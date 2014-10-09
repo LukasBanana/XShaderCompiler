@@ -81,10 +81,8 @@ class Token
             Buffer,         //!< cbuffer, tbuffer
 
             // Control transfer keywords
-            Break,          //!< break
-            Continue,       //!< continue
+            CtrlTransfer,   //!< break, continue, discard
             Return,         //!< return
-            Discard,        //!< discard
 
             // Special tokens
             Directive,      //!< '#' ... (e.g. "#include").

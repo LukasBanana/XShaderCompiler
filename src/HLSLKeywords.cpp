@@ -98,10 +98,10 @@ static KeywordMapType GenerateKeywordMap()
         { "cbuffer",          Ty::Buffer        },
         { "tbuffer",          Ty::Buffer        },
 
-        { "break",            Ty::Break         },
-        { "continue",         Ty::Continue      },
+        { "break",            Ty::CtrlTransfer  },
+        { "continue",         Ty::CtrlTransfer  },
+        { "discard",          Ty::CtrlTransfer  },
         { "return",           Ty::Return        },
-        { "discard",          Ty::Discard       },
     };
 }
 
