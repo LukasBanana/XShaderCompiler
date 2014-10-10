@@ -8,8 +8,17 @@
 #include "HLSLParser.h"
 
 
-HLSLParser::HLSLParser()
+HLSLParser::HLSLParser(Logger* log) :
+    scanner_(log)
 {
+}
+
+bool HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
+{
+    
+
+
+    return true;
 }
 
 

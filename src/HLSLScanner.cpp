@@ -64,10 +64,10 @@ TokenPtr HLSLScanner::Next()
                         if (Is('='))
                         {
                             spell += TakeIt();
-                            return Make(Token::Types::ModifyAssignOp, spell);
+                            return Make(Token::Types::AssignOp, spell);
                         }
 
-                        return Make(Token::Types::DivOp, spell);
+                        return Make(Token::Types::BinaryOp, spell);
                     }
                 }
                 else
@@ -208,6 +208,10 @@ TokenPtr HLSLScanner::ScanToken()
 {
     std::string spell;
 
+    /* Scan directive */
+    if (Is('#'))
+        return ScanDirective();
+
     /* Scan identifier */
     if (std::isalpha(UChr()) || Is('_'))
         return ScanIdentifier();
@@ -217,36 +221,27 @@ TokenPtr HLSLScanner::ScanToken()
         return ScanNumber();
 
     /* Scan operators */
-    if (Is(':'))
+    if (Is('='))
     {
         spell += TakeIt();
 
         if (Is('='))
-        {
-            spell += TakeIt();
-            return Make(Token::Types::CopyAssignOp, spell);
-        }
+            return Make(Token::Types::BinaryOp, spell, true);
 
-        return Make(Token::Types::Colon, spell);
+        return Make(Token::Types::AssignOp, spell);
     }
 
-    if (Is('='))
-        return Make(Token::Types::EqualityOp, spell, true);
-
     if (Is('~'))
-        return Make(Token::Types::BitwiseNotOp, spell, true);
+        return Make(Token::Types::UnaryOp, spell, true);
 
     if (Is('!'))
     {
         spell += TakeIt();
 
         if (Is('='))
-        {
-            spell += TakeIt();
-            return Make(Token::Types::EqualityOp, spell);
-        }
+            return Make(Token::Types::BinaryOp, spell, true);
 
-        ErrorUnexpected();
+        return Make(Token::Types::UnaryOp, spell);
     }
 
     if (Is('%'))
@@ -254,12 +249,9 @@ TokenPtr HLSLScanner::ScanToken()
         spell += TakeIt();
 
         if (Is('='))
-        {
-            spell += TakeIt();
-            return Make(Token::Types::ModifyAssignOp, spell);
-        }
+            return Make(Token::Types::AssignOp, spell, true);
 
-        return Make(Token::Types::DivOp, spell);
+        return Make(Token::Types::BinaryOp, spell);
     }
 
     if (Is('*'))
@@ -267,12 +259,9 @@ TokenPtr HLSLScanner::ScanToken()
         spell += TakeIt();
 
         if (Is('='))
-        {
-            spell += TakeIt();
-            return Make(Token::Types::ModifyAssignOp, spell);
-        }
+            return Make(Token::Types::AssignOp, spell, true);
 
-        return Make(Token::Types::MulOp, spell);
+        return Make(Token::Types::BinaryOp, spell);
     }
 
     if (Is('^'))
@@ -280,12 +269,9 @@ TokenPtr HLSLScanner::ScanToken()
         spell += TakeIt();
 
         if (Is('='))
-        {
-            spell += TakeIt();
-            return Make(Token::Types::ModifyAssignOp, spell);
-        }
+            return Make(Token::Types::AssignOp, spell, true);
 
-        return Make(Token::Types::BitwiseXorOp, spell);
+        return Make(Token::Types::BinaryOp, spell);
     }
 
     if (Is('+'))
@@ -301,12 +287,9 @@ TokenPtr HLSLScanner::ScanToken()
         spell += TakeIt();
 
         if (Is('='))
-        {
-            spell += TakeIt();
-            return Make(Token::Types::ModifyAssignOp, spell);
-        }
+            return Make(Token::Types::AssignOp, spell, true);
 
-        return Make(Token::Types::BitwiseAndOp, spell);
+        return Make(Token::Types::BinaryOp, spell);
     }
 
     if (Is('|'))
@@ -314,12 +297,9 @@ TokenPtr HLSLScanner::ScanToken()
         spell += TakeIt();
 
         if (Is('='))
-        {
-            spell += TakeIt();
-            return Make(Token::Types::ModifyAssignOp, spell);
-        }
+            return Make(Token::Types::AssignOp, spell, true);
 
-        return Make(Token::Types::BitwiseOrOp, spell);
+        return Make(Token::Types::BinaryOp, spell);
     }
 
     /* Scan punctuation, special characters and brackets */
@@ -341,6 +321,22 @@ TokenPtr HLSLScanner::ScanToken()
     return nullptr;
 }
 
+TokenPtr HLSLScanner::ScanDirective()
+{
+    std::string spell;
+    bool takeNextLine = false;
+
+    while (!Is('\n') || takeNextLine)
+    {
+        takeNextLine = false;
+        if (Is('\\'))
+            takeNextLine = true;
+        spell += TakeIt();
+    }
+
+    return Make(Token::Types::Directive, spell);
+}
+
 TokenPtr HLSLScanner::ScanIdentifier()
 {
     /* Scan identifier string */
@@ -349,10 +345,6 @@ TokenPtr HLSLScanner::ScanIdentifier()
 
     while (std::isalnum(UChr()) || Is('_'))
         spell += TakeIt();
-
-    /* Check for reserved internal names */
-    if (spell.compare(0, 6, "__xx__") == 0)
-        Error("reserved prefix \"__xx__\" used in identifier \"" + spell + "\"");
 
     /* Scan reserved words */
     auto it = HLSLKeywords().find(spell);
@@ -373,18 +365,15 @@ TokenPtr HLSLScanner::ScanAssignShiftRelationOp(const char chr)
         spell += TakeIt();
 
         if (Is('='))
-        {
-            spell += TakeIt();
-            return Make(Token::Types::ModifyAssignOp, spell);
-        }
+            return Make(Token::Types::AssignOp, spell, true);
 
-        return Make(Token::Types::ShiftOp, spell);
+        return Make(Token::Types::BinaryOp, spell);
     }
 
     if (Is('='))
         spell += TakeIt();
 
-    return Make(Token::Types::RelationOp, spell);
+    return Make(Token::Types::BinaryOp, spell);
 }
 
 TokenPtr HLSLScanner::ScanPlusOp()
@@ -393,17 +382,11 @@ TokenPtr HLSLScanner::ScanPlusOp()
     spell += TakeIt();
     
     if (Is('+'))
-    {
-        spell += TakeIt();
-        return Make(Token::Types::PostAssignOp, spell);
-    }
+        return Make(Token::Types::UnaryOp, spell, true);
     else if (Is('='))
-    {
-        spell += TakeIt();
-        return Make(Token::Types::ModifyAssignOp, spell);
-    }
+        return Make(Token::Types::AssignOp, spell, true);
 
-    return Make(Token::Types::AddOp, spell);
+    return Make(Token::Types::BinaryOp, spell);
 }
 
 TokenPtr HLSLScanner::ScanMinusOp()
@@ -412,22 +395,11 @@ TokenPtr HLSLScanner::ScanMinusOp()
     spell += TakeIt();
 
     if (Is('-'))
-    {
-        spell += TakeIt();
-        return Make(Token::Types::PostAssignOp, spell);
-    }
+        return Make(Token::Types::UnaryOp, spell, true);
     else if (Is('='))
-    {
-        spell += TakeIt();
-        return Make(Token::Types::ModifyAssignOp, spell);
-    }
-    else if (Is('>'))
-    {
-        spell += TakeIt();
-        return Make(Token::Types::Arrow, spell);
-    }
+        return Make(Token::Types::AssignOp, spell, true);
 
-    return Make(Token::Types::SubOp, spell);
+    return Make(Token::Types::BinaryOp, spell);
 }
 
 TokenPtr HLSLScanner::ScanNumber()
@@ -440,23 +412,6 @@ TokenPtr HLSLScanner::ScanNumber()
 
     const auto startChr = TakeIt();
     spell += startChr;
-
-    /* Check for hex, octal or binary number */
-    if (startChr == '0')
-    {
-        switch (chr_)
-        {
-            case 'x':
-                TakeIt();
-                return ScanHexNumber();
-            case 'o':
-                TakeIt();
-                return ScanOctNumber();
-            case 'b':
-                TakeIt();
-                return ScanBinNumber();
-        }
-    }
 
     /* Parse integer or floating-point number */
     auto type = Token::Types::IntLiteral;
@@ -475,6 +430,9 @@ TokenPtr HLSLScanner::ScanNumber()
         type = Token::Types::FloatLiteral;
     }
 
+    if (Is('f') || Is('F'))
+        TakeIt();
+
     if (std::isalpha(UChr()) || Is('.'))
         ErrorLetterInNumber();
 
@@ -482,69 +440,10 @@ TokenPtr HLSLScanner::ScanNumber()
     return Make(type, spell);
 }
 
-TokenPtr HLSLScanner::ScanHexNumber()
-{
-    /* Scan hex literal */
-    std::string spell;
-    while (std::isxdigit(UChr()))
-        spell += TakeIt();
-
-    /* Check for wrong appendix */
-    if ( ( std::isalpha(UChr()) && !std::isxdigit(UChr()) ) || Is('.') )
-        ErrorLetterInNumber();
-
-    /* Convert literal to decimal */
-    spell = std::to_string(HexToNum<int>(spell));
-    return Make(Token::Types::IntLiteral, spell);
-}
-
-TokenPtr HLSLScanner::ScanOctNumber()
-{
-    /* Scan octal literal */
-    std::string spell;
-    while (chr_ >= '0' && chr_ <= '7')
-        spell += TakeIt();
-
-    /* Check for wrong appendix */
-    if (std::isalpha(UChr()) || Is('.') )
-        ErrorLetterInNumber();
-
-    /* Convert literal to decimal */
-    spell = std::to_string(OctToNum<int>(spell));
-    return Make(Token::Types::IntLiteral, spell);
-}
-
-TokenPtr HLSLScanner::ScanBinNumber()
-{
-    /* Scan binary literal */
-    std::string spell;
-    while (Is('1') || Is('0'))
-        spell += TakeIt();
-
-    /* Check for wrong appendix */
-    if (std::isalpha(UChr()) || Is('.') )
-        ErrorLetterInNumber();
-
-    /* Convert literal to decimal */
-    spell = std::to_string(BinToNum<int>(spell));
-    return Make(Token::Types::IntLiteral, spell);
-}
-
 void HLSLScanner::ScanDecimalLiteral(std::string& spell)
 {
     while (std::isdigit(UChr()))
         spell += TakeIt();
-}
-
-bool HLSLScanner::IsEscapeChar() const
-{
-    return
-        ( chr_ >= '0' && chr_ <= '7') ||
-        Is('\\') || Is('\"') || Is('\'') ||
-        Is('\0') || Is( '?') || Is( 'a') ||
-        Is( 'b') || Is( 'f') || Is( 'n') ||
-        Is( 'r') || Is( 't') || Is( 'v') ||
-        Is( 'x') || Is( 'u') || Is( 'U');
 }
 
 

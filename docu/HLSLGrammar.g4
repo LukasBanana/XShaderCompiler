@@ -17,27 +17,48 @@ code_block	: '{' stmnt_list '}';
 code_body	: stmnt
 			| code_block
 
+// Statements
+
 stmnt_list	: stmnt*;
 stmnt		: ';'
 			| for_loop_stmnt
 			| while_loop_stmnt
-			| do_while_loop_stmnt
+			| do_while_loop_stmnt ';'
 			| if_stmnt
 			| switch_stmnt
-			| var_decl_stmnt
-			| assign_stmnt
-			| function_call_stmnt
-			| return_stmnt
+			| var_decl_stmnt ';'
+			| assign_stmnt ';'
+			| function_call_stmnt ';'
+			| return_stmnt ';'
+			| struct_decl
 			| CTRL_TRANSFER_STMNT;
+
+// Variables
+
+array_index_access	: '[' expr ']';
+var_single_ident	: IDENT array_index_access*;
+var_ident			: var_single_ident ('.' var_single_ident)*;
+
+// Expressions
 
 expr			: literal
 				| binary_expr
 				| unary_expr
 				| post_unary_expr
-				| function_call;
+				| function_call_stmnt
+				| bracket_expr
+				| cast_expr
+				| var_access_expr;
+
 binary_expr		: expr BINARY_OP expr;
 unary_expr		: UNARY_OP expr;
 post_unary_expr	: expr POST_UNARY_OP;
+bracket_expr	: '(' expr ')';
+cast_expr		: '(' var_type ')' expr;
+var_access_expr	: var_ident (ASSIGN_OP expr)?;
+
+// Operators
+
 ASSIGN_OP		: '='
 				| '+='
 				| '-='
@@ -71,12 +92,16 @@ UNARY_OP		: POST_UNARY_OP
 				| '~'
 				| '-';
 
+// Loop statements
+
 for_loop_stmnt	: 'for' '(' for_init? ';' expr? ';' expr? ')' code_block;
 for_init		: assign_stmnt
 				| var_decl_stmnt;
 
 while_loop_stmnt	: 'while' '(' expr ')' code_body;
-do_while_loop_stmnt	: 'do' code_block 'while' '(' expr ')' ';'
+do_while_loop_stmnt	: 'do' code_block 'while' '(' expr ')';
+
+// Conditional statements
 
 if_stmnt	: 'if' '(' expr ')' code_body else_stmnt?;
 else_stmnt	: 'else' code_body;
@@ -86,33 +111,89 @@ case_stmnt_list	: case_stmnt* default_stmnt?;
 case_stmnt		: 'case' expr ':' stmnt_list;
 default_stmnt	: 'default' ':' stmnt_list;
 
-var_decl_stmnt	: ;
-assign_stmnt	: ;
+// Variable declaration
 
-function_call		: IDENT '(' argument_list ')';
-function_call_stmnt	: function_call ';';
+INTERP_MODIFIER			: 'linear'
+						| 'centroid'
+						| 'nointerpolation'
+						| 'noperspective'
+						| 'sample';
+
+STORAGE_CLASS			: 'extern';
+						| 'nointerpolation'
+						| 'precise'
+						| 'shared'
+						| 'groupshared'
+						| 'static'
+						| 'uniform'
+						| 'volatile';
+
+TYPE_MODIFIER			: 'const'
+						| 'row_major'
+						| 'column_major';
+
+var_type				: SCALAR_TYPE
+						| VECTOR_TYPE
+						| MATRIX_TYPE
+						| TEXTURE_TYPE
+						| BUFFER_TYPE
+						| SAMPLER_STATE_TYPE
+						| IDENT;
+
+VECTOR_SINGLE_COMPONENT	: 'x'
+						| 'y'
+						| 'z'
+						| 'w'
+						| 'r'
+						| 'g'
+						| 'b'
+						| 'a';
+
+VECTOR_COMPONENT		: VECTOR_SINGLE_COMPONENT (VECTOR_SINGLE_COMPONENT (VECTOR_SINGLE_COMPONENT VECTOR_SINGLE_COMPONENT?)?)?;
+
+REGISTER_IDENT			: 'b'
+						| 't'
+						| 'c'
+						| 's'
+						| 'u';
+
+REGISTER_NAME			: REGISTER_IDENT INT_LITERAL;
+SEMANTIC				: ':' IDENT;
+initializer				: '=' expr;
+array_dimension			: '[' expr ']';
+var_packoffset			: 'packoffset' '(' REGISTER_NAME ('.' VECTOR_COMPONENT)? ')';
+var_register			: 'register' '(' REGISTER_NAME ')';
+
+var_semantic			: SEMANTIC
+						| var_packoffset
+						| var_register;
+
+var_decl				: IDENT array_dimension? var_semantic* initializer?;
+var_decl_stmnt			: (STORAGE_CLASS | INTERP_MODIFIER)* TYPE_MODIFIER? var_type var_decl (',' var_decl)*;
+
+// Function calls
+
+function_name		: IDENT
+					| VECTOR_TYPE
+					| MATRIX_TYPE;
+function_call_stmnt	: function_name '(' argument_list ')';
 argument_list		: ( epsilion | expr ( ',' expr )* );
 
-return_stmnt	: 'return' expr? ';';
+// Other statements
+
+assign_stmnt	: var_ident ASSIGN_OP expr;
+
+return_stmnt	: 'return' expr?;
 
 CTRL_TRANSFER_STMNT	: 'break'
 					| 'continue'
 					| 'discard';
 
-function_decl	: return_type IDENT '(' parameter_list ')' semantic_modifier? code_block;
+// Function declaration
 
-var_type		: SCALAR_TYPE
-				| VECTOR_TYPE
-				| MATRIX_TYPE
-				| TEXTURE_TYPE
-				| BUFFER_TYPE
-				| SAMPLER_STATE_TYPE
-				| IDENT;
 return_type		: var_type
 				| VOID;
-
-semantic_modifier	: ':' IDENT;
-initializer			: '=' expr;
+function_decl	: return_type IDENT '(' parameter_list ')' SEMANTIC? code_block;
 
 INPUT_MODIFIER	: 'in'
 				| 'out'
@@ -126,6 +207,17 @@ INTERP_MODIFIER		: 'linear'
 					| 'sample';
 
 parameter_list	: ( epsilion | parameter ( ',' parameter )* );
-parameter		: INPUT_MODIFIER? var_type IDENT semantic_modifier? INTERP_MODIFIER? initializer?;
+parameter		: INPUT_MODIFIER? var_type IDENT SEMANTIC? INTERP_MODIFIER? initializer?;
 
+// Struct declaration
+
+struct_decl			: 'struct' IDENT? '{' struct_decl_body '}' IDENT? ';';
+struct_decl_body	: (var_decl_stmnt ';')*;
+
+
+/*
+| buffer_decl
+| texture_decl
+| samplerstate_decl
+*/
 

@@ -69,18 +69,14 @@ class HLSLScanner
 
         TokenPtr ScanToken();
 
+        TokenPtr ScanDirective();
         TokenPtr ScanIdentifier();
         TokenPtr ScanAssignShiftRelationOp(const char Chr);
         TokenPtr ScanPlusOp();
         TokenPtr ScanMinusOp();
         TokenPtr ScanNumber();
-        TokenPtr ScanHexNumber();
-        TokenPtr ScanOctNumber();
-        TokenPtr ScanBinNumber();
 
         void ScanDecimalLiteral(std::string& spell);
-
-        bool IsEscapeChar() const;
 
         inline bool Is(char chr) const
         {

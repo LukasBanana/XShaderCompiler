@@ -9,7 +9,7 @@
 #define __HT_PARSER_H__
 
 
-#include <string>
+#include "HLSLScanner.h"
 
 
 //! Syntax parser class.
@@ -18,11 +18,13 @@ class HLSLParser
     
     public:
         
-        HLSLParser();
+        HLSLParser(Logger* log = nullptr);
 
+        bool ParseSource(const std::shared_ptr<SourceCode>& source);
 
     private:
         
+        HLSLScanner scanner_;
 
 };
 
