@@ -8,6 +8,10 @@
 #include "SourcePosition.h"
 
 
+namespace HTLib
+{
+
+
 const SourcePosition SourcePosition::ignore;
 
 SourcePosition::SourcePosition(unsigned int row, unsigned int column) :
@@ -41,6 +45,9 @@ void SourcePosition::Reset()
 {
     row_ = column_ = 0;
 }
+
+
+} // /namespace HTLib
 
 
 

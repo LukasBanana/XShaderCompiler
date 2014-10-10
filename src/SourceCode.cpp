@@ -8,6 +8,10 @@
 #include "SourceCode.h"
 
 
+namespace HTLib
+{
+
+
 SourceCode::SourceCode(std::istream& stream) :
     stream_(&stream)
 {
@@ -37,6 +41,9 @@ char SourceCode::Next()
 
     return chr;
 }
+
+
+} // /namespace HTLib
 
 
 

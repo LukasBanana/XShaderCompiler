@@ -5,20 +5,22 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_SCANNER_H__
-#define __HT_SCANNER_H__
+#ifndef __HT_HLSL_SCANNER_H__
+#define __HT_HLSL_SCANNER_H__
 
 
 #include "SourceCode.h"
 #include "SourcePosition.h"
 #include "Token.h"
-#include "Logger.h"
+#include "HT/Logger.h"
 
 #include <string>
 #include <functional>
 
 
-using namespace HLSLTrans;
+namespace HTLib
+{
+
 
 //! This class stores the position in a source code file.
 class HLSLScanner
@@ -97,6 +99,9 @@ class HLSLScanner
         Logger* log_ = nullptr;
 
 };
+
+
+} // /namespace HTLib
 
 
 #endif

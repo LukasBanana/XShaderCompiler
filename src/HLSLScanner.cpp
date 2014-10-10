@@ -11,8 +11,12 @@
 #include <cctype>
 
 
+namespace HTLib
+{
+
+
 HLSLScanner::HLSLScanner(Logger* log) :
-    log_(log)
+    log_{ log }
 {
 }
 
@@ -116,7 +120,7 @@ char HLSLScanner::TakeIt()
 
 void HLSLScanner::Error(const std::string& msg)
 {
-    throw std::runtime_error(Pos().ToString() + " : " + msg);
+    throw std::runtime_error("lexical error (" + Pos().ToString() + ") : " + msg);
 }
 
 void HLSLScanner::ErrorUnexpected()
@@ -305,6 +309,7 @@ TokenPtr HLSLScanner::ScanToken()
     /* Scan punctuation, special characters and brackets */
     switch (chr_)
     {
+        case ':': return Make(Token::Types::Colon,     true); break;
         case ';': return Make(Token::Types::Semicolon, true); break;
         case ',': return Make(Token::Types::Comma,     true); break;
         case '.': return Make(Token::Types::Dot,       true); break;
@@ -445,6 +450,9 @@ void HLSLScanner::ScanDecimalLiteral(std::string& spell)
     while (std::isdigit(UChr()))
         spell += TakeIt();
 }
+
+
+} // /namespace HTLib
 
 
 

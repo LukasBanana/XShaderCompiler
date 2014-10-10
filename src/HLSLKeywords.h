@@ -15,10 +15,17 @@
 #include <string>
 
 
+namespace HTLib
+{
+
+
 typedef std::map<std::string, Token::Types> KeywordMapType;
 
 //! Returns the keywords map (which is an exception for identifiers).
 const KeywordMapType& HLSLKeywords();
+
+
+} // /namespace HTLib
 
 
 #endif

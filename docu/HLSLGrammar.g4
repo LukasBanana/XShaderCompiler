@@ -21,6 +21,7 @@ code_body	: stmnt
 
 stmnt_list	: stmnt*;
 stmnt		: ';'
+			| code_block
 			| for_loop_stmnt
 			| while_loop_stmnt
 			| do_while_loop_stmnt ';'
@@ -106,10 +107,10 @@ do_while_loop_stmnt	: 'do' code_block 'while' '(' expr ')';
 if_stmnt	: 'if' '(' expr ')' code_body else_stmnt?;
 else_stmnt	: 'else' code_body;
 
-switch_stmnt	: 'switch' '(' expr ')' '{' case_stmnt_list '}';
-case_stmnt_list	: case_stmnt* default_stmnt?;
-case_stmnt		: 'case' expr ':' stmnt_list;
-default_stmnt	: 'default' ':' stmnt_list;
+switch_stmnt		: 'switch' '(' expr ')' '{' switch_case_list '}';
+switch_case_list	: switch_case* switch_default_case?;
+switch_case			: 'case' expr ':' stmnt_list;
+switch_default_case		: 'default' ':' stmnt_list;
 
 // Variable declaration
 

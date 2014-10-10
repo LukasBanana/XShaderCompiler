@@ -8,6 +8,10 @@
 #include "HLSLKeywords.h"
 
 
+namespace HTLib
+{
+
+
 static KeywordMapType GenerateKeywordMap()
 {
     typedef Token::Types Ty;
@@ -111,6 +115,9 @@ const KeywordMapType& HLSLKeywords()
 {
     return keywordMap;
 }
+
+
+} // /namespace HTLib
 
 
 

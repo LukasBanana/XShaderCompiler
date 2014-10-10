@@ -9,15 +9,17 @@
 #define __HT_LOGGER_H__
 
 
+#include "Export.h"
+
 #include <string>
 
 
-namespace HLSLTrans
+namespace HTLib
 {
 
 
 //! Logger interface.
-class Logger
+class _HT_EXPORT_ Logger
 {
     
     public:
@@ -41,7 +43,7 @@ class Logger
 };
 
 
-} // /namespace HLSLTrans
+} // /namespace HTLib
 
 
 #endif

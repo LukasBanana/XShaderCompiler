@@ -12,6 +12,10 @@
 #include <string>
 
 
+namespace HTLib
+{
+
+
 //! This class stores the position in a source code file.
 class SourcePosition
 {
@@ -54,6 +58,9 @@ class SourcePosition
         unsigned int row_ = 0, column_ = 0;
 
 };
+
+
+} // /namespace HTLib
 
 
 #endif

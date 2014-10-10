@@ -19,7 +19,7 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 # === Global files ===
 
-file(GLOB FilesInc	${PROJECT_SOURCE_DIR}/inc/*.*)
+file(GLOB FilesInc	${PROJECT_SOURCE_DIR}/inc/HT/*.*)
 file(GLOB FilesSrc	${PROJECT_SOURCE_DIR}/src/*.*)
 file(GLOB FilesTest	${PROJECT_SOURCE_DIR}/test/*.*)
 

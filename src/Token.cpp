@@ -8,6 +8,10 @@
 #include "Token.h"
 
 
+namespace HTLib
+{
+
+
 Token::Token(Token&& other) :
     type_   { other.type_             },
     pos_    { other.pos_              },
@@ -32,6 +36,9 @@ Token::Token(const SourcePosition& pos, const Types type, std::string&& spell) :
     spell_  { std::move(spell) }
 {
 }
+
+
+} // /namespace HTLib
 
 
 

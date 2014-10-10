@@ -15,6 +15,10 @@
 #include <memory>
 
 
+namespace HTLib
+{
+
+
 //! Token classes used by the scanner and parser.
 class Token
 {
@@ -121,6 +125,9 @@ class Token
 };
 
 typedef std::shared_ptr<Token> TokenPtr;
+
+
+} // /namespace HTLib
 
 
 #endif

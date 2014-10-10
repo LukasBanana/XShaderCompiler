@@ -15,6 +15,10 @@
 #include <string>
 
 
+namespace HTLib
+{
+
+
 class SourceCode
 {
     
@@ -51,6 +55,9 @@ class SourceCode
         SourcePosition  pos_;
 
 };
+
+
+} // /namespace HTLib
 
 
 #endif
