@@ -133,9 +133,11 @@ TYPE_MODIFIER			: 'const'
 						| 'row_major'
 						| 'column_major';
 
-var_type				: SCALAR_TYPE
+base_var_type			: SCALAR_TYPE
 						| VECTOR_TYPE
-						| MATRIX_TYPE
+						| MATRIX_TYPE;
+
+var_type				: base_var_type
 						| TEXTURE_TYPE
 						| BUFFER_TYPE
 						| SAMPLER_STATE_TYPE
@@ -210,6 +212,44 @@ INTERP_MODIFIER		: 'linear'
 
 parameter_list	: ( epsilion | parameter ( ',' parameter )* );
 parameter		: INPUT_MODIFIER? var_type IDENT SEMANTIC? INTERP_MODIFIER? initializer?;
+
+// Buffer declaration
+
+buffer_decl_ident	: IDENT (':' var_register)?;
+
+BUFFER_TYPE		: 'Buffer'
+				| 'RWBuffer'
+				| 'StructuredBuffer'
+				| 'RWStructuredBuffer'
+				| 'ByteAddressBuffer'
+				| 'RWByteAddressBuffer'
+				| 'AppendStructuredBuffer'
+				| 'ConsumeStructuredBuffer';
+
+buffer_decl		: BUFFER_TYPE '<' base_var_type '>' buffer_decl_ident (',' buffer_decl_ident)*;
+
+// Texture declaration
+
+TEXTURE_IDENT	: 'Texture1D'
+				| 'Texture1DArray'
+				| 'Texture2D'
+				| 'Texture2DArray'
+				| 'Texture2DMS'
+				| 'Texture2DMSArray'
+				| 'Texture3D'
+				| 'TextureCube'
+				| 'TextureCubeArray'
+				| 'RWTexture1D'
+				| 'RWTexture1DArray'
+				| 'RWTexture2D'
+				| 'RWTexture2DArray'
+				| 'RWTexture3D';
+
+texture_decl	: TEXTURE_IDENT ('<' base_var_type '>')? buffer_decl_ident (',' buffer_decl_ident)* ;
+
+// Sampler state declaration
+
+samplerstate_decl	: 'SamplerState' buffer_decl_ident (',' buffer_decl_ident)*;
 
 // Struct declaration
 
