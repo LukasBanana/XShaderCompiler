@@ -14,6 +14,8 @@
 #include "Visitor.h"
 #include "Token.h"
 
+#include <map>
+
 
 namespace HTLib
 {
@@ -40,7 +42,31 @@ class GLSLGenerator : private Visitor
 
     private:
         
+        /* === Structures === */
+
+        struct SemanticStage
+        {
+            SemanticStage(const std::string& semantic);
+            SemanticStage(
+                const std::string& vertex,
+                const std::string& geometry,
+                const std::string& tessControl,
+                const std::string& tessEvaluation,
+                const std::string& fragment,
+                const std::string& compute
+            );
+
+            std::string vertex;
+            std::string geometry;
+            std::string tessControl;
+            std::string tessEvaluation;
+            std::string fragment;
+            std::string compute;
+        };
+
         /* === Functions === */
+
+        void EstablishMaps();
 
         void BeginLn();
         void EndLn();
@@ -73,6 +99,10 @@ class GLSLGenerator : private Visitor
         CodeWriter      writer_;
         IncludeHandler* includeHandler_ = nullptr;
         Logger*         log_            = nullptr;
+
+        std::map<std::string, std::string> typeMap_;        // <hlsl-type, glsl-type>
+        std::map<std::string, std::string> intrinsicMap_;   // <hlsl-intrinsic, glsl-intrinsic>
+        std::map<std::string, SemanticStage> semanticMap_;    // <hlsl-semantic, glsl-keyword>
 
 };
 
