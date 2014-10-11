@@ -76,7 +76,7 @@ class OutputLog : public HTLib::Logger
 int main()
 {
     // Read file
-    std::ifstream input("TestShader1.hlsl");
+    auto input = std::make_shared<std::ifstream>("TestShader1.hlsl");
     std::ofstream output("TestShader1.glsl");
 
     // Translate HLSL code

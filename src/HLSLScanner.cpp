@@ -22,13 +22,11 @@ HLSLScanner::HLSLScanner(Logger* log) :
 
 bool HLSLScanner::ScanSource(const std::shared_ptr<SourceCode>& source)
 {
-    if (source)
+    if (source && source->IsValid())
     {
+        /* Store source stream and take first character */
         source_ = source;
-
-        /* Take first character from source */
         TakeIt();
-
         return true;
     }
     return false;
@@ -82,7 +80,7 @@ TokenPtr HLSLScanner::Next()
             /* Scan next token */
             return ScanToken();
         }
-        catch (const std::runtime_error& err)
+        catch (const std::exception& err)
         {
             /* Add to error and scan next token */
             if (log_)

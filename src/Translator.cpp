@@ -7,6 +7,7 @@
 
 #include "HT/Translator.h"
 #include "HLSLParser.h"
+#include "GLSLGenerator.h"
 
 
 namespace HTLib
@@ -14,7 +15,7 @@ namespace HTLib
 
 
 _HT_EXPORT_ bool TranslateHLSLtoGLSL(
-    std::istream& input,
+    const std::shared_ptr<std::istream>& input,
     std::ostream& output,
     const std::string& entryPoint,
     const ShaderTargets shaderTarget,
@@ -23,6 +24,7 @@ _HT_EXPORT_ bool TranslateHLSLtoGLSL(
     const Options& options,
     Logger* log)
 {
+    /* Parse HLSL input code */
     HLSLParser parser(log);
 
     if (!parser.ParseSource(std::make_shared<SourceCode>(input)))
@@ -32,7 +34,15 @@ _HT_EXPORT_ bool TranslateHLSLtoGLSL(
         return false;
     }
 
-    //...
+    /* Generate GLSL output code */
+    GLSLGenerator generator(log, includeHandler, options);
+
+    if (!generator.GenerateCode(output, entryPoint, shaderTarget, shaderVersion))
+    {
+        if (log)
+            log->Error("generating output code failed");
+        return false;
+    }
 
     return true;
 }

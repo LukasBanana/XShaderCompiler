@@ -32,10 +32,7 @@ class HLSLScanner
 
         bool ScanSource(const std::shared_ptr<SourceCode>& source);
 
-        /**
-        Scanns the next token with the current scanner state.
-        \see state
-        */
+        //! Scanns the next token.
         TokenPtr Next();
 
         SourcePosition Pos() const;
@@ -93,10 +90,9 @@ class HLSLScanner
         /* === Members === */
 
         std::shared_ptr<SourceCode> source_;
+        char                        chr_ = 0;
 
-        char chr_ = 0;
-
-        Logger* log_ = nullptr;
+        Logger*                     log_ = nullptr;
 
 };
 

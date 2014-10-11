@@ -40,9 +40,8 @@ bool HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
 
         #endif
     }
-    catch (const std::runtime_error& err)
+    catch (const std::exception& err)
     {
-        /* Add to error and scan next token */
         if (log_)
             log_->Error(err.what());
     }

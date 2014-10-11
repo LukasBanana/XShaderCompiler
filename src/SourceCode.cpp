@@ -12,14 +12,19 @@ namespace HTLib
 {
 
 
-SourceCode::SourceCode(std::istream& stream) :
-    stream_(&stream)
+SourceCode::SourceCode(const std::shared_ptr<std::istream>& stream) :
+    stream_{ stream }
 {
+}
+
+bool SourceCode::IsValid() const
+{
+    return stream_ != nullptr && stream_->good();
 }
 
 char SourceCode::Next()
 {
-    if (!stream_ || !stream_->good())
+    if (!IsValid())
         return 0;
 
     /* Check if reader is at end-of-line */

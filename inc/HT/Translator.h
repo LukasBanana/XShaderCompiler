@@ -16,6 +16,7 @@
 #include <string>
 #include <istream>
 #include <ostream>
+#include <memory>
 
 
 namespace HTLib
@@ -38,7 +39,7 @@ class _HT_EXPORT_ IncludeHandler
         {
         }
 
-        virtual void Include(const std::string& includeName, std::istream& includedInputStream) = 0;
+        virtual std::shared_ptr<std::istream> Include(const std::string& includeName) = 0;
 
 };
 
@@ -61,7 +62,7 @@ Therefore wrong HLSL code will be translated into wrong GLSL code.
 \see Options
 */
 _HT_EXPORT_ bool TranslateHLSLtoGLSL(
-    std::istream& input,
+    const std::shared_ptr<std::istream>& input,
     std::ostream& output,
     const std::string& entryPoint,
     const ShaderTargets shaderTarget,

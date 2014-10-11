@@ -13,6 +13,7 @@
 
 #include <istream>
 #include <string>
+#include <memory>
 
 
 namespace HTLib
@@ -24,7 +25,10 @@ class SourceCode
     
     public:
         
-        SourceCode(std::istream& stream);
+        SourceCode(const std::shared_ptr<std::istream>& stream);
+
+        //! Returns true if this is a valid source code stream.
+        bool IsValid() const;
 
         //! Returns the next character from the source.
         char Next();
@@ -50,9 +54,9 @@ class SourceCode
         
         SourceCode() = default;
 
-        std::istream*   stream_ = nullptr;
-        std::string     line_;
-        SourcePosition  pos_;
+        std::shared_ptr<std::istream>   stream_;
+        std::string                     line_;
+        SourcePosition                  pos_;
 
 };
 
