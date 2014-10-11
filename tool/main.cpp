@@ -54,7 +54,7 @@ class OutputLog : public HTLib::Logger
                 PrintHead(std::to_string(errors_.size()) + " ERROR(S)");
 
                 for (const auto& msg : errors_)
-                    std::cerr << "errors: " << msg << std::endl;
+                    std::cerr << "error: " << msg << std::endl;
                 errors_.clear();
             }
         }
@@ -63,7 +63,6 @@ class OutputLog : public HTLib::Logger
 
         void PrintHead(const std::string& head)
         {
-            std::cout << std::endl;
             std::cout << head << std::endl;
             std::cout << std::string(head.size(), '-') << std::endl;
         }
@@ -204,6 +203,8 @@ int main(int argc, char** argv)
             output = filename + ".glsl";
 
         /* Translate HLSL file into GLSL */
+        std::cout << "translate from " << filename << " to " << output << std::endl;
+
         auto inputStream = std::make_shared<std::ifstream>(filename);
         std::ofstream outputStream(output);
 
@@ -215,7 +216,7 @@ int main(int argc, char** argv)
 
         try
         {
-            TranslateHLSLtoGLSL(
+            auto result = TranslateHLSLtoGLSL(
                 inputStream,
                 outputStream,
                 entry,
@@ -227,6 +228,9 @@ int main(int argc, char** argv)
             );
 
             log.Report();
+
+            if (result)
+                std::cout << "translation successful" << std::endl;
         }
         catch (const std::string& err)
         {

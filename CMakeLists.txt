@@ -21,7 +21,6 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 file(GLOB FilesInc	${PROJECT_SOURCE_DIR}/inc/HT/*.*)
 file(GLOB FilesSrc	${PROJECT_SOURCE_DIR}/src/*.*)
-file(GLOB FilesTest	${PROJECT_SOURCE_DIR}/test/*.*)
 file(GLOB FilesTool	${PROJECT_SOURCE_DIR}/tool/*.*)
 
 set(
@@ -35,7 +34,6 @@ set(
 
 source_group("inc" FILES ${FilesInc})
 source_group("src" FILES ${FilesSrc})
-source_group("test" FILES ${FilesTest})
 source_group("tool" FILES ${FilesTool})
 
 
@@ -48,14 +46,11 @@ include_directories("${PROJECT_SOURCE_DIR}/src")
 # === Executable ===
 
 add_library(HLSLTranslator STATIC ${FilesAll})
-add_executable(TranslationTest ${FilesTest})
 add_executable(HLSLOfflineTranslator ${FilesTool})
 
-target_link_libraries(TranslationTest HLSLTranslator)
 target_link_libraries(HLSLOfflineTranslator HLSLTranslator)
 
 set_target_properties(HLSLTranslator PROPERTIES LINKER_LANGUAGE CXX)
-set_target_properties(TranslationTest PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(HLSLOfflineTranslator PROPERTIES LINKER_LANGUAGE CXX)
 
 
