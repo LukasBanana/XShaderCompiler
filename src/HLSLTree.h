@@ -48,6 +48,7 @@ struct AST
         Program,
         CodeBlock,
         Terminal,
+        BufferDeclIdent,
 
         FunctionDecl,
         BufferDecl,
@@ -134,6 +135,14 @@ DECL_AST_ALIAS( BinaryOp, Terminal );
 DECL_AST_ALIAS( UnaryOp,  Terminal );
 DECL_AST_ALIAS( Semantic, Terminal );
 
+//! Buffer declaration identifier.
+struct BufferDeclIdent : public AST
+{
+    AST_INTERFACE(BufferDeclIdent);
+    IdentPtr ident;
+    IdentPtr registerName;
+};
+
 /* --- Global declarations --- */
 
 struct FunctionDecl : public GlobalDecl
@@ -146,18 +155,34 @@ struct FunctionDecl : public GlobalDecl
     CodeBlockPtr            codeBlock;
 };
 
+struct BufferDecl : public GlobalDecl
+{
+    AST_INTERFACE(BufferDecl);
+    IdentPtr                        bufferType;
+    IdentPtr                        genericType;
+    std::vector<BufferDeclIdentPtr> names;
+};
+
+struct TextureDecl : public GlobalDecl
+{
+    AST_INTERFACE(TextureDecl);
+    IdentPtr                        textureType;
+    IdentPtr                        genericType;
+    std::vector<BufferDeclIdentPtr> names;
+};
+
+struct SamplerStateDecl : public GlobalDecl
+{
+    AST_INTERFACE(SamplerStateDecl);
+    std::vector<BufferDeclIdentPtr> names;
+};
+
 struct StructDecl : public GlobalDecl
 {
     AST_INTERFACE(StructDecl);
     IdentPtr                name;
     std::vector<VarDeclPtr> members;
 };
-
-/*FunctionDecl,
-BufferDecl,
-TextureDecl,
-SamplerStateDecl,
-StructDecl,*/
 
 /* --- Variables --- */
 
@@ -182,7 +207,7 @@ struct VarSemantic : public AST
 struct VarType : public AST
 {
     AST_INTERFACE(VarType);
-    TerminalPtr     baseType;   // either this ...
+    IdentPtr        baseType;   // either this ...
     StructDeclPtr   structType; // ... or this is used.
 };
 
