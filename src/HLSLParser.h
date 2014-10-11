@@ -14,6 +14,8 @@
 #include "Visitor.h"
 #include "Token.h"
 
+#include <vector>
+
 
 namespace HTLib
 {
@@ -43,9 +45,9 @@ class HLSLParser
         TokenPtr AcceptIt();
 
         //! Makes a new shared pointer of the specified AST node class.
-        template <typename T> std::shared_ptr<T> Make()
+        template <typename T, typename... Args> std::shared_ptr<T> Make(Args&&... args)
         {
-            return std::make_shared<T>(scanner_.Pos());
+            return std::make_shared<T>(scanner_.Pos(), args...);
         }
 
         inline Token::Types Type() const
@@ -55,14 +57,20 @@ class HLSLParser
 
         /* === Parse functions === */
 
-        ProgramPtr          ParseProgram();
+        ProgramPtr              ParseProgram();
 
-        GlobalDeclPtr       ParseGlobalDecl();
-        FunctionDeclPtr     ParseFunctionDecl();
-        BufferDeclPtr       ParseBufferDecl();
-        TextureDeclPtr      ParseTextureDecl();
-        SamplerStateDeclPtr ParseSamplerStateDecl();
-        StructDeclPtr       ParseStructDecl();
+        std::string             ParseRegister();
+        std::vector<VarDeclPtr> ParseVarDeclList();
+
+        GlobalDeclPtr           ParseGlobalDecl();
+        FunctionDeclPtr         ParseFunctionDecl();
+        BufferDeclPtr           ParseBufferDecl();
+        TextureDeclPtr          ParseTextureDecl();
+        SamplerStateDeclPtr     ParseSamplerStateDecl();
+        StructDeclPtr           ParseStructDecl();
+        DirectiveDeclPtr        ParseDirectiveDecl();
+
+        VarDeclPtr              ParseVarDeclStmnt();
 
         /* === Members === */
 

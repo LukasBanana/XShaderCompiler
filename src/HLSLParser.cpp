@@ -91,6 +91,34 @@ ProgramPtr HLSLParser::ParseProgram()
     return ast;
 }
 
+std::string HLSLParser::ParseRegister()
+{
+    /* Parse ': register(IDENT)' */
+    Accept(Tokens::Colon);
+    Accept(Tokens::Register);
+    Accept(Tokens::LBracket);
+    auto registerName = Accept(Tokens::Ident)->Spell();
+    Accept(Tokens::RBracket);
+    return registerName;
+}
+
+std::vector<VarDeclPtr> HLSLParser::ParseVarDeclList()
+{
+    std::vector<VarDeclPtr> members;
+
+    Accept(Tokens::LCurly);
+
+    /* Parse all var-decl statements */
+    while (Type() != Tokens::RCurly)
+        members.push_back(ParseVarDeclStmnt());
+
+    AcceptIt();
+
+    return members;
+}
+
+/* --- Global declarations --- */
+
 GlobalDeclPtr HLSLParser::ParseGlobalDecl()
 {
     switch (Type())
@@ -105,6 +133,8 @@ GlobalDeclPtr HLSLParser::ParseGlobalDecl()
             return ParseSamplerStateDecl();
         case Tokens::Struct:
             return ParseStructDecl();
+        case Tokens::Directive:
+            return ParseDirectiveDecl();
         default:
             return ParseFunctionDecl();
     }
@@ -118,7 +148,22 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl()
 
 BufferDeclPtr HLSLParser::ParseBufferDecl()
 {
-    return nullptr;
+    auto ast = Make<BufferDecl>();
+
+    /* Parse buffer header */
+    ast->bufferType = Accept(Tokens::Buffer)->Spell();
+    ast->name = Accept(Tokens::Ident)->Spell();
+
+    /* Parse optional register */
+    if (Type() == Tokens::Colon)
+        ast->registerName = ParseRegister();
+
+    /* Parse buffer body */
+    ast->members = ParseVarDeclList();
+
+    Accept(Tokens::Semicolon);
+
+    return ast;
 }
 
 TextureDeclPtr HLSLParser::ParseTextureDecl()
@@ -134,6 +179,26 @@ SamplerStateDeclPtr HLSLParser::ParseSamplerStateDecl()
 StructDeclPtr HLSLParser::ParseStructDecl()
 {
     return nullptr;
+}
+
+DirectiveDeclPtr HLSLParser::ParseDirectiveDecl()
+{
+    /* Parse pre-processor directive line */
+    auto ast = Make<DirectiveDecl>();
+    ast->line = Accept(Tokens::Directive)->Spell();
+    return ast;
+}
+
+/* --- Statements --- */
+
+VarDeclPtr HLSLParser::ParseVarDeclStmnt()
+{
+    auto ast = Make<VarDecl>();
+
+    AcceptIt();//!!!
+    //...
+
+    return ast;
 }
 
 

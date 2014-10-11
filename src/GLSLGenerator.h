@@ -34,6 +34,7 @@ class GLSLGenerator : private Visitor
         );
 
         bool GenerateCode(
+            const ProgramPtr& program,
             std::ostream& output,
             const std::string& entryPoint,
             const ShaderTargets shaderTarget,
@@ -68,6 +69,8 @@ class GLSLGenerator : private Visitor
 
         void EstablishMaps();
 
+        void Error(const std::string& msg, const ASTPtr& ast = nullptr);
+
         void BeginLn();
         void EndLn();
         
@@ -84,6 +87,9 @@ class GLSLGenerator : private Visitor
         //! Writes a "#line" directive.
         void Line(int lineNumber);
         void Line(const TokenPtr& tkn);
+        void Line(const AST* ast);
+        //! Writes a blank line.
+        void Blank();
 
         void AppendHelperMacros();
         void AppendMulFunctions();
@@ -94,15 +100,75 @@ class GLSLGenerator : private Visitor
         //! Closes the current scope with '}'.
         void CloseScope();
 
+        void ValidateRegisterPrefix(const std::string& registerName, char prefix);
+        int RegisterIndex(const std::string& registerName);
+
+        std::string BRegister(const std::string& registerName);
+        std::string TRegister(const std::string& registerName);
+        std::string SRegister(const std::string& registerName);
+        std::string URegister(const std::string& registerName);
+
+        //! Returns true if the target version is greater than or equal to the specified version number.
+        bool IsVersion(int version) const;
+
+        template <typename T> void Visit(T ast, void* args = nullptr)
+        {
+            ast->Visit(this, args);
+        }
+
         /* === Visitor implementation === */
 
-        //...
+        DECL_VISIT_PROC( Program           );
+        /*DECL_VISIT_PROC( CodeBlock         );
+        DECL_VISIT_PROC( Terminal          );
+        DECL_VISIT_PROC( TextureDeclIdent  );
+
+        DECL_VISIT_PROC( FunctionDecl      );*/
+        DECL_VISIT_PROC( BufferDecl        );
+        /*DECL_VISIT_PROC( TextureDecl       );
+        DECL_VISIT_PROC( SamplerStateDecl  );
+        DECL_VISIT_PROC( StructDecl        );
+        DECL_VISIT_PROC( DirectiveDecl     );
+
+        DECL_VISIT_PROC( CodeBlockStmnt    );
+        DECL_VISIT_PROC( ForLoopStmnt      );
+        DECL_VISIT_PROC( WhileLoopStmnt    );
+        DECL_VISIT_PROC( DoWhileLoopStmnt  );
+        DECL_VISIT_PROC( IfStmnt           );
+        DECL_VISIT_PROC( ElseStmnt         );
+        DECL_VISIT_PROC( SwitchStmnt       );
+        DECL_VISIT_PROC( VarDeclStmnt      );
+        DECL_VISIT_PROC( AssignSmnt        );
+        DECL_VISIT_PROC( FunctionCallStmnt );
+        DECL_VISIT_PROC( ReturnStmnt       );
+        DECL_VISIT_PROC( StructDeclStmnt   );
+
+        DECL_VISIT_PROC( LiteralExpr       );
+        DECL_VISIT_PROC( BinaryExpr        );
+        DECL_VISIT_PROC( UnaryExpr         );
+        DECL_VISIT_PROC( PostUnaryExpr     );
+        DECL_VISIT_PROC( FunctionCallExpr  );
+        DECL_VISIT_PROC( BracketExpr       );
+        DECL_VISIT_PROC( CastExpr          );
+        DECL_VISIT_PROC( VarAccessExpr     );
+
+        DECL_VISIT_PROC( SwitchCase        );
+
+        DECL_VISIT_PROC( PackOffset        );
+        DECL_VISIT_PROC( VarSemantic       );
+        DECL_VISIT_PROC( VarType           );
+        DECL_VISIT_PROC( VarIdent          );
+        DECL_VISIT_PROC( VarDecl           );*/
 
         /* === Members === */
 
         CodeWriter      writer_;
         IncludeHandler* includeHandler_ = nullptr;
         Logger*         log_            = nullptr;
+
+        std::string     entryPoint_;
+        ShaderTargets   shaderTarget_   = ShaderTargets::GLSLVertexShader;
+        ShaderVersions  shaderVersion_  = ShaderVersions::GLSL110;
 
         std::map<std::string, std::string> typeMap_;        // <hlsl-type, glsl-type>
         std::map<std::string, std::string> intrinsicMap_;   // <hlsl-intrinsic, glsl-intrinsic>

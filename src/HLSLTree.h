@@ -55,6 +55,7 @@ struct AST
         TextureDecl,
         SamplerStateDecl,
         StructDecl,
+        DirectiveDecl,
 
         CodeBlockStmnt,
         ForLoopStmnt,
@@ -139,49 +140,62 @@ DECL_AST_ALIAS( Semantic, Terminal );
 struct TextureDeclIdent : public AST
 {
     AST_INTERFACE(TextureDeclIdent);
-    IdentPtr ident;
-    IdentPtr registerName;
+    std::string ident;
+    std::string registerName; // may be empty
 };
 
 /* --- Global declarations --- */
 
+//! Function declaration.
 struct FunctionDecl : public GlobalDecl
 {
     AST_INTERFACE(FunctionDecl);
     VarTypePtr              returnType;
-    IdentPtr                name;
+    std::string             name;
     std::vector<VarDeclPtr> parameters;
     SemanticPtr             semantic;
     CodeBlockPtr            codeBlock;
 };
 
+//! Buffer (cbuffer, tbuffer) declaration.
 struct BufferDecl : public GlobalDecl
 {
     AST_INTERFACE(BufferDecl);
-    IdentPtr                name;
-    IdentPtr                registerName;
+    std::string             bufferType;
+    std::string             name;
+    std::string             registerName; // may be empty
     std::vector<VarDeclPtr> members;
 };
 
+//! Texture declaration.
 struct TextureDecl : public GlobalDecl
 {
     AST_INTERFACE(TextureDecl);
-    IdentPtr                            textureType;
-    IdentPtr                            genericType;
+    std::string                         textureType;
+    std::string                         genericType;
     std::vector<TextureDeclIdentPtr>    names;
 };
 
+//! Sampler state declaration.
 struct SamplerStateDecl : public GlobalDecl
 {
     AST_INTERFACE(SamplerStateDecl);
     std::vector<TextureDeclIdentPtr> names;
 };
 
+//! Structure declaration.
 struct StructDecl : public GlobalDecl
 {
     AST_INTERFACE(StructDecl);
-    IdentPtr                name;
+    std::string             name;
     std::vector<VarDeclPtr> members;
+};
+
+//! Direvtive declaration.
+struct DirectiveDecl : public GlobalDecl
+{
+    AST_INTERFACE(DirectiveDecl);
+    std::string line;
 };
 
 /* --- Variables --- */
@@ -190,8 +204,8 @@ struct StructDecl : public GlobalDecl
 struct PackOffset : public AST
 {
     AST_INTERFACE(PackOffset);
-    IdentPtr registerName;
-    IdentPtr vectorComponent;
+    std::string registerName;
+    std::string vectorComponent; // may be empty
 };
 
 //! Variable semantic.
@@ -200,14 +214,14 @@ struct VarSemantic : public AST
     AST_INTERFACE(VarSemantic);
     SemanticPtr     semantic;
     PackOffsetPtr   packOffset;
-    IdentPtr        registerName;
+    std::string     registerName; // may be empty
 };
 
 //! Variable data type.
 struct VarType : public AST
 {
     AST_INTERFACE(VarType);
-    IdentPtr        baseType;   // either this ...
+    std::string     baseType;   // either this ...
     StructDeclPtr   structType; // ... or this is used.
 };
 
@@ -215,7 +229,7 @@ struct VarType : public AST
 struct VarIdent : public AST
 {
     AST_INTERFACE(VarIdent);
-    IdentPtr                ident;
+    std::string             ident;
     std::vector<ExprPtr>    arrayIndices;
     VarIdentPtr             next;
 };
@@ -224,7 +238,7 @@ struct VarIdent : public AST
 struct VarDecl : public AST
 {
     AST_INTERFACE(VarDecl);
-    IdentPtr                    name;
+    std::string                 name;
     std::vector<ExprPtr>        arrayDims;
     std::vector<VarSemanticPtr> semantics;
     ExprPtr                     initializer;
@@ -292,10 +306,10 @@ struct SwitchStmnt : public Stmnt
 struct VarDeclStmnt : public Stmnt
 {
     AST_INTERFACE(VarDeclStmnt);
-    std::vector<IdentPtr>   storageClasses;
-    std::vector<IdentPtr>   interpModifiers;
-    IdentPtr                typeModifier; // may be null
-    std::vector<VarDeclPtr> varDecls;
+    std::vector<std::string>    storageClasses;
+    std::vector<std::string>    interpModifiers;
+    std::string                 typeModifier; // may be empty
+    std::vector<VarDeclPtr>     varDecls;
 };
 
 /* --- Expressions --- */

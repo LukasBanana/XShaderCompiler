@@ -11,7 +11,10 @@ global_decl			: function_decl
 					| buffer_decl
 					| texture_decl
 					| samplerstate_decl
-					| struct_decl ';';
+					| struct_decl ';'
+					| directive_decl;
+
+directive_decl	: '#' to-end-of-line
 
 code_block	: '{' stmnt_list '}';
 code_body	: stmnt
@@ -165,8 +168,8 @@ REGISTER_NAME			: REGISTER_IDENT INT_LITERAL;
 SEMANTIC				: ':' IDENT;
 initializer				: '=' expr;
 array_dimension			: '[' expr ']';
-var_packoffset			: 'packoffset' '(' REGISTER_NAME ('.' VECTOR_COMPONENT)? ')';
-var_register			: 'register' '(' REGISTER_NAME ')';
+var_packoffset			: ':' 'packoffset' '(' REGISTER_NAME ('.' VECTOR_COMPONENT)? ')';
+var_register			: ':' 'register' '(' REGISTER_NAME ')';
 
 var_semantic			: SEMANTIC
 						| var_packoffset
@@ -215,12 +218,12 @@ parameter		: INPUT_MODIFIER? var_type IDENT SEMANTIC? INTERP_MODIFIER? initializ
 
 // Buffer declaration
 
-buffer_decl_ident	: IDENT (':' var_register)?;
+buffer_decl_ident	: IDENT var_register?;
 
 BUFFER_TYPE		: 'cbuffer'
 				| 'tbuffer';
 
-buffer_decl		: BUFFER_TYPE IDENT (':' var_register)? '{' struct_decl_body '}' ';';
+buffer_decl		: BUFFER_TYPE IDENT var_register? var_decl_list ';';
 
 // Texture declaration
 
@@ -255,8 +258,8 @@ samplerstate_decl	: 'SamplerState' buffer_decl_ident (',' buffer_decl_ident)*;
 
 // Struct declaration
 
-struct_decl			: 'struct' IDENT? '{' struct_decl_body '}';
-struct_decl_body	: (var_decl_stmnt ';')*;
+struct_decl		: 'struct' IDENT? var_decl_list;
+var_decl_list	: '{' (var_decl_stmnt ';')* '}';
 
 
 /*

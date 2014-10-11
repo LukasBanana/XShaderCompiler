@@ -37,6 +37,7 @@ DECL_PTR( BufferDecl        );
 DECL_PTR( TextureDecl       );
 DECL_PTR( SamplerStateDecl  );
 DECL_PTR( StructDecl        );
+DECL_PTR( DirectiveDecl     );
 
 DECL_PTR( CodeBlockStmnt    );
 DECL_PTR( ForLoopStmnt      );
@@ -77,6 +78,9 @@ DECL_PTR( VarDecl           );
     {                                                           \
     }
 
+#define DECL_VISIT_PROC(className) \
+    void Visit##className(className* ast, void* args) override
+
 class Visitor
 {
     
@@ -86,46 +90,47 @@ class Visitor
         {
         }
 
-        VISITOR_VISIT_PROC( Program           )
-        VISITOR_VISIT_PROC( CodeBlock         )
-        VISITOR_VISIT_PROC( Terminal          )
-        VISITOR_VISIT_PROC( TextureDeclIdent  )
+        VISITOR_VISIT_PROC( Program           );
+        VISITOR_VISIT_PROC( CodeBlock         );
+        VISITOR_VISIT_PROC( Terminal          );
+        VISITOR_VISIT_PROC( TextureDeclIdent  );
 
-        VISITOR_VISIT_PROC( FunctionDecl      )
-        VISITOR_VISIT_PROC( BufferDecl        )
-        VISITOR_VISIT_PROC( TextureDecl       )
-        VISITOR_VISIT_PROC( SamplerStateDecl  )
-        VISITOR_VISIT_PROC( StructDecl        )
+        VISITOR_VISIT_PROC( FunctionDecl      );
+        VISITOR_VISIT_PROC( BufferDecl        );
+        VISITOR_VISIT_PROC( TextureDecl       );
+        VISITOR_VISIT_PROC( SamplerStateDecl  );
+        VISITOR_VISIT_PROC( StructDecl        );
+        VISITOR_VISIT_PROC( DirectiveDecl     );
 
-        VISITOR_VISIT_PROC( CodeBlockStmnt    )
-        VISITOR_VISIT_PROC( ForLoopStmnt      )
-        VISITOR_VISIT_PROC( WhileLoopStmnt    )
-        VISITOR_VISIT_PROC( DoWhileLoopStmnt  )
-        VISITOR_VISIT_PROC( IfStmnt           )
-        VISITOR_VISIT_PROC( ElseStmnt         )
-        VISITOR_VISIT_PROC( SwitchStmnt       )
-        VISITOR_VISIT_PROC( VarDeclStmnt      )
-        VISITOR_VISIT_PROC( AssignSmnt        )
-        VISITOR_VISIT_PROC( FunctionCallStmnt )
-        VISITOR_VISIT_PROC( ReturnStmnt       )
-        VISITOR_VISIT_PROC( StructDeclStmnt   )
+        VISITOR_VISIT_PROC( CodeBlockStmnt    );
+        VISITOR_VISIT_PROC( ForLoopStmnt      );
+        VISITOR_VISIT_PROC( WhileLoopStmnt    );
+        VISITOR_VISIT_PROC( DoWhileLoopStmnt  );
+        VISITOR_VISIT_PROC( IfStmnt           );
+        VISITOR_VISIT_PROC( ElseStmnt         );
+        VISITOR_VISIT_PROC( SwitchStmnt       );
+        VISITOR_VISIT_PROC( VarDeclStmnt      );
+        VISITOR_VISIT_PROC( AssignSmnt        );
+        VISITOR_VISIT_PROC( FunctionCallStmnt );
+        VISITOR_VISIT_PROC( ReturnStmnt       );
+        VISITOR_VISIT_PROC( StructDeclStmnt   );
 
-        VISITOR_VISIT_PROC( LiteralExpr       )
-        VISITOR_VISIT_PROC( BinaryExpr        )
-        VISITOR_VISIT_PROC( UnaryExpr         )
-        VISITOR_VISIT_PROC( PostUnaryExpr     )
-        VISITOR_VISIT_PROC( FunctionCallExpr  )
-        VISITOR_VISIT_PROC( BracketExpr       )
-        VISITOR_VISIT_PROC( CastExpr          )
-        VISITOR_VISIT_PROC( VarAccessExpr     )
+        VISITOR_VISIT_PROC( LiteralExpr       );
+        VISITOR_VISIT_PROC( BinaryExpr        );
+        VISITOR_VISIT_PROC( UnaryExpr         );
+        VISITOR_VISIT_PROC( PostUnaryExpr     );
+        VISITOR_VISIT_PROC( FunctionCallExpr  );
+        VISITOR_VISIT_PROC( BracketExpr       );
+        VISITOR_VISIT_PROC( CastExpr          );
+        VISITOR_VISIT_PROC( VarAccessExpr     );
 
-        VISITOR_VISIT_PROC( SwitchCase        )
+        VISITOR_VISIT_PROC( SwitchCase        );
 
-        VISITOR_VISIT_PROC( PackOffset        )
-        VISITOR_VISIT_PROC( VarSemantic       )
-        VISITOR_VISIT_PROC( VarType           )
-        VISITOR_VISIT_PROC( VarIdent          )
-        VISITOR_VISIT_PROC( VarDecl           )
+        VISITOR_VISIT_PROC( PackOffset        );
+        VISITOR_VISIT_PROC( VarSemantic       );
+        VISITOR_VISIT_PROC( VarType           );
+        VISITOR_VISIT_PROC( VarIdent          );
+        VISITOR_VISIT_PROC( VarDecl           );
 
 };
 

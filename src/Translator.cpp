@@ -26,18 +26,27 @@ _HT_EXPORT_ bool TranslateHLSLtoGLSL(
 {
     /* Parse HLSL input code */
     HLSLParser parser(log);
+    auto program = parser.ParseSource(std::make_shared<SourceCode>(input));
 
-    if (!parser.ParseSource(std::make_shared<SourceCode>(input)))
+    if (!program)
     {
         if (log)
             log->Error("parsing input code failed");
         return false;
     }
 
+    /* Small context analysis */
+    /*HLSLAnalyzer analyzer(log);
+    if (!analyzer.DecorateAST(program))
+    {
+        if (log)
+            log->Error("analyzing input code failed");
+        return false;
+    }*/
+
     /* Generate GLSL output code */
     GLSLGenerator generator(log, includeHandler, options);
-
-    if (!generator.GenerateCode(output, entryPoint, shaderTarget, shaderVersion))
+    if (!generator.GenerateCode(program, output, entryPoint, shaderTarget, shaderVersion))
     {
         if (log)
             log->Error("generating output code failed");

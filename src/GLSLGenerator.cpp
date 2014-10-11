@@ -6,6 +6,7 @@
  */
 
 #include "GLSLGenerator.h"
+#include "HLSLTree.h"
 
 #include <ctime>
 #include <chrono>
@@ -70,11 +71,20 @@ GLSLGenerator::GLSLGenerator(Logger* log, IncludeHandler* includeHandler, const 
 }
 
 bool GLSLGenerator::GenerateCode(
+    const ProgramPtr& program,
     std::ostream& output,
     const std::string& entryPoint,
     const ShaderTargets shaderTarget,
     const ShaderVersions shaderVersion)
 {
+    if (!program)
+        return false;
+
+    /* Store parameters */
+    entryPoint_     = entryPoint;
+    shaderTarget_   = shaderTarget;
+    shaderVersion_  = shaderVersion;
+
     try
     {
         writer_.OutputStream(output);
@@ -86,11 +96,13 @@ bool GLSLGenerator::GenerateCode(
 
         Version(static_cast<int>(shaderVersion));
 
+        /* Append default helper macros and functions */
         AppendHelperMacros();
         AppendMulFunctions();
         AppendRcpFunctions();
 
-        //...
+        /* Visit program AST */
+        Visit(program);
     }
     catch (const std::exception& err)
     {
@@ -98,6 +110,7 @@ bool GLSLGenerator::GenerateCode(
             log_->Error(err.what());
         return false;
     }
+
     return true;
 }
 
@@ -213,6 +226,14 @@ void GLSLGenerator::EstablishMaps()
     };
 }
 
+void GLSLGenerator::Error(const std::string& msg, const ASTPtr& ast)
+{
+    if (ast)
+        throw std::runtime_error("code generation error (" + ast->pos.ToString() + ") : " + msg);
+    else
+        throw std::runtime_error("code generation error : " + msg);
+}
+
 void GLSLGenerator::BeginLn()
 {
     writer_.BeginLine();
@@ -263,6 +284,16 @@ void GLSLGenerator::Line(const TokenPtr& tkn)
     Line(tkn->Pos().Row());
 }
 
+void GLSLGenerator::Line(const AST* ast)
+{
+    Line(ast->pos.Row());
+}
+
+void GLSLGenerator::Blank()
+{
+    WriteLn("");
+}
+
 void GLSLGenerator::AppendHelperMacros()
 {
     WriteLn("#define saturate(x) clamp(x, 0.0, 1.0)");
@@ -275,6 +306,7 @@ void GLSLGenerator::AppendHelperMacros()
     WriteLn("#define InterlockedMax(dest, value, prev) prev = atomicMax(dest, value)");
     WriteLn("#define InterlockedCompareExchange(dest, value, prev) prev = atomicCompSwap(dest, value)");
     WriteLn("#define InterlockedExchange(dest, value, prev) prev = atomicExchange(dest, value)");
+    Blank();
 }
 
 void GLSLGenerator::AppendMulFunctions()
@@ -290,6 +322,8 @@ void GLSLGenerator::AppendMulFunctions()
     WriteLn("mat4 mul(mat4 m, vec4 v) { return m * v; }");
     WriteLn("mat4 mul(vec4 v, mat4 m) { return v * m; }");
     WriteLn("mat4 mul(mat4 a, mat4 b) { return a * b; }");
+
+    Blank();
 }
 
 void GLSLGenerator::AppendRcpFunctions()
@@ -309,6 +343,8 @@ void GLSLGenerator::AppendRcpFunctions()
     WriteLn("mat2 rcp(mat2 m) { mat2 r; r[0] = rcp(m[0]); r[1] = rcp(m[1]); return r; }");
     WriteLn("mat3 rcp(mat3 m) { mat3 r; r[0] = rcp(m[0]); r[1] = rcp(m[1]); r[2] = rcp(m[2]); return r; }");
     WriteLn("mat4 rcp(mat4 m) { mat4 r; r[0] = rcp(m[0]); r[1] = rcp(m[1]); r[2] = rcp(m[2]); r[3] = rcp(m[3]); return r; }");
+
+    Blank();
 }
 
 void GLSLGenerator::OpenScope()
@@ -320,9 +356,97 @@ void GLSLGenerator::OpenScope()
 void GLSLGenerator::CloseScope()
 {
     DecTab();
-    WriteLn("}");
+    WriteLn("};");
 }
 
+void GLSLGenerator::ValidateRegisterPrefix(const std::string& registerName, char prefix)
+{
+    if (registerName.empty() || registerName[0] != prefix)
+    {
+        Error(
+            "invalid register prefix '" + std::string(1, registerName[0]) +
+            "' (expected '" + std::string(1, prefix) + "')"
+        );
+    }
+}
+
+int GLSLGenerator::RegisterIndex(const std::string& registerName)
+{
+    return std::stoi(registerName.substr(1));
+}
+
+std::string GLSLGenerator::BRegister(const std::string& registerName)
+{
+    ValidateRegisterPrefix(registerName, 'b');
+    return registerName.substr(1);
+}
+
+std::string GLSLGenerator::TRegister(const std::string& registerName)
+{
+    ValidateRegisterPrefix(registerName, 't');
+    return registerName.substr(1);
+}
+
+std::string GLSLGenerator::SRegister(const std::string& registerName)
+{
+    ValidateRegisterPrefix(registerName, 's');
+    return registerName.substr(1);
+}
+
+std::string GLSLGenerator::URegister(const std::string& registerName)
+{
+    ValidateRegisterPrefix(registerName, 'u');
+    return registerName.substr(1);
+}
+
+bool GLSLGenerator::IsVersion(int version) const
+{
+    return static_cast<int>(shaderVersion_) >= version;
+}
+
+/* ------- Visit functions ------- */
+
+#define IMPLEMENT_VISIT_PROC(className) \
+    void GLSLGenerator::Visit##className(className* ast, void* args)
+
+IMPLEMENT_VISIT_PROC(Program)
+{
+    for (auto& globDecl : ast->globalDecls)
+    {
+        Visit(globDecl);
+        Blank();
+    }
+}
+
+IMPLEMENT_VISIT_PROC(BufferDecl)
+{
+    if (ast->bufferType != "cbuffer")
+        Error("buffer type \"" + ast->bufferType + "\" currently not supported");
+
+    /* Write uniform buffer header */
+    Line(ast);
+
+    BeginLn();
+    {
+        Write("layout(std140");
+
+        if (!ast->registerName.empty())
+            Write(", binding = " + BRegister(ast->registerName));
+
+        Write(") uniform ");
+        Write(ast->name);
+    }
+    EndLn();
+
+    OpenScope();
+    {
+        for (auto& member : ast->members)
+            Visit(member);
+    }
+    CloseScope();
+}
+
+#undef IMPLEMENT_VISIT_PROC
 
 /*
  * SemanticStage structure
