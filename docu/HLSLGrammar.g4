@@ -217,7 +217,14 @@ parameter		: INPUT_MODIFIER? var_type IDENT SEMANTIC? INTERP_MODIFIER? initializ
 
 buffer_decl_ident	: IDENT (':' var_register)?;
 
-BUFFER_TYPE		: 'Buffer'
+BUFFER_TYPE		: 'cbuffer'
+				| 'tbuffer';
+
+buffer_decl		: BUFFER_TYPE IDENT (':' var_register)? '{' struct_decl_body '}' ';';
+
+// Texture declaration
+
+TEXTURE_IDENT	: 'Buffer'
 				| 'RWBuffer'
 				| 'StructuredBuffer'
 				| 'RWStructuredBuffer'
@@ -225,12 +232,7 @@ BUFFER_TYPE		: 'Buffer'
 				| 'RWByteAddressBuffer'
 				| 'AppendStructuredBuffer'
 				| 'ConsumeStructuredBuffer';
-
-buffer_decl		: BUFFER_TYPE '<' base_var_type '>' buffer_decl_ident (',' buffer_decl_ident)*;
-
-// Texture declaration
-
-TEXTURE_IDENT	: 'Texture1D'
+				| 'Texture1D'
 				| 'Texture1DArray'
 				| 'Texture2D'
 				| 'Texture2DArray'

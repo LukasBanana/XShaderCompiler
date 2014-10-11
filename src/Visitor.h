@@ -19,7 +19,7 @@ namespace HTLib
 // Declare all AST node classes
 
 #define DECL_PTR(className)                             \
-    class className;                                    \
+    struct className;                                   \
     typedef std::shared_ptr<className> className##Ptr
 
 DECL_PTR( AST               );
@@ -30,7 +30,7 @@ DECL_PTR( Expr              );
 DECL_PTR( Program           );
 DECL_PTR( CodeBlock         );
 DECL_PTR( Terminal          );
-DECL_PTR( BufferDeclIdent   );
+DECL_PTR( TextureDeclIdent  );
 
 DECL_PTR( FunctionDecl      );
 DECL_PTR( BufferDecl        );
@@ -89,7 +89,7 @@ class Visitor
         VISITOR_VISIT_PROC( Program           )
         VISITOR_VISIT_PROC( CodeBlock         )
         VISITOR_VISIT_PROC( Terminal          )
-        VISITOR_VISIT_PROC( BufferDeclIdent   )
+        VISITOR_VISIT_PROC( TextureDeclIdent  )
 
         VISITOR_VISIT_PROC( FunctionDecl      )
         VISITOR_VISIT_PROC( BufferDecl        )

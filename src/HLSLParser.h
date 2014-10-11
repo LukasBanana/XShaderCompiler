@@ -27,10 +27,12 @@ class HLSLParser
         
         HLSLParser(Logger* log = nullptr);
 
-        bool ParseSource(const std::shared_ptr<SourceCode>& source);
+        ProgramPtr ParseSource(const std::shared_ptr<SourceCode>& source);
 
     private:
         
+        typedef Token::Types Tokens;
+
         /* === Functions === */
 
         void Error(const std::string& msg);
@@ -39,6 +41,28 @@ class HLSLParser
 
         TokenPtr Accept(const Token::Types type);
         TokenPtr AcceptIt();
+
+        //! Makes a new shared pointer of the specified AST node class.
+        template <typename T> std::shared_ptr<T> Make()
+        {
+            return std::make_shared<T>(scanner_.Pos());
+        }
+
+        inline Token::Types Type() const
+        {
+            return tkn_->Type();
+        }
+
+        /* === Parse functions === */
+
+        ProgramPtr          ParseProgram();
+
+        GlobalDeclPtr       ParseGlobalDecl();
+        FunctionDeclPtr     ParseFunctionDecl();
+        BufferDeclPtr       ParseBufferDecl();
+        TextureDeclPtr      ParseTextureDecl();
+        SamplerStateDeclPtr ParseSamplerStateDecl();
+        StructDeclPtr       ParseStructDecl();
 
         /* === Members === */
 

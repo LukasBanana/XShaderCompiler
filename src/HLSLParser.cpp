@@ -6,6 +6,7 @@
  */
 
 #include "HLSLParser.h"
+#include "HLSLTree.h"
 
 
 namespace HTLib
@@ -18,7 +19,7 @@ HLSLParser::HLSLParser(Logger* log) :
 {
 }
 
-bool HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
+ProgramPtr HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
 {
     if (!scanner_.ScanSource(source))
         return false;
@@ -27,18 +28,7 @@ bool HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
 
     try
     {
-        #if 1//!!!
-
-        if (log_)
-        {
-            while (tkn_ && tkn_->Type() != Token::Types::EndOfStream)
-            {
-                log_->Info(tkn_->Spell());
-                AcceptIt();
-            };
-        }
-
-        #endif
+        return ParseProgram();
     }
     catch (const std::exception& err)
     {
@@ -46,7 +36,7 @@ bool HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
             log_->Error(err.what());
     }
 
-    return true;
+    return nullptr;
 }
 
 
@@ -81,6 +71,69 @@ TokenPtr HLSLParser::AcceptIt()
     auto prevTkn = tkn_;
     tkn_ = scanner_.Next();
     return prevTkn;
+}
+
+/* ------- Parse functions ------- */
+
+ProgramPtr HLSLParser::ParseProgram()
+{
+    auto ast = Make<Program>();
+
+    while (true)
+    {
+        auto globDecl = ParseGlobalDecl();
+        if (globDecl)
+            ast->globalDecls.push_back(globDecl);
+        else
+            break;
+    }
+
+    return ast;
+}
+
+GlobalDeclPtr HLSLParser::ParseGlobalDecl()
+{
+    switch (Type())
+    {
+        case Tokens::EndOfStream:
+            return nullptr;
+        case Tokens::Texture:
+            return ParseTextureDecl();
+        case Tokens::Buffer:
+            return ParseBufferDecl();
+        case Tokens::SamplerState:
+            return ParseSamplerStateDecl();
+        case Tokens::Struct:
+            return ParseStructDecl();
+        default:
+            return ParseFunctionDecl();
+    }
+    return nullptr;
+}
+
+FunctionDeclPtr HLSLParser::ParseFunctionDecl()
+{
+    return nullptr;
+}
+
+BufferDeclPtr HLSLParser::ParseBufferDecl()
+{
+    return nullptr;
+}
+
+TextureDeclPtr HLSLParser::ParseTextureDecl()
+{
+    return nullptr;
+}
+
+SamplerStateDeclPtr HLSLParser::ParseSamplerStateDecl()
+{
+    return nullptr;
+}
+
+StructDeclPtr HLSLParser::ParseStructDecl()
+{
+    return nullptr;
 }
 
 

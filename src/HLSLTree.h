@@ -48,7 +48,7 @@ struct AST
         Program,
         CodeBlock,
         Terminal,
-        BufferDeclIdent,
+        TextureDeclIdent,
 
         FunctionDecl,
         BufferDecl,
@@ -136,9 +136,9 @@ DECL_AST_ALIAS( UnaryOp,  Terminal );
 DECL_AST_ALIAS( Semantic, Terminal );
 
 //! Buffer declaration identifier.
-struct BufferDeclIdent : public AST
+struct TextureDeclIdent : public AST
 {
-    AST_INTERFACE(BufferDeclIdent);
+    AST_INTERFACE(TextureDeclIdent);
     IdentPtr ident;
     IdentPtr registerName;
 };
@@ -158,23 +158,23 @@ struct FunctionDecl : public GlobalDecl
 struct BufferDecl : public GlobalDecl
 {
     AST_INTERFACE(BufferDecl);
-    IdentPtr                        bufferType;
-    IdentPtr                        genericType;
-    std::vector<BufferDeclIdentPtr> names;
+    IdentPtr                name;
+    IdentPtr                registerName;
+    std::vector<VarDeclPtr> members;
 };
 
 struct TextureDecl : public GlobalDecl
 {
     AST_INTERFACE(TextureDecl);
-    IdentPtr                        textureType;
-    IdentPtr                        genericType;
-    std::vector<BufferDeclIdentPtr> names;
+    IdentPtr                            textureType;
+    IdentPtr                            genericType;
+    std::vector<TextureDeclIdentPtr>    names;
 };
 
 struct SamplerStateDecl : public GlobalDecl
 {
     AST_INTERFACE(SamplerStateDecl);
-    std::vector<BufferDeclIdentPtr> names;
+    std::vector<TextureDeclIdentPtr> names;
 };
 
 struct StructDecl : public GlobalDecl
