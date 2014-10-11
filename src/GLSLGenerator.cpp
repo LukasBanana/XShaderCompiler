@@ -83,7 +83,12 @@ bool GLSLGenerator::GenerateCode(
         Comment("GLSL " + TargetToString(shaderTarget) + " Shader");
         Comment("Generated from HLSL Shader \"" + entryPoint + "\"");
         Comment(TimePoint());
+
         Version(static_cast<int>(shaderVersion));
+
+        AppendHelperMacros();
+        AppendMulFunctions();
+        AppendRcpFunctions();
 
         //...
     }
@@ -163,15 +168,22 @@ void GLSLGenerator::EstablishMaps()
         { "TextureCubeArray", "samplerCubeArray" },
         { "Texture2DMS",      "sampler2DMS"      },
         { "Texture2DMSArray", "sampler2DMSArray" },
+
+        /* Storage class types */
+        { "groupshared", "shared" },
     };
 
     intrinsicMap_ = std::map<std::string, std::string>
     {
-        { "frac",  "fract" },
-        { "lerp",  "mix"   },
-        { "ddx",   "dFdx"  },
-        { "ddy",   "dFdy"  },
-        { "atan2", "atan"  },
+        { "frac",                            "fract"              },
+        { "lerp",                            "mix"                },
+        { "ddx",                             "dFdx"               },
+        { "ddy",                             "dFdy"               },
+        { "atan2",                           "atan"               },
+        { "GroupMemoryBarrier",              "groupMemoryBarrier" },
+        { "GroupMemoryBarrierWithGroupSync", "barrier"            },
+        { "AllMemoryBarrier",                "memoryBarrier"      },
+        { "AllMemoryBarrierWithGroupSync",   "barrier"            },
     };
 
     semanticMap_ = std::map<std::string, SemanticStage>
@@ -249,6 +261,54 @@ void GLSLGenerator::Line(int lineNumber)
 void GLSLGenerator::Line(const TokenPtr& tkn)
 {
     Line(tkn->Pos().Row());
+}
+
+void GLSLGenerator::AppendHelperMacros()
+{
+    WriteLn("#define saturate(x) clamp(x, 0.0, 1.0)");
+    WriteLn("#define clip(x) if (lessThan(x, 0.0)) { discard; }");
+    WriteLn("#define InterlockedAdd(dest, value, prev) prev = atomicAdd(dest, value)");
+    WriteLn("#define InterlockedAnd(dest, value, prev) prev = atomicAnd(dest, value)");
+    WriteLn("#define InterlockedOr(dest, value, prev) prev = atomicOr(dest, value)");
+    WriteLn("#define InterlockedXor(dest, value, prev) prev = atomicXor(dest, value)");
+    WriteLn("#define InterlockedMin(dest, value, prev) prev = atomicMin(dest, value)");
+    WriteLn("#define InterlockedMax(dest, value, prev) prev = atomicMax(dest, value)");
+    WriteLn("#define InterlockedCompareExchange(dest, value, prev) prev = atomicCompSwap(dest, value)");
+    WriteLn("#define InterlockedExchange(dest, value, prev) prev = atomicExchange(dest, value)");
+}
+
+void GLSLGenerator::AppendMulFunctions()
+{
+    WriteLn("mat2 mul(mat2 m, vec2 v) { return m * v; }");
+    WriteLn("mat2 mul(vec2 v, mat2 m) { return v * m; }");
+    WriteLn("mat2 mul(mat2 a, mat2 b) { return a * b; }");
+
+    WriteLn("mat3 mul(mat3 m, vec3 v) { return m * v; }");
+    WriteLn("mat3 mul(vec3 v, mat3 m) { return v * m; }");
+    WriteLn("mat3 mul(mat3 a, mat3 b) { return a * b; }");
+
+    WriteLn("mat4 mul(mat4 m, vec4 v) { return m * v; }");
+    WriteLn("mat4 mul(vec4 v, mat4 m) { return v * m; }");
+    WriteLn("mat4 mul(mat4 a, mat4 b) { return a * b; }");
+}
+
+void GLSLGenerator::AppendRcpFunctions()
+{
+    WriteLn("float rcp(float x) { return 1.0 / x; }");
+    WriteLn("double rcp(double x) { return 1.0 / x; }");
+
+    WriteLn("vec2 rcp(vec2 v) { return vec2(1.0 / v.x, 1.0 / v.y); }");
+    WriteLn("dvec2 rcp(dvec2 v) { return dvec2(1.0 / v.x, 1.0 / v.y); }");
+
+    WriteLn("vec3 rcp(vec3 v) { return vec3(1.0 / v.x, 1.0 / v.y, 1.0 / v.z); }");
+    WriteLn("dvec3 rcp(dvec4 v) { return dvec3(1.0 / v.x, 1.0 / v.y, 1.0 / v.z); }");
+
+    WriteLn("vec4 rcp(vec3 v) { return vec4(1.0 / v.x, 1.0 / v.y, 1.0 / v.z, 1.0 / v.w); }");
+    WriteLn("dvec4 rcp(dvec4 v) { return dvec4(1.0 / v.x, 1.0 / v.y, 1.0 / v.z, 1.0 / v.w); }");
+
+    WriteLn("mat2 rcp(mat2 m) { mat2 r; r[0] = rcp(m[0]); r[1] = rcp(m[1]); return r; }");
+    WriteLn("mat3 rcp(mat3 m) { mat3 r; r[0] = rcp(m[0]); r[1] = rcp(m[1]); r[2] = rcp(m[2]); return r; }");
+    WriteLn("mat4 rcp(mat4 m) { mat4 r; r[0] = rcp(m[0]); r[1] = rcp(m[1]); r[2] = rcp(m[2]); r[3] = rcp(m[3]); return r; }");
 }
 
 void GLSLGenerator::OpenScope()

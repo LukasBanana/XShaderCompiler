@@ -85,6 +85,10 @@ class GLSLGenerator : private Visitor
         void Line(int lineNumber);
         void Line(const TokenPtr& tkn);
 
+        void AppendHelperMacros();
+        void AppendMulFunctions();
+        void AppendRcpFunctions();
+
         //! Opens a new scope with '{'.
         void OpenScope();
         //! Closes the current scope with '}'.
