@@ -29,6 +29,7 @@ DECL_PTR( Expr              );
 
 DECL_PTR( Program           );
 DECL_PTR( CodeBlock         );
+DECL_PTR( Terminal          );
 
 DECL_PTR( FunctionDecl      );
 DECL_PTR( BufferDecl        );
@@ -60,6 +61,12 @@ DECL_PTR( VarAccessExpr     );
 
 DECL_PTR( SwitchCase        );
 
+DECL_PTR( PackOffset        );
+DECL_PTR( VarSemantic       );
+DECL_PTR( VarType           );
+DECL_PTR( VarIdent          );
+DECL_PTR( VarDecl           );
+
 #undef DECL_PTR
 
 // Visitor interface
@@ -80,6 +87,7 @@ class Visitor
 
         VISITOR_VISIT_PROC( Program           )
         VISITOR_VISIT_PROC( CodeBlock         )
+        VISITOR_VISIT_PROC( Terminal          )
 
         VISITOR_VISIT_PROC( FunctionDecl      )
         VISITOR_VISIT_PROC( BufferDecl        )
@@ -110,6 +118,12 @@ class Visitor
         VISITOR_VISIT_PROC( VarAccessExpr     )
 
         VISITOR_VISIT_PROC( SwitchCase        )
+
+        VISITOR_VISIT_PROC( PackOffset        )
+        VISITOR_VISIT_PROC( VarSemantic       )
+        VISITOR_VISIT_PROC( VarType           )
+        VISITOR_VISIT_PROC( VarIdent          )
+        VISITOR_VISIT_PROC( VarDecl           )
 
 };
 

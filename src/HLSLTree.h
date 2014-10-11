@@ -23,6 +23,10 @@ namespace HTLib
 class Visitor;
 
 #define AST_INTERFACE(className)                                \
+    className(const SourcePosition& astPos)                     \
+    {                                                           \
+        pos = astPos;                                           \
+    }                                                           \
     Types Type() const override                                 \
     {                                                           \
         return Types::className;                                \
@@ -32,6 +36,10 @@ class Visitor;
         visitor->Visit##className(this, args);                  \
     }
 
+#define DECL_AST_ALIAS(alias, base) \
+    typedef base alias;             \
+    typedef base##Ptr alias##Ptr
+
 //! Base class for all AST node classes.
 struct AST
 {
@@ -39,6 +47,7 @@ struct AST
     {
         Program,
         CodeBlock,
+        Terminal,
 
         FunctionDecl,
         BufferDecl,
@@ -69,6 +78,12 @@ struct AST
         VarAccessExpr,
 
         SwitchCase,
+
+        PackOffset,
+        VarSemantic,
+        VarType,
+        VarIdent,
+        VarDecl,
     };
 
     virtual ~AST()
@@ -77,6 +92,8 @@ struct AST
     
     virtual Types Type() const = 0;
     virtual void Visit(Visitor* visitor, void* args = nullptr) = 0;
+
+    SourcePosition pos;
 };
 
 /* --- Base AST nodes --- */
@@ -102,6 +119,90 @@ struct CodeBlock : public AST
 {
     AST_INTERFACE(CodeBlock);
     std::vector<StmntPtr> stmnts;
+};
+
+//! Terminal symbol.
+struct Terminal : public AST
+{
+    AST_INTERFACE(Terminal);
+    std::string spell;
+};
+
+DECL_AST_ALIAS( Ident,    Terminal );
+DECL_AST_ALIAS( Literal,  Terminal );
+DECL_AST_ALIAS( BinaryOp, Terminal );
+DECL_AST_ALIAS( UnaryOp,  Terminal );
+DECL_AST_ALIAS( Semantic, Terminal );
+
+/* --- Global declarations --- */
+
+struct FunctionDecl : public GlobalDecl
+{
+    AST_INTERFACE(FunctionDecl);
+    VarTypePtr              returnType;
+    IdentPtr                name;
+    std::vector<VarDeclPtr> parameters;
+    SemanticPtr             semantic;
+    CodeBlockPtr            codeBlock;
+};
+
+struct StructDecl : public GlobalDecl
+{
+    AST_INTERFACE(StructDecl);
+    IdentPtr                name;
+    std::vector<VarDeclPtr> members;
+};
+
+/*FunctionDecl,
+BufferDecl,
+TextureDecl,
+SamplerStateDecl,
+StructDecl,*/
+
+/* --- Variables --- */
+
+//! Pack offset.
+struct PackOffset : public AST
+{
+    AST_INTERFACE(PackOffset);
+    IdentPtr registerName;
+    IdentPtr vectorComponent;
+};
+
+//! Variable semantic.
+struct VarSemantic : public AST
+{
+    AST_INTERFACE(VarSemantic);
+    SemanticPtr     semantic;
+    PackOffsetPtr   packOffset;
+    IdentPtr        registerName;
+};
+
+//! Variable data type.
+struct VarType : public AST
+{
+    AST_INTERFACE(VarType);
+    TerminalPtr     baseType;   // either this ...
+    StructDeclPtr   structType; // ... or this is used.
+};
+
+//! Variable (linked-list) identifier.
+struct VarIdent : public AST
+{
+    AST_INTERFACE(VarIdent);
+    IdentPtr                ident;
+    std::vector<ExprPtr>    arrayIndices;
+    VarIdentPtr             next;
+};
+
+//! Variable declaration.
+struct VarDecl : public AST
+{
+    AST_INTERFACE(VarDecl);
+    IdentPtr                    name;
+    std::vector<ExprPtr>        arrayDims;
+    std::vector<VarSemanticPtr> semantics;
+    ExprPtr                     initializer;
 };
 
 /* --- Statements --- */
@@ -162,7 +263,15 @@ struct SwitchStmnt : public Stmnt
     std::vector<SwitchCasePtr> cases;
 };
 
-//...
+//! Variable declaration statement.
+struct VarDeclStmnt : public Stmnt
+{
+    AST_INTERFACE(VarDeclStmnt);
+    std::vector<IdentPtr>   storageClasses;
+    std::vector<IdentPtr>   interpModifiers;
+    IdentPtr                typeModifier; // may be null
+    std::vector<VarDeclPtr> varDecls;
+};
 
 /* --- Expressions --- */
 
@@ -170,7 +279,7 @@ struct SwitchStmnt : public Stmnt
 struct LiteralExpr : public Expr
 {
     AST_INTERFACE(LiteralExpr);
-    TokenPtr literal;
+    LiteralPtr literal;
 };
 
 //! Binary expressions.
@@ -178,7 +287,7 @@ struct BinaryExpr : public Expr
 {
     AST_INTERFACE(BinaryExpr);
     ExprPtr     lhsExpr;    // left-hand-side expression
-    TokenPtr    op;         // binary operator
+    BinaryOpPtr op;         // binary operator
     ExprPtr     rhsExpr;    // right-hand-side expression
 };
 
@@ -186,7 +295,7 @@ struct BinaryExpr : public Expr
 struct UnaryExpr : public Expr
 {
     AST_INTERFACE(UnaryExpr);
-    TokenPtr    op;
+    UnaryOpPtr  op;
     ExprPtr     expr;
 };
 
@@ -195,7 +304,7 @@ struct PostUnaryExpr : public Expr
 {
     AST_INTERFACE(PostUnaryExpr);
     ExprPtr     expr;
-    TokenPtr    op;
+    UnaryOpPtr  op;
 };
 
 //! Function call expression.
@@ -224,6 +333,7 @@ struct SwitchCase : public AST
 };
 
 #undef AST_INTERFACE
+#undef DECL_AST_ALIAS
 
 
 } // /namespace HTLib

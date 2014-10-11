@@ -11,7 +11,7 @@ global_decl			: function_decl
 					| buffer_decl
 					| texture_decl
 					| samplerstate_decl
-					| struct_decl;
+					| struct_decl ';';
 
 code_block	: '{' stmnt_list '}';
 code_body	: stmnt
@@ -31,13 +31,13 @@ stmnt		: ';'
 			| assign_stmnt ';'
 			| function_call_stmnt ';'
 			| return_stmnt ';'
-			| struct_decl
+			| struct_decl ';'
 			| CTRL_TRANSFER_STMNT;
 
 // Variables
 
-array_index_access	: '[' expr ']';
-var_single_ident	: IDENT array_index_access*;
+array_access		: '[' expr ']';
+var_single_ident	: IDENT array_access*;
 var_ident			: var_single_ident ('.' var_single_ident)*;
 
 // Expressions
@@ -139,7 +139,8 @@ var_type				: SCALAR_TYPE
 						| TEXTURE_TYPE
 						| BUFFER_TYPE
 						| SAMPLER_STATE_TYPE
-						| IDENT;
+						| IDENT
+						| struct_decl;
 
 VECTOR_SINGLE_COMPONENT	: 'x'
 						| 'y'
@@ -169,7 +170,7 @@ var_semantic			: SEMANTIC
 						| var_packoffset
 						| var_register;
 
-var_decl				: IDENT array_dimension? var_semantic* initializer?;
+var_decl				: IDENT array_dimension* var_semantic* initializer?;
 var_decl_stmnt			: (STORAGE_CLASS | INTERP_MODIFIER)* TYPE_MODIFIER? var_type var_decl (',' var_decl)*;
 
 // Function calls
@@ -212,7 +213,7 @@ parameter		: INPUT_MODIFIER? var_type IDENT SEMANTIC? INTERP_MODIFIER? initializ
 
 // Struct declaration
 
-struct_decl			: 'struct' IDENT? '{' struct_decl_body '}' IDENT? ';';
+struct_decl			: 'struct' IDENT? '{' struct_decl_body '}';
 struct_decl_body	: (var_decl_stmnt ';')*;
 
 
