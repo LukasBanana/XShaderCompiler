@@ -37,6 +37,11 @@ stmnt		: ';'
 			| struct_decl ';'
 			| CTRL_TRANSFER_STMNT;
 
+// Attributes
+
+attribute_list	: attribute*;
+attribute		: '[' IDENT ('(' argument_list ')')? ']';
+
 // Variables
 
 array_access		: '[' expr ']';
@@ -98,16 +103,16 @@ UNARY_OP		: POST_UNARY_OP
 
 // Loop statements
 
-for_loop_stmnt	: 'for' '(' for_init? ';' expr? ';' expr? ')' code_block;
+for_loop_stmnt	: attribute_list? 'for' '(' for_init? ';' expr? ';' expr? ')' code_block;
 for_init		: assign_stmnt
 				| var_decl_stmnt;
 
-while_loop_stmnt	: 'while' '(' expr ')' code_body;
-do_while_loop_stmnt	: 'do' code_block 'while' '(' expr ')';
+while_loop_stmnt	: attribute_list? 'while' '(' expr ')' code_body;
+do_while_loop_stmnt	: attribute_list? 'do' code_block 'while' '(' expr ')';
 
 // Conditional statements
 
-if_stmnt	: 'if' '(' expr ')' code_body else_stmnt?;
+if_stmnt	: attribute_list? 'if' '(' expr ')' code_body else_stmnt?;
 else_stmnt	: 'else' code_body;
 
 switch_stmnt		: 'switch' '(' expr ')' '{' switch_case_list '}';
@@ -200,7 +205,7 @@ CTRL_TRANSFER_STMNT	: 'break'
 
 return_type		: var_type
 				| VOID;
-function_decl	: return_type IDENT '(' parameter_list ')' SEMANTIC? code_block;
+function_decl	: attribute_list? return_type IDENT '(' parameter_list ')' SEMANTIC? code_block;
 
 INPUT_MODIFIER	: 'in'
 				| 'out'

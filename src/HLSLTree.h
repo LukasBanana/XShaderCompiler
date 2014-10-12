@@ -47,8 +47,9 @@ struct AST
     {
         Program,
         CodeBlock,
-        Terminal,
-        TextureDeclIdent,
+        BufferDeclIdent,
+        FunctionCall,
+        Structure,
 
         FunctionDecl,
         BufferDecl,
@@ -69,6 +70,7 @@ struct AST
         FunctionCallStmnt,
         ReturnStmnt,
         StructDeclStmnt,
+        CtrlTransferStmnt,
 
         LiteralExpr,
         BinaryExpr,
@@ -123,25 +125,28 @@ struct CodeBlock : public AST
     std::vector<StmntPtr> stmnts;
 };
 
-//! Terminal symbol.
-struct Terminal : public AST
-{
-    AST_INTERFACE(Terminal);
-    std::string spell;
-};
-
-DECL_AST_ALIAS( Ident,    Terminal );
-DECL_AST_ALIAS( Literal,  Terminal );
-DECL_AST_ALIAS( BinaryOp, Terminal );
-DECL_AST_ALIAS( UnaryOp,  Terminal );
-DECL_AST_ALIAS( Semantic, Terminal );
-
 //! Buffer declaration identifier.
-struct TextureDeclIdent : public AST
+struct BufferDeclIdent : public AST
 {
-    AST_INTERFACE(TextureDeclIdent);
+    AST_INTERFACE(BufferDeclIdent);
     std::string ident;
     std::string registerName; // may be empty
+};
+
+//! Function call.
+struct FunctionCall : public AST
+{
+    AST_INTERFACE(FunctionCall);
+    std::string             name;
+    std::vector<ExprPtr>    arguments;
+};
+
+//! Structure object.
+struct Structure : public AST
+{
+    AST_INTERFACE(Structure);
+    std::string             name;
+    std::vector<VarDeclPtr> members;
 };
 
 /* --- Global declarations --- */
@@ -153,7 +158,7 @@ struct FunctionDecl : public GlobalDecl
     VarTypePtr              returnType;
     std::string             name;
     std::vector<VarDeclPtr> parameters;
-    SemanticPtr             semantic;
+    std::string             semantic;
     CodeBlockPtr            codeBlock;
 };
 
@@ -171,24 +176,23 @@ struct BufferDecl : public GlobalDecl
 struct TextureDecl : public GlobalDecl
 {
     AST_INTERFACE(TextureDecl);
-    std::string                         textureType;
-    std::string                         genericType;
-    std::vector<TextureDeclIdentPtr>    names;
+    std::string                     textureType;
+    std::string                     genericType;
+    std::vector<BufferDeclIdentPtr> names;
 };
 
 //! Sampler state declaration.
 struct SamplerStateDecl : public GlobalDecl
 {
     AST_INTERFACE(SamplerStateDecl);
-    std::vector<TextureDeclIdentPtr> names;
+    std::vector<BufferDeclIdentPtr> names;
 };
 
 //! Structure declaration.
 struct StructDecl : public GlobalDecl
 {
     AST_INTERFACE(StructDecl);
-    std::string             name;
-    std::vector<VarDeclPtr> members;
+    StructurePtr structure;
 };
 
 //! Direvtive declaration.
@@ -212,7 +216,7 @@ struct PackOffset : public AST
 struct VarSemantic : public AST
 {
     AST_INTERFACE(VarSemantic);
-    SemanticPtr     semantic;
+    std::string     semantic;
     PackOffsetPtr   packOffset;
     std::string     registerName; // may be empty
 };
@@ -222,7 +226,7 @@ struct VarType : public AST
 {
     AST_INTERFACE(VarType);
     std::string     baseType;   // either this ...
-    StructDeclPtr   structType; // ... or this is used.
+    StructurePtr    structType; // ... or this is used.
 };
 
 //! Variable (linked-list) identifier.
@@ -312,13 +316,50 @@ struct VarDeclStmnt : public Stmnt
     std::vector<VarDeclPtr>     varDecls;
 };
 
+//! Variable assign statement.
+struct AssignSmnt : public Stmnt
+{
+    AST_INTERFACE(AssignSmnt);
+    VarIdentPtr varIdent;
+    std::string op;
+    ExprPtr     expr;
+};
+
+//! Function call statement.
+struct FunctionCallStmnt : public Stmnt
+{
+    AST_INTERFACE(FunctionCallStmnt);
+    FunctionCallPtr call;
+};
+
+//! Returns statement.
+struct ReturnStmnt : public Stmnt
+{
+    AST_INTERFACE(ReturnStmnt);
+    ExprPtr expr; // may be null
+};
+
+//! Structure declaration statement.
+struct StructDeclStmnt : public Stmnt
+{
+    AST_INTERFACE(StructDeclStmnt);
+    StructurePtr structure;
+};
+
+//! Control transfer statement.
+struct CtrlTransferStmnt : public Stmnt
+{
+    AST_INTERFACE(CtrlTransferStmnt);
+    std::string instruction; // "continue", "break"
+};
+
 /* --- Expressions --- */
 
 //! Literal expression.
 struct LiteralExpr : public Expr
 {
     AST_INTERFACE(LiteralExpr);
-    LiteralPtr literal;
+    std::string literal;
 };
 
 //! Binary expressions.
@@ -326,7 +367,7 @@ struct BinaryExpr : public Expr
 {
     AST_INTERFACE(BinaryExpr);
     ExprPtr     lhsExpr;    // left-hand-side expression
-    BinaryOpPtr op;         // binary operator
+    std::string op;         // binary operator
     ExprPtr     rhsExpr;    // right-hand-side expression
 };
 
@@ -334,7 +375,7 @@ struct BinaryExpr : public Expr
 struct UnaryExpr : public Expr
 {
     AST_INTERFACE(UnaryExpr);
-    UnaryOpPtr  op;
+    std::string op;
     ExprPtr     expr;
 };
 
@@ -343,14 +384,14 @@ struct PostUnaryExpr : public Expr
 {
     AST_INTERFACE(PostUnaryExpr);
     ExprPtr     expr;
-    UnaryOpPtr  op;
+    std::string op;
 };
 
 //! Function call expression.
 struct FunctionCallExpr : public Expr
 {
     AST_INTERFACE(FunctionCallExpr);
-    //...
+    FunctionCallPtr call;
 };
 
 //! Bracket expression.
@@ -360,10 +401,26 @@ struct BracketExpr : public Expr
     ExprPtr expr; // inner expression
 };
 
-//...
+//! Cast expression.
+struct CastExpr : public Expr
+{
+    AST_INTERFACE(CastExpr);
+    VarTypePtr  castType;
+    ExprPtr     expr;
+};
+
+//! Variable access expression.
+struct VarAccessExpr : public Expr
+{
+    AST_INTERFACE(VarAccessExpr);
+    VarIdentPtr varIdent;
+    std::string assignOp;   // may be empty
+    ExprPtr     assignExpr; // may be null
+};
 
 /* --- Others --- */
 
+//! Case block for a switch statement.
 struct SwitchCase : public AST
 {
     AST_INTERFACE(SwitchCase);
