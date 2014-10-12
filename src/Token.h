@@ -79,6 +79,7 @@ class Token
 
             Struct,         //!< struct
             Register,       //!< register
+            PackOffset,     //!< packoffset
 
             // Object keywords
             Texture,        //!< texture, Texture1D, Texture1DArray, Texture2D, Texture2DArray, Texture3D, TextureCube, TextureCubeArray, Texture2DMS, Texture2DMSArray, Buffer

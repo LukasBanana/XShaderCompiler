@@ -69,7 +69,7 @@ class GLSLGenerator : private Visitor
 
         void EstablishMaps();
 
-        void Error(const std::string& msg, const ASTPtr& ast = nullptr);
+        void Error(const std::string& msg, const AST* ast = nullptr);
 
         void BeginLn();
         void EndLn();
@@ -137,9 +137,9 @@ class GLSLGenerator : private Visitor
         DECL_VISIT_PROC( DoWhileLoopStmnt  );
         DECL_VISIT_PROC( IfStmnt           );
         DECL_VISIT_PROC( ElseStmnt         );
-        DECL_VISIT_PROC( SwitchStmnt       );
+        DECL_VISIT_PROC( SwitchStmnt       );*/
         DECL_VISIT_PROC( VarDeclStmnt      );
-        DECL_VISIT_PROC( AssignSmnt        );
+        /*DECL_VISIT_PROC( AssignSmnt        );
         DECL_VISIT_PROC( FunctionCallStmnt );
         DECL_VISIT_PROC( ReturnStmnt       );
         DECL_VISIT_PROC( StructDeclStmnt   );*/
@@ -154,13 +154,13 @@ class GLSLGenerator : private Visitor
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( VarAccessExpr     );
 
-        DECL_VISIT_PROC( SwitchCase        );
+        DECL_VISIT_PROC( SwitchCase        );*/
 
         DECL_VISIT_PROC( PackOffset        );
         DECL_VISIT_PROC( VarSemantic       );
         DECL_VISIT_PROC( VarType           );
         DECL_VISIT_PROC( VarIdent          );
-        DECL_VISIT_PROC( VarDecl           );*/
+        DECL_VISIT_PROC( VarDecl           );
 
         /* === Members === */
 
@@ -171,6 +171,7 @@ class GLSLGenerator : private Visitor
         std::string     entryPoint_;
         ShaderTargets   shaderTarget_   = ShaderTargets::GLSLVertexShader;
         ShaderVersions  shaderVersion_  = ShaderVersions::GLSL110;
+        bool            allowBlanks_    = true;
 
         std::map<std::string, std::string> typeMap_;        // <hlsl-type, glsl-type>
         std::map<std::string, std::string> intrinsicMap_;   // <hlsl-intrinsic, glsl-intrinsic>

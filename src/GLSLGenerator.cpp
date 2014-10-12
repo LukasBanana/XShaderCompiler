@@ -63,9 +63,10 @@ static std::string TargetToString(const ShaderTargets shaderTarget)
  */
 
 GLSLGenerator::GLSLGenerator(Logger* log, IncludeHandler* includeHandler, const Options& options) :
-    writer_         { options.indent },
-    includeHandler_ { includeHandler },
-    log_            { log            }
+    writer_         { options.indent    },
+    includeHandler_ { includeHandler    },
+    log_            { log               },
+    allowBlanks_    { !options.noblanks }
 {
     EstablishMaps();
 }
@@ -93,8 +94,10 @@ bool GLSLGenerator::GenerateCode(
         Comment("GLSL " + TargetToString(shaderTarget) + " Shader");
         Comment("Generated from HLSL Shader \"" + entryPoint + "\"");
         Comment(TimePoint());
+        Blank();
 
         Version(static_cast<int>(shaderVersion));
+        Blank();
 
         /* Append default helper macros and functions */
         AppendHelperMacros();
@@ -226,7 +229,7 @@ void GLSLGenerator::EstablishMaps()
     };
 }
 
-void GLSLGenerator::Error(const std::string& msg, const ASTPtr& ast)
+void GLSLGenerator::Error(const std::string& msg, const AST* ast)
 {
     if (ast)
         throw std::runtime_error("code generation error (" + ast->pos.ToString() + ") : " + msg);
@@ -291,7 +294,8 @@ void GLSLGenerator::Line(const AST* ast)
 
 void GLSLGenerator::Blank()
 {
-    WriteLn("");
+    if (allowBlanks_)
+        WriteLn("");
 }
 
 void GLSLGenerator::AppendHelperMacros()
@@ -447,7 +451,7 @@ IMPLEMENT_VISIT_PROC(Structure)
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     if (ast->bufferType != "cbuffer")
-        Error("buffer type \"" + ast->bufferType + "\" currently not supported");
+        Error("buffer type \"" + ast->bufferType + "\" currently not supported", ast);
 
     /* Write uniform buffer header */
     Line(ast);
@@ -474,11 +478,35 @@ IMPLEMENT_VISIT_PROC(BufferDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
+    Line(ast);
     bool semicolon = true;
     Visit(ast->structure, &semicolon);
 }
 
 /* --- Statements --- */
+
+IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+{
+    BeginLn();
+
+    /* Write type modifier and variable types */
+    if (ast->typeModifier == "const")
+        Write(ast->typeModifier + " ");
+
+    Visit(ast->varType);
+    Write(" ");
+
+    /* Write variable declarations */
+    for (size_t i = 0; i < ast->varDecls.size(); ++i)
+    {
+        Visit(ast->varDecls[i]);
+        if (i + 1 < ast->varDecls.size())
+            Write(", ");
+    }
+
+    Write(";");
+    EndLn();
+}
 
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 {
@@ -488,6 +516,44 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 /* --- Expressions --- */
 
 //...
+
+/* --- Variables --- */
+
+IMPLEMENT_VISIT_PROC(PackOffset)
+{
+}
+
+IMPLEMENT_VISIT_PROC(VarSemantic)
+{
+}
+
+IMPLEMENT_VISIT_PROC(VarType)
+{
+    if (!ast->baseType.empty())
+    {
+        /* Write GLSL base type */
+        auto typeName = ast->baseType;
+
+        auto it = typeMap_.find(typeName);
+        if (it != typeMap_.end())
+            typeName = it->second;
+
+        Write(typeName);
+    }
+    else if (ast->structType)
+        Visit(ast->structType);
+    else
+        Error("missing variable type", ast);
+}
+
+IMPLEMENT_VISIT_PROC(VarIdent)
+{
+}
+
+IMPLEMENT_VISIT_PROC(VarDecl)
+{
+    Write(ast->name);
+}
 
 #undef IMPLEMENT_VISIT_PROC
 

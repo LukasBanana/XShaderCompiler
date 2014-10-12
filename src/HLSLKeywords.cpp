@@ -84,6 +84,7 @@ static KeywordMapType GenerateKeywordMap()
 
         { "struct",           Ty::Struct        },
         { "register",         Ty::Register      },
+        { "packoffset",       Ty::PackOffset    },
 
         { "texture",          Ty::Texture       },
         { "Texture1D",        Ty::Texture       },

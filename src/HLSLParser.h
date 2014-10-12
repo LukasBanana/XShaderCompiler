@@ -15,6 +15,8 @@
 #include "Token.h"
 
 #include <vector>
+#include <map>
+#include <string>
 
 
 namespace HTLib
@@ -35,13 +37,25 @@ class HLSLParser
         
         typedef Token::Types Tokens;
 
+        /* === Enumerations === */
+
+        //! Variable declaration modifiers.
+        enum class VarModifiers
+        {
+            StorageModifier,    //!< Storage class or interpolation modifier (extern, linear, centroid, nointerpolation, noperspective, sample).
+            TypeModifier,       //!< Type modifier (const, row_major, column_major).
+        };
+
         /* === Functions === */
+
+        void EstablishMaps();
 
         void Error(const std::string& msg);
         void ErrorUnexpected();
         void ErrorUnexpected(const std::string& hint);
 
-        TokenPtr Accept(const Token::Types type);
+        TokenPtr Accept(const Tokens type);
+        TokenPtr Accept(const Tokens type, const std::string& spell);
         TokenPtr AcceptIt();
 
         //! Makes a new shared pointer of the specified AST node class.
@@ -50,47 +64,66 @@ class HLSLParser
             return std::make_shared<T>(scanner_.Pos(), args...);
         }
 
-        inline Token::Types Type() const
+        inline Tokens Type() const
         {
             return tkn_->Type();
         }
 
+        inline bool Is(const Tokens type) const
+        {
+            return Type() == type;
+        }
+        inline bool Is(const Tokens type, const std::string& spell) const
+        {
+            return Type() == type && tkn_->Spell() == spell;
+        }
+
         /* === Parse functions === */
 
-        ProgramPtr              ParseProgram();
+        ProgramPtr                      ParseProgram();
 
-        CodeBlockPtr            ParseCodeBlock();
-        BufferDeclIdentPtr      ParseBufferDeclIdent();
-        FunctionCallPtr         ParseFunctionCall();
-        StructurePtr            ParseStructure();
+        CodeBlockPtr                    ParseCodeBlock();
+        BufferDeclIdentPtr              ParseBufferDeclIdent();
+        FunctionCallPtr                 ParseFunctionCall();
+        StructurePtr                    ParseStructure();
 
-        GlobalDeclPtr           ParseGlobalDecl();
-        FunctionDeclPtr         ParseFunctionDecl();
-        BufferDeclPtr           ParseBufferDecl();
-        TextureDeclPtr          ParseTextureDecl();
-        SamplerStateDeclPtr     ParseSamplerStateDecl();
-        StructDeclPtr           ParseStructDecl();
-        DirectiveDeclPtr        ParseDirectiveDecl();
+        GlobalDeclPtr                   ParseGlobalDecl();
+        FunctionDeclPtr                 ParseFunctionDecl();
+        BufferDeclPtr                   ParseBufferDecl();
+        TextureDeclPtr                  ParseTextureDecl();
+        SamplerStateDeclPtr             ParseSamplerStateDecl();
+        StructDeclPtr                   ParseStructDecl();
+        DirectiveDeclPtr                ParseDirectiveDecl();
 
-        StmntPtr                ParseStmnt();
-        VarDeclPtr              ParseVarDeclStmnt();
+        PackOffsetPtr                   ParsePackOffset(bool parseColon = true);
+        ExprPtr                         ParseArrayDimension();
+        ExprPtr                         ParseInitializer();
+        VarSemanticPtr                  ParseVarSemantic();
+        VarDeclPtr                      ParseVarDecl();
+
+        StmntPtr                        ParseStmnt();
+        VarDeclStmntPtr                 ParseVarDeclStmnt();
         //statements...
 
-        ExprPtr                 ParseExpr();
+        ExprPtr                         ParseExpr();
         //expressions...
 
-        std::vector<VarDeclPtr> ParseVarDeclList();
-        std::vector<StmntPtr>   ParseStmntList();
+        std::vector<VarDeclPtr>         ParseVarDeclList();
+        std::vector<VarDeclStmntPtr>    ParseVarDeclStmntList();
+        std::vector<StmntPtr>           ParseStmntList();
+        std::vector<ExprPtr>            ParseArrayDimensionList();
+        std::vector<VarSemanticPtr>     ParseVarSemanticList();
 
-        std::string             ParseRegister();
+        std::string                     ParseRegister(bool parseColon = true);
 
         /* === Members === */
 
         HLSLScanner scanner_;
-
         TokenPtr tkn_;
 
         Logger* log_ = nullptr;
+
+        std::map<std::string, VarModifiers> varModifierMap_;
 
 };
 

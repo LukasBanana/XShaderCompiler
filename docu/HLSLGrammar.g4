@@ -122,12 +122,6 @@ switch_default_case		: 'default' ':' stmnt_list;
 
 // Variable declaration
 
-INTERP_MODIFIER			: 'linear'
-						| 'centroid'
-						| 'nointerpolation'
-						| 'noperspective'
-						| 'sample';
-
 STORAGE_CLASS			: 'extern';
 						| 'nointerpolation'
 						| 'precise'
@@ -136,6 +130,12 @@ STORAGE_CLASS			: 'extern';
 						| 'static'
 						| 'uniform'
 						| 'volatile';
+
+INTERP_MODIFIER			: 'linear'
+						| 'centroid'
+						| 'nointerpolation'
+						| 'noperspective'
+						| 'sample';
 
 TYPE_MODIFIER			: 'const'
 						| 'row_major'
@@ -170,13 +170,13 @@ REGISTER_IDENT			: 'b'
 						| 'u';
 
 REGISTER_NAME			: REGISTER_IDENT INT_LITERAL;
-SEMANTIC				: ':' IDENT;
+semantic				: ':' IDENT;
 initializer				: '=' expr;
 array_dimension			: '[' expr ']';
 var_packoffset			: ':' 'packoffset' '(' REGISTER_NAME ('.' VECTOR_COMPONENT)? ')';
 var_register			: ':' 'register' '(' REGISTER_NAME ')';
 
-var_semantic			: SEMANTIC
+var_semantic			: semantic
 						| var_packoffset
 						| var_register;
 
@@ -228,7 +228,7 @@ buffer_decl_ident	: IDENT var_register?;
 BUFFER_TYPE		: 'cbuffer'
 				| 'tbuffer';
 
-buffer_decl		: BUFFER_TYPE IDENT var_register? var_decl_list ';';
+buffer_decl		: BUFFER_TYPE IDENT var_register? var_decl_stmnt_list ';';
 
 // Texture declaration
 
@@ -263,8 +263,8 @@ samplerstate_decl	: 'SamplerState' buffer_decl_ident (',' buffer_decl_ident)*;
 
 // Struct declaration
 
-struct_decl		: 'struct' IDENT? var_decl_list;
-var_decl_list	: '{' (var_decl_stmnt ';')* '}';
+struct_decl		: 'struct' IDENT? var_decl_stmnt_list;
+var_decl_stmnt_list	: '{' (var_decl_stmnt ';')* '}';
 
 
 /*

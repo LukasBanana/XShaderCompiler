@@ -11,6 +11,7 @@
 
 #include "Token.h"
 #include "Visitor.h"
+#include "Flags.h"
 
 #include <vector>
 #include <string>
@@ -39,6 +40,10 @@ class Visitor;
 #define DECL_AST_ALIAS(alias, base) \
     typedef base alias;             \
     typedef base##Ptr alias##Ptr
+
+#define FLAGS           \
+    Flags flags;        \
+    enum : unsigned int
 
 //! Base class for all AST node classes.
 struct AST
@@ -145,8 +150,8 @@ struct FunctionCall : public AST
 struct Structure : public AST
 {
     AST_INTERFACE(Structure);
-    std::string             name;
-    std::vector<VarDeclPtr> members;
+    std::string                     name;
+    std::vector<VarDeclStmntPtr>    members;
 };
 
 /* --- Global declarations --- */
@@ -154,22 +159,28 @@ struct Structure : public AST
 //! Function declaration.
 struct FunctionDecl : public GlobalDecl
 {
+    FLAGS
+    {
+        isEntryPoint    = (1 << 0), // This function is the main entry point.
+        isUsed          = (1 << 1), // This function is used at least once (use-count >= 1).
+    };
     AST_INTERFACE(FunctionDecl);
-    VarTypePtr              returnType;
-    std::string             name;
-    std::vector<VarDeclPtr> parameters;
-    std::string             semantic;
-    CodeBlockPtr            codeBlock;
+    std::vector<FunctionCallPtr>    attribs; // attribute list
+    VarTypePtr                      returnType;
+    std::string                     name;
+    std::vector<VarDeclStmntPtr>    parameters;
+    std::string                     semantic;
+    CodeBlockPtr                    codeBlock;
 };
 
 //! Buffer (cbuffer, tbuffer) declaration.
 struct BufferDecl : public GlobalDecl
 {
     AST_INTERFACE(BufferDecl);
-    std::string             bufferType;
-    std::string             name;
-    std::string             registerName; // may be empty
-    std::vector<VarDeclPtr> members;
+    std::string                     bufferType;
+    std::string                     name;
+    std::string                     registerName; // may be empty
+    std::vector<VarDeclStmntPtr>    members;
 };
 
 //! Texture declaration.
@@ -191,6 +202,11 @@ struct SamplerStateDecl : public GlobalDecl
 //! Structure declaration.
 struct StructDecl : public GlobalDecl
 {
+    FLAGS
+    {
+        isShaderInput   = (1 << 0), // This structure is used as shader input.
+        isShaderOutput  = (1 << 1), // This structure is used as shader output.
+    };
     AST_INTERFACE(StructDecl);
     StructurePtr structure;
 };
@@ -261,34 +277,38 @@ struct CodeBlockStmnt : public Stmnt
 struct ForLoopStmnt : public Stmnt
 {
     AST_INTERFACE(ForLoopStmnt);
-    AssignSmntPtr   initAssign;
-    VarDeclStmntPtr initVarDecl;
-    ExprPtr         condition;
-    ExprPtr         iteration;
+    std::vector<FunctionCallPtr>    attribs; // attribute list
+    AssignSmntPtr                   initAssign;
+    VarDeclStmntPtr                 initVarDecl;
+    ExprPtr                         condition;
+    ExprPtr                         iteration;
 };
 
 //! 'while'-loop statement.
 struct WhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(WhileLoopStmnt);
-    ExprPtr         condition;
-    CodeBlockPtr    codeBlock;
+    std::vector<FunctionCallPtr>    attribs; // attribute list
+    ExprPtr                         condition;
+    CodeBlockPtr                    codeBlock;
 };
 
 //! 'do/while'-loop statement.
 struct DoWhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(DoWhileLoopStmnt);
-    CodeBlockPtr    codeBlock;
-    ExprPtr         condition;
+    std::vector<FunctionCallPtr>    attribs; // attribute list
+    CodeBlockPtr                    codeBlock;
+    ExprPtr                         condition;
 };
 
 //! 'if' statement.
 struct IfStmnt : public Stmnt
 {
     AST_INTERFACE(IfStmnt);
-    ExprPtr         condition;
-    CodeBlockPtr    codeBlock;
+    std::vector<FunctionCallPtr>    attribs; // attribute list
+    ExprPtr                         condition;
+    CodeBlockPtr                    codeBlock;
 };
 
 //! 'else' statement.
@@ -310,9 +330,9 @@ struct SwitchStmnt : public Stmnt
 struct VarDeclStmnt : public Stmnt
 {
     AST_INTERFACE(VarDeclStmnt);
-    std::vector<std::string>    storageClasses;
-    std::vector<std::string>    interpModifiers;
+    std::vector<std::string>    storageModifiers; // storage classes or interpolation modifiers
     std::string                 typeModifier; // may be empty
+    VarTypePtr                  varType;
     std::vector<VarDeclPtr>     varDecls;
 };
 
@@ -430,6 +450,7 @@ struct SwitchCase : public AST
 
 #undef AST_INTERFACE
 #undef DECL_AST_ALIAS
+#undef FLAGS
 
 
 } // /namespace HTLib

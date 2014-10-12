@@ -12,6 +12,7 @@
 #include "HT/Export.h"
 #include "HT/Logger.h"
 #include "HT/Targets.h"
+#include "HT/Version.h"
 
 #include <string>
 #include <istream>
@@ -26,7 +27,8 @@ namespace HTLib
 //! Structure for additional translation options.
 struct Options
 {
-    std::string indent = "    "; //!< Indentation string. By default std::string(4, ' ').
+    std::string indent      = "    ";   //!< Indentation string. By default std::string(4, ' ').
+    bool        noblanks    = false;    //!< True if no blanks are allowed. By default false.
 };
 
 //! Interface for handling new include streams.

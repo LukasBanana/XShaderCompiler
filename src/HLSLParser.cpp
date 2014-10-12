@@ -17,6 +17,7 @@ HLSLParser::HLSLParser(Logger* log) :
     scanner_{ log },
     log_    { log }
 {
+    EstablishMaps();
 }
 
 ProgramPtr HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
@@ -44,6 +45,29 @@ ProgramPtr HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
  * ======= Private: =======
  */
 
+void HLSLParser::EstablishMaps()
+{
+    varModifierMap_ = std::map<std::string, VarModifiers>
+    {
+        { "extern",          VarModifiers::StorageModifier },
+        { "nointerpolation", VarModifiers::StorageModifier },
+        { "precise",         VarModifiers::StorageModifier },
+        { "shared",          VarModifiers::StorageModifier },
+        { "groupshared",     VarModifiers::StorageModifier },
+        { "static",          VarModifiers::StorageModifier },
+        { "uniform",         VarModifiers::StorageModifier },
+        { "volatile",        VarModifiers::StorageModifier },
+        { "linear",          VarModifiers::StorageModifier },
+        { "centroid",        VarModifiers::StorageModifier },
+        { "noperspective",   VarModifiers::StorageModifier },
+        { "sample",          VarModifiers::StorageModifier },
+
+        { "const",           VarModifiers::TypeModifier    },
+        { "row_major",       VarModifiers::TypeModifier    },
+        { "column_major",    VarModifiers::TypeModifier    },
+    };
+}
+
 void HLSLParser::Error(const std::string& msg)
 {
     throw std::runtime_error("syntax error (" + scanner_.Pos().ToString() + ") : " + msg);
@@ -59,10 +83,19 @@ void HLSLParser::ErrorUnexpected(const std::string& hint)
     Error("unexpected token '" + tkn_->Spell() + "' (" + hint + ")");
 }
 
-TokenPtr HLSLParser::Accept(const Token::Types type)
+TokenPtr HLSLParser::Accept(const Tokens type)
 {
     if (tkn_->Type() != type)
         ErrorUnexpected();
+    return AcceptIt();
+}
+
+TokenPtr HLSLParser::Accept(const Tokens type, const std::string& spell)
+{
+    if (tkn_->Type() != type)
+        ErrorUnexpected();
+    if (tkn_->Spell() != spell)
+        Error("unexpected token spelling '" + tkn_->Spell() + "' (expected '" + spell + "')");
     return AcceptIt();
 }
 
@@ -79,7 +112,7 @@ ProgramPtr HLSLParser::ParseProgram()
 {
     auto ast = Make<Program>();
 
-    while (Type() != Tokens::EndOfStream)
+    while (!Is(Tokens::EndOfStream))
         ast->globalDecls.push_back(ParseGlobalDecl());
 
     return ast;
@@ -116,7 +149,7 @@ StructurePtr HLSLParser::ParseStructure()
     Accept(Tokens::Struct);
 
     ast->name = Accept(Tokens::Ident)->Spell();
-    ast->members = ParseVarDeclList();
+    ast->members = ParseVarDeclStmntList();
 
     return ast;
 }
@@ -161,11 +194,11 @@ BufferDeclPtr HLSLParser::ParseBufferDecl()
     ast->name = Accept(Tokens::Ident)->Spell();
 
     /* Parse optional register */
-    if (Type() == Tokens::Colon)
+    if (Is(Tokens::Colon))
         ast->registerName = ParseRegister();
 
     /* Parse buffer body */
-    ast->members = ParseVarDeclList();
+    ast->members = ParseVarDeclStmntList();
 
     Accept(Tokens::Semicolon);
 
@@ -206,24 +239,132 @@ DirectiveDeclPtr HLSLParser::ParseDirectiveDecl()
     return ast;
 }
 
+/* --- Variables --- */
+
+PackOffsetPtr HLSLParser::ParsePackOffset(bool parseColon)
+{
+    auto ast = Make<PackOffset>();
+
+    /* Parse ': packoffset( IDENT (.COMPONENT)? )' */
+    if (parseColon)
+        Accept(Tokens::Colon);
+    
+    Accept(Tokens::PackOffset);
+    Accept(Tokens::LBracket);
+
+    ast->registerName = Accept(Tokens::Ident)->Spell();
+
+    if (Is(Tokens::Dot))
+    {
+        AcceptIt();
+        ast->vectorComponent = Accept(Tokens::Ident)->Spell();
+    }
+
+    Accept(Tokens::RBracket);
+
+    return ast;
+}
+
+ExprPtr HLSLParser::ParseArrayDimension()
+{
+    Accept(Tokens::LParen);
+    auto ast = ParseExpr();
+    Accept(Tokens::RParen);
+    return ast;
+}
+
+ExprPtr HLSLParser::ParseInitializer()
+{
+    Accept(Tokens::AssignOp, "=");
+    return ParseExpr();
+}
+
+VarSemanticPtr HLSLParser::ParseVarSemantic()
+{
+    auto ast = Make<VarSemantic>();
+
+    Accept(Tokens::Colon);
+
+    if (Is(Tokens::Register))
+        ast->registerName = ParseRegister(false);
+    else if (Is(Tokens::PackOffset))
+        ast->packOffset = ParsePackOffset(false);
+    else
+        ast->semantic = Accept(Tokens::Ident)->Spell();
+
+    return ast;
+}
+
+VarDeclPtr HLSLParser::ParseVarDecl()
+{
+    auto ast = Make<VarDecl>();
+
+    /* Parse variable declaration */
+    ast->name = Accept(Tokens::Ident)->Spell();
+    ast->arrayDims = ParseArrayDimensionList();
+    ast->semantics = ParseVarSemanticList();
+
+    if (Is(Tokens::AssignOp, "="))
+        ast->initializer = ParseInitializer();
+
+    return ast;
+}
+
 /* --- Statements --- */
 
 StmntPtr HLSLParser::ParseStmnt()
 {
     #if 1//!!!
-    while (Type() != Tokens::Semicolon)
+    while (!Is(Tokens::Semicolon))
         AcceptIt();
     #endif
     //...
     return nullptr;
 }
 
-VarDeclPtr HLSLParser::ParseVarDeclStmnt()
+VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 {
-    auto ast = Make<VarDecl>();
+    auto ast = Make<VarDeclStmnt>();
 
-    AcceptIt();//!!!
-    //...
+    while (true)
+    {
+        if (Is(Tokens::Ident))
+        {
+            /* Parse storage class, interpolation- or type modifiers */
+            auto ident = AcceptIt()->Spell();
+
+            auto it = varModifierMap_.find(ident);
+            if (it == varModifierMap_.end())
+            {
+                /* Parse base variable type */
+                ast->varType = Make<VarType>();
+                ast->varType->baseType = ident;
+                break;
+            }
+            else
+                ast->storageModifiers.push_back(ident);
+        }
+        else if (Is(Tokens::Struct))
+        {
+            /* Parse structure variable type */
+            ast->varType = Make<VarType>();
+            ast->varType->structType = ParseStructure();
+            break;
+        }
+        else if (Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType))
+        {
+            /* Parse base variable type */
+            ast->varType = Make<VarType>();
+            ast->varType->baseType = AcceptIt()->Spell();
+            break;
+        }
+        else
+            ErrorUnexpected();
+    }
+
+    /* Parse variable declarations */
+    ast->varDecls = ParseVarDeclList();
+    Accept(Tokens::Semicolon);
 
     return ast;
 }
@@ -239,12 +380,29 @@ ExprPtr HLSLParser::ParseExpr()
 
 std::vector<VarDeclPtr> HLSLParser::ParseVarDeclList()
 {
-    std::vector<VarDeclPtr> members;
+    std::vector<VarDeclPtr> varDecls;
+
+    /* Parse variable declaration list */
+    while (true)
+    {
+        varDecls.push_back(ParseVarDecl());
+        if (Is(Tokens::Comma))
+            AcceptIt();
+        else
+            break;
+    }
+
+    return varDecls;
+}
+
+std::vector<VarDeclStmntPtr> HLSLParser::ParseVarDeclStmntList()
+{
+    std::vector<VarDeclStmntPtr> members;
 
     Accept(Tokens::LCurly);
 
-    /* Parse all var-decl statements */
-    while (Type() != Tokens::RCurly)
+    /* Parse all variable declaration statements */
+    while (!Is(Tokens::RCurly))
         members.push_back(ParseVarDeclStmnt());
 
     AcceptIt();
@@ -256,22 +414,47 @@ std::vector<StmntPtr> HLSLParser::ParseStmntList()
 {
     std::vector<StmntPtr> stmnts;
 
-    while (Type() != Tokens::RCurly)
+    while (!Is(Tokens::RCurly))
         stmnts.push_back(ParseStmnt());
 
     return stmnts;
 }
 
+std::vector<ExprPtr> HLSLParser::ParseArrayDimensionList()
+{
+    std::vector<ExprPtr> arrayDims;
+
+    while (Is(Tokens::LParen))
+        arrayDims.push_back(ParseArrayDimension());
+
+    return arrayDims;
+}
+
+std::vector<VarSemanticPtr> HLSLParser::ParseVarSemanticList()
+{
+    std::vector<VarSemanticPtr> semantics;
+
+    while (Is(Tokens::Colon))
+        semantics.push_back(ParseVarSemantic());
+
+    return semantics;
+}
+
 /* --- Others --- */
 
-std::string HLSLParser::ParseRegister()
+std::string HLSLParser::ParseRegister(bool parseColon)
 {
     /* Parse ': register(IDENT)' */
-    Accept(Tokens::Colon);
+    if (parseColon)
+        Accept(Tokens::Colon);
+    
     Accept(Tokens::Register);
     Accept(Tokens::LBracket);
+
     auto registerName = Accept(Tokens::Ident)->Spell();
+
     Accept(Tokens::RBracket);
+
     return registerName;
 }
 

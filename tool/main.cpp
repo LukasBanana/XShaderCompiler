@@ -14,6 +14,8 @@
 
 using namespace HTLib;
 
+/* --- Classes --- */
+
 class OutputLog : public HTLib::Logger
 {
     
@@ -86,6 +88,17 @@ class IncludeStreamHandler : public IncludeHandler
 };
 
 
+/* --- Globals --- */
+
+std::string entry;
+std::string target;
+std::string version;
+std::string output;
+Options options;
+
+
+/* --- Functions --- */
+
 static void ShowHint()
 {
     std::cout << "no input : enter \"HLSLOfflineTranslator help\"" << std::endl;
@@ -94,7 +107,7 @@ static void ShowHint()
 static void ShowHelp()
 {
     std::cout << "Usage:" << std::endl;
-    std::cout << "  HLSLOfflineTranslator FILE Options" << std::endl;
+    std::cout << "  HLSLOfflineTranslator (Options [FILE])+" << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "  -entry NAME         HLSL shader entry point" << std::endl;
     std::cout << "  -target TARGET      Shader target; valid values:" << std::endl;
@@ -107,6 +120,16 @@ static void ShowHelp()
     std::cout << "  -version VERSION    GLSL version ('110', '120', etc.); default is 110" << std::endl;
     std::cout << "  -indent INDENT      Code indentation string; default is 4 blanks" << std::endl;
     std::cout << "  -output FILE        GLSL output file; default is '<InputFile>.glsl'" << std::endl;
+    std::cout << "  -noblanks           No blank lines will be generated" << std::endl;
+    std::cout << "  --help, help, -h    Prints this help reference" << std::endl;
+    std::cout << "  --version, -v       Prints the version information" << std::endl;
+}
+
+static void ShowVersion()
+{
+    std::cout << "HLSL Translator ( Version " << __HT_VERSION__ << " )" << std::endl;
+    std::cout << "Copyright (c) 2014 by Lukas Hermanns" << std::endl;
+    std::cout << "3-Clause BSD License" << std::endl;
 }
 
 static ShaderTargets TargetFromString(const std::string& target)
@@ -147,97 +170,114 @@ static ShaderVersions VersionFromString(const std::string& version)
     return ShaderVersions::GLSL110;
 }
 
+static std::string NextArg(int& i, int argc, char** argv, const std::string& flag)
+{
+    if (i + 1 >= argc)
+        throw std::string("missing next argument after flag \"" + flag + "\"");
+    return argv[++i];
+}
+
+static void Translate(const std::string& filename)
+{
+    if (entry.empty())
+    {
+        std::cerr << "missing entry point" << std::endl;
+        return;
+    }
+    if (target.empty())
+    {
+        std::cerr << "missing shader target" << std::endl;
+        return;
+    }
+
+    if (output.empty())
+        output = filename + ".glsl";
+
+    /* Translate HLSL file into GLSL */
+    std::cout << "translate from " << filename << " to " << output << std::endl;
+
+    auto inputStream = std::make_shared<std::ifstream>(filename);
+    std::ofstream outputStream(output);
+
+    OutputLog log;
+    IncludeStreamHandler includeHandler;
+
+    try
+    {
+        auto result = TranslateHLSLtoGLSL(
+            inputStream,
+            outputStream,
+            entry,
+            TargetFromString(target),
+            VersionFromString(version),
+            &includeHandler,
+            options,
+            &log
+        );
+
+        log.Report();
+
+        if (result)
+            std::cout << "translation successful" << std::endl;
+    }
+    catch (const std::string& err)
+    {
+        std::cerr << err << std::endl;
+    }
+}
+
+
+/* --- Main function --- */
 
 int main(int argc, char** argv)
 {
-    std::string filename;
-    std::string entry;
-    std::string target;
-    std::string version;
-    std::string indent;
-    std::string output;
+    int translationCounter = 0;
     bool showHelp = false;
+    bool showVersion = false;
 
     /* Parse program arguments */
     for (int i = 1; i < argc; ++i)
     {
-        auto arg = std::string(argv[i]);
-
-        if (arg == "help")
-            showHelp = true;
-        else if (filename.empty())
-            filename = arg;
-        else if (i + 1 < argc)
+        try
         {
-            if (arg == "-entry")
-                entry = argv[++i];
+            auto arg = std::string(argv[i]);
+
+            if (arg == "help" || arg == "--help" || arg == "-h")
+                showHelp = true;
+            else if (arg == "--version" || arg == "-v")
+                showVersion = true;
+            else if (arg == "-noblanks")
+                options.noblanks = true;
+            else if (arg == "-entry")
+                entry = NextArg(i, argc, argv, "-entry");
             else if (arg == "-target")
-                target = argv[++i];
+                target = NextArg(i, argc, argv, "-target");
             else if (arg == "-version")
-                version = argv[++i];
+                version = NextArg(i, argc, argv, "-version");
             else if (arg == "-indent")
-                indent = argv[++i];
+                options.indent = NextArg(i, argc, argv, "-indent");
             else if (arg == "-output")
-                output = argv[++i];
+                output = NextArg(i, argc, argv, "-output");
+            else
+            {
+                Translate(arg);
+                ++translationCounter;
+            }
+        }
+        catch (const std::string& err)
+        {
+            std::cerr << err << std::endl;
+            return 0;
         }
     }
 
     /* Evaluate arguemnts */
     if (showHelp)
         ShowHelp();
+    if (showVersion)
+        ShowVersion();
 
-    if (!filename.empty())
-    {
-        if (entry.empty())
-        {
-            std::cerr << "missing entry point" << std::endl;
-            return 0;
-        }
-        if (target.empty())
-        {
-            std::cerr << "missing shader target" << std::endl;
-            return 0;
-        }
-
-        if (output.empty())
-            output = filename + ".glsl";
-
-        /* Translate HLSL file into GLSL */
-        std::cout << "translate from " << filename << " to " << output << std::endl;
-
-        auto inputStream = std::make_shared<std::ifstream>(filename);
-        std::ofstream outputStream(output);
-
-        OutputLog log;
-        Options options;
-        IncludeStreamHandler includeHandler;
-
-        options.indent = indent;
-
-        try
-        {
-            auto result = TranslateHLSLtoGLSL(
-                inputStream,
-                outputStream,
-                entry,
-                TargetFromString(target),
-                VersionFromString(version),
-                &includeHandler,
-                options,
-                &log
-            );
-
-            log.Report();
-
-            if (result)
-                std::cout << "translation successful" << std::endl;
-        }
-        catch (const std::string& err)
-        {
-            std::cerr << err << std::endl;
-        }
-    }
-    else if (!showHelp)
+    if (translationCounter == 0 && !showHelp && !showVersion)
         ShowHint();
 
     return 0;

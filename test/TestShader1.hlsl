@@ -6,7 +6,8 @@
 
 cbuffer VertexParam : register(b0)
 {
-	float4x4 wvpMatrix;
+	float4x4 wvpMatrix : packoffset(c0);
+//	nointerpolation float3 normal	: NORMAL : packoffset(c4.x), test : packoffset(c5.x);
 };
 
 struct VertexIn
