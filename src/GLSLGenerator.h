@@ -9,8 +9,8 @@
 #define __HT_GLSL_GENERATOR_H__
 
 
-#include "CodeWriter.h"
 #include "HT/Translator.h"
+#include "CodeWriter.h"
 #include "Visitor.h"
 #include "Token.h"
 
@@ -34,7 +34,7 @@ class GLSLGenerator : private Visitor
         );
 
         bool GenerateCode(
-            const ProgramPtr& program,
+            Program* program,
             std::ostream& output,
             const std::string& entryPoint,
             const ShaderTargets shaderTarget,
@@ -91,7 +91,8 @@ class GLSLGenerator : private Visitor
         //! Writes a blank line.
         void Blank();
 
-        void AppendHelperMacros();
+        void AppendCommonMacros();
+        void AppendInterlockedMacros();
         void AppendMulFunctions();
         void AppendRcpFunctions();
 
@@ -110,11 +111,6 @@ class GLSLGenerator : private Visitor
 
         //! Returns true if the target version is greater than or equal to the specified version number.
         bool IsVersion(int version) const;
-
-        template <typename T> void Visit(T ast, void* args = nullptr)
-        {
-            ast->Visit(this, args);
-        }
 
         /* === Visitor implementation === */
 

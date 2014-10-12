@@ -41,9 +41,11 @@ class Visitor;
     typedef base alias;             \
     typedef base##Ptr alias##Ptr
 
-#define FLAGS           \
+#define FLAG_ENUM       \
     Flags flags;        \
     enum : unsigned int
+
+#define FLAG(name, index) name = (1 << (index))
 
 //! Base class for all AST node classes.
 struct AST
@@ -119,6 +121,12 @@ struct Expr : public AST {};
 //! Program AST root.
 struct Program : public AST
 {
+    FLAG_ENUM
+    {
+        FLAG( mulIntrinsicUsed,             0 ), // The "mul" intrinsic is used.
+        FLAG( rcpIntrinsicUsed,             1 ), // The "rcp" intrinsic is used.
+        FLAG( interlockedIntrinsicsUsed,    2 ), // Some 'Interlocked...' intrinsics are used.
+    };
     AST_INTERFACE(Program)
     std::vector<GlobalDeclPtr> globalDecls;
 };
@@ -159,10 +167,10 @@ struct Structure : public AST
 //! Function declaration.
 struct FunctionDecl : public GlobalDecl
 {
-    FLAGS
+    FLAG_ENUM
     {
-        isEntryPoint    = (1 << 0), // This function is the main entry point.
-        isUsed          = (1 << 1), // This function is used at least once (use-count >= 1).
+        FLAG( isEntryPoint, 0 ), // This function is the main entry point.
+        FLAG( isUsed,       1 ), // This function is used at least once (use-count >= 1).
     };
     AST_INTERFACE(FunctionDecl);
     std::vector<FunctionCallPtr>    attribs; // attribute list
@@ -202,10 +210,10 @@ struct SamplerStateDecl : public GlobalDecl
 //! Structure declaration.
 struct StructDecl : public GlobalDecl
 {
-    FLAGS
+    FLAG_ENUM
     {
-        isShaderInput   = (1 << 0), // This structure is used as shader input.
-        isShaderOutput  = (1 << 1), // This structure is used as shader output.
+        FLAG( isShaderInput,    0 ), // This structure is used as shader input.
+        FLAG( isShaderOutput,   1 ), // This structure is used as shader output.
     };
     AST_INTERFACE(StructDecl);
     StructurePtr structure;
@@ -450,7 +458,8 @@ struct SwitchCase : public AST
 
 #undef AST_INTERFACE
 #undef DECL_AST_ALIAS
-#undef FLAGS
+#undef FLAG_ENUM
+#undef FLAG
 
 
 } // /namespace HTLib

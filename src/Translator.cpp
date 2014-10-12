@@ -7,6 +7,7 @@
 
 #include "HT/Translator.h"
 #include "HLSLParser.h"
+#include "HLSLAnalyzer.h"
 #include "GLSLGenerator.h"
 
 
@@ -36,17 +37,17 @@ _HT_EXPORT_ bool TranslateHLSLtoGLSL(
     }
 
     /* Small context analysis */
-    /*HLSLAnalyzer analyzer(log);
-    if (!analyzer.DecorateAST(program))
+    HLSLAnalyzer analyzer(log);
+    if (!analyzer.DecorateAST(program.get(), entryPoint, shaderTarget, shaderVersion))
     {
         if (log)
             log->Error("analyzing input code failed");
         return false;
-    }*/
+    }
 
     /* Generate GLSL output code */
     GLSLGenerator generator(log, includeHandler, options);
-    if (!generator.GenerateCode(program, output, entryPoint, shaderTarget, shaderVersion))
+    if (!generator.GenerateCode(program.get(), output, entryPoint, shaderTarget, shaderVersion))
     {
         if (log)
             log->Error("generating output code failed");

@@ -32,7 +32,7 @@ class Flags
             return *this;
         }
 
-        inline bool Has(unsigned int flag) const
+        inline bool operator () (unsigned int flag) const
         {
             return (bitMask_ & flag) != 0;
         }

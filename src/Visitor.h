@@ -136,6 +136,13 @@ class Visitor
         VISITOR_VISIT_PROC( VarIdent          );
         VISITOR_VISIT_PROC( VarDecl           );
 
+    protected:
+        
+        template <typename T> void Visit(T ast, void* args = nullptr)
+        {
+            ast->Visit(this, args);
+        }
+
 };
 
 #undef VISITOR_VISIT_PROC

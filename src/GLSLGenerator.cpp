@@ -72,7 +72,7 @@ GLSLGenerator::GLSLGenerator(Logger* log, IncludeHandler* includeHandler, const 
 }
 
 bool GLSLGenerator::GenerateCode(
-    const ProgramPtr& program,
+    Program* program,
     std::ostream& output,
     const std::string& entryPoint,
     const ShaderTargets shaderTarget,
@@ -98,11 +98,6 @@ bool GLSLGenerator::GenerateCode(
 
         Version(static_cast<int>(shaderVersion));
         Blank();
-
-        /* Append default helper macros and functions */
-        AppendHelperMacros();
-        AppendMulFunctions();
-        AppendRcpFunctions();
 
         /* Visit program AST */
         Visit(program);
@@ -298,10 +293,15 @@ void GLSLGenerator::Blank()
         WriteLn("");
 }
 
-void GLSLGenerator::AppendHelperMacros()
+void GLSLGenerator::AppendCommonMacros()
 {
     WriteLn("#define saturate(x) clamp(x, 0.0, 1.0)");
     WriteLn("#define clip(x) if (lessThan(x, 0.0)) { discard; }");
+    Blank();
+}
+
+void GLSLGenerator::AppendInterlockedMacros()
+{
     WriteLn("#define InterlockedAdd(dest, value, prev) prev = atomicAdd(dest, value)");
     WriteLn("#define InterlockedAnd(dest, value, prev) prev = atomicAnd(dest, value)");
     WriteLn("#define InterlockedOr(dest, value, prev) prev = atomicOr(dest, value)");
@@ -415,6 +415,16 @@ bool GLSLGenerator::IsVersion(int version) const
 
 IMPLEMENT_VISIT_PROC(Program)
 {
+    /* Append default helper macros and functions */
+    AppendCommonMacros();
+
+    if (ast->flags(Program::interlockedIntrinsicsUsed))
+        AppendInterlockedMacros();
+    if (ast->flags(Program::mulIntrinsicUsed))
+        AppendMulFunctions();
+    if (ast->flags(Program::rcpIntrinsicUsed))
+        AppendRcpFunctions();
+
     for (auto& globDecl : ast->globalDecls)
     {
         Visit(globDecl);
@@ -450,9 +460,6 @@ IMPLEMENT_VISIT_PROC(Structure)
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
-    if (ast->bufferType != "cbuffer")
-        Error("buffer type \"" + ast->bufferType + "\" currently not supported", ast);
-
     /* Write uniform buffer header */
     Line(ast);
 
@@ -542,8 +549,6 @@ IMPLEMENT_VISIT_PROC(VarType)
     }
     else if (ast->structType)
         Visit(ast->structType);
-    else
-        Error("missing variable type", ast);
 }
 
 IMPLEMENT_VISIT_PROC(VarIdent)
