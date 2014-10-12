@@ -59,8 +59,10 @@ class HLSLParser
 
         ProgramPtr              ParseProgram();
 
-        std::string             ParseRegister();
-        std::vector<VarDeclPtr> ParseVarDeclList();
+        CodeBlockPtr            ParseCodeBlock();
+        BufferDeclIdentPtr      ParseBufferDeclIdent();
+        FunctionCallPtr         ParseFunctionCall();
+        StructurePtr            ParseStructure();
 
         GlobalDeclPtr           ParseGlobalDecl();
         FunctionDeclPtr         ParseFunctionDecl();
@@ -70,7 +72,17 @@ class HLSLParser
         StructDeclPtr           ParseStructDecl();
         DirectiveDeclPtr        ParseDirectiveDecl();
 
+        StmntPtr                ParseStmnt();
         VarDeclPtr              ParseVarDeclStmnt();
+        //statements...
+
+        ExprPtr                 ParseExpr();
+        //expressions...
+
+        std::vector<VarDeclPtr> ParseVarDeclList();
+        std::vector<StmntPtr>   ParseStmntList();
+
+        std::string             ParseRegister();
 
         /* === Members === */
 

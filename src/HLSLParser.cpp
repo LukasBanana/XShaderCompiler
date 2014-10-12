@@ -79,42 +79,46 @@ ProgramPtr HLSLParser::ParseProgram()
 {
     auto ast = Make<Program>();
 
-    while (true)
-    {
-        auto globDecl = ParseGlobalDecl();
-        if (globDecl)
-            ast->globalDecls.push_back(globDecl);
-        else
-            break;
-    }
+    while (Type() != Tokens::EndOfStream)
+        ast->globalDecls.push_back(ParseGlobalDecl());
 
     return ast;
 }
 
-std::string HLSLParser::ParseRegister()
+CodeBlockPtr HLSLParser::ParseCodeBlock()
 {
-    /* Parse ': register(IDENT)' */
-    Accept(Tokens::Colon);
-    Accept(Tokens::Register);
-    Accept(Tokens::LBracket);
-    auto registerName = Accept(Tokens::Ident)->Spell();
-    Accept(Tokens::RBracket);
-    return registerName;
+    auto ast = Make<CodeBlock>();
+
+    /* Parse statement list */
+    Accept(Tokens::LCurly);
+    ast->stmnts = ParseStmntList();
+    Accept(Tokens::RCurly);
+
+    return ast;
 }
 
-std::vector<VarDeclPtr> HLSLParser::ParseVarDeclList()
+BufferDeclIdentPtr HLSLParser::ParseBufferDeclIdent()
 {
-    std::vector<VarDeclPtr> members;
+    //...
+    return nullptr;
+}
 
-    Accept(Tokens::LCurly);
+FunctionCallPtr HLSLParser::ParseFunctionCall()
+{
+    //...
+    return nullptr;
+}
 
-    /* Parse all var-decl statements */
-    while (Type() != Tokens::RCurly)
-        members.push_back(ParseVarDeclStmnt());
+StructurePtr HLSLParser::ParseStructure()
+{
+    auto ast = Make<Structure>();
 
-    AcceptIt();
+    Accept(Tokens::Struct);
 
-    return members;
+    ast->name = Accept(Tokens::Ident)->Spell();
+    ast->members = ParseVarDeclList();
+
+    return ast;
 }
 
 /* --- Global declarations --- */
@@ -123,8 +127,6 @@ GlobalDeclPtr HLSLParser::ParseGlobalDecl()
 {
     switch (Type())
     {
-        case Tokens::EndOfStream:
-            return nullptr;
         case Tokens::Texture:
             return ParseTextureDecl();
         case Tokens::Buffer:
@@ -143,7 +145,11 @@ GlobalDeclPtr HLSLParser::ParseGlobalDecl()
 
 FunctionDeclPtr HLSLParser::ParseFunctionDecl()
 {
-    return nullptr;
+    auto ast = Make<FunctionDecl>();
+
+    AcceptIt();//!!!
+
+    return ast;
 }
 
 BufferDeclPtr HLSLParser::ParseBufferDecl()
@@ -168,17 +174,28 @@ BufferDeclPtr HLSLParser::ParseBufferDecl()
 
 TextureDeclPtr HLSLParser::ParseTextureDecl()
 {
-    return nullptr;
+    auto ast = Make<TextureDecl>();
+
+    AcceptIt();//!!!
+
+    return ast;
 }
 
 SamplerStateDeclPtr HLSLParser::ParseSamplerStateDecl()
 {
-    return nullptr;
+    auto ast = Make<SamplerStateDecl>();
+
+    AcceptIt();//!!!
+
+    return ast;
 }
 
 StructDeclPtr HLSLParser::ParseStructDecl()
 {
-    return nullptr;
+    auto ast = Make<StructDecl>();
+    ast->structure = ParseStructure();
+    Accept(Tokens::Semicolon);
+    return ast;
 }
 
 DirectiveDeclPtr HLSLParser::ParseDirectiveDecl()
@@ -191,6 +208,16 @@ DirectiveDeclPtr HLSLParser::ParseDirectiveDecl()
 
 /* --- Statements --- */
 
+StmntPtr HLSLParser::ParseStmnt()
+{
+    #if 1//!!!
+    while (Type() != Tokens::Semicolon)
+        AcceptIt();
+    #endif
+    //...
+    return nullptr;
+}
+
 VarDeclPtr HLSLParser::ParseVarDeclStmnt()
 {
     auto ast = Make<VarDecl>();
@@ -199,6 +226,53 @@ VarDeclPtr HLSLParser::ParseVarDeclStmnt()
     //...
 
     return ast;
+}
+
+/* --- Expressions --- */
+
+ExprPtr HLSLParser::ParseExpr()
+{
+    return nullptr;
+}
+
+/* --- Lists --- */
+
+std::vector<VarDeclPtr> HLSLParser::ParseVarDeclList()
+{
+    std::vector<VarDeclPtr> members;
+
+    Accept(Tokens::LCurly);
+
+    /* Parse all var-decl statements */
+    while (Type() != Tokens::RCurly)
+        members.push_back(ParseVarDeclStmnt());
+
+    AcceptIt();
+
+    return members;
+}
+
+std::vector<StmntPtr> HLSLParser::ParseStmntList()
+{
+    std::vector<StmntPtr> stmnts;
+
+    while (Type() != Tokens::RCurly)
+        stmnts.push_back(ParseStmnt());
+
+    return stmnts;
+}
+
+/* --- Others --- */
+
+std::string HLSLParser::ParseRegister()
+{
+    /* Parse ': register(IDENT)' */
+    Accept(Tokens::Colon);
+    Accept(Tokens::Register);
+    Accept(Tokens::LBracket);
+    auto registerName = Accept(Tokens::Ident)->Spell();
+    Accept(Tokens::RBracket);
+    return registerName;
 }
 
 
