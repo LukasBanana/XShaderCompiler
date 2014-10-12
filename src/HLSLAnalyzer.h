@@ -38,7 +38,16 @@ class HLSLAnalyzer : private Visitor
 
     private:
         
+        /* === Enumerations === */
+
+        enum class IntrinsicClasses
+        {
+            Interlocked,
+        };
+
         /* === Functions === */
+        
+        void EstablishMaps();
 
         void Error(const std::string& msg, const AST* ast = nullptr);
 
@@ -47,10 +56,10 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         //DECL_VISIT_PROC( BufferDeclIdent   );
-        //DECL_VISIT_PROC( FunctionCall      );
+        DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( Structure         );
 
-        //DECL_VISIT_PROC( FunctionDecl      );
+        DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( BufferDecl        );
         //DECL_VISIT_PROC( TextureDecl       );
         //DECL_VISIT_PROC( SamplerStateDecl  );
@@ -98,6 +107,8 @@ class HLSLAnalyzer : private Visitor
         std::string     entryPoint_;
         ShaderTargets   shaderTarget_   = ShaderTargets::GLSLVertexShader;
         ShaderVersions  shaderVersion_  = ShaderVersions::GLSL110;
+
+        std::map<std::string, IntrinsicClasses> intrinsicMap_;
 
 };
 

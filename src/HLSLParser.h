@@ -86,6 +86,7 @@ class HLSLParser
         BufferDeclIdentPtr              ParseBufferDeclIdent();
         FunctionCallPtr                 ParseFunctionCall();
         StructurePtr                    ParseStructure();
+        VarDeclStmntPtr                 ParseParameter();
 
         GlobalDeclPtr                   ParseGlobalDecl();
         FunctionDeclPtr                 ParseFunctionDecl();
@@ -95,10 +96,12 @@ class HLSLParser
         StructDeclPtr                   ParseStructDecl();
         DirectiveDeclPtr                ParseDirectiveDecl();
 
+        FunctionCallPtr                 ParseAttribute();
         PackOffsetPtr                   ParsePackOffset(bool parseColon = true);
         ExprPtr                         ParseArrayDimension();
         ExprPtr                         ParseInitializer();
         VarSemanticPtr                  ParseVarSemantic();
+        VarTypePtr                      ParseVarType(bool parseVoidType = false);
         VarDeclPtr                      ParseVarDecl();
 
         StmntPtr                        ParseStmnt();
@@ -110,11 +113,14 @@ class HLSLParser
 
         std::vector<VarDeclPtr>         ParseVarDeclList();
         std::vector<VarDeclStmntPtr>    ParseVarDeclStmntList();
+        std::vector<VarDeclStmntPtr>    ParseParameterList();
         std::vector<StmntPtr>           ParseStmntList();
         std::vector<ExprPtr>            ParseArrayDimensionList();
         std::vector<VarSemanticPtr>     ParseVarSemanticList();
+        std::vector<FunctionCallPtr>    ParseAttributeList();
 
         std::string                     ParseRegister(bool parseColon = true);
+        std::string                     ParseSemantic();
 
         /* === Members === */
 

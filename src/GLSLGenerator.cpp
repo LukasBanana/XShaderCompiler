@@ -232,6 +232,11 @@ void GLSLGenerator::Error(const std::string& msg, const AST* ast)
         throw std::runtime_error("code generation error : " + msg);
 }
 
+void GLSLGenerator::ErrorInvalidNumArgs(const std::string& functionName, const AST* ast)
+{
+    Error("invalid number of arguments for " + functionName, ast);
+}
+
 void GLSLGenerator::BeginLn()
 {
     writer_.BeginLine();
@@ -458,6 +463,40 @@ IMPLEMENT_VISIT_PROC(Structure)
 
 /* --- Global declarations --- */
 
+IMPLEMENT_VISIT_PROC(FunctionDecl)
+{
+    Line(ast);
+
+    /* Write attributes */
+    for (auto& attrib : ast->attribs)
+        VisitAttribute(attrib.get());
+
+    /* Write function header */
+    BeginLn();
+    {
+        if (ast->flags(FunctionDecl::isEntryPoint))
+            Write("void main()");
+        else
+        {
+            Visit(ast->returnType);
+            Write(" " + ast->name + "(");
+
+            for (size_t i = 0; i < ast->parameters.size(); ++i)
+            {
+                VisitParameter(ast->parameters[i].get());
+                if (i + 1 < ast->parameters.size())
+                    Write(", ");
+            }
+
+            Write(")");
+        }
+    }
+    EndLn();
+
+    /* Write function body */
+    Visit(ast->codeBlock);
+}
+
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     /* Write uniform buffer header */
@@ -561,6 +600,58 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 }
 
 #undef IMPLEMENT_VISIT_PROC
+
+/* --- Helper functions for code generation --- */
+
+void GLSLGenerator::VisitAttribute(FunctionCall* ast)
+{
+    const auto& name = ast->name;
+
+    if (name == "numthreads")
+        WriteAttributeNumThreads(ast);
+    //else if (name == ...)
+    //    ...
+}
+
+void GLSLGenerator::WriteAttributeNumThreads(FunctionCall* ast)
+{
+    if (ast->arguments.size() == 3)
+    {
+        BeginLn();
+        {
+            Write("layout(");
+
+            Write("local_size_x = ");
+            Visit(ast->arguments[0]);
+
+            Write("local_size_y = ");
+            Visit(ast->arguments[1]);
+
+            Write("local_size_z = ");
+            Visit(ast->arguments[2]);
+
+            Write(") in;");
+        }
+        EndLn();
+    }
+    else
+        ErrorInvalidNumArgs("\"numthreads\" attribute", ast);
+}
+
+void GLSLGenerator::VisitParameter(VarDeclStmnt* ast)
+{
+    if (ast->typeModifier == "const")
+        Write(ast->typeModifier + " ");
+
+    Visit(ast->varType);
+    Write(" ");
+
+    if (ast->varDecls.size() == 1)
+        Visit(ast->varDecls[0]);
+    else
+        Error("invalid number of variables in function parameter", ast);
+}
+
 
 /*
  * SemanticStage structure

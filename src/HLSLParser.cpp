@@ -154,6 +154,20 @@ StructurePtr HLSLParser::ParseStructure()
     return ast;
 }
 
+VarDeclStmntPtr HLSLParser::ParseParameter()
+{
+    auto ast = Make<VarDeclStmnt>();
+
+    /* Parse parameter as single variable declaration */
+    if (Is(Tokens::InputModifier))
+        ast->commonModifiers.push_back(AcceptIt()->Spell());
+
+    ast->varType = ParseVarType();
+    ast->varDecls.push_back(ParseVarDecl());
+
+    return ast;
+}
+
 /* --- Global declarations --- */
 
 GlobalDeclPtr HLSLParser::ParseGlobalDecl()
@@ -180,7 +194,17 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl()
 {
     auto ast = Make<FunctionDecl>();
 
-    AcceptIt();//!!!
+    /* Parse function header */
+    ast->attribs = ParseAttributeList();
+    ast->returnType = ParseVarType(true);
+    ast->name = Accept(Tokens::Ident)->Spell();
+    ast->parameters = ParseParameterList();
+    
+    if (Is(Tokens::Colon))
+        ast->semantic = ParseSemantic();
+
+    /* Parse function body */
+    ast->codeBlock = ParseCodeBlock();
 
     return ast;
 }
@@ -241,6 +265,38 @@ DirectiveDeclPtr HLSLParser::ParseDirectiveDecl()
 
 /* --- Variables --- */
 
+FunctionCallPtr HLSLParser::ParseAttribute()
+{
+    auto ast = Make<FunctionCall>();
+
+    Accept(Tokens::LParen);
+
+    ast->name = Accept(Tokens::Ident)->Spell();
+
+    if (Is(Tokens::LBracket))
+    {
+        AcceptIt();
+
+        if (!Is(Tokens::RBracket))
+        {
+            while (true)
+            {
+                ast->arguments.push_back(ParseExpr());
+                if (Is(Tokens::Comma))
+                    AcceptIt();
+                else
+                    break;
+            }
+        }
+
+        Accept(Tokens::RBracket);
+    }
+
+    Accept(Tokens::RParen);
+
+    return ast;
+}
+
 PackOffsetPtr HLSLParser::ParsePackOffset(bool parseColon)
 {
     auto ast = Make<PackOffset>();
@@ -295,6 +351,27 @@ VarSemanticPtr HLSLParser::ParseVarSemantic()
     return ast;
 }
 
+VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
+{
+    auto ast = Make<VarType>();
+
+    if (Is(Tokens::Void))
+    {
+        if (parseVoidType)
+            ast->baseType = AcceptIt()->Spell();
+        else
+            Error("'void' type not allowed in this context");
+    }
+    else if (Is(Tokens::Ident) || Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType) || Is(Tokens::Texture) || Is(Tokens::SamplerState))
+        ast->baseType = AcceptIt()->Spell();
+    else if (Is(Tokens::Struct))
+        ast->structType = ParseStructure();
+    else
+        ErrorUnexpected("expected type specifier");
+
+    return ast;
+}
+
 VarDeclPtr HLSLParser::ParseVarDecl()
 {
     auto ast = Make<VarDecl>();
@@ -317,6 +394,7 @@ StmntPtr HLSLParser::ParseStmnt()
     #if 1//!!!
     while (!Is(Tokens::Semicolon))
         AcceptIt();
+    AcceptIt();
     #endif
     //...
     return nullptr;
@@ -342,7 +420,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
                 break;
             }
             else
-                ast->storageModifiers.push_back(ident);
+                ast->commonModifiers.push_back(ident);
         }
         else if (Is(Tokens::Struct))
         {
@@ -351,7 +429,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
             ast->varType->structType = ParseStructure();
             break;
         }
-        else if (Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType))
+        else if (Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType) || Is(Tokens::Texture) || Is(Tokens::SamplerState))
         {
             /* Parse base variable type */
             ast->varType = Make<VarType>();
@@ -410,6 +488,30 @@ std::vector<VarDeclStmntPtr> HLSLParser::ParseVarDeclStmntList()
     return members;
 }
 
+std::vector<VarDeclStmntPtr> HLSLParser::ParseParameterList()
+{
+    std::vector<VarDeclStmntPtr> parameters;
+
+    Accept(Tokens::LBracket);
+
+    /* Parse all variable declaration statements */
+    if (!Is(Tokens::RBracket))
+    {
+        while (true)
+        {
+            parameters.push_back(ParseParameter());
+            if (Is(Tokens::Comma))
+                AcceptIt();
+            else
+                break;
+        }
+    }
+
+    Accept(Tokens::RBracket);
+
+    return parameters;
+}
+
 std::vector<StmntPtr> HLSLParser::ParseStmntList()
 {
     std::vector<StmntPtr> stmnts;
@@ -440,6 +542,16 @@ std::vector<VarSemanticPtr> HLSLParser::ParseVarSemanticList()
     return semantics;
 }
 
+std::vector<FunctionCallPtr> HLSLParser::ParseAttributeList()
+{
+    std::vector<FunctionCallPtr> attribs;
+
+    while (Is(Tokens::LParen))
+        attribs.push_back(ParseAttribute());
+
+    return attribs;
+}
+
 /* --- Others --- */
 
 std::string HLSLParser::ParseRegister(bool parseColon)
@@ -456,6 +568,12 @@ std::string HLSLParser::ParseRegister(bool parseColon)
     Accept(Tokens::RBracket);
 
     return registerName;
+}
+
+std::string HLSLParser::ParseSemantic()
+{
+    Accept(Tokens::Colon);
+    return Accept(Tokens::Ident)->Spell();
 }
 
 

@@ -338,7 +338,7 @@ struct SwitchStmnt : public Stmnt
 struct VarDeclStmnt : public Stmnt
 {
     AST_INTERFACE(VarDeclStmnt);
-    std::vector<std::string>    storageModifiers; // storage classes or interpolation modifiers
+    std::vector<std::string>    commonModifiers; // storage classes, interpolation modifiers or input modifiers,
     std::string                 typeModifier; // may be empty
     VarTypePtr                  varType;
     std::vector<VarDeclPtr>     varDecls;

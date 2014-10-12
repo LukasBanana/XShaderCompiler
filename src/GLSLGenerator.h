@@ -70,6 +70,7 @@ class GLSLGenerator : private Visitor
         void EstablishMaps();
 
         void Error(const std::string& msg, const AST* ast = nullptr);
+        void ErrorInvalidNumArgs(const std::string& functionName, const AST* ast = nullptr);
 
         void BeginLn();
         void EndLn();
@@ -112,7 +113,7 @@ class GLSLGenerator : private Visitor
         //! Returns true if the target version is greater than or equal to the specified version number.
         bool IsVersion(int version) const;
 
-        /* === Visitor implementation === */
+        /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
@@ -120,7 +121,7 @@ class GLSLGenerator : private Visitor
         //DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( Structure         );
 
-        //DECL_VISIT_PROC( FunctionDecl      );
+        DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( BufferDecl        );
         //DECL_VISIT_PROC( TextureDecl       );
         //DECL_VISIT_PROC( SamplerStateDecl  );
@@ -157,6 +158,13 @@ class GLSLGenerator : private Visitor
         DECL_VISIT_PROC( VarType           );
         DECL_VISIT_PROC( VarIdent          );
         DECL_VISIT_PROC( VarDecl           );
+
+        /* --- Helper functions for code generation --- */
+
+        void VisitAttribute(FunctionCall* ast);
+        void WriteAttributeNumThreads(FunctionCall* ast);
+
+        void VisitParameter(VarDeclStmnt* ast);
 
         /* === Members === */
 

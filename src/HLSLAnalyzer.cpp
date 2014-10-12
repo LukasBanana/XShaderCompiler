@@ -16,6 +16,7 @@ namespace HTLib
 HLSLAnalyzer::HLSLAnalyzer(Logger* log) :
     log_{ log }
 {
+    EstablishMaps();
 }
 
 bool HLSLAnalyzer::DecorateAST(
@@ -46,6 +47,21 @@ bool HLSLAnalyzer::DecorateAST(
  * ======= Private: =======
  */
 
+void HLSLAnalyzer::EstablishMaps()
+{
+    intrinsicMap_ = std::map<std::string, IntrinsicClasses>
+    {
+        { "InterlockedAdd",             IntrinsicClasses::Interlocked },
+        { "InterlockedAnd",             IntrinsicClasses::Interlocked },
+        { "InterlockedOr",              IntrinsicClasses::Interlocked },
+        { "InterlockedXor",             IntrinsicClasses::Interlocked },
+        { "InterlockedMin",             IntrinsicClasses::Interlocked },
+        { "InterlockedMax",             IntrinsicClasses::Interlocked },
+        { "InterlockedCompareExchange", IntrinsicClasses::Interlocked },
+        { "InterlockedExchange",        IntrinsicClasses::Interlocked },
+    };
+}
+
 void HLSLAnalyzer::Error(const std::string& msg, const AST* ast)
 {
     hasErrors_ = true;
@@ -75,6 +91,30 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
         Visit(stmnt);
 }
 
+IMPLEMENT_VISIT_PROC(FunctionCall)
+{
+    /* Check if a specific intrinsic is used */
+    if (ast->name == "mul")
+        program_->flags << Program::mulIntrinsicUsed;
+    else
+    {
+        auto it = intrinsicMap_.find(ast->name);
+        if (it != intrinsicMap_.end())
+        {
+            switch (it->second)
+            {
+                case IntrinsicClasses::Interlocked:
+                    program_->flags << Program::interlockedIntrinsicsUsed;
+                    break;
+            }
+        }
+    }
+
+    /* Analyze function arguments */
+    for (auto& arg : ast->arguments)
+        Visit(arg);
+}
+
 IMPLEMENT_VISIT_PROC(Structure)
 {
     for (auto& varDecl : ast->members)
@@ -82,6 +122,21 @@ IMPLEMENT_VISIT_PROC(Structure)
 }
 
 /* --- Global declarations --- */
+
+IMPLEMENT_VISIT_PROC(FunctionDecl)
+{
+    if (ast->name == entryPoint_)
+        ast->flags << FunctionDecl::isEntryPoint;
+
+    for (auto& attrib : ast->attribs)
+        Visit(attrib);
+
+    Visit(ast->returnType);
+    for (auto& param : ast->parameters)
+        Visit(param);
+
+    Visit(ast->codeBlock);
+}
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
@@ -102,13 +157,13 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     Visit(ast->varType);
-
     for (auto& varDecl : ast->varDecls)
         Visit(varDecl);
 }
 
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 {
+    // do nothing
 }
 
 /* --- Expressions --- */
@@ -119,10 +174,12 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 
 IMPLEMENT_VISIT_PROC(PackOffset)
 {
+    // do nothing
 }
 
 IMPLEMENT_VISIT_PROC(VarSemantic)
 {
+    // do nothing
 }
 
 IMPLEMENT_VISIT_PROC(VarType)
@@ -139,10 +196,18 @@ IMPLEMENT_VISIT_PROC(VarType)
 
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
+    for (auto& index : ast->arrayIndices)
+        Visit(index);
+    Visit(ast->next);
 }
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
+    for (auto& dim : ast->arrayDims)
+        Visit(dim);
+    for (auto& semantic : ast->semantics)
+        Visit(semantic);
+    Visit(ast->initializer);
 }
 
 #undef IMPLEMENT_VISIT_PROC

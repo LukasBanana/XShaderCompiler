@@ -205,7 +205,7 @@ CTRL_TRANSFER_STMNT	: 'break'
 
 return_type		: var_type
 				| VOID;
-function_decl	: attribute_list? return_type IDENT '(' parameter_list ')' SEMANTIC? code_block;
+function_decl	: attribute_list? return_type IDENT '(' parameter_list ')' semantic? code_block;
 
 INPUT_MODIFIER	: 'in'
 				| 'out'
@@ -219,7 +219,7 @@ INTERP_MODIFIER		: 'linear'
 					| 'sample';
 
 parameter_list	: ( epsilion | parameter ( ',' parameter )* );
-parameter		: INPUT_MODIFIER? var_type IDENT SEMANTIC? INTERP_MODIFIER? initializer?;
+parameter		: INPUT_MODIFIER? var_type IDENT semantic? INTERP_MODIFIER? initializer?;
 
 // Buffer declaration
 

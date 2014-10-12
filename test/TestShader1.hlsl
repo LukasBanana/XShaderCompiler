@@ -46,12 +46,20 @@ VertexOut VS(VertexIn inp)
 
 // Pixel shader
 
-Texture2D tex : register(t0);
-SamplerState samplerState : register(s0);
+/*Texture2D tex : register(t0);
+SamplerState samplerState : register(s0);*/
 
 float4 PS(VertexOut inp) : SV_Target0
 {
 	float4 diffuse = tex.Sample(samplerState, inp.texCoord);
 	return inp.color * diffuse;
+}
+
+// Compute shader
+
+//[numthreads(10, 1, 1)]
+void CS(uint3 threadID : SV_DispatchThreadID)
+{
+	//...
 }
 

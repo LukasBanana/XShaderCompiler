@@ -140,7 +140,8 @@ class Visitor
         
         template <typename T> void Visit(T ast, void* args = nullptr)
         {
-            ast->Visit(this, args);
+            if (ast)
+                ast->Visit(this, args);
         }
 
 };
