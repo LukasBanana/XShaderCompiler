@@ -102,10 +102,10 @@ bool GLSLGenerator::GenerateCode(
         /* Visit program AST */
         Visit(program);
     }
-    catch (const std::exception& err)
+    catch (const std::string& err)
     {
         if (log_)
-            log_->Error(err.what());
+            log_->Error(err);
         return false;
     }
 
@@ -122,12 +122,12 @@ void GLSLGenerator::EstablishMaps()
     typeMap_ = std::map<std::string, std::string>
     {
         /* Scalar types */
-        { "bool",   "bool"  },
-        { "int",    "int"   },
-        { "uint",   "uint"  },
-        { "half",   "float" },
-        { "float",  "float" },
-        { "double", "dvec"  },
+        { "bool",   "bool"   },
+        { "int",    "int"    },
+        { "uint",   "uint"   },
+        { "half",   "float"  },
+        { "float",  "float"  },
+        { "double", "double" },
 
         /* Vector types */
         { "bool2",   "bvec2" },
@@ -227,9 +227,9 @@ void GLSLGenerator::EstablishMaps()
 void GLSLGenerator::Error(const std::string& msg, const AST* ast)
 {
     if (ast)
-        throw std::runtime_error("code generation error (" + ast->pos.ToString() + ") : " + msg);
+        throw std::string("code generation error (" + ast->pos.ToString() + ") : " + msg);
     else
-        throw std::runtime_error("code generation error : " + msg);
+        throw std::string("code generation error : " + msg);
 }
 
 void GLSLGenerator::ErrorInvalidNumArgs(const std::string& functionName, const AST* ast)

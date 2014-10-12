@@ -30,14 +30,17 @@ class _HT_EXPORT_ Logger
 
         virtual void Info(const std::string& message)
         {
+            // dummy
         }
 
         virtual void Warning(const std::string& message)
         {
+            // dummy
         }
 
         virtual void Error(const std::string& message)
         {
+            // dummy
         }
 
 };

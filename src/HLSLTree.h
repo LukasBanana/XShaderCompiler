@@ -21,7 +21,14 @@ namespace HTLib
 {
 
 
+/*
+This file contains all node classes for the entire HLSL absract syntax tree.
+For simplicity only structs with public members are used here.
+*/
+
 class Visitor;
+
+/* --- Some helper macros --- */
 
 #define AST_INTERFACE(className)                                \
     className(const SourcePosition& astPos)                     \
