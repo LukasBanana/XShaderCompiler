@@ -98,7 +98,7 @@ class GLSLGenerator : private Visitor
         //! Opens a new scope with '{'.
         void OpenScope();
         //! Closes the current scope with '}'.
-        void CloseScope();
+        void CloseScope(bool semicolon = false);
 
         void ValidateRegisterPrefix(const std::string& registerName, char prefix);
         int RegisterIndex(const std::string& registerName);
@@ -119,16 +119,17 @@ class GLSLGenerator : private Visitor
         /* === Visitor implementation === */
 
         DECL_VISIT_PROC( Program           );
-        /*DECL_VISIT_PROC( CodeBlock         );
-        DECL_VISIT_PROC( Terminal          );
-        DECL_VISIT_PROC( TextureDeclIdent  );
+        DECL_VISIT_PROC( CodeBlock         );
+        //DECL_VISIT_PROC( BufferDeclIdent   );
+        //DECL_VISIT_PROC( FunctionCall      );
+        DECL_VISIT_PROC( Structure         );
 
-        DECL_VISIT_PROC( FunctionDecl      );*/
+        //DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( BufferDecl        );
-        /*DECL_VISIT_PROC( TextureDecl       );
-        DECL_VISIT_PROC( SamplerStateDecl  );
+        //DECL_VISIT_PROC( TextureDecl       );
+        //DECL_VISIT_PROC( SamplerStateDecl  );
         DECL_VISIT_PROC( StructDecl        );
-        DECL_VISIT_PROC( DirectiveDecl     );
+        /*DECL_VISIT_PROC( DirectiveDecl     );
 
         DECL_VISIT_PROC( CodeBlockStmnt    );
         DECL_VISIT_PROC( ForLoopStmnt      );
@@ -141,9 +142,10 @@ class GLSLGenerator : private Visitor
         DECL_VISIT_PROC( AssignSmnt        );
         DECL_VISIT_PROC( FunctionCallStmnt );
         DECL_VISIT_PROC( ReturnStmnt       );
-        DECL_VISIT_PROC( StructDeclStmnt   );
+        DECL_VISIT_PROC( StructDeclStmnt   );*/
+        DECL_VISIT_PROC( CtrlTransferStmnt );
 
-        DECL_VISIT_PROC( LiteralExpr       );
+        /*DECL_VISIT_PROC( LiteralExpr       );
         DECL_VISIT_PROC( BinaryExpr        );
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );

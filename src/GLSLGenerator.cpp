@@ -353,10 +353,10 @@ void GLSLGenerator::OpenScope()
     IncTab();
 }
 
-void GLSLGenerator::CloseScope()
+void GLSLGenerator::CloseScope(bool semicolon)
 {
     DecTab();
-    WriteLn("};");
+    WriteLn(semicolon ? "};" : "}");
 }
 
 void GLSLGenerator::ValidateRegisterPrefix(const std::string& registerName, char prefix)
@@ -418,6 +418,32 @@ IMPLEMENT_VISIT_PROC(Program)
     }
 }
 
+IMPLEMENT_VISIT_PROC(CodeBlock)
+{
+    OpenScope();
+    {
+        for (auto& stmnt : ast->stmnts)
+            Visit(stmnt);
+    }
+    CloseScope();
+}
+
+IMPLEMENT_VISIT_PROC(Structure)
+{
+    bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
+
+    WriteLn("struct " + ast->name);
+    
+    OpenScope();
+    {
+        for (auto& varDecl : ast->members)
+            Visit(varDecl);
+    }
+    CloseScope(semicolon);
+}
+
+/* --- Global declarations --- */
+
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     if (ast->bufferType != "cbuffer")
@@ -443,8 +469,25 @@ IMPLEMENT_VISIT_PROC(BufferDecl)
         for (auto& member : ast->members)
             Visit(member);
     }
-    CloseScope();
+    CloseScope(true);
 }
+
+IMPLEMENT_VISIT_PROC(StructDecl)
+{
+    bool semicolon = true;
+    Visit(ast->structure, &semicolon);
+}
+
+/* --- Statements --- */
+
+IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
+{
+    WriteLn(ast->instruction + ";");
+}
+
+/* --- Expressions --- */
+
+//...
 
 #undef IMPLEMENT_VISIT_PROC
 
