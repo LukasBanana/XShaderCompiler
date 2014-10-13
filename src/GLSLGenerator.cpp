@@ -738,10 +738,10 @@ void GLSLGenerator::WriteAttributeNumThreads(FunctionCall* ast)
             Write("local_size_x = ");
             Visit(ast->arguments[0]);
 
-            Write("local_size_y = ");
+            Write(", local_size_y = ");
             Visit(ast->arguments[1]);
 
-            Write("local_size_z = ");
+            Write(", local_size_z = ");
             Visit(ast->arguments[2]);
 
             Write(") in;");

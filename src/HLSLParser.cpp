@@ -601,8 +601,15 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     auto expr = ParseExpr();
     Accept(Tokens::RBracket);
 
-    /* Parse cast expression if a new expression (without a separate binary operator) follows */
-    if (IsDataType() || Is(Tokens::Ident) || IsLiteral())
+    /*
+    Parse cast expression the expression inside the bracket is a type name
+    (single identifier (for a struct name) or a data type)
+    !!!!!!!!!!!!!!!!!
+    !TODO! -> This must be extended with the contextual analyzer,
+    becauses expressions like "(x)" are no cast expression is "x" is a variable and not a structure!!!
+    !!!!!!!!!!!!!!!!!
+    */
+    if (expr->Type() == AST::Types::TypeNameExpr || expr->Type() == AST::Types::VarAccessExpr)
     {
         /* Return cast expression */
         auto ast = Make<CastExpr>();

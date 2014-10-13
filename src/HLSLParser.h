@@ -69,15 +69,18 @@ class HLSLParser
             return std::make_shared<T>(scanner_.Pos(), args...);
         }
 
+        //! Returns the type of the next token.
         inline Tokens Type() const
         {
             return tkn_->Type();
         }
 
+        //! Returns true if the next token is from the specified type.
         inline bool Is(const Tokens type) const
         {
             return Type() == type;
         }
+        //! Returns true if the next token is from the specified type and has the specified spelling.
         inline bool Is(const Tokens type, const std::string& spell) const
         {
             return Type() == type && tkn_->Spell() == spell;

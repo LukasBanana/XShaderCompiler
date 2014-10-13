@@ -157,6 +157,11 @@ struct BufferDeclIdent : public AST
 //! Function call.
 struct FunctionCall : public AST
 {
+    FLAG_ENUM
+    {
+        FLAG( isSampleFunc, 0 ), // This function is a "Texture.Sample" function.
+        FLAG( isLoadFunc,   1 ), // This function is a "Texture.Load" function.
+    };
     AST_INTERFACE(FunctionCall);
     VarIdentPtr             name;
     std::vector<ExprPtr>    arguments;

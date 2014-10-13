@@ -60,9 +60,14 @@ float4 PS(VertexOut inp) : SV_Target0
 
 // Compute shader
 
-//[numthreads(10, 1, 1)]
+[numthreads(10, 1, 1)]
 void CS(uint3 threadID : SV_DispatchThreadID)
 {
+	// expression tests
+	float x = 3 * (float)-threadID.x;
+	int y = (int)x * 2 + 2 - (int)x;//(x + 0.5);
+	//float a = 1, b = 2 + (a += 4);
+	
 	//...
 }
 
