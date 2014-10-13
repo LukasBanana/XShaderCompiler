@@ -87,6 +87,7 @@ struct AST
         CtrlTransferStmnt,
 
         LiteralExpr,
+        TypeNameExpr,
         BinaryExpr,
         UnaryExpr,
         PostUnaryExpr,
@@ -157,7 +158,7 @@ struct BufferDeclIdent : public AST
 struct FunctionCall : public AST
 {
     AST_INTERFACE(FunctionCall);
-    std::string             name;
+    VarIdentPtr             name;
     std::vector<ExprPtr>    arguments;
 };
 
@@ -397,6 +398,13 @@ struct LiteralExpr : public Expr
     std::string literal;
 };
 
+//! Type name expression (used for simpler cast-expression parsing).
+struct TypeNameExpr : public Expr
+{
+    AST_INTERFACE(TypeNameExpr);
+    std::string typeName;
+};
+
 //! Binary expressions.
 struct BinaryExpr : public Expr
 {
@@ -440,8 +448,8 @@ struct BracketExpr : public Expr
 struct CastExpr : public Expr
 {
     AST_INTERFACE(CastExpr);
-    VarTypePtr  castType;
-    ExprPtr     expr;
+    ExprPtr typeExpr;
+    ExprPtr expr;
 };
 
 //! Variable access expression.
@@ -467,6 +475,11 @@ struct SwitchCase : public AST
 #undef DECL_AST_ALIAS
 #undef FLAG_ENUM
 #undef FLAG
+
+/* --- Helper functions --- */
+
+//! Returns the full variabel identifier name.
+std::string FullVarIdent(const VarIdentPtr& varIdent);
 
 
 } // /namespace HTLib

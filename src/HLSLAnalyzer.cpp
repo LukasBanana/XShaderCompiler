@@ -93,12 +93,14 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
+    auto name = FullVarIdent(ast->name);
+
     /* Check if a specific intrinsic is used */
-    if (ast->name == "mul")
+    if (name == "mul")
         program_->flags << Program::mulIntrinsicUsed;
     else
     {
-        auto it = intrinsicMap_.find(ast->name);
+        auto it = intrinsicMap_.find(name);
         if (it != intrinsicMap_.end())
         {
             switch (it->second)

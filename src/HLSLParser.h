@@ -58,6 +58,11 @@ class HLSLParser
         TokenPtr Accept(const Tokens type, const std::string& spell);
         TokenPtr AcceptIt();
 
+        //! Returns true if the current token is a data type.
+        bool IsDataType() const;
+        //! Returns true if the current token is a literal.
+        bool IsLiteral() const;
+
         //! Makes a new shared pointer of the specified AST node class.
         template <typename T, typename... Args> std::shared_ptr<T> Make(Args&&... args)
         {
@@ -84,7 +89,7 @@ class HLSLParser
 
         CodeBlockPtr                    ParseCodeBlock();
         BufferDeclIdentPtr              ParseBufferDeclIdent();
-        FunctionCallPtr                 ParseFunctionCall();
+        FunctionCallPtr                 ParseFunctionCall(VarIdentPtr varIdent = nullptr);
         StructurePtr                    ParseStructure();
         VarDeclStmntPtr                 ParseParameter();
 
@@ -101,6 +106,7 @@ class HLSLParser
         ExprPtr                         ParseArrayDimension();
         ExprPtr                         ParseInitializer();
         VarSemanticPtr                  ParseVarSemantic();
+        VarIdentPtr                     ParseVarIdent();
         VarTypePtr                      ParseVarType(bool parseVoidType = false);
         VarDeclPtr                      ParseVarDecl();
 
@@ -109,6 +115,14 @@ class HLSLParser
         //statements...
 
         ExprPtr                         ParseExpr();
+        ExprPtr                         ParsePrimaryExpr();
+        LiteralExprPtr                  ParseLiteralExpr();
+        ExprPtr                         ParseTypeNameOrFunctionCallExpr();
+        UnaryExprPtr                    ParseUnaryExpr();
+        ExprPtr                         ParseBracketOrCastExpr();
+        ExprPtr                         ParseVarAccessOrFunctionCallExpr();
+        VarAccessExprPtr                ParseVarAccessExpr(VarIdentPtr varIdent = nullptr);
+        FunctionCallExprPtr             ParseFunctionCallExpr(VarIdentPtr varIdent = nullptr);
         //expressions...
 
         std::vector<VarDeclPtr>         ParseVarDeclList();
@@ -116,6 +130,7 @@ class HLSLParser
         std::vector<VarDeclStmntPtr>    ParseParameterList();
         std::vector<StmntPtr>           ParseStmntList();
         std::vector<ExprPtr>            ParseArrayDimensionList();
+        std::vector<ExprPtr>            ParseArgumentList();
         std::vector<VarSemanticPtr>     ParseVarSemanticList();
         std::vector<FunctionCallPtr>    ParseAttributeList();
 

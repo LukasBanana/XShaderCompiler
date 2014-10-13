@@ -34,7 +34,7 @@ VertexOut VS(VertexIn inp)
 	outp.texCoord	= inp.texCoord;
 	
 	// Per-vertex lighting
-	float3 lightDir = { 0.5, -0.5, 1.0 };
+	float3 lightDir = float3(0.5, -0.5, 1.0);//{ 0.5, -0.5, 1.0 };
 	
 	float NdotL		= dot(normalize(inp.normal), -normalize(lightDir));
 	float shading	= max(0.2, NdotL);

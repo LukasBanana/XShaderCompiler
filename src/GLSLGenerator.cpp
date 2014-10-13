@@ -592,11 +592,29 @@ IMPLEMENT_VISIT_PROC(VarType)
 
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
+    /* Write single identifier */
+    Write(ast->ident);
+
+    /* Write array index expressions */
+    for (auto& index : ast->arrayIndices)
+    {
+        Write("[");
+        Visit(index);
+        Write("]");
+    }
+
+    Visit(ast->next);
 }
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
     Write(ast->name);
+
+    if (ast->initializer)
+    {
+        Write(" = ");
+        Visit(ast->initializer);
+    }
 }
 
 #undef IMPLEMENT_VISIT_PROC
@@ -605,7 +623,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 void GLSLGenerator::VisitAttribute(FunctionCall* ast)
 {
-    const auto& name = ast->name;
+    auto name = FullVarIdent(ast->name);
 
     if (name == "numthreads")
         WriteAttributeNumThreads(ast);

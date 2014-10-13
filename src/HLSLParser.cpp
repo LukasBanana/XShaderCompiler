@@ -106,6 +106,16 @@ TokenPtr HLSLParser::AcceptIt()
     return prevTkn;
 }
 
+bool HLSLParser::IsDataType() const
+{
+    return Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType) || Is(Tokens::Texture) || Is(Tokens::SamplerState);
+}
+
+bool HLSLParser::IsLiteral() const
+{
+    return Is(Tokens::BoolLiteral) || Is(Tokens::IntLiteral) || Is(Tokens::FloatLiteral);
+}
+
 /* ------- Parse functions ------- */
 
 ProgramPtr HLSLParser::ParseProgram()
@@ -136,10 +146,28 @@ BufferDeclIdentPtr HLSLParser::ParseBufferDeclIdent()
     return nullptr;
 }
 
-FunctionCallPtr HLSLParser::ParseFunctionCall()
+FunctionCallPtr HLSLParser::ParseFunctionCall(VarIdentPtr varIdent)
 {
-    //...
-    return nullptr;
+    auto ast = Make<FunctionCall>();
+
+    /* Parse function name (as variable identifier) */
+    if (!varIdent)
+    {
+        if (IsDataType())
+        {
+            varIdent = Make<VarIdent>();
+            varIdent->ident = AcceptIt()->Spell();
+        }
+        else
+            varIdent = ParseVarIdent();
+    }
+
+    ast->name = varIdent;
+
+    /* Parse argument list */
+    ast->arguments = ParseArgumentList();
+
+    return ast;
 }
 
 StructurePtr HLSLParser::ParseStructure()
@@ -271,7 +299,8 @@ FunctionCallPtr HLSLParser::ParseAttribute()
 
     Accept(Tokens::LParen);
 
-    ast->name = Accept(Tokens::Ident)->Spell();
+    ast->name = Make<VarIdent>();
+    ast->name->ident = Accept(Tokens::Ident)->Spell();
 
     if (Is(Tokens::LBracket))
     {
@@ -351,6 +380,24 @@ VarSemanticPtr HLSLParser::ParseVarSemantic()
     return ast;
 }
 
+VarIdentPtr HLSLParser::ParseVarIdent()
+{
+    auto ast = Make<VarIdent>();
+
+    /* Parse variable single identifier */
+    ast->ident = Accept(Tokens::Ident)->Spell();
+    ast->arrayIndices = ParseArrayDimensionList();
+    
+    if (Is(Tokens::Dot))
+    {
+        /* Parse next variable identifier */
+        AcceptIt();
+        ast->next = ParseVarIdent();
+    }
+
+    return ast;
+}
+
 VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
 {
     auto ast = Make<VarType>();
@@ -362,7 +409,7 @@ VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
         else
             Error("'void' type not allowed in this context");
     }
-    else if (Is(Tokens::Ident) || Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType) || Is(Tokens::Texture) || Is(Tokens::SamplerState))
+    else if (Is(Tokens::Ident) || IsDataType())
         ast->baseType = AcceptIt()->Spell();
     else if (Is(Tokens::Struct))
         ast->structType = ParseStructure();
@@ -391,12 +438,17 @@ VarDeclPtr HLSLParser::ParseVarDecl()
 
 StmntPtr HLSLParser::ParseStmnt()
 {
+    /* Determine which kind of statement the next one is */
+    if (IsDataType())
+        return ParseVarDeclStmnt();
+
     #if 1//!!!
     while (!Is(Tokens::Semicolon))
         AcceptIt();
     AcceptIt();
     #endif
     //...
+
     return nullptr;
 }
 
@@ -429,7 +481,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
             ast->varType->structType = ParseStructure();
             break;
         }
-        else if (Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType) || Is(Tokens::Texture) || Is(Tokens::SamplerState))
+        else if (IsDataType())
         {
             /* Parse base variable type */
             ast->varType = Make<VarType>();
@@ -451,7 +503,154 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 
 ExprPtr HLSLParser::ParseExpr()
 {
+    /* Parse primary expression */
+    auto ast = ParsePrimaryExpr();
+
+    /* Parse optional post-unary expression */
+    if (Is(Tokens::UnaryOp))
+    {
+        auto unaryExpr = Make<PostUnaryExpr>();
+        unaryExpr->expr = ast;
+        unaryExpr->op = AcceptIt()->Spell();
+        ast = unaryExpr;
+    }
+
+    /* Parse optional binary expression */
+    if (Is(Tokens::BinaryOp))
+    {
+        auto binExpr = Make<BinaryExpr>();
+
+        binExpr->lhsExpr = ast;
+        binExpr->op = AcceptIt()->Spell();
+        binExpr->rhsExpr = ParseExpr();
+
+        return binExpr;
+    }
+
+    return ast;
+}
+
+ExprPtr HLSLParser::ParsePrimaryExpr()
+{
+    /* Determine which kind of expression the next one is */
+    if (IsLiteral())
+        return ParseLiteralExpr();
+    if (IsDataType())
+        return ParseTypeNameOrFunctionCallExpr();
+    if (Is(Tokens::UnaryOp) || Is(Tokens::BinaryOp, "-"))
+        return ParseUnaryExpr();
+    if (Is(Tokens::LBracket))
+        return ParseBracketOrCastExpr();
+    if (Is(Tokens::Ident))
+        return ParseVarAccessOrFunctionCallExpr();
+
+    ErrorUnexpected("expected primary expression");
     return nullptr;
+}
+
+LiteralExprPtr HLSLParser::ParseLiteralExpr()
+{
+    if (!IsLiteral())
+        ErrorUnexpected("expected literal expression");
+
+    /* Parse literal */
+    auto ast = Make<LiteralExpr>();    
+    ast->literal = AcceptIt()->Spell();
+    return ast;
+}
+
+ExprPtr HLSLParser::ParseTypeNameOrFunctionCallExpr()
+{
+    /* Parse type name */
+    if (!IsDataType())
+        ErrorUnexpected("expected type name or function call expression");
+
+    auto typeName = AcceptIt()->Spell();
+
+    /* Determine which kind of expression this is */
+    if (Is(Tokens::LBracket))
+    {
+        /* Return function call expression */
+        auto varIdent = Make<VarIdent>();
+        varIdent->ident = typeName;
+        return ParseFunctionCallExpr(varIdent);
+    }
+
+    /* Return type name expression */
+    auto ast = Make<TypeNameExpr>();
+    ast->typeName = typeName;
+    return ast;
+}
+
+UnaryExprPtr HLSLParser::ParseUnaryExpr()
+{
+    if (!Is(Tokens::UnaryOp) && !Is(Tokens::BinaryOp, "-"))
+        ErrorUnexpected("expected unary expression operator");
+
+    /* Parse unary expression */
+    auto ast = Make<UnaryExpr>();
+    ast->op = AcceptIt()->Spell();
+    ast->expr = ParsePrimaryExpr();
+    return ast;
+}
+
+ExprPtr HLSLParser::ParseBracketOrCastExpr()
+{
+    /* Parse expression inside the bracket */
+    Accept(Tokens::LBracket);
+    auto expr = ParseExpr();
+    Accept(Tokens::RBracket);
+
+    /* Parse cast expression if a new expression (without a separate binary operator) follows */
+    if (IsDataType() || Is(Tokens::Ident) || IsLiteral())
+    {
+        /* Return cast expression */
+        auto ast = Make<CastExpr>();
+        ast->typeExpr = expr;
+        ast->expr = ParsePrimaryExpr();
+        return ast;
+    }
+
+    /* Return bracket expression */
+    auto ast = Make<BracketExpr>();
+    ast->expr = expr;
+    return ast;
+}
+
+ExprPtr HLSLParser::ParseVarAccessOrFunctionCallExpr()
+{
+    /* Parse variable identifier first (for variables and functions) */
+    auto varIdent = ParseVarIdent();
+    if (Is(Tokens::LBracket))
+        return ParseFunctionCallExpr(varIdent);
+    return ParseVarAccessExpr(varIdent);
+}
+
+VarAccessExprPtr HLSLParser::ParseVarAccessExpr(VarIdentPtr varIdent)
+{
+    auto ast = Make<VarAccessExpr>();
+
+    if (varIdent)
+        ast->varIdent = varIdent;
+    else
+        ast->varIdent = ParseVarIdent();
+
+    /* Parse optional assign expression */
+    if (Is(Tokens::AssignOp))
+    {
+        ast->assignOp = AcceptIt()->Spell();
+        ast->assignExpr = ParseExpr();
+    }
+
+    return ast;
+}
+
+FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr(VarIdentPtr varIdent)
+{
+    /* Parse function call expression */
+    auto ast = Make<FunctionCallExpr>();
+    ast->call = ParseFunctionCall(varIdent);
+    return ast;
 }
 
 /* --- Lists --- */
@@ -530,6 +729,30 @@ std::vector<ExprPtr> HLSLParser::ParseArrayDimensionList()
         arrayDims.push_back(ParseArrayDimension());
 
     return arrayDims;
+}
+
+std::vector<ExprPtr> HLSLParser::ParseArgumentList()
+{
+    std::vector<ExprPtr> arguments;
+
+    Accept(Tokens::LBracket);
+
+    /* Parse all argument expressions */
+    if (!Is(Tokens::RBracket))
+    {
+        while (true)
+        {
+            arguments.push_back(ParseExpr());
+            if (Is(Tokens::Comma))
+                AcceptIt();
+            else
+                break;
+        }
+    }
+
+    Accept(Tokens::RBracket);
+
+    return arguments;
 }
 
 std::vector<VarSemanticPtr> HLSLParser::ParseVarSemanticList()

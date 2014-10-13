@@ -50,8 +50,10 @@ var_ident			: var_single_ident ('.' var_single_ident)*;
 
 // Expressions
 
-expr			: literal
+expr			: primary_expr
 				| binary_expr
+
+primary_expr	: literal
 				| unary_expr
 				| post_unary_expr
 				| function_call_stmnt
@@ -59,11 +61,11 @@ expr			: literal
 				| cast_expr
 				| var_access_expr;
 
-binary_expr		: expr BINARY_OP expr;
-unary_expr		: UNARY_OP expr;
-post_unary_expr	: expr POST_UNARY_OP;
+binary_expr		: primary_expr BINARY_OP primary_expr;
+unary_expr		: UNARY_OP primary_expr;
+post_unary_expr	: primary_expr POST_UNARY_OP;
 bracket_expr	: '(' expr ')';
-cast_expr		: '(' var_type ')' expr;
+cast_expr		: '(' expr ')' primary_expr;
 var_access_expr	: var_ident (ASSIGN_OP expr)?;
 
 // Operators
@@ -185,7 +187,7 @@ var_decl_stmnt			: (STORAGE_CLASS | INTERP_MODIFIER)* TYPE_MODIFIER? var_type va
 
 // Function calls
 
-function_name		: IDENT
+function_name		: var_ident
 					| VECTOR_TYPE
 					| MATRIX_TYPE;
 function_call_stmnt	: function_name '(' argument_list ')';
