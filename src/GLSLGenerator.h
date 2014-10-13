@@ -118,7 +118,7 @@ class GLSLGenerator : private Visitor
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         //DECL_VISIT_PROC( BufferDeclIdent   );
-        //DECL_VISIT_PROC( FunctionCall      );
+        DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( Structure         );
 
         DECL_VISIT_PROC( FunctionDecl      );
@@ -142,7 +142,8 @@ class GLSLGenerator : private Visitor
         DECL_VISIT_PROC( StructDeclStmnt   );*/
         DECL_VISIT_PROC( CtrlTransferStmnt );
 
-        /*DECL_VISIT_PROC( LiteralExpr       );
+        DECL_VISIT_PROC( LiteralExpr       );
+        DECL_VISIT_PROC( TypeNameExpr      );
         DECL_VISIT_PROC( BinaryExpr        );
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
@@ -151,7 +152,7 @@ class GLSLGenerator : private Visitor
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( VarAccessExpr     );
 
-        DECL_VISIT_PROC( SwitchCase        );*/
+        //DECL_VISIT_PROC( SwitchCase        );
 
         DECL_VISIT_PROC( PackOffset        );
         DECL_VISIT_PROC( VarSemantic       );

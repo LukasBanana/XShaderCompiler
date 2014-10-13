@@ -34,7 +34,7 @@ VertexOut VS(VertexIn inp)
 	outp.texCoord	= inp.texCoord;
 	
 	// Per-vertex lighting
-	float3 lightDir = float3(0.5, -0.5, 1.0);//{ 0.5, -0.5, 1.0 };
+	float3 lightDir = (float3)0.5;//{ 0.5, -0.5, 1.0 };
 	
 	float NdotL		= dot(normalize(inp.normal), -normalize(lightDir));
 	float shading	= max(0.2, NdotL);
@@ -51,7 +51,10 @@ SamplerState samplerState : register(s0);*/
 
 float4 PS(VertexOut inp) : SV_Target0
 {
-	float4 diffuse = tex.Sample(samplerState, inp.texCoord);
+	float3 interpColor = float3(1.0, 0.0, 0.0);
+	
+	float4 diffuse = lerp((float4)1.0, tex.Sample(samplerState, inp.texCoord), inp.position.x);
+	
 	return inp.color * diffuse;
 }
 

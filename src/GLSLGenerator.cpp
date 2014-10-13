@@ -447,6 +447,36 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     CloseScope();
 }
 
+IMPLEMENT_VISIT_PROC(FunctionCall)
+{
+    /* Write function name */
+    auto name = FullVarIdent(ast->name);
+
+    auto it = intrinsicMap_.find(name);
+    if (it != intrinsicMap_.end())
+        Write(it->second);
+    else
+    {
+        auto it = typeMap_.find(name);
+        if (it != typeMap_.end())
+            Write(it->second);
+        else
+            Visit(ast->name);
+    }
+
+    /* Write arguments */
+    Write("(");
+
+    for (size_t i = 0; i < ast->arguments.size(); ++i)
+    {
+        Visit(ast->arguments[i]);
+        if (i + 1 < ast->arguments.size())
+            Write(", ");
+    }
+
+    Write(")");
+}
+
 IMPLEMENT_VISIT_PROC(Structure)
 {
     bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
@@ -561,7 +591,69 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 
 /* --- Expressions --- */
 
-//...
+IMPLEMENT_VISIT_PROC(LiteralExpr)
+{
+    Write(ast->literal);
+}
+
+IMPLEMENT_VISIT_PROC(TypeNameExpr)
+{
+    auto it = typeMap_.find(ast->typeName);
+    if (it != typeMap_.end())
+        Write(it->second);
+    else
+        Write(ast->typeName);
+}
+
+IMPLEMENT_VISIT_PROC(BinaryExpr)
+{
+    Visit(ast->lhsExpr);
+    Write(" " + ast->op + " ");
+    Visit(ast->rhsExpr);
+}
+
+IMPLEMENT_VISIT_PROC(UnaryExpr)
+{
+    Write(ast->op);
+    Visit(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(PostUnaryExpr)
+{
+    Visit(ast->expr);
+    Write(ast->op);
+}
+
+IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+{
+    Visit(ast->call);
+}
+
+IMPLEMENT_VISIT_PROC(BracketExpr)
+{
+    Write("(");
+    Visit(ast->expr);
+    Write(")");
+}
+
+IMPLEMENT_VISIT_PROC(CastExpr)
+{
+    Visit(ast->typeExpr);
+    Write("(");
+    Visit(ast->expr);
+    Write(")");
+}
+
+IMPLEMENT_VISIT_PROC(VarAccessExpr)
+{
+    Visit(ast->varIdent);
+    if (ast->assignExpr)
+    {
+        Write(" " + ast->assignOp + " ");
+        Visit(ast->assignExpr);
+    }
+}
+
 
 /* --- Variables --- */
 
@@ -603,7 +695,11 @@ IMPLEMENT_VISIT_PROC(VarIdent)
         Write("]");
     }
 
-    Visit(ast->next);
+    if (ast->next)
+    {
+        Write(".");
+        Visit(ast->next);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(VarDecl)
