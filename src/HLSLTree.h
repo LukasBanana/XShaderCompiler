@@ -72,6 +72,7 @@ struct AST
         StructDecl,
         DirectiveDecl,
 
+        NullStmnt,
         CodeBlockStmnt,
         ForLoopStmnt,
         WhileLoopStmnt,
@@ -287,6 +288,12 @@ struct VarDecl : public AST
 
 /* --- Statements --- */
 
+//! Null statement.
+struct NullStmnt : public Stmnt
+{
+    AST_INTERFACE(NullStmnt);
+};
+
 //! Code block statement.
 struct CodeBlockStmnt : public Stmnt
 {
@@ -299,10 +306,10 @@ struct ForLoopStmnt : public Stmnt
 {
     AST_INTERFACE(ForLoopStmnt);
     std::vector<FunctionCallPtr>    attribs; // attribute list
-    AssignSmntPtr                   initAssign;
-    VarDeclStmntPtr                 initVarDecl;
+    StmntPtr                        initSmnt;
     ExprPtr                         condition;
     ExprPtr                         iteration;
+    CodeBlockPtr                    codeBlock;
 };
 
 //! 'while'-loop statement.
@@ -330,6 +337,7 @@ struct IfStmnt : public Stmnt
     std::vector<FunctionCallPtr>    attribs; // attribute list
     ExprPtr                         condition;
     CodeBlockPtr                    codeBlock;
+    ElseStmntPtr                    elseStmnt; // may be null
 };
 
 //! 'else' statement.
@@ -343,8 +351,9 @@ struct ElseStmnt : public Stmnt
 struct SwitchStmnt : public Stmnt
 {
     AST_INTERFACE(SwitchStmnt);
-    ExprPtr expr;
-    std::vector<SwitchCasePtr> cases;
+    std::vector<FunctionCallPtr>    attribs; // attribute list
+    ExprPtr                         selector;
+    std::vector<SwitchCasePtr>      cases;
 };
 
 //! Variable declaration statement.

@@ -40,6 +40,7 @@ DECL_PTR( SamplerStateDecl  );
 DECL_PTR( StructDecl        );
 DECL_PTR( DirectiveDecl     );
 
+DECL_PTR( NullStmnt         );
 DECL_PTR( CodeBlockStmnt    );
 DECL_PTR( ForLoopStmnt      );
 DECL_PTR( WhileLoopStmnt    );
@@ -106,6 +107,7 @@ class Visitor
         VISITOR_VISIT_PROC( StructDecl        );
         VISITOR_VISIT_PROC( DirectiveDecl     );
 
+        VISITOR_VISIT_PROC( NullStmnt         );
         VISITOR_VISIT_PROC( CodeBlockStmnt    );
         VISITOR_VISIT_PROC( ForLoopStmnt      );
         VISITOR_VISIT_PROC( WhileLoopStmnt    );

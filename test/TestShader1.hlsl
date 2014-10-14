@@ -66,7 +66,40 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 	// expression tests
 	float x = 3 * (float)-threadID.x;
 	int y = (int)x * 2 + 2 - (int)x;//(x + 0.5);
-	//float a = 1, b = 2 + (a += 4);
+	float a = 1, b = 2 + (a += 4);
+	
+	// Loop test
+	[unroll(4)]
+	for (int i = 0; i < 10; ++i)
+		for (int y = 0; y < 20; y++)
+		{
+			// Conidition test
+			[branch]
+			if (x > y + 2)
+				i++;
+			else if (x == 2)
+			{
+				i += 4;
+			}
+		}
+	
+	// Switch test
+	switch (x)
+	{
+		case 1:
+		{
+			int x = 5;
+			;
+			;;;
+			{
+				;;;
+			}
+		}
+		case 2:
+			break;
+		default:
+			break;
+	}
 	
 	//...
 }

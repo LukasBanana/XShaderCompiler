@@ -90,11 +90,12 @@ class HLSLParser
 
         ProgramPtr                      ParseProgram();
 
-        CodeBlockPtr                    ParseCodeBlock();
+        CodeBlockPtr                    ParseCodeBlock(bool allowSingleStmnt = false);
         BufferDeclIdentPtr              ParseBufferDeclIdent();
         FunctionCallPtr                 ParseFunctionCall(VarIdentPtr varIdent = nullptr);
         StructurePtr                    ParseStructure();
         VarDeclStmntPtr                 ParseParameter();
+        SwitchCasePtr                   ParseSwitchCase();
 
         GlobalDeclPtr                   ParseGlobalDecl();
         FunctionDeclPtr                 ParseFunctionDecl();
@@ -114,7 +115,18 @@ class HLSLParser
         VarDeclPtr                      ParseVarDecl();
 
         StmntPtr                        ParseStmnt();
+        NullStmntPtr                    ParseNullStmnt();
+        CodeBlockStmntPtr               ParseCodeBlockStmnt();
+        ForLoopStmntPtr                 ParseForLoopStmnt(const std::vector<FunctionCallPtr>& attribs);
+        WhileLoopStmntPtr               ParseWhileLoopStmnt(const std::vector<FunctionCallPtr>& attribs);
+        DoWhileLoopStmntPtr             ParseDoWhileLoopStmnt(const std::vector<FunctionCallPtr>& attribs);
+        IfStmntPtr                      ParseIfStmnt(const std::vector<FunctionCallPtr>& attribs);
+        ElseStmntPtr                    ParseElseStmnt();
+        SwitchStmntPtr                  ParseSwitchStmnt(const std::vector<FunctionCallPtr>& attribs);
+        StmntPtr                        ParseStructDeclOrVarDeclStmnt();
+        CtrlTransferStmntPtr            ParseCtrlTransferStmnt();
         VarDeclStmntPtr                 ParseVarDeclStmnt();
+        ReturnStmntPtr                  ParseReturnStmnt();
         //statements...
 
         ExprPtr                         ParseExpr();
@@ -136,6 +148,7 @@ class HLSLParser
         std::vector<ExprPtr>            ParseArgumentList();
         std::vector<VarSemanticPtr>     ParseVarSemanticList();
         std::vector<FunctionCallPtr>    ParseAttributeList();
+        std::vector<SwitchCasePtr>      ParseSwitchCaseList();
 
         std::string                     ParseRegister(bool parseColon = true);
         std::string                     ParseSemantic();

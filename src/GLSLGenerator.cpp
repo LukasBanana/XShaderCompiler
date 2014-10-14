@@ -596,6 +596,22 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     EndLn();
 }
 
+IMPLEMENT_VISIT_PROC(ReturnStmnt)
+{
+    BeginLn();
+
+    Write("return");
+
+    if (ast->expr)
+    {
+        Write(" ");
+        Visit(ast->expr);
+    }
+
+    Write(";");
+    EndLn();
+}
+
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 {
     WriteLn(ast->instruction + ";");

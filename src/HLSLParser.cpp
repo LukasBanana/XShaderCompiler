@@ -128,14 +128,19 @@ ProgramPtr HLSLParser::ParseProgram()
     return ast;
 }
 
-CodeBlockPtr HLSLParser::ParseCodeBlock()
+CodeBlockPtr HLSLParser::ParseCodeBlock(bool allowSingleStmnt)
 {
     auto ast = Make<CodeBlock>();
 
     /* Parse statement list */
-    Accept(Tokens::LCurly);
-    ast->stmnts = ParseStmntList();
-    Accept(Tokens::RCurly);
+    if (!allowSingleStmnt || Is(Tokens::LCurly))
+    {
+        Accept(Tokens::LCurly);
+        ast->stmnts = ParseStmntList();
+        Accept(Tokens::RCurly);
+    }
+    else
+        ast->stmnts.push_back(ParseStmnt());
 
     return ast;
 }
@@ -192,6 +197,27 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
 
     ast->varType = ParseVarType();
     ast->varDecls.push_back(ParseVarDecl());
+
+    return ast;
+}
+
+SwitchCasePtr HLSLParser::ParseSwitchCase()
+{
+    auto ast = Make<SwitchCase>();
+
+    /* Parse switch case header */
+    if (Is(Tokens::Case))
+    {
+        Accept(Tokens::Case);
+        ast->expr = ParseExpr();
+    }
+    else
+        Accept(Tokens::Default);
+    Accept(Tokens::Colon);
+
+    /* Parse switch case statement list */
+    while (!Is(Tokens::Case) && !Is(Tokens::Default) && !Is(Tokens::RCurly))
+        ast->stmnts.push_back(ParseStmnt());
 
     return ast;
 }
@@ -278,8 +304,10 @@ SamplerStateDeclPtr HLSLParser::ParseSamplerStateDecl()
 StructDeclPtr HLSLParser::ParseStructDecl()
 {
     auto ast = Make<StructDecl>();
+    
     ast->structure = ParseStructure();
     Accept(Tokens::Semicolon);
+
     return ast;
 }
 
@@ -438,7 +466,40 @@ VarDeclPtr HLSLParser::ParseVarDecl()
 
 StmntPtr HLSLParser::ParseStmnt()
 {
+    /* Parse optional attributes */
+    std::vector<FunctionCallPtr> attribs;
+    if (Is(Tokens::LParen))
+        attribs = ParseAttributeList();
+
     /* Determine which kind of statement the next one is */
+    switch (Type())
+    {
+        case Tokens::Semicolon:
+            return ParseNullStmnt();
+        case Tokens::LCurly:
+            return ParseCodeBlockStmnt();
+        case Tokens::Return:
+            return ParseReturnStmnt();
+        //case Tokens::Ident):
+        //    return ParseVarDeclOrVarAccessOrFunctionCallStmnt();
+        case Tokens::For:
+            return ParseForLoopStmnt(attribs);
+        case Tokens::While:
+            return ParseWhileLoopStmnt(attribs);
+        case Tokens::Do:
+            return ParseDoWhileLoopStmnt(attribs);
+        case Tokens::If:
+            return ParseIfStmnt(attribs);
+        case Tokens::Switch:
+            return ParseSwitchStmnt(attribs);
+        case Tokens::CtrlTransfer:
+            return ParseCtrlTransferStmnt();
+        case Tokens::Struct:
+            return ParseStructDeclOrVarDeclStmnt();
+        default:
+            break;
+    }
+
     if (IsDataType())
         return ParseVarDeclStmnt();
 
@@ -450,6 +511,179 @@ StmntPtr HLSLParser::ParseStmnt()
     //...
 
     return nullptr;
+}
+
+NullStmntPtr HLSLParser::ParseNullStmnt()
+{
+    /* Parse null statement */
+    auto ast = Make<NullStmnt>();
+    Accept(Tokens::Semicolon);
+    return ast;
+}
+
+CodeBlockStmntPtr HLSLParser::ParseCodeBlockStmnt()
+{
+    /* Parse code block statement */
+    auto ast = Make<CodeBlockStmnt>();
+    ast->codeBlock = ParseCodeBlock();
+    return ast;
+}
+
+ForLoopStmntPtr HLSLParser::ParseForLoopStmnt(const std::vector<FunctionCallPtr>& attribs)
+{
+    auto ast = Make<ForLoopStmnt>();
+    ast->attribs = attribs;
+
+    /* Parse loop init */
+    Accept(Tokens::For);
+    Accept(Tokens::LBracket);
+
+    ast->initSmnt = ParseStmnt();
+
+    /* Parse loop condition */
+    if (!Is(Tokens::Semicolon))
+        ast->condition = ParseExpr();
+    Accept(Tokens::Semicolon);
+
+    /* Parse loop iteration */
+    if (!Is(Tokens::RBracket))
+        ast->iteration = ParseExpr();
+    Accept(Tokens::RBracket);
+
+    /* Parse loop body */
+    ast->codeBlock = ParseCodeBlock(true);
+
+    return ast;
+}
+
+WhileLoopStmntPtr HLSLParser::ParseWhileLoopStmnt(const std::vector<FunctionCallPtr>& attribs)
+{
+    auto ast = Make<WhileLoopStmnt>();
+    ast->attribs = attribs;
+
+    /* Parse loop condition */
+    Accept(Tokens::While);
+
+    Accept(Tokens::LBracket);
+    ast->condition = ParseExpr();
+    Accept(Tokens::RBracket);
+
+    /* Parse loop body */
+    ast->codeBlock = ParseCodeBlock(true);
+
+    return ast;
+}
+
+DoWhileLoopStmntPtr HLSLParser::ParseDoWhileLoopStmnt(const std::vector<FunctionCallPtr>& attribs)
+{
+    auto ast = Make<DoWhileLoopStmnt>();
+    ast->attribs = attribs;
+
+    /* Parse loop body */
+    Accept(Tokens::Do);
+    ast->codeBlock = ParseCodeBlock();
+
+    /* Parse loop condition */
+    Accept(Tokens::While);
+
+    Accept(Tokens::LBracket);
+    ast->condition = ParseExpr();
+    Accept(Tokens::RBracket);
+
+    Accept(Tokens::Semicolon);
+
+    return ast;
+}
+
+IfStmntPtr HLSLParser::ParseIfStmnt(const std::vector<FunctionCallPtr>& attribs)
+{
+    auto ast = Make<IfStmnt>();
+    ast->attribs = attribs;
+
+    /* Parse if condition */
+    Accept(Tokens::If);
+
+    Accept(Tokens::LBracket);
+    ast->condition = ParseExpr();
+    Accept(Tokens::RBracket);
+
+    /* Parse if body */
+    ast->codeBlock = ParseCodeBlock(true);
+
+    /* Parse optional else statement */
+    if (Is(Tokens::Else))
+        ast->elseStmnt = ParseElseStmnt();
+
+    return ast;
+}
+
+ElseStmntPtr HLSLParser::ParseElseStmnt()
+{
+    /* Parse else statment */
+    auto ast = Make<ElseStmnt>();
+
+    Accept(Tokens::Else);
+    ast->codeBlock = ParseCodeBlock(true);
+
+    return ast;
+}
+
+SwitchStmntPtr HLSLParser::ParseSwitchStmnt(const std::vector<FunctionCallPtr>& attribs)
+{
+    auto ast = Make<SwitchStmnt>();
+    ast->attribs = attribs;
+
+    /* Parse switch selector */
+    Accept(Tokens::Switch);
+
+    Accept(Tokens::LBracket);
+    ast->selector = ParseExpr();
+    Accept(Tokens::RBracket);
+
+    /* Parse switch cases */
+    Accept(Tokens::LCurly);
+    ast->cases = ParseSwitchCaseList();
+    Accept(Tokens::RCurly);
+
+    return ast;
+}
+
+StmntPtr HLSLParser::ParseStructDeclOrVarDeclStmnt()
+{
+    /* Parse structure declaration statement */
+    auto ast = Make<StructDeclStmnt>();
+    
+    ast->structure = ParseStructure();
+
+    if (!Is(Tokens::Semicolon))
+    {
+        /* Parse variable declaration with previous structure type */
+        auto varDeclStmnt = Make<VarDeclStmnt>();
+
+        varDeclStmnt->varType = Make<VarType>();
+        varDeclStmnt->varType->structType = ast->structure;
+        
+        /* Parse variable declarations */
+        varDeclStmnt->varDecls = ParseVarDeclList();
+        Accept(Tokens::Semicolon);
+
+        return varDeclStmnt;
+    }
+    else
+        Accept(Tokens::Semicolon);
+
+    return ast;
+}
+
+CtrlTransferStmntPtr HLSLParser::ParseCtrlTransferStmnt()
+{
+    /* Parse control transfer statement */
+    auto ast = Make<CtrlTransferStmnt>();
+    
+    ast->instruction = Accept(Tokens::CtrlTransfer)->Spell();
+    Accept(Tokens::Semicolon);
+
+    return ast;
 }
 
 VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
@@ -494,6 +728,20 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 
     /* Parse variable declarations */
     ast->varDecls = ParseVarDeclList();
+    Accept(Tokens::Semicolon);
+
+    return ast;
+}
+
+ReturnStmntPtr HLSLParser::ParseReturnStmnt()
+{
+    auto ast = Make<ReturnStmnt>();
+
+    Accept(Tokens::Return);
+
+    if (!Is(Tokens::Semicolon))
+        ast->expr = ParseExpr();
+
     Accept(Tokens::Semicolon);
 
     return ast;
@@ -609,7 +857,9 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     becauses expressions like "(x)" are no cast expression is "x" is a variable and not a structure!!!
     !!!!!!!!!!!!!!!!!
     */
-    if (expr->Type() == AST::Types::TypeNameExpr || expr->Type() == AST::Types::VarAccessExpr)
+    if ( expr->Type() == AST::Types::TypeNameExpr ||
+         ( expr->Type() == AST::Types::VarAccessExpr &&
+           dynamic_cast<VarAccessExpr*>(expr.get())->assignExpr == nullptr ) )
     {
         /* Return cast expression */
         auto ast = Make<CastExpr>();
@@ -780,6 +1030,16 @@ std::vector<FunctionCallPtr> HLSLParser::ParseAttributeList()
         attribs.push_back(ParseAttribute());
 
     return attribs;
+}
+
+std::vector<SwitchCasePtr> HLSLParser::ParseSwitchCaseList()
+{
+    std::vector<SwitchCasePtr> cases;
+
+    while (Is(Tokens::Case) || Is(Tokens::Default))
+        cases.push_back(ParseSwitchCase());
+
+    return cases;
 }
 
 /* --- Others --- */

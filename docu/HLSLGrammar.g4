@@ -33,7 +33,7 @@ stmnt		: ';'
 			| var_decl_stmnt ';'
 			| assign_stmnt ';'
 			| function_call_stmnt ';'
-			| return_stmnt ';'
+			| return_stmnt
 			| struct_decl ';'
 			| CTRL_TRANSFER_STMNT;
 
@@ -105,10 +105,7 @@ UNARY_OP		: POST_UNARY_OP
 
 // Loop statements
 
-for_loop_stmnt	: attribute_list? 'for' '(' for_init? ';' expr? ';' expr? ')' code_block;
-for_init		: assign_stmnt
-				| var_decl_stmnt;
-
+for_loop_stmnt		: attribute_list? 'for' '(' stmnt? ';' expr? ';' expr? ')' code_block;
 while_loop_stmnt	: attribute_list? 'while' '(' expr ')' code_body;
 do_while_loop_stmnt	: attribute_list? 'do' code_block 'while' '(' expr ')';
 
@@ -117,10 +114,10 @@ do_while_loop_stmnt	: attribute_list? 'do' code_block 'while' '(' expr ')';
 if_stmnt	: attribute_list? 'if' '(' expr ')' code_body else_stmnt?;
 else_stmnt	: 'else' code_body;
 
-switch_stmnt		: 'switch' '(' expr ')' '{' switch_case_list '}';
+switch_stmnt		: attribute_list? 'switch' '(' expr ')' '{' switch_case_list '}';
 switch_case_list	: switch_case* switch_default_case?;
 switch_case			: 'case' expr ':' stmnt_list;
-switch_default_case		: 'default' ':' stmnt_list;
+switch_default_case	: 'default' ':' stmnt_list;
 
 // Variable declaration
 
@@ -197,7 +194,7 @@ argument_list		: ( epsilion | expr ( ',' expr )* );
 
 assign_stmnt	: var_ident ASSIGN_OP expr;
 
-return_stmnt	: 'return' expr?;
+return_stmnt	: 'return' expr? ';';
 
 CTRL_TRANSFER_STMNT	: 'break'
 					| 'continue'
