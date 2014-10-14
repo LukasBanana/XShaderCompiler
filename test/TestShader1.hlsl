@@ -7,7 +7,7 @@
 cbuffer VertexParam : register(b0)
 {
 	float4x4 wvpMatrix : packoffset(c0);
-//	nointerpolation float3 normal	: NORMAL : packoffset(c4.x), test : packoffset(c5.x);
+	nointerpolation float3 normal	: NORMAL : packoffset(c4.x), test : packoffset(c5.x);
 };
 
 struct VertexIn
@@ -83,6 +83,12 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 				i += 4;
 			} else { int z; x = y; }
 		}
+	
+	while (test(x))
+		do {
+			test2(y, x);
+		} while ((bool)x == true);
+		//} while ((bool)(x) == true);
 	
 	// Switch test
 	switch (x)

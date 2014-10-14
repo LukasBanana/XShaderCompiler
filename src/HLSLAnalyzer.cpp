@@ -128,7 +128,10 @@ IMPLEMENT_VISIT_PROC(Structure)
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (ast->name == entryPoint_)
+    {
         ast->flags << FunctionDecl::isEntryPoint;
+        ast->flags << FunctionDecl::isUsed;
+    }
 
     for (auto& attrib : ast->attribs)
         Visit(attrib);
