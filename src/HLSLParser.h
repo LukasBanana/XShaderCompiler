@@ -90,7 +90,7 @@ class HLSLParser
 
         ProgramPtr                      ParseProgram();
 
-        CodeBlockPtr                    ParseCodeBlock(bool allowSingleStmnt = false);
+        CodeBlockPtr                    ParseCodeBlock();
         BufferDeclIdentPtr              ParseBufferDeclIdent();
         FunctionCallPtr                 ParseFunctionCall(VarIdentPtr varIdent = nullptr);
         StructurePtr                    ParseStructure();

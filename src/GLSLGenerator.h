@@ -81,6 +81,9 @@ class GLSLGenerator : private Visitor
         void IncTab();
         void DecTab();
         
+        void PushOptions(const CodeWriter::Options& options);
+        void PopOptions();
+
         //! Writes a new single line comment.
         void Comment(const std::string& text);
         //! Writes a "#version" directive.
@@ -120,21 +123,23 @@ class GLSLGenerator : private Visitor
         //DECL_VISIT_PROC( BufferDeclIdent   );
         DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( Structure         );
+        DECL_VISIT_PROC( SwitchCase        );
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( BufferDecl        );
         //DECL_VISIT_PROC( TextureDecl       );
         //DECL_VISIT_PROC( SamplerStateDecl  );
         DECL_VISIT_PROC( StructDecl        );
-        /*DECL_VISIT_PROC( DirectiveDecl     );
+        //DECL_VISIT_PROC( DirectiveDecl     );
 
+        DECL_VISIT_PROC( NullStmnt         );
         DECL_VISIT_PROC( CodeBlockStmnt    );
         DECL_VISIT_PROC( ForLoopStmnt      );
         DECL_VISIT_PROC( WhileLoopStmnt    );
         DECL_VISIT_PROC( DoWhileLoopStmnt  );
         DECL_VISIT_PROC( IfStmnt           );
         DECL_VISIT_PROC( ElseStmnt         );
-        DECL_VISIT_PROC( SwitchStmnt       );*/
+        DECL_VISIT_PROC( SwitchStmnt       );
         DECL_VISIT_PROC( VarDeclStmnt      );
         //DECL_VISIT_PROC( AssignSmnt        );
         //DECL_VISIT_PROC( FunctionCallStmnt );
@@ -152,8 +157,6 @@ class GLSLGenerator : private Visitor
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( VarAccessExpr     );
 
-        //DECL_VISIT_PROC( SwitchCase        );
-
         DECL_VISIT_PROC( PackOffset        );
         DECL_VISIT_PROC( VarSemantic       );
         DECL_VISIT_PROC( VarType           );
@@ -166,6 +169,7 @@ class GLSLGenerator : private Visitor
         void WriteAttributeNumThreads(FunctionCall* ast);
 
         void VisitParameter(VarDeclStmnt* ast);
+        void VisitScopedStmnt(Stmnt* ast);
 
         /* === Members === */
 

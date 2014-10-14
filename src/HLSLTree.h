@@ -309,7 +309,7 @@ struct ForLoopStmnt : public Stmnt
     StmntPtr                        initSmnt;
     ExprPtr                         condition;
     ExprPtr                         iteration;
-    CodeBlockPtr                    codeBlock;
+    StmntPtr                        bodyStmnt;
 };
 
 //! 'while'-loop statement.
@@ -318,7 +318,7 @@ struct WhileLoopStmnt : public Stmnt
     AST_INTERFACE(WhileLoopStmnt);
     std::vector<FunctionCallPtr>    attribs; // attribute list
     ExprPtr                         condition;
-    CodeBlockPtr                    codeBlock;
+    StmntPtr                        bodyStmnt;
 };
 
 //! 'do/while'-loop statement.
@@ -336,7 +336,7 @@ struct IfStmnt : public Stmnt
     AST_INTERFACE(IfStmnt);
     std::vector<FunctionCallPtr>    attribs; // attribute list
     ExprPtr                         condition;
-    CodeBlockPtr                    codeBlock;
+    StmntPtr                        bodyStmnt;
     ElseStmntPtr                    elseStmnt; // may be null
 };
 
@@ -344,7 +344,7 @@ struct IfStmnt : public Stmnt
 struct ElseStmnt : public Stmnt
 {
     AST_INTERFACE(ElseStmnt);
-    CodeBlockPtr codeBlock;
+    StmntPtr bodyStmnt;
 };
 
 //! 'switch' statement.

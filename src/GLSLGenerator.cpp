@@ -279,6 +279,16 @@ void GLSLGenerator::DecTab()
     writer_.PopIndent();
 }
 
+void GLSLGenerator::PushOptions(const CodeWriter::Options& options)
+{
+    writer_.PushOptions(options);
+}
+
+void GLSLGenerator::PopOptions()
+{
+    writer_.PopOptions();
+}
+
 void GLSLGenerator::Comment(const std::string& text)
 {
     WriteLn("// " + text);
@@ -503,6 +513,31 @@ IMPLEMENT_VISIT_PROC(Structure)
     CloseScope(semicolon);
 }
 
+IMPLEMENT_VISIT_PROC(SwitchCase)
+{
+    /* Write case header */
+    if (ast->expr)
+    {
+        BeginLn();
+        {
+            Write("case ");
+            Visit(ast->expr);
+            Write(":");
+        }
+        EndLn();
+    }
+    else
+        WriteLn("default:");
+
+    /* Write statement list */
+    IncTab();
+    {
+        for (auto& stmnt : ast->stmnts)
+            Visit(stmnt);
+    }
+    DecTab();
+}
+
 /* --- Global declarations --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
@@ -572,6 +607,128 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 }
 
 /* --- Statements --- */
+
+IMPLEMENT_VISIT_PROC(NullStmnt)
+{
+    WriteLn(";");
+}
+
+IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
+{
+    Visit(ast->codeBlock);
+}
+
+IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+{
+    /* Write loop header */
+    BeginLn();
+    {
+        Write("for (");
+
+        PushOptions({ false, false });
+        {
+            Visit(ast->initSmnt);
+            Write(" "); // initStmnt already has the ';'!
+            Visit(ast->condition);
+            Write("; ");
+            Visit(ast->iteration);
+        }
+        PopOptions();
+
+        Write(")");
+    }
+    EndLn();
+
+    VisitScopedStmnt(ast->bodyStmnt.get());
+}
+
+IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+{
+    /* Write loop condition */
+    BeginLn();
+    {
+        Write("while (");
+        Visit(ast->condition);
+        Write(")");
+    }
+    EndLn();
+
+    VisitScopedStmnt(ast->bodyStmnt.get());
+}
+
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+{
+    WriteLn("do");
+    Visit(ast->codeBlock);
+
+    /* Write loop condition */
+    BeginLn();
+    {
+        Write("while (");
+        Visit(ast->condition);
+        Write(");");
+    }
+    EndLn();
+}
+
+IMPLEMENT_VISIT_PROC(IfStmnt)
+{
+    bool hasElseParentNode = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
+
+    /* Write if condition */
+    if (!hasElseParentNode)
+        BeginLn();
+    
+    Write("if (");
+    Visit(ast->condition);
+    Write(")");
+    
+    EndLn();
+
+    /* Write if body */
+    VisitScopedStmnt(ast->bodyStmnt.get());
+
+    Visit(ast->elseStmnt);
+}
+
+IMPLEMENT_VISIT_PROC(ElseStmnt)
+{
+    if (ast->bodyStmnt->Type() == AST::Types::IfStmnt)
+    {
+        /* Write else if statement */
+        BeginLn();
+        Write("else ");
+
+        bool hasElseParentNode = true;
+        Visit(ast->bodyStmnt, &hasElseParentNode);
+    }
+    else
+    {
+        /* Write else statement */
+        WriteLn("else");
+        VisitScopedStmnt(ast->bodyStmnt.get());
+    }
+}
+
+IMPLEMENT_VISIT_PROC(SwitchStmnt)
+{
+    /* Write selector */
+    BeginLn();
+    {
+        Write("switch (");
+        Visit(ast->selector);
+        Write(")");
+    }
+    EndLn();
+
+    /* Write switch cases */
+    OpenScope();
+    {
+        for (auto& switchCase : ast->cases)
+            Visit(switchCase);
+    }
+    CloseScope();
+}
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
@@ -792,6 +949,21 @@ void GLSLGenerator::VisitParameter(VarDeclStmnt* ast)
         Visit(ast->varDecls[0]);
     else
         Error("invalid number of variables in function parameter", ast);
+}
+
+void GLSLGenerator::VisitScopedStmnt(Stmnt* ast)
+{
+    if (ast)
+    {
+        if (ast->Type() != AST::Types::CodeBlockStmnt)
+        {
+            IncTab();
+            Visit(ast);
+            DecTab();
+        }
+        else
+            Visit(ast);
+    }
 }
 
 

@@ -58,6 +58,7 @@ class HLSLAnalyzer : private Visitor
         //DECL_VISIT_PROC( BufferDeclIdent   );
         DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( Structure         );
+        //DECL_VISIT_PROC( SwitchCase        );
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( BufferDecl        );
@@ -87,9 +88,7 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( FunctionCallExpr  );
         DECL_VISIT_PROC( BracketExpr       );
         DECL_VISIT_PROC( CastExpr          );
-        DECL_VISIT_PROC( VarAccessExpr     );
-
-        DECL_VISIT_PROC( SwitchCase        );*/
+        DECL_VISIT_PROC( VarAccessExpr     );*/
 
         DECL_VISIT_PROC( PackOffset        );
         DECL_VISIT_PROC( VarSemantic       );

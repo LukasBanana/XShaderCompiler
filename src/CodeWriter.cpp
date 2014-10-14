@@ -35,14 +35,27 @@ void CodeWriter::PopIndent()
         indent_.resize(indent_.size() - indentTab_.size());
 }
 
+void CodeWriter::PushOptions(const Options& options)
+{
+    optionsStack_.push(options);
+}
+
+void CodeWriter::PopOptions()
+{
+    if (!optionsStack_.empty())
+        optionsStack_.pop();
+}
+
 void CodeWriter::BeginLine()
 {
-    stream_->write(indent_.c_str(), indent_.size());
+    if (CurrentOptions().enableTabs)
+        stream_->write(indent_.c_str(), indent_.size());
 }
 
 void CodeWriter::EndLine()
 {
-    (*stream_) << '\n';
+    if (CurrentOptions().enableNewLine)
+        (*stream_) << '\n';
 }
 
 void CodeWriter::Write(const std::string& text)
@@ -55,6 +68,11 @@ void CodeWriter::WriteLine(const std::string& text)
     BeginLine();
     Write(text);
     EndLine();
+}
+
+CodeWriter::Options CodeWriter::CurrentOptions() const
+{
+    return !optionsStack_.empty() ? optionsStack_.top() : Options();
 }
 
 

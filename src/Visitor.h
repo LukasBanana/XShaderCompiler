@@ -32,6 +32,7 @@ DECL_PTR( CodeBlock         );
 DECL_PTR( BufferDeclIdent   );
 DECL_PTR( FunctionCall      );
 DECL_PTR( Structure         );
+DECL_PTR( SwitchCase        );
 
 DECL_PTR( FunctionDecl      );
 DECL_PTR( BufferDecl        );
@@ -65,8 +66,6 @@ DECL_PTR( BracketExpr       );
 DECL_PTR( CastExpr          );
 DECL_PTR( VarAccessExpr     );
 
-DECL_PTR( SwitchCase        );
-
 DECL_PTR( PackOffset        );
 DECL_PTR( VarSemantic       );
 DECL_PTR( VarType           );
@@ -99,6 +98,7 @@ class Visitor
         VISITOR_VISIT_PROC( BufferDeclIdent   );
         VISITOR_VISIT_PROC( FunctionCall      );
         VISITOR_VISIT_PROC( Structure         );
+        VISITOR_VISIT_PROC( SwitchCase        );
 
         VISITOR_VISIT_PROC( FunctionDecl      );
         VISITOR_VISIT_PROC( BufferDecl        );
@@ -131,8 +131,6 @@ class Visitor
         VISITOR_VISIT_PROC( BracketExpr       );
         VISITOR_VISIT_PROC( CastExpr          );
         VISITOR_VISIT_PROC( VarAccessExpr     );
-
-        VISITOR_VISIT_PROC( SwitchCase        );
 
         VISITOR_VISIT_PROC( PackOffset        );
         VISITOR_VISIT_PROC( VarSemantic       );

@@ -76,11 +76,12 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 			// Conidition test
 			[branch]
 			if (x > y + 2)
-				i++;
+				;//i++;
 			else if (x == 2)
 			{
+				int y;
 				i += 4;
-			}
+			} else { int z; x = y; }
 		}
 	
 	// Switch test

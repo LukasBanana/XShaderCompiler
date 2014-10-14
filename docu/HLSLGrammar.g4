@@ -105,14 +105,14 @@ UNARY_OP		: POST_UNARY_OP
 
 // Loop statements
 
-for_loop_stmnt		: attribute_list? 'for' '(' stmnt? ';' expr? ';' expr? ')' code_block;
-while_loop_stmnt	: attribute_list? 'while' '(' expr ')' code_body;
+for_loop_stmnt		: attribute_list? 'for' '(' stmnt? ';' expr? ';' expr? ')' stmnt;
+while_loop_stmnt	: attribute_list? 'while' '(' expr ')' stmnt;
 do_while_loop_stmnt	: attribute_list? 'do' code_block 'while' '(' expr ')';
 
 // Conditional statements
 
-if_stmnt	: attribute_list? 'if' '(' expr ')' code_body else_stmnt?;
-else_stmnt	: 'else' code_body;
+if_stmnt	: attribute_list? 'if' '(' expr ')' stmnt else_stmnt?;
+else_stmnt	: 'else' stmnt;
 
 switch_stmnt		: attribute_list? 'switch' '(' expr ')' '{' switch_case_list '}';
 switch_case_list	: switch_case* switch_default_case?;

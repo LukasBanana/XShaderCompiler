@@ -128,19 +128,14 @@ ProgramPtr HLSLParser::ParseProgram()
     return ast;
 }
 
-CodeBlockPtr HLSLParser::ParseCodeBlock(bool allowSingleStmnt)
+CodeBlockPtr HLSLParser::ParseCodeBlock()
 {
     auto ast = Make<CodeBlock>();
 
     /* Parse statement list */
-    if (!allowSingleStmnt || Is(Tokens::LCurly))
-    {
-        Accept(Tokens::LCurly);
-        ast->stmnts = ParseStmntList();
-        Accept(Tokens::RCurly);
-    }
-    else
-        ast->stmnts.push_back(ParseStmnt());
+    Accept(Tokens::LCurly);
+    ast->stmnts = ParseStmntList();
+    Accept(Tokens::RCurly);
 
     return ast;
 }
@@ -551,7 +546,7 @@ ForLoopStmntPtr HLSLParser::ParseForLoopStmnt(const std::vector<FunctionCallPtr>
     Accept(Tokens::RBracket);
 
     /* Parse loop body */
-    ast->codeBlock = ParseCodeBlock(true);
+    ast->bodyStmnt = ParseStmnt();
 
     return ast;
 }
@@ -569,7 +564,7 @@ WhileLoopStmntPtr HLSLParser::ParseWhileLoopStmnt(const std::vector<FunctionCall
     Accept(Tokens::RBracket);
 
     /* Parse loop body */
-    ast->codeBlock = ParseCodeBlock(true);
+    ast->bodyStmnt = ParseStmnt();
 
     return ast;
 }
@@ -608,7 +603,7 @@ IfStmntPtr HLSLParser::ParseIfStmnt(const std::vector<FunctionCallPtr>& attribs)
     Accept(Tokens::RBracket);
 
     /* Parse if body */
-    ast->codeBlock = ParseCodeBlock(true);
+    ast->bodyStmnt = ParseStmnt();
 
     /* Parse optional else statement */
     if (Is(Tokens::Else))
@@ -623,7 +618,7 @@ ElseStmntPtr HLSLParser::ParseElseStmnt()
     auto ast = Make<ElseStmnt>();
 
     Accept(Tokens::Else);
-    ast->codeBlock = ParseCodeBlock(true);
+    ast->bodyStmnt = ParseStmnt();
 
     return ast;
 }

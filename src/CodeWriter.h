@@ -10,6 +10,7 @@
 
 
 #include <ostream>
+#include <stack>
 
 
 namespace HTLib
@@ -22,6 +23,19 @@ class CodeWriter
     
     public:
         
+        struct Options
+        {
+            Options() = default;
+            Options(bool enableNewLine, bool enableTabs) :
+                enableNewLine   { enableNewLine },
+                enableTabs      { enableTabs    }
+            {
+            }
+
+            bool enableNewLine  = true;
+            bool enableTabs     = true;
+        };
+
         CodeWriter(const std::string& indentTab);
 
         //! \throws std::runtime_error If stream is invalid.
@@ -30,17 +44,24 @@ class CodeWriter
         void PushIndent();
         void PopIndent();
 
+        void PushOptions(const Options& options);
+        void PopOptions();
+
         void BeginLine();
         void EndLine();
 
         void Write(const std::string& text);
         void WriteLine(const std::string& text);
 
+        Options CurrentOptions() const;
+
     private:
         
         std::ostream*   stream_ = nullptr;
         std::string     indentTab_;
         std::string     indent_;
+
+        std::stack<Options> optionsStack_;
 
 };
 
