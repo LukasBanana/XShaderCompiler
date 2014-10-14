@@ -102,10 +102,10 @@ bool GLSLGenerator::GenerateCode(
         /* Visit program AST */
         Visit(program);
     }
-    catch (const std::string& err)
+    catch (const std::exception& err)
     {
         if (log_)
-            log_->Error(err);
+            log_->Error(err.what());
         return false;
     }
 
@@ -122,12 +122,24 @@ void GLSLGenerator::EstablishMaps()
     typeMap_ = std::map<std::string, std::string>
     {
         /* Scalar types */
-        { "bool",   "bool"   },
-        { "int",    "int"    },
-        { "uint",   "uint"   },
-        { "half",   "float"  },
-        { "float",  "float"  },
-        { "double", "double" },
+        { "bool",      "bool"   },
+        { "bool1",     "bool"   },
+        { "bool1x1",   "bool"   },
+        { "int",       "int"    },
+        { "int1",      "int"    },
+        { "int1x1",    "int"    },
+        { "uint",      "uint"   },
+        { "uint1",     "uint"   },
+        { "uint1x1",   "uint"   },
+        { "half",      "float"  },
+        { "half1",     "float"  },
+        { "half1x1",   "float"  },
+        { "float",     "float"  },
+        { "float1",    "float"  },
+        { "float1x1",  "float"  },
+        { "double",    "double" },
+        { "double1",   "double" },
+        { "double1x1", "double" },
 
         /* Vector types */
         { "bool2",   "bvec2" },
@@ -151,23 +163,23 @@ void GLSLGenerator::EstablishMaps()
 
         /* Matrix types */
         { "float2x2",  "mat2"   },
-        { "float3x3",  "mat3"   },
-        { "float4x4",  "mat4"   },
         { "float2x3",  "mat2x3" },
         { "float2x4",  "mat2x4" },
         { "float3x2",  "mat3x2" },
+        { "float3x3",  "mat3"   },
         { "float3x4",  "mat3x4" },
         { "float4x2",  "mat4x2" },
         { "float4x3",  "mat4x3" },
+        { "float4x4",  "mat4"   },
         { "double2x2", "mat2"   },
-        { "double3x3", "mat3"   },
-        { "double4x4", "mat4"   },
         { "double2x3", "mat2x3" },
         { "double2x4", "mat2x4" },
         { "double3x2", "mat3x2" },
+        { "double3x3", "mat3"   },
         { "double3x4", "mat3x4" },
         { "double4x2", "mat4x2" },
         { "double4x3", "mat4x3" },
+        { "double4x4", "mat4"   },
 
         /* Texture types */
         { "Texture1D",        "sampler1D"        },
@@ -227,9 +239,9 @@ void GLSLGenerator::EstablishMaps()
 void GLSLGenerator::Error(const std::string& msg, const AST* ast)
 {
     if (ast)
-        throw std::string("code generation error (" + ast->pos.ToString() + ") : " + msg);
+        throw std::runtime_error("code generation error (" + ast->pos.ToString() + ") : " + msg);
     else
-        throw std::string("code generation error : " + msg);
+        throw std::runtime_error("code generation error : " + msg);
 }
 
 void GLSLGenerator::ErrorInvalidNumArgs(const std::string& functionName, const AST* ast)
