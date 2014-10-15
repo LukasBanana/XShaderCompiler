@@ -209,6 +209,15 @@ void GLSLGenerator::EstablishMaps()
         { "AllMemoryBarrierWithGroupSync",   "barrier"            },
     };
 
+    modifierMap_ = std::map<std::string, std::string>
+    {
+        { "linear",          "smooth"        },
+        { "centroid",        "centroid"      },
+        { "nointerpolation", "flat"          },
+        { "noperspective",   "noperspective" },
+        { "sample",          "sample"        },
+    };
+
     semanticMap_ = std::map<std::string, SemanticStage>
     {
         { "SV_ClipDistance",            { "gl_ClipDistance"                             } },
@@ -737,10 +746,18 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     BeginLn();
 
-    /* Write type modifier and variable types */
+    /* Write modifiers */
+    for (auto& modifier : ast->commonModifiers)
+    {
+        auto it = modifierMap_.find(modifier);
+        if (it != modifierMap_.end())
+            Write(it->second + " ");
+    }
+
     if (ast->typeModifier == "const")
         Write(ast->typeModifier + " ");
 
+    /* Write variable type */
     Visit(ast->varType);
     Write(" ");
 

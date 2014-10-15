@@ -238,7 +238,7 @@ TEXTURE_IDENT	: 'Buffer'
 				| 'ByteAddressBuffer'
 				| 'RWByteAddressBuffer'
 				| 'AppendStructuredBuffer'
-				| 'ConsumeStructuredBuffer';
+				| 'ConsumeStructuredBuffer'
 				| 'Texture1D'
 				| 'Texture1DArray'
 				| 'Texture2D'

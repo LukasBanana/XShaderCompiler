@@ -58,8 +58,8 @@ and this parameter is null, the code generation will fail! By default null.
 \param[in] options Additional options to configure the code generation.
 \param[in] log Optional pointer to an output log. Inherit from the "Logger" class interface.
 \return True if the code has been translated correctly.
-\note This translator does not make any context analysis!
-Therefore wrong HLSL code will be translated into wrong GLSL code.
+\note This translator makes a minimum of contextual analysis.
+Therefore wrong HLSL code may be translated into wrong GLSL code!
 \see IncludeHandler
 \see Options
 */

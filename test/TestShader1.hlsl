@@ -65,7 +65,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 {
 	// expression tests
 	float x = 3 * (float)-threadID.x;
-	int y = (int)x * 2 + 2 - (int)x;//(x + 0.5);
+	int y = (int)x * 2 + 2 - (int)(x + 0.5) + (int)(float)(z) + 9;
 	float a = 1, b = 2 + (a += 4);
 	
 	// Loop test
@@ -87,8 +87,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 	while (test(x))
 		do {
 			test2(y, x);
-		} while ((bool)x == true);
-		//} while ((bool)(x) == true);
+		} while ((bool)(x) == true);
 	
 	// Switch test
 	switch (x)

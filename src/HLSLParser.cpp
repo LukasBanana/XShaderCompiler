@@ -116,6 +116,11 @@ bool HLSLParser::IsLiteral() const
     return Is(Tokens::BoolLiteral) || Is(Tokens::IntLiteral) || Is(Tokens::FloatLiteral);
 }
 
+bool HLSLParser::IsPrimaryExpr() const
+{
+    return IsLiteral() || Is(Tokens::Ident) || Is(Tokens::UnaryOp) || Is(Tokens::BinaryOp, "-") || Is(Tokens::LBracket);
+}
+
 /* ------- Parse functions ------- */
 
 ProgramPtr HLSLParser::ParseProgram()
@@ -852,9 +857,10 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     becauses expressions like "(x)" are no cast expression is "x" is a variable and not a structure!!!
     !!!!!!!!!!!!!!!!!
     */
-    if ( expr->Type() == AST::Types::TypeNameExpr ||
-         ( expr->Type() == AST::Types::VarAccessExpr &&
-           dynamic_cast<VarAccessExpr*>(expr.get())->assignExpr == nullptr ) )
+    if ( IsPrimaryExpr() &&
+         ( expr->Type() == AST::Types::TypeNameExpr ||
+           ( expr->Type() == AST::Types::VarAccessExpr &&
+             dynamic_cast<VarAccessExpr*>(expr.get())->assignExpr == nullptr ) ) )
     {
         /* Return cast expression */
         auto ast = Make<CastExpr>();

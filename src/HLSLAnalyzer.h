@@ -13,6 +13,7 @@
 #include "CodeWriter.h"
 #include "Visitor.h"
 #include "Token.h"
+#include "SymbolTable.h"
 
 #include <map>
 
@@ -38,6 +39,8 @@ class HLSLAnalyzer : private Visitor
 
     private:
         
+        typedef SymbolTable<AST>::OnOverrideProc OnOverrideProc;
+
         /* === Enumerations === */
 
         enum class IntrinsicClasses
@@ -50,6 +53,12 @@ class HLSLAnalyzer : private Visitor
         void EstablishMaps();
 
         void Error(const std::string& msg, const AST* ast = nullptr);
+
+        void OpenScope();
+        void CloseScope();
+
+        void Register(const std::string& ident, AST* ast, const OnOverrideProc& overrideProc = nullptr);
+        AST* Fetch(const std::string& ident) const;
 
         /* === Visitor implementation === */
 
@@ -108,6 +117,8 @@ class HLSLAnalyzer : private Visitor
         ShaderVersions  shaderVersion_  = ShaderVersions::GLSL110;
 
         std::map<std::string, IntrinsicClasses> intrinsicMap_;
+
+        SymbolTable<AST> symTable_;
 
 };
 

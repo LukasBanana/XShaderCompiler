@@ -74,6 +74,33 @@ void HLSLAnalyzer::Error(const std::string& msg, const AST* ast)
     }
 }
 
+void HLSLAnalyzer::OpenScope()
+{
+    symTable_.OpenScope();
+}
+
+void HLSLAnalyzer::CloseScope()
+{
+    symTable_.CloseScope();
+}
+
+void HLSLAnalyzer::Register(const std::string& ident, AST* ast, const OnOverrideProc& overrideProc)
+{
+    try
+    {
+        symTable_.Register(ident, ast, overrideProc);
+    }
+    catch (const std::exception& err)
+    {
+        Error(err.what(), ast);
+    }
+}
+
+AST* HLSLAnalyzer::Fetch(const std::string& ident) const
+{
+    return symTable_.Fetch(ident);
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(className) \
@@ -87,8 +114,12 @@ IMPLEMENT_VISIT_PROC(Program)
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
+    OpenScope();
+
     for (auto& stmnt : ast->stmnts)
         Visit(stmnt);
+
+    CloseScope();
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
@@ -119,6 +150,17 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
 IMPLEMENT_VISIT_PROC(Structure)
 {
+    if (!ast->name.empty())
+    {
+        Register(
+            ast->name, ast,
+            [](AST* symbol) -> bool
+            {
+                return symbol->Type() == AST::Types::StructDecl;//!TODO! Types::StructForwardDecl !!!
+            }
+        );
+    }
+
     for (auto& varDecl : ast->members)
         Visit(varDecl);
 }
@@ -127,12 +169,23 @@ IMPLEMENT_VISIT_PROC(Structure)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
+    /* Register symbol name */
+    Register(
+        ast->name, ast,
+        [](AST* symbol) -> bool
+        {
+            return symbol->Type() == AST::Types::FunctionDecl;//!TODO! Types::FunctionForwardDecl !!!
+        }
+    );
+
+    /* Mark function as used when it's the main entry point */
     if (ast->name == entryPoint_)
     {
         ast->flags << FunctionDecl::isEntryPoint;
         ast->flags << FunctionDecl::isUsed;
     }
 
+    /* Visit sub nodes */
     for (auto& attrib : ast->attribs)
         Visit(attrib);
 

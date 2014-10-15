@@ -62,6 +62,8 @@ class HLSLParser
         bool IsDataType() const;
         //! Returns true if the current token is a literal.
         bool IsLiteral() const;
+        //! Returns true if the current token is part of a primary expression.
+        bool IsPrimaryExpr() const;
 
         //! Makes a new shared pointer of the specified AST node class.
         template <typename T, typename... Args> std::shared_ptr<T> Make(Args&&... args)
