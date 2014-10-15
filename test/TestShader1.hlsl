@@ -10,12 +10,18 @@ cbuffer VertexParam : register(b0)
 	nointerpolation float3 normal	: NORMAL : packoffset(c4.x), test : packoffset(c5.x);
 };
 
+struct TestStruct
+{
+	float4x4 mat;
+};
+
 struct VertexIn
 {
 	float3 coord	: POSITION;
 	float3 normal	: NORMAL;
 	float2 texCoord	: TEXCOORD0;
 	float4 color	: COLOR;
+	TestStruct test;
 };
 
 struct VertexOut

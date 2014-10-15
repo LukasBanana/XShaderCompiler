@@ -510,16 +510,48 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
 IMPLEMENT_VISIT_PROC(Structure)
 {
-    bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
+    bool semicolon  = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
+    bool resolveStruct = (
+        (ast->flags(Structure::isShaderInput) && shaderTarget_ == ShaderTargets::GLSLVertexShader) ||
+        (ast->flags(Structure::isShaderOutput) && shaderTarget_ == ShaderTargets::GLSLFragmentShader)
+    );
 
-    WriteLn("struct " + ast->name);
-    
-    OpenScope();
+    if (resolveStruct)
     {
         for (auto& varDecl : ast->members)
+        {
+            if (ast->flags(Structure::isShaderInput))
+                varDecl->flags << VarDeclStmnt::isShaderInput;
+            else if (ast->flags(Structure::isShaderOutput))
+                varDecl->flags << VarDeclStmnt::isShaderOutput;
             Visit(varDecl);
+        }
     }
-    CloseScope(semicolon);
+    else
+    {
+        BeginLn();
+        {
+            if (ast->flags(Structure::isShaderInput))
+                Write("in");
+            else if (ast->flags(Structure::isShaderOutput))
+                Write("out");
+            else
+                Write("struct");
+
+            Write(" " + ast->name);
+        }
+        EndLn();
+
+        OpenScope();
+        {
+            for (auto& varDecl : ast->members)
+                Visit(varDecl);
+        }
+        CloseScope(semicolon && ast->aliasName.empty());
+
+        if (!ast->aliasName.empty())
+            WriteLn(ast->aliasName + ";");
+    }
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
@@ -747,6 +779,11 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     BeginLn();
 
     /* Write modifiers */
+    if (ast->flags(VarDeclStmnt::isShaderInput))
+        Write("in ");
+    else if (ast->flags(VarDeclStmnt::isShaderOutput))
+        Write("out ");
+
     for (auto& modifier : ast->commonModifiers)
     {
         auto it = modifierMap_.find(modifier);

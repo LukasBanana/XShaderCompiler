@@ -101,6 +101,50 @@ AST* HLSLAnalyzer::Fetch(const std::string& ident) const
     return symTable_.Fetch(ident);
 }
 
+void HLSLAnalyzer::DecorateEntryInOut(VarDeclStmnt* ast, bool isInput)
+{
+    const auto structFlag = (isInput ? Structure::isShaderInput : Structure::isShaderOutput);
+
+    /* Add flag to variable declaration statement */
+    ast->flags << (isInput ? VarDeclStmnt::isShaderInput : VarDeclStmnt::isShaderOutput);
+
+    /* Add flag to structure type */
+    auto& varType = ast->varType;
+    if (varType->structType)
+        varType->structType->flags << structFlag;
+
+    /* Add flag to optional symbol reference */
+    auto& symbolRef = varType->symbolRef;
+    if (symbolRef && symbolRef->Type() == AST::Types::Structure)
+    {
+        auto structType = dynamic_cast<Structure*>(symbolRef);
+        if (structType)
+        {
+            structType->flags << structFlag;
+            if (!ast->varDecls.empty())
+                structType->aliasName = ast->varDecls.front()->name;
+        }
+    }
+}
+
+void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
+{
+    const auto structFlag = (isInput ? Structure::isShaderInput : Structure::isShaderOutput);
+
+    /* Add flag to structure type */
+    if (ast->structType)
+        ast->structType->flags << structFlag;
+
+    /* Add flag to optional symbol reference */
+    auto& symbolRef = ast->symbolRef;
+    if (symbolRef && symbolRef->Type() == AST::Types::Structure)
+    {
+        auto structType = dynamic_cast<Structure*>(symbolRef);
+        if (structType)
+            structType->flags << structFlag;
+    }
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(className) \
@@ -178,14 +222,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         }
     );
 
-    /* Mark function as used when it's the main entry point */
-    if (ast->name == entryPoint_)
-    {
-        ast->flags << FunctionDecl::isEntryPoint;
-        ast->flags << FunctionDecl::isUsed;
-    }
-
-    /* Visit sub nodes */
+    /* Visit function header */
     for (auto& attrib : ast->attribs)
         Visit(attrib);
 
@@ -193,7 +230,27 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     for (auto& param : ast->parameters)
         Visit(param);
 
-    Visit(ast->codeBlock);
+    /* Mark function as used when it's the main entry point */
+    const auto isEntryPoint = (ast->name == entryPoint_);
+
+    if (isEntryPoint)
+    {
+        /* Add flags */
+        ast->flags << FunctionDecl::isEntryPoint;
+        ast->flags << FunctionDecl::isUsed;
+
+        /* Add flags to input- and output parameters of the main entry point */
+        DecorateEntryInOut(ast->returnType.get(), false);
+        for (auto& param : ast->parameters)
+            DecorateEntryInOut(param.get(), true);
+    }
+
+    /* Visit function body */
+    isInsideEntryPoint_ = isEntryPoint;
+    {
+        Visit(ast->codeBlock);
+    }
+    isInsideEntryPoint_ = false;
 }
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
@@ -217,6 +274,21 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     Visit(ast->varType);
     for (auto& varDecl : ast->varDecls)
         Visit(varDecl);
+
+    /* Decorate variable type */
+    if (isInsideEntryPoint_ && ast->varDecls.empty())
+    {
+        auto symbolRef = ast->varType->symbolRef;
+        if (symbolRef && symbolRef->Type() == AST::Types::Structure)
+        {
+            auto structType = dynamic_cast<Structure*>(symbolRef);
+            if (structType && structType->flags(Structure::isShaderOutput) && structType->aliasName.empty())
+            {
+                /* Store alias name for shader output interface block */
+                structType->aliasName = ast->varDecls.front()->name;
+            }
+        }
+    }
 }
 
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
@@ -244,7 +316,10 @@ IMPLEMENT_VISIT_PROC(VarType)
 {
     if (!ast->baseType.empty())
     {
-        //...
+        /* Decorate variable type */
+        auto symbol = Fetch(ast->baseType);
+        if (symbol)
+            ast->symbolRef = symbol;
     }
     else if (ast->structType)
         Visit(ast->structType);

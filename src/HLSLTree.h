@@ -171,9 +171,15 @@ struct FunctionCall : public AST
 //! Structure object.
 struct Structure : public AST
 {
+    FLAG_ENUM
+    {
+        FLAG( isShaderInput,    0 ), // This structure is used as shader input.
+        FLAG( isShaderOutput,   1 ), // This structure is used as shader output.
+    };
     AST_INTERFACE(Structure);
     std::string                     name;
     std::vector<VarDeclStmntPtr>    members;
+    std::string                     aliasName; // alias name for input and output interface blocks of the DAST.
 };
 
 /* --- Global declarations --- */
@@ -224,11 +230,6 @@ struct SamplerStateDecl : public GlobalDecl
 //! Structure declaration.
 struct StructDecl : public GlobalDecl
 {
-    FLAG_ENUM
-    {
-        FLAG( isShaderInput,    0 ), // This structure is used as shader input.
-        FLAG( isShaderOutput,   1 ), // This structure is used as shader output.
-    };
     AST_INTERFACE(StructDecl);
     StructurePtr structure;
 };
@@ -263,8 +264,9 @@ struct VarSemantic : public AST
 struct VarType : public AST
 {
     AST_INTERFACE(VarType);
-    std::string     baseType;   // either this ...
-    StructurePtr    structType; // ... or this is used.
+    std::string     baseType;               // either this ...
+    StructurePtr    structType;             // ... or this is used.
+    AST*            symbolRef = nullptr;    // symbol reference for DAST.
 };
 
 //! Variable (linked-list) identifier.
@@ -359,6 +361,11 @@ struct SwitchStmnt : public Stmnt
 //! Variable declaration statement.
 struct VarDeclStmnt : public Stmnt
 {
+    FLAG_ENUM
+    {
+        FLAG( isShaderInput,    0 ), // This variable is used as shader input.
+        FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
+    };
     AST_INTERFACE(VarDeclStmnt);
     std::vector<std::string>    commonModifiers; // storage classes, interpolation modifiers or input modifiers,
     std::string                 typeModifier; // may be empty

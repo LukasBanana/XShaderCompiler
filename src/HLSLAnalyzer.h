@@ -60,6 +60,9 @@ class HLSLAnalyzer : private Visitor
         void Register(const std::string& ident, AST* ast, const OnOverrideProc& overrideProc = nullptr);
         AST* Fetch(const std::string& ident) const;
 
+        void DecorateEntryInOut(VarDeclStmnt* ast, bool isInput);
+        void DecorateEntryInOut(VarType* ast, bool isInput);
+
         /* === Visitor implementation === */
 
         DECL_VISIT_PROC( Program           );
@@ -119,6 +122,7 @@ class HLSLAnalyzer : private Visitor
         std::map<std::string, IntrinsicClasses> intrinsicMap_;
 
         SymbolTable<AST> symTable_;
+        bool isInsideEntryPoint_ = false; //!< True if AST traversal is currently inside the main entry point (or its sub nodes).
 
 };
 
