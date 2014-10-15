@@ -511,6 +511,13 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 IMPLEMENT_VISIT_PROC(Structure)
 {
     bool semicolon  = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
+
+    /*
+    Check if struct must be resolve:
+    -> vertex shaders can not have input interface blocks and
+       fragment shaders can not have output interface blocks
+    -> see https://www.opengl.org/wiki/Interface_Block_%28GLSL%29#Input_and_output
+    */
     bool resolveStruct = (
         (ast->flags(Structure::isShaderInput) && shaderTarget_ == ShaderTargets::GLSLVertexShader) ||
         (ast->flags(Structure::isShaderOutput) && shaderTarget_ == ShaderTargets::GLSLFragmentShader)
