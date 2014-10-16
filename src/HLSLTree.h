@@ -281,6 +281,10 @@ struct VarIdent : public AST
 //! Variable declaration.
 struct VarDecl : public AST
 {
+    FLAG_ENUM
+    {
+        FLAG( isInsideFunc, 0 ), // This variable is declared inside a function.
+    };
     AST_INTERFACE(VarDecl);
     std::string                 name;
     std::vector<ExprPtr>        arrayDims;

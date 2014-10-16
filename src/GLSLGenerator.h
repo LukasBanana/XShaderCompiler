@@ -180,6 +180,7 @@ class GLSLGenerator : private Visitor
         std::string     entryPoint_;
         ShaderTargets   shaderTarget_   = ShaderTargets::GLSLVertexShader;
         ShaderVersions  shaderVersion_  = ShaderVersions::GLSL110;
+        std::string     localVarPrefix_;
         bool            allowBlanks_    = true;
 
         std::map<std::string, std::string> typeMap_;        // <hlsl-type, glsl-type>

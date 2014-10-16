@@ -23,7 +23,8 @@ bool HLSLAnalyzer::DecorateAST(
     Program* program,
     const std::string& entryPoint,
     const ShaderTargets shaderTarget,
-    const ShaderVersions shaderVersion)
+    const ShaderVersions shaderVersion,
+    const std::string& localVarPrefix)
 {
     if (!program)
         return false;
@@ -32,6 +33,7 @@ bool HLSLAnalyzer::DecorateAST(
     entryPoint_     = entryPoint;
     shaderTarget_   = shaderTarget;
     shaderVersion_  = shaderVersion;
+    localVarPrefix_ = localVarPrefix;
 
     /* Decorate program AST */
     hasErrors_ = false;
@@ -74,6 +76,17 @@ void HLSLAnalyzer::Error(const std::string& msg, const AST* ast)
     }
 }
 
+void HLSLAnalyzer::Warning(const std::string& msg, const AST* ast)
+{
+    if (log_)
+    {
+        if (ast)
+            log_->Warning("warning (" + ast->pos.ToString() + ") : " + msg);
+        else
+            log_->Warning("warning : " + msg);
+    }
+}
+
 void HLSLAnalyzer::OpenScope()
 {
     symTable_.OpenScope();
@@ -99,6 +112,12 @@ void HLSLAnalyzer::Register(const std::string& ident, AST* ast, const OnOverride
 AST* HLSLAnalyzer::Fetch(const std::string& ident) const
 {
     return symTable_.Fetch(ident);
+}
+
+AST* HLSLAnalyzer::Fetch(const VarIdentPtr& ident) const
+{
+    auto fullIdent = FullVarIdent(ident);
+    return Fetch(fullIdent);
 }
 
 void HLSLAnalyzer::DecorateEntryInOut(VarDeclStmnt* ast, bool isInput)
@@ -205,8 +224,19 @@ IMPLEMENT_VISIT_PROC(Structure)
         );
     }
 
-    for (auto& varDecl : ast->members)
-        Visit(varDecl);
+    OpenScope();
+    {
+        for (auto& varDecl : ast->members)
+            Visit(varDecl);
+    }
+    CloseScope();
+}
+
+IMPLEMENT_VISIT_PROC(SwitchCase)
+{
+    Visit(ast->expr);
+    for (auto& stmnt : ast->stmnts)
+        Visit(stmnt);
 }
 
 /* --- Global declarations --- */
@@ -227,30 +257,37 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         Visit(attrib);
 
     Visit(ast->returnType);
-    for (auto& param : ast->parameters)
-        Visit(param);
 
-    /* Mark function as used when it's the main entry point */
-    const auto isEntryPoint = (ast->name == entryPoint_);
-
-    if (isEntryPoint)
+    OpenScope();
     {
-        /* Add flags */
-        ast->flags << FunctionDecl::isEntryPoint;
-        ast->flags << FunctionDecl::isUsed;
-
-        /* Add flags to input- and output parameters of the main entry point */
-        DecorateEntryInOut(ast->returnType.get(), false);
         for (auto& param : ast->parameters)
-            DecorateEntryInOut(param.get(), true);
-    }
+            Visit(param);
 
-    /* Visit function body */
-    isInsideEntryPoint_ = isEntryPoint;
-    {
-        Visit(ast->codeBlock);
+        /* Mark function as used when it's the main entry point */
+        const auto isEntryPoint = (ast->name == entryPoint_);
+
+        if (isEntryPoint)
+        {
+            /* Add flags */
+            ast->flags << FunctionDecl::isEntryPoint;
+            ast->flags << FunctionDecl::isUsed;
+
+            /* Add flags to input- and output parameters of the main entry point */
+            DecorateEntryInOut(ast->returnType.get(), false);
+            for (auto& param : ast->parameters)
+                DecorateEntryInOut(param.get(), true);
+        }
+
+        /* Visit function body */
+        isInsideFunc_ = true;
+        isInsideEntryPoint_ = isEntryPoint;
+        {
+            Visit(ast->codeBlock);
+        }
+        isInsideEntryPoint_ = false;
+        isInsideFunc_ = false;
     }
-    isInsideEntryPoint_ = false;
+    CloseScope();
 }
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
@@ -269,9 +306,110 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
 /* --- Statements --- */
 
+IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
+{
+    Visit(ast->codeBlock);
+}
+
+IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+{
+    for (auto& attrib : ast->attribs)
+        Visit(attrib);
+
+    OpenScope();
+    {
+        Visit(ast->initSmnt);
+        Visit(ast->condition);
+        Visit(ast->iteration);
+
+        OpenScope();
+        {
+            Visit(ast->bodyStmnt);
+        }
+        CloseScope();
+    }
+    CloseScope();
+}
+
+IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+{
+    for (auto& attrib : ast->attribs)
+        Visit(attrib);
+
+    OpenScope();
+    {
+        Visit(ast->condition);
+
+        OpenScope();
+        {
+            Visit(ast->bodyStmnt);
+        }
+        CloseScope();
+    }
+    CloseScope();
+}
+
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+{
+    for (auto& attrib : ast->attribs)
+        Visit(attrib);
+
+    OpenScope();
+    {
+        Visit(ast->codeBlock);
+        Visit(ast->condition);
+    }
+    CloseScope();
+}
+
+IMPLEMENT_VISIT_PROC(IfStmnt)
+{
+    for (auto& attrib : ast->attribs)
+        Visit(attrib);
+
+    OpenScope();
+    {
+        Visit(ast->condition);
+
+        OpenScope();
+        {
+            Visit(ast->bodyStmnt);
+        }
+        CloseScope();
+    }
+    CloseScope();
+
+    Visit(ast->elseStmnt);
+}
+
+IMPLEMENT_VISIT_PROC(ElseStmnt)
+{
+    OpenScope();
+    {
+        Visit(ast->bodyStmnt);
+    }
+    CloseScope();
+}
+
+IMPLEMENT_VISIT_PROC(SwitchStmnt)
+{
+    for (auto& attrib : ast->attribs)
+        Visit(attrib);
+
+    OpenScope();
+    {
+        Visit(ast->selector);
+
+        for (auto& switchCase : ast->cases)
+            Visit(switchCase);
+    }
+    CloseScope();
+}
+
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     Visit(ast->varType);
+
     for (auto& varDecl : ast->varDecls)
         Visit(varDecl);
 
@@ -298,7 +436,58 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 
 /* --- Expressions --- */
 
-//...
+IMPLEMENT_VISIT_PROC(LiteralExpr)
+{
+    // do nothing
+}
+
+IMPLEMENT_VISIT_PROC(BinaryExpr)
+{
+    Visit(ast->lhsExpr);
+    Visit(ast->rhsExpr);
+}
+
+IMPLEMENT_VISIT_PROC(UnaryExpr)
+{
+    Visit(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(PostUnaryExpr)
+{
+    Visit(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+{
+    Visit(ast->call);
+}
+
+IMPLEMENT_VISIT_PROC(BracketExpr)
+{
+    Visit(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(CastExpr)
+{
+    Visit(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(VarAccessExpr)
+{
+    /* Decorate AST */
+    auto symbol = Fetch(ast->varIdent);
+    if (symbol)
+    {
+        if (symbol->Type() == AST::Types::VarDecl)
+        {
+            auto varDecl = dynamic_cast<VarDecl*>(symbol);
+            if (varDecl && varDecl->flags(VarDecl::isInsideFunc))
+                ast->varIdent->ident = localVarPrefix_ + ast->varIdent->ident;
+        }
+    }
+    else
+        Warning("undeclrated identifier \"" + FullVarIdent(ast->varIdent) + "\"", ast);
+}
 
 /* --- Variables --- */
 
@@ -336,11 +525,17 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
+    if (isInsideFunc_)
+        ast->flags << VarDecl::isInsideFunc;
+
     for (auto& dim : ast->arrayDims)
         Visit(dim);
     for (auto& semantic : ast->semantics)
         Visit(semantic);
+
     Visit(ast->initializer);
+
+    Register(ast->name, ast);
 }
 
 #undef IMPLEMENT_VISIT_PROC

@@ -6,6 +6,7 @@
  */
 
 #include "GLSLGenerator.h"
+#include "HLSLAnalyzer.h"
 #include "HLSLTree.h"
 
 #include <ctime>
@@ -66,6 +67,7 @@ GLSLGenerator::GLSLGenerator(Logger* log, IncludeHandler* includeHandler, const 
     writer_         { options.indent    },
     includeHandler_ { includeHandler    },
     log_            { log               },
+    localVarPrefix_ { options.prefix    },
     allowBlanks_    { !options.noblanks }
 {
     EstablishMaps();
@@ -513,7 +515,7 @@ IMPLEMENT_VISIT_PROC(Structure)
     bool semicolon  = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
 
     /*
-    Check if struct must be resolve:
+    Check if struct must be resolved:
     -> vertex shaders can not have input interface blocks and
        fragment shaders can not have output interface blocks
     -> see https://www.opengl.org/wiki/Interface_Block_%28GLSL%29#Input_and_output
@@ -525,13 +527,15 @@ IMPLEMENT_VISIT_PROC(Structure)
 
     if (resolveStruct)
     {
-        for (auto& varDecl : ast->members)
+        for (auto& member : ast->members)
         {
+            /* Append struct input/output flag to member */
             if (ast->flags(Structure::isShaderInput))
-                varDecl->flags << VarDeclStmnt::isShaderInput;
+                member->flags << VarDeclStmnt::isShaderInput;
             else if (ast->flags(Structure::isShaderOutput))
-                varDecl->flags << VarDeclStmnt::isShaderOutput;
-            Visit(varDecl);
+                member->flags << VarDeclStmnt::isShaderOutput;
+
+            Visit(member);
         }
     }
     else
@@ -953,6 +957,8 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
+    if (ast->flags(VarDecl::isInsideFunc))
+        Write(localVarPrefix_);
     Write(ast->name);
 
     if (ast->initializer)

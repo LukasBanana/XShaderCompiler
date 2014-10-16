@@ -27,8 +27,18 @@ namespace HTLib
 //! Structure for additional translation options.
 struct Options
 {
-    std::string indent      = "    ";   //!< Indentation string. By default std::string(4, ' ').
-    bool        noblanks    = false;    //!< True if no blanks are allowed. By default false.
+    //! Indentation string for code generation. By default std::string(4, ' ').
+    std::string indent      = "    ";
+    /**
+    Prefix string for all local variables. By default "_".
+    \remarks This prefix is used because GLSL does not allow interface blocks as
+    input for vertex shaders or output for fragment shaders.
+    Thus some identifiers of local variables may overlap with input variables.
+    This prefix is added to all local function variables.
+    */
+    std::string prefix      = "_";
+    //! True if no blanks are allowed. By default false.
+    bool        noblanks    = false;
 };
 
 //! Interface for handling new include streams.

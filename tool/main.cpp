@@ -47,7 +47,7 @@ class OutputLog : public HTLib::Logger
                 PrintHead(std::to_string(warnings_.size()) + " WARNING(S)");
 
                 for (const auto& msg : warnings_)
-                    std::cout << "warning: " << msg << std::endl;
+                    std::cout << msg << std::endl;
                 warnings_.clear();
             }
 
@@ -56,7 +56,7 @@ class OutputLog : public HTLib::Logger
                 PrintHead(std::to_string(errors_.size()) + " ERROR(S)");
 
                 for (const auto& msg : errors_)
-                    std::cerr << "error: " << msg << std::endl;
+                    std::cerr << msg << std::endl;
                 errors_.clear();
             }
         }
@@ -119,6 +119,7 @@ static void ShowHelp()
     std::cout << "                        'compute'" << std::endl;
     std::cout << "  -version VERSION    GLSL version ('110', '120', etc.); default is 110" << std::endl;
     std::cout << "  -indent INDENT      Code indentation string; default is 4 blanks" << std::endl;
+    std::cout << "  -prefix PREFIX      Prefix for local variables; default '_'" << std::endl;
     std::cout << "  -output FILE        GLSL output file; default is '<InputFile>.glsl'" << std::endl;
     std::cout << "  -noblanks           No blank lines will be generated" << std::endl;
     std::cout << "  --help, help, -h    Prints this help reference" << std::endl;
@@ -249,15 +250,17 @@ int main(int argc, char** argv)
             else if (arg == "-noblanks")
                 options.noblanks = true;
             else if (arg == "-entry")
-                entry = NextArg(i, argc, argv, "-entry");
+                entry = NextArg(i, argc, argv, arg);
             else if (arg == "-target")
-                target = NextArg(i, argc, argv, "-target");
+                target = NextArg(i, argc, argv, arg);
             else if (arg == "-version")
-                version = NextArg(i, argc, argv, "-version");
+                version = NextArg(i, argc, argv, arg);
             else if (arg == "-indent")
-                options.indent = NextArg(i, argc, argv, "-indent");
+                options.indent = NextArg(i, argc, argv, arg);
+            else if (arg == "-prefix")
+                options.prefix = NextArg(i, argc, argv, arg);
             else if (arg == "-output")
-                output = NextArg(i, argc, argv, "-output");
+                output = NextArg(i, argc, argv, arg);
             else
             {
                 Translate(arg);

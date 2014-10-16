@@ -34,7 +34,8 @@ class HLSLAnalyzer : private Visitor
             Program* program,
             const std::string& entryPoint,
             const ShaderTargets shaderTarget,
-            const ShaderVersions shaderVersion
+            const ShaderVersions shaderVersion,
+            const std::string& localVarPrefix
         );
 
     private:
@@ -53,12 +54,15 @@ class HLSLAnalyzer : private Visitor
         void EstablishMaps();
 
         void Error(const std::string& msg, const AST* ast = nullptr);
+        void Warning(const std::string& msg, const AST* ast = nullptr);
 
         void OpenScope();
         void CloseScope();
 
         void Register(const std::string& ident, AST* ast, const OnOverrideProc& overrideProc = nullptr);
+        
         AST* Fetch(const std::string& ident) const;
+        AST* Fetch(const VarIdentPtr& ident) const;
 
         void DecorateEntryInOut(VarDeclStmnt* ast, bool isInput);
         void DecorateEntryInOut(VarType* ast, bool isInput);
@@ -70,14 +74,14 @@ class HLSLAnalyzer : private Visitor
         //DECL_VISIT_PROC( BufferDeclIdent   );
         DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( Structure         );
-        //DECL_VISIT_PROC( SwitchCase        );
+        DECL_VISIT_PROC( SwitchCase        );
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( BufferDecl        );
         //DECL_VISIT_PROC( TextureDecl       );
         //DECL_VISIT_PROC( SamplerStateDecl  );
         DECL_VISIT_PROC( StructDecl        );
-        /*DECL_VISIT_PROC( DirectiveDecl     );
+        //DECL_VISIT_PROC( DirectiveDecl     );
 
         DECL_VISIT_PROC( CodeBlockStmnt    );
         DECL_VISIT_PROC( ForLoopStmnt      );
@@ -85,7 +89,7 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( DoWhileLoopStmnt  );
         DECL_VISIT_PROC( IfStmnt           );
         DECL_VISIT_PROC( ElseStmnt         );
-        DECL_VISIT_PROC( SwitchStmnt       );*/
+        DECL_VISIT_PROC( SwitchStmnt       );
         DECL_VISIT_PROC( VarDeclStmnt      );
         /*DECL_VISIT_PROC( AssignSmnt        );
         DECL_VISIT_PROC( FunctionCallStmnt );
@@ -93,14 +97,14 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( StructDeclStmnt   );*/
         DECL_VISIT_PROC( CtrlTransferStmnt );
 
-        /*DECL_VISIT_PROC( LiteralExpr       );
+        DECL_VISIT_PROC( LiteralExpr       );
         DECL_VISIT_PROC( BinaryExpr        );
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( FunctionCallExpr  );
         DECL_VISIT_PROC( BracketExpr       );
         DECL_VISIT_PROC( CastExpr          );
-        DECL_VISIT_PROC( VarAccessExpr     );*/
+        DECL_VISIT_PROC( VarAccessExpr     );
 
         DECL_VISIT_PROC( PackOffset        );
         DECL_VISIT_PROC( VarSemantic       );
@@ -118,11 +122,14 @@ class HLSLAnalyzer : private Visitor
         std::string     entryPoint_;
         ShaderTargets   shaderTarget_   = ShaderTargets::GLSLVertexShader;
         ShaderVersions  shaderVersion_  = ShaderVersions::GLSL110;
+        std::string     localVarPrefix_;
 
         std::map<std::string, IntrinsicClasses> intrinsicMap_;
 
         SymbolTable<AST> symTable_;
-        bool isInsideEntryPoint_ = false; //!< True if AST traversal is currently inside the main entry point (or its sub nodes).
+
+        bool isInsideFunc_          = false; //!< True if AST traversal is currently inside any function.
+        bool isInsideEntryPoint_    = false; //!< True if AST traversal is currently inside the main entry point (or its sub nodes).
 
 };
 
