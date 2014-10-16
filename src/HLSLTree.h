@@ -332,7 +332,7 @@ struct DoWhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(DoWhileLoopStmnt);
     std::vector<FunctionCallPtr>    attribs; // attribute list
-    CodeBlockPtr                    codeBlock;
+    StmntPtr                        bodyStmnt;
     ExprPtr                         condition;
 };
 

@@ -339,12 +339,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
     OpenScope();
     {
         Visit(ast->condition);
-
-        OpenScope();
-        {
-            Visit(ast->bodyStmnt);
-        }
-        CloseScope();
+        Visit(ast->bodyStmnt);
     }
     CloseScope();
 }
@@ -356,7 +351,7 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 
     OpenScope();
     {
-        Visit(ast->codeBlock);
+        Visit(ast->bodyStmnt);
         Visit(ast->condition);
     }
     CloseScope();
@@ -370,12 +365,7 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     OpenScope();
     {
         Visit(ast->condition);
-
-        OpenScope();
-        {
-            Visit(ast->bodyStmnt);
-        }
-        CloseScope();
+        Visit(ast->bodyStmnt);
     }
     CloseScope();
 
@@ -475,7 +465,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     /* Decorate AST */
-    auto symbol = Fetch(ast->varIdent);
+    auto symbol = Fetch(ast->varIdent->ident);
     if (symbol)
     {
         if (symbol->Type() == AST::Types::VarDecl)

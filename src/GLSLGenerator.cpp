@@ -714,7 +714,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 {
     WriteLn("do");
-    Visit(ast->codeBlock);
+    VisitScopedStmnt(ast->bodyStmnt.get());
 
     /* Write loop condition */
     BeginLn();

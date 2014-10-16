@@ -581,7 +581,7 @@ DoWhileLoopStmntPtr HLSLParser::ParseDoWhileLoopStmnt(const std::vector<Function
 
     /* Parse loop body */
     Accept(Tokens::Do);
-    ast->codeBlock = ParseCodeBlock();
+    ast->bodyStmnt = ParseStmnt();
 
     /* Parse loop condition */
     Accept(Tokens::While);

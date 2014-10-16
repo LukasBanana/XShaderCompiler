@@ -95,6 +95,9 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 	while (test(x))
 		do {
 			test2(y, x);
+			do
+				float4 v = 0;
+			while (v.x < 10);
 		} while ((bool)(x) == true);
 	
 	// Switch test
