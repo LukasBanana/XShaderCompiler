@@ -96,6 +96,7 @@ struct AST
         BracketExpr,
         CastExpr,
         VarAccessExpr,
+        InitializerExpr,
 
         SwitchCase,
 
@@ -484,6 +485,13 @@ struct VarAccessExpr : public Expr
     VarIdentPtr varIdent;
     std::string assignOp;   // may be empty
     ExprPtr     assignExpr; // may be null
+};
+
+//! Initializer list expression.
+struct InitializerExpr : public Expr
+{
+    AST_INTERFACE(InitializerExpr);
+    std::vector<ExprPtr> exprs;
 };
 
 /* --- Others --- */

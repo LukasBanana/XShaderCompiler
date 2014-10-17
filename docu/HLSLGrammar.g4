@@ -50,23 +50,25 @@ var_ident			: var_single_ident ('.' var_single_ident)*;
 
 // Expressions
 
-expr			: primary_expr
-				| binary_expr
+expr				: primary_expr
+					| binary_expr
 
-primary_expr	: literal
-				| unary_expr
-				| post_unary_expr
-				| function_call_stmnt
-				| bracket_expr
-				| cast_expr
-				| var_access_expr;
+primary_expr		: literal
+					| unary_expr
+					| post_unary_expr
+					| function_call_stmnt
+					| bracket_expr
+					| cast_expr
+					| var_access_expr
+					| initializer_expr;
 
-binary_expr		: primary_expr BINARY_OP primary_expr;
-unary_expr		: UNARY_OP primary_expr;
-post_unary_expr	: primary_expr POST_UNARY_OP;
-bracket_expr	: '(' expr ')';
-cast_expr		: '(' expr ')' primary_expr;
-var_access_expr	: var_ident (ASSIGN_OP expr)?;
+binary_expr			: primary_expr BINARY_OP primary_expr;
+unary_expr			: UNARY_OP primary_expr;
+post_unary_expr		: primary_expr POST_UNARY_OP;
+bracket_expr		: '(' expr ')';
+cast_expr			: '(' expr ')' primary_expr;
+var_access_expr		: var_ident (ASSIGN_OP expr)?;
+initializer_expr	: '{' (expr (',' expr)*)? '}';
 
 // Operators
 

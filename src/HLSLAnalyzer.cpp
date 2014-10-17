@@ -479,6 +479,12 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
         Warning("undeclrated identifier \"" + FullVarIdent(ast->varIdent) + "\"", ast);
 }
 
+IMPLEMENT_VISIT_PROC(InitializerExpr)
+{
+    for (auto& expr : ast->exprs)
+        Visit(expr);
+}
+
 /* --- Variables --- */
 
 IMPLEMENT_VISIT_PROC(PackOffset)

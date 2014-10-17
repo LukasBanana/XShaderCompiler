@@ -156,6 +156,7 @@ class GLSLGenerator : private Visitor
         DECL_VISIT_PROC( BracketExpr       );
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( VarAccessExpr     );
+        DECL_VISIT_PROC( InitializerExpr   );
 
         DECL_VISIT_PROC( PackOffset        );
         DECL_VISIT_PROC( VarSemantic       );

@@ -41,6 +41,7 @@ VertexOut VS(VertexIn inp)
 	
 	// Per-vertex lighting
 	float3 lightDir = (float3)0.5;//{ 0.5, -0.5, 1.0 };
+	float3 lightDir2 = { 0.5, -0.5, 1.0 };
 	
 	float3 normal = normalize(inp.normal);
 	

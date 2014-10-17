@@ -789,6 +789,8 @@ ExprPtr HLSLParser::ParsePrimaryExpr()
         return ParseUnaryExpr();
     if (Is(Tokens::LBracket))
         return ParseBracketOrCastExpr();
+    if (Is(Tokens::LCurly))
+        return ParseInitializerExpr();
     if (Is(Tokens::Ident))
         return ParseVarAccessOrFunctionCallExpr();
 
@@ -911,6 +913,13 @@ FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr(VarIdentPtr varIdent)
     return ast;
 }
 
+InitializerExprPtr HLSLParser::ParseInitializerExpr()
+{
+    auto ast = Make<InitializerExpr>();
+    ast->exprs = ParseInitializerList();
+    return ast;
+}
+
 /* --- Lists --- */
 
 std::vector<VarDeclPtr> HLSLParser::ParseVarDeclList()
@@ -979,6 +988,26 @@ std::vector<StmntPtr> HLSLParser::ParseStmntList()
     return stmnts;
 }
 
+std::vector<ExprPtr> HLSLParser::ParseExprList(const Tokens listTerminatorToken)
+{
+    std::vector<ExprPtr> exprs;
+
+    /* Parse all argument expressions */
+    if (!Is(listTerminatorToken))
+    {
+        while (true)
+        {
+            exprs.push_back(ParseExpr());
+            if (Is(Tokens::Comma))
+                AcceptIt();
+            else
+                break;
+        }
+    }
+
+    return exprs;
+}
+
 std::vector<ExprPtr> HLSLParser::ParseArrayDimensionList()
 {
     std::vector<ExprPtr> arrayDims;
@@ -991,25 +1020,17 @@ std::vector<ExprPtr> HLSLParser::ParseArrayDimensionList()
 
 std::vector<ExprPtr> HLSLParser::ParseArgumentList()
 {
-    std::vector<ExprPtr> arguments;
-
     Accept(Tokens::LBracket);
-
-    /* Parse all argument expressions */
-    if (!Is(Tokens::RBracket))
-    {
-        while (true)
-        {
-            arguments.push_back(ParseExpr());
-            if (Is(Tokens::Comma))
-                AcceptIt();
-            else
-                break;
-        }
-    }
-
+    auto arguments = ParseExprList(Tokens::RBracket);
     Accept(Tokens::RBracket);
+    return arguments;
+}
 
+std::vector<ExprPtr> HLSLParser::ParseInitializerList()
+{
+    Accept(Tokens::LCurly);
+    auto arguments = ParseExprList(Tokens::RCurly);
+    Accept(Tokens::RCurly);
     return arguments;
 }
 

@@ -129,7 +129,6 @@ class HLSLParser
         CtrlTransferStmntPtr            ParseCtrlTransferStmnt();
         VarDeclStmntPtr                 ParseVarDeclStmnt();
         ReturnStmntPtr                  ParseReturnStmnt();
-        //statements...
 
         ExprPtr                         ParseExpr();
         ExprPtr                         ParsePrimaryExpr();
@@ -140,14 +139,16 @@ class HLSLParser
         ExprPtr                         ParseVarAccessOrFunctionCallExpr();
         VarAccessExprPtr                ParseVarAccessExpr(VarIdentPtr varIdent = nullptr);
         FunctionCallExprPtr             ParseFunctionCallExpr(VarIdentPtr varIdent = nullptr);
-        //expressions...
+        InitializerExprPtr              ParseInitializerExpr();
 
         std::vector<VarDeclPtr>         ParseVarDeclList();
         std::vector<VarDeclStmntPtr>    ParseVarDeclStmntList();
         std::vector<VarDeclStmntPtr>    ParseParameterList();
         std::vector<StmntPtr>           ParseStmntList();
+        std::vector<ExprPtr>            ParseExprList(const Tokens listTerminatorToken);
         std::vector<ExprPtr>            ParseArrayDimensionList();
         std::vector<ExprPtr>            ParseArgumentList();
+        std::vector<ExprPtr>            ParseInitializerList();
         std::vector<VarSemanticPtr>     ParseVarSemanticList();
         std::vector<FunctionCallPtr>    ParseAttributeList();
         std::vector<SwitchCasePtr>      ParseSwitchCaseList();

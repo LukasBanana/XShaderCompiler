@@ -907,6 +907,19 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     }
 }
 
+IMPLEMENT_VISIT_PROC(InitializerExpr)
+{
+    Write("{ ");
+        
+    for (size_t i = 0; i < ast->exprs.size(); ++i)
+    {
+        Visit(ast->exprs[i]);
+        if (i + 1 < ast->exprs.size())
+            Write(", ");
+    }
+
+    Write(" }");
+}
 
 /* --- Variables --- */
 

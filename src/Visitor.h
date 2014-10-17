@@ -65,6 +65,7 @@ DECL_PTR( FunctionCallExpr  );
 DECL_PTR( BracketExpr       );
 DECL_PTR( CastExpr          );
 DECL_PTR( VarAccessExpr     );
+DECL_PTR( InitializerExpr   );
 
 DECL_PTR( PackOffset        );
 DECL_PTR( VarSemantic       );
@@ -131,6 +132,7 @@ class Visitor
         VISITOR_VISIT_PROC( BracketExpr       );
         VISITOR_VISIT_PROC( CastExpr          );
         VISITOR_VISIT_PROC( VarAccessExpr     );
+        VISITOR_VISIT_PROC( InitializerExpr   );
 
         VISITOR_VISIT_PROC( PackOffset        );
         VISITOR_VISIT_PROC( VarSemantic       );
