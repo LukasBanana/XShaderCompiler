@@ -67,6 +67,8 @@ class HLSLAnalyzer : private Visitor
         void DecorateEntryInOut(VarDeclStmnt* ast, bool isInput);
         void DecorateEntryInOut(VarType* ast, bool isInput);
 
+        void ReportNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName);
+
         /* === Visitor implementation === */
 
         DECL_VISIT_PROC( Program           );

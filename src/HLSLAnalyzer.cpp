@@ -164,6 +164,12 @@ void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
     }
 }
 
+void HLSLAnalyzer::ReportNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName)
+{
+    if (ast->Type() == AST::Types::NullStmnt)
+        Warning("<" + stmntTypeName + "> statement with empty body", ast.get());
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(className) \
@@ -313,6 +319,8 @@ IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
 
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
+    ReportNullStmnt(ast->bodyStmnt, "for loop");
+
     for (auto& attrib : ast->attribs)
         Visit(attrib);
 
@@ -333,6 +341,8 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
 IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 {
+    ReportNullStmnt(ast->bodyStmnt, "while loop");
+
     for (auto& attrib : ast->attribs)
         Visit(attrib);
 
@@ -346,6 +356,8 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 {
+    ReportNullStmnt(ast->bodyStmnt, "do-while loop");
+
     for (auto& attrib : ast->attribs)
         Visit(attrib);
 
@@ -359,6 +371,8 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 
 IMPLEMENT_VISIT_PROC(IfStmnt)
 {
+    ReportNullStmnt(ast->bodyStmnt, "if");
+
     for (auto& attrib : ast->attribs)
         Visit(attrib);
 
@@ -374,6 +388,8 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
 
 IMPLEMENT_VISIT_PROC(ElseStmnt)
 {
+    ReportNullStmnt(ast->bodyStmnt, "else");
+
     OpenScope();
     {
         Visit(ast->bodyStmnt);
@@ -476,7 +492,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
         }
     }
     else
-        Warning("undeclrated identifier \"" + FullVarIdent(ast->varIdent) + "\"", ast);
+        Warning("undeclared identifier \"" + FullVarIdent(ast->varIdent) + "\"", ast);
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)

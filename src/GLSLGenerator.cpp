@@ -512,7 +512,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
 IMPLEMENT_VISIT_PROC(Structure)
 {
-    bool semicolon  = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
+    bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
 
     /*
     Check if struct must be resolved:
@@ -972,7 +972,15 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     if (ast->flags(VarDecl::isInsideFunc))
         Write(localVarPrefix_);
+    
     Write(ast->name);
+
+    for (auto& dim : ast->arrayDims)
+    {
+        Write("[");
+        Visit(dim);
+        Write("]");
+    }
 
     if (ast->initializer)
     {

@@ -7,7 +7,8 @@
 cbuffer VertexParam : register(b0)
 {
 	float4x4 wvpMatrix : packoffset(c0);
-	nointerpolation float3 normal	: NORMAL : packoffset(c4.x), test : packoffset(c5.x);
+	nointerpolation float3 normal[3][2]	: NORMAL : packoffset(c4.x), test : packoffset(c5.x);
+	struct dataStruct { float2 v0, v1; int2 v2; } data[10];
 };
 
 struct TestStruct
