@@ -14,6 +14,7 @@
 #include "Visitor.h"
 #include "Token.h"
 #include "SymbolTable.h"
+#include "HLSLTree.h"
 
 #include <map>
 
@@ -69,6 +70,11 @@ class HLSLAnalyzer : private Visitor
 
         void ReportNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName);
 
+        void AcquireExtension(const Program::ARBExtension& extension);
+
+        //! Returns true if the target version is greater than or equal to the specified version number.
+        bool IsVersion(int version) const;
+
         /* === Visitor implementation === */
 
         DECL_VISIT_PROC( Program           );
@@ -93,10 +99,10 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( ElseStmnt         );
         DECL_VISIT_PROC( SwitchStmnt       );
         DECL_VISIT_PROC( VarDeclStmnt      );
-        /*DECL_VISIT_PROC( AssignSmnt        );
-        DECL_VISIT_PROC( FunctionCallStmnt );
+        //DECL_VISIT_PROC( AssignSmnt        );
+        //DECL_VISIT_PROC( FunctionCallStmnt );
         DECL_VISIT_PROC( ReturnStmnt       );
-        DECL_VISIT_PROC( StructDeclStmnt   );*/
+        //DECL_VISIT_PROC( StructDeclStmnt   );
         DECL_VISIT_PROC( CtrlTransferStmnt );
 
         DECL_VISIT_PROC( LiteralExpr       );
@@ -128,6 +134,7 @@ class HLSLAnalyzer : private Visitor
         std::string     localVarPrefix_;
 
         std::map<std::string, IntrinsicClasses> intrinsicMap_;
+        std::map<std::string, Program::ARBExtension> extensionMap_;
 
         SymbolTable<AST> symTable_;
 

@@ -13,6 +13,20 @@ namespace HTLib
 {
 
 
+/*
+ * Internal GL ARB extension descriptions
+ */
+
+typedef Program::ARBExtension ARBExt;
+
+static const ARBExt ARBEXT_GL_EXT_gpu_shader4        { "GL_EXT_gpu_shader4",        130 };
+static const ARBExt ARBEXT_GL_ARB_derivative_control { "GL_ARB_derivative_control", 400 };
+
+
+/*
+ * HLSLAnalyzer class
+ */
+
 HLSLAnalyzer::HLSLAnalyzer(Logger* log) :
     log_{ log }
 {
@@ -61,6 +75,14 @@ void HLSLAnalyzer::EstablishMaps()
         { "InterlockedMax",             IntrinsicClasses::Interlocked },
         { "InterlockedCompareExchange", IntrinsicClasses::Interlocked },
         { "InterlockedExchange",        IntrinsicClasses::Interlocked },
+    };
+
+    extensionMap_ = std::map<std::string, Program::ARBExtension>
+    {
+        { "ddx_coarse", ARBEXT_GL_ARB_derivative_control },
+        { "ddy_coarse", ARBEXT_GL_ARB_derivative_control },
+        { "ddx_fine",   ARBEXT_GL_ARB_derivative_control },
+        { "ddy_fine",   ARBEXT_GL_ARB_derivative_control },
     };
 }
 
@@ -170,6 +192,17 @@ void HLSLAnalyzer::ReportNullStmnt(const StmntPtr& ast, const std::string& stmnt
         Warning("<" + stmntTypeName + "> statement with empty body", ast.get());
 }
 
+void HLSLAnalyzer::AcquireExtension(const Program::ARBExtension& extension)
+{
+    if (!IsVersion(extension.requiredVersion))
+        program_->requiredExtensions.insert(extension.extensionName);
+}
+
+bool HLSLAnalyzer::IsVersion(int version) const
+{
+    return static_cast<int>(shaderVersion_) >= version;
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(className) \
@@ -211,6 +244,11 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             }
         }
     }
+
+    /* Check if this function requires a specific extension (or GLSL target version) */
+    auto it = extensionMap_.find(name);
+    if (it != extensionMap_.end())
+        AcquireExtension(it->second);
 
     /* Analyze function arguments */
     for (auto& arg : ast->arguments)
@@ -435,6 +473,11 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     }
 }
 
+IMPLEMENT_VISIT_PROC(ReturnStmnt)
+{
+    Visit(ast->expr);
+}
+
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 {
     // do nothing
@@ -449,8 +492,14 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
+    /* Visit sub expressions */
     Visit(ast->lhsExpr);
     Visit(ast->rhsExpr);
+
+    /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
+    const auto& op = ast->op;
+    if (op == "|" || op == "&" || op == "^" || op == "%")
+        AcquireExtension(ARBEXT_GL_EXT_gpu_shader4);
 }
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
@@ -493,6 +542,11 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     }
     else
         Warning("undeclared identifier \"" + FullVarIdent(ast->varIdent) + "\"", ast);
+
+    /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
+    const auto& op = ast->assignOp;
+    if (op == "|=" || op == "&=" || op == "^=" || op == "%=")
+        AcquireExtension(ARBEXT_GL_EXT_gpu_shader4);
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)

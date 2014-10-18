@@ -94,7 +94,10 @@ class GLSLGenerator : private Visitor
         void Line(const AST* ast);
         //! Writes a blank line.
         void Blank();
+        //! Writes a new extensions
+        void Extension(const std::string& extensionName);
 
+        void AppendRequiredExtensions(Program* ast);
         void AppendCommonMacros();
         void AppendInterlockedMacros();
         void AppendMulFunctions();
@@ -133,6 +136,7 @@ class GLSLGenerator : private Visitor
         //DECL_VISIT_PROC( DirectiveDecl     );
 
         DECL_VISIT_PROC( NullStmnt         );
+        DECL_VISIT_PROC( DirectiveStmnt    );
         DECL_VISIT_PROC( CodeBlockStmnt    );
         DECL_VISIT_PROC( ForLoopStmnt      );
         DECL_VISIT_PROC( WhileLoopStmnt    );

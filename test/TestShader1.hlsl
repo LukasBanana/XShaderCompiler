@@ -65,6 +65,9 @@ float4 PS(VertexOut inp) : SV_Target0
 	
 	float4 diffuse = lerp((float4)1.0, tex.Sample(samplerState, inp.texCoord), inp.position.x);
 	
+	// dFdxCoarse requires GLSL 4.00 or the "GL_ARB_derivative_control" extension
+	float2 tc_dx = ddx_coarse(inp.texCoord);
+	
 	return inp.color * diffuse;
 }
 
@@ -78,6 +81,12 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 	int y = (int)x * 2 + 2 - (int)(x + 0.5) + (int)(float)(z) + 9;
 	float a = 1, b = 2 + (a += 4);
 	
+	#if 1
+	// requires GLSL 1.30 or the "GL_EXT_gpu_shader4" extension.
+	//int mask = 0xffff | y;
+	int mask = 256 | y;
+	#endif
+	
 	// Loop test
 	[unroll(4)]
 	for (int i = 0; i < 10; ++i)
@@ -87,7 +96,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 			[branch]
 			if (x > y + 2)
 				;//i++;
-			else if (x == 2)
+			else if (!(x == 2))
 			{
 				int y;
 				i += 4;

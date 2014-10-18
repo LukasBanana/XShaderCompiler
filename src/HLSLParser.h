@@ -118,6 +118,7 @@ class HLSLParser
 
         StmntPtr                        ParseStmnt();
         NullStmntPtr                    ParseNullStmnt();
+        DirectiveStmntPtr               ParseDirectiveStmnt();
         CodeBlockStmntPtr               ParseCodeBlockStmnt();
         ForLoopStmntPtr                 ParseForLoopStmnt(const std::vector<FunctionCallPtr>& attribs);
         WhileLoopStmntPtr               ParseWhileLoopStmnt(const std::vector<FunctionCallPtr>& attribs);

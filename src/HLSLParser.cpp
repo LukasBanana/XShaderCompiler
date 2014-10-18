@@ -476,6 +476,8 @@ StmntPtr HLSLParser::ParseStmnt()
     {
         case Tokens::Semicolon:
             return ParseNullStmnt();
+        case Tokens::Directive:
+            return ParseDirectiveStmnt();
         case Tokens::LCurly:
             return ParseCodeBlockStmnt();
         case Tokens::Return:
@@ -518,6 +520,14 @@ NullStmntPtr HLSLParser::ParseNullStmnt()
     /* Parse null statement */
     auto ast = Make<NullStmnt>();
     Accept(Tokens::Semicolon);
+    return ast;
+}
+
+DirectiveStmntPtr HLSLParser::ParseDirectiveStmnt()
+{
+    /* Parse pre-processor directive statement */
+    auto ast = Make<DirectiveStmnt>();
+    ast->line = Accept(Tokens::Directive)->Spell();
     return ast;
 }
 

@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <string>
+#include <set>
 
 
 namespace HTLib
@@ -73,6 +74,7 @@ struct AST
         DirectiveDecl,
 
         NullStmnt,
+        DirectiveStmnt,
         CodeBlockStmnt,
         ForLoopStmnt,
         WhileLoopStmnt,
@@ -130,7 +132,13 @@ struct Expr : public AST {};
 
 //! Program AST root.
 struct Program : public AST
-{
+{   
+    //! GL ARB extension structure.
+    struct ARBExtension
+    {
+        std::string extensionName;
+        int         requiredVersion;
+    };
     FLAG_ENUM
     {
         FLAG( mulIntrinsicUsed,             0 ), // The "mul" intrinsic is used.
@@ -139,6 +147,7 @@ struct Program : public AST
     };
     AST_INTERFACE(Program)
     std::vector<GlobalDeclPtr> globalDecls;
+    std::set<std::string> requiredExtensions;
 };
 
 //! Code block.
@@ -299,6 +308,13 @@ struct VarDecl : public AST
 struct NullStmnt : public Stmnt
 {
     AST_INTERFACE(NullStmnt);
+};
+
+//! Pre-processor directive statement.
+struct DirectiveStmnt : public Stmnt
+{
+    AST_INTERFACE(DirectiveStmnt);
+    std::string line;
 };
 
 //! Code block statement.

@@ -204,6 +204,10 @@ void GLSLGenerator::EstablishMaps()
         { "lerp",                            "mix"                },
         { "ddx",                             "dFdx"               },
         { "ddy",                             "dFdy"               },
+        { "ddx_coarse",                      "dFdxCoarse"         },
+        { "ddy_coarse",                      "dFdyCoarse"         },
+        { "ddx_fine",                        "dFdxFine"           },
+        { "ddy_fine",                        "dFdyFine"           },
         { "atan2",                           "atan"               },
         { "GroupMemoryBarrier",              "groupMemoryBarrier" },
         { "GroupMemoryBarrierWithGroupSync", "barrier"            },
@@ -331,6 +335,18 @@ void GLSLGenerator::Blank()
         WriteLn("");
 }
 
+void GLSLGenerator::Extension(const std::string& extensionName)
+{
+    WriteLn("#extensions " + extensionName + " : require");// "require" or "enable"
+}
+
+void GLSLGenerator::AppendRequiredExtensions(Program* ast)
+{
+    for (const auto& ext : ast->requiredExtensions)
+        Extension(ext);
+    Blank();
+}
+
 void GLSLGenerator::AppendCommonMacros()
 {
     WriteLn("#define saturate(x) clamp(x, 0.0, 1.0)");
@@ -453,7 +469,8 @@ bool GLSLGenerator::IsVersion(int version) const
 
 IMPLEMENT_VISIT_PROC(Program)
 {
-    /* Append default helper macros and functions */
+    /* Append required extensions, default helper macros and functions */
+    AppendRequiredExtensions(ast);
     AppendCommonMacros();
 
     if (ast->flags(Program::interlockedIntrinsicsUsed))
@@ -668,6 +685,11 @@ IMPLEMENT_VISIT_PROC(NullStmnt)
     WriteLn(";");
 }
 
+IMPLEMENT_VISIT_PROC(DirectiveStmnt)
+{
+    WriteLn(ast->line);
+}
+
 IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
 {
     Visit(ast->codeBlock);
@@ -806,8 +828,17 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         Write(ast->typeModifier + " ");
 
     /* Write variable type */
-    Visit(ast->varType);
-    Write(" ");
+    if (ast->varType->structType)
+    {
+        EndLn();
+        Visit(ast->varType);
+        BeginLn();
+    }
+    else
+    {
+        Visit(ast->varType);
+        Write(" ");
+    }
 
     /* Write variable declarations */
     for (size_t i = 0; i < ast->varDecls.size(); ++i)
