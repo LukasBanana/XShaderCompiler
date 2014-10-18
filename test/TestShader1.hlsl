@@ -76,8 +76,15 @@ float4 PS(VertexOut inp) : SV_Target0
 
 // Compute shader
 
+struct ComputeIn
+{
+	uint3 threadID : SV_DispatchThreadID;
+	uint groupIndex : SV_GroupIndex;
+};
+
 [numthreads(10, 1, 1)]
-void CS(uint3 threadID : SV_DispatchThreadID)
+void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
+//void CS(ComputeIn inp)
 {
 	// expression tests
 	float x = 3 * (float)-threadID.x;

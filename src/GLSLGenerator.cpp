@@ -465,8 +465,9 @@ bool GLSLGenerator::IsVersion(int version) const
 bool GLSLGenerator::MustResolveStruct(Structure* ast) const
 {
     return
-        (ast->flags(Structure::isShaderInput) && shaderTarget_ == ShaderTargets::GLSLVertexShader) ||
-        (ast->flags(Structure::isShaderOutput) && shaderTarget_ == ShaderTargets::GLSLFragmentShader);
+        ( ast->flags(Structure::isShaderInput) && shaderTarget_ == ShaderTargets::GLSLVertexShader ) ||
+        ( ast->flags(Structure::isShaderOutput) && shaderTarget_ == ShaderTargets::GLSLFragmentShader ) ||
+        ( ast->flags(Structure::isShaderInput) && shaderTarget_ == ShaderTargets::GLSLComputeShader );
 }
 
 /* ------- Visit functions ------- */
@@ -661,8 +662,12 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             Blank();
 
             /* Write code block (without additional scope) */
-            bool writeScope = false;
-            Visit(ast->codeBlock, &writeScope);
+            isInsideEntryPoint_ = true;
+            {
+                bool writeScope = false;
+                Visit(ast->codeBlock, &writeScope);
+            }
+            isInsideEntryPoint_ = false;
         }
         CloseScope();
     }
@@ -881,18 +886,28 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
-    BeginLn();
-
-    Write("return");
-
-    if (ast->expr)
+    if (isInsideEntryPoint_)
     {
-        Write(" ");
-        Visit(ast->expr);
-    }
+        //!TODO! -> write output variables!!!
 
-    Write(";");
-    EndLn();
+        WriteLn("return;");
+    }
+    else
+    {
+        BeginLn();
+        {
+            Write("return");
+
+            if (ast->expr)
+            {
+                Write(" ");
+                Visit(ast->expr);
+            }
+
+            Write(";");
+        }
+        EndLn();
+    }
 }
 
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
@@ -1067,9 +1082,7 @@ void GLSLGenerator::WriteAttributeNumThreads(FunctionCall* ast)
     {
         BeginLn();
         {
-            Write("layout(");
-
-            Write("local_size_x = ");
+            Write("layout(local_size_x = ");
             Visit(ast->arguments[0]);
 
             Write(", local_size_y = ");
