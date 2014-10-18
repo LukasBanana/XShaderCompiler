@@ -462,6 +462,13 @@ bool GLSLGenerator::IsVersion(int version) const
     return static_cast<int>(shaderVersion_) >= version;
 }
 
+bool GLSLGenerator::MustResolveStruct(Structure* ast) const
+{
+    return
+        (ast->flags(Structure::isShaderInput) && shaderTarget_ == ShaderTargets::GLSLVertexShader) ||
+        (ast->flags(Structure::isShaderOutput) && shaderTarget_ == ShaderTargets::GLSLFragmentShader);
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(className) \
@@ -489,12 +496,16 @@ IMPLEMENT_VISIT_PROC(Program)
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    OpenScope();
-    {
-        for (auto& stmnt : ast->stmnts)
-            Visit(stmnt);
-    }
-    CloseScope();
+    bool writeScope = (args != nullptr ? *reinterpret_cast<bool*>(args) : true);
+
+    if (writeScope)
+        OpenScope();
+    
+    for (auto& stmnt : ast->stmnts)
+        Visit(stmnt);
+    
+    if (writeScope)
+        CloseScope();
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
@@ -537,11 +548,33 @@ IMPLEMENT_VISIT_PROC(Structure)
        fragment shaders can not have output interface blocks
     -> see https://www.opengl.org/wiki/Interface_Block_%28GLSL%29#Input_and_output
     */
-    bool resolveStruct = (
-        (ast->flags(Structure::isShaderInput) && shaderTarget_ == ShaderTargets::GLSLVertexShader) ||
-        (ast->flags(Structure::isShaderOutput) && shaderTarget_ == ShaderTargets::GLSLFragmentShader)
-    );
+    auto resolveStruct = MustResolveStruct(ast);
 
+    /* Always write this structure (also when a resolution is required) */
+    BeginLn();
+    {
+        if (!resolveStruct && ast->flags(Structure::isShaderInput))
+            Write("in");
+        else if (!resolveStruct && ast->flags(Structure::isShaderOutput))
+            Write("out");
+        else
+            Write("struct");
+
+        Write(" " + ast->name);
+    }
+    EndLn();
+
+    OpenScope();
+    {
+        for (auto& varDecl : ast->members)
+            Visit(varDecl);
+    }
+    CloseScope( semicolon && ( resolveStruct || ast->aliasName.empty() ) );
+
+    if (!ast->aliasName.empty() && !resolveStruct)
+        WriteLn(ast->aliasName + ";");
+
+    /* Write structure members as global input/output variables (if structure must be resolved) */
     if (resolveStruct)
     {
         for (auto& member : ast->members)
@@ -554,31 +587,6 @@ IMPLEMENT_VISIT_PROC(Structure)
 
             Visit(member);
         }
-    }
-    else
-    {
-        BeginLn();
-        {
-            if (ast->flags(Structure::isShaderInput))
-                Write("in");
-            else if (ast->flags(Structure::isShaderOutput))
-                Write("out");
-            else
-                Write("struct");
-
-            Write(" " + ast->name);
-        }
-        EndLn();
-
-        OpenScope();
-        {
-            for (auto& varDecl : ast->members)
-                Visit(varDecl);
-        }
-        CloseScope(semicolon && ast->aliasName.empty());
-
-        if (!ast->aliasName.empty())
-            WriteLn(ast->aliasName + ";");
     }
 }
 
@@ -643,7 +651,26 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     EndLn();
 
     /* Write function body */
-    Visit(ast->codeBlock);
+    if (ast->flags(FunctionDecl::isEntryPoint))
+    {
+        OpenScope();
+        {
+            /* Write input parameters as local variables */
+            for (auto& param : ast->parameters)
+                WriteEntryPointParameter(param.get());
+            Blank();
+
+            /* Write code block (without additional scope) */
+            bool writeScope = false;
+            Visit(ast->codeBlock, &writeScope);
+        }
+        CloseScope();
+    }
+    else
+    {
+        /* Write default code block */
+        Visit(ast->codeBlock);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
@@ -1059,6 +1086,62 @@ void GLSLGenerator::WriteAttributeNumThreads(FunctionCall* ast)
         ErrorInvalidNumArgs("\"numthreads\" attribute", ast);
 }
 
+void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast)
+{
+    /* Get variable declaration */
+    if (ast->varDecls.size() != 1)
+        Error("invalid number of variables inside parameter of entry point", ast);
+    auto varDecl = ast->varDecls.front().get();
+
+    /* Check if a structure input is used */
+    auto typeRef = ast->varType->symbolRef;
+    Structure* structType = nullptr;
+
+    if (typeRef && typeRef->Type() == AST::Types::Structure)
+        structType = dynamic_cast<Structure*>(typeRef);
+
+    if (structType)
+    {
+        if (MustResolveStruct(structType))
+        {
+            /* Write variable declaration */
+            BeginLn();
+            {
+                Visit(ast->varType);
+                Write(" " + varDecl->name + ";");
+            }
+            EndLn();
+
+            /* Fill structure members */
+            for (const auto& member : structType->members)
+            {
+                for (const auto& memberVar : member->varDecls)
+                    WriteLn(varDecl->name + "." + memberVar->name + " = " + memberVar->name + ";");
+            }
+        }
+    }
+    else
+    {
+        /* Get single semantic */
+        if (varDecl->semantics.size() != 1)
+            Error("invalid number of semantics inside parameter fo entry point", varDecl);
+        auto semantic = varDecl->semantics.front()->semantic;
+
+        /* Map semantic to GL built-in constant */
+        auto it = semanticMap_.find(semantic);
+        if (it == semanticMap_.end())
+            return;
+
+        /* Write local variable definition statement */
+        BeginLn();
+        {
+            Visit(ast->varType);
+            Write(" " + varDecl->name + " = " + it->second[shaderTarget_] + ";");
+        }
+        EndLn();
+    }
+}
+
 void GLSLGenerator::VisitParameter(VarDeclStmnt* ast)
 {
     if (ast->typeModifier == "const")
@@ -1117,6 +1200,27 @@ GLSLGenerator::SemanticStage::SemanticStage(
         fragment        { fragment       },
         compute         { compute        }
 {
+}
+
+const std::string& GLSLGenerator::SemanticStage::operator [] (const ShaderTargets target) const
+{
+    switch (target)
+    {
+        case ShaderTargets::GLSLVertexShader:
+            return vertex;
+        case ShaderTargets::GLSLGeometryShader:
+            return geometry;
+        case ShaderTargets::GLSLTessControlShader:
+            return tessControl;
+        case ShaderTargets::GLSLTessEvaluationShader:
+            return tessEvaluation;
+        case ShaderTargets::GLSLFragmentShader:
+            return fragment;
+        case ShaderTargets::GLSLComputeShader:
+            return compute;
+    }
+    throw std::out_of_range("'target' parameter out of range in " __FUNCTION__);
+    return vertex;
 }
 
 

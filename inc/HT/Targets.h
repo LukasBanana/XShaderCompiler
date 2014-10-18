@@ -16,11 +16,11 @@ namespace HTLib
 //! Shader output targets.
 enum class ShaderTargets
 {
-    GLSLVertexShader,           //!< GLSL vertex shader.
-    GLSLFragmentShader,         //!< GLSL fragment (also pixel-) shader.
+    GLSLVertexShader = 0,       //!< GLSL vertex shader.
     GLSLGeometryShader,         //!< GLSL geometry shader.
     GLSLTessControlShader,      //!< GLSL tessellation control (also hull-) shader.
     GLSLTessEvaluationShader,   //!< GLSL tessellation evaluation (also domain-) shader.
+    GLSLFragmentShader,         //!< GLSL fragment (also pixel-) shader.
     GLSLComputeShader,          //!< GLSL compute shader.
 };
 

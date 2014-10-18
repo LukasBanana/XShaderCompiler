@@ -57,6 +57,9 @@ class GLSLGenerator : private Visitor
                 const std::string& compute
             );
 
+            //! \throws std::out_of_range If 'target' is out of range.
+            const std::string& operator [] (const ShaderTargets target) const;
+
             std::string vertex;
             std::string geometry;
             std::string tessControl;
@@ -119,6 +122,9 @@ class GLSLGenerator : private Visitor
         //! Returns true if the target version is greater than or equal to the specified version number.
         bool IsVersion(int version) const;
 
+        //! Returns true if the specified AST structure must be resolved.
+        bool MustResolveStruct(Structure* ast) const;
+
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
@@ -172,6 +178,7 @@ class GLSLGenerator : private Visitor
 
         void VisitAttribute(FunctionCall* ast);
         void WriteAttributeNumThreads(FunctionCall* ast);
+        void WriteEntryPointParameter(VarDeclStmnt* ast);
 
         void VisitParameter(VarDeclStmnt* ast);
         void VisitScopedStmnt(Stmnt* ast);

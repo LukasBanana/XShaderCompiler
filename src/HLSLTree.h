@@ -276,7 +276,7 @@ struct VarType : public AST
     AST_INTERFACE(VarType);
     std::string     baseType;               // either this ...
     StructurePtr    structType;             // ... or this is used.
-    AST*            symbolRef = nullptr;    // symbol reference for DAST.
+    AST*            symbolRef = nullptr;    // symbol reference for DAST to the type definition; may be null.
 };
 
 //! Variable (linked-list) identifier.

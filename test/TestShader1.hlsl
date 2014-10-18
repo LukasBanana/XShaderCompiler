@@ -32,7 +32,7 @@ struct VertexOut
 	float4 color	: COLOR;
 };
 
-VertexOut VS(VertexIn inp)
+VertexOut VS(VertexIn inp, uint vertexID : SV_VertexID, float3 texCoord2 : TEXCOORD)
 {
 	VertexOut outp = (VertexOut)0;
 	
@@ -46,9 +46,12 @@ VertexOut VS(VertexIn inp)
 	
 	float3 normal = normalize(inp.normal);
 	
-	float NdotL		= dot(normal, -normalize(lightDir));
-	float shading	= max(0.2, NdotL);
-
+	if (vertexID < 3)
+	{
+		float NdotL		= dot(normal, -normalize(lightDir));
+		float shading	= max(0.2, NdotL);
+	}
+	
 	outp.color		= inp.color * shading;
 	
 	return outp;
