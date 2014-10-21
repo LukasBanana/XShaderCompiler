@@ -248,6 +248,21 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         }
     }
 
+    /* Decorate function identifier (if it's a member function) */
+    if (ast->name->next)
+    {
+        auto symbol = Fetch(ast->name->ident);
+        if (symbol)
+        {
+            /*if (symbol->Type() == AST::Types::TextureDecl)
+            {
+                //...
+            }*/
+        }
+        else
+            Warning("undeclared identifier \"" + ast->name->ident + "\"", ast);
+    }
+
     /* Check if this function requires a specific extension (or GLSL target version) */
     auto it = extensionMap_.find(name);
     if (it != extensionMap_.end())
@@ -555,7 +570,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
         }
     }
     else
-        Warning("undeclared identifier \"" + FullVarIdent(ast->varIdent) + "\"", ast);
+        Warning("undeclared identifier \"" + ast->varIdent->ident + "\"", ast);
 
     /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
     const auto& op = ast->assignOp;

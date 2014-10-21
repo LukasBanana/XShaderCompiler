@@ -49,8 +49,16 @@ template <typename SymbolType> class SymbolTable
                 for (const auto& ident : scopeStack_.top())
                 {
                     auto it = symTable_.find(ident);
-                    if (it != symTable_.end() && !it->second.empty() && it->second.top().scopeLevel == ScopeLevel())
-                        symTable_.erase(it);
+                    if (it != symTable_.end())
+                    {
+                        /* Remove symbol from the top most scope level */
+                        it->second.pop();
+                        if (it->second.empty())
+                        {
+                            /* Remove symbol entry completely if it's reference list is empty */
+                            symTable_.erase(it);
+                        }
+                    }
                 }
                 scopeStack_.pop();
             }
