@@ -367,6 +367,12 @@ void GLSLGenerator::AppendInterlockedMacros()
     Blank();
 }
 
+#if 0
+
+/*
+Remove this if it is clear, that it will never be used!
+*/
+
 void GLSLGenerator::AppendMulFunctions()
 {
     WriteLn("mat2 mul(mat2 m, vec2 v) { return m * v; }");
@@ -383,6 +389,8 @@ void GLSLGenerator::AppendMulFunctions()
 
     Blank();
 }
+
+#endif
 
 void GLSLGenerator::AppendRcpFunctions()
 {
@@ -483,8 +491,6 @@ IMPLEMENT_VISIT_PROC(Program)
 
     if (ast->flags(Program::interlockedIntrinsicsUsed))
         AppendInterlockedMacros();
-    if (ast->flags(Program::mulIntrinsicUsed))
-        AppendMulFunctions();
     if (ast->flags(Program::rcpIntrinsicUsed))
         AppendRcpFunctions();
 
@@ -511,32 +517,44 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    /* Write function name */
-    auto name = FullVarIdent(ast->name);
-
-    auto it = intrinsicMap_.find(name);
-    if (it != intrinsicMap_.end())
-        Write(it->second);
+    if (ast->flags(FunctionCall::isMulFunc) && ast->arguments.size() == 2)
+    {
+        /* Convert this function call into a multiplication */
+        Write("((");
+        Visit(ast->arguments[0]);
+        Write(") * (");
+        Visit(ast->arguments[1]);
+        Write("))");
+    }
     else
     {
-        auto it = typeMap_.find(name);
-        if (it != typeMap_.end())
+        /* Write function name */
+        auto name = FullVarIdent(ast->name);
+
+        auto it = intrinsicMap_.find(name);
+        if (it != intrinsicMap_.end())
             Write(it->second);
         else
-            Visit(ast->name);
+        {
+            auto it = typeMap_.find(name);
+            if (it != typeMap_.end())
+                Write(it->second);
+            else
+                Visit(ast->name);
+        }
+
+        /* Write arguments */
+        Write("(");
+
+        for (size_t i = 0; i < ast->arguments.size(); ++i)
+        {
+            Visit(ast->arguments[i]);
+            if (i + 1 < ast->arguments.size())
+                Write(", ");
+        }
+
+        Write(")");
     }
-
-    /* Write arguments */
-    Write("(");
-
-    for (size_t i = 0; i < ast->arguments.size(); ++i)
-    {
-        Visit(ast->arguments[i]);
-        if (i + 1 < ast->arguments.size())
-            Write(", ");
-    }
-
-    Write(")");
 }
 
 IMPLEMENT_VISIT_PROC(Structure)
@@ -881,6 +899,18 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     }
 
     Write(";");
+    EndLn();
+}
+
+IMPLEMENT_VISIT_PROC(AssignSmnt)
+{
+    BeginLn();
+    {
+        Visit(ast->varIdent);
+        Write(" " + ast->op + " ");
+        Visit(ast->expr);
+        Write(";");
+    }
     EndLn();
 }
 

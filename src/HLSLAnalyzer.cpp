@@ -110,6 +110,11 @@ void HLSLAnalyzer::Warning(const std::string& msg, const AST* ast)
     }
 }
 
+void HLSLAnalyzer::NotifyUndeclaredIdent(const std::string& ident, const AST* ast)
+{
+    Warning("undeclared identifier \"" + ident + "\"", ast);
+}
+
 void HLSLAnalyzer::OpenScope()
 {
     symTable_.OpenScope();
@@ -231,9 +236,18 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
     /* Check if a specific intrinsic is used */
     if (name == "mul")
-        program_->flags << Program::mulIntrinsicUsed;
+    {
+        ast->flags << FunctionCall::isMulFunc;
+
+        /* Validate number of arguments */
+        if (ast->arguments.size() != 2)
+            Error("\"mul\" intrinsic must have exactly two arguments", ast);
+    }
     else if (name == "rcp")
+    {
         program_->flags << Program::rcpIntrinsicUsed;
+        ast->flags << FunctionCall::isRcpFunc;
+    }
     else
     {
         auto it = intrinsicMap_.find(name);
@@ -260,7 +274,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             }*/
         }
         else
-            Warning("undeclared identifier \"" + ast->name->ident + "\"", ast);
+            NotifyUndeclaredIdent(ast->name->ident, ast);
     }
 
     /* Check if this function requires a specific extension (or GLSL target version) */
@@ -491,6 +505,15 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     }
 }
 
+IMPLEMENT_VISIT_PROC(AssignSmnt)
+{
+    auto symbol = Fetch(ast->varIdent->ident);
+    if (!symbol)
+        NotifyUndeclaredIdent(ast->varIdent->ident, ast);
+
+    Visit(ast->expr);
+}
+
 IMPLEMENT_VISIT_PROC(FunctionCallStmnt)
 {
     Visit(ast->call);
@@ -570,7 +593,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
         }
     }
     else
-        Warning("undeclared identifier \"" + ast->varIdent->ident + "\"", ast);
+        NotifyUndeclaredIdent(ast->varIdent->ident, ast);
 
     /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
     const auto& op = ast->assignOp;

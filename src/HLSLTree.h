@@ -142,9 +142,8 @@ struct Program : public AST
     };
     FLAG_ENUM
     {
-        FLAG( mulIntrinsicUsed,             0 ), // The "mul" intrinsic is used.
-        FLAG( rcpIntrinsicUsed,             1 ), // The "rcp" intrinsic is used.
-        FLAG( interlockedIntrinsicsUsed,    2 ), // Some 'Interlocked...' intrinsics are used.
+        FLAG( rcpIntrinsicUsed,          0 ), // The "rcp" intrinsic is used.
+        FLAG( interlockedIntrinsicsUsed, 1 ), // Some 'Interlocked...' intrinsics are used.
     };
     AST_INTERFACE(Program)
     std::vector<GlobalDeclPtr> globalDecls;
@@ -171,8 +170,10 @@ struct FunctionCall : public AST
 {
     FLAG_ENUM
     {
-        FLAG( isSampleFunc, 0 ), // This function is a "Texture.Sample" function.
-        FLAG( isLoadFunc,   1 ), // This function is a "Texture.Load" function.
+        FLAG( isMulFunc,    0 ), // This is a "mul" function.
+        FLAG( isRcpFunc,    1 ), // This is a "rcp" function.
+        FLAG( isSampleFunc, 2 ), // This is a "Texture.Sample" function.
+        FLAG( isLoadFunc,   3 ), // This is a "Texture.Load" function.
     };
     AST_INTERFACE(FunctionCall);
     VarIdentPtr             name;

@@ -764,10 +764,27 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
     {
         /* Parse function call statement */
         auto ast = Make<FunctionCallStmnt>();
+        
         ast->call = ParseFunctionCall(varIdent);
+        Accept(Tokens::Semicolon);
+
+        return ast;
+    }
+    else if (Is(Tokens::AssignOp))
+    {
+        /* Parse assignment statement */
+        auto ast = Make<AssignSmnt>();
+        
+        ast->varIdent = varIdent;
+        ast->op = AcceptIt()->Spell();
+        ast->expr = ParseExpr();
+        Accept(Tokens::Semicolon);
+
         return ast;
     }
 
+    /* Parse variable declaration statement */
+    //return ast;
 
     #if 1//!!!
     while (!Is(Tokens::Semicolon))

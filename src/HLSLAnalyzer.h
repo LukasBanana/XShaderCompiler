@@ -56,6 +56,7 @@ class HLSLAnalyzer : private Visitor
 
         void Error(const std::string& msg, const AST* ast = nullptr);
         void Warning(const std::string& msg, const AST* ast = nullptr);
+        void NotifyUndeclaredIdent(const std::string& ident, const AST* ast = nullptr);
 
         void OpenScope();
         void CloseScope();
@@ -99,7 +100,7 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( ElseStmnt         );
         DECL_VISIT_PROC( SwitchStmnt       );
         DECL_VISIT_PROC( VarDeclStmnt      );
-        //DECL_VISIT_PROC( AssignSmnt        );
+        DECL_VISIT_PROC( AssignSmnt        );
         DECL_VISIT_PROC( FunctionCallStmnt );
         DECL_VISIT_PROC( ReturnStmnt       );
         //DECL_VISIT_PROC( StructDeclStmnt   );
