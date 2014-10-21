@@ -19,8 +19,9 @@ namespace HTLib
 
 typedef Program::ARBExtension ARBExt;
 
-static const ARBExt ARBEXT_GL_EXT_gpu_shader4        { "GL_EXT_gpu_shader4",        130 };
-static const ARBExt ARBEXT_GL_ARB_derivative_control { "GL_ARB_derivative_control", 400 };
+static const ARBExt ARBEXT_GL_EXT_gpu_shader4               { "GL_EXT_gpu_shader4",                 130 };
+static const ARBExt ARBEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",          400 };
+static const ARBExt ARBEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_language_420pack",    420 };
 
 
 /*
@@ -551,6 +552,8 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
+    AcquireExtension(ARBEXT_GL_ARB_shading_language_420pack);
+
     for (auto& expr : ast->exprs)
         Visit(expr);
 }

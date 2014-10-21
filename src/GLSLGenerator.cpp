@@ -337,7 +337,7 @@ void GLSLGenerator::Blank()
 
 void GLSLGenerator::Extension(const std::string& extensionName)
 {
-    WriteLn("#extensions " + extensionName + " : require");// "require" or "enable"
+    WriteLn("#extension " + extensionName + " : enable");// "require" or "enable"
 }
 
 void GLSLGenerator::AppendRequiredExtensions(Program* ast)
