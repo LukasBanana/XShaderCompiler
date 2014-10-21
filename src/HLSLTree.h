@@ -89,6 +89,7 @@ struct AST
         StructDeclStmnt,
         CtrlTransferStmnt,
 
+        ListExpr,
         LiteralExpr,
         TypeNameExpr,
         BinaryExpr,
@@ -432,6 +433,14 @@ struct CtrlTransferStmnt : public Stmnt
 };
 
 /* --- Expressions --- */
+
+//! List expression ( expr ',' expr ).
+struct ListExpr : public Expr
+{
+    AST_INTERFACE(ListExpr);
+    ExprPtr firstExpr;
+    ExprPtr nextExpr;
+};
 
 //! Literal expression.
 struct LiteralExpr : public Expr

@@ -884,6 +884,16 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     EndLn();
 }
 
+IMPLEMENT_VISIT_PROC(FunctionCallStmnt)
+{
+    BeginLn();
+    {
+        Visit(ast->call);
+        Write(";");
+    }
+    EndLn();
+}
+
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     if (isInsideEntryPoint_)
@@ -916,6 +926,13 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 }
 
 /* --- Expressions --- */
+
+IMPLEMENT_VISIT_PROC(ListExpr)
+{
+    Visit(ast->firstExpr);
+    Write(", ");
+    Visit(ast->nextExpr);
+}
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {

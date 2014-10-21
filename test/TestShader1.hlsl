@@ -6,8 +6,8 @@
 
 cbuffer VertexParam : register(b0)
 {
-	float4x4 wvpMatrix : packoffset(c0);
-	nointerpolation float3 normal[3][2]	: NORMAL : packoffset(c4.x), test : packoffset(c5.x);
+	float4x4 wvpMatrix;
+	nointerpolation float3 normal[3][2]	: NORMAL, test3;
 	struct dataStruct { float2 v0, v1; int2 v2; } data[10];
 };
 
@@ -52,7 +52,7 @@ VertexOut VS(VertexIn inp, uint vertexID : SV_VertexID, float3 texCoord2 : TEXCO
 		float shading	= max(0.2, NdotL);
 	}
 	
-	outp.color		= inp.color * shading;
+	outp.color		= inp.color;
 	
 	return outp;
 }
@@ -82,10 +82,14 @@ struct ComputeIn
 	uint groupIndex : SV_GroupIndex;
 };
 
+int test(int x){return 0;}
+void test2(int x, int y){}
+
 [numthreads(10, 1, 1)]
 void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 //void CS(ComputeIn inp)
 {
+	int z = 0;
 	// expression tests
 	float x = 3 * (float)-threadID.x;
 	int y = (int)x * 2 + 2 - (int)(x + 0.5) + (int)(float)(z) + 9;
@@ -100,7 +104,7 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 	// Loop test
 	[unroll(4)]
 	for (int i = 0; i < 10; ++i)
-		for (int y = 0; y < 20; y++)
+		for (int y = 0; y < 20; y++, ++mask)
 		{
 			// Conidition test
 			[branch]
@@ -122,7 +126,7 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 		} while ((bool)(x) == true);
 	
 	// Switch test
-	switch (x)
+	switch ((int)x, mask)
 	{
 		case 1:
 		{
@@ -133,6 +137,7 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 				;;;
 			}
 		}
+		break;
 		case 2:
 			break;
 		default:

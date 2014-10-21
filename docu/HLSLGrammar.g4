@@ -52,6 +52,7 @@ var_ident			: var_single_ident ('.' var_single_ident)*;
 
 expr				: primary_expr
 					| binary_expr
+					| list_expr
 
 primary_expr		: literal
 					| unary_expr
@@ -62,6 +63,7 @@ primary_expr		: literal
 					| var_access_expr
 					| initializer_expr;
 
+list_expr			: expr ',' expr;
 binary_expr			: primary_expr BINARY_OP primary_expr;
 unary_expr			: UNARY_OP primary_expr;
 post_unary_expr		: primary_expr POST_UNARY_OP;
@@ -107,7 +109,7 @@ UNARY_OP		: POST_UNARY_OP
 
 // Loop statements
 
-for_loop_stmnt		: attribute_list? 'for' '(' stmnt? ';' expr? ';' expr? ')' stmnt;
+for_loop_stmnt		: attribute_list? 'for' '(' stmnt? ';' expr? ';' argument_list? ')' stmnt;
 while_loop_stmnt	: attribute_list? 'while' '(' expr ')' stmnt;
 do_while_loop_stmnt	: attribute_list? 'do' code_block 'while' '(' expr ')';
 

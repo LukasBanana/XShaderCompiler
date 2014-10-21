@@ -232,6 +232,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     /* Check if a specific intrinsic is used */
     if (name == "mul")
         program_->flags << Program::mulIntrinsicUsed;
+    else if (name == "rcp")
+        program_->flags << Program::rcpIntrinsicUsed;
     else
     {
         auto it = intrinsicMap_.find(name);
@@ -474,6 +476,11 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     }
 }
 
+IMPLEMENT_VISIT_PROC(FunctionCallStmnt)
+{
+    Visit(ast->call);
+}
+
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     Visit(ast->expr);
@@ -485,6 +492,12 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 }
 
 /* --- Expressions --- */
+
+IMPLEMENT_VISIT_PROC(ListExpr)
+{
+    Visit(ast->firstExpr);
+    Visit(ast->nextExpr);
+}
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {

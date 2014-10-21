@@ -126,12 +126,13 @@ class HLSLParser
         IfStmntPtr                      ParseIfStmnt(const std::vector<FunctionCallPtr>& attribs);
         ElseStmntPtr                    ParseElseStmnt();
         SwitchStmntPtr                  ParseSwitchStmnt(const std::vector<FunctionCallPtr>& attribs);
-        StmntPtr                        ParseStructDeclOrVarDeclStmnt();
         CtrlTransferStmntPtr            ParseCtrlTransferStmnt();
         VarDeclStmntPtr                 ParseVarDeclStmnt();
         ReturnStmntPtr                  ParseReturnStmnt();
+        StmntPtr                        ParseStructDeclOrVarDeclStmnt();
+        StmntPtr                        ParseVarDeclOrAssignOrFunctionCallStmnt();
 
-        ExprPtr                         ParseExpr();
+        ExprPtr                         ParseExpr(bool allowComma = false);
         ExprPtr                         ParsePrimaryExpr();
         LiteralExprPtr                  ParseLiteralExpr();
         ExprPtr                         ParseTypeNameOrFunctionCallExpr();

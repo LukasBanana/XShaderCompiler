@@ -57,6 +57,7 @@ DECL_PTR( ReturnStmnt       );
 DECL_PTR( StructDeclStmnt   );
 DECL_PTR( CtrlTransferStmnt );
 
+DECL_PTR( ListExpr          );
 DECL_PTR( LiteralExpr       );
 DECL_PTR( TypeNameExpr      );
 DECL_PTR( BinaryExpr        );
@@ -125,6 +126,7 @@ class Visitor
         VISITOR_VISIT_PROC( StructDeclStmnt   );
         VISITOR_VISIT_PROC( CtrlTransferStmnt );
 
+        VISITOR_VISIT_PROC( ListExpr          );
         VISITOR_VISIT_PROC( LiteralExpr       );
         VISITOR_VISIT_PROC( TypeNameExpr      );
         VISITOR_VISIT_PROC( BinaryExpr        );
