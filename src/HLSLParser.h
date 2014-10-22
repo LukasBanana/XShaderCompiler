@@ -101,9 +101,9 @@ class HLSLParser
 
         GlobalDeclPtr                   ParseGlobalDecl();
         FunctionDeclPtr                 ParseFunctionDecl();
-        BufferDeclPtr                   ParseBufferDecl();
+        UniformBufferDeclPtr            ParseUniformBufferDecl();
         TextureDeclPtr                  ParseTextureDecl();
-        SamplerStateDeclPtr             ParseSamplerStateDecl();
+        SamplerDeclPtr                  ParseSamplerDecl();
         StructDeclPtr                   ParseStructDecl();
         DirectiveDeclPtr                ParseDirectiveDecl();
 
@@ -154,6 +154,7 @@ class HLSLParser
         std::vector<VarSemanticPtr>     ParseVarSemanticList();
         std::vector<FunctionCallPtr>    ParseAttributeList();
         std::vector<SwitchCasePtr>      ParseSwitchCaseList();
+        std::vector<BufferDeclIdentPtr> ParseBufferDeclIdentList();
 
         std::string                     ParseRegister(bool parseColon = true);
         std::string                     ParseSemantic();

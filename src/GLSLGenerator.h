@@ -135,9 +135,9 @@ class GLSLGenerator : private Visitor
         DECL_VISIT_PROC( SwitchCase        );
 
         DECL_VISIT_PROC( FunctionDecl      );
-        DECL_VISIT_PROC( BufferDecl        );
-        //DECL_VISIT_PROC( TextureDecl       );
-        //DECL_VISIT_PROC( SamplerStateDecl  );
+        DECL_VISIT_PROC( UniformBufferDecl );
+        DECL_VISIT_PROC( TextureDecl       );
+        //DECL_VISIT_PROC( SamplerDecl       );
         DECL_VISIT_PROC( StructDecl        );
         //DECL_VISIT_PROC( DirectiveDecl     );
 

@@ -366,13 +366,28 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     CloseScope();
 }
 
-IMPLEMENT_VISIT_PROC(BufferDecl)
+IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
-    if (ast->bufferType != "cbuffer")
-        Error("buffer type \"" + ast->bufferType + "\" currently not supported", ast);
-
     for (auto& member : ast->members)
         Visit(member);
+}
+
+IMPLEMENT_VISIT_PROC(TextureDecl)
+{
+    /* Register all texture identifiers */
+    for (auto& name : ast->names)
+    {
+        if (!name->registerName.empty())
+            AcquireExtension(ARBEXT_GL_ARB_shading_language_420pack);
+        Register(name->ident, ast);
+    }
+}
+
+IMPLEMENT_VISIT_PROC(SamplerDecl)
+{
+    /* Register all sampler identifiers */
+    for (auto& name : ast->names)
+        Register(name->ident, ast);
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)

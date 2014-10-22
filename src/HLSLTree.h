@@ -67,9 +67,10 @@ struct AST
         Structure,
 
         FunctionDecl,
-        BufferDecl,
+        UniformBufferDecl,
+        StorageBufferDecl,
         TextureDecl,
-        SamplerStateDecl,
+        SamplerDecl,
         StructDecl,
         DirectiveDecl,
 
@@ -213,10 +214,10 @@ struct FunctionDecl : public GlobalDecl
     CodeBlockPtr                    codeBlock;
 };
 
-//! Buffer (cbuffer, tbuffer) declaration.
-struct BufferDecl : public GlobalDecl
+//! Uniform buffer (cbuffer, tbuffer) declaration.
+struct UniformBufferDecl : public GlobalDecl
 {
-    AST_INTERFACE(BufferDecl);
+    AST_INTERFACE(UniformBufferDecl);
     std::string                     bufferType;
     std::string                     name;
     std::string                     registerName; // may be empty
@@ -228,14 +229,15 @@ struct TextureDecl : public GlobalDecl
 {
     AST_INTERFACE(TextureDecl);
     std::string                     textureType;
-    std::string                     genericType;
+    std::string                     colorType;
     std::vector<BufferDeclIdentPtr> names;
 };
 
-//! Sampler state declaration.
-struct SamplerStateDecl : public GlobalDecl
+//! Sampler declaration.
+struct SamplerDecl : public GlobalDecl
 {
-    AST_INTERFACE(SamplerStateDecl);
+    AST_INTERFACE(SamplerDecl);
+    std::string                     samplerType;
     std::vector<BufferDeclIdentPtr> names;
 };
 

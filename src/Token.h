@@ -82,9 +82,18 @@ class Token
             PackOffset,     //!< packoffset
 
             // Object keywords
-            Texture,        //!< texture, Texture1D, Texture1DArray, Texture2D, Texture2DArray, Texture3D, TextureCube, TextureCubeArray, Texture2DMS, Texture2DMSArray, Buffer
-            SamplerState,   //!< SamplerState
-            Buffer,         //!< cbuffer, tbuffer
+            Sampler,        //!< sampler, sampler1D, sampler2D, sampler3D, samplerCUBE, sampler_state, SamplerState
+            /**
+            Texture1D, Texture1DArray, Texture2D, Texture2DArray, Texture3D, TextureCube, TextureCubeArray,
+            Texture2DMS, Texture2DMSArray, RWTexture1D, RWTexture1DArray, RWTexture2D, RWTexture2DArray, RWTexture3D
+            */
+            Texture,
+            /**
+            AppendStructuredBuffer, Buffer, ByteAddressBuffer, ConsumeStructuredBuffer,
+            StructuredBuffer, RWBuffer, RWByteAddressBuffer, RWStructuredBuffer
+            */
+            StorageBuffer,
+            UniformBuffer,  //!< cbuffer, tbuffer
 
             // Control transfer keywords
             CtrlTransfer,   //!< break, continue, discard

@@ -35,9 +35,10 @@ DECL_PTR( Structure         );
 DECL_PTR( SwitchCase        );
 
 DECL_PTR( FunctionDecl      );
-DECL_PTR( BufferDecl        );
+DECL_PTR( UniformBufferDecl );
+//DECL_PTR( StorageBufferDecl );
 DECL_PTR( TextureDecl       );
-DECL_PTR( SamplerStateDecl  );
+DECL_PTR( SamplerDecl       );
 DECL_PTR( StructDecl        );
 DECL_PTR( DirectiveDecl     );
 
@@ -104,9 +105,9 @@ class Visitor
         VISITOR_VISIT_PROC( SwitchCase        );
 
         VISITOR_VISIT_PROC( FunctionDecl      );
-        VISITOR_VISIT_PROC( BufferDecl        );
+        VISITOR_VISIT_PROC( UniformBufferDecl );
         VISITOR_VISIT_PROC( TextureDecl       );
-        VISITOR_VISIT_PROC( SamplerStateDecl  );
+        VISITOR_VISIT_PROC( SamplerDecl       );
         VISITOR_VISIT_PROC( StructDecl        );
         VISITOR_VISIT_PROC( DirectiveDecl     );
 

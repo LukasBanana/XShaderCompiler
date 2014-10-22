@@ -10,7 +10,7 @@ global_decl_list	: global_decl*;
 global_decl			: function_decl
 					| buffer_decl
 					| texture_decl
-					| samplerstate_decl
+					| sampler_decl
 					| struct_decl ';'
 					| directive_decl;
 
@@ -258,21 +258,23 @@ TEXTURE_IDENT	: 'Buffer'
 				| 'RWTexture2DArray'
 				| 'RWTexture3D';
 
-texture_decl	: TEXTURE_IDENT ('<' base_var_type '>')? buffer_decl_ident (',' buffer_decl_ident)* ;
+texture_decl	: TEXTURE_IDENT ('<' base_var_type '>')? buffer_decl_ident (',' buffer_decl_ident)* ';';
 
 // Sampler state declaration
 
-samplerstate_decl	: 'SamplerState' buffer_decl_ident (',' buffer_decl_ident)*;
+SAMPLER_IDENT	: 'sampler'
+				| 'sampler1D'
+				| 'sampler2D'
+				| 'sampler3D'
+				| 'samplerCUBE'
+				| 'sampler_state'
+				| 'SamplerState';
+
+sampler_decl	: SAMPLER_IDENT buffer_decl_ident (',' buffer_decl_ident)* ';';
 
 // Struct declaration
 
 struct_decl		: 'struct' IDENT? var_decl_stmnt_list;
 var_decl_stmnt_list	: '{' (var_decl_stmnt ';')* '}';
 
-
-/*
-| buffer_decl
-| texture_decl
-| samplerstate_decl
-*/
 

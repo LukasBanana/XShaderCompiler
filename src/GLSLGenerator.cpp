@@ -193,6 +193,11 @@ void GLSLGenerator::EstablishMaps()
         { "TextureCubeArray", "samplerCubeArray" },
         { "Texture2DMS",      "sampler2DMS"      },
         { "Texture2DMSArray", "sampler2DMSArray" },
+        /*{ "RWTexture1D",      "" },
+        { "RWTexture1DArray", "" },
+        { "RWTexture2D",      "" },
+        { "RWTexture2DArray", "" },
+        { "RWTexture3D",      "" },*/
 
         /* Storage class types */
         { "groupshared", "shared" },
@@ -495,10 +500,7 @@ IMPLEMENT_VISIT_PROC(Program)
         AppendRcpFunctions();
 
     for (auto& globDecl : ast->globalDecls)
-    {
         Visit(globDecl);
-        Blank();
-    }
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
@@ -694,9 +696,11 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         /* Write default code block */
         Visit(ast->codeBlock);
     }
+
+    Blank();
 }
 
-IMPLEMENT_VISIT_PROC(BufferDecl)
+IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     /* Write uniform buffer header */
     Line(ast);
@@ -719,6 +723,32 @@ IMPLEMENT_VISIT_PROC(BufferDecl)
             Visit(member);
     }
     CloseScope(true);
+
+    Blank();
+}
+
+IMPLEMENT_VISIT_PROC(TextureDecl)
+{
+    /* Determine GLSL sampler type */
+    auto it = typeMap_.find(ast->textureType);
+    if (it == typeMap_.end())
+        Error("texture type \"" + ast->textureType + "\" not supported yet", ast);
+
+    auto samplerType = it->second;
+
+    /* Write texture samplers */
+    for (auto& name : ast->names)
+    {
+        BeginLn();
+        {
+            if (!name->registerName.empty())
+                Write("layout(binding = " + TRegister(name->registerName) + ") ");
+            Write(samplerType + " " + name->ident + ";");
+        }
+        EndLn();
+    }
+
+    Blank();
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
@@ -726,6 +756,8 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     Line(ast);
     bool semicolon = true;
     Visit(ast->structure, &semicolon);
+
+    Blank();
 }
 
 /* --- Statements --- */

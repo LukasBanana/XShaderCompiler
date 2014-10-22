@@ -22,7 +22,7 @@ class Flags
         Flags() = default;
 
         inline Flags(unsigned int flags) :
-            bitMask_(flags)
+            bitMask_{ flags }
         {
         }
 
