@@ -61,7 +61,8 @@ Translates the specifies HLSL code into GLSL code.
 \param[in,out] input Specifies the input stream. This must be valid HLSL code.
 \param[in,out] output Specifies the output stream. This will contain the output GLSL code.
 \param[in] shaderTarget Specifies the target shader.
-\param[in] shaderVersion Specifies the output shader version (e.g. for "GLSL 1.20" use ShaderVersions::GLSL120).
+\param[in] inputShaderVersion Specifies the input shader version (e.g. for "HLSL 5" use 'InputShaderVersions::HLSL5').
+\param[in] outputShaderVersion Specifies the output shader version (e.g. for "GLSL 1.20" use 'OutputShaderVersions::GLSL120').
 \param[in] includeHandler Optional pointer to the implementation of the "IncludeHandler" interface.
 This will be used when en "#include" directive occurs. If such a directive occurs
 and this parameter is null, the code generation will fail! By default null.
@@ -70,18 +71,22 @@ and this parameter is null, the code generation will fail! By default null.
 \return True if the code has been translated correctly.
 \note This translator makes a minimum of contextual analysis.
 Therefore wrong HLSL code may be translated into wrong GLSL code!
+\see InputShaderVersions
+\see OutputShaderVersions
 \see IncludeHandler
 \see Options
+\see Logger
 */
 _HT_EXPORT_ bool TranslateHLSLtoGLSL(
-    const std::shared_ptr<std::istream>& input,
-    std::ostream& output,
-    const std::string& entryPoint,
-    const ShaderTargets shaderTarget,
-    const ShaderVersions shaderVersion,
-    IncludeHandler* includeHandler = nullptr,
-    const Options& options = {},
-    Logger* log = nullptr
+    const std::shared_ptr<std::istream>&    input,
+    std::ostream&                           output,
+    const std::string&                      entryPoint,
+    const ShaderTargets                     shaderTarget,
+    const InputShaderVersions               inputShaderVersion,
+    const OutputShaderVersions              outputShaderVersion,
+    IncludeHandler*                         includeHandler = nullptr,
+    const Options&                          options = {},
+    Logger*                                 log = nullptr
 );
 
 

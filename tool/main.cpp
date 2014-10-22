@@ -92,7 +92,8 @@ class IncludeStreamHandler : public IncludeHandler
 
 std::string entry;
 std::string target;
-std::string version;
+std::string shaderIn = "HLSL5";
+std::string shaderOut = "GLSL110";
 std::string output;
 Options options;
 
@@ -117,7 +118,8 @@ static void ShowHelp()
     std::cout << "                        'tesscontrol'" << std::endl;
     std::cout << "                        'tessevaluation'" << std::endl;
     std::cout << "                        'compute'" << std::endl;
-    std::cout << "  -version VERSION    GLSL version ('110', '120', etc.); default is 110" << std::endl;
+    std::cout << "  -shaderin VERSION   HLSL version ('HLSL3', 'HLSL4' or 'HLSL5'); default is HLSL5" << std::endl;
+    std::cout << "  -shaderout VERSION  GLSL version ('GLSL110', 'GLSL120', etc.); default is GLSL110" << std::endl;
     std::cout << "  -indent INDENT      Code indentation string; default is 4 blanks" << std::endl;
     std::cout << "  -prefix PREFIX      Prefix for local variables; default '_'" << std::endl;
     std::cout << "  -output FILE        GLSL output file; default is '<InputFile>.glsl'" << std::endl;
@@ -152,23 +154,41 @@ static ShaderTargets TargetFromString(const std::string& target)
     return ShaderTargets::GLSLVertexShader;
 }
 
-static ShaderVersions VersionFromString(const std::string& version)
+static InputShaderVersions InputVersionFromString(const std::string& version)
 {
-    if (version == "110") return ShaderVersions::GLSL110;
-    if (version == "120") return ShaderVersions::GLSL120;
-    if (version == "130") return ShaderVersions::GLSL130;
-    if (version == "140") return ShaderVersions::GLSL140;
-    if (version == "150") return ShaderVersions::GLSL150;
-    if (version == "330") return ShaderVersions::GLSL330;
-    if (version == "400") return ShaderVersions::GLSL400;
-    if (version == "410") return ShaderVersions::GLSL410;
-    if (version == "420") return ShaderVersions::GLSL420;
-    if (version == "430") return ShaderVersions::GLSL430;
-    if (version == "440") return ShaderVersions::GLSL440;
-    if (version == "450") return ShaderVersions::GLSL450;
+    #define CHECK_IN_VER(n) if (version == #n) return InputShaderVersions::n
 
-    throw std::string("invalid shader version \"" + version + "\"");
-    return ShaderVersions::GLSL110;
+    CHECK_IN_VER(HLSL3);
+    CHECK_IN_VER(HLSL4);
+    CHECK_IN_VER(HLSL5);
+
+    #undef CHECK_IN_VER
+
+    throw std::string("invalid input shader version \"" + version + "\"");
+    return InputShaderVersions::HLSL5;
+}
+
+static OutputShaderVersions OutputVersionFromString(const std::string& version)
+{
+    #define CHECK_OUT_VER(n) if (version == #n) return OutputShaderVersions::n
+
+    CHECK_OUT_VER(GLSL110);
+    CHECK_OUT_VER(GLSL120);
+    CHECK_OUT_VER(GLSL130);
+    CHECK_OUT_VER(GLSL140);
+    CHECK_OUT_VER(GLSL150);
+    CHECK_OUT_VER(GLSL330);
+    CHECK_OUT_VER(GLSL400);
+    CHECK_OUT_VER(GLSL410);
+    CHECK_OUT_VER(GLSL420);
+    CHECK_OUT_VER(GLSL430);
+    CHECK_OUT_VER(GLSL440);
+    CHECK_OUT_VER(GLSL450);
+
+    #undef CHECK_OUT_VER
+
+    throw std::string("invalid output shader version \"" + version + "\"");
+    return OutputShaderVersions::GLSL110;
 }
 
 static std::string NextArg(int& i, int argc, char** argv, const std::string& flag)
@@ -210,7 +230,8 @@ static void Translate(const std::string& filename)
             outputStream,
             entry,
             TargetFromString(target),
-            VersionFromString(version),
+            InputVersionFromString(shaderIn),
+            OutputVersionFromString(shaderOut),
             &includeHandler,
             options,
             &log
@@ -253,8 +274,10 @@ int main(int argc, char** argv)
                 entry = NextArg(i, argc, argv, arg);
             else if (arg == "-target")
                 target = NextArg(i, argc, argv, arg);
-            else if (arg == "-version")
-                version = NextArg(i, argc, argv, arg);
+            else if (arg == "-shaderin")
+                shaderIn = NextArg(i, argc, argv, arg);
+            else if (arg == "-shaderout")
+                shaderOut = NextArg(i, argc, argv, arg);
             else if (arg == "-indent")
                 options.indent = NextArg(i, argc, argv, arg);
             else if (arg == "-prefix")

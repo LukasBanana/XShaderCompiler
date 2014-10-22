@@ -38,7 +38,7 @@ bool HLSLAnalyzer::DecorateAST(
     Program* program,
     const std::string& entryPoint,
     const ShaderTargets shaderTarget,
-    const ShaderVersions shaderVersion,
+    const OutputShaderVersions shaderVersion,
     const std::string& localVarPrefix)
 {
     if (!program)
@@ -268,10 +268,12 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         auto symbol = Fetch(ast->name->ident);
         if (symbol)
         {
-            /*if (symbol->Type() == AST::Types::TextureDecl)
+            if (symbol->Type() == AST::Types::TextureDecl)
             {
+                const auto& funcName = ast->name->next->ident;
+
                 //...
-            }*/
+            }
         }
         else
             NotifyUndeclaredIdent(ast->name->ident, ast);

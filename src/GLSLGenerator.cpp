@@ -78,7 +78,7 @@ bool GLSLGenerator::GenerateCode(
     std::ostream& output,
     const std::string& entryPoint,
     const ShaderTargets shaderTarget,
-    const ShaderVersions shaderVersion)
+    const OutputShaderVersions shaderVersion)
 {
     if (!program)
         return false;

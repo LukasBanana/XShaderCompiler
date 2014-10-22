@@ -16,14 +16,15 @@ namespace HTLib
 
 
 _HT_EXPORT_ bool TranslateHLSLtoGLSL(
-    const std::shared_ptr<std::istream>& input,
-    std::ostream& output,
-    const std::string& entryPoint,
-    const ShaderTargets shaderTarget,
-    const ShaderVersions shaderVersion,
-    IncludeHandler* includeHandler,
-    const Options& options,
-    Logger* log)
+    const std::shared_ptr<std::istream>&    input,
+    std::ostream&                           output,
+    const std::string&                      entryPoint,
+    const ShaderTargets                     shaderTarget,
+    const InputShaderVersions               inputShaderVersion,
+    const OutputShaderVersions              outputShaderVersion,
+    IncludeHandler*                         includeHandler,
+    const Options&                          options,
+    Logger*                                 log)
 {
     /* Parse HLSL input code */
     HLSLParser parser(log);
@@ -38,7 +39,7 @@ _HT_EXPORT_ bool TranslateHLSLtoGLSL(
 
     /* Small context analysis */
     HLSLAnalyzer analyzer(log);
-    if (!analyzer.DecorateAST(program.get(), entryPoint, shaderTarget, shaderVersion, options.prefix))
+    if (!analyzer.DecorateAST(program.get(), entryPoint, shaderTarget, outputShaderVersion, options.prefix))
     {
         if (log)
             log->Error("analyzing input code failed");
@@ -47,7 +48,7 @@ _HT_EXPORT_ bool TranslateHLSLtoGLSL(
 
     /* Generate GLSL output code */
     GLSLGenerator generator(log, includeHandler, options);
-    if (!generator.GenerateCode(program.get(), output, entryPoint, shaderTarget, shaderVersion))
+    if (!generator.GenerateCode(program.get(), output, entryPoint, shaderTarget, outputShaderVersion))
     {
         if (log)
             log->Error("generating output code failed");

@@ -60,6 +60,7 @@ VertexOut VS(VertexIn inp, uint vertexID : SV_VertexID, float3 texCoord2 : TEXCO
 // Pixel shader
 
 Texture2D tex : register(t0), tex2 : register(t1);
+Texture2D<float> tex3 : register(t2);
 SamplerState samplerState : register(s0);
 
 float4 PS(VertexOut inp) : SV_Target0

@@ -35,7 +35,7 @@ class HLSLAnalyzer : private Visitor
             Program* program,
             const std::string& entryPoint,
             const ShaderTargets shaderTarget,
-            const ShaderVersions shaderVersion,
+            const OutputShaderVersions shaderVersion,
             const std::string& localVarPrefix
         );
 
@@ -123,15 +123,15 @@ class HLSLAnalyzer : private Visitor
 
         /* === Members === */
 
-        Logger*         log_            = nullptr;
+        Logger*                 log_            = nullptr;
 
-        bool            hasErrors_      = false;
-        Program*        program_        = nullptr;
+        bool                    hasErrors_      = false;
+        Program*                program_        = nullptr;
 
-        std::string     entryPoint_;
-        ShaderTargets   shaderTarget_   = ShaderTargets::GLSLVertexShader;
-        ShaderVersions  shaderVersion_  = ShaderVersions::GLSL110;
-        std::string     localVarPrefix_;
+        std::string             entryPoint_;
+        ShaderTargets           shaderTarget_   = ShaderTargets::GLSLVertexShader;
+        OutputShaderVersions    shaderVersion_  = OutputShaderVersions::GLSL110;
+        std::string             localVarPrefix_;
 
         std::map<std::string, IntrinsicClasses> intrinsicMap_;
         std::map<std::string, Program::ARBExtension> extensionMap_;
