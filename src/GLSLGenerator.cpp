@@ -229,6 +229,18 @@ void GLSLGenerator::EstablishMaps()
         { "sample",          "sample"        },
     };
 
+    texFuncMap_ = std::map<std::string, std::string>
+    {
+        { "GetDimensions ",     "textureSize"   },
+        { "Load",               "texelFetch"    },
+        { "Sample",             "texture"       },
+        { "SampleBias",         "textureOffset" },
+        //{ "SampleCmp", "" },
+        //{ "SampleCmpLevelZero", "" },
+        { "SampleGrad",         "textureGrad"   },
+        { "SampleLevel",        "textureLod"    },
+    };
+
     semanticMap_ = std::map<std::string, SemanticStage>
     {
         { "SV_ClipDistance",            { "gl_ClipDistance"                             } },
@@ -527,6 +539,31 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         Write(") * (");
         Visit(ast->arguments[1]);
         Write("))");
+    }
+    else if (ast->flags(FunctionCall::isTexFunc) && ast->name->next)
+    {
+        /* Get function name */
+        const auto& inFuncName = ast->name->next->ident;
+
+        auto it = texFuncMap_.find(inFuncName);
+        if (it == texFuncMap_.end())
+            Error("texture member function \"" + inFuncName + "\" is not supported", ast);
+
+        const auto& funcName = it->second;
+
+        /* Write function call */
+        Write(funcName + "(");
+        
+        for (size_t i = 0; i < ast->arguments.size(); ++i)
+        {
+            const auto& arg = ast->arguments[i];
+            
+            Visit(arg);
+            if (i + 1 < ast->arguments.size())
+                Write(", ");
+        }
+
+        Write(")");
     }
     else
     {

@@ -201,6 +201,7 @@ class GLSLGenerator : private Visitor
         std::map<std::string, std::string> typeMap_;        // <hlsl-type, glsl-type>
         std::map<std::string, std::string> intrinsicMap_;   // <hlsl-intrinsic, glsl-intrinsic>
         std::map<std::string, std::string> modifierMap_;    // <hlsl-modifier, glsl-qualifier>
+        std::map<std::string, std::string> texFuncMap_;     // <hlsl-function, glsl-function>
         std::map<std::string, SemanticStage> semanticMap_;  // <hlsl-semantic, glsl-keyword>
 
 };

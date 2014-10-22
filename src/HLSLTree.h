@@ -171,10 +171,9 @@ struct FunctionCall : public AST
 {
     FLAG_ENUM
     {
-        FLAG( isMulFunc,    0 ), // This is a "mul" function.
-        FLAG( isRcpFunc,    1 ), // This is a "rcp" function.
-        FLAG( isSampleFunc, 2 ), // This is a "Texture.Sample" function.
-        FLAG( isLoadFunc,   3 ), // This is a "Texture.Load" function.
+        FLAG( isMulFunc, 0 ), // This is a "mul" function.
+        FLAG( isRcpFunc, 1 ), // This is a "rcp" function.
+        FLAG( isTexFunc, 2 ), // This is a texture function (e.g. "tex.Sample" or "tex.Load").
     };
     AST_INTERFACE(FunctionCall);
     VarIdentPtr             name;

@@ -270,9 +270,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         {
             if (symbol->Type() == AST::Types::TextureDecl)
             {
-                const auto& funcName = ast->name->next->ident;
-
-                //...
+                //const auto& funcName = ast->name->next->ident;
+                ast->flags << FunctionCall::isTexFunc;
             }
         }
         else
