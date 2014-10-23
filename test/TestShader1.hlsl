@@ -78,6 +78,8 @@ Texture2D tex : register(t0), tex2 : register(t1);
 Texture2D<float> tex3 : register(t2);
 SamplerState samplerState : register(s0);
 
+void Frustum(inout float4 v);
+
 float4 PS(VertexOut inp) : SV_Target0
 {
 	float3 interpColor = float3(1.0, 0.0, 0.0);
@@ -91,7 +93,16 @@ float4 PS(VertexOut inp) : SV_Target0
 	// dFdxCoarse requires GLSL 4.00 or the "GL_ARB_derivative_control" extension
 	float2 tc_dx = ddx_coarse(inp.texCoord);
 	
+	float4 viewRay = (float4)0.0;
+	Frustum(viewRay);
+	
 	return ambientColor + saturate(inp.color * diffuse);
+}
+
+void Frustum(inout float4 v)
+{
+	v.x = v.x*0.5 + 0.5;
+	v.y = v.y*0.5 + 0.5;
 }
 
 // Compute shader

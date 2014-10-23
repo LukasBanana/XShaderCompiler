@@ -266,7 +266,10 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl()
         ast->semantic = ParseSemantic();
 
     /* Parse function body */
-    ast->codeBlock = ParseCodeBlock();
+    if (Is(Tokens::Semicolon))
+        AcceptIt();
+    else
+        ast->codeBlock = ParseCodeBlock();
 
     return ast;
 }

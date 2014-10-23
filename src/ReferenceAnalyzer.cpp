@@ -54,7 +54,15 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     {
         if (symbol->Type() == AST::Types::FunctionDecl)
         {
-            /* Mark this function an visit the entire function body */
+            auto functionDecl = dynamic_cast<FunctionDecl*>(symbol);
+            if (functionDecl)
+            {
+                /* Mark all forward declarations to this function */
+                for (auto& forwardDecl : functionDecl->forwardDeclsRef)
+                    forwardDecl->flags << FunctionDecl::isReferenced;
+            }
+
+            /* Mark this function and visit the entire function body */
             symbol->flags << FunctionDecl::isReferenced;
             Visit(symbol);
         }

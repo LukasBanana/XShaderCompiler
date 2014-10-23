@@ -217,7 +217,8 @@ struct FunctionDecl : public GlobalDecl
     std::string                     name;
     std::vector<VarDeclStmntPtr>    parameters;
     std::string                     semantic;
-    CodeBlockPtr                    codeBlock;
+    CodeBlockPtr                    codeBlock; // may be null (if this AST node is a forward declaration)
+    std::vector<FunctionDecl*>      forwardDeclsRef; // list of forward declarations to this function
 };
 
 //! Uniform buffer (cbuffer, tbuffer) declaration.

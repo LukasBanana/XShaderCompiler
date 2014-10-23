@@ -339,12 +339,25 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     const auto isEntryPoint = (ast->name == entryPoint_);
 
+    /* Find previous function forward declarations */
+    auto symbol = Fetch(ast->name);
+    if (symbol && symbol->Type() == AST::Types::FunctionDecl)
+    {
+        auto forwardDecl = dynamic_cast<FunctionDecl*>(symbol);
+        if (forwardDecl)
+        {
+            /* Append previous forward declarations */
+            ast->forwardDeclsRef = forwardDecl->forwardDeclsRef;
+            ast->forwardDeclsRef.push_back(forwardDecl);
+        }
+    }
+
     /* Register symbol name */
     Register(
         ast->name, ast,
         [](AST* symbol) -> bool
         {
-            return symbol->Type() == AST::Types::FunctionDecl;//!TODO! Types::FunctionForwardDecl !!!
+            return symbol->Type() == AST::Types::FunctionDecl;
         }
     );
 

@@ -723,34 +723,46 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             }
 
             Write(")");
+
+            if (!ast->codeBlock)
+            {
+                /*
+                This is only a function forward declaration
+                -> finish with line terminator
+                */
+                Write(";");
+            }
         }
     }
     EndLn();
 
-    /* Write function body */
-    if (ast->flags(FunctionDecl::isEntryPoint))
+    if (ast->codeBlock)
     {
-        OpenScope();
+        /* Write function body */
+        if (ast->flags(FunctionDecl::isEntryPoint))
         {
-            /* Write input parameters as local variables */
-            for (auto& param : ast->parameters)
-                WriteEntryPointParameter(param.get());
-            Blank();
-
-            /* Write code block (without additional scope) */
-            isInsideEntryPoint_ = true;
+            OpenScope();
             {
-                bool writeScope = false;
-                Visit(ast->codeBlock, &writeScope);
+                /* Write input parameters as local variables */
+                for (auto& param : ast->parameters)
+                    WriteEntryPointParameter(param.get());
+                Blank();
+
+                /* Write code block (without additional scope) */
+                isInsideEntryPoint_ = true;
+                {
+                    bool writeScope = false;
+                    Visit(ast->codeBlock, &writeScope);
+                }
+                isInsideEntryPoint_ = false;
             }
-            isInsideEntryPoint_ = false;
+            CloseScope();
         }
-        CloseScope();
-    }
-    else
-    {
-        /* Write default code block */
-        Visit(ast->codeBlock);
+        else
+        {
+            /* Write default code block */
+            Visit(ast->codeBlock);
+        }
     }
 
     Blank();
@@ -1304,12 +1316,25 @@ void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast)
 
 void GLSLGenerator::VisitParameter(VarDeclStmnt* ast)
 {
+    /* Write type modifier */
     if (ast->typeModifier == "const")
         Write(ast->typeModifier + " ");
 
+    /* Write common modifiers */
+    for (const auto& modifier : ast->commonModifiers)
+    {
+        if (modifier == "in" || modifier == "out" || modifier == "inout")
+        {
+            Write(modifier + " ");
+            break;
+        }
+    }
+
+    /* Write parameter type */
     Visit(ast->varType);
     Write(" ");
 
+    /* Write parameter identifier */
     if (ast->varDecls.size() == 1)
         Visit(ast->varDecls[0]);
     else

@@ -43,7 +43,7 @@ class HLSLAnalyzer : private Visitor
 
     private:
         
-        typedef SymbolTable<AST>::OnOverrideProc OnOverrideProc;
+        typedef ASTSymbolTable::OnOverrideProc OnOverrideProc;
 
         /* === Enumerations === */
 
