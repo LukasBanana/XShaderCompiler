@@ -202,6 +202,7 @@ struct FunctionDecl : public GlobalDecl
     {
         FLAG( isEntryPoint, 0 ), // This function is the main entry point.
         FLAG( isUsed,       1 ), // This function is used at least once (use-count >= 1).
+        FLAG( wasMarked,    2 ), // This function was already marked by the "FuncUseAnalyzer" visitor.
     };
     AST_INTERFACE(FunctionDecl);
     std::vector<FunctionCallPtr>    attribs; // attribute list

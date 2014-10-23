@@ -6,7 +6,6 @@
  */
 
 #include "HLSLAnalyzer.h"
-#include "HLSLTree.h"
 
 
 namespace HTLib
@@ -29,8 +28,8 @@ static const ARBExt ARBEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_la
  */
 
 HLSLAnalyzer::HLSLAnalyzer(Logger* log) :
-    log_            { log        },
-    funcUseAnalyzer_{ symTable_ }
+    log_        { log        },
+    refAnalyzer_{ symTable_ }
 {
     EstablishMaps();
 }
@@ -222,8 +221,15 @@ FunctionCall* HLSLAnalyzer::CurrentFunction() const
 
 IMPLEMENT_VISIT_PROC(Program)
 {
+    /* Analyze context of the entire program */
     for (auto& globDecl : ast->globalDecls)
         Visit(globDecl);
+
+    /* Mark all functions used for the target shader */
+    if (mainFunction_)
+        refAnalyzer_.MarkFunctionsFromEntryPoint(mainFunction_);
+    else
+        Error("entry point \"" + entryPoint_ + "\" not found");
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
@@ -352,6 +358,8 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
         if (isEntryPoint)
         {
+            mainFunction_ = ast;
+
             /* Add flags */
             ast->flags << FunctionDecl::isEntryPoint;
             ast->flags << FunctionDecl::isUsed;
@@ -360,9 +368,6 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             DecorateEntryInOut(ast->returnType.get(), false);
             for (auto& param : ast->parameters)
                 DecorateEntryInOut(param.get(), true);
-
-            /* Mark all functions used for the target shader */
-            //(ast->codeBlock.get();
         }
 
         /* Visit function body */

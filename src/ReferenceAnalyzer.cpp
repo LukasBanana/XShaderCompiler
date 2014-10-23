@@ -1,11 +1,11 @@
 /*
- * FuncUseAnalyzer.cpp
+ * ReferenceAnalyzer.cpp
  * 
  * This file is part of the "HLSL Translator" (Copyright (c) 2014 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
-#include "FuncUseAnalyzer.h"
+#include "ReferenceAnalyzer.h"
 #include "HLSLTree.h"
 
 
@@ -13,12 +13,12 @@ namespace HTLib
 {
 
 
-FuncUseAnalyzer::FuncUseAnalyzer(const ASTSymbolTable& symTable) :
+ReferenceAnalyzer::ReferenceAnalyzer(const ASTSymbolTable& symTable) :
     symTable_{ &symTable }
 {
 }
 
-void FuncUseAnalyzer::MarkFunctionsFromEntryPoint(FunctionDecl* ast)
+void ReferenceAnalyzer::MarkFunctionsFromEntryPoint(FunctionDecl* ast)
 {
     Visit(ast);
 }
@@ -31,7 +31,7 @@ void FuncUseAnalyzer::MarkFunctionsFromEntryPoint(FunctionDecl* ast)
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(className) \
-    void FuncUseAnalyzer::Visit##className(className* ast, void* args)
+    void ReferenceAnalyzer::Visit##className(className* ast, void* args)
 
 IMPLEMENT_VISIT_PROC(Program)
 {
@@ -47,6 +47,17 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
+    /* Mark this function to be used */
+    auto symbol = symTable_->Fetch(FullVarIdent(ast->name));
+    if (symbol && symbol->Type() == AST::Types::FunctionDecl)
+    {
+        symbol->flags << FunctionDecl::isUsed;
+
+        /* Visit referenced function */
+        Visit(symbol);
+    }
+
+    /* Visit arguments */
     for (auto& arg : ast->arguments)
         Visit(arg);
 }
@@ -62,6 +73,12 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
+    /* Check if this function was already marked by this analyzer */
+    if (ast->flags(FunctionDecl::wasMarked))
+        return;
+    ast->flags << FunctionDecl::wasMarked;
+
+    /* Analyze function */
     Visit(ast->returnType);
     for (auto& param : ast->parameters)
         Visit(param);

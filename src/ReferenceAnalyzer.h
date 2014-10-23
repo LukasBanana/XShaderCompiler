@@ -1,12 +1,12 @@
 /*
- * FuncUseAnalyzer.h
+ * ReferenceAnalyzer.h
  * 
  * This file is part of the "HLSL Translator" (Copyright (c) 2014 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_FUNC_USE_ANALYZER_H__
-#define __HT_FUNC_USE_ANALYZER_H__
+#ifndef __HT_REFERENCE_ANALYZER_H__
+#define __HT_REFERENCE_ANALYZER_H__
 
 
 #include "Visitor.h"
@@ -22,17 +22,17 @@ namespace HTLib
 typedef SymbolTable<AST> ASTSymbolTable;
 
 /**
-Function usage analyzer.
+Object reference analyzer.
 This helper class for the context analyzer marks all functions
 which are used from the beginning of the shader entry point.
 All other functions will be removed from the code generation.
 */
-class FuncUseAnalyzer : private Visitor
+class ReferenceAnalyzer : private Visitor
 {
     
     public:
         
-        FuncUseAnalyzer(const ASTSymbolTable& symTable);
+        ReferenceAnalyzer(const ASTSymbolTable& symTable);
 
         void MarkFunctionsFromEntryPoint(FunctionDecl* ast);
 

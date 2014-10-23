@@ -10,7 +10,7 @@
 
 
 #include "HT/Translator.h"
-#include "FuncUseAnalyzer.h"
+#include "ReferenceAnalyzer.h"
 #include "CodeWriter.h"
 #include "Visitor.h"
 #include "Token.h"
@@ -134,6 +134,7 @@ class HLSLAnalyzer : private Visitor
 
         bool                    hasErrors_      = false;
         Program*                program_        = nullptr;
+        FunctionDecl*           mainFunction_   = nullptr;
 
         std::string             entryPoint_;
         ShaderTargets           shaderTarget_   = ShaderTargets::GLSLVertexShader;
@@ -145,8 +146,8 @@ class HLSLAnalyzer : private Visitor
 
         std::stack<FunctionCall*> callStack_; //!< Function call stack to join arguments with its function call.
 
-        ASTSymbolTable  symTable_;
-        FuncUseAnalyzer funcUseAnalyzer_;
+        ASTSymbolTable      symTable_;
+        ReferenceAnalyzer   refAnalyzer_;
 
         bool isInsideFunc_          = false; //!< True if AST traversal is currently inside any function.
         bool isInsideEntryPoint_    = false; //!< True if AST traversal is currently inside the main entry point (or its sub nodes).
