@@ -21,6 +21,7 @@ typedef Program::ARBExtension ARBExt;
 static const ARBExt ARBEXT_GL_EXT_gpu_shader4               { "GL_EXT_gpu_shader4",                 130 };
 static const ARBExt ARBEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",          400 };
 static const ARBExt ARBEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_language_420pack",    420 };
+static const ARBExt ARBEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_image_load_store",     420 };
 
 
 /*
@@ -38,7 +39,8 @@ bool HLSLAnalyzer::DecorateAST(
     Program* program,
     const std::string& entryPoint,
     const ShaderTargets shaderTarget,
-    const OutputShaderVersions shaderVersion,
+    const InputShaderVersions versionIn,
+    const OutputShaderVersions versionOut,
     const Options& options)
 {
     if (!program)
@@ -47,7 +49,8 @@ bool HLSLAnalyzer::DecorateAST(
     /* Store parameters */
     entryPoint_     = entryPoint;
     shaderTarget_   = shaderTarget;
-    shaderVersion_  = shaderVersion;
+    versionIn_      = versionIn;
+    versionOut_     = versionOut;
     localVarPrefix_ = options.prefix;
     enableWarnings_ = options.warnings;
 
@@ -201,13 +204,13 @@ void HLSLAnalyzer::ReportNullStmnt(const StmntPtr& ast, const std::string& stmnt
 
 void HLSLAnalyzer::AcquireExtension(const Program::ARBExtension& extension)
 {
-    if (!IsVersion(extension.requiredVersion))
+    if (!IsVersionOut(extension.requiredVersion))
         program_->requiredExtensions.insert(extension.extensionName);
 }
 
-bool HLSLAnalyzer::IsVersion(int version) const
+bool HLSLAnalyzer::IsVersionOut(int version) const
 {
-    return static_cast<int>(shaderVersion_) >= version;
+    return static_cast<int>(versionOut_) >= version;
 }
 
 FunctionCall* HLSLAnalyzer::CurrentFunction() const
@@ -334,6 +337,8 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
+    const auto isEntryPoint = (ast->name == entryPoint_);
+
     /* Register symbol name */
     Register(
         ast->name, ast,
@@ -343,10 +348,19 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         }
     );
 
-    /* Visit function header */
+    /* Visit attributes */
     for (auto& attrib : ast->attribs)
+    {
         Visit(attrib);
 
+        /* Check for special attributes */
+        auto name = FullVarIdent(attrib->name);
+
+        if (name == "earlydepthstencil")
+            AcquireExtension(ARBEXT_GL_ARB_shader_image_load_store);
+    }
+
+    /* Visit function header */
     Visit(ast->returnType);
 
     OpenScope();
@@ -354,9 +368,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         for (auto& param : ast->parameters)
             Visit(param);
 
-        /* Mark function as used when it's the main entry point */
-        const auto isEntryPoint = (ast->name == entryPoint_);
-
+        /* Special case for the main entry point */
         if (isEntryPoint)
         {
             mainFunction_ = ast;
@@ -368,6 +380,10 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             DecorateEntryInOut(ast->returnType.get(), false);
             for (auto& param : ast->parameters)
                 DecorateEntryInOut(param.get(), true);
+
+            /* Check if fragment shader use a slightly different screen space (VPOS vs. SV_Position) */
+            if (shaderTarget_ == ShaderTargets::GLSLFragmentShader && versionIn_ <= InputShaderVersions::HLSL3)
+                program_->flags << Program::hasSM3ScreenSpace;
         }
 
         /* Visit function body */

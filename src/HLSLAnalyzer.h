@@ -36,7 +36,8 @@ class HLSLAnalyzer : private Visitor
             Program* program,
             const std::string& entryPoint,
             const ShaderTargets shaderTarget,
-            const OutputShaderVersions shaderVersion,
+            const InputShaderVersions versionIn,
+            const OutputShaderVersions versionOut,
             const Options& options
         );
 
@@ -75,7 +76,7 @@ class HLSLAnalyzer : private Visitor
         void AcquireExtension(const Program::ARBExtension& extension);
 
         //! Returns true if the target version is greater than or equal to the specified version number.
-        bool IsVersion(int version) const;
+        bool IsVersionOut(int version) const;
 
         /**
         Returns the current (top level) function in the call stack
@@ -139,7 +140,8 @@ class HLSLAnalyzer : private Visitor
 
         std::string             entryPoint_;
         ShaderTargets           shaderTarget_   = ShaderTargets::GLSLVertexShader;
-        OutputShaderVersions    shaderVersion_  = OutputShaderVersions::GLSL110;
+        InputShaderVersions     versionIn_      = InputShaderVersions::HLSL5;
+        OutputShaderVersions    versionOut_     = OutputShaderVersions::GLSL330;
         std::string             localVarPrefix_;
 
         std::map<std::string, IntrinsicClasses> intrinsicMap_;

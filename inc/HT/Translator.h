@@ -29,6 +29,7 @@ struct Options
 {
     //! Indentation string for code generation. By default std::string(4, ' ').
     std::string indent      = "    ";
+    
     /**
     Prefix string for all local variables. By default "_".
     \remarks This prefix is used because GLSL does not allow interface blocks as
@@ -37,10 +38,15 @@ struct Options
     This prefix is added to all local function variables.
     */
     std::string prefix      = "_";
-    //! True if no blanks are allowed. By default false.
-    bool        noblanks    = false;
+
     //! True if warnings are allowed. By default false.
     bool        warnings    = false;
+
+    //! True if no blanks are allowed. By default false.
+    bool        noBlanks    = false;
+
+    //! True if no line marks are allowed. By default false.
+    bool        noLineMarks = false;
 };
 
 //! Interface for handling new include streams.

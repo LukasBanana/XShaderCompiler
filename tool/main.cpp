@@ -116,9 +116,9 @@ static void ShowHelp()
     PrintLines(
         {
             "Usage:",
-            "  HLSLOfflineTranslator (Options [FILE])+",
+            "  HLSLOfflineTranslator (Options FILE)+",
             "Options:",
-            "  -entry NAME .......... HLSL shader entry point",
+            "  -entry ENTRY ......... HLSL shader entry point",
             "  -target TARGET ....... Shader target; valid values:",
             "    vertex, fragment, geometry, tess-control, tess-evaluation, compute",
             "  -shaderin VERSION .... HLSL version; default is HLSL5; valid values:",
@@ -128,13 +128,15 @@ static void ShowHelp()
             "    GLSL400, GLSL410, GLSL420, GLSL430, GLSL440, GLSL450",
             "  -indent INDENT ....... Code indentation string; default is 4 blanks",
             "  -prefix PREFIX ....... Prefix for local variables; default '_'",
-            "  -output FILE ......... GLSL output file; default is '<InputFile>.<entry>.glsl'",
-            "  -noblanks ............ No blank lines will be generated",
+            "  -output FILE ......... GLSL output file; default is '<FILE>.<ENTRY>.glsl'",
             "  -warn ................ Enables all warnings",
+            "  -no-blanks ........... No blank lines will be generated",
+            "  -no-line-marks ....... No line marks will be generated (e.g. '#line 30')",
             "  --help, help, -h ..... Prints this help reference",
             "  --version, -v ........ Prints the version information",
             "Example:",
-            "  HLSLOfflineTranslator -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl"
+            "  HLSLOfflineTranslator -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl",
+            "   --> Example.hlsl.vertex.glsl; Example.hlsl.fragment.glsl ",
         }
     );
 }
@@ -279,10 +281,12 @@ int main(int argc, char** argv)
                 showHelp = true;
             else if (arg == "--version" || arg == "-v")
                 showVersion = true;
-            else if (arg == "-noblanks")
-                options.noblanks = true;
             else if (arg == "-warn")
                 options.warnings = true;
+            else if (arg == "-no-blanks")
+                options.noBlanks = true;
+            else if (arg == "-no-line-marks")
+                options.noLineMarks = true;
             else if (arg == "-entry")
                 entry = NextArg(i, argc, argv, arg);
             else if (arg == "-target")

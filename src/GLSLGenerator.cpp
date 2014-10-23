@@ -64,11 +64,12 @@ static std::string TargetToString(const ShaderTargets shaderTarget)
  */
 
 GLSLGenerator::GLSLGenerator(Logger* log, IncludeHandler* includeHandler, const Options& options) :
-    writer_         { options.indent    },
-    includeHandler_ { includeHandler    },
-    log_            { log               },
-    localVarPrefix_ { options.prefix    },
-    allowBlanks_    { !options.noblanks }
+    writer_         { options.indent       },
+    includeHandler_ { includeHandler       },
+    log_            { log                  },
+    localVarPrefix_ { options.prefix       },
+    allowBlanks_    { !options.noBlanks    },
+    allowLineMarks_ { !options.noLineMarks }
 {
     EstablishMaps();
 }
@@ -78,7 +79,8 @@ bool GLSLGenerator::GenerateCode(
     std::ostream& output,
     const std::string& entryPoint,
     const ShaderTargets shaderTarget,
-    const OutputShaderVersions shaderVersion)
+    const InputShaderVersions versionIn,
+    const OutputShaderVersions versionOut)
 {
     if (!program)
         return false;
@@ -86,7 +88,8 @@ bool GLSLGenerator::GenerateCode(
     /* Store parameters */
     entryPoint_     = entryPoint;
     shaderTarget_   = shaderTarget;
-    shaderVersion_  = shaderVersion;
+    versionIn_      = versionIn;
+    versionOut_     = versionOut;
 
     try
     {
@@ -98,7 +101,7 @@ bool GLSLGenerator::GenerateCode(
         Comment(TimePoint());
         Blank();
 
-        Version(static_cast<int>(shaderVersion));
+        Version(static_cast<int>(versionOut_));
         Blank();
 
         /* Visit program AST */
@@ -334,7 +337,8 @@ void GLSLGenerator::Version(int versionNumber)
 
 void GLSLGenerator::Line(int lineNumber)
 {
-    WriteLn("#line " + std::to_string(lineNumber));
+    if (allowLineMarks_)
+        WriteLn("#line " + std::to_string(lineNumber));
 }
 
 void GLSLGenerator::Line(const TokenPtr& tkn)
@@ -482,11 +486,6 @@ std::string GLSLGenerator::URegister(const std::string& registerName)
     return registerName.substr(1);
 }
 
-bool GLSLGenerator::IsVersion(int version) const
-{
-    return static_cast<int>(shaderVersion_) >= version;
-}
-
 bool GLSLGenerator::MustResolveStruct(Structure* ast) const
 {
     return
@@ -502,6 +501,22 @@ bool GLSLGenerator::MustResolveStruct(Structure* ast) const
 
 IMPLEMENT_VISIT_PROC(Program)
 {
+    program_ = ast;
+
+    /* Write 'gl_FragCoord' layout */
+    if (shaderTarget_ == ShaderTargets::GLSLFragmentShader)
+    {
+        BeginLn();
+        {
+            Write("layout(origin_upper_left");
+            if (program_->flags(Program::hasSM3ScreenSpace))
+                Write(", pixel_center_integer");
+            Write(") in vec4 gl_FragCoord;");
+        }
+        EndLn();
+        Blank();
+    }
+
     /* Append required extensions, default helper macros and functions */
     AppendRequiredExtensions(ast);
     AppendCommonMacros();
@@ -1204,8 +1219,8 @@ void GLSLGenerator::VisitAttribute(FunctionCall* ast)
 
     if (name == "numthreads")
         WriteAttributeNumThreads(ast);
-    //else if (name == ...)
-    //    ...
+    else if (name == "earlydepthstencil")
+        WriteLn("layout(early_fragment_tests) in;");
 }
 
 void GLSLGenerator::WriteAttributeNumThreads(FunctionCall* ast)

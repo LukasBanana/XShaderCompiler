@@ -38,7 +38,8 @@ class GLSLGenerator : private Visitor
             std::ostream& output,
             const std::string& entryPoint,
             const ShaderTargets shaderTarget,
-            const OutputShaderVersions shaderVersion
+            const InputShaderVersions versionIn,
+            const OutputShaderVersions versionOut
         );
 
     private:
@@ -119,9 +120,6 @@ class GLSLGenerator : private Visitor
         std::string SRegister(const std::string& registerName);
         std::string URegister(const std::string& registerName);
 
-        //! Returns true if the target version is greater than or equal to the specified version number.
-        bool IsVersion(int version) const;
-
         //! Returns true if the specified AST structure must be resolved.
         bool MustResolveStruct(Structure* ast) const;
 
@@ -190,11 +188,15 @@ class GLSLGenerator : private Visitor
         IncludeHandler*         includeHandler_     = nullptr;
         Logger*                 log_                = nullptr;
 
+        Program*                program_            = nullptr;
+
         std::string             entryPoint_;
         ShaderTargets           shaderTarget_       = ShaderTargets::GLSLVertexShader;
-        OutputShaderVersions    shaderVersion_      = OutputShaderVersions::GLSL110;
+        InputShaderVersions     versionIn_          = InputShaderVersions::HLSL5;
+        OutputShaderVersions    versionOut_         = OutputShaderVersions::GLSL330;
         std::string             localVarPrefix_;
         bool                    allowBlanks_        = true;
+        bool                    allowLineMarks_     = true;
 
         bool                    isInsideEntryPoint_ = false; //!< True if AST traversal is currently inside the main entry point (or its sub nodes).
 
