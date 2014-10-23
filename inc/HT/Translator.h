@@ -39,6 +39,8 @@ struct Options
     std::string prefix      = "_";
     //! True if no blanks are allowed. By default false.
     bool        noblanks    = false;
+    //! True if warnings are allowed. By default false.
+    bool        warnings    = false;
 };
 
 //! Interface for handling new include streams.

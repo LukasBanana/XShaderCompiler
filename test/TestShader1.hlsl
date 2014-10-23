@@ -17,6 +17,11 @@ cbuffer VertexParam : register(b0)
 	ParamStruct param0;
 };
 
+cbuffer PixelParam : register(b1)
+{
+	float4 ambientColor;
+};
+
 struct TestStruct
 {
 	float4x4 mat;
@@ -86,7 +91,7 @@ float4 PS(VertexOut inp) : SV_Target0
 	// dFdxCoarse requires GLSL 4.00 or the "GL_ARB_derivative_control" extension
 	float2 tc_dx = ddx_coarse(inp.texCoord);
 	
-	return saturate(inp.color * diffuse);
+	return ambientColor + saturate(inp.color * diffuse);
 }
 
 // Compute shader

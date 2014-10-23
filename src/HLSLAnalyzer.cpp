@@ -39,7 +39,7 @@ bool HLSLAnalyzer::DecorateAST(
     const std::string& entryPoint,
     const ShaderTargets shaderTarget,
     const OutputShaderVersions shaderVersion,
-    const std::string& localVarPrefix)
+    const Options& options)
 {
     if (!program)
         return false;
@@ -48,7 +48,8 @@ bool HLSLAnalyzer::DecorateAST(
     entryPoint_     = entryPoint;
     shaderTarget_   = shaderTarget;
     shaderVersion_  = shaderVersion;
-    localVarPrefix_ = localVarPrefix;
+    localVarPrefix_ = options.prefix;
+    enableWarnings_ = options.warnings;
 
     /* Decorate program AST */
     hasErrors_ = false;
@@ -101,7 +102,7 @@ void HLSLAnalyzer::Error(const std::string& msg, const AST* ast)
 
 void HLSLAnalyzer::Warning(const std::string& msg, const AST* ast)
 {
-    if (log_)
+    if (log_ && enableWarnings_)
     {
         if (ast)
             log_->Warning("warning (" + ast->pos.ToString() + ") : " + msg);
@@ -384,7 +385,13 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     for (auto& member : ast->members)
+    {
         Visit(member);
+
+        /* Decorate all members with a reference to this uniform buffer */
+        for (auto& varDecl : member->varDecls)
+            varDecl->uniformBufferRef = ast;
+    }
 }
 
 IMPLEMENT_VISIT_PROC(TextureDecl)

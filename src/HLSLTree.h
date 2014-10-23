@@ -222,6 +222,11 @@ struct FunctionDecl : public GlobalDecl
 //! Uniform buffer (cbuffer, tbuffer) declaration.
 struct UniformBufferDecl : public GlobalDecl
 {
+    FLAG_ENUM
+    {
+        FLAG( isReferenced, 0 ), // This uniform buffer is referenced (or rather used) at least once (use-count >= 1).
+        FLAG( wasMarked,    1 ), // This uniform buffer was already marked by the "ReferenceAnalyzer" visitor.
+    };
     AST_INTERFACE(UniformBufferDecl);
     std::string                     bufferType;
     std::string                     name;
@@ -313,6 +318,7 @@ struct VarDecl : public AST
     std::vector<ExprPtr>        arrayDims;
     std::vector<VarSemanticPtr> semantics;
     ExprPtr                     initializer;
+    UniformBufferDecl*          uniformBufferRef = nullptr; // uniform buffer reference for DAST; may be null
 };
 
 /* --- Statements --- */

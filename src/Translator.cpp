@@ -39,7 +39,7 @@ _HT_EXPORT_ bool TranslateHLSLtoGLSL(
 
     /* Small context analysis */
     HLSLAnalyzer analyzer(log);
-    if (!analyzer.DecorateAST(program.get(), entryPoint, shaderTarget, outputShaderVersion, options.prefix))
+    if (!analyzer.DecorateAST(program.get(), entryPoint, shaderTarget, outputShaderVersion, options))
     {
         if (log)
             log->Error("analyzing input code failed");

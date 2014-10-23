@@ -743,6 +743,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
+    if (!ast->flags(UniformBufferDecl::isReferenced))
+        return; // uniform buffer not used
+
     /* Write uniform buffer header */
     Line(ast);
 

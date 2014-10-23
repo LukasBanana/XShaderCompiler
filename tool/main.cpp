@@ -93,12 +93,18 @@ class IncludeStreamHandler : public IncludeHandler
 std::string entry;
 std::string target;
 std::string shaderIn = "HLSL5";
-std::string shaderOut = "GLSL110";
+std::string shaderOut = "GLSL330";
 std::string output;
 Options options;
 
 
 /* --- Functions --- */
+
+static void PrintLines(const std::vector<std::string>& lines)
+{
+    for (const auto& line : lines)
+        std::cout << line << std::endl;
+}
 
 static void ShowHint()
 {
@@ -107,25 +113,30 @@ static void ShowHint()
 
 static void ShowHelp()
 {
-    std::cout << "Usage:" << std::endl;
-    std::cout << "  HLSLOfflineTranslator (Options [FILE])+" << std::endl;
-    std::cout << "Options:" << std::endl;
-    std::cout << "  -entry NAME         HLSL shader entry point" << std::endl;
-    std::cout << "  -target TARGET      Shader target; valid values:" << std::endl;
-    std::cout << "                        'vertex'" << std::endl;
-    std::cout << "                        'fragment'" << std::endl;
-    std::cout << "                        'geometry'" << std::endl;
-    std::cout << "                        'tesscontrol'" << std::endl;
-    std::cout << "                        'tessevaluation'" << std::endl;
-    std::cout << "                        'compute'" << std::endl;
-    std::cout << "  -shaderin VERSION   HLSL version ('HLSL3', 'HLSL4' or 'HLSL5'); default is HLSL5" << std::endl;
-    std::cout << "  -shaderout VERSION  GLSL version ('GLSL110', 'GLSL120', etc.); default is GLSL110" << std::endl;
-    std::cout << "  -indent INDENT      Code indentation string; default is 4 blanks" << std::endl;
-    std::cout << "  -prefix PREFIX      Prefix for local variables; default '_'" << std::endl;
-    std::cout << "  -output FILE        GLSL output file; default is '<InputFile>.glsl'" << std::endl;
-    std::cout << "  -noblanks           No blank lines will be generated" << std::endl;
-    std::cout << "  --help, help, -h    Prints this help reference" << std::endl;
-    std::cout << "  --version, -v       Prints the version information" << std::endl;
+    PrintLines(
+        {
+            "Usage:",
+            "  HLSLOfflineTranslator (Options [FILE])+",
+            "Options:",
+            "  -entry NAME .......... HLSL shader entry point",
+            "  -target TARGET ....... Shader target; valid values:",
+            "    vertex, fragment, geometry, tess-control, tess-evaluation, compute",
+            "  -shaderin VERSION .... HLSL version; default is HLSL5; valid values:",
+            "    HLSL3, HLSL4, HLSL5",
+            "  -shaderout VERSION ... GLSL version; default is GLSL330; valid values:",
+            "    GLSL110, GLSL120, GLSL130, GLSL140, GLSL150, GLSL330,",
+            "    GLSL400, GLSL410, GLSL420, GLSL430, GLSL440, GLSL450",
+            "  -indent INDENT ....... Code indentation string; default is 4 blanks",
+            "  -prefix PREFIX ....... Prefix for local variables; default '_'",
+            "  -output FILE ......... GLSL output file; default is '<InputFile>.<entry>.glsl'",
+            "  -noblanks ............ No blank lines will be generated",
+            "  -warn ................ Enables all warnings",
+            "  --help, help, -h ..... Prints this help reference",
+            "  --version, -v ........ Prints the version information",
+            "Example:",
+            "  HLSLOfflineTranslator -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl"
+        }
+    );
 }
 
 static void ShowVersion()
@@ -143,9 +154,9 @@ static ShaderTargets TargetFromString(const std::string& target)
         return ShaderTargets::GLSLFragmentShader;
     if (target == "geometry")
         return ShaderTargets::GLSLGeometryShader;
-    if (target == "tesscontrol")
+    if (target == "tess-control")
         return ShaderTargets::GLSLTessControlShader;
-    if (target == "tessevaluation")
+    if (target == "tess-evaluation")
         return ShaderTargets::GLSLTessEvaluationShader;
     if (target == "compute")
         return ShaderTargets::GLSLComputeShader;
@@ -212,7 +223,7 @@ static void Translate(const std::string& filename)
     }
 
     if (output.empty())
-        output = filename + ".glsl";
+        output = filename + "." + target + ".glsl";
 
     /* Translate HLSL file into GLSL */
     std::cout << "translate from " << filename << " to " << output << std::endl;
@@ -270,6 +281,8 @@ int main(int argc, char** argv)
                 showVersion = true;
             else if (arg == "-noblanks")
                 options.noblanks = true;
+            else if (arg == "-warn")
+                options.warnings = true;
             else if (arg == "-entry")
                 entry = NextArg(i, argc, argv, arg);
             else if (arg == "-target")
@@ -287,6 +300,7 @@ int main(int argc, char** argv)
             else
             {
                 Translate(arg);
+                output.clear();
                 ++translationCounter;
             }
         }

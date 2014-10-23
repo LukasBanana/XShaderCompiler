@@ -105,6 +105,20 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     Visit(ast->codeBlock);
 }
 
+IMPLEMENT_VISIT_PROC(UniformBufferDecl)
+{
+    /* Check if this function was already marked by this analyzer */
+    if (ast->flags(UniformBufferDecl::wasMarked))
+        return;
+    ast->flags << UniformBufferDecl::wasMarked;
+
+    /* Analyze uniform buffer */
+    ast->flags << UniformBufferDecl::isReferenced;
+
+    for (auto& member : ast->members)
+        Visit(member);
+}
+
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
     Visit(ast->structure);
@@ -222,8 +236,17 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     /* Mark texture reference */
     auto symbol = symTable_->Fetch(ast->varIdent->ident);
-    if (symbol && symbol->Type() == AST::Types::TextureDecl)
-        MarkTextureReference(symbol, ast->varIdent->ident);
+    if (symbol)
+    {
+        if (symbol->Type() == AST::Types::TextureDecl)
+            MarkTextureReference(symbol, ast->varIdent->ident);
+        else if (symbol->Type() == AST::Types::VarDecl)
+        {
+            auto varDecl = dynamic_cast<VarDecl*>(symbol);
+            if (varDecl && varDecl->uniformBufferRef)
+                Visit(varDecl->uniformBufferRef);
+        }
+    }
 
     Visit(ast->assignExpr);
 }

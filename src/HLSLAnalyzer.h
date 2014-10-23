@@ -37,7 +37,7 @@ class HLSLAnalyzer : private Visitor
             const std::string& entryPoint,
             const ShaderTargets shaderTarget,
             const OutputShaderVersions shaderVersion,
-            const std::string& localVarPrefix
+            const Options& options
         );
 
     private:
@@ -133,6 +133,7 @@ class HLSLAnalyzer : private Visitor
         Logger*                 log_            = nullptr;
 
         bool                    hasErrors_      = false;
+        bool                    enableWarnings_ = false;
         Program*                program_        = nullptr;
         FunctionDecl*           mainFunction_   = nullptr;
 
