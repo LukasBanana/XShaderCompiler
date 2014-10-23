@@ -4,11 +4,17 @@
 
 // Vertex shader
 
+struct ParamStruct
+{
+	int param;
+};
+
 cbuffer VertexParam : register(b0)
 {
 	float4x4 wvpMatrix;
 	nointerpolation float3 normal[3][2]	: NORMAL, test3;
 	struct dataStruct { float2 v0, v1; int2 v2; } data[10];
+	ParamStruct param0;
 };
 
 struct TestStruct
@@ -71,12 +77,16 @@ float4 PS(VertexOut inp) : SV_Target0
 {
 	float3 interpColor = float3(1.0, 0.0, 0.0);
 	
-	float4 diffuse = lerp((float4)1.0, tex.Sample(samplerState, inp.texCoord), inp.position.x);
+	float4 diffuse = lerp(
+		(float4)1.0,
+		saturate(tex.Sample(samplerState, inp.texCoord)),
+		inp.position.x
+	);
 	
 	// dFdxCoarse requires GLSL 4.00 or the "GL_ARB_derivative_control" extension
 	float2 tc_dx = ddx_coarse(inp.texCoord);
 	
-	return inp.color * diffuse;
+	return saturate(inp.color * diffuse);
 }
 
 // Compute shader

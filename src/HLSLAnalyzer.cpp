@@ -227,7 +227,7 @@ IMPLEMENT_VISIT_PROC(Program)
 
     /* Mark all functions used for the target shader */
     if (mainFunction_)
-        refAnalyzer_.MarkFunctionsFromEntryPoint(mainFunction_);
+        refAnalyzer_.MarkReferencesFromEntryPoint(mainFunction_);
     else
         Error("entry point \"" + entryPoint_ + "\" not found");
 }
@@ -362,7 +362,6 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
             /* Add flags */
             ast->flags << FunctionDecl::isEntryPoint;
-            ast->flags << FunctionDecl::isUsed;
 
             /* Add flags to input- and output parameters of the main entry point */
             DecorateEntryInOut(ast->returnType.get(), false);

@@ -34,7 +34,7 @@ class ReferenceAnalyzer : private Visitor
         
         ReferenceAnalyzer(const ASTSymbolTable& symTable);
 
-        void MarkFunctionsFromEntryPoint(FunctionDecl* ast);
+        void MarkReferencesFromEntryPoint(FunctionDecl* ast);
 
     private:
         
@@ -45,9 +45,11 @@ class ReferenceAnalyzer : private Visitor
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
+        DECL_VISIT_PROC( Structure         );
         DECL_VISIT_PROC( SwitchCase        );
 
         DECL_VISIT_PROC( FunctionDecl      );
+        DECL_VISIT_PROC( StructDecl        );
 
         DECL_VISIT_PROC( CodeBlockStmnt    );
         DECL_VISIT_PROC( ForLoopStmnt      );
@@ -71,8 +73,13 @@ class ReferenceAnalyzer : private Visitor
         DECL_VISIT_PROC( VarAccessExpr     );
         DECL_VISIT_PROC( InitializerExpr   );
 
+        DECL_VISIT_PROC( VarType           );
         DECL_VISIT_PROC( VarIdent          );
         DECL_VISIT_PROC( VarDecl           );
+
+        /* --- Helper functions for analysis --- */
+
+        void MarkTextureReference(AST* ast, const std::string& texIdent);
 
         /* === Members === */
 

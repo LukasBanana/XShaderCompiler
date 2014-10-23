@@ -160,6 +160,10 @@ struct CodeBlock : public AST
 //! Buffer declaration identifier.
 struct BufferDeclIdent : public AST
 {
+    FLAG_ENUM
+    {
+        FLAG( isReferenced, 0 ), // This buffer is referenced (or rather used) at least once (use-count >= 1).
+    };
     AST_INTERFACE(BufferDeclIdent);
     std::string ident;
     std::string registerName; // may be empty
@@ -184,8 +188,10 @@ struct Structure : public AST
 {
     FLAG_ENUM
     {
-        FLAG( isShaderInput,    0 ), // This structure is used as shader input.
-        FLAG( isShaderOutput,   1 ), // This structure is used as shader output.
+        FLAG( isReferenced,     0 ), // This structure is referenced (or rather used) at least once (use-count >= 1).
+        FLAG( wasMarked,        1 ), // This structure was already marked by the "ReferenceAnalyzer" visitor.
+        FLAG( isShaderInput,    2 ), // This structure is used as shader input.
+        FLAG( isShaderOutput,   3 ), // This structure is used as shader output.
     };
     AST_INTERFACE(Structure);
     std::string                     name;
@@ -200,9 +206,9 @@ struct FunctionDecl : public GlobalDecl
 {
     FLAG_ENUM
     {
-        FLAG( isEntryPoint, 0 ), // This function is the main entry point.
-        FLAG( isUsed,       1 ), // This function is used at least once (use-count >= 1).
-        FLAG( wasMarked,    2 ), // This function was already marked by the "FuncUseAnalyzer" visitor.
+        FLAG( isReferenced, 0 ), // This function is referenced (or rather used) at least once (use-count >= 1).
+        FLAG( wasMarked,    1 ), // This function was already marked by the "ReferenceAnalyzer" visitor.
+        FLAG( isEntryPoint, 2 ), // This function is the main entry point.
     };
     AST_INTERFACE(FunctionDecl);
     std::vector<FunctionCallPtr>    attribs; // attribute list
@@ -226,6 +232,10 @@ struct UniformBufferDecl : public GlobalDecl
 //! Texture declaration.
 struct TextureDecl : public GlobalDecl
 {
+    FLAG_ENUM
+    {
+        FLAG( isReferenced, 0 ), // This texture is referenced (or rather used) at least once (use-count >= 1).
+    };
     AST_INTERFACE(TextureDecl);
     std::string                     textureType;
     std::string                     colorType;

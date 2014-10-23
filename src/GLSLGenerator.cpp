@@ -207,6 +207,7 @@ void GLSLGenerator::EstablishMaps()
     {
         { "frac",                            "fract"              },
         { "lerp",                            "mix"                },
+        { "saturate",                        "clamp"              },
         { "ddx",                             "dFdx"               },
         { "ddy",                             "dFdy"               },
         { "ddx_coarse",                      "dFdxCoarse"         },
@@ -366,7 +367,6 @@ void GLSLGenerator::AppendRequiredExtensions(Program* ast)
 
 void GLSLGenerator::AppendCommonMacros()
 {
-    WriteLn("#define saturate(x) clamp(x, 0.0, 1.0)");
     WriteLn("#define clip(x) if (lessThan(x, 0.0)) { discard; }");
     Blank();
 }
@@ -592,6 +592,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                 Write(", ");
         }
 
+        /* Check for special cases */
+        if (name == "saturate")
+            Write(", 0.0, 1.0");
+
         Write(")");
     }
 }
@@ -677,7 +681,7 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    if (!ast->flags(FunctionDecl::isUsed))
+    if (!ast->flags(FunctionDecl::isReferenced))
         return; // function not used
 
     Line(ast);
@@ -766,6 +770,9 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 
 IMPLEMENT_VISIT_PROC(TextureDecl)
 {
+    if (!ast->flags(TextureDecl::isReferenced))
+        return; // texture not used
+
     /* Determine GLSL sampler type */
     auto it = typeMap_.find(ast->textureType);
     if (it == typeMap_.end())
@@ -776,13 +783,16 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
     /* Write texture samplers */
     for (auto& name : ast->names)
     {
-        BeginLn();
+        if (name->flags(BufferDeclIdent::isReferenced))
         {
-            if (!name->registerName.empty())
-                Write("layout(binding = " + TRegister(name->registerName) + ") ");
-            Write(samplerType + " " + name->ident + ";");
+            BeginLn();
+            {
+                if (!name->registerName.empty())
+                    Write("layout(binding = " + TRegister(name->registerName) + ") ");
+                Write(samplerType + " " + name->ident + ";");
+            }
+            EndLn();
         }
-        EndLn();
     }
 
     Blank();
@@ -790,6 +800,9 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
+    if (!ast->structure->flags(Structure::isReferenced))
+        return; // structure not used
+
     Line(ast);
     bool semicolon = true;
     Visit(ast->structure, &semicolon);
