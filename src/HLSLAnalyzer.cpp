@@ -209,6 +209,11 @@ bool HLSLAnalyzer::IsVersion(int version) const
     return static_cast<int>(shaderVersion_) >= version;
 }
 
+FunctionCall* HLSLAnalyzer::CurrentFunction() const
+{
+    return callStack_.empty() ? nullptr : callStack_.top();
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(className) \
@@ -284,8 +289,12 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         AcquireExtension(it->second);
 
     /* Analyze function arguments */
-    for (auto& arg : ast->arguments)
-        Visit(arg);
+    callStack_.push(ast);
+    {
+        for (auto& arg : ast->arguments)
+            Visit(arg);
+    }
+    callStack_.pop();
 }
 
 IMPLEMENT_VISIT_PROC(Structure)
@@ -603,9 +612,18 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     {
         if (symbol->Type() == AST::Types::VarDecl)
         {
+            /* Append prefix to local variables */
             auto varDecl = dynamic_cast<VarDecl*>(symbol);
             if (varDecl && varDecl->flags(VarDecl::isInsideFunc))
                 ast->varIdent->ident = localVarPrefix_ + ast->varIdent->ident;
+        }
+        else if (symbol->Type() == AST::Types::SamplerDecl)
+        {
+            /* Rename sampler object by its respective texture object */
+            auto samplerDecl = dynamic_cast<SamplerDecl*>(symbol);
+            auto currentFunc = CurrentFunction();
+            if (samplerDecl && currentFunc && currentFunc->flags(FunctionCall::isTexFunc))
+                ast->varIdent->ident = currentFunc->name->ident;
         }
     }
     else

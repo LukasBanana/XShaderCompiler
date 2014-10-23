@@ -76,6 +76,12 @@ class HLSLAnalyzer : private Visitor
         //! Returns true if the target version is greater than or equal to the specified version number.
         bool IsVersion(int version) const;
 
+        /**
+        Returns the current (top level) function in the call stack
+        or null if the AST traversion is in the global scope.
+        */
+        FunctionCall* CurrentFunction() const;
+
         /* === Visitor implementation === */
 
         DECL_VISIT_PROC( Program           );
@@ -135,6 +141,8 @@ class HLSLAnalyzer : private Visitor
 
         std::map<std::string, IntrinsicClasses> intrinsicMap_;
         std::map<std::string, Program::ARBExtension> extensionMap_;
+
+        std::stack<FunctionCall*> callStack_; //!< Function call stack to join arguments with its function call.
 
         SymbolTable<AST> symTable_;
 
