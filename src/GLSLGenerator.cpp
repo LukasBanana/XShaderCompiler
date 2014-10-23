@@ -677,8 +677,8 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    //if (!ast->flags(FunctionDecl::isUsed))
-    //    return; // function not used
+    if (!ast->flags(FunctionDecl::isUsed))
+        return; // function not used
 
     Line(ast);
 

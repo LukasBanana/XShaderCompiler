@@ -29,7 +29,8 @@ static const ARBExt ARBEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_la
  */
 
 HLSLAnalyzer::HLSLAnalyzer(Logger* log) :
-    log_{ log }
+    log_            { log        },
+    funcUseAnalyzer_{ symTable_ }
 {
     EstablishMaps();
 }
@@ -274,10 +275,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         if (symbol)
         {
             if (symbol->Type() == AST::Types::TextureDecl)
-            {
-                //const auto& funcName = ast->name->next->ident;
                 ast->flags << FunctionCall::isTexFunc;
-            }
         }
         else
             NotifyUndeclaredIdent(ast->name->ident, ast);
@@ -362,6 +360,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             DecorateEntryInOut(ast->returnType.get(), false);
             for (auto& param : ast->parameters)
                 DecorateEntryInOut(param.get(), true);
+
+            /* Mark all functions used for the target shader */
+            //(ast->codeBlock.get();
         }
 
         /* Visit function body */
@@ -619,7 +620,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
         }
         else if (symbol->Type() == AST::Types::SamplerDecl)
         {
-            /* Rename sampler object by its respective texture object */
+            /* Exchange sampler object by its respective texture object */
             auto samplerDecl = dynamic_cast<SamplerDecl*>(symbol);
             auto currentFunc = CurrentFunction();
             if (samplerDecl && currentFunc && currentFunc->flags(FunctionCall::isTexFunc))
@@ -633,6 +634,9 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     const auto& op = ast->assignOp;
     if (op == "|=" || op == "&=" || op == "^=" || op == "%=")
         AcquireExtension(ARBEXT_GL_EXT_gpu_shader4);
+
+    /* Visit optional assign expression */
+    Visit(ast->assignExpr);
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)

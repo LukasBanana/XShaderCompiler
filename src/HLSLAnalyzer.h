@@ -10,6 +10,7 @@
 
 
 #include "HT/Translator.h"
+#include "FuncUseAnalyzer.h"
 #include "CodeWriter.h"
 #include "Visitor.h"
 #include "Token.h"
@@ -144,7 +145,8 @@ class HLSLAnalyzer : private Visitor
 
         std::stack<FunctionCall*> callStack_; //!< Function call stack to join arguments with its function call.
 
-        SymbolTable<AST> symTable_;
+        ASTSymbolTable  symTable_;
+        FuncUseAnalyzer funcUseAnalyzer_;
 
         bool isInsideFunc_          = false; //!< True if AST traversal is currently inside any function.
         bool isInsideEntryPoint_    = false; //!< True if AST traversal is currently inside the main entry point (or its sub nodes).

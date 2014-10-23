@@ -32,6 +32,11 @@ struct VertexOut
 	float4 color	: COLOR;
 };
 
+float3 GammaCorrect(float3 color, float gamma)
+{
+	return pow(color, 1.0/gamma);
+}
+
 VertexOut VS(VertexIn inp, uint vertexID : SV_VertexID, float3 texCoord2 : TEXCOORD)
 {
 	VertexOut outp = (VertexOut)0;
@@ -52,7 +57,7 @@ VertexOut VS(VertexIn inp, uint vertexID : SV_VertexID, float3 texCoord2 : TEXCO
 		float shading	= max(0.2, NdotL);
 	}
 	
-	outp.color		= inp.color;
+	outp.color		= GammaCorrect(inp.color, 1.2);
 	
 	return outp;
 }

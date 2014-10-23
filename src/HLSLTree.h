@@ -49,9 +49,7 @@ class Visitor;
     typedef base alias;             \
     typedef base##Ptr alias##Ptr
 
-#define FLAG_ENUM       \
-    Flags flags;        \
-    enum : unsigned int
+#define FLAG_ENUM enum : unsigned int
 
 #define FLAG(name, index) name = (1 << (index))
 
@@ -118,7 +116,8 @@ struct AST
     virtual Types Type() const = 0;
     virtual void Visit(Visitor* visitor, void* args = nullptr) = 0;
 
-    SourcePosition pos;
+    SourcePosition  pos;
+    Flags           flags;
 };
 
 /* --- Base AST nodes --- */
