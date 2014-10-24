@@ -11,6 +11,7 @@
 
 #include <ctime>
 #include <chrono>
+#include <initializer_list>
 
 
 namespace HTLib
@@ -56,6 +57,11 @@ static std::string TargetToString(const ShaderTargets shaderTarget)
             return "Compute";
     }
     return "";
+}
+
+static inline std::vector<std::string> StringList(const std::initializer_list<std::string>& list)
+{
+    return list;
 }
 
 
@@ -209,6 +215,7 @@ void GLSLGenerator::EstablishMaps()
     intrinsicMap_ = std::map<std::string, std::string>
     {
         { "frac",                            "fract"              },
+        { "rsqrt",                           "inversesqrt"        },
         { "lerp",                            "mix"                },
         { "saturate",                        "clamp"              },
         { "ddx",                             "dFdx"               },
@@ -371,8 +378,8 @@ void GLSLGenerator::AppendRequiredExtensions(Program* ast)
 
 void GLSLGenerator::AppendCommonMacros()
 {
-    WriteLn("#define clip(x) if (lessThan(x, 0.0)) { discard; }");
-    Blank();
+    //WriteLn("#define clip(x) if (lessThan(x, 0.0)) { discard; }");
+    //Blank();
 }
 
 void GLSLGenerator::AppendInterlockedMacros()
@@ -394,7 +401,7 @@ void GLSLGenerator::AppendInterlockedMacros()
 Remove this if it is clear, that it will never be used!
 */
 
-void GLSLGenerator::AppendMulFunctions()
+void GLSLGenerator::AppendMulIntrinsics()
 {
     WriteLn("mat2 mul(mat2 m, vec2 v) { return m * v; }");
     WriteLn("mat2 mul(vec2 v, mat2 m) { return v * m; }");
@@ -413,7 +420,7 @@ void GLSLGenerator::AppendMulFunctions()
 
 #endif
 
-void GLSLGenerator::AppendRcpFunctions()
+void GLSLGenerator::AppendRcpIntrinsics()
 {
     WriteLn("float rcp(float x) { return 1.0 / x; }");
     WriteLn("double rcp(double x) { return 1.0 / x; }");
@@ -431,6 +438,28 @@ void GLSLGenerator::AppendRcpFunctions()
     WriteLn("mat3 rcp(mat3 m) { mat3 r; r[0] = rcp(m[0]); r[1] = rcp(m[1]); r[2] = rcp(m[2]); return r; }");
     WriteLn("mat4 rcp(mat4 m) { mat4 r; r[0] = rcp(m[0]); r[1] = rcp(m[1]); r[2] = rcp(m[2]); r[3] = rcp(m[3]); return r; }");
 
+    Blank();
+}
+
+void GLSLGenerator::AppendClipIntrinsics()
+{
+    WriteLn("void clip(float x) { if (x < 0.0) discard; }");
+
+    for (const auto& typeName : StringList({ "vec2", "vec3", "vec4" }))
+        WriteLn("void clip(" + typeName + " x) { if (any(lessThan(x, " + typeName + "(0.0)))) discard; }");
+
+    Blank();
+}
+
+void GLSLGenerator::AppendSinCosIntrinsics()
+{
+    for (const auto& typeName : StringList({ "float", "vec2", "vec3", "vec4" }))
+    {
+        WriteLn(
+            "void sincos(" + typeName + " x, out " + typeName +
+            " s, out " + typeName + " c) { s = sin(x); c = cos(x); }"
+        );
+    }
     Blank();
 }
 
@@ -524,7 +553,11 @@ IMPLEMENT_VISIT_PROC(Program)
     if (ast->flags(Program::interlockedIntrinsicsUsed))
         AppendInterlockedMacros();
     if (ast->flags(Program::rcpIntrinsicUsed))
-        AppendRcpFunctions();
+        AppendRcpIntrinsics();
+    if (ast->flags(Program::clipIntrinsicUsed))
+        AppendClipIntrinsics();
+    if (ast->flags(Program::sinCosIntrinsicUsed))
+        AppendSinCosIntrinsics();
 
     for (auto& globDecl : ast->globalDecls)
         Visit(globDecl);

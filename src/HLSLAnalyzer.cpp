@@ -231,7 +231,7 @@ IMPLEMENT_VISIT_PROC(Program)
 
     /* Mark all functions used for the target shader */
     if (mainFunction_)
-        refAnalyzer_.MarkReferencesFromEntryPoint(mainFunction_);
+        refAnalyzer_.MarkReferencesFromEntryPoint(mainFunction_, program_);
     else
         Error("entry point \"" + entryPoint_ + "\" not found");
 }
@@ -260,10 +260,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             Error("\"mul\" intrinsic must have exactly two arguments", ast);
     }
     else if (name == "rcp")
-    {
-        program_->flags << Program::rcpIntrinsicUsed;
         ast->flags << FunctionCall::isRcpFunc;
-    }
     else
     {
         auto it = intrinsicMap_.find(name);

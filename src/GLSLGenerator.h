@@ -102,10 +102,14 @@ class GLSLGenerator : private Visitor
         void Extension(const std::string& extensionName);
 
         void AppendRequiredExtensions(Program* ast);
+        
         void AppendCommonMacros();
         void AppendInterlockedMacros();
-        //void AppendMulFunctions();
-        void AppendRcpFunctions();
+
+        //void AppendMulIntrinsics();
+        void AppendRcpIntrinsics();
+        void AppendClipIntrinsics();
+        void AppendSinCosIntrinsics();
 
         //! Opens a new scope with '{'.
         void OpenScope();

@@ -143,8 +143,10 @@ struct Program : public AST
     FLAG_ENUM
     {
         FLAG( rcpIntrinsicUsed,             0 ), // The "rcp" intrinsic is used.
-        FLAG( interlockedIntrinsicsUsed,    1 ), // Some 'Interlocked...' intrinsics are used.
-        FLAG( hasSM3ScreenSpace,            3 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
+        FLAG( sinCosIntrinsicUsed,          1 ), // The "sincos" intrinsic is used.
+        FLAG( clipIntrinsicUsed,            2 ), // The "clip" intrinsic is used.
+        FLAG( interlockedIntrinsicsUsed,    3 ), // Some 'Interlocked...' intrinsics are used.
+        FLAG( hasSM3ScreenSpace,            4 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
     };
     AST_INTERFACE(Program)
     std::vector<GlobalDeclPtr> globalDecls;

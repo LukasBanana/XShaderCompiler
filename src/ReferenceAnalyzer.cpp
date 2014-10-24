@@ -18,8 +18,9 @@ ReferenceAnalyzer::ReferenceAnalyzer(const ASTSymbolTable& symTable) :
 {
 }
 
-void ReferenceAnalyzer::MarkReferencesFromEntryPoint(FunctionDecl* ast)
+void ReferenceAnalyzer::MarkReferencesFromEntryPoint(FunctionDecl* ast, Program* program)
 {
+    program_ = program;
     ast->flags << FunctionDecl::isReferenced;
     Visit(ast);
 }
@@ -49,7 +50,9 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     /* Mark this function to be referenced */
-    auto symbol = symTable_->Fetch(ast->name->ident);
+    const auto& name = ast->name->ident;
+    auto symbol = symTable_->Fetch(name);
+
     if (symbol)
     {
         if (symbol->Type() == AST::Types::FunctionDecl)
@@ -67,7 +70,17 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             Visit(symbol);
         }
         else if (symbol->Type() == AST::Types::TextureDecl)
-            MarkTextureReference(symbol, ast->name->ident);
+            MarkTextureReference(symbol, name);
+    }
+    else
+    {
+        /* Check for intrinsic usage */
+        if (name == "rcp")
+            program_->flags << Program::rcpIntrinsicUsed;
+        else if (name == "sincos")
+            program_->flags << Program::sinCosIntrinsicUsed;
+        else if (name == "clip")
+            program_->flags << Program::clipIntrinsicUsed;
     }
 
     /* Visit arguments */

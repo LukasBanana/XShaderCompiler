@@ -34,7 +34,7 @@ class ReferenceAnalyzer : private Visitor
         
         ReferenceAnalyzer(const ASTSymbolTable& symTable);
 
-        void MarkReferencesFromEntryPoint(FunctionDecl* ast);
+        void MarkReferencesFromEntryPoint(FunctionDecl* ast, Program* program);
 
     private:
         
@@ -84,7 +84,8 @@ class ReferenceAnalyzer : private Visitor
 
         /* === Members === */
 
-        const ASTSymbolTable* symTable_ = nullptr;
+        Program*                program_    = nullptr;
+        const ASTSymbolTable*   symTable_   = nullptr;
 
 };
 
