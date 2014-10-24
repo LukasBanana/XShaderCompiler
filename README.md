@@ -24,6 +24,7 @@ The result are two GLSL shader files: "Example.hlsl.vertex.glsl" and "Example.hl
 
 ```cpp
 #include <HT/Translator.h>
+#include <fstream>
 
 /* ... */
 
@@ -55,6 +56,8 @@ class Log : public HT::Logger
 		}
 };
 
+/* ... */
+
 auto inputStream = std::make_shared<std::ifstream>("Example.hlsl");
 std::ofstream outputStream("Example.vertex.glsl");
 
@@ -70,8 +73,8 @@ bool result = TranslateHLSLtoGLSL(
 	HT::ShaderTargets::GLSLVertexShader,	// Target shader
 	HT::InputShaderVersions::HLSL5,			// Input shader version: HLSL Shader Model 5
 	HT::OutputShaderVersions::GLSL330,		// Output shader version: GLSL 3.30
-	&includeHandler,						// File stream include handler
-	options,								// Translation options
-	&log
+	&includeHandler,						// Optional include handler
+	options,								// Optional translation options
+	&log									// Optional output log
 );
 ```
