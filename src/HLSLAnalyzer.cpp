@@ -198,7 +198,7 @@ void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
 
 void HLSLAnalyzer::ReportNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName)
 {
-    if (ast->Type() == AST::Types::NullStmnt)
+    if (ast && ast->Type() == AST::Types::NullStmnt)
         Warning("<" + stmntTypeName + "> statement with empty body", ast.get());
 }
 
@@ -257,7 +257,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
         /* Validate number of arguments */
         if (ast->arguments.size() != 2)
-            Error("\"mul\" intrinsic must have exactly two arguments", ast);
+            Error("\"mul\" intrinsic must have exactly 2 arguments", ast);
     }
     else if (name == "rcp")
         ast->flags << FunctionCall::isRcpFunc;
@@ -269,7 +269,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             switch (it->second)
             {
                 case IntrinsicClasses::Interlocked:
-                    program_->flags << Program::interlockedIntrinsicsUsed;
+                    ast->flags << FunctionCall::isAtomicFunc;
+                    if (ast->arguments.size() < 2)
+                        Error("interlocked intrinsics must have at least 2 arguments", ast);
+                    //program_->flags << Program::interlockedIntrinsicsUsed;
                     break;
             }
         }

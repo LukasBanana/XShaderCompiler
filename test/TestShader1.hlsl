@@ -96,6 +96,9 @@ float4 PS(VertexOut inp) : SV_Target0
 	float4 viewRay = (float4)0.0;
 	Frustum(viewRay);
 	
+	int intrl;
+	InterlockedAdd(intrl, 5);
+	
 	return ambientColor + saturate(inp.color * diffuse);
 }
 

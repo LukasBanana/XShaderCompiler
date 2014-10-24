@@ -145,8 +145,7 @@ struct Program : public AST
         FLAG( rcpIntrinsicUsed,             0 ), // The "rcp" intrinsic is used.
         FLAG( sinCosIntrinsicUsed,          1 ), // The "sincos" intrinsic is used.
         FLAG( clipIntrinsicUsed,            2 ), // The "clip" intrinsic is used.
-        FLAG( interlockedIntrinsicsUsed,    3 ), // Some 'Interlocked...' intrinsics are used.
-        FLAG( hasSM3ScreenSpace,            4 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
+        FLAG( hasSM3ScreenSpace,            3 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
     };
     AST_INTERFACE(Program)
     std::vector<GlobalDeclPtr> globalDecls;
@@ -177,9 +176,10 @@ struct FunctionCall : public AST
 {
     FLAG_ENUM
     {
-        FLAG( isMulFunc, 0 ), // This is a "mul" function.
-        FLAG( isRcpFunc, 1 ), // This is a "rcp" function.
-        FLAG( isTexFunc, 2 ), // This is a texture function (e.g. "tex.Sample" or "tex.Load").
+        FLAG( isMulFunc,    0 ), // This is a "mul" function.
+        FLAG( isRcpFunc,    1 ), // This is a "rcp" function.
+        FLAG( isTexFunc,    2 ), // This is a texture function (e.g. "tex.Sample" or "tex.Load").
+        FLAG( isAtomicFunc, 3 ), // This is an atomic (or rather interlocked) function (e.g. "InterlockedAdd").
     };
     AST_INTERFACE(FunctionCall);
     VarIdentPtr             name;

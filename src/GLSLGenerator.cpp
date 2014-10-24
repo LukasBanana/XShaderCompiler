@@ -231,6 +231,18 @@ void GLSLGenerator::EstablishMaps()
         { "AllMemoryBarrierWithGroupSync",   "barrier"            },
     };
 
+    atomicIntrinsicMap_ = std::map<std::string, std::string>
+    {
+        { "InterlockedAdd",             "atomicAdd"      },
+        { "InterlockedAnd",             "atomicAnd"      },
+        { "InterlockedOr",              "atomicOr"       },
+        { "InterlockedXor",             "atomicXor"      },
+        { "InterlockedMin",             "atomicMin"      },
+        { "InterlockedMax",             "atomicMax"      },
+        { "InterlockedCompareExchange", "atomicCompSwap" },
+        { "InterlockedExchange",        "atomicExchange" },
+    };
+
     modifierMap_ = std::map<std::string, std::string>
     {
         { "linear",          "smooth"        },
@@ -380,19 +392,6 @@ void GLSLGenerator::AppendCommonMacros()
 {
     //WriteLn("#define clip(x) if (lessThan(x, 0.0)) { discard; }");
     //Blank();
-}
-
-void GLSLGenerator::AppendInterlockedMacros()
-{
-    WriteLn("#define InterlockedAdd(dest, value, prev) prev = atomicAdd(dest, value)");
-    WriteLn("#define InterlockedAnd(dest, value, prev) prev = atomicAnd(dest, value)");
-    WriteLn("#define InterlockedOr(dest, value, prev) prev = atomicOr(dest, value)");
-    WriteLn("#define InterlockedXor(dest, value, prev) prev = atomicXor(dest, value)");
-    WriteLn("#define InterlockedMin(dest, value, prev) prev = atomicMin(dest, value)");
-    WriteLn("#define InterlockedMax(dest, value, prev) prev = atomicMax(dest, value)");
-    WriteLn("#define InterlockedCompareExchange(dest, value, prev) prev = atomicCompSwap(dest, value)");
-    WriteLn("#define InterlockedExchange(dest, value, prev) prev = atomicExchange(dest, value)");
-    Blank();
 }
 
 #if 0
@@ -550,8 +549,6 @@ IMPLEMENT_VISIT_PROC(Program)
     AppendRequiredExtensions(ast);
     AppendCommonMacros();
 
-    if (ast->flags(Program::interlockedIntrinsicsUsed))
-        AppendInterlockedMacros();
     if (ast->flags(Program::rcpIntrinsicUsed))
         AppendRcpIntrinsics();
     if (ast->flags(Program::clipIntrinsicUsed))
@@ -612,6 +609,27 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         }
 
         Write(")");
+    }
+    else if (ast->flags(FunctionCall::isAtomicFunc) && ast->arguments.size() >= 2)
+    {
+        /* Find atomic intrinsic mapping */
+        auto it = atomicIntrinsicMap_.find(ast->name->ident);
+        if (it != atomicIntrinsicMap_.end())
+        {
+            /* Write function call */
+            if (ast->arguments.size() >= 3)
+            {
+                Visit(ast->arguments[2]);
+                Write(" = ");
+            }
+            Write(it->second + "(");
+            Visit(ast->arguments[0]);
+            Write(", ");
+            Visit(ast->arguments[1]);
+            Write(")");
+        }
+        else
+            Error("unknown interlocked intrinsic \"" + ast->name->ident + "\"", ast);
     }
     else
     {
