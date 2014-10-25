@@ -1,27 +1,29 @@
 # HLSL (Shader Model 4 & 5) Translator #
 
-### Features ###
+Features
+--------
 
 * Translates HLSL shader code into GLSL
 * Simple to integrate into other projects
 * Written in C++11
 
-### License ###
+License
+-------
 
 3-Clause BSD License
 
-### Status ###
+Status
+------
 
-TODO List:
-----------
+#### TODO List: ####
 * Common HLSL IO semantics to GLSL transformation.
 * 'typedef' statement.
 * 'include' directive parsing.
 * Geometry and Tessellation semantics.
 * 'interface' and 'class' declarations.
 
-Limitations:
-------------
+#### Limitations: ####
+
 There is currently no pre-processor. Pre-processor directives (beginning with '#') will be translated
 as something like a dummy statement. Example:
 ```
@@ -50,7 +52,8 @@ That is to say that pre-processor directives may only appear as an own statement
 and not as a combination with other statements or expressions.
 Only 'include' directives will be parsed and inlined.
 
-### Offline Translator ###
+Offline Translator
+------------------
 
 The following command line translates the "Example.hlsl" shader file:
 
@@ -60,7 +63,8 @@ HLSLOfflineTranslator -entry VS -target vertex Example.hlsl -entry PS -target fr
 
 The result are two GLSL shader files: "Example.hlsl.vertex.glsl" and "Example.hlsl.fragment.glsl".
 
-### Library Usage ###
+Library Usage
+-------------
 
 ```cpp
 #include <HT/Translator.h>
