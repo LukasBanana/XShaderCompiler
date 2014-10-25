@@ -18,7 +18,7 @@ Status
 ##### TODO List: #####
 * Common HLSL IO semantics to GLSL transformation.
 * 'typedef' statement.
-* 'include' directive parsing.
+* Basic pre-processor.
 * Geometry and Tessellation semantics.
 * 'interface' and 'class' declarations.
 
