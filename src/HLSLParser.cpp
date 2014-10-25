@@ -106,6 +106,11 @@ TokenPtr HLSLParser::AcceptIt()
     return prevTkn;
 }
 
+void HLSLParser::Semi()
+{
+    Accept(Tokens::Semicolon);
+}
+
 bool HLSLParser::IsDataType() const
 {
     return Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType) || Is(Tokens::Texture) || Is(Tokens::Sampler);
@@ -289,7 +294,7 @@ UniformBufferDeclPtr HLSLParser::ParseUniformBufferDecl()
     /* Parse buffer body */
     ast->members = ParseVarDeclStmntList();
 
-    Accept(Tokens::Semicolon);
+    Semi();
 
     return ast;
 }
@@ -310,7 +315,7 @@ TextureDeclPtr HLSLParser::ParseTextureDecl()
 
     ast->names = ParseBufferDeclIdentList();
 
-    Accept(Tokens::Semicolon);
+    Semi();
 
     return ast;
 }
@@ -322,7 +327,7 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl()
     ast->samplerType = Accept(Tokens::Sampler)->Spell();
     ast->names = ParseBufferDeclIdentList();
 
-    Accept(Tokens::Semicolon);
+    Semi();
 
     return ast;
 }
@@ -332,7 +337,7 @@ StructDeclPtr HLSLParser::ParseStructDecl()
     auto ast = Make<StructDecl>();
     
     ast->structure = ParseStructure();
-    Accept(Tokens::Semicolon);
+    Semi();
 
     return ast;
 }
@@ -531,16 +536,15 @@ StmntPtr HLSLParser::ParseStmnt()
     if (IsDataType())
         return ParseVarDeclStmnt();
 
-    ErrorUnexpected("expected statement");
-
-    return nullptr;
+    /* Parse statement of arbitrary expression */
+    return ParseExprStmnt();
 }
 
 NullStmntPtr HLSLParser::ParseNullStmnt()
 {
     /* Parse null statement */
     auto ast = Make<NullStmnt>();
-    Accept(Tokens::Semicolon);
+    Semi();
     return ast;
 }
 
@@ -574,7 +578,7 @@ ForLoopStmntPtr HLSLParser::ParseForLoopStmnt(const std::vector<FunctionCallPtr>
     /* Parse loop condition */
     if (!Is(Tokens::Semicolon))
         ast->condition = ParseExpr(true);
-    Accept(Tokens::Semicolon);
+    Semi();
 
     /* Parse loop iteration */
     if (!Is(Tokens::RBracket))
@@ -621,7 +625,7 @@ DoWhileLoopStmntPtr HLSLParser::ParseDoWhileLoopStmnt(const std::vector<Function
     ast->condition = ParseExpr(true);
     Accept(Tokens::RBracket);
 
-    Accept(Tokens::Semicolon);
+    Semi();
 
     return ast;
 }
@@ -685,7 +689,7 @@ CtrlTransferStmntPtr HLSLParser::ParseCtrlTransferStmnt()
     auto ast = Make<CtrlTransferStmnt>();
     
     ast->instruction = Accept(Tokens::CtrlTransfer)->Spell();
-    Accept(Tokens::Semicolon);
+    Semi();
 
     return ast;
 }
@@ -732,7 +736,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 
     /* Parse variable declarations */
     ast->varDecls = ParseVarDeclList();
-    Accept(Tokens::Semicolon);
+    Semi();
 
     return ast;
 }
@@ -746,7 +750,27 @@ ReturnStmntPtr HLSLParser::ParseReturnStmnt()
     if (!Is(Tokens::Semicolon))
         ast->expr = ParseExpr(true);
 
-    Accept(Tokens::Semicolon);
+    Semi();
+
+    return ast;
+}
+
+ExprStmntPtr HLSLParser::ParseExprStmnt(const VarIdentPtr& varIdent)
+{
+    /* Parse expression statement */
+    auto ast = Make<ExprStmnt>();
+
+    if (varIdent)
+    {
+        /* Make var-ident to a var-access expression */
+        auto expr = Make<VarAccessExpr>();
+        expr->varIdent = varIdent;
+        ast->expr = ParseExpr(true, expr);
+    }
+    else
+        ast->expr = ParseExpr(true);
+
+    Semi();
 
     return ast;
 }
@@ -768,12 +792,12 @@ StmntPtr HLSLParser::ParseStructDeclOrVarDeclStmnt()
         
         /* Parse variable declarations */
         varDeclStmnt->varDecls = ParseVarDeclList();
-        Accept(Tokens::Semicolon);
+        Semi();
 
         return varDeclStmnt;
     }
     else
-        Accept(Tokens::Semicolon);
+        Semi();
 
     return ast;
 }
@@ -792,21 +816,26 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
         auto ast = Make<FunctionCallStmnt>();
         
         ast->call = ParseFunctionCall(varIdent);
-        Accept(Tokens::Semicolon);
+        Semi();
 
         return ast;
     }
     else if (Is(Tokens::AssignOp))
     {
         /* Parse assignment statement */
-        auto ast = Make<AssignSmnt>();
+        auto ast = Make<AssignStmnt>();
         
         ast->varIdent = varIdent;
         ast->op = AcceptIt()->Spell();
-        ast->expr = ParseExpr();
-        Accept(Tokens::Semicolon);
+        ast->expr = ParseExpr(true);
+        Semi();
 
         return ast;
+    }
+    else if (Is(Tokens::UnaryOp, "++") || Is(Tokens::UnaryOp, "--"))
+    {
+        /* Parse expression statement */
+        return ParseExprStmnt(varIdent);
     }
 
     /* Parse variable declaration statement */
@@ -824,10 +853,12 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
 
 /* --- Expressions --- */
 
-ExprPtr HLSLParser::ParseExpr(bool allowComma)
+ExprPtr HLSLParser::ParseExpr(bool allowComma, const ExprPtr& initExpr)
 {
     /* Parse primary expression */
-    auto ast = ParsePrimaryExpr();
+    ExprPtr ast = initExpr;
+    if (!ast)
+        ast = ParsePrimaryExpr();
 
     /* Parse optional post-unary expression */
     if (Is(Tokens::UnaryOp))
@@ -845,7 +876,7 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma)
 
         binExpr->lhsExpr = ast;
         binExpr->op = AcceptIt()->Spell();
-        binExpr->rhsExpr = ParseExpr();
+        binExpr->rhsExpr = ParseExpr(allowComma);
 
         return binExpr;
     }
@@ -973,7 +1004,7 @@ ExprPtr HLSLParser::ParseVarAccessOrFunctionCallExpr()
     return ParseVarAccessExpr(varIdent);
 }
 
-VarAccessExprPtr HLSLParser::ParseVarAccessExpr(VarIdentPtr varIdent)
+VarAccessExprPtr HLSLParser::ParseVarAccessExpr(const VarIdentPtr& varIdent)
 {
     auto ast = Make<VarAccessExpr>();
 
@@ -992,7 +1023,7 @@ VarAccessExprPtr HLSLParser::ParseVarAccessExpr(VarIdentPtr varIdent)
     return ast;
 }
 
-FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr(VarIdentPtr varIdent)
+FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIdent)
 {
     /* Parse function call expression */
     auto ast = Make<FunctionCallExpr>();

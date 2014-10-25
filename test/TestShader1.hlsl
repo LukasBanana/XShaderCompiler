@@ -33,7 +33,7 @@ struct VertexIn
 	float3 normal	: NORMAL;
 	float2 texCoord	: TEXCOORD0;
 	float4 color	: COLOR;
-	TestStruct test;
+	//TestStruct test;
 };
 
 struct VertexOut
@@ -48,9 +48,11 @@ float3 GammaCorrect(float3 color, float gamma)
 	return pow(color, 1.0/gamma);
 }
 
-VertexOut VS(VertexIn inp, uint vertexID : SV_VertexID, float3 texCoord2 : TEXCOORD)
+VertexOut VS(VertexIn inp, uint vertexID : SV_VertexID)
 {
 	VertexOut outp = (VertexOut)0;
+	
+	TestStruct test = (TestStruct)0;
 	
 	// Vertex transformation
 	outp.position	= mul(wvpMatrix, float4(inp.coord, 1.0));
@@ -68,7 +70,7 @@ VertexOut VS(VertexIn inp, uint vertexID : SV_VertexID, float3 texCoord2 : TEXCO
 		float shading	= max(0.2, NdotL);
 	}
 	
-	outp.color		= GammaCorrect(inp.color, 1.2);
+	outp.color		= float4(GammaCorrect(inp.color.xyz, 1.2), 1.0);
 	
 	return outp;
 }
@@ -135,6 +137,9 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 	int mask = 256 | y;
 	#endif
 	
+	// Expression statements
+	5 + 2, ++mask, mask <<= 2;
+	
 	// Loop test
 	[unroll(4)]
 	for (int i = 0; i < 10; ++i)
@@ -143,11 +148,12 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 			// Conidition test
 			[branch]
 			if (x > y + 2)
-				;//i++;
+				i++, --i, threadID.x++;
 			else if (!(x == 2))
 			{
 				int y;
-				i += 4;
+				i += 4, ++i, i *= 2;
+				y = 2, y = 4;
 			} else { int z; x = y; }
 		}
 	

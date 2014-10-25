@@ -152,50 +152,6 @@ AST* HLSLAnalyzer::Fetch(const VarIdentPtr& ident) const
     return Fetch(fullIdent);
 }
 
-void HLSLAnalyzer::DecorateEntryInOut(VarDeclStmnt* ast, bool isInput)
-{
-    const auto structFlag = (isInput ? Structure::isShaderInput : Structure::isShaderOutput);
-
-    /* Add flag to variable declaration statement */
-    ast->flags << (isInput ? VarDeclStmnt::isShaderInput : VarDeclStmnt::isShaderOutput);
-
-    /* Add flag to structure type */
-    auto& varType = ast->varType;
-    if (varType->structType)
-        varType->structType->flags << structFlag;
-
-    /* Add flag to optional symbol reference */
-    auto& symbolRef = varType->symbolRef;
-    if (symbolRef && symbolRef->Type() == AST::Types::Structure)
-    {
-        auto structType = dynamic_cast<Structure*>(symbolRef);
-        if (structType)
-        {
-            structType->flags << structFlag;
-            if (!ast->varDecls.empty())
-                structType->aliasName = ast->varDecls.front()->name;
-        }
-    }
-}
-
-void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
-{
-    const auto structFlag = (isInput ? Structure::isShaderInput : Structure::isShaderOutput);
-
-    /* Add flag to structure type */
-    if (ast->structType)
-        ast->structType->flags << structFlag;
-
-    /* Add flag to optional symbol reference */
-    auto& symbolRef = ast->symbolRef;
-    if (symbolRef && symbolRef->Type() == AST::Types::Structure)
-    {
-        auto structType = dynamic_cast<Structure*>(symbolRef);
-        if (structType)
-            structType->flags << structFlag;
-    }
-}
-
 void HLSLAnalyzer::ReportNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName)
 {
     if (ast && ast->Type() == AST::Types::NullStmnt)
@@ -571,12 +527,14 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     }
 }
 
-IMPLEMENT_VISIT_PROC(AssignSmnt)
+IMPLEMENT_VISIT_PROC(AssignStmnt)
 {
-    auto symbol = Fetch(ast->varIdent->ident);
-    if (!symbol)
-        NotifyUndeclaredIdent(ast->varIdent->ident, ast);
+    DecorateVarObjectSymbol(ast);
+    Visit(ast->expr);
+}
 
+IMPLEMENT_VISIT_PROC(ExprStmnt)
+{
     Visit(ast->expr);
 }
 
@@ -648,27 +606,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     /* Decorate AST */
-    auto symbol = Fetch(ast->varIdent->ident);
-    if (symbol)
-    {
-        if (symbol->Type() == AST::Types::VarDecl)
-        {
-            /* Append prefix to local variables */
-            auto varDecl = dynamic_cast<VarDecl*>(symbol);
-            if (varDecl && varDecl->flags(VarDecl::isInsideFunc))
-                ast->varIdent->ident = localVarPrefix_ + ast->varIdent->ident;
-        }
-        else if (symbol->Type() == AST::Types::SamplerDecl)
-        {
-            /* Exchange sampler object by its respective texture object */
-            auto samplerDecl = dynamic_cast<SamplerDecl*>(symbol);
-            auto currentFunc = CurrentFunction();
-            if (samplerDecl && currentFunc && currentFunc->flags(FunctionCall::isTexFunc))
-                ast->varIdent->ident = currentFunc->name->ident;
-        }
-    }
-    else
-        NotifyUndeclaredIdent(ast->varIdent->ident, ast);
+    DecorateVarObjectSymbol(ast);
 
     /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
     const auto& op = ast->assignOp;
@@ -737,6 +675,84 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 }
 
 #undef IMPLEMENT_VISIT_PROC
+
+/* --- Helper functions for context analysis --- */
+
+//!INCOMPLETE!
+void HLSLAnalyzer::DecorateEntryInOut(VarDeclStmnt* ast, bool isInput)
+{
+    const auto structFlag = (isInput ? Structure::isShaderInput : Structure::isShaderOutput);
+
+    /* Add flag to variable declaration statement */
+    ast->flags << (isInput ? VarDeclStmnt::isShaderInput : VarDeclStmnt::isShaderOutput);
+
+    /* Add flag to structure type */
+    auto& varType = ast->varType;
+    if (varType->structType)
+        varType->structType->flags << structFlag;
+
+    /* Add flag to optional symbol reference */
+    auto& symbolRef = varType->symbolRef;
+    if (symbolRef && symbolRef->Type() == AST::Types::Structure)
+    {
+        auto structType = dynamic_cast<Structure*>(symbolRef);
+        if (structType)
+        {
+            structType->flags << structFlag;
+            if (!ast->varDecls.empty())
+                structType->aliasName = ast->varDecls.front()->name;
+        }
+    }
+}
+
+//!INCOMPLETE!
+void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
+{
+    const auto structFlag = (isInput ? Structure::isShaderInput : Structure::isShaderOutput);
+
+    /* Add flag to structure type */
+    if (ast->structType)
+        ast->structType->flags << structFlag;
+
+    /* Add flag to optional symbol reference */
+    auto& symbolRef = ast->symbolRef;
+    if (symbolRef && symbolRef->Type() == AST::Types::Structure)
+    {
+        auto structType = dynamic_cast<Structure*>(symbolRef);
+        if (structType)
+            structType->flags << structFlag;
+    }
+}
+
+void HLSLAnalyzer::DecorateVarObject(AST* symbol, VarIdent* varIdent)
+{
+    if (symbol->Type() == AST::Types::VarDecl)
+    {
+        /* Append prefix to local variables */
+        auto varDecl = dynamic_cast<VarDecl*>(symbol);
+        if (varDecl && varDecl->flags(VarDecl::isInsideFunc))
+            varIdent->ident = localVarPrefix_ + varIdent->ident;
+    }
+    else if (symbol->Type() == AST::Types::SamplerDecl)
+    {
+        /* Exchange sampler object by its respective texture object */
+        auto samplerDecl = dynamic_cast<SamplerDecl*>(symbol);
+        auto currentFunc = CurrentFunction();
+        if (samplerDecl && currentFunc && currentFunc->flags(FunctionCall::isTexFunc))
+            varIdent->ident = currentFunc->name->ident;
+    }
+}
+
+/* --- Helper templates for context analysis --- */
+
+template <typename T> void HLSLAnalyzer::DecorateVarObjectSymbol(T ast)
+{
+    auto symbol = Fetch(ast->varIdent->ident);
+    if (symbol)
+        DecorateVarObject(symbol, ast->varIdent.get());
+    else
+        NotifyUndeclaredIdent(ast->varIdent->ident, ast);
+}
 
 
 } // /namespace HTLib

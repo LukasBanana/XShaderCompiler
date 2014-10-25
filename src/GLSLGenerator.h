@@ -153,7 +153,8 @@ class GLSLGenerator : private Visitor
         DECL_VISIT_PROC( ElseStmnt         );
         DECL_VISIT_PROC( SwitchStmnt       );
         DECL_VISIT_PROC( VarDeclStmnt      );
-        DECL_VISIT_PROC( AssignSmnt        );
+        DECL_VISIT_PROC( AssignStmnt       );
+        DECL_VISIT_PROC( ExprStmnt         );
         DECL_VISIT_PROC( FunctionCallStmnt );
         DECL_VISIT_PROC( ReturnStmnt       );
         //DECL_VISIT_PROC( StructDeclStmnt   );

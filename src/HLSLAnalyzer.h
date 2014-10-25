@@ -68,9 +68,6 @@ class HLSLAnalyzer : private Visitor
         AST* Fetch(const std::string& ident) const;
         AST* Fetch(const VarIdentPtr& ident) const;
 
-        void DecorateEntryInOut(VarDeclStmnt* ast, bool isInput);
-        void DecorateEntryInOut(VarType* ast, bool isInput);
-
         void ReportNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName);
 
         void AcquireExtension(const Program::ARBExtension& extension);
@@ -106,7 +103,8 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( ElseStmnt         );
         DECL_VISIT_PROC( SwitchStmnt       );
         DECL_VISIT_PROC( VarDeclStmnt      );
-        DECL_VISIT_PROC( AssignSmnt        );
+        DECL_VISIT_PROC( AssignStmnt       );
+        DECL_VISIT_PROC( ExprStmnt         );
         DECL_VISIT_PROC( FunctionCallStmnt );
         DECL_VISIT_PROC( ReturnStmnt       );
         //DECL_VISIT_PROC( StructDeclStmnt   );
@@ -128,6 +126,16 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( VarType           );
         DECL_VISIT_PROC( VarIdent          );
         DECL_VISIT_PROC( VarDecl           );
+
+        /* --- Helper functions for context analysis --- */
+
+        void DecorateEntryInOut(VarDeclStmnt* ast, bool isInput);
+        void DecorateEntryInOut(VarType* ast, bool isInput);
+        void DecorateVarObject(AST* symbol, VarIdent* varIdent);
+
+        /* --- Helper templates for context analysis --- */
+
+        template <typename T> void DecorateVarObjectSymbol(T ast);
 
         /* === Members === */
 

@@ -199,7 +199,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         Visit(varDecl);
 }
 
-IMPLEMENT_VISIT_PROC(AssignSmnt)
+IMPLEMENT_VISIT_PROC(AssignStmnt)
 {
     Visit(ast->expr);
 }

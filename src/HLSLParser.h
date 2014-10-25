@@ -58,6 +58,9 @@ class HLSLParser
         TokenPtr Accept(const Tokens type, const std::string& spell);
         TokenPtr AcceptIt();
 
+        //! Accepts the semicolon token (Accept(Tokens::Semicolon)).
+        void Semi();
+
         //! Returns true if the current token is a data type.
         bool IsDataType() const;
         //! Returns true if the current token is a literal.
@@ -129,18 +132,19 @@ class HLSLParser
         CtrlTransferStmntPtr            ParseCtrlTransferStmnt();
         VarDeclStmntPtr                 ParseVarDeclStmnt();
         ReturnStmntPtr                  ParseReturnStmnt();
+        ExprStmntPtr                    ParseExprStmnt(const VarIdentPtr& varIdent = nullptr);
         StmntPtr                        ParseStructDeclOrVarDeclStmnt();
         StmntPtr                        ParseVarDeclOrAssignOrFunctionCallStmnt();
 
-        ExprPtr                         ParseExpr(bool allowComma = false);
+        ExprPtr                         ParseExpr(bool allowComma = false, const ExprPtr& initExpr = nullptr);
         ExprPtr                         ParsePrimaryExpr();
         LiteralExprPtr                  ParseLiteralExpr();
         ExprPtr                         ParseTypeNameOrFunctionCallExpr();
         UnaryExprPtr                    ParseUnaryExpr();
         ExprPtr                         ParseBracketOrCastExpr();
         ExprPtr                         ParseVarAccessOrFunctionCallExpr();
-        VarAccessExprPtr                ParseVarAccessExpr(VarIdentPtr varIdent = nullptr);
-        FunctionCallExprPtr             ParseFunctionCallExpr(VarIdentPtr varIdent = nullptr);
+        VarAccessExprPtr                ParseVarAccessExpr(const VarIdentPtr& varIdent = nullptr);
+        FunctionCallExprPtr             ParseFunctionCallExpr(const VarIdentPtr& varIdent = nullptr);
         InitializerExprPtr              ParseInitializerExpr();
 
         std::vector<VarDeclPtr>         ParseVarDeclList();

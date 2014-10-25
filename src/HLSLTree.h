@@ -82,7 +82,8 @@ struct AST
         ElseStmnt,
         SwitchStmnt,
         VarDeclStmnt,
-        AssignSmnt,
+        AssignStmnt,
+        ExprStmnt,
         FunctionCallStmnt,
         ReturnStmnt,
         StructDeclStmnt,
@@ -418,12 +419,19 @@ struct VarDeclStmnt : public Stmnt
 };
 
 //! Variable assign statement.
-struct AssignSmnt : public Stmnt
+struct AssignStmnt : public Stmnt
 {
-    AST_INTERFACE(AssignSmnt);
+    AST_INTERFACE(AssignStmnt);
     VarIdentPtr varIdent;
     std::string op;
     ExprPtr     expr;
+};
+
+//! Arbitrary expression statement.
+struct ExprStmnt : public Stmnt
+{
+    AST_INTERFACE(ExprStmnt);
+    ExprPtr expr;
 };
 
 //! Function call statement.

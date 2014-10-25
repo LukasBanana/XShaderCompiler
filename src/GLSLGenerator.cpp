@@ -1065,12 +1065,22 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     EndLn();
 }
 
-IMPLEMENT_VISIT_PROC(AssignSmnt)
+IMPLEMENT_VISIT_PROC(AssignStmnt)
 {
     BeginLn();
     {
         Visit(ast->varIdent);
         Write(" " + ast->op + " ");
+        Visit(ast->expr);
+        Write(";");
+    }
+    EndLn();
+}
+
+IMPLEMENT_VISIT_PROC(ExprStmnt)
+{
+    BeginLn();
+    {
         Visit(ast->expr);
         Write(";");
     }

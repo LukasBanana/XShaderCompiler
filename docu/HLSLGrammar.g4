@@ -11,7 +11,7 @@ global_decl			: function_decl
 					| buffer_decl
 					| texture_decl
 					| sampler_decl
-					| struct_decl ';'
+					| struct_decl_stmnt
 					| directive_decl;
 
 directive_decl	: '#' to-end-of-line
@@ -23,19 +23,23 @@ code_body	: stmnt
 // Statements
 
 stmnt_list	: stmnt*;
-stmnt		: ';'
+stmnt		: null_stmnt
 			| code_block
 			| for_loop_stmnt
 			| while_loop_stmnt
-			| do_while_loop_stmnt ';'
+			| do_while_loop_stmnt
 			| if_stmnt
 			| switch_stmnt
-			| var_decl_stmnt ';'
-			| assign_stmnt ';'
-			| function_call_stmnt ';'
+			| var_decl_stmnt
+			| assign_stmnt
+			| function_call_stmnt
 			| return_stmnt
-			| struct_decl ';'
-			| CTRL_TRANSFER_STMNT;
+			| struct_decl_stmnt
+			| CTRL_TRANSFER_STMNT
+			| expr_stmnt;
+
+null_stmnt	: ';';
+expr_stmnt	: expr ';';
 
 // Attributes
 
@@ -57,7 +61,7 @@ expr				: primary_expr
 primary_expr		: literal
 					| unary_expr
 					| post_unary_expr
-					| function_call_stmnt
+					| function_call_expr
 					| bracket_expr
 					| cast_expr
 					| var_access_expr
@@ -71,6 +75,7 @@ bracket_expr		: '(' expr ')';
 cast_expr			: '(' expr ')' primary_expr;
 var_access_expr		: var_ident (ASSIGN_OP expr)?;
 initializer_expr	: '{' (expr (',' expr)*)? '}';
+function_call_expr	: function_call;
 
 // Operators
 
@@ -109,9 +114,9 @@ UNARY_OP		: POST_UNARY_OP
 
 // Loop statements
 
-for_loop_stmnt		: attribute_list? 'for' '(' stmnt? ';' expr? ';' argument_list? ')' stmnt;
-while_loop_stmnt	: attribute_list? 'while' '(' expr ')' stmnt;
-do_while_loop_stmnt	: attribute_list? 'do' code_block 'while' '(' expr ')';
+for_loop_stmnt		: attribute_list? 'for' '(' stmnt? ';' expr? ';' argument_list? ')' stmnt ';';
+while_loop_stmnt	: attribute_list? 'while' '(' expr ')' stmnt ';';
+do_while_loop_stmnt	: attribute_list? 'do' code_block 'while' '(' expr ')' ';';
 
 // Conditional statements
 
@@ -184,19 +189,20 @@ var_semantic			: semantic
 						| var_register;
 
 var_decl				: IDENT array_dimension* var_semantic* initializer?;
-var_decl_stmnt			: (STORAGE_CLASS | INTERP_MODIFIER)* TYPE_MODIFIER? var_type var_decl (',' var_decl)*;
+var_decl_stmnt			: (STORAGE_CLASS | INTERP_MODIFIER)* TYPE_MODIFIER? var_type var_decl (',' var_decl)* ';';
 
 // Function calls
 
 function_name		: var_ident
 					| VECTOR_TYPE
 					| MATRIX_TYPE;
-function_call_stmnt	: function_name '(' argument_list ')';
+function_call		: function_name '(' argument_list ')';
+function_call_stmnt	: function_call ';';
 argument_list		: ( epsilion | expr ( ',' expr )* );
 
 // Other statements
 
-assign_stmnt	: var_ident ASSIGN_OP expr;
+assign_stmnt	: var_ident ASSIGN_OP expr ';';
 
 return_stmnt	: 'return' expr? ';';
 
@@ -274,7 +280,9 @@ sampler_decl	: SAMPLER_IDENT buffer_decl_ident (',' buffer_decl_ident)* ';';
 
 // Struct declaration
 
-struct_decl		: 'struct' IDENT? var_decl_stmnt_list;
-var_decl_stmnt_list	: '{' (var_decl_stmnt ';')* '}';
+struct_decl			: 'struct' IDENT? var_decl_stmnt_list;
+struct_decl_stmnt	: struct_decl ';';
+
+var_decl_stmnt_list	: '{' var_decl_stmnt* '}';
 
 
