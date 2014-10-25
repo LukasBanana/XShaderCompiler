@@ -42,11 +42,11 @@ struct Options
     //! True if warnings are allowed. By default false.
     bool        warnings    = false;
 
-    //! True if no blanks are allowed. By default false.
-    bool        noBlanks    = false;
+    //! True if no blanks are allowed. By default true.
+    bool        blanks      = true;
 
-    //! True if no line marks are allowed. By default false.
-    bool        noLineMarks = false;
+    //! True if line marks are allowed. By default false.
+    bool        lineMarks   = false;
 };
 
 //! Interface for handling new include streams.

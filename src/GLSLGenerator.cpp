@@ -70,12 +70,12 @@ static inline std::vector<std::string> StringList(const std::initializer_list<st
  */
 
 GLSLGenerator::GLSLGenerator(Logger* log, IncludeHandler* includeHandler, const Options& options) :
-    writer_         { options.indent       },
-    includeHandler_ { includeHandler       },
-    log_            { log                  },
-    localVarPrefix_ { options.prefix       },
-    allowBlanks_    { !options.noBlanks    },
-    allowLineMarks_ { !options.noLineMarks }
+    writer_         { options.indent    },
+    includeHandler_ { includeHandler    },
+    log_            { log               },
+    localVarPrefix_ { options.prefix    },
+    allowBlanks_    { options.blanks    },
+    allowLineMarks_ { options.lineMarks }
 {
     EstablishMaps();
 }
@@ -870,7 +870,7 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
             {
                 if (!name->registerName.empty())
                     Write("layout(binding = " + TRegister(name->registerName) + ") ");
-                Write(samplerType + " " + name->ident + ";");
+                Write("uniform " + samplerType + " " + name->ident + ";");
             }
             EndLn();
         }

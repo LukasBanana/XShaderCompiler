@@ -139,6 +139,8 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 	
 	// Expression statements
 	5 + 2, ++mask, mask <<= 2;
+	const int cnst0 = 0;
+	int cnst1 = 1;
 	
 	// Loop test
 	[unroll(4)]

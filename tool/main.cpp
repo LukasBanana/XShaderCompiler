@@ -16,7 +16,7 @@ using namespace HTLib;
 
 /* --- Classes --- */
 
-class OutputLog : public HTLib::Logger
+class OutputLog : public Logger
 {
     
     public:
@@ -118,22 +118,22 @@ static void ShowHelp()
             "Usage:",
             "  HLSLOfflineTranslator (Options FILE)+",
             "Options:",
-            "  -entry ENTRY ......... HLSL shader entry point",
-            "  -target TARGET ....... Shader target; valid values:",
+            "  -entry ENTRY ........... HLSL shader entry point",
+            "  -target TARGET ......... Shader target; valid values:",
             "    vertex, fragment, geometry, tess-control, tess-evaluation, compute",
-            "  -shaderin VERSION .... HLSL version; default is HLSL5; valid values:",
+            "  -shaderin VERSION ...... HLSL version; default is HLSL5; valid values:",
             "    HLSL3, HLSL4, HLSL5",
-            "  -shaderout VERSION ... GLSL version; default is GLSL330; valid values:",
+            "  -shaderout VERSION ..... GLSL version; default is GLSL330; valid values:",
             "    GLSL110, GLSL120, GLSL130, GLSL140, GLSL150, GLSL330,",
             "    GLSL400, GLSL410, GLSL420, GLSL430, GLSL440, GLSL450",
-            "  -indent INDENT ....... Code indentation string; default is 4 blanks",
-            "  -prefix PREFIX ....... Prefix for local variables; default '_'",
-            "  -output FILE ......... GLSL output file; default is '<FILE>.<ENTRY>.glsl'",
-            "  -warn ................ Enables all warnings",
-            "  -no-blanks ........... No blank lines will be generated",
-            "  -no-line-marks ....... No line marks will be generated (e.g. '#line 30')",
-            "  --help, help, -h ..... Prints this help reference",
-            "  --version, -v ........ Prints the version information",
+            "  -indent INDENT ......... Code indentation string; default is 4 blanks",
+            "  -prefix PREFIX ......... Prefix for local variables; default '_'",
+            "  -output FILE ........... GLSL output file; default is '<FILE>.<ENTRY>.glsl'",
+            "  -warn [on|off] ......... Enables/disables all warnings; by default off",
+            "  -blanks [on|off] ....... Enables/disables generation of blank lines between declarations; by default on",
+            "  -line-marks [on|off] ... Enables/disables generation of line marks (e.g. '#line 30'); by default off",
+            "  --help, help, -h ....... Prints this help reference",
+            "  --version, -v .......... Prints the version information",
             "Example:",
             "  HLSLOfflineTranslator -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl",
             "   --> Example.hlsl.vertex.glsl; Example.hlsl.fragment.glsl ",
@@ -163,7 +163,7 @@ static ShaderTargets TargetFromString(const std::string& target)
     if (target == "compute")
         return ShaderTargets::GLSLComputeShader;
 
-    throw std::string("invalid shader target \"" + target + "\"");
+    throw std::runtime_error("invalid shader target \"" + target + "\"");
     return ShaderTargets::GLSLVertexShader;
 }
 
@@ -177,7 +177,7 @@ static InputShaderVersions InputVersionFromString(const std::string& version)
 
     #undef CHECK_IN_VER
 
-    throw std::string("invalid input shader version \"" + version + "\"");
+    throw std::runtime_error("invalid input shader version \"" + version + "\"");
     return InputShaderVersions::HLSL5;
 }
 
@@ -200,15 +200,28 @@ static OutputShaderVersions OutputVersionFromString(const std::string& version)
 
     #undef CHECK_OUT_VER
 
-    throw std::string("invalid output shader version \"" + version + "\"");
+    throw std::runtime_error("invalid output shader version \"" + version + "\"");
     return OutputShaderVersions::GLSL110;
 }
 
 static std::string NextArg(int& i, int argc, char** argv, const std::string& flag)
 {
     if (i + 1 >= argc)
-        throw std::string("missing next argument after flag \"" + flag + "\"");
+        throw std::runtime_error("missing next argument after flag \"" + flag + "\"");
     return argv[++i];
+}
+
+static bool BoolArg(int& i, int argc, char** argv, const std::string& flag)
+{
+    auto arg = NextArg(i, argc, argv, flag);
+    
+    if (arg == "on")
+        return true;
+    else if (arg == "off")
+        return false;
+
+    throw std::runtime_error("invalid state '" + arg + "' for boolean flag (must be 'on' or 'off')");
+    return false;
 }
 
 static void Translate(const std::string& filename)
@@ -255,9 +268,9 @@ static void Translate(const std::string& filename)
         if (result)
             std::cout << "translation successful" << std::endl;
     }
-    catch (const std::string& err)
+    catch (const std::exception& err)
     {
-        std::cerr << err << std::endl;
+        std::cerr << err.what() << std::endl;
     }
 }
 
@@ -282,11 +295,11 @@ int main(int argc, char** argv)
             else if (arg == "--version" || arg == "-v")
                 showVersion = true;
             else if (arg == "-warn")
-                options.warnings = true;
-            else if (arg == "-no-blanks")
-                options.noBlanks = true;
-            else if (arg == "-no-line-marks")
-                options.noLineMarks = true;
+                options.warnings = BoolArg(i, argc, argv, arg);
+            else if (arg == "-blanks")
+                options.blanks = BoolArg(i, argc, argv, arg);
+            else if (arg == "-line-marks")
+                options.lineMarks = BoolArg(i, argc, argv, arg);
             else if (arg == "-entry")
                 entry = NextArg(i, argc, argv, arg);
             else if (arg == "-target")
@@ -308,9 +321,9 @@ int main(int argc, char** argv)
                 ++translationCounter;
             }
         }
-        catch (const std::string& err)
+        catch (const std::exception& err)
         {
-            std::cerr << err << std::endl;
+            std::cerr << err.what() << std::endl;
             return 0;
         }
     }
