@@ -13,10 +13,42 @@
 ### Status ###
 
 TODO List:
+----------
 * Common HLSL IO semantics to GLSL transformation.
 * 'typedef' statement.
+* 'include' directive parsing.
 * Geometry and Tessellation semantics.
 * 'interface' and 'class' declarations.
+
+Limitations:
+------------
+There is currently no pre-processor. Pre-processor directives (beginning with '#') will be translated
+as something like a dummy statement. Example:
+```
+// HLSL Code
+#ifdef 1
+Function();
+#endif
+```
+Will be translated to:
+```
+// GLSL Code
+#if 1
+Function();
+#endif
+```
+And the following HLSL code can currently not be translated:
+```
+#define FOREVER for(;;)
+FOREVER
+{
+	if (Function())
+		break;
+}
+```
+That is to say that pre-processor directives may only appear as an own statement
+and not as a combination with other statements or expressions.
+Only 'include' directives will be parsed and inlined.
 
 ### Offline Translator ###
 
