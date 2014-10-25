@@ -15,28 +15,26 @@ License
 Status
 ------
 
-#### TODO List: ####
+##### TODO List: #####
 * Common HLSL IO semantics to GLSL transformation.
 * 'typedef' statement.
 * 'include' directive parsing.
 * Geometry and Tessellation semantics.
 * 'interface' and 'class' declarations.
 
-#### Limitations: ####
+##### Limitations: #####
 
 There is currently no pre-processor. Pre-processor directives (beginning with '#') will be translated
 as something like a dummy statement. Example:
 ```
-// HLSL Code
-#ifdef 1
-Function();
+#if 1
+float4 Function(inout float4 x);
 #endif
 ```
 Will be translated to:
 ```
-// GLSL Code
 #if 1
-Function();
+vec4 Function(inout vec4 x);
 #endif
 ```
 And the following HLSL code can currently not be translated:
