@@ -10,6 +10,14 @@
 
 3-Clause BSD License
 
+### Status ###
+
+TODO List:
+* Common HLSL IO semantics to GLSL transformation.
+* 'typedef' statement.
+* Geometry and Tessellation semantics.
+* 'interface' and 'class' declarations.
+
 ### Offline Translator ###
 
 The following command line translates the "Example.hlsl" shader file:
@@ -29,7 +37,7 @@ The result are two GLSL shader files: "Example.hlsl.vertex.glsl" and "Example.hl
 /* ... */
 
 // Implements the include handler interface
-class ShaderIncludeHandler : public HT::IncludeHandler
+class ShaderIncludeHandler : public HTLib::IncludeHandler
 {
 	public:
 		std::shared_ptr<std::istream> Include(const std::string& includeName) override
@@ -39,7 +47,7 @@ class ShaderIncludeHandler : public HT::IncludeHandler
 };
 
 // Implements the output log interface
-class Log : public HT::Logger
+class Log : public HTLib::Logger
 {
 	public:
 		void Info(const std::string& message) override
@@ -62,17 +70,17 @@ auto inputStream = std::make_shared<std::ifstream>("Example.hlsl");
 std::ofstream outputStream("Example.vertex.glsl");
 
 ShaderIncludeHandler includeHandler;
-HT::Options options;
+HTLib::Options options;
 Log log;
 
 // Translate HLSL code into GLSL
-bool result = TranslateHLSLtoGLSL(
+bool result = HTLib::TranslateHLSLtoGLSL(
 	inputStream,							// Input HLSL stream
 	outputStream,							// Output GLSL stream
 	"VS",									// Main entry point
-	HT::ShaderTargets::GLSLVertexShader,	// Target shader
-	HT::InputShaderVersions::HLSL5,			// Input shader version: HLSL Shader Model 5
-	HT::OutputShaderVersions::GLSL330,		// Output shader version: GLSL 3.30
+	HTLib::ShaderTargets::GLSLVertexShader,	// Target shader
+	HTLib::InputShaderVersions::HLSL5,		// Input shader version: HLSL Shader Model 5
+	HTLib::OutputShaderVersions::GLSL330,	// Output shader version: GLSL 3.30
 	&includeHandler,						// Optional include handler
 	options,								// Optional translation options
 	&log									// Optional output log
