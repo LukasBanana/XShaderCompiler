@@ -187,6 +187,11 @@ class GLSLGenerator : private Visitor
         void VisitParameter(VarDeclStmnt* ast);
         void VisitScopedStmnt(Stmnt* ast);
 
+        //! Returns true if the specified expression contains a sampler object.
+        bool ExprContainsSampler(Expr* ast);
+        //! Returns true if the specified variable type is a sampler.
+        bool VarTypeIsSampler(VarType* ast);
+
         /* === Members === */
 
         CodeWriter              writer_;

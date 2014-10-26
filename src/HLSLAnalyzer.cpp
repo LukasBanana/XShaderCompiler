@@ -726,6 +726,9 @@ void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
 
 void HLSLAnalyzer::DecorateVarObject(AST* symbol, VarIdent* varIdent)
 {
+    /* Decorate variable identifier with this symbol */
+    varIdent->symbolRef = symbol;
+
     if (symbol->Type() == AST::Types::VarDecl)
     {
         /* Append prefix to local variables */
@@ -735,7 +738,7 @@ void HLSLAnalyzer::DecorateVarObject(AST* symbol, VarIdent* varIdent)
     }
     else if (symbol->Type() == AST::Types::SamplerDecl)
     {
-        /* Exchange sampler object by its respective texture object */
+        /* Exchange sampler object by its respective texture object () */
         auto samplerDecl = dynamic_cast<SamplerDecl*>(symbol);
         auto currentFunc = CurrentFunction();
         if (samplerDecl && currentFunc && currentFunc->flags(FunctionCall::isTexFunc))

@@ -8,6 +8,7 @@
 #include "GLSLGenerator.h"
 #include "HLSLAnalyzer.h"
 #include "HLSLTree.h"
+#include "HLSLKeywords.h"
 
 #include <ctime>
 #include <chrono>
@@ -648,6 +649,20 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                 Visit(ast->name);
         }
 
+        /*
+        Remove arguments which contain a sampler state object,
+        since GLSL does not support sampler states.
+        --> Only "Texture2D" will be mapped to "sampler2D",
+            but "SamplerState" can not be translated.
+        */
+        for (auto it = ast->arguments.begin(); it != ast->arguments.end();)
+        {
+            if (ExprContainsSampler(it->get()))
+                it = ast->arguments.erase(it);
+            else
+                ++it;
+        }
+
         /* Write arguments */
         Write("(");
 
@@ -766,6 +781,21 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             Visit(ast->returnType);
             Write(" " + ast->name + "(");
 
+            /*
+            Remove parameters which contain a sampler state object,
+            since GLSL does not support sampler states.
+            --> Only "Texture2D" will be mapped to "sampler2D",
+                but "SamplerState" can not be translated.
+            */
+            for (auto it = ast->parameters.begin(); it != ast->parameters.end();)
+            {
+                if (VarTypeIsSampler((*it)->varType.get()))
+                    it = ast->parameters.erase(it);
+                else
+                    ++it;
+            }
+
+            /* Write parameters */
             for (size_t i = 0; i < ast->parameters.size(); ++i)
             {
                 VisitParameter(ast->parameters[i].get());
@@ -1415,6 +1445,43 @@ void GLSLGenerator::VisitScopedStmnt(Stmnt* ast)
         else
             Visit(ast);
     }
+}
+
+bool GLSLGenerator::ExprContainsSampler(Expr* ast)
+{
+    if (ast)
+    {
+        if (ast->Type() == AST::Types::BracketExpr)
+        {
+            auto bracketExpr = dynamic_cast<BracketExpr*>(ast);
+            return ExprContainsSampler(bracketExpr->expr.get());
+        }
+        if (ast->Type() == AST::Types::BinaryExpr)
+        {
+            auto binaryExpr = dynamic_cast<BinaryExpr*>(ast);
+            return
+                ExprContainsSampler(binaryExpr->lhsExpr.get()) ||
+                ExprContainsSampler(binaryExpr->rhsExpr.get());
+        }
+        if (ast->Type() == AST::Types::UnaryExpr)
+        {
+            auto unaryExpr = dynamic_cast<UnaryExpr*>(ast);
+            return ExprContainsSampler(unaryExpr->expr.get());
+        }
+        if (ast->Type() == AST::Types::VarAccessExpr)
+        {
+            auto symbolRef = dynamic_cast<VarAccessExpr*>(ast)->varIdent->symbolRef;
+            if (symbolRef && symbolRef->Type() == AST::Types::SamplerDecl)
+                return true;
+        }
+    }
+    return false;
+}
+
+bool GLSLGenerator::VarTypeIsSampler(VarType* ast)
+{
+    auto it = HLSLKeywords().find(ast->baseType);
+    return it != HLSLKeywords().end() && it->second == Token::Types::Sampler;
 }
 
 

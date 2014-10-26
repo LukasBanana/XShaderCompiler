@@ -309,6 +309,7 @@ struct VarIdent : public AST
     std::string             ident;
     std::vector<ExprPtr>    arrayIndices;
     VarIdentPtr             next;
+    AST*                    symbolRef = nullptr; // symbol reference for DAST to the variable object; may be null.
 };
 
 //! Variable declaration.

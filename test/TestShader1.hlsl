@@ -82,6 +82,9 @@ SamplerState samplerState : register(s0);
 
 void Frustum(inout float4 v);
 
+// "SamplerState ss" must be removed by the translator
+void TexTest(Texture2D t2d, SamplerState ss) {}
+
 float4 PS(VertexOut inp) : SV_Target0
 {
 	float3 interpColor = float3(1.0, 0.0, 0.0);
@@ -97,6 +100,9 @@ float4 PS(VertexOut inp) : SV_Target0
 	
 	float4 viewRay = (float4)0.0;
 	Frustum(viewRay);
+	
+	// "samplerState" must be removed by the translator
+	TexTest(tex, ((samplerState)));
 	
 	int intrl;
 	InterlockedAdd(intrl, 5);
