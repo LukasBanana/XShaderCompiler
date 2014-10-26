@@ -125,7 +125,7 @@ struct ComputeIn
 };
 
 int test(int x){return 0;}
-void test2(int x, int y){}
+void test2(int x, inout const row_major float4x4 y){}
 
 [numthreads(10, 1, 1)]
 void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
@@ -147,6 +147,7 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 	5 + 2, ++mask, mask <<= 2;
 	const int cnst0 = 0;
 	int cnst1 = 1;
+	row_major float4x4 cnst2;
 	
 	// Loop test
 	[unroll(4)]
@@ -167,7 +168,8 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 	
 	while (test(x))
 		do {
-			test2(y, x);
+			float4x4 mat0;
+			test2(y, mat0);
 			do
 				float4 v = 0;
 			while (v.x < 10);

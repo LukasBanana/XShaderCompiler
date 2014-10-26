@@ -48,8 +48,6 @@ class HLSLParser
 
         /* === Functions === */
 
-        void EstablishMaps();
-
         void Error(const std::string& msg);
         void ErrorUnexpected();
         void ErrorUnexpected(const std::string& hint);
@@ -169,8 +167,6 @@ class HLSLParser
         TokenPtr tkn_;
 
         Logger* log_ = nullptr;
-
-        std::map<std::string, VarModifiers> varModifierMap_;
 
 };
 

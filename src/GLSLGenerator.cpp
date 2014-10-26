@@ -1060,15 +1060,18 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     else if (ast->flags(VarDeclStmnt::isShaderOutput))
         Write("out ");
 
-    for (auto& modifier : ast->commonModifiers)
+    for (const auto& modifier : ast->storageModifiers)
     {
         auto it = modifierMap_.find(modifier);
         if (it != modifierMap_.end())
             Write(it->second + " ");
     }
 
-    if (ast->typeModifier == "const")
-        Write(ast->typeModifier + " ");
+    for (const auto& modifier : ast->typeModifiers)
+    {
+        if (modifier == "const")
+            Write(modifier + " ");
+    }
 
     /* Write variable type */
     if (ast->varType->structType)
@@ -1407,18 +1410,14 @@ void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast)
 
 void GLSLGenerator::VisitParameter(VarDeclStmnt* ast)
 {
-    /* Write type modifier */
-    if (ast->typeModifier == "const")
-        Write(ast->typeModifier + " ");
+    /* Write modifiers */
+    if (!ast->inputModifier.empty())
+        Write(ast->inputModifier + " ");
 
-    /* Write common modifiers */
-    for (const auto& modifier : ast->commonModifiers)
+    for (const auto& modifier : ast->typeModifiers)
     {
-        if (modifier == "in" || modifier == "out" || modifier == "inout")
-        {
+        if (modifier == "const")
             Write(modifier + " ");
-            break;
-        }
     }
 
     /* Write parameter type */

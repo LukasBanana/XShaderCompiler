@@ -17,7 +17,6 @@ HLSLParser::HLSLParser(Logger* log) :
     scanner_{ log },
     log_    { log }
 {
-    EstablishMaps();
 }
 
 ProgramPtr HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
@@ -44,29 +43,6 @@ ProgramPtr HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
 /*
  * ======= Private: =======
  */
-
-void HLSLParser::EstablishMaps()
-{
-    varModifierMap_ = std::map<std::string, VarModifiers>
-    {
-        { "extern",          VarModifiers::StorageModifier },
-        { "nointerpolation", VarModifiers::StorageModifier },
-        { "precise",         VarModifiers::StorageModifier },
-        { "shared",          VarModifiers::StorageModifier },
-        { "groupshared",     VarModifiers::StorageModifier },
-        { "static",          VarModifiers::StorageModifier },
-        { "uniform",         VarModifiers::StorageModifier },
-        { "volatile",        VarModifiers::StorageModifier },
-        { "linear",          VarModifiers::StorageModifier },
-        { "centroid",        VarModifiers::StorageModifier },
-        { "noperspective",   VarModifiers::StorageModifier },
-        { "sample",          VarModifiers::StorageModifier },
-
-        { "const",           VarModifiers::TypeModifier    },
-        { "row_major",       VarModifiers::TypeModifier    },
-        { "column_major",    VarModifiers::TypeModifier    },
-    };
-}
 
 void HLSLParser::Error(const std::string& msg)
 {
@@ -203,8 +179,15 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     auto ast = Make<VarDeclStmnt>();
 
     /* Parse parameter as single variable declaration */
-    if (Is(Tokens::InputModifier))
-        ast->commonModifiers.push_back(AcceptIt()->Spell());
+    while (Is(Tokens::InputModifier) || Is(Tokens::TypeModifier) || Is(Tokens::StorageModifier))
+    {
+        if (Is(Tokens::InputModifier))
+            ast->inputModifier = AcceptIt()->Spell();
+        else if (Is(Tokens::TypeModifier))
+            ast->typeModifiers.push_back(AcceptIt()->Spell());
+        else if (Is(Tokens::StorageModifier))
+            ast->storageModifiers.push_back(AcceptIt()->Spell());
+    }
 
     ast->varType = ParseVarType();
     ast->varDecls.push_back(ParseVarDecl());
@@ -529,6 +512,9 @@ StmntPtr HLSLParser::ParseStmnt()
             return ParseCtrlTransferStmnt();
         case Tokens::Struct:
             return ParseStructDeclOrVarDeclStmnt();
+        case Tokens::TypeModifier:
+        case Tokens::StorageModifier:
+            return ParseVarDeclStmnt();
         default:
             break;
     }
@@ -700,21 +686,25 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 
     while (true)
     {
-        if (Is(Tokens::Ident))
+        if (Is(Tokens::StorageModifier))
         {
-            /* Parse storage class, interpolation- or type modifiers */
+            /* Parse storage modifiers */
             auto ident = AcceptIt()->Spell();
-
-            auto it = varModifierMap_.find(ident);
-            if (it == varModifierMap_.end())
-            {
-                /* Parse base variable type */
-                ast->varType = Make<VarType>();
-                ast->varType->baseType = ident;
-                break;
-            }
-            else
-                ast->commonModifiers.push_back(ident);
+            ast->storageModifiers.push_back(ident);
+        }
+        else if (Is(Tokens::TypeModifier))
+        {
+            /* Parse type modifier (const, row_major, column_major) */
+            auto ident = AcceptIt()->Spell();
+            ast->typeModifiers.push_back(ident);
+        }
+        else if (Is(Tokens::Ident))
+        {
+            /* Parse base variable type */
+            auto ident = AcceptIt()->Spell();
+            ast->varType = Make<VarType>();
+            ast->varType->baseType = ident;
+            break;
         }
         else if (Is(Tokens::Struct))
         {
@@ -838,15 +828,20 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
         return ParseExprStmnt(varIdent);
     }
 
-    /* Parse variable declaration statement */
-    //return ast;
+    if (!varIdent->next)
+    {
+        /* Parse variable declaration statement */
+        auto ast = Make<VarDeclStmnt>();
 
-    #if 1//!!!
-    while (!Is(Tokens::Semicolon))
-        AcceptIt();
-    AcceptIt();
-    #endif
-    //...
+        ast->varType = Make<VarType>();
+        ast->varType->baseType = varIdent->ident;
+        ast->varDecls = ParseVarDeclList();
+        Semi();
+
+        return ast;
+    }
+
+    ErrorUnexpected("expected variable declaration, assignment or function call statement");
     
     return nullptr;
 }

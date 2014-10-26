@@ -413,8 +413,9 @@ struct VarDeclStmnt : public Stmnt
         FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
     };
     AST_INTERFACE(VarDeclStmnt);
-    std::vector<std::string>    commonModifiers; // storage classes, interpolation modifiers or input modifiers,
-    std::string                 typeModifier; // may be empty
+    std::string                 inputModifier; // in, out, inout, uniform
+    std::vector<std::string>    storageModifiers;
+    std::vector<std::string>    typeModifiers; // const, row_major, column_major
     VarTypePtr                  varType;
     std::vector<VarDeclPtr>     varDecls;
 };

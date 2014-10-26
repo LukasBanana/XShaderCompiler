@@ -65,7 +65,7 @@ class _HT_EXPORT_ IncludeHandler
 
 
 /**
-Translates the specifies HLSL code into GLSL code.
+Translates the HLSL code from the specified input stream into GLSL code.
 \param[in,out] input Specifies the input stream. This must be valid HLSL code.
 \param[in,out] output Specifies the output stream. This will contain the output GLSL code.
 \param[in] shaderTarget Specifies the target shader.
