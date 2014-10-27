@@ -149,7 +149,7 @@ class HLSLParser
         std::vector<VarDeclStmntPtr>    ParseVarDeclStmntList();
         std::vector<VarDeclStmntPtr>    ParseParameterList();
         std::vector<StmntPtr>           ParseStmntList();
-        std::vector<ExprPtr>            ParseExprList(const Tokens listTerminatorToken);
+        std::vector<ExprPtr>            ParseExprList(const Tokens listTerminatorToken, bool allowLastComma = false);
         std::vector<ExprPtr>            ParseArrayDimensionList();
         std::vector<ExprPtr>            ParseArgumentList();
         std::vector<ExprPtr>            ParseInitializerList();

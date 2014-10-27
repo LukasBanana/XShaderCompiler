@@ -135,12 +135,15 @@ struct Expr : public AST {};
 //! Program AST root.
 struct Program : public AST
 {   
+    AST_INTERFACE(Program)
+
     //! GL ARB extension structure.
     struct ARBExtension
     {
         std::string extensionName;
         int         requiredVersion;
     };
+
     FLAG_ENUM
     {
         FLAG( rcpIntrinsicUsed,             0 ), // The "rcp" intrinsic is used.
@@ -148,7 +151,7 @@ struct Program : public AST
         FLAG( clipIntrinsicUsed,            2 ), // The "clip" intrinsic is used.
         FLAG( hasSM3ScreenSpace,            3 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
     };
-    AST_INTERFACE(Program)
+
     std::vector<GlobalDeclPtr> globalDecls;
     std::set<std::string> requiredExtensions;
 };
@@ -163,11 +166,13 @@ struct CodeBlock : public AST
 //! Buffer declaration identifier.
 struct BufferDeclIdent : public AST
 {
+    AST_INTERFACE(BufferDeclIdent);
+
     FLAG_ENUM
     {
         FLAG( isReferenced, 0 ), // This buffer is referenced (or rather used) at least once (use-count >= 1).
     };
-    AST_INTERFACE(BufferDeclIdent);
+
     std::string ident;
     std::string registerName; // may be empty
 };
@@ -175,6 +180,8 @@ struct BufferDeclIdent : public AST
 //! Function call.
 struct FunctionCall : public AST
 {
+    AST_INTERFACE(FunctionCall);
+
     FLAG_ENUM
     {
         FLAG( isMulFunc,    0 ), // This is a "mul" function.
@@ -182,7 +189,7 @@ struct FunctionCall : public AST
         FLAG( isTexFunc,    2 ), // This is a texture function (e.g. "tex.Sample" or "tex.Load").
         FLAG( isAtomicFunc, 3 ), // This is an atomic (or rather interlocked) function (e.g. "InterlockedAdd").
     };
-    AST_INTERFACE(FunctionCall);
+
     VarIdentPtr             name;
     std::vector<ExprPtr>    arguments;
 };
@@ -190,6 +197,8 @@ struct FunctionCall : public AST
 //! Structure object.
 struct Structure : public AST
 {
+    AST_INTERFACE(Structure);
+
     FLAG_ENUM
     {
         FLAG( isReferenced,     0 ), // This structure is referenced (or rather used) at least once (use-count >= 1).
@@ -197,7 +206,7 @@ struct Structure : public AST
         FLAG( isShaderInput,    2 ), // This structure is used as shader input.
         FLAG( isShaderOutput,   3 ), // This structure is used as shader output.
     };
-    AST_INTERFACE(Structure);
+
     std::string                     name;
     std::vector<VarDeclStmntPtr>    members;
     std::string                     aliasName; // alias name for input and output interface blocks of the DAST.
@@ -208,13 +217,15 @@ struct Structure : public AST
 //! Function declaration.
 struct FunctionDecl : public GlobalDecl
 {
+    AST_INTERFACE(FunctionDecl);
+
     FLAG_ENUM
     {
         FLAG( isReferenced, 0 ), // This function is referenced (or rather used) at least once (use-count >= 1).
         FLAG( wasMarked,    1 ), // This function was already marked by the "ReferenceAnalyzer" visitor.
         FLAG( isEntryPoint, 2 ), // This function is the main entry point.
     };
-    AST_INTERFACE(FunctionDecl);
+    
     std::vector<FunctionCallPtr>    attribs; // attribute list
     VarTypePtr                      returnType;
     std::string                     name;
@@ -227,12 +238,14 @@ struct FunctionDecl : public GlobalDecl
 //! Uniform buffer (cbuffer, tbuffer) declaration.
 struct UniformBufferDecl : public GlobalDecl
 {
+    AST_INTERFACE(UniformBufferDecl);
+
     FLAG_ENUM
     {
         FLAG( isReferenced, 0 ), // This uniform buffer is referenced (or rather used) at least once (use-count >= 1).
         FLAG( wasMarked,    1 ), // This uniform buffer was already marked by the "ReferenceAnalyzer" visitor.
     };
-    AST_INTERFACE(UniformBufferDecl);
+    
     std::string                     bufferType;
     std::string                     name;
     std::string                     registerName; // may be empty
@@ -242,11 +255,13 @@ struct UniformBufferDecl : public GlobalDecl
 //! Texture declaration.
 struct TextureDecl : public GlobalDecl
 {
+    AST_INTERFACE(TextureDecl);
+
     FLAG_ENUM
     {
         FLAG( isReferenced, 0 ), // This texture is referenced (or rather used) at least once (use-count >= 1).
     };
-    AST_INTERFACE(TextureDecl);
+
     std::string                     textureType;
     std::string                     colorType;
     std::vector<BufferDeclIdentPtr> names;
@@ -315,11 +330,13 @@ struct VarIdent : public AST
 //! Variable declaration.
 struct VarDecl : public AST
 {
+    AST_INTERFACE(VarDecl);
+
     FLAG_ENUM
     {
         FLAG( isInsideFunc, 0 ), // This variable is declared inside a function.
     };
-    AST_INTERFACE(VarDecl);
+
     std::string                 name;
     std::vector<ExprPtr>        arrayDims;
     std::vector<VarSemanticPtr> semantics;
@@ -407,12 +424,14 @@ struct SwitchStmnt : public Stmnt
 //! Variable declaration statement.
 struct VarDeclStmnt : public Stmnt
 {
+    AST_INTERFACE(VarDeclStmnt);
+
     FLAG_ENUM
     {
         FLAG( isShaderInput,    0 ), // This variable is used as shader input.
         FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
     };
-    AST_INTERFACE(VarDeclStmnt);
+
     std::string                 inputModifier; // in, out, inout, uniform
     std::vector<std::string>    storageModifiers;
     std::vector<std::string>    typeModifiers; // const, row_major, column_major
@@ -447,6 +466,12 @@ struct FunctionCallStmnt : public Stmnt
 struct ReturnStmnt : public Stmnt
 {
     AST_INTERFACE(ReturnStmnt);
+
+    FLAG_ENUM
+    {
+        FLAG( isLastStmnt, 0 ), // This is the last statement in a code block
+    };
+
     ExprPtr expr; // may be null
 };
 

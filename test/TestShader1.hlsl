@@ -80,7 +80,13 @@ Texture2D tex : register(t0), tex2 : register(t1);
 Texture2D<float> tex3 : register(t2);
 SamplerState samplerState : register(s0);
 
+// 1st forward declaration
 void Frustum(inout float4 v);
+// 2nd forward declaration
+void Frustum(inout float4 v);
+
+// overloaded function
+void Frustum(inout float4 v, int x) {}
 
 // "SamplerState ss" must be removed by the translator
 void TexTest(Texture2D t2d, SamplerState ss) {}
@@ -115,6 +121,9 @@ void Frustum(inout float4 v)
 	v.x = v.x*0.5 + 0.5;
 	v.y = v.y*0.5 + 0.5;
 }
+
+// 3rd forward declaration (must not override the function reference in the DAST)
+void Frustum(inout float4 v);
 
 // Compute shader
 

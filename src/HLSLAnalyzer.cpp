@@ -199,6 +199,21 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     for (auto& stmnt : ast->stmnts)
         Visit(stmnt);
 
+    /*
+    Check if the last statement is a 'return' statement
+    (can be removed in the main entry point or when it has no expression)
+    */
+    if (!ast->stmnts.empty())
+    {
+        auto& lastStmnt = ast->stmnts.back();
+        if (lastStmnt->Type() == AST::Types::ReturnStmnt)
+        {
+            auto returnStmnt = dynamic_cast<ReturnStmnt*>(lastStmnt.get());
+            if (returnStmnt)
+                returnStmnt->flags << ReturnStmnt::isLastStmnt;
+        }
+    }
+
     CloseScope();
 }
 
@@ -263,16 +278,20 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
 IMPLEMENT_VISIT_PROC(Structure)
 {
+    #if 0//!!!! there is no forward declaration for structs in HLSL!
     if (!ast->name.empty())
     {
         Register(
             ast->name, ast,
             [](AST* symbol) -> bool
             {
-                return symbol->Type() == AST::Types::StructDecl;//!TODO! Types::StructForwardDecl !!!
+                return symbol->Type() == AST::Types::StructDecl;
             }
         );
     }
+    #else
+    Register(ast->name, ast);
+    #endif
 
     OpenScope();
     {
@@ -299,16 +318,16 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     auto symbol = Fetch(ast->name);
     if (symbol && symbol->Type() == AST::Types::FunctionDecl)
     {
-        auto forwardDecl = dynamic_cast<FunctionDecl*>(symbol);
-        if (forwardDecl)
+        auto funcDecl = dynamic_cast<FunctionDecl*>(symbol);
+        if (funcDecl)
         {
-            /* Append previous forward declarations */
-            ast->forwardDeclsRef = forwardDecl->forwardDeclsRef;
-            ast->forwardDeclsRef.push_back(forwardDecl);
+            /* Append previous forward declarations (required for the 'reference analyzer') */
+            ast->forwardDeclsRef = funcDecl->forwardDeclsRef;
+            ast->forwardDeclsRef.push_back(funcDecl);
         }
     }
 
-    /* Register symbol name */
+    /* Register symbol name  */
     Register(
         ast->name, ast,
         [](AST* symbol) -> bool

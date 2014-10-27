@@ -969,7 +969,7 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     (single identifier (for a struct name) or a data type)
     !!!!!!!!!!!!!!!!!
     !TODO! -> This must be extended with the contextual analyzer,
-    becauses expressions like "(x)" are no cast expression is "x" is a variable and not a structure!!!
+    becauses expressions like "(x)" are no cast expression if "x" is a variable and not a structure!!!
     !!!!!!!!!!!!!!!!!
     */
     if ( IsPrimaryExpr() &&
@@ -1101,7 +1101,7 @@ std::vector<StmntPtr> HLSLParser::ParseStmntList()
     return stmnts;
 }
 
-std::vector<ExprPtr> HLSLParser::ParseExprList(const Tokens listTerminatorToken)
+std::vector<ExprPtr> HLSLParser::ParseExprList(const Tokens listTerminatorToken, bool allowLastComma)
 {
     std::vector<ExprPtr> exprs;
 
@@ -1112,7 +1112,11 @@ std::vector<ExprPtr> HLSLParser::ParseExprList(const Tokens listTerminatorToken)
         {
             exprs.push_back(ParseExpr());
             if (Is(Tokens::Comma))
+            {
                 AcceptIt();
+                if (allowLastComma && Is(listTerminatorToken))
+                    break;
+            }
             else
                 break;
         }
@@ -1142,7 +1146,7 @@ std::vector<ExprPtr> HLSLParser::ParseArgumentList()
 std::vector<ExprPtr> HLSLParser::ParseInitializerList()
 {
     Accept(Tokens::LCurly);
-    auto arguments = ParseExprList(Tokens::RCurly);
+    auto arguments = ParseExprList(Tokens::RCurly, true);
     Accept(Tokens::RCurly);
     return arguments;
 }

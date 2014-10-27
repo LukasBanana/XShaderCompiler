@@ -532,6 +532,9 @@ IMPLEMENT_VISIT_PROC(Program)
 {
     program_ = ast;
 
+    /* Append required extensions first */
+    AppendRequiredExtensions(ast);
+
     /* Write 'gl_FragCoord' layout */
     if (shaderTarget_ == ShaderTargets::GLSLFragmentShader)
     {
@@ -546,8 +549,7 @@ IMPLEMENT_VISIT_PROC(Program)
         Blank();
     }
 
-    /* Append required extensions, default helper macros and functions */
-    AppendRequiredExtensions(ast);
+    /* Append default helper macros and functions */
     AppendCommonMacros();
 
     if (ast->flags(Program::rcpIntrinsicUsed))
@@ -1136,9 +1138,10 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     {
         //!TODO! -> write output variables!!!
 
-        WriteLn("return;");
+        if (!ast->flags(ReturnStmnt::isLastStmnt))
+            WriteLn("return;");
     }
-    else
+    else if (ast->expr || !ast->flags(ReturnStmnt::isLastStmnt))
     {
         BeginLn();
         {
