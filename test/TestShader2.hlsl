@@ -50,6 +50,11 @@ Texture2D tex : register(t0);
 SamplerState samplerState : register(s0);
 
 float4 PS(VertexOut inp) : SV_Target0
+/*struct PixelOut
+{
+	float4 color : SV_Target0;
+};
+PixelOut PS(VertexOut inp)*/
 {
 	return inp.color * tex.Sample(samplerState, inp.texCoord);
 }

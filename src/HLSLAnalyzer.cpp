@@ -199,21 +199,6 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     for (auto& stmnt : ast->stmnts)
         Visit(stmnt);
 
-    /*
-    Check if the last statement is a 'return' statement
-    (can be removed in the main entry point or when it has no expression)
-    */
-    if (!ast->stmnts.empty())
-    {
-        auto& lastStmnt = ast->stmnts.back();
-        if (lastStmnt->Type() == AST::Types::ReturnStmnt)
-        {
-            auto returnStmnt = dynamic_cast<ReturnStmnt*>(lastStmnt.get());
-            if (returnStmnt)
-                returnStmnt->flags << ReturnStmnt::isLastStmnt;
-        }
-    }
-
     CloseScope();
 }
 
@@ -360,6 +345,13 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         if (isEntryPoint)
         {
             mainFunction_ = ast;
+
+            /* Decorate program's input and output semantics */
+            for (auto& param : ast->parameters)
+                program_->inputSemantics.parameters.push_back(param.get());
+
+            program_->outputSemantics.returnType = ast->returnType.get();
+            program_->outputSemantics.functionSemantic = ast->semantic;
 
             /* Add flags */
             ast->flags << FunctionDecl::isEntryPoint;

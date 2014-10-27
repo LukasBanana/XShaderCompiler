@@ -48,6 +48,7 @@ class GLSLGenerator : private Visitor
 
         struct SemanticStage
         {
+            SemanticStage() = default;
             SemanticStage(const std::string& semantic);
             SemanticStage(
                 const std::string& vertex,
@@ -67,6 +68,7 @@ class GLSLGenerator : private Visitor
             std::string tessEvaluation;
             std::string fragment;
             std::string compute;
+            int         index = 0;      // Semantic index
         };
 
         /* === Functions === */
@@ -127,6 +129,9 @@ class GLSLGenerator : private Visitor
         //! Returns true if the specified AST structure must be resolved.
         bool MustResolveStruct(Structure* ast) const;
 
+        //! Returns true if the target version is greater than or equal to the specified version number.
+        bool IsVersionOut(int version) const;
+
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
@@ -182,7 +187,12 @@ class GLSLGenerator : private Visitor
 
         void VisitAttribute(FunctionCall* ast);
         void WriteAttributeNumThreads(FunctionCall* ast);
-        void WriteEntryPointParameter(VarDeclStmnt* ast);
+
+        void WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenParamCounter);
+        void WriteEntryPointInputSemantics();
+        void WriteEntryPointOutputSemantics(Expr* ast);
+
+        void WriteFragmentShaderOutput();
 
         void VisitParameter(VarDeclStmnt* ast);
         void VisitScopedStmnt(Stmnt* ast);
@@ -191,6 +201,8 @@ class GLSLGenerator : private Visitor
         bool ExprContainsSampler(Expr* ast);
         //! Returns true if the specified variable type is a sampler.
         bool VarTypeIsSampler(VarType* ast);
+
+        bool FetchSemantic(std::string semanticName, SemanticStage& semantic) const;
 
         /* === Members === */
 

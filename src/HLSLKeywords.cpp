@@ -183,7 +183,7 @@ static KeywordMapType GenerateKeywordMap()
         { "shared",                  Ty::StorageModifier },
         { "groupshared",             Ty::StorageModifier },
         { "static",                  Ty::StorageModifier },
-        { "uniform",                 Ty::StorageModifier },
+        //{ "uniform",                 Ty::StorageModifier }, // Already used as "InputModifier"
         { "volatile",                Ty::StorageModifier },
         { "linear",                  Ty::StorageModifier },
         { "centroid",                Ty::StorageModifier },

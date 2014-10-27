@@ -144,6 +144,18 @@ struct Program : public AST
         int         requiredVersion;
     };
 
+    struct InputSemantics
+    {
+        std::vector<VarDeclStmnt*> parameters;
+    };
+
+    struct OutputSemantics
+    {
+        VarType*    returnType = nullptr;   // Either this ...
+        std::string functionSemantic;       // ... or this is used.
+        std::string singleOutputVariable;   // May be empty
+    };
+
     FLAG_ENUM
     {
         FLAG( rcpIntrinsicUsed,             0 ), // The "rcp" intrinsic is used.
@@ -152,8 +164,10 @@ struct Program : public AST
         FLAG( hasSM3ScreenSpace,            3 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
     };
 
-    std::vector<GlobalDeclPtr> globalDecls;
-    std::set<std::string> requiredExtensions;
+    std::vector<GlobalDeclPtr>  globalDecls;
+    std::set<std::string>       requiredExtensions; // Required GLSL extensions for the DAST
+    InputSemantics              inputSemantics;     // Input semantics for the DAST
+    OutputSemantics             outputSemantics;    // Output semantics for the DAST
 };
 
 //! Code block.
@@ -174,7 +188,7 @@ struct BufferDeclIdent : public AST
     };
 
     std::string ident;
-    std::string registerName; // may be empty
+    std::string registerName; // May be empty
 };
 
 //! Function call.
@@ -209,7 +223,7 @@ struct Structure : public AST
 
     std::string                     name;
     std::vector<VarDeclStmntPtr>    members;
-    std::string                     aliasName; // alias name for input and output interface blocks of the DAST.
+    std::string                     aliasName; // Alias name for input and output interface blocks of the DAST.
 };
 
 /* --- Global declarations --- */
@@ -226,13 +240,13 @@ struct FunctionDecl : public GlobalDecl
         FLAG( isEntryPoint, 2 ), // This function is the main entry point.
     };
     
-    std::vector<FunctionCallPtr>    attribs; // attribute list
+    std::vector<FunctionCallPtr>    attribs;            // Attribute list
     VarTypePtr                      returnType;
     std::string                     name;
     std::vector<VarDeclStmntPtr>    parameters;
-    std::string                     semantic;
-    CodeBlockPtr                    codeBlock; // may be null (if this AST node is a forward declaration)
-    std::vector<FunctionDecl*>      forwardDeclsRef; // list of forward declarations to this function
+    std::string                     semantic;           // May be empty
+    CodeBlockPtr                    codeBlock;          // May be null (if this AST node is a forward declaration)
+    std::vector<FunctionDecl*>      forwardDeclsRef;    // List of forward declarations to this function
 };
 
 //! Uniform buffer (cbuffer, tbuffer) declaration.
@@ -248,7 +262,7 @@ struct UniformBufferDecl : public GlobalDecl
     
     std::string                     bufferType;
     std::string                     name;
-    std::string                     registerName; // may be empty
+    std::string                     registerName; // May be empty
     std::vector<VarDeclStmntPtr>    members;
 };
 
@@ -296,7 +310,7 @@ struct PackOffset : public AST
 {
     AST_INTERFACE(PackOffset);
     std::string registerName;
-    std::string vectorComponent; // may be empty
+    std::string vectorComponent; // May be empty
 };
 
 //! Variable semantic.
@@ -305,16 +319,16 @@ struct VarSemantic : public AST
     AST_INTERFACE(VarSemantic);
     std::string     semantic;
     PackOffsetPtr   packOffset;
-    std::string     registerName; // may be empty
+    std::string     registerName; // May be empty
 };
 
 //! Variable data type.
 struct VarType : public AST
 {
     AST_INTERFACE(VarType);
-    std::string     baseType;               // either this ...
+    std::string     baseType;               // Either this ...
     StructurePtr    structType;             // ... or this is used.
-    AST*            symbolRef = nullptr;    // symbol reference for DAST to the type definition; may be null.
+    AST*            symbolRef = nullptr;    // Symbol reference for DAST to the type definition; may be null.
 };
 
 //! Variable (linked-list) identifier.
@@ -324,7 +338,7 @@ struct VarIdent : public AST
     std::string             ident;
     std::vector<ExprPtr>    arrayIndices;
     VarIdentPtr             next;
-    AST*                    symbolRef = nullptr; // symbol reference for DAST to the variable object; may be null.
+    AST*                    symbolRef = nullptr; // Symbol reference for DAST to the variable object; may be null.
 };
 
 //! Variable declaration.
@@ -341,7 +355,7 @@ struct VarDecl : public AST
     std::vector<ExprPtr>        arrayDims;
     std::vector<VarSemanticPtr> semantics;
     ExprPtr                     initializer;
-    UniformBufferDecl*          uniformBufferRef = nullptr; // uniform buffer reference for DAST; may be null
+    UniformBufferDecl*          uniformBufferRef = nullptr; // Uniform buffer reference for DAST; may be null
 };
 
 /* --- Statements --- */
@@ -370,7 +384,7 @@ struct CodeBlockStmnt : public Stmnt
 struct ForLoopStmnt : public Stmnt
 {
     AST_INTERFACE(ForLoopStmnt);
-    std::vector<FunctionCallPtr>    attribs; // attribute list
+    std::vector<FunctionCallPtr>    attribs; // Attribute list
     StmntPtr                        initSmnt;
     ExprPtr                         condition;
     ExprPtr                         iteration;
@@ -381,7 +395,7 @@ struct ForLoopStmnt : public Stmnt
 struct WhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(WhileLoopStmnt);
-    std::vector<FunctionCallPtr>    attribs; // attribute list
+    std::vector<FunctionCallPtr>    attribs; // Attribute list
     ExprPtr                         condition;
     StmntPtr                        bodyStmnt;
 };
@@ -390,7 +404,7 @@ struct WhileLoopStmnt : public Stmnt
 struct DoWhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(DoWhileLoopStmnt);
-    std::vector<FunctionCallPtr>    attribs; // attribute list
+    std::vector<FunctionCallPtr>    attribs; // Attribute list
     StmntPtr                        bodyStmnt;
     ExprPtr                         condition;
 };
@@ -399,10 +413,10 @@ struct DoWhileLoopStmnt : public Stmnt
 struct IfStmnt : public Stmnt
 {
     AST_INTERFACE(IfStmnt);
-    std::vector<FunctionCallPtr>    attribs; // attribute list
+    std::vector<FunctionCallPtr>    attribs;    // Attribute list
     ExprPtr                         condition;
     StmntPtr                        bodyStmnt;
-    ElseStmntPtr                    elseStmnt; // may be null
+    ElseStmntPtr                    elseStmnt;  // May be null
 };
 
 //! 'else' statement.
@@ -416,7 +430,7 @@ struct ElseStmnt : public Stmnt
 struct SwitchStmnt : public Stmnt
 {
     AST_INTERFACE(SwitchStmnt);
-    std::vector<FunctionCallPtr>    attribs; // attribute list
+    std::vector<FunctionCallPtr>    attribs; // Attribute list
     ExprPtr                         selector;
     std::vector<SwitchCasePtr>      cases;
 };
@@ -432,9 +446,9 @@ struct VarDeclStmnt : public Stmnt
         FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
     };
 
-    std::string                 inputModifier; // in, out, inout, uniform
-    std::vector<std::string>    storageModifiers;
-    std::vector<std::string>    typeModifiers; // const, row_major, column_major
+    std::string                 inputModifier;      // in, out, inout, uniform
+    std::vector<std::string>    storageModifiers;   // extern, nointerpolation, precise, shared, groupshared, static, volatile
+    std::vector<std::string>    typeModifiers;      // const, row_major, column_major
     VarTypePtr                  varType;
     std::vector<VarDeclPtr>     varDecls;
 };
@@ -466,12 +480,6 @@ struct FunctionCallStmnt : public Stmnt
 struct ReturnStmnt : public Stmnt
 {
     AST_INTERFACE(ReturnStmnt);
-
-    FLAG_ENUM
-    {
-        FLAG( isLastStmnt, 0 ), // This is the last statement in a code block
-    };
-
     ExprPtr expr; // may be null
 };
 
@@ -486,7 +494,7 @@ struct StructDeclStmnt : public Stmnt
 struct CtrlTransferStmnt : public Stmnt
 {
     AST_INTERFACE(CtrlTransferStmnt);
-    std::string instruction; // "continue", "break"
+    std::string instruction; // continue, break, discard
 };
 
 /* --- Expressions --- */
@@ -517,9 +525,9 @@ struct TypeNameExpr : public Expr
 struct BinaryExpr : public Expr
 {
     AST_INTERFACE(BinaryExpr);
-    ExprPtr     lhsExpr;    // left-hand-side expression
-    std::string op;         // binary operator
-    ExprPtr     rhsExpr;    // right-hand-side expression
+    ExprPtr     lhsExpr;    // Left-hand-side expression
+    std::string op;         // Binary operator
+    ExprPtr     rhsExpr;    // Right-hand-side expression
 };
 
 //! (Pre-) Unary expressions.
@@ -549,7 +557,7 @@ struct FunctionCallExpr : public Expr
 struct BracketExpr : public Expr
 {
     AST_INTERFACE(BracketExpr);
-    ExprPtr expr; // inner expression
+    ExprPtr expr; // Inner expression
 };
 
 //! Cast expression.
@@ -565,8 +573,8 @@ struct VarAccessExpr : public Expr
 {
     AST_INTERFACE(VarAccessExpr);
     VarIdentPtr varIdent;
-    std::string assignOp;   // may be empty
-    ExprPtr     assignExpr; // may be null
+    std::string assignOp;   // May be empty
+    ExprPtr     assignExpr; // May be null
 };
 
 //! Initializer list expression.
@@ -582,7 +590,7 @@ struct InitializerExpr : public Expr
 struct SwitchCase : public AST
 {
     AST_INTERFACE(SwitchCase);
-    ExprPtr                 expr; // if null -> default case
+    ExprPtr                 expr; // If null -> default case
     std::vector<StmntPtr>   stmnts;
 };
 

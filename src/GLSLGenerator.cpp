@@ -13,6 +13,8 @@
 #include <ctime>
 #include <chrono>
 #include <initializer_list>
+#include <algorithm>
+#include <cctype>
 
 
 namespace HTLib
@@ -267,28 +269,28 @@ void GLSLGenerator::EstablishMaps()
 
     semanticMap_ = std::map<std::string, SemanticStage>
     {
-        { "SV_ClipDistance",            { "gl_ClipDistance"                             } },
-        { "SV_CullDistance",            { "gl_CullDistance"                             } },
-      //{ "SV_Coverage",                { "???"                                         } },
-        { "SV_Depth",                   { "gl_FragDepth"                                } },
-        { "SV_DispatchThreadID",        { "gl_GlobalInvocationID"                       } },
-        { "SV_DomainLocation",          { "gl_TessCoord"                                } },
-        { "SV_GroupID",                 { "gl_WorkGroupID"                              } },
-        { "SV_GroupIndex",              { "gl_LocalInvocationIndex"                     } },
-        { "SV_GroupThreadID",           { "gl_LocalInvocationID"                        } },
-        { "SV_GSInstanceID",            { "gl_InvocationID"                             } },
-        { "SV_InsideTessFactor",        { "gl_Position"                                 } },
-        { "SV_IsFrontFace",             { "gl_FrontFacing"                              } },
-        { "SV_OutputControlPointID",    { "gl_PrimitiveID"                              } },
-        { "SV_Position",                { "gl_Position", "", "", "", "gl_FragCoord", "" } },
-      //{ "SV_RenderTargetArrayIndex",  { "???"                                         } },
-        { "SV_SampleIndex",             { "gl_SampleID"                                 } },
-        { "SV_Target",                  { "gl_FragColor"                                } },
-        { "SV_TessFactor",              { "gl_Position"                                 } },
-        { "SV_ViewportArrayIndex",      { "gl_ViewportIndex"                            } },
-        { "SV_InstanceID",              { "gl_InstanceID"                               } },
-        { "SV_PrimitiveID",             { "gl_PrimitiveID"                              } },
-        { "SV_VertexID",                { "gl_VertexID"                                 } },
+        { "SV_CLIPDISTANCE",            { "gl_ClipDistance"                             } },
+        { "SV_CULLDISTANCE",            { "gl_CullDistance"                             } },
+      //{ "SV_COVERAGE",                { "???"                                         } },
+        { "SV_DEPTH",                   { "gl_FragDepth"                                } },
+        { "SV_DISPATCHTHREADID",        { "gl_GlobalInvocationID"                       } },
+        { "SV_DOMAINLOCATION",          { "gl_TessCoord"                                } },
+        { "SV_GROUPID",                 { "gl_WorkGroupID"                              } },
+        { "SV_GROUPINDEX",              { "gl_LocalInvocationIndex"                     } },
+        { "SV_GROUPTHREADID",           { "gl_LocalInvocationID"                        } },
+        { "SV_GSINSTANCEID",            { "gl_InvocationID"                             } },
+        { "SV_INSIDETESSFACTOR",        { "gl_Position"                                 } },
+        { "SV_ISFRONTFACE",             { "gl_FrontFacing"                              } },
+        { "SV_OUTPUTCONTROLPOINTID",    { "gl_PrimitiveID"                              } },
+        { "SV_POSITION",                { "gl_Position", "", "", "", "gl_FragCoord", "" } },
+      //{ "SV_RENDERTARGETARRAYINDEX",  { "???"                                         } },
+        { "SV_SAMPLEINDEX",             { "gl_SampleID"                                 } },
+        { "SV_TARGET",                  { "gl_FragColor"                                } },
+        { "SV_TESSFACTOR",              { "gl_Position"                                 } },
+        { "SV_VIEWPORTARRAYINDEX",      { "gl_ViewportIndex"                            } },
+        { "SV_INSTANCEID",              { "gl_InstanceID"                               } },
+        { "SV_PRIMITIVEID",             { "gl_PrimitiveID"                              } },
+        { "SV_VERTEXID",                { "gl_VertexID"                                 } },
     };
 }
 
@@ -518,9 +520,14 @@ std::string GLSLGenerator::URegister(const std::string& registerName)
 bool GLSLGenerator::MustResolveStruct(Structure* ast) const
 {
     return
-        ( ast->flags(Structure::isShaderInput) && shaderTarget_ == ShaderTargets::GLSLVertexShader ) ||
-        ( ast->flags(Structure::isShaderOutput) && shaderTarget_ == ShaderTargets::GLSLFragmentShader ) ||
-        ( ast->flags(Structure::isShaderInput) && shaderTarget_ == ShaderTargets::GLSLComputeShader );
+        ( shaderTarget_ == ShaderTargets::GLSLVertexShader && ast->flags(Structure::isShaderInput) ) ||
+        ( shaderTarget_ == ShaderTargets::GLSLFragmentShader && ast->flags(Structure::isShaderOutput) ) ||
+        ( shaderTarget_ == ShaderTargets::GLSLComputeShader && ( ast->flags(Structure::isShaderInput) || ast->flags(Structure::isShaderOutput) ) );
+}
+
+bool GLSLGenerator::IsVersionOut(int version) const
+{
+    return static_cast<int>(versionOut_) >= version;
 }
 
 /* ------- Visit functions ------- */
@@ -558,6 +565,9 @@ IMPLEMENT_VISIT_PROC(Program)
         AppendClipIntrinsics();
     if (ast->flags(Program::sinCosIntrinsicUsed))
         AppendSinCosIntrinsics();
+
+    if (shaderTarget_ == ShaderTargets::GLSLFragmentShader)
+        WriteFragmentShaderOutput();
 
     for (auto& globDecl : ast->globalDecls)
         Visit(globDecl);
@@ -827,9 +837,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             OpenScope();
             {
                 /* Write input parameters as local variables */
-                for (auto& param : ast->parameters)
-                    WriteEntryPointParameter(param.get());
-                Blank();
+                WriteEntryPointInputSemantics();
 
                 /* Write code block (without additional scope) */
                 isInsideEntryPoint_ = true;
@@ -1136,12 +1144,19 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     if (isInsideEntryPoint_)
     {
-        //!TODO! -> write output variables!!!
-
-        if (!ast->flags(ReturnStmnt::isLastStmnt))
+        if (ast->expr)
+        {
+            OpenScope();
+            {
+                WriteEntryPointOutputSemantics(ast->expr.get());
+                WriteLn("return;");
+            }
+            CloseScope();
+        }
+        else
             WriteLn("return;");
     }
-    else if (ast->expr || !ast->flags(ReturnStmnt::isLastStmnt))
+    else
     {
         BeginLn();
         {
@@ -1355,7 +1370,7 @@ void GLSLGenerator::WriteAttributeNumThreads(FunctionCall* ast)
         ErrorInvalidNumArgs("\"numthreads\" attribute", ast);
 }
 
-void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast)
+void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenParamCounter)
 {
     /* Get variable declaration */
     if (ast->varDecls.size() != 1)
@@ -1387,6 +1402,8 @@ void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast)
                 for (const auto& memberVar : member->varDecls)
                     WriteLn(varDecl->name + "." + memberVar->name + " = " + memberVar->name + ";");
             }
+
+            ++writtenParamCounter;
         }
     }
     else
@@ -1397,18 +1414,96 @@ void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast)
         auto semantic = varDecl->semantics.front()->semantic;
 
         /* Map semantic to GL built-in constant */
-        auto it = semanticMap_.find(semantic);
-        if (it == semanticMap_.end())
+        SemanticStage semanticStage;
+        if (!FetchSemantic(semantic, semanticStage))
             return;
 
         /* Write local variable definition statement */
         BeginLn();
         {
             Visit(ast->varType);
-            Write(" " + varDecl->name + " = " + it->second[shaderTarget_] + ";");
+            Write(" " + varDecl->name + " = " + semanticStage[shaderTarget_] + ";");
+        }
+        EndLn();
+
+        ++writtenParamCounter;
+    }
+}
+
+void GLSLGenerator::WriteEntryPointInputSemantics()
+{
+    auto& parameters = program_->inputSemantics.parameters;
+
+    size_t writtenParamCounter = 0;
+    for (auto& param : parameters)
+        WriteEntryPointParameter(param, writtenParamCounter);
+
+    if (writtenParamCounter > 0)
+        Blank();
+}
+
+void GLSLGenerator::WriteEntryPointOutputSemantics(Expr* ast)
+{
+    auto& outp = program_->outputSemantics;
+
+    if (!outp.singleOutputVariable.empty())
+    {
+        BeginLn();
+        {
+            Write(outp.singleOutputVariable + " = ");
+            Visit(ast);
+            Write(";");
         }
         EndLn();
     }
+    else
+    {
+
+        //!TODO!
+        
+    }
+}
+
+void GLSLGenerator::WriteFragmentShaderOutput()
+{
+    auto& outp = program_->outputSemantics;
+
+    if (outp.returnType->symbolRef || outp.returnType->structType)
+    {
+        //!TODO! -> write all structure member output semantics
+    }
+    else
+    {
+        /* Write single output semantic declaration */
+        SemanticStage semantic;
+        if (FetchSemantic(outp.functionSemantic, semantic))
+        {
+            if (semantic.fragment == "gl_FragColor")
+            {
+                if (IsVersionOut(130))
+                {
+                    BeginLn();
+                    {
+                        Write("layout(location = " + std::to_string(semantic.index) + ") out ");
+                        Visit(outp.returnType);
+                        Write(" " + outp.functionSemantic + ";");
+                    }
+                    EndLn();
+                    outp.singleOutputVariable = outp.functionSemantic;
+                }
+                else
+                    outp.singleOutputVariable = "gl_FragData[" + std::to_string(semantic.index) + "]";
+            }
+            else if (semantic.fragment == "gl_FragDepth")
+                outp.singleOutputVariable = semantic.fragment;
+            else
+                Error("invalid output semantic for pixel shader: \"" + outp.functionSemantic + "\"");
+        }
+        else
+            Error("unknown shader output semantic: \"" + outp.functionSemantic + "\"");
+    }
+
+    Blank();
 }
 
 void GLSLGenerator::VisitParameter(VarDeclStmnt* ast)
@@ -1484,6 +1579,32 @@ bool GLSLGenerator::VarTypeIsSampler(VarType* ast)
 {
     auto it = HLSLKeywords().find(ast->baseType);
     return it != HLSLKeywords().end() && it->second == Token::Types::Sampler;
+}
+
+bool GLSLGenerator::FetchSemantic(std::string semanticName, SemanticStage& semantic) const
+{
+    /* Extract optional index */
+    int index = 0;
+
+    if (!semanticName.empty() && std::isdigit(semanticName.back()))
+    {
+        index = std::stoi(std::string(1, semanticName.back()));
+        semanticName.pop_back();
+    }
+
+    /* Search for semantic */
+    std::transform(semanticName.begin(), semanticName.end(), semanticName.begin(), ::toupper);
+
+    auto it = semanticMap_.find(semanticName);
+    if (it != semanticMap_.end())
+    {
+        /* Return semantic */
+        semantic = it->second;
+        semantic.index = index;
+        return true;
+    }
+
+    return false;
 }
 
 
