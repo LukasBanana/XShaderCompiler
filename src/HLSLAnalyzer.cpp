@@ -711,7 +711,13 @@ void HLSLAnalyzer::DecorateEntryInOut(VarDeclStmnt* ast, bool isInput)
         {
             structType->flags << structFlag;
             if (!ast->varDecls.empty())
+            {
+                /*
+                Set structure alias name;
+                This will be the name of the shader interface block
+                */
                 structType->aliasName = ast->varDecls.front()->name;
+            }
         }
     }
 }

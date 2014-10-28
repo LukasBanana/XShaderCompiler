@@ -1456,9 +1456,9 @@ void GLSLGenerator::WriteEntryPointOutputSemantics(Expr* ast)
         }
         EndLn();
     }
-    else
+    else if (outp.returnType->symbolRef)
     {
-
+        
         //!TODO!
         
     }

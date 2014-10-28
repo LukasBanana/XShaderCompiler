@@ -49,14 +49,28 @@ VertexOut VS(VertexIn inp)
 Texture2D tex : register(t0);
 SamplerState samplerState : register(s0);
 
-float4 PS(VertexOut inp) : SV_Target0
-/*struct PixelOut
-{
-	float4 color : SV_Target0;
-};
-PixelOut PS(VertexOut inp)*/
+/*float4 PS(VertexOut inp) : SV_Target0
 {
 	return inp.color * tex.Sample(samplerState, inp.texCoord);
+}*/
+
+struct PixelOut
+{
+	float4 color0 : SV_Target0;
+	float4 color1 : SV_Target1;
+	float depth : SV_Depth;
+};
+
+PixelOut PS(VertexOut inp)
+{
+	PixelOut outp;
+	
+	outp.color0 = (float4)1.0;
+	outp.color1 = (float4)1.0;
+	outp.depth = inp.position.z;
+	
+	return outp;
 }
+
 
 

@@ -442,8 +442,8 @@ struct VarDeclStmnt : public Stmnt
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,    0 ), // This variable is used as shader input.
-        FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
+        FLAG( isShaderInput,    2 ), // This variable is used as shader input.
+        FLAG( isShaderOutput,   3 ), // This variable is used as shader output.
     };
 
     std::string                 inputModifier;      // in, out, inout, uniform
