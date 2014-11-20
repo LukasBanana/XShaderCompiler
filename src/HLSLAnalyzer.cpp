@@ -187,11 +187,14 @@ IMPLEMENT_VISIT_PROC(Program)
     for (auto& globDecl : ast->globalDecls)
         Visit(globDecl);
 
-    /* Mark all functions used for the target shader */
-    if (mainFunction_)
-        refAnalyzer_.MarkReferencesFromEntryPoint(mainFunction_, program_);
-    else
-        Error("entry point \"" + entryPoint_ + "\" not found");
+    if (shaderTarget_ != ShaderTargets::CommonShader)
+    {
+        /* Mark all functions used for the target shader */
+        if (mainFunction_)
+            refAnalyzer_.MarkReferencesFromEntryPoint(mainFunction_, program_);
+        else
+            Error("entry point \"" + entryPoint_ + "\" not found");
+    }
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)

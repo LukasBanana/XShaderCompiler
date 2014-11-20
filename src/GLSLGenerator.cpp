@@ -46,18 +46,20 @@ static std::string TargetToString(const ShaderTargets shaderTarget)
 {
     switch (shaderTarget)
     {
+        case ShaderTargets::CommonShader:
+            return "Shader";
         case ShaderTargets::GLSLVertexShader:
-            return "Vertex";
+            return "Vertex Shader";
         case ShaderTargets::GLSLFragmentShader:
-            return "Fragment";
+            return "Fragment Shader";
         case ShaderTargets::GLSLGeometryShader:
-            return "Geometry";
+            return "Geometry Shader";
         case ShaderTargets::GLSLTessControlShader:
-            return "Tessellation Control";
+            return "Tessellation Control Shader";
         case ShaderTargets::GLSLTessEvaluationShader:
-            return "Tessellation Evaluation";
+            return "Tessellation Evaluation Shader";
         case ShaderTargets::GLSLComputeShader:
-            return "Compute";
+            return "Compute Shader";
     }
     return "";
 }
@@ -105,13 +107,21 @@ bool GLSLGenerator::GenerateCode(
         writer_.OutputStream(output);
 
         /* Write header */
-        Comment("GLSL " + TargetToString(shaderTarget) + " Shader");
-        Comment("Generated from HLSL Shader \"" + entryPoint + "\"");
+        Comment("GLSL " + TargetToString(shaderTarget));
+        
+        if (entryPoint.empty())
+            Comment("Generated from HLSL Shader");
+        else
+            Comment("Generated from HLSL Shader \"" + entryPoint + "\"");
+
         Comment(TimePoint());
         Blank();
 
-        Version(static_cast<int>(versionOut_));
-        Blank();
+        if (shaderTarget_ != ShaderTargets::CommonShader)
+        {
+            Version(static_cast<int>(versionOut_));
+            Blank();
+        }
 
         /* Visit program AST */
         Visit(program);
@@ -774,7 +784,7 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    if (!ast->flags(FunctionDecl::isReferenced))
+    if (!ast->flags(FunctionDecl::isReferenced) && shaderTarget_ != ShaderTargets::CommonShader)
         return; // function not used
 
     Line(ast);
@@ -861,7 +871,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
-    if (!ast->flags(UniformBufferDecl::isReferenced))
+    if (!ast->flags(UniformBufferDecl::isReferenced) && shaderTarget_ != ShaderTargets::CommonShader)
         return; // uniform buffer not used
 
     /* Write uniform buffer header */
@@ -891,7 +901,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 
 IMPLEMENT_VISIT_PROC(TextureDecl)
 {
-    if (!ast->flags(TextureDecl::isReferenced))
+    if (!ast->flags(TextureDecl::isReferenced) && shaderTarget_ != ShaderTargets::CommonShader)
         return; // texture not used
 
     /* Determine GLSL sampler type */
@@ -904,7 +914,7 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
     /* Write texture samplers */
     for (auto& name : ast->names)
     {
-        if (name->flags(BufferDeclIdent::isReferenced))
+        if (name->flags(BufferDeclIdent::isReferenced) || shaderTarget_ == ShaderTargets::CommonShader)
         {
             BeginLn();
             {
@@ -921,7 +931,7 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    if (!ast->structure->flags(Structure::isReferenced))
+    if (!ast->structure->flags(Structure::isReferenced) && shaderTarget_ != ShaderTargets::CommonShader)
         return; // structure not used
 
     Line(ast);
@@ -929,6 +939,11 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     Visit(ast->structure, &semicolon);
 
     Blank();
+}
+
+IMPLEMENT_VISIT_PROC(DirectiveDecl)
+{
+    WriteLn(ast->line);
 }
 
 /* --- Statements --- */

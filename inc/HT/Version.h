@@ -9,9 +9,9 @@
 #define __HT_VERSION_H__
 
 
-#define __HT_VERSION_MAJOR__    1
-#define __HT_VERSION_MINOR__    0
-#define __HT_VERSION__          "1.00"
+#define __HT_VERSION_MAJOR__    0
+#define __HT_VERSION_MINOR__    1
+#define __HT_VERSION__          "0.01 Alpha"
 
 
 #endif

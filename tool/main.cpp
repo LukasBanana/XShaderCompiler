@@ -150,6 +150,8 @@ static void ShowVersion()
 
 static ShaderTargets TargetFromString(const std::string& target)
 {
+    if (target.empty())
+        return ShaderTargets::CommonShader;
     if (target == "vertex")
         return ShaderTargets::GLSLVertexShader;
     if (target == "fragment")
@@ -232,19 +234,21 @@ static std::string ExtractFilename(const std::string& filename)
 
 static void Translate(const std::string& filename)
 {
-    if (entry.empty())
+    if (output.empty())
     {
-        std::cerr << "missing entry point" << std::endl;
-        return;
-    }
-    if (target.empty())
-    {
-        std::cerr << "missing shader target" << std::endl;
-        return;
+        /* Set default output filename */
+        output = ExtractFilename(filename);
+        if (!target.empty())
+            output += "." + target;
+        output += ".glsl";
     }
 
-    if (output.empty())
-        output = ExtractFilename(filename) + "." + target + ".glsl";
+    /* Ignore entry and target if one of them are empty */
+    if (entry.empty() || target.empty())
+    {
+        entry.clear();
+        target.clear();
+    }
 
     /* Translate HLSL file into GLSL */
     std::cout << "translate from " << filename << " to " << output << std::endl;
@@ -322,9 +326,14 @@ int main(int argc, char** argv)
                 output = NextArg(i, argc, argv, arg);
             else
             {
+                /* Translate input code */
                 Translate(arg);
-                output.clear();
                 ++translationCounter;
+
+                /* Reset translation options */
+                output.clear();
+                target.clear();
+                entry.clear();
             }
         }
         catch (const std::exception& err)

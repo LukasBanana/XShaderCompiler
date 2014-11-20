@@ -68,7 +68,8 @@ class _HT_EXPORT_ IncludeHandler
 Translates the HLSL code from the specified input stream into GLSL code.
 \param[in] input Specifies the input stream. This must be valid HLSL code.
 \param[out] output Specifies the output stream. This will contain the output GLSL code.
-\param[in] shaderTarget Specifies the target shader.
+\param[in] entryPoint Specifies the HLSL shader entry point. If may also be empty.
+\param[in] shaderTarget Specifies the target shader (Vertex, Fragment etc.).
 \param[in] inputShaderVersion Specifies the input shader version (e.g. for "HLSL 5" use 'InputShaderVersions::HLSL5').
 \param[in] outputShaderVersion Specifies the output shader version (e.g. for "GLSL 1.20" use 'OutputShaderVersions::GLSL120').
 \param[in] includeHandler Optional pointer to the implementation of the "IncludeHandler" interface.
