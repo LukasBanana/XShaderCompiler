@@ -16,6 +16,7 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <map>
 
 
 namespace HTLib
@@ -223,7 +224,8 @@ struct Structure : public AST
 
     std::string                     name;
     std::vector<VarDeclStmntPtr>    members;
-    std::string                     aliasName; // Alias name for input and output interface blocks of the DAST.
+    std::string                     aliasName;          // Alias name for input and output interface blocks of the DAST.
+    std::map<std::string, VarDecl*> systemValuesRef;    // List of members with system value semantic (SV_...).
 };
 
 /* --- Global declarations --- */
@@ -245,8 +247,8 @@ struct FunctionDecl : public GlobalDecl
     std::string                     name;
     std::vector<VarDeclStmntPtr>    parameters;
     std::string                     semantic;           // May be empty
-    CodeBlockPtr                    codeBlock;          // May be null (if this AST node is a forward declaration)
-    std::vector<FunctionDecl*>      forwardDeclsRef;    // List of forward declarations to this function
+    CodeBlockPtr                    codeBlock;          // May be null (if this AST node is a forward declaration).
+    std::vector<FunctionDecl*>      forwardDeclsRef;    // List of forward declarations to this function.
 };
 
 //! Uniform buffer (cbuffer, tbuffer) declaration.
@@ -338,7 +340,8 @@ struct VarIdent : public AST
     std::string             ident;
     std::vector<ExprPtr>    arrayIndices;
     VarIdentPtr             next;
-    AST*                    symbolRef = nullptr; // Symbol reference for DAST to the variable object; may be null.
+    AST*                    symbolRef = nullptr;    // Symbol reference for DAST to the variable object; may be null.
+    std::string             systemSemantic;         // System semantic (SV_...) for DAST; may be empty.
 };
 
 //! Variable declaration.
@@ -356,6 +359,7 @@ struct VarDecl : public AST
     std::vector<VarSemanticPtr> semantics;
     ExprPtr                     initializer;
     UniformBufferDecl*          uniformBufferRef = nullptr; // Uniform buffer reference for DAST; may be null
+    VarDeclStmnt*               declStmntRef = nullptr;     // Reference to its declaration statement; may be null
 };
 
 /* --- Statements --- */

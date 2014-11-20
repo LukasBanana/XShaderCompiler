@@ -136,7 +136,7 @@ static void ShowHelp()
             "  --version, -v .......... Prints the version information",
             "Example:",
             "  HLSLOfflineTranslator -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl",
-            "   --> Example.hlsl.vertex.glsl; Example.hlsl.fragment.glsl ",
+            "   --> Example.vertex.glsl; Example.fragment.glsl ",
         }
     );
 }
@@ -224,6 +224,12 @@ static bool BoolArg(int& i, int argc, char** argv, const std::string& flag)
     return false;
 }
 
+static std::string ExtractFilename(const std::string& filename)
+{
+    auto pos = filename.find_last_of('.');
+    return pos == std::string::npos ? filename : filename.substr(0, pos);
+}
+
 static void Translate(const std::string& filename)
 {
     if (entry.empty())
@@ -238,7 +244,7 @@ static void Translate(const std::string& filename)
     }
 
     if (output.empty())
-        output = filename + "." + target + ".glsl";
+        output = ExtractFilename(filename) + "." + target + ".glsl";
 
     /* Translate HLSL file into GLSL */
     std::cout << "translate from " << filename << " to " << output << std::endl;

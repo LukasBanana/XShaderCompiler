@@ -7,6 +7,8 @@
 
 #include "HLSLAnalyzer.h"
 
+#include <algorithm>
+
 
 namespace HTLib
 {
@@ -278,12 +280,16 @@ IMPLEMENT_VISIT_PROC(Structure)
     Register(ast->name, ast);
     #endif
 
+    structStack_.push_back(ast);
+
     OpenScope();
     {
         for (auto& varDecl : ast->members)
             Visit(varDecl);
     }
     CloseScope();
+
+    structStack_.pop_back();
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
@@ -677,8 +683,18 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
     for (auto& dim : ast->arrayDims)
         Visit(dim);
+
     for (auto& semantic : ast->semantics)
+    {
         Visit(semantic);
+
+        /* Store references to members with system value semantic (SV_...) in all parent structures */
+        if (IsSystemValueSemnatic(semantic->semantic))
+        {
+            for (auto& structure : structStack_)
+                structure->systemValuesRef[ast->name] = ast;
+        }
+    }
 
     Visit(ast->initializer);
 
@@ -748,10 +764,40 @@ void HLSLAnalyzer::DecorateVarObject(AST* symbol, VarIdent* varIdent)
 
     if (symbol->Type() == AST::Types::VarDecl)
     {
-        /* Append prefix to local variables */
         auto varDecl = dynamic_cast<VarDecl*>(symbol);
-        if (varDecl && varDecl->flags(VarDecl::isInsideFunc))
-            varIdent->ident = localVarPrefix_ + varIdent->ident;
+        if (varDecl)
+        {
+            /* Check if this identifier contains a system semantic (SV_...) */
+            FetchSystemValueSemantic(varDecl->semantics, varIdent->systemSemantic);
+
+            /* Check if the next identifiers contain a system semantic in their respective structure member */
+            if (varDecl->declStmntRef)
+            {
+                auto varTypeSymbol = varDecl->declStmntRef->varType->symbolRef;
+                if (varTypeSymbol && varTypeSymbol->Type() == AST::Types::Structure)
+                {
+                    auto structSymbol = dynamic_cast<Structure*>(varTypeSymbol);
+                    if (structSymbol)
+                    {
+                        auto ident = varIdent->next.get();
+                        while (ident)
+                        {
+                            /* Search member in structure */
+                            auto systemVal = structSymbol->systemValuesRef.find(ident->ident);
+                            if (systemVal != structSymbol->systemValuesRef.end())
+                                FetchSystemValueSemantic(systemVal->second->semantics, ident->systemSemantic);
+
+                            /* Check next identifier */
+                            ident = ident->next.get();
+                        }
+                    }
+                }
+            }
+
+            /* Append prefix to local variables */
+            if (varDecl->flags(VarDecl::isInsideFunc))
+                varIdent->ident = localVarPrefix_ + varIdent->ident;
+        }
     }
     else if (symbol->Type() == AST::Types::SamplerDecl)
     {
@@ -761,6 +807,29 @@ void HLSLAnalyzer::DecorateVarObject(AST* symbol, VarIdent* varIdent)
         if (samplerDecl && currentFunc && currentFunc->flags(FunctionCall::isTexFunc))
             varIdent->ident = currentFunc->name->ident;
     }
+}
+
+bool HLSLAnalyzer::FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics, std::string& semanticName) const
+{
+    for (auto& semantic : varSemantics)
+    {
+        if (IsSystemValueSemnatic(semantic->semantic))
+        {
+            semanticName = semantic->semantic;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool HLSLAnalyzer::IsSystemValueSemnatic(std::string semantic) const
+{
+    if (semantic.size() > 3)
+    {
+        std::transform(semantic.begin(), semantic.begin() + 2, semantic.begin(), ::toupper);
+        return semantic.substr(0, 3) == "SV_";
+    }
+    return false;
 }
 
 /* --- Helper templates for context analysis --- */

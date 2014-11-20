@@ -194,6 +194,8 @@ class GLSLGenerator : private Visitor
 
         void WriteFragmentShaderOutput();
 
+        void WriteVarIdent(VarIdent* ast);
+
         void VisitParameter(VarDeclStmnt* ast);
         void VisitScopedStmnt(Stmnt* ast);
 

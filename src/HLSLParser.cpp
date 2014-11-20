@@ -454,7 +454,14 @@ VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
     else if (Is(Tokens::Ident) || IsDataType())
         ast->baseType = AcceptIt()->Spell();
     else if (Is(Tokens::Struct))
+    {
+        /*
+        Parse anonymous structure declaration and
+        decorate the VarType AST node with its own structure type
+        */
         ast->structType = ParseStructure();
+        ast->symbolRef = ast->structType.get();
+    }
     else
         ErrorUnexpected("expected type specifier");
 
@@ -727,6 +734,10 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
     /* Parse variable declarations */
     ast->varDecls = ParseVarDeclList();
     Semi();
+
+    /* Decorate variable declarations with this statement AST node */
+    for (auto& varDecl : ast->varDecls)
+        varDecl->declStmntRef = ast.get();
 
     return ast;
 }

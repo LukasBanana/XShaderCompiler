@@ -133,6 +133,9 @@ class HLSLAnalyzer : private Visitor
         void DecorateEntryInOut(VarType* ast, bool isInput);
         void DecorateVarObject(AST* symbol, VarIdent* varIdent);
 
+        bool FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics, std::string& semanticName) const;
+        bool IsSystemValueSemnatic(std::string semantic) const;
+
         /* --- Helper templates for context analysis --- */
 
         template <typename T> void DecorateVarObjectSymbol(T ast);
@@ -155,7 +158,8 @@ class HLSLAnalyzer : private Visitor
         std::map<std::string, IntrinsicClasses> intrinsicMap_;
         std::map<std::string, Program::ARBExtension> extensionMap_;
 
-        std::stack<FunctionCall*> callStack_; //!< Function call stack to join arguments with its function call.
+        std::stack<FunctionCall*>   callStack_;     //!< Function call stack to join arguments with its function call.
+        std::vector<Structure*>     structStack_;   //!< Structure stack to collect all members with system value semantic (SV_...).
 
         ASTSymbolTable      symTable_;
         ReferenceAnalyzer   refAnalyzer_;

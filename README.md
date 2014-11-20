@@ -59,7 +59,7 @@ The following command line translates the "Example.hlsl" shader file:
 HLSLOfflineTranslator -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl
 ```
 
-The result are two GLSL shader files: "Example.hlsl.vertex.glsl" and "Example.hlsl.fragment.glsl".
+The result are two GLSL shader files: "Example.vertex.glsl" and "Example.fragment.glsl".
 
 Library Usage
 -------------

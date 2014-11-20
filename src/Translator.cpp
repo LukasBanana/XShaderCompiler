@@ -59,7 +59,7 @@ _HT_EXPORT_ bool TranslateHLSLtoGLSL(
 }
 
 
-} // /namespace HLSLTrans
+} // /namespace HTLib
 
 
 

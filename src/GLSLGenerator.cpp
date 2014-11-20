@@ -1243,7 +1243,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    Visit(ast->varIdent);
+    WriteVarIdent(ast->varIdent.get());
     if (ast->assignExpr)
     {
         Write(" " + ast->assignOp + " ");
@@ -1504,6 +1504,15 @@ void GLSLGenerator::WriteFragmentShaderOutput()
     }
 
     Blank();
+}
+
+void GLSLGenerator::WriteVarIdent(VarIdent* ast)
+{
+    /* Check if this variable identifier contains a system semantic (SV_...) */
+    //...
+
+    /* Write default variable identifier */
+    Visit(ast);
 }
 
 void GLSLGenerator::VisitParameter(VarDeclStmnt* ast)
