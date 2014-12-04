@@ -29,7 +29,7 @@ VertexOut VS(VertexIn inp)
 	
 	// Vertex transformation
 	outp.position	= mul(wvpMatrix, float4(inp.coord, 1.0));
-	outp.texCoord	= inp.texCoord;
+	outp.texCoord	= inp.texCoord + (outp.position.xy);
 	
 	// Per-vertex lighting
 	float3 lightDir = { 0.5, -0.5, 1.0 };
@@ -67,7 +67,7 @@ PixelOut PS(VertexOut inp)
 	
 	outp.color0 = (float4)1.0;
 	outp.color1 = (float4)1.0;
-	outp.depth = inp.position.z;
+	outp.depth = inp.position;
 	
 	return outp;
 }

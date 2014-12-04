@@ -1588,16 +1588,36 @@ void GLSLGenerator::WriteFragmentShaderOutput()
     Blank();
 }
 
+VarIdent* GLSLGenerator::FirstSystemSemanticVarIdent(VarIdent* ast)
+{
+    /* Check if current var-ident AST node has a system semantic */
+    SemanticStage semantic;
+    if (FetchSemantic(ast->systemSemantic, semantic))
+        return ast;
+
+    /* Search in next var-ident AST node */
+    if (ast->next)
+        return FirstSystemSemanticVarIdent(ast->next.get());
+
+    return nullptr;
+}
+
 void GLSLGenerator::WriteVarIdent(VarIdent* ast)
 {
-    /* Check if this is referenced to a variabel with system value semantic */
-    auto lastIdent = LastVarIdent(ast);
+    /* Find system value semantic in variable identifier */
     SemanticStage semantic;
+    auto semanticVarIdent = FirstSystemSemanticVarIdent(ast);
 
-    if (FetchSemantic(lastIdent->systemSemantic, semantic))
+    if (semanticVarIdent && FetchSemantic(semanticVarIdent->systemSemantic, semantic))
     {
         /* Write shader target respective system semantic */
         Write(semantic[shaderTarget_]);
+
+        if (semanticVarIdent->next)
+        {
+            Write(".");
+            Visit(semanticVarIdent->next);
+        }
     }
     else
     {

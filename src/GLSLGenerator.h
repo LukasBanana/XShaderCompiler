@@ -195,6 +195,7 @@ class GLSLGenerator : private Visitor
 
         void WriteFragmentShaderOutput();
 
+        VarIdent* FirstSystemSemanticVarIdent(VarIdent* ast);
         void WriteVarIdent(VarIdent* ast);
 
         void VisitParameter(VarDeclStmnt* ast);
