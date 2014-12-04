@@ -25,7 +25,7 @@ struct VertexOut
 
 VertexOut VS(VertexIn inp)
 {
-	VertexOut outp = (VertexOut)0;
+	VertexOut outp;// = (VertexOut)0;
 	
 	// Vertex transformation
 	outp.position	= mul(wvpMatrix, float4(inp.coord, 1.0));

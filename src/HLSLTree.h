@@ -159,10 +159,10 @@ struct Program : public AST
 
     FLAG_ENUM
     {
-        FLAG( rcpIntrinsicUsed,             0 ), // The "rcp" intrinsic is used.
-        FLAG( sinCosIntrinsicUsed,          1 ), // The "sincos" intrinsic is used.
-        FLAG( clipIntrinsicUsed,            2 ), // The "clip" intrinsic is used.
-        FLAG( hasSM3ScreenSpace,            3 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
+        FLAG( rcpIntrinsicUsed,     0 ), // The "rcp" intrinsic is used.
+        FLAG( sinCosIntrinsicUsed,  1 ), // The "sincos" intrinsic is used.
+        FLAG( clipIntrinsicUsed,    2 ), // The "clip" intrinsic is used.
+        FLAG( hasSM3ScreenSpace,    3 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
     };
 
     std::vector<GlobalDeclPtr>  globalDecls;
@@ -351,7 +351,8 @@ struct VarDecl : public AST
 
     FLAG_ENUM
     {
-        FLAG( isInsideFunc, 0 ), // This variable is declared inside a function.
+        FLAG( isInsideFunc,     0 ), // This variable is declared inside a function.
+        FLAG( disableCodeGen,   1 ), // Disables the code generation for this variable declaration.
     };
 
     std::string                 name;
@@ -607,6 +608,8 @@ struct SwitchCase : public AST
 
 //! Returns the full variabel identifier name.
 std::string FullVarIdent(const VarIdentPtr& varIdent);
+//! Returns the last identifier AST node.
+VarIdent* LastVarIdent(VarIdent* varIdent);
 
 
 } // /namespace HTLib

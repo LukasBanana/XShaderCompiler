@@ -566,6 +566,43 @@ IMPLEMENT_VISIT_PROC(FunctionCallStmnt)
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     Visit(ast->expr);
+
+    /* Analyze entry point return statement */
+    if (isInsideEntryPoint_ && ast->expr->Type() == AST::Types::VarAccessExpr)
+    {
+        auto varAccessExpr = dynamic_cast<VarAccessExpr*>(ast->expr.get());
+        if (varAccessExpr && varAccessExpr->varIdent->symbolRef)
+        {
+            auto varObject = varAccessExpr->varIdent->symbolRef;
+            if (varObject->Type() == AST::Types::VarDecl)
+            {
+                auto varDecl = dynamic_cast<VarDecl*>(varObject);
+                if (varDecl && varDecl->declStmntRef && varDecl->declStmntRef->varType)
+                {
+                    /*
+                    Variable declaration statement has been found,
+                    now find the structure object to add the alias name for the interface block.
+                    */
+                    auto varType = varDecl->declStmntRef->varType.get();
+                    if (varType->symbolRef && varType->symbolRef->Type() == AST::Types::Structure)
+                    {
+                        auto structType = dynamic_cast<Structure*>(varType->symbolRef);
+                        if (structType)
+                        {
+                            /* Store alias name for the interface block */
+                            structType->aliasName = varAccessExpr->varIdent->ident;
+
+                            /*
+                            Don't generate code for this variable declaration,
+                            because this variable is now already used as interface block.
+                            */
+                            varDecl->flags << VarDecl::disableCodeGen;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)

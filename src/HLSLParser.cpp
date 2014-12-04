@@ -849,6 +849,10 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
         ast->varDecls = ParseVarDeclList();
         Semi();
 
+        /* Decorate variable declarations with this statement AST node */
+        for (auto& varDecl : ast->varDecls)
+            varDecl->declStmntRef = ast.get();
+
         return ast;
     }
 

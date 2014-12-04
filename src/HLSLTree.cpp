@@ -14,7 +14,6 @@ namespace HTLib
 
 /* --- Helper functions --- */
 
-//! Returns the full variabel identifier name.
 std::string FullVarIdent(const VarIdentPtr& varIdent)
 {
     std::string name;
@@ -31,6 +30,11 @@ std::string FullVarIdent(const VarIdentPtr& varIdent)
             break;
     }
     return name;
+}
+
+VarIdent* LastVarIdent(VarIdent* varIdent)
+{
+    return (varIdent && varIdent->next) ? LastVarIdent(varIdent->next.get()) : varIdent;
 }
 
 

@@ -15,6 +15,7 @@
 #include "Token.h"
 
 #include <map>
+#include <vector>
 
 
 namespace HTLib
@@ -206,23 +207,27 @@ class GLSLGenerator : private Visitor
 
         bool FetchSemantic(std::string semanticName, SemanticStage& semantic) const;
 
+        bool IsSystemValueSemantic(const VarSemantic* ast) const;
+        bool HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const;
+
         /* === Members === */
 
         CodeWriter              writer_;
-        IncludeHandler*         includeHandler_     = nullptr;
-        Logger*                 log_                = nullptr;
+        IncludeHandler*         includeHandler_         = nullptr;
+        Logger*                 log_                    = nullptr;
 
-        Program*                program_            = nullptr;
+        Program*                program_                = nullptr;
 
         std::string             entryPoint_;
-        ShaderTargets           shaderTarget_       = ShaderTargets::GLSLVertexShader;
-        InputShaderVersions     versionIn_          = InputShaderVersions::HLSL5;
-        OutputShaderVersions    versionOut_         = OutputShaderVersions::GLSL330;
+        ShaderTargets           shaderTarget_           = ShaderTargets::GLSLVertexShader;
+        InputShaderVersions     versionIn_              = InputShaderVersions::HLSL5;
+        OutputShaderVersions    versionOut_             = OutputShaderVersions::GLSL330;
         std::string             localVarPrefix_;
-        bool                    allowBlanks_        = true;
-        bool                    allowLineMarks_     = true;
+        bool                    allowBlanks_            = true;
+        bool                    allowLineMarks_         = true;
 
-        bool                    isInsideEntryPoint_ = false; //!< True if AST traversal is currently inside the main entry point (or its sub nodes).
+        bool                    isInsideEntryPoint_     = false; //!< True if AST traversal is currently inside the main entry point (or its sub nodes).
+        bool                    isInsideInterfaceBlock_ = false;
 
         std::map<std::string, std::string> typeMap_;            // <hlsl-type, glsl-type>
         std::map<std::string, std::string> intrinsicMap_;       // <hlsl-intrinsic, glsl-intrinsic>

@@ -22,6 +22,13 @@ namespace HTLib
 
 
 /*
+ * Internal members
+ */
+
+static const std::string interfaceBlockPrefix = "_I";
+
+
+/*
  * Internal functions
  */
 
@@ -715,29 +722,18 @@ IMPLEMENT_VISIT_PROC(Structure)
     */
     auto resolveStruct = MustResolveStruct(ast);
 
-    /* Always write this structure (also when a resolution is required) */
-    BeginLn();
+    if ( resolveStruct || ( !ast->flags(Structure::isShaderInput) && !ast->flags(Structure::isShaderOutput) ) )
     {
-        if (!resolveStruct && ast->flags(Structure::isShaderInput))
-            Write("in");
-        else if (!resolveStruct && ast->flags(Structure::isShaderOutput))
-            Write("out");
-        else
-            Write("struct");
+        /* Write structure declaration */
+        WriteLn("struct " + ast->name);
 
-        Write(" " + ast->name);
+        OpenScope();
+        {
+            for (auto& varDecl : ast->members)
+                Visit(varDecl);
+        }
+        CloseScope(semicolon);
     }
-    EndLn();
-
-    OpenScope();
-    {
-        for (auto& varDecl : ast->members)
-            Visit(varDecl);
-    }
-    CloseScope( semicolon && ( resolveStruct || ast->aliasName.empty() ) );
-
-    if (!ast->aliasName.empty() && !resolveStruct)
-        WriteLn(ast->aliasName + ";");
 
     /* Write structure members as global input/output variables (if structure must be resolved) */
     if (resolveStruct)
@@ -752,6 +748,32 @@ IMPLEMENT_VISIT_PROC(Structure)
 
             Visit(member);
         }
+    }
+    /* Write this structure as interface block (if structure doesn't need to be resolved) */
+    else if (ast->flags(Structure::isShaderInput) || ast->flags(Structure::isShaderOutput))
+    {
+        BeginLn();
+        {
+            if (ast->flags(Structure::isShaderInput))
+                Write("in");
+            else
+                Write("out");
+            Write(" " + interfaceBlockPrefix + ast->name);
+        }
+        EndLn();
+
+        OpenScope();
+        {
+            isInsideInterfaceBlock_ = true;
+
+            for (auto& varDecl : ast->members)
+                Visit(varDecl);
+
+            isInsideInterfaceBlock_ = false;
+        }
+        CloseScope();
+
+        WriteLn(ast->aliasName + ";");
     }
 }
 
@@ -1077,6 +1099,36 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
+    auto varDecls = ast->varDecls;
+
+    for (auto it = varDecls.begin(); it != varDecls.end();)
+    {
+        /*
+        First check if code generation is disabled for variable declaration,
+        then check if this is a system value semantic inside an interface block.
+        */
+        if ( (*it)->flags(VarDecl::disableCodeGen) ||
+             ( isInsideInterfaceBlock_ && HasSystemValueSemantic((*it)->semantics) ) )
+        {
+            /*
+            Code generation is disabled for this variable declaration
+            -> Remove this from the list
+            */
+            it = varDecls.erase(it);
+        }
+        else
+            ++it;
+    }
+
+    if (varDecls.empty())
+    {
+        /*
+        All variable declarations within this statement are disabled
+        -> Break code generation here
+        */
+        return;
+    }
+
     BeginLn();
 
     /* Write modifiers */
@@ -1112,10 +1164,10 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     }
 
     /* Write variable declarations */
-    for (size_t i = 0; i < ast->varDecls.size(); ++i)
+    for (size_t i = 0; i < varDecls.size(); ++i)
     {
-        Visit(ast->varDecls[i]);
-        if (i + 1 < ast->varDecls.size())
+        Visit(varDecls[i]);
+        if (i + 1 < varDecls.size())
             Write(", ");
     }
 
@@ -1127,7 +1179,7 @@ IMPLEMENT_VISIT_PROC(AssignStmnt)
 {
     BeginLn();
     {
-        Visit(ast->varIdent);
+        WriteVarIdent(ast->varIdent.get());
         Write(" " + ast->op + " ");
         Visit(ast->expr);
         Write(";");
@@ -1485,7 +1537,22 @@ void GLSLGenerator::WriteFragmentShaderOutput()
 
     if (outp.returnType->symbolRef || outp.returnType->structType)
     {
-        //!TODO! -> write all structure member output semantics
+        /* Get structure AST node */
+        Structure* structAST = nullptr;
+
+        if (outp.returnType->symbolRef && outp.returnType->symbolRef->Type() == AST::Types::Structure)
+            structAST = dynamic_cast<Structure*>(outp.returnType->symbolRef);
+        else if (outp.returnType->structType)
+            structAST = outp.returnType->structType.get();
+
+        if (structAST)
+        {
+            for (const auto& member : structAST->members)
+            {
+                
+
+            }
+        }
     }
     else
     {
@@ -1523,11 +1590,20 @@ void GLSLGenerator::WriteFragmentShaderOutput()
 
 void GLSLGenerator::WriteVarIdent(VarIdent* ast)
 {
-    /* Check if this variable identifier contains a system semantic (SV_...) */
-    //...
+    /* Check if this is referenced to a variabel with system value semantic */
+    auto lastIdent = LastVarIdent(ast);
+    SemanticStage semantic;
 
-    /* Write default variable identifier */
-    Visit(ast);
+    if (FetchSemantic(lastIdent->systemSemantic, semantic))
+    {
+        /* Write shader target respective system semantic */
+        Write(semantic[shaderTarget_]);
+    }
+    else
+    {
+        /* Write default variable identifier */
+        Visit(ast);
+    }
 }
 
 void GLSLGenerator::VisitParameter(VarDeclStmnt* ast)
@@ -1607,6 +1683,9 @@ bool GLSLGenerator::VarTypeIsSampler(VarType* ast)
 
 bool GLSLGenerator::FetchSemantic(std::string semanticName, SemanticStage& semantic) const
 {
+    if (semanticName.empty())
+        return false;
+
     /* Extract optional index */
     int index = 0;
 
@@ -1628,6 +1707,22 @@ bool GLSLGenerator::FetchSemantic(std::string semanticName, SemanticStage& seman
         return true;
     }
 
+    return false;
+}
+
+bool GLSLGenerator::IsSystemValueSemantic(const VarSemantic* ast) const
+{
+    SemanticStage semantic;
+    return FetchSemantic(ast->semantic, semantic);
+}
+
+bool GLSLGenerator::HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const
+{
+    for (const auto& varSemantic : semantics)
+    {
+        if (IsSystemValueSemantic(varSemantic.get()))
+            return true;
+    }
     return false;
 }
 
