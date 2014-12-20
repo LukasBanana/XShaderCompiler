@@ -127,7 +127,7 @@ static void ShowHelp()
             "    GLSL110, GLSL120, GLSL130, GLSL140, GLSL150, GLSL330,",
             "    GLSL400, GLSL410, GLSL420, GLSL430, GLSL440, GLSL450",
             "  -indent INDENT ......... Code indentation string; by default 4 spaces",
-            "  -prefix PREFIX ......... Prefix for local variables; by default '_'",
+            "  -prefix PREFIX ......... Prefix for local variables (use \"<none>\" to disable); by default '_'",
             "  -output FILE ........... GLSL output file; default is '<FILE>.<ENTRY>.glsl'",
             "  -warn [on|off] ......... Enables/disables all warnings; by default off",
             "  -blanks [on|off] ....... Enables/disables generation of blank lines between declarations; by default on",
@@ -242,6 +242,9 @@ static void Translate(const std::string& filename)
             output += "." + target;
         output += ".glsl";
     }
+
+    if (options.prefix == "<none>")
+        options.prefix.clear();
 
     /* Ignore entry and target if one of them are empty */
     if (entry.empty() || target.empty())
