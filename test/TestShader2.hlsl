@@ -11,9 +11,10 @@ cbuffer VertexParam : register(b0)
 
 struct VertexIn
 {
-	float3 coord	: POSITION;
-	float3 normal	: NORMAL;
-	float2 texCoord	: TEXCOORD0;
+	float3	coord		: POSITION;
+	float3	normal		: NORMAL;
+	float2	texCoord	: TEXCOORD0;
+	uint	id			: SV_VertexID;
 };
 
 struct VertexOut
@@ -49,25 +50,25 @@ VertexOut VS(VertexIn inp)
 Texture2D tex : register(t0);
 SamplerState samplerState : register(s0);
 
-/*float4 PS(VertexOut inp) : SV_Target0
+float4 PS(VertexOut inp) : SV_Target0
 {
 	return inp.color * tex.Sample(samplerState, inp.texCoord);
-}*/
+}
 
 struct PixelOut
 {
-	float4 color0 : SV_Target0;
-	float4 color1 : SV_Target1;
-	float depth : SV_Depth;
+	float4	color0	: SV_Target0;
+	float4	color1	: SV_Target1;
+	float	depth	: SV_Depth;
 };
 
-PixelOut PS(VertexOut inp)
+PixelOut PS_(VertexOut inp)
 {
 	PixelOut outp;
 	
-	outp.color0 = (float4)1.0;
-	outp.color1 = (float4)1.0;
-	outp.depth = inp.position;
+	outp.color0	= (float4)1.0;
+	outp.color1	= (float4)1.0;
+	outp.depth	= inp.position;
 	
 	return outp;
 }
