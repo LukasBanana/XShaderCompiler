@@ -290,6 +290,8 @@ TokenPtr HLSLScanner::ScanToken()
 
         if (Is('='))
             return Make(Token::Types::AssignOp, spell, true);
+        if (Is('&'))
+            return Make(Token::Types::BinaryOp, spell, true);
 
         return Make(Token::Types::BinaryOp, spell);
     }
@@ -300,6 +302,8 @@ TokenPtr HLSLScanner::ScanToken()
 
         if (Is('='))
             return Make(Token::Types::AssignOp, spell, true);
+        if (Is('|'))
+            return Make(Token::Types::BinaryOp, spell, true);
 
         return Make(Token::Types::BinaryOp, spell);
     }
