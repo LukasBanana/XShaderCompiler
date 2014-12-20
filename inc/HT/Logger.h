@@ -28,17 +28,32 @@ class _HT_EXPORT_ Logger
         {
         }
 
+        //! Prints an information.
         virtual void Info(const std::string& message)
         {
             // dummy
         }
 
+        //! Prints a warning.
         virtual void Warning(const std::string& message)
         {
             // dummy
         }
 
+        //! Prints an error.
         virtual void Error(const std::string& message)
+        {
+            // dummy
+        }
+
+        //! Increments the indentation.
+        virtual void IncIndent()
+        {
+            // dummy
+        }
+
+        //! Decrements the indentation.
+        virtual void DecIndent()
         {
             // dummy
         }

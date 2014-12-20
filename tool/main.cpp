@@ -23,17 +23,30 @@ class OutputLog : public Logger
         
         void Info(const std::string& message) override
         {
-            infos_.push_back(message);
+            infos_.push_back(indent_ + message);
         }
 
         void Warning(const std::string& message) override
         {
-            warnings_.push_back(message);
+            warnings_.push_back(indent_ + message);
         }
 
         void Error(const std::string& message) override
         {
-            errors_.push_back(message);
+            errors_.push_back(indent_ + message);
+        }
+
+        void IncIndent() override
+        {
+            indent_ += indentTab_;
+        }
+
+        void DecIndent() override
+        {
+            if (indent_.size() <= indentTab_.size())
+                indent_.clear();
+            else
+                indent_.resize(indent_.size() - indentTab_.size());
         }
 
         void Report()
@@ -73,6 +86,9 @@ class OutputLog : public Logger
         std::vector<std::string> warnings_;
         std::vector<std::string> errors_;
 
+        std::string indent_;
+        std::string indentTab_ = "  ";
+
 };
 
 class IncludeStreamHandler : public IncludeHandler
@@ -80,7 +96,7 @@ class IncludeStreamHandler : public IncludeHandler
     
     public:
         
-        std::shared_ptr<std::istream> Include(const std::string& includeName) override
+        std::shared_ptr<std::istream> Include(std::string& includeName) override
         {
             return std::make_shared<std::ifstream>(includeName);
         }
