@@ -13,7 +13,7 @@ namespace HTLib
 {
 
 
-void ASTPrinter::PrintTree(Program* program, Logger& log)
+void ASTPrinter::DumpAST(Program* program, Logger& log)
 {
     log_ = &log;
     Visit(program);
@@ -65,6 +65,11 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
         Visit(stmnt);
 }
 
+IMPLEMENT_VISIT_PROC(BufferDeclIdent)
+{
+    Print(ast, "BufferDeclIdent");
+}
+
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     Print(ast, "FunctionCall");
@@ -92,7 +97,7 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    Print(ast, "FunctionDecl");
+    Print(ast, "FunctionDecl", ast->name);
     SCOPED_INDENT;
 
     for (auto& attrib : ast->attribs)
@@ -108,11 +113,27 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 IMPLEMENT_VISIT_PROC(TextureDecl)
 {
     Print(ast, "TextureDecl");
+    SCOPED_INDENT;
+
+    for (auto& name : ast->names)
+        Visit(name);
+}
+
+IMPLEMENT_VISIT_PROC(SamplerDecl)
+{
+    Print(ast, "SamplerDecl");
+    SCOPED_INDENT;
+
+    for (auto& name : ast->names)
+        Visit(name);
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
     Print(ast, "StructDecl");
+    SCOPED_INDENT;
+
+    Visit(ast->structure);
 }
 
 IMPLEMENT_VISIT_PROC(DirectiveDecl)
@@ -232,6 +253,11 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     SCOPED_INDENT;
 
     Visit(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(StructDeclStmnt)
+{
+    Print(ast, "StructDeclStmnt");
 }
 
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)

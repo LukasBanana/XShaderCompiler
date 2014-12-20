@@ -28,7 +28,7 @@ class ASTPrinter : private Visitor
     
     public:
         
-        void PrintTree(Program* program, Logger& log);
+        void DumpAST(Program* program, Logger& log);
 
     private:
         

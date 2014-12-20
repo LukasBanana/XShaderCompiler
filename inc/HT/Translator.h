@@ -47,6 +47,9 @@ struct Options
 
     //! True if line marks are allowed. By default false.
     bool        lineMarks   = false;
+
+    //! If true, the abstract syntax tree (AST) will be printed as debug output. By default false.
+    bool        dumpAST     = false;
 };
 
 //! Interface for handling new include streams.

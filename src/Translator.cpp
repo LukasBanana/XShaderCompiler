@@ -9,6 +9,7 @@
 #include "HLSLParser.h"
 #include "HLSLAnalyzer.h"
 #include "GLSLGenerator.h"
+#include "ASTPrinter.h"
 
 
 namespace HTLib
@@ -44,6 +45,13 @@ _HT_EXPORT_ bool TranslateHLSLtoGLSL(
         if (log)
             log->Error("analyzing input code failed");
         return false;
+    }
+
+    /* Print debug output */
+    if (options.dumpAST && log)
+    {
+        ASTPrinter dumper;
+        dumper.DumpAST(program.get(), *log);
     }
 
     /* Generate GLSL output code */
