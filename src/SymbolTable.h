@@ -90,7 +90,7 @@ template <typename SymbolType> class SymbolTable
                         return;
                     }
                     else
-                        throw std::runtime_error("identifier \"" + ident + "\" already decelared in the current scope");
+                        throw std::runtime_error("identifier \"" + ident + "\" already declared in the current scope");
                 }
             }
 
