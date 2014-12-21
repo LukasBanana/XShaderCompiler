@@ -74,7 +74,7 @@ Library Usage
 class ShaderIncludeHandler : public HTLib::IncludeHandler
 {
 	public:
-		std::shared_ptr<std::istream> Include(const std::string& includeName) override
+		std::shared_ptr<std::istream> Include(std::string& includeName) override
 		{
 			return std::make_shared<std::ifstream>(includeName);
 		}
@@ -86,16 +86,27 @@ class Log : public HTLib::Logger
 	public:
 		void Info(const std::string& message) override
 		{
-			std::cout << message << std::endl;
+			std::cout << indent << message << std::endl;
 		}
 		void Warning(const std::string& message) override
 		{
-			std::cout << message << std::endl;
+			std::cout << indent << message << std::endl;
 		}
 		void Error(const std::string& message) override
 		{
-			std::cerr << message << std::endl;
+			std::cerr << indent << message << std::endl;
 		}
+		void IncIndent() override
+		{
+			indent.push_back(' ');
+		}
+		void DecIndent() override
+		{
+			if (!indent.empty())
+				indent.pop_back();
+		}
+	private:
+		std::string indent;
 };
 
 /* ... */
