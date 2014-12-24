@@ -67,12 +67,17 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(BufferDeclIdent)
 {
-    Print(ast, "BufferDeclIdent");
+    Print(ast, "BufferDeclIdent", ast->ident);
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     Print(ast, "FunctionCall");
+    SCOPED_INDENT;
+
+    Visit(ast->name);
+    for (auto& arg : ast->arguments)
+        Visit(arg);
 }
 
 IMPLEMENT_VISIT_PROC(Structure)
@@ -107,7 +112,11 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
-    Print(ast, "UniformBufferDecl");
+    Print(ast, "UniformBufferDecl", ast->name + " (" + ast->bufferType + ")");
+    SCOPED_INDENT;
+    
+    for (auto& member : ast->members)
+        Visit(member);
 }
 
 IMPLEMENT_VISIT_PROC(TextureDecl)
@@ -221,6 +230,10 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     Print(ast, "VarDeclStmnt");
+    SCOPED_INDENT;
+
+    for (auto decl : ast->varDecls)
+        Visit(decl);
 }
 
 IMPLEMENT_VISIT_PROC(AssignStmnt)
@@ -258,6 +271,9 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 {
     Print(ast, "StructDeclStmnt");
+    SCOPED_INDENT;
+
+    Visit(ast->structure);
 }
 
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
@@ -284,6 +300,16 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 IMPLEMENT_VISIT_PROC(TypeNameExpr)
 {
     Print(ast, "TypeNameExpr", ast->typeName);
+}
+
+IMPLEMENT_VISIT_PROC(TernaryExpr)
+{
+    Print(ast, "TernaryExpr");
+    SCOPED_INDENT;
+
+    Visit(ast->condition);
+    Visit(ast->ifExpr);
+    Visit(ast->elseExpr);
 }
 
 IMPLEMENT_VISIT_PROC(BinaryExpr)
@@ -338,11 +364,19 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     Print(ast, "VarAccessExpr");
+    SCOPED_INDENT;
+
+    Visit(ast->varIdent);
+    Visit(ast->assignExpr);
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
     Print(ast, "InitializerExpr");
+    SCOPED_INDENT;
+
+    for (auto& expr : ast->exprs)
+        Visit(expr);
 }
 
 /* --- Variables --- */
