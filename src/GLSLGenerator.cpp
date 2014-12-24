@@ -1269,6 +1269,15 @@ IMPLEMENT_VISIT_PROC(TypeNameExpr)
         Write(ast->typeName);
 }
 
+IMPLEMENT_VISIT_PROC(TernaryExpr)
+{
+    Visit(ast->condition);
+    Write(" ? ");
+    Visit(ast->ifExpr);
+    Write(" : ");
+    Visit(ast->elseExpr);
+}
+
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
     Visit(ast->lhsExpr);

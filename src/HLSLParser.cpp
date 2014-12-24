@@ -891,6 +891,20 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma, const ExprPtr& initExpr)
         return binExpr;
     }
 
+    /* Parse optional ternary expression */
+    if (Is(Tokens::TernaryOp))
+    {
+        auto ternExpr = Make<TernaryExpr>();
+
+        ternExpr->condition = ast;
+        AcceptIt();
+        ternExpr->ifExpr = ParseExpr();
+        Accept(Tokens::Colon);
+        ternExpr->elseExpr = ParseExpr();
+
+        return ternExpr;
+    }
+
     /* Parse optional list expression */
     if (allowComma && Is(Tokens::Comma))
     {

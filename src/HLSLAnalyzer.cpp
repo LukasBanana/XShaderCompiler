@@ -623,6 +623,13 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
     // do nothing
 }
 
+IMPLEMENT_VISIT_PROC(TernaryExpr)
+{
+    Visit(ast->condition);
+    Visit(ast->ifExpr);
+    Visit(ast->elseExpr);
+}
+
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
     /* Visit sub expressions */

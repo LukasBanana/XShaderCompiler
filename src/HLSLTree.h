@@ -93,6 +93,7 @@ struct AST
         ListExpr,
         LiteralExpr,
         TypeNameExpr,
+        TernaryExpr,
         BinaryExpr,
         UnaryExpr,
         PostUnaryExpr,
@@ -524,6 +525,15 @@ struct TypeNameExpr : public Expr
 {
     AST_INTERFACE(TypeNameExpr);
     std::string typeName;
+};
+
+//! Ternary expression.
+struct TernaryExpr : public Expr
+{
+    AST_INTERFACE(TernaryExpr);
+    ExprPtr condition;  // Condition expression
+    ExprPtr ifExpr;     // <if> case expression
+    ExprPtr elseExpr;   // <else> case expression
 };
 
 //! Binary expressions.

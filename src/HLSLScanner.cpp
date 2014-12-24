@@ -315,6 +315,7 @@ TokenPtr HLSLScanner::ScanToken()
         case ';': return Make(Token::Types::Semicolon, true); break;
         case ',': return Make(Token::Types::Comma,     true); break;
         case '.': return Make(Token::Types::Dot,       true); break;
+        case '?': return Make(Token::Types::TernaryOp, true); break;
         case '(': return Make(Token::Types::LBracket,  true); break;
         case ')': return Make(Token::Types::RBracket,  true); break;
         case '{': return Make(Token::Types::LCurly,    true); break;
