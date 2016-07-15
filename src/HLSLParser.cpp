@@ -13,9 +13,10 @@ namespace HTLib
 {
 
 
-HLSLParser::HLSLParser(Logger* log) :
-    scanner_{ log },
-    log_    { log }
+HLSLParser::HLSLParser(const Options& options, Logger* log) :
+    options_{ options },
+    scanner_{ log     },
+    log_    { log     }
 {
 }
 
@@ -78,7 +79,7 @@ TokenPtr HLSLParser::Accept(const Tokens type, const std::string& spell)
 TokenPtr HLSLParser::AcceptIt()
 {
     auto prevTkn = tkn_;
-    tkn_ = scanner_.Next();
+    tkn_ = scanner_.Next(/*options_.keepComments*/);
     return prevTkn;
 }
 
@@ -495,6 +496,8 @@ StmntPtr HLSLParser::ParseStmnt()
     /* Determine which kind of statement the next one is */
     switch (Type())
     {
+        case Tokens::Comment:
+            return ParseCommentStmnt();
         case Tokens::Semicolon:
             return ParseNullStmnt();
         case Tokens::Directive:
@@ -531,6 +534,14 @@ StmntPtr HLSLParser::ParseStmnt()
 
     /* Parse statement of arbitrary expression */
     return ParseExprStmnt();
+}
+
+CommentStmntPtr HLSLParser::ParseCommentStmnt()
+{
+    auto ast = Make<CommentStmnt>();
+    while (Is(Tokens::Comment))
+        ast->commentText += Accept(Tokens::Comment)->Spell() + '\n';
+    return ast;
 }
 
 NullStmntPtr HLSLParser::ParseNullStmnt()

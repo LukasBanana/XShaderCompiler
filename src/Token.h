@@ -108,6 +108,7 @@ class Token
 
             // Special tokens
             Directive,          //!< '#' ... (e.g. "#include").
+            Comment,            //!< Commentary (only a single text line)
             EndOfStream,
         };
 

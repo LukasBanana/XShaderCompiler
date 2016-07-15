@@ -50,6 +50,9 @@ struct Options
 
     //! If true, the abstract syntax tree (AST) will be printed as debug output. By default false.
     bool        dumpAST     = false;
+
+    //! If true, (almost) all comments are kept in the output code. By default true.
+    bool        keepComments    = true;
 };
 
 //! Interface for handling new include streams.

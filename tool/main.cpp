@@ -148,7 +148,8 @@ static void ShowHelp()
             "  -warn [on|off] ......... Enables/disables all warnings; by default off",
             "  -blanks [on|off] ....... Enables/disables generation of blank lines between declarations; by default on",
             "  -line-marks [on|off] ... Enables/disables generation of line marks (e.g. '#line 30'); by default off",
-            "  -dump-ast [on|off] ..... Enables/disables debug output for the entire abstract syntax tree (AST)",
+            "  -dump-ast [on|off] ..... Enables/disables debug output for the entire abstract syntax tree (AST); by default off",
+            "  -comments [on|off] ..... Enables/disables commentaries output kept from the sources; by default on",
             "  --help, help, -h ....... Prints this help reference",
             "  --version, -v .......... Prints the version information",
             "Example:",
@@ -332,6 +333,8 @@ int main(int argc, char** argv)
                 options.lineMarks = BoolArg(i, argc, argv, arg);
             else if (arg == "-dump-ast")
                 options.dumpAST = BoolArg(i, argc, argv, arg);
+            else if (arg == "-comments")
+                options.keepComments = BoolArg(i, argc, argv, arg);
             else if (arg == "-entry")
                 entry = NextArg(i, argc, argv, arg);
             else if (arg == "-target")

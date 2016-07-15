@@ -89,6 +89,7 @@ struct AST
         ReturnStmnt,
         StructDeclStmnt,
         CtrlTransferStmnt,
+        CommentStmnt,
 
         ListExpr,
         LiteralExpr,
@@ -501,6 +502,13 @@ struct CtrlTransferStmnt : public Stmnt
 {
     AST_INTERFACE(CtrlTransferStmnt);
     std::string instruction; // continue, break, discard
+};
+
+//! Commentary statement (pseudo statement).
+struct CommentStmnt : public Stmnt
+{
+    AST_INTERFACE(CommentStmnt);
+    std::string commentText;
 };
 
 /* --- Expressions --- */

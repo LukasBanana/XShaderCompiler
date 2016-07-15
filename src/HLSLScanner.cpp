@@ -32,7 +32,7 @@ bool HLSLScanner::ScanSource(const std::shared_ptr<SourceCode>& source)
     return false;
 }
 
-TokenPtr HLSLScanner::Next()
+TokenPtr HLSLScanner::Next(bool scanComments)
 {
     while (true)
     {
@@ -55,9 +55,17 @@ TokenPtr HLSLScanner::Next()
                     auto prevChr = TakeIt();
 
                     if (Is('/'))
-                        IgnoreCommentLine();
+                    {
+                        auto tkn = ScanCommentLine(scanComments);
+                        if (tkn)
+                            return tkn;
+                    }
                     else if (Is('*'))
-                        IgnoreCommentBlock();
+                    {
+                        auto tkn = ScanCommentBlock(scanComments);
+                        if (tkn)
+                            return tkn;
+                    }
                     else
                     {
                         std::string spell;
@@ -154,18 +162,33 @@ void HLSLScanner::IgnoreWhiteSpaces()
     Ignore([](char chr) { return std::isspace(static_cast<unsigned char>(chr)) != 0; });
 }
 
-void HLSLScanner::IgnoreCommentLine()
+TokenPtr HLSLScanner::ScanCommentLine(bool scanComments)
 {
-    Ignore([](char chr) { return chr != '\n'; });
+    if (scanComments)
+    {
+        std::string spell;
+
+        TakeIt(); // Ignore second '/' from commentary line beginning
+        while (chr_ != '\n')
+            spell += TakeIt();
+
+        return Make(Token::Types::Comment, spell);
+    }
+    else
+    {
+        Ignore([](char chr) { return chr != '\n'; });
+        return nullptr;
+    }
 }
 
-void HLSLScanner::IgnoreCommentBlock()
+TokenPtr HLSLScanner::ScanCommentBlock(bool scanComments)
 {
-    while (true)
-    {
-        if (Is(0))
-            return;
+    std::string spell;
 
+    TakeIt(); // Ignore first '*' from commentary block beginning
+
+    while (!Is(0))
+    {
         /* Scan comment block ending */
         if (Is('*'))
         {
@@ -173,12 +196,19 @@ void HLSLScanner::IgnoreCommentBlock()
             if (Is('/'))
             {
                 TakeIt();
-                return;
+                break;
             }
+            else if (scanComments)
+                spell += '*';
         }
 
-        TakeIt();
+        if (scanComments)
+            spell += TakeIt();
+        else
+            TakeIt();
     }
+
+    return (scanComments ? Make(Token::Types::Comment, spell) : nullptr);
 }
 
 TokenPtr HLSLScanner::Make(const Token::Types& type, bool takeChr)

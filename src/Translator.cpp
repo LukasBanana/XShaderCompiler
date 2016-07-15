@@ -28,7 +28,7 @@ _HT_EXPORT_ bool TranslateHLSLtoGLSL(
     Logger*                                 log)
 {
     /* Parse HLSL input code */
-    HLSLParser parser(log);
+    HLSLParser parser(options, log);
     auto program = parser.ParseSource(std::make_shared<SourceCode>(input));
 
     if (!program)

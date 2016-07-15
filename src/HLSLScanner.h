@@ -9,10 +9,11 @@
 #define __HT_HLSL_SCANNER_H__
 
 
+#include "HT/Translator.h"
+#include "HT/Logger.h"
 #include "SourceCode.h"
 #include "SourcePosition.h"
 #include "Token.h"
-#include "HT/Logger.h"
 
 #include <string>
 #include <functional>
@@ -33,7 +34,7 @@ class HLSLScanner
         bool ScanSource(const std::shared_ptr<SourceCode>& source);
 
         //! Scanns the next token.
-        TokenPtr Next();
+        TokenPtr Next(bool scanComments = false);
 
         SourcePosition Pos() const;
 
@@ -59,8 +60,9 @@ class HLSLScanner
         void Ignore(const std::function<bool (char)>& pred);
 
         void IgnoreWhiteSpaces();
-        void IgnoreCommentLine();
-        void IgnoreCommentBlock();
+
+        TokenPtr ScanCommentLine(bool scanComments);
+        TokenPtr ScanCommentBlock(bool scanComments);
 
         TokenPtr Make(const Token::Types& type, bool takeChr = false);
         TokenPtr Make(const Token::Types& type, std::string& spell, bool takeChr = false);

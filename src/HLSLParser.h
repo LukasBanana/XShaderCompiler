@@ -29,7 +29,7 @@ class HLSLParser
     
     public:
         
-        HLSLParser(Logger* log = nullptr);
+        HLSLParser(const Options& options, Logger* log = nullptr);
 
         ProgramPtr ParseSource(const std::shared_ptr<SourceCode>& source);
 
@@ -118,6 +118,7 @@ class HLSLParser
         VarDeclPtr                      ParseVarDecl();
 
         StmntPtr                        ParseStmnt();
+        CommentStmntPtr                 ParseCommentStmnt();
         NullStmntPtr                    ParseNullStmnt();
         DirectiveStmntPtr               ParseDirectiveStmnt();
         CodeBlockStmntPtr               ParseCodeBlockStmnt();
@@ -163,10 +164,12 @@ class HLSLParser
 
         /* === Members === */
 
-        HLSLScanner scanner_;
-        TokenPtr tkn_;
+        const Options&  options_;
 
-        Logger* log_ = nullptr;
+        HLSLScanner     scanner_;
+        TokenPtr        tkn_;
+
+        Logger*         log_ = nullptr;
 
 };
 
