@@ -35,7 +35,7 @@ static const std::string interfaceBlockPrefix = "_I";
 static std::string TimePoint()
 {
     /* Determine current time point */
-    const auto currentTime = std::chrono::high_resolution_clock::now();
+    const auto currentTime = std::chrono::system_clock::now();
     const auto duration = std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch());
     const auto date = duration.count();
     
