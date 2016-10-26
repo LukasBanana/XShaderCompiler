@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_HLSL_ANALYZER_H__
-#define __HT_HLSL_ANALYZER_H__
+#ifndef HTLIB_HLSL_ANALYZER_H
+#define HTLIB_HLSL_ANALYZER_H
 
 
 #include "HT/Translator.h"

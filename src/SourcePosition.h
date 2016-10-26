@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_SOURCE_POSITION_H__
-#define __HT_SOURCE_POSITION_H__
+#ifndef HTLIB_SOURCE_POSITION_H
+#define HTLIB_SOURCE_POSITION_H
 
 
 #include <string>

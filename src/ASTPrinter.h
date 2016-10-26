@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_AST_PRINTER_H__
-#define __HT_AST_PRINTER_H__
+#ifndef HTLIB_AST_PRINTER_H
+#define HTLIB_AST_PRINTER_H
 
 
 #include "HT/Translator.h"

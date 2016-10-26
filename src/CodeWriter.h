@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_CODE_GENERATOR_H__
-#define __HT_CODE_GENERATOR_H__
+#ifndef HTLIB_CODE_GENERATOR_H
+#define HTLIB_CODE_GENERATOR_H
 
 
 #include <ostream>

@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_FLAGS_H__
-#define __HT_FLAGS_H__
+#ifndef HTLIB_FLAGS_H
+#define HTLIB_FLAGS_H
 
 
 namespace HTLib

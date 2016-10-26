@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_GLSL_GENERATOR_H__
-#define __HT_GLSL_GENERATOR_H__
+#ifndef HTLIB_GLSL_GENERATOR_H
+#define HTLIB_GLSL_GENERATOR_H
 
 
 #include "HT/Translator.h"

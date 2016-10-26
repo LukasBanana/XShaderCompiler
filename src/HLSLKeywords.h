@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_KEYWORDS_H__
-#define __HT_KEYWORDS_H__
+#ifndef HTLIB_KEYWORDS_H
+#define HTLIB_KEYWORDS_H
 
 
 #include "Token.h"

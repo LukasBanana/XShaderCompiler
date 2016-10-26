@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_VERSION_H__
-#define __HT_VERSION_H__
+#ifndef HTLIB_VERSION_H
+#define HTLIB_VERSION_H
 
 
 #define __HT_VERSION_MAJOR__    0

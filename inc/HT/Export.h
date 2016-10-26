@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_EXPORT_H__
-#define __HT_EXPORT_H__
+#ifndef HTLIB_EXPORT_H
+#define HTLIB_EXPORT_H
 
 
 #if defined(_MSC_VER) && defined(_HT_DYNAMIC_LIB_)

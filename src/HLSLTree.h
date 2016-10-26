@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_HLSL_TREE_H__
-#define __HT_HLSL_TREE_H__
+#ifndef HTLIB_HLSL_TREE_H
+#define HTLIB_HLSL_TREE_H
 
 
 #include "Token.h"

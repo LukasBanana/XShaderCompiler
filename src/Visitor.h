@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_VISITOR_H__
-#define __HT_VISITOR_H__
+#ifndef HTLIB_VISITOR_H
+#define HTLIB_VISITOR_H
 
 
 #include <memory>

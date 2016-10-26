@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_REFERENCE_ANALYZER_H__
-#define __HT_REFERENCE_ANALYZER_H__
+#ifndef HTLIB_REFERENCE_ANALYZER_H
+#define HTLIB_REFERENCE_ANALYZER_H
 
 
 #include "Visitor.h"

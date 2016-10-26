@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_HLSL_PARSER_H__
-#define __HT_HLSL_PARSER_H__
+#ifndef HTLIB_HLSL_PARSER_H
+#define HTLIB_HLSL_PARSER_H
 
 
 #include "HT/Logger.h"

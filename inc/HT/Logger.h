@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_LOGGER_H__
-#define __HT_LOGGER_H__
+#ifndef HTLIB_LOGGER_H
+#define HTLIB_LOGGER_H
 
 
 #include "Export.h"

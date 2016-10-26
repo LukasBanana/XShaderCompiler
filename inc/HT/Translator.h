@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_TRANSLATOR_H__
-#define __HT_TRANSLATOR_H__
+#ifndef HTLIB_TRANSLATOR_H
+#define HTLIB_TRANSLATOR_H
 
 
 #include "HT/Export.h"

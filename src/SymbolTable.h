@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_SYMBOL_TABLE_H__
-#define __HT_SYMBOL_TABLE_H__
+#ifndef HTLIB_SYMBOL_TABLE_H
+#define HTLIB_SYMBOL_TABLE_H
 
 
 #include <map>

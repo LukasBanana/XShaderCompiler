@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __HT_TOKEN_H__
-#define __HT_TOKEN_H__
+#ifndef HTLIB_TOKEN_H
+#define HTLIB_TOKEN_H
 
 
 #include "SourcePosition.h"
