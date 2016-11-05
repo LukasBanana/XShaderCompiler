@@ -10,6 +10,7 @@
 #include <iostream>
 #include <vector>
 #include <HT/Translator.h>
+#include <conio.h>
 
 
 using namespace HTLib;
@@ -152,6 +153,7 @@ static void ShowHelp()
             "  -comments [on|off] ..... Enables/disables commentaries output kept from the sources; by default on",
             "  --help, help, -h ....... Prints this help reference",
             "  --version, -v .......... Prints the version information",
+            "  --pause ................ Waits for user input after the translation process",
             "Example:",
             "  HTLibCmd -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl",
             "   --> Example.vertex.glsl; Example.fragment.glsl ",
@@ -310,9 +312,10 @@ static void Translate(const std::string& filename)
 
 int main(int argc, char** argv)
 {
-    int translationCounter = 0;
-    bool showHelp = false;
-    bool showVersion = false;
+    int     translationCounter  = 0;
+    bool    showHelp            = false,
+            showVersion         = false,
+            pauseApp            = false;
 
     /* Parse program arguments */
     for (int i = 1; i < argc; ++i)
@@ -325,6 +328,8 @@ int main(int argc, char** argv)
                 showHelp = true;
             else if (arg == "--version" || arg == "-v")
                 showVersion = true;
+            else if (arg == "--pause")
+                pauseApp = true;
             else if (arg == "-warn")
                 options.warnings = BoolArg(i, argc, argv, arg);
             else if (arg == "-blanks")
@@ -376,6 +381,13 @@ int main(int argc, char** argv)
 
     if (translationCounter == 0 && !showHelp && !showVersion)
         ShowHint();
+
+    if (pauseApp)
+    {
+        std::cout << "press any key to continue ...";
+        int i = _getch();
+        std::cout << std::endl;
+    }
 
     return 0;
 }
