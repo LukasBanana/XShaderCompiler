@@ -41,8 +41,8 @@ bool HLSLAnalyzer::DecorateAST(
     Program* program,
     const std::string& entryPoint,
     const ShaderTarget shaderTarget,
-    const InputShaderVersions versionIn,
-    const OutputShaderVersions versionOut,
+    const InputShaderVersion versionIn,
+    const OutputShaderVersion versionOut,
     const Options& options)
 {
     if (!program)
@@ -371,7 +371,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                 DecorateEntryInOut(param.get(), true);
 
             /* Check if fragment shader use a slightly different screen space (VPOS vs. SV_Position) */
-            if (shaderTarget_ == ShaderTarget::GLSLFragmentShader && versionIn_ <= InputShaderVersions::HLSL3)
+            if (shaderTarget_ == ShaderTarget::GLSLFragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
                 program_->flags << Program::hasSM3ScreenSpace;
         }
 

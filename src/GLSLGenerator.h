@@ -35,8 +35,8 @@ class GLSLGenerator : private Visitor
             std::ostream& output,
             const std::string& entryPoint,
             const ShaderTarget shaderTarget,
-            const InputShaderVersions versionIn,
-            const OutputShaderVersions versionOut
+            const InputShaderVersion versionIn,
+            const OutputShaderVersion versionOut
         );
 
     private:
@@ -217,8 +217,8 @@ class GLSLGenerator : private Visitor
 
         std::string             entryPoint_;
         ShaderTarget            shaderTarget_           = ShaderTarget::GLSLVertexShader;
-        InputShaderVersions     versionIn_              = InputShaderVersions::HLSL5;
-        OutputShaderVersions    versionOut_             = OutputShaderVersions::GLSL330;
+        InputShaderVersion      versionIn_              = InputShaderVersion::HLSL5;
+        OutputShaderVersion     versionOut_             = OutputShaderVersion::GLSL330;
         std::string             localVarPrefix_;
         bool                    allowBlanks_            = true;
         bool                    allowLineMarks_         = true;

@@ -63,8 +63,8 @@ struct ShaderInput
     //! Specifies the input stream. This must be valid HLSL code.
     std::shared_ptr<std::istream>   sourceCode;
 
-    //! Specifies the input shader version (e.g. InputShaderVersions::HLSL5 for "HLSL 5").
-    InputShaderVersions             shaderVersion;
+    //! Specifies the input shader version (e.g. InputShaderVersion::HLSL5 for "HLSL 5"). By default InputShaderVersion::HLSL5.
+    InputShaderVersion              shaderVersion       = InputShaderVersion::HLSL5;
 
     //! Specifies the HLSL shader entry point. If may also be empty.
     std::string                     entryPoint;
@@ -85,8 +85,8 @@ struct ShaderOutput
     //! Specifies the output stream. This will contain the output GLSL code. This must not be null!
     std::ostream*                   sourceCode          = nullptr;
 
-    //! Specifies the output shader version (e.g. for "GLSL 1.20" use 'OutputShaderVersions::GLSL120').
-    OutputShaderVersions            shaderVersion;
+    //! Specifies the output shader version (e.g. for "GLSL 1.20" use 'OutputShaderVersion::GLSL120'). By default OutputShaderVersion::GLSL330.
+    OutputShaderVersion             shaderVersion       = OutputShaderVersion::GLSL330;
 
     //! Additional options to configure the code generation.
     Options                         options;

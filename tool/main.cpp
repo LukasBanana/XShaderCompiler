@@ -182,9 +182,9 @@ static ShaderTarget TargetFromString(const std::string& target)
     return ShaderTarget::GLSLVertexShader;
 }
 
-static InputShaderVersions InputVersionFromString(const std::string& version)
+static InputShaderVersion InputVersionFromString(const std::string& version)
 {
-    #define CHECK_IN_VER(n) if (version == #n) return InputShaderVersions::n
+    #define CHECK_IN_VER(n) if (version == #n) return InputShaderVersion::n
 
     CHECK_IN_VER(HLSL3);
     CHECK_IN_VER(HLSL4);
@@ -193,12 +193,12 @@ static InputShaderVersions InputVersionFromString(const std::string& version)
     #undef CHECK_IN_VER
 
     throw std::runtime_error("invalid input shader version \"" + version + "\"");
-    return InputShaderVersions::HLSL5;
+    return InputShaderVersion::HLSL5;
 }
 
-static OutputShaderVersions OutputVersionFromString(const std::string& version)
+static OutputShaderVersion OutputVersionFromString(const std::string& version)
 {
-    #define CHECK_OUT_VER(n) if (version == #n) return OutputShaderVersions::n
+    #define CHECK_OUT_VER(n) if (version == #n) return OutputShaderVersion::n
 
     CHECK_OUT_VER(GLSL110);
     CHECK_OUT_VER(GLSL120);
@@ -216,7 +216,7 @@ static OutputShaderVersions OutputVersionFromString(const std::string& version)
     #undef CHECK_OUT_VER
 
     throw std::runtime_error("invalid output shader version \"" + version + "\"");
-    return OutputShaderVersions::GLSL110;
+    return OutputShaderVersion::GLSL110;
 }
 
 static std::string NextArg(int& i, int argc, char** argv, const std::string& flag)

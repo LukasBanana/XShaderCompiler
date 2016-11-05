@@ -29,7 +29,7 @@ enum class ShaderTarget
 };
 
 //! Input shader version enumeration.
-enum class InputShaderVersions
+enum class InputShaderVersion
 {
     HLSL3 = 3, //< HLSL Shader Model 3 (DirectX 9).
     HLSL4 = 4, //< HLSL Shader Model 4 (DirectX 10).
@@ -37,7 +37,7 @@ enum class InputShaderVersions
 };
 
 //! Output shader version enumeration.
-enum class OutputShaderVersions
+enum class OutputShaderVersion
 {
     GLSL110 = 110, //< GLSL 1.10 (OpenGL 2.0).
     GLSL120 = 120, //< GLSL 1.20 (OpenGL 2.1).
