@@ -69,12 +69,13 @@ Library Usage
 
 ```cpp
 #include <HT/Translator.h>
+#include <fstream>
 #include <iostream>
 
 /* ... */
 
 // Implements the output log interface
-class StdLog : public HTLib::Log
+class OutputLog : public HTLib::Log
 {
 	public:
 		void Info(const std::string& message) override
@@ -107,20 +108,17 @@ class StdLog : public HTLib::Log
 auto inputStream = std::make_shared<std::ifstream>("Example.hlsl");
 std::ofstream outputStream("Example.vertex.glsl");
 
-ShaderIncludeHandler includeHandler;
-HTLib::Options options;
-StdLog log;
+HTLib::ShaderInput inputDesc;
+inputDesc.sourceCode     = inputStream;
+inputDesc.shaderVersion  = HTLib::InputShaderVersions::HLSL5;
+inputDesc.entryPoint     = "VS";
+inputDesc.shaderTarget   = HTLib::ShaderTargets::GLSLVertexShader;
+
+HTLib::ShaderOutput outputDesc;
+outputDesc.sourceCode    = &outputStream;
+outputDesc.shaderVersion = HTLib::OutputShaderVersions::GLSL330;
 
 // Translate HLSL code into GLSL
-bool result = HTLib::TranslateHLSLtoGLSL(
-	inputStream,							// Input HLSL stream
-	outputStream,							// Output GLSL stream
-	"VS",									// Main entry point
-	HTLib::ShaderTargets::GLSLVertexShader,	// Target shader
-	HTLib::InputShaderVersions::HLSL5,		// Input shader version: HLSL Shader Model 5
-	HTLib::OutputShaderVersions::GLSL330,	// Output shader version: GLSL 3.30
-	nullptr,							// Use default include handler
-	options,								// Optional translation options
-	&log									// Optional output log
-);
+OutputLog log;
+bool result = HTLib::TranslateHLSLtoGLSL(inputDesc, outputDesc, &log);
 ```
