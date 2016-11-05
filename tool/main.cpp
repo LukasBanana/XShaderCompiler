@@ -83,24 +83,29 @@ class OutputLog : public Log
             std::cout << std::string(head.size(), '-') << std::endl;
         }
         
-        std::vector<std::string> infos_;
-        std::vector<std::string> warnings_;
-        std::vector<std::string> errors_;
+        std::vector<std::string>    infos_;
+        std::vector<std::string>    warnings_;
+        std::vector<std::string>    errors_;
 
-        std::string indent_;
-        std::string indentTab_ = "  ";
+        std::string                 indent_;
+        std::string                 indentTab_ = "  ";
 
 };
 
 
 /* --- Globals --- */
 
-std::string entry;
-std::string target;
-std::string shaderIn = "HLSL5";
-std::string shaderOut = "GLSL330";
-std::string output;
-Options options;
+struct Config
+{
+    std::string entry;
+    std::string target;
+    std::string shaderIn    = "HLSL5";
+    std::string shaderOut   = "GLSL330";
+    std::string output;
+    Options     options;
+};
+
+static Config g_config;
 
 
 /* --- Functions --- */
@@ -242,46 +247,47 @@ static std::string ExtractFilename(const std::string& filename)
 
 static void Translate(const std::string& filename)
 {
-    if (output.empty())
+    ShaderInput inputDesc;
+    ShaderOutput outputDesc;
+
+    if (g_config.output.empty())
     {
         /* Set default output filename */
-        output = ExtractFilename(filename);
-        if (!target.empty())
-            output += "." + target;
-        output += ".glsl";
+        g_config.output = ExtractFilename(filename);
+        if (!g_config.target.empty())
+            g_config.output += "." + g_config.target;
+        g_config.output += ".glsl";
     }
 
-    if (options.prefix == "<none>")
-        options.prefix.clear();
+    if (g_config.options.prefix == "<none>")
+        g_config.options.prefix.clear();
 
     /* Ignore entry and target if one of them are empty */
-    if (entry.empty() || target.empty())
+    if (g_config.entry.empty() || g_config.target.empty())
     {
-        entry.clear();
-        target.clear();
+        g_config.entry.clear();
+        g_config.target.clear();
     }
 
     /* Translate HLSL file into GLSL */
-    std::cout << "translate from " << filename << " to " << output << std::endl;
+    std::cout << "translate from " << filename << " to " << g_config.output << std::endl;
 
-    auto inputStream = std::make_shared<std::ifstream>(filename);
-    std::ofstream outputStream(output);
+    std::ofstream outputStream(g_config.output);
+
+    inputDesc.sourceCode        = std::make_shared<std::ifstream>(filename);
+    inputDesc.shaderVersion     = InputVersionFromString(g_config.shaderIn);
+    inputDesc.entryPoint        = g_config.entry;
+    inputDesc.shaderTarget      = TargetFromString(g_config.target);
+
+    outputDesc.sourceCode       = &outputStream;
+    outputDesc.shaderVersion    = OutputVersionFromString(g_config.shaderOut);
+    outputDesc.options          = g_config.options;
 
     OutputLog log;
 
     try
     {
-        auto result = TranslateHLSLtoGLSL(
-            inputStream,
-            outputStream,
-            entry,
-            TargetFromString(target),
-            InputVersionFromString(shaderIn),
-            OutputVersionFromString(shaderOut),
-            nullptr,
-            options,
-            &log
-        );
+        auto result = TranslateHLSLtoGLSL(inputDesc, outputDesc, &log);
 
         log.Report();
 
@@ -318,29 +324,29 @@ int main(int argc, char** argv)
             else if (arg == "--pause")
                 pauseApp = true;
             else if (arg == "-warn")
-                options.warnings = BoolArg(i, argc, argv, arg);
+                g_config.options.warnings = BoolArg(i, argc, argv, arg);
             else if (arg == "-blanks")
-                options.blanks = BoolArg(i, argc, argv, arg);
+                g_config.options.blanks = BoolArg(i, argc, argv, arg);
             else if (arg == "-line-marks")
-                options.lineMarks = BoolArg(i, argc, argv, arg);
+                g_config.options.lineMarks = BoolArg(i, argc, argv, arg);
             else if (arg == "-dump-ast")
-                options.dumpAST = BoolArg(i, argc, argv, arg);
+                g_config.options.dumpAST = BoolArg(i, argc, argv, arg);
             else if (arg == "-comments")
-                options.keepComments = BoolArg(i, argc, argv, arg);
+                g_config.options.keepComments = BoolArg(i, argc, argv, arg);
             else if (arg == "-entry")
-                entry = NextArg(i, argc, argv, arg);
+                g_config.entry = NextArg(i, argc, argv, arg);
             else if (arg == "-target")
-                target = NextArg(i, argc, argv, arg);
+                g_config.target = NextArg(i, argc, argv, arg);
             else if (arg == "-shaderin")
-                shaderIn = NextArg(i, argc, argv, arg);
+                g_config.shaderIn = NextArg(i, argc, argv, arg);
             else if (arg == "-shaderout")
-                shaderOut = NextArg(i, argc, argv, arg);
+                g_config.shaderOut = NextArg(i, argc, argv, arg);
             else if (arg == "-indent")
-                options.indent = NextArg(i, argc, argv, arg);
+                g_config.options.indent = NextArg(i, argc, argv, arg);
             else if (arg == "-prefix")
-                options.prefix = NextArg(i, argc, argv, arg);
+                g_config.options.prefix = NextArg(i, argc, argv, arg);
             else if (arg == "-output")
-                output = NextArg(i, argc, argv, arg);
+                g_config.output = NextArg(i, argc, argv, arg);
             else
             {
                 /* Translate input code */
@@ -348,9 +354,9 @@ int main(int argc, char** argv)
                 ++translationCounter;
 
                 /* Reset translation options */
-                output.clear();
-                target.clear();
-                entry.clear();
+                g_config.output.clear();
+                g_config.target.clear();
+                g_config.entry.clear();
             }
         }
         catch (const std::exception& err)

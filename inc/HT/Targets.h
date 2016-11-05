@@ -13,7 +13,7 @@ namespace HTLib
 {
 
 
-// Shader output targets.
+//! Shader target enumeration.
 enum class ShaderTargets
 {
     /* --- Special types --- */
@@ -28,7 +28,7 @@ enum class ShaderTargets
     GLSLComputeShader,          //< GLSL compute shader.
 };
 
-// Input shader versions.
+//! Input shader version enumeration.
 enum class InputShaderVersions
 {
     HLSL3 = 3, //< HLSL Shader Model 3 (DirectX 9).
@@ -36,7 +36,7 @@ enum class InputShaderVersions
     HLSL5 = 5, //< HLSL Shader Model 5 (DirectX 11).
 };
 
-// Output shader versions.
+//! Output shader version enumeration.
 enum class OutputShaderVersions
 {
     GLSL110 = 110, //< GLSL 1.10 (OpenGL 2.0).

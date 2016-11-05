@@ -9,10 +9,11 @@
 #define HTLIB_TRANSLATOR_H
 
 
-#include "HT/Export.h"
-#include "HT/Log.h"
-#include "HT/Targets.h"
-#include "HT/Version.h"
+#include "Export.h"
+#include "Log.h"
+#include "IncludeHandler.h"
+#include "Targets.h"
+#include "Version.h"
 
 #include <string>
 #include <istream>
@@ -28,7 +29,7 @@ namespace HTLib
 struct Options
 {
     //! Indentation string for code generation. By default std::string(4, ' ').
-    std::string indent      = "    ";
+    std::string indent          = "    ";
     
     /**
     Prefix string for all local variables. By default "_".
@@ -36,77 +37,75 @@ struct Options
     input for vertex shaders or output for fragment shaders.
     Thus some identifiers of local variables may overlap with input variables.
     This prefix is added to all local function variables.
+    \todo Remove this option and handle this workaround in an autmatic manner.
     */
-    std::string prefix      = "_";
+    std::string prefix          = "_";
 
     //! True if warnings are allowed. By default false.
-    bool        warnings    = false;
+    bool        warnings        = false;
 
     //! True if blanks are allowed. By default true.
-    bool        blanks      = true;
+    bool        blanks          = true;
 
     //! True if line marks are allowed. By default false.
-    bool        lineMarks   = false;
+    bool        lineMarks       = false;
 
     //! If true, the abstract syntax tree (AST) will be printed as debug output. By default false.
-    bool        dumpAST     = false;
+    bool        dumpAST         = false;
 
     //! If true, (almost) all comments are kept in the output code. By default true.
     bool        keepComments    = true;
 };
 
-//! Interface for handling new include streams.
-class HTLIB_EXPORT IncludeHandler
+//! Shader input descriptor structure.
+struct ShaderInput
 {
+    //! Specifies the input stream. This must be valid HLSL code.
+    std::shared_ptr<std::istream>   sourceCode;
+
+    //! Specifies the input shader version (e.g. InputShaderVersions::HLSL5 for "HLSL 5").
+    InputShaderVersions             shaderVersion;
+
+    //! Specifies the HLSL shader entry point. If may also be empty.
+    std::string                     entryPoint;
     
-    public:
-        
-        virtual ~IncludeHandler()
-        {
-        }
+    //! Specifies the target shader (Vertex, Fragment etc.).
+    ShaderTargets                   shaderTarget;
 
-        /**
-        \brief Returns an input stream for the specified filename.
-        \param[in] includeName Specifies the include filename.
-        \return Unique pointer to the new input stream.
-        */
-        virtual std::unique_ptr<std::istream> Include(const std::string& filename) = 0;
-
+    /**
+    \brief Optional pointer to the implementation of the "IncludeHandler" interface. By default null.
+    \remarks If this is null, the default include handler will be used, which will include files with the STL input file streams.
+    */
+    IncludeHandler*                 includeHandler      = nullptr;
 };
 
+//! Shader output descriptor structure.
+struct ShaderOutput
+{
+    //! Specifies the output stream. This will contain the output GLSL code. This must not be null!
+    std::ostream*                   sourceCode          = nullptr;
+
+    //! Specifies the output shader version (e.g. for "GLSL 1.20" use 'OutputShaderVersions::GLSL120').
+    OutputShaderVersions            shaderVersion;
+
+    //! Additional options to configure the code generation.
+    Options                         options;
+};
 
 /**
-Translates the HLSL code from the specified input stream into GLSL code.
-\param[in] input Specifies the input stream. This must be valid HLSL code.
-\param[out] output Specifies the output stream. This will contain the output GLSL code.
-\param[in] entryPoint Specifies the HLSL shader entry point. If may also be empty.
-\param[in] shaderTarget Specifies the target shader (Vertex, Fragment etc.).
-\param[in] inputShaderVersion Specifies the input shader version (e.g. for "HLSL 5" use 'InputShaderVersions::HLSL5').
-\param[in] outputShaderVersion Specifies the output shader version (e.g. for "GLSL 1.20" use 'OutputShaderVersions::GLSL120').
-\param[in] includeHandler Optional pointer to the implementation of the "IncludeHandler" interface.
-This will be used when an "#include" directive occurs. If such a directive occurs
-and this parameter is null, the code generation will fail! By default null.
-\param[in] options Additional options to configure the code generation.
+\brief Translates the HLSL code from the specified input stream into GLSL code.
+\param[in] inputDesc Input shader code descriptor.
+\param[in] outputDesc Output shader code descriptor.
 \param[in] log Optional pointer to an output log. Inherit from the "Log" class interface.
-\return True if the code has been translated correctly.
-\note This translator makes a minimum of contextual analysis.
-Therefore wrong HLSL code may be translated into wrong GLSL code!
-\see InputShaderVersions
-\see OutputShaderVersions
-\see IncludeHandler
-\see Options
+\return True if the code has been translated successfully.
+\see ShaderInput
+\see ShaderOutput
 \see Log
 */
 HTLIB_EXPORT bool TranslateHLSLtoGLSL(
-    const std::shared_ptr<std::istream>&    input,
-    std::ostream&                           output,
-    const std::string&                      entryPoint,
-    const ShaderTargets                     shaderTarget,
-    const InputShaderVersions               inputShaderVersion,
-    const OutputShaderVersions              outputShaderVersion,
-    IncludeHandler*                         includeHandler = nullptr,
-    const Options&                          options = {},
-    Log*                                    log = nullptr
+    const ShaderInput& inputDesc,
+    const ShaderOutput& outputDesc,
+    Log* log = nullptr
 );
 
 
