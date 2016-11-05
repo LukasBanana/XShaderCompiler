@@ -24,7 +24,7 @@ namespace HTLib
 {
 
 
-//! HLSL context analyzer.
+// HLSL context analyzer.
 class HLSLAnalyzer : private Visitor
 {
     
@@ -43,7 +43,7 @@ class HLSLAnalyzer : private Visitor
 
     private:
         
-        typedef ASTSymbolTable::OnOverrideProc OnOverrideProc;
+        using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
 
         /* === Enumerations === */
 
@@ -72,10 +72,10 @@ class HLSLAnalyzer : private Visitor
 
         void AcquireExtension(const Program::ARBExtension& extension);
 
-        //! Returns true if the target version is greater than or equal to the specified version number.
+        // Returns true if the target version is greater than or equal to the specified version number.
         bool IsVersionOut(int version) const;
 
-        /**
+        /*
         Returns the current (top level) function in the call stack
         or null if the AST traversion is in the global scope.
         */
@@ -159,14 +159,14 @@ class HLSLAnalyzer : private Visitor
         std::map<std::string, IntrinsicClasses> intrinsicMap_;
         std::map<std::string, Program::ARBExtension> extensionMap_;
 
-        std::stack<FunctionCall*>   callStack_;     //!< Function call stack to join arguments with its function call.
-        std::vector<Structure*>     structStack_;   //!< Structure stack to collect all members with system value semantic (SV_...).
+        std::stack<FunctionCall*>   callStack_;     //< Function call stack to join arguments with its function call.
+        std::vector<Structure*>     structStack_;   //< Structure stack to collect all members with system value semantic (SV_...).
 
         ASTSymbolTable      symTable_;
         ReferenceAnalyzer   refAnalyzer_;
 
-        bool isInsideFunc_          = false; //!< True if AST traversal is currently inside any function.
-        bool isInsideEntryPoint_    = false; //!< True if AST traversal is currently inside the main entry point (or its sub nodes).
+        bool isInsideFunc_          = false; //< True if AST traversal is currently inside any function.
+        bool isInsideEntryPoint_    = false; //< True if AST traversal is currently inside the main entry point (or its sub nodes).
 
 };
 

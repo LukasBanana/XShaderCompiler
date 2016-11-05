@@ -14,7 +14,7 @@ namespace HTLib
 
 static KeywordMapType GenerateKeywordMap()
 {
-    typedef Token::Types Ty;
+    using Ty = Token::Types;
 
     return
     {

@@ -18,7 +18,7 @@ namespace HTLib
  * Internal GL ARB extension descriptions
  */
 
-typedef Program::ARBExtension ARBExt;
+using ARBExt = Program::ARBExtension;
 
 static const ARBExt ARBEXT_GL_EXT_gpu_shader4               { "GL_EXT_gpu_shader4",                 130 };
 static const ARBExt ARBEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",          400 };
@@ -268,7 +268,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
 IMPLEMENT_VISIT_PROC(Structure)
 {
-    #if 0//!!!! there is no forward declaration for structs in HLSL!
+    #if 0//!!! there is no forward declaration for structs in HLSL!
     if (!ast->name.empty())
     {
         Register(
@@ -752,7 +752,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 /* --- Helper functions for context analysis --- */
 
-//!INCOMPLETE!
+//INCOMPLETE!
 void HLSLAnalyzer::DecorateEntryInOut(VarDeclStmnt* ast, bool isInput)
 {
     const auto structFlag = (isInput ? Structure::isShaderInput : Structure::isShaderOutput);
@@ -785,7 +785,7 @@ void HLSLAnalyzer::DecorateEntryInOut(VarDeclStmnt* ast, bool isInput)
     }
 }
 
-//!INCOMPLETE!
+//INCOMPLETE!
 void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
 {
     const auto structFlag = (isInput ? Structure::isShaderInput : Structure::isShaderOutput);

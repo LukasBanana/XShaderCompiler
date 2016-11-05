@@ -18,10 +18,10 @@ namespace HTLib
 {
 
 
-//! AST symbol table type.
-typedef SymbolTable<AST> ASTSymbolTable;
+// AST symbol table type.
+using ASTSymbolTable = SymbolTable<AST>;
 
-/**
+/*
 Object reference analyzer.
 This helper class for the context analyzer marks all functions
 which are used from the beginning of the shader entry point.
@@ -38,7 +38,7 @@ class ReferenceAnalyzer : private Visitor
 
     private:
         
-        typedef SymbolTable<AST>::OnOverrideProc OnOverrideProc;
+        using OnOverrideProc = SymbolTable<AST>::OnOverrideProc;
 
         /* === Visitor implementation === */
 

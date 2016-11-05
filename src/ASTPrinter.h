@@ -22,7 +22,7 @@ namespace HTLib
 {
 
 
-//! AST debug printer.
+// AST debug printer.
 class ASTPrinter : private Visitor
 {
     

@@ -16,7 +16,7 @@ namespace HTLib
 {
 
 
-//! This class stores the position in a source code file.
+// This class stores the position in a source code file.
 class SourcePosition
 {
     
@@ -25,32 +25,32 @@ class SourcePosition
         SourcePosition() = default;
         SourcePosition(unsigned int row, unsigned int column);
 
-        //! Returns the source position as string in the format "Row:Column", e.g. "75:10".
+        // Returns the source position as string in the format "Row:Column", e.g. "75:10".
         std::string ToString() const;
 
-        //! Increases the row by 1 and sets the column to 0.
+        // Increases the row by 1 and sets the column to 0.
         void IncRow();
-        //! Increases the column by 1.
+        // Increases the column by 1.
         void IncColumn();
 
-        //! Returns ture if this is a valid source position. False if row and column are 0.
+        // Returns ture if this is a valid source position. False if row and column are 0.
         bool IsValid() const;
 
-        //! Reste the source position to (0:0).
+        // Reste the source position to (0:0).
         void Reset();
 
-        //! Returns the row of the source position, beginning with 1.
+        // Returns the row of the source position, beginning with 1.
         inline unsigned int Row() const
         {
             return row_;
         }
-        //! Returns the colummn of the source position, beginning with 1.
+        // Returns the colummn of the source position, beginning with 1.
         inline unsigned int Column() const
         {
             return column_;
         }
 
-        //! Invalid source position.
+        // Invalid source position.
         static const SourcePosition ignore;
 
     private:

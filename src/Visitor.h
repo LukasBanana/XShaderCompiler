@@ -18,9 +18,9 @@ namespace HTLib
 
 // Declare all AST node classes
 
-#define DECL_PTR(className)                             \
-    struct className;                                   \
-    typedef std::shared_ptr<className> className##Ptr
+#define DECL_PTR(CLASS_NAME)                            \
+    struct CLASS_NAME;                                  \
+    using CLASS_NAME##Ptr = std::shared_ptr<CLASS_NAME>
 
 DECL_PTR( AST               );
 DECL_PTR( GlobalDecl        );
@@ -83,13 +83,13 @@ DECL_PTR( VarDecl           );
 
 // Visitor interface
 
-#define VISITOR_VISIT_PROC(className)                           \
-    virtual void Visit##className(className* ast, void* args)   \
+#define VISITOR_VISIT_PROC(CLASS_NAME)                          \
+    virtual void Visit##CLASS_NAME(CLASS_NAME* ast, void* args) \
     {                                                           \
     }
 
-#define DECL_VISIT_PROC(className) \
-    void Visit##className(className* ast, void* args) override
+#define DECL_VISIT_PROC(CLASS_NAME) \
+    void Visit##CLASS_NAME(CLASS_NAME* ast, void* args) override
 
 class Visitor
 {
@@ -153,7 +153,8 @@ class Visitor
 
     protected:
         
-        template <typename T> void Visit(T ast, void* args = nullptr)
+        template <typename T>
+        void Visit(T ast, void* args = nullptr)
         {
             if (ast)
                 ast->Visit(this, args);

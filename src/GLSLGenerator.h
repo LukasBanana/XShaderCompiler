@@ -22,7 +22,7 @@ namespace HTLib
 {
 
 
-//! GLSL output code generator.
+// GLSL output code generator.
 class GLSLGenerator : private Visitor
 {
     
@@ -60,7 +60,7 @@ class GLSLGenerator : private Visitor
                 const std::string& compute
             );
 
-            //! \throws std::out_of_range If 'target' is out of range.
+            // \throws std::out_of_range If 'target' is out of range.
             const std::string& operator [] (const ShaderTargets target) const;
 
             std::string vertex;
@@ -91,17 +91,17 @@ class GLSLGenerator : private Visitor
         void PushOptions(const CodeWriter::Options& options);
         void PopOptions();
 
-        //! Writes a new single line comment.
+        // Writes a new single line comment.
         void Comment(const std::string& text);
-        //! Writes a "#version" directive.
+        // Writes a "#version" directive.
         void Version(int versionNumber);
-        //! Writes a "#line" directive.
+        // Writes a "#line" directive.
         void Line(int lineNumber);
         void Line(const TokenPtr& tkn);
         void Line(const AST* ast);
-        //! Writes a blank line.
+        // Writes a blank line.
         void Blank();
-        //! Writes a new extensions
+        // Writes a new extensions
         void Extension(const std::string& extensionName);
 
         void AppendRequiredExtensions(Program* ast);
@@ -114,9 +114,9 @@ class GLSLGenerator : private Visitor
         void AppendClipIntrinsics();
         void AppendSinCosIntrinsics();
 
-        //! Opens a new scope with '{'.
+        // Opens a new scope with '{'.
         void OpenScope();
-        //! Closes the current scope with '}'.
+        // Closes the current scope with '}'.
         void CloseScope(bool semicolon = false);
 
         void ValidateRegisterPrefix(const std::string& registerName, char prefix);
@@ -127,10 +127,10 @@ class GLSLGenerator : private Visitor
         std::string SRegister(const std::string& registerName);
         std::string URegister(const std::string& registerName);
 
-        //! Returns true if the specified AST structure must be resolved.
+        // Returns true if the specified AST structure must be resolved.
         bool MustResolveStruct(Structure* ast) const;
 
-        //! Returns true if the target version is greater than or equal to the specified version number.
+        // Returns true if the target version is greater than or equal to the specified version number.
         bool IsVersionOut(int version) const;
 
         /* --- Visitor implementation --- */
@@ -202,9 +202,9 @@ class GLSLGenerator : private Visitor
         void VisitParameter(VarDeclStmnt* ast);
         void VisitScopedStmnt(Stmnt* ast);
 
-        //! Returns true if the specified expression contains a sampler object.
+        // Returns true if the specified expression contains a sampler object.
         bool ExprContainsSampler(Expr* ast);
-        //! Returns true if the specified variable type is a sampler.
+        // Returns true if the specified variable type is a sampler.
         bool VarTypeIsSampler(VarType* ast);
 
         bool FetchSemantic(std::string semanticName, SemanticStage& semantic) const;
@@ -228,7 +228,7 @@ class GLSLGenerator : private Visitor
         bool                    allowBlanks_            = true;
         bool                    allowLineMarks_         = true;
 
-        bool                    isInsideEntryPoint_     = false; //!< True if AST traversal is currently inside the main entry point (or its sub nodes).
+        bool                    isInsideEntryPoint_     = false; //< True if AST traversal is currently inside the main entry point (or its sub nodes).
         bool                    isInsideInterfaceBlock_ = false;
 
         std::map<std::string, std::string> typeMap_;            // <hlsl-type, glsl-type>

@@ -13,7 +13,7 @@ namespace HTLib
 {
 
 
-//! Common flags class.
+// Common flags class.
 class Flags
 {
     

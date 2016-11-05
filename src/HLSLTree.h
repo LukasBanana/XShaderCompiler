@@ -32,29 +32,31 @@ class Visitor;
 
 /* --- Some helper macros --- */
 
-#define AST_INTERFACE(className)                                \
-    className(const SourcePosition& astPos)                     \
+#define AST_INTERFACE(CLASS_NAME)                               \
+    CLASS_NAME(const SourcePosition& astPos)                    \
     {                                                           \
         pos = astPos;                                           \
     }                                                           \
     Types Type() const override                                 \
     {                                                           \
-        return Types::className;                                \
+        return Types::CLASS_NAME;                               \
     }                                                           \
     void Visit(Visitor* visitor, void* args = nullptr) override \
     {                                                           \
-        visitor->Visit##className(this, args);                  \
+        visitor->Visit##CLASS_NAME(this, args);                 \
     }
 
-#define DECL_AST_ALIAS(alias, base) \
-    typedef base alias;             \
-    typedef base##Ptr alias##Ptr
+#define DECL_AST_ALIAS(ALIAS, BASE) \
+    using ALIAS         = BASE;     \
+    using ALIAS##Ptr    = BASE##Ptr
 
-#define FLAG_ENUM enum : unsigned int
+#define FLAG_ENUM \
+    enum : unsigned int
 
-#define FLAG(name, index) name = (1 << (index))
+#define FLAG(IDENT, INDEX) \
+    IDENT = (1 << (INDEX))
 
-//! Base class for all AST node classes.
+// Base class for all AST node classes.
 struct AST
 {
     enum class Types
@@ -126,21 +128,21 @@ struct AST
 
 /* --- Base AST nodes --- */
 
-//! Global declaration base class.
+// Global declaration base class.
 struct GlobalDecl : public AST {};
 
-//! Statement base class.
+// Statement base class.
 struct Stmnt : public AST {};
 
-//! Expression base class.
+// Expression base class.
 struct Expr : public AST {};
 
-//! Program AST root.
+// Program AST root.
 struct Program : public AST
 {   
     AST_INTERFACE(Program)
 
-    //! GL ARB extension structure.
+    // GL ARB extension structure.
     struct ARBExtension
     {
         std::string extensionName;
@@ -173,14 +175,14 @@ struct Program : public AST
     OutputSemantics             outputSemantics;    // Output semantics for the DAST
 };
 
-//! Code block.
+// Code block.
 struct CodeBlock : public AST
 {
     AST_INTERFACE(CodeBlock);
     std::vector<StmntPtr> stmnts;
 };
 
-//! Buffer declaration identifier.
+// Buffer declaration identifier.
 struct BufferDeclIdent : public AST
 {
     AST_INTERFACE(BufferDeclIdent);
@@ -194,7 +196,7 @@ struct BufferDeclIdent : public AST
     std::string registerName; // May be empty
 };
 
-//! Function call.
+// Function call.
 struct FunctionCall : public AST
 {
     AST_INTERFACE(FunctionCall);
@@ -211,7 +213,7 @@ struct FunctionCall : public AST
     std::vector<ExprPtr>    arguments;
 };
 
-//! Structure object.
+// Structure object.
 struct Structure : public AST
 {
     AST_INTERFACE(Structure);
@@ -232,7 +234,7 @@ struct Structure : public AST
 
 /* --- Global declarations --- */
 
-//! Function declaration.
+// Function declaration.
 struct FunctionDecl : public GlobalDecl
 {
     AST_INTERFACE(FunctionDecl);
@@ -253,7 +255,7 @@ struct FunctionDecl : public GlobalDecl
     std::vector<FunctionDecl*>      forwardDeclsRef;    // List of forward declarations to this function.
 };
 
-//! Uniform buffer (cbuffer, tbuffer) declaration.
+// Uniform buffer (cbuffer, tbuffer) declaration.
 struct UniformBufferDecl : public GlobalDecl
 {
     AST_INTERFACE(UniformBufferDecl);
@@ -270,7 +272,7 @@ struct UniformBufferDecl : public GlobalDecl
     std::vector<VarDeclStmntPtr>    members;
 };
 
-//! Texture declaration.
+// Texture declaration.
 struct TextureDecl : public GlobalDecl
 {
     AST_INTERFACE(TextureDecl);
@@ -285,7 +287,7 @@ struct TextureDecl : public GlobalDecl
     std::vector<BufferDeclIdentPtr> names;
 };
 
-//! Sampler declaration.
+// Sampler declaration.
 struct SamplerDecl : public GlobalDecl
 {
     AST_INTERFACE(SamplerDecl);
@@ -293,14 +295,14 @@ struct SamplerDecl : public GlobalDecl
     std::vector<BufferDeclIdentPtr> names;
 };
 
-//! Structure declaration.
+// Structure declaration.
 struct StructDecl : public GlobalDecl
 {
     AST_INTERFACE(StructDecl);
     StructurePtr structure;
 };
 
-//! Direvtive declaration.
+// Direvtive declaration.
 struct DirectiveDecl : public GlobalDecl
 {
     AST_INTERFACE(DirectiveDecl);
@@ -309,7 +311,7 @@ struct DirectiveDecl : public GlobalDecl
 
 /* --- Variables --- */
 
-//! Pack offset.
+// Pack offset.
 struct PackOffset : public AST
 {
     AST_INTERFACE(PackOffset);
@@ -317,7 +319,7 @@ struct PackOffset : public AST
     std::string vectorComponent; // May be empty
 };
 
-//! Variable semantic.
+// Variable semantic.
 struct VarSemantic : public AST
 {
     AST_INTERFACE(VarSemantic);
@@ -326,7 +328,7 @@ struct VarSemantic : public AST
     std::string     registerName; // May be empty
 };
 
-//! Variable data type.
+// Variable data type.
 struct VarType : public AST
 {
     AST_INTERFACE(VarType);
@@ -335,7 +337,7 @@ struct VarType : public AST
     AST*            symbolRef = nullptr;    // Symbol reference for DAST to the type definition; may be null.
 };
 
-//! Variable (linked-list) identifier.
+// Variable (linked-list) identifier.
 struct VarIdent : public AST
 {
     AST_INTERFACE(VarIdent);
@@ -346,7 +348,7 @@ struct VarIdent : public AST
     std::string             systemSemantic;         // System semantic (SV_...) for DAST; may be empty.
 };
 
-//! Variable declaration.
+// Variable declaration.
 struct VarDecl : public AST
 {
     AST_INTERFACE(VarDecl);
@@ -367,27 +369,27 @@ struct VarDecl : public AST
 
 /* --- Statements --- */
 
-//! Null statement.
+// Null statement.
 struct NullStmnt : public Stmnt
 {
     AST_INTERFACE(NullStmnt);
 };
 
-//! Pre-processor directive statement.
+// Pre-processor directive statement.
 struct DirectiveStmnt : public Stmnt
 {
     AST_INTERFACE(DirectiveStmnt);
     std::string line;
 };
 
-//! Code block statement.
+// Code block statement.
 struct CodeBlockStmnt : public Stmnt
 {
     AST_INTERFACE(CodeBlockStmnt);
     CodeBlockPtr codeBlock;
 };
 
-//! 'for'-loop statemnet.
+// 'for'-loop statemnet.
 struct ForLoopStmnt : public Stmnt
 {
     AST_INTERFACE(ForLoopStmnt);
@@ -398,7 +400,7 @@ struct ForLoopStmnt : public Stmnt
     StmntPtr                        bodyStmnt;
 };
 
-//! 'while'-loop statement.
+// 'while'-loop statement.
 struct WhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(WhileLoopStmnt);
@@ -407,7 +409,7 @@ struct WhileLoopStmnt : public Stmnt
     StmntPtr                        bodyStmnt;
 };
 
-//! 'do/while'-loop statement.
+// 'do/while'-loop statement.
 struct DoWhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(DoWhileLoopStmnt);
@@ -416,7 +418,7 @@ struct DoWhileLoopStmnt : public Stmnt
     ExprPtr                         condition;
 };
 
-//! 'if' statement.
+// 'if' statement.
 struct IfStmnt : public Stmnt
 {
     AST_INTERFACE(IfStmnt);
@@ -426,14 +428,14 @@ struct IfStmnt : public Stmnt
     ElseStmntPtr                    elseStmnt;  // May be null
 };
 
-//! 'else' statement.
+// 'else' statement.
 struct ElseStmnt : public Stmnt
 {
     AST_INTERFACE(ElseStmnt);
     StmntPtr bodyStmnt;
 };
 
-//! 'switch' statement.
+// 'switch' statement.
 struct SwitchStmnt : public Stmnt
 {
     AST_INTERFACE(SwitchStmnt);
@@ -442,7 +444,7 @@ struct SwitchStmnt : public Stmnt
     std::vector<SwitchCasePtr>      cases;
 };
 
-//! Variable declaration statement.
+// Variable declaration statement.
 struct VarDeclStmnt : public Stmnt
 {
     AST_INTERFACE(VarDeclStmnt);
@@ -460,7 +462,7 @@ struct VarDeclStmnt : public Stmnt
     std::vector<VarDeclPtr>     varDecls;
 };
 
-//! Variable assign statement.
+// Variable assign statement.
 struct AssignStmnt : public Stmnt
 {
     AST_INTERFACE(AssignStmnt);
@@ -469,42 +471,42 @@ struct AssignStmnt : public Stmnt
     ExprPtr     expr;
 };
 
-//! Arbitrary expression statement.
+// Arbitrary expression statement.
 struct ExprStmnt : public Stmnt
 {
     AST_INTERFACE(ExprStmnt);
     ExprPtr expr;
 };
 
-//! Function call statement.
+// Function call statement.
 struct FunctionCallStmnt : public Stmnt
 {
     AST_INTERFACE(FunctionCallStmnt);
     FunctionCallPtr call;
 };
 
-//! Returns statement.
+// Returns statement.
 struct ReturnStmnt : public Stmnt
 {
     AST_INTERFACE(ReturnStmnt);
     ExprPtr expr; // may be null
 };
 
-//! Structure declaration statement.
+// Structure declaration statement.
 struct StructDeclStmnt : public Stmnt
 {
     AST_INTERFACE(StructDeclStmnt);
     StructurePtr structure;
 };
 
-//! Control transfer statement.
+// Control transfer statement.
 struct CtrlTransferStmnt : public Stmnt
 {
     AST_INTERFACE(CtrlTransferStmnt);
     std::string instruction; // continue, break, discard
 };
 
-//! Commentary statement (pseudo statement).
+// Commentary statement (pseudo statement).
 struct CommentStmnt : public Stmnt
 {
     AST_INTERFACE(CommentStmnt);
@@ -513,7 +515,7 @@ struct CommentStmnt : public Stmnt
 
 /* --- Expressions --- */
 
-//! List expression ( expr ',' expr ).
+// List expression ( expr ',' expr ).
 struct ListExpr : public Expr
 {
     AST_INTERFACE(ListExpr);
@@ -521,21 +523,21 @@ struct ListExpr : public Expr
     ExprPtr nextExpr;
 };
 
-//! Literal expression.
+// Literal expression.
 struct LiteralExpr : public Expr
 {
     AST_INTERFACE(LiteralExpr);
     std::string literal;
 };
 
-//! Type name expression (used for simpler cast-expression parsing).
+// Type name expression (used for simpler cast-expression parsing).
 struct TypeNameExpr : public Expr
 {
     AST_INTERFACE(TypeNameExpr);
     std::string typeName;
 };
 
-//! Ternary expression.
+// Ternary expression.
 struct TernaryExpr : public Expr
 {
     AST_INTERFACE(TernaryExpr);
@@ -544,7 +546,7 @@ struct TernaryExpr : public Expr
     ExprPtr elseExpr;   // <else> case expression
 };
 
-//! Binary expressions.
+// Binary expressions.
 struct BinaryExpr : public Expr
 {
     AST_INTERFACE(BinaryExpr);
@@ -553,7 +555,7 @@ struct BinaryExpr : public Expr
     ExprPtr     rhsExpr;    // Right-hand-side expression
 };
 
-//! (Pre-) Unary expressions.
+// (Pre-) Unary expressions.
 struct UnaryExpr : public Expr
 {
     AST_INTERFACE(UnaryExpr);
@@ -561,7 +563,7 @@ struct UnaryExpr : public Expr
     ExprPtr     expr;
 };
 
-//! Post unary expressions.
+// Post unary expressions.
 struct PostUnaryExpr : public Expr
 {
     AST_INTERFACE(PostUnaryExpr);
@@ -569,21 +571,21 @@ struct PostUnaryExpr : public Expr
     std::string op;
 };
 
-//! Function call expression.
+// Function call expression.
 struct FunctionCallExpr : public Expr
 {
     AST_INTERFACE(FunctionCallExpr);
     FunctionCallPtr call;
 };
 
-//! Bracket expression.
+// Bracket expression.
 struct BracketExpr : public Expr
 {
     AST_INTERFACE(BracketExpr);
     ExprPtr expr; // Inner expression
 };
 
-//! Cast expression.
+// Cast expression.
 struct CastExpr : public Expr
 {
     AST_INTERFACE(CastExpr);
@@ -591,7 +593,7 @@ struct CastExpr : public Expr
     ExprPtr expr;
 };
 
-//! Variable access expression.
+// Variable access expression.
 struct VarAccessExpr : public Expr
 {
     AST_INTERFACE(VarAccessExpr);
@@ -600,7 +602,7 @@ struct VarAccessExpr : public Expr
     ExprPtr     assignExpr; // May be null
 };
 
-//! Initializer list expression.
+// Initializer list expression.
 struct InitializerExpr : public Expr
 {
     AST_INTERFACE(InitializerExpr);
@@ -609,7 +611,7 @@ struct InitializerExpr : public Expr
 
 /* --- Others --- */
 
-//! Case block for a switch statement.
+// Case block for a switch statement.
 struct SwitchCase : public AST
 {
     AST_INTERFACE(SwitchCase);
@@ -624,9 +626,9 @@ struct SwitchCase : public AST
 
 /* --- Helper functions --- */
 
-//! Returns the full variabel identifier name.
+// Returns the full variabel identifier name.
 std::string FullVarIdent(const VarIdentPtr& varIdent);
-//! Returns the last identifier AST node.
+// Returns the last identifier AST node.
 VarIdent* LastVarIdent(VarIdent* varIdent);
 
 

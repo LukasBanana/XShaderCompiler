@@ -18,7 +18,7 @@ namespace HTLib
 {
 
 
-//! Log interface.
+// Log interface.
 class HTLIB_EXPORT Log
 {
     
@@ -28,31 +28,31 @@ class HTLIB_EXPORT Log
         {
         }
 
-        //! Prints an information.
+        // Prints an information.
         virtual void Info(const std::string& message)
         {
             // dummy
         }
 
-        //! Prints a warning.
+        // Prints a warning.
         virtual void Warning(const std::string& message)
         {
             // dummy
         }
 
-        //! Prints an error.
+        // Prints an error.
         virtual void Error(const std::string& message)
         {
             // dummy
         }
 
-        //! Increments the indentation.
+        // Increments the indentation.
         virtual void IncIndent()
         {
             // dummy
         }
 
-        //! Decrements the indentation.
+        // Decrements the indentation.
         virtual void DecIndent()
         {
             // dummy

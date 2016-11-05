@@ -23,7 +23,7 @@ namespace HTLib
 {
 
 
-//! This class stores the position in a source code file.
+// This class stores the position in a source code file.
 class HLSLScanner
 {
     
@@ -33,7 +33,7 @@ class HLSLScanner
 
         bool ScanSource(const std::shared_ptr<SourceCode>& source);
 
-        //! Scanns the next token.
+        // Scanns the next token.
         TokenPtr Next(bool scanComments = false);
 
         SourcePosition Pos() const;
@@ -56,7 +56,7 @@ class HLSLScanner
         void ErrorEOF();
         void ErrorLetterInNumber();
 
-        //! Ignores all characters which comply the specified predicate.
+        // Ignores all characters which comply the specified predicate.
         void Ignore(const std::function<bool (char)>& pred);
 
         void IgnoreWhiteSpaces();

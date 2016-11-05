@@ -27,24 +27,25 @@ class SourceCode
         
         SourceCode(const std::shared_ptr<std::istream>& stream);
 
-        //! Returns true if this is a valid source code stream.
+        // Returns true if this is a valid source code stream.
         bool IsValid() const;
 
-        //! Returns the next character from the source.
+        // Returns the next character from the source.
         char Next();
 
-        //! Ignores the current character.
+        // Ignores the current character.
         inline void Ignore()
         {
             Next();
         }
 
-        //! Returns the current source position.
+        // Returns the current source position.
         inline const SourcePosition& Pos() const
         {
             return pos_;
         }
-        //! Returns the current source line.
+
+        // Returns the current source line.
         inline const std::string& Line() const
         {
             return line_;

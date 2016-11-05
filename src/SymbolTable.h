@@ -20,27 +20,28 @@ namespace HTLib
 {
 
 
-//! Common symbol table class with a single scope.
-template <typename SymbolType> class SymbolTable
+// Common symbol table class with a single scope.
+template <typename SymbolType>
+class SymbolTable
 {
     
     public:
         
-        //! Override symbol callback procedure. Must return true to allow a symbol override.
-        typedef std::function<bool (SymbolType* symbol)> OnOverrideProc;
+        // Override symbol callback procedure. Must return true to allow a symbol override.
+        using OnOverrideProc = std::function<bool (SymbolType* symbol)>;
 
         SymbolTable()
         {
             OpenScope();
         }
 
-        //! Opens a new scope.
+        // Opens a new scope.
         void OpenScope()
         {
             scopeStack_.push({});
         }
 
-        //! Closes the active scope.
+        // Closes the active scope.
         void CloseScope()
         {
             if (!scopeStack_.empty())
@@ -64,7 +65,7 @@ template <typename SymbolType> class SymbolTable
             }
         }
 
-        /**
+        /*
         Registers the specified symbol in the current scope.
         At least one scope must be open before symbols can be registered!
         */
@@ -99,7 +100,7 @@ template <typename SymbolType> class SymbolTable
             scopeStack_.top().push_back(ident);
         }
 
-        /**
+        /*
         Returns the symbol with the specified identifer which is in
         the deepest scope, or null if there is no such symbol.
         */
@@ -111,7 +112,7 @@ template <typename SymbolType> class SymbolTable
             return nullptr;
         }
 
-        //! Returns current scope level.
+        // Returns current scope level.
         size_t ScopeLevel() const
         {
             return scopeStack_.size();
@@ -125,14 +126,14 @@ template <typename SymbolType> class SymbolTable
             size_t      scopeLevel;
         };
 
-        //! Stores the scope stack for all identifiers.
-        std::map<std::string, std::stack<Symbol>> symTable_;
+        // Stores the scope stack for all identifiers.
+        std::map<std::string, std::stack<Symbol>>   symTable_;
 
-        /**
+        /*
         Stores all identifiers for the current stack.
         All these identifiers will be removed from "symTable_" when a scope will be closed.
         */
-        std::stack<std::vector<std::string>> scopeStack_;
+        std::stack<std::vector<std::string>>        scopeStack_;
 
 };
 

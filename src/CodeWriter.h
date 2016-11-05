@@ -17,7 +17,7 @@ namespace HTLib
 {
 
 
-//! Output code writer.
+// Output code writer.
 class CodeWriter
 {
     
@@ -38,7 +38,7 @@ class CodeWriter
 
         CodeWriter(const std::string& indentTab);
 
-        //! \throws std::runtime_error If stream is invalid.
+        // \throws std::runtime_error If stream is invalid.
         void OutputStream(std::ostream& stream);
 
         void PushIndent();
