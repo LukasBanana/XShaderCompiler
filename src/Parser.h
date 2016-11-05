@@ -17,6 +17,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <stack>
 
 
 namespace HTLib
@@ -39,7 +40,10 @@ class Parser
 
         Parser(Log* log);
 
-        virtual Scanner& GetScanner() = 0;
+        virtual ScannerPtr MakeScanner() = 0;
+
+        void PushScannerSource(const std::shared_ptr<SourceCode>& source);
+        void PopScannerSource();
 
         void Error(const std::string& msg);
         void ErrorUnexpected();
@@ -83,21 +87,35 @@ class Parser
         // Returns true if the next token is from the specified type.
         inline bool Is(const Tokens type) const
         {
-            return Type() == type;
+            return (Type() == type);
         }
 
         // Returns true if the next token is from the specified type and has the specified spelling.
         inline bool Is(const Tokens type, const std::string& spell) const
         {
-            return Type() == type && Tkn()->Spell() == spell;
+            return (Type() == type && Tkn()->Spell() == spell);
         }
-
-        /* === Members === */
 
     private:
 
-        Log*        log_ = nullptr;
-        TokenPtr    tkn_;
+        /* === Structures === */
+
+        struct ScannerStackEntry
+        {
+            ScannerPtr  scanner;
+            TokenPtr    nextToken;
+        };
+
+        /* === Functions === */
+
+        Scanner& GetScanner();
+
+        /* === Members === */
+
+        Log*                            log_ = nullptr;
+        TokenPtr                        tkn_;
+
+        std::stack<ScannerStackEntry>   scannerStack_;
 
 };
 

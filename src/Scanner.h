@@ -104,6 +104,8 @@ class Scanner
 
 };
 
+using ScannerPtr = std::shared_ptr<Scanner>;
+
 
 } // /namespace HTLib
 

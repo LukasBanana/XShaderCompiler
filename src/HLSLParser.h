@@ -50,7 +50,7 @@ class HLSLParser : public Parser
 
         /* === Functions === */
 
-        Scanner& GetScanner() override;
+        ScannerPtr MakeScanner() override;
 
         // Accepts the semicolon token (Accept(Tokens::Semicolon)).
         void Semi();

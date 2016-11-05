@@ -22,10 +22,7 @@ PreProcessor::PreProcessor(IncludeHandler& includeHandler, Log* log) :
 
 std::shared_ptr<std::iostream> PreProcessor::Process(const std::shared_ptr<SourceCode>& input)
 {
-    if (!scanner_.ScanSource(input))
-        return nullptr;
-
-    AcceptIt();
+    PushScannerSource(input);
 
     output_ = std::make_shared<std::stringstream>();
 
@@ -53,9 +50,9 @@ std::shared_ptr<std::iostream> PreProcessor::Process(const std::shared_ptr<Sourc
  * ======= Private: =======
  */
 
-Scanner& PreProcessor::GetScanner()
+ScannerPtr PreProcessor::MakeScanner()
 {
-    return scanner_;
+    return std::make_shared<PreProcessorScanner>(GetLog());
 }
 
 PreProcessor::DefinedSymbolPtr PreProcessor::MakeSymbol(const std::string& ident)

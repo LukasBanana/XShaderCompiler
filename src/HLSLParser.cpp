@@ -22,10 +22,7 @@ HLSLParser::HLSLParser(const Options& options, Log* log) :
 
 ProgramPtr HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
 {
-    if (!scanner_.ScanSource(source))
-        return false;
-
-    AcceptIt();
+    PushScannerSource(source);
 
     try
     {
@@ -45,9 +42,9 @@ ProgramPtr HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
  * ======= Private: =======
  */
 
-Scanner& HLSLParser::GetScanner()
+ScannerPtr HLSLParser::MakeScanner()
 {
-    return scanner_;
+    return std::make_shared<HLSLScanner>(GetLog());
 }
 
 void HLSLParser::Semi()

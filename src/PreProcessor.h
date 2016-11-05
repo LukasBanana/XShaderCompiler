@@ -46,7 +46,7 @@ class PreProcessor : public Parser
 
         /* === Functions === */
 
-        Scanner& GetScanner() override;
+        ScannerPtr MakeScanner() override;
 
         DefinedSymbolPtr MakeSymbol(const std::string& ident);
 
