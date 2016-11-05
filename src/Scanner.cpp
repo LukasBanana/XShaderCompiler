@@ -184,7 +184,7 @@ TokenPtr Scanner::ScanCommentLine(bool scanComments)
 {
     if (scanComments)
     {
-        std::string spell;
+        std::string spell = "//";
 
         TakeIt(); // Ignore second '/' from commentary line beginning
         while (chr_ != '\n')
@@ -201,7 +201,7 @@ TokenPtr Scanner::ScanCommentLine(bool scanComments)
 
 TokenPtr Scanner::ScanCommentBlock(bool scanComments)
 {
-    std::string spell;
+    std::string spell = "/*";
 
     TakeIt(); // Ignore first '*' from commentary block beginning
 
@@ -225,6 +225,8 @@ TokenPtr Scanner::ScanCommentBlock(bool scanComments)
         else
             TakeIt();
     }
+
+    spell += "*/";
 
     return (scanComments ? Make(Tokens::Comment, spell) : nullptr);
 }

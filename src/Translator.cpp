@@ -61,6 +61,13 @@ HTLIB_EXPORT bool TranslateHLSLtoGLSL(
 
     auto processedInput = preProcessor.Process(std::make_shared<SourceCode>(input));
 
+    if (!processedInput)
+    {
+        if (log)
+            log->Error("preprocessing input code failed");
+        return false;
+    }
+
     /* Parse HLSL input code */
     HLSLParser parser(options, log);
     auto program = parser.ParseSource(std::make_shared<SourceCode>(processedInput));

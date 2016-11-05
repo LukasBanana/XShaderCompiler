@@ -57,16 +57,68 @@ ScannerPtr PreProcessor::MakeScanner()
 
 PreProcessor::DefinedSymbolPtr PreProcessor::MakeSymbol(const std::string& ident)
 {
-    /* Check if identifier is already defined */
-    if (definedSymbols_.find(ident) != definedSymbols_.end())
-        Warning("redefinition of symbol \"" + ident + "\"");
-
     /* Make new symbol */
     auto symbol = std::make_shared<DefinedSymbol>();
     definedSymbols_[ident] = symbol;
-
     return symbol;
 }
+
+bool PreProcessor::IsDefined(const std::string& ident) const
+{
+    return (definedSymbols_.find(ident) != definedSymbols_.end());
+}
+
+bool PreProcessor::CompareTokenStrings(const TokenString& lhs, const TokenString& rhs) const
+{
+    auto IsTokenOfInteres = [](const std::vector<TokenPtr>::const_iterator& it)
+    {
+        auto type = (*it)->Type();
+        return (type != Tokens::Comment && type != Tokens::WhiteSpaces && type != Tokens::NewLines);
+    };
+
+    auto NextStringToken = [&](const TokenString& tokenString, std::vector<TokenPtr>::const_iterator& it)
+    {
+        do
+        {
+            ++it;
+        }
+        while (it != tokenString.end() && !IsTokenOfInteres(it));
+    };
+
+    /* Get first tokens */
+    auto lhsIt = lhs.begin(), rhsIt = rhs.begin();
+
+    if (!IsTokenOfInteres(lhsIt))
+        NextStringToken(lhs, lhsIt);
+    if (!IsTokenOfInteres(rhsIt))
+        NextStringToken(rhs, rhsIt);
+
+    /* Check if all tokens of interest are equal in both strings */
+    for (; (lhsIt != lhs.end() && rhsIt != rhs.end()); NextStringToken(lhs, lhsIt), NextStringToken(rhs, rhsIt))
+    {
+        auto lhsTkn = lhsIt->get();
+        auto rhsTkn = rhsIt->get();
+
+        /* Compare types */
+        if (lhsTkn->Type() != rhsTkn->Type())
+            return false;
+
+        /* Compare values */
+        if (lhsTkn->Spell() != rhsTkn->Spell())
+            return false;
+    }
+
+    /* Check if both strings reached the end */
+    return (lhsIt == lhs.end() && rhsIt == rhs.end());
+}
+
+void PreProcessor::OutputTokenString(const TokenString& tokenString)
+{
+    for (const auto& tkn : tokenString)
+        *output_ << tkn->Spell();
+}
+
+/* === Parse functions === */
 
 void PreProcessor::ParseProgram()
 {
@@ -96,7 +148,7 @@ void PreProcessor::ParseProgram()
 
 void PreProcessor::ParesComment()
 {
-    *output_ << "/* " << Accept(Tokens::Comment)->Spell() << " */";
+    *output_ << Accept(Tokens::Comment)->Spell();
 }
 
 void PreProcessor::ParseIdent()
@@ -114,7 +166,7 @@ void PreProcessor::ParseIdent()
             //TODO...
         }
         else
-            *output_ << symbol.value;
+            OutputTokenString(symbol.tokenString);
     }
     else
         *output_ << ident;
@@ -146,12 +198,18 @@ void PreProcessor::ParseDirective()
         ParseDirectivePragma();
 }
 
-// #define IDENT ( '(' IDENT+ ')' )? (TOKEN-STRING)?
+// '#define' IDENT ( '(' IDENT+ ')' )? (TOKEN-STRING)?
 void PreProcessor::ParseDirectiveDefine()
 {
     /* Parse identifier */
     IgnoreWhiteSpaces(false);
     auto ident = Accept(Tokens::Ident)->Spell();
+
+    /* Check if identifier is already defined */
+    DefinedSymbolPtr previousSymbol;
+    auto previousSymbolIt = definedSymbols_.find(ident);
+    if (previousSymbolIt != definedSymbols_.end())
+        previousSymbol = previousSymbolIt->second;
 
     /* Make new defined symbol */
     auto symbol = MakeSymbol(ident);
@@ -175,28 +233,15 @@ void PreProcessor::ParseDirectiveDefine()
     }
 
     /* Parse optional value */
-    IgnoreWhiteSpaces(false);
+    symbol->tokenString = ParseTokenString();
 
-    while (!Is(Tokens::NewLines))
+    /* Now compare previous and new definition */
+    if (previousSymbol)
     {
-        auto tkn = Tkn();
-        switch (Type())
-        {
-            case Tokens::LineBreak:
-                symbol->value += "\n";
-                AcceptIt();
-                IgnoreWhiteSpaces(false);
-                IgnoreNewLines();
-                break;
-
-            case Tokens::Comment:
-                symbol->value += "/* " + AcceptIt()->Spell() + " */";
-                break;
-
-            default:
-                symbol->value += AcceptIt()->Spell();
-                break;
-        }
+        if (CompareTokenStrings(previousSymbol->tokenString, symbol->tokenString))
+            Warning("redefinition of symbol \"" + ident + "\"");
+        else
+            Error("redefinition of symbol \"" + ident + "\" with mismatch");
     }
 }
 
@@ -241,21 +286,44 @@ void PreProcessor::ParseDirectiveInclude()
     }
 }
 
+// '#if' CONSTANT-EXPRESSION
 void PreProcessor::ParseDirectiveIf()
 {
     //todo...
 }
 
+// '#ifdef' IDENT
 void PreProcessor::ParseDirectiveIfdef()
 {
     //todo...
 }
 
+// '#ifndef' IDENT
 void PreProcessor::ParseDirectiveIfndef()
 {
     //todo...
 }
 
+// '#elif CONSTANT-EXPRESSION'
+void PreProcessor::ParseDirectiveElif()
+{
+    //todo...
+}
+
+// '#else'
+void PreProcessor::ParseDirectiveElse()
+{
+    //todo...
+}
+
+// '#endif'
+void PreProcessor::ParseDirectiveEndif()
+{
+    //todo...
+}
+
+// '#pragma' TOKEN-STRING
+// see https://msdn.microsoft.com/de-de/library/windows/desktop/dd607351(v=vs.85).aspx
 void PreProcessor::ParseDirectivePragma()
 {
     /* Parse pragma command identifier */
@@ -271,6 +339,44 @@ void PreProcessor::ParseDirectivePragma()
     }
     else
         Warning("unknown pragma command: \"" + command + "\"");
+}
+
+// '#line' NUMBER STRING-LITERAL?
+void PreProcessor::ParseDirectiveLine()
+{
+    //todo...
+}
+
+// '#error' TOKEN-STRING
+void PreProcessor::ParseDirectiveError()
+{
+    //todo...
+}
+
+PreProcessor::TokenString PreProcessor::ParseTokenString()
+{
+    TokenString tokenString;
+
+    IgnoreWhiteSpaces(false);
+
+    while (!Is(Tokens::NewLines))
+    {
+        switch (Type())
+        {
+            case Tokens::LineBreak:
+                AcceptIt();
+                IgnoreWhiteSpaces(false);
+                while (Is(Tokens::NewLines))
+                    tokenString.push_back(AcceptIt());
+                break;
+
+            default:
+                tokenString.push_back(AcceptIt());
+                break;
+        }
+    }
+
+    return tokenString;
 }
 
 

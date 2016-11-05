@@ -17,11 +17,8 @@
 #define FOREVER_TEST1 \  
 	for(;;) \  
 	{ \ 
-		int x=0; \
+		int /*TEST_X*/ x=0; \
 	}
-
-// redefinition test
-#define FOREVER_TEST1
 
 cbuffer Settings : register(b0)
 {
@@ -65,7 +62,7 @@ VertexOut VS(VertexIn inp)
 	return outp;
 }
 
-#undef FOREVER_TEST1
+#undef FOREVER
 #undef FOREVER_TEST2
 
 

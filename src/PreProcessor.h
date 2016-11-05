@@ -37,10 +37,12 @@ class PreProcessor : public Parser
         
         /* === Structures === */
 
+        using TokenString = std::vector<TokenPtr>;
+
         struct DefinedSymbol
         {
             std::vector<std::string>    parameters;
-            std::string                 value;
+            TokenString                 tokenString;
         };
 
         using DefinedSymbolPtr = std::shared_ptr<DefinedSymbol>;
@@ -50,6 +52,16 @@ class PreProcessor : public Parser
         ScannerPtr MakeScanner() override;
 
         DefinedSymbolPtr MakeSymbol(const std::string& ident);
+
+        // Returns true if the specified symbol is defined.
+        bool IsDefined(const std::string& ident) const;
+
+        // Compares the two token strings (ignores white-space, new-line, and comment tokens).
+        bool CompareTokenStrings(const TokenString& lhs, const TokenString& rhs) const;
+
+        void OutputTokenString(const TokenString& tokenString);
+
+        /* === Parse functions === */
 
         void ParseProgram();
 
@@ -64,7 +76,14 @@ class PreProcessor : public Parser
         void ParseDirectiveIf();
         void ParseDirectiveIfdef();
         void ParseDirectiveIfndef();
+        void ParseDirectiveElif();
+        void ParseDirectiveElse();
+        void ParseDirectiveEndif();
         void ParseDirectivePragma();
+        void ParseDirectiveLine();
+        void ParseDirectiveError();
+
+        TokenString ParseTokenString();
 
         /* === Members === */
 
