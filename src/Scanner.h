@@ -34,6 +34,8 @@ class Scanner
 
         bool ScanSource(const std::shared_ptr<SourceCode>& source);
 
+        virtual TokenPtr Next() = 0;
+
         SourcePosition Pos() const;
 
         inline SourceCode* Source() const
@@ -43,6 +45,8 @@ class Scanner
 
     protected:
         
+        using Tokens = Token::Types;
+
         /* === Functions === */
 
         TokenPtr NextToken(bool scanComments, bool scanWhiteSpaces);
@@ -58,15 +62,20 @@ class Scanner
 
         // Ignores all characters which comply the specified predicate.
         void Ignore(const std::function<bool(char)>& pred);
-        void IgnoreWhiteSpaces();
+        void IgnoreWhiteSpaces(bool includeNewLines = true);
 
-        TokenPtr ScanWhiteSpaces();
+        TokenPtr ScanWhiteSpaces(bool includeNewLines = true);
         TokenPtr ScanCommentLine(bool scanComments);
         TokenPtr ScanCommentBlock(bool scanComments);
 
         TokenPtr Make(const Token::Types& type, bool takeChr = false);
         TokenPtr Make(const Token::Types& type, std::string& spell, bool takeChr = false);
         TokenPtr Make(const Token::Types& type, std::string& spell, const SourcePosition& pos, bool takeChr = false);
+
+        inline bool IsNewLine() const
+        {
+            return (chr_ == '\n' || chr_ == '\r');
+        }
 
         inline bool Is(char chr) const
         {

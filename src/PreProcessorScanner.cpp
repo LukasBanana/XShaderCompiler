@@ -41,11 +41,12 @@ TokenPtr PreProcessorScanner::ScanToken()
     /* Scan punctuation, special characters and brackets */
     switch (Chr())
     {
-        case ',': return Make(Token::Types::Comma,     true); break;
-        case '(': return Make(Token::Types::LBracket,  true); break;
-        case ')': return Make(Token::Types::RBracket,  true); break;
-        case '*': return Make(Token::Types::BinaryOp,  true); break;
-        case '/': return Make(Token::Types::BinaryOp,  true); break;
+        case  ',': return Make(Token::Types::Comma,     true); break;
+        case  '(': return Make(Token::Types::LBracket,  true); break;
+        case  ')': return Make(Token::Types::RBracket,  true); break;
+        case  '*': return Make(Token::Types::BinaryOp,  true); break;
+        case  '/': return Make(Token::Types::BinaryOp,  true); break;
+        case '\\': return Make(Token::Types::LineBreak, true); break;
     }
 
     /* Return miscellaneous token */
@@ -58,7 +59,7 @@ TokenPtr PreProcessorScanner::ScanDirective()
     Take('#');
 
     /* Ignore white spaces */
-    IgnoreWhiteSpaces();
+    IgnoreWhiteSpaces(false);
 
     /* Scan identifier string */
     std::string spell;
@@ -87,8 +88,8 @@ TokenPtr PreProcessorScanner::ScanMisc()
 {
     /* Scan string as long as no identifier or directive character appears */
     std::string spell;
-
-    while (!std::isalpha(UChr()) && !Is('_') && !Is(',') && !Is('(') && !Is(')') && !Is('#') && !Is('/') && !Is('*') && !Is(0))
+    
+    while (!std::isalpha(UChr()) && !std::isspace(UChr()) && !Is(0) && std::string("_,()#/\\*").find(Chr()) == std::string::npos)
         spell += TakeIt();
 
     /* Return as misc token */

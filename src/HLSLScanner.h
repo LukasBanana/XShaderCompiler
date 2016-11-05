@@ -25,7 +25,7 @@ class HLSLScanner : public Scanner
         HLSLScanner(Log* log = nullptr);
 
         // Scanns the next token.
-        TokenPtr Next(bool scanComments = false);
+        TokenPtr Next() override;
 
     private:
         

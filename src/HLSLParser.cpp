@@ -45,42 +45,9 @@ ProgramPtr HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
  * ======= Private: =======
  */
 
-void HLSLParser::Error(const std::string& msg)
+Scanner& HLSLParser::GetScanner()
 {
-    throw std::runtime_error("syntax error (" + scanner_.Pos().ToString() + ") : " + msg);
-}
-
-void HLSLParser::ErrorUnexpected()
-{
-    Error("unexpected token '" + tkn_->Spell() + "'");
-}
-
-void HLSLParser::ErrorUnexpected(const std::string& hint)
-{
-    Error("unexpected token '" + tkn_->Spell() + "' (" + hint + ")");
-}
-
-TokenPtr HLSLParser::Accept(const Tokens type)
-{
-    if (tkn_->Type() != type)
-        ErrorUnexpected();
-    return AcceptIt();
-}
-
-TokenPtr HLSLParser::Accept(const Tokens type, const std::string& spell)
-{
-    if (tkn_->Type() != type)
-        ErrorUnexpected();
-    if (tkn_->Spell() != spell)
-        Error("unexpected token spelling '" + tkn_->Spell() + "' (expected '" + spell + "')");
-    return AcceptIt();
-}
-
-TokenPtr HLSLParser::AcceptIt()
-{
-    auto prevTkn = tkn_;
-    tkn_ = scanner_.Next(/*options_.keepComments*/);
-    return prevTkn;
+    return scanner_;
 }
 
 void HLSLParser::Semi()

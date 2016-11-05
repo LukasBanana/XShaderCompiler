@@ -24,7 +24,7 @@ class PreProcessorScanner : public Scanner
         
         PreProcessorScanner(Log* log = nullptr);
 
-        TokenPtr Next();
+        TokenPtr Next() override;
 
     private:
         

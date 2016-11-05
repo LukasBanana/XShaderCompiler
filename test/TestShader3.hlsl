@@ -9,7 +9,17 @@
 #include ignore this include directive
 */
 
-#define FOREVER// for(;;)
+#define FOREVER for(;;)
+
+// multi-line macro test
+#define FOREVER_TEST1 \  
+	for(;;) \  
+	{ \ 
+		int x=0; \
+	}
+
+// redefinition test
+#define FOREVER_TEST1
 
 cbuffer Settings : register(b0)
 {
@@ -39,14 +49,18 @@ VertexOut VS(VertexIn inp)
 {
 	VertexOut outp = (VertexOut)0;
 	
-	//FOREVER
-	for(;;)
+	FOREVER_TEST1
+	
+	FOREVER
 	{
 		
 	}
 	
 	return outp;
 }
+
+#undef FOREVER_TEST1
+#undef FOREVER_TEST2
 
 
 

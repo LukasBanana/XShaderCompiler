@@ -11,6 +11,7 @@
 
 #include "HT/Log.h"
 #include "HLSLScanner.h"
+#include "Parser.h"
 #include "Visitor.h"
 #include "Token.h"
 
@@ -24,7 +25,7 @@ namespace HTLib
 
 
 // Syntax parser class.
-class HLSLParser
+class HLSLParser : public Parser
 {
     
     public:
@@ -35,8 +36,6 @@ class HLSLParser
 
     private:
         
-        using Tokens = Token::Types;
-
         /* === Enumerations === */
 
         // Variable declaration modifiers.
@@ -51,13 +50,7 @@ class HLSLParser
 
         /* === Functions === */
 
-        void Error(const std::string& msg);
-        void ErrorUnexpected();
-        void ErrorUnexpected(const std::string& hint);
-
-        TokenPtr Accept(const Tokens type);
-        TokenPtr Accept(const Tokens type, const std::string& spell);
-        TokenPtr AcceptIt();
+        Scanner& GetScanner() override;
 
         // Accepts the semicolon token (Accept(Tokens::Semicolon)).
         void Semi();
@@ -70,30 +63,6 @@ class HLSLParser
 
         // Returns true if the current token is part of a primary expression.
         bool IsPrimaryExpr() const;
-
-        // Makes a new shared pointer of the specified AST node class.
-        template <typename T, typename... Args> std::shared_ptr<T> Make(Args&&... args)
-        {
-            return std::make_shared<T>(scanner_.Pos(), args...);
-        }
-
-        // Returns the type of the next token.
-        inline Tokens Type() const
-        {
-            return tkn_->Type();
-        }
-
-        // Returns true if the next token is from the specified type.
-        inline bool Is(const Tokens type) const
-        {
-            return Type() == type;
-        }
-
-        // Returns true if the next token is from the specified type and has the specified spelling.
-        inline bool Is(const Tokens type, const std::string& spell) const
-        {
-            return Type() == type && tkn_->Spell() == spell;
-        }
 
         /* === Parse functions === */
 
@@ -173,7 +142,6 @@ class HLSLParser
         const Options&  options_;
 
         HLSLScanner     scanner_;
-        TokenPtr        tkn_;
 
         Log*            log_ = nullptr;
 

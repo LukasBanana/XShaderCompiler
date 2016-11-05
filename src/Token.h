@@ -31,7 +31,7 @@ class Token
             __Unknown__,
 
             // Identifiers
-            Ident = 0,          //< (letter | '_') (letter | '_' | digit)*
+            Ident,              //< (letter | '_') (letter | '_' | digit)*
 
             // Literals,
             BoolLiteral,        //< true | false
@@ -109,7 +109,9 @@ class Token
             // Special tokens
             Directive,          //< '#' ... (e.g. "#include").
             Comment,            //< Commentary (only a single text line)
-            WhiteSpaces,        //< White spaces (' ', '\t', '\n', '\r')
+            WhiteSpaces,        //< White spaces (' ', '\t', '\r')
+            NewLines,           //< New-line characters ('\n', "\r\n")
+            LineBreak,          //< Line break for pre-processor directives '\'
             Misc,               //< Miscellaneous
             EndOfStream,
         };

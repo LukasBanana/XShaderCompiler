@@ -12,6 +12,7 @@
 #include "HT/Translator.h"
 #include "HT/Log.h"
 #include "PreProcessorScanner.h"
+#include "Parser.h"
 #include "SourceCode.h"
 #include <iostream>
 #include <map>
@@ -22,7 +23,7 @@ namespace HTLib
 
 
 // Pre-processor to substitute macros and include directives.
-class PreProcessor
+class PreProcessor : public Parser
 {
     
     public:
@@ -33,18 +34,28 @@ class PreProcessor
 
     private:
         
+        /* === Structures === */
+
+        struct DefinedSymbol
+        {
+            std::vector<std::string>    parameters;
+            std::string                 value;
+        };
+
+        using DefinedSymbolPtr = std::shared_ptr<DefinedSymbol>;
+
         /* === Functions === */
 
-        void Error(const std::string& msg);
-        void ErrorUnexpected();
-        void ErrorUnexpected(const std::string& hint);
+        Scanner& GetScanner() override;
 
-        TokenPtr Accept(const Token::Types type);
-        TokenPtr AcceptIt();
+        void Warning(const std::string& msg);
+
+        DefinedSymbolPtr MakeSymbol(const std::string& ident);
 
         void ParseProgram();
 
         void ParesComment();
+        void ParseIdent();
         void ParseMisc();
         
         void ParseDirective();
@@ -56,29 +67,16 @@ class PreProcessor
         void ParseDirectiveIfndef();
         void ParseDirectivePragma();
 
-        // Returns the type of the next token.
-        inline Token::Types Type() const
-        {
-            return tkn_->Type();
-        }
-
-        // Returns true if the next token is from the specified type.
-        inline bool Is(const Token::Types type) const
-        {
-            return (Type() == type);
-        }
-
         /* === Members === */
 
-        IncludeHandler&                     includeHandler_;
-        Log*                                log_                = nullptr;
+        IncludeHandler&                         includeHandler_;
+        Log*                                    log_                = nullptr;
 
-        PreProcessorScanner                 scanner_;
-        TokenPtr                            tkn_;
+        PreProcessorScanner                     scanner_;
 
-        std::shared_ptr<std::stringstream>  output_;
+        std::shared_ptr<std::stringstream>      output_;
 
-        //std::map<std::string, std::string>  definedSymbols_;
+        std::map<std::string, DefinedSymbolPtr> definedSymbols_;
 
 };
 

@@ -57,13 +57,13 @@ TokenPtr Scanner::NextToken(bool scanComments, bool scanWhiteSpaces)
             {
                 /* Scan or ignore white spaces */
                 if (scanWhiteSpaces && std::isspace(UChr()))
-                    return ScanWhiteSpaces();
+                    return ScanWhiteSpaces(false);
                 else
                     IgnoreWhiteSpaces();
 
                 /* Check for end-of-file */
                 if (Is(0))
-                    return Make(Token::Types::EndOfStream);
+                    return Make(Tokens::EndOfStream);
                 
                 /* Scan commentaries */
                 if (Is('/'))
@@ -90,10 +90,10 @@ TokenPtr Scanner::NextToken(bool scanComments, bool scanWhiteSpaces)
                         if (Is('='))
                         {
                             spell += TakeIt();
-                            return Make(Token::Types::AssignOp, spell);
+                            return Make(Tokens::AssignOp, spell);
                         }
 
-                        return Make(Token::Types::BinaryOp, spell);
+                        return Make(Tokens::BinaryOp, spell);
                     }
                 }
                 else
@@ -153,20 +153,31 @@ void Scanner::Ignore(const std::function<bool(char)>& pred)
         TakeIt();
 }
 
-void Scanner::IgnoreWhiteSpaces()
+void Scanner::IgnoreWhiteSpaces(bool includeNewLines)
 {
-    while (std::isspace(UChr()))
+    while ( std::isspace(UChr()) && ( includeNewLines || !IsNewLine() ) )
         TakeIt();
 }
 
-TokenPtr Scanner::ScanWhiteSpaces()
+TokenPtr Scanner::ScanWhiteSpaces(bool includeNewLines)
 {
     std::string spell;
     
-    while (std::isspace(UChr()))
+    if (!includeNewLines)
+    {
+        /* Scan new-line characters */
+        while (IsNewLine())
+            spell += TakeIt();
+
+        if (!spell.empty())
+            return Make(Tokens::NewLines, spell);
+    }
+
+    /* Scan other white spaces */
+    while ( std::isspace(UChr()) && ( includeNewLines || !IsNewLine() ) )
         spell += TakeIt();
 
-    return Make(Token::Types::WhiteSpaces, spell);
+    return Make(Tokens::WhiteSpaces, spell);
 }
 
 TokenPtr Scanner::ScanCommentLine(bool scanComments)
@@ -179,7 +190,7 @@ TokenPtr Scanner::ScanCommentLine(bool scanComments)
         while (chr_ != '\n')
             spell += TakeIt();
 
-        return Make(Token::Types::Comment, spell);
+        return Make(Tokens::Comment, spell);
     }
     else
     {
@@ -215,7 +226,7 @@ TokenPtr Scanner::ScanCommentBlock(bool scanComments)
             TakeIt();
     }
 
-    return (scanComments ? Make(Token::Types::Comment, spell) : nullptr);
+    return (scanComments ? Make(Tokens::Comment, spell) : nullptr);
 }
 
 TokenPtr Scanner::Make(const Token::Types& type, bool takeChr)

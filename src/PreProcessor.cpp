@@ -33,7 +33,9 @@ std::shared_ptr<std::iostream> PreProcessor::Process(const std::shared_ptr<Sourc
     {
         ParseProgram();
 
+        #ifdef _DEBUG
         auto output = output_->str();
+        #endif
 
         return output_;
     }
@@ -51,46 +53,44 @@ std::shared_ptr<std::iostream> PreProcessor::Process(const std::shared_ptr<Sourc
  * ======= Private: =======
  */
 
-void PreProcessor::Error(const std::string& msg)
+Scanner& PreProcessor::GetScanner()
 {
-    throw std::runtime_error("pre-processor error (" + scanner_.Pos().ToString() + ") : " + msg);
+    return scanner_;
 }
 
-void PreProcessor::ErrorUnexpected()
+void PreProcessor::Warning(const std::string& msg)
 {
-    Error("unexpected token '" + tkn_->Spell() + "'");
+    if (log_)
+        log_->Warning("warning (" + GetScanner().Pos().ToString() + ") : " + msg);
 }
 
-void PreProcessor::ErrorUnexpected(const std::string& hint)
+PreProcessor::DefinedSymbolPtr PreProcessor::MakeSymbol(const std::string& ident)
 {
-    Error("unexpected token '" + tkn_->Spell() + "' (" + hint + ")");
-}
+    /* Check if identifier is already defined */
+    if (definedSymbols_.find(ident) != definedSymbols_.end())
+        Warning("redefinition of symbol \"" + ident + "\"");
 
-TokenPtr PreProcessor::Accept(const Token::Types type)
-{
-    if (tkn_->Type() != type)
-        ErrorUnexpected();
-    return AcceptIt();
-}
+    /* Make new symbol */
+    auto symbol = std::make_shared<DefinedSymbol>();
+    definedSymbols_[ident] = symbol;
 
-TokenPtr PreProcessor::AcceptIt()
-{
-    auto prevTkn = tkn_;
-    tkn_ = scanner_.Next();
-    return prevTkn;
+    return symbol;
 }
 
 void PreProcessor::ParseProgram()
 {
-    while (!Is(Token::Types::EndOfStream))
+    while (!Is(Tokens::EndOfStream))
     {
         switch (Type())
         {
-            case Token::Types::Directive:
+            case Tokens::Directive:
                 ParseDirective();
                 break;
-            case Token::Types::Comment:
+            case Tokens::Comment:
                 ParesComment();
+                break;
+            case Tokens::Ident:
+                ParseIdent();
                 break;
             default:
                 ParseMisc();
@@ -101,7 +101,28 @@ void PreProcessor::ParseProgram()
 
 void PreProcessor::ParesComment()
 {
-    *output_ << "/*" << Accept(Token::Types::Comment)->Spell() << "*/";
+    *output_ << "/* " << Accept(Tokens::Comment)->Spell() << " */";
+}
+
+void PreProcessor::ParseIdent()
+{
+    auto ident = Accept(Tokens::Ident)->Spell();
+
+    /* Search for defined symbol */
+    auto it = definedSymbols_.find(ident);
+    if (it != definedSymbols_.end())
+    {
+        auto& symbol = *it->second;
+
+        if (!symbol.parameters.empty())
+        {
+            //TODO...
+        }
+        else
+            *output_ << symbol.value;
+    }
+    else
+        *output_ << ident;
 }
 
 void PreProcessor::ParseMisc()
@@ -112,7 +133,7 @@ void PreProcessor::ParseMisc()
 void PreProcessor::ParseDirective()
 {
     /* Parse pre-processor directive */
-    auto directive = Accept(Token::Types::Directive)->Spell();
+    auto directive = Accept(Tokens::Directive)->Spell();
 
     if (directive == "define")
         ParseDirectiveDefine();
@@ -133,17 +154,69 @@ void PreProcessor::ParseDirective()
 // #define IDENT ( '(' IDENT+ ')' )? (TOKEN-STRING)?
 void PreProcessor::ParseDirectiveDefine()
 {
-    if (Is(Token::Types::WhiteSpaces))
+    /* Parse identifier */
+    IgnoreWhiteSpaces(false);
+    auto ident = Accept(Tokens::Ident)->Spell();
+
+    /* Make new defined symbol */
+    auto symbol = MakeSymbol(ident);
+
+    /* Ignore white spaces and check for end of line */
+    IgnoreWhiteSpaces(false);
+    if (Is(Tokens::NewLines))
+        return;
+
+    /* Parse optional parameters */
+    if (Is(Tokens::LBracket))
+    {
         AcceptIt();
 
-    auto ident = Accept(Token::Types::Ident);
+        while (!Is(Tokens::RBracket))
+        {
+            //todo...
+        }
+        
+        AcceptIt();
+    }
 
-    //todo...
+    /* Parse optional value */
+    IgnoreWhiteSpaces(false);
+
+    while (!Is(Tokens::NewLines))
+    {
+        auto tkn = Tkn();
+        switch (Type())
+        {
+            case Tokens::LineBreak:
+                symbol->value += "\n";
+                AcceptIt();
+                IgnoreWhiteSpaces(false);
+                IgnoreNewLines();
+                break;
+
+            case Tokens::Comment:
+                symbol->value += "/* " + AcceptIt()->Spell() + " */";
+                break;
+
+            default:
+                symbol->value += AcceptIt()->Spell();
+                break;
+        }
+    }
 }
 
 void PreProcessor::ParseDirectiveUndef()
 {
-    //todo...
+    /* Parse identifier */
+    IgnoreWhiteSpaces(false);
+    auto ident = Accept(Tokens::Ident)->Spell();
+
+    /* Remove symbol */
+    auto it = definedSymbols_.find(ident);
+    if (it != definedSymbols_.end())
+        definedSymbols_.erase(it);
+    else
+        Warning("failed to undefine symbol \"" + ident + "\"");
 }
 
 void PreProcessor::ParseDirectiveInclude()

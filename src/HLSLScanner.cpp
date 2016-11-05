@@ -19,9 +19,9 @@ HLSLScanner::HLSLScanner(Log* log) :
 {
 }
 
-TokenPtr HLSLScanner::Next(bool scanComments)
+TokenPtr HLSLScanner::Next()
 {
-    return NextToken(scanComments, false);
+    return NextToken(false, false);
 }
 
 
@@ -51,22 +51,22 @@ TokenPtr HLSLScanner::ScanToken()
         spell += TakeIt();
 
         if (Is('='))
-            return Make(Token::Types::BinaryOp, spell, true);
+            return Make(Tokens::BinaryOp, spell, true);
 
-        return Make(Token::Types::AssignOp, spell);
+        return Make(Tokens::AssignOp, spell);
     }
 
     if (Is('~'))
-        return Make(Token::Types::UnaryOp, spell, true);
+        return Make(Tokens::UnaryOp, spell, true);
 
     if (Is('!'))
     {
         spell += TakeIt();
 
         if (Is('='))
-            return Make(Token::Types::BinaryOp, spell, true);
+            return Make(Tokens::BinaryOp, spell, true);
 
-        return Make(Token::Types::UnaryOp, spell);
+        return Make(Tokens::UnaryOp, spell);
     }
 
     if (Is('%'))
@@ -74,9 +74,9 @@ TokenPtr HLSLScanner::ScanToken()
         spell += TakeIt();
 
         if (Is('='))
-            return Make(Token::Types::AssignOp, spell, true);
+            return Make(Tokens::AssignOp, spell, true);
 
-        return Make(Token::Types::BinaryOp, spell);
+        return Make(Tokens::BinaryOp, spell);
     }
 
     if (Is('*'))
@@ -84,9 +84,9 @@ TokenPtr HLSLScanner::ScanToken()
         spell += TakeIt();
 
         if (Is('='))
-            return Make(Token::Types::AssignOp, spell, true);
+            return Make(Tokens::AssignOp, spell, true);
 
-        return Make(Token::Types::BinaryOp, spell);
+        return Make(Tokens::BinaryOp, spell);
     }
 
     if (Is('^'))
@@ -94,9 +94,9 @@ TokenPtr HLSLScanner::ScanToken()
         spell += TakeIt();
 
         if (Is('='))
-            return Make(Token::Types::AssignOp, spell, true);
+            return Make(Tokens::AssignOp, spell, true);
 
-        return Make(Token::Types::BinaryOp, spell);
+        return Make(Tokens::BinaryOp, spell);
     }
 
     if (Is('+'))
@@ -112,11 +112,11 @@ TokenPtr HLSLScanner::ScanToken()
         spell += TakeIt();
 
         if (Is('='))
-            return Make(Token::Types::AssignOp, spell, true);
+            return Make(Tokens::AssignOp, spell, true);
         if (Is('&'))
-            return Make(Token::Types::BinaryOp, spell, true);
+            return Make(Tokens::BinaryOp, spell, true);
 
-        return Make(Token::Types::BinaryOp, spell);
+        return Make(Tokens::BinaryOp, spell);
     }
 
     if (Is('|'))
@@ -124,27 +124,27 @@ TokenPtr HLSLScanner::ScanToken()
         spell += TakeIt();
 
         if (Is('='))
-            return Make(Token::Types::AssignOp, spell, true);
+            return Make(Tokens::AssignOp, spell, true);
         if (Is('|'))
-            return Make(Token::Types::BinaryOp, spell, true);
+            return Make(Tokens::BinaryOp, spell, true);
 
-        return Make(Token::Types::BinaryOp, spell);
+        return Make(Tokens::BinaryOp, spell);
     }
 
     /* Scan punctuation, special characters and brackets */
     switch (Chr())
     {
-        case ':': return Make(Token::Types::Colon,     true); break;
-        case ';': return Make(Token::Types::Semicolon, true); break;
-        case ',': return Make(Token::Types::Comma,     true); break;
-        case '.': return Make(Token::Types::Dot,       true); break;
-        case '?': return Make(Token::Types::TernaryOp, true); break;
-        case '(': return Make(Token::Types::LBracket,  true); break;
-        case ')': return Make(Token::Types::RBracket,  true); break;
-        case '{': return Make(Token::Types::LCurly,    true); break;
-        case '}': return Make(Token::Types::RCurly,    true); break;
-        case '[': return Make(Token::Types::LParen,    true); break;
-        case ']': return Make(Token::Types::RParen,    true); break;
+        case ':': return Make(Tokens::Colon,     true); break;
+        case ';': return Make(Tokens::Semicolon, true); break;
+        case ',': return Make(Tokens::Comma,     true); break;
+        case '.': return Make(Tokens::Dot,       true); break;
+        case '?': return Make(Tokens::TernaryOp, true); break;
+        case '(': return Make(Tokens::LBracket,  true); break;
+        case ')': return Make(Tokens::RBracket,  true); break;
+        case '{': return Make(Tokens::LCurly,    true); break;
+        case '}': return Make(Tokens::RCurly,    true); break;
+        case '[': return Make(Tokens::LParen,    true); break;
+        case ']': return Make(Tokens::RParen,    true); break;
     }
 
     ErrorUnexpected();
@@ -165,7 +165,7 @@ TokenPtr HLSLScanner::ScanDirective()
         spell += TakeIt();
     }
 
-    return Make(Token::Types::Directive, spell);
+    return Make(Tokens::Directive, spell);
 }
 
 TokenPtr HLSLScanner::ScanIdentifier()
@@ -183,7 +183,7 @@ TokenPtr HLSLScanner::ScanIdentifier()
         return Make(it->second, spell);
 
     /* Return as identifier */
-    return Make(Token::Types::Ident, spell);
+    return Make(Tokens::Ident, spell);
 }
 
 TokenPtr HLSLScanner::ScanAssignShiftRelationOp(const char chr)
@@ -196,15 +196,15 @@ TokenPtr HLSLScanner::ScanAssignShiftRelationOp(const char chr)
         spell += TakeIt();
 
         if (Is('='))
-            return Make(Token::Types::AssignOp, spell, true);
+            return Make(Tokens::AssignOp, spell, true);
 
-        return Make(Token::Types::BinaryOp, spell);
+        return Make(Tokens::BinaryOp, spell);
     }
 
     if (Is('='))
         spell += TakeIt();
 
-    return Make(Token::Types::BinaryOp, spell);
+    return Make(Tokens::BinaryOp, spell);
 }
 
 TokenPtr HLSLScanner::ScanPlusOp()
@@ -213,11 +213,11 @@ TokenPtr HLSLScanner::ScanPlusOp()
     spell += TakeIt();
     
     if (Is('+'))
-        return Make(Token::Types::UnaryOp, spell, true);
+        return Make(Tokens::UnaryOp, spell, true);
     else if (Is('='))
-        return Make(Token::Types::AssignOp, spell, true);
+        return Make(Tokens::AssignOp, spell, true);
 
-    return Make(Token::Types::BinaryOp, spell);
+    return Make(Tokens::BinaryOp, spell);
 }
 
 TokenPtr HLSLScanner::ScanMinusOp()
@@ -226,11 +226,11 @@ TokenPtr HLSLScanner::ScanMinusOp()
     spell += TakeIt();
 
     if (Is('-'))
-        return Make(Token::Types::UnaryOp, spell, true);
+        return Make(Tokens::UnaryOp, spell, true);
     else if (Is('='))
-        return Make(Token::Types::AssignOp, spell, true);
+        return Make(Tokens::AssignOp, spell, true);
 
-    return Make(Token::Types::BinaryOp, spell);
+    return Make(Tokens::BinaryOp, spell);
 }
 
 TokenPtr HLSLScanner::ScanNumber()
@@ -245,7 +245,7 @@ TokenPtr HLSLScanner::ScanNumber()
     spell += startChr;
 
     /* Parse integer or floating-point number */
-    auto type = Token::Types::IntLiteral;
+    auto type = Tokens::IntLiteral;
 
     ScanDecimalLiteral(spell);
 
@@ -258,7 +258,7 @@ TokenPtr HLSLScanner::ScanNumber()
         else
             Error("floating-point literals must have a decimal on both sides of the dot (e.g. '0.0' but not '0.' or '.0')");
 
-        type = Token::Types::FloatLiteral;
+        type = Tokens::FloatLiteral;
     }
 
     if (Is('f') || Is('F'))
