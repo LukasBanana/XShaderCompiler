@@ -9,7 +9,7 @@
 #define HTLIB_HLSL_PARSER_H
 
 
-#include "HT/Logger.h"
+#include "HT/Log.h"
 #include "HLSLScanner.h"
 #include "Visitor.h"
 #include "Token.h"

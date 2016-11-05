@@ -20,6 +20,7 @@ namespace HTLib
 {
 
 
+// Source code stream class.
 class SourceCode
 {
     

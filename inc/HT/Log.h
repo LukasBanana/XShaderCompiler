@@ -5,12 +5,11 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_LOGGER_H
-#define HTLIB_LOGGER_H
+#ifndef HTLIB_LOG_H
+#define HTLIB_LOG_H
 
 
 #include "Export.h"
-
 #include <string>
 
 

@@ -10,7 +10,7 @@
 
 
 #include "HT/Export.h"
-#include "HT/Logger.h"
+#include "HT/Log.h"
 #include "HT/Targets.h"
 #include "HT/Version.h"
 

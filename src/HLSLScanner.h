@@ -10,7 +10,7 @@
 
 
 #include "HT/Translator.h"
-#include "HT/Logger.h"
+#include "HT/Log.h"
 #include "SourceCode.h"
 #include "SourcePosition.h"
 #include "Token.h"
@@ -94,7 +94,7 @@ class HLSLScanner
         std::shared_ptr<SourceCode> source_;
         char                        chr_ = 0;
 
-        Log*                     log_ = nullptr;
+        Log*                        log_ = nullptr;
 
 };
 
