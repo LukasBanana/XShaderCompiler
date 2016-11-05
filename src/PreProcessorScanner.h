@@ -1,12 +1,12 @@
 /*
- * HLSLScanner.h
+ * PreProcessorScanner.h
  * 
  * This file is part of the "HLSL Translator" (Copyright (c) 2014 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_HLSL_SCANNER_H
-#define HTLIB_HLSL_SCANNER_H
+#ifndef HTLIB_PRE_PROCESSOR_SCANNER_H
+#define HTLIB_PRE_PROCESSOR_SCANNER_H
 
 
 #include "Scanner.h"
@@ -16,16 +16,15 @@ namespace HTLib
 {
 
 
-// HLSL token scanner.
-class HLSLScanner : public Scanner
+// Pre-processor token scanner.
+class PreProcessorScanner : public Scanner
 {
     
     public:
         
-        HLSLScanner(Log* log = nullptr);
+        PreProcessorScanner(Log* log = nullptr);
 
-        // Scanns the next token.
-        TokenPtr Next(bool scanComments = false);
+        TokenPtr Next();
 
     private:
         
@@ -35,12 +34,7 @@ class HLSLScanner : public Scanner
 
         TokenPtr ScanDirective();
         TokenPtr ScanIdentifier();
-        TokenPtr ScanAssignShiftRelationOp(const char Chr);
-        TokenPtr ScanPlusOp();
-        TokenPtr ScanMinusOp();
-        TokenPtr ScanNumber();
-
-        void ScanDecimalLiteral(std::string& spell);
+        TokenPtr ScanMisc();
 
 };
 

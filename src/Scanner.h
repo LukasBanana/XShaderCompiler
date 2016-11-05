@@ -34,9 +34,6 @@ class Scanner
 
         bool ScanSource(const std::shared_ptr<SourceCode>& source);
 
-        // Scanns the next token.
-        TokenPtr Next(bool scanComments = false);
-
         SourcePosition Pos() const;
 
         inline SourceCode* Source() const
@@ -48,23 +45,28 @@ class Scanner
         
         /* === Functions === */
 
+        TokenPtr NextToken(bool scanComments, bool scanWhiteSpaces);
+
+        virtual TokenPtr ScanToken() = 0;
+
         char Take(char chr);
         char TakeIt();
 
         void Error(const std::string& msg);
         void ErrorUnexpected();
         void ErrorUnexpected(char expectedChar);
-        void ErrorEOF();
-        void ErrorLetterInNumber();
 
         // Ignores all characters which comply the specified predicate.
-        void Ignore(const std::function<bool (char)>& pred);
+        void Ignore(const std::function<bool(char)>& pred);
+        void IgnoreWhiteSpaces();
+
+        TokenPtr ScanWhiteSpaces();
+        TokenPtr ScanCommentLine(bool scanComments);
+        TokenPtr ScanCommentBlock(bool scanComments);
 
         TokenPtr Make(const Token::Types& type, bool takeChr = false);
         TokenPtr Make(const Token::Types& type, std::string& spell, bool takeChr = false);
         TokenPtr Make(const Token::Types& type, std::string& spell, const SourcePosition& pos, bool takeChr = false);
-
-        virtual TokenPtr ScanToken() = 0;
 
         inline bool Is(char chr) const
         {
@@ -82,13 +84,6 @@ class Scanner
         }
 
     private:
-
-        /* === Functions === */
-
-        void IgnoreWhiteSpaces();
-
-        TokenPtr ScanCommentLine(bool scanComments);
-        TokenPtr ScanCommentBlock(bool scanComments);
 
         /* === Members === */
 

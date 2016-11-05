@@ -11,6 +11,7 @@
 
 #include "HT/Translator.h"
 #include "HT/Log.h"
+#include "PreProcessorScanner.h"
 #include "SourceCode.h"
 #include <iostream>
 #include <map>
@@ -34,12 +35,15 @@ class PreProcessor
         
         /* === Functions === */
 
-        void ProcessLine(std::string& line);
+        
+
 
         /* === Members === */
 
         IncludeHandler&                     includeHandler_;
         Log*                                log_                = nullptr;
+
+        PreProcessorScanner                 scanner_;
 
         std::shared_ptr<std::iostream>      output_;
 

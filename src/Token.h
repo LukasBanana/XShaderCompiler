@@ -109,6 +109,8 @@ class Token
             // Special tokens
             Directive,          //< '#' ... (e.g. "#include").
             Comment,            //< Commentary (only a single text line)
+            WhiteSpaces,        //< White spaces (' ', '\t', '\n', '\r')
+            Misc,               //< Miscellaneous
             EndOfStream,
         };
 

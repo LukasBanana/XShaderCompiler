@@ -175,7 +175,7 @@ class HLSLParser
         HLSLScanner     scanner_;
         TokenPtr        tkn_;
 
-        Log*         log_ = nullptr;
+        Log*            log_ = nullptr;
 
 };
 

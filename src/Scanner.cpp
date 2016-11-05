@@ -34,7 +34,17 @@ bool Scanner::ScanSource(const std::shared_ptr<SourceCode>& source)
     return false;
 }
 
-TokenPtr Scanner::Next(bool scanComments)
+SourcePosition Scanner::Pos() const
+{
+    return (source_ != nullptr ? source_->Pos() : SourcePosition::ignore);
+}
+
+
+/*
+ * ======= Private: =======
+ */
+
+TokenPtr Scanner::NextToken(bool scanComments, bool scanWhiteSpaces)
 {
     while (true)
     {
@@ -45,7 +55,11 @@ TokenPtr Scanner::Next(bool scanComments)
 
             do
             {
-                IgnoreWhiteSpaces();
+                /* Scan or ignore white spaces */
+                if (scanWhiteSpaces && std::isspace(UChr()))
+                    return ScanWhiteSpaces();
+                else
+                    IgnoreWhiteSpaces();
 
                 /* Check for end-of-file */
                 if (Is(0))
@@ -101,16 +115,6 @@ TokenPtr Scanner::Next(bool scanComments)
     return nullptr;
 }
 
-SourcePosition Scanner::Pos() const
-{
-    return (source_ != nullptr ? source_->Pos() : SourcePosition::ignore);
-}
-
-
-/*
- * ======= Private: =======
- */
-
 char Scanner::Take(char chr)
 {
     if (chr_ != chr)
@@ -143,25 +147,26 @@ void Scanner::ErrorUnexpected(char expectedChar)
     Error("unexpected character '" + std::string(1, chr) + "' (expected '" + std::string(1, expectedChar) + "')");
 }
 
-void Scanner::ErrorEOF()
+void Scanner::Ignore(const std::function<bool(char)>& pred)
 {
-    Error("unexpected end-of-file");
-}
-
-void Scanner::ErrorLetterInNumber()
-{
-    Error("letter '" + std::string(1, chr_) + "' is not allowed within a number");
-}
-
-void Scanner::Ignore(const std::function<bool (char)>& pred)
-{
-    while (pred(chr_))
+    while (pred(Chr()))
         TakeIt();
 }
 
 void Scanner::IgnoreWhiteSpaces()
 {
-    Ignore([](char chr) { return std::isspace(static_cast<unsigned char>(chr)) != 0; });
+    while (std::isspace(UChr()))
+        TakeIt();
+}
+
+TokenPtr Scanner::ScanWhiteSpaces()
+{
+    std::string spell;
+    
+    while (std::isspace(UChr()))
+        spell += TakeIt();
+
+    return Make(Token::Types::WhiteSpaces, spell);
 }
 
 TokenPtr Scanner::ScanCommentLine(bool scanComments)

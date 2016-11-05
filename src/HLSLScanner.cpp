@@ -7,7 +7,6 @@
 
 #include "HLSLScanner.h"
 #include "HLSLKeywords.h"
-
 #include <cctype>
 
 
@@ -18,6 +17,11 @@ namespace HTLib
 HLSLScanner::HLSLScanner(Log* log) :
     Scanner{ log }
 {
+}
+
+TokenPtr HLSLScanner::Next(bool scanComments)
+{
+    return NextToken(scanComments, false);
 }
 
 
@@ -261,7 +265,7 @@ TokenPtr HLSLScanner::ScanNumber()
         TakeIt();
 
     if (std::isalpha(UChr()) || Is('.'))
-        ErrorLetterInNumber();
+        Error("letter '" + std::string(1, Chr()) + "' is not allowed within a number");
 
     /* Create number token */
     return Make(type, spell);
