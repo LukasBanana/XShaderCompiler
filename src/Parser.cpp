@@ -18,8 +18,13 @@ Parser::~Parser()
 
 
 /*
- * ======= Private: =======
+ * ======= Protected: =======
  */
+
+Parser::Parser(Log* log) :
+    log_{ log }
+{
+}
 
 void Parser::Error(const std::string& msg)
 {
@@ -34,6 +39,12 @@ void Parser::ErrorUnexpected()
 void Parser::ErrorUnexpected(const std::string& hint)
 {
     Error("unexpected token '" + tkn_->Spell() + "' (" + hint + ")");
+}
+
+void Parser::Warning(const std::string& msg)
+{
+    if (log_)
+        log_->Warning("warning (" + GetScanner().Pos().ToString() + ") : " + msg);
 }
 
 TokenPtr Parser::Accept(const Tokens type)

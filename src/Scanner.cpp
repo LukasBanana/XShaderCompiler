@@ -229,6 +229,20 @@ TokenPtr Scanner::ScanCommentBlock(bool scanComments)
     return (scanComments ? Make(Tokens::Comment, spell) : nullptr);
 }
 
+TokenPtr Scanner::ScanStringLiteral()
+{
+    std::string spell;
+
+    Take('\"');
+    {
+        while (!Is('\"'))
+            spell += TakeIt();
+    }
+    Take('\"');
+
+    return Make(Tokens::StringLiteral, spell);
+}
+
 TokenPtr Scanner::Make(const Token::Types& type, bool takeChr)
 {
     if (takeChr)

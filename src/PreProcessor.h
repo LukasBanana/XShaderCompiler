@@ -48,8 +48,6 @@ class PreProcessor : public Parser
 
         Scanner& GetScanner() override;
 
-        void Warning(const std::string& msg);
-
         DefinedSymbolPtr MakeSymbol(const std::string& ident);
 
         void ParseProgram();
@@ -70,7 +68,6 @@ class PreProcessor : public Parser
         /* === Members === */
 
         IncludeHandler&                         includeHandler_;
-        Log*                                    log_                = nullptr;
 
         PreProcessorScanner                     scanner_;
 

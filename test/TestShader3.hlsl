@@ -1,6 +1,8 @@
 
-// HLSL Translator: Shader Test 1
-// 09/10/2014
+// HLSL Translator: Shader Test 3
+// 05/11/2016
+
+	#	include   "TestHeader1.h"   /*comment*/
 
 
 // VERTEX SHADER
@@ -55,6 +57,8 @@ VertexOut VS(VertexIn inp)
 	{
 		
 	}
+	
+	#include "TestHeader1.h"
 	
 	return outp;
 }

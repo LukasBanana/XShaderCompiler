@@ -38,6 +38,10 @@ TokenPtr PreProcessorScanner::ScanToken()
     if (std::isalpha(UChr()) || Is('_'))
         return ScanIdentifier();
 
+    /* Scan string literal */
+    if (Is('\"'))
+        return ScanStringLiteral();
+
     /* Scan punctuation, special characters and brackets */
     switch (Chr())
     {
@@ -89,7 +93,7 @@ TokenPtr PreProcessorScanner::ScanMisc()
     /* Scan string as long as no identifier or directive character appears */
     std::string spell;
     
-    while (!std::isalpha(UChr()) && !std::isspace(UChr()) && !Is(0) && std::string("_,()#/\\*").find(Chr()) == std::string::npos)
+    while (!std::isalpha(UChr()) && !std::isspace(UChr()) && !Is(0) && std::string("_,()#\"/\\*").find(Chr()) == std::string::npos)
         spell += TakeIt();
 
     /* Return as misc token */

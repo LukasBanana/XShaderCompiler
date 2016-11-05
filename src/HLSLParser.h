@@ -143,8 +143,6 @@ class HLSLParser : public Parser
 
         HLSLScanner     scanner_;
 
-        Log*            log_ = nullptr;
-
 };
 
 

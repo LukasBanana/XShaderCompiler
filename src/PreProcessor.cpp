@@ -14,8 +14,8 @@ namespace HTLib
 
 
 PreProcessor::PreProcessor(IncludeHandler& includeHandler, Log* log) :
+    Parser          { log            },
     includeHandler_ { includeHandler },
-    log_            { log            },
     scanner_        { log            }
 {
 }
@@ -41,8 +41,8 @@ std::shared_ptr<std::iostream> PreProcessor::Process(const std::shared_ptr<Sourc
     }
     catch (const std::exception& err)
     {
-        if (log_)
-            log_->Error(err.what());
+        if (GetLog())
+            GetLog()->Error(err.what());
     }
 
     return nullptr;
@@ -56,12 +56,6 @@ std::shared_ptr<std::iostream> PreProcessor::Process(const std::shared_ptr<Sourc
 Scanner& PreProcessor::GetScanner()
 {
     return scanner_;
-}
-
-void PreProcessor::Warning(const std::string& msg)
-{
-    if (log_)
-        log_->Warning("warning (" + GetScanner().Pos().ToString() + ") : " + msg);
 }
 
 PreProcessor::DefinedSymbolPtr PreProcessor::MakeSymbol(const std::string& ident)
@@ -221,7 +215,12 @@ void PreProcessor::ParseDirectiveUndef()
 
 void PreProcessor::ParseDirectiveInclude()
 {
-    //todo...
+    /* Parse filename string literal */
+    IgnoreWhiteSpaces(false);
+    auto filename = Accept(Tokens::StringLiteral)->Spell();
+    
+
+
 }
 
 void PreProcessor::ParseDirectiveIf()

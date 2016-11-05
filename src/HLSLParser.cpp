@@ -14,9 +14,9 @@ namespace HTLib
 
 
 HLSLParser::HLSLParser(const Options& options, Log* log) :
+    Parser  { log     },
     options_{ options },
-    scanner_{ log     },
-    log_    { log     }
+    scanner_{ log     }
 {
 }
 
@@ -33,8 +33,8 @@ ProgramPtr HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
     }
     catch (const std::exception& err)
     {
-        if (log_)
-            log_->Error(err.what());
+        if (GetLog())
+            GetLog()->Error(err.what());
     }
 
     return nullptr;

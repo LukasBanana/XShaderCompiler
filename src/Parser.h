@@ -37,13 +37,15 @@ class Parser
 
         /* === Functions === */
 
-        Parser() = default;
+        Parser(Log* log);
 
         virtual Scanner& GetScanner() = 0;
 
         void Error(const std::string& msg);
         void ErrorUnexpected();
         void ErrorUnexpected(const std::string& hint);
+
+        void Warning(const std::string& msg);
 
         TokenPtr Accept(const Tokens type);
         TokenPtr Accept(const Tokens type, const std::string& spell);
@@ -52,6 +54,12 @@ class Parser
         // Ignores the next tokens if they are white spaces and optionally new lines.
         void IgnoreWhiteSpaces(bool includeNewLines = true);
         void IgnoreNewLines();
+
+        // Returns the log pointer or null if no log was defined.
+        inline Log* GetLog() const
+        {
+            return log_;
+        }
 
         // Makes a new shared pointer of the specified AST node class.
         template <typename T, typename... Args>
@@ -88,7 +96,8 @@ class Parser
 
     private:
 
-        TokenPtr tkn_;
+        Log*        log_ = nullptr;
+        TokenPtr    tkn_;
 
 };
 

@@ -37,6 +37,7 @@ class Token
             BoolLiteral,        //< true | false
             IntLiteral,         //< digit+
             FloatLiteral,       //< digit+ '.' digit+
+            StringLiteral,      //< '"' ANY+ '"'
 
             // Operators
             AssignOp,           //< =, +=, -=, *=, /=, %=, <<=, >>=, |= , &=, ^=

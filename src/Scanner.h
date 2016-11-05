@@ -67,6 +67,7 @@ class Scanner
         TokenPtr ScanWhiteSpaces(bool includeNewLines = true);
         TokenPtr ScanCommentLine(bool scanComments);
         TokenPtr ScanCommentBlock(bool scanComments);
+        TokenPtr ScanStringLiteral();
 
         TokenPtr Make(const Token::Types& type, bool takeChr = false);
         TokenPtr Make(const Token::Types& type, std::string& spell, bool takeChr = false);
