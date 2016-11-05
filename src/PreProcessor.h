@@ -35,8 +35,38 @@ class PreProcessor
         
         /* === Functions === */
 
-        
+        void Error(const std::string& msg);
+        void ErrorUnexpected();
+        void ErrorUnexpected(const std::string& hint);
 
+        TokenPtr Accept(const Token::Types type);
+        TokenPtr AcceptIt();
+
+        void ParseProgram();
+
+        void ParesComment();
+        void ParseMisc();
+        
+        void ParseDirective();
+        void ParseDirectiveDefine();
+        void ParseDirectiveUndef();
+        void ParseDirectiveInclude();
+        void ParseDirectiveIf();
+        void ParseDirectiveIfdef();
+        void ParseDirectiveIfndef();
+        void ParseDirectivePragma();
+
+        // Returns the type of the next token.
+        inline Token::Types Type() const
+        {
+            return tkn_->Type();
+        }
+
+        // Returns true if the next token is from the specified type.
+        inline bool Is(const Token::Types type) const
+        {
+            return (Type() == type);
+        }
 
         /* === Members === */
 
@@ -44,10 +74,11 @@ class PreProcessor
         Log*                                log_                = nullptr;
 
         PreProcessorScanner                 scanner_;
+        TokenPtr                            tkn_;
 
-        std::shared_ptr<std::iostream>      output_;
+        std::shared_ptr<std::stringstream>  output_;
 
-        std::map<std::string, std::string>  symbols_;
+        //std::map<std::string, std::string>  definedSymbols_;
 
 };
 

@@ -44,6 +44,8 @@ TokenPtr PreProcessorScanner::ScanToken()
         case ',': return Make(Token::Types::Comma,     true); break;
         case '(': return Make(Token::Types::LBracket,  true); break;
         case ')': return Make(Token::Types::RBracket,  true); break;
+        case '*': return Make(Token::Types::BinaryOp,  true); break;
+        case '/': return Make(Token::Types::BinaryOp,  true); break;
     }
 
     /* Return miscellaneous token */
@@ -65,7 +67,7 @@ TokenPtr PreProcessorScanner::ScanDirective()
         spell += TakeIt();
 
     /* Return as identifier */
-    return Make(Token::Types::Ident, spell);
+    return Make(Token::Types::Directive, spell);
 }
 
 TokenPtr PreProcessorScanner::ScanIdentifier()
@@ -83,8 +85,14 @@ TokenPtr PreProcessorScanner::ScanIdentifier()
 
 TokenPtr PreProcessorScanner::ScanMisc()
 {
+    /* Scan string as long as no identifier or directive character appears */
+    std::string spell;
 
-    return nullptr;
+    while (!std::isalpha(UChr()) && !Is('_') && !Is(',') && !Is('(') && !Is(')') && !Is('#') && !Is('/') && !Is('*') && !Is(0))
+        spell += TakeIt();
+
+    /* Return as misc token */
+    return Make(Token::Types::Misc, spell);
 }
 
 

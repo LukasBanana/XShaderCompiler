@@ -5,7 +5,11 @@
 
 // VERTEX SHADER
 
-#define FOREVER for(;;)
+/*
+#include ignore this include directive
+*/
+
+#define FOREVER// for(;;)
 
 cbuffer Settings : register(b0)
 {
@@ -16,8 +20,11 @@ cbuffer Settings : register(b0)
 
 struct VertexIn
 {
-	float3 position	: POSITION;
-	float3 normal	: NORMAL;
+	float3 position	: POSITION;/*
+	Multi-line
+	comment test
+	*/
+	float3 normal /*test*/	: NORMAL;
 	float2 texCoord	: TEXCOORD0;
 };
 
