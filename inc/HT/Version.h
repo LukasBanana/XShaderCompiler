@@ -9,9 +9,14 @@
 #define HTLIB_VERSION_H
 
 
-#define __HT_VERSION_MAJOR__    0
-#define __HT_VERSION_MINOR__    1
-#define __HT_VERSION__          "0.01 Alpha"
+//! HTLib major version number.
+#define HTLIB_VERSION_MAJOR     0
+
+//! HTLib minor version number.
+#define HTLIB_VERSION_MINOR     2
+
+//! HTLib version string in the form "X.YZ", where X is the major version, and YZ is the minor version.
+#define HTLIB_VERSION_STRING    "0.02 Alpha"
 
 
 #endif

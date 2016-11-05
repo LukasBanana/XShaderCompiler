@@ -156,8 +156,8 @@ static void ShowHelp()
 
 static void ShowVersion()
 {
-    std::cout << "HLSL Translator ( Version " << __HT_VERSION__ << " )" << std::endl;
-    std::cout << "Copyright (c) 2014 by Lukas Hermanns" << std::endl;
+    std::cout << "HLSL Translator ( Version " << HTLIB_VERSION_STRING << " )" << std::endl;
+    std::cout << "Copyright (c) 2014-2016 by Lukas Hermanns" << std::endl;
     std::cout << "3-Clause BSD License" << std::endl;
 }
 
