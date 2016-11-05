@@ -35,7 +35,7 @@ class HLSLAnalyzer : private Visitor
         bool DecorateAST(
             Program* program,
             const std::string& entryPoint,
-            const ShaderTargets shaderTarget,
+            const ShaderTarget shaderTarget,
             const InputShaderVersions versionIn,
             const OutputShaderVersions versionOut,
             const Options& options
@@ -143,7 +143,7 @@ class HLSLAnalyzer : private Visitor
 
         /* === Members === */
 
-        Log*                 log_            = nullptr;
+        Log*                    log_            = nullptr;
 
         bool                    hasErrors_      = false;
         bool                    enableWarnings_ = false;
@@ -151,7 +151,7 @@ class HLSLAnalyzer : private Visitor
         FunctionDecl*           mainFunction_   = nullptr;
 
         std::string             entryPoint_;
-        ShaderTargets           shaderTarget_   = ShaderTargets::GLSLVertexShader;
+        ShaderTarget            shaderTarget_   = ShaderTarget::GLSLVertexShader;
         InputShaderVersions     versionIn_      = InputShaderVersions::HLSL5;
         OutputShaderVersions    versionOut_     = OutputShaderVersions::GLSL330;
         std::string             localVarPrefix_;
@@ -162,8 +162,8 @@ class HLSLAnalyzer : private Visitor
         std::stack<FunctionCall*>   callStack_;     //< Function call stack to join arguments with its function call.
         std::vector<Structure*>     structStack_;   //< Structure stack to collect all members with system value semantic (SV_...).
 
-        ASTSymbolTable      symTable_;
-        ReferenceAnalyzer   refAnalyzer_;
+        ASTSymbolTable              symTable_;
+        ReferenceAnalyzer           refAnalyzer_;
 
         bool isInsideFunc_          = false; //< True if AST traversal is currently inside any function.
         bool isInsideEntryPoint_    = false; //< True if AST traversal is currently inside the main entry point (or its sub nodes).

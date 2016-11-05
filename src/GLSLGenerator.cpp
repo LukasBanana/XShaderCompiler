@@ -49,23 +49,23 @@ static std::string TimePoint()
     return timePoint;
 }
 
-static std::string TargetToString(const ShaderTargets shaderTarget)
+static std::string TargetToString(const ShaderTarget shaderTarget)
 {
     switch (shaderTarget)
     {
-        case ShaderTargets::CommonShader:
+        case ShaderTarget::CommonShader:
             return "Shader";
-        case ShaderTargets::GLSLVertexShader:
+        case ShaderTarget::GLSLVertexShader:
             return "Vertex Shader";
-        case ShaderTargets::GLSLFragmentShader:
+        case ShaderTarget::GLSLFragmentShader:
             return "Fragment Shader";
-        case ShaderTargets::GLSLGeometryShader:
+        case ShaderTarget::GLSLGeometryShader:
             return "Geometry Shader";
-        case ShaderTargets::GLSLTessControlShader:
+        case ShaderTarget::GLSLTessControlShader:
             return "Tessellation Control Shader";
-        case ShaderTargets::GLSLTessEvaluationShader:
+        case ShaderTarget::GLSLTessEvaluationShader:
             return "Tessellation Evaluation Shader";
-        case ShaderTargets::GLSLComputeShader:
+        case ShaderTarget::GLSLComputeShader:
             return "Compute Shader";
     }
     return "";
@@ -95,7 +95,7 @@ bool GLSLGenerator::GenerateCode(
     Program* program,
     std::ostream& output,
     const std::string& entryPoint,
-    const ShaderTargets shaderTarget,
+    const ShaderTarget shaderTarget,
     const InputShaderVersions versionIn,
     const OutputShaderVersions versionOut)
 {
@@ -123,7 +123,7 @@ bool GLSLGenerator::GenerateCode(
         Comment(TimePoint());
         Blank();
 
-        if (shaderTarget_ != ShaderTargets::CommonShader)
+        if (shaderTarget_ != ShaderTarget::CommonShader)
         {
             Version(static_cast<int>(versionOut_));
             Blank();
@@ -536,9 +536,9 @@ std::string GLSLGenerator::URegister(const std::string& registerName)
 bool GLSLGenerator::MustResolveStruct(Structure* ast) const
 {
     return
-        ( shaderTarget_ == ShaderTargets::GLSLVertexShader && ast->flags(Structure::isShaderInput) ) ||
-        ( shaderTarget_ == ShaderTargets::GLSLFragmentShader && ast->flags(Structure::isShaderOutput) ) ||
-        ( shaderTarget_ == ShaderTargets::GLSLComputeShader && ( ast->flags(Structure::isShaderInput) || ast->flags(Structure::isShaderOutput) ) );
+        ( shaderTarget_ == ShaderTarget::GLSLVertexShader && ast->flags(Structure::isShaderInput) ) ||
+        ( shaderTarget_ == ShaderTarget::GLSLFragmentShader && ast->flags(Structure::isShaderOutput) ) ||
+        ( shaderTarget_ == ShaderTarget::GLSLComputeShader && ( ast->flags(Structure::isShaderInput) || ast->flags(Structure::isShaderOutput) ) );
 }
 
 bool GLSLGenerator::IsVersionOut(int version) const
@@ -559,7 +559,7 @@ IMPLEMENT_VISIT_PROC(Program)
     AppendRequiredExtensions(ast);
 
     /* Write 'gl_FragCoord' layout */
-    if (shaderTarget_ == ShaderTargets::GLSLFragmentShader)
+    if (shaderTarget_ == ShaderTarget::GLSLFragmentShader)
     {
         BeginLn();
         {
@@ -582,7 +582,7 @@ IMPLEMENT_VISIT_PROC(Program)
     if (ast->flags(Program::sinCosIntrinsicUsed))
         AppendSinCosIntrinsics();
 
-    if (shaderTarget_ == ShaderTargets::GLSLFragmentShader)
+    if (shaderTarget_ == ShaderTarget::GLSLFragmentShader)
         WriteFragmentShaderOutput();
 
     for (auto& globDecl : ast->globalDecls)
@@ -805,7 +805,7 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    if (!ast->flags(FunctionDecl::isReferenced) && shaderTarget_ != ShaderTargets::CommonShader)
+    if (!ast->flags(FunctionDecl::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
         return; // function not used
 
     Line(ast);
@@ -892,7 +892,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
-    if (!ast->flags(UniformBufferDecl::isReferenced) && shaderTarget_ != ShaderTargets::CommonShader)
+    if (!ast->flags(UniformBufferDecl::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
         return; // uniform buffer not used
 
     /* Write uniform buffer header */
@@ -922,7 +922,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 
 IMPLEMENT_VISIT_PROC(TextureDecl)
 {
-    if (!ast->flags(TextureDecl::isReferenced) && shaderTarget_ != ShaderTargets::CommonShader)
+    if (!ast->flags(TextureDecl::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
         return; // texture not used
 
     /* Determine GLSL sampler type */
@@ -935,7 +935,7 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
     /* Write texture samplers */
     for (auto& name : ast->names)
     {
-        if (name->flags(BufferDeclIdent::isReferenced) || shaderTarget_ == ShaderTargets::CommonShader)
+        if (name->flags(BufferDeclIdent::isReferenced) || shaderTarget_ == ShaderTarget::CommonShader)
         {
             BeginLn();
             {
@@ -952,7 +952,7 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    if (!ast->structure->flags(Structure::isReferenced) && shaderTarget_ != ShaderTargets::CommonShader)
+    if (!ast->structure->flags(Structure::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
         return; // structure not used
 
     Line(ast);
@@ -1785,21 +1785,21 @@ GLSLGenerator::SemanticStage::SemanticStage(
 {
 }
 
-const std::string& GLSLGenerator::SemanticStage::operator [] (const ShaderTargets target) const
+const std::string& GLSLGenerator::SemanticStage::operator [] (const ShaderTarget target) const
 {
     switch (target)
     {
-        case ShaderTargets::GLSLVertexShader:
+        case ShaderTarget::GLSLVertexShader:
             return vertex;
-        case ShaderTargets::GLSLGeometryShader:
+        case ShaderTarget::GLSLGeometryShader:
             return geometry;
-        case ShaderTargets::GLSLTessControlShader:
+        case ShaderTarget::GLSLTessControlShader:
             return tessControl;
-        case ShaderTargets::GLSLTessEvaluationShader:
+        case ShaderTarget::GLSLTessEvaluationShader:
             return tessEvaluation;
-        case ShaderTargets::GLSLFragmentShader:
+        case ShaderTarget::GLSLFragmentShader:
             return fragment;
-        case ShaderTargets::GLSLComputeShader:
+        case ShaderTarget::GLSLComputeShader:
             return compute;
     }
     throw std::out_of_range("'target' parameter out of range in " __FUNCTION__);

@@ -14,7 +14,7 @@ namespace HTLib
 
 
 //! Shader target enumeration.
-enum class ShaderTargets
+enum class ShaderTarget
 {
     /* --- Special types --- */
     CommonShader = 0,           //< Common shader (used as include file).

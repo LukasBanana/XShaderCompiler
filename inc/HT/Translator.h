@@ -70,7 +70,7 @@ struct ShaderInput
     std::string                     entryPoint;
     
     //! Specifies the target shader (Vertex, Fragment etc.).
-    ShaderTargets                   shaderTarget;
+    ShaderTarget                    shaderTarget;
 
     /**
     \brief Optional pointer to the implementation of the "IncludeHandler" interface. By default null.

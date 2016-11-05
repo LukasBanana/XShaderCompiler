@@ -161,25 +161,25 @@ static void ShowVersion()
     std::cout << "3-Clause BSD License" << std::endl;
 }
 
-static ShaderTargets TargetFromString(const std::string& target)
+static ShaderTarget TargetFromString(const std::string& target)
 {
     if (target.empty())
-        return ShaderTargets::CommonShader;
+        return ShaderTarget::CommonShader;
     if (target == "vertex")
-        return ShaderTargets::GLSLVertexShader;
+        return ShaderTarget::GLSLVertexShader;
     if (target == "fragment")
-        return ShaderTargets::GLSLFragmentShader;
+        return ShaderTarget::GLSLFragmentShader;
     if (target == "geometry")
-        return ShaderTargets::GLSLGeometryShader;
+        return ShaderTarget::GLSLGeometryShader;
     if (target == "tess-control")
-        return ShaderTargets::GLSLTessControlShader;
+        return ShaderTarget::GLSLTessControlShader;
     if (target == "tess-evaluation")
-        return ShaderTargets::GLSLTessEvaluationShader;
+        return ShaderTarget::GLSLTessEvaluationShader;
     if (target == "compute")
-        return ShaderTargets::GLSLComputeShader;
+        return ShaderTarget::GLSLComputeShader;
 
     throw std::runtime_error("invalid shader target \"" + target + "\"");
-    return ShaderTargets::GLSLVertexShader;
+    return ShaderTarget::GLSLVertexShader;
 }
 
 static InputShaderVersions InputVersionFromString(const std::string& version)

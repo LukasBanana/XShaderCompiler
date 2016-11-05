@@ -45,17 +45,7 @@ std::unique_ptr<std::istream> StdIncludeHandler::Include(const std::string& file
  */
 
 HTLIB_EXPORT bool TranslateHLSLtoGLSL(
-    const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log
-
-    /*const std::shared_ptr<std::istream>&    input,
-    std::ostream&                           output,
-    const std::string&                      entryPoint,
-    const ShaderTargets                     shaderTarget,
-    const InputShaderVersions               inputShaderVersion,
-    const OutputShaderVersions              outputShaderVersion,
-    IncludeHandler*                         includeHandler,
-    const Options&                          options,
-    Log*                                    log*/)
+    const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log)
 {
     /* Validate arguments */
     if (!inputDesc.sourceCode)

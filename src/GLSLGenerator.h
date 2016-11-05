@@ -34,7 +34,7 @@ class GLSLGenerator : private Visitor
             Program* program,
             std::ostream& output,
             const std::string& entryPoint,
-            const ShaderTargets shaderTarget,
+            const ShaderTarget shaderTarget,
             const InputShaderVersions versionIn,
             const OutputShaderVersions versionOut
         );
@@ -57,7 +57,7 @@ class GLSLGenerator : private Visitor
             );
 
             // \throws std::out_of_range If 'target' is out of range.
-            const std::string& operator [] (const ShaderTargets target) const;
+            const std::string& operator [] (const ShaderTarget target) const;
 
             std::string vertex;
             std::string geometry;
@@ -216,7 +216,7 @@ class GLSLGenerator : private Visitor
         Program*                program_                = nullptr;
 
         std::string             entryPoint_;
-        ShaderTargets           shaderTarget_           = ShaderTargets::GLSLVertexShader;
+        ShaderTarget            shaderTarget_           = ShaderTarget::GLSLVertexShader;
         InputShaderVersions     versionIn_              = InputShaderVersions::HLSL5;
         OutputShaderVersions    versionOut_             = OutputShaderVersions::GLSL330;
         std::string             localVarPrefix_;
