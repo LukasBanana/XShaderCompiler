@@ -24,8 +24,11 @@ Status
 
 ##### Limitations: #####
 
-There is currently no pre-processor. Pre-processor directives (beginning with '#') will be translated
-as something like a dummy statement. Example:
+**UPDATE**:
+*The limitations described in this section are about to be solved.
+The development of an sophisticated pre-processor for the HLSL translator is in progress.*
+
+Pre-processor directives (beginning with '#') will be translated as something like a dummy statement. Example:
 ```
 #if 1
 float4 Function(inout float4 x);
@@ -56,7 +59,7 @@ Offline Translator
 The following command line translates the "Example.hlsl" shader file:
 
 ```
-HLSLOfflineTranslator -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl
+HTLibCmd -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl
 ```
 
 The result are two GLSL shader files: "Example.vertex.glsl" and "Example.fragment.glsl".
@@ -66,22 +69,12 @@ Library Usage
 
 ```cpp
 #include <HT/Translator.h>
-#include <fstream>
+#include <iostream>
 
 /* ... */
 
-// Implements the include handler interface
-class ShaderIncludeHandler : public HTLib::IncludeHandler
-{
-	public:
-		std::shared_ptr<std::istream> Include(std::string& includeName) override
-		{
-			return std::make_shared<std::ifstream>(includeName);
-		}
-};
-
 // Implements the output log interface
-class Log : public HTLib::Logger
+class StdLog : public HTLib::Log
 {
 	public:
 		void Info(const std::string& message) override
@@ -116,7 +109,7 @@ std::ofstream outputStream("Example.vertex.glsl");
 
 ShaderIncludeHandler includeHandler;
 HTLib::Options options;
-Log log;
+StdLog log;
 
 // Translate HLSL code into GLSL
 bool result = HTLib::TranslateHLSLtoGLSL(
@@ -126,7 +119,7 @@ bool result = HTLib::TranslateHLSLtoGLSL(
 	HTLib::ShaderTargets::GLSLVertexShader,	// Target shader
 	HTLib::InputShaderVersions::HLSL5,		// Input shader version: HLSL Shader Model 5
 	HTLib::OutputShaderVersions::GLSL330,	// Output shader version: GLSL 3.30
-	&includeHandler,						// Optional include handler
+	nullptr,							// Use default include handler
 	options,								// Optional translation options
 	&log									// Optional output log
 );
