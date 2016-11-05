@@ -30,6 +30,7 @@ class SourcePosition
 
         // Increases the row by 1 and sets the column to 0.
         void IncRow();
+
         // Increases the column by 1.
         void IncColumn();
 
@@ -55,7 +56,8 @@ class SourcePosition
 
     private:
         
-        unsigned int row_ = 0, column_ = 0;
+        unsigned int    row_    = 0,
+                        column_ = 0;
 
 };
 

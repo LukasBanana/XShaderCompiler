@@ -10,7 +10,7 @@ struct ParamStruct
 	int param;
 };
 
-cbuf fer VertexParam : register(b0)
+cbuffer VertexParam : register(b0)
 {
 	float4x4 wvpMatrix;
 	nointerpolation float3 normal[3][2]	: NORMAL, test3;

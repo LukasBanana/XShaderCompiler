@@ -38,7 +38,7 @@ class ReferenceAnalyzer : private Visitor
 
     private:
         
-        using OnOverrideProc = SymbolTable<AST>::OnOverrideProc;
+        using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
 
         /* === Visitor implementation === */
 

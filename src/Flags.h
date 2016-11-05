@@ -34,7 +34,7 @@ class Flags
 
         inline bool operator () (unsigned int flag) const
         {
-            return (bitMask_ & flag) != 0;
+            return ((bitMask_ & flag) != 0);
         }
 
         inline operator unsigned int () const
