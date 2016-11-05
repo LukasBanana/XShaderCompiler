@@ -81,9 +81,8 @@ static inline std::vector<std::string> StringList(const std::initializer_list<st
  * GLSLGenerator class
  */
 
-GLSLGenerator::GLSLGenerator(Log* log, IncludeHandler* includeHandler, const Options& options) :
+GLSLGenerator::GLSLGenerator(Log* log, const Options& options) :
     writer_         { options.indent    },
-    includeHandler_ { includeHandler    },
     log_            { log               },
     localVarPrefix_ { options.prefix    },
     allowBlanks_    { options.blanks    },

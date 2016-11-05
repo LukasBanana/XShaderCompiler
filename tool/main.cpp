@@ -92,18 +92,6 @@ class OutputLog : public Log
 
 };
 
-class IncludeStreamHandler : public IncludeHandler
-{
-    
-    public:
-        
-        std::shared_ptr<std::istream> Include(std::string& includeName) override
-        {
-            return std::make_shared<std::ifstream>(includeName);
-        }
-
-};
-
 
 /* --- Globals --- */
 
@@ -280,7 +268,6 @@ static void Translate(const std::string& filename)
     std::ofstream outputStream(output);
 
     OutputLog log;
-    IncludeStreamHandler includeHandler;
 
     try
     {
@@ -291,7 +278,7 @@ static void Translate(const std::string& filename)
             TargetFromString(target),
             InputVersionFromString(shaderIn),
             OutputVersionFromString(shaderOut),
-            &includeHandler,
+            nullptr,
             options,
             &log
         );

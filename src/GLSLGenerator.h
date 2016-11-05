@@ -28,11 +28,7 @@ class GLSLGenerator : private Visitor
     
     public:
         
-        GLSLGenerator(
-            Log* log = nullptr,
-            IncludeHandler* includeHandler = nullptr,
-            const Options& options = {}
-        );
+        GLSLGenerator(Log* log = nullptr, const Options& options = {});
 
         bool GenerateCode(
             Program* program,
@@ -215,8 +211,7 @@ class GLSLGenerator : private Visitor
         /* === Members === */
 
         CodeWriter              writer_;
-        IncludeHandler*         includeHandler_         = nullptr;
-        Log*                 log_                    = nullptr;
+        Log*                    log_                    = nullptr;
 
         Program*                program_                = nullptr;
 

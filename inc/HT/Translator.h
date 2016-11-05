@@ -66,23 +66,11 @@ class HTLIB_EXPORT IncludeHandler
         }
 
         /**
-        Inlcudes the specified file and/or modifies the filename.
-        \param[in,out] includeName Specifies the include filename. This name can be modified.
-        If the return value is not null, a modification has no effect.
-        \return Shared pointer to the new input stream. This may also be null.
-        In this case the '#include' directive will be modified with the output value of "includeName".
-        \remarks A modification of "includeName" can be used to modify the following include directive:
-        \code
-        // HLSL Code:
-        #include "CoreShader.hlsl"
-        \endcode
-        ... and transform it to:
-        \code
-        // GLSL Code:
-        #include "CoreShader.glsl"
-        \endcode
+        \brief Returns an input stream for the specified filename.
+        \param[in] includeName Specifies the include filename.
+        \return Unique pointer to the new input stream.
         */
-        virtual std::shared_ptr<std::istream> Include(std::string& includeName) = 0;
+        virtual std::unique_ptr<std::istream> Include(const std::string& filename) = 0;
 
 };
 
