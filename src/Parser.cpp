@@ -26,7 +26,7 @@ Parser::Parser(Log* log) :
 {
 }
 
-void Parser::PushScannerSource(const std::shared_ptr<SourceCode>& source)
+void Parser::PushScannerSource(const std::shared_ptr<SourceCode>& source, const std::string& filename)
 {
     /* Add current token to previous scanner */
     if (!scannerStack_.empty())
@@ -37,7 +37,7 @@ void Parser::PushScannerSource(const std::shared_ptr<SourceCode>& source)
     if (!scanner)
         throw std::runtime_error("failed to create token scanner");
 
-    scannerStack_.push({ scanner, nullptr });
+    scannerStack_.push({ scanner, filename, nullptr });
 
     /* Start scanning */
     if (!scanner->ScanSource(source))
@@ -46,19 +46,26 @@ void Parser::PushScannerSource(const std::shared_ptr<SourceCode>& source)
     AcceptIt();
 }
 
-void Parser::PopScannerSource()
+bool Parser::PopScannerSource()
 {
     /* Get previous scanner */
     if (scannerStack_.empty())
-        throw std::runtime_error("failed to pop previous token scanner from stack");
+        return false;
 
-    auto entry = scannerStack_.top();
+    scannerStack_.pop();
+
+    if (scannerStack_.empty())
+        return false;
 
     /* Reset previous 'next token' */
-    tkn_ = entry.nextToken;
+    tkn_ = scannerStack_.top().nextToken;
 
-    /* Pop entry from stack */
-    scannerStack_.pop();
+    return (tkn_ != nullptr);
+}
+
+std::string Parser::GetCurrentFilename() const
+{
+    return (!scannerStack_.empty() ? scannerStack_.top().filename : "");
 }
 
 void Parser::Error(const std::string& msg)
@@ -105,9 +112,9 @@ TokenPtr Parser::AcceptIt()
     return prevTkn;
 }
 
-void Parser::IgnoreWhiteSpaces(bool includeNewLines)
+void Parser::IgnoreWhiteSpaces(bool includeNewLines)//, bool includeComments)
 {
-    while ( Is(Tokens::WhiteSpaces) || ( includeNewLines && Is(Tokens::NewLines) ) )
+    while ( Is(Tokens::WhiteSpaces) || ( includeNewLines && Is(Tokens::NewLines) ) /*|| ( includeComments && Is(Tokens::Comment) )*/ )
         AcceptIt();
 }
 

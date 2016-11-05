@@ -42,8 +42,11 @@ class Parser
 
         virtual ScannerPtr MakeScanner() = 0;
 
-        void PushScannerSource(const std::shared_ptr<SourceCode>& source);
-        void PopScannerSource();
+        void PushScannerSource(const std::shared_ptr<SourceCode>& source, const std::string& filename = "");
+        bool PopScannerSource();
+
+        // Returns the filename for the current scanner source.
+        std::string GetCurrentFilename() const;
 
         void Error(const std::string& msg);
         void ErrorUnexpected();
@@ -56,7 +59,7 @@ class Parser
         TokenPtr AcceptIt();
 
         // Ignores the next tokens if they are white spaces and optionally new lines.
-        void IgnoreWhiteSpaces(bool includeNewLines = true);
+        void IgnoreWhiteSpaces(bool includeNewLines = true);//, bool includeComments = true);
         void IgnoreNewLines();
 
         // Returns the log pointer or null if no log was defined.
@@ -103,6 +106,7 @@ class Parser
         struct ScannerStackEntry
         {
             ScannerPtr  scanner;
+            std::string filename;
             TokenPtr    nextToken;
         };
 

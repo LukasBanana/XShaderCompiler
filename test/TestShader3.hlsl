@@ -51,6 +51,8 @@ VertexOut VS(VertexIn inp)
 {
 	VertexOut outp = (VertexOut)0;
 	
+	float pi2 = M_PI*2;
+	
 	FOREVER_TEST1
 	
 	FOREVER

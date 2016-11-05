@@ -70,24 +70,28 @@ PreProcessor::DefinedSymbolPtr PreProcessor::MakeSymbol(const std::string& ident
 
 void PreProcessor::ParseProgram()
 {
-    while (!Is(Tokens::EndOfStream))
+    do
     {
-        switch (Type())
+        while (!Is(Tokens::EndOfStream))
         {
-            case Tokens::Directive:
-                ParseDirective();
-                break;
-            case Tokens::Comment:
-                ParesComment();
-                break;
-            case Tokens::Ident:
-                ParseIdent();
-                break;
-            default:
-                ParseMisc();
-                break;
+            switch (Type())
+            {
+                case Tokens::Directive:
+                    ParseDirective();
+                    break;
+                case Tokens::Comment:
+                    ParesComment();
+                    break;
+                case Tokens::Ident:
+                    ParseIdent();
+                    break;
+                default:
+                    ParseMisc();
+                    break;
+            }
         }
     }
+    while (PopScannerSource());
 }
 
 void PreProcessor::ParesComment()
@@ -216,8 +220,25 @@ void PreProcessor::ParseDirectiveInclude()
     IgnoreWhiteSpaces(false);
     auto filename = Accept(Tokens::StringLiteral)->Spell();
     
+    /* Check if filename has already been marked as 'once included' */
+    if (onceIncluded_.find(filename) == onceIncluded_.end())
+    {
+        /* Open source code */
+        std::unique_ptr<std::istream> includeStream;
 
+        try
+        {
+            includeStream = includeHandler_.Include(filename);
+        }
+        catch (const std::exception& e)
+        {
+            Error(e.what());
+        }
 
+        /* Push scanner soruce for include file */
+        auto sourceCode = std::make_shared<SourceCode>(std::move(includeStream));
+        PushScannerSource(sourceCode, filename);
+    }
 }
 
 void PreProcessor::ParseDirectiveIf()
@@ -237,7 +258,19 @@ void PreProcessor::ParseDirectiveIfndef()
 
 void PreProcessor::ParseDirectivePragma()
 {
-    //todo...
+    /* Parse pragma command identifier */
+    IgnoreWhiteSpaces(false);
+    auto command = Accept(Tokens::Ident)->Spell();
+
+    if (command == "once")
+    {
+        /* Mark current filename as 'once included' (but not for the main file) */
+        auto filename = GetCurrentFilename();
+        if (!filename.empty())
+            onceIncluded_.insert(std::move(filename));
+    }
+    else
+        Warning("unknown pragma command: \"" + command + "\"");
 }
 
 

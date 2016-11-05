@@ -16,6 +16,7 @@
 #include "SourceCode.h"
 #include <iostream>
 #include <map>
+#include <set>
 
 
 namespace HTLib
@@ -74,6 +75,8 @@ class PreProcessor : public Parser
         std::shared_ptr<std::stringstream>      output_;
 
         std::map<std::string, DefinedSymbolPtr> definedSymbols_;
+
+        std::set<std::string>                   onceIncluded_;
 
 };
 

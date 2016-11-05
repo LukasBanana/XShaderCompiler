@@ -62,7 +62,7 @@ TokenPtr PreProcessorScanner::ScanDirective()
     /* Take directive begin '#' */
     Take('#');
 
-    /* Ignore white spaces */
+    /* Ignore white spaces (but not new-lines) */
     IgnoreWhiteSpaces(false);
 
     /* Scan identifier string */
