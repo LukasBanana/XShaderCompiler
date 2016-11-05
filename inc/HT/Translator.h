@@ -56,7 +56,7 @@ struct Options
 };
 
 //! Interface for handling new include streams.
-class _HT_EXPORT_ IncludeHandler
+class HTLIB_EXPORT IncludeHandler
 {
     
     public:
@@ -109,7 +109,7 @@ Therefore wrong HLSL code may be translated into wrong GLSL code!
 \see Options
 \see Logger
 */
-_HT_EXPORT_ bool TranslateHLSLtoGLSL(
+HTLIB_EXPORT bool TranslateHLSLtoGLSL(
     const std::shared_ptr<std::istream>&    input,
     std::ostream&                           output,
     const std::string&                      entryPoint,

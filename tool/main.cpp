@@ -132,7 +132,7 @@ static void ShowHelp()
     PrintLines(
         {
             "Usage:",
-            "  HLSLOfflineTranslator (Options FILE)+",
+            "  HTLibCmd (Options FILE)+",
             "Options:",
             "  -entry ENTRY ........... HLSL shader entry point",
             "  -target TARGET ......... Shader target; valid values:",
@@ -153,7 +153,7 @@ static void ShowHelp()
             "  --help, help, -h ....... Prints this help reference",
             "  --version, -v .......... Prints the version information",
             "Example:",
-            "  HLSLOfflineTranslator -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl",
+            "  HTLibCmd -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl",
             "   --> Example.vertex.glsl; Example.fragment.glsl ",
         }
     );

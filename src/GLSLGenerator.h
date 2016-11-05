@@ -107,7 +107,7 @@ class GLSLGenerator : private Visitor
         void AppendRequiredExtensions(Program* ast);
         
         void AppendCommonMacros();
-        void AppendInterlockedMacros();
+        //void AppendInterlockedMacros();
 
         //void AppendMulIntrinsics();
         void AppendRcpIntrinsics();

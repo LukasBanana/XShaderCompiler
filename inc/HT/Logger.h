@@ -19,7 +19,7 @@ namespace HTLib
 
 
 //! Logger interface.
-class _HT_EXPORT_ Logger
+class HTLIB_EXPORT Logger
 {
     
     public:

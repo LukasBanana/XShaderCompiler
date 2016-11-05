@@ -16,7 +16,7 @@ namespace HTLib
 {
 
 
-_HT_EXPORT_ bool TranslateHLSLtoGLSL(
+HTLIB_EXPORT bool TranslateHLSLtoGLSL(
     const std::shared_ptr<std::istream>&    input,
     std::ostream&                           output,
     const std::string&                      entryPoint,

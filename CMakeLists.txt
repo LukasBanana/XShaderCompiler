@@ -12,9 +12,19 @@ set(EXECUTABLE_OUTPUT_PATH ${dir} CACHE PATH "Build directory" FORCE)
 set(LIBRARY_OUTPUT_PATH ${dir} CACHE PATH "Build directory" FORCE)
 
 
+# === Options ===
+
+option(HTLib_SHARED_LIB "Build HTLib as a shared library instead of a static library" OFF)
+option(HTLib_BUILD_CMD_TOOL "Build HTLib command line tool 'HTLibCmd'" ON)
+
+
 # === Preprocessor definitions ===
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+
+if(HTLib_SHARED_LIB)
+	add_definitions(-DHTLIB_SHARED_LIB)
+endif()
 
 
 # === Global files ===
@@ -45,12 +55,16 @@ include_directories("${PROJECT_SOURCE_DIR}/src")
 
 # === Executable ===
 
-add_library(HLSLTranslator STATIC ${FilesAll})
-add_executable(HLSLOfflineTranslator ${FilesTool})
+if(HTLib_SHARED_LIB)
+	add_library(HTLib SHARED ${FilesAll})
+else()
+	add_library(HTLib STATIC ${FilesAll})
+endif()
+set_target_properties(HTLib PROPERTIES LINKER_LANGUAGE CXX)
 
-target_link_libraries(HLSLOfflineTranslator HLSLTranslator)
-
-set_target_properties(HLSLTranslator PROPERTIES LINKER_LANGUAGE CXX)
-set_target_properties(HLSLOfflineTranslator PROPERTIES LINKER_LANGUAGE CXX)
-
+if(HTLib_BUILD_CMD_TOOL)
+	add_executable(HTLibCmd ${FilesTool})
+	set_target_properties(HTLibCmd PROPERTIES LINKER_LANGUAGE CXX)
+	target_link_libraries(HTLibCmd HTLib)
+endif()
 

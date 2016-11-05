@@ -9,10 +9,10 @@
 #define HTLIB_EXPORT_H
 
 
-#if defined(_MSC_VER) && defined(_HT_DYNAMIC_LIB_)
-#   define _HT_EXPORT_ __declspec(dllexport)
+#if defined(_MSC_VER) && defined(HTLIB_SHARED_LIB)
+#   define HTLIB_EXPORT __declspec(dllexport)
 #else
-#   define _HT_EXPORT_
+#   define HTLIB_EXPORT
 #endif
 
 
