@@ -30,7 +30,7 @@ class HLSLAnalyzer : private Visitor
     
     public:
         
-        HLSLAnalyzer(Logger* log = nullptr);
+        HLSLAnalyzer(Log* log = nullptr);
 
         bool DecorateAST(
             Program* program,
@@ -143,7 +143,7 @@ class HLSLAnalyzer : private Visitor
 
         /* === Members === */
 
-        Logger*                 log_            = nullptr;
+        Log*                 log_            = nullptr;
 
         bool                    hasErrors_      = false;
         bool                    enableWarnings_ = false;

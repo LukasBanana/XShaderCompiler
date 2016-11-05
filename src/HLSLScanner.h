@@ -29,7 +29,7 @@ class HLSLScanner
     
     public:
         
-        HLSLScanner(Logger* log = nullptr);
+        HLSLScanner(Log* log = nullptr);
 
         bool ScanSource(const std::shared_ptr<SourceCode>& source);
 
@@ -94,7 +94,7 @@ class HLSLScanner
         std::shared_ptr<SourceCode> source_;
         char                        chr_ = 0;
 
-        Logger*                     log_ = nullptr;
+        Log*                     log_ = nullptr;
 
 };
 

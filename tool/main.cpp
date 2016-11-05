@@ -16,7 +16,7 @@ using namespace HTLib;
 
 /* --- Classes --- */
 
-class OutputLog : public Logger
+class OutputLog : public Log
 {
     
     public:

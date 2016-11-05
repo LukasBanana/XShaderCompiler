@@ -25,7 +25,7 @@ HTLIB_EXPORT bool TranslateHLSLtoGLSL(
     const OutputShaderVersions              outputShaderVersion,
     IncludeHandler*                         includeHandler,
     const Options&                          options,
-    Logger*                                 log)
+    Log*                                    log)
 {
     /* Parse HLSL input code */
     HLSLParser parser(options, log);

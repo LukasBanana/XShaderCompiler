@@ -13,7 +13,7 @@ namespace HTLib
 {
 
 
-void ASTPrinter::DumpAST(Program* program, Logger& log)
+void ASTPrinter::DumpAST(Program* program, Log& log)
 {
     log_ = &log;
     Visit(program);
@@ -27,7 +27,7 @@ void ASTPrinter::DumpAST(Program* program, Logger& log)
 class ScopedIndent
 {
     public:
-        ScopedIndent(Logger& log) :
+        ScopedIndent(Log& log) :
             log_{ log }
         {
             log_.IncIndent();
@@ -37,7 +37,7 @@ class ScopedIndent
             log_.DecIndent();
         }
     private:
-        Logger& log_;
+        Log& log_;
 };
 
 #define SCOPED_INDENT ScopedIndent indent(*log_)

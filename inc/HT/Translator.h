@@ -99,7 +99,7 @@ Translates the HLSL code from the specified input stream into GLSL code.
 This will be used when an "#include" directive occurs. If such a directive occurs
 and this parameter is null, the code generation will fail! By default null.
 \param[in] options Additional options to configure the code generation.
-\param[in] log Optional pointer to an output log. Inherit from the "Logger" class interface.
+\param[in] log Optional pointer to an output log. Inherit from the "Log" class interface.
 \return True if the code has been translated correctly.
 \note This translator makes a minimum of contextual analysis.
 Therefore wrong HLSL code may be translated into wrong GLSL code!
@@ -107,7 +107,7 @@ Therefore wrong HLSL code may be translated into wrong GLSL code!
 \see OutputShaderVersions
 \see IncludeHandler
 \see Options
-\see Logger
+\see Log
 */
 HTLIB_EXPORT bool TranslateHLSLtoGLSL(
     const std::shared_ptr<std::istream>&    input,
@@ -118,7 +118,7 @@ HTLIB_EXPORT bool TranslateHLSLtoGLSL(
     const OutputShaderVersions              outputShaderVersion,
     IncludeHandler*                         includeHandler = nullptr,
     const Options&                          options = {},
-    Logger*                                 log = nullptr
+    Log*                                    log = nullptr
 );
 
 

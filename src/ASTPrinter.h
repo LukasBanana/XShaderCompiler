@@ -28,7 +28,7 @@ class ASTPrinter : private Visitor
     
     public:
         
-        void DumpAST(Program* program, Logger& log);
+        void DumpAST(Program* program, Log& log);
 
     private:
         
@@ -93,7 +93,7 @@ class ASTPrinter : private Visitor
 
         /* === Members === */
 
-        Logger* log_ = nullptr;
+        Log* log_ = nullptr;
 
 };
 

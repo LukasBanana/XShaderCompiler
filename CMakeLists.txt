@@ -7,9 +7,10 @@ project(HLSLTranslator)
 
 # === Build path ===
 
-set(dir ${CMAKE_CURRENT_BINARY_DIR}/build)
-set(EXECUTABLE_OUTPUT_PATH ${dir} CACHE PATH "Build directory" FORCE)
-set(LIBRARY_OUTPUT_PATH ${dir} CACHE PATH "Build directory" FORCE)
+set(BUILD_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/build")
+set(EXECUTABLE_OUTPUT_PATH ${BUILD_OUTPUT_PATH} CACHE PATH "Build directory" FORCE)
+set(LIBRARY_OUTPUT_PATH ${BUILD_OUTPUT_PATH} CACHE PATH "Build directory" FORCE)
+set(INSTALL_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "Installation directory" FORCE)
 
 
 # === Options ===
@@ -67,4 +68,12 @@ if(HTLib_BUILD_CMD_TOOL)
 	set_target_properties(HTLibCmd PROPERTIES LINKER_LANGUAGE CXX)
 	target_link_libraries(HTLibCmd HTLib)
 endif()
+
+
+# === Installation Rules ===
+
+install(
+	TARGETS HTLib HTLibCmd
+	DESTINATION ${INSTALL_OUTPUT_PATH}
+)
 

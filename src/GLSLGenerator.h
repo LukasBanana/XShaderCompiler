@@ -29,7 +29,7 @@ class GLSLGenerator : private Visitor
     public:
         
         GLSLGenerator(
-            Logger* log = nullptr,
+            Log* log = nullptr,
             IncludeHandler* includeHandler = nullptr,
             const Options& options = {}
         );
@@ -216,7 +216,7 @@ class GLSLGenerator : private Visitor
 
         CodeWriter              writer_;
         IncludeHandler*         includeHandler_         = nullptr;
-        Logger*                 log_                    = nullptr;
+        Log*                 log_                    = nullptr;
 
         Program*                program_                = nullptr;
 

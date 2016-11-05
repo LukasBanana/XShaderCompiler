@@ -29,7 +29,7 @@ class HLSLParser
     
     public:
         
-        HLSLParser(const Options& options, Logger* log = nullptr);
+        HLSLParser(const Options& options, Log* log = nullptr);
 
         ProgramPtr ParseSource(const std::shared_ptr<SourceCode>& source);
 
@@ -169,7 +169,7 @@ class HLSLParser
         HLSLScanner     scanner_;
         TokenPtr        tkn_;
 
-        Logger*         log_ = nullptr;
+        Log*         log_ = nullptr;
 
 };
 

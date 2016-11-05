@@ -13,7 +13,7 @@ namespace HTLib
 {
 
 
-HLSLParser::HLSLParser(const Options& options, Logger* log) :
+HLSLParser::HLSLParser(const Options& options, Log* log) :
     options_{ options },
     scanner_{ log     },
     log_    { log     }

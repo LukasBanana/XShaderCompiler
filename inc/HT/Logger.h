@@ -1,5 +1,5 @@
 /*
- * Logger.h
+ * Log.h
  * 
  * This file is part of the "HLSL Translator" (Copyright (c) 2014 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
@@ -18,13 +18,13 @@ namespace HTLib
 {
 
 
-//! Logger interface.
-class HTLIB_EXPORT Logger
+//! Log interface.
+class HTLIB_EXPORT Log
 {
     
     public:
         
-        virtual ~Logger()
+        virtual ~Log()
         {
         }
 

@@ -30,7 +30,7 @@ static const ARBExt ARBEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_ima
  * HLSLAnalyzer class
  */
 
-HLSLAnalyzer::HLSLAnalyzer(Logger* log) :
+HLSLAnalyzer::HLSLAnalyzer(Log* log) :
     log_        { log       },
     refAnalyzer_{ symTable_ }
 {

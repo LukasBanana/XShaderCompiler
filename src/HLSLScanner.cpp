@@ -15,7 +15,7 @@ namespace HTLib
 {
 
 
-HLSLScanner::HLSLScanner(Logger* log) :
+HLSLScanner::HLSLScanner(Log* log) :
     log_{ log }
 {
 }
