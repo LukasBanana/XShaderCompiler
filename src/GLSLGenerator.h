@@ -31,12 +31,9 @@ class GLSLGenerator : private Visitor
         GLSLGenerator(Log* log = nullptr, const Options& options = {});
 
         bool GenerateCode(
-            Program* program,
-            std::ostream& output,
-            const std::string& entryPoint,
-            const ShaderTarget shaderTarget,
-            const InputShaderVersion versionIn,
-            const OutputShaderVersion versionOut
+            Program& program,
+            const ShaderInput& inputDesc,
+            const ShaderOutput& outputDesc
         );
 
     private:

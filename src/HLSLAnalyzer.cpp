@@ -38,29 +38,21 @@ HLSLAnalyzer::HLSLAnalyzer(Log* log) :
 }
 
 bool HLSLAnalyzer::DecorateAST(
-    Program* program,
-    const std::string& entryPoint,
-    const ShaderTarget shaderTarget,
-    const InputShaderVersion versionIn,
-    const OutputShaderVersion versionOut,
-    const Options& options)
+    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
 {
-    if (!program)
-        return false;
-
     /* Store parameters */
-    entryPoint_     = entryPoint;
-    shaderTarget_   = shaderTarget;
-    versionIn_      = versionIn;
-    versionOut_     = versionOut;
-    localVarPrefix_ = options.prefix;
-    enableWarnings_ = options.warnings;
+    entryPoint_     = inputDesc.entryPoint;
+    shaderTarget_   = inputDesc.shaderTarget;
+    versionIn_      = inputDesc.shaderVersion;
+    versionOut_     = outputDesc.shaderVersion;
+    localVarPrefix_ = outputDesc.options.prefix;
+    enableWarnings_ = outputDesc.options.warnings;
 
     /* Decorate program AST */
-    hasErrors_ = false;
-    program_ = program;
+    hasErrors_      = false;
+    program_        = &program;
 
-    Visit(program);
+    Visit(&program);
 
     return !hasErrors_;
 }

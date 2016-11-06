@@ -92,33 +92,25 @@ GLSLGenerator::GLSLGenerator(Log* log, const Options& options) :
 }
 
 bool GLSLGenerator::GenerateCode(
-    Program* program,
-    std::ostream& output,
-    const std::string& entryPoint,
-    const ShaderTarget shaderTarget,
-    const InputShaderVersion versionIn,
-    const OutputShaderVersion versionOut)
+    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
 {
-    if (!program)
-        return false;
-
     /* Store parameters */
-    entryPoint_     = entryPoint;
-    shaderTarget_   = shaderTarget;
-    versionIn_      = versionIn;
-    versionOut_     = versionOut;
+    entryPoint_     = inputDesc.entryPoint;
+    shaderTarget_   = inputDesc.shaderTarget;
+    versionIn_      = inputDesc.shaderVersion;
+    versionOut_     = outputDesc.shaderVersion;
 
     try
     {
-        writer_.OutputStream(output);
+        writer_.OutputStream(*outputDesc.sourceCode);
 
         /* Write header */
-        Comment("GLSL " + TargetToString(shaderTarget));
+        Comment("GLSL " + TargetToString(shaderTarget_));
         
-        if (entryPoint.empty())
+        if (entryPoint_.empty())
             Comment("Generated from HLSL Shader");
         else
-            Comment("Generated from HLSL Shader \"" + entryPoint + "\"");
+            Comment("Generated from HLSL Shader \"" + entryPoint_ + "\"");
 
         Comment(TimePoint());
         Blank();
@@ -130,7 +122,7 @@ bool GLSLGenerator::GenerateCode(
         }
 
         /* Visit program AST */
-        Visit(program);
+        Visit(&program);
     }
     catch (const std::exception& err)
     {

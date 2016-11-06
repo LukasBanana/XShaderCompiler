@@ -92,7 +92,7 @@ HTLIB_EXPORT bool TranslateHLSLtoGLSL(
 
     /* Small context analysis */
     HLSLAnalyzer analyzer(log);
-    if (!analyzer.DecorateAST(program.get(), inputDesc.entryPoint, inputDesc.shaderTarget, inputDesc.shaderVersion, outputDesc.shaderVersion, outputDesc.options))
+    if (!analyzer.DecorateAST(*program, inputDesc, outputDesc))
     {
         if (log)
             log->Error("analyzing input code failed");
@@ -108,7 +108,7 @@ HTLIB_EXPORT bool TranslateHLSLtoGLSL(
 
     /* Generate GLSL output code */
     GLSLGenerator generator(log, outputDesc.options);
-    if (!generator.GenerateCode(program.get(), *outputDesc.sourceCode, inputDesc.entryPoint, inputDesc.shaderTarget, inputDesc.shaderVersion, outputDesc.shaderVersion))
+    if (!generator.GenerateCode(*program, inputDesc, outputDesc))
     {
         if (log)
             log->Error("generating output code failed");

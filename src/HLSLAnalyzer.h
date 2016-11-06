@@ -33,12 +33,9 @@ class HLSLAnalyzer : private Visitor
         HLSLAnalyzer(Log* log = nullptr);
 
         bool DecorateAST(
-            Program* program,
-            const std::string& entryPoint,
-            const ShaderTarget shaderTarget,
-            const InputShaderVersion versionIn,
-            const OutputShaderVersion versionOut,
-            const Options& options
+            Program& program,
+            const ShaderInput& inputDesc,
+            const ShaderOutput& outputDesc
         );
 
     private:
@@ -143,30 +140,39 @@ class HLSLAnalyzer : private Visitor
 
         /* === Members === */
 
-        Log*                    log_            = nullptr;
+        Log*                                            log_                    = nullptr;
 
-        bool                    hasErrors_      = false;
-        bool                    enableWarnings_ = false;
-        Program*                program_        = nullptr;
-        FunctionDecl*           mainFunction_   = nullptr;
+        bool                                            hasErrors_              = false;
+        bool                                            enableWarnings_         = false;
+        Program*                                        program_                = nullptr;
+        FunctionDecl*                                   mainFunction_           = nullptr;
 
-        std::string             entryPoint_;
-        ShaderTarget            shaderTarget_   = ShaderTarget::GLSLVertexShader;
-        InputShaderVersion      versionIn_      = InputShaderVersion::HLSL5;
-        OutputShaderVersion     versionOut_     = OutputShaderVersion::GLSL330;
-        std::string             localVarPrefix_;
+        ShaderInput                                     inputDesc_;
+        ShaderOutput                                    outputDesc_;
 
-        std::map<std::string, IntrinsicClasses> intrinsicMap_;
-        std::map<std::string, Program::ARBExtension> extensionMap_;
+        std::string                                     entryPoint_;
+        ShaderTarget                                    shaderTarget_           = ShaderTarget::GLSLVertexShader;
+        InputShaderVersion                              versionIn_              = InputShaderVersion::HLSL5;
+        OutputShaderVersion                             versionOut_             = OutputShaderVersion::GLSL330;
+        std::string                                     localVarPrefix_;
 
-        std::stack<FunctionCall*>   callStack_;     //< Function call stack to join arguments with its function call.
-        std::vector<Structure*>     structStack_;   //< Structure stack to collect all members with system value semantic (SV_...).
+        std::map<std::string, IntrinsicClasses>         intrinsicMap_;
+        std::map<std::string, Program::ARBExtension>    extensionMap_;
 
-        ASTSymbolTable              symTable_;
-        ReferenceAnalyzer           refAnalyzer_;
+        // Function call stack to join arguments with its function call.
+        std::stack<FunctionCall*>                       callStack_;
 
-        bool isInsideFunc_          = false; //< True if AST traversal is currently inside any function.
-        bool isInsideEntryPoint_    = false; //< True if AST traversal is currently inside the main entry point (or its sub nodes).
+        // Structure stack to collect all members with system value semantic (SV_...).
+        std::vector<Structure*>                         structStack_;
+
+        ASTSymbolTable                                  symTable_;
+        ReferenceAnalyzer                               refAnalyzer_;
+
+        // True if AST traversal is currently inside any function.
+        bool                                            isInsideFunc_          = false;
+
+        // True if AST traversal is currently inside the main entry point (or its sub nodes).
+        bool                                            isInsideEntryPoint_    = false;
 
 };
 
