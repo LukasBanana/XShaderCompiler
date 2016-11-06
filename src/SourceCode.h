@@ -14,6 +14,7 @@
 #include <istream>
 #include <string>
 #include <memory>
+#include <vector>
 
 
 namespace HTLib
@@ -34,6 +35,9 @@ class SourceCode
         // Returns the next character from the source.
         char Next();
 
+        // Fetches the line with the marker string of the specified source position.
+        bool FetchLineMarker(const SourceArea& area, std::string& line, std::string& marker);
+
         // Ignores the current character.
         inline void Ignore()
         {
@@ -49,15 +53,19 @@ class SourceCode
         // Returns the current source line.
         inline const std::string& Line() const
         {
-            return line_;
+            return currentLine_;
         }
 
     protected:
         
         SourceCode() = default;
 
+        // Returns the line (if it has already been read) by the zero-based line index.
+        std::string GetLine(std::size_t lineIndex) const;
+
         std::shared_ptr<std::istream>   stream_;
-        std::string                     line_;
+        std::string                     currentLine_;
+        std::vector<std::string>        lines_;
         SourcePosition                  pos_;
 
 };

@@ -34,10 +34,19 @@ class Scanner
 
         bool ScanSource(const std::shared_ptr<SourceCode>& source);
 
+        // Scanes the source code for the next token
         virtual TokenPtr Next() = 0;
 
+        // Returns the token previously returned by the "Next" function.
+        TokenPtr ActiveToken() const;
+
+        // Returns the token previously returned by the "Next" function.
+        TokenPtr PreviousToken() const;
+
+        // Returns the start position of the token previously returned by the "Next" function.
         SourcePosition Pos() const;
 
+        // Returns the source code which is currently being scanned.
         inline SourceCode* Source() const
         {
             return source_.get();
@@ -95,12 +104,22 @@ class Scanner
 
     private:
 
+        /* === Functions === */
+
+        TokenPtr NextTokenScan(bool scanComments, bool scanWhiteSpaces);
+
+        void StoreStartPos();
+
         /* === Members === */
 
         std::shared_ptr<SourceCode> source_;
         char                        chr_ = 0;
 
         Log*                        log_ = nullptr;
+
+        SourcePosition              nextStartPos_;
+        TokenPtr                    activeToken_;
+        TokenPtr                    prevToken_;
 
 };
 

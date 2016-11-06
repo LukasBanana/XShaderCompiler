@@ -123,6 +123,9 @@ class Token
         Token(const SourcePosition& pos, const Types type, const std::string& spell);
         Token(const SourcePosition& pos, const Types type, std::string&& spell);
 
+        // Returns the source area of this token.
+        SourceArea Area() const;
+
         // Returns the token type.
         inline Types Type() const
         {

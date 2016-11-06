@@ -68,25 +68,49 @@ std::string Parser::GetCurrentFilename() const
     return (!scannerStack_.empty() ? scannerStack_.top().filename : "");
 }
 
-void Parser::Error(const std::string& msg)
+//private
+Report Parser::MakeReport(const Report::Types type, const std::string& msg, const SourceArea& area)
 {
-    throw Report(Report::Types::Error, "syntax error (" + GetScanner().Pos().ToString() + ") : " + msg);
+    if (area.length > 0)
+    {
+        std::string line, marker;
+        if (GetScanner().Source()->FetchLineMarker(area, line, marker))
+            return Report(type, msg, line, marker);
+        else
+            return Report(type, msg);
+    }
+    else
+        return Report(type, msg);
 }
 
-void Parser::ErrorUnexpected()
+static SourceArea GetTokenArea(const TokenPtr& tkn)
 {
-    Error("unexpected token '" + tkn_->Spell() + "'");
+    return (tkn != nullptr ? tkn->Area() : SourceArea());
+}
+
+void Parser::Error(const std::string& msg, bool prevToken)
+{
+    auto area = GetTokenArea(prevToken ? GetScanner().PreviousToken() : GetScanner().ActiveToken());
+    throw MakeReport(Report::Types::Error, "syntax error (" + area.pos.ToString() + ") : " + msg, area);
 }
 
 void Parser::ErrorUnexpected(const std::string& hint)
 {
-    Error("unexpected token '" + tkn_->Spell() + "' (" + hint + ")");
+    std::string msg = "unexpected token '" + tkn_->Spell() + "'";
+
+    if (!hint.empty())
+        msg += " (" + hint + ")";
+
+    Error(msg, false);
 }
 
-void Parser::Warning(const std::string& msg)
+void Parser::Warning(const std::string& msg, bool prevToken)
 {
     if (log_)
-        log_->SumitReport(Report(Report::Types::Warning, "warning (" + GetScanner().Pos().ToString() + ") : " + msg));
+    {
+        auto area = GetTokenArea(prevToken ? GetScanner().PreviousToken() : GetScanner().ActiveToken());
+        log_->SumitReport(MakeReport(Report::Types::Warning, "warning (" + area.pos.ToString() + ") : " + msg, area));
+    }
 }
 
 TokenPtr Parser::Accept(const Tokens type)

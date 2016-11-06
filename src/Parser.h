@@ -48,11 +48,10 @@ class Parser
         // Returns the filename for the current scanner source.
         std::string GetCurrentFilename() const;
 
-        void Error(const std::string& msg);
-        void ErrorUnexpected();
-        void ErrorUnexpected(const std::string& hint);
+        void Error(const std::string& msg, bool prevToken = true);
+        void ErrorUnexpected(const std::string& hint = "");
 
-        void Warning(const std::string& msg);
+        void Warning(const std::string& msg, bool prevToken = true);
 
         TokenPtr Accept(const Tokens type);
         TokenPtr Accept(const Tokens type, const std::string& spell);
@@ -111,6 +110,8 @@ class Parser
         };
 
         /* === Functions === */
+
+        Report MakeReport(const Report::Types type, const std::string& msg, const SourceArea& area);
 
         Scanner& GetScanner();
 

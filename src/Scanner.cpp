@@ -34,9 +34,19 @@ bool Scanner::ScanSource(const std::shared_ptr<SourceCode>& source)
     return false;
 }
 
+TokenPtr Scanner::ActiveToken() const
+{
+    return activeToken_;
+}
+
+TokenPtr Scanner::PreviousToken() const
+{
+    return prevToken_;
+}
+
 SourcePosition Scanner::Pos() const
 {
-    return (source_ != nullptr ? source_->Pos() : SourcePosition::ignore);
+    return nextStartPos_;//(source_ != nullptr ? source_->Pos() : SourcePosition::ignore);
 }
 
 
@@ -44,7 +54,23 @@ SourcePosition Scanner::Pos() const
  * ======= Private: =======
  */
 
+//private
 TokenPtr Scanner::NextToken(bool scanComments, bool scanWhiteSpaces)
+{
+    /* Store previous token */
+    prevToken_ = activeToken_;
+
+    /* Scan next token */
+    auto tkn = NextTokenScan(scanComments, scanWhiteSpaces);
+
+    /* Store new active token */
+    activeToken_ = tkn;
+
+    return tkn;
+}
+
+//private
+TokenPtr Scanner::NextTokenScan(bool scanComments, bool scanWhiteSpaces)
 {
     while (true)
     {
@@ -57,17 +83,25 @@ TokenPtr Scanner::NextToken(bool scanComments, bool scanWhiteSpaces)
             {
                 /* Scan or ignore white spaces */
                 if (scanWhiteSpaces && std::isspace(UChr()))
+                {
+                    StoreStartPos();
                     return ScanWhiteSpaces(false);
+                }
                 else
                     IgnoreWhiteSpaces();
 
                 /* Check for end-of-file */
                 if (Is(0))
+                {
+                    StoreStartPos();
                     return Make(Tokens::EndOfStream);
+                }
                 
                 /* Scan commentaries */
                 if (Is('/'))
                 {
+                    StoreStartPos();
+
                     auto prevChr = TakeIt();
 
                     if (Is('/'))
@@ -102,6 +136,7 @@ TokenPtr Scanner::NextToken(bool scanComments, bool scanWhiteSpaces)
             while (comments);
 
             /* Scan next token */
+            StoreStartPos();
             return ScanToken();
         }
         catch (const Report& err)
@@ -113,6 +148,13 @@ TokenPtr Scanner::NextToken(bool scanComments, bool scanWhiteSpaces)
     }
 
     return nullptr;
+}
+
+//private
+void Scanner::StoreStartPos()
+{
+    /* Store current source position as start position for the next token */
+    nextStartPos_ = source_->Pos();
 }
 
 char Scanner::Take(char chr)

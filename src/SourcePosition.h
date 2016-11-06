@@ -61,6 +61,13 @@ class SourcePosition
 
 };
 
+// Source area structure with position and length.
+struct SourceArea
+{
+    SourcePosition  pos;
+    unsigned int    length  = 0;
+};
+
 
 } // /namespace HTLib
 
