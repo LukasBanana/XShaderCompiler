@@ -1,0 +1,6 @@
+[PPTest1.hlsl -pponly]
+-pponly -target vertex -entry VS -output output/PPTest1.port.hlsl PPTest1.hlsl
+
+[PPTest1.hlsl VS]
+-target vertex -entry VS -output output/PPTest1.vertex.glsl PPTest1.hlsl
+

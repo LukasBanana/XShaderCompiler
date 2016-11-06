@@ -12,6 +12,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <set>
 
 #ifdef _WIN32
 #include <conio.h>
@@ -41,6 +42,8 @@ struct Config
 };
 
 static Config g_config;
+
+static std::set<std::string> g_pressetingFilenames;
 
 
 /* --- Functions --- */
@@ -85,6 +88,7 @@ static void ShowHelp()
             "  --help, help, -h ....... Prints this help reference",
             "  --version, -v .......... Prints the version information",
             "  --pause ................ Waits for user input after the translation process",
+            "  --presetting FILE ...... Parse further arguments from the presetting file",
             "Example:",
             "  HTLibCmd -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl",
             "   --> Example.vertex.glsl; Example.fragment.glsl ",
@@ -289,6 +293,98 @@ static void Translate(const std::string& filename)
     }
 }
 
+// Forward declaration
+void ParseArguments(const std::vector<std::string>& args);
+
+struct Presetting
+{
+    std::string                 title;
+    std::vector<std::string>    args;
+};
+
+static void RunPresetting(const Presetting& preset)
+{
+    std::cout << "run presetting: \"" << preset.title << "\"" << std::endl;
+    ParseArguments(preset.args);
+}
+
+static void ParseFromPresetting(const std::string& filename)
+{
+    /* Check if this presetting file has already been processed */
+    if (g_pressetingFilenames.find(filename) != g_pressetingFilenames.end())
+        throw std::runtime_error("loop in presetting files detected");
+
+    g_pressetingFilenames.insert(filename);
+
+    /* Read arguments from file */
+    std::ifstream file(filename);
+    if (!file.good())
+        throw std::runtime_error("failed to read file: \"" + filename + "\"");
+
+    std::vector<Presetting> presettings;
+
+    while (!file.eof())
+    {
+        /* Get presetting title */
+        Presetting preset;
+        std::getline(file, preset.title);
+
+        if (!preset.title.empty())
+        {
+            /* Get presetting arguments */
+            std::string line;
+            std::getline(file, line);
+
+            std::stringstream lineStream;
+            lineStream << line;
+
+            while (!lineStream.eof())
+            {
+                std::string arg;
+                lineStream >> arg;
+                preset.args.push_back(arg);
+            }
+
+            if (!preset.args.empty())
+                presettings.emplace_back(std::move(preset));
+        }
+    }
+
+    if (presettings.size() > 1)
+    {
+        std::size_t idx = ~0;
+
+        while (idx > presettings.size())
+        {
+            /* Let user choose between one of the presettings */
+            std::cout << "choose presetting:" << std::endl;
+            std::cout << "  0.) ALL" << std::endl;
+
+            for (std::size_t i = 0; i < presettings.size(); ++i)
+                std::cout << "  " << (i+1) << ".) " << presettings[i].title << std::endl;
+
+            std::cin >> idx;
+        }
+
+        if (idx == 0)
+        {
+            /* Run all presettings */
+            for (const auto& preset : presettings)
+                RunPresetting(preset);
+        }
+        else if (idx > 0)
+        {
+            /* Run selected presetting */
+            RunPresetting(presettings[idx - 1]);
+        }
+    }
+    else if (presettings.size() == 1)
+    {
+        /* First single presetting */
+        RunPresetting(presettings.front());
+    }
+}
+
 static void ParseArguments(const std::vector<std::string>& args)
 {
     int     translationCounter  = 0;
@@ -309,6 +405,8 @@ static void ParseArguments(const std::vector<std::string>& args)
                 showVersion = true;
             else if (arg == "--pause")
                 pauseApp = true;
+            else if (arg == "--presetting")
+                ParseFromPresetting(NextArg(i, args, arg));
             else if (arg == "-warn")
                 g_config.options.warnings = BoolArg(i, args, arg);
             else if (arg == "-blanks")
