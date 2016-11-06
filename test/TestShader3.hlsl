@@ -22,7 +22,6 @@
 
 cbuffer Settings : register(b0)
 {
-	int x;   float int x;
 	float4x4	wvpMatrix;
 	float4x4	wMatrix;
 	float4		diffuse;
@@ -51,6 +50,7 @@ VertexOut VS(VertexIn inp)
 	
 	float pi2 = M_PI*2;
 	
+	[[offroll]]
 	for (;)
 	{
 	}

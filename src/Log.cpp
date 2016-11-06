@@ -6,6 +6,7 @@
  */
 
 #include <HT/Log.h>
+#include <HT/ConsoleManip.h>
 #include <iostream>
 
 
@@ -78,14 +79,65 @@ void StdLog::PrintAll()
     PrintAndClearReports(errors_, "ERROR(S)");
 }
 
+using Colors = ConsoleManip::ColorFlags;
+
 void StdLog::PrintReport(const IndentReport& r)
 {
-    /* Print report with optional line and line-marker */
-    std::cout << r.indent << r.report.Message() << std::endl;
+    /* Print report message */
+    std::cout << r.indent;
+
+    auto type = r.report.Type();
+    const auto& msg = r.report.Message();
+
+    if (type == Report::Types::Error)
+    {
+        ConsoleManip::ScopedColor highlight(std::cout, Colors::Red | Colors::Intens);
+        std::cout << msg;
+    }
+    else if (type == Report::Types::Warning)
+    {
+        ConsoleManip::ScopedColor highlight(std::cout, Colors::Yellow);
+        std::cout << msg;
+    }
+    else
+        std::cout << msg;
+
+    std::cout << std::endl;
+
+    /* Print optional line and line-marker */
     if (r.report.HasLine())
     {
-        std::cout << r.indent << r.report.Line() << std::endl;
-        std::cout << r.indent << r.report.Marker() << std::endl;
+        const auto& line    = r.report.Line();
+        const auto& marker  = r.report.Marker();
+
+        /* Print line with color highlight for the occurrence */
+        {
+            ConsoleManip::ScopedColor highlight(std::cout, Colors::Green | Colors::Blue);
+
+            std::cout << r.indent;
+
+            auto pos = marker.find('^');
+            if (pos != std::string::npos && pos < marker.size())
+            {
+                std::cout << line.substr(0, pos);
+                {
+                    ConsoleManip::ScopedColor highlight(std::cout, Colors::Cyan);
+                    std::cout << line.substr(pos, marker.size() - pos);
+                }
+                if (pos + marker.size() < line.size())
+                    std::cout << line.substr(pos + marker.size());
+            }
+            else
+                std::cout << line;
+
+            std::cout << std::endl;
+        }
+
+        /* Print line marker */
+        {
+            ConsoleManip::ScopedColor highlight(std::cout, Colors::Cyan);
+            std::cout << r.indent << marker << std::endl;
+        }
     }
 }
 
