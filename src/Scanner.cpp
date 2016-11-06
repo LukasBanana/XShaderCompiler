@@ -104,11 +104,11 @@ TokenPtr Scanner::NextToken(bool scanComments, bool scanWhiteSpaces)
             /* Scan next token */
             return ScanToken();
         }
-        catch (const std::exception& err)
+        catch (const Report& err)
         {
             /* Add to error and scan next token */
             if (log_)
-                log_->Error(err.what());
+                log_->SumitReport(err);
         }
     }
 
@@ -132,7 +132,7 @@ char Scanner::TakeIt()
 
 void Scanner::Error(const std::string& msg)
 {
-    throw std::runtime_error("lexical error (" + Pos().ToString() + ") : " + msg);
+    throw Report(Report::Types::Error, "lexical error (" + Pos().ToString() + ") : " + msg);
 }
 
 void Scanner::ErrorUnexpected()

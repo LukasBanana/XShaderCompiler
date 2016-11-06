@@ -15,84 +15,6 @@
 
 using namespace HTLib;
 
-/* --- Classes --- */
-
-class OutputLog : public Log
-{
-    
-    public:
-        
-        void Info(const std::string& message) override
-        {
-            infos_.push_back(indent_ + message);
-        }
-
-        void Warning(const std::string& message) override
-        {
-            warnings_.push_back(indent_ + message);
-        }
-
-        void Error(const std::string& message) override
-        {
-            errors_.push_back(indent_ + message);
-        }
-
-        void IncIndent() override
-        {
-            indent_ += indentTab_;
-        }
-
-        void DecIndent() override
-        {
-            if (indent_.size() <= indentTab_.size())
-                indent_.clear();
-            else
-                indent_.resize(indent_.size() - indentTab_.size());
-        }
-
-        void Report()
-        {
-            for (const auto& msg : infos_)
-                std::cout << msg << std::endl;
-            infos_.clear();
-            
-            if (!warnings_.empty())
-            {
-                PrintHead(std::to_string(warnings_.size()) + " WARNING(S)");
-
-                for (const auto& msg : warnings_)
-                    std::cout << msg << std::endl;
-                warnings_.clear();
-            }
-
-            if (!errors_.empty())
-            {
-                PrintHead(std::to_string(errors_.size()) + " ERROR(S)");
-
-                for (const auto& msg : errors_)
-                    std::cerr << msg << std::endl;
-                errors_.clear();
-            }
-        }
-
-    private:
-
-        void PrintHead(const std::string& head)
-        {
-            std::cout << head << std::endl;
-            std::cout << std::string(head.size(), '-') << std::endl;
-        }
-        
-        std::vector<std::string>    infos_;
-        std::vector<std::string>    warnings_;
-        std::vector<std::string>    errors_;
-
-        std::string                 indent_;
-        std::string                 indentTab_ = "  ";
-
-};
-
-
 /* --- Globals --- */
 
 struct Config
@@ -296,13 +218,13 @@ static void Translate(const std::string& filename)
     outputDesc.shaderVersion    = OutputVersionFromString(g_config.shaderOut);
     outputDesc.options          = g_config.options;
 
-    OutputLog log;
-
     try
     {
+        StdLog log;
+
         auto result = TranslateHLSLtoGLSL(inputDesc, outputDesc, &log);
 
-        log.Report();
+        log.PrintAll();
 
         if (result)
             std::cout << "translation successful" << std::endl;

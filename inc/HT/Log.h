@@ -10,52 +10,91 @@
 
 
 #include "Export.h"
+#include "Report.h"
 #include <string>
+#include <stack>
+#include <vector>
 
 
 namespace HTLib
 {
 
 
-// Log interface.
+//! Log base class.
 class HTLIB_EXPORT Log
 {
     
     public:
         
-        virtual ~Log()
+        virtual ~Log();
+
+        //! Submits the specified report.
+        virtual void SumitReport(const Report& report) = 0;
+
+        //! Sets the next indentation string. By default two spaces.
+        void SetIndent(const std::string& indent);
+
+        //! Increments the indentation.
+        void IncIndent();
+
+        //! Decrements the indentation.
+        void DecIndent();
+
+    protected:
+
+        Log();
+
+        /**
+        \brief Returns the current full indentation string.
+        \remarks Add this to the front of each report message.
+        \code
+        MyLog::SubmitReport(const Report& report)
         {
+            std::cout << FullIndent() << report.Message() << std::endl;
+        }
+        \endcode
+        */
+        inline const std::string& FullIndent() const
+        {
+            return indentFull_;
         }
 
-        // Prints an information.
-        virtual void Info(const std::string& message)
-        {
-            // dummy
-        }
+    private:
 
-        // Prints a warning.
-        virtual void Warning(const std::string& message)
-        {
-            // dummy
-        }
+        std::string                         indent_;
+        std::string                         indentFull_;
+        std::stack<std::string::size_type>  indentStack_;
 
-        // Prints an error.
-        virtual void Error(const std::string& message)
-        {
-            // dummy
-        }
+};
 
-        // Increments the indentation.
-        virtual void IncIndent()
-        {
-            // dummy
-        }
+//! Standard output log (uses std::cout to submit a report).
+class HTLIB_EXPORT StdLog : public Log
+{
 
-        // Decrements the indentation.
-        virtual void DecIndent()
+    public:
+
+        //! Implements the base class interface.
+        void SumitReport(const Report& report) override;
+
+        //! Prints all submitted reports to the standard output.
+        void PrintAll();
+
+    private:
+
+        struct IndentReport
         {
-            // dummy
-        }
+            std::string indent;
+            Report      report;
+        };
+
+        using IndentReportList = std::vector<IndentReport>;
+
+        void PrintReport(const IndentReport& r);
+        void PrintAndClearReports(IndentReportList& reports, const std::string& headline = "");
+
+        IndentReportList infos_;
+        IndentReportList warnings_;
+        IndentReportList errors_;
 
 };
 

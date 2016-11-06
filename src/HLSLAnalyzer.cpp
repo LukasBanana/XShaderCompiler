@@ -85,27 +85,38 @@ void HLSLAnalyzer::EstablishMaps()
     };
 }
 
-void HLSLAnalyzer::Error(const std::string& msg, const AST* ast)
+void HLSLAnalyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast)
 {
-    hasErrors_ = true;
+    if (isError)
+        hasErrors_ = true;
+    else if (!enableWarnings_)
+        return;
+
     if (log_)
     {
+        /* Construct full message string */
+        std::string typeStr = (isError ? "context error" : "warning");
+        std::string fullMsg;
+
         if (ast)
-            log_->Error("context error (" + ast->pos.ToString() + ") : " + msg);
+            fullMsg = (typeStr + " (" + ast->pos.ToString() + ") : " + msg);
         else
-            log_->Error("context error : " + msg);
+            fullMsg = (typeStr + " : " + msg);
+
+        /* Get report type and submit report */
+        auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
+        log_->SumitReport(Report(reportType, fullMsg));
     }
+}
+
+void HLSLAnalyzer::Error(const std::string& msg, const AST* ast)
+{
+    SubmitReport(true, msg, ast);
 }
 
 void HLSLAnalyzer::Warning(const std::string& msg, const AST* ast)
 {
-    if (log_ && enableWarnings_)
-    {
-        if (ast)
-            log_->Warning("warning (" + ast->pos.ToString() + ") : " + msg);
-        else
-            log_->Warning("warning : " + msg);
-    }
+    SubmitReport(false, msg, ast);
 }
 
 void HLSLAnalyzer::NotifyUndeclaredIdent(const std::string& ident, const AST* ast)

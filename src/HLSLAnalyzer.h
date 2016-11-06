@@ -53,6 +53,7 @@ class HLSLAnalyzer : private Visitor
         
         void EstablishMaps();
 
+        void SubmitReport(bool isError, const std::string& msg, const AST* ast = nullptr);
         void Error(const std::string& msg, const AST* ast = nullptr);
         void Warning(const std::string& msg, const AST* ast = nullptr);
         void NotifyUndeclaredIdent(const std::string& ident, const AST* ast = nullptr);

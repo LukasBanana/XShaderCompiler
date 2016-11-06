@@ -70,7 +70,7 @@ std::string Parser::GetCurrentFilename() const
 
 void Parser::Error(const std::string& msg)
 {
-    throw std::runtime_error("syntax error (" + GetScanner().Pos().ToString() + ") : " + msg);
+    throw Report(Report::Types::Error, "syntax error (" + GetScanner().Pos().ToString() + ") : " + msg);
 }
 
 void Parser::ErrorUnexpected()
@@ -86,7 +86,7 @@ void Parser::ErrorUnexpected(const std::string& hint)
 void Parser::Warning(const std::string& msg)
 {
     if (log_)
-        log_->Warning("warning (" + GetScanner().Pos().ToString() + ") : " + msg);
+        log_->SumitReport(Report(Report::Types::Warning, "warning (" + GetScanner().Pos().ToString() + ") : " + msg));
 }
 
 TokenPtr Parser::Accept(const Tokens type)

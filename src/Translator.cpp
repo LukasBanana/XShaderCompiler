@@ -48,6 +48,13 @@ std::unique_ptr<std::istream> StdIncludeHandler::Include(const std::string& file
 HTLIB_EXPORT bool TranslateHLSLtoGLSL(
     const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log)
 {
+    auto SubmitError = [log](const char* msg)
+    {
+        if (log)
+            log->SumitReport(Report(Report::Types::Error, msg));
+        return false;
+    };
+
     /* Validate arguments */
     if (!inputDesc.sourceCode)
         throw std::invalid_argument("input stream must not be null");
@@ -67,11 +74,7 @@ HTLIB_EXPORT bool TranslateHLSLtoGLSL(
     auto processedInput = preProcessor.Process(std::make_shared<SourceCode>(inputDesc.sourceCode));
 
     if (!processedInput)
-    {
-        if (log)
-            log->Error("preprocessing input code failed");
-        return false;
-    }
+        return SubmitError("preprocessing input code failed");
 
     if (outputDesc.options.preprocessOnly)
     {
@@ -84,20 +87,12 @@ HTLIB_EXPORT bool TranslateHLSLtoGLSL(
     auto program = parser.ParseSource(std::make_shared<SourceCode>(processedInput));
 
     if (!program)
-    {
-        if (log)
-            log->Error("parsing input code failed");
-        return false;
-    }
+        return SubmitError("parsing input code failed");
 
     /* Small context analysis */
     HLSLAnalyzer analyzer(log);
     if (!analyzer.DecorateAST(*program, inputDesc, outputDesc))
-    {
-        if (log)
-            log->Error("analyzing input code failed");
-        return false;
-    }
+        return SubmitError("analyzing input code failed");
 
     /* Print debug output */
     if (outputDesc.options.dumpAST && log)
@@ -109,11 +104,7 @@ HTLIB_EXPORT bool TranslateHLSLtoGLSL(
     /* Generate GLSL output code */
     GLSLGenerator generator(log, outputDesc.options);
     if (!generator.GenerateCode(*program, inputDesc, outputDesc))
-    {
-        if (log)
-            log->Error("generating output code failed");
-        return false;
-    }
+        return SubmitError("generating output code failed");
 
     return true;
 }

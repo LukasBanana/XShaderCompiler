@@ -124,10 +124,10 @@ bool GLSLGenerator::GenerateCode(
         /* Visit program AST */
         Visit(&program);
     }
-    catch (const std::exception& err)
+    catch (const Report& err)
     {
         if (log_)
-            log_->Error(err.what());
+            log_->SumitReport(err);
         return false;
     }
 
@@ -304,10 +304,14 @@ void GLSLGenerator::EstablishMaps()
 
 void GLSLGenerator::Error(const std::string& msg, const AST* ast)
 {
+    std::string fullMsg = "code generation error";
+
     if (ast)
-        throw std::runtime_error("code generation error (" + ast->pos.ToString() + ") : " + msg);
+        fullMsg += (" (" + ast->pos.ToString() + ") : " + msg);
     else
-        throw std::runtime_error("code generation error : " + msg);
+        fullMsg += (" : " + msg);
+
+    throw Report(Report::Types::Error, fullMsg);
 }
 
 void GLSLGenerator::ErrorInvalidNumArgs(const std::string& functionName, const AST* ast)
@@ -1794,8 +1798,7 @@ const std::string& GLSLGenerator::SemanticStage::operator [] (const ShaderTarget
         case ShaderTarget::GLSLComputeShader:
             return compute;
     }
-    throw std::out_of_range("'target' parameter out of range in " __FUNCTION__);
-    return vertex;
+    throw Report(Report::Types::Error, "'target' parameter out of range in " + std::string(__FUNCTION__));
 }
 
 

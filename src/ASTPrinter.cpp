@@ -446,7 +446,7 @@ void ASTPrinter::Print(AST* ast, const std::string& astName, const std::string& 
     if (!info.empty())
         msg += " \"" + info + "\"";
 
-    log_->Info(msg);
+    log_->SumitReport(Report(Report::Types::Info, msg));
 }
 
 void ASTPrinter::IncIndent()

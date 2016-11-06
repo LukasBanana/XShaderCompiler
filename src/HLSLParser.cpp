@@ -28,10 +28,10 @@ ProgramPtr HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
     {
         return ParseProgram();
     }
-    catch (const std::exception& err)
+    catch (const Report& err)
     {
         if (GetLog())
-            GetLog()->Error(err.what());
+            GetLog()->SumitReport(err);
     }
 
     return nullptr;

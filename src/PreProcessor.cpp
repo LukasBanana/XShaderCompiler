@@ -36,10 +36,10 @@ std::shared_ptr<std::iostream> PreProcessor::Process(const std::shared_ptr<Sourc
 
         return output_;
     }
-    catch (const std::exception& err)
+    catch (const Report& err)
     {
         if (GetLog())
-            GetLog()->Error(err.what());
+            GetLog()->SumitReport(err);
     }
 
     return nullptr;
@@ -196,6 +196,8 @@ void PreProcessor::ParseDirective()
         ParseDirectiveIfndef();
     else if (directive == "pragma")
         ParseDirectivePragma();
+    else
+        Error("unknown preprocessor directive: \"" + directive + "\"");
 }
 
 // '#define' IDENT ( '(' IDENT+ ')' )? (TOKEN-STRING)?
