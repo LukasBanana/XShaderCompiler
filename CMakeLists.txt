@@ -30,14 +30,21 @@ endif()
 
 # === Global files ===
 
-file(GLOB FilesInc	${PROJECT_SOURCE_DIR}/inc/HT/*.*)
-file(GLOB FilesSrc	${PROJECT_SOURCE_DIR}/src/*.*)
-file(GLOB FilesTool	${PROJECT_SOURCE_DIR}/tool/*.*)
+file(GLOB FilesInc ${PROJECT_SOURCE_DIR}/inc/HT/*.*)
+file(GLOB FilesSrc ${PROJECT_SOURCE_DIR}/src/*.*)
+file(GLOB FilesTool ${PROJECT_SOURCE_DIR}/tool/*.*)
+
+if(WIN32)
+	file(GLOB FilesPlatform ${PROJECT_SOURCE_DIR}/src/win32/*.*)
+else()
+	file(GLOB FilesPlatform ${PROJECT_SOURCE_DIR}/src/unix/*.*)
+endif()
 
 set(
 	FilesAll
 	${FilesInc}
 	${FilesSrc}
+	${FilesPlatform}
 )
 
 
@@ -45,6 +52,7 @@ set(
 
 source_group("inc" FILES ${FilesInc})
 source_group("src" FILES ${FilesSrc})
+source_group("src\\platform" FILES ${FilesPlatform})
 source_group("tool" FILES ${FilesTool})
 
 
