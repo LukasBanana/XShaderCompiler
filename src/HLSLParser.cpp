@@ -88,10 +88,14 @@ CodeBlockPtr HLSLParser::ParseCodeBlock()
 {
     auto ast = Make<CodeBlock>();
 
-    /* Parse statement list */
-    Accept(Tokens::LCurly);
-    ast->stmnts = ParseStmntList();
-    Accept(Tokens::RCurly);
+    typeSymTable_.OpenScope();
+    {
+        /* Parse statement list */
+        Accept(Tokens::LCurly);
+        ast->stmnts = ParseStmntList();
+        Accept(Tokens::RCurly);
+    }
+    typeSymTable_.CloseScope();
 
     return ast;
 }
@@ -136,10 +140,14 @@ StructurePtr HLSLParser::ParseStructure()
 {
     auto ast = Make<Structure>();
 
+    /* Parse structure declaration */
     Accept(Tokens::Struct);
 
     ast->name = Accept(Tokens::Ident)->Spell();
     ast->members = ParseVarDeclStmntList();
+
+    /* Register identifier in symbol table (used to detect special cast expressions) */
+    typeSymTable_.Register(ast->name, ast.get());
 
     return ast;
 }
@@ -971,22 +979,27 @@ bool HLSLParser::IsLhsOfCastExpr(const ExprPtr& expr) const
     if (!IsPrimaryExpr())
         return false;
 
+    /* Type name (float, int3 etc.) is always allowed for a cast expression */
     if (expr->Type() == AST::Types::TypeNameExpr)
         return true;
 
     /*
-    TODO:
-     -> This must be extended with the contextual analyzer,
-        because an expression like "(x)" is a valid cast expression
-        if (and only if) "x" is the identifier to a structure or typedef.
+    Check if variable access denotes a structure type:
+    An expression like "(x)" is a valid cast expression
+    if (and only if) "x" is the identifier to a structure or typedef.
     */
-    #if 0
     if (expr->Type() == AST::Types::VarAccessExpr)
     {
         auto varAccessExpr = static_cast<VarAccessExpr*>(expr.get());
-        return (varAccessExpr->assignExpr == nullptr && varAccessExpr->varIdent->next == nullptr);
+        if (varAccessExpr->assignExpr || varAccessExpr->varIdent->next)
+            return false;
+
+        /* Check if identifier denotes a type definition (either struct or typedef) */
+        if (typeSymTable_.Fetch(varAccessExpr->varIdent->ident))
+            return true;
+            
+        return false;
     }
-    #endif
 
     return false;
 }

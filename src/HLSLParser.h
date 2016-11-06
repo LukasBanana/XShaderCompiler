@@ -11,6 +11,7 @@
 
 #include "HT/Log.h"
 #include "HLSLScanner.h"
+#include "ReferenceAnalyzer.h"
 #include "Parser.h"
 #include "Visitor.h"
 #include "Token.h"
@@ -24,7 +25,11 @@ namespace HTLib
 {
 
 
-// Syntax parser class.
+/*
+Syntax parser class for the shading language HLSL.
+This parser is not fully context free. To parse cast expressions correctly,
+the respective type identifiers are stored in a symbol table.
+*/
 class HLSLParser : public Parser
 {
     
@@ -148,6 +153,9 @@ class HLSLParser : public Parser
         const Options&  options_;
 
         HLSLScanner     scanner_;
+
+        // Symbol table for all types which are allowed in a cast expression (currently only structure types).
+        ASTSymbolTable  typeSymTable_;
 
 };
 

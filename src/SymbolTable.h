@@ -113,7 +113,7 @@ class SymbolTable
         }
 
         // Returns current scope level.
-        size_t ScopeLevel() const
+        std::size_t ScopeLevel() const
         {
             return scopeStack_.size();
         }
@@ -123,7 +123,7 @@ class SymbolTable
         struct Symbol
         {
             SymbolType* symbol;
-            size_t      scopeLevel;
+            std::size_t scopeLevel;
         };
 
         // Stores the scope stack for all identifiers.
