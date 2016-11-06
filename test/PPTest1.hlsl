@@ -1,5 +1,5 @@
 
-// HLSL Translator: Shader Test 3
+// HLSL Translator: Preprocessor Test 1
 // 05/11/2016
 
 	#	include   "TestHeader1.h"   /*comment*/
