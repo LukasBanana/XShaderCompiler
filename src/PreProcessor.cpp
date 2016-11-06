@@ -321,6 +321,10 @@ void PreProcessor::ParseDirectiveDefine()
     /* Now compare previous and new definition */
     if (previousSymbol)
     {
+        /* Compare parameters */
+        //TODO...
+
+        /* Compare values */
         if (CompareTokenStrings(previousSymbol->tokenString, symbol->tokenString))
             Warning("redefinition of symbol \"" + ident + "\"");
         else
