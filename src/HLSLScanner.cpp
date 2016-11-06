@@ -42,6 +42,8 @@ TokenPtr HLSLScanner::ScanToken()
         return ScanIdentifier();
 
     /* Scan number */
+    if (Is('.'))
+        return ScanNumberOrDot();
     if (std::isdigit(UChr()))
         return ScanNumber();
 
@@ -137,7 +139,6 @@ TokenPtr HLSLScanner::ScanToken()
         case ':': return Make(Tokens::Colon,     true); break;
         case ';': return Make(Tokens::Semicolon, true); break;
         case ',': return Make(Tokens::Comma,     true); break;
-        case '.': return Make(Tokens::Dot,       true); break;
         case '?': return Make(Tokens::TernaryOp, true); break;
         case '(': return Make(Tokens::LBracket,  true); break;
         case ')': return Make(Tokens::RBracket,  true); break;

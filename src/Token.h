@@ -42,7 +42,7 @@ class Token
             // Operators
             AssignOp,           //< =, +=, -=, *=, /=, %=, <<=, >>=, |= , &=, ^=
             BinaryOp,           //< &&, ||, |, ^, &, <<, >>, +, -, *, /, %, ==, !=, <, >, <=, >=
-            UnaryOp,            //< !, ~, -, ++, --
+            UnaryOp,            //< !, ~, +, -, ++, --
             TernaryOp,          //< ?
 
             // Punctuation

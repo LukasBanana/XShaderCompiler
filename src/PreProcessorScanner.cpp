@@ -39,6 +39,8 @@ TokenPtr PreProcessorScanner::ScanToken()
         return ScanIdentifier();
 
     /* Scan number */
+    if (Is('.'))
+        return ScanNumberOrDot();
     if (std::isdigit(UChr()))
         return ScanNumber();
 

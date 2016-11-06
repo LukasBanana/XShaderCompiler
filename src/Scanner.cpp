@@ -287,48 +287,88 @@ TokenPtr Scanner::ScanStringLiteral()
     return Make(Tokens::StringLiteral, spell);
 }
 
-TokenPtr Scanner::ScanNumber()
+// see https://msdn.microsoft.com/de-de/library/windows/desktop/bb509567(v=vs.85).aspx
+TokenPtr Scanner::ScanNumber(bool startWithDot)
 {
-    if (!std::isdigit(UChr()))
-        Error("expected digit");
-    
-    /* Take first number (literals like ".0" are not allowed) */
     std::string spell;
 
-    const auto startChr = TakeIt();
-    spell += startChr;
-
     /* Parse integer or floating-point number */
-    auto type = Tokens::IntLiteral;
+    auto type       = Tokens::IntLiteral;
+    auto preDigits  = false;
+    auto postDigits = false;
 
-    ScanDecimalLiteral(spell);
+    if (!startWithDot)
+        preDigits = ScanDigitSequence(spell);
 
-    if (Is('.'))
+    /* Check for fractional part */
+    if (startWithDot || Is('.'))
     {
-        spell += TakeIt();
-        
-        if (std::isdigit(UChr()))
-            ScanDecimalLiteral(spell);
-        else
-            Error("floating-point literals must have a decimal on both sides of the dot (e.g. '0.0' but not '0.' or '.0')");
-
         type = Tokens::FloatLiteral;
+
+        /* Scan floating-point dot */
+        if (startWithDot)
+            spell += '.';
+        else
+            spell += TakeIt();
+        
+        /* Scan (optional) right hand side digit-sequence */
+        postDigits = ScanDigitSequence(spell);
+
+        if (!preDigits && !postDigits)
+            Error("missing decimal part in floating-point number");
+
+        /* Check for exponent-part */
+        if (Is('e') || Is('E'))
+        {
+            spell += TakeIt();
+
+            /* Check for sign */
+            if (Is('-') || Is('+'))
+                spell += TakeIt();
+
+            /* Scan exponent digit sequence */
+            if (!ScanDigitSequence(spell))
+                Error("missing digit-sequence after exponent part");
+        }
+
+        /* Check for floating-suffix */
+        if (Is('f') || Is('F'))
+            spell += TakeIt();
+
+        /* Check for following invalid characters */
+        if (std::isalpha(UChr()) || Is('.'))
+            Error("character '" + std::string(1, Chr()) + "' is not allowed immediately after floating-point literal");
     }
-
-    if (Is('f') || Is('F'))
-        TakeIt();
-
-    if (std::isalpha(UChr()) || Is('.'))
-        Error("letter '" + std::string(1, Chr()) + "' is not allowed within a number");
+    else
+    {
+        /* Check for following invalid characters */
+        if (std::isalpha(UChr()) || Is('.'))
+            Error("character '" + std::string(1, Chr()) + "' is not allowed immediately after integer literal");
+    }
 
     /* Create number token */
     return Make(type, spell);
 }
 
-void Scanner::ScanDecimalLiteral(std::string& spell)
+TokenPtr Scanner::ScanNumberOrDot()
 {
+    Take('.');
+
+    if (std::isdigit(UChr()))
+        return ScanNumber(true);
+
+    std::string spell = ".";
+    return Make(Tokens::Dot, spell);
+}
+
+bool Scanner::ScanDigitSequence(std::string& spell)
+{
+    bool result = (std::isdigit(UChr()) != 0);
+
     while (std::isdigit(UChr()))
         spell += TakeIt();
+
+    return result;
 }
 
 TokenPtr Scanner::Make(const Token::Types& type, bool takeChr)

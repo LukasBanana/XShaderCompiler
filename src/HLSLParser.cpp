@@ -54,17 +54,22 @@ void HLSLParser::Semi()
 
 bool HLSLParser::IsDataType() const
 {
-    return Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType) || Is(Tokens::Texture) || Is(Tokens::Sampler);
+    return (Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType) || Is(Tokens::Texture) || Is(Tokens::Sampler));
 }
 
 bool HLSLParser::IsLiteral() const
 {
-    return Is(Tokens::BoolLiteral) || Is(Tokens::IntLiteral) || Is(Tokens::FloatLiteral);
+    return (Is(Tokens::BoolLiteral) || Is(Tokens::IntLiteral) || Is(Tokens::FloatLiteral));
 }
 
 bool HLSLParser::IsPrimaryExpr() const
 {
-    return IsLiteral() || Is(Tokens::Ident) || Is(Tokens::UnaryOp) || Is(Tokens::BinaryOp, "-") || Is(Tokens::LBracket);
+    return (IsLiteral() || Is(Tokens::Ident) || Is(Tokens::UnaryOp) || IsArithmeticUnaryExpr() || Is(Tokens::LBracket));
+}
+
+bool HLSLParser::IsArithmeticUnaryExpr() const
+{
+    return (Is(Tokens::BinaryOp, "-") || Is(Tokens::BinaryOp, "+"));
 }
 
 /* ------- Parse functions ------- */
@@ -902,7 +907,7 @@ ExprPtr HLSLParser::ParsePrimaryExpr()
         return ParseLiteralExpr();
     if (IsDataType())
         return ParseTypeNameOrFunctionCallExpr();
-    if (Is(Tokens::UnaryOp) || Is(Tokens::BinaryOp, "-"))
+    if (Is(Tokens::UnaryOp) || IsArithmeticUnaryExpr())
         return ParseUnaryExpr();
     if (Is(Tokens::LBracket))
         return ParseBracketOrCastExpr();
@@ -951,7 +956,7 @@ ExprPtr HLSLParser::ParseTypeNameOrFunctionCallExpr()
 
 UnaryExprPtr HLSLParser::ParseUnaryExpr()
 {
-    if (!Is(Tokens::UnaryOp) && !Is(Tokens::BinaryOp, "-"))
+    if (!Is(Tokens::UnaryOp) && !IsArithmeticUnaryExpr())
         ErrorUnexpected("expected unary expression operator");
 
     /* Parse unary expression */
@@ -959,6 +964,31 @@ UnaryExprPtr HLSLParser::ParseUnaryExpr()
     ast->op = AcceptIt()->Spell();
     ast->expr = ParsePrimaryExpr();
     return ast;
+}
+
+bool HLSLParser::IsLhsOfCastExpr(const ExprPtr& expr) const
+{
+    if (!IsPrimaryExpr())
+        return false;
+
+    if (expr->Type() == AST::Types::TypeNameExpr)
+        return true;
+
+    /*
+    TODO:
+     -> This must be extended with the contextual analyzer,
+        because an expression like "(x)" is a valid cast expression
+        if (and only if) "x" is the identifier to a structure or typedef.
+    */
+    #if 0
+    if (expr->Type() == AST::Types::VarAccessExpr)
+    {
+        auto varAccessExpr = static_cast<VarAccessExpr*>(expr.get());
+        return (varAccessExpr->assignExpr == nullptr && varAccessExpr->varIdent->next == nullptr);
+    }
+    #endif
+
+    return false;
 }
 
 ExprPtr HLSLParser::ParseBracketOrCastExpr()
@@ -969,17 +999,10 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     Accept(Tokens::RBracket);
 
     /*
-    Parse cast expression the expression inside the bracket is a type name
-    (single identifier (for a struct name) or a data type)
-    !!!!!!!!!!!!!!!!!
-    !TODO! -> This must be extended with the contextual analyzer,
-    becauses expressions like "(x)" are no cast expression if "x" is a variable and not a structure!!!
-    !!!!!!!!!!!!!!!!!
+    Parse cast expression if the expression inside the bracket is a type name,
+    i.e. single identifier (for a struct name) or a data type
     */
-    if ( IsPrimaryExpr() &&
-         ( expr->Type() == AST::Types::TypeNameExpr ||
-           ( expr->Type() == AST::Types::VarAccessExpr &&
-             dynamic_cast<VarAccessExpr*>(expr.get())->assignExpr == nullptr ) ) )
+    if (IsLhsOfCastExpr(expr))
     {
         /* Return cast expression */
         auto ast = Make<CastExpr>();

@@ -79,9 +79,10 @@ class Scanner
         TokenPtr ScanCommentLine(bool scanComments);
         TokenPtr ScanCommentBlock(bool scanComments);
         TokenPtr ScanStringLiteral();
-        TokenPtr ScanNumber();
+        TokenPtr ScanNumber(bool startWithDot = false);
+        TokenPtr ScanNumberOrDot();
 
-        void ScanDecimalLiteral(std::string& spell);
+        bool ScanDigitSequence(std::string& spell);
 
         TokenPtr Make(const Token::Types& type, bool takeChr = false);
         TokenPtr Make(const Token::Types& type, std::string& spell, bool takeChr = false);

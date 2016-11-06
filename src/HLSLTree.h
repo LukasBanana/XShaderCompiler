@@ -343,7 +343,7 @@ struct VarIdent : public AST
     AST_INTERFACE(VarIdent);
     std::string             ident;
     std::vector<ExprPtr>    arrayIndices;
-    VarIdentPtr             next;
+    VarIdentPtr             next;                   // Next identifier; may be null.
     AST*                    symbolRef = nullptr;    // Symbol reference for DAST to the variable object; may be null.
     std::string             systemSemantic;         // System semantic (SV_...) for DAST; may be empty.
 };
@@ -628,6 +628,7 @@ struct SwitchCase : public AST
 
 // Returns the full variabel identifier name.
 std::string FullVarIdent(const VarIdentPtr& varIdent);
+
 // Returns the last identifier AST node.
 VarIdent* LastVarIdent(VarIdent* varIdent);
 

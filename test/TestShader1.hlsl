@@ -146,11 +146,11 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 	int y = (int)x * 2 + 2 - (int)(x + 0.5) + (int)(float)(z) + 9;
 	float a = 1, b = 2 + (a += 4);
 	
-	#if 1
+	//#if 1
 	// requires GLSL 1.30 or the "GL_EXT_gpu_shader4" extension.
 	//int mask = 0xffff | y;
 	int mask = 256 | y;
-	#endif
+	//#endif
 	
 	// Expression statements
 	5 + 2, ++mask, mask <<= 2;

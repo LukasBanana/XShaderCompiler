@@ -64,6 +64,12 @@ class HLSLParser : public Parser
         // Returns true if the current token is part of a primary expression.
         bool IsPrimaryExpr() const;
 
+        // Returns true if the current token is part of an arithmetic unary expression, i.e. either '-' or '+'.
+        bool IsArithmeticUnaryExpr() const;
+
+        // Returns true if the specified expression is a valid left-hand-side of a cast expression.
+        bool IsLhsOfCastExpr(const ExprPtr& expr) const;
+
         /* === Parse functions === */
 
         ProgramPtr                      ParseProgram();
