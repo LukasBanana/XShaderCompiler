@@ -11,7 +11,10 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+
+#ifdef _WIN32
 #include <conio.h>
+#endif
 
 
 using namespace HTLib;
@@ -315,12 +318,14 @@ int main(int argc, char** argv)
     if (translationCounter == 0 && !showHelp && !showVersion)
         ShowHint();
 
+    #ifdef _WIN32
     if (pauseApp)
     {
         std::cout << "press any key to continue ...";
         int i = _getch();
         std::cout << std::endl;
     }
+    #endif
 
     return 0;
 }

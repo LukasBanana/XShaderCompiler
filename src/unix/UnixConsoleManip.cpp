@@ -88,7 +88,7 @@ class IOModifierState
 
         ~IOModifierState();
 
-        void Push(std::ostream& stream, const IOModifier& mode);
+        void Push(std::ostream& stream, const IOModifier& mod);
         void Pop();
 
     private:
@@ -111,13 +111,13 @@ static int GetModCode(long color, bool fg)
     
     int code = 0;
     
-    if ((color & Color::Red) != 0)
+    if ((color & ColorFlags::Red) != 0)
         code += Cd::Red;
-    if ((color & Color::Green) != 0)
+    if ((color & ColorFlags::Green) != 0)
         code += Cd::Green;
-    if ((color & Color::Blue) != 0)
+    if ((color & ColorFlags::Blue) != 0)
         code += Cd::Blue;
-    if ((color & Color::Intens) != 0)
+    if ((color & ColorFlags::Intens) != 0)
         code += Cd::Bright;
     
     code += (fg ? Cd::Foreground : Cd::Background);
@@ -131,7 +131,7 @@ IOModifierState::~IOModifierState()
         Pop();
 }
 
-void IOModifierState::Push(std::ostream& stream, const IOModifier& mode)
+void IOModifierState::Push(std::ostream& stream, const IOModifier& mod)
 {
     modifierStack_.push({ stream, mod });
     stream << mod;
