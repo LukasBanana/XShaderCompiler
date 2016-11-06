@@ -30,28 +30,28 @@ class Token
         {
             __Unknown__,
 
-            // Identifiers
+            /* --- Identifiers --- */
             Ident,              //< (letter | '_') (letter | '_' | digit)*
 
-            // Literals,
+            /* --- Literals --- */
             BoolLiteral,        //< true | false
             IntLiteral,         //< digit+
             FloatLiteral,       //< digit+ '.' digit+
             StringLiteral,      //< '"' ANY+ '"'
 
-            // Operators
+            /* --- Operators --- */
             AssignOp,           //< =, +=, -=, *=, /=, %=, <<=, >>=, |= , &=, ^=
             BinaryOp,           //< &&, ||, |, ^, &, <<, >>, +, -, *, /, %, ==, !=, <, >, <=, >=
             UnaryOp,            //< !, ~, +, -, ++, --
             TernaryOp,          //< ?
 
-            // Punctuation
+            /* --- Punctuation --- */
             Dot,                //< .
             Colon,              //< :
             Semicolon,          //< ;
             Comma,              //< ,
 
-            // Brackets
+            /* --- Brackets --- */
             LBracket,           //< (
             RBracket,           //< )
             LCurly,             //< {
@@ -59,7 +59,7 @@ class Token
             LParen,             //< [
             RParen,             //< ]
 
-            // Keywords
+            /* --- Keywords --- */
             Void,               //< void
 
             ScalarType,         //< bool, int, uint, half, float, double
@@ -81,25 +81,29 @@ class Token
             Register,           //< register
             PackOffset,         //< packoffset
 
-            // Object keywords
+            /* --- Object keywords --- */
             Sampler,            //< sampler, sampler1D, sampler2D, sampler3D, samplerCUBE, sampler_state, SamplerState
+
             /*
             Texture1D, Texture1DArray, Texture2D, Texture2DArray, Texture3D, TextureCube, TextureCubeArray,
             Texture2DMS, Texture2DMSArray, RWTexture1D, RWTexture1DArray, RWTexture2D, RWTexture2DArray, RWTexture3D
             */
             Texture,
+
             /*
             AppendStructuredBuffer, Buffer, ByteAddressBuffer, ConsumeStructuredBuffer,
             StructuredBuffer, RWBuffer, RWByteAddressBuffer, RWStructuredBuffer
             */
             StorageBuffer,
+
             UniformBuffer,      //< cbuffer, tbuffer
 
-            // Control transfer keywords
+            /* --- Control transfer keywords --- */
             CtrlTransfer,       //< break, continue, discard
             Return,             //< return
 
             InputModifier,      //< in, out, inout, uniform
+
             /*
             extern, nointerpolation, precise, shared, groupshared, static,
             uniform, volatile, linear, centroid, noperspective, sample
@@ -107,7 +111,7 @@ class Token
             StorageModifier,
             TypeModifier,       //< const, row_major, column_major
 
-            // Special tokens
+            /* --- Special tokens --- */
             Directive,          //< '#' ... (e.g. "#include").
             Comment,            //< Commentary (only a single text line)
             WhiteSpaces,        //< White spaces (' ', '\t', '\r')
