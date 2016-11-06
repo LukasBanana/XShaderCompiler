@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 #ifdef _WIN32
@@ -22,14 +23,21 @@ using namespace HTLib::ConsoleManip;
 
 /* --- Globals --- */
 
+struct PredefinedMacro
+{
+    std::string ident;
+    std::string value;
+};
+
 struct Config
 {
-    std::string entry;
-    std::string target;
-    std::string shaderIn    = "HLSL5";
-    std::string shaderOut   = "GLSL330";
-    std::string output;
-    Options     options;
+    std::string                     entry;
+    std::string                     target;
+    std::string                     shaderIn    = "HLSL5";
+    std::string                     shaderOut   = "GLSL330";
+    std::string                     output;
+    std::vector<PredefinedMacro>    predefinedMacros;
+    Options                         options;
 };
 
 static Config g_config;
@@ -72,6 +80,8 @@ static void ShowHelp()
             "  -dump-ast [on|off] ..... Enables/disables debug output for the entire abstract syntax tree (AST); by default off",
             "  -pponly [on|off] ....... Enables/disables to only preprocess source code; by default off",
             "  -comments [on|off] ..... Enables/disables commentaries output kept from the sources; by default on",
+            "  -D<IDENT> .............. Adds the identifier <IDENT> to the pre-defined macros",
+            "  -D<IDENT>=VALUE ........ Adds the identifier <IDENT> to the pre-defined macros with the VALUE",
             "  --help, help, -h ....... Prints this help reference",
             "  --version, -v .......... Prints the version information",
             "  --pause ................ Waits for user input after the translation process",
@@ -180,6 +190,22 @@ static bool BoolArg(int& i, int argc, char** argv, const std::string& flag)
     return value;
 }
 
+static PredefinedMacro PredefinedMacroArg(const std::string& arg)
+{
+    PredefinedMacro macro;
+
+    auto pos = arg.find('=');
+    if (pos != std::string::npos && pos + 1 < arg.size())
+    {
+        macro.ident = arg.substr(2, pos - 2);
+        macro.value = arg.substr(pos + 1);
+    }
+    else
+        macro.ident = arg.substr(2);
+
+    return macro;
+}
+
 static std::string ExtractFilename(const std::string& filename)
 {
     auto pos = filename.find_last_of('.');
@@ -210,23 +236,45 @@ static void Translate(const std::string& filename)
         g_config.target.clear();
     }
 
-    /* Translate HLSL file into GLSL */
-    std::cout << "translate from " << filename << " to " << g_config.output << std::endl;
-
-    std::ofstream outputStream(g_config.output);
-
-    inputDesc.sourceCode        = std::make_shared<std::ifstream>(filename);
-    inputDesc.shaderVersion     = InputVersionFromString(g_config.shaderIn);
-    inputDesc.entryPoint        = g_config.entry;
-    inputDesc.shaderTarget      = TargetFromString(g_config.target);
-
-    outputDesc.sourceCode       = &outputStream;
-    outputDesc.shaderVersion    = OutputVersionFromString(g_config.shaderOut);
-    outputDesc.options          = g_config.options;
-
     try
     {
+        /* Add pre-defined macros at the top of the input stream */
+        auto inputStream = std::make_shared<std::stringstream>();
+        
+        for (const auto& macro : g_config.predefinedMacros)
+        {
+            *inputStream << "#define " << macro.ident;
+            if (!macro.value.empty())
+                *inputStream << ' ' << macro.value;
+            *inputStream << std::endl;
+        }
+
+        /* Open input stream */
+        std::ifstream inputFile(filename);
+        if (!inputFile.good())
+            throw std::runtime_error("failed to read file: \"" + filename + "\"");
+
+        *inputStream << inputFile.rdbuf();
+
+        /* Open output stream */
+        std::ofstream outputStream(g_config.output);
+        if (!outputStream.good())
+            throw std::runtime_error("failed to read file: \"" + filename + "\"");
+
+        /* Initialize input and output descriptors */
+        inputDesc.sourceCode        = inputStream;
+        inputDesc.shaderVersion     = InputVersionFromString(g_config.shaderIn);
+        inputDesc.entryPoint        = g_config.entry;
+        inputDesc.shaderTarget      = TargetFromString(g_config.target);
+
+        outputDesc.sourceCode       = &outputStream;
+        outputDesc.shaderVersion    = OutputVersionFromString(g_config.shaderOut);
+        outputDesc.options          = g_config.options;
+
+        /* Translate HLSL file into GLSL */
         StdLog log;
+
+        std::cout << "translate from " << filename << " to " << g_config.output << std::endl;
 
         auto result = TranslateHLSLtoGLSL(inputDesc, outputDesc, &log);
 
@@ -290,6 +338,8 @@ int main(int argc, char** argv)
                 g_config.options.prefix = NextArg(i, argc, argv, arg);
             else if (arg == "-output")
                 g_config.output = NextArg(i, argc, argv, arg);
+            else if (arg.size() > 3 && arg.substr(0, 2) == "-D")
+                g_config.predefinedMacros.push_back(PredefinedMacroArg(arg));
             else
             {
                 /* Translate input code */
