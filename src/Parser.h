@@ -50,6 +50,7 @@ class Parser
 
         void Error(const std::string& msg, bool prevToken = true);
         void ErrorUnexpected(const std::string& hint = "");
+        void ErrorUnexpected(const Tokens type);
 
         void Warning(const std::string& msg, bool prevToken = true);
 

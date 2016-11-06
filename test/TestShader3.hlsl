@@ -13,6 +13,8 @@
 
 #define FOREVER for(;;)
 
+   #    line 16 "TestShader3.hlsl"
+
 // multi-line macro test
 #define FOREVER_TEST1 \  
 	for(;;) \  
@@ -49,11 +51,6 @@ VertexOut VS(VertexIn inp)
 	VertexOut outp = (VertexOut)0;
 	
 	float pi2 = M_PI*2;
-	
-	[[unroll]]
-	for (;)
-	{
-	}
 	
 	FOREVER_TEST1
 	

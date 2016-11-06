@@ -38,6 +38,10 @@ TokenPtr PreProcessorScanner::ScanToken()
     if (std::isalpha(UChr()) || Is('_'))
         return ScanIdentifier();
 
+    /* Scan number */
+    if (std::isdigit(UChr()))
+        return ScanNumber();
+
     /* Scan string literal */
     if (Is('\"'))
         return ScanStringLiteral();
@@ -66,8 +70,9 @@ TokenPtr PreProcessorScanner::ScanDirective()
     IgnoreWhiteSpaces(false);
 
     /* Scan identifier string */
-    std::string spell;
+    StoreStartPos();
 
+    std::string spell;
     while (std::isalpha(UChr()))
         spell += TakeIt();
 
@@ -93,7 +98,7 @@ TokenPtr PreProcessorScanner::ScanMisc()
     /* Scan string as long as no identifier or directive character appears */
     std::string spell;
     
-    while (!std::isalpha(UChr()) && !std::isspace(UChr()) && !Is(0) && std::string("_,()#\"/\\*").find(Chr()) == std::string::npos)
+    while (!std::isalnum(UChr()) && !std::isspace(UChr()) && !Is(0) && std::string("_,()#\"/\\*").find(Chr()) == std::string::npos)
         spell += TakeIt();
 
     /* Return as misc token */

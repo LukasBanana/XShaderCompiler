@@ -196,6 +196,10 @@ void PreProcessor::ParseDirective()
         ParseDirectiveIfndef();
     else if (directive == "pragma")
         ParseDirectivePragma();
+    else if (directive == "line")
+        ParseDirectiveLine();
+    else if (directive == "error")
+        ParseDirectiveError();
     else
         Error("unknown preprocessor directive: \"" + directive + "\"");
 }
@@ -346,7 +350,19 @@ void PreProcessor::ParseDirectivePragma()
 // '#line' NUMBER STRING-LITERAL?
 void PreProcessor::ParseDirectiveLine()
 {
-    //todo...
+    /* Parse line number */
+    IgnoreWhiteSpaces(false);
+    auto lineNumber = Accept(Tokens::IntLiteral)->Spell();
+
+    /* Parse optional filename */
+    IgnoreWhiteSpaces(false);
+
+    if (Is(Tokens::StringLiteral))
+    {
+        auto filename = AcceptIt()->Spell();
+
+        //todo...
+    }
 }
 
 // '#error' TOKEN-STRING

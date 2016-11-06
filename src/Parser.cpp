@@ -104,6 +104,15 @@ void Parser::ErrorUnexpected(const std::string& hint)
     Error(msg, false);
 }
 
+void Parser::ErrorUnexpected(const Tokens type)
+{
+    auto typeName = Token::TypeToString(type);
+    if (typeName.empty())
+        ErrorUnexpected();
+    else
+        ErrorUnexpected("expected " + typeName);
+}
+
 void Parser::Warning(const std::string& msg, bool prevToken)
 {
     if (log_)
@@ -116,14 +125,14 @@ void Parser::Warning(const std::string& msg, bool prevToken)
 TokenPtr Parser::Accept(const Tokens type)
 {
     if (tkn_->Type() != type)
-        ErrorUnexpected();
+        ErrorUnexpected(type);
     return AcceptIt();
 }
 
 TokenPtr Parser::Accept(const Tokens type, const std::string& spell)
 {
     if (tkn_->Type() != type)
-        ErrorUnexpected();
+        ErrorUnexpected(type);
     if (tkn_->Spell() != spell)
         Error("unexpected token spelling '" + tkn_->Spell() + "' (expected '" + spell + "')");
     return AcceptIt();

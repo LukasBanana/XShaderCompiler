@@ -60,6 +60,8 @@ class Scanner
 
         TokenPtr NextToken(bool scanComments, bool scanWhiteSpaces);
 
+        void StoreStartPos();
+
         virtual TokenPtr ScanToken() = 0;
 
         char Take(char chr);
@@ -77,6 +79,9 @@ class Scanner
         TokenPtr ScanCommentLine(bool scanComments);
         TokenPtr ScanCommentBlock(bool scanComments);
         TokenPtr ScanStringLiteral();
+        TokenPtr ScanNumber();
+
+        void ScanDecimalLiteral(std::string& spell);
 
         TokenPtr Make(const Token::Types& type, bool takeChr = false);
         TokenPtr Make(const Token::Types& type, std::string& spell, bool takeChr = false);
@@ -107,8 +112,6 @@ class Scanner
         /* === Functions === */
 
         TokenPtr NextTokenScan(bool scanComments, bool scanWhiteSpaces);
-
-        void StoreStartPos();
 
         /* === Members === */
 

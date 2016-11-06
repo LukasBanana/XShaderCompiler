@@ -233,50 +233,6 @@ TokenPtr HLSLScanner::ScanMinusOp()
     return Make(Tokens::BinaryOp, spell);
 }
 
-TokenPtr HLSLScanner::ScanNumber()
-{
-    if (!std::isdigit(UChr()))
-        Error("expected digit");
-    
-    /* Take first number (literals like ".0" are not allowed) */
-    std::string spell;
-
-    const auto startChr = TakeIt();
-    spell += startChr;
-
-    /* Parse integer or floating-point number */
-    auto type = Tokens::IntLiteral;
-
-    ScanDecimalLiteral(spell);
-
-    if (Is('.'))
-    {
-        spell += TakeIt();
-        
-        if (std::isdigit(UChr()))
-            ScanDecimalLiteral(spell);
-        else
-            Error("floating-point literals must have a decimal on both sides of the dot (e.g. '0.0' but not '0.' or '.0')");
-
-        type = Tokens::FloatLiteral;
-    }
-
-    if (Is('f') || Is('F'))
-        TakeIt();
-
-    if (std::isalpha(UChr()) || Is('.'))
-        Error("letter '" + std::string(1, Chr()) + "' is not allowed within a number");
-
-    /* Create number token */
-    return Make(type, spell);
-}
-
-void HLSLScanner::ScanDecimalLiteral(std::string& spell)
-{
-    while (std::isdigit(UChr()))
-        spell += TakeIt();
-}
-
 
 } // /namespace HTLib
 

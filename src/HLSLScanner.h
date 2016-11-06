@@ -38,9 +38,6 @@ class HLSLScanner : public Scanner
         TokenPtr ScanAssignShiftRelationOp(const char Chr);
         TokenPtr ScanPlusOp();
         TokenPtr ScanMinusOp();
-        TokenPtr ScanNumber();
-
-        void ScanDecimalLiteral(std::string& spell);
 
 };
 
