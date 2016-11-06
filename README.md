@@ -21,6 +21,7 @@ Status
 * 'typedef' statement.
 * Geometry and Tessellation semantics.
 * 'interface' and 'class' declarations.
+* full support of floating-point syntax in lexical analyzer.
 
 Offline Translator
 ------------------
