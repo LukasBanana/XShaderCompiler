@@ -70,38 +70,6 @@ Library Usage
 ```cpp
 #include <HT/Translator.h>
 #include <fstream>
-#include <iostream>
-
-/* ... */
-
-// Implements the output log interface
-class OutputLog : public HTLib::Log
-{
-	public:
-		void Info(const std::string& message) override
-		{
-			std::cout << indent << message << std::endl;
-		}
-		void Warning(const std::string& message) override
-		{
-			std::cout << indent << message << std::endl;
-		}
-		void Error(const std::string& message) override
-		{
-			std::cerr << indent << message << std::endl;
-		}
-		void IncIndent() override
-		{
-			indent.push_back(' ');
-		}
-		void DecIndent() override
-		{
-			if (!indent.empty())
-				indent.pop_back();
-		}
-	private:
-		std::string indent;
-};
 
 /* ... */
 
@@ -119,6 +87,6 @@ outputDesc.sourceCode    = &outputStream;
 outputDesc.shaderVersion = HTLib::OutputShaderVersions::GLSL330;
 
 // Translate HLSL code into GLSL
-OutputLog log;
+HTLib::StdLog log;
 bool result = HTLib::TranslateHLSLtoGLSL(inputDesc, outputDesc, &log);
 ```
