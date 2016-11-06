@@ -180,7 +180,8 @@ void PreProcessor::ParseMisc()
 void PreProcessor::ParseDirective()
 {
     /* Parse pre-processor directive */
-    auto directive = Accept(Tokens::Directive)->Spell();
+    auto tkn = Accept(Tokens::Directive);
+    auto directive = tkn->Spell();
 
     if (directive == "define")
         ParseDirectiveDefine();
@@ -199,7 +200,7 @@ void PreProcessor::ParseDirective()
     else if (directive == "line")
         ParseDirectiveLine();
     else if (directive == "error")
-        ParseDirectiveError();
+        ParseDirectiveError(tkn);
     else
         Error("unknown preprocessor directive: \"" + directive + "\"");
 }
@@ -366,9 +367,25 @@ void PreProcessor::ParseDirectiveLine()
 }
 
 // '#error' TOKEN-STRING
-void PreProcessor::ParseDirectiveError()
+void PreProcessor::ParseDirectiveError(const TokenPtr& directiveToken)
 {
-    //todo...
+    auto pos = directiveToken->Pos();
+
+    /* Parse token string */
+    auto tokenString = ParseTokenString();
+    
+    /* Convert token string into error message */
+    std::string errorMsg;
+
+    for (const auto& tkn : tokenString)
+    {
+        if (tkn->Type() == Tokens::StringLiteral)
+            errorMsg += '\"' + tkn->Spell() + '\"';
+        else
+            errorMsg += tkn->Spell();
+    }
+
+    throw Report(Report::Types::Error, "error (" + pos.ToString() + ") : " + errorMsg);
 }
 
 PreProcessor::TokenString PreProcessor::ParseTokenString()

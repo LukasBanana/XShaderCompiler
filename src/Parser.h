@@ -48,10 +48,13 @@ class Parser
         // Returns the filename for the current scanner source.
         std::string GetCurrentFilename() const;
 
+        void Error(const std::string& msg, Token* tkn);
         void Error(const std::string& msg, bool prevToken = true);
+
         void ErrorUnexpected(const std::string& hint = "");
         void ErrorUnexpected(const Tokens type);
 
+        void Warning(const std::string& msg, Token* tkn);
         void Warning(const std::string& msg, bool prevToken = true);
 
         TokenPtr Accept(const Tokens type);

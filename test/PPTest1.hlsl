@@ -46,6 +46,8 @@ struct VertexOut
 	float4 color	: COLOR;
 };
 
+//#error Foo F1(2) bar "Hello World"
+
 VertexOut VS(VertexIn inp)
 {
 	VertexOut outp = (VertexOut)0;

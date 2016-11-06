@@ -83,15 +83,20 @@ Report Parser::MakeReport(const Report::Types type, const std::string& msg, cons
         return Report(type, msg);
 }
 
-static SourceArea GetTokenArea(const TokenPtr& tkn)
+static SourceArea GetTokenArea(Token* tkn)
 {
     return (tkn != nullptr ? tkn->Area() : SourceArea());
 }
 
+void Parser::Error(const std::string& msg, Token* tkn)
+{
+    auto area = GetTokenArea(tkn);
+    throw MakeReport(Report::Types::Error, "syntax error (" + area.pos.ToString() + ") : " + msg, area);
+}
+
 void Parser::Error(const std::string& msg, bool prevToken)
 {
-    auto area = GetTokenArea(prevToken ? GetScanner().PreviousToken() : GetScanner().ActiveToken());
-    throw MakeReport(Report::Types::Error, "syntax error (" + area.pos.ToString() + ") : " + msg, area);
+    Error(msg, prevToken ? GetScanner().PreviousToken().get() : GetScanner().ActiveToken().get());
 }
 
 void Parser::ErrorUnexpected(const std::string& hint)
@@ -113,13 +118,18 @@ void Parser::ErrorUnexpected(const Tokens type)
         ErrorUnexpected("expected " + typeName);
 }
 
-void Parser::Warning(const std::string& msg, bool prevToken)
+void Parser::Warning(const std::string& msg, Token* tkn)
 {
     if (log_)
     {
-        auto area = GetTokenArea(prevToken ? GetScanner().PreviousToken() : GetScanner().ActiveToken());
+        auto area = GetTokenArea(tkn);
         log_->SumitReport(MakeReport(Report::Types::Warning, "warning (" + area.pos.ToString() + ") : " + msg, area));
     }
+}
+
+void Parser::Warning(const std::string& msg, bool prevToken)
+{
+    Warning(msg, prevToken ? GetScanner().PreviousToken().get() : GetScanner().ActiveToken().get());
 }
 
 TokenPtr Parser::Accept(const Tokens type)
