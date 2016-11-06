@@ -124,8 +124,8 @@ void StdLog::PrintReport(const IndentReport& r)
                     ConsoleManip::ScopedColor highlight(std::cout, Colors::Cyan);
                     std::cout << line.substr(pos, marker.size() - pos);
                 }
-                if (pos + marker.size() < line.size())
-                    std::cout << line.substr(pos + marker.size());
+                if (marker.size() < line.size())
+                    std::cout << line.substr(marker.size());
             }
             else
                 std::cout << line;
