@@ -16,42 +16,11 @@ Status
 ------
 
 ##### TODO List: #####
+* Preprocessor (*In Progress*).
 * Common HLSL IO semantics to GLSL transformation.
 * 'typedef' statement.
-* Basic pre-processor (*In Progress*).
 * Geometry and Tessellation semantics.
 * 'interface' and 'class' declarations.
-
-##### Limitations: #####
-
-**UPDATE**:
-*The limitations described in this section are about to be solved.
-The development of an sophisticated pre-processor for the HLSL translator is in progress.*
-
-Pre-processor directives (beginning with '#') will be translated as something like a dummy statement. Example:
-```
-#if 1
-float4 Function(inout float4 x);
-#endif
-```
-Will be translated to:
-```
-#if 1
-vec4 Function(inout vec4 x);
-#endif
-```
-And the following HLSL code can currently not be translated:
-```
-#define FOREVER for(;;)
-FOREVER
-{
-	if (Function())
-		break;
-}
-```
-That is to say that pre-processor directives may only appear as an own statement
-and not as a combination with other statements or expressions.
-Only 'include' directives will be parsed and inlined.
 
 Offline Translator
 ------------------
