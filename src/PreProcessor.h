@@ -23,7 +23,13 @@ namespace HTLib
 {
 
 
-// Pre-processor to substitute macros and include directives.
+/*
+Pre-processor to substitute macros and include directives.
+The preprocessor works on something similar to a Concrete Syntax Tree (CST) rather than an Abstract Syntax Tree (AST).
+This is because the output is not an intermediate representation but rather concrete source code.
+Therefore, all white spaces and new-line characters must not be ignored.
+All other parsers and analyzers only work on an AST.
+*/
 class PreProcessor : public Parser
 {
     
