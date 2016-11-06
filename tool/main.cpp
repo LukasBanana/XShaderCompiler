@@ -158,23 +158,23 @@ static OutputShaderVersion OutputVersionFromString(const std::string& version)
     return OutputShaderVersion::GLSL110;
 }
 
-static std::string NextArg(int& i, int argc, char** argv, const std::string& flag)
+static const std::string& NextArg(std::size_t& i, const std::vector<std::string>& args, const std::string& flag)
 {
-    if (i + 1 >= argc)
+    if (i + 1 >= args.size())
         throw std::runtime_error("missing next argument after flag \"" + flag + "\"");
-    return argv[++i];
+    return args[++i];
 }
 
-static bool BoolArg(int& i, int argc, char** argv, const std::string& flag)
+static bool BoolArg(std::size_t& i, const std::vector<std::string>& args, const std::string& flag)
 {
     /* Set default value to true (when used, boolean flags for command lines enable per default) */
     bool value = true;
 
     /* Check if the there is a next argument "on" or "off" */
-    if (i + 1 < argc)
+    if (i + 1 < args.size())
     {
         /* Fetch next argument from 'argv' array */
-        auto arg = std::string(argv[i + 1]);
+        const auto& arg = args[i + 1];
 
         if (arg == "on")
             value = true;
@@ -289,10 +289,7 @@ static void Translate(const std::string& filename)
     }
 }
 
-
-/* --- Main function --- */
-
-int main(int argc, char** argv)
+static void ParseArguments(const std::vector<std::string>& args)
 {
     int     translationCounter  = 0;
     bool    showHelp            = false,
@@ -300,11 +297,11 @@ int main(int argc, char** argv)
             pauseApp            = false;
 
     /* Parse program arguments */
-    for (int i = 1; i < argc; ++i)
+    for (std::size_t i = 0; i < args.size(); ++i)
     {
         try
         {
-            auto arg = std::string(argv[i]);
+            const auto& arg = args[i];
 
             if (arg == "help" || arg == "--help" || arg == "-h")
                 showHelp = true;
@@ -313,31 +310,31 @@ int main(int argc, char** argv)
             else if (arg == "--pause")
                 pauseApp = true;
             else if (arg == "-warn")
-                g_config.options.warnings = BoolArg(i, argc, argv, arg);
+                g_config.options.warnings = BoolArg(i, args, arg);
             else if (arg == "-blanks")
-                g_config.options.blanks = BoolArg(i, argc, argv, arg);
+                g_config.options.blanks = BoolArg(i, args, arg);
             else if (arg == "-line-marks")
-                g_config.options.lineMarks = BoolArg(i, argc, argv, arg);
+                g_config.options.lineMarks = BoolArg(i, args, arg);
             else if (arg == "-dump-ast")
-                g_config.options.dumpAST = BoolArg(i, argc, argv, arg);
+                g_config.options.dumpAST = BoolArg(i, args, arg);
             else if (arg == "-pponly")
-                g_config.options.preprocessOnly = BoolArg(i, argc, argv, arg);
+                g_config.options.preprocessOnly = BoolArg(i, args, arg);
             else if (arg == "-comments")
-                g_config.options.keepComments = BoolArg(i, argc, argv, arg);
+                g_config.options.keepComments = BoolArg(i, args, arg);
             else if (arg == "-entry")
-                g_config.entry = NextArg(i, argc, argv, arg);
+                g_config.entry = NextArg(i, args, arg);
             else if (arg == "-target")
-                g_config.target = NextArg(i, argc, argv, arg);
+                g_config.target = NextArg(i, args, arg);
             else if (arg == "-shaderin")
-                g_config.shaderIn = NextArg(i, argc, argv, arg);
+                g_config.shaderIn = NextArg(i, args, arg);
             else if (arg == "-shaderout")
-                g_config.shaderOut = NextArg(i, argc, argv, arg);
+                g_config.shaderOut = NextArg(i, args, arg);
             else if (arg == "-indent")
-                g_config.options.indent = NextArg(i, argc, argv, arg);
+                g_config.options.indent = NextArg(i, args, arg);
             else if (arg == "-prefix")
-                g_config.options.prefix = NextArg(i, argc, argv, arg);
+                g_config.options.prefix = NextArg(i, args, arg);
             else if (arg == "-output")
-                g_config.output = NextArg(i, argc, argv, arg);
+                g_config.output = NextArg(i, args, arg);
             else if (arg.size() > 3 && arg.substr(0, 2) == "-D")
                 g_config.predefinedMacros.push_back(PredefinedMacroArg(arg));
             else
@@ -355,7 +352,7 @@ int main(int argc, char** argv)
         catch (const std::exception& err)
         {
             std::cerr << err.what() << std::endl;
-            return 0;
+            return;
         }
     }
 
@@ -376,6 +373,21 @@ int main(int argc, char** argv)
         std::cout << std::endl;
     }
     #endif
+}
+
+
+/* --- Main function --- */
+
+int main(int argc, char** argv)
+{
+    /* Convert arguments and pass them to the main argument parse function */
+    std::vector<std::string> args;
+    args.reserve(argc - 1);
+
+    for (int i = 1; i < argc; ++i)
+        args.push_back(argv[i]);
+
+    ParseArguments(args);
 
     return 0;
 }
