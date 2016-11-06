@@ -88,9 +88,9 @@ bool PreProcessor::CompareTokenStrings(const TokenString& lhs, const TokenString
     /* Get first tokens */
     auto lhsIt = lhs.begin(), rhsIt = rhs.begin();
 
-    if (!IsTokenOfInteres(lhsIt))
+    if (lhsIt != lhs.end() && !IsTokenOfInteres(lhsIt))
         NextStringToken(lhs, lhsIt);
-    if (!IsTokenOfInteres(rhsIt))
+    if (rhsIt != rhs.end() && !IsTokenOfInteres(rhsIt))
         NextStringToken(rhs, rhsIt);
 
     /* Check if all tokens of interest are equal in both strings */
