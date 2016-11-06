@@ -118,6 +118,30 @@ void PreProcessor::OutputTokenString(const TokenString& tokenString)
         *output_ << tkn->Spell();
 }
 
+void PreProcessor::PushIfBlock(bool active)
+{
+    activeIfBlockStack_.push(IsTopIfBlockActive() && active);
+}
+
+void PreProcessor::PopIfBlock()
+{
+    if (activeIfBlockStack_.empty())
+        Error("missing '#if'-directive to closing '#endif'");
+    activeIfBlockStack_.pop();
+}
+
+bool PreProcessor::IsTopIfBlockActive() const
+{
+    return (activeIfBlockStack_.empty() || activeIfBlockStack_.top());
+}
+
+void PreProcessor::SkipToNextLine()
+{
+    while (!Is(Tokens::NewLines))
+        AcceptIt();
+    AcceptIt();
+}
+
 /* === Parse functions === */
 
 void PreProcessor::ParseProgram()
@@ -126,20 +150,31 @@ void PreProcessor::ParseProgram()
     {
         while (!Is(Tokens::EndOfStream))
         {
-            switch (Type())
+            if (IsTopIfBlockActive())
             {
-                case Tokens::Directive:
-                    ParseDirective();
-                    break;
-                case Tokens::Comment:
-                    ParesComment();
-                    break;
-                case Tokens::Ident:
-                    ParseIdent();
-                    break;
-                default:
-                    ParseMisc();
-                    break;
+                /* Parse active block */
+                switch (Type())
+                {
+                    case Tokens::Directive:
+                        ParseDirective();
+                        break;
+                    case Tokens::Comment:
+                        ParesComment();
+                        break;
+                    case Tokens::Ident:
+                        ParseIdent();
+                        break;
+                    default:
+                        ParseMisc();
+                        break;
+                }
+            }
+            else
+            {
+                /* On an inactive if-block: parse only '#if'-directives or skip to next line */
+                if (Type() == Tokens::Directive)
+                    ParseAnyIfDirectiveAndSkipValidation();
+                SkipToNextLine();
             }
         }
     }
@@ -195,6 +230,12 @@ void PreProcessor::ParseDirective()
         ParseDirectiveIfdef();
     else if (directive == "ifndef")
         ParseDirectiveIfndef();
+    else if (directive == "elif")
+        ParseDirectiveElif();
+    else if (directive == "else")
+        ParseDirectiveElse();
+    else if (directive == "endif")
+        ParseDirectiveEndif();
     else if (directive == "pragma")
         ParseDirectivePragma();
     else if (directive == "line")
@@ -203,6 +244,26 @@ void PreProcessor::ParseDirective()
         ParseDirectiveError(tkn);
     else
         Error("unknown preprocessor directive: \"" + directive + "\"");
+}
+
+void PreProcessor::ParseAnyIfDirectiveAndSkipValidation()
+{
+    /* Parse pre-processor directive */
+    auto tkn = Accept(Tokens::Directive);
+    auto directive = tkn->Spell();
+
+    if (directive == "if")
+        ParseDirectiveIf(true);
+    else if (directive == "ifdef")
+        ParseDirectiveIfdef(true);
+    else if (directive == "ifndef")
+        ParseDirectiveIfndef(true);
+    else if (directive == "elif")
+        ParseDirectiveElif(true);
+    else if (directive == "else")
+        ParseDirectiveElse();
+    else if (directive == "endif")
+        ParseDirectiveEndif();
 }
 
 // '#define' IDENT ( '(' IDENT+ ')' )? (TOKEN-STRING)?
@@ -309,25 +370,43 @@ void PreProcessor::ParseDirectiveInclude()
 }
 
 // '#if' CONSTANT-EXPRESSION
-void PreProcessor::ParseDirectiveIf()
+void PreProcessor::ParseDirectiveIf(bool skipEvaluation)
 {
     //todo...
 }
 
 // '#ifdef' IDENT
-void PreProcessor::ParseDirectiveIfdef()
+void PreProcessor::ParseDirectiveIfdef(bool skipEvaluation)
 {
-    //todo...
+    if (skipEvaluation)
+    {
+        /* Push new if-block activation (and skip evaluation, due to currently inactive block) */
+        PushIfBlock();
+    }
+    else
+    {
+        /* Parse identifier */
+        IgnoreWhiteSpaces(false);
+        auto ident = Accept(Tokens::Ident)->Spell();
+    
+        /* Push new if-block activation (with 'defined' condition) */
+        PushIfBlock(IsDefined(ident));
+    }
 }
 
 // '#ifndef' IDENT
-void PreProcessor::ParseDirectiveIfndef()
+void PreProcessor::ParseDirectiveIfndef(bool skipEvaluation)
 {
-    //todo...
+    /* Parse identifier */
+    IgnoreWhiteSpaces(false);
+    auto ident = Accept(Tokens::Ident)->Spell();
+    
+    /* Push new if-block activation (with 'not defined' condition) */
+    PushIfBlock(!IsDefined(ident));
 }
 
 // '#elif CONSTANT-EXPRESSION'
-void PreProcessor::ParseDirectiveElif()
+void PreProcessor::ParseDirectiveElif(bool skipEvaluation)
 {
     //todo...
 }
@@ -341,7 +420,8 @@ void PreProcessor::ParseDirectiveElse()
 // '#endif'
 void PreProcessor::ParseDirectiveEndif()
 {
-    //todo...
+    /* Only pop if-block from top of the stack */
+    PopIfBlock();
 }
 
 // '#pragma' TOKEN-STRING

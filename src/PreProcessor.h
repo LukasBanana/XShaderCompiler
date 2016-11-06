@@ -15,6 +15,7 @@
 #include "Parser.h"
 #include "SourceCode.h"
 #include <iostream>
+#include <stack>
 #include <map>
 #include <set>
 
@@ -67,6 +68,15 @@ class PreProcessor : public Parser
 
         void OutputTokenString(const TokenString& tokenString);
 
+        void PushIfBlock(bool active = false);
+        void PopIfBlock();
+
+        // Returns true if the if-block on top of the stack is active or if the stack is empty.
+        bool IsTopIfBlockActive() const;
+
+        // Ignores all tokens until the next line is reached.
+        void SkipToNextLine();
+
         /* === Parse functions === */
 
         void ParseProgram();
@@ -76,13 +86,14 @@ class PreProcessor : public Parser
         void ParseMisc();
         
         void ParseDirective();
+        void ParseAnyIfDirectiveAndSkipValidation();
         void ParseDirectiveDefine();
         void ParseDirectiveUndef();
         void ParseDirectiveInclude();
-        void ParseDirectiveIf();
-        void ParseDirectiveIfdef();
-        void ParseDirectiveIfndef();
-        void ParseDirectiveElif();
+        void ParseDirectiveIf(bool skipEvaluation = false);
+        void ParseDirectiveIfdef(bool skipEvaluation = false);
+        void ParseDirectiveIfndef(bool skipEvaluation = false);
+        void ParseDirectiveElif(bool skipEvaluation = false);
         void ParseDirectiveElse();
         void ParseDirectiveEndif();
         void ParseDirectivePragma();
@@ -100,8 +111,13 @@ class PreProcessor : public Parser
         std::shared_ptr<std::stringstream>      output_;
 
         std::map<std::string, DefinedSymbolPtr> definedSymbols_;
-
         std::set<std::string>                   onceIncluded_;
+
+        /*
+        Stack to store the info which if-block in the hierarchy is active.
+        Once an if-block is inactive, all subsequent if-blocks are inactive, too.
+        */
+        std::stack<bool>                        activeIfBlockStack_;
 
 };
 

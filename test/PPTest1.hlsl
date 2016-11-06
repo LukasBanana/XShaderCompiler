@@ -27,6 +27,10 @@
 #define  F2 (  X ,   Y  )  (X)*(Y)
 
 
+#ifdef F3
+#	error F3 must not be defined!
+#endif
+
 cbuffer Settings : register(b0)
 {
 	float4x4	wvpMatrix;
