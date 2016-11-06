@@ -126,7 +126,7 @@ static void ShowHelp()
     PrintLines(
         {
             "Usage:",
-            "  HTLibCmd (Options FILE)+",
+            "  HTLibCmd (OPTION+ FILE)+",
             "Options:",
             "  -entry ENTRY ........... HLSL shader entry point",
             "  -target TARGET ......... Shader target; valid values:",
@@ -143,6 +143,7 @@ static void ShowHelp()
             "  -blanks [on|off] ....... Enables/disables generation of blank lines between declarations; by default on",
             "  -line-marks [on|off] ... Enables/disables generation of line marks (e.g. '#line 30'); by default off",
             "  -dump-ast [on|off] ..... Enables/disables debug output for the entire abstract syntax tree (AST); by default off",
+            "  -pponly [on|off] ....... Enables/disables to only preprocess source code; by default off",
             "  -comments [on|off] ..... Enables/disables commentaries output kept from the sources; by default on",
             "  --help, help, -h ....... Prints this help reference",
             "  --version, -v .......... Prints the version information",
@@ -228,15 +229,27 @@ static std::string NextArg(int& i, int argc, char** argv, const std::string& fla
 
 static bool BoolArg(int& i, int argc, char** argv, const std::string& flag)
 {
-    auto arg = NextArg(i, argc, argv, flag);
-    
-    if (arg == "on")
-        return true;
-    else if (arg == "off")
-        return false;
+    /* Set default value to true (when used, boolean flags for command lines enable per default) */
+    bool value = true;
 
-    throw std::runtime_error("invalid state '" + arg + "' for boolean flag (must be 'on' or 'off')");
-    return false;
+    /* Check if the there is a next argument "on" or "off" */
+    if (i + 1 < argc)
+    {
+        /* Fetch next argument from 'argv' array */
+        auto arg = std::string(argv[i + 1]);
+
+        if (arg == "on")
+            value = true;
+        else if (arg == "off")
+            value = false;
+        else
+            return true;
+
+        /* Accept this argument by increasing index of 'argv' array */
+        ++i;
+    }
+
+    return value;
 }
 
 static std::string ExtractFilename(const std::string& filename)
@@ -331,6 +344,8 @@ int main(int argc, char** argv)
                 g_config.options.lineMarks = BoolArg(i, argc, argv, arg);
             else if (arg == "-dump-ast")
                 g_config.options.dumpAST = BoolArg(i, argc, argv, arg);
+            else if (arg == "-pponly")
+                g_config.options.preprocessOnly = BoolArg(i, argc, argv, arg);
             else if (arg == "-comments")
                 g_config.options.keepComments = BoolArg(i, argc, argv, arg);
             else if (arg == "-entry")

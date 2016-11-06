@@ -53,6 +53,9 @@ struct Options
     //! If true, the abstract syntax tree (AST) will be printed as debug output. By default false.
     bool        dumpAST         = false;
 
+    //! If true, only the preprocessed source code will be written out.
+    bool        preprocessOnly  = false;
+
     //! If true, (almost) all comments are kept in the output code. By default true.
     bool        keepComments    = true;
 };

@@ -12,6 +12,7 @@
 #include "GLSLGenerator.h"
 #include "ASTPrinter.h"
 #include <fstream>
+#include <sstream>
 
 
 namespace HTLib
@@ -70,6 +71,12 @@ HTLIB_EXPORT bool TranslateHLSLtoGLSL(
         if (log)
             log->Error("preprocessing input code failed");
         return false;
+    }
+
+    if (outputDesc.options.preprocessOnly)
+    {
+        *outputDesc.sourceCode << processedInput->rdbuf();
+        return true;
     }
 
     /* Parse HLSL input code */
