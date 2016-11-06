@@ -114,7 +114,7 @@ class Token
             NewLines,           //< New-line characters ('\n', "\r\n")
             LineBreak,          //< Line break for pre-processor directives '\'
             Misc,               //< Miscellaneous
-            EndOfStream,
+            EndOfStream,        //< End-of-stream
         };
 
         Token(Token&& other);
@@ -125,6 +125,9 @@ class Token
 
         // Returns the source area of this token.
         SourceArea Area() const;
+
+        // Returns a descriptive string for the specified token type.
+        static std::string TypeToString(const Types type);
 
         // Returns the token type.
         inline Types Type() const
