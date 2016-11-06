@@ -230,13 +230,28 @@ void PreProcessor::ParseDirectiveDefine()
     if (Is(Tokens::LBracket))
     {
         AcceptIt();
+        IgnoreWhiteSpaces(false);
 
-        while (!Is(Tokens::RBracket))
+        if (!Is(Tokens::RBracket))
         {
-            //todo...
+            while (true)
+            {
+                /* Parse next parameter identifier */
+                IgnoreWhiteSpaces(false);
+                auto paramIdent = Accept(Tokens::Ident)->Spell();
+                IgnoreWhiteSpaces(false);
+
+                symbol->parameters.push_back(paramIdent);
+
+                /* Check if parameter list is finished */
+                if (!Is(Tokens::Comma))
+                    break;
+
+                AcceptIt();
+            }
         }
         
-        AcceptIt();
+        Accept(Tokens::RBracket);
     }
 
     /* Parse optional value */
@@ -362,7 +377,7 @@ void PreProcessor::ParseDirectiveLine()
     {
         auto filename = AcceptIt()->Spell();
 
-        //todo...
+        //TODO...
     }
 }
 

@@ -22,6 +22,11 @@
 		int /*TEST_X*/ x=0; \
 	}
 
+// macro test with parameters
+#define F1(X, Y) (X)*(Y)
+#define  F2 (  X ,   Y  )  (X)*(Y)
+
+
 cbuffer Settings : register(b0)
 {
 	float4x4	wvpMatrix;
