@@ -90,3 +90,9 @@ outputDesc.shaderVersion = HTLib::OutputShaderVersions::GLSL330;
 HTLib::StdLog log;
 bool result = HTLib::TranslateHLSLtoGLSL(inputDesc, outputDesc, &log);
 ```
+
+Output Example
+--------------
+
+<p align="center">Meaningful output messages with line marker:</p>
+<p align="center"><img src="docu/screenshot_01.png" alt="docu/screenshot_01.png"/></p>
