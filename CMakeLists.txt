@@ -69,12 +69,15 @@ if(HTLib_SHARED_LIB)
 else()
 	add_library(HTLib STATIC ${FilesAll})
 endif()
+
 set_target_properties(HTLib PROPERTIES LINKER_LANGUAGE CXX)
+target_compile_features(HTLib PRIVATE cxx_range_for)
 
 if(HTLib_BUILD_CMD_TOOL)
 	add_executable(HTLibCmd ${FilesTool})
 	set_target_properties(HTLibCmd PROPERTIES LINKER_LANGUAGE CXX)
 	target_link_libraries(HTLibCmd HTLib)
+	target_compile_features(HTLibCmd PRIVATE cxx_range_for)
 endif()
 
 

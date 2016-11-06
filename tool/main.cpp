@@ -5,15 +5,17 @@
  * See "LICENSE.txt" for license information.
  */
 
+#include <HT/Translator.h>
+#include <HT/ConsoleManip.h>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include <HT/Translator.h>
 #include <conio.h>
 
 
 using namespace HTLib;
+using namespace HTLib::ConsoleManip;
 
 /* --- Globals --- */
 
@@ -79,6 +81,7 @@ static void ShowHelp()
 
 static void ShowVersion()
 {
+    ScopedColor highlight(std::cout, ColorFlags::Green | ColorFlags::Blue);
     std::cout << "HLSL Translator ( Version " << HTLIB_VERSION_STRING << " )" << std::endl;
     std::cout << "Copyright (c) 2014-2016 by Lukas Hermanns" << std::endl;
     std::cout << "3-Clause BSD License" << std::endl;
