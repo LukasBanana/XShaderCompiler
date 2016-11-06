@@ -135,6 +135,7 @@ bool PreProcessor::IsTopIfBlockActive() const
     return (activeIfBlockStack_.empty() || activeIfBlockStack_.top());
 }
 
+//UNUSED
 void PreProcessor::SkipToNextLine()
 {
     while (!Is(Tokens::NewLines))
@@ -174,7 +175,8 @@ void PreProcessor::ParseProgram()
                 /* On an inactive if-block: parse only '#if'-directives or skip to next line */
                 if (Type() == Tokens::Directive)
                     ParseAnyIfDirectiveAndSkipValidation();
-                SkipToNextLine();
+                else
+                    AcceptIt();
             }
         }
     }
@@ -418,7 +420,10 @@ void PreProcessor::ParseDirectiveElif(bool skipEvaluation)
 // '#else'
 void PreProcessor::ParseDirectiveElse()
 {
-    //todo...
+    /* Pop if-block and push new if-block with negated condition */
+    auto elseCondition = !IsTopIfBlockActive();
+    PopIfBlock();
+    PushIfBlock(elseCondition);
 }
 
 // '#endif'
