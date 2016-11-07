@@ -750,8 +750,14 @@ ExprPtr PreProcessor::ParseValueExpr()
     switch (TknType())
     {
         case Tokens::Ident:
-            //TODO...
-            break;
+        {
+            /* Parse identifier without macro expansion (this already happend at this point) */
+            auto ast = Make<VarAccessExpr>();
+            ast->varIdent = Make<VarIdent>();
+            ast->varIdent->ident = AcceptIt()->Spell();
+            return ast;
+        }
+        break;
 
         case Tokens::UnaryOp:
         {
