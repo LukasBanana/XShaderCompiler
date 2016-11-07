@@ -16,6 +16,7 @@
 #include "Parser.h"
 #include "SourceCode.h"
 #include <iostream>
+#include <functional>
 #include <stack>
 #include <map>
 #include <set>
@@ -86,6 +87,9 @@ class PreProcessor : public Parser
         */
         TokenPtrString ExpandMacro(const Macro& macro, const std::vector<TokenPtrString>& arguments);
 
+        // Builds a left-to-right binary-expression tree hierarchy for the specified list of expressions.
+        ExprPtr BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<std::string>& ops);
+
         /* === Parse functions === */
 
         void ParseProgram();
@@ -112,7 +116,26 @@ class PreProcessor : public Parser
         void ParseDirectiveLine();
         void ParseDirectiveError(const TokenPtr& directiveToken);
 
-        //ExprPtr ParseExpr();
+        ExprPtr ParseExpr();
+        
+        ExprPtr ParseAbstractBinaryExpr(
+            const std::function<ExprPtr()>& parseFunc,
+            const std::vector<std::string>& binaryOps
+        );
+
+        ExprPtr ParseLogicOrExpr();
+        ExprPtr ParseLogicAndExpr();
+        ExprPtr ParseBitwiseOrExpr();
+        ExprPtr ParseBitwiseXOrExpr();
+        ExprPtr ParseBitwiseAndExpr();
+        ExprPtr ParseEqualityExpr();
+        ExprPtr ParseRelationExpr();
+        ExprPtr ParseShiftExpr();
+        ExprPtr ParseAddExpr();
+        ExprPtr ParseSubExpr();
+        ExprPtr ParseMulExpr();
+        ExprPtr ParseDivExpr();
+        ExprPtr ParseValueExpr();
 
         TokenPtrString ParseDirectiveTokenString();
         TokenPtrString ParseArgumentTokenString();

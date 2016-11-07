@@ -59,12 +59,18 @@ class Parser
         void ErrorUnexpected(const std::string& hint = "");
         void ErrorUnexpected(const Tokens type);
 
+        void ErrorInternal(const std::string& msg, const std::string& procName);
+
         void Warning(const std::string& msg, Token* tkn);
         void Warning(const std::string& msg, bool prevToken = true);
 
         TokenPtr Accept(const Tokens type);
         TokenPtr Accept(const Tokens type, const std::string& spell);
         TokenPtr AcceptIt();
+
+        // Pushes the specified token string onto the stack where further tokens will be parsed from the top of the stack.
+        void PushTokenString(const TokenPtrString& tokenString);
+        void PopTokenString();
 
         // Ignores the next tokens if they are white spaces and optionally new lines.
         void IgnoreWhiteSpaces(bool includeNewLines = true);//, bool includeComments = true);
@@ -96,7 +102,7 @@ class Parser
         }
 
         // Returns the type of the next token.
-        inline Tokens Type() const
+        inline Tokens TknType() const
         {
             return Tkn()->Type();
         }
@@ -104,13 +110,13 @@ class Parser
         // Returns true if the next token is from the specified type.
         inline bool Is(const Tokens type) const
         {
-            return (Type() == type);
+            return (TknType() == type);
         }
 
         // Returns true if the next token is from the specified type and has the specified spelling.
         inline bool Is(const Tokens type, const std::string& spell) const
         {
-            return (Type() == type && Tkn()->Spell() == spell);
+            return (TknType() == type && Tkn()->Spell() == spell);
         }
 
     private:

@@ -198,7 +198,7 @@ SwitchCasePtr HLSLParser::ParseSwitchCase()
 
 GlobalDeclPtr HLSLParser::ParseGlobalDecl()
 {
-    switch (Type())
+    switch (TknType())
     {
         case Tokens::Sampler:
             return ParseSamplerDecl();
@@ -471,7 +471,7 @@ StmntPtr HLSLParser::ParseStmnt()
         attribs = ParseAttributeList();
 
     /* Determine which kind of statement the next one is */
-    switch (Type())
+    switch (TknType())
     {
         case Tokens::Comment:
             return ParseCommentStmnt();
@@ -858,6 +858,7 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma, const ExprPtr& initExpr)
     if (!ast)
         ast = ParsePrimaryExpr();
 
+    //~~~~~~~~~~ TODO: WHAT IS POST-UNARY EXPRESSION????? ~~~~~~~~~~~~~~
     /* Parse optional post-unary expression */
     if (Is(Tokens::UnaryOp))
     {
@@ -934,7 +935,7 @@ LiteralExprPtr HLSLParser::ParseLiteralExpr()
         ErrorUnexpected("expected literal expression");
 
     /* Parse literal */
-    auto ast = Make<LiteralExpr>();    
+    auto ast = Make<LiteralExpr>();
     ast->literal = AcceptIt()->Spell();
     return ast;
 }
@@ -1068,6 +1069,7 @@ FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIden
 
 InitializerExprPtr HLSLParser::ParseInitializerExpr()
 {
+    /* Parse initializer list expression */
     auto ast = Make<InitializerExpr>();
     ast->exprs = ParseInitializerList();
     return ast;

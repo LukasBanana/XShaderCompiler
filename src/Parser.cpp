@@ -110,6 +110,11 @@ void Parser::ErrorUnexpected(const Tokens type)
         ErrorUnexpected("expected: " + typeName);
 }
 
+void Parser::ErrorInternal(const std::string& msg, const std::string& procName)
+{
+    reportHandler_.ErrorBreak(msg + " (in function: " + procName + ")");
+}
+
 void Parser::Warning(const std::string& msg, Token* tkn)
 {
     reportHandler_.Warning(msg, GetScanner().Source(), GetTokenArea(tkn));
@@ -141,6 +146,19 @@ TokenPtr Parser::AcceptIt()
     auto prevTkn = tkn_;
     tkn_ = GetScanner().Next();
     return prevTkn;
+}
+
+void Parser::PushTokenString(const TokenPtrString& tokenString)
+{
+    /* Push token string onto stack in the scanner and accept first token */
+    GetScanner().PushTokenString(tokenString);
+    AcceptIt();
+}
+
+void Parser::PopTokenString()
+{
+    /* Pop token string from the stack in the scanner */
+    GetScanner().PopTokenString();
 }
 
 void Parser::IgnoreWhiteSpaces(bool includeNewLines)//, bool includeComments)

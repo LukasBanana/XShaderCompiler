@@ -6,6 +6,7 @@
  */
 
 #include "PreProcessor.h"
+#include "HLSLTree.h"
 #include <sstream>
 
 
@@ -132,6 +133,34 @@ TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<T
     return expandedString;
 }
 
+ExprPtr PreProcessor::BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<std::string>& ops)
+{
+    if (exprs.empty())
+        ErrorInternal("sub-expressions must not be empty", __FUNCTION__);
+
+    if (exprs.size() > 1)
+    {
+        if (exprs.size() != ops.size() + 1)
+            ErrorInternal("sub-expressions and operators have uncorrelated number of elements", __FUNCTION__);
+
+        auto ast = Make<BinaryExpr>();
+
+        /* Build right hand side */
+        ast->rhsExpr = exprs.back();
+        ast->op = ops.back();
+
+        exprs.pop_back();
+        ops.pop_back();
+
+        /* Build left hand side of the tree */
+        ast->lhsExpr = BuildBinaryExprTree(exprs, ops);
+
+        return ast;
+    }
+
+    return exprs.front();
+}
+
 /* === Parse functions === */
 
 void PreProcessor::ParseProgram()
@@ -144,7 +173,7 @@ void PreProcessor::ParseProgram()
             if (TopIfBlock().active)
             {
                 /* Parse active block */
-                switch (Type())
+                switch (TknType())
                 {
                     case Tokens::Directive:
                         ParseDirective();
@@ -163,7 +192,7 @@ void PreProcessor::ParseProgram()
             else
             {
                 /* On an inactive if-block: parse only '#if'-directives or skip to next line */
-                if (Type() == Tokens::Directive)
+                if (TknType() == Tokens::Directive)
                     ParseAnyIfDirectiveAndSkipValidation();
                 else
                     AcceptIt();
@@ -500,6 +529,15 @@ void PreProcessor::ParseDirectiveIfOrElifCondition(bool skipEvaluation)
     /* Evalutate condition */
     bool condition = false;
 
+    PushTokenString(tokenString);
+    {
+        auto conditionExpr = ParseExpr();
+
+        //TODO: evaluate expression tree ...
+        int _dummy=0;
+    }
+    PopTokenString();
+
     //TODO...
 
     /* Push new if-block */
@@ -613,6 +651,138 @@ void PreProcessor::ParseDirectiveError(const TokenPtr& directiveToken)
     throw Report(Report::Types::Error, "error (" + pos.ToString() + ") : " + errorMsg);
 }
 
+ExprPtr PreProcessor::ParseExpr()
+{
+    IgnoreWhiteSpaces(false);
+    return ParseLogicOrExpr();
+}
+
+/*
+EXPR: EXPR (OPERATOR EXPR)*;
+*/
+ExprPtr PreProcessor::ParseAbstractBinaryExpr(
+    const std::function<ExprPtr()>& parseFunc,
+    const std::vector<std::string>& binaryOps)
+{
+    /* Parse sub expressions */
+    std::vector<ExprPtr> exprs;
+    std::vector<std::string> ops;
+
+    /* Parse primary expression */
+    exprs.push_back(parseFunc());
+
+    while (Is(Tokens::BinaryOp) && std::find(binaryOps.begin(), binaryOps.end(), Tkn()->Spell()) != binaryOps.end())
+    {
+        /* Parse binary operator */
+        auto spell = AcceptIt()->Spell();
+        ops.push_back(spell);
+
+        /* Parse next sub-expression */
+        exprs.push_back(parseFunc());
+    }
+
+    /* Build (left-to-rigth) binary expression tree */
+    return BuildBinaryExprTree(exprs, ops);
+}
+
+ExprPtr PreProcessor::ParseLogicOrExpr()
+{
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseLogicAndExpr, this), { "||" });
+}
+
+ExprPtr PreProcessor::ParseLogicAndExpr()
+{
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseBitwiseOrExpr, this), { "&&" });
+}
+
+ExprPtr PreProcessor::ParseBitwiseOrExpr()
+{
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseBitwiseXOrExpr, this), { "|" });
+}
+
+ExprPtr PreProcessor::ParseBitwiseXOrExpr()
+{
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseBitwiseAndExpr, this), { "^" });
+}
+
+ExprPtr PreProcessor::ParseBitwiseAndExpr()
+{
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseEqualityExpr, this), { "&" });
+}
+
+ExprPtr PreProcessor::ParseEqualityExpr()
+{
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseRelationExpr, this), { "==", "!=" });
+}
+
+ExprPtr PreProcessor::ParseRelationExpr()
+{
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseShiftExpr, this), { "<", "<=", ">", ">=" });
+}
+
+ExprPtr PreProcessor::ParseShiftExpr()
+{
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseAddExpr, this), { "<<", ">>" });
+}
+
+ExprPtr PreProcessor::ParseAddExpr()
+{
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseSubExpr, this), { "+" });
+}
+
+ExprPtr PreProcessor::ParseSubExpr()
+{
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseMulExpr, this), { "-" });
+}
+
+ExprPtr PreProcessor::ParseMulExpr()
+{
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseDivExpr, this), { "*" });
+}
+
+ExprPtr PreProcessor::ParseDivExpr()
+{
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseValueExpr, this), { "/" });
+}
+
+ExprPtr PreProcessor::ParseValueExpr()
+{
+    switch (TknType())
+    {
+        case Tokens::Ident:
+            //TODO...
+            break;
+
+        case Tokens::UnaryOp:
+        {
+            /* Parse unary expression */
+            auto ast = Make<UnaryExpr>();
+            ast->op = AcceptIt()->Spell();
+            ast->expr = ParseValueExpr();
+            return ast;
+        }
+        break;
+
+        case Tokens::BoolLiteral:
+        case Tokens::IntLiteral:
+        case Tokens::FloatLiteral:
+        {
+            /* Parse literal */
+            auto ast = Make<LiteralExpr>();
+            ast->literal = AcceptIt()->Spell();
+            return ast;
+        }
+        break;
+
+        default:
+        {
+            ErrorUnexpected("expected constant expression");
+        }
+        break;
+    }
+    return nullptr;
+}
+
 TokenPtrString PreProcessor::ParseDirectiveTokenString()
 {
     TokenPtrString tokenString;
@@ -621,7 +791,7 @@ TokenPtrString PreProcessor::ParseDirectiveTokenString()
 
     while (!Is(Tokens::NewLines))
     {
-        switch (Type())
+        switch (TknType())
         {
             case Tokens::LineBreak:
                 AcceptIt();

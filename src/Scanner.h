@@ -14,6 +14,7 @@
 #include "SourceCode.h"
 #include "SourcePosition.h"
 #include "Token.h"
+#include "TokenString.h"
 
 #include <string>
 #include <functional>
@@ -33,6 +34,10 @@ class Scanner
         virtual ~Scanner();
 
         bool ScanSource(const SourceCodePtr& source);
+
+        // Pushes the specified token string onto the stack where further tokens will be parsed from the top of the stack.
+        void PushTokenString(const TokenPtrString& tokenString);
+        void PopTokenString();
 
         // Scanes the source code for the next token
         virtual TokenPtr Next() = 0;
@@ -130,6 +135,8 @@ class Scanner
         SourcePosition  nextStartPos_;
         TokenPtr        activeToken_;
         TokenPtr        prevToken_;
+
+        std::stack<TokenPtrString::ConstIterator>   tokenStringItStack_;
 
 };
 

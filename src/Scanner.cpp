@@ -34,6 +34,16 @@ bool Scanner::ScanSource(const SourceCodePtr& source)
     return false;
 }
 
+void Scanner::PushTokenString(const TokenPtrString& tokenString)
+{
+    tokenStringItStack_.push(tokenString.Begin());
+}
+
+void Scanner::PopTokenString()
+{
+    tokenStringItStack_.pop();
+}
+
 TokenPtr Scanner::ActiveToken() const
 {
     return activeToken_;
@@ -57,11 +67,22 @@ SourcePosition Scanner::Pos() const
 //private
 TokenPtr Scanner::NextToken(bool scanComments, bool scanWhiteSpaces)
 {
+    TokenPtr tkn;
+    
     /* Store previous token */
     prevToken_ = activeToken_;
 
-    /* Scan next token */
-    auto tkn = NextTokenScan(scanComments, scanWhiteSpaces);
+    if (!tokenStringItStack_.empty() && !tokenStringItStack_.top().ReachedEnd())
+    {
+        /* Scan next token from token string */
+        auto& tokenStringIt = tokenStringItStack_.top();
+        tkn = *(tokenStringIt++);
+    }
+    else
+    {
+        /* Scan next token from token sub-scanner */
+        tkn = NextTokenScan(scanComments, scanWhiteSpaces);
+    }
 
     /* Store new active token */
     activeToken_ = tkn;
