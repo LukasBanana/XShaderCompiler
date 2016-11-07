@@ -70,6 +70,8 @@ class SourceCode
 
 };
 
+using SourceCodePtr = std::shared_ptr<SourceCode>;
+
 
 } // /namespace HTLib
 

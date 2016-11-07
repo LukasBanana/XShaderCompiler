@@ -19,7 +19,7 @@ SourceCode::SourceCode(const std::shared_ptr<std::istream>& stream) :
 
 bool SourceCode::IsValid() const
 {
-    return stream_ != nullptr && stream_->good();
+    return (stream_ != nullptr && stream_->good());
 }
 
 char SourceCode::Next()

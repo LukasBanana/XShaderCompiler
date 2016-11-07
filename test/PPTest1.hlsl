@@ -27,14 +27,18 @@
 #define  F2 (  X ,   Y  )  (X)*(Y)
 
 
+#ifdef _5
+#ifndef FOO
 #ifdef F3
 #	error F3 is defined
 #else
 #	define F3
+/*#elif 1
+#	error Wait what? ELIF
 #else
-#	error Wait what?
-#endif
-#endif
+#	error Wait what? ELSE*/
+//#endif
+//#endif
 
 cbuffer Settings : register(b0)
 {

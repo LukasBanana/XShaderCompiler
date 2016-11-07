@@ -20,7 +20,7 @@ HLSLParser::HLSLParser(const Options& options, Log* log) :
 {
 }
 
-ProgramPtr HLSLParser::ParseSource(const std::shared_ptr<SourceCode>& source)
+ProgramPtr HLSLParser::ParseSource(const SourceCodePtr& source)
 {
     PushScannerSource(source);
 

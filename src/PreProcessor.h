@@ -38,7 +38,7 @@ class PreProcessor : public Parser
         
         PreProcessor(IncludeHandler& includeHandler, Log* log = nullptr);
 
-        std::shared_ptr<std::iostream> Process(const std::shared_ptr<SourceCode>& input);
+        std::shared_ptr<std::iostream> Process(const SourceCodePtr& input);
 
     private:
         
@@ -54,8 +54,10 @@ class PreProcessor : public Parser
 
         struct IfBlock
         {
-            bool active         = false;
-            bool expectEndif    = false;
+            TokenPtr        directiveToken;
+            SourceCodePtr   directiveSource;
+            bool            active         = true;
+            bool            expectEndif    = false;
         };
 
         using MacroPtr = std::shared_ptr<Macro>;
@@ -75,11 +77,11 @@ class PreProcessor : public Parser
 
         void OutputTokenString(const TokenString& tokenString);
 
-        void PushIfBlock(bool active = false);
+        void PushIfBlock(const TokenPtr& directiveToken, bool active = false, bool expectEndif = false);
         void PopIfBlock();
 
-        // Returns true if the if-block on top of the stack is active or if the stack is empty.
-        bool IsTopIfBlockActive() const;
+        // Returns the if-block state from the top of the stack. If the stack is empty, the default state is returned.
+        IfBlock TopIfBlock() const;
 
         // Ignores all tokens until the next line is reached.
         void SkipToNextLine();
@@ -112,8 +114,6 @@ class PreProcessor : public Parser
         /* === Members === */
 
         IncludeHandler&                     includeHandler_;
-
-        PreProcessorScanner                 scanner_;
 
         std::shared_ptr<std::stringstream>  output_;
 

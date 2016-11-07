@@ -44,8 +44,11 @@ class Parser
 
         virtual ScannerPtr MakeScanner() = 0;
 
-        void PushScannerSource(const std::shared_ptr<SourceCode>& source, const std::string& filename = "");
+        void PushScannerSource(const SourceCodePtr& source, const std::string& filename = "");
         bool PopScannerSource();
+
+        // Returns the current token scanner.
+        Scanner& GetScanner();
 
         // Returns the filename for the current scanner source.
         std::string GetCurrentFilename() const;
@@ -71,6 +74,12 @@ class Parser
         inline Log* GetLog() const
         {
             return log_;
+        }
+
+        // Returns the report handler.
+        inline ReportHandler& GetReportHandler()
+        {
+            return reportHandler_;
         }
 
         // Makes a new shared pointer of the specified AST node class.
@@ -114,10 +123,6 @@ class Parser
             std::string filename;
             TokenPtr    nextToken;
         };
-
-        /* === Functions === */
-
-        Scanner& GetScanner();
 
         /* === Members === */
 

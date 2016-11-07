@@ -37,7 +37,7 @@ class HLSLParser : public Parser
         
         HLSLParser(const Options& options, Log* log = nullptr);
 
-        ProgramPtr ParseSource(const std::shared_ptr<SourceCode>& source);
+        ProgramPtr ParseSource(const SourceCodePtr& source);
 
     private:
         

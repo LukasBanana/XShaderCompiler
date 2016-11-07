@@ -22,7 +22,7 @@ Scanner::~Scanner()
 {
 }
 
-bool Scanner::ScanSource(const std::shared_ptr<SourceCode>& source)
+bool Scanner::ScanSource(const SourceCodePtr& source)
 {
     if (source && source->IsValid())
     {

@@ -32,7 +32,7 @@ class Scanner
         Scanner(Log* log = nullptr);
         virtual ~Scanner();
 
-        bool ScanSource(const std::shared_ptr<SourceCode>& source);
+        bool ScanSource(const SourceCodePtr& source);
 
         // Scanes the source code for the next token
         virtual TokenPtr Next() = 0;
@@ -50,6 +50,12 @@ class Scanner
         inline SourceCode* Source() const
         {
             return source_.get();
+        }
+
+        // Returns the source code which is currently being scanned.
+        inline const SourceCodePtr& GetSharedSource() const
+        {
+            return source_;
         }
 
     protected:
@@ -116,14 +122,14 @@ class Scanner
 
         /* === Members === */
 
-        std::shared_ptr<SourceCode> source_;
-        char                        chr_ = 0;
+        SourceCodePtr   source_;
+        char            chr_ = 0;
 
-        Log*                        log_ = nullptr;
+        Log*            log_ = nullptr;
 
-        SourcePosition              nextStartPos_;
-        TokenPtr                    activeToken_;
-        TokenPtr                    prevToken_;
+        SourcePosition  nextStartPos_;
+        TokenPtr        activeToken_;
+        TokenPtr        prevToken_;
 
 };
 

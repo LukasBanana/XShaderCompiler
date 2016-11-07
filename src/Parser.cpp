@@ -27,7 +27,7 @@ Parser::Parser(Log* log) :
 {
 }
 
-void Parser::PushScannerSource(const std::shared_ptr<SourceCode>& source, const std::string& filename)
+void Parser::PushScannerSource(const SourceCodePtr& source, const std::string& filename)
 {
     /* Add current token to previous scanner */
     if (!scannerStack_.empty())
@@ -62,6 +62,13 @@ bool Parser::PopScannerSource()
     tkn_ = scannerStack_.top().nextToken;
 
     return (tkn_ != nullptr);
+}
+
+Scanner& Parser::GetScanner()
+{
+    if (scannerStack_.empty())
+        throw std::runtime_error("missing token scanner");
+    return *(scannerStack_.top().scanner);
 }
 
 std::string Parser::GetCurrentFilename() const
@@ -146,13 +153,6 @@ void Parser::IgnoreNewLines()
 {
     while (Is(Tokens::NewLines))
         AcceptIt();
-}
-
-Scanner& Parser::GetScanner()
-{
-    if (scannerStack_.empty())
-        throw std::runtime_error("missing token scanner");
-    return *(scannerStack_.top().scanner);
 }
 
 

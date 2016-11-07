@@ -15,12 +15,11 @@ namespace HTLib
 
 PreProcessor::PreProcessor(IncludeHandler& includeHandler, Log* log) :
     Parser          { log            },
-    includeHandler_ { includeHandler },
-    scanner_        { log            }
+    includeHandler_ { includeHandler }
 {
 }
 
-std::shared_ptr<std::iostream> PreProcessor::Process(const std::shared_ptr<SourceCode>& input)
+std::shared_ptr<std::iostream> PreProcessor::Process(const SourceCodePtr& input)
 {
     PushScannerSource(input);
 
@@ -30,11 +29,8 @@ std::shared_ptr<std::iostream> PreProcessor::Process(const std::shared_ptr<Sourc
     {
         ParseProgram();
 
-        #ifdef _DEBUG
-        auto output = output_->str();
-        #endif
-
-        return output_;
+        if (!GetReportHandler().HasErros())
+            return output_;
     }
     catch (const Report& err)
     {
@@ -118,11 +114,14 @@ void PreProcessor::OutputTokenString(const TokenString& tokenString)
         *output_ << tkn->Spell();
 }
 
-void PreProcessor::PushIfBlock(bool active)
+void PreProcessor::PushIfBlock(const TokenPtr& directiveToken, bool active, bool expectEndif)
 {
     IfBlock ifBlock;
     {
-        ifBlock.active = (IsTopIfBlockActive() && active);
+        ifBlock.directiveToken  = directiveToken;
+        ifBlock.directiveSource = GetScanner().GetSharedSource();
+        ifBlock.active          = (TopIfBlock().active && active);
+        ifBlock.expectEndif     = expectEndif;
     }
     ifBlockStack_.push(ifBlock);
 }
@@ -130,14 +129,14 @@ void PreProcessor::PushIfBlock(bool active)
 void PreProcessor::PopIfBlock()
 {
     if (ifBlockStack_.empty())
-        Error("missing '#if'-directive to closing '#endif'", true, HLSLErr::ERR_ENDIF);
+        Error("missing '#if'-directive to closing '#endif', '#else', or '#elif'", true, HLSLErr::ERR_ENDIF);
     else
         ifBlockStack_.pop();
 }
 
-bool PreProcessor::IsTopIfBlockActive() const
+PreProcessor::IfBlock PreProcessor::TopIfBlock() const
 {
-    return (ifBlockStack_.empty() || ifBlockStack_.top().active);
+    return (ifBlockStack_.empty() ? IfBlock() : ifBlockStack_.top());
 }
 
 //UNUSED
@@ -152,11 +151,12 @@ void PreProcessor::SkipToNextLine()
 
 void PreProcessor::ParseProgram()
 {
+    /* Parse entire program */
     do
     {
         while (!Is(Tokens::EndOfStream))
         {
-            if (IsTopIfBlockActive())
+            if (TopIfBlock().active)
             {
                 /* Parse active block */
                 switch (Type())
@@ -186,6 +186,18 @@ void PreProcessor::ParseProgram()
         }
     }
     while (PopScannerSource());
+
+    /* Check for incomplete '#if'-scopes */
+    while (!ifBlockStack_.empty())
+    {
+        const auto& ifBlock = ifBlockStack_.top();
+        GetReportHandler().Error(
+            "missing '#endif'-directive for open '#if', '#ifdef', or '#ifndef'",
+            ifBlock.directiveSource.get(),
+            ifBlock.directiveToken->Area()
+        );
+        ifBlockStack_.pop();
+    }
 }
 
 void PreProcessor::ParesComment()
@@ -391,46 +403,60 @@ void PreProcessor::ParseDirectiveIf(bool skipEvaluation)
 // '#ifdef' IDENT
 void PreProcessor::ParseDirectiveIfdef(bool skipEvaluation)
 {
+    auto tkn = GetScanner().PreviousToken();
+
     if (skipEvaluation)
     {
         /* Push new if-block activation (and skip evaluation, due to currently inactive block) */
-        PushIfBlock();
+        PushIfBlock(tkn);
     }
     else
     {
         /* Parse identifier */
         IgnoreWhiteSpaces(false);
         auto ident = Accept(Tokens::Ident)->Spell();
-    
+
         /* Push new if-block activation (with 'defined' condition) */
-        PushIfBlock(IsDefined(ident));
+        PushIfBlock(tkn, IsDefined(ident));
     }
 }
 
 // '#ifndef' IDENT
 void PreProcessor::ParseDirectiveIfndef(bool skipEvaluation)
 {
+    auto tkn = GetScanner().PreviousToken();
+
     /* Parse identifier */
     IgnoreWhiteSpaces(false);
     auto ident = Accept(Tokens::Ident)->Spell();
     
     /* Push new if-block activation (with 'not defined' condition) */
-    PushIfBlock(!IsDefined(ident));
+    PushIfBlock(tkn, !IsDefined(ident));
 }
 
 // '#elif CONSTANT-EXPRESSION'
 void PreProcessor::ParseDirectiveElif(bool skipEvaluation)
 {
+    /* Check if '#endif'-directive is expected */
+    if (TopIfBlock().expectEndif)
+        Error("expected '#endif'-directive after previous '#else', but got '#elif'", true, HLSLErr::ERR_ELIF_ELSE);
+
     //todo...
 }
 
 // '#else'
 void PreProcessor::ParseDirectiveElse()
 {
+    auto tkn = TopIfBlock().directiveToken;
+
+    /* Check if '#endif'-directive is expected */
+    if (TopIfBlock().expectEndif)
+        Error("expected '#endif'-directive after previous '#else', but got another '#else'", true, HLSLErr::ERR_ELSE_ELSE);
+
     /* Pop if-block and push new if-block with negated condition */
-    auto elseCondition = !IsTopIfBlockActive();
+    auto elseCondition = !TopIfBlock().active;
     PopIfBlock();
-    PushIfBlock(elseCondition);
+    PushIfBlock(tkn, elseCondition, true);
 }
 
 // '#endif'
