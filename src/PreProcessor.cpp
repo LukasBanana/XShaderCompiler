@@ -438,7 +438,8 @@ void PreProcessor::ParseDirectiveInclude()
 // '#if' CONSTANT-EXPRESSION
 void PreProcessor::ParseDirectiveIf(bool skipEvaluation)
 {
-    //todo...
+    /* Parse condition */
+    ParseDirectiveIfOrElifCondition(skipEvaluation);
 }
 
 // '#ifdef' IDENT
@@ -482,7 +483,27 @@ void PreProcessor::ParseDirectiveElif(bool skipEvaluation)
     if (TopIfBlock().expectEndif)
         Error("expected '#endif'-directive after previous '#else', but got '#elif'", true, HLSLErr::ERR_ELIF_ELSE);
 
-    //todo...
+    /* Pop if-block and push new if-block in the condition-parse function */
+    PopIfBlock();
+
+    /* Parse condition */
+    ParseDirectiveIfOrElifCondition(skipEvaluation);
+}
+
+void PreProcessor::ParseDirectiveIfOrElifCondition(bool skipEvaluation)
+{
+    auto tkn = GetScanner().PreviousToken();
+
+    /* Parse condition token string */
+    auto tokenString = ParseDirectiveTokenString();
+
+    /* Evalutate condition */
+    bool condition = false;
+
+    //TODO...
+
+    /* Push new if-block */
+    PushIfBlock(tkn, condition, true);
 }
 
 // '#else'

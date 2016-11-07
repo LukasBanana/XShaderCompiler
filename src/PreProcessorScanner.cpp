@@ -30,6 +30,8 @@ TokenPtr PreProcessorScanner::Next()
 
 TokenPtr PreProcessorScanner::ScanToken()
 {
+    std::string spell;
+
     /* Scan directive */
     if (Is('#'))
         return ScanDirective();
@@ -48,19 +50,77 @@ TokenPtr PreProcessorScanner::ScanToken()
     if (Is('\"'))
         return ScanStringLiteral();
 
+    /* Scan operators */
+    if (Is('='))
+    {
+        spell += TakeIt();
+        if (Is('='))
+            return Make(Tokens::BinaryOp, spell, true);
+        return Make(Tokens::Misc, spell);
+    }
+
+    if (Is('!'))
+    {
+        spell += TakeIt();
+        if (Is('='))
+            return Make(Tokens::BinaryOp, spell, true);
+        return Make(Tokens::UnaryOp, spell);
+    }
+
+    if (Is('<'))
+    {
+        spell += TakeIt();
+        if (Is('<'))
+            spell += TakeIt();
+        else if (Is('='))
+            spell += TakeIt();
+        return Make(Tokens::BinaryOp, spell);
+    }
+
+    if (Is('>'))
+    {
+        spell += TakeIt();
+        if (Is('>'))
+            spell += TakeIt();
+        else if (Is('='))
+            spell += TakeIt();
+        return Make(Tokens::BinaryOp, spell);
+    }
+
+    if (Is('&'))
+    {
+        spell += TakeIt();
+        if (Is('&'))
+            spell += TakeIt();
+        return Make(Tokens::BinaryOp, spell);
+    }
+
+    if (Is('|'))
+    {
+        spell += TakeIt();
+        if (Is('|'))
+            spell += TakeIt();
+        return Make(Tokens::BinaryOp, spell);
+    }
+
     /* Scan punctuation, special characters and brackets */
     switch (Chr())
     {
         case  ',': return Make(Token::Types::Comma,     true); break;
         case  '(': return Make(Token::Types::LBracket,  true); break;
         case  ')': return Make(Token::Types::RBracket,  true); break;
+        case  '~': return Make(Token::Types::UnaryOp,   true); break;
+        case  '^': return Make(Token::Types::BinaryOp,  true); break;
+        case  '%': return Make(Token::Types::BinaryOp,  true); break;
+        case  '+': return Make(Token::Types::BinaryOp,  true); break;
+        case  '-': return Make(Token::Types::BinaryOp,  true); break;
         case  '*': return Make(Token::Types::BinaryOp,  true); break;
         case  '/': return Make(Token::Types::BinaryOp,  true); break;
         case '\\': return Make(Token::Types::LineBreak, true); break;
     }
 
     /* Return miscellaneous token */
-    return ScanMisc();
+    return Make(Token::Types::Misc, true);
 }
 
 TokenPtr PreProcessorScanner::ScanDirective()
@@ -93,18 +153,6 @@ TokenPtr PreProcessorScanner::ScanIdentifier()
 
     /* Return as identifier */
     return Make(Token::Types::Ident, spell);
-}
-
-TokenPtr PreProcessorScanner::ScanMisc()
-{
-    /* Scan string as long as no identifier or directive character appears */
-    std::string spell;
-    
-    while (!std::isalnum(UChr()) && !std::isspace(UChr()) && !Is(0) && std::string("_,()#\"/\\*").find(Chr()) == std::string::npos)
-        spell += TakeIt();
-
-    /* Return as misc token */
-    return Make(Token::Types::Misc, spell);
 }
 
 

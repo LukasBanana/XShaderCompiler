@@ -105,11 +105,14 @@ class PreProcessor : public Parser
         void ParseDirectiveIfdef(bool skipEvaluation = false);
         void ParseDirectiveIfndef(bool skipEvaluation = false);
         void ParseDirectiveElif(bool skipEvaluation = false);
+        void ParseDirectiveIfOrElifCondition(bool skipEvaluation = false);
         void ParseDirectiveElse();
         void ParseDirectiveEndif();
         void ParseDirectivePragma();
         void ParseDirectiveLine();
         void ParseDirectiveError(const TokenPtr& directiveToken);
+
+        //ExprPtr ParseExpr();
 
         TokenPtrString ParseDirectiveTokenString();
         TokenPtrString ParseArgumentTokenString();

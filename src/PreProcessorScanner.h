@@ -34,7 +34,6 @@ class PreProcessorScanner : public Scanner
 
         TokenPtr ScanDirective();
         TokenPtr ScanIdentifier();
-        TokenPtr ScanMisc();
 
 };
 
