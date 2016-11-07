@@ -93,7 +93,7 @@ void Parser::Error(const std::string& msg, bool prevToken, const HLSLErr errorCo
 
 void Parser::ErrorUnexpected(const std::string& hint)
 {
-    std::string msg = "unexpected token '" + tkn_->Spell() + "'";
+    std::string msg = "unexpected token: " + Token::TypeToString(tkn_->Type());
 
     if (!hint.empty())
         msg += " (" + hint + ")";
@@ -107,7 +107,7 @@ void Parser::ErrorUnexpected(const Tokens type)
     if (typeName.empty())
         ErrorUnexpected();
     else
-        ErrorUnexpected("expected " + typeName);
+        ErrorUnexpected("expected: " + typeName);
 }
 
 void Parser::Warning(const std::string& msg, Token* tkn)

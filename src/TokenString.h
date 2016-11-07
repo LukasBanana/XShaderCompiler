@@ -107,6 +107,11 @@ class BasicTokenString
             tokens_.push_back(token);
         }
 
+        void PushBack(const BasicTokenString& tokenString)
+        {
+            tokens_.insert(tokens_.end(), tokenString.tokens_.begin(), tokenString.tokens_.end());
+        }
+
         bool Empty() const
         {
             return tokens_.empty();

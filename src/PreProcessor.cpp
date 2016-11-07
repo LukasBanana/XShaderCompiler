@@ -97,6 +97,41 @@ void PreProcessor::SkipToNextLine()
     AcceptIt();
 }
 
+TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<TokenPtrString>& arguments)
+{
+    TokenPtrString expandedString;
+
+    if (macro.parameters.size() != arguments.size())
+        return expandedString;
+    
+    auto ExpandTokenString = [&](const Token& tkn) -> bool
+    {
+        /* Check if current token is an identifier which matches one of the parameters of the macro */
+        if (tkn.Type() == Tokens::Ident)
+        {
+            auto ident = tkn.Spell();
+            for (std::size_t i = 0; i < macro.parameters.size(); ++i)
+            {
+                if (ident == macro.parameters[i])
+                {
+                    /* Expand identifier by argument token string */
+                    expandedString.PushBack(arguments[i]);
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    for (const auto& tkn : macro.tokenString.GetTokens())
+    {
+        if (!ExpandTokenString(*tkn))
+            expandedString.PushBack(tkn);
+    }
+
+    return expandedString;
+}
+
 /* === Parse functions === */
 
 void PreProcessor::ParseProgram()
@@ -157,7 +192,8 @@ void PreProcessor::ParesComment()
 
 void PreProcessor::ParseIdent()
 {
-    auto ident = Accept(Tokens::Ident)->Spell();
+    auto identTkn = Accept(Tokens::Ident);
+    auto ident = identTkn->Spell();
 
     /* Search for defined macro */
     auto it = macros_.find(ident);
@@ -165,7 +201,7 @@ void PreProcessor::ParseIdent()
     {
         auto& macro = *it->second;
         if (!macro.parameters.empty())
-            ParseIdentArgumentsForMacro(macro);
+            ParseIdentArgumentsForMacro(identTkn, macro);
         else
             *output_ << macro.tokenString;
     }
@@ -173,15 +209,53 @@ void PreProcessor::ParseIdent()
         *output_ << ident;
 }
 
-void PreProcessor::ParseIdentArgumentsForMacro(const Macro& macro)
+void PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identToken, const Macro& macro)
 {
     /* Parse argument list begin */
-    //IgnoreWhiteSpaces();
-    //Accept(Tokens::LBracket);
+    IgnoreWhiteSpaces();
 
+    if (!Is(Tokens::LBracket))
+    {
+        Error(
+            ( "macro \"" + identToken->Spell() + "\" requires an argument list of " +
+              std::to_string(macro.parameters.size()) + " parameter(s)" ),
+            identToken.get()
+        );
+    }
 
+    AcceptIt();
+    IgnoreWhiteSpaces();
 
+    /* Parse all arguments */
+    std::vector<TokenPtrString> arguments;
 
+    while (!Is(Tokens::RBracket))
+    {
+        arguments.push_back(ParseArgumentTokenString());
+        if (Is(Tokens::Comma))
+            AcceptIt();
+    }
+
+    AcceptIt();
+
+    /* Check compatability of parameter count to macro */
+    if (arguments.size() != macro.parameters.size())
+    {
+        std::string errorMsg;
+
+        if (arguments.size() > macro.parameters.size())
+            errorMsg = "too many";
+        if (arguments.size() < macro.parameters.size())
+            errorMsg = "too few";
+
+        errorMsg += " arguments for macro \"" + identToken->Spell() + "\"";
+        errorMsg += " (expected " + std::to_string(macro.parameters.size()) + " but got " + std::to_string(arguments.size()) + ")";
+
+        Error(errorMsg, identToken.get());
+    }
+
+    /* Perform macro expansion */
+    *output_ << ExpandMacro(macro, arguments);
 }
 
 void PreProcessor::ParseMisc()
@@ -531,6 +605,16 @@ TokenPtrString PreProcessor::ParseDirectiveTokenString()
                 break;
         }
     }
+
+    return tokenString;
+}
+
+TokenPtrString PreProcessor::ParseArgumentTokenString()
+{
+    TokenPtrString tokenString;
+
+    while (!Is(Tokens::RBracket) && !Is(Tokens::Comma))
+        tokenString.PushBack(AcceptIt());
 
     return tokenString;
 }

@@ -80,13 +80,19 @@ class PreProcessor : public Parser
         // Ignores all tokens until the next line is reached.
         void SkipToNextLine();
 
+        /*
+        Replaces all identifiers (specified by 'macro.parameters') in the token string (specified by 'macro.tokenString')
+        by the respective replacement (specified by 'arguments'). The number of identifiers and the number of replacements must be equal.
+        */
+        TokenPtrString ExpandMacro(const Macro& macro, const std::vector<TokenPtrString>& arguments);
+
         /* === Parse functions === */
 
         void ParseProgram();
 
         void ParesComment();
         void ParseIdent();
-        void ParseIdentArgumentsForMacro(const Macro& macro);
+        void ParseIdentArgumentsForMacro(const TokenPtr& identToken, const Macro& macro);
         void ParseMisc();
         
         void ParseDirective();
@@ -105,6 +111,7 @@ class PreProcessor : public Parser
         void ParseDirectiveError(const TokenPtr& directiveToken);
 
         TokenPtrString ParseDirectiveTokenString();
+        TokenPtrString ParseArgumentTokenString();
 
         /* === Members === */
 
