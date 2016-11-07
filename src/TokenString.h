@@ -38,6 +38,8 @@ class BasicTokenString
 
             public:
 
+                ConstIterator() = default;
+
                 ConstIterator(const ConstIterator&) = default;
                 ConstIterator& operator = (const ConstIterator&) = default;
 

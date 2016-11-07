@@ -39,6 +39,9 @@ class Scanner
         void PushTokenString(const TokenPtrString& tokenString);
         void PopTokenString();
 
+        // Returns the iterator of the top most token string on the stack.
+        TokenPtrString::ConstIterator TopTokenStringIterator() const;
+
         // Scanes the source code for the next token
         virtual TokenPtr Next() = 0;
 

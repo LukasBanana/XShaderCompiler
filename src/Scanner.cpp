@@ -44,6 +44,11 @@ void Scanner::PopTokenString()
     tokenStringItStack_.pop();
 }
 
+TokenPtrString::ConstIterator Scanner::TopTokenStringIterator() const
+{
+    return (!tokenStringItStack_.empty() ? tokenStringItStack_.top() : TokenPtrString::ConstIterator());
+}
+
 TokenPtr Scanner::ActiveToken() const
 {
     return activeToken_;

@@ -228,6 +228,7 @@ TokenPtrString PreProcessor::ParseIdentAsTokenString()
 {
     TokenPtrString tokenString;
 
+    /* Parse identifier */
     auto identTkn = Accept(Tokens::Ident);
     auto ident = identTkn->Spell();
 
@@ -235,6 +236,7 @@ TokenPtrString PreProcessor::ParseIdentAsTokenString()
     auto it = macros_.find(ident);
     if (it != macros_.end())
     {
+        /* Perform macro expansion */
         auto& macro = *it->second;
         if (!macro.parameters.empty())
             tokenString.PushBack(ParseIdentArgumentsForMacro(identTkn, macro));
@@ -524,21 +526,25 @@ void PreProcessor::ParseDirectiveIfOrElifCondition(bool skipEvaluation)
     auto tkn = GetScanner().PreviousToken();
 
     /* Parse condition token string */
-    auto tokenString = ParseDirectiveTokenString();
+    auto tokenString = ParseDirectiveTokenString(true);
 
     /* Evalutate condition */
     bool condition = false;
 
     PushTokenString(tokenString);
     {
+        /* Build binary expression tree from token string */
         auto conditionExpr = ParseExpr();
+
+        /* Check if token string has reached the end */
+        auto tokenStringIt = GetScanner().TopTokenStringIterator();
+        if (!tokenStringIt.ReachedEnd())
+            Error("illegal end of constant expression", tokenStringIt->get());
 
         //TODO: evaluate expression tree ...
         int _dummy=0;
     }
     PopTokenString();
-
-    //TODO...
 
     /* Push new if-block */
     PushIfBlock(tkn, condition, true);
@@ -653,7 +659,6 @@ void PreProcessor::ParseDirectiveError(const TokenPtr& directiveToken)
 
 ExprPtr PreProcessor::ParseExpr()
 {
-    IgnoreWhiteSpaces(false);
     return ParseLogicOrExpr();
 }
 
@@ -780,6 +785,16 @@ ExprPtr PreProcessor::ParseValueExpr()
         }
         break;
 
+        case Tokens::LBracket:
+        {
+            /* Parse bracket expression */
+            AcceptIt();
+            auto ast = ParseExpr();
+            Accept(Tokens::RBracket);
+            return ast;
+        }
+        break;
+
         default:
         {
             ErrorUnexpected("expected constant expression");
@@ -789,7 +804,7 @@ ExprPtr PreProcessor::ParseValueExpr()
     return nullptr;
 }
 
-TokenPtrString PreProcessor::ParseDirectiveTokenString()
+TokenPtrString PreProcessor::ParseDirectiveTokenString(bool expandDefinedDirective)
 {
     TokenPtrString tokenString;
 
@@ -800,19 +815,54 @@ TokenPtrString PreProcessor::ParseDirectiveTokenString()
         switch (TknType())
         {
             case Tokens::LineBreak:
+            {
                 AcceptIt();
                 IgnoreWhiteSpaces(false);
                 while (Is(Tokens::NewLines))
                     tokenString.PushBack(AcceptIt());
-                break;
+            }
+            break;
 
             case Tokens::Ident:
-                tokenString.PushBack(ParseIdentAsTokenString());
-                break;
+            {
+                if (expandDefinedDirective && Tkn()->Spell() == "defined")
+                {
+                    /* Parse 'defined IDENT' or 'defined (IDENT)' */
+                    AcceptIt();
+                    IgnoreWhiteSpaces(false);
+
+                    /* Parse macro identifier */
+                    std::string macroIdent;
+                    if (Is(Tokens::LBracket))
+                    {
+                        AcceptIt();
+                        IgnoreWhiteSpaces(false);
+                        macroIdent = Accept(Tokens::Ident)->Spell();
+                        IgnoreWhiteSpaces(false);
+                        Accept(Tokens::RBracket);
+                    }
+                    else
+                        macroIdent = Accept(Tokens::Ident)->Spell();
+
+                    /* Determine value of boolean literal ('true' if macro is defined, 'false' otherwise */
+                    std::string booleanLiteral = (IsDefined(macroIdent) ? "true" : "false");
+
+                    /* Generate new token for boolean literal (which is the replacement of the 'defined IDENT' directive) */
+                    tokenString.PushBack(Make<Token>(Tokens::BoolLiteral, std::move(booleanLiteral)));
+                }
+                else
+                {
+                    /* Append identifier with macro expansion */
+                    tokenString.PushBack(ParseIdentAsTokenString());
+                }
+            }
+            break;
 
             default:
+            {
                 tokenString.PushBack(AcceptIt());
-                break;
+            }
+            break;
         }
     }
 

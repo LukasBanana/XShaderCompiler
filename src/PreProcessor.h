@@ -137,7 +137,7 @@ class PreProcessor : public Parser
         ExprPtr ParseDivExpr();
         ExprPtr ParseValueExpr();
 
-        TokenPtrString ParseDirectiveTokenString();
+        TokenPtrString ParseDirectiveTokenString(bool expandDefinedDirective = false);
         TokenPtrString ParseArgumentTokenString();
 
         /* === Members === */
