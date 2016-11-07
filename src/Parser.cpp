@@ -88,15 +88,24 @@ static SourceArea GetTokenArea(Token* tkn)
     return (tkn != nullptr ? tkn->Area() : SourceArea());
 }
 
-void Parser::Error(const std::string& msg, Token* tkn)
+void Parser::Error(const std::string& msg, Token* tkn, const HLSLErr errorCode)
 {
     auto area = GetTokenArea(tkn);
-    throw MakeReport(Report::Types::Error, "syntax error (" + area.pos.ToString() + ") : " + msg, area);
+
+    std::string errorMsg = "syntax error (" + area.pos.ToString() + ") ";
+
+    if (errorCode != HLSLErr::Unknown)
+        errorMsg += "[X" + std::to_string(static_cast<int>(errorCode)) + "=" + ErrToString(errorCode) + "]";
+
+    errorMsg += ": ";
+    errorMsg += msg;
+
+    throw MakeReport(Report::Types::Error, errorMsg, area);
 }
 
-void Parser::Error(const std::string& msg, bool prevToken)
+void Parser::Error(const std::string& msg, bool prevToken, const HLSLErr errorCode)
 {
-    Error(msg, prevToken ? GetScanner().PreviousToken().get() : GetScanner().ActiveToken().get());
+    Error(msg, prevToken ? GetScanner().PreviousToken().get() : GetScanner().ActiveToken().get(), errorCode);
 }
 
 void Parser::ErrorUnexpected(const std::string& hint)

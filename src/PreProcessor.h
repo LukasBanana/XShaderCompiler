@@ -52,6 +52,12 @@ class PreProcessor : public Parser
             TokenString                 tokenString;
         };
 
+        struct IfBlock
+        {
+            bool active         = false;
+            bool expectEndif    = false;
+        };
+
         using MacroPtr = std::shared_ptr<Macro>;
 
         /* === Functions === */
@@ -118,7 +124,7 @@ class PreProcessor : public Parser
         Stack to store the info which if-block in the hierarchy is active.
         Once an if-block is inactive, all subsequent if-blocks are inactive, too.
         */
-        std::stack<bool>                    activeIfBlockStack_;
+        std::stack<IfBlock>                 ifBlockStack_;
 
 };
 

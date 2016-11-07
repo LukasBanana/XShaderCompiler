@@ -11,6 +11,7 @@
 
 #include "HT/Log.h"
 #include "HLSLScanner.h"
+#include "HLSLErr.h"
 #include "Visitor.h"
 #include "Token.h"
 
@@ -48,8 +49,8 @@ class Parser
         // Returns the filename for the current scanner source.
         std::string GetCurrentFilename() const;
 
-        void Error(const std::string& msg, Token* tkn);
-        void Error(const std::string& msg, bool prevToken = true);
+        void Error(const std::string& msg, Token* tkn, const HLSLErr errorCode = HLSLErr::Unknown);
+        void Error(const std::string& msg, bool prevToken = true, const HLSLErr errorCode = HLSLErr::Unknown);
 
         void ErrorUnexpected(const std::string& hint = "");
         void ErrorUnexpected(const Tokens type);

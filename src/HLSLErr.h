@@ -23,6 +23,8 @@ see https://msdn.microsoft.com/en-us/library/windows/desktop/dn508414(v=vs.85).a
 */
 enum class HLSLErr
 {
+    Unknown                                 = 0,
+
     // A comment continues past the end of file.
     ERR_COMMENTEOF                          = 1001,
 

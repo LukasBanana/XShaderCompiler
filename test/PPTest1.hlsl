@@ -28,7 +28,12 @@
 
 
 #ifdef F3
-#	error F3 must not be defined!
+#	error F3 is defined
+#else
+#	define F3
+#else
+#	error Wait what?
+#endif
 #endif
 
 cbuffer Settings : register(b0)

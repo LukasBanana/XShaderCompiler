@@ -120,19 +120,23 @@ void PreProcessor::OutputTokenString(const TokenString& tokenString)
 
 void PreProcessor::PushIfBlock(bool active)
 {
-    activeIfBlockStack_.push(IsTopIfBlockActive() && active);
+    IfBlock ifBlock;
+    {
+        ifBlock.active = (IsTopIfBlockActive() && active);
+    }
+    ifBlockStack_.push(ifBlock);
 }
 
 void PreProcessor::PopIfBlock()
 {
-    if (activeIfBlockStack_.empty())
-        Error("missing '#if'-directive to closing '#endif'");
-    activeIfBlockStack_.pop();
+    if (ifBlockStack_.empty())
+        Error("missing '#if'-directive to closing '#endif'", true, HLSLErr::ERR_ENDIF);
+    ifBlockStack_.pop();
 }
 
 bool PreProcessor::IsTopIfBlockActive() const
 {
-    return (activeIfBlockStack_.empty() || activeIfBlockStack_.top());
+    return (ifBlockStack_.empty() || ifBlockStack_.top().active);
 }
 
 //UNUSED
