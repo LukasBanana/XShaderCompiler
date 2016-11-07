@@ -51,10 +51,8 @@ TokenPtr HLSLScanner::ScanToken()
     if (Is('='))
     {
         spell += TakeIt();
-
         if (Is('='))
             return Make(Tokens::BinaryOp, spell, true);
-
         return Make(Tokens::AssignOp, spell);
     }
 
@@ -64,40 +62,32 @@ TokenPtr HLSLScanner::ScanToken()
     if (Is('!'))
     {
         spell += TakeIt();
-
         if (Is('='))
             return Make(Tokens::BinaryOp, spell, true);
-
         return Make(Tokens::UnaryOp, spell);
     }
 
     if (Is('%'))
     {
         spell += TakeIt();
-
         if (Is('='))
             return Make(Tokens::AssignOp, spell, true);
-
         return Make(Tokens::BinaryOp, spell);
     }
 
     if (Is('*'))
     {
         spell += TakeIt();
-
         if (Is('='))
             return Make(Tokens::AssignOp, spell, true);
-
         return Make(Tokens::BinaryOp, spell);
     }
 
     if (Is('^'))
     {
         spell += TakeIt();
-
         if (Is('='))
             return Make(Tokens::AssignOp, spell, true);
-
         return Make(Tokens::BinaryOp, spell);
     }
 
@@ -112,24 +102,20 @@ TokenPtr HLSLScanner::ScanToken()
     if (Is('&'))
     {
         spell += TakeIt();
-
         if (Is('='))
             return Make(Tokens::AssignOp, spell, true);
         if (Is('&'))
             return Make(Tokens::BinaryOp, spell, true);
-
         return Make(Tokens::BinaryOp, spell);
     }
 
     if (Is('|'))
     {
         spell += TakeIt();
-
         if (Is('='))
             return Make(Tokens::AssignOp, spell, true);
         if (Is('|'))
             return Make(Tokens::BinaryOp, spell, true);
-
         return Make(Tokens::BinaryOp, spell);
     }
 
