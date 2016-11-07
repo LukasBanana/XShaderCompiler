@@ -42,6 +42,7 @@
 #endif
 #endif
 
+
 cbuffer Settings : register(b0)
 {
 	float4x4	wvpMatrix;

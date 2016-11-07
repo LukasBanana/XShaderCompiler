@@ -86,6 +86,7 @@ class PreProcessor : public Parser
 
         void ParesComment();
         void ParseIdent();
+        void ParseIdentArgumentsForMacro(const Macro& macro);
         void ParseMisc();
         
         void ParseDirective();
@@ -103,7 +104,7 @@ class PreProcessor : public Parser
         void ParseDirectiveLine();
         void ParseDirectiveError(const TokenPtr& directiveToken);
 
-        TokenPtrString ParseTokenString();
+        TokenPtrString ParseDirectiveTokenString();
 
         /* === Members === */
 

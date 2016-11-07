@@ -159,21 +159,29 @@ void PreProcessor::ParseIdent()
 {
     auto ident = Accept(Tokens::Ident)->Spell();
 
-    /* Search for defined symbol */
+    /* Search for defined macro */
     auto it = macros_.find(ident);
     if (it != macros_.end())
     {
-        auto& symbol = *it->second;
-
-        if (!symbol.parameters.empty())
-        {
-            //TODO...
-        }
+        auto& macro = *it->second;
+        if (!macro.parameters.empty())
+            ParseIdentArgumentsForMacro(macro);
         else
-            *output_ << symbol.tokenString;
+            *output_ << macro.tokenString;
     }
     else
         *output_ << ident;
+}
+
+void PreProcessor::ParseIdentArgumentsForMacro(const Macro& macro)
+{
+    /* Parse argument list begin */
+    //IgnoreWhiteSpaces();
+    //Accept(Tokens::LBracket);
+
+
+
+
 }
 
 void PreProcessor::ParseMisc()
@@ -287,7 +295,7 @@ void PreProcessor::ParseDirectiveDefine()
     }
 
     /* Parse optional value */
-    symbol->tokenString = ParseTokenString();
+    symbol->tokenString = ParseDirectiveTokenString();
 
     /* Now compare previous and new definition */
     if (previousMacro)
@@ -426,7 +434,7 @@ void PreProcessor::ParseDirectivePragma()
     IgnoreWhiteSpaces(false);
 
     /* Parse token string */
-    auto tokenString = ParseTokenString();
+    auto tokenString = ParseDirectiveTokenString();
 
     if (!tokenString.Empty())
     {
@@ -485,7 +493,7 @@ void PreProcessor::ParseDirectiveError(const TokenPtr& directiveToken)
     auto pos = directiveToken->Pos();
 
     /* Parse token string */
-    auto tokenString = ParseTokenString();
+    auto tokenString = ParseDirectiveTokenString();
     
     /* Convert token string into error message */
     std::string errorMsg;
@@ -501,7 +509,7 @@ void PreProcessor::ParseDirectiveError(const TokenPtr& directiveToken)
     throw Report(Report::Types::Error, "error (" + pos.ToString() + ") : " + errorMsg);
 }
 
-TokenPtrString PreProcessor::ParseTokenString()
+TokenPtrString PreProcessor::ParseDirectiveTokenString()
 {
     TokenPtrString tokenString;
 
