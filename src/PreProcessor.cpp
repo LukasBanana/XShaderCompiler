@@ -64,56 +64,6 @@ bool PreProcessor::IsDefined(const std::string& ident) const
     return (macros_.find(ident) != macros_.end());
 }
 
-bool PreProcessor::CompareTokenStrings(const TokenString& lhs, const TokenString& rhs) const
-{
-    auto IsTokenOfInteres = [](const std::vector<TokenPtr>::const_iterator& it)
-    {
-        auto type = (*it)->Type();
-        return (type != Tokens::Comment && type != Tokens::WhiteSpaces && type != Tokens::NewLines);
-    };
-
-    auto NextStringToken = [&](const TokenString& tokenString, std::vector<TokenPtr>::const_iterator& it)
-    {
-        do
-        {
-            ++it;
-        }
-        while (it != tokenString.end() && !IsTokenOfInteres(it));
-    };
-
-    /* Get first tokens */
-    auto lhsIt = lhs.begin(), rhsIt = rhs.begin();
-
-    if (lhsIt != lhs.end() && !IsTokenOfInteres(lhsIt))
-        NextStringToken(lhs, lhsIt);
-    if (rhsIt != rhs.end() && !IsTokenOfInteres(rhsIt))
-        NextStringToken(rhs, rhsIt);
-
-    /* Check if all tokens of interest are equal in both strings */
-    for (; (lhsIt != lhs.end() && rhsIt != rhs.end()); NextStringToken(lhs, lhsIt), NextStringToken(rhs, rhsIt))
-    {
-        auto lhsTkn = lhsIt->get();
-        auto rhsTkn = rhsIt->get();
-
-        /* Compare types */
-        if (lhsTkn->Type() != rhsTkn->Type())
-            return false;
-
-        /* Compare values */
-        if (lhsTkn->Spell() != rhsTkn->Spell())
-            return false;
-    }
-
-    /* Check if both strings reached the end */
-    return (lhsIt == lhs.end() && rhsIt == rhs.end());
-}
-
-void PreProcessor::OutputTokenString(const TokenString& tokenString)
-{
-    for (const auto& tkn : tokenString)
-        *output_ << tkn->Spell();
-}
-
 void PreProcessor::PushIfBlock(const TokenPtr& directiveToken, bool active, bool expectEndif)
 {
     IfBlock ifBlock;
@@ -220,7 +170,7 @@ void PreProcessor::ParseIdent()
             //TODO...
         }
         else
-            OutputTokenString(symbol.tokenString);
+            *output_ << symbol.tokenString;
     }
     else
         *output_ << ident;
@@ -346,7 +296,7 @@ void PreProcessor::ParseDirectiveDefine()
         //TODO...
 
         /* Compare values */
-        if (CompareTokenStrings(previousMacro->tokenString, symbol->tokenString))
+        if (previousMacro->tokenString == symbol->tokenString)
             Warning("redefinition of symbol \"" + ident + "\"", identTkn.get());
         else
             Error("redefinition of symbol \"" + ident + "\" with mismatch", identTkn.get());
@@ -470,19 +420,42 @@ void PreProcessor::ParseDirectiveEndif()
 // see https://msdn.microsoft.com/de-de/library/windows/desktop/dd607351(v=vs.85).aspx
 void PreProcessor::ParseDirectivePragma()
 {
+    auto tkn = GetScanner().PreviousToken();
+
     /* Parse pragma command identifier */
     IgnoreWhiteSpaces(false);
-    auto command = Accept(Tokens::Ident)->Spell();
 
-    if (command == "once")
+    /* Parse token string */
+    auto tokenString = ParseTokenString();
+
+    if (!tokenString.Empty())
     {
-        /* Mark current filename as 'once included' (but not for the main file) */
-        auto filename = GetCurrentFilename();
-        if (!filename.empty())
-            onceIncluded_.insert(std::move(filename));
+        /* Check if first token in the token string is an identifier */
+        auto tokenIt = tokenString.Begin();
+        if ((*tokenIt)->Type() == Tokens::Ident)
+        {
+            auto command = (*tokenIt)->Spell();
+            if (command == "once")
+            {
+                /* Mark current filename as 'once included' (but not for the main file) */
+                auto filename = GetCurrentFilename();
+                if (!filename.empty())
+                    onceIncluded_.insert(std::move(filename));
+            }
+            else if (command == "foo")
+                Warning("pragma \"" + command + "\" can currently not be handled", tokenIt->get());
+            else
+                Warning("unknown pragma: \"" + command + "\"", tokenIt->get());
+        }
+        else
+            Warning("unexpected token in '#pragam'-directive", tokenIt->get());
+
+        /* Check if there are remaining unused tokens in the token string */
+        if (!(++tokenIt).ReachedEnd())
+            Warning("remaining unhandled tokens in '#pragma'-directive", tokenIt->get());
     }
     else
-        Warning("unknown pragma command: \"" + command + "\"");
+        Warning("empty '#pragma'-directive", tkn.get());
 }
 
 // '#line' NUMBER STRING-LITERAL?
@@ -514,7 +487,7 @@ void PreProcessor::ParseDirectiveError(const TokenPtr& directiveToken)
     /* Convert token string into error message */
     std::string errorMsg;
 
-    for (const auto& tkn : tokenString)
+    for (const auto& tkn : tokenString.GetTokens())
     {
         if (tkn->Type() == Tokens::StringLiteral)
             errorMsg += '\"' + tkn->Spell() + '\"';
@@ -525,9 +498,9 @@ void PreProcessor::ParseDirectiveError(const TokenPtr& directiveToken)
     throw Report(Report::Types::Error, "error (" + pos.ToString() + ") : " + errorMsg);
 }
 
-PreProcessor::TokenString PreProcessor::ParseTokenString()
+TokenPtrString PreProcessor::ParseTokenString()
 {
-    TokenString tokenString;
+    TokenPtrString tokenString;
 
     IgnoreWhiteSpaces(false);
 
@@ -539,11 +512,11 @@ PreProcessor::TokenString PreProcessor::ParseTokenString()
                 AcceptIt();
                 IgnoreWhiteSpaces(false);
                 while (Is(Tokens::NewLines))
-                    tokenString.push_back(AcceptIt());
+                    tokenString.PushBack(AcceptIt());
                 break;
 
             default:
-                tokenString.push_back(AcceptIt());
+                tokenString.PushBack(AcceptIt());
                 break;
         }
     }

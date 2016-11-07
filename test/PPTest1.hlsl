@@ -26,9 +26,11 @@
 #define F1(X, Y) (X)*(Y)
 #define  F2 (  X ,   Y  )  (X)*(Y)
 
+#pragma
+#pragma foo ()
+#pragma foo     
 
 #ifdef _5
-#ifndef FOO
 #ifdef F3
 #	error F3 is defined
 #else
@@ -37,8 +39,8 @@
 #	error Wait what? ELIF
 #else
 #	error Wait what? ELSE*/
-//#endif
-//#endif
+#endif
+#endif
 
 cbuffer Settings : register(b0)
 {

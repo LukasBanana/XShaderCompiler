@@ -12,6 +12,7 @@
 #include "HT/Translator.h"
 #include "HT/Log.h"
 #include "PreProcessorScanner.h"
+#include "TokenString.h"
 #include "Parser.h"
 #include "SourceCode.h"
 #include <iostream>
@@ -28,7 +29,7 @@ namespace HTLib
 Pre-processor to substitute macros and include directives.
 The preprocessor works on something similar to a Concrete Syntax Tree (CST) rather than an Abstract Syntax Tree (AST).
 This is because the output is not an intermediate representation but rather concrete source code.
-Therefore, all white spaces and new-line characters must not be ignored.
+Therefore, all white spaces and new-line characters must NOT be ignored.
 All other parsers and analyzers only work on an AST.
 */
 class PreProcessor : public Parser
@@ -44,12 +45,10 @@ class PreProcessor : public Parser
         
         /* === Structures === */
 
-        using TokenString = std::vector<TokenPtr>;
-
         struct Macro
         {
             std::vector<std::string>    parameters;
-            TokenString                 tokenString;
+            TokenPtrString              tokenString;
         };
 
         struct IfBlock
@@ -71,11 +70,6 @@ class PreProcessor : public Parser
 
         // Returns true if the specified symbol is defined.
         bool IsDefined(const std::string& ident) const;
-
-        // Compares the two token strings (ignores white-space, new-line, and comment tokens).
-        bool CompareTokenStrings(const TokenString& lhs, const TokenString& rhs) const;
-
-        void OutputTokenString(const TokenString& tokenString);
 
         void PushIfBlock(const TokenPtr& directiveToken, bool active = false, bool expectEndif = false);
         void PopIfBlock();
@@ -109,7 +103,7 @@ class PreProcessor : public Parser
         void ParseDirectiveLine();
         void ParseDirectiveError(const TokenPtr& directiveToken);
 
-        TokenString ParseTokenString();
+        TokenPtrString ParseTokenString();
 
         /* === Members === */
 
