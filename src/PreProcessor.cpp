@@ -192,6 +192,13 @@ void PreProcessor::ParesComment()
 
 void PreProcessor::ParseIdent()
 {
+    *output_ << ParseIdentAsTokenString();
+}
+
+TokenPtrString PreProcessor::ParseIdentAsTokenString()
+{
+    TokenPtrString tokenString;
+
     auto identTkn = Accept(Tokens::Ident);
     auto ident = identTkn->Spell();
 
@@ -201,15 +208,17 @@ void PreProcessor::ParseIdent()
     {
         auto& macro = *it->second;
         if (!macro.parameters.empty())
-            ParseIdentArgumentsForMacro(identTkn, macro);
+            tokenString.PushBack(ParseIdentArgumentsForMacro(identTkn, macro));
         else
-            *output_ << macro.tokenString;
+            tokenString.PushBack(macro.tokenString);
     }
     else
-        *output_ << ident;
+        tokenString.PushBack(identTkn);
+
+    return tokenString;
 }
 
-void PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identToken, const Macro& macro)
+TokenPtrString PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identToken, const Macro& macro)
 {
     /* Parse argument list begin */
     IgnoreWhiteSpaces();
@@ -255,7 +264,7 @@ void PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identToken, const
     }
 
     /* Perform macro expansion */
-    *output_ << ExpandMacro(macro, arguments);
+    return ExpandMacro(macro, arguments);
 }
 
 void PreProcessor::ParseMisc()
@@ -598,6 +607,10 @@ TokenPtrString PreProcessor::ParseDirectiveTokenString()
                 IgnoreWhiteSpaces(false);
                 while (Is(Tokens::NewLines))
                     tokenString.PushBack(AcceptIt());
+                break;
+
+            case Tokens::Ident:
+                tokenString.PushBack(ParseIdentAsTokenString());
                 break;
 
             default:

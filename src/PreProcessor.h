@@ -92,7 +92,8 @@ class PreProcessor : public Parser
 
         void ParesComment();
         void ParseIdent();
-        void ParseIdentArgumentsForMacro(const TokenPtr& identToken, const Macro& macro);
+        TokenPtrString ParseIdentAsTokenString();
+        TokenPtrString ParseIdentArgumentsForMacro(const TokenPtr& identToken, const Macro& macro);
         void ParseMisc();
         
         void ParseDirective();
