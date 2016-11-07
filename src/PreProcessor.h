@@ -46,19 +46,20 @@ class PreProcessor : public Parser
 
         using TokenString = std::vector<TokenPtr>;
 
-        struct DefinedSymbol
+        struct Macro
         {
             std::vector<std::string>    parameters;
             TokenString                 tokenString;
         };
 
-        using DefinedSymbolPtr = std::shared_ptr<DefinedSymbol>;
+        using MacroPtr = std::shared_ptr<Macro>;
 
         /* === Functions === */
 
         ScannerPtr MakeScanner() override;
 
-        DefinedSymbolPtr MakeSymbol(const std::string& ident);
+        // Defines a new macro with the specified identifier.
+        MacroPtr MakeMacro(const std::string& ident);
 
         // Returns true if the specified symbol is defined.
         bool IsDefined(const std::string& ident) const;
@@ -104,20 +105,20 @@ class PreProcessor : public Parser
 
         /* === Members === */
 
-        IncludeHandler&                         includeHandler_;
+        IncludeHandler&                     includeHandler_;
 
-        PreProcessorScanner                     scanner_;
+        PreProcessorScanner                 scanner_;
 
-        std::shared_ptr<std::stringstream>      output_;
+        std::shared_ptr<std::stringstream>  output_;
 
-        std::map<std::string, DefinedSymbolPtr> definedSymbols_;
-        std::set<std::string>                   onceIncluded_;
+        std::map<std::string, MacroPtr>     macros_;
+        std::set<std::string>               onceIncluded_;
 
         /*
         Stack to store the info which if-block in the hierarchy is active.
         Once an if-block is inactive, all subsequent if-blocks are inactive, too.
         */
-        std::stack<bool>                        activeIfBlockStack_;
+        std::stack<bool>                    activeIfBlockStack_;
 
 };
 

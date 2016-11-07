@@ -55,17 +55,17 @@ ScannerPtr PreProcessor::MakeScanner()
     return std::make_shared<PreProcessorScanner>(GetLog());
 }
 
-PreProcessor::DefinedSymbolPtr PreProcessor::MakeSymbol(const std::string& ident)
+PreProcessor::MacroPtr PreProcessor::MakeMacro(const std::string& ident)
 {
     /* Make new symbol */
-    auto symbol = std::make_shared<DefinedSymbol>();
-    definedSymbols_[ident] = symbol;
+    auto symbol = std::make_shared<Macro>();
+    macros_[ident] = symbol;
     return symbol;
 }
 
 bool PreProcessor::IsDefined(const std::string& ident) const
 {
-    return (definedSymbols_.find(ident) != definedSymbols_.end());
+    return (macros_.find(ident) != macros_.end());
 }
 
 bool PreProcessor::CompareTokenStrings(const TokenString& lhs, const TokenString& rhs) const
@@ -193,8 +193,8 @@ void PreProcessor::ParseIdent()
     auto ident = Accept(Tokens::Ident)->Spell();
 
     /* Search for defined symbol */
-    auto it = definedSymbols_.find(ident);
-    if (it != definedSymbols_.end())
+    auto it = macros_.find(ident);
+    if (it != macros_.end())
     {
         auto& symbol = *it->second;
 
@@ -278,13 +278,13 @@ void PreProcessor::ParseDirectiveDefine()
     auto ident = identTkn->Spell();
 
     /* Check if identifier is already defined */
-    DefinedSymbolPtr previousSymbol;
-    auto previousSymbolIt = definedSymbols_.find(ident);
-    if (previousSymbolIt != definedSymbols_.end())
-        previousSymbol = previousSymbolIt->second;
+    MacroPtr previousMacro;
+    auto previousMacroIt = macros_.find(ident);
+    if (previousMacroIt != macros_.end())
+        previousMacro = previousMacroIt->second;
 
     /* Make new defined symbol */
-    auto symbol = MakeSymbol(ident);
+    auto symbol = MakeMacro(ident);
 
     /* Ignore white spaces and check for end of line */
     IgnoreWhiteSpaces(false);
@@ -323,13 +323,13 @@ void PreProcessor::ParseDirectiveDefine()
     symbol->tokenString = ParseTokenString();
 
     /* Now compare previous and new definition */
-    if (previousSymbol)
+    if (previousMacro)
     {
         /* Compare parameters */
         //TODO...
 
         /* Compare values */
-        if (CompareTokenStrings(previousSymbol->tokenString, symbol->tokenString))
+        if (CompareTokenStrings(previousMacro->tokenString, symbol->tokenString))
             Warning("redefinition of symbol \"" + ident + "\"", identTkn.get());
         else
             Error("redefinition of symbol \"" + ident + "\" with mismatch", identTkn.get());
@@ -343,9 +343,9 @@ void PreProcessor::ParseDirectiveUndef()
     auto ident = Accept(Tokens::Ident)->Spell();
 
     /* Remove symbol */
-    auto it = definedSymbols_.find(ident);
-    if (it != definedSymbols_.end())
-        definedSymbols_.erase(it);
+    auto it = macros_.find(ident);
+    if (it != macros_.end())
+        macros_.erase(it);
     else
         Warning("failed to undefine symbol \"" + ident + "\"");
 }
