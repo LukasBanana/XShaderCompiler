@@ -7,7 +7,7 @@
 /*THIS COMMENT MUST ONLY BE VISIBLE ONCE*/
 void foo() { int bar=0; }
 
-#pragma unknown_pramga /*hello world*/
+#pragma unknown_pragma /*hello world*/
 
   #  define M_PI 3.141592654  /*TEST_PI*/   
 

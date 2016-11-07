@@ -27,8 +27,8 @@
 #define  F2 (  X ,   Y  )  (X)*(Y)
 
 #pragma
-#pragma foo ()
-#pragma foo     
+#pragma pack_matrix ()
+#pragma def  
 
 #ifdef _5
 #ifdef F3

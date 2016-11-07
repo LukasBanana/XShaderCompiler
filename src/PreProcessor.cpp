@@ -442,8 +442,11 @@ void PreProcessor::ParseDirectivePragma()
                 if (!filename.empty())
                     onceIncluded_.insert(std::move(filename));
             }
-            else if (command == "foo")
+            else if (command == "def" || command == "message" || command == "pack_matrix" || command == "warning")
+            {
                 Warning("pragma \"" + command + "\" can currently not be handled", tokenIt->get());
+                return;
+            }
             else
                 Warning("unknown pragma: \"" + command + "\"", tokenIt->get());
         }
