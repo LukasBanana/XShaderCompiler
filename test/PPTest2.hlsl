@@ -13,10 +13,15 @@
 
 #define V1 1+2
 
+// error example
+#if f
+// 'g' is an invalid token here
+#endif
+
 #if !defined (V1) || defined F3
 #endif
 
-#if 5 > V1*3 && (x | 2 != f) f// 2
+#if 5 > V1*3 && (x | 2 != f) //f 2
 
 F1 ( 1 , 2 )
 F1 (1,2+3)

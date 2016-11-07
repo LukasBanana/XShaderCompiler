@@ -525,8 +525,15 @@ void PreProcessor::ParseDirectiveIfOrElifCondition(bool skipEvaluation)
 {
     auto tkn = GetScanner().PreviousToken();
 
-    /* Parse condition token string */
-    auto tokenString = ParseDirectiveTokenString(true);
+    /*
+    Parse condition token string, and wrap it inside a bracket expression
+    to easier find the legal end of the expression during parsing.
+    TODO: this is a work around to detect an illegal end of a constant expression.
+    */
+    TokenPtrString tokenString;
+    tokenString.PushBack(Make<Token>(Tokens::LBracket, "("));
+    tokenString.PushBack(ParseDirectiveTokenString(true));
+    tokenString.PushBack(Make<Token>(Tokens::RBracket, ")"));
 
     /* Evalutate condition */
     bool condition = false;
@@ -536,10 +543,12 @@ void PreProcessor::ParseDirectiveIfOrElifCondition(bool skipEvaluation)
         /* Build binary expression tree from token string */
         auto conditionExpr = ParseExpr();
 
+        #if 0
         /* Check if token string has reached the end */
         auto tokenStringIt = GetScanner().TopTokenStringIterator();
         if (!tokenStringIt.ReachedEnd())
             Error("illegal end of constant expression", tokenStringIt->get());
+        #endif
 
         //TODO: evaluate expression tree ...
         int _dummy=0;

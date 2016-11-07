@@ -124,6 +124,11 @@ class BasicTokenString
             return tokens_;
         }
 
+        inline Container& GetTokens()
+        {
+            return tokens_;
+        }
+
     private:
 
         Container tokens_;
