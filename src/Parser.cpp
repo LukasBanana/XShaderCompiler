@@ -22,7 +22,8 @@ Parser::~Parser()
  */
 
 Parser::Parser(Log* log) :
-    log_{ log }
+    reportHandler_  { "syntax", log },
+    log_            { log           }
 {
 }
 
@@ -68,39 +69,14 @@ std::string Parser::GetCurrentFilename() const
     return (!scannerStack_.empty() ? scannerStack_.top().filename : "");
 }
 
-//private
-Report Parser::MakeReport(const Report::Types type, const std::string& msg, const SourceArea& area)
-{
-    if (area.length > 0)
-    {
-        std::string line, marker;
-        if (GetScanner().Source()->FetchLineMarker(area, line, marker))
-            return Report(type, msg, line, marker);
-        else
-            return Report(type, msg);
-    }
-    else
-        return Report(type, msg);
-}
-
 static SourceArea GetTokenArea(Token* tkn)
 {
-    return (tkn != nullptr ? tkn->Area() : SourceArea());
+    return (tkn != nullptr ? tkn->Area() : SourceArea::ignore);
 }
 
 void Parser::Error(const std::string& msg, Token* tkn, const HLSLErr errorCode)
 {
-    auto area = GetTokenArea(tkn);
-
-    std::string errorMsg = "syntax error (" + area.pos.ToString() + ") ";
-
-    if (errorCode != HLSLErr::Unknown)
-        errorMsg += "[X" + std::to_string(static_cast<int>(errorCode)) + "=" + ErrToString(errorCode) + "]";
-
-    errorMsg += ": ";
-    errorMsg += msg;
-
-    throw MakeReport(Report::Types::Error, errorMsg, area);
+    reportHandler_.ErrorBreak(msg, GetScanner().Source(), GetTokenArea(tkn), errorCode);
 }
 
 void Parser::Error(const std::string& msg, bool prevToken, const HLSLErr errorCode)
@@ -129,11 +105,7 @@ void Parser::ErrorUnexpected(const Tokens type)
 
 void Parser::Warning(const std::string& msg, Token* tkn)
 {
-    if (log_)
-    {
-        auto area = GetTokenArea(tkn);
-        log_->SumitReport(MakeReport(Report::Types::Warning, "warning (" + area.pos.ToString() + ") : " + msg, area));
-    }
+    reportHandler_.Warning(msg, GetScanner().Source(), GetTokenArea(tkn));
 }
 
 void Parser::Warning(const std::string& msg, bool prevToken)

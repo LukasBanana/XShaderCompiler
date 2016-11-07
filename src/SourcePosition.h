@@ -45,6 +45,7 @@ class SourcePosition
         {
             return row_;
         }
+
         // Returns the colummn of the source position, beginning with 1.
         inline unsigned int Column() const
         {
@@ -66,6 +67,12 @@ struct SourceArea
 {
     SourcePosition  pos;
     unsigned int    length  = 0;
+
+    // Returns ture if this is a valid source area. False if the position is invalid or the length is 0.
+    bool IsValid() const;
+
+    // Invalid source area.
+    static const SourceArea ignore;
 };
 
 

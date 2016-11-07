@@ -12,6 +12,7 @@
 #include "HT/Log.h"
 #include "HLSLScanner.h"
 #include "HLSLErr.h"
+#include "ReportHandler.h"
 #include "Visitor.h"
 #include "Token.h"
 
@@ -116,13 +117,13 @@ class Parser
 
         /* === Functions === */
 
-        Report MakeReport(const Report::Types type, const std::string& msg, const SourceArea& area);
-
         Scanner& GetScanner();
 
         /* === Members === */
 
-        Log*                            log_ = nullptr;
+        ReportHandler                   reportHandler_;
+
+        Log*                            log_            = nullptr;
         TokenPtr                        tkn_;
 
         std::stack<ScannerStackEntry>   scannerStack_;

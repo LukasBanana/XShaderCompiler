@@ -12,6 +12,10 @@ namespace HTLib
 {
 
 
+/*
+ * SourcePosition class
+ */
+
 const SourcePosition SourcePosition::ignore;
 
 SourcePosition::SourcePosition(unsigned int row, unsigned int column) :
@@ -38,12 +42,24 @@ void SourcePosition::IncColumn()
 
 bool SourcePosition::IsValid() const
 {
-    return row_ > 0 && column_ > 0;
+    return (row_ > 0 && column_ > 0);
 }
 
 void SourcePosition::Reset()
 {
     row_ = column_ = 0;
+}
+
+
+/*
+ * SourceArea structure
+ */
+
+const SourceArea SourceArea::ignore;
+
+bool SourceArea::IsValid() const
+{
+    return (pos.IsValid() && length > 0);
 }
 
 

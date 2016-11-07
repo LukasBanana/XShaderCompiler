@@ -131,7 +131,8 @@ void PreProcessor::PopIfBlock()
 {
     if (ifBlockStack_.empty())
         Error("missing '#if'-directive to closing '#endif'", true, HLSLErr::ERR_ENDIF);
-    ifBlockStack_.pop();
+    else
+        ifBlockStack_.pop();
 }
 
 bool PreProcessor::IsTopIfBlockActive() const
