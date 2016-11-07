@@ -626,8 +626,23 @@ TokenPtrString PreProcessor::ParseArgumentTokenString()
 {
     TokenPtrString tokenString;
 
-    while (!Is(Tokens::RBracket) && !Is(Tokens::Comma))
-        tokenString.PushBack(AcceptIt());
+    int bracketLevel = 0;
+
+    /* Parse tokens until the closing bracket ')' appears */
+    while ( ( bracketLevel > 0 || !Is(Tokens::RBracket) ) && !Is(Tokens::Comma) )
+    {
+        /* Do not exit loop if a closing bracket ')' appears, which belongs to an inner opening bracket '(' */
+        if (Is(Tokens::LBracket))
+            ++bracketLevel;
+        else if (bracketLevel > 0 && Is(Tokens::RBracket))
+            --bracketLevel;
+
+        /* Add token to token string */
+        if (Is(Tokens::Ident))
+            tokenString.PushBack(ParseIdentAsTokenString());
+        else
+            tokenString.PushBack(AcceptIt());
+    }
 
     return tokenString;
 }
