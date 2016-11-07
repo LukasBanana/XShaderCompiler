@@ -433,7 +433,7 @@ static void ParseArguments(const std::vector<std::string>& args)
                 g_config.options.prefix = NextArg(i, args, arg);
             else if (arg == "-output")
                 g_config.output = NextArg(i, args, arg);
-            else if (arg.size() > 3 && arg.substr(0, 2) == "-D")
+            else if (arg.size() >= 3 && arg.substr(0, 2) == "-D")
                 g_config.predefinedMacros.push_back(PredefinedMacroArg(arg));
             else
             {
