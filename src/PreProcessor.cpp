@@ -273,7 +273,9 @@ void PreProcessor::ParseDirectiveDefine()
 {
     /* Parse identifier */
     IgnoreWhiteSpaces(false);
-    auto ident = Accept(Tokens::Ident)->Spell();
+
+    auto identTkn = Accept(Tokens::Ident);
+    auto ident = identTkn->Spell();
 
     /* Check if identifier is already defined */
     DefinedSymbolPtr previousSymbol;
@@ -328,9 +330,9 @@ void PreProcessor::ParseDirectiveDefine()
 
         /* Compare values */
         if (CompareTokenStrings(previousSymbol->tokenString, symbol->tokenString))
-            Warning("redefinition of symbol \"" + ident + "\"");
+            Warning("redefinition of symbol \"" + ident + "\"", identTkn.get());
         else
-            Error("redefinition of symbol \"" + ident + "\" with mismatch");
+            Error("redefinition of symbol \"" + ident + "\" with mismatch", identTkn.get());
     }
 }
 
