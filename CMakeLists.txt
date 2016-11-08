@@ -32,7 +32,7 @@ endif()
 
 file(GLOB FilesInc ${PROJECT_SOURCE_DIR}/inc/HT/*.*)
 file(GLOB FilesSrc ${PROJECT_SOURCE_DIR}/src/*.*)
-file(GLOB FilesTool ${PROJECT_SOURCE_DIR}/tool/*.*)
+file(GLOB FilesShell ${PROJECT_SOURCE_DIR}/shell/*.*)
 
 if(WIN32)
 	file(GLOB FilesPlatform ${PROJECT_SOURCE_DIR}/src/win32/*.*)
@@ -53,7 +53,7 @@ set(
 source_group("inc" FILES ${FilesInc})
 source_group("src" FILES ${FilesSrc})
 source_group("src\\platform" FILES ${FilesPlatform})
-source_group("tool" FILES ${FilesTool})
+source_group("shell" FILES ${FilesShell})
 
 
 # === Include directories ===
@@ -74,7 +74,7 @@ set_target_properties(HTLib PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_features(HTLib PRIVATE cxx_range_for)
 
 if(HTLib_BUILD_CMD_TOOL)
-	add_executable(HTLibCmd ${FilesTool})
+	add_executable(HTLibCmd ${FilesShell})
 	set_target_properties(HTLibCmd PROPERTIES LINKER_LANGUAGE CXX)
 	target_link_libraries(HTLibCmd HTLib)
 	target_compile_features(HTLibCmd PRIVATE cxx_range_for)
