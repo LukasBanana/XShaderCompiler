@@ -15,7 +15,7 @@ namespace HTLib
 
 HLSLParser::HLSLParser(const Options& options, Log* log) :
     Parser  { log     },
-    options_{ options },
+    //options_{ options },
     scanner_{ log     }
 {
 }

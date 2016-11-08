@@ -35,9 +35,9 @@ static const std::string interfaceBlockPrefix = "_I";
 static std::string TimePoint()
 {
     /* Determine current time point */
-    const auto currentTime = std::chrono::system_clock::now();
-    const auto duration = std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch());
-    const auto date = duration.count();
+    const auto currentTime  = std::chrono::system_clock::now();
+    const auto duration     = std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch());
+    const auto date         = static_cast<std::time_t>(duration.count());
     
     /* Get time point as string */
     auto timePoint = std::string(std::ctime(&date));
@@ -1553,8 +1553,7 @@ void GLSLGenerator::WriteFragmentShaderOutput()
         {
             for (const auto& member : structAST->members)
             {
-                
-
+                //TODO...
             }
         }
     }
@@ -1797,6 +1796,8 @@ const std::string& GLSLGenerator::SemanticStage::operator [] (const ShaderTarget
             return fragment;
         case ShaderTarget::GLSLComputeShader:
             return compute;
+        default:
+            break;
     }
     throw Report(Report::Types::Error, "'target' parameter out of range in " + std::string(__FUNCTION__));
 }

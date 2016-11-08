@@ -20,6 +20,7 @@ std::string ErrToString(const HLSLErr errorCode)
 {
     switch (errorCode)
     {
+        CASE_TO_STR( Unknown                                 );
         CASE_TO_STR( ERR_COMMENTEOF                          );
         CASE_TO_STR( ERR_HEXTRUNCATED                        );
         CASE_TO_STR( ERR_OCTTRUNCATED                        );

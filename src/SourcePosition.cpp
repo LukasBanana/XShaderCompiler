@@ -16,7 +16,7 @@ namespace HTLib
  * SourcePosition class
  */
 
-const SourcePosition SourcePosition::ignore;
+const SourcePosition SourcePosition::ignore {};
 
 SourcePosition::SourcePosition(unsigned int row, unsigned int column) :
     row_   { row    },
@@ -55,7 +55,7 @@ void SourcePosition::Reset()
  * SourceArea structure
  */
 
-const SourceArea SourceArea::ignore;
+const SourceArea SourceArea::ignore {};
 
 bool SourceArea::IsValid() const
 {

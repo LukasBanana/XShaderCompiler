@@ -150,7 +150,7 @@ class HLSLParser : public Parser
 
         /* === Members === */
 
-        const Options&  options_;
+        //const Options&  options_;
 
         HLSLScanner     scanner_;
 

@@ -101,6 +101,7 @@ std::string Token::TypeToString(const Types type)
         case Types::LineBreak:          return "preprocessor line break";
         case Types::Misc:               return "miscellaneous";
         case Types::EndOfStream:        return "end-of-stream";
+        default:                        break;
     }
     return "";
 }

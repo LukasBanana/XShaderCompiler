@@ -385,7 +385,7 @@ static void ParseFromPresetting(const std::string& filename)
     }
 }
 
-static void ParseArguments(const std::vector<std::string>& args)
+void ParseArguments(const std::vector<std::string>& args)
 {
     int     translationCounter  = 0;
     bool    showHelp            = false,
