@@ -614,8 +614,7 @@ HelpDescriptor IncludePathCommand::Help() const
 
 void IncludePathCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    auto path = cmdLine.Accept();
-    //TODO...
+    state.searchPaths.push_back(cmdLine.Accept());
 }
 
 

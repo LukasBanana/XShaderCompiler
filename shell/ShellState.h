@@ -31,6 +31,7 @@ struct ShellState
     ShaderOutput                    outputDesc;
     std::string                     outputFilename;
     std::vector<PredefinedMacro>    predefinedMacros;
+    std::vector<std::string>        searchPaths;
     bool                            pauseApp            = false;
 };
 

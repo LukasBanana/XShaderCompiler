@@ -2,9 +2,11 @@
 // HLSL Translator: Preprocessor Test 1
 // 05/11/2016
 
-	#	include   <TestHeader1.h>   /*comment*/
+	#	include   <TestHeader1.h>
 	#	include   "TestHeader1.h"   /*comment*/
 
+#pragma message "This is a simple compiler message"
+#pragma message "~~~~~ HELLO WORLD! ~~~~~"
 
 // VERTEX SHADER
 

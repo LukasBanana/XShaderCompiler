@@ -91,23 +91,26 @@ void Parser::Error(const std::string& msg, bool prevToken, const HLSLErr errorCo
     Error(msg, prevToken ? GetScanner().PreviousToken().get() : GetScanner().ActiveToken().get(), errorCode);
 }
 
-void Parser::ErrorUnexpected(const std::string& hint)
+void Parser::ErrorUnexpected(const std::string& hint, Token* tkn)
 {
-    std::string msg = "unexpected token: " + Token::TypeToString(tkn_->Type());
+    if (!tkn)
+        tkn = tkn_.get();
+
+    std::string msg = "unexpected token: " + Token::TypeToString(tkn->Type());
 
     if (!hint.empty())
         msg += " (" + hint + ")";
 
-    Error(msg, false);
+    Error(msg, tkn);
 }
 
-void Parser::ErrorUnexpected(const Tokens type)
+void Parser::ErrorUnexpected(const Tokens type, Token* tkn)
 {
     auto typeName = Token::TypeToString(type);
     if (typeName.empty())
-        ErrorUnexpected();
+        ErrorUnexpected("", tkn);
     else
-        ErrorUnexpected("expected: " + typeName);
+        ErrorUnexpected("expected: " + typeName, tkn);
 }
 
 void Parser::ErrorInternal(const std::string& msg, const std::string& procName)

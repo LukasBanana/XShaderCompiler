@@ -114,7 +114,7 @@ class PreProcessor : public Parser
         void ParseDirectiveEndif();
         void ParseDirectivePragma();
         void ParseDirectiveLine();
-        void ParseDirectiveError(const TokenPtr& directiveToken);
+        void ParseDirectiveError();
 
         ExprPtr ParseExpr();
         

@@ -1,9 +1,12 @@
-[PPTest1.hlsl -pponly]
--PP -T vertex -E VS -O output/PPTest1.post.hlsl PPTest1.hlsl
+[PPTest1.hlsl -PP]
+-PP -O output/PPTest1.post.hlsl PPTest1.hlsl
+
+[PPTest1.hlsl -PP -I]
+-PP -I ../../misc/ -O output/PPTest1.post.hlsl PPTest1.hlsl
 
 [PPTest1.hlsl VS]
 -T vertex -E VS -O output/PPTest1.vertex.glsl PPTest1.hlsl
 
-[PPTest2.hlsl -pponly]
--PP -T vertex -E VS -O output/PPTest2.post.hlsl PPTest2.hlsl
+[PPTest2.hlsl -PP]
+-PP -O output/PPTest2.post.hlsl PPTest2.hlsl
 

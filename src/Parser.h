@@ -56,8 +56,8 @@ class Parser
         void Error(const std::string& msg, Token* tkn, const HLSLErr errorCode = HLSLErr::Unknown);
         void Error(const std::string& msg, bool prevToken = true, const HLSLErr errorCode = HLSLErr::Unknown);
 
-        void ErrorUnexpected(const std::string& hint = "");
-        void ErrorUnexpected(const Tokens type);
+        void ErrorUnexpected(const std::string& hint = "", Token* tkn = nullptr);
+        void ErrorUnexpected(const Tokens type, Token* tkn = nullptr);
 
         void ErrorInternal(const std::string& msg, const std::string& procName);
 

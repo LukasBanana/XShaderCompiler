@@ -81,10 +81,53 @@ void StdLog::PrintAll()
 
 using Colors = ConsoleManip::ColorFlags;
 
+static void PrintMultiLineString(const std::string& s, const std::string& indent)
+{
+    /* Determine at which position the actual text begins (excluding the "error (X:Y) : " or the like) */
+    auto textStartPos = s.find(" : ");
+
+    if (textStartPos != std::string::npos)
+        textStartPos += 3;
+    else
+        textStartPos = 0;
+
+    std::string newLineIndent(textStartPos, ' ');
+
+    std::size_t start = 0;
+    bool useNewLineIndent = false;
+
+    while (start < s.size())
+    {
+        /* Print indentation */
+        std::cout << indent;
+
+        if (useNewLineIndent)
+            std::cout << newLineIndent;
+
+        /* Print next line */
+        auto end = s.find('\n', start);
+
+        if (end != std::string::npos)
+        {
+            std::cout << s.substr(start, end - start);
+            start = end + 1;
+        }
+        else
+        {
+            std::cout << s.substr(start);
+            start = end;
+        }
+
+        std::cout << std::endl;
+
+        useNewLineIndent = true;
+    }
+}
+
 void StdLog::PrintReport(const IndentReport& r)
 {
     /* Print report message */
-    std::cout << r.indent;
+    //std::cout << r.indent;
 
     auto type = r.report.Type();
     const auto& msg = r.report.Message();
@@ -92,17 +135,20 @@ void StdLog::PrintReport(const IndentReport& r)
     if (type == Report::Types::Error)
     {
         ConsoleManip::ScopedColor highlight(std::cout, Colors::Red | Colors::Intens);
-        std::cout << msg;
+        PrintMultiLineString(msg, r.indent);
+        //std::cout << msg;
     }
     else if (type == Report::Types::Warning)
     {
         ConsoleManip::ScopedColor highlight(std::cout, Colors::Yellow);
-        std::cout << msg;
+        PrintMultiLineString(msg, r.indent);
+        //std::cout << msg;
     }
     else
-        std::cout << msg;
+        PrintMultiLineString(msg, r.indent);
+        //std::cout << msg;
 
-    std::cout << std::endl;
+    //std::cout << std::endl;
 
     /* Print optional line and line-marker */
     if (r.report.HasLine())

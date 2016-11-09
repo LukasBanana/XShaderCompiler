@@ -306,8 +306,7 @@ void PreProcessor::ParseMisc()
 void PreProcessor::ParseDirective()
 {
     /* Parse pre-processor directive */
-    auto tkn = Accept(Tokens::Directive);
-    auto directive = tkn->Spell();
+    auto directive = Accept(Tokens::Directive)->Spell();
 
     if (directive == "define")
         ParseDirectiveDefine();
@@ -332,7 +331,7 @@ void PreProcessor::ParseDirective()
     else if (directive == "line")
         ParseDirectiveLine();
     else if (directive == "error")
-        ParseDirectiveError(tkn);
+        ParseDirectiveError();
     else
         Error("unknown preprocessor directive: \"" + directive + "\"");
 }
@@ -627,7 +626,15 @@ void PreProcessor::ParseDirectivePragma()
                 if (!filename.empty())
                     onceIncluded_.insert(std::move(filename));
             }
-            else if (command == "def" || command == "message" || command == "pack_matrix" || command == "warning")
+            else if (command == "message")
+            {
+                /* Parse message string */
+                if ((*++tokenIt)->Type() == Tokens::StringLiteral)
+                    GetReportHandler().SubmitReport(false, Report::Types::Info, "message", (*tokenIt)->Spell(), nullptr, (*tokenIt)->Area());
+                else
+                    ErrorUnexpected(Tokens::StringLiteral, tokenIt->get());
+            }
+            else if (command == "def" || command == "pack_matrix" || command == "warning")
             {
                 Warning("pragma \"" + command + "\" can currently not be handled", tokenIt->get());
                 return;
@@ -665,9 +672,9 @@ void PreProcessor::ParseDirectiveLine()
 }
 
 // '#' 'error' TOKEN-STRING
-void PreProcessor::ParseDirectiveError(const TokenPtr& directiveToken)
+void PreProcessor::ParseDirectiveError()
 {
-    auto pos = directiveToken->Pos();
+    auto tkn = GetScanner().PreviousToken();
 
     /* Parse token string */
     auto tokenString = ParseDirectiveTokenString();
@@ -683,7 +690,7 @@ void PreProcessor::ParseDirectiveError(const TokenPtr& directiveToken)
             errorMsg += tkn->Spell();
     }
 
-    throw Report(Report::Types::Error, "error (" + pos.ToString() + ") : " + errorMsg);
+    GetReportHandler().SubmitReport(true, Report::Types::Error, "error", errorMsg, GetScanner().Source(), tkn->Area());
 }
 
 ExprPtr PreProcessor::ParseExpr()

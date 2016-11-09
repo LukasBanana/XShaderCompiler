@@ -80,6 +80,16 @@ class ReportHandler
             const ErrorCode& errorCode = ErrorCode()
         );
 
+        void SubmitReport(
+            bool breakWithExpection,
+            const Report::Types type,
+            const std::string& typeName,
+            const std::string& msg,
+            SourceCode* sourceCode = nullptr,
+            const SourceArea& area = SourceArea::ignore,
+            const ErrorCode& errorCode = ErrorCode()
+        );
+
         // Returns true if any errors have been submitted.
         inline bool HasErros() const
         {
@@ -87,15 +97,6 @@ class ReportHandler
         }
 
     private:
-
-        void SubmitReport(
-            bool isError,
-            bool throwExpection,
-            const std::string& msg,
-            SourceCode* sourceCode,
-            const SourceArea& area,
-            const ErrorCode& errorCode
-        );
 
         Report MakeReport(
             const Report::Types type,

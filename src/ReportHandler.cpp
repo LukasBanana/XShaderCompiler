@@ -36,44 +36,33 @@ ReportHandler::ReportHandler(const std::string& reportTypeName, Log* log) :
 
 void ReportHandler::Error(const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
 {
-    SubmitReport(true, false, msg, sourceCode, area, errorCode);
+    SubmitReport(false, Report::Types::Error, (reportTypeName_ + " error"), msg, sourceCode, area, errorCode);
 }
 
 void ReportHandler::ErrorBreak(const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
 {
-    SubmitReport(true, true, msg, sourceCode, area, errorCode);
+    SubmitReport(true, Report::Types::Error, (reportTypeName_ + " error"), msg, sourceCode, area, errorCode);
 }
 
 void ReportHandler::Warning(const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
 {
-    SubmitReport(false, false, msg, sourceCode, area, errorCode);
+    SubmitReport(false, Report::Types::Warning, "warning", msg, sourceCode, area, errorCode);
 }
 
 void ReportHandler::WarningBreak(const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
 {
-    SubmitReport(false, true, msg, sourceCode, area, errorCode);
+    SubmitReport(true, Report::Types::Warning, "warning", msg, sourceCode, area, errorCode);
 }
 
-
-/*
- * ======= Private: =======
- */
-
 void ReportHandler::SubmitReport(
-    bool isError, bool throwExpection, const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
+    bool breakWithExpection, const Report::Types type, const std::string& typeName,
+    const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
 {
-    std::string outputMsg;
+    /* Initialize output message */
+    auto outputMsg = typeName;
     
-    /* Initialize with either error or warning message */
-    auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
-
-    if (isError)
-    {
-        outputMsg = reportTypeName_ + " error";
+    if (type == Report::Types::Error)
         hasErrors_ = true;
-    }
-    else
-        outputMsg = "warning";
 
     /* Add source position */
     outputMsg += " (" + area.pos.ToString() + ") ";
@@ -86,13 +75,18 @@ void ReportHandler::SubmitReport(
     outputMsg += msg;
 
     /* Either throw or submit report */
-    auto report = MakeReport(reportType, outputMsg, sourceCode, area);
+    auto report = MakeReport(type, outputMsg, sourceCode, area);
 
-    if (throwExpection)
+    if (breakWithExpection)
         throw report;
     else if (log_)
         log_->SumitReport(report);
 }
+
+
+/*
+ * ======= Private: =======
+ */
 
 Report ReportHandler::MakeReport(
     const Report::Types type, const std::string& msg, SourceCode* sourceCode, const SourceArea& area)

@@ -34,7 +34,7 @@ class Shell
 
     private:
 
-        void Translate(const std::string& filename);
+        void Compile(const std::string& filename);
 
         ShellState state;
 

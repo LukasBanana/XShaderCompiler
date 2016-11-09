@@ -63,8 +63,8 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
             }
             else
             {
-                /* Translate specified shader file */
-                Translate(cmdName);
+                /* Compile specified shader file */
+                Compile(cmdName);
 
                 /* Reset output filename and entry point */
                 state.outputFilename.clear();
@@ -100,7 +100,7 @@ static std::string ExtractFilename(const std::string& filename)
     return (pos == std::string::npos ? filename : filename.substr(0, pos));
 }
 
-void Shell::Translate(const std::string& filename)
+void Shell::Compile(const std::string& filename)
 {
     auto outputFilename = state.outputFilename;
 
@@ -142,10 +142,14 @@ void Shell::Translate(const std::string& filename)
         state.inputDesc.sourceCode  = inputStream;
         state.outputDesc.sourceCode = &outputStream;
 
-        /* Translate HLSL file into GLSL */
+        /* Compile shader file */
         StdLog log;
+        IncludeHandler includeHandler;
+        
+        includeHandler.searchPaths = state.searchPaths;
+        state.inputDesc.includeHandler = &includeHandler;
 
-        output << "translate from " << filename << " to " << outputFilename << std::endl;
+        output << "compile " << filename << " to " << outputFilename << std::endl;
 
         auto result = CompileShader(state.inputDesc, state.outputDesc, &log);
 
