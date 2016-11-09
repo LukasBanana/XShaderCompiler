@@ -96,7 +96,7 @@ struct ShaderOutput
 };
 
 /**
-\brief Translates the HLSL code from the specified input stream into GLSL code.
+\brief Cross compiles the shader code from the specified input stream into the specified output shader code.
 \param[in] inputDesc Input shader code descriptor.
 \param[in] outputDesc Output shader code descriptor.
 \param[in] log Optional pointer to an output log. Inherit from the "Log" class interface.
@@ -105,7 +105,7 @@ struct ShaderOutput
 \see ShaderOutput
 \see Log
 */
-HTLIB_EXPORT bool TranslateHLSLtoGLSL(
+HTLIB_EXPORT bool CompileShader(
     const ShaderInput& inputDesc,
     const ShaderOutput& outputDesc,
     Log* log = nullptr

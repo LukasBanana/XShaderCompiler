@@ -147,7 +147,7 @@ void Shell::Translate(const std::string& filename)
 
         output << "translate from " << filename << " to " << outputFilename << std::endl;
 
-        auto result = TranslateHLSLtoGLSL(state.inputDesc, state.outputDesc, &log);
+        auto result = CompileShader(state.inputDesc, state.outputDesc, &log);
 
         log.PrintAll();
 
