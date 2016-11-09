@@ -26,7 +26,7 @@ SourcePosition::SourcePosition(unsigned int row, unsigned int column) :
 
 std::string SourcePosition::ToString() const
 {
-    return std::to_string(row_) + ":" + std::to_string(column_ > 0 ? column_ - 1 : 0);
+    return (std::to_string(row_) + ":" + std::to_string(column_ > 0 ? column_ - 1 : 0));
 }
 
 void SourcePosition::IncRow()

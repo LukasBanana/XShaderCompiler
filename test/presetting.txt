@@ -1,8 +1,9 @@
+
+[PPExprTest1.hlsl -PP]
+-PP -O output/PPExprTest1.post.hlsl PPExprTest1.hlsl
+
 [PPTest1.hlsl -PP]
 -PP -O output/PPTest1.post.hlsl PPTest1.hlsl
-
-[PPTest1.hlsl -PP -I]
--PP -I ../../misc/ -O output/PPTest1.post.hlsl PPTest1.hlsl
 
 [PPTest1.hlsl VS]
 -T vertex -E VS -O output/PPTest1.vertex.glsl PPTest1.hlsl
