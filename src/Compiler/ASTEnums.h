@@ -80,7 +80,6 @@ AssignOp StringToAssignOp(const std::string& s);
 std::string BinaryOpToString(const BinaryOp o);
 BinaryOp StringToBinaryOp(const std::string& s);
 
-
 std::string UnaryOpToString(const UnaryOp o);
 UnaryOp StringToUnaryOp(const std::string& s);
 

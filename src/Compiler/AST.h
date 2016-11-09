@@ -12,6 +12,7 @@
 #include "Token.h"
 #include "Visitor.h"
 #include "Flags.h"
+#include "ASTEnums.h"
 
 #include <vector>
 #include <string>
