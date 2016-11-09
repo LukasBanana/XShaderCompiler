@@ -30,7 +30,7 @@ endif()
 
 # === Global files ===
 
-file(GLOB FilesInc ${PROJECT_SOURCE_DIR}/inc/HT/*.*)
+file(GLOB FilesInc ${PROJECT_SOURCE_DIR}/inc/Xsc/*.*)
 file(GLOB FilesSrc ${PROJECT_SOURCE_DIR}/src/*.*)
 file(GLOB FilesShell ${PROJECT_SOURCE_DIR}/shell/*.*)
 
@@ -50,7 +50,7 @@ set(
 
 # === Source group folders ===
 
-source_group("inc" FILES ${FilesInc})
+source_group("inc\\Xsc" FILES ${FilesInc})
 source_group("src" FILES ${FilesSrc})
 source_group("src\\platform" FILES ${FilesPlatform})
 source_group("shell" FILES ${FilesShell})

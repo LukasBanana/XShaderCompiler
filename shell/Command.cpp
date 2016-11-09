@@ -8,7 +8,7 @@
 #include "Command.h"
 #include "CommandFactory.h"
 #include "Shell.h"
-#include <HT/ConsoleManip.h>
+#include <Xsc/ConsoleManip.h>
 #include <map>
 #include <fstream>
 #include <sstream>

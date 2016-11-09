@@ -9,8 +9,8 @@
 #define XSC_PRE_PROCESSOR_H
 
 
-#include "HT/Translator.h"
-#include "HT/Log.h"
+#include <Xsc/Translator.h>
+#include <Xsc/Log.h>
 #include "PreProcessorScanner.h"
 #include "TokenString.h"
 #include "Parser.h"

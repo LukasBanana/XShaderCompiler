@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#include <HT/Log.h>
-#include <HT/ConsoleManip.h>
+#include <Xsc/Log.h>
+#include <Xsc/ConsoleManip.h>
 #include <iostream>
 
 

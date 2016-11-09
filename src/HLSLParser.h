@@ -9,7 +9,7 @@
 #define XSC_HLSL_PARSER_H
 
 
-#include "HT/Log.h"
+#include <Xsc/Log.h>
 #include "HLSLScanner.h"
 #include "ReferenceAnalyzer.h"
 #include "Parser.h"

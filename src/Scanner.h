@@ -9,8 +9,8 @@
 #define XSC_SCANNER_H
 
 
-#include "HT/Translator.h"
-#include "HT/Log.h"
+#include <Xsc/Translator.h>
+#include <Xsc/Log.h>
 #include "SourceCode.h"
 #include "SourcePosition.h"
 #include "Token.h"

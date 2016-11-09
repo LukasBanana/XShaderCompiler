@@ -10,8 +10,8 @@
 
 
 #include "SourcePosition.h"
-#include <HT/Report.h>
-#include <HT/Log.h>
+#include <Xsc/Report.h>
+#include <Xsc/Log.h>
 #include <HLSLErr.h>
 #include <string>
 

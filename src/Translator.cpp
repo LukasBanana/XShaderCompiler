@@ -5,7 +5,7 @@
  * See "LICENSE.txt" for license information.
  */
 
-#include "HT/Translator.h"
+#include <Xsc/Translator.h>
 #include "PreProcessor.h"
 #include "HLSLParser.h"
 #include "HLSLAnalyzer.h"
