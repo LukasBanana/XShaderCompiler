@@ -5,9 +5,11 @@
 
 #define A (3*2)
 
-#define B(X) "hello " #X
+#define F1(a, b, c) (a+()*c)
+#define F2(a, b) a/b
 
-#error B(B(A))
+F1(1, 2, F2(0, 1))
+
 
 #if 5 > V1*3 && (x | 2 != f) //f 2
 #	pragma message "1: IF BRANCH"
