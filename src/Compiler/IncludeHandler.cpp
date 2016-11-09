@@ -25,7 +25,15 @@ static std::unique_ptr<std::istream> ReadFile(const std::string& filename)
 
 std::unique_ptr<std::istream> IncludeHandler::Include(const std::string& filename, bool useSearchPaths)
 {
-    if (useSearchPaths)
+    /* Read file from relative path */
+    if (!useSearchPaths)
+    {
+        auto file = ReadFile(filename);
+        if (file)
+            return file;
+    }
+    
+    //if (useSearchPaths)
     {
         /* Search file in search paths */
         for (const auto& path : searchPaths)
@@ -46,13 +54,15 @@ std::unique_ptr<std::istream> IncludeHandler::Include(const std::string& filenam
         }
     }
 
-    /* Read file from relative path */
-    auto file = ReadFile(filename);
-    
-    if (!file)
-        throw std::runtime_error("failed to include file: \"" + filename + "\"");
+    if (useSearchPaths)
+    {
+        /* Read file from relative path */
+        auto file = ReadFile(filename);
+        if (file)
+            return file;
+    }
 
-    return file;
+    throw std::runtime_error("failed to include file: \"" + filename + "\"");
 }
 
 
