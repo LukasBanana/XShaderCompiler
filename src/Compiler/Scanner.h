@@ -130,14 +130,14 @@ class Scanner
 
         /* === Members === */
 
-        SourceCodePtr   source_;
-        char            chr_ = 0;
+        SourceCodePtr                               source_;
+        char                                        chr_ = 0;
 
-        Log*            log_ = nullptr;
+        Log*                                        log_ = nullptr;
 
-        SourcePosition  nextStartPos_;
-        TokenPtr        activeToken_;
-        TokenPtr        prevToken_;
+        SourcePosition                              nextStartPos_;
+        TokenPtr                                    activeToken_;
+        TokenPtr                                    prevToken_;
 
         std::stack<TokenPtrString::ConstIterator>   tokenStringItStack_;
 
