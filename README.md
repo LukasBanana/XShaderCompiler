@@ -1,9 +1,9 @@
-# HLSL (Shader Model 4 & 5) Translator #
+# XShaderCompiler ("Cross Shader Compiler") #
 
 Features
 --------
 
-* Translates HLSL shader code into GLSL
+* Translates HLSL shader code (Shader Model 4 and 5) into GLSL
 * Simple to integrate into other projects
 * Written in C++11
 
@@ -23,16 +23,16 @@ Status
 * 'interface' and 'class' declarations.
 * Cast expressions to a struct type is currently not supported (e.g. "(VertexOut)0").
 
-Offline Translator
-------------------
+Offline Compiler
+----------------
 
 The following command line translates the "Example.hlsl" shader file:
 
 ```
-HTLibCmd -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl
+HTLibCmd -E VS -T vertex Example.hlsl -E PS -T fragment Example.hlsl
 ```
 
-The result are two GLSL shader files: "Example.vertex.glsl" and "Example.fragment.glsl".
+The result are two GLSL shader files: "Example.VS.glsl" and "Example.PS.glsl".
 
 Library Usage
 -------------
