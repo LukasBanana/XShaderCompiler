@@ -596,8 +596,8 @@ void HelpCommand::Run(CommandLine& cmdLine, ShellState& state)
     std::cout << "  HTLibCmd -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl" << std::endl;
     std::cout << "   --> Example.vertex.glsl; Example.fragment.glsl" << std::endl;
 }
-    
-    
+
+
 /*
  * IncludePathCommand class
  */
