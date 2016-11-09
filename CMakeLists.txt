@@ -1,8 +1,8 @@
 
-# === CMake lists for the HLSL Translator - (09/10/2014) ===
+# === CMake lists for the XShaderCompiler - (09/10/2014) ===
 
 cmake_minimum_required(VERSION 2.8)
-project(HLSLTranslator)
+project(XShaderCompiler)
 
 
 # === Build path ===
@@ -15,8 +15,8 @@ set(INSTALL_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "Instal
 
 # === Options ===
 
-option(HTLib_SHARED_LIB "Build HTLib as a shared library instead of a static library" OFF)
-option(HTLib_BUILD_CMD_TOOL "Build HTLib command line tool 'HTLibCmd'" ON)
+option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
+option(XSC_BUILD_SHELL "Build XShaderCompiler shell 'xsc'" ON)
 
 
 # === Preprocessor definitions ===
@@ -64,27 +64,27 @@ include_directories("${PROJECT_SOURCE_DIR}/src")
 
 # === Executable ===
 
-if(HTLib_SHARED_LIB)
-	add_library(HTLib SHARED ${FilesAll})
+if(XSC_SHARED_LIB)
+	add_library(xsc_core SHARED ${FilesAll})
 else()
-	add_library(HTLib STATIC ${FilesAll})
+	add_library(xsc_core STATIC ${FilesAll})
 endif()
 
-set_target_properties(HTLib PROPERTIES LINKER_LANGUAGE CXX)
-target_compile_features(HTLib PRIVATE cxx_range_for)
+set_target_properties(xsc_core PROPERTIES LINKER_LANGUAGE CXX)
+target_compile_features(xsc_core PRIVATE cxx_range_for)
 
-if(HTLib_BUILD_CMD_TOOL)
-	add_executable(HTLibCmd ${FilesShell})
-	set_target_properties(HTLibCmd PROPERTIES LINKER_LANGUAGE CXX)
-	target_link_libraries(HTLibCmd HTLib)
-	target_compile_features(HTLibCmd PRIVATE cxx_range_for)
+if(XSC_BUILD_SHELL)
+	add_executable(xsc ${FilesShell})
+	set_target_properties(xsc PROPERTIES LINKER_LANGUAGE CXX)
+	target_link_libraries(xsc xsc_core)
+	target_compile_features(xsc PRIVATE cxx_range_for)
 endif()
 
 
 # === Installation Rules ===
 
 install(
-	TARGETS HTLib HTLibCmd
+	TARGETS xsc_core xsc
 	DESTINATION ${INSTALL_OUTPUT_PATH}
 )
 
