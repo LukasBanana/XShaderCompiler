@@ -115,6 +115,21 @@ TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<T
                 }
             }
         }
+        else if (tkn.Type() == Tokens::Directive)
+        {
+            auto ident = tkn.Spell();
+            for (std::size_t i = 0; i < macro.parameters.size(); ++i)
+            {
+                if (ident == macro.parameters[i])
+                {
+                    /* Expand identifier by converting argument token string to string literal */
+                    std::stringstream stringLiteral;
+                    stringLiteral << arguments[i];
+                    expandedString.PushBack(Make<Token>(Tokens::StringLiteral, stringLiteral.str()));
+                    return true;
+                }
+            }
+        }
         return false;
     };
 
