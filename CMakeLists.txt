@@ -23,8 +23,8 @@ option(XSC_BUILD_SHELL "Build XShaderCompiler shell 'xsc'" ON)
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
-if(HTLib_SHARED_LIB)
-	add_definitions(-DHTLIB_SHARED_LIB)
+if(XSC_SHARED_LIB)
+	add_definitions(-DXSC_SHARED_LIB)
 endif()
 
 

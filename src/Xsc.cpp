@@ -45,7 +45,7 @@ std::unique_ptr<std::istream> StdIncludeHandler::Include(const std::string& file
  * Public functions
  */
 
-HTLIB_EXPORT bool CompileShader(
+XSC_EXPORT bool CompileShader(
     const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log)
 {
     auto SubmitError = [log](const char* msg)

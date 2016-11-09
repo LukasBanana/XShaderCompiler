@@ -9,10 +9,10 @@
 #define XSC_EXPORT_H
 
 
-#if defined(_MSC_VER) && defined(HTLIB_SHARED_LIB)
-#   define HTLIB_EXPORT __declspec(dllexport)
+#if defined(_MSC_VER) && defined(XSC_SHARED_LIB)
+#   define XSC_EXPORT __declspec(dllexport)
 #else
-#   define HTLIB_EXPORT
+#   define XSC_EXPORT
 #endif
 
 

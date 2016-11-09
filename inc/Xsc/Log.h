@@ -21,7 +21,7 @@ namespace Xsc
 
 
 //! Log base class.
-class HTLIB_EXPORT Log
+class XSC_EXPORT Log
 {
     
     public:
@@ -68,7 +68,7 @@ class HTLIB_EXPORT Log
 };
 
 //! Standard output log (uses std::cout to submit a report).
-class HTLIB_EXPORT StdLog : public Log
+class XSC_EXPORT StdLog : public Log
 {
 
     public:

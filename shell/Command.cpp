@@ -564,7 +564,7 @@ HelpDescriptor VersionCommand::Help() const
 void VersionCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     ConsoleManip::ScopedColor highlight(std::cout, ConsoleManip::ColorFlags::Green | ConsoleManip::ColorFlags::Blue);
-    std::cout << "HLSL Translator ( Version " << HTLIB_VERSION_STRING << " )" << std::endl;
+    std::cout << "HLSL Translator ( Version " << XSC_VERSION_STRING << " )" << std::endl;
     std::cout << "Copyright (c) 2014-2016 by Lukas Hermanns" << std::endl;
     std::cout << "3-Clause BSD License" << std::endl;
 }
@@ -587,13 +587,13 @@ HelpDescriptor HelpCommand::Help() const
 void HelpCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     std::cout << "Usage:" << std::endl;
-    std::cout << "  HTLibCmd (OPTION+ FILE)+" << std::endl;
+    std::cout << "  xsc (OPTION+ FILE)+" << std::endl;
     std::cout << "Options:" << std::endl;
 
     CommandFactory::Instance().GetHelpPrinter().PrintAll(std::cout, 2);
 
     std::cout << "Example:" << std::endl;
-    std::cout << "  HTLibCmd -E VS -T vertex Example.hlsl -E PS -T fragment Example.hlsl" << std::endl;
+    std::cout << "  xsc -E VS -T vertex Example.hlsl -E PS -T fragment Example.hlsl" << std::endl;
     std::cout << "   -> Output files: 'Example.VS.glsl', and 'Example.PS.glsl'" << std::endl;
 }
 

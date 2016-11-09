@@ -20,7 +20,7 @@ namespace Xsc
 
 
 //! Interface for handling new include streams.
-class HTLIB_EXPORT IncludeHandler
+class XSC_EXPORT IncludeHandler
 {
     
     public:

@@ -105,7 +105,7 @@ struct ShaderOutput
 \see ShaderOutput
 \see Log
 */
-HTLIB_EXPORT bool CompileShader(
+XSC_EXPORT bool CompileShader(
     const ShaderInput& inputDesc,
     const ShaderOutput& outputDesc,
     Log* log = nullptr

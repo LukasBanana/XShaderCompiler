@@ -32,7 +32,7 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
 {
     if (cmdLine.ReachedEnd())
     {
-        std::cout << "no input : enter \"HTLibCmd help\"" << std::endl;
+        std::cout << "no input : enter \"xsc help\"" << std::endl;
         return;
     }
 

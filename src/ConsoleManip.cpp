@@ -17,12 +17,12 @@ namespace ConsoleManip
 
 static bool g_enabled = true;
 
-void HTLIB_EXPORT Enable(bool enable)
+void XSC_EXPORT Enable(bool enable)
 {
     g_enabled = enable;
 }
 
-bool HTLIB_EXPORT IsEnabled()
+bool XSC_EXPORT IsEnabled()
 {
     return g_enabled;
 }

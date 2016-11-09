@@ -43,19 +43,19 @@ struct ColorFlags
 
 
 //! Enables or disables console manipulation. By default enabled.
-void HTLIB_EXPORT Enable(bool enable);
+void XSC_EXPORT Enable(bool enable);
 
 //! Returns true if console manipulation is enabled.
-bool HTLIB_EXPORT IsEnabled();
+bool XSC_EXPORT IsEnabled();
 
 //! Push the specified front color onto the stack.
-void HTLIB_EXPORT PushColor(std::ostream& stream, long front);
+void XSC_EXPORT PushColor(std::ostream& stream, long front);
 
 //! Push the specified front and back color onto the stack.
-void HTLIB_EXPORT PushColor(std::ostream& stream, long front, long back);
+void XSC_EXPORT PushColor(std::ostream& stream, long front, long back);
 
 //! Pops the previous front and back colors from the stack.
-void HTLIB_EXPORT PopColor(std::ostream& stream);
+void XSC_EXPORT PopColor(std::ostream& stream);
 
 
 //! Helper class for scoped color stack operations.

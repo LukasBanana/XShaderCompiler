@@ -19,7 +19,7 @@ namespace Xsc
 
 
 //! Report exception class.
-class HTLIB_EXPORT Report : public std::exception
+class XSC_EXPORT Report : public std::exception
 {
     
     public:
