@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_COMMAND_H
-#define HTLIB_COMMAND_H
+#ifndef XSC_COMMAND_H
+#define XSC_COMMAND_H
 
 
 #include "HelpPrinter.h"
@@ -15,7 +15,7 @@
 #include <string>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace Util
@@ -93,7 +93,7 @@ DECL_SHELL_COMMAND( IncludePathCommand );
 
 } // /namespace Util
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

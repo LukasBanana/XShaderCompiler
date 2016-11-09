@@ -5,15 +5,15 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_CONSOLE_MANIP_H
-#define HTLIB_CONSOLE_MANIP_H
+#ifndef XSC_CONSOLE_MANIP_H
+#define XSC_CONSOLE_MANIP_H
 
 
 #include "Export.h"
 #include <ostream>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace ConsoleManip
@@ -90,7 +90,7 @@ class ScopedColor
 
 } // /namespace ConsoleManip
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

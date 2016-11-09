@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_AST_PRINTER_H
-#define HTLIB_AST_PRINTER_H
+#ifndef XSC_AST_PRINTER_H
+#define XSC_AST_PRINTER_H
 
 
 #include "HT/Translator.h"
@@ -18,7 +18,7 @@
 #include <vector>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -98,7 +98,7 @@ class ASTPrinter : private Visitor
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_COMMAND_LINE_H
-#define HTLIB_COMMAND_LINE_H
+#ifndef XSC_COMMAND_LINE_H
+#define XSC_COMMAND_LINE_H
 
 
 #include <list>
@@ -14,7 +14,7 @@
 #include <string>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace Util
@@ -78,7 +78,7 @@ class CommandLine
 
 } // /namespace Util
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

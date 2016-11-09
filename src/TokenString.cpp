@@ -8,7 +8,7 @@
 #include "TokenString.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -19,7 +19,7 @@ bool PreProcessorTokenOfInterestFunctor::IsOfInterest(const TokenPtr& token)
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_REPORT_H
-#define HTLIB_REPORT_H
+#ifndef XSC_REPORT_H
+#define XSC_REPORT_H
 
 
 #include "Export.h"
@@ -14,7 +14,7 @@
 #include <string>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -85,7 +85,7 @@ class HTLIB_EXPORT Report : public std::exception
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

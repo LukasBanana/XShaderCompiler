@@ -10,7 +10,7 @@
 #include <cctype>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -221,7 +221,7 @@ TokenPtr HLSLScanner::ScanMinusOp()
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

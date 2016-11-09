@@ -8,7 +8,7 @@
 #include "HLSLTree.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -38,7 +38,7 @@ VarIdent* LastVarIdent(VarIdent* varIdent)
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

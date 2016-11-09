@@ -8,7 +8,7 @@
 #include "HLSLErr.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -502,7 +502,7 @@ std::string ErrToString(const HLSLErr errorCode)
 #undef CASE_TO_STR
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

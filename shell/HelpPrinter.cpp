@@ -11,7 +11,7 @@
 #include <algorithm>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace Util
@@ -93,7 +93,7 @@ void HelpPrinter::PrintEntry(std::ostream& output, const HelpDescriptor& helpDes
 
 } // /namespace Util
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

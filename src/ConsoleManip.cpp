@@ -8,7 +8,7 @@
 #include <HT/ConsoleManip.h>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace ConsoleManip
@@ -30,7 +30,7 @@ bool HTLIB_EXPORT IsEnabled()
 
 } // /namespace ConsoleManip
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

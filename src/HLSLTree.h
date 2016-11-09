@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_HLSL_TREE_H
-#define HTLIB_HLSL_TREE_H
+#ifndef XSC_HLSL_TREE_H
+#define XSC_HLSL_TREE_H
 
 
 #include "Token.h"
@@ -19,7 +19,7 @@
 #include <map>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -633,7 +633,7 @@ std::string FullVarIdent(const VarIdentPtr& varIdent);
 VarIdent* LastVarIdent(VarIdent* varIdent);
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

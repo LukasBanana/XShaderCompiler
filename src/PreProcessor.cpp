@@ -10,7 +10,7 @@
 #include <sstream>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -904,7 +904,7 @@ TokenPtrString PreProcessor::ParseArgumentTokenString()
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

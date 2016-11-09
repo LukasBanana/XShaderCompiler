@@ -5,11 +5,11 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_FLAGS_H
-#define HTLIB_FLAGS_H
+#ifndef XSC_FLAGS_H
+#define XSC_FLAGS_H
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -49,7 +49,7 @@ class Flags
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

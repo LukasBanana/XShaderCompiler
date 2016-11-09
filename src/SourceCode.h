@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_SOURCE_CODE_H
-#define HTLIB_SOURCE_CODE_H
+#ifndef XSC_SOURCE_CODE_H
+#define XSC_SOURCE_CODE_H
 
 
 #include "SourcePosition.h"
@@ -17,7 +17,7 @@
 #include <vector>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -73,7 +73,7 @@ class SourceCode
 using SourceCodePtr = std::shared_ptr<SourceCode>;
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

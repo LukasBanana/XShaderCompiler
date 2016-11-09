@@ -5,14 +5,14 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_HLSL_SCANNER_H
-#define HTLIB_HLSL_SCANNER_H
+#ifndef XSC_HLSL_SCANNER_H
+#define XSC_HLSL_SCANNER_H
 
 
 #include "Scanner.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -42,7 +42,7 @@ class HLSLScanner : public Scanner
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

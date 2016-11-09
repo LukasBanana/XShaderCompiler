@@ -10,7 +10,7 @@
 #include <algorithm>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -894,7 +894,7 @@ template <typename T> void HLSLAnalyzer::DecorateVarObjectSymbol(T ast)
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

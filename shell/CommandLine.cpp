@@ -8,7 +8,7 @@
 #include "CommandLine.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace Util
@@ -100,7 +100,7 @@ const std::string CommandLine::GetBooleanOption()
 
 } // /namespace Util
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

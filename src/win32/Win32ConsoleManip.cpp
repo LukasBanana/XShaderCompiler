@@ -52,7 +52,7 @@
 #include <Windows.h>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace ConsoleManip
@@ -175,7 +175,7 @@ void PopColor(std::ostream&)
 
 } // /namespace ConsoleManip
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

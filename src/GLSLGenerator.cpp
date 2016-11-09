@@ -17,7 +17,7 @@
 #include <cctype>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -1803,7 +1803,7 @@ const std::string& GLSLGenerator::SemanticStage::operator [] (const ShaderTarget
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

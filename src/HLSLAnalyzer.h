@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_HLSL_ANALYZER_H
-#define HTLIB_HLSL_ANALYZER_H
+#ifndef XSC_HLSL_ANALYZER_H
+#define XSC_HLSL_ANALYZER_H
 
 
 #include "HT/Translator.h"
@@ -20,7 +20,7 @@
 #include <map>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -178,7 +178,7 @@ class HLSLAnalyzer : private Visitor
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

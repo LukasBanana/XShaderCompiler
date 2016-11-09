@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_REPORT_HANDLER_H
-#define HTLIB_REPORT_HANDLER_H
+#ifndef XSC_REPORT_HANDLER_H
+#define XSC_REPORT_HANDLER_H
 
 
 #include "SourcePosition.h"
@@ -16,7 +16,7 @@
 #include <string>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -111,7 +111,7 @@ class ReportHandler
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

@@ -9,7 +9,7 @@
 #include "HLSLTree.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -330,7 +330,7 @@ void ReferenceAnalyzer::MarkTextureReference(AST* ast, const std::string& texIde
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

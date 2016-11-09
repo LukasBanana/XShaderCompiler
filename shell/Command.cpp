@@ -17,7 +17,7 @@
 #include <set>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace Util
@@ -621,7 +621,7 @@ void IncludePathCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 } // /namespace Util
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

@@ -9,7 +9,7 @@
 #include "HLSLTree.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -1263,7 +1263,7 @@ std::string HLSLParser::ParseSemantic()
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

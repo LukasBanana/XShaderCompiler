@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_PRE_PROCESSOR_H
-#define HTLIB_PRE_PROCESSOR_H
+#ifndef XSC_PRE_PROCESSOR_H
+#define XSC_PRE_PROCESSOR_H
 
 
 #include "HT/Translator.h"
@@ -22,7 +22,7 @@
 #include <set>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -158,7 +158,7 @@ class PreProcessor : public Parser
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

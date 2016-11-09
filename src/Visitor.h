@@ -5,14 +5,14 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_VISITOR_H
-#define HTLIB_VISITOR_H
+#ifndef XSC_VISITOR_H
+#define XSC_VISITOR_H
 
 
 #include <memory>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -165,7 +165,7 @@ class Visitor
 #undef VISITOR_VISIT_PROC
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

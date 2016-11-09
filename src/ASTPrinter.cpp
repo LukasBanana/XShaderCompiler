@@ -9,7 +9,7 @@
 #include "HLSLTree.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -460,7 +460,7 @@ void ASTPrinter::DecIndent()
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

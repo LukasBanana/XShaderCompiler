@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_HLSL_PARSER_H
-#define HTLIB_HLSL_PARSER_H
+#ifndef XSC_HLSL_PARSER_H
+#define XSC_HLSL_PARSER_H
 
 
 #include "HT/Log.h"
@@ -21,7 +21,7 @@
 #include <string>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -160,7 +160,7 @@ class HLSLParser : public Parser
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

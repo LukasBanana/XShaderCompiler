@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_SCANNER_H
-#define HTLIB_SCANNER_H
+#ifndef XSC_SCANNER_H
+#define XSC_SCANNER_H
 
 
 #include "HT/Translator.h"
@@ -20,7 +20,7 @@
 #include <functional>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -146,7 +146,7 @@ class Scanner
 using ScannerPtr = std::shared_ptr<Scanner>;
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

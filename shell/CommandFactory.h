@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_COMMAND_FACTOR_H
-#define HTLIB_COMMAND_FACTOR_H
+#ifndef XSC_COMMAND_FACTOR_H
+#define XSC_COMMAND_FACTOR_H
 
 
 #include "Command.h"
@@ -15,7 +15,7 @@
 #include <vector>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace Util
@@ -59,7 +59,7 @@ class CommandFactory
 
 } // /namespace Util
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

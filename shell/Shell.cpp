@@ -16,7 +16,7 @@
 #endif
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace Util
@@ -164,7 +164,7 @@ void Shell::Translate(const std::string& filename)
 
 } // /namespace Util
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

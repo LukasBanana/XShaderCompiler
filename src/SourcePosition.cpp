@@ -8,7 +8,7 @@
 #include "SourcePosition.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -63,7 +63,7 @@ bool SourceArea::IsValid() const
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

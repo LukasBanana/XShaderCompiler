@@ -9,7 +9,7 @@
 #include <cctype>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -423,7 +423,7 @@ TokenPtr Scanner::Make(const Token::Types& type, std::string& spell, const Sourc
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

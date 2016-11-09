@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_TRANSLATOR_H
-#define HTLIB_TRANSLATOR_H
+#ifndef XSC_TRANSLATOR_H
+#define XSC_TRANSLATOR_H
 
 
 #include "Export.h"
@@ -21,7 +21,7 @@
 #include <memory>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -112,7 +112,7 @@ HTLIB_EXPORT bool TranslateHLSLtoGLSL(
 );
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

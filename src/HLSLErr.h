@@ -5,14 +5,14 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_HLSL_ERR_H
-#define HTLIB_HLSL_ERR_H
+#ifndef XSC_HLSL_ERR_H
+#define XSC_HLSL_ERR_H
 
 
 #include <string>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -1453,7 +1453,7 @@ enum class HLSLErr
 std::string ErrToString(const HLSLErr errorCode);
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

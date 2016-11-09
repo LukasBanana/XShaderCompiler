@@ -8,7 +8,7 @@
 #include "Parser.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -174,7 +174,7 @@ void Parser::IgnoreNewLines()
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

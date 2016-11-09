@@ -8,7 +8,7 @@
 #include "SourceCode.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -95,7 +95,7 @@ std::string SourceCode::GetLine(std::size_t lineIndex) const
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

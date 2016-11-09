@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_SYMBOL_TABLE_H
-#define HTLIB_SYMBOL_TABLE_H
+#ifndef XSC_SYMBOL_TABLE_H
+#define XSC_SYMBOL_TABLE_H
 
 
 #include <map>
@@ -16,7 +16,7 @@
 #include <functional>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -138,7 +138,7 @@ class SymbolTable
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

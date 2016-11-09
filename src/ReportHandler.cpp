@@ -9,7 +9,7 @@
 #include <SourceCode.h>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -110,7 +110,7 @@ Report ReportHandler::MakeReport(
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

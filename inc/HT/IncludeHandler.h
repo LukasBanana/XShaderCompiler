@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_INCLUDE_HANDLER_H
-#define HTLIB_INCLUDE_HANDLER_H
+#ifndef XSC_INCLUDE_HANDLER_H
+#define XSC_INCLUDE_HANDLER_H
 
 
 #include "Export.h"
@@ -15,7 +15,7 @@
 #include <memory>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -39,7 +39,7 @@ class HTLIB_EXPORT IncludeHandler
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

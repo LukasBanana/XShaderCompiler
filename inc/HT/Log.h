@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_LOG_H
-#define HTLIB_LOG_H
+#ifndef XSC_LOG_H
+#define XSC_LOG_H
 
 
 #include "Export.h"
@@ -16,7 +16,7 @@
 #include <vector>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -99,7 +99,7 @@ class HTLIB_EXPORT StdLog : public Log
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

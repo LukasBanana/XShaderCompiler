@@ -8,7 +8,7 @@
 #include "HLSLKeywords.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -204,7 +204,7 @@ const KeywordMapType& HLSLKeywords()
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

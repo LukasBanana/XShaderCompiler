@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_GLSL_GENERATOR_H
-#define HTLIB_GLSL_GENERATOR_H
+#ifndef XSC_GLSL_GENERATOR_H
+#define XSC_GLSL_GENERATOR_H
 
 
 #include "HT/Translator.h"
@@ -18,7 +18,7 @@
 #include <vector>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -233,7 +233,7 @@ class GLSLGenerator : private Visitor
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

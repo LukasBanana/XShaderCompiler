@@ -8,7 +8,7 @@
 #include <HT/Report.h>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -35,7 +35,7 @@ const char* Report::what() const throw()
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

@@ -8,7 +8,7 @@
 #include "CommandFactory.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace Util
@@ -79,7 +79,7 @@ void CommandFactory::MakeCommand(Args&&... args)
 
 } // /namespace Util
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

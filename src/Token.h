@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_TOKEN_H
-#define HTLIB_TOKEN_H
+#ifndef XSC_TOKEN_H
+#define XSC_TOKEN_H
 
 
 #include "SourcePosition.h"
@@ -15,7 +15,7 @@
 #include <memory>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -162,7 +162,7 @@ class Token
 using TokenPtr = std::shared_ptr<Token>;
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

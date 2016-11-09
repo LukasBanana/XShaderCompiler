@@ -15,7 +15,7 @@
 #include <sstream>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -110,7 +110,7 @@ HTLIB_EXPORT bool TranslateHLSLtoGLSL(
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

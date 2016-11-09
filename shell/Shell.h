@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_SHELL_H
-#define HTLIB_SHELL_H
+#ifndef XSC_SHELL_H
+#define XSC_SHELL_H
 
 
 #include "ShellState.h"
@@ -14,7 +14,7 @@
 #include <ostream>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace Util
@@ -43,7 +43,7 @@ class Shell
 
 } // /namespace Util
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

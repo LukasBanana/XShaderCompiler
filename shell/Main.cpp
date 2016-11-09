@@ -9,8 +9,8 @@
 #include "Shell.h"
 #include <iostream>
 
-using namespace HTLib;
-using namespace HTLib::Util;
+using namespace Xsc;
+using namespace Xsc::Util;
 
 
 int main(int argc, char** argv)

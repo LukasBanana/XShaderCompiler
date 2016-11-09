@@ -8,7 +8,7 @@
 #include "CodeWriter.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -76,7 +76,7 @@ CodeWriter::Options CodeWriter::CurrentOptions() const
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

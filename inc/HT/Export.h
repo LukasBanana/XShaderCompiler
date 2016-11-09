@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_EXPORT_H
-#define HTLIB_EXPORT_H
+#ifndef XSC_EXPORT_H
+#define XSC_EXPORT_H
 
 
 #if defined(_MSC_VER) && defined(HTLIB_SHARED_LIB)

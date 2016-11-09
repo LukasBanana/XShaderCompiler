@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_TOKEN_STRING_H
-#define HTLIB_TOKEN_STRING_H
+#ifndef XSC_TOKEN_STRING_H
+#define XSC_TOKEN_STRING_H
 
 
 #include "Token.h"
@@ -14,7 +14,7 @@
 #include <ostream>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -189,7 +189,7 @@ struct PreProcessorTokenOfInterestFunctor
 using TokenPtrString = BasicTokenString<TokenPtr, PreProcessorTokenOfInterestFunctor>;
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

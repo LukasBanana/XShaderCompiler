@@ -5,11 +5,11 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_TARGETS_H
-#define HTLIB_TARGETS_H
+#ifndef XSC_TARGETS_H
+#define XSC_TARGETS_H
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -54,7 +54,7 @@ enum class OutputShaderVersion
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

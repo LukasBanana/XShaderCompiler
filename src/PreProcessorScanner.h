@@ -5,14 +5,14 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_PRE_PROCESSOR_SCANNER_H
-#define HTLIB_PRE_PROCESSOR_SCANNER_H
+#ifndef XSC_PRE_PROCESSOR_SCANNER_H
+#define XSC_PRE_PROCESSOR_SCANNER_H
 
 
 #include "Scanner.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -38,7 +38,7 @@ class PreProcessorScanner : public Scanner
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

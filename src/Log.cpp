@@ -10,7 +10,7 @@
 #include <iostream>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -162,7 +162,7 @@ void StdLog::PrintAndClearReports(IndentReportList& reports, const std::string& 
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

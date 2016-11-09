@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_KEYWORDS_H
-#define HTLIB_KEYWORDS_H
+#ifndef XSC_KEYWORDS_H
+#define XSC_KEYWORDS_H
 
 
 #include "Token.h"
@@ -15,7 +15,7 @@
 #include <string>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -25,7 +25,7 @@ using KeywordMapType = std::map<std::string, Token::Types>;
 const KeywordMapType& HLSLKeywords();
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

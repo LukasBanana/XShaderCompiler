@@ -9,7 +9,7 @@
 #include <cctype>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -156,7 +156,7 @@ TokenPtr PreProcessorScanner::ScanIdentifier()
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

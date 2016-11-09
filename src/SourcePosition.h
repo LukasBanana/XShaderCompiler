@@ -5,14 +5,14 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_SOURCE_POSITION_H
-#define HTLIB_SOURCE_POSITION_H
+#ifndef XSC_SOURCE_POSITION_H
+#define XSC_SOURCE_POSITION_H
 
 
 #include <string>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -76,7 +76,7 @@ struct SourceArea
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

@@ -5,15 +5,15 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_HELP_PRINTER_H
-#define HTLIB_HELP_PRINTER_H
+#ifndef XSC_HELP_PRINTER_H
+#define XSC_HELP_PRINTER_H
 
 
 #include <vector>
 #include <string>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace Util
@@ -72,7 +72,7 @@ class HelpPrinter
 
 } // /namespace Util
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

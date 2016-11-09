@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_REFERENCE_ANALYZER_H
-#define HTLIB_REFERENCE_ANALYZER_H
+#ifndef XSC_REFERENCE_ANALYZER_H
+#define XSC_REFERENCE_ANALYZER_H
 
 
 #include "Visitor.h"
@@ -14,7 +14,7 @@
 #include "SymbolTable.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -90,7 +90,7 @@ class ReferenceAnalyzer : private Visitor
 };
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

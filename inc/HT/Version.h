@@ -5,17 +5,17 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_VERSION_H
-#define HTLIB_VERSION_H
+#ifndef XSC_VERSION_H
+#define XSC_VERSION_H
 
 
-//! HTLib major version number.
+//! Xsc major version number.
 #define HTLIB_VERSION_MAJOR     0
 
-//! HTLib minor version number.
+//! Xsc minor version number.
 #define HTLIB_VERSION_MINOR     2
 
-//! HTLib version string in the form "X.YZ", where X is the major version, and YZ is the minor version.
+//! Xsc version string in the form "X.YZ", where X is the major version, and YZ is the minor version.
 #define HTLIB_VERSION_STRING    "0.02 Alpha"
 
 

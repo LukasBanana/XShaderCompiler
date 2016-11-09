@@ -5,14 +5,14 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef HTLIB_SHELL_STATE_H
-#define HTLIB_SHELL_STATE_H
+#ifndef XSC_SHELL_STATE_H
+#define XSC_SHELL_STATE_H
 
 
 #include <HT/Translator.h>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace Util
@@ -37,7 +37,7 @@ struct ShellState
 
 } // /namespace Util
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 #endif

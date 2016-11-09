@@ -8,7 +8,7 @@
 #include "Token.h"
 
 
-namespace HTLib
+namespace Xsc
 {
 
 
@@ -107,7 +107,7 @@ std::string Token::TypeToString(const Types type)
 }
 
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 
