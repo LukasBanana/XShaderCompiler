@@ -9,7 +9,7 @@
 #define XSC_SCANNER_H
 
 
-#include <Xsc/Translator.h>
+#include <Xsc/Xsc.h>
 #include <Xsc/Log.h>
 #include "SourceCode.h"
 #include "SourcePosition.h"

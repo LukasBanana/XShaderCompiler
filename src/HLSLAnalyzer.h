@@ -9,7 +9,7 @@
 #define XSC_HLSL_ANALYZER_H
 
 
-#include <Xsc/Translator.h>
+#include <Xsc/Xsc.h>
 #include "ReferenceAnalyzer.h"
 #include "CodeWriter.h"
 #include "Visitor.h"

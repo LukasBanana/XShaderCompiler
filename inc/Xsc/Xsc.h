@@ -1,12 +1,12 @@
 /*
- * Translator.h
+ * Xsc.h
  * 
  * This file is part of the XShaderCompiler project (Copyright (c) 2014-2016 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef XSC_TRANSLATOR_H
-#define XSC_TRANSLATOR_H
+#ifndef XSC_XSC_H
+#define XSC_XSC_H
 
 
 #include "Export.h"

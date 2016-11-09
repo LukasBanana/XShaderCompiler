@@ -9,7 +9,7 @@
 #define XSC_AST_PRINTER_H
 
 
-#include <Xsc/Translator.h>
+#include <Xsc/Xsc.h>
 #include "CodeWriter.h"
 #include "Visitor.h"
 #include "Token.h"

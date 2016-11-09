@@ -9,7 +9,7 @@
 #define XSC_SHELL_STATE_H
 
 
-#include <Xsc/Translator.h>
+#include <Xsc/Xsc.h>
 
 
 namespace Xsc

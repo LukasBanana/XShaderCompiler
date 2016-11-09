@@ -9,7 +9,7 @@
 #define XSC_GLSL_GENERATOR_H
 
 
-#include <Xsc/Translator.h>
+#include <Xsc/Xsc.h>
 #include "CodeWriter.h"
 #include "Visitor.h"
 #include "Token.h"

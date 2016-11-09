@@ -5,7 +5,7 @@
  * See "LICENSE.txt" for license information.
  */
 
-#include <Xsc/Translator.h>
+#include <Xsc/Xsc.h>
 #include "Shell.h"
 #include <iostream>
 
