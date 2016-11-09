@@ -326,6 +326,10 @@ TokenPtr Scanner::ScanNumber(bool startWithDot)
     if (!startWithDot)
         preDigits = ScanDigitSequence(spell);
 
+    /* Check for exponent part (without fractional part) */
+    if ( !startWithDot && ( Is('e') || Is('E') ) )
+        startWithDot = true;
+
     /* Check for fractional part */
     if (startWithDot || Is('.'))
     {
@@ -367,8 +371,14 @@ TokenPtr Scanner::ScanNumber(bool startWithDot)
     }
     else
     {
-        /* Check for following invalid characters */
-        if (std::isalpha(UChr()) || Is('.'))
+        /* Check for hex numbers or following invalid characters */
+        if (spell == "0" && Is('x'))
+        {
+            spell += TakeIt();
+            while ( std::isdigit(UChr()) || ( Chr() >= 'a' && Chr() <= 'f' ) || ( Chr() >= 'A' && Chr() <= 'F' ) )
+                spell += TakeIt();
+        }
+        else if (std::isalpha(UChr()) || Is('.'))
             Error("character '" + std::string(1, Chr()) + "' is not allowed immediately after integer literal");
     }
 
