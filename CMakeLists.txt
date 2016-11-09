@@ -31,29 +31,28 @@ endif()
 # === Global files ===
 
 file(GLOB FilesInc ${PROJECT_SOURCE_DIR}/inc/Xsc/*.*)
-file(GLOB FilesSrc ${PROJECT_SOURCE_DIR}/src/*.*)
-file(GLOB FilesShell ${PROJECT_SOURCE_DIR}/shell/*.*)
+file(GLOB FilesSrcCompiler ${PROJECT_SOURCE_DIR}/src/Compiler/*.*)
+file(GLOB FilesSrcShell ${PROJECT_SOURCE_DIR}/src/Shell/*.*)
 
 if(WIN32)
-	file(GLOB FilesPlatform ${PROJECT_SOURCE_DIR}/src/win32/*.*)
+	file(GLOB FilesSrcCompilerPlatform ${PROJECT_SOURCE_DIR}/src/Compiler/Platform/Win32/*.*)
 else()
-	file(GLOB FilesPlatform ${PROJECT_SOURCE_DIR}/src/unix/*.*)
+	file(GLOB FilesSrcCompilerPlatform ${PROJECT_SOURCE_DIR}/src/Compiler/Platform/Unix/*.*)
 endif()
 
 set(
-	FilesAll
+	FilesCompilerAll
 	${FilesInc}
-	${FilesSrc}
-	${FilesPlatform}
+	${FilesSrcCompiler}
+	${FilesSrcCompilerPlatform}
 )
 
 
 # === Source group folders ===
 
 source_group("inc\\Xsc" FILES ${FilesInc})
-source_group("src" FILES ${FilesSrc})
-source_group("src\\platform" FILES ${FilesPlatform})
-source_group("shell" FILES ${FilesShell})
+source_group("src" FILES ${FilesSrcCompiler} ${FilesSrcShell})
+source_group("src\\Platform" FILES ${FilesSrcCompilerPlatform})
 
 
 # === Include directories ===
@@ -65,16 +64,16 @@ include_directories("${PROJECT_SOURCE_DIR}/src")
 # === Executable ===
 
 if(XSC_SHARED_LIB)
-	add_library(xsc_core SHARED ${FilesAll})
+	add_library(xsc_core SHARED ${FilesCompilerAll})
 else()
-	add_library(xsc_core STATIC ${FilesAll})
+	add_library(xsc_core STATIC ${FilesCompilerAll})
 endif()
 
 set_target_properties(xsc_core PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_features(xsc_core PRIVATE cxx_range_for)
 
 if(XSC_BUILD_SHELL)
-	add_executable(xsc ${FilesShell})
+	add_executable(xsc ${FilesSrcShell})
 	set_target_properties(xsc PROPERTIES LINKER_LANGUAGE CXX)
 	target_link_libraries(xsc xsc_core)
 	target_compile_features(xsc PRIVATE cxx_range_for)
