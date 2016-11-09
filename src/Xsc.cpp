@@ -19,32 +19,6 @@ namespace Xsc
 {
 
 
-/*
- * Default include handler class
- */
-
-class StdIncludeHandler : public IncludeHandler
-{
-
-    public:
-    
-        std::unique_ptr<std::istream> Include(const std::string& filename) override;
-
-};
-
-std::unique_ptr<std::istream> StdIncludeHandler::Include(const std::string& filename)
-{
-    auto stream = std::unique_ptr<std::istream>(new std::ifstream(filename));
-    if (!stream->good())
-        throw std::runtime_error("failed to include file: \"" + filename + "\"");
-    return stream;
-}
-
-
-/*
- * Public functions
- */
-
 XSC_EXPORT bool CompileShader(
     const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log)
 {
@@ -64,7 +38,7 @@ XSC_EXPORT bool CompileShader(
     /* Pre-process input code */
     std::unique_ptr<IncludeHandler> stdIncludeHandler;
     if (!inputDesc.includeHandler)
-        stdIncludeHandler = std::unique_ptr<IncludeHandler>(new StdIncludeHandler());
+        stdIncludeHandler = std::unique_ptr<IncludeHandler>(new IncludeHandler());
 
     PreProcessor preProcessor(
         (inputDesc.includeHandler != nullptr ? *inputDesc.includeHandler : *stdIncludeHandler),

@@ -2,6 +2,7 @@
 // HLSL Translator: Preprocessor Test 1
 // 05/11/2016
 
+	#	include   <TestHeader1.h>   /*comment*/
 	#	include   "TestHeader1.h"   /*comment*/
 
 

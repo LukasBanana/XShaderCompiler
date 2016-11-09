@@ -13,28 +13,34 @@
 #include <string>
 #include <istream>
 #include <memory>
+#include <vector>
 
 
 namespace Xsc
 {
 
 
-//! Interface for handling new include streams.
+/**
+\brief Interface for handling new include streams.
+\remarks The default implementation will read the files from an std::ifstream.
+*/
 class XSC_EXPORT IncludeHandler
 {
     
     public:
         
-        virtual ~IncludeHandler()
-        {
-        }
+        virtual ~IncludeHandler();
 
         /**
         \brief Returns an input stream for the specified filename.
         \param[in] includeName Specifies the include filename.
+        \param[in] useSearchPaths Specifies whether to first use the search paths to find the file.
         \return Unique pointer to the new input stream.
         */
-        virtual std::unique_ptr<std::istream> Include(const std::string& filename) = 0;
+        virtual std::unique_ptr<std::istream> Include(const std::string& filename, bool useSearchPaths);
+        
+        //! List of search paths.
+        std::vector<std::string> searchPaths;
 
 };
 

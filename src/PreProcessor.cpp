@@ -357,7 +357,7 @@ void PreProcessor::ParseAnyIfDirectiveAndSkipValidation()
         ParseDirectiveEndif();
 }
 
-// '#define' IDENT ( '(' IDENT+ ')' )? (TOKEN-STRING)?
+// '#' 'define' IDENT ( '(' IDENT+ ')' )? (TOKEN-STRING)?
 void PreProcessor::ParseDirectiveDefine()
 {
     /* Parse identifier */
@@ -439,12 +439,32 @@ void PreProcessor::ParseDirectiveUndef()
         Warning("failed to undefine symbol \"" + ident + "\"");
 }
 
+// '#' 'include' ('<' TOKEN-STRING '>' | STRING-LITERAL)
 void PreProcessor::ParseDirectiveInclude()
 {
-    /* Parse filename string literal */
+    bool useSearchPaths = false;
+    std::string filename;
+
+    /* Parse filename */
     IgnoreWhiteSpaces(false);
-    auto filename = Accept(Tokens::StringLiteral)->Spell();
-    
+
+    if (Is(Tokens::BinaryOp, "<"))
+    {
+        /* Parse filename from token string */
+        AcceptIt();
+
+        useSearchPaths = true;
+        while (!Is(Tokens::BinaryOp, ">"))
+            filename += AcceptIt()->Spell();
+
+        AcceptIt();
+    }
+    else
+    {
+        /* Parse filename from string literal */
+        filename = Accept(Tokens::StringLiteral)->Spell();
+    }
+
     /* Check if filename has already been marked as 'once included' */
     if (onceIncluded_.find(filename) == onceIncluded_.end())
     {
@@ -453,7 +473,7 @@ void PreProcessor::ParseDirectiveInclude()
 
         try
         {
-            includeStream = includeHandler_.Include(filename);
+            includeStream = includeHandler_.Include(filename, useSearchPaths);
         }
         catch (const std::exception& e)
         {
@@ -466,14 +486,14 @@ void PreProcessor::ParseDirectiveInclude()
     }
 }
 
-// '#if' CONSTANT-EXPRESSION
+// '#' 'if' CONSTANT-EXPRESSION
 void PreProcessor::ParseDirectiveIf(bool skipEvaluation)
 {
     /* Parse condition */
     ParseDirectiveIfOrElifCondition(skipEvaluation);
 }
 
-// '#ifdef' IDENT
+// '#' 'ifdef' IDENT
 void PreProcessor::ParseDirectiveIfdef(bool skipEvaluation)
 {
     auto tkn = GetScanner().PreviousToken();
@@ -494,7 +514,7 @@ void PreProcessor::ParseDirectiveIfdef(bool skipEvaluation)
     }
 }
 
-// '#ifndef' IDENT
+// '#' 'ifndef' IDENT
 void PreProcessor::ParseDirectiveIfndef(bool skipEvaluation)
 {
     auto tkn = GetScanner().PreviousToken();
@@ -507,7 +527,7 @@ void PreProcessor::ParseDirectiveIfndef(bool skipEvaluation)
     PushIfBlock(tkn, !IsDefined(ident));
 }
 
-// '#elif CONSTANT-EXPRESSION'
+// '#' 'elif CONSTANT-EXPRESSION'
 void PreProcessor::ParseDirectiveElif(bool skipEvaluation)
 {
     /* Check if '#endif'-directive is expected */
@@ -559,7 +579,7 @@ void PreProcessor::ParseDirectiveIfOrElifCondition(bool skipEvaluation)
     PushIfBlock(tkn, condition, true);
 }
 
-// '#else'
+// '#' 'else'
 void PreProcessor::ParseDirectiveElse()
 {
     auto tkn = TopIfBlock().directiveToken;
@@ -574,14 +594,14 @@ void PreProcessor::ParseDirectiveElse()
     PushIfBlock(tkn, elseCondition, true);
 }
 
-// '#endif'
+// '#' 'endif'
 void PreProcessor::ParseDirectiveEndif()
 {
     /* Only pop if-block from top of the stack */
     PopIfBlock();
 }
 
-// '#pragma' TOKEN-STRING
+// '#' 'pragma' TOKEN-STRING
 // see https://msdn.microsoft.com/de-de/library/windows/desktop/dd607351(v=vs.85).aspx
 void PreProcessor::ParseDirectivePragma()
 {
@@ -626,7 +646,7 @@ void PreProcessor::ParseDirectivePragma()
         Warning("empty '#pragma'-directive", tkn.get());
 }
 
-// '#line' NUMBER STRING-LITERAL?
+// '#' 'line' NUMBER STRING-LITERAL?
 void PreProcessor::ParseDirectiveLine()
 {
     /* Parse line number */
@@ -644,7 +664,7 @@ void PreProcessor::ParseDirectiveLine()
     }
 }
 
-// '#error' TOKEN-STRING
+// '#' 'error' TOKEN-STRING
 void PreProcessor::ParseDirectiveError(const TokenPtr& directiveToken)
 {
     auto pos = directiveToken->Pos();
