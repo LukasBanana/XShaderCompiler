@@ -40,28 +40,28 @@ std::string CommandLine::Accept()
     return arg;
 }
 
-static const std::string booleanArgTrue = "ON";
-static const std::string booleanArgFalse = "OFF";
-
 bool CommandLine::AcceptBoolean()
 {
     auto arg = Accept();
-    if (arg == booleanArgTrue)
+    if (arg == CommandLine::GetBooleanTrue())
         return true;
-    if (arg == booleanArgFalse)
+    if (arg == CommandLine::GetBooleanFalse())
         return false;
-    throw std::invalid_argument("expected 'on' or 'off', but got '" + arg + "'");
+    throw std::invalid_argument(
+        "expected '" + CommandLine::GetBooleanTrue() + "' or '" +
+        CommandLine::GetBooleanFalse() + "', but got '" + arg + "'"
+    );
 }
 
 bool CommandLine::AcceptBoolean(bool defaultValue)
 {
     auto arg = Get();
-    if (arg == booleanArgTrue)
+    if (arg == CommandLine::GetBooleanTrue())
     {
         Accept();
         return true;
     }
-    if (arg == booleanArgFalse)
+    if (arg == CommandLine::GetBooleanFalse())
     {
         Accept();
         return false;
@@ -78,6 +78,24 @@ bool CommandLine::ReachedEnd() const
 {
     return args_.empty();
 }
+
+const std::string& CommandLine::GetBooleanTrue()
+{
+    static const std::string value("ON");
+    return value;
+}
+
+const std::string& CommandLine::GetBooleanFalse()
+{
+    static const std::string value("OFF");
+    return value;
+}
+
+const std::string CommandLine::GetBooleanOption()
+{
+    return (GetBooleanTrue() + '/' + GetBooleanFalse());
+}
+
 
 
 } // /namespace Util

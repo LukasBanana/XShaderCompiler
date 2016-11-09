@@ -59,6 +59,15 @@ class CommandLine
 
         // Returns true if the end of the argument list has reached.
         bool ReachedEnd() const;
+    
+        // Returns the value command line argument for a boolean true value (e.g. "ON", "YES", or "true").
+        static const std::string& GetBooleanTrue();
+    
+        // Returns the value command line argument for a boolean false value (e.g. "OFF", "NO", or "false").
+        static const std::string& GetBooleanFalse();
+    
+        // Returns the value command line argument for a boolean value (e.g. "ON/OFF").
+        static const std::string GetBooleanOption();
 
     private:
 

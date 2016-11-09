@@ -246,7 +246,11 @@ std::vector<Command::Identifier> WarnCommand::Idents() const
 
 HelpDescriptor WarnCommand::Help() const
 {
-    return { "-W, --warnings [ON/OFF]", "Enables/disables all warnings; default=OFF" };
+    return
+    {
+        "-W, --warnings [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables all warnings; default=" + CommandLine::GetBooleanFalse()
+    };
 }
 
 void WarnCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -266,7 +270,11 @@ std::vector<Command::Identifier> BlanksCommand::Idents() const
 
 HelpDescriptor BlanksCommand::Help() const
 {
-    return { "--blanks [ON/OFF]", "Enables/disables generation of blank lines between declarations; default=ON" };
+    return
+    {
+        "--blanks [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables generation of blank lines between declarations; default=" + CommandLine::GetBooleanTrue()
+    };
 }
 
 void BlanksCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -286,7 +294,11 @@ std::vector<Command::Identifier> LineMarksCommand::Idents() const
 
 HelpDescriptor LineMarksCommand::Help() const
 {
-    return { "--line-marks [ON/OFF]", "Enables/disables generation of line marks (e.g. '#line 30'); default=OFF" };
+    return
+    {
+        "--line-marks [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables generation of line marks (e.g. '#line 30'); default=" + CommandLine::GetBooleanFalse()
+    };
 }
 
 void LineMarksCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -306,7 +318,11 @@ std::vector<Command::Identifier> DumpASTCommand::Idents() const
 
 HelpDescriptor DumpASTCommand::Help() const
 {
-    return { "--dump-ast [ON/OFF]", "Enables/disables debug output for the abstract syntax tree (AST); default=OFF" };
+    return
+    {
+        "--dump-ast [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables debug output for the abstract syntax tree (AST); default=" + CommandLine::GetBooleanFalse()
+    };
 }
 
 void DumpASTCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -326,7 +342,11 @@ std::vector<Command::Identifier> PPOnlyCommand::Idents() const
 
 HelpDescriptor PPOnlyCommand::Help() const
 {
-    return { "-PP, --preprocess-only [ON/OFF]", "Enables/disables to only preprocess source code; default=OFF" };
+    return
+    {
+        "-PP, --preprocess-only [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables to only preprocess source code; default=" + CommandLine::GetBooleanFalse()
+    };
 }
 
 void PPOnlyCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -346,7 +366,11 @@ std::vector<Command::Identifier> CommentsCommand::Idents() const
 
 HelpDescriptor CommentsCommand::Help() const
 {
-    return { "--comments [ON/OFF]", "Enables/disables commentaries output kept from the sources; default=ON" };
+    return
+    {
+        "--comments [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables commentaries output kept from the sources; default=" + CommandLine::GetBooleanTrue()
+    };
 }
 
 void CommentsCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -366,7 +390,11 @@ std::vector<Command::Identifier> MacroCommand::Idents() const
 
 HelpDescriptor MacroCommand::Help() const
 {
-    return { "-D<IDENT>, -D<IDENT>=VALUE", "Adds the identifier <IDENT> to the pre-defined macros with an optional VALUE" };
+    return
+    {
+        "-D<IDENT>, -D<IDENT>=VALUE",
+        "Adds the identifier <IDENT> to the pre-defined macros with an optional VALUE"
+    };
 }
 
 void MacroCommand::Run(CommandLine& cmdLine, ShellState& state)
