@@ -68,24 +68,25 @@ class Command
             void Run(CommandLine& cmdLine, ShellState& state) override; \
     }
 
-DECL_SHELL_COMMAND( EntryCommand      );
-DECL_SHELL_COMMAND( TargetCommand     );
-DECL_SHELL_COMMAND( VersionInCommand  );
-DECL_SHELL_COMMAND( VersionOutCommand );
-DECL_SHELL_COMMAND( IndentCommand     );
-DECL_SHELL_COMMAND( PrefixCommand     );
-DECL_SHELL_COMMAND( OutputCommand     );
-DECL_SHELL_COMMAND( WarnCommand       );
-DECL_SHELL_COMMAND( BlanksCommand     );
-DECL_SHELL_COMMAND( LineMarksCommand  );
-DECL_SHELL_COMMAND( DumpASTCommand    );
-DECL_SHELL_COMMAND( PPOnlyCommand     );
-DECL_SHELL_COMMAND( CommentsCommand   );
-DECL_SHELL_COMMAND( MacroCommand      );
-DECL_SHELL_COMMAND( PauseCommand      );
-DECL_SHELL_COMMAND( PresettingCommand );
-DECL_SHELL_COMMAND( VersionCommand    );
-DECL_SHELL_COMMAND( HelpCommand       );
+DECL_SHELL_COMMAND( EntryCommand       );
+DECL_SHELL_COMMAND( TargetCommand      );
+DECL_SHELL_COMMAND( VersionInCommand   );
+DECL_SHELL_COMMAND( VersionOutCommand  );
+DECL_SHELL_COMMAND( IndentCommand      );
+DECL_SHELL_COMMAND( PrefixCommand      );
+DECL_SHELL_COMMAND( OutputCommand      );
+DECL_SHELL_COMMAND( WarnCommand        );
+DECL_SHELL_COMMAND( BlanksCommand      );
+DECL_SHELL_COMMAND( LineMarksCommand   );
+DECL_SHELL_COMMAND( DumpASTCommand     );
+DECL_SHELL_COMMAND( PPOnlyCommand      );
+DECL_SHELL_COMMAND( CommentsCommand    );
+DECL_SHELL_COMMAND( MacroCommand       );
+DECL_SHELL_COMMAND( PauseCommand       );
+DECL_SHELL_COMMAND( PresettingCommand  );
+DECL_SHELL_COMMAND( VersionCommand     );
+DECL_SHELL_COMMAND( HelpCommand        );
+DECL_SHELL_COMMAND( IncludePathCommand );
 
 #undef DECL_SHELL_COMMAND
 

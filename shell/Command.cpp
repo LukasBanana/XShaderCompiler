@@ -596,6 +596,27 @@ void HelpCommand::Run(CommandLine& cmdLine, ShellState& state)
     std::cout << "  HTLibCmd -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl" << std::endl;
     std::cout << "   --> Example.vertex.glsl; Example.fragment.glsl" << std::endl;
 }
+    
+    
+/*
+ * IncludePathCommand class
+ */
+
+std::vector<Command::Identifier> IncludePathCommand::Idents() const
+{
+    return { { "-I" }, { "--include-path" } };
+}
+
+HelpDescriptor IncludePathCommand::Help() const
+{
+    return { "-I, --include-path PATH", "Adds PATH to the search include paths" };
+}
+
+void IncludePathCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    auto path = cmdLine.Accept();
+    //TODO...
+}
 
 
 } // /namespace Util

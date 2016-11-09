@@ -47,24 +47,25 @@ Command* CommandFactory::Get(const std::string& name, Command::Identifier* cmdId
 
 CommandFactory::CommandFactory()
 {
-    MakeCommand< EntryCommand      >();
-    MakeCommand< TargetCommand     >();
-    MakeCommand< VersionInCommand  >();
-    MakeCommand< VersionOutCommand >();
-    MakeCommand< IndentCommand     >();
-    MakeCommand< PrefixCommand     >();
-    MakeCommand< OutputCommand     >();
-    MakeCommand< WarnCommand       >();
-    MakeCommand< BlanksCommand     >();
-    MakeCommand< LineMarksCommand  >();
-    MakeCommand< DumpASTCommand    >();
-    MakeCommand< PPOnlyCommand     >();
-    MakeCommand< CommentsCommand   >();
-    MakeCommand< MacroCommand      >();
-    MakeCommand< PauseCommand      >();
-    MakeCommand< PresettingCommand >();
-    MakeCommand< VersionCommand    >();
-    MakeCommand< HelpCommand       >();
+    MakeCommand< EntryCommand       >();
+    MakeCommand< TargetCommand      >();
+    MakeCommand< VersionInCommand   >();
+    MakeCommand< VersionOutCommand  >();
+    MakeCommand< IndentCommand      >();
+    MakeCommand< PrefixCommand      >();
+    MakeCommand< OutputCommand      >();
+    MakeCommand< WarnCommand        >();
+    MakeCommand< BlanksCommand      >();
+    MakeCommand< LineMarksCommand   >();
+    MakeCommand< DumpASTCommand     >();
+    MakeCommand< PPOnlyCommand      >();
+    MakeCommand< CommentsCommand    >();
+    MakeCommand< MacroCommand       >();
+    MakeCommand< PauseCommand       >();
+    MakeCommand< PresettingCommand  >();
+    MakeCommand< VersionCommand     >();
+    MakeCommand< HelpCommand        >();
+    MakeCommand< IncludePathCommand >();
 }
 
 template <typename T, typename... Args>
