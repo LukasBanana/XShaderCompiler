@@ -528,7 +528,8 @@ struct ListExpr : public Expr
 struct LiteralExpr : public Expr
 {
     AST_INTERFACE(LiteralExpr);
-    std::string literal;
+    Token::Types    type    = Token::Types::__Unknown__;
+    std::string     value;
 };
 
 // Type name expression (used for simpler cast-expression parsing).

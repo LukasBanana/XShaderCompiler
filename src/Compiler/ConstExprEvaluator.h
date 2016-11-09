@@ -1,12 +1,12 @@
 /*
- * ExprEvaluator.h
+ * ConstExprEvaluator.h
  * 
  * This file is part of the XShaderCompiler project (Copyright (c) 2014-2016 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef XSC_EXPR_EVALUATOR_H
-#define XSC_EXPR_EVALUATOR_H
+#ifndef XSC_CONST_EXPR_EVALUATOR_H
+#define XSC_CONST_EXPR_EVALUATOR_H
 
 
 #include "Visitor.h"
@@ -18,8 +18,8 @@ namespace Xsc
 {
 
 
-// Expression evaluator AST visitor.
-class ExprEvaluator : private Visitor
+// Constant expression evaluator AST visitor.
+class ConstExprEvaluator : private Visitor
 {
     
     public:

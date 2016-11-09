@@ -294,7 +294,7 @@ IMPLEMENT_VISIT_PROC(ListExpr)
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
-    Print(ast, "LiteralExpr", ast->literal);
+    Print(ast, "LiteralExpr", ast->value);
 }
 
 IMPLEMENT_VISIT_PROC(TypeNameExpr)

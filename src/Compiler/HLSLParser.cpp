@@ -936,7 +936,8 @@ LiteralExprPtr HLSLParser::ParseLiteralExpr()
 
     /* Parse literal */
     auto ast = Make<LiteralExpr>();
-    ast->literal = AcceptIt()->Spell();
+    ast->type   = TknType();
+    ast->value  = AcceptIt()->Spell();
     return ast;
 }
 

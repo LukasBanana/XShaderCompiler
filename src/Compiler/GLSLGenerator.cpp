@@ -1252,7 +1252,7 @@ IMPLEMENT_VISIT_PROC(ListExpr)
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
-    Write(ast->literal);
+    Write(ast->value);
 }
 
 IMPLEMENT_VISIT_PROC(TypeNameExpr)

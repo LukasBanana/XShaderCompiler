@@ -16,15 +16,21 @@ namespace Xsc
  * Variant class
  */
 
-Variant::Variant(BoolType value)
+Variant::Variant(BoolType value) :
+    type_{ Types::Bool },
+    bool_{ value       }
 {
 }
 
-Variant::Variant(IntType value)
+Variant::Variant(IntType value) :
+    type_   { Types::Int },
+    int_    { value      }
 {
 }
 
-Variant::Variant(RealType value)
+Variant::Variant(RealType value) :
+    type_{ Types::Real },
+    real_{ value       }
 {
 }
 

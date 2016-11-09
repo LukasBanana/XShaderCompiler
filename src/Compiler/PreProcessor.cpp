@@ -7,6 +7,7 @@
 
 #include "PreProcessor.h"
 #include "AST.h"
+#include "ConstExprEvaluator.h"
 #include <sstream>
 
 
@@ -555,12 +556,22 @@ void PreProcessor::ParseDirectiveIfOrElifCondition(bool skipEvaluation)
     tokenString.PushBack(Make<Token>(Tokens::RBracket, ")"));
 
     /* Evalutate condition */
-    bool condition = false;
+    Variant condition;
 
     PushTokenString(tokenString);
     {
         /* Build binary expression tree from token string */
         auto conditionExpr = ParseExpr();
+
+        try
+        {
+            ConstExprEvaluator exprEval;
+            condition = exprEval.EvaluateExpr(*conditionExpr);
+        }
+        catch (const std::exception& e)
+        {
+            Error(e.what(), tkn.get());
+        }
 
         #if 0
         /* Check if token string has reached the end */
@@ -568,14 +579,11 @@ void PreProcessor::ParseDirectiveIfOrElifCondition(bool skipEvaluation)
         if (!tokenStringIt.ReachedEnd())
             Error("illegal end of constant expression", tokenStringIt->get());
         #endif
-
-        //TODO: evaluate expression tree ...
-        int _dummy=0;
     }
     PopTokenString();
 
     /* Push new if-block */
-    PushIfBlock(tkn, condition, true);
+    PushIfBlock(tkn, condition.ToBool());
 }
 
 // '#' 'else'
@@ -819,7 +827,8 @@ ExprPtr PreProcessor::ParseValueExpr()
         {
             /* Parse literal */
             auto ast = Make<LiteralExpr>();
-            ast->literal = AcceptIt()->Spell();
+            ast->type   = TknType();
+            ast->value  = AcceptIt()->Spell();
             return ast;
         }
         break;
