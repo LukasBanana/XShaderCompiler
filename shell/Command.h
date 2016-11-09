@@ -70,8 +70,8 @@ class Command
 
 DECL_SHELL_COMMAND( EntryCommand      );
 DECL_SHELL_COMMAND( TargetCommand     );
-DECL_SHELL_COMMAND( ShaderInCommand   );
-DECL_SHELL_COMMAND( ShaderOutCommand  );
+DECL_SHELL_COMMAND( VersionInCommand  );
+DECL_SHELL_COMMAND( VersionOutCommand );
 DECL_SHELL_COMMAND( IndentCommand     );
 DECL_SHELL_COMMAND( PrefixCommand     );
 DECL_SHELL_COMMAND( OutputCommand     );

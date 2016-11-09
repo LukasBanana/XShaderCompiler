@@ -105,20 +105,20 @@ void TargetCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
- * ShaderInCommand class
+ * VersionInCommand class
  */
 
-std::vector<Command::Identifier> ShaderInCommand::Idents() const
+std::vector<Command::Identifier> VersionInCommand::Idents() const
 {
     return { { "-Vin" }, { "--version-in" } };
 }
 
-HelpDescriptor ShaderInCommand::Help() const
+HelpDescriptor VersionInCommand::Help() const
 {
     return { "-Vin, --version-in VERSION", "Input shader version; default=HLSL5; valid values:", "HLSL3, HLSL4, HLSL5" };
 }
 
-void ShaderInCommand::Run(CommandLine& cmdLine, ShellState& state)
+void VersionInCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.inputDesc.shaderVersion = MapStringToType<InputShaderVersion>(
         cmdLine.Accept(),
@@ -136,12 +136,12 @@ void ShaderInCommand::Run(CommandLine& cmdLine, ShellState& state)
  * ShaderOutCommand class
  */
 
-std::vector<Command::Identifier> ShaderOutCommand::Idents() const
+std::vector<Command::Identifier> VersionOutCommand::Idents() const
 {
     return { { "-Vout" }, { "--version-out" } };
 }
 
-HelpDescriptor ShaderOutCommand::Help() const
+HelpDescriptor VersionOutCommand::Help() const
 {
     return
     {
@@ -151,7 +151,7 @@ HelpDescriptor ShaderOutCommand::Help() const
     };
 }
 
-void ShaderOutCommand::Run(CommandLine& cmdLine, ShellState& state)
+void VersionOutCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.shaderVersion = MapStringToType<OutputShaderVersion>(
         cmdLine.Accept(),

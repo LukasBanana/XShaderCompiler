@@ -49,8 +49,8 @@ CommandFactory::CommandFactory()
 {
     MakeCommand< EntryCommand      >();
     MakeCommand< TargetCommand     >();
-    MakeCommand< ShaderInCommand   >();
-    MakeCommand< ShaderOutCommand  >();
+    MakeCommand< VersionInCommand  >();
+    MakeCommand< VersionOutCommand >();
     MakeCommand< IndentCommand     >();
     MakeCommand< PrefixCommand     >();
     MakeCommand< OutputCommand     >();
