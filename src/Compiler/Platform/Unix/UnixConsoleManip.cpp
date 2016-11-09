@@ -5,11 +5,11 @@
  * See "LICENSE.txt" for license information.
  */
 
-#include <HT/ConsoleManip.h>
+#include <Xsc/ConsoleManip.h>
 #include <stack>
 
 
-namespace HTLib
+namespace Xsc
 {
 
 namespace ConsoleManip
@@ -178,7 +178,7 @@ void PopColor(std::ostream& stream)
 
 } // /namespace ConsoleManip
 
-} // /namespace HTLib
+} // /namespace Xsc
 
 
 

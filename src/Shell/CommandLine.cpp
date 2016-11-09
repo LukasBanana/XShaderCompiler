@@ -6,6 +6,7 @@
  */
 
 #include "CommandLine.h"
+#include <stdexcept>
 
 
 namespace Xsc

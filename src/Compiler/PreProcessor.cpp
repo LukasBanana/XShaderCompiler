@@ -9,6 +9,7 @@
 #include "AST.h"
 #include "ConstExprEvaluator.h"
 #include <sstream>
+#include <algorithm>
 
 
 namespace Xsc
