@@ -45,7 +45,10 @@ XSC_EXPORT bool CompileShader(
         log
     );
 
-    auto processedInput = preProcessor.Process(std::make_shared<SourceCode>(inputDesc.sourceCode));
+    auto processedInput = preProcessor.Process(
+        std::make_shared<SourceCode>(inputDesc.sourceCode),
+        inputDesc.filename
+    );
 
     if (!processedInput)
         return SubmitError("preprocessing input code failed");

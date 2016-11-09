@@ -63,6 +63,9 @@ struct Options
 //! Shader input descriptor structure.
 struct ShaderInput
 {
+    //! Specifies the filename of the input shader code. This is an optional attribute, and only a hint to the compiler.
+    std::string                     filename;
+
     //! Specifies the input stream. This must be valid HLSL code.
     std::shared_ptr<std::istream>   sourceCode;
 
@@ -85,6 +88,9 @@ struct ShaderInput
 //! Shader output descriptor structure.
 struct ShaderOutput
 {
+    //! Specifies the filename of the output shader code. This is an optional attribute, and only a hint to the compiler.
+    std::string                     filename;
+
     //! Specifies the output stream. This will contain the output GLSL code. This must not be null!
     std::ostream*                   sourceCode          = nullptr;
 

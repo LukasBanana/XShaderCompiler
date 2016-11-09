@@ -127,6 +127,8 @@ void Shell::Compile(const std::string& filename)
         }
 
         /* Open input stream */
+        state.inputDesc.filename = filename;
+
         std::ifstream inputFile(filename);
         if (!inputFile.good())
             throw std::runtime_error("failed to read file: \"" + filename + "\"");

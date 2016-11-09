@@ -42,7 +42,7 @@ class PreProcessor : public Parser
         
         PreProcessor(IncludeHandler& includeHandler, Log* log = nullptr);
 
-        std::shared_ptr<std::iostream> Process(const SourceCodePtr& input);
+        std::shared_ptr<std::iostream> Process(const SourceCodePtr& input, const std::string& filename = "");
 
     private:
         

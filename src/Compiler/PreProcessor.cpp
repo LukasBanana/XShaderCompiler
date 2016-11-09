@@ -22,9 +22,9 @@ PreProcessor::PreProcessor(IncludeHandler& includeHandler, Log* log) :
 {
 }
 
-std::shared_ptr<std::iostream> PreProcessor::Process(const SourceCodePtr& input)
+std::shared_ptr<std::iostream> PreProcessor::Process(const SourceCodePtr& input, const std::string& filename)
 {
-    PushScannerSource(input);
+    PushScannerSource(input, filename);
 
     output_ = std::make_shared<std::stringstream>();
 

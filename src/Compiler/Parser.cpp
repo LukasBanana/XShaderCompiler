@@ -29,6 +29,9 @@ Parser::Parser(Log* log) :
 
 void Parser::PushScannerSource(const SourceCodePtr& source, const std::string& filename)
 {
+    /* Set new filename to report handler */
+    GetReportHandler().SetCurrentFilename(filename);
+
     /* Add current token to previous scanner */
     if (!scannerStack_.empty())
         scannerStack_.top().nextToken = tkn_;

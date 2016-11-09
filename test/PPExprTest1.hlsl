@@ -11,7 +11,7 @@
 F1(1, 2, F2(0, 1))
 
 
-#if 5 > V1*3 && (x | 2 != f) //f 2
+#if 5 > V1*3 && (x | 2 != f) f 2
 #	pragma message "1: IF BRANCH"
 #else
 #	pragma message "1: ELSE BRANCH"

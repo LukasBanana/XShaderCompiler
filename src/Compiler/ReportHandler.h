@@ -96,6 +96,12 @@ class ReportHandler
             return hasErrors_;
         }
 
+        // Sets the current filename.
+        inline void SetCurrentFilename(const std::string& filename)
+        {
+            currentFilename_ = filename;
+        }
+
     private:
 
         Report MakeReport(
@@ -106,8 +112,10 @@ class ReportHandler
         );
 
         std::string reportTypeName_;
-        Log*        log_            = nullptr;
-        bool        hasErrors_      = false;
+        std::string currentFilename_;
+
+        Log*        log_                = nullptr;
+        bool        hasErrors_          = false;
 
 };
 

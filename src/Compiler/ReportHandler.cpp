@@ -65,7 +65,16 @@ void ReportHandler::SubmitReport(
         hasErrors_ = true;
 
     /* Add source position */
-    outputMsg += " (" + area.pos.ToString() + ") ";
+    outputMsg += " (";
+
+    if (!currentFilename_.empty())
+    {
+        outputMsg += currentFilename_;
+        outputMsg += ": ";
+    }
+
+    outputMsg += area.pos.ToString();
+    outputMsg += ") ";
 
     /* Add error code */
     if (!errorCode.Get().empty())
