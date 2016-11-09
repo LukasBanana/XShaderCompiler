@@ -68,6 +68,11 @@ AssignOp StringToAssignOp(const std::string& s)
     return StringToType(g_mapAssignOp, s, "AssignOp");
 }
 
+bool IsBitwiseOp(const AssignOp o)
+{
+    return (o >= AssignOp::LShift && o <= AssignOp::Xor);
+}
+
 /* ----- BinaryOp Enum ----- */
 
 static const std::map<BinaryOp, std::string> g_mapBinaryOp
@@ -102,7 +107,12 @@ BinaryOp StringToBinaryOp(const std::string& s)
     return StringToType(g_mapBinaryOp, s, "BinaryOp");
 }
 
-/* ----- UnaryOp Enumeration ----- */
+bool IsBitwiseOp(const BinaryOp o)
+{
+    return (o >= BinaryOp::Or && o <= BinaryOp::RShift);
+}
+
+/* ----- UnaryOp Enum ----- */
 
 static const std::map<UnaryOp, std::string> g_mapUnaryOp
 {
@@ -123,6 +133,12 @@ UnaryOp StringToUnaryOp(const std::string& s)
 {
     return StringToType(g_mapUnaryOp, s, "UnaryOp");
 }
+
+bool IsBitwiseOp(const UnaryOp o)
+{
+    return (o == UnaryOp::Not);
+}
+
 
 
 } // /namespace Xsc

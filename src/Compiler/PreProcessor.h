@@ -13,10 +13,12 @@
 #include <Xsc/Log.h>
 #include "PreProcessorScanner.h"
 #include "TokenString.h"
+#include "ASTEnums.h"
 #include "Parser.h"
 #include "SourceCode.h"
 #include <iostream>
 #include <functional>
+#include <initializer_list>
 #include <stack>
 #include <map>
 #include <set>
@@ -60,7 +62,8 @@ class PreProcessor : public Parser
             bool            expectEndif    = false;
         };
 
-        using MacroPtr = std::shared_ptr<Macro>;
+        using MacroPtr      = std::shared_ptr<Macro>;
+        using BinaryOpList  = std::initializer_list<BinaryOp>;
 
         /* === Functions === */
 
@@ -88,7 +91,7 @@ class PreProcessor : public Parser
         TokenPtrString ExpandMacro(const Macro& macro, const std::vector<TokenPtrString>& arguments);
 
         // Builds a left-to-right binary-expression tree hierarchy for the specified list of expressions.
-        ExprPtr BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<std::string>& ops);
+        ExprPtr BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops);
 
         /* === Parse functions === */
 
@@ -120,7 +123,7 @@ class PreProcessor : public Parser
         
         ExprPtr ParseAbstractBinaryExpr(
             const std::function<ExprPtr()>& parseFunc,
-            const std::vector<std::string>& binaryOps
+            const BinaryOpList& binaryOps
         );
 
         ExprPtr ParseLogicOrExpr();

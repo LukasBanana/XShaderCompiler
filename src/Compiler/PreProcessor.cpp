@@ -133,7 +133,7 @@ TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<T
     return expandedString;
 }
 
-ExprPtr PreProcessor::BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<std::string>& ops)
+ExprPtr PreProcessor::BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops)
 {
     if (exprs.empty())
         ErrorInternal("sub-expressions must not be empty", __FUNCTION__);
@@ -146,8 +146,8 @@ ExprPtr PreProcessor::BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vect
         auto ast = Make<BinaryExpr>();
 
         /* Build right hand side */
-        ast->rhsExpr = exprs.back();
-        ast->op = ops.back();
+        ast->rhsExpr    = exprs.back();
+        ast->op         = ops.back();
 
         exprs.pop_back();
         ops.pop_back();
@@ -701,22 +701,25 @@ ExprPtr PreProcessor::ParseExpr()
 /*
 EXPR: EXPR (OPERATOR EXPR)*;
 */
-ExprPtr PreProcessor::ParseAbstractBinaryExpr(
-    const std::function<ExprPtr()>& parseFunc,
-    const std::vector<std::string>& binaryOps)
+ExprPtr PreProcessor::ParseAbstractBinaryExpr(const std::function<ExprPtr()>& parseFunc, const BinaryOpList& binaryOps)
 {
     /* Parse sub expressions */
     std::vector<ExprPtr> exprs;
-    std::vector<std::string> ops;
+    std::vector<BinaryOp> ops;
 
     /* Parse primary expression */
     exprs.push_back(parseFunc());
 
-    while (Is(Tokens::BinaryOp) && std::find(binaryOps.begin(), binaryOps.end(), Tkn()->Spell()) != binaryOps.end())
+    while (Is(Tokens::BinaryOp))
     {
         /* Parse binary operator */
-        auto spell = AcceptIt()->Spell();
-        ops.push_back(spell);
+        auto op = StringToBinaryOp(Tkn()->Spell());
+
+        if (std::find(binaryOps.begin(), binaryOps.end(), op) == binaryOps.end())
+            break;
+
+        AcceptIt();
+        ops.push_back(op);
 
         /* Parse next sub-expression */
         exprs.push_back(parseFunc());
@@ -728,62 +731,62 @@ ExprPtr PreProcessor::ParseAbstractBinaryExpr(
 
 ExprPtr PreProcessor::ParseLogicOrExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseLogicAndExpr, this), { "||" });
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseLogicAndExpr, this), { BinaryOp::LogicalOr });
 }
 
 ExprPtr PreProcessor::ParseLogicAndExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseBitwiseOrExpr, this), { "&&" });
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseBitwiseOrExpr, this), { BinaryOp::LogicalAnd });
 }
 
 ExprPtr PreProcessor::ParseBitwiseOrExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseBitwiseXOrExpr, this), { "|" });
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseBitwiseXOrExpr, this), { BinaryOp::Or });
 }
 
 ExprPtr PreProcessor::ParseBitwiseXOrExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseBitwiseAndExpr, this), { "^" });
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseBitwiseAndExpr, this), { BinaryOp::Xor });
 }
 
 ExprPtr PreProcessor::ParseBitwiseAndExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseEqualityExpr, this), { "&" });
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseEqualityExpr, this), { BinaryOp::And });
 }
 
 ExprPtr PreProcessor::ParseEqualityExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseRelationExpr, this), { "==", "!=" });
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseRelationExpr, this), { BinaryOp::Equal, BinaryOp::NotEqual });
 }
 
 ExprPtr PreProcessor::ParseRelationExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseShiftExpr, this), { "<", "<=", ">", ">=" });
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseShiftExpr, this), { BinaryOp::Less, BinaryOp::LessEqual, BinaryOp::Greater, BinaryOp::GreaterEqual });
 }
 
 ExprPtr PreProcessor::ParseShiftExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseAddExpr, this), { "<<", ">>" });
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseAddExpr, this), { BinaryOp::LShift, BinaryOp::RShift });
 }
 
 ExprPtr PreProcessor::ParseAddExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseSubExpr, this), { "+" });
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseSubExpr, this), { BinaryOp::Add });
 }
 
 ExprPtr PreProcessor::ParseSubExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseMulExpr, this), { "-" });
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseMulExpr, this), { BinaryOp::Sub });
 }
 
 ExprPtr PreProcessor::ParseMulExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseDivExpr, this), { "*" });
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseDivExpr, this), { BinaryOp::Mul });
 }
 
 ExprPtr PreProcessor::ParseDivExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseValueExpr, this), { "/" });
+    return ParseAbstractBinaryExpr(std::bind(&PreProcessor::ParseValueExpr, this), { BinaryOp::Div, BinaryOp::Mod });
 }
 
 ExprPtr PreProcessor::ParseValueExpr()
@@ -804,8 +807,8 @@ ExprPtr PreProcessor::ParseValueExpr()
         {
             /* Parse unary expression */
             auto ast = Make<UnaryExpr>();
-            ast->op = AcceptIt()->Spell();
-            ast->expr = ParseValueExpr();
+            ast->op     = StringToUnaryOp(AcceptIt()->Spell());
+            ast->expr   = ParseValueExpr();
             return ast;
         }
         break;

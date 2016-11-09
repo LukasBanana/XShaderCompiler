@@ -468,7 +468,7 @@ struct AssignStmnt : public Stmnt
 {
     AST_INTERFACE(AssignStmnt);
     VarIdentPtr varIdent;
-    std::string op;
+    AssignOp    op          = AssignOp::Undefined;
     ExprPtr     expr;
 };
 
@@ -551,25 +551,25 @@ struct TernaryExpr : public Expr
 struct BinaryExpr : public Expr
 {
     AST_INTERFACE(BinaryExpr);
-    ExprPtr     lhsExpr;    // Left-hand-side expression
-    std::string op;         // Binary operator
-    ExprPtr     rhsExpr;    // Right-hand-side expression
+    ExprPtr     lhsExpr;                        // Left-hand-side expression
+    BinaryOp    op      = BinaryOp::Undefined;  // Binary operator
+    ExprPtr     rhsExpr;                        // Right-hand-side expression
 };
 
 // (Pre-) Unary expressions.
 struct UnaryExpr : public Expr
 {
     AST_INTERFACE(UnaryExpr);
-    std::string op;
-    ExprPtr     expr;
+    UnaryOp op      = UnaryOp::Undefined;
+    ExprPtr expr;
 };
 
 // Post unary expressions.
 struct PostUnaryExpr : public Expr
 {
     AST_INTERFACE(PostUnaryExpr);
-    ExprPtr     expr;
-    std::string op;
+    ExprPtr expr;
+    UnaryOp op      = UnaryOp::Undefined;
 };
 
 // Function call expression.

@@ -1175,7 +1175,7 @@ IMPLEMENT_VISIT_PROC(AssignStmnt)
     BeginLn();
     {
         WriteVarIdent(ast->varIdent.get());
-        Write(" " + ast->op + " ");
+        Write(" " + AssignOpToString(ast->op) + " ");
         Visit(ast->expr);
         Write(";");
     }
@@ -1276,20 +1276,20 @@ IMPLEMENT_VISIT_PROC(TernaryExpr)
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
     Visit(ast->lhsExpr);
-    Write(" " + ast->op + " ");
+    Write(" " + BinaryOpToString(ast->op) + " ");
     Visit(ast->rhsExpr);
 }
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    Write(ast->op);
+    Write(UnaryOpToString(ast->op));
     Visit(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 {
     Visit(ast->expr);
-    Write(ast->op);
+    Write(UnaryOpToString(ast->op));
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCallExpr)

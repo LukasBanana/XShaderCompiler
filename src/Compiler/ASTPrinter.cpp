@@ -238,7 +238,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(AssignStmnt)
 {
-    Print(ast, "AssignStmnt");
+    Print(ast, "AssignStmnt", AssignOpToString(ast->op));
     SCOPED_INDENT;
 
     Visit(ast->expr);
@@ -314,7 +314,7 @@ IMPLEMENT_VISIT_PROC(TernaryExpr)
 
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
-    Print(ast, "BinaryExpr", ast->op);
+    Print(ast, "BinaryExpr", BinaryOpToString(ast->op));
     SCOPED_INDENT;
 
     Visit(ast->lhsExpr);
@@ -323,7 +323,7 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    Print(ast, "UnaryExpr", ast->op);
+    Print(ast, "UnaryExpr", UnaryOpToString(ast->op));
     SCOPED_INDENT;
 
     Visit(ast->expr);
@@ -331,7 +331,7 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 
 IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 {
-    Print(ast, "PostUnaryExpr", ast->op);
+    Print(ast, "PostUnaryExpr", UnaryOpToString(ast->op));
     SCOPED_INDENT;
 
     Visit(ast->expr);

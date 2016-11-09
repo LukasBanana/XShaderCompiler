@@ -640,8 +640,7 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
     Visit(ast->rhsExpr);
 
     /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
-    const auto& op = ast->op;
-    if (op == "|" || op == "&" || op == "^" || op == "%")
+    if (IsBitwiseOp(ast->op))
         AcquireExtension(ARBEXT_GL_EXT_gpu_shader4);
 }
 

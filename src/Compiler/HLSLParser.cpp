@@ -814,9 +814,9 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
         /* Parse assignment statement */
         auto ast = Make<AssignStmnt>();
         
-        ast->varIdent = varIdent;
-        ast->op = AcceptIt()->Spell();
-        ast->expr = ParseExpr(true);
+        ast->varIdent   = varIdent;
+        ast->op         = StringToAssignOp(AcceptIt()->Spell());
+        ast->expr       = ParseExpr(true);
         Semi();
 
         return ast;
@@ -864,7 +864,7 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma, const ExprPtr& initExpr)
     {
         auto unaryExpr = Make<PostUnaryExpr>();
         unaryExpr->expr = ast;
-        unaryExpr->op = AcceptIt()->Spell();
+        unaryExpr->op = StringToUnaryOp(AcceptIt()->Spell());
         ast = unaryExpr;
     }
 
@@ -874,7 +874,7 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma, const ExprPtr& initExpr)
         auto binExpr = Make<BinaryExpr>();
 
         binExpr->lhsExpr = ast;
-        binExpr->op = AcceptIt()->Spell();
+        binExpr->op = StringToBinaryOp(AcceptIt()->Spell());
         binExpr->rhsExpr = ParseExpr(allowComma);
 
         return binExpr;
@@ -970,8 +970,8 @@ UnaryExprPtr HLSLParser::ParseUnaryExpr()
 
     /* Parse unary expression */
     auto ast = Make<UnaryExpr>();
-    ast->op = AcceptIt()->Spell();
-    ast->expr = ParsePrimaryExpr();
+    ast->op     = StringToUnaryOp(AcceptIt()->Spell());
+    ast->expr   = ParsePrimaryExpr();
     return ast;
 }
 
