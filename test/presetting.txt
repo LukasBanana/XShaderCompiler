@@ -1,9 +1,9 @@
 [PPTest1.hlsl -pponly]
--pponly -target vertex -entry VS -output output/PPTest1.post.hlsl PPTest1.hlsl
+-PP -T vertex -E VS -O output/PPTest1.post.hlsl PPTest1.hlsl
 
 [PPTest1.hlsl VS]
--target vertex -entry VS -output output/PPTest1.vertex.glsl PPTest1.hlsl
+-T vertex -E VS -O output/PPTest1.vertex.glsl PPTest1.hlsl
 
 [PPTest2.hlsl -pponly]
--pponly -target vertex -entry VS -output output/PPTest2.post.hlsl PPTest2.hlsl
+-PP -T vertex -E VS -O output/PPTest2.post.hlsl PPTest2.hlsl
 

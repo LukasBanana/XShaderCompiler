@@ -40,12 +40,15 @@ std::string CommandLine::Accept()
     return arg;
 }
 
+static const std::string booleanArgTrue = "ON";
+static const std::string booleanArgFalse = "OFF";
+
 bool CommandLine::AcceptBoolean()
 {
     auto arg = Accept();
-    if (arg == "on")
+    if (arg == booleanArgTrue)
         return true;
-    if (arg == "off")
+    if (arg == booleanArgFalse)
         return false;
     throw std::invalid_argument("expected 'on' or 'off', but got '" + arg + "'");
 }
@@ -53,12 +56,12 @@ bool CommandLine::AcceptBoolean()
 bool CommandLine::AcceptBoolean(bool defaultValue)
 {
     auto arg = Get();
-    if (arg == "on")
+    if (arg == booleanArgTrue)
     {
         Accept();
         return true;
     }
-    if (arg == "off")
+    if (arg == booleanArgFalse)
     {
         Accept();
         return false;

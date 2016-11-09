@@ -54,12 +54,12 @@ Command::~Command()
 
 std::vector<Command::Identifier> EntryCommand::Idents() const
 {
-    return { { "-entry" } };
+    return { { "-E" }, { "--entry" } };
 }
 
 HelpDescriptor EntryCommand::Help() const
 {
-    return { "-entry ENTRY", "HLSL shader entry point" };
+    return { "-E, --entry ENTRY", "HLSL shader entry point" };
 }
 
 void EntryCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -74,14 +74,14 @@ void EntryCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> TargetCommand::Idents() const
 {
-    return { { "-target" } };
+    return { { "-T" }, { "--target" } };
 }
 
 HelpDescriptor TargetCommand::Help() const
 {
     return
     {
-        "-target TARGET", "Shader target; valid values:",
+        "-T, --target TARGET", "Shader target; valid values:",
         "vertex, fragment, geometry, tess-control, tess-evaluation, compute"
     };
 }
@@ -110,12 +110,12 @@ void TargetCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> ShaderInCommand::Idents() const
 {
-    return { { "-shaderin" } };
+    return { { "-Vin" }, { "--version-in" } };
 }
 
 HelpDescriptor ShaderInCommand::Help() const
 {
-    return { "-shaderin VERSION", "Input shader version; default is HLSL5; valid values:", "HLSL3, HLSL4, HLSL5" };
+    return { "-Vin, --version-in VERSION", "Input shader version; default=HLSL5; valid values:", "HLSL3, HLSL4, HLSL5" };
 }
 
 void ShaderInCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -138,14 +138,14 @@ void ShaderInCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> ShaderOutCommand::Idents() const
 {
-    return { { "-shaderout" } };
+    return { { "-Vout" }, { "--version-out" } };
 }
 
 HelpDescriptor ShaderOutCommand::Help() const
 {
     return
     {
-        "-shaderout VERSION", "GLSL version; default is GLSL330; valid values:",
+        "-Vout, --version-out VERSION", "Shader output version; default=GLSL330; valid values:",
         "GLSL110, GLSL120, GLSL130, GLSL140, GLSL150, GLSL330,\n" \
         "GLSL400, GLSL410, GLSL420, GLSL430, GLSL440, GLSL450"
     };
@@ -180,12 +180,12 @@ void ShaderOutCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> IndentCommand::Idents() const
 {
-    return { { "-indent" } };
+    return { { "--indent" } };
 }
 
 HelpDescriptor IndentCommand::Help() const
 {
-    return { "-indent INDENT", "Code indentation string; by default 4 spaces" };
+    return { "--indent INDENT", "Code indentation string; default='    '" };
 }
 
 void IndentCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -200,12 +200,12 @@ void IndentCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> PrefixCommand::Idents() const
 {
-    return { { "-prefix" } };
+    return { { "--prefix" } };
 }
 
 HelpDescriptor PrefixCommand::Help() const
 {
-    return { "-prefix PREFIX", "Prefix for local variables (use \"<none>\" to disable); by default '_'" };
+    return { "--prefix PREFIX", "Prefix for local variables (use \"<none>\" to disable); default='_'" };
 }
 
 void PrefixCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -221,12 +221,12 @@ void PrefixCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> OutputCommand::Idents() const
 {
-    return { { "-output" } };
+    return { { "-O", }, { "--output" } };
 }
 
 HelpDescriptor OutputCommand::Help() const
 {
-    return { "-output FILE", "Shader output file; default is '<FILE>.<ENTRY>.glsl'" };
+    return { "-O, --output FILE", "Shader output file; default='<FILE>.<ENTRY>.glsl'" };
 }
 
 void OutputCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -241,12 +241,12 @@ void OutputCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> WarnCommand::Idents() const
 {
-    return { { "-warn" } };
+    return { { "-W" }, { "--warnings" } };
 }
 
 HelpDescriptor WarnCommand::Help() const
 {
-    return { "-warn [on|off]", "Enables/disables all warnings; by default off" };
+    return { "-W, --warnings [ON/OFF]", "Enables/disables all warnings; default=OFF" };
 }
 
 void WarnCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -261,12 +261,12 @@ void WarnCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> BlanksCommand::Idents() const
 {
-    return { { "-blanks" } };
+    return { { "--blanks" } };
 }
 
 HelpDescriptor BlanksCommand::Help() const
 {
-    return { "-blanks [on|off]", "Enables/disables generation of blank lines between declarations; by default on" };
+    return { "--blanks [ON/OFF]", "Enables/disables generation of blank lines between declarations; default=ON" };
 }
 
 void BlanksCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -274,19 +274,19 @@ void BlanksCommand::Run(CommandLine& cmdLine, ShellState& state)
     state.outputDesc.options.blanks = cmdLine.AcceptBoolean(true);
 }
 
-//~~~~~~~~~~~~~~~
+
 /*
  * LineMarksCommand class
  */
 
 std::vector<Command::Identifier> LineMarksCommand::Idents() const
 {
-    return { { "-line-marks" } };
+    return { { "--line-marks" } };
 }
 
 HelpDescriptor LineMarksCommand::Help() const
 {
-    return { "-line-marks [on|off]", "Enables/disables generation of line marks (e.g. '#line 30'); by default off" };
+    return { "--line-marks [ON/OFF]", "Enables/disables generation of line marks (e.g. '#line 30'); default=OFF" };
 }
 
 void LineMarksCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -301,12 +301,12 @@ void LineMarksCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> DumpASTCommand::Idents() const
 {
-    return { { "-dump-ast" } };
+    return { { "--dump-ast" } };
 }
 
 HelpDescriptor DumpASTCommand::Help() const
 {
-    return { "-dump-ast [on|off]", "Enables/disables debug output for the abstract syntax tree (AST); by default off" };
+    return { "--dump-ast [ON/OFF]", "Enables/disables debug output for the abstract syntax tree (AST); default=OFF" };
 }
 
 void DumpASTCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -321,12 +321,12 @@ void DumpASTCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> PPOnlyCommand::Idents() const
 {
-    return { { "-pponly" } };
+    return { { "-PP" }, { "--preprocess-only" } };
 }
 
 HelpDescriptor PPOnlyCommand::Help() const
 {
-    return { "-pponly [on|off]", "Enables/disables to only preprocess source code; by default off" };
+    return { "-PP, --preprocess-only [ON/OFF]", "Enables/disables to only preprocess source code; default=OFF" };
 }
 
 void PPOnlyCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -341,12 +341,12 @@ void PPOnlyCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> CommentsCommand::Idents() const
 {
-    return { { "-comments" } };
+    return { { "--comments" } };
 }
 
 HelpDescriptor CommentsCommand::Help() const
 {
-    return { "-comments [on|off]", "Enables/disables commentaries output kept from the sources; by default on" };
+    return { "--comments [ON/OFF]", "Enables/disables commentaries output kept from the sources; default=ON" };
 }
 
 void CommentsCommand::Run(CommandLine& cmdLine, ShellState& state)
