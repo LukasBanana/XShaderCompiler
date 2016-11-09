@@ -78,9 +78,6 @@ class PreProcessor : public Parser
         // Returns the if-block state from the top of the stack. If the stack is empty, the default state is returned.
         IfBlock TopIfBlock() const;
 
-        // Ignores all tokens until the next line is reached.
-        void SkipToNextLine();
-
         /*
         Replaces all identifiers (specified by 'macro.parameters') in the token string (specified by 'macro.tokenString')
         by the respective replacement (specified by 'arguments'). The number of identifiers and the number of replacements must be equal.

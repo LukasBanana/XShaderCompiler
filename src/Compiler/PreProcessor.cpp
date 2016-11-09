@@ -84,14 +84,6 @@ PreProcessor::IfBlock PreProcessor::TopIfBlock() const
     return (ifBlockStack_.empty() ? IfBlock() : ifBlockStack_.top());
 }
 
-//UNUSED
-void PreProcessor::SkipToNextLine()
-{
-    while (!Is(Tokens::NewLines))
-        AcceptIt();
-    AcceptIt();
-}
-
 TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<TokenPtrString>& arguments)
 {
     TokenPtrString expandedString;
