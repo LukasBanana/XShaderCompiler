@@ -1,7 +1,7 @@
 /*
  * HLSLTree.h
  * 
- * This file is part of the "HLSL Translator" (Copyright (c) 2014 by Lukas Hermanns)
+ * This file is part of the XShaderCompiler project (Copyright (c) 2014-2016 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
