@@ -3,6 +3,8 @@
 // 09/11/2016
 
 
+#define A (3*2)
+
 #if 5 > V1*3 && (x | 2 != f) //f 2
 #	pragma message "1: IF BRANCH"
 #else

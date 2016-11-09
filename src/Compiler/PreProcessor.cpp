@@ -375,11 +375,6 @@ void PreProcessor::ParseDirectiveDefine()
     /* Make new defined symbol */
     auto symbol = MakeMacro(ident);
 
-    /* Ignore white spaces and check for end of line */
-    IgnoreWhiteSpaces(false);
-    if (Is(Tokens::NewLines))
-        return;
-
     /* Parse optional parameters */
     if (Is(Tokens::LBracket))
     {
@@ -407,6 +402,11 @@ void PreProcessor::ParseDirectiveDefine()
         
         Accept(Tokens::RBracket);
     }
+
+    /* Ignore white spaces and check for end of line */
+    IgnoreWhiteSpaces(false);
+    if (Is(Tokens::NewLines))
+        return;
 
     /* Parse optional value */
     symbol->tokenString = ParseDirectiveTokenString();
