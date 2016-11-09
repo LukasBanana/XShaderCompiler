@@ -69,9 +69,6 @@ class PreProcessor : public Parser
 
         ScannerPtr MakeScanner() override;
 
-        // Defines a new macro with the specified identifier.
-        MacroPtr MakeMacro(const std::string& ident);
-
         // Returns true if the specified symbol is defined.
         bool IsDefined(const std::string& ident) const;
 

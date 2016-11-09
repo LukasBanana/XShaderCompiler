@@ -5,6 +5,8 @@
 
 #define A (3*2)
 
+#define B(X) B(5)*B(2)
+
 #if 5 > V1*3 && (x | 2 != f) //f 2
 #	pragma message "1: IF BRANCH"
 #else

@@ -54,14 +54,6 @@ ScannerPtr PreProcessor::MakeScanner()
     return std::make_shared<PreProcessorScanner>(GetLog());
 }
 
-PreProcessor::MacroPtr PreProcessor::MakeMacro(const std::string& ident)
-{
-    /* Make new symbol */
-    auto symbol = std::make_shared<Macro>();
-    macros_[ident] = symbol;
-    return symbol;
-}
-
 bool PreProcessor::IsDefined(const std::string& ident) const
 {
     return (macros_.find(ident) != macros_.end());
@@ -373,8 +365,8 @@ void PreProcessor::ParseDirectiveDefine()
     if (previousMacroIt != macros_.end())
         previousMacro = previousMacroIt->second;
 
-    /* Make new defined symbol */
-    auto symbol = MakeMacro(ident);
+    /* Make new macro symbol */
+    auto symbol = std::make_shared<Macro>();
 
     /* Parse optional parameters */
     if (Is(Tokens::LBracket))
@@ -424,6 +416,9 @@ void PreProcessor::ParseDirectiveDefine()
         else
             Error("redefinition of symbol \"" + ident + "\" with mismatch", identTkn.get());
     }
+
+    /* Register symbol as new macro */
+    macros_[ident] = symbol;
 }
 
 void PreProcessor::ParseDirectiveUndef()
