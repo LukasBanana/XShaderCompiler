@@ -442,12 +442,12 @@ void PauseCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> PresettingCommand::Idents() const
 {
-    return { { "--presetting" } };
+    return { { "-PS" }, { "--presetting" } };
 }
 
 HelpDescriptor PresettingCommand::Help() const
 {
-    return { "--presetting FILE", "Parse further arguments from the presetting file" };
+    return { "-PS, --presetting FILE", "Parse further arguments from the presetting file" };
 }
 
 void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -593,8 +593,8 @@ void HelpCommand::Run(CommandLine& cmdLine, ShellState& state)
     CommandFactory::Instance().GetHelpPrinter().PrintAll(std::cout, 2);
 
     std::cout << "Example:" << std::endl;
-    std::cout << "  HTLibCmd -entry VS -target vertex Example.hlsl -entry PS -target fragment Example.hlsl" << std::endl;
-    std::cout << "   --> Example.vertex.glsl; Example.fragment.glsl" << std::endl;
+    std::cout << "  HTLibCmd -E VS -T vertex Example.hlsl -E PS -T fragment Example.hlsl" << std::endl;
+    std::cout << "   -> Output files: 'Example.VS.glsl', and 'Example.PS.glsl'" << std::endl;
 }
 
 
