@@ -1,11 +1,11 @@
 /*
- * HLSLTree.cpp
+ * AST.cpp
  * 
  * This file is part of the XShaderCompiler project (Copyright (c) 2014-2016 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
-#include "HLSLTree.h"
+#include "AST.h"
 
 
 namespace Xsc
@@ -14,6 +14,7 @@ namespace Xsc
 
 /* --- Helper functions --- */
 
+//TODO: move this into "VarIdent" struct.
 std::string FullVarIdent(const VarIdentPtr& varIdent)
 {
     std::string name;
@@ -32,9 +33,10 @@ std::string FullVarIdent(const VarIdentPtr& varIdent)
     return name;
 }
 
+//TODO: move this into "VarIdent" struct.
 VarIdent* LastVarIdent(VarIdent* varIdent)
 {
-    return (varIdent && varIdent->next) ? LastVarIdent(varIdent->next.get()) : varIdent;
+    return ((varIdent && varIdent->next) ? LastVarIdent(varIdent->next.get()) : varIdent);
 }
 
 

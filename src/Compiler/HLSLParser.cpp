@@ -6,7 +6,7 @@
  */
 
 #include "HLSLParser.h"
-#include "HLSLTree.h"
+#include "AST.h"
 
 
 namespace Xsc

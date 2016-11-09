@@ -7,7 +7,7 @@
 
 #include "GLSLGenerator.h"
 #include "HLSLAnalyzer.h"
-#include "HLSLTree.h"
+#include "AST.h"
 #include "HLSLKeywords.h"
 
 #include <ctime>

@@ -1,12 +1,12 @@
 /*
- * HLSLTree.h
+ * AST.h
  * 
  * This file is part of the XShaderCompiler project (Copyright (c) 2014-2016 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef XSC_HLSL_TREE_H
-#define XSC_HLSL_TREE_H
+#ifndef XSC_AST_H
+#define XSC_AST_H
 
 
 #include "Token.h"
@@ -24,7 +24,7 @@ namespace Xsc
 
 
 /*
-This file contains all node classes for the entire HLSL absract syntax tree.
+This file contains all node classes for the entire absract syntax tree (AST).
 For simplicity only structs with public members are used here.
 */
 

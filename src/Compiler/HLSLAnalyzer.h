@@ -15,7 +15,7 @@
 #include "Visitor.h"
 #include "Token.h"
 #include "SymbolTable.h"
-#include "HLSLTree.h"
+#include "AST.h"
 
 #include <map>
 
