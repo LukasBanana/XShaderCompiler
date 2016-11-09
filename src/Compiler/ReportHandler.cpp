@@ -70,7 +70,7 @@ void ReportHandler::SubmitReport(
     if (!currentFilename_.empty())
     {
         outputMsg += currentFilename_;
-        outputMsg += ": ";
+        outputMsg += ":";
     }
 
     outputMsg += area.pos.ToString();
