@@ -564,7 +564,7 @@ HelpDescriptor VersionCommand::Help() const
 void VersionCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     ConsoleManip::ScopedColor highlight(std::cout, ConsoleManip::ColorFlags::Green | ConsoleManip::ColorFlags::Blue);
-    std::cout << "HLSL Translator ( Version " << XSC_VERSION_STRING << " )" << std::endl;
+    std::cout << "XShaderCompiler ( Version " << XSC_VERSION_STRING << " )" << std::endl;
     std::cout << "Copyright (c) 2014-2016 by Lukas Hermanns" << std::endl;
     std::cout << "3-Clause BSD License" << std::endl;
 }
