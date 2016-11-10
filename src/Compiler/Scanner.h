@@ -95,6 +95,7 @@ class Scanner
         TokenPtr ScanStringLiteral();
         TokenPtr ScanNumber(bool startWithDot = false);
         TokenPtr ScanNumberOrDot();
+        TokenPtr ScanVarArg(std::string& spell);
 
         bool ScanDigitSequence(std::string& spell);
 

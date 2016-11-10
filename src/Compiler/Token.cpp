@@ -108,10 +108,12 @@ std::string Token::TypeToString(const Types type)
         case Types::StorageModifier:    return "storage modifier";
         case Types::TypeModifier:       return "type modifier";
         case Types::Directive:          return "preprocessor directive";
+        case Types::DirectiveConcat:    return "preprocessor directive concatenation";
         case Types::Comment:            return "comment";
         case Types::WhiteSpaces:        return "white spaces";
         case Types::NewLines:           return "new-line characters";
         case Types::LineBreak:          return "preprocessor line break";
+        case Types::VarArg:             return "variadic argument specifier";
         case Types::Misc:               return "miscellaneous";
         case Types::EndOfStream:        return "end-of-stream";
         default:                        break;

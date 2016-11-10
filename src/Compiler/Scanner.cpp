@@ -394,13 +394,23 @@ TokenPtr Scanner::ScanNumber(bool startWithDot)
 
 TokenPtr Scanner::ScanNumberOrDot()
 {
-    Take('.');
+    std::string spell;
 
+    spell += Take('.');
+
+    if (Is('.'))
+        return ScanVarArg(spell);
     if (std::isdigit(UChr()))
         return ScanNumber(true);
 
-    std::string spell = ".";
     return Make(Tokens::Dot, spell);
+}
+
+TokenPtr Scanner::ScanVarArg(std::string& spell)
+{
+    spell += Take('.');
+    spell += Take('.');
+    return Make(Tokens::VarArg, spell);
 }
 
 bool Scanner::ScanDigitSequence(std::string& spell)

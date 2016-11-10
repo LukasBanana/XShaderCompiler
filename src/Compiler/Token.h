@@ -111,14 +111,17 @@ class Token
             StorageModifier,
             TypeModifier,       //< const, row_major, column_major
 
-            /* --- Special tokens --- */
+            /* --- Preprocessor specific tokens --- */
             Directive,          //< Preprocessor directive ('#' IDENT).
             DirectiveConcat,    //< Preprocessor directive concatenation ('##').
             Comment,            //< Commentary (only a single text line)
             WhiteSpaces,        //< White spaces (' ', '\t', '\r')
             NewLines,           //< New-line characters ('\n', "\r\n")
             LineBreak,          //< Line break for pre-processor directives '\'
+            VarArg,             //< Variadic argument specifier ('...').
             Misc,               //< Miscellaneous
+
+            /* --- Special tokens --- */
             EndOfStream,        //< End-of-stream
         };
 
