@@ -60,7 +60,7 @@ XSC_EXPORT bool CompileShader(
     }
 
     /* Parse HLSL input code */
-    HLSLParser parser(outputDesc.options, log);
+    HLSLParser parser(log);
     auto program = parser.ParseSource(std::make_shared<SourceCode>(processedInput));
 
     if (!program)

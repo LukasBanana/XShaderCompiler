@@ -528,7 +528,7 @@ struct ListExpr : public Expr
 struct LiteralExpr : public Expr
 {
     AST_INTERFACE(LiteralExpr);
-    Token::Types    type    = Token::Types::__Unknown__;
+    Token::Types    type    = Token::Types::Undefined;
     std::string     value;
 };
 

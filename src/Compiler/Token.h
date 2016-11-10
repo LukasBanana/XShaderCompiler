@@ -28,7 +28,7 @@ class Token
         // Token type enumeration.
         enum class Types
         {
-            __Unknown__,
+            Undefined,
 
             /* --- Identifiers --- */
             Ident,              //< (letter | '_') (letter | '_' | digit)*

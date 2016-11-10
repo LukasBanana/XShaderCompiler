@@ -35,7 +35,7 @@ class HLSLParser : public Parser
     
     public:
         
-        HLSLParser(const Options& options, Log* log = nullptr);
+        HLSLParser(Log* log = nullptr);
 
         ProgramPtr ParseSource(const SourceCodePtr& source);
 
@@ -150,12 +150,8 @@ class HLSLParser : public Parser
 
         /* === Members === */
 
-        //const Options&  options_;
-
-        HLSLScanner     scanner_;
-
         // Symbol table for all types which are allowed in a cast expression (currently only structure types).
-        ASTSymbolTable  typeSymTable_;
+        ASTSymbolTable typeSymTable_;
 
 };
 

@@ -13,10 +13,8 @@ namespace Xsc
 {
 
 
-HLSLParser::HLSLParser(const Options& options, Log* log) :
-    Parser  { log     },
-    //options_{ options },
-    scanner_{ log     }
+HLSLParser::HLSLParser(Log* log) :
+    Parser{ log }
 {
 }
 
