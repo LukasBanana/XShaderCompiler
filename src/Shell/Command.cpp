@@ -496,14 +496,28 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
             std::string line;
             std::getline(file, line);
 
-            std::stringstream lineStream;
-            lineStream << line;
-
-            while (!lineStream.eof())
+            std::size_t start = 0, end = 0;
+            while (start < line.size())
             {
-                std::string arg;
-                lineStream >> arg;
-                preset.args.push_back(arg);
+                start = line.find_first_not_of(' ', end);
+                if (start >= line.size())
+                    break;
+
+                if (line[start] == '\"')
+                {
+                    end = line.find('\"', start + 1);
+                    if (end != std::string::npos)
+                    {
+                        preset.args.push_back(line.substr(start + 1, end - start - 1));
+                        ++end;
+                    }
+                }
+                else
+                {
+                    end = line.find(' ', start + 1);
+                    if (end != std::string::npos)
+                        preset.args.push_back(line.substr(start, end - start));
+                }
             }
 
             if (!preset.args.empty())
