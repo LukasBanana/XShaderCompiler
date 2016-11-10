@@ -88,7 +88,7 @@ TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<T
 {
     TokenPtrString expandedString;
 
-    if (macro.parameters.size() != arguments.size())
+    if (macro.parameters.size() > arguments.size())
         return expandedString;
     
     auto ExpandTokenString = [&](TokenPtrString::Container::const_iterator& tknIt, const TokenPtrString::Container::const_iterator& tknItEnd) -> bool
@@ -101,13 +101,27 @@ TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<T
             case Tokens::Ident:
             {
                 auto ident = tkn.Spell();
-                for (std::size_t i = 0; i < macro.parameters.size(); ++i)
+                if (ident == "__VA_ARGS__")
                 {
-                    if (ident == macro.parameters[i])
+                    /* Replace '__VA_ARGS__' identifier with all variadic arguments (i.e. all after the number of parameters) */
+                    for (std::size_t i = macro.parameters.size(); i < arguments.size(); ++i)
                     {
-                        /* Expand identifier by argument token string */
                         expandedString.PushBack(arguments[i]);
-                        return true;
+                        if (i + 1 < arguments.size())
+                            expandedString.PushBack(Make<Token>(Tokens::Comma, ","));
+                    }
+                    return true;
+                }
+                else
+                {
+                    for (std::size_t i = 0; i < macro.parameters.size(); ++i)
+                    {
+                        if (ident == macro.parameters[i])
+                        {
+                            /* Expand identifier by argument token string */
+                            expandedString.PushBack(arguments[i]);
+                            return true;
+                        }
                     }
                 }
             }
@@ -316,7 +330,8 @@ TokenPtrString PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identTo
     AcceptIt();
 
     /* Check compatability of parameter count to macro */
-    if (arguments.size() != macro.parameters.size())
+    if ( ( !macro.varArgs && arguments.size() != macro.parameters.size() ) ||
+         ( macro.varArgs && arguments.size() < macro.parameters.size() ) )
     {
         std::string errorMsg;
 
@@ -413,7 +428,7 @@ void PreProcessor::ParseDirectiveDefine()
         previousMacro = previousMacroIt->second;
 
     /* Make new macro symbol */
-    auto symbol = std::make_shared<Macro>();
+    auto macro = std::make_shared<Macro>();
 
     /* Parse optional parameters */
     if (Is(Tokens::LBracket))
@@ -425,18 +440,30 @@ void PreProcessor::ParseDirectiveDefine()
         {
             while (true)
             {
-                /* Parse next parameter identifier */
+                /* Parse next parameter identifier or variadic argument specifier (i.e. IDENT or '...') */
                 IgnoreWhiteSpaces(false);
-                auto paramIdent = Accept(Tokens::Ident)->Spell();
-                IgnoreWhiteSpaces(false);
-
-                symbol->parameters.push_back(paramIdent);
-
-                /* Check if parameter list is finished */
-                if (!Is(Tokens::Comma))
+                
+                if (Is(Tokens::VarArg))
+                {
+                    AcceptIt();
+                    macro->varArgs = true;
+                    IgnoreWhiteSpaces(false);
                     break;
+                }
+                else
+                {
+                    /* Parse next parameter identifier */
+                    auto paramIdent = Accept(Tokens::Ident)->Spell();
+                    IgnoreWhiteSpaces(false);
 
-                AcceptIt();
+                    macro->parameters.push_back(paramIdent);
+
+                    /* Check if parameter list is finished */
+                    if (!Is(Tokens::Comma))
+                        break;
+
+                    AcceptIt();
+                }
             }
         }
         
@@ -449,23 +476,24 @@ void PreProcessor::ParseDirectiveDefine()
         return;
 
     /* Parse optional value */
-    symbol->tokenString = ParseDirectiveTokenString();
+    macro->tokenString = ParseDirectiveTokenString();
 
     /* Now compare previous and new definition */
     if (previousMacro)
     {
         /* Compare parameters */
-        //TODO...
+        if (previousMacro->parameters != macro->parameters || previousMacro->varArgs != macro->varArgs)
+            Error("redefinition of macro \"" + ident + "\" with mismatch in parameter list", identTkn.get());
 
         /* Compare values */
-        if (previousMacro->tokenString == symbol->tokenString)
+        if (previousMacro->tokenString == macro->tokenString)
             Warning("redefinition of symbol \"" + ident + "\"", identTkn.get());
         else
-            Error("redefinition of symbol \"" + ident + "\" with mismatch", identTkn.get());
+            Error("redefinition of macro \"" + ident + "\" with mismatch", identTkn.get());
     }
 
     /* Register symbol as new macro */
-    macros_[ident] = symbol;
+    macros_[ident] = macro;
 }
 
 void PreProcessor::ParseDirectiveUndef()

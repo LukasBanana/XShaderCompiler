@@ -50,8 +50,9 @@ class PreProcessor : public Parser
 
         struct Macro
         {
-            std::vector<std::string>    parameters;
-            TokenPtrString              tokenString;
+            std::vector<std::string>    parameters;             //< Parameter identifiers
+            bool                        varArgs     = false;    //< Specifies whether macro supports variadic arguments
+            TokenPtrString              tokenString;            //< Macro definition value as token string
         };
 
         struct IfBlock

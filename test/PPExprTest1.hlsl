@@ -12,6 +12,15 @@ F1(1, 2, F2(0, 1))
 
 #define TOSTR(NAME) #NAME
 
+#define VARG_F1(a, ...) a*2 { __VA_ARGS__ }
+
+#define MyPrintf(STR, ...) printf(STR, __VA_ARGS__)
+
+/*VARG_F1*/
+VARG_F1(1, 2, 3, /*foo*/-foo)
+
+MyPrintf("x = %i, y = %s", 5, "test")
+
 TOSTR(TOSTR)
 
 #define MERGE(TYPE, SIZE) TYPE  ##   SIZE
