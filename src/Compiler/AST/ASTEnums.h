@@ -77,6 +77,17 @@ enum class UnaryOp
     Dec,        // Decrement (e.g. --x)
 };
 
+// Control transfer enumeration:
+// break, continue, discard
+enum class CtrlTransfer
+{
+    Undefined,
+
+    Break,
+    Continue,
+    Discard,
+};
+
 
 /* ----- Functions ----- */
 
@@ -88,6 +99,9 @@ BinaryOp StringToBinaryOp(const std::string& s);
 
 std::string UnaryOpToString(const UnaryOp o);
 UnaryOp StringToUnaryOp(const std::string& s);
+
+std::string CtrlTransformToString(const CtrlTransfer ct);
+CtrlTransfer StringToCtrlTransfer(const std::string& s);
 
 bool IsBitwiseOp(const AssignOp o);
 bool IsBitwiseOp(const BinaryOp o);

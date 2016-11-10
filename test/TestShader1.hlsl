@@ -185,6 +185,7 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 				int y;
 				i += 4, ++i, i *= 2;
 				y = 2, y = 4;
+				break;
 			} else { int z; x = y; }
 		}
 	

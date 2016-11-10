@@ -504,7 +504,7 @@ struct StructDeclStmnt : public Stmnt
 struct CtrlTransferStmnt : public Stmnt
 {
     AST_INTERFACE(CtrlTransferStmnt);
-    std::string instruction; // continue, break, discard
+    CtrlTransfer transfer = CtrlTransfer::Undefined; // break, continue, discard
 };
 
 // Commentary statement (pseudo statement).

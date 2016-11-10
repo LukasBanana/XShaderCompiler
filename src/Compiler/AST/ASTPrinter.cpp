@@ -278,7 +278,7 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 {
-    Print(ast, "CtrlTransferStmnt", ast->instruction);
+    Print(ast, "CtrlTransferStmnt", CtrlTransformToString(ast->transfer));
 }
 
 /* --- Expressions --- */

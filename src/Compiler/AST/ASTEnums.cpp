@@ -139,6 +139,24 @@ bool IsBitwiseOp(const UnaryOp o)
     return (o == UnaryOp::Not);
 }
 
+/* ----- CtrlTransfer Enum ----- */
+
+static const std::map<CtrlTransfer, std::string> g_mapCtrlTransfer
+{
+    { CtrlTransfer::Break,      "break"    },
+    { CtrlTransfer::Continue,   "continue" },
+    { CtrlTransfer::Discard,    "discard"  },
+};
+
+std::string CtrlTransformToString(const CtrlTransfer ct)
+{
+    return TypeToString(g_mapCtrlTransfer, ct, "CtrlTransfer");
+}
+
+CtrlTransfer StringToCtrlTransfer(const std::string& s)
+{
+    return StringToType(g_mapCtrlTransfer, s, "CtrlTransfer");
+}
 
 
 } // /namespace Xsc

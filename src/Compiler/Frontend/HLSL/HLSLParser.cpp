@@ -667,7 +667,9 @@ CtrlTransferStmntPtr HLSLParser::ParseCtrlTransferStmnt()
     /* Parse control transfer statement */
     auto ast = Make<CtrlTransferStmnt>();
     
-    ast->instruction = Accept(Tokens::CtrlTransfer)->Spell();
+    auto ctrlTransfer = Accept(Tokens::CtrlTransfer)->Spell();
+    ast->transfer = StringToCtrlTransfer(ctrlTransfer);
+
     Semi();
 
     return ast;
