@@ -155,7 +155,7 @@ void Shell::Compile(const std::string& filename)
 
         auto result = CompileShader(state.inputDesc, state.outputDesc, &log);
 
-        log.PrintAll();
+        log.PrintAll(state.verbose);
 
         if (result)
             output << "translation successful" << std::endl;

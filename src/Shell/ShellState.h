@@ -27,11 +27,25 @@ struct PredefinedMacro
 
 struct ShellState
 {
+    // Shader input descriptor.
     ShaderInput                     inputDesc;
+
+    // Shader output descriptor.
     ShaderOutput                    outputDesc;
+
+    // Output filename (hint).
     std::string                     outputFilename;
+
+    // Predefined macros for the preprocessor
     std::vector<PredefinedMacro>    predefinedMacros;
+
+    // Include search paths for the preprocessor.
     std::vector<std::string>        searchPaths;
+
+    // Print line marks for compiler reports.
+    bool                            verbose             = true;
+
+    // Pause application after everything is done.
     bool                            pauseApp            = false;
 };
 

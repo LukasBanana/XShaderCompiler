@@ -87,6 +87,7 @@ DECL_SHELL_COMMAND( PresettingCommand  );
 DECL_SHELL_COMMAND( VersionCommand     );
 DECL_SHELL_COMMAND( HelpCommand        );
 DECL_SHELL_COMMAND( IncludePathCommand );
+DECL_SHELL_COMMAND( VerboseCommand     );
 
 #undef DECL_SHELL_COMMAND
 

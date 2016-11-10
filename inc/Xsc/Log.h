@@ -77,7 +77,7 @@ class XSC_EXPORT StdLog : public Log
         void SumitReport(const Report& report) override;
 
         //! Prints all submitted reports to the standard output.
-        void PrintAll();
+        void PrintAll(bool verbose = true);
 
     private:
 
@@ -89,8 +89,8 @@ class XSC_EXPORT StdLog : public Log
 
         using IndentReportList = std::vector<IndentReport>;
 
-        void PrintReport(const IndentReport& r);
-        void PrintAndClearReports(IndentReportList& reports, const std::string& headline = "");
+        void PrintReport(const IndentReport& r, bool verbose);
+        void PrintAndClearReports(IndentReportList& reports, bool verbose, const std::string& headline = "");
 
         IndentReportList infos_;
         IndentReportList warnings_;

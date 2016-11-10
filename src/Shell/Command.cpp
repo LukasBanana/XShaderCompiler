@@ -634,6 +634,30 @@ void IncludePathCommand::Run(CommandLine& cmdLine, ShellState& state)
 }
 
 
+/*
+ * VerboseCommand class
+ */
+
+std::vector<Command::Identifier> VerboseCommand::Idents() const
+{
+    return { { "-V" }, { "--verbose" } };
+}
+
+HelpDescriptor VerboseCommand::Help() const
+{
+    return
+    {
+        "-V, --verbose [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables more output for compiler reports; default=" + CommandLine::GetBooleanTrue()
+    };
+}
+
+void VerboseCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.verbose = cmdLine.AcceptBoolean(true);
+}
+
+
 } // /namespace Util
 
 } // /namespace Xsc

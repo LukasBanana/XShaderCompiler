@@ -66,6 +66,7 @@ CommandFactory::CommandFactory()
     MakeCommand< VersionCommand     >();
     MakeCommand< HelpCommand        >();
     MakeCommand< IncludePathCommand >();
+    MakeCommand< VerboseCommand     >();
 }
 
 template <typename T, typename... Args>
