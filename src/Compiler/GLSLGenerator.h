@@ -86,14 +86,18 @@ class GLSLGenerator : private Visitor
 
         // Writes a new single line comment.
         void Comment(const std::string& text);
+
         // Writes a "#version" directive.
         void Version(int versionNumber);
+
         // Writes a "#line" directive.
         void Line(int lineNumber);
         void Line(const TokenPtr& tkn);
         void Line(const AST* ast);
+
         // Writes a blank line.
         void Blank();
+
         // Writes a new extensions
         void Extension(const std::string& extensionName);
 
@@ -109,6 +113,7 @@ class GLSLGenerator : private Visitor
 
         // Opens a new scope with '{'.
         void OpenScope();
+
         // Closes the current scope with '}'.
         void CloseScope(bool semicolon = false);
 
