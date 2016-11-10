@@ -30,7 +30,6 @@ std::shared_ptr<std::iostream> PreProcessor::Process(const SourceCodePtr& input,
     try
     {
         ParseProgram();
-
         if (!GetReportHandler().HasErros())
             return output_;
     }
@@ -446,7 +445,7 @@ void PreProcessor::ParseDirectiveDefine()
     if (!Is(Tokens::NewLines))
     {
         /* Parse optional value */
-        macro->tokenString = ParseDirectiveTokenString();
+        macro->tokenString = ParseDirectiveTokenString(false, true);
 
         /* Now compare previous and new definition */
         if (previousMacro)
@@ -804,7 +803,7 @@ ExprPtr PreProcessor::ParsePrimaryExpr()
     return nullptr;
 }
 
-TokenPtrString PreProcessor::ParseDirectiveTokenString(bool expandDefinedDirective)
+TokenPtrString PreProcessor::ParseDirectiveTokenString(bool expandDefinedDirective, bool ignoreComments)
 {
     TokenPtrString tokenString;
 
@@ -855,6 +854,15 @@ TokenPtrString PreProcessor::ParseDirectiveTokenString(bool expandDefinedDirecti
                     /* Append identifier with macro expansion */
                     tokenString.PushBack(ParseIdentAsTokenString());
                 }
+            }
+            break;
+
+            case Tokens::Comment:
+            {
+                if (ignoreComments)
+                    AcceptIt();
+                else
+                    tokenString.PushBack(AcceptIt());
             }
             break;
 

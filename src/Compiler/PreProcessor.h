@@ -113,7 +113,7 @@ class PreProcessor : public Parser
         ExprPtr ParseExpr();
         ExprPtr ParsePrimaryExpr() override;
 
-        TokenPtrString ParseDirectiveTokenString(bool expandDefinedDirective = false);
+        TokenPtrString ParseDirectiveTokenString(bool expandDefinedDirective = false, bool ignoreComments = false);
         TokenPtrString ParseArgumentTokenString();
 
         /* === Members === */
