@@ -517,6 +517,8 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
                     end = line.find(' ', start + 1);
                     if (end != std::string::npos)
                         preset.args.push_back(line.substr(start, end - start));
+                    else
+                        preset.args.push_back(line.substr(start));
                 }
             }
 
