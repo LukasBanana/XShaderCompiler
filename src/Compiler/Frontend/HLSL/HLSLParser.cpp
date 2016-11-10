@@ -196,6 +196,10 @@ SwitchCasePtr HLSLParser::ParseSwitchCase()
 
 GlobalDeclPtr HLSLParser::ParseGlobalDecl()
 {
+    /* Ignore all null statements */
+    while (Is(Tokens::Semicolon))
+        AcceptIt();
+
     switch (TknType())
     {
         case Tokens::Sampler:

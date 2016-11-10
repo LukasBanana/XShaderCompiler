@@ -123,7 +123,7 @@ float4 PS(VertexOut inp) : SV_Target0
 	InterlockedAdd(intrl, 5);
 	
 	return ambientColor + saturate(inp.color * diffuse);
-}
+};
 
 void Frustum(inout float4 v)
 {
