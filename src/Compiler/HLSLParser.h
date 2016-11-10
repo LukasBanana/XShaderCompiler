@@ -122,7 +122,7 @@ class HLSLParser : public Parser
         StmntPtr                        ParseVarDeclOrAssignOrFunctionCallStmnt();
 
         ExprPtr                         ParseExpr(bool allowComma = false, const ExprPtr& initExpr = nullptr);
-        ExprPtr                         ParsePrimaryExpr();
+        ExprPtr                         ParsePrimaryExpr() override;
         LiteralExprPtr                  ParseLiteralExpr();
         ExprPtr                         ParseTypeNameOrFunctionCallExpr();
         UnaryExprPtr                    ParseUnaryExpr();

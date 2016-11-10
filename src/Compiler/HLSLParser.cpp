@@ -854,43 +854,15 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
 ExprPtr HLSLParser::ParseExpr(bool allowComma, const ExprPtr& initExpr)
 {
     /* Parse primary expression */
-    ExprPtr ast = initExpr;
-    if (!ast)
-        ast = ParsePrimaryExpr();
+    ExprPtr ast = (initExpr ? initExpr : ParseGenericExpr());
 
-    /* Parse optional post-unary expression (e.g. 'x++' or 'x--') */
+    /* Parse optional post-unary expression (e.g. 'x++', 'x--', or 'f()++', or 'f().xyz++') */
     if (Is(Tokens::UnaryOp))
     {
         auto unaryExpr = Make<PostUnaryExpr>();
         unaryExpr->expr = ast;
         unaryExpr->op = StringToUnaryOp(AcceptIt()->Spell());
         ast = unaryExpr;
-    }
-
-    /* Parse optional binary expression */
-    if (Is(Tokens::BinaryOp))
-    {
-        auto binExpr = Make<BinaryExpr>();
-
-        binExpr->lhsExpr = ast;
-        binExpr->op = StringToBinaryOp(AcceptIt()->Spell());
-        binExpr->rhsExpr = ParseExpr(allowComma);
-
-        return binExpr;
-    }
-
-    /* Parse optional ternary expression */
-    if (Is(Tokens::TernaryOp))
-    {
-        auto ternExpr = Make<TernaryExpr>();
-
-        ternExpr->condExpr = ast;
-        AcceptIt();
-        ternExpr->thenExpr = ParseExpr();
-        Accept(Tokens::Colon);
-        ternExpr->elseExpr = ParseExpr();
-
-        return ternExpr;
     }
 
     /* Parse optional list expression */

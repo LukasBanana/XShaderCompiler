@@ -63,8 +63,7 @@ class PreProcessor : public Parser
             bool            expectEndif    = false;
         };
 
-        using MacroPtr      = std::shared_ptr<Macro>;
-        using BinaryOpList  = std::initializer_list<BinaryOp>;
+        using MacroPtr = std::shared_ptr<Macro>;
 
         /* === Functions === */
 
@@ -84,9 +83,6 @@ class PreProcessor : public Parser
         by the respective replacement (specified by 'arguments'). The number of identifiers and the number of replacements must be equal.
         */
         TokenPtrString ExpandMacro(const Macro& macro, const std::vector<TokenPtrString>& arguments);
-
-        // Builds a left-to-right binary-expression tree hierarchy for the specified list of expressions.
-        ExprPtr BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops);
 
         /* === Parse functions === */
 
@@ -115,26 +111,7 @@ class PreProcessor : public Parser
         void ParseDirectiveError();
 
         ExprPtr ParseExpr();
-        TernaryExprPtr ParseTernaryExpr(const ExprPtr& condExpr);
-
-        ExprPtr ParseAbstractBinaryExpr(
-            const std::function<ExprPtr()>& parseFunc,
-            const BinaryOpList& binaryOps
-        );
-
-        ExprPtr ParseLogicOrExpr();
-        ExprPtr ParseLogicAndExpr();
-        ExprPtr ParseBitwiseOrExpr();
-        ExprPtr ParseBitwiseXOrExpr();
-        ExprPtr ParseBitwiseAndExpr();
-        ExprPtr ParseEqualityExpr();
-        ExprPtr ParseRelationExpr();
-        ExprPtr ParseShiftExpr();
-        ExprPtr ParseAddExpr();
-        ExprPtr ParseSubExpr();
-        ExprPtr ParseMulExpr();
-        ExprPtr ParseDivExpr();
-        ExprPtr ParseValueExpr();
+        ExprPtr ParsePrimaryExpr() override;
 
         TokenPtrString ParseDirectiveTokenString(bool expandDefinedDirective = false);
         TokenPtrString ParseArgumentTokenString();

@@ -3,7 +3,7 @@
 -T vertex -E VS -O output/TestShader1.VS.glsl TestShader1.hlsl
 
 [TestShader1.hlsl Compute]
--T compute -E CS -O output/TestShader1.CS.glsl TestShader1.hlsl
+--dump-ast -T compute -E CS -O output/TestShader1.CS.glsl TestShader1.hlsl
 
 [PPExprTest1.hlsl -PP]
 -PP -O output/PPExprTest1.post.hlsl PPExprTest1.hlsl

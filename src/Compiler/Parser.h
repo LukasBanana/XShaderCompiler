@@ -10,8 +10,9 @@
 
 
 #include <Xsc/Log.h>
-#include "HLSLScanner.h"
+#include "Scanner.h"
 #include "HLSLErr.h"
+#include "ASTEnums.h"
 #include "ReportHandler.h"
 #include "Visitor.h"
 #include "Token.h"
@@ -36,22 +37,14 @@ class Parser
 
     protected:
         
-        using Tokens = Token::Types;
+        using Tokens        = Token::Types;
+        using BinaryOpList  = std::initializer_list<BinaryOp>;
 
         /* === Functions === */
 
         Parser(Log* log);
 
-        virtual ScannerPtr MakeScanner() = 0;
-
-        void PushScannerSource(const SourceCodePtr& source, const std::string& filename = "");
-        bool PopScannerSource();
-
-        // Returns the current token scanner.
-        Scanner& GetScanner();
-
-        // Returns the filename for the current scanner source.
-        std::string GetCurrentFilename() const;
+        /* ----- Report Handling ----- */
 
         void Error(const std::string& msg, Token* tkn, const HLSLErr errorCode = HLSLErr::Unknown);
         void Error(const std::string& msg, bool prevToken = true, const HLSLErr errorCode = HLSLErr::Unknown);
@@ -64,6 +57,19 @@ class Parser
         void Warning(const std::string& msg, Token* tkn);
         void Warning(const std::string& msg, bool prevToken = true);
 
+        /* ----- Scanner ----- */
+
+        virtual ScannerPtr MakeScanner() = 0;
+
+        void PushScannerSource(const SourceCodePtr& source, const std::string& filename = "");
+        bool PopScannerSource();
+
+        // Returns the current token scanner.
+        Scanner& GetScanner();
+
+        // Returns the filename for the current scanner source.
+        std::string GetCurrentFilename() const;
+
         TokenPtr Accept(const Tokens type);
         TokenPtr Accept(const Tokens type, const std::string& spell);
         TokenPtr AcceptIt();
@@ -75,6 +81,37 @@ class Parser
         // Ignores the next tokens if they are white spaces and optionally new lines.
         void IgnoreWhiteSpaces(bool includeNewLines = false);//, bool includeComments = true);
         void IgnoreNewLines();
+
+        /* ----- Parsing ----- */
+
+        // Builds a left-to-right binary-expression tree hierarchy for the specified list of expressions.
+        ExprPtr BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops);
+
+        ExprPtr ParseGenericExpr();
+        TernaryExprPtr ParseTernaryExpr(const ExprPtr& condExpr);
+
+        ExprPtr ParseAbstractBinaryExpr(
+            const std::function<ExprPtr()>& parseFunc,
+            const BinaryOpList& binaryOps
+        );
+
+        ExprPtr ParseLogicOrExpr();
+        ExprPtr ParseLogicAndExpr();
+        ExprPtr ParseBitwiseOrExpr();
+        ExprPtr ParseBitwiseXOrExpr();
+        ExprPtr ParseBitwiseAndExpr();
+        ExprPtr ParseEqualityExpr();
+        ExprPtr ParseRelationExpr();
+        ExprPtr ParseShiftExpr();
+        ExprPtr ParseAddExpr();
+        ExprPtr ParseSubExpr();
+        ExprPtr ParseMulExpr();
+        ExprPtr ParseDivExpr();
+        ExprPtr ParseValueExpr();
+
+        virtual ExprPtr ParsePrimaryExpr() = 0;
+
+        /* ----- Common ----- */
 
         // Returns the log pointer or null if no log was defined.
         inline Log* GetLog() const
