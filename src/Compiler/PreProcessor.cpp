@@ -960,6 +960,8 @@ TokenPtrString PreProcessor::ParseDirectiveTokenString(bool expandDefinedDirecti
     return tokenString;
 }
 
+// Parse next argument as token string
+// --> Parse until the closing ')' token or until the next ',' token for the next argument appears
 TokenPtrString PreProcessor::ParseArgumentTokenString()
 {
     TokenPtrString tokenString;
@@ -967,7 +969,7 @@ TokenPtrString PreProcessor::ParseArgumentTokenString()
     int bracketLevel = 0;
 
     /* Parse tokens until the closing bracket ')' appears */
-    while ( ( bracketLevel > 0 || !Is(Tokens::RBracket) ) && !Is(Tokens::Comma) )
+    while ( bracketLevel > 0 || ( !Is(Tokens::RBracket) && !Is(Tokens::Comma) ) )
     {
         /* Do not exit loop if a closing bracket ')' appears, which belongs to an inner opening bracket '(' */
         if (Is(Tokens::LBracket))
