@@ -38,7 +38,7 @@ Variant::Variant(RealType value) :
     switch (type_)                  \
     {                               \
         case Types::Bool:           \
-            bool_ OP rhs.bool_;     \
+            /* dummy case block */; \
             break;                  \
         case Types::Int:            \
             int_ OP rhs.int_;       \
@@ -52,13 +52,10 @@ Variant::Variant(RealType value) :
 #define IMPLEMENT_VARIANT_BITWISE_OP(OP)    \
     switch (type_)                          \
     {                                       \
-        case Types::Bool:                   \
-            bool_ OP rhs.bool_;             \
-            break;                          \
         case Types::Int:                    \
             int_ OP rhs.int_;               \
             break;                          \
-        case Types::Real:                   \
+        default:                            \
             /* dummy case block */          \
             break;                          \
     }                                       \
@@ -158,7 +155,7 @@ Variant Variant::operator - ()
     switch (type_)
     {
         case Types::Bool:
-            result.bool_ = -bool_;
+            // dummy case block
             break;
         case Types::Int:
             result.int_ = -int_;
@@ -177,13 +174,10 @@ Variant Variant::operator ~ ()
 
     switch (type_)
     {
-        case Types::Bool:
-            result.bool_ = ~bool_;
-            break;
         case Types::Int:
             result.int_ = ~int_;
             break;
-        case Types::Real:
+        default:
             // dummy case block
             break;
     }
@@ -220,11 +214,11 @@ Variant::BoolType Variant::ToBool()
             break;
         case Types::Int:
             type_ = Types::Bool;
-            bool_ = static_cast<BoolType>(int_);
+            bool_ = (int_ != 0);
             break;
         case Types::Real:
             type_ = Types::Bool;
-            bool_ = static_cast<BoolType>(real_);
+            bool_ = (real_ != 0.0f);
             break;
     }
     return bool_;
