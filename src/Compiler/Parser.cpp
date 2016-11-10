@@ -7,6 +7,7 @@
 
 #include "Parser.h"
 #include "AST.h"
+#include <algorithm>
 
 
 namespace Xsc
