@@ -362,7 +362,7 @@ TokenPtr Scanner::ScanNumber(bool startWithDot)
         }
 
         /* Check for floating-suffix */
-        if (Is('f') || Is('F'))
+        if (Is('f') || Is('F') || Is('h') || Is('H') || Is('l') || Is('L'))
             spell += TakeIt();
 
         /* Check for following invalid characters */

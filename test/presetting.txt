@@ -12,5 +12,4 @@
 -PP -O output/PPTest2.post.hlsl PPTest2.hlsl
 
 [test.cpp -PP]
--PP -O "../../misc/test.h" -I "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include" -I "C:\Program Files (x86)\Windows Kits\10\Include\10.0.14393.0\ucrt" "../../misc/test.cpp"
-
+-PP -O "../../misc/test.h" -I "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include" -I "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\atlmfc\include" -I "C:\Program Files (x86)\Windows Kits\10\Include\10.0.14393.0\ucrt" -I "C:\Program Files (x86)\Windows Kits\10\Include\10.0.14393.0\um" -I "C:\Program Files (x86)\Windows Kits\10\Include\10.0.14393.0\shared" -I "C:\Program Files (x86)\Windows Kits\10\Include\10.0.14393.0\winrt" "../../misc/test.cpp"
