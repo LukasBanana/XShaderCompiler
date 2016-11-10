@@ -378,11 +378,13 @@ TokenPtr Scanner::ScanNumber(bool startWithDot)
             while ( std::isdigit(UChr()) || ( Chr() >= 'a' && Chr() <= 'f' ) || ( Chr() >= 'A' && Chr() <= 'F' ) )
                 spell += TakeIt();
         }
+        
         /* Check for integer-suffix */
-        else if (Is('u') || Is('U') || Is('l') || Is('L'))
+        if (Is('u') || Is('U') || Is('l') || Is('L'))
             spell += TakeIt();
+        
         /* Check for following invalid characters */
-        else if (std::isalpha(UChr()) || Is('.'))
+        if (std::isalpha(UChr()) || Is('.'))
             Error("character '" + std::string(1, Chr()) + "' is not allowed immediately after integer literal");
     }
 
