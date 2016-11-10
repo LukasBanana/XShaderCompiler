@@ -264,7 +264,9 @@ UniformBufferDeclPtr HLSLParser::ParseUniformBufferDecl()
     /* Parse buffer body */
     ast->members = ParseVarDeclStmntList();
 
-    Semi();
+    /* Parse optional semicolon (this seems to be optional for cbuffer, and tbuffer) */
+    if (Is(Tokens::Semicolon))
+        Semi();
 
     return ast;
 }
@@ -1011,6 +1013,14 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     /* Return bracket expression */
     auto ast = Make<BracketExpr>();
     ast->expr = expr;
+
+    /* Parse optional var-ident suffix */
+    if (Is(Tokens::Dot))
+    {
+        AcceptIt();
+        ast->varIdentSuffix = ParseVarIdent();
+    }
+
     return ast;
 }
 
