@@ -259,7 +259,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    Push(0ll);
+    Push(Variant::IntType(0));
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)

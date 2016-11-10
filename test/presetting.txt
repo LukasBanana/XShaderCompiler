@@ -11,3 +11,6 @@
 [PPTest2.hlsl -PP]
 -PP -O output/PPTest2.post.hlsl PPTest2.hlsl
 
+[test.cpp -PP]
+-PP -O "../../misc/test.h" -I "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include" "../../misc/test.cpp"
+

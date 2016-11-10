@@ -32,9 +32,9 @@ TokenPtr PreProcessorScanner::ScanToken()
 {
     std::string spell;
 
-    /* Scan directive */
+    /* Scan directive (beginning with '#'), or directive concatenation ('##') */
     if (Is('#'))
-        return ScanDirective();
+        return ScanDirectiveOrDirectiveConcat();
 
     /* Scan identifier */
     if (std::isalpha(UChr()) || Is('_'))
@@ -123,10 +123,20 @@ TokenPtr PreProcessorScanner::ScanToken()
     return Make(Token::Types::Misc, true);
 }
 
-TokenPtr PreProcessorScanner::ScanDirective()
+TokenPtr PreProcessorScanner::ScanDirectiveOrDirectiveConcat()
 {
+    std::string spell;
+
     /* Take directive begin '#' */
     Take('#');
+
+    /* Check for concatenation */
+    if (Is('#'))
+    {
+        TakeIt();
+        spell = "##";
+        return Make(Token::Types::DirectiveConcat, spell);
+    }
 
     /* Ignore white spaces (but not new-lines) */
     IgnoreWhiteSpaces(false);
@@ -134,7 +144,6 @@ TokenPtr PreProcessorScanner::ScanDirective()
     /* Scan identifier string */
     StoreStartPos();
 
-    std::string spell;
     while (std::isalpha(UChr()))
         spell += TakeIt();
 

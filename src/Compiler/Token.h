@@ -112,7 +112,8 @@ class Token
             TypeModifier,       //< const, row_major, column_major
 
             /* --- Special tokens --- */
-            Directive,          //< '#' ... (e.g. "#include").
+            Directive,          //< Preprocessor directive ('#' IDENT).
+            DirectiveConcat,    //< Preprocessor directive concatenation ('##').
             Comment,            //< Commentary (only a single text line)
             WhiteSpaces,        //< White spaces (' ', '\t', '\r')
             NewLines,           //< New-line characters ('\n', "\r\n")

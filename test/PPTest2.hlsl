@@ -8,6 +8,9 @@
 
 #define F3(X, Y) /*<F3>*/ F1((X),Y)+F2(X, Y) /*</F3>*/
 
+#define TOSTR(a) #a
+#define CONCAT(a, b) a ## b
+
 //#define F3(X, Y) \
 //	F1(X, Y) + F2(X, Y) /*F3*/
 
@@ -21,10 +24,10 @@
 #if !defined (V1) || defined F3
 #endif
 
-#if 5 > V1*3 && (x | 2 != f) //f 2
+#if (5 > V1*3 && (x | 2 != f)) || 1 //f 2
 //#ifndef _0
 
-F1 ( 1 , 2 )
+F1 ( /*TROLLOLOL*/  1   ,   2   )
 F1 (1,2+3)
 F3 (F1(1,2),2+3);
 

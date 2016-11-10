@@ -91,44 +91,73 @@ TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<T
     if (macro.parameters.size() != arguments.size())
         return expandedString;
     
-    auto ExpandTokenString = [&](const Token& tkn) -> bool
+    auto ExpandTokenString = [&](TokenPtrString::Container::const_iterator& tknIt, const TokenPtrString::Container::const_iterator& tknItEnd) -> bool
     {
+        const auto& tkn = **tknIt;
+
         /* Check if current token is an identifier which matches one of the parameters of the macro */
-        if (tkn.Type() == Tokens::Ident)
+        switch (tkn.Type())
         {
-            auto ident = tkn.Spell();
-            for (std::size_t i = 0; i < macro.parameters.size(); ++i)
+            case Tokens::Ident:
             {
-                if (ident == macro.parameters[i])
+                auto ident = tkn.Spell();
+                for (std::size_t i = 0; i < macro.parameters.size(); ++i)
                 {
-                    /* Expand identifier by argument token string */
-                    expandedString.PushBack(arguments[i]);
-                    return true;
+                    if (ident == macro.parameters[i])
+                    {
+                        /* Expand identifier by argument token string */
+                        expandedString.PushBack(arguments[i]);
+                        return true;
+                    }
                 }
             }
-        }
-        else if (tkn.Type() == Tokens::Directive)
-        {
-            auto ident = tkn.Spell();
-            for (std::size_t i = 0; i < macro.parameters.size(); ++i)
+            break;
+
+            case Tokens::Directive:
             {
-                if (ident == macro.parameters[i])
+                auto ident = tkn.Spell();
+                for (std::size_t i = 0; i < macro.parameters.size(); ++i)
                 {
-                    /* Expand identifier by converting argument token string to string literal */
-                    std::stringstream stringLiteral;
-                    stringLiteral << arguments[i];
-                    expandedString.PushBack(Make<Token>(Tokens::StringLiteral, stringLiteral.str()));
-                    return true;
+                    if (ident == macro.parameters[i])
+                    {
+                        /* Expand identifier by converting argument token string to string literal */
+                        std::stringstream stringLiteral;
+                        stringLiteral << '\"' << arguments[i] << '\"';
+                        expandedString.PushBack(Make<Token>(Tokens::StringLiteral, stringLiteral.str()));
+                        return true;
+                    }
                 }
             }
+            break;
+
+            case Tokens::DirectiveConcat:
+            {
+                /* Rremove previous white spaces and comments */
+                expandedString.TrimBack();
+
+                /* Ignore concatenation token */
+                ++tknIt;
+
+                /* Ignore following white spaces and comments */
+                while (tknIt != tknItEnd && !PreProcessorTokenOfInterestFunctor::IsOfInterest(*tknIt))
+                    ++tknIt;
+                
+                /* Iterate one token back since it will be incremented in the outer for-loop */
+                --tknIt;
+                return true;
+            }
+            break;
         }
+
+        /* Return false -> meaning this function has not added any tokens to the expanded string */
         return false;
     };
 
-    for (const auto& tkn : macro.tokenString.GetTokens())
+    const auto& tokens = macro.tokenString.GetTokens();
+    for (auto it = tokens.begin(); it != tokens.end(); ++it)
     {
-        if (!ExpandTokenString(*tkn))
-            expandedString.PushBack(tkn);
+        if (!ExpandTokenString(it, tokens.end()))
+            expandedString.PushBack(*it);
     }
 
     return expandedString;
@@ -257,11 +286,11 @@ TokenPtrString PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identTo
 
     if (!Is(Tokens::LBracket))
     {
-        Error(
-            ( "macro \"" + identToken->Spell() + "\" requires an argument list of " +
-              std::to_string(macro.parameters.size()) + " parameter(s)" ),
-            identToken.get()
-        );
+        /*
+        Interpret the macro usage only as plain identifier,
+        if the macro has parameters, but the macro usage has no arguments
+        */
+        return identToken;
     }
 
     AcceptIt();
@@ -272,7 +301,14 @@ TokenPtrString PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identTo
 
     while (!Is(Tokens::RBracket))
     {
-        arguments.push_back(ParseArgumentTokenString());
+        auto arg = ParseArgumentTokenString();
+        
+        /* Remove white spaces and comments from argument */
+        arg.TrimBack();
+        arg.TrimFront();
+
+        arguments.push_back(arg);
+
         if (Is(Tokens::Comma))
             AcceptIt();
     }
@@ -899,11 +935,11 @@ TokenPtrString PreProcessor::ParseDirectiveTokenString(bool expandDefinedDirecti
                     else
                         macroIdent = Accept(Tokens::Ident)->Spell();
 
-                    /* Determine value of boolean literal ('true' if macro is defined, 'false' otherwise */
-                    std::string booleanLiteral = (IsDefined(macroIdent) ? "true" : "false");
+                    /* Determine value of integer literal ('1' if macro is defined, '0' otherwise */
+                    std::string intLiteral = (IsDefined(macroIdent) ? "1" : "0");
 
                     /* Generate new token for boolean literal (which is the replacement of the 'defined IDENT' directive) */
-                    tokenString.PushBack(Make<Token>(Tokens::BoolLiteral, std::move(booleanLiteral)));
+                    tokenString.PushBack(Make<Token>(Tokens::IntLiteral, std::move(intLiteral)));
                 }
                 else
                 {

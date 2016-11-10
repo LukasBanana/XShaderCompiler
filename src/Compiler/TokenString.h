@@ -93,6 +93,15 @@ class BasicTokenString
                 typename Container::const_iterator it_, itEnd_;
 
         };
+
+        BasicTokenString() = default;
+        BasicTokenString(const BasicTokenString&) = default;
+        BasicTokenString& operator = (const BasicTokenString&) = default;
+
+        BasicTokenString(const TokenType& token)
+        {
+            PushBack(token);
+        }
         
         ConstIterator Begin() const
         {
@@ -114,19 +123,53 @@ class BasicTokenString
             tokens_.insert(tokens_.end(), tokenString.tokens_.begin(), tokenString.tokens_.end());
         }
 
+        void PopFront()
+        {
+            tokens_.erase(tokens_.begin());
+        }
+
+        void PopBack()
+        {
+            tokens_.pop_back();
+        }
+        
+        const ValueType& Front() const
+        {
+            return tokens_.front();
+        }
+
+        const ValueType& Back() const
+        {
+            return tokens_.back();
+        }
+
         bool Empty() const
         {
             return tokens_.empty();
         }
 
-        inline const Container& GetTokens() const
+        const Container& GetTokens() const
         {
             return tokens_;
         }
 
-        inline Container& GetTokens()
+        Container& GetTokens()
         {
             return tokens_;
+        }
+
+        // Removes all tokens that are not of interest for the specified token string from the front.
+        void TrimFront()
+        {
+            while (!Empty() && !TokenOfInterestFunctor::IsOfInterest(Front()))
+                PopFront();
+        }
+
+        // Removes all tokens that are not of interest for the specified token string from the back.
+        void TrimBack()
+        {
+            while (!Empty() && !TokenOfInterestFunctor::IsOfInterest(Back()))
+                PopBack();
         }
 
     private:
@@ -136,7 +179,7 @@ class BasicTokenString
 };
 
 
-/* --- Global operators --- */
+/* ----- Global operators ----- */
 
 template <typename TokenType, typename TokenOfInterestFunctor>
 bool operator == (const BasicTokenString<TokenType, TokenOfInterestFunctor>& lhs, const BasicTokenString<TokenType, TokenOfInterestFunctor>& rhs)

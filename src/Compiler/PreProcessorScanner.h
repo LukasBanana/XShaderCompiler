@@ -32,7 +32,7 @@ class PreProcessorScanner : public Scanner
 
         TokenPtr ScanToken() override;
 
-        TokenPtr ScanDirective();
+        TokenPtr ScanDirectiveOrDirectiveConcat();
         TokenPtr ScanIdentifier();
 
 };

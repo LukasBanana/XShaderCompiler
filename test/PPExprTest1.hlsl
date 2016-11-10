@@ -10,8 +10,20 @@
 
 F1(1, 2, F2(0, 1))
 
+#define TOSTR(NAME) #NAME
 
-#if 5 > V1*3 && (x | 2 != f) f 2
+TOSTR(TOSTR)
+
+#define MERGE(TYPE, SIZE) TYPE  ##   SIZE
+
+MERGE  (  MERGE(float, 4 ) , x4  )
+
+#define CURSOR(top, bottom) (((top) << 8) | (bottom))
+
+CURSOR(25, -32)
+
+
+#if 5 > V1*3 && (x | 2 != f)// f 2
 #	pragma message "1: IF BRANCH"
 #else
 #	pragma message "1: ELSE BRANCH"
