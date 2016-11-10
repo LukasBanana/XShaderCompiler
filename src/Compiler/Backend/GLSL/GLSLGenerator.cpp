@@ -339,12 +339,12 @@ void GLSLGenerator::WriteLn(const std::string& text)
     writer_.WriteLine(text);
 }
 
-void GLSLGenerator::IncTab()
+void GLSLGenerator::IncIndent()
 {
     writer_.PushIndent();
 }
 
-void GLSLGenerator::DecTab()
+void GLSLGenerator::DecIndent()
 {
     writer_.PopIndent();
 }
@@ -480,12 +480,12 @@ void GLSLGenerator::AppendSinCosIntrinsics()
 void GLSLGenerator::OpenScope()
 {
     WriteLn("{");
-    IncTab();
+    IncIndent();
 }
 
 void GLSLGenerator::CloseScope(bool semicolon)
 {
-    DecTab();
+    DecIndent();
     WriteLn(semicolon ? "};" : "}");
 }
 
@@ -789,12 +789,12 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
         WriteLn("default:");
 
     /* Write statement list */
-    IncTab();
+    IncIndent();
     {
         for (auto& stmnt : ast->stmnts)
             Visit(stmnt);
     }
-    DecTab();
+    DecIndent();
 }
 
 /* --- Global declarations --- */
@@ -1664,9 +1664,9 @@ void GLSLGenerator::VisitScopedStmnt(Stmnt* ast)
     {
         if (ast->Type() != AST::Types::CodeBlockStmnt)
         {
-            IncTab();
+            IncIndent();
             Visit(ast);
-            DecTab();
+            DecIndent();
         }
         else
             Visit(ast);

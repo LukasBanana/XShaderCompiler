@@ -78,8 +78,8 @@ class GLSLGenerator : private Visitor
         void Write(const std::string& text);
         void WriteLn(const std::string& text);
 
-        void IncTab();
-        void DecTab();
+        void IncIndent();
+        void DecIndent();
         
         void PushOptions(const CodeWriter::Options& options);
         void PopOptions();
