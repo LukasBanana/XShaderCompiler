@@ -533,7 +533,7 @@ void PreProcessor::ParseDirectiveInclude()
     else
     {
         /* Parse filename from string literal */
-        filename = Accept(Tokens::StringLiteral)->Spell();
+        filename = Accept(Tokens::StringLiteral)->SpellContent();
     }
 
     /* Check if filename has already been marked as 'once included' */
@@ -709,7 +709,7 @@ void PreProcessor::ParseDirectivePragma()
             {
                 /* Parse message string */
                 if ((*++tokenIt)->Type() == Tokens::StringLiteral)
-                    GetReportHandler().SubmitReport(false, Report::Types::Info, "message", (*tokenIt)->Spell(), nullptr, (*tokenIt)->Area());
+                    GetReportHandler().SubmitReport(false, Report::Types::Info, "message", (*tokenIt)->SpellContent(), nullptr, (*tokenIt)->Area());
                 else
                     ErrorUnexpected(Tokens::StringLiteral, tokenIt->get());
             }
@@ -744,7 +744,7 @@ void PreProcessor::ParseDirectiveLine()
 
     if (Is(Tokens::StringLiteral))
     {
-        auto filename = AcceptIt()->Spell();
+        auto filename = AcceptIt()->SpellContent();
 
         //TODO...
     }
@@ -762,12 +762,7 @@ void PreProcessor::ParseDirectiveError()
     std::string errorMsg;
 
     for (const auto& tkn : tokenString.GetTokens())
-    {
-        if (tkn->Type() == Tokens::StringLiteral)
-            errorMsg += '\"' + tkn->Spell() + '\"';
-        else
-            errorMsg += tkn->Spell();
-    }
+        errorMsg += tkn->Spell();
 
     GetReportHandler().SubmitReport(true, Report::Types::Error, "error", errorMsg, GetScanner().Source(), tkn->Area());
 }

@@ -303,12 +303,12 @@ TokenPtr Scanner::ScanStringLiteral()
 {
     std::string spell;
 
-    Take('\"');
-    {
-        while (!Is('\"'))
-            spell += TakeIt();
-    }
-    Take('\"');
+    spell += Take('\"');
+    
+    while (!Is('\"'))
+        spell += TakeIt();
+    
+    spell += Take('\"');
 
     return Make(Tokens::StringLiteral, spell);
 }

@@ -137,6 +137,9 @@ class Token
         // Returns a descriptive string for the specified token type.
         static std::string TypeToString(const Types type);
 
+        // Returns the token spelling of the content (e.g. only the content of a string literal within the quotes).
+        std::string SpellContent() const;
+
         // Returns the token type.
         inline Types Type() const
         {

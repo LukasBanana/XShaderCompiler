@@ -48,6 +48,7 @@ SourceArea Token::Area() const
     area.length = Spell().size();
 
     /* Handle special cases */
+    #if 0
     switch (Type())
     {
         case Types::StringLiteral:
@@ -56,6 +57,7 @@ SourceArea Token::Area() const
         default:
             break;
     }
+    #endif
 
     return area;
 }
@@ -119,6 +121,14 @@ std::string Token::TypeToString(const Types type)
         default:                        break;
     }
     return "";
+}
+
+std::string Token::SpellContent() const
+{
+    if (Type() == Types::StringLiteral && Spell().size() >= 2)
+        return Spell().substr(1, Spell().size() - 2);
+    else
+        return Spell();
 }
 
 
