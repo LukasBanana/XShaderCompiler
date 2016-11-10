@@ -334,7 +334,11 @@ void PreProcessor::ParseDirective()
     else if (directive == "error")
         ParseDirectiveError();
     else
-        Error("unknown preprocessor directive: \"" + directive + "\"");
+    {
+        /* Ignore unknown preprocessor directives */
+        Warning("unknown preprocessor directive: \"" + directive + "\"");
+        ParseDirectiveTokenString();
+    }
 }
 
 void PreProcessor::ParseAnyIfDirectiveAndSkipValidation()
