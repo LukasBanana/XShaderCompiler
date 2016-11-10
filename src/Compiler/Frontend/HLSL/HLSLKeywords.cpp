@@ -138,6 +138,7 @@ static KeywordMapType GenerateKeywordMap()
         { "samplerCUBE",             Ty::Sampler         },
         { "sampler_state",           Ty::Sampler         },
         { "SamplerState",            Ty::Sampler         },
+        { "SamplerComparisonState",  Ty::Sampler         }, // since D3D10+
 
         { "Texture1D",               Ty::Texture         },
         { "Texture1DArray",          Ty::Texture         },
