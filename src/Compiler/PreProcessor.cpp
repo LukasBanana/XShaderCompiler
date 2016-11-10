@@ -791,7 +791,7 @@ TernaryExprPtr PreProcessor::ParseTernaryExpr(const ExprPtr& condExpr)
     auto ast = Make<TernaryExpr>();
 
     /* Take condExpr expression and use its source position */
-    ast->condExpr  = condExpr;
+    ast->condExpr   = condExpr;
     ast->pos        = condExpr->pos;
 
     /* Parse expressions for 'then' and 'else' branches */

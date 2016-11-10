@@ -1,11 +1,17 @@
 
+[TestShader1.hlsl Vertex]
+-T vertex -E VS -O output/TestShader1.VS.glsl TestShader1.hlsl
+
+[TestShader1.hlsl Compute]
+-T compute -E CS -O output/TestShader1.CS.glsl TestShader1.hlsl
+
 [PPExprTest1.hlsl -PP]
 -PP -O output/PPExprTest1.post.hlsl PPExprTest1.hlsl
 
 [PPTest1.hlsl -PP]
 -PP -O output/PPTest1.post.hlsl PPTest1.hlsl
 
-[PPTest1.hlsl VS]
+[PPTest1.hlsl Vertex]
 -T vertex -E VS -O output/PPTest1.VS.glsl PPTest1.hlsl
 
 [PPTest2.hlsl -PP]
