@@ -443,30 +443,30 @@ void PreProcessor::ParseDirectiveDefine()
 
     /* Ignore white spaces and check for end of line */
     IgnoreWhiteSpaces();
-    if (Is(Tokens::NewLines))
-        return;
-
-    /* Parse optional value */
-    macro->tokenString = ParseDirectiveTokenString();
-
-    /* Now compare previous and new definition */
-    if (previousMacro)
+    if (!Is(Tokens::NewLines))
     {
-        /* Compare parameters and body */
-        auto mismatchParam  = (previousMacro->parameters != macro->parameters || previousMacro->varArgs != macro->varArgs);
-        auto mismatchBody   = (previousMacro->tokenString != macro->tokenString);
+        /* Parse optional value */
+        macro->tokenString = ParseDirectiveTokenString();
 
-        /* Construct warning message */
-        std::string warnMsg = "redefinition of macro \"" + ident + "\"";
+        /* Now compare previous and new definition */
+        if (previousMacro)
+        {
+            /* Compare parameters and body */
+            auto mismatchParam  = (previousMacro->parameters != macro->parameters || previousMacro->varArgs != macro->varArgs);
+            auto mismatchBody   = (previousMacro->tokenString != macro->tokenString);
 
-        if (mismatchParam && mismatchBody)
-            warnMsg += " with mismatch in parameter list and body definition";
-        else if (mismatchParam)
-            warnMsg += " with mismatch in parameter list";
-        else if (mismatchBody)
-            warnMsg += " with mismatch in body definition";
+            /* Construct warning message */
+            std::string warnMsg = "redefinition of macro \"" + ident + "\"";
 
-        Warning(warnMsg, identTkn.get());
+            if (mismatchParam && mismatchBody)
+                warnMsg += " with mismatch in parameter list and body definition";
+            else if (mismatchParam)
+                warnMsg += " with mismatch in parameter list";
+            else if (mismatchBody)
+                warnMsg += " with mismatch in body definition";
+
+            Warning(warnMsg, identTkn.get());
+        }
     }
 
     /* Register symbol as new macro */

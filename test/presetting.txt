@@ -1,4 +1,7 @@
 
+[ssct_reflect]
+-T fragment -E PS -I "../../misc/ssct_shader/" -O "../../misc/ssct_shader/ssct_reflect.PS.glsl" "../../misc/ssct_shader/ssct_reflect.hlsl"
+
 [TestShader1.hlsl Vertex]
 -T vertex -E VS -O output/TestShader1.VS.glsl TestShader1.hlsl
 
