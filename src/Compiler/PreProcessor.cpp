@@ -416,7 +416,7 @@ void PreProcessor::ParseAnyIfDirectiveAndSkipValidation()
 void PreProcessor::ParseDirectiveDefine()
 {
     /* Parse identifier */
-    IgnoreWhiteSpaces(false);
+    IgnoreWhiteSpaces();
 
     auto identTkn = Accept(Tokens::Ident);
     auto ident = identTkn->Spell();
@@ -434,27 +434,27 @@ void PreProcessor::ParseDirectiveDefine()
     if (Is(Tokens::LBracket))
     {
         AcceptIt();
-        IgnoreWhiteSpaces(false);
+        IgnoreWhiteSpaces();
 
         if (!Is(Tokens::RBracket))
         {
             while (true)
             {
                 /* Parse next parameter identifier or variadic argument specifier (i.e. IDENT or '...') */
-                IgnoreWhiteSpaces(false);
+                IgnoreWhiteSpaces();
                 
                 if (Is(Tokens::VarArg))
                 {
                     AcceptIt();
                     macro->varArgs = true;
-                    IgnoreWhiteSpaces(false);
+                    IgnoreWhiteSpaces();
                     break;
                 }
                 else
                 {
                     /* Parse next parameter identifier */
                     auto paramIdent = Accept(Tokens::Ident)->Spell();
-                    IgnoreWhiteSpaces(false);
+                    IgnoreWhiteSpaces();
 
                     macro->parameters.push_back(paramIdent);
 
@@ -471,7 +471,7 @@ void PreProcessor::ParseDirectiveDefine()
     }
 
     /* Ignore white spaces and check for end of line */
-    IgnoreWhiteSpaces(false);
+    IgnoreWhiteSpaces();
     if (Is(Tokens::NewLines))
         return;
 
@@ -505,7 +505,7 @@ void PreProcessor::ParseDirectiveDefine()
 void PreProcessor::ParseDirectiveUndef()
 {
     /* Parse identifier */
-    IgnoreWhiteSpaces(false);
+    IgnoreWhiteSpaces();
     auto ident = Accept(Tokens::Ident)->Spell();
 
     /* Remove symbol */
@@ -523,7 +523,7 @@ void PreProcessor::ParseDirectiveInclude()
     std::string filename;
 
     /* Parse filename */
-    IgnoreWhiteSpaces(false);
+    IgnoreWhiteSpaces();
 
     if (Is(Tokens::BinaryOp, "<"))
     {
@@ -583,7 +583,7 @@ void PreProcessor::ParseDirectiveIfdef(bool skipEvaluation)
     else
     {
         /* Parse identifier */
-        IgnoreWhiteSpaces(false);
+        IgnoreWhiteSpaces();
         auto ident = Accept(Tokens::Ident)->Spell();
 
         /* Push new if-block activation (with 'defined' condition) */
@@ -597,7 +597,7 @@ void PreProcessor::ParseDirectiveIfndef(bool skipEvaluation)
     auto tkn = GetScanner().PreviousToken();
 
     /* Parse identifier */
-    IgnoreWhiteSpaces(false);
+    IgnoreWhiteSpaces();
     auto ident = Accept(Tokens::Ident)->Spell();
     
     /* Push new if-block activation (with 'not defined' condition) */
@@ -692,7 +692,7 @@ void PreProcessor::ParseDirectivePragma()
     auto tkn = GetScanner().PreviousToken();
 
     /* Parse pragma command identifier */
-    IgnoreWhiteSpaces(false);
+    IgnoreWhiteSpaces();
 
     /* Parse token string */
     auto tokenString = ParseDirectiveTokenString();
@@ -742,11 +742,11 @@ void PreProcessor::ParseDirectivePragma()
 void PreProcessor::ParseDirectiveLine()
 {
     /* Parse line number */
-    IgnoreWhiteSpaces(false);
+    IgnoreWhiteSpaces();
     auto lineNumber = Accept(Tokens::IntLiteral)->Spell();
 
     /* Parse optional filename */
-    IgnoreWhiteSpaces(false);
+    IgnoreWhiteSpaces();
 
     if (Is(Tokens::StringLiteral))
     {
@@ -928,7 +928,7 @@ TokenPtrString PreProcessor::ParseDirectiveTokenString(bool expandDefinedDirecti
 {
     TokenPtrString tokenString;
 
-    IgnoreWhiteSpaces(false);
+    IgnoreWhiteSpaces();
 
     while (!Is(Tokens::NewLines))
     {
@@ -937,7 +937,7 @@ TokenPtrString PreProcessor::ParseDirectiveTokenString(bool expandDefinedDirecti
             case Tokens::LineBreak:
             {
                 AcceptIt();
-                IgnoreWhiteSpaces(false);
+                IgnoreWhiteSpaces();
                 while (Is(Tokens::NewLines))
                     tokenString.PushBack(AcceptIt());
             }
@@ -949,16 +949,16 @@ TokenPtrString PreProcessor::ParseDirectiveTokenString(bool expandDefinedDirecti
                 {
                     /* Parse 'defined IDENT' or 'defined (IDENT)' */
                     AcceptIt();
-                    IgnoreWhiteSpaces(false);
+                    IgnoreWhiteSpaces();
 
                     /* Parse macro identifier */
                     std::string macroIdent;
                     if (Is(Tokens::LBracket))
                     {
                         AcceptIt();
-                        IgnoreWhiteSpaces(false);
+                        IgnoreWhiteSpaces();
                         macroIdent = Accept(Tokens::Ident)->Spell();
-                        IgnoreWhiteSpaces(false);
+                        IgnoreWhiteSpaces();
                         Accept(Tokens::RBracket);
                     }
                     else

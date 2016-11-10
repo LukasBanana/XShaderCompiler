@@ -10,6 +10,12 @@
 
 F1(1, 2, F2(0, 1))
 
+#define WINAPI_FAMILY_PARTITION(Partitions)     (Partitions)
+
+#if WINAPI_FAMILY_PARTITION(1)
+#	error WINAPI_FAMILY_PARTITION
+#endif
+
 #define TOSTR(NAME) #NAME
 
 #define VARG_F1(a, ...) a*2 { __VA_ARGS__ }
