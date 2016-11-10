@@ -20,6 +20,8 @@ namespace Xsc
 
 /*
 Token string template class.
+This is a helper class to iterate only over a list of tokens that are of interest (e.g. to ignore white spaces).
+This class is mainly used by the preprocessor, because the preprocessor must keep all white spaces and new-lines for its output.
 'TokenType' should be either from type 'Token*' or 'TokenPtr'.
 'TokenOfInterestFunctor' must be a type with a static function of the following interface:
 "bool IsOfInterest(const TokenType& token)"

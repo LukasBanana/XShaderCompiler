@@ -43,22 +43,8 @@ SourceArea Token::Area() const
 {
     /* Initialize source area by token position and length of spelling */
     SourceArea area;
-    
     area.pos    = Pos();
     area.length = Spell().size();
-
-    /* Handle special cases */
-    #if 0
-    switch (Type())
-    {
-        case Types::StringLiteral:
-            area.length += 2;
-            break;
-        default:
-            break;
-    }
-    #endif
-
     return area;
 }
 
