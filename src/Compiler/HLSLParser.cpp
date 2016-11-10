@@ -856,7 +856,7 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma, const ExprPtr& initExpr)
     /* Parse primary expression */
     ExprPtr ast = (initExpr ? initExpr : ParseGenericExpr());
 
-    /* Parse optional post-unary expression (e.g. 'x++', 'x--', or 'f()++', or 'f().xyz++') */
+    /* Parse optional post-unary expression (e.g. 'x++', 'x--') */
     if (Is(Tokens::UnaryOp))
     {
         auto unaryExpr = Make<PostUnaryExpr>();

@@ -565,7 +565,7 @@ struct UnaryExpr : public Expr
     ExprPtr expr;
 };
 
-// Post unary expressions (e.g. x++, x--, f()++, f().memberField++, f().member0.submember1.xyz)
+// Post unary expressions (e.g. x++, x--)
 struct PostUnaryExpr : public Expr
 {
     AST_INTERFACE(PostUnaryExpr);
