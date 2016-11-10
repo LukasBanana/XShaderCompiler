@@ -481,15 +481,21 @@ void PreProcessor::ParseDirectiveDefine()
     /* Now compare previous and new definition */
     if (previousMacro)
     {
-        /* Compare parameters */
-        if (previousMacro->parameters != macro->parameters || previousMacro->varArgs != macro->varArgs)
-            Error("redefinition of macro \"" + ident + "\" with mismatch in parameter list", identTkn.get());
+        /* Compare parameters and body */
+        auto mismatchParam  = (previousMacro->parameters != macro->parameters || previousMacro->varArgs != macro->varArgs);
+        auto mismatchBody   = (previousMacro->tokenString != macro->tokenString);
 
-        /* Compare values */
-        if (previousMacro->tokenString == macro->tokenString)
-            Warning("redefinition of symbol \"" + ident + "\"", identTkn.get());
-        else
-            Error("redefinition of macro \"" + ident + "\" with mismatch", identTkn.get());
+        /* Construct warning message */
+        std::string warnMsg = "redefinition of macro \"" + ident + "\"";
+
+        if (mismatchParam && mismatchBody)
+            warnMsg += " with mismatch in parameter list and body definition";
+        else if (mismatchParam)
+            warnMsg += " with mismatch in parameter list";
+        else if (mismatchBody)
+            warnMsg += " with mismatch in body definition";
+
+        Warning(warnMsg, identTkn.get());
     }
 
     /* Register symbol as new macro */
