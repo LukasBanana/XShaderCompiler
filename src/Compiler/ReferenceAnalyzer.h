@@ -18,9 +18,6 @@ namespace Xsc
 {
 
 
-// AST symbol table type.
-using ASTSymbolTable = SymbolTable<AST>;
-
 /*
 Object reference analyzer.
 This helper class for the context analyzer marks all functions
@@ -34,6 +31,7 @@ class ReferenceAnalyzer : private Visitor
         
         ReferenceAnalyzer(const ASTSymbolTable& symTable);
 
+        // Marks all declarational AST nodes (i.e. function decl, structure decl etc.) that are reachable from the specififed entry point.
         void MarkReferencesFromEntryPoint(FunctionDecl* ast, Program* program);
 
     private:

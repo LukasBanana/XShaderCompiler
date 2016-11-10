@@ -544,8 +544,8 @@ bool GLSLGenerator::IsVersionOut(int version) const
 
 /* ------- Visit functions ------- */
 
-#define IMPLEMENT_VISIT_PROC(className) \
-    void GLSLGenerator::Visit##className(className* ast, void* args)
+#define IMPLEMENT_VISIT_PROC(AST_NAME) \
+    void GLSLGenerator::Visit##AST_NAME(AST_NAME* ast, void* args)
 
 IMPLEMENT_VISIT_PROC(Program)
 {

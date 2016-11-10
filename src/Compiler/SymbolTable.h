@@ -9,6 +9,7 @@
 #define XSC_SYMBOL_TABLE_H
 
 
+#include "AST.h"
 #include <map>
 #include <string>
 #include <stack>
@@ -136,6 +137,10 @@ class SymbolTable
         std::stack<std::vector<std::string>>        scopeStack_;
 
 };
+
+
+// AST symbol table type.
+using ASTSymbolTable = SymbolTable<AST>;
 
 
 } // /namespace Xsc

@@ -32,8 +32,8 @@ void ReferenceAnalyzer::MarkReferencesFromEntryPoint(FunctionDecl* ast, Program*
 
 /* ------- Visit functions ------- */
 
-#define IMPLEMENT_VISIT_PROC(className) \
-    void ReferenceAnalyzer::Visit##className(className* ast, void* args)
+#define IMPLEMENT_VISIT_PROC(AST_NAME) \
+    void ReferenceAnalyzer::Visit##AST_NAME(AST_NAME* ast, void* args)
 
 IMPLEMENT_VISIT_PROC(Program)
 {
@@ -241,6 +241,7 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 IMPLEMENT_VISIT_PROC(FunctionCallExpr)
 {
     Visit(ast->call);
+    Visit(ast->varIdentSuffix);
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)

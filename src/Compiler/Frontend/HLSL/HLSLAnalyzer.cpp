@@ -181,8 +181,8 @@ FunctionCall* HLSLAnalyzer::CurrentFunction() const
 
 /* ------- Visit functions ------- */
 
-#define IMPLEMENT_VISIT_PROC(className) \
-    void HLSLAnalyzer::Visit##className(className* ast, void* args)
+#define IMPLEMENT_VISIT_PROC(AST_NAME) \
+    void HLSLAnalyzer::Visit##AST_NAME(AST_NAME* ast, void* args)
 
 IMPLEMENT_VISIT_PROC(Program)
 {

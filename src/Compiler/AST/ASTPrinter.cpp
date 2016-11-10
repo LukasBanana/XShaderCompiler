@@ -44,8 +44,8 @@ class ScopedIndent
 
 /* ------- Visit functions ------- */
 
-#define IMPLEMENT_VISIT_PROC(className) \
-    void ASTPrinter::Visit##className(className* ast, void* args)
+#define IMPLEMENT_VISIT_PROC(AST_NAME) \
+    void ASTPrinter::Visit##AST_NAME(AST_NAME* ast, void* args)
 
 IMPLEMENT_VISIT_PROC(Program)
 {
