@@ -76,8 +76,19 @@ ProgramPtr HLSLParser::ParseProgram()
 {
     auto ast = Make<Program>();
 
-    while (!Is(Tokens::EndOfStream))
+    while (true)
+    {
+        /* Ignore all null statements */
+        while (Is(Tokens::Semicolon))
+            AcceptIt();
+
+        /* Check if end of stream has been reached */
+        if (Is(Tokens::EndOfStream))
+            break;
+
+        /* Parse next global declaration */
         ast->globalDecls.push_back(ParseGlobalDecl());
+    }
 
     return ast;
 }
@@ -196,10 +207,6 @@ SwitchCasePtr HLSLParser::ParseSwitchCase()
 
 GlobalDeclPtr HLSLParser::ParseGlobalDecl()
 {
-    /* Ignore all null statements */
-    while (Is(Tokens::Semicolon))
-        AcceptIt();
-
     switch (TknType())
     {
         case Tokens::Sampler:
