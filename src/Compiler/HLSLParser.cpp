@@ -556,7 +556,7 @@ ForLoopStmntPtr HLSLParser::ParseForLoopStmnt(const std::vector<FunctionCallPtr>
 
     ast->initSmnt = ParseStmnt();
 
-    /* Parse loop condition */
+    /* Parse loop condExpr */
     if (!Is(Tokens::Semicolon))
         ast->condition = ParseExpr(true);
     Semi();
@@ -577,7 +577,7 @@ WhileLoopStmntPtr HLSLParser::ParseWhileLoopStmnt(const std::vector<FunctionCall
     auto ast = Make<WhileLoopStmnt>();
     ast->attribs = attribs;
 
-    /* Parse loop condition */
+    /* Parse loop condExpr */
     Accept(Tokens::While);
 
     Accept(Tokens::LBracket);
@@ -599,7 +599,7 @@ DoWhileLoopStmntPtr HLSLParser::ParseDoWhileLoopStmnt(const std::vector<Function
     Accept(Tokens::Do);
     ast->bodyStmnt = ParseStmnt();
 
-    /* Parse loop condition */
+    /* Parse loop condExpr */
     Accept(Tokens::While);
 
     Accept(Tokens::LBracket);
@@ -616,7 +616,7 @@ IfStmntPtr HLSLParser::ParseIfStmnt(const std::vector<FunctionCallPtr>& attribs)
     auto ast = Make<IfStmnt>();
     ast->attribs = attribs;
 
-    /* Parse if condition */
+    /* Parse if condExpr */
     Accept(Tokens::If);
 
     Accept(Tokens::LBracket);
@@ -884,9 +884,9 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma, const ExprPtr& initExpr)
     {
         auto ternExpr = Make<TernaryExpr>();
 
-        ternExpr->condition = ast;
+        ternExpr->condExpr = ast;
         AcceptIt();
-        ternExpr->ifExpr = ParseExpr();
+        ternExpr->thenExpr = ParseExpr();
         Accept(Tokens::Colon);
         ternExpr->elseExpr = ParseExpr();
 

@@ -628,8 +628,8 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
-    Visit(ast->condition);
-    Visit(ast->ifExpr);
+    Visit(ast->condExpr);
+    Visit(ast->thenExpr);
     Visit(ast->elseExpr);
 }
 

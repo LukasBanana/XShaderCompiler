@@ -566,7 +566,7 @@ void PreProcessor::ParseDirectiveInclude()
 // '#' 'if' CONSTANT-EXPRESSION
 void PreProcessor::ParseDirectiveIf(bool skipEvaluation)
 {
-    /* Parse condition */
+    /* Parse condExpr */
     ParseDirectiveIfOrElifCondition(skipEvaluation);
 }
 
@@ -586,7 +586,7 @@ void PreProcessor::ParseDirectiveIfdef(bool skipEvaluation)
         IgnoreWhiteSpaces();
         auto ident = Accept(Tokens::Ident)->Spell();
 
-        /* Push new if-block activation (with 'defined' condition) */
+        /* Push new if-block activation (with 'defined' condExpr) */
         PushIfBlock(tkn, IsDefined(ident));
     }
 }
@@ -600,7 +600,7 @@ void PreProcessor::ParseDirectiveIfndef(bool skipEvaluation)
     IgnoreWhiteSpaces();
     auto ident = Accept(Tokens::Ident)->Spell();
     
-    /* Push new if-block activation (with 'not defined' condition) */
+    /* Push new if-block activation (with 'not defined' condExpr) */
     PushIfBlock(tkn, !IsDefined(ident));
 }
 
@@ -611,10 +611,10 @@ void PreProcessor::ParseDirectiveElif(bool skipEvaluation)
     if (TopIfBlock().expectEndif)
         Error("expected '#endif'-directive after previous '#else', but got '#elif'", true, HLSLErr::ERR_ELIF_ELSE);
 
-    /* Pop if-block and push new if-block in the condition-parse function */
+    /* Pop if-block and push new if-block in the condExpr-parse function */
     PopIfBlock();
 
-    /* Parse condition */
+    /* Parse condExpr */
     ParseDirectiveIfOrElifCondition(skipEvaluation);
 }
 
@@ -623,7 +623,7 @@ void PreProcessor::ParseDirectiveIfOrElifCondition(bool skipEvaluation)
     auto tkn = GetScanner().PreviousToken();
 
     /*
-    Parse condition token string, and wrap it inside a bracket expression
+    Parse condExpr token string, and wrap it inside a bracket expression
     to easier find the legal end of the expression during parsing.
     TODO: this is a work around to detect an illegal end of a constant expression.
     */
@@ -632,7 +632,7 @@ void PreProcessor::ParseDirectiveIfOrElifCondition(bool skipEvaluation)
     tokenString.PushBack(ParseDirectiveTokenString(true));
     tokenString.PushBack(Make<Token>(Tokens::RBracket, ")"));
 
-    /* Evalutate condition */
+    /* Evalutate condExpr */
     Variant condition;
 
     PushTokenString(tokenString);
@@ -672,7 +672,7 @@ void PreProcessor::ParseDirectiveElse()
     if (TopIfBlock().expectEndif)
         Error("expected '#endif'-directive after previous '#else', but got another '#else'", true, HLSLErr::ERR_ELSE_ELSE);
 
-    /* Pop if-block and push new if-block with negated condition */
+    /* Pop if-block and push new if-block with negated condExpr */
     auto elseCondition = !TopIfBlock().active;
     PopIfBlock();
     PushIfBlock(tkn, elseCondition, true);
@@ -790,13 +790,13 @@ TernaryExprPtr PreProcessor::ParseTernaryExpr(const ExprPtr& condExpr)
 {
     auto ast = Make<TernaryExpr>();
 
-    /* Take condition expression and use its source position */
-    ast->condition  = condExpr;
+    /* Take condExpr expression and use its source position */
+    ast->condExpr  = condExpr;
     ast->pos        = condExpr->pos;
 
     /* Parse expressions for 'then' and 'else' branches */
     Accept(Tokens::TernaryOp);
-    ast->ifExpr = ParseExpr();
+    ast->thenExpr = ParseExpr();
     Accept(Tokens::Colon);
     ast->elseExpr = ParseExpr();
 

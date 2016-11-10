@@ -543,9 +543,9 @@ struct TypeNameExpr : public Expr
 struct TernaryExpr : public Expr
 {
     AST_INTERFACE(TernaryExpr);
-    ExprPtr condition;  // Condition expression
-    ExprPtr ifExpr;     // <then> case expression
-    ExprPtr elseExpr;   // <else> case expression
+    ExprPtr condExpr; // Condition expression
+    ExprPtr thenExpr; // <then> case expression
+    ExprPtr elseExpr; // <else> case expression
 };
 
 // Binary expressions.

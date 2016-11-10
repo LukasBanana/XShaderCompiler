@@ -1006,7 +1006,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
 IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 {
-    /* Write loop condition */
+    /* Write loop condExpr */
     BeginLn();
     {
         Write("while (");
@@ -1023,7 +1023,7 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
     WriteLn("do");
     VisitScopedStmnt(ast->bodyStmnt.get());
 
-    /* Write loop condition */
+    /* Write loop condExpr */
     BeginLn();
     {
         Write("while (");
@@ -1037,7 +1037,7 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
 {
     bool hasElseParentNode = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
 
-    /* Write if condition */
+    /* Write if condExpr */
     if (!hasElseParentNode)
         BeginLn();
     
@@ -1266,9 +1266,9 @@ IMPLEMENT_VISIT_PROC(TypeNameExpr)
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
-    Visit(ast->condition);
+    Visit(ast->condExpr);
     Write(" ? ");
-    Visit(ast->ifExpr);
+    Visit(ast->thenExpr);
     Write(" : ");
     Visit(ast->elseExpr);
 }

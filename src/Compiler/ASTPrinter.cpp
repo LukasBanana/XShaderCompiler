@@ -307,8 +307,8 @@ IMPLEMENT_VISIT_PROC(TernaryExpr)
     Print(ast, "TernaryExpr");
     SCOPED_INDENT;
 
-    Visit(ast->condition);
-    Visit(ast->ifExpr);
+    Visit(ast->condExpr);
+    Visit(ast->thenExpr);
     Visit(ast->elseExpr);
 }
 

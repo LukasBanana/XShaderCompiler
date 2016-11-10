@@ -52,7 +52,7 @@ Variant ConstExprEvaluator::Pop()
 
 IMPLEMENT_VISIT_PROC(ListExpr)
 {
-    /* Only visit first sub-expression (when used as condition) */
+    /* Only visit first sub-expression (when used as condExpr) */
     Visit(ast->firstExpr);
     //Visit(ast->nextExpr);
 }
@@ -111,11 +111,11 @@ IMPLEMENT_VISIT_PROC(TypeNameExpr)
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
-    Visit(ast->condition);
+    Visit(ast->condExpr);
     auto cond = Pop();
 
     if (cond.ToBool())
-        Visit(ast->ifExpr);
+        Visit(ast->thenExpr);
     else
         Visit(ast->elseExpr);
 }

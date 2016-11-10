@@ -715,7 +715,7 @@ enum class HLSLErr
     // Loop simulation finished early, use /O1 or higher for potentially better codegen.
     WAR_DID_NOT_SIMULATE                    = 3565,
 
-    // Loop won't exit early, try to make sure the loop condition is as tight as possible.
+    // Loop won't exit early, try to make sure the loop condExpr is as tight as possible.
     WAR_NO_EARLY_BREAK                      = 3566,
 
     // The register semantic is ignored.
@@ -766,10 +766,10 @@ enum class HLSLErr
     // Texture access must have literal offset and multisample index.
     WAR_TEXTURE_OFFSET                      = 3582,
 
-    // A race condition writing to a shared resource was detected, note that threads are writing the same value, but performance might be diminished due to contention.
+    // A race condExpr writing to a shared resource was detected, note that threads are writing the same value, but performance might be diminished due to contention.
     WAR_POTENTIAL_RACE_CONDITION_UAV        = 3583,
 
-    // A race condition writing to shared memory was detected, note that threads are writing the same value, but performance might be diminished due to contention.
+    // A race condExpr writing to shared memory was detected, note that threads are writing the same value, but performance might be diminished due to contention.
     WAR_POTENTIAL_RACE_CONDITION_GSM        = 3584,
 
     // Source_mark is most useful in /Od builds. Without /Od source_mark, can be moved around in the final shader by optimizations.
@@ -862,7 +862,7 @@ enum class HLSLErr
     // Attribute evaluation can only be done on values that are taken directly from inputs.
     ERR_PULL_MUST_BE_INPUT                  = 3674,
 
-    // Can't unroll loop with an out-of-bounds array reference in the condition.
+    // Can't unroll loop with an out-of-bounds array reference in the condExpr.
     ERR_LOOP_CONDITION_OUT_OF_BOUNDS        = 3675,
 
     // Typed UAV loads are only supported for single-component 32-bit element types.
@@ -916,10 +916,10 @@ enum class HLSLErr
     // The specified target doesn't support messages.
     ERR_NO_MESSAGES                         = 3693,
 
-    // A race condition writing to a shared resource was detected so consider making this operation write conditional.
+    // A race condExpr writing to a shared resource was detected so consider making this operation write conditional.
     ERR_GUARANTEED_RACE_CONDITION_UAV       = 3694,
 
-    // A race condition writing to shared memory was detected so consider making this operation write conditional.
+    // A race condExpr writing to shared memory was detected so consider making this operation write conditional.
     ERR_GUARANTEED_RACE_CONDITION_GSM       = 3695,
 
     // An infinite loop was detected so the loop never exits.
@@ -1072,7 +1072,7 @@ enum class HLSLErr
     // Unable to calculate the derivative of the specified value.
     ERR_DERIV_UNKNOWN                       = 4025,
 
-    // A thread sync operation must be in non-varying flow control. Because of a potential race condition, this sync is invalid so consider adding a sync after reading any values that control shader execution at this point.
+    // A thread sync operation must be in non-varying flow control. Because of a potential race condExpr, this sync is invalid so consider adding a sync after reading any values that control shader execution at this point.
     ERR_RACE_CONDITION_INDUCED_INV_SYNC     = 4026,
 
     // The array index is out of bounds.
