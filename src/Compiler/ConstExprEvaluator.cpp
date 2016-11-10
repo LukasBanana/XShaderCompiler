@@ -127,6 +127,9 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 
     switch (ast->op)
     {
+        case BinaryOp::Undefined:
+            IllegalExpr("binary operator");
+            break;
         case BinaryOp::LogicalAnd:
             Push(lhs.ToBool() && rhs.ToBool());
             break;
@@ -193,6 +196,9 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 
     switch (ast->op)
     {
+        case UnaryOp::Undefined:
+            IllegalExpr("unary operator");
+            break;
         case UnaryOp::LogicalNot:
             Push(!rhs.ToBool());
             break;
@@ -229,7 +235,7 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
             Push(lhs);
             break;
         default:
-            throw std::runtime_error("invalid post-unary operator '" + UnaryOpToString(ast->op) + "'");
+            IllegalExpr("unary operator '" + UnaryOpToString(ast->op) + "'");
             break;
     }
 }

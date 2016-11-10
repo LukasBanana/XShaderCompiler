@@ -53,6 +53,8 @@ SourceArea Token::Area() const
         case Types::StringLiteral:
             area.length += 2;
             break;
+        default:
+            break;
     }
 
     return area;

@@ -58,6 +58,9 @@ Variant::Variant(RealType value) :
         case Types::Int:                    \
             int_ OP rhs.int_;               \
             break;                          \
+        case Types::Real:                   \
+            /* dummy case block */          \
+            break;                          \
     }                                       \
     return *this                            \
 
@@ -118,6 +121,9 @@ Variant& Variant::operator ++ ()
 {
     switch (type_)
     {
+        case Types::Bool:
+            // dummy case block
+            break;
         case Types::Int:
             ++int_;
             break;
@@ -132,6 +138,9 @@ Variant& Variant::operator -- ()
 {
     switch (type_)
     {
+        case Types::Bool:
+            // dummy case block
+            break;
         case Types::Int:
             --int_;
             break;
@@ -174,6 +183,9 @@ Variant Variant::operator ~ ()
         case Types::Int:
             result.int_ = ~int_;
             break;
+        case Types::Real:
+            // dummy case block
+            break;
     }
 
     return result;
@@ -203,6 +215,9 @@ Variant::BoolType Variant::ToBool()
 {
     switch (type_)
     {
+        case Types::Bool:
+            // dummy case block
+            break;
         case Types::Int:
             type_ = Types::Bool;
             bool_ = static_cast<BoolType>(int_);
@@ -223,6 +238,9 @@ Variant::IntType Variant::ToInt()
             type_ = Types::Int;
             int_ = static_cast<IntType>(bool_);
             break;
+        case Types::Int:
+            // dummy case block
+            break;
         case Types::Real:
             type_ = Types::Int;
             int_ = static_cast<IntType>(real_);
@@ -242,6 +260,9 @@ Variant::RealType Variant::ToReal()
         case Types::Int:
             type_ = Types::Real;
             real_ = static_cast<RealType>(int_);
+            break;
+        case Types::Real:
+            // dummy case block
             break;
     }
     return real_;
