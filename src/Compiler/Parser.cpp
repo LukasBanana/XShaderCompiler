@@ -119,6 +119,9 @@ bool Parser::PopScannerSource()
     if (scannerStack_.empty())
         return false;
 
+    /* Reset previous filename to report handler */
+    GetReportHandler().SetCurrentFilename(scannerStack_.top().filename);
+
     /* Reset previous 'next token' */
     tkn_ = scannerStack_.top().nextToken;
 

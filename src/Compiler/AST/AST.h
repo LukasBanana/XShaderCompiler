@@ -585,7 +585,8 @@ struct FunctionCallExpr : public Expr
 struct BracketExpr : public Expr
 {
     AST_INTERFACE(BracketExpr);
-    ExprPtr expr; // Inner expression
+    ExprPtr     expr;           // Inner expression
+    VarIdentPtr varIdentSuffix; // Optional var-ident suffix
 };
 
 // Cast expression.
