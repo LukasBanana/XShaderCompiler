@@ -508,12 +508,12 @@ void PreProcessor::ParseDirectiveUndef()
     IgnoreWhiteSpaces();
     auto ident = Accept(Tokens::Ident)->Spell();
 
-    /* Remove symbol */
+    /* Remove macro */
     auto it = macros_.find(ident);
     if (it != macros_.end())
         macros_.erase(it);
     else
-        Warning("failed to undefine symbol \"" + ident + "\"");
+        Warning("failed to undefine macro \"" + ident + "\"");
 }
 
 // '#' 'include' ('<' TOKEN-STRING '>' | STRING-LITERAL)
