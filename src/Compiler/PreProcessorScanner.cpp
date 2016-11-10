@@ -106,7 +106,9 @@ TokenPtr PreProcessorScanner::ScanToken()
     /* Scan punctuation, special characters and brackets */
     switch (Chr())
     {
+        case  ':': return Make(Token::Types::Colon,     true); break;
         case  ',': return Make(Token::Types::Comma,     true); break;
+        case  '?': return Make(Token::Types::TernaryOp, true); break;
         case  '(': return Make(Token::Types::LBracket,  true); break;
         case  ')': return Make(Token::Types::RBracket,  true); break;
         case  '~': return Make(Token::Types::UnaryOp,   true); break;

@@ -773,14 +773,37 @@ void PreProcessor::ParseDirectiveError()
     GetReportHandler().SubmitReport(true, Report::Types::Error, "error", errorMsg, GetScanner().Source(), tkn->Area());
 }
 
+// expr: logic_or_expr | ternary_expr;
 ExprPtr PreProcessor::ParseExpr()
 {
-    return ParseLogicOrExpr();
+    auto ast = ParseLogicOrExpr();
+
+    /* Parse optional ternary expression */
+    if (Is(Tokens::TernaryOp))
+        return ParseTernaryExpr(ast);
+
+    return ast;
 }
 
-/*
-EXPR: EXPR (OPERATOR EXPR)*;
-*/
+// ternary_expr: expr '?' expr ':' expr;
+TernaryExprPtr PreProcessor::ParseTernaryExpr(const ExprPtr& condExpr)
+{
+    auto ast = Make<TernaryExpr>();
+
+    /* Take condition expression and use its source position */
+    ast->condition  = condExpr;
+    ast->pos        = condExpr->pos;
+
+    /* Parse expressions for 'then' and 'else' branches */
+    Accept(Tokens::TernaryOp);
+    ast->ifExpr = ParseExpr();
+    Accept(Tokens::Colon);
+    ast->elseExpr = ParseExpr();
+
+    return ast;
+}
+
+// expr: expr (operator expr)*;
 ExprPtr PreProcessor::ParseAbstractBinaryExpr(const std::function<ExprPtr()>& parseFunc, const BinaryOpList& binaryOps)
 {
     /* Parse sub expressions */

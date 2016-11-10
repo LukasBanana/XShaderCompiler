@@ -112,8 +112,12 @@ IMPLEMENT_VISIT_PROC(TypeNameExpr)
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
     Visit(ast->condition);
-    Visit(ast->ifExpr);
-    Visit(ast->elseExpr);
+    auto cond = Pop();
+
+    if (cond.ToBool())
+        Visit(ast->ifExpr);
+    else
+        Visit(ast->elseExpr);
 }
 
 // EXPR OP EXPR

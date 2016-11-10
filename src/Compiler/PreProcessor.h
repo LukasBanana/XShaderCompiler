@@ -115,7 +115,8 @@ class PreProcessor : public Parser
         void ParseDirectiveError();
 
         ExprPtr ParseExpr();
-        
+        TernaryExprPtr ParseTernaryExpr(const ExprPtr& condExpr);
+
         ExprPtr ParseAbstractBinaryExpr(
             const std::function<ExprPtr()>& parseFunc,
             const BinaryOpList& binaryOps

@@ -10,10 +10,10 @@
 
 F1(1, 2, F2(0, 1))
 
-#define WINAPI_FAMILY_PARTITION(Partitions)     (Partitions)
-
-#if WINAPI_FAMILY_PARTITION(1)
-#	error WINAPI_FAMILY_PARTITION
+#if 5 > 2 ? 0 : 1
+#	error YES {}
+#else
+#	error NO []
 #endif
 
 #define TOSTR(NAME) #NAME

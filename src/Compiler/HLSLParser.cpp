@@ -858,8 +858,7 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma, const ExprPtr& initExpr)
     if (!ast)
         ast = ParsePrimaryExpr();
 
-    //~~~~~~~~~~ TODO: WHAT IS POST-UNARY EXPRESSION????? ~~~~~~~~~~~~~~
-    /* Parse optional post-unary expression */
+    /* Parse optional post-unary expression (e.g. 'x++' or 'x--') */
     if (Is(Tokens::UnaryOp))
     {
         auto unaryExpr = Make<PostUnaryExpr>();

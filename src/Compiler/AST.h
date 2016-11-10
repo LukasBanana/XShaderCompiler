@@ -544,7 +544,7 @@ struct TernaryExpr : public Expr
 {
     AST_INTERFACE(TernaryExpr);
     ExprPtr condition;  // Condition expression
-    ExprPtr ifExpr;     // <if> case expression
+    ExprPtr ifExpr;     // <then> case expression
     ExprPtr elseExpr;   // <else> case expression
 };
 
