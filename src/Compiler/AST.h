@@ -578,6 +578,7 @@ struct FunctionCallExpr : public Expr
 {
     AST_INTERFACE(FunctionCallExpr);
     FunctionCallPtr call;
+    VarIdentPtr     varIdentSuffix; // Optional var-ident suffix
 };
 
 // Bracket expression.

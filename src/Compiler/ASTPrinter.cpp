@@ -343,6 +343,7 @@ IMPLEMENT_VISIT_PROC(FunctionCallExpr)
     SCOPED_INDENT;
 
     Visit(ast->call);
+    Visit(ast->varIdentSuffix);
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)

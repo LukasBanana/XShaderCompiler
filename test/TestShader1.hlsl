@@ -25,7 +25,16 @@ cbuffer PixelParam : register(b1)
 struct TestStruct
 {
 	float4x4 mat;
+	float4 v4;
 };
+
+TestStruct Get_TestStruct()
+{
+	TestStruct s;
+	s.mat = (float4x4)0;
+	s.v4 = (float4)0;
+	return s;
+}
 
 struct VertexIn
 {
@@ -136,6 +145,7 @@ struct ComputeIn
 int test(int x){return 0;}
 void test2(int x, inout const row_major float4x4 y){}
 
+
 [numthreads(10, 1, 1)]
 void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 //void CS(ComputeIn inp)
@@ -146,7 +156,8 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 	int y = (int)x * 2 + 2 - (int)(x + 0.5) + (int)(float)(z) + 9;
 	float a = 1, b = 2 + (a += 4);
 	
-	float3 v1 = float3(1, 2, 3) + float4(0).xyz * 2;
+	float3 v0;
+	float3 v1 = float3(1, 2, 3) + v0.xxy + Get_TestStruct().v4.zyx + float4(0).xyz * 2;
 	
 	//#if 1
 	// requires GLSL 1.30 or the "GL_EXT_gpu_shader4" extension.

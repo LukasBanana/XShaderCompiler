@@ -1295,6 +1295,12 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 IMPLEMENT_VISIT_PROC(FunctionCallExpr)
 {
     Visit(ast->call);
+
+    if (ast->varIdentSuffix)
+    {
+        Write(".");
+        Visit(ast->varIdentSuffix);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)

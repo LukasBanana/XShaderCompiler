@@ -1036,6 +1036,14 @@ FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIden
     /* Parse function call expression */
     auto ast = Make<FunctionCallExpr>();
     ast->call = ParseFunctionCall(varIdent);
+
+    /* Parse optional var-ident suffix */
+    if (Is(Tokens::Dot))
+    {
+        AcceptIt();
+        ast->varIdentSuffix = ParseVarIdent();
+    }
+
     return ast;
 }
 
