@@ -30,22 +30,29 @@ void ReferenceAnalyzer::MarkReferencesFromEntryPoint(FunctionDecl* ast, Program*
  * ======= Private: =======
  */
 
+void ReferenceAnalyzer::MarkTextureReference(AST* ast, const std::string& texIdent)
+{
+    ast->flags << TextureDecl::isReferenced;
+
+    auto texDecl = dynamic_cast<TextureDecl*>(ast);
+    if (texDecl)
+    {
+        /* Mark individual texture identifier to be used */
+        for (auto& tex : texDecl->names)
+        {
+            if (tex->ident == texIdent)
+            {
+                tex->flags << BufferDeclIdent::isReferenced;
+                break;
+            }
+        }
+    }
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
     void ReferenceAnalyzer::Visit##AST_NAME(AST_NAME* ast, void* args)
-
-IMPLEMENT_VISIT_PROC(Program)
-{
-    for (auto& globDecl : ast->globalDecls)
-        Visit(globDecl);
-}
-
-IMPLEMENT_VISIT_PROC(CodeBlock)
-{
-    for (auto& stmnt : ast->stmnts)
-        Visit(stmnt);
-}
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
@@ -74,6 +81,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     }
     else
     {
+        //TODO: remove this from the ReferenceAnalyzer; intrinsic references should not be flagged here!
         /* Check for intrinsic usage */
         if (name == "rcp")
             program_->flags << Program::rcpIntrinsicUsed;
@@ -84,8 +92,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     }
 
     /* Visit arguments */
-    for (auto& arg : ast->arguments)
-        Visit(arg);
+    Visit(ast->arguments);
 }
 
 IMPLEMENT_VISIT_PROC(Structure)
@@ -99,16 +106,8 @@ IMPLEMENT_VISIT_PROC(Structure)
         ast->flags << Structure::isReferenced;
 
         /* Analyze structure members */
-        for (auto& member : ast->members)
-            Visit(member);
+        Visit(ast->members);
     }
-}
-
-IMPLEMENT_VISIT_PROC(SwitchCase)
-{
-    Visit(ast->expr);
-    for (auto& stmnt : ast->stmnts)
-        Visit(stmnt);
 }
 
 /* --- Global declarations --- */
@@ -120,11 +119,8 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     {
         ast->flags << FunctionDecl::wasMarked;
 
-        /* Analyze function */
-        Visit(ast->returnType);
-        for (auto& param : ast->parameters)
-            Visit(param);
-        Visit(ast->codeBlock);
+        /* Default visitor */
+        Visitor::VisitFunctionDecl(ast, args);
     }
 }
 
@@ -134,144 +130,29 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     if (!ast->flags(UniformBufferDecl::wasMarked))
     {
         ast->flags << UniformBufferDecl::wasMarked;
-
-        /* Analyze uniform buffer */
         ast->flags << UniformBufferDecl::isReferenced;
 
-        for (auto& member : ast->members)
-            Visit(member);
+        /* Default visitor */
+        Visitor::VisitUniformBufferDecl(ast, args);
     }
-}
-
-IMPLEMENT_VISIT_PROC(StructDecl)
-{
-    Visit(ast->structure);
-}
-
-/* --- Statements --- */
-
-IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
-{
-    Visit(ast->codeBlock);
-}
-
-IMPLEMENT_VISIT_PROC(ForLoopStmnt)
-{
-    Visit(ast->initSmnt);
-    Visit(ast->condition);
-    Visit(ast->iteration);
-    Visit(ast->bodyStmnt);
-}
-
-IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
-{
-    Visit(ast->condition);
-    Visit(ast->bodyStmnt);
-}
-
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
-{
-    Visit(ast->bodyStmnt);
-    Visit(ast->condition);
-}
-
-IMPLEMENT_VISIT_PROC(IfStmnt)
-{
-    Visit(ast->condition);
-    Visit(ast->bodyStmnt);
-    Visit(ast->elseStmnt);
-}
-
-IMPLEMENT_VISIT_PROC(ElseStmnt)
-{
-    Visit(ast->bodyStmnt);
-}
-
-IMPLEMENT_VISIT_PROC(SwitchStmnt)
-{
-    Visit(ast->selector);
-
-    for (auto& switchCase : ast->cases)
-        Visit(switchCase);
-}
-
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
-{
-    Visit(ast->varType);
-    for (auto& varDecl : ast->varDecls)
-        Visit(varDecl);
-}
-
-IMPLEMENT_VISIT_PROC(AssignStmnt)
-{
-    Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(FunctionCallStmnt)
-{
-    Visit(ast->call);
-}
-
-IMPLEMENT_VISIT_PROC(ReturnStmnt)
-{
-    Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(StructDeclStmnt)
-{
-    Visit(ast->structure);
 }
 
 /* --- Expressions --- */
 
-IMPLEMENT_VISIT_PROC(ListExpr)
-{
-    Visit(ast->firstExpr);
-    Visit(ast->nextExpr);
-}
-
-IMPLEMENT_VISIT_PROC(BinaryExpr)
-{
-    Visit(ast->lhsExpr);
-    Visit(ast->rhsExpr);
-}
-
-IMPLEMENT_VISIT_PROC(UnaryExpr)
-{
-    Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(PostUnaryExpr)
-{
-    Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(FunctionCallExpr)
-{
-    Visit(ast->call);
-    Visit(ast->varIdentSuffix);
-}
-
-IMPLEMENT_VISIT_PROC(BracketExpr)
-{
-    Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(CastExpr)
-{
-    Visit(ast->expr);
-}
-
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    /* Mark texture reference */
+    /* Mark either texture object or uniform buffer */
     auto symbol = symTable_->Fetch(ast->varIdent->ident);
     if (symbol)
     {
         if (symbol->Type() == AST::Types::TextureDecl)
+        {
+            /* Mark texture object as referenced */
             MarkTextureReference(symbol, ast->varIdent->ident);
+        }
         else if (symbol->Type() == AST::Types::VarDecl)
         {
+            /* Mark uniform buffer as referenced */
             auto varDecl = dynamic_cast<VarDecl*>(symbol);
             if (varDecl && varDecl->uniformBufferRef)
                 Visit(varDecl->uniformBufferRef);
@@ -279,12 +160,6 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     }
 
     Visit(ast->assignExpr);
-}
-
-IMPLEMENT_VISIT_PROC(InitializerExpr)
-{
-    for (auto& expr : ast->exprs)
-        Visit(expr);
 }
 
 /* --- Variables --- */
@@ -301,42 +176,7 @@ IMPLEMENT_VISIT_PROC(VarType)
         Visit(ast->structType);
 }
 
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    for (auto& index : ast->arrayIndices)
-        Visit(index);
-    Visit(ast->next);
-}
-
-IMPLEMENT_VISIT_PROC(VarDecl)
-{
-    for (auto& dim : ast->arrayDims)
-        Visit(dim);
-    Visit(ast->initializer);
-}
-
 #undef IMPLEMENT_VISIT_PROC
-
-/* --- Helper functions for analysis --- */
-
-void ReferenceAnalyzer::MarkTextureReference(AST* ast, const std::string& texIdent)
-{
-    ast->flags << TextureDecl::isReferenced;
-
-    auto texDecl = dynamic_cast<TextureDecl*>(ast);
-    if (texDecl)
-    {
-        /* Mark individual texture identifier to be used */
-        for (auto& tex : texDecl->names)
-        {
-            if (tex->ident == texIdent)
-            {
-                tex->flags << BufferDeclIdent::isReferenced;
-                break;
-            }
-        }
-    }
-}
 
 
 } // /namespace Xsc

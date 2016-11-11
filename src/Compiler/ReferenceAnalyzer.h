@@ -38,53 +38,26 @@ class ReferenceAnalyzer : private Visitor
         
         using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
 
-        /* === Visitor implementation === */
+        void MarkTextureReference(AST* ast, const std::string& texIdent);
 
-        DECL_VISIT_PROC( Program           );
-        DECL_VISIT_PROC( CodeBlock         );
+        /* ----- Visitor implementation ----- */
+
         DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( Structure         );
-        DECL_VISIT_PROC( SwitchCase        );
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
-        DECL_VISIT_PROC( StructDecl        );
 
-        DECL_VISIT_PROC( CodeBlockStmnt    );
-        DECL_VISIT_PROC( ForLoopStmnt      );
-        DECL_VISIT_PROC( WhileLoopStmnt    );
-        DECL_VISIT_PROC( DoWhileLoopStmnt  );
-        DECL_VISIT_PROC( IfStmnt           );
-        DECL_VISIT_PROC( ElseStmnt         );
-        DECL_VISIT_PROC( SwitchStmnt       );
-        DECL_VISIT_PROC( VarDeclStmnt      );
-        DECL_VISIT_PROC( AssignStmnt       );
-        DECL_VISIT_PROC( FunctionCallStmnt );
-        DECL_VISIT_PROC( ReturnStmnt       );
-        DECL_VISIT_PROC( StructDeclStmnt   );
-
-        DECL_VISIT_PROC( ListExpr          );
-        DECL_VISIT_PROC( BinaryExpr        );
-        DECL_VISIT_PROC( UnaryExpr         );
-        DECL_VISIT_PROC( PostUnaryExpr     );
-        DECL_VISIT_PROC( FunctionCallExpr  );
-        DECL_VISIT_PROC( BracketExpr       );
-        DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( VarAccessExpr     );
-        DECL_VISIT_PROC( InitializerExpr   );
 
         DECL_VISIT_PROC( VarType           );
-        DECL_VISIT_PROC( VarIdent          );
-        DECL_VISIT_PROC( VarDecl           );
-
-        /* --- Helper functions for analysis --- */
-
-        void MarkTextureReference(AST* ast, const std::string& texIdent);
 
         /* === Members === */
 
-        Program*                program_    = nullptr;
         const ASTSymbolTable*   symTable_   = nullptr;
+
+        //TODO: remove this member; intrinsic references should not be flagged here!
+        Program*                program_    = nullptr;
 
 };
 
