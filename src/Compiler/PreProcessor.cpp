@@ -30,8 +30,7 @@ std::shared_ptr<std::iostream> PreProcessor::Process(const SourceCodePtr& input,
     try
     {
         ParseProgram();
-        if (!GetReportHandler().HasErros())
-            return output_;
+        return (GetReportHandler().HasErros() ? nullptr : output_);
     }
     catch (const Report& err)
     {

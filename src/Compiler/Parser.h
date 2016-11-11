@@ -49,8 +49,8 @@ class Parser
         void Error(const std::string& msg, Token* tkn, const HLSLErr errorCode = HLSLErr::Unknown, bool breakWithExpection = true);
         void Error(const std::string& msg, bool prevToken = true, const HLSLErr errorCode = HLSLErr::Unknown, bool breakWithExpection = true);
 
-        void ErrorUnexpected(const std::string& hint = "", Token* tkn = nullptr, bool breakWithExpection = true);
-        void ErrorUnexpected(const Tokens type, Token* tkn = nullptr, bool breakWithExpection = true);
+        void ErrorUnexpected(const std::string& hint = "", Token* tkn = nullptr, bool breakWithExpection = false);
+        void ErrorUnexpected(const Tokens type, Token* tkn = nullptr, bool breakWithExpection = false);
 
         void ErrorInternal(const std::string& msg, const std::string& procName);
 
@@ -167,14 +167,24 @@ class Parser
             TokenPtr    nextToken;
         };
 
+        /* === Functions === */
+
+        void IncUnexpectedTokenCounter(Token* tkn);
+
+        void AssertTokenType(const Tokens type);
+        void AssertTokenSpell(const std::string& spell);
+
         /* === Members === */
 
         ReportHandler                   reportHandler_;
 
-        Log*                            log_            = nullptr;
+        Log*                            log_                    = nullptr;
         TokenPtr                        tkn_;
 
         std::stack<ScannerStackEntry>   scannerStack_;
+
+        unsigned int                    unexpectedTokenCounter_ = 0;
+        const unsigned int              unexpectedTokenLimit_   = 5; //< this should never be less than 1
 
 };
 

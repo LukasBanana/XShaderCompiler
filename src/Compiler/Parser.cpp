@@ -38,11 +38,17 @@ static SourceArea GetTokenArea(Token* tkn)
 
 void Parser::Error(const std::string& msg, Token* tkn, const HLSLErr errorCode, bool breakWithExpection)
 {
+    /* Always break with an exception when the end of stream has been reached */
+    if (tkn->Type() == Tokens::EndOfStream)
+        breakWithExpection = true;
+
+    /* Report error with the report handler */
     reportHandler_.Error(breakWithExpection, msg, GetScanner().Source(), GetTokenArea(tkn), errorCode);
 }
 
 void Parser::Error(const std::string& msg, bool prevToken, const HLSLErr errorCode, bool breakWithExpection)
 {
+    /* Get token and submit error */
     auto tkn = (prevToken ? GetScanner().PreviousToken().get() : GetScanner().ActiveToken().get());
     Error(msg, tkn, errorCode, breakWithExpection);
 }
@@ -59,9 +65,6 @@ void Parser::ErrorUnexpected(const std::string& hint, Token* tkn, bool breakWith
         msg += " (" + hint + ")";
 
     Error(msg, tkn, HLSLErr::Unknown, breakWithExpection);
-
-    /* Ignore unexpected token to produce further reports */
-    AcceptIt();
 }
 
 void Parser::ErrorUnexpected(const Tokens type, Token* tkn, bool breakWithExpection)
@@ -147,17 +150,18 @@ std::string Parser::GetCurrentFilename() const
 
 TokenPtr Parser::Accept(const Tokens type)
 {
-    if (tkn_->Type() != type)
-        ErrorUnexpected(type);
+    /* Check if token is unexpected, otherwise reset counter */
+    AssertTokenType(type);
+    unexpectedTokenCounter_ = 0;
     return AcceptIt();
 }
 
 TokenPtr Parser::Accept(const Tokens type, const std::string& spell)
 {
-    if (tkn_->Type() != type)
-        ErrorUnexpected(type);
-    if (tkn_->Spell() != spell)
-        Error("unexpected token spelling '" + tkn_->Spell() + "' (expected '" + spell + "')");
+    /* Check if token is unexpected, otherwise reset counter */
+    AssertTokenType(type);
+    AssertTokenSpell(spell);
+    unexpectedTokenCounter_ = 0;
     return AcceptIt();
 }
 
@@ -345,6 +349,53 @@ ExprPtr Parser::ParseDivExpr()
 ExprPtr Parser::ParseValueExpr()
 {
     return ParsePrimaryExpr();
+}
+
+
+/*
+ * ======= Private: =======
+ */
+
+void Parser::IncUnexpectedTokenCounter(Token* tkn)
+{
+    /* Increment counter */
+    ++unexpectedTokenCounter_;
+
+    /* Track how many errors of this kind happend without a single accepted token */
+    if (unexpectedTokenCounter_ > unexpectedTokenLimit_)
+        reportHandler_.SubmitReport(true, Report::Types::Error, "error", "too many syntax errors");
+}
+
+void Parser::AssertTokenType(const Tokens type)
+{
+    /* Check if token type is unexpected */
+    while (tkn_->Type() != type)
+    {
+        /* Increment unexpected token counter */
+        IncUnexpectedTokenCounter(tkn_.get());
+
+        /* Submit error */
+        ErrorUnexpected(type);
+
+        /* Ignore unexpected token to produce further reports */
+        AcceptIt();
+    }
+}
+
+void Parser::AssertTokenSpell(const std::string& spell)
+{
+    /* Check if token spelling is unexpected */
+    while (tkn_->Spell() != spell)
+    {
+        /* Increment unexpected token counter */
+        IncUnexpectedTokenCounter(tkn_.get());
+
+        /* Submit error */
+        Error("unexpected token spelling '" + tkn_->Spell() + "' (expected '" + spell + "')", true, HLSLErr::Unknown, false);
+
+        /* Ignore unexpected token to produce further reports */
+        AcceptIt();
+    }
 }
 
 

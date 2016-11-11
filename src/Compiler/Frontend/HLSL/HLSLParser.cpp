@@ -24,7 +24,8 @@ ProgramPtr HLSLParser::ParseSource(const SourceCodePtr& source)
 
     try
     {
-        return ParseProgram();
+        auto ast = ParseProgram();
+        return (GetReportHandler().HasErros() ? nullptr : ast);
     }
     catch (const Report& err)
     {
