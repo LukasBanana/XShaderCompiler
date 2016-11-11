@@ -67,7 +67,7 @@ class SymbolTable
         }
 
         /*
-        Registers the specified symbol in the current scope.
+        Registers the specified symbol in the current scope (if the identifier is not empty).
         At least one scope must be open before symbols can be registered!
         */
         void Register(const std::string& ident, SymbolType* symbol, const OnOverrideProc& overrideProc = nullptr)
@@ -76,7 +76,7 @@ class SymbolTable
             if (scopeStack_.empty())
                 throw std::runtime_error("no active scope to register symbol");
             if (ident.empty())
-                throw std::runtime_error("can not register unnamed symbol");
+                return;
 
             /* Check if identifier was already registered in the current scope */
             auto it = symTable_.find(ident);

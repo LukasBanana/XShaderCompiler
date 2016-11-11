@@ -283,11 +283,7 @@ IMPLEMENT_VISIT_PROC(Structure)
         );
     }
     #else
-    
-    /* Register if it is not an anonymous struct */
-    if (!ast->name.empty())
-        Register(ast->name, ast);
-
+    Register(ast->name, ast);
     #endif
 
     structStack_.push_back(ast);
