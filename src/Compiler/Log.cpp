@@ -19,36 +19,8 @@ namespace Xsc
  */
 
 Log::Log() :
-    indent_{ std::string(2, ' ') }
+    IndentHandler{ std::string(2, ' ') }
 {
-}
-
-Log::~Log()
-{
-    // dummy
-}
-
-void Log::SetIndent(const std::string& indent)
-{
-    indent_ = indent;
-}
-
-void Log::IncIndent()
-{
-    /* Appemnd indentation string and store current size */
-    indentFull_ += indent_;
-    indentStack_.push(indent_.size());
-}
-
-void Log::DecIndent()
-{
-    if (!indentStack_.empty())
-    {
-        /* Reduce indentation string by previous size */
-        auto size = indentStack_.top();
-        indentFull_.resize(indentFull_.size() - size);
-        indentStack_.pop();
-    }
 }
 
 
