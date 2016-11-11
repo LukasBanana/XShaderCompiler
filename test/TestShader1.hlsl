@@ -57,14 +57,14 @@ float3 GammaCorrect(float3 color, float gamma)
 	return pow(color, 1.0/gamma);
 }
 
-VertexOut VS(in const VertexIn inp, uint vertexID : SV_VertexID)
+VertexOut VS(VertexIn inp, uint vertexID : SV_VertexID)
 {
 	VertexOut outp = (VertexOut)0;
 	
 	TestStruct test = (TestStruct)0;
 	
 	// Vertex transformation
-	outp.position	= mul(wvpMatrix, float4(inp.coord, 1.0), 1);
+	outp.position	= mul(wvpMatrix, float4(inp.coord, 1.0), 1, foo, bar);
 	outp.texCoord	= inp.texCoord;
 	
 	// Per-vertex lighting

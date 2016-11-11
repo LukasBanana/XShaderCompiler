@@ -98,7 +98,7 @@ void HLSLAnalyzer::SubmitReport(bool isError, const std::string& msg, const AST*
 
     /* Submit error */
     auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
-    reportHandler_.SubmitReport(false, reportType, "context error", msg, nullptr, area);
+    reportHandler_.SubmitReport(false, reportType, "context error", msg, program_->sourceCode.get(), area);
 }
 
 void HLSLAnalyzer::Error(const std::string& msg, const AST* ast)
@@ -212,8 +212,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         ast->flags << FunctionCall::isMulFunc;
 
         /* Validate number of arguments */
-        if (ast->arguments.size() != 2)
-            Error("\"mul\" intrinsic must have 2 arguments, but got " + std::to_string(ast->arguments.size()), ast);
+        for (std::size_t i = 2; i < ast->arguments.size(); ++i)
+            Error("too many arguments in \"mul\" intrinsic", ast->arguments[i].get());
     }
     else if (name == "rcp")
         ast->flags << FunctionCall::isRcpFunc;

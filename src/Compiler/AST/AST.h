@@ -13,6 +13,7 @@
 #include "Visitor.h"
 #include "Flags.h"
 #include "ASTEnums.h"
+#include "SourceCode.h"
 
 #include <vector>
 #include <string>
@@ -171,6 +172,8 @@ struct Program : public AST
     };
 
     std::vector<GlobalDeclPtr>  globalDecls;
+
+    SourceCodePtr               sourceCode;         // Preprocessed source code
     std::set<std::string>       requiredExtensions; // Required GLSL extensions for the DAST
     InputSemantics              inputSemantics;     // Input semantics for the DAST
     OutputSemantics             outputSemantics;    // Output semantics for the DAST

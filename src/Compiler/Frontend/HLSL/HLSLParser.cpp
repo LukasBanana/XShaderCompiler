@@ -24,7 +24,7 @@ ProgramPtr HLSLParser::ParseSource(const SourceCodePtr& source)
 
     try
     {
-        auto ast = ParseProgram();
+        auto ast = ParseProgram(source);
         return (GetReportHandler().HasErros() ? nullptr : ast);
     }
     catch (const Report& err)
@@ -73,9 +73,12 @@ bool HLSLParser::IsArithmeticUnaryExpr() const
 
 /* ------- Parse functions ------- */
 
-ProgramPtr HLSLParser::ParseProgram()
+ProgramPtr HLSLParser::ParseProgram(const SourceCodePtr& source)
 {
     auto ast = Make<Program>();
+
+    /* Keep reference to preprocessed source code */
+    ast->sourceCode = source;
 
     while (true)
     {

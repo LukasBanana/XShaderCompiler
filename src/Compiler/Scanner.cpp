@@ -61,7 +61,7 @@ TokenPtr Scanner::PreviousToken() const
 
 SourcePosition Scanner::Pos() const
 {
-    return nextStartPos_;//(source_ != nullptr ? source_->Pos() : SourcePosition::ignore);
+    return nextStartPos_;
 }
 
 

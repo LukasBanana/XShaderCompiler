@@ -77,7 +77,7 @@ class HLSLParser : public Parser
 
         /* === Parse functions === */
 
-        ProgramPtr                      ParseProgram();
+        ProgramPtr                      ParseProgram(const SourceCodePtr& source);
 
         CodeBlockPtr                    ParseCodeBlock();
         BufferDeclIdentPtr              ParseBufferDeclIdent();
