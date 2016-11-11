@@ -167,8 +167,7 @@ FunctionCall* HLSLAnalyzer::CurrentFunction() const
 IMPLEMENT_VISIT_PROC(Program)
 {
     /* Analyze context of the entire program */
-    for (auto& globDecl : ast->globalDecls)
-        Visit(globDecl);
+    Visit(ast->globalDecls);
 
     if (shaderTarget_ != ShaderTarget::CommonShader)
     {
@@ -183,10 +182,9 @@ IMPLEMENT_VISIT_PROC(Program)
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
     OpenScope();
-
-    for (auto& stmnt : ast->stmnts)
-        Visit(stmnt);
-
+    {
+        Visit(ast->stmnts);
+    }
     CloseScope();
 }
 
@@ -243,8 +241,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     /* Analyze function arguments */
     callStack_.push(ast);
     {
-        for (auto& arg : ast->arguments)
-            Visit(arg);
+        Visit(ast->arguments);
     }
     callStack_.pop();
 }
@@ -270,8 +267,7 @@ IMPLEMENT_VISIT_PROC(Structure)
 
     OpenScope();
     {
-        for (auto& varDecl : ast->members)
-            Visit(varDecl);
+        Visit(ast->members);
     }
     CloseScope();
 
@@ -281,8 +277,7 @@ IMPLEMENT_VISIT_PROC(Structure)
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     Visit(ast->expr);
-    for (auto& stmnt : ast->stmnts)
-        Visit(stmnt);
+    Visit(ast->stmnts);
 }
 
 /* --- Global declarations --- */
@@ -332,8 +327,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
     OpenScope();
     {
-        for (auto& param : ast->parameters)
-            Visit(param);
+        Visit(ast->parameters);
 
         /* Special case for the main entry point */
         if (isEntryPoint)
@@ -420,8 +414,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
     ReportNullStmnt(ast->bodyStmnt, "for loop");
 
-    for (auto& attrib : ast->attribs)
-        Visit(attrib);
+    Visit(ast->attribs);
 
     OpenScope();
     {
@@ -442,8 +435,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 {
     ReportNullStmnt(ast->bodyStmnt, "while loop");
 
-    for (auto& attrib : ast->attribs)
-        Visit(attrib);
+    Visit(ast->attribs);
 
     OpenScope();
     {
@@ -457,8 +449,7 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 {
     ReportNullStmnt(ast->bodyStmnt, "do-while loop");
 
-    for (auto& attrib : ast->attribs)
-        Visit(attrib);
+    Visit(ast->attribs);
 
     OpenScope();
     {
@@ -472,8 +463,7 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
 {
     ReportNullStmnt(ast->bodyStmnt, "if");
 
-    for (auto& attrib : ast->attribs)
-        Visit(attrib);
+    Visit(ast->attribs);
 
     OpenScope();
     {
@@ -498,15 +488,12 @@ IMPLEMENT_VISIT_PROC(ElseStmnt)
 
 IMPLEMENT_VISIT_PROC(SwitchStmnt)
 {
-    for (auto& attrib : ast->attribs)
-        Visit(attrib);
+    Visit(ast->attribs);
 
     OpenScope();
     {
         Visit(ast->selector);
-
-        for (auto& switchCase : ast->cases)
-            Visit(switchCase);
+        Visit(ast->cases);
     }
     CloseScope();
 }
@@ -514,9 +501,7 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     Visit(ast->varType);
-
-    for (auto& varDecl : ast->varDecls)
-        Visit(varDecl);
+    Visit(ast->varDecls);
 
     /* Decorate variable type */
     if (isInsideEntryPoint_ && ast->varDecls.empty())
@@ -676,8 +661,7 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
     AcquireExtension(ARBEXT_GL_ARB_shading_language_420pack);
 
-    for (auto& expr : ast->exprs)
-        Visit(expr);
+    Visit(ast->exprs);
 }
 
 /* --- Variables --- */
@@ -709,8 +693,7 @@ IMPLEMENT_VISIT_PROC(VarType)
 
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
-    for (auto& index : ast->arrayIndices)
-        Visit(index);
+    Visit(ast->arrayIndices);
     Visit(ast->next);
 }
 
@@ -719,8 +702,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     if (isInsideFunc_)
         ast->flags << VarDecl::isInsideFunc;
 
-    for (auto& dim : ast->arrayDims)
-        Visit(dim);
+    Visit(ast->arrayDims);
 
     for (auto& semantic : ast->semantics)
     {
