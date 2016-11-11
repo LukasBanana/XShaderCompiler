@@ -23,6 +23,22 @@ namespace Util
 {
 
 
+#ifdef XSC_ENABLE_EASTER_EGGS
+
+static void PrintBackdoorEasterEgg(std::ostream& output)
+{
+    std::cout << "here is your backdoor :-)" << std::endl;
+    std::cout << " _____ " << std::endl;
+    std::cout << "| ___ |" << std::endl;
+    std::cout << "||___||" << std::endl;
+    std::cout << "|    o|" << std::endl;
+    std::cout << "|     |" << std::endl;
+    std::cout << "|_____|" << std::endl;
+    std::cout << "-------" << std::endl;
+}
+
+#endif
+
 Shell::Shell(std::ostream& output) :
     output{ output }
 {
@@ -43,6 +59,16 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
         {
             /* Get next command */
             auto cmdName = cmdLine.Accept();
+
+            #ifdef XSC_ENABLE_EASTER_EGGS
+
+            if (cmdName == "--backdoor")
+            {
+                PrintBackdoorEasterEgg(output);
+                continue;
+            }
+
+            #endif
 
             Command::Identifier cmdIdent;
             auto cmd = CommandFactory::Instance().Get(cmdName, &cmdIdent);
