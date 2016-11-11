@@ -31,7 +31,7 @@ static void PrintBackdoorEasterEgg(std::ostream& output)
     std::cout << " _____ " << std::endl;
     std::cout << "| ___ |" << std::endl;
     std::cout << "||___||" << std::endl;
-    std::cout << "|    o|" << std::endl;
+    std::cout << "|   ~o|" << std::endl;
     std::cout << "|     |" << std::endl;
     std::cout << "|_____|" << std::endl;
     std::cout << "-------" << std::endl;
