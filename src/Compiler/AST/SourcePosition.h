@@ -65,14 +65,22 @@ class SourcePosition
 // Source area structure with position and length.
 struct SourceArea
 {
-    SourcePosition  pos;
-    unsigned int    length  = 0;
+    // Invalid source area.
+    static const SourceArea ignore;
+
+    SourceArea() = default;
+    SourceArea(const SourceArea&) = default;
+    SourceArea& operator = (const SourceArea&) = default;
+
+    SourceArea(const SourcePosition& pos, unsigned int length);
 
     // Returns ture if this is a valid source area. False if the position is invalid or the length is 0.
     bool IsValid() const;
 
-    // Invalid source area.
-    static const SourceArea ignore;
+    SourceArea IncLength(const SourceArea& other) const;
+
+    SourcePosition  pos;
+    unsigned int    length  = 0;
 };
 
 

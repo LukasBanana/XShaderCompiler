@@ -37,7 +37,7 @@ class Visitor;
 #define AST_INTERFACE(CLASS_NAME)                               \
     CLASS_NAME(const SourcePosition& astPos)                    \
     {                                                           \
-        pos = astPos;                                           \
+        area = SourceArea(astPos, 1);                           \
     }                                                           \
     Types Type() const override                                 \
     {                                                           \
@@ -124,8 +124,8 @@ struct AST
     virtual Types Type() const = 0;
     virtual void Visit(Visitor* visitor, void* args = nullptr) = 0;
 
-    SourcePosition  pos;
-    Flags           flags;
+    SourceArea  area;
+    Flags       flags;
 };
 
 /* --- Base AST nodes --- */

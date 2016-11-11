@@ -57,9 +57,29 @@ void SourcePosition::Reset()
 
 const SourceArea SourceArea::ignore {};
 
+SourceArea::SourceArea(const SourcePosition& pos, unsigned int length) :
+    pos     { pos    },
+    length  { length }
+{
+}
+
 bool SourceArea::IsValid() const
 {
     return (pos.IsValid() && length > 0);
+}
+
+SourceArea SourceArea::IncLength(const SourceArea& other) const
+{
+    SourceArea area;
+    
+    area.pos = pos;
+
+    if (other.pos.Row() > pos.Row())
+        area.length = ~0;
+    else if (other.pos.Row() == pos.Row() && other.pos.Column() > pos.Column() + length)
+        area.length = (other.pos.Column() - pos.Column() + other.length);
+
+    return area;
 }
 
 

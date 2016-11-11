@@ -253,7 +253,7 @@ TernaryExprPtr Parser::ParseTernaryExpr(const ExprPtr& condExpr)
 
     /* Take condExpr expression and use its source position */
     ast->condExpr   = condExpr;
-    ast->pos        = condExpr->pos;
+    ast->area       = condExpr->area;
 
     /* Parse expressions for 'then' and 'else' branches */
     Accept(Tokens::TernaryOp);

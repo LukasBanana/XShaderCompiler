@@ -307,7 +307,7 @@ void GLSLGenerator::Error(const std::string& msg, const AST* ast)
     std::string fullMsg = "code generation error";
 
     if (ast)
-        fullMsg += (" (" + ast->pos.ToString() + ") : " + msg);
+        fullMsg += (" (" + ast->area.pos.ToString() + ") : " + msg);
     else
         fullMsg += (" : " + msg);
 
@@ -382,7 +382,7 @@ void GLSLGenerator::Line(const TokenPtr& tkn)
 
 void GLSLGenerator::Line(const AST* ast)
 {
-    Line(ast->pos.Row());
+    Line(ast->area.pos.Row());
 }
 
 void GLSLGenerator::Blank()

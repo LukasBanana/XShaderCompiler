@@ -6,6 +6,7 @@
  */
 
 #include "SourceCode.h"
+#include <algorithm>
 
 
 namespace Xsc
@@ -53,10 +54,11 @@ char SourceCode::Next()
 static bool FinalizeMarker(
     const SourceArea& area, const std::string& lineIn, std::string& lineOut, std::string& markerOut)
 {
-    if (area.pos.Column() + area.length > lineIn.size() || area.pos.Column() == 0 || area.length == 0)
+    if (area.pos.Column() >= lineIn.size() || area.pos.Column() == 0 || area.length == 0)
         return false;
 
     lineOut = lineIn;
+
     markerOut = std::string(area.pos.Column() - 1, ' ');
 
     for (size_t i = 0, n = markerOut.size(); i < n; ++i)
@@ -65,8 +67,10 @@ static bool FinalizeMarker(
             markerOut[i] = '\t';
     }
 
+    auto len = std::min(area.length, lineIn.size() - area.pos.Column());
+
     markerOut += '^';
-    markerOut += std::string(area.length - 1, '~');
+    markerOut += std::string(len - 1, '~');
 
     return true;
 }

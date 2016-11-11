@@ -85,20 +85,8 @@ void HLSLAnalyzer::EstablishMaps()
 
 void HLSLAnalyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast)
 {
-    /* Get source are */
-    SourceArea area;
-
-    if (ast)
-    {
-        area.pos    = ast->pos;
-        area.length = 1;
-    }
-    else
-        area = SourceArea::ignore;
-
-    /* Submit error */
     auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
-    reportHandler_.SubmitReport(false, reportType, "context error", msg, program_->sourceCode.get(), area);
+    reportHandler_.SubmitReport(false, reportType, "context error", msg, program_->sourceCode.get(), (ast ? ast->area : SourceArea::ignore));
 }
 
 void HLSLAnalyzer::Error(const std::string& msg, const AST* ast)

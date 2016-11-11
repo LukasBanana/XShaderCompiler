@@ -446,6 +446,8 @@ VarIdentPtr HLSLParser::ParseVarIdent()
         ast->next = ParseVarIdent();
     }
 
+    ast->area.length = ast->ident.size();
+
     return ast;
 }
 
@@ -1068,6 +1070,8 @@ VarAccessExprPtr HLSLParser::ParseVarAccessExpr(const VarIdentPtr& varIdent)
         ast->assignOp = AcceptIt()->Spell();
         ast->assignExpr = ParseExpr();
     }
+
+    ast->area = ast->varIdent->area;
 
     return ast;
 }
