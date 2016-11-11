@@ -79,8 +79,8 @@ XSC_EXPORT bool CompileShader(
     }
 
     /* Generate GLSL output code */
-    GLSLGenerator generator(log, outputDesc.options);
-    if (!generator.GenerateCode(*program, inputDesc, outputDesc))
+    GLSLGenerator generator;
+    if (!generator.GenerateCode(*program, inputDesc, outputDesc, log))
         return SubmitError("generating output code failed");
 
     return true;

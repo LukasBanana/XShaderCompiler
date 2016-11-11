@@ -10,7 +10,7 @@
 
 
 #include <Xsc/Xsc.h>
-#include "CodeWriter.h"
+#include "Generator.h"
 #include "Visitor.h"
 #include "Token.h"
 
@@ -23,18 +23,12 @@ namespace Xsc
 
 
 // GLSL output code generator.
-class GLSLGenerator : private Visitor
+class GLSLGenerator : public Generator
 {
     
     public:
         
-        GLSLGenerator(Log* log = nullptr, const Options& options = {});
-
-        bool GenerateCode(
-            Program& program,
-            const ShaderInput& inputDesc,
-            const ShaderOutput& outputDesc
-        );
+        GLSLGenerator();
 
     private:
         
@@ -67,22 +61,13 @@ class GLSLGenerator : private Visitor
 
         /* === Functions === */
 
+        void GeneratePrimaryCode(
+            Program& program,
+            const ShaderInput& inputDesc,
+            const ShaderOutput& outputDesc
+        ) override;
+
         void EstablishMaps();
-
-        void Error(const std::string& msg, const AST* ast = nullptr);
-        void ErrorInvalidNumArgs(const std::string& functionName, const AST* ast = nullptr);
-
-        void BeginLn();
-        void EndLn();
-        
-        void Write(const std::string& text);
-        void WriteLn(const std::string& text);
-
-        void IncIndent();
-        void DecIndent();
-        
-        void PushOptions(const CodeWriter::Options& options);
-        void PopOptions();
 
         // Writes a new single line comment.
         void Comment(const std::string& text);
@@ -94,9 +79,6 @@ class GLSLGenerator : private Visitor
         void Line(int lineNumber);
         void Line(const TokenPtr& tkn);
         void Line(const AST* ast);
-
-        // Writes a blank line.
-        void Blank();
 
         // Writes a new extensions
         void Extension(const std::string& extensionName);
@@ -212,16 +194,12 @@ class GLSLGenerator : private Visitor
 
         /* === Members === */
 
-        CodeWriter              writer_;
-        Log*                    log_                    = nullptr;
-
         Program*                program_                = nullptr;
 
         std::string             entryPoint_;
         ShaderTarget            shaderTarget_           = ShaderTarget::GLSLVertexShader;
         OutputShaderVersion     versionOut_             = OutputShaderVersion::GLSL330;
         std::string             localVarPrefix_;
-        bool                    allowBlanks_            = true;
         bool                    allowLineMarks_         = true;
 
         bool                    isInsideEntryPoint_     = false; //< True if AST traversal is currently inside the main entry point (or its sub nodes).

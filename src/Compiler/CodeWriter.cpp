@@ -12,11 +12,6 @@ namespace Xsc
 {
 
 
-CodeWriter::CodeWriter(const std::string& indentTab) :
-    indentTab_{ indentTab }
-{
-}
-
 void CodeWriter::OutputStream(std::ostream& stream)
 {
     stream_ = &stream;
@@ -24,15 +19,20 @@ void CodeWriter::OutputStream(std::ostream& stream)
         throw std::runtime_error("invalid output stream");
 }
 
+void CodeWriter::SetIndent(const std::string& indent)
+{
+    indent_ = indent;
+}
+
 void CodeWriter::PushIndent()
 {
-    indent_ += indentTab_;
+    indentFull_ += indent_;
 }
 
 void CodeWriter::PopIndent()
 {
-    if (!indent_.empty())
-        indent_.resize(indent_.size() - indentTab_.size());
+    if (!indentFull_.empty())
+        indentFull_.resize(indentFull_.size() - indent_.size());
 }
 
 void CodeWriter::PushOptions(const Options& options)
@@ -48,8 +48,8 @@ void CodeWriter::PopOptions()
 
 void CodeWriter::BeginLine()
 {
-    if (CurrentOptions().enableTabs)
-        stream_->write(indent_.c_str(), indent_.size());
+    if (CurrentOptions().enableIndent)
+        stream_->write(indentFull_.c_str(), indentFull_.size());
 }
 
 void CodeWriter::EndLine()
@@ -72,7 +72,7 @@ void CodeWriter::WriteLine(const std::string& text)
 
 CodeWriter::Options CodeWriter::CurrentOptions() const
 {
-    return !optionsStack_.empty() ? optionsStack_.top() : Options();
+    return (!optionsStack_.empty() ? optionsStack_.top() : Options());
 }
 
 

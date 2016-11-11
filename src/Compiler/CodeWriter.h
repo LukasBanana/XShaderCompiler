@@ -26,20 +26,21 @@ class CodeWriter
         struct Options
         {
             Options() = default;
-            Options(bool enableNewLine, bool enableTabs) :
+
+            inline Options(bool enableNewLine, bool enableIndent) :
                 enableNewLine   { enableNewLine },
-                enableTabs      { enableTabs    }
+                enableIndent    { enableIndent  }
             {
             }
 
             bool enableNewLine  = true;
-            bool enableTabs     = true;
+            bool enableIndent   = true;
         };
 
-        CodeWriter(const std::string& indentTab);
-
-        // \throws std::runtime_error If stream is invalid.
+        // Throws std::runtime_error If stream is invalid.
         void OutputStream(std::ostream& stream);
+
+        void SetIndent(const std::string& indent);
 
         void PushIndent();
         void PopIndent();
@@ -57,9 +58,9 @@ class CodeWriter
 
     private:
         
-        std::ostream*   stream_ = nullptr;
-        std::string     indentTab_;
-        std::string     indent_;
+        std::ostream*       stream_         = nullptr;
+        std::string         indent_         = std::string(4, ' ');
+        std::string         indentFull_;
 
         std::stack<Options> optionsStack_;
 
