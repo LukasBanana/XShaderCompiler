@@ -55,16 +55,23 @@ void Parser::Error(const std::string& msg, bool prevToken, const HLSLErr errorCo
 
 void Parser::ErrorUnexpected(const std::string& hint, Token* tkn, bool breakWithExpection)
 {
-    /* Construct error message */
     if (!tkn)
         tkn = tkn_.get();
 
+    /* Increment unexpected token counter */
+    IncUnexpectedTokenCounter(tkn);
+
+    /* Construct error message */
     std::string msg = "unexpected token: " + Token::TypeToString(tkn->Type());
 
     if (!hint.empty())
         msg += " (" + hint + ")";
 
+    /* Submit error */
     Error(msg, tkn, HLSLErr::Unknown, breakWithExpection);
+
+    /* Ignore unexpected token to produce further reports */
+    AcceptIt();
 }
 
 void Parser::ErrorUnexpected(const Tokens type, Token* tkn, bool breakWithExpection)

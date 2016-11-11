@@ -162,8 +162,9 @@ StructurePtr HLSLParser::ParseStructure()
         /* Parse member variable declarations */
         ast->members = ParseVarDeclStmntList();
 
-        /* Register identifier in symbol table (used to detect special cast expressions) */
-        typeSymTable_.Register(ast->name, ast.get());
+        /* Register identifier in symbol table if it's not an anonymous struct (used to detect special cast expressions) */
+        if (!ast->name.empty())
+            typeSymTable_.Register(ast->name, ast.get());
     }
     GetReportHandler().PopContextDesc();
 

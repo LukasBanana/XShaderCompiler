@@ -158,7 +158,7 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 	
 	struct
 	{
-		int x, y,;
+		int x, y;
 	}
 	s1;
 	

@@ -184,7 +184,7 @@ class Parser
         std::stack<ScannerStackEntry>   scannerStack_;
 
         unsigned int                    unexpectedTokenCounter_ = 0;
-        const unsigned int              unexpectedTokenLimit_   = 5; //< this should never be less than 1
+        const unsigned int              unexpectedTokenLimit_   = 3; //< this should never be less than 1
 
 };
 
