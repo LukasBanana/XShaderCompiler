@@ -64,7 +64,7 @@ VertexOut VS(VertexIn inp, uint vertexID : SV_VertexID)
 	TestStruct test = (TestStruct)0;
 	
 	// Vertex transformation
-	outp.position	= mul(wvpMatrix, float4(inp.coord, 1.0), 1, foo, bar);
+	outp.position	= mul(wvpMatrix, float4(inp.coord, 1.0));//, 1, foo, bar);
 	outp.texCoord	= inp.texCoord;
 	
 	// Per-vertex lighting
