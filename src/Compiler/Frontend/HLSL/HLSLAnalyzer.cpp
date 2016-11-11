@@ -14,22 +14,6 @@ namespace Xsc
 {
 
 
-/*
- * Internal GL ARB extension descriptions
- */
-
-using ARBExt = Program::ARBExtension;
-
-static const ARBExt ARBEXT_GL_EXT_gpu_shader4               { "GL_EXT_gpu_shader4",                 130 };
-static const ARBExt ARBEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",          400 };
-static const ARBExt ARBEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_language_420pack",    420 };
-static const ARBExt ARBEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_image_load_store",     420 };
-
-
-/*
- * HLSLAnalyzer class
- */
-
 HLSLAnalyzer::HLSLAnalyzer(Log* log) :
     reportHandler_  { "context", log },
     refAnalyzer_    { symTable_      }
@@ -72,14 +56,6 @@ void HLSLAnalyzer::EstablishMaps()
         { "InterlockedMax",             IntrinsicClasses::Interlocked },
         { "InterlockedCompareExchange", IntrinsicClasses::Interlocked },
         { "InterlockedExchange",        IntrinsicClasses::Interlocked },
-    };
-
-    extensionMap_ = std::map<std::string, Program::ARBExtension>
-    {
-        { "ddx_coarse", ARBEXT_GL_ARB_derivative_control },
-        { "ddy_coarse", ARBEXT_GL_ARB_derivative_control },
-        { "ddx_fine",   ARBEXT_GL_ARB_derivative_control },
-        { "ddy_fine",   ARBEXT_GL_ARB_derivative_control },
     };
 }
 
@@ -141,17 +117,6 @@ void HLSLAnalyzer::ReportNullStmnt(const StmntPtr& ast, const std::string& stmnt
 {
     if (ast && ast->Type() == AST::Types::NullStmnt)
         Warning("<" + stmntTypeName + "> statement with empty body", ast.get());
-}
-
-void HLSLAnalyzer::AcquireExtension(const Program::ARBExtension& extension)
-{
-    if (!IsVersionOut(extension.requiredVersion))
-        program_->requiredExtensions.insert(extension.extensionName);
-}
-
-bool HLSLAnalyzer::IsVersionOut(int version) const
-{
-    return (static_cast<int>(versionOut_) >= version);
 }
 
 FunctionCall* HLSLAnalyzer::CurrentFunction() const
@@ -233,11 +198,6 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             NotifyUndeclaredIdent(ast->name->ident, ast);
     }
 
-    /* Check if this function requires a specific extension (or GLSL target version) */
-    auto it = extensionMap_.find(name);
-    if (it != extensionMap_.end())
-        AcquireExtension(it->second);
-
     /* Analyze function arguments */
     callStack_.push(ast);
     {
@@ -305,16 +265,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     );
 
     /* Visit attributes */
-    for (auto& attrib : ast->attribs)
-    {
-        Visit(attrib);
-
-        /* Check for special attributes */
-        auto name = attrib->name->ToString();
-
-        if (name == "earlydepthstencil")
-            AcquireExtension(ARBEXT_GL_ARB_shader_image_load_store);
-    }
+    Visit(ast->attribs);
 
     /* Visit function header */
     Visit(ast->returnType);
@@ -378,11 +329,7 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
 {
     /* Register all texture identifiers */
     for (auto& name : ast->names)
-    {
-        if (!name->registerName.empty())
-            AcquireExtension(ARBEXT_GL_ARB_shading_language_420pack);
         Register(name->ident, ast);
-    }
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
@@ -558,36 +505,13 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
 /* --- Expressions --- */
 
-IMPLEMENT_VISIT_PROC(BinaryExpr)
-{
-    /* Visit sub expressions */
-    Visit(ast->lhsExpr);
-    Visit(ast->rhsExpr);
-
-    /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
-    if (IsBitwiseOp(ast->op))
-        AcquireExtension(ARBEXT_GL_EXT_gpu_shader4);
-}
-
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     /* Decorate AST */
     DecorateVarObjectSymbol(ast);
 
-    /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
-    const auto& op = ast->assignOp;
-    if (op == "|=" || op == "&=" || op == "^=" || op == "%=")
-        AcquireExtension(ARBEXT_GL_EXT_gpu_shader4);
-
     /* Visit optional assign expression */
     Visit(ast->assignExpr);
-}
-
-IMPLEMENT_VISIT_PROC(InitializerExpr)
-{
-    AcquireExtension(ARBEXT_GL_ARB_shading_language_420pack);
-
-    Visit(ast->exprs);
 }
 
 /* --- Variables --- */

@@ -69,12 +69,6 @@ class HLSLAnalyzer : private Visitor
 
         void ReportNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName);
 
-        void AcquireExtension(const Program::ARBExtension& extension);
-
-        // Returns true if the target version is greater than or equal to the specified version number.
-        // TODO: remove this function from this class (frontend should be affected by the output shader)
-        bool IsVersionOut(int version) const;
-
         /*
         Returns the current (top level) function in the call stack
         or null if the AST traversion is in the global scope.
@@ -104,9 +98,7 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( AssignStmnt       );
         DECL_VISIT_PROC( ReturnStmnt       );
 
-        DECL_VISIT_PROC( BinaryExpr        );
         DECL_VISIT_PROC( VarAccessExpr     );
-        DECL_VISIT_PROC( InitializerExpr   );
 
         DECL_VISIT_PROC( VarType           );
         DECL_VISIT_PROC( VarDecl           );
@@ -142,7 +134,6 @@ class HLSLAnalyzer : private Visitor
         std::string                                     localVarPrefix_;
 
         std::map<std::string, IntrinsicClasses>         intrinsicMap_;
-        std::map<std::string, Program::ARBExtension>    extensionMap_;
 
         // Function call stack to join arguments with its function call.
         std::stack<FunctionCall*>                       callStack_;

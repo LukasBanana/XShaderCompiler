@@ -144,14 +144,6 @@ struct Program : public AST
 {   
     AST_INTERFACE(Program)
 
-    // GL ARB extension structure.
-    //TODO: replace this by "GLSLExtensionAgent::GLSLExtension
-    struct ARBExtension
-    {
-        std::string extensionName;
-        int         requiredVersion;
-    };
-
     struct InputSemantics
     {
         std::vector<VarDeclStmnt*> parameters;
@@ -175,7 +167,6 @@ struct Program : public AST
     std::vector<GlobalDeclPtr>  globalDecls;
 
     SourceCodePtr               sourceCode;         // Preprocessed source code
-    std::set<std::string>       requiredExtensions; // Required GLSL extensions for the DAST
     InputSemantics              inputSemantics;     // Input semantics for the DAST
     OutputSemantics             outputSemantics;    // Output semantics for the DAST
 };
