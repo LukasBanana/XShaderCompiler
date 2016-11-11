@@ -235,6 +235,7 @@ struct Structure : public AST
 
     std::string                     name;               // May be empty (for anonymous structures).
     std::vector<VarDeclStmntPtr>    members;
+
     std::string                     aliasName;          // Alias name for input and output interface blocks of the DAST.
     std::map<std::string, VarDecl*> systemValuesRef;    // List of members with system value semantic (SV_...).
 };
@@ -262,7 +263,8 @@ struct FunctionDecl : public GlobalDecl
     std::vector<VarDeclStmntPtr>    parameters;
     std::string                     semantic;           // May be empty
     CodeBlockPtr                    codeBlock;          // May be null (if this AST node is a forward declaration).
-    std::vector<FunctionDecl*>      forwardDeclsRef;    // List of forward declarations to this function.
+
+    std::vector<FunctionDecl*>      forwardDeclsRef;    // List of forward declarations to this function for the DAST.
 };
 
 // Uniform buffer (cbuffer, tbuffer) declaration.
@@ -354,6 +356,7 @@ struct VarType : public AST
 
     std::string     baseType;               // Either this ...
     StructurePtr    structType;             // ... or this is used.
+
     AST*            symbolRef = nullptr;    // Symbol reference for DAST to the type definition; may be null.
 };
 
@@ -371,6 +374,7 @@ struct VarIdent : public AST
     std::string             ident;
     std::vector<ExprPtr>    arrayIndices;
     VarIdentPtr             next;                   // Next identifier; may be null.
+
     AST*                    symbolRef = nullptr;    // Symbol reference for DAST to the variable object; may be null.
     std::string             systemSemantic;         // System semantic (SV_...) for DAST; may be empty.
 };

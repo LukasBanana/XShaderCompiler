@@ -10,6 +10,7 @@
 
 
 #include <memory>
+#include <vector>
 
 
 namespace Xsc
@@ -83,10 +84,8 @@ DECL_PTR( VarDecl           );
 
 // Visitor interface
 
-#define VISITOR_VISIT_PROC(CLASS_NAME)                          \
-    virtual void Visit##CLASS_NAME(CLASS_NAME* ast, void* args) \
-    {                                                           \
-    }
+#define VISITOR_VISIT_PROC(CLASS_NAME) \
+    virtual void Visit##CLASS_NAME(CLASS_NAME* ast, void* args)
 
 #define DECL_VISIT_PROC(CLASS_NAME) \
     void Visit##CLASS_NAME(CLASS_NAME* ast, void* args) override
@@ -96,9 +95,7 @@ class Visitor
     
     public:
         
-        virtual ~Visitor()
-        {
-        }
+        virtual ~Visitor();
 
         VISITOR_VISIT_PROC( Program           );
         VISITOR_VISIT_PROC( CodeBlock         );
@@ -158,6 +155,13 @@ class Visitor
         {
             if (ast)
                 ast->Visit(this, args);
+        }
+
+        template <typename T>
+        void Visit(const std::vector<T>& astList, void* args = nullptr)
+        {
+            for (const auto& ast : astList)
+                Visit(ast, args);
         }
 
 };
