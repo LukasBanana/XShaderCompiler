@@ -159,8 +159,6 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( VarAccessExpr     );
         DECL_VISIT_PROC( InitializerExpr   );
 
-        DECL_VISIT_PROC( PackOffset        );
-        DECL_VISIT_PROC( VarSemantic       );
         DECL_VISIT_PROC( VarType           );
         DECL_VISIT_PROC( VarIdent          );
         DECL_VISIT_PROC( VarDecl           );

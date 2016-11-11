@@ -27,16 +27,6 @@ static const std::string interfaceBlockPrefix = "_I";
 
 
 /*
- * Internal functions
- */
-
-static inline std::vector<std::string> StringList(const std::initializer_list<std::string>& list)
-{
-    return list;
-}
-
-
-/*
  * GLSLGenerator class
  */
 
@@ -341,7 +331,7 @@ void GLSLGenerator::AppendClipIntrinsics()
 {
     WriteLn("void clip(float x) { if (x < 0.0) discard; }");
 
-    for (const auto& typeName : StringList({ "vec2", "vec3", "vec4" }))
+    for (const auto& typeName : std::vector<std::string>{ "vec2", "vec3", "vec4" })
         WriteLn("void clip(" + typeName + " x) { if (any(lessThan(x, " + typeName + "(0.0)))) discard; }");
 
     Blank();
@@ -349,7 +339,7 @@ void GLSLGenerator::AppendClipIntrinsics()
 
 void GLSLGenerator::AppendSinCosIntrinsics()
 {
-    for (const auto& typeName : StringList({ "float", "vec2", "vec3", "vec4" }))
+    for (const auto& typeName : std::vector<std::string>{ "float", "vec2", "vec3", "vec4" })
     {
         WriteLn(
             "void sincos(" + typeName + " x, out " + typeName +
@@ -1237,14 +1227,6 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 }
 
 /* --- Variables --- */
-
-IMPLEMENT_VISIT_PROC(PackOffset)
-{
-}
-
-IMPLEMENT_VISIT_PROC(VarSemantic)
-{
-}
 
 IMPLEMENT_VISIT_PROC(VarType)
 {
