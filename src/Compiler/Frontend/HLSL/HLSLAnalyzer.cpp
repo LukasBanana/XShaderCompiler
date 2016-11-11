@@ -608,6 +608,11 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     }
 }
 
+IMPLEMENT_VISIT_PROC(StructDeclStmnt)
+{
+    Visit(ast->structure);
+}
+
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 {
     // do nothing

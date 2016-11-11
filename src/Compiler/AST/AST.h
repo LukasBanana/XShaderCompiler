@@ -299,7 +299,7 @@ struct SamplerDecl : public GlobalDecl
     std::vector<BufferDeclIdentPtr> names;
 };
 
-// Structure declaration.
+// Structure declaration (in global scope).
 struct StructDecl : public GlobalDecl
 {
     AST_INTERFACE(StructDecl);

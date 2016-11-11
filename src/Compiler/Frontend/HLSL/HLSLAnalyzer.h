@@ -105,7 +105,7 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( ExprStmnt         );
         DECL_VISIT_PROC( FunctionCallStmnt );
         DECL_VISIT_PROC( ReturnStmnt       );
-        //DECL_VISIT_PROC( StructDeclStmnt   );
+        DECL_VISIT_PROC( StructDeclStmnt   );
         DECL_VISIT_PROC( CtrlTransferStmnt );
 
         DECL_VISIT_PROC( ListExpr          );

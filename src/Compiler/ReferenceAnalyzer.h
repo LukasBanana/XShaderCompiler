@@ -61,6 +61,7 @@ class ReferenceAnalyzer : private Visitor
         DECL_VISIT_PROC( AssignStmnt       );
         DECL_VISIT_PROC( FunctionCallStmnt );
         DECL_VISIT_PROC( ReturnStmnt       );
+        DECL_VISIT_PROC( StructDeclStmnt   );
 
         DECL_VISIT_PROC( ListExpr          );
         DECL_VISIT_PROC( BinaryExpr        );

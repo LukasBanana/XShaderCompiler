@@ -217,6 +217,11 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     Visit(ast->expr);
 }
 
+IMPLEMENT_VISIT_PROC(StructDeclStmnt)
+{
+    Visit(ast->structure);
+}
+
 /* --- Expressions --- */
 
 IMPLEMENT_VISIT_PROC(ListExpr)

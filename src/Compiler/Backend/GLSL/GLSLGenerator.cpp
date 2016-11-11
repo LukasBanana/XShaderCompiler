@@ -1202,6 +1202,18 @@ IMPLEMENT_VISIT_PROC(FunctionCallStmnt)
     EndLn();
 }
 
+IMPLEMENT_VISIT_PROC(StructDeclStmnt)
+{
+    if (!ast->structure->flags(Structure::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
+        return; // structure not used
+
+    Line(ast);
+    bool semicolon = true;
+    Visit(ast->structure, &semicolon);
+
+    Blank();
+}
+
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     if (isInsideEntryPoint_)
