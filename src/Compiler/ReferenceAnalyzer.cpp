@@ -91,16 +91,17 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 IMPLEMENT_VISIT_PROC(Structure)
 {
     /* Check if this function was already marked by this analyzer */
-    if (ast->flags(FunctionDecl::wasMarked))
-        return;
-    ast->flags << FunctionDecl::wasMarked;
+    if (!ast->flags(FunctionDecl::wasMarked))
+    {
+        ast->flags << FunctionDecl::wasMarked;
 
-    /* Mark this structure to be referenced */
-    ast->flags << Structure::isReferenced;
+        /* Mark this structure to be referenced */
+        ast->flags << Structure::isReferenced;
 
-    /* Analyze structure members */
-    for (auto& member : ast->members)
-        Visit(member);
+        /* Analyze structure members */
+        for (auto& member : ast->members)
+            Visit(member);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
@@ -115,29 +116,31 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     /* Check if this function was already marked by this analyzer */
-    if (ast->flags(FunctionDecl::wasMarked))
-        return;
-    ast->flags << FunctionDecl::wasMarked;
+    if (!ast->flags(FunctionDecl::wasMarked))
+    {
+        ast->flags << FunctionDecl::wasMarked;
 
-    /* Analyze function */
-    Visit(ast->returnType);
-    for (auto& param : ast->parameters)
-        Visit(param);
-    Visit(ast->codeBlock);
+        /* Analyze function */
+        Visit(ast->returnType);
+        for (auto& param : ast->parameters)
+            Visit(param);
+        Visit(ast->codeBlock);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     /* Check if this function was already marked by this analyzer */
-    if (ast->flags(UniformBufferDecl::wasMarked))
-        return;
-    ast->flags << UniformBufferDecl::wasMarked;
+    if (!ast->flags(UniformBufferDecl::wasMarked))
+    {
+        ast->flags << UniformBufferDecl::wasMarked;
 
-    /* Analyze uniform buffer */
-    ast->flags << UniformBufferDecl::isReferenced;
+        /* Analyze uniform buffer */
+        ast->flags << UniformBufferDecl::isReferenced;
 
-    for (auto& member : ast->members)
-        Visit(member);
+        for (auto& member : ast->members)
+            Visit(member);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)

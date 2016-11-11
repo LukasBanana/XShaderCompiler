@@ -154,10 +154,15 @@ StructurePtr HLSLParser::ParseStructure()
     Accept(Tokens::Struct);
 
     ast->name = Accept(Tokens::Ident)->Spell();
-    ast->members = ParseVarDeclStmntList();
 
-    /* Register identifier in symbol table (used to detect special cast expressions) */
-    typeSymTable_.Register(ast->name, ast.get());
+    GetReportHandler().PushContextDesc("struct " + ast->name);
+    {
+        ast->members = ParseVarDeclStmntList();
+
+        /* Register identifier in symbol table (used to detect special cast expressions) */
+        typeSymTable_.Register(ast->name, ast.get());
+    }
+    GetReportHandler().PopContextDesc();
 
     return ast;
 }
@@ -266,12 +271,16 @@ UniformBufferDeclPtr HLSLParser::ParseUniformBufferDecl()
     if (Is(Tokens::Colon))
         ast->registerName = ParseRegister();
 
-    /* Parse buffer body */
-    ast->members = ParseVarDeclStmntList();
+    GetReportHandler().PushContextDesc(ast->bufferType + " " + ast->name);
+    {
+        /* Parse buffer body */
+        ast->members = ParseVarDeclStmntList();
 
-    /* Parse optional semicolon (this seems to be optional for cbuffer, and tbuffer) */
-    if (Is(Tokens::Semicolon))
-        Semi();
+        /* Parse optional semicolon (this seems to be optional for cbuffer, and tbuffer) */
+        if (Is(Tokens::Semicolon))
+            Semi();
+    }
+    GetReportHandler().PopContextDesc();
 
     return ast;
 }
