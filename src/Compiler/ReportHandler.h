@@ -14,6 +14,7 @@
 #include <Xsc/Report.h>
 #include <Xsc/Log.h>
 #include <string>
+#include <stack>
 
 
 namespace Xsc
@@ -96,6 +97,10 @@ class ReportHandler
             return hasErrors_;
         }
 
+        // Pushes the specified context description string onto the stack. The top most description will be added to the next report message.
+        void PushContextDesc(const std::string& contextDesc);
+        void PopContextDesc();
+
         // Sets the current filename.
         inline void SetCurrentFilename(const std::string& filename)
         {
@@ -111,11 +116,13 @@ class ReportHandler
             const SourceArea& area
         );
 
-        std::string reportTypeName_;
-        std::string currentFilename_;
+        std::string             reportTypeName_;
+        std::string             currentFilename_;
 
-        Log*        log_                = nullptr;
-        bool        hasErrors_          = false;
+        Log*                    log_                = nullptr;
+        bool                    hasErrors_          = false;
+
+        std::stack<std::string> contextDescStack_;
 
 };
 

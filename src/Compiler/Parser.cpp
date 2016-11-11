@@ -48,6 +48,7 @@ void Parser::Error(const std::string& msg, bool prevToken, const HLSLErr errorCo
 
 void Parser::ErrorUnexpected(const std::string& hint, Token* tkn)
 {
+    /* Construct error message */
     if (!tkn)
         tkn = tkn_.get();
 
@@ -57,6 +58,9 @@ void Parser::ErrorUnexpected(const std::string& hint, Token* tkn)
         msg += " (" + hint + ")";
 
     Error(msg, tkn);
+
+    /* Ignore unexpected token to produce further reports */
+    AcceptIt();
 }
 
 void Parser::ErrorUnexpected(const Tokens type, Token* tkn)

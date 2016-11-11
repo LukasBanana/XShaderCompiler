@@ -35,8 +35,8 @@ class XSC_EXPORT Report : public std::exception
         Report(const Report&) = default;
         Report& operator = (const Report&) = default;
 
-        Report(const Types type, const std::string& message);
-        Report(const Types type, const std::string& message, const std::string& line, const std::string& marker);
+        Report(const Types type, const std::string& message, const std::string& context = "");
+        Report(const Types type, const std::string& message, const std::string& line, const std::string& marker, const std::string& context = "");
 
         //! Overrides the 'std::exception::what' function.
         const char* what() const throw() override;
@@ -45,6 +45,12 @@ class XSC_EXPORT Report : public std::exception
         inline Types Type() const
         {
             return type_;
+        }
+
+        //! Returns the context description string (e.g. a function name where the report occured). This may also be empty.
+        inline const std::string& Context() const
+        {
+            return context_;
         }
 
         //! Returns the message string.
@@ -78,6 +84,7 @@ class XSC_EXPORT Report : public std::exception
     private:
 
         Types       type_       = Types::Info;
+        std::string context_;
         std::string message_;
         std::string line_;
         std::string marker_;

@@ -240,11 +240,15 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl()
     if (Is(Tokens::Colon))
         ast->semantic = ParseSemantic();
 
-    /* Parse function body */
+    /* Parse optional function body */
     if (Is(Tokens::Semicolon))
         AcceptIt();
     else
+    {
+        GetReportHandler().PushContextDesc(ast->SignatureToString(false));
         ast->codeBlock = ParseCodeBlock();
+        GetReportHandler().PopContextDesc();
+    }
 
     return ast;
 }

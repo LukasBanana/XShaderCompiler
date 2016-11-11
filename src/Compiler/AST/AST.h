@@ -248,7 +248,7 @@ struct FunctionDecl : public GlobalDecl
     };
     
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
-    std::string ToString(bool useParamNames = true) const;
+    std::string SignatureToString(bool useParamNames = true) const;
 
     std::vector<FunctionCallPtr>    attribs;            // Attribute list
     VarTypePtr                      returnType;
@@ -481,7 +481,7 @@ struct VarDeclStmnt : public Stmnt
     };
 
     // Returns the var-decl statement as string.
-    std::string ToString(bool useVarNames) const;
+    std::string ToString(bool useVarNames = true) const;
 
     std::string                 inputModifier;      // in, out, inout, uniform
     std::vector<std::string>    storageModifiers;   // extern, nointerpolation, precise, shared, groupshared, static, volatile

@@ -81,6 +81,8 @@ void ReportHandler::SubmitReport(
         outputMsg += "[" + errorCode.Get() + "] ";
 
     outputMsg += ": ";
+
+    /* Add actual report message */
     outputMsg += msg;
 
     /* Either throw or submit report */
@@ -92,6 +94,16 @@ void ReportHandler::SubmitReport(
         log_->SumitReport(report);
 }
 
+void ReportHandler::PushContextDesc(const std::string& contextDesc)
+{
+    contextDescStack_.push(contextDesc);
+}
+
+void ReportHandler::PopContextDesc()
+{
+    contextDescStack_.pop();
+}
+
 
 /*
  * ======= Private: =======
@@ -100,16 +112,26 @@ void ReportHandler::SubmitReport(
 Report ReportHandler::MakeReport(
     const Report::Types type, const std::string& msg, SourceCode* sourceCode, const SourceArea& area)
 {
+    /* Get current context description */
+    std::string contextDesc;
+    if (!contextDescStack_.empty())
+    {
+        contextDesc += "in '";
+        contextDesc += contextDescStack_.top();
+        contextDesc += "':";
+    }
+
+    /* Make report with parameters */
     if (sourceCode != nullptr && area.length > 0)
     {
         std::string line, marker;
         if (sourceCode->FetchLineMarker(area, line, marker))
-            return Report(type, msg, line, marker);
+            return Report(type, msg, line, marker, contextDesc);
         else
-            return Report(type, msg);
+            return Report(type, msg, contextDesc);
     }
     else
-        return Report(type, msg);
+        return Report(type, msg, contextDesc);
 }
 
 

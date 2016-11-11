@@ -166,7 +166,7 @@ std::string VarDeclStmnt::ToString(bool useVarNames) const
 
 /* ----- FunctionDecl ----- */
 
-std::string FunctionDecl::ToString(bool useParamNames) const
+std::string FunctionDecl::SignatureToString(bool useParamNames) const
 {
     std::string s;
 
@@ -177,7 +177,7 @@ std::string FunctionDecl::ToString(bool useParamNames) const
 
     for (std::size_t i = 0; i < parameters.size(); ++i)
     {
-
+        s += parameters[i]->ToString(useParamNames);
         if (i + 1 < parameters.size())
             s += ", ";
     }
