@@ -319,6 +319,9 @@ struct DirectiveDecl : public GlobalDecl
 struct PackOffset : public AST
 {
     AST_INTERFACE(PackOffset);
+
+    std::string ToString() const;
+
     std::string registerName;
     std::string vectorComponent; // May be empty
 };
@@ -327,6 +330,9 @@ struct PackOffset : public AST
 struct VarSemantic : public AST
 {
     AST_INTERFACE(VarSemantic);
+
+    std::string ToString() const;
+
     std::string     semantic;
     PackOffsetPtr   packOffset;
     std::string     registerName; // May be empty
@@ -374,10 +380,14 @@ struct VarDecl : public AST
         FLAG( disableCodeGen,   1 ), // Disables the code generation for this variable declaration.
     };
 
+    // Returns the variable declaration as string.
+    std::string ToString() const;
+
     std::string                 name;
     std::vector<ExprPtr>        arrayDims;
     std::vector<VarSemanticPtr> semantics;
     ExprPtr                     initializer;
+
     UniformBufferDecl*          uniformBufferRef = nullptr; // Uniform buffer reference for DAST; may be null
     VarDeclStmnt*               declStmntRef = nullptr;     // Reference to its declaration statement; may be null
 };
@@ -469,6 +479,9 @@ struct VarDeclStmnt : public Stmnt
         FLAG( isShaderInput,    2 ), // This variable is used as shader input.
         FLAG( isShaderOutput,   3 ), // This variable is used as shader output.
     };
+
+    // Returns the var-decl statement as string.
+    std::string ToString(bool useVarNames) const;
 
     std::string                 inputModifier;      // in, out, inout, uniform
     std::vector<std::string>    storageModifiers;   // extern, nointerpolation, precise, shared, groupshared, static, volatile
