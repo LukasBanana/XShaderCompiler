@@ -67,7 +67,7 @@ static bool FinalizeMarker(
             markerOut[i] = '\t';
     }
 
-    auto len = std::min(area.length, lineIn.size() - area.pos.Column());
+    auto len = std::min(area.length, static_cast<unsigned int>(lineIn.size()) - area.pos.Column());
 
     markerOut += '^';
     markerOut += std::string(len - 1, '~');
