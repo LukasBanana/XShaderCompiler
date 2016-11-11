@@ -56,6 +56,9 @@ class Generator : protected Visitor
 
         void Blank();
 
+        // Returns the current date and time point (can be used in a headline comment).
+        std::string TimePoint() const;
+
     private:
 
         CodeWriter  writer_;

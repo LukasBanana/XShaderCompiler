@@ -196,7 +196,6 @@ class GLSLGenerator : public Generator
 
         Program*                program_                = nullptr;
 
-        std::string             entryPoint_;
         ShaderTarget            shaderTarget_           = ShaderTarget::GLSLVertexShader;
         OutputShaderVersion     versionOut_             = OutputShaderVersion::GLSL330;
         std::string             localVarPrefix_;
