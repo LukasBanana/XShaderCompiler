@@ -9,6 +9,7 @@
 #define XSC_CODE_GENERATOR_H
 
 
+#include <Xsc/IndentHandler.h>
 #include <ostream>
 #include <stack>
 
@@ -18,7 +19,7 @@ namespace Xsc
 
 
 // Output code writer.
-class CodeWriter
+class CodeWriter : public IndentHandler
 {
     
     public:
@@ -40,11 +41,6 @@ class CodeWriter
         // Throws std::runtime_error If stream is invalid.
         void OutputStream(std::ostream& stream);
 
-        void SetIndent(const std::string& indent);
-
-        void PushIndent();
-        void PopIndent();
-
         void PushOptions(const Options& options);
         void PopOptions();
 
@@ -59,8 +55,6 @@ class CodeWriter
     private:
         
         std::ostream*       stream_         = nullptr;
-        std::string         indent_         = std::string(4, ' ');
-        std::string         indentFull_;
 
         std::stack<Options> optionsStack_;
 

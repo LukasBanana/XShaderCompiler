@@ -19,22 +19,6 @@ void CodeWriter::OutputStream(std::ostream& stream)
         throw std::runtime_error("invalid output stream");
 }
 
-void CodeWriter::SetIndent(const std::string& indent)
-{
-    indent_ = indent;
-}
-
-void CodeWriter::PushIndent()
-{
-    indentFull_ += indent_;
-}
-
-void CodeWriter::PopIndent()
-{
-    if (!indentFull_.empty())
-        indentFull_.resize(indentFull_.size() - indent_.size());
-}
-
 void CodeWriter::PushOptions(const Options& options)
 {
     optionsStack_.push(options);
@@ -49,7 +33,7 @@ void CodeWriter::PopOptions()
 void CodeWriter::BeginLine()
 {
     if (CurrentOptions().enableIndent)
-        stream_->write(indentFull_.c_str(), indentFull_.size());
+        stream_->write(FullIndent().c_str(), FullIndent().size());
 }
 
 void CodeWriter::EndLine()

@@ -81,12 +81,12 @@ void Generator::WriteLn(const std::string& text)
 
 void Generator::IncIndent()
 {
-    writer_.PushIndent();
+    writer_.IncIndent();
 }
 
 void Generator::DecIndent()
 {
-    writer_.PopIndent();
+    writer_.DecIndent();
 }
 
 void Generator::PushOptions(const CodeWriter::Options& options)

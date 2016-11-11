@@ -37,18 +37,9 @@ class XSC_EXPORT IndentHandler
 
     protected:
 
-        IndentHandler(const std::string& initialIndent);
+        IndentHandler(const std::string& initialIndent = std::string(2, ' '));
 
-        /**
-        \brief Returns the current full indentation string.
-        \remarks Add this to the front of each report message.
-        \code
-        MyLog::SubmitReport(const Report& report)
-        {
-            std::cout << FullIndent() << report.Message() << std::endl;
-        }
-        \endcode
-        */
+        //! Returns the current full indentation string.
         inline const std::string& FullIndent() const
         {
             return indentFull_;
