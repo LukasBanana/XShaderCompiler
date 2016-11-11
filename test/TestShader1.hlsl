@@ -181,6 +181,11 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 	int cnst1 = 1;
 	row_major float4x4 cnst2;
 	
+	if (x > 0)
+	{
+		;;;
+	}
+	
 	// Loop test
 	[unroll(4)]
 	for (int i = 0; i < 10; ++i)

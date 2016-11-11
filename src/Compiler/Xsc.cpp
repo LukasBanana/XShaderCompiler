@@ -10,6 +10,7 @@
 #include "HLSLParser.h"
 #include "HLSLAnalyzer.h"
 #include "GLSLGenerator.h"
+#include "Optimizer.h"
 #include "ASTPrinter.h"
 #include <fstream>
 #include <sstream>
@@ -98,6 +99,13 @@ XSC_EXPORT bool CompileShader(
     {
         ASTPrinter dumper;
         dumper.DumpAST(program.get(), *log);
+    }
+
+    /* Optimize AST */
+    //if (outputDesc.options.optimize)
+    {
+        Optimizer optimizer;
+        optimizer.Optimize(*program);
     }
 
     /* Generate GLSL output code */

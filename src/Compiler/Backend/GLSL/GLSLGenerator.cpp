@@ -592,7 +592,13 @@ IMPLEMENT_VISIT_PROC(Structure)
     if ( resolveStruct || ( !ast->flags(Structure::isShaderInput) && !ast->flags(Structure::isShaderOutput) ) )
     {
         /* Write structure declaration */
-        WriteLn("struct " + ast->name);
+        BeginLn();
+        {
+            Write("struct");
+            if (!ast->name.empty())
+                Write(' ' + ast->name);
+        }
+        EndLn();
 
         OpenScope();
         {
