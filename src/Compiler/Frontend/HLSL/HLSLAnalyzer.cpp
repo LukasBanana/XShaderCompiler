@@ -274,12 +274,6 @@ IMPLEMENT_VISIT_PROC(Structure)
     structStack_.pop_back();
 }
 
-IMPLEMENT_VISIT_PROC(SwitchCase)
-{
-    Visit(ast->expr);
-    Visit(ast->stmnts);
-}
-
 /* --- Global declarations --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
@@ -405,11 +399,6 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
-{
-    Visit(ast->codeBlock);
-}
-
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
     ReportNullStmnt(ast->bodyStmnt, "for loop");
@@ -525,16 +514,6 @@ IMPLEMENT_VISIT_PROC(AssignStmnt)
     Visit(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(ExprStmnt)
-{
-    Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(FunctionCallStmnt)
-{
-    Visit(ast->call);
-}
-
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     Visit(ast->expr);
@@ -577,35 +556,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     }
 }
 
-IMPLEMENT_VISIT_PROC(StructDeclStmnt)
-{
-    Visit(ast->structure);
-}
-
-IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
-{
-    // do nothing
-}
-
 /* --- Expressions --- */
-
-IMPLEMENT_VISIT_PROC(ListExpr)
-{
-    Visit(ast->firstExpr);
-    Visit(ast->nextExpr);
-}
-
-IMPLEMENT_VISIT_PROC(LiteralExpr)
-{
-    // do nothing
-}
-
-IMPLEMENT_VISIT_PROC(TernaryExpr)
-{
-    Visit(ast->condExpr);
-    Visit(ast->thenExpr);
-    Visit(ast->elseExpr);
-}
 
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
@@ -616,31 +567,6 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
     /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
     if (IsBitwiseOp(ast->op))
         AcquireExtension(ARBEXT_GL_EXT_gpu_shader4);
-}
-
-IMPLEMENT_VISIT_PROC(UnaryExpr)
-{
-    Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(PostUnaryExpr)
-{
-    Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(FunctionCallExpr)
-{
-    Visit(ast->call);
-}
-
-IMPLEMENT_VISIT_PROC(BracketExpr)
-{
-    Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(CastExpr)
-{
-    Visit(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
@@ -666,16 +592,6 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 
 /* --- Variables --- */
 
-IMPLEMENT_VISIT_PROC(PackOffset)
-{
-    // do nothing
-}
-
-IMPLEMENT_VISIT_PROC(VarSemantic)
-{
-    // do nothing
-}
-
 IMPLEMENT_VISIT_PROC(VarType)
 {
     if (!ast->baseType.empty())
@@ -689,12 +605,6 @@ IMPLEMENT_VISIT_PROC(VarType)
         Visit(ast->structType);
     else
         Error("missing variable type", ast);
-}
-
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    Visit(ast->arrayIndices);
-    Visit(ast->next);
 }
 
 IMPLEMENT_VISIT_PROC(VarDecl)
