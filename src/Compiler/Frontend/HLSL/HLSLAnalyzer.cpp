@@ -151,12 +151,12 @@ void HLSLAnalyzer::AcquireExtension(const Program::ARBExtension& extension)
 
 bool HLSLAnalyzer::IsVersionOut(int version) const
 {
-    return static_cast<int>(versionOut_) >= version;
+    return (static_cast<int>(versionOut_) >= version);
 }
 
 FunctionCall* HLSLAnalyzer::CurrentFunction() const
 {
-    return callStack_.empty() ? nullptr : callStack_.top();
+    return (callStack_.empty() ? nullptr : callStack_.top());
 }
 
 /* ------- Visit functions ------- */
