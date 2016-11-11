@@ -227,7 +227,10 @@ struct Structure : public AST
         FLAG( isShaderOutput,   3 ), // This structure is used as shader output.
     };
 
-    std::string                     name;
+    // Returns a descriptive string of the function signature (e.g. "struct s" or "struct <anonymous>").
+    std::string SignatureToString() const;
+
+    std::string                     name;               // May be empty (for anonymous structures).
     std::vector<VarDeclStmntPtr>    members;
     std::string                     aliasName;          // Alias name for input and output interface blocks of the DAST.
     std::map<std::string, VarDecl*> systemValuesRef;    // List of members with system value semantic (SV_...).

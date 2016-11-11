@@ -156,12 +156,13 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 	int y = (int)x * 2 + 2 - (int)(x + 0.5) + (int)(float)(z) + 9;
 	float a = 1, b = 2 + (a += 4);
 	
-	struct InnerStruct
+	struct
 	{
-		int x, y;
-	};
+		int x, y,;
+	}
+	s1;
 	
-	InnerStruct s;
+	InnerStruct s2;
 	
 	float3 v0;
 	float3 v1 = float3(1, 2, 3) + v0.xxy + Get_TestStruct().v4.zyx + float4(0).xyz * 2;

@@ -153,10 +153,13 @@ StructurePtr HLSLParser::ParseStructure()
     /* Parse structure declaration */
     Accept(Tokens::Struct);
 
-    ast->name = Accept(Tokens::Ident)->Spell();
+    /* Parse optional name */
+    if (Is(Tokens::Ident))
+        ast->name = Accept(Tokens::Ident)->Spell();
 
-    GetReportHandler().PushContextDesc("struct " + ast->name);
+    GetReportHandler().PushContextDesc("struct " + ast->SignatureToString());
     {
+        /* Parse member variable declarations */
         ast->members = ParseVarDeclStmntList();
 
         /* Register identifier in symbol table (used to detect special cast expressions) */

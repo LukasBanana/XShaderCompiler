@@ -37,6 +37,15 @@ VarIdent* VarIdent::LastVarIdent()
     return (next ? next->LastVarIdent() : this);
 }
 
+
+/* ----- Structure ----- */
+
+std::string Structure::SignatureToString() const
+{
+    return (name.empty() ? "<anonymous>" : name);
+}
+
+
 /* ----- PackOffset ----- */
 
 std::string PackOffset::ToString() const
