@@ -12,19 +12,18 @@ namespace Xsc
 {
 
 
-/* --- Helper functions --- */
+/* ----- VarIdent ----- */
 
-//TODO: move this into "VarIdent" struct.
-std::string FullVarIdent(const VarIdentPtr& varIdent)
+std::string VarIdent::FullVarIdent() const
 {
     std::string name;
-    auto ast = varIdent;
+    auto ast = this;
     while (true)
     {
         name += ast->ident;
         if (ast->next)
         {
-            ast = ast->next;
+            ast = ast->next.get();
             name += ".";
         }
         else
@@ -33,10 +32,9 @@ std::string FullVarIdent(const VarIdentPtr& varIdent)
     return name;
 }
 
-//TODO: move this into "VarIdent" struct.
-VarIdent* LastVarIdent(VarIdent* varIdent)
+VarIdent* VarIdent::LastVarIdent()
 {
-    return ((varIdent && varIdent->next) ? LastVarIdent(varIdent->next.get()) : varIdent);
+    return (next ? next->LastVarIdent() : this);
 }
 
 

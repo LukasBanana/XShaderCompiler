@@ -659,7 +659,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     else
     {
         /* Write function name */
-        auto name = FullVarIdent(ast->name);
+        auto name = ast->name->FullVarIdent();
 
         auto it = intrinsicMap_.find(name);
         if (it != intrinsicMap_.end())
@@ -1416,7 +1416,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 void GLSLGenerator::VisitAttribute(FunctionCall* ast)
 {
-    auto name = FullVarIdent(ast->name);
+    auto name = ast->name->FullVarIdent();
 
     if (name == "numthreads")
         WriteAttributeNumThreads(ast);

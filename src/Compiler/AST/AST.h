@@ -342,6 +342,13 @@ struct VarType : public AST
 struct VarIdent : public AST
 {
     AST_INTERFACE(VarIdent);
+
+    // Returns the full var-ident string (with '.' separation).
+    std::string FullVarIdent() const;
+
+    // Returns the last identifier AST node.
+    VarIdent* LastVarIdent();
+
     std::string             ident;
     std::vector<ExprPtr>    arrayIndices;
     VarIdentPtr             next;                   // Next identifier; may be null.
@@ -627,14 +634,6 @@ struct SwitchCase : public AST
 #undef DECL_AST_ALIAS
 #undef FLAG_ENUM
 #undef FLAG
-
-/* --- Helper functions --- */
-
-// Returns the full variabel identifier name.
-std::string FullVarIdent(const VarIdentPtr& varIdent);
-
-// Returns the last identifier AST node.
-VarIdent* LastVarIdent(VarIdent* varIdent);
 
 
 } // /namespace Xsc
