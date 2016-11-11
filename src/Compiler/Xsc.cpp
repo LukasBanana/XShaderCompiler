@@ -19,6 +19,28 @@ namespace Xsc
 {
 
 
+XSC_EXPORT std::string TargetToString(const ShaderTarget target)
+{
+    switch (target)
+    {
+        case ShaderTarget::CommonShader:
+            return "Shader";
+        case ShaderTarget::VertexShader:
+            return "Vertex Shader";
+        case ShaderTarget::FragmentShader:
+            return "Fragment Shader";
+        case ShaderTarget::GeometryShader:
+            return "Geometry Shader";
+        case ShaderTarget::TessellationControlShader:
+            return "Tessellation-Control Shader";
+        case ShaderTarget::TessellationEvaluationShader:
+            return "Tessellation-Evaluation Shader";
+        case ShaderTarget::ComputeShader:
+            return "Compute Shader";
+    }
+    return "";
+}
+
 XSC_EXPORT bool CompileShader(
     const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log)
 {

@@ -9,6 +9,10 @@
 #define XSC_TARGETS_H
 
 
+#include "Export.h"
+#include <string>
+
+
 namespace Xsc
 {
 
@@ -52,6 +56,10 @@ enum class OutputShaderVersion
     GLSL440 = 440, //< GLSL 4.40 (OpenGL 4.4).
     GLSL450 = 450, //< GLSL 4.50 (OpenGL 4.5).
 };
+
+
+//! Returns the specified shader target as string.
+XSC_EXPORT std::string TargetToString(const ShaderTarget target);
 
 
 } // /namespace Xsc

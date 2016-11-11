@@ -10,7 +10,6 @@
 #include "HLSLAnalyzer.h"
 #include "AST.h"
 #include "HLSLKeywords.h"
-
 #include <initializer_list>
 #include <algorithm>
 #include <cctype>
@@ -30,28 +29,6 @@ static const std::string interfaceBlockPrefix = "_I";
 /*
  * Internal functions
  */
-
-static std::string TargetToString(const ShaderTarget shaderTarget)
-{
-    switch (shaderTarget)
-    {
-        case ShaderTarget::CommonShader:
-            return "Shader";
-        case ShaderTarget::VertexShader:
-            return "Vertex Shader";
-        case ShaderTarget::FragmentShader:
-            return "Fragment Shader";
-        case ShaderTarget::GeometryShader:
-            return "Geometry Shader";
-        case ShaderTarget::TessellationControlShader:
-            return "Tessellation-Control Shader";
-        case ShaderTarget::TessellationEvaluationShader:
-            return "Tessellation-Evaluation Shader";
-        case ShaderTarget::ComputeShader:
-            return "Compute Shader";
-    }
-    return "";
-}
 
 static inline std::vector<std::string> StringList(const std::initializer_list<std::string>& list)
 {
