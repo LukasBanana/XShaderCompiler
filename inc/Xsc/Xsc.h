@@ -58,6 +58,9 @@ struct Options
 
     //! If true, (almost) all comments are kept in the output code. By default true.
     bool        keepComments    = true;
+
+    //! If true, little code optimizations are performed. By default false.
+    bool        optimize        = false;
 };
 
 //! Shader input descriptor structure.

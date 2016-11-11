@@ -221,12 +221,12 @@ void PrefixCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> OutputCommand::Idents() const
 {
-    return { { "-O", }, { "--output" } };
+    return { { "-o", }, { "--output" } };
 }
 
 HelpDescriptor OutputCommand::Help() const
 {
-    return { "-O, --output FILE", "Shader output file; default='<FILE>.<ENTRY>.glsl'" };
+    return { "-o, --output FILE", "Shader output file; default='<FILE>.<ENTRY>.glsl'" };
 }
 
 void OutputCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -655,6 +655,30 @@ HelpDescriptor VerboseCommand::Help() const
 void VerboseCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.verbose = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * OptimizeCommand class
+ */
+
+std::vector<Command::Identifier> OptimizeCommand::Idents() const
+{
+    return { { "-O" }, { "--optimize" } };
+}
+
+HelpDescriptor OptimizeCommand::Help() const
+{
+    return
+    {
+        "-O, --optimize [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables optimization; default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void OptimizeCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.optimize = cmdLine.AcceptBoolean(true);
 }
 
 

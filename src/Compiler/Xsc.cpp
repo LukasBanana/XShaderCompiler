@@ -102,7 +102,7 @@ XSC_EXPORT bool CompileShader(
     }
 
     /* Optimize AST */
-    //if (outputDesc.options.optimize)
+    if (outputDesc.options.optimize)
     {
         Optimizer optimizer;
         optimizer.Optimize(*program);
