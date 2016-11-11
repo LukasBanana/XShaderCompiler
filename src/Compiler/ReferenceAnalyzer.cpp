@@ -91,9 +91,9 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 IMPLEMENT_VISIT_PROC(Structure)
 {
     /* Check if this function was already marked by this analyzer */
-    if (!ast->flags(FunctionDecl::wasMarked))
+    if (!ast->flags(Structure::wasMarked))
     {
-        ast->flags << FunctionDecl::wasMarked;
+        ast->flags << Structure::wasMarked;
 
         /* Mark this structure to be referenced */
         ast->flags << Structure::isReferenced;
