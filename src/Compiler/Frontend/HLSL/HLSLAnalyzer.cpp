@@ -31,8 +31,8 @@ static const ARBExt ARBEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_ima
  */
 
 HLSLAnalyzer::HLSLAnalyzer(Log* log) :
-    log_        { log       },
-    refAnalyzer_{ symTable_ }
+    reportHandler_  { "context", log },
+    refAnalyzer_    { symTable_      }
 {
     EstablishMaps();
 }
@@ -46,15 +46,13 @@ bool HLSLAnalyzer::DecorateAST(
     versionIn_      = inputDesc.shaderVersion;
     versionOut_     = outputDesc.shaderVersion;
     localVarPrefix_ = outputDesc.options.prefix;
-    enableWarnings_ = outputDesc.options.warnings;
 
     /* Decorate program AST */
-    hasErrors_      = false;
-    program_        = &program;
+    program_ = &program;
 
     Visit(&program);
 
-    return !hasErrors_;
+    return (!reportHandler_.HasErros());
 }
 
 
@@ -87,26 +85,20 @@ void HLSLAnalyzer::EstablishMaps()
 
 void HLSLAnalyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast)
 {
-    if (isError)
-        hasErrors_ = true;
-    else if (!enableWarnings_)
-        return;
+    /* Get source are */
+    SourceArea area;
 
-    if (log_)
+    if (ast)
     {
-        /* Construct full message string */
-        std::string typeStr = (isError ? "context error" : "warning");
-        std::string fullMsg;
-
-        if (ast)
-            fullMsg = (typeStr + " (" + ast->pos.ToString() + ") : " + msg);
-        else
-            fullMsg = (typeStr + " : " + msg);
-
-        /* Get report type and submit report */
-        auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
-        log_->SumitReport(Report(reportType, fullMsg));
+        area.pos    = ast->pos;
+        area.length = 1;
     }
+    else
+        area = SourceArea::ignore;
+
+    /* Submit error */
+    auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
+    reportHandler_.SubmitReport(false, reportType, "context error", msg, nullptr, area);
 }
 
 void HLSLAnalyzer::Error(const std::string& msg, const AST* ast)
@@ -221,7 +213,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
         /* Validate number of arguments */
         if (ast->arguments.size() != 2)
-            Error("\"mul\" intrinsic must have exactly 2 arguments", ast);
+            Error("\"mul\" intrinsic must have 2 arguments, but got " + std::to_string(ast->arguments.size()), ast);
     }
     else if (name == "rcp")
         ast->flags << FunctionCall::isRcpFunc;
@@ -309,6 +301,8 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
+    reportHandler_.PushContextDesc(ast->SignatureToString(false));
+
     const auto isEntryPoint = (ast->name == entryPoint_);
 
     /* Find previous function forward declarations */
@@ -388,6 +382,8 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         isInsideFunc_ = false;
     }
     CloseScope();
+
+    reportHandler_.PopContextDesc();
 }
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)

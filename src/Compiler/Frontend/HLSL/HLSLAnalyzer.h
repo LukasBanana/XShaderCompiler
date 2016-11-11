@@ -10,6 +10,7 @@
 
 
 #include <Xsc/Xsc.h>
+#include "ReportHandler.h"
 #include "ReferenceAnalyzer.h"
 #include "CodeWriter.h"
 #include "Visitor.h"
@@ -141,10 +142,8 @@ class HLSLAnalyzer : private Visitor
 
         /* === Members === */
 
-        Log*                                            log_                    = nullptr;
+        ReportHandler                                   reportHandler_;
 
-        bool                                            hasErrors_              = false;
-        bool                                            enableWarnings_         = false;
         Program*                                        program_                = nullptr;
         FunctionDecl*                                   mainFunction_           = nullptr;
 
