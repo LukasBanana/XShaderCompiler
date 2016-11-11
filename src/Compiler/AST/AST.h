@@ -145,6 +145,7 @@ struct Program : public AST
     AST_INTERFACE(Program)
 
     // GL ARB extension structure.
+    //TODO: replace this by "GLSLExtensionAgent::GLSLExtension
     struct ARBExtension
     {
         std::string extensionName;

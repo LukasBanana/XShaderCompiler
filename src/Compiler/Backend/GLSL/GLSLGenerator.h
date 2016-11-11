@@ -101,7 +101,7 @@ class GLSLGenerator : private Visitor
         // Writes a new extensions
         void Extension(const std::string& extensionName);
 
-        void AppendRequiredExtensions(Program* ast);
+        void AppendRequiredExtensions(Program& ast);
         
         void AppendCommonMacros();
         //void AppendInterlockedMacros();
@@ -219,7 +219,6 @@ class GLSLGenerator : private Visitor
 
         std::string             entryPoint_;
         ShaderTarget            shaderTarget_           = ShaderTarget::GLSLVertexShader;
-        InputShaderVersion      versionIn_              = InputShaderVersion::HLSL5;
         OutputShaderVersion     versionOut_             = OutputShaderVersion::GLSL330;
         std::string             localVarPrefix_;
         bool                    allowBlanks_            = true;

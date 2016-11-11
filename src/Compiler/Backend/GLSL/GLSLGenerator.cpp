@@ -6,6 +6,7 @@
  */
 
 #include "GLSLGenerator.h"
+#include "GLSLExtensionAgent.h"
 #include "HLSLAnalyzer.h"
 #include "AST.h"
 #include "HLSLKeywords.h"
@@ -97,7 +98,6 @@ bool GLSLGenerator::GenerateCode(
     /* Store parameters */
     entryPoint_     = inputDesc.entryPoint;
     shaderTarget_   = inputDesc.shaderTarget;
-    versionIn_      = inputDesc.shaderVersion;
     versionOut_     = outputDesc.shaderVersion;
 
     try
@@ -396,10 +396,14 @@ void GLSLGenerator::Extension(const std::string& extensionName)
     WriteLn("#extension " + extensionName + " : enable");// "require" or "enable"
 }
 
-void GLSLGenerator::AppendRequiredExtensions(Program* ast)
+void GLSLGenerator::AppendRequiredExtensions(Program& ast)
 {
-    for (const auto& ext : ast->requiredExtensions)
+    GLSLExtensionAgent extensionAgent;
+    auto requiredExtensions = extensionAgent.DetermineRequiredExtensions(ast, versionOut_);
+
+    for (const auto& ext : requiredExtensions)
         Extension(ext);
+
     Blank();
 }
 
@@ -552,7 +556,7 @@ IMPLEMENT_VISIT_PROC(Program)
     program_ = ast;
 
     /* Append required extensions first */
-    AppendRequiredExtensions(ast);
+    AppendRequiredExtensions(*ast);
 
     /* Write 'gl_FragCoord' layout */
     if (shaderTarget_ == ShaderTarget::GLSLFragmentShader)
