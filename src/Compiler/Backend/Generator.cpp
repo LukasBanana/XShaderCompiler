@@ -15,12 +15,19 @@ namespace Xsc
 {
 
 
+Generator::Generator(Log* log) :
+    reportHandler_{ "code generation", log }
+{
+}
+
 bool Generator::GenerateCode(
     Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log)
 {
     /* Store parameters */
     writer_.SetIndent(outputDesc.options.indent);
-    allowBlanks_ = outputDesc.options.blanks;
+
+    allowBlanks_    = outputDesc.options.blanks;
+    program_        = &program;
 
     try
     {
@@ -44,14 +51,7 @@ bool Generator::GenerateCode(
 
 void Generator::Error(const std::string& msg, const AST* ast)
 {
-    std::string fullMsg = "code generation error";
-
-    if (ast)
-        fullMsg += (" (" + ast->area.pos.ToString() + ") : " + msg);
-    else
-        fullMsg += (" : " + msg);
-
-    throw Report(Report::Types::Error, fullMsg);
+    reportHandler_.Error(true, msg, program_->sourceCode.get(), (ast ? ast->area : SourceArea::ignore));
 }
 
 void Generator::ErrorInvalidNumArgs(const std::string& functionName, const AST* ast)

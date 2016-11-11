@@ -12,6 +12,7 @@
 #include <Xsc/Xsc.h>
 #include "CodeWriter.h"
 #include "Visitor.h"
+#include "ReportHandler.h"
 
 
 namespace Xsc
@@ -24,6 +25,8 @@ class Generator : protected Visitor
     
     public:
         
+        Generator(Log* log);
+
         bool GenerateCode(
             Program& program,
             const ShaderInput& inputDesc,
@@ -59,11 +62,19 @@ class Generator : protected Visitor
         // Returns the current date and time point (can be used in a headline comment).
         std::string TimePoint() const;
 
+        inline Program* GetProgram() const
+        {
+            return program_;
+        }
+
     private:
 
-        CodeWriter  writer_;
+        CodeWriter      writer_;
+        ReportHandler   reportHandler_;
 
-        bool        allowBlanks_ = true;
+        Program*        program_        = nullptr;
+
+        bool            allowBlanks_    = true;
 
 };
 

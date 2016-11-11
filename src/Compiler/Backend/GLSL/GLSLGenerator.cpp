@@ -30,7 +30,8 @@ static const std::string interfaceBlockPrefix = "_I";
  * GLSLGenerator class
  */
 
-GLSLGenerator::GLSLGenerator()
+GLSLGenerator::GLSLGenerator(Log* log) :
+    Generator{ log }
 {
     EstablishMaps();
 }
@@ -361,13 +362,14 @@ void GLSLGenerator::CloseScope(bool semicolon)
     WriteLn(semicolon ? "};" : "}");
 }
 
-void GLSLGenerator::ValidateRegisterPrefix(const std::string& registerName, char prefix)
+void GLSLGenerator::ValidateRegisterPrefix(const std::string& registerName, char prefix, const AST* ast)
 {
     if (registerName.empty() || registerName[0] != prefix)
     {
         Error(
             "invalid register prefix '" + std::string(1, registerName[0]) +
-            "' (expected '" + std::string(1, prefix) + "')"
+            "' (expected '" + std::string(1, prefix) + "')",
+            ast
         );
     }
 }
@@ -377,27 +379,27 @@ int GLSLGenerator::RegisterIndex(const std::string& registerName)
     return std::stoi(registerName.substr(1));
 }
 
-std::string GLSLGenerator::BRegister(const std::string& registerName)
+std::string GLSLGenerator::BRegister(const std::string& registerName, const AST* ast)
 {
-    ValidateRegisterPrefix(registerName, 'b');
+    ValidateRegisterPrefix(registerName, 'b', ast);
     return registerName.substr(1);
 }
 
-std::string GLSLGenerator::TRegister(const std::string& registerName)
+std::string GLSLGenerator::TRegister(const std::string& registerName, const AST* ast)
 {
-    ValidateRegisterPrefix(registerName, 't');
+    ValidateRegisterPrefix(registerName, 't', ast);
     return registerName.substr(1);
 }
 
-std::string GLSLGenerator::SRegister(const std::string& registerName)
+std::string GLSLGenerator::SRegister(const std::string& registerName, const AST* ast)
 {
-    ValidateRegisterPrefix(registerName, 's');
+    ValidateRegisterPrefix(registerName, 's', ast);
     return registerName.substr(1);
 }
 
-std::string GLSLGenerator::URegister(const std::string& registerName)
+std::string GLSLGenerator::URegister(const std::string& registerName, const AST* ast)
 {
-    ValidateRegisterPrefix(registerName, 'u');
+    ValidateRegisterPrefix(registerName, 'u', ast);
     return registerName.substr(1);
 }
 
@@ -421,8 +423,6 @@ bool GLSLGenerator::IsVersionOut(int version) const
 
 IMPLEMENT_VISIT_PROC(Program)
 {
-    program_ = ast;
-
     /* Append required extensions first */
     AppendRequiredExtensions(*ast);
 
@@ -432,7 +432,7 @@ IMPLEMENT_VISIT_PROC(Program)
         BeginLn();
         {
             Write("layout(origin_upper_left");
-            if (program_->flags(Program::hasSM3ScreenSpace))
+            if (GetProgram()->flags(Program::hasSM3ScreenSpace))
                 Write(", pixel_center_integer");
             Write(") in vec4 gl_FragCoord;");
         }
@@ -771,7 +771,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         Write("layout(std140");
 
         if (!ast->registerName.empty())
-            Write(", binding = " + BRegister(ast->registerName));
+            Write(", binding = " + BRegister(ast->registerName, ast));
 
         Write(") uniform ");
         Write(ast->name);
@@ -808,7 +808,7 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
             BeginLn();
             {
                 if (!name->registerName.empty())
-                    Write("layout(binding = " + TRegister(name->registerName) + ") ");
+                    Write("layout(binding = " + TRegister(name->registerName, name.get()) + ") ");
                 Write("uniform " + samplerType + " " + name->ident + ";");
             }
             EndLn();
@@ -1385,7 +1385,7 @@ void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenP
 
 void GLSLGenerator::WriteEntryPointInputSemantics()
 {
-    auto& parameters = program_->inputSemantics.parameters;
+    auto& parameters = GetProgram()->inputSemantics.parameters;
 
     size_t writtenParamCounter = 0;
     for (auto& param : parameters)
@@ -1397,7 +1397,7 @@ void GLSLGenerator::WriteEntryPointInputSemantics()
 
 void GLSLGenerator::WriteEntryPointOutputSemantics(Expr* ast)
 {
-    auto& outp = program_->outputSemantics;
+    auto& outp = GetProgram()->outputSemantics;
 
     if (!outp.singleOutputVariable.empty())
     {
@@ -1419,7 +1419,7 @@ void GLSLGenerator::WriteEntryPointOutputSemantics(Expr* ast)
 
 void GLSLGenerator::WriteFragmentShaderOutput()
 {
-    auto& outp = program_->outputSemantics;
+    auto& outp = GetProgram()->outputSemantics;
 
     if (outp.returnType->symbolRef || outp.returnType->structType)
     {

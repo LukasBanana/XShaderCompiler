@@ -156,6 +156,8 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 	int y = (int)x * 2 + 2 - (int)(x + 0.5) + (int)(float)(z) + 9;
 	float a = 1, b = 2 + (a += 4);
 	
+	//float4x4 m = wvpMatrix;
+	
 	struct
 	{
 		int x, y;
