@@ -37,17 +37,17 @@ static std::string TargetToString(const ShaderTarget shaderTarget)
     {
         case ShaderTarget::CommonShader:
             return "Shader";
-        case ShaderTarget::GLSLVertexShader:
+        case ShaderTarget::VertexShader:
             return "Vertex Shader";
-        case ShaderTarget::GLSLFragmentShader:
+        case ShaderTarget::FragmentShader:
             return "Fragment Shader";
-        case ShaderTarget::GLSLGeometryShader:
+        case ShaderTarget::GeometryShader:
             return "Geometry Shader";
-        case ShaderTarget::GLSLTessControlShader:
-            return "Tessellation Control Shader";
-        case ShaderTarget::GLSLTessEvaluationShader:
-            return "Tessellation Evaluation Shader";
-        case ShaderTarget::GLSLComputeShader:
+        case ShaderTarget::TessellationControlShader:
+            return "Tessellation-Control Shader";
+        case ShaderTarget::TessellationEvaluationShader:
+            return "Tessellation-Evaluation Shader";
+        case ShaderTarget::ComputeShader:
             return "Compute Shader";
     }
     return "";
@@ -437,9 +437,9 @@ std::string GLSLGenerator::URegister(const std::string& registerName)
 bool GLSLGenerator::MustResolveStruct(Structure* ast) const
 {
     return
-        ( shaderTarget_ == ShaderTarget::GLSLVertexShader && ast->flags(Structure::isShaderInput) ) ||
-        ( shaderTarget_ == ShaderTarget::GLSLFragmentShader && ast->flags(Structure::isShaderOutput) ) ||
-        ( shaderTarget_ == ShaderTarget::GLSLComputeShader && ( ast->flags(Structure::isShaderInput) || ast->flags(Structure::isShaderOutput) ) );
+        ( shaderTarget_ == ShaderTarget::VertexShader && ast->flags(Structure::isShaderInput) ) ||
+        ( shaderTarget_ == ShaderTarget::FragmentShader && ast->flags(Structure::isShaderOutput) ) ||
+        ( shaderTarget_ == ShaderTarget::ComputeShader && ( ast->flags(Structure::isShaderInput) || ast->flags(Structure::isShaderOutput) ) );
 }
 
 bool GLSLGenerator::IsVersionOut(int version) const
@@ -460,7 +460,7 @@ IMPLEMENT_VISIT_PROC(Program)
     AppendRequiredExtensions(*ast);
 
     /* Write 'gl_FragCoord' layout */
-    if (shaderTarget_ == ShaderTarget::GLSLFragmentShader)
+    if (shaderTarget_ == ShaderTarget::FragmentShader)
     {
         BeginLn();
         {
@@ -483,7 +483,7 @@ IMPLEMENT_VISIT_PROC(Program)
     if (ast->flags(Program::sinCosIntrinsicUsed))
         AppendSinCosIntrinsics();
 
-    if (shaderTarget_ == ShaderTarget::GLSLFragmentShader)
+    if (shaderTarget_ == ShaderTarget::FragmentShader)
         WriteFragmentShaderOutput();
 
     for (auto& globDecl : ast->globalDecls)
@@ -1707,17 +1707,17 @@ const std::string& GLSLGenerator::SemanticStage::operator [] (const ShaderTarget
 {
     switch (target)
     {
-        case ShaderTarget::GLSLVertexShader:
+        case ShaderTarget::VertexShader:
             return vertex;
-        case ShaderTarget::GLSLGeometryShader:
+        case ShaderTarget::GeometryShader:
             return geometry;
-        case ShaderTarget::GLSLTessControlShader:
+        case ShaderTarget::TessellationControlShader:
             return tessControl;
-        case ShaderTarget::GLSLTessEvaluationShader:
+        case ShaderTarget::TessellationEvaluationShader:
             return tessEvaluation;
-        case ShaderTarget::GLSLFragmentShader:
+        case ShaderTarget::FragmentShader:
             return fragment;
-        case ShaderTarget::GLSLComputeShader:
+        case ShaderTarget::ComputeShader:
             return compute;
         default:
             break;

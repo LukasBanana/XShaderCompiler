@@ -92,12 +92,12 @@ void TargetCommand::Run(CommandLine& cmdLine, ShellState& state)
         cmdLine.Accept(),
         {
           //{ "common",          ShaderTarget::CommonShader             },
-            { "vertex",          ShaderTarget::GLSLVertexShader         },
-            { "fragment",        ShaderTarget::GLSLFragmentShader       },
-            { "geometry",        ShaderTarget::GLSLGeometryShader       },
-            { "tess-control",    ShaderTarget::GLSLTessControlShader    },
-            { "tess-evaluation", ShaderTarget::GLSLTessEvaluationShader },
-            { "compute",         ShaderTarget::GLSLComputeShader        },
+            { "vertex",          ShaderTarget::VertexShader         },
+            { "fragment",        ShaderTarget::FragmentShader       },
+            { "geometry",        ShaderTarget::GeometryShader       },
+            { "tess-control",    ShaderTarget::TessellationControlShader    },
+            { "tess-evaluation", ShaderTarget::TessellationEvaluationShader },
+            { "compute",         ShaderTarget::ComputeShader        },
         },
         "invalid shader target"
     );

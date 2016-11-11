@@ -295,7 +295,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                 DecorateEntryInOut(param.get(), true);
 
             /* Check if fragment shader use a slightly different screen space (VPOS vs. SV_Position) */
-            if (shaderTarget_ == ShaderTarget::GLSLFragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
+            if (shaderTarget_ == ShaderTarget::FragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
                 program_->flags << Program::hasSM3ScreenSpace;
         }
 

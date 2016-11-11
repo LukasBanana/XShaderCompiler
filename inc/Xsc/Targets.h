@@ -17,15 +17,15 @@ namespace Xsc
 enum class ShaderTarget
 {
     /* --- Special types --- */
-    CommonShader = 0,           //< Common shader (used as include file).
+    CommonShader = 0,               //< Common shader (used as include file).
 
-    /* --- GLSL shader types --- */
-    GLSLVertexShader,           //< GLSL vertex shader.
-    GLSLGeometryShader,         //< GLSL geometry shader.
-    GLSLTessControlShader,      //< GLSL tessellation control (also hull-) shader.
-    GLSLTessEvaluationShader,   //< GLSL tessellation evaluation (also domain-) shader.
-    GLSLFragmentShader,         //< GLSL fragment (also pixel-) shader.
-    GLSLComputeShader,          //< GLSL compute shader.
+    /* --- Shader types --- */
+    VertexShader,                   //< Vertex shader.
+    GeometryShader,                 //< Geometry shader.
+    TessellationControlShader,      //< Tessellation-control (also hull-) shader.
+    TessellationEvaluationShader,   //< Tessellation-evaluation (also domain-) shader.
+    FragmentShader,                 //< Fragment (also pixel-) shader.
+    ComputeShader,                  //< Compute shader.
 };
 
 //! Input shader version enumeration.
