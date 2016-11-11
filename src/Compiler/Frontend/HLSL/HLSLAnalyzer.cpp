@@ -29,7 +29,7 @@ bool HLSLAnalyzer::DecorateAST(
     shaderTarget_   = inputDesc.shaderTarget;
     versionIn_      = inputDesc.shaderVersion;
     versionOut_     = outputDesc.shaderVersion;
-    localVarPrefix_ = outputDesc.options.prefix;
+    localVarPrefix_ = outputDesc.formatting.prefix;
 
     /* Decorate program AST */
     program_ = &program;

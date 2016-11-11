@@ -190,7 +190,7 @@ HelpDescriptor IndentCommand::Help() const
 
 void IndentCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.options.indent = cmdLine.Accept();
+    state.outputDesc.formatting.indent = cmdLine.Accept();
 }
 
 
@@ -211,7 +211,7 @@ HelpDescriptor PrefixCommand::Help() const
 void PrefixCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     auto prefix = cmdLine.Accept();
-    state.outputDesc.options.prefix = (prefix == "<none>" ? "" : prefix);
+    state.outputDesc.formatting.prefix = (prefix == "<none>" ? "" : prefix);
 }
 
 
@@ -279,7 +279,7 @@ HelpDescriptor BlanksCommand::Help() const
 
 void BlanksCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.options.blanks = cmdLine.AcceptBoolean(true);
+    state.outputDesc.formatting.blanks = cmdLine.AcceptBoolean(true);
 }
 
 
@@ -303,7 +303,7 @@ HelpDescriptor LineMarksCommand::Help() const
 
 void LineMarksCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.options.lineMarks = cmdLine.AcceptBoolean(true);
+    state.outputDesc.formatting.lineMarks = cmdLine.AcceptBoolean(true);
 }
 
 
@@ -375,7 +375,7 @@ HelpDescriptor CommentsCommand::Help() const
 
 void CommentsCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.options.keepComments = cmdLine.AcceptBoolean(true);
+    state.outputDesc.formatting.keepComments = cmdLine.AcceptBoolean(true);
 }
 
 

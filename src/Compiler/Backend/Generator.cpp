@@ -24,9 +24,9 @@ bool Generator::GenerateCode(
     Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log)
 {
     /* Store parameters */
-    writer_.SetIndent(outputDesc.options.indent);
+    writer_.SetIndent(outputDesc.formatting.indent);
 
-    allowBlanks_    = outputDesc.options.blanks;
+    allowBlanks_    = outputDesc.formatting.blanks;
     program_        = &program;
 
     try

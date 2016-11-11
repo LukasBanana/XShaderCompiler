@@ -42,8 +42,8 @@ void GLSLGenerator::GeneratePrimaryCode(
     /* Store parameters */
     shaderTarget_   = inputDesc.shaderTarget;
     versionOut_     = outputDesc.shaderVersion;
-    localVarPrefix_ = outputDesc.options.prefix;
-    allowLineMarks_ = outputDesc.options.lineMarks;
+    localVarPrefix_ = outputDesc.formatting.prefix;
+    allowLineMarks_ = outputDesc.formatting.lineMarks;
 
     /* Write header */
     if (inputDesc.entryPoint.empty())

@@ -25,11 +25,11 @@ namespace Xsc
 {
 
 
-//! Structure for additional translation options.
-struct Options
+//! Formatting descriptor structure for the output shader.
+struct Formatting
 {
     //! Indentation string for code generation. By default std::string(4, ' ').
-    std::string indent          = "    ";
+    std::string indent              = "    ";
     
     /**
     Prefix string for all local variables. By default "_".
@@ -39,28 +39,40 @@ struct Options
     This prefix is added to all local function variables.
     \todo Remove this option and handle this workaround in an autmatic manner.
     */
-    std::string prefix          = "_";
+    std::string prefix              = "_";
 
+    //! True if blanks are allowed. By default true.
+    bool        blanks              = true;
+
+    //! True if line marks are allowed. By default false.
+    bool        lineMarks           = false;
+
+    //! If true, (almost) all comments are kept in the output code. By default true.
+    bool        keepComments        = true;
+
+    #if 0
+    /**
+    If true, open curly braces are put at the end of a line. By default false.
+    \remarks Also called "egyptian brackets" like in Java coding styles.
+    */
+    bool        openBracesAtLineEnd = false;
+    #endif
+};
+
+//! Structure for additional translation options.
+struct Options
+{
     //! True if warnings are allowed. By default false.
     bool        warnings        = false;
 
-    //! True if blanks are allowed. By default true.
-    bool        blanks          = true;
-
-    //! True if line marks are allowed. By default false.
-    bool        lineMarks       = false;
-
-    //! If true, the abstract syntax tree (AST) will be printed as debug output. By default false.
-    bool        dumpAST         = false;
+    //! If true, little code optimizations are performed. By default false.
+    bool        optimize        = false;
 
     //! If true, only the preprocessed source code will be written out.
     bool        preprocessOnly  = false;
 
-    //! If true, (almost) all comments are kept in the output code. By default true.
-    bool        keepComments    = true;
-
-    //! If true, little code optimizations are performed. By default false.
-    bool        optimize        = false;
+    //! If true, the abstract syntax tree (AST) will be written to the log output. By default false.
+    bool        dumpAST         = false;
 };
 
 //! Shader input descriptor structure.
@@ -99,6 +111,9 @@ struct ShaderOutput
 
     //! Specifies the output shader version (e.g. for "GLSL 1.20" use 'OutputShaderVersion::GLSL120'). By default OutputShaderVersion::GLSL330.
     OutputShaderVersion             shaderVersion       = OutputShaderVersion::GLSL330;
+
+    //! Output code formatting descriptor.
+    Formatting                      formatting;
 
     //! Additional options to configure the code generation.
     Options                         options;
