@@ -220,6 +220,7 @@ void PreProcessor::ParseProgram()
     {
         const auto& ifBlock = ifBlockStack_.top();
         GetReportHandler().Error(
+            false,
             "missing '#endif'-directive for open '#if', '#ifdef', or '#ifndef'",
             ifBlock.directiveSource.get(),
             ifBlock.directiveToken->Area()

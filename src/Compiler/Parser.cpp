@@ -36,17 +36,18 @@ static SourceArea GetTokenArea(Token* tkn)
     return (tkn != nullptr ? tkn->Area() : SourceArea::ignore);
 }
 
-void Parser::Error(const std::string& msg, Token* tkn, const HLSLErr errorCode)
+void Parser::Error(const std::string& msg, Token* tkn, const HLSLErr errorCode, bool breakWithExpection)
 {
-    reportHandler_.ErrorBreak(msg, GetScanner().Source(), GetTokenArea(tkn), errorCode);
+    reportHandler_.Error(breakWithExpection, msg, GetScanner().Source(), GetTokenArea(tkn), errorCode);
 }
 
-void Parser::Error(const std::string& msg, bool prevToken, const HLSLErr errorCode)
+void Parser::Error(const std::string& msg, bool prevToken, const HLSLErr errorCode, bool breakWithExpection)
 {
-    Error(msg, prevToken ? GetScanner().PreviousToken().get() : GetScanner().ActiveToken().get(), errorCode);
+    auto tkn = (prevToken ? GetScanner().PreviousToken().get() : GetScanner().ActiveToken().get());
+    Error(msg, tkn, errorCode, breakWithExpection);
 }
 
-void Parser::ErrorUnexpected(const std::string& hint, Token* tkn)
+void Parser::ErrorUnexpected(const std::string& hint, Token* tkn, bool breakWithExpection)
 {
     /* Construct error message */
     if (!tkn)
@@ -57,29 +58,29 @@ void Parser::ErrorUnexpected(const std::string& hint, Token* tkn)
     if (!hint.empty())
         msg += " (" + hint + ")";
 
-    Error(msg, tkn);
+    Error(msg, tkn, HLSLErr::Unknown, breakWithExpection);
 
     /* Ignore unexpected token to produce further reports */
     AcceptIt();
 }
 
-void Parser::ErrorUnexpected(const Tokens type, Token* tkn)
+void Parser::ErrorUnexpected(const Tokens type, Token* tkn, bool breakWithExpection)
 {
     auto typeName = Token::TypeToString(type);
     if (typeName.empty())
-        ErrorUnexpected("", tkn);
+        ErrorUnexpected("", tkn, breakWithExpection);
     else
-        ErrorUnexpected("expected: " + typeName, tkn);
+        ErrorUnexpected("expected: " + typeName, tkn, breakWithExpection);
 }
 
 void Parser::ErrorInternal(const std::string& msg, const std::string& procName)
 {
-    reportHandler_.ErrorBreak(msg + " (in function: " + procName + ")");
+    reportHandler_.Error(true, msg + " (in function: " + procName + ")");
 }
 
 void Parser::Warning(const std::string& msg, Token* tkn)
 {
-    reportHandler_.Warning(msg, GetScanner().Source(), GetTokenArea(tkn));
+    reportHandler_.Warning(false, msg, GetScanner().Source(), GetTokenArea(tkn));
 }
 
 void Parser::Warning(const std::string& msg, bool prevToken)

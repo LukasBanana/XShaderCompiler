@@ -34,24 +34,16 @@ ReportHandler::ReportHandler(const std::string& reportTypeName, Log* log) :
 {
 }
 
-void ReportHandler::Error(const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
+void ReportHandler::Error(
+    bool breakWithExpection, const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
 {
-    SubmitReport(false, Report::Types::Error, (reportTypeName_ + " error"), msg, sourceCode, area, errorCode);
+    SubmitReport(breakWithExpection, Report::Types::Error, (reportTypeName_ + " error"), msg, sourceCode, area, errorCode);
 }
 
-void ReportHandler::ErrorBreak(const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
+void ReportHandler::Warning(
+    bool breakWithExpection, const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
 {
-    SubmitReport(true, Report::Types::Error, (reportTypeName_ + " error"), msg, sourceCode, area, errorCode);
-}
-
-void ReportHandler::Warning(const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
-{
-    SubmitReport(false, Report::Types::Warning, "warning", msg, sourceCode, area, errorCode);
-}
-
-void ReportHandler::WarningBreak(const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
-{
-    SubmitReport(true, Report::Types::Warning, "warning", msg, sourceCode, area, errorCode);
+    SubmitReport(breakWithExpection, Report::Types::Warning, "warning", msg, sourceCode, area, errorCode);
 }
 
 void ReportHandler::SubmitReport(

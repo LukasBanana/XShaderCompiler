@@ -54,13 +54,7 @@ class ReportHandler
         ReportHandler(const std::string& reportTypeName, Log* log);
 
         void Error(
-            const std::string& msg,
-            SourceCode* sourceCode = nullptr,
-            const SourceArea& area = SourceArea::ignore,
-            const ErrorCode& errorCode = ErrorCode()
-        );
-
-        void ErrorBreak(
+            bool breakWithExpection,
             const std::string& msg,
             SourceCode* sourceCode = nullptr,
             const SourceArea& area = SourceArea::ignore,
@@ -68,13 +62,7 @@ class ReportHandler
         );
 
         void Warning(
-            const std::string& msg,
-            SourceCode* sourceCode = nullptr,
-            const SourceArea& area = SourceArea::ignore,
-            const ErrorCode& errorCode = ErrorCode()
-        );
-
-        void WarningBreak(
+            bool breakWithExpection,
             const std::string& msg,
             SourceCode* sourceCode = nullptr,
             const SourceArea& area = SourceArea::ignore,

@@ -46,11 +46,11 @@ class Parser
 
         /* ----- Report Handling ----- */
 
-        void Error(const std::string& msg, Token* tkn, const HLSLErr errorCode = HLSLErr::Unknown);
-        void Error(const std::string& msg, bool prevToken = true, const HLSLErr errorCode = HLSLErr::Unknown);
+        void Error(const std::string& msg, Token* tkn, const HLSLErr errorCode = HLSLErr::Unknown, bool breakWithExpection = true);
+        void Error(const std::string& msg, bool prevToken = true, const HLSLErr errorCode = HLSLErr::Unknown, bool breakWithExpection = true);
 
-        void ErrorUnexpected(const std::string& hint = "", Token* tkn = nullptr);
-        void ErrorUnexpected(const Tokens type, Token* tkn = nullptr);
+        void ErrorUnexpected(const std::string& hint = "", Token* tkn = nullptr, bool breakWithExpection = true);
+        void ErrorUnexpected(const Tokens type, Token* tkn = nullptr, bool breakWithExpection = true);
 
         void ErrorInternal(const std::string& msg, const std::string& procName);
 
