@@ -153,7 +153,7 @@ AST* HLSLAnalyzer::Fetch(const std::string& ident) const
 
 AST* HLSLAnalyzer::Fetch(const VarIdentPtr& ident) const
 {
-    auto fullIdent = ident->FullVarIdent();
+    auto fullIdent = ident->ToString();
     return Fetch(fullIdent);
 }
 
@@ -212,7 +212,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    auto name = ast->name->FullVarIdent();
+    auto name = ast->name->ToString();
 
     /* Check if a specific intrinsic is used */
     if (name == "mul")
@@ -339,7 +339,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         Visit(attrib);
 
         /* Check for special attributes */
-        auto name = attrib->name->FullVarIdent();
+        auto name = attrib->name->ToString();
 
         if (name == "earlydepthstencil")
             AcquireExtension(ARBEXT_GL_ARB_shader_image_load_store);

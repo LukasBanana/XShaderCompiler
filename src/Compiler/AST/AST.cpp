@@ -14,7 +14,7 @@ namespace Xsc
 
 /* ----- VarIdent ----- */
 
-std::string VarIdent::FullVarIdent() const
+std::string VarIdent::ToString() const
 {
     std::string name;
     auto ast = this;
@@ -35,6 +35,38 @@ std::string VarIdent::FullVarIdent() const
 VarIdent* VarIdent::LastVarIdent()
 {
     return (next ? next->LastVarIdent() : this);
+}
+
+
+/* ----- VarType ----- */
+
+std::string VarType::ToString() const
+{
+    return (structType ? structType->name : baseType);
+}
+
+
+/* ----- FunctionDecl ----- */
+
+std::string FunctionDecl::ToString(bool useParamNames) const
+{
+    std::string s;
+
+    s += returnType->ToString();
+    s += ' ';
+    s += name;
+    s += '(';
+
+    for (std::size_t i = 0; i < parameters.size(); ++i)
+    {
+
+        if (i + 1 < parameters.size())
+            s += ", ";
+    }
+
+    s += ')';
+
+    return s;
 }
 
 

@@ -247,6 +247,9 @@ struct FunctionDecl : public GlobalDecl
         FLAG( isEntryPoint, 2 ), // This function is the main entry point.
     };
     
+    // Returns a descriptive string of the function signature (e.g. "void f(int x)").
+    std::string ToString(bool useParamNames = true) const;
+
     std::vector<FunctionCallPtr>    attribs;            // Attribute list
     VarTypePtr                      returnType;
     std::string                     name;
@@ -333,6 +336,10 @@ struct VarSemantic : public AST
 struct VarType : public AST
 {
     AST_INTERFACE(VarType);
+    
+    // Returns the name of this type (either 'baseType' or 'structType->name').
+    std::string ToString() const;
+
     std::string     baseType;               // Either this ...
     StructurePtr    structType;             // ... or this is used.
     AST*            symbolRef = nullptr;    // Symbol reference for DAST to the type definition; may be null.
@@ -344,7 +351,7 @@ struct VarIdent : public AST
     AST_INTERFACE(VarIdent);
 
     // Returns the full var-ident string (with '.' separation).
-    std::string FullVarIdent() const;
+    std::string ToString() const;
 
     // Returns the last identifier AST node.
     VarIdent* LastVarIdent();
