@@ -74,7 +74,6 @@ struct AST
 
         FunctionDecl,
         UniformBufferDecl,
-        StorageBufferDecl,
         TextureDecl,
         SamplerDecl,
         StructDecl,

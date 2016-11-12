@@ -39,7 +39,6 @@ DECL_PTR( SamplerValue      );
 
 DECL_PTR( FunctionDecl      );
 DECL_PTR( UniformBufferDecl );
-//DECL_PTR( StorageBufferDecl );
 DECL_PTR( TextureDecl       );
 DECL_PTR( SamplerDecl       );
 DECL_PTR( StructDecl        );
