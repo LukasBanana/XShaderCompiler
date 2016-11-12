@@ -84,7 +84,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     Visit(ast->initializer);
 }
 
-IMPLEMENT_VISIT_PROC(BufferDecl)
+IMPLEMENT_VISIT_PROC(TextureDecl)
 {
     Visit(ast->arrayIndices);
 }
@@ -112,7 +112,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
-    Visit(ast->bufferDecls);
+    Visit(ast->texDecls);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)

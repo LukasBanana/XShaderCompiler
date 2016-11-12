@@ -875,9 +875,9 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
     auto samplerType = it->second;
 
     /* Write texture samplers */
-    for (auto& name : ast->bufferDecls)
+    for (auto& name : ast->texDecls)
     {
-        if (name->flags(BufferDecl::isReferenced) || shaderTarget_ == ShaderTarget::CommonShader)
+        if (name->flags(TextureDecl::isReferenced) || shaderTarget_ == ShaderTarget::CommonShader)
         {
             BeginLn();
             {

@@ -38,11 +38,11 @@ void ReferenceAnalyzer::MarkTextureReference(AST* ast, const std::string& texIde
     if (texDecl)
     {
         /* Mark individual texture identifier to be used */
-        for (auto& tex : texDecl->bufferDecls)
+        for (auto& tex : texDecl->texDecls)
         {
             if (tex->ident == texIdent)
             {
-                tex->flags << BufferDecl::isReferenced;
+                tex->flags << TextureDecl::isReferenced;
                 break;
             }
         }

@@ -138,10 +138,10 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     DEFAULT_VISITOR(VarDecl);
 }
 
-IMPLEMENT_VISIT_PROC(BufferDecl)
+IMPLEMENT_VISIT_PROC(TextureDecl)
 {
-    Print(ast, "BufferDecl", ast->ident);
-    DEFAULT_VISITOR(BufferDecl);
+    Print(ast, "TextureDecl", ast->ident);
+    DEFAULT_VISITOR(TextureDecl);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)

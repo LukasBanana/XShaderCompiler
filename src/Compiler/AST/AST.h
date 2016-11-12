@@ -75,7 +75,7 @@ struct AST
         VarType,
         VarIdent,
         VarDecl,
-        BufferDecl,
+        TextureDecl,
         SamplerDecl,
 
         FunctionDecl, // Do not use "Stmnt" postfix here (--> FunctionDecl can only appear in global scope)
@@ -303,10 +303,10 @@ struct VarDecl : public AST
     VarDeclStmnt*               declStmntRef    = nullptr; // Reference to its declaration statement; may be null
 };
 
-// Buffer (or texture) declaration identifier.
-struct BufferDecl : public AST
+// Texture declaration.
+struct TextureDecl : public AST
 {
-    AST_INTERFACE(BufferDecl);
+    AST_INTERFACE(TextureDecl);
 
     FLAG_ENUM
     {
@@ -318,7 +318,7 @@ struct BufferDecl : public AST
     std::string                     registerName;   // May be empty
 };
 
-// Sampler state declaration identifier.
+// Sampler state declaration.
 struct SamplerDecl : public AST
 {
     AST_INTERFACE(SamplerDecl);
@@ -385,7 +385,7 @@ struct TextureDeclStmnt : public Stmnt
 
     std::string                 textureType;
     std::string                 colorType;
-    std::vector<BufferDeclPtr>  bufferDecls;
+    std::vector<TextureDeclPtr> texDecls;
 };
 
 // Sampler declaration.

@@ -113,44 +113,6 @@ CodeBlockPtr HLSLParser::ParseCodeBlock()
     return ast;
 }
 
-BufferDeclPtr HLSLParser::ParseBufferDecl()
-{
-    auto ast = Make<BufferDecl>();
-
-    /* Parse identifier and array dimension list (array dimension can be optional) */
-    ast->ident          = Accept(Tokens::Ident)->Spell();
-    ast->arrayIndices   = ParseArrayDimensionList();
-
-    /* Parse register name (not allowed for local variables!) */
-    if (Is(Tokens::Colon))
-        ast->registerName = ParseRegister(true);
-
-    return ast;
-}
-
-SamplerDeclPtr HLSLParser::ParseSamplerDecl()
-{
-    auto ast = Make<SamplerDecl>();
-
-    /* Parse identifier and array dimension list (array dimension can be optional) */
-    ast->ident          = Accept(Tokens::Ident)->Spell();
-    ast->arrayIndices   = ParseArrayDimensionList();
-
-    /* Parse register name (not allowed for local variables!) */
-    if (Is(Tokens::Colon))
-        ast->registerName = ParseRegister(true);
-
-    /* Parse optional static sampler state */
-    if (Is(Tokens::LCurly))
-    {
-        AcceptIt();
-        ast->samplerValues = ParseSamplerValueList();
-        Accept(Tokens::RCurly);
-    }
-
-    return ast;
-}
-
 FunctionCallPtr HLSLParser::ParseFunctionCall(VarIdentPtr varIdent)
 {
     auto ast = Make<FunctionCall>();
@@ -408,6 +370,44 @@ VarDeclPtr HLSLParser::ParseVarDecl()
     return ast;
 }
 
+TextureDeclPtr HLSLParser::ParseTextureDecl()
+{
+    auto ast = Make<TextureDecl>();
+
+    /* Parse identifier and array dimension list (array dimension can be optional) */
+    ast->ident          = Accept(Tokens::Ident)->Spell();
+    ast->arrayIndices   = ParseArrayDimensionList();
+
+    /* Parse register name (not allowed for local variables!) */
+    if (Is(Tokens::Colon))
+        ast->registerName = ParseRegister(true);
+
+    return ast;
+}
+
+SamplerDeclPtr HLSLParser::ParseSamplerDecl()
+{
+    auto ast = Make<SamplerDecl>();
+
+    /* Parse identifier and array dimension list (array dimension can be optional) */
+    ast->ident          = Accept(Tokens::Ident)->Spell();
+    ast->arrayIndices   = ParseArrayDimensionList();
+
+    /* Parse register name (not allowed for local variables!) */
+    if (Is(Tokens::Colon))
+        ast->registerName = ParseRegister(true);
+
+    /* Parse optional static sampler state */
+    if (Is(Tokens::LCurly))
+    {
+        AcceptIt();
+        ast->samplerValues = ParseSamplerValueList();
+        Accept(Tokens::RCurly);
+    }
+
+    return ast;
+}
+
 /* --- Declaration statements --- */
 
 StmntPtr HLSLParser::ParseGlobalStmnt()
@@ -497,7 +497,7 @@ TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
         Accept(Tokens::BinaryOp, ">");
     }
 
-    ast->bufferDecls = ParseBufferDeclList();
+    ast->texDecls = ParseTextureDeclList();
 
     Semi();
 
@@ -1262,19 +1262,19 @@ std::vector<SwitchCasePtr> HLSLParser::ParseSwitchCaseList()
     return cases;
 }
 
-std::vector<BufferDeclPtr> HLSLParser::ParseBufferDeclList()
+std::vector<TextureDeclPtr> HLSLParser::ParseTextureDeclList()
 {
-    std::vector<BufferDeclPtr> bufferDecls;
+    std::vector<TextureDeclPtr> textureDecls;
 
-    bufferDecls.push_back(ParseBufferDecl());
+    textureDecls.push_back(ParseTextureDecl());
 
     while (Is(Tokens::Comma))
     {
         AcceptIt();
-        bufferDecls.push_back(ParseBufferDecl());
+        textureDecls.push_back(ParseTextureDecl());
     }
 
-    return bufferDecls;
+    return textureDecls;
 }
 
 std::vector<SamplerDeclPtr> HLSLParser::ParseSamplerDeclList()

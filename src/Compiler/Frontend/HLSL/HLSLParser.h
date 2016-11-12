@@ -94,7 +94,7 @@ class HLSLParser : public Parser
         VarIdentPtr                     ParseVarIdent();
         VarTypePtr                      ParseVarType(bool parseVoidType = false);
         VarDeclPtr                      ParseVarDecl();
-        BufferDeclPtr                   ParseBufferDecl();
+        TextureDeclPtr                  ParseTextureDecl();
         SamplerDeclPtr                  ParseSamplerDecl();
 
         StmntPtr                        ParseGlobalStmnt();
@@ -142,7 +142,7 @@ class HLSLParser : public Parser
         std::vector<VarSemanticPtr>     ParseVarSemanticList();
         std::vector<FunctionCallPtr>    ParseAttributeList();
         std::vector<SwitchCasePtr>      ParseSwitchCaseList();
-        std::vector<BufferDeclPtr>      ParseBufferDeclList();
+        std::vector<TextureDeclPtr>     ParseTextureDeclList();
         std::vector<SamplerDeclPtr>     ParseSamplerDeclList();
         std::vector<SamplerValuePtr>    ParseSamplerValueList();
 
