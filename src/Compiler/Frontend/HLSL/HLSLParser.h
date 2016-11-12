@@ -80,11 +80,13 @@ class HLSLParser : public Parser
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);
 
         CodeBlockPtr                    ParseCodeBlock();
-        BufferDeclIdentPtr              ParseBufferDeclIdent();
+        BufferDeclIdentPtr              ParseBufferDeclIdent(bool registerAllowed = true);
+        SamplerDeclIdentPtr             ParseSamplerDeclIdent(bool registerAllowed = true);
         FunctionCallPtr                 ParseFunctionCall(VarIdentPtr varIdent = nullptr);
         StructurePtr                    ParseStructure();
         VarDeclStmntPtr                 ParseParameter();
         SwitchCasePtr                   ParseSwitchCase();
+        SamplerValuePtr                 ParseSamplerValue();
 
         GlobalDeclPtr                   ParseGlobalDecl();
         FunctionDeclPtr                 ParseFunctionDecl();
@@ -144,8 +146,10 @@ class HLSLParser : public Parser
         std::vector<FunctionCallPtr>    ParseAttributeList();
         std::vector<SwitchCasePtr>      ParseSwitchCaseList();
         std::vector<BufferDeclIdentPtr> ParseBufferDeclIdentList();
+        std::vector<SamplerDeclIdentPtr> ParseSamplerDeclIdentList();
+        std::vector<SamplerValuePtr>    ParseSamplerValueList();
 
-        std::string                     ParseRegister(bool parseColon = true);
+        std::string                     ParseRegister(bool parseColon = true, bool registerAllowed = true);
         std::string                     ParseSemantic();
 
         /* === Members === */

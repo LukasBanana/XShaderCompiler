@@ -113,14 +113,40 @@ CodeBlockPtr HLSLParser::ParseCodeBlock()
     return ast;
 }
 
-BufferDeclIdentPtr HLSLParser::ParseBufferDeclIdent()
+BufferDeclIdentPtr HLSLParser::ParseBufferDeclIdent(bool registerAllowed)
 {
     auto ast = Make<BufferDeclIdent>();
 
-    /* Parse identifier and optional register */
-    ast->ident = Accept(Tokens::Ident)->Spell();
+    /* Parse identifier and array dimension list (array dimension can be optional) */
+    ast->ident          = Accept(Tokens::Ident)->Spell();
+    ast->arrayIndices   = ParseArrayDimensionList();
+
+    /* Parse register name (not allowed for local variables!) */
     if (Is(Tokens::Colon))
-        ast->registerName = ParseRegister();
+        ast->registerName = ParseRegister(true, registerAllowed);
+
+    return ast;
+}
+
+SamplerDeclIdentPtr HLSLParser::ParseSamplerDeclIdent(bool registerAllowed)
+{
+    auto ast = Make<SamplerDeclIdent>();
+
+    /* Parse identifier and array dimension list (array dimension can be optional) */
+    ast->ident          = Accept(Tokens::Ident)->Spell();
+    ast->arrayIndices   = ParseArrayDimensionList();
+
+    /* Parse register name (not allowed for local variables!) */
+    if (Is(Tokens::Colon))
+        ast->registerName = ParseRegister(true, registerAllowed);
+
+    /* Parse optional static sampler state */
+    if (Is(Tokens::LCurly))
+    {
+        AcceptIt();
+        ast->samplerValues = ParseSamplerValueList();
+        Accept(Tokens::RCurly);
+    }
 
     return ast;
 }
@@ -211,6 +237,18 @@ SwitchCasePtr HLSLParser::ParseSwitchCase()
     /* Parse switch case statement list */
     while (!Is(Tokens::Case) && !Is(Tokens::Default) && !Is(Tokens::RCurly))
         ast->stmnts.push_back(ParseStmnt());
+
+    return ast;
+}
+
+SamplerValuePtr HLSLParser::ParseSamplerValue()
+{
+    auto ast = Make<SamplerValue>();
+
+    ast->name = Accept(Tokens::Ident)->Spell();
+    Accept(Tokens::AssignOp, "=");
+    ast->value = ParseExpr();
+    Semi();
 
     return ast;
 }
@@ -316,8 +354,8 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl()
 {
     auto ast = Make<SamplerDecl>();
 
-    ast->samplerType = Accept(Tokens::Sampler)->Spell();
-    ast->names = ParseBufferDeclIdentList();
+    ast->samplerType    = Accept(Tokens::Sampler)->Spell();
+    ast->names          = ParseSamplerDeclIdentList();
 
     Semi();
 
@@ -1263,10 +1301,38 @@ std::vector<BufferDeclIdentPtr> HLSLParser::ParseBufferDeclIdentList()
     return bufferIdents;
 }
 
+std::vector<SamplerDeclIdentPtr> HLSLParser::ParseSamplerDeclIdentList()
+{
+    std::vector<SamplerDeclIdentPtr> samplerIdents;
+
+    samplerIdents.push_back(ParseSamplerDeclIdent());
+
+    while (Is(Tokens::Comma))
+    {
+        AcceptIt();
+        samplerIdents.push_back(ParseSamplerDeclIdent());
+    }
+
+    return samplerIdents;
+}
+
+std::vector<SamplerValuePtr> HLSLParser::ParseSamplerValueList()
+{
+    std::vector<SamplerValuePtr> samplerValues;
+
+    while (!Is(Tokens::RCurly))
+        samplerValues.push_back(ParseSamplerValue());
+
+    return samplerValues;
+}
+
 /* --- Others --- */
 
-std::string HLSLParser::ParseRegister(bool parseColon)
+std::string HLSLParser::ParseRegister(bool parseColon, bool registerAllowed)
 {
+    if (!registerAllowed)
+        Error("semantic is not allowed in this scope", true, HLSLErr::ERR_SEMANTICS, false);
+
     /* Parse ': register(IDENT)' */
     if (parseColon)
         Accept(Tokens::Colon);

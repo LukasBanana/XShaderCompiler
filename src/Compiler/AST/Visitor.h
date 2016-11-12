@@ -31,9 +31,11 @@ DECL_PTR( Expr              );
 DECL_PTR( Program           );
 DECL_PTR( CodeBlock         );
 DECL_PTR( BufferDeclIdent   );
+DECL_PTR( SamplerDeclIdent  );
 DECL_PTR( FunctionCall      );
 DECL_PTR( Structure         );
 DECL_PTR( SwitchCase        );
+DECL_PTR( SamplerValue      );
 
 DECL_PTR( FunctionDecl      );
 DECL_PTR( UniformBufferDecl );
@@ -100,9 +102,11 @@ class Visitor
         VISITOR_VISIT_PROC( Program           );
         VISITOR_VISIT_PROC( CodeBlock         );
         VISITOR_VISIT_PROC( BufferDeclIdent   );
+        VISITOR_VISIT_PROC( SamplerDeclIdent  );
         VISITOR_VISIT_PROC( FunctionCall      );
         VISITOR_VISIT_PROC( Structure         );
         VISITOR_VISIT_PROC( SwitchCase        );
+        VISITOR_VISIT_PROC( SamplerValue      );
 
         VISITOR_VISIT_PROC( FunctionDecl      );
         VISITOR_VISIT_PROC( UniformBufferDecl );

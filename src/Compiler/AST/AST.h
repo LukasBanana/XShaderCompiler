@@ -66,8 +66,11 @@ struct AST
         Program,
         CodeBlock,
         BufferDeclIdent,
+        SamplerDeclIdent,
         FunctionCall,
         Structure,
+        SwitchCase,
+        SamplerValue,
 
         FunctionDecl,
         UniformBufferDecl,
@@ -107,8 +110,6 @@ struct AST
         CastExpr,
         VarAccessExpr,
         InitializerExpr,
-
-        SwitchCase,
 
         PackOffset,
         VarSemantic,
@@ -175,10 +176,21 @@ struct Program : public AST
 struct CodeBlock : public AST
 {
     AST_INTERFACE(CodeBlock);
+
     std::vector<StmntPtr> stmnts;
 };
 
-// Buffer declaration identifier.
+// Sampler state value assignment.
+// see https://msdn.microsoft.com/de-de/library/windows/desktop/bb509644(v=vs.85).aspx
+struct SamplerValue : public AST
+{
+    AST_INTERFACE(SamplerValue);
+
+    std::string name;   // Sampler state name
+    ExprPtr     value;  // Sampler state value expression
+};
+
+// Buffer (or texture) declaration identifier.
 struct BufferDeclIdent : public AST
 {
     AST_INTERFACE(BufferDeclIdent);
@@ -188,8 +200,20 @@ struct BufferDeclIdent : public AST
         FLAG( isReferenced, 0 ), // This buffer is referenced (or rather used) at least once (use-count >= 1).
     };
 
-    std::string ident;
-    std::string registerName; // May be empty
+    std::string                     ident;
+    std::vector<ExprPtr>            arrayIndices;
+    std::string                     registerName;   // May be empty
+};
+
+// Sampler state declaration identifier.
+struct SamplerDeclIdent : public AST
+{
+    AST_INTERFACE(SamplerDeclIdent);
+
+    std::string                     ident;
+    std::vector<ExprPtr>            arrayIndices;
+    std::string                     registerName;   // May be empty
+    std::vector<SamplerValuePtr>    samplerValues;  // State values for a sampler decl-ident.
 };
 
 // Function call.
@@ -295,14 +319,16 @@ struct TextureDecl : public GlobalDecl
 struct SamplerDecl : public GlobalDecl
 {
     AST_INTERFACE(SamplerDecl);
-    std::string                     samplerType;
-    std::vector<BufferDeclIdentPtr> names;
+
+    std::string                         samplerType;
+    std::vector<SamplerDeclIdentPtr>    names;
 };
 
 // Structure declaration (in global scope).
 struct StructDecl : public GlobalDecl
 {
     AST_INTERFACE(StructDecl);
+
     StructurePtr structure;
 };
 
@@ -310,6 +336,7 @@ struct StructDecl : public GlobalDecl
 struct DirectiveDecl : public GlobalDecl
 {
     AST_INTERFACE(DirectiveDecl);
+
     std::string line;
 };
 
@@ -406,6 +433,7 @@ struct NullStmnt : public Stmnt
 struct DirectiveStmnt : public Stmnt
 {
     AST_INTERFACE(DirectiveStmnt);
+
     std::string line;
 };
 
@@ -413,6 +441,7 @@ struct DirectiveStmnt : public Stmnt
 struct CodeBlockStmnt : public Stmnt
 {
     AST_INTERFACE(CodeBlockStmnt);
+
     CodeBlockPtr codeBlock;
 };
 
@@ -420,6 +449,7 @@ struct CodeBlockStmnt : public Stmnt
 struct ForLoopStmnt : public Stmnt
 {
     AST_INTERFACE(ForLoopStmnt);
+
     std::vector<FunctionCallPtr>    attribs; // Attribute list
     StmntPtr                        initSmnt;
     ExprPtr                         condition;
@@ -431,6 +461,7 @@ struct ForLoopStmnt : public Stmnt
 struct WhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(WhileLoopStmnt);
+
     std::vector<FunctionCallPtr>    attribs; // Attribute list
     ExprPtr                         condition;
     StmntPtr                        bodyStmnt;
@@ -440,6 +471,7 @@ struct WhileLoopStmnt : public Stmnt
 struct DoWhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(DoWhileLoopStmnt);
+
     std::vector<FunctionCallPtr>    attribs; // Attribute list
     StmntPtr                        bodyStmnt;
     ExprPtr                         condition;
@@ -449,6 +481,7 @@ struct DoWhileLoopStmnt : public Stmnt
 struct IfStmnt : public Stmnt
 {
     AST_INTERFACE(IfStmnt);
+
     std::vector<FunctionCallPtr>    attribs;    // Attribute list
     ExprPtr                         condition;
     StmntPtr                        bodyStmnt;
@@ -459,6 +492,7 @@ struct IfStmnt : public Stmnt
 struct ElseStmnt : public Stmnt
 {
     AST_INTERFACE(ElseStmnt);
+
     StmntPtr bodyStmnt;
 };
 
@@ -466,6 +500,7 @@ struct ElseStmnt : public Stmnt
 struct SwitchStmnt : public Stmnt
 {
     AST_INTERFACE(SwitchStmnt);
+
     std::vector<FunctionCallPtr>    attribs; // Attribute list
     ExprPtr                         selector;
     std::vector<SwitchCasePtr>      cases;
@@ -496,6 +531,7 @@ struct VarDeclStmnt : public Stmnt
 struct AssignStmnt : public Stmnt
 {
     AST_INTERFACE(AssignStmnt);
+
     VarIdentPtr varIdent;
     AssignOp    op          = AssignOp::Undefined;
     ExprPtr     expr;
@@ -505,6 +541,7 @@ struct AssignStmnt : public Stmnt
 struct ExprStmnt : public Stmnt
 {
     AST_INTERFACE(ExprStmnt);
+
     ExprPtr expr;
 };
 
@@ -512,6 +549,7 @@ struct ExprStmnt : public Stmnt
 struct FunctionCallStmnt : public Stmnt
 {
     AST_INTERFACE(FunctionCallStmnt);
+
     FunctionCallPtr call;
 };
 
@@ -519,7 +557,8 @@ struct FunctionCallStmnt : public Stmnt
 struct ReturnStmnt : public Stmnt
 {
     AST_INTERFACE(ReturnStmnt);
-    ExprPtr expr; // may be null
+
+    ExprPtr expr; // May be null
 };
 
 // Structure declaration statement.
@@ -533,13 +572,16 @@ struct StructDeclStmnt : public Stmnt
 struct CtrlTransferStmnt : public Stmnt
 {
     AST_INTERFACE(CtrlTransferStmnt);
+
     CtrlTransfer transfer = CtrlTransfer::Undefined; // break, continue, discard
 };
 
 // Commentary statement (pseudo statement).
+//TODO: remove this
 struct CommentStmnt : public Stmnt
 {
     AST_INTERFACE(CommentStmnt);
+
     std::string commentText;
 };
 
@@ -549,6 +591,7 @@ struct CommentStmnt : public Stmnt
 struct ListExpr : public Expr
 {
     AST_INTERFACE(ListExpr);
+
     ExprPtr firstExpr;
     ExprPtr nextExpr;
 };
@@ -557,6 +600,7 @@ struct ListExpr : public Expr
 struct LiteralExpr : public Expr
 {
     AST_INTERFACE(LiteralExpr);
+
     Token::Types    type    = Token::Types::Undefined;
     std::string     value;
 };
@@ -565,6 +609,7 @@ struct LiteralExpr : public Expr
 struct TypeNameExpr : public Expr
 {
     AST_INTERFACE(TypeNameExpr);
+
     std::string typeName;
 };
 
@@ -572,6 +617,7 @@ struct TypeNameExpr : public Expr
 struct TernaryExpr : public Expr
 {
     AST_INTERFACE(TernaryExpr);
+
     ExprPtr condExpr; // Condition expression
     ExprPtr thenExpr; // <then> case expression
     ExprPtr elseExpr; // <else> case expression
@@ -581,6 +627,7 @@ struct TernaryExpr : public Expr
 struct BinaryExpr : public Expr
 {
     AST_INTERFACE(BinaryExpr);
+
     ExprPtr     lhsExpr;                        // Left-hand-side expression
     BinaryOp    op      = BinaryOp::Undefined;  // Binary operator
     ExprPtr     rhsExpr;                        // Right-hand-side expression
@@ -590,6 +637,7 @@ struct BinaryExpr : public Expr
 struct UnaryExpr : public Expr
 {
     AST_INTERFACE(UnaryExpr);
+
     UnaryOp op      = UnaryOp::Undefined;
     ExprPtr expr;
 };
@@ -598,6 +646,7 @@ struct UnaryExpr : public Expr
 struct PostUnaryExpr : public Expr
 {
     AST_INTERFACE(PostUnaryExpr);
+
     ExprPtr expr;
     UnaryOp op      = UnaryOp::Undefined;
 };
@@ -606,6 +655,7 @@ struct PostUnaryExpr : public Expr
 struct FunctionCallExpr : public Expr
 {
     AST_INTERFACE(FunctionCallExpr);
+
     FunctionCallPtr call;
     VarIdentPtr     varIdentSuffix; // Optional var-ident suffix
 };
@@ -614,6 +664,7 @@ struct FunctionCallExpr : public Expr
 struct BracketExpr : public Expr
 {
     AST_INTERFACE(BracketExpr);
+
     ExprPtr     expr;           // Inner expression
     VarIdentPtr varIdentSuffix; // Optional var-ident suffix
 };
@@ -622,6 +673,7 @@ struct BracketExpr : public Expr
 struct CastExpr : public Expr
 {
     AST_INTERFACE(CastExpr);
+
     ExprPtr typeExpr;
     ExprPtr expr;
 };
@@ -630,6 +682,7 @@ struct CastExpr : public Expr
 struct VarAccessExpr : public Expr
 {
     AST_INTERFACE(VarAccessExpr);
+
     VarIdentPtr varIdent;
     std::string assignOp;   // May be empty
     ExprPtr     assignExpr; // May be null
@@ -639,6 +692,7 @@ struct VarAccessExpr : public Expr
 struct InitializerExpr : public Expr
 {
     AST_INTERFACE(InitializerExpr);
+
     std::vector<ExprPtr> exprs;
 };
 
@@ -648,6 +702,7 @@ struct InitializerExpr : public Expr
 struct SwitchCase : public AST
 {
     AST_INTERFACE(SwitchCase);
+
     ExprPtr                 expr; // If null -> default case
     std::vector<StmntPtr>   stmnts;
 };

@@ -34,7 +34,13 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(BufferDeclIdent)
 {
-    // do nothing
+    Visit(ast->arrayIndices);
+}
+
+IMPLEMENT_VISIT_PROC(SamplerDeclIdent)
+{
+    Visit(ast->arrayIndices);
+    Visit(ast->samplerValues);
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
@@ -52,6 +58,11 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     Visit(ast->expr);
     Visit(ast->stmnts);
+}
+
+IMPLEMENT_VISIT_PROC(SamplerValue)
+{
+    Visit(ast->value);
 }
 
 /* --- Global declarations --- */
