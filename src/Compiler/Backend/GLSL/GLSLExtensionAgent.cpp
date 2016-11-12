@@ -96,7 +96,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     }
 }
 
-IMPLEMENT_VISIT_PROC(TextureDecl)
+IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
     /* Check for explicit texture binding */
     for (auto& name : ast->names)
@@ -106,7 +106,7 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
     }
 
     /* Default visitor */
-    Visitor::VisitTextureDecl(ast, args);
+    Visitor::VisitTextureDeclStmnt(ast, args);
 }
 
 IMPLEMENT_VISIT_PROC(BinaryExpr)

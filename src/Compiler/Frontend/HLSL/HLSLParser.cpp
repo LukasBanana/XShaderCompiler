@@ -324,9 +324,9 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDecl()
     return ast;
 }
 
-TextureDeclPtr HLSLParser::ParseTextureDecl()
+TextureDeclStmntPtr HLSLParser::ParseTextureDecl()
 {
-    auto ast = Make<TextureDecl>();
+    auto ast = Make<TextureDeclStmnt>();
 
     ast->textureType = Accept(Tokens::Texture)->Spell();
 

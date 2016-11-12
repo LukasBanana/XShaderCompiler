@@ -191,7 +191,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         auto symbol = Fetch(ast->name->ident);
         if (symbol)
         {
-            if (symbol->Type() == AST::Types::TextureDecl)
+            if (symbol->Type() == AST::Types::TextureDeclStmnt)
                 ast->flags << FunctionCall::isTexFunc;
         }
         else
@@ -325,7 +325,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     }
 }
 
-IMPLEMENT_VISIT_PROC(TextureDecl)
+IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
     /* Register all texture identifiers */
     for (auto& name : ast->names)

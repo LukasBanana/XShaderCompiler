@@ -862,9 +862,9 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     Blank();
 }
 
-IMPLEMENT_VISIT_PROC(TextureDecl)
+IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
-    if (!ast->flags(TextureDecl::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
+    if (!ast->flags(TextureDeclStmnt::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
         return; // texture not used
 
     /* Determine GLSL sampler type */

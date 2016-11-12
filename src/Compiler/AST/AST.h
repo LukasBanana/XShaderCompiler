@@ -78,9 +78,9 @@ struct AST
         VarIdent,
         VarDecl,
 
-        FunctionDecl,
+        FunctionDecl, // Do not use "Stmnt" postfix here (--> FunctionDecl can only appear in global scope)
         BufferDeclStmnt,
-        TextureDecl,
+        TextureDeclStmnt,
         SamplerDecl,
         StructDeclStmnt,
 
@@ -374,9 +374,9 @@ struct BufferDeclStmnt : public Stmnt
 };
 
 // Texture declaration.
-struct TextureDecl : public Stmnt
+struct TextureDeclStmnt : public Stmnt
 {
-    AST_INTERFACE(TextureDecl);
+    AST_INTERFACE(TextureDeclStmnt);
 
     FLAG_ENUM
     {

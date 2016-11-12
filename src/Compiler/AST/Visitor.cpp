@@ -110,7 +110,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     Visit(ast->members);
 }
 
-IMPLEMENT_VISIT_PROC(TextureDecl)
+IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
     Visit(ast->names);
 }

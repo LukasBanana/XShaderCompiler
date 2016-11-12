@@ -178,9 +178,9 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
         Visit(member);
 }
 
-IMPLEMENT_VISIT_PROC(TextureDecl)
+IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
-    Print(ast, "TextureDecl");
+    Print(ast, "TextureDeclStmnt");
     SCOPED_INDENT;
 
     for (auto& name : ast->names)

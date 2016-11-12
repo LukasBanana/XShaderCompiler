@@ -32,9 +32,9 @@ void ReferenceAnalyzer::MarkReferencesFromEntryPoint(FunctionDecl* ast, Program*
 
 void ReferenceAnalyzer::MarkTextureReference(AST* ast, const std::string& texIdent)
 {
-    ast->flags << TextureDecl::isReferenced;
+    ast->flags << TextureDeclStmnt::isReferenced;
 
-    auto texDecl = dynamic_cast<TextureDecl*>(ast);
+    auto texDecl = dynamic_cast<TextureDeclStmnt*>(ast);
     if (texDecl)
     {
         /* Mark individual texture identifier to be used */
@@ -76,7 +76,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             symbol->flags << FunctionDecl::isReferenced;
             Visit(symbol);
         }
-        else if (symbol->Type() == AST::Types::TextureDecl)
+        else if (symbol->Type() == AST::Types::TextureDeclStmnt)
             MarkTextureReference(symbol, name);
     }
     else
@@ -145,7 +145,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     auto symbol = symTable_->Fetch(ast->varIdent->ident);
     if (symbol)
     {
-        if (symbol->Type() == AST::Types::TextureDecl)
+        if (symbol->Type() == AST::Types::TextureDeclStmnt)
         {
             /* Mark texture object as referenced */
             MarkTextureReference(symbol, ast->varIdent->ident);
