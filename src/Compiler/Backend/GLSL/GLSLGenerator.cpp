@@ -458,15 +458,11 @@ IMPLEMENT_VISIT_PROC(Program)
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    bool writeScope = (args != nullptr ? *reinterpret_cast<bool*>(args) : true);
-
-    if (writeScope)
-        OpenScope();
-    
-    Visit(ast->stmnts);
-    
-    if (writeScope)
-        CloseScope();
+    OpenScope();
+    {
+        Visit(ast->stmnts);
+    }
+    CloseScope();
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
@@ -742,8 +738,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                 /* Write code block (without additional scope) */
                 isInsideEntryPoint_ = true;
                 {
-                    bool writeScope = false;
-                    Visit(ast->codeBlock, &writeScope);
+                    Visit(ast->codeBlock->stmnts);
                 }
                 isInsideEntryPoint_ = false;
             }
