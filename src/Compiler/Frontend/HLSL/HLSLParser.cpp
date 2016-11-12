@@ -128,9 +128,9 @@ BufferDeclPtr HLSLParser::ParseBufferDecl(bool registerAllowed)
     return ast;
 }
 
-SamplerDeclIdentPtr HLSLParser::ParseSamplerDeclIdent(bool registerAllowed)
+SamplerDeclPtr HLSLParser::ParseSamplerDecl(bool registerAllowed)
 {
-    auto ast = Make<SamplerDeclIdent>();
+    auto ast = Make<SamplerDecl>();
 
     /* Parse identifier and array dimension list (array dimension can be optional) */
     ast->ident          = Accept(Tokens::Ident)->Spell();
@@ -502,7 +502,7 @@ SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt()
     auto ast = Make<SamplerDeclStmnt>();
 
     ast->samplerType    = Accept(Tokens::Sampler)->Spell();
-    ast->samplerDecls          = ParseSamplerDeclIdentList();
+    ast->samplerDecls          = ParseSamplerDeclList();
 
     Semi();
 
@@ -1268,19 +1268,19 @@ std::vector<BufferDeclPtr> HLSLParser::ParseBufferDeclList()
     return bufferDecls;
 }
 
-std::vector<SamplerDeclIdentPtr> HLSLParser::ParseSamplerDeclIdentList()
+std::vector<SamplerDeclPtr> HLSLParser::ParseSamplerDeclList()
 {
-    std::vector<SamplerDeclIdentPtr> samplerIdents;
+    std::vector<SamplerDeclPtr> samplerDecls;
 
-    samplerIdents.push_back(ParseSamplerDeclIdent());
+    samplerDecls.push_back(ParseSamplerDecl());
 
     while (Is(Tokens::Comma))
     {
         AcceptIt();
-        samplerIdents.push_back(ParseSamplerDeclIdent());
+        samplerDecls.push_back(ParseSamplerDecl());
     }
 
-    return samplerIdents;
+    return samplerDecls;
 }
 
 std::vector<SamplerValuePtr> HLSLParser::ParseSamplerValueList()

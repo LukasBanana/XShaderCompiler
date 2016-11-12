@@ -37,7 +37,7 @@ IMPLEMENT_VISIT_PROC(BufferDecl)
     Visit(ast->arrayIndices);
 }
 
-IMPLEMENT_VISIT_PROC(SamplerDeclIdent)
+IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
     Visit(ast->arrayIndices);
     Visit(ast->samplerValues);

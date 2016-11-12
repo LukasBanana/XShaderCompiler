@@ -76,7 +76,7 @@ struct AST
         VarIdent,
         VarDecl,
         BufferDecl,
-        SamplerDeclIdent,
+        SamplerDecl,
 
         FunctionDecl, // Do not use "Stmnt" postfix here (--> FunctionDecl can only appear in global scope)
         BufferDeclStmnt,
@@ -319,9 +319,9 @@ struct BufferDecl : public AST
 };
 
 // Sampler state declaration identifier.
-struct SamplerDeclIdent : public AST
+struct SamplerDecl : public AST
 {
-    AST_INTERFACE(SamplerDeclIdent);
+    AST_INTERFACE(SamplerDecl);
 
     std::string                     ident;
     std::vector<ExprPtr>            arrayIndices;
@@ -393,8 +393,8 @@ struct SamplerDeclStmnt : public Stmnt
 {
     AST_INTERFACE(SamplerDeclStmnt);
 
-    std::string                         samplerType;
-    std::vector<SamplerDeclIdentPtr>    samplerDecls;
+    std::string                 samplerType;
+    std::vector<SamplerDeclPtr> samplerDecls;
 };
 
 // Structure declaration statement.
