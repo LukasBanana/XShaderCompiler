@@ -102,7 +102,62 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
         Visit(stmnt);
 }
 
-/* --- Global declarations --- */
+/* --- Variables --- */
+
+IMPLEMENT_VISIT_PROC(PackOffset)
+{
+    auto info = ast->registerName;
+
+    if (!ast->vectorComponent.empty())
+        info += " (" + ast->vectorComponent + ")";
+
+    Print(ast, "PackOffset", info);
+}
+
+IMPLEMENT_VISIT_PROC(VarSemantic)
+{
+    auto info = ast->semantic;
+
+    if (!ast->registerName.empty())
+        info += " (" + ast->registerName + ")";
+
+    Print(ast, "VarSemantic", info);
+    SCOPED_INDENT;
+
+    Visit(ast->packOffset);
+}
+
+IMPLEMENT_VISIT_PROC(VarType)
+{
+    Print(ast, "VarType", ast->baseType);
+    SCOPED_INDENT;
+
+    Visit(ast->structType);
+}
+
+IMPLEMENT_VISIT_PROC(VarIdent)
+{
+    Print(ast, "VarIdent", ast->ident);
+    SCOPED_INDENT;
+
+    for (auto& index : ast->arrayIndices)
+        Visit(index);
+    Visit(ast->next);
+}
+
+IMPLEMENT_VISIT_PROC(VarDecl)
+{
+    Print(ast, "VarDecl", ast->name);
+    SCOPED_INDENT;
+
+    for (auto& dim : ast->arrayDims)
+        Visit(dim);
+    for (auto& semantic : ast->semantics)
+        Visit(semantic);
+    Visit(ast->initializer);
+}
+
+/* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
@@ -139,6 +194,14 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 
     for (auto& name : ast->names)
         Visit(name);
+}
+
+IMPLEMENT_VISIT_PROC(StructDeclStmnt)
+{
+    Print(ast, "StructDeclStmnt");
+    SCOPED_INDENT;
+
+    Visit(ast->structure);
 }
 
 /* --- Statements --- */
@@ -254,14 +317,6 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     Visit(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(StructDeclStmnt)
-{
-    Print(ast, "StructDeclStmnt");
-    SCOPED_INDENT;
-
-    Visit(ast->structure);
-}
-
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 {
     Print(ast, "CtrlTransferStmnt", CtrlTransformToString(ast->transfer));
@@ -364,61 +419,6 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 
     for (auto& expr : ast->exprs)
         Visit(expr);
-}
-
-/* --- Variables --- */
-
-IMPLEMENT_VISIT_PROC(PackOffset)
-{
-    auto info = ast->registerName;
-
-    if (!ast->vectorComponent.empty())
-        info += " (" + ast->vectorComponent + ")";
-
-    Print(ast, "PackOffset", info);
-}
-
-IMPLEMENT_VISIT_PROC(VarSemantic)
-{
-    auto info = ast->semantic;
-
-    if (!ast->registerName.empty())
-        info += " (" + ast->registerName + ")";
-
-    Print(ast, "VarSemantic", info);
-    SCOPED_INDENT;
-
-    Visit(ast->packOffset);
-}
-
-IMPLEMENT_VISIT_PROC(VarType)
-{
-    Print(ast, "VarType", ast->baseType);
-    SCOPED_INDENT;
-
-    Visit(ast->structType);
-}
-
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    Print(ast, "VarIdent", ast->ident);
-    SCOPED_INDENT;
-
-    for (auto& index : ast->arrayIndices)
-        Visit(index);
-    Visit(ast->next);
-}
-
-IMPLEMENT_VISIT_PROC(VarDecl)
-{
-    Print(ast, "VarDecl", ast->name);
-    SCOPED_INDENT;
-
-    for (auto& dim : ast->arrayDims)
-        Visit(dim);
-    for (auto& semantic : ast->semantics)
-        Visit(semantic);
-    Visit(ast->initializer);
 }
 
 #undef IMPLEMENT_VISIT_PROC

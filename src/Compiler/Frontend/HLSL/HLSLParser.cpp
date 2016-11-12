@@ -253,7 +253,7 @@ SamplerValuePtr HLSLParser::ParseSamplerValue()
     return ast;
 }
 
-/* --- Global declarations --- */
+/* --- Declaration statements --- */
 
 StmntPtr HLSLParser::ParseGlobalStmnt()
 {

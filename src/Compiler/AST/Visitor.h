@@ -36,10 +36,17 @@ DECL_PTR( Structure         );
 DECL_PTR( SwitchCase        );
 DECL_PTR( SamplerValue      );
 
+DECL_PTR( PackOffset        );
+DECL_PTR( VarSemantic       );
+DECL_PTR( VarType           );
+DECL_PTR( VarIdent          );
+DECL_PTR( VarDecl           );
+
 DECL_PTR( FunctionDecl      );
 DECL_PTR( BufferDecl        );
 DECL_PTR( TextureDecl       );
 DECL_PTR( SamplerDecl       );
+DECL_PTR( StructDeclStmnt   );
 
 DECL_PTR( NullStmnt         );
 DECL_PTR( CodeBlockStmnt    );
@@ -54,7 +61,6 @@ DECL_PTR( AssignStmnt       );
 DECL_PTR( ExprStmnt         );
 DECL_PTR( FunctionCallStmnt );
 DECL_PTR( ReturnStmnt       );
-DECL_PTR( StructDeclStmnt   );
 DECL_PTR( CtrlTransferStmnt );
 
 DECL_PTR( ListExpr          );
@@ -69,12 +75,6 @@ DECL_PTR( BracketExpr       );
 DECL_PTR( CastExpr          );
 DECL_PTR( VarAccessExpr     );
 DECL_PTR( InitializerExpr   );
-
-DECL_PTR( PackOffset        );
-DECL_PTR( VarSemantic       );
-DECL_PTR( VarType           );
-DECL_PTR( VarIdent          );
-DECL_PTR( VarDecl           );
 
 #undef DECL_PTR
 
@@ -106,6 +106,7 @@ class Visitor
         VISITOR_VISIT_PROC( BufferDecl        );
         VISITOR_VISIT_PROC( TextureDecl       );
         VISITOR_VISIT_PROC( SamplerDecl       );
+        VISITOR_VISIT_PROC( StructDeclStmnt   );
 
         VISITOR_VISIT_PROC( NullStmnt         );
         VISITOR_VISIT_PROC( CodeBlockStmnt    );
@@ -120,7 +121,6 @@ class Visitor
         VISITOR_VISIT_PROC( ExprStmnt         );
         VISITOR_VISIT_PROC( FunctionCallStmnt );
         VISITOR_VISIT_PROC( ReturnStmnt       );
-        VISITOR_VISIT_PROC( StructDeclStmnt   );
         VISITOR_VISIT_PROC( CtrlTransferStmnt );
 
         VISITOR_VISIT_PROC( ListExpr          );

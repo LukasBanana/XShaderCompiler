@@ -110,7 +110,7 @@ IMPLEMENT_VISIT_PROC(Structure)
     }
 }
 
-/* --- Global declarations --- */
+/* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {

@@ -86,6 +86,7 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( BufferDecl        );
         DECL_VISIT_PROC( TextureDecl       );
         DECL_VISIT_PROC( SamplerDecl       );
+        DECL_VISIT_PROC( StructDeclStmnt   );
 
         DECL_VISIT_PROC( ForLoopStmnt      );
         DECL_VISIT_PROC( WhileLoopStmnt    );
@@ -96,7 +97,6 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( VarDeclStmnt      );
         DECL_VISIT_PROC( AssignStmnt       );
         DECL_VISIT_PROC( ReturnStmnt       );
-        DECL_VISIT_PROC( StructDeclStmnt   );
 
         DECL_VISIT_PROC( VarAccessExpr     );
 

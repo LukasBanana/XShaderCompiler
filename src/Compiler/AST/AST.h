@@ -72,10 +72,17 @@ struct AST
         SwitchCase,
         SamplerValue,
 
+        PackOffset,
+        VarSemantic,
+        VarType,
+        VarIdent,
+        VarDecl,
+
         FunctionDecl,
         BufferDecl,
         TextureDecl,
         SamplerDecl,
+        StructDeclStmnt,
 
         NullStmnt,
         CodeBlockStmnt,
@@ -90,7 +97,6 @@ struct AST
         ExprStmnt,
         FunctionCallStmnt,
         ReturnStmnt,
-        StructDeclStmnt,
         CtrlTransferStmnt,
 
         ListExpr,
@@ -105,12 +111,6 @@ struct AST
         CastExpr,
         VarAccessExpr,
         InitializerExpr,
-
-        PackOffset,
-        VarSemantic,
-        VarType,
-        VarIdent,
-        VarDecl,
     };
 
     virtual ~AST()
@@ -248,74 +248,6 @@ struct Structure : public AST
     std::map<std::string, VarDecl*> systemValuesRef;    // List of members with system value semantic (SV_...).
 };
 
-/* --- Global declarations --- */
-
-// Function declaration.
-struct FunctionDecl : public Stmnt
-{
-    AST_INTERFACE(FunctionDecl);
-
-    FLAG_ENUM
-    {
-        FLAG( isReferenced, 0 ), // This function is referenced (or rather used) at least once (use-count >= 1).
-        FLAG( wasMarked,    1 ), // This function was already marked by the "ReferenceAnalyzer" visitor.
-        FLAG( isEntryPoint, 2 ), // This function is the main entry point.
-    };
-    
-    // Returns a descriptive string of the function signature (e.g. "void f(int x)").
-    std::string SignatureToString(bool useParamNames = true) const;
-
-    std::vector<FunctionCallPtr>    attribs;            // Attribute list
-    VarTypePtr                      returnType;
-    std::string                     name;
-    std::vector<VarDeclStmntPtr>    parameters;
-    std::string                     semantic;           // May be empty
-    CodeBlockPtr                    codeBlock;          // May be null (if this AST node is a forward declaration).
-
-    std::vector<FunctionDecl*>      forwardDeclsRef;    // List of forward declarations to this function for the DAST.
-};
-
-// Uniform buffer (cbuffer, tbuffer) declaration.
-struct BufferDecl : public Stmnt
-{
-    AST_INTERFACE(BufferDecl);
-
-    FLAG_ENUM
-    {
-        FLAG( isReferenced, 0 ), // This uniform buffer is referenced (or rather used) at least once (use-count >= 1).
-        FLAG( wasMarked,    1 ), // This uniform buffer was already marked by the "ReferenceAnalyzer" visitor.
-    };
-    
-    std::string                     bufferType;
-    std::string                     name;
-    std::string                     registerName; // May be empty
-    std::vector<VarDeclStmntPtr>    members;
-};
-
-// Texture declaration.
-struct TextureDecl : public Stmnt
-{
-    AST_INTERFACE(TextureDecl);
-
-    FLAG_ENUM
-    {
-        FLAG( isReferenced, 0 ), // This texture is referenced (or rather used) at least once (use-count >= 1).
-    };
-
-    std::string                     textureType;
-    std::string                     colorType;
-    std::vector<BufferDeclIdentPtr> names;
-};
-
-// Sampler declaration.
-struct SamplerDecl : public Stmnt
-{
-    AST_INTERFACE(SamplerDecl);
-
-    std::string                         samplerType;
-    std::vector<SamplerDeclIdentPtr>    names;
-};
-
 /* --- Variables --- */
 
 // Pack offset.
@@ -393,8 +325,83 @@ struct VarDecl : public AST
     std::vector<VarSemanticPtr> semantics;
     ExprPtr                     initializer;
 
-    BufferDecl*          uniformBufferRef = nullptr; // Uniform buffer reference for DAST; may be null
-    VarDeclStmnt*               declStmntRef = nullptr;     // Reference to its declaration statement; may be null
+    BufferDecl*                 uniformBufferRef    = nullptr; // Uniform buffer reference for DAST; may be null
+    VarDeclStmnt*               declStmntRef        = nullptr; // Reference to its declaration statement; may be null
+};
+
+/* --- Declaration statements --- */
+
+// Function declaration.
+struct FunctionDecl : public Stmnt
+{
+    AST_INTERFACE(FunctionDecl);
+
+    FLAG_ENUM
+    {
+        FLAG( isReferenced, 0 ), // This function is referenced (or rather used) at least once (use-count >= 1).
+        FLAG( wasMarked,    1 ), // This function was already marked by the "ReferenceAnalyzer" visitor.
+        FLAG( isEntryPoint, 2 ), // This function is the main entry point.
+    };
+    
+    // Returns a descriptive string of the function signature (e.g. "void f(int x)").
+    std::string SignatureToString(bool useParamNames = true) const;
+
+    std::vector<FunctionCallPtr>    attribs;            // Attribute list
+    VarTypePtr                      returnType;
+    std::string                     name;
+    std::vector<VarDeclStmntPtr>    parameters;
+    std::string                     semantic;           // May be empty
+    CodeBlockPtr                    codeBlock;          // May be null (if this AST node is a forward declaration).
+
+    std::vector<FunctionDecl*>      forwardDeclsRef;    // List of forward declarations to this function for the DAST.
+};
+
+// Uniform buffer (cbuffer, tbuffer) declaration.
+struct BufferDecl : public Stmnt
+{
+    AST_INTERFACE(BufferDecl);
+
+    FLAG_ENUM
+    {
+        FLAG( isReferenced, 0 ), // This uniform buffer is referenced (or rather used) at least once (use-count >= 1).
+        FLAG( wasMarked,    1 ), // This uniform buffer was already marked by the "ReferenceAnalyzer" visitor.
+    };
+    
+    std::string                     bufferType;
+    std::string                     name;
+    std::string                     registerName; // May be empty
+    std::vector<VarDeclStmntPtr>    members;
+};
+
+// Texture declaration.
+struct TextureDecl : public Stmnt
+{
+    AST_INTERFACE(TextureDecl);
+
+    FLAG_ENUM
+    {
+        FLAG( isReferenced, 0 ), // This texture is referenced (or rather used) at least once (use-count >= 1).
+    };
+
+    std::string                     textureType;
+    std::string                     colorType;
+    std::vector<BufferDeclIdentPtr> names;
+};
+
+// Sampler declaration.
+struct SamplerDecl : public Stmnt
+{
+    AST_INTERFACE(SamplerDecl);
+
+    std::string                         samplerType;
+    std::vector<SamplerDeclIdentPtr>    names;
+};
+
+// Structure declaration statement.
+struct StructDeclStmnt : public Stmnt
+{
+    AST_INTERFACE(StructDeclStmnt);
+    StructurePtr structure;
 };
 
 /* --- Statements --- */
@@ -527,13 +534,6 @@ struct ReturnStmnt : public Stmnt
     AST_INTERFACE(ReturnStmnt);
 
     ExprPtr expr; // May be null
-};
-
-// Structure declaration statement.
-struct StructDeclStmnt : public Stmnt
-{
-    AST_INTERFACE(StructDeclStmnt);
-    StructurePtr structure;
 };
 
 // Control transfer statement.

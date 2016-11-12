@@ -234,7 +234,7 @@ IMPLEMENT_VISIT_PROC(Structure)
     structStack_.pop_back();
 }
 
-/* --- Global declarations --- */
+/* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
@@ -337,6 +337,11 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
     /* Register all sampler identifiers */
     for (auto& name : ast->names)
         Register(name->ident, ast);
+}
+
+IMPLEMENT_VISIT_PROC(StructDeclStmnt)
+{
+    Visit(ast->structure);
 }
 
 /* --- Statements --- */
@@ -496,11 +501,6 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
             }
         }
     }
-}
-
-IMPLEMENT_VISIT_PROC(StructDeclStmnt)
-{
-    Visit(ast->structure);
 }
 
 /* --- Expressions --- */

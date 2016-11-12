@@ -65,7 +65,37 @@ IMPLEMENT_VISIT_PROC(SamplerValue)
     Visit(ast->value);
 }
 
-/* --- Global declarations --- */
+/* --- Variables --- */
+
+IMPLEMENT_VISIT_PROC(PackOffset)
+{
+    // do nothing
+}
+
+IMPLEMENT_VISIT_PROC(VarSemantic)
+{
+    // do nothing
+}
+
+IMPLEMENT_VISIT_PROC(VarType)
+{
+    Visit(ast->structType);
+}
+
+IMPLEMENT_VISIT_PROC(VarIdent)
+{
+    Visit(ast->arrayIndices);
+    Visit(ast->next);
+}
+
+IMPLEMENT_VISIT_PROC(VarDecl)
+{
+    Visit(ast->arrayDims);
+    Visit(ast->semantics);
+    Visit(ast->initializer);
+}
+
+/* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
@@ -88,6 +118,11 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
     Visit(ast->names);
+}
+
+IMPLEMENT_VISIT_PROC(StructDeclStmnt)
+{
+    Visit(ast->structure);
 }
 
 /* --- Statements --- */
@@ -172,11 +207,6 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     Visit(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(StructDeclStmnt)
-{
-    Visit(ast->structure);
-}
-
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 {
     // do nothing
@@ -250,36 +280,6 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
     Visit(ast->exprs);
-}
-
-/* --- Variables --- */
-
-IMPLEMENT_VISIT_PROC(PackOffset)
-{
-    // do nothing
-}
-
-IMPLEMENT_VISIT_PROC(VarSemantic)
-{
-    // do nothing
-}
-
-IMPLEMENT_VISIT_PROC(VarType)
-{
-    Visit(ast->structType);
-}
-
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    Visit(ast->arrayIndices);
-    Visit(ast->next);
-}
-
-IMPLEMENT_VISIT_PROC(VarDecl)
-{
-    Visit(ast->arrayDims);
-    Visit(ast->semantics);
-    Visit(ast->initializer);
 }
 
 

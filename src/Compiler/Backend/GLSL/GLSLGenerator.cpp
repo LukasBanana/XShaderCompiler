@@ -685,7 +685,67 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     DecIndent();
 }
 
-/* --- Global declarations --- */
+/* --- Variables --- */
+
+IMPLEMENT_VISIT_PROC(VarType)
+{
+    if (!ast->baseType.empty())
+    {
+        /* Write GLSL base type */
+        auto typeName = ast->baseType;
+
+        auto it = typeMap_.find(typeName);
+        if (it != typeMap_.end())
+            typeName = it->second;
+
+        Write(typeName);
+    }
+    else if (ast->structType)
+        Visit(ast->structType);
+}
+
+IMPLEMENT_VISIT_PROC(VarIdent)
+{
+    /* Write single identifier */
+    Write(ast->ident);
+
+    /* Write array index expressions */
+    for (auto& index : ast->arrayIndices)
+    {
+        Write("[");
+        Visit(index);
+        Write("]");
+    }
+
+    if (ast->next)
+    {
+        Write(".");
+        Visit(ast->next);
+    }
+}
+
+IMPLEMENT_VISIT_PROC(VarDecl)
+{
+    if (ast->flags(VarDecl::isInsideFunc))
+        Write(localVarPrefix_);
+    
+    Write(ast->name);
+
+    for (auto& dim : ast->arrayDims)
+    {
+        Write("[");
+        Visit(dim);
+        Write("]");
+    }
+
+    if (ast->initializer)
+    {
+        Write(" = ");
+        Visit(ast->initializer);
+    }
+}
+
+/* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
@@ -828,6 +888,18 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
             EndLn();
         }
     }
+
+    Blank();
+}
+
+IMPLEMENT_VISIT_PROC(StructDeclStmnt)
+{
+    if (!ast->structure->flags(Structure::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
+        return; // structure not used
+
+    Line(ast);
+    bool semicolon = true;
+    Visit(ast->structure, &semicolon);
 
     Blank();
 }
@@ -1065,18 +1137,6 @@ IMPLEMENT_VISIT_PROC(FunctionCallStmnt)
     EndLn();
 }
 
-IMPLEMENT_VISIT_PROC(StructDeclStmnt)
-{
-    if (!ast->structure->flags(Structure::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
-        return; // structure not used
-
-    Line(ast);
-    bool semicolon = true;
-    Visit(ast->structure, &semicolon);
-
-    Blank();
-}
-
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     if (isInsideEntryPoint_)
@@ -1215,66 +1275,6 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
     }
 
     Write(" }");
-}
-
-/* --- Variables --- */
-
-IMPLEMENT_VISIT_PROC(VarType)
-{
-    if (!ast->baseType.empty())
-    {
-        /* Write GLSL base type */
-        auto typeName = ast->baseType;
-
-        auto it = typeMap_.find(typeName);
-        if (it != typeMap_.end())
-            typeName = it->second;
-
-        Write(typeName);
-    }
-    else if (ast->structType)
-        Visit(ast->structType);
-}
-
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    /* Write single identifier */
-    Write(ast->ident);
-
-    /* Write array index expressions */
-    for (auto& index : ast->arrayIndices)
-    {
-        Write("[");
-        Visit(index);
-        Write("]");
-    }
-
-    if (ast->next)
-    {
-        Write(".");
-        Visit(ast->next);
-    }
-}
-
-IMPLEMENT_VISIT_PROC(VarDecl)
-{
-    if (ast->flags(VarDecl::isInsideFunc))
-        Write(localVarPrefix_);
-    
-    Write(ast->name);
-
-    for (auto& dim : ast->arrayDims)
-    {
-        Write("[");
-        Visit(dim);
-        Write("]");
-    }
-
-    if (ast->initializer)
-    {
-        Write(" = ");
-        Visit(ast->initializer);
-    }
 }
 
 #undef IMPLEMENT_VISIT_PROC
