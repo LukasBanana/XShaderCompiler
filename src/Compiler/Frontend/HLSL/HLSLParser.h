@@ -88,12 +88,12 @@ class HLSLParser : public Parser
         SwitchCasePtr                   ParseSwitchCase();
         SamplerValuePtr                 ParseSamplerValue();
 
-        GlobalDeclPtr                   ParseGlobalDecl();
+        StmntPtr                        ParseGlobalStmnt();
         FunctionDeclPtr                 ParseFunctionDecl();
         BufferDeclPtr                   ParseBufferDecl();
         TextureDeclPtr                  ParseTextureDecl();
         SamplerDeclPtr                  ParseSamplerDecl();
-        StructDeclPtr                   ParseStructDecl();
+        StructDeclStmntPtr              ParseStructDeclStmnt();
 
         FunctionCallPtr                 ParseAttribute();
         PackOffsetPtr                   ParsePackOffset(bool parseColon = true);

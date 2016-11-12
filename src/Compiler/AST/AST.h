@@ -76,7 +76,6 @@ struct AST
         BufferDecl,
         TextureDecl,
         SamplerDecl,
-        StructDecl,
 
         NullStmnt,
         CodeBlockStmnt,
@@ -127,9 +126,6 @@ struct AST
 
 /* --- Base AST nodes --- */
 
-// Global declaration base class.
-struct GlobalDecl : public AST {};
-
 // Statement base class.
 struct Stmnt : public AST {};
 
@@ -161,11 +157,11 @@ struct Program : public AST
         FLAG( hasSM3ScreenSpace,    3 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
     };
 
-    std::vector<GlobalDeclPtr>  globalDecls;
+    std::vector<StmntPtr>   globalStmnts;       // Global declaration statements
 
-    SourceCodePtr               sourceCode;         // Preprocessed source code
-    InputSemantics              inputSemantics;     // Input semantics for the DAST
-    OutputSemantics             outputSemantics;    // Output semantics for the DAST
+    SourceCodePtr           sourceCode;         // Preprocessed source code
+    InputSemantics          inputSemantics;     // Input semantics for the DAST
+    OutputSemantics         outputSemantics;    // Output semantics for the DAST
 };
 
 // Code block.
@@ -255,7 +251,7 @@ struct Structure : public AST
 /* --- Global declarations --- */
 
 // Function declaration.
-struct FunctionDecl : public GlobalDecl
+struct FunctionDecl : public Stmnt
 {
     AST_INTERFACE(FunctionDecl);
 
@@ -280,7 +276,7 @@ struct FunctionDecl : public GlobalDecl
 };
 
 // Uniform buffer (cbuffer, tbuffer) declaration.
-struct BufferDecl : public GlobalDecl
+struct BufferDecl : public Stmnt
 {
     AST_INTERFACE(BufferDecl);
 
@@ -297,7 +293,7 @@ struct BufferDecl : public GlobalDecl
 };
 
 // Texture declaration.
-struct TextureDecl : public GlobalDecl
+struct TextureDecl : public Stmnt
 {
     AST_INTERFACE(TextureDecl);
 
@@ -312,20 +308,12 @@ struct TextureDecl : public GlobalDecl
 };
 
 // Sampler declaration.
-struct SamplerDecl : public GlobalDecl
+struct SamplerDecl : public Stmnt
 {
     AST_INTERFACE(SamplerDecl);
 
     std::string                         samplerType;
     std::vector<SamplerDeclIdentPtr>    names;
-};
-
-// Structure declaration (in global scope).
-struct StructDecl : public GlobalDecl
-{
-    AST_INTERFACE(StructDecl);
-
-    StructurePtr structure;
 };
 
 /* --- Variables --- */

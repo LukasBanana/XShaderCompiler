@@ -132,7 +132,7 @@ FunctionCall* HLSLAnalyzer::CurrentFunction() const
 IMPLEMENT_VISIT_PROC(Program)
 {
     /* Analyze context of the entire program */
-    Visit(ast->globalDecls);
+    Visit(ast->globalStmnts);
 
     if (shaderTarget_ != ShaderTarget::CommonShader)
     {
@@ -339,11 +339,6 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
         Register(name->ident, ast);
 }
 
-IMPLEMENT_VISIT_PROC(StructDecl)
-{
-    Visit(ast->structure);
-}
-
 /* --- Statements --- */
 
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
@@ -501,6 +496,11 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
             }
         }
     }
+}
+
+IMPLEMENT_VISIT_PROC(StructDeclStmnt)
+{
+    Visit(ast->structure);
 }
 
 /* --- Expressions --- */

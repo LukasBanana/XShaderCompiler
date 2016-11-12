@@ -24,7 +24,6 @@ namespace Xsc
     using CLASS_NAME##Ptr = std::shared_ptr<CLASS_NAME>
 
 DECL_PTR( AST               );
-DECL_PTR( GlobalDecl        );
 DECL_PTR( Stmnt             );
 DECL_PTR( Expr              );
 
@@ -41,7 +40,6 @@ DECL_PTR( FunctionDecl      );
 DECL_PTR( BufferDecl        );
 DECL_PTR( TextureDecl       );
 DECL_PTR( SamplerDecl       );
-DECL_PTR( StructDecl        );
 
 DECL_PTR( NullStmnt         );
 DECL_PTR( CodeBlockStmnt    );
@@ -108,7 +106,6 @@ class Visitor
         VISITOR_VISIT_PROC( BufferDecl        );
         VISITOR_VISIT_PROC( TextureDecl       );
         VISITOR_VISIT_PROC( SamplerDecl       );
-        VISITOR_VISIT_PROC( StructDecl        );
 
         VISITOR_VISIT_PROC( NullStmnt         );
         VISITOR_VISIT_PROC( CodeBlockStmnt    );

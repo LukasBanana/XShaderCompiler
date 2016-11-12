@@ -24,7 +24,7 @@ Visitor::~Visitor()
 
 IMPLEMENT_VISIT_PROC(Program)
 {
-    Visit(ast->globalDecls);
+    Visit(ast->globalStmnts);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
@@ -88,11 +88,6 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
     Visit(ast->names);
-}
-
-IMPLEMENT_VISIT_PROC(StructDecl)
-{
-    Visit(ast->structure);
 }
 
 /* --- Statements --- */

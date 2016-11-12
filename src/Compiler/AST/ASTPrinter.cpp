@@ -27,17 +27,22 @@ void ASTPrinter::DumpAST(Program* program, Log& log)
 class ScopedIndent
 {
     public:
-        ScopedIndent(Log& log) :
+        
+        inline ScopedIndent(Log& log) :
             log_{ log }
         {
             log_.IncIndent();
         }
-        ~ScopedIndent()
+
+        inline ~ScopedIndent()
         {
             log_.DecIndent();
         }
+
     private:
+
         Log& log_;
+
 };
 
 #define SCOPED_INDENT ScopedIndent indent(*log_)
@@ -52,8 +57,7 @@ IMPLEMENT_VISIT_PROC(Program)
     Print(ast, "Program");
     SCOPED_INDENT;
 
-    for (auto& globDecl : ast->globalDecls)
-        Visit(globDecl);
+    Visit(ast->globalStmnts);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
@@ -135,14 +139,6 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 
     for (auto& name : ast->names)
         Visit(name);
-}
-
-IMPLEMENT_VISIT_PROC(StructDecl)
-{
-    Print(ast, "StructDecl");
-    SCOPED_INDENT;
-
-    Visit(ast->structure);
 }
 
 /* --- Statements --- */

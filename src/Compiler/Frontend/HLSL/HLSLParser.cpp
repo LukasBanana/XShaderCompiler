@@ -91,7 +91,7 @@ ProgramPtr HLSLParser::ParseProgram(const SourceCodePtr& source)
             break;
 
         /* Parse next global declaration */
-        ast->globalDecls.push_back(ParseGlobalDecl());
+        ast->globalStmnts.push_back(ParseGlobalStmnt());
     }
 
     return ast;
@@ -255,7 +255,7 @@ SamplerValuePtr HLSLParser::ParseSamplerValue()
 
 /* --- Global declarations --- */
 
-GlobalDeclPtr HLSLParser::ParseGlobalDecl()
+StmntPtr HLSLParser::ParseGlobalStmnt()
 {
     switch (TknType())
     {
@@ -266,11 +266,10 @@ GlobalDeclPtr HLSLParser::ParseGlobalDecl()
         case Tokens::UniformBuffer:
             return ParseBufferDecl();
         case Tokens::Struct:
-            return ParseStructDecl();
+            return ParseStructDeclStmnt();
         default:
             return ParseFunctionDecl();
     }
-    return nullptr;
 }
 
 FunctionDeclPtr HLSLParser::ParseFunctionDecl()
@@ -358,9 +357,9 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl()
     return ast;
 }
 
-StructDeclPtr HLSLParser::ParseStructDecl()
+StructDeclStmntPtr HLSLParser::ParseStructDeclStmnt()
 {
-    auto ast = Make<StructDecl>();
+    auto ast = Make<StructDeclStmnt>();
     
     ast->structure = ParseStructure();
     Semi();

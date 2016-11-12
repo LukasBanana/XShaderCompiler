@@ -453,7 +453,7 @@ IMPLEMENT_VISIT_PROC(Program)
     if (shaderTarget_ == ShaderTarget::FragmentShader)
         WriteFragmentShaderOutput();
 
-    Visit(ast->globalDecls);
+    Visit(ast->globalStmnts);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
@@ -828,18 +828,6 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
             EndLn();
         }
     }
-
-    Blank();
-}
-
-IMPLEMENT_VISIT_PROC(StructDecl)
-{
-    if (!ast->structure->flags(Structure::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
-        return; // structure not used
-
-    Line(ast);
-    bool semicolon = true;
-    Visit(ast->structure, &semicolon);
 
     Blank();
 }
