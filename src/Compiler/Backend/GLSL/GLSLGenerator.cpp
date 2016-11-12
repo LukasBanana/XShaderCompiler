@@ -469,12 +469,31 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     if (ast->flags(FunctionCall::isMulFunc) && ast->arguments.size() == 2)
     {
+        auto WriteMulArgument = [&](const ExprPtr& expr)
+        {
+            /*
+            Determine if the expression needs extra brackets when converted from a function call "mul(lhs, rhs)" to a binary expression "lhs * rhs",
+            e.g. "mul(wMatrix, pos + float4(0, 1, 0, 0))" -> "wMatrix * (pos + float4(0, 1, 0, 0))" needs extra brackets
+            */
+            auto type = expr->Type();
+            if (type == AST::Types::TernaryExpr || type == AST::Types::BinaryExpr || type == AST::Types::UnaryExpr || type == AST::Types::PostUnaryExpr)
+            {
+                Write("(");
+                Visit(expr);
+                Write(")");
+            }
+            else
+                Visit(expr);
+        };
+
         /* Convert this function call into a multiplication */
-        Write("((");
-        Visit(ast->arguments[0]);
-        Write(") * (");
-        Visit(ast->arguments[1]);
-        Write("))");
+        Write("(");
+        {
+            WriteMulArgument(ast->arguments[0]);
+            Write(" * ");
+            WriteMulArgument(ast->arguments[1]);
+        }
+        Write(")");
     }
     else if (ast->flags(FunctionCall::isTexFunc) && ast->name->next)
     {
