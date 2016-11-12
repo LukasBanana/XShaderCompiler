@@ -844,21 +844,11 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     Blank();
 }
 
-IMPLEMENT_VISIT_PROC(DirectiveDecl)
-{
-    WriteLn(ast->line);
-}
-
 /* --- Statements --- */
 
 IMPLEMENT_VISIT_PROC(NullStmnt)
 {
     WriteLn(";");
-}
-
-IMPLEMENT_VISIT_PROC(DirectiveStmnt)
-{
-    WriteLn(ast->line);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlockStmnt)

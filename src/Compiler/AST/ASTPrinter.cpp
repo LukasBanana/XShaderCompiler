@@ -145,21 +145,11 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     Visit(ast->structure);
 }
 
-IMPLEMENT_VISIT_PROC(DirectiveDecl)
-{
-    Print(ast, "DirectiveDecl", ast->line);
-}
-
 /* --- Statements --- */
 
 IMPLEMENT_VISIT_PROC(NullStmnt)
 {
     Print(ast, "NullStmnt");
-}
-
-IMPLEMENT_VISIT_PROC(DirectiveStmnt)
-{
-    Print(ast, "DirectiveStmnt", ast->line);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlockStmnt)

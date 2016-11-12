@@ -94,7 +94,6 @@ class HLSLParser : public Parser
         TextureDeclPtr                  ParseTextureDecl();
         SamplerDeclPtr                  ParseSamplerDecl();
         StructDeclPtr                   ParseStructDecl();
-        DirectiveDeclPtr                ParseDirectiveDecl();
 
         FunctionCallPtr                 ParseAttribute();
         PackOffsetPtr                   ParsePackOffset(bool parseColon = true);
@@ -107,7 +106,6 @@ class HLSLParser : public Parser
 
         StmntPtr                        ParseStmnt();
         NullStmntPtr                    ParseNullStmnt();
-        DirectiveStmntPtr               ParseDirectiveStmnt();
         CodeBlockStmntPtr               ParseCodeBlockStmnt();
         ForLoopStmntPtr                 ParseForLoopStmnt(const std::vector<FunctionCallPtr>& attribs);
         WhileLoopStmntPtr               ParseWhileLoopStmnt(const std::vector<FunctionCallPtr>& attribs);

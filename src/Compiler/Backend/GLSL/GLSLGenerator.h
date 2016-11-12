@@ -127,10 +127,8 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( TextureDecl       );
         //DECL_VISIT_PROC( SamplerDecl       );
         DECL_VISIT_PROC( StructDecl        );
-        DECL_VISIT_PROC( DirectiveDecl     );
 
         DECL_VISIT_PROC( NullStmnt         );
-        DECL_VISIT_PROC( DirectiveStmnt    );
         DECL_VISIT_PROC( CodeBlockStmnt    );
         DECL_VISIT_PROC( ForLoopStmnt      );
         DECL_VISIT_PROC( WhileLoopStmnt    );

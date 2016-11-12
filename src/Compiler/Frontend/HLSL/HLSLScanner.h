@@ -33,7 +33,6 @@ class HLSLScanner : public Scanner
 
         TokenPtr ScanToken() override;
 
-        TokenPtr ScanDirective();
         TokenPtr ScanIdentifier();
         TokenPtr ScanAssignShiftRelationOp(const char Chr);
         TokenPtr ScanPlusOp();

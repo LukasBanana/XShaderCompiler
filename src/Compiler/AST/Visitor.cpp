@@ -95,19 +95,9 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     Visit(ast->structure);
 }
 
-IMPLEMENT_VISIT_PROC(DirectiveDecl)
-{
-    // do nothing
-}
-
 /* --- Statements --- */
 
 IMPLEMENT_VISIT_PROC(NullStmnt)
-{
-    // do nothing
-}
-
-IMPLEMENT_VISIT_PROC(DirectiveStmnt)
 {
     // do nothing
 }

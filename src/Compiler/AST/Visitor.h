@@ -43,10 +43,8 @@ DECL_PTR( UniformBufferDecl );
 DECL_PTR( TextureDecl       );
 DECL_PTR( SamplerDecl       );
 DECL_PTR( StructDecl        );
-DECL_PTR( DirectiveDecl     );
 
 DECL_PTR( NullStmnt         );
-DECL_PTR( DirectiveStmnt    );
 DECL_PTR( CodeBlockStmnt    );
 DECL_PTR( ForLoopStmnt      );
 DECL_PTR( WhileLoopStmnt    );
@@ -112,10 +110,8 @@ class Visitor
         VISITOR_VISIT_PROC( TextureDecl       );
         VISITOR_VISIT_PROC( SamplerDecl       );
         VISITOR_VISIT_PROC( StructDecl        );
-        VISITOR_VISIT_PROC( DirectiveDecl     );
 
         VISITOR_VISIT_PROC( NullStmnt         );
-        VISITOR_VISIT_PROC( DirectiveStmnt    );
         VISITOR_VISIT_PROC( CodeBlockStmnt    );
         VISITOR_VISIT_PROC( ForLoopStmnt      );
         VISITOR_VISIT_PROC( WhileLoopStmnt    );

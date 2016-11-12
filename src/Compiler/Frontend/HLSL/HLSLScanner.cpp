@@ -33,10 +33,6 @@ TokenPtr HLSLScanner::ScanToken()
 {
     std::string spell;
 
-    /* Scan directive */
-    if (Is('#'))
-        return ScanDirective();
-
     /* Scan identifier */
     if (std::isalpha(UChr()) || Is('_'))
         return ScanIdentifier();
@@ -137,22 +133,6 @@ TokenPtr HLSLScanner::ScanToken()
     ErrorUnexpected();
 
     return nullptr;
-}
-
-TokenPtr HLSLScanner::ScanDirective()
-{
-    std::string spell;
-    bool takeNextLine = false;
-
-    while (!Is('\n') || takeNextLine)
-    {
-        takeNextLine = false;
-        if (Is('\\'))
-            takeNextLine = true;
-        spell += TakeIt();
-    }
-
-    return Make(Tokens::Directive, spell);
 }
 
 TokenPtr HLSLScanner::ScanIdentifier()

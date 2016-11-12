@@ -78,10 +78,8 @@ struct AST
         TextureDecl,
         SamplerDecl,
         StructDecl,
-        DirectiveDecl,
 
         NullStmnt,
-        DirectiveStmnt,
         CodeBlockStmnt,
         ForLoopStmnt,
         WhileLoopStmnt,
@@ -331,14 +329,6 @@ struct StructDecl : public GlobalDecl
     StructurePtr structure;
 };
 
-// Direvtive declaration.
-struct DirectiveDecl : public GlobalDecl
-{
-    AST_INTERFACE(DirectiveDecl);
-
-    std::string line;
-};
-
 /* --- Variables --- */
 
 // Pack offset.
@@ -426,14 +416,6 @@ struct VarDecl : public AST
 struct NullStmnt : public Stmnt
 {
     AST_INTERFACE(NullStmnt);
-};
-
-// Pre-processor directive statement.
-struct DirectiveStmnt : public Stmnt
-{
-    AST_INTERFACE(DirectiveStmnt);
-
-    std::string line;
 };
 
 // Code block statement.
