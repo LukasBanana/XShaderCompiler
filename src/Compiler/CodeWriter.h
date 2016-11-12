@@ -54,6 +54,11 @@ class CodeWriter : public IndentHandler
 
     private:
         
+        inline std::ostream& Out()
+        {
+            return (*stream_);
+        }
+
         std::ostream*       stream_         = nullptr;
 
         std::stack<Options> optionsStack_;

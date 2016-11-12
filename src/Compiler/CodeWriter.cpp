@@ -33,18 +33,18 @@ void CodeWriter::PopOptions()
 void CodeWriter::BeginLine()
 {
     if (CurrentOptions().enableIndent)
-        stream_->write(FullIndent().c_str(), FullIndent().size());
+        Out() << FullIndent();
 }
 
 void CodeWriter::EndLine()
 {
     if (CurrentOptions().enableNewLine)
-        (*stream_) << '\n';
+        Out() << '\n';
 }
 
 void CodeWriter::Write(const std::string& text)
 {
-    stream_->write(text.c_str(), text.size());
+    Out() << text;
 }
 
 void CodeWriter::WriteLine(const std::string& text)
