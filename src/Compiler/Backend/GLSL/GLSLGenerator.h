@@ -191,6 +191,7 @@ class GLSLGenerator : public Generator
         OutputShaderVersion     versionOut_             = OutputShaderVersion::GLSL330;
         std::string             localVarPrefix_;
         bool                    allowLineMarks_         = true;
+        Statistics*             stats_                  = nullptr;
 
         bool                    isInsideEntryPoint_     = false; //< True if AST traversal is currently inside the main entry point (or its sub nodes).
         bool                    isInsideInterfaceBlock_ = false;

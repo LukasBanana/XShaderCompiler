@@ -332,6 +332,30 @@ void DumpASTCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
+ * DumpStatCommand class
+ */
+
+std::vector<Command::Identifier> DumpStatCommand::Idents() const
+{
+    return { { "--dump-stat" } };
+}
+
+HelpDescriptor DumpStatCommand::Help() const
+{
+    return
+    {
+        "--dump-stat [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables debug output for shader output statistics; default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void DumpStatCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.dumpStats = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
  * PPOnlyCommand class
  */
 

@@ -84,7 +84,7 @@ struct Statistics
         //! Identifier of the binding point.
         std::string ident;
 
-        //! Zero based binding point or location.
+        //! Zero based binding point or location. If this is -1, the location has not been set explicitly.
         int         location;
     };
 

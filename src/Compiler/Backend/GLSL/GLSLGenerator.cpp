@@ -13,6 +13,7 @@
 #include <initializer_list>
 #include <algorithm>
 #include <cctype>
+#include <sstream>//!!!
 
 
 namespace Xsc
@@ -44,6 +45,7 @@ void GLSLGenerator::GeneratePrimaryCode(
     versionOut_     = outputDesc.shaderVersion;
     localVarPrefix_ = outputDesc.formatting.prefix;
     allowLineMarks_ = outputDesc.formatting.lineMarks;
+    stats_          = outputDesc.statistics;
 
     /* Write header */
     if (inputDesc.entryPoint.empty())
@@ -875,15 +877,28 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
     auto samplerType = it->second;
 
     /* Write texture samplers */
-    for (auto& name : ast->textureDecls)
+    for (auto& texDecl : ast->textureDecls)
     {
-        if (name->flags(TextureDecl::isReferenced) || shaderTarget_ == ShaderTarget::CommonShader)
+        if (texDecl->flags(TextureDecl::isReferenced) || shaderTarget_ == ShaderTarget::CommonShader)
         {
+            /* Write output statistics */
+            if (stats_)
+            {
+                int location = -1;
+                if (!texDecl->registerName.empty())
+                {
+                    std::stringstream s;
+                    s << TRegister(texDecl->registerName, texDecl.get());
+                    s >> location;
+                }
+                stats_->textures.push_back({ texDecl->ident, location });
+            }
+
             BeginLn();
             {
-                if (!name->registerName.empty())
-                    Write("layout(binding = " + TRegister(name->registerName, name.get()) + ") ");
-                Write("uniform " + samplerType + " " + name->ident + ";");
+                if (!texDecl->registerName.empty())
+                    Write("layout(binding = " + TRegister(texDecl->registerName, texDecl.get()) + ") ");
+                Write("uniform " + samplerType + " " + texDecl->ident + ";");
             }
             EndLn();
         }

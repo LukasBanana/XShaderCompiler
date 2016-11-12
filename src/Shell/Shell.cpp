@@ -10,6 +10,8 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
+#include <cmath>
 
 #ifdef _WIN32
 #include <conio.h>
@@ -170,13 +172,18 @@ void Shell::Compile(const std::string& filename)
         state.inputDesc.sourceCode  = inputStream;
         state.outputDesc.sourceCode = &outputStream;
 
-        /* Compile shader file */
-        StdLog log;
-        IncludeHandler includeHandler;
+        /* Final setup before compilation */
+        StdLog          log;
+        IncludeHandler  includeHandler;
+        Statistics      stats;
         
         includeHandler.searchPaths = state.searchPaths;
         state.inputDesc.includeHandler = &includeHandler;
 
+        if (state.dumpStats)
+            state.outputDesc.statistics = &stats;
+
+        /* Compile shader file */
         output << "compile " << filename << " to " << outputFilename << std::endl;
 
         auto result = CompileShader(state.inputDesc, state.outputDesc, &log);
@@ -184,13 +191,59 @@ void Shell::Compile(const std::string& filename)
         log.PrintAll(state.verbose);
 
         if (result)
+        {
             output << "translation successful" << std::endl;
+
+            /* Show output statistics (if enabled) */
+            if (state.dumpStats)
+                ShowStats(stats);
+        }
     }
     catch (const std::exception& err)
     {
         /* Print error message */
         output << err.what() << std::endl;
     }
+}
+
+void Shell::ShowStats(const Statistics& stats)
+{
+    output << "statistics:" << std::endl;
+    ShowStatsFor(stats.textures, "texture bindings");
+    ShowStatsFor(stats.constantBuffers, "constant buffer bindings");
+    ShowStatsFor(stats.fragmentTargets, "fragment target bindings");
+}
+
+void Shell::ShowStatsFor(const std::vector<Statistics::Binding>& objects, const std::string& title)
+{
+    const std::string indent("  ");
+    output << indent << title << ':' << std::endl;
+
+    if (!objects.empty())
+    {
+        /* Determine offset for right-aligned location index */
+        int maxLocation = 0;
+        for (const auto& obj : objects)
+            maxLocation = std::max(maxLocation, obj.location);
+
+        auto NumDigits = [](int n) -> std::size_t
+        {
+            return (n > 0u ? static_cast<std::size_t>(std::log10(n)) + 1u : 1u);
+        };
+
+        std::size_t maxLocationLen = NumDigits(maxLocation);
+
+        /* Print binding points */
+        for (const auto& obj : objects)
+        {
+            if (obj.location >= 0)
+                output << indent << indent << std::string(maxLocationLen - NumDigits(obj.location), ' ') << obj.location << ": " << obj.ident << std::endl;
+            else
+                output << indent << indent << std::string(maxLocationLen, ' ') << "  " << obj.ident << std::endl;
+        }
+    }
+    else
+        output << indent << indent << "< none >" << std::endl;
 }
 
 

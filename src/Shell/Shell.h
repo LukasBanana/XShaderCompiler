@@ -36,6 +36,9 @@ class Shell
 
         void Compile(const std::string& filename);
 
+        void ShowStats(const Statistics& stats);
+        void ShowStatsFor(const std::vector<Statistics::Binding>& objects, const std::string& title);
+
         ShellState state;
 
 };

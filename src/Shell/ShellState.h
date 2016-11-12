@@ -47,6 +47,9 @@ struct ShellState
 
     // Pause application after everything is done.
     bool                            pauseApp            = false;
+
+    // Show shader output statistics after compilation.
+    bool                            dumpStats           = false;
 };
 
 

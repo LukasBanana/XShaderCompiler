@@ -14,6 +14,7 @@
 #include "ASTPrinter.h"
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 
 namespace Xsc
@@ -78,7 +79,7 @@ XSC_EXPORT bool CompileShader(
 
     if (outputDesc.options.preprocessOnly)
     {
-        *outputDesc.sourceCode << processedInput->rdbuf();
+        (*outputDesc.sourceCode) << processedInput->rdbuf();
         return true;
     }
 
@@ -112,6 +113,25 @@ XSC_EXPORT bool CompileShader(
     GLSLGenerator generator(log);
     if (!generator.GenerateCode(*program, inputDesc, outputDesc, log))
         return SubmitError("generating output code failed");
+
+    /* Sort statistics */
+    if (outputDesc.statistics)
+    {
+        auto SortStats = [](std::vector<Statistics::Binding>& objects)
+        {
+            std::sort(
+                objects.begin(), objects.end(),
+                [](const Statistics::Binding& lhs, const Statistics::Binding& rhs)
+                {
+                    return (lhs.location < rhs.location);
+                }
+            );
+        };
+
+        SortStats(outputDesc.statistics->textures);
+        SortStats(outputDesc.statistics->constantBuffers);
+        SortStats(outputDesc.statistics->fragmentTargets);
+    }
 
     return true;
 }
