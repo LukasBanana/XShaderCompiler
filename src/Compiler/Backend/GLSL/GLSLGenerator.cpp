@@ -453,8 +453,7 @@ IMPLEMENT_VISIT_PROC(Program)
     if (shaderTarget_ == ShaderTarget::FragmentShader)
         WriteFragmentShaderOutput();
 
-    for (auto& globDecl : ast->globalDecls)
-        Visit(globDecl);
+    Visit(ast->globalDecls);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
@@ -464,8 +463,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     if (writeScope)
         OpenScope();
     
-    for (auto& stmnt : ast->stmnts)
-        Visit(stmnt);
+    Visit(ast->stmnts);
     
     if (writeScope)
         CloseScope();
@@ -602,8 +600,7 @@ IMPLEMENT_VISIT_PROC(Structure)
 
         OpenScope();
         {
-            for (auto& varDecl : ast->members)
-                Visit(varDecl);
+            Visit(ast->members);
         }
         CloseScope(semicolon);
     }
@@ -639,8 +636,7 @@ IMPLEMENT_VISIT_PROC(Structure)
         {
             isInsideInterfaceBlock_ = true;
 
-            for (auto& varDecl : ast->members)
-                Visit(varDecl);
+            Visit(ast->members);
 
             isInsideInterfaceBlock_ = false;
         }
@@ -669,8 +665,7 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     /* Write statement list */
     IncIndent();
     {
-        for (auto& stmnt : ast->stmnts)
-            Visit(stmnt);
+        Visit(ast->stmnts);
     }
     DecIndent();
 }
@@ -786,8 +781,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 
     OpenScope();
     {
-        for (auto& member : ast->members)
-            Visit(member);
+        Visit(ast->members);
     }
     CloseScope(true);
 
@@ -964,8 +958,7 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
     /* Write switch cases */
     OpenScope();
     {
-        for (auto& switchCase : ast->cases)
-            Visit(switchCase);
+        Visit(ast->cases);
     }
     CloseScope();
 }
