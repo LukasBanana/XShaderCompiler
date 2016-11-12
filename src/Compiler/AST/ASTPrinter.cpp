@@ -47,6 +47,12 @@ class ScopedIndent
 
 #define SCOPED_INDENT ScopedIndent indent(*log_)
 
+#define DEFAULT_VISITOR(AST_NAME)               \
+    {                                           \
+        SCOPED_INDENT;                          \
+        Visitor::Visit##AST_NAME(ast, args);    \
+    }
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -55,47 +61,37 @@ class ScopedIndent
 IMPLEMENT_VISIT_PROC(Program)
 {
     Print(ast, "Program");
-    SCOPED_INDENT;
-
-    Visit(ast->globalStmnts);
+    DEFAULT_VISITOR(Program);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
     Print(ast, "CodeBlock");
-    SCOPED_INDENT;
-
-    Visit(ast->stmnts);
+    DEFAULT_VISITOR(CodeBlock);
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     Print(ast, "FunctionCall");
-    SCOPED_INDENT;
-
-    Visit(ast->name);
-    Visit(ast->arguments);
+    DEFAULT_VISITOR(FunctionCall);
 }
 
 IMPLEMENT_VISIT_PROC(Structure)
 {
     Print(ast, "Structure");
-    SCOPED_INDENT;
-
-    Visit(ast->members);
+    DEFAULT_VISITOR(Structure);
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     Print(ast, "SwitchCase");
-    SCOPED_INDENT;
-
-    Visit(ast->stmnts);
+    DEFAULT_VISITOR(SwitchCase);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerValue)
 {
     Print(ast, "SamplerValue", ast->name/* + " = " + ast->value->ToString()*/);
+    DEFAULT_VISITOR(SamplerValue);
 }
 
 /* --- Variables --- */
@@ -108,6 +104,8 @@ IMPLEMENT_VISIT_PROC(PackOffset)
         info += " (" + ast->vectorComponent + ")";
 
     Print(ast, "PackOffset", info);
+
+    DEFAULT_VISITOR(PackOffset);
 }
 
 IMPLEMENT_VISIT_PROC(VarSemantic)
@@ -118,46 +116,38 @@ IMPLEMENT_VISIT_PROC(VarSemantic)
         info += " (" + ast->registerName + ")";
 
     Print(ast, "VarSemantic", info);
-    SCOPED_INDENT;
 
-    Visit(ast->packOffset);
+    DEFAULT_VISITOR(VarSemantic);
 }
 
 IMPLEMENT_VISIT_PROC(VarType)
 {
     Print(ast, "VarType", ast->baseType);
-    SCOPED_INDENT;
-
-    Visit(ast->structType);
+    DEFAULT_VISITOR(VarType);
 }
 
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
     Print(ast, "VarIdent", ast->ident);
-    SCOPED_INDENT;
-
-    Visit(ast->arrayIndices);
-    Visit(ast->next);
+    DEFAULT_VISITOR(VarIdent);
 }
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
     Print(ast, "VarDecl", ast->name);
-    SCOPED_INDENT;
-
-    Visit(ast->arrayDims);
-    Visit(ast->semantics);
-    Visit(ast->initializer);
+    DEFAULT_VISITOR(VarDecl);
 }
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     Print(ast, "BufferDecl", ast->ident);
+    DEFAULT_VISITOR(BufferDecl);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
     Print(ast, "SamplerDecl", ast->ident);
+    DEFAULT_VISITOR(SamplerDecl);
 }
 
 /* --- Declaration statements --- */
@@ -165,42 +155,31 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     Print(ast, "FunctionDecl", ast->name);
-    SCOPED_INDENT;
-
-    Visit(ast->attribs);
-    Visit(ast->codeBlock);
+    DEFAULT_VISITOR(FunctionDecl);
 }
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
     Print(ast, "BufferDeclStmnt", ast->name + " (" + ast->bufferType + ")");
-    SCOPED_INDENT;
-    
-    Visit(ast->members);
+    DEFAULT_VISITOR(BufferDeclStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
     Print(ast, "TextureDeclStmnt");
-    SCOPED_INDENT;
-
-    Visit(ast->bufferDecls);
+    DEFAULT_VISITOR(TextureDeclStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
     Print(ast, "SamplerDeclStmnt");
-    SCOPED_INDENT;
-
-    Visit(ast->samplerDecls);
+    DEFAULT_VISITOR(SamplerDeclStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 {
     Print(ast, "StructDeclStmnt");
-    SCOPED_INDENT;
-
-    Visit(ast->structure);
+    DEFAULT_VISITOR(StructDeclStmnt);
 }
 
 /* --- Statements --- */
@@ -208,116 +187,85 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 IMPLEMENT_VISIT_PROC(NullStmnt)
 {
     Print(ast, "NullStmnt");
+    DEFAULT_VISITOR(NullStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
 {
     Print(ast, "CodeBlockStmnt");
-    SCOPED_INDENT;
-    
-    Visit(ast->codeBlock);
+    DEFAULT_VISITOR(CodeBlockStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
     Print(ast, "ForLoopStmnt");
-    SCOPED_INDENT;
-
-    Visit(ast->initSmnt);
-    Visit(ast->condition);
-    Visit(ast->iteration);
-    Visit(ast->bodyStmnt);
+    DEFAULT_VISITOR(ForLoopStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 {
     Print(ast, "WhileLoopStmnt");
-    SCOPED_INDENT;
-
-    Visit(ast->condition);
-    Visit(ast->bodyStmnt);
+    DEFAULT_VISITOR(WhileLoopStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 {
     Print(ast, "DoWhileLoopStmnt");
-    SCOPED_INDENT;
-
-    Visit(ast->bodyStmnt);
-    Visit(ast->condition);
+    DEFAULT_VISITOR(DoWhileLoopStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(IfStmnt)
 {
     Print(ast, "IfStmnt");
-    SCOPED_INDENT;
-
-    Visit(ast->condition);
-    Visit(ast->bodyStmnt);
-    Visit(ast->elseStmnt);
+    DEFAULT_VISITOR(IfStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(ElseStmnt)
 {
     Print(ast, "ElseStmnt");
-    SCOPED_INDENT;
-
-    Visit(ast->bodyStmnt);
+    DEFAULT_VISITOR(ElseStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(SwitchStmnt)
 {
     Print(ast, "SwitchStmnt");
-    SCOPED_INDENT;
-
-    Visit(ast->selector);
-    Visit(ast->cases);
+    DEFAULT_VISITOR(SwitchStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     Print(ast, "VarDeclStmnt");
-    SCOPED_INDENT;
-
-    for (auto decl : ast->varDecls)
-        Visit(decl);
+    DEFAULT_VISITOR(VarDeclStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(AssignStmnt)
 {
     Print(ast, "AssignStmnt", AssignOpToString(ast->op));
-    SCOPED_INDENT;
-
-    Visit(ast->expr);
+    DEFAULT_VISITOR(AssignStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
     Print(ast, "ExprStmnt");
-    SCOPED_INDENT;
-
-    Visit(ast->expr);
+    DEFAULT_VISITOR(ExprStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCallStmnt)
 {
     Print(ast, "FunctionCallStmnt");
-    SCOPED_INDENT;
-
-    Visit(ast->call);
+    DEFAULT_VISITOR(FunctionCallStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     Print(ast, "ReturnStmnt");
-    SCOPED_INDENT;
-
-    Visit(ast->expr);
+    DEFAULT_VISITOR(ReturnStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 {
     Print(ast, "CtrlTransferStmnt", CtrlTransformToString(ast->transfer));
+    DEFAULT_VISITOR(CtrlTransferStmnt);
 }
 
 /* --- Expressions --- */
@@ -325,100 +273,77 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 IMPLEMENT_VISIT_PROC(ListExpr)
 {
     Print(ast, "ListExpr");
-    SCOPED_INDENT;
-
-    Visit(ast->firstExpr);
-    Visit(ast->nextExpr);
+    DEFAULT_VISITOR(ListExpr);
 }
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
     Print(ast, "LiteralExpr", ast->value);
+    DEFAULT_VISITOR(LiteralExpr);
 }
 
 IMPLEMENT_VISIT_PROC(TypeNameExpr)
 {
     Print(ast, "TypeNameExpr", ast->typeName);
+    DEFAULT_VISITOR(TypeNameExpr);
 }
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
     Print(ast, "TernaryExpr");
-    SCOPED_INDENT;
-
-    Visit(ast->condExpr);
-    Visit(ast->thenExpr);
-    Visit(ast->elseExpr);
+    DEFAULT_VISITOR(TernaryExpr);
 }
 
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
     Print(ast, "BinaryExpr", BinaryOpToString(ast->op));
-    SCOPED_INDENT;
-
-    Visit(ast->lhsExpr);
-    Visit(ast->rhsExpr);
+    DEFAULT_VISITOR(BinaryExpr);
 }
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
     Print(ast, "UnaryExpr", UnaryOpToString(ast->op));
-    SCOPED_INDENT;
-
-    Visit(ast->expr);
+    DEFAULT_VISITOR(UnaryExpr);
 }
 
 IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 {
     Print(ast, "PostUnaryExpr", UnaryOpToString(ast->op));
-    SCOPED_INDENT;
-
-    Visit(ast->expr);
+    DEFAULT_VISITOR(PostUnaryExpr);
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCallExpr)
 {
     Print(ast, "FunctionCallExpr");
-    SCOPED_INDENT;
-
-    Visit(ast->call);
-    Visit(ast->varIdentSuffix);
+    DEFAULT_VISITOR(FunctionCallExpr);
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
 {
     Print(ast, "BracketExpr");
-    SCOPED_INDENT;
-
-    Visit(ast->expr);
+    DEFAULT_VISITOR(BracketExpr);
 }
 
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
     Print(ast, "CastExpr");
-    SCOPED_INDENT;
-
-    Visit(ast->typeExpr);
+    DEFAULT_VISITOR(CastExpr);
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     Print(ast, "VarAccessExpr");
-    SCOPED_INDENT;
-
-    Visit(ast->varIdent);
-    Visit(ast->assignExpr);
+    DEFAULT_VISITOR(VarAccessExpr);
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
     Print(ast, "InitializerExpr");
-    SCOPED_INDENT;
-
-    Visit(ast->exprs);
+    DEFAULT_VISITOR(InitializerExpr);
 }
 
 #undef IMPLEMENT_VISIT_PROC
+#undef DEFAULT_VISITOR
 #undef SCOPED_INDENT
 
 /* --- Helper functions --- */
