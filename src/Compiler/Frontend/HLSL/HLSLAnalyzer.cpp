@@ -313,7 +313,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     reportHandler_.PopContextDesc();
 }
 
-IMPLEMENT_VISIT_PROC(BufferDecl)
+IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
     for (auto& member : ast->members)
     {

@@ -298,9 +298,9 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl()
     return ast;
 }
 
-BufferDeclPtr HLSLParser::ParseBufferDecl()
+BufferDeclStmntPtr HLSLParser::ParseBufferDecl()
 {
-    auto ast = Make<BufferDecl>();
+    auto ast = Make<BufferDeclStmnt>();
 
     /* Parse buffer header */
     ast->bufferType = Accept(Tokens::UniformBuffer)->Spell();

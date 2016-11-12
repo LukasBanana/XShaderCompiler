@@ -169,9 +169,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     Visit(ast->codeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(BufferDecl)
+IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
-    Print(ast, "BufferDecl", ast->name + " (" + ast->bufferType + ")");
+    Print(ast, "BufferDeclStmnt", ast->name + " (" + ast->bufferType + ")");
     SCOPED_INDENT;
     
     for (auto& member : ast->members)

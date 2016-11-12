@@ -90,7 +90,7 @@ class HLSLParser : public Parser
 
         StmntPtr                        ParseGlobalStmnt();
         FunctionDeclPtr                 ParseFunctionDecl();
-        BufferDeclPtr                   ParseBufferDecl();
+        BufferDeclStmntPtr              ParseBufferDecl();
         TextureDeclPtr                  ParseTextureDecl();
         SamplerDeclPtr                  ParseSamplerDecl();
         StructDeclStmntPtr              ParseStructDeclStmnt();
