@@ -68,11 +68,6 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     Visit(ast->stmnts);
 }
 
-IMPLEMENT_VISIT_PROC(BufferDecl)
-{
-    Print(ast, "BufferDecl", ast->ident);
-}
-
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     Print(ast, "FunctionCall");
@@ -96,6 +91,11 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     SCOPED_INDENT;
 
     Visit(ast->stmnts);
+}
+
+IMPLEMENT_VISIT_PROC(SamplerValue)
+{
+    Print(ast, "SamplerValue", ast->name/* + " = " + ast->value->ToString()*/);
 }
 
 /* --- Variables --- */
@@ -148,6 +148,16 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     Visit(ast->arrayDims);
     Visit(ast->semantics);
     Visit(ast->initializer);
+}
+
+IMPLEMENT_VISIT_PROC(BufferDecl)
+{
+    Print(ast, "BufferDecl", ast->ident);
+}
+
+IMPLEMENT_VISIT_PROC(SamplerDecl)
+{
+    Print(ast, "SamplerDecl", ast->ident);
 }
 
 /* --- Declaration statements --- */

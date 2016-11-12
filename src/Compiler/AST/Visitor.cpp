@@ -32,17 +32,6 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     Visit(ast->stmnts);
 }
 
-IMPLEMENT_VISIT_PROC(BufferDecl)
-{
-    Visit(ast->arrayIndices);
-}
-
-IMPLEMENT_VISIT_PROC(SamplerDecl)
-{
-    Visit(ast->arrayIndices);
-    Visit(ast->samplerValues);
-}
-
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     Visit(ast->name);
@@ -93,6 +82,17 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     Visit(ast->arrayDims);
     Visit(ast->semantics);
     Visit(ast->initializer);
+}
+
+IMPLEMENT_VISIT_PROC(BufferDecl)
+{
+    Visit(ast->arrayIndices);
+}
+
+IMPLEMENT_VISIT_PROC(SamplerDecl)
+{
+    Visit(ast->arrayIndices);
+    Visit(ast->samplerValues);
 }
 
 /* --- Declaration statements --- */
