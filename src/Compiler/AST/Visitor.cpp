@@ -32,7 +32,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     Visit(ast->stmnts);
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclIdent)
+IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     Visit(ast->arrayIndices);
 }

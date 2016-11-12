@@ -39,7 +39,7 @@ DECL_PTR( VarSemantic       );
 DECL_PTR( VarType           );
 DECL_PTR( VarIdent          );
 DECL_PTR( VarDecl           );
-DECL_PTR( BufferDeclIdent   );
+DECL_PTR( BufferDecl   );
 DECL_PTR( SamplerDeclIdent  );
 
 DECL_PTR( FunctionDecl      );
@@ -105,7 +105,7 @@ class Visitor
         VISITOR_VISIT_PROC( VarType           );
         VISITOR_VISIT_PROC( VarIdent          );
         VISITOR_VISIT_PROC( VarDecl           );
-        VISITOR_VISIT_PROC( BufferDeclIdent   );
+        VISITOR_VISIT_PROC( BufferDecl   );
         VISITOR_VISIT_PROC( SamplerDeclIdent  );
 
         VISITOR_VISIT_PROC( FunctionDecl      );

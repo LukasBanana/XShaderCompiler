@@ -42,7 +42,7 @@ void ReferenceAnalyzer::MarkTextureReference(AST* ast, const std::string& texIde
         {
             if (tex->ident == texIdent)
             {
-                tex->flags << BufferDeclIdent::isReferenced;
+                tex->flags << BufferDecl::isReferenced;
                 break;
             }
         }

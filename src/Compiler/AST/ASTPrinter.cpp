@@ -69,9 +69,9 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
         Visit(stmnt);
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclIdent)
+IMPLEMENT_VISIT_PROC(BufferDecl)
 {
-    Print(ast, "BufferDeclIdent", ast->ident);
+    Print(ast, "BufferDecl", ast->ident);
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCall)

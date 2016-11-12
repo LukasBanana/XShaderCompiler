@@ -113,9 +113,9 @@ CodeBlockPtr HLSLParser::ParseCodeBlock()
     return ast;
 }
 
-BufferDeclIdentPtr HLSLParser::ParseBufferDeclIdent(bool registerAllowed)
+BufferDeclPtr HLSLParser::ParseBufferDecl(bool registerAllowed)
 {
-    auto ast = Make<BufferDeclIdent>();
+    auto ast = Make<BufferDecl>();
 
     /* Parse identifier and array dimension list (array dimension can be optional) */
     ast->ident          = Accept(Tokens::Ident)->Spell();
@@ -248,120 +248,6 @@ SamplerValuePtr HLSLParser::ParseSamplerValue()
     ast->name = Accept(Tokens::Ident)->Spell();
     Accept(Tokens::AssignOp, "=");
     ast->value = ParseExpr();
-    Semi();
-
-    return ast;
-}
-
-/* --- Declaration statements --- */
-
-StmntPtr HLSLParser::ParseGlobalStmnt()
-{
-    switch (TknType())
-    {
-        case Tokens::Sampler:
-            return ParseSamplerDeclStmnt();
-        case Tokens::Texture:
-            return ParseTextureDeclStmnt();
-        case Tokens::UniformBuffer:
-            return ParseBufferDeclStmnt();
-        case Tokens::Struct:
-            return ParseStructDeclStmnt();
-        default:
-            return ParseFunctionDecl();
-    }
-}
-
-FunctionDeclPtr HLSLParser::ParseFunctionDecl()
-{
-    auto ast = Make<FunctionDecl>();
-
-    /* Parse function header */
-    ast->attribs = ParseAttributeList();
-    ast->returnType = ParseVarType(true);
-    ast->name = Accept(Tokens::Ident)->Spell();
-    ast->parameters = ParseParameterList();
-    
-    if (Is(Tokens::Colon))
-        ast->semantic = ParseSemantic();
-
-    /* Parse optional function body */
-    if (Is(Tokens::Semicolon))
-        AcceptIt();
-    else
-    {
-        GetReportHandler().PushContextDesc(ast->SignatureToString(false));
-        ast->codeBlock = ParseCodeBlock();
-        GetReportHandler().PopContextDesc();
-    }
-
-    return ast;
-}
-
-BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
-{
-    auto ast = Make<BufferDeclStmnt>();
-
-    /* Parse buffer header */
-    ast->bufferType = Accept(Tokens::UniformBuffer)->Spell();
-    ast->name = Accept(Tokens::Ident)->Spell();
-
-    /* Parse optional register */
-    if (Is(Tokens::Colon))
-        ast->registerName = ParseRegister();
-
-    GetReportHandler().PushContextDesc(ast->bufferType + " " + ast->name);
-    {
-        /* Parse buffer body */
-        ast->members = ParseVarDeclStmntList();
-
-        /* Parse optional semicolon (this seems to be optional for cbuffer, and tbuffer) */
-        if (Is(Tokens::Semicolon))
-            Semi();
-    }
-    GetReportHandler().PopContextDesc();
-
-    return ast;
-}
-
-TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
-{
-    auto ast = Make<TextureDeclStmnt>();
-
-    ast->textureType = Accept(Tokens::Texture)->Spell();
-
-    /* Parse optional generic color type ('<' colorType '>') */
-    if (Is(Tokens::BinaryOp, "<"))
-    {
-        AcceptIt();
-        ast->colorType = Accept(Tokens::ScalarType)->Spell();
-        Accept(Tokens::BinaryOp, ">");
-    }
-
-    ast->names = ParseBufferDeclIdentList();
-
-    Semi();
-
-    return ast;
-}
-
-SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt()
-{
-    auto ast = Make<SamplerDeclStmnt>();
-
-    ast->samplerType    = Accept(Tokens::Sampler)->Spell();
-    ast->names          = ParseSamplerDeclIdentList();
-
-    Semi();
-
-    return ast;
-}
-
-StructDeclStmntPtr HLSLParser::ParseStructDeclStmnt()
-{
-    auto ast = Make<StructDeclStmnt>();
-    
-    ast->structure = ParseStructure();
     Semi();
 
     return ast;
@@ -515,6 +401,120 @@ VarDeclPtr HLSLParser::ParseVarDecl()
 
     if (Is(Tokens::AssignOp, "="))
         ast->initializer = ParseInitializer();
+
+    return ast;
+}
+
+/* --- Declaration statements --- */
+
+StmntPtr HLSLParser::ParseGlobalStmnt()
+{
+    switch (TknType())
+    {
+        case Tokens::Sampler:
+            return ParseSamplerDeclStmnt();
+        case Tokens::Texture:
+            return ParseTextureDeclStmnt();
+        case Tokens::UniformBuffer:
+            return ParseBufferDeclStmnt();
+        case Tokens::Struct:
+            return ParseStructDeclStmnt();
+        default:
+            return ParseFunctionDecl();
+    }
+}
+
+FunctionDeclPtr HLSLParser::ParseFunctionDecl()
+{
+    auto ast = Make<FunctionDecl>();
+
+    /* Parse function header */
+    ast->attribs = ParseAttributeList();
+    ast->returnType = ParseVarType(true);
+    ast->name = Accept(Tokens::Ident)->Spell();
+    ast->parameters = ParseParameterList();
+    
+    if (Is(Tokens::Colon))
+        ast->semantic = ParseSemantic();
+
+    /* Parse optional function body */
+    if (Is(Tokens::Semicolon))
+        AcceptIt();
+    else
+    {
+        GetReportHandler().PushContextDesc(ast->SignatureToString(false));
+        ast->codeBlock = ParseCodeBlock();
+        GetReportHandler().PopContextDesc();
+    }
+
+    return ast;
+}
+
+BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
+{
+    auto ast = Make<BufferDeclStmnt>();
+
+    /* Parse buffer header */
+    ast->bufferType = Accept(Tokens::UniformBuffer)->Spell();
+    ast->name = Accept(Tokens::Ident)->Spell();
+
+    /* Parse optional register */
+    if (Is(Tokens::Colon))
+        ast->registerName = ParseRegister();
+
+    GetReportHandler().PushContextDesc(ast->bufferType + " " + ast->name);
+    {
+        /* Parse buffer body */
+        ast->members = ParseVarDeclStmntList();
+
+        /* Parse optional semicolon (this seems to be optional for cbuffer, and tbuffer) */
+        if (Is(Tokens::Semicolon))
+            Semi();
+    }
+    GetReportHandler().PopContextDesc();
+
+    return ast;
+}
+
+TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
+{
+    auto ast = Make<TextureDeclStmnt>();
+
+    ast->textureType = Accept(Tokens::Texture)->Spell();
+
+    /* Parse optional generic color type ('<' colorType '>') */
+    if (Is(Tokens::BinaryOp, "<"))
+    {
+        AcceptIt();
+        ast->colorType = Accept(Tokens::ScalarType)->Spell();
+        Accept(Tokens::BinaryOp, ">");
+    }
+
+    ast->names = ParseBufferDeclList();
+
+    Semi();
+
+    return ast;
+}
+
+SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt()
+{
+    auto ast = Make<SamplerDeclStmnt>();
+
+    ast->samplerType    = Accept(Tokens::Sampler)->Spell();
+    ast->names          = ParseSamplerDeclIdentList();
+
+    Semi();
+
+    return ast;
+}
+
+StructDeclStmntPtr HLSLParser::ParseStructDeclStmnt()
+{
+    auto ast = Make<StructDeclStmnt>();
+    
+    ast->structure = ParseStructure();
+    Semi();
 
     return ast;
 }
@@ -1253,19 +1253,19 @@ std::vector<SwitchCasePtr> HLSLParser::ParseSwitchCaseList()
     return cases;
 }
 
-std::vector<BufferDeclIdentPtr> HLSLParser::ParseBufferDeclIdentList()
+std::vector<BufferDeclPtr> HLSLParser::ParseBufferDeclList()
 {
-    std::vector<BufferDeclIdentPtr> bufferIdents;
+    std::vector<BufferDeclPtr> bufferDecls;
 
-    bufferIdents.push_back(ParseBufferDeclIdent());
+    bufferDecls.push_back(ParseBufferDecl());
 
     while (Is(Tokens::Comma))
     {
         AcceptIt();
-        bufferIdents.push_back(ParseBufferDeclIdent());
+        bufferDecls.push_back(ParseBufferDecl());
     }
 
-    return bufferIdents;
+    return bufferDecls;
 }
 
 std::vector<SamplerDeclIdentPtr> HLSLParser::ParseSamplerDeclIdentList()

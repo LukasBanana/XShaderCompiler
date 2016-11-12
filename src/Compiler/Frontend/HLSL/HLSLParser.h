@@ -80,20 +80,11 @@ class HLSLParser : public Parser
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);
 
         CodeBlockPtr                    ParseCodeBlock();
-        BufferDeclIdentPtr              ParseBufferDeclIdent(bool registerAllowed = true);
-        SamplerDeclIdentPtr             ParseSamplerDeclIdent(bool registerAllowed = true);
         FunctionCallPtr                 ParseFunctionCall(VarIdentPtr varIdent = nullptr);
         StructurePtr                    ParseStructure();
         VarDeclStmntPtr                 ParseParameter();
         SwitchCasePtr                   ParseSwitchCase();
         SamplerValuePtr                 ParseSamplerValue();
-
-        StmntPtr                        ParseGlobalStmnt();
-        FunctionDeclPtr                 ParseFunctionDecl();
-        BufferDeclStmntPtr              ParseBufferDeclStmnt();
-        TextureDeclStmntPtr             ParseTextureDeclStmnt();
-        SamplerDeclStmntPtr             ParseSamplerDeclStmnt();
-        StructDeclStmntPtr              ParseStructDeclStmnt();
 
         FunctionCallPtr                 ParseAttribute();
         PackOffsetPtr                   ParsePackOffset(bool parseColon = true);
@@ -103,6 +94,15 @@ class HLSLParser : public Parser
         VarIdentPtr                     ParseVarIdent();
         VarTypePtr                      ParseVarType(bool parseVoidType = false);
         VarDeclPtr                      ParseVarDecl();
+        BufferDeclPtr                   ParseBufferDecl(bool registerAllowed = true);
+        SamplerDeclIdentPtr             ParseSamplerDeclIdent(bool registerAllowed = true);
+
+        StmntPtr                        ParseGlobalStmnt();
+        FunctionDeclPtr                 ParseFunctionDecl();
+        BufferDeclStmntPtr              ParseBufferDeclStmnt();
+        TextureDeclStmntPtr             ParseTextureDeclStmnt();
+        SamplerDeclStmntPtr             ParseSamplerDeclStmnt();
+        StructDeclStmntPtr              ParseStructDeclStmnt();
 
         StmntPtr                        ParseStmnt();
         NullStmntPtr                    ParseNullStmnt();
@@ -142,7 +142,7 @@ class HLSLParser : public Parser
         std::vector<VarSemanticPtr>     ParseVarSemanticList();
         std::vector<FunctionCallPtr>    ParseAttributeList();
         std::vector<SwitchCasePtr>      ParseSwitchCaseList();
-        std::vector<BufferDeclIdentPtr> ParseBufferDeclIdentList();
+        std::vector<BufferDeclPtr>      ParseBufferDeclList();
         std::vector<SamplerDeclIdentPtr> ParseSamplerDeclIdentList();
         std::vector<SamplerValuePtr>    ParseSamplerValueList();
 
