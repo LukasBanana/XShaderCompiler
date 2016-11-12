@@ -245,7 +245,10 @@ SamplerValuePtr HLSLParser::ParseSamplerValue()
 {
     auto ast = Make<SamplerValue>();
 
+    /* Parse state name */
     ast->name = Accept(Tokens::Ident)->Spell();
+
+    /* Parse value expression */
     Accept(Tokens::AssignOp, "=");
     ast->value = ParseExpr();
     Semi();
