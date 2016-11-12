@@ -126,8 +126,8 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( VarDecl           );
 
         DECL_VISIT_PROC( FunctionDecl      );
-        DECL_VISIT_PROC( BufferDeclStmnt        );
-        DECL_VISIT_PROC( TextureDeclStmnt       );
+        DECL_VISIT_PROC( BufferDeclStmnt   );
+        DECL_VISIT_PROC( TextureDeclStmnt  );
         DECL_VISIT_PROC( StructDeclStmnt   );
 
         DECL_VISIT_PROC( NullStmnt         );

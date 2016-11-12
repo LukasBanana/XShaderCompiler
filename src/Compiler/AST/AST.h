@@ -65,8 +65,6 @@ struct AST
     {
         Program,
         CodeBlock,
-        BufferDeclIdent,
-        SamplerDeclIdent,
         FunctionCall,
         Structure,
         SwitchCase,
@@ -77,6 +75,8 @@ struct AST
         VarType,
         VarIdent,
         VarDecl,
+        BufferDeclIdent,
+        SamplerDeclIdent,
 
         FunctionDecl, // Do not use "Stmnt" postfix here (--> FunctionDecl can only appear in global scope)
         BufferDeclStmnt,
@@ -180,32 +180,6 @@ struct SamplerValue : public AST
 
     std::string name;   // Sampler state name
     ExprPtr     value;  // Sampler state value expression
-};
-
-// Buffer (or texture) declaration identifier.
-struct BufferDeclIdent : public AST
-{
-    AST_INTERFACE(BufferDeclIdent);
-
-    FLAG_ENUM
-    {
-        FLAG( isReferenced, 0 ), // This buffer is referenced (or rather used) at least once (use-count >= 1).
-    };
-
-    std::string                     ident;
-    std::vector<ExprPtr>            arrayIndices;
-    std::string                     registerName;   // May be empty
-};
-
-// Sampler state declaration identifier.
-struct SamplerDeclIdent : public AST
-{
-    AST_INTERFACE(SamplerDeclIdent);
-
-    std::string                     ident;
-    std::vector<ExprPtr>            arrayIndices;
-    std::string                     registerName;   // May be empty
-    std::vector<SamplerValuePtr>    samplerValues;  // State values for a sampler decl-ident.
 };
 
 // Function call.
@@ -327,6 +301,32 @@ struct VarDecl : public AST
 
     BufferDeclStmnt*            bufferDeclRef   = nullptr; // Buffer declaration reference for DAST; may be null
     VarDeclStmnt*               declStmntRef    = nullptr; // Reference to its declaration statement; may be null
+};
+
+// Buffer (or texture) declaration identifier.
+struct BufferDeclIdent : public AST
+{
+    AST_INTERFACE(BufferDeclIdent);
+
+    FLAG_ENUM
+    {
+        FLAG( isReferenced, 0 ), // This buffer is referenced (or rather used) at least once (use-count >= 1).
+    };
+
+    std::string                     ident;
+    std::vector<ExprPtr>            arrayIndices;
+    std::string                     registerName;   // May be empty
+};
+
+// Sampler state declaration identifier.
+struct SamplerDeclIdent : public AST
+{
+    AST_INTERFACE(SamplerDeclIdent);
+
+    std::string                     ident;
+    std::vector<ExprPtr>            arrayIndices;
+    std::string                     registerName;   // May be empty
+    std::vector<SamplerValuePtr>    samplerValues;  // State values for a sampler decl-ident.
 };
 
 /* --- Declaration statements --- */

@@ -29,8 +29,6 @@ DECL_PTR( Expr              );
 
 DECL_PTR( Program           );
 DECL_PTR( CodeBlock         );
-DECL_PTR( BufferDeclIdent   );
-DECL_PTR( SamplerDeclIdent  );
 DECL_PTR( FunctionCall      );
 DECL_PTR( Structure         );
 DECL_PTR( SwitchCase        );
@@ -41,11 +39,13 @@ DECL_PTR( VarSemantic       );
 DECL_PTR( VarType           );
 DECL_PTR( VarIdent          );
 DECL_PTR( VarDecl           );
+DECL_PTR( BufferDeclIdent   );
+DECL_PTR( SamplerDeclIdent  );
 
 DECL_PTR( FunctionDecl      );
 DECL_PTR( BufferDeclStmnt   );
-DECL_PTR( TextureDeclStmnt       );
-DECL_PTR( SamplerDeclStmnt       );
+DECL_PTR( TextureDeclStmnt  );
+DECL_PTR( SamplerDeclStmnt  );
 DECL_PTR( StructDeclStmnt   );
 
 DECL_PTR( NullStmnt         );
@@ -95,17 +95,23 @@ class Visitor
 
         VISITOR_VISIT_PROC( Program           );
         VISITOR_VISIT_PROC( CodeBlock         );
-        VISITOR_VISIT_PROC( BufferDeclIdent   );
-        VISITOR_VISIT_PROC( SamplerDeclIdent  );
         VISITOR_VISIT_PROC( FunctionCall      );
         VISITOR_VISIT_PROC( Structure         );
         VISITOR_VISIT_PROC( SwitchCase        );
         VISITOR_VISIT_PROC( SamplerValue      );
 
+        VISITOR_VISIT_PROC( PackOffset        );
+        VISITOR_VISIT_PROC( VarSemantic       );
+        VISITOR_VISIT_PROC( VarType           );
+        VISITOR_VISIT_PROC( VarIdent          );
+        VISITOR_VISIT_PROC( VarDecl           );
+        VISITOR_VISIT_PROC( BufferDeclIdent   );
+        VISITOR_VISIT_PROC( SamplerDeclIdent  );
+
         VISITOR_VISIT_PROC( FunctionDecl      );
         VISITOR_VISIT_PROC( BufferDeclStmnt   );
-        VISITOR_VISIT_PROC( TextureDeclStmnt       );
-        VISITOR_VISIT_PROC( SamplerDeclStmnt       );
+        VISITOR_VISIT_PROC( TextureDeclStmnt  );
+        VISITOR_VISIT_PROC( SamplerDeclStmnt  );
         VISITOR_VISIT_PROC( StructDeclStmnt   );
 
         VISITOR_VISIT_PROC( NullStmnt         );
@@ -135,12 +141,6 @@ class Visitor
         VISITOR_VISIT_PROC( CastExpr          );
         VISITOR_VISIT_PROC( VarAccessExpr     );
         VISITOR_VISIT_PROC( InitializerExpr   );
-
-        VISITOR_VISIT_PROC( PackOffset        );
-        VISITOR_VISIT_PROC( VarSemantic       );
-        VISITOR_VISIT_PROC( VarType           );
-        VISITOR_VISIT_PROC( VarIdent          );
-        VISITOR_VISIT_PROC( VarDecl           );
 
     protected:
         
