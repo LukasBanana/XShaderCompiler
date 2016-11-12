@@ -325,8 +325,8 @@ struct VarDecl : public AST
     std::vector<VarSemanticPtr> semantics;
     ExprPtr                     initializer;
 
-    BufferDeclStmnt*                 uniformBufferRef    = nullptr; // Uniform buffer reference for DAST; may be null
-    VarDeclStmnt*               declStmntRef        = nullptr; // Reference to its declaration statement; may be null
+    BufferDeclStmnt*            bufferDeclRef   = nullptr; // Buffer declaration reference for DAST; may be null
+    VarDeclStmnt*               declStmntRef    = nullptr; // Reference to its declaration statement; may be null
 };
 
 /* --- Declaration statements --- */

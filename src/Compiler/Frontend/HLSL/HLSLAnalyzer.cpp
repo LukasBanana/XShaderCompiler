@@ -321,7 +321,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
         /* Decorate all members with a reference to this uniform buffer */
         for (auto& varDecl : member->varDecls)
-            varDecl->uniformBufferRef = ast;
+            varDecl->bufferDeclRef = ast;
     }
 }
 

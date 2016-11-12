@@ -154,8 +154,8 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
         {
             /* Mark uniform buffer as referenced */
             auto varDecl = dynamic_cast<VarDecl*>(symbol);
-            if (varDecl && varDecl->uniformBufferRef)
-                Visit(varDecl->uniformBufferRef);
+            if (varDecl && varDecl->bufferDeclRef)
+                Visit(varDecl->bufferDeclRef);
         }
     }
 
