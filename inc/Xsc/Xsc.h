@@ -16,6 +16,7 @@
 #include "Version.h"
 
 #include <string>
+#include <vector>
 #include <istream>
 #include <ostream>
 #include <memory>
@@ -63,16 +64,38 @@ struct Formatting
 struct Options
 {
     //! True if warnings are allowed. By default false.
-    bool        warnings        = false;
+    bool warnings       = false;
 
     //! If true, little code optimizations are performed. By default false.
-    bool        optimize        = false;
+    bool optimize       = false;
 
     //! If true, only the preprocessed source code will be written out.
-    bool        preprocessOnly  = false;
+    bool preprocessOnly = false;
 
     //! If true, the abstract syntax tree (AST) will be written to the log output. By default false.
-    bool        dumpAST         = false;
+    bool dumpAST        = false;
+};
+
+//! Structure for shader output statistics (e.g. texture/buffer binding points).
+struct Statistics
+{
+    struct Binding
+    {
+        //! Identifier of the binding point.
+        std::string ident;
+
+        //! Zero based binding point or location.
+        int         location;
+    };
+
+    //! Texture bindings.
+    std::vector<Binding> textures;
+
+    //! Constant buffer bindings.
+    std::vector<Binding> constantBuffers;
+
+    //! Fragment shader output targets.
+    std::vector<Binding> fragmentTargets;
 };
 
 //! Shader input descriptor structure.
@@ -104,19 +127,22 @@ struct ShaderInput
 struct ShaderOutput
 {
     //! Specifies the filename of the output shader code. This is an optional attribute, and only a hint to the compiler.
-    std::string                     filename;
+    std::string         filename;
 
-    //! Specifies the output stream. This will contain the output GLSL code. This must not be null!
-    std::ostream*                   sourceCode          = nullptr;
+    //! Specifies the output stream. This will contain the output GLSL code. This must not be null when passed to the "CompileShader" functino!
+    std::ostream*       sourceCode      = nullptr;
 
     //! Specifies the output shader version (e.g. for "GLSL 1.20" use 'OutputShaderVersion::GLSL120'). By default OutputShaderVersion::GLSL330.
-    OutputShaderVersion             shaderVersion       = OutputShaderVersion::GLSL330;
+    OutputShaderVersion shaderVersion   = OutputShaderVersion::GLSL330;
 
     //! Output code formatting descriptor.
-    Formatting                      formatting;
+    Formatting          formatting;
 
     //! Additional options to configure the code generation.
-    Options                         options;
+    Options             options;
+
+    //! Optional output statistics. By default null.
+    Statistics*         statistics      = nullptr;
 };
 
 /**
@@ -125,6 +151,7 @@ struct ShaderOutput
 \param[in] outputDesc Output shader code descriptor.
 \param[in] log Optional pointer to an output log. Inherit from the "Log" class interface.
 \return True if the code has been translated successfully.
+\throw std::invalid_argument If either the input or output streams are null.
 \see ShaderInput
 \see ShaderOutput
 \see Log
