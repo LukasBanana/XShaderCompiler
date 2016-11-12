@@ -263,10 +263,8 @@ GlobalDeclPtr HLSLParser::ParseGlobalDecl()
             return ParseSamplerDecl();
         case Tokens::Texture:
             return ParseTextureDecl();
-        //case Tokens::StorageBuffer:
-        //    return ParseStorageBufferDecl();
         case Tokens::UniformBuffer:
-            return ParseUniformBufferDecl();
+            return ParseBufferDecl();
         case Tokens::Struct:
             return ParseStructDecl();
         default:
@@ -301,9 +299,9 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl()
     return ast;
 }
 
-UniformBufferDeclPtr HLSLParser::ParseUniformBufferDecl()
+BufferDeclPtr HLSLParser::ParseBufferDecl()
 {
-    auto ast = Make<UniformBufferDecl>();
+    auto ast = Make<BufferDecl>();
 
     /* Parse buffer header */
     ast->bufferType = Accept(Tokens::UniformBuffer)->Spell();

@@ -773,9 +773,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     Blank();
 }
 
-IMPLEMENT_VISIT_PROC(UniformBufferDecl)
+IMPLEMENT_VISIT_PROC(BufferDecl)
 {
-    if (!ast->flags(UniformBufferDecl::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
+    if (!ast->flags(BufferDecl::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
         return; // uniform buffer not used
 
     /* Write uniform buffer header */

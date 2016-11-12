@@ -73,7 +73,7 @@ struct AST
         SamplerValue,
 
         FunctionDecl,
-        UniformBufferDecl,
+        BufferDecl,
         TextureDecl,
         SamplerDecl,
         StructDecl,
@@ -280,9 +280,9 @@ struct FunctionDecl : public GlobalDecl
 };
 
 // Uniform buffer (cbuffer, tbuffer) declaration.
-struct UniformBufferDecl : public GlobalDecl
+struct BufferDecl : public GlobalDecl
 {
-    AST_INTERFACE(UniformBufferDecl);
+    AST_INTERFACE(BufferDecl);
 
     FLAG_ENUM
     {
@@ -405,7 +405,7 @@ struct VarDecl : public AST
     std::vector<VarSemanticPtr> semantics;
     ExprPtr                     initializer;
 
-    UniformBufferDecl*          uniformBufferRef = nullptr; // Uniform buffer reference for DAST; may be null
+    BufferDecl*          uniformBufferRef = nullptr; // Uniform buffer reference for DAST; may be null
     VarDeclStmnt*               declStmntRef = nullptr;     // Reference to its declaration statement; may be null
 };
 

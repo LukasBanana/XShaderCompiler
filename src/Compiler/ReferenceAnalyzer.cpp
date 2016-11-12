@@ -124,16 +124,16 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     }
 }
 
-IMPLEMENT_VISIT_PROC(UniformBufferDecl)
+IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     /* Check if this function was already marked by this analyzer */
-    if (!ast->flags(UniformBufferDecl::wasMarked))
+    if (!ast->flags(BufferDecl::wasMarked))
     {
-        ast->flags << UniformBufferDecl::wasMarked;
-        ast->flags << UniformBufferDecl::isReferenced;
+        ast->flags << BufferDecl::wasMarked;
+        ast->flags << BufferDecl::isReferenced;
 
         /* Default visitor */
-        Visitor::VisitUniformBufferDecl(ast, args);
+        Visitor::VisitBufferDecl(ast, args);
     }
 }
 

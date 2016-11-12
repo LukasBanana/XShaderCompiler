@@ -75,7 +75,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     Visit(ast->codeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(UniformBufferDecl)
+IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     Visit(ast->members);
 }
