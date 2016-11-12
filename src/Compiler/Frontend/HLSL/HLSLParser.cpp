@@ -113,7 +113,7 @@ CodeBlockPtr HLSLParser::ParseCodeBlock()
     return ast;
 }
 
-BufferDeclPtr HLSLParser::ParseBufferDecl(bool registerAllowed)
+BufferDeclPtr HLSLParser::ParseBufferDecl()
 {
     auto ast = Make<BufferDecl>();
 
@@ -123,12 +123,12 @@ BufferDeclPtr HLSLParser::ParseBufferDecl(bool registerAllowed)
 
     /* Parse register name (not allowed for local variables!) */
     if (Is(Tokens::Colon))
-        ast->registerName = ParseRegister(true, registerAllowed);
+        ast->registerName = ParseRegister(true);
 
     return ast;
 }
 
-SamplerDeclPtr HLSLParser::ParseSamplerDecl(bool registerAllowed)
+SamplerDeclPtr HLSLParser::ParseSamplerDecl()
 {
     auto ast = Make<SamplerDecl>();
 
@@ -138,7 +138,7 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl(bool registerAllowed)
 
     /* Parse register name (not allowed for local variables!) */
     if (Is(Tokens::Colon))
-        ast->registerName = ParseRegister(true, registerAllowed);
+        ast->registerName = ParseRegister(true);
 
     /* Parse optional static sampler state */
     if (Is(Tokens::LCurly))
@@ -443,7 +443,11 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl()
     else
     {
         GetReportHandler().PushContextDesc(ast->SignatureToString(false));
-        ast->codeBlock = ParseCodeBlock();
+        {
+            localScope_ = true;
+            ast->codeBlock = ParseCodeBlock();
+            localScope_ = false;
+        }
         GetReportHandler().PopContextDesc();
     }
 
@@ -502,7 +506,7 @@ SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt()
     auto ast = Make<SamplerDeclStmnt>();
 
     ast->samplerType    = Accept(Tokens::Sampler)->Spell();
-    ast->samplerDecls          = ParseSamplerDeclList();
+    ast->samplerDecls   = ParseSamplerDeclList();
 
     Semi();
 
@@ -553,6 +557,8 @@ StmntPtr HLSLParser::ParseStmnt()
             return ParseCtrlTransferStmnt();
         case Tokens::Struct:
             return ParseStructDeclOrVarDeclStmnt();
+        case Tokens::Sampler:
+            return ParseSamplerDeclStmnt();
         case Tokens::TypeModifier:
         case Tokens::StorageModifier:
             return ParseVarDeclStmnt();
@@ -1295,10 +1301,10 @@ std::vector<SamplerValuePtr> HLSLParser::ParseSamplerValueList()
 
 /* --- Others --- */
 
-std::string HLSLParser::ParseRegister(bool parseColon, bool registerAllowed)
+std::string HLSLParser::ParseRegister(bool parseColon)
 {
-    if (!registerAllowed)
-        Error("semantic is not allowed in this scope", true, HLSLErr::ERR_SEMANTICS, false);
+    if (localScope_)
+        Error("semantics are not allowed in local scope", false, HLSLErr::ERR_SEMANTICS, false);
 
     /* Parse ': register(IDENT)' */
     if (parseColon)

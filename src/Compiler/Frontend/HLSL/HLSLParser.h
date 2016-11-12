@@ -94,8 +94,8 @@ class HLSLParser : public Parser
         VarIdentPtr                     ParseVarIdent();
         VarTypePtr                      ParseVarType(bool parseVoidType = false);
         VarDeclPtr                      ParseVarDecl();
-        BufferDeclPtr                   ParseBufferDecl(bool registerAllowed = true);
-        SamplerDeclPtr                  ParseSamplerDecl(bool registerAllowed = true);
+        BufferDeclPtr                   ParseBufferDecl();
+        SamplerDeclPtr                  ParseSamplerDecl();
 
         StmntPtr                        ParseGlobalStmnt();
         FunctionDeclPtr                 ParseFunctionDecl();
@@ -146,13 +146,16 @@ class HLSLParser : public Parser
         std::vector<SamplerDeclPtr>     ParseSamplerDeclList();
         std::vector<SamplerValuePtr>    ParseSamplerValueList();
 
-        std::string                     ParseRegister(bool parseColon = true, bool registerAllowed = true);
+        std::string                     ParseRegister(bool parseColon = true);
         std::string                     ParseSemantic();
 
         /* === Members === */
 
         // Symbol table for all types which are allowed in a cast expression (currently only structure types).
-        ASTSymbolTable typeSymTable_;
+        ASTSymbolTable  typeSymTable_;
+
+        // True, if the parser is currently inside a local scope of a function.
+        bool            localScope_     = false;
 
 };
 
