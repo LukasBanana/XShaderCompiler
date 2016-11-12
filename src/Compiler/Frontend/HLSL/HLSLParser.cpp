@@ -490,7 +490,7 @@ TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
         Accept(Tokens::BinaryOp, ">");
     }
 
-    ast->names = ParseBufferDeclList();
+    ast->bufferDecls = ParseBufferDeclList();
 
     Semi();
 
@@ -502,7 +502,7 @@ SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt()
     auto ast = Make<SamplerDeclStmnt>();
 
     ast->samplerType    = Accept(Tokens::Sampler)->Spell();
-    ast->names          = ParseSamplerDeclIdentList();
+    ast->samplerDecls          = ParseSamplerDeclIdentList();
 
     Semi();
 

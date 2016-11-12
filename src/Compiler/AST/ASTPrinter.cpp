@@ -65,8 +65,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     Print(ast, "CodeBlock");
     SCOPED_INDENT;
 
-    for (auto& stmnt : ast->stmnts)
-        Visit(stmnt);
+    Visit(ast->stmnts);
 }
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
@@ -80,8 +79,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     SCOPED_INDENT;
 
     Visit(ast->name);
-    for (auto& arg : ast->arguments)
-        Visit(arg);
+    Visit(ast->arguments);
 }
 
 IMPLEMENT_VISIT_PROC(Structure)
@@ -89,8 +87,7 @@ IMPLEMENT_VISIT_PROC(Structure)
     Print(ast, "Structure");
     SCOPED_INDENT;
 
-    for (auto& member : ast->members)
-        Visit(member);
+    Visit(ast->members);
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
@@ -98,8 +95,7 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     Print(ast, "SwitchCase");
     SCOPED_INDENT;
 
-    for (auto& stmnt : ast->stmnts)
-        Visit(stmnt);
+    Visit(ast->stmnts);
 }
 
 /* --- Variables --- */
@@ -140,8 +136,7 @@ IMPLEMENT_VISIT_PROC(VarIdent)
     Print(ast, "VarIdent", ast->ident);
     SCOPED_INDENT;
 
-    for (auto& index : ast->arrayIndices)
-        Visit(index);
+    Visit(ast->arrayIndices);
     Visit(ast->next);
 }
 
@@ -150,10 +145,8 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     Print(ast, "VarDecl", ast->name);
     SCOPED_INDENT;
 
-    for (auto& dim : ast->arrayDims)
-        Visit(dim);
-    for (auto& semantic : ast->semantics)
-        Visit(semantic);
+    Visit(ast->arrayDims);
+    Visit(ast->semantics);
     Visit(ast->initializer);
 }
 
@@ -164,8 +157,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     Print(ast, "FunctionDecl", ast->name);
     SCOPED_INDENT;
 
-    for (auto& attrib : ast->attribs)
-        Visit(attrib);
+    Visit(ast->attribs);
     Visit(ast->codeBlock);
 }
 
@@ -174,8 +166,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     Print(ast, "BufferDeclStmnt", ast->name + " (" + ast->bufferType + ")");
     SCOPED_INDENT;
     
-    for (auto& member : ast->members)
-        Visit(member);
+    Visit(ast->members);
 }
 
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
@@ -183,8 +174,7 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
     Print(ast, "TextureDeclStmnt");
     SCOPED_INDENT;
 
-    for (auto& name : ast->names)
-        Visit(name);
+    Visit(ast->bufferDecls);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
@@ -192,8 +182,7 @@ IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
     Print(ast, "SamplerDeclStmnt");
     SCOPED_INDENT;
 
-    for (auto& name : ast->names)
-        Visit(name);
+    Visit(ast->samplerDecls);
 }
 
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
@@ -272,8 +261,7 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
     SCOPED_INDENT;
 
     Visit(ast->selector);
-    for (auto& switchCase : ast->cases)
-        Visit(switchCase);
+    Visit(ast->cases);
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
@@ -417,8 +405,7 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
     Print(ast, "InitializerExpr");
     SCOPED_INDENT;
 
-    for (auto& expr : ast->exprs)
-        Visit(expr);
+    Visit(ast->exprs);
 }
 
 #undef IMPLEMENT_VISIT_PROC

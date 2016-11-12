@@ -99,7 +99,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
     /* Check for explicit texture binding */
-    for (auto& name : ast->names)
+    for (auto& name : ast->bufferDecls)
     {
         if (!name->registerName.empty())
             AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);

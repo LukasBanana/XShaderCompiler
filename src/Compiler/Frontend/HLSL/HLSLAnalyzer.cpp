@@ -328,14 +328,14 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
     /* Register all texture identifiers */
-    for (auto& name : ast->names)
+    for (auto& name : ast->bufferDecls)
         Register(name->ident, ast);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
     /* Register all sampler identifiers */
-    for (auto& name : ast->names)
+    for (auto& name : ast->samplerDecls)
         Register(name->ident, ast);
 }
 

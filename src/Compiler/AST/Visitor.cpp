@@ -112,12 +112,12 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
-    Visit(ast->names);
+    Visit(ast->bufferDecls);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
-    Visit(ast->names);
+    Visit(ast->samplerDecls);
 }
 
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)

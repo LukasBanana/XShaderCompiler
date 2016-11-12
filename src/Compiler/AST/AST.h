@@ -385,7 +385,7 @@ struct TextureDeclStmnt : public Stmnt
 
     std::string                 textureType;
     std::string                 colorType;
-    std::vector<BufferDeclPtr>  names;
+    std::vector<BufferDeclPtr>  bufferDecls;
 };
 
 // Sampler declaration.
@@ -394,7 +394,7 @@ struct SamplerDeclStmnt : public Stmnt
     AST_INTERFACE(SamplerDeclStmnt);
 
     std::string                         samplerType;
-    std::vector<SamplerDeclIdentPtr>    names;
+    std::vector<SamplerDeclIdentPtr>    samplerDecls;
 };
 
 // Structure declaration statement.
