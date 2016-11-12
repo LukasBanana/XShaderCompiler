@@ -197,11 +197,6 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
     // do nothing
 }
 
-IMPLEMENT_VISIT_PROC(CommentStmnt)
-{
-    // do nothing
-}
-
 /* --- Expressions --- */
 
 IMPLEMENT_VISIT_PROC(ListExpr)

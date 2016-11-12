@@ -544,8 +544,6 @@ StmntPtr HLSLParser::ParseStmnt()
     /* Determine which kind of statement the next one is */
     switch (TknType())
     {
-        case Tokens::Comment:
-            return ParseCommentStmnt();
         case Tokens::Semicolon:
             return ParseNullStmnt();
         case Tokens::Directive:
@@ -582,14 +580,6 @@ StmntPtr HLSLParser::ParseStmnt()
 
     /* Parse statement of arbitrary expression */
     return ParseExprStmnt();
-}
-
-CommentStmntPtr HLSLParser::ParseCommentStmnt()
-{
-    auto ast = Make<CommentStmnt>();
-    while (Is(Tokens::Comment))
-        ast->commentText += Accept(Tokens::Comment)->Spell() + '\n';
-    return ast;
 }
 
 NullStmntPtr HLSLParser::ParseNullStmnt()

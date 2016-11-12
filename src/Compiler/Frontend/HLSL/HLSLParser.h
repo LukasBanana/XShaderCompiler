@@ -106,7 +106,6 @@ class HLSLParser : public Parser
         VarDeclPtr                      ParseVarDecl();
 
         StmntPtr                        ParseStmnt();
-        CommentStmntPtr                 ParseCommentStmnt();
         NullStmntPtr                    ParseNullStmnt();
         DirectiveStmntPtr               ParseDirectiveStmnt();
         CodeBlockStmntPtr               ParseCodeBlockStmnt();

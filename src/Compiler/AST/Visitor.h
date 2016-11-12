@@ -61,7 +61,6 @@ DECL_PTR( FunctionCallStmnt );
 DECL_PTR( ReturnStmnt       );
 DECL_PTR( StructDeclStmnt   );
 DECL_PTR( CtrlTransferStmnt );
-DECL_PTR( CommentStmnt      );
 
 DECL_PTR( ListExpr          );
 DECL_PTR( LiteralExpr       );
@@ -131,7 +130,6 @@ class Visitor
         VISITOR_VISIT_PROC( ReturnStmnt       );
         VISITOR_VISIT_PROC( StructDeclStmnt   );
         VISITOR_VISIT_PROC( CtrlTransferStmnt );
-        VISITOR_VISIT_PROC( CommentStmnt      );
 
         VISITOR_VISIT_PROC( ListExpr          );
         VISITOR_VISIT_PROC( LiteralExpr       );
