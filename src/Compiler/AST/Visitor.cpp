@@ -112,7 +112,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
-    Visit(ast->texDecls);
+    Visit(ast->textureDecls);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)

@@ -385,7 +385,7 @@ struct TextureDeclStmnt : public Stmnt
 
     std::string                 textureType;
     std::string                 colorType;
-    std::vector<TextureDeclPtr> texDecls;
+    std::vector<TextureDeclPtr> textureDecls;
 };
 
 // Sampler declaration.

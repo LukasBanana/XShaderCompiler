@@ -497,7 +497,7 @@ TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
         Accept(Tokens::BinaryOp, ">");
     }
 
-    ast->texDecls = ParseTextureDeclList();
+    ast->textureDecls = ParseTextureDeclList();
 
     Semi();
 
@@ -1219,17 +1219,17 @@ std::vector<ExprPtr> HLSLParser::ParseArrayDimensionList()
 std::vector<ExprPtr> HLSLParser::ParseArgumentList()
 {
     Accept(Tokens::LBracket);
-    auto arguments = ParseExprList(Tokens::RBracket);
+    auto exprs = ParseExprList(Tokens::RBracket);
     Accept(Tokens::RBracket);
-    return arguments;
+    return exprs;
 }
 
 std::vector<ExprPtr> HLSLParser::ParseInitializerList()
 {
     Accept(Tokens::LCurly);
-    auto arguments = ParseExprList(Tokens::RCurly, true);
+    auto exprs = ParseExprList(Tokens::RCurly, true);
     Accept(Tokens::RCurly);
-    return arguments;
+    return exprs;
 }
 
 std::vector<VarSemanticPtr> HLSLParser::ParseVarSemanticList()

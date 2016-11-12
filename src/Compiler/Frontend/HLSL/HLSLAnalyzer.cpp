@@ -328,7 +328,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
     /* Register all texture declarations */
-    for (auto& name : ast->texDecls)
+    for (auto& name : ast->textureDecls)
         Register(name->ident, ast);
 }
 
