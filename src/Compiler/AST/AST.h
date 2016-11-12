@@ -81,7 +81,7 @@ struct AST
         FunctionDecl, // Do not use "Stmnt" postfix here (--> FunctionDecl can only appear in global scope)
         BufferDeclStmnt,
         TextureDeclStmnt,
-        SamplerDecl,
+        SamplerDeclStmnt,
         StructDeclStmnt,
 
         NullStmnt,
@@ -389,9 +389,9 @@ struct TextureDeclStmnt : public Stmnt
 };
 
 // Sampler declaration.
-struct SamplerDecl : public Stmnt
+struct SamplerDeclStmnt : public Stmnt
 {
-    AST_INTERFACE(SamplerDecl);
+    AST_INTERFACE(SamplerDeclStmnt);
 
     std::string                         samplerType;
     std::vector<SamplerDeclIdentPtr>    names;

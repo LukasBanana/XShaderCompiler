@@ -187,9 +187,9 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
         Visit(name);
 }
 
-IMPLEMENT_VISIT_PROC(SamplerDecl)
+IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
-    Print(ast, "SamplerDecl");
+    Print(ast, "SamplerDeclStmnt");
     SCOPED_INDENT;
 
     for (auto& name : ast->names)

@@ -260,11 +260,11 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
     switch (TknType())
     {
         case Tokens::Sampler:
-            return ParseSamplerDecl();
+            return ParseSamplerDeclStmnt();
         case Tokens::Texture:
-            return ParseTextureDecl();
+            return ParseTextureDeclStmnt();
         case Tokens::UniformBuffer:
-            return ParseBufferDecl();
+            return ParseBufferDeclStmnt();
         case Tokens::Struct:
             return ParseStructDeclStmnt();
         default:
@@ -298,7 +298,7 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl()
     return ast;
 }
 
-BufferDeclStmntPtr HLSLParser::ParseBufferDecl()
+BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
 {
     auto ast = Make<BufferDeclStmnt>();
 
@@ -324,7 +324,7 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDecl()
     return ast;
 }
 
-TextureDeclStmntPtr HLSLParser::ParseTextureDecl()
+TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
 {
     auto ast = Make<TextureDeclStmnt>();
 
@@ -345,9 +345,9 @@ TextureDeclStmntPtr HLSLParser::ParseTextureDecl()
     return ast;
 }
 
-SamplerDeclPtr HLSLParser::ParseSamplerDecl()
+SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt()
 {
-    auto ast = Make<SamplerDecl>();
+    auto ast = Make<SamplerDeclStmnt>();
 
     ast->samplerType    = Accept(Tokens::Sampler)->Spell();
     ast->names          = ParseSamplerDeclIdentList();

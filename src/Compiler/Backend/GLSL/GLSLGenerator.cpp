@@ -1564,7 +1564,7 @@ bool GLSLGenerator::ExprContainsSampler(Expr* ast)
         if (ast->Type() == AST::Types::VarAccessExpr)
         {
             auto symbolRef = dynamic_cast<VarAccessExpr*>(ast)->varIdent->symbolRef;
-            if (symbolRef && symbolRef->Type() == AST::Types::SamplerDecl)
+            if (symbolRef && symbolRef->Type() == AST::Types::SamplerDeclStmnt)
                 return true;
         }
     }

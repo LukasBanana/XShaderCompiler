@@ -45,7 +45,7 @@ DECL_PTR( VarDecl           );
 DECL_PTR( FunctionDecl      );
 DECL_PTR( BufferDeclStmnt   );
 DECL_PTR( TextureDeclStmnt       );
-DECL_PTR( SamplerDecl       );
+DECL_PTR( SamplerDeclStmnt       );
 DECL_PTR( StructDeclStmnt   );
 
 DECL_PTR( NullStmnt         );
@@ -105,7 +105,7 @@ class Visitor
         VISITOR_VISIT_PROC( FunctionDecl      );
         VISITOR_VISIT_PROC( BufferDeclStmnt   );
         VISITOR_VISIT_PROC( TextureDeclStmnt       );
-        VISITOR_VISIT_PROC( SamplerDecl       );
+        VISITOR_VISIT_PROC( SamplerDeclStmnt       );
         VISITOR_VISIT_PROC( StructDeclStmnt   );
 
         VISITOR_VISIT_PROC( NullStmnt         );

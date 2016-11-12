@@ -115,7 +115,7 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
     Visit(ast->names);
 }
 
-IMPLEMENT_VISIT_PROC(SamplerDecl)
+IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
     Visit(ast->names);
 }

@@ -332,7 +332,7 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
         Register(name->ident, ast);
 }
 
-IMPLEMENT_VISIT_PROC(SamplerDecl)
+IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
     /* Register all sampler identifiers */
     for (auto& name : ast->names)
@@ -653,10 +653,10 @@ void HLSLAnalyzer::DecorateVarObject(AST* symbol, VarIdent* varIdent)
                 varIdent->ident = localVarPrefix_ + varIdent->ident;
         }
     }
-    else if (symbol->Type() == AST::Types::SamplerDecl)
+    else if (symbol->Type() == AST::Types::SamplerDeclStmnt)
     {
         /* Exchange sampler object by its respective texture object () */
-        auto samplerDecl = dynamic_cast<SamplerDecl*>(symbol);
+        auto samplerDecl = dynamic_cast<SamplerDeclStmnt*>(symbol);
         auto currentFunc = CurrentFunction();
         if (samplerDecl && currentFunc && currentFunc->flags(FunctionCall::isTexFunc))
             varIdent->ident = currentFunc->name->ident;
