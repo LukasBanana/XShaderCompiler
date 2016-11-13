@@ -17,6 +17,12 @@ struct S2 : S11 {
 
 float4 PS() : SV_Target
 {
-	S2 s = (S2)0;
-	return s.x;
+	struct Foo : S11
+	{
+		float w;
+	}
+	s_anonym;
+	
+	S2 s = (S2)4;
+	return float4(s.x, s.y, 0, s.w);
 }

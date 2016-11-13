@@ -149,14 +149,39 @@ StructurePtr HLSLParser::ParseStructure()
     /* Parse structure declaration */
     Accept(Tokens::Struct);
 
-    /* Parse optional name */
     if (Is(Tokens::Ident))
+    {
+        /* Parse structure name */
         ast->name = Accept(Tokens::Ident)->Spell();
+
+        /* Parse optional inheritance (not documented in HLSL but supported; only single inheritance) */
+        if (Is(Tokens::Colon))
+        {
+            AcceptIt();
+
+            auto baseStructName = Accept(Tokens::Ident)->Spell();
+            if (baseStructName == ast->name)
+                Error("recursive inheritance is not allowed");
+
+            if (Is(Tokens::Comma))
+                Error("multiple inheritance is not allowed", false);
+
+            /* Fetch structure from symbol table */
+            auto baseStruct = typeSymTable_.Fetch(baseStructName);
+            if (!baseStruct || baseStruct->Type() != AST::Types::Structure)
+                Error("'" + baseStructName + "' does not name a structure");
+
+            /* Copy members from base struct into new structure */
+            auto baseStructAST = dynamic_cast<Structure*>(baseStruct);
+            ast->members = baseStructAST->members;
+        }
+    }
 
     GetReportHandler().PushContextDesc("struct " + ast->SignatureToString());
     {
         /* Parse member variable declarations */
-        ast->members = ParseVarDeclStmntList();
+        auto members = ParseVarDeclStmntList();
+        ast->members.insert(ast->members.end(), members.begin(), members.end());
 
         /* Register identifier in symbol table (used to detect special cast expressions) */
         typeSymTable_.Register(ast->name, ast.get());
