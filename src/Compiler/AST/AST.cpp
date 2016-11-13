@@ -93,7 +93,7 @@ std::string VarSemantic::ToString() const
 
 std::string VarType::ToString() const
 {
-    return (structDecl ? structDecl->name : baseType);
+    return typeDenoter->ToString();
 }
 
 

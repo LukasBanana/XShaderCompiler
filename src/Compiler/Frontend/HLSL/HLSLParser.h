@@ -159,6 +159,7 @@ class HLSLParser : public Parser
 
         TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true);
         TypeDenoterPtr                  ParseTypeDenoterPrimary();
+        TypeDenoterPtr                  ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl, bool allowVoidType = true);
         VoidTypeDenoterPtr              ParseVoidTypeDenoter();
         BaseTypeDenoterPtr              ParseBaseTypeDenoter();
         BaseTypeDenoterPtr              ParseBaseVectorTypeDenoter();
@@ -166,7 +167,7 @@ class HLSLParser : public Parser
         TextureTypeDenoterPtr           ParseTextureTypeDenoter();
         SamplerTypeDenoterPtr           ParseSamplerTypeDenoter();
         StructTypeDenoterPtr            ParseStructTypeDenoter();
-        TypeDenoterPtr                  ParseStructOrAliasTypeDenoter();
+        AliasTypeDenoterPtr             ParseAliasTypeDenoter(std::string ident = "");
 
         Variant                         ParseAndEvaluateConstExpr();
         int                             ParseAndEvaluateConstIntExpr();

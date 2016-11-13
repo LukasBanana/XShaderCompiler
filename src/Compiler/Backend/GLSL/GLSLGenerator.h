@@ -13,6 +13,7 @@
 #include "Generator.h"
 #include "Visitor.h"
 #include "Token.h"
+#include "ASTEnums.h"
 
 #include <map>
 #include <vector>
@@ -196,12 +197,16 @@ class GLSLGenerator : public Generator
         bool                    isInsideEntryPoint_     = false; //< True if AST traversal is currently inside the main entry point (or its sub nodes).
         bool                    isInsideInterfaceBlock_ = false;
 
+        #if 1//TODO: remove all HLSL type mappings from here
         std::map<std::string, std::string> typeMap_;            // <hlsl-type, glsl-type>
         std::map<std::string, std::string> intrinsicMap_;       // <hlsl-intrinsic, glsl-intrinsic>
         std::map<std::string, std::string> atomicIntrinsicMap_; // <hlsl-interlocked-intrinsic, glsl-atomic-intrinsic>
         std::map<std::string, std::string> modifierMap_;        // <hlsl-modifier, glsl-qualifier>
         std::map<std::string, std::string> texFuncMap_;         // <hlsl-function, glsl-function>
         std::map<std::string, SemanticStage> semanticMap_;      // <hlsl-semantic, glsl-keyword>
+        #endif
+
+        std::map<DataType, std::string> dataTypeMap_;
 
 };
 

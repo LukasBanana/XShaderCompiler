@@ -251,7 +251,6 @@ struct VarSemantic : public AST
     std::string     registerName; // May be empty
 };
 
-//TODO --> remove this AST and replace by TypeDenoter!!!
 // Variable data type.
 struct VarType : public AST
 {
@@ -261,9 +260,11 @@ struct VarType : public AST
     std::string ToString() const;
 
     //TODO --> change this to "TypeDenoterPtr typeDenoter"!!!
-    std::string     baseType;               // Either this ...
-    StructDeclPtr   structDecl;             // ... or this is used.
+    //std::string     baseType;               // Either this ...
+    TypeDenoterPtr  typeDenoter;
+    StructDeclPtr   structDecl;             // Optional structure declaration
 
+    //TODO: remove this
     AST*            symbolRef = nullptr;    // Symbol reference for DAST to the type definition; may be null.
 };
 

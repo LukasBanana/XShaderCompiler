@@ -14,7 +14,7 @@ matrix<float, 3, 3> f1()
 	return (float3)0;
 }
 
-typedef int DWORD;
+//typedef int DWORD;
 typedef float FLOAT; 
 typedef vector <float, 4> VECTOR;
 typedef matrix <float, 4, 4> MATRIX;
@@ -22,7 +22,6 @@ typedef matrix <float, 4, 4> MATRIX;
 //typedef texture TEXTURE;
 //typedef pixelshader PIXELSHADER;
 //typedef vertexshader VERTEXSHADER;
-typedef matrix <float, 4, 4> MATRIX;
 
 /* --- <typedef struct tests> --- */
 
@@ -51,8 +50,16 @@ void f2(Texture2D t[5])
 
 float4 VS() : SV_Position
 {
+	struct S1
+	{
+		float f, g;
+	}
+	s1, s2, s3;
+
 	f2(0);
 	DWORD x = 0;
+	float x1 = 0;
+	S1_t2 x2 = 0;
 	return float4(v0 + f1(), 1);
 }
 

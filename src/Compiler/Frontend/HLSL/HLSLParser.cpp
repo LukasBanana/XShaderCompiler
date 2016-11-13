@@ -313,6 +313,10 @@ VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
 {
     auto ast = Make<VarType>();
 
+    /* Parse variable type denoter with optional struct declaration */
+    ast->typeDenoter = ParseTypeDenoterWithStructDeclOpt(ast->structDecl);
+
+    #if 0
     if (Is(Tokens::Void))
     {
         if (parseVoidType)
@@ -335,6 +339,7 @@ VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
     }
     else
         ErrorUnexpected("expected type specifier");
+    #endif
 
     return ast;
 }
@@ -602,21 +607,20 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
         if (Is(Tokens::StorageModifier))
         {
             /* Parse storage modifiers */
-            auto ident = AcceptIt()->Spell();
-            ast->storageModifiers.push_back(ident);
+            auto modifier = AcceptIt()->Spell();
+            ast->storageModifiers.push_back(modifier);
         }
         else if (Is(Tokens::TypeModifier))
         {
             /* Parse type modifier (const, row_major, column_major) */
-            auto ident = AcceptIt()->Spell();
-            ast->typeModifiers.push_back(ident);
+            auto modifier = AcceptIt()->Spell();
+            ast->typeModifiers.push_back(modifier);
         }
-        else if (Is(Tokens::Ident))
+        else if (Is(Tokens::Ident) || IsDataType())
         {
-            /* Parse base variable type */
-            auto ident = AcceptIt()->Spell();
+            /* Parse type denoter */
             ast->varType = Make<VarType>();
-            ast->varType->baseType = ident;
+            ast->varType->typeDenoter = ParseTypeDenoter();
             break;
         }
         else if (Is(Tokens::Struct))
@@ -624,13 +628,6 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
             /* Parse structure variable type */
             ast->varType = Make<VarType>();
             ast->varType->structDecl = ParseStructDecl();
-            break;
-        }
-        else if (IsDataType())
-        {
-            /* Parse base variable type */
-            ast->varType = Make<VarType>();
-            ast->varType->baseType = AcceptIt()->Spell();
             break;
         }
         else
@@ -656,43 +653,8 @@ AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
     /* Parse type alias declaration */
     Accept(Tokens::Typedef);
 
-    /* Parse struct declaration or type denoter */
-    TypeDenoterPtr typeDenoter;
-
-    if (Is(Tokens::Struct))
-    {
-        AcceptIt();
-
-        if (Is(Tokens::LCurly))
-        {
-            /* Parse struct-decl */
-            ast->structDecl = ParseStructDecl(false);
-
-            /* Make struct type denoter with reference to the structure of this alias decl */
-            typeDenoter = std::make_shared<StructTypeDenoter>(ast->structDecl.get());
-        }
-        else
-        {
-            /* Parse struct ident token */
-            auto structIdentTkn = Accept(Tokens::Ident);
-
-            if (Is(Tokens::LCurly))
-            {
-                /* Parse struct-decl */
-                ast->structDecl = ParseStructDecl(false, structIdentTkn);
-
-                /* Make struct type denoter with reference to the structure of this alias decl */
-                typeDenoter = std::make_shared<StructTypeDenoter>(ast->structDecl.get());
-            }
-            else
-            {
-                /* Make struct type denoter without struct decl */
-                typeDenoter = std::make_shared<StructTypeDenoter>(structIdentTkn->Spell());
-            }
-        }
-    }
-    else
-        typeDenoter = ParseTypeDenoter();
+    /* Parse type denoter with optional struct declaration */
+    auto typeDenoter = ParseTypeDenoterWithStructDeclOpt(ast->structDecl);
 
     /* Parse type aliases */
     ast->aliasDecls = ParseAliasDeclList(typeDenoter);
@@ -1005,7 +967,7 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
         auto ast = Make<VarDeclStmnt>();
 
         ast->varType = Make<VarType>();
-        ast->varType->baseType = varIdent->ident;
+        ast->varType->typeDenoter = ParseAliasTypeDenoter(varIdent->ident);
         ast->varDecls = ParseVarDeclList();
         Semi();
 
@@ -1540,7 +1502,7 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoterPrimary()
     else if (Is(Tokens::Matrix))
         return ParseBaseMatrixTypeDenoter();
     else if (Is(Tokens::Ident))
-        return ParseStructOrAliasTypeDenoter();
+        return ParseAliasTypeDenoter();
     else if (Is(Tokens::Struct))
         return ParseStructTypeDenoter();
     else if (Is(Tokens::Texture))
@@ -1550,6 +1512,44 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoterPrimary()
     else
         ErrorUnexpected("expected type denoter", GetScanner().ActiveToken().get(), true);
     return nullptr;
+}
+
+TypeDenoterPtr HLSLParser::ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl, bool allowVoidType)
+{
+    if (Is(Tokens::Struct))
+    {
+        AcceptIt();
+
+        if (Is(Tokens::LCurly))
+        {
+            /* Parse struct-decl */
+            structDecl = ParseStructDecl(false);
+
+            /* Make struct type denoter with reference to the structure of this alias decl */
+            return std::make_shared<StructTypeDenoter>(structDecl.get());
+        }
+        else
+        {
+            /* Parse struct ident token */
+            auto structIdentTkn = Accept(Tokens::Ident);
+
+            if (Is(Tokens::LCurly))
+            {
+                /* Parse struct-decl */
+                structDecl = ParseStructDecl(false, structIdentTkn);
+
+                /* Make struct type denoter with reference to the structure of this alias decl */
+                return std::make_shared<StructTypeDenoter>(structDecl.get());
+            }
+            else
+            {
+                /* Make struct type denoter without struct decl */
+                return std::make_shared<StructTypeDenoter>(structIdentTkn->Spell());
+            }
+        }
+    }
+    else
+        return ParseTypeDenoter(allowVoidType);
 }
 
 VoidTypeDenoterPtr HLSLParser::ParseVoidTypeDenoter()
@@ -1667,36 +1667,14 @@ StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoter()
     return typeDenoter;
 }
 
-TypeDenoterPtr HLSLParser::ParseStructOrAliasTypeDenoter()
+AliasTypeDenoterPtr HLSLParser::ParseAliasTypeDenoter(std::string ident)
 {
     /* Parse identifier */
-    auto ident = ParseIdent();
+    if (ident.empty())
+        ident = ParseIdent();
 
-    /* Fetch identifier from symbol table */
-    auto ast = typeSymTable_.Fetch(ident);
-    if (ast)
-    {
-        if (ast->Type() == AST::Types::StructDecl)
-        {
-            /* Make struct type denoter */
-            auto typeDenoter = std::make_shared<StructTypeDenoter>();
-            typeDenoter->ident = ident;
-            return typeDenoter;
-        }
-        else if (ast->Type() == AST::Types::AliasDeclStmnt)
-        {
-            /* Make alias type denoter */
-            auto typeDenoter = std::make_shared<AliasTypeDenoter>();
-            typeDenoter->ident = ident;
-            return typeDenoter;
-        }
-        else
-            Error("'" + ident + "' does not name a type");
-    }
-    else
-        Error("'" + ident + "' is undefined");
-
-    return nullptr;
+    /* Make alias type denoter per default (change this to a struct type later) */
+    return std::make_shared<AliasTypeDenoter>(ident);
 }
 
 Variant HLSLParser::ParseAndEvaluateConstExpr()

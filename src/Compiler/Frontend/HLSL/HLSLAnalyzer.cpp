@@ -518,17 +518,17 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
 IMPLEMENT_VISIT_PROC(VarType)
 {
-    if (!ast->baseType.empty())
+    if (ast->structDecl)
+        Visit(ast->structDecl);
+    else if (!ast->typeDenoter->Ident().empty())
     {
         /* Decorate variable type */
-        auto symbol = Fetch(ast->baseType);
+        auto symbol = Fetch(ast->typeDenoter->Ident());
         if (symbol)
             ast->symbolRef = symbol;
     }
-    else if (ast->structDecl)
-        Visit(ast->structDecl);
-    else
-        Error("missing variable type", ast);
+    /*else
+        Error("missing variable type", ast);*/
 }
 
 IMPLEMENT_VISIT_PROC(VarDecl)

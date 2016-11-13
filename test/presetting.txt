@@ -1,6 +1,6 @@
 
 [TypeTest1]
--T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
+--dump-ast -T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
 
 [StructInheritTest1]
 -T fragment -E PS -o output/StructInheritTest1.PS.glsl StructInheritTest1.hlsl

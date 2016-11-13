@@ -45,6 +45,11 @@ bool TypeDenoter::IsVoid() const
     return (Type() == Types::Void);
 }
 
+bool TypeDenoter::IsBase() const
+{
+    return (Type() == Types::Base);
+}
+
 bool TypeDenoter::IsBuffer() const
 {
     return (Type() == Types::Buffer);
@@ -78,6 +83,11 @@ bool TypeDenoter::IsCompatibleWith(const TypeDenoter& rhs) const
 bool TypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
     return (Type() == targetType.Type());
+}
+
+std::string TypeDenoter::Ident() const
+{
+    return "";
 }
 
 
@@ -218,8 +228,18 @@ std::string StructTypeDenoter::ToString() const
     return "struct " + (!ident.empty() ? ident : std::string("<anonymous>"));
 }
 
+std::string StructTypeDenoter::Ident() const
+{
+    return ident;
+}
+
 
 /* ----- AliasTypeDenoter ----- */
+
+AliasTypeDenoter::AliasTypeDenoter(const std::string& ident) :
+    ident{ ident }
+{
+}
 
 TypeDenoter::Types AliasTypeDenoter::Type() const
 {
@@ -233,7 +253,12 @@ TypeDenoter* AliasTypeDenoter::Get()
 
 std::string AliasTypeDenoter::ToString() const
 {
-    return (aliasTypeRef ? aliasTypeRef->ToString() : "undefined");
+    return (aliasTypeRef ? aliasTypeRef->ToString() : "<unknown alias>");
+}
+
+std::string AliasTypeDenoter::Ident() const
+{
+    return ident;
 }
 
 
@@ -246,12 +271,10 @@ TypeDenoter::Types ArrayTypeDenoter::Type() const
 
 std::string ArrayTypeDenoter::ToString() const
 {
-    std::string typeName;
-    
-    if (baseTypeDenoter)
-        typeName = baseTypeDenoter->ToString();
-    else
-        typeName = "<undefined>";
+    if (!baseTypeDenoter)
+        throw std::runtime_error("missing base type in array type denoter");
+
+    auto typeName = baseTypeDenoter->ToString();
 
     for (std::size_t i = 0; i < arrayDims.size(); ++i)
         typeName += "[]";

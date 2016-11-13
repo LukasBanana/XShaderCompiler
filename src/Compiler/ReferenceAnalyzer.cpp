@@ -166,14 +166,14 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
 IMPLEMENT_VISIT_PROC(VarType)
 {
-    if (!ast->baseType.empty())
+    if (ast->structDecl)
+        Visit(ast->structDecl);
+    else if (!ast->typeDenoter->Ident().empty())
     {
-        auto symbol = symTable_->Fetch(ast->baseType);
+        auto symbol = symTable_->Fetch(ast->typeDenoter->Ident());
         if (symbol)
             Visit(symbol);
     }
-    else if (ast->structDecl)
-        Visit(ast->structDecl);
 }
 
 #undef IMPLEMENT_VISIT_PROC

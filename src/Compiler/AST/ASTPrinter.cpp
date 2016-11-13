@@ -122,7 +122,7 @@ IMPLEMENT_VISIT_PROC(VarSemantic)
 
 IMPLEMENT_VISIT_PROC(VarType)
 {
-    Print(ast, "VarType", ast->baseType);
+    Print(ast, "VarType", (ast->typeDenoter ? ast->typeDenoter->ToString() : ""));
     DEFAULT_VISITOR(VarType);
 }
 

@@ -50,6 +50,7 @@ struct TypeDenoter
     virtual bool IsMatrix() const;
 
     bool IsVoid() const;
+    bool IsBase() const;
     bool IsBuffer() const;
     bool IsSampler() const;
     bool IsTexture() const;
@@ -61,6 +62,9 @@ struct TypeDenoter
 
     // Returns true if this type denoter can be casted to the specified target type denoter (special cases void and base types).
     virtual bool IsCastableTo(const TypeDenoter& targetType) const;
+
+    // Returns the type identifier (if it has one), e.g. for structs and type aliases.
+    virtual std::string Ident() const;
 };
 
 using TypeDenoterPtr = std::shared_ptr<TypeDenoter>;
@@ -111,7 +115,8 @@ struct TextureTypeDenoter : public TypeDenoter
     Types Type() const override;
     std::string ToString() const override;
 
-    TextureDecl* textureDeclRef = nullptr;
+  //TextureType     textureType;
+    TextureDecl*    textureDeclRef = nullptr;
 };
 
 using TextureTypeDenoterPtr = std::shared_ptr<TextureTypeDenoter>;
@@ -136,9 +141,10 @@ struct StructTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+    std::string Ident() const override;
 
     std::string     ident;
-    StructDecl*      structDeclRef = nullptr;
+    StructDecl*     structDeclRef = nullptr;
 };
 
 using StructTypeDenoterPtr = std::shared_ptr<StructTypeDenoter>;
@@ -146,8 +152,12 @@ using StructTypeDenoterPtr = std::shared_ptr<StructTypeDenoter>;
 // Alias type denoter.
 struct AliasTypeDenoter : public TypeDenoter
 {
+    AliasTypeDenoter() = default;
+    AliasTypeDenoter(const std::string& ident);
+
     Types Type() const override;
     std::string ToString() const override;
+    std::string Ident() const override;
 
     TypeDenoter* Get() override;
 
@@ -162,6 +172,8 @@ using AliasTypeDenoterPtr = std::shared_ptr<AliasTypeDenoter>;
 struct ArrayTypeDenoter : public TypeDenoter
 {
     Types Type() const override;
+
+    // Throws std::runtime_error if 'baseTypeDenoter' is null.
     std::string ToString() const override;
 
     TypeDenoterPtr          baseTypeDenoter;
