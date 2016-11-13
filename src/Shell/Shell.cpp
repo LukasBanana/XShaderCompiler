@@ -230,20 +230,17 @@ void Shell::ShowStatsFor(const std::vector<Statistics::Binding>& objects, const 
             for (const auto& obj : objects)
                 maxLocation = std::max(maxLocation, obj.location);
 
-            auto NumDigits = [](int n) -> std::size_t
-            {
-                return (n > 0u ? static_cast<std::size_t>(std::log10(n)) + 1u : 1u);
-            };
-
-            std::size_t maxLocationLen = NumDigits(maxLocation);
+            std::size_t maxLocationLen = std::to_string(maxLocation).size();
 
             /* Print binding points */
             for (const auto& obj : objects)
             {
+                output << indentHandler_.FullIndent();
                 if (obj.location >= 0)
-                    output << indentHandler_.FullIndent() << std::string(maxLocationLen - NumDigits(obj.location), ' ') << obj.location << ": " << obj.ident << std::endl;
+                    output << std::string(maxLocationLen - std::to_string(obj.location).size(), ' ') << obj.location << ": ";
                 else
-                    output << indentHandler_.FullIndent() << std::string(maxLocationLen, ' ') << "  " << obj.ident << std::endl;
+                    output << std::string(maxLocationLen, ' ') << "  ";
+                output << obj.ident << std::endl;
             }
         }
         else

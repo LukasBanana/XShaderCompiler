@@ -10,10 +10,10 @@
 #include "HLSLAnalyzer.h"
 #include "AST.h"
 #include "HLSLKeywords.h"
+#include "Helper.h"
 #include <initializer_list>
 #include <algorithm>
 #include <cctype>
-#include <sstream>//!!!
 
 
 namespace Xsc
@@ -881,24 +881,22 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
     {
         if (texDecl->flags(TextureDecl::isReferenced) || shaderTarget_ == ShaderTarget::CommonShader)
         {
-            /* Write output statistics */
-            if (stats_)
-            {
-                int location = -1;
-                if (!texDecl->registerName.empty())
-                {
-                    std::stringstream s;
-                    s << TRegister(texDecl->registerName, texDecl.get());
-                    s >> location;
-                }
-                stats_->textures.push_back({ texDecl->ident, location });
-            }
-
             BeginLn();
             {
+                int binding = -1;
+
+                /* Write uniform declaration */
                 if (!texDecl->registerName.empty())
+                {
+                    binding = FromString<int>(TRegister(texDecl->registerName, texDecl.get()));
                     Write("layout(binding = " + TRegister(texDecl->registerName, texDecl.get()) + ") ");
+                }
+
                 Write("uniform " + samplerType + " " + texDecl->ident + ";");
+
+                /* Write output statistics */
+                if (stats_)
+                    stats_->textures.push_back({ texDecl->ident, binding });
             }
             EndLn();
         }
