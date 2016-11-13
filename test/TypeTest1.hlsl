@@ -29,6 +29,11 @@ typedef matrix <float, 4, 4> MATRIX;
 }
 S1_t;*/
 
+void f2(Texture2D t)
+{
+	return 0;
+}
+
 float4 VS() : SV_Position
 {
 	DWORD x = 0;

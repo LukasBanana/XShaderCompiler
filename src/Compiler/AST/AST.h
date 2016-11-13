@@ -14,6 +14,7 @@
 #include "Flags.h"
 #include "ASTEnums.h"
 #include "SourceCode.h"
+#include "TypeDenoter.h"
 
 #include <vector>
 #include <string>
@@ -249,6 +250,7 @@ struct VarSemantic : public AST
     std::string     registerName; // May be empty
 };
 
+//TODO --> remove this AST and replace by TypeDenoter!!!
 // Variable data type.
 struct VarType : public AST
 {

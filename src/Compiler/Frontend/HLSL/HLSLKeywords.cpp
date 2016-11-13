@@ -201,11 +201,123 @@ static KeywordMapType GenerateKeywordMap()
     };
 }
 
-static KeywordMapType keywordMap = GenerateKeywordMap();
+static KeywordMapType g_keywordMapHLSL = GenerateKeywordMap();
 
 const KeywordMapType& HLSLKeywords()
 {
-    return keywordMap;
+    return g_keywordMapHLSL;
+}
+
+using DataTypeMap = std::map<std::string, DataType>;
+
+static DataTypeMap GenerateDataTypeMap()
+{
+    return
+    {
+        { "bool",       DataType::Bool      },
+        { "bool1",      DataType::Bool      },
+        { "bool1x1",    DataType::Bool      },
+        { "int",        DataType::Int      },
+        { "int1",       DataType::Int      },
+        { "int1x1",     DataType::Int      },
+        { "uint",       DataType::UInt      },
+        { "uint1",      DataType::UInt      },
+        { "uint1x1",    DataType::UInt      },
+        { "half",       DataType::Half      },
+        { "half1",      DataType::Half      },
+        { "half1x1",    DataType::Half      },
+        { "float",      DataType::Float      },
+        { "float1",     DataType::Float      },
+        { "float1x1",   DataType::Float      },
+        { "double",     DataType::Double      },
+        { "double1",    DataType::Double      },
+        { "double1x1",  DataType::Double      },
+
+        { "bool2",      DataType::Bool2      },
+        { "bool3",      DataType::Bool3      },
+        { "bool4",      DataType::Bool4      },
+        { "int2",       DataType::Int2      },
+        { "int3",       DataType::Int3      },
+        { "int4",       DataType::Int4      },
+        { "uint2",      DataType::UInt2      },
+        { "uint3",      DataType::UInt3      },
+        { "uint4",      DataType::UInt4      },
+        { "half2",      DataType::Half2      },
+        { "half3",      DataType::Half3      },
+        { "half4",      DataType::Half4      },
+        { "float2",     DataType::Float2      },
+        { "float3",     DataType::Float3      },
+        { "float4",     DataType::Float4      },
+        { "double2",    DataType::Double2      },
+        { "double3",    DataType::Double3      },
+        { "double4",    DataType::Double4      },
+
+        { "bool2x2",    DataType::Bool2x2      },
+        { "bool2x3",    DataType::Bool2x3      },
+        { "bool2x4",    DataType::Bool2x4      },
+        { "bool3x2",    DataType::Bool3x2      },
+        { "bool3x3",    DataType::Bool3x3      },
+        { "bool3x4",    DataType::Bool3x4      },
+        { "bool4x2",    DataType::Bool4x2      },
+        { "bool4x3",    DataType::Bool4x3      },
+        { "bool4x4",    DataType::Bool4x4      },
+        { "int2x2",     DataType::Int2x2     },
+        { "int2x3",     DataType::Int2x3     },
+        { "int2x4",     DataType::Int2x4      },
+        { "int3x2",     DataType::Int3x2      },
+        { "int3x3",     DataType::Int3x3      },
+        { "int3x4",     DataType::Int3x4      },
+        { "int4x2",     DataType::Int4x2      },
+        { "int4x3",     DataType::Int4x3      },
+        { "int4x4",     DataType::Int4x4      },
+        { "uint2x2",    DataType::UInt2x2      },
+        { "uint2x3",    DataType::UInt2x3      },
+        { "uint2x4",    DataType::UInt2x4      },
+        { "uint3x2",    DataType::UInt3x2      },
+        { "uint3x3",    DataType::UInt3x3      },
+        { "uint3x4",    DataType::UInt3x4      },
+        { "uint4x2",    DataType::UInt4x2      },
+        { "uint4x3",    DataType::UInt4x3      },
+        { "uint4x4",    DataType::UInt4x4      },
+        { "half2x2",    DataType::Half2x2      },
+        { "half2x3",    DataType::Half2x3      },
+        { "half2x4",    DataType::Half2x4      },
+        { "half3x2",    DataType::Half3x2      },
+        { "half3x3",    DataType::Half3x3      },
+        { "half3x4",    DataType::Half3x4      },
+        { "half4x2",    DataType::Half4x2      },
+        { "half4x3",    DataType::Half4x3      },
+        { "half4x4",    DataType::Half4x4      },
+        { "float2x2",   DataType::Float2x2      },
+        { "float2x3",   DataType::Float2x3      },
+        { "float2x4",   DataType::Float2x4      },
+        { "float3x2",   DataType::Float3x2      },
+        { "float3x3",   DataType::Float3x3      },
+        { "float3x4",   DataType::Float3x4      },
+        { "float4x2",   DataType::Float4x2      },
+        { "float4x3",   DataType::Float4x3      },
+        { "float4x4",   DataType::Float4x4      },
+        { "double2x2",  DataType::Double2x2      },
+        { "double2x3",  DataType::Double2x3      },
+        { "double2x4",  DataType::Double2x4      },
+        { "double3x2",  DataType::Double3x2      },
+        { "double3x3",  DataType::Double3x3      },
+        { "double3x4",  DataType::Double3x4      },
+        { "double4x2",  DataType::Double4x2      },
+        { "double4x3",  DataType::Double4x3      },
+        { "double4x4",  DataType::Double4x4      },
+    };
+}
+
+static DataTypeMap g_dataTypeMapHLSL = GenerateDataTypeMap();
+
+DataType HLSLKeywordToDataType(const std::string& keyword)
+{
+    auto it = g_dataTypeMapHLSL.find(keyword);
+    if (it != g_dataTypeMapHLSL.end())
+        return it->second;
+    else
+        throw std::runtime_error("failed to map keyword '" + keyword + "' to data type");
 }
 
 

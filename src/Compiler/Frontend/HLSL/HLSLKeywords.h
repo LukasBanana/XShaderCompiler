@@ -10,6 +10,7 @@
 
 
 #include "Token.h"
+#include "ASTEnums.h"
 
 #include <map>
 #include <string>
@@ -23,6 +24,9 @@ using KeywordMapType = std::map<std::string, Token::Types>;
 
 // Returns the keywords map (which is an exception for identifiers).
 const KeywordMapType& HLSLKeywords();
+
+// Returns the data type for the specified HLSL keyword (throws std::runtime_error on failure).
+DataType HLSLKeywordToDataType(const std::string& keyword);
 
 
 } // /namespace Xsc

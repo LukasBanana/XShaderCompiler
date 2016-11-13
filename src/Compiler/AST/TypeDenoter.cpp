@@ -199,7 +199,7 @@ TypeDenoter::Types StructTypeDenoter::Type() const
 
 std::string StructTypeDenoter::ToString() const
 {
-    return "struct " + (structDeclRef ? structDeclRef->name : std::string("<anonymous>"));
+    return "struct " + (!ident.empty() ? ident : std::string("<anonymous>"));
 }
 
 

@@ -6,6 +6,7 @@
  */
 
 #include "HLSLParser.h"
+#include "HLSLKeywords.h"
 #include "ConstExprEvaluator.h"
 #include "AST.h"
 
@@ -128,7 +129,7 @@ FunctionCallPtr HLSLParser::ParseFunctionCall(VarIdentPtr varIdent)
         if (IsDataType())
         {
             varIdent = Make<VarIdent>();
-            varIdent->ident = ParseTypeDenoter();
+            varIdent->ident = AcceptIt()->Spell();
         }
         else
             varIdent = ParseVarIdent();
@@ -373,7 +374,7 @@ VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
     else if (Is(Tokens::Ident))
         ast->baseType = AcceptIt()->Spell();
     else if (IsDataType())
-        ast->baseType = ParseTypeDenoter();
+        ast->baseType = ParseTypeDenoter_TEMP();
     else if (Is(Tokens::Struct))
     {
         /*
@@ -599,7 +600,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
         {
             /* Parse base variable type */
             ast->varType = Make<VarType>();
-            ast->varType->baseType = ParseTypeDenoter();
+            ast->varType->baseType = ParseTypeDenoter_TEMP();
             break;
         }
         else
@@ -625,7 +626,7 @@ AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
     /* Parse type alias declaration */
     Accept(Tokens::Typedef);
 
-    ast->typeDenoter = ParseTypeDenoter();
+    ast->typeDenoter = ParseTypeDenoter_TEMP();
 
     /* Parse type alias identifier */
     auto identTkn = Tkn();
@@ -1422,14 +1423,14 @@ std::string HLSLParser::ParseSemantic()
     return ParseIdent();
 }
 
-std::string HLSLParser::ParseTypeDenoter()
+std::string HLSLParser::ParseTypeDenoter_TEMP()
 {
     switch (TknType())
     {
         case Tokens::Vector:
-            return ParseVectorTypeDenoter();
+            return ParseVectorTypeDenoter_TEMP();
         case Tokens::Matrix:
-            return ParseMatrixTypeDenoter();
+            return ParseMatrixTypeDenoter_TEMP();
         case Tokens::ScalarType:
         case Tokens::VectorType:
         case Tokens::MatrixType:
@@ -1444,7 +1445,7 @@ std::string HLSLParser::ParseTypeDenoter()
 }
 
 // vector < ScalarType, '1'-'4' >;
-std::string HLSLParser::ParseVectorTypeDenoter()
+std::string HLSLParser::ParseVectorTypeDenoter_TEMP()
 {
     std::string typeDenoter;
 
@@ -1471,7 +1472,7 @@ std::string HLSLParser::ParseVectorTypeDenoter()
 }
 
 // matrix < ScalarType, '1'-'4', '1'-'4' >;
-std::string HLSLParser::ParseMatrixTypeDenoter()
+std::string HLSLParser::ParseMatrixTypeDenoter_TEMP()
 {
     std::string typeDenoter;
 
@@ -1498,6 +1499,183 @@ std::string HLSLParser::ParseMatrixTypeDenoter()
     Accept(Tokens::BinaryOp, ">");
 
     return typeDenoter;
+}
+
+TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool allowVoidType)
+{
+    if (Is(Tokens::Void))
+    {
+        /* Parse void type denoter */
+        if (allowVoidType)
+            return ParseVoidTypeDenoter();
+        else
+            Error("'void' type not allowed in this context");
+    }
+    else if (Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType))
+        return ParseBaseTypeDenoter();
+    else if (Is(Tokens::Vector))
+        return ParseBaseVectorTypeDenoter();
+    else if (Is(Tokens::Matrix))
+        return ParseBaseMatrixTypeDenoter();
+    else if (Is(Tokens::Ident))
+        return ParseStructOrAliasTypeDenoter();
+    else if (Is(Tokens::Struct))
+        return ParseStructTypeDenoter();
+    else if (Is(Tokens::Texture))
+        return ParseTextureTypeDenoter();
+    else if (Is(Tokens::Sampler))
+        return ParseSamplerTypeDenoter();
+    else
+        ErrorUnexpected("expected type denoter", GetScanner().ActiveToken().get(), true);
+
+    return nullptr;
+}
+
+VoidTypeDenoterPtr HLSLParser::ParseVoidTypeDenoter()
+{
+    Accept(Tokens::Void);
+    return std::make_shared<VoidTypeDenoter>();
+}
+
+BaseTypeDenoterPtr HLSLParser::ParseBaseTypeDenoter()
+{
+    if (Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType))
+    {
+        auto keyword = AcceptIt()->Spell();
+
+        /* Make base type denoter by data type keyword */
+        auto typeDenoter = std::make_shared<BaseTypeDenoter>();
+        typeDenoter->dataType = HLSLKeywordToDataType(keyword);
+        return typeDenoter;
+    }
+    ErrorUnexpected("expected base type denoter", nullptr, true);
+    return nullptr;
+}
+
+// matrix < ScalarType, '1'-'4', '1'-'4' >;
+BaseTypeDenoterPtr HLSLParser::ParseBaseVectorTypeDenoter()
+{
+    std::string vectorType;
+
+    /* Parse scalar type */
+    Accept(Tokens::Vector);
+    Accept(Tokens::BinaryOp, "<");
+    
+    PushParsingState({ true });
+    {
+        vectorType = Accept(Tokens::ScalarType)->Spell();
+
+        /* Parse vector dimension */
+        Accept(Tokens::Comma);
+        int dim = ParseAndEvaluateVectorDimension();
+
+        /* Build final type denoter */
+        vectorType += std::to_string(dim);
+    }
+    PopParsingState();
+
+    Accept(Tokens::BinaryOp, ">");
+
+    /* Make base type denoter by data type keyword */
+    auto typeDenoter = std::make_shared<BaseTypeDenoter>();
+    typeDenoter->dataType = HLSLKeywordToDataType(vectorType);
+
+    return typeDenoter;
+}
+
+// matrix < ScalarType, '1'-'4', '1'-'4' >;
+BaseTypeDenoterPtr HLSLParser::ParseBaseMatrixTypeDenoter()
+{
+    std::string matrixType;
+
+    /* Parse scalar type */
+    Accept(Tokens::Matrix);
+    Accept(Tokens::BinaryOp, "<");
+    
+    PushParsingState({ true });
+    {
+        matrixType = Accept(Tokens::ScalarType)->Spell();
+
+        /* Parse matrix dimensions */
+        Accept(Tokens::Comma);
+        int dimM = ParseAndEvaluateVectorDimension();
+
+        Accept(Tokens::Comma);
+        int dimN = ParseAndEvaluateVectorDimension();
+
+        /* Build final type denoter */
+        matrixType += std::to_string(dimM) + 'x' + std::to_string(dimN);
+    }
+    PopParsingState();
+
+    Accept(Tokens::BinaryOp, ">");
+
+    /* Make base type denoter by data type keyword */
+    auto typeDenoter = std::make_shared<BaseTypeDenoter>();
+    typeDenoter->dataType = HLSLKeywordToDataType(matrixType);
+
+    return typeDenoter;
+}
+
+TextureTypeDenoterPtr HLSLParser::ParseTextureTypeDenoter()
+{
+    /* Make texture type denoter */
+    Accept(Tokens::Texture);
+    return std::make_shared<TextureTypeDenoter>();
+}
+
+SamplerTypeDenoterPtr HLSLParser::ParseSamplerTypeDenoter()
+{
+    /* Make sampler type denoter */
+    Accept(Tokens::Sampler);
+    return std::make_shared<SamplerTypeDenoter>();
+}
+
+StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoter()
+{
+    if (Is(Tokens::Struct))
+        AcceptIt();
+
+    /* Parse identifier */
+    auto ident = ParseIdent();
+
+    /* Make struct type denoter */
+    auto typeDenoter = std::make_shared<StructTypeDenoter>();
+    typeDenoter->ident = ident;
+
+    return typeDenoter;
+}
+
+TypeDenoterPtr HLSLParser::ParseStructOrAliasTypeDenoter()
+{
+    /* Parse identifier */
+    auto ident = ParseIdent();
+
+    /* Fetch identifier from symbol table */
+    auto ast = typeSymTable_.Fetch(ident);
+    if (ast)
+    {
+        if (ast->Type() == AST::Types::Structure)
+        {
+            /* Make struct type denoter */
+            auto typeDenoter = std::make_shared<StructTypeDenoter>();
+            typeDenoter->ident = ident;
+            return typeDenoter;
+        }
+        else if (ast->Type() == AST::Types::AliasDeclStmnt)
+        {
+            /* Make alias type denoter */
+            auto typeDenoter = std::make_shared<AliasTypeDenoter>();
+            typeDenoter->ident = ident;
+            return typeDenoter;
+        }
+        else
+            Error("'" + ident + "' does not name a type");
+    }
+    else
+        Error("'" + ident + "' is undefined");
+
+    return nullptr;
 }
 
 Variant HLSLParser::ParseAndEvaluateConstExpr()

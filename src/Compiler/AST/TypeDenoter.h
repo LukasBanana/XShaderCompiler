@@ -19,10 +19,6 @@ namespace Xsc
 {
 
 
-struct TypeDenoter;
-using TypeDenoterPtr = std::shared_ptr<TypeDenoter>;
-
-
 // Type denoter base class.
 struct TypeDenoter
 {
@@ -65,6 +61,8 @@ struct TypeDenoter
     virtual bool IsCastableTo(const TypeDenoter& targetType) const;
 };
 
+using TypeDenoterPtr = std::shared_ptr<TypeDenoter>;
+
 // Void type denoter.
 struct VoidTypeDenoter : public TypeDenoter
 {
@@ -74,6 +72,8 @@ struct VoidTypeDenoter : public TypeDenoter
     // Returns always false, since void type can not be casted to anything.
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 };
+
+using VoidTypeDenoterPtr = std::shared_ptr<VoidTypeDenoter>;
 
 // Base type denoter.
 struct BaseTypeDenoter : public TypeDenoter
@@ -90,6 +90,8 @@ struct BaseTypeDenoter : public TypeDenoter
     DataType dataType = DataType::Undefined;
 };
 
+using BaseTypeDenoterPtr = std::shared_ptr<BaseTypeDenoter>;
+
 // Buffer type denoter.
 struct BufferTypeDenoter : public TypeDenoter
 {
@@ -98,6 +100,8 @@ struct BufferTypeDenoter : public TypeDenoter
 
     BufferDeclStmnt* bufferDeclRef = nullptr;
 };
+
+using BufferTypeDenoterPtr = std::shared_ptr<BufferTypeDenoter>;
 
 // Texture type denoter.
 struct TextureTypeDenoter : public TypeDenoter
@@ -108,6 +112,8 @@ struct TextureTypeDenoter : public TypeDenoter
     TextureDecl* textureDeclRef = nullptr;
 };
 
+using TextureTypeDenoterPtr = std::shared_ptr<TextureTypeDenoter>;
+
 // Sampler type denoter.
 struct SamplerTypeDenoter : public TypeDenoter
 {
@@ -117,14 +123,19 @@ struct SamplerTypeDenoter : public TypeDenoter
     SamplerDecl* samplerDeclRef = nullptr;
 };
 
+using SamplerTypeDenoterPtr = std::shared_ptr<SamplerTypeDenoter>;
+
 // Struct type denoter.
 struct StructTypeDenoter : public TypeDenoter
 {
     Types Type() const override;
     std::string ToString() const override;
 
-    Structure* structDeclRef = nullptr;
+    std::string     ident;
+    Structure*      structDeclRef = nullptr;
 };
+
+using StructTypeDenoterPtr = std::shared_ptr<StructTypeDenoter>;
 
 // Alias type denoter.
 struct AliasTypeDenoter : public TypeDenoter
@@ -134,8 +145,13 @@ struct AliasTypeDenoter : public TypeDenoter
 
     TypeDenoter* Get() override;
 
-    TypeDenoter* aliasTypeRef = nullptr;
+    std::string     ident;                  // Type identifier
+  //StructurePtr    structDecl;             // Optional struct-decl AST node.
+    TypeDenoter*    aliasTypeRef = nullptr;
 };
+
+using AliasTypeDenoterPtr = std::shared_ptr<AliasTypeDenoter>;
+
 
 
 } // /namespace Xsc

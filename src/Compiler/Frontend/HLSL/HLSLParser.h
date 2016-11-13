@@ -154,9 +154,20 @@ class HLSLParser : public Parser
         std::string                     ParseIdent();
         std::string                     ParseRegister(bool parseColon = true);
         std::string                     ParseSemantic();
-        std::string                     ParseTypeDenoter();
-        std::string                     ParseVectorTypeDenoter();
-        std::string                     ParseMatrixTypeDenoter();
+
+        std::string                     ParseTypeDenoter_TEMP();
+        std::string                     ParseVectorTypeDenoter_TEMP();
+        std::string                     ParseMatrixTypeDenoter_TEMP();
+
+        TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true);
+        VoidTypeDenoterPtr              ParseVoidTypeDenoter();
+        BaseTypeDenoterPtr              ParseBaseTypeDenoter();
+        BaseTypeDenoterPtr              ParseBaseVectorTypeDenoter();
+        BaseTypeDenoterPtr              ParseBaseMatrixTypeDenoter();
+        TextureTypeDenoterPtr           ParseTextureTypeDenoter();
+        SamplerTypeDenoterPtr           ParseSamplerTypeDenoter();
+        StructTypeDenoterPtr            ParseStructTypeDenoter();
+        TypeDenoterPtr                  ParseStructOrAliasTypeDenoter();
 
         Variant                         ParseAndEvaluateConstExpr();
         int                             ParseAndEvaluateConstIntExpr();
