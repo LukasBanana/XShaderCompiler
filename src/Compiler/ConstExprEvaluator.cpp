@@ -14,8 +14,9 @@ namespace Xsc
 {
 
 
-Variant ConstExprEvaluator::EvaluateExpr(Expr& ast)
+Variant ConstExprEvaluator::EvaluateExpr(Expr& ast, const OnVarAccessCallback& onVarAccessCallback)
 {
+    onVarAccessCallback_ = (onVarAccessCallback ? onVarAccessCallback : [](VarAccessExpr* ast) { return Variant(Variant::IntType(0)); });
     Visit(&ast);
     return Pop();
 }
@@ -263,7 +264,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    Push(Variant::IntType(0));
+    Push(onVarAccessCallback_(ast));
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)

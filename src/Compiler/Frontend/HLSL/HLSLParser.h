@@ -15,6 +15,7 @@
 #include "Parser.h"
 #include "Visitor.h"
 #include "Token.h"
+#include "Variant.h"
 
 #include <vector>
 #include <map>
@@ -148,6 +149,13 @@ class HLSLParser : public Parser
 
         std::string                     ParseRegister(bool parseColon = true);
         std::string                     ParseSemantic();
+        std::string                     ParseTypeDenoter();
+        std::string                     ParseVectorTypeDenoter();
+        std::string                     ParseMatrixTypeDenoter();
+
+        Variant                         ParseAndEvaluateConstExpr();
+        int                             ParseAndEvaluateConstIntExpr();
+        int                             ParseAndEvaluateVectorDimension();
 
         /* === Members === */
 

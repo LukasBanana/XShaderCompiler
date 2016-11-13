@@ -40,6 +40,11 @@ class Parser
         using Tokens        = Token::Types;
         using BinaryOpList  = std::initializer_list<BinaryOp>;
 
+        struct ParsingState
+        {
+            bool activeTemplate; // If true, '<' and '>' will not be parsed as a binary operator.
+        };
+
         /* === Functions === */
 
         Parser(Log* log);
@@ -64,6 +69,8 @@ class Parser
         void PushScannerSource(const SourceCodePtr& source, const std::string& filename = "");
         bool PopScannerSource();
 
+        ParsingState ActiveParsingState() const;
+
         // Returns the current token scanner.
         Scanner& GetScanner();
 
@@ -83,6 +90,9 @@ class Parser
         void IgnoreNewLines();
 
         /* ----- Parsing ----- */
+
+        void PushParsingState(const ParsingState& state);
+        void PopParsingState();
 
         // Builds a left-to-right binary-expression tree hierarchy for the specified list of expressions.
         ExprPtr BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops);
@@ -182,6 +192,7 @@ class Parser
         TokenPtr                        tkn_;
 
         std::stack<ScannerStackEntry>   scannerStack_;
+        std::stack<ParsingState>        parsingStateStack_;
 
         unsigned int                    unexpectedTokenCounter_ = 0;
         const unsigned int              unexpectedTokenLimit_   = 3; //< this should never be less than 1

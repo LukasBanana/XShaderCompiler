@@ -1,6 +1,6 @@
 
 [TypeTest1]
--T vertex -E VS TypeTest.hlsl
+-T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
 
 [ssct_reflect]
 --dump-stat -T fragment -E PS -O -I "../../misc/ssct_shader/" -o "../../misc/ssct_shader/ssct_reflect.PS.frag" "../../misc/ssct_shader/ssct_reflect.hlsl"

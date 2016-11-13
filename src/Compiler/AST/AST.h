@@ -255,6 +255,7 @@ struct VarType : public AST
     // Returns the name of this type (either 'baseType' or 'structType->name').
     std::string ToString() const;
 
+    //TODO --> change this to "TypeDenoterPtr typeDenoter"!!!
     std::string     baseType;               // Either this ...
     StructurePtr    structType;             // ... or this is used.
 

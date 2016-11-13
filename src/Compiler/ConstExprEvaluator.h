@@ -12,6 +12,7 @@
 #include "Visitor.h"
 #include "Variant.h"
 #include <stack>
+#include <functional>
 
 
 namespace Xsc
@@ -24,7 +25,13 @@ class ConstExprEvaluator : private Visitor
     
     public:
         
-        Variant EvaluateExpr(Expr& ast);
+        using OnVarAccessCallback = std::function<Variant(VarAccessExpr* ast)>;
+
+        /*
+        Evaluates the specified expression and returns the result as variante.
+        Throws an std::runtime_error if the expression could not be evaluated.
+        */
+        Variant EvaluateExpr(Expr& ast, const OnVarAccessCallback& onVarAccessCallback = nullptr);
 
     private:
         
@@ -51,6 +58,8 @@ class ConstExprEvaluator : private Visitor
         /* === Members === */
 
         std::stack<Variant> variantStack_;
+
+        OnVarAccessCallback onVarAccessCallback_;
 
 };
 

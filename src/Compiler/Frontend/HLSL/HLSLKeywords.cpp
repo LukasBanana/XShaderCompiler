@@ -21,8 +21,6 @@ static KeywordMapType GenerateKeywordMap()
         { "true",                    Ty::BoolLiteral     },
         { "false",                   Ty::BoolLiteral     },
 
-        { "void",                    Ty::Void            },
-
         { "bool",                    Ty::ScalarType      },
         { "bool1",                   Ty::ScalarType      },
         { "bool1x1",                 Ty::ScalarType      },
@@ -115,6 +113,11 @@ static KeywordMapType GenerateKeywordMap()
         { "double4x2",               Ty::MatrixType      },
         { "double4x3",               Ty::MatrixType      },
         { "double4x4",               Ty::MatrixType      },
+
+        { "void",                    Ty::Void            },
+
+        { "vector",                  Ty::Vector          },
+        { "matrix",                  Ty::Matrix          },
 
         { "do",                      Ty::Do              },
         { "while",                   Ty::While           },

@@ -31,58 +31,62 @@ class Token
             Undefined,
 
             /* --- Identifiers --- */
-            Ident,              //< (letter | '_') (letter | '_' | digit)*
+            Ident,              // (letter | '_') (letter | '_' | digit)*
 
             /* --- Literals --- */
-            BoolLiteral,        //< true | false
-            IntLiteral,         //< digit+
-            FloatLiteral,       //< digit+ '.' digit+
-            StringLiteral,      //< '"' ANY+ '"'
+            BoolLiteral,        // true | false
+            IntLiteral,         // digit+
+            FloatLiteral,       // digit+ '.' digit+
+            StringLiteral,      // '"' ANY+ '"'
 
             /* --- Operators --- */
-            AssignOp,           //< =, +=, -=, *=, /=, %=, <<=, >>=, |= , &=, ^=
-            BinaryOp,           //< &&, ||, |, ^, &, <<, >>, +, -, *, /, %, ==, !=, <, >, <=, >=
-            UnaryOp,            //< !, ~, +, -, ++, --
-            TernaryOp,          //< ?
+            AssignOp,           // =, +=, -=, *=, /=, %=, <<=, >>=, |= , &=, ^=
+            BinaryOp,           // &&, ||, |, ^, &, <<, >>, +, -, *, /, %, ==, !=, <, >, <=, >=
+            UnaryOp,            // !, ~, +, -, ++, --
+            TernaryOp,          // ?
 
             /* --- Punctuation --- */
-            Dot,                //< .
-            Colon,              //< :
-            Semicolon,          //< ;
-            Comma,              //< ,
+            Dot,                // .
+            Colon,              // :
+            Semicolon,          // ;
+            Comma,              // ,
 
             /* --- Brackets --- */
-            LBracket,           //< (
-            RBracket,           //< )
-            LCurly,             //< {
-            RCurly,             //< }
-            LParen,             //< [
-            RParen,             //< ]
+            LBracket,           // (
+            RBracket,           // )
+            LCurly,             // {
+            RCurly,             // }
+            LParen,             // [
+            RParen,             // ]
+
+            /* --- Type denoters --- */
+            ScalarType,         // bool, int, uint, half, float, double
+            VectorType,         // ScalarType ('1'-'4')
+            MatrixType,         // ScalarType ('1'-'4') 'x' ('1'-'4')
 
             /* --- Keywords --- */
-            Void,               //< void
+            Void,               // void
 
-            ScalarType,         //< bool, int, uint, half, float, double
-            VectorType,         //< ScalarType ('2' | '3' | '4')
-            MatrixType,         //< ('float' | 'double') ('2' | '3' | '4') 'x' ('2' | '3' | '4')
+            Vector,             // vector (e.g. "vector<float, 3>")
+            Matrix,             // matrix (e.g. "matrix<int, 4, 4>")
 
-            Do,                 //< do
-            While,              //< while
-            For,                //< for
+            Do,                 // do
+            While,              // while
+            For,                // for
             
-            If,                 //< if
-            Else,               //< else
+            If,                 // if
+            Else,               // else
             
-            Switch,             //< switch
-            Case,               //< case
-            Default,            //< default
+            Switch,             // switch
+            Case,               // case
+            Default,            // default
 
-            Struct,             //< struct
-            Register,           //< register
-            PackOffset,         //< packoffset
+            Struct,             // struct
+            Register,           // register
+            PackOffset,         // packoffset
 
             /* --- Object keywords --- */
-            Sampler,            //< sampler, sampler1D, sampler2D, sampler3D, samplerCUBE, sampler_state, SamplerState
+            Sampler,            // sampler, sampler1D, sampler2D, sampler3D, samplerCUBE, sampler_state, SamplerState
 
             /*
             Texture1D, Texture1DArray, Texture2D, Texture2DArray, Texture3D, TextureCube, TextureCubeArray,
@@ -96,33 +100,33 @@ class Token
             */
             StorageBuffer,
 
-            UniformBuffer,      //< cbuffer, tbuffer
+            UniformBuffer,      // cbuffer, tbuffer
 
             /* --- Control transfer keywords --- */
-            CtrlTransfer,       //< break, continue, discard
-            Return,             //< return
+            CtrlTransfer,       // break, continue, discard
+            Return,             // return
 
-            InputModifier,      //< in, out, inout, uniform
+            InputModifier,      // in, out, inout, uniform
 
             /*
             extern, nointerpolation, precise, shared, groupshared, static,
             uniform, volatile, linear, centroid, noperspective, sample
             */
             StorageModifier,
-            TypeModifier,       //< const, row_major, column_major
+            TypeModifier,       // const, row_major, column_major
 
             /* --- Preprocessor specific tokens --- */
-            Directive,          //< Preprocessor directive ('#' IDENT).
-            DirectiveConcat,    //< Preprocessor directive concatenation ('##').
-            Comment,            //< Commentary (only a single text line)
-            WhiteSpaces,        //< White spaces (' ', '\t', '\r')
-            NewLines,           //< New-line characters ('\n', "\r\n")
-            LineBreak,          //< Line break for pre-processor directives '\'
-            VarArg,             //< Variadic argument specifier ('...').
-            Misc,               //< Miscellaneous
+            Directive,          // Preprocessor directive ('#' IDENT).
+            DirectiveConcat,    // Preprocessor directive concatenation ('##').
+            Comment,            // Commentary (only a single text line)
+            WhiteSpaces,        // White spaces (' ', '\t', '\r')
+            NewLines,           // New-line characters ('\n', "\r\n")
+            LineBreak,          // Line break for pre-processor directives '\'
+            VarArg,             // Variadic argument specifier ('...').
+            Misc,               // Miscellaneous
 
             /* --- Special tokens --- */
-            EndOfStream,        //< End-of-stream
+            EndOfStream,        // End-of-stream
         };
 
         Token(Token&& other);
@@ -160,9 +164,9 @@ class Token
 
     private:
 
-        Types           type_;  //< Type of this token.
-        SourcePosition  pos_;   //< Source area of this token.
-        std::string     spell_; //< Token spelling.
+        Types           type_;  // Type of this token.
+        SourcePosition  pos_;   // Source area of this token.
+        std::string     spell_; // Token spelling.
 
 };
 

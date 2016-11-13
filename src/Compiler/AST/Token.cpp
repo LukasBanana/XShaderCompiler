@@ -71,10 +71,12 @@ std::string Token::TypeToString(const Types type)
         case Types::RCurly:             return "'}'";
         case Types::LParen:             return "'['";
         case Types::RParen:             return "']'";
-        case Types::Void:               return "'void'";
         case Types::ScalarType:         return "scalar type";
         case Types::VectorType:         return "vector type";
         case Types::MatrixType:         return "matrix type";
+        case Types::Void:               return "'void'";
+        case Types::Vector:             return "'vector'";
+        case Types::Matrix:             return "'matrix'";
         case Types::Do:                 return "'do'";
         case Types::While:              return "'while'";
         case Types::For:                return "'for'";

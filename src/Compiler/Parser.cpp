@@ -206,6 +206,21 @@ void Parser::IgnoreNewLines()
 
 /* ----- Parsing ----- */
 
+void Parser::PushParsingState(const ParsingState& state)
+{
+    parsingStateStack_.push(state);
+}
+
+void Parser::PopParsingState()
+{
+    parsingStateStack_.pop();
+}
+
+Parser::ParsingState Parser::ActiveParsingState() const
+{
+    return (parsingStateStack_.empty() ? ParsingState{ false } : parsingStateStack_.top());
+}
+
 ExprPtr Parser::BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops)
 {
     if (exprs.empty())
@@ -325,7 +340,11 @@ ExprPtr Parser::ParseEqualityExpr()
 
 ExprPtr Parser::ParseRelationExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&Parser::ParseShiftExpr, this), { BinaryOp::Less, BinaryOp::LessEqual, BinaryOp::Greater, BinaryOp::GreaterEqual });
+    /* Do not parse '<' and '>' as binary operator while a template is actively being parsed */
+    if (ActiveParsingState().activeTemplate)
+        return ParseAbstractBinaryExpr(std::bind(&Parser::ParseShiftExpr, this), { BinaryOp::LessEqual, BinaryOp::GreaterEqual });
+    else
+        return ParseAbstractBinaryExpr(std::bind(&Parser::ParseShiftExpr, this), { BinaryOp::Less, BinaryOp::LessEqual, BinaryOp::Greater, BinaryOp::GreaterEqual });
 }
 
 ExprPtr Parser::ParseShiftExpr()

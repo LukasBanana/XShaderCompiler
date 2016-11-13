@@ -6,6 +6,7 @@
  */
 
 #include "HLSLParser.h"
+#include "ConstExprEvaluator.h"
 #include "AST.h"
 
 
@@ -53,7 +54,11 @@ void HLSLParser::Semi()
 
 bool HLSLParser::IsDataType() const
 {
-    return (Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType) || Is(Tokens::Texture) || Is(Tokens::Sampler));
+    return
+    (
+        Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType) ||
+        Is(Tokens::Vector) || Is(Tokens::Matrix) || Is(Tokens::Texture) || Is(Tokens::Sampler)
+    );
 }
 
 bool HLSLParser::IsLiteral() const
@@ -123,7 +128,7 @@ FunctionCallPtr HLSLParser::ParseFunctionCall(VarIdentPtr varIdent)
         if (IsDataType())
         {
             varIdent = Make<VarIdent>();
-            varIdent->ident = AcceptIt()->Spell();
+            varIdent->ident = ParseTypeDenoter();
         }
         else
             varIdent = ParseVarIdent();
@@ -338,8 +343,10 @@ VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
         else
             Error("'void' type not allowed in this context");
     }
-    else if (Is(Tokens::Ident) || IsDataType())
+    else if (Is(Tokens::Ident))
         ast->baseType = AcceptIt()->Spell();
+    else if (IsDataType())
+        ast->baseType = ParseTypeDenoter();
     else if (Is(Tokens::Struct))
     {
         /*
@@ -761,7 +768,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
         {
             /* Parse base variable type */
             ast->varType = Make<VarType>();
-            ast->varType->baseType = AcceptIt()->Spell();
+            ast->varType->baseType = ParseTypeDenoter();
             break;
         }
         else
@@ -1028,9 +1035,25 @@ bool HLSLParser::IsLhsOfCastExpr(const ExprPtr& expr) const
 
 ExprPtr HLSLParser::ParseBracketOrCastExpr()
 {
+    ExprPtr expr;
+
     /* Parse expression inside the bracket */
     Accept(Tokens::LBracket);
-    auto expr = ParseExpr(true);
+    {
+        if (ActiveParsingState().activeTemplate)
+        {
+            /* Inside brackets, '<' and '>' are allowed as binary operators (albeit an active template is being parsed) */
+            auto parsingState = ActiveParsingState();
+            parsingState.activeTemplate = false;
+            PushParsingState(parsingState);
+            {
+                expr = ParseExpr(true);
+            }
+            PopParsingState();
+        }
+        else
+            expr = ParseExpr(true);
+    }
     Accept(Tokens::RBracket);
 
     /*
@@ -1327,6 +1350,130 @@ std::string HLSLParser::ParseSemantic()
 {
     Accept(Tokens::Colon);
     return Accept(Tokens::Ident)->Spell();
+}
+
+std::string HLSLParser::ParseTypeDenoter()
+{
+    switch (TknType())
+    {
+        case Tokens::Vector:
+            return ParseVectorTypeDenoter();
+        case Tokens::Matrix:
+            return ParseMatrixTypeDenoter();
+        case Tokens::ScalarType:
+        case Tokens::VectorType:
+        case Tokens::MatrixType:
+        case Tokens::Texture:
+        case Tokens::Sampler:
+            return AcceptIt()->Spell();
+        default:
+            ErrorUnexpected("expected type denoter", nullptr, true);
+            break;
+    }
+    return "";
+}
+
+// vector < ScalarType, '1'-'4' >;
+std::string HLSLParser::ParseVectorTypeDenoter()
+{
+    std::string typeDenoter;
+
+    /* Parse scalar type */
+    Accept(Tokens::Vector);
+    Accept(Tokens::BinaryOp, "<");
+    
+    PushParsingState({ true });
+    {
+        typeDenoter = Accept(Tokens::ScalarType)->Spell();
+
+        /* Parse vector dimension */
+        Accept(Tokens::Comma);
+        int dim = ParseAndEvaluateVectorDimension();
+
+        /* Build final type denoter */
+        typeDenoter += std::to_string(dim);
+    }
+    PopParsingState();
+
+    Accept(Tokens::BinaryOp, ">");
+
+    return typeDenoter;
+}
+
+// matrix < ScalarType, '1'-'4', '1'-'4' >;
+std::string HLSLParser::ParseMatrixTypeDenoter()
+{
+    std::string typeDenoter;
+
+    /* Parse scalar type */
+    Accept(Tokens::Matrix);
+    Accept(Tokens::BinaryOp, "<");
+    
+    PushParsingState({ true });
+    {
+        typeDenoter = Accept(Tokens::ScalarType)->Spell();
+
+        /* Parse matrix dimensions */
+        Accept(Tokens::Comma);
+        int dimM = ParseAndEvaluateVectorDimension();
+
+        Accept(Tokens::Comma);
+        int dimN = ParseAndEvaluateVectorDimension();
+
+        /* Build final type denoter */
+        typeDenoter += std::to_string(dimM) + 'x' + std::to_string(dimN);
+    }
+    PopParsingState();
+
+    Accept(Tokens::BinaryOp, ">");
+
+    return typeDenoter;
+}
+
+Variant HLSLParser::ParseAndEvaluateConstExpr()
+{
+    /* Parse expression */
+    auto tkn = Tkn();
+    auto expr = ParseExpr();
+
+    try
+    {
+        /* Evaluate expression and throw error on var-access */
+        ConstExprEvaluator exprEvaluator;
+        return exprEvaluator.EvaluateExpr(*expr, [](VarAccessExpr* ast) -> Variant { throw ast; });
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what(), tkn.get());
+    }
+    catch (const VarAccessExpr* expr)
+    {
+        GetReportHandler().Error(true, "expected constant expression", GetScanner().Source(), expr->area);
+    }
+
+    return Variant();
+}
+
+int HLSLParser::ParseAndEvaluateConstIntExpr()
+{
+    auto tkn = Tkn();
+    auto value = ParseAndEvaluateConstExpr();
+
+    if (value.Type() != Variant::Types::Int)
+        Error("expected integral constant expression", tkn.get());
+
+    return static_cast<int>(value.Int());
+}
+
+int HLSLParser::ParseAndEvaluateVectorDimension()
+{
+    auto tkn = Tkn();
+    auto value = ParseAndEvaluateConstIntExpr();
+
+    if (value < 1 || value > 4)
+        Error("vector and matrix dimensions must be between 1 and 4", tkn.get());
+
+    return value;
 }
 
 
