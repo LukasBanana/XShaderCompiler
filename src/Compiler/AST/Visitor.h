@@ -47,6 +47,7 @@ DECL_PTR( BufferDeclStmnt   );
 DECL_PTR( TextureDeclStmnt  );
 DECL_PTR( SamplerDeclStmnt  );
 DECL_PTR( StructDeclStmnt   );
+DECL_PTR( VarDeclStmnt      );
 
 DECL_PTR( NullStmnt         );
 DECL_PTR( CodeBlockStmnt    );
@@ -56,7 +57,6 @@ DECL_PTR( DoWhileLoopStmnt  );
 DECL_PTR( IfStmnt           );
 DECL_PTR( ElseStmnt         );
 DECL_PTR( SwitchStmnt       );
-DECL_PTR( VarDeclStmnt      );
 DECL_PTR( AssignStmnt       );
 DECL_PTR( ExprStmnt         );
 DECL_PTR( FunctionCallStmnt );
@@ -113,6 +113,7 @@ class Visitor
         VISITOR_VISIT_PROC( TextureDeclStmnt  );
         VISITOR_VISIT_PROC( SamplerDeclStmnt  );
         VISITOR_VISIT_PROC( StructDeclStmnt   );
+        VISITOR_VISIT_PROC( VarDeclStmnt      );
 
         VISITOR_VISIT_PROC( NullStmnt         );
         VISITOR_VISIT_PROC( CodeBlockStmnt    );
@@ -122,7 +123,6 @@ class Visitor
         VISITOR_VISIT_PROC( IfStmnt           );
         VISITOR_VISIT_PROC( ElseStmnt         );
         VISITOR_VISIT_PROC( SwitchStmnt       );
-        VISITOR_VISIT_PROC( VarDeclStmnt      );
         VISITOR_VISIT_PROC( AssignStmnt       );
         VISITOR_VISIT_PROC( ExprStmnt         );
         VISITOR_VISIT_PROC( FunctionCallStmnt );

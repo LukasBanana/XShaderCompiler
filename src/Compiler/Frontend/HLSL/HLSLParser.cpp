@@ -558,6 +558,61 @@ StructDeclStmntPtr HLSLParser::ParseStructDeclStmnt()
     return ast;
 }
 
+VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
+{
+    auto ast = Make<VarDeclStmnt>();
+
+    while (true)
+    {
+        if (Is(Tokens::StorageModifier))
+        {
+            /* Parse storage modifiers */
+            auto ident = AcceptIt()->Spell();
+            ast->storageModifiers.push_back(ident);
+        }
+        else if (Is(Tokens::TypeModifier))
+        {
+            /* Parse type modifier (const, row_major, column_major) */
+            auto ident = AcceptIt()->Spell();
+            ast->typeModifiers.push_back(ident);
+        }
+        else if (Is(Tokens::Ident))
+        {
+            /* Parse base variable type */
+            auto ident = AcceptIt()->Spell();
+            ast->varType = Make<VarType>();
+            ast->varType->baseType = ident;
+            break;
+        }
+        else if (Is(Tokens::Struct))
+        {
+            /* Parse structure variable type */
+            ast->varType = Make<VarType>();
+            ast->varType->structType = ParseStructure();
+            break;
+        }
+        else if (IsDataType())
+        {
+            /* Parse base variable type */
+            ast->varType = Make<VarType>();
+            ast->varType->baseType = ParseTypeDenoter();
+            break;
+        }
+        else
+            ErrorUnexpected();
+    }
+
+    /* Parse variable declarations */
+    ast->varDecls = ParseVarDeclList();
+    Semi();
+
+    /* Decorate variable declarations with this statement AST node */
+    for (auto& varDecl : ast->varDecls)
+        varDecl->declStmntRef = ast.get();
+
+    return ast;
+}
+
 /* --- Statements --- */
 
 StmntPtr HLSLParser::ParseStmnt()
@@ -752,61 +807,6 @@ CtrlTransferStmntPtr HLSLParser::ParseCtrlTransferStmnt()
     ast->transfer = StringToCtrlTransfer(ctrlTransfer);
 
     Semi();
-
-    return ast;
-}
-
-VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
-{
-    auto ast = Make<VarDeclStmnt>();
-
-    while (true)
-    {
-        if (Is(Tokens::StorageModifier))
-        {
-            /* Parse storage modifiers */
-            auto ident = AcceptIt()->Spell();
-            ast->storageModifiers.push_back(ident);
-        }
-        else if (Is(Tokens::TypeModifier))
-        {
-            /* Parse type modifier (const, row_major, column_major) */
-            auto ident = AcceptIt()->Spell();
-            ast->typeModifiers.push_back(ident);
-        }
-        else if (Is(Tokens::Ident))
-        {
-            /* Parse base variable type */
-            auto ident = AcceptIt()->Spell();
-            ast->varType = Make<VarType>();
-            ast->varType->baseType = ident;
-            break;
-        }
-        else if (Is(Tokens::Struct))
-        {
-            /* Parse structure variable type */
-            ast->varType = Make<VarType>();
-            ast->varType->structType = ParseStructure();
-            break;
-        }
-        else if (IsDataType())
-        {
-            /* Parse base variable type */
-            ast->varType = Make<VarType>();
-            ast->varType->baseType = ParseTypeDenoter();
-            break;
-        }
-        else
-            ErrorUnexpected();
-    }
-
-    /* Parse variable declarations */
-    ast->varDecls = ParseVarDeclList();
-    Semi();
-
-    /* Decorate variable declarations with this statement AST node */
-    for (auto& varDecl : ast->varDecls)
-        varDecl->declStmntRef = ast.get();
 
     return ast;
 }

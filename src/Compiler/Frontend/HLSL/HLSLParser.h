@@ -104,6 +104,7 @@ class HLSLParser : public Parser
         TextureDeclStmntPtr             ParseTextureDeclStmnt();
         SamplerDeclStmntPtr             ParseSamplerDeclStmnt();
         StructDeclStmntPtr              ParseStructDeclStmnt();
+        VarDeclStmntPtr                 ParseVarDeclStmnt();
 
         StmntPtr                        ParseStmnt();
         NullStmntPtr                    ParseNullStmnt();
@@ -115,7 +116,6 @@ class HLSLParser : public Parser
         ElseStmntPtr                    ParseElseStmnt();
         SwitchStmntPtr                  ParseSwitchStmnt(const std::vector<FunctionCallPtr>& attribs);
         CtrlTransferStmntPtr            ParseCtrlTransferStmnt();
-        VarDeclStmntPtr                 ParseVarDeclStmnt();
         ReturnStmntPtr                  ParseReturnStmnt();
         ExprStmntPtr                    ParseExprStmnt(const VarIdentPtr& varIdent = nullptr);
         StmntPtr                        ParseStructDeclOrVarDeclStmnt();

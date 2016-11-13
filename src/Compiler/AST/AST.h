@@ -83,6 +83,7 @@ struct AST
         TextureDeclStmnt,
         SamplerDeclStmnt,
         StructDeclStmnt,
+        VarDeclStmnt,
 
         NullStmnt,
         CodeBlockStmnt,
@@ -92,7 +93,6 @@ struct AST
         IfStmnt,
         ElseStmnt,
         SwitchStmnt,
-        VarDeclStmnt,
         AssignStmnt,
         ExprStmnt,
         FunctionCallStmnt,
@@ -405,6 +405,27 @@ struct StructDeclStmnt : public Stmnt
     StructurePtr structure;
 };
 
+// Variable declaration statement.
+struct VarDeclStmnt : public Stmnt
+{
+    AST_INTERFACE(VarDeclStmnt);
+
+    FLAG_ENUM
+    {
+        FLAG( isShaderInput,    2 ), // This variable is used as shader input.
+        FLAG( isShaderOutput,   3 ), // This variable is used as shader output.
+    };
+
+    // Returns the var-decl statement as string.
+    std::string ToString(bool useVarNames = true) const;
+
+    std::string                 inputModifier;      // in, out, inout, uniform
+    std::vector<std::string>    storageModifiers;   // extern, nointerpolation, precise, shared, groupshared, static, volatile
+    std::vector<std::string>    typeModifiers;      // const, row_major, column_major
+    VarTypePtr                  varType;
+    std::vector<VarDeclPtr>     varDecls;
+};
+
 /* --- Statements --- */
 
 // Null statement.
@@ -480,27 +501,6 @@ struct SwitchStmnt : public Stmnt
     std::vector<FunctionCallPtr>    attribs; // Attribute list
     ExprPtr                         selector;
     std::vector<SwitchCasePtr>      cases;
-};
-
-// Variable declaration statement.
-struct VarDeclStmnt : public Stmnt
-{
-    AST_INTERFACE(VarDeclStmnt);
-
-    FLAG_ENUM
-    {
-        FLAG( isShaderInput,    2 ), // This variable is used as shader input.
-        FLAG( isShaderOutput,   3 ), // This variable is used as shader output.
-    };
-
-    // Returns the var-decl statement as string.
-    std::string ToString(bool useVarNames = true) const;
-
-    std::string                 inputModifier;      // in, out, inout, uniform
-    std::vector<std::string>    storageModifiers;   // extern, nointerpolation, precise, shared, groupshared, static, volatile
-    std::vector<std::string>    typeModifiers;      // const, row_major, column_major
-    VarTypePtr                  varType;
-    std::vector<VarDeclPtr>     varDecls;
 };
 
 // Variable assign statement.

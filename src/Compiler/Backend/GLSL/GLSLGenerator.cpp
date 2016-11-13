@@ -917,6 +917,84 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
     Blank();
 }
 
+IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+{
+    auto varDecls = ast->varDecls;
+
+    for (auto it = varDecls.begin(); it != varDecls.end();)
+    {
+        /*
+        First check if code generation is disabled for variable declaration,
+        then check if this is a system value semantic inside an interface block.
+        */
+        if ( (*it)->flags(VarDecl::disableCodeGen) ||
+             ( isInsideInterfaceBlock_ && HasSystemValueSemantic((*it)->semantics) ) )
+        {
+            /*
+            Code generation is disabled for this variable declaration
+            -> Remove this from the list
+            */
+            it = varDecls.erase(it);
+        }
+        else
+            ++it;
+    }
+
+    if (varDecls.empty())
+    {
+        /*
+        All variable declarations within this statement are disabled
+        -> Break code generation here
+        */
+        return;
+    }
+
+    BeginLn();
+
+    /* Write modifiers */
+    if (ast->flags(VarDeclStmnt::isShaderInput))
+        Write("in ");
+    else if (ast->flags(VarDeclStmnt::isShaderOutput))
+        Write("out ");
+
+    for (const auto& modifier : ast->storageModifiers)
+    {
+        auto it = modifierMap_.find(modifier);
+        if (it != modifierMap_.end())
+            Write(it->second + " ");
+    }
+
+    for (const auto& modifier : ast->typeModifiers)
+    {
+        if (modifier == "const")
+            Write(modifier + " ");
+    }
+
+    /* Write variable type */
+    if (ast->varType->structType)
+    {
+        EndLn();
+        Visit(ast->varType);
+        BeginLn();
+    }
+    else
+    {
+        Visit(ast->varType);
+        Write(" ");
+    }
+
+    /* Write variable declarations */
+    for (size_t i = 0; i < varDecls.size(); ++i)
+    {
+        Visit(varDecls[i]);
+        if (i + 1 < varDecls.size())
+            Write(", ");
+    }
+
+    Write(";");
+    EndLn();
+}
+
 /* --- Statements --- */
 
 IMPLEMENT_VISIT_PROC(NullStmnt)
@@ -1038,84 +1116,6 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
         Visit(ast->cases);
     }
     CloseScope();
-}
-
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
-{
-    auto varDecls = ast->varDecls;
-
-    for (auto it = varDecls.begin(); it != varDecls.end();)
-    {
-        /*
-        First check if code generation is disabled for variable declaration,
-        then check if this is a system value semantic inside an interface block.
-        */
-        if ( (*it)->flags(VarDecl::disableCodeGen) ||
-             ( isInsideInterfaceBlock_ && HasSystemValueSemantic((*it)->semantics) ) )
-        {
-            /*
-            Code generation is disabled for this variable declaration
-            -> Remove this from the list
-            */
-            it = varDecls.erase(it);
-        }
-        else
-            ++it;
-    }
-
-    if (varDecls.empty())
-    {
-        /*
-        All variable declarations within this statement are disabled
-        -> Break code generation here
-        */
-        return;
-    }
-
-    BeginLn();
-
-    /* Write modifiers */
-    if (ast->flags(VarDeclStmnt::isShaderInput))
-        Write("in ");
-    else if (ast->flags(VarDeclStmnt::isShaderOutput))
-        Write("out ");
-
-    for (const auto& modifier : ast->storageModifiers)
-    {
-        auto it = modifierMap_.find(modifier);
-        if (it != modifierMap_.end())
-            Write(it->second + " ");
-    }
-
-    for (const auto& modifier : ast->typeModifiers)
-    {
-        if (modifier == "const")
-            Write(modifier + " ");
-    }
-
-    /* Write variable type */
-    if (ast->varType->structType)
-    {
-        EndLn();
-        Visit(ast->varType);
-        BeginLn();
-    }
-    else
-    {
-        Visit(ast->varType);
-        Write(" ");
-    }
-
-    /* Write variable declarations */
-    for (size_t i = 0; i < varDecls.size(); ++i)
-    {
-        Visit(varDecls[i]);
-        if (i + 1 < varDecls.size())
-            Write(", ");
-    }
-
-    Write(";");
-    EndLn();
 }
 
 IMPLEMENT_VISIT_PROC(AssignStmnt)

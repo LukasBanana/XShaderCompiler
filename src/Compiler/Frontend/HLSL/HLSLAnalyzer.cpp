@@ -344,6 +344,27 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
     Visit(ast->structure);
 }
 
+IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+{
+    Visit(ast->varType);
+    Visit(ast->varDecls);
+
+    /* Decorate variable type */
+    if (isInsideEntryPoint_ && ast->varDecls.empty())
+    {
+        auto symbolRef = ast->varType->symbolRef;
+        if (symbolRef && symbolRef->Type() == AST::Types::Structure)
+        {
+            auto structType = dynamic_cast<Structure*>(symbolRef);
+            if (structType && structType->flags(Structure::isShaderOutput) && structType->aliasName.empty())
+            {
+                /* Store alias name for shader output interface block */
+                structType->aliasName = ast->varDecls.front()->name;
+            }
+        }
+    }
+}
+
 /* --- Statements --- */
 
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
@@ -432,27 +453,6 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
         Visit(ast->cases);
     }
     CloseScope();
-}
-
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
-{
-    Visit(ast->varType);
-    Visit(ast->varDecls);
-
-    /* Decorate variable type */
-    if (isInsideEntryPoint_ && ast->varDecls.empty())
-    {
-        auto symbolRef = ast->varType->symbolRef;
-        if (symbolRef && symbolRef->Type() == AST::Types::Structure)
-        {
-            auto structType = dynamic_cast<Structure*>(symbolRef);
-            if (structType && structType->flags(Structure::isShaderOutput) && structType->aliasName.empty())
-            {
-                /* Store alias name for shader output interface block */
-                structType->aliasName = ast->varDecls.front()->name;
-            }
-        }
-    }
 }
 
 IMPLEMENT_VISIT_PROC(AssignStmnt)

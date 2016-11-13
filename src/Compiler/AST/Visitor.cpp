@@ -125,6 +125,12 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
     Visit(ast->structure);
 }
 
+IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+{
+    Visit(ast->varType);
+    Visit(ast->varDecls);
+}
+
 /* --- Statements --- */
 
 IMPLEMENT_VISIT_PROC(NullStmnt)
@@ -178,12 +184,6 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
     Visit(ast->attribs);
     Visit(ast->selector);
     Visit(ast->cases);
-}
-
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
-{
-    Visit(ast->varType);
-    Visit(ast->varDecls);
 }
 
 IMPLEMENT_VISIT_PROC(AssignStmnt)
