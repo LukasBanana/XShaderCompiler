@@ -64,28 +64,6 @@ class Token
             VectorType,         // ScalarType ('1'-'4')
             MatrixType,         // ScalarType ('1'-'4') 'x' ('1'-'4')
 
-            /* --- Keywords --- */
-            Void,               // void
-
-            Vector,             // vector (e.g. "vector<float, 3>")
-            Matrix,             // matrix (e.g. "matrix<int, 4, 4>")
-
-            Do,                 // do
-            While,              // while
-            For,                // for
-            
-            If,                 // if
-            Else,               // else
-            
-            Switch,             // switch
-            Case,               // case
-            Default,            // default
-
-            Struct,             // struct
-            Register,           // register
-            PackOffset,         // packoffset
-
-            /* --- Object keywords --- */
             Sampler,            // sampler, sampler1D, sampler2D, sampler3D, samplerCUBE, sampler_state, SamplerState
 
             /*
@@ -101,6 +79,28 @@ class Token
             StorageBuffer,
 
             UniformBuffer,      // cbuffer, tbuffer
+
+            Vector,             // vector (e.g. "vector<float, 3>")
+            Matrix,             // matrix (e.g. "matrix<int, 4, 4>")
+
+            /* --- Keywords --- */
+            Void,               // void
+
+            Do,                 // do
+            While,              // while
+            For,                // for
+            
+            If,                 // if
+            Else,               // else
+            
+            Switch,             // switch
+            Case,               // case
+            Default,            // default
+
+            Typedef,            // typedef
+            Struct,             // struct
+            Register,           // register
+            PackOffset,         // packoffset
 
             /* --- Control transfer keywords --- */
             CtrlTransfer,       // break, continue, discard

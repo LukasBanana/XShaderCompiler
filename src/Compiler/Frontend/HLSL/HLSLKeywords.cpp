@@ -130,6 +130,7 @@ static KeywordMapType GenerateKeywordMap()
         { "case",                    Ty::Case            },
         { "default",                 Ty::Default         },
 
+        { "typedef",                 Ty::Typedef         },
         { "struct",                  Ty::Struct          },
         { "register",                Ty::Register        },
         { "packoffset",              Ty::PackOffset      },
