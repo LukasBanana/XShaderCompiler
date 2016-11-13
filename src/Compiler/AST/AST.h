@@ -67,25 +67,25 @@ struct AST
         Program,
         CodeBlock,
         FunctionCall,
-        Structure,
         SwitchCase,
         SamplerValue,
-
         PackOffset,
         VarSemantic,
         VarType,
         VarIdent,
+
         VarDecl,
         TextureDecl,
         SamplerDecl,
+        StructDecl,
         AliasDecl,
 
         FunctionDecl, // Do not use "Stmnt" postfix here (--> FunctionDecl can only appear in global scope)
+        VarDeclStmnt,
         BufferDeclStmnt,
         TextureDeclStmnt,
         SamplerDeclStmnt,
         StructDeclStmnt,
-        VarDeclStmnt,
         AliasDeclStmnt, // Type alias (typedef)
 
         NullStmnt,
@@ -203,10 +203,10 @@ struct FunctionCall : public AST
 };
 
 //TODO --> maybe rename to "StructDecl" (like in the other declaration AST nodes).
-// Structure object.
-struct Structure : public AST
+// StructDecl object.
+struct StructDecl : public AST
 {
-    AST_INTERFACE(Structure);
+    AST_INTERFACE(StructDecl);
 
     FLAG_ENUM
     {
@@ -257,12 +257,12 @@ struct VarType : public AST
 {
     AST_INTERFACE(VarType);
     
-    // Returns the name of this type (either 'baseType' or 'structType->name').
+    // Returns the name of this type (either 'baseType' or 'structDecl->name').
     std::string ToString() const;
 
     //TODO --> change this to "TypeDenoterPtr typeDenoter"!!!
     std::string     baseType;               // Either this ...
-    StructurePtr    structType;             // ... or this is used.
+    StructDeclPtr   structDecl;             // ... or this is used.
 
     AST*            symbolRef = nullptr;    // Symbol reference for DAST to the type definition; may be null.
 };
@@ -413,11 +413,11 @@ struct SamplerDeclStmnt : public Stmnt
     std::vector<SamplerDeclPtr> samplerDecls;
 };
 
-// Structure declaration statement.
+// StructDecl declaration statement.
 struct StructDeclStmnt : public Stmnt
 {
     AST_INTERFACE(StructDeclStmnt);
-    StructurePtr structure;
+    StructDeclPtr structDecl;
 };
 
 // Variable declaration statement.
@@ -447,7 +447,7 @@ struct AliasDeclStmnt : public Stmnt
     AST_INTERFACE(AliasDeclStmnt);
 
     std::vector<AliasDeclPtr>   aliasDecls; // Type aliases
-    StructurePtr                structDecl; // Optional structure declaration
+    StructDeclPtr               structDecl; // Optional structure declaration
 };
 
 /* --- Statements --- */

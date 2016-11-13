@@ -95,15 +95,15 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     Visit(ast->arguments);
 }
 
-IMPLEMENT_VISIT_PROC(Structure)
+IMPLEMENT_VISIT_PROC(StructDecl)
 {
     /* Check if this function was already marked by this analyzer */
-    if (!ast->flags(Structure::wasMarked))
+    if (!ast->flags(StructDecl::wasMarked))
     {
-        ast->flags << Structure::wasMarked;
+        ast->flags << StructDecl::wasMarked;
 
         /* Mark this structure to be referenced */
-        ast->flags << Structure::isReferenced;
+        ast->flags << StructDecl::isReferenced;
 
         /* Analyze structure members */
         Visit(ast->members);
@@ -172,8 +172,8 @@ IMPLEMENT_VISIT_PROC(VarType)
         if (symbol)
             Visit(symbol);
     }
-    else if (ast->structType)
-        Visit(ast->structType);
+    else if (ast->structDecl)
+        Visit(ast->structDecl);
 }
 
 #undef IMPLEMENT_VISIT_PROC

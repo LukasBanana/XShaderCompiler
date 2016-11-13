@@ -43,7 +43,7 @@ class ReferenceAnalyzer : private Visitor
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( FunctionCall      );
-        DECL_VISIT_PROC( Structure         );
+        DECL_VISIT_PROC( StructDecl         );
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( BufferDeclStmnt   );

@@ -80,7 +80,7 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
-        DECL_VISIT_PROC( Structure         );
+        DECL_VISIT_PROC( StructDecl         );
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( BufferDeclStmnt   );
@@ -139,7 +139,7 @@ class HLSLAnalyzer : private Visitor
         std::stack<FunctionCall*>                       callStack_;
 
         // Structure stack to collect all members with system value semantic (SV_...).
-        std::vector<Structure*>                         structStack_;
+        std::vector<StructDecl*>                         structStack_;
 
         ASTSymbolTable                                  symTable_;
         ReferenceAnalyzer                               refAnalyzer_;

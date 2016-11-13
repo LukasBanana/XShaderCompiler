@@ -108,7 +108,7 @@ class GLSLGenerator : public Generator
         std::string URegister(const std::string& registerName, const AST* ast = nullptr);
 
         // Returns true if the specified AST structure must be resolved.
-        bool MustResolveStruct(Structure* ast) const;
+        bool MustResolveStruct(StructDecl* ast) const;
 
         // Returns true if the target version is greater than or equal to the specified version number.
         bool IsVersionOut(int version) const;
@@ -118,7 +118,7 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
-        DECL_VISIT_PROC( Structure         );
+        DECL_VISIT_PROC( StructDecl         );
         DECL_VISIT_PROC( SwitchCase        );
 
         DECL_VISIT_PROC( VarType           );

@@ -405,12 +405,12 @@ std::string GLSLGenerator::URegister(const std::string& registerName, const AST*
     return registerName.substr(1);
 }
 
-bool GLSLGenerator::MustResolveStruct(Structure* ast) const
+bool GLSLGenerator::MustResolveStruct(StructDecl* ast) const
 {
     return
-        ( shaderTarget_ == ShaderTarget::VertexShader && ast->flags(Structure::isShaderInput) ) ||
-        ( shaderTarget_ == ShaderTarget::FragmentShader && ast->flags(Structure::isShaderOutput) ) ||
-        ( shaderTarget_ == ShaderTarget::ComputeShader && ( ast->flags(Structure::isShaderInput) || ast->flags(Structure::isShaderOutput) ) );
+        ( shaderTarget_ == ShaderTarget::VertexShader && ast->flags(StructDecl::isShaderInput) ) ||
+        ( shaderTarget_ == ShaderTarget::FragmentShader && ast->flags(StructDecl::isShaderOutput) ) ||
+        ( shaderTarget_ == ShaderTarget::ComputeShader && ( ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput) ) );
 }
 
 bool GLSLGenerator::IsVersionOut(int version) const
@@ -592,7 +592,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     }
 }
 
-IMPLEMENT_VISIT_PROC(Structure)
+IMPLEMENT_VISIT_PROC(StructDecl)
 {
     bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
 
@@ -604,7 +604,7 @@ IMPLEMENT_VISIT_PROC(Structure)
     */
     auto resolveStruct = MustResolveStruct(ast);
 
-    if ( resolveStruct || ( !ast->flags(Structure::isShaderInput) && !ast->flags(Structure::isShaderOutput) ) )
+    if ( resolveStruct || ( !ast->flags(StructDecl::isShaderInput) && !ast->flags(StructDecl::isShaderOutput) ) )
     {
         /* Write structure declaration */
         BeginLn();
@@ -628,20 +628,20 @@ IMPLEMENT_VISIT_PROC(Structure)
         for (auto& member : ast->members)
         {
             /* Append struct input/output flag to member */
-            if (ast->flags(Structure::isShaderInput))
+            if (ast->flags(StructDecl::isShaderInput))
                 member->flags << VarDeclStmnt::isShaderInput;
-            else if (ast->flags(Structure::isShaderOutput))
+            else if (ast->flags(StructDecl::isShaderOutput))
                 member->flags << VarDeclStmnt::isShaderOutput;
 
             Visit(member);
         }
     }
     /* Write this structure as interface block (if structure doesn't need to be resolved) */
-    else if (ast->flags(Structure::isShaderInput) || ast->flags(Structure::isShaderOutput))
+    else if (ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput))
     {
         BeginLn();
         {
-            if (ast->flags(Structure::isShaderInput))
+            if (ast->flags(StructDecl::isShaderInput))
                 Write("in");
             else
                 Write("out");
@@ -702,8 +702,8 @@ IMPLEMENT_VISIT_PROC(VarType)
 
         Write(typeName);
     }
-    else if (ast->structType)
-        Visit(ast->structType);
+    else if (ast->structDecl)
+        Visit(ast->structDecl);
 }
 
 IMPLEMENT_VISIT_PROC(VarIdent)
@@ -907,12 +907,12 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 {
-    if (!ast->structure->flags(Structure::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
+    if (!ast->structDecl->flags(StructDecl::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
         return; // structure not used
 
     Line(ast);
     bool semicolon = true;
-    Visit(ast->structure, &semicolon);
+    Visit(ast->structDecl, &semicolon);
 
     Blank();
 }
@@ -971,7 +971,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     }
 
     /* Write variable type */
-    if (ast->varType->structType)
+    if (ast->varType->structDecl)
     {
         EndLn();
         Visit(ast->varType);
@@ -1336,14 +1336,14 @@ void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenP
 
     /* Check if a structure input is used */
     auto typeRef = ast->varType->symbolRef;
-    Structure* structType = nullptr;
+    StructDecl* structDecl = nullptr;
 
-    if (typeRef && typeRef->Type() == AST::Types::Structure)
-        structType = dynamic_cast<Structure*>(typeRef);
+    if (typeRef && typeRef->Type() == AST::Types::StructDecl)
+        structDecl = dynamic_cast<StructDecl*>(typeRef);
 
-    if (structType)
+    if (structDecl)
     {
-        if (MustResolveStruct(structType))
+        if (MustResolveStruct(structDecl))
         {
             /* Write variable declaration */
             BeginLn();
@@ -1354,7 +1354,7 @@ void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenP
             EndLn();
 
             /* Fill structure members */
-            for (const auto& member : structType->members)
+            for (const auto& member : structDecl->members)
             {
                 for (const auto& memberVar : member->varDecls)
                     WriteLn(varDecl->name + "." + memberVar->name + " = " + memberVar->name + ";");
@@ -1425,15 +1425,15 @@ void GLSLGenerator::WriteFragmentShaderOutput()
 {
     auto& outp = GetProgram()->outputSemantics;
 
-    if (outp.returnType->symbolRef || outp.returnType->structType)
+    if (outp.returnType->symbolRef || outp.returnType->structDecl)
     {
         /* Get structure AST node */
-        Structure* structAST = nullptr;
+        StructDecl* structAST = nullptr;
 
-        if (outp.returnType->symbolRef && outp.returnType->symbolRef->Type() == AST::Types::Structure)
-            structAST = dynamic_cast<Structure*>(outp.returnType->symbolRef);
-        else if (outp.returnType->structType)
-            structAST = outp.returnType->structType.get();
+        if (outp.returnType->symbolRef && outp.returnType->symbolRef->Type() == AST::Types::StructDecl)
+            structAST = dynamic_cast<StructDecl*>(outp.returnType->symbolRef);
+        else if (outp.returnType->structDecl)
+            structAST = outp.returnType->structDecl.get();
 
         if (structAST)
         {

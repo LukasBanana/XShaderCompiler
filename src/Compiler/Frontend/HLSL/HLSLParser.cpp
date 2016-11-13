@@ -143,58 +143,6 @@ FunctionCallPtr HLSLParser::ParseFunctionCall(VarIdentPtr varIdent)
     return ast;
 }
 
-StructurePtr HLSLParser::ParseStructure(bool parseStructTkn, const TokenPtr& identTkn)
-{
-    auto tkn = Tkn();
-    auto ast = Make<Structure>();
-
-    /* Parse structure declaration */
-    if (parseStructTkn)
-        Accept(Tokens::Struct);
-
-    if (Is(Tokens::Ident) || identTkn)
-    {
-        /* Parse structure name */
-        tkn = Tkn();
-        ast->name = (identTkn ? identTkn->Spell() : ParseIdent());
-
-        /* Parse optional inheritance (not documented in HLSL but supported; only single inheritance) */
-        if (Is(Tokens::Colon))
-        {
-            AcceptIt();
-
-            auto baseStructName = ParseIdent();
-            if (baseStructName == ast->name)
-                Error("recursive inheritance is not allowed");
-
-            if (Is(Tokens::Comma))
-                Error("multiple inheritance is not allowed", false);
-
-            /* Fetch structure from symbol table */
-            auto baseStruct = typeSymTable_.Fetch(baseStructName);
-            if (!baseStruct || baseStruct->Type() != AST::Types::Structure)
-                Error("'" + baseStructName + "' does not name a structure");
-
-            /* Copy members from base struct into new structure */
-            auto baseStructAST = dynamic_cast<Structure*>(baseStruct);
-            ast->members = baseStructAST->members;
-        }
-    }
-
-    GetReportHandler().PushContextDesc("struct " + ast->SignatureToString());
-    {
-        /* Parse member variable declarations */
-        auto members = ParseVarDeclStmntList();
-        ast->members.insert(ast->members.end(), members.begin(), members.end());
-
-        /* Register identifier in symbol table (used to detect special cast expressions) */
-        RegisterSymbol(ast->name, ast.get(), tkn.get());
-    }
-    GetReportHandler().PopContextDesc();
-
-    return ast;
-}
-
 VarDeclStmntPtr HLSLParser::ParseParameter()
 {
     auto ast = Make<VarDeclStmnt>();
@@ -382,8 +330,8 @@ VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
         Parse anonymous structure declaration and
         decorate the VarType AST node with its own structure type
         */
-        ast->structType = ParseStructure();
-        ast->symbolRef = ast->structType.get();
+        ast->structDecl = ParseStructDecl();
+        ast->symbolRef = ast->structDecl.get();
     }
     else
         ErrorUnexpected("expected type specifier");
@@ -440,6 +388,58 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl()
         ast->samplerValues = ParseSamplerValueList();
         Accept(Tokens::RCurly);
     }
+
+    return ast;
+}
+
+StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& identTkn)
+{
+    auto tkn = Tkn();
+    auto ast = Make<StructDecl>();
+
+    /* Parse structure declaration */
+    if (parseStructTkn)
+        Accept(Tokens::Struct);
+
+    if (Is(Tokens::Ident) || identTkn)
+    {
+        /* Parse structure name */
+        tkn = Tkn();
+        ast->name = (identTkn ? identTkn->Spell() : ParseIdent());
+
+        /* Parse optional inheritance (not documented in HLSL but supported; only single inheritance) */
+        if (Is(Tokens::Colon))
+        {
+            AcceptIt();
+
+            auto baseStructName = ParseIdent();
+            if (baseStructName == ast->name)
+                Error("recursive inheritance is not allowed");
+
+            if (Is(Tokens::Comma))
+                Error("multiple inheritance is not allowed", false);
+
+            /* Fetch structure from symbol table */
+            auto baseStruct = typeSymTable_.Fetch(baseStructName);
+            if (!baseStruct || baseStruct->Type() != AST::Types::StructDecl)
+                Error("'" + baseStructName + "' does not name a structure");
+
+            /* Copy members from base struct into new structure */
+            auto baseStructAST = dynamic_cast<StructDecl*>(baseStruct);
+            ast->members = baseStructAST->members;
+        }
+    }
+
+    GetReportHandler().PushContextDesc("struct " + ast->SignatureToString());
+    {
+        /* Parse member variable declarations */
+        auto members = ParseVarDeclStmntList();
+        ast->members.insert(ast->members.end(), members.begin(), members.end());
+
+        /* Register identifier in symbol table (used to detect special cast expressions) */
+        RegisterSymbol(ast->name, ast.get(), tkn.get());
+    }
+    GetReportHandler().PopContextDesc();
 
     return ast;
 }
@@ -587,7 +587,7 @@ StructDeclStmntPtr HLSLParser::ParseStructDeclStmnt()
 {
     auto ast = Make<StructDeclStmnt>();
     
-    ast->structure = ParseStructure();
+    ast->structDecl = ParseStructDecl();
     Semi();
 
     return ast;
@@ -623,7 +623,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
         {
             /* Parse structure variable type */
             ast->varType = Make<VarType>();
-            ast->varType->structType = ParseStructure();
+            ast->varType->structDecl = ParseStructDecl();
             break;
         }
         else if (IsDataType())
@@ -666,7 +666,7 @@ AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
         if (Is(Tokens::LCurly))
         {
             /* Parse struct-decl */
-            ast->structDecl = ParseStructure(false);
+            ast->structDecl = ParseStructDecl(false);
 
             /* Make struct type denoter with reference to the structure of this alias decl */
             typeDenoter = std::make_shared<StructTypeDenoter>(ast->structDecl.get());
@@ -679,7 +679,7 @@ AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
             if (Is(Tokens::LCurly))
             {
                 /* Parse struct-decl */
-                ast->structDecl = ParseStructure(false, structIdentTkn);
+                ast->structDecl = ParseStructDecl(false, structIdentTkn);
 
                 /* Make struct type denoter with reference to the structure of this alias decl */
                 typeDenoter = std::make_shared<StructTypeDenoter>(ast->structDecl.get());
@@ -941,7 +941,7 @@ StmntPtr HLSLParser::ParseStructDeclOrVarDeclStmnt()
     /* Parse structure declaration statement */
     auto ast = Make<StructDeclStmnt>();
     
-    ast->structure = ParseStructure();
+    ast->structDecl = ParseStructDecl();
 
     if (!Is(Tokens::Semicolon))
     {
@@ -949,7 +949,7 @@ StmntPtr HLSLParser::ParseStructDeclOrVarDeclStmnt()
         auto varDeclStmnt = Make<VarDeclStmnt>();
 
         varDeclStmnt->varType = Make<VarType>();
-        varDeclStmnt->varType->structType = ast->structure;
+        varDeclStmnt->varType->structDecl = ast->structDecl;
         
         /* Parse variable declarations */
         varDeclStmnt->varDecls = ParseVarDeclList();
@@ -1676,7 +1676,7 @@ TypeDenoterPtr HLSLParser::ParseStructOrAliasTypeDenoter()
     auto ast = typeSymTable_.Fetch(ident);
     if (ast)
     {
-        if (ast->Type() == AST::Types::Structure)
+        if (ast->Type() == AST::Types::StructDecl)
         {
             /* Make struct type denoter */
             auto typeDenoter = std::make_shared<StructTypeDenoter>();

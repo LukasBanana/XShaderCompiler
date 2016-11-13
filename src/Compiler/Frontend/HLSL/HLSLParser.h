@@ -85,11 +85,9 @@ class HLSLParser : public Parser
 
         CodeBlockPtr                    ParseCodeBlock();
         FunctionCallPtr                 ParseFunctionCall(VarIdentPtr varIdent = nullptr);
-        StructurePtr                    ParseStructure(bool parseStructTkn = true, const TokenPtr& identTkn = nullptr);
         VarDeclStmntPtr                 ParseParameter();
         SwitchCasePtr                   ParseSwitchCase();
         SamplerValuePtr                 ParseSamplerValue();
-
         FunctionCallPtr                 ParseAttribute();
         PackOffsetPtr                   ParsePackOffset(bool parseColon = true);
         ExprPtr                         ParseArrayDimension();
@@ -97,9 +95,11 @@ class HLSLParser : public Parser
         VarSemanticPtr                  ParseVarSemantic();
         VarIdentPtr                     ParseVarIdent();
         VarTypePtr                      ParseVarType(bool parseVoidType = false);
+
         VarDeclPtr                      ParseVarDecl();
         TextureDeclPtr                  ParseTextureDecl();
         SamplerDeclPtr                  ParseSamplerDecl();
+        StructDeclPtr                   ParseStructDecl(bool parseStructTkn = true, const TokenPtr& identTkn = nullptr);
         AliasDeclPtr                    ParseAliasDecl(TypeDenoterPtr typeDenoter);
 
         StmntPtr                        ParseGlobalStmnt();

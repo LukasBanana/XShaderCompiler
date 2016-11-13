@@ -38,11 +38,6 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     Visit(ast->arguments);
 }
 
-IMPLEMENT_VISIT_PROC(Structure)
-{
-    Visit(ast->members);
-}
-
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     Visit(ast->expr);
@@ -53,8 +48,6 @@ IMPLEMENT_VISIT_PROC(SamplerValue)
 {
     Visit(ast->value);
 }
-
-/* --- Variables --- */
 
 IMPLEMENT_VISIT_PROC(PackOffset)
 {
@@ -68,7 +61,7 @@ IMPLEMENT_VISIT_PROC(VarSemantic)
 
 IMPLEMENT_VISIT_PROC(VarType)
 {
-    Visit(ast->structType);
+    Visit(ast->structDecl);
 }
 
 IMPLEMENT_VISIT_PROC(VarIdent)
@@ -76,6 +69,8 @@ IMPLEMENT_VISIT_PROC(VarIdent)
     Visit(ast->arrayIndices);
     Visit(ast->next);
 }
+
+/* --- Declarations --- */
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
@@ -93,6 +88,11 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
     Visit(ast->arrayIndices);
     Visit(ast->samplerValues);
+}
+
+IMPLEMENT_VISIT_PROC(StructDecl)
+{
+    Visit(ast->members);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDecl)
@@ -127,7 +127,7 @@ IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 {
-    Visit(ast->structure);
+    Visit(ast->structDecl);
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)

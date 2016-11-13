@@ -76,10 +76,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     DEFAULT_VISITOR(FunctionCall);
 }
 
-IMPLEMENT_VISIT_PROC(Structure)
+IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    Print(ast, "Structure");
-    DEFAULT_VISITOR(Structure);
+    Print(ast, "StructDecl");
+    DEFAULT_VISITOR(StructDecl);
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)

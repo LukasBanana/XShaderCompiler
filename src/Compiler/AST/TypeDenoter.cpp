@@ -202,7 +202,7 @@ StructTypeDenoter::StructTypeDenoter(const std::string& ident) :
 {
 }
 
-StructTypeDenoter::StructTypeDenoter(Structure* structDeclRef) :
+StructTypeDenoter::StructTypeDenoter(StructDecl* structDeclRef) :
     ident           { structDeclRef ? structDeclRef->name : "" },
     structDeclRef   { structDeclRef                            }
 {

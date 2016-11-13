@@ -38,9 +38,9 @@ VarIdent* VarIdent::LastVarIdent()
 }
 
 
-/* ----- Structure ----- */
+/* ----- StructDecl ----- */
 
-std::string Structure::SignatureToString() const
+std::string StructDecl::SignatureToString() const
 {
     return (name.empty() ? "<anonymous>" : name);
 }
@@ -93,7 +93,7 @@ std::string VarSemantic::ToString() const
 
 std::string VarType::ToString() const
 {
-    return (structType ? structType->name : baseType);
+    return (structDecl ? structDecl->name : baseType);
 }
 
 

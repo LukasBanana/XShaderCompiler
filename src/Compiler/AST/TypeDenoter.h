@@ -132,13 +132,13 @@ struct StructTypeDenoter : public TypeDenoter
 {
     StructTypeDenoter() = default;
     StructTypeDenoter(const std::string& ident);
-    StructTypeDenoter(Structure* structDeclRef);
+    StructTypeDenoter(StructDecl* structDeclRef);
 
     Types Type() const override;
     std::string ToString() const override;
 
     std::string     ident;
-    Structure*      structDeclRef = nullptr;
+    StructDecl*      structDeclRef = nullptr;
 };
 
 using StructTypeDenoterPtr = std::shared_ptr<StructTypeDenoter>;
@@ -152,7 +152,7 @@ struct AliasTypeDenoter : public TypeDenoter
     TypeDenoter* Get() override;
 
     std::string     ident;                  // Type identifier
-  //StructurePtr    structDecl;             // Optional struct-decl AST node.
+  //StructDeclPtr   structDecl;             // Optional struct-decl AST node.
     TypeDenoter*    aliasTypeRef = nullptr;
 };
 

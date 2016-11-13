@@ -206,7 +206,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     callStack_.pop();
 }
 
-IMPLEMENT_VISIT_PROC(Structure)
+IMPLEMENT_VISIT_PROC(StructDecl)
 {
     #if 0//!!! there is no forward declaration for structs in HLSL!
     if (!ast->name.empty())
@@ -341,7 +341,7 @@ IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 {
-    Visit(ast->structure);
+    Visit(ast->structDecl);
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
@@ -353,13 +353,13 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     if (isInsideEntryPoint_ && ast->varDecls.empty())
     {
         auto symbolRef = ast->varType->symbolRef;
-        if (symbolRef && symbolRef->Type() == AST::Types::Structure)
+        if (symbolRef && symbolRef->Type() == AST::Types::StructDecl)
         {
-            auto structType = dynamic_cast<Structure*>(symbolRef);
-            if (structType && structType->flags(Structure::isShaderOutput) && structType->aliasName.empty())
+            auto structDecl = dynamic_cast<StructDecl*>(symbolRef);
+            if (structDecl && structDecl->flags(StructDecl::isShaderOutput) && structDecl->aliasName.empty())
             {
                 /* Store alias name for shader output interface block */
-                structType->aliasName = ast->varDecls.front()->name;
+                structDecl->aliasName = ast->varDecls.front()->name;
             }
         }
     }
@@ -482,13 +482,13 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
                     now find the structure object to add the alias name for the interface block.
                     */
                     auto varType = varDecl->declStmntRef->varType.get();
-                    if (varType->symbolRef && varType->symbolRef->Type() == AST::Types::Structure)
+                    if (varType->symbolRef && varType->symbolRef->Type() == AST::Types::StructDecl)
                     {
-                        auto structType = dynamic_cast<Structure*>(varType->symbolRef);
-                        if (structType)
+                        auto structDecl = dynamic_cast<StructDecl*>(varType->symbolRef);
+                        if (structDecl)
                         {
                             /* Store alias name for the interface block */
-                            structType->aliasName = varAccessExpr->varIdent->ident;
+                            structDecl->aliasName = varAccessExpr->varIdent->ident;
 
                             /*
                             Don't generate code for this variable declaration,
@@ -525,8 +525,8 @@ IMPLEMENT_VISIT_PROC(VarType)
         if (symbol)
             ast->symbolRef = symbol;
     }
-    else if (ast->structType)
-        Visit(ast->structType);
+    else if (ast->structDecl)
+        Visit(ast->structDecl);
     else
         Error("missing variable type", ast);
 }
@@ -545,8 +545,8 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         /* Store references to members with system value semantic (SV_...) in all parent structures */
         if (IsSystemValueSemnatic(semantic->semantic))
         {
-            for (auto& structure : structStack_)
-                structure->systemValuesRef[ast->name] = ast;
+            for (auto& structDecl : structStack_)
+                structDecl->systemValuesRef[ast->name] = ast;
         }
     }
 
@@ -562,31 +562,31 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 //INCOMPLETE!
 void HLSLAnalyzer::DecorateEntryInOut(VarDeclStmnt* ast, bool isInput)
 {
-    const auto structFlag = (isInput ? Structure::isShaderInput : Structure::isShaderOutput);
+    const auto structFlag = (isInput ? StructDecl::isShaderInput : StructDecl::isShaderOutput);
 
     /* Add flag to variable declaration statement */
     ast->flags << (isInput ? VarDeclStmnt::isShaderInput : VarDeclStmnt::isShaderOutput);
 
     /* Add flag to structure type */
     auto& varType = ast->varType;
-    if (varType->structType)
-        varType->structType->flags << structFlag;
+    if (varType->structDecl)
+        varType->structDecl->flags << structFlag;
 
     /* Add flag to optional symbol reference */
     auto& symbolRef = varType->symbolRef;
-    if (symbolRef && symbolRef->Type() == AST::Types::Structure)
+    if (symbolRef && symbolRef->Type() == AST::Types::StructDecl)
     {
-        auto structType = dynamic_cast<Structure*>(symbolRef);
-        if (structType)
+        auto structDecl = dynamic_cast<StructDecl*>(symbolRef);
+        if (structDecl)
         {
-            structType->flags << structFlag;
+            structDecl->flags << structFlag;
             if (!ast->varDecls.empty())
             {
                 /*
                 Set structure alias name;
                 This will be the name of the shader interface block
                 */
-                structType->aliasName = ast->varDecls.front()->name;
+                structDecl->aliasName = ast->varDecls.front()->name;
             }
         }
     }
@@ -595,19 +595,19 @@ void HLSLAnalyzer::DecorateEntryInOut(VarDeclStmnt* ast, bool isInput)
 //INCOMPLETE!
 void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
 {
-    const auto structFlag = (isInput ? Structure::isShaderInput : Structure::isShaderOutput);
+    const auto structFlag = (isInput ? StructDecl::isShaderInput : StructDecl::isShaderOutput);
 
     /* Add flag to structure type */
-    if (ast->structType)
-        ast->structType->flags << structFlag;
+    if (ast->structDecl)
+        ast->structDecl->flags << structFlag;
 
     /* Add flag to optional symbol reference */
     auto& symbolRef = ast->symbolRef;
-    if (symbolRef && symbolRef->Type() == AST::Types::Structure)
+    if (symbolRef && symbolRef->Type() == AST::Types::StructDecl)
     {
-        auto structType = dynamic_cast<Structure*>(symbolRef);
-        if (structType)
-            structType->flags << structFlag;
+        auto structDecl = dynamic_cast<StructDecl*>(symbolRef);
+        if (structDecl)
+            structDecl->flags << structFlag;
     }
 }
 
@@ -628,9 +628,9 @@ void HLSLAnalyzer::DecorateVarObject(AST* symbol, VarIdent* varIdent)
             if (varDecl->declStmntRef)
             {
                 auto varTypeSymbol = varDecl->declStmntRef->varType->symbolRef;
-                if (varTypeSymbol && varTypeSymbol->Type() == AST::Types::Structure)
+                if (varTypeSymbol && varTypeSymbol->Type() == AST::Types::StructDecl)
                 {
-                    auto structSymbol = dynamic_cast<Structure*>(varTypeSymbol);
+                    auto structSymbol = dynamic_cast<StructDecl*>(varTypeSymbol);
                     if (structSymbol)
                     {
                         auto ident = varIdent->next.get();
