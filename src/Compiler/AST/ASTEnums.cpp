@@ -41,6 +41,7 @@ T StringToType(const std::map<T, std::string>& typeMap, const std::string& str, 
      MapFailed("string", typeName);
 }
 
+
 /* ----- AssignOp Enum ----- */
 
 static const std::map<AssignOp, std::string> g_mapAssignOp
@@ -72,6 +73,7 @@ bool IsBitwiseOp(const AssignOp o)
 {
     return (o >= AssignOp::LShift && o <= AssignOp::Xor);
 }
+
 
 /* ----- BinaryOp Enum ----- */
 
@@ -112,6 +114,7 @@ bool IsBitwiseOp(const BinaryOp o)
     return (o >= BinaryOp::Or && o <= BinaryOp::RShift);
 }
 
+
 /* ----- UnaryOp Enum ----- */
 
 static const std::map<UnaryOp, std::string> g_mapUnaryOp
@@ -139,6 +142,7 @@ bool IsBitwiseOp(const UnaryOp o)
     return (o == UnaryOp::Not);
 }
 
+
 /* ----- CtrlTransfer Enum ----- */
 
 static const std::map<CtrlTransfer, std::string> g_mapCtrlTransfer
@@ -156,6 +160,177 @@ std::string CtrlTransformToString(const CtrlTransfer ct)
 CtrlTransfer StringToCtrlTransfer(const std::string& s)
 {
     return StringToType(g_mapCtrlTransfer, s, "CtrlTransfer");
+}
+
+
+/* ----- DataType Enum ----- */
+
+bool IsScalarType(const DataType t)
+{
+    return (t >= DataType::Bool && t <= DataType::Double);
+}
+
+bool IsVectorType(const DataType t)
+{
+    return (t >= DataType::Bool2 && t <= DataType::Double4);
+}
+
+bool IsMatrixType(const DataType t)
+{
+    return (t >= DataType::Bool2x2 && t <= DataType::Double4x4);
+}
+
+int VectorTypeDim(const DataType t)
+{
+    switch (t)
+    {
+        case DataType::Bool:
+        case DataType::Int:
+        case DataType::UInt:
+        case DataType::Half:
+        case DataType::Float:
+        case DataType::Double:
+            return 1;
+    
+        case DataType::Bool2:
+        case DataType::Int2:
+        case DataType::UInt2:
+        case DataType::Half2:
+        case DataType::Float2:
+        case DataType::Double2:
+            return 2;
+
+        case DataType::Bool3:
+        case DataType::Int3:
+        case DataType::UInt3:
+        case DataType::Half3:
+        case DataType::Float3:
+        case DataType::Double3:
+            return 3;
+
+        case DataType::Bool4:
+        case DataType::Int4:
+        case DataType::UInt4:
+        case DataType::Half4:
+        case DataType::Float4:
+        case DataType::Double4:
+            return 4;
+
+        default:
+            break;
+    }
+    return 0;
+}
+
+std::pair<int, int> MatrixTypeDim(const DataType t)
+{
+    switch (t)
+    {
+        case DataType::Bool:
+        case DataType::Int:
+        case DataType::UInt:
+        case DataType::Half:
+        case DataType::Float:
+        case DataType::Double:
+            return { 1, 1 };
+    
+        case DataType::Bool2:
+        case DataType::Int2:
+        case DataType::UInt2:
+        case DataType::Half2:
+        case DataType::Float2:
+        case DataType::Double2:
+            return { 2, 1 };
+
+        case DataType::Bool3:
+        case DataType::Int3:
+        case DataType::UInt3:
+        case DataType::Half3:
+        case DataType::Float3:
+        case DataType::Double3:
+            return { 3, 1 };
+
+        case DataType::Bool4:
+        case DataType::Int4:
+        case DataType::UInt4:
+        case DataType::Half4:
+        case DataType::Float4:
+        case DataType::Double4:
+            return { 4, 1 };
+
+        case DataType::Bool2x2:
+        case DataType::Int2x2:
+        case DataType::UInt2x2:
+        case DataType::Half2x2:
+        case DataType::Float2x2:
+        case DataType::Double2x2:
+            return { 2, 2 };
+
+        case DataType::Bool2x3:
+        case DataType::Int2x3:
+        case DataType::UInt2x3:
+        case DataType::Half2x3:
+        case DataType::Float2x3:
+        case DataType::Double2x3:
+            return { 2, 3 };
+
+        case DataType::Bool2x4:
+        case DataType::Int2x4:
+        case DataType::UInt2x4:
+        case DataType::Half2x4:
+        case DataType::Float2x4:
+        case DataType::Double2x4:
+            return { 2, 4 };
+
+        case DataType::Bool3x2:
+        case DataType::Int3x2:
+        case DataType::UInt3x2:
+        case DataType::Half3x2:
+        case DataType::Float3x2:
+        case DataType::Double3x2:
+            return { 3, 2 };
+
+        case DataType::Bool3x3:
+        case DataType::Int3x3:
+        case DataType::UInt3x3:
+        case DataType::Half3x3:
+        case DataType::Float3x3:
+        case DataType::Double3x3:
+            return { 3, 3 };
+
+        case DataType::Bool3x4:
+        case DataType::Int3x4:
+        case DataType::UInt3x4:
+        case DataType::Half3x4:
+        case DataType::Float3x4:
+        case DataType::Double3x4:
+            return { 3, 4 };
+
+        case DataType::Bool4x2:
+        case DataType::Int4x2:
+        case DataType::UInt4x2:
+        case DataType::Half4x2:
+        case DataType::Float4x2:
+        case DataType::Double4x2:
+            return { 4, 2 };
+
+        case DataType::Bool4x3:
+        case DataType::Int4x3:
+        case DataType::UInt4x3:
+        case DataType::Half4x3:
+        case DataType::Float4x3:
+        case DataType::Double4x3:
+            return { 4, 3 };
+
+        case DataType::Bool4x4:
+        case DataType::Int4x4:
+        case DataType::UInt4x4:
+        case DataType::Half4x4:
+        case DataType::Float4x4:
+        case DataType::Double4x4:
+            return { 4, 4 };
+    }
+    return { 0, 0 };
 }
 
 

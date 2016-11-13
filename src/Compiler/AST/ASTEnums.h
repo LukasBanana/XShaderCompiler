@@ -88,6 +88,94 @@ enum class CtrlTransfer
     Discard,
 };
 
+// Base data type enumeration.
+enum class DataType
+{
+    // Scalar types
+    Bool,
+    Int,
+    UInt,
+    Half,
+    Float,
+    Double,
+    
+    // Vector types
+    Bool2,
+    Bool3,
+    Bool4,
+    Int2,
+    Int3,
+    Int4,
+    UInt2,
+    UInt3,
+    UInt4,
+    Half2,
+    Half3,
+    Half4,
+    Float2,
+    Float3,
+    Float4,
+    Double2,
+    Double3,
+    Double4,
+
+    // Matrix types
+    Bool2x2,
+    Bool2x3,
+    Bool2x4,
+    Bool3x2,
+    Bool3x3,
+    Bool3x4,
+    Bool4x2,
+    Bool4x3,
+    Bool4x4,
+    Int2x2,
+    Int2x3,
+    Int2x4,
+    Int3x2,
+    Int3x3,
+    Int3x4,
+    Int4x2,
+    Int4x3,
+    Int4x4,
+    UInt2x2,
+    UInt2x3,
+    UInt2x4,
+    UInt3x2,
+    UInt3x3,
+    UInt3x4,
+    UInt4x2,
+    UInt4x3,
+    UInt4x4,
+    Half2x2,
+    Half2x3,
+    Half2x4,
+    Half3x2,
+    Half3x3,
+    Half3x4,
+    Half4x2,
+    Half4x3,
+    Half4x4,
+    Float2x2,
+    Float2x3,
+    Float2x4,
+    Float3x2,
+    Float3x3,
+    Float3x4,
+    Float4x2,
+    Float4x3,
+    Float4x4,
+    Double2x2,
+    Double2x3,
+    Double2x4,
+    Double3x2,
+    Double3x3,
+    Double3x4,
+    Double4x2,
+    Double4x3,
+    Double4x4,
+};
+
 
 /* ----- Functions ----- */
 
@@ -106,6 +194,22 @@ CtrlTransfer StringToCtrlTransfer(const std::string& s);
 bool IsBitwiseOp(const AssignOp o);
 bool IsBitwiseOp(const BinaryOp o);
 bool IsBitwiseOp(const UnaryOp o);
+
+bool IsScalarType(const DataType t);
+bool IsVectorType(const DataType t);
+bool IsMatrixType(const DataType t);
+
+/*
+Returns the dimension of the specified data type interpreted as vector type.
+Values range from 1 to 4, but 0 for matrix types.
+*/
+int VectorTypeDim(const DataType t);
+
+/*
+Returns the dimensions MxN of the specified data type interpreted as matrix type.
+Values range from 1x1 to 4x4, but 1x1 to 4x1 for vector and scalar types).
+*/
+std::pair<int, int> MatrixTypeDim(const DataType t);
 
 
 } // /namespace Xsc
