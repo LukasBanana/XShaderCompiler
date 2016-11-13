@@ -12,13 +12,14 @@
 #include "Visitor.h"
 #include "ASTEnums.h"
 #include <memory>
+#include <string>
 
 
 namespace Xsc
 {
 
 
-class TypeDenoter;
+struct TypeDenoter;
 using TypeDenoterPtr = std::shared_ptr<TypeDenoter>;
 
 
@@ -38,7 +39,11 @@ struct TypeDenoter
 
     virtual ~TypeDenoter();
 
+    // Returns the type (kind) of this type denoter.
     virtual Types Type() const = 0;
+
+    // Returns a simple string representation of this type denoter (e.g. "scalar type").
+    virtual std::string ToString() const = 0;
 
     // Returns either this or the aliased type.
     virtual TypeDenoter* Get();
@@ -64,6 +69,7 @@ struct TypeDenoter
 struct VoidTypeDenoter : public TypeDenoter
 {
     Types Type() const override;
+    std::string ToString() const override;
 
     // Returns always false, since void type can not be casted to anything.
     bool IsCastableTo(const TypeDenoter& targetType) const override;
@@ -73,6 +79,7 @@ struct VoidTypeDenoter : public TypeDenoter
 struct BaseTypeDenoter : public TypeDenoter
 {
     Types Type() const override;
+    std::string ToString() const override;
 
     bool IsScalar() const override;
     bool IsVector() const override;
@@ -80,13 +87,14 @@ struct BaseTypeDenoter : public TypeDenoter
 
     bool IsCastableTo(const TypeDenoter& targetType) const;
 
-    DataType dataType = DataType::Bool;
+    DataType dataType = DataType::Undefined;
 };
 
 // Buffer type denoter.
 struct BufferTypeDenoter : public TypeDenoter
 {
     Types Type() const override;
+    std::string ToString() const override;
 
     BufferDeclStmnt* bufferDeclRef = nullptr;
 };
@@ -95,6 +103,7 @@ struct BufferTypeDenoter : public TypeDenoter
 struct TextureTypeDenoter : public TypeDenoter
 {
     Types Type() const override;
+    std::string ToString() const override;
 
     TextureDecl* textureDeclRef = nullptr;
 };
@@ -103,6 +112,7 @@ struct TextureTypeDenoter : public TypeDenoter
 struct SamplerTypeDenoter : public TypeDenoter
 {
     Types Type() const override;
+    std::string ToString() const override;
 
     SamplerDecl* samplerDeclRef = nullptr;
 };
@@ -111,6 +121,7 @@ struct SamplerTypeDenoter : public TypeDenoter
 struct StructTypeDenoter : public TypeDenoter
 {
     Types Type() const override;
+    std::string ToString() const override;
 
     Structure* structDeclRef = nullptr;
 };
@@ -119,6 +130,7 @@ struct StructTypeDenoter : public TypeDenoter
 struct AliasTypeDenoter : public TypeDenoter
 {
     Types Type() const override;
+    std::string ToString() const override;
 
     TypeDenoter* Get() override;
 

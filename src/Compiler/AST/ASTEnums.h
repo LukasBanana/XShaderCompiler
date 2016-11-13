@@ -91,6 +91,8 @@ enum class CtrlTransfer
 // Base data type enumeration.
 enum class DataType
 {
+    Undefined,
+
     // Scalar types
     Bool,
     Int,
@@ -201,7 +203,7 @@ bool IsMatrixType(const DataType t);
 
 /*
 Returns the dimension of the specified data type interpreted as vector type.
-Values range from 1 to 4, but 0 for matrix types.
+Values range from 1 to 4, but 0 for matrix types).
 */
 int VectorTypeDim(const DataType t);
 

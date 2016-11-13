@@ -329,6 +329,9 @@ std::pair<int, int> MatrixTypeDim(const DataType t)
         case DataType::Float4x4:
         case DataType::Double4x4:
             return { 4, 4 };
+
+        default:
+            break;
     }
     return { 0, 0 };
 }

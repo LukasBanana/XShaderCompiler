@@ -6,6 +6,7 @@
  */
 
 #include "TypeDenoter.h"
+#include "AST.h"
 
 
 namespace Xsc
@@ -82,6 +83,11 @@ TypeDenoter::Types VoidTypeDenoter::Type() const
     return Types::Void;
 }
 
+std::string VoidTypeDenoter::ToString() const
+{
+    return "void";
+}
+
 bool VoidTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
     /* Void can not be casted to anything */
@@ -94,6 +100,17 @@ bool VoidTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 TypeDenoter::Types BaseTypeDenoter::Type() const
 {
     return Types::Base;
+}
+
+std::string BaseTypeDenoter::ToString() const
+{
+    if (IsScalar())
+        return "scalar";
+    if (IsVector())
+        return "vector";
+    if (IsMatrix())
+        return "matrix";
+    return "<undefined>";
 }
 
 bool BaseTypeDenoter::IsScalar() const
@@ -141,12 +158,22 @@ TypeDenoter::Types BufferTypeDenoter::Type() const
     return Types::Buffer;
 }
 
+std::string BufferTypeDenoter::ToString() const
+{
+    return "buffer";
+}
+
 
 /* ----- TextureTypeDenoter ----- */
 
 TypeDenoter::Types TextureTypeDenoter::Type() const
 {
     return Types::Texture;
+}
+
+std::string TextureTypeDenoter::ToString() const
+{
+    return "texture";
 }
 
 
@@ -157,12 +184,22 @@ TypeDenoter::Types SamplerTypeDenoter::Type() const
     return Types::Sampler;
 }
 
+std::string SamplerTypeDenoter::ToString() const
+{
+    return "sampler";
+}
+
 
 /* ----- StructTypeDenoter ----- */
 
 TypeDenoter::Types StructTypeDenoter::Type() const
 {
     return Types::Struct;
+}
+
+std::string StructTypeDenoter::ToString() const
+{
+    return "struct " + (structDeclRef ? structDeclRef->name : std::string("<anonymous>"));
 }
 
 
@@ -176,6 +213,11 @@ TypeDenoter::Types AliasTypeDenoter::Type() const
 TypeDenoter* AliasTypeDenoter::Get()
 {
     return (aliasTypeRef ? aliasTypeRef : this);
+}
+
+std::string AliasTypeDenoter::ToString() const
+{
+    return (aliasTypeRef ? aliasTypeRef->ToString() : "undefined");
 }
 
 
