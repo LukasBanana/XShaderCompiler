@@ -17,7 +17,7 @@ Status
 
 ##### TODO List: #####
 * Common HLSL IO semantics to GLSL transformation.
-* 'typedef' statement.
+* 'typedef' statement (*in progress*).
 * Geometry and Tessellation semantics.
 * 'interface' and 'class' declarations.
 * Cast expressions to a struct type is currently not supported (e.g. "(VertexOut)0").
