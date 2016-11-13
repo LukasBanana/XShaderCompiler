@@ -444,6 +444,35 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl()
     return ast;
 }
 
+AliasDeclPtr HLSLParser::ParseAliasDecl(TypeDenoterPtr typeDenoter)
+{
+    auto ast = Make<AliasDecl>();
+
+    /* Parse alias identifier */
+    auto identTkn = Tkn();
+    ast->ident = ParseIdent();
+
+    /* Parse optional array dimensions */
+    if (Is(Tokens::LParen))
+    {
+        /* Make array type denoter and use input as base type denoter */
+        auto arrayTypeDenoter = std::make_shared<ArrayTypeDenoter>();
+        {
+            arrayTypeDenoter->arrayDims         = ParseArrayDimensionList();
+            arrayTypeDenoter->baseTypeDenoter   = typeDenoter;
+        }
+        typeDenoter = arrayTypeDenoter;
+    }
+
+    /* Store final type denoter in alias declaration */
+    ast->typeDenoter = typeDenoter;
+
+    /* Register identifier in symbol table (used to detect special cast expressions) */
+    RegisterSymbol(ast->ident, ast.get(), identTkn.get());
+
+    return ast;
+}
+
 /* --- Declaration statements --- */
 
 StmntPtr HLSLParser::ParseGlobalStmnt()
@@ -628,6 +657,8 @@ AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
     Accept(Tokens::Typedef);
 
     /* Parse struct declaration or type denoter */
+    TypeDenoterPtr typeDenoter;
+
     if (Is(Tokens::Struct))
     {
         AcceptIt();
@@ -638,7 +669,7 @@ AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
             ast->structDecl = ParseStructure(false);
 
             /* Make struct type denoter with reference to the structure of this alias decl */
-            ast->typeDenoter = std::make_shared<StructTypeDenoter>(ast->structDecl.get());
+            typeDenoter = std::make_shared<StructTypeDenoter>(ast->structDecl.get());
         }
         else
         {
@@ -651,26 +682,22 @@ AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
                 ast->structDecl = ParseStructure(false, structIdentTkn);
 
                 /* Make struct type denoter with reference to the structure of this alias decl */
-                ast->typeDenoter = std::make_shared<StructTypeDenoter>(ast->structDecl.get());
+                typeDenoter = std::make_shared<StructTypeDenoter>(ast->structDecl.get());
             }
             else
             {
                 /* Make struct type denoter without struct decl */
-                ast->typeDenoter = std::make_shared<StructTypeDenoter>(structIdentTkn->Spell());
+                typeDenoter = std::make_shared<StructTypeDenoter>(structIdentTkn->Spell());
             }
         }
     }
     else
-        ast->typeDenoter = ParseTypeDenoter();
+        typeDenoter = ParseTypeDenoter();
 
-    /* Parse type alias identifier */
-    auto identTkn = Tkn();
-    ast->ident = ParseIdent();
+    /* Parse type aliases */
+    ast->aliasDecls = ParseAliasDeclList(typeDenoter);
 
     Semi();
-
-    /* Register identifier in symbol table (used to detect special cast expressions) */
-    RegisterSymbol(ast->ident, ast.get(), identTkn.get());
 
     return ast;
 }
@@ -1426,6 +1453,21 @@ std::vector<SamplerValuePtr> HLSLParser::ParseSamplerValueList()
     return samplerValues;
 }
 
+std::vector<AliasDeclPtr> HLSLParser::ParseAliasDeclList(TypeDenoterPtr typeDenoter)
+{
+    std::vector<AliasDeclPtr> aliasDecls;
+
+    aliasDecls.push_back(ParseAliasDecl(typeDenoter));
+
+    while (Is(Tokens::Comma))
+    {
+        AcceptIt();
+        aliasDecls.push_back(ParseAliasDecl(typeDenoter));
+    }
+
+    return aliasDecls;
+}
+
 /* --- Others --- */
 
 std::string HLSLParser::ParseIdent()
@@ -1545,8 +1587,31 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool allowVoidType)
             return ParseVoidTypeDenoter();
         else
             Error("'void' type not allowed in this context");
+        return nullptr;
     }
-    else if (Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType))
+    else
+    {
+        /* Parse primary type denoter and optional array dimensions */
+        auto typeDenoter = ParseTypeDenoterPrimary();
+
+        if (Is(Tokens::LParen))
+        {
+            /* Make array type denoter */
+            auto arrayTypeDenoter = std::make_shared<ArrayTypeDenoter>();
+            {
+                arrayTypeDenoter->arrayDims         = ParseArrayDimensionList();
+                arrayTypeDenoter->baseTypeDenoter   = typeDenoter;
+            }
+            typeDenoter = arrayTypeDenoter;
+        }
+
+        return typeDenoter;
+    }
+}
+
+TypeDenoterPtr HLSLParser::ParseTypeDenoterPrimary()
+{
+    if (Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType))
         return ParseBaseTypeDenoter();
     else if (Is(Tokens::Vector))
         return ParseBaseVectorTypeDenoter();
@@ -1562,7 +1627,6 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool allowVoidType)
         return ParseSamplerTypeDenoter();
     else
         ErrorUnexpected("expected type denoter", GetScanner().ActiveToken().get(), true);
-
     return nullptr;
 }
 

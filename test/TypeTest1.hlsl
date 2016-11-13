@@ -22,6 +22,7 @@ typedef matrix <float, 4, 4> MATRIX;
 //typedef texture TEXTURE;
 //typedef pixelshader PIXELSHADER;
 //typedef vertexshader VERTEXSHADER;
+typedef matrix <float, 4, 4> MATRIX;
 
 /* --- <typedef struct tests> --- */
 
@@ -29,7 +30,7 @@ typedef struct S1
 {
 	float x, y;
 }
-S1_t1, S1_t1_a, S1_t1_b;
+S1_t1, S1_t1_a[5], S1_t1_b[1][2][3];
 
 typedef struct
 {
@@ -43,13 +44,14 @@ typedef S1 S1_t4;
 
 /* --- </typedef struct tests> --- */
 
-void f2(Texture2D t)
+void f2(Texture2D t[5])
 {
 	return 0;
 }
 
 float4 VS() : SV_Position
 {
+	f2(0);
 	DWORD x = 0;
 	return float4(v0 + f1(), 1);
 }

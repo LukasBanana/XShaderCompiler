@@ -78,6 +78,7 @@ struct AST
         VarDecl,
         TextureDecl,
         SamplerDecl,
+        AliasDecl,
 
         FunctionDecl, // Do not use "Stmnt" postfix here (--> FunctionDecl can only appear in global scope)
         BufferDeclStmnt,
@@ -334,6 +335,15 @@ struct SamplerDecl : public AST
     std::vector<SamplerValuePtr>    samplerValues;  // State values for a sampler decl-ident.
 };
 
+// Type alias declaration.
+struct AliasDecl : AST
+{
+    AST_INTERFACE(AliasDecl);
+
+    std::string     ident;          // Type identifier
+    TypeDenoterPtr  typeDenoter;    // Type denoter
+};
+
 /* --- Declaration statements --- */
 
 // Function declaration.
@@ -436,9 +446,8 @@ struct AliasDeclStmnt : public Stmnt
 {
     AST_INTERFACE(AliasDeclStmnt);
 
-    std::string     ident;          // Type identifier
-    StructurePtr    structDecl;     // Optional structure declaration
-    TypeDenoterPtr  typeDenoter;    // Type denoter
+    std::vector<AliasDeclPtr>   aliasDecls; // Type aliases
+    StructurePtr                structDecl; // Optional structure declaration
 };
 
 /* --- Statements --- */

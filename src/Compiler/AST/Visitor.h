@@ -41,6 +41,7 @@ DECL_PTR( VarIdent          );
 DECL_PTR( VarDecl           );
 DECL_PTR( TextureDecl       );
 DECL_PTR( SamplerDecl       );
+DECL_PTR( AliasDecl         );
 
 DECL_PTR( FunctionDecl      );
 DECL_PTR( BufferDeclStmnt   );
@@ -108,6 +109,7 @@ class Visitor
         VISITOR_VISIT_PROC( VarDecl           );
         VISITOR_VISIT_PROC( TextureDecl       );
         VISITOR_VISIT_PROC( SamplerDecl       );
+        VISITOR_VISIT_PROC( AliasDecl         );
 
         VISITOR_VISIT_PROC( FunctionDecl      );
         VISITOR_VISIT_PROC( BufferDeclStmnt   );

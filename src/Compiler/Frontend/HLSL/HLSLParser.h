@@ -100,6 +100,7 @@ class HLSLParser : public Parser
         VarDeclPtr                      ParseVarDecl();
         TextureDeclPtr                  ParseTextureDecl();
         SamplerDeclPtr                  ParseSamplerDecl();
+        AliasDeclPtr                    ParseAliasDecl(TypeDenoterPtr typeDenoter);
 
         StmntPtr                        ParseGlobalStmnt();
         FunctionDeclPtr                 ParseFunctionDecl();
@@ -150,6 +151,7 @@ class HLSLParser : public Parser
         std::vector<TextureDeclPtr>     ParseTextureDeclList();
         std::vector<SamplerDeclPtr>     ParseSamplerDeclList();
         std::vector<SamplerValuePtr>    ParseSamplerValueList();
+        std::vector<AliasDeclPtr>       ParseAliasDeclList(TypeDenoterPtr typeDenoter);
 
         std::string                     ParseIdent();
         std::string                     ParseRegister(bool parseColon = true);
@@ -160,6 +162,7 @@ class HLSLParser : public Parser
         std::string                     ParseMatrixTypeDenoter_TEMP();
 
         TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true);
+        TypeDenoterPtr                  ParseTypeDenoterPrimary();
         VoidTypeDenoterPtr              ParseVoidTypeDenoter();
         BaseTypeDenoterPtr              ParseBaseTypeDenoter();
         BaseTypeDenoterPtr              ParseBaseVectorTypeDenoter();

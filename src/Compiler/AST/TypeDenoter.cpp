@@ -65,6 +65,11 @@ bool TypeDenoter::IsStruct() const
     return (Type() == Types::Struct);
 }
 
+bool TypeDenoter::IsArray() const
+{
+    return (Type() == Types::Array);
+}
+
 bool TypeDenoter::IsCompatibleWith(const TypeDenoter& rhs) const
 {
     return (Type() == rhs.Type());
@@ -229,6 +234,29 @@ TypeDenoter* AliasTypeDenoter::Get()
 std::string AliasTypeDenoter::ToString() const
 {
     return (aliasTypeRef ? aliasTypeRef->ToString() : "undefined");
+}
+
+
+/* ----- ArrayTypeDenoter ----- */
+
+TypeDenoter::Types ArrayTypeDenoter::Type() const
+{
+    return Types::Array;
+}
+
+std::string ArrayTypeDenoter::ToString() const
+{
+    std::string typeName;
+    
+    if (baseTypeDenoter)
+        typeName = baseTypeDenoter->ToString();
+    else
+        typeName = "<undefined>";
+
+    for (std::size_t i = 0; i < arrayDims.size(); ++i)
+        typeName += "[]";
+
+    return typeName;
 }
 
 

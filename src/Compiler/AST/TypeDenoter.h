@@ -31,6 +31,7 @@ struct TypeDenoter
         Sampler,
         Struct,
         Alias,
+        Array,
     };
 
     virtual ~TypeDenoter();
@@ -53,6 +54,7 @@ struct TypeDenoter
     bool IsSampler() const;
     bool IsTexture() const;
     bool IsStruct() const;
+    bool IsArray() const;
 
     // Returns true if this type denoter is compatible with the specified type denoter (special cases for void and base types).
     virtual bool IsCompatibleWith(const TypeDenoter& rhs) const;
@@ -155,6 +157,18 @@ struct AliasTypeDenoter : public TypeDenoter
 };
 
 using AliasTypeDenoterPtr = std::shared_ptr<AliasTypeDenoter>;
+
+// Array type denoter.
+struct ArrayTypeDenoter : public TypeDenoter
+{
+    Types Type() const override;
+    std::string ToString() const override;
+
+    TypeDenoterPtr          baseTypeDenoter;
+    std::vector<ExprPtr>    arrayDims;
+};
+
+using ArrayTypeDenoterPtr = std::shared_ptr<ArrayTypeDenoter>;
 
 
 

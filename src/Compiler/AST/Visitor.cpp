@@ -95,6 +95,11 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
     Visit(ast->samplerValues);
 }
 
+IMPLEMENT_VISIT_PROC(AliasDecl)
+{
+    // do nothing
+}
+
 /* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
