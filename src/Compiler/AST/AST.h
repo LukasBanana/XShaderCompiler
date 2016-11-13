@@ -200,6 +200,7 @@ struct FunctionCall : public AST
     std::vector<ExprPtr>    arguments;
 };
 
+//TODO --> maybe rename to "StructDecl" (like in the other declaration AST nodes).
 // Structure object.
 struct Structure : public AST
 {
@@ -358,6 +359,7 @@ struct FunctionDecl : public Stmnt
     std::vector<FunctionDecl*>      forwardDeclsRef;    // List of forward declarations to this function for the DAST.
 };
 
+//TODO --> maybe separate this structure into "BufferDeclStmnt" and "BufferDecl" (like in the other declaration AST nodes)
 // Uniform buffer (cbuffer, tbuffer) declaration.
 struct BufferDeclStmnt : public Stmnt
 {
