@@ -508,46 +508,53 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
 
     std::vector<Presetting> presettings;
 
+    static const char commentChar = '#';
+
     while (!file.eof())
     {
         /* Get presetting title */
         Presetting preset;
         std::getline(file, preset.title);
 
-        if (!preset.title.empty())
+        if (!preset.title.empty() && preset.title.front() != commentChar)
         {
             /* Get presetting arguments */
             std::string line;
             std::getline(file, line);
 
-            std::size_t start = 0, end = 0;
-            while (start < line.size())
+            if (!line.empty() && line.front() != commentChar)
             {
-                start = line.find_first_not_of(' ', end);
-                if (start >= line.size())
-                    break;
-
-                if (line[start] == '\"')
+                /* Parse command line arguments for current presetting */
+                std::size_t start = 0, end = 0;
+                while (start < line.size())
                 {
-                    end = line.find('\"', start + 1);
-                    if (end != std::string::npos)
+                    start = line.find_first_not_of(' ', end);
+                    if (start >= line.size())
+                        break;
+
+                    if (line[start] == '\"')
                     {
-                        preset.args.push_back(line.substr(start + 1, end - start - 1));
-                        ++end;
+                        end = line.find('\"', start + 1);
+                        if (end != std::string::npos)
+                        {
+                            preset.args.push_back(line.substr(start + 1, end - start - 1));
+                            ++end;
+                        }
+                    }
+                    else
+                    {
+                        end = line.find(' ', start + 1);
+                        if (end != std::string::npos)
+                            preset.args.push_back(line.substr(start, end - start));
+                        else
+                            preset.args.push_back(line.substr(start));
                     }
                 }
-                else
-                {
-                    end = line.find(' ', start + 1);
-                    if (end != std::string::npos)
-                        preset.args.push_back(line.substr(start, end - start));
-                    else
-                        preset.args.push_back(line.substr(start));
-                }
-            }
 
-            if (!preset.args.empty())
-                presettings.emplace_back(std::move(preset));
+                /* Add presetting to the selection */
+                if (!preset.args.empty())
+                    presettings.emplace_back(std::move(preset));
+            }
         }
     }
 
