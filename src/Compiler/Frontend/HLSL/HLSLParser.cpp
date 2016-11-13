@@ -152,14 +152,14 @@ StructurePtr HLSLParser::ParseStructure()
     if (Is(Tokens::Ident))
     {
         /* Parse structure name */
-        ast->name = Accept(Tokens::Ident)->Spell();
+        ast->name = ParseIdent();
 
         /* Parse optional inheritance (not documented in HLSL but supported; only single inheritance) */
         if (Is(Tokens::Colon))
         {
             AcceptIt();
 
-            auto baseStructName = Accept(Tokens::Ident)->Spell();
+            auto baseStructName = ParseIdent();
             if (baseStructName == ast->name)
                 Error("recursive inheritance is not allowed");
 
@@ -238,7 +238,7 @@ SamplerValuePtr HLSLParser::ParseSamplerValue()
     auto ast = Make<SamplerValue>();
 
     /* Parse state name */
-    ast->name = Accept(Tokens::Ident)->Spell();
+    ast->name = ParseIdent();
 
     /* Parse value expression */
     Accept(Tokens::AssignOp, "=");
@@ -257,7 +257,7 @@ FunctionCallPtr HLSLParser::ParseAttribute()
     Accept(Tokens::LParen);
 
     ast->name = Make<VarIdent>();
-    ast->name->ident = Accept(Tokens::Ident)->Spell();
+    ast->name->ident = ParseIdent();
 
     if (Is(Tokens::LBracket))
     {
@@ -294,12 +294,12 @@ PackOffsetPtr HLSLParser::ParsePackOffset(bool parseColon)
     Accept(Tokens::PackOffset);
     Accept(Tokens::LBracket);
 
-    ast->registerName = Accept(Tokens::Ident)->Spell();
+    ast->registerName = ParseIdent();
 
     if (Is(Tokens::Dot))
     {
         AcceptIt();
-        ast->vectorComponent = Accept(Tokens::Ident)->Spell();
+        ast->vectorComponent = ParseIdent();
     }
 
     Accept(Tokens::RBracket);
@@ -332,7 +332,7 @@ VarSemanticPtr HLSLParser::ParseVarSemantic()
     else if (Is(Tokens::PackOffset))
         ast->packOffset = ParsePackOffset(false);
     else
-        ast->semantic = Accept(Tokens::Ident)->Spell();
+        ast->semantic = ParseIdent();
 
     return ast;
 }
@@ -342,7 +342,7 @@ VarIdentPtr HLSLParser::ParseVarIdent()
     auto ast = Make<VarIdent>();
 
     /* Parse variable single identifier */
-    ast->ident = Accept(Tokens::Ident)->Spell();
+    ast->ident = ParseIdent();
     ast->arrayIndices = ParseArrayDimensionList();
     
     if (Is(Tokens::Dot))
@@ -392,7 +392,7 @@ VarDeclPtr HLSLParser::ParseVarDecl()
     auto ast = Make<VarDecl>();
 
     /* Parse variable declaration */
-    ast->name = Accept(Tokens::Ident)->Spell();
+    ast->name = ParseIdent();
     ast->arrayDims = ParseArrayDimensionList();
     ast->semantics = ParseVarSemanticList();
 
@@ -407,7 +407,7 @@ TextureDeclPtr HLSLParser::ParseTextureDecl()
     auto ast = Make<TextureDecl>();
 
     /* Parse identifier and array dimension list (array dimension can be optional) */
-    ast->ident          = Accept(Tokens::Ident)->Spell();
+    ast->ident          = ParseIdent();
     ast->arrayIndices   = ParseArrayDimensionList();
 
     /* Parse register name (not allowed for local variables!) */
@@ -422,7 +422,7 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl()
     auto ast = Make<SamplerDecl>();
 
     /* Parse identifier and array dimension list (array dimension can be optional) */
-    ast->ident          = Accept(Tokens::Ident)->Spell();
+    ast->ident          = ParseIdent();
     ast->arrayIndices   = ParseArrayDimensionList();
 
     /* Parse register name (not allowed for local variables!) */
@@ -454,6 +454,8 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
             return ParseBufferDeclStmnt();
         case Tokens::Struct:
             return ParseStructDeclStmnt();
+        case Tokens::Typedef:
+            return ParseAliasDeclStmnt();
         default:
             return ParseFunctionDecl();
     }
@@ -464,9 +466,9 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl()
     auto ast = Make<FunctionDecl>();
 
     /* Parse function header */
-    ast->attribs = ParseAttributeList();
+    ast->attribs    = ParseAttributeList();
     ast->returnType = ParseVarType(true);
-    ast->name = Accept(Tokens::Ident)->Spell();
+    ast->name       = ParseIdent();
     ast->parameters = ParseParameterList();
     
     if (Is(Tokens::Colon))
@@ -495,7 +497,7 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
 
     /* Parse buffer header */
     ast->bufferType = Accept(Tokens::UniformBuffer)->Spell();
-    ast->name = Accept(Tokens::Ident)->Spell();
+    ast->name       = ParseIdent();
 
     /* Parse optional register */
     if (Is(Tokens::Colon))
@@ -613,6 +615,25 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
     return ast;
 }
 
+// 'typedef' type_denoter IDENT;
+AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
+{
+    auto ast = Make<AliasDeclStmnt>();
+
+    /* Parse type alias declaration */
+    Accept(Tokens::Typedef);
+
+    ast->typeDenoter    = ParseTypeDenoter();
+    ast->ident          = ParseIdent();
+
+    Semi();
+
+    /* Register identifier in symbol table (used to detect special cast expressions) */
+    typeSymTable_.Register(ast->ident, ast.get());
+
+    return ast;
+}
+
 /* --- Statements --- */
 
 StmntPtr HLSLParser::ParseStmnt()
@@ -647,6 +668,8 @@ StmntPtr HLSLParser::ParseStmnt()
             return ParseCtrlTransferStmnt();
         case Tokens::Struct:
             return ParseStructDeclOrVarDeclStmnt();
+        case Tokens::Typedef:
+            return ParseAliasDeclStmnt();
         case Tokens::Sampler:
             return ParseSamplerDeclStmnt();
         case Tokens::TypeModifier:
@@ -1352,6 +1375,11 @@ std::vector<SamplerValuePtr> HLSLParser::ParseSamplerValueList()
 
 /* --- Others --- */
 
+std::string HLSLParser::ParseIdent()
+{
+    return Accept(Tokens::Ident)->Spell();
+}
+
 std::string HLSLParser::ParseRegister(bool parseColon)
 {
     if (localScope_)
@@ -1364,7 +1392,7 @@ std::string HLSLParser::ParseRegister(bool parseColon)
     Accept(Tokens::Register);
     Accept(Tokens::LBracket);
 
-    auto registerName = Accept(Tokens::Ident)->Spell();
+    auto registerName = ParseIdent();
 
     Accept(Tokens::RBracket);
 
@@ -1374,7 +1402,7 @@ std::string HLSLParser::ParseRegister(bool parseColon)
 std::string HLSLParser::ParseSemantic()
 {
     Accept(Tokens::Colon);
-    return Accept(Tokens::Ident)->Spell();
+    return ParseIdent();
 }
 
 std::string HLSLParser::ParseTypeDenoter()

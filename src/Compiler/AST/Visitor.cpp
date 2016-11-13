@@ -131,6 +131,11 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     Visit(ast->varDecls);
 }
 
+IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
+{
+    // do nothing
+}
+
 /* --- Statements --- */
 
 IMPLEMENT_VISIT_PROC(NullStmnt)

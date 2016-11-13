@@ -105,6 +105,7 @@ class HLSLParser : public Parser
         SamplerDeclStmntPtr             ParseSamplerDeclStmnt();
         StructDeclStmntPtr              ParseStructDeclStmnt();
         VarDeclStmntPtr                 ParseVarDeclStmnt();
+        AliasDeclStmntPtr               ParseAliasDeclStmnt();
 
         StmntPtr                        ParseStmnt();
         NullStmntPtr                    ParseNullStmnt();
@@ -147,6 +148,7 @@ class HLSLParser : public Parser
         std::vector<SamplerDeclPtr>     ParseSamplerDeclList();
         std::vector<SamplerValuePtr>    ParseSamplerValueList();
 
+        std::string                     ParseIdent();
         std::string                     ParseRegister(bool parseColon = true);
         std::string                     ParseSemantic();
         std::string                     ParseTypeDenoter();

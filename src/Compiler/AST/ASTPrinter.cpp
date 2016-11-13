@@ -182,6 +182,18 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
     DEFAULT_VISITOR(StructDeclStmnt);
 }
 
+IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+{
+    Print(ast, "VarDeclStmnt");
+    DEFAULT_VISITOR(VarDeclStmnt);
+}
+
+IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
+{
+    Print(ast, "AliasDeclStmnt");
+    DEFAULT_VISITOR(AliasDeclStmnt);
+}
+
 /* --- Statements --- */
 
 IMPLEMENT_VISIT_PROC(NullStmnt)
@@ -230,12 +242,6 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
 {
     Print(ast, "SwitchStmnt");
     DEFAULT_VISITOR(SwitchStmnt);
-}
-
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
-{
-    Print(ast, "VarDeclStmnt");
-    DEFAULT_VISITOR(VarDeclStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(AssignStmnt)

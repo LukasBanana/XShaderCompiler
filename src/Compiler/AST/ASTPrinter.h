@@ -54,6 +54,8 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( TextureDeclStmnt  );
         DECL_VISIT_PROC( SamplerDeclStmnt  );
         DECL_VISIT_PROC( StructDeclStmnt   );
+        DECL_VISIT_PROC( VarDeclStmnt      );
+        DECL_VISIT_PROC( AliasDeclStmnt    );
 
         DECL_VISIT_PROC( NullStmnt         );
         DECL_VISIT_PROC( CodeBlockStmnt    );
@@ -63,7 +65,6 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( IfStmnt           );
         DECL_VISIT_PROC( ElseStmnt         );
         DECL_VISIT_PROC( SwitchStmnt       );
-        DECL_VISIT_PROC( VarDeclStmnt      );
         DECL_VISIT_PROC( AssignStmnt       );
         DECL_VISIT_PROC( ExprStmnt         );
         DECL_VISIT_PROC( FunctionCallStmnt );

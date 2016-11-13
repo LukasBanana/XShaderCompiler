@@ -18,13 +18,14 @@ typedef int DWORD;
 typedef float FLOAT; 
 typedef vector <float, 4> VECTOR;
 typedef matrix <float, 4, 4> MATRIX;
-typedef string STRING;
-typedef texture TEXTURE;
-typedef pixelshader PIXELSHADER;
-typedef vertexshader VERTEXSHADER;
+//typedef string STRING;
+//typedef texture TEXTURE;
+//typedef pixelshader PIXELSHADER;
+//typedef vertexshader VERTEXSHADER;
 
 float4 VS() : SV_Position
 {
+	DWORD x = 0;
 	return float4(v0 + f1(), 1);
 }
 

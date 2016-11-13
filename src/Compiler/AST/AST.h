@@ -84,6 +84,7 @@ struct AST
         SamplerDeclStmnt,
         StructDeclStmnt,
         VarDeclStmnt,
+        AliasDeclStmnt, // Type alias (typedef)
 
         NullStmnt,
         CodeBlockStmnt,
@@ -424,6 +425,15 @@ struct VarDeclStmnt : public Stmnt
     std::vector<std::string>    typeModifiers;      // const, row_major, column_major
     VarTypePtr                  varType;
     std::vector<VarDeclPtr>     varDecls;
+};
+
+// Type alias declaration statement.
+struct AliasDeclStmnt : public Stmnt
+{
+    AST_INTERFACE(AliasDeclStmnt);
+
+    std::string ident;          // Type identifier
+    std::string typeDenoter;    // Type denoter (TODO: replace this by "TypeDenoterPtr")
 };
 
 /* --- Statements --- */
