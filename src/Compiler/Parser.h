@@ -51,15 +51,15 @@ class Parser
 
         /* ----- Report Handling ----- */
 
-        void Error(const std::string& msg, Token* tkn, const HLSLErr errorCode = HLSLErr::Unknown, bool breakWithExpection = true);
+        void Error(const std::string& msg, const Token* tkn, const HLSLErr errorCode = HLSLErr::Unknown, bool breakWithExpection = true);
         void Error(const std::string& msg, bool prevToken = true, const HLSLErr errorCode = HLSLErr::Unknown, bool breakWithExpection = true);
 
-        void ErrorUnexpected(const std::string& hint = "", Token* tkn = nullptr, bool breakWithExpection = false);
-        void ErrorUnexpected(const Tokens type, Token* tkn = nullptr, bool breakWithExpection = false);
+        void ErrorUnexpected(const std::string& hint = "", const Token* tkn = nullptr, bool breakWithExpection = false);
+        void ErrorUnexpected(const Tokens type, const Token* tkn = nullptr, bool breakWithExpection = false);
 
         void ErrorInternal(const std::string& msg, const std::string& procName);
 
-        void Warning(const std::string& msg, Token* tkn);
+        void Warning(const std::string& msg, const Token* tkn);
         void Warning(const std::string& msg, bool prevToken = true);
 
         /* ----- Scanner ----- */
@@ -179,7 +179,7 @@ class Parser
 
         /* === Functions === */
 
-        void IncUnexpectedTokenCounter(Token* tkn);
+        void IncUnexpectedTokenCounter();
 
         void AssertTokenType(const Tokens type);
         void AssertTokenSpell(const std::string& spell);

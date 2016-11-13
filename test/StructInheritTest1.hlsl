@@ -1,4 +1,6 @@
 
+#if 0
+
 struct S1 {
 	float x;
 };
@@ -26,3 +28,9 @@ float4 PS() : SV_Target
 	S2 s = (S2)4;
 	return float4(s.x, s.y, 0, s.w);
 }
+
+#else
+
+struct S : S {};
+
+#endif

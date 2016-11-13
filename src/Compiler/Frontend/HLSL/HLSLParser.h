@@ -76,6 +76,9 @@ class HLSLParser : public Parser
         // Returns true if the specified expression is a valid left-hand-side of a cast expression.
         bool IsLhsOfCastExpr(const ExprPtr& expr) const;
 
+        // Registers the specified AST node in the symbol table.
+        void RegisterSymbol(const std::string& ident, AST* ast, Token* tkn = nullptr);
+
         /* === Parse functions === */
 
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);

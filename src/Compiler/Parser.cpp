@@ -31,12 +31,12 @@ Parser::Parser(Log* log) :
 
 /* ----- Report Handling ----- */
 
-static SourceArea GetTokenArea(Token* tkn)
+static SourceArea GetTokenArea(const Token* tkn)
 {
     return (tkn != nullptr ? tkn->Area() : SourceArea::ignore);
 }
 
-void Parser::Error(const std::string& msg, Token* tkn, const HLSLErr errorCode, bool breakWithExpection)
+void Parser::Error(const std::string& msg, const Token* tkn, const HLSLErr errorCode, bool breakWithExpection)
 {
     /* Always break with an exception when the end of stream has been reached */
     if (tkn->Type() == Tokens::EndOfStream)
@@ -53,13 +53,13 @@ void Parser::Error(const std::string& msg, bool prevToken, const HLSLErr errorCo
     Error(msg, tkn, errorCode, breakWithExpection);
 }
 
-void Parser::ErrorUnexpected(const std::string& hint, Token* tkn, bool breakWithExpection)
+void Parser::ErrorUnexpected(const std::string& hint, const Token* tkn, bool breakWithExpection)
 {
     if (!tkn)
         tkn = tkn_.get();
 
     /* Increment unexpected token counter */
-    IncUnexpectedTokenCounter(tkn);
+    IncUnexpectedTokenCounter();
 
     /* Construct error message */
     std::string msg = "unexpected token: " + Token::TypeToString(tkn->Type());
@@ -74,7 +74,7 @@ void Parser::ErrorUnexpected(const std::string& hint, Token* tkn, bool breakWith
     AcceptIt();
 }
 
-void Parser::ErrorUnexpected(const Tokens type, Token* tkn, bool breakWithExpection)
+void Parser::ErrorUnexpected(const Tokens type, const Token* tkn, bool breakWithExpection)
 {
     auto typeName = Token::TypeToString(type);
     if (typeName.empty())
@@ -88,7 +88,7 @@ void Parser::ErrorInternal(const std::string& msg, const std::string& procName)
     reportHandler_.Error(true, msg + " (in function: " + procName + ")");
 }
 
-void Parser::Warning(const std::string& msg, Token* tkn)
+void Parser::Warning(const std::string& msg, const Token* tkn)
 {
     reportHandler_.Warning(false, msg, GetScanner().Source(), GetTokenArea(tkn));
 }
@@ -382,7 +382,7 @@ ExprPtr Parser::ParseValueExpr()
  * ======= Private: =======
  */
 
-void Parser::IncUnexpectedTokenCounter(Token* tkn)
+void Parser::IncUnexpectedTokenCounter()
 {
     /* Increment counter */
     ++unexpectedTokenCounter_;
@@ -398,7 +398,7 @@ void Parser::AssertTokenType(const Tokens type)
     while (tkn_->Type() != type)
     {
         /* Increment unexpected token counter */
-        IncUnexpectedTokenCounter(tkn_.get());
+        IncUnexpectedTokenCounter();
 
         /* Submit error */
         ErrorUnexpected(type);
@@ -414,7 +414,7 @@ void Parser::AssertTokenSpell(const std::string& spell)
     while (tkn_->Spell() != spell)
     {
         /* Increment unexpected token counter */
-        IncUnexpectedTokenCounter(tkn_.get());
+        IncUnexpectedTokenCounter();
 
         /* Submit error */
         Error("unexpected token spelling '" + tkn_->Spell() + "' (expected '" + spell + "')", true, HLSLErr::Unknown, false);

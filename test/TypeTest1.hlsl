@@ -23,6 +23,12 @@ typedef matrix <float, 4, 4> MATRIX;
 //typedef pixelshader PIXELSHADER;
 //typedef vertexshader VERTEXSHADER;
 
+/*typedef struct S1
+{
+	float x, y;
+}
+S1_t;*/
+
 float4 VS() : SV_Position
 {
 	DWORD x = 0;

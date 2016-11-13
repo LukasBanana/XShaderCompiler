@@ -144,6 +144,7 @@ FunctionCallPtr HLSLParser::ParseFunctionCall(VarIdentPtr varIdent)
 
 StructurePtr HLSLParser::ParseStructure()
 {
+    auto tkn = Tkn();
     auto ast = Make<Structure>();
 
     /* Parse structure declaration */
@@ -152,6 +153,7 @@ StructurePtr HLSLParser::ParseStructure()
     if (Is(Tokens::Ident))
     {
         /* Parse structure name */
+        tkn = Tkn();
         ast->name = ParseIdent();
 
         /* Parse optional inheritance (not documented in HLSL but supported; only single inheritance) */
@@ -184,7 +186,7 @@ StructurePtr HLSLParser::ParseStructure()
         ast->members.insert(ast->members.end(), members.begin(), members.end());
 
         /* Register identifier in symbol table (used to detect special cast expressions) */
-        typeSymTable_.Register(ast->name, ast.get());
+        RegisterSymbol(ast->name, ast.get(), tkn.get());
     }
     GetReportHandler().PopContextDesc();
 
@@ -623,13 +625,16 @@ AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
     /* Parse type alias declaration */
     Accept(Tokens::Typedef);
 
-    ast->typeDenoter    = ParseTypeDenoter();
-    ast->ident          = ParseIdent();
+    ast->typeDenoter = ParseTypeDenoter();
+
+    /* Parse type alias identifier */
+    auto identTkn = Tkn();
+    ast->ident = ParseIdent();
 
     Semi();
 
     /* Register identifier in symbol table (used to detect special cast expressions) */
-    typeSymTable_.Register(ast->ident, ast.get());
+    RegisterSymbol(ast->ident, ast.get(), identTkn.get());
 
     return ast;
 }
@@ -1079,6 +1084,18 @@ bool HLSLParser::IsLhsOfCastExpr(const ExprPtr& expr) const
     }
 
     return false;
+}
+
+void HLSLParser::RegisterSymbol(const std::string& ident, AST* ast, Token* tkn)
+{
+    try
+    {
+        typeSymTable_.Register(ident, ast);
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what(), tkn, HLSLErr::Unknown, false);
+    }
 }
 
 ExprPtr HLSLParser::ParseBracketOrCastExpr()
