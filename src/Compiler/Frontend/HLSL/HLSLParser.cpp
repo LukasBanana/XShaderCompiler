@@ -375,7 +375,7 @@ VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
     else if (Is(Tokens::Ident))
         ast->baseType = AcceptIt()->Spell();
     else if (IsDataType())
-        ast->baseType = ParseTypeDenoter_TEMP();
+        ast->baseType = AcceptIt()->Spell();
     else if (Is(Tokens::Struct))
     {
         /*
@@ -630,7 +630,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
         {
             /* Parse base variable type */
             ast->varType = Make<VarType>();
-            ast->varType->baseType = ParseTypeDenoter_TEMP();
+            ast->varType->baseType = AcceptIt()->Spell();
             break;
         }
         else
@@ -1498,84 +1498,6 @@ std::string HLSLParser::ParseSemantic()
 {
     Accept(Tokens::Colon);
     return ParseIdent();
-}
-
-std::string HLSLParser::ParseTypeDenoter_TEMP()
-{
-    switch (TknType())
-    {
-        case Tokens::Vector:
-            return ParseVectorTypeDenoter_TEMP();
-        case Tokens::Matrix:
-            return ParseMatrixTypeDenoter_TEMP();
-        case Tokens::ScalarType:
-        case Tokens::VectorType:
-        case Tokens::MatrixType:
-        case Tokens::Texture:
-        case Tokens::Sampler:
-            return AcceptIt()->Spell();
-        default:
-            ErrorUnexpected("expected type denoter", nullptr, true);
-            break;
-    }
-    return "";
-}
-
-// vector < ScalarType, '1'-'4' >;
-std::string HLSLParser::ParseVectorTypeDenoter_TEMP()
-{
-    std::string typeDenoter;
-
-    /* Parse scalar type */
-    Accept(Tokens::Vector);
-    Accept(Tokens::BinaryOp, "<");
-    
-    PushParsingState({ true });
-    {
-        typeDenoter = Accept(Tokens::ScalarType)->Spell();
-
-        /* Parse vector dimension */
-        Accept(Tokens::Comma);
-        int dim = ParseAndEvaluateVectorDimension();
-
-        /* Build final type denoter */
-        typeDenoter += std::to_string(dim);
-    }
-    PopParsingState();
-
-    Accept(Tokens::BinaryOp, ">");
-
-    return typeDenoter;
-}
-
-// matrix < ScalarType, '1'-'4', '1'-'4' >;
-std::string HLSLParser::ParseMatrixTypeDenoter_TEMP()
-{
-    std::string typeDenoter;
-
-    /* Parse scalar type */
-    Accept(Tokens::Matrix);
-    Accept(Tokens::BinaryOp, "<");
-    
-    PushParsingState({ true });
-    {
-        typeDenoter = Accept(Tokens::ScalarType)->Spell();
-
-        /* Parse matrix dimensions */
-        Accept(Tokens::Comma);
-        int dimM = ParseAndEvaluateVectorDimension();
-
-        Accept(Tokens::Comma);
-        int dimN = ParseAndEvaluateVectorDimension();
-
-        /* Build final type denoter */
-        typeDenoter += std::to_string(dimM) + 'x' + std::to_string(dimN);
-    }
-    PopParsingState();
-
-    Accept(Tokens::BinaryOp, ">");
-
-    return typeDenoter;
 }
 
 TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool allowVoidType)

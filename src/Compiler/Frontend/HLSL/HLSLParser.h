@@ -157,10 +157,6 @@ class HLSLParser : public Parser
         std::string                     ParseRegister(bool parseColon = true);
         std::string                     ParseSemantic();
 
-        std::string                     ParseTypeDenoter_TEMP();
-        std::string                     ParseVectorTypeDenoter_TEMP();
-        std::string                     ParseMatrixTypeDenoter_TEMP();
-
         TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true);
         TypeDenoterPtr                  ParseTypeDenoterPrimary();
         VoidTypeDenoterPtr              ParseVoidTypeDenoter();
