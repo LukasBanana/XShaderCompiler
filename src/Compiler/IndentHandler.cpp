@@ -17,11 +17,6 @@ IndentHandler::IndentHandler(const std::string& initialIndent) :
 {
 }
 
-IndentHandler::~IndentHandler()
-{
-    // dummy
-}
-
 void IndentHandler::SetIndent(const std::string& indent)
 {
     indent_ = indent;

@@ -24,7 +24,7 @@ class XSC_EXPORT IndentHandler
     
     public:
         
-        virtual ~IndentHandler();
+        IndentHandler(const std::string& initialIndent = std::string(2, ' '));
 
         //! Sets the next indentation string. By default two spaces.
         void SetIndent(const std::string& indent);
@@ -34,10 +34,6 @@ class XSC_EXPORT IndentHandler
 
         //! Decrements the indentation.
         void DecIndent();
-
-    protected:
-
-        IndentHandler(const std::string& initialIndent = std::string(2, ' '));
 
         //! Returns the current full indentation string.
         inline const std::string& FullIndent() const

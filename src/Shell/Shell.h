@@ -9,6 +9,7 @@
 #define XSC_SHELL_H
 
 
+#include <Xsc/IndentHandler.h>
 #include "ShellState.h"
 #include "CommandLine.h"
 #include <ostream>
@@ -39,7 +40,8 @@ class Shell
         void ShowStats(const Statistics& stats);
         void ShowStatsFor(const std::vector<Statistics::Binding>& objects, const std::string& title);
 
-        ShellState state;
+        ShellState      state_;
+        IndentHandler   indentHandler_;
 
 };
 

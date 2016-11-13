@@ -15,16 +15,6 @@ namespace Xsc
 
 
 /*
- * Log class
- */
-
-Log::Log() :
-    IndentHandler{ std::string(2, ' ') }
-{
-}
-
-
-/*
  * StdLog class
  */
 

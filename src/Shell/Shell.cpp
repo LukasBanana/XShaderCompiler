@@ -87,7 +87,7 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
                 }
 
                 /* Run command */
-                cmd->Run(cmdLine, state);
+                cmd->Run(cmdLine, state_);
             }
             else
             {
@@ -95,8 +95,8 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
                 Compile(cmdName);
 
                 /* Reset output filename and entry point */
-                state.outputFilename.clear();
-                state.inputDesc.entryPoint.clear();
+                state_.outputFilename.clear();
+                state_.inputDesc.entryPoint.clear();
             }
         }
     }
@@ -108,7 +108,7 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
 
     /* Wait for user input (if enabled) */
     #ifdef _WIN32
-    if (state.pauseApp)
+    if (state_.pauseApp)
     {
         std::cout << "press any key to continue ...";
         int i = _getch();
@@ -130,14 +130,14 @@ static std::string ExtractFilename(const std::string& filename)
 
 void Shell::Compile(const std::string& filename)
 {
-    auto outputFilename = state.outputFilename;
+    auto outputFilename = state_.outputFilename;
 
     if (outputFilename.empty())
     {
         /* Set default output filename */
         outputFilename = ExtractFilename(filename);
-        if (!state.inputDesc.entryPoint.empty())
-            outputFilename += "." + state.inputDesc.entryPoint;
+        if (!state_.inputDesc.entryPoint.empty())
+            outputFilename += "." + state_.inputDesc.entryPoint;
         outputFilename += ".glsl";
     }
 
@@ -146,7 +146,7 @@ void Shell::Compile(const std::string& filename)
         /* Add pre-defined macros at the top of the input stream */
         auto inputStream = std::make_shared<std::stringstream>();
         
-        for (const auto& macro : state.predefinedMacros)
+        for (const auto& macro : state_.predefinedMacros)
         {
             *inputStream << "#define " << macro.ident;
             if (!macro.value.empty())
@@ -155,7 +155,7 @@ void Shell::Compile(const std::string& filename)
         }
 
         /* Open input stream */
-        state.inputDesc.filename = filename;
+        state_.inputDesc.filename = filename;
 
         std::ifstream inputFile(filename);
         if (!inputFile.good())
@@ -169,33 +169,33 @@ void Shell::Compile(const std::string& filename)
             throw std::runtime_error("failed to write file: \"" + filename + "\"");
 
         /* Initialize input and output descriptors */
-        state.inputDesc.sourceCode  = inputStream;
-        state.outputDesc.sourceCode = &outputStream;
+        state_.inputDesc.sourceCode  = inputStream;
+        state_.outputDesc.sourceCode = &outputStream;
 
         /* Final setup before compilation */
         StdLog          log;
         IncludeHandler  includeHandler;
         Statistics      stats;
         
-        includeHandler.searchPaths = state.searchPaths;
-        state.inputDesc.includeHandler = &includeHandler;
+        includeHandler.searchPaths = state_.searchPaths;
+        state_.inputDesc.includeHandler = &includeHandler;
 
-        if (state.dumpStats)
-            state.outputDesc.statistics = &stats;
+        if (state_.dumpStats)
+            state_.outputDesc.statistics = &stats;
 
         /* Compile shader file */
         output << "compile " << filename << " to " << outputFilename << std::endl;
 
-        auto result = CompileShader(state.inputDesc, state.outputDesc, &log);
+        auto result = CompileShader(state_.inputDesc, state_.outputDesc, &log);
 
-        log.PrintAll(state.verbose);
+        log.PrintAll(state_.verbose);
 
         if (result)
         {
             output << "translation successful" << std::endl;
 
             /* Show output statistics (if enabled) */
-            if (state.dumpStats)
+            if (state_.dumpStats)
                 ShowStats(stats);
         }
     }
@@ -209,41 +209,47 @@ void Shell::Compile(const std::string& filename)
 void Shell::ShowStats(const Statistics& stats)
 {
     output << "statistics:" << std::endl;
-    ShowStatsFor(stats.textures, "texture bindings");
-    ShowStatsFor(stats.constantBuffers, "constant buffer bindings");
-    ShowStatsFor(stats.fragmentTargets, "fragment target bindings");
+    indentHandler_.IncIndent();
+    {
+        ShowStatsFor(stats.textures, "texture bindings");
+        ShowStatsFor(stats.constantBuffers, "constant buffer bindings");
+        ShowStatsFor(stats.fragmentTargets, "fragment target bindings");
+    }
+    indentHandler_.DecIndent();
 }
 
 void Shell::ShowStatsFor(const std::vector<Statistics::Binding>& objects, const std::string& title)
 {
-    const std::string indent("  ");
-    output << indent << title << ':' << std::endl;
-
-    if (!objects.empty())
+    output << indentHandler_.FullIndent() << title << ':' << std::endl;
+    indentHandler_.IncIndent();
     {
-        /* Determine offset for right-aligned location index */
-        int maxLocation = 0;
-        for (const auto& obj : objects)
-            maxLocation = std::max(maxLocation, obj.location);
-
-        auto NumDigits = [](int n) -> std::size_t
+        if (!objects.empty())
         {
-            return (n > 0u ? static_cast<std::size_t>(std::log10(n)) + 1u : 1u);
-        };
+            /* Determine offset for right-aligned location index */
+            int maxLocation = 0;
+            for (const auto& obj : objects)
+                maxLocation = std::max(maxLocation, obj.location);
 
-        std::size_t maxLocationLen = NumDigits(maxLocation);
+            auto NumDigits = [](int n) -> std::size_t
+            {
+                return (n > 0u ? static_cast<std::size_t>(std::log10(n)) + 1u : 1u);
+            };
 
-        /* Print binding points */
-        for (const auto& obj : objects)
-        {
-            if (obj.location >= 0)
-                output << indent << indent << std::string(maxLocationLen - NumDigits(obj.location), ' ') << obj.location << ": " << obj.ident << std::endl;
-            else
-                output << indent << indent << std::string(maxLocationLen, ' ') << "  " << obj.ident << std::endl;
+            std::size_t maxLocationLen = NumDigits(maxLocation);
+
+            /* Print binding points */
+            for (const auto& obj : objects)
+            {
+                if (obj.location >= 0)
+                    output << indentHandler_.FullIndent() << std::string(maxLocationLen - NumDigits(obj.location), ' ') << obj.location << ": " << obj.ident << std::endl;
+                else
+                    output << indentHandler_.FullIndent() << std::string(maxLocationLen, ' ') << "  " << obj.ident << std::endl;
+            }
         }
+        else
+            output << indentHandler_.FullIndent() << "< none >" << std::endl;
     }
-    else
-        output << indent << indent << "< none >" << std::endl;
+    indentHandler_.DecIndent();
 }
 
 
