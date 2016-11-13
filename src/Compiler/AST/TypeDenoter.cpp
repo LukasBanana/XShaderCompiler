@@ -192,6 +192,17 @@ std::string SamplerTypeDenoter::ToString() const
 
 /* ----- StructTypeDenoter ----- */
 
+StructTypeDenoter::StructTypeDenoter(const std::string& ident) :
+    ident{ ident }
+{
+}
+
+StructTypeDenoter::StructTypeDenoter(Structure* structDeclRef) :
+    ident           { structDeclRef ? structDeclRef->name : "" },
+    structDeclRef   { structDeclRef                            }
+{
+}
+
 TypeDenoter::Types StructTypeDenoter::Type() const
 {
     return Types::Struct;

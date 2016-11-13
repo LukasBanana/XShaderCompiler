@@ -436,8 +436,9 @@ struct AliasDeclStmnt : public Stmnt
 {
     AST_INTERFACE(AliasDeclStmnt);
 
-    std::string ident;          // Type identifier
-    std::string typeDenoter;    // Type denoter (TODO: replace this by "TypeDenoterPtr")
+    std::string     ident;          // Type identifier
+    StructurePtr    structDecl;     // Optional structure declaration
+    TypeDenoterPtr  typeDenoter;    // Type denoter
 };
 
 /* --- Statements --- */

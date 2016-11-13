@@ -143,19 +143,20 @@ FunctionCallPtr HLSLParser::ParseFunctionCall(VarIdentPtr varIdent)
     return ast;
 }
 
-StructurePtr HLSLParser::ParseStructure()
+StructurePtr HLSLParser::ParseStructure(bool parseStructTkn, const TokenPtr& identTkn)
 {
     auto tkn = Tkn();
     auto ast = Make<Structure>();
 
     /* Parse structure declaration */
-    Accept(Tokens::Struct);
+    if (parseStructTkn)
+        Accept(Tokens::Struct);
 
-    if (Is(Tokens::Ident))
+    if (Is(Tokens::Ident) || identTkn)
     {
         /* Parse structure name */
         tkn = Tkn();
-        ast->name = ParseIdent();
+        ast->name = (identTkn ? identTkn->Spell() : ParseIdent());
 
         /* Parse optional inheritance (not documented in HLSL but supported; only single inheritance) */
         if (Is(Tokens::Colon))
@@ -626,7 +627,41 @@ AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
     /* Parse type alias declaration */
     Accept(Tokens::Typedef);
 
-    ast->typeDenoter = ParseTypeDenoter_TEMP();
+    /* Parse struct declaration or type denoter */
+    if (Is(Tokens::Struct))
+    {
+        AcceptIt();
+
+        if (Is(Tokens::LCurly))
+        {
+            /* Parse struct-decl */
+            ast->structDecl = ParseStructure(false);
+
+            /* Make struct type denoter with reference to the structure of this alias decl */
+            ast->typeDenoter = std::make_shared<StructTypeDenoter>(ast->structDecl.get());
+        }
+        else
+        {
+            /* Parse struct ident token */
+            auto structIdentTkn = Accept(Tokens::Ident);
+
+            if (Is(Tokens::LCurly))
+            {
+                /* Parse struct-decl */
+                ast->structDecl = ParseStructure(false, structIdentTkn);
+
+                /* Make struct type denoter with reference to the structure of this alias decl */
+                ast->typeDenoter = std::make_shared<StructTypeDenoter>(ast->structDecl.get());
+            }
+            else
+            {
+                /* Make struct type denoter without struct decl */
+                ast->typeDenoter = std::make_shared<StructTypeDenoter>(structIdentTkn->Spell());
+            }
+        }
+    }
+    else
+        ast->typeDenoter = ParseTypeDenoter();
 
     /* Parse type alias identifier */
     auto identTkn = Tkn();
@@ -1633,6 +1668,7 @@ SamplerTypeDenoterPtr HLSLParser::ParseSamplerTypeDenoter()
 
 StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoter()
 {
+    /* Parse optional 'struct' keyword */
     if (Is(Tokens::Struct))
         AcceptIt();
 
@@ -1640,8 +1676,7 @@ StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoter()
     auto ident = ParseIdent();
 
     /* Make struct type denoter */
-    auto typeDenoter = std::make_shared<StructTypeDenoter>();
-    typeDenoter->ident = ident;
+    auto typeDenoter = std::make_shared<StructTypeDenoter>(ident);
 
     return typeDenoter;
 }

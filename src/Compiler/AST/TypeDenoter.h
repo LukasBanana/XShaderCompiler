@@ -128,6 +128,10 @@ using SamplerTypeDenoterPtr = std::shared_ptr<SamplerTypeDenoter>;
 // Struct type denoter.
 struct StructTypeDenoter : public TypeDenoter
 {
+    StructTypeDenoter() = default;
+    StructTypeDenoter(const std::string& ident);
+    StructTypeDenoter(Structure* structDeclRef);
+
     Types Type() const override;
     std::string ToString() const override;
 

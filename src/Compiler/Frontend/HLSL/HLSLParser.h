@@ -85,7 +85,7 @@ class HLSLParser : public Parser
 
         CodeBlockPtr                    ParseCodeBlock();
         FunctionCallPtr                 ParseFunctionCall(VarIdentPtr varIdent = nullptr);
-        StructurePtr                    ParseStructure();
+        StructurePtr                    ParseStructure(bool parseStructTkn = true, const TokenPtr& identTkn = nullptr);
         VarDeclStmntPtr                 ParseParameter();
         SwitchCasePtr                   ParseSwitchCase();
         SamplerValuePtr                 ParseSamplerValue();
