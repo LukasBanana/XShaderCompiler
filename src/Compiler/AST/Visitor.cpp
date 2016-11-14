@@ -97,12 +97,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
 IMPLEMENT_VISIT_PROC(AliasDecl)
 {
-    /* Special case: type denoters are not sub classes of AST */
-    if (ast->typeDenoter->IsArray())
-    {
-        auto arrayTypeDenoter = static_cast<ArrayTypeDenoter*>(ast->typeDenoter.get());
-        Visit(arrayTypeDenoter->arrayDims);
-    }
+    // do nothing
 }
 
 /* --- Declaration statements --- */

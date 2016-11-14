@@ -1075,6 +1075,11 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     EndLn();
 }
 
+IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
+{
+    // do nothing -> GLSL does not support 'typedef'
+}
+
 /* --- Statements --- */
 
 IMPLEMENT_VISIT_PROC(NullStmnt)
