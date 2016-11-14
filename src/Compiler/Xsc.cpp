@@ -92,8 +92,7 @@ XSC_EXPORT bool CompileShader(
 
     /* Small context analysis */
     HLSLAnalyzer analyzer(log);
-    if (!analyzer.DecorateAST(*program, inputDesc, outputDesc))
-        return SubmitError("analyzing input code failed");
+    auto analyzerResult = analyzer.DecorateAST(*program, inputDesc, outputDesc);
 
     /* Print debug output */
     if (outputDesc.options.dumpAST && log)
@@ -101,6 +100,9 @@ XSC_EXPORT bool CompileShader(
         ASTPrinter dumper;
         dumper.DumpAST(program.get(), *log);
     }
+
+    if (!analyzerResult)
+        return SubmitError("analyzing input code failed");
 
     /* Optimize AST */
     if (outputDesc.options.optimize)
