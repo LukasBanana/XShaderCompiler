@@ -143,6 +143,19 @@ FunctionCallPtr HLSLParser::ParseFunctionCall(VarIdentPtr varIdent)
     return ast;
 }
 
+FunctionCallPtr HLSLParser::ParseFunctionCall(const TypeDenoterPtr& typeDenoter)
+{
+    auto ast = Make<FunctionCall>();
+
+    /* Take type denoter */
+    ast->typeDenoter = typeDenoter;
+
+    /* Parse argument list */
+    ast->arguments = ParseArgumentList();
+
+    return ast;
+}
+
 VarDeclStmntPtr HLSLParser::ParseParameter()
 {
     auto ast = Make<VarDeclStmnt>();
@@ -1019,7 +1032,7 @@ ExprPtr HLSLParser::ParsePrimaryExpr()
     /* Determine which kind of expression the next one is */
     if (IsLiteral())
         return ParseLiteralExpr();
-    if (IsDataType())
+    if (IsDataType() || Is(Tokens::Struct))
         return ParseTypeNameOrFunctionCallExpr();
     if (Is(Tokens::UnaryOp) || IsArithmeticUnaryExpr())
         return ParseUnaryExpr();
@@ -1041,31 +1054,32 @@ LiteralExprPtr HLSLParser::ParseLiteralExpr()
 
     /* Parse literal */
     auto ast = Make<LiteralExpr>();
+
     ast->type   = TknType();
     ast->value  = AcceptIt()->Spell();
+
     return ast;
 }
 
 ExprPtr HLSLParser::ParseTypeNameOrFunctionCallExpr()
 {
     /* Parse type name */
-    if (!IsDataType())
+    if (!IsDataType() && !Is(Tokens::Struct))
         ErrorUnexpected("expected type name or function call expression");
 
-    auto typeName = AcceptIt()->Spell();
+    auto typeDenoter = ParseTypeDenoter();
 
     /* Determine which kind of expression this is */
     if (Is(Tokens::LBracket))
     {
         /* Return function call expression */
-        auto varIdent = Make<VarIdent>();
-        varIdent->ident = typeName;
-        return ParseFunctionCallExpr(varIdent);
+        return ParseFunctionCallExpr(nullptr, typeDenoter);
     }
 
     /* Return type name expression */
     auto ast = Make<TypeNameExpr>();
-    ast->typeName = typeName;
+    ast->typeDenoter = typeDenoter;
+
     return ast;
 }
 
@@ -1076,8 +1090,10 @@ UnaryExprPtr HLSLParser::ParseUnaryExpr()
 
     /* Parse unary expression */
     auto ast = Make<UnaryExpr>();
+
     ast->op     = StringToUnaryOp(AcceptIt()->Spell());
     ast->expr   = ParsePrimaryExpr();
+
     return ast;
 }
 
@@ -1203,11 +1219,15 @@ VarAccessExprPtr HLSLParser::ParseVarAccessExpr(const VarIdentPtr& varIdent)
     return ast;
 }
 
-FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIdent)
+FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIdent, const TypeDenoterPtr& typeDenoter)
 {
     /* Parse function call expression */
     auto ast = Make<FunctionCallExpr>();
-    ast->call = ParseFunctionCall(varIdent);
+
+    if (typeDenoter)
+        ast->call = ParseFunctionCall(typeDenoter);
+    else
+        ast->call = ParseFunctionCall(varIdent);
 
     /* Parse optional var-ident suffix */
     if (Is(Tokens::Dot))

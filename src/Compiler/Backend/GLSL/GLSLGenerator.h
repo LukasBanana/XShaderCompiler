@@ -23,6 +23,8 @@ namespace Xsc
 {
 
 
+struct TypeDenoter;
+
 // GLSL output code generator.
 class GLSLGenerator : public Generator
 {
@@ -184,6 +186,8 @@ class GLSLGenerator : public Generator
 
         bool IsSystemValueSemantic(const VarSemantic* ast) const;
         bool HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const;
+
+        std::string ResolveTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast);
 
         /* === Members === */
 

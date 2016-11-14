@@ -197,7 +197,8 @@ struct FunctionCall : public AST
         FLAG( isAtomicFunc, 3 ), // This is an atomic (or rather interlocked) function (e.g. "InterlockedAdd").
     };
 
-    VarIdentPtr             name;
+    VarIdentPtr             name;           // Either this ...
+    TypeDenoterPtr          typeDenoter;    // ... or this is used.
     std::vector<ExprPtr>    arguments;
 };
 
@@ -586,7 +587,7 @@ struct TypeNameExpr : public Expr
 {
     AST_INTERFACE(TypeNameExpr);
 
-    std::string typeName;
+    TypeDenoterPtr typeDenoter;
 };
 
 // Ternary expression.

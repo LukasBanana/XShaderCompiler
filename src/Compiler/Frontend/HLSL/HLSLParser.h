@@ -85,6 +85,7 @@ class HLSLParser : public Parser
 
         CodeBlockPtr                    ParseCodeBlock();
         FunctionCallPtr                 ParseFunctionCall(VarIdentPtr varIdent = nullptr);
+        FunctionCallPtr                 ParseFunctionCall(const TypeDenoterPtr& typeDenoter);
         VarDeclStmntPtr                 ParseParameter();
         SwitchCasePtr                   ParseSwitchCase();
         SamplerValuePtr                 ParseSamplerValue();
@@ -134,7 +135,7 @@ class HLSLParser : public Parser
         ExprPtr                         ParseBracketOrCastExpr();
         ExprPtr                         ParseVarAccessOrFunctionCallExpr();
         VarAccessExprPtr                ParseVarAccessExpr(const VarIdentPtr& varIdent = nullptr);
-        FunctionCallExprPtr             ParseFunctionCallExpr(const VarIdentPtr& varIdent = nullptr);
+        FunctionCallExprPtr             ParseFunctionCallExpr(const VarIdentPtr& varIdent = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
         InitializerExprPtr              ParseInitializerExpr();
 
         std::vector<VarDeclPtr>         ParseVarDeclList();

@@ -1,21 +1,21 @@
 
-[TypeTest1]
+[ExprTest2.hlsl CS]
+-T compute -E CS -o output/ExprTest2.CS.glsl ExprTest2.hlsl
+
+[TypeTest1 VS]
 --dump-ast -T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
 
-[StructInheritTest1]
+[StructInheritTest1 PS]
 -T fragment -E PS -o output/StructInheritTest1.PS.glsl StructInheritTest1.hlsl
 
-[ssct_reflect]
+[ssct_reflect PS]
 --dump-stat -T fragment -E PS -O -I "../../misc/ssct_shader/" -o "../../misc/ssct_shader/ssct_reflect.PS.frag" "../../misc/ssct_shader/ssct_reflect.hlsl"
 
-[TestShader1.hlsl Vertex]
--T vertex -E VS -O -o output/TestShader1.VS.glsl TestShader1.hlsl
+#[TestShader1.hlsl VS]
+#-T vertex -E VS -O -o output/TestShader1.VS.glsl TestShader1.hlsl
 
-[TestShader1.hlsl Compute]
--T compute -E CS -O -o output/TestShader1.CS.glsl TestShader1.hlsl
-
-#[PPExprTest1.hlsl -PP]
-#-PP -O -o output/PPExprTest1.post.hlsl PPExprTest1.hlsl
+#[TestShader1.hlsl CS]
+#-T compute -E CS -O -o output/TestShader1.CS.glsl TestShader1.hlsl
 
 #[PPTest1.hlsl -PP]
 #-PP -O -o output/PPTest1.post.hlsl PPTest1.hlsl

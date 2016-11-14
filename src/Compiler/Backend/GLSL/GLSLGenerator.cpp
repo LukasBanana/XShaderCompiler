@@ -8,6 +8,7 @@
 #include "GLSLGenerator.h"
 #include "GLSLExtensionAgent.h"
 #include "HLSLAnalyzer.h"
+#include "TypeDenoter.h"
 #include "AST.h"
 #include "HLSLKeywords.h"
 #include "Helper.h"
@@ -600,19 +601,32 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     else
     {
         /* Write function name */
-        auto name = ast->name->ToString();
+        std::string name;
 
-        auto it = intrinsicMap_.find(name);
-        if (it != intrinsicMap_.end())
-            Write(it->second);
-        else
+        if (ast->name)
         {
-            auto it = typeMap_.find(name);
-            if (it != typeMap_.end())
+            name = ast->name->ToString();
+
+            auto it = intrinsicMap_.find(name);
+            if (it != intrinsicMap_.end())
                 Write(it->second);
             else
-                Visit(ast->name);
+            {
+                auto it = typeMap_.find(name);
+                if (it != typeMap_.end())
+                    Write(it->second);
+                else
+                    Visit(ast->name);
+            }
         }
+        else if (ast->typeDenoter)
+        {
+            /* Get function name from type denoter */
+            name = ResolveTypeDenoter(*ast->typeDenoter, ast);
+            Write(name);
+        }
+        else
+            Error("missing function name", ast);
 
         /*
         Remove arguments which contain a sampler state object,
@@ -748,42 +762,7 @@ IMPLEMENT_VISIT_PROC(VarType)
     if (ast->structDecl)
         Visit(ast->structDecl);
     else
-    {
-        #if 1 //TODO --> visitor for type denoters!!!
-
-        auto typeDen = ast->typeDenoter.get();
-        
-        std::string typeName;
-
-        if (typeDen->IsVoid())
-            typeName = "void";
-        else if (typeDen->IsBase())
-        {
-            auto baseTypeDen = dynamic_cast<BaseTypeDenoter*>(typeDen);
-
-            /* Write GLSL base type */
-            auto dataType = baseTypeDen->dataType;
-
-            auto it = dataTypeMap_.find(dataType);
-            if (it != dataTypeMap_.end())
-                typeName = it->second;
-            else
-                Error("failed to map data type to GLSL data type", ast);
-        }
-        else if (typeDen->IsTexture())
-        {
-            //TODO: determine correct texture type!!!
-            typeName = "sampler2D";
-        }
-        else if (!typeDen->Ident().empty())
-            typeName = typeDen->Ident();
-        else
-            Error("failed to determine GLSL data type", ast);
-
-        Write(typeName);
-
-        #endif
-    }
+        Write(ResolveTypeDenoter(*ast->typeDenoter, ast));
 }
 
 IMPLEMENT_VISIT_PROC(VarIdent)
@@ -1280,11 +1259,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(TypeNameExpr)
 {
-    auto it = typeMap_.find(ast->typeName);
-    if (it != typeMap_.end())
-        Write(it->second);
-    else
-        Write(ast->typeName);
+    Write(ResolveTypeDenoter(*ast->typeDenoter, ast));
 }
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
@@ -1331,6 +1306,12 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Write("(");
     Visit(ast->expr);
     Write(")");
+
+    if (ast->varIdentSuffix)
+    {
+        Write(".");
+        Visit(ast->varIdentSuffix);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(CastExpr)
@@ -1762,6 +1743,34 @@ const std::string& GLSLGenerator::SemanticStage::operator [] (const ShaderTarget
             break;
     }
     throw Report(Report::Types::Error, "'target' parameter out of range in " + std::string(__FUNCTION__));
+}
+
+//TODO: incomplete!!!
+std::string GLSLGenerator::ResolveTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast)
+{
+    if (typeDenoter.IsVoid())
+        return "void";
+    else if (typeDenoter.IsBase())
+    {
+        /* Map GLSL base type */
+        auto& baseTypeDen = dynamic_cast<const BaseTypeDenoter&>(typeDenoter);
+
+        auto it = dataTypeMap_.find(baseTypeDen.dataType);
+        if (it != dataTypeMap_.end())
+            return it->second;
+        else
+            Error("failed to map data type to GLSL data type", ast);
+    }
+    else if (typeDenoter.IsTexture())
+    {
+        //TODO: determine correct texture type!!!
+        return "sampler2D";
+    }
+    else if (!typeDenoter.Ident().empty())
+        return typeDenoter.Ident();
+
+    Error("failed to determine GLSL data type", ast);
+    return "";
 }
 
 

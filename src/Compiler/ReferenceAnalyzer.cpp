@@ -56,39 +56,42 @@ void ReferenceAnalyzer::MarkTextureReference(AST* ast, const std::string& texIde
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    /* Mark this function to be referenced */
-    const auto& name = ast->name->ident;
-    auto symbol = symTable_->Fetch(name);
-
-    if (symbol)
+    if (ast->name)
     {
-        if (symbol->Type() == AST::Types::FunctionDecl)
+        /* Mark this function to be referenced */
+        const auto& name = ast->name->ident;
+        auto symbol = symTable_->Fetch(name);
+
+        if (symbol)
         {
-            auto functionDecl = dynamic_cast<FunctionDecl*>(symbol);
-            if (functionDecl)
+            if (symbol->Type() == AST::Types::FunctionDecl)
             {
-                /* Mark all forward declarations to this function */
-                for (auto& forwardDecl : functionDecl->forwardDeclsRef)
-                    forwardDecl->flags << FunctionDecl::isReferenced;
-            }
+                auto functionDecl = dynamic_cast<FunctionDecl*>(symbol);
+                if (functionDecl)
+                {
+                    /* Mark all forward declarations to this function */
+                    for (auto& forwardDecl : functionDecl->forwardDeclsRef)
+                        forwardDecl->flags << FunctionDecl::isReferenced;
+                }
 
-            /* Mark this function and visit the entire function body */
-            symbol->flags << FunctionDecl::isReferenced;
-            Visit(symbol);
+                /* Mark this function and visit the entire function body */
+                symbol->flags << FunctionDecl::isReferenced;
+                Visit(symbol);
+            }
+            else if (symbol->Type() == AST::Types::TextureDeclStmnt)
+                MarkTextureReference(symbol, name);
         }
-        else if (symbol->Type() == AST::Types::TextureDeclStmnt)
-            MarkTextureReference(symbol, name);
-    }
-    else
-    {
-        //TODO: remove this from the ReferenceAnalyzer; intrinsic references should not be flagged here!
-        /* Check for intrinsic usage */
-        if (name == "rcp")
-            program_->flags << Program::rcpIntrinsicUsed;
-        else if (name == "sincos")
-            program_->flags << Program::sinCosIntrinsicUsed;
-        else if (name == "clip")
-            program_->flags << Program::clipIntrinsicUsed;
+        else
+        {
+            //TODO: remove this from the ReferenceAnalyzer; intrinsic references should not be flagged here!
+            /* Check for intrinsic usage */
+            if (name == "rcp")
+                program_->flags << Program::rcpIntrinsicUsed;
+            else if (name == "sincos")
+                program_->flags << Program::sinCosIntrinsicUsed;
+            else if (name == "clip")
+                program_->flags << Program::clipIntrinsicUsed;
+        }
     }
 
     /* Visit arguments */

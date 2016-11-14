@@ -155,47 +155,50 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    auto name = ast->name->ToString();
-
-    /* Check if a specific intrinsic is used */
-    if (name == "mul")
+    if (ast->name)
     {
-        ast->flags << FunctionCall::isMulFunc;
+        auto name = ast->name->ToString();
 
-        /* Validate number of arguments */
-        for (std::size_t i = 2; i < ast->arguments.size(); ++i)
-            Error("too many arguments in \"mul\" intrinsic", ast->arguments[i].get());
-    }
-    else if (name == "rcp")
-        ast->flags << FunctionCall::isRcpFunc;
-    else
-    {
-        auto it = intrinsicMap_.find(name);
-        if (it != intrinsicMap_.end())
+        /* Check if a specific intrinsic is used */
+        if (name == "mul")
         {
-            switch (it->second)
+            ast->flags << FunctionCall::isMulFunc;
+
+            /* Validate number of arguments */
+            for (std::size_t i = 2; i < ast->arguments.size(); ++i)
+                Error("too many arguments in \"mul\" intrinsic", ast->arguments[i].get());
+        }
+        else if (name == "rcp")
+            ast->flags << FunctionCall::isRcpFunc;
+        else
+        {
+            auto it = intrinsicMap_.find(name);
+            if (it != intrinsicMap_.end())
             {
-                case IntrinsicClasses::Interlocked:
-                    ast->flags << FunctionCall::isAtomicFunc;
-                    if (ast->arguments.size() < 2)
-                        Error("interlocked intrinsics must have at least 2 arguments", ast);
-                    //program_->flags << Program::interlockedIntrinsicsUsed;
-                    break;
+                switch (it->second)
+                {
+                    case IntrinsicClasses::Interlocked:
+                        ast->flags << FunctionCall::isAtomicFunc;
+                        if (ast->arguments.size() < 2)
+                            Error("interlocked intrinsics must have at least 2 arguments", ast);
+                        //program_->flags << Program::interlockedIntrinsicsUsed;
+                        break;
+                }
             }
         }
-    }
 
-    /* Decorate function identifier (if it's a member function) */
-    if (ast->name->next)
-    {
-        auto symbol = Fetch(ast->name->ident);
-        if (symbol)
+        /* Decorate function identifier (if it's a member function) */
+        if (ast->name->next)
         {
-            if (symbol->Type() == AST::Types::TextureDeclStmnt)
-                ast->flags << FunctionCall::isTexFunc;
+            auto symbol = Fetch(ast->name->ident);
+            if (symbol)
+            {
+                if (symbol->Type() == AST::Types::TextureDeclStmnt)
+                    ast->flags << FunctionCall::isTexFunc;
+            }
+            else
+                NotifyUndeclaredIdent(ast->name->ident, ast);
         }
-        else
-            NotifyUndeclaredIdent(ast->name->ident, ast);
     }
 
     /* Analyze function arguments */

@@ -68,12 +68,15 @@ void GLSLExtensionAgent::AcquireExtension(const GLSLExtension& extension)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    /* Check for special function (or intrinsic) */
-    auto name = ast->name->ToString();
+    if (ast->name)
+    {
+        /* Check for special function (or intrinsic) */
+        auto name = ast->name->ToString();
 
-    auto it = funcToExtMap_.find(name);
-    if (it != funcToExtMap_.end())
-        AcquireExtension(it->second);
+        auto it = funcToExtMap_.find(name);
+        if (it != funcToExtMap_.end())
+            AcquireExtension(it->second);
+    }
 
     /* Default visitor */
     Visitor::VisitFunctionCall(ast, args);
