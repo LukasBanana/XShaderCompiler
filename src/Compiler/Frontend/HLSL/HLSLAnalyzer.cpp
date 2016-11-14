@@ -572,6 +572,7 @@ void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
     }
 }
 
+//TODO: refacotre this function!!!
 void HLSLAnalyzer::DecorateVarObject(AST* symbol, VarIdent* varIdent)
 {
     /* Decorate variable identifier with this symbol */

@@ -122,6 +122,11 @@ TypeDenoter::Types BaseTypeDenoter::Type() const
     return Types::Base;
 }
 
+BaseTypeDenoter::BaseTypeDenoter(DataType dataType) :
+    dataType{ dataType }
+{
+}
+
 std::string BaseTypeDenoter::ToString() const
 {
     if (IsScalar())
@@ -191,6 +196,11 @@ std::string BufferTypeDenoter::ToString() const
 
 /* ----- TextureTypeDenoter ----- */
 
+TextureTypeDenoter::TextureTypeDenoter(TextureDecl* textureDeclRef) :
+    textureDeclRef{ textureDeclRef }
+{
+}
+
 TypeDenoter::Types TextureTypeDenoter::Type() const
 {
     return Types::Texture;
@@ -203,6 +213,11 @@ std::string TextureTypeDenoter::ToString() const
 
 
 /* ----- SamplerTypeDenoter ----- */
+
+SamplerTypeDenoter::SamplerTypeDenoter(SamplerDecl* samplerDeclRef) :
+    samplerDeclRef{ samplerDeclRef }
+{
+}
 
 TypeDenoter::Types SamplerTypeDenoter::Type() const
 {
@@ -268,6 +283,11 @@ std::string AliasTypeDenoter::Ident() const
 
 
 /* ----- ArrayTypeDenoter ----- */
+
+ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter) :
+    baseTypeDenoter{ baseTypeDenoter }
+{
+}
 
 TypeDenoter::Types ArrayTypeDenoter::Type() const
 {

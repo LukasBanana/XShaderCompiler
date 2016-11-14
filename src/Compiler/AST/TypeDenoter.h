@@ -86,6 +86,9 @@ using VoidTypeDenoterPtr = std::shared_ptr<VoidTypeDenoter>;
 // Base type denoter.
 struct BaseTypeDenoter : public TypeDenoter
 {
+    BaseTypeDenoter() = default;
+    BaseTypeDenoter(DataType dataType);
+
     Types Type() const override;
     std::string ToString() const override;
 
@@ -115,6 +118,9 @@ using BufferTypeDenoterPtr = std::shared_ptr<BufferTypeDenoter>;
 // Texture type denoter.
 struct TextureTypeDenoter : public TypeDenoter
 {
+    TextureTypeDenoter() = default;
+    TextureTypeDenoter(TextureDecl* textureDeclRef);
+
     Types Type() const override;
     std::string ToString() const override;
 
@@ -127,6 +133,9 @@ using TextureTypeDenoterPtr = std::shared_ptr<TextureTypeDenoter>;
 // Sampler type denoter.
 struct SamplerTypeDenoter : public TypeDenoter
 {
+    SamplerTypeDenoter() = default;
+    SamplerTypeDenoter(SamplerDecl* samplerDeclRef);
+
     Types Type() const override;
     std::string ToString() const override;
 
@@ -171,13 +180,16 @@ using AliasTypeDenoterPtr = std::shared_ptr<AliasTypeDenoter>;
 // Array type denoter.
 struct ArrayTypeDenoter : public TypeDenoter
 {
+    ArrayTypeDenoter() = default;
+    ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter);
+
     Types Type() const override;
 
     // Throws std::runtime_error if 'baseTypeDenoter' is null.
     std::string ToString() const override;
 
     TypeDenoterPtr          baseTypeDenoter;
-    std::vector<ExprPtr>    arrayDims;
+    std::vector<ExprPtr>    arrayDims;          // May be null
 };
 
 using ArrayTypeDenoterPtr = std::shared_ptr<ArrayTypeDenoter>;

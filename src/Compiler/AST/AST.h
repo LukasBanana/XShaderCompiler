@@ -132,7 +132,11 @@ struct AST
 struct Stmnt : public AST {};
 
 // Expression base class.
-struct Expr : public AST {};
+struct Expr : public AST
+{
+    // Returns a type denoter for this expression or throws an std::runtime_error if a type denoter can not be derived.
+    virtual TypeDenoterPtr GetTypeDenoter() const = 0;
+};
 
 // Program AST root.
 struct Program : public AST
@@ -286,6 +290,9 @@ struct VarIdent : public AST
     // Returns the last identifier AST node.
     VarIdent* LastVarIdent();
 
+    // Returns a type denoter for the symbol reference of this variable identifier.
+    TypeDenoterPtr GetTypeDenoter(StructDecl* structDeclScope = nullptr) const;
+
     std::string             ident;
     std::vector<ExprPtr>    arrayIndices;
     VarIdentPtr             next;                   // Next identifier; may be null.
@@ -307,6 +314,9 @@ struct VarDecl : public AST
 
     // Returns the variable declaration as string.
     std::string ToString() const;
+
+    // Returns a type denoter for this variable declaration or throws an std::runtime_error if the type can not be derived.
+    TypeDenoterPtr GetTypeDenoter() const;
 
     std::string                 name;
     std::vector<ExprPtr>        arrayDims;
@@ -456,6 +466,9 @@ struct VarDeclStmnt : public Stmnt
     // Returns the var-decl statement as string.
     std::string ToString(bool useVarNames = true) const;
     
+    // Returns a type denoter for this declaration statement or throws an std::runtime_error if the type can not be derived.
+    TypeDenoterPtr GetTypeDenoter() const;
+
     // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident) const;
 
@@ -593,6 +606,8 @@ struct ListExpr : public Expr
 {
     AST_INTERFACE(ListExpr);
 
+    TypeDenoterPtr GetTypeDenoter() const override;
+
     ExprPtr firstExpr;
     ExprPtr nextExpr;
 };
@@ -601,6 +616,8 @@ struct ListExpr : public Expr
 struct LiteralExpr : public Expr
 {
     AST_INTERFACE(LiteralExpr);
+
+    TypeDenoterPtr GetTypeDenoter() const override;
 
     Token::Types    type    = Token::Types::Undefined;
     std::string     value;
@@ -611,6 +628,8 @@ struct TypeNameExpr : public Expr
 {
     AST_INTERFACE(TypeNameExpr);
 
+    TypeDenoterPtr GetTypeDenoter() const override;
+
     TypeDenoterPtr typeDenoter;
 };
 
@@ -618,6 +637,8 @@ struct TypeNameExpr : public Expr
 struct TernaryExpr : public Expr
 {
     AST_INTERFACE(TernaryExpr);
+
+    TypeDenoterPtr GetTypeDenoter() const override;
 
     ExprPtr condExpr; // Condition expression
     ExprPtr thenExpr; // <then> case expression
@@ -629,6 +650,8 @@ struct BinaryExpr : public Expr
 {
     AST_INTERFACE(BinaryExpr);
 
+    TypeDenoterPtr GetTypeDenoter() const override;
+
     ExprPtr     lhsExpr;                        // Left-hand-side expression
     BinaryOp    op      = BinaryOp::Undefined;  // Binary operator
     ExprPtr     rhsExpr;                        // Right-hand-side expression
@@ -639,6 +662,8 @@ struct UnaryExpr : public Expr
 {
     AST_INTERFACE(UnaryExpr);
 
+    TypeDenoterPtr GetTypeDenoter() const override;
+
     UnaryOp op      = UnaryOp::Undefined;
     ExprPtr expr;
 };
@@ -647,6 +672,8 @@ struct UnaryExpr : public Expr
 struct PostUnaryExpr : public Expr
 {
     AST_INTERFACE(PostUnaryExpr);
+
+    TypeDenoterPtr GetTypeDenoter() const override;
 
     ExprPtr expr;
     UnaryOp op      = UnaryOp::Undefined;
@@ -657,6 +684,8 @@ struct FunctionCallExpr : public Expr
 {
     AST_INTERFACE(FunctionCallExpr);
 
+    TypeDenoterPtr GetTypeDenoter() const override;
+
     FunctionCallPtr call;
     VarIdentPtr     varIdentSuffix; // Optional var-ident suffix
 };
@@ -665,6 +694,8 @@ struct FunctionCallExpr : public Expr
 struct BracketExpr : public Expr
 {
     AST_INTERFACE(BracketExpr);
+
+    TypeDenoterPtr GetTypeDenoter() const override;
 
     ExprPtr     expr;           // Inner expression
     VarIdentPtr varIdentSuffix; // Optional var-ident suffix
@@ -675,6 +706,8 @@ struct CastExpr : public Expr
 {
     AST_INTERFACE(CastExpr);
 
+    TypeDenoterPtr GetTypeDenoter() const override;
+
     ExprPtr typeExpr;
     ExprPtr expr;
 };
@@ -683,6 +716,8 @@ struct CastExpr : public Expr
 struct VarAccessExpr : public Expr
 {
     AST_INTERFACE(VarAccessExpr);
+
+    TypeDenoterPtr GetTypeDenoter() const override;
 
     VarIdentPtr varIdent;
     std::string assignOp;   // May be empty
@@ -693,6 +728,11 @@ struct VarAccessExpr : public Expr
 struct InitializerExpr : public Expr
 {
     AST_INTERFACE(InitializerExpr);
+
+    TypeDenoterPtr GetTypeDenoter() const override;
+
+    // Returns the number of scalar elements (with recursion).
+    unsigned int NumElements() const;
 
     std::vector<ExprPtr> exprs;
 };
