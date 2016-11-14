@@ -15,6 +15,8 @@ License
 Status
 ------
 
+**Alpha Status**: *Do not use in production code!*
+
 ##### TODO List: #####
 * Common HLSL IO semantics to GLSL transformation.
 * Geometry and Tessellation semantics.
