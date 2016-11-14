@@ -58,11 +58,12 @@ class Analyzer : protected Visitor
         void OpenScope();
         void CloseScope();
 
-        void Register(const std::string& ident, AST* ast, const OnOverrideProc& overrideProc = nullptr);
+        void Register(const std::string& ident, AST* ast);
         
-        AST* Fetch(const std::string& ident) const;
-        AST* Fetch(const VarIdentPtr& ident) const;
+        AST* Fetch(const std::string& ident);
+        AST* Fetch(const VarIdentPtr& ident);
         AST* FetchType(const std::string& ident, const AST* ast = nullptr);
+        FunctionDecl* FetchFunctionDecl(const std::string& ident, const std::vector<ExprPtr>& args, const AST* ast = nullptr);
 
         StructDecl* FetchStructDeclFromIdent(const std::string& ident);
         StructDecl* FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter);
@@ -87,11 +88,11 @@ class Analyzer : protected Visitor
 
         /* === Members === */
 
-        ReportHandler       reportHandler_;
-        SourceCode*         sourceCode_     = nullptr;
+        ReportHandler           reportHandler_;
+        SourceCode*             sourceCode_     = nullptr;
 
-        ASTSymbolTable      symTable_;
-        ReferenceAnalyzer   refAnalyzer_;
+        ASTSymbolOverloadTable  symTable_;
+        ReferenceAnalyzer       refAnalyzer_;
 
 };
 

@@ -510,6 +510,9 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl()
     /* Parse function header */
     ast->attribs    = ParseAttributeList();
     ast->returnType = ParseVarType(true);
+
+    ast->area = GetScanner().ActiveToken()->Area();
+
     ast->name       = ParseIdent();
     ast->parameters = ParseParameterList();
     

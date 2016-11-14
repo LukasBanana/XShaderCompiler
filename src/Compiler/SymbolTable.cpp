@@ -13,9 +13,11 @@ namespace Xsc
 {
 
 
-ASTSymbolOverload::ASTSymbolOverload(const std::string& ident) :
+ASTSymbolOverload::ASTSymbolOverload(const std::string& ident, AST* ast) :
     ident_{ ident }
 {
+    /* Add initial reference */
+    refs_.push_back(ast);
 }
 
 bool ASTSymbolOverload::AddSymbolRef(AST* ast)
@@ -31,7 +33,20 @@ bool ASTSymbolOverload::AddSymbolRef(AST* ast)
             return false;
 
         /* Can this type of symbol be overloaded? */
-        if (ast->Type() != AST::Types::FunctionDecl)
+        if (ast->Type() == AST::Types::FunctionDecl)
+        {
+            auto lhsFuncDecl = static_cast<const FunctionDecl*>(refs_.front());
+            auto rhsFuncDecl = static_cast<const FunctionDecl*>(ast);
+
+            /* Is any of the two declarations a forward declaration? */
+            if (lhsFuncDecl->IsForwardDecl() || rhsFuncDecl->IsForwardDecl())
+                return true;
+
+            /* Are the function signatures equal? */
+            if (lhsFuncDecl->EqualsSignature(*rhsFuncDecl))
+                return false;
+        }
+        else
             return false;
     }
 
@@ -41,30 +56,45 @@ bool ASTSymbolOverload::AddSymbolRef(AST* ast)
     return true;
 }
 
-AST* ASTSymbolOverload::Fetch()
+AST* ASTSymbolOverload::Fetch(bool throwOnFailure)
 {
-    if (refs_.empty())
-        throw std::runtime_error("undefined symbol '" + ident_ + "'");
-    if (refs_.size() > 1)
-        throw std::runtime_error("symbol '" + ident_ + "' is ambiguous");
-    return refs_.front();
+    if (throwOnFailure)
+    {
+        if (refs_.empty())
+            throw std::runtime_error("undefined symbol '" + ident_ + "'");
+        if (refs_.size() > 1)
+            throw std::runtime_error("symbol '" + ident_ + "' is ambiguous");
+        return refs_.front();
+    }
+    else
+        return (refs_.size() == 1 ? refs_.front() : nullptr);
 }
 
-AST* ASTSymbolOverload::FetchVar()
+AST* ASTSymbolOverload::FetchVar(bool throwOnFailure)
 {
-    auto ref = Fetch();
+    auto ref = Fetch(throwOnFailure);
     auto type = ref->Type();
     if (type != AST::Types::VarDecl && type != AST::Types::TextureDecl && type != AST::Types::SamplerDecl)
-        throw std::runtime_error("identifier '" + ident_ + "' does not name a type");
+    {
+        if (throwOnFailure)
+            throw std::runtime_error("identifier '" + ident_ + "' does not name a variable");
+        else
+            return nullptr;
+    }
     return ref;
 }
 
-AST* ASTSymbolOverload::FetchType()
+AST* ASTSymbolOverload::FetchType(bool throwOnFailure)
 {
-    auto ref = Fetch();
+    auto ref = Fetch(throwOnFailure);
     auto type = ref->Type();
     if (type != AST::Types::StructDecl && type != AST::Types::AliasDecl)
-        throw std::runtime_error("identifier '" + ident_ + "' does not name a type");
+    {
+        if (throwOnFailure)
+            throw std::runtime_error("identifier '" + ident_ + "' does not name a type");
+        else
+            return nullptr;
+    }
     return ref;
 }
 

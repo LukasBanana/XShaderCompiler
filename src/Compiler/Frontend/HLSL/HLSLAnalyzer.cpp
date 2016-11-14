@@ -136,6 +136,11 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             else
                 ErrorUndeclaredIdent(ast->name->ident, ast);
         }
+        else
+        {
+            /* Fetch function declaratino by arguments */
+            ast->funcDeclRef = FetchFunctionDecl(ast->name->ident, ast->arguments, ast);
+        }
     }
 
     /* Analyze function arguments */
@@ -208,6 +213,8 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
     const auto isEntryPoint = (ast->name == entryPoint_);
 
+    #if 0
+
     /* Find previous function forward declarations */
     auto symbol = Fetch(ast->name);
     if (symbol && symbol->Type() == AST::Types::FunctionDecl)
@@ -229,6 +236,10 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             return symbol->Type() == AST::Types::FunctionDecl;
         }
     );
+
+    #endif
+
+    Register(ast->name, ast);
 
     /* Visit attributes */
     Visit(ast->attribs);
@@ -490,6 +501,7 @@ IMPLEMENT_VISIT_PROC(VarType)
     {
         AnalyzeTypeDenoter(ast->typeDenoter, ast);
 
+        #if 1
         if (!ast->typeDenoter->Ident().empty())
         {
             /* Decorate variable type */
@@ -497,6 +509,7 @@ IMPLEMENT_VISIT_PROC(VarType)
             if (symbol)
                 ast->symbolRef = symbol;
         }
+        #endif
     }
     else
         Error("missing variable type", ast);

@@ -211,6 +211,11 @@ VarDecl* VarDeclStmnt::Fetch(const std::string& ident) const
 
 /* ----- FunctionDecl ----- */
 
+bool FunctionDecl::IsForwardDecl() const
+{
+    return (codeBlock == nullptr);
+}
+
 std::string FunctionDecl::SignatureToString(bool useParamNames) const
 {
     std::string s;
@@ -230,6 +235,25 @@ std::string FunctionDecl::SignatureToString(bool useParamNames) const
     s += ')';
 
     return s;
+}
+
+bool FunctionDecl::EqualsSignature(const FunctionDecl& rhs) const
+{
+    /* Compare parameter count */
+    if (parameters.size() != rhs.parameters.size())
+        return false;
+
+    /* Compare parameter type denoters */
+    for (std::size_t i = 0; i < parameters.size(); ++i)
+    {
+        auto lhsTypeDen = parameters[i]->varType->typeDenoter.get();
+        auto rhsTypeDen = rhs.parameters[i]->varType->typeDenoter.get();
+
+        if (!lhsTypeDen->Equals(*rhsTypeDen))
+            return false;
+    }
+
+    return true;
 }
 
 std::size_t FunctionDecl::NumMinArgs() const

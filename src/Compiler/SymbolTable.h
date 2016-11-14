@@ -148,25 +148,25 @@ class ASTSymbolOverload
 
     public:
     
-        ASTSymbolOverload(const std::string& ident);
+        ASTSymbolOverload(const std::string& ident, AST* ast);
 
         // Adds the specified AST reference to this overloaded symbol, and return true if the overload is valid.
         bool AddSymbolRef(AST* ast);
 
         // Fetches any AST. If there is more than one reference, an std::runtime_error is thrown.
-        AST* Fetch();
+        AST* Fetch(bool throwOnFailure = true);
 
         /*
         Fetches a variable declaration (VarDecl, TextureDecl, SamplerDecl).
         If there is more than one reference or the type does not fit, an std::runtime_error is thrown.
         */
-        AST* FetchVar();
+        AST* FetchVar(bool throwOnFailure = true);
 
         /*
         Fetches a type declaration (StructDecl, AliasDecl).
         If there is more than one reference or the type does not fit, an std::runtime_error is thrown.
         */
-        AST* FetchType();
+        AST* FetchType(bool throwOnFailure = true);
 
         // Returns the FunctionDecl AST node for the specified argument type denoter list (used to derive the overloaded function).
         FunctionDecl* FetchFunctionDecl(const std::vector<const TypeDenoter*>& argTypeDenoters);

@@ -71,11 +71,18 @@ void Analyzer::CloseScope()
     symTable_.CloseScope();
 }
 
-void Analyzer::Register(const std::string& ident, AST* ast, const OnOverrideProc& overrideProc)
+void Analyzer::Register(const std::string& ident, AST* ast)
 {
     try
     {
-        symTable_.Register(ident, ast, overrideProc);
+        symTable_.Register(
+            ident,
+            std::make_shared<ASTSymbolOverload>(ident, ast),
+            [&](ASTSymbolOverloadPtr symbol) -> bool
+            {
+                return symbol->AddSymbolRef(ast);
+            }
+        );
     }
     catch (const std::exception& err)
     {
@@ -83,12 +90,24 @@ void Analyzer::Register(const std::string& ident, AST* ast, const OnOverrideProc
     }
 }
 
-AST* Analyzer::Fetch(const std::string& ident) const
+AST* Analyzer::Fetch(const std::string& ident)
 {
-    return symTable_.Fetch(ident);
+    try
+    {
+        auto symbol = symTable_.Fetch(ident);
+        if (symbol)
+            return symbol->Fetch();
+        else
+            Error("undefined symbol '" + ident + "'");
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
+    return nullptr;
 }
 
-AST* Analyzer::Fetch(const VarIdentPtr& ident) const
+AST* Analyzer::Fetch(const VarIdentPtr& ident)
 {
     auto fullIdent = ident->ToString();
     return Fetch(fullIdent);
@@ -96,11 +115,24 @@ AST* Analyzer::Fetch(const VarIdentPtr& ident) const
 
 AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
 {
-    auto symbol = Fetch(ident);
-    if ( symbol && ( symbol->Type() == AST::Types::StructDecl || symbol->Type() == AST::Types::AliasDecl ) )
-        return symbol;
-    else
-        Error("identifier '" + ident + "' does not name a type", ast);
+    try
+    {
+        auto symbol = symTable_.Fetch(ident);
+        if (symbol)
+            return symbol->FetchType();
+        else
+            Error("undefined symbol '" + ident + "'", ast);
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what(), ast);
+    }
+    return nullptr;
+}
+
+FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::vector<ExprPtr>& args, const AST* ast)
+{
+    //TODO: derive type denoter from argument expressions ...
     return nullptr;
 }
 

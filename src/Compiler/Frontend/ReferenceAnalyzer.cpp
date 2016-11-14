@@ -13,7 +13,7 @@ namespace Xsc
 {
 
 
-ReferenceAnalyzer::ReferenceAnalyzer(const ASTSymbolTable& symTable) :
+ReferenceAnalyzer::ReferenceAnalyzer(const ASTSymbolOverloadTable& symTable) :
     symTable_{ &symTable }
 {
 }
@@ -58,6 +58,11 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     if (ast->name)
     {
+        //~~~~~~~~TODO:~~~~~~~~~
+        //Use "symTable_->FetchFunctionDecl" with type denoters of argument list
+
+        #if 0
+
         /* Mark this function to be referenced */
         const auto& name = ast->name->ident;
         auto symbol = symTable_->Fetch(name);
@@ -92,6 +97,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             else if (name == "clip")
                 program_->flags << Program::clipIntrinsicUsed;
         }
+
+        #endif
     }
 
     /* Visit arguments */
@@ -148,17 +155,21 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     auto symbol = symTable_->Fetch(ast->varIdent->ident);
     if (symbol)
     {
-        if (symbol->Type() == AST::Types::TextureDeclStmnt)
+        auto symbolAST = symbol->FetchVar(false);
+        if (symbolAST)
         {
-            /* Mark texture object as referenced */
-            MarkTextureReference(symbol, ast->varIdent->ident);
-        }
-        else if (symbol->Type() == AST::Types::VarDecl)
-        {
-            /* Mark uniform buffer as referenced */
-            auto varDecl = dynamic_cast<VarDecl*>(symbol);
-            if (varDecl && varDecl->bufferDeclRef)
-                Visit(varDecl->bufferDeclRef);
+            if (symbolAST->Type() == AST::Types::TextureDeclStmnt)
+            {
+                /* Mark texture object as referenced */
+                MarkTextureReference(symbolAST, ast->varIdent->ident);
+            }
+            else if (symbolAST->Type() == AST::Types::VarDecl)
+            {
+                /* Mark uniform buffer as referenced */
+                auto varDecl = static_cast<VarDecl*>(symbolAST);
+                if (varDecl && varDecl->bufferDeclRef)
+                    Visit(varDecl->bufferDeclRef);
+            }
         }
     }
 
@@ -175,7 +186,11 @@ IMPLEMENT_VISIT_PROC(VarType)
     {
         auto symbol = symTable_->Fetch(ast->typeDenoter->Ident());
         if (symbol)
-            Visit(symbol);
+        {
+            auto symbolAST = symbol->FetchType(false);
+            if (symbolAST)
+                Visit(symbolAST);
+        }
     }
 }
 

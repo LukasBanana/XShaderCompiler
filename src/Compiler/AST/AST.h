@@ -197,9 +197,11 @@ struct FunctionCall : public AST
         FLAG( isAtomicFunc, 3 ), // This is an atomic (or rather interlocked) function (e.g. "InterlockedAdd").
     };
 
-    VarIdentPtr             name;           // Either this ...
-    TypeDenoterPtr          typeDenoter;    // ... or this is used.
+    VarIdentPtr             name;                   // Either this ...
+    TypeDenoterPtr          typeDenoter;            // ... or this is used.
     std::vector<ExprPtr>    arguments;
+
+    FunctionDecl*           funcDeclRef = nullptr;  // Reference to the function declaration; may be null
 };
 
 // StructDecl object.
@@ -365,9 +367,15 @@ struct FunctionDecl : public Stmnt
         FLAG( wasMarked,    1 ), // This function was already marked by the "ReferenceAnalyzer" visitor.
         FLAG( isEntryPoint, 2 ), // This function is the main entry point.
     };
+
+    // Returns true if this function declaration is just a forward declaration (without function body).
+    bool IsForwardDecl() const;
     
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
     std::string SignatureToString(bool useParamNames = true) const;
+
+    // Returns true if the specified function declaration has the same signature as this function.
+    bool EqualsSignature(const FunctionDecl& rhs) const;
 
     // Returns the minimal number of arguments for a call to this function.
     std::size_t NumMinArgs() const;
@@ -382,7 +390,7 @@ struct FunctionDecl : public Stmnt
     std::string                     semantic;           // May be empty
     CodeBlockPtr                    codeBlock;          // May be null (if this AST node is a forward declaration).
 
-    std::vector<FunctionDecl*>      forwardDeclsRef;    // List of forward declarations to this function for the DAST.
+    //std::vector<FunctionDecl*>      forwardDeclsRef;    // List of forward declarations to this function for the DAST.
 };
 
 //TODO --> maybe separate this structure into "BufferDeclStmnt" and "BufferDecl" (like in the other declaration AST nodes)

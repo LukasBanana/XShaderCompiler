@@ -29,7 +29,7 @@ class ReferenceAnalyzer : private Visitor
     
     public:
         
-        ReferenceAnalyzer(const ASTSymbolTable& symTable);
+        ReferenceAnalyzer(const ASTSymbolOverloadTable& symTable);
 
         // Marks all declarational AST nodes (i.e. function decl, structure decl etc.) that are reachable from the specififed entry point.
         void MarkReferencesFromEntryPoint(FunctionDecl* ast, Program* program);
@@ -54,10 +54,10 @@ class ReferenceAnalyzer : private Visitor
 
         /* === Members === */
 
-        const ASTSymbolTable*   symTable_   = nullptr;
+        const ASTSymbolOverloadTable*   symTable_   = nullptr;
 
         //TODO: remove this member; intrinsic references should not be flagged here!
-        Program*                program_    = nullptr;
+        Program*                        program_    = nullptr;
 
 };
 
