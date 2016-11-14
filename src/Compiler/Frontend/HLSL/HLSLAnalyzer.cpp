@@ -501,6 +501,7 @@ IMPLEMENT_VISIT_PROC(VarType)
     {
         AnalyzeTypeDenoter(ast->typeDenoter, ast);
 
+        //TODO: remove this
         #if 1
         if (!ast->typeDenoter->Ident().empty())
         {

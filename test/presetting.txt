@@ -3,7 +3,7 @@
 -T compute -E CS -o output/ExprTest2.CS.glsl ExprTest2.hlsl
 
 [TypeTest1 VS]
---dump-ast -T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
+-T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
 
 [StructInheritTest1 PS]
 -T fragment -E PS -o output/StructInheritTest1.PS.glsl StructInheritTest1.hlsl

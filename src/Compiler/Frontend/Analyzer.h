@@ -65,7 +65,7 @@ class Analyzer : protected Visitor
         AST* FetchType(const std::string& ident, const AST* ast = nullptr);
         FunctionDecl* FetchFunctionDecl(const std::string& ident, const std::vector<ExprPtr>& args, const AST* ast = nullptr);
 
-        StructDecl* FetchStructDeclFromIdent(const std::string& ident);
+        StructDecl* FetchStructDeclFromIdent(const std::string& ident, const AST* ast = nullptr);
         StructDecl* FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter);
 
         void AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);

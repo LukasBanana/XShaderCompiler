@@ -1050,7 +1050,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
 {
-    if (!ast->structDecl->IsAnonymous())
+    if (ast->structDecl && !ast->structDecl->IsAnonymous())
     {
         Line(ast);
 

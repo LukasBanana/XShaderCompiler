@@ -98,7 +98,7 @@ AST* Analyzer::Fetch(const std::string& ident)
         if (symbol)
             return symbol->Fetch();
         else
-            Error("undefined symbol '" + ident + "'");
+            ErrorUndeclaredIdent(ident);
     }
     catch (const std::exception& e)
     {
@@ -121,7 +121,7 @@ AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
         if (symbol)
             return symbol->FetchType();
         else
-            Error("undefined symbol '" + ident + "'", ast);
+            ErrorUndeclaredIdent(ident, ast);
     }
     catch (const std::exception& e)
     {
@@ -136,9 +136,9 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
     return nullptr;
 }
 
-StructDecl* Analyzer::FetchStructDeclFromIdent(const std::string& ident)
+StructDecl* Analyzer::FetchStructDeclFromIdent(const std::string& ident, const AST* ast)
 {
-    auto symbol = FetchType(ident);
+    auto symbol = FetchType(ident, ast);
     if (symbol)
     {
         if (symbol->Type() == AST::Types::StructDecl)
@@ -165,35 +165,41 @@ StructDecl* Analyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDeno
 void Analyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
 {
     if (typeDenoter->IsStruct())
-        AnalyzeStructTypeDenoter(dynamic_cast<StructTypeDenoter&>(*typeDenoter), ast);
+        AnalyzeStructTypeDenoter(static_cast<StructTypeDenoter&>(*typeDenoter), ast);
     else if (typeDenoter->IsAlias())
         AnalyzeAliasTypeDenoter(typeDenoter, ast);
+    else if (typeDenoter->IsArray())
+        AnalyzeTypeDenoter(static_cast<ArrayTypeDenoter&>(*typeDenoter).baseTypeDenoter, ast);
 }
 
 void Analyzer::AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* ast)
 {
-    structTypeDen.structDeclRef = FetchStructDeclFromIdent(structTypeDen.ident);
+    if (!structTypeDen.structDeclRef)
+        structTypeDen.structDeclRef = FetchStructDeclFromIdent(structTypeDen.ident, ast);
 }
 
 void Analyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
 {
     auto& aliasTypeDen = static_cast<AliasTypeDenoter&>(*typeDenoter);
 
-    auto symbol = FetchType(aliasTypeDen.ident);
-    if (symbol)
+    if (!aliasTypeDen.aliasDeclRef)
     {
-        if (symbol->Type() == AST::Types::StructDecl)
+        auto symbol = FetchType(aliasTypeDen.ident, ast);
+        if (symbol)
         {
-            /* Replace type denoter by a struct type denoter */
-            auto structTypeDen = std::make_shared<StructTypeDenoter>();
+            if (symbol->Type() == AST::Types::StructDecl)
+            {
+                /* Replace type denoter by a struct type denoter */
+                auto structTypeDen = std::make_shared<StructTypeDenoter>();
 
-            structTypeDen->ident            = aliasTypeDen.ident;
-            structTypeDen->structDeclRef    = static_cast<StructDecl*>(symbol);
+                structTypeDen->ident            = aliasTypeDen.ident;
+                structTypeDen->structDeclRef    = static_cast<StructDecl*>(symbol);
             
-            typeDenoter = structTypeDen;
+                typeDenoter = structTypeDen;
+            }
+            else if (symbol->Type() == AST::Types::AliasDecl)
+                aliasTypeDen.aliasDeclRef = static_cast<AliasDecl*>(symbol);
         }
-        else if (symbol->Type() == AST::Types::AliasDecl)
-            aliasTypeDen.aliasDeclRef = static_cast<AliasDecl*>(symbol);
     }
 }
 
