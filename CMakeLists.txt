@@ -38,6 +38,7 @@ endif()
 file(GLOB FilesInc ${PROJECT_SOURCE_DIR}/inc/Xsc/*.*)
 file(GLOB FilesSrcCompiler ${PROJECT_SOURCE_DIR}/src/Compiler/*.*)
 file(GLOB FilesSrcCompilerAST ${PROJECT_SOURCE_DIR}/src/Compiler/AST/*.*)
+file(GLOB FilesSrcCompilerFrontend ${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/*.*)
 file(GLOB FilesSrcCompilerFrontendHLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/HLSL/*.*)
 file(GLOB FilesSrcCompilerBackend ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/*.*)
 file(GLOB FilesSrcCompilerBackendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL/*.*)
@@ -55,6 +56,7 @@ set(
 	${FilesSrcCompiler}
 	${FilesSrcCompilerAST}
 	${FilesSrcCompilerPlatform}
+	${FilesSrcCompilerFrontend}
 	${FilesSrcCompilerFrontendHLSL}
 	${FilesSrcCompilerBackend}
 	${FilesSrcCompilerBackendGLSL}
@@ -67,6 +69,7 @@ source_group("inc\\Xsc" FILES ${FilesInc})
 source_group("src" FILES ${FilesSrcCompiler} ${FilesSrcShell})
 source_group("src\\AST" FILES ${FilesSrcCompilerAST})
 source_group("src\\Platform" FILES ${FilesSrcCompilerPlatform})
+source_group("src\\Frontend" FILES ${FilesSrcCompilerFrontend})
 source_group("src\\Frontend\\HLSL" FILES ${FilesSrcCompilerFrontendHLSL})
 source_group("src\\Backend" FILES ${FilesSrcCompilerBackend})
 source_group("src\\Backend\\GLSL" FILES ${FilesSrcCompilerBackendGLSL})
@@ -77,6 +80,7 @@ source_group("src\\Backend\\GLSL" FILES ${FilesSrcCompilerBackendGLSL})
 include_directories("${PROJECT_SOURCE_DIR}/inc")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/AST")
+include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/HLSL")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL")
