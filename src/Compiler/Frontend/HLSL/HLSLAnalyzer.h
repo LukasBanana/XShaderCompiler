@@ -9,15 +9,7 @@
 #define XSC_HLSL_ANALYZER_H
 
 
-#include <Xsc/Xsc.h>
-#include "ReportHandler.h"
-#include "ReferenceAnalyzer.h"
-#include "CodeWriter.h"
-#include "Visitor.h"
-#include "Token.h"
-#include "SymbolTable.h"
-#include "AST.h"
-
+#include "Analyzer.h"
 #include <map>
 
 
@@ -26,18 +18,12 @@ namespace Xsc
 
 
 // HLSL context analyzer.
-class HLSLAnalyzer : private Visitor
+class HLSLAnalyzer : public Analyzer
 {
     
     public:
         
         HLSLAnalyzer(Log* log = nullptr);
-
-        bool DecorateAST(
-            Program& program,
-            const ShaderInput& inputDesc,
-            const ShaderOutput& outputDesc
-        );
 
     private:
         
@@ -51,25 +37,14 @@ class HLSLAnalyzer : private Visitor
         };
 
         /* === Functions === */
+
+        void DecorateASTPrimary(
+            Program& program,
+            const ShaderInput& inputDesc,
+            const ShaderOutput& outputDesc
+        ) override;
         
         void EstablishMaps();
-
-        void SubmitReport(bool isError, const std::string& msg, const AST* ast = nullptr);
-        void Error(const std::string& msg, const AST* ast = nullptr);
-        void Warning(const std::string& msg, const AST* ast = nullptr);
-        void NotifyUndeclaredIdent(const std::string& ident, const AST* ast = nullptr);
-
-        void OpenScope();
-        void CloseScope();
-
-        void Register(const std::string& ident, AST* ast, const OnOverrideProc& overrideProc = nullptr);
-        
-        AST* Fetch(const std::string& ident) const;
-        AST* Fetch(const VarIdentPtr& ident) const;
-        
-        AST* FetchTypeIdent(const std::string& ident, const AST* ast = nullptr);
-
-        void ReportNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName);
 
         /*
         Returns the current (top level) function in the call stack
@@ -116,13 +91,6 @@ class HLSLAnalyzer : private Visitor
         bool FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics, std::string& semanticName) const;
         bool IsSystemValueSemnatic(std::string semantic) const;
 
-        StructDecl* FetchStructDeclFromIdent(const std::string& ident);
-        StructDecl* FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter);
-
-        void AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);
-        void AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* ast);
-        void AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);
-
         /* --- Helper templates for context analysis --- */
 
         template <typename T>
@@ -130,36 +98,31 @@ class HLSLAnalyzer : private Visitor
 
         /* === Members === */
 
-        ReportHandler                                   reportHandler_;
+        Program*                                program_                = nullptr;
+        FunctionDecl*                           mainFunction_           = nullptr;
 
-        Program*                                        program_                = nullptr;
-        FunctionDecl*                                   mainFunction_           = nullptr;
+        ShaderInput                             inputDesc_;
+        ShaderOutput                            outputDesc_;
 
-        ShaderInput                                     inputDesc_;
-        ShaderOutput                                    outputDesc_;
+        std::string                             entryPoint_;
+        ShaderTarget                            shaderTarget_           = ShaderTarget::VertexShader;
+        InputShaderVersion                      versionIn_              = InputShaderVersion::HLSL5;
+        OutputShaderVersion                     versionOut_             = OutputShaderVersion::GLSL330; //< TODO --> remove this variable from this class!!!
+        std::string                             localVarPrefix_;
 
-        std::string                                     entryPoint_;
-        ShaderTarget                                    shaderTarget_           = ShaderTarget::VertexShader;
-        InputShaderVersion                              versionIn_              = InputShaderVersion::HLSL5;
-        OutputShaderVersion                             versionOut_             = OutputShaderVersion::GLSL330; //< TODO --> remove this variable from this class!!!
-        std::string                                     localVarPrefix_;
-
-        std::map<std::string, IntrinsicClasses>         intrinsicMap_;
+        std::map<std::string, IntrinsicClasses> intrinsicMap_;
 
         // Function call stack to join arguments with its function call.
-        std::stack<FunctionCall*>                       callStack_;
+        std::stack<FunctionCall*>               callStack_;
 
         // Structure stack to collect all members with system value semantic (SV_...).
-        std::vector<StructDecl*>                        structStack_;
-
-        ASTSymbolTable                                  symTable_;
-        ReferenceAnalyzer                               refAnalyzer_;
+        std::vector<StructDecl*>                structStack_;
 
         // True if AST traversal is currently inside any function.
-        bool                                            isInsideFunc_          = false;
+        bool                                    isInsideFunc_          = false;
 
         // True if AST traversal is currently inside the main entry point (or its sub nodes).
-        bool                                            isInsideEntryPoint_    = false;
+        bool                                    isInsideEntryPoint_    = false;
 
 };
 

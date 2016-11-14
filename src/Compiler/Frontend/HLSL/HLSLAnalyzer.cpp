@@ -15,13 +15,12 @@ namespace Xsc
 
 
 HLSLAnalyzer::HLSLAnalyzer(Log* log) :
-    reportHandler_  { "context", log },
-    refAnalyzer_    { symTable_      }
+    Analyzer{ log }
 {
     EstablishMaps();
 }
 
-bool HLSLAnalyzer::DecorateAST(
+void HLSLAnalyzer::DecorateASTPrimary(
     Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
 {
     /* Store parameters */
@@ -35,8 +34,6 @@ bool HLSLAnalyzer::DecorateAST(
     program_ = &program;
 
     Visit(&program);
-
-    return (!reportHandler_.HasErros());
 }
 
 
@@ -59,76 +56,6 @@ void HLSLAnalyzer::EstablishMaps()
     };
 }
 
-void HLSLAnalyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast)
-{
-    auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
-    reportHandler_.SubmitReport(false, reportType, "context error", msg, program_->sourceCode.get(), (ast ? ast->area : SourceArea::ignore));
-}
-
-void HLSLAnalyzer::Error(const std::string& msg, const AST* ast)
-{
-    SubmitReport(true, msg, ast);
-}
-
-void HLSLAnalyzer::Warning(const std::string& msg, const AST* ast)
-{
-    SubmitReport(false, msg, ast);
-}
-
-void HLSLAnalyzer::NotifyUndeclaredIdent(const std::string& ident, const AST* ast)
-{
-    Warning("undeclared identifier \"" + ident + "\"", ast);
-}
-
-void HLSLAnalyzer::OpenScope()
-{
-    symTable_.OpenScope();
-}
-
-void HLSLAnalyzer::CloseScope()
-{
-    symTable_.CloseScope();
-}
-
-void HLSLAnalyzer::Register(const std::string& ident, AST* ast, const OnOverrideProc& overrideProc)
-{
-    try
-    {
-        symTable_.Register(ident, ast, overrideProc);
-    }
-    catch (const std::exception& err)
-    {
-        Error(err.what(), ast);
-    }
-}
-
-AST* HLSLAnalyzer::Fetch(const std::string& ident) const
-{
-    return symTable_.Fetch(ident);
-}
-
-AST* HLSLAnalyzer::Fetch(const VarIdentPtr& ident) const
-{
-    auto fullIdent = ident->ToString();
-    return Fetch(fullIdent);
-}
-
-AST* HLSLAnalyzer::FetchTypeIdent(const std::string& ident, const AST* ast)
-{
-    auto symbol = Fetch(ident);
-    if ( symbol && ( symbol->Type() == AST::Types::StructDecl || symbol->Type() == AST::Types::AliasDecl ) )
-        return symbol;
-    else
-        Error("identifier '" + ident + "' does not name a type", ast);
-    return nullptr;
-}
-
-void HLSLAnalyzer::ReportNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName)
-{
-    if (ast && ast->Type() == AST::Types::NullStmnt)
-        Warning("<" + stmntTypeName + "> statement with empty body", ast.get());
-}
-
 FunctionCall* HLSLAnalyzer::CurrentFunction() const
 {
     return (callStack_.empty() ? nullptr : callStack_.top());
@@ -148,7 +75,7 @@ IMPLEMENT_VISIT_PROC(Program)
     {
         /* Mark all functions used for the target shader */
         if (mainFunction_)
-            refAnalyzer_.MarkReferencesFromEntryPoint(mainFunction_, program_);
+            GetRefAnalyzer().MarkReferencesFromEntryPoint(mainFunction_, program_);
         else
             Error("entry point \"" + entryPoint_ + "\" not found");
     }
@@ -207,7 +134,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                     ast->flags << FunctionCall::isTexFunc;
             }
             else
-                NotifyUndeclaredIdent(ast->name->ident, ast);
+                ErrorUndeclaredIdent(ast->name->ident, ast);
         }
     }
 
@@ -277,7 +204,7 @@ IMPLEMENT_VISIT_PROC(AliasDecl)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    reportHandler_.PushContextDesc(ast->SignatureToString(false));
+    GetReportHandler().PushContextDesc(ast->SignatureToString(false));
 
     const auto isEntryPoint = (ast->name == entryPoint_);
 
@@ -349,7 +276,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     }
     CloseScope();
 
-    reportHandler_.PopContextDesc();
+    GetReportHandler().PopContextDesc();
 }
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
@@ -408,7 +335,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
-    ReportNullStmnt(ast->bodyStmnt, "for loop");
+    WarningOnNullStmnt(ast->bodyStmnt, "for loop");
 
     Visit(ast->attribs);
 
@@ -429,7 +356,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
 IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 {
-    ReportNullStmnt(ast->bodyStmnt, "while loop");
+    WarningOnNullStmnt(ast->bodyStmnt, "while loop");
 
     Visit(ast->attribs);
 
@@ -443,7 +370,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 {
-    ReportNullStmnt(ast->bodyStmnt, "do-while loop");
+    WarningOnNullStmnt(ast->bodyStmnt, "do-while loop");
 
     Visit(ast->attribs);
 
@@ -457,7 +384,7 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 
 IMPLEMENT_VISIT_PROC(IfStmnt)
 {
-    ReportNullStmnt(ast->bodyStmnt, "if");
+    WarningOnNullStmnt(ast->bodyStmnt, "if");
 
     Visit(ast->attribs);
 
@@ -473,7 +400,7 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
 
 IMPLEMENT_VISIT_PROC(ElseStmnt)
 {
-    ReportNullStmnt(ast->bodyStmnt, "else");
+    WarningOnNullStmnt(ast->bodyStmnt, "else");
 
     OpenScope();
     {
@@ -706,67 +633,6 @@ bool HLSLAnalyzer::IsSystemValueSemnatic(std::string semantic) const
     return false;
 }
 
-StructDecl* HLSLAnalyzer::FetchStructDeclFromIdent(const std::string& ident)
-{
-    auto symbol = FetchTypeIdent(ident);
-    if (symbol)
-    {
-        if (symbol->Type() == AST::Types::StructDecl)
-            return static_cast<StructDecl*>(symbol);
-        else if (symbol->Type() == AST::Types::AliasDecl)
-            return FetchStructDeclFromTypeDenoter(*(static_cast<AliasDecl*>(symbol)->typeDenoter));
-    }
-    return nullptr;
-}
-
-StructDecl* HLSLAnalyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter)
-{
-    if (typeDenoter.IsStruct())
-        return static_cast<const StructTypeDenoter&>(typeDenoter).structDeclRef;
-    else if (typeDenoter.IsAlias())
-    {
-        auto aliasDecl = static_cast<const AliasTypeDenoter&>(typeDenoter).aliasDeclRef;
-        if (aliasDecl)
-            return FetchStructDeclFromTypeDenoter(*(aliasDecl->typeDenoter));
-    }
-    return nullptr;
-}
-
-void HLSLAnalyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
-{
-    if (typeDenoter->IsStruct())
-        AnalyzeStructTypeDenoter(dynamic_cast<StructTypeDenoter&>(*typeDenoter), ast);
-    else if (typeDenoter->IsAlias())
-        AnalyzeAliasTypeDenoter(typeDenoter, ast);
-}
-
-void HLSLAnalyzer::AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* ast)
-{
-    structTypeDen.structDeclRef = FetchStructDeclFromIdent(structTypeDen.ident);
-}
-
-void HLSLAnalyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
-{
-    auto& aliasTypeDen = static_cast<AliasTypeDenoter&>(*typeDenoter);
-
-    auto symbol = FetchTypeIdent(aliasTypeDen.ident);
-    if (symbol)
-    {
-        if (symbol->Type() == AST::Types::StructDecl)
-        {
-            /* Replace type denoter by a struct type denoter */
-            auto structTypeDen = std::make_shared<StructTypeDenoter>();
-
-            structTypeDen->ident            = aliasTypeDen.ident;
-            structTypeDen->structDeclRef    = static_cast<StructDecl*>(symbol);
-            
-            typeDenoter = structTypeDen;
-        }
-        else if (symbol->Type() == AST::Types::AliasDecl)
-            aliasTypeDen.aliasDeclRef = static_cast<AliasDecl*>(symbol);
-    }
-}
-
 /* --- Helper templates for context analysis --- */
 
 template <typename T>
@@ -776,7 +642,7 @@ void HLSLAnalyzer::DecorateVarObjectSymbol(T ast)
     if (symbol)
         DecorateVarObject(symbol, ast->varIdent.get());
     else
-        NotifyUndeclaredIdent(ast->varIdent->ident, ast);
+        ErrorUndeclaredIdent(ast->varIdent->ident, ast);
 }
 
 
