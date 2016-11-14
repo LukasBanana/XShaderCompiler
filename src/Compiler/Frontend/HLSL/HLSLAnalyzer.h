@@ -116,6 +116,7 @@ class HLSLAnalyzer : private Visitor
         bool FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics, std::string& semanticName) const;
         bool IsSystemValueSemnatic(std::string semantic) const;
 
+        StructDecl* FetchStructDeclFromIdent(const std::string& ident);
         StructDecl* FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter);
 
         void AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);

@@ -684,7 +684,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
         OpenScope();
         {
-            Visit(ast->members);
+            VisitStructDeclMembers(ast);
         }
         CloseScope(semicolon);
     }
@@ -1533,6 +1533,13 @@ void GLSLGenerator::WriteFragmentShaderOutput()
     }
 
     Blank();
+}
+
+void GLSLGenerator::VisitStructDeclMembers(StructDecl* ast)
+{
+    if (ast->baseStructRef)
+        VisitStructDeclMembers(ast->baseStructRef);
+    Visit(ast->members);
 }
 
 VarIdent* GLSLGenerator::FirstSystemSemanticVarIdent(VarIdent* ast)

@@ -171,6 +171,8 @@ class GLSLGenerator : public Generator
 
         void WriteFragmentShaderOutput();
 
+        void VisitStructDeclMembers(StructDecl* ast);
+
         VarIdent* FirstSystemSemanticVarIdent(VarIdent* ast);
         void WriteVarIdent(VarIdent* ast);
 

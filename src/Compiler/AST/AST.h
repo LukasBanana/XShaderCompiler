@@ -221,12 +221,13 @@ struct StructDecl : public AST
     // Returns true if this is an anonymous structure.
     bool IsAnonymous() const;
 
-    std::string                     name;               // May be empty (for anonymous structures).
-    std::string                     baseStructName;     // May be empty (if no inheritance is used).
+    std::string                     name;                       // May be empty (for anonymous structures).
+    std::string                     baseStructName;             // May be empty (if no inheritance is used).
     std::vector<VarDeclStmntPtr>    members;
 
-    std::string                     aliasName;          // Alias name for input and output interface blocks of the DAST.
-    std::map<std::string, VarDecl*> systemValuesRef;    // List of members with system value semantic (SV_...).
+    std::string                     aliasName;                  // Alias name for input and output interface blocks of the DAST.
+    std::map<std::string, VarDecl*> systemValuesRef;            // List of members with system value semantic (SV_...).
+    StructDecl*                     baseStructRef   = nullptr;  // Optional reference to base struct
 };
 
 /* --- Variables --- */

@@ -247,12 +247,9 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
+    /* Find base struct-decl */
     if (!ast->baseStructName.empty())
-    {
-        /* Find base struct-decl */
-        //auto baseStruct = FetchStructDecl(ast->baseStructName);
-
-    }
+        ast->baseStructRef = FetchStructDeclFromIdent(ast->baseStructName);
 
     /* Register struct identifier in symbol table */
     Register(ast->name, ast);
@@ -709,6 +706,19 @@ bool HLSLAnalyzer::IsSystemValueSemnatic(std::string semantic) const
     return false;
 }
 
+StructDecl* HLSLAnalyzer::FetchStructDeclFromIdent(const std::string& ident)
+{
+    auto symbol = FetchTypeIdent(ident);
+    if (symbol)
+    {
+        if (symbol->Type() == AST::Types::StructDecl)
+            return static_cast<StructDecl*>(symbol);
+        else if (symbol->Type() == AST::Types::AliasDecl)
+            return FetchStructDeclFromTypeDenoter(*(static_cast<AliasDecl*>(symbol)->typeDenoter));
+    }
+    return nullptr;
+}
+
 StructDecl* HLSLAnalyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter)
 {
     if (typeDenoter.IsStruct())
@@ -732,14 +742,7 @@ void HLSLAnalyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
 
 void HLSLAnalyzer::AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* ast)
 {
-    auto symbol = FetchTypeIdent(structTypeDen.ident);
-    if (symbol)
-    {
-        if (symbol->Type() == AST::Types::StructDecl)
-            structTypeDen.structDeclRef = static_cast<StructDecl*>(symbol);
-        else if (symbol->Type() == AST::Types::AliasDecl)
-            structTypeDen.structDeclRef = FetchStructDeclFromTypeDenoter(*(static_cast<AliasDecl*>(symbol)->typeDenoter));
-    }
+    structTypeDen.structDeclRef = FetchStructDeclFromIdent(structTypeDen.ident);
 }
 
 void HLSLAnalyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
