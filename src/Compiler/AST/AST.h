@@ -218,6 +218,9 @@ struct StructDecl : public AST
     // Returns a descriptive string of the function signature (e.g. "struct s" or "struct <anonymous>").
     std::string SignatureToString() const;
 
+    // Returns true if this is an anonymous structure.
+    bool IsAnonymous() const;
+
     std::string                     name;               // May be empty (for anonymous structures).
     std::string                     baseStructName;     // May be empty (if no inheritance is used).
     std::vector<VarDeclStmntPtr>    members;
@@ -259,10 +262,8 @@ struct VarType : public AST
     // Returns the name of this type (either 'baseType' or 'structDecl->name').
     std::string ToString() const;
 
-    //TODO --> change this to "TypeDenoterPtr typeDenoter"!!!
-    //std::string     baseType;               // Either this ...
-    TypeDenoterPtr  typeDenoter;
     StructDeclPtr   structDecl;             // Optional structure declaration
+    TypeDenoterPtr  typeDenoter;
 
     //TODO: remove this
     AST*            symbolRef = nullptr;    // Symbol reference for DAST to the type definition; may be null.
@@ -341,8 +342,10 @@ struct AliasDecl : AST
 {
     AST_INTERFACE(AliasDecl);
 
-    std::string     ident;          // Type identifier
-    TypeDenoterPtr  typeDenoter;    // Type denoter
+    std::string     ident;                  // Type identifier
+    TypeDenoterPtr  typeDenoter;            // Type denoter
+
+    AliasDeclStmnt* declStmntRef = nullptr; // Reference to decl-stmnt.
 };
 
 /* --- Declaration statements --- */

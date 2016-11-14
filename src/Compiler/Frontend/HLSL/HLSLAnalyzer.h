@@ -66,6 +66,8 @@ class HLSLAnalyzer : private Visitor
         
         AST* Fetch(const std::string& ident) const;
         AST* Fetch(const VarIdentPtr& ident) const;
+        
+        AST* FetchTypeIdent(const std::string& ident, const AST* ast = nullptr);
 
         void ReportNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName);
 
@@ -80,7 +82,10 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
-        DECL_VISIT_PROC( StructDecl         );
+
+        DECL_VISIT_PROC( VarDecl           );
+        DECL_VISIT_PROC( StructDecl        );
+        DECL_VISIT_PROC( AliasDecl         );
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( BufferDeclStmnt   );
@@ -101,7 +106,6 @@ class HLSLAnalyzer : private Visitor
         DECL_VISIT_PROC( VarAccessExpr     );
 
         DECL_VISIT_PROC( VarType           );
-        DECL_VISIT_PROC( VarDecl           );
 
         /* --- Helper functions for context analysis --- */
 
@@ -111,6 +115,12 @@ class HLSLAnalyzer : private Visitor
 
         bool FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics, std::string& semanticName) const;
         bool IsSystemValueSemnatic(std::string semantic) const;
+
+        StructDecl* FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter);
+
+        void AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);
+        void AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* ast);
+        void AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);
 
         /* --- Helper templates for context analysis --- */
 
@@ -139,7 +149,7 @@ class HLSLAnalyzer : private Visitor
         std::stack<FunctionCall*>                       callStack_;
 
         // Structure stack to collect all members with system value semantic (SV_...).
-        std::vector<StructDecl*>                         structStack_;
+        std::vector<StructDecl*>                        structStack_;
 
         ASTSymbolTable                                  symTable_;
         ReferenceAnalyzer                               refAnalyzer_;

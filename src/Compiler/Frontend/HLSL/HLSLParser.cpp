@@ -630,8 +630,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
         else if (Is(Tokens::Struct))
         {
             /* Parse structure variable type */
-            ast->varType = Make<VarType>();
-            ast->varType->structDecl = ParseStructDecl();
+            ast->varType = MakeVarType(ParseStructDecl());
             break;
         }
         else
@@ -664,6 +663,10 @@ AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
     ast->aliasDecls = ParseAliasDeclList(typeDenoter);
 
     Semi();
+
+    /* Store references in decls to this statement */
+    for (auto& decl : ast->aliasDecls)
+        decl->declStmntRef = ast.get();
 
     return ast;
 }
@@ -914,8 +917,7 @@ StmntPtr HLSLParser::ParseStructDeclOrVarDeclStmnt()
         /* Parse variable declaration with previous structure type */
         auto varDeclStmnt = Make<VarDeclStmnt>();
 
-        varDeclStmnt->varType = Make<VarType>();
-        varDeclStmnt->varType->structDecl = ast->structDecl;
+        varDeclStmnt->varType = MakeVarType(ast->structDecl);
         
         /* Parse variable declarations */
         varDeclStmnt->varDecls = ParseVarDeclList();
@@ -1129,6 +1131,18 @@ void HLSLParser::RegisterSymbol(const std::string& ident, Token* tkn)
         Error(e.what(), tkn, HLSLErr::Unknown, false);
     }
 }
+
+VarTypePtr HLSLParser::MakeVarType(const StructDeclPtr& structDecl)
+{
+    auto ast = Make<VarType>();
+
+    ast->structDecl     = ast->structDecl;
+    ast->typeDenoter    = std::make_shared<StructTypeDenoter>(structDecl->name);
+
+    return ast;
+}
+
+/* === Parse functions === */
 
 ExprPtr HLSLParser::ParseBracketOrCastExpr()
 {

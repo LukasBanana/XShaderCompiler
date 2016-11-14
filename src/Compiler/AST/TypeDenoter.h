@@ -42,6 +42,7 @@ struct TypeDenoter
     // Returns a simple string representation of this type denoter (e.g. "scalar type").
     virtual std::string ToString() const = 0;
 
+    //TODO: REMOVE THIS!!!
     // Returns either this or the aliased type.
     virtual TypeDenoter* Get();
 
@@ -55,6 +56,7 @@ struct TypeDenoter
     bool IsSampler() const;
     bool IsTexture() const;
     bool IsStruct() const;
+    bool IsAlias() const;
     bool IsArray() const;
 
     // Returns true if this type denoter is compatible with the specified type denoter (special cases for void and base types).
@@ -144,7 +146,7 @@ struct StructTypeDenoter : public TypeDenoter
     std::string Ident() const override;
 
     std::string     ident;
-    StructDecl*     structDeclRef = nullptr;
+    StructDecl*     structDeclRef = nullptr;    // Reference to the StructDecl AST node
 };
 
 using StructTypeDenoterPtr = std::shared_ptr<StructTypeDenoter>;
@@ -159,11 +161,8 @@ struct AliasTypeDenoter : public TypeDenoter
     std::string ToString() const override;
     std::string Ident() const override;
 
-    TypeDenoter* Get() override;
-
-    std::string     ident;                  // Type identifier
-  //StructDeclPtr   structDecl;             // Optional struct-decl AST node.
-    TypeDenoter*    aliasTypeRef = nullptr;
+    std::string     ident;                      // Type identifier
+    AliasDecl*      aliasDeclRef    = nullptr;  // Reference to the AliasDecl AST node.
 };
 
 using AliasTypeDenoterPtr = std::shared_ptr<AliasTypeDenoter>;

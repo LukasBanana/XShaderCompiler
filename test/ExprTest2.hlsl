@@ -7,11 +7,17 @@ struct S1
 	float x, y, z;
 };
 
+typedef struct S2
+{
+	int a, b;
+}
+S2_t[1][2][3];
+
 void CS()
 {
 	S1 s1 = (struct S1)0;
 	
-	S1 s2 = (S2)0;
+	S2_t s2;
 	
 	int i1 = (int).0f;
 	

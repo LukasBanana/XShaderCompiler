@@ -113,6 +113,16 @@ AST* HLSLAnalyzer::Fetch(const VarIdentPtr& ident) const
     return Fetch(fullIdent);
 }
 
+AST* HLSLAnalyzer::FetchTypeIdent(const std::string& ident, const AST* ast)
+{
+    auto symbol = Fetch(ident);
+    if ( symbol && ( symbol->Type() == AST::Types::StructDecl || symbol->Type() == AST::Types::AliasDecl ) )
+        return symbol;
+    else
+        Error("identifier '" + ident + "' does not name a type", ast);
+    return nullptr;
+}
+
 void HLSLAnalyzer::ReportNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName)
 {
     if (ast && ast->Type() == AST::Types::NullStmnt)
@@ -209,22 +219,43 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     callStack_.pop();
 }
 
+/* --- Declarations --- */
+
+IMPLEMENT_VISIT_PROC(VarDecl)
+{
+    if (isInsideFunc_)
+        ast->flags << VarDecl::isInsideFunc;
+
+    Visit(ast->arrayDims);
+
+    for (auto& semantic : ast->semantics)
+    {
+        Visit(semantic);
+
+        /* Store references to members with system value semantic (SV_...) in all parent structures */
+        if (IsSystemValueSemnatic(semantic->semantic))
+        {
+            for (auto& structDecl : structStack_)
+                structDecl->systemValuesRef[ast->name] = ast;
+        }
+    }
+
+    Visit(ast->initializer);
+
+    Register(ast->name, ast);
+}
+
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    #if 0//!!! there is no forward declaration for structs in HLSL!
-    if (!ast->name.empty())
+    if (!ast->baseStructName.empty())
     {
-        Register(
-            ast->name, ast,
-            [](AST* symbol) -> bool
-            {
-                return symbol->Type() == AST::Types::StructDecl;
-            }
-        );
+        /* Find base struct-decl */
+        //auto baseStruct = FetchStructDecl(ast->baseStructName);
+
     }
-    #else
+
+    /* Register struct identifier in symbol table */
     Register(ast->name, ast);
-    #endif
 
     structStack_.push_back(ast);
 
@@ -235,6 +266,14 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     CloseScope();
 
     structStack_.pop_back();
+}
+
+IMPLEMENT_VISIT_PROC(AliasDecl)
+{
+    AnalyzeTypeDenoter(ast->typeDenoter, ast);
+
+    /* Register type-alias identifier in symbol table */
+    Register(ast->ident, ast);
 }
 
 /* --- Declaration statements --- */
@@ -521,41 +560,22 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
 IMPLEMENT_VISIT_PROC(VarType)
 {
-    if (ast->structDecl)
-        Visit(ast->structDecl);
-    else if (!ast->typeDenoter->Ident().empty())
+    Visit(ast->structDecl);
+
+    if (ast->typeDenoter)
     {
-        /* Decorate variable type */
-        auto symbol = Fetch(ast->typeDenoter->Ident());
-        if (symbol)
-            ast->symbolRef = symbol;
-    }
-    /*else
-        Error("missing variable type", ast);*/
-}
+        AnalyzeTypeDenoter(ast->typeDenoter, ast);
 
-IMPLEMENT_VISIT_PROC(VarDecl)
-{
-    if (isInsideFunc_)
-        ast->flags << VarDecl::isInsideFunc;
-
-    Visit(ast->arrayDims);
-
-    for (auto& semantic : ast->semantics)
-    {
-        Visit(semantic);
-
-        /* Store references to members with system value semantic (SV_...) in all parent structures */
-        if (IsSystemValueSemnatic(semantic->semantic))
+        if (!ast->typeDenoter->Ident().empty())
         {
-            for (auto& structDecl : structStack_)
-                structDecl->systemValuesRef[ast->name] = ast;
+            /* Decorate variable type */
+            auto symbol = Fetch(ast->typeDenoter->Ident());
+            if (symbol)
+                ast->symbolRef = symbol;
         }
     }
-
-    Visit(ast->initializer);
-
-    Register(ast->name, ast);
+    else
+        Error("missing variable type", ast);
 }
 
 #undef IMPLEMENT_VISIT_PROC
@@ -689,9 +709,65 @@ bool HLSLAnalyzer::IsSystemValueSemnatic(std::string semantic) const
     return false;
 }
 
+StructDecl* HLSLAnalyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter)
+{
+    if (typeDenoter.IsStruct())
+        return static_cast<const StructTypeDenoter&>(typeDenoter).structDeclRef;
+    else if (typeDenoter.IsAlias())
+    {
+        auto aliasDecl = static_cast<const AliasTypeDenoter&>(typeDenoter).aliasDeclRef;
+        if (aliasDecl)
+            return FetchStructDeclFromTypeDenoter(*(aliasDecl->typeDenoter));
+    }
+    return nullptr;
+}
+
+void HLSLAnalyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
+{
+    if (typeDenoter->IsStruct())
+        AnalyzeStructTypeDenoter(dynamic_cast<StructTypeDenoter&>(*typeDenoter), ast);
+    else if (typeDenoter->IsAlias())
+        AnalyzeAliasTypeDenoter(typeDenoter, ast);
+}
+
+void HLSLAnalyzer::AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* ast)
+{
+    auto symbol = FetchTypeIdent(structTypeDen.ident);
+    if (symbol)
+    {
+        if (symbol->Type() == AST::Types::StructDecl)
+            structTypeDen.structDeclRef = static_cast<StructDecl*>(symbol);
+        else if (symbol->Type() == AST::Types::AliasDecl)
+            structTypeDen.structDeclRef = FetchStructDeclFromTypeDenoter(*(static_cast<AliasDecl*>(symbol)->typeDenoter));
+    }
+}
+
+void HLSLAnalyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
+{
+    auto& aliasTypeDen = static_cast<AliasTypeDenoter&>(*typeDenoter);
+
+    auto symbol = FetchTypeIdent(aliasTypeDen.ident);
+    if (symbol)
+    {
+        if (symbol->Type() == AST::Types::StructDecl)
+        {
+            /* Replace type denoter by a struct type denoter */
+            auto structTypeDen = std::make_shared<StructTypeDenoter>();
+
+            structTypeDen->ident            = aliasTypeDen.ident;
+            structTypeDen->structDeclRef    = static_cast<StructDecl*>(symbol);
+            
+            typeDenoter = structTypeDen;
+        }
+        else if (symbol->Type() == AST::Types::AliasDecl)
+            aliasTypeDen.aliasDeclRef = static_cast<AliasDecl*>(symbol);
+    }
+}
+
 /* --- Helper templates for context analysis --- */
 
-template <typename T> void HLSLAnalyzer::DecorateVarObjectSymbol(T ast)
+template <typename T>
+void HLSLAnalyzer::DecorateVarObjectSymbol(T ast)
 {
     auto symbol = Fetch(ast->varIdent->ident);
     if (symbol)

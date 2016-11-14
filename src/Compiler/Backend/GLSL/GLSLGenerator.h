@@ -187,7 +187,8 @@ class GLSLGenerator : public Generator
         bool IsSystemValueSemantic(const VarSemantic* ast) const;
         bool HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const;
 
-        std::string ResolveTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast);
+        void WriteArrayDims(const std::vector<ExprPtr>& arrayDims);
+        void WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast);
 
         /* === Members === */
 

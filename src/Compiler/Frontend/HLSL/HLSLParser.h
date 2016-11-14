@@ -79,6 +79,9 @@ class HLSLParser : public Parser
         // Registers the specified AST node in the symbol table.
         void RegisterSymbol(const std::string& ident, Token* tkn = nullptr);
 
+        // Makes a new VarType AST node for the specified struct decl.
+        VarTypePtr MakeVarType(const StructDeclPtr& structDecl);
+
         /* === Parse functions === */
 
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);

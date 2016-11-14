@@ -621,9 +621,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         }
         else if (ast->typeDenoter)
         {
-            /* Get function name from type denoter */
-            name = ResolveTypeDenoter(*ast->typeDenoter, ast);
-            Write(name);
+            /* Write function name from type denoter */
+            WriteTypeDenoter(*ast->typeDenoter, ast);
         }
         else
             Error("missing function name", ast);
@@ -762,7 +761,7 @@ IMPLEMENT_VISIT_PROC(VarType)
     if (ast->structDecl)
         Visit(ast->structDecl);
     else
-        Write(ResolveTypeDenoter(*ast->typeDenoter, ast));
+        WriteTypeDenoter(*ast->typeDenoter, ast);
 }
 
 IMPLEMENT_VISIT_PROC(VarIdent)
@@ -791,13 +790,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         Write(localVarPrefix_);
     
     Write(ast->name);
-
-    for (auto& dim : ast->arrayDims)
-    {
-        Write("[");
-        Visit(dim);
-        Write("]");
-    }
+    WriteArrayDims(ast->arrayDims);
 
     if (ast->initializer)
     {
@@ -970,6 +963,7 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
         return; // structure not used
 
     Line(ast);
+
     bool semicolon = true;
     Visit(ast->structDecl, &semicolon);
 
@@ -1056,7 +1050,15 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
 {
-    // do nothing -> GLSL does not support 'typedef'
+    if (!ast->structDecl->IsAnonymous())
+    {
+        Line(ast);
+
+        bool semicolon = true;
+        Visit(ast->structDecl, &semicolon);
+
+        Blank();
+    }
 }
 
 /* --- Statements --- */
@@ -1259,7 +1261,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(TypeNameExpr)
 {
-    Write(ResolveTypeDenoter(*ast->typeDenoter, ast));
+    WriteTypeDenoter(*ast->typeDenoter, ast);
 }
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
@@ -1745,32 +1747,64 @@ const std::string& GLSLGenerator::SemanticStage::operator [] (const ShaderTarget
     throw Report(Report::Types::Error, "'target' parameter out of range in " + std::string(__FUNCTION__));
 }
 
+void GLSLGenerator::WriteArrayDims(const std::vector<ExprPtr>& arrayDims)
+{
+    for (auto& dim : arrayDims)
+    {
+        Write("[");
+        Visit(dim);
+        Write("]");
+    }
+}
+
 //TODO: incomplete!!!
-std::string GLSLGenerator::ResolveTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast)
+void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast)
 {
     if (typeDenoter.IsVoid())
-        return "void";
+    {
+        /* Just write void type */
+        Write("void");
+    }
     else if (typeDenoter.IsBase())
     {
         /* Map GLSL base type */
-        auto& baseTypeDen = dynamic_cast<const BaseTypeDenoter&>(typeDenoter);
+        auto& baseTypeDen = static_cast<const BaseTypeDenoter&>(typeDenoter);
 
         auto it = dataTypeMap_.find(baseTypeDen.dataType);
         if (it != dataTypeMap_.end())
-            return it->second;
+            Write(it->second);
         else
             Error("failed to map data type to GLSL data type", ast);
     }
     else if (typeDenoter.IsTexture())
     {
         //TODO: determine correct texture type!!!
-        return "sampler2D";
+        Write("sampler2D");
     }
-    else if (!typeDenoter.Ident().empty())
-        return typeDenoter.Ident();
+    else if (typeDenoter.IsStruct())
+    {
+        /* Return struct identifier */
+        Write(typeDenoter.Ident());
+    }
+    else if (typeDenoter.IsAlias())
+    {
+        /* Resolve typename of aliased type */
+        auto& aliasTypeDenoter = static_cast<const AliasTypeDenoter&>(typeDenoter);
+        if (aliasTypeDenoter.aliasDeclRef)
+            WriteTypeDenoter(*(aliasTypeDenoter.aliasDeclRef->typeDenoter), ast);
+        else
+            Error("missing reference to type alias '" + aliasTypeDenoter.ident + "'", ast);
+    }
+    else if (typeDenoter.IsArray())
+    {
+        /* Write array type denoter */
+        auto& arrayTypeDen = static_cast<const ArrayTypeDenoter&>(typeDenoter);
 
-    Error("failed to determine GLSL data type", ast);
-    return "";
+        WriteTypeDenoter(*arrayTypeDen.baseTypeDenoter, ast);
+        WriteArrayDims(arrayTypeDen.arrayDims);
+    }
+    else
+        Error("failed to determine GLSL data type", ast);
 }
 
 

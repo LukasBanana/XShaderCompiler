@@ -42,7 +42,12 @@ VarIdent* VarIdent::LastVarIdent()
 
 std::string StructDecl::SignatureToString() const
 {
-    return (name.empty() ? "<anonymous>" : name);
+    return (IsAnonymous() ? "<anonymous>" : name);
+}
+
+bool StructDecl::IsAnonymous() const
+{
+    return name.empty();
 }
 
 

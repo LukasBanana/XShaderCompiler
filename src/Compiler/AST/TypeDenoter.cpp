@@ -70,6 +70,11 @@ bool TypeDenoter::IsStruct() const
     return (Type() == Types::Struct);
 }
 
+bool TypeDenoter::IsAlias() const
+{
+    return (Type() == Types::Alias);
+}
+
 bool TypeDenoter::IsArray() const
 {
     return (Type() == Types::Array);
@@ -246,14 +251,9 @@ TypeDenoter::Types AliasTypeDenoter::Type() const
     return Types::Alias;
 }
 
-TypeDenoter* AliasTypeDenoter::Get()
-{
-    return (aliasTypeRef ? aliasTypeRef : this);
-}
-
 std::string AliasTypeDenoter::ToString() const
 {
-    return (aliasTypeRef ? aliasTypeRef->ToString() : "<unknown alias>");
+    return ident;
 }
 
 std::string AliasTypeDenoter::Ident() const
