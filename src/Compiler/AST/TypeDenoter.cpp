@@ -158,8 +158,11 @@ bool BaseTypeDenoter::Equals(const TypeDenoter& rhs) const
     return (rhs.Type() == Types::Base && dataType == static_cast<const BaseTypeDenoter&>(rhs).dataType);
 }
 
+// see https://msdn.microsoft.com/en-us/library/windows/desktop/bb172396(v=vs.85).aspx
 bool BaseTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
+    //TODO: this must be extended for a lot of casting variants!!!
+    #if 0
     if (IsScalar())
         return (targetType.Type() == Types::Base || targetType.Type() == Types::Struct);
     else if (IsVector())
@@ -179,6 +182,9 @@ bool BaseTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
         }
     }
     return false;
+    #else
+    return (targetType.Type() == Types::Base || targetType.Type() == Types::Struct);
+    #endif
 }
 
 /* ----- BufferTypeDenoter ----- */

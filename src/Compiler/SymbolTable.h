@@ -29,7 +29,7 @@ class SymbolTable
     public:
         
         // Override symbol callback procedure. Must return true to allow a symbol override.
-        using OnOverrideProc = std::function<bool(SymbolType symbol)>;
+        using OnOverrideProc = std::function<bool(SymbolType& prevSymbol)>;
 
         SymbolTable()
         {
@@ -85,12 +85,9 @@ class SymbolTable
                 auto& entry = it->second.top();
                 if (entry.symbol && entry.scopeLevel == ScopeLevel())
                 {
+                    /* Call override procedure and pass previous symbol entry as reference */
                     if (overrideProc && overrideProc(entry.symbol))
-                    {
-                        /* Override symbol in this scope */
-                        entry.symbol = symbol;
                         return;
-                    }
                     else
                         throw std::runtime_error("identifier '" + ident + "' already declared in this scope");
                 }
@@ -169,7 +166,7 @@ class ASTSymbolOverload
         AST* FetchType(bool throwOnFailure = true);
 
         // Returns the FunctionDecl AST node for the specified argument type denoter list (used to derive the overloaded function).
-        FunctionDecl* FetchFunctionDecl(const std::vector<const TypeDenoter*>& argTypeDenoters);
+        FunctionDecl* FetchFunctionDecl(const std::vector<TypeDenoterPtr>& argTypeDenoters);
 
     private:
 
@@ -177,7 +174,7 @@ class ASTSymbolOverload
 
         bool MatchFunctionDeclWithArgs(
             FunctionDecl& funcDecl,
-            const std::vector<const TypeDenoter*>& typeDens,
+            const std::vector<TypeDenoterPtr>& typeDens,
             bool implicitTypeConversion
         );
 

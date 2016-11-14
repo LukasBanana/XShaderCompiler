@@ -140,6 +140,9 @@ FunctionCallPtr HLSLParser::ParseFunctionCall(VarIdentPtr varIdent)
     /* Parse argument list */
     ast->arguments = ParseArgumentList();
 
+    /* Update AST area */
+    ast->area = ast->name->area;
+
     return ast;
 }
 

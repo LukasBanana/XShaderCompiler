@@ -98,7 +98,7 @@ AST* ASTSymbolOverload::FetchType(bool throwOnFailure)
     return ref;
 }
 
-FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<const TypeDenoter*>& argTypeDenoters)
+FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoterPtr>& argTypeDenoters)
 {
     if (refs_.empty())
         throw std::runtime_error("undefined symbol '" + ident_ + "'");
@@ -139,7 +139,7 @@ FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<const TypeD
 
     /* Check for ambiguous function call */
     if (funcDeclCandidates.size() != 1)
-        throw std::runtime_error("ambiguous function call");
+        throw std::runtime_error("ambiguous function call (" + std::to_string(funcDeclCandidates.size()) + " candidates)");
 
     return funcDeclCandidates.front();
 }
@@ -162,12 +162,12 @@ bool ASTSymbolOverload::ValidateNumArgsForFunctionDecl(std::size_t numArgs)
 }
 
 bool ASTSymbolOverload::MatchFunctionDeclWithArgs(
-    FunctionDecl& funcDecl, const std::vector<const TypeDenoter*>& typeDens, bool implicitTypeConversion)
+    FunctionDecl& funcDecl, const std::vector<TypeDenoterPtr>& typeDens, bool implicitTypeConversion)
 {
     auto numArgs = typeDens.size();
     if (numArgs >= funcDecl.NumMinArgs() && numArgs <= funcDecl.NumMaxArgs())
     {
-        for (std::size_t i = 0; i < funcDecl.parameters.size(); ++i)
+        for (std::size_t i = 0, n = std::min(typeDens.size(), funcDecl.parameters.size()); i < n; ++i)
         {
             /* Get type denoters to compare */
             auto paramTypeDen = funcDecl.parameters[i]->varType->typeDenoter.get();
@@ -186,6 +186,7 @@ bool ASTSymbolOverload::MatchFunctionDeclWithArgs(
                     return false;
             }
         }
+        return true;
     }
     return false;
 }

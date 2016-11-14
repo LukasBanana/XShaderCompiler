@@ -43,7 +43,8 @@ typedef S1 S1_t4;
 
 /* --- </typedef struct tests> --- */
 
-void f2(Texture2D t[5])
+//void f2(Texture2D t[5])
+void f2(int x)
 {
 	return 0;
 }

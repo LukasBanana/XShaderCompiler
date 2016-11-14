@@ -19,7 +19,7 @@ S2_t[1][2][3];
 
 void CS()
 {
-	f s1 = (struct S1)0;
+	S1 s1 = (struct S1)0;
 	
 	S2_t s2;
 	
@@ -29,7 +29,8 @@ void CS()
 	
 	float f2 = ((vector<float, (1+4)/5+3>)1).w;
 	
-	float f3 = f(1);
+	//float f3 = f(i1);
+	float f3 = f(1, 0);
 	
 }
 

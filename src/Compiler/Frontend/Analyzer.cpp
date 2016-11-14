@@ -78,9 +78,9 @@ void Analyzer::Register(const std::string& ident, AST* ast)
         symTable_.Register(
             ident,
             std::make_shared<ASTSymbolOverload>(ident, ast),
-            [&](ASTSymbolOverloadPtr symbol) -> bool
+            [&](ASTSymbolOverloadPtr& prevSymbol) -> bool
             {
-                return symbol->AddSymbolRef(ast);
+                return prevSymbol->AddSymbolRef(ast);
             }
         );
     }
@@ -132,7 +132,38 @@ AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
 
 FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::vector<ExprPtr>& args, const AST* ast)
 {
-    //TODO: derive type denoter from argument expressions ...
+    try
+    {
+        /* Fetch symbol with identifier */
+        auto symbol = symTable_.Fetch(ident);
+        if (symbol)
+        {
+            /* Derive type denoters from arguments */
+            std::vector<TypeDenoterPtr> argTypeDens;
+
+            for (const auto& arg : args)
+            {
+                try
+                {
+                    argTypeDens.push_back(arg->GetTypeDenoter());
+                }
+                catch (const std::exception& e)
+                {
+                    Error(e.what(), arg.get());
+                    return nullptr;
+                }
+            }
+
+            /* Fetch function call with argument type denoters */
+            return symbol->FetchFunctionDecl(argTypeDens);
+        }
+        else
+            ErrorUndeclaredIdent(ident, ast);
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what(), ast);
+    }
     return nullptr;
 }
 
