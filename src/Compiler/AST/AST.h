@@ -98,7 +98,6 @@ struct AST
         SwitchStmnt,
         AssignStmnt,
         ExprStmnt,
-        FunctionCallStmnt,
         ReturnStmnt,
         CtrlTransferStmnt,
 
@@ -447,8 +446,8 @@ struct AliasDeclStmnt : public Stmnt
 {
     AST_INTERFACE(AliasDeclStmnt);
 
-    std::vector<AliasDeclPtr>   aliasDecls; // Type aliases
     StructDeclPtr               structDecl; // Optional structure declaration
+    std::vector<AliasDeclPtr>   aliasDecls; // Type aliases
 };
 
 /* --- Statements --- */
@@ -544,14 +543,6 @@ struct ExprStmnt : public Stmnt
     AST_INTERFACE(ExprStmnt);
 
     ExprPtr expr;
-};
-
-// Function call statement.
-struct FunctionCallStmnt : public Stmnt
-{
-    AST_INTERFACE(FunctionCallStmnt);
-
-    FunctionCallPtr call;
 };
 
 // Returns statement.

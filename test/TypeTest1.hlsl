@@ -56,7 +56,11 @@ float4 VS() : SV_Position
 	}
 	s1, s2, s3;
 
-	f2(0);
+	float3 f2_v = f2(0).xyz;
+	
+	int a = 0, b = 0;
+	int c = (a += b);
+	
 	DWORD x = 0;
 	float x1 = 0;
 	S1_t2 x2 = 0;

@@ -97,7 +97,12 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
 IMPLEMENT_VISIT_PROC(AliasDecl)
 {
-    // do nothing
+    /* Special case: type denoters are not sub classes of AST */
+    if (ast->typeDenoter->IsArray())
+    {
+        auto arrayTypeDenoter = static_cast<ArrayTypeDenoter*>(ast->typeDenoter.get());
+        Visit(arrayTypeDenoter->arrayDims);
+    }
 }
 
 /* --- Declaration statements --- */
@@ -138,7 +143,8 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
 {
-    // do nothing
+    Visit(ast->structDecl);
+    Visit(ast->aliasDecls);
 }
 
 /* --- Statements --- */
@@ -205,11 +211,6 @@ IMPLEMENT_VISIT_PROC(AssignStmnt)
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
     Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(FunctionCallStmnt)
-{
-    Visit(ast->call);
 }
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)

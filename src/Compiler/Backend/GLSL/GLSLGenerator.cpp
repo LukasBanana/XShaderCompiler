@@ -1220,16 +1220,6 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
     EndLn();
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCallStmnt)
-{
-    BeginLn();
-    {
-        Visit(ast->call);
-        Write(";");
-    }
-    EndLn();
-}
-
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     if (isInsideEntryPoint_)

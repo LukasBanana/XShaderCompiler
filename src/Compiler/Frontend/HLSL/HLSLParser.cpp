@@ -935,10 +935,10 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
     
     if (Is(Tokens::LBracket))
     {
-        /* Parse function call statement */
-        auto ast = Make<FunctionCallStmnt>();
+        /* Parse function call as expression statement */
+        auto ast = Make<ExprStmnt>();
         
-        ast->call = ParseFunctionCall(varIdent);
+        ast->expr = ParseFunctionCallExpr(varIdent);
         Semi();
 
         return ast;

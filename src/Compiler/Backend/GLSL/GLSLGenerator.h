@@ -142,7 +142,6 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( SwitchStmnt       );
         DECL_VISIT_PROC( AssignStmnt       );
         DECL_VISIT_PROC( ExprStmnt         );
-        DECL_VISIT_PROC( FunctionCallStmnt );
         DECL_VISIT_PROC( ReturnStmnt       );
         DECL_VISIT_PROC( CtrlTransferStmnt );
 

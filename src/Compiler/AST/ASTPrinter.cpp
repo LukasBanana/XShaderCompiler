@@ -76,12 +76,6 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     DEFAULT_VISITOR(FunctionCall);
 }
 
-IMPLEMENT_VISIT_PROC(StructDecl)
-{
-    Print(ast, "StructDecl");
-    DEFAULT_VISITOR(StructDecl);
-}
-
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     Print(ast, "SwitchCase");
@@ -93,8 +87,6 @@ IMPLEMENT_VISIT_PROC(SamplerValue)
     Print(ast, "SamplerValue", ast->name/* + " = " + ast->value->ToString()*/);
     DEFAULT_VISITOR(SamplerValue);
 }
-
-/* --- Variables --- */
 
 IMPLEMENT_VISIT_PROC(PackOffset)
 {
@@ -132,6 +124,8 @@ IMPLEMENT_VISIT_PROC(VarIdent)
     DEFAULT_VISITOR(VarIdent);
 }
 
+/* --- Declaration --- */
+
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
     Print(ast, "VarDecl", ast->name);
@@ -150,12 +144,30 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
     DEFAULT_VISITOR(SamplerDecl);
 }
 
+IMPLEMENT_VISIT_PROC(StructDecl)
+{
+    Print(ast, "StructDecl");
+    DEFAULT_VISITOR(StructDecl);
+}
+
+IMPLEMENT_VISIT_PROC(AliasDecl)
+{
+    Print(ast, "AliasDecl", ast->ident);
+    DEFAULT_VISITOR(AliasDecl);
+}
+
 /* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     Print(ast, "FunctionDecl", ast->name);
     DEFAULT_VISITOR(FunctionDecl);
+}
+
+IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+{
+    Print(ast, "VarDeclStmnt");
+    DEFAULT_VISITOR(VarDeclStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
@@ -180,12 +192,6 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 {
     Print(ast, "StructDeclStmnt");
     DEFAULT_VISITOR(StructDeclStmnt);
-}
-
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
-{
-    Print(ast, "VarDeclStmnt");
-    DEFAULT_VISITOR(VarDeclStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
@@ -254,12 +260,6 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
     Print(ast, "ExprStmnt");
     DEFAULT_VISITOR(ExprStmnt);
-}
-
-IMPLEMENT_VISIT_PROC(FunctionCallStmnt)
-{
-    Print(ast, "FunctionCallStmnt");
-    DEFAULT_VISITOR(FunctionCallStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)

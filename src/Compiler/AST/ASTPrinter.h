@@ -37,24 +37,25 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
-        DECL_VISIT_PROC( StructDecl         );
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( SamplerValue      );
-
         DECL_VISIT_PROC( PackOffset        );
         DECL_VISIT_PROC( VarSemantic       );
         DECL_VISIT_PROC( VarType           );
         DECL_VISIT_PROC( VarIdent          );
+
         DECL_VISIT_PROC( VarDecl           );
-        DECL_VISIT_PROC( TextureDecl        );
+        DECL_VISIT_PROC( TextureDecl       );
         DECL_VISIT_PROC( SamplerDecl       );
+        DECL_VISIT_PROC( StructDecl        );
+        DECL_VISIT_PROC( AliasDecl         );
 
         DECL_VISIT_PROC( FunctionDecl      );
+        DECL_VISIT_PROC( VarDeclStmnt      );
         DECL_VISIT_PROC( BufferDeclStmnt   );
         DECL_VISIT_PROC( TextureDeclStmnt  );
         DECL_VISIT_PROC( SamplerDeclStmnt  );
         DECL_VISIT_PROC( StructDeclStmnt   );
-        DECL_VISIT_PROC( VarDeclStmnt      );
         DECL_VISIT_PROC( AliasDeclStmnt    );
 
         DECL_VISIT_PROC( NullStmnt         );
@@ -67,7 +68,6 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( SwitchStmnt       );
         DECL_VISIT_PROC( AssignStmnt       );
         DECL_VISIT_PROC( ExprStmnt         );
-        DECL_VISIT_PROC( FunctionCallStmnt );
         DECL_VISIT_PROC( ReturnStmnt       );
         DECL_VISIT_PROC( CtrlTransferStmnt );
 

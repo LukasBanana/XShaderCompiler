@@ -61,7 +61,6 @@ DECL_PTR( ElseStmnt         );
 DECL_PTR( SwitchStmnt       );
 DECL_PTR( AssignStmnt       );
 DECL_PTR( ExprStmnt         );
-DECL_PTR( FunctionCallStmnt );
 DECL_PTR( ReturnStmnt       );
 DECL_PTR( CtrlTransferStmnt );
 
@@ -108,7 +107,7 @@ class Visitor
         VISITOR_VISIT_PROC( VarDecl           );
         VISITOR_VISIT_PROC( TextureDecl       );
         VISITOR_VISIT_PROC( SamplerDecl       );
-        VISITOR_VISIT_PROC( StructDecl         );
+        VISITOR_VISIT_PROC( StructDecl        );
         VISITOR_VISIT_PROC( AliasDecl         );
 
         VISITOR_VISIT_PROC( FunctionDecl      );
@@ -129,7 +128,6 @@ class Visitor
         VISITOR_VISIT_PROC( SwitchStmnt       );
         VISITOR_VISIT_PROC( AssignStmnt       );
         VISITOR_VISIT_PROC( ExprStmnt         );
-        VISITOR_VISIT_PROC( FunctionCallStmnt );
         VISITOR_VISIT_PROC( ReturnStmnt       );
         VISITOR_VISIT_PROC( CtrlTransferStmnt );
 
