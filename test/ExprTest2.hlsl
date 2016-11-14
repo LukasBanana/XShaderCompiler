@@ -2,6 +2,9 @@
 // HLSL Translator: Expression Test 2
 // 14/11/2016
 
+void f(int x) {}
+void f(float x) {}
+
 struct S1
 {
 	float x, y, z;

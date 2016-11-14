@@ -94,7 +94,7 @@ AST* Analyzer::Fetch(const VarIdentPtr& ident) const
     return Fetch(fullIdent);
 }
 
-AST* Analyzer::FetchTypeIdent(const std::string& ident, const AST* ast)
+AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
 {
     auto symbol = Fetch(ident);
     if ( symbol && ( symbol->Type() == AST::Types::StructDecl || symbol->Type() == AST::Types::AliasDecl ) )
@@ -106,7 +106,7 @@ AST* Analyzer::FetchTypeIdent(const std::string& ident, const AST* ast)
 
 StructDecl* Analyzer::FetchStructDeclFromIdent(const std::string& ident)
 {
-    auto symbol = FetchTypeIdent(ident);
+    auto symbol = FetchType(ident);
     if (symbol)
     {
         if (symbol->Type() == AST::Types::StructDecl)
@@ -147,7 +147,7 @@ void Analyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
 {
     auto& aliasTypeDen = static_cast<AliasTypeDenoter&>(*typeDenoter);
 
-    auto symbol = FetchTypeIdent(aliasTypeDen.ident);
+    auto symbol = FetchType(aliasTypeDen.ident);
     if (symbol)
     {
         if (symbol->Type() == AST::Types::StructDecl)

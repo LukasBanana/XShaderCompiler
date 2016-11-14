@@ -62,8 +62,7 @@ class Analyzer : protected Visitor
         
         AST* Fetch(const std::string& ident) const;
         AST* Fetch(const VarIdentPtr& ident) const;
-        //TODO: rename to "FetchType".
-        AST* FetchTypeIdent(const std::string& ident, const AST* ast = nullptr);
+        AST* FetchType(const std::string& ident, const AST* ast = nullptr);
 
         StructDecl* FetchStructDeclFromIdent(const std::string& ident);
         StructDecl* FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter);

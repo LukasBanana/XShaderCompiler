@@ -29,7 +29,7 @@ class SymbolTable
     public:
         
         // Override symbol callback procedure. Must return true to allow a symbol override.
-        using OnOverrideProc = std::function<bool (SymbolType symbol)>;
+        using OnOverrideProc = std::function<bool(SymbolType symbol)>;
 
         SymbolTable()
         {
