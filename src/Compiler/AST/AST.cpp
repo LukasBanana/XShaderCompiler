@@ -232,6 +232,25 @@ std::string FunctionDecl::SignatureToString(bool useParamNames) const
     return s;
 }
 
+std::size_t FunctionDecl::NumMinArgs() const
+{
+    std::size_t n = 0;
+
+    for (const auto& param : parameters)
+    {
+        if (!param->varDecls.empty() && param->varDecls.front()->initializer != nullptr)
+            break;
+        ++n;
+    }
+
+    return n;
+}
+
+std::size_t FunctionDecl::NumMaxArgs() const
+{
+    return parameters.size();
+}
+
 
 } // /namespace Xsc
 

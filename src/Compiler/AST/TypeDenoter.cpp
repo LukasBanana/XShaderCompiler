@@ -80,7 +80,7 @@ bool TypeDenoter::IsArray() const
     return (Type() == Types::Array);
 }
 
-bool TypeDenoter::IsCompatibleWith(const TypeDenoter& rhs) const
+bool TypeDenoter::Equals(const TypeDenoter& rhs) const
 {
     return (Type() == rhs.Type());
 }
@@ -146,6 +146,11 @@ bool BaseTypeDenoter::IsVector() const
 bool BaseTypeDenoter::IsMatrix() const
 {
     return IsMatrixType(dataType);
+}
+
+bool BaseTypeDenoter::Equals(const TypeDenoter& rhs) const
+{
+    return (rhs.Type() == Types::Base && dataType == static_cast<const BaseTypeDenoter&>(rhs).dataType);
 }
 
 bool BaseTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const

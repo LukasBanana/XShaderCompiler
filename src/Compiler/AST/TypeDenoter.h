@@ -59,8 +59,8 @@ struct TypeDenoter
     bool IsAlias() const;
     bool IsArray() const;
 
-    // Returns true if this type denoter is compatible with the specified type denoter (special cases for void and base types).
-    virtual bool IsCompatibleWith(const TypeDenoter& rhs) const;
+    // Returns true if this type denoter is equal to the specified type denoter.
+    virtual bool Equals(const TypeDenoter& rhs) const;
 
     // Returns true if this type denoter can be casted to the specified target type denoter (special cases void and base types).
     virtual bool IsCastableTo(const TypeDenoter& targetType) const;
@@ -93,7 +93,8 @@ struct BaseTypeDenoter : public TypeDenoter
     bool IsVector() const override;
     bool IsMatrix() const override;
 
-    bool IsCastableTo(const TypeDenoter& targetType) const;
+    bool Equals(const TypeDenoter& rhs) const override;
+    bool IsCastableTo(const TypeDenoter& targetType) const override;
 
     DataType dataType = DataType::Undefined;
 };

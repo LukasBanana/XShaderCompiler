@@ -143,12 +143,47 @@ class SymbolTable
 using ASTSymbolTable = SymbolTable<AST*>;
 
 
-struct ASTSymbolOverload
+class ASTSymbolOverload
 {
-    // Adds the specified AST reference to this overloaded symbol, and return true if the overload is valid.
-    bool AddSymbolRef(AST* ast);
 
-    std::vector<AST*> refs;
+    public:
+    
+        ASTSymbolOverload(const std::string& ident);
+
+        // Adds the specified AST reference to this overloaded symbol, and return true if the overload is valid.
+        bool AddSymbolRef(AST* ast);
+
+        // Fetches any AST. If there is more than one reference, an std::runtime_error is thrown.
+        AST* Fetch();
+
+        /*
+        Fetches a variable declaration (VarDecl, TextureDecl, SamplerDecl).
+        If there is more than one reference or the type does not fit, an std::runtime_error is thrown.
+        */
+        AST* FetchVar();
+
+        /*
+        Fetches a type declaration (StructDecl, AliasDecl).
+        If there is more than one reference or the type does not fit, an std::runtime_error is thrown.
+        */
+        AST* FetchType();
+
+        // Returns the FunctionDecl AST node for the specified argument type denoter list (used to derive the overloaded function).
+        FunctionDecl* FetchFunctionDecl(const std::vector<const TypeDenoter*>& argTypeDenoters);
+
+    private:
+
+        bool ValidateNumArgsForFunctionDecl(std::size_t numArgs);
+
+        bool MatchFunctionDeclWithArgs(
+            FunctionDecl& funcDecl,
+            const std::vector<const TypeDenoter*>& typeDens,
+            bool implicitTypeConversion
+        );
+
+        std::string         ident_;
+        std::vector<AST*>   refs_;
+
 };
 
 using ASTSymbolOverloadPtr = std::shared_ptr<ASTSymbolOverload>;

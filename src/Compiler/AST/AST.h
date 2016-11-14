@@ -369,6 +369,12 @@ struct FunctionDecl : public Stmnt
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
     std::string SignatureToString(bool useParamNames = true) const;
 
+    // Returns the minimal number of arguments for a call to this function.
+    std::size_t NumMinArgs() const;
+
+    // Returns the maximal number of arguments for a call to this function (this is merely: parameters.size()).
+    std::size_t NumMaxArgs() const;
+
     std::vector<FunctionCallPtr>    attribs;            // Attribute list
     VarTypePtr                      returnType;
     std::string                     name;
