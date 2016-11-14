@@ -143,6 +143,20 @@ class SymbolTable
 using ASTSymbolTable = SymbolTable<AST*>;
 
 
+struct ASTSymbolOverload
+{
+    // Adds the specified AST reference to this overloaded symbol, and return true if the overload is valid.
+    bool AddSymbolRef(AST* ast);
+
+    std::vector<AST*> refs;
+};
+
+using ASTSymbolOverloadPtr = std::shared_ptr<ASTSymbolOverload>;
+
+// AST symbol table type for ovloading.
+using ASTSymbolOverloadTable = SymbolTable<ASTSymbolOverloadPtr>;
+
+
 } // /namespace Xsc
 
 
