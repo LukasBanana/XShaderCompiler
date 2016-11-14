@@ -221,6 +221,9 @@ struct StructDecl : public AST
     // Returns true if this is an anonymous structure.
     bool IsAnonymous() const;
 
+    // Returns the VarDecl AST node inside this struct decl for the specified identifier, or null if there is no such VarDecl.
+    VarDecl* Fetch(const std::string& ident) const;
+
     std::string                     name;                       // May be empty (for anonymous structures).
     std::string                     baseStructName;             // May be empty (if no inheritance is used).
     std::vector<VarDeclStmntPtr>    members;
@@ -438,6 +441,9 @@ struct VarDeclStmnt : public Stmnt
 
     // Returns the var-decl statement as string.
     std::string ToString(bool useVarNames = true) const;
+    
+    // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
+    VarDecl* Fetch(const std::string& ident) const;
 
     std::string                 inputModifier;      // in, out, inout, uniform
     std::vector<std::string>    storageModifiers;   // extern, nointerpolation, precise, shared, groupshared, static, volatile

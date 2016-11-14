@@ -50,6 +50,27 @@ bool StructDecl::IsAnonymous() const
     return name.empty();
 }
 
+VarDecl* StructDecl::Fetch(const std::string& ident) const
+{
+    /* Fetch symbol from base struct first */
+    if (baseStructRef)
+    {
+        auto varDecl = baseStructRef->Fetch(ident);
+        if (varDecl)
+            return varDecl;
+    }
+
+    /* Now fetch symbol from members */
+    for (const auto& varDeclStmnt : members)
+    {
+        auto symbol = varDeclStmnt->Fetch(ident);
+        if (symbol)
+            return symbol;
+    }
+
+    return nullptr;
+}
+
 
 /* ----- PackOffset ----- */
 
@@ -175,6 +196,16 @@ std::string VarDeclStmnt::ToString(bool useVarNames) const
     }
 
     return s;
+}
+
+VarDecl* VarDeclStmnt::Fetch(const std::string& ident) const
+{
+    for (const auto& var : varDecls)
+    {
+        if (var->name == ident)
+            return var.get();
+    }
+    return nullptr;
 }
 
 
