@@ -64,3 +64,20 @@ Output Example
 
 <p align="center">Meaningful output messages with line marker:</p>
 <p align="center"><img src="docu/screenshot_01.png" alt="docu/screenshot_01.png"/></p>
+
+A few thoughts on translating HLSL
+----------------------------------
+
+Although HLSL lacks lots of features commonly seen in general purpose programming languages like C++ and Java,
+HLSL is a very complex language, in both syntax and context!
+The XShaderCompiler has to be prepared for a lot of weird corner cases, especially syntactically.
+Take a look at the following example of an unnecessarily complex expression:
+```hlsl
+float f = ((vector<float, (1+4)/5+3>)1).w;
+```
+The XShaderCompiler is able to translate this to the follwing GLSL code:
+```glsl
+float f = (vec4(1)).w;
+```
+Many other features like structure inheritance (which does not seem to be documented in the HLSL manual pages)
+must be translated to other constructs in GLSL, because GLSL is a more simpler language -- which pleases the compiler builder ;-).
