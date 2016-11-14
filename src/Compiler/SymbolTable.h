@@ -29,7 +29,7 @@ class SymbolTable
     public:
         
         // Override symbol callback procedure. Must return true to allow a symbol override.
-        using OnOverrideProc = std::function<bool (SymbolType* symbol)>;
+        using OnOverrideProc = std::function<bool (SymbolType symbol)>;
 
         SymbolTable()
         {
@@ -70,7 +70,7 @@ class SymbolTable
         Registers the specified symbol in the current scope (if the identifier is not empty).
         At least one scope must be open before symbols can be registered!
         */
-        void Register(const std::string& ident, SymbolType* symbol, const OnOverrideProc& overrideProc = nullptr)
+        void Register(const std::string& ident, SymbolType symbol, const OnOverrideProc& overrideProc = nullptr)
         {
             /* Validate input parameters */
             if (scopeStack_.empty())
@@ -105,7 +105,7 @@ class SymbolTable
         Returns the symbol with the specified identifer which is in
         the deepest scope, or null if there is no such symbol.
         */
-        SymbolType* Fetch(const std::string& ident) const
+        SymbolType Fetch(const std::string& ident) const
         {
             auto it = symTable_.find(ident);
             if (it != symTable_.end() && !it->second.empty())
@@ -123,7 +123,7 @@ class SymbolTable
         
         struct Symbol
         {
-            SymbolType* symbol;
+            SymbolType  symbol;
             std::size_t scopeLevel;
         };
 
@@ -140,7 +140,7 @@ class SymbolTable
 
 
 // AST symbol table type.
-using ASTSymbolTable = SymbolTable<AST>;
+using ASTSymbolTable = SymbolTable<AST*>;
 
 
 } // /namespace Xsc

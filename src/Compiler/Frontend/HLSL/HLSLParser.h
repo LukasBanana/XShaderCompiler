@@ -77,7 +77,7 @@ class HLSLParser : public Parser
         bool IsLhsOfCastExpr(const ExprPtr& expr) const;
 
         // Registers the specified AST node in the symbol table.
-        void RegisterSymbol(const std::string& ident, AST* ast, Token* tkn = nullptr);
+        void RegisterSymbol(const std::string& ident, Token* tkn = nullptr);
 
         /* === Parse functions === */
 
@@ -177,10 +177,10 @@ class HLSLParser : public Parser
         /* === Members === */
 
         // Symbol table for all types which are allowed in a cast expression (currently only structure types).
-        ASTSymbolTable  typeSymTable_;
+        SymbolTable<bool>   typeSymTable_;
 
         // True, if the parser is currently inside a local scope of a function (to detect illegal semantics inside local scopes).
-        bool            localScope_     = false;
+        bool                localScope_     = false;
 
 };
 

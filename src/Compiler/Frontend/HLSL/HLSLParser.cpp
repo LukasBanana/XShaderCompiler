@@ -446,7 +446,7 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
         ast->members.insert(ast->members.end(), members.begin(), members.end());
 
         /* Register identifier in symbol table (used to detect special cast expressions) */
-        RegisterSymbol(ast->name, ast.get(), tkn.get());
+        RegisterSymbol(ast->name, tkn.get());
     }
     GetReportHandler().PopContextDesc();
 
@@ -477,7 +477,7 @@ AliasDeclPtr HLSLParser::ParseAliasDecl(TypeDenoterPtr typeDenoter)
     ast->typeDenoter = typeDenoter;
 
     /* Register identifier in symbol table (used to detect special cast expressions) */
-    RegisterSymbol(ast->ident, ast.get(), identTkn.get());
+    RegisterSymbol(ast->ident, identTkn.get());
 
     return ast;
 }
@@ -1118,11 +1118,11 @@ bool HLSLParser::IsLhsOfCastExpr(const ExprPtr& expr) const
     return false;
 }
 
-void HLSLParser::RegisterSymbol(const std::string& ident, AST* ast, Token* tkn)
+void HLSLParser::RegisterSymbol(const std::string& ident, Token* tkn)
 {
     try
     {
-        typeSymTable_.Register(ident, ast);
+        typeSymTable_.Register(ident, true);
     }
     catch (const std::exception& e)
     {
