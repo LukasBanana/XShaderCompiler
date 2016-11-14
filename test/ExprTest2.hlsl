@@ -15,5 +15,7 @@ void CS()
 	
 	float f1 = ((float3)1).x;
 	
+	float f2 = ((vector<float, (1+4)/5+3>)1).w;
+	
 }
 

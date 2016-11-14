@@ -202,7 +202,6 @@ struct FunctionCall : public AST
     std::vector<ExprPtr>    arguments;
 };
 
-//TODO --> maybe rename to "StructDecl" (like in the other declaration AST nodes).
 // StructDecl object.
 struct StructDecl : public AST
 {
@@ -220,6 +219,7 @@ struct StructDecl : public AST
     std::string SignatureToString() const;
 
     std::string                     name;               // May be empty (for anonymous structures).
+    std::string                     baseStructName;     // May be empty (if no inheritance is used).
     std::vector<VarDeclStmntPtr>    members;
 
     std::string                     aliasName;          // Alias name for input and output interface blocks of the DAST.

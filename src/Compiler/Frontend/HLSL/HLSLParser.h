@@ -179,7 +179,7 @@ class HLSLParser : public Parser
         // Symbol table for all types which are allowed in a cast expression (currently only structure types).
         ASTSymbolTable  typeSymTable_;
 
-        // True, if the parser is currently inside a local scope of a function.
+        // True, if the parser is currently inside a local scope of a function (to detect illegal semantics inside local scopes).
         bool            localScope_     = false;
 
 };

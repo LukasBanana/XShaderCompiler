@@ -430,21 +430,12 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
         {
             AcceptIt();
 
-            auto baseStructName = ParseIdent();
-            if (baseStructName == ast->name)
+            ast->baseStructName = ParseIdent();
+            if (ast->baseStructName == ast->name)
                 Error("recursive inheritance is not allowed");
 
             if (Is(Tokens::Comma))
                 Error("multiple inheritance is not allowed", false);
-
-            /* Fetch structure from symbol table */
-            auto baseStruct = typeSymTable_.Fetch(baseStructName);
-            if (!baseStruct || baseStruct->Type() != AST::Types::StructDecl)
-                Error("'" + baseStructName + "' does not name a structure");
-
-            /* Copy members from base struct into new structure */
-            auto baseStructAST = dynamic_cast<StructDecl*>(baseStruct);
-            ast->members = baseStructAST->members;
         }
     }
 
