@@ -97,7 +97,7 @@ class Analyzer : protected Visitor
         // Returns true if the analyzer is currently inside the main entry point.
         bool InsideEntryPoint() const;
 
-        void PushFunctinoCall(FunctionCall* ast);
+        void PushFunctionCall(FunctionCall* ast);
         void PopFunctionCall();
 
         // Returns the active (inner most) function call or null if the analyzer is currently not inside a function call.

@@ -250,7 +250,7 @@ bool Analyzer::InsideEntryPoint() const
     return (funcDeclLevel_ >= funcDeclLevelOfEntryPoint_);
 }
 
-void Analyzer::PushFunctinoCall(FunctionCall* ast)
+void Analyzer::PushFunctionCall(FunctionCall* ast)
 {
     funcCallStack_.push(ast);
 }
