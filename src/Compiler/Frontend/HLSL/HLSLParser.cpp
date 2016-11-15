@@ -1269,7 +1269,7 @@ VarAccessExprPtr HLSLParser::ParseVarAccessExpr(const VarIdentPtr& varIdent)
     /* Parse optional assign expression */
     if (Is(Tokens::AssignOp))
     {
-        ast->assignOp = AcceptIt()->Spell();
+        ast->assignOp   = StringToAssignOp(AcceptIt()->Spell());
         ast->assignExpr = ParseExpr();
     }
 

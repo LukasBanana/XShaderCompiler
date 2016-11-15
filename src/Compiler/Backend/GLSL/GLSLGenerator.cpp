@@ -1281,7 +1281,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     WriteVarIdent(ast->varIdent.get());
     if (ast->assignExpr)
     {
-        Write(" " + ast->assignOp + " ");
+        Write(" " + AssignOpToString(ast->assignOp) + " ");
         Visit(ast->assignExpr);
     }
 }

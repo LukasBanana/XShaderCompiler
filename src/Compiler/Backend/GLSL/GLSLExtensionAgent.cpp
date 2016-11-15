@@ -126,8 +126,7 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
-    const auto& op = ast->assignOp;
-    if (op == "|=" || op == "&=" || op == "^=" || op == "%=")
+    if (IsBitwiseOp(ast->assignOp) || ast->assignOp == AssignOp::Mod)
         AcquireExtension(GLSLEXT_GL_EXT_gpu_shader4);
 
     /* Default visitor */

@@ -782,8 +782,8 @@ struct VarAccessExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter();
 
     VarIdentPtr varIdent;
-    std::string assignOp;   // May be empty
-    ExprPtr     assignExpr; // May be null
+    AssignOp    assignOp    = AssignOp::Undefined;  // May be undefined
+    ExprPtr     assignExpr;                         // May be null
 };
 
 // Initializer list expression.
