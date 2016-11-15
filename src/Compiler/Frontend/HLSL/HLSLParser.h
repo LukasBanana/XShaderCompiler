@@ -138,6 +138,7 @@ class HLSLParser : public Parser
         UnaryExprPtr                    ParseUnaryExpr();
         ExprPtr                         ParseBracketOrCastExpr();
         SuffixExprPtr                   ParseSuffixExpr(const ExprPtr& expr);
+        ArrayAccessExprPtr              ParseArrayAccessExpr(const ExprPtr& expr);
         ExprPtr                         ParseVarAccessOrFunctionCallExpr();
         VarAccessExprPtr                ParseVarAccessExpr(const VarIdentPtr& varIdent = nullptr);
         ExprPtr                         ParseFunctionCallExpr(const VarIdentPtr& varIdent = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);

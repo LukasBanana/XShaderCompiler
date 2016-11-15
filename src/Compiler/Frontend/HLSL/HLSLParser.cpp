@@ -1214,11 +1214,17 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     auto ast = Make<BracketExpr>();
     ast->expr = expr;
 
-    /* Parse optional var-ident suffix */
-    if (Is(Tokens::Dot))
-        return ParseSuffixExpr(ast);
+    expr = ast;
 
-    return ast;
+    /* Parse optional array-access expression */
+    if (Is(Tokens::LParen))
+        expr = ParseArrayAccessExpr(expr);
+
+    /* Parse optional suffix expression */
+    if (Is(Tokens::Dot))
+        expr = ParseSuffixExpr(expr);
+
+    return expr;
 }
 
 SuffixExprPtr HLSLParser::ParseSuffixExpr(const ExprPtr& expr)
@@ -1229,6 +1235,16 @@ SuffixExprPtr HLSLParser::ParseSuffixExpr(const ExprPtr& expr)
 
     ast->expr       = expr;
     ast->varIdent   = ParseVarIdent();
+
+    return ast;
+}
+
+ArrayAccessExprPtr HLSLParser::ParseArrayAccessExpr(const ExprPtr& expr)
+{
+    auto ast = Make<ArrayAccessExpr>();
+
+    ast->expr           = expr;
+    ast->arrayIndices   = ParseArrayDimensionList();
 
     return ast;
 }
@@ -1273,11 +1289,17 @@ ExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIdent, const Typ
     else
         ast->call = ParseFunctionCall(varIdent);
 
-    /* Parse optional var-ident suffix */
-    if (Is(Tokens::Dot))
-        return ParseSuffixExpr(ast);
+    /* Parse optional array-access expression */
+    ExprPtr expr = ast;
 
-    return ast;
+    if (Is(Tokens::LParen))
+        expr = ParseArrayAccessExpr(expr);
+
+    /* Parse optional suffix expression */
+    if (Is(Tokens::Dot))
+        expr = ParseSuffixExpr(expr);
+
+    return expr;
 }
 
 InitializerExprPtr HLSLParser::ParseInitializerExpr()
