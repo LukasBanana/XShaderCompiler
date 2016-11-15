@@ -38,6 +38,11 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     Visit(ast->arguments);
 }
 
+IMPLEMENT_VISIT_PROC(Attribute)
+{
+    Visit(ast->arguments);
+}
+
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     Visit(ast->expr);

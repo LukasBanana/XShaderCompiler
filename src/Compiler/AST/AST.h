@@ -67,6 +67,7 @@ struct AST
         Program,
         CodeBlock,
         FunctionCall,
+        Attribute,
         SwitchCase,
         SamplerValue,
         PackOffset,
@@ -226,6 +227,15 @@ struct FunctionCall : public AST
     std::vector<ExprPtr>    arguments;
 
     FunctionDecl*           funcDeclRef = nullptr;  // Reference to the function declaration; may be null
+};
+
+// Attribute (e.g. "[unroll]" or "[numthreads(x,y,z)]").
+struct Attribute : public AST
+{
+    AST_INTERFACE(Attribute);
+
+    std::string             ident;
+    std::vector<ExprPtr>    arguments;
 };
 
 // Case block for a switch statement.

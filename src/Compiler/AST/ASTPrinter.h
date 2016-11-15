@@ -37,6 +37,7 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
+        DECL_VISIT_PROC( Attribute         );
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( SamplerValue      );
         DECL_VISIT_PROC( PackOffset        );

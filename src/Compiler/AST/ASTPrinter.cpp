@@ -76,6 +76,12 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     DEFAULT_VISITOR(FunctionCall);
 }
 
+IMPLEMENT_VISIT_PROC(Attribute)
+{
+    Print(ast, "Attribute", ast->ident);
+    DEFAULT_VISITOR(Attribute);
+}
+
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     Print(ast, "SwitchCase");
