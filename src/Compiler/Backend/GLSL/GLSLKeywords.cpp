@@ -19,6 +19,7 @@ static std::set<std::string> GenerateKeywordSet()
     return
     {
         "main",
+        //TODO: add all GLSL keywords ...
     };
 }
 
