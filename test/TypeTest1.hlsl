@@ -56,6 +56,7 @@ int f2(int x)
 
 S1_t1_a f3()
 {
+	int x = 1 + (1 + (((3))) - 1) * 5;
 	return (S1_t1_a)0;
 }
 

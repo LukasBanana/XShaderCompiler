@@ -721,7 +721,6 @@ struct FunctionCallExpr : public Expr
     FunctionCallPtr call;
 };
 
-//TODO: remove this AST node!!!
 // Bracket expression.
 struct BracketExpr : public Expr
 {
