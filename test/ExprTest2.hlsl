@@ -2,7 +2,7 @@
 // HLSL Translator: Expression Test 2
 // 14/11/2016
 
-#define TEST 2
+#define TEST 3
 
 #if TEST == 1
 
@@ -24,7 +24,13 @@ S2_t[1][2][3];
 #elif TEST == 2
 
 void f(float x) { return x; }
+void f(float3 x) {}
 void g(int x) { return x; }
+
+#elif TEST == 3
+
+void f(float x) {}
+void f(int x) {}
 
 #endif
 
@@ -47,9 +53,24 @@ void CS()
 	
 	#elif TEST == 2
 	
-	struct {float x;} i1 = g(0);
-	float f1 = f(i1);
+	int i1 = g(0);
+	float f1 = f( ((int3)i1).x );
 	//f(f);
+	
+	#elif TEST == 3
+	
+	struct S
+	{
+		float foo, bar;
+	};
+	
+	S s;
+	
+	float a = (s).foos;
+	int b = ((int3)0).x;
+	
+	f(a);
+	f(b);
 	
 	#endif
 	

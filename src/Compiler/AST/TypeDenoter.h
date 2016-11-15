@@ -42,10 +42,6 @@ struct TypeDenoter
     // Returns a simple string representation of this type denoter (e.g. "scalar type").
     virtual std::string ToString() const = 0;
 
-    //TODO: REMOVE THIS!!!
-    // Returns either this or the aliased type.
-    virtual TypeDenoter* Get();
-
     virtual bool IsScalar() const;
     virtual bool IsVector() const;
     virtual bool IsMatrix() const;

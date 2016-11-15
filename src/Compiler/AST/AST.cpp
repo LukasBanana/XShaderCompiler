@@ -454,7 +454,12 @@ TypeDenoterPtr FunctionCallExpr::GetTypeDenoter() const
 
 TypeDenoterPtr BracketExpr::GetTypeDenoter() const
 {
-    return expr->GetTypeDenoter();
+    auto typeDenoter = expr->GetTypeDenoter();
+    if (varIdentSuffix)
+    {
+        //TODO...
+    }
+    return typeDenoter;
 }
 
 

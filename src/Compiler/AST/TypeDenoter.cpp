@@ -20,11 +20,6 @@ TypeDenoter::~TypeDenoter()
     // dummy
 }
 
-TypeDenoter* TypeDenoter::Get()
-{
-    return this;
-}
-
 bool TypeDenoter::IsScalar() const
 {
     return false;
