@@ -110,6 +110,7 @@ struct AST
         PostUnaryExpr,
         FunctionCallExpr,
         BracketExpr,
+        SuffixExpr,
         CastExpr,
         VarAccessExpr,
         InitializerExpr,
@@ -279,7 +280,7 @@ struct VarIdent : public TypedAST
     TypeDenoterPtr DeriveTypeDenoter() override;
 
     std::string             ident;
-    std::vector<ExprPtr>    arrayIndices;
+    std::vector<ExprPtr>    arrayIndices;           // Optional array indices
     VarIdentPtr             next;                   // Next identifier; may be null.
 
     AST*                    symbolRef = nullptr;    // Symbol reference for DAST to the variable object; may be null.
@@ -707,8 +708,8 @@ struct FunctionCallExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter();
 
-    FunctionCallPtr call;
-    VarIdentPtr     varIdentSuffix; // Optional var-ident suffix
+    FunctionCallPtr         call;
+    //std::vector<ExprPtr>    arrayIndices;   // Optional array indices
 };
 
 // Bracket expression.
@@ -718,8 +719,19 @@ struct BracketExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter();
 
-    ExprPtr     expr;           // Inner expression
-    VarIdentPtr varIdentSuffix; // Optional var-ident suffix
+    ExprPtr                 expr;           // Inner expression
+    //std::vector<ExprPtr>    arrayIndices;   // Optional array indices
+};
+
+// Suffix expression.
+struct SuffixExpr : public Expr
+{
+    AST_INTERFACE(SuffixExpr);
+
+    TypeDenoterPtr DeriveTypeDenoter();
+
+    ExprPtr     expr;       // Sub expression (left hand side)
+    VarIdentPtr varIdent;   // Suffix var identifier (right hand side)
 };
 
 // Cast expression.

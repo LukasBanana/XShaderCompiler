@@ -137,9 +137,10 @@ class HLSLParser : public Parser
         ExprPtr                         ParseTypeNameOrFunctionCallExpr();
         UnaryExprPtr                    ParseUnaryExpr();
         ExprPtr                         ParseBracketOrCastExpr();
+        SuffixExprPtr                   ParseSuffixExpr(const ExprPtr& expr);
         ExprPtr                         ParseVarAccessOrFunctionCallExpr();
         VarAccessExprPtr                ParseVarAccessExpr(const VarIdentPtr& varIdent = nullptr);
-        FunctionCallExprPtr             ParseFunctionCallExpr(const VarIdentPtr& varIdent = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
+        ExprPtr                         ParseFunctionCallExpr(const VarIdentPtr& varIdent = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
         InitializerExprPtr              ParseInitializerExpr();
 
         std::vector<VarDeclPtr>         ParseVarDeclList(VarDeclStmnt* declStmntRef, TokenPtr firstIdentTkn = nullptr);

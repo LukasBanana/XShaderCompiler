@@ -1216,10 +1216,19 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
 
     /* Parse optional var-ident suffix */
     if (Is(Tokens::Dot))
-    {
-        AcceptIt();
-        ast->varIdentSuffix = ParseVarIdent();
-    }
+        return ParseSuffixExpr(ast);
+
+    return ast;
+}
+
+SuffixExprPtr HLSLParser::ParseSuffixExpr(const ExprPtr& expr)
+{
+    auto ast = Make<SuffixExpr>();
+
+    Accept(Tokens::Dot);
+
+    ast->expr       = expr;
+    ast->varIdent   = ParseVarIdent();
 
     return ast;
 }
@@ -1254,7 +1263,7 @@ VarAccessExprPtr HLSLParser::ParseVarAccessExpr(const VarIdentPtr& varIdent)
     return ast;
 }
 
-FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIdent, const TypeDenoterPtr& typeDenoter)
+ExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIdent, const TypeDenoterPtr& typeDenoter)
 {
     /* Parse function call expression */
     auto ast = Make<FunctionCallExpr>();
@@ -1266,10 +1275,7 @@ FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIden
 
     /* Parse optional var-ident suffix */
     if (Is(Tokens::Dot))
-    {
-        AcceptIt();
-        ast->varIdentSuffix = ParseVarIdent();
-    }
+        return ParseSuffixExpr(ast);
 
     return ast;
 }

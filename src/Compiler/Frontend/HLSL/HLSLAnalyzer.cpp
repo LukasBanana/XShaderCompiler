@@ -87,7 +87,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     /* Analyze function arguments first */
-    PushFunctinoCall(ast);
+    PushFunctionCall(ast);
     {
         Visit(ast->arguments);
     }

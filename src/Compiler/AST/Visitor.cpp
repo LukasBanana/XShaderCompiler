@@ -262,13 +262,17 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 IMPLEMENT_VISIT_PROC(FunctionCallExpr)
 {
     Visit(ast->call);
-    Visit(ast->varIdentSuffix);
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
 {
     Visit(ast->expr);
-    Visit(ast->varIdentSuffix);
+}
+
+IMPLEMENT_VISIT_PROC(SuffixExpr)
+{
+    Visit(ast->expr);
+    Visit(ast->varIdent);
 }
 
 IMPLEMENT_VISIT_PROC(CastExpr)

@@ -73,6 +73,7 @@ DECL_PTR( UnaryExpr         );
 DECL_PTR( PostUnaryExpr     );
 DECL_PTR( FunctionCallExpr  );
 DECL_PTR( BracketExpr       );
+DECL_PTR( SuffixExpr        );
 DECL_PTR( CastExpr          );
 DECL_PTR( VarAccessExpr     );
 DECL_PTR( InitializerExpr   );
@@ -140,6 +141,7 @@ class Visitor
         VISITOR_VISIT_PROC( PostUnaryExpr     );
         VISITOR_VISIT_PROC( FunctionCallExpr  );
         VISITOR_VISIT_PROC( BracketExpr       );
+        VISITOR_VISIT_PROC( SuffixExpr        );
         VISITOR_VISIT_PROC( CastExpr          );
         VISITOR_VISIT_PROC( VarAccessExpr     );
         VISITOR_VISIT_PROC( InitializerExpr   );
