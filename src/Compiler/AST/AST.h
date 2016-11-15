@@ -437,6 +437,9 @@ struct FunctionDecl : public Stmnt
     // Returns the maximal number of arguments for a call to this function (this is merely: parameters.size()).
     std::size_t NumMaxArgs() const;
 
+    // Returns true if the specified type denoter matches the parameter.
+    bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& typeDenoter, bool implicitTypeConversion) const;
+
     std::vector<AttributePtr>       attribs;                    // Attribute list
     VarTypePtr                      returnType;
     std::string                     ident;

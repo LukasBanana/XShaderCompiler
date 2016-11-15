@@ -191,22 +191,9 @@ bool ASTSymbolOverload::MatchFunctionDeclWithArgs(
     {
         for (std::size_t i = 0, n = std::min(typeDens.size(), funcDecl.parameters.size()); i < n; ++i)
         {
-            /* Get type denoters to compare */
-            auto paramTypeDen = funcDecl.parameters[i]->varType->typeDenoter.get();
-            auto argTypeDen = typeDens[i];
-
-            /* Check for explicit compatability: are they equal? */
-            if (!argTypeDen->Equals(*paramTypeDen))
-            {
-                if (implicitTypeConversion)
-                {
-                    /* Check for implicit compatability: is it castable? */
-                    if (!argTypeDen->IsCastableTo(*paramTypeDen))
-                        return false;
-                }
-                else
-                    return false;
-            }
+            /* Match argument type denoter to parameter */
+            if (!funcDecl.MatchParameterWithTypeDenoter(i, *typeDens[i], implicitTypeConversion))
+                return false;
         }
         return true;
     }

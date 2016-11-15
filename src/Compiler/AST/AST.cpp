@@ -347,6 +347,30 @@ std::size_t FunctionDecl::NumMaxArgs() const
     return parameters.size();
 }
 
+bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& typeDenoter, bool implicitTypeConversion) const
+{
+    if (paramIndex >= parameters.size())
+        return false;
+
+    /* Get type denoters to compare */
+    auto paramTypeDen = parameters[paramIndex]->varType->typeDenoter.get();
+
+    /* Check for explicit compatability: are they equal? */
+    if (!typeDenoter.Equals(*paramTypeDen))
+    {
+        if (implicitTypeConversion)
+        {
+            /* Check for implicit compatability: is it castable? */
+            if (!typeDenoter.IsCastableTo(*paramTypeDen))
+                return false;
+        }
+        else
+            return false;
+    }
+
+    return true;
+}
+
 
 /* ----- ListExpr ----- */
 
