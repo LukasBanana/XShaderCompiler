@@ -116,11 +116,21 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
     /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
-    if (IsBitwiseOp(ast->op))
+    if (IsBitwiseOp(ast->op) || ast->op == BinaryOp::Mod)
         AcquireExtension(GLSLEXT_GL_EXT_gpu_shader4);
 
     /* Default visitor */
     Visitor::VisitBinaryExpr(ast, args);
+}
+
+IMPLEMENT_VISIT_PROC(UnaryExpr)
+{
+    /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
+    if (IsBitwiseOp(ast->op))
+        AcquireExtension(GLSLEXT_GL_EXT_gpu_shader4);
+
+    /* Default visitor */
+    Visitor::VisitUnaryExpr(ast, args);
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
