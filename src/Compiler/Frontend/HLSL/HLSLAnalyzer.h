@@ -46,6 +46,8 @@ class HLSLAnalyzer : public Analyzer
         
         void EstablishMaps();
 
+        void DeclareIntrinsics();
+
         /*
         Returns the current (top level) function in the call stack
         or null if the AST traversion is in the global scope.

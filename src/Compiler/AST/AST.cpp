@@ -288,6 +288,11 @@ bool FunctionDecl::IsForwardDecl() const
     return (codeBlock == nullptr);
 }
 
+bool FunctionDecl::IsIntrinsic() const
+{
+    return false;
+}
+
 std::string FunctionDecl::SignatureToString(bool useParamNames) const
 {
     std::string s;
@@ -347,7 +352,7 @@ std::size_t FunctionDecl::NumMaxArgs() const
     return parameters.size();
 }
 
-bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& typeDenoter, bool implicitTypeConversion) const
+bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const
 {
     if (paramIndex >= parameters.size())
         return false;
@@ -356,17 +361,35 @@ bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const T
     auto paramTypeDen = parameters[paramIndex]->varType->typeDenoter.get();
 
     /* Check for explicit compatability: are they equal? */
-    if (!typeDenoter.Equals(*paramTypeDen))
+    if (!argType.Equals(*paramTypeDen))
     {
-        if (implicitTypeConversion)
+        if (implicitConversion)
         {
             /* Check for implicit compatability: is it castable? */
-            if (!typeDenoter.IsCastableTo(*paramTypeDen))
+            if (!argType.IsCastableTo(*paramTypeDen))
                 return false;
         }
         else
             return false;
     }
+
+    return true;
+}
+
+
+/* ----- IntrinsicDecl ----- */
+
+bool IntrinsicDecl::IsIntrinsic() const
+{
+    return true;
+}
+
+bool IntrinsicDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const
+{
+    if (paramIndex >= parameters.size())
+        return false;
+
+    //TODO: check for template type matches
 
     return true;
 }

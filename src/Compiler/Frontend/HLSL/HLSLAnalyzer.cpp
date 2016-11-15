@@ -18,6 +18,7 @@ HLSLAnalyzer::HLSLAnalyzer(Log* log) :
     Analyzer{ log }
 {
     EstablishMaps();
+    DeclareIntrinsics();
 }
 
 void HLSLAnalyzer::DecorateASTPrimary(
@@ -53,6 +54,23 @@ void HLSLAnalyzer::EstablishMaps()
         { "InterlockedCompareExchange", IntrinsicClasses::Interlocked },
         { "InterlockedExchange",        IntrinsicClasses::Interlocked },
     };
+}
+
+void HLSLAnalyzer::DeclareIntrinsics()
+{
+    #if 0//TODO: currently for testing only
+
+    static std::set<std::shared_ptr<IntrinsicDecl>> s_intrinsics;
+
+    auto ast = std::make_shared<IntrinsicDecl>();
+
+    ast->ident = "mul";
+
+    Register(ast->ident, ast.get());
+
+    s_intrinsics.insert(ast);
+
+    #endif
 }
 
 /* ------- Visit functions ------- */

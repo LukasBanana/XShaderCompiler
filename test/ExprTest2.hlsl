@@ -72,6 +72,8 @@ void CS()
 	//f(a.xxx);
 	f(b);
 	
+	float4 pos = mul((float3x3)0, (float3)1);
+	
 	#endif
 	
 }

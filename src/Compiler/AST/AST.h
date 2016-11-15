@@ -425,6 +425,9 @@ struct FunctionDecl : public Stmnt
     // Returns true if this function declaration is just a forward declaration (without function body).
     bool IsForwardDecl() const;
     
+    // Returns true if this declaration is an intrinsic (no code must be generated for this declaration!).
+    virtual bool IsIntrinsic() const;
+
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
     std::string SignatureToString(bool useParamNames = true) const;
 
@@ -438,7 +441,7 @@ struct FunctionDecl : public Stmnt
     std::size_t NumMaxArgs() const;
 
     // Returns true if the specified type denoter matches the parameter.
-    bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& typeDenoter, bool implicitTypeConversion) const;
+    virtual bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const;
 
     std::vector<AttributePtr>       attribs;                    // Attribute list
     VarTypePtr                      returnType;
@@ -449,6 +452,21 @@ struct FunctionDecl : public Stmnt
 
     //TODO: currently unused
     FunctionDecl*                   definitionRef   = nullptr;  // Reference to the actual function definition (only for forward declarations).
+};
+
+/*
+Special case: Function intrinsic declaration (this is only for pre-defined AST nodes!).
+No "Visit", no "Type" functions override.
+*/
+struct IntrinsicDecl : public FunctionDecl
+{
+    IntrinsicDecl() :
+        FunctionDecl{ SourcePosition::ignore }
+    {
+    }
+
+    bool IsIntrinsic() const override;
+    bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const override;
 };
 
 //TODO --> maybe separate this structure into "BufferDeclStmnt" and "BufferDecl" (like in the other declaration AST nodes)

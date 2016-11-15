@@ -39,8 +39,12 @@ bool ASTSymbolOverload::AddSymbolRef(AST* ast)
             auto lhsFuncDecl = static_cast<const FunctionDecl*>(refs_.front());
             auto rhsFuncDecl = static_cast<const FunctionDecl*>(ast);
 
-            /* Is any of the two declarations a forward declaration? */
-            if (lhsFuncDecl->IsForwardDecl() || rhsFuncDecl->IsForwardDecl())
+            /* Are both intrinsics or both non-intrinsics? */
+            if (lhsFuncDecl->IsIntrinsic() != rhsFuncDecl->IsIntrinsic())
+                return false;
+
+            /* Is any of the two declarations a forward declaration (but not an intrinsic)? */
+            if ( !lhsFuncDecl->IsIntrinsic() && ( lhsFuncDecl->IsForwardDecl() || rhsFuncDecl->IsForwardDecl() ) )
                 return true;
 
             /* Are the function signatures equal? */
