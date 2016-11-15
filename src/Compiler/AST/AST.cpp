@@ -207,7 +207,7 @@ std::string VarDecl::ToString() const
 TypeDenoterPtr VarDecl::GetTypeDenoter() const
 {
     if (declStmntRef)
-        return declStmntRef->GetTypeDenoter();
+        return declStmntRef->varType->typeDenoter;
     RuntimeErr("missing reference to declaration statement to derive type denoter of variable identifier '" + name + "'", this);
 }
 
@@ -250,11 +250,6 @@ std::string VarDeclStmnt::ToString(bool useVarNames) const
     }
 
     return s;
-}
-
-TypeDenoterPtr VarDeclStmnt::GetTypeDenoter() const
-{
-    return varType->typeDenoter;
 }
 
 VarDecl* VarDeclStmnt::Fetch(const std::string& ident) const

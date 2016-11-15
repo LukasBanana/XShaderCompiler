@@ -469,9 +469,6 @@ struct VarDeclStmnt : public Stmnt
     // Returns the var-decl statement as string.
     std::string ToString(bool useVarNames = true) const;
     
-    // Returns a type denoter for this declaration statement or throws an std::runtime_error if the type can not be derived.
-    TypeDenoterPtr GetTypeDenoter() const;
-
     // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident) const;
 

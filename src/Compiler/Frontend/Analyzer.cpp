@@ -25,7 +25,18 @@ bool Analyzer::DecorateAST(
     /* Decorate program AST */
     sourceCode_ = program.sourceCode.get();
 
-    DecorateASTPrimary(program, inputDesc, outputDesc);
+    try
+    {
+        DecorateASTPrimary(program, inputDesc, outputDesc);
+    }
+    catch (const ASTRuntimeError& e)
+    {
+        Error(e.what(), e.GetAST());
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
 
     return (!reportHandler_.HasErros());
 }

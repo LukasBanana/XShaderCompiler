@@ -183,7 +183,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         {
             if (ast->declStmntRef)
             {
-                auto declTypeDen = ast->declStmntRef->GetTypeDenoter();
+                auto declTypeDen = ast->GetTypeDenoter();
                 ValidateTypeCast(*initTypeDen, *declTypeDen, ast->initializer.get());
             }
             else
