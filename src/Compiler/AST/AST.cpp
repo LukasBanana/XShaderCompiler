@@ -13,6 +13,16 @@ namespace Xsc
 {
 
 
+/* ----- TypedAST ----- */
+
+const TypeDenoterPtr& TypedAST::GetTypeDenoter()
+{
+    if (!bufferedTypeDenoter_)
+        bufferedTypeDenoter_ = DeriveTypeDenoter();
+    return bufferedTypeDenoter_;
+}
+
+
 /* ----- VarIdent ----- */
 
 std::string VarIdent::ToString() const
@@ -38,7 +48,7 @@ VarIdent* VarIdent::LastVarIdent()
     return (next ? next->LastVarIdent() : this);
 }
 
-TypeDenoterPtr VarIdent::GetTypeDenoter() const
+TypeDenoterPtr VarIdent::DeriveTypeDenoter()
 {
     if (symbolRef)
     {
@@ -113,9 +123,17 @@ VarDecl* StructDecl::Fetch(const std::string& ident) const
     return nullptr;
 }
 
-StructTypeDenoterPtr StructDecl::GetTypeDenoter()
+TypeDenoterPtr StructDecl::DeriveTypeDenoter()
 {
     return std::make_shared<StructTypeDenoter>(this);
+}
+
+
+/* ----- AliasDecl ----- */
+
+TypeDenoterPtr AliasDecl::DeriveTypeDenoter()
+{
+    return typeDenoter;
 }
 
 
@@ -204,7 +222,7 @@ std::string VarDecl::ToString() const
     return s;
 }
 
-TypeDenoterPtr VarDecl::GetTypeDenoter() const
+TypeDenoterPtr VarDecl::DeriveTypeDenoter()
 {
     if (declStmntRef)
         return declStmntRef->varType->typeDenoter;
@@ -332,7 +350,7 @@ std::size_t FunctionDecl::NumMaxArgs() const
 
 /* ----- ListExpr ----- */
 
-TypeDenoterPtr ListExpr::GetTypeDenoter() const
+TypeDenoterPtr ListExpr::DeriveTypeDenoter()
 {
     /* Only return type denoter of first sub expression */
     return firstExpr->GetTypeDenoter();
@@ -341,7 +359,7 @@ TypeDenoterPtr ListExpr::GetTypeDenoter() const
 
 /* ----- LiteralExpr ----- */
 
-TypeDenoterPtr LiteralExpr::GetTypeDenoter() const
+TypeDenoterPtr LiteralExpr::DeriveTypeDenoter()
 {
     switch (type)
     {
@@ -358,7 +376,7 @@ TypeDenoterPtr LiteralExpr::GetTypeDenoter() const
 
 /* ----- TypeNameExpr ----- */
 
-TypeDenoterPtr TypeNameExpr::GetTypeDenoter() const
+TypeDenoterPtr TypeNameExpr::DeriveTypeDenoter()
 {
     return typeDenoter;
 }
@@ -366,7 +384,7 @@ TypeDenoterPtr TypeNameExpr::GetTypeDenoter() const
 
 /* ----- TernaryExpr ----- */
 
-TypeDenoterPtr TernaryExpr::GetTypeDenoter() const
+TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
 {
     /* Only return type denoter of the 'then'-branch (both types must be compatible) */
     return thenExpr->GetTypeDenoter();
@@ -375,7 +393,7 @@ TypeDenoterPtr TernaryExpr::GetTypeDenoter() const
 
 /* ----- BinaryExpr ----- */
 
-TypeDenoterPtr BinaryExpr::GetTypeDenoter() const
+TypeDenoterPtr BinaryExpr::DeriveTypeDenoter()
 {
     /* Only return type denoter of left hand side */
     return lhsExpr->GetTypeDenoter();
@@ -384,7 +402,7 @@ TypeDenoterPtr BinaryExpr::GetTypeDenoter() const
 
 /* ----- UnaryExpr ----- */
 
-TypeDenoterPtr UnaryExpr::GetTypeDenoter() const
+TypeDenoterPtr UnaryExpr::DeriveTypeDenoter()
 {
     return expr->GetTypeDenoter();
 }
@@ -392,7 +410,7 @@ TypeDenoterPtr UnaryExpr::GetTypeDenoter() const
 
 /* ----- PostUnaryExpr ----- */
 
-TypeDenoterPtr PostUnaryExpr::GetTypeDenoter() const
+TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter()
 {
     return expr->GetTypeDenoter();
 }
@@ -400,7 +418,7 @@ TypeDenoterPtr PostUnaryExpr::GetTypeDenoter() const
 
 /* ----- FunctionCallExpr ----- */
 
-TypeDenoterPtr FunctionCallExpr::GetTypeDenoter() const
+TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
 {
     if (call->funcDeclRef)
         return call->funcDeclRef->returnType->typeDenoter;
@@ -411,7 +429,7 @@ TypeDenoterPtr FunctionCallExpr::GetTypeDenoter() const
 
 /* ----- BracketExpr ----- */
 
-TypeDenoterPtr BracketExpr::GetTypeDenoter() const
+TypeDenoterPtr BracketExpr::DeriveTypeDenoter()
 {
     auto typeDenoter = expr->GetTypeDenoter();
     if (varIdentSuffix)
@@ -424,7 +442,7 @@ TypeDenoterPtr BracketExpr::GetTypeDenoter() const
 
 /* ----- CastExpr ----- */
 
-TypeDenoterPtr CastExpr::GetTypeDenoter() const
+TypeDenoterPtr CastExpr::DeriveTypeDenoter()
 {
     return typeExpr->GetTypeDenoter();
 }
@@ -432,7 +450,7 @@ TypeDenoterPtr CastExpr::GetTypeDenoter() const
 
 /* ----- VarAccessExpr ----- */
 
-TypeDenoterPtr VarAccessExpr::GetTypeDenoter() const
+TypeDenoterPtr VarAccessExpr::DeriveTypeDenoter()
 {
     return varIdent->GetTypeDenoter();
 }
@@ -440,7 +458,7 @@ TypeDenoterPtr VarAccessExpr::GetTypeDenoter() const
 
 /* ----- InitializerExpr ----- */
 
-TypeDenoterPtr InitializerExpr::GetTypeDenoter() const
+TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
 {
     if (exprs.empty())
         throw std::runtime_error("can not derive type of initializer list with no elements");
