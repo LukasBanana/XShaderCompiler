@@ -112,7 +112,7 @@ FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoter
     if (!ValidateNumArgsForFunctionDecl(numArgs))
     {
         throw std::runtime_error(
-            "function does not take " + std::to_string(numArgs) + " " +
+            "function '" + ident_ + "' does not take " + std::to_string(numArgs) + " " +
             std::string(numArgs == 1 ? "parameter" : "parameters")
         );
     }

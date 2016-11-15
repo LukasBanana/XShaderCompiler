@@ -69,6 +69,8 @@ struct { float x; } f4()
 	//return (struct { float x; })0;
 }
 
+S1_t1_a f5(int x);
+
 float4 VS() : SV_Position
 {
 	struct S1
@@ -86,6 +88,8 @@ float4 VS() : SV_Position
 	
 	int a = 0, b = 0;
 	int c = (a += b);
+	
+	int f5_v = f5(3)[2];
 	
 	DWORD x = 0;
 	float x1 = 0;

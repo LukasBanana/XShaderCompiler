@@ -222,32 +222,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
     const auto isEntryPoint = (ast->name == entryPoint_);
 
-    #if 0
-
-    /* Find previous function forward declarations */
-    auto symbol = Fetch(ast->ident);
-    if (symbol && symbol->Type() == AST::Types::FunctionDecl)
-    {
-        auto funcDecl = dynamic_cast<FunctionDecl*>(symbol);
-        if (funcDecl)
-        {
-            /* Append previous forward declarations (required for the 'reference analyzer') */
-            ast->forwardDeclsRef = funcDecl->forwardDeclsRef;
-            ast->forwardDeclsRef.push_back(funcDecl);
-        }
-    }
-
-    /* Register symbol name  */
-    Register(
-        ast->ident, ast,
-        [](AST* symbol) -> bool
-        {
-            return symbol->Type() == AST::Types::FunctionDecl;
-        }
-    );
-
-    #endif
-
+    /* Register function declaration in symbol table */
     Register(ast->name, ast);
 
     /* Visit attributes */
@@ -260,10 +235,16 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     {
         Visit(ast->parameters);
 
+        //TODO: refactor this part!
+        #if 1
+
         /* Special case for the main entry point */
         if (isEntryPoint)
         {
             mainFunction_ = ast;
+
+            /* Add flags */
+            ast->flags << FunctionDecl::isEntryPoint;
 
             /* Decorate program's input and output semantics */
             for (auto& param : ast->parameters)
@@ -271,9 +252,6 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
             program_->outputSemantics.returnType = ast->returnType.get();
             program_->outputSemantics.functionSemantic = ast->semantic;
-
-            /* Add flags */
-            ast->flags << FunctionDecl::isEntryPoint;
 
             /* Add flags to input- and output parameters of the main entry point */
             DecorateEntryInOut(ast->returnType.get(), false);
@@ -284,6 +262,8 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             if (shaderTarget_ == ShaderTarget::FragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
                 program_->flags << Program::hasSM3ScreenSpace;
         }
+
+        #endif
 
         /* Visit function body */
         PushFunctionDeclLevel(isEntryPoint);
@@ -303,7 +283,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     {
         Visit(member);
 
-        /* Decorate all members with a reference to this uniform buffer */
+        /* Decorate all members with a reference to this buffer declaration */
         for (auto& varDecl : member->varDecls)
             varDecl->bufferDeclRef = ast;
     }

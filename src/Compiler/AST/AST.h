@@ -310,8 +310,8 @@ struct VarDecl : public Decl
     std::vector<VarSemanticPtr> semantics;
     ExprPtr                     initializer;
 
-    BufferDeclStmnt*            bufferDeclRef   = nullptr; // Buffer declaration reference for DAST; may be null
-    VarDeclStmnt*               declStmntRef    = nullptr; // Reference to its declaration statement; may be null
+    VarDeclStmnt*               declStmntRef    = nullptr; // Reference to its declaration statement ('parent node'); may be null
+    BufferDeclStmnt*            bufferDeclRef   = nullptr; // Buffer declaration reference for DAST (optional 'parent's parent node'); may be null
 };
 
 // Texture declaration.
@@ -416,14 +416,15 @@ struct FunctionDecl : public Stmnt
     // Returns the maximal number of arguments for a call to this function (this is merely: parameters.size()).
     std::size_t NumMaxArgs() const;
 
-    std::vector<FunctionCallPtr>    attribs;            // Attribute list
+    std::vector<FunctionCallPtr>    attribs;                    // Attribute list
     VarTypePtr                      returnType;
     std::string                     name;
     std::vector<VarDeclStmntPtr>    parameters;
-    std::string                     semantic;           // May be empty
-    CodeBlockPtr                    codeBlock;          // May be null (if this AST node is a forward declaration).
+    std::string                     semantic;                   // May be empty
+    CodeBlockPtr                    codeBlock;                  // May be null (if this AST node is a forward declaration).
 
-    //std::vector<FunctionDecl*>      forwardDeclsRef;    // List of forward declarations to this function for the DAST.
+    //TODO: currently unused
+    FunctionDecl*                   definitionRef   = nullptr;  // Reference to the actual function definition (only for forward declarations).
 };
 
 //TODO --> maybe separate this structure into "BufferDeclStmnt" and "BufferDecl" (like in the other declaration AST nodes)
