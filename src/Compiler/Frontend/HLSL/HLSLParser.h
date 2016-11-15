@@ -100,14 +100,15 @@ class HLSLParser : public Parser
         VarIdentPtr                     ParseVarIdent();
         VarTypePtr                      ParseVarType(bool parseVoidType = false);
 
-        VarDeclPtr                      ParseVarDecl(VarDeclStmnt* declStmntRef);
+        VarDeclPtr                      ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         TextureDeclPtr                  ParseTextureDecl();
         SamplerDeclPtr                  ParseSamplerDecl();
         StructDeclPtr                   ParseStructDecl(bool parseStructTkn = true, const TokenPtr& identTkn = nullptr);
         AliasDeclPtr                    ParseAliasDecl(TypeDenoterPtr typeDenoter);
 
         StmntPtr                        ParseGlobalStmnt();
-        FunctionDeclPtr                 ParseFunctionDecl();
+        StmntPtr                        ParseVarDeclOrFunctionDecl();
+        FunctionDeclPtr                 ParseFunctionDecl(const VarTypePtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
         BufferDeclStmntPtr              ParseBufferDeclStmnt();
         TextureDeclStmntPtr             ParseTextureDeclStmnt();
         SamplerDeclStmntPtr             ParseSamplerDeclStmnt();
@@ -141,7 +142,7 @@ class HLSLParser : public Parser
         FunctionCallExprPtr             ParseFunctionCallExpr(const VarIdentPtr& varIdent = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
         InitializerExprPtr              ParseInitializerExpr();
 
-        std::vector<VarDeclPtr>         ParseVarDeclList(VarDeclStmnt* declStmntRef);
+        std::vector<VarDeclPtr>         ParseVarDeclList(VarDeclStmnt* declStmntRef, TokenPtr firstIdentTkn = nullptr);
         std::vector<VarDeclStmntPtr>    ParseVarDeclStmntList();
         std::vector<VarDeclStmntPtr>    ParseParameterList();
         std::vector<StmntPtr>           ParseStmntList();

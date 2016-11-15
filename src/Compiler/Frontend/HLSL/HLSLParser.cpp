@@ -332,35 +332,10 @@ VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
     /* Parse variable type denoter with optional struct declaration */
     ast->typeDenoter = ParseTypeDenoterWithStructDeclOpt(ast->structDecl);
 
-    #if 0
-    if (Is(Tokens::Void))
-    {
-        if (parseVoidType)
-            ast->baseType = AcceptIt()->Spell();
-        else
-            Error("'void' type not allowed in this context");
-    }
-    else if (Is(Tokens::Ident))
-        ast->baseType = AcceptIt()->Spell();
-    else if (IsDataType())
-        ast->baseType = AcceptIt()->Spell();
-    else if (Is(Tokens::Struct))
-    {
-        /*
-        Parse anonymous structure declaration and
-        decorate the VarType AST node with its own structure type
-        */
-        ast->structDecl = ParseStructDecl();
-        ast->symbolRef = ast->structDecl.get();
-    }
-    else
-        ErrorUnexpected("expected type specifier");
-    #endif
-
     return ast;
 }
 
-VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef)
+VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn)
 {
     auto ast = Make<VarDecl>();
 
@@ -368,7 +343,7 @@ VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef)
     ast->declStmntRef = declStmntRef;
 
     /* Parse variable declaration */
-    ast->ident      = ParseIdent();
+    ast->ident      = (identTkn ? identTkn->Spell() : ParseIdent());
     ast->arrayDims  = ParseArrayDimensionList();
     ast->semantics  = ParseVarSemanticList();
 
@@ -504,22 +479,67 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
             return ParseStructDeclStmnt();
         case Tokens::Typedef:
             return ParseAliasDeclStmnt();
-        default:
+        case Tokens::TypeModifier:
+        case Tokens::StorageModifier:
+            return ParseVarDeclStmnt();
+        case Tokens::LParen:
+        case Tokens::Void:
             return ParseFunctionDecl();
+        default:
+            return ParseVarDeclOrFunctionDecl();
     }
 }
 
-FunctionDeclPtr HLSLParser::ParseFunctionDecl()
+StmntPtr HLSLParser::ParseVarDeclOrFunctionDecl()
+{
+    auto varType = ParseVarType();
+    auto identTkn = Accept(Tokens::Ident);
+
+    if (Is(Tokens::LBracket))
+    {
+        /* Parse function declaration statement */
+        return ParseFunctionDecl(varType, identTkn);
+    }
+    else
+    {
+        /* Parse variable declaration statement */
+        auto ast = Make<VarDeclStmnt>();
+
+        ast->varType    = varType;
+        ast->varDecls   = ParseVarDeclList(ast.get(), identTkn);
+
+        Semi();
+
+        return ast;
+    }
+}
+
+FunctionDeclPtr HLSLParser::ParseFunctionDecl(const VarTypePtr& returnType, const TokenPtr& identTkn)
 {
     auto ast = Make<FunctionDecl>();
 
-    /* Parse function header */
-    ast->attribs    = ParseAttributeList();
-    ast->returnType = ParseVarType(true);
+    /* Parse function attributes and return type */
+    if (returnType)
+        ast->returnType = returnType;
+    else
+    {
+        ast->attribs    = ParseAttributeList();
+        ast->returnType = ParseVarType(true);
+    }
 
-    ast->area = GetScanner().ActiveToken()->Area();
+    /* Parse function identifier */
+    if (identTkn)
+    {
+        ast->area = identTkn->Area();
+        ast->name = identTkn->Spell();
+    }
+    else
+    {
+        ast->area = GetScanner().ActiveToken()->Area();
+        ast->name = ParseIdent();
+    }
 
-    ast->name       = ParseIdent();
+    /* Parse parameters */
     ast->parameters = ParseParameterList();
     
     if (Is(Tokens::Colon))
@@ -982,10 +1002,6 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
         ast->varDecls = ParseVarDeclList(ast.get());
         Semi();
 
-        /* Decorate variable declarations with this statement AST node */
-        for (auto& varDecl : ast->varDecls)
-            varDecl->declStmntRef = ast.get();
-
         return ast;
     }
 
@@ -1259,14 +1275,15 @@ InitializerExprPtr HLSLParser::ParseInitializerExpr()
 
 /* --- Lists --- */
 
-std::vector<VarDeclPtr> HLSLParser::ParseVarDeclList(VarDeclStmnt* declStmntRef)
+std::vector<VarDeclPtr> HLSLParser::ParseVarDeclList(VarDeclStmnt* declStmntRef, TokenPtr firstIdentTkn)
 {
     std::vector<VarDeclPtr> varDecls;
 
     /* Parse variable declaration list */
     while (true)
     {
-        varDecls.push_back(ParseVarDecl(declStmntRef));
+        varDecls.push_back(ParseVarDecl(declStmntRef, firstIdentTkn));
+        firstIdentTkn = nullptr;
         if (Is(Tokens::Comma))
             AcceptIt();
         else
