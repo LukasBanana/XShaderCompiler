@@ -898,7 +898,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
             Write(", binding = " + BRegister(ast->registerName, ast));
 
         Write(") uniform ");
-        Write(ast->name);
+        Write(ast->ident);
     }
     EndLn();
 

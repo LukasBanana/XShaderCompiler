@@ -172,7 +172,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
-    Print(ast, "BufferDeclStmnt", ast->name + " (" + ast->bufferType + ")");
+    Print(ast, "BufferDeclStmnt", ast->ident + " (" + ast->bufferType + ")");
     DEFAULT_VISITOR(BufferDeclStmnt);
 }
 

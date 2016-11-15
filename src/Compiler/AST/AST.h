@@ -451,7 +451,7 @@ struct BufferDeclStmnt : public Stmnt
     };
     
     std::string                     bufferType;
-    std::string                     name;
+    std::string                     ident;
     std::string                     registerName; // May be empty
     std::vector<VarDeclStmntPtr>    members;
 };
