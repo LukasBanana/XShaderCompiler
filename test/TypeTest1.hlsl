@@ -87,7 +87,7 @@ float4 VS() : SV_Position
 	
 	float f4_x = g_anomym_s1.inner1.inner2;
 	
-	int a = 0, b = 0;
+	int a = 0, b = (dword)0;
 	int c = (a += b);
 	
 	int f5_v = f5(3)[2].x;
