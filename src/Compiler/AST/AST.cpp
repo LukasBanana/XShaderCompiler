@@ -421,7 +421,10 @@ TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter()
 TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
 {
     if (call->funcDeclRef)
-        return call->funcDeclRef->returnType->typeDenoter;
+    {
+        auto typeDenoter = call->funcDeclRef->returnType->typeDenoter;
+        return typeDenoter->Get(varIdentSuffix.get());
+    }
     else
         throw std::runtime_error("missing function reference to derive expression type");
 }
@@ -431,12 +434,7 @@ TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr BracketExpr::DeriveTypeDenoter()
 {
-    auto typeDenoter = expr->GetTypeDenoter();
-    if (varIdentSuffix)
-    {
-        //TODO...
-    }
-    return typeDenoter;
+    return expr->GetTypeDenoter()->Get(varIdentSuffix.get());
 }
 
 

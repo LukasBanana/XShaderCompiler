@@ -57,7 +57,7 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
-
+        
         DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( StructDecl        );
         DECL_VISIT_PROC( AliasDecl         );

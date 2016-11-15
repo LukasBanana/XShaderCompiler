@@ -44,9 +44,19 @@ typedef S1 S1_t4;
 /* --- </typedef struct tests> --- */
 
 //void f2(Texture2D t[5])
-void f2(int x)
+int f2(int x)
 {
 	return 0;
+}
+
+S1_t1_a f3()
+{
+	return (S1_t1_a)0;
+}
+
+struct { float x; } f4()
+{
+	return (struct { float x; })0;
 }
 
 float4 VS() : SV_Position
@@ -57,7 +67,9 @@ float4 VS() : SV_Position
 	}
 	s1, s2, s3;
 
-	float3 f2_v = f2(0).xyz;
+	float3 f2_v = f2(0).xxx;
+	//float3 f3_v = f3()[0].xxx;
+	float3 f3_v = f3()[0].xxx;
 	
 	int a = 0, b = 0;
 	int c = (a += b);

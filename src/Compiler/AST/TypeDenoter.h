@@ -69,6 +69,9 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
 
     // Returns a type denoter for the specified (full) var-ident. Throws ASTRuntimeError if the respective var-ident could not be resolved.
     virtual TypeDenoterPtr Get(const VarIdent* varIdent = nullptr);
+
+    // Returns either this type denoter or an aliased type.
+    virtual const TypeDenoter& GetAliased() const;
 };
 
 // Void type denoter.
@@ -175,6 +178,10 @@ struct AliasTypeDenoter : public TypeDenoter
     std::string ToString() const override;
     std::string Ident() const override;
 
+    TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
+
+    const TypeDenoter& GetAliased() const override;
+
     std::string     ident;                      // Type identifier
     AliasDecl*      aliasDeclRef    = nullptr;  // Reference to the AliasDecl AST node.
 };
@@ -191,6 +198,8 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     // Throws std::runtime_error if 'baseTypeDenoter' is null.
     std::string ToString() const override;
+
+    TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
 
     TypeDenoterPtr          baseTypeDenoter;
     std::vector<ExprPtr>    arrayDims;          // May be null

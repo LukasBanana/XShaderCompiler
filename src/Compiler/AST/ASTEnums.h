@@ -16,7 +16,7 @@ namespace Xsc
 {
 
 
-/* ----- Enumeration ----- */
+/* ----- AssignOp Enum ----- */
 
 // Assignment operator enumeration:
 // =, +=, -=, *=, /=, %=, <<=, >>=, |= , &=, ^=
@@ -36,6 +36,14 @@ enum class AssignOp
     And,
     Xor,
 };
+
+std::string AssignOpToString(const AssignOp o);
+AssignOp StringToAssignOp(const std::string& s);
+
+bool IsBitwiseOp(const AssignOp o);
+
+
+/* ----- BinaryOp Enum ----- */
 
 // Binary operator enumeration:
 // &&, ||, |, ^, &, <<, >>, +, -, *, /, %, ==, !=, <, >, <=, >=
@@ -63,6 +71,14 @@ enum class BinaryOp
     GreaterEqual,
 };
 
+std::string BinaryOpToString(const BinaryOp o);
+BinaryOp StringToBinaryOp(const std::string& s);
+
+bool IsBitwiseOp(const BinaryOp o);
+
+
+/* ----- UnaryOp Enum ----- */
+
 // Unary operator enumeration:
 // !, ~, +, -, ++, --
 enum class UnaryOp
@@ -77,6 +93,14 @@ enum class UnaryOp
     Dec,        // Decrement (e.g. --x)
 };
 
+std::string UnaryOpToString(const UnaryOp o);
+UnaryOp StringToUnaryOp(const std::string& s);
+
+bool IsBitwiseOp(const UnaryOp o);
+
+
+/* ----- CtrlTransfer Enum ----- */
+
 // Control transfer enumeration:
 // break, continue, discard
 enum class CtrlTransfer
@@ -87,6 +111,12 @@ enum class CtrlTransfer
     Continue,
     Discard,
 };
+
+std::string CtrlTransformToString(const CtrlTransfer ct);
+CtrlTransfer StringToCtrlTransfer(const std::string& s);
+
+
+/* ----- DataType Enum ----- */
 
 // Base data type enumeration.
 enum class DataType
@@ -178,27 +208,16 @@ enum class DataType
     Double4x4,
 };
 
+// Returns a descriptive string of the specified data type.
+std::string DataTypeToString(const DataType t, bool useTemplateSyntax = false);
 
-/* ----- Functions ----- */
-
-std::string AssignOpToString(const AssignOp o);
-AssignOp StringToAssignOp(const std::string& s);
-
-std::string BinaryOpToString(const BinaryOp o);
-BinaryOp StringToBinaryOp(const std::string& s);
-
-std::string UnaryOpToString(const UnaryOp o);
-UnaryOp StringToUnaryOp(const std::string& s);
-
-std::string CtrlTransformToString(const CtrlTransfer ct);
-CtrlTransfer StringToCtrlTransfer(const std::string& s);
-
-bool IsBitwiseOp(const AssignOp o);
-bool IsBitwiseOp(const BinaryOp o);
-bool IsBitwiseOp(const UnaryOp o);
-
+// Returns true if the specified data type is a scalar type.
 bool IsScalarType(const DataType t);
+
+// Returns true if the specified data type is a vector type.
 bool IsVectorType(const DataType t);
+
+// Returns true if the specified data type is a matrix type.
 bool IsMatrixType(const DataType t);
 
 /*

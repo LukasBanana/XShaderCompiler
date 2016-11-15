@@ -83,7 +83,7 @@ bool TypeDenoter::Equals(const TypeDenoter& rhs) const
 
 bool TypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
-    return (Type() == targetType.Type());
+    return (GetAliased().Type() == targetType.GetAliased().Type());
 }
 
 std::string TypeDenoter::Ident() const
@@ -97,6 +97,11 @@ TypeDenoterPtr TypeDenoter::Get(const VarIdent* varIdent)
         RuntimeErr("variable identifier could not be resolved", varIdent);
     else
         return shared_from_this();
+}
+
+const TypeDenoter& TypeDenoter::GetAliased() const
+{
+    return *this;
 }
 
 
@@ -133,13 +138,7 @@ BaseTypeDenoter::BaseTypeDenoter(DataType dataType) :
 
 std::string BaseTypeDenoter::ToString() const
 {
-    if (IsScalar())
-        return "scalar";
-    if (IsVector())
-        return "vector";
-    if (IsMatrix())
-        return "matrix";
-    return "<undefined>";
+    return DataTypeToString(dataType, true);
 }
 
 bool BaseTypeDenoter::IsScalar() const
@@ -187,7 +186,8 @@ bool BaseTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     }
     return false;
     #else
-    return (targetType.Type() == Types::Base || targetType.Type() == Types::Struct);
+    const auto& targetTypeAliased = targetType.GetAliased();
+    return (targetTypeAliased.Type() == Types::Base || targetTypeAliased.Type() == Types::Struct);
     #endif
 }
 
@@ -209,8 +209,6 @@ TypeDenoterPtr BaseTypeDenoter::Get(const VarIdent* varIdent)
             RuntimeErr(e.what(), varIdent);
         }
     }
-
-    /* Default getter */
     return TypeDenoter::Get(varIdent);
 }
 
@@ -333,6 +331,20 @@ std::string AliasTypeDenoter::Ident() const
     return ident;
 }
 
+TypeDenoterPtr AliasTypeDenoter::Get(const VarIdent* varIdent)
+{
+    if (aliasDeclRef)
+        return aliasDeclRef->GetTypeDenoter()->Get(varIdent);
+    RuntimeErr("missing reference to alias declaration", varIdent);
+}
+
+const TypeDenoter& AliasTypeDenoter::GetAliased() const
+{
+    if (aliasDeclRef)
+        return *(aliasDeclRef->GetTypeDenoter());
+    RuntimeErr("missing reference to alias declaration");
+}
+
 
 /* ----- ArrayTypeDenoter ----- */
 
@@ -357,6 +369,32 @@ std::string ArrayTypeDenoter::ToString() const
         typeName += "[]";
 
     return typeName;
+}
+
+TypeDenoterPtr ArrayTypeDenoter::Get(const VarIdent* varIdent)
+{
+    if (varIdent)
+    {
+        /* Validate array dimensions */
+        auto numDims    = arrayDims.size();
+        auto numDimArgs = varIdent->arrayIndices.size();
+
+        if (numDimArgs != numDims)
+        {
+            std::string err;
+            
+            if (numDimArgs < numDims)
+                err = "not enough";
+            else if (numDimArgs > numDims)
+                err = "too many";
+
+            RuntimeErr(err + " array indices (expected " + std::to_string(numDims) + " but got " + std::to_string(numDimArgs) + ")", varIdent);
+        }
+
+        /* Get base type denoter with next identifier */
+        return baseTypeDenoter->Get(varIdent->next.get());
+    }
+    return TypeDenoter::Get(varIdent);
 }
 
 

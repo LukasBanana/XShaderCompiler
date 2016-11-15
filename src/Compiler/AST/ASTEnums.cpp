@@ -166,6 +166,39 @@ CtrlTransfer StringToCtrlTransfer(const std::string& s)
 
 /* ----- DataType Enum ----- */
 
+std::string DataTypeToString(const DataType t, bool useTemplateSyntax)
+{
+    if (IsScalarType(t))
+    {
+        switch (t)
+        {
+            case DataType::Bool:    return "bool";
+            case DataType::Int:     return "int";
+            case DataType::UInt:    return "uint";
+            case DataType::Half:    return "half";
+            case DataType::Float:   return "float";
+            case DataType::Double:  return "double";
+        }
+    }
+    else if (IsVectorType(t))
+    {
+        auto dim = VectorTypeDim(t);
+        if (useTemplateSyntax)
+            return "vector<" + DataTypeToString(BaseDataType(t)) + ", " + std::to_string(dim) + ">";
+        else
+            return DataTypeToString(BaseDataType(t)) + std::to_string(dim);
+    }
+    else if (IsMatrixType(t))
+    {
+        auto dim = MatrixTypeDim(t);
+        if (useTemplateSyntax)
+            return "matrix<" + DataTypeToString(BaseDataType(t)) + ", " + std::to_string(dim.first) + ", " + std::to_string(dim.second) + ">";
+        else
+            return DataTypeToString(BaseDataType(t)) + std::to_string(dim.first) + "x" + std::to_string(dim.second);
+    }
+    return "<undefined>";
+}
+
 bool IsScalarType(const DataType t)
 {
     return (t >= DataType::Bool && t <= DataType::Double);

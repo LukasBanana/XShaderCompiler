@@ -382,7 +382,7 @@ struct AliasDecl : Decl
     TypeDenoterPtr DeriveTypeDenoter() override;
 
     std::string     ident;                  // Type identifier
-    TypeDenoterPtr  typeDenoter;            // Type denoter
+    TypeDenoterPtr  typeDenoter;            // Type denoter of the aliased type
 
     AliasDeclStmnt* declStmntRef = nullptr; // Reference to decl-stmnt.
 };
