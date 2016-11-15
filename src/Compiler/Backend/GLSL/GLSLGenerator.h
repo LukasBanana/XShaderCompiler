@@ -194,6 +194,9 @@ class GLSLGenerator : public Generator
         void WriteArrayDims(const std::vector<ExprPtr>& arrayDims);
         void WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast);
 
+        // Writes the specified identifier with possible name manging (if the name is reserved in GLSL).
+        void WriteIdent(const std::string& ident);
+
         /* === Members === */
 
         ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;
@@ -213,8 +216,6 @@ class GLSLGenerator : public Generator
         std::map<std::string, std::string> texFuncMap_;         // <hlsl-function, glsl-function>
         std::map<std::string, SemanticStage> semanticMap_;      // <hlsl-semantic, glsl-keyword>
         #endif
-
-        std::map<DataType, std::string> dataTypeMap_;
 
 };
 

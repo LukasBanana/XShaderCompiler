@@ -5,13 +5,12 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef XSC_KEYWORDS_H
-#define XSC_KEYWORDS_H
+#ifndef XSC_HLSL_KEYWORDS_H
+#define XSC_HLSL_KEYWORDS_H
 
 
 #include "Token.h"
 #include "ASTEnums.h"
-
 #include <map>
 #include <string>
 

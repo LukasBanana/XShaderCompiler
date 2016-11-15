@@ -216,7 +216,7 @@ static KeywordMapType GenerateKeywordMap()
     };
 }
 
-static KeywordMapType g_keywordMapHLSL = GenerateKeywordMap();
+static const KeywordMapType g_keywordMapHLSL = GenerateKeywordMap();
 
 const KeywordMapType& HLSLKeywords()
 {
@@ -339,7 +339,7 @@ static DataTypeMap GenerateDataTypeMap()
     };
 }
 
-static DataTypeMap g_dataTypeMapHLSL = GenerateDataTypeMap();
+static const DataTypeMap g_dataTypeMapHLSL = GenerateDataTypeMap();
 
 DataType HLSLKeywordToDataType(const std::string& keyword)
 {

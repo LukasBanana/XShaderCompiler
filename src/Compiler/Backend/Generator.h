@@ -69,10 +69,10 @@ class Generator : protected Visitor
         }
 
         // Returns the output stream.
-        inline std::ostream& Out()
+        /*inline std::ostream& Out()
         {
             return writer_.Out();
-        }
+        }*/
 
     private:
 
