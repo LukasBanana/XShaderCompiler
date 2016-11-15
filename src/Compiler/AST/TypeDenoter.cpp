@@ -138,7 +138,7 @@ BaseTypeDenoter::BaseTypeDenoter(DataType dataType) :
 
 std::string BaseTypeDenoter::ToString() const
 {
-    return DataTypeToString(dataType, true);
+    return DataTypeToString(dataType);
 }
 
 bool BaseTypeDenoter::IsScalar() const
