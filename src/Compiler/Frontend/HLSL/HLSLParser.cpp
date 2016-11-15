@@ -491,7 +491,6 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
 StmntPtr HLSLParser::ParseStructDeclOrVarDeclOrFunctionDeclStmnt()
 {
     auto varType = ParseVarType();
-    auto identTkn = Accept(Tokens::Ident);
 
     if (varType->structDecl && Is(Tokens::Semicolon))
     {
@@ -502,7 +501,10 @@ StmntPtr HLSLParser::ParseStructDeclOrVarDeclOrFunctionDeclStmnt()
 
         return ast;
     }
-    else if (Is(Tokens::LBracket))
+
+    auto identTkn = Accept(Tokens::Ident);
+
+    if (Is(Tokens::LBracket))
     {
         /* Parse function declaration statement */
         return ParseFunctionDecl(varType, identTkn);
