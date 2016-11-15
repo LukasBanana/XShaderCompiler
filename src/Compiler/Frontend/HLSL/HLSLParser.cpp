@@ -175,7 +175,7 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     }
 
     ast->varType = ParseVarType();
-    ast->varDecls.push_back(ParseVarDecl());
+    ast->varDecls.push_back(ParseVarDecl(ast.get()));
 
     return ast;
 }
@@ -360,14 +360,17 @@ VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
     return ast;
 }
 
-VarDeclPtr HLSLParser::ParseVarDecl()
+VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef)
 {
     auto ast = Make<VarDecl>();
 
+    /* Store reference to parent node */
+    ast->declStmntRef = declStmntRef;
+
     /* Parse variable declaration */
-    ast->name = ParseIdent();
-    ast->arrayDims = ParseArrayDimensionList();
-    ast->semantics = ParseVarSemanticList();
+    ast->name       = ParseIdent();
+    ast->arrayDims  = ParseArrayDimensionList();
+    ast->semantics  = ParseVarSemanticList();
 
     if (Is(Tokens::AssignOp, "="))
         ast->initializer = ParseInitializer();
@@ -644,12 +647,8 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
     }
 
     /* Parse variable declarations */
-    ast->varDecls = ParseVarDeclList();
+    ast->varDecls = ParseVarDeclList(ast.get());
     Semi();
-
-    /* Decorate variable declarations with this statement AST node */
-    for (auto& varDecl : ast->varDecls)
-        varDecl->declStmntRef = ast.get();
 
     return ast;
 }
@@ -926,7 +925,7 @@ StmntPtr HLSLParser::ParseStructDeclOrVarDeclStmnt()
         varDeclStmnt->varType = MakeVarType(ast->structDecl);
         
         /* Parse variable declarations */
-        varDeclStmnt->varDecls = ParseVarDeclList();
+        varDeclStmnt->varDecls = ParseVarDeclList(varDeclStmnt.get());
         Semi();
 
         return varDeclStmnt;
@@ -980,7 +979,7 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
 
         ast->varType = Make<VarType>();
         ast->varType->typeDenoter = ParseAliasTypeDenoter(varIdent->ident);
-        ast->varDecls = ParseVarDeclList();
+        ast->varDecls = ParseVarDeclList(ast.get());
         Semi();
 
         /* Decorate variable declarations with this statement AST node */
@@ -1260,14 +1259,14 @@ InitializerExprPtr HLSLParser::ParseInitializerExpr()
 
 /* --- Lists --- */
 
-std::vector<VarDeclPtr> HLSLParser::ParseVarDeclList()
+std::vector<VarDeclPtr> HLSLParser::ParseVarDeclList(VarDeclStmnt* declStmntRef)
 {
     std::vector<VarDeclPtr> varDecls;
 
     /* Parse variable declaration list */
     while (true)
     {
-        varDecls.push_back(ParseVarDecl());
+        varDecls.push_back(ParseVarDecl(declStmntRef));
         if (Is(Tokens::Comma))
             AcceptIt();
         else
