@@ -376,25 +376,30 @@ TypeDenoterPtr ArrayTypeDenoter::Get(const VarIdent* varIdent)
     if (varIdent)
     {
         /* Validate array dimensions */
-        auto numDims    = arrayDims.size();
-        auto numDimArgs = varIdent->arrayIndices.size();
-
-        if (numDimArgs != numDims)
-        {
-            std::string err;
-            
-            if (numDimArgs < numDims)
-                err = "not enough";
-            else if (numDimArgs > numDims)
-                err = "too many";
-
-            RuntimeErr(err + " array indices (expected " + std::to_string(numDims) + " but got " + std::to_string(numDimArgs) + ")", varIdent);
-        }
+        ValidateArrayIndices(varIdent->arrayIndices.size(), varIdent);
 
         /* Get base type denoter with next identifier */
         return baseTypeDenoter->Get(varIdent->next.get());
     }
     return TypeDenoter::Get(varIdent);
+}
+
+void ArrayTypeDenoter::ValidateArrayIndices(std::size_t numArrayIndices, const AST* ast) const
+{
+    /* Validate array dimensions for specified indices */
+    auto numDims = arrayDims.size();
+
+    if (numArrayIndices != numDims)
+    {
+        std::string err;
+            
+        if (numArrayIndices < numDims)
+            err = "not enough";
+        else if (numArrayIndices > numDims)
+            err = "too many";
+
+        RuntimeErr(err + " array indices (expected " + std::to_string(numDims) + " but got " + std::to_string(numArrayIndices) + ")", ast);
+    }
 }
 
 

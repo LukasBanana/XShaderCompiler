@@ -447,8 +447,14 @@ TypeDenoterPtr SuffixExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
 {
-    //TODO: array indices
-    return expr->GetTypeDenoter();
+    const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
+    if (typeDen.IsArray())
+    {
+        auto& arrayTypeDen = static_cast<const ArrayTypeDenoter&>(typeDen);
+        arrayTypeDen.ValidateArrayIndices(arrayIndices.size(), this);
+        return arrayTypeDen.baseTypeDenoter;
+    }
+    RuntimeErr("array access without array type denoter", this);
 }
 
 

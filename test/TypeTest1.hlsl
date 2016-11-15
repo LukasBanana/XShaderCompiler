@@ -90,7 +90,7 @@ float4 VS() : SV_Position
 	int a = 0, b = 0;
 	int c = (a += b);
 	
-	int f5_v = f5(3)[2];
+	int f5_v = f5(3)[2].x;
 	
 	DWORD x = 0;
 	float x1 = 0;

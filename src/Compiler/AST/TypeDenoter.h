@@ -201,6 +201,9 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
 
+    // Validates the number of array indices for this array type denoter.
+    void ValidateArrayIndices(std::size_t numArrayIndices, const AST* ast = nullptr) const;
+
     TypeDenoterPtr          baseTypeDenoter;
     std::vector<ExprPtr>    arrayDims;          // May be null
 };
