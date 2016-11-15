@@ -1143,7 +1143,7 @@ VarTypePtr HLSLParser::MakeVarType(const StructDeclPtr& structDecl)
     auto ast = Make<VarType>();
 
     ast->structDecl     = structDecl;
-    ast->typeDenoter    = std::make_shared<StructTypeDenoter>(structDecl->name);
+    ast->typeDenoter    = std::make_shared<StructTypeDenoter>(structDecl.get());
 
     return ast;
 }
