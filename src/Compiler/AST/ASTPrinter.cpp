@@ -330,6 +330,12 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     DEFAULT_VISITOR(BracketExpr);
 }
 
+IMPLEMENT_VISIT_PROC(SuffixExpr)
+{
+    Print(ast, "SuffixExpr");
+    DEFAULT_VISITOR(SuffixExpr);
+}
+
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
     Print(ast, "CastExpr");

@@ -723,7 +723,7 @@ struct BracketExpr : public Expr
     //std::vector<ExprPtr>    arrayIndices;   // Optional array indices
 };
 
-// Suffix expression.
+// Suffix expression (e.g. "foo().suffix").
 struct SuffixExpr : public Expr
 {
     AST_INTERFACE(SuffixExpr);

@@ -80,6 +80,7 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( FunctionCallExpr  );
         DECL_VISIT_PROC( BracketExpr       );
+        DECL_VISIT_PROC( SuffixExpr        );
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( VarAccessExpr     );
         DECL_VISIT_PROC( InitializerExpr   );
