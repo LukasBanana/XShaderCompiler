@@ -111,6 +111,7 @@ struct AST
         FunctionCallExpr,
         BracketExpr,
         SuffixExpr,
+        ArrayAccessExpr,
         CastExpr,
         VarAccessExpr,
         InitializerExpr,
@@ -225,6 +226,15 @@ struct FunctionCall : public AST
     std::vector<ExprPtr>    arguments;
 
     FunctionDecl*           funcDeclRef = nullptr;  // Reference to the function declaration; may be null
+};
+
+// Case block for a switch statement.
+struct SwitchCase : public AST
+{
+    AST_INTERFACE(SwitchCase);
+
+    ExprPtr                 expr; // If null -> default case
+    std::vector<StmntPtr>   stmnts;
 };
 
 // Pack offset.
@@ -708,10 +718,10 @@ struct FunctionCallExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter();
 
-    FunctionCallPtr         call;
-    //std::vector<ExprPtr>    arrayIndices;   // Optional array indices
+    FunctionCallPtr call;
 };
 
+//TODO: remove this AST node!!!
 // Bracket expression.
 struct BracketExpr : public Expr
 {
@@ -719,8 +729,7 @@ struct BracketExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter();
 
-    ExprPtr                 expr;           // Inner expression
-    //std::vector<ExprPtr>    arrayIndices;   // Optional array indices
+    ExprPtr expr;           // Inner expression
 };
 
 // Suffix expression (e.g. "foo().suffix").
@@ -732,6 +741,17 @@ struct SuffixExpr : public Expr
 
     ExprPtr     expr;       // Sub expression (left hand side)
     VarIdentPtr varIdent;   // Suffix var identifier (right hand side)
+};
+
+// Array-access expression (e.g. "foo()[arrayAccess]").
+struct ArrayAccessExpr : public Expr
+{
+    AST_INTERFACE(ArrayAccessExpr);
+
+    TypeDenoterPtr DeriveTypeDenoter();
+
+    ExprPtr                 expr;           // Sub expression (left hand side)
+    std::vector<ExprPtr>    arrayIndices;   // Array indices (right hand side)
 };
 
 // Cast expression.
@@ -768,17 +788,6 @@ struct InitializerExpr : public Expr
     unsigned int NumElements() const;
 
     std::vector<ExprPtr> exprs;
-};
-
-/* --- Others --- */
-
-// Case block for a switch statement.
-struct SwitchCase : public AST
-{
-    AST_INTERFACE(SwitchCase);
-
-    ExprPtr                 expr; // If null -> default case
-    std::vector<StmntPtr>   stmnts;
 };
 
 #undef AST_INTERFACE

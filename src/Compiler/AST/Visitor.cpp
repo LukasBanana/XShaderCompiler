@@ -275,6 +275,12 @@ IMPLEMENT_VISIT_PROC(SuffixExpr)
     Visit(ast->varIdent);
 }
 
+IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+{
+    Visit(ast->expr);
+    Visit(ast->arrayIndices);
+}
+
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
     Visit(ast->typeExpr);

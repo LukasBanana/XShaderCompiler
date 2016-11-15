@@ -443,6 +443,15 @@ TypeDenoterPtr SuffixExpr::DeriveTypeDenoter()
 }
 
 
+/* ----- ArrayAccessExpr ----- */
+
+TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
+{
+    //TODO: array indices
+    return expr->GetTypeDenoter();
+}
+
+
 /* ----- CastExpr ----- */
 
 TypeDenoterPtr CastExpr::DeriveTypeDenoter()

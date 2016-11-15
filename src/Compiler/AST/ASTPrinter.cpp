@@ -336,6 +336,12 @@ IMPLEMENT_VISIT_PROC(SuffixExpr)
     DEFAULT_VISITOR(SuffixExpr);
 }
 
+IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+{
+    Print(ast, "ArrayAccessExpr");
+    DEFAULT_VISITOR(ArrayAccessExpr);
+}
+
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
     Print(ast, "CastExpr");
