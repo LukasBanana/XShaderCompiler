@@ -360,26 +360,38 @@ DataType BaseDataType(const DataType t)
 
 DataType VectorDataType(const DataType baseDataType, int vectorSize)
 {
-    switch (vectorSize)
+    if (IsScalarType(baseDataType))
     {
-        case 1:
+        if (vectorSize >= 2 && vectorSize <= 4)
         {
+            auto Idx = [](const DataType t)
+            {
+                return static_cast<int>(t);
+            };
 
+            auto offset = (Idx(baseDataType) - Idx(DataType::Bool));
+            auto idx    = Idx(DataType::Bool2) + offset*3 + (vectorSize - 2);
+
+            return static_cast<DataType>(idx);
         }
-        break;
+        else if (vectorSize == 1)
+            return baseDataType;
     }
     return DataType::Undefined;
 }
 
-DataType VectorSubscriptDataType(const DataType baseDataType, const std::string& subscript)
+DataType VectorSubscriptDataType(const DataType dataType, const std::string& subscript)
 {
-    auto IsValidSubscript = [&subscript](const std::string& compareSubscript) -> bool
+    auto IsValidSubscript = [&subscript](std::string compareSubscript, int vectorSize) -> bool
     {
+        compareSubscript.resize(vectorSize);
+
         for (auto chr : subscript)
         {
             if (compareSubscript.find(chr) == std::string::npos)
                 return false;
         }
+
         return true;
     };
 
@@ -388,16 +400,21 @@ DataType VectorSubscriptDataType(const DataType baseDataType, const std::string&
         InvalidArg("vector subscript can not have " + std::to_string(subscript.size()) + " components");
 
     /* Validate vector subscript */
+    int vectorSize = VectorTypeDim(dataType);
+
+    if (vectorSize < 1 || vectorSize > 4)
+        InvalidArg("vector subscript is only allowed for scalar and vector types");
+
     bool validSubscript =
     (
-        IsValidSubscript("xyzw") ||
-        IsValidSubscript("rgba")
+        IsValidSubscript("xyzw", vectorSize) ||
+        IsValidSubscript("rgba", vectorSize)
     );
 
     if (!validSubscript)
         InvalidArg("invalid vector subscript: '" + subscript + "'");
 
-    return VectorDataType(baseDataType, static_cast<int>(subscript.size()));
+    return VectorDataType(BaseDataType(dataType), static_cast<int>(subscript.size()));
 }
 
 

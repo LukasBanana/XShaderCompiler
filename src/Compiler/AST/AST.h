@@ -230,6 +230,9 @@ struct StructDecl : public AST
     // Returns the VarDecl AST node inside this struct decl for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident) const;
 
+    // Returns a type denoter for this structure.
+    StructTypeDenoterPtr GetTypeDenoter();
+
     std::string                     name;                       // May be empty (for anonymous structures).
     std::string                     baseStructName;             // May be empty (if no inheritance is used).
     std::vector<VarDeclStmntPtr>    members;
@@ -291,7 +294,10 @@ struct VarIdent : public AST
     VarIdent* LastVarIdent();
 
     // Returns a type denoter for the symbol reference of this variable identifier.
-    TypeDenoterPtr GetTypeDenoter(StructDecl* structDeclScope = nullptr) const;
+    TypeDenoterPtr GetBaseTypeDenoter() const;
+
+    // Returns a type denoter for the symbol reference of the last variable identifier.
+    TypeDenoterPtr GetTypeDenoter() const;
 
     std::string             ident;
     std::vector<ExprPtr>    arrayIndices;

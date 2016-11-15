@@ -6,6 +6,7 @@
  */
 
 #include "SymbolTable.h"
+#include "Exception.h"
 #include <algorithm>
 
 
@@ -139,7 +140,28 @@ FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoter
 
     /* Check for ambiguous function call */
     if (funcDeclCandidates.size() != 1)
-        throw std::runtime_error("ambiguous function call (" + std::to_string(funcDeclCandidates.size()) + " candidates)");
+    {
+        /* Construct descriptive string for argument type names */
+        std::string argTypeNames;
+
+        if (numArgs > 0)
+        {
+            for (std::size_t i = 0; i < numArgs; ++i)
+            {
+                argTypeNames += argTypeDenoters[i]->ToString();
+                if (i + 1 < numArgs)
+                    argTypeNames += ", ";
+            }
+        }
+        else
+            argTypeNames = "void";
+
+        /* Throw runtime error */
+        RuntimeErr(
+            "ambiguous function call (" + std::to_string(funcDeclCandidates.size()) +
+            " candidates) with arguments: (" + argTypeNames + ")"
+        );
+    }
 
     return funcDeclCandidates.front();
 }

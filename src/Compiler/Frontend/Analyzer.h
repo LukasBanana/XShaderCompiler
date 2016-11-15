@@ -51,6 +51,7 @@ class Analyzer : protected Visitor
         
         void Error(const std::string& msg, const AST* ast = nullptr);
         void ErrorUndeclaredIdent(const std::string& ident, const AST* ast = nullptr);
+        void ErrorInternal(const std::string& msg, const AST* ast = nullptr);
 
         void Warning(const std::string& msg, const AST* ast = nullptr);
         void WarningOnNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName);
@@ -71,6 +72,10 @@ class Analyzer : protected Visitor
         void AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);
         void AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* ast);
         void AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);
+
+        TypeDenoterPtr GetExprTypeDenoter(Expr* ast);
+
+        void ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, const AST* ast = nullptr);
 
         // Returns the report handler.
         inline ReportHandler& GetReportHandler()

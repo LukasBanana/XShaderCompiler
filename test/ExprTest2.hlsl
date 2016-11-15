@@ -66,10 +66,10 @@ void CS()
 	
 	S s;
 	
-	float a = (s).foos;
+	float a = s;//.foo.xx;
 	int b = ((int3)0).x;
 	
-	f(a);
+	f(a.xxx);
 	f(b);
 	
 	#endif

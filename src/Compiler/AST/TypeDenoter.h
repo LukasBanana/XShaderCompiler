@@ -157,6 +157,8 @@ struct StructTypeDenoter : public TypeDenoter
     std::string ToString() const override;
     std::string Ident() const override;
 
+    TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
+
     std::string     ident;
     StructDecl*     structDeclRef = nullptr;    // Reference to the StructDecl AST node
 };

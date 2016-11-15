@@ -6,6 +6,7 @@
  */
 
 #include "Analyzer.h"
+#include "Exception.h"
 
 
 namespace Xsc
@@ -48,6 +49,11 @@ void Analyzer::Error(const std::string& msg, const AST* ast)
 void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const AST* ast)
 {
     Error("undeclared identifier \"" + ident + "\"", ast);
+}
+
+void Analyzer::ErrorInternal(const std::string& msg, const AST* ast)
+{
+    reportHandler_.SubmitReport(false, Report::Types::Error, "internal error", msg, sourceCode_, (ast ? ast->area : SourceArea::ignore));
 }
 
 void Analyzer::Warning(const std::string& msg, const AST* ast)
@@ -232,6 +238,30 @@ void Analyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
                 aliasTypeDen.aliasDeclRef = static_cast<AliasDecl*>(symbol);
         }
     }
+}
+
+TypeDenoterPtr Analyzer::GetExprTypeDenoter(Expr* ast)
+{
+    try
+    {
+        /* Validate and return type denoter of initializer expression */
+        return ast->GetTypeDenoter();
+    }
+    catch (const ASTRuntimeError& e)
+    {
+        Error(e.what(), e.GetAST());
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what(), ast);
+    }
+    return nullptr;
+}
+
+void Analyzer::ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, const AST* ast)
+{
+    if (!sourceTypeDen.IsCastableTo(destTypeDen))
+        Error("can not cast '" + sourceTypeDen.ToString() + "' to '" + destTypeDen.ToString() + "'", ast);
 }
 
 

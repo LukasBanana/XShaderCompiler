@@ -6,6 +6,7 @@
  */
 
 #include "AST.h"
+#include "Exception.h"
 
 
 namespace Xsc
@@ -37,50 +38,9 @@ VarIdent* VarIdent::LastVarIdent()
     return (next ? next->LastVarIdent() : this);
 }
 
-TypeDenoterPtr VarIdent::GetTypeDenoter(StructDecl* structDeclScope) const
+TypeDenoterPtr VarIdent::GetBaseTypeDenoter() const
 {
-    if (structDeclScope)
-    {
-        /* Derive type denoter in struct-decl scope */
-        auto varDecl = structDeclScope->Fetch(ident);
-        if (varDecl)
-        {
-            if (next)
-            {
-                auto varDeclTypeDen = varDecl->GetTypeDenoter();
-                if (varDeclTypeDen->IsStruct())
-                {
-                    auto varDeclStructType = static_cast<StructTypeDenoter*>(varDeclTypeDen.get());
-                    if (varDeclStructType->structDeclRef)
-                        return next->GetTypeDenoter(varDeclStructType->structDeclRef);
-                    else
-                    {
-                        throw std::runtime_error(
-                            "missing reference to '" + varDeclStructType->ToString() + "' to derive type for '" +
-                            next->ident + "' in '" + structDeclScope->SignatureToString() + "'"
-                        );
-                    }
-                }
-                else
-                {
-                    throw std::runtime_error(
-                        "identifier '" + ident + "' in '" + structDeclScope->SignatureToString() +
-                        "' does not have a structure type"
-                    );
-                }
-            }
-            else
-                return varDecl->GetTypeDenoter();
-        }
-        else
-        {
-            throw std::runtime_error(
-                "missing variable declaration reference to '" + ident + "' in '" + structDeclScope->SignatureToString() +
-                "' to derive type denoter of variable identifier"
-            );
-        }
-    }
-    else if (symbolRef)
+    if (symbolRef)
     {
         /* Derive type denoter from symbol reference */
         switch (symbolRef->Type())
@@ -109,15 +69,24 @@ TypeDenoterPtr VarIdent::GetTypeDenoter(StructDecl* structDeclScope) const
             case AST::Types::StructDecl:
             {
                 auto structDecl = static_cast<StructDecl*>(symbolRef);
+                #if 1
+                return structDecl->GetTypeDenoter()->Get(next.get());
+                #else
                 if (next)
                     return next->GetTypeDenoter(structDecl);
                 else
                     return std::make_shared<StructTypeDenoter>(structDecl);
+                #endif
             }
             break;
         }
     }
     throw std::runtime_error("missing symbol reference to derive type denoter of variable identifier '" + ident + "'");
+}
+
+TypeDenoterPtr VarIdent::GetTypeDenoter() const
+{
+    return GetBaseTypeDenoter()->Get(next.get());
 }
 
 
@@ -152,6 +121,11 @@ VarDecl* StructDecl::Fetch(const std::string& ident) const
     }
 
     return nullptr;
+}
+
+StructTypeDenoterPtr StructDecl::GetTypeDenoter()
+{
+    return std::make_shared<StructTypeDenoter>(this);
 }
 
 
@@ -244,7 +218,7 @@ TypeDenoterPtr VarDecl::GetTypeDenoter() const
 {
     if (declStmntRef)
         return declStmntRef->GetTypeDenoter();
-    throw std::runtime_error("missing reference to declaration statement to derive type denoter of variable identifier '" + name + "'");
+    RuntimeErr("missing reference to declaration statement to derive type denoter of variable identifier '" + name + "'", this);
 }
 
 

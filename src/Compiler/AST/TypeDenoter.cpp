@@ -198,16 +198,10 @@ TypeDenoterPtr BaseTypeDenoter::Get(const VarIdent* varIdent)
         if (varIdent->next)
             RuntimeErr("vector subscript '" + varIdent->ident + "' can not have further suffixes", varIdent->next.get());
 
-        /* Check if data type can be vector subscript */
-        auto baseDataType = BaseDataType(dataType);
-
-        if (!IsVectorType(baseDataType))
-            RuntimeErr("non-vector types can not have vector subscripts", varIdent);
-
         /* Resolve vector subscript (swizzle operator) */
         try
         {
-            auto subscriptDataType = VectorSubscriptDataType(baseDataType, varIdent->ident);
+            auto subscriptDataType = VectorSubscriptDataType(dataType, varIdent->ident);
             return std::make_shared<BaseTypeDenoter>(subscriptDataType);
         }
         catch (const std::exception& e)
@@ -295,6 +289,25 @@ std::string StructTypeDenoter::ToString() const
 std::string StructTypeDenoter::Ident() const
 {
     return ident;
+}
+
+TypeDenoterPtr StructTypeDenoter::Get(const VarIdent* varIdent)
+{
+    if (varIdent)
+    {
+        if (structDeclRef)
+        {
+            const auto& ident = varIdent->ident;
+            auto varDecl = structDeclRef->Fetch(ident);
+            if (varDecl)
+                return varDecl->GetTypeDenoter()->Get(varIdent->next.get());
+            else
+                RuntimeErr("identifier '" + ident + "' not found in 'struct " + structDeclRef->SignatureToString() + "'", varIdent);
+        }
+        else
+            RuntimeErr("missing reference to structure declaration", varIdent);
+    }
+    return TypeDenoter::Get(varIdent);
 }
 
 

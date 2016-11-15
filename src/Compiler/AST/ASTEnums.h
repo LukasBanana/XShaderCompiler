@@ -220,7 +220,7 @@ DataType BaseDataType(const DataType t);
 DataType VectorDataType(const DataType baseDataType, int vectorSize);
 
 // Returns the data type for the specified swizzle operator or throws and std::invalid_argument on failure.
-DataType VectorSubscriptDataType(const DataType baseDataType, const std::string& subscript);
+DataType VectorSubscriptDataType(const DataType dataType, const std::string& subscript);
 
 
 } // /namespace Xsc

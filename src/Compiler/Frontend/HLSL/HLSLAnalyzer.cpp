@@ -174,7 +174,22 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         }
     }
 
-    Visit(ast->initializer);
+    if (ast->initializer)
+    {
+        Visit(ast->initializer);
+
+        /* Compare initializer type with var-decl type */
+        if (auto initTypeDen = GetExprTypeDenoter(ast->initializer.get()))
+        {
+            if (ast->declStmntRef)
+            {
+                auto declTypeDen = ast->declStmntRef->GetTypeDenoter();
+                ValidateTypeCast(*initTypeDen, *declTypeDen, ast->initializer.get());
+            }
+            else
+                ErrorInternal("missing reference to statement in variable declaration", ast);
+        }
+    }
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
