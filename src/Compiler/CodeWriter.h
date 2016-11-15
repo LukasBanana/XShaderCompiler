@@ -52,13 +52,14 @@ class CodeWriter : public IndentHandler
 
         Options CurrentOptions() const;
 
-    private:
-        
+        // Returns the output stream.
         inline std::ostream& Out()
         {
             return (*stream_);
         }
 
+    private:
+        
         std::ostream*       stream_         = nullptr;
 
         std::stack<Options> optionsStack_;

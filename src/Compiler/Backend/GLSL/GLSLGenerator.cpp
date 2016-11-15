@@ -770,12 +770,7 @@ IMPLEMENT_VISIT_PROC(VarIdent)
     Write(ast->ident);
 
     /* Write array index expressions */
-    for (auto& index : ast->arrayIndices)
-    {
-        Write("[");
-        Visit(index);
-        Write("]");
-    }
+    WriteArrayDims(ast->arrayIndices);
 
     if (ast->next)
     {

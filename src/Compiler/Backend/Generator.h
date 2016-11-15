@@ -62,9 +62,16 @@ class Generator : protected Visitor
         // Returns the current date and time point (can be used in a headline comment).
         std::string TimePoint() const;
 
+        // Returns the AST root node.
         inline Program* GetProgram() const
         {
             return program_;
+        }
+
+        // Returns the output stream.
+        inline std::ostream& Out()
+        {
+            return writer_.Out();
         }
 
     private:
