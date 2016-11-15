@@ -293,9 +293,6 @@ struct VarIdent : public AST
     // Returns the last identifier AST node.
     VarIdent* LastVarIdent();
 
-    // Returns a type denoter for the symbol reference of this variable identifier.
-    TypeDenoterPtr GetBaseTypeDenoter() const;
-
     // Returns a type denoter for the symbol reference of the last variable identifier.
     TypeDenoterPtr GetTypeDenoter() const;
 

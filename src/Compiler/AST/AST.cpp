@@ -38,7 +38,7 @@ VarIdent* VarIdent::LastVarIdent()
     return (next ? next->LastVarIdent() : this);
 }
 
-TypeDenoterPtr VarIdent::GetBaseTypeDenoter() const
+TypeDenoterPtr VarIdent::GetTypeDenoter() const
 {
     if (symbolRef)
     {
@@ -48,7 +48,7 @@ TypeDenoterPtr VarIdent::GetBaseTypeDenoter() const
             case AST::Types::VarDecl:
             {
                 auto varDecl = static_cast<VarDecl*>(symbolRef);
-                return varDecl->GetTypeDenoter();
+                return varDecl->GetTypeDenoter()->Get(next.get());
             }
             break;
 
@@ -69,24 +69,14 @@ TypeDenoterPtr VarIdent::GetBaseTypeDenoter() const
             case AST::Types::StructDecl:
             {
                 auto structDecl = static_cast<StructDecl*>(symbolRef);
-                #if 1
-                return structDecl->GetTypeDenoter()->Get(next.get());
-                #else
                 if (next)
-                    return next->GetTypeDenoter(structDecl);
-                else
-                    return std::make_shared<StructTypeDenoter>(structDecl);
-                #endif
+                    RuntimeErr("can not directly access members of 'struct " + structDecl->SignatureToString() + "'", next.get());
+                return structDecl->GetTypeDenoter();
             }
             break;
         }
     }
-    throw std::runtime_error("missing symbol reference to derive type denoter of variable identifier '" + ident + "'");
-}
-
-TypeDenoterPtr VarIdent::GetTypeDenoter() const
-{
-    return GetBaseTypeDenoter()->Get(next.get());
+    RuntimeErr("missing symbol reference to derive type denoter of variable identifier '" + ident + "'", this);
 }
 
 

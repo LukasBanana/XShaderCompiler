@@ -153,6 +153,11 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
                 {
                     argTypeDens.push_back(arg->GetTypeDenoter());
                 }
+                catch (const ASTRuntimeError& e)
+                {
+                    Error(e.what(), e.GetAST());
+                    return nullptr;
+                }
                 catch (const std::exception& e)
                 {
                     Error(e.what(), arg.get());
