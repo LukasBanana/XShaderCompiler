@@ -46,6 +46,8 @@ bool Analyzer::DecorateAST(
  * ======= Private: =======
  */
 
+/* ----- Report and error handling ----- */
+
 void Analyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast)
 {
     auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
@@ -77,6 +79,8 @@ void Analyzer::WarningOnNullStmnt(const StmntPtr& ast, const std::string& stmntT
     if (ast && ast->Type() == AST::Types::NullStmnt)
         Warning("<" + stmntTypeName + "> statement with empty body", ast.get());
 }
+
+/* ----- Symbol table functions ----- */
 
 void Analyzer::OpenScope()
 {
@@ -214,6 +218,39 @@ StructDecl* Analyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDeno
     }
     return nullptr;
 }
+
+/* ----- State tracker functions ----- */
+
+void Analyzer::PushFunctionDeclLevel(bool isEntryPoint)
+{
+    ++funcDeclLevel_;
+    if (isEntryPoint)
+        funcDeclLevelOfEntryPoint_ = funcDeclLevel_;
+}
+
+void Analyzer::PopFunctionDeclLevel()
+{
+    if (funcDeclLevel_ > 0)
+    {
+        if (funcDeclLevelOfEntryPoint_ == funcDeclLevel_)
+            funcDeclLevelOfEntryPoint_ = ~0;
+        --funcDeclLevel_;
+    }
+    else
+        ErrorInternal("function declaration level underflow");
+}
+
+bool Analyzer::InsideFunctionDecl() const
+{
+    return (funcDeclLevel_ > 0);
+}
+
+bool Analyzer::InsideEntryPoint() const
+{
+    return (funcDeclLevel_ >= funcDeclLevelOfEntryPoint_);
+}
+
+/* ----- Analyzer functions ----- */
 
 void Analyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
 {

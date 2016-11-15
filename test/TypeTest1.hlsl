@@ -73,8 +73,10 @@ float4 VS() : SV_Position
 	s1, s2, s3;
 
 	float3 f2_v = f2(0).xxx;
+	
 	//float3 f3_v = f3()[0].xxx;
 	//float3 f3_v = f3()[0].xxx;
+	
 	float f4_x = g_anomym_s1.inner1.inner2;
 	
 	int a = 0, b = 0;

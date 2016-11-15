@@ -117,12 +117,6 @@ class HLSLAnalyzer : public Analyzer
         // Structure stack to collect all members with system value semantic (SV_...).
         std::vector<StructDecl*>                structStack_;
 
-        // True if AST traversal is currently inside any function.
-        bool                                    isInsideFunc_          = false;
-
-        // True if AST traversal is currently inside the main entry point (or its sub nodes).
-        bool                                    isInsideEntryPoint_    = false;
-
 };
 
 

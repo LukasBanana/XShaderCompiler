@@ -369,9 +369,9 @@ struct StructDecl : public Decl
     std::string                     baseStructName;             // May be empty (if no inheritance is used).
     std::vector<VarDeclStmntPtr>    members;
 
+    StructDecl*                     baseStructRef   = nullptr;  // Optional reference to base struct
     std::string                     aliasName;                  // Alias name for input and output interface blocks of the DAST.
     std::map<std::string, VarDecl*> systemValuesRef;            // List of members with system value semantic (SV_...).
-    StructDecl*                     baseStructRef   = nullptr;  // Optional reference to base struct
 };
 
 // Type alias declaration.

@@ -156,7 +156,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     Register(ast->ident, ast);
 
-    if (isInsideFunc_)
+    if (InsideFunctionDecl())
         ast->flags << VarDecl::isInsideFunc;
 
     Visit(ast->arrayDims);
@@ -291,13 +291,11 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         }
 
         /* Visit function body */
-        isInsideFunc_ = true;
-        isInsideEntryPoint_ = isEntryPoint;
+        PushFunctionDeclLevel(isEntryPoint);
         {
             Visit(ast->codeBlock);
         }
-        isInsideEntryPoint_ = false;
-        isInsideFunc_ = false;
+        PopFunctionDeclLevel();
     }
     CloseScope();
 
@@ -341,7 +339,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     Visit(ast->varDecls);
 
     /* Decorate variable type */
-    if (isInsideEntryPoint_ && ast->varDecls.empty())
+    if (InsideEntryPoint() && ast->varDecls.empty())
     {
         auto symbolRef = ast->varType->symbolRef;
         if (symbolRef && symbolRef->Type() == AST::Types::StructDecl)
@@ -457,7 +455,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     Visit(ast->expr);
 
     /* Analyze entry point return statement */
-    if (isInsideEntryPoint_ && ast->expr->Type() == AST::Types::VarAccessExpr)
+    if (InsideEntryPoint() && ast->expr->Type() == AST::Types::VarAccessExpr)
     {
         auto varAccessExpr = dynamic_cast<VarAccessExpr*>(ast->expr.get());
         if (varAccessExpr && varAccessExpr->varIdent->symbolRef)

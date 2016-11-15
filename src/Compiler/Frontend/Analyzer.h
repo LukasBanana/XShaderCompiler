@@ -47,6 +47,8 @@ class Analyzer : protected Visitor
             const ShaderOutput& outputDesc
         ) = 0;
 
+        /* ----- Report and error handling ----- */
+
         void SubmitReport(bool isError, const std::string& msg, const AST* ast = nullptr);
         
         void Error(const std::string& msg, const AST* ast = nullptr);
@@ -55,6 +57,20 @@ class Analyzer : protected Visitor
 
         void Warning(const std::string& msg, const AST* ast = nullptr);
         void WarningOnNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName);
+
+        // Returns the report handler.
+        inline ReportHandler& GetReportHandler()
+        {
+            return reportHandler_;
+        }
+
+        // Returns the reference analyzer.
+        inline ReferenceAnalyzer& GetRefAnalyzer()
+        {
+            return refAnalyzer_;
+        }
+
+        /* ----- Symbol table functions ----- */
 
         void OpenScope();
         void CloseScope();
@@ -69,6 +85,19 @@ class Analyzer : protected Visitor
         StructDecl* FetchStructDeclFromIdent(const std::string& ident, const AST* ast = nullptr);
         StructDecl* FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter);
 
+        /* ----- State tracker functions ----- */
+
+        void PushFunctionDeclLevel(bool isEntryPoint);
+        void PopFunctionDeclLevel();
+
+        // Returns true if the analyzer is currently inside a function declaration.
+        bool InsideFunctionDecl() const;
+
+        // Returns true if the analyzer is currently inside the main entry point.
+        bool InsideEntryPoint() const;
+
+        /* ----- Analyzer functions ----- */
+
         void AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);
         void AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* ast);
         void AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);
@@ -77,27 +106,19 @@ class Analyzer : protected Visitor
 
         void ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, const AST* ast = nullptr);
 
-        // Returns the report handler.
-        inline ReportHandler& GetReportHandler()
-        {
-            return reportHandler_;
-        }
-
-        // Returns the reference analyzer.
-        inline ReferenceAnalyzer& GetRefAnalyzer()
-        {
-            return refAnalyzer_;
-        }
-
     private:
 
         /* === Members === */
 
         ReportHandler           reportHandler_;
-        SourceCode*             sourceCode_     = nullptr;
+        SourceCode*             sourceCode_                 = nullptr;
 
         ASTSymbolOverloadTable  symTable_;
         ReferenceAnalyzer       refAnalyzer_;
+
+        // Current level of function declarations. Actually only 0 or 1 (but can be more if inner functions are supported).
+        unsigned int            funcDeclLevel_              = 0;
+        unsigned int            funcDeclLevelOfEntryPoint_  = ~0;
 
 };
 
