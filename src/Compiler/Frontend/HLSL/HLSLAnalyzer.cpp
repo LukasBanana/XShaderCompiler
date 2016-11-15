@@ -92,6 +92,13 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
+    /* Analyze function arguments first */
+    callStack_.push(ast);
+    {
+        Visit(ast->arguments);
+    }
+    callStack_.pop();
+
     if (ast->name)
     {
         auto name = ast->name->ToString();
@@ -142,19 +149,14 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             ast->funcDeclRef = FetchFunctionDecl(ast->name->ident, ast->arguments, ast);
         }
     }
-
-    /* Analyze function arguments */
-    callStack_.push(ast);
-    {
-        Visit(ast->arguments);
-    }
-    callStack_.pop();
 }
 
 /* --- Declarations --- */
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
+    Register(ast->name, ast);
+
     if (isInsideFunc_)
         ast->flags << VarDecl::isInsideFunc;
 
@@ -173,8 +175,6 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     }
 
     Visit(ast->initializer);
-
-    Register(ast->name, ast);
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
