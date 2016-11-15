@@ -27,7 +27,6 @@ void HLSLAnalyzer::DecorateASTPrimary(
     entryPoint_     = inputDesc.entryPoint;
     shaderTarget_   = inputDesc.shaderTarget;
     versionIn_      = inputDesc.shaderVersion;
-    versionOut_     = outputDesc.shaderVersion;
     localVarPrefix_ = outputDesc.formatting.prefix;
 
     /* Decorate program AST */

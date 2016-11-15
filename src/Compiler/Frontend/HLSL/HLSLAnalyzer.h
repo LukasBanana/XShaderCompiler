@@ -107,7 +107,6 @@ class HLSLAnalyzer : public Analyzer
         std::string                             entryPoint_;
         ShaderTarget                            shaderTarget_           = ShaderTarget::VertexShader;
         InputShaderVersion                      versionIn_              = InputShaderVersion::HLSL5;
-        OutputShaderVersion                     versionOut_             = OutputShaderVersion::GLSL330; //< TODO --> remove this variable from this class!!!
         std::string                             localVarPrefix_;
 
         std::map<std::string, IntrinsicClasses> intrinsicMap_;
