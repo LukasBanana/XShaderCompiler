@@ -552,10 +552,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         }
         Write(")");
     }
-    else if (ast->flags(FunctionCall::isTexFunc) && ast->name->next)
+    else if (ast->flags(FunctionCall::isTexFunc) && ast->varIdent->next)
     {
         /* Get function name */
-        const auto& inFuncName = ast->name->next->ident;
+        const auto& inFuncName = ast->varIdent->next->ident;
 
         auto it = texFuncMap_.find(inFuncName);
         if (it == texFuncMap_.end())
@@ -580,7 +580,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     else if (ast->flags(FunctionCall::isAtomicFunc) && ast->arguments.size() >= 2)
     {
         /* Find atomic intrinsic mapping */
-        auto it = atomicIntrinsicMap_.find(ast->name->ident);
+        auto it = atomicIntrinsicMap_.find(ast->varIdent->ident);
         if (it != atomicIntrinsicMap_.end())
         {
             /* Write function call */
@@ -596,16 +596,16 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             Write(")");
         }
         else
-            Error("unknown interlocked intrinsic \"" + ast->name->ident + "\"", ast);
+            Error("unknown interlocked intrinsic \"" + ast->varIdent->ident + "\"", ast);
     }
     else
     {
         /* Write function name */
         std::string name;
 
-        if (ast->name)
+        if (ast->varIdent)
         {
-            name = ast->name->ToString();
+            name = ast->varIdent->ToString();
 
             auto it = intrinsicMap_.find(name);
             if (it != intrinsicMap_.end())
@@ -616,7 +616,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                 if (it != typeMap_.end())
                     Write(it->second);
                 else
-                    Visit(ast->name);
+                    Visit(ast->varIdent);
             }
         }
         else if (ast->typeDenoter)
@@ -677,8 +677,8 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         BeginLn();
         {
             Write("struct");
-            if (!ast->name.empty())
-                Write(' ' + ast->name);
+            if (!ast->ident.empty())
+                Write(' ' + ast->ident);
         }
         EndLn();
 
@@ -712,7 +712,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
                 Write("in");
             else
                 Write("out");
-            Write(" " + interfaceBlockPrefix + ast->name);
+            Write(" " + interfaceBlockPrefix + ast->ident);
         }
         EndLn();
 
@@ -815,7 +815,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         else
         {
             Visit(ast->returnType);
-            Write(" " + ast->name + "(");
+            Write(" " + ast->ident + "(");
 
             /*
             Remove parameters which contain a sampler state object,
@@ -1350,7 +1350,7 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 
 void GLSLGenerator::VisitAttribute(FunctionCall* ast)
 {
-    auto name = ast->name->ToString();
+    auto name = ast->varIdent->ToString();
 
     if (name == "numthreads")
         WriteAttributeNumThreads(ast);

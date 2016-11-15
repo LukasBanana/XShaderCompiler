@@ -56,7 +56,7 @@ void ReferenceAnalyzer::MarkTextureReference(AST* ast, const std::string& texIde
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    if (ast->name)
+    if (ast->varIdent)
     {
         //~~~~~~~~TODO:~~~~~~~~~
         //Use "symTable_->FetchFunctionDecl" with type denoters of argument list

@@ -160,7 +160,7 @@ IMPLEMENT_VISIT_PROC(AliasDecl)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    Print(ast, "FunctionDecl", ast->name);
+    Print(ast, "FunctionDecl", ast->ident);
     DEFAULT_VISITOR(FunctionDecl);
 }
 

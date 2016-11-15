@@ -221,7 +221,7 @@ struct FunctionCall : public AST
         FLAG( isAtomicFunc, 3 ), // This is an atomic (or rather interlocked) function (e.g. "InterlockedAdd").
     };
 
-    VarIdentPtr             name;                   // Either this ...
+    VarIdentPtr             varIdent;               // Either this ...
     TypeDenoterPtr          typeDenoter;            // ... or this is used.
     std::vector<ExprPtr>    arguments;
 
@@ -376,7 +376,7 @@ struct StructDecl : public Decl
     // Returns a type denoter for this structure.
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    std::string                     name;                       // May be empty (for anonymous structures).
+    std::string                     ident;                      // May be empty (for anonymous structures).
     std::string                     baseStructName;             // May be empty (if no inheritance is used).
     std::vector<VarDeclStmntPtr>    members;
 
@@ -429,7 +429,7 @@ struct FunctionDecl : public Stmnt
 
     std::vector<FunctionCallPtr>    attribs;                    // Attribute list
     VarTypePtr                      returnType;
-    std::string                     name;
+    std::string                     ident;
     std::vector<VarDeclStmntPtr>    parameters;
     std::string                     semantic;                   // May be empty
     CodeBlockPtr                    codeBlock;                  // May be null (if this AST node is a forward declaration).

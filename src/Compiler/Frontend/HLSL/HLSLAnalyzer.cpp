@@ -93,9 +93,9 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     }
     PopFunctionCall();
 
-    if (ast->name)
+    if (ast->varIdent)
     {
-        auto name = ast->name->ToString();
+        auto name = ast->varIdent->ToString();
 
         /* Check if a specific intrinsic is used */
         if (name == "mul")
@@ -126,21 +126,21 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         }
 
         /* Decorate function identifier (if it's a member function) */
-        if (ast->name->next)
+        if (ast->varIdent->next)
         {
-            auto symbol = Fetch(ast->name->ident);
+            auto symbol = Fetch(ast->varIdent->ident);
             if (symbol)
             {
                 if (symbol->Type() == AST::Types::TextureDeclStmnt)
                     ast->flags << FunctionCall::isTexFunc;
             }
             else
-                ErrorUndeclaredIdent(ast->name->ident, ast);
+                ErrorUndeclaredIdent(ast->varIdent->ident, ast);
         }
         else
         {
             /* Fetch function declaratino by arguments */
-            ast->funcDeclRef = FetchFunctionDecl(ast->name->ident, ast->arguments, ast);
+            ast->funcDeclRef = FetchFunctionDecl(ast->varIdent->ident, ast->arguments, ast);
         }
     }
 }
@@ -193,7 +193,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         ast->baseStructRef = FetchStructDeclFromIdent(ast->baseStructName);
 
     /* Register struct identifier in symbol table */
-    Register(ast->name, ast);
+    Register(ast->ident, ast);
 
     structStack_.push_back(ast);
 
@@ -220,10 +220,10 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     GetReportHandler().PushContextDesc(ast->SignatureToString(false));
 
-    const auto isEntryPoint = (ast->name == entryPoint_);
+    const auto isEntryPoint = (ast->ident == entryPoint_);
 
     /* Register function declaration in symbol table */
-    Register(ast->name, ast);
+    Register(ast->ident, ast);
 
     /* Visit attributes */
     Visit(ast->attribs);
@@ -608,7 +608,7 @@ void HLSLAnalyzer::DecorateVarObject(AST* symbol, VarIdent* varIdent)
         auto samplerDecl = dynamic_cast<SamplerDeclStmnt*>(symbol);
         auto currentFunc = ActiveFunctionCall();
         if (samplerDecl && currentFunc && currentFunc->flags(FunctionCall::isTexFunc))
-            varIdent->ident = currentFunc->name->ident;
+            varIdent->ident = currentFunc->varIdent->ident;
     }
 }
 

@@ -135,13 +135,13 @@ FunctionCallPtr HLSLParser::ParseFunctionCall(VarIdentPtr varIdent)
             varIdent = ParseVarIdent();
     }
 
-    ast->name = varIdent;
+    ast->varIdent = varIdent;
 
     /* Parse argument list */
     ast->arguments = ParseArgumentList();
 
     /* Update AST area */
-    ast->area = ast->name->area;
+    ast->area = ast->varIdent->area;
 
     return ast;
 }
@@ -224,8 +224,8 @@ FunctionCallPtr HLSLParser::ParseAttribute()
 
     Accept(Tokens::LParen);
 
-    ast->name = Make<VarIdent>();
-    ast->name->ident = ParseIdent();
+    ast->varIdent = Make<VarIdent>();
+    ast->varIdent->ident = ParseIdent();
 
     if (Is(Tokens::LBracket))
     {
@@ -404,7 +404,7 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
     {
         /* Parse structure name */
         tkn = Tkn();
-        ast->name = (identTkn ? identTkn->Spell() : ParseIdent());
+        ast->ident = (identTkn ? identTkn->Spell() : ParseIdent());
 
         /* Parse optional inheritance (not documented in HLSL but supported; only single inheritance) */
         if (Is(Tokens::Colon))
@@ -412,7 +412,7 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
             AcceptIt();
 
             ast->baseStructName = ParseIdent();
-            if (ast->baseStructName == ast->name)
+            if (ast->baseStructName == ast->ident)
                 Error("recursive inheritance is not allowed");
 
             if (Is(Tokens::Comma))
@@ -427,7 +427,7 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
         ast->members.insert(ast->members.end(), members.begin(), members.end());
 
         /* Register identifier in symbol table (used to detect special cast expressions) */
-        RegisterSymbol(ast->name, tkn.get());
+        RegisterSymbol(ast->ident, tkn.get());
     }
     GetReportHandler().PopContextDesc();
 
@@ -539,13 +539,13 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl(const VarTypePtr& returnType, cons
     /* Parse function identifier */
     if (identTkn)
     {
-        ast->area = identTkn->Area();
-        ast->name = identTkn->Spell();
+        ast->area   = identTkn->Area();
+        ast->ident  = identTkn->Spell();
     }
     else
     {
-        ast->area = GetScanner().ActiveToken()->Area();
-        ast->name = ParseIdent();
+        ast->area   = GetScanner().ActiveToken()->Area();
+        ast->ident  = ParseIdent();
     }
 
     /* Parse parameters */

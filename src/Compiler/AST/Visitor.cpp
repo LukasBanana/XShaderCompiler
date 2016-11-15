@@ -34,7 +34,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    Visit(ast->name);
+    Visit(ast->varIdent);
     Visit(ast->arguments);
 }
 

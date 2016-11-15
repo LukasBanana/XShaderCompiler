@@ -94,12 +94,12 @@ TypeDenoterPtr VarIdent::DeriveTypeDenoter()
 
 std::string StructDecl::SignatureToString() const
 {
-    return (IsAnonymous() ? "<anonymous>" : name);
+    return (IsAnonymous() ? "<anonymous>" : ident);
 }
 
 bool StructDecl::IsAnonymous() const
 {
-    return name.empty();
+    return ident.empty();
 }
 
 VarDecl* StructDecl::Fetch(const std::string& ident) const
@@ -294,7 +294,7 @@ std::string FunctionDecl::SignatureToString(bool useParamNames) const
 
     s += returnType->ToString();
     s += ' ';
-    s += name;
+    s += ident;
     s += '(';
 
     for (std::size_t i = 0; i < parameters.size(); ++i)

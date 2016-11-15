@@ -68,10 +68,10 @@ void GLSLExtensionAgent::AcquireExtension(const GLSLExtension& extension)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    if (ast->name)
+    if (ast->varIdent)
     {
         /* Check for special function (or intrinsic) */
-        auto name = ast->name->ToString();
+        auto name = ast->varIdent->ToString();
 
         auto it = funcToExtMap_.find(name);
         if (it != funcToExtMap_.end())
@@ -89,7 +89,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         /* Check for special attributes */
         for (auto& attrib : ast->attribs)
         {
-            auto name = attrib->name->ToString();
+            auto name = attrib->varIdent->ToString();
             if (name == "earlydepthstencil")
                 AcquireExtension(GLSLEXT_GL_ARB_shader_image_load_store);
         }
