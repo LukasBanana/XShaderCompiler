@@ -383,8 +383,8 @@ TextureDeclPtr HLSLParser::ParseTextureDecl()
     auto ast = Make<TextureDecl>();
 
     /* Parse identifier and array dimension list (array dimension can be optional) */
-    ast->ident          = ParseIdent();
-    ast->arrayIndices   = ParseArrayDimensionList();
+    ast->ident      = ParseIdent();
+    ast->arrayDims  = ParseArrayDimensionList();
 
     /* Parse register name (not allowed for local variables!) */
     if (Is(Tokens::Colon))
@@ -398,8 +398,8 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl()
     auto ast = Make<SamplerDecl>();
 
     /* Parse identifier and array dimension list (array dimension can be optional) */
-    ast->ident          = ParseIdent();
-    ast->arrayIndices   = ParseArrayDimensionList();
+    ast->ident      = ParseIdent();
+    ast->arrayDims  = ParseArrayDimensionList();
 
     /* Parse register name (not allowed for local variables!) */
     if (Is(Tokens::Colon))

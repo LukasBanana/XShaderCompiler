@@ -81,12 +81,12 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(TextureDecl)
 {
-    Visit(ast->arrayIndices);
+    Visit(ast->arrayDims);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
-    Visit(ast->arrayIndices);
+    Visit(ast->arrayDims);
     Visit(ast->samplerValues);
 }
 

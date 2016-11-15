@@ -325,7 +325,7 @@ struct TextureDecl : public AST /*TODO --> public Decl*/
     };
 
     std::string                     ident;
-    std::vector<ExprPtr>            arrayIndices;
+    std::vector<ExprPtr>            arrayDims;
     std::string                     registerName;   // May be empty
 };
 
@@ -335,7 +335,7 @@ struct SamplerDecl : public AST /*TODO --> public Decl*/
     AST_INTERFACE(SamplerDecl);
 
     std::string                     ident;
-    std::vector<ExprPtr>            arrayIndices;
+    std::vector<ExprPtr>            arrayDims;
     std::string                     registerName;   // May be empty
     std::vector<SamplerValuePtr>    samplerValues;  // State values for a sampler decl-ident.
 };
