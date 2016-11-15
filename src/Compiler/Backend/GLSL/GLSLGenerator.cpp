@@ -789,7 +789,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     if (ast->flags(VarDecl::isInsideFunc))
         Write(localVarPrefix_);
     
-    Write(ast->name);
+    Write(ast->ident);
     WriteArrayDims(ast->arrayDims);
 
     if (ast->initializer)
@@ -1407,7 +1407,7 @@ void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenP
             BeginLn();
             {
                 Visit(ast->varType);
-                Write(" " + varDecl->name + ";");
+                Write(" " + varDecl->ident + ";");
             }
             EndLn();
 
@@ -1415,7 +1415,7 @@ void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenP
             for (const auto& member : structDecl->members)
             {
                 for (const auto& memberVar : member->varDecls)
-                    WriteLn(varDecl->name + "." + memberVar->name + " = " + memberVar->name + ";");
+                    WriteLn(varDecl->ident + "." + memberVar->ident + " = " + memberVar->ident + ";");
             }
 
             ++writtenParamCounter;
@@ -1437,7 +1437,7 @@ void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenP
         BeginLn();
         {
             Visit(ast->varType);
-            Write(" " + varDecl->name + " = " + semanticStage[shaderTarget_] + ";");
+            Write(" " + varDecl->ident + " = " + semanticStage[shaderTarget_] + ";");
         }
         EndLn();
 

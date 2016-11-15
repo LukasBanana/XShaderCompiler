@@ -155,7 +155,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    Register(ast->name, ast);
+    Register(ast->ident, ast);
 
     if (isInsideFunc_)
         ast->flags << VarDecl::isInsideFunc;
@@ -170,7 +170,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         if (IsSystemValueSemnatic(semantic->semantic))
         {
             for (auto& structDecl : structStack_)
-                structDecl->systemValuesRef[ast->name] = ast;
+                structDecl->systemValuesRef[ast->ident] = ast;
         }
     }
 
@@ -231,7 +231,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     #if 0
 
     /* Find previous function forward declarations */
-    auto symbol = Fetch(ast->name);
+    auto symbol = Fetch(ast->ident);
     if (symbol && symbol->Type() == AST::Types::FunctionDecl)
     {
         auto funcDecl = dynamic_cast<FunctionDecl*>(symbol);
@@ -245,7 +245,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
     /* Register symbol name  */
     Register(
-        ast->name, ast,
+        ast->ident, ast,
         [](AST* symbol) -> bool
         {
             return symbol->Type() == AST::Types::FunctionDecl;
@@ -351,7 +351,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
             if (structDecl && structDecl->flags(StructDecl::isShaderOutput) && structDecl->aliasName.empty())
             {
                 /* Store alias name for shader output interface block */
-                structDecl->aliasName = ast->varDecls.front()->name;
+                structDecl->aliasName = ast->varDecls.front()->ident;
             }
         }
     }
@@ -562,7 +562,7 @@ void HLSLAnalyzer::DecorateEntryInOut(VarDeclStmnt* ast, bool isInput)
                 Set structure alias name;
                 This will be the name of the shader interface block
                 */
-                structDecl->aliasName = ast->varDecls.front()->name;
+                structDecl->aliasName = ast->varDecls.front()->ident;
             }
         }
     }

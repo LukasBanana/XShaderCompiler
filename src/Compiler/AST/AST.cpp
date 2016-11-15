@@ -194,7 +194,7 @@ std::string VarDecl::ToString() const
 {
     std::string s;
 
-    s += name;
+    s += ident;
 
     for (const auto& expr : arrayDims)
     {
@@ -226,7 +226,7 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter()
 {
     if (declStmntRef)
         return declStmntRef->varType->typeDenoter;
-    RuntimeErr("missing reference to declaration statement to derive type denoter of variable identifier '" + name + "'", this);
+    RuntimeErr("missing reference to declaration statement to derive type denoter of variable identifier '" + ident + "'", this);
 }
 
 
@@ -274,7 +274,7 @@ VarDecl* VarDeclStmnt::Fetch(const std::string& ident) const
 {
     for (const auto& var : varDecls)
     {
-        if (var->name == ident)
+        if (var->ident == ident)
             return var.get();
     }
     return nullptr;

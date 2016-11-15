@@ -368,7 +368,7 @@ VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef)
     ast->declStmntRef = declStmntRef;
 
     /* Parse variable declaration */
-    ast->name       = ParseIdent();
+    ast->ident      = ParseIdent();
     ast->arrayDims  = ParseArrayDimensionList();
     ast->semantics  = ParseVarSemanticList();
 

@@ -128,7 +128,7 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    Print(ast, "VarDecl", ast->name);
+    Print(ast, "VarDecl", ast->ident);
     DEFAULT_VISITOR(VarDecl);
 }
 

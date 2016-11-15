@@ -305,7 +305,7 @@ struct VarDecl : public Decl
     // Returns a type denoter for this variable declaration or throws an std::runtime_error if the type can not be derived.
     TypeDenoterPtr DeriveTypeDenoter();
 
-    std::string                 name;
+    std::string                 ident;
     std::vector<ExprPtr>        arrayDims;
     std::vector<VarSemanticPtr> semantics;
     ExprPtr                     initializer;

@@ -64,8 +64,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         #if 0
 
         /* Mark this function to be referenced */
-        const auto& name = ast->name->ident;
-        auto symbol = symTable_->Fetch(name);
+        const auto& ident = ast->ident->ident;
+        auto symbol = symTable_->Fetch(ident);
 
         if (symbol)
         {
@@ -84,17 +84,17 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                 Visit(symbol);
             }
             else if (symbol->Type() == AST::Types::TextureDeclStmnt)
-                MarkTextureReference(symbol, name);
+                MarkTextureReference(symbol, ident);
         }
         else
         {
             //TODO: remove this from the ReferenceAnalyzer; intrinsic references should not be flagged here!
             /* Check for intrinsic usage */
-            if (name == "rcp")
+            if (ident == "rcp")
                 program_->flags << Program::rcpIntrinsicUsed;
-            else if (name == "sincos")
+            else if (ident == "sincos")
                 program_->flags << Program::sinCosIntrinsicUsed;
-            else if (name == "clip")
+            else if (ident == "clip")
                 program_->flags << Program::clipIntrinsicUsed;
         }
 
