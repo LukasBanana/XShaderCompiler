@@ -57,10 +57,12 @@ S1_t1_a f3()
 const int g_2 = 5;
 float g_1 = 0.0;
 
-/*struct { float x; } f4()
+const struct { struct { float inner2; } inner1; } g_anomym_s1;
+
+struct { float x; } f4()
 {
-	return (struct { float x; })0;
-}*/
+	//return (struct { float x; })0;
+}
 
 float4 VS() : SV_Position
 {
@@ -73,6 +75,7 @@ float4 VS() : SV_Position
 	float3 f2_v = f2(0).xxx;
 	//float3 f3_v = f3()[0].xxx;
 	//float3 f3_v = f3()[0].xxx;
+	float f4_x = g_anomym_s1.inner1.inner2;
 	
 	int a = 0, b = 0;
 	int c = (a += b);

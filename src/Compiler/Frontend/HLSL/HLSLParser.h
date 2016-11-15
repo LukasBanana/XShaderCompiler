@@ -107,12 +107,12 @@ class HLSLParser : public Parser
         AliasDeclPtr                    ParseAliasDecl(TypeDenoterPtr typeDenoter);
 
         StmntPtr                        ParseGlobalStmnt();
-        StmntPtr                        ParseVarDeclOrFunctionDecl();
+        StmntPtr                        ParseStructDeclOrVarDeclOrFunctionDeclStmnt();
         FunctionDeclPtr                 ParseFunctionDecl(const VarTypePtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
         BufferDeclStmntPtr              ParseBufferDeclStmnt();
         TextureDeclStmntPtr             ParseTextureDeclStmnt();
         SamplerDeclStmntPtr             ParseSamplerDeclStmnt();
-        StructDeclStmntPtr              ParseStructDeclStmnt();
+        //StructDeclStmntPtr              ParseStructDeclStmnt();
         VarDeclStmntPtr                 ParseVarDeclStmnt();
         AliasDeclStmntPtr               ParseAliasDeclStmnt();
 

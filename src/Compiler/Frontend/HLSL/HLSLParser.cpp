@@ -475,8 +475,6 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
             return ParseTextureDeclStmnt();
         case Tokens::UniformBuffer:
             return ParseBufferDeclStmnt();
-        case Tokens::Struct:
-            return ParseStructDeclStmnt();
         case Tokens::Typedef:
             return ParseAliasDeclStmnt();
         case Tokens::TypeModifier:
@@ -486,16 +484,25 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
         case Tokens::Void:
             return ParseFunctionDecl();
         default:
-            return ParseVarDeclOrFunctionDecl();
+            return ParseStructDeclOrVarDeclOrFunctionDeclStmnt();
     }
 }
 
-StmntPtr HLSLParser::ParseVarDeclOrFunctionDecl()
+StmntPtr HLSLParser::ParseStructDeclOrVarDeclOrFunctionDeclStmnt()
 {
     auto varType = ParseVarType();
     auto identTkn = Accept(Tokens::Ident);
 
-    if (Is(Tokens::LBracket))
+    if (varType->structDecl && Is(Tokens::Semicolon))
+    {
+        auto ast = Make<StructDeclStmnt>();
+
+        ast->structDecl = varType->structDecl;
+        Semi();
+
+        return ast;
+    }
+    else if (Is(Tokens::LBracket))
     {
         /* Parse function declaration statement */
         return ParseFunctionDecl(varType, identTkn);
@@ -621,7 +628,7 @@ SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt()
     return ast;
 }
 
-StructDeclStmntPtr HLSLParser::ParseStructDeclStmnt()
+/*StructDeclStmntPtr HLSLParser::ParseStructDeclStmnt()
 {
     auto ast = Make<StructDeclStmnt>();
     
@@ -629,7 +636,7 @@ StructDeclStmntPtr HLSLParser::ParseStructDeclStmnt()
     Semi();
 
     return ast;
-}
+}*/
 
 VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 {
