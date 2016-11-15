@@ -2,11 +2,15 @@
 // HLSL Translator: Name Mangling Test 1
 // 15/11/2016
 
+int main()
+{
+	return 0;
+}
 
 [numthreads(1,1,1)]
-void main()
+void CS()
 {
-	int fract = 0;
+	int fract = main();
 }
 
 

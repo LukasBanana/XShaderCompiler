@@ -82,17 +82,18 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     Visitor::VisitFunctionCall(ast, args);
 }
 
+IMPLEMENT_VISIT_PROC(Attribute)
+{
+    /* Check for special attributes */
+    if (ast->ident == "earlydepthstencil")
+        AcquireExtension(GLSLEXT_GL_ARB_shader_image_load_store);
+}
+
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (ast->flags(FunctionDecl::isReferenced))
     {
-        /* Check for special attributes */
-        for (auto& attrib : ast->attribs)
-        {
-            auto name = attrib->varIdent->ToString();
-            if (name == "earlydepthstencil")
-                AcquireExtension(GLSLEXT_GL_ARB_shader_image_load_store);
-        }
+        Visit(ast->attribs);
 
         /* Default visitor */
         Visitor::VisitFunctionDecl(ast, args);

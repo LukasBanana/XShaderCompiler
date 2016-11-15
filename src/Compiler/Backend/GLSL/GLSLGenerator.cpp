@@ -608,6 +608,14 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     }
 }
 
+IMPLEMENT_VISIT_PROC(Attribute)
+{
+    if (ast->ident == "numthreads")
+        WriteAttributeNumThreads(ast);
+    else if (ast->ident == "earlydepthstencil")
+        WriteLn("layout(early_fragment_tests) in;");
+}
+
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
     bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
@@ -753,8 +761,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     Line(ast);
 
     /* Write attributes */
-    for (auto& attrib : ast->attribs)
-        VisitAttribute(attrib.get());
+    Visit(ast->attribs);
 
     /* Write function header */
     BeginLn();
@@ -1297,17 +1304,7 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 
 /* --- Helper functions for code generation --- */
 
-void GLSLGenerator::VisitAttribute(FunctionCall* ast)
-{
-    auto name = ast->varIdent->ToString();
-
-    if (name == "numthreads")
-        WriteAttributeNumThreads(ast);
-    else if (name == "earlydepthstencil")
-        WriteLn("layout(early_fragment_tests) in;");
-}
-
-void GLSLGenerator::WriteAttributeNumThreads(FunctionCall* ast)
+void GLSLGenerator::WriteAttributeNumThreads(Attribute* ast)
 {
     if (ast->arguments.size() == 3)
     {

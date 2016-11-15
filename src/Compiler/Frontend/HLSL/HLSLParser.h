@@ -92,7 +92,7 @@ class HLSLParser : public Parser
         VarDeclStmntPtr                 ParseParameter();
         SwitchCasePtr                   ParseSwitchCase();
         SamplerValuePtr                 ParseSamplerValue();
-        FunctionCallPtr                 ParseAttribute();
+        AttributePtr                    ParseAttribute();
         PackOffsetPtr                   ParsePackOffset(bool parseColon = true);
         ExprPtr                         ParseArrayDimension();
         ExprPtr                         ParseInitializer();
@@ -119,12 +119,12 @@ class HLSLParser : public Parser
         StmntPtr                        ParseStmnt();
         NullStmntPtr                    ParseNullStmnt();
         CodeBlockStmntPtr               ParseCodeBlockStmnt();
-        ForLoopStmntPtr                 ParseForLoopStmnt(const std::vector<FunctionCallPtr>& attribs);
-        WhileLoopStmntPtr               ParseWhileLoopStmnt(const std::vector<FunctionCallPtr>& attribs);
-        DoWhileLoopStmntPtr             ParseDoWhileLoopStmnt(const std::vector<FunctionCallPtr>& attribs);
-        IfStmntPtr                      ParseIfStmnt(const std::vector<FunctionCallPtr>& attribs);
+        ForLoopStmntPtr                 ParseForLoopStmnt(const std::vector<AttributePtr>& attribs);
+        WhileLoopStmntPtr               ParseWhileLoopStmnt(const std::vector<AttributePtr>& attribs);
+        DoWhileLoopStmntPtr             ParseDoWhileLoopStmnt(const std::vector<AttributePtr>& attribs);
+        IfStmntPtr                      ParseIfStmnt(const std::vector<AttributePtr>& attribs);
         ElseStmntPtr                    ParseElseStmnt();
-        SwitchStmntPtr                  ParseSwitchStmnt(const std::vector<FunctionCallPtr>& attribs);
+        SwitchStmntPtr                  ParseSwitchStmnt(const std::vector<AttributePtr>& attribs);
         CtrlTransferStmntPtr            ParseCtrlTransferStmnt();
         ReturnStmntPtr                  ParseReturnStmnt();
         ExprStmntPtr                    ParseExprStmnt(const VarIdentPtr& varIdent = nullptr);
@@ -153,7 +153,7 @@ class HLSLParser : public Parser
         std::vector<ExprPtr>            ParseArgumentList();
         std::vector<ExprPtr>            ParseInitializerList();
         std::vector<VarSemanticPtr>     ParseVarSemanticList();
-        std::vector<FunctionCallPtr>    ParseAttributeList();
+        std::vector<AttributePtr>       ParseAttributeList();
         std::vector<SwitchCasePtr>      ParseSwitchCaseList();
         std::vector<TextureDeclPtr>     ParseTextureDeclList();
         std::vector<SamplerDeclPtr>     ParseSamplerDeclList();

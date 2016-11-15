@@ -218,14 +218,13 @@ SamplerValuePtr HLSLParser::ParseSamplerValue()
 
 /* --- Variables --- */
 
-FunctionCallPtr HLSLParser::ParseAttribute()
+AttributePtr HLSLParser::ParseAttribute()
 {
-    auto ast = Make<FunctionCall>();
+    auto ast = Make<Attribute>();
 
     Accept(Tokens::LParen);
 
-    ast->varIdent = Make<VarIdent>();
-    ast->varIdent->ident = ParseIdent();
+    ast->ident = ParseIdent();
 
     if (Is(Tokens::LBracket))
     {
@@ -710,7 +709,7 @@ AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
 StmntPtr HLSLParser::ParseStmnt()
 {
     /* Parse optional attributes */
-    std::vector<FunctionCallPtr> attribs;
+    std::vector<AttributePtr> attribs;
     if (Is(Tokens::LParen))
         attribs = ParseAttributeList();
 
@@ -773,7 +772,7 @@ CodeBlockStmntPtr HLSLParser::ParseCodeBlockStmnt()
     return ast;
 }
 
-ForLoopStmntPtr HLSLParser::ParseForLoopStmnt(const std::vector<FunctionCallPtr>& attribs)
+ForLoopStmntPtr HLSLParser::ParseForLoopStmnt(const std::vector<AttributePtr>& attribs)
 {
     auto ast = Make<ForLoopStmnt>();
     ast->attribs = attribs;
@@ -800,7 +799,7 @@ ForLoopStmntPtr HLSLParser::ParseForLoopStmnt(const std::vector<FunctionCallPtr>
     return ast;
 }
 
-WhileLoopStmntPtr HLSLParser::ParseWhileLoopStmnt(const std::vector<FunctionCallPtr>& attribs)
+WhileLoopStmntPtr HLSLParser::ParseWhileLoopStmnt(const std::vector<AttributePtr>& attribs)
 {
     auto ast = Make<WhileLoopStmnt>();
     ast->attribs = attribs;
@@ -818,7 +817,7 @@ WhileLoopStmntPtr HLSLParser::ParseWhileLoopStmnt(const std::vector<FunctionCall
     return ast;
 }
 
-DoWhileLoopStmntPtr HLSLParser::ParseDoWhileLoopStmnt(const std::vector<FunctionCallPtr>& attribs)
+DoWhileLoopStmntPtr HLSLParser::ParseDoWhileLoopStmnt(const std::vector<AttributePtr>& attribs)
 {
     auto ast = Make<DoWhileLoopStmnt>();
     ast->attribs = attribs;
@@ -839,7 +838,7 @@ DoWhileLoopStmntPtr HLSLParser::ParseDoWhileLoopStmnt(const std::vector<Function
     return ast;
 }
 
-IfStmntPtr HLSLParser::ParseIfStmnt(const std::vector<FunctionCallPtr>& attribs)
+IfStmntPtr HLSLParser::ParseIfStmnt(const std::vector<AttributePtr>& attribs)
 {
     auto ast = Make<IfStmnt>();
     ast->attribs = attribs;
@@ -872,7 +871,7 @@ ElseStmntPtr HLSLParser::ParseElseStmnt()
     return ast;
 }
 
-SwitchStmntPtr HLSLParser::ParseSwitchStmnt(const std::vector<FunctionCallPtr>& attribs)
+SwitchStmntPtr HLSLParser::ParseSwitchStmnt(const std::vector<AttributePtr>& attribs)
 {
     auto ast = Make<SwitchStmnt>();
     ast->attribs = attribs;
@@ -1439,9 +1438,9 @@ std::vector<VarSemanticPtr> HLSLParser::ParseVarSemanticList()
     return semantics;
 }
 
-std::vector<FunctionCallPtr> HLSLParser::ParseAttributeList()
+std::vector<AttributePtr> HLSLParser::ParseAttributeList()
 {
-    std::vector<FunctionCallPtr> attribs;
+    std::vector<AttributePtr> attribs;
 
     while (Is(Tokens::LParen))
         attribs.push_back(ParseAttribute());

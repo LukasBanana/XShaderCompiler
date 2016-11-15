@@ -437,7 +437,7 @@ struct FunctionDecl : public Stmnt
     // Returns the maximal number of arguments for a call to this function (this is merely: parameters.size()).
     std::size_t NumMaxArgs() const;
 
-    std::vector<FunctionCallPtr>    attribs;                    // Attribute list
+    std::vector<AttributePtr>       attribs;                    // Attribute list
     VarTypePtr                      returnType;
     std::string                     ident;
     std::vector<VarDeclStmntPtr>    parameters;
@@ -551,11 +551,11 @@ struct ForLoopStmnt : public Stmnt
 {
     AST_INTERFACE(ForLoopStmnt);
 
-    std::vector<FunctionCallPtr>    attribs; // Attribute list
-    StmntPtr                        initSmnt;
-    ExprPtr                         condition;
-    ExprPtr                         iteration;
-    StmntPtr                        bodyStmnt;
+    std::vector<AttributePtr>   attribs; // Attribute list
+    StmntPtr                    initSmnt;
+    ExprPtr                     condition;
+    ExprPtr                     iteration;
+    StmntPtr                    bodyStmnt;
 };
 
 // 'while'-loop statement.
@@ -563,9 +563,9 @@ struct WhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(WhileLoopStmnt);
 
-    std::vector<FunctionCallPtr>    attribs; // Attribute list
-    ExprPtr                         condition;
-    StmntPtr                        bodyStmnt;
+    std::vector<AttributePtr>   attribs; // Attribute list
+    ExprPtr                     condition;
+    StmntPtr                    bodyStmnt;
 };
 
 // 'do/while'-loop statement.
@@ -573,9 +573,9 @@ struct DoWhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(DoWhileLoopStmnt);
 
-    std::vector<FunctionCallPtr>    attribs; // Attribute list
-    StmntPtr                        bodyStmnt;
-    ExprPtr                         condition;
+    std::vector<AttributePtr>   attribs; // Attribute list
+    StmntPtr                    bodyStmnt;
+    ExprPtr                     condition;
 };
 
 // 'if' statement.
@@ -583,10 +583,10 @@ struct IfStmnt : public Stmnt
 {
     AST_INTERFACE(IfStmnt);
 
-    std::vector<FunctionCallPtr>    attribs;    // Attribute list
-    ExprPtr                         condition;
-    StmntPtr                        bodyStmnt;
-    ElseStmntPtr                    elseStmnt;  // May be null
+    std::vector<AttributePtr>   attribs;    // Attribute list
+    ExprPtr                     condition;
+    StmntPtr                    bodyStmnt;
+    ElseStmntPtr                elseStmnt;  // May be null
 };
 
 // 'else' statement.
@@ -602,9 +602,9 @@ struct SwitchStmnt : public Stmnt
 {
     AST_INTERFACE(SwitchStmnt);
 
-    std::vector<FunctionCallPtr>    attribs; // Attribute list
-    ExprPtr                         selector;
-    std::vector<SwitchCasePtr>      cases;
+    std::vector<AttributePtr>   attribs; // Attribute list
+    ExprPtr                     selector;
+    std::vector<SwitchCasePtr>  cases;
 };
 
 // Variable assign statement.

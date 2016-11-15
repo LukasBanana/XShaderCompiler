@@ -121,7 +121,8 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
-        DECL_VISIT_PROC( StructDecl         );
+        DECL_VISIT_PROC( Attribute         );
+        DECL_VISIT_PROC( StructDecl        );
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( VarType           );
         DECL_VISIT_PROC( VarIdent          );
@@ -164,8 +165,7 @@ class GLSLGenerator : public Generator
 
         /* --- Helper functions for code generation --- */
 
-        void VisitAttribute(FunctionCall* ast);
-        void WriteAttributeNumThreads(FunctionCall* ast);
+        void WriteAttributeNumThreads(Attribute* ast);
 
         void WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenParamCounter);
         void WriteEntryPointInputSemantics();

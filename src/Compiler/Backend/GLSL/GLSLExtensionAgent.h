@@ -45,6 +45,7 @@ class GLSLExtensionAgent : private Visitor
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( FunctionCall      );
+        DECL_VISIT_PROC( Attribute         );
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( TextureDeclStmnt  );
