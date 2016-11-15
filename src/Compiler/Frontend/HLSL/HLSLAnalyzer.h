@@ -111,9 +111,6 @@ class HLSLAnalyzer : public Analyzer
 
         std::map<std::string, IntrinsicClasses> intrinsicMap_;
 
-        // Function call stack to join arguments with its function call.
-        std::stack<FunctionCall*>               callStack_;
-
         // Structure stack to collect all members with system value semantic (SV_...).
         std::vector<StructDecl*>                structStack_;
 

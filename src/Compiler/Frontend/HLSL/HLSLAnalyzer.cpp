@@ -55,11 +55,6 @@ void HLSLAnalyzer::EstablishMaps()
     };
 }
 
-FunctionCall* HLSLAnalyzer::CurrentFunction() const
-{
-    return (callStack_.empty() ? nullptr : callStack_.top());
-}
-
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -92,11 +87,11 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     /* Analyze function arguments first */
-    callStack_.push(ast);
+    PushFunctinoCall(ast);
     {
         Visit(ast->arguments);
     }
-    callStack_.pop();
+    PopFunctionCall();
 
     if (ast->name)
     {
@@ -631,7 +626,7 @@ void HLSLAnalyzer::DecorateVarObject(AST* symbol, VarIdent* varIdent)
     {
         /* Exchange sampler object by its respective texture object () */
         auto samplerDecl = dynamic_cast<SamplerDeclStmnt*>(symbol);
-        auto currentFunc = CurrentFunction();
+        auto currentFunc = ActiveFunctionCall();
         if (samplerDecl && currentFunc && currentFunc->flags(FunctionCall::isTexFunc))
             varIdent->ident = currentFunc->name->ident;
     }

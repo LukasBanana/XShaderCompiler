@@ -17,6 +17,7 @@
 #include "SymbolTable.h"
 #include "AST.h"
 #include <string>
+#include <stack>
 
 
 namespace Xsc
@@ -96,6 +97,12 @@ class Analyzer : protected Visitor
         // Returns true if the analyzer is currently inside the main entry point.
         bool InsideEntryPoint() const;
 
+        void PushFunctinoCall(FunctionCall* ast);
+        void PopFunctionCall();
+
+        // Returns the active (inner most) function call or null if the analyzer is currently not inside a function call.
+        FunctionCall* ActiveFunctionCall() const;
+
         /* ----- Analyzer functions ----- */
 
         void AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);
@@ -110,15 +117,18 @@ class Analyzer : protected Visitor
 
         /* === Members === */
 
-        ReportHandler           reportHandler_;
-        SourceCode*             sourceCode_                 = nullptr;
+        ReportHandler               reportHandler_;
+        SourceCode*                 sourceCode_                 = nullptr;
 
-        ASTSymbolOverloadTable  symTable_;
-        ReferenceAnalyzer       refAnalyzer_;
+        ASTSymbolOverloadTable      symTable_;
+        ReferenceAnalyzer           refAnalyzer_;
 
         // Current level of function declarations. Actually only 0 or 1 (but can be more if inner functions are supported).
-        unsigned int            funcDeclLevel_              = 0;
-        unsigned int            funcDeclLevelOfEntryPoint_  = ~0;
+        unsigned int                funcDeclLevel_              = 0;
+        unsigned int                funcDeclLevelOfEntryPoint_  = ~0;
+
+        // Function call stack to join arguments with its function call.
+        std::stack<FunctionCall*>   funcCallStack_;
 
 };
 

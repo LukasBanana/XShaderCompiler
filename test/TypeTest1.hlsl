@@ -2,6 +2,11 @@
 // HLSL Translator: Type Test 1
 // 13/11/2016
 
+struct S0
+{
+	float x;
+};
+
 
 cbuffer buffer1 : register(b0)
 {

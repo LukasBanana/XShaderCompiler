@@ -250,6 +250,24 @@ bool Analyzer::InsideEntryPoint() const
     return (funcDeclLevel_ >= funcDeclLevelOfEntryPoint_);
 }
 
+void Analyzer::PushFunctinoCall(FunctionCall* ast)
+{
+    funcCallStack_.push(ast);
+}
+
+void Analyzer::PopFunctionCall()
+{
+    if (funcCallStack_.empty())
+        ErrorInternal("function call stack underflow");
+    else
+        funcCallStack_.pop();
+}
+
+FunctionCall* Analyzer::ActiveFunctionCall() const
+{
+    return (funcCallStack_.empty() ? nullptr : funcCallStack_.top());
+}
+
 /* ----- Analyzer functions ----- */
 
 void Analyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
