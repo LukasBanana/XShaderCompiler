@@ -19,8 +19,11 @@ namespace Xsc
 {
 
 
+struct TypeDenoter;
+using TypeDenoterPtr = std::shared_ptr<TypeDenoter>;
+
 // Type denoter base class.
-struct TypeDenoter
+struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
 {
     enum class Types
     {
@@ -63,9 +66,10 @@ struct TypeDenoter
 
     // Returns the type identifier (if it has one), e.g. for structs and type aliases.
     virtual std::string Ident() const;
-};
 
-using TypeDenoterPtr = std::shared_ptr<TypeDenoter>;
+    // Returns a type denoter for the specified (full) var-ident. Throws ASTRuntimeError if the respective var-ident could not be resolved.
+    virtual TypeDenoterPtr Get(const VarIdent* varIdent = nullptr);
+};
 
 // Void type denoter.
 struct VoidTypeDenoter : public TypeDenoter
@@ -94,6 +98,8 @@ struct BaseTypeDenoter : public TypeDenoter
 
     bool Equals(const TypeDenoter& rhs) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
+
+    TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
 
     DataType dataType = DataType::Undefined;
 };

@@ -213,6 +213,15 @@ Values range from 1x1 to 4x4, but 1x1 to 4x1 for vector and scalar types).
 */
 std::pair<int, int> MatrixTypeDim(const DataType t);
 
+// Returns the base data type for the specified type or DataType::Undefined on failure.
+DataType BaseDataType(const DataType t);
+
+// Returns the vector data type for the specified type and vector size.
+DataType VectorDataType(const DataType baseDataType, int vectorSize);
+
+// Returns the data type for the specified swizzle operator or throws and std::invalid_argument on failure.
+DataType VectorSubscriptDataType(const DataType baseDataType, const std::string& subscript);
+
 
 } // /namespace Xsc
 

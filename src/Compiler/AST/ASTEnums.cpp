@@ -6,6 +6,7 @@
  */
 
 #include "ASTEnums.h"
+#include "Exception.h"
 #include <map>
 
 
@@ -334,6 +335,69 @@ std::pair<int, int> MatrixTypeDim(const DataType t)
             break;
     }
     return { 0, 0 };
+}
+
+DataType BaseDataType(const DataType t)
+{
+    #define FIND_BASETYPE(TYPENAME)                                                 \
+        if ( ( t >= DataType::TYPENAME##2   && t <= DataType::TYPENAME##4   ) ||    \
+             ( t >= DataType::TYPENAME##2x2 && t <= DataType::TYPENAME##4x4 ) )     \
+        {                                                                           \
+            return DataType::TYPENAME;                                              \
+        }
+
+    FIND_BASETYPE( Bool   );
+    FIND_BASETYPE( Int    );
+    FIND_BASETYPE( UInt   );
+    FIND_BASETYPE( Half   );
+    FIND_BASETYPE( Float  );
+    FIND_BASETYPE( Double );
+
+    return t;
+
+    #undef FIND_BASETYPE
+}
+
+DataType VectorDataType(const DataType baseDataType, int vectorSize)
+{
+    switch (vectorSize)
+    {
+        case 1:
+        {
+
+        }
+        break;
+    }
+    return DataType::Undefined;
+}
+
+DataType VectorSubscriptDataType(const DataType baseDataType, const std::string& subscript)
+{
+    auto IsValidSubscript = [&subscript](const std::string& compareSubscript) -> bool
+    {
+        for (auto chr : subscript)
+        {
+            if (compareSubscript.find(chr) == std::string::npos)
+                return false;
+        }
+        return true;
+    };
+
+    /* Validate swizzle operator size */
+    if (subscript.size() < 0 || subscript.size() > 4)
+        InvalidArg("vector subscript can not have " + std::to_string(subscript.size()) + " components");
+
+    /* Validate vector subscript */
+    bool validSubscript =
+    (
+        IsValidSubscript("xyzw") ||
+        IsValidSubscript("rgba")
+    );
+
+    if (!validSubscript)
+        InvalidArg("invalid vector subscript: '" + subscript + "'");
+
+    return VectorDataType(baseDataType, static_cast<int>(subscript.size()));
 }
 
 

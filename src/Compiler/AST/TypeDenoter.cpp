@@ -6,6 +6,7 @@
  */
 
 #include "TypeDenoter.h"
+#include "Exception.h"
 #include "AST.h"
 
 
@@ -87,7 +88,15 @@ bool TypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 
 std::string TypeDenoter::Ident() const
 {
-    return "";
+    return ""; // dummy
+}
+
+TypeDenoterPtr TypeDenoter::Get(const VarIdent* varIdent)
+{
+    if (varIdent)
+        RuntimeErr("variable identifier could not be resolved", varIdent);
+    else
+        return shared_from_this();
 }
 
 
@@ -180,6 +189,35 @@ bool BaseTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     #else
     return (targetType.Type() == Types::Base || targetType.Type() == Types::Struct);
     #endif
+}
+
+TypeDenoterPtr BaseTypeDenoter::Get(const VarIdent* varIdent)
+{
+    if (varIdent)
+    {
+        if (varIdent->next)
+            RuntimeErr("vector subscript '" + varIdent->ident + "' can not have further suffixes", varIdent->next.get());
+
+        /* Check if data type can be vector subscript */
+        auto baseDataType = BaseDataType(dataType);
+
+        if (!IsVectorType(baseDataType))
+            RuntimeErr("non-vector types can not have vector subscripts", varIdent);
+
+        /* Resolve vector subscript (swizzle operator) */
+        try
+        {
+            auto subscriptDataType = VectorSubscriptDataType(baseDataType, varIdent->ident);
+            return std::make_shared<BaseTypeDenoter>(subscriptDataType);
+        }
+        catch (const std::exception& e)
+        {
+            RuntimeErr(e.what(), varIdent);
+        }
+    }
+
+    /* Default getter */
+    return TypeDenoter::Get(varIdent);
 }
 
 /* ----- BufferTypeDenoter ----- */
