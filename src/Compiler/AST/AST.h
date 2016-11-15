@@ -208,42 +208,6 @@ struct FunctionCall : public AST
     FunctionDecl*           funcDeclRef = nullptr;  // Reference to the function declaration; may be null
 };
 
-// StructDecl object.
-struct StructDecl : public AST
-{
-    AST_INTERFACE(StructDecl);
-
-    FLAG_ENUM
-    {
-        FLAG( isReferenced,     0 ), // This structure is referenced (or rather used) at least once (use-count >= 1).
-        FLAG( wasMarked,        1 ), // This structure was already marked by the "ReferenceAnalyzer" visitor.
-        FLAG( isShaderInput,    2 ), // This structure is used as shader input.
-        FLAG( isShaderOutput,   3 ), // This structure is used as shader output.
-    };
-
-    // Returns a descriptive string of the function signature (e.g. "struct s" or "struct <anonymous>").
-    std::string SignatureToString() const;
-
-    // Returns true if this is an anonymous structure.
-    bool IsAnonymous() const;
-
-    // Returns the VarDecl AST node inside this struct decl for the specified identifier, or null if there is no such VarDecl.
-    VarDecl* Fetch(const std::string& ident) const;
-
-    // Returns a type denoter for this structure.
-    StructTypeDenoterPtr GetTypeDenoter();
-
-    std::string                     name;                       // May be empty (for anonymous structures).
-    std::string                     baseStructName;             // May be empty (if no inheritance is used).
-    std::vector<VarDeclStmntPtr>    members;
-
-    std::string                     aliasName;                  // Alias name for input and output interface blocks of the DAST.
-    std::map<std::string, VarDecl*> systemValuesRef;            // List of members with system value semantic (SV_...).
-    StructDecl*                     baseStructRef   = nullptr;  // Optional reference to base struct
-};
-
-/* --- Variables --- */
-
 // Pack offset.
 struct PackOffset : public AST
 {
@@ -304,6 +268,8 @@ struct VarIdent : public AST
     std::string             systemSemantic;         // System semantic (SV_...) for DAST; may be empty.
 };
 
+/* --- Declarations --- */
+
 // Variable declaration.
 struct VarDecl : public AST
 {
@@ -354,6 +320,40 @@ struct SamplerDecl : public AST
     std::vector<ExprPtr>            arrayIndices;
     std::string                     registerName;   // May be empty
     std::vector<SamplerValuePtr>    samplerValues;  // State values for a sampler decl-ident.
+};
+
+// StructDecl object.
+struct StructDecl : public AST
+{
+    AST_INTERFACE(StructDecl);
+
+    FLAG_ENUM
+    {
+        FLAG( isReferenced,     0 ), // This structure is referenced (or rather used) at least once (use-count >= 1).
+        FLAG( wasMarked,        1 ), // This structure was already marked by the "ReferenceAnalyzer" visitor.
+        FLAG( isShaderInput,    2 ), // This structure is used as shader input.
+        FLAG( isShaderOutput,   3 ), // This structure is used as shader output.
+    };
+
+    // Returns a descriptive string of the function signature (e.g. "struct s" or "struct <anonymous>").
+    std::string SignatureToString() const;
+
+    // Returns true if this is an anonymous structure.
+    bool IsAnonymous() const;
+
+    // Returns the VarDecl AST node inside this struct decl for the specified identifier, or null if there is no such VarDecl.
+    VarDecl* Fetch(const std::string& ident) const;
+
+    // Returns a type denoter for this structure.
+    StructTypeDenoterPtr GetTypeDenoter();
+
+    std::string                     name;                       // May be empty (for anonymous structures).
+    std::string                     baseStructName;             // May be empty (if no inheritance is used).
+    std::vector<VarDeclStmntPtr>    members;
+
+    std::string                     aliasName;                  // Alias name for input and output interface blocks of the DAST.
+    std::map<std::string, VarDecl*> systemValuesRef;            // List of members with system value semantic (SV_...).
+    StructDecl*                     baseStructRef   = nullptr;  // Optional reference to base struct
 };
 
 // Type alias declaration.
