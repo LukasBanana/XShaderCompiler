@@ -341,13 +341,15 @@ VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& 
     auto ast = Make<VarDecl>();
 
     /* Store reference to parent node */
-    ast->declStmntRef = declStmntRef;
+    ast->declStmntRef   = declStmntRef;
 
     /* Parse variable declaration */
-    ast->ident      = (identTkn ? identTkn->Spell() : ParseIdent());
-    ast->arrayDims  = ParseArrayDimensionList();
-    ast->semantics  = ParseVarSemanticList();
+    ast->ident          = (identTkn ? identTkn->Spell() : ParseIdent());
+    ast->arrayDims      = ParseArrayDimensionList();
+    ast->semantics      = ParseVarSemanticList();
+    ast->annotations    = ParseAnnotationList();
 
+    /* Parse optional initializer expression */
     if (Is(Tokens::AssignOp, "="))
         ast->initializer = ParseInitializer();
 
@@ -1215,13 +1217,18 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     {
         /* Return cast expression */
         auto ast = Make<CastExpr>();
-        ast->typeExpr = expr;
-        ast->expr = ParsePrimaryExpr();
-        return ast;
+        
+        ast->area       = expr->area;
+        ast->typeExpr   = expr;
+        ast->expr       = ParsePrimaryExpr();
+
+        return UpdateSourceArea(ast);
     }
 
     /* Return bracket expression */
     auto ast = Make<BracketExpr>();
+
+    ast->area = expr->area;
     ast->expr = expr;
 
     expr = ast;
@@ -1234,7 +1241,7 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     if (Is(Tokens::Dot))
         expr = ParseSuffixExpr(expr);
 
-    return expr;
+    return UpdateSourceArea(expr);
 }
 
 SuffixExprPtr HLSLParser::ParseSuffixExpr(const ExprPtr& expr)
@@ -1280,6 +1287,8 @@ VarAccessExprPtr HLSLParser::ParseVarAccessExpr(const VarIdentPtr& varIdent)
     else
         ast->varIdent = ParseVarIdent();
 
+    ast->area = ast->varIdent->area;
+
     /* Parse optional assign expression */
     if (Is(Tokens::AssignOp))
     {
@@ -1287,9 +1296,7 @@ VarAccessExprPtr HLSLParser::ParseVarAccessExpr(const VarIdentPtr& varIdent)
         ast->assignExpr = ParseExpr();
     }
 
-    ast->area = ast->varIdent->area;
-
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 ExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIdent, const TypeDenoterPtr& typeDenoter)
@@ -1383,6 +1390,23 @@ std::vector<VarDeclStmntPtr> HLSLParser::ParseParameterList()
     Accept(Tokens::RBracket);
 
     return parameters;
+}
+
+std::vector<VarDeclStmntPtr> HLSLParser::ParseAnnotationList()
+{
+    std::vector<VarDeclStmntPtr> annotations;
+
+    if (Is(Tokens::BinaryOp, "<"))
+    {
+        AcceptIt();
+
+        while (!Is(Tokens::BinaryOp, ">"))
+            annotations.push_back(ParseVarDeclStmnt());
+        
+        AcceptIt();
+    }
+
+    return annotations;
 }
 
 std::vector<StmntPtr> HLSLParser::ParseStmntList()

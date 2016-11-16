@@ -327,13 +327,14 @@ struct VarDecl : public Decl
     // Returns a type denoter for this variable declaration or throws an std::runtime_error if the type can not be derived.
     TypeDenoterPtr DeriveTypeDenoter();
 
-    std::string                 ident;
-    std::vector<ExprPtr>        arrayDims;
-    std::vector<VarSemanticPtr> semantics;
-    ExprPtr                     initializer;
+    std::string                     ident;
+    std::vector<ExprPtr>            arrayDims;
+    std::vector<VarSemanticPtr>     semantics;
+    std::vector<VarDeclStmntPtr>    annotations;                // Annotations can be ignored by analyzers and generators
+    ExprPtr                         initializer;
 
-    VarDeclStmnt*               declStmntRef    = nullptr; // Reference to its declaration statement ('parent node'); may be null
-    BufferDeclStmnt*            bufferDeclRef   = nullptr; // Buffer declaration reference for DAST (optional 'parent's parent node'); may be null
+    VarDeclStmnt*                   declStmntRef    = nullptr;  // Reference to its declaration statement ('parent node'); may be null
+    BufferDeclStmnt*                bufferDeclRef   = nullptr;  // Buffer declaration reference for DAST (optional 'parent's parent node'); may be null
 };
 
 // Texture declaration.

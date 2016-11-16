@@ -150,6 +150,7 @@ class HLSLParser : public Parser
         std::vector<VarDeclPtr>         ParseVarDeclList(VarDeclStmnt* declStmntRef, TokenPtr firstIdentTkn = nullptr);
         std::vector<VarDeclStmntPtr>    ParseVarDeclStmntList();
         std::vector<VarDeclStmntPtr>    ParseParameterList();
+        std::vector<VarDeclStmntPtr>    ParseAnnotationList();
         std::vector<StmntPtr>           ParseStmntList();
         std::vector<ExprPtr>            ParseExprList(const Tokens listTerminatorToken, bool allowLastComma = false);
         std::vector<ExprPtr>            ParseArrayDimensionList();

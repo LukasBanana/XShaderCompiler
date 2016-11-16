@@ -12,7 +12,7 @@ void f(float x) {}
 
 struct S1
 {
-	float x, y, z;
+	float x <int annotation1 = 0, y=0; string str="hello annotations";>, y, z;
 };
 
 typedef struct S2
@@ -31,6 +31,8 @@ void g(int x) { return x; }
 
 void f(float x) {}
 void f(int x) {}
+
+static const int g_const1 <int annotation1 = 0, y=0; string str="hello annotations";>;
 
 #endif
 
@@ -66,7 +68,9 @@ void CS()
 	
 	S s;
 	
-	float a = s.foo.xx;
+	//s = (struct{})g_const1;
+	
+	float a = s.foo.xx * ( (S)g_const1   ) + 1;
 	int b = ((int3)0).x;
 	
 	//f(a.xxx);
