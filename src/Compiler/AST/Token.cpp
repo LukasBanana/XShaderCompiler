@@ -72,6 +72,7 @@ std::string Token::TypeToString(const Types type)
         case Types::RCurly:             return "'}'";
         case Types::LParen:             return "'['";
         case Types::RParen:             return "']'";
+        case Types::StringType:         return "string type denoter";
         case Types::ScalarType:         return "scalar type denoter";
         case Types::VectorType:         return "vector type denoter";
         case Types::MatrixType:         return "matrix type denoter";

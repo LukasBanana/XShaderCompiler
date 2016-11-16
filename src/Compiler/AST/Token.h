@@ -59,6 +59,7 @@ class Token
             RParen,             // ]
 
             /* --- Type denoters --- */
+            StringType,         // string
             ScalarType,         // bool, int, uint, half, float, double
             VectorType,         // ScalarType ('1'-'4')
             MatrixType,         // ScalarType ('1'-'4') 'x' ('1'-'4')

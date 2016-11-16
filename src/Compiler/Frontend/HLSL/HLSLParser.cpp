@@ -57,14 +57,18 @@ bool HLSLParser::IsDataType() const
 {
     return
     (
-        Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType) ||
-        Is(Tokens::Vector) || Is(Tokens::Matrix) || Is(Tokens::Texture) || Is(Tokens::Sampler)
+        IsBaseDataType() || Is(Tokens::Vector) || Is(Tokens::Matrix) || Is(Tokens::Texture) || Is(Tokens::Sampler)
     );
+}
+
+bool HLSLParser::IsBaseDataType() const
+{
+    return (Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType) || Is(Tokens::StringType));
 }
 
 bool HLSLParser::IsLiteral() const
 {
-    return (Is(Tokens::BoolLiteral) || Is(Tokens::IntLiteral) || Is(Tokens::FloatLiteral));
+    return (Is(Tokens::BoolLiteral) || Is(Tokens::IntLiteral) || Is(Tokens::FloatLiteral) || Is(Tokens::StringLiteral));
 }
 
 bool HLSLParser::IsPrimaryExpr() const
@@ -156,7 +160,7 @@ FunctionCallPtr HLSLParser::ParseFunctionCall(const TypeDenoterPtr& typeDenoter)
     /* Parse argument list */
     ast->arguments = ParseArgumentList();
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 VarDeclStmntPtr HLSLParser::ParseParameter()
@@ -319,10 +323,7 @@ VarIdentPtr HLSLParser::ParseVarIdent()
         ast->next = ParseVarIdent();
     }
 
-    /* Update source area */
-    UpdateSourceArea(ast);
-
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
@@ -332,7 +333,7 @@ VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
     /* Parse variable type denoter with optional struct declaration */
     ast->typeDenoter = ParseTypeDenoterWithStructDeclOpt(ast->structDecl);
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn)
@@ -610,7 +611,12 @@ TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
     if (Is(Tokens::BinaryOp, "<"))
     {
         AcceptIt();
-        ast->colorType = Accept(Tokens::ScalarType)->Spell();
+
+        if (Is(Tokens::ScalarType) || Is(Tokens::VectorType))
+            ast->colorType = AcceptIt()->Spell();
+        else
+            ErrorUnexpected("expected scalar or vector type denoter");
+
         Accept(Tokens::BinaryOp, ">");
     }
 
@@ -666,6 +672,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
             /* Parse type denoter */
             ast->varType = Make<VarType>();
             ast->varType->typeDenoter = ParseTypeDenoter();
+            UpdateSourceArea(ast->varType);
             break;
         }
         else if (Is(Tokens::Struct))
@@ -682,7 +689,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
     ast->varDecls = ParseVarDeclList(ast.get());
     Semi();
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 // 'typedef' type_denoter IDENT;
@@ -1084,7 +1091,7 @@ LiteralExprPtr HLSLParser::ParseLiteralExpr()
     ast->type   = TknType();
     ast->value  = AcceptIt()->Spell();
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 ExprPtr HLSLParser::ParseTypeNameOrFunctionCallExpr()
@@ -1241,10 +1248,7 @@ SuffixExprPtr HLSLParser::ParseSuffixExpr(const ExprPtr& expr)
     Accept(Tokens::Dot);
     ast->varIdent = ParseVarIdent();
 
-    /* Update source area */
-    UpdateSourceArea(ast, expr.get());
-
-    return ast;
+    return UpdateSourceArea(ast, expr.get());
 }
 
 ArrayAccessExprPtr HLSLParser::ParseArrayAccessExpr(const ExprPtr& expr)
@@ -1255,10 +1259,7 @@ ArrayAccessExprPtr HLSLParser::ParseArrayAccessExpr(const ExprPtr& expr)
     ast->expr           = expr;
     ast->arrayIndices   = ParseArrayDimensionList();
 
-    /* Update source area */
-    UpdateSourceArea(ast, expr.get());
-
-    return ast;
+    return UpdateSourceArea(ast, expr.get());
 }
 
 ExprPtr HLSLParser::ParseVarAccessOrFunctionCallExpr()
@@ -1594,7 +1595,7 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool allowVoidType)
 
 TypeDenoterPtr HLSLParser::ParseTypeDenoterPrimary()
 {
-    if (Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType))
+    if (IsBaseDataType())
         return ParseBaseTypeDenoter();
     else if (Is(Tokens::Vector))
         return ParseBaseVectorTypeDenoter();
@@ -1659,7 +1660,7 @@ VoidTypeDenoterPtr HLSLParser::ParseVoidTypeDenoter()
 
 BaseTypeDenoterPtr HLSLParser::ParseBaseTypeDenoter()
 {
-    if (Is(Tokens::ScalarType) || Is(Tokens::VectorType) || Is(Tokens::MatrixType))
+    if (IsBaseDataType())
     {
         auto keyword = AcceptIt()->Spell();
 

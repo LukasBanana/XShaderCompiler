@@ -123,6 +123,9 @@ enum class DataType
 {
     Undefined,
 
+    // String types,
+    String,
+
     // Scalar types
     Bool,
     Int,

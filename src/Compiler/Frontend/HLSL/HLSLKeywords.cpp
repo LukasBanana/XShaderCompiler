@@ -21,6 +21,8 @@ static KeywordMapType GenerateKeywordMap()
         { "true",                    Ty::BoolLiteral     },
         { "false",                   Ty::BoolLiteral     },
 
+        { "string",                  Ty::StringType      },
+
         { "bool",                    Ty::ScalarType      },
         { "bool1",                   Ty::ScalarType      },
         { "bool1x1",                 Ty::ScalarType      },
@@ -229,6 +231,8 @@ static DataTypeMap GenerateDataTypeMap()
 {
     return
     {
+        { "string",     DataType::String    },
+
         { "bool",       DataType::Bool      },
         { "bool1",      DataType::Bool      },
         { "bool1x1",    DataType::Bool      },

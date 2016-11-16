@@ -89,14 +89,34 @@ class Parser
         void IgnoreWhiteSpaces(bool includeNewLines = false);//, bool includeComments = true);
         void IgnoreNewLines();
 
+        /* ----- Source area ----- */
+
         // Sets the source area of the specified AST to area of the 'areaOriginAST' (if not null), and updates the area with the previous scanner token.
-        void UpdateSourceArea(const ASTPtr& ast, const AST* areaOriginAST = nullptr);
+        template <typename T>
+        const T& UpdateSourceArea(const T& ast, const AST* areaOriginAST = nullptr)
+        {
+            if (areaOriginAST)
+                ast->area = areaOriginAST->area;
+            ast->area.Update(GetScanner().PreviousToken()->Area());
+            return ast;
+        }
 
         // Sets the source area of the specified AST to area of the first origin and updates the area with last origin.
-        void UpdateSourceArea(const ASTPtr& ast, const ASTPtr& firstAreaOriginAST, const ASTPtr& lastAreaOriginAST);
+        template <typename T>
+        const T& UpdateSourceArea(const T& ast, const ASTPtr& firstAreaOriginAST, const ASTPtr& lastAreaOriginAST)
+        {
+            ast->area = firstAreaOriginAST->area;
+            ast->area.Update(*lastAreaOriginAST);
+            return ast;
+        }
 
         // Sets the source area offset of the specified AST to the source position of the previous scanner token.
-        void UpdateSourceAreaOffset(const ASTPtr& ast);
+        template <typename T>
+        const T& UpdateSourceAreaOffset(const T& ast)
+        {
+            ast->area.Offset(GetScanner().PreviousToken()->Pos());
+            return ast;
+        }
 
         /* ----- Parsing ----- */
 

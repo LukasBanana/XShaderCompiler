@@ -204,24 +204,6 @@ void Parser::IgnoreNewLines()
         AcceptIt();
 }
 
-void Parser::UpdateSourceArea(const ASTPtr& ast, const AST* areaOriginAST)
-{
-    if (areaOriginAST)
-        ast->area = areaOriginAST->area;
-    ast->area.Update(GetScanner().PreviousToken()->Area());
-}
-
-void Parser::UpdateSourceArea(const ASTPtr& ast, const ASTPtr& firstAreaOriginAST, const ASTPtr& lastAreaOriginAST)
-{
-    ast->area = firstAreaOriginAST->area;
-    ast->area.Update(*lastAreaOriginAST);
-}
-
-void Parser::UpdateSourceAreaOffset(const ASTPtr& ast)
-{
-    ast->area.Offset(GetScanner().PreviousToken()->Pos());
-}
-
 /* ----- Parsing ----- */
 
 void Parser::PushParsingState(const ParsingState& state)

@@ -281,7 +281,7 @@ struct VarType : public AST
     StructDeclPtr   structDecl;             // Optional structure declaration
     TypeDenoterPtr  typeDenoter;
 
-    //TODO: remove this
+    //TODO: replace this by 'typeDenoter' (but currently heavy use of this member)
     AST*            symbolRef = nullptr;    // Symbol reference for DAST to the type definition; may be null.
 };
 
@@ -299,7 +299,8 @@ struct VarIdent : public TypedAST
     // Returns a type denoter for the symbol reference of the last variable identifier.
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    std::string             ident;
+    std::string             ident;                  // Either this ..
+  //TypeDenoterPtr          typeDenoter;            // ... or this is used
     std::vector<ExprPtr>    arrayIndices;           // Optional array indices
     VarIdentPtr             next;                   // Next identifier; may be null.
 
@@ -498,7 +499,7 @@ struct TextureDeclStmnt : public Stmnt
     };
 
     std::string                 textureType;
-    std::string                 colorType;
+    std::string                 colorType;      //TODO: replace with TypeDenoterPtr
     std::vector<TextureDeclPtr> textureDecls;
 };
 

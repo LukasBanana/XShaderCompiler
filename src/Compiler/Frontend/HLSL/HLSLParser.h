@@ -63,6 +63,9 @@ class HLSLParser : public Parser
 
         // Returns true if the current token is a data type.
         bool IsDataType() const;
+
+        // Returns true if the current token is a base data type (i.e. scalar, vector, matrix, or string type denoter).
+        bool IsBaseDataType() const;
         
         // Returns true if the current token is a literal.
         bool IsLiteral() const;

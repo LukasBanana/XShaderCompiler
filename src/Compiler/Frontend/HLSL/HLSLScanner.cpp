@@ -43,6 +43,10 @@ TokenPtr HLSLScanner::ScanToken()
     if (std::isdigit(UChr()))
         return ScanNumber();
 
+    /* Scan string literal */
+    if (Is('\"'))
+        return ScanStringLiteral();
+
     /* Scan operators */
     if (Is('='))
     {

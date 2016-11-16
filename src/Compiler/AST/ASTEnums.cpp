@@ -168,7 +168,9 @@ CtrlTransfer StringToCtrlTransfer(const std::string& s)
 
 std::string DataTypeToString(const DataType t, bool useTemplateSyntax)
 {
-    if (IsScalarType(t))
+    if (t == DataType::String)
+        return "string";
+    else if (IsScalarType(t))
     {
         switch (t)
         {
