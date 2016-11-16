@@ -89,13 +89,16 @@ class Parser
         void IgnoreWhiteSpaces(bool includeNewLines = false);//, bool includeComments = true);
         void IgnoreNewLines();
 
+        // Sets the source area of the specified ast to area of the 'areaOriginAST' (if not null), and updates the area with the previous scanner token.
+        void UpdateSourceArea(const ASTPtr& ast, const AST* areaOriginAST = nullptr);
+
+        // Sets the source area of the specified ast to area of the first origin and updates the area with last origin.
+        void UpdateSourceArea(const ASTPtr& ast, const ASTPtr& firstAreaOriginAST, const ASTPtr& lastAreaOriginAST);
+
         /* ----- Parsing ----- */
 
         void PushParsingState(const ParsingState& state);
         void PopParsingState();
-
-        // Builds a left-to-right binary-expression tree hierarchy for the specified list of expressions.
-        ExprPtr BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops);
 
         ExprPtr ParseGenericExpr();
         TernaryExprPtr ParseTernaryExpr(const ExprPtr& condExpr);
@@ -178,6 +181,9 @@ class Parser
         };
 
         /* === Functions === */
+
+        // Builds a left-to-right binary-expression tree hierarchy for the specified list of expressions.
+        ExprPtr BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops);
 
         void IncUnexpectedTokenCounter();
 

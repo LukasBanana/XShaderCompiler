@@ -1233,10 +1233,15 @@ SuffixExprPtr HLSLParser::ParseSuffixExpr(const ExprPtr& expr)
 {
     auto ast = Make<SuffixExpr>();
 
-    Accept(Tokens::Dot);
+    /* Take sub expression */
+    ast->expr = expr;
 
-    ast->expr       = expr;
-    ast->varIdent   = ParseVarIdent();
+    /* Parse suffix after dot */
+    Accept(Tokens::Dot);
+    ast->varIdent = ParseVarIdent();
+
+    /* Update source area */
+    UpdateSourceArea(ast, expr.get());
 
     return ast;
 }
@@ -1245,8 +1250,12 @@ ArrayAccessExprPtr HLSLParser::ParseArrayAccessExpr(const ExprPtr& expr)
 {
     auto ast = Make<ArrayAccessExpr>();
 
+    /* Take sub expression and parse array dimensions */
     ast->expr           = expr;
     ast->arrayIndices   = ParseArrayDimensionList();
+
+    /* Update source area */
+    UpdateSourceArea(ast, expr.get());
 
     return ast;
 }
@@ -1290,6 +1299,9 @@ ExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIdent, const Typ
         ast->call = ParseFunctionCall(typeDenoter);
     else
         ast->call = ParseFunctionCall(varIdent);
+
+    /* Update source area */
+    UpdateSourceArea(ast, ast->call.get());
 
     /* Parse optional array-access expression */
     ExprPtr expr = ast;

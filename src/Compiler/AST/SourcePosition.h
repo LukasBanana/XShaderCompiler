@@ -64,6 +64,7 @@ class SourcePosition
 
 
 class Token;
+struct AST;
 
 // Source area structure with position and length.
 struct SourceArea
@@ -88,6 +89,9 @@ struct SourceArea
 
     // Updates the source area from the specified token.
     void Update(const Token& tkn);
+
+    // Updates the source area from the specified AST node.
+    void Update(const AST& ast);
 
     // Source area start position.
     SourcePosition  pos;

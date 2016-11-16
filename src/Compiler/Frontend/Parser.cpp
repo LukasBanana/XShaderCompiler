@@ -204,6 +204,19 @@ void Parser::IgnoreNewLines()
         AcceptIt();
 }
 
+void Parser::UpdateSourceArea(const ASTPtr& ast, const AST* areaOriginAST)
+{
+    if (areaOriginAST)
+        ast->area = areaOriginAST->area;
+    ast->area.Update(GetScanner().PreviousToken()->Area());
+}
+
+void Parser::UpdateSourceArea(const ASTPtr& ast, const ASTPtr& firstAreaOriginAST, const ASTPtr& lastAreaOriginAST)
+{
+    ast->area = firstAreaOriginAST->area;
+    ast->area.Update(*lastAreaOriginAST);
+}
+
 /* ----- Parsing ----- */
 
 void Parser::PushParsingState(const ParsingState& state)
@@ -219,34 +232,6 @@ void Parser::PopParsingState()
 Parser::ParsingState Parser::ActiveParsingState() const
 {
     return (parsingStateStack_.empty() ? ParsingState{ false } : parsingStateStack_.top());
-}
-
-ExprPtr Parser::BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops)
-{
-    if (exprs.empty())
-        ErrorInternal("sub-expressions must not be empty", __FUNCTION__);
-
-    if (exprs.size() > 1)
-    {
-        if (exprs.size() != ops.size() + 1)
-            ErrorInternal("sub-expressions and operators have uncorrelated number of elements", __FUNCTION__);
-
-        auto ast = Make<BinaryExpr>();
-
-        /* Build right hand side */
-        ast->rhsExpr    = exprs.back();
-        ast->op         = ops.back();
-
-        exprs.pop_back();
-        ops.pop_back();
-
-        /* Build left hand side of the tree */
-        ast->lhsExpr = BuildBinaryExprTree(exprs, ops);
-
-        return ast;
-    }
-
-    return exprs.front();
 }
 
 // expr: logic_or_expr | ternary_expr;
@@ -381,6 +366,37 @@ ExprPtr Parser::ParseValueExpr()
 /*
  * ======= Private: =======
  */
+
+ExprPtr Parser::BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops)
+{
+    if (exprs.empty())
+        ErrorInternal("sub-expressions must not be empty", __FUNCTION__);
+
+    if (exprs.size() > 1)
+    {
+        if (exprs.size() != ops.size() + 1)
+            ErrorInternal("sub-expressions and operators have uncorrelated number of elements", __FUNCTION__);
+
+        auto ast = Make<BinaryExpr>();
+
+        /* Build right hand side */
+        ast->rhsExpr    = exprs.back();
+        ast->op         = ops.back();
+
+        exprs.pop_back();
+        ops.pop_back();
+
+        /* Build left hand side of the tree */
+        ast->lhsExpr = BuildBinaryExprTree(exprs, ops);
+
+        /* Update source area */
+        UpdateSourceArea(ast, ast->lhsExpr, ast->rhsExpr);
+
+        return ast;
+    }
+
+    return exprs.front();
+}
 
 void Parser::IncUnexpectedTokenCounter()
 {

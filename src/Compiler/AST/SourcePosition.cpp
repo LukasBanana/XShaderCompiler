@@ -7,6 +7,7 @@
 
 #include "SourcePosition.h"
 #include "Token.h"
+#include "AST.h"
 #include <algorithm>
 
 
@@ -86,6 +87,11 @@ void SourceArea::Update(const std::string& lengthFromIdent)
 void SourceArea::Update(const Token& tkn)
 {
     Update(tkn.Area());
+}
+
+void SourceArea::Update(const AST& ast)
+{
+    Update(ast.area);
 }
 
 

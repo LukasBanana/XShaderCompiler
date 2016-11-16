@@ -442,8 +442,14 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr BinaryExpr::DeriveTypeDenoter()
 {
-    /* Only return type denoter of left hand side */
-    return lhsExpr->GetTypeDenoter();
+    /* Return type of left-hand-side sub expresion if the types are compatible */
+    const auto& lhsTypeDen = lhsExpr->GetTypeDenoter();
+    const auto& rhsTypeDen = rhsExpr->GetTypeDenoter();
+
+    if (!rhsTypeDen->IsCastableTo(*lhsTypeDen))
+        RuntimeErr("can not cast '" + rhsTypeDen->ToString() + "' to '" + lhsTypeDen->ToString() + "' in binary expression", this);
+
+    return lhsTypeDen;
 }
 
 
@@ -470,7 +476,7 @@ TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
     if (call->funcDeclRef)
         return call->funcDeclRef->returnType->typeDenoter;
     else
-        throw std::runtime_error("missing function reference to derive expression type");
+        RuntimeErr("missing function reference to derive expression type", this);
 }
 
 
@@ -526,7 +532,7 @@ TypeDenoterPtr VarAccessExpr::DeriveTypeDenoter()
 TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
 {
     if (exprs.empty())
-        throw std::runtime_error("can not derive type of initializer list with no elements");
+        RuntimeErr("can not derive type of initializer list with no elements", this);
     return std::make_shared<ArrayTypeDenoter>(exprs.front()->GetTypeDenoter());
 }
 
