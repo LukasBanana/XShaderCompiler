@@ -2,7 +2,7 @@
 // HLSL Translator: Expression Test 2
 // 14/11/2016
 
-#define TEST 3
+#define TEST 4
 
 #if TEST == 1
 
@@ -70,8 +70,7 @@ void CS()
 	
 	//s = (struct{})g_const1;
 	
-	float a = s.foo.xx * ( (S)g_const1 + {1,2,3}  ) + 1;
-	int b = ((int3)0).x;
+	//float a = s.foo.xx * ( (S)g_const1 + {1,2,3}  ) + 1;
 	
 	//f(a.xxx);
 	f(b);
@@ -81,6 +80,16 @@ void CS()
 	//float4 pos = mul((float3x3)0, (float3)1);
 	
 	//float4 pos = mul((mul(1, 2)).x, (float3)1);
+	
+	#elif TEST == 4
+	
+	struct S { int s; };
+	
+	int a = (int)(float)(S)0 + 0;
+	S   b = (S)0 + 0;
+	S   c = (S) + + - + 0;
+	S   d = (S) - 0;
+	int e = (int)(float)(S)(1 + 2);
 	
 	#endif
 	

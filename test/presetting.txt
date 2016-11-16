@@ -3,7 +3,7 @@
 --dump-ast -T compute -E CS -o output/NameMangling1.CS.glsl NameMangling1.hlsl
 
 [ExprTest2 CS]
--T compute -E CS -o output/ExprTest2.CS.glsl ExprTest2.hlsl
+--dump-ast -T compute -E CS -o output/ExprTest2.CS.glsl ExprTest2.hlsl
 
 [TypeTest1 VS]
 -T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
