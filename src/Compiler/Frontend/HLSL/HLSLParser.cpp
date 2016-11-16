@@ -309,8 +309,8 @@ VarIdentPtr HLSLParser::ParseVarIdent()
     auto ast = Make<VarIdent>();
 
     /* Parse variable single identifier */
-    ast->ident = ParseIdent();
-    ast->arrayIndices = ParseArrayDimensionList();
+    ast->ident          = ParseIdent();
+    ast->arrayIndices   = ParseArrayDimensionList();
     
     if (Is(Tokens::Dot))
     {
@@ -319,7 +319,8 @@ VarIdentPtr HLSLParser::ParseVarIdent()
         ast->next = ParseVarIdent();
     }
 
-    ast->area.length = ast->ident.size();
+    /* Update source area */
+    UpdateSourceArea(ast);
 
     return ast;
 }

@@ -20,37 +20,56 @@ class Token;
 struct AST;
 
 // Source area structure with position and length.
-struct SourceArea
+class SourceArea
 {
-    // Invalid source area.
-    static const SourceArea ignore;
 
-    SourceArea() = default;
-    SourceArea(const SourceArea&) = default;
-    SourceArea& operator = (const SourceArea&) = default;
+    public:
 
-    SourceArea(const SourcePosition& pos, unsigned int length);
+        // Invalid source area.
+        static const SourceArea ignore;
 
-    // Returns ture if this is a valid source area. False if the position is invalid or the length is 0.
-    bool IsValid() const;
+        SourceArea() = default;
+        SourceArea(const SourceArea&) = default;
+        SourceArea& operator = (const SourceArea&) = default;
 
-    // Updates the source area from the specified other area.
-    void Update(const SourceArea& area);
+        SourceArea(const SourcePosition& pos, unsigned int length, unsigned int offset = 0);
 
-    // Updates the source area length from the specified identifier.
-    void Update(const std::string& lengthFromIdent);
+        // Returns ture if this is a valid source area. False if the position is invalid or the length is 0.
+        bool IsValid() const;
 
-    // Updates the source area from the specified token.
-    void Update(const Token& tkn);
+        // Updates the source area from the specified other area.
+        void Update(const SourceArea& area);
 
-    // Updates the source area from the specified AST node.
-    void Update(const AST& ast);
+        // Updates the source area length from the specified identifier.
+        void Update(const std::string& lengthFromIdent);
 
-    // Source area start position.
-    SourcePosition  pos;
+        // Updates the source area from the specified token.
+        void Update(const Token& tkn);
 
-    // Source area length.
-    unsigned int    length  = 0;
+        // Updates the source area from the specified AST node.
+        void Update(const AST& ast);
+
+        // Returns the offset of the marker pointer (e.g. "^~~~") clamped to the range [0, length).
+        unsigned int Offset() const;
+
+        // Returns the start position of the source area.
+        inline const SourcePosition& Pos() const
+        {
+            return pos_;
+        }
+
+        // Returns the length of the source area.
+        inline unsigned int Length() const
+        {
+            return length_;
+        }
+
+    private:
+
+        SourcePosition  pos_;
+        unsigned int    length_ = 0;
+        unsigned int    offset_  = 0;
+
 };
 
 

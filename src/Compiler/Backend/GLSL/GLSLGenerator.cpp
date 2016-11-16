@@ -263,7 +263,7 @@ void GLSLGenerator::Line(const TokenPtr& tkn)
 
 void GLSLGenerator::Line(const AST* ast)
 {
-    Line(ast->area.pos.Row());
+    Line(ast->area.Pos().Row());
 }
 
 void GLSLGenerator::Extension(const std::string& extensionName)

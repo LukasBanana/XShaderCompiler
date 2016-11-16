@@ -374,7 +374,7 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 
 void ASTPrinter::Print(AST* ast, const std::string& astName, const std::string& info)
 {
-    std::string msg = astName + " (" + ast->area.pos.ToString() + ")";
+    std::string msg = astName + " (" + ast->area.Pos().ToString() + ")";
 
     if (!info.empty())
         msg += " \"" + info + "\"";

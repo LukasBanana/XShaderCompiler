@@ -22,6 +22,9 @@ class SourcePosition
     
     public:
         
+        // Invalid source position.
+        static const SourcePosition ignore;
+
         SourcePosition() = default;
         SourcePosition(unsigned int row, unsigned int column);
 
@@ -52,13 +55,10 @@ class SourcePosition
             return column_;
         }
 
-        // Invalid source position.
-        static const SourcePosition ignore;
-
     private:
         
-        unsigned int    row_    = 0,
-                        column_ = 0;
+        unsigned int row_    = 0,
+                     column_ = 0;
 
 };
 

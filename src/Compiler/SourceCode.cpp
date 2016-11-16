@@ -54,12 +54,12 @@ char SourceCode::Next()
 static bool FinalizeMarker(
     const SourceArea& area, const std::string& lineIn, std::string& lineOut, std::string& markerOut)
 {
-    if (area.pos.Column() >= lineIn.size() || area.pos.Column() == 0 || area.length == 0)
+    if (area.Pos().Column() >= lineIn.size() || area.Pos().Column() == 0 || area.Length() == 0)
         return false;
 
     lineOut = lineIn;
 
-    markerOut = std::string(area.pos.Column() - 1, ' ');
+    markerOut = std::string(area.Pos().Column() - 1, ' ');
 
     for (size_t i = 0, n = markerOut.size(); i < n; ++i)
     {
@@ -67,7 +67,7 @@ static bool FinalizeMarker(
             markerOut[i] = '\t';
     }
 
-    auto len = std::min(area.length, static_cast<unsigned int>(lineIn.size()) - area.pos.Column());
+    auto len = std::min(area.Length(), static_cast<unsigned int>(lineIn.size()) - area.Pos().Column());
 
     markerOut += '^';
     markerOut += std::string(len - 1, '~');
@@ -77,9 +77,9 @@ static bool FinalizeMarker(
 
 bool SourceCode::FetchLineMarker(const SourceArea& area, std::string& line, std::string& marker)
 {
-    if (area.length > 0)
+    if (area.Length() > 0)
     {
-        auto row = area.pos.Row();
+        auto row = area.Pos().Row();
         if (row == pos_.Row())
             return FinalizeMarker(area, Line(), line, marker);
         else if (row > 0)

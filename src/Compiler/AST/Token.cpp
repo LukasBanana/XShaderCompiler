@@ -42,10 +42,11 @@ Token::Token(const SourcePosition& pos, const Types type, std::string&& spell) :
 SourceArea Token::Area() const
 {
     /* Initialize source area by token position and length of spelling */
-    SourceArea area;
-    area.pos    = Pos();
-    area.length = Spell().size();
-    return area;
+    return
+    {
+        Pos(),
+        static_cast<unsigned int>(Spell().size())
+    };
 }
 
 std::string Token::TypeToString(const Types type)

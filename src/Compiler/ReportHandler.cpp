@@ -57,19 +57,19 @@ void ReportHandler::SubmitReport(
         hasErrors_ = true;
 
     /* Add source position */
-    if (!currentFilename_.empty() || area.pos.IsValid())
+    if (!currentFilename_.empty() || area.Pos().IsValid())
     {
         outputMsg += " (";
 
         if (!currentFilename_.empty())
         {
             outputMsg += currentFilename_;
-            if (area.pos.IsValid())
+            if (area.Pos().IsValid())
                 outputMsg += ":";
         }
 
-        if (area.pos.IsValid())
-            outputMsg += area.pos.ToString();
+        if (area.Pos().IsValid())
+            outputMsg += area.Pos().ToString();
 
         outputMsg += ") ";
     }
@@ -120,7 +120,7 @@ Report ReportHandler::MakeReport(
     }
 
     /* Make report with parameters */
-    if (sourceCode != nullptr && area.length > 0)
+    if (sourceCode != nullptr && area.Length() > 0)
     {
         std::string line, marker;
         if (sourceCode->FetchLineMarker(area, line, marker))
