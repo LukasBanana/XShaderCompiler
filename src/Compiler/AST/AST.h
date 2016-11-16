@@ -330,7 +330,7 @@ struct VarDecl : public Decl
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
     std::vector<VarSemanticPtr>     semantics;
-    std::vector<VarDeclStmntPtr>    annotations;                // Annotations can be ignored by analyzers and generators
+    std::vector<VarDeclStmntPtr>    annotations;                // Annotations can be ignored by analyzers and generators.
     ExprPtr                         initializer;
 
     VarDeclStmnt*                   declStmntRef    = nullptr;  // Reference to its declaration statement ('parent node'); may be null
@@ -450,6 +450,7 @@ struct FunctionDecl : public Stmnt
     std::string                     ident;
     std::vector<VarDeclStmntPtr>    parameters;
     std::string                     semantic;                   // May be empty
+    std::vector<VarDeclStmntPtr>    annotations;                // Annotations can be ignored by analyzers and generators.
     CodeBlockPtr                    codeBlock;                  // May be null (if this AST node is a forward declaration).
 
     //TODO: currently unused

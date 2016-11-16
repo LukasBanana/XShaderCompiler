@@ -554,6 +554,8 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl(const VarTypePtr& returnType, cons
     if (Is(Tokens::Colon))
         ast->semantic = ParseSemantic();
 
+    ast->annotations = ParseAnnotationList();
+
     /* Parse optional function body */
     if (Is(Tokens::Semicolon))
         AcceptIt();

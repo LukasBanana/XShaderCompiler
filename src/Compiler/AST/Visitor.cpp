@@ -81,6 +81,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     Visit(ast->arrayDims);
     Visit(ast->semantics);
+    Visit(ast->annotations);
     Visit(ast->initializer);
 }
 
@@ -112,6 +113,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     Visit(ast->attribs);
     Visit(ast->returnType);
     Visit(ast->parameters);
+    Visit(ast->annotations);
     Visit(ast->codeBlock);
 }
 

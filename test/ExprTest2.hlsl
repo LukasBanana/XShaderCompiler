@@ -36,7 +36,7 @@ static const int g_const1 <int annotation1 = 0, y=0; string str="hello annotatio
 
 #endif
 
-void CS()
+void CS() <int annotation=0; string info="hello world!";>
 {
 	#if TEST == 1
 	
@@ -90,6 +90,7 @@ void CS()
 	S   c = (S) + + - + 1;
 	S   d = (S) - 1;
 	int e = (int)(float)(S)(1 + 2);
+	//S   f = (struct {float x;})1;
 	
 	#endif
 	
