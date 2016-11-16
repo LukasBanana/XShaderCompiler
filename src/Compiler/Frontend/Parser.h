@@ -89,11 +89,14 @@ class Parser
         void IgnoreWhiteSpaces(bool includeNewLines = false);//, bool includeComments = true);
         void IgnoreNewLines();
 
-        // Sets the source area of the specified ast to area of the 'areaOriginAST' (if not null), and updates the area with the previous scanner token.
+        // Sets the source area of the specified AST to area of the 'areaOriginAST' (if not null), and updates the area with the previous scanner token.
         void UpdateSourceArea(const ASTPtr& ast, const AST* areaOriginAST = nullptr);
 
-        // Sets the source area of the specified ast to area of the first origin and updates the area with last origin.
+        // Sets the source area of the specified AST to area of the first origin and updates the area with last origin.
         void UpdateSourceArea(const ASTPtr& ast, const ASTPtr& firstAreaOriginAST, const ASTPtr& lastAreaOriginAST);
+
+        // Sets the source area offset of the specified AST to the source position of the previous scanner token.
+        void UpdateSourceAreaOffset(const ASTPtr& ast);
 
         /* ----- Parsing ----- */
 

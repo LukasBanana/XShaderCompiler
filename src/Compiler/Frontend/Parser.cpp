@@ -217,6 +217,11 @@ void Parser::UpdateSourceArea(const ASTPtr& ast, const ASTPtr& firstAreaOriginAS
     ast->area.Update(*lastAreaOriginAST);
 }
 
+void Parser::UpdateSourceAreaOffset(const ASTPtr& ast)
+{
+    ast->area.Offset(GetScanner().PreviousToken()->Pos());
+}
+
 /* ----- Parsing ----- */
 
 void Parser::PushParsingState(const ParsingState& state)
@@ -255,8 +260,13 @@ TernaryExprPtr Parser::ParseTernaryExpr(const ExprPtr& condExpr)
     ast->condExpr   = condExpr;
     ast->area       = condExpr->area;
 
-    /* Parse expressions for 'then' and 'else' branches */
+    /* Parse begin of ternary expression */
     Accept(Tokens::TernaryOp);
+
+    /* Update source area */
+    UpdateSourceAreaOffset(ast);
+
+    /* Parse 'then' and 'else' branch expressions */
     ast->thenExpr = ParseGenericExpr();
     Accept(Tokens::Colon);
     ast->elseExpr = ParseGenericExpr();

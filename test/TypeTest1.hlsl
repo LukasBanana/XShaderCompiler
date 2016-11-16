@@ -10,13 +10,13 @@ struct S0
 
 cbuffer buffer1 : register(b0)
 {
-	vector<float, (4 > 2 ? (3+1)/4+3 : 2)> v0;
+	vector<float, /*(4 > 2 ? (3+1)/4+3 : 2)*/4> v0;
 	matrix<double, 2, 3> m0;
 };
 
 matrix<float, 3, 3> f1()
 {
-	return (float3)0;
+	return (float3x3)0;
 }
 
 typedef int DWORD;
@@ -60,7 +60,7 @@ S1_t1_a f3()
 	return (S1_t1_a)0;
 }
 
-const int g_2 = 5;
+//const int g_2 = 5;
 float g_1 = 0.0;
 
 const struct { struct { float inner2; } inner1; } g_anomym_s1;
@@ -90,7 +90,7 @@ float4 VS() : SV_Position
 	int a = 0, b = (dword)0;
 	int c = (a += b);
 	
-	int f5_v = 4 + f5(3)[2];//.x;
+	int f5_v = 1 + 4 + f5(3)[2];//.x;
 	
 	DWORD x = 0;
 	float x1 = 0;
