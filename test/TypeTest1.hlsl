@@ -54,13 +54,14 @@ int f2(int x)
 	return 0;
 }
 
+//static S1_t1_a f3()
 S1_t1_a f3()
 {
 	int x = 1 + (1 + (((3))) - 1) * 5;
 	return (S1_t1_a)0;
 }
 
-//const int g_2 = 5;
+static const int g_2 = 5;
 float g_1 = 0.0;
 
 const struct { struct { float inner2; } inner1; } g_anomym_s1;

@@ -69,8 +69,10 @@ void CS()
 	float a = s.foo.xx;
 	int b = ((int3)0).x;
 	
-	f(a.xxx);
+	//f(a.xxx);
 	f(b);
+	
+	string x;// = "test";
 	
 	float4 pos = mul((float3x3)0, (float3)1);
 	
