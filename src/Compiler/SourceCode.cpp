@@ -57,8 +57,10 @@ static bool FinalizeMarker(
     if (area.Pos().Column() >= lineIn.size() || area.Pos().Column() == 0 || area.Length() == 0)
         return false;
 
+    /* Copy input line into output line */
     lineOut = lineIn;
 
+    /* Construct the space offset */
     markerOut = std::string(area.Pos().Column() - 1, ' ');
 
     for (size_t i = 0, n = markerOut.size(); i < n; ++i)
@@ -67,12 +69,23 @@ static bool FinalizeMarker(
             markerOut[i] = '\t';
     }
 
+    /* Construct the marker */
     auto len = std::min(area.Length(), static_cast<unsigned int>(lineIn.size()) - area.Pos().Column());
 
-    markerOut += '^';
-    markerOut += std::string(len - 1, '~');
+    if (len > 0)
+    {
+        if (area.Offset() < len)
+        {
+            markerOut += std::string(area.Offset(), '~');
+            markerOut += '^';
+            markerOut += std::string(len - 1 - area.Offset(), '~');
+        }
+        else
+            markerOut += std::string(len, '~');
+        return true;
+    }
 
-    return true;
+    return false;
 }
 
 bool SourceCode::FetchLineMarker(const SourceArea& area, std::string& line, std::string& marker)

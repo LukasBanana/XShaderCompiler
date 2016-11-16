@@ -183,7 +183,11 @@ class Parser
         /* === Functions === */
 
         // Builds a left-to-right binary-expression tree hierarchy for the specified list of expressions.
-        ExprPtr BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops);
+        ExprPtr BuildBinaryExprTree(
+            std::vector<ExprPtr>& exprs,
+            std::vector<BinaryOp>& ops,
+            std::vector<SourcePosition>& opsPos
+        );
 
         void IncUnexpectedTokenCounter();
 

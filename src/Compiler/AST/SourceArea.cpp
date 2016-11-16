@@ -52,9 +52,22 @@ void SourceArea::Update(const AST& ast)
     Update(ast.area);
 }
 
+void SourceArea::Offset(unsigned int offset)
+{
+    offset_ = offset;
+}
+
+void SourceArea::Offset(const SourcePosition& pos)
+{
+    if (pos.Row() == pos_.Row() && pos.Column() >= pos_.Column())
+        offset_ = (pos.Column() - pos_.Column());
+    else
+        offset_ = ~0;
+}
+
 unsigned int SourceArea::Offset() const
 {
-    return std::min(offset_, length_);
+    return (length_ > 0 ? std::min(offset_, length_ - 1) : 0);
 }
 
 

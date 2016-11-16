@@ -49,6 +49,12 @@ class SourceArea
         // Updates the source area from the specified AST node.
         void Update(const AST& ast);
 
+        // Sets the new offset of the marker pointer.
+        void Offset(unsigned int offset);
+
+        // Sets the new offset of the marker pointer by a source position.
+        void Offset(const SourcePosition& pos);
+
         // Returns the offset of the marker pointer (e.g. "^~~~") clamped to the range [0, length).
         unsigned int Offset() const;
 

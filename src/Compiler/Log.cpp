@@ -8,6 +8,7 @@
 #include <Xsc/Log.h>
 #include <Xsc/ConsoleManip.h>
 #include <iostream>
+#include <algorithm>
 
 
 namespace Xsc
@@ -121,7 +122,7 @@ void StdLog::PrintReport(const IndentReport& r, bool verbose)
 
             std::cout << r.indent;
 
-            auto pos = marker.find('^');
+            auto pos = std::min(marker.find('^'), marker.find('~'));
             if (pos != std::string::npos && pos < marker.size())
             {
                 std::cout << line.substr(0, pos);

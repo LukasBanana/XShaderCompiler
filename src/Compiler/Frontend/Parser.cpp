@@ -270,6 +270,7 @@ ExprPtr Parser::ParseAbstractBinaryExpr(const std::function<ExprPtr()>& parseFun
     /* Parse sub expressions */
     std::vector<ExprPtr> exprs;
     std::vector<BinaryOp> ops;
+    std::vector<SourcePosition> opsPos;
 
     /* Parse primary expression */
     exprs.push_back(parseFunc());
@@ -283,14 +284,17 @@ ExprPtr Parser::ParseAbstractBinaryExpr(const std::function<ExprPtr()>& parseFun
             break;
 
         AcceptIt();
+
+        /* Store operator and its source position */
         ops.push_back(op);
+        opsPos.push_back(GetScanner().PreviousToken()->Pos());
 
         /* Parse next sub-expression */
         exprs.push_back(parseFunc());
     }
 
     /* Build (left-to-rigth) binary expression tree */
-    return BuildBinaryExprTree(exprs, ops);
+    return BuildBinaryExprTree(exprs, ops, opsPos);
 }
 
 ExprPtr Parser::ParseLogicOrExpr()
@@ -367,14 +371,15 @@ ExprPtr Parser::ParseValueExpr()
  * ======= Private: =======
  */
 
-ExprPtr Parser::BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops)
+ExprPtr Parser::BuildBinaryExprTree(
+    std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops, std::vector<SourcePosition>& opsPos)
 {
     if (exprs.empty())
         ErrorInternal("sub-expressions must not be empty", __FUNCTION__);
 
     if (exprs.size() > 1)
     {
-        if (exprs.size() != ops.size() + 1)
+        if (exprs.size() != ops.size() + 1 || exprs.size() != opsPos.size() + 1)
             ErrorInternal("sub-expressions and operators have uncorrelated number of elements", __FUNCTION__);
 
         auto ast = Make<BinaryExpr>();
@@ -382,15 +387,20 @@ ExprPtr Parser::BuildBinaryExprTree(std::vector<ExprPtr>& exprs, std::vector<Bin
         /* Build right hand side */
         ast->rhsExpr    = exprs.back();
         ast->op         = ops.back();
+        auto opPos      = opsPos.back();
 
         exprs.pop_back();
         ops.pop_back();
+        opsPos.pop_back();
 
         /* Build left hand side of the tree */
-        ast->lhsExpr = BuildBinaryExprTree(exprs, ops);
+        ast->lhsExpr = BuildBinaryExprTree(exprs, ops, opsPos);
 
         /* Update source area */
         UpdateSourceArea(ast, ast->lhsExpr, ast->rhsExpr);
+
+        /* Update pointer offset of source area (to point directly to the operator in a line marker) */
+        ast->area.Offset(opPos);
 
         return ast;
     }
