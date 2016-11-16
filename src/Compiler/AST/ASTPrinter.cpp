@@ -152,7 +152,11 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    Print(ast, "StructDecl");
+    auto info = ast->ident;
+    if (!ast->baseStructName.empty())
+        info += " : " + ast->baseStructName;
+
+    Print(ast, "StructDecl", info);
     DEFAULT_VISITOR(StructDecl);
 }
 

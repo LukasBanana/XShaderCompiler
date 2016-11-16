@@ -1618,7 +1618,7 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& stru
             /* Parse struct ident token */
             auto structIdentTkn = Accept(Tokens::Ident);
 
-            if (Is(Tokens::LCurly))
+            if (Is(Tokens::LCurly) || Is(Tokens::Colon))
             {
                 /* Parse struct-decl */
                 structDecl = ParseStructDecl(false, structIdentTkn);

@@ -9,7 +9,7 @@
 -T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
 
 [StructInheritTest1 PS]
--T fragment -E PS -o output/StructInheritTest1.PS.glsl StructInheritTest1.hlsl
+--dump-ast -T fragment -E PS -o output/StructInheritTest1.PS.glsl StructInheritTest1.hlsl
 
 [ssct_reflect PS]
 --dump-stat -T fragment -E PS -O -I "../../misc/ssct_shader/" -o "../../misc/ssct_shader/ssct_reflect.PS.frag" "../../misc/ssct_shader/ssct_reflect.hlsl"
