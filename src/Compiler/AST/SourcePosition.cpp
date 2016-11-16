@@ -6,6 +6,8 @@
  */
 
 #include "SourcePosition.h"
+#include "Token.h"
+#include <algorithm>
 
 
 namespace Xsc
@@ -68,18 +70,22 @@ bool SourceArea::IsValid() const
     return (pos.IsValid() && length > 0);
 }
 
-SourceArea SourceArea::IncLength(const SourceArea& other) const
+void SourceArea::Update(const SourceArea& area)
 {
-    SourceArea area;
-    
-    area.pos = pos;
+    if (area.pos.Row() > pos.Row())
+        length = ~0;
+    else if (area.pos.Row() == pos.Row() && area.pos.Column() > pos.Column() + length)
+        length = (area.pos.Column() - pos.Column() + area.length);
+}
 
-    if (other.pos.Row() > pos.Row())
-        area.length = ~0;
-    else if (other.pos.Row() == pos.Row() && other.pos.Column() > pos.Column() + length)
-        area.length = (other.pos.Column() - pos.Column() + other.length);
+void SourceArea::Update(const std::string& lengthFromIdent)
+{
+    length = std::max(length, static_cast<unsigned int>(lengthFromIdent.size()));
+}
 
-    return area;
+void SourceArea::Update(const Token& tkn)
+{
+    Update(tkn.Area());
 }
 
 

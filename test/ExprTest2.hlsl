@@ -74,7 +74,7 @@ void CS()
 	
 	float4 pos = mul((float3x3)0, (float3)1);
 	
-	//float4 pos = mul((mul(1, 2)).x, (float3)1);
+	float4 pos = mul((mul(1, 2)).x, (float3)1);
 	
 	#endif
 	

@@ -62,6 +62,9 @@ class SourcePosition
 
 };
 
+
+class Token;
+
 // Source area structure with position and length.
 struct SourceArea
 {
@@ -77,9 +80,19 @@ struct SourceArea
     // Returns ture if this is a valid source area. False if the position is invalid or the length is 0.
     bool IsValid() const;
 
-    SourceArea IncLength(const SourceArea& other) const;
+    // Updates the source area from the specified other area.
+    void Update(const SourceArea& area);
 
+    // Updates the source area length from the specified identifier.
+    void Update(const std::string& lengthFromIdent);
+
+    // Updates the source area from the specified token.
+    void Update(const Token& tkn);
+
+    // Source area start position.
     SourcePosition  pos;
+
+    // Source area length.
     unsigned int    length  = 0;
 };
 

@@ -349,6 +349,9 @@ VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& 
     if (Is(Tokens::AssignOp, "="))
         ast->initializer = ParseInitializer();
 
+    /* Update source area */
+    ast->area.Update(ast->ident);
+
     return ast;
 }
 
