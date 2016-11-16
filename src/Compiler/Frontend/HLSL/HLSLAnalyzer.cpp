@@ -34,6 +34,11 @@ void HLSLAnalyzer::DecorateASTPrimary(
     program_ = &program;
 
     Visit(&program);
+
+    #if 1
+    if (program_->entryPointRef)
+        GetRefAnalyzer().MarkReferencesFromEntryPoint(program_->entryPointRef, program_);
+    #endif
 }
 
 
@@ -82,15 +87,6 @@ IMPLEMENT_VISIT_PROC(Program)
 {
     /* Analyze context of the entire program */
     Visit(ast->globalStmnts);
-
-    if (shaderTarget_ != ShaderTarget::CommonShader)
-    {
-        /* Mark all functions used for the target shader */
-        if (mainFunction_)
-            GetRefAnalyzer().MarkReferencesFromEntryPoint(mainFunction_, program_);
-        else
-            Error("entry point \"" + entryPoint_ + "\" not found");
-    }
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
@@ -259,7 +255,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         /* Special case for the main entry point */
         if (isEntryPoint)
         {
-            mainFunction_ = ast;
+            program_->entryPointRef = ast;
 
             /* Add flags */
             ast->flags << FunctionDecl::isEntryPoint;

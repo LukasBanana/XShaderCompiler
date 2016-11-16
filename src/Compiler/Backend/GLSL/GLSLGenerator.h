@@ -64,7 +64,7 @@ class GLSLGenerator : public Generator
 
         /* === Functions === */
 
-        void GeneratePrimaryCode(
+        void GenerateCodePrimary(
             Program& program,
             const ShaderInput& inputDesc,
             const ShaderOutput& outputDesc

@@ -184,11 +184,12 @@ struct Program : public AST
         FLAG( hasSM3ScreenSpace,    3 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
     };
 
-    std::vector<StmntPtr>   globalStmnts;       // Global declaration statements
+    std::vector<StmntPtr>   globalStmnts;               // Global declaration statements
 
-    SourceCodePtr           sourceCode;         // Preprocessed source code
-    InputSemantics          inputSemantics;     // Input semantics for the DAST
-    OutputSemantics         outputSemantics;    // Output semantics for the DAST
+    SourceCodePtr           sourceCode;                 // Preprocessed source code
+    InputSemantics          inputSemantics;             // Input semantics for the DAST
+    OutputSemantics         outputSemantics;            // Output semantics for the DAST
+    FunctionDecl*           entryPointRef   = nullptr;  // Reference to the entry point function declaration.
 };
 
 // Code block.

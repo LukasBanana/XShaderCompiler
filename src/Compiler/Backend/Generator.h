@@ -36,7 +36,7 @@ class Generator : protected Visitor
 
     protected:
         
-        virtual void GeneratePrimaryCode(
+        virtual void GenerateCodePrimary(
             Program& program,
             const ShaderInput& inputDesc,
             const ShaderOutput& outputDesc

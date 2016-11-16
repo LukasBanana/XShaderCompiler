@@ -101,7 +101,6 @@ class HLSLAnalyzer : public Analyzer
         /* === Members === */
 
         Program*                                program_                = nullptr;
-        FunctionDecl*                           mainFunction_           = nullptr;
 
         ShaderInput                             inputDesc_;
         ShaderOutput                            outputDesc_;

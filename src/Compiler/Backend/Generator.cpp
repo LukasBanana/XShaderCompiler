@@ -32,7 +32,7 @@ bool Generator::GenerateCode(
     try
     {
         writer_.OutputStream(*outputDesc.sourceCode);
-        GeneratePrimaryCode(program, inputDesc, outputDesc);
+        GenerateCodePrimary(program, inputDesc, outputDesc);
     }
     catch (const Report& err)
     {

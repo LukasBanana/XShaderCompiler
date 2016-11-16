@@ -7,7 +7,7 @@
 
 #include "GLSLGenerator.h"
 #include "GLSLExtensionAgent.h"
-#include "HLSLAnalyzer.h"
+//#include "ReferenceAnalyzer.h"
 #include "TypeDenoter.h"
 #include "AST.h"
 #include "GLSLKeywords.h"
@@ -38,7 +38,7 @@ GLSLGenerator::GLSLGenerator(Log* log) :
     EstablishMaps();
 }
 
-void GLSLGenerator::GeneratePrimaryCode(
+void GLSLGenerator::GenerateCodePrimary(
     Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
 {
     /* Store parameters */
@@ -47,6 +47,15 @@ void GLSLGenerator::GeneratePrimaryCode(
     localVarPrefix_ = outputDesc.formatting.prefix;
     allowLineMarks_ = outputDesc.formatting.lineMarks;
     stats_          = outputDesc.statistics;
+
+    /* Pre-process AST */
+    if (program.entryPointRef)
+    {
+        //ReferenceAnalyzer refAnalyzer;
+        //refAnalyzer.MarkReferencesFromEntryPoint(mainFunction_, program_);
+    }
+    else
+        Error("entry point \"" + inputDesc.entryPoint + "\" not found");
 
     /* Write header */
     if (inputDesc.entryPoint.empty())
