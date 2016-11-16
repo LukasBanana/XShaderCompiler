@@ -9,8 +9,7 @@
 #define XSC_TOKEN_H
 
 
-#include "SourcePosition.h"
-
+#include "SourceArea.h"
 #include <string>
 #include <memory>
 

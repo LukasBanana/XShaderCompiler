@@ -9,7 +9,7 @@
 #define XSC_SOURCE_CODE_H
 
 
-#include "SourcePosition.h"
+#include "SourceArea.h"
 
 #include <istream>
 #include <string>

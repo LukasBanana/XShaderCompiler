@@ -12,7 +12,7 @@
 #include <Xsc/Xsc.h>
 #include <Xsc/Log.h>
 #include "SourceCode.h"
-#include "SourcePosition.h"
+#include "SourceArea.h"
 #include "Token.h"
 #include "TokenString.h"
 

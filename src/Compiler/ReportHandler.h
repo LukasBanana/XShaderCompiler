@@ -9,7 +9,7 @@
 #define XSC_REPORT_HANDLER_H
 
 
-#include "SourcePosition.h"
+#include "SourceArea.h"
 #include "HLSLErr.h"
 #include <Xsc/Report.h>
 #include <Xsc/Log.h>
