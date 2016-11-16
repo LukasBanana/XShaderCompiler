@@ -36,6 +36,8 @@ class ReferenceAnalyzer : private Visitor
         
         using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
 
+        bool Reachable(AST* ast);
+
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( FunctionCall      );

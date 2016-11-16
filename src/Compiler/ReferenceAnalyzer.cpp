@@ -15,7 +15,7 @@ namespace Xsc
 
 void ReferenceAnalyzer::MarkReferencesFromEntryPoint(FunctionDecl* entryPoint)
 {
-    entryPoint->flags << FunctionDecl::isReferenced;
+    entryPoint->flags << AST::isReferenced;
     Visit(entryPoint);
 }
 
@@ -23,6 +23,17 @@ void ReferenceAnalyzer::MarkReferencesFromEntryPoint(FunctionDecl* entryPoint)
 /*
  * ======= Private: =======
  */
+
+bool ReferenceAnalyzer::Reachable(AST* ast)
+{
+    if (!ast->flags(AST::wasMarked))
+    {
+        ast->flags << AST::wasMarked;
+        ast->flags << AST::isReferenced;
+        return true;
+    }
+    return false;
+}
 
 /* ------- Visit functions ------- */
 
@@ -55,77 +66,64 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
 IMPLEMENT_VISIT_PROC(VarType)
 {
-    Visit(ast->symbolRef);
-    Visitor::VisitVarType(ast, args);
+    if (Reachable(ast))
+    {
+        Visit(ast->symbolRef);
+        Visitor::VisitVarType(ast, args);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
-    Visit(ast->symbolRef);
-
-    Visitor::VisitVarIdent(ast, args);
+    if (Reachable(ast))
+    {
+        Visit(ast->symbolRef);
+        Visitor::VisitVarIdent(ast, args);
+    }
 }
 
 /* --- Declarations --- */
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    if (!ast->flags(VarDecl::wasMarked))
+    if (Reachable(ast))
     {
-        ast->flags << VarDecl::wasMarked;
-        ast->flags << VarDecl::isReferenced;
-        
         Visit(ast->declStmntRef);
         Visit(ast->bufferDeclRef);
-
         Visitor::VisitVarDecl(ast, args);
     }
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    if (!ast->flags(StructDecl::wasMarked))
-    {
-        ast->flags << StructDecl::wasMarked;
-        ast->flags << StructDecl::isReferenced;
-
+    if (Reachable(ast))
         Visitor::VisitStructDecl(ast, args);
-    }
 }
 
 IMPLEMENT_VISIT_PROC(TextureDecl)
 {
-    ast->flags << TextureDecl::isReferenced;
-    Visit(ast->declStmntRef);
+    if (Reachable(ast))
+        Visit(ast->declStmntRef);
 }
 
 /* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    if (!ast->flags(FunctionDecl::wasMarked))
-    {
-        ast->flags << FunctionDecl::wasMarked;
-        ast->flags << FunctionDecl::isReferenced;
-
+    if (Reachable(ast))
         Visitor::VisitFunctionDecl(ast, args);
-    }
 }
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
-    if (!ast->flags(BufferDeclStmnt::wasMarked))
-    {
-        ast->flags << BufferDeclStmnt::wasMarked;
-        ast->flags << BufferDeclStmnt::isReferenced;
-
+    if (Reachable(ast))
         Visitor::VisitBufferDeclStmnt(ast, args);
-    }
 }
 
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
-    ast->flags << TextureDeclStmnt::isReferenced;
+    if (Reachable(ast))
+        Visitor::VisitTextureDeclStmnt(ast, args);
 }
 
 #undef IMPLEMENT_VISIT_PROC

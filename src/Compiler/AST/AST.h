@@ -57,7 +57,7 @@ class Visitor;
     enum : unsigned int
 
 #define FLAG(IDENT, INDEX) \
-    IDENT = (1 << (INDEX))
+    IDENT = (1u << (INDEX))
 
 // Base class for all AST node classes.
 struct AST
@@ -124,6 +124,12 @@ struct AST
     
     virtual Types Type() const = 0;
     virtual void Visit(Visitor* visitor, void* args = nullptr) = 0;
+
+    FLAG_ENUM
+    {
+        FLAG( isReferenced,    30 ), // This AST node is reachable from the main entry point (i.e. the use-count >= 1).
+        FLAG( wasMarked,       31 ), // This AST node was already marked as reachable.
+    };
 
     SourceArea  area;
     Flags       flags;
@@ -318,10 +324,8 @@ struct VarDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( isReferenced,     0 ), // This variable is referenced (or rather used) at least once (use-count >= 1).
-        FLAG( wasMarked,        1 ), // This variable was already marked by the "ReferenceAnalyzer" visitor.
-        FLAG( isInsideFunc,     2 ), // This variable is declared inside a function.
-        FLAG( disableCodeGen,   3 ), // Disables the code generation for this variable declaration.
+        FLAG( isInsideFunc,     0 ), // This variable is declared inside a function.
+        FLAG( disableCodeGen,   1 ), // Disables the code generation for this variable declaration.
     };
 
     // Returns the variable declaration as string.
@@ -344,11 +348,6 @@ struct VarDecl : public Decl
 struct TextureDecl : public AST /*TODO --> public Decl*/
 {
     AST_INTERFACE(TextureDecl);
-
-    FLAG_ENUM
-    {
-        FLAG( isReferenced, 0 ), // This buffer is referenced (or rather used) at least once (use-count >= 1).
-    };
 
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
@@ -375,10 +374,8 @@ struct StructDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( isReferenced,     0 ), // This structure is referenced (or rather used) at least once (use-count >= 1).
-        FLAG( wasMarked,        1 ), // This structure was already marked by the "ReferenceAnalyzer" visitor.
-        FLAG( isShaderInput,    2 ), // This structure is used as shader input.
-        FLAG( isShaderOutput,   3 ), // This structure is used as shader output.
+        FLAG( isShaderInput,    0 ), // This structure is used as shader input.
+        FLAG( isShaderOutput,   1 ), // This structure is used as shader output.
     };
 
     // Returns a descriptive string of the function signature (e.g. "struct s" or "struct <anonymous>").
@@ -424,9 +421,7 @@ struct FunctionDecl : public Stmnt
 
     FLAG_ENUM
     {
-        FLAG( isReferenced, 0 ), // This function is referenced (or rather used) at least once (use-count >= 1).
-        FLAG( wasMarked,    1 ), // This function was already marked by the "ReferenceAnalyzer" visitor.
-        FLAG( isEntryPoint, 2 ), // This function is the main entry point.
+        FLAG( isEntryPoint, 0 ), // This function is the main entry point.
     };
 
     // Returns true if this function declaration is just a forward declaration (without function body).
@@ -483,12 +478,6 @@ struct BufferDeclStmnt : public Stmnt
 {
     AST_INTERFACE(BufferDeclStmnt);
 
-    FLAG_ENUM
-    {
-        FLAG( isReferenced, 0 ), // This uniform buffer is referenced (or rather used) at least once (use-count >= 1).
-        FLAG( wasMarked,    1 ), // This uniform buffer was already marked by the "ReferenceAnalyzer" visitor.
-    };
-    
     std::string                     bufferType;
     std::string                     ident;
     std::string                     registerName; // May be empty
@@ -499,11 +488,6 @@ struct BufferDeclStmnt : public Stmnt
 struct TextureDeclStmnt : public Stmnt
 {
     AST_INTERFACE(TextureDeclStmnt);
-
-    FLAG_ENUM
-    {
-        FLAG( isReferenced, 0 ), // This texture is referenced (or rather used) at least once (use-count >= 1).
-    };
 
     std::string                 textureType;
     std::string                 colorType;      //TODO: replace with TypeDenoterPtr
