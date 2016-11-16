@@ -95,6 +95,12 @@ class ReportHandler
             currentFilename_ = filename;
         }
 
+        /*
+        Appends a hint for the next upcomming report.
+        Implemented as static function to avoid passing lots of report data around the code.
+        */
+        static void HintForNextReport(const std::string& hint);
+
     private:
 
         Report MakeReport(

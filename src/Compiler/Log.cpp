@@ -110,8 +110,11 @@ void StdLog::PrintReport(const IndentReport& r, bool verbose)
     else
         PrintMultiLineString(msg, r.indent);
 
+    if (!verbose)
+        return;
+    
     /* Print optional line and line-marker */
-    if (verbose && r.report.HasLine())
+    if (r.report.HasLine())
     {
         const auto& line    = r.report.Line();
         const auto& marker  = r.report.Marker();
@@ -145,6 +148,10 @@ void StdLog::PrintReport(const IndentReport& r, bool verbose)
             std::cout << r.indent << marker << std::endl;
         }
     }
+
+    /* Print optional hints */
+    for (const auto& hint : r.report.GetHints())
+        std::cout << r.indent << hint << std::endl;
 }
 
 void StdLog::PrintAndClearReports(IndentReportList& reports, bool verbose, const std::string& headline)

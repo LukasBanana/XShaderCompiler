@@ -7,6 +7,7 @@
 
 #include "ReportHandler.h"
 #include "SourceCode.h"
+#include <vector>
 
 
 namespace Xsc
@@ -27,6 +28,8 @@ ErrorCode::ErrorCode(const HLSLErr errorCode)
 /*
  * ReportHandler class
  */
+
+static std::vector<std::string> g_hintQueue;
 
 ReportHandler::ReportHandler(const std::string& reportTypeName, Log* log) :
     reportTypeName_ { reportTypeName },
@@ -83,9 +86,13 @@ void ReportHandler::SubmitReport(
     /* Add actual report message */
     outputMsg += msg;
 
-    /* Either throw or submit report */
+    /* Make report object */
     auto report = MakeReport(type, outputMsg, sourceCode, area);
 
+    /* Move hint queue into report */
+    report.TakeHints(std::move(g_hintQueue));
+
+    /* Either throw or submit report */
     if (breakWithExpection)
         throw report;
     else if (log_)
@@ -100,6 +107,11 @@ void ReportHandler::PushContextDesc(const std::string& contextDesc)
 void ReportHandler::PopContextDesc()
 {
     contextDescStack_.pop();
+}
+
+void ReportHandler::HintForNextReport(const std::string& hint)
+{
+    g_hintQueue.push_back(hint);
 }
 
 

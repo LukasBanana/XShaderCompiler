@@ -7,6 +7,7 @@
 
 #include "SymbolTable.h"
 #include "Exception.h"
+#include "ReportHandler.h"
 #include <algorithm>
 
 
@@ -66,9 +67,9 @@ AST* ASTSymbolOverload::Fetch(bool throwOnFailure)
     if (throwOnFailure)
     {
         if (refs_.empty())
-            throw std::runtime_error("undefined symbol '" + ident_ + "'");
+            RuntimeErr("undefined symbol '" + ident_ + "'");
         if (refs_.size() > 1)
-            throw std::runtime_error("symbol '" + ident_ + "' is ambiguous");
+            RuntimeErr("symbol '" + ident_ + "' is ambiguous");
         return refs_.front();
     }
     else
@@ -82,7 +83,7 @@ AST* ASTSymbolOverload::FetchVar(bool throwOnFailure)
     if (type != AST::Types::VarDecl && type != AST::Types::TextureDecl && type != AST::Types::SamplerDecl)
     {
         if (throwOnFailure)
-            throw std::runtime_error("identifier '" + ident_ + "' does not name a variable");
+            RuntimeErr("identifier '" + ident_ + "' does not name a variable");
         else
             return nullptr;
     }
@@ -96,7 +97,7 @@ AST* ASTSymbolOverload::FetchType(bool throwOnFailure)
     if (type != AST::Types::StructDecl && type != AST::Types::AliasDecl)
     {
         if (throwOnFailure)
-            throw std::runtime_error("identifier '" + ident_ + "' does not name a type");
+            RuntimeErr("identifier '" + ident_ + "' does not name a type");
         else
             return nullptr;
     }
@@ -106,16 +107,16 @@ AST* ASTSymbolOverload::FetchType(bool throwOnFailure)
 FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoterPtr>& argTypeDenoters)
 {
     if (refs_.empty())
-        throw std::runtime_error("undefined symbol '" + ident_ + "'");
+        RuntimeErr("undefined symbol '" + ident_ + "'");
     if (refs_.front()->Type() != AST::Types::FunctionDecl)
-        throw std::runtime_error("identifier '" + ident_ + "' does not name a function");
+        RuntimeErr("identifier '" + ident_ + "' does not name a function");
 
     /* Validate number of arguments for function call */
     const auto numArgs = argTypeDenoters.size();
 
     if (!ValidateNumArgsForFunctionDecl(numArgs))
     {
-        throw std::runtime_error(
+        RuntimeErr(
             "function '" + ident_ + "' does not take " + std::to_string(numArgs) + " " +
             std::string(numArgs == 1 ? "parameter" : "parameters")
         );
@@ -159,6 +160,14 @@ FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoter
         }
         else
             argTypeNames = "void";
+
+        /* Add candidate signatures to report hints */
+        if (!funcDeclCandidates.empty())
+        {
+            ReportHandler::HintForNextReport("candidates are:");
+            for (auto funcDecl : funcDeclCandidates)
+                ReportHandler::HintForNextReport("  '" + funcDecl->SignatureToString(false) + "'");
+        }
 
         /* Throw runtime error */
         RuntimeErr(

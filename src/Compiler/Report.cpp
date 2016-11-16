@@ -36,6 +36,11 @@ const char* Report::what() const throw()
     return message_.c_str();
 }
 
+void Report::TakeHints(std::vector<std::string>&& hints)
+{
+    hints_ = std::move(hints);
+}
+
 
 } // /namespace Xsc
 

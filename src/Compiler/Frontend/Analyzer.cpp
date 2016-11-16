@@ -186,6 +186,11 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
         else
             ErrorUndeclaredIdent(ident, ast);
     }
+    catch (const ASTRuntimeError& e)
+    {
+        Error(e.what(), e.GetAST());
+        return nullptr;
+    }
     catch (const std::exception& e)
     {
         Error(e.what(), ast);

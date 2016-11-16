@@ -12,6 +12,7 @@
 #include "Export.h"
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 
 namespace Xsc
@@ -40,6 +41,9 @@ class XSC_EXPORT Report : public std::exception
 
         //! Overrides the 'std::exception::what' function.
         const char* what() const throw() override;
+
+        //! Moves the specified hints into this report.
+        void TakeHints(std::vector<std::string>&& hints);
 
         //! Returns the type of this report.
         inline Types Type() const
@@ -71,6 +75,12 @@ class XSC_EXPORT Report : public std::exception
             return marker_;
         }
 
+        //! Returns the list of optional hints of the report.
+        inline const std::vector<std::string>& GetHints() const
+        {
+            return hints_;
+        }
+
         /**
         \brief Returns true if this report has a line with line marker.
         \see Line
@@ -83,11 +93,12 @@ class XSC_EXPORT Report : public std::exception
 
     private:
 
-        Types       type_       = Types::Info;
-        std::string context_;
-        std::string message_;
-        std::string line_;
-        std::string marker_;
+        Types                       type_       = Types::Info;
+        std::string                 context_;
+        std::string                 message_;
+        std::string                 line_;
+        std::string                 marker_;
+        std::vector<std::string>    hints_;
 
 };
 
