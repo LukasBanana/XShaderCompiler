@@ -7,6 +7,7 @@
 
 #include "ConstExprEvaluator.h"
 #include "AST.h"
+#include "Helper.h"
 #include <sstream>
 
 
@@ -75,25 +76,13 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
         case Token::Types::IntLiteral:
         {
-            Variant::IntType value = 0;
-
-            std::stringstream s;
-            s << ast->value;
-            s >> value;
-
-            Push(value);
+            Push(FromString<Variant::IntType>(ast->value));
         }
         break;
 
         case Token::Types::FloatLiteral:
         {
-            Variant::RealType value = 0.0;
-
-            std::stringstream s;
-            s << ast->value;
-            s >> value;
-
-            Push(value);
+            Push(FromString<Variant::RealType>(ast->value));
         }
         break;
 
