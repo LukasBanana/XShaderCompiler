@@ -127,8 +127,8 @@ struct AST
 
     FLAG_ENUM
     {
-        FLAG( isReferenced,    30 ), // This AST node is reachable from the main entry point (i.e. the use-count >= 1).
-        FLAG( wasMarked,       31 ), // This AST node was already marked as reachable.
+        FLAG( isReachable,      30 ), // This AST node is reachable from the main entry point (i.e. the use-count >= 1).
+        FLAG( isReachableDone,  31 ), // This AST node was already marked as reachable.
     };
 
     SourceArea  area;

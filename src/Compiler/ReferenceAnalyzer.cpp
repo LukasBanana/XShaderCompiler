@@ -15,7 +15,6 @@ namespace Xsc
 
 void ReferenceAnalyzer::MarkReferencesFromEntryPoint(FunctionDecl* entryPoint)
 {
-    entryPoint->flags << AST::isReferenced;
     Visit(entryPoint);
 }
 
@@ -26,10 +25,10 @@ void ReferenceAnalyzer::MarkReferencesFromEntryPoint(FunctionDecl* entryPoint)
 
 bool ReferenceAnalyzer::Reachable(AST* ast)
 {
-    if (!ast->flags(AST::wasMarked))
+    if (!ast->flags(AST::isReachableDone))
     {
-        ast->flags << AST::wasMarked;
-        ast->flags << AST::isReferenced;
+        ast->flags << AST::isReachable;
+        ast->flags << AST::isReachableDone;
         return true;
     }
     return false;

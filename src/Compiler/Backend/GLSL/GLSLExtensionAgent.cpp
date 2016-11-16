@@ -91,7 +91,7 @@ IMPLEMENT_VISIT_PROC(Attribute)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    if (ast->flags(FunctionDecl::isReferenced))
+    if (ast->flags(AST::isReachable))
     {
         Visit(ast->attribs);
 

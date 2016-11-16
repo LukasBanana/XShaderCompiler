@@ -764,7 +764,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    if (!ast->flags(FunctionDecl::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
+    if (!ast->flags(AST::isReachable) && shaderTarget_ != ShaderTarget::CommonShader)
         return; // function not used
 
     Line(ast);
@@ -849,7 +849,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
-    if (!ast->flags(BufferDeclStmnt::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
+    if (!ast->flags(AST::isReachable) && shaderTarget_ != ShaderTarget::CommonShader)
         return; // uniform buffer not used
 
     /* Write uniform buffer header */
@@ -878,7 +878,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
-    if (!ast->flags(TextureDeclStmnt::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
+    if (!ast->flags(AST::isReachable) && shaderTarget_ != ShaderTarget::CommonShader)
         return; // texture not used
 
     /* Determine GLSL sampler type */
@@ -891,7 +891,7 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
     /* Write texture samplers */
     for (auto& texDecl : ast->textureDecls)
     {
-        if (texDecl->flags(TextureDecl::isReferenced) || shaderTarget_ == ShaderTarget::CommonShader)
+        if (texDecl->flags(AST::isReachable) || shaderTarget_ == ShaderTarget::CommonShader)
         {
             BeginLn();
             {
@@ -919,7 +919,7 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 {
-    if (!ast->structDecl->flags(StructDecl::isReferenced) && shaderTarget_ != ShaderTarget::CommonShader)
+    if (!ast->structDecl->flags(AST::isReachable) && shaderTarget_ != ShaderTarget::CommonShader)
         return; // structure not used
 
     Line(ast);
