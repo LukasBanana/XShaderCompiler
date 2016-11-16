@@ -318,8 +318,10 @@ struct VarDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( isInsideFunc,     0 ), // This variable is declared inside a function.
-        FLAG( disableCodeGen,   1 ), // Disables the code generation for this variable declaration.
+        FLAG( isReferenced,     0 ), // This variable is referenced (or rather used) at least once (use-count >= 1).
+        FLAG( wasMarked,        1 ), // This variable was already marked by the "ReferenceAnalyzer" visitor.
+        FLAG( isInsideFunc,     2 ), // This variable is declared inside a function.
+        FLAG( disableCodeGen,   3 ), // Disables the code generation for this variable declaration.
     };
 
     // Returns the variable declaration as string.
@@ -334,7 +336,7 @@ struct VarDecl : public Decl
     std::vector<VarDeclStmntPtr>    annotations;                // Annotations can be ignored by analyzers and generators.
     ExprPtr                         initializer;
 
-    VarDeclStmnt*                   declStmntRef    = nullptr;  // Reference to its declaration statement ('parent node'); may be null
+    VarDeclStmnt*                   declStmntRef    = nullptr;  // Reference to its declaration statement (parent node); may be null
     BufferDeclStmnt*                bufferDeclRef   = nullptr;  // Buffer declaration reference for DAST (optional 'parent's parent node'); may be null
 };
 
@@ -350,7 +352,9 @@ struct TextureDecl : public AST /*TODO --> public Decl*/
 
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
-    std::string                     registerName;   // May be empty
+    std::string                     registerName;               // May be empty
+
+    TextureDeclStmnt*               declStmntRef    = nullptr;  // Reference to its declaration statement (parent node).
 };
 
 // Sampler state declaration.

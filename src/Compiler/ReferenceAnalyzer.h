@@ -29,35 +29,26 @@ class ReferenceAnalyzer : private Visitor
     
     public:
         
-        ReferenceAnalyzer(const ASTSymbolOverloadTable& symTable);
-
         // Marks all declarational AST nodes (i.e. function decl, structure decl etc.) that are reachable from the specififed entry point.
-        void MarkReferencesFromEntryPoint(FunctionDecl* ast, Program* program);
+        void MarkReferencesFromEntryPoint(FunctionDecl* entryPoint);
 
     private:
         
         using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
 
-        void MarkTextureReference(AST* ast, const std::string& texIdent);
-
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( FunctionCall      );
+        DECL_VISIT_PROC( VarType           );
+        DECL_VISIT_PROC( VarIdent          );
+
+        DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( StructDecl        );
+        DECL_VISIT_PROC( TextureDecl       );
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( BufferDeclStmnt   );
-
-        DECL_VISIT_PROC( VarAccessExpr     );
-
-        DECL_VISIT_PROC( VarType           );
-
-        /* === Members === */
-
-        const ASTSymbolOverloadTable*   symTable_   = nullptr;
-
-        //TODO: remove this member; intrinsic references should not be flagged here!
-        Program*                        program_    = nullptr;
+        DECL_VISIT_PROC( TextureDeclStmnt  );
 
 };
 

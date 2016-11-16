@@ -14,8 +14,7 @@ namespace Xsc
 
 
 Analyzer::Analyzer(Log* log) :
-    reportHandler_  { "context", log },
-    refAnalyzer_    { symTable_      }
+    reportHandler_{ "context", log }
 {
 }
 

@@ -34,11 +34,6 @@ void HLSLAnalyzer::DecorateASTPrimary(
     program_ = &program;
 
     Visit(&program);
-
-    #if 1
-    if (program_->entryPointRef)
-        GetRefAnalyzer().MarkReferencesFromEntryPoint(program_->entryPointRef, program_);
-    #endif
 }
 
 

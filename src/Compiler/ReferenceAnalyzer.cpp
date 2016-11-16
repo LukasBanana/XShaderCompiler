@@ -13,41 +13,16 @@ namespace Xsc
 {
 
 
-ReferenceAnalyzer::ReferenceAnalyzer(const ASTSymbolOverloadTable& symTable) :
-    symTable_{ &symTable }
+void ReferenceAnalyzer::MarkReferencesFromEntryPoint(FunctionDecl* entryPoint)
 {
-}
-
-void ReferenceAnalyzer::MarkReferencesFromEntryPoint(FunctionDecl* ast, Program* program)
-{
-    program_ = program;
-    ast->flags << FunctionDecl::isReferenced;
-    Visit(ast);
+    entryPoint->flags << FunctionDecl::isReferenced;
+    Visit(entryPoint);
 }
 
 
 /*
  * ======= Private: =======
  */
-
-void ReferenceAnalyzer::MarkTextureReference(AST* ast, const std::string& texIdent)
-{
-    ast->flags << TextureDeclStmnt::isReferenced;
-
-    auto texDecl = dynamic_cast<TextureDeclStmnt*>(ast);
-    if (texDecl)
-    {
-        /* Mark individual texture identifier to be used */
-        for (auto& tex : texDecl->textureDecls)
-        {
-            if (tex->ident == texIdent)
-            {
-                tex->flags << TextureDecl::isReferenced;
-                break;
-            }
-        }
-    }
-}
 
 /* ------- Visit functions ------- */
 
@@ -56,142 +31,101 @@ void ReferenceAnalyzer::MarkTextureReference(AST* ast, const std::string& texIde
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
+    Visit(ast->funcDeclRef);
+
+    Visitor::VisitFunctionCall(ast, args);
+
+    //TODO: remove this from the ReferenceAnalyzer; intrinsic references should not be flagged here!
+    #if 0
     if (ast->varIdent)
     {
-        //~~~~~~~~TODO:~~~~~~~~~
-        //Use "symTable_->FetchFunctionDecl" with type denoters of argument list
-
-        #if 0
-
         /* Mark this function to be referenced */
-        const auto& ident = ast->ident->ident;
-        auto symbol = symTable_->Fetch(ident);
+        const auto& ident = ast->varIdent->ident;
 
-        if (symbol)
-        {
-            if (symbol->Type() == AST::Types::FunctionDecl)
-            {
-                auto functionDecl = dynamic_cast<FunctionDecl*>(symbol);
-                if (functionDecl)
-                {
-                    /* Mark all forward declarations to this function */
-                    for (auto& forwardDecl : functionDecl->forwardDeclsRef)
-                        forwardDecl->flags << FunctionDecl::isReferenced;
-                }
-
-                /* Mark this function and visit the entire function body */
-                symbol->flags << FunctionDecl::isReferenced;
-                Visit(symbol);
-            }
-            else if (symbol->Type() == AST::Types::TextureDeclStmnt)
-                MarkTextureReference(symbol, ident);
-        }
-        else
-        {
-            //TODO: remove this from the ReferenceAnalyzer; intrinsic references should not be flagged here!
-            /* Check for intrinsic usage */
-            if (ident == "rcp")
-                program_->flags << Program::rcpIntrinsicUsed;
-            else if (ident == "sincos")
-                program_->flags << Program::sinCosIntrinsicUsed;
-            else if (ident == "clip")
-                program_->flags << Program::clipIntrinsicUsed;
-        }
-
-        #endif
+        /* Check for intrinsic usage */
+        if (ident == "rcp")
+            program_->flags << Program::rcpIntrinsicUsed;
+        else if (ident == "sincos")
+            program_->flags << Program::sinCosIntrinsicUsed;
+        else if (ident == "clip")
+            program_->flags << Program::clipIntrinsicUsed;
     }
+    #endif
+}
 
-    /* Visit arguments */
-    Visit(ast->arguments);
+IMPLEMENT_VISIT_PROC(VarType)
+{
+    Visit(ast->symbolRef);
+    Visitor::VisitVarType(ast, args);
+}
+
+IMPLEMENT_VISIT_PROC(VarIdent)
+{
+    Visit(ast->symbolRef);
+
+    Visitor::VisitVarIdent(ast, args);
+}
+
+/* --- Declarations --- */
+
+IMPLEMENT_VISIT_PROC(VarDecl)
+{
+    if (!ast->flags(VarDecl::wasMarked))
+    {
+        ast->flags << VarDecl::wasMarked;
+        ast->flags << VarDecl::isReferenced;
+        
+        Visit(ast->declStmntRef);
+        Visit(ast->bufferDeclRef);
+
+        Visitor::VisitVarDecl(ast, args);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    /* Check if this function was already marked by this analyzer */
     if (!ast->flags(StructDecl::wasMarked))
     {
         ast->flags << StructDecl::wasMarked;
-
-        /* Mark this structure to be referenced */
         ast->flags << StructDecl::isReferenced;
 
-        /* Analyze structure members */
-        Visit(ast->members);
+        Visitor::VisitStructDecl(ast, args);
     }
+}
+
+IMPLEMENT_VISIT_PROC(TextureDecl)
+{
+    ast->flags << TextureDecl::isReferenced;
+    Visit(ast->declStmntRef);
 }
 
 /* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    /* Check if this function was already marked by this analyzer */
     if (!ast->flags(FunctionDecl::wasMarked))
     {
         ast->flags << FunctionDecl::wasMarked;
+        ast->flags << FunctionDecl::isReferenced;
 
-        /* Default visitor */
         Visitor::VisitFunctionDecl(ast, args);
     }
 }
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
-    /* Check if this function was already marked by this analyzer */
     if (!ast->flags(BufferDeclStmnt::wasMarked))
     {
         ast->flags << BufferDeclStmnt::wasMarked;
         ast->flags << BufferDeclStmnt::isReferenced;
 
-        /* Default visitor */
         Visitor::VisitBufferDeclStmnt(ast, args);
     }
 }
 
-/* --- Expressions --- */
-
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
+IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
-    /* Mark either texture object or uniform buffer */
-    auto symbol = symTable_->Fetch(ast->varIdent->ident);
-    if (symbol)
-    {
-        auto symbolAST = symbol->FetchVar(false);
-        if (symbolAST)
-        {
-            if (symbolAST->Type() == AST::Types::TextureDeclStmnt)
-            {
-                /* Mark texture object as referenced */
-                MarkTextureReference(symbolAST, ast->varIdent->ident);
-            }
-            else if (symbolAST->Type() == AST::Types::VarDecl)
-            {
-                /* Mark uniform buffer as referenced */
-                auto varDecl = static_cast<VarDecl*>(symbolAST);
-                if (varDecl && varDecl->bufferDeclRef)
-                    Visit(varDecl->bufferDeclRef);
-            }
-        }
-    }
-
-    Visit(ast->assignExpr);
-}
-
-/* --- Variables --- */
-
-IMPLEMENT_VISIT_PROC(VarType)
-{
-    if (ast->structDecl)
-        Visit(ast->structDecl);
-    else if (!ast->typeDenoter->Ident().empty())
-    {
-        auto symbol = symTable_->Fetch(ast->typeDenoter->Ident());
-        if (symbol)
-        {
-            auto symbolAST = symbol->FetchType(false);
-            if (symbolAST)
-                Visit(symbolAST);
-        }
-    }
+    ast->flags << TextureDeclStmnt::isReferenced;
 }
 
 #undef IMPLEMENT_VISIT_PROC

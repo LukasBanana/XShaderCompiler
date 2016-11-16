@@ -359,9 +359,12 @@ VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& 
     return ast;
 }
 
-TextureDeclPtr HLSLParser::ParseTextureDecl()
+TextureDeclPtr HLSLParser::ParseTextureDecl(TextureDeclStmnt* declStmntRef)
 {
     auto ast = Make<TextureDecl>();
+
+    /* Store reference to parent node */
+    ast->declStmntRef = declStmntRef;
 
     /* Parse identifier and array dimension list (array dimension can be optional) */
     ast->ident      = ParseIdent();
@@ -618,7 +621,7 @@ TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
         Accept(Tokens::BinaryOp, ">");
     }
 
-    ast->textureDecls = ParseTextureDeclList();
+    ast->textureDecls = ParseTextureDeclList(ast.get());
 
     Semi();
 
@@ -1460,16 +1463,16 @@ std::vector<SwitchCasePtr> HLSLParser::ParseSwitchCaseList()
     return cases;
 }
 
-std::vector<TextureDeclPtr> HLSLParser::ParseTextureDeclList()
+std::vector<TextureDeclPtr> HLSLParser::ParseTextureDeclList(TextureDeclStmnt* declStmntRef)
 {
     std::vector<TextureDeclPtr> textureDecls;
 
-    textureDecls.push_back(ParseTextureDecl());
+    textureDecls.push_back(ParseTextureDecl(declStmntRef));
 
     while (Is(Tokens::Comma))
     {
         AcceptIt();
-        textureDecls.push_back(ParseTextureDecl());
+        textureDecls.push_back(ParseTextureDecl(declStmntRef));
     }
 
     return textureDecls;

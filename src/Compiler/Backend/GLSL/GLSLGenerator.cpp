@@ -7,7 +7,7 @@
 
 #include "GLSLGenerator.h"
 #include "GLSLExtensionAgent.h"
-//#include "ReferenceAnalyzer.h"
+#include "ReferenceAnalyzer.h"
 #include "TypeDenoter.h"
 #include "AST.h"
 #include "GLSLKeywords.h"
@@ -51,8 +51,8 @@ void GLSLGenerator::GenerateCodePrimary(
     /* Pre-process AST */
     if (program.entryPointRef)
     {
-        //ReferenceAnalyzer refAnalyzer;
-        //refAnalyzer.MarkReferencesFromEntryPoint(mainFunction_, program_);
+        ReferenceAnalyzer refAnalyzer;
+        refAnalyzer.MarkReferencesFromEntryPoint(program.entryPointRef);
     }
     else
         Error("entry point \"" + inputDesc.entryPoint + "\" not found");

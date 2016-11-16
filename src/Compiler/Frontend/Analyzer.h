@@ -11,7 +11,6 @@
 
 #include <Xsc/Xsc.h>
 #include "ReportHandler.h"
-#include "ReferenceAnalyzer.h"
 #include "Visitor.h"
 #include "Token.h"
 #include "SymbolTable.h"
@@ -65,12 +64,6 @@ class Analyzer : protected Visitor
             return reportHandler_;
         }
 
-        // Returns the reference analyzer.
-        inline ReferenceAnalyzer& GetRefAnalyzer()
-        {
-            return refAnalyzer_;
-        }
-
         /* ----- Symbol table functions ----- */
 
         void OpenScope();
@@ -121,7 +114,6 @@ class Analyzer : protected Visitor
         SourceCode*                 sourceCode_                 = nullptr;
 
         ASTSymbolOverloadTable      symTable_;
-        ReferenceAnalyzer           refAnalyzer_;
 
         // Current level of function declarations. Actually only 0 or 1 (but can be more if inner functions are supported).
         unsigned int                funcDeclLevel_              = 0;

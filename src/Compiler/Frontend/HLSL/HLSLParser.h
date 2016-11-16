@@ -97,7 +97,7 @@ class HLSLParser : public Parser
         VarTypePtr                      ParseVarType(bool parseVoidType = false);
 
         VarDeclPtr                      ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
-        TextureDeclPtr                  ParseTextureDecl();
+        TextureDeclPtr                  ParseTextureDecl(TextureDeclStmnt* declStmntRef);
         SamplerDeclPtr                  ParseSamplerDecl();
         StructDeclPtr                   ParseStructDecl(bool parseStructTkn = true, const TokenPtr& identTkn = nullptr);
         AliasDeclPtr                    ParseAliasDecl(TypeDenoterPtr typeDenoter);
@@ -152,7 +152,7 @@ class HLSLParser : public Parser
         std::vector<VarSemanticPtr>     ParseVarSemanticList();
         std::vector<AttributePtr>       ParseAttributeList();
         std::vector<SwitchCasePtr>      ParseSwitchCaseList();
-        std::vector<TextureDeclPtr>     ParseTextureDeclList();
+        std::vector<TextureDeclPtr>     ParseTextureDeclList(TextureDeclStmnt* declStmntRef);
         std::vector<SamplerDeclPtr>     ParseSamplerDeclList();
         std::vector<SamplerValuePtr>    ParseSamplerValueList();
         std::vector<AliasDeclPtr>       ParseAliasDeclList(TypeDenoterPtr typeDenoter);
