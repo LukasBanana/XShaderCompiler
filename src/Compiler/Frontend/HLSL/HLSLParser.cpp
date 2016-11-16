@@ -73,7 +73,11 @@ bool HLSLParser::IsLiteral() const
 
 bool HLSLParser::IsPrimaryExpr() const
 {
-    return (IsLiteral() || Is(Tokens::Ident) || Is(Tokens::UnaryOp) || IsArithmeticUnaryExpr() || Is(Tokens::LBracket));
+    return
+    (
+        IsLiteral() || IsDataType() || IsArithmeticUnaryExpr() ||
+        Is(Tokens::Struct) || Is(Tokens::UnaryOp) || Is(Tokens::LBracket) || Is(Tokens::LCurly) || Is(Tokens::Ident)
+    );
 }
 
 bool HLSLParser::IsArithmeticUnaryExpr() const
@@ -111,14 +115,10 @@ CodeBlockPtr HLSLParser::ParseCodeBlock()
 {
     auto ast = Make<CodeBlock>();
 
-    typeSymTable_.OpenScope();
-    {
-        /* Parse statement list */
-        Accept(Tokens::LCurly);
-        ast->stmnts = ParseStmntList();
-        Accept(Tokens::RCurly);
-    }
-    typeSymTable_.CloseScope();
+    /* Parse statement list */
+    Accept(Tokens::LCurly);
+    ast->stmnts = ParseStmntList();
+    Accept(Tokens::RCurly);
 
     return ast;
 }
@@ -431,9 +431,6 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
         /* Parse member variable declarations */
         auto members = ParseVarDeclStmntList();
         ast->members.insert(ast->members.end(), members.begin(), members.end());
-
-        /* Register identifier in symbol table (used to detect special cast expressions) */
-        RegisterSymbol(ast->ident, tkn.get());
     }
     GetReportHandler().PopContextDesc();
 
@@ -462,9 +459,6 @@ AliasDeclPtr HLSLParser::ParseAliasDecl(TypeDenoterPtr typeDenoter)
 
     /* Store final type denoter in alias declaration */
     ast->typeDenoter = typeDenoter;
-
-    /* Register identifier in symbol table (used to detect special cast expressions) */
-    RegisterSymbol(ast->ident, identTkn.get());
 
     return ast;
 }
@@ -1134,44 +1128,8 @@ UnaryExprPtr HLSLParser::ParseUnaryExpr()
 
 bool HLSLParser::IsLhsOfCastExpr(const ExprPtr& expr) const
 {
-    if (!IsPrimaryExpr())
-        return false;
-
     /* Type name (float, int3 etc.) is always allowed for a cast expression */
-    if (expr->Type() == AST::Types::TypeNameExpr)
-        return true;
-
-    /*
-    Check if variable access denotes a structure type:
-    An expression like "(x)" is a valid cast expression
-    if (and only if) "x" is the identifier to a structure or typedef.
-    */
-    if (expr->Type() == AST::Types::VarAccessExpr)
-    {
-        auto varAccessExpr = static_cast<VarAccessExpr*>(expr.get());
-        if (varAccessExpr->assignExpr || varAccessExpr->varIdent->next)
-            return false;
-
-        /* Check if identifier denotes a type definition (either struct or typedef) */
-        if (typeSymTable_.Fetch(varAccessExpr->varIdent->ident))
-            return true;
-            
-        return false;
-    }
-
-    return false;
-}
-
-void HLSLParser::RegisterSymbol(const std::string& ident, Token* tkn)
-{
-    try
-    {
-        typeSymTable_.Register(ident, true);
-    }
-    catch (const std::exception& e)
-    {
-        Error(e.what(), tkn, HLSLErr::Unknown, false);
-    }
+    return (expr->Type() == AST::Types::TypeNameExpr || expr->Type() == AST::Types::VarAccessExpr);
 }
 
 VarTypePtr HLSLParser::MakeVarType(const StructDeclPtr& structDecl)
@@ -1211,10 +1169,10 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     Accept(Tokens::RBracket);
 
     /*
-    Parse cast expression if the expression inside the bracket is a type name,
-    i.e. single identifier (for a struct name) or a data type
+    Parse cast expression if the expression inside the bracket is the left-hand-side of a cast expression,
+    and if the next token belongs to a primary expression.
     */
-    if (IsLhsOfCastExpr(expr))
+    if (IsLhsOfCastExpr(expr) && IsPrimaryExpr())
     {
         /* Return cast expression */
         auto ast = Make<CastExpr>();

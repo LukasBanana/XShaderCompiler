@@ -85,10 +85,10 @@ void CS()
 	
 	struct S { int s; };
 	
-	int a = (int)(float)(S)0 + 0;
-	S   b = (S)0 + 0;
-	S   c = (S) + + - + 0;
-	S   d = (S) - 0;
+	int a = (int)(float)(S)1 + 2;
+	S   b = (S)1 + 2;
+	S   c = (S) + + - + 1;
+	S   d = (S) - 1;
 	int e = (int)(float)(S)(1 + 2);
 	
 	#endif

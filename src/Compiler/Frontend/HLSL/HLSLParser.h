@@ -26,11 +26,7 @@ namespace Xsc
 {
 
 
-/*
-Syntax parser class for the shading language HLSL.
-This parser is not fully context free. To parse cast expressions correctly,
-the respective type identifiers are stored in a symbol table.
-*/
+// Syntax parser class for the shading language HLSL.
 class HLSLParser : public Parser
 {
     
@@ -78,9 +74,6 @@ class HLSLParser : public Parser
 
         // Returns true if the specified expression is a valid left-hand-side of a cast expression.
         bool IsLhsOfCastExpr(const ExprPtr& expr) const;
-
-        // Registers the specified AST node in the symbol table.
-        void RegisterSymbol(const std::string& ident, Token* tkn = nullptr);
 
         // Makes a new VarType AST node for the specified struct decl.
         VarTypePtr MakeVarType(const StructDeclPtr& structDecl);
@@ -186,11 +179,8 @@ class HLSLParser : public Parser
 
         /* === Members === */
 
-        // Symbol table for all types which are allowed in a cast expression (currently only structure types).
-        SymbolTable<bool>   typeSymTable_;
-
         // True, if the parser is currently inside a local scope of a function (to detect illegal semantics inside local scopes).
-        bool                localScope_     = false;
+        bool localScope_ = false;
 
 };
 
