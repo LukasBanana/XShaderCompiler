@@ -70,7 +70,7 @@ void CS()
 	
 	//s = (struct{})g_const1;
 	
-	float a = s.foo.xx * ( (S)g_const1   ) + 1;
+	float a = s.foo.xx * ( (S)g_const1 + {1,2,3}  ) + 1;
 	int b = ((int3)0).x;
 	
 	//f(a.xxx);

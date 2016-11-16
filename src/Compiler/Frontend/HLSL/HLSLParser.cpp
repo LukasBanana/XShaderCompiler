@@ -1189,6 +1189,7 @@ VarTypePtr HLSLParser::MakeVarType(const StructDeclPtr& structDecl)
 ExprPtr HLSLParser::ParseBracketOrCastExpr()
 {
     ExprPtr expr;
+    SourceArea area(GetScanner().Pos(), 1);
 
     /* Parse expression inside the bracket */
     Accept(Tokens::LBracket);
@@ -1218,7 +1219,7 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
         /* Return cast expression */
         auto ast = Make<CastExpr>();
         
-        ast->area       = expr->area;
+        ast->area       = area;
         ast->typeExpr   = expr;
         ast->expr       = ParsePrimaryExpr();
 
@@ -1228,7 +1229,7 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     /* Return bracket expression */
     auto ast = Make<BracketExpr>();
 
-    ast->area = expr->area;
+    ast->area = area;
     ast->expr = expr;
 
     expr = ast;
@@ -1330,7 +1331,7 @@ InitializerExprPtr HLSLParser::ParseInitializerExpr()
     /* Parse initializer list expression */
     auto ast = Make<InitializerExpr>();
     ast->exprs = ParseInitializerList();
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 /* --- Lists --- */
