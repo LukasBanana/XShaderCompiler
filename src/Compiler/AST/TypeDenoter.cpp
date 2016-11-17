@@ -198,7 +198,7 @@ TypeDenoterPtr BaseTypeDenoter::Get(const VarIdent* varIdent)
         /* Resolve vector/matrix subscript (swizzle operator) */
         try
         {
-            auto subscriptDataType = VectorSubscriptDataType(dataType, varIdent->ident);
+            auto subscriptDataType = SubscriptDataType(dataType, varIdent->ident);
             auto subscriptTypeDenoter = std::make_shared<BaseTypeDenoter>(subscriptDataType);
             return subscriptTypeDenoter->Get(varIdent->next.get());
         }

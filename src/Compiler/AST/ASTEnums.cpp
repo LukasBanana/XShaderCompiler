@@ -416,7 +416,7 @@ DataType VectorDataType(const DataType baseDataType, int vectorSize)
     return DataType::Undefined;
 }
 
-DataType VectorSubscriptDataType(const DataType dataType, const std::string& subscript)
+DataType SubscriptDataType(const DataType dataType, const std::string& subscript)
 {
     auto IsValidSubscript = [&subscript](std::string compareSubscript, int vectorSize) -> bool
     {

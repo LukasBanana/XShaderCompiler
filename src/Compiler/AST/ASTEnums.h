@@ -242,7 +242,7 @@ DataType BaseDataType(const DataType t);
 DataType VectorDataType(const DataType baseDataType, int vectorSize);
 
 // Returns the data type for the specified swizzle operator or throws and std::invalid_argument on failure.
-DataType VectorSubscriptDataType(const DataType dataType, const std::string& subscript);
+DataType SubscriptDataType(const DataType dataType, const std::string& subscript);
 
 
 /* ----- Intrinsic Enum ----- */
