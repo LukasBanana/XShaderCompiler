@@ -332,7 +332,7 @@ struct VarDecl : public Decl
     std::string ToString() const;
 
     // Returns a type denoter for this variable declaration or throws an std::runtime_error if the type can not be derived.
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
@@ -661,7 +661,7 @@ struct ListExpr : public Expr
 {
     AST_INTERFACE(ListExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     ExprPtr firstExpr;
     ExprPtr nextExpr;
@@ -672,7 +672,7 @@ struct LiteralExpr : public Expr
 {
     AST_INTERFACE(LiteralExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     Token::Types    type    = Token::Types::Undefined;
     std::string     value;
@@ -683,7 +683,7 @@ struct TypeNameExpr : public Expr
 {
     AST_INTERFACE(TypeNameExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     TypeDenoterPtr typeDenoter;
 };
@@ -693,7 +693,7 @@ struct TernaryExpr : public Expr
 {
     AST_INTERFACE(TernaryExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     ExprPtr condExpr; // Condition expression
     ExprPtr thenExpr; // <then> case expression
@@ -705,7 +705,7 @@ struct BinaryExpr : public Expr
 {
     AST_INTERFACE(BinaryExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     ExprPtr     lhsExpr;                        // Left-hand-side expression
     BinaryOp    op      = BinaryOp::Undefined;  // Binary operator
@@ -717,7 +717,7 @@ struct UnaryExpr : public Expr
 {
     AST_INTERFACE(UnaryExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     UnaryOp op      = UnaryOp::Undefined;
     ExprPtr expr;
@@ -728,7 +728,7 @@ struct PostUnaryExpr : public Expr
 {
     AST_INTERFACE(PostUnaryExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     ExprPtr expr;
     UnaryOp op      = UnaryOp::Undefined;
@@ -739,7 +739,7 @@ struct FunctionCallExpr : public Expr
 {
     AST_INTERFACE(FunctionCallExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     FunctionCallPtr call;
 };
@@ -749,7 +749,7 @@ struct BracketExpr : public Expr
 {
     AST_INTERFACE(BracketExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     ExprPtr expr;           // Inner expression
 };
@@ -759,7 +759,7 @@ struct SuffixExpr : public Expr
 {
     AST_INTERFACE(SuffixExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     ExprPtr     expr;       // Sub expression (left hand side)
     VarIdentPtr varIdent;   // Suffix var identifier (right hand side)
@@ -770,7 +770,7 @@ struct ArrayAccessExpr : public Expr
 {
     AST_INTERFACE(ArrayAccessExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     ExprPtr                 expr;           // Sub expression (left hand side)
     std::vector<ExprPtr>    arrayIndices;   // Array indices (right hand side)
@@ -781,7 +781,7 @@ struct CastExpr : public Expr
 {
     AST_INTERFACE(CastExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     ExprPtr typeExpr;
     ExprPtr expr;
@@ -792,7 +792,7 @@ struct VarAccessExpr : public Expr
 {
     AST_INTERFACE(VarAccessExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     VarIdentPtr varIdent;
     AssignOp    assignOp    = AssignOp::Undefined;  // May be undefined
@@ -804,7 +804,7 @@ struct InitializerExpr : public Expr
 {
     AST_INTERFACE(InitializerExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter();
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     // Returns the number of scalar elements (with recursion).
     unsigned int NumElements() const;

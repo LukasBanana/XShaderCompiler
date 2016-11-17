@@ -15,6 +15,7 @@
 #include "ASTEnums.h"
 #include "ReportHandler.h"
 #include "Visitor.h"
+#include "AST.h"
 #include "Token.h"
 
 #include <vector>

@@ -158,6 +158,9 @@ TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<T
                 return true;
             }
             break;
+            
+            default:
+            break;
         }
 
         /* Return false -> meaning this function has not added any tokens to the expanded string */

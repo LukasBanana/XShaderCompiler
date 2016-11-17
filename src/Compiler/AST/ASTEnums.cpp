@@ -180,6 +180,7 @@ std::string DataTypeToString(const DataType t, bool useTemplateSyntax)
             case DataType::Half:    return "half";
             case DataType::Float:   return "float";
             case DataType::Double:  return "double";
+            default:                break;
         }
     }
     else if (IsVectorType(t))
@@ -431,7 +432,7 @@ DataType VectorSubscriptDataType(const DataType dataType, const std::string& sub
     };
 
     /* Validate swizzle operator size */
-    if (subscript.size() < 0 || subscript.size() > 4)
+    if (subscript.size() < 1 || subscript.size() > 4)
         InvalidArg("vector subscript can not have " + std::to_string(subscript.size()) + " components");
 
     /* Validate vector subscript */

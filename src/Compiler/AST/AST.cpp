@@ -84,6 +84,12 @@ TypeDenoterPtr VarIdent::DeriveTypeDenoter()
                 return structDecl->GetTypeDenoter();
             }
             break;
+            
+            default:
+            {
+                RuntimeErr("unknown type of symbol reference to derive type denoter of variable identifier '" + ident + "'", this);
+            }
+            break;
         }
     }
     RuntimeErr("missing symbol reference to derive type denoter of variable identifier '" + ident + "'", this);
@@ -416,8 +422,12 @@ TypeDenoterPtr LiteralExpr::DeriveTypeDenoter()
             return std::make_shared<BaseTypeDenoter>(DataType::Int);
         case Token::Types::FloatLiteral:
             return std::make_shared<BaseTypeDenoter>(DataType::Float);
+        case Token::Types::StringLiteral:
+            return std::make_shared<BaseTypeDenoter>(DataType::String);
+        default:
+            break;
     }
-    return std::make_shared<BaseTypeDenoter>();
+    RuntimeErr("invalid data type in base type denoter", this);
 }
 
 
