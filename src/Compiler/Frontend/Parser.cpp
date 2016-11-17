@@ -174,8 +174,14 @@ TokenPtr Parser::Accept(const Tokens type, const std::string& spell)
 
 TokenPtr Parser::AcceptIt()
 {
+    /* Check if end-of-stream has already reached */
+    if (tkn_ && tkn_->Type() == Tokens::EndOfStream)
+        Error("unexpected end-of-stream", tkn_.get());
+
+    /* Scan next token and return previous one */
     auto prevTkn = tkn_;
     tkn_ = GetScanner().Next();
+
     return prevTkn;
 }
 

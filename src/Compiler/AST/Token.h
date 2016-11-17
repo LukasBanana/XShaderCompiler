@@ -104,7 +104,6 @@ class Token
             Register,           // register
             PackOffset,         // packoffset
 
-            /* --- Control transfer keywords --- */
             CtrlTransfer,       // break, continue, discard
             Return,             // return
 
@@ -116,6 +115,11 @@ class Token
             */
             StorageModifier,
             TypeModifier,       // const, row_major, column_major
+
+            /* --- Technique keywords --- */
+            Technique,          // technique
+            Pass,               // pass
+            Compile,            // compile
 
             /* --- Preprocessor specific tokens --- */
             Directive,          // Preprocessor directive ('#' IDENT).

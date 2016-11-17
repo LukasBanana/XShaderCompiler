@@ -216,6 +216,10 @@ static KeywordMapType GenerateKeywordMap()
         { "row_major",                  Ty::TypeModifier    },
         { "column_major",               Ty::TypeModifier    },
 
+        { "technique",                  Ty::Technique       },
+        { "pass",                       Ty::Pass            },
+        { "compile",                    Ty::Compile         },
+
         { "auto",                       Ty::Reserved        },
         { "catch",                      Ty::Reserved        },
         { "char",                       Ty::Reserved        },

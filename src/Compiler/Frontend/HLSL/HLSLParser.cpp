@@ -96,9 +96,14 @@ ProgramPtr HLSLParser::ParseProgram(const SourceCodePtr& source)
 
     while (true)
     {
-        /* Ignore all null statements */
-        while (Is(Tokens::Semicolon))
-            AcceptIt();
+        /* Ignore all null statements and techniques */
+        while (Is(Tokens::Semicolon) || Is(Tokens::Technique))
+        {
+            if (Is(Tokens::Technique))
+                ParseAndIgnoreTechnique();
+            else
+                AcceptIt();
+        }
 
         /* Check if end of stream has been reached */
         if (Is(Tokens::EndOfStream))
@@ -1821,6 +1826,34 @@ int HLSLParser::ParseAndEvaluateVectorDimension()
         Error("vector and matrix dimensions must be between 1 and 4", tkn.get());
 
     return value;
+}
+
+void HLSLParser::ParseAndIgnoreTechnique()
+{
+    /* Only expect 'technique' keyword */
+    Accept(Tokens::Technique);
+
+    Warning("techniques are ignored");
+
+    /* Ignore all tokens until the first opening brace */
+    std::stack<TokenPtr> braceTknStack;
+
+    while (!Is(Tokens::LCurly))
+        AcceptIt();
+
+    braceTknStack.push(Accept(Tokens::LCurly));
+
+    /* Ignore all tokens and count the opening and closing braces */
+    while (!braceTknStack.empty())
+    {
+        if (Is(Tokens::LCurly))
+            braceTknStack.push(Tkn());
+        else if (Is(Tokens::RCurly))
+            braceTknStack.pop();
+        else if (Is(Tokens::EndOfStream))
+            Error("missing closing brace '}' for open code block", braceTknStack.top().get());
+        AcceptIt();
+    }
 }
 
 

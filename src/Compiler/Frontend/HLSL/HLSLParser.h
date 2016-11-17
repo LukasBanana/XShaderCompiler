@@ -177,6 +177,8 @@ class HLSLParser : public Parser
         int                             ParseAndEvaluateConstIntExpr();
         int                             ParseAndEvaluateVectorDimension();
 
+        void                            ParseAndIgnoreTechnique();
+
         /* === Members === */
 
         // True, if the parser is currently inside a local scope of a function (to detect illegal semantics inside local scopes).

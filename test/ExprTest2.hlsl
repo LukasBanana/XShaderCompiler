@@ -100,3 +100,11 @@ void CS() <int annotation=0; string info="hello world!";>
 	
 }
 
+technique T0 {
+	pass P0 {
+		PixelShader = compile ps_5_0 PS();
+		
+	}
+}
+
+
