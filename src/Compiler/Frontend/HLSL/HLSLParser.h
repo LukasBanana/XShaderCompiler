@@ -78,7 +78,7 @@ class HLSLParser : public Parser
         // Makes a new VarType AST node for the specified struct decl.
         VarTypePtr MakeVarType(const StructDeclPtr& structDecl);
 
-        /* === Parse functions === */
+        /* ----- Parsing ----- */
 
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);
 

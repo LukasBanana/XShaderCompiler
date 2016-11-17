@@ -124,27 +124,24 @@ class Parser
         void PushParsingState(const ParsingState& state);
         void PopParsingState();
 
-        ExprPtr ParseGenericExpr();
-        TernaryExprPtr ParseTernaryExpr(const ExprPtr& condExpr);
+        ExprPtr         ParseGenericExpr();
+        TernaryExprPtr  ParseTernaryExpr(const ExprPtr& condExpr);
 
-        ExprPtr ParseAbstractBinaryExpr(
-            const std::function<ExprPtr()>& parseFunc,
-            const BinaryOpList& binaryOps
-        );
+        ExprPtr         ParseAbstractBinaryExpr(const std::function<ExprPtr()>& parseFunc, const BinaryOpList& binaryOps);
 
-        ExprPtr ParseLogicOrExpr();
-        ExprPtr ParseLogicAndExpr();
-        ExprPtr ParseBitwiseOrExpr();
-        ExprPtr ParseBitwiseXOrExpr();
-        ExprPtr ParseBitwiseAndExpr();
-        ExprPtr ParseEqualityExpr();
-        ExprPtr ParseRelationExpr();
-        ExprPtr ParseShiftExpr();
-        ExprPtr ParseAddExpr();
-        ExprPtr ParseSubExpr();
-        ExprPtr ParseMulExpr();
-        ExprPtr ParseDivExpr();
-        ExprPtr ParseValueExpr();
+        ExprPtr         ParseLogicOrExpr();
+        ExprPtr         ParseLogicAndExpr();
+        ExprPtr         ParseBitwiseOrExpr();
+        ExprPtr         ParseBitwiseXOrExpr();
+        ExprPtr         ParseBitwiseAndExpr();
+        ExprPtr         ParseEqualityExpr();
+        ExprPtr         ParseRelationExpr();
+        ExprPtr         ParseShiftExpr();
+        ExprPtr         ParseAddExpr();
+        ExprPtr         ParseSubExpr();
+        ExprPtr         ParseMulExpr();
+        ExprPtr         ParseDivExpr();
+        ExprPtr         ParseValueExpr();
 
         virtual ExprPtr ParsePrimaryExpr() = 0;
 

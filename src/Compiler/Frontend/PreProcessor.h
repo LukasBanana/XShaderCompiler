@@ -84,37 +84,37 @@ class PreProcessor : public Parser
         */
         TokenPtrString ExpandMacro(const Macro& macro, const std::vector<TokenPtrString>& arguments);
 
-        /* === Parse functions === */
+        /* ----- Parsing ----- */
 
-        void ParseProgram();
+        void            ParseProgram();
 
-        void ParesComment();
-        void ParseIdent();
-        TokenPtrString ParseIdentAsTokenString();
-        TokenPtrString ParseIdentArgumentsForMacro(const TokenPtr& identToken, const Macro& macro);
-        void ParseMisc();
+        void            ParesComment();
+        void            ParseIdent();
+        TokenPtrString  ParseIdentAsTokenString();
+        TokenPtrString  ParseIdentArgumentsForMacro(const TokenPtr& identToken, const Macro& macro);
+        void            ParseMisc();
         
-        void ParseDirective();
-        void ParseAnyIfDirectiveAndSkipValidation();
-        void ParseDirectiveDefine();
-        void ParseDirectiveUndef();
-        void ParseDirectiveInclude();
-        void ParseDirectiveIf(bool skipEvaluation = false);
-        void ParseDirectiveIfdef(bool skipEvaluation = false);
-        void ParseDirectiveIfndef(bool skipEvaluation = false);
-        void ParseDirectiveElif(bool skipEvaluation = false);
-        void ParseDirectiveIfOrElifCondition(bool skipEvaluation = false);
-        void ParseDirectiveElse();
-        void ParseDirectiveEndif();
-        void ParseDirectivePragma();
-        void ParseDirectiveLine();
-        void ParseDirectiveError();
+        void            ParseDirective();
+        void            ParseAnyIfDirectiveAndSkipValidation();
+        void            ParseDirectiveDefine();
+        void            ParseDirectiveUndef();
+        void            ParseDirectiveInclude();
+        void            ParseDirectiveIf(bool skipEvaluation = false);
+        void            ParseDirectiveIfdef(bool skipEvaluation = false);
+        void            ParseDirectiveIfndef(bool skipEvaluation = false);
+        void            ParseDirectiveElif(bool skipEvaluation = false);
+        void            ParseDirectiveIfOrElifCondition(bool skipEvaluation = false);
+        void            ParseDirectiveElse();
+        void            ParseDirectiveEndif();
+        void            ParseDirectivePragma();
+        void            ParseDirectiveLine();
+        void            ParseDirectiveError();
 
-        ExprPtr ParseExpr();
-        ExprPtr ParsePrimaryExpr() override;
+        ExprPtr         ParseExpr();
+        ExprPtr         ParsePrimaryExpr() override;
 
-        TokenPtrString ParseDirectiveTokenString(bool expandDefinedDirective = false, bool ignoreComments = false);
-        TokenPtrString ParseArgumentTokenString();
+        TokenPtrString  ParseDirectiveTokenString(bool expandDefinedDirective = false, bool ignoreComments = false);
+        TokenPtrString  ParseArgumentTokenString();
 
         /* === Members === */
 
