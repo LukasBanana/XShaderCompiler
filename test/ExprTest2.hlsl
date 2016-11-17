@@ -2,7 +2,7 @@
 // HLSL Translator: Expression Test 2
 // 14/11/2016
 
-#define TEST 3
+#define TEST 1
 
 #if TEST == 1
 
@@ -50,7 +50,7 @@ void CS() <int annotation=0; string info="hello world!";>
 	
 	float f2 = ((vector<float, (1+4)/5+3>)1).w;
 	
-	//((matrix)0)._m00_m10;
+	((matrix)0)._m00_m10;
 	
 	#if 1
 	float f3 = f(i1, 0);

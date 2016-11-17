@@ -195,7 +195,7 @@ TypeDenoterPtr BaseTypeDenoter::Get(const VarIdent* varIdent)
 {
     if (varIdent)
     {
-        /* Resolve vector subscript (swizzle operator) */
+        /* Resolve vector/matrix subscript (swizzle operator) */
         try
         {
             auto subscriptDataType = VectorSubscriptDataType(dataType, varIdent->ident);
