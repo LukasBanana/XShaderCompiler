@@ -195,14 +195,16 @@ TypeDenoterPtr BaseTypeDenoter::Get(const VarIdent* varIdent)
 {
     if (varIdent)
     {
-        if (varIdent->next)
-            RuntimeErr("vector subscript '" + varIdent->ident + "' can not have further suffixes", varIdent->next.get());
-
         /* Resolve vector subscript (swizzle operator) */
         try
         {
             auto subscriptDataType = VectorSubscriptDataType(dataType, varIdent->ident);
-            return std::make_shared<BaseTypeDenoter>(subscriptDataType);
+            auto subscriptTypeDenoter = std::make_shared<BaseTypeDenoter>(subscriptDataType);
+            return subscriptTypeDenoter->Get(varIdent->next.get());
+        }
+        catch (const ASTRuntimeError& e)
+        {
+            throw e;
         }
         catch (const std::exception& e)
         {
