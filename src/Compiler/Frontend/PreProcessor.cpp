@@ -21,11 +21,12 @@ PreProcessor::PreProcessor(IncludeHandler& includeHandler, Log* log) :
 {
 }
 
-std::shared_ptr<std::iostream> PreProcessor::Process(const SourceCodePtr& input, const std::string& filename)
+std::shared_ptr<std::iostream> PreProcessor::Process(const SourceCodePtr& input, const std::string& filename, bool writeLineMarks)
 {
-    PushScannerSource(input, filename);
+    output_         = std::make_shared<std::stringstream>();
+    writeLineMarks_ = writeLineMarks;
 
-    output_ = std::make_shared<std::stringstream>();
+    PushScannerSource(input, filename);
 
     try
     {
@@ -51,6 +52,22 @@ ScannerPtr PreProcessor::MakeScanner()
     return std::make_shared<PreProcessorScanner>(GetLog());
 }
 
+void PreProcessor::PushScannerSource(const SourceCodePtr& source, const std::string& filename)
+{
+    Parser::PushScannerSource(source, filename);
+    WritePosToLineDirective();
+}
+
+bool PreProcessor::PopScannerSource()
+{
+    if (Parser::PopScannerSource())
+    {
+        WritePosToLineDirective();
+        return true;
+    }
+    return false;
+}
+
 bool PreProcessor::IsDefined(const std::string& ident) const
 {
     return (macros_.find(ident) != macros_.end());
@@ -66,6 +83,8 @@ void PreProcessor::PushIfBlock(const TokenPtr& directiveToken, bool active, bool
         ifBlock.expectEndif     = expectEndif;
     }
     ifBlockStack_.push(ifBlock);
+
+    WritePosToLineDirective();
 }
 
 void PreProcessor::PopIfBlock()
@@ -74,6 +93,8 @@ void PreProcessor::PopIfBlock()
         Error("missing '#if'-directive to closing '#endif', '#else', or '#elif'", true, HLSLErr::ERR_ENDIF);
     else
         ifBlockStack_.pop();
+
+    WritePosToLineDirective();
 }
 
 PreProcessor::IfBlock PreProcessor::TopIfBlock() const
@@ -177,6 +198,15 @@ TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<T
     return expandedString;
 }
 
+void PreProcessor::WritePosToLineDirective()
+{
+    if (writeLineMarks_)
+    {
+        auto pos = GetScanner().ActiveToken()->Pos();
+        Out() << "#line " << pos.Row() << " \"" << GetCurrentFilename() << '\"' << std::endl;
+    }
+}
+
 /* === Parse functions === */
 
 void PreProcessor::ParseProgram()
@@ -233,12 +263,12 @@ void PreProcessor::ParseProgram()
 
 void PreProcessor::ParesComment()
 {
-    *output_ << Accept(Tokens::Comment)->Spell();
+    Out() << Accept(Tokens::Comment)->Spell();
 }
 
 void PreProcessor::ParseIdent()
 {
-    *output_ << ParseIdentAsTokenString();
+    Out() << ParseIdentAsTokenString();
 }
 
 TokenPtrString PreProcessor::ParseIdentAsTokenString()
@@ -325,7 +355,7 @@ TokenPtrString PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identTo
 
 void PreProcessor::ParseMisc()
 {
-    *output_ << AcceptIt()->Spell();
+    Out() << AcceptIt()->Spell();
 }
 
 void PreProcessor::ParseDirective()

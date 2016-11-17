@@ -67,8 +67,8 @@ class Parser
 
         virtual ScannerPtr MakeScanner() = 0;
 
-        void PushScannerSource(const SourceCodePtr& source, const std::string& filename = "");
-        bool PopScannerSource();
+        virtual void PushScannerSource(const SourceCodePtr& source, const std::string& filename = "");
+        virtual bool PopScannerSource();
 
         ParsingState ActiveParsingState() const;
 

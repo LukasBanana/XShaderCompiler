@@ -42,7 +42,11 @@ class PreProcessor : public Parser
         
         PreProcessor(IncludeHandler& includeHandler, Log* log = nullptr);
 
-        std::shared_ptr<std::iostream> Process(const SourceCodePtr& input, const std::string& filename = "");
+        std::shared_ptr<std::iostream> Process(
+            const SourceCodePtr& input,
+            const std::string& filename = "",
+            bool writeLineMarks = true
+        );
 
     private:
         
@@ -69,6 +73,9 @@ class PreProcessor : public Parser
 
         ScannerPtr MakeScanner() override;
 
+        void PushScannerSource(const SourceCodePtr& source, const std::string& filename = "") override;
+        bool PopScannerSource() override;
+
         // Returns true if the specified symbol is defined.
         bool IsDefined(const std::string& ident) const;
 
@@ -83,6 +90,15 @@ class PreProcessor : public Parser
         by the respective replacement (specified by 'arguments'). The number of identifiers and the number of replacements must be equal.
         */
         TokenPtrString ExpandMacro(const Macro& macro, const std::vector<TokenPtrString>& arguments);
+
+        // Writes a '#line'-directive to the output with the current source position and filename.
+        void WritePosToLineDirective();
+
+        // Returns the output stream as reference.
+        inline std::stringstream& Out()
+        {
+            return *output_;
+        }
 
         /* ----- Parsing ----- */
 
@@ -130,6 +146,8 @@ class PreProcessor : public Parser
         Once an if-block is inactive, all subsequent if-blocks are inactive, too.
         */
         std::stack<IfBlock>                 ifBlockStack_;
+
+        bool                                writeLineMarks_ = true;
 
 };
 
