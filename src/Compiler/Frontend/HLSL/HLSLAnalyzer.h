@@ -78,6 +78,7 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( ElseStmnt         );
         DECL_VISIT_PROC( SwitchStmnt       );
         DECL_VISIT_PROC( AssignStmnt       );
+        DECL_VISIT_PROC( ExprStmnt         );
         DECL_VISIT_PROC( ReturnStmnt       );
 
         DECL_VISIT_PROC( VarAccessExpr     );

@@ -5,8 +5,8 @@
 [ExprTest2 CS]
 -T compute -E CS -o output/ExprTest2.CS.glsl ExprTest2.hlsl
 
-[ExprTest2 -PP]
--PP -T compute -E CS -o output/ExprTest2.post.hlsl ExprTest2.hlsl
+#[ExprTest2 -PP]
+#-PP -T compute -E CS -o output/ExprTest2.post.hlsl ExprTest2.hlsl
 
 [TypeTest1 VS]
 -T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl

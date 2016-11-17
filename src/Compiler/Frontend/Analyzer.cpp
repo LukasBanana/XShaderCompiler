@@ -315,7 +315,7 @@ void Analyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
     }
 }
 
-TypeDenoterPtr Analyzer::GetExprTypeDenoter(Expr* ast)
+TypeDenoterPtr Analyzer::GetTypeDenoterFrom(TypedAST* ast)
 {
     try
     {

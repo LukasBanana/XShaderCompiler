@@ -182,15 +182,10 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         Visit(ast->initializer);
 
         /* Compare initializer type with var-decl type */
-        if (auto initTypeDen = GetExprTypeDenoter(ast->initializer.get()))
+        if (auto initTypeDen = GetTypeDenoterFrom(ast->initializer.get()))
         {
-            if (ast->declStmntRef)
-            {
-                auto declTypeDen = ast->GetTypeDenoter();
+            if (auto declTypeDen = GetTypeDenoterFrom(ast))
                 ValidateTypeCast(*initTypeDen, *declTypeDen, ast->initializer.get());
-            }
-            else
-                ErrorInternal("missing reference to statement in variable declaration", ast);
         }
     }
 }
@@ -432,6 +427,14 @@ IMPLEMENT_VISIT_PROC(AssignStmnt)
 {
     DecorateVarObjectSymbol(ast);
     Visit(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(ExprStmnt)
+{
+    Visit(ast->expr);
+
+    /* Validate expression type by just calling the getter */
+    GetTypeDenoterFrom(ast->expr.get());
 }
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)

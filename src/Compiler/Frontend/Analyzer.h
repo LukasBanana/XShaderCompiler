@@ -102,7 +102,7 @@ class Analyzer : protected Visitor
         void AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* ast);
         void AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);
 
-        TypeDenoterPtr GetExprTypeDenoter(Expr* ast);
+        TypeDenoterPtr GetTypeDenoterFrom(TypedAST* ast);
 
         void ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, const AST* ast = nullptr);
 

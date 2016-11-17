@@ -50,6 +50,8 @@ void CS() <int annotation=0; string info="hello world!";>
 	
 	float f2 = ((vector<float, (1+4)/5+3>)1).w;
 	
+	//((matrix)0)._m00_m10;
+	
 	#if 1
 	float f3 = f(i1, 0);
 	float f4 = f(1, 0);
@@ -100,6 +102,8 @@ void CS() <int annotation=0; string info="hello world!";>
 	
 }
 
+#if 0
+
 technique T0 {
 	pass P0 {
 		PixelShader = compile ps_5_0 PS();
@@ -107,4 +111,5 @@ technique T0 {
 	}
 }
 
+#endif
 
