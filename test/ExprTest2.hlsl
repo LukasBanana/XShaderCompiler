@@ -85,7 +85,7 @@ void CS() <int annotation=0; string info="hello world!";>
 	
 	float4 pos1 = mul((float3x3)0, (float3)1);
 	
-	float4 pos2 = mul((mul(1, 2)).x, (float3)1);
+	//float4 pos2 = mul((mul(1, 2)).x, (float3)1);
 	
 	#elif TEST == 4
 	

@@ -11,6 +11,7 @@
 #include "TypeDenoter.h"
 #include "AST.h"
 #include "GLSLKeywords.h"
+#include "GLSLIntrinsics.h"
 #include "Helper.h"
 #include <initializer_list>
 #include <algorithm>
@@ -166,37 +167,6 @@ void GLSLGenerator::EstablishMaps()
 
         /* Storage class types */
         { "groupshared", "shared" },
-    };
-
-    intrinsicMap_ = std::map<std::string, std::string>
-    {
-        { "frac",                            "fract"              },
-        { "rsqrt",                           "inversesqrt"        },
-        { "lerp",                            "mix"                },
-        { "saturate",                        "clamp"              },
-        { "ddx",                             "dFdx"               },
-        { "ddy",                             "dFdy"               },
-        { "ddx_coarse",                      "dFdxCoarse"         },
-        { "ddy_coarse",                      "dFdyCoarse"         },
-        { "ddx_fine",                        "dFdxFine"           },
-        { "ddy_fine",                        "dFdyFine"           },
-        { "atan2",                           "atan"               },
-        { "GroupMemoryBarrier",              "groupMemoryBarrier" },
-        { "GroupMemoryBarrierWithGroupSync", "barrier"            },
-        { "AllMemoryBarrier",                "memoryBarrier"      },
-        { "AllMemoryBarrierWithGroupSync",   "barrier"            },
-    };
-
-    atomicIntrinsicMap_ = std::map<std::string, std::string>
-    {
-        { "InterlockedAdd",             "atomicAdd"      },
-        { "InterlockedAnd",             "atomicAnd"      },
-        { "InterlockedOr",              "atomicOr"       },
-        { "InterlockedXor",             "atomicXor"      },
-        { "InterlockedMin",             "atomicMin"      },
-        { "InterlockedMax",             "atomicMax"      },
-        { "InterlockedCompareExchange", "atomicCompSwap" },
-        { "InterlockedExchange",        "atomicExchange" },
     };
 
     modifierMap_ = std::map<std::string, std::string>
@@ -1639,13 +1609,18 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
 
     if (ast->varIdent)
     {
-        name = ast->varIdent->ToString();
-
-        auto it = intrinsicMap_.find(name);
-        if (it != intrinsicMap_.end())
-            Write(it->second);
+        if (ast->intrinsic != Intrinsic::Undefined)
+        {
+            auto keyword = IntrinsicToGLSLKeyword(ast->intrinsic);
+            if (keyword)
+                Write(*keyword);
+            else
+                Error("can not map intrinsic '" + ast->varIdent->ToString() + "' to GLSL keyword", ast);
+        }
         else
         {
+            //TODO: remove direct HLSL-to-GLSL type mappings!
+            name = ast->varIdent->ToString();
             auto it = typeMap_.find(name);
             if (it != typeMap_.end())
                 Write(it->second);
@@ -1661,7 +1636,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
     else
         Error("missing function name", ast);
 
-    //TODO: move this to another visitor (e.g. "GLSLConverter" of the like) which does some transformation on the AST
+    //TODO: move this to another visitor (e.g. "GLSLConverter" or the like) which does some transformation on the AST
     #if 1
     /*
     Remove arguments which contain a sampler state object,
@@ -1688,8 +1663,9 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
             Write(", ");
     }
 
+    //TODO: move this to another visitor (e.g. "GLSLConverter" or the like) which does some transformation on the AST
     /* Check for special cases */
-    if (name == "saturate")
+    if (ast->intrinsic == Intrinsic::Saturate)
         Write(", 0.0, 1.0");
 
     Write(")");
@@ -1730,9 +1706,10 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
 {
     AssertIntrinsicNumArgs(ast, 2, 3);
 
+    //TODO: move this to another visitor (e.g. "GLSLConverter" or the like) which does some transformation on the AST
     /* Find atomic intrinsic mapping */
-    auto it = atomicIntrinsicMap_.find(ast->varIdent->ident);
-    if (it != atomicIntrinsicMap_.end())
+    auto keyword = IntrinsicToGLSLKeyword(ast->intrinsic);
+    if (keyword)
     {
         /* Write function call */
         if (ast->arguments.size() >= 3)
@@ -1740,14 +1717,14 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
             Visit(ast->arguments[2]);
             Write(" = ");
         }
-        Write(it->second + "(");
+        Write(*keyword + "(");
         Visit(ast->arguments[0]);
         Write(", ");
         Visit(ast->arguments[1]);
         Write(")");
     }
     else
-        Error("unknown interlocked intrinsic \"" + ast->varIdent->ident + "\"", ast);
+        Error("can not map intrinsic '" + ast->varIdent->ToString() + "' to GLSL keyword", ast);
 }
 
 void GLSLGenerator::WriteFunctionCallIntrinsicTex(FunctionCall* ast)
