@@ -30,7 +30,7 @@ class ReferenceAnalyzer : private Visitor
     public:
         
         // Marks all declarational AST nodes (i.e. function decl, structure decl etc.) that are reachable from the specififed entry point.
-        void MarkReferencesFromEntryPoint(FunctionDecl* entryPoint);
+        void MarkReferencesFromEntryPoint(Program& program);
 
     private:
         
@@ -52,6 +52,10 @@ class ReferenceAnalyzer : private Visitor
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( BufferDeclStmnt   );
         DECL_VISIT_PROC( TextureDeclStmnt  );
+
+        /* === Members === */
+
+        Program* program_ = nullptr;
 
 };
 

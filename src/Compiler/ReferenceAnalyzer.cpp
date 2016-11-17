@@ -13,9 +13,10 @@ namespace Xsc
 {
 
 
-void ReferenceAnalyzer::MarkReferencesFromEntryPoint(FunctionDecl* entryPoint)
+void ReferenceAnalyzer::MarkReferencesFromEntryPoint(Program& program)
 {
-    Visit(entryPoint);
+    program_ = &program;
+    Visit(program.entryPointRef);
 }
 
 
@@ -41,26 +42,14 @@ bool ReferenceAnalyzer::Reachable(AST* ast)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
+    /* Mark function declaration as referenced */
     Visit(ast->funcDeclRef);
 
+    /* Collect all used intrinsics */
+    if (ast->intrinsic != Intrinsic::Undefined)
+        program_->usedIntrinsics.insert(ast->intrinsic);
+
     Visitor::VisitFunctionCall(ast, args);
-
-    //TODO: remove this from the ReferenceAnalyzer; intrinsic references should not be flagged here!
-    #if 0
-    if (ast->varIdent)
-    {
-        /* Mark this function to be referenced */
-        const auto& ident = ast->varIdent->ident;
-
-        /* Check for intrinsic usage */
-        if (ident == "rcp")
-            program_->flags << Program::rcpIntrinsicUsed;
-        else if (ident == "sincos")
-            program_->flags << Program::sinCosIntrinsicUsed;
-        else if (ident == "clip")
-            program_->flags << Program::clipIntrinsicUsed;
-    }
-    #endif
 }
 
 IMPLEMENT_VISIT_PROC(VarType)

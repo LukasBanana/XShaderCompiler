@@ -89,9 +89,8 @@ class GLSLGenerator : public Generator
         void AppendRequiredExtensions(Program& ast);
         
         void AppendCommonMacros();
-        //void AppendInterlockedMacros();
+        void AppendAllReferencedIntrinsics(Program& ast);
 
-        //void AppendMulIntrinsics();
         void AppendRcpIntrinsics();
         void AppendClipIntrinsics();
         void AppendSinCosIntrinsics();

@@ -15,7 +15,6 @@
 #include "ASTEnums.h"
 #include "SourceCode.h"
 #include "TypeDenoter.h"
-
 #include <vector>
 #include <string>
 #include <set>
@@ -184,10 +183,7 @@ struct Program : public AST
 
     FLAG_ENUM
     {
-        FLAG( rcpIntrinsicUsed,     0 ), // The "rcp" intrinsic is used.
-        FLAG( sinCosIntrinsicUsed,  1 ), // The "sincos" intrinsic is used.
-        FLAG( clipIntrinsicUsed,    2 ), // The "clip" intrinsic is used.
-        FLAG( hasSM3ScreenSpace,    3 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
+        FLAG( hasSM3ScreenSpace, 0 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
     };
 
     std::vector<StmntPtr>   globalStmnts;               // Global declaration statements
@@ -196,6 +192,7 @@ struct Program : public AST
     InputSemantics          inputSemantics;             // Input semantics for the DAST
     OutputSemantics         outputSemantics;            // Output semantics for the DAST
     FunctionDecl*           entryPointRef   = nullptr;  // Reference to the entry point function declaration.
+    std::set<Intrinsic>     usedIntrinsics;             // Set of all used intrinsic (filled by the reference analyzer).
 };
 
 // Code block.
@@ -223,10 +220,7 @@ struct FunctionCall : public AST
 
     FLAG_ENUM
     {
-        FLAG( isMulFunc,    0 ), // This is a "mul" function.
-        FLAG( isRcpFunc,    1 ), // This is a "rcp" function.
-        FLAG( isTexFunc,    2 ), // This is a texture function (e.g. "tex.Sample" or "tex.Load").
-        FLAG( isAtomicFunc, 3 ), // This is an atomic (or rather interlocked) function (e.g. "InterlockedAdd").
+        FLAG( isTexFunc, 0 ), // This is a texture function (e.g. "tex.Sample" or "tex.Load").
     };
 
     VarIdentPtr             varIdent;                           // Either this ...

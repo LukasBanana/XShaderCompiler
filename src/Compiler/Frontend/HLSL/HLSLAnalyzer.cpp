@@ -649,17 +649,9 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLInt
     {
         case Intrinsic::Mul:
         {
-            ast->flags << FunctionCall::isMulFunc;
-
             /* Validate number of arguments */
             for (std::size_t i = 2; i < ast->arguments.size(); ++i)
                 Error("too many arguments in \"mul\" intrinsic", ast->arguments[i].get());
-        }
-        break;
-
-        case Intrinsic::Rcp:
-        {
-            ast->flags << FunctionCall::isRcpFunc;
         }
         break;
 
@@ -667,7 +659,6 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLInt
         {
             if (intr.intrinsic >= Intrinsic::InterlockedAdd && intr.intrinsic <= Intrinsic::InterlockedXor)
             {
-                ast->flags << FunctionCall::isAtomicFunc;
                 if (ast->arguments.size() < 2)
                     Error("interlocked intrinsics must have at least 2 arguments", ast);
                 //program_->flags << Program::interlockedIntrinsicsUsed;

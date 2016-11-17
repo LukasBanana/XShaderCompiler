@@ -52,7 +52,7 @@ void GLSLGenerator::GenerateCodePrimary(
     if (program.entryPointRef)
     {
         ReferenceAnalyzer refAnalyzer;
-        refAnalyzer.MarkReferencesFromEntryPoint(program.entryPointRef);
+        refAnalyzer.MarkReferencesFromEntryPoint(program);
     }
     else
         Error("entry point \"" + inputDesc.entryPoint + "\" not found");
@@ -297,30 +297,20 @@ void GLSLGenerator::AppendCommonMacros()
     //Blank();
 }
 
-#if 0
-
-/*
-Remove this if it is clear, that it will never be used!
-*/
-
-void GLSLGenerator::AppendMulIntrinsics()
+void GLSLGenerator::AppendAllReferencedIntrinsics(Program& ast)
 {
-    WriteLn("mat2 mul(mat2 m, vec2 v) { return m * v; }");
-    WriteLn("mat2 mul(vec2 v, mat2 m) { return v * m; }");
-    WriteLn("mat2 mul(mat2 a, mat2 b) { return a * b; }");
+    auto Used = [&ast](Intrinsic intr)
+    {
+        return (ast.usedIntrinsics.find(intr) != ast.usedIntrinsics.end());
+    };
 
-    WriteLn("mat3 mul(mat3 m, vec3 v) { return m * v; }");
-    WriteLn("mat3 mul(vec3 v, mat3 m) { return v * m; }");
-    WriteLn("mat3 mul(mat3 a, mat3 b) { return a * b; }");
-
-    WriteLn("mat4 mul(mat4 m, vec4 v) { return m * v; }");
-    WriteLn("mat4 mul(vec4 v, mat4 m) { return v * m; }");
-    WriteLn("mat4 mul(mat4 a, mat4 b) { return a * b; }");
-
-    Blank();
+    if (Used(Intrinsic::Rcp))
+        AppendRcpIntrinsics();
+    if (Used(Intrinsic::Clip))
+        AppendClipIntrinsics();
+    if (Used(Intrinsic::SinCos))
+        AppendSinCosIntrinsics();
 }
-
-#endif
 
 void GLSLGenerator::AppendRcpIntrinsics()
 {
@@ -457,13 +447,7 @@ IMPLEMENT_VISIT_PROC(Program)
 
     /* Append default helper macros and functions */
     AppendCommonMacros();
-
-    if (ast->flags(Program::rcpIntrinsicUsed))
-        AppendRcpIntrinsics();
-    if (ast->flags(Program::clipIntrinsicUsed))
-        AppendClipIntrinsics();
-    if (ast->flags(Program::sinCosIntrinsicUsed))
-        AppendSinCosIntrinsics();
+    AppendAllReferencedIntrinsics(*ast);
 
     if (shaderTarget_ == ShaderTarget::FragmentShader)
         WriteFragmentShaderOutput();
