@@ -482,139 +482,14 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    if (ast->flags(FunctionCall::isMulFunc) && ast->arguments.size() == 2)
-    {
-        auto WriteMulArgument = [&](const ExprPtr& expr)
-        {
-            /*
-            Determine if the expression needs extra brackets when converted from a function call "mul(lhs, rhs)" to a binary expression "lhs * rhs",
-            e.g. "mul(wMatrix, pos + float4(0, 1, 0, 0))" -> "wMatrix * (pos + float4(0, 1, 0, 0))" needs extra brackets
-            */
-            auto type = expr->Type();
-            if (type == AST::Types::TernaryExpr || type == AST::Types::BinaryExpr || type == AST::Types::UnaryExpr || type == AST::Types::PostUnaryExpr)
-            {
-                Write("(");
-                Visit(expr);
-                Write(")");
-            }
-            else
-                Visit(expr);
-        };
-
-        /* Convert this function call into a multiplication */
-        Write("(");
-        {
-            WriteMulArgument(ast->arguments[0]);
-            Write(" * ");
-            WriteMulArgument(ast->arguments[1]);
-        }
-        Write(")");
-    }
-    else if (ast->flags(FunctionCall::isTexFunc) && ast->varIdent->next)
-    {
-        /* Get function name */
-        const auto& inFuncName = ast->varIdent->next->ident;
-
-        auto it = texFuncMap_.find(inFuncName);
-        if (it == texFuncMap_.end())
-            Error("texture member function \"" + inFuncName + "\" is not supported", ast);
-
-        const auto& funcName = it->second;
-
-        /* Write function call */
-        Write(funcName + "(");
-        
-        for (size_t i = 0; i < ast->arguments.size(); ++i)
-        {
-            const auto& arg = ast->arguments[i];
-            
-            Visit(arg);
-            if (i + 1 < ast->arguments.size())
-                Write(", ");
-        }
-
-        Write(")");
-    }
-    else if (ast->flags(FunctionCall::isAtomicFunc) && ast->arguments.size() >= 2)
-    {
-        /* Find atomic intrinsic mapping */
-        auto it = atomicIntrinsicMap_.find(ast->varIdent->ident);
-        if (it != atomicIntrinsicMap_.end())
-        {
-            /* Write function call */
-            if (ast->arguments.size() >= 3)
-            {
-                Visit(ast->arguments[2]);
-                Write(" = ");
-            }
-            Write(it->second + "(");
-            Visit(ast->arguments[0]);
-            Write(", ");
-            Visit(ast->arguments[1]);
-            Write(")");
-        }
-        else
-            Error("unknown interlocked intrinsic \"" + ast->varIdent->ident + "\"", ast);
-    }
+    if (ast->intrinsic == Intrinsic::Mul)
+        WriteFunctionCallIntrinsicMul(ast);
+    else if (ast->flags(FunctionCall::isTexFunc))
+        WriteFunctionCallIntrinsicTex(ast);
+    else if (ast->intrinsic >= Intrinsic::InterlockedAdd && ast->intrinsic <= Intrinsic::InterlockedXor)
+        WriteFunctionCallIntrinsicAtomic(ast);
     else
-    {
-        /* Write function name */
-        std::string name;
-
-        if (ast->varIdent)
-        {
-            name = ast->varIdent->ToString();
-
-            auto it = intrinsicMap_.find(name);
-            if (it != intrinsicMap_.end())
-                Write(it->second);
-            else
-            {
-                auto it = typeMap_.find(name);
-                if (it != typeMap_.end())
-                    Write(it->second);
-                else
-                    Visit(ast->varIdent);
-            }
-        }
-        else if (ast->typeDenoter)
-        {
-            /* Write function name from type denoter */
-            WriteTypeDenoter(*ast->typeDenoter, ast);
-        }
-        else
-            Error("missing function name", ast);
-
-        /*
-        Remove arguments which contain a sampler state object,
-        since GLSL does not support sampler states.
-        --> Only "Texture2D" will be mapped to "sampler2D",
-            but "SamplerState" can not be translated.
-        */
-        for (auto it = ast->arguments.begin(); it != ast->arguments.end();)
-        {
-            if (ExprContainsSampler(it->get()))
-                it = ast->arguments.erase(it);
-            else
-                ++it;
-        }
-
-        /* Write arguments */
-        Write("(");
-
-        for (size_t i = 0; i < ast->arguments.size(); ++i)
-        {
-            Visit(ast->arguments[i]);
-            if (i + 1 < ast->arguments.size())
-                Write(", ");
-        }
-
-        /* Check for special cases */
-        if (name == "saturate")
-            Write(", 0.0, 1.0");
-
-        Write(")");
-    }
+        WriteFunctionCallStandard(ast);
 }
 
 IMPLEMENT_VISIT_PROC(Attribute)
@@ -1765,6 +1640,159 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* 
 void GLSLGenerator::WriteIdent(const std::string& ident)
 {
     Write(ident);
+}
+
+void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax)
+{
+    if (ast->arguments.size() < numArgsMin || ast->arguments.size() > numArgsMax)
+        Error("invalid number of arguments in intrinsic", ast);
+}
+
+void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
+{
+    /* Write function name */
+    std::string name;
+
+    if (ast->varIdent)
+    {
+        name = ast->varIdent->ToString();
+
+        auto it = intrinsicMap_.find(name);
+        if (it != intrinsicMap_.end())
+            Write(it->second);
+        else
+        {
+            auto it = typeMap_.find(name);
+            if (it != typeMap_.end())
+                Write(it->second);
+            else
+                Visit(ast->varIdent);
+        }
+    }
+    else if (ast->typeDenoter)
+    {
+        /* Write function name from type denoter */
+        WriteTypeDenoter(*ast->typeDenoter, ast);
+    }
+    else
+        Error("missing function name", ast);
+
+    //TODO: move this to another visitor (e.g. "GLSLConverter" of the like) which does some transformation on the AST
+    #if 1
+    /*
+    Remove arguments which contain a sampler state object,
+    since GLSL does not support sampler states.
+    --> Only "Texture2D" will be mapped to "sampler2D",
+        but "SamplerState" can not be translated.
+    */
+    for (auto it = ast->arguments.begin(); it != ast->arguments.end();)
+    {
+        if (ExprContainsSampler(it->get()))
+            it = ast->arguments.erase(it);
+        else
+            ++it;
+    }
+    #endif
+
+    /* Write arguments */
+    Write("(");
+
+    for (size_t i = 0; i < ast->arguments.size(); ++i)
+    {
+        Visit(ast->arguments[i]);
+        if (i + 1 < ast->arguments.size())
+            Write(", ");
+    }
+
+    /* Check for special cases */
+    if (name == "saturate")
+        Write(", 0.0, 1.0");
+
+    Write(")");
+}
+
+void GLSLGenerator::WriteFunctionCallIntrinsicMul(FunctionCall* ast)
+{
+    AssertIntrinsicNumArgs(ast, 2, 2);
+
+    auto WriteMulArgument = [&](const ExprPtr& expr)
+    {
+        /*
+        Determine if the expression needs extra brackets when converted from a function call "mul(lhs, rhs)" to a binary expression "lhs * rhs",
+        e.g. "mul(wMatrix, pos + float4(0, 1, 0, 0))" -> "wMatrix * (pos + float4(0, 1, 0, 0))" needs extra brackets
+        */
+        auto type = expr->Type();
+        if (type == AST::Types::TernaryExpr || type == AST::Types::BinaryExpr || type == AST::Types::UnaryExpr || type == AST::Types::PostUnaryExpr)
+        {
+            Write("(");
+            Visit(expr);
+            Write(")");
+        }
+        else
+            Visit(expr);
+    };
+
+    /* Convert this function call into a multiplication */
+    Write("(");
+    {
+        WriteMulArgument(ast->arguments[0]);
+        Write(" * ");
+        WriteMulArgument(ast->arguments[1]);
+    }
+    Write(")");
+}
+
+void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
+{
+    AssertIntrinsicNumArgs(ast, 2, 3);
+
+    /* Find atomic intrinsic mapping */
+    auto it = atomicIntrinsicMap_.find(ast->varIdent->ident);
+    if (it != atomicIntrinsicMap_.end())
+    {
+        /* Write function call */
+        if (ast->arguments.size() >= 3)
+        {
+            Visit(ast->arguments[2]);
+            Write(" = ");
+        }
+        Write(it->second + "(");
+        Visit(ast->arguments[0]);
+        Write(", ");
+        Visit(ast->arguments[1]);
+        Write(")");
+    }
+    else
+        Error("unknown interlocked intrinsic \"" + ast->varIdent->ident + "\"", ast);
+}
+
+void GLSLGenerator::WriteFunctionCallIntrinsicTex(FunctionCall* ast)
+{
+    if (!ast->varIdent->next)
+        Error("missing member function in texture intrinsic", ast);
+
+    /* Get function name */
+    const auto& inFuncName = ast->varIdent->next->ident;
+
+    auto it = texFuncMap_.find(inFuncName);
+    if (it == texFuncMap_.end())
+        Error("texture member function \"" + inFuncName + "\" is not supported", ast);
+
+    const auto& funcName = it->second;
+
+    /* Write function call */
+    Write(funcName + "(");
+        
+    for (size_t i = 0; i < ast->arguments.size(); ++i)
+    {
+        const auto& arg = ast->arguments[i];
+            
+        Visit(arg);
+        if (i + 1 < ast->arguments.size())
+            Write(", ");
+    }
+
+    Write(")");
 }
 
 

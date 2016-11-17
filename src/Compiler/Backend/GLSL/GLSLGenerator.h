@@ -197,6 +197,13 @@ class GLSLGenerator : public Generator
         // Writes the specified identifier with possible name manging (if the name is reserved in GLSL).
         void WriteIdent(const std::string& ident);
 
+        void AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax = ~0);
+
+        void WriteFunctionCallStandard(FunctionCall* ast);
+        void WriteFunctionCallIntrinsicMul(FunctionCall* ast);
+        void WriteFunctionCallIntrinsicAtomic(FunctionCall* ast);
+        void WriteFunctionCallIntrinsicTex(FunctionCall* ast);
+
         /* === Members === */
 
         ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;
