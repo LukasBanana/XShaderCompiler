@@ -17,6 +17,8 @@ namespace Xsc
 {
 
 
+struct HLSLIntrinsicEntry;
+
 // HLSL context analyzer.
 class HLSLAnalyzer : public Analyzer
 {
@@ -93,6 +95,9 @@ class HLSLAnalyzer : public Analyzer
 
         bool FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics, std::string& semanticName) const;
         bool IsSystemValueSemnatic(std::string semantic) const;
+
+        void AnalyzeFunctionCallStandard(FunctionCall* ast);
+        void AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const std::string& ident, const HLSLIntrinsicEntry& intr);
 
         /* --- Helper templates for context analysis --- */
 

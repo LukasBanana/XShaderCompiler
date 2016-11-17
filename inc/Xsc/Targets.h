@@ -35,9 +35,9 @@ enum class ShaderTarget
 //! Input shader version enumeration.
 enum class InputShaderVersion
 {
-    HLSL3 = 3, //< HLSL Shader Model 3 (DirectX 9).
-    HLSL4 = 4, //< HLSL Shader Model 4 (DirectX 10).
-    HLSL5 = 5, //< HLSL Shader Model 5 (DirectX 11).
+    HLSL3 = 3, //< HLSL Shader Model 3.0 (DirectX 9).
+    HLSL4 = 4, //< HLSL Shader Model 4.0 (DirectX 10).
+    HLSL5 = 5, //< HLSL Shader Model 5.0 (DirectX 11).
 };
 
 //! Output shader version enumeration.

@@ -6,7 +6,7 @@
  */
 
 #include "HLSLAnalyzer.h"
-
+#include "HLSLIntrinsics.h"
 #include <algorithm>
 
 
@@ -106,51 +106,12 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     {
         auto name = ast->varIdent->ToString();
 
-        /* Check if a specific intrinsic is used */
-        if (name == "mul")
-        {
-            ast->flags << FunctionCall::isMulFunc;
-
-            /* Validate number of arguments */
-            for (std::size_t i = 2; i < ast->arguments.size(); ++i)
-                Error("too many arguments in \"mul\" intrinsic", ast->arguments[i].get());
-        }
-        else if (name == "rcp")
-            ast->flags << FunctionCall::isRcpFunc;
+        /* Check if the function call refers to an intrinsic */
+        auto intrIt = HLSLIntrinsics().find(name);
+        if (intrIt != HLSLIntrinsics().end())
+            AnalyzeFunctionCallIntrinsic(ast, name, intrIt->second);
         else
-        {
-            auto it = intrinsicMap_.find(name);
-            if (it != intrinsicMap_.end())
-            {
-                switch (it->second)
-                {
-                    case IntrinsicClasses::Interlocked:
-                        ast->flags << FunctionCall::isAtomicFunc;
-                        if (ast->arguments.size() < 2)
-                            Error("interlocked intrinsics must have at least 2 arguments", ast);
-                        //program_->flags << Program::interlockedIntrinsicsUsed;
-                        break;
-                }
-            }
-        }
-
-        /* Decorate function identifier (if it's a member function) */
-        if (ast->varIdent->next)
-        {
-            auto symbol = Fetch(ast->varIdent->ident);
-            if (symbol)
-            {
-                if (symbol->Type() == AST::Types::TextureDeclStmnt)
-                    ast->flags << FunctionCall::isTexFunc;
-            }
-            else
-                ErrorUndeclaredIdent(ast->varIdent->ident, ast);
-        }
-        else
-        {
-            /* Fetch function declaratino by arguments */
-            ast->funcDeclRef = FetchFunctionDecl(ast->varIdent->ident, ast->arguments, ast);
-        }
+            AnalyzeFunctionCallStandard(ast);
     }
 }
 
@@ -645,6 +606,62 @@ bool HLSLAnalyzer::IsSystemValueSemnatic(std::string semantic) const
         return semantic.substr(0, 3) == "SV_";
     }
     return false;
+}
+
+void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
+{
+    /* Decorate function identifier (if it's a member function) */
+    if (ast->varIdent->next)
+    {
+        //TODO: refactor member functions!
+
+        auto symbol = Fetch(ast->varIdent->ident);
+        if (symbol)
+        {
+            if (symbol->Type() == AST::Types::TextureDeclStmnt)
+                ast->flags << FunctionCall::isTexFunc;
+        }
+        else
+            ErrorUndeclaredIdent(ast->varIdent->ident, ast);
+    }
+    else
+    {
+        /* Fetch function declaratino by arguments */
+        ast->funcDeclRef = FetchFunctionDecl(ast->varIdent->ident, ast->arguments, ast);
+    }
+}
+
+void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const std::string& ident, const HLSLIntrinsicEntry& intr)
+{
+    //TODO: refactor analysis of intrinsic function call arguments!
+
+    /* Check if a specific intrinsic is used */
+    if (ident == "mul")
+    {
+        ast->flags << FunctionCall::isMulFunc;
+
+        /* Validate number of arguments */
+        for (std::size_t i = 2; i < ast->arguments.size(); ++i)
+            Error("too many arguments in \"mul\" intrinsic", ast->arguments[i].get());
+    }
+    else if (ident == "rcp")
+        ast->flags << FunctionCall::isRcpFunc;
+    else
+    {
+        auto it = intrinsicMap_.find(ident);
+        if (it != intrinsicMap_.end())
+        {
+            switch (it->second)
+            {
+                case IntrinsicClasses::Interlocked:
+                    ast->flags << FunctionCall::isAtomicFunc;
+                    if (ast->arguments.size() < 2)
+                        Error("interlocked intrinsics must have at least 2 arguments", ast);
+                    //program_->flags << Program::interlockedIntrinsicsUsed;
+                    break;
+            }
+        }
+    }
 }
 
 /* --- Helper templates for context analysis --- */

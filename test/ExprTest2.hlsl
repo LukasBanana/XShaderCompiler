@@ -2,7 +2,7 @@
 // HLSL Translator: Expression Test 2
 // 14/11/2016
 
-#define TEST 1
+#define TEST 3
 
 #if TEST == 1
 
@@ -79,13 +79,13 @@ void CS() <int annotation=0; string info="hello world!";>
 	//float a = s.foo.xx * ( (S)g_const1 + {1,2,3}  ) + 1;
 	
 	//f(a.xxx);
-	f(b);
+	//f(b);
 	
 	//string x = "test";
 	
-	//float4 pos = mul((float3x3)0, (float3)1);
+	float4 pos1 = mul((float3x3)0, (float3)1);
 	
-	//float4 pos = mul((mul(1, 2)).x, (float3)1);
+	float4 pos2 = mul((mul(1, 2)).x, (float3)1);
 	
 	#elif TEST == 4
 	
