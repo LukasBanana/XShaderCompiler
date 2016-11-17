@@ -60,20 +60,10 @@ void ReportHandler::SubmitReport(
         hasErrors_ = true;
 
     /* Add source position */
-    if (!currentFilename_.empty() || area.Pos().IsValid())
+    if (area.Pos().IsValid())
     {
         outputMsg += " (";
-
-        if (!currentFilename_.empty())
-        {
-            outputMsg += currentFilename_;
-            if (area.Pos().IsValid())
-                outputMsg += ":";
-        }
-
-        if (area.Pos().IsValid())
-            outputMsg += area.Pos().ToString();
-
+        outputMsg += area.Pos().ToString();
         outputMsg += ") ";
     }
 

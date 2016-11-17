@@ -89,12 +89,6 @@ class ReportHandler
         void PushContextDesc(const std::string& contextDesc);
         void PopContextDesc();
 
-        // Sets the current filename.
-        inline void SetCurrentFilename(const std::string& filename)
-        {
-            currentFilename_ = filename;
-        }
-
         /*
         Appends a hint for the next upcomming report.
         Implemented as static function to avoid passing lots of report data around the code.
@@ -111,7 +105,6 @@ class ReportHandler
         );
 
         std::string             reportTypeName_;
-        std::string             currentFilename_;
 
         Log*                    log_                = nullptr;
         bool                    hasErrors_          = false;

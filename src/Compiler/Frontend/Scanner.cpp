@@ -59,11 +59,6 @@ TokenPtr Scanner::PreviousToken() const
     return prevToken_;
 }
 
-SourcePosition Scanner::Pos() const
-{
-    return nextStartPos_;
-}
-
 
 /*
  * ======= Private: =======
@@ -198,6 +193,33 @@ char Scanner::TakeIt()
     return prevChr;
 }
 
+TokenPtr Scanner::Make(const Token::Types& type, bool takeChr)
+{
+    if (takeChr)
+    {
+        std::string spell;
+        spell += TakeIt();
+        return std::make_shared<Token>(Pos(), type, std::move(spell));
+    }
+    return std::make_shared<Token>(Pos(), type);
+}
+
+TokenPtr Scanner::Make(const Token::Types& type, std::string& spell, bool takeChr)
+{
+    if (takeChr)
+        spell += TakeIt();
+    return std::make_shared<Token>(Pos(), type, std::move(spell));
+}
+
+TokenPtr Scanner::Make(const Token::Types& type, std::string& spell, const SourcePosition& pos, bool takeChr)
+{
+    if (takeChr)
+        spell += TakeIt();
+    return std::make_shared<Token>(pos, type, std::move(spell));
+}
+
+/* ----- Report Handling ----- */
+
 [[noreturn]]
 void Scanner::Error(const std::string& msg)
 {
@@ -217,6 +239,8 @@ void Scanner::ErrorUnexpected(char expectedChar)
     auto chr = TakeIt();
     Error("unexpected character '" + std::string(1, chr) + "' (expected '" + std::string(1, expectedChar) + "')");
 }
+
+/* ----- Scanning ----- */
 
 void Scanner::Ignore(const std::function<bool(char)>& pred)
 {
@@ -424,31 +448,6 @@ bool Scanner::ScanDigitSequence(std::string& spell)
         spell += TakeIt();
 
     return result;
-}
-
-TokenPtr Scanner::Make(const Token::Types& type, bool takeChr)
-{
-    if (takeChr)
-    {
-        std::string spell;
-        spell += TakeIt();
-        return std::make_shared<Token>(Pos(), type, std::move(spell));
-    }
-    return std::make_shared<Token>(Pos(), type);
-}
-
-TokenPtr Scanner::Make(const Token::Types& type, std::string& spell, bool takeChr)
-{
-    if (takeChr)
-        spell += TakeIt();
-    return std::make_shared<Token>(Pos(), type, std::move(spell));
-}
-
-TokenPtr Scanner::Make(const Token::Types& type, std::string& spell, const SourcePosition& pos, bool takeChr)
-{
-    if (takeChr)
-        spell += TakeIt();
-    return std::make_shared<Token>(pos, type, std::move(spell));
 }
 
 

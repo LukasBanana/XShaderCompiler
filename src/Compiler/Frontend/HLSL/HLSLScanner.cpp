@@ -33,6 +33,10 @@ TokenPtr HLSLScanner::ScanToken()
 {
     std::string spell;
 
+    /* Scan directive (beginning with '#') */
+    if (Is('#'))
+        return ScanDirective();
+
     /* Scan identifier */
     if (std::isalpha(UChr()) || Is('_'))
         return ScanIdentifier();
@@ -137,6 +141,26 @@ TokenPtr HLSLScanner::ScanToken()
     ErrorUnexpected();
 
     return nullptr;
+}
+
+TokenPtr HLSLScanner::ScanDirective()
+{
+    std::string spell;
+
+    /* Take directive begin '#' */
+    Take('#');
+
+    /* Ignore white spaces (but not new-lines) */
+    IgnoreWhiteSpaces(false);
+
+    /* Scan identifier string */
+    StoreStartPos();
+
+    while (std::isalpha(UChr()))
+        spell += TakeIt();
+
+    /* Return as identifier */
+    return Make(Token::Types::Directive, spell);
 }
 
 TokenPtr HLSLScanner::ScanIdentifier()

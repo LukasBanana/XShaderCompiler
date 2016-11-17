@@ -78,6 +78,10 @@ class HLSLParser : public Parser
         // Makes a new VarType AST node for the specified struct decl.
         VarTypePtr MakeVarType(const StructDeclPtr& structDecl);
 
+        TokenPtr AcceptIt() override;
+
+        void ProcessDirective(const std::string& ident);
+
         /* ----- Parsing ----- */
 
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);

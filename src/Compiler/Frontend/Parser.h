@@ -80,7 +80,7 @@ class Parser
 
         TokenPtr Accept(const Tokens type);
         TokenPtr Accept(const Tokens type, const std::string& spell);
-        TokenPtr AcceptIt();
+        virtual TokenPtr AcceptIt();
 
         // Pushes the specified token string onto the stack where further tokens will be parsed from the top of the stack.
         void PushTokenString(const TokenPtrString& tokenString);

@@ -10,10 +10,25 @@
 
 
 #include <string>
+#include <memory>
 
 
 namespace Xsc
 {
+
+
+/*
+Source code origin with filename and line offset.
+This is used to track the filename and correct source position line for each AST within a pre-processed source code.
+This is necessary because the pre-processsor eliminates all include directives.
+*/
+struct SourceOrigin
+{
+    std::string filename;
+    int         lineOffset;
+};
+
+using SourceOriginPtr = std::shared_ptr<SourceOrigin>;
 
 
 // This class stores the position in a source code file.
@@ -26,7 +41,7 @@ class SourcePosition
         static const SourcePosition ignore;
 
         SourcePosition() = default;
-        SourcePosition(unsigned int row, unsigned int column);
+        SourcePosition(unsigned int row, unsigned int column, const SourceOriginPtr& origin = nullptr);
 
         // Returns the source position as string in the format "Row:Column", e.g. "75:10".
         std::string ToString() const;
@@ -55,10 +70,18 @@ class SourcePosition
             return column_;
         }
 
+        // Sets the new source origin.
+        inline void SetOrigin(const SourceOriginPtr& origin)
+        {
+            origin_ = origin;
+        }
+
     private:
         
-        unsigned int row_    = 0,
-                     column_ = 0;
+        unsigned int    row_    = 0,
+                        column_ = 0;
+
+        SourceOriginPtr origin_;
 
 };
 

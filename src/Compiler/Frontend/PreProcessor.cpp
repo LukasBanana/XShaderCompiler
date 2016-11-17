@@ -56,6 +56,7 @@ ScannerPtr PreProcessor::MakeScanner()
 void PreProcessor::PushScannerSource(const SourceCodePtr& source, const std::string& filename)
 {
     Parser::PushScannerSource(source, filename);
+    GetScanner().Source()->NextSourceOrigin(filename, 0);
     WritePosToLineDirective();
 }
 
@@ -830,7 +831,7 @@ ExprPtr PreProcessor::ParsePrimaryExpr()
 
         default:
         {
-            ErrorUnexpected("expected constant expression");
+            ErrorUnexpected("expected constant expression", nullptr, true);
         }
         break;
     }

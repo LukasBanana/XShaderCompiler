@@ -101,6 +101,16 @@ bool SourceCode::FetchLineMarker(const SourceArea& area, std::string& line, std:
     return false;
 }
 
+void SourceCode::NextSourceOrigin(const std::string& filename, int lineOffset)
+{
+    auto origin = std::make_shared<SourceOrigin>();
+    {
+        origin->filename    = filename;
+        origin->lineOffset  = lineOffset;
+    }
+    pos_.SetOrigin(origin);
+}
+
 
 /*
  * ======= Private: =======

@@ -52,7 +52,10 @@ class Scanner
         TokenPtr PreviousToken() const;
 
         // Returns the start position of the token previously returned by the "Next" function.
-        SourcePosition Pos() const;
+        inline const SourcePosition& Pos() const
+        {
+            return nextStartPos_;
+        }
 
         // Returns the source code which is currently being scanned.
         inline SourceCode* Source() const
@@ -81,6 +84,12 @@ class Scanner
         char Take(char chr);
         char TakeIt();
 
+        TokenPtr Make(const Token::Types& type, bool takeChr = false);
+        TokenPtr Make(const Token::Types& type, std::string& spell, bool takeChr = false);
+        TokenPtr Make(const Token::Types& type, std::string& spell, const SourcePosition& pos, bool takeChr = false);
+
+        /* ----- Report Handling ----- */
+
         [[noreturn]]
         void Error(const std::string& msg);
 
@@ -90,23 +99,23 @@ class Scanner
         [[noreturn]]
         void ErrorUnexpected(char expectedChar);
 
+        /* ----- Scanning ----- */
+
         // Ignores all characters which comply the specified predicate.
-        void Ignore(const std::function<bool(char)>& pred);
-        void IgnoreWhiteSpaces(bool includeNewLines = true);
+        void        Ignore(const std::function<bool(char)>& pred);
+        void        IgnoreWhiteSpaces(bool includeNewLines = true);
 
-        TokenPtr ScanWhiteSpaces(bool includeNewLines = true);
-        TokenPtr ScanCommentLine(bool scanComments);
-        TokenPtr ScanCommentBlock(bool scanComments);
-        TokenPtr ScanStringLiteral();
-        TokenPtr ScanNumber(bool startWithDot = false);
-        TokenPtr ScanNumberOrDot();
-        TokenPtr ScanVarArg(std::string& spell);
+        TokenPtr    ScanWhiteSpaces(bool includeNewLines = true);
+        TokenPtr    ScanCommentLine(bool scanComments);
+        TokenPtr    ScanCommentBlock(bool scanComments);
+        TokenPtr    ScanStringLiteral();
+        TokenPtr    ScanNumber(bool startWithDot = false);
+        TokenPtr    ScanNumberOrDot();
+        TokenPtr    ScanVarArg(std::string& spell);
 
-        bool ScanDigitSequence(std::string& spell);
+        bool        ScanDigitSequence(std::string& spell);
 
-        TokenPtr Make(const Token::Types& type, bool takeChr = false);
-        TokenPtr Make(const Token::Types& type, std::string& spell, bool takeChr = false);
-        TokenPtr Make(const Token::Types& type, std::string& spell, const SourcePosition& pos, bool takeChr = false);
+        /* ----- Helper functions ----- */
 
         inline bool IsNewLine() const
         {

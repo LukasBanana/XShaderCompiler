@@ -102,9 +102,6 @@ void Parser::Warning(const std::string& msg, bool prevToken)
 
 void Parser::PushScannerSource(const SourceCodePtr& source, const std::string& filename)
 {
-    /* Set new filename to report handler */
-    GetReportHandler().SetCurrentFilename(filename);
-
     /* Add current token to previous scanner */
     if (!scannerStack_.empty())
         scannerStack_.top().nextToken = tkn_;
@@ -121,6 +118,9 @@ void Parser::PushScannerSource(const SourceCodePtr& source, const std::string& f
         throw std::runtime_error("failed to scan source code");
 
     AcceptIt();
+
+    /* Set initial source origin for scanner */
+    scanner->Source()->NextSourceOrigin(filename, 0);
 }
 
 bool Parser::PopScannerSource()
@@ -133,9 +133,6 @@ bool Parser::PopScannerSource()
 
     if (scannerStack_.empty())
         return false;
-
-    /* Reset previous filename to report handler */
-    GetReportHandler().SetCurrentFilename(scannerStack_.top().filename);
 
     /* Reset previous 'next token' */
     tkn_ = scannerStack_.top().nextToken;

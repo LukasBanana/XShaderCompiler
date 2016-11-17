@@ -14,15 +14,36 @@ namespace Xsc
 
 const SourcePosition SourcePosition::ignore {};
 
-SourcePosition::SourcePosition(unsigned int row, unsigned int column) :
+SourcePosition::SourcePosition(unsigned int row, unsigned int column, const SourceOriginPtr& origin) :
     row_   { row    },
-    column_{ column }
+    column_{ column },
+    origin_{ origin }
 {
 }
 
 std::string SourcePosition::ToString() const
 {
-    return (std::to_string(row_) + ":" + std::to_string(column_ > 0 ? column_ - 1 : 0));
+    std::string s;
+
+    auto r = row_;
+    auto c = column_;
+
+    if (origin_)
+    {
+        if (!origin_->filename.empty())
+        {
+            s += origin_->filename;
+            s += ':';
+        }
+        s += std::to_string(static_cast<int>(r) + origin_->lineOffset);
+    }
+    else
+        s += std::to_string(r);
+
+    s += ':';
+    s += std::to_string(c);
+
+    return s;
 }
 
 void SourcePosition::IncRow()

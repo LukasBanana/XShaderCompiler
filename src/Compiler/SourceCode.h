@@ -38,6 +38,9 @@ class SourceCode
         // Fetches the line with the marker string of the specified source position.
         bool FetchLineMarker(const SourceArea& area, std::string& line, std::string& marker);
 
+        // Sets the new source origin for the current source position (see "Pos()").
+        void NextSourceOrigin(const std::string& filename, int lineOffset);
+
         // Ignores the current character.
         inline void Ignore()
         {

@@ -8,6 +8,7 @@
 #include "HLSLParser.h"
 #include "HLSLKeywords.h"
 #include "ConstExprEvaluator.h"
+#include "Helper.h"
 #include "AST.h"
 
 
@@ -83,6 +84,58 @@ bool HLSLParser::IsPrimaryExpr() const
 bool HLSLParser::IsArithmeticUnaryExpr() const
 {
     return (Is(Tokens::BinaryOp, "-") || Is(Tokens::BinaryOp, "+"));
+}
+
+bool HLSLParser::IsLhsOfCastExpr(const ExprPtr& expr) const
+{
+    /* Type name (float, int3 etc.) is always allowed for a cast expression */
+    return (expr->Type() == AST::Types::TypeNameExpr || expr->Type() == AST::Types::VarAccessExpr);
+}
+
+VarTypePtr HLSLParser::MakeVarType(const StructDeclPtr& structDecl)
+{
+    auto ast = Make<VarType>();
+
+    ast->structDecl     = structDecl;
+    ast->typeDenoter    = std::make_shared<StructTypeDenoter>(structDecl.get());
+
+    return ast;
+}
+
+TokenPtr HLSLParser::AcceptIt()
+{
+    auto tkn = Parser::AcceptIt();
+
+    /* Post-process directives */
+    while (Tkn()->Type() == Tokens::Directive)
+        ProcessDirective(AcceptIt()->Spell());
+
+    return tkn;
+}
+
+void HLSLParser::ProcessDirective(const std::string& ident)
+{
+    if (ident == "line")
+    {
+        int lineNo = 0;
+        std::string filename;
+
+        /* Parse '#line'-directive with base class "AcceptIt" functions to avoid recursive calls of this function */
+        if (Is(Tokens::IntLiteral))
+            lineNo = FromString<int>(Parser::AcceptIt()->Spell());
+        else
+            ErrorUnexpected(Tokens::IntLiteral);
+
+        if (Is(Tokens::StringLiteral))
+            filename = Parser::AcceptIt()->SpellContent();
+        else
+            ErrorUnexpected(Tokens::StringLiteral);
+
+        auto currentLine = static_cast<int>(GetScanner().PreviousToken()->Pos().Row());
+        GetScanner().Source()->NextSourceOrigin(filename, lineNo - currentLine - 1);
+    }
+    else
+        Error("only '#line'-directives are allowed after pre-processing");
 }
 
 /* ------- Parse functions ------- */
@@ -1136,23 +1189,7 @@ UnaryExprPtr HLSLParser::ParseUnaryExpr()
     return ast;
 }
 
-bool HLSLParser::IsLhsOfCastExpr(const ExprPtr& expr) const
-{
-    /* Type name (float, int3 etc.) is always allowed for a cast expression */
-    return (expr->Type() == AST::Types::TypeNameExpr || expr->Type() == AST::Types::VarAccessExpr);
-}
-
-VarTypePtr HLSLParser::MakeVarType(const StructDeclPtr& structDecl)
-{
-    auto ast = Make<VarType>();
-
-    ast->structDecl     = structDecl;
-    ast->typeDenoter    = std::make_shared<StructTypeDenoter>(structDecl.get());
-
-    return ast;
-}
-
-/* === Parse functions === */
+/* ----- Parsing ----- */
 
 ExprPtr HLSLParser::ParseBracketOrCastExpr()
 {
