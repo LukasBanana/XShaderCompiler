@@ -254,11 +254,10 @@ static KeywordMapType GenerateKeywordMap()
     };
 }
 
-static const KeywordMapType g_keywordMapHLSL = GenerateKeywordMap();
-
 const KeywordMapType& HLSLKeywords()
 {
-    return g_keywordMapHLSL;
+    static const KeywordMapType keywordMap = GenerateKeywordMap();
+    return keywordMap;
 }
 
 using DataTypeMap = std::map<std::string, DataType>;
