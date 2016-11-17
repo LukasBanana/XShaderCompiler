@@ -470,6 +470,8 @@ struct IntrinsicDecl : public FunctionDecl
 
     bool IsIntrinsic() const override;
     bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const override;
+
+    Intrinsic intrinsic = Intrinsic::Undefined; // Intrinsic ID.
 };
 
 //TODO --> maybe separate this structure into "BufferDeclStmnt" and "BufferDecl" (like in the other declaration AST nodes)
