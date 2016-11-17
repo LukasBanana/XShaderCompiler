@@ -416,6 +416,8 @@ DataType VectorDataType(const DataType baseDataType, int vectorSize)
     return DataType::Undefined;
 }
 
+// TODO: add support for matrix subscription
+//  --> see https://msdn.microsoft.com/en-us/library/windows/desktop/bb509634(v=vs.85).aspx#Matrix
 DataType SubscriptDataType(const DataType dataType, const std::string& subscript)
 {
     auto IsValidSubscript = [&subscript](std::string compareSubscript, int vectorSize) -> bool
