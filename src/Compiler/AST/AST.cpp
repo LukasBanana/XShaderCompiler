@@ -13,6 +13,14 @@ namespace Xsc
 {
 
 
+/* ----- AST ----- */
+
+AST::~AST()
+{
+    // dummy
+}
+
+
 /* ----- TypedAST ----- */
 
 const TypeDenoterPtr& TypedAST::GetTypeDenoter()

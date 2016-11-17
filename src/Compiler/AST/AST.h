@@ -117,9 +117,7 @@ struct AST
         InitializerExpr,
     };
 
-    virtual ~AST()
-    {
-    }
+    virtual ~AST();
     
     virtual Types Type() const = 0;
     virtual void Visit(Visitor* visitor, void* args = nullptr) = 0;
@@ -395,7 +393,7 @@ struct StructDecl : public Decl
 };
 
 // Type alias declaration.
-struct AliasDecl : Decl
+struct AliasDecl : public Decl
 {
     AST_INTERFACE(AliasDecl);
 
