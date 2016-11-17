@@ -77,6 +77,7 @@ std::string Token::TypeToString(const Types type)
         case Types::VectorType:         return "vector type denoter";
         case Types::MatrixType:         return "matrix type denoter";
         case Types::Void:               return "'void' type denoter";
+        case Types::Reserved:           return "reserved keyword";
         case Types::Vector:             return "'vector' generic type denoter";
         case Types::Matrix:             return "'matrix' generic type denoter";
         case Types::Sampler:            return "sampler state type denoter";

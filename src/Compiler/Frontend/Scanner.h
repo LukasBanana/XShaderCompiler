@@ -81,8 +81,13 @@ class Scanner
         char Take(char chr);
         char TakeIt();
 
+        [[noreturn]]
         void Error(const std::string& msg);
+
+        [[noreturn]]
         void ErrorUnexpected();
+
+        [[noreturn]]
         void ErrorUnexpected(char expectedChar);
 
         // Ignores all characters which comply the specified predicate.

@@ -46,7 +46,8 @@ void CS() <int annotation=0; string info="hello world!";>
 	
 	int i1 = (int).0f;
 	
-	float f1 = ((float3)1).x;
+	int template = 0;
+	float f1 = ((vector)1).x.x.x.x.x.x.x;
 	
 	float f2 = ((vector<float, (1+4)/5+3>)1).w;
 	

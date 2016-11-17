@@ -151,7 +151,12 @@ TokenPtr HLSLScanner::ScanIdentifier()
     /* Scan reserved words */
     auto it = HLSLKeywords().find(spell);
     if (it != HLSLKeywords().end())
-        return Make(it->second, spell);
+    {
+        if (it->second == Token::Types::Reserved)
+            Error("keyword '" + spell + "' is reserved for future use");
+        else
+            return Make(it->second, spell);
+    }
 
     /* Return as identifier */
     return Make(Tokens::Ident, spell);

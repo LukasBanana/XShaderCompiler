@@ -83,8 +83,10 @@ class Token
             Vector,             // vector (e.g. "vector<float, 3>")
             Matrix,             // matrix (e.g. "matrix<int, 4, 4>")
 
-            /* --- Keywords --- */
             Void,               // void
+
+            /* --- Keywords --- */
+            Reserved,           // reserved keyword (not allowed, but reserved for future use)
 
             Do,                 // do
             While,              // while

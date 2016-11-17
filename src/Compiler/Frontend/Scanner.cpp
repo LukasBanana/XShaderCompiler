@@ -198,17 +198,20 @@ char Scanner::TakeIt()
     return prevChr;
 }
 
+[[noreturn]]
 void Scanner::Error(const std::string& msg)
 {
     throw Report(Report::Types::Error, "lexical error (" + Pos().ToString() + ") : " + msg);
 }
 
+[[noreturn]]
 void Scanner::ErrorUnexpected()
 {
     auto chr = TakeIt();
     Error("unexpected character '" + std::string(1, chr) + "'");
 }
 
+[[noreturn]]
 void Scanner::ErrorUnexpected(char expectedChar)
 {
     auto chr = TakeIt();

@@ -1668,22 +1668,28 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseVectorTypeDenoter()
 
     /* Parse scalar type */
     Accept(Tokens::Vector);
-    Accept(Tokens::BinaryOp, "<");
-    
-    PushParsingState({ true });
+
+    if (Is(Tokens::BinaryOp, "<"))
     {
-        vectorType = Accept(Tokens::ScalarType)->Spell();
+        AcceptIt();
+    
+        PushParsingState({ true });
+        {
+            vectorType = Accept(Tokens::ScalarType)->Spell();
 
-        /* Parse vector dimension */
-        Accept(Tokens::Comma);
-        int dim = ParseAndEvaluateVectorDimension();
+            /* Parse vector dimension */
+            Accept(Tokens::Comma);
+            int dim = ParseAndEvaluateVectorDimension();
 
-        /* Build final type denoter */
-        vectorType += std::to_string(dim);
+            /* Build final type denoter */
+            vectorType += std::to_string(dim);
+        }
+        PopParsingState();
+
+        Accept(Tokens::BinaryOp, ">");
     }
-    PopParsingState();
-
-    Accept(Tokens::BinaryOp, ">");
+    else
+        vectorType = "float4";
 
     /* Make base type denoter by data type keyword */
     auto typeDenoter = std::make_shared<BaseTypeDenoter>();
@@ -1699,25 +1705,31 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseMatrixTypeDenoter()
 
     /* Parse scalar type */
     Accept(Tokens::Matrix);
-    Accept(Tokens::BinaryOp, "<");
-    
-    PushParsingState({ true });
+
+    if (Is(Tokens::BinaryOp, "<"))
     {
-        matrixType = Accept(Tokens::ScalarType)->Spell();
+        AcceptIt();
+    
+        PushParsingState({ true });
+        {
+            matrixType = Accept(Tokens::ScalarType)->Spell();
 
-        /* Parse matrix dimensions */
-        Accept(Tokens::Comma);
-        int dimM = ParseAndEvaluateVectorDimension();
+            /* Parse matrix dimensions */
+            Accept(Tokens::Comma);
+            int dimM = ParseAndEvaluateVectorDimension();
 
-        Accept(Tokens::Comma);
-        int dimN = ParseAndEvaluateVectorDimension();
+            Accept(Tokens::Comma);
+            int dimN = ParseAndEvaluateVectorDimension();
 
-        /* Build final type denoter */
-        matrixType += std::to_string(dimM) + 'x' + std::to_string(dimN);
+            /* Build final type denoter */
+            matrixType += std::to_string(dimM) + 'x' + std::to_string(dimN);
+        }
+        PopParsingState();
+
+        Accept(Tokens::BinaryOp, ">");
     }
-    PopParsingState();
-
-    Accept(Tokens::BinaryOp, ">");
+    else
+        matrixType = "float4x4";
 
     /* Make base type denoter by data type keyword */
     auto typeDenoter = std::make_shared<BaseTypeDenoter>();
