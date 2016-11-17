@@ -229,11 +229,12 @@ struct FunctionCall : public AST
         FLAG( isAtomicFunc, 3 ), // This is an atomic (or rather interlocked) function (e.g. "InterlockedAdd").
     };
 
-    VarIdentPtr             varIdent;               // Either this ...
-    TypeDenoterPtr          typeDenoter;            // ... or this is used.
+    VarIdentPtr             varIdent;                           // Either this ...
+    TypeDenoterPtr          typeDenoter;                        // ... or this is used.
     std::vector<ExprPtr>    arguments;
 
-    FunctionDecl*           funcDeclRef = nullptr;  // Reference to the function declaration; may be null
+    FunctionDecl*           funcDeclRef = nullptr;              // Reference to the function declaration; may be null
+    Intrinsic               intrinsic   = Intrinsic::Undefined; // Intrinsic ID (if this is an intrinsic).
 };
 
 // Attribute (e.g. "[unroll]" or "[numthreads(x,y,z)]").

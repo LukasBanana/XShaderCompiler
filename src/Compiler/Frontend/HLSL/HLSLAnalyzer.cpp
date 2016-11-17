@@ -14,10 +14,20 @@ namespace Xsc
 {
 
 
+static ShaderVersion GetShaderModel(const InputShaderVersion v)
+{
+    switch (v)
+    {
+        case InputShaderVersion::HLSL3: return { 3, 0 };
+        case InputShaderVersion::HLSL4: return { 4, 0 };
+        case InputShaderVersion::HLSL5: return { 5, 0 };
+    }
+    return { 1, 0 };
+}
+
 HLSLAnalyzer::HLSLAnalyzer(Log* log) :
     Analyzer{ log }
 {
-    EstablishMaps();
     DeclareIntrinsics();
 }
 
@@ -28,6 +38,7 @@ void HLSLAnalyzer::DecorateASTPrimary(
     entryPoint_     = inputDesc.entryPoint;
     shaderTarget_   = inputDesc.shaderTarget;
     versionIn_      = inputDesc.shaderVersion;
+    shaderModel_    = GetShaderModel(inputDesc.shaderVersion);
     localVarPrefix_ = outputDesc.formatting.prefix;
 
     /* Decorate program AST */
@@ -40,21 +51,6 @@ void HLSLAnalyzer::DecorateASTPrimary(
 /*
  * ======= Private: =======
  */
-
-void HLSLAnalyzer::EstablishMaps()
-{
-    intrinsicMap_ = std::map<std::string, IntrinsicClasses>
-    {
-        { "InterlockedAdd",             IntrinsicClasses::Interlocked },
-        { "InterlockedAnd",             IntrinsicClasses::Interlocked },
-        { "InterlockedOr",              IntrinsicClasses::Interlocked },
-        { "InterlockedXor",             IntrinsicClasses::Interlocked },
-        { "InterlockedMin",             IntrinsicClasses::Interlocked },
-        { "InterlockedMax",             IntrinsicClasses::Interlocked },
-        { "InterlockedCompareExchange", IntrinsicClasses::Interlocked },
-        { "InterlockedExchange",        IntrinsicClasses::Interlocked },
-    };
-}
 
 void HLSLAnalyzer::DeclareIntrinsics()
 {
@@ -109,7 +105,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         /* Check if the function call refers to an intrinsic */
         auto intrIt = HLSLIntrinsics().find(name);
         if (intrIt != HLSLIntrinsics().end())
-            AnalyzeFunctionCallIntrinsic(ast, name, intrIt->second);
+            AnalyzeFunctionCallIntrinsic(ast, intrIt->second);
         else
             AnalyzeFunctionCallStandard(ast);
     }
@@ -631,37 +627,56 @@ void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
     }
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const std::string& ident, const HLSLIntrinsicEntry& intr)
+void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLIntrinsicEntry& intr)
 {
+    /* Check shader input version */
+    if (shaderModel_ < intr.minShaderModel)
+    {
+        Warning(
+            "intrinsic '" + ast->varIdent->ToString() + "' requires shader model " + intr.minShaderModel.ToString() +
+            ", but only " + shaderModel_.ToString() + " is specified", ast
+        );
+    }
+
+    /* Decorate AST with intrinsic ID */
+    ast->intrinsic = intr.intrinsic;
+
     //TODO: refactor analysis of intrinsic function call arguments!
+    #if 1
 
     /* Check if a specific intrinsic is used */
-    if (ident == "mul")
+    switch (intr.intrinsic)
     {
-        ast->flags << FunctionCall::isMulFunc;
-
-        /* Validate number of arguments */
-        for (std::size_t i = 2; i < ast->arguments.size(); ++i)
-            Error("too many arguments in \"mul\" intrinsic", ast->arguments[i].get());
-    }
-    else if (ident == "rcp")
-        ast->flags << FunctionCall::isRcpFunc;
-    else
-    {
-        auto it = intrinsicMap_.find(ident);
-        if (it != intrinsicMap_.end())
+        case Intrinsic::Mul:
         {
-            switch (it->second)
+            ast->flags << FunctionCall::isMulFunc;
+
+            /* Validate number of arguments */
+            for (std::size_t i = 2; i < ast->arguments.size(); ++i)
+                Error("too many arguments in \"mul\" intrinsic", ast->arguments[i].get());
+        }
+        break;
+
+        case Intrinsic::Rcp:
+        {
+            ast->flags << FunctionCall::isRcpFunc;
+        }
+        break;
+
+        default:
+        {
+            if (intr.intrinsic >= Intrinsic::InterlockedAdd && intr.intrinsic <= Intrinsic::InterlockedXor)
             {
-                case IntrinsicClasses::Interlocked:
-                    ast->flags << FunctionCall::isAtomicFunc;
-                    if (ast->arguments.size() < 2)
-                        Error("interlocked intrinsics must have at least 2 arguments", ast);
-                    //program_->flags << Program::interlockedIntrinsicsUsed;
-                    break;
+                ast->flags << FunctionCall::isAtomicFunc;
+                if (ast->arguments.size() < 2)
+                    Error("interlocked intrinsics must have at least 2 arguments", ast);
+                //program_->flags << Program::interlockedIntrinsicsUsed;
             }
         }
+        break;
     }
+
+    #endif
 }
 
 /* --- Helper templates for context analysis --- */

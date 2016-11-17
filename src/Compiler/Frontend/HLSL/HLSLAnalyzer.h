@@ -10,6 +10,7 @@
 
 
 #include "Analyzer.h"
+#include "ShaderVersion.h"
 #include <map>
 
 
@@ -31,13 +32,6 @@ class HLSLAnalyzer : public Analyzer
         
         using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
 
-        /* === Enumerations === */
-
-        enum class IntrinsicClasses
-        {
-            Interlocked,
-        };
-
         /* === Functions === */
 
         void DecorateASTPrimary(
@@ -46,8 +40,6 @@ class HLSLAnalyzer : public Analyzer
             const ShaderOutput& outputDesc
         ) override;
         
-        void EstablishMaps();
-
         void DeclareIntrinsics();
 
         /*
@@ -97,7 +89,7 @@ class HLSLAnalyzer : public Analyzer
         bool IsSystemValueSemnatic(std::string semantic) const;
 
         void AnalyzeFunctionCallStandard(FunctionCall* ast);
-        void AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const std::string& ident, const HLSLIntrinsicEntry& intr);
+        void AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLIntrinsicEntry& intr);
 
         /* --- Helper templates for context analysis --- */
 
@@ -106,20 +98,19 @@ class HLSLAnalyzer : public Analyzer
 
         /* === Members === */
 
-        Program*                                program_                = nullptr;
+        Program*                    program_        = nullptr;
 
-        ShaderInput                             inputDesc_;
-        ShaderOutput                            outputDesc_;
+        ShaderInput                 inputDesc_;
+        ShaderOutput                outputDesc_;
 
-        std::string                             entryPoint_;
-        ShaderTarget                            shaderTarget_           = ShaderTarget::VertexShader;
-        InputShaderVersion                      versionIn_              = InputShaderVersion::HLSL5;
-        std::string                             localVarPrefix_;
-
-        std::map<std::string, IntrinsicClasses> intrinsicMap_;
+        std::string                 entryPoint_;
+        ShaderTarget                shaderTarget_   = ShaderTarget::VertexShader;
+        InputShaderVersion          versionIn_      = InputShaderVersion::HLSL5;
+        ShaderVersion               shaderModel_    { 5, 0 };
+        std::string                 localVarPrefix_;
 
         // Structure stack to collect all members with system value semantic (SV_...).
-        std::vector<StructDecl*>                structStack_;
+        std::vector<StructDecl*>    structStack_;
 
 };
 
