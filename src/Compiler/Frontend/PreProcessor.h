@@ -42,7 +42,7 @@ class PreProcessor : public Parser
         
         PreProcessor(IncludeHandler& includeHandler, Log* log = nullptr);
 
-        std::shared_ptr<std::iostream> Process(
+        std::unique_ptr<std::iostream> Process(
             const SourceCodePtr& input,
             const std::string& filename = "",
             bool writeLineMarks = true
@@ -136,7 +136,7 @@ class PreProcessor : public Parser
 
         IncludeHandler&                     includeHandler_;
 
-        std::shared_ptr<std::stringstream>  output_;
+        std::unique_ptr<std::stringstream>  output_;
 
         std::map<std::string, MacroPtr>     macros_;
         std::set<std::string>               onceIncluded_;

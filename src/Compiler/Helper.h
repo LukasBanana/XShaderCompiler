@@ -13,11 +13,19 @@
 #include <sstream>
 #include <cmath>
 #include <type_traits>
+#include <memory>
 
 
 namespace Xsc
 {
 
+
+//! Alternative to std::make_unique for strict C++11 support.
+template <typename T, typename... Args>
+std::unique_ptr<T> MakeUnique(Args&&... args)
+{
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 // Converts the specified string into a value from type T.
 template <typename T>

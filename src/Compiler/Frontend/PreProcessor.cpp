@@ -8,6 +8,7 @@
 #include "PreProcessor.h"
 #include "AST.h"
 #include "ConstExprEvaluator.h"
+#include "Helper.h"
 #include <sstream>
 
 
@@ -21,9 +22,9 @@ PreProcessor::PreProcessor(IncludeHandler& includeHandler, Log* log) :
 {
 }
 
-std::shared_ptr<std::iostream> PreProcessor::Process(const SourceCodePtr& input, const std::string& filename, bool writeLineMarks)
+std::unique_ptr<std::iostream> PreProcessor::Process(const SourceCodePtr& input, const std::string& filename, bool writeLineMarks)
 {
-    output_         = std::make_shared<std::stringstream>();
+    output_         = MakeUnique<std::stringstream>();
     writeLineMarks_ = writeLineMarks;
 
     PushScannerSource(input, filename);
@@ -31,7 +32,7 @@ std::shared_ptr<std::iostream> PreProcessor::Process(const SourceCodePtr& input,
     try
     {
         ParseProgram();
-        return (GetReportHandler().HasErros() ? nullptr : output_);
+        return (GetReportHandler().HasErros() ? nullptr : std::move(output_));
     }
     catch (const Report& err)
     {
