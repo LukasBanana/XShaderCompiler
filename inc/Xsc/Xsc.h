@@ -74,6 +74,9 @@ struct Options
 
     //! If true, the abstract syntax tree (AST) will be written to the log output. By default false.
     bool dumpAST        = false;
+
+    //! If true, the timings of the different compilation processes are written to the log output.
+    bool dumpTimes      = false;
 };
 
 //! Structure for shader output statistics (e.g. texture/buffer binding points).

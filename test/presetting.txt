@@ -3,7 +3,7 @@
 --dump-ast -T compute -E CS -o output/NameMangling1.CS.glsl NameMangling1.hlsl
 
 [ExprTest2 CS]
--T compute -E CS -o output/ExprTest2.CS.glsl ExprTest2.hlsl
+--dump-times -T compute -E CS -o output/ExprTest2.CS.glsl ExprTest2.hlsl
 
 #[ExprTest2 -PP]
 #-PP -T compute -E CS -o output/ExprTest2.post.hlsl ExprTest2.hlsl
@@ -15,7 +15,7 @@
 --dump-ast -T fragment -E PS -o output/StructInheritTest1.PS.glsl StructInheritTest1.hlsl
 
 [ssct_reflect PS]
---dump-stat -T fragment -E PS -O -I "../../misc/ssct_shader/" -o "../../misc/ssct_shader/ssct_reflect.PS.frag" "../../misc/ssct_shader/ssct_reflect.hlsl"
+--dump-times --dump-stat -T fragment -E PS -O -I "../../misc/ssct_shader/" -o "../../misc/ssct_shader/ssct_reflect.PS.frag" "../../misc/ssct_shader/ssct_reflect.hlsl"
 
 #[TestShader1.hlsl VS]
 #-T vertex -E VS -O -o output/TestShader1.VS.glsl TestShader1.hlsl

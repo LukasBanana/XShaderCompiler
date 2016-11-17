@@ -59,6 +59,7 @@ CommandFactory::CommandFactory()
     MakeCommand< LineMarksCommand   >();
     MakeCommand< DumpASTCommand     >();
     MakeCommand< DumpStatCommand    >();
+    MakeCommand< DumpTimesCommand   >();
     MakeCommand< PPOnlyCommand      >();
     MakeCommand< CommentsCommand    >();
     MakeCommand< MacroCommand       >();

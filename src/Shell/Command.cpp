@@ -332,6 +332,30 @@ void DumpASTCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
+ * DumpTimesCommand class
+ */
+
+std::vector<Command::Identifier> DumpTimesCommand::Idents() const
+{
+    return { { "--dump-times" } };
+}
+
+HelpDescriptor DumpTimesCommand::Help() const
+{
+    return
+    {
+        "--dump-times [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables debug output for timings of each compilation process; default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void DumpTimesCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.dumpTimes = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
  * DumpStatCommand class
  */
 

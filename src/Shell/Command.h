@@ -80,6 +80,7 @@ DECL_SHELL_COMMAND( BlanksCommand      );
 DECL_SHELL_COMMAND( LineMarksCommand   );
 DECL_SHELL_COMMAND( DumpASTCommand     );
 DECL_SHELL_COMMAND( DumpStatCommand    );
+DECL_SHELL_COMMAND( DumpTimesCommand   );
 DECL_SHELL_COMMAND( PPOnlyCommand      );
 DECL_SHELL_COMMAND( CommentsCommand    );
 DECL_SHELL_COMMAND( MacroCommand       );
