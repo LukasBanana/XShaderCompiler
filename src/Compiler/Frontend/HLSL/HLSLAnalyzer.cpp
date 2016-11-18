@@ -7,7 +7,7 @@
 
 #include "HLSLAnalyzer.h"
 #include "HLSLIntrinsics.h"
-#include <algorithm>
+#include "Helper.h"
 
 
 namespace Xsc
@@ -91,24 +91,25 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    /* Analyze function arguments first */
     PushFunctionCall(ast);
     {
+        /* Analyze function arguments first */
         Visit(ast->arguments);
+
+        /* Then analyze function name */
+        if (ast->varIdent)
+        {
+            auto name = ast->varIdent->ToString();
+
+            /* Check if the function call refers to an intrinsic */
+            auto intrIt = HLSLIntrinsics().find(name);
+            if (intrIt != HLSLIntrinsics().end())
+                AnalyzeFunctionCallIntrinsic(ast, intrIt->second);
+            else
+                AnalyzeFunctionCallStandard(ast);
+        }
     }
     PopFunctionCall();
-
-    if (ast->varIdent)
-    {
-        auto name = ast->varIdent->ToString();
-
-        /* Check if the function call refers to an intrinsic */
-        auto intrIt = HLSLIntrinsics().find(name);
-        if (intrIt != HLSLIntrinsics().end())
-            AnalyzeFunctionCallIntrinsic(ast, intrIt->second);
-        else
-            AnalyzeFunctionCallStandard(ast);
-    }
 }
 
 /* --- Declarations --- */
@@ -244,6 +245,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     {
         Visit(member);
 
+        //TODO: move this to the HLSLParser!
         /* Decorate all members with a reference to this buffer declaration */
         for (auto& varDecl : member->varDecls)
             varDecl->bufferDeclRef = ast;
@@ -252,16 +254,16 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
-    /* Register all texture declarations */
-    for (auto& name : ast->textureDecls)
-        Register(name->ident, ast);
+    /* Register all texture declarations (register only in the statement) */
+    for (auto& textureDecl : ast->textureDecls)
+        Register(textureDecl->ident, textureDecl.get());
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
-    /* Register all sampler declarations */
-    for (auto& name : ast->samplerDecls)
-        Register(name->ident, ast);
+    /* Register all sampler declarations (register only in the statement) */
+    for (auto& samplerDecl : ast->samplerDecls)
+        Register(samplerDecl->ident, samplerDecl.get());
 }
 
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
@@ -382,7 +384,7 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
 
 IMPLEMENT_VISIT_PROC(AssignStmnt)
 {
-    DecorateVarObjectSymbol(ast);
+    AnalyzeVarIdent(ast->varIdent.get());
     Visit(ast->expr);
 }
 
@@ -440,10 +442,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    /* Decorate AST */
-    DecorateVarObjectSymbol(ast);
-
-    /* Visit optional assign expression */
+    AnalyzeVarIdent(ast->varIdent.get());
     Visit(ast->assignExpr);
 }
 
@@ -528,59 +527,7 @@ void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
     }
 }
 
-//TODO: refacotre this function!!!
-void HLSLAnalyzer::DecorateVarObject(AST* symbol, VarIdent* varIdent)
-{
-    /* Decorate variable identifier with this symbol */
-    varIdent->symbolRef = symbol;
-
-    if (symbol->Type() == AST::Types::VarDecl)
-    {
-        auto varDecl = dynamic_cast<VarDecl*>(symbol);
-        if (varDecl)
-        {
-            /* Check if this identifier contains a system semantic (SV_...) */
-            FetchSystemValueSemantic(varDecl->semantics, varIdent->systemSemantic);
-
-            /* Check if the next identifiers contain a system semantic in their respective structure member */
-            if (varDecl->declStmntRef)
-            {
-                auto varTypeSymbol = varDecl->declStmntRef->varType->symbolRef;
-                if (varTypeSymbol && varTypeSymbol->Type() == AST::Types::StructDecl)
-                {
-                    auto structSymbol = dynamic_cast<StructDecl*>(varTypeSymbol);
-                    if (structSymbol)
-                    {
-                        auto ident = varIdent->next.get();
-                        while (ident)
-                        {
-                            /* Search member in structure */
-                            auto systemVal = structSymbol->systemValuesRef.find(ident->ident);
-                            if (systemVal != structSymbol->systemValuesRef.end())
-                                FetchSystemValueSemantic(systemVal->second->semantics, ident->systemSemantic);
-
-                            /* Check next identifier */
-                            ident = ident->next.get();
-                        }
-                    }
-                }
-            }
-
-            /* Append prefix to local variables */
-            if (varDecl->flags(VarDecl::isInsideFunc))
-                varIdent->ident = localVarPrefix_ + varIdent->ident;
-        }
-    }
-    else if (symbol->Type() == AST::Types::SamplerDeclStmnt)
-    {
-        /* Exchange sampler object by its respective texture object () */
-        auto samplerDecl = dynamic_cast<SamplerDeclStmnt*>(symbol);
-        auto currentFunc = ActiveFunctionCall();
-        if (samplerDecl && currentFunc && currentFunc->flags(FunctionCall::isTexFunc))
-            varIdent->ident = currentFunc->varIdent->ident;
-    }
-}
-
+//TODO: replace this function by an enum for all HLSL semantics
 bool HLSLAnalyzer::FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics, std::string& semanticName) const
 {
     for (auto& semantic : varSemantics)
@@ -594,14 +541,10 @@ bool HLSLAnalyzer::FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& v
     return false;
 }
 
+//TODO: replace this function by an enum for all HLSL semantics
 bool HLSLAnalyzer::IsSystemValueSemnatic(std::string semantic) const
 {
-    if (semantic.size() > 3)
-    {
-        std::transform(semantic.begin(), semantic.begin() + 2, semantic.begin(), ::toupper);
-        return semantic.substr(0, 3) == "SV_";
-    }
-    return false;
+    return (semantic.size() > 3 && ToUpper(semantic.substr(0, 3)) == "SV_");
 }
 
 void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
@@ -609,16 +552,16 @@ void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
     /* Decorate function identifier (if it's a member function) */
     if (ast->varIdent->next)
     {
-        //TODO: refactor member functions!
+        AnalyzeVarIdent(ast->varIdent.get());
 
-        auto symbol = Fetch(ast->varIdent->ident);
-        if (symbol)
+        //TODO: refactor member functions!
+        #if 1
+        if (auto symbol = ast->varIdent->symbolRef)
         {
-            if (symbol->Type() == AST::Types::TextureDeclStmnt)
+            if (symbol->Type() == AST::Types::TextureDecl)
                 ast->flags << FunctionCall::isTexFunc;
         }
-        else
-            ErrorUndeclaredIdent(ast->varIdent->ident, ast);
+        #endif
     }
     else
     {
@@ -670,20 +613,89 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLInt
     #endif
 }
 
-/*void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent, const AST* ast)
+void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
 {
-}*/
+    if (varIdent)
+    {
+        auto symbol = Fetch(varIdent->ident);
+        if (symbol)
+            AnalyzeVarIdentWithSymbol(varIdent, symbol);
+        else
+            ErrorUndeclaredIdent(varIdent->ident, varIdent);
+    }
+}
 
-/* --- Helper templates for context analysis --- */
-
-template <typename T>
-void HLSLAnalyzer::DecorateVarObjectSymbol(T ast)
+void HLSLAnalyzer::AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol)
 {
-    auto symbol = Fetch(ast->varIdent->ident);
-    if (symbol)
-        DecorateVarObject(symbol, ast->varIdent.get());
-    else
-        ErrorUndeclaredIdent(ast->varIdent->ident, ast);
+    /* Decorate variable identifier with this symbol */
+    varIdent->symbolRef = symbol;
+
+    switch (symbol->Type())
+    {
+        case AST::Types::VarDecl:
+            AnalyzeVarIdentWithSymbolVarDecl(varIdent, static_cast<VarDecl*>(symbol));
+            break;
+        case AST::Types::TextureDecl:
+            AnalyzeVarIdentWithSymbolTextureDecl(varIdent, static_cast<TextureDecl*>(symbol));
+            break;
+        case AST::Types::SamplerDecl:
+            AnalyzeVarIdentWithSymbolSamplerDecl(varIdent, static_cast<SamplerDecl*>(symbol));
+            break;
+        default:
+            Error("invalid symbol reference to variable identifier '" + varIdent->ToString() + "'", varIdent);
+            break;
+    }
+}
+
+//TODO: refactor this function
+void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl* varDecl)
+{
+    /* Check if this identifier contains a system semantic (SV_...) */
+    FetchSystemValueSemantic(varDecl->semantics, varIdent->systemSemantic);
+
+    #if 1//??????
+    /* Check if the next identifiers contain a system semantic in their respective structure member */
+    if (varDecl->declStmntRef)
+    {
+        auto varTypeSymbol = varDecl->declStmntRef->varType->symbolRef;
+        if (varTypeSymbol && varTypeSymbol->Type() == AST::Types::StructDecl)
+        {
+            auto structSymbol = dynamic_cast<StructDecl*>(varTypeSymbol);
+            if (structSymbol)
+            {
+                auto ident = varIdent->next.get();
+                while (ident)
+                {
+                    /* Search member in structure */
+                    auto systemVal = structSymbol->systemValuesRef.find(ident->ident);
+                    if (systemVal != structSymbol->systemValuesRef.end())
+                        FetchSystemValueSemantic(systemVal->second->semantics, ident->systemSemantic);
+
+                    /* Check next identifier */
+                    ident = ident->next.get();
+                }
+            }
+        }
+    }
+    #endif
+
+    /* Append prefix to local variables */
+    if (varDecl->flags(VarDecl::isInsideFunc))
+        varIdent->ident = localVarPrefix_ + varIdent->ident;
+}
+
+void HLSLAnalyzer::AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, TextureDecl* textureDecl)
+{
+    //TODO...
+}
+
+//TODO: refactor this function
+void HLSLAnalyzer::AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, SamplerDecl* samplerDecl)
+{
+    /* Exchange sampler object by its respective texture object () */
+    auto currentFunc = ActiveFunctionCall();
+    if (currentFunc && currentFunc->flags(FunctionCall::isTexFunc))
+        varIdent->ident = currentFunc->varIdent->ident;
 }
 
 

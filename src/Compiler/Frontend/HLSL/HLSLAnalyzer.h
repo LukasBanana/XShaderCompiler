@@ -83,7 +83,6 @@ class HLSLAnalyzer : public Analyzer
 
         void DecorateEntryInOut(VarDeclStmnt* ast, bool isInput);
         void DecorateEntryInOut(VarType* ast, bool isInput);
-        void DecorateVarObject(AST* symbol, VarIdent* varIdent);
 
         bool FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics, std::string& semanticName) const;
         bool IsSystemValueSemnatic(std::string semantic) const;
@@ -91,12 +90,11 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeFunctionCallStandard(FunctionCall* ast);
         void AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLIntrinsicEntry& intr);
 
-        //void AnalyzeVarIdent(VarIdent* varIdent, const AST* ast);
-
-        /* --- Helper templates for context analysis --- */
-
-        template <typename T>
-        void DecorateVarObjectSymbol(T ast);
+        void AnalyzeVarIdent(VarIdent* varIdent);
+        void AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol);
+        void AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl* varDecl);
+        void AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, TextureDecl* textureDecl);
+        void AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, SamplerDecl* samplerDecl);
 
         /* === Members === */
 

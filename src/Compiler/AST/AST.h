@@ -75,6 +75,7 @@ struct AST
         VarIdent,
 
         VarDecl,
+        //BufferDecl,
         TextureDecl,
         SamplerDecl,
         StructDecl,
@@ -356,8 +357,10 @@ struct SamplerDecl : public AST /*TODO --> public Decl*/
 
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
-    std::string                     registerName;   // May be empty
-    std::vector<SamplerValuePtr>    samplerValues;  // State values for a sampler decl-ident.
+    std::string                     registerName;               // May be empty
+    std::vector<SamplerValuePtr>    samplerValues;              // State values for a sampler decl-ident.
+
+    SamplerDeclStmnt*               declStmntRef    = nullptr;  // Reference to its declaration statmenet (parent node).
 };
 
 // StructDecl object.

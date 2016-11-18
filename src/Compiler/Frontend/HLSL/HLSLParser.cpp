@@ -435,9 +435,12 @@ TextureDeclPtr HLSLParser::ParseTextureDecl(TextureDeclStmnt* declStmntRef)
     return ast;
 }
 
-SamplerDeclPtr HLSLParser::ParseSamplerDecl()
+SamplerDeclPtr HLSLParser::ParseSamplerDecl(SamplerDeclStmnt* declStmntRef)
 {
     auto ast = Make<SamplerDecl>();
+
+    /* Store reference to parent node */
+    ast->declStmntRef = declStmntRef;
 
     /* Parse identifier and array dimension list (array dimension can be optional) */
     ast->ident      = ParseIdent();
@@ -691,7 +694,7 @@ SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt()
     auto ast = Make<SamplerDeclStmnt>();
 
     ast->samplerType    = Accept(Tokens::Sampler)->Spell();
-    ast->samplerDecls   = ParseSamplerDeclList();
+    ast->samplerDecls   = ParseSamplerDeclList(ast.get());
 
     Semi();
 
@@ -1519,16 +1522,16 @@ std::vector<TextureDeclPtr> HLSLParser::ParseTextureDeclList(TextureDeclStmnt* d
     return textureDecls;
 }
 
-std::vector<SamplerDeclPtr> HLSLParser::ParseSamplerDeclList()
+std::vector<SamplerDeclPtr> HLSLParser::ParseSamplerDeclList(SamplerDeclStmnt* declStmntRef)
 {
     std::vector<SamplerDeclPtr> samplerDecls;
 
-    samplerDecls.push_back(ParseSamplerDecl());
+    samplerDecls.push_back(ParseSamplerDecl(declStmntRef));
 
     while (Is(Tokens::Comma))
     {
         AcceptIt();
-        samplerDecls.push_back(ParseSamplerDecl());
+        samplerDecls.push_back(ParseSamplerDecl(declStmntRef));
     }
 
     return samplerDecls;

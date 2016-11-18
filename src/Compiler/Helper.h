@@ -38,6 +38,12 @@ T FromString(const std::string& s)
     return value;
 }
 
+// Converts the specified strin to lower case.
+std::string ToLower(const std::string& s);
+
+// Converts the specified strin to upper case.
+std::string ToUpper(const std::string& s);
+
 
 } // /namespace Xsc
 
