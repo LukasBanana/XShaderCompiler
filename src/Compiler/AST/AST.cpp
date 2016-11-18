@@ -56,7 +56,7 @@ VarIdent* VarIdent::LastVarIdent()
     return (next ? next->LastVarIdent() : this);
 }
 
-//TODO: incomplete for arrays of TextureDecl, SamplerDecl, etc.
+//TODO: incomplete for arrays of TextureDecl, and SamplerDecl!
 TypeDenoterPtr VarIdent::DeriveTypeDenoter()
 {
     if (symbolRef)
@@ -90,7 +90,20 @@ TypeDenoterPtr VarIdent::DeriveTypeDenoter()
                 auto structDecl = static_cast<StructDecl*>(symbolRef);
                 if (next)
                     RuntimeErr("can not directly access members of 'struct " + structDecl->SignatureToString() + "'", next.get());
-                return structDecl->GetTypeDenoter();
+                if (!arrayIndices.empty())
+                    RuntimeErr("can not directly acces array of 'struct " + structDecl->SignatureToString() + "'", this);
+                return structDecl->GetTypeDenoter()->Get();
+            }
+            break;
+
+            case AST::Types::AliasDecl:
+            {
+                auto aliasDecl = static_cast<AliasDecl*>(symbolRef);
+                if (next)
+                    RuntimeErr("can not directly access members of '" + aliasDecl->ident + "'", next.get());
+                if (!arrayIndices.empty())
+                    RuntimeErr("can not directly access array of '" + aliasDecl->ident + "'", this);
+                return aliasDecl->GetTypeDenoter()->Get();
             }
             break;
             

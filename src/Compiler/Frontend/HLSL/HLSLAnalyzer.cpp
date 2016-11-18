@@ -141,11 +141,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         Visit(ast->initializer);
 
         /* Compare initializer type with var-decl type */
-        if (auto initTypeDen = GetTypeDenoterFrom(ast->initializer.get()))
-        {
-            if (auto declTypeDen = GetTypeDenoterFrom(ast))
-                ValidateTypeCast(*initTypeDen, *declTypeDen, ast->initializer.get());
-        }
+        ValidateTypeCastFrom(ast->initializer.get(), ast);
     }
 }
 
@@ -389,9 +385,6 @@ IMPLEMENT_VISIT_PROC(AssignStmnt)
 {
     AnalyzeVarIdent(ast->varIdent.get());
     Visit(ast->expr);
-
-    /* Validate expression type by just calling the getter */
-    GetTypeDenoterFrom(ast->expr.get());
 }
 
 IMPLEMENT_VISIT_PROC(ExprStmnt)
@@ -407,7 +400,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     Visit(ast->expr);
 
     /* Validate expression type by just calling the getter */
-    //GetTypeDenoterFrom(ast->expr.get());
+    GetTypeDenoterFrom(ast->expr.get());
 
     //TODO: refactor this
     #if 1
@@ -455,7 +448,12 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     AnalyzeVarIdent(ast->varIdent.get());
-    Visit(ast->assignExpr);
+
+    if (ast->assignExpr)
+    {
+        Visit(ast->assignExpr);
+        ValidateTypeCastFrom(ast->assignExpr.get(), ast->varIdent.get());
+    }
 }
 
 /* --- Variables --- */
@@ -662,6 +660,12 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol)
             break;
         case AST::Types::SamplerDecl:
             AnalyzeVarIdentWithSymbolSamplerDecl(varIdent, static_cast<SamplerDecl*>(symbol));
+            break;
+        case AST::Types::StructDecl:
+            //...
+            break;
+        case AST::Types::AliasDecl:
+            //...
             break;
         default:
             Error("invalid symbol reference to variable identifier '" + varIdent->ToString() + "'", varIdent);

@@ -618,6 +618,7 @@ struct SwitchStmnt : public Stmnt
     std::vector<SwitchCasePtr>  cases;
 };
 
+//TODO: replace this by "ExprStmnt->VarAccessExpr"
 // Variable assign statement.
 struct AssignStmnt : public Stmnt
 {

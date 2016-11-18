@@ -46,7 +46,7 @@ static const int g_const1 <int annotation1 = 0, y=0; string str="hello annotatio
 
 void CS() <int annotation=0; string info="hello world!";>
 {
-	//return acos();
+	return acos();
 	
 	#if TEST == 1
 	

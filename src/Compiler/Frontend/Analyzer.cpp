@@ -357,6 +357,15 @@ void Analyzer::ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDeno
         Error("can not cast '" + sourceTypeDen.ToString() + "' to '" + destTypeDen.ToString() + "'", ast);
 }
 
+void Analyzer::ValidateTypeCastFrom(TypedAST* sourceAST, TypedAST* destAST)
+{
+    if (auto sourceTypeDen = GetTypeDenoterFrom(sourceAST))
+    {
+        if (auto destTypeDen = GetTypeDenoterFrom(destAST))
+            ValidateTypeCast(*sourceTypeDen, *destTypeDen, sourceAST);
+    }
+}
+
 
 } // /namespace Xsc
 

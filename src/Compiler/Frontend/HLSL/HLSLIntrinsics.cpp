@@ -20,6 +20,7 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
     {
         { "abort",                              { I::Abort,                             4, 0 } },
         { "abs",                                { I::Abs,                               1, 1 } },
+        { "acos",                               { I::ACos,                              1, 1 } },
         { "all",                                { I::All,                               1, 1 } },
         { "AllMemoryBarrier",                   { I::AllMemoryBarrier,                  5, 0 } },
         { "AllMemoryBarrierWithGroupSync",      { I::AllMemoryBarrierWithGroupSync,     5, 0 } },

@@ -111,6 +111,7 @@ class Analyzer : protected Visitor
         TypeDenoterPtr GetTypeDenoterFrom(TypedAST* ast);
 
         void ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, const AST* ast = nullptr);
+        void ValidateTypeCastFrom(TypedAST* sourceAST, TypedAST* destAST);
 
     private:
 
