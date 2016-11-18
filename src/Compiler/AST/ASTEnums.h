@@ -253,6 +253,8 @@ This also contains the interpolation modifier for simplicity.
 */
 enum class StorageClass
 {
+    Undefined,
+
     // Storage classes
     Extern,
     Precise,
@@ -279,6 +281,8 @@ bool IsInterpolationModifier(const StorageClass s);
 // Buffer (and texture) object type enumeration.
 enum class BufferType
 {
+    Undefined,
+
     Buffer,
     StucturedBuffer,
     ByteAddressBuffer,
@@ -318,6 +322,8 @@ bool IsTextureBufferType(const BufferType t);
 // Sampler type enumeration.
 enum class SamplerType
 {
+    Undefined,
+
     Sampler,                // 'sampler' in D3D9
     Sampler1D,              // 'sampler1D' in D3D9
     Sampler2D,              // 'sampler2D' in D3D9

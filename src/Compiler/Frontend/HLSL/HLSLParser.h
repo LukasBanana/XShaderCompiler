@@ -171,7 +171,10 @@ class HLSLParser : public Parser
 
         void                            ParseAndIgnoreTechnique();
 
+        DataType                        ParseDataType(const std::string& keyword);
         StorageClass                    ParseStorageClass();
+        BufferType                      ParseBufferType();
+        SamplerType                     ParseSamplerType();
 
         /* === Members === */
 

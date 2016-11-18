@@ -664,7 +664,7 @@ TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
 {
     auto ast = Make<TextureDeclStmnt>();
 
-    ast->textureType = HLSLKeywordToBufferType(Accept(Tokens::Texture)->Spell());
+    ast->textureType = ParseBufferType();
 
     /* Parse optional generic color type ('<' colorType '>') */
     if (Is(Tokens::BinaryOp, "<"))
@@ -1695,7 +1695,7 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseTypeDenoter()
 
         /* Make base type denoter by data type keyword */
         auto typeDenoter = std::make_shared<BaseTypeDenoter>();
-        typeDenoter->dataType = HLSLKeywordToDataType(keyword);
+        typeDenoter->dataType = ParseDataType(keyword);
         return typeDenoter;
     }
     ErrorUnexpected("expected base type denoter", nullptr, true);
@@ -1734,7 +1734,7 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseVectorTypeDenoter()
 
     /* Make base type denoter by data type keyword */
     auto typeDenoter = std::make_shared<BaseTypeDenoter>();
-    typeDenoter->dataType = HLSLKeywordToDataType(vectorType);
+    typeDenoter->dataType = ParseDataType(vectorType);
 
     return typeDenoter;
 }
@@ -1774,7 +1774,7 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseMatrixTypeDenoter()
 
     /* Make base type denoter by data type keyword */
     auto typeDenoter = std::make_shared<BaseTypeDenoter>();
-    typeDenoter->dataType = HLSLKeywordToDataType(matrixType);
+    typeDenoter->dataType = ParseDataType(matrixType);
 
     return typeDenoter;
 }
@@ -1892,10 +1892,57 @@ void HLSLParser::ParseAndIgnoreTechnique()
     }
 }
 
+DataType HLSLParser::ParseDataType(const std::string& keyword)
+{
+    try
+    {
+        return HLSLKeywordToDataType(keyword);
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
+    return DataType::Undefined;
+}
+
 StorageClass HLSLParser::ParseStorageClass()
 {
-    return HLSLKeywordToStorageClass(Accept(Tokens::StorageClass)->Spell());
+    try
+    {
+        return HLSLKeywordToStorageClass(Accept(Tokens::StorageClass)->Spell());
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
+    return StorageClass::Undefined;
 }
+
+BufferType HLSLParser::ParseBufferType()
+{
+    try
+    {
+        return HLSLKeywordToBufferType(Accept(Tokens::Texture)->Spell());
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
+    return BufferType::Undefined;
+}
+
+/*SamplerType HLSLParser::ParseSamplerType()
+{
+    try
+    {
+        return HLSLKeywordToSamplerType(Accept(Tokens::Sampler)->Spell());
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
+    return SamplerType::Undefined;
+}*/
 
 
 } // /namespace Xsc

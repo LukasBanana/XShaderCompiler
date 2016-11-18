@@ -670,6 +670,10 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLInt
     #endif
 }
 
+/*void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent, const AST* ast)
+{
+}*/
+
 /* --- Helper templates for context analysis --- */
 
 template <typename T>

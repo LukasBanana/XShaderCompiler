@@ -91,6 +91,8 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeFunctionCallStandard(FunctionCall* ast);
         void AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLIntrinsicEntry& intr);
 
+        //void AnalyzeVarIdent(VarIdent* varIdent, const AST* ast);
+
         /* --- Helper templates for context analysis --- */
 
         template <typename T>
