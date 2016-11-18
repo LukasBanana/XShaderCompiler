@@ -1278,6 +1278,7 @@ void GLSLGenerator::VisitScopedStmnt(Stmnt* ast)
     }
 }
 
+//TODO: move this into "GLSLConverter"
 bool GLSLGenerator::ExprContainsSampler(Expr* ast)
 {
     if (ast)
