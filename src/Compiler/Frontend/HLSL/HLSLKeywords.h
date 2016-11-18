@@ -33,6 +33,9 @@ StorageClass HLSLKeywordToStorageClass(const std::string& keyword);
 // Returns the buffer type for the specified HLSL keyword or throws an std::runtime_error on failure..
 BufferType HLSLKeywordToBufferType(const std::string& keyword);
 
+// Returns the semantic for the specified HLSL keyword or throws an std::runtime_error on failure..
+Semantic HLSLKeywordToSemantic(const std::string& keyword);
+
 
 } // /namespace Xsc
 

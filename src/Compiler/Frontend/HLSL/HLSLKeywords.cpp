@@ -474,6 +474,56 @@ BufferType HLSLKeywordToBufferType(const std::string& keyword)
 }
 
 
+/* ----- Semantic Mapping ----- */
+
+static std::map<std::string, Semantic> GenerateSemanticMap()
+{
+    using T = Semantic;
+
+    return
+    {
+        { "SV_ClipDistance",           T::ClipDistance           },
+        { "SV_CullDistance",           T::CullDistance           },
+        { "SV_Coverage",               T::Coverage               },
+        { "DEPTH",                     T::Depth                  },
+        { "SV_Depth",                  T::Depth                  },
+        { "SV_DepthGreaterEqual",      T::DepthGreaterEqual      },
+        { "SV_DepthLessEqual",         T::DepthLessEqual         },
+        { "SV_DispatchThreadID",       T::DispatchThreadID       },
+        { "SV_DomainLocation",         T::DomainLocation         },
+        { "SV_GroupID",                T::GroupID                },
+        { "SV_GroupIndex",             T::GroupIndex             },
+        { "SV_GroupThreadID",          T::GroupThreadID          },
+        { "SV_GSInstanceID",           T::GSInstanceID           },
+        { "SV_InnerCoverage",          T::InnerCoverage          },
+        { "SV_InsideTessFactor",       T::InsideTessFactor       },
+        { "SV_InstanceID",             T::InstanceID             },
+        { "VFACE",                     T::IsFrontFace            },
+        { "SV_IsFrontFace",            T::IsFrontFace            },
+        { "SV_OutputControlPointID",   T::OutputControlPointID   },
+        { "VPOS",                      T::Position               },
+        { "SV_Position",               T::Position               },
+        { "SV_PrimitiveID",            T::PrimitiveID            },
+        { "SV_RenderTargetArrayIndex", T::RenderTargetArrayIndex },
+        { "SV_SampleIndex",            T::SampleIndex            },
+        { "SV_StencilRef",             T::StencilRef             },
+        { "COLOR",                     T::Target                 },
+        { "SV_Target",                 T::Target                 },
+        { "SV_TessFactor",             T::TessFactor             },
+        { "SV_VertexID",               T::VertexID               },
+        { "POSITION",                  T::VertexPosition         },
+      //{ "SV_Position",               T::VertexPosition         }, // Special case (SV_Position is overloaded)
+        { "SV_ViewportArrayIndex",     T::ViewportArrayIndex     },
+    };
+}
+
+Semantic HLSLKeywordToSemantic(const std::string& keyword)
+{
+    static const auto typeMap = GenerateSemanticMap();
+    return MapKeywordToType(typeMap, keyword, "semantic");
+}
+
+
 } // /namespace Xsc
 
 

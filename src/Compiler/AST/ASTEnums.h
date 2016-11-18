@@ -494,6 +494,45 @@ enum class Intrinsic
 };
 
 
+/* ----- Semantic Enum ----- */
+
+// Semantic enumeration (vertex input is omitted).
+enum class Semantic
+{
+    Undefined,
+
+    UserDefined,            // User defined HLSL semantic
+
+    ClipDistance,           // SV_ClipDistance, 
+    CullDistance,           // SV_CullDistance, 
+    Coverage,               // SV_Coverage, gl_SampleMask
+    Depth,                  // DEPTH (D3D9), SV_Depth (D3D10+), gl_FragDepth
+    DepthGreaterEqual,      // SV_DepthGreaterEqual, layout(depth_greater) out float gl_FragDepth;
+    DepthLessEqual,         // SV_DepthLessEqual, layout(depth_less) out float gl_FragDepth;
+    DispatchThreadID,       // SV_DispatchThreadID, gl_GlobalInvocationID
+    DomainLocation,         // SV_DomainLocation, gl_TessCord
+    GroupID,                // SV_GroupID, gl_WorkGroupID
+    GroupIndex,             // SV_GroupIndex, N/A
+    GroupThreadID,          // SV_GroupThreadID, gl_LocalInvocationID
+    GSInstanceID,           // SV_GSInstanceID, gl_InvocationID
+    InnerCoverage,          // SV_InnerCoverage, gl_SampleMaskIn
+    InsideTessFactor,       // SV_InsideTessFactor, gl_TessLevelInner
+    InstanceID,             // SV_InstanceID, gl_InstanceID (GLSL), gl_InstanceIndex (Vulkan)
+    IsFrontFace,            // VFACE (D3D9), SV_IsFrontFace (D3D10+), gl_FrontFacing
+    OutputControlPointID,   // SV_OutputControlPointID, gl_InvocationID
+    Position,               // VPOS (D3D9), SV_Position (D3D10+), gl_FragCoord
+    PrimitiveID,            // SV_PrimitiveID, gl_PrimitiveID
+    RenderTargetArrayIndex, // SV_RenderTargetArrayIndex, gl_Layer
+    SampleIndex,            // SV_SampleIndex, gl_SampleID
+    StencilRef,             // SV_StencilRef, gl_FragStencilRef (if ARB_shader_stencil_export is present)
+    Target,                 // COLOR (D3D9), SV_Target (D3D10+), gl_FragData
+    TessFactor,             // SV_TessFactor, gl_TessLevelOuter
+    VertexID,               // SV_VertexID, gl_VertexID (GLSL), gl_VertexIndex (Vulkan)
+    VertexPosition,         // POSITION (D3D9), SV_Position (D3D10+), gl_Position
+    ViewportArrayIndex,     // SV_ViewportArrayIndex, gl_ViewportIndex
+};
+
+
 } // /namespace Xsc
 
 

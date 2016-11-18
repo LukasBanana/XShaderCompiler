@@ -265,9 +265,9 @@ struct VarSemantic : public AST
 
     std::string ToString() const;
 
-    std::string     semantic;
+    std::string     semantic;       //TODO: replace string with "Semantic" enum
     PackOffsetPtr   packOffset;
-    std::string     registerName; // May be empty
+    std::string     registerName;   // May be empty
 };
 
 // Variable data type.
