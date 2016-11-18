@@ -11,7 +11,8 @@ Texture2D tex;
 float f(int x) {}
 float f(inout int x, float y = 0.0)
 {
-	return sin(y);
+	y = sin(y);
+	
 	SamplerState samp;
 	return tex.Sample(samp, (float2)y);
 }
@@ -46,8 +47,6 @@ static const int g_const1 <int annotation1 = 0, y=0; string str="hello annotatio
 
 void CS() <int annotation=0; string info="hello world!";>
 {
-	//return acos();
-	
 	#if TEST == 1
 	
 	struct LocalStruct

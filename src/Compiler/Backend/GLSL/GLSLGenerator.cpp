@@ -886,18 +886,6 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
     CloseScope();
 }
 
-IMPLEMENT_VISIT_PROC(AssignStmnt)
-{
-    BeginLn();
-    {
-        WriteVarIdent(ast->varIdent.get());
-        Write(" " + AssignOpToString(ast->op) + " ");
-        Visit(ast->expr);
-        Write(";");
-    }
-    EndLn();
-}
-
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
     BeginLn();

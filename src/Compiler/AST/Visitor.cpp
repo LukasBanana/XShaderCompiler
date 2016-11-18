@@ -204,12 +204,6 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
     Visit(ast->cases);
 }
 
-IMPLEMENT_VISIT_PROC(AssignStmnt)
-{
-    Visit(ast->varIdent);
-    Visit(ast->expr);
-}
-
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
     Visit(ast->expr);

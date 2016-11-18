@@ -260,12 +260,6 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
     DEFAULT_VISITOR(SwitchStmnt);
 }
 
-IMPLEMENT_VISIT_PROC(AssignStmnt)
-{
-    Print(ast, "AssignStmnt", AssignOpToString(ast->op));
-    DEFAULT_VISITOR(AssignStmnt);
-}
-
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
     Print(ast, "ExprStmnt");

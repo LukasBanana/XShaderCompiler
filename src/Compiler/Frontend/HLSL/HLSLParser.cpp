@@ -1057,13 +1057,17 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
     else if (Is(Tokens::AssignOp))
     {
         /* Parse assignment statement */
-        auto ast = Make<AssignStmnt>();
-        
-        ast->varIdent   = varIdent;
-        ast->op         = StringToAssignOp(AcceptIt()->Spell());
-        ast->expr       = ParseExpr(true);
-        Semi();
+        auto ast = Make<ExprStmnt>();
+        {
+            auto expr = Make<VarAccessExpr>();
 
+            expr->varIdent      = varIdent;
+            expr->assignOp      = StringToAssignOp(AcceptIt()->Spell());
+            expr->assignExpr    = ParseExpr(true);
+            Semi();
+
+            ast->expr = expr;
+        }
         return ast;
     }
     else if (Is(Tokens::UnaryOp, "++") || Is(Tokens::UnaryOp, "--"))

@@ -97,7 +97,6 @@ struct AST
         IfStmnt,
         ElseStmnt,
         SwitchStmnt,
-        AssignStmnt,
         ExprStmnt,
         ReturnStmnt,
         CtrlTransferStmnt,
@@ -616,17 +615,6 @@ struct SwitchStmnt : public Stmnt
     std::vector<AttributePtr>   attribs; // Attribute list
     ExprPtr                     selector;
     std::vector<SwitchCasePtr>  cases;
-};
-
-//TODO: replace this by "ExprStmnt->VarAccessExpr"
-// Variable assign statement.
-struct AssignStmnt : public Stmnt
-{
-    AST_INTERFACE(AssignStmnt);
-
-    VarIdentPtr varIdent;
-    AssignOp    op          = AssignOp::Undefined;
-    ExprPtr     expr;
 };
 
 // Arbitrary expression statement.

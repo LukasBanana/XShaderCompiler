@@ -60,7 +60,6 @@ DECL_PTR( DoWhileLoopStmnt  );
 DECL_PTR( IfStmnt           );
 DECL_PTR( ElseStmnt         );
 DECL_PTR( SwitchStmnt       );
-DECL_PTR( AssignStmnt       );
 DECL_PTR( ExprStmnt         );
 DECL_PTR( ReturnStmnt       );
 DECL_PTR( CtrlTransferStmnt );
@@ -130,7 +129,6 @@ class Visitor
         VISITOR_VISIT_PROC( IfStmnt           );
         VISITOR_VISIT_PROC( ElseStmnt         );
         VISITOR_VISIT_PROC( SwitchStmnt       );
-        VISITOR_VISIT_PROC( AssignStmnt       );
         VISITOR_VISIT_PROC( ExprStmnt         );
         VISITOR_VISIT_PROC( ReturnStmnt       );
         VISITOR_VISIT_PROC( CtrlTransferStmnt );
