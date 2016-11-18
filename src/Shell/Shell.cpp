@@ -163,10 +163,7 @@ void Shell::Compile(const std::string& filename)
 
         *inputStream << inputFile.rdbuf();
 
-        /* Open output stream */
-        std::ofstream outputStream(outputFilename);
-        if (!outputStream.good())
-            throw std::runtime_error("failed to write file: \"" + filename + "\"");
+        std::stringstream outputStream;
 
         /* Initialize input and output descriptors */
         state_.inputDesc.sourceCode  = inputStream;
@@ -191,7 +188,16 @@ void Shell::Compile(const std::string& filename)
         log.PrintAll(state_.verbose);
 
         if (result)
+        {
             output << "translation successful" << std::endl;
+
+            /* Write result to output stream only on success */
+            std::ofstream outputFile(outputFilename);
+            if (!outputFile.good())
+                throw std::runtime_error("failed to write file: \"" + filename + "\"");
+
+            outputFile << outputStream.rdbuf();
+        }
 
         /* Show output statistics (if enabled) */
         if (state_.dumpStats)

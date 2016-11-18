@@ -406,6 +406,11 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     Visit(ast->expr);
 
+    /* Validate expression type by just calling the getter */
+    //GetTypeDenoterFrom(ast->expr.get());
+
+    //TODO: refactor this
+    #if 1
     /* Analyze entry point return statement */
     if (InsideEntryPoint() && ast->expr->Type() == AST::Types::VarAccessExpr)
     {
@@ -442,6 +447,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
             }
         }
     }
+    #endif
 }
 
 /* --- Expressions --- */
@@ -668,6 +674,8 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
     /* Decorate next identifier */
     if (varIdent->next)
     {
+        #if 0
+
         /* Variable declaration must have a struct type denoter */
         auto varTypeDen = varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size());
         if (varTypeDen->IsStruct())
@@ -676,6 +684,8 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
         }
         else
             Error("invalid type denoter in variable identifier", varIdent);
+
+        #endif
     }
 
     //TODO: refactor analysis of system value semantics (SV_...)
