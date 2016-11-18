@@ -538,6 +538,19 @@ bool IsTextureBufferType(const BufferType t)
 }
 
 
+/* ----- SamplerType Enum ----- */
+
+bool IsD3D9SamplerType(const SamplerType t)
+{
+    return (t >= SamplerType::Sampler && t <= SamplerType::Sampler_State);
+}
+
+bool IsD3D10SamplerType(const SamplerType t)
+{
+    return (t >= SamplerType::SamplerState && t <= SamplerType::SamplerComparisonState);
+}
+
+
 } // /namespace Xsc
 
 

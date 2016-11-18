@@ -313,6 +313,28 @@ bool IsRWBufferType(const BufferType t);
 bool IsTextureBufferType(const BufferType t);
 
 
+/* ----- SamplerType Enum ----- */
+
+// Sampler type enumeration.
+enum class SamplerType
+{
+    Sampler,                // 'sampler' in D3D9
+    Sampler1D,              // 'sampler1D' in D3D9
+    Sampler2D,              // 'sampler2D' in D3D9
+    Sampler3D,              // 'sampler3D' in D3D9
+    SamplerCube,            // 'samplerCUBE' in D3D9
+    Sampler_State,          // 'sampler_state' in D3D9, e.g. "sampler texSampler = sampler_state { Texture = <texObject>; MinFilter = LINEAR; };"
+    SamplerState,           // 'SamplerState' in D3D10+, e.g. "SamplerState texSampler { Filter = MIN_MAG_MIP_LINEAR; };"
+    SamplerComparisonState, // 'SamplerComparisonState' in D3D10+
+};
+
+// Returns true if the specified sampler type is a type from D3D9.
+bool IsD3D9SamplerType(const SamplerType t);
+
+// Returns true if the specified sampler type is a type from D3D10+.
+bool IsD3D10SamplerType(const SamplerType t);
+
+
 /* ----- Intrinsic Enum ----- */
 
 /*
