@@ -67,8 +67,7 @@ TypeDenoterPtr VarIdent::DeriveTypeDenoter()
             case AST::Types::VarDecl:
             {
                 auto varDecl = static_cast<VarDecl*>(symbolRef);
-                auto typeDenoter = varDecl->GetTypeDenoter()->GetArrayBaseType(arrayIndices.size(), this);
-                return typeDenoter->Get(next.get());
+                return varDecl->GetTypeDenoter()->GetFromArray(arrayIndices.size(), next.get());
             }
             break;
 
@@ -516,7 +515,7 @@ TypeDenoterPtr SuffixExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
 {
-    return expr->GetTypeDenoter()->GetArrayBaseType(arrayIndices.size(), this);
+    return expr->GetTypeDenoter()->GetFromArray(arrayIndices.size());
 }
 
 

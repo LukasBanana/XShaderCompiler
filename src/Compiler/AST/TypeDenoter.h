@@ -67,14 +67,14 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Returns the type identifier (if it has one), e.g. for structs and type aliases.
     virtual std::string Ident() const;
 
-    // Returns a type denoter for the specified (full) var-ident. Throws ASTRuntimeError if the respective var-ident could not be resolved.
+    // Returns a type denoter for the specified full variable identifier. Throws ASTRuntimeError on failure.
     virtual TypeDenoterPtr Get(const VarIdent* varIdent = nullptr);
+
+    // Returns a type denoter for the specified array access and full variable identifier. Throws ASTRuntimeError on failure.
+    virtual TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr);
 
     // Returns either this type denoter or an aliased type.
     virtual const TypeDenoter& GetAliased() const;
-
-    // Returns this as array type denoter or throws an ASTRuntimeError on failure.
-    virtual TypeDenoterPtr GetArrayBaseType(std::size_t numArrayIndices, const AST* ast);
 };
 
 // Void type denoter.
@@ -105,7 +105,7 @@ struct BaseTypeDenoter : public TypeDenoter
     bool Equals(const TypeDenoter& rhs) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 
-    TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
+    TypeDenoterPtr Get(const VarIdent* varIdent) override;
 
     DataType dataType = DataType::Undefined;
 };
@@ -182,10 +182,9 @@ struct AliasTypeDenoter : public TypeDenoter
     std::string Ident() const override;
 
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
+    TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
 
     const TypeDenoter& GetAliased() const override;
-
-    TypeDenoterPtr GetArrayBaseType(std::size_t numArrayIndices, const AST* ast) override;
 
     std::string     ident;                      // Type identifier
     AliasDecl*      aliasDeclRef    = nullptr;  // Reference to the AliasDecl AST node.
@@ -207,7 +206,7 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
 
-    TypeDenoterPtr GetArrayBaseType(std::size_t numArrayIndices, const AST* ast) override;
+    TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
 
     // Validates the number of array indices for this array type denoter.
     void ValidateArrayIndices(std::size_t numArrayIndices, const AST* ast = nullptr) const;

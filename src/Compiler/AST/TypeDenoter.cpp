@@ -99,17 +99,17 @@ TypeDenoterPtr TypeDenoter::Get(const VarIdent* varIdent)
         return shared_from_this();
 }
 
+TypeDenoterPtr TypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
+{
+    if (numArrayIndices > 0)
+        RuntimeErr("array access without array type denoter");
+    else
+        return Get(varIdent);
+}
+
 const TypeDenoter& TypeDenoter::GetAliased() const
 {
     return *this;
-}
-
-TypeDenoterPtr TypeDenoter::GetArrayBaseType(std::size_t numArrayIndices, const AST* ast)
-{
-    if (numArrayIndices > 0)
-        RuntimeErr("array access without array type denoter", ast);
-    else
-        return Get();
 }
 
 
@@ -348,16 +348,16 @@ TypeDenoterPtr AliasTypeDenoter::Get(const VarIdent* varIdent)
     RuntimeErr("missing reference to alias declaration", varIdent);
 }
 
+TypeDenoterPtr AliasTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
+{
+    return Get()->GetFromArray(numArrayIndices, varIdent);
+}
+
 const TypeDenoter& AliasTypeDenoter::GetAliased() const
 {
     if (aliasDeclRef)
         return *(aliasDeclRef->GetTypeDenoter());
     RuntimeErr("missing reference to alias declaration");
-}
-
-TypeDenoterPtr AliasTypeDenoter::GetArrayBaseType(std::size_t numArrayIndices, const AST* ast)
-{
-    return Get()->GetArrayBaseType(numArrayIndices, ast);
 }
 
 
@@ -405,11 +405,11 @@ TypeDenoterPtr ArrayTypeDenoter::Get(const VarIdent* varIdent)
     return TypeDenoter::Get(varIdent);
 }
 
-TypeDenoterPtr ArrayTypeDenoter::GetArrayBaseType(std::size_t numArrayIndices, const AST* ast)
+TypeDenoterPtr ArrayTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
 {
     /* Validate array dimensions */
-    ValidateArrayIndices(numArrayIndices, ast);
-    return baseTypeDenoter;
+    ValidateArrayIndices(numArrayIndices);
+    return baseTypeDenoter->Get(varIdent);
 }
 
 void ArrayTypeDenoter::ValidateArrayIndices(std::size_t numArrayIndices, const AST* ast) const

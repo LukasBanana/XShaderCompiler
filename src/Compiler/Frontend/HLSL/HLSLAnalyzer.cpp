@@ -669,7 +669,7 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
     if (varIdent->next)
     {
         /* Variable declaration must have a struct type denoter */
-        auto varTypeDen = varDecl->GetTypeDenoter()->GetArrayBaseType(varIdent->arrayIndices.size(), varIdent);
+        auto varTypeDen = varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size());
         if (varTypeDen->IsStruct())
         {
             //TODO...
