@@ -254,6 +254,24 @@ bool Analyzer::InsideEntryPoint() const
     return (funcDeclLevel_ >= funcDeclLevelOfEntryPoint_);
 }
 
+void Analyzer::PushStructDeclLevel()
+{
+    ++structDeclLevel_;
+}
+
+void Analyzer::PopStructDeclLevel()
+{
+    if (structDeclLevel_ > 0)
+        --structDeclLevel_;
+    else
+        ErrorInternal("structure declaration level underflow");
+}
+
+bool Analyzer::InsideStructDecl() const
+{
+    return (structDeclLevel_ > 0);
+}
+
 void Analyzer::PushFunctionCall(FunctionCall* ast)
 {
     funcCallStack_.push(ast);

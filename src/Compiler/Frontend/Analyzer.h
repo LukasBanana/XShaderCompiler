@@ -90,6 +90,12 @@ class Analyzer : protected Visitor
         // Returns true if the analyzer is currently inside the main entry point.
         bool InsideEntryPoint() const;
 
+        void PushStructDeclLevel();
+        void PopStructDeclLevel();
+
+        // Returns true if the analyzer is currently inside a structure declaration.
+        bool InsideStructDecl() const;
+
         void PushFunctionCall(FunctionCall* ast);
         void PopFunctionCall();
 
@@ -118,6 +124,8 @@ class Analyzer : protected Visitor
         // Current level of function declarations. Actually only 0 or 1 (but can be more if inner functions are supported).
         unsigned int                funcDeclLevel_              = 0;
         unsigned int                funcDeclLevelOfEntryPoint_  = ~0;
+
+        unsigned int                structDeclLevel_            = 0;
 
         // Function call stack to join arguments with its function call.
         std::stack<FunctionCall*>   funcCallStack_;
