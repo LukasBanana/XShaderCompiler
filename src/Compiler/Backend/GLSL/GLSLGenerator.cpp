@@ -486,7 +486,7 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    if (ast->flags(VarDecl::isInsideFunc))
+    if (ast->flags(VarDecl::isLocalVar))
         Write(localVarPrefix_);
     
     Write(ast->ident);

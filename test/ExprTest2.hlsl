@@ -47,6 +47,11 @@ void CS() <int annotation=0; string info="hello world!";>
 {
 	#if TEST == 1
 	
+	struct LocalStruct
+	{
+		float x,y;
+	};
+	
 	S1 s1 = (struct S1)0;
 	
 	S2_t s2;

@@ -118,8 +118,8 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     Register(ast->ident, ast);
 
-    if (InsideFunctionDecl())
-        ast->flags << VarDecl::isInsideFunc;
+    if (InsideFunctionDecl() && !InsideStructDecl())
+        ast->flags << VarDecl::isLocalVar;
 
     Visit(ast->arrayDims);
 
@@ -159,11 +159,13 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
     structStack_.push_back(ast);
 
+    PushStructDeclLevel();
     OpenScope();
     {
         Visit(ast->members);
     }
     CloseScope();
+    PopStructDeclLevel();
 
     structStack_.pop_back();
 }
@@ -680,7 +682,7 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
     #endif
 
     /* Append prefix to local variables */
-    if (varDecl->flags(VarDecl::isInsideFunc))
+    if (varDecl->flags(VarDecl::isLocalVar))
         varIdent->ident = localVarPrefix_ + varIdent->ident;
 }
 
