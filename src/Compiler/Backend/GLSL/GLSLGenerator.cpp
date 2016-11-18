@@ -88,28 +88,6 @@ void GLSLGenerator::EstablishMaps()
 {
     #if 1 // TODO: remove all HLSL mappings from here !!!
 
-    typeMap_ = std::map<std::string, std::string>
-    {
-        /* Texture types */
-        { "Texture1D",        "sampler1D"        },
-        { "Texture1DArray",   "sampler1DArray"   },
-        { "Texture2D",        "sampler2D"        },
-        { "Texture2DArray",   "sampler2DArray"   },
-        { "Texture3D",        "sampler3D"        },
-        { "TextureCube",      "samplerCube"      },
-        { "TextureCubeArray", "samplerCubeArray" },
-        { "Texture2DMS",      "sampler2DMS"      },
-        { "Texture2DMSArray", "sampler2DMSArray" },
-        /*{ "RWTexture1D",      "" },
-        { "RWTexture1DArray", "" },
-        { "RWTexture2D",      "" },
-        { "RWTexture2DArray", "" },
-        { "RWTexture3D",      "" },*/
-
-        /* Storage class types */
-        { "groupshared", "shared" },
-    };
-
     texFuncMap_ = std::map<std::string, std::string>
     {
         { "GetDimensions ",     "textureSize"   },
@@ -643,11 +621,9 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
         return; // texture not used
 
     /* Determine GLSL sampler type */
-    auto it = typeMap_.find(ast->textureType);
-    if (it == typeMap_.end())
-        Error("texture type \"" + ast->textureType + "\" not supported yet", ast);
-
-    auto samplerType = it->second;
+    auto samplerType = BufferTypeToGLSLKeyword(ast->textureType);
+    if (!samplerType)
+        Error("can not map texture type to GLSL sampler type", ast);
 
     /* Write texture samplers */
     for (auto& texDecl : ast->textureDecls)
@@ -665,7 +641,7 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
                     Write("layout(binding = " + TRegister(texDecl->registerName, texDecl.get()) + ") ");
                 }
 
-                Write("uniform " + samplerType + " " + texDecl->ident + ";");
+                Write("uniform " + *samplerType + " " + texDecl->ident + ";");
 
                 /* Write output statistics */
                 if (stats_)

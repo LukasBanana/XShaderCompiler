@@ -51,15 +51,15 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { I::DDYFine,                           "dFdyFine"              },
         { I::Degrees,                           "degrees"               },
         { I::Determinant,                       "determinant"           },
-      //{ I::DeviceMemoryBarrier,               ""                      },
-      //{ I::DeviceMemoryBarrierWithGroupSync,  ""                      },
+      //{ I::DeviceMemoryBarrier,               ""                      }, // memoryBarrier, memoryBarrierImage, memoryBarrierImage, and barrier
+      //{ I::DeviceMemoryBarrierWithGroupSync,  ""                      }, // memoryBarrier, memoryBarrierImage, memoryBarrierImage
         { I::Distance,                          "distance"              },
         { I::Dot,                               "dot"                   },
       //{ I::Dst,                               ""                      },
       //{ I::ErrorF,                            ""                      },
-      //{ I::EvaluateAttributeAtCentroid,       ""                      },
-      //{ I::EvaluateAttributeAtSample,         ""                      },
-      //{ I::EvaluateAttributeSnapped,          ""                      },
+        { I::EvaluateAttributeAtCentroid,       "interpolateAtCentroid" },
+        { I::EvaluateAttributeAtSample,         "interpolateAtSample"   },
+        { I::EvaluateAttributeSnapped,          "interpolateAtOffset"   },
         { I::Exp,                               "exp"                   },
         { I::Exp2,                              "exp2"                  },
       //{ I::F16toF32,                          ""                      },
@@ -76,7 +76,7 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
       //{ I::GetRenderTargetSampleCount,        ""                      },
       //{ I::GetRenderTargetSamplePosition,     ""                      },
         { I::GroupMemoryBarrier,                "groupMemoryBarrier"    },
-      //{ I::GroupMemoryBarrierWithGroupSync,   "barrier"               }, //???
+      //{ I::GroupMemoryBarrierWithGroupSync,   "barrier"               }, // -> groupMemoryBarrier and barrier
         { I::InterlockedAdd,                    "atomicAdd"             },
         { I::InterlockedAnd,                    "atomicAnd"             },
         { I::InterlockedCompareExchange,        "atomicCompSwap"        },
@@ -96,7 +96,7 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { I::Log,                               "log"                   },
       //{ I::Log10,                             ""                      },
         { I::Log2,                              "log2"                  },
-      //{ I::MAD,                               ""                      },
+        { I::MAD,                               "fma"                   },
         { I::Max,                               "max"                   },
         { I::Min,                               "min"                   },
         { I::ModF,                              "modf"                  },

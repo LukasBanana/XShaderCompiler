@@ -274,6 +274,45 @@ enum class StorageClass
 bool IsInterpolationModifier(const StorageClass s);
 
 
+/* ----- TextureType Enum ----- */
+
+// Buffer (and texture) object type enumeration.
+enum class BufferType
+{
+    Buffer,
+    StucturedBuffer,
+    ByteAddressBuffer,
+
+    RWBuffer,
+    RWStucturedBuffer,
+    RWByteAddressBuffer,
+    AppendStructuredBuffer,
+    ConsumeStructuredBuffer,
+
+    RWTexture1D,
+    RWTexture1DArray,
+    RWTexture2D,
+    RWTexture2DArray,
+    RWTexture3D,
+
+    Texture1D,
+    Texture1DArray,
+    Texture2D,
+    Texture2DArray,
+    Texture3D,
+    TextureCube,
+    TextureCubeArray,
+    Texture2DMS,
+    Texture2DMSArray,
+};
+
+// Returns true if the specified buffer type is a RW (read/write) buffer type.
+bool IsRWBufferType(const BufferType t);
+
+// Returns true if the specified buffer type is a texture buffer.
+bool IsTextureBufferType(const BufferType t);
+
+
 /* ----- Intrinsic Enum ----- */
 
 /*

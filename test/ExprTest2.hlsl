@@ -6,8 +6,15 @@
 
 #if TEST == 1
 
+Texture2D tex;
+
 float f(int x) {}
-float f(inout int x, float y = 0.0) {}
+float f(inout int x, float y = 0.0)
+{
+	SamplerState samp;
+	return tex.Sample(samp, (float2)y);
+}
+
 void f(float x) {}
 
 struct S1

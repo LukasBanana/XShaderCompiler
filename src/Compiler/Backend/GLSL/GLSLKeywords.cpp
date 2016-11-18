@@ -20,6 +20,13 @@ https://anteru.net/blog/2016/mapping-between-hlsl-and-glsl/
 https://msdn.microsoft.com/en-us/windows/uwp/gaming/glsl-to-hlsl-reference
 */
 
+template <typename T>
+const std::string* MapTypeToKeyword(const std::map<T, std::string>& typeMap, const T type)
+{
+    auto it = typeMap.find(type);
+    return (it != typeMap.end() ? &(it->second) : nullptr);
+}
+
 /* ------ GLSL Keywords ----- */
 
 static std::set<std::string> GenerateKeywordSet()
@@ -93,11 +100,10 @@ static std::map<DataType, std::string> GenerateDataTypeMap()
     };
 }
 
-const std::string* DataTypeToGLSLKeyword(const DataType dataType)
+const std::string* DataTypeToGLSLKeyword(const DataType t)
 {
-    static const auto dataTypeMap = GenerateDataTypeMap();
-    auto it = dataTypeMap.find(dataType);
-    return (it != dataTypeMap.end() ? &(it->second) : nullptr);
+    static const auto typeMap = GenerateDataTypeMap();
+    return MapTypeToKeyword(typeMap, t);
 }
 
 
@@ -125,11 +131,53 @@ static std::map<StorageClass, std::string> GenerateStorageClassMap()
     };
 }
 
-const std::string* StorageClassToGLSLKeyword(const StorageClass storageClass)
+const std::string* StorageClassToGLSLKeyword(const StorageClass t)
 {
-    static const auto storageClassMap = GenerateStorageClassMap();
-    auto it = storageClassMap.find(storageClass);
-    return (it != storageClassMap.end() ? &(it->second) : nullptr);
+    static const auto typeMap = GenerateStorageClassMap();
+    return MapTypeToKeyword(typeMap, t);
+}
+
+
+/* ----- BufferType Mapping ----- */
+
+static std::map<BufferType, std::string> GenerateBufferTypeMap()
+{
+    using T = BufferType;
+
+    return
+    {
+        { T::Buffer,                  "buffer"           },
+        { T::StucturedBuffer,         "buffer"           },
+        { T::ByteAddressBuffer,       "buffer"           },
+
+        { T::RWBuffer,                "buffer"           },
+        { T::RWStucturedBuffer,       "buffer"           },
+        { T::RWByteAddressBuffer,     "buffer"           },
+        { T::AppendStructuredBuffer,  "buffer"           },
+        { T::ConsumeStructuredBuffer, "buffer"           },
+
+      //{ T::RWTexture1D,             ""                 },
+      //{ T::RWTexture1DArray,        ""                 },
+      //{ T::RWTexture2D,             ""                 },
+      //{ T::RWTexture2DArray,        ""                 },
+      //{ T::RWTexture3D,             ""                 },
+
+        { T::Texture1D,               "sampler1D"        },
+        { T::Texture1DArray,          "sampler1DArray"   },
+        { T::Texture2D,               "sampler2D"        },
+        { T::Texture2DArray,          "sampler2DArray"   },
+        { T::Texture3D,               "sampler3D"        },
+        { T::TextureCube,             "samplerCube"      },
+        { T::TextureCubeArray,        "samplerCubeArray" },
+        { T::Texture2DMS,             "sampler2DMS"      },
+        { T::Texture2DMSArray,        "sampler2DMSArray" },
+    };
+}
+
+const std::string* BufferTypeToGLSLKeyword(const BufferType t)
+{
+    static const auto typeMap = GenerateBufferTypeMap();
+    return MapTypeToKeyword(typeMap, t);
 }
 
 

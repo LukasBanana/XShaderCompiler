@@ -12,6 +12,16 @@ namespace Xsc
 {
 
 
+template <typename T>
+T MapKeywordToType(const std::map<std::string, T>& typeMap, const std::string& keyword, const std::string& typeName)
+{
+    auto it = typeMap.find(keyword);
+    if (it != typeMap.end())
+        return it->second;
+    else
+        throw std::runtime_error("failed to map keyword '" + keyword + "' to " + typeName);
+}
+
 /* ----- HLSL Keywords ----- */
 
 static KeywordMapType GenerateKeywordMap()
@@ -178,14 +188,14 @@ static KeywordMapType GenerateKeywordMap()
         { "RWTexture2DArray",        T::Texture         },
         { "RWTexture3D",             T::Texture         },
 
-        { "AppendStructuredBuffer",  T::StorageBuffer   },
         { "Buffer",                  T::StorageBuffer   },
-        { "ByteAddressBuffer",       T::StorageBuffer   },
-        { "ConsumeStructuredBuffer", T::StorageBuffer   },
         { "StructuredBuffer",        T::StorageBuffer   },
+        { "ByteAddressBuffer",       T::StorageBuffer   },
         { "RWBuffer",                T::StorageBuffer   },
         { "RWByteAddressBuffer",     T::StorageBuffer   },
         { "RWStructuredBuffer",      T::StorageBuffer   },
+        { "AppendStructuredBuffer",  T::StorageBuffer   },
+        { "ConsumeStructuredBuffer", T::StorageBuffer   },
 
         { "cbuffer",                 T::UniformBuffer   },
         { "tbuffer",                 T::UniformBuffer   },
@@ -265,9 +275,7 @@ const KeywordMapType& HLSLKeywords()
 
 /* ----- DataType Mapping ----- */
 
-using DataTypeMap = std::map<std::string, DataType>;
-
-static DataTypeMap GenerateDataTypeMap()
+static std::map<std::string, DataType> GenerateDataTypeMap()
 {
     using T = DataType;
 
@@ -387,20 +395,14 @@ static DataTypeMap GenerateDataTypeMap()
 
 DataType HLSLKeywordToDataType(const std::string& keyword)
 {
-    static const auto dataTypeMap = GenerateDataTypeMap();
-    auto it = dataTypeMap.find(keyword);
-    if (it != dataTypeMap.end())
-        return it->second;
-    else
-        throw std::runtime_error("failed to map keyword '" + keyword + "' to data type");
+    static const auto typeMap = GenerateDataTypeMap();
+    return MapKeywordToType(typeMap, keyword, "data type");
 }
 
 
 /* ----- StorageClass Mapping ----- */
 
-using StorageClassMap = std::map<std::string, StorageClass>;
-
-static StorageClassMap GenerateStorageClassMap()
+static std::map<std::string, StorageClass> GenerateStorageClassMap()
 {
     using T = StorageClass;
 
@@ -424,12 +426,51 @@ static StorageClassMap GenerateStorageClassMap()
 
 StorageClass HLSLKeywordToStorageClass(const std::string& keyword)
 {
-    static const auto storageClassMap = GenerateStorageClassMap();
-    auto it = storageClassMap.find(keyword);
-    if (it != storageClassMap.end())
-        return it->second;
-    else
-        throw std::runtime_error("failed to map keyword '" + keyword + "' to storage class");
+    static const auto typeMap = GenerateStorageClassMap();
+    return MapKeywordToType(typeMap, keyword, "storage class");
+}
+
+
+/* ----- BufferType Mapping ----- */
+
+static std::map<std::string, BufferType> GenerateBufferTypeMap()
+{
+    using T = BufferType;
+
+    return
+    {
+        { "Buffer",                  T::Buffer                  },
+        { "StucturedBuffer",         T::StucturedBuffer         },
+        { "ByteAddressBuffer",       T::ByteAddressBuffer       },
+
+        { "RWBuffer",                T::RWBuffer                },
+        { "RWStucturedBuffer",       T::RWStucturedBuffer       },
+        { "RWByteAddressBuffer",     T::RWByteAddressBuffer     },
+        { "AppendStructuredBuffer",  T::AppendStructuredBuffer  },
+        { "ConsumeStructuredBuffer", T::ConsumeStructuredBuffer },
+
+        { "RWTexture1D",             T::RWTexture1D             },
+        { "RWTexture1DArray",        T::RWTexture1DArray        },
+        { "RWTexture2D",             T::RWTexture2D             },
+        { "RWTexture2DArray",        T::RWTexture2DArray        },
+        { "RWTexture3D",             T::RWTexture3D             },
+
+        { "Texture1D",               T::Texture1D               },
+        { "Texture1DArray",          T::Texture1DArray          },
+        { "Texture2D",               T::Texture2D               },
+        { "Texture2DArray",          T::Texture2DArray          },
+        { "Texture3D",               T::Texture3D               },
+        { "TextureCube",             T::TextureCube             },
+        { "TextureCubeArray",        T::TextureCubeArray        },
+        { "Texture2DMS",             T::Texture2DMS             },
+        { "Texture2DMSArray",        T::Texture2DMSArray        },
+    };
+}
+
+BufferType HLSLKeywordToBufferType(const std::string& keyword)
+{
+    static const auto typeMap = GenerateBufferTypeMap();
+    return MapKeywordToType(typeMap, keyword, "buffer type");
 }
 
 

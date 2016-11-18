@@ -22,10 +22,13 @@ namespace Xsc
 bool IsGLSLKeyword(const std::string& ident);
 
 // Returns GLSL keyword for the specified data type or null on failure.
-const std::string* DataTypeToGLSLKeyword(const DataType dataType);
+const std::string* DataTypeToGLSLKeyword(const DataType t);
 
 // Returns GLSL keyword for the specified storage class or null on failure.
-const std::string* StorageClassToGLSLKeyword(const StorageClass storageClass);
+const std::string* StorageClassToGLSLKeyword(const StorageClass t);
+
+// Returns GLSL keyword for the specified buffer type or null on failure.
+const std::string* BufferTypeToGLSLKeyword(const BufferType t);
 
 
 } // /namespace Xsc

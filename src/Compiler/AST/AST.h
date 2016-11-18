@@ -484,8 +484,8 @@ struct TextureDeclStmnt : public Stmnt
 {
     AST_INTERFACE(TextureDeclStmnt);
 
-    std::string                 textureType;
-    std::string                 colorType;      //TODO: replace with TypeDenoterPtr
+    BufferType                  textureType = BufferType::Buffer;
+    std::string                 colorType;                          //TODO: replace with TypeDenoterPtr
     std::vector<TextureDeclPtr> textureDecls;
 };
 

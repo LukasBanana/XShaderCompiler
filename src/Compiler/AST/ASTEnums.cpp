@@ -525,6 +525,19 @@ bool IsInterpolationModifier(const StorageClass s)
 }
 
 
+/* ----- BufferType Enum ----- */
+
+bool IsRWBufferType(const BufferType t)
+{
+    return (t >= BufferType::RWBuffer && t <= BufferType::RWTexture3D);
+}
+
+bool IsTextureBufferType(const BufferType t)
+{
+    return (t >= BufferType::RWTexture1D && t <= BufferType::Texture2DMSArray);
+}
+
+
 } // /namespace Xsc
 
 

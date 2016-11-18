@@ -664,7 +664,7 @@ TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
 {
     auto ast = Make<TextureDeclStmnt>();
 
-    ast->textureType = Accept(Tokens::Texture)->Spell();
+    ast->textureType = HLSLKeywordToBufferType(Accept(Tokens::Texture)->Spell());
 
     /* Parse optional generic color type ('<' colorType '>') */
     if (Is(Tokens::BinaryOp, "<"))
