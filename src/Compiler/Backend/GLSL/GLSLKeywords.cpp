@@ -14,6 +14,14 @@ namespace Xsc
 {
 
 
+/*
+Here are a few references for HLSL-to-GLSL mappings:
+https://anteru.net/blog/2016/mapping-between-hlsl-and-glsl/
+https://msdn.microsoft.com/en-us/windows/uwp/gaming/glsl-to-hlsl-reference
+*/
+
+/* ------ GLSL Keywords ----- */
+
 static std::set<std::string> GenerateKeywordSet()
 {
     return
@@ -23,75 +31,105 @@ static std::set<std::string> GenerateKeywordSet()
     };
 }
 
-static const std::set<std::string> g_keywordSetGLSL = GenerateKeywordSet();
-
 bool IsGLSLKeyword(const std::string& ident)
 {
-    return (g_keywordSetGLSL.find(ident) != g_keywordSetGLSL.end());
+    static const auto keywordSet = GenerateKeywordSet();
+    return (keywordSet.find(ident) != keywordSet.end());
 }
 
-using DataTypeMap = std::map<DataType, std::string>;
 
-static DataTypeMap GenerateDataTypeMap()
+/* ----- DataType Mapping ----- */
+
+static std::map<DataType, std::string> GenerateDataTypeMap()
 {
+    using T = DataType;
+
     return
     {
-        /* Scalar types */
-        { DataType::Bool,   "bool"   },
-        { DataType::Int,    "int"    },
-        { DataType::UInt,   "uint"   },
-        { DataType::Half,   "float"  },
-        { DataType::Float,  "float"  },
-        { DataType::Double, "double" },
+        { T::Bool,      "bool"   },
+        { T::Int,       "int"    },
+        { T::UInt,      "uint"   },
+        { T::Half,      "float"  },
+        { T::Float,     "float"  },
+        { T::Double,    "double" },
 
-        /* Vector types */
-        { DataType::Bool2,   "bvec2" },
-        { DataType::Bool3,   "bvec3" },
-        { DataType::Bool4,   "bvec4" },
-        { DataType::Int2,    "ivec2" },
-        { DataType::Int3,    "ivec3" },
-        { DataType::Int4,    "ivec4" },
-        { DataType::UInt2,   "uvec2" },
-        { DataType::UInt3,   "uvec3" },
-        { DataType::UInt4,   "uvec4" },
-        { DataType::Half2,   "vec2"  },
-        { DataType::Half3,   "vec3"  },
-        { DataType::Half4,   "vec4"  },
-        { DataType::Float2,  "vec2"  },
-        { DataType::Float3,  "vec3"  },
-        { DataType::Float4,  "vec4"  },
-        { DataType::Double2, "dvec2" },
-        { DataType::Double3, "dvec3" },
-        { DataType::Double4, "dvec4" },
+        { T::Bool2,     "bvec2"  },
+        { T::Bool3,     "bvec3"  },
+        { T::Bool4,     "bvec4"  },
+        { T::Int2,      "ivec2"  },
+        { T::Int3,      "ivec3"  },
+        { T::Int4,      "ivec4"  },
+        { T::UInt2,     "uvec2"  },
+        { T::UInt3,     "uvec3"  },
+        { T::UInt4,     "uvec4"  },
+        { T::Half2,     "vec2"   },
+        { T::Half3,     "vec3"   },
+        { T::Half4,     "vec4"   },
+        { T::Float2,    "vec2"   },
+        { T::Float3,    "vec3"   },
+        { T::Float4,    "vec4"   },
+        { T::Double2,   "dvec2"  },
+        { T::Double3,   "dvec3"  },
+        { T::Double4,   "dvec4"  },
 
-        /* Matrix types */
-        { DataType::Float2x2,  "mat2"   },
-        { DataType::Float2x3,  "mat2x3" },
-        { DataType::Float2x4,  "mat2x4" },
-        { DataType::Float3x2,  "mat3x2" },
-        { DataType::Float3x3,  "mat3"   },
-        { DataType::Float3x4,  "mat3x4" },
-        { DataType::Float4x2,  "mat4x2" },
-        { DataType::Float4x3,  "mat4x3" },
-        { DataType::Float4x4,  "mat4"   },
-        { DataType::Double2x2, "mat2"   },
-        { DataType::Double2x3, "mat2x3" },
-        { DataType::Double2x4, "mat2x4" },
-        { DataType::Double3x2, "mat3x2" },
-        { DataType::Double3x3, "mat3"   },
-        { DataType::Double3x4, "mat3x4" },
-        { DataType::Double4x2, "mat4x2" },
-        { DataType::Double4x3, "mat4x3" },
-        { DataType::Double4x4, "mat4"   },
+        { T::Float2x2,  "mat2"   },
+        { T::Float2x3,  "mat2x3" },
+        { T::Float2x4,  "mat2x4" },
+        { T::Float3x2,  "mat3x2" },
+        { T::Float3x3,  "mat3"   },
+        { T::Float3x4,  "mat3x4" },
+        { T::Float4x2,  "mat4x2" },
+        { T::Float4x3,  "mat4x3" },
+        { T::Float4x4,  "mat4"   },
+        { T::Double2x2, "mat2"   },
+        { T::Double2x3, "mat2x3" },
+        { T::Double2x4, "mat2x4" },
+        { T::Double3x2, "mat3x2" },
+        { T::Double3x3, "mat3"   },
+        { T::Double3x4, "mat3x4" },
+        { T::Double4x2, "mat4x2" },
+        { T::Double4x3, "mat4x3" },
+        { T::Double4x4, "mat4"   },
     };
 }
 
-static const DataTypeMap g_dataTypeMapGLSL = GenerateDataTypeMap();
-
 const std::string* DataTypeToGLSLKeyword(const DataType dataType)
 {
-    auto it = g_dataTypeMapGLSL.find(dataType);
-    return (it != g_dataTypeMapGLSL.end() ? &(it->second) : nullptr);
+    static const auto dataTypeMap = GenerateDataTypeMap();
+    auto it = dataTypeMap.find(dataType);
+    return (it != dataTypeMap.end() ? &(it->second) : nullptr);
+}
+
+
+/* ----- StorageClass Mapping ----- */
+
+static std::map<StorageClass, std::string> GenerateStorageClassMap()
+{
+    using T = StorageClass;
+
+    return
+    {
+        { T::Extern,          "extern"        },
+      //{ T::Precise,         ""              },
+        { T::Shared,          "shared"        },
+        { T::GroupShared,     "shared"        },
+        { T::Static,          "static"        },
+        { T::Uniform,         "uniform"       },
+        { T::Volatile,        "volatile"      },
+
+        { T::NoInterpolation, "flat"          },
+        { T::Linear,          "smooth"        },
+        { T::Centroid,        "centroid"      },
+        { T::NoPerspective,   "noperspective" },
+        { T::Sample,          "sample"        },
+    };
+}
+
+const std::string* StorageClassToGLSLKeyword(const StorageClass storageClass)
+{
+    static const auto storageClassMap = GenerateStorageClassMap();
+    auto it = storageClassMap.find(storageClass);
+    return (it != storageClassMap.end() ? &(it->second) : nullptr);
 }
 
 

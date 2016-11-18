@@ -233,7 +233,7 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
         else if (Is(Tokens::TypeModifier))
             ast->typeModifiers.push_back(AcceptIt()->Spell());
         else if (Is(Tokens::StorageModifier))
-            ast->storageModifiers.push_back(AcceptIt()->Spell());
+            ast->storageModifiers.push_back(ParseStorageClass());
     }
 
     ast->varType = ParseVarType();
@@ -717,8 +717,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
         if (Is(Tokens::StorageModifier))
         {
             /* Parse storage modifiers */
-            auto modifier = AcceptIt()->Spell();
-            ast->storageModifiers.push_back(modifier);
+            ast->storageModifiers.push_back(ParseStorageClass());
         }
         else if (Is(Tokens::TypeModifier))
         {
@@ -1891,6 +1890,11 @@ void HLSLParser::ParseAndIgnoreTechnique()
             Error("missing closing brace '}' for open code block", braceTknStack.top().get());
         AcceptIt();
     }
+}
+
+StorageClass HLSLParser::ParseStorageClass()
+{
+    return HLSLKeywordToStorageClass(Accept(Tokens::StorageModifier)->Spell());
 }
 
 

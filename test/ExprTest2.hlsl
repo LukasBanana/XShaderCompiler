@@ -7,7 +7,7 @@
 #if TEST == 1
 
 float f(int x) {}
-float f(int x, float y = 0.0) {}
+float f(inout int x, float y = 0.0) {}
 void f(float x) {}
 
 struct S1

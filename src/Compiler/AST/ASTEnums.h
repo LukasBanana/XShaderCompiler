@@ -270,6 +270,8 @@ enum class StorageClass
     Sample,
 };
 
+// Returns true if the specified storage class is actually an interpolation modifier.
+bool IsInterpolationModifier(const StorageClass s);
 
 
 /* ----- Intrinsic Enum ----- */

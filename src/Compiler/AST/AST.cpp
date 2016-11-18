@@ -248,27 +248,7 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter()
 
 std::string VarDeclStmnt::ToString(bool useVarNames) const
 {
-    std::string s;
-
-    if (!inputModifier.empty())
-    {
-        s += inputModifier;
-        s += ' ';
-    }
-
-    for (const auto& modifier : storageModifiers)
-    {
-        s += modifier;
-        s += ' ';
-    }
-
-    for (const auto& modifier : typeModifiers)
-    {
-        s += modifier;
-        s += ' ';
-    }
-
-    s += varType->ToString();
+    auto s = varType->ToString();
     
     if (useVarNames)
     {

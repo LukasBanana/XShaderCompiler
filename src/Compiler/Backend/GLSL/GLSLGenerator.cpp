@@ -110,15 +110,6 @@ void GLSLGenerator::EstablishMaps()
         { "groupshared", "shared" },
     };
 
-    modifierMap_ = std::map<std::string, std::string>
-    {
-        { "linear",          "smooth"        },
-        { "centroid",        "centroid"      },
-        { "nointerpolation", "flat"          },
-        { "noperspective",   "noperspective" },
-        { "sample",          "sample"        },
-    };
-
     texFuncMap_ = std::map<std::string, std::string>
     {
         { "GetDimensions ",     "textureSize"   },
@@ -704,6 +695,8 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     auto varDecls = ast->varDecls;
 
+    //TODO: refactor this!
+    #if 1
     for (auto it = varDecls.begin(); it != varDecls.end();)
     {
         /*
@@ -731,6 +724,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         */
         return;
     }
+    #endif
 
     BeginLn();
 
@@ -740,11 +734,13 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     else if (ast->flags(VarDeclStmnt::isShaderOutput))
         Write("out ");
 
-    for (const auto& modifier : ast->storageModifiers)
+    for (auto storageClass : ast->storageModifiers)
     {
-        auto it = modifierMap_.find(modifier);
-        if (it != modifierMap_.end())
-            Write(it->second + " ");
+        auto keyword = StorageClassToGLSLKeyword(storageClass);
+        if (keyword)
+            Write(*keyword + " ");
+        else
+            Error("not all storage classes or interpolation modifiers can be mapped to GLSL keyword", ast);
     }
 
     for (const auto& modifier : ast->typeModifiers)

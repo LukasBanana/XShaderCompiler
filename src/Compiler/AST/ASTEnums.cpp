@@ -517,6 +517,14 @@ DataType SubscriptDataType(const DataType dataType, const std::string& subscript
 }
 
 
+/* ----- StorageClass Enum ----- */
+
+bool IsInterpolationModifier(const StorageClass s)
+{
+    return (s >= StorageClass::NoInterpolation && s <= StorageClass::Sample);
+}
+
+
 } // /namespace Xsc
 
 

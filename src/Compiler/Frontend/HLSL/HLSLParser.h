@@ -38,18 +38,6 @@ class HLSLParser : public Parser
 
     private:
         
-        /* === Enumerations === */
-
-        // Variable declaration modifiers.
-        enum class VarModifiers
-        {
-            // Storage class or interpolation modifier (extern, linear, centroid, nointerpolation, noperspective, sample).
-            StorageModifier,
-
-            // Type modifier (const, row_major, column_major).
-            TypeModifier,
-        };
-
         /* === Functions === */
 
         ScannerPtr MakeScanner() override;
@@ -182,6 +170,8 @@ class HLSLParser : public Parser
         int                             ParseAndEvaluateVectorDimension();
 
         void                            ParseAndIgnoreTechnique();
+
+        StorageClass                    ParseStorageClass();
 
         /* === Members === */
 

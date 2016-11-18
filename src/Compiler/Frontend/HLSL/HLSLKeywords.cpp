@@ -12,7 +12,7 @@ namespace Xsc
 {
 
 
-/* ----- HLSLKeywords ----- */
+/* ----- HLSL Keywords ----- */
 
 static KeywordMapType GenerateKeywordMap()
 {
@@ -262,7 +262,8 @@ const KeywordMapType& HLSLKeywords()
     return keywordMap;
 }
 
-/* ----- HLSLKeywordToDataType ----- */
+
+/* ----- DataType Mapping ----- */
 
 using DataTypeMap = std::map<std::string, DataType>;
 
@@ -394,7 +395,8 @@ DataType HLSLKeywordToDataType(const std::string& keyword)
         throw std::runtime_error("failed to map keyword '" + keyword + "' to data type");
 }
 
-/* ----- HLSLKeywordToStorageClass ----- */
+
+/* ----- StorageClass Mapping ----- */
 
 using StorageClassMap = std::map<std::string, StorageClass>;
 
@@ -404,7 +406,19 @@ static StorageClassMap GenerateStorageClassMap()
 
     return
     {
-        //{ "bool",       DataType::Bool      },
+        { "extern",          T::Extern          },
+        { "precise",         T::Precise         },
+        { "shared",          T::Shared          },
+        { "groupshared",     T::GroupShared     },
+        { "static",          T::Static          },
+        { "uniform",         T::Uniform         },
+        { "volatile",        T::Volatile        },
+
+        { "nointerpolation", T::NoInterpolation },
+        { "linear",          T::Linear          },
+        { "centroid",        T::Centroid        },
+        { "noperspective",   T::NoPerspective   },
+        { "sample",          T::Sample          },
     };
 }
 

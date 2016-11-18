@@ -522,9 +522,9 @@ struct VarDeclStmnt : public Stmnt
     // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident) const;
 
-    std::string                 inputModifier;      // in, out, inout, uniform
-    std::vector<std::string>    storageModifiers;   // extern, nointerpolation, precise, shared, groupshared, static, volatile
-    std::vector<std::string>    typeModifiers;      // const, row_major, column_major
+    std::string                 inputModifier;      // Input modifiers, e.g. in, out, inout, uniform.
+    std::vector<StorageClass>   storageModifiers;   // Storage classes (or interpolation modifiers), e.g. extern, nointerpolation, precise, etc.
+    std::vector<std::string>    typeModifiers;      // Type modifiers, e.g. const, row_major, column_major.
     VarTypePtr                  varType;
     std::vector<VarDeclPtr>     varDecls;
 };
