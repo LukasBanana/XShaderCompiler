@@ -113,7 +113,7 @@ class Token
             extern, nointerpolation, precise, shared, groupshared, static,
             uniform, volatile, linear, centroid, noperspective, sample
             */
-            StorageModifier,
+            StorageClass,
             TypeModifier,       // const, row_major, column_major
 
             /* --- Technique keywords --- */

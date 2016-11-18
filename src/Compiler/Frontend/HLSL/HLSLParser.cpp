@@ -226,13 +226,13 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     auto ast = Make<VarDeclStmnt>();
 
     /* Parse parameter as single variable declaration */
-    while (Is(Tokens::InputModifier) || Is(Tokens::TypeModifier) || Is(Tokens::StorageModifier))
+    while (Is(Tokens::InputModifier) || Is(Tokens::TypeModifier) || Is(Tokens::StorageClass))
     {
         if (Is(Tokens::InputModifier))
             ast->inputModifier = AcceptIt()->Spell();
         else if (Is(Tokens::TypeModifier))
             ast->typeModifiers.push_back(AcceptIt()->Spell());
-        else if (Is(Tokens::StorageModifier))
+        else if (Is(Tokens::StorageClass))
             ast->storageModifiers.push_back(ParseStorageClass());
     }
 
@@ -539,7 +539,7 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
         case Tokens::Typedef:
             return ParseAliasDeclStmnt();
         case Tokens::TypeModifier:
-        case Tokens::StorageModifier:
+        case Tokens::StorageClass:
             return ParseVarDeclStmnt();
         case Tokens::LParen:
         case Tokens::Void:
@@ -714,7 +714,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 
     while (true)
     {
-        if (Is(Tokens::StorageModifier))
+        if (Is(Tokens::StorageClass))
         {
             /* Parse storage modifiers */
             ast->storageModifiers.push_back(ParseStorageClass());
@@ -812,7 +812,7 @@ StmntPtr HLSLParser::ParseStmnt()
         case Tokens::Sampler:
             return ParseSamplerDeclStmnt();
         case Tokens::TypeModifier:
-        case Tokens::StorageModifier:
+        case Tokens::StorageClass:
             return ParseVarDeclStmnt();
         default:
             break;
@@ -1894,7 +1894,7 @@ void HLSLParser::ParseAndIgnoreTechnique()
 
 StorageClass HLSLParser::ParseStorageClass()
 {
-    return HLSLKeywordToStorageClass(Accept(Tokens::StorageModifier)->Spell());
+    return HLSLKeywordToStorageClass(Accept(Tokens::StorageClass)->Spell());
 }
 
 
