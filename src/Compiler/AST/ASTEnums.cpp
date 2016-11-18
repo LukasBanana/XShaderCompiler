@@ -551,6 +551,14 @@ bool IsD3D10SamplerType(const SamplerType t)
 }
 
 
+/* ----- Semantic Enum ----- */
+
+bool IsSystemSemantic(const Semantic t)
+{
+    return (t >= Semantic::ClipDistance && t <= Semantic::ViewportArrayIndex);
+}
+
+
 } // /namespace Xsc
 
 

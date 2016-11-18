@@ -21,14 +21,17 @@ namespace Xsc
 // Returns true if the specified identifier is a reserved GLSL keyword.
 bool IsGLSLKeyword(const std::string& ident);
 
-// Returns GLSL keyword for the specified data type or null on failure.
+// Returns the GLSL keyword for the specified data type or null on failure.
 const std::string* DataTypeToGLSLKeyword(const DataType t);
 
-// Returns GLSL keyword for the specified storage class or null on failure.
+// Returns the GLSL keyword for the specified storage class or null on failure.
 const std::string* StorageClassToGLSLKeyword(const StorageClass t);
 
-// Returns GLSL keyword for the specified buffer type or null on failure.
+// Returns the GLSL keyword for the specified buffer type or null on failure.
 const std::string* BufferTypeToGLSLKeyword(const BufferType t);
+
+// Returns the GLSL keyword for the specified semantic.
+const std::string* SemanticToGLSLKeyword(const Semantic t);
 
 
 } // /namespace Xsc

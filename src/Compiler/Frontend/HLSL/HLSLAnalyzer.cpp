@@ -124,12 +124,12 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
     Visit(ast->arrayDims);
 
-    for (auto& semantic : ast->semantics)
+    for (auto& varSem : ast->semantics)
     {
-        Visit(semantic);
+        Visit(varSem);
 
         /* Store references to members with system value semantic (SV_...) in all parent structures */
-        if (IsSystemValueSemnatic(semantic->semantic))
+        if (IsSystemSemantic(varSem->semantic))
         {
             for (auto& structDecl : structStack_)
                 structDecl->systemValuesRef[ast->ident] = ast;
@@ -531,24 +531,14 @@ void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
     }
 }
 
-//TODO: replace this function by an enum for all HLSL semantics
-bool HLSLAnalyzer::FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics, std::string& semanticName) const
+VarSemanticPtr HLSLAnalyzer::FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics) const
 {
-    for (auto& semantic : varSemantics)
+    for (auto& varSem : varSemantics)
     {
-        if (IsSystemValueSemnatic(semantic->semantic))
-        {
-            semanticName = semantic->semantic;
-            return true;
-        }
+        if (IsSystemSemantic(varSem->semantic))
+            return varSem;
     }
     return false;
-}
-
-//TODO: replace this function by an enum for all HLSL semantics
-bool HLSLAnalyzer::IsSystemValueSemnatic(std::string semantic) const
-{
-    return (semantic.size() > 3 && ToUpper(semantic.substr(0, 3)) == "SV_");
 }
 
 void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
@@ -689,27 +679,33 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
     //TODO: refactor analysis of system value semantics (SV_...)
     #if 1
     /* Check if this identifier contains a system semantic (SV_...) */
-    FetchSystemValueSemantic(varDecl->semantics, varIdent->systemSemantic);
-
-    /* Check if the next identifiers contain a system semantic in their respective structure member */
-    if (varDecl->declStmntRef)
+    if (auto systemSemantic = FetchSystemValueSemantic(varDecl->semantics))
     {
-        auto varTypeSymbol = varDecl->declStmntRef->varType->symbolRef;
-        if (varTypeSymbol && varTypeSymbol->Type() == AST::Types::StructDecl)
-        {
-            auto structSymbol = dynamic_cast<StructDecl*>(varTypeSymbol);
-            if (structSymbol)
-            {
-                auto ident = varIdent->next.get();
-                while (ident)
-                {
-                    /* Search member in structure */
-                    auto systemVal = structSymbol->systemValuesRef.find(ident->ident);
-                    if (systemVal != structSymbol->systemValuesRef.end())
-                        FetchSystemValueSemantic(systemVal->second->semantics, ident->systemSemantic);
+        varIdent->systemSemantic = systemSemantic->semantic;
 
-                    /* Check next identifier */
-                    ident = ident->next.get();
+        /* Check if the next identifiers contain a system semantic in their respective structure member */
+        if (varDecl->declStmntRef)
+        {
+            auto varTypeSymbol = varDecl->declStmntRef->varType->symbolRef;
+            if (varTypeSymbol && varTypeSymbol->Type() == AST::Types::StructDecl)
+            {
+                auto structSymbol = dynamic_cast<StructDecl*>(varTypeSymbol);
+                if (structSymbol)
+                {
+                    auto ident = varIdent->next.get();
+                    while (ident)
+                    {
+                        /* Search member in structure */
+                        auto systemVal = structSymbol->systemValuesRef.find(ident->ident);
+                        if (systemVal != structSymbol->systemValuesRef.end())
+                        {
+                            if (auto identSemantic = FetchSystemValueSemantic(systemVal->second->semantics))
+                                ident->systemSemantic = identSemantic->semantic;
+                        }
+
+                        /* Check next identifier */
+                        ident = ident->next.get();
+                    }
                 }
             }
         }

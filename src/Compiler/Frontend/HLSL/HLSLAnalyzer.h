@@ -83,8 +83,7 @@ class HLSLAnalyzer : public Analyzer
         void DecorateEntryInOut(VarDeclStmnt* ast, bool isInput);
         void DecorateEntryInOut(VarType* ast, bool isInput);
 
-        bool FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics, std::string& semanticName) const;
-        bool IsSystemValueSemnatic(std::string semantic) const;
+        VarSemanticPtr FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics) const;
 
         void AnalyzeFunctionCallStandard(FunctionCall* ast);
         void AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLIntrinsicEntry& intr);

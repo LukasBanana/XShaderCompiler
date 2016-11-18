@@ -204,7 +204,8 @@ std::string VarSemantic::ToString() const
     if (packOffset)
         return packOffset->ToString();
 
-    return semantic;
+    //return semantic;
+    return "<Semantic>";
 }
 
 

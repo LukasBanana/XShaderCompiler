@@ -174,9 +174,9 @@ struct Program : public AST
 
     struct OutputSemantics
     {
-        VarType*    returnType = nullptr;   // Either this ...
-        std::string functionSemantic;       // ... or this is used.
-        std::string singleOutputVariable;   // May be empty
+        VarType*    returnType              = nullptr;              // Either this ...
+        Semantic    functionSemantic        = Semantic::Undefined;  // ... or this is used.
+        std::string singleOutputVariable;                           // May be empty
     };
 
     FLAG_ENUM
@@ -265,9 +265,9 @@ struct VarSemantic : public AST
 
     std::string ToString() const;
 
-    std::string     semantic;       //TODO: replace string with "Semantic" enum
+    Semantic        semantic        = Semantic::Undefined;
     PackOffsetPtr   packOffset;
-    std::string     registerName;   // May be empty
+    std::string     registerName;                           // May be empty
 };
 
 // Variable data type.
@@ -299,13 +299,13 @@ struct VarIdent : public TypedAST
     // Returns a type denoter for the symbol reference of the last variable identifier.
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    std::string             ident;                  // Either this ..
-  //TypeDenoterPtr          typeDenoter;            // ... or this is used
-    std::vector<ExprPtr>    arrayIndices;           // Optional array indices
-    VarIdentPtr             next;                   // Next identifier; may be null.
+    std::string             ident;                                  // Either this ..
+  //TypeDenoterPtr          typeDenoter;                            // ... or this is used
+    std::vector<ExprPtr>    arrayIndices;                           // Optional array indices
+    VarIdentPtr             next;                                   // Next identifier; may be null.
 
-    AST*                    symbolRef = nullptr;    // Symbol reference for DAST to the variable object; may be null.
-    std::string             systemSemantic;         // System semantic (SV_...) for DAST; may be empty.
+    AST*                    symbolRef       = nullptr;              // Symbol reference for DAST to the variable object; may be null.
+    Semantic                systemSemantic  = Semantic::Undefined;  // System semantic (SV_...) for DAST; may be undefined.
 };
 
 /* --- Declarations --- */
@@ -440,16 +440,16 @@ struct FunctionDecl : public Stmnt
     // Returns true if the specified type denoter matches the parameter.
     virtual bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const;
 
-    std::vector<AttributePtr>       attribs;                    // Attribute list
+    std::vector<AttributePtr>       attribs;                                // Attribute list
     VarTypePtr                      returnType;
     std::string                     ident;
     std::vector<VarDeclStmntPtr>    parameters;
-    std::string                     semantic;                   // May be empty
-    std::vector<VarDeclStmntPtr>    annotations;                // Annotations can be ignored by analyzers and generators.
-    CodeBlockPtr                    codeBlock;                  // May be null (if this AST node is a forward declaration).
+    Semantic                        semantic        = Semantic::Undefined;  // May be empty
+    std::vector<VarDeclStmntPtr>    annotations;                            // Annotations can be ignored by analyzers and generators.
+    CodeBlockPtr                    codeBlock;                              // May be null (if this AST node is a forward declaration).
 
     //TODO: currently unused
-    FunctionDecl*                   definitionRef   = nullptr;  // Reference to the actual function definition (only for forward declarations).
+    FunctionDecl*                   definitionRef   = nullptr;              // Reference to the actual function definition (only for forward declarations).
 };
 
 /*

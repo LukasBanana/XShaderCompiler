@@ -108,7 +108,8 @@ IMPLEMENT_VISIT_PROC(PackOffset)
 
 IMPLEMENT_VISIT_PROC(VarSemantic)
 {
-    auto info = ast->semantic;
+    //auto info = ast->semantic;
+    std::string info = "<Semantic>";
 
     if (!ast->registerName.empty())
         info += " (" + ast->registerName + ")";

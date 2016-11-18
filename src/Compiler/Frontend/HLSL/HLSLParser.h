@@ -151,7 +151,6 @@ class HLSLParser : public Parser
 
         std::string                     ParseIdent();
         std::string                     ParseRegister(bool parseColon = true);
-        std::string                     ParseSemantic();
 
         TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true);
         TypeDenoterPtr                  ParseTypeDenoterPrimary();
@@ -174,7 +173,8 @@ class HLSLParser : public Parser
         DataType                        ParseDataType(const std::string& keyword);
         StorageClass                    ParseStorageClass();
         BufferType                      ParseBufferType();
-        SamplerType                     ParseSamplerType();
+        //SamplerType                     ParseSamplerType();
+        Semantic                        ParseSemantic(bool parseColon = true);
 
         /* === Members === */
 

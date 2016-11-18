@@ -361,7 +361,7 @@ VarSemanticPtr HLSLParser::ParseVarSemantic()
     else if (Is(Tokens::PackOffset))
         ast->packOffset = ParsePackOffset(false);
     else
-        ast->semantic = ParseIdent();
+        ast->semantic = ParseSemantic(false);
 
     return ast;
 }
@@ -1592,12 +1592,6 @@ std::string HLSLParser::ParseRegister(bool parseColon)
     return registerName;
 }
 
-std::string HLSLParser::ParseSemantic()
-{
-    Accept(Tokens::Colon);
-    return ParseIdent();
-}
-
 TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool allowVoidType)
 {
     if (Is(Tokens::Void))
@@ -1950,6 +1944,13 @@ BufferType HLSLParser::ParseBufferType()
     }
     return SamplerType::Undefined;
 }*/
+
+Semantic HLSLParser::ParseSemantic(bool parseColon)
+{
+    if (parseColon)
+        Accept(Tokens::Colon);
+    return HLSLKeywordToSemantic(ParseIdent());
+}
 
 
 } // /namespace Xsc

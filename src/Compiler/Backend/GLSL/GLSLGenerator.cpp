@@ -100,32 +100,6 @@ void GLSLGenerator::EstablishMaps()
         { "SampleLevel",        "textureLod"    },
     };
 
-    semanticMap_ = std::map<std::string, SemanticStage>
-    {
-        { "SV_CLIPDISTANCE",            { "gl_ClipDistance"                             } },
-        { "SV_CULLDISTANCE",            { "gl_CullDistance"                             } },
-      //{ "SV_COVERAGE",                { "???"                                         } },
-        { "SV_DEPTH",                   { "gl_FragDepth"                                } },
-        { "SV_DISPATCHTHREADID",        { "gl_GlobalInvocationID"                       } },
-        { "SV_DOMAINLOCATION",          { "gl_TessCoord"                                } },
-        { "SV_GROUPID",                 { "gl_WorkGroupID"                              } },
-        { "SV_GROUPINDEX",              { "gl_LocalInvocationIndex"                     } },
-        { "SV_GROUPTHREADID",           { "gl_LocalInvocationID"                        } },
-        { "SV_GSINSTANCEID",            { "gl_InvocationID"                             } },
-        { "SV_INSIDETESSFACTOR",        { "gl_Position"                                 } },
-        { "SV_ISFRONTFACE",             { "gl_FrontFacing"                              } },
-        { "SV_OUTPUTCONTROLPOINTID",    { "gl_PrimitiveID"                              } },
-        { "SV_POSITION",                { "gl_Position", "", "", "", "gl_FragCoord", "" } },
-      //{ "SV_RENDERTARGETARRAYINDEX",  { "???"                                         } },
-        { "SV_SAMPLEINDEX",             { "gl_SampleID"                                 } },
-        { "SV_TARGET",                  { "gl_FragColor"                                } },
-        { "SV_TESSFACTOR",              { "gl_Position"                                 } },
-        { "SV_VIEWPORTARRAYINDEX",      { "gl_ViewportIndex"                            } },
-        { "SV_INSTANCEID",              { "gl_InstanceID"                               } },
-        { "SV_PRIMITIVEID",             { "gl_PrimitiveID"                              } },
-        { "SV_VERTEXID",                { "gl_VertexID"                                 } },
-    };
-
     #endif
 }
 
@@ -1110,17 +1084,18 @@ void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenP
         auto semantic = varDecl->semantics.front()->semantic;
 
         /* Map semantic to GL built-in constant */
-        SemanticStage semanticStage;
-        if (!FetchSemantic(semantic, semanticStage))
-            return;
-
-        /* Write local variable definition statement */
-        BeginLn();
+        if (auto semanticKeyword = SemanticToGLSLKeyword(semantic))
         {
-            Visit(ast->varType);
-            Write(" " + varDecl->ident + " = " + semanticStage[shaderTarget_] + ";");
+            /* Write local variable definition statement */
+            BeginLn();
+            {
+                Visit(ast->varType);
+                Write(" " + varDecl->ident + " = " + *semanticKeyword + ";");
+            }
+            EndLn();
         }
-        EndLn();
+        else
+            Error("can not map semantic name to GLSL keyword", ast);
 
         ++writtenParamCounter;
     }
@@ -1185,32 +1160,34 @@ void GLSLGenerator::WriteFragmentShaderOutput()
     else
     {
         /* Write single output semantic declaration */
-        SemanticStage semantic;
-        if (FetchSemantic(outp.functionSemantic, semantic))
+        if (auto semanticKeyword = SemanticToGLSLKeyword(outp.functionSemantic))
         {
-            if (semantic.fragment == "gl_FragColor")
+            if (outp.functionSemantic == Semantic::Target)
             {
+                //TODO: record semantic index
+                int semanticIndex = 0;
+
                 if (IsVersionOut(130))
                 {
                     BeginLn();
                     {
-                        Write("layout(location = " + std::to_string(semantic.index) + ") out ");
+                        Write("layout(location = " + std::to_string(semanticIndex) + ") out ");
                         Visit(outp.returnType);
-                        Write(" " + outp.functionSemantic + ";");
+                        Write(" " + *semanticKeyword + ";");
                     }
                     EndLn();
-                    outp.singleOutputVariable = outp.functionSemantic;
+                    outp.singleOutputVariable = *semanticKeyword;
                 }
                 else
-                    outp.singleOutputVariable = "gl_FragData[" + std::to_string(semantic.index) + "]";
+                    outp.singleOutputVariable = "gl_FragData[" + std::to_string(semanticIndex) + "]";
             }
-            else if (semantic.fragment == "gl_FragDepth")
-                outp.singleOutputVariable = semantic.fragment;
+            else if (outp.functionSemantic == Semantic::Depth)
+                outp.singleOutputVariable = *semanticKeyword;
             else
-                Error("invalid output semantic for pixel shader: \"" + outp.functionSemantic + "\"");
+                Error("invalid output semantic for fragment shader: \"" + *semanticKeyword + "\"");
         }
         else
-            Error("unknown shader output semantic: \"" + outp.functionSemantic + "\"");
+            Error("failed to map fragment shader output semantic to GLSL keyword");
     }
 
     Blank();
@@ -1226,8 +1203,7 @@ void GLSLGenerator::VisitStructDeclMembers(StructDecl* ast)
 VarIdent* GLSLGenerator::FirstSystemSemanticVarIdent(VarIdent* ast)
 {
     /* Check if current var-ident AST node has a system semantic */
-    SemanticStage semantic;
-    if (FetchSemantic(ast->systemSemantic, semantic))
+    if (SemanticToGLSLKeyword(ast->systemSemantic))
         return ast;
 
     /* Search in next var-ident AST node */
@@ -1240,13 +1216,16 @@ VarIdent* GLSLGenerator::FirstSystemSemanticVarIdent(VarIdent* ast)
 void GLSLGenerator::WriteVarIdent(VarIdent* ast)
 {
     /* Find system value semantic in variable identifier */
-    SemanticStage semantic;
     auto semanticVarIdent = FirstSystemSemanticVarIdent(ast);
+    const std::string* semanticKeyword = nullptr;
 
-    if (semanticVarIdent && FetchSemantic(semanticVarIdent->systemSemantic, semantic))
+    if (semanticVarIdent)
+        semanticKeyword = SemanticToGLSLKeyword(semanticVarIdent->systemSemantic);
+
+    if (semanticVarIdent && semanticKeyword)
     {
         /* Write shader target respective system semantic */
-        Write(semantic[shaderTarget_]);
+        Write(*semanticKeyword);
 
         if (semanticVarIdent->next)
         {
@@ -1335,102 +1314,14 @@ bool GLSLGenerator::VarTypeIsSampler(VarType* ast)
     return ast->typeDenoter->IsSampler();
 }
 
-bool GLSLGenerator::FetchSemantic(std::string semanticName, SemanticStage& semantic) const
-{
-    if (semanticName.empty())
-        return false;
-
-    /* Extract optional index */
-    int index = 0;
-
-    if (!semanticName.empty() && std::isdigit(semanticName.back()))
-    {
-        index = std::stoi(std::string(1, semanticName.back()));
-        semanticName.pop_back();
-    }
-
-    /* Search for semantic */
-    std::transform(semanticName.begin(), semanticName.end(), semanticName.begin(), ::toupper);
-
-    auto it = semanticMap_.find(semanticName);
-    if (it != semanticMap_.end())
-    {
-        /* Return semantic */
-        semantic = it->second;
-        semantic.index = index;
-        return true;
-    }
-
-    return false;
-}
-
-bool GLSLGenerator::IsSystemValueSemantic(const VarSemantic* ast) const
-{
-    SemanticStage semantic;
-    return FetchSemantic(ast->semantic, semantic);
-}
-
 bool GLSLGenerator::HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const
 {
-    for (const auto& varSemantic : semantics)
+    for (const auto& varSem : semantics)
     {
-        if (IsSystemValueSemantic(varSemantic.get()))
+        if (IsSystemSemantic(varSem->semantic))
             return true;
     }
     return false;
-}
-
-
-/*
- * SemanticStage structure
- */
-
-GLSLGenerator::SemanticStage::SemanticStage(const std::string& semantic) :
-    vertex          { semantic },
-    geometry        { semantic },
-    tessControl     { semantic },
-    tessEvaluation  { semantic },
-    fragment        { semantic },
-    compute         { semantic }
-{
-}
-
-GLSLGenerator::SemanticStage::SemanticStage(
-    const std::string& vertex,
-    const std::string& geometry,
-    const std::string& tessControl,
-    const std::string& tessEvaluation,
-    const std::string& fragment,
-    const std::string& compute) :
-        vertex          { vertex         },
-        geometry        { geometry       },
-        tessControl     { tessControl    },
-        tessEvaluation  { tessEvaluation },
-        fragment        { fragment       },
-        compute         { compute        }
-{
-}
-
-const std::string& GLSLGenerator::SemanticStage::operator [] (const ShaderTarget target) const
-{
-    switch (target)
-    {
-        case ShaderTarget::VertexShader:
-            return vertex;
-        case ShaderTarget::GeometryShader:
-            return geometry;
-        case ShaderTarget::TessellationControlShader:
-            return tessControl;
-        case ShaderTarget::TessellationEvaluationShader:
-            return tessEvaluation;
-        case ShaderTarget::FragmentShader:
-            return fragment;
-        case ShaderTarget::ComputeShader:
-            return compute;
-        default:
-            break;
-    }
-    throw Report(Report::Types::Error, "'target' parameter out of range in " + std::string(__FUNCTION__));
 }
 
 void GLSLGenerator::WriteArrayDims(const std::vector<ExprPtr>& arrayDims)

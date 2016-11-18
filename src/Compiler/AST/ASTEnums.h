@@ -503,8 +503,8 @@ enum class Semantic
 
     UserDefined,            // User defined HLSL semantic
 
-    ClipDistance,           // SV_ClipDistance, 
-    CullDistance,           // SV_CullDistance, 
+    ClipDistance,           // SV_ClipDistance, gl_ClipDistance
+    CullDistance,           // SV_CullDistance, gl_CullDistance (if ARB_cull_distance is present)
     Coverage,               // SV_Coverage, gl_SampleMask
     Depth,                  // DEPTH (D3D9), SV_Depth (D3D10+), gl_FragDepth
     DepthGreaterEqual,      // SV_DepthGreaterEqual, layout(depth_greater) out float gl_FragDepth;
@@ -531,6 +531,9 @@ enum class Semantic
     VertexPosition,         // POSITION (D3D9), SV_Position (D3D10+), gl_Position
     ViewportArrayIndex,     // SV_ViewportArrayIndex, gl_ViewportIndex
 };
+
+// Returns true if the specified semantic is a system value semantic.
+bool IsSystemSemantic(const Semantic t);
 
 
 } // /namespace Xsc

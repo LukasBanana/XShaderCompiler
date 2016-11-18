@@ -11,10 +11,10 @@ Texture2D tex;
 float f(int x) {}
 float f(inout int x, float y = 0.0)
 {
-	y = sin(y);
+	//y = sin(y);
 	
 	SamplerState samp;
-	return tex.Sample(samp, (float2)y);
+	//return tex.Sample(samp, (float2)y);
 }
 
 void f(float x) {}
@@ -45,6 +45,7 @@ static const int g_const1 <int annotation1 = 0, y=0; string str="hello annotatio
 
 #endif
 
+[numthreads(1,2,3)]
 void CS() <int annotation=0; string info="hello world!";>
 {
 	#if TEST == 1

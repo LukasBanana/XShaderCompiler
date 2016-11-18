@@ -35,33 +35,6 @@ class GLSLGenerator : public Generator
 
     private:
         
-        /* === Structures === */
-
-        struct SemanticStage
-        {
-            SemanticStage() = default;
-            SemanticStage(const std::string& semantic);
-            SemanticStage(
-                const std::string& vertex,
-                const std::string& geometry,
-                const std::string& tessControl,
-                const std::string& tessEvaluation,
-                const std::string& fragment,
-                const std::string& compute
-            );
-
-            // \throws std::out_of_range If 'target' is out of range.
-            const std::string& operator [] (const ShaderTarget target) const;
-
-            std::string vertex;
-            std::string geometry;
-            std::string tessControl;
-            std::string tessEvaluation;
-            std::string fragment;
-            std::string compute;
-            int         index = 0;      // Semantic index
-        };
-
         /* === Functions === */
 
         void GenerateCodePrimary(
@@ -184,9 +157,6 @@ class GLSLGenerator : public Generator
         // Returns true if the specified variable type is a sampler.
         bool VarTypeIsSampler(VarType* ast);
 
-        bool FetchSemantic(std::string semanticName, SemanticStage& semantic) const;
-
-        bool IsSystemValueSemantic(const VarSemantic* ast) const;
         bool HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const;
 
         void WriteArrayDims(const std::vector<ExprPtr>& arrayDims);
@@ -215,7 +185,6 @@ class GLSLGenerator : public Generator
 
         #if 1//TODO: remove all HLSL type mappings from here
         std::map<std::string, std::string> texFuncMap_;         // <hlsl-function, glsl-function>
-        std::map<std::string, SemanticStage> semanticMap_;      // <hlsl-semantic, glsl-keyword>
         #endif
 
 };
