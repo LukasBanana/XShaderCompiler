@@ -7,6 +7,10 @@
 
 #include "Token.h"
 
+#ifdef XSC_ENABLE_MEMORY_POOL
+#include "MemoryPool.h"
+#endif
+
 
 namespace Xsc
 {
@@ -125,6 +129,20 @@ std::string Token::SpellContent() const
     else
         return Spell();
 }
+
+#ifdef XSC_ENABLE_MEMORY_POOL
+
+void* Token::operator new (std::size_t count)
+{
+    return MemoryPool::Instance().Alloc(count);
+}
+
+void Token::operator delete (void* ptr)
+{
+    MemoryPool::Instance().Free(ptr);
+}
+
+#endif
 
 
 } // /namespace Xsc

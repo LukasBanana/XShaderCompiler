@@ -6,6 +6,7 @@
  */
 
 #include "Scanner.h"
+#include "Helper.h"
 #include <cctype>
 
 
@@ -199,23 +200,23 @@ TokenPtr Scanner::Make(const Token::Types& type, bool takeChr)
     {
         std::string spell;
         spell += TakeIt();
-        return std::make_shared<Token>(Pos(), type, std::move(spell));
+        return MakeShared<Token>(Pos(), type, std::move(spell));
     }
-    return std::make_shared<Token>(Pos(), type);
+    return MakeShared<Token>(Pos(), type);
 }
 
 TokenPtr Scanner::Make(const Token::Types& type, std::string& spell, bool takeChr)
 {
     if (takeChr)
         spell += TakeIt();
-    return std::make_shared<Token>(Pos(), type, std::move(spell));
+    return MakeShared<Token>(Pos(), type, std::move(spell));
 }
 
 TokenPtr Scanner::Make(const Token::Types& type, std::string& spell, const SourcePosition& pos, bool takeChr)
 {
     if (takeChr)
         spell += TakeIt();
-    return std::make_shared<Token>(pos, type, std::move(spell));
+    return MakeShared<Token>(pos, type, std::move(spell));
 }
 
 /* ----- Report Handling ----- */

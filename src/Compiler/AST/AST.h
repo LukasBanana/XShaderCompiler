@@ -122,6 +122,13 @@ struct AST
     virtual Types Type() const = 0;
     virtual void Visit(Visitor* visitor, void* args = nullptr) = 0;
 
+    #ifdef XSC_ENABLE_MEMORY_POOL
+
+    void* operator new (std::size_t count);
+    void operator delete (void* ptr);
+
+    #endif
+
     FLAG_ENUM
     {
         FLAG( isReachable,      30 ), // This AST node is reachable from the main entry point (i.e. the use-count >= 1).

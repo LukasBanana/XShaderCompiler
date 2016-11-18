@@ -15,6 +15,7 @@
 #include "ASTEnums.h"
 #include "ReportHandler.h"
 #include "Visitor.h"
+#include "Helper.h"
 #include "AST.h"
 #include "Token.h"
 
@@ -163,7 +164,7 @@ class Parser
         template <typename T, typename... Args>
         std::shared_ptr<T> Make(Args&&... args)
         {
-            return std::make_shared<T>(GetScanner().Pos(), args...);
+            return MakeShared<T>(GetScanner().Pos(), std::forward<Args>(args)...);
         }
 
         // Returns the current token.

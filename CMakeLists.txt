@@ -18,6 +18,7 @@ set(INSTALL_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "Instal
 option(XSC_BUILD_SHELL "Build XShaderCompiler shell 'xsc'" ON)
 option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
+option(XSC_MEMORY_POOL "Enables the memory pool for optimized memory allocation (Experimental)" OFF)
 
 
 # === Preprocessor definitions ===
@@ -30,6 +31,10 @@ endif()
 
 if(XSC_ENABLE_EASTER_EGGS)
 	add_definitions(-DXSC_ENABLE_EASTER_EGGS)
+endif()
+
+if(XSC_MEMORY_POOL)
+	add_definitions(-DXSC_ENABLE_MEMORY_POOL)
 endif()
 
 

@@ -168,6 +168,13 @@ class Token
             return spell_;
         }
 
+        #ifdef XSC_ENABLE_MEMORY_POOL
+
+        void* operator new (std::size_t count);
+        void operator delete (void* ptr);
+
+        #endif
+
     private:
 
         Types           type_;  // Type of this token.
