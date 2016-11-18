@@ -385,6 +385,9 @@ IMPLEMENT_VISIT_PROC(AssignStmnt)
 {
     AnalyzeVarIdent(ast->varIdent.get());
     Visit(ast->expr);
+
+    /* Validate expression type by just calling the getter */
+    GetTypeDenoterFrom(ast->expr.get());
 }
 
 IMPLEMENT_VISIT_PROC(ExprStmnt)
