@@ -56,6 +56,8 @@ void CS() <int annotation=0; string info="hello world!";>
 	
 	S2_t s2;
 	
+	s1 = s2[0][0][0].a;
+	
 	int i1 = (int).0f;
 	
 	float f1 = ((vector)1).xyz.x.xxx.zz.x.x.x;

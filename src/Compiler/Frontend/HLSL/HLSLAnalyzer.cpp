@@ -388,6 +388,9 @@ IMPLEMENT_VISIT_PROC(AssignStmnt)
 {
     AnalyzeVarIdent(ast->varIdent.get());
     Visit(ast->expr);
+
+    /* Validate expression type by just calling the getter */
+    GetTypeDenoterFrom(ast->expr.get());
 }
 
 IMPLEMENT_VISIT_PROC(ExprStmnt)
@@ -606,7 +609,6 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLInt
             {
                 if (ast->arguments.size() < 2)
                     Error("interlocked intrinsics must have at least 2 arguments", ast);
-                //program_->flags << Program::interlockedIntrinsicsUsed;
             }
         }
         break;
@@ -649,13 +651,22 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol)
     }
 }
 
-//TODO: refactor this function
 void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl* varDecl)
 {
+    /* Decorate next identifier */
+    if (varIdent->next)
+    {
+        /* Variable declaration must have a struct type denoter */
+        //auto varTypeDen = varDecl->GetTypeDenoter()->Get();
+
+
+    }
+
+    //TODO: refactor analysis of system value semantics (SV_...)
+    #if 1
     /* Check if this identifier contains a system semantic (SV_...) */
     FetchSystemValueSemantic(varDecl->semantics, varIdent->systemSemantic);
 
-    #if 1//??????
     /* Check if the next identifiers contain a system semantic in their respective structure member */
     if (varDecl->declStmntRef)
     {
@@ -681,9 +692,12 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
     }
     #endif
 
+    //TODO: refactor local variable prefix
+    #if 1
     /* Append prefix to local variables */
     if (varDecl->flags(VarDecl::isLocalVar))
         varIdent->ident = localVarPrefix_ + varIdent->ident;
+    #endif
 }
 
 void HLSLAnalyzer::AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, TextureDecl* textureDecl)
@@ -691,13 +705,9 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, Text
     //TODO...
 }
 
-//TODO: refactor this function
 void HLSLAnalyzer::AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, SamplerDecl* samplerDecl)
 {
-    /* Exchange sampler object by its respective texture object () */
-    auto currentFunc = ActiveFunctionCall();
-    if (currentFunc && currentFunc->flags(FunctionCall::isTexFunc))
-        varIdent->ident = currentFunc->varIdent->ident;
+    //TODO...
 }
 
 

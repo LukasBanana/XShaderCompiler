@@ -56,6 +56,7 @@ VarIdent* VarIdent::LastVarIdent()
     return (next ? next->LastVarIdent() : this);
 }
 
+//TODO: incomplete for arrays of TextureDecl, SamplerDecl, etc.
 TypeDenoterPtr VarIdent::DeriveTypeDenoter()
 {
     if (symbolRef)
@@ -66,7 +67,24 @@ TypeDenoterPtr VarIdent::DeriveTypeDenoter()
             case AST::Types::VarDecl:
             {
                 auto varDecl = static_cast<VarDecl*>(symbolRef);
-                return varDecl->GetTypeDenoter()->Get(next.get());
+                auto typeDenoter = varDecl->GetTypeDenoter();
+                
+                /* Are array indices used? */
+                if (!arrayIndices.empty())
+                {
+                    /* Is the aliased type an array type denoter? */
+                    const auto& aliasTypeDen = typeDenoter->GetAliased();
+                    if (aliasTypeDen.IsArray())
+                    {
+                        auto& arrayTypeDen = static_cast<const ArrayTypeDenoter&>(aliasTypeDen);
+                        arrayTypeDen.ValidateArrayIndices(arrayIndices.size(), this);
+                        typeDenoter = arrayTypeDen.baseTypeDenoter;
+                    }
+                    else
+                        RuntimeErr("array access without array type denoter", this);
+                }
+
+                return typeDenoter->Get(next.get());
             }
             break;
 
