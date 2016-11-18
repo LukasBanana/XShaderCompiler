@@ -24,8 +24,11 @@ using KeywordMapType = std::map<std::string, Token::Types>;
 // Returns the keywords map (which is an exception for identifiers).
 const KeywordMapType& HLSLKeywords();
 
-// Returns the data type for the specified HLSL keyword (throws std::runtime_error on failure).
+// Returns the data type for the specified HLSL keyword or throws an std::runtime_error on failure.
 DataType HLSLKeywordToDataType(const std::string& keyword);
+
+// Returns the storage class for the specified HLSL keyword or throws an std::runtime_error on failure..
+StorageClass HLSLKeywordToStorageClass(const std::string& keyword);
 
 
 } // /namespace Xsc

@@ -87,6 +87,7 @@ void GLSLGenerator::GenerateCodePrimary(
 void GLSLGenerator::EstablishMaps()
 {
     #if 1 // TODO: remove all HLSL mappings from here !!!
+
     typeMap_ = std::map<std::string, std::string>
     {
         /* Texture types */

@@ -245,6 +245,33 @@ DataType VectorDataType(const DataType baseDataType, int vectorSize);
 DataType SubscriptDataType(const DataType dataType, const std::string& subscript);
 
 
+/* ----- StorageClass Enum ----- */
+
+/*
+Variable storage class enumeration.
+This also contains the interpolation modifier for simplicity.
+*/
+enum class StorageClass
+{
+    // Storage classes
+    Extern,
+    Precise,
+    Shared,
+    GroupShared,
+    Static,
+    Uniform,
+    Volatile,
+
+    // Interpolation modifiers
+    NoInterpolation,
+    Linear,
+    Centroid,
+    NoPerspective,
+    Sample,
+};
+
+
+
 /* ----- Intrinsic Enum ----- */
 
 /*
