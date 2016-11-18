@@ -19,8 +19,26 @@ namespace Xsc
 {
 
 
-struct TypeDenoter;
-using TypeDenoterPtr = std::shared_ptr<TypeDenoter>;
+/* ----- Forward declaration ----- */
+
+#define DECL_PTR(CLASS_NAME)                            \
+    struct CLASS_NAME;                                  \
+    using CLASS_NAME##Ptr = std::shared_ptr<CLASS_NAME>
+
+DECL_PTR( TypeDenoter        );
+DECL_PTR( VoidTypeDenoter    );
+DECL_PTR( BaseTypeDenoter    );
+DECL_PTR( BufferTypeDenoter  );
+DECL_PTR( TextureTypeDenoter );
+DECL_PTR( SamplerTypeDenoter );
+DECL_PTR( StructTypeDenoter  );
+DECL_PTR( AliasTypeDenoter   );
+DECL_PTR( ArrayTypeDenoter   );
+
+#undef DECL_PTR
+
+
+/* ----- Type denoter declarations ----- */
 
 // Type denoter base class.
 struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
@@ -75,6 +93,9 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
 
     // Returns either this type denoter or an aliased type.
     virtual const TypeDenoter& GetAliased() const;
+
+    // Returns either this type denoter (if 'arrayDims' is empty), or this type denoter as array with the specified dimension expressions.
+    TypeDenoterPtr AsArray(const std::vector<ExprPtr>& arrayDims);
 };
 
 // Void type denoter.
@@ -86,8 +107,6 @@ struct VoidTypeDenoter : public TypeDenoter
     // Returns always false, since void type can not be casted to anything.
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 };
-
-using VoidTypeDenoterPtr = std::shared_ptr<VoidTypeDenoter>;
 
 // Base type denoter.
 struct BaseTypeDenoter : public TypeDenoter
@@ -110,8 +129,6 @@ struct BaseTypeDenoter : public TypeDenoter
     DataType dataType = DataType::Undefined;
 };
 
-using BaseTypeDenoterPtr = std::shared_ptr<BaseTypeDenoter>;
-
 // Buffer type denoter.
 struct BufferTypeDenoter : public TypeDenoter
 {
@@ -120,8 +137,6 @@ struct BufferTypeDenoter : public TypeDenoter
 
     BufferDeclStmnt* bufferDeclRef = nullptr;
 };
-
-using BufferTypeDenoterPtr = std::shared_ptr<BufferTypeDenoter>;
 
 // Texture type denoter.
 struct TextureTypeDenoter : public TypeDenoter
@@ -136,8 +151,6 @@ struct TextureTypeDenoter : public TypeDenoter
     TextureDecl*    textureDeclRef = nullptr;
 };
 
-using TextureTypeDenoterPtr = std::shared_ptr<TextureTypeDenoter>;
-
 // Sampler type denoter.
 struct SamplerTypeDenoter : public TypeDenoter
 {
@@ -149,8 +162,6 @@ struct SamplerTypeDenoter : public TypeDenoter
 
     SamplerDecl* samplerDeclRef = nullptr;
 };
-
-using SamplerTypeDenoterPtr = std::shared_ptr<SamplerTypeDenoter>;
 
 // Struct type denoter.
 struct StructTypeDenoter : public TypeDenoter
@@ -168,8 +179,6 @@ struct StructTypeDenoter : public TypeDenoter
     std::string     ident;
     StructDecl*     structDeclRef = nullptr;    // Reference to the StructDecl AST node
 };
-
-using StructTypeDenoterPtr = std::shared_ptr<StructTypeDenoter>;
 
 // Alias type denoter.
 struct AliasTypeDenoter : public TypeDenoter
@@ -189,8 +198,6 @@ struct AliasTypeDenoter : public TypeDenoter
     std::string     ident;                      // Type identifier
     AliasDecl*      aliasDeclRef    = nullptr;  // Reference to the AliasDecl AST node.
 };
-
-using AliasTypeDenoterPtr = std::shared_ptr<AliasTypeDenoter>;
 
 // Array type denoter.
 struct ArrayTypeDenoter : public TypeDenoter
@@ -214,9 +221,6 @@ struct ArrayTypeDenoter : public TypeDenoter
     TypeDenoterPtr          baseTypeDenoter;
     std::vector<ExprPtr>    arrayDims;          // May be null
 };
-
-using ArrayTypeDenoterPtr = std::shared_ptr<ArrayTypeDenoter>;
-
 
 
 } // /namespace Xsc

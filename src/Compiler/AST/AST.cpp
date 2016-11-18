@@ -242,13 +242,7 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter()
     if (declStmntRef)
     {
         /* Get base type denoter from declaration statement */
-        auto typeDenoter = declStmntRef->varType->typeDenoter;
-
-        /* If an array defined for this variable declaration? */
-        if (!arrayDims.empty())
-            typeDenoter = std::make_shared<ArrayTypeDenoter>(typeDenoter, arrayDims);
-
-        return typeDenoter;
+        return declStmntRef->varType->typeDenoter->AsArray(arrayDims);
     }
     RuntimeErr("missing reference to declaration statement to derive type denoter of variable identifier '" + ident + "'", this);
 }

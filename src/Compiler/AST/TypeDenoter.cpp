@@ -112,6 +112,14 @@ const TypeDenoter& TypeDenoter::GetAliased() const
     return *this;
 }
 
+TypeDenoterPtr TypeDenoter::AsArray(const std::vector<ExprPtr>& arrayDims)
+{
+    if (arrayDims.empty())
+        return shared_from_this();
+    else
+        return std::make_shared<ArrayTypeDenoter>(shared_from_this(), arrayDims);
+}
+
 
 /* ----- VoidTypeDenoter ----- */
 
