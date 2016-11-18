@@ -99,9 +99,22 @@ TypeDenoterPtr TypeDenoter::Get(const VarIdent* varIdent)
         return shared_from_this();
 }
 
+TypeDenoterPtr TypeDenoter::GetAliased()
+{
+    return shared_from_this();
+}
+
 const TypeDenoter& TypeDenoter::GetAliased() const
 {
     return *this;
+}
+
+TypeDenoterPtr TypeDenoter::GetArrayBaseType(std::size_t numArrayIndices, const AST* ast)
+{
+    if (numArrayIndices > 0)
+        RuntimeErr("array access without array type denoter", ast);
+    else
+        return Get();
 }
 
 
@@ -340,6 +353,13 @@ TypeDenoterPtr AliasTypeDenoter::Get(const VarIdent* varIdent)
     RuntimeErr("missing reference to alias declaration", varIdent);
 }
 
+TypeDenoterPtr AliasTypeDenoter::GetAliased()
+{
+    if (aliasDeclRef)
+        return aliasDeclRef->GetTypeDenoter();
+    RuntimeErr("missing reference to alias declaration");
+}
+
 const TypeDenoter& AliasTypeDenoter::GetAliased() const
 {
     if (aliasDeclRef)
@@ -347,11 +367,22 @@ const TypeDenoter& AliasTypeDenoter::GetAliased() const
     RuntimeErr("missing reference to alias declaration");
 }
 
+TypeDenoterPtr AliasTypeDenoter::GetArrayBaseType(std::size_t numArrayIndices, const AST* ast)
+{
+    return GetAliased()->GetArrayBaseType(numArrayIndices, ast);
+}
+
 
 /* ----- ArrayTypeDenoter ----- */
 
 ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter) :
     baseTypeDenoter{ baseTypeDenoter }
+{
+}
+
+ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter, const std::vector<ExprPtr>& arrayDims) :
+    baseTypeDenoter { baseTypeDenoter },
+    arrayDims       { arrayDims       }
 {
 }
 
@@ -384,6 +415,13 @@ TypeDenoterPtr ArrayTypeDenoter::Get(const VarIdent* varIdent)
         return baseTypeDenoter->Get(varIdent->next.get());
     }
     return TypeDenoter::Get(varIdent);
+}
+
+TypeDenoterPtr ArrayTypeDenoter::GetArrayBaseType(std::size_t numArrayIndices, const AST* ast)
+{
+    /* Validate array dimensions */
+    ValidateArrayIndices(numArrayIndices, ast);
+    return baseTypeDenoter;
 }
 
 void ArrayTypeDenoter::ValidateArrayIndices(std::size_t numArrayIndices, const AST* ast) const

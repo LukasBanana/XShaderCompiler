@@ -71,18 +71,7 @@ TypeDenoterPtr VarIdent::DeriveTypeDenoter()
                 
                 /* Are array indices used? */
                 if (!arrayIndices.empty())
-                {
-                    /* Is the aliased type an array type denoter? */
-                    const auto& aliasTypeDen = typeDenoter->GetAliased();
-                    if (aliasTypeDen.IsArray())
-                    {
-                        auto& arrayTypeDen = static_cast<const ArrayTypeDenoter&>(aliasTypeDen);
-                        arrayTypeDen.ValidateArrayIndices(arrayIndices.size(), this);
-                        typeDenoter = arrayTypeDen.baseTypeDenoter;
-                    }
-                    else
-                        RuntimeErr("array access without array type denoter", this);
-                }
+                    typeDenoter = typeDenoter->GetAliased()->GetArrayBaseType(arrayIndices.size(), this);
 
                 return typeDenoter->Get(next.get());
             }
@@ -257,7 +246,16 @@ std::string VarDecl::ToString() const
 TypeDenoterPtr VarDecl::DeriveTypeDenoter()
 {
     if (declStmntRef)
-        return declStmntRef->varType->typeDenoter;
+    {
+        /* Get base type denoter from declaration statement */
+        auto typeDenoter = declStmntRef->varType->typeDenoter;
+
+        /* If an array defined for this variable declaration? */
+        if (!arrayDims.empty())
+            typeDenoter = std::make_shared<ArrayTypeDenoter>(typeDenoter, arrayDims);
+
+        return typeDenoter;
+    }
     RuntimeErr("missing reference to declaration statement to derive type denoter of variable identifier '" + ident + "'", this);
 }
 
@@ -523,14 +521,7 @@ TypeDenoterPtr SuffixExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
 {
-    const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
-    if (typeDen.IsArray())
-    {
-        auto& arrayTypeDen = static_cast<const ArrayTypeDenoter&>(typeDen);
-        arrayTypeDen.ValidateArrayIndices(arrayIndices.size(), this);
-        return arrayTypeDen.baseTypeDenoter;
-    }
-    RuntimeErr("array access without array type denoter", this);
+    return expr->GetTypeDenoter()->GetArrayBaseType(arrayIndices.size(), this);
 }
 
 

@@ -50,7 +50,11 @@ void CS() <int annotation=0; string info="hello world!";>
 	struct LocalStruct
 	{
 		float x,y;
+		S2 s2;
 	};
+	
+	LocalStruct local_s[2][1];
+	int local_s_a = local_s[0][1].s2.b;
 	
 	S1 s1 = (struct S1)0;
 	

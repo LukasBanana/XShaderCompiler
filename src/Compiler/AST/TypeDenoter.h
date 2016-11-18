@@ -71,7 +71,13 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     virtual TypeDenoterPtr Get(const VarIdent* varIdent = nullptr);
 
     // Returns either this type denoter or an aliased type.
+    virtual TypeDenoterPtr GetAliased();
+
+    // Returns either this type denoter or an aliased type.
     virtual const TypeDenoter& GetAliased() const;
+
+    // Returns this as array type denoter or throws an ASTRuntimeError on failure.
+    virtual TypeDenoterPtr GetArrayBaseType(std::size_t numArrayIndices, const AST* ast);
 };
 
 // Void type denoter.
@@ -180,7 +186,10 @@ struct AliasTypeDenoter : public TypeDenoter
 
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
 
+    TypeDenoterPtr GetAliased() override;
     const TypeDenoter& GetAliased() const override;
+
+    TypeDenoterPtr GetArrayBaseType(std::size_t numArrayIndices, const AST* ast) override;
 
     std::string     ident;                      // Type identifier
     AliasDecl*      aliasDeclRef    = nullptr;  // Reference to the AliasDecl AST node.
@@ -193,6 +202,7 @@ struct ArrayTypeDenoter : public TypeDenoter
 {
     ArrayTypeDenoter() = default;
     ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter);
+    ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter, const std::vector<ExprPtr>& arrayDims);
 
     Types Type() const override;
 
@@ -200,6 +210,8 @@ struct ArrayTypeDenoter : public TypeDenoter
     std::string ToString() const override;
 
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
+
+    TypeDenoterPtr GetArrayBaseType(std::size_t numArrayIndices, const AST* ast) override;
 
     // Validates the number of array indices for this array type denoter.
     void ValidateArrayIndices(std::size_t numArrayIndices, const AST* ast = nullptr) const;

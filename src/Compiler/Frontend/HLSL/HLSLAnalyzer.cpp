@@ -7,6 +7,7 @@
 
 #include "HLSLAnalyzer.h"
 #include "HLSLIntrinsics.h"
+#include "Exception.h"
 #include "Helper.h"
 
 
@@ -621,11 +622,22 @@ void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
 {
     if (varIdent)
     {
-        auto symbol = Fetch(varIdent->ident);
-        if (symbol)
-            AnalyzeVarIdentWithSymbol(varIdent, symbol);
-        else
-            ErrorUndeclaredIdent(varIdent->ident, varIdent);
+        try
+        {
+            auto symbol = Fetch(varIdent->ident);
+            if (symbol)
+                AnalyzeVarIdentWithSymbol(varIdent, symbol);
+            else
+                ErrorUndeclaredIdent(varIdent->ident, varIdent);
+        }
+        catch (const ASTRuntimeError& e)
+        {
+            Error(e.what(), e.GetAST());
+        }
+        catch (const std::exception& e)
+        {
+            Error(e.what(), varIdent);
+        }
     }
 }
 
@@ -657,9 +669,15 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
     if (varIdent->next)
     {
         /* Variable declaration must have a struct type denoter */
-        //auto varTypeDen = varDecl->GetTypeDenoter()->Get();
+        auto varTypeDen = varDecl->GetTypeDenoter()->GetArrayBaseType(varIdent->arrayIndices.size(), varIdent);
+        if (varTypeDen->IsStruct())
+        {
 
 
+
+        }
+        else
+            Error("invalid type denoter in variable identifier", varIdent);
     }
 
     //TODO: refactor analysis of system value semantics (SV_...)
