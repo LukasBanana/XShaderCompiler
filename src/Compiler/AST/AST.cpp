@@ -498,6 +498,8 @@ TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
 {
     if (call->funcDeclRef)
         return call->funcDeclRef->returnType->typeDenoter;
+    else if (call->typeDenoter)
+        return call->typeDenoter;
     else
         RuntimeErr("missing function reference to derive expression type", this);
 }

@@ -416,9 +416,7 @@ DataType VectorDataType(const DataType baseDataType, int vectorSize)
     return DataType::Undefined;
 }
 
-// TODO: add support for matrix subscription
-//  --> see https://msdn.microsoft.com/en-us/library/windows/desktop/bb509634(v=vs.85).aspx#Matrix
-DataType SubscriptDataType(const DataType dataType, const std::string& subscript)
+static DataType SubscriptDataTypeVector(const DataType dataType, const std::string& subscript, int vectorSize)
 {
     auto IsValidSubscript = [&subscript](std::string compareSubscript, int vectorSize) -> bool
     {
@@ -434,14 +432,14 @@ DataType SubscriptDataType(const DataType dataType, const std::string& subscript
     };
 
     /* Validate swizzle operator size */
-    if (subscript.size() < 1 || subscript.size() > 4)
-        InvalidArg("vector subscript can not have " + std::to_string(subscript.size()) + " components");
+    auto subscriptSize = subscript.size();
+
+    if (subscriptSize < 1 || subscriptSize > 4)
+        InvalidArg("vector subscript can not have " + std::to_string(subscriptSize) + " components");
 
     /* Validate vector subscript */
-    int vectorSize = VectorTypeDim(dataType);
-
     if (vectorSize < 1 || vectorSize > 4)
-        InvalidArg("vector subscript is only allowed for scalar and vector types");
+        InvalidArg("invalid vector dimension (must be in the range [1, 4], but got " + std::to_string(vectorSize) + ")");
 
     bool validSubscript =
     (
@@ -452,7 +450,70 @@ DataType SubscriptDataType(const DataType dataType, const std::string& subscript
     if (!validSubscript)
         InvalidArg("invalid vector subscript: '" + subscript + "'");
 
-    return VectorDataType(BaseDataType(dataType), static_cast<int>(subscript.size()));
+    return VectorDataType(BaseDataType(dataType), static_cast<int>(subscriptSize));
+}
+
+/*
+Matrix subscription rules for HLSL:
+see https://msdn.microsoft.com/en-us/library/windows/desktop/bb509634(v=vs.85).aspx#Matrix
+*/
+static DataType SubscriptDataTypeMatrix(const DataType dataType, const std::string& subscript, int rows, int cols)
+{
+    /* Validate matrix subscript */
+    if (rows < 1 || rows > 4 || cols < 1 || cols > 4)
+    {
+        InvalidArg(
+            "invalid matrix dimension (must be in the range [1, 4] x [1, 4], but got " +
+            std::to_string(rows) + " x " + std::to_string(cols) + ")"
+        );
+    }
+
+    /* Parse all matrix row-column subscriptions (e.g. zero-based "_m00", or one-based "_11") */
+    auto ParseNextSubscript = [](const std::string& s, std::size_t& i)
+    {
+        if (i + 3 > s.size())
+            InvalidArg("incomplete matrix subscript: '" + s + "'");
+        if (s[i] != '_')
+            InvalidArg("invalid character '" + std::string(1, s[i]) + "' in matrix subscript: '" + s + "'");
+        ++i;
+
+        char zeroBase = 1;
+        if (s[i] == 'm')
+        {
+            ++i;
+            zeroBase = 0;
+            if (i + 2 > s.size())
+                InvalidArg("incomplete matrix subscript: '" + s + "'");
+        }
+        
+        for (int j = 0; j < 2; ++j)
+        {
+            if (s[i] < '0' + zeroBase || s[i] > '3' + zeroBase)
+            {
+                InvalidArg(
+                    "invalid character '" + std::string(1, s[i]) + "' in " +
+                    std::string(zeroBase == 0 ? "zero" : "one") + "-based matrix subscript: '" + s + "'"
+                );
+            }
+            ++i;
+        }
+    };
+
+    int vectorSize = 0;
+
+    for (std::size_t i = 0; i < subscript.size(); ++vectorSize)
+        ParseNextSubscript(subscript, i);
+
+    return VectorDataType(BaseDataType(dataType), vectorSize);
+}
+
+DataType SubscriptDataType(const DataType dataType, const std::string& subscript)
+{
+    auto matrixDim = MatrixTypeDim(dataType);
+    if (matrixDim.second == 1)
+        return SubscriptDataTypeVector(dataType, subscript, matrixDim.first);
+    else
+        return SubscriptDataTypeMatrix(dataType, subscript, matrixDim.first, matrixDim.second);
 }
 
 

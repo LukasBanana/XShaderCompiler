@@ -57,7 +57,8 @@ void CS() <int annotation=0; string info="hello world!";>
 	f(0.0);
 	#endif
 	
-	float f5 = ((matrix)0)._m00_m10;
+	float f5 = ((matrix)0)._11_m10_11;
+	float f6 = float3(1,2,3).z;
 	
 	#elif TEST == 2
 	

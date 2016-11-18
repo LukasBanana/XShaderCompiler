@@ -18,6 +18,7 @@ namespace Xsc
 
 struct AST;
 
+// Runtime error exception class with a reference to the AST node where the error occured.
 class ASTRuntimeError : public std::runtime_error
 {
 

@@ -89,66 +89,6 @@ void GLSLGenerator::EstablishMaps()
     #if 1 // TODO: remove all HLSL mappings from here !!!
     typeMap_ = std::map<std::string, std::string>
     {
-        /* Scalar types */
-        { "bool",      "bool"   },
-        { "bool1",     "bool"   },
-        { "bool1x1",   "bool"   },
-        { "int",       "int"    },
-        { "int1",      "int"    },
-        { "int1x1",    "int"    },
-        { "uint",      "uint"   },
-        { "uint1",     "uint"   },
-        { "uint1x1",   "uint"   },
-        { "half",      "float"  },
-        { "half1",     "float"  },
-        { "half1x1",   "float"  },
-        { "float",     "float"  },
-        { "float1",    "float"  },
-        { "float1x1",  "float"  },
-        { "double",    "double" },
-        { "double1",   "double" },
-        { "double1x1", "double" },
-
-        /* Vector types */
-        { "bool2",   "bvec2" },
-        { "bool3",   "bvec3" },
-        { "bool4",   "bvec4" },
-        { "int2",    "ivec2" },
-        { "int3",    "ivec3" },
-        { "int4",    "ivec4" },
-        { "uint2",   "uvec2" },
-        { "uint3",   "uvec3" },
-        { "uint4",   "uvec4" },
-        { "half2",   "vec2"  },
-        { "half3",   "vec3"  },
-        { "half4",   "vec4"  },
-        { "float2",  "vec2"  },
-        { "float3",  "vec3"  },
-        { "float4",  "vec4"  },
-        { "double2", "dvec2" },
-        { "double3", "dvec3" },
-        { "double4", "dvec4" },
-
-        /* Matrix types */
-        { "float2x2",  "mat2"   },
-        { "float2x3",  "mat2x3" },
-        { "float2x4",  "mat2x4" },
-        { "float3x2",  "mat3x2" },
-        { "float3x3",  "mat3"   },
-        { "float3x4",  "mat3x4" },
-        { "float4x2",  "mat4x2" },
-        { "float4x3",  "mat4x3" },
-        { "float4x4",  "mat4"   },
-        { "double2x2", "mat2"   },
-        { "double2x3", "mat2x3" },
-        { "double2x4", "mat2x4" },
-        { "double3x2", "mat3x2" },
-        { "double3x3", "mat3"   },
-        { "double3x4", "mat3x4" },
-        { "double4x2", "mat4x2" },
-        { "double4x3", "mat4x3" },
-        { "double4x4", "mat4"   },
-
         /* Texture types */
         { "Texture1D",        "sampler1D"        },
         { "Texture1DArray",   "sampler1DArray"   },
@@ -1605,12 +1545,11 @@ void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArg
 void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
 {
     /* Write function name */
-    std::string name;
-
     if (ast->varIdent)
     {
         if (ast->intrinsic != Intrinsic::Undefined)
         {
+            /* Write GLSL intrinsic keyword */
             auto keyword = IntrinsicToGLSLKeyword(ast->intrinsic);
             if (keyword)
                 Write(*keyword);
@@ -1619,18 +1558,13 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
         }
         else
         {
-            //TODO: remove direct HLSL-to-GLSL type mappings!
-            name = ast->varIdent->ToString();
-            auto it = typeMap_.find(name);
-            if (it != typeMap_.end())
-                Write(it->second);
-            else
-                Visit(ast->varIdent);
+            /* Write function identifier */
+            Visit(ast->varIdent);
         }
     }
     else if (ast->typeDenoter)
     {
-        /* Write function name from type denoter */
+        /* Write type denoter */
         WriteTypeDenoter(*ast->typeDenoter, ast);
     }
     else
@@ -1664,9 +1598,11 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
     }
 
     //TODO: move this to another visitor (e.g. "GLSLConverter" or the like) which does some transformation on the AST
+    #if 1
     /* Check for special cases */
     if (ast->intrinsic == Intrinsic::Saturate)
         Write(", 0.0, 1.0");
+    #endif
 
     Write(")");
 }
