@@ -672,9 +672,7 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
         auto varTypeDen = varDecl->GetTypeDenoter()->GetArrayBaseType(varIdent->arrayIndices.size(), varIdent);
         if (varTypeDen->IsStruct())
         {
-
-
-
+            //TODO...
         }
         else
             Error("invalid type denoter in variable identifier", varIdent);

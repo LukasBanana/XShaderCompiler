@@ -71,9 +71,6 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     virtual TypeDenoterPtr Get(const VarIdent* varIdent = nullptr);
 
     // Returns either this type denoter or an aliased type.
-    virtual TypeDenoterPtr GetAliased();
-
-    // Returns either this type denoter or an aliased type.
     virtual const TypeDenoter& GetAliased() const;
 
     // Returns this as array type denoter or throws an ASTRuntimeError on failure.
@@ -186,7 +183,6 @@ struct AliasTypeDenoter : public TypeDenoter
 
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
 
-    TypeDenoterPtr GetAliased() override;
     const TypeDenoter& GetAliased() const override;
 
     TypeDenoterPtr GetArrayBaseType(std::size_t numArrayIndices, const AST* ast) override;

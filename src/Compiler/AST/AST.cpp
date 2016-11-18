@@ -67,12 +67,7 @@ TypeDenoterPtr VarIdent::DeriveTypeDenoter()
             case AST::Types::VarDecl:
             {
                 auto varDecl = static_cast<VarDecl*>(symbolRef);
-                auto typeDenoter = varDecl->GetTypeDenoter();
-                
-                /* Are array indices used? */
-                if (!arrayIndices.empty())
-                    typeDenoter = typeDenoter->GetAliased()->GetArrayBaseType(arrayIndices.size(), this);
-
+                auto typeDenoter = varDecl->GetTypeDenoter()->GetArrayBaseType(arrayIndices.size(), this);
                 return typeDenoter->Get(next.get());
             }
             break;
