@@ -91,14 +91,17 @@ struct Statistics
         int         location;
     };
 
+    //! All defined macros after pre-processing.
+    std::vector<std::string>    macros;
+
     //! Texture bindings.
-    std::vector<Binding> textures;
+    std::vector<Binding>        textures;
 
     //! Constant buffer bindings.
-    std::vector<Binding> constantBuffers;
+    std::vector<Binding>        constantBuffers;
 
     //! Fragment shader output targets.
-    std::vector<Binding> fragmentTargets;
+    std::vector<Binding>        fragmentTargets;
 };
 
 //! Shader input descriptor structure.

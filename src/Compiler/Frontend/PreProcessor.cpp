@@ -43,6 +43,17 @@ std::unique_ptr<std::iostream> PreProcessor::Process(const SourceCodePtr& input,
     return nullptr;
 }
 
+std::vector<std::string> PreProcessor::ListDefinedMacroIdents() const
+{
+    std::vector<std::string> idents;
+    idents.reserve(macros_.size());
+
+    for (const auto& macro : macros_)
+        idents.push_back(macro.first);
+
+    return idents;
+}
+
 
 /*
  * ======= Private: =======

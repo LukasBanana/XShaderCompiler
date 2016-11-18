@@ -191,13 +191,11 @@ void Shell::Compile(const std::string& filename)
         log.PrintAll(state_.verbose);
 
         if (result)
-        {
             output << "translation successful" << std::endl;
 
-            /* Show output statistics (if enabled) */
-            if (state_.dumpStats)
-                ShowStats(stats);
-        }
+        /* Show output statistics (if enabled) */
+        if (state_.dumpStats)
+            ShowStats(stats);
     }
     catch (const std::exception& err)
     {
@@ -211,6 +209,7 @@ void Shell::ShowStats(const Statistics& stats)
     output << "statistics:" << std::endl;
     indentHandler_.IncIndent();
     {
+        ShowStatsFor(stats.macros, "macros");
         ShowStatsFor(stats.textures, "texture bindings");
         ShowStatsFor(stats.constantBuffers, "constant buffer bindings");
         ShowStatsFor(stats.fragmentTargets, "fragment target bindings");
@@ -242,6 +241,22 @@ void Shell::ShowStatsFor(const std::vector<Statistics::Binding>& objects, const 
                     output << std::string(maxLocationLen, ' ') << "  ";
                 output << obj.ident << std::endl;
             }
+        }
+        else
+            output << indentHandler_.FullIndent() << "< none >" << std::endl;
+    }
+    indentHandler_.DecIndent();
+}
+
+void Shell::ShowStatsFor(const std::vector<std::string>& idents, const std::string& title)
+{
+    output << indentHandler_.FullIndent() << title << ':' << std::endl;
+    indentHandler_.IncIndent();
+    {
+        if (!idents.empty())
+        {
+            for (const auto& i : idents)
+                output << indentHandler_.FullIndent() << i << std::endl;
         }
         else
             output << indentHandler_.FullIndent() << "< none >" << std::endl;

@@ -48,6 +48,9 @@ class PreProcessor : public Parser
             bool writeLineMarks = true
         );
 
+        // Returns a list of all defined macro identifiers after pre-processing.
+        std::vector<std::string> ListDefinedMacroIdents() const;
+
     private:
         
         /* === Structures === */

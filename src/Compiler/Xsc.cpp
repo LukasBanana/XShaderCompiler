@@ -81,6 +81,9 @@ static bool CompileShaderPrimary(
         inputDesc.filename
     );
 
+    if (outputDesc.statistics)
+        outputDesc.statistics->macros = preProcessor.ListDefinedMacroIdents();
+
     if (!processedInput)
         return SubmitError("preprocessing input code failed");
 

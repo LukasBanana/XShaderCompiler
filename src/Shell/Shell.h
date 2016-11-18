@@ -22,6 +22,7 @@ namespace Util
 {
 
 
+// The shell is the main class of the command line tool for the compiler.
 class Shell
 {
     
@@ -39,6 +40,7 @@ class Shell
 
         void ShowStats(const Statistics& stats);
         void ShowStatsFor(const std::vector<Statistics::Binding>& objects, const std::string& title);
+        void ShowStatsFor(const std::vector<std::string>& idents, const std::string& title);
 
         ShellState      state_;
         IndentHandler   indentHandler_;
