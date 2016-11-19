@@ -538,7 +538,7 @@ VarSemanticPtr HLSLAnalyzer::FetchSystemValueSemantic(const std::vector<VarSeman
         if (IsSystemSemantic(varSem->semantic))
             return varSem;
     }
-    return false;
+    return nullptr;
 }
 
 void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
