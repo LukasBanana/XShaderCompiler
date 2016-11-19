@@ -454,6 +454,9 @@ struct FunctionDecl : public Stmnt
     // Returns true if the specified type denoter matches the parameter.
     virtual bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const;
 
+    // Returns a type denoter for the specified arguments (used to return generic type for intrinsics).
+    virtual TypeDenoterPtr GetTypeDenoterForArgs(const std::vector<ExprPtr>& args);
+
     std::vector<AttributePtr>       attribs;                                // Attribute list
     VarTypePtr                      returnType;
     std::string                     ident;
@@ -472,13 +475,13 @@ No "Visit", no "Type" functions override.
 */
 struct IntrinsicDecl : public FunctionDecl
 {
-    IntrinsicDecl() :
-        FunctionDecl{ SourcePosition::ignore }
-    {
-    }
+    IntrinsicDecl();
 
     bool IsIntrinsic() const override;
+    
     bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const override;
+    
+    TypeDenoterPtr GetTypeDenoterForArgs(const std::vector<ExprPtr>& args) override;
 
     Intrinsic intrinsic = Intrinsic::Undefined; // Intrinsic ID.
 };

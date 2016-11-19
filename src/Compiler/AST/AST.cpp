@@ -406,8 +406,18 @@ bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const T
     return true;
 }
 
+TypeDenoterPtr FunctionDecl::GetTypeDenoterForArgs(const std::vector<ExprPtr>& /*args*/)
+{
+    return returnType->typeDenoter;
+}
+
 
 /* ----- IntrinsicDecl ----- */
+
+IntrinsicDecl::IntrinsicDecl() :
+    FunctionDecl{ SourcePosition::ignore }
+{
+}
 
 bool IntrinsicDecl::IsIntrinsic() const
 {
@@ -419,9 +429,16 @@ bool IntrinsicDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const 
     if (paramIndex >= parameters.size())
         return false;
 
-    //TODO: check for template type matches
+    //TODO: check for generic type matches
 
     return true;
+}
+
+TypeDenoterPtr IntrinsicDecl::GetTypeDenoterForArgs(const std::vector<ExprPtr>& args)
+{
+    //TODO: determine generic return type by arguments for respective intrinsics
+
+    return returnType->typeDenoter;
 }
 
 
@@ -513,7 +530,7 @@ TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter()
 TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
 {
     if (call->funcDeclRef)
-        return call->funcDeclRef->returnType->typeDenoter;
+        return call->funcDeclRef->GetTypeDenoterForArgs(call->arguments);
     else if (call->typeDenoter)
         return call->typeDenoter;
     else
