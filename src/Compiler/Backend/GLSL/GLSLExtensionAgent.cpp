@@ -17,26 +17,25 @@ namespace Xsc
  * Internal GL ARB extension descriptions
  */
 
-static const GLSLExtension GLSLEXT_GL_EXT_gpu_shader4               { "GL_EXT_gpu_shader4",                 130 };
-static const GLSLExtension GLSLEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",          400 };
-static const GLSLExtension GLSLEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_language_420pack",    420 };
-static const GLSLExtension GLSLEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_image_load_store",     420 };
+static const GLSLExtension GLSLEXT_GL_EXT_gpu_shader4               { "GL_EXT_gpu_shader4",              130 };
+static const GLSLExtension GLSLEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",       400 };
+static const GLSLExtension GLSLEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_language_420pack", 420 };
+static const GLSLExtension GLSLEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_image_load_store",  420 };
 
 
 /*
  * GLSLExtensionAgent class
  */
 
-//TODO: HLSL specific names like "ddx_coarse" must be abstracted!
 GLSLExtensionAgent::GLSLExtensionAgent()
 {
-    /* Establish function-to-extension map */
-    funcToExtMap_ = std::map<std::string, GLSLExtension>
+    /* Establish intrinsic-to-extension map */
+    intrinsicExtMap_ = std::map<Intrinsic, GLSLExtension>
     {
-        { "ddx_coarse", GLSLEXT_GL_ARB_derivative_control },
-        { "ddy_coarse", GLSLEXT_GL_ARB_derivative_control },
-        { "ddx_fine",   GLSLEXT_GL_ARB_derivative_control },
-        { "ddy_fine",   GLSLEXT_GL_ARB_derivative_control },
+        { Intrinsic::DDXCoarse, GLSLEXT_GL_ARB_derivative_control },
+        { Intrinsic::DDXFine,   GLSLEXT_GL_ARB_derivative_control },
+        { Intrinsic::DDYCoarse, GLSLEXT_GL_ARB_derivative_control },
+        { Intrinsic::DDYFine,   GLSLEXT_GL_ARB_derivative_control },
     };
 }
 
@@ -68,13 +67,11 @@ void GLSLExtensionAgent::AcquireExtension(const GLSLExtension& extension)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    if (ast->varIdent)
+    /* Check for special intrinsics */
+    if (ast->intrinsic != Intrinsic::Undefined)
     {
-        /* Check for special function (or intrinsic) */
-        auto name = ast->varIdent->ToString();
-
-        auto it = funcToExtMap_.find(name);
-        if (it != funcToExtMap_.end())
+        auto it = intrinsicExtMap_.find(ast->intrinsic);
+        if (it != intrinsicExtMap_.end())
             AcquireExtension(it->second);
     }
 

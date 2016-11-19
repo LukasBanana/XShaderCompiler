@@ -11,6 +11,7 @@
 
 #include <Xsc/Targets.h>
 #include "Visitor.h"
+#include "ASTEnums.h"
 #include <set>
 #include <string>
 #include <map>
@@ -58,13 +59,13 @@ class GLSLExtensionAgent : private Visitor
         /* === Members === */
 
         // Target output GLSL version number.
-        int                                     targetGLSLVersion_  = 0;
+        int                                 targetGLSLVersion_  = 0;
 
         // Resulting set of required GLSL extensions.
-        std::set<std::string>                   extensions_;
+        std::set<std::string>               extensions_;
 
-        // Function (or intrinsic) name to GLSL extension map.
-        std::map<std::string, GLSLExtension>    funcToExtMap_;
+        // Intrinsic name to GLSL extension map.
+        std::map<Intrinsic, GLSLExtension>  intrinsicExtMap_;
 
 };
 
