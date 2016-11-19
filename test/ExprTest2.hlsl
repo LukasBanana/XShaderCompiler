@@ -8,12 +8,15 @@
 
 Texture2D tex;
 
+void f(SamplerState s) {}
+
 float f(int x) {}
 float f(inout int x, float y = 0.0)
 {
 	//y = sin(y);
 	
 	SamplerState samp;
+	f(samp);
 	//return tex.Sample(samp, (float2)y);
 }
 

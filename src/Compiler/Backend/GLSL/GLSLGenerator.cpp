@@ -7,11 +7,13 @@
 
 #include "GLSLGenerator.h"
 #include "GLSLExtensionAgent.h"
+#include "GLSLConverter.h"
+#include "GLSLKeywords.h"
+#include "GLSLIntrinsics.h"
+#include "Exception.h"
 #include "ReferenceAnalyzer.h"
 #include "TypeDenoter.h"
 #include "AST.h"
-#include "GLSLKeywords.h"
-#include "GLSLIntrinsics.h"
 #include "Helper.h"
 #include <initializer_list>
 #include <algorithm>
@@ -49,11 +51,26 @@ void GLSLGenerator::GenerateCodePrimary(
     allowLineMarks_ = outputDesc.formatting.lineMarks;
     stats_          = outputDesc.statistics;
 
-    /* Pre-process AST */
     if (program.entryPointRef)
     {
-        ReferenceAnalyzer refAnalyzer;
-        refAnalyzer.MarkReferencesFromEntryPoint(program);
+        try
+        {
+            /* Mark all reachable AST nodes */
+            ReferenceAnalyzer refAnalyzer;
+            refAnalyzer.MarkReferencesFromEntryPoint(program);
+
+            /* Convert AST for GLSL code generation */
+            GLSLConverter converter;
+            converter.Convert(program);
+        }
+        catch (const ASTRuntimeError& e)
+        {
+            Error(e.what(), e.GetAST());
+        }
+        catch (const std::exception& e)
+        {
+            Error(e.what());
+        }
     }
     else
         Error("entry point \"" + inputDesc.entryPoint + "\" not found");
@@ -129,18 +146,19 @@ void GLSLGenerator::Line(const AST* ast)
     Line(ast->area.Pos().Row());
 }
 
-void GLSLGenerator::Extension(const std::string& extensionName)
+void GLSLGenerator::AppendExtension(const std::string& extensionName)
 {
     WriteLn("#extension " + extensionName + " : enable");// "require" or "enable"
 }
 
 void GLSLGenerator::AppendRequiredExtensions(Program& ast)
 {
+    /* Determine all required GLSL extensions with the GLSL extension agent */
     GLSLExtensionAgent extensionAgent;
     auto requiredExtensions = extensionAgent.DetermineRequiredExtensions(ast, versionOut_);
 
     for (const auto& ext : requiredExtensions)
-        Extension(ext);
+        AppendExtension(ext);
 
     Blank();
 }
@@ -494,20 +512,6 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         {
             Visit(ast->returnType);
             Write(" " + ast->ident + "(");
-
-            /*
-            Remove parameters which contain a sampler state object,
-            since GLSL does not support sampler states.
-            --> Only "Texture2D" will be mapped to "sampler2D",
-                but "SamplerState" can not be translated.
-            */
-            for (auto it = ast->parameters.begin(); it != ast->parameters.end();)
-            {
-                if (VarTypeIsSampler((*it)->varType.get()))
-                    it = ast->parameters.erase(it);
-                else
-                    ++it;
-            }
 
             /* Write parameters */
             for (size_t i = 0; i < ast->parameters.size(); ++i)
@@ -1278,43 +1282,6 @@ void GLSLGenerator::VisitScopedStmnt(Stmnt* ast)
     }
 }
 
-//TODO: move this into "GLSLConverter"
-bool GLSLGenerator::ExprContainsSampler(Expr* ast)
-{
-    if (ast)
-    {
-        if (ast->Type() == AST::Types::BracketExpr)
-        {
-            auto bracketExpr = dynamic_cast<BracketExpr*>(ast);
-            return ExprContainsSampler(bracketExpr->expr.get());
-        }
-        if (ast->Type() == AST::Types::BinaryExpr)
-        {
-            auto binaryExpr = dynamic_cast<BinaryExpr*>(ast);
-            return
-                ExprContainsSampler(binaryExpr->lhsExpr.get()) ||
-                ExprContainsSampler(binaryExpr->rhsExpr.get());
-        }
-        if (ast->Type() == AST::Types::UnaryExpr)
-        {
-            auto unaryExpr = dynamic_cast<UnaryExpr*>(ast);
-            return ExprContainsSampler(unaryExpr->expr.get());
-        }
-        if (ast->Type() == AST::Types::VarAccessExpr)
-        {
-            auto symbolRef = dynamic_cast<VarAccessExpr*>(ast)->varIdent->symbolRef;
-            if (symbolRef && symbolRef->Type() == AST::Types::SamplerDeclStmnt)
-                return true;
-        }
-    }
-    return false;
-}
-
-bool GLSLGenerator::VarTypeIsSampler(VarType* ast)
-{
-    return ast->typeDenoter->IsSampler();
-}
-
 bool GLSLGenerator::HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const
 {
     for (const auto& varSem : semantics)
@@ -1422,23 +1389,6 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
     }
     else
         Error("missing function name", ast);
-
-    //TODO: move this to another visitor (e.g. "GLSLConverter" or the like) which does some transformation on the AST
-    #if 1
-    /*
-    Remove arguments which contain a sampler state object,
-    since GLSL does not support sampler states.
-    --> Only "Texture2D" will be mapped to "sampler2D",
-        but "SamplerState" can not be translated.
-    */
-    for (auto it = ast->arguments.begin(); it != ast->arguments.end();)
-    {
-        if (ExprContainsSampler(it->get()))
-            it = ast->arguments.erase(it);
-        else
-            ++it;
-    }
-    #endif
 
     /* Write arguments */
     Write("(");

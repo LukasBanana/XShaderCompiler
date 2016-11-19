@@ -174,6 +174,8 @@ struct Program : public AST
 {   
     AST_INTERFACE(Program)
 
+    //TODO: remove this (and use 'entryPointRef' instead):
+    #if 1
     struct InputSemantics
     {
         std::vector<VarDeclStmnt*> parameters;
@@ -185,6 +187,7 @@ struct Program : public AST
         Semantic    functionSemantic        = Semantic::Undefined;  // ... or this is used.
         std::string singleOutputVariable;                           // May be empty
     };
+    #endif
 
     FLAG_ENUM
     {
@@ -194,10 +197,14 @@ struct Program : public AST
     std::vector<StmntPtr>   globalStmnts;               // Global declaration statements
 
     SourceCodePtr           sourceCode;                 // Preprocessed source code
-    InputSemantics          inputSemantics;             // Input semantics for the DAST
-    OutputSemantics         outputSemantics;            // Output semantics for the DAST
     FunctionDecl*           entryPointRef   = nullptr;  // Reference to the entry point function declaration.
     std::set<Intrinsic>     usedIntrinsics;             // Set of all used intrinsic (filled by the reference analyzer).
+
+    //TODO: remove this (and use 'entryPointRef' instead):
+    #if 1
+    InputSemantics          inputSemantics;             // Input semantics for the DAST
+    OutputSemantics         outputSemantics;            // Output semantics for the DAST
+    #endif
 };
 
 // Code block.
@@ -278,7 +285,7 @@ struct VarSemantic : public AST
 };
 
 // Variable data type.
-struct VarType : public AST
+struct VarType : public AST //TypedAST
 {
     AST_INTERFACE(VarType);
     

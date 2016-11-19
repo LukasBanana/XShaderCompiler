@@ -57,7 +57,7 @@ class GLSLGenerator : public Generator
         void Line(const AST* ast);
 
         // Writes a new extensions
-        void Extension(const std::string& extensionName);
+        void AppendExtension(const std::string& extensionName);
 
         void AppendRequiredExtensions(Program& ast);
         
@@ -151,13 +151,6 @@ class GLSLGenerator : public Generator
 
         void VisitParameter(VarDeclStmnt* ast);
         void VisitScopedStmnt(Stmnt* ast);
-
-        #if 1//TODO: move to "GLSLConverter"
-        // Returns true if the specified expression contains a sampler object.
-        bool ExprContainsSampler(Expr* ast);
-        // Returns true if the specified variable type is a sampler.
-        bool VarTypeIsSampler(VarType* ast);
-        #endif
 
         bool HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const;
 
