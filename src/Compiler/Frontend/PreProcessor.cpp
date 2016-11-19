@@ -292,19 +292,33 @@ TokenPtrString PreProcessor::ParseIdentAsTokenString()
     auto identTkn = Accept(Tokens::Ident);
     auto ident = identTkn->Spell();
 
-    /* Search for defined macro */
-    auto it = macros_.find(ident);
-    if (it != macros_.end())
+    /* Check for pre-defined and dynamic macros */
+    if (ident == "__FILE__")
     {
-        /* Perform macro expansion */
-        auto& macro = *it->second;
-        if (!macro.parameters.empty())
-            tokenString.PushBack(ParseIdentArgumentsForMacro(identTkn, macro));
-        else
-            tokenString.PushBack(macro.tokenString);
+        /* Replace '__FILE__' identifier with current filename */
+        tokenString.PushBack(Make<Token>(Tokens::Ident, GetCurrentFilename()));
+    }
+    else if (ident == "__LINE__")
+    {
+        /* Replace '__LINE__' identifier with current line number */
+        tokenString.PushBack(Make<Token>(Tokens::IntLiteral, std::to_string(GetScanner().Pos().Row())));
     }
     else
-        tokenString.PushBack(identTkn);
+    {
+        /* Search for defined macro */
+        auto it = macros_.find(ident);
+        if (it != macros_.end())
+        {
+            /* Perform macro expansion */
+            auto& macro = *it->second;
+            if (!macro.parameters.empty())
+                tokenString.PushBack(ParseIdentArgumentsForMacro(identTkn, macro));
+            else
+                tokenString.PushBack(macro.tokenString);
+        }
+        else
+            tokenString.PushBack(identTkn);
+    }
 
     return tokenString;
 }

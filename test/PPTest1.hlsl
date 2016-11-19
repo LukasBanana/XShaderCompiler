@@ -5,6 +5,9 @@
 	#	include   <TestHeader1.h>
 	#	include   "TestHeader1.h"   /*comment*/
 
+#define TOSTR(S) #S
+#error Error in TOSTR(__FILE__(__LINE__))
+
 #pragma message "This is a simple compiler message"
 #pragma message "~~~~~ HELLO WORLD! ~~~~~"
 

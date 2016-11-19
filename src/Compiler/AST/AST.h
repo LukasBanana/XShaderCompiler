@@ -451,7 +451,7 @@ struct FunctionDecl : public Stmnt
     VarTypePtr                      returnType;
     std::string                     ident;
     std::vector<VarDeclStmntPtr>    parameters;
-    Semantic                        semantic        = Semantic::Undefined;  // May be empty
+    Semantic                        semantic        = Semantic::Undefined;  // May be undefined
     std::vector<VarDeclStmntPtr>    annotations;                            // Annotations can be ignored by analyzers and generators.
     CodeBlockPtr                    codeBlock;                              // May be null (if this AST node is a forward declaration).
 

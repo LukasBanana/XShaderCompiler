@@ -23,9 +23,6 @@
 #[TestShader1.hlsl CS]
 #-T compute -E CS -O -o output/TestShader1.CS.glsl TestShader1.hlsl
 
-#[PPTest1.hlsl -PP]
-#-PP -O -o output/PPTest1.post.hlsl PPTest1.hlsl
-
 #[PPTest1.hlsl Vertex]
 #-T vertex -E VS -O -o output/PPTest1.VS.glsl PPTest1.hlsl
 
