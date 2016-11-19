@@ -1302,7 +1302,6 @@ void GLSLGenerator::WriteArrayDims(const std::vector<ExprPtr>& arrayDims)
     }
 }
 
-//TODO: incomplete!!!
 void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast)
 {
     if (typeDenoter.IsVoid())
@@ -1314,16 +1313,23 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* 
     {
         /* Map GLSL base type */
         auto& baseTypeDen = static_cast<const BaseTypeDenoter&>(typeDenoter);
-
         if (auto keyword = DataTypeToGLSLKeyword(baseTypeDen.dataType))
             Write(*keyword);
         else
-            Error("failed to map data type to GLSL data type", ast);
+            Error("failed to map data type to GLSL keyword", ast);
     }
     else if (typeDenoter.IsTexture())
     {
-        //TODO: determine correct texture type!!!
-        Write("sampler2D");
+        auto& textureTypeDen = static_cast<const TextureTypeDenoter&>(typeDenoter);
+        if (auto texDecl = textureTypeDen.textureDeclRef)
+        {
+            if (auto keyword = BufferTypeToGLSLKeyword(texDecl->declStmntRef->textureType))
+                Write(*keyword);
+            else
+                Error("failed to map texture type to GLSL keyword", ast);
+        }
+        else
+            Error("missing reference to texture type denoter", ast);
     }
     else if (typeDenoter.IsStruct())
     {
@@ -1333,17 +1339,16 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* 
     else if (typeDenoter.IsAlias())
     {
         /* Resolve typename of aliased type */
-        auto& aliasTypeDenoter = static_cast<const AliasTypeDenoter&>(typeDenoter);
-        if (aliasTypeDenoter.aliasDeclRef)
-            WriteTypeDenoter(*(aliasTypeDenoter.aliasDeclRef->typeDenoter), ast);
+        auto& aliasTypeDen = static_cast<const AliasTypeDenoter&>(typeDenoter);
+        if (aliasTypeDen.aliasDeclRef)
+            WriteTypeDenoter(*(aliasTypeDen.aliasDeclRef->typeDenoter), ast);
         else
-            Error("missing reference to type alias '" + aliasTypeDenoter.ident + "'", ast);
+            Error("missing reference to type alias '" + aliasTypeDen.ident + "'", ast);
     }
     else if (typeDenoter.IsArray())
     {
         /* Write array type denoter */
         auto& arrayTypeDen = static_cast<const ArrayTypeDenoter&>(typeDenoter);
-
         WriteTypeDenoter(*arrayTypeDen.baseTypeDenoter, ast);
         WriteArrayDims(arrayTypeDen.arrayDims);
     }
