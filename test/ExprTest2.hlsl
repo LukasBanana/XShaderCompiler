@@ -7,6 +7,7 @@
 #if TEST == 1
 
 Texture2D tex;
+//sampler2D tex2;
 
 void f(SamplerState s) {}
 
@@ -15,6 +16,8 @@ float f(inout int x, float y = 0.0)
 {
 	//y = sin(y);
 	return tex;
+	//return tex2;
+	
 	SamplerState samp;
 	f(samp);
 	//return tex.Sample(samp, (float2)y);

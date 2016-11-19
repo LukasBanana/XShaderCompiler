@@ -7,6 +7,7 @@
 
 #include <Xsc/IncludeHandler.h>
 #include <fstream>
+#include "Exception.h"
 
 
 namespace Xsc
@@ -23,38 +24,35 @@ static std::unique_ptr<std::istream> ReadFile(const std::string& filename)
     return (stream->good() ? std::move(stream) : nullptr);
 }
 
-std::unique_ptr<std::istream> IncludeHandler::Include(const std::string& filename, bool useSearchPaths)
+std::unique_ptr<std::istream> IncludeHandler::Include(const std::string& filename, bool useSearchPathsFirst)
 {
-    /* Read file from relative path */
-    if (!useSearchPaths)
+    if (!useSearchPathsFirst)
     {
+        /* Read file from relative path */
         auto file = ReadFile(filename);
         if (file)
             return file;
     }
     
-    //if (useSearchPaths)
+    /* Search file in search paths */
+    for (const auto& path : searchPaths)
     {
-        /* Search file in search paths */
-        for (const auto& path : searchPaths)
+        if (!path.empty())
         {
-            if (!path.empty())
-            {
-                /* Get complete filename */
-                std::string s = path;
-                if (path.back() != '/' && path.back() != '\\')
-                    s += '/';
-                s += filename;
+            /* Get complete filename */
+            std::string s = path;
+            if (path.back() != '/' && path.back() != '\\')
+                s += '/';
+            s += filename;
 
-                /* Read file from current path */
-                auto file = ReadFile(s);
-                if (file)
-                    return file;
-            }
+            /* Read file from current path */
+            auto file = ReadFile(s);
+            if (file)
+                return file;
         }
     }
 
-    if (useSearchPaths)
+    if (useSearchPathsFirst)
     {
         /* Read file from relative path */
         auto file = ReadFile(filename);
@@ -62,7 +60,7 @@ std::unique_ptr<std::istream> IncludeHandler::Include(const std::string& filenam
             return file;
     }
 
-    throw std::runtime_error("failed to include file: \"" + filename + "\"");
+    RuntimeErr("failed to include file: \"" + filename + "\"");
 }
 
 
