@@ -51,11 +51,11 @@ T FromString(const std::string& s)
 
 // Removes all entries from the specified container for which the specified predicate is true.
 template <typename Cont, typename Pred>
-void EraseIf(Cont container, Pred pred)
+void EraseIf(Cont& container, Pred pred)
 {
     container.erase(
-        std::remove_if(container.begin(), container.end(), pred),
-        container.end()
+        std::remove_if(std::begin(container), std::end(container), pred),
+        std::end(container)
     );
 }
 

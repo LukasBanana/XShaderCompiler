@@ -42,14 +42,6 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                 return ExprContainsSampler(*expr);
             }
         );
-
-        /*for (auto it = ast->arguments.begin(); it != ast->arguments.end();)
-        {
-            if (ExprContainsSampler(it->get()))
-                it = ast->arguments.erase(it);
-            else
-                ++it;
-        }*/
     }
 
     /* Default visitor */
@@ -72,13 +64,6 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             return VarTypeIsSampler(*varDeclStmnt->varType);
         }
     );
-    /*for (auto it = ast->parameters.begin(); it != ast->parameters.end();)
-    {
-        if (VarTypeIsSampler(*(*it)->varType))
-            it = ast->parameters.erase(it);
-        else
-            ++it;
-    }*/
 
     /* Default visitor */
     Visitor::VisitFunctionDecl(ast, args);
@@ -88,35 +73,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 /* --- Helper functions for conversion --- */
 
-//TODO: refactor this function:
 bool GLSLConverter::ExprContainsSampler(Expr& ast)
 {
-    if (ast.Type() == AST::Types::BracketExpr)
-    {
-        auto& bracketExpr = static_cast<BracketExpr&>(ast);
-        return ExprContainsSampler(*bracketExpr.expr);
-    }
-    if (ast.Type() == AST::Types::BinaryExpr)
-    {
-        auto& binaryExpr = static_cast<BinaryExpr&>(ast);
-        return
-        (
-            ExprContainsSampler(*binaryExpr.lhsExpr) ||
-            ExprContainsSampler(*binaryExpr.rhsExpr)
-        );
-    }
-    if (ast.Type() == AST::Types::UnaryExpr)
-    {
-        auto& unaryExpr = static_cast<UnaryExpr&>(ast);
-        return ExprContainsSampler(*unaryExpr.expr);
-    }
-    if (ast.Type() == AST::Types::VarAccessExpr)
-    {
-        auto symbolRef = static_cast<VarAccessExpr&>(ast).varIdent->symbolRef;
-        if (symbolRef && symbolRef->Type() == AST::Types::SamplerDeclStmnt)
-            return true;
-    }
-    return false;
+    return ast.GetTypeDenoter()->Get()->IsSampler();
 }
 
 bool GLSLConverter::VarTypeIsSampler(VarType& ast)
