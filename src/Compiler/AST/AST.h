@@ -340,7 +340,9 @@ struct VarDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( disableCodeGen, 0 ), // Disables the code generation for this variable declaration.
+        FLAG( isShaderInput,    0 ), // This variable is used as shader input.
+        FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
+        FLAG( disableCodeGen,   2 ), // Disables the code generation for this variable declaration.
     };
 
     // Returns the variable declaration as string.

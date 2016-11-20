@@ -196,7 +196,11 @@ bool GLSLConverter::MustResolveStruct(StructDecl* ast) const
 bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
 {
     /* Variable must be renamed if it's not inside a structure declaration and its name is reserved */
-    return (!IsInsideStructDecl() && std::find(reservedVarIdents_.begin(), reservedVarIdents_.end(), ast->ident) != reservedVarIdents_.end());
+    return (
+        !IsInsideStructDecl() &&
+        !ast->flags(VarDecl::isShaderInput) &&
+        std::find(reservedVarIdents_.begin(), reservedVarIdents_.end(), ast->ident) != reservedVarIdents_.end()
+    );
 }
 
 void GLSLConverter::RenameVarDecl(VarDecl* ast)

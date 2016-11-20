@@ -68,7 +68,7 @@ VertexOut VS(VertexIn inp, uint vertexID2 : SV_VertexID, float4 jointWeights : J
 	
 	// Vertex transformation
 	outp.position	= mul(wvpMatrix, float4(inp.coord, 1.0) + (float4)0);//, 1, foo, bar);
-	outp.texCoord	= inp.texCoord;
+	outp.texCoord	= inp.texCoord + jointWeights;
 	
 	// Per-vertex lighting
 	float3 lightDir = (float3)0.5;//{ 0.5, -0.5, 1.0 };

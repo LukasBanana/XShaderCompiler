@@ -753,6 +753,9 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInput(FunctionDecl* funcDecl, VarDe
     {
         /* Add variable declaration to the global input semantics */
         funcDecl->inputSemantics.varDeclRefs.push_back(varDecl);
+
+        /* Mark variable as shader input */
+        varDecl->flags << VarDecl::isShaderInput;
     }
 }
 
