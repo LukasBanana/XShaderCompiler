@@ -290,6 +290,8 @@ IMPLEMENT_VISIT_PROC(Program)
     if (shaderTarget_ == ShaderTarget::FragmentShader)
         WriteFragmentShaderOutput();
 
+    WriteGlobalInputSemantics();
+
     Visit(ast->globalStmnts);
 }
 
@@ -318,58 +320,65 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
+    #if 0
     if (MustResolveStruct(ast))
     {
         /* Write structure members as global input/output variables (if structure must be resolved) */
         for (auto& member : ast->members)
         {
             for (auto& memberVar : member->varDecls)
-                WriteInputSemanticsGlobalVarDecl(memberVar.get());
+                WriteGlobalInputSemanticsVarDecl(memberVar.get());
         }
-    }
-    else if (ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput))
-    {
-        /* Write this structure as interface block (if structure doesn't need to be resolved) */
-        BeginLn();
-        {
-            if (ast->flags(StructDecl::isShaderInput))
-                Write("in ");
-            else
-                Write("out ");
-            Write(ast->ident);
-        }
-        EndLn();
-
-        OpenScope();
-        {
-            isInsideInterfaceBlock_ = true;
-
-            Visit(ast->members);
-
-            isInsideInterfaceBlock_ = false;
-        }
-        CloseScope();
-
-        WriteLn(ast->aliasName + ";");
     }
     else
+    #else
+    if (!MustResolveStruct(ast))
+    #endif
     {
-        bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
-
-        /* Write standard structure declaration */
-        BeginLn();
+        if (ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput))
         {
-            Write("struct");
-            if (!ast->ident.empty())
-                Write(' ' + ast->ident);
-        }
-        EndLn();
+            /* Write this structure as interface block (if structure doesn't need to be resolved) */
+            BeginLn();
+            {
+                if (ast->flags(StructDecl::isShaderInput))
+                    Write("in ");
+                else
+                    Write("out ");
+                Write(ast->ident);
+            }
+            EndLn();
 
-        OpenScope();
-        {
-            VisitStructDeclMembers(ast);
+            OpenScope();
+            {
+                isInsideInterfaceBlock_ = true;
+
+                Visit(ast->members);
+
+                isInsideInterfaceBlock_ = false;
+            }
+            CloseScope();
+
+            WriteLn(ast->aliasName + ";");
         }
-        CloseScope(semicolon);
+        else
+        {
+            bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
+
+            /* Write standard structure declaration */
+            BeginLn();
+            {
+                Write("struct");
+                if (!ast->ident.empty())
+                    Write(' ' + ast->ident);
+            }
+            EndLn();
+
+            OpenScope();
+            {
+                VisitStructDeclMembers(ast);
+            }
+            CloseScope(semicolon);
+        }
     }
 }
 
@@ -483,7 +492,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             OpenScope();
             {
                 /* Write input parameters as local variables */
-                WriteInputSemantics();
+                WriteLocalInputSemantics();
 
                 /* Write code block (without additional scope) */
                 isInsideEntryPoint_ = true;
@@ -998,15 +1007,15 @@ void GLSLGenerator::WriteAttributeEarlyDepthStencil()
     WriteLn("layout(early_fragment_tests) in;");
 }
 
-void GLSLGenerator::WriteInputSemantics()
+void GLSLGenerator::WriteLocalInputSemantics()
 {
-    auto& parameters = GetProgram()->inputSemantics.parameters;
+    auto& varDeclRefs = GetProgram()->entryPointRef->inputSemantics.varDeclRefs;
 
     bool paramsWritten = false;
 
-    for (auto& param : parameters)
+    for (auto varDecl : varDeclRefs)
     {
-        if (WriteInputSemanticsParameter(param))
+        if (WriteLocalInputSemanticsVarDecl(varDecl))
             paramsWritten = true;
     }
 
@@ -1014,8 +1023,9 @@ void GLSLGenerator::WriteInputSemantics()
         Blank();
 }
 
+#if 0
 //TODO: refactor this function:
-bool GLSLGenerator::WriteInputSemanticsParameter(VarDeclStmnt* ast)
+bool GLSLGenerator::WriteLocalInputSemanticsParameter(VarDeclStmnt* ast)
 {
     /* Get variable declaration */
     if (ast->varDecls.size() != 1)
@@ -1040,7 +1050,7 @@ bool GLSLGenerator::WriteInputSemanticsParameter(VarDeclStmnt* ast)
         {
             for (auto& memberVar : member->varDecls)
             {
-                if (WriteInputSemanticsParameterVarDecl(memberVar.get()))
+                if (WriteLocalInputSemanticsParameterVarDecl(memberVar.get()))
                     paramsWritten = true;
             }
         }
@@ -1050,13 +1060,14 @@ bool GLSLGenerator::WriteInputSemanticsParameter(VarDeclStmnt* ast)
     else if (varDecl->semantics.size() == 1)
     {
         /* Write single input semantic (for system value semantics) */
-        return WriteInputSemanticsParameterVarDecl(varDecl);
+        return WriteLocalInputSemanticsParameterVarDecl(varDecl);
     }
 
     return false;
 }
+#endif
 
-bool GLSLGenerator::WriteInputSemanticsParameterVarDecl(VarDecl* varDecl)
+bool GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
 {
     /* Is semantic of the variable declaration a system value semantic? */
     auto varSemantic = varDecl->semantics.front().get();
@@ -1081,12 +1092,27 @@ bool GLSLGenerator::WriteInputSemanticsParameterVarDecl(VarDecl* varDecl)
     return false;
 }
 
-bool GLSLGenerator::WriteInputSemanticsGlobalVarDecl(VarDecl* varDecl)
+void GLSLGenerator::WriteGlobalInputSemantics()
+{
+    auto& varDeclRefs = GetProgram()->entryPointRef->inputSemantics.varDeclRefs;
+
+    bool paramsWritten = false;
+
+    for (auto varDecl : varDeclRefs)
+    {
+        if (WriteGlobalInputSemanticsVarDecl(varDecl))
+            paramsWritten = true;
+    }
+
+    if (paramsWritten)
+        Blank();
+}
+
+bool GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 {
     /* Is semantic of the variable declaration a user defined semantic? */
     auto varSemantic = varDecl->semantics.front().get();
-    auto semantic = varSemantic->semantic;
-    if (semantic == Semantic::UserDefined)
+    if (IsUserSemantic(varSemantic->semantic))
     {
         /* Write global variable definition statement */
         BeginLn();

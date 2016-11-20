@@ -60,7 +60,7 @@ float3 GammaCorrect(float3 color, float gamma)
 
 //static const float3 color;
 
-VertexOut VS(VertexIn inp, uint vertexID2 : SV_VertexID)
+VertexOut VS(VertexIn inp, uint vertexID2 : SV_VertexID, float4 jointWeights : JOINTWEIGHTS)
 {
 	VertexOut outp = (VertexOut)0;
 	

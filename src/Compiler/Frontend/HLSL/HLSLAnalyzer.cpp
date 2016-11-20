@@ -177,35 +177,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     {
         Visit(ast->parameters);
 
-        //TODO: refactor this part!
-        #if 1
-
         /* Special case for the main entry point */
         if (isEntryPoint)
-        {
-            program_->entryPointRef = ast;
-
-            /* Add flags */
-            ast->flags << FunctionDecl::isEntryPoint;
-
-            /* Decorate program's input and output semantics */
-            for (auto& param : ast->parameters)
-                program_->inputSemantics.parameters.push_back(param.get());
-
-            program_->outputSemantics.returnType = ast->returnType.get();
-            program_->outputSemantics.functionSemantic = ast->semantic;
-
-            /* Add flags to input- and output parameters of the main entry point */
-            DecorateEntryInOut(ast->returnType.get(), false);
-            for (auto& param : ast->parameters)
-                DecorateEntryInOut(param.get(), true);
-
-            /* Check if fragment shader use a slightly different screen space (VPOS vs. SV_Position) */
-            if (shaderTarget_ == ShaderTarget::FragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
-                program_->flags << Program::hasSM3ScreenSpace;
-        }
-
-        #endif
+            AnalyzeEntryPoint(ast);
 
         /* Visit function body */
         PushFunctionDeclLevel(isEntryPoint);
@@ -522,6 +496,16 @@ VarSemanticPtr HLSLAnalyzer::FetchSystemValueSemantic(const std::vector<VarSeman
     return nullptr;
 }
 
+VarSemanticPtr HLSLAnalyzer::FetchUserDefinedSemantic(const std::vector<VarSemanticPtr>& varSemantics) const
+{
+    for (auto& varSem : varSemantics)
+    {
+        if (!IsSystemSemantic(varSem->semantic))
+            return varSem;
+    }
+    return nullptr;
+}
+
 void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
 {
     /* Decorate function identifier (if it's a member function) */
@@ -700,6 +684,83 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, Text
 }
 
 void HLSLAnalyzer::AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, SamplerDecl* samplerDecl)
+{
+    //TODO...
+}
+
+void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
+{
+    /* Store reference to entry point in root AST node */
+    program_->entryPointRef = funcDecl;
+
+    /* Mark this function declaration with the entry point flag */
+    funcDecl->flags << FunctionDecl::isEntryPoint;
+
+    for (auto& param : funcDecl->parameters)
+    {
+        if (param->varDecls.size() == 1)
+            AnalyzeEntryPointParameter(funcDecl, param.get());
+        else
+            Error("invalid number of variable declarations in function parameter", param.get());
+    }
+
+
+    //TODO: refactor this
+    #if 1
+    /* Decorate program's input and output semantics */
+    for (auto& param : funcDecl->parameters)
+        program_->inputSemantics.parameters.push_back(param.get());
+
+    program_->outputSemantics.returnType = funcDecl->returnType.get();
+    program_->outputSemantics.functionSemantic = funcDecl->semantic;
+
+    /* Add flags to input- and output parameters of the main entry point */
+    DecorateEntryInOut(funcDecl->returnType.get(), false);
+    for (auto& param : funcDecl->parameters)
+        DecorateEntryInOut(param.get(), true);
+
+    /* Check if fragment shader use a slightly different screen space (VPOS vs. SV_Position) */
+    if (shaderTarget_ == ShaderTarget::FragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
+        program_->flags << Program::hasSM3ScreenSpace;
+    #endif
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param)
+{
+    auto varDecl = param->varDecls.front().get();
+
+    /* Analyze input semantic */
+    if (param->IsInput())
+        AnalyzeEntryPointParameterInput(funcDecl, varDecl);
+
+    /* Analyze output semantic */
+    if (param->IsOutput())
+        AnalyzeEntryPointParameterOutput(funcDecl, varDecl);
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointParameterInput(FunctionDecl* funcDecl, VarDecl* varDecl)
+{
+    auto typeDenoter = varDecl->GetTypeDenoter()->Get();
+    if (typeDenoter->IsStruct())
+    {
+        /* Analyze all structure members */
+        auto& structTypeDenoter = static_cast<StructTypeDenoter&>(*typeDenoter);
+        auto structDecl = structTypeDenoter.structDeclRef;
+
+        for (auto& member : structDecl->members)
+        {
+            for (auto& memberVar : member->varDecls)
+                AnalyzeEntryPointParameterInput(funcDecl, memberVar.get());
+        }
+    }
+    else
+    {
+        /* Add variable declaration to the global input semantics */
+        funcDecl->inputSemantics.varDeclRefs.push_back(varDecl);
+    }
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointParameterOutput(FunctionDecl* funcDecl, VarDecl* varDecl)
 {
     //TODO...
 }

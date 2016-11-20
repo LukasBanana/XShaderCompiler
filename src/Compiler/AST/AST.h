@@ -443,6 +443,18 @@ struct FunctionDecl : public Stmnt
 {
     AST_INTERFACE(FunctionDecl);
 
+    struct InputSemantics
+    {
+        std::vector<VarDecl*> varDeclRefs; // References to all variable declarations of the user defined semantics
+    };
+
+    /*struct OutputSemantics
+    {
+        VarType*    returnType              = nullptr;              // Either this ...
+        Semantic    functionSemantic        = Semantic::Undefined;  // ... or this is used.
+        std::string singleOutputVariable;                           // May be empty
+    };*/
+
     FLAG_ENUM
     {
         FLAG( isEntryPoint, 0 ), // This function is the main entry point.
@@ -479,6 +491,8 @@ struct FunctionDecl : public Stmnt
     Semantic                        semantic        = Semantic::Undefined;  // May be undefined
     std::vector<VarDeclStmntPtr>    annotations;                            // Annotations can be ignored by analyzers and generators.
     CodeBlockPtr                    codeBlock;                              // May be null (if this AST node is a forward declaration).
+
+    InputSemantics                  inputSemantics;
 
     //TODO: currently unused
     FunctionDecl*                   definitionRef   = nullptr;              // Reference to the actual function definition (only for forward declarations).
@@ -555,6 +569,12 @@ struct VarDeclStmnt : public Stmnt
     
     // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident) const;
+
+    // Returns true if this variable declaration statement has the 'in' or 'inout' input modifier or an empty input modifier (input is default).
+    bool IsInput() const;
+
+    // Returns true if this variable declaration statement has the 'out' or 'inout'  input modifier.
+    bool IsOutput() const;
 
     std::string                 inputModifier;      // Input modifiers, e.g. in, out, inout, uniform.
     std::vector<StorageClass>   storageModifiers;   // Storage classes (or interpolation modifiers), e.g. extern, nointerpolation, precise, etc.

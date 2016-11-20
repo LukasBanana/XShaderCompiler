@@ -82,6 +82,7 @@ class HLSLAnalyzer : public Analyzer
         void DecorateEntryInOut(VarType* ast, bool isInput);
 
         VarSemanticPtr FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics) const;
+        VarSemanticPtr FetchUserDefinedSemantic(const std::vector<VarSemanticPtr>& varSemantics) const;
 
         void AnalyzeFunctionCallStandard(FunctionCall* ast);
         void AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLIntrinsicEntry& intr);
@@ -91,6 +92,11 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl* varDecl);
         void AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, TextureDecl* textureDecl);
         void AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, SamplerDecl* samplerDecl);
+
+        void AnalyzeEntryPoint(FunctionDecl* funcDecl);
+        void AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param);
+        void AnalyzeEntryPointParameterInput(FunctionDecl* funcDecl, VarDecl* varDecl);
+        void AnalyzeEntryPointParameterOutput(FunctionDecl* funcDecl, VarDecl* varDecl);
 
         /* === Members === */
 

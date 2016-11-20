@@ -538,6 +538,9 @@ enum class Semantic
 // Returns true if the specified semantic is a system value semantic.
 bool IsSystemSemantic(const Semantic t);
 
+// Returns true if the specified semantic is a user defined semantic.
+bool IsUserSemantic(const Semantic t);
+
 
 } // /namespace Xsc
 

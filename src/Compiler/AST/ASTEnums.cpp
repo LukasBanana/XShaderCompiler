@@ -585,6 +585,11 @@ bool IsSystemSemantic(const Semantic t)
     return (t >= Semantic::ClipDistance && t <= Semantic::ViewportArrayIndex);
 }
 
+bool IsUserSemantic(const Semantic t)
+{
+    return (t == Semantic::UserDefined);
+}
+
 
 } // /namespace Xsc
 

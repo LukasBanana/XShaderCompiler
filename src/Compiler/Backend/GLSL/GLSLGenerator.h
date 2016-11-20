@@ -133,10 +133,12 @@ class GLSLGenerator : public Generator
         void WriteAttributeNumThreads(Attribute* ast);
         void WriteAttributeEarlyDepthStencil();
 
-        void WriteInputSemantics();
-        bool WriteInputSemanticsParameter(VarDeclStmnt* ast);
-        bool WriteInputSemanticsParameterVarDecl(VarDecl* varDecl);
-        bool WriteInputSemanticsGlobalVarDecl(VarDecl* varDecl);
+        void WriteLocalInputSemantics();
+        //bool WriteLocalInputSemanticsParameter(VarDeclStmnt* varDecl);
+        bool WriteLocalInputSemanticsVarDecl(VarDecl* varDecl);
+        
+        void WriteGlobalInputSemantics();
+        bool WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl);
 
         void WriteOutputSemantics(Expr* ast);
 
