@@ -231,9 +231,7 @@ TypeDenoterPtr IntrinsicDescriptor::GetTypeDenoterWithArgs(const std::vector<Exp
     {
         /* Take type denoter from argument */
         auto idx = static_cast<std::size_t>(takeByArgIndex_);
-        if (idx < args.size())
-            return args[idx]->GetTypeDenoter();
-        RuntimeErr("");
+        return args[idx]->GetTypeDenoter();
     }
     else
     {
@@ -461,6 +459,7 @@ TypeDenoterPtr GetTypeDenoterForHLSLIntrinsicWithArgs(const Intrinsic intrinsic,
 
         if (type0->IsMatrix())
         {
+            /* Convert MxN matrix type to NxM matrix type */
             auto dataType0      = static_cast<BaseTypeDenoter&>(*type0).dataType;
             auto baseDataType0  = BaseDataType(dataType0);
             auto matrixTypeDim0 = MatrixTypeDim(dataType0);

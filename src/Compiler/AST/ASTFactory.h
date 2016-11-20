@@ -27,14 +27,14 @@ FunctionCallPtr FindSingleFunctionCall(Expr* ast);
 VarIdentPtr FindSingleVarIdent(Expr* ast);
 
 FunctionCallExprPtr MakeIntrinsicCallExpr(
-    const Intrinsic intrinsic,
-    const std::string& ident,
-    const TypeDenoterPtr& typeDenoter,
-    const std::vector<ExprPtr>& arguments
+    const Intrinsic intrinsic, const std::string& ident,
+    const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments
 );
 
 // Converts the specified function call from "sincos(x, s, c)" to "s = sin(x), c = cos(x)".
 ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall);
+
+CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const Token::Types literalType, const std::string& literalValue);
 
 
 } // /namespace ASTFactory

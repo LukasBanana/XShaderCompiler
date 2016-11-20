@@ -21,6 +21,7 @@ float f(inout int x, float y = 0.0)
 
 	float a, b;
 	sincos((x), ((a)), b);
+	a = saturate(a);
 
 	return tex;
 	//return tex2;

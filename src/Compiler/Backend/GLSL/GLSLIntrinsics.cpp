@@ -123,7 +123,7 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
       //{ T::ReverseBits,                       ""                      },
         { T::Round,                             "round"                 },
         { T::RSqrt,                             "inversesqrt"           },
-        { T::Saturate,                          "clamp"                 }, //TODO: make this unavailable as mapping (must be converted by an "GLSLConverter" or the like)
+      //{ T::Saturate,                          ""                      },
         { T::Sign,                              "sign"                  },
         { T::Sin,                               "sin"                   },
       //{ T::SinCos,                            ""                      },

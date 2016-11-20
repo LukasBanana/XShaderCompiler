@@ -37,7 +37,20 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     if (ast->intrinsic == Intrinsic::Saturate)
     {
         /* Convert "saturate(x)" to "clamp(x, genType(0), genType(1))" */
-        //TODO...
+        if (ast->arguments.size() == 1)
+        {
+            auto argTypeDen = ast->arguments.front()->GetTypeDenoter()->Get();
+            if (argTypeDen->IsBase())
+            {
+                ast->intrinsic = Intrinsic::Clamp;
+                ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, Token::Types::IntLiteral, "0"));
+                ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, Token::Types::IntLiteral, "1"));
+            }
+            else
+                RuntimeErr("invalid argument type denoter in intrinsic 'saturate'", ast->arguments.front().get());
+        }
+        else
+            RuntimeErr("invalid number of arguments in intrinsic 'saturate'", ast);
     }
     else if (ast->intrinsic == Intrinsic::Undefined)
     {

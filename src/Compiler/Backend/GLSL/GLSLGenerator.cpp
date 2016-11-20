@@ -1392,13 +1392,6 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
             Write(", ");
     }
 
-    //TODO: move this to another visitor (e.g. "GLSLConverter" or the like) which does some transformation on the AST
-    #if 1
-    /* Check for special cases */
-    if (ast->intrinsic == Intrinsic::Saturate)
-        Write(", 0.0, 1.0");
-    #endif
-
     Write(")");
 }
 
