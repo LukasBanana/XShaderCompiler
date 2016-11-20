@@ -33,7 +33,7 @@ FunctionCallExprPtr MakeIntrinsicCallExpr(
     const std::vector<ExprPtr>& arguments
 );
 
-// Converts the specified function call from "sincos(x, a, b)" to "a = sin(x), b = cos(x)".
+// Converts the specified function call from "sincos(x, s, c)" to "s = sin(x), c = cos(x)".
 ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall);
 
 

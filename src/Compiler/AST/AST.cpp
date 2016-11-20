@@ -534,6 +534,7 @@ TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
     else if (call->typeDenoter)
         return call->typeDenoter;
     else
+        //return std::make_shared<BaseTypeDenoter>(DataType::Float);
         RuntimeErr("missing function reference to derive expression type", this);
 }
 

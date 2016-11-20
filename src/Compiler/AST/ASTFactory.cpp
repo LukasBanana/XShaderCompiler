@@ -77,7 +77,7 @@ ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall)
     if (funcCall.arguments.size() == 3)
     {
         /*
-        Convert "sincos(x, a, b)" expression to "a = sin(x), b = cos(x)"
+        Convert "sincos(x, s, c)" expression into "s = sin(x), c = cos(x)" (ListExpr)
         see https://msdn.microsoft.com/en-us/library/windows/desktop/bb509652(v=vs.85).aspx
         */
         auto listExpr = MakeShared<ListExpr>(funcCall.area);
@@ -88,6 +88,7 @@ ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall)
 
         if (auto varOutSin = ASTFactory::FindSingleVarIdent(arg1.get()))
         {
+            /* Make "s = sin(x)" expression */
             auto sinExpr = MakeShared<VarAccessExpr>(funcCall.area);
             sinExpr->varIdent   = varOutSin;
             sinExpr->assignOp   = AssignOp::Set;
@@ -99,6 +100,7 @@ ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall)
 
         if (auto varOutCos = ASTFactory::FindSingleVarIdent(arg2.get()))
         {
+            /* Make "c = cos(x)" expression */
             auto cosExpr = MakeShared<VarAccessExpr>(funcCall.area);
             cosExpr->varIdent   = varOutCos;
             cosExpr->assignOp   = AssignOp::Set;
