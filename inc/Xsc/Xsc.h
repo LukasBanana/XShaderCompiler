@@ -33,14 +33,14 @@ struct Formatting
     std::string indent              = "    ";
     
     /**
-    Prefix string for all local variables. By default "_".
+    \brief Prefix string for name mangling. By default "xsc_".
     \remarks This prefix is used because GLSL does not allow interface blocks as
     input for vertex shaders or output for fragment shaders.
     Thus some identifiers of local variables may overlap with input variables.
     This prefix is added to all local function variables.
     \todo Remove this option and handle this workaround in an autmatic manner.
     */
-    std::string prefix              = "_";
+    std::string prefix              = "xsc_";
 
     //! True if blanks are allowed. By default true.
     bool        blanks              = true;

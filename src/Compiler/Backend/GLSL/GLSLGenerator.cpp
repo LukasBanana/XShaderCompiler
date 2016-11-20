@@ -36,7 +36,6 @@ void GLSLGenerator::GenerateCodePrimary(
     /* Store parameters */
     shaderTarget_   = inputDesc.shaderTarget;
     versionOut_     = outputDesc.shaderVersion;
-    localVarPrefix_ = outputDesc.formatting.prefix;
     allowLineMarks_ = outputDesc.formatting.lineMarks;
     stats_          = outputDesc.statistics;
 
@@ -53,7 +52,7 @@ void GLSLGenerator::GenerateCodePrimary(
             /* Convert AST for GLSL code generation */
             {
                 GLSLConverter converter;
-                converter.Convert(program, inputDesc.shaderTarget);
+                converter.Convert(program, inputDesc.shaderTarget, outputDesc.formatting.prefix);
             }
 
             /* Write header */
@@ -410,8 +409,8 @@ IMPLEMENT_VISIT_PROC(VarType)
 
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
-    /* Write single identifier */
-    Write(ast->ident);
+    /* Write identifier */
+    Write(FinalIdentFromVarIdent(ast));
 
     /* Write array index expressions */
     WriteArrayDims(ast->arrayIndices);
@@ -425,9 +424,6 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    if (ast->flags(VarDecl::isLocalVar))
-        Write(localVarPrefix_);
-    
     Write(ast->ident);
     WriteArrayDims(ast->arrayDims);
 
@@ -1209,6 +1205,19 @@ VarIdent* GLSLGenerator::FindSystemValueVarIdent(VarIdent* ast)
         ast = ast->next.get();
     }
     return nullptr;
+}
+
+const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* ast)
+{
+    /* Check if a variable declaration has changed it's name during conversion */
+    if (ast->symbolRef)
+    {
+        if (auto varDecl = ast->symbolRef->As<VarDecl>())
+            return varDecl->ident;
+    }
+
+    /* Return default identifier */
+    return ast->ident;
 }
 
 /*

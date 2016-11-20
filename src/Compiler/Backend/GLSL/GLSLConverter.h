@@ -12,6 +12,7 @@
 #include "Visitor.h"
 #include <Xsc/Targets.h>
 #include <functional>
+#include <set>
 
 
 namespace Xsc
@@ -25,7 +26,11 @@ class GLSLConverter : public Visitor
     public:
         
         // Converts the specified AST for GLSL.
-        void Convert(Program& program, const ShaderTarget shaderTarget);
+        void Convert(
+            Program& program,
+            const ShaderTarget shaderTarget,
+            const std::string& nameManglingPrefix
+        );
 
     private:
         
@@ -33,6 +38,9 @@ class GLSLConverter : public Visitor
 
         DECL_VISIT_PROC( FunctionCall );
         DECL_VISIT_PROC( VarIdent     );
+
+        DECL_VISIT_PROC( VarDecl      );
+        DECL_VISIT_PROC( StructDecl   );
 
         DECL_VISIT_PROC( FunctionDecl );
 
@@ -46,12 +54,28 @@ class GLSLConverter : public Visitor
         // Returns true if the specified variable type is a sampler.
         bool VarTypeIsSampler(VarType& ast) const;
 
-        // Returns true if the specified AST structure must be resolved (i.e. structure is removed, and its members are used as global variables).
+        // Returns true if the specified structure declaration must be resolved (i.e. structure is removed, and its members are used as global variables).
         bool MustResolveStruct(StructDecl* ast) const;
+
+        // Returns true if the specified variable declaration must be renamed.
+        bool MustRenameVarDecl(VarDecl* ast) const;
+
+        // Renames the specified variable declaration with name mangling.
+        void RenameVarDecl(VarDecl* ast);
 
         /* === Members === */
 
-        ShaderTarget shaderTarget_ = ShaderTarget::VertexShader;
+        ShaderTarget                shaderTarget_           = ShaderTarget::VertexShader;
+
+        std::string                 nameManglingPrefix_;
+
+        /*
+        List of all reserved variable identifiers that come from a structure that must be resolved.
+        If a local variable uses a name from this list, it name must be modified with name mangling.
+        */
+        std::vector<std::string>    reservedLocalVarIdents_;
+
+        bool                        localScope_             = false;
 
 };
 

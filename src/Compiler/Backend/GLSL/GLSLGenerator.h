@@ -147,6 +147,9 @@ class GLSLGenerator : public Generator
         // Returns the first VarIdent AST node which has a system value semantic, or null if no such AST node was found.
         VarIdent* FindSystemValueVarIdent(VarIdent* ast);
 
+        // Returns the final identifier string from the specified variable identifier.
+        const std::string& FinalIdentFromVarIdent(VarIdent* ast);
+
         // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
         void WriteVarIdentOrSystemValue(VarIdent* ast);
 
@@ -173,7 +176,6 @@ class GLSLGenerator : public Generator
 
         ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;
         OutputShaderVersion     versionOut_             = OutputShaderVersion::GLSL330;
-        std::string             localVarPrefix_;
         bool                    allowLineMarks_         = true;
         Statistics*             stats_                  = nullptr;
 

@@ -16,9 +16,12 @@ namespace Xsc
 {
 
 
-void GLSLConverter::Convert(Program& program, const ShaderTarget shaderTarget)
+void GLSLConverter::Convert(
+    Program& program, const ShaderTarget shaderTarget, const std::string& nameManglingPrefix)
 {
-    shaderTarget_ = shaderTarget;
+    /* Store settings */
+    shaderTarget_       = shaderTarget;
+    nameManglingPrefix_ = nameManglingPrefix;
 
     /* Visit program AST */
     Visit(&program);
@@ -93,6 +96,31 @@ IMPLEMENT_VISIT_PROC(VarIdent)
     }
 }
 
+/* --- Declarations --- */
+
+IMPLEMENT_VISIT_PROC(VarDecl)
+{
+    /* Must this variable be renamed with name mangling? */
+    if (MustRenameVarDecl(ast))
+        RenameVarDecl(ast);
+
+    /* Default visitor */
+    Visitor::VisitVarDecl(ast, args);
+}
+
+IMPLEMENT_VISIT_PROC(StructDecl)
+{
+    if (MustResolveStruct(ast))
+    {
+        /* Append all members of this resolved structure to the list of reserved identifiers for local variables */
+        for (auto& member : ast->members)
+        {
+            for (auto& memberVar : member->varDecls)
+                reservedLocalVarIdents_.push_back(memberVar->ident);
+        }
+    }
+}
+
 /* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
@@ -111,7 +139,11 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     );
 
     /* Default visitor */
-    Visitor::VisitFunctionDecl(ast, args);
+    localScope_ = true;
+    {
+        Visitor::VisitFunctionDecl(ast, args);
+    }
+    localScope_ = false;
 }
 
 /* --- Statements --- */
@@ -151,6 +183,18 @@ bool GLSLConverter::MustResolveStruct(StructDecl* ast) const
         ( shaderTarget_ == ShaderTarget::FragmentShader && ast->flags(StructDecl::isShaderOutput) ) ||
         ( shaderTarget_ == ShaderTarget::ComputeShader && ( ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput) ) )
     );
+}
+
+bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
+{
+    /* Variable must be renamed if it's inside local scope and its name is reserved */
+    return (localScope_ && std::find(reservedLocalVarIdents_.begin(), reservedLocalVarIdents_.end(), ast->ident) != reservedLocalVarIdents_.end());
+}
+
+void GLSLConverter::RenameVarDecl(VarDecl* ast)
+{
+    /* Set new identifier for this variable */
+    ast->ident = nameManglingPrefix_ + ast->ident;
 }
 
 
