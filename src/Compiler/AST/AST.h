@@ -188,11 +188,6 @@ struct Program : public AST
 
     //TODO: remove this (and use 'entryPointRef' instead):
     #if 1
-    struct InputSemantics
-    {
-        std::vector<VarDeclStmnt*> parameters;
-    };
-
     struct OutputSemantics
     {
         VarType*    returnType              = nullptr;              // Either this ...
@@ -214,7 +209,6 @@ struct Program : public AST
 
     //TODO: remove this (and use 'entryPointRef' instead):
     #if 1
-    InputSemantics          inputSemantics;             // Input semantics for the DAST
     OutputSemantics         outputSemantics;            // Output semantics for the DAST
     #endif
 };

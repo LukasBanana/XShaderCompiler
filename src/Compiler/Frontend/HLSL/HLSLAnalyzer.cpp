@@ -708,9 +708,6 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
     //TODO: refactor this
     #if 1
     /* Decorate program's input and output semantics */
-    for (auto& param : funcDecl->parameters)
-        program_->inputSemantics.parameters.push_back(param.get());
-
     program_->outputSemantics.returnType = funcDecl->returnType.get();
     program_->outputSemantics.functionSemantic = funcDecl->semantic;
 

@@ -1023,50 +1023,6 @@ void GLSLGenerator::WriteLocalInputSemantics()
         Blank();
 }
 
-#if 0
-//TODO: refactor this function:
-bool GLSLGenerator::WriteLocalInputSemanticsParameter(VarDeclStmnt* ast)
-{
-    /* Get variable declaration */
-    if (ast->varDecls.size() != 1)
-        Error("invalid number of variables inside parameter of entry point", ast);
-    
-    auto varDecl = ast->varDecls.front().get();
-    auto typeDenoter = varDecl->GetTypeDenoter();
-
-    /* Check if a structure input is used */
-    auto typeRef = ast->varType->symbolRef;
-    StructDecl* structDecl = nullptr;
-
-    if (typeRef && typeRef->Type() == AST::Types::StructDecl)
-        structDecl = dynamic_cast<StructDecl*>(typeRef);
-
-    if (structDecl)
-    {
-        /* Write all members of input semantic structure (for system value semantics) */
-        bool paramsWritten = false;
-
-        for (auto& member : structDecl->members)
-        {
-            for (auto& memberVar : member->varDecls)
-            {
-                if (WriteLocalInputSemanticsParameterVarDecl(memberVar.get()))
-                    paramsWritten = true;
-            }
-        }
-
-        return paramsWritten;
-    }
-    else if (varDecl->semantics.size() == 1)
-    {
-        /* Write single input semantic (for system value semantics) */
-        return WriteLocalInputSemanticsParameterVarDecl(varDecl);
-    }
-
-    return false;
-}
-#endif
-
 bool GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
 {
     /* Is semantic of the variable declaration a system value semantic? */
