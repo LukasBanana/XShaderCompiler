@@ -55,7 +55,7 @@ class GLSLConverter : public Visitor
         // Returns true if the specified variable type is a sampler.
         bool VarTypeIsSampler(VarType& ast) const;
 
-        // Returns true if the specified structure declaration must be resolved (i.e. structure is removed, and its members are used as global variables).
+        // Returns true if the specified structure declaration must be resolved.
         bool MustResolveStruct(StructDecl* ast) const;
 
         // Returns true if the specified variable declaration must be renamed.

@@ -14,7 +14,6 @@
 #include "Visitor.h"
 #include "Token.h"
 #include "ASTEnums.h"
-
 #include <map>
 #include <vector>
 
@@ -76,7 +75,7 @@ class GLSLGenerator : public Generator
         std::string SRegister(const std::string& registerName, const AST* ast = nullptr);
         std::string URegister(const std::string& registerName, const AST* ast = nullptr);
 
-        // Returns true if the specified AST structure must be resolved (i.e. structure is removed, and its members are used as global variables).
+        // Returns true if the specified AST structure must be resolved.
         bool MustResolveStruct(StructDecl* ast) const;
 
         // Returns true if the target version is greater than or equal to the specified version number.

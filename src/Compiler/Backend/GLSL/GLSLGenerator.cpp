@@ -10,6 +10,7 @@
 #include "GLSLConverter.h"
 #include "GLSLKeywords.h"
 #include "GLSLIntrinsics.h"
+#include "GLSLHelper.h"
 #include "Exception.h"
 #include "ReferenceAnalyzer.h"
 #include "TypeDenoter.h"
@@ -236,15 +237,9 @@ std::string GLSLGenerator::URegister(const std::string& registerName, const AST*
 }
 #endif
 
-//TODO: move this to GLSLConverter
 bool GLSLGenerator::MustResolveStruct(StructDecl* ast) const
 {
-    return
-    (
-        ( shaderTarget_ == ShaderTarget::VertexShader && ast->flags(StructDecl::isShaderInput) ) ||
-        ( shaderTarget_ == ShaderTarget::FragmentShader && ast->flags(StructDecl::isShaderOutput) ) ||
-        ( shaderTarget_ == ShaderTarget::ComputeShader && ( ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput) ) )
-    );
+    return MustResolveStructForTarget(shaderTarget_, ast);
 }
 
 bool GLSLGenerator::IsVersionOut(int version) const

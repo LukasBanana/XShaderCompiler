@@ -6,6 +6,7 @@
  */
 
 #include "GLSLConverter.h"
+#include "GLSLHelper.h"
 #include "AST.h"
 #include "ASTFactory.h"
 #include "Exception.h"
@@ -39,14 +40,10 @@ void GLSLConverter::Convert(
 
 IMPLEMENT_VISIT_PROC(Program)
 {
+    /* Register all input semantic variables are reserved identifiers */
     auto& varDeclRefs = ast->entryPointRef->inputSemantics.varDeclRefs;
-
     for (auto& varDecl : varDeclRefs)
-    {
-        auto varSemantic = varDecl->semantics.front().get();
-        if (IsUserSemantic(varSemantic->semantic))
-            reservedVarIdents_.push_back(varDecl->ident);
-    }
+        reservedVarIdents_.push_back(varDecl->ident);
 
     /* Default visitor */
     Visitor::VisitProgram(ast, args);
@@ -185,12 +182,7 @@ bool GLSLConverter::VarTypeIsSampler(VarType& ast) const
 
 bool GLSLConverter::MustResolveStruct(StructDecl* ast) const
 {
-    return
-    (
-        ( shaderTarget_ == ShaderTarget::VertexShader && ast->flags(StructDecl::isShaderInput) ) ||
-        ( shaderTarget_ == ShaderTarget::FragmentShader && ast->flags(StructDecl::isShaderOutput) ) ||
-        ( shaderTarget_ == ShaderTarget::ComputeShader && ( ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput) ) )
-    );
+    return MustResolveStructForTarget(shaderTarget_, ast);
 }
 
 bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
