@@ -140,12 +140,12 @@ void VarIdent::PopFront()
 {
     if (next)
     {
-        auto& nextVarIdent = *next;
-        ident           = nextVarIdent.ident;
-        arrayIndices    = nextVarIdent.arrayIndices;
-        next            = nextVarIdent.next;
-        symbolRef       = nextVarIdent.symbolRef;
-        systemSemantic  = nextVarIdent.systemSemantic;
+        auto nextVarIdent = next;
+        ident           = nextVarIdent->ident;
+        arrayIndices    = nextVarIdent->arrayIndices;
+        next            = nextVarIdent->next;
+        symbolRef       = nextVarIdent->symbolRef;
+        systemSemantic  = nextVarIdent->systemSemantic;
     }
 }
 
