@@ -48,13 +48,13 @@ std::ofstream outputStream("Example.vertex.glsl");
 
 Xsc::ShaderInput inputDesc;
 inputDesc.sourceCode     = inputStream;
-inputDesc.shaderVersion  = Xsc::InputShaderVersions::HLSL5;
+inputDesc.shaderVersion  = Xsc::InputShaderVersion::HLSL5;
 inputDesc.entryPoint     = "VS";
-inputDesc.shaderTarget   = Xsc::ShaderTargets::GLSLVertexShader;
+inputDesc.shaderTarget   = Xsc::ShaderTarget::VertexShader;
 
 Xsc::ShaderOutput outputDesc;
 outputDesc.sourceCode    = &outputStream;
-outputDesc.shaderVersion = Xsc::OutputShaderVersions::GLSL330;
+outputDesc.shaderVersion = Xsc::OutputShaderVersion::GLSL330;
 
 // Translate HLSL code into GLSL
 Xsc::StdLog log;
@@ -83,3 +83,83 @@ float f = (vec4(1)).w;
 ```
 Many other features like structure inheritance (which does not seem to be documented in the HLSL manual pages)
 must be translated to other constructs in GLSL, because GLSL is a more simpler language -- which pleases the compiler builder ;-).
+
+Besides parsing a complex syntax, the XShaderCompiler tries to produce pretty output code which you'll love to maintain,
+in contrast to most auto-generated code.
+Consider the following simple HLSL vertex shader:
+```hlsl
+struct VertexIn
+{
+    float4 position : POSITION;
+    float3 normal : NORMAL;
+};
+
+struct VertexOut
+{
+    float4 position : SV_Position;;
+    float3 normal : NORMAL;
+};
+
+VertexOut VertexMain(VertexIn inp)
+{
+    VertexOut outp;
+    outp.position = inp.position;
+    outp.normal = inp.normal;
+    return outp;
+}
+```
+Many shader cross compilers wrap the HLSL entry point into the GLSL 'main' function like this:
+```glsl
+in vec4 position;
+in vec3 normal;
+
+out vec3 outp_normal;
+
+struct VertexIn
+{
+    vec4 position;
+    vec3 normal;
+};
+
+struct VertexOut
+{
+    vec4 position;
+    vec3 normal;
+};
+
+VertexOut VertexMain(VertexIn inp)
+{
+    VertexOut outp;
+    outp.position = inp.position;
+    outp.normal = inp.normal;
+    return outp;
+}
+
+void main()
+{
+    VertexIn inp;
+    inp.position = position;
+    inp.normal = normal;
+    VertexOut outp = VertexMain(inp);
+    gl_Position = outp.position;
+    outp_normal = outp.normal;
+}
+```
+The XShaderCompiler will automatically solve overlapping names and structures that are used as shader input or output,
+so that unnecessary function wrappers are not required. This is what XShaderCompiler makes out of this:
+```glsl
+in vec3 position;
+in vec3 normal;
+
+out VertexOut
+{
+    vec3 normal;
+}
+outp;
+
+void main()
+{
+    gl_Position = position;
+    outp.normal = normal;
+}
+```
