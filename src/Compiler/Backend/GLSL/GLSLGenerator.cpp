@@ -159,16 +159,12 @@ void GLSLGenerator::AppendRequiredExtensions(Program& ast)
     GLSLExtensionAgent extensionAgent;
     auto requiredExtensions = extensionAgent.DetermineRequiredExtensions(ast, versionOut_);
 
-    for (const auto& ext : requiredExtensions)
-        AppendExtension(ext);
-
-    Blank();
-}
-
-void GLSLGenerator::AppendCommonMacros()
-{
-    //WriteLn("#define clip(x) if (lessThan(x, 0.0)) { discard; }");
-    //Blank();
+    if (!requiredExtensions.empty())
+    {
+        for (const auto& ext : requiredExtensions)
+            AppendExtension(ext);
+        Blank();
+    }
 }
 
 void GLSLGenerator::AppendAllReferencedIntrinsics(Program& ast)
@@ -285,8 +281,15 @@ IMPLEMENT_VISIT_PROC(Program)
         Blank();
     }
 
+    /* Write entry point attributes */
+    if (!ast->entryPointRef->attribs.empty())
+    {
+        for (auto& attrib : ast->entryPointRef->attribs)
+            WriteAttribute(attrib.get());
+        Blank();
+    }
+
     /* Append default helper macros and functions */
-    AppendCommonMacros();
     AppendAllReferencedIntrinsics(*ast);
 
     if (shaderTarget_ == ShaderTarget::FragmentShader)
@@ -316,14 +319,6 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         WriteFunctionCallIntrinsicAtomic(ast);
     else
         WriteFunctionCallStandard(ast);
-}
-
-IMPLEMENT_VISIT_PROC(Attribute)
-{
-    if (ast->ident == "numthreads")
-        WriteAttributeNumThreads(ast);
-    else if (ast->ident == "earlydepthstencil")
-        WriteLn("layout(early_fragment_tests) in;");
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
@@ -466,12 +461,12 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (!ast->flags(AST::isReachable))
-        return; // function not used
+        return;
 
     Line(ast);
 
     /* Write attributes */
-    Visit(ast->attribs);
+    //Visit(ast->attribs);
 
     /* Write function header */
     BeginLn();
@@ -537,7 +532,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
     if (!ast->flags(AST::isReachable))
-        return; // uniform buffer not used
+        return;
 
     /* Write uniform buffer header */
     Line(ast);
@@ -566,7 +561,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
     if (!ast->flags(AST::isReachable))
-        return; // texture not used
+        return;
 
     /* Determine GLSL sampler type */
     auto samplerType = BufferTypeToGLSLKeyword(ast->textureType);
@@ -605,7 +600,7 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 {
     if (!ast->structDecl->flags(AST::isReachable))
-        return; // structure not used
+        return;
 
     Line(ast);
 
@@ -991,6 +986,14 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 
 /* --- Helper functions for code generation --- */
 
+void GLSLGenerator::WriteAttribute(Attribute* ast)
+{
+    if (ast->ident == "numthreads")
+        WriteAttributeNumThreads(ast);
+    else if (ast->ident == "earlydepthstencil")
+        WriteAttributeEarlyDepthStencil();
+}
+
 void GLSLGenerator::WriteAttributeNumThreads(Attribute* ast)
 {
     if (ast->arguments.size() == 3)
@@ -1012,6 +1015,11 @@ void GLSLGenerator::WriteAttributeNumThreads(Attribute* ast)
     }
     else
         ErrorInvalidNumArgs("\"numthreads\" attribute", ast);
+}
+
+void GLSLGenerator::WriteAttributeEarlyDepthStencil()
+{
+    WriteLn("layout(early_fragment_tests) in;");
 }
 
 void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenParamCounter)

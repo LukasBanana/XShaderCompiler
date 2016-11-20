@@ -58,12 +58,8 @@ class GLSLGenerator : public Generator
 
         // Writes a new extensions
         void AppendExtension(const std::string& extensionName);
-
         void AppendRequiredExtensions(Program& ast);
-        
-        void AppendCommonMacros();
         void AppendAllReferencedIntrinsics(Program& ast);
-
         void AppendClipIntrinsics();
 
         // Opens a new scope with '{'.
@@ -91,7 +87,6 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
-        DECL_VISIT_PROC( Attribute         );
         DECL_VISIT_PROC( StructDecl        );
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( VarType           );
@@ -134,7 +129,9 @@ class GLSLGenerator : public Generator
 
         /* --- Helper functions for code generation --- */
 
+        void WriteAttribute(Attribute* ast);
         void WriteAttributeNumThreads(Attribute* ast);
+        void WriteAttributeEarlyDepthStencil();
 
         void WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenParamCounter);
         void WriteEntryPointInputSemantics();

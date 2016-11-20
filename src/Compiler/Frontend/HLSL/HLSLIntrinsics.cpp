@@ -6,6 +6,8 @@
  */
 
 #include "HLSLIntrinsics.h"
+#include "AST.h"
+#include "Helper.h"
 
 
 namespace Xsc
@@ -160,6 +162,20 @@ const HLSLIntrinsicsMap& HLSLIntrinsics()
 {
     static const HLSLIntrinsicsMap intrinsicMap = GenerateIntrinsicMap();
     return intrinsicMap;
+}
+
+TypeDenoterPtr GetTypeDenoterForHLSLIntrinsicWithArgs(const Intrinsic intrinsic, const std::vector<ExprPtr>& args)
+{
+    //TODO: temporary work around (use type mapping)
+    #if 1
+
+    if (!args.empty())
+    {
+        return args.front()->GetTypeDenoter();
+    }
+    return MakeShared<VoidTypeDenoter>();
+
+    #endif
 }
 
 

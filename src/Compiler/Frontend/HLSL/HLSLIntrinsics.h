@@ -11,6 +11,7 @@
 
 #include "ASTEnums.h"
 #include "ShaderVersion.h"
+#include "TypeDenoter.h"
 #include <map>
 
 
@@ -34,6 +35,9 @@ using HLSLIntrinsicsMap = std::map<std::string, HLSLIntrinsicEntry>;
 
 // Returns the intrinsics map (Intrinsic name -> Intrinsic ID and minimum HLSL shader model).
 const HLSLIntrinsicsMap& HLSLIntrinsics();
+
+// Returns a type denoter for the specified intrinsic call and its arguments.
+TypeDenoterPtr GetTypeDenoterForHLSLIntrinsicWithArgs(const Intrinsic intrinsic, const std::vector<ExprPtr>& args);
 
 
 } // /namespace Xsc

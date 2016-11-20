@@ -7,6 +7,7 @@
 
 #include "AST.h"
 #include "Exception.h"
+#include "HLSLIntrinsics.h"
 
 #ifdef XSC_ENABLE_MEMORY_POOL
 #include "MemoryPool.h"
@@ -533,8 +534,9 @@ TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
         return call->funcDeclRef->GetTypeDenoterForArgs(call->arguments);
     else if (call->typeDenoter)
         return call->typeDenoter;
+    else if (call->intrinsic != Intrinsic::Undefined)
+        return GetTypeDenoterForHLSLIntrinsicWithArgs(call->intrinsic, call->arguments);
     else
-        //return std::make_shared<BaseTypeDenoter>(DataType::Float);
         RuntimeErr("missing function reference to derive expression type", this);
 }
 
