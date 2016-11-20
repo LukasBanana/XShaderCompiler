@@ -24,17 +24,6 @@ namespace Xsc
 {
 
 
-/*
- * Internal members
- */
-
-static const std::string interfaceBlockPrefix = "_I";
-
-
-/*
- * GLSLGenerator class
- */
-
 GLSLGenerator::GLSLGenerator(Log* log) :
     Generator{ log }
 {
@@ -330,58 +319,25 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
-
-    /*
-    Check if struct must be resolved:
-    -> vertex shaders can not have input interface blocks and
-       fragment shaders can not have output interface blocks
-    -> see https://www.opengl.org/wiki/Interface_Block_%28GLSL%29#Input_and_output
-    */
-    auto resolveStruct = MustResolveStruct(ast);
-
-    if ( resolveStruct || ( !ast->flags(StructDecl::isShaderInput) && !ast->flags(StructDecl::isShaderOutput) ) )
+    if (MustResolveStruct(ast))
     {
-        /* Write structure declaration */
-        BeginLn();
-        {
-            Write("struct");
-            if (!ast->ident.empty())
-                Write(' ' + ast->ident);
-        }
-        EndLn();
-
-        OpenScope();
-        {
-            VisitStructDeclMembers(ast);
-        }
-        CloseScope(semicolon);
-    }
-
-    /* Write structure members as global input/output variables (if structure must be resolved) */
-    if (resolveStruct)
-    {
+        /* Write structure members as global input/output variables (if structure must be resolved) */
         for (auto& member : ast->members)
         {
-            /* Append struct input/output flag to member */
-            if (ast->flags(StructDecl::isShaderInput))
-                member->flags << VarDeclStmnt::isShaderInput;
-            else if (ast->flags(StructDecl::isShaderOutput))
-                member->flags << VarDeclStmnt::isShaderOutput;
-
-            Visit(member);
+            for (auto& memberVar : member->varDecls)
+                WriteInputSemanticsGlobalVarDecl(memberVar.get());
         }
     }
-    /* Write this structure as interface block (if structure doesn't need to be resolved) */
     else if (ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput))
     {
+        /* Write this structure as interface block (if structure doesn't need to be resolved) */
         BeginLn();
         {
             if (ast->flags(StructDecl::isShaderInput))
-                Write("in");
+                Write("in ");
             else
-                Write("out");
-            Write(" " + interfaceBlockPrefix + ast->ident);
+                Write("out ");
+            Write(ast->ident);
         }
         EndLn();
 
@@ -396,6 +352,25 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         CloseScope();
 
         WriteLn(ast->aliasName + ";");
+    }
+    else
+    {
+        bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
+
+        /* Write standard structure declaration */
+        BeginLn();
+        {
+            Write("struct");
+            if (!ast->ident.empty())
+                Write(' ' + ast->ident);
+        }
+        EndLn();
+
+        OpenScope();
+        {
+            VisitStructDeclMembers(ast);
+        }
+        CloseScope(semicolon);
     }
 }
 
@@ -1087,7 +1062,7 @@ bool GLSLGenerator::WriteInputSemanticsParameter(VarDeclStmnt* ast)
 
 bool GLSLGenerator::WriteInputSemanticsParameterVarDecl(VarDecl* varDecl)
 {
-    /* Map semantic to GL built-in constant */
+    /* Is semantic of the variable declaration a system value semantic? */
     auto varSemantic = varDecl->semantics.front().get();
     auto semantic = varSemantic->semantic;
     if (IsSystemSemantic(semantic))
@@ -1104,6 +1079,27 @@ bool GLSLGenerator::WriteInputSemanticsParameterVarDecl(VarDecl* varDecl)
         }
         else
             Error("failed to map semantic name to GLSL keyword", varSemantic);
+
+        return true;
+    }
+    return false;
+}
+
+bool GLSLGenerator::WriteInputSemanticsGlobalVarDecl(VarDecl* varDecl)
+{
+    /* Is semantic of the variable declaration a user defined semantic? */
+    auto varSemantic = varDecl->semantics.front().get();
+    auto semantic = varSemantic->semantic;
+    if (semantic == Semantic::UserDefined)
+    {
+        /* Write global variable definition statement */
+        BeginLn();
+        {
+            Write("in ");
+            Visit(varDecl->declStmntRef->varType);
+            Write(" " + varDecl->ident + ";");
+        }
+        EndLn();
 
         return true;
     }

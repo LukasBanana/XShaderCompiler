@@ -136,6 +136,7 @@ class GLSLGenerator : public Generator
         void WriteInputSemantics();
         bool WriteInputSemanticsParameter(VarDeclStmnt* ast);
         bool WriteInputSemanticsParameterVarDecl(VarDecl* varDecl);
+        bool WriteInputSemanticsGlobalVarDecl(VarDecl* varDecl);
 
         void WriteOutputSemantics(Expr* ast);
 
