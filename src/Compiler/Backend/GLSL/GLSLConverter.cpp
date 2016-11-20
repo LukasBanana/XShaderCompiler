@@ -16,8 +16,10 @@ namespace Xsc
 {
 
 
-void GLSLConverter::Convert(Program& program)
+void GLSLConverter::Convert(Program& program, const ShaderTarget shaderTarget)
 {
+    shaderTarget_ = shaderTarget;
+
     /* Visit program AST */
     Visit(&program);
 }
@@ -67,6 +69,30 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     Visitor::VisitFunctionCall(ast, args);
 }
 
+IMPLEMENT_VISIT_PROC(VarIdent)
+{
+    /* Has the variable identifier a next identifier? */
+    if (ast->next && ast->symbolRef)
+    {
+        /* Does this identifier refer to a variable declaration? */
+        if (auto varDecl = ast->symbolRef->As<VarDecl>())
+        {
+            /* Is its type denoter a structure? */
+            auto& typeDenoter = *varDecl->declStmntRef->varType->typeDenoter;
+            if (typeDenoter.IsStruct())
+            {
+                /* Must the structure be resolved? */
+                auto& structTypeDenoter = static_cast<StructTypeDenoter&>(typeDenoter);
+                if (MustResolveStruct(structTypeDenoter.structDeclRef))
+                {
+                    /* Remove first identifier */
+                    ast->PopFront();
+                }
+            }
+        }
+    }
+}
+
 /* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
@@ -107,14 +133,24 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
 
 /* --- Helper functions for conversion --- */
 
-bool GLSLConverter::ExprContainsSampler(Expr& ast)
+bool GLSLConverter::ExprContainsSampler(Expr& ast) const
 {
     return ast.GetTypeDenoter()->Get()->IsSampler();
 }
 
-bool GLSLConverter::VarTypeIsSampler(VarType& ast)
+bool GLSLConverter::VarTypeIsSampler(VarType& ast) const
 {
     return ast.typeDenoter->IsSampler();
+}
+
+bool GLSLConverter::MustResolveStruct(StructDecl* ast) const
+{
+    return
+    (
+        ( shaderTarget_ == ShaderTarget::VertexShader && ast->flags(StructDecl::isShaderInput) ) ||
+        ( shaderTarget_ == ShaderTarget::FragmentShader && ast->flags(StructDecl::isShaderOutput) ) ||
+        ( shaderTarget_ == ShaderTarget::ComputeShader && ( ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput) ) )
+    );
 }
 
 

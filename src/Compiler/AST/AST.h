@@ -35,6 +35,7 @@ class Visitor;
 /* --- Some helper macros --- */
 
 #define AST_INTERFACE(CLASS_NAME)                               \
+    static const Types astType = Types::CLASS_NAME;             \
     CLASS_NAME(const SourcePosition& astPos)                    \
     {                                                           \
         area = SourceArea(astPos, 1);                           \
@@ -138,6 +139,13 @@ struct AST
         FLAG( isReachable,      30 ), // This AST node is reachable from the main entry point (i.e. the use-count >= 1).
         FLAG( isReachableDone,  31 ), // This AST node was already marked as reachable.
     };
+
+    // Returns this AST node as the specified sub class if this AST node has the correc type. Otherwise, null is returned.
+    template <typename T>
+    T* As()
+    {
+        return (Type() == T::astType ? static_cast<T*>(this) : nullptr);
+    }
 
     SourceArea  area;
     Flags       flags;
@@ -316,6 +324,9 @@ struct VarIdent : public TypedAST
 
     // Returns a type denoter for the symbol reference of the last variable identifier.
     TypeDenoterPtr DeriveTypeDenoter() override;
+
+    // Moves the next identifier into this one (i.e. removes the first identifier).
+    void PopFront();
 
     std::string             ident;                                  // Either this ..
   //TypeDenoterPtr          typeDenoter;                            // ... or this is used

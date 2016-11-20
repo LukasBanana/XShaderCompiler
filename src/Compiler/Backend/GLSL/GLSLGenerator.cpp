@@ -64,7 +64,7 @@ void GLSLGenerator::GenerateCodePrimary(
             /* Convert AST for GLSL code generation */
             {
                 GLSLConverter converter;
-                converter.Convert(program);
+                converter.Convert(program, inputDesc.shaderTarget);
             }
 
             /* Write header */
@@ -246,15 +246,18 @@ std::string GLSLGenerator::URegister(const std::string& registerName, const AST*
     ValidateRegisterPrefix(registerName, 'u', ast);
     return registerName.substr(1);
 }
+#endif
 
+//TODO: move this to GLSLConverter
 bool GLSLGenerator::MustResolveStruct(StructDecl* ast) const
 {
     return
+    (
         ( shaderTarget_ == ShaderTarget::VertexShader && ast->flags(StructDecl::isShaderInput) ) ||
         ( shaderTarget_ == ShaderTarget::FragmentShader && ast->flags(StructDecl::isShaderOutput) ) ||
-        ( shaderTarget_ == ShaderTarget::ComputeShader && ( ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput) ) );
+        ( shaderTarget_ == ShaderTarget::ComputeShader && ( ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput) ) )
+    );
 }
-#endif
 
 bool GLSLGenerator::IsVersionOut(int version) const
 {
@@ -509,7 +512,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             OpenScope();
             {
                 /* Write input parameters as local variables */
-                WriteEntryPointInputSemantics();
+                WriteInputSemantics();
 
                 /* Write code block (without additional scope) */
                 isInsideEntryPoint_ = true;
@@ -848,7 +851,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         {
             OpenScope();
             {
-                WriteEntryPointOutputSemantics(ast->expr.get());
+                WriteOutputSemantics(ast->expr.get());
                 WriteLn("return;");
             }
             CloseScope();
@@ -1024,28 +1027,31 @@ void GLSLGenerator::WriteAttributeEarlyDepthStencil()
     WriteLn("layout(early_fragment_tests) in;");
 }
 
-void GLSLGenerator::WriteEntryPointInputSemantics()
+void GLSLGenerator::WriteInputSemantics()
 {
     auto& parameters = GetProgram()->inputSemantics.parameters;
 
-    std::size_t numWrittenParams = 0;
+    bool paramsWritten = false;
+
     for (auto& param : parameters)
     {
-        if (WriteEntryPointInputSemanticsParameter(param))
-            ++numWrittenParams;
+        if (WriteInputSemanticsParameter(param))
+            paramsWritten = true;
     }
 
-    if (numWrittenParams > 0)
+    if (paramsWritten)
         Blank();
 }
 
 //TODO: refactor this function:
-bool GLSLGenerator::WriteEntryPointInputSemanticsParameter(VarDeclStmnt* ast)
+bool GLSLGenerator::WriteInputSemanticsParameter(VarDeclStmnt* ast)
 {
     /* Get variable declaration */
     if (ast->varDecls.size() != 1)
         Error("invalid number of variables inside parameter of entry point", ast);
+    
     auto varDecl = ast->varDecls.front().get();
+    auto typeDenoter = varDecl->GetTypeDenoter();
 
     /* Check if a structure input is used */
     auto typeRef = ast->varType->symbolRef;
@@ -1056,54 +1062,55 @@ bool GLSLGenerator::WriteEntryPointInputSemanticsParameter(VarDeclStmnt* ast)
 
     if (structDecl)
     {
-        if (MustResolveStruct(structDecl))
+        /* Write all members of input semantic structure (for system value semantics) */
+        bool paramsWritten = false;
+
+        for (auto& member : structDecl->members)
         {
-            /* Write variable declaration */
-            BeginLn();
+            for (auto& memberVar : member->varDecls)
             {
-                Visit(ast->varType);
-                Write(" " + varDecl->ident + ";");
+                if (WriteInputSemanticsParameterVarDecl(memberVar.get()))
+                    paramsWritten = true;
             }
-            EndLn();
-
-            /* Fill structure members */
-            for (const auto& member : structDecl->members)
-            {
-                for (const auto& memberVar : member->varDecls)
-                    WriteLn(varDecl->ident + "." + memberVar->ident + " = " + memberVar->ident + ";");
-            }
-
-            return true;
         }
+
+        return paramsWritten;
     }
-    else
+    else if (varDecl->semantics.size() == 1)
     {
-        /* Get single semantic */
-        if (varDecl->semantics.size() != 1)
-            Error("invalid number of semantics inside parameter fo entry point", varDecl);
-        auto semantic = varDecl->semantics.front()->semantic;
-
-        /* Map semantic to GL built-in constant */
-        if (auto semanticKeyword = SemanticToGLSLKeyword(semantic))
-        {
-            /* Write local variable definition statement */
-            BeginLn();
-            {
-                Visit(ast->varType);
-                Write(" " + varDecl->ident + " = " + *semanticKeyword + ";");
-            }
-            EndLn();
-        }
-        else
-            Error("failed to map semantic name to GLSL keyword", varDecl->semantics.front().get());
-
-        return true;
+        /* Write single input semantic (for system value semantics) */
+        return WriteInputSemanticsParameterVarDecl(varDecl);
     }
 
     return false;
 }
 
-void GLSLGenerator::WriteEntryPointOutputSemantics(Expr* ast)
+bool GLSLGenerator::WriteInputSemanticsParameterVarDecl(VarDecl* varDecl)
+{
+    /* Map semantic to GL built-in constant */
+    auto varSemantic = varDecl->semantics.front().get();
+    auto semantic = varSemantic->semantic;
+    if (IsSystemSemantic(semantic))
+    {
+        if (auto semanticKeyword = SemanticToGLSLKeyword(semantic))
+        {
+            /* Write local variable definition statement */
+            BeginLn();
+            {
+                Visit(varDecl->declStmntRef->varType);
+                Write(" " + varDecl->ident + " = " + *semanticKeyword + ";");
+            }
+            EndLn();
+        }
+        else
+            Error("failed to map semantic name to GLSL keyword", varSemantic);
+
+        return true;
+    }
+    return false;
+}
+
+void GLSLGenerator::WriteOutputSemantics(Expr* ast)
 {
     auto& outp = GetProgram()->outputSemantics;
 

@@ -136,6 +136,19 @@ TypeDenoterPtr VarIdent::DeriveTypeDenoter()
     RuntimeErr("missing symbol reference to derive type denoter of variable identifier '" + ident + "'", this);
 }
 
+void VarIdent::PopFront()
+{
+    if (next)
+    {
+        auto& nextVarIdent = *next;
+        ident           = nextVarIdent.ident;
+        arrayIndices    = nextVarIdent.arrayIndices;
+        next            = nextVarIdent.next;
+        symbolRef       = nextVarIdent.symbolRef;
+        systemSemantic  = nextVarIdent.systemSemantic;
+    }
+}
+
 
 /* ----- StructDecl ----- */
 

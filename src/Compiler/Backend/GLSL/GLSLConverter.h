@@ -10,6 +10,7 @@
 
 
 #include "Visitor.h"
+#include <Xsc/Targets.h>
 #include <functional>
 
 
@@ -24,13 +25,14 @@ class GLSLConverter : public Visitor
     public:
         
         // Converts the specified AST for GLSL.
-        void Convert(Program& program);
+        void Convert(Program& program, const ShaderTarget shaderTarget);
 
     private:
         
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( FunctionCall );
+        DECL_VISIT_PROC( VarIdent     );
 
         DECL_VISIT_PROC( FunctionDecl );
 
@@ -39,10 +41,17 @@ class GLSLConverter : public Visitor
         /* --- Helper functions for conversion --- */
 
         // Returns true if the specified expression contains a sampler object.
-        bool ExprContainsSampler(Expr& ast);
+        bool ExprContainsSampler(Expr& ast) const;
 
         // Returns true if the specified variable type is a sampler.
-        bool VarTypeIsSampler(VarType& ast);
+        bool VarTypeIsSampler(VarType& ast) const;
+
+        // Returns true if the specified AST structure must be resolved (i.e. structure is removed, and its members are used as global variables).
+        bool MustResolveStruct(StructDecl* ast) const;
+
+        /* === Members === */
+
+        ShaderTarget shaderTarget_ = ShaderTarget::VertexShader;
 
 };
 

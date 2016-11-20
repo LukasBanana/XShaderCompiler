@@ -76,7 +76,7 @@ class GLSLGenerator : public Generator
         std::string SRegister(const std::string& registerName, const AST* ast = nullptr);
         std::string URegister(const std::string& registerName, const AST* ast = nullptr);
 
-        // Returns true if the specified AST structure must be resolved.
+        // Returns true if the specified AST structure must be resolved (i.e. structure is removed, and its members are used as global variables).
         bool MustResolveStruct(StructDecl* ast) const;
 
         // Returns true if the target version is greater than or equal to the specified version number.
@@ -133,10 +133,11 @@ class GLSLGenerator : public Generator
         void WriteAttributeNumThreads(Attribute* ast);
         void WriteAttributeEarlyDepthStencil();
 
-        void WriteEntryPointInputSemantics();
-        bool WriteEntryPointInputSemanticsParameter(VarDeclStmnt* ast);
+        void WriteInputSemantics();
+        bool WriteInputSemanticsParameter(VarDeclStmnt* ast);
+        bool WriteInputSemanticsParameterVarDecl(VarDecl* varDecl);
 
-        void WriteEntryPointOutputSemantics(Expr* ast);
+        void WriteOutputSemantics(Expr* ast);
 
         void WriteFragmentShaderOutput();
 

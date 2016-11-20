@@ -476,7 +476,21 @@ BufferType HLSLKeywordToBufferType(const std::string& keyword)
 
 /* ----- Semantic Mapping ----- */
 
-static std::map<std::string, Semantic> GenerateSemanticMap()
+static std::map<std::string, Semantic> GenerateSemanticMapD3D9()
+{
+    using T = Semantic;
+
+    return
+    {
+        { "DEPTH",    T::Depth          },
+        { "VFACE",    T::IsFrontFace    },
+        { "VPOS",     T::Position       },
+        { "COLOR",    T::Target         },
+        { "POSITION", T::VertexPosition },
+    };
+}
+
+static std::map<std::string, Semantic> GenerateSemanticMapD3D10()
 {
     using T = Semantic;
 
@@ -485,7 +499,6 @@ static std::map<std::string, Semantic> GenerateSemanticMap()
         { "SV_ClipDistance",           T::ClipDistance           },
         { "SV_CullDistance",           T::CullDistance           },
         { "SV_Coverage",               T::Coverage               },
-        { "DEPTH",                     T::Depth                  }, // D3D9
         { "SV_Depth",                  T::Depth                  },
         { "SV_DepthGreaterEqual",      T::DepthGreaterEqual      },
         { "SV_DepthLessEqual",         T::DepthLessEqual         },
@@ -498,33 +511,38 @@ static std::map<std::string, Semantic> GenerateSemanticMap()
         { "SV_InnerCoverage",          T::InnerCoverage          },
         { "SV_InsideTessFactor",       T::InsideTessFactor       },
         { "SV_InstanceID",             T::InstanceID             },
-        { "VFACE",                     T::IsFrontFace            }, // D3D9
         { "SV_IsFrontFace",            T::IsFrontFace            },
         { "SV_OutputControlPointID",   T::OutputControlPointID   },
-        { "VPOS",                      T::Position               }, // D3D9
         { "SV_Position",               T::Position               },
         { "SV_PrimitiveID",            T::PrimitiveID            },
         { "SV_RenderTargetArrayIndex", T::RenderTargetArrayIndex },
         { "SV_SampleIndex",            T::SampleIndex            },
         { "SV_StencilRef",             T::StencilRef             },
-        { "COLOR",                     T::Target                 }, // D3D9
         { "SV_Target",                 T::Target                 },
         { "SV_TessFactor",             T::TessFactor             },
         { "SV_VertexID",               T::VertexID               },
-        { "POSITION",                  T::VertexPosition         }, // D3D9
       //{ "SV_Position",               T::VertexPosition         }, // Special case (SV_Position is overloaded)
         { "SV_ViewportArrayIndex",     T::ViewportArrayIndex     },
     };
 }
 
-Semantic HLSLKeywordToSemantic(const std::string& ident)
+Semantic HLSLKeywordToSemantic(const std::string& ident, bool useD3D10Semantics)
 {
-    static const auto typeMap = GenerateSemanticMap();
-    auto it = typeMap.find(ident);
-    if (it != typeMap.end())
-        return it->second;
+    if (useD3D10Semantics)
+    {
+        static const auto typeMapD3D10 = GenerateSemanticMapD3D10();
+        auto it = typeMapD3D10.find(ident);
+        if (it != typeMapD3D10.end())
+            return it->second;
+    }
     else
-        return Semantic::UserDefined;
+    {
+        static const auto typeMapD3D9 = GenerateSemanticMapD3D9();
+        auto it = typeMapD3D9.find(ident);
+        if (it != typeMapD3D9.end())
+            return it->second;
+    }
+    return Semantic::UserDefined;
 }
 
 

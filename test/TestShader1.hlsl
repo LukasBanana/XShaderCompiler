@@ -42,6 +42,7 @@ struct VertexIn
 	float3 normal	: NORMAL;
 	float2 texCoord	: TEXCOORD0;
 	float4 color	: COLOR;
+	uint vertexID1 : SV_VertexID;
 	//TestStruct test;
 };
 
@@ -57,7 +58,7 @@ float3 GammaCorrect(float3 color, float gamma)
 	return pow(color, 1.0/gamma);
 }
 
-VertexOut VS(VertexIn inp, uint vertexID : SV_VertexID)
+VertexOut VS(VertexIn inp, uint vertexID2 : SV_VertexID)
 {
 	VertexOut outp = (VertexOut)0;
 	
@@ -73,7 +74,7 @@ VertexOut VS(VertexIn inp, uint vertexID : SV_VertexID)
 	
 	float3 normal = normalize(inp.normal);
 	
-	if (vertexID < 3)
+	if (inp.vertexID1 < 3 && vertexID2 < 3)
 	{
 		float NdotL		= dot(normal, -normalize(lightDir));
 		float shading	= max(0.2, NdotL);
@@ -147,9 +148,14 @@ void test2(int x, inout const row_major float4x4 y){}
 
 
 [numthreads(10, 1, 1)]
+#if 0
 void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
-//void CS(ComputeIn inp)
 {
+#else
+void CS(ComputeIn inp)
+{
+	uint3 threadID = inp.threadID;
+#endif
 	int z = 0;
 	// expression tests
 	float x = 3 * (float)-threadID.x;
