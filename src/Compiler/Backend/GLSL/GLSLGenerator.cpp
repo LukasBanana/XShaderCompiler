@@ -1366,7 +1366,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
             if (keyword)
                 Write(*keyword);
             else
-                Error("can not map intrinsic '" + ast->varIdent->ToString() + "' to GLSL keyword", ast);
+                Error("failed to map intrinsic '" + ast->varIdent->ToString() + "' to GLSL keyword", ast);
         }
         else
         {
@@ -1471,7 +1471,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
         Write(")");
     }
     else
-        Error("can not map intrinsic '" + ast->varIdent->ToString() + "' to GLSL keyword", ast);
+        Error("failed to map intrinsic '" + ast->varIdent->ToString() + "' to GLSL keyword", ast);
 }
 
 void GLSLGenerator::WriteFunctionCallIntrinsicTex(FunctionCall* ast)

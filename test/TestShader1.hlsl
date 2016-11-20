@@ -120,7 +120,7 @@ float4 PS(VertexOut inp) : SV_Target0
 	TexTest(tex, ((samplerState)));
 	
 	int intrl;
-	InterlockedAdd(intrl, 5);
+	InterlockedAdd(intrl, 5, intrl);
 	
 	return ambientColor + saturate(inp.color * diffuse);
 };
@@ -158,7 +158,7 @@ void CS(uint3 threadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex)
 	
 	//float4x4 m = wvpMatrix;
 	
-	struct
+	struct InnerStruct
 	{
 		int x, y;
 	}
