@@ -212,14 +212,16 @@ struct ArrayTypeDenoter : public TypeDenoter
     std::string ToString() const override;
 
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
-
     TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
+
+    bool Equals(const TypeDenoter& rhs) const override;
+    bool IsCastableTo(const TypeDenoter& targetType) const override;
 
     // Validates the number of array indices for this array type denoter.
     void ValidateArrayIndices(std::size_t numArrayIndices, const AST* ast = nullptr) const;
 
     TypeDenoterPtr          baseTypeDenoter;
-    std::vector<ExprPtr>    arrayDims;          // May be null
+    std::vector<ExprPtr>    arrayDims;          // Entries may be null
 };
 
 

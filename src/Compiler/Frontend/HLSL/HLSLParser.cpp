@@ -352,9 +352,9 @@ ExprPtr HLSLParser::ParseInitializer()
 
 VarSemanticPtr HLSLParser::ParseVarSemantic()
 {
-    auto ast = Make<VarSemantic>();
+    Accept(Tokens::Colon); // colon is only syntactic sugar, thus not port of the source area
 
-    Accept(Tokens::Colon);
+    auto ast = Make<VarSemantic>();
 
     if (Is(Tokens::Register))
         ast->registerName = ParseRegister(false);
@@ -363,7 +363,7 @@ VarSemanticPtr HLSLParser::ParseVarSemantic()
     else
         ast->semantic = ParseSemantic(false);
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 VarIdentPtr HLSLParser::ParseVarIdent()

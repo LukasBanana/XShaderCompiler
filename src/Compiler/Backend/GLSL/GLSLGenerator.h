@@ -133,8 +133,9 @@ class GLSLGenerator : public Generator
         void WriteAttributeNumThreads(Attribute* ast);
         void WriteAttributeEarlyDepthStencil();
 
-        void WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenParamCounter);
         void WriteEntryPointInputSemantics();
+        void WriteEntryPointInputSemanticsParameter(VarDeclStmnt* ast, std::size_t& writtenParamCounter);
+
         void WriteEntryPointOutputSemantics(Expr* ast);
 
         void WriteFragmentShaderOutput();

@@ -596,7 +596,7 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
 {
     if (exprs.empty())
         RuntimeErr("can not derive type of initializer list with no elements", this);
-    return std::make_shared<ArrayTypeDenoter>(exprs.front()->GetTypeDenoter());
+    return std::make_shared<ArrayTypeDenoter>(exprs.front()->GetTypeDenoter(), std::vector<ExprPtr>{ nullptr });
 }
 
 unsigned int InitializerExpr::NumElements() const

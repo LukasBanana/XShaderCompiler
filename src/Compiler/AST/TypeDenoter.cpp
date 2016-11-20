@@ -78,7 +78,7 @@ bool TypeDenoter::IsArray() const
 
 bool TypeDenoter::Equals(const TypeDenoter& rhs) const
 {
-    return (Type() == rhs.Type());
+    return (GetAliased().Type() == rhs.GetAliased().Type());
 }
 
 bool TypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
@@ -418,6 +418,28 @@ TypeDenoterPtr ArrayTypeDenoter::GetFromArray(std::size_t numArrayIndices, const
     /* Validate array dimensions */
     ValidateArrayIndices(numArrayIndices);
     return baseTypeDenoter->Get(varIdent);
+}
+
+bool ArrayTypeDenoter::Equals(const TypeDenoter& rhs) const
+{
+    const auto& rhsAliased = rhs.GetAliased();
+    if (rhsAliased.Type() == Types::Array)
+    {
+        const auto& rhsArray = static_cast<const ArrayTypeDenoter&>(rhsAliased);
+        if (baseTypeDenoter && rhsArray.baseTypeDenoter)
+            return baseTypeDenoter->Equals(*rhsArray.baseTypeDenoter);
+    }
+    return false;
+}
+
+bool ArrayTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
+{
+    if (baseTypeDenoter)
+    {
+        const auto& baseAliased = baseTypeDenoter->GetAliased();
+        return (!baseAliased.IsArray() && baseAliased.IsCastableTo(targetType));
+    }
+    return false;
 }
 
 void ArrayTypeDenoter::ValidateArrayIndices(std::size_t numArrayIndices, const AST* ast) const

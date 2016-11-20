@@ -85,6 +85,10 @@ void GLSLGenerator::GenerateCodePrimary(
             /* Visit program AST */
             Visit(&program);
         }
+        catch (const Report& e)
+        {
+            throw e;
+        }
         catch (const ASTRuntimeError& e)
         {
             Error(e.what(), e.GetAST());
@@ -465,9 +469,6 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
     Line(ast);
 
-    /* Write attributes */
-    //Visit(ast->attribs);
-
     /* Write function header */
     BeginLn();
     {
@@ -566,7 +567,7 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
     /* Determine GLSL sampler type */
     auto samplerType = BufferTypeToGLSLKeyword(ast->textureType);
     if (!samplerType)
-        Error("can not map texture type to GLSL sampler type", ast);
+        Error("failed to map texture type to GLSL sampler type", ast);
 
     /* Write texture samplers */
     for (auto& texDecl : ast->textureDecls)
@@ -960,7 +961,8 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    WriteVarIdentOrSystemValue(ast->varIdent.get());
+    //WriteVarIdentOrSystemValue(ast->varIdent.get());
+    Visit(ast->varIdent);
     if (ast->assignExpr)
     {
         Write(" " + AssignOpToString(ast->assignOp) + " ");
@@ -1022,7 +1024,19 @@ void GLSLGenerator::WriteAttributeEarlyDepthStencil()
     WriteLn("layout(early_fragment_tests) in;");
 }
 
-void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenParamCounter)
+void GLSLGenerator::WriteEntryPointInputSemantics()
+{
+    auto& parameters = GetProgram()->inputSemantics.parameters;
+
+    size_t writtenParamCounter = 0;
+    for (auto& param : parameters)
+        WriteEntryPointInputSemanticsParameter(param, writtenParamCounter);
+
+    if (writtenParamCounter > 0)
+        Blank();
+}
+
+void GLSLGenerator::WriteEntryPointInputSemanticsParameter(VarDeclStmnt* ast, std::size_t& writtenParamCounter)
 {
     /* Get variable declaration */
     if (ast->varDecls.size() != 1)
@@ -1077,22 +1091,10 @@ void GLSLGenerator::WriteEntryPointParameter(VarDeclStmnt* ast, size_t& writtenP
             EndLn();
         }
         else
-            Error("can not map semantic name to GLSL keyword", ast);
+            Error("failed to map semantic name to GLSL keyword", varDecl->semantics.front().get());
 
         ++writtenParamCounter;
     }
-}
-
-void GLSLGenerator::WriteEntryPointInputSemantics()
-{
-    auto& parameters = GetProgram()->inputSemantics.parameters;
-
-    size_t writtenParamCounter = 0;
-    for (auto& param : parameters)
-        WriteEntryPointParameter(param, writtenParamCounter);
-
-    if (writtenParamCounter > 0)
-        Blank();
 }
 
 void GLSLGenerator::WriteEntryPointOutputSemantics(Expr* ast)
@@ -1191,7 +1193,7 @@ VarIdent* GLSLGenerator::FindSystemValueVarIdent(VarIdent* ast)
     while (ast)
     {
         /* Check if current var-ident AST node has a system semantic */
-        if (SemanticToGLSLKeyword(ast->systemSemantic))
+        if (SemanticToGLSLKeyword(ast->systemSemantic) != nullptr)
             return ast;
 
         /* Search in next var-ident AST node */
