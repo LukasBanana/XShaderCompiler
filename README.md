@@ -96,7 +96,7 @@ struct VertexIn
 
 struct VertexOut
 {
-    float4 position : SV_Position;;
+    float4 position : SV_Position;
     float3 normal : NORMAL;
 };
 
@@ -110,6 +110,8 @@ VertexOut VertexMain(VertexIn inp)
 ```
 Many shader cross compilers wrap the HLSL entry point into the GLSL 'main' function like this:
 ```glsl
+#version 330
+
 in vec4 position;
 in vec3 normal;
 
@@ -148,6 +150,8 @@ void main()
 The XShaderCompiler will automatically solve overlapping names and structures that are used as shader input or output,
 so that unnecessary function wrappers are not required. This is what XShaderCompiler makes out of this:
 ```glsl
+#version 330
+
 in vec3 position;
 in vec3 normal;
 
