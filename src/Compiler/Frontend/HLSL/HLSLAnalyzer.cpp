@@ -29,7 +29,6 @@ static ShaderVersion GetShaderModel(const InputShaderVersion v)
 HLSLAnalyzer::HLSLAnalyzer(Log* log) :
     Analyzer{ log }
 {
-    DeclareIntrinsics();
 }
 
 void HLSLAnalyzer::DecorateASTPrimary(
@@ -40,7 +39,6 @@ void HLSLAnalyzer::DecorateASTPrimary(
     shaderTarget_   = inputDesc.shaderTarget;
     versionIn_      = inputDesc.shaderVersion;
     shaderModel_    = GetShaderModel(inputDesc.shaderVersion);
-    localVarPrefix_ = outputDesc.formatting.prefix;
 
     /* Decorate program AST */
     program_ = &program;
@@ -52,23 +50,6 @@ void HLSLAnalyzer::DecorateASTPrimary(
 /*
  * ======= Private: =======
  */
-
-void HLSLAnalyzer::DeclareIntrinsics()
-{
-    #if 0//TODO: currently for testing only
-
-    static std::set<std::shared_ptr<IntrinsicDecl>> s_intrinsics;
-
-    auto ast = std::make_shared<IntrinsicDecl>();
-
-    ast->ident = "mul";
-
-    Register(ast->ident, ast.get());
-
-    s_intrinsics.insert(ast);
-
-    #endif
-}
 
 /* ------- Visit functions ------- */
 

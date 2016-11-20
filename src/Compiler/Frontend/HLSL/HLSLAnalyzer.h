@@ -40,8 +40,6 @@ class HLSLAnalyzer : public Analyzer
             const ShaderOutput& outputDesc
         ) override;
         
-        void DeclareIntrinsics();
-
         /*
         Returns the current (top level) function in the call stack
         or null if the AST traversion is in the global scope.
@@ -105,7 +103,6 @@ class HLSLAnalyzer : public Analyzer
         ShaderTarget                shaderTarget_   = ShaderTarget::VertexShader;
         InputShaderVersion          versionIn_      = InputShaderVersion::HLSL5;
         ShaderVersion               shaderModel_    { 5, 0 };
-        std::string                 localVarPrefix_;
 
         // Structure stack to collect all members with system value semantic (SV_...).
         std::vector<StructDecl*>    structStack_;
