@@ -711,13 +711,6 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
         }
     }
     #endif
-
-    //TODO: refactor local variable prefix
-    #if 1
-    /* Append prefix to local variables */
-    if (varDecl->flags(VarDecl::isLocalVar))
-        varIdent->ident = localVarPrefix_ + varIdent->ident;
-    #endif
 }
 
 void HLSLAnalyzer::AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, TextureDecl* textureDecl)

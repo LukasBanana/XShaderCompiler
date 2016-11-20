@@ -116,7 +116,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         for (auto& member : ast->members)
         {
             for (auto& memberVar : member->varDecls)
-                reservedLocalVarIdents_.push_back(memberVar->ident);
+                reservedVarIdents_.push_back(memberVar->ident);
         }
     }
 }
@@ -139,11 +139,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     );
 
     /* Default visitor */
-    localScope_ = true;
-    {
-        Visitor::VisitFunctionDecl(ast, args);
-    }
-    localScope_ = false;
+    Visitor::VisitFunctionDecl(ast, args);
 }
 
 /* --- Statements --- */
@@ -187,8 +183,8 @@ bool GLSLConverter::MustResolveStruct(StructDecl* ast) const
 
 bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
 {
-    /* Variable must be renamed if it's inside local scope and its name is reserved */
-    return (localScope_ && std::find(reservedLocalVarIdents_.begin(), reservedLocalVarIdents_.end(), ast->ident) != reservedLocalVarIdents_.end());
+    /* Variable must be renamed if its name is reserved */
+    return (std::find(reservedVarIdents_.begin(), reservedVarIdents_.end(), ast->ident) != reservedVarIdents_.end());
 }
 
 void GLSLConverter::RenameVarDecl(VarDecl* ast)

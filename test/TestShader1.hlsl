@@ -58,6 +58,8 @@ float3 GammaCorrect(float3 color, float gamma)
 	return pow(color, 1.0/gamma);
 }
 
+//static const float3 color;
+
 VertexOut VS(VertexIn inp, uint vertexID2 : SV_VertexID)
 {
 	VertexOut outp = (VertexOut)0;

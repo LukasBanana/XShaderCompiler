@@ -65,7 +65,7 @@ class GLSLConverter : public Visitor
 
         /* === Members === */
 
-        ShaderTarget                shaderTarget_           = ShaderTarget::VertexShader;
+        ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
 
         std::string                 nameManglingPrefix_;
 
@@ -73,9 +73,7 @@ class GLSLConverter : public Visitor
         List of all reserved variable identifiers that come from a structure that must be resolved.
         If a local variable uses a name from this list, it name must be modified with name mangling.
         */
-        std::vector<std::string>    reservedLocalVarIdents_;
-
-        bool                        localScope_             = false;
+        std::vector<std::string>    reservedVarIdents_;
 
 };
 
