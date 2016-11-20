@@ -64,7 +64,6 @@ class GLSLGenerator : public Generator
         void AppendCommonMacros();
         void AppendAllReferencedIntrinsics(Program& ast);
 
-        void AppendRcpIntrinsics();
         void AppendClipIntrinsics();
         void AppendSinCosIntrinsics();
 
@@ -146,8 +145,11 @@ class GLSLGenerator : public Generator
 
         void VisitStructDeclMembers(StructDecl* ast);
 
-        VarIdent* FirstSystemSemanticVarIdent(VarIdent* ast);
-        void WriteVarIdent(VarIdent* ast);
+        // Returns the first VarIdent AST node which has a system value semantic, or null if no such AST node was found.
+        VarIdent* FindSystemValueVarIdent(VarIdent* ast);
+
+        // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
+        void WriteVarIdentOrSystemValue(VarIdent* ast);
 
         void VisitParameter(VarDeclStmnt* ast);
         void VisitScopedStmnt(Stmnt* ast);
@@ -164,6 +166,7 @@ class GLSLGenerator : public Generator
 
         void WriteFunctionCallStandard(FunctionCall* ast);
         void WriteFunctionCallIntrinsicMul(FunctionCall* ast);
+        void WriteFunctionCallIntrinsicRcp(FunctionCall* ast);
         void WriteFunctionCallIntrinsicAtomic(FunctionCall* ast);
         void WriteFunctionCallIntrinsicTex(FunctionCall* ast);
 

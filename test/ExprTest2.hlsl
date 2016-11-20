@@ -14,7 +14,9 @@ void f(SamplerState s) {}
 float f(int x) {}
 float f(inout int x, float y = 0.0)
 {
-	//y = sin(y);
+//	y = sin(y);
+//	return rcp((float3)y);
+
 	return tex;
 	//return tex2;
 	
