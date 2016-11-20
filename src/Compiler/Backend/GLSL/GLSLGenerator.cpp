@@ -1028,15 +1028,19 @@ void GLSLGenerator::WriteEntryPointInputSemantics()
 {
     auto& parameters = GetProgram()->inputSemantics.parameters;
 
-    size_t writtenParamCounter = 0;
+    std::size_t numWrittenParams = 0;
     for (auto& param : parameters)
-        WriteEntryPointInputSemanticsParameter(param, writtenParamCounter);
+    {
+        if (WriteEntryPointInputSemanticsParameter(param))
+            ++numWrittenParams;
+    }
 
-    if (writtenParamCounter > 0)
+    if (numWrittenParams > 0)
         Blank();
 }
 
-void GLSLGenerator::WriteEntryPointInputSemanticsParameter(VarDeclStmnt* ast, std::size_t& writtenParamCounter)
+//TODO: refactor this function:
+bool GLSLGenerator::WriteEntryPointInputSemanticsParameter(VarDeclStmnt* ast)
 {
     /* Get variable declaration */
     if (ast->varDecls.size() != 1)
@@ -1069,7 +1073,7 @@ void GLSLGenerator::WriteEntryPointInputSemanticsParameter(VarDeclStmnt* ast, st
                     WriteLn(varDecl->ident + "." + memberVar->ident + " = " + memberVar->ident + ";");
             }
 
-            ++writtenParamCounter;
+            return true;
         }
     }
     else
@@ -1093,8 +1097,10 @@ void GLSLGenerator::WriteEntryPointInputSemanticsParameter(VarDeclStmnt* ast, st
         else
             Error("failed to map semantic name to GLSL keyword", varDecl->semantics.front().get());
 
-        ++writtenParamCounter;
+        return true;
     }
+
+    return false;
 }
 
 void GLSLGenerator::WriteEntryPointOutputSemantics(Expr* ast)

@@ -134,7 +134,7 @@ class GLSLGenerator : public Generator
         void WriteAttributeEarlyDepthStencil();
 
         void WriteEntryPointInputSemantics();
-        void WriteEntryPointInputSemanticsParameter(VarDeclStmnt* ast, std::size_t& writtenParamCounter);
+        bool WriteEntryPointInputSemanticsParameter(VarDeclStmnt* ast);
 
         void WriteEntryPointOutputSemantics(Expr* ast);
 
