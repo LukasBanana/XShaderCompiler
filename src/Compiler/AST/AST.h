@@ -442,12 +442,13 @@ struct FunctionDecl : public Stmnt
         std::vector<VarDecl*> varDeclRefs; // References to all variable declarations of the user defined semantics
     };
 
-    /*struct OutputSemantics
+    #if 0
+    struct OutputSemantics
     {
-        VarType*    returnType              = nullptr;              // Either this ...
-        Semantic    functionSemantic        = Semantic::Undefined;  // ... or this is used.
-        std::string singleOutputVariable;                           // May be empty
-    };*/
+        std::vector<VarDecl*>   varDeclRefs; // References to all variable declarations of the user defined semantics
+        Semantic                functionSemantic        = Semantic::Undefined;  // May be undefined.
+    };
+    #endif
 
     FLAG_ENUM
     {

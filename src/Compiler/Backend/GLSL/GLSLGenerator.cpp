@@ -320,20 +320,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    #if 0
-    if (MustResolveStruct(ast))
-    {
-        /* Write structure members as global input/output variables (if structure must be resolved) */
-        for (auto& member : ast->members)
-        {
-            for (auto& memberVar : member->varDecls)
-                WriteGlobalInputSemanticsVarDecl(memberVar.get());
-        }
-    }
-    else
-    #else
     if (!MustResolveStruct(ast))
-    #endif
     {
         if (ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput))
         {

@@ -134,7 +134,6 @@ class GLSLGenerator : public Generator
         void WriteAttributeEarlyDepthStencil();
 
         void WriteLocalInputSemantics();
-        //bool WriteLocalInputSemanticsParameter(VarDeclStmnt* varDecl);
         bool WriteLocalInputSemanticsVarDecl(VarDecl* varDecl);
         
         void WriteGlobalInputSemantics();

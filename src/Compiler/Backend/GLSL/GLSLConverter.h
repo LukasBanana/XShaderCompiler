@@ -36,11 +36,12 @@ class GLSLConverter : public Visitor
         
         /* --- Visitor implementation --- */
 
+        DECL_VISIT_PROC( Program      );
         DECL_VISIT_PROC( FunctionCall );
+        DECL_VISIT_PROC( StructDecl   );
         DECL_VISIT_PROC( VarIdent     );
 
         DECL_VISIT_PROC( VarDecl      );
-        DECL_VISIT_PROC( StructDecl   );
 
         DECL_VISIT_PROC( FunctionDecl );
 
@@ -63,6 +64,11 @@ class GLSLConverter : public Visitor
         // Renames the specified variable declaration with name mangling.
         void RenameVarDecl(VarDecl* ast);
 
+        void PushStructDeclLevel();
+        void PopStructDeclLevel();
+
+        bool IsInsideStructDecl() const;
+
         /* === Members === */
 
         ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
@@ -74,6 +80,8 @@ class GLSLConverter : public Visitor
         If a local variable uses a name from this list, it name must be modified with name mangling.
         */
         std::vector<std::string>    reservedVarIdents_;
+
+        unsigned int                structDeclLevel_    = 0;
 
 };
 

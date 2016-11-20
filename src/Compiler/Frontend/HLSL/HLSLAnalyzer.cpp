@@ -704,7 +704,6 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
             Error("invalid number of variable declarations in function parameter", param.get());
     }
 
-
     //TODO: refactor this
     #if 1
     /* Decorate program's input and output semantics */
@@ -749,6 +748,9 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInput(FunctionDecl* funcDecl, VarDe
             for (auto& memberVar : member->varDecls)
                 AnalyzeEntryPointParameterInput(funcDecl, memberVar.get());
         }
+
+        /* Mark structure as shader input */
+        structDecl->flags << StructDecl::isShaderInput;
     }
     else
     {

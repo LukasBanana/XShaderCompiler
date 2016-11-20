@@ -37,6 +37,21 @@ void GLSLConverter::Convert(
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
     void GLSLConverter::Visit##AST_NAME(AST_NAME* ast, void* args)
 
+IMPLEMENT_VISIT_PROC(Program)
+{
+    auto& varDeclRefs = ast->entryPointRef->inputSemantics.varDeclRefs;
+
+    for (auto& varDecl : varDeclRefs)
+    {
+        auto varSemantic = varDecl->semantics.front().get();
+        if (IsUserSemantic(varSemantic->semantic))
+            reservedVarIdents_.push_back(varDecl->ident);
+    }
+
+    /* Default visitor */
+    Visitor::VisitProgram(ast, args);
+}
+
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     if (ast->intrinsic == Intrinsic::Saturate)
@@ -70,6 +85,16 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
     /* Default visitor */
     Visitor::VisitFunctionCall(ast, args);
+}
+
+IMPLEMENT_VISIT_PROC(StructDecl)
+{
+    PushStructDeclLevel();
+    {
+        /* Default visitor */
+        Visitor::VisitStructDecl(ast, args);
+    }
+    PopStructDeclLevel();
 }
 
 IMPLEMENT_VISIT_PROC(VarIdent)
@@ -106,19 +131,6 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
     /* Default visitor */
     Visitor::VisitVarDecl(ast, args);
-}
-
-IMPLEMENT_VISIT_PROC(StructDecl)
-{
-    if (MustResolveStruct(ast))
-    {
-        /* Append all members of this resolved structure to the list of reserved identifiers for local variables */
-        for (auto& member : ast->members)
-        {
-            for (auto& memberVar : member->varDecls)
-                reservedVarIdents_.push_back(memberVar->ident);
-        }
-    }
 }
 
 /* --- Declaration statements --- */
@@ -183,14 +195,29 @@ bool GLSLConverter::MustResolveStruct(StructDecl* ast) const
 
 bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
 {
-    /* Variable must be renamed if its name is reserved */
-    return (std::find(reservedVarIdents_.begin(), reservedVarIdents_.end(), ast->ident) != reservedVarIdents_.end());
+    /* Variable must be renamed if it's not inside a structure declaration and its name is reserved */
+    return (!IsInsideStructDecl() && std::find(reservedVarIdents_.begin(), reservedVarIdents_.end(), ast->ident) != reservedVarIdents_.end());
 }
 
 void GLSLConverter::RenameVarDecl(VarDecl* ast)
 {
     /* Set new identifier for this variable */
     ast->ident = nameManglingPrefix_ + ast->ident;
+}
+
+void GLSLConverter::PushStructDeclLevel()
+{
+    ++structDeclLevel_;
+}
+
+void GLSLConverter::PopStructDeclLevel()
+{
+    --structDeclLevel_;
+}
+
+bool GLSLConverter::IsInsideStructDecl() const
+{
+    return (structDeclLevel_ > 0);
 }
 
 
