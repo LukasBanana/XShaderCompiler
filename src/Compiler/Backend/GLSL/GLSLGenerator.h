@@ -65,7 +65,6 @@ class GLSLGenerator : public Generator
         void AppendAllReferencedIntrinsics(Program& ast);
 
         void AppendClipIntrinsics();
-        void AppendSinCosIntrinsics();
 
         // Opens a new scope with '{'.
         void OpenScope();

@@ -182,8 +182,6 @@ void GLSLGenerator::AppendAllReferencedIntrinsics(Program& ast)
 
     if (Used(Intrinsic::Clip))
         AppendClipIntrinsics();
-    if (Used(Intrinsic::SinCos))
-        AppendSinCosIntrinsics();
 }
 
 void GLSLGenerator::AppendClipIntrinsics()
@@ -193,18 +191,6 @@ void GLSLGenerator::AppendClipIntrinsics()
     for (const auto& typeName : std::vector<std::string>{ "vec2", "vec3", "vec4" })
         WriteLn("void clip(" + typeName + " x) { if (any(lessThan(x, " + typeName + "(0.0)))) discard; }");
 
-    Blank();
-}
-
-void GLSLGenerator::AppendSinCosIntrinsics()
-{
-    for (const auto& typeName : std::vector<std::string>{ "float", "vec2", "vec3", "vec4" })
-    {
-        WriteLn(
-            "void sincos(" + typeName + " x, out " + typeName +
-            " s, out " + typeName + " c) { s = sin(x); c = cos(x); }"
-        );
-    }
     Blank();
 }
 
@@ -237,6 +223,8 @@ int GLSLGenerator::RegisterIndex(const std::string& registerName)
     return std::stoi(registerName.substr(1));
 }
 
+//TODO: move this to GLSLConverter
+#if 1
 std::string GLSLGenerator::BRegister(const std::string& registerName, const AST* ast)
 {
     ValidateRegisterPrefix(registerName, 'b', ast);
@@ -268,6 +256,7 @@ bool GLSLGenerator::MustResolveStruct(StructDecl* ast) const
         ( shaderTarget_ == ShaderTarget::FragmentShader && ast->flags(StructDecl::isShaderOutput) ) ||
         ( shaderTarget_ == ShaderTarget::ComputeShader && ( ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput) ) );
 }
+#endif
 
 bool GLSLGenerator::IsVersionOut(int version) const
 {

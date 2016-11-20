@@ -39,6 +39,10 @@ class Visitor;
     {                                                           \
         area = SourceArea(astPos, 1);                           \
     }                                                           \
+    CLASS_NAME(const SourceArea& astArea)                       \
+    {                                                           \
+        area = astArea;                                         \
+    }                                                           \
     Types Type() const override                                 \
     {                                                           \
         return Types::CLASS_NAME;                               \

@@ -10,6 +10,7 @@
 
 
 #include "Visitor.h"
+#include <functional>
 
 
 namespace Xsc
@@ -32,6 +33,8 @@ class GLSLConverter : public Visitor
         DECL_VISIT_PROC( FunctionCall );
 
         DECL_VISIT_PROC( FunctionDecl );
+
+        DECL_VISIT_PROC( ExprStmnt    );
 
         /* --- Helper functions for conversion --- */
 

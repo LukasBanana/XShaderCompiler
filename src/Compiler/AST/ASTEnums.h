@@ -24,17 +24,17 @@ enum class AssignOp
 {
     Undefined,
 
-    Set,
-    Add,
-    Sub,
-    Mul,
-    Div,
-    Mod,
-    LShift,
-    RShift,
-    Or,
-    And,
-    Xor,
+    Set,    // =
+    Add,    // +=
+    Sub,    // -=
+    Mul,    // *=
+    Div,    // /=
+    Mod,    // %=
+    LShift, // <<=
+    RShift, // >>=
+    Or,     // |=
+    And,    // &=
+    Xor,    // ^=
 };
 
 std::string AssignOpToString(const AssignOp o);
@@ -51,24 +51,24 @@ enum class BinaryOp
 {
     Undefined,
 
-    LogicalAnd,
-    LogicalOr,
-    Or,
-    Xor,
-    And,
-    LShift,
-    RShift,
-    Add,
-    Sub,
-    Mul,
-    Div,
-    Mod,
-    Equal,
-    NotEqual,
-    Less,
-    Greater,
-    LessEqual,
-    GreaterEqual,
+    LogicalAnd,     // &&
+    LogicalOr,      // ||
+    Or,             // |
+    Xor,            // ^
+    And,            // &
+    LShift,         // <<
+    RShift,         // >>
+    Add,            // +
+    Sub,            // -
+    Mul,            // *
+    Div,            // /
+    Mod,            // %
+    Equal,          // ==
+    NotEqual,       // !=
+    Less,           // <
+    Greater,        // >
+    LessEqual,      // <=
+    GreaterEqual,   // >=
 };
 
 std::string BinaryOpToString(const BinaryOp o);

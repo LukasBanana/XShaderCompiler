@@ -7,6 +7,8 @@
 
 #include "GLSLConverter.h"
 #include "AST.h"
+#include "ASTFactory.h"
+#include "Exception.h"
 #include "Helper.h"
 
 
@@ -35,8 +37,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     if (ast->intrinsic == Intrinsic::Undefined)
     {
         /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
-        EraseIf(
-            ast->arguments,
+        EraseIf(ast->arguments,
             [&](const ExprPtr& expr)
             {
                 return ExprContainsSampler(*expr);
@@ -67,6 +68,21 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
     /* Default visitor */
     Visitor::VisitFunctionDecl(ast, args);
+}
+
+/* --- Statements --- */
+
+IMPLEMENT_VISIT_PROC(ExprStmnt)
+{
+    if (auto funcCall = ASTFactory::FindSingleFunctionCall(ast->expr.get()))
+    {
+        /* Is this a special intrinsic function call? */
+        if (funcCall->intrinsic == Intrinsic::SinCos)
+            ast->expr = ASTFactory::MakeSeparatedSinCosFunctionCalls(*funcCall);
+    }
+
+    /* Default visitor */
+    Visitor::VisitExprStmnt(ast, args);
 }
 
 #undef IMPLEMENT_VISIT_PROC
