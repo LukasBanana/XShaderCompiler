@@ -340,8 +340,7 @@ struct VarDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( isLocalVar,       0 ), // This variable is declared inside the local scope of a function.
-        FLAG( disableCodeGen,   1 ), // Disables the code generation for this variable declaration.
+        FLAG( disableCodeGen, 0 ), // Disables the code generation for this variable declaration.
     };
 
     // Returns the variable declaration as string.

@@ -100,9 +100,6 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     Register(ast->ident, ast);
 
-    if (InsideFunctionDecl() && !InsideStructDecl())
-        ast->flags << VarDecl::isLocalVar;
-
     Visit(ast->arrayDims);
 
     for (auto& varSem : ast->semantics)
