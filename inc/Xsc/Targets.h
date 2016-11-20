@@ -20,10 +20,6 @@ namespace Xsc
 //! Shader target enumeration.
 enum class ShaderTarget
 {
-    /* --- Special types --- */
-    CommonShader = 0,               //< Common shader (used as include file).
-
-    /* --- Shader types --- */
     VertexShader,                   //< Vertex shader.
     GeometryShader,                 //< Geometry shader.
     TessellationControlShader,      //< Tessellation-control (also hull-) shader.

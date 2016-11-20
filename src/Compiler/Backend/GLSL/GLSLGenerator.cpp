@@ -78,11 +78,9 @@ void GLSLGenerator::GenerateCodePrimary(
             Comment(TimePoint());
             Blank();
 
-            if (shaderTarget_ != ShaderTarget::CommonShader)
-            {
-                Version(static_cast<int>(versionOut_));
-                Blank();
-            }
+            /* Write GLSL version */
+            Version(static_cast<int>(versionOut_));
+            Blank();
 
             /* Visit program AST */
             Visit(&program);
@@ -467,7 +465,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    if (!ast->flags(AST::isReachable) && shaderTarget_ != ShaderTarget::CommonShader)
+    if (!ast->flags(AST::isReachable))
         return; // function not used
 
     Line(ast);
@@ -538,7 +536,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
-    if (!ast->flags(AST::isReachable) && shaderTarget_ != ShaderTarget::CommonShader)
+    if (!ast->flags(AST::isReachable))
         return; // uniform buffer not used
 
     /* Write uniform buffer header */
@@ -567,7 +565,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
-    if (!ast->flags(AST::isReachable) && shaderTarget_ != ShaderTarget::CommonShader)
+    if (!ast->flags(AST::isReachable))
         return; // texture not used
 
     /* Determine GLSL sampler type */
@@ -578,7 +576,7 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
     /* Write texture samplers */
     for (auto& texDecl : ast->textureDecls)
     {
-        if (texDecl->flags(AST::isReachable) || shaderTarget_ == ShaderTarget::CommonShader)
+        if (texDecl->flags(AST::isReachable))
         {
             BeginLn();
             {
@@ -606,7 +604,7 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 {
-    if (!ast->structDecl->flags(AST::isReachable) && shaderTarget_ != ShaderTarget::CommonShader)
+    if (!ast->structDecl->flags(AST::isReachable))
         return; // structure not used
 
     Line(ast);

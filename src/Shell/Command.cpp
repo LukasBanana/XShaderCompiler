@@ -91,13 +91,12 @@ void TargetCommand::Run(CommandLine& cmdLine, ShellState& state)
     state.inputDesc.shaderTarget = MapStringToType<ShaderTarget>(
         cmdLine.Accept(),
         {
-          //{ "common",          ShaderTarget::CommonShader             },
-            { "vertex",          ShaderTarget::VertexShader         },
-            { "fragment",        ShaderTarget::FragmentShader       },
-            { "geometry",        ShaderTarget::GeometryShader       },
+            { "vertex",          ShaderTarget::VertexShader                 },
+            { "fragment",        ShaderTarget::FragmentShader               },
+            { "geometry",        ShaderTarget::GeometryShader               },
             { "tess-control",    ShaderTarget::TessellationControlShader    },
             { "tess-evaluation", ShaderTarget::TessellationEvaluationShader },
-            { "compute",         ShaderTarget::ComputeShader        },
+            { "compute",         ShaderTarget::ComputeShader                },
         },
         "invalid shader target"
     );
