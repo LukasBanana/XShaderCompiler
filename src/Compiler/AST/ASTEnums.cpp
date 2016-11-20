@@ -416,6 +416,33 @@ DataType VectorDataType(const DataType baseDataType, int vectorSize)
     return DataType::Undefined;
 }
 
+DataType MatrixDataType(const DataType baseDataType, int rows, int columns)
+{
+    if (IsScalarType(baseDataType))
+    {
+        if (rows == 1 && columns == 1)
+            return baseDataType;
+        if (rows == 1)
+            return VectorDataType(baseDataType, columns);
+        if (columns == 1)
+            return VectorDataType(baseDataType, rows);
+
+        if (rows >= 2 && rows <= 4 && columns >= 2 && columns <= 4)
+        {
+            auto Idx = [](const DataType t)
+            {
+                return static_cast<int>(t);
+            };
+
+            auto offset = (Idx(baseDataType) - Idx(DataType::Bool));
+            auto idx    = Idx(DataType::Bool2x2) + offset*9 + (rows - 2)*3 + (columns - 2);
+
+            return static_cast<DataType>(idx);
+        }
+    }
+    return DataType::Undefined;
+}
+
 static DataType SubscriptDataTypeVector(const DataType dataType, const std::string& subscript, int vectorSize)
 {
     auto IsValidSubscript = [&subscript](std::string compareSubscript, int vectorSize) -> bool

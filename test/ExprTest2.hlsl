@@ -16,6 +16,8 @@ float f(inout int x, float y = 0.0)
 {
 	y = sin(y);
 	return rcp((float3)y);
+	
+	//tex = transpose((float2x3)0);
 
 	float a, b;
 	sincos((x), ((a)), b);

@@ -241,6 +241,9 @@ DataType BaseDataType(const DataType t);
 // Returns the vector data type for the specified type and vector size.
 DataType VectorDataType(const DataType baseDataType, int vectorSize);
 
+// Returns the matrix data type for the specified type, rows, and columns.
+DataType MatrixDataType(const DataType baseDataType, int rows, int columns);
+
 // Returns the data type for the specified swizzle operator or throws and std::invalid_argument on failure.
 DataType SubscriptDataType(const DataType dataType, const std::string& subscript);
 

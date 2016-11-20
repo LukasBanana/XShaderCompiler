@@ -34,7 +34,12 @@ void GLSLConverter::Convert(Program& program)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    if (ast->intrinsic == Intrinsic::Undefined)
+    if (ast->intrinsic == Intrinsic::Saturate)
+    {
+        /* Convert "saturate(x)" to "clamp(x, genType(0), genType(1))" */
+        //TODO...
+    }
+    else if (ast->intrinsic == Intrinsic::Undefined)
     {
         /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
         EraseIf(ast->arguments,

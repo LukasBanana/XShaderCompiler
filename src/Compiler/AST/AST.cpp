@@ -535,7 +535,16 @@ TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
     else if (call->typeDenoter)
         return call->typeDenoter;
     else if (call->intrinsic != Intrinsic::Undefined)
-        return GetTypeDenoterForHLSLIntrinsicWithArgs(call->intrinsic, call->arguments);
+    {
+        try
+        {
+            return GetTypeDenoterForHLSLIntrinsicWithArgs(call->intrinsic, call->arguments);
+        }
+        catch (const std::exception& e)
+        {
+            RuntimeErr(e.what(), this);
+        }
+    }
     else
         RuntimeErr("missing function reference to derive expression type", this);
 }
