@@ -15,8 +15,9 @@ float4 VS() : SV_Position
 	float e = 1.5e+5;
 	float f = 1.5e25;
 	float g = 1.5E-10F;
-	float h = ----.1+2;
+	float h = -- --.1+2;
 	float i = +-+-+-.1;
+	float j = .1h;
 	
 	
 	return float4(0, 0, 1, 1);

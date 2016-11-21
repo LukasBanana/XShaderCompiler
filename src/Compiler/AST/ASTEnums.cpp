@@ -544,6 +544,38 @@ DataType SubscriptDataType(const DataType dataType, const std::string& subscript
         return SubscriptDataTypeMatrix(dataType, subscript, matrixDim.first, matrixDim.second);
 }
 
+static DataType IntLiteralTokenToDataType(const Token& tkn)
+{
+    const auto& s = tkn.Spell();
+
+    if (!s.empty())
+    {
+        /* Has literal the 'u' or 'U' suffix for unsigned integers? */
+        if (s.back() == 'u' || s.back() == 'U')
+            return DataType::UInt;
+    }
+
+    return DataType::Int;
+}
+
+static DataType FloatLiteralTokenToDataType(const Token& tkn)
+{
+    const auto& s = tkn.Spell();
+
+    if (!s.empty())
+    {
+        /* Has literal the 'f' or 'F' suffix for single precision floats? */
+        if (s.back() == 'f' || s.back() == 'F')
+            return DataType::Float;
+
+        /* Has literal the 'h' or 'H' suffix for half precision floats? */
+        if (s.back() == 'h' || s.back() == 'H')
+            return DataType::Half;
+    }
+
+    return DataType::Double;
+}
+
 DataType TokenToDataType(const Token& tkn)
 {
     switch (tkn.Type())
@@ -551,9 +583,9 @@ DataType TokenToDataType(const Token& tkn)
         case Token::Types::BoolLiteral:
             return DataType::Bool;
         case Token::Types::IntLiteral:
-            return DataType::Int;
+            return IntLiteralTokenToDataType(tkn);
         case Token::Types::FloatLiteral:
-            return DataType::Float;
+            return FloatLiteralTokenToDataType(tkn);
         case Token::Types::StringLiteral:
             return DataType::String;
     }
