@@ -535,6 +535,40 @@ enum class Semantic
     ViewportArrayIndex,     // SV_ViewportArrayIndex, gl_ViewportIndex
 };
 
+// Indexed semantic type with 'Semantic' enum, integral index, and implicit conversion from and to 'Semantic' enum.
+class IndexedSemantic
+{
+
+    public:
+
+        IndexedSemantic() = default;
+        IndexedSemantic(const IndexedSemantic&) = default;
+        IndexedSemantic& operator = (const IndexedSemantic&) = default;
+
+        inline IndexedSemantic(Semantic semantic, int index = 0) :
+            semantic_   { semantic },
+            index_      { index    }
+        {
+        }
+
+        inline operator Semantic() const
+        {
+            return semantic_;
+        }
+
+        // Returns the semantic index.
+        inline int Index() const
+        {
+            return index_;
+        }
+
+    private:
+
+        Semantic    semantic_   = Semantic::Undefined;
+        int         index_      = 0;
+
+};
+
 // Returns true if the specified semantic is a system value semantic.
 bool IsSystemSemantic(const Semantic t);
 

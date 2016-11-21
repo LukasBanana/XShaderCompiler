@@ -498,8 +498,13 @@ static Semantic HLSLKeywordToSemanticWithMap(const CiString& ident, const HLSLSe
     {
         if (s.second.hasIndex)
         {
+            /* Does the identifier equal the semantic name without the index? */
             if (ident.size() >= s.first.size() && ident.compare(0, s.first.size(), s.first) == 0)
+            {
+                /* Return semantic with index */
+                //TODO: also return index...
                 return s.second.semantic;
+            }
         }
         else if (ident == s.first)
             return s.second.semantic;

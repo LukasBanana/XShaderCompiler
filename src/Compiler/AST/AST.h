@@ -190,9 +190,9 @@ struct Program : public AST
     #if 1
     struct OutputSemantics
     {
-        VarType*    returnType              = nullptr;              // Either this ...
-        Semantic    functionSemantic        = Semantic::Undefined;  // ... or this is used.
-        std::string singleOutputVariable;                           // May be empty
+        VarType*        returnType              = nullptr;              // Either this ...
+        IndexedSemantic functionSemantic        = Semantic::Undefined;  // ... or this is used.
+        std::string     singleOutputVariable;                           // May be empty
     };
     #endif
 
@@ -285,7 +285,7 @@ struct VarSemantic : public AST
 
     std::string ToString() const;
 
-    Semantic        semantic        = Semantic::Undefined;
+    IndexedSemantic semantic        = Semantic::Undefined;
     PackOffsetPtr   packOffset;
     std::string     registerName;                           // May be empty
 };
@@ -328,7 +328,7 @@ struct VarIdent : public TypedAST
     VarIdentPtr             next;                                   // Next identifier; may be null.
 
     AST*                    symbolRef       = nullptr;              // Symbol reference for DAST to the variable object; may be null.
-    Semantic                systemSemantic  = Semantic::Undefined;  // System semantic (SV_...) for DAST; may be undefined.
+    IndexedSemantic         systemSemantic  = Semantic::Undefined;  // System semantic (SV_...) for DAST; may be undefined.
 };
 
 /* --- Declarations --- */
@@ -446,8 +446,8 @@ struct FunctionDecl : public Stmnt
     #if 0
     struct OutputSemantics
     {
-        std::vector<VarDecl*>   varDeclRefs; // References to all variable declarations of the user defined semantics
-        Semantic                functionSemantic        = Semantic::Undefined;  // May be undefined.
+        std::vector<VarDecl*>   varDeclRefs;        // References to all variable declarations of the user defined semantics
+        IndexedSemantic         functionSemantic;   // May be undefined.
     };
     #endif
 
@@ -484,7 +484,7 @@ struct FunctionDecl : public Stmnt
     VarTypePtr                      returnType;
     std::string                     ident;
     std::vector<VarDeclStmntPtr>    parameters;
-    Semantic                        semantic        = Semantic::Undefined;  // May be undefined
+    IndexedSemantic                 semantic        = Semantic::Undefined;  // May be undefined
     std::vector<VarDeclStmntPtr>    annotations;                            // Annotations can be ignored by analyzers and generators.
     CodeBlockPtr                    codeBlock;                              // May be null (if this AST node is a forward declaration).
 
