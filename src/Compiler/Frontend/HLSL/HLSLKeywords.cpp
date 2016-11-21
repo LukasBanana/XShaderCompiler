@@ -6,6 +6,7 @@
  */
 
 #include "HLSLKeywords.h"
+#include "CiString.h"
 
 
 namespace Xsc
@@ -476,7 +477,7 @@ BufferType HLSLKeywordToBufferType(const std::string& keyword)
 
 /* ----- Semantic Mapping ----- */
 
-static std::map<std::string, Semantic> GenerateSemanticMapD3D9()
+static std::map<CiString, Semantic> GenerateSemanticMapD3D9()
 {
     using T = Semantic;
 
@@ -490,7 +491,7 @@ static std::map<std::string, Semantic> GenerateSemanticMapD3D9()
     };
 }
 
-static std::map<std::string, Semantic> GenerateSemanticMapD3D10()
+static std::map<CiString, Semantic> GenerateSemanticMapD3D10()
 {
     using T = Semantic;
 
@@ -531,14 +532,14 @@ Semantic HLSLKeywordToSemantic(const std::string& ident, bool useD3D10Semantics)
     if (useD3D10Semantics)
     {
         static const auto typeMapD3D10 = GenerateSemanticMapD3D10();
-        auto it = typeMapD3D10.find(ident);
+        auto it = typeMapD3D10.find(ToCiString(ident));
         if (it != typeMapD3D10.end())
             return it->second;
     }
     else
     {
         static const auto typeMapD3D9 = GenerateSemanticMapD3D9();
-        auto it = typeMapD3D9.find(ident);
+        auto it = typeMapD3D9.find(ToCiString(ident));
         if (it != typeMapD3D9.end())
             return it->second;
     }
