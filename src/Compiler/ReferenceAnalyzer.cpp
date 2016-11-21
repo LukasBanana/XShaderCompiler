@@ -26,10 +26,9 @@ void ReferenceAnalyzer::MarkReferencesFromEntryPoint(Program& program)
 
 bool ReferenceAnalyzer::Reachable(AST* ast)
 {
-    if (!ast->flags(AST::isReachableDone))
+    if (!ast->flags(AST::isReachable))
     {
         ast->flags << AST::isReachable;
-        ast->flags << AST::isReachableDone;
         return true;
     }
     return false;

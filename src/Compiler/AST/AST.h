@@ -136,8 +136,7 @@ struct AST
 
     FLAG_ENUM
     {
-        FLAG( isReachable,      30 ), // This AST node is reachable from the main entry point (i.e. the use-count >= 1).
-        FLAG( isReachableDone,  31 ), // This AST node was already marked as reachable.
+        FLAG( isReachable, 30 ), // This AST node is reachable from the main entry point (i.e. the use-count >= 1).
     };
 
     // Returns this AST node as the specified sub class if this AST node has the correc type. Otherwise, null is returned.
