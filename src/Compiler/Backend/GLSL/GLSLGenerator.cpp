@@ -357,7 +357,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
             OpenScope();
             {
-                VisitStructDeclMembers(ast);
+                WriteStructDeclMembers(ast);
             }
             CloseScope(semicolon);
         }
@@ -447,7 +447,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             /* Write parameters */
             for (size_t i = 0; i < ast->parameters.size(); ++i)
             {
-                VisitParameter(ast->parameters[i].get());
+                WriteParameter(ast->parameters[i].get());
                 if (i + 1 < ast->parameters.size())
                     Write(", ");
             }
@@ -705,7 +705,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
     }
     EndLn();
 
-    VisitScopedStmnt(ast->bodyStmnt.get());
+    WriteScopedStmnt(ast->bodyStmnt.get());
 }
 
 IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
@@ -719,13 +719,13 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
     }
     EndLn();
 
-    VisitScopedStmnt(ast->bodyStmnt.get());
+    WriteScopedStmnt(ast->bodyStmnt.get());
 }
 
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 {
     WriteLn("do");
-    VisitScopedStmnt(ast->bodyStmnt.get());
+    WriteScopedStmnt(ast->bodyStmnt.get());
 
     /* Write loop condExpr */
     BeginLn();
@@ -752,7 +752,7 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     EndLn();
 
     /* Write if body */
-    VisitScopedStmnt(ast->bodyStmnt.get());
+    WriteScopedStmnt(ast->bodyStmnt.get());
 
     Visit(ast->elseStmnt);
 }
@@ -772,7 +772,7 @@ IMPLEMENT_VISIT_PROC(ElseStmnt)
     {
         /* Write else statement */
         WriteLn("else");
-        VisitScopedStmnt(ast->bodyStmnt.get());
+        WriteScopedStmnt(ast->bodyStmnt.get());
     }
 }
 
@@ -1145,10 +1145,10 @@ void GLSLGenerator::WriteFragmentShaderOutput()
     Blank();
 }
 
-void GLSLGenerator::VisitStructDeclMembers(StructDecl* ast)
+void GLSLGenerator::WriteStructDeclMembers(StructDecl* ast)
 {
     if (ast->baseStructRef)
-        VisitStructDeclMembers(ast->baseStructRef);
+        WriteStructDeclMembers(ast->baseStructRef);
     Visit(ast->members);
 }
 
@@ -1214,7 +1214,7 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
     }
 }
 
-void GLSLGenerator::VisitParameter(VarDeclStmnt* ast)
+void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
 {
     /* Write modifiers */
     if (!ast->inputModifier.empty())
@@ -1237,7 +1237,7 @@ void GLSLGenerator::VisitParameter(VarDeclStmnt* ast)
         Error("invalid number of variables in function parameter", ast);
 }
 
-void GLSLGenerator::VisitScopedStmnt(Stmnt* ast)
+void GLSLGenerator::WriteScopedStmnt(Stmnt* ast)
 {
     if (ast)
     {
@@ -1331,11 +1331,6 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* 
     }
     else
         Error("failed to determine GLSL data type", ast);
-}
-
-void GLSLGenerator::WriteIdent(const std::string& ident)
-{
-    Write(ident);
 }
 
 void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax)

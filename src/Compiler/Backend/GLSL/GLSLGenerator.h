@@ -142,7 +142,7 @@ class GLSLGenerator : public Generator
 
         void WriteFragmentShaderOutput();
 
-        void VisitStructDeclMembers(StructDecl* ast);
+        void WriteStructDeclMembers(StructDecl* ast);
 
         // Returns the first VarIdent AST node which has a system value semantic, or null if no such AST node was found.
         VarIdent* FindSystemValueVarIdent(VarIdent* ast);
@@ -153,16 +153,13 @@ class GLSLGenerator : public Generator
         // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
         void WriteVarIdentOrSystemValue(VarIdent* ast);
 
-        void VisitParameter(VarDeclStmnt* ast);
-        void VisitScopedStmnt(Stmnt* ast);
+        void WriteParameter(VarDeclStmnt* ast);
+        void WriteScopedStmnt(Stmnt* ast);
 
         bool HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const;
 
         void WriteArrayDims(const std::vector<ExprPtr>& arrayDims);
         void WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast);
-
-        // Writes the specified identifier with possible name manging (if the name is reserved in GLSL).
-        void WriteIdent(const std::string& ident);
 
         void AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax = ~0);
 
