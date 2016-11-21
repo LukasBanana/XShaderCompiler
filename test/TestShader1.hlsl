@@ -103,7 +103,7 @@ void Frustum(inout float4 v, int x) {}
 // "SamplerState ss" must be removed by the translator
 void TexTest(Texture2D t2d, SamplerState ss) {}
 
-float4 PS(VertexOut inp) : SV_TARGET//SV_Target0
+float4 PS(VertexOut inp) : SV_TARGET0
 {
 	float3 interpColor = float3(1.0, 0.0, 0.0);
 	

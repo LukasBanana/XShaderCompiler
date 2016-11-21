@@ -7,6 +7,7 @@
 
 #include "HLSLKeywords.h"
 #include "CiString.h"
+#include <vector>
 
 
 namespace Xsc
@@ -477,73 +478,104 @@ BufferType HLSLKeywordToBufferType(const std::string& keyword)
 
 /* ----- Semantic Mapping ----- */
 
-static std::map<CiString, Semantic> GenerateSemanticMapD3D9()
+struct HLSLSemanticDescriptor
 {
-    using T = Semantic;
-
-    return
+    inline HLSLSemanticDescriptor(const Semantic semantic, bool hasIndex = false) :
+        semantic{ semantic },
+        hasIndex{ hasIndex }
     {
-        { "DEPTH",    T::Depth          },
-        { "VFACE",    T::IsFrontFace    },
-        { "VPOS",     T::Position       },
-        { "COLOR",    T::Target         },
-        { "POSITION", T::VertexPosition },
-    };
+    }
+
+    Semantic    semantic;
+    bool        hasIndex    = false;
+};
+
+using HLSLSemanticMap = std::vector<std::pair<CiString, HLSLSemanticDescriptor>>;
+
+static Semantic HLSLKeywordToSemanticWithMap(const CiString& ident, const HLSLSemanticMap& semanticMap)
+{
+    for (const auto& s : semanticMap)
+    {
+        if (s.second.hasIndex)
+        {
+            if (ident.size() >= s.first.size() && ident.compare(0, s.first.size(), s.first) == 0)
+                return s.second.semantic;
+        }
+        else if (ident == s.first)
+            return s.second.semantic;
+    }
+    return Semantic::UserDefined;
 }
 
-static std::map<CiString, Semantic> GenerateSemanticMapD3D10()
+static Semantic HLSLKeywordToSemanticD3D9(const CiString& ident)
 {
     using T = Semantic;
 
-    return
+    static const HLSLSemanticMap semanticMap
     {
-        { "SV_ClipDistance",           T::ClipDistance           },
-        { "SV_CullDistance",           T::CullDistance           },
-        { "SV_Coverage",               T::Coverage               },
-        { "SV_Depth",                  T::Depth                  },
-        { "SV_DepthGreaterEqual",      T::DepthGreaterEqual      },
-        { "SV_DepthLessEqual",         T::DepthLessEqual         },
-        { "SV_DispatchThreadID",       T::DispatchThreadID       },
-        { "SV_DomainLocation",         T::DomainLocation         },
-        { "SV_GroupID",                T::GroupID                },
-        { "SV_GroupIndex",             T::GroupIndex             },
-        { "SV_GroupThreadID",          T::GroupThreadID          },
-        { "SV_GSInstanceID",           T::GSInstanceID           },
-        { "SV_InnerCoverage",          T::InnerCoverage          },
-        { "SV_InsideTessFactor",       T::InsideTessFactor       },
-        { "SV_InstanceID",             T::InstanceID             },
-        { "SV_IsFrontFace",            T::IsFrontFace            },
-        { "SV_OutputControlPointID",   T::OutputControlPointID   },
-        { "SV_Position",               T::Position               },
-        { "SV_PrimitiveID",            T::PrimitiveID            },
-        { "SV_RenderTargetArrayIndex", T::RenderTargetArrayIndex },
-        { "SV_SampleIndex",            T::SampleIndex            },
-        { "SV_StencilRef",             T::StencilRef             },
-        { "SV_Target",                 T::Target                 },
-        { "SV_TessFactor",             T::TessFactor             },
-        { "SV_VertexID",               T::VertexID               },
-      //{ "SV_Position",               T::VertexPosition         }, // Special case (SV_Position is overloaded)
-        { "SV_ViewportArrayIndex",     T::ViewportArrayIndex     },
+        { "COLOR",    { T::Target,         true } },
+        { "DEPTH",    { T::Depth,          true } },
+        { "POSITION", { T::VertexPosition, true } },
+        { "VFACE",    { T::IsFrontFace          } },
+        { "VPOS",     { T::Position             } },
+        //TODO: continue this list ...
     };
+
+    /* Has identifier at the the length of the shortest semantic? */
+    if (ident.size() >= 4)
+        return HLSLKeywordToSemanticWithMap(ident, semanticMap);
+    else
+        return Semantic::UserDefined;
+}
+
+static Semantic HLSLKeywordToSemanticD3D10(const CiString& ident)
+{
+    using T = Semantic;
+
+    static const HLSLSemanticMap semanticMap
+    {
+        { "SV_ClipDistance",           { T::ClipDistance,          true } },
+        { "SV_CullDistance",           { T::CullDistance,          true } },
+        { "SV_Coverage",               { T::Coverage                    } },
+        { "SV_Depth",                  { T::Depth                       } },
+        { "SV_DepthGreaterEqual",      { T::DepthGreaterEqual           } },
+        { "SV_DepthLessEqual",         { T::DepthLessEqual              } },
+        { "SV_DispatchThreadID",       { T::DispatchThreadID            } },
+        { "SV_DomainLocation",         { T::DomainLocation              } },
+        { "SV_GroupID",                { T::GroupID                     } },
+        { "SV_GroupIndex",             { T::GroupIndex                  } },
+        { "SV_GroupThreadID",          { T::GroupThreadID               } },
+        { "SV_GSInstanceID",           { T::GSInstanceID                } },
+        { "SV_InnerCoverage",          { T::InnerCoverage               } },
+        { "SV_InsideTessFactor",       { T::InsideTessFactor            } },
+        { "SV_InstanceID",             { T::InstanceID                  } },
+        { "SV_IsFrontFace",            { T::IsFrontFace                 } },
+        { "SV_OutputControlPointID",   { T::OutputControlPointID        } },
+        { "SV_Position",               { T::Position                    } },
+        { "SV_PrimitiveID",            { T::PrimitiveID                 } },
+        { "SV_RenderTargetArrayIndex", { T::RenderTargetArrayIndex      } },
+        { "SV_SampleIndex",            { T::SampleIndex                 } },
+        { "SV_StencilRef",             { T::StencilRef                  } },
+        { "SV_Target",                 { T::Target,                true } },
+        { "SV_TessFactor",             { T::TessFactor                  } },
+        { "SV_VertexID",               { T::VertexID                    } },
+      //{ "SV_Position",               { T::VertexPosition              } }, // Special case (SV_Position is overloaded)
+        { "SV_ViewportArrayIndex",     { T::ViewportArrayIndex          } },
+    };
+
+    /* Has identifier at the the length of the shortest semantic? */
+    if (ident.size() >= 8 && ident.compare(0, 3, "SV_") == 0)
+        return HLSLKeywordToSemanticWithMap(ident, semanticMap);
+    else
+        return Semantic::UserDefined;
 }
 
 Semantic HLSLKeywordToSemantic(const std::string& ident, bool useD3D10Semantics)
 {
     if (useD3D10Semantics)
-    {
-        static const auto typeMapD3D10 = GenerateSemanticMapD3D10();
-        auto it = typeMapD3D10.find(ToCiString(ident));
-        if (it != typeMapD3D10.end())
-            return it->second;
-    }
+        return HLSLKeywordToSemanticD3D10(ToCiString(ident));
     else
-    {
-        static const auto typeMapD3D9 = GenerateSemanticMapD3D9();
-        auto it = typeMapD3D9.find(ToCiString(ident));
-        if (it != typeMapD3D9.end())
-            return it->second;
-    }
-    return Semantic::UserDefined;
+        return HLSLKeywordToSemanticD3D9(ToCiString(ident));
 }
 
 
