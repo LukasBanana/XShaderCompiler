@@ -1117,8 +1117,7 @@ void GLSLGenerator::WriteFragmentShaderOutput()
         {
             if (outp.functionSemantic == Semantic::Target)
             {
-                //TODO: record semantic index
-                int semanticIndex = 0;
+                auto semanticIndex = outp.functionSemantic.Index();
 
                 if (IsVersionOut(130))
                 {

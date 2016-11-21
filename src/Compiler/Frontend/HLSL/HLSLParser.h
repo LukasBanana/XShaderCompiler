@@ -174,7 +174,7 @@ class HLSLParser : public Parser
         StorageClass                    ParseStorageClass();
         BufferType                      ParseBufferType();
         //SamplerType                     ParseSamplerType();
-        Semantic                        ParseSemantic(bool parseColon = true);
+        IndexedSemantic                 ParseSemantic(bool parseColon = true);
 
         /* === Members === */
 

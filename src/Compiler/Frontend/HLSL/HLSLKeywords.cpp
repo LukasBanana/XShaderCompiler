@@ -7,6 +7,7 @@
 
 #include "HLSLKeywords.h"
 #include "CiString.h"
+#include "Helper.h"
 #include <vector>
 
 
@@ -492,7 +493,7 @@ struct HLSLSemanticDescriptor
 
 using HLSLSemanticMap = std::vector<std::pair<CiString, HLSLSemanticDescriptor>>;
 
-static Semantic HLSLKeywordToSemanticWithMap(const CiString& ident, const HLSLSemanticMap& semanticMap)
+static IndexedSemantic HLSLKeywordToSemanticWithMap(const CiString& ident, const HLSLSemanticMap& semanticMap)
 {
     for (const auto& s : semanticMap)
     {
@@ -501,8 +502,13 @@ static Semantic HLSLKeywordToSemanticWithMap(const CiString& ident, const HLSLSe
             /* Does the identifier equal the semantic name without the index? */
             if (ident.size() >= s.first.size() && ident.compare(0, s.first.size(), s.first) == 0)
             {
-                /* Return semantic with index */
-                //TODO: also return index...
+                /* Is identifier longer than semantic name? */
+                if (ident.size() > s.first.size())
+                {
+                    /* Return semantic with index */
+                    auto index = FromString<int>(ident.substr(s.first.size()).c_str());
+                    return { s.second.semantic, index };
+                }
                 return s.second.semantic;
             }
         }
@@ -512,7 +518,7 @@ static Semantic HLSLKeywordToSemanticWithMap(const CiString& ident, const HLSLSe
     return Semantic::UserDefined;
 }
 
-static Semantic HLSLKeywordToSemanticD3D9(const CiString& ident)
+static IndexedSemantic HLSLKeywordToSemanticD3D9(const CiString& ident)
 {
     using T = Semantic;
 
@@ -533,7 +539,7 @@ static Semantic HLSLKeywordToSemanticD3D9(const CiString& ident)
         return Semantic::UserDefined;
 }
 
-static Semantic HLSLKeywordToSemanticD3D10(const CiString& ident)
+static IndexedSemantic HLSLKeywordToSemanticD3D10(const CiString& ident)
 {
     using T = Semantic;
 
@@ -575,7 +581,7 @@ static Semantic HLSLKeywordToSemanticD3D10(const CiString& ident)
         return Semantic::UserDefined;
 }
 
-Semantic HLSLKeywordToSemantic(const std::string& ident, bool useD3D10Semantics)
+IndexedSemantic HLSLKeywordToSemantic(const std::string& ident, bool useD3D10Semantics)
 {
     if (useD3D10Semantics)
         return HLSLKeywordToSemanticD3D10(ToCiString(ident));

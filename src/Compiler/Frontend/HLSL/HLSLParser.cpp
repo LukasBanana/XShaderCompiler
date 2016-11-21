@@ -1946,7 +1946,7 @@ BufferType HLSLParser::ParseBufferType()
     return SamplerType::Undefined;
 }*/
 
-Semantic HLSLParser::ParseSemantic(bool parseColon)
+IndexedSemantic HLSLParser::ParseSemantic(bool parseColon)
 {
     if (parseColon)
         Accept(Tokens::Colon);

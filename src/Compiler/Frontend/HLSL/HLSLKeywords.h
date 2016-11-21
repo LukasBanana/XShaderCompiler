@@ -34,7 +34,7 @@ StorageClass HLSLKeywordToStorageClass(const std::string& keyword);
 BufferType HLSLKeywordToBufferType(const std::string& keyword);
 
 // Returns the semantic for the specified identifier or Semantic::UserDefined if the identifier is not reserved.
-Semantic HLSLKeywordToSemantic(const std::string& ident, bool useD3D10Semantics = true);
+IndexedSemantic HLSLKeywordToSemantic(const std::string& ident, bool useD3D10Semantics = true);
 
 
 } // /namespace Xsc
