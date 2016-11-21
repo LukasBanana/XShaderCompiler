@@ -1292,15 +1292,22 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* 
     else if (typeDenoter.IsTexture())
     {
         auto& textureTypeDen = static_cast<const TextureTypeDenoter&>(typeDenoter);
-        if (auto texDecl = textureTypeDen.textureDeclRef)
+        
+        /* Get texture type */
+        auto textureType = textureTypeDen.textureType;
+        if (textureType == BufferType::Undefined)
         {
-            if (auto keyword = BufferTypeToGLSLKeyword(texDecl->declStmntRef->textureType))
-                Write(*keyword);
+            if (auto texDecl = textureTypeDen.textureDeclRef)
+                textureType = texDecl->declStmntRef->textureType;
             else
-                Error("failed to map texture type to GLSL keyword", ast);
+                Error("missing reference to texture type denoter", ast);
         }
+
+        /* Convert texture type to GLSL sampler type */
+        if (auto keyword = BufferTypeToGLSLKeyword(textureType))
+            Write(*keyword);
         else
-            Error("missing reference to texture type denoter", ast);
+            Error("failed to map texture type to GLSL keyword", ast);
     }
     else if (typeDenoter.IsStruct())
     {

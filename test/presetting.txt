@@ -2,14 +2,14 @@
 [NameMangling1]
 --dump-ast -T compute -E CS -o output/NameMangling1.CS.glsl NameMangling1.hlsl
 
-[ExprTest2 CS]
--T compute -E CS -o output/ExprTest2.CS.glsl ExprTest2.hlsl
+#[ExprTest2 CS]
+#-T compute -E CS -o output/ExprTest2.CS.glsl ExprTest2.hlsl
 
 #[ExprTest2 -PP]
 #-PP -T compute -E CS -o output/ExprTest2.post.hlsl ExprTest2.hlsl
 
-[TypeTest1 VS]
--T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
+#[TypeTest1 VS]
+#-T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
 
 #[StructInheritTest1 PS]
 #--dump-ast -T fragment -E PS -o output/StructInheritTest1.PS.glsl StructInheritTest1.hlsl
@@ -19,6 +19,9 @@
 
 [TestShader1.hlsl VS]
 -T vertex -E VS -O -o output/TestShader1.VS.glsl TestShader1.hlsl
+
+[TestShader1.hlsl PS]
+-T fragment -E PS -O -o output/TestShader1.PS.glsl TestShader1.hlsl
 
 [TestShader1.hlsl CS]
 -T compute -E CS -O -o output/TestShader1.CS.glsl TestShader1.hlsl

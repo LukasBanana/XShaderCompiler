@@ -142,13 +142,14 @@ struct BufferTypeDenoter : public TypeDenoter
 struct TextureTypeDenoter : public TypeDenoter
 {
     TextureTypeDenoter() = default;
+    TextureTypeDenoter(BufferType textureType);
     TextureTypeDenoter(TextureDecl* textureDeclRef);
 
     Types Type() const override;
     std::string ToString() const override;
 
-  //TextureType     textureType;
-    TextureDecl*    textureDeclRef = nullptr;
+    BufferType      textureType     = BufferType::Undefined;
+    TextureDecl*    textureDeclRef  = nullptr;
 };
 
 // Sampler type denoter.

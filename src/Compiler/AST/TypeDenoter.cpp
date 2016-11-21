@@ -245,6 +245,11 @@ std::string BufferTypeDenoter::ToString() const
 
 /* ----- TextureTypeDenoter ----- */
 
+TextureTypeDenoter::TextureTypeDenoter(BufferType textureType) :
+    textureType{ textureType }
+{
+}
+
 TextureTypeDenoter::TextureTypeDenoter(TextureDecl* textureDeclRef) :
     textureDeclRef{ textureDeclRef }
 {
