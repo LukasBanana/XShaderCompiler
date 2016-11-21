@@ -47,6 +47,8 @@ class GLSLConverter : public Visitor
 
         DECL_VISIT_PROC( ExprStmnt    );
 
+        DECL_VISIT_PROC( LiteralExpr  );
+
         /* --- Helper functions for conversion --- */
 
         // Returns true if the specified expression contains a sampler object.

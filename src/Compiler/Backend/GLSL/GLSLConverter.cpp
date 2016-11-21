@@ -166,6 +166,26 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
     Visitor::VisitExprStmnt(ast, args);
 }
 
+/* --- Expressions --- */
+
+IMPLEMENT_VISIT_PROC(LiteralExpr)
+{
+    /* Replace 'h' and 'H' suffix with 'f' suffix */
+    auto& s = ast->value;
+
+    if (!s.empty())
+    {
+        if (s.back() == 'h' || s.back() == 'H')
+        {
+            s.back() = 'f';
+            ast->dataType = DataType::Float;
+        }
+    }
+
+    /* Default visitor */
+    Visitor::VisitLiteralExpr(ast, args);
+}
+
 #undef IMPLEMENT_VISIT_PROC
 
 /* --- Helper functions for conversion --- */
