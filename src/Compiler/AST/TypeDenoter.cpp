@@ -439,6 +439,8 @@ bool ArrayTypeDenoter::Equals(const TypeDenoter& rhs) const
 
 bool ArrayTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
+    if (Equals(targetType))
+        return true;
     if (baseTypeDenoter)
     {
         const auto& baseAliased = baseTypeDenoter->GetAliased();
