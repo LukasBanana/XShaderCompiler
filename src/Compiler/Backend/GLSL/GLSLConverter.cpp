@@ -103,12 +103,11 @@ IMPLEMENT_VISIT_PROC(VarIdent)
         if (auto varDecl = ast->symbolRef->As<VarDecl>())
         {
             /* Is its type denoter a structure? */
-            auto& typeDenoter = *varDecl->declStmntRef->varType->typeDenoter;
-            if (typeDenoter.IsStruct())
+            auto varTypeDen = varDecl->declStmntRef->varType->typeDenoter.get();
+            if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
             {
                 /* Must the structure be resolved? */
-                auto& structTypeDenoter = static_cast<StructTypeDenoter&>(typeDenoter);
-                if (MustResolveStruct(structTypeDenoter.structDeclRef))
+                if (MustResolveStruct(structTypeDen->structDeclRef))
                 {
                     /* Remove first identifier */
                     ast->PopFront();

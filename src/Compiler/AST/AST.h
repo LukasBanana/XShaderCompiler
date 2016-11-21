@@ -35,7 +35,7 @@ class Visitor;
 /* --- Some helper macros --- */
 
 #define AST_INTERFACE(CLASS_NAME)                               \
-    static const Types astType = Types::CLASS_NAME;             \
+    static const Types classType = Types::CLASS_NAME;           \
     CLASS_NAME(const SourcePosition& astPos)                    \
     {                                                           \
         area = SourceArea(astPos, 1);                           \
@@ -139,11 +139,11 @@ struct AST
         FLAG( isReachable, 30 ), // This AST node is reachable from the main entry point (i.e. the use-count >= 1).
     };
 
-    // Returns this AST node as the specified sub class if this AST node has the correc type. Otherwise, null is returned.
+    // Returns this AST node as the specified sub class if this AST node has the correct type. Otherwise, null is returned.
     template <typename T>
     T* As()
     {
-        return (Type() == T::astType ? static_cast<T*>(this) : nullptr);
+        return (Type() == T::classType ? static_cast<T*>(this) : nullptr);
     }
 
     SourceArea  area;

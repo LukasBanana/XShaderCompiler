@@ -625,12 +625,11 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
     if (varIdent->next)
     {
         /* Has variable a struct type denoter? */
-        auto typeDenoter = varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size());
-        if (typeDenoter->IsStruct())
+        auto varTypeDen = varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size());
+        if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
         {
             /* Fetch struct member variable declaration from next identifier */
-            auto& structTypeDenoter = static_cast<StructTypeDenoter&>(*typeDenoter);
-            if (auto memberVarDecl = structTypeDenoter.structDeclRef->Fetch(varIdent->next->ident))
+            if (auto memberVarDecl = structTypeDen->structDeclRef->Fetch(varIdent->next->ident))
             {
                 /* Analyzer next identifier with fetched symbol */
                 AnalyzeVarIdentWithSymbol(varIdent->next.get(), memberVarDecl);
@@ -733,12 +732,11 @@ void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStm
 
 void HLSLAnalyzer::AnalyzeEntryPointParameterInput(FunctionDecl* funcDecl, VarDecl* varDecl)
 {
-    auto typeDenoter = varDecl->GetTypeDenoter()->Get();
-    if (typeDenoter->IsStruct())
+    auto varTypeDen = varDecl->GetTypeDenoter()->Get();
+    if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
     {
         /* Analyze all structure members */
-        auto& structTypeDenoter = static_cast<StructTypeDenoter&>(*typeDenoter);
-        auto structDecl = structTypeDenoter.structDeclRef;
+        auto structDecl = structTypeDen->structDeclRef;
 
         for (auto& member : structDecl->members)
         {

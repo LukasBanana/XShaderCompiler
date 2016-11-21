@@ -96,11 +96,20 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
 
     // Returns either this type denoter (if 'arrayDims' is empty), or this type denoter as array with the specified dimension expressions.
     TypeDenoterPtr AsArray(const std::vector<ExprPtr>& arrayDims);
+
+    // Returns this type denoter as the specified sub class if this type denoter has the correct type. Otherwise, null is returned.
+    template <typename T>
+    T* As()
+    {
+        return (Type() == T::classType ? static_cast<T*>(this) : nullptr);
+    }
 };
 
 // Void type denoter.
 struct VoidTypeDenoter : public TypeDenoter
 {
+    static const Types classType = Types::Void;
+
     Types Type() const override;
     std::string ToString() const override;
 
@@ -111,6 +120,8 @@ struct VoidTypeDenoter : public TypeDenoter
 // Base type denoter.
 struct BaseTypeDenoter : public TypeDenoter
 {
+    static const Types classType = Types::Base;
+
     BaseTypeDenoter() = default;
     BaseTypeDenoter(DataType dataType);
 
@@ -132,6 +143,8 @@ struct BaseTypeDenoter : public TypeDenoter
 // Buffer type denoter.
 struct BufferTypeDenoter : public TypeDenoter
 {
+    static const Types classType = Types::Buffer;
+
     Types Type() const override;
     std::string ToString() const override;
 
@@ -141,6 +154,8 @@ struct BufferTypeDenoter : public TypeDenoter
 // Texture type denoter.
 struct TextureTypeDenoter : public TypeDenoter
 {
+    static const Types classType = Types::Texture;
+
     TextureTypeDenoter() = default;
     TextureTypeDenoter(BufferType textureType);
     TextureTypeDenoter(TextureDecl* textureDeclRef);
@@ -155,6 +170,8 @@ struct TextureTypeDenoter : public TypeDenoter
 // Sampler type denoter.
 struct SamplerTypeDenoter : public TypeDenoter
 {
+    static const Types classType = Types::Sampler;
+
     SamplerTypeDenoter() = default;
     SamplerTypeDenoter(SamplerDecl* samplerDeclRef);
 
@@ -167,6 +184,8 @@ struct SamplerTypeDenoter : public TypeDenoter
 // Struct type denoter.
 struct StructTypeDenoter : public TypeDenoter
 {
+    static const Types classType = Types::Struct;
+
     StructTypeDenoter() = default;
     StructTypeDenoter(const std::string& ident);
     StructTypeDenoter(StructDecl* structDeclRef);
@@ -184,6 +203,8 @@ struct StructTypeDenoter : public TypeDenoter
 // Alias type denoter.
 struct AliasTypeDenoter : public TypeDenoter
 {
+    static const Types classType = Types::Alias;
+
     AliasTypeDenoter() = default;
     AliasTypeDenoter(const std::string& ident);
 
@@ -203,6 +224,8 @@ struct AliasTypeDenoter : public TypeDenoter
 // Array type denoter.
 struct ArrayTypeDenoter : public TypeDenoter
 {
+    static const Types classType = Types::Array;
+
     ArrayTypeDenoter() = default;
     ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter);
     ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter, const std::vector<ExprPtr>& arrayDims);
