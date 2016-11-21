@@ -48,6 +48,7 @@ class GLSLConverter : public Visitor
         DECL_VISIT_PROC( ExprStmnt    );
 
         DECL_VISIT_PROC( LiteralExpr  );
+        DECL_VISIT_PROC( UnaryExpr    );
 
         /* --- Helper functions for conversion --- */
 

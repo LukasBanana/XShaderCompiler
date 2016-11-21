@@ -186,6 +186,23 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
     Visitor::VisitLiteralExpr(ast, args);
 }
 
+IMPLEMENT_VISIT_PROC(UnaryExpr)
+{
+    /* Is the next sub expression again an unary expression? */
+    if (ast->expr->Type() == AST::Types::UnaryExpr)
+    {
+        /* Insert bracket expression */
+        auto bracketExpr = MakeShared<BracketExpr>(ast->area);
+        
+        bracketExpr->expr = ast->expr;
+
+        ast->expr = bracketExpr;
+    }
+
+    /* Default visitor */
+    Visitor::VisitUnaryExpr(ast, args);
+}
+
 #undef IMPLEMENT_VISIT_PROC
 
 /* --- Helper functions for conversion --- */

@@ -881,10 +881,10 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    Write("(");
+    //Write("(");
     Write(UnaryOpToString(ast->op));
     Visit(ast->expr);
-    Write(")");
+    //Write(")");
 }
 
 IMPLEMENT_VISIT_PROC(PostUnaryExpr)
