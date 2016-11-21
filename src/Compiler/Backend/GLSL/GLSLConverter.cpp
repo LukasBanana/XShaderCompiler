@@ -113,6 +113,11 @@ IMPLEMENT_VISIT_PROC(VarIdent)
                     /* Remove first identifier */
                     ast->PopFront();
                 }
+                else
+                {
+                    /* Has a sub node a system value semantic? */
+                    MakeVarIdentWithSystemSemanticLocal(ast);
+                }
             }
         }
     }
@@ -207,6 +212,21 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 
 /* --- Helper functions for conversion --- */
 
+void GLSLConverter::PushStructDeclLevel()
+{
+    ++structDeclLevel_;
+}
+
+void GLSLConverter::PopStructDeclLevel()
+{
+    --structDeclLevel_;
+}
+
+bool GLSLConverter::IsInsideStructDecl() const
+{
+    return (structDeclLevel_ > 0);
+}
+
 bool GLSLConverter::ExprContainsSampler(Expr& ast) const
 {
     return ast.GetTypeDenoter()->Get()->IsSampler();
@@ -238,19 +258,51 @@ void GLSLConverter::RenameVarDecl(VarDecl* ast)
     ast->ident = nameManglingPrefix_ + ast->ident;
 }
 
-void GLSLConverter::PushStructDeclLevel()
+bool GLSLConverter::HasVarDeclOfVarIdentSystemSemantic(VarIdent* varIdent) const
 {
-    ++structDeclLevel_;
+    /* Has variable identifier a system reference? */
+    if (varIdent->symbolRef)
+    {
+        /* Is this symbol reference a variable declaration? */
+        if (auto varDecl = varIdent->symbolRef->As<VarDecl>())
+        {
+            /* Get first variable semantic */
+            if (auto varSemantic = varDecl->FirstSemantic())
+            {
+                /* Is semantic a system semantic? */
+                return IsSystemSemantic(varSemantic->semantic);
+            }
+        }
+    }
+    return false;
 }
 
-void GLSLConverter::PopStructDeclLevel()
+void GLSLConverter::MakeVarIdentWithSystemSemanticLocal(VarIdent* ast)
 {
-    --structDeclLevel_;
-}
+    auto root = ast;
 
-bool GLSLConverter::IsInsideStructDecl() const
-{
-    return (structDeclLevel_ > 0);
+    while (ast)
+    {
+        /* Has current variable declaration a system semantic? */
+        if (HasVarDeclOfVarIdentSystemSemantic(ast))
+        {
+            /*
+            Remove all leading AST nodes until this one, to convert this
+            variable identifer to an identifier for a local variable
+            */
+            while (root && !HasVarDeclOfVarIdentSystemSemantic(root))
+            {
+                root->PopFront();
+                root = root->next.get();
+            }
+
+            /* Stop conversion process */
+            break;
+        }
+
+        /* Continue search in next node */
+        ast = ast->next.get();
+    }
 }
 
 

@@ -624,18 +624,18 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
     /* Decorate next identifier */
     if (varIdent->next)
     {
-        #if 0
-
-        /* Variable declaration must have a struct type denoter */
-        auto varTypeDen = varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size());
-        if (varTypeDen->IsStruct())
+        /* Has variable a struct type denoter? */
+        auto typeDenoter = varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size());
+        if (typeDenoter->IsStruct())
         {
-            //TODO...
+            /* Fetch struct member variable declaration from next identifier */
+            auto& structTypeDenoter = static_cast<StructTypeDenoter&>(*typeDenoter);
+            if (auto memberVarDecl = structTypeDenoter.structDeclRef->Fetch(varIdent->next->ident))
+            {
+                /* Analyzer next identifier with fetched symbol */
+                AnalyzeVarIdentWithSymbol(varIdent->next.get(), memberVarDecl);
+            }
         }
-        else
-            Error("invalid type denoter in variable identifier", varIdent);
-
-        #endif
     }
 
     //TODO: refactor analysis of system value semantics (SV_...)

@@ -52,6 +52,11 @@ class GLSLConverter : public Visitor
 
         /* --- Helper functions for conversion --- */
 
+        void PushStructDeclLevel();
+        void PopStructDeclLevel();
+
+        bool IsInsideStructDecl() const;
+
         // Returns true if the specified expression contains a sampler object.
         bool ExprContainsSampler(Expr& ast) const;
 
@@ -67,10 +72,14 @@ class GLSLConverter : public Visitor
         // Renames the specified variable declaration with name mangling.
         void RenameVarDecl(VarDecl* ast);
 
-        void PushStructDeclLevel();
-        void PopStructDeclLevel();
+        // Returns true if the variable identifier refers to a variable declaration which has a system semantic.
+        bool HasVarDeclOfVarIdentSystemSemantic(VarIdent* varIdent) const;
 
-        bool IsInsideStructDecl() const;
+        /*
+        Changes the specified variable identifier to a local variable identifier
+        (without a leading structure instance name), if it refers to a variable with a system semantic.
+        */
+        void MakeVarIdentWithSystemSemanticLocal(VarIdent* ast);
 
         /* === Members === */
 
