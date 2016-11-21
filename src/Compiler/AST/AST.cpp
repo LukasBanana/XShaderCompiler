@@ -293,6 +293,11 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter()
     RuntimeErr("missing reference to declaration statement to derive type denoter of variable identifier '" + ident + "'", this);
 }
 
+VarSemantic* VarDecl::FirstSemantic() const
+{
+    return (!semantics.empty() ? semantics.front().get() : nullptr);
+}
+
 
 /* ----- VarDelcStmnt ----- */
 

@@ -1008,24 +1008,25 @@ void GLSLGenerator::WriteLocalInputSemantics()
 bool GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
 {
     /* Is semantic of the variable declaration a system value semantic? */
-    auto varSemantic = varDecl->semantics.front().get();
-    auto semantic = varSemantic->semantic;
-    if (IsSystemSemantic(semantic))
+    if (auto varSemantic = varDecl->FirstSemantic())
     {
-        if (auto semanticKeyword = SemanticToGLSLKeyword(semantic))
+        if (IsSystemSemantic(varSemantic->semantic))
         {
-            /* Write local variable definition statement */
-            BeginLn();
+            if (auto semanticKeyword = SemanticToGLSLKeyword(varSemantic->semantic))
             {
-                Visit(varDecl->declStmntRef->varType);
-                Write(" " + varDecl->ident + " = " + *semanticKeyword + ";");
+                /* Write local variable definition statement */
+                BeginLn();
+                {
+                    Visit(varDecl->declStmntRef->varType);
+                    Write(" " + varDecl->ident + " = " + *semanticKeyword + ";");
+                }
+                EndLn();
             }
-            EndLn();
-        }
-        else
-            Error("failed to map semantic name to GLSL keyword", varSemantic);
+            else
+                Error("failed to map semantic name to GLSL keyword", varSemantic);
 
-        return true;
+            return true;
+        }
     }
     return false;
 }
