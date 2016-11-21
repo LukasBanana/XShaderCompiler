@@ -61,26 +61,34 @@ IMPLEMENT_VISIT_PROC(ListExpr)
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
-    switch (ast->type)
+    switch (ast->dataType)
     {
-        case Token::Types::BoolLiteral:
+        case DataType::Bool:
         {
             if (ast->value == "true")
                 Push(true);
             else if (ast->value == "false")
                 Push(false);
             else
-                throw std::runtime_error("invalid boolean literal value \"" + ast->value + "\"");
+                IllegalExpr("boolean literal value '" + ast->value + "'");
         }
         break;
 
-        case Token::Types::IntLiteral:
+        case DataType::Int:
         {
             Push(FromString<Variant::IntType>(ast->value));
         }
         break;
 
-        case Token::Types::FloatLiteral:
+        case DataType::UInt:
+        {
+            Push(Variant::IntType(FromString<unsigned int>(ast->value)));
+        }
+        break;
+
+        case DataType::Half:
+        case DataType::Float:
+        case DataType::Double:
         {
             Push(FromString<Variant::RealType>(ast->value));
         }
@@ -88,7 +96,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
         default:
         {
-            throw std::runtime_error("invalid literal type \"" + Token::TypeToString(ast->type) + "\"");
+            IllegalExpr("literal type '" + DataTypeToString(ast->dataType) + "'");
         }
         break;
     }

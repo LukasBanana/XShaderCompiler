@@ -479,20 +479,7 @@ TypeDenoterPtr ListExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr LiteralExpr::DeriveTypeDenoter()
 {
-    switch (type)
-    {
-        case Token::Types::BoolLiteral:
-            return std::make_shared<BaseTypeDenoter>(DataType::Bool);
-        case Token::Types::IntLiteral:
-            return std::make_shared<BaseTypeDenoter>(DataType::Int);
-        case Token::Types::FloatLiteral:
-            return std::make_shared<BaseTypeDenoter>(DataType::Float);
-        case Token::Types::StringLiteral:
-            return std::make_shared<BaseTypeDenoter>(DataType::String);
-        default:
-            break;
-    }
-    RuntimeErr("invalid data type in base type denoter", this);
+    return std::make_shared<BaseTypeDenoter>(dataType);
 }
 
 

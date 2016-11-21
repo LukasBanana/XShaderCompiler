@@ -708,7 +708,7 @@ struct LiteralExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    Token::Types    type    = Token::Types::Undefined;
+    DataType        dataType    = DataType::Undefined;
     std::string     value;
 };
 

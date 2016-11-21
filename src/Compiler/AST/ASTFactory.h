@@ -34,7 +34,7 @@ FunctionCallExprPtr MakeIntrinsicCallExpr(
 // Converts the specified function call from "sincos(x, s, c)" to "s = sin(x), c = cos(x)".
 ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall);
 
-CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const Token::Types literalType, const std::string& literalValue);
+CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue);
 
 
 } // /namespace ASTFactory

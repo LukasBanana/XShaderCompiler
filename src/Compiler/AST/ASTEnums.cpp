@@ -7,6 +7,7 @@
 
 #include "ASTEnums.h"
 #include "Exception.h"
+#include "Token.h"
 #include <map>
 
 
@@ -541,6 +542,22 @@ DataType SubscriptDataType(const DataType dataType, const std::string& subscript
         return SubscriptDataTypeVector(dataType, subscript, matrixDim.first);
     else
         return SubscriptDataTypeMatrix(dataType, subscript, matrixDim.first, matrixDim.second);
+}
+
+DataType TokenToDataType(const Token& tkn)
+{
+    switch (tkn.Type())
+    {
+        case Token::Types::BoolLiteral:
+            return DataType::Bool;
+        case Token::Types::IntLiteral:
+            return DataType::Int;
+        case Token::Types::FloatLiteral:
+            return DataType::Float;
+        case Token::Types::StringLiteral:
+            return DataType::String;
+    }
+    return DataType::Undefined;
 }
 
 

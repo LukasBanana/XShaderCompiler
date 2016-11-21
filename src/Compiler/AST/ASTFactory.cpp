@@ -116,7 +116,7 @@ ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall)
         RuntimeErr("invalid number of arguments in intrinsic", &funcCall);
 }
 
-CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const Token::Types literalType, const std::string& literalValue)
+CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue)
 {
     auto ast = MakeShared<CastExpr>(SourcePosition::ignore);
 
@@ -124,8 +124,8 @@ CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const Token::
     typeExpr->typeDenoter = typeDenoter;
 
     auto literalExpr = MakeShared<LiteralExpr>(SourcePosition::ignore);
-    literalExpr->type   = literalType;
-    literalExpr->value  = literalValue;
+    literalExpr->dataType   = literalType;
+    literalExpr->value      = literalValue;
 
     ast->typeExpr   = typeExpr;
     ast->expr       = literalExpr;

@@ -16,6 +16,8 @@ namespace Xsc
 {
 
 
+class Token;
+
 /* ----- AssignOp Enum ----- */
 
 // Assignment operator enumeration:
@@ -246,6 +248,9 @@ DataType MatrixDataType(const DataType baseDataType, int rows, int columns);
 
 // Returns the data type for the specified swizzle operator or throws and std::invalid_argument on failure.
 DataType SubscriptDataType(const DataType dataType, const std::string& subscript);
+
+// Returns the data type for the specified literal token (BoolLiteral, IntLiteral, FloatLiteral, and StringLiteral).
+DataType TokenToDataType(const Token& tkn);
 
 
 /* ----- StorageClass Enum ----- */

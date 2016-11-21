@@ -60,8 +60,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             if (argTypeDen->IsBase())
             {
                 ast->intrinsic = Intrinsic::Clamp;
-                ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, Token::Types::IntLiteral, "0"));
-                ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, Token::Types::IntLiteral, "1"));
+                ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, DataType::Int, "0"));
+                ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, DataType::Int, "1"));
             }
             else
                 RuntimeErr("invalid argument type denoter in intrinsic 'saturate'", ast->arguments.front().get());
