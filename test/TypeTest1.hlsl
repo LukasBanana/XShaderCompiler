@@ -58,7 +58,10 @@ int f2(int x)
 S1_t1_a f3()
 {
 	int x = 1 + (1 + (((3))) - 1) * 5;
-	return (S1_t1_a[0])0;
+	//S1_t1_a a;
+	//return (a);
+	int a[10];
+	a = a;
 }
 
 static const int g_2 = 5;
@@ -91,11 +94,12 @@ float4 VS() : SV_Position
 	int a = 0, b = (dword)0;
 	int c = (a += b);
 	
-	int f5_v = 1 + 4 + f5(3)[2];//.x;
+	int f5_v = 1 + 4 + f5(3)[2].x;
 	
 	DWORD x = 0;
-	float x1 = 0;
+	FLOAT x1 = 0;
 	S1_t2 x2 = 0;
+//	return VECTOR(v0 + f1(), 1);
 	return float4(v0 + f1(), 1);
 }
 

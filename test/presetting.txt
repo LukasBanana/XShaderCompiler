@@ -2,14 +2,14 @@
 [NameMangling1]
 --dump-ast -T compute -E CS -o output/NameMangling1.CS.glsl NameMangling1.hlsl
 
-[ExprTest3 VS]
---dump-ast -T vertex -E VS -o output/ExprTest3.VS.glsl ExprTest3.hlsl
+#[ExprTest3 VS]
+#--dump-ast -T vertex -E VS -o output/ExprTest3.VS.glsl ExprTest3.hlsl
 
 #[ExprTest2 -PP]
 #-PP -T compute -E CS -o output/ExprTest2.post.hlsl ExprTest2.hlsl
 
-#[TypeTest1 VS]
-#-T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
+[TypeTest1 VS]
+-T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
 
 #[FloatTest1 VS]
 #-T vertex -E VS -o output/FloatTest1.VS.glsl FloatTest1.hlsl
