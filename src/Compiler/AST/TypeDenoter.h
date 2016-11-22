@@ -242,8 +242,8 @@ struct ArrayTypeDenoter : public TypeDenoter
     bool Equals(const TypeDenoter& rhs) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 
-    // Validates the number of array indices for this array type denoter.
-    void ValidateArrayIndices(std::size_t numArrayIndices, const AST* ast = nullptr) const;
+    // Returns the base type denoter or a new array type denoter with (|arrayDims| - |numArrayIndices|) dimensions.
+    TypeDenoterPtr GetWithIndices(std::size_t numArrayIndices, const VarIdent* varIdent);
 
     TypeDenoterPtr          baseTypeDenoter;
     std::vector<ExprPtr>    arrayDims;          // Entries may be null

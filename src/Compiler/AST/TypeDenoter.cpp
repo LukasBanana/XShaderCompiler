@@ -382,6 +382,18 @@ const TypeDenoter& AliasTypeDenoter::GetAliased() const
 
 /* ----- ArrayTypeDenoter ----- */
 
+static void ValidateArrayIndices(std::size_t numDims, std::size_t numArrayIndices, const AST* ast)
+{
+    /* Validate array dimensions for specified indices */
+    if (numArrayIndices > numDims)
+    {
+        RuntimeErr(
+            "too many array indices (expected " + std::to_string(numDims) +
+            " but got " + std::to_string(numArrayIndices) + ")", ast
+        );
+    }
+}
+
 ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter) :
     baseTypeDenoter{ baseTypeDenoter }
 {
@@ -416,10 +428,10 @@ TypeDenoterPtr ArrayTypeDenoter::Get(const VarIdent* varIdent)
     if (varIdent)
     {
         /* Validate array dimensions */
-        ValidateArrayIndices(varIdent->arrayIndices.size(), varIdent);
+        ValidateArrayIndices(arrayDims.size(), varIdent->arrayIndices.size(), varIdent);
 
         /* Get base type denoter with next identifier */
-        return baseTypeDenoter->Get(varIdent->next.get());
+        return GetWithIndices(varIdent->arrayIndices.size(), varIdent->next.get());
     }
     return TypeDenoter::Get(varIdent);
 }
@@ -427,8 +439,10 @@ TypeDenoterPtr ArrayTypeDenoter::Get(const VarIdent* varIdent)
 TypeDenoterPtr ArrayTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
 {
     /* Validate array dimensions */
-    ValidateArrayIndices(numArrayIndices);
-    return baseTypeDenoter->Get(varIdent);
+    ValidateArrayIndices(arrayDims.size(), numArrayIndices, varIdent);
+
+    /* Get base type denoter with identifier */
+    return GetWithIndices(numArrayIndices, varIdent);
 }
 
 bool ArrayTypeDenoter::Equals(const TypeDenoter& rhs) const
@@ -455,22 +469,26 @@ bool ArrayTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     return false;
 }
 
-void ArrayTypeDenoter::ValidateArrayIndices(std::size_t numArrayIndices, const AST* ast) const
+TypeDenoterPtr ArrayTypeDenoter::GetWithIndices(std::size_t numArrayIndices, const VarIdent* varIdent)
 {
-    /* Validate array dimensions for specified indices */
     auto numDims = arrayDims.size();
-
-    if (numArrayIndices != numDims)
+    
+    if (numArrayIndices == 0)
     {
-        std::string err;
-            
-        if (numArrayIndices < numDims)
-            err = "not enough";
-        else if (numArrayIndices > numDims)
-            err = "too many";
-
-        RuntimeErr(err + " array indices (expected " + std::to_string(numDims) + " but got " + std::to_string(numArrayIndices) + ")", ast);
+        /* Just return this array type denoter */
+        return shared_from_this();
     }
+
+    if (numArrayIndices < numDims)
+    {
+        /* Make new array type denoter with less dimensions */
+        auto subArrayDims = arrayDims;
+        subArrayDims.resize(numDims - numArrayIndices);
+        return std::make_shared<ArrayTypeDenoter>(baseTypeDenoter, subArrayDims);
+    }
+
+    /* Get base type denoter with next identifier */
+    return baseTypeDenoter->Get(varIdent);
 }
 
 

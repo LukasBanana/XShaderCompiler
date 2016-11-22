@@ -58,10 +58,8 @@ int f2(int x)
 S1_t1_a f3()
 {
 	int x = 1 + (1 + (((3))) - 1) * 5;
-	//S1_t1_a a;
-	//return (a);
-	int a[10];
-	a = a;
+	S1_t1_a a;
+	return (a);
 }
 
 static const int g_2 = 5;
