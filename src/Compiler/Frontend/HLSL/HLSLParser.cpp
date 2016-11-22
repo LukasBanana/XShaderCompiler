@@ -585,7 +585,7 @@ AliasDeclPtr HLSLParser::ParseAliasDecl(TypeDenoterPtr typeDenoter)
     /* Store final type denoter in alias declaration */
     ast->typeDenoter = typeDenoter;
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 /* --- Declaration statements --- */
