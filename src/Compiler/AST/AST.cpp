@@ -593,7 +593,18 @@ TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr CastExpr::DeriveTypeDenoter()
 {
-    return typeExpr->GetTypeDenoter();
+    const auto& castTypeDen = typeExpr->GetTypeDenoter();
+    const auto& valueTypeDen = expr->GetTypeDenoter();
+
+    if (!valueTypeDen->IsCastableTo(*castTypeDen))
+    {
+        RuntimeErr(
+            "can not cast '" + valueTypeDen->ToString() + "' to '" +
+            castTypeDen->ToString() + "' in cast expression", this
+        );
+    }
+
+    return castTypeDen;
 }
 
 

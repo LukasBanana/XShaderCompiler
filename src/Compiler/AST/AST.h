@@ -820,8 +820,8 @@ struct CastExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    ExprPtr typeExpr;
-    ExprPtr expr;
+    TypeNameExprPtr typeExpr;   // Cast type name expression
+    ExprPtr         expr;       // Value expression
 };
 
 // Variable access expression.

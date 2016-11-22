@@ -103,11 +103,11 @@ bool HLSLParser::IsArithmeticUnaryExpr() const
     return (Is(Tokens::BinaryOp, "-") || Is(Tokens::BinaryOp, "+"));
 }
 
-bool HLSLParser::MakeToTypeNameIfLhsOfCastExpr(ExprPtr& expr)
+TypeNameExprPtr HLSLParser::MakeToTypeNameIfLhsOfCastExpr(const ExprPtr& expr)
 {
     /* Type name expression (float, int3 etc.) is always allowed for a cast expression */
     if (expr->Type() == AST::Types::TypeNameExpr)
-        return true;
+        return std::dynamic_pointer_cast<TypeNameExpr>(expr);
 
     /* Is this a variable identifier? */
     if (auto varAccessExpr = expr->As<VarAccessExpr>())
@@ -118,13 +118,12 @@ bool HLSLParser::MakeToTypeNameIfLhsOfCastExpr(ExprPtr& expr)
             /* Convert the variable access into a type name expression */
             auto typeExpr = Make<TypeNameExpr>();
             typeExpr->typeDenoter = std::make_shared<AliasTypeDenoter>(varAccessExpr->varIdent->ident);
-            expr = typeExpr;
-            return true;
+            return typeExpr;
         }
     }
 
     /* No type name expression */
-    return false;
+    return nullptr;
 }
 
 VarTypePtr HLSLParser::MakeVarType(const StructDeclPtr& structDecl)
@@ -1296,13 +1295,13 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     Parse cast expression if the expression inside the bracket is the left-hand-side of a cast expression,
     which is checked by the symbol table, because HLSL cast expressions are not context free.
     */
-    if (MakeToTypeNameIfLhsOfCastExpr(expr))
+    if (auto typeNameExpr = MakeToTypeNameIfLhsOfCastExpr(expr))
     {
         /* Return cast expression */
         auto ast = Make<CastExpr>();
         
         ast->area       = area;
-        ast->typeExpr   = expr;
+        ast->typeExpr   = typeNameExpr;
         ast->expr       = ParsePrimaryExpr();
 
         return UpdateSourceArea(ast);

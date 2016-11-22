@@ -60,11 +60,8 @@ class HLSLParser : public Parser
         // Returns true if the current token is part of an arithmetic unary expression, i.e. either '-' or '+'.
         bool IsArithmeticUnaryExpr() const;
 
-        /*
-        Returns true if the specified expression is a left-hand-side of a cast expression.
-        If so, it also converts the expression to a type name expression.
-        */
-        bool MakeToTypeNameIfLhsOfCastExpr(ExprPtr& expr);
+        // Converts the specified expression to a type name expression if it is a left-hand-side of a cast expression.
+        TypeNameExprPtr MakeToTypeNameIfLhsOfCastExpr(const ExprPtr& expr);
 
         // Makes a new VarType AST node for the specified struct decl.
         VarTypePtr MakeVarType(const StructDeclPtr& structDecl);
