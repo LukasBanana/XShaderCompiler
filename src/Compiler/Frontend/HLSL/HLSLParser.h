@@ -16,7 +16,7 @@
 #include "Visitor.h"
 #include "Token.h"
 #include "Variant.h"
-
+#include "SymbolTable.h"
 #include <vector>
 #include <map>
 #include <string>
@@ -55,20 +55,39 @@ class HLSLParser : public Parser
         bool IsLiteral() const;
 
         // Returns true if the current token is part of a primary expression.
-        bool IsPrimaryExpr() const;
+        //bool IsPrimaryExpr() const;
 
         // Returns true if the current token is part of an arithmetic unary expression, i.e. either '-' or '+'.
         bool IsArithmeticUnaryExpr() const;
 
-        // Returns true if the specified expression is a valid left-hand-side of a cast expression.
-        bool IsLhsOfCastExpr(const ExprPtr& expr) const;
+        /*
+        Returns true if the specified expression is a left-hand-side of a cast expression.
+        If so, it also converts the expression to a type name expression.
+        */
+        bool MakeToTypeNameIfLhsOfCastExpr(ExprPtr& expr);
 
         // Makes a new VarType AST node for the specified struct decl.
         VarTypePtr MakeVarType(const StructDeclPtr& structDecl);
 
+        // Overrides the token accept function to process all directives before the actual parsing.
         TokenPtr AcceptIt() override;
 
+        // Processes the specified directive (only '#line'-directive are allowed after pre-processing).
         void ProcessDirective(const std::string& ident);
+
+        /* ----- Symbol table ----- */
+
+        // Opens a new scope of the type name symbol table.
+        void OpenScope();
+
+        // Closes the current scope of the type name symbol table.
+        void CloseScope();
+
+        // Registers the specified identifier as type name, to detect cast expressions.
+        void RegisterTypeName(const std::string& ident);
+
+        // Returns true if the specified identifier is a valid type name within the current scope.
+        bool IsRegisteredTypeName(const std::string& ident) const;
 
         /* ----- Parsing ----- */
 
@@ -178,8 +197,13 @@ class HLSLParser : public Parser
 
         /* === Members === */
 
+        using TypeNameSymbolTable = SymbolTable<bool>;
+
         // True, if the parser is currently inside a local scope of a function (to detect illegal semantics inside local scopes).
-        bool localScope_ = false;
+        bool                localScope_             = false;
+
+        // Symbol table for type name (i.e. structure and typedef identifiers) to detect cast expression, which are not context free.
+        TypeNameSymbolTable typeNameSymbolTable_;
 
 };
 

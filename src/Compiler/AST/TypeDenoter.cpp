@@ -293,7 +293,7 @@ StructTypeDenoter::StructTypeDenoter(const std::string& ident) :
 
 StructTypeDenoter::StructTypeDenoter(StructDecl* structDeclRef) :
     ident           { structDeclRef ? structDeclRef->ident : "" },
-    structDeclRef   { structDeclRef                            }
+    structDeclRef   { structDeclRef                             }
 {
 }
 
@@ -336,6 +336,12 @@ TypeDenoterPtr StructTypeDenoter::Get(const VarIdent* varIdent)
 
 AliasTypeDenoter::AliasTypeDenoter(const std::string& ident) :
     ident{ ident }
+{
+}
+
+AliasTypeDenoter::AliasTypeDenoter(AliasDecl* aliasDeclRef) :
+    ident       { aliasDeclRef ? aliasDeclRef->ident : "" },
+    aliasDeclRef{ aliasDeclRef                            }
 {
 }
 

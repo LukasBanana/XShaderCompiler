@@ -16,6 +16,23 @@ namespace Xsc
 {
 
 
+/*
+The HLSL parser is not a fully context free parser,
+because cast expressions in HLSL are not context free.
+Take a look at the following example:
+
+    int X = 0;
+    (X) - (1);
+
+Here "(X) - (1)" is a binary expression, but in the following example it is a cast expression:
+
+    typedef int X;
+    (X) - (1);
+
+Here "-(1)" is an unary expression. Thus, cast expression can only be parsed, if the parser is aware of all
+types, which are valid in the respective scope.
+*/
+
 HLSLParser::HLSLParser(Log* log) :
     Parser{ log }
 {
@@ -72,24 +89,42 @@ bool HLSLParser::IsLiteral() const
     return (Is(Tokens::BoolLiteral) || Is(Tokens::IntLiteral) || Is(Tokens::FloatLiteral) || Is(Tokens::StringLiteral));
 }
 
-bool HLSLParser::IsPrimaryExpr() const
+/*bool HLSLParser::IsPrimaryExpr() const
 {
     return
     (
         IsLiteral() || IsDataType() || IsArithmeticUnaryExpr() ||
         Is(Tokens::Struct) || Is(Tokens::UnaryOp) || Is(Tokens::LBracket) || Is(Tokens::LCurly) || Is(Tokens::Ident)
     );
-}
+}*/
 
 bool HLSLParser::IsArithmeticUnaryExpr() const
 {
     return (Is(Tokens::BinaryOp, "-") || Is(Tokens::BinaryOp, "+"));
 }
 
-bool HLSLParser::IsLhsOfCastExpr(const ExprPtr& expr) const
+bool HLSLParser::MakeToTypeNameIfLhsOfCastExpr(ExprPtr& expr)
 {
-    /* Type name (float, int3 etc.) is always allowed for a cast expression */
-    return (expr->Type() == AST::Types::TypeNameExpr || expr->Type() == AST::Types::VarAccessExpr);
+    /* Type name expression (float, int3 etc.) is always allowed for a cast expression */
+    if (expr->Type() == AST::Types::TypeNameExpr)
+        return true;
+
+    /* Is this a variable identifier? */
+    if (auto varAccessExpr = expr->As<VarAccessExpr>())
+    {
+        /* Check if the identifier refers to a type name */
+        if (!varAccessExpr->varIdent->next && IsRegisteredTypeName(varAccessExpr->varIdent->ident))
+        {
+            /* Convert the variable access into a type name expression */
+            auto typeExpr = Make<TypeNameExpr>();
+            typeExpr->typeDenoter = std::make_shared<AliasTypeDenoter>(varAccessExpr->varIdent->ident);
+            expr = typeExpr;
+            return true;
+        }
+    }
+
+    /* No type name expression */
+    return false;
 }
 
 VarTypePtr HLSLParser::MakeVarType(const StructDeclPtr& structDecl)
@@ -138,11 +173,35 @@ void HLSLParser::ProcessDirective(const std::string& ident)
         Error("only '#line'-directives are allowed after pre-processing");
 }
 
+/* ------- Symbol table ------- */
+
+void HLSLParser::OpenScope()
+{
+    typeNameSymbolTable_.OpenScope();
+}
+
+void HLSLParser::CloseScope()
+{
+    typeNameSymbolTable_.CloseScope();
+}
+
+void HLSLParser::RegisterTypeName(const std::string& ident)
+{
+    typeNameSymbolTable_.Register(ident, true);
+}
+
+bool HLSLParser::IsRegisteredTypeName(const std::string& ident) const
+{
+    return typeNameSymbolTable_.Fetch(ident);
+}
+
 /* ------- Parse functions ------- */
 
 ProgramPtr HLSLParser::ParseProgram(const SourceCodePtr& source)
 {
     auto ast = Make<Program>();
+
+    OpenScope();
 
     /* Keep reference to preprocessed source code */
     ast->sourceCode = source;
@@ -166,6 +225,8 @@ ProgramPtr HLSLParser::ParseProgram(const SourceCodePtr& source)
         ast->globalStmnts.push_back(ParseGlobalStmnt());
     }
 
+    CloseScope();
+
     return ast;
 }
 
@@ -175,7 +236,11 @@ CodeBlockPtr HLSLParser::ParseCodeBlock()
 
     /* Parse statement list */
     Accept(Tokens::LCurly);
-    ast->stmnts = ParseStmntList();
+    OpenScope();
+    {
+        ast->stmnts = ParseStmntList();
+    }
+    CloseScope();
     Accept(Tokens::RCurly);
 
     return ast;
@@ -476,6 +541,9 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
         tkn = Tkn();
         ast->ident = (identTkn ? identTkn->Spell() : ParseIdent());
 
+        /* Register type name in symbol table */
+        RegisterTypeName(ast->ident);
+
         /* Parse optional inheritance (not documented in HLSL but supported; only single inheritance) */
         if (Is(Tokens::Colon))
         {
@@ -508,6 +576,9 @@ AliasDeclPtr HLSLParser::ParseAliasDecl(TypeDenoterPtr typeDenoter)
     /* Parse alias identifier */
     auto identTkn = Tkn();
     ast->ident = ParseIdent();
+
+    /* Register type name in symbol table */
+    RegisterTypeName(ast->ident);
 
     /* Parse optional array dimensions */
     if (Is(Tokens::LParen))
@@ -1223,9 +1294,9 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
 
     /*
     Parse cast expression if the expression inside the bracket is the left-hand-side of a cast expression,
-    and if the next token belongs to a primary expression.
+    which is checked by the symbol table, because HLSL cast expressions are not context free.
     */
-    if (IsLhsOfCastExpr(expr) && IsPrimaryExpr())
+    if (MakeToTypeNameIfLhsOfCastExpr(expr))
     {
         /* Return cast expression */
         auto ast = Make<CastExpr>();

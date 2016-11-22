@@ -21,6 +21,24 @@ namespace Xsc
 {
 
 
+template <typename T>
+struct GenericDefaultValue
+{
+    static T Get()
+    {
+        return nullptr;
+    }
+};
+
+template <>
+struct GenericDefaultValue<bool>
+{
+    static bool Get()
+    {
+        return false;
+    }
+};
+
 // Common symbol table class with a single scope.
 template <typename SymbolType>
 class SymbolTable
@@ -107,7 +125,8 @@ class SymbolTable
             auto it = symTable_.find(ident);
             if (it != symTable_.end() && !it->second.empty())
                 return it->second.top().symbol;
-            return nullptr;
+            else
+                return GenericDefaultValue<SymbolType>::Get();
         }
 
         // Returns current scope level.

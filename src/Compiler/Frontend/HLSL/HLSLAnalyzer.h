@@ -51,6 +51,7 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
+        DECL_VISIT_PROC( VarType           );
         
         DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( StructDecl        );
@@ -72,9 +73,8 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( ExprStmnt         );
         DECL_VISIT_PROC( ReturnStmnt       );
 
+        DECL_VISIT_PROC( TypeNameExpr      );
         DECL_VISIT_PROC( VarAccessExpr     );
-
-        DECL_VISIT_PROC( VarType           );
 
         /* --- Helper functions for context analysis --- */
 

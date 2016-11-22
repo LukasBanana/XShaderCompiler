@@ -94,6 +94,29 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     PopFunctionCall();
 }
 
+IMPLEMENT_VISIT_PROC(VarType)
+{
+    Visit(ast->structDecl);
+
+    if (ast->typeDenoter)
+    {
+        AnalyzeTypeDenoter(ast->typeDenoter, ast);
+
+        //TODO: remove this
+        #if 1
+        if (!ast->typeDenoter->Ident().empty())
+        {
+            /* Decorate variable type */
+            auto symbol = Fetch(ast->typeDenoter->Ident());
+            if (symbol)
+                ast->symbolRef = symbol;
+        }
+        #endif
+    }
+    else
+        Error("missing variable type", ast);
+}
+
 /* --- Declarations --- */
 
 IMPLEMENT_VISIT_PROC(VarDecl)
@@ -391,6 +414,30 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
 /* --- Expressions --- */
 
+IMPLEMENT_VISIT_PROC(TypeNameExpr)
+{
+    auto typeName = ast->typeDenoter->Ident();
+    if (!typeName.empty())
+    {
+        /* Fetch type declaration from type name */
+        if (auto typeDecl = FetchType(typeName, ast))
+        {
+            if (auto structDecl = typeDecl->As<StructDecl>())
+            {
+                /* Convert type denoter to struct type denoter with reference to structure declaration */
+                ast->typeDenoter = MakeShared<StructTypeDenoter>(structDecl);
+            }
+            else if (auto aliasDecl = typeDecl->As<AliasDecl>())
+            {
+                /* Convert type denoter to alias type denoter with reference to alias declaration */
+                ast->typeDenoter = MakeShared<AliasTypeDenoter>(aliasDecl);
+            }
+            else
+                Error("invalid type name '" + typeName + "'", ast);
+        }
+    }
+}
+
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     AnalyzeVarIdent(ast->varIdent.get());
@@ -400,31 +447,6 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
         Visit(ast->assignExpr);
         ValidateTypeCastFrom(ast->assignExpr.get(), ast->varIdent.get());
     }
-}
-
-/* --- Variables --- */
-
-IMPLEMENT_VISIT_PROC(VarType)
-{
-    Visit(ast->structDecl);
-
-    if (ast->typeDenoter)
-    {
-        AnalyzeTypeDenoter(ast->typeDenoter, ast);
-
-        //TODO: remove this
-        #if 1
-        if (!ast->typeDenoter->Ident().empty())
-        {
-            /* Decorate variable type */
-            auto symbol = Fetch(ast->typeDenoter->Ident());
-            if (symbol)
-                ast->symbolRef = symbol;
-        }
-        #endif
-    }
-    else
-        Error("missing variable type", ast);
 }
 
 #undef IMPLEMENT_VISIT_PROC

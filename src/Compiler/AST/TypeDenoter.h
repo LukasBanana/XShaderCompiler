@@ -207,6 +207,7 @@ struct AliasTypeDenoter : public TypeDenoter
 
     AliasTypeDenoter() = default;
     AliasTypeDenoter(const std::string& ident);
+    AliasTypeDenoter(AliasDecl* aliasDeclRef);
 
     Types Type() const override;
     std::string ToString() const override;

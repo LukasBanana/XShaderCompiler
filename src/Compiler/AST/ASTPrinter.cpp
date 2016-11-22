@@ -295,7 +295,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(TypeNameExpr)
 {
-    Print(ast, "TypeNameExpr");
+    Print(ast, "TypeNameExpr", ast->typeDenoter->ToString());
     DEFAULT_VISITOR(TypeNameExpr);
 }
 
