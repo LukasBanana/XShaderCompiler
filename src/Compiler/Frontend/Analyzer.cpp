@@ -294,12 +294,12 @@ FunctionCall* Analyzer::ActiveFunctionCall() const
 
 void Analyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
 {
-    if (typeDenoter->IsStruct())
-        AnalyzeStructTypeDenoter(static_cast<StructTypeDenoter&>(*typeDenoter), ast);
+    if (auto structTypeDen = typeDenoter->As<StructTypeDenoter>())
+        AnalyzeStructTypeDenoter(*structTypeDen, ast);
     else if (typeDenoter->IsAlias())
         AnalyzeAliasTypeDenoter(typeDenoter, ast);
-    else if (typeDenoter->IsArray())
-        AnalyzeTypeDenoter(static_cast<ArrayTypeDenoter&>(*typeDenoter).baseTypeDenoter, ast);
+    else if (auto arrayTypeDen = typeDenoter->As<ArrayTypeDenoter>())
+        AnalyzeTypeDenoter(arrayTypeDen->baseTypeDenoter, ast);
 }
 
 void Analyzer::AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* ast)
@@ -311,24 +311,21 @@ void Analyzer::AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* a
 void Analyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
 {
     auto& aliasTypeDen = static_cast<AliasTypeDenoter&>(*typeDenoter);
-
     if (!aliasTypeDen.aliasDeclRef)
     {
-        auto symbol = FetchType(aliasTypeDen.ident, ast);
-        if (symbol)
+        /* Fetch type declaration from type name */
+        if (auto symbol = FetchType(aliasTypeDen.ident, ast))
         {
-            if (symbol->Type() == AST::Types::StructDecl)
+            if (auto structDecl = symbol->As<StructDecl>())
             {
                 /* Replace type denoter by a struct type denoter */
-                auto structTypeDen = std::make_shared<StructTypeDenoter>();
-
-                structTypeDen->ident            = aliasTypeDen.ident;
-                structTypeDen->structDeclRef    = static_cast<StructDecl*>(symbol);
-            
-                typeDenoter = structTypeDen;
+                typeDenoter = std::make_shared<StructTypeDenoter>(structDecl);
             }
-            else if (symbol->Type() == AST::Types::AliasDecl)
-                aliasTypeDen.aliasDeclRef = static_cast<AliasDecl*>(symbol);
+            else if (auto aliasDecl = symbol->As<AliasDecl>())
+            {
+                /* Decorate alias type denoter with reference to alias declaration */
+                aliasTypeDen.aliasDeclRef = aliasDecl;
+            }
         }
     }
 }
