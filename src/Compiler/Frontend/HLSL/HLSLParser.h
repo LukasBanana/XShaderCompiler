@@ -54,9 +54,6 @@ class HLSLParser : public Parser
         // Returns true if the current token is a literal.
         bool IsLiteral() const;
 
-        // Returns true if the current token is part of a primary expression.
-        //bool IsPrimaryExpr() const;
-
         // Returns true if the current token is part of an arithmetic unary expression, i.e. either '-' or '+'.
         bool IsArithmeticUnaryExpr() const;
 
@@ -116,7 +113,6 @@ class HLSLParser : public Parser
         BufferDeclStmntPtr              ParseBufferDeclStmnt();
         TextureDeclStmntPtr             ParseTextureDeclStmnt();
         SamplerDeclStmntPtr             ParseSamplerDeclStmnt();
-        //StructDeclStmntPtr              ParseStructDeclStmnt();
         VarDeclStmntPtr                 ParseVarDeclStmnt();
         AliasDeclStmntPtr               ParseAliasDeclStmnt();
 

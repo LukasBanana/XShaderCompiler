@@ -89,15 +89,6 @@ bool HLSLParser::IsLiteral() const
     return (Is(Tokens::BoolLiteral) || Is(Tokens::IntLiteral) || Is(Tokens::FloatLiteral) || Is(Tokens::StringLiteral));
 }
 
-/*bool HLSLParser::IsPrimaryExpr() const
-{
-    return
-    (
-        IsLiteral() || IsDataType() || IsArithmeticUnaryExpr() ||
-        Is(Tokens::Struct) || Is(Tokens::UnaryOp) || Is(Tokens::LBracket) || Is(Tokens::LCurly) || Is(Tokens::Ident)
-    );
-}*/
-
 bool HLSLParser::IsArithmeticUnaryExpr() const
 {
     return (Is(Tokens::BinaryOp, "-") || Is(Tokens::BinaryOp, "+"));
@@ -770,16 +761,6 @@ SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt()
 
     return ast;
 }
-
-/*StructDeclStmntPtr HLSLParser::ParseStructDeclStmnt()
-{
-    auto ast = Make<StructDeclStmnt>();
-    
-    ast->structDecl = ParseStructDecl();
-    Semi();
-
-    return ast;
-}*/
 
 VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 {
