@@ -416,26 +416,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
 IMPLEMENT_VISIT_PROC(TypeNameExpr)
 {
-    auto typeName = ast->typeDenoter->Ident();
-    if (!typeName.empty())
-    {
-        /* Fetch type declaration from type name */
-        if (auto typeDecl = FetchType(typeName, ast))
-        {
-            if (auto structDecl = typeDecl->As<StructDecl>())
-            {
-                /* Convert type denoter to struct type denoter with reference to structure declaration */
-                ast->typeDenoter = MakeShared<StructTypeDenoter>(structDecl);
-            }
-            else if (auto aliasDecl = typeDecl->As<AliasDecl>())
-            {
-                /* Convert type denoter to alias type denoter with reference to alias declaration */
-                ast->typeDenoter = MakeShared<AliasTypeDenoter>(aliasDecl);
-            }
-            else
-                Error("invalid type name '" + typeName + "'", ast);
-        }
-    }
+    AnalyzeTypeDenoter(ast->typeDenoter, ast);
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
