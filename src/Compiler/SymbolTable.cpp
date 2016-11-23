@@ -35,21 +35,21 @@ bool ASTSymbolOverload::AddSymbolRef(AST* ast)
             return false;
 
         /* Can this type of symbol be overloaded? */
-        if (ast->Type() == AST::Types::FunctionDecl)
+        if (ast->Type() != AST::Types::FunctionDecl)
+            return false;
+        
+        /* Is the new declaration a forward declaration? */
+        auto newFuncDecl = static_cast<const FunctionDecl*>(ast);
+        if (newFuncDecl->IsForwardDecl())
+            return true;
+
+        /* Are all previous declarations forward declarations or are the function signatures different? */
+        for (auto ref : refs_)
         {
-            auto lhsFuncDecl = static_cast<const FunctionDecl*>(refs_.front());
-            auto rhsFuncDecl = static_cast<const FunctionDecl*>(ast);
-
-            /* Is any of the two declarations a forward declaration (but not an intrinsic)? */
-            if (lhsFuncDecl->IsForwardDecl() || rhsFuncDecl->IsForwardDecl())
-                return true;
-
-            /* Are the function signatures equal? */
-            if (lhsFuncDecl->EqualsSignature(*rhsFuncDecl))
+            auto funcDecl = static_cast<const FunctionDecl*>(ref);
+            if (!funcDecl->IsForwardDecl() && funcDecl->EqualsSignature(*newFuncDecl))
                 return false;
         }
-        else
-            return false;
     }
 
     /* Add AST reference to list */
