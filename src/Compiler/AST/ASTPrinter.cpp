@@ -53,28 +53,23 @@ class ScopedIndent
         Visitor::Visit##AST_NAME(ast, args);    \
     }
 
+#define IMPLEMENT_VISIT_PROC_DEFAULT(AST_NAME)  \
+    IMPLEMENT_VISIT_PROC(AST_NAME)              \
+    {                                           \
+        Print(ast, #AST_NAME);                  \
+        DEFAULT_VISITOR(AST_NAME);              \
+    }
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
     void ASTPrinter::Visit##AST_NAME(AST_NAME* ast, void* args)
 
-IMPLEMENT_VISIT_PROC(Program)
-{
-    Print(ast, "Program");
-    DEFAULT_VISITOR(Program);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(Program)
 
-IMPLEMENT_VISIT_PROC(CodeBlock)
-{
-    Print(ast, "CodeBlock");
-    DEFAULT_VISITOR(CodeBlock);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(CodeBlock)
 
-IMPLEMENT_VISIT_PROC(FunctionCall)
-{
-    Print(ast, "FunctionCall");
-    DEFAULT_VISITOR(FunctionCall);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(FunctionCall)
 
 IMPLEMENT_VISIT_PROC(Attribute)
 {
@@ -82,11 +77,7 @@ IMPLEMENT_VISIT_PROC(Attribute)
     DEFAULT_VISITOR(Attribute);
 }
 
-IMPLEMENT_VISIT_PROC(SwitchCase)
-{
-    Print(ast, "SwitchCase");
-    DEFAULT_VISITOR(SwitchCase);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(SamplerValue)
 {
@@ -175,11 +166,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     DEFAULT_VISITOR(FunctionDecl);
 }
 
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
-{
-    Print(ast, "VarDeclStmnt");
-    DEFAULT_VISITOR(VarDeclStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(VarDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
@@ -187,91 +174,35 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     DEFAULT_VISITOR(BufferDeclStmnt);
 }
 
-IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
-{
-    Print(ast, "TextureDeclStmnt");
-    DEFAULT_VISITOR(TextureDeclStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(TextureDeclStmnt)
 
-IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
-{
-    Print(ast, "SamplerDeclStmnt");
-    DEFAULT_VISITOR(SamplerDeclStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(SamplerDeclStmnt)
 
-IMPLEMENT_VISIT_PROC(StructDeclStmnt)
-{
-    Print(ast, "StructDeclStmnt");
-    DEFAULT_VISITOR(StructDeclStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(StructDeclStmnt)
 
-IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
-{
-    Print(ast, "AliasDeclStmnt");
-    DEFAULT_VISITOR(AliasDeclStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(AliasDeclStmnt)
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(NullStmnt)
-{
-    Print(ast, "NullStmnt");
-    DEFAULT_VISITOR(NullStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(NullStmnt)
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
-{
-    Print(ast, "CodeBlockStmnt");
-    DEFAULT_VISITOR(CodeBlockStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(CodeBlockStmnt)
 
-IMPLEMENT_VISIT_PROC(ForLoopStmnt)
-{
-    Print(ast, "ForLoopStmnt");
-    DEFAULT_VISITOR(ForLoopStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(ForLoopStmnt)
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
-{
-    Print(ast, "WhileLoopStmnt");
-    DEFAULT_VISITOR(WhileLoopStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(WhileLoopStmnt)
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
-{
-    Print(ast, "DoWhileLoopStmnt");
-    DEFAULT_VISITOR(DoWhileLoopStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(DoWhileLoopStmnt)
 
-IMPLEMENT_VISIT_PROC(IfStmnt)
-{
-    Print(ast, "IfStmnt");
-    DEFAULT_VISITOR(IfStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(IfStmnt)
 
-IMPLEMENT_VISIT_PROC(ElseStmnt)
-{
-    Print(ast, "ElseStmnt");
-    DEFAULT_VISITOR(ElseStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(ElseStmnt)
 
-IMPLEMENT_VISIT_PROC(SwitchStmnt)
-{
-    Print(ast, "SwitchStmnt");
-    DEFAULT_VISITOR(SwitchStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(SwitchStmnt)
 
-IMPLEMENT_VISIT_PROC(ExprStmnt)
-{
-    Print(ast, "ExprStmnt");
-    DEFAULT_VISITOR(ExprStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(ExprStmnt)
 
-IMPLEMENT_VISIT_PROC(ReturnStmnt)
-{
-    Print(ast, "ReturnStmnt");
-    DEFAULT_VISITOR(ReturnStmnt);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(ReturnStmnt)
 
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 {
@@ -281,11 +212,7 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 
 /* --- Expressions --- */
 
-IMPLEMENT_VISIT_PROC(ListExpr)
-{
-    Print(ast, "ListExpr");
-    DEFAULT_VISITOR(ListExpr);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(ListExpr)
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
@@ -299,11 +226,7 @@ IMPLEMENT_VISIT_PROC(TypeNameExpr)
     DEFAULT_VISITOR(TypeNameExpr);
 }
 
-IMPLEMENT_VISIT_PROC(TernaryExpr)
-{
-    Print(ast, "TernaryExpr");
-    DEFAULT_VISITOR(TernaryExpr);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(TernaryExpr)
 
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
@@ -323,48 +246,21 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
     DEFAULT_VISITOR(PostUnaryExpr);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCallExpr)
-{
-    Print(ast, "FunctionCallExpr");
-    DEFAULT_VISITOR(FunctionCallExpr);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(FunctionCallExpr)
 
-IMPLEMENT_VISIT_PROC(BracketExpr)
-{
-    Print(ast, "BracketExpr");
-    DEFAULT_VISITOR(BracketExpr);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(BracketExpr)
 
-IMPLEMENT_VISIT_PROC(SuffixExpr)
-{
-    Print(ast, "SuffixExpr");
-    DEFAULT_VISITOR(SuffixExpr);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(SuffixExpr)
 
-IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
-{
-    Print(ast, "ArrayAccessExpr");
-    DEFAULT_VISITOR(ArrayAccessExpr);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(ArrayAccessExpr)
 
-IMPLEMENT_VISIT_PROC(CastExpr)
-{
-    Print(ast, "CastExpr");
-    DEFAULT_VISITOR(CastExpr);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(CastExpr)
 
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
-{
-    Print(ast, "VarAccessExpr");
-    DEFAULT_VISITOR(VarAccessExpr);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(VarAccessExpr)
 
-IMPLEMENT_VISIT_PROC(InitializerExpr)
-{
-    Print(ast, "InitializerExpr");
-    DEFAULT_VISITOR(InitializerExpr);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(InitializerExpr)
 
+#undef IMPLEMENT_VISIT_PROC_DEFAULT
 #undef IMPLEMENT_VISIT_PROC
 #undef DEFAULT_VISITOR
 #undef SCOPED_INDENT
