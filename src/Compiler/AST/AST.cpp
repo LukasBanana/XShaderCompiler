@@ -465,8 +465,31 @@ TypeDenoterPtr TypeNameExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
 {
-    /* Only return type denoter of the 'then'-branch (both types must be compatible) */
-    return thenExpr->GetTypeDenoter();
+    /* Check if conditional expression is compatible to a boolean */
+    const auto& condTypeDen = condExpr->GetTypeDenoter();
+    const BaseTypeDenoter boolTypeDen(DataType::Bool);
+
+    if (!condTypeDen->IsCastableTo(boolTypeDen))
+    {
+        RuntimeErr(
+            "can not cast '" + condTypeDen->ToString() + "' to '" +
+            boolTypeDen.ToString() + "' in condition of ternary expression", condExpr.get()
+        );
+    }
+
+    /* Return type of 'then'-branch sub expresion if the types are compatible */
+    const auto& thenTypeDen = thenExpr->GetTypeDenoter();
+    const auto& elseTypeDen = elseExpr->GetTypeDenoter();
+
+    if (!elseTypeDen->IsCastableTo(*thenTypeDen))
+    {
+        RuntimeErr(
+            "can not cast '" + elseTypeDen->ToString() + "' to '" +
+            thenTypeDen->ToString() + "' in ternary expression", this
+        );
+    }
+
+    return thenTypeDen;
 }
 
 
