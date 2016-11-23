@@ -445,13 +445,11 @@ struct FunctionDecl : public Stmnt
         std::vector<VarDecl*> varDeclRefs; // References to all variable declarations of the user defined semantics
     };
 
-    #if 0
     struct OutputSemantics
     {
         std::vector<VarDecl*>   varDeclRefs;        // References to all variable declarations of the user defined semantics
         IndexedSemantic         functionSemantic;   // May be undefined.
     };
-    #endif
 
     FLAG_ENUM
     {
@@ -488,6 +486,7 @@ struct FunctionDecl : public Stmnt
     CodeBlockPtr                    codeBlock;                              // May be null (if this AST node is a forward declaration).
 
     InputSemantics                  inputSemantics;
+    OutputSemantics                 outputSemantics;
 
     //TODO: currently unused
   //FunctionDecl*                   definitionRef   = nullptr;              // Reference to the actual function definition (only for forward declarations).

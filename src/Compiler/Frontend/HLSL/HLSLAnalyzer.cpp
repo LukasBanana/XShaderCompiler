@@ -726,14 +726,14 @@ void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStm
 
     /* Analyze input semantic */
     if (param->IsInput())
-        AnalyzeEntryPointParameterInput(funcDecl, varDecl);
+        AnalyzeEntryPointParameterInOut(funcDecl, varDecl, true);
 
     /* Analyze output semantic */
     if (param->IsOutput())
-        AnalyzeEntryPointParameterOutput(funcDecl, varDecl);
+        AnalyzeEntryPointParameterInOut(funcDecl, varDecl, false);
 }
 
-void HLSLAnalyzer::AnalyzeEntryPointParameterInput(FunctionDecl* funcDecl, VarDecl* varDecl)
+void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input)
 {
     auto varTypeDen = varDecl->GetTypeDenoter()->Get();
     if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
@@ -744,25 +744,29 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInput(FunctionDecl* funcDecl, VarDe
         for (auto& member : structDecl->members)
         {
             for (auto& memberVar : member->varDecls)
-                AnalyzeEntryPointParameterInput(funcDecl, memberVar.get());
+                AnalyzeEntryPointParameterInOut(funcDecl, memberVar.get(), input);
         }
 
-        /* Mark structure as shader input */
-        structDecl->flags << StructDecl::isShaderInput;
+        /* Mark structure as shader input/output */
+        if (input)
+            structDecl->flags << StructDecl::isShaderInput;
+        else
+            structDecl->flags << StructDecl::isShaderOutput;
     }
     else
     {
-        /* Add variable declaration to the global input semantics */
-        funcDecl->inputSemantics.varDeclRefs.push_back(varDecl);
-
-        /* Mark variable as shader input */
-        varDecl->flags << VarDecl::isShaderInput;
+        /* Add variable declaration to the global input/output semantics */
+        if (input)
+        {
+            funcDecl->inputSemantics.varDeclRefs.push_back(varDecl);
+            varDecl->flags << VarDecl::isShaderInput;
+        }
+        else
+        {
+            funcDecl->outputSemantics.varDeclRefs.push_back(varDecl);
+            varDecl->flags << VarDecl::isShaderOutput;
+        }
     }
-}
-
-void HLSLAnalyzer::AnalyzeEntryPointParameterOutput(FunctionDecl* funcDecl, VarDecl* varDecl)
-{
-    //TODO...
 }
 
 

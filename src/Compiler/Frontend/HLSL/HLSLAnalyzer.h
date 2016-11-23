@@ -95,8 +95,7 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeEntryPoint(FunctionDecl* funcDecl);
         void AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param);
-        void AnalyzeEntryPointParameterInput(FunctionDecl* funcDecl, VarDecl* varDecl);
-        void AnalyzeEntryPointParameterOutput(FunctionDecl* funcDecl, VarDecl* varDecl);
+        void AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input);
 
         /* === Members === */
 
