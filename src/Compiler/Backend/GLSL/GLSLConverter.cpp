@@ -151,11 +151,68 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         }
     );
 
-    /* Default visitor */
-    Visitor::VisitFunctionDecl(ast, args);
+    if (ast->flags(FunctionDecl::isEntryPoint))
+    {
+        isInsideEntryPoint_ = true;
+        {
+            /* Default visitor */
+            Visitor::VisitFunctionDecl(ast, args);
+        }
+        isInsideEntryPoint_ = false;
+    }
+    else
+    {
+        /* Default visitor */
+        Visitor::VisitFunctionDecl(ast, args);
+    }
 }
 
 /* --- Statements --- */
+
+IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+{
+    /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
+    MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
+
+    /* Default visitor */
+    Visitor::VisitForLoopStmnt(ast, args);
+}
+
+IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+{
+    /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
+    MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
+
+    /* Default visitor */
+    Visitor::VisitWhileLoopStmnt(ast, args);
+}
+
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+{
+    /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
+    MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
+
+    /* Default visitor */
+    Visitor::VisitDoWhileLoopStmnt(ast, args);
+}
+
+IMPLEMENT_VISIT_PROC(IfStmnt)
+{
+    /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
+    MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
+
+    /* Default visitor */
+    Visitor::VisitIfStmnt(ast, args);
+}
+
+IMPLEMENT_VISIT_PROC(ElseStmnt)
+{
+    /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
+    MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
+
+    /* Default visitor */
+    Visitor::VisitElseStmnt(ast, args);
+}
 
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
@@ -297,6 +354,23 @@ void GLSLConverter::MakeVarIdentWithSystemSemanticLocal(VarIdent* ast)
 
         /* Continue search in next node */
         ast = ast->next.get();
+    }
+}
+
+void GLSLConverter::MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt)
+{
+    /* Is this statement within the entry point? */
+    if (isInsideEntryPoint_)
+    {
+        if (auto returnStmnt = bodyStmnt->As<ReturnStmnt>())
+        {
+            auto codeBlockStmnt = MakeShared<CodeBlockStmnt>(bodyStmnt->area);
+
+            codeBlockStmnt->codeBlock = MakeShared<CodeBlock>(bodyStmnt->area);
+            codeBlockStmnt->codeBlock->stmnts.push_back(bodyStmnt);
+
+            bodyStmnt = codeBlockStmnt;
+        }
     }
 }
 

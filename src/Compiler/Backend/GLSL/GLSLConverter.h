@@ -36,19 +36,24 @@ class GLSLConverter : public Visitor
         
         /* --- Visitor implementation --- */
 
-        DECL_VISIT_PROC( Program      );
-        DECL_VISIT_PROC( FunctionCall );
-        DECL_VISIT_PROC( StructDecl   );
-        DECL_VISIT_PROC( VarIdent     );
+        DECL_VISIT_PROC( Program          );
+        DECL_VISIT_PROC( FunctionCall     );
+        DECL_VISIT_PROC( StructDecl       );
+        DECL_VISIT_PROC( VarIdent         );
 
-        DECL_VISIT_PROC( VarDecl      );
+        DECL_VISIT_PROC( VarDecl          );
 
-        DECL_VISIT_PROC( FunctionDecl );
+        DECL_VISIT_PROC( FunctionDecl     );
 
-        DECL_VISIT_PROC( ExprStmnt    );
+        DECL_VISIT_PROC( ForLoopStmnt     );
+        DECL_VISIT_PROC( WhileLoopStmnt   );
+        DECL_VISIT_PROC( DoWhileLoopStmnt );
+        DECL_VISIT_PROC( IfStmnt          );
+        DECL_VISIT_PROC( ElseStmnt        );
+        DECL_VISIT_PROC( ExprStmnt        );
 
-        DECL_VISIT_PROC( LiteralExpr  );
-        DECL_VISIT_PROC( UnaryExpr    );
+        DECL_VISIT_PROC( LiteralExpr      );
+        DECL_VISIT_PROC( UnaryExpr        );
 
         /* --- Helper functions for conversion --- */
 
@@ -81,6 +86,12 @@ class GLSLConverter : public Visitor
         */
         void MakeVarIdentWithSystemSemanticLocal(VarIdent* ast);
 
+        /*
+        Converts the specified statement to a code block and inserts itself into this code block (if it is a return statement within the entry point).
+        This is used to ensure a new scope within a control flow statement (e.g. if-statement).
+        */
+        void MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt);
+
         /* === Members === */
 
         ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
@@ -94,6 +105,9 @@ class GLSLConverter : public Visitor
         std::vector<std::string>    reservedVarIdents_;
 
         unsigned int                structDeclLevel_    = 0;
+
+        // True if AST traversal is currently inside the main entry point (or its sub nodes).
+        bool                        isInsideEntryPoint_ = false;
 
 };
 

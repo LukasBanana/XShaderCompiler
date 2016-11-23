@@ -179,7 +179,8 @@ class GLSLGenerator : public Generator
         bool                    allowLineMarks_         = true;
         Statistics*             stats_                  = nullptr;
 
-        bool                    isInsideEntryPoint_     = false; //< True if AST traversal is currently inside the main entry point (or its sub nodes).
+        // True if AST traversal is currently inside the main entry point (or its sub nodes).
+        bool                    isInsideEntryPoint_     = false;
         bool                    isInsideInterfaceBlock_ = false;
 
         #if 1//TODO: remove all HLSL type mappings from here

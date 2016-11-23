@@ -811,16 +811,8 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     if (isInsideEntryPoint_)
     {
         if (ast->expr)
-        {
-            OpenScope();
-            {
-                WriteOutputSemanticsAssignment(ast->expr.get());
-                WriteLn("return;");
-            }
-            CloseScope();
-        }
-        else
-            WriteLn("return;");
+            WriteOutputSemanticsAssignment(ast->expr.get());
+        WriteLn("return;");
     }
     else
     {
