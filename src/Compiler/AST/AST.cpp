@@ -347,11 +347,6 @@ bool FunctionDecl::IsForwardDecl() const
     return (codeBlock == nullptr);
 }
 
-bool FunctionDecl::IsIntrinsic() const
-{
-    return false;
-}
-
 std::string FunctionDecl::SignatureToString(bool useParamNames) const
 {
     std::string s;
@@ -437,36 +432,6 @@ bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const T
 
 TypeDenoterPtr FunctionDecl::GetTypeDenoterForArgs(const std::vector<ExprPtr>& /*args*/)
 {
-    return returnType->typeDenoter;
-}
-
-
-/* ----- IntrinsicDecl ----- */
-
-IntrinsicDecl::IntrinsicDecl() :
-    FunctionDecl{ SourcePosition::ignore }
-{
-}
-
-bool IntrinsicDecl::IsIntrinsic() const
-{
-    return true;
-}
-
-bool IntrinsicDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const
-{
-    if (paramIndex >= parameters.size())
-        return false;
-
-    //TODO: check for generic type matches
-
-    return true;
-}
-
-TypeDenoterPtr IntrinsicDecl::GetTypeDenoterForArgs(const std::vector<ExprPtr>& args)
-{
-    //TODO: determine generic return type by arguments for respective intrinsics
-
     return returnType->typeDenoter;
 }
 
