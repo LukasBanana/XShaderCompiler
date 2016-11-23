@@ -24,6 +24,8 @@ struct VOut
 
 float4 VS1(float4 vPos : POSITION, uint id : SV_VertexID) : SV_Position
 {
+	if (id == 0)
+		return (float4)0;
 	return mul(wvpMatrix, vPos);
 }
 
@@ -54,9 +56,9 @@ void VS4(in VIn inp, out VOut outp)
 
 // VS5
 
-float4 VS5(in VIn inp, float3 vNormal : NORMAL, out float3 tNormal : NORMAL) : SV_Position
+float4 VS5(in VIn inp, float3 vTangent : TANGENT, out float3 tNormal : NORMAL) : SV_Position
 {
-	tNormal = vNormal;
+	tNormal = inp.vNormal + vTangent;
 	return mul(wvpMatrix, inp.vPos);
 }
 

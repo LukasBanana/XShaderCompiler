@@ -265,12 +265,8 @@ bool GLSLConverter::HasVarDeclOfVarIdentSystemSemantic(VarIdent* varIdent) const
         /* Is this symbol reference a variable declaration? */
         if (auto varDecl = varIdent->symbolRef->As<VarDecl>())
         {
-            /* Get first variable semantic */
-            if (auto varSemantic = varDecl->FirstSemantic())
-            {
-                /* Is semantic a system semantic? */
-                return IsSystemSemantic(varSemantic->semantic);
-            }
+            /* Is semantic a system semantic? */
+            return varDecl->flags(VarDecl::isSystemValue);
         }
     }
     return false;

@@ -473,8 +473,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         {
             OpenScope();
             {
-                /* Write input parameters as local variables */
+                /* Write input/output parameters of system values as local variables */
                 WriteLocalInputSemantics();
+                WriteLocalOutputSemantics();
 
                 /* Write code block (without additional scope) */
                 isInsideEntryPoint_ = true;
@@ -813,7 +814,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         {
             OpenScope();
             {
-                WriteOutputSemantics(ast->expr.get());
+                WriteOutputSemanticsAssignment(ast->expr.get());
                 WriteLn("return;");
             }
             CloseScope();
@@ -991,7 +992,7 @@ void GLSLGenerator::WriteAttributeEarlyDepthStencil()
 
 void GLSLGenerator::WriteLocalInputSemantics()
 {
-    auto& varDeclRefs = GetProgram()->entryPointRef->inputSemantics.varDeclRefs;
+    auto& varDeclRefs = GetProgram()->entryPointRef->inputSemantics.varDeclRefsSV;
 
     bool paramsWritten = false;
 
@@ -1010,23 +1011,20 @@ bool GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
     /* Is semantic of the variable declaration a system value semantic? */
     if (auto varSemantic = varDecl->FirstSemantic())
     {
-        if (IsSystemSemantic(varSemantic->semantic))
+        if (auto semanticKeyword = SemanticToGLSLKeyword(varSemantic->semantic))
         {
-            if (auto semanticKeyword = SemanticToGLSLKeyword(varSemantic->semantic))
+            /* Write local variable definition statement */
+            BeginLn();
             {
-                /* Write local variable definition statement */
-                BeginLn();
-                {
-                    Visit(varDecl->declStmntRef->varType);
-                    Write(" " + varDecl->ident + " = " + *semanticKeyword + ";");
-                }
-                EndLn();
+                Visit(varDecl->declStmntRef->varType);
+                Write(" " + varDecl->ident + " = " + *semanticKeyword + ";");
             }
-            else
-                Error("failed to map semantic name to GLSL keyword", varSemantic);
-
-            return true;
+            EndLn();
         }
+        else
+            Error("failed to map semantic name to GLSL keyword", varSemantic);
+
+        return true;
     }
     return false;
 }
@@ -1049,26 +1047,55 @@ void GLSLGenerator::WriteGlobalInputSemantics()
 
 bool GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 {
-    /* Is semantic of the variable declaration a user defined semantic? */
-    auto varSemantic = varDecl->semantics.front().get();
-    if (IsUserSemantic(varSemantic->semantic))
+    /* Write global variable definition statement */
+    BeginLn();
     {
-        /* Write global variable definition statement */
+        Write("in ");
+        Visit(varDecl->declStmntRef->varType);
+        Write(" " + varDecl->ident + ";");
+    }
+    EndLn();
+
+    return true;
+}
+
+void GLSLGenerator::WriteLocalOutputSemantics()
+{
+    auto& varDeclRefs = GetProgram()->entryPointRef->outputSemantics.varDeclRefsSV;
+
+    bool paramsWritten = false;
+
+    for (auto varDecl : varDeclRefs)
+    {
+        if (WriteLocalOutputSemanticsVarDecl(varDecl))
+            paramsWritten = true;
+    }
+
+    if (paramsWritten)
+        Blank();
+}
+
+bool GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
+{
+    /* Is semantic of the variable declaration a system value semantic? */
+    if (auto varSemantic = varDecl->FirstSemantic())
+    {
+        /* Write local variable definition statement (without initialization) */
         BeginLn();
         {
-            Write("in ");
             Visit(varDecl->declStmntRef->varType);
             Write(" " + varDecl->ident + ";");
         }
         EndLn();
-
         return true;
     }
     return false;
 }
 
-void GLSLGenerator::WriteOutputSemantics(Expr* ast)
+void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
 {
+    #if 0
+    //TODO: refactor this
     auto& outp = GetProgram()->outputSemantics;
 
     if (!outp.singleOutputVariable.empty())
@@ -1083,12 +1110,65 @@ void GLSLGenerator::WriteOutputSemantics(Expr* ast)
     }
     else if (outp.returnType->symbolRef)
     {
-        
         //TODO!
-        
     }
+    #endif
+
+    auto        entryPoint  = GetProgram()->entryPointRef;
+    auto        semantic    = entryPoint->semantic;
+    const auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefsSV;
+
+    /* Prefer variables are system semantics */
+    if (!varDeclRefs.empty())
+    {
+        const auto& typeDen = ast->GetTypeDenoter()->Get();
+
+        if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
+        {
+            //TODO...
+        }
+        else if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+        {
+            /* Write system values */
+            for (auto varDecl : varDeclRefs)
+            {
+                if (auto varSemantic = varDecl->FirstSemantic())
+                {
+                    if (auto semanticKeyword = SemanticToGLSLKeyword(varSemantic->semantic))
+                    {
+                        BeginLn();
+                        {
+                            Write(*semanticKeyword + " = " + varDecl->ident + ";");
+                        }
+                        EndLn();
+                    }
+                }
+            }
+        }
+        else
+            Error("invalid type denoter for output semantic", ast);
+    }
+    else if (IsSystemSemantic(semantic))
+    {
+        if (auto semanticKeyword = SemanticToGLSLKeyword(semantic))
+        {
+            BeginLn();
+            {
+                Write(*semanticKeyword);
+                Write(" = ");
+                Visit(ast);
+                Write(";");
+            }
+            EndLn();
+        }
+        else
+            Error("failed to map output semantic to GLSL keyword", entryPoint);
+    }
+    else
+        Error("missing output semantic", ast);
 }
 
+//TODO: refactor this function
 void GLSLGenerator::WriteFragmentShaderOutput()
 {
     auto& outp = GetProgram()->outputSemantics;

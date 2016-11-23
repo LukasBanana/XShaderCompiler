@@ -51,6 +51,7 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
+        DECL_VISIT_PROC( VarSemantic       );
         DECL_VISIT_PROC( VarType           );
         
         DECL_VISIT_PROC( VarDecl           );
@@ -96,6 +97,9 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPoint(FunctionDecl* funcDecl);
         void AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param);
         void AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input);
+        void AnalyzeEntryPointStructInOut(FunctionDecl* funcDecl, StructDecl* structDecl, bool input);
+
+        void AnalyzeSemantic(IndexedSemantic& semantic);
 
         /* === Members === */
 

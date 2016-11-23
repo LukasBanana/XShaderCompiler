@@ -138,7 +138,10 @@ class GLSLGenerator : public Generator
         void WriteGlobalInputSemantics();
         bool WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl);
 
-        void WriteOutputSemantics(Expr* ast);
+        void WriteLocalOutputSemantics();
+        bool WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl);
+
+        void WriteOutputSemanticsAssignment(Expr* ast);
 
         void WriteFragmentShaderOutput();
 

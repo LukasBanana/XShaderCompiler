@@ -342,6 +342,17 @@ bool VarDeclStmnt::IsOutput() const
 
 /* ----- FunctionDecl ----- */
 
+void FunctionDecl::ParameterSemantics::Add(VarDecl* varDecl)
+{
+    if (varDecl)
+    {
+        if (varDecl->flags(VarDecl::isSystemValue))
+            varDeclRefsSV.push_back(varDecl);
+        else
+            varDeclRefs.push_back(varDecl);
+    }
+}
+
 bool FunctionDecl::IsForwardDecl() const
 {
     return (codeBlock == nullptr);

@@ -446,7 +446,10 @@ struct FunctionDecl : public Stmnt
 
     struct ParameterSemantics
     {
-        std::vector<VarDecl*> varDeclRefs; // References to all variable declarations of the parameter semantics
+        void Add(VarDecl* varDecl);
+
+        std::vector<VarDecl*> varDeclRefs;      // References to all variable declarations of the user defined semantics
+        std::vector<VarDecl*> varDeclRefsSV;    // References to all variable declarations of the system value semantics
     };
 
     FLAG_ENUM

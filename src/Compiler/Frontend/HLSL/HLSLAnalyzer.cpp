@@ -94,6 +94,11 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     PopFunctionCall();
 }
 
+IMPLEMENT_VISIT_PROC(VarSemantic)
+{
+    AnalyzeSemantic(ast->semantic);
+}
+
 IMPLEMENT_VISIT_PROC(VarType)
 {
     Visit(ast->structDecl);
@@ -183,6 +188,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     GetReportHandler().PushContextDesc(ast->SignatureToString(false));
 
     const auto isEntryPoint = (ast->ident == entryPoint_);
+
+    /* Analyze function return semantic */
+    AnalyzeSemantic(ast->semantic);
 
     /* Register function declaration in symbol table */
     Register(ast->ident, ast);
@@ -704,6 +712,14 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
             Error("invalid number of variable declarations in function parameter", param.get());
     }
 
+    /* Analyze return type */
+    auto returnTypeDen = funcDecl->returnType->typeDenoter->Get();
+    if (auto structTypeDen = returnTypeDen->As<StructTypeDenoter>())
+    {
+        /* Analyze entry point output structure */
+        AnalyzeEntryPointStructInOut(funcDecl, structTypeDen->structDeclRef, false);
+    }
+
     //TODO: refactor this
     #if 1
     /* Decorate program's input and output semantics */
@@ -739,35 +755,11 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
     auto varTypeDen = varDecl->GetTypeDenoter()->Get();
     if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
     {
-        /* Analyze all structure members */
-        auto structDecl = structTypeDen->structDeclRef;
-
-        for (auto& member : structDecl->members)
-        {
-            for (auto& memberVar : member->varDecls)
-                AnalyzeEntryPointParameterInOut(funcDecl, memberVar.get(), input);
-        }
-
-        /* Mark structure as shader input/output */
-        if (input)
-            structDecl->flags << StructDecl::isShaderInput;
-        else
-            structDecl->flags << StructDecl::isShaderOutput;
+        /* Analyze entry point structure */
+        AnalyzeEntryPointStructInOut(funcDecl, structTypeDen->structDeclRef, input);
     }
     else
     {
-        /* Add variable declaration to the global input/output semantics */
-        if (input)
-        {
-            funcDecl->inputSemantics.varDeclRefs.push_back(varDecl);
-            varDecl->flags << VarDecl::isShaderInput;
-        }
-        else
-        {
-            funcDecl->outputSemantics.varDeclRefs.push_back(varDecl);
-            varDecl->flags << VarDecl::isShaderOutput;
-        }
-
         /* Has the variable a system value semantic? */
         if (auto varSemantic = varDecl->FirstSemantic())
         {
@@ -776,6 +768,43 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
         }
         else
             Error("missing semantic in parameter '" + varDecl->ident + "' of entry point", varDecl);
+
+        /* Add variable declaration to the global input/output semantics */
+        if (input)
+        {
+            funcDecl->inputSemantics.Add(varDecl);
+            varDecl->flags << VarDecl::isShaderInput;
+        }
+        else
+        {
+            funcDecl->outputSemantics.Add(varDecl);
+            varDecl->flags << VarDecl::isShaderOutput;
+        }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointStructInOut(FunctionDecl* funcDecl, StructDecl* structDecl, bool input)
+{
+    /* Analyze all structure members */
+    for (auto& member : structDecl->members)
+    {
+        for (auto& memberVar : member->varDecls)
+            AnalyzeEntryPointParameterInOut(funcDecl, memberVar.get(), input);
+    }
+
+    /* Mark structure as shader input/output */
+    if (input)
+        structDecl->flags << StructDecl::isShaderInput;
+    else
+        structDecl->flags << StructDecl::isShaderOutput;
+}
+
+void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic)
+{
+    if (semantic == Semantic::Position && shaderTarget_ == ShaderTarget::VertexShader)
+    {
+        /* Convert shader semantic to VertexPosition */
+        semantic = IndexedSemantic(Semantic::VertexPosition, semantic.Index());
     }
 }
 
