@@ -32,8 +32,8 @@
 #[StructInheritTest1 PS]
 #--dump-ast -T fragment -E PS -o output/StructInheritTest1.PS.glsl StructInheritTest1.hlsl
 
-[ssct_reflect PS]
---dump-times --dump-stat -T fragment -E PS -O -I "../../misc/ssct_shader/" -o "../../misc/ssct_shader/ssct_reflect.PS.frag" "../../misc/ssct_shader/ssct_reflect.hlsl"
+#[ssct_reflect PS]
+#--dump-times --dump-stat -T fragment -E PS -O -I "../../misc/ssct_shader/" -o "../../misc/ssct_shader/ssct_reflect.PS.frag" "../../misc/ssct_shader/ssct_reflect.hlsl"
 
 #[TestShader1.hlsl VS]
 #-T vertex -E VS -O -o output/TestShader1.VS.glsl TestShader1.hlsl

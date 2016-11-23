@@ -695,6 +695,7 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
     /* Mark this function declaration with the entry point flag */
     funcDecl->flags << FunctionDecl::isEntryPoint;
 
+    /* Analyze all function parameters */
     for (auto& param : funcDecl->parameters)
     {
         if (param->varDecls.size() == 1)
@@ -766,6 +767,15 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
             funcDecl->outputSemantics.varDeclRefs.push_back(varDecl);
             varDecl->flags << VarDecl::isShaderOutput;
         }
+
+        /* Has the variable a system value semantic? */
+        if (auto varSemantic = varDecl->FirstSemantic())
+        {
+            if (IsSystemSemantic(varSemantic->semantic))
+                varDecl->flags << VarDecl::isSystemValue;
+        }
+        else
+            Error("missing semantic in parameter '" + varDecl->ident + "' of entry point", varDecl);
     }
 }
 

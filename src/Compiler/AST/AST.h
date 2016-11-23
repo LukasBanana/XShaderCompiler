@@ -341,7 +341,11 @@ struct VarDecl : public Decl
     {
         FLAG( isShaderInput,    0 ), // This variable is used as shader input.
         FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
-        FLAG( disableCodeGen,   2 ), // Disables the code generation for this variable declaration.
+        FLAG( isSystemValue,    2 ), // This variable is a system value.
+        FLAG( disableCodeGen,   3 ), // Disables the code generation for this variable declaration.
+
+        isShaderInputSV     = (isShaderInput  | isSystemValue), // This variable a used as shader input, and it is a system value.
+        isShaderOutputSV    = (isShaderOutput | isSystemValue), // This variable a used as shader output, and it is a system value.
     };
 
     // Returns the variable declaration as string.
@@ -440,15 +444,9 @@ struct FunctionDecl : public Stmnt
 {
     AST_INTERFACE(FunctionDecl);
 
-    struct InputSemantics
+    struct ParameterSemantics
     {
-        std::vector<VarDecl*> varDeclRefs; // References to all variable declarations of the user defined semantics
-    };
-
-    struct OutputSemantics
-    {
-        std::vector<VarDecl*>   varDeclRefs;        // References to all variable declarations of the user defined semantics
-        IndexedSemantic         functionSemantic;   // May be undefined.
+        std::vector<VarDecl*> varDeclRefs; // References to all variable declarations of the parameter semantics
     };
 
     FLAG_ENUM
@@ -485,8 +483,8 @@ struct FunctionDecl : public Stmnt
     std::vector<VarDeclStmntPtr>    annotations;                            // Annotations can be ignored by analyzers and generators.
     CodeBlockPtr                    codeBlock;                              // May be null (if this AST node is a forward declaration).
 
-    InputSemantics                  inputSemantics;
-    OutputSemantics                 outputSemantics;
+    ParameterSemantics              inputSemantics;
+    ParameterSemantics              outputSemantics;
 
     //TODO: currently unused
   //FunctionDecl*                   definitionRef   = nullptr;              // Reference to the actual function definition (only for forward declarations).

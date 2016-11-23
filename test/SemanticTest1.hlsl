@@ -10,23 +10,26 @@ cbuffer Matrices
 struct VIn
 {
 	float4 vPos : POSITION;
+	float3 vNormal : NORMAL;
+	uint id : SV_VertexID;
 };
 
 struct VOut
 {
 	float4 tPos : SV_Position;
+	float3 tNormal : NORMAL;
 };
 
 // VS1
 
-float4 VS1(float4 vPos : POSITION) : SV_Position
+float4 VS1(float4 vPos : POSITION, uint id : SV_VertexID) : SV_Position
 {
 	return mul(wvpMatrix, vPos);
 }
 
 // VS2
 
-void VS2(in float4 vPos : POSITION, out float4 tPos : SV_Position)
+void VS2(in float4 vPos : POSITION, in uint id : SV_VertexID, out float4 tPos : SV_Position)
 {
 	tPos = mul(wvpMatrix, vPos);
 }
@@ -37,6 +40,7 @@ VOut VS3(VIn inp)
 {
 	VOut outp = (VOut)0;
 	outp.tPos = mul(wvpMatrix, inp.vPos);
+	outp.tNormal = inp.vNormal;
 	return outp;
 }
 
@@ -45,6 +49,7 @@ VOut VS3(VIn inp)
 void VS4(in VIn inp, out VOut outp)
 {
 	outp.tPos = mul(wvpMatrix, inp.vPos);
+	outp.tNormal = inp.vNormal;
 }
 
 // VS5
