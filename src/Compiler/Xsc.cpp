@@ -43,8 +43,8 @@ XSC_EXPORT std::string TargetToString(const ShaderTarget target)
     return "";
 }
 
-using Time      = std::chrono::high_resolution_clock;
-using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
+using Time      = std::chrono::system_clock;
+using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 static bool CompileShaderPrimary(
     const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log, std::array<TimePoint, 6>& timePoints)

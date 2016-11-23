@@ -7,8 +7,10 @@
 
 #include "Generator.h"
 #include "AST.h"
+#include <sstream>
 #include <ctime>
 #include <chrono>
+#include <iomanip>
 
 
 namespace Xsc
@@ -107,19 +109,13 @@ void Generator::Blank()
 
 std::string Generator::TimePoint() const
 {
-    /* Determine current time point */
-    const auto currentTime  = std::chrono::system_clock::now();
-    const auto duration     = std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch());
-    const auto date         = static_cast<std::time_t>(duration.count());
-    
-    /* Get time point as string */
-    auto timePoint = std::string(std::ctime(&date));
+    auto currentTime    = std::chrono::system_clock::now();
+    auto date           = std::chrono::system_clock::to_time_t(currentTime);
 
-    /* Remove new-line character at the end */
-    if (!timePoint.empty() && timePoint.back() == '\n')
-        timePoint.resize(timePoint.size() - 1);
+    std::stringstream s;
+    s << std::put_time(std::localtime(&date), "%d/%m/%Y %H:%M:%S");
 
-    return timePoint;
+    return s.str();
 }
 
 
