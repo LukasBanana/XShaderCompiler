@@ -256,7 +256,7 @@ TernaryExprPtr Parser::ParseTernaryExpr(const ExprPtr& condExpr)
     Accept(Tokens::Colon);
     ast->elseExpr = ParseGenericExpr();
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 // expr: expr (operator expr)*;
