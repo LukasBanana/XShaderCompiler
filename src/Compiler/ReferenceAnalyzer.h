@@ -34,8 +34,6 @@ class ReferenceAnalyzer : private Visitor
 
     private:
         
-        using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
-
         // Marks the specified AST node as reachable and returns false if the AST node has already been marked as reachable.
         bool Reachable(AST* ast);
 

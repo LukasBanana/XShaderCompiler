@@ -101,6 +101,8 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeSemantic(IndexedSemantic& semantic);
 
+        void AnalyzeEndOfScopes(FunctionDecl& funcDecl);
+
         /* === Members === */
 
         Program*                    program_        = nullptr;

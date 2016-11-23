@@ -660,6 +660,11 @@ struct ReturnStmnt : public Stmnt
 {
     AST_INTERFACE(ReturnStmnt);
 
+    FLAG_ENUM
+    {
+        FLAG( isEndOfFunction, 0 ), // This return statement is at the end of its function body.
+    };
+
     ExprPtr expr; // May be null
 };
 

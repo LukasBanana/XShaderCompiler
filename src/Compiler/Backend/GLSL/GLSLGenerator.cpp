@@ -810,25 +810,28 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     if (isInsideEntryPoint_)
     {
+        /* Write all output semantics assignment with the expression of the return statement */
         if (ast->expr)
             WriteOutputSemanticsAssignment(ast->expr.get());
-        WriteLn("return;");
+
+        /* Is this return statement at the end of the function scope? */
+        if (!ast->flags(ReturnStmnt::isEndOfFunction))
+            WriteLn("return;");
     }
     else
     {
-        BeginLn();
+        if (ast->expr)
         {
-            Write("return");
-
-            if (ast->expr)
+            BeginLn();
             {
-                Write(" ");
+                Write("return ");
                 Visit(ast->expr);
+                Write(";");
             }
-
-            Write(";");
+            EndLn();
         }
-        EndLn();
+        else if (!ast->flags(ReturnStmnt::isEndOfFunction))
+            WriteLn("return;");
     }
 }
 

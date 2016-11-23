@@ -7,6 +7,7 @@
 
 #include "HLSLAnalyzer.h"
 #include "HLSLIntrinsics.h"
+#include "EndOfScopeAnalyzer.h"
 #include "Exception.h"
 #include "Helper.h"
 
@@ -215,6 +216,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             Visit(ast->codeBlock);
         }
         PopFunctionDeclLevel();
+
+        /* Analyze last statement of function body ('isEndOfFunction' flag) */
+        AnalyzeEndOfScopes(*ast);
     }
     CloseScope();
 
@@ -806,6 +810,13 @@ void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic)
         /* Convert shader semantic to VertexPosition */
         semantic = IndexedSemantic(Semantic::VertexPosition, semantic.Index());
     }
+}
+
+void HLSLAnalyzer::AnalyzeEndOfScopes(FunctionDecl& funcDecl)
+{
+    /* Analyze end of scopes from function body */
+    EndOfScopeAnalyzer scopeAnalyzer;
+    scopeAnalyzer.MarkEndOfScopesFromFunction(funcDecl);
 }
 
 
