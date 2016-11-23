@@ -34,8 +34,8 @@ class Optimizer : private Visitor
 
         /* ----- Visitor implementation ----- */
 
-        DECL_VISIT_PROC( CodeBlock         );
-        DECL_VISIT_PROC( SwitchCase        );
+        DECL_VISIT_PROC( CodeBlock  );
+        DECL_VISIT_PROC( SwitchCase );
 
 };
 
