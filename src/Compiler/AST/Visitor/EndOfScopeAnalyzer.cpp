@@ -36,20 +36,45 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 /* --- Statements --- */
 
+IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+{
+    // do nothing
+}
+
+IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+{
+    // do nothing
+}
+
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+{
+    // do nothing
+}
+
 IMPLEMENT_VISIT_PROC(IfStmnt)
 {
     Visit(ast->bodyStmnt);
     Visit(ast->elseStmnt);
 }
 
-IMPLEMENT_VISIT_PROC(ElseStmnt)
+IMPLEMENT_VISIT_PROC(SwitchStmnt)
 {
-    Visit(ast->bodyStmnt);
+    // do nothing
+}
+
+IMPLEMENT_VISIT_PROC(ExprStmnt)
+{
+    // do nothing
 }
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     ast->flags << ReturnStmnt::isEndOfFunction;
+}
+
+IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
+{
+    // do nothing
 }
 
 #undef IMPLEMENT_VISIT_PROC
