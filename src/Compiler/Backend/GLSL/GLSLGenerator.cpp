@@ -1266,7 +1266,7 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
 {
     /* Find system value semantic in variable identifier */
     auto semanticVarIdent = FindSystemValueVarIdent(ast);
-    const std::string* semanticKeyword = nullptr;
+    std::unique_ptr<std::string> semanticKeyword;
 
     if (semanticVarIdent)
         semanticKeyword = SemanticToGLSLKeyword(semanticVarIdent->systemSemantic);

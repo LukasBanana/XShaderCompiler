@@ -38,11 +38,11 @@ TestStruct Get_TestStruct()
 
 struct VertexIn
 {
-	float3 coord	: POSITION;
-	float3 normal	: NORMAL;
-	float2 texCoord	: TEXCOORD0;
-	float4 color	: COLOR;
-	uint vertexID1 : SV_VertexID;
+	float3	coord		: POSITION;
+	float3	normal		: NORMAL;
+	float2	texCoord	: TEXCOORD0;
+	float4	color		: COLOR;
+	uint	vertexID1	: SV_VertexID;
 	//TestStruct test;
 };
 
@@ -51,6 +51,8 @@ struct VertexOut
 	float4					position	: SV_Position;
 	float2					texCoord	: TEXCOORD0;
 	nointerpolation float4	color		: COLOR;
+	float					clipDist0	: SV_ClipDistance0;
+	float					clipDist1	: SV_ClipDistance1;
 };
 
 float3 GammaCorrect(float3 color, float gamma)
@@ -69,6 +71,9 @@ VertexOut VS(VertexIn inp, uint vertexID2 : SV_VertexID, float4 jointWeights : J
 	// Vertex transformation
 	outp.position	= mul(wvpMatrix, float4(inp.coord, 1.0) + (float4)0);//, 1, foo, bar);
 	outp.texCoord	= inp.texCoord + jointWeights;
+	
+	outp.clipDist0 = 0;
+	outp.clipDist1 = 1;
 	
 	// Per-vertex lighting
 	float3 lightDir = (float3)0.5;//{ 0.5, -0.5, 1.0 };

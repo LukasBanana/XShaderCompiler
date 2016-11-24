@@ -6,6 +6,7 @@
  */
 
 #include "GLSLKeywords.h"
+#include "Helper.h"
 #include <set>
 #include <map>
 
@@ -183,46 +184,65 @@ const std::string* BufferTypeToGLSLKeyword(const BufferType t)
 
 /* ----- Semantic Mapping ----- */
 
-static std::map<Semantic, std::string> GenerateSemanticMap()
+struct GLSLSemanticDescriptor
+{
+    inline GLSLSemanticDescriptor(const std::string& keyword, bool hasIndex = false) :
+        keyword { keyword  },
+        hasIndex{ hasIndex }
+    {
+    }
+
+    std::string keyword;
+    bool        hasIndex    = false;
+};
+
+static std::map<Semantic, GLSLSemanticDescriptor> GenerateSemanticMap()
 {
     using T = Semantic;
 
     return
     {
-        { T::ClipDistance,           "gl_ClipDistance"         },
-        { T::CullDistance,           "gl_CullDistance"         }, // if ARB_cull_distance is present
-        { T::Coverage,               "gl_SampleMask"           },
-        { T::Depth,                  "gl_FragDepth"            },
-        { T::DepthGreaterEqual,      "gl_FragDepth"            }, // layout(depth_greater) out float gl_FragDepth;
-        { T::DepthLessEqual,         "gl_FragDepth"            }, // layout(depth_less) out float gl_FragDepth;
-        { T::DispatchThreadID,       "gl_GlobalInvocationID"   },
-        { T::DomainLocation,         "gl_TessCord"             },
-        { T::GroupID,                "gl_WorkGroupID"          },
-        { T::GroupIndex,             "gl_LocalInvocationIndex" },
-        { T::GroupThreadID,          "gl_LocalInvocationID"    },
-        { T::GSInstanceID,           "gl_InvocationID"         },
-        { T::InnerCoverage,          "gl_SampleMaskIn"         },
-        { T::InsideTessFactor,       "gl_TessLevelInner"       },
-        { T::InstanceID,             "gl_InstanceID"           }, // gl_InstanceID (GLSL), gl_InstanceIndex (Vulkan)
-        { T::IsFrontFace,            "gl_FrontFacing"          },
-        { T::OutputControlPointID,   "gl_InvocationID"         },
-        { T::Position,               "gl_FragCoord"            },
-        { T::PrimitiveID,            "gl_PrimitiveID"          },
-        { T::RenderTargetArrayIndex, "gl_Layer"                },
-        { T::SampleIndex,            "gl_SampleID"             },
-        { T::StencilRef,             "gl_FragStencilRef"       }, // if ARB_shader_stencil_export is present
-        { T::Target,                 "gl_FragColor"            }, // only for GLSL 1.10
-        { T::TessFactor,             "gl_TessLevelOuter"       },
-        { T::VertexID,               "gl_VertexID"             }, // gl_VertexID (GLSL), gl_VertexIndex (Vulkan)
-        { T::VertexPosition,         "gl_Position"             },
-        { T::ViewportArrayIndex,     "gl_ViewportIndex"        },
+        { T::ClipDistance,           { "gl_ClipDistance",        true } },
+        { T::CullDistance,           { "gl_CullDistance",        true } }, // if ARB_cull_distance is present
+        { T::Coverage,               { "gl_SampleMask"                } },
+        { T::Depth,                  { "gl_FragDepth"                 } },
+        { T::DepthGreaterEqual,      { "gl_FragDepth"                 } }, // layout(depth_greater) out float gl_FragDepth;
+        { T::DepthLessEqual,         { "gl_FragDepth"                 } }, // layout(depth_less) out float gl_FragDepth;
+        { T::DispatchThreadID,       { "gl_GlobalInvocationID"        } },
+        { T::DomainLocation,         { "gl_TessCord"                  } },
+        { T::GroupID,                { "gl_WorkGroupID"               } },
+        { T::GroupIndex,             { "gl_LocalInvocationIndex"      } },
+        { T::GroupThreadID,          { "gl_LocalInvocationID"         } },
+        { T::GSInstanceID,           { "gl_InvocationID"              } },
+        { T::InnerCoverage,          { "gl_SampleMaskIn"              } },
+        { T::InsideTessFactor,       { "gl_TessLevelInner"            } },
+        { T::InstanceID,             { "gl_InstanceID"                } }, // gl_InstanceID (GLSL), gl_InstanceIndex (Vulkan)
+        { T::IsFrontFace,            { "gl_FrontFacing"               } },
+        { T::OutputControlPointID,   { "gl_InvocationID"              } },
+        { T::Position,               { "gl_FragCoord"                 } },
+        { T::PrimitiveID,            { "gl_PrimitiveID"               } },
+        { T::RenderTargetArrayIndex, { "gl_Layer"                     } },
+        { T::SampleIndex,            { "gl_SampleID"                  } },
+        { T::StencilRef,             { "gl_FragStencilRef"            } }, // if ARB_shader_stencil_export is present
+        { T::Target,                 { "gl_FragData",            true } }, // only for GLSL 1.10
+        { T::TessFactor,             { "gl_TessLevelOuter"            } },
+        { T::VertexID,               { "gl_VertexID"                  } }, // gl_VertexID (GLSL), gl_VertexIndex (Vulkan)
+        { T::VertexPosition,         { "gl_Position"                  } },
+        { T::ViewportArrayIndex,     { "gl_ViewportIndex"             } },
     };
 }
 
-const std::string* SemanticToGLSLKeyword(const IndexedSemantic& semantic)
+std::unique_ptr<std::string> SemanticToGLSLKeyword(const IndexedSemantic& semantic)
 {
     static const auto typeMap = GenerateSemanticMap();
-    return MapTypeToKeyword(typeMap, Semantic(semantic));
+    if (auto type = MapTypeToKeyword(typeMap, Semantic(semantic)))
+    {
+        if (type->hasIndex)
+            return MakeUnique<std::string>(type->keyword + "[" + std::to_string(semantic.Index()) + "]");
+        else
+            return MakeUnique<std::string>(type->keyword);
+    }
+    return nullptr;
 }
 
 
