@@ -574,6 +574,19 @@ class IndexedSemantic
 
 };
 
+// Simple descriptor structure for semantics with or without an index.
+struct SemanticDescriptor
+{
+    inline SemanticDescriptor(const Semantic semantic, bool hasIndex = false) :
+        semantic{ semantic },
+        hasIndex{ hasIndex }
+    {
+    }
+
+    Semantic    semantic;
+    bool        hasIndex    = false;
+};
+
 // Returns true if the specified semantic is a system value semantic.
 bool IsSystemSemantic(const Semantic t);
 

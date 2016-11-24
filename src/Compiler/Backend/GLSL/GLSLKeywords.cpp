@@ -20,8 +20,8 @@ https://anteru.net/blog/2016/mapping-between-hlsl-and-glsl/
 https://msdn.microsoft.com/en-us/windows/uwp/gaming/glsl-to-hlsl-reference
 */
 
-template <typename T>
-const std::string* MapTypeToKeyword(const std::map<T, std::string>& typeMap, const T type)
+template <typename Key, typename Value>
+const Value* MapTypeToKeyword(const std::map<Key, Value>& typeMap, const Key type)
 {
     auto it = typeMap.find(type);
     return (it != typeMap.end() ? &(it->second) : nullptr);
@@ -219,10 +219,10 @@ static std::map<Semantic, std::string> GenerateSemanticMap()
     };
 }
 
-const std::string* SemanticToGLSLKeyword(const Semantic t)
+const std::string* SemanticToGLSLKeyword(const IndexedSemantic& semantic)
 {
     static const auto typeMap = GenerateSemanticMap();
-    return MapTypeToKeyword(typeMap, t);
+    return MapTypeToKeyword(typeMap, Semantic(semantic));
 }
 
 

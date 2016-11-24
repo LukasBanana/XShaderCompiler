@@ -479,19 +479,7 @@ BufferType HLSLKeywordToBufferType(const std::string& keyword)
 
 /* ----- Semantic Mapping ----- */
 
-struct HLSLSemanticDescriptor
-{
-    inline HLSLSemanticDescriptor(const Semantic semantic, bool hasIndex = false) :
-        semantic{ semantic },
-        hasIndex{ hasIndex }
-    {
-    }
-
-    Semantic    semantic;
-    bool        hasIndex    = false;
-};
-
-using HLSLSemanticMap = std::vector<std::pair<CiString, HLSLSemanticDescriptor>>;
+using HLSLSemanticMap = std::vector<std::pair<CiString, SemanticDescriptor>>;
 
 static IndexedSemantic HLSLKeywordToSemanticWithMap(const CiString& ident, const HLSLSemanticMap& semanticMap)
 {

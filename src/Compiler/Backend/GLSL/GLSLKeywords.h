@@ -31,7 +31,7 @@ const std::string* StorageClassToGLSLKeyword(const StorageClass t);
 const std::string* BufferTypeToGLSLKeyword(const BufferType t);
 
 // Returns the GLSL keyword for the specified semantic.
-const std::string* SemanticToGLSLKeyword(const Semantic t);
+const std::string* SemanticToGLSLKeyword(const IndexedSemantic& semantic);
 
 
 } // /namespace Xsc
