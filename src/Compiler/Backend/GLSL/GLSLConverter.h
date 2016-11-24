@@ -92,6 +92,9 @@ class GLSLConverter : public Visitor
         */
         void MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt);
 
+        // Registers the all specified variables as reserved identifiers.
+        void RegisterReservedVarIdents(const std::vector<VarDecl*>& varDecls);
+
         /* === Members === */
 
         ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;

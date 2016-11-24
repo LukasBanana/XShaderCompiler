@@ -48,9 +48,9 @@ struct VertexIn
 
 struct VertexOut
 {
-	float4 position	: SV_Position;
-	float2 texCoord	: TEXCOORD0;
-	float4 color	: COLOR;
+	float4					position	: SV_Position;
+	float2					texCoord	: TEXCOORD0;
+	nointerpolation float4	color		: COLOR;
 };
 
 float3 GammaCorrect(float3 color, float gamma)

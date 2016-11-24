@@ -63,7 +63,7 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( TextureDeclStmnt  );
         DECL_VISIT_PROC( SamplerDeclStmnt  );
         DECL_VISIT_PROC( StructDeclStmnt   );
-        DECL_VISIT_PROC( VarDeclStmnt      );
+        //DECL_VISIT_PROC( VarDeclStmnt      );
 
         DECL_VISIT_PROC( ForLoopStmnt      );
         DECL_VISIT_PROC( WhileLoopStmnt    );
@@ -79,8 +79,10 @@ class HLSLAnalyzer : public Analyzer
 
         /* --- Helper functions for context analysis --- */
 
+        #if 0
         void DecorateEntryInOut(VarDeclStmnt* ast, bool isInput);
         void DecorateEntryInOut(VarType* ast, bool isInput);
+        #endif
 
         VarSemanticPtr FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics) const;
         VarSemanticPtr FetchUserDefinedSemantic(const std::vector<VarSemanticPtr>& varSemantics) const;
@@ -97,7 +99,7 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPoint(FunctionDecl* funcDecl);
         void AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param);
         void AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input);
-        void AnalyzeEntryPointStructInOut(FunctionDecl* funcDecl, StructDecl* structDecl, bool input);
+        void AnalyzeEntryPointStructInOut(FunctionDecl* funcDecl, StructDecl* structDecl, const std::string& structAliasName, bool input);
 
         void AnalyzeSemantic(IndexedSemantic& semantic);
 

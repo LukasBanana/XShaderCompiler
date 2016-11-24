@@ -483,6 +483,13 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                     Visit(ast->codeBlock->stmnts);
                 }
                 isInsideEntryPoint_ = false;
+
+                /* Is the last statement a return statement? */
+                if (ast->codeBlock->stmnts.empty() || ast->codeBlock->stmnts.back()->Type() != AST::Types::ReturnStmnt)
+                {
+                    /* Write output semantic at the end of the code block, if no return statement was written before */
+                    WriteOutputSemanticsAssignment(nullptr);
+                }
             }
             CloseScope();
         }
@@ -811,8 +818,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     if (isInsideEntryPoint_)
     {
         /* Write all output semantics assignment with the expression of the return statement */
-        if (ast->expr)
-            WriteOutputSemanticsAssignment(ast->expr.get());
+        WriteOutputSemanticsAssignment(ast->expr.get());
 
         /* Is this return statement at the end of the function scope? */
         if (!ast->flags(ReturnStmnt::isEndOfFunction))
@@ -1116,34 +1122,23 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
     /* Prefer variables are system semantics */
     if (!varDeclRefs.empty())
     {
-        const auto& typeDen = ast->GetTypeDenoter()->Get();
-
-        if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
+        /* Write system values */
+        for (auto varDecl : varDeclRefs)
         {
-            //TODO...
-        }
-        else if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
-        {
-            /* Write system values */
-            for (auto varDecl : varDeclRefs)
+            if (auto varSemantic = varDecl->FirstSemantic())
             {
-                if (auto varSemantic = varDecl->FirstSemantic())
+                if (auto semanticKeyword = SemanticToGLSLKeyword(varSemantic->semantic))
                 {
-                    if (auto semanticKeyword = SemanticToGLSLKeyword(varSemantic->semantic))
+                    BeginLn();
                     {
-                        BeginLn();
-                        {
-                            Write(*semanticKeyword + " = " + varDecl->ident + ";");
-                        }
-                        EndLn();
+                        Write(*semanticKeyword + " = " + varDecl->ident + ";");
                     }
+                    EndLn();
                 }
             }
         }
-        else
-            Error("invalid type denoter for output semantic", ast);
     }
-    else if (IsSystemSemantic(semantic))
+    else if (IsSystemSemantic(semantic) && ast)
     {
         if (auto semanticKeyword = SemanticToGLSLKeyword(semantic))
         {
@@ -1159,13 +1154,15 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
         else
             Error("failed to map output semantic to GLSL keyword", entryPoint);
     }
-    else
+    else if (shaderTarget_ != ShaderTarget::ComputeShader)
         Error("missing output semantic", ast);
 }
 
 //TODO: refactor this function
 void GLSLGenerator::WriteFragmentShaderOutput()
 {
+    #if 0
+
     auto& outp = GetProgram()->outputSemantics;
 
     if (outp.returnType->symbolRef || outp.returnType->structDecl)
@@ -1219,6 +1216,8 @@ void GLSLGenerator::WriteFragmentShaderOutput()
     }
 
     Blank();
+
+    #endif
 }
 
 void GLSLGenerator::WriteStructDeclMembers(StructDecl* ast)

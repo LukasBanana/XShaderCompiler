@@ -40,10 +40,9 @@ void GLSLConverter::Convert(
 
 IMPLEMENT_VISIT_PROC(Program)
 {
-    /* Register all input semantic variables are reserved identifiers */
-    auto& varDeclRefs = ast->entryPointRef->inputSemantics.varDeclRefs;
-    for (auto& varDecl : varDeclRefs)
-        reservedVarIdents_.push_back(varDecl->ident);
+    /* Register all input and output semantic variables are reserved identifiers */
+    RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefsSV);
+    RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefsSV);
 
     /* Default visitor */
     Visitor::VisitProgram(ast, args);
@@ -372,6 +371,12 @@ void GLSLConverter::MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt)
             bodyStmnt = codeBlockStmnt;
         }
     }
+}
+
+void GLSLConverter::RegisterReservedVarIdents(const std::vector<VarDecl*>& varDecls)
+{
+    for (auto& varDecl : varDecls)
+        reservedVarIdents_.push_back(varDecl->ident);
 }
 
 

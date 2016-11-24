@@ -257,6 +257,7 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
     Visit(ast->structDecl);
 }
 
+#if 0
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     Visit(ast->varType);
@@ -265,18 +266,20 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     /* Decorate variable type */
     if (InsideEntryPoint() && ast->varDecls.empty())
     {
-        auto symbolRef = ast->varType->symbolRef;
-        if (symbolRef && symbolRef->Type() == AST::Types::StructDecl)
+        if (auto symbol = ast->varType->symbolRef)
         {
-            auto structDecl = dynamic_cast<StructDecl*>(symbolRef);
-            if (structDecl && structDecl->flags(StructDecl::isShaderOutput) && structDecl->aliasName.empty())
+            if (auto structDecl = symbol->As<StructDecl>())
             {
-                /* Store alias name for shader output interface block */
-                structDecl->aliasName = ast->varDecls.front()->ident;
+                if (structDecl->flags(StructDecl::isShaderOutput) && structDecl->aliasName.empty())
+                {
+                    /* Store alias name for shader output interface block */
+                    structDecl->aliasName = ast->varDecls.front()->ident;
+                }
             }
         }
     }
 }
+#endif
 
 /* --- Statements --- */
 
@@ -446,6 +449,8 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
 /* --- Helper functions for context analysis --- */
 
+#if 0
+
 //INCOMPLETE!
 void HLSLAnalyzer::DecorateEntryInOut(VarDeclStmnt* ast, bool isInput)
 {
@@ -497,6 +502,8 @@ void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
             structDecl->flags << structFlag;
     }
 }
+
+#endif
 
 VarSemanticPtr HLSLAnalyzer::FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics) const
 {
@@ -721,11 +728,11 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
     if (auto structTypeDen = returnTypeDen->As<StructTypeDenoter>())
     {
         /* Analyze entry point output structure */
-        AnalyzeEntryPointStructInOut(funcDecl, structTypeDen->structDeclRef, false);
+        AnalyzeEntryPointStructInOut(funcDecl, structTypeDen->structDeclRef, "", false);
     }
 
     //TODO: refactor this
-    #if 1
+    #if 0
     /* Decorate program's input and output semantics */
     program_->outputSemantics.returnType = funcDecl->returnType.get();
     program_->outputSemantics.functionSemantic = funcDecl->semantic;
@@ -760,7 +767,7 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
     if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
     {
         /* Analyze entry point structure */
-        AnalyzeEntryPointStructInOut(funcDecl, structTypeDen->structDeclRef, input);
+        AnalyzeEntryPointStructInOut(funcDecl, structTypeDen->structDeclRef, varDecl->ident, input);
     }
     else
     {
@@ -787,8 +794,11 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
     }
 }
 
-void HLSLAnalyzer::AnalyzeEntryPointStructInOut(FunctionDecl* funcDecl, StructDecl* structDecl, bool input)
+void HLSLAnalyzer::AnalyzeEntryPointStructInOut(FunctionDecl* funcDecl, StructDecl* structDecl, const std::string& structAliasName, bool input)
 {
+    /* Set structure alias name */
+    structDecl->aliasName = structAliasName;
+
     /* Analyze all structure members */
     for (auto& member : structDecl->members)
     {
