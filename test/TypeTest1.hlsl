@@ -42,7 +42,7 @@ typedef struct
 }
 S1_t2, S1_t2_a[3];
 
-typedef S1_t2_a S1_t2_a_3;
+typedef S1_t2_a S1_t2_a_3[2];
 
 typedef struct S1 S1_t3;
 
@@ -101,6 +101,7 @@ float4 VS() : SV_Position
 	S1_t2 x2 = 0;
 	S1_t2_a x3;
 	S1_t2_a_3 x4;
+	S1_t2_a_3[1] x5;
 //	return VECTOR(v0 + f1(), 1);
 	return float4(v0 + f1(), 1);
 }

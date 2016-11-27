@@ -29,6 +29,9 @@
 [TypeTest1 VS]
 -T vertex -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
 
+[TypeTest2 VS]
+-T vertex -E VS -o output/TypeTest2.VS.glsl TypeTest2.hlsl
+
 #[FloatTest1 VS]
 #-T vertex -E VS -o output/FloatTest1.VS.glsl FloatTest1.hlsl
 

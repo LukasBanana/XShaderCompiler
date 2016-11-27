@@ -1161,11 +1161,18 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
 
     if (!varIdent->next)
     {
-        /* Parse variable declaration statement */
+        /* Convert variable identifier to alias type denoter */
         auto ast = Make<VarDeclStmnt>();
 
         ast->varType = Make<VarType>();
         ast->varType->typeDenoter = ParseAliasTypeDenoter(varIdent->ident);
+
+        if (!varIdent->arrayIndices.empty())
+        {
+            /* Convert variable identifier to array of alias type denoter */
+            ast->varType->typeDenoter = MakeShared<ArrayTypeDenoter>(ast->varType->typeDenoter, varIdent->arrayIndices);
+        }
+
         ast->varDecls = ParseVarDeclList(ast.get());
         Semi();
 
