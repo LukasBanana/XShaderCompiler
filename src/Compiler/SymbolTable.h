@@ -88,13 +88,13 @@ class SymbolTable
         Registers the specified symbol in the current scope (if the identifier is not empty).
         At least one scope must be open before symbols can be registered!
         */
-        void Register(const std::string& ident, SymbolType symbol, const OnOverrideProc& overrideProc = nullptr)
+        bool Register(const std::string& ident, SymbolType symbol, const OnOverrideProc& overrideProc = nullptr, bool throwOnFailure = true)
         {
             /* Validate input parameters */
             if (scopeStack_.empty())
                 throw std::runtime_error("no active scope to register symbol");
             if (ident.empty())
-                return;
+                return false;
 
             /* Check if identifier was already registered in the current scope */
             auto it = symTable_.find(ident);
@@ -105,15 +105,19 @@ class SymbolTable
                 {
                     /* Call override procedure and pass previous symbol entry as reference */
                     if (overrideProc && overrideProc(entry.symbol))
-                        return;
-                    else
+                        return true;
+                    else if (throwOnFailure)
                         throw std::runtime_error("identifier '" + ident + "' already declared in this scope");
+                    else
+                        return false;
                 }
             }
 
             /* Register new identifier */
             symTable_[ident].push({ symbol, ScopeLevel() });
             scopeStack_.top().push_back(ident);
+
+            return true;
         }
 
         /*

@@ -177,7 +177,7 @@ void HLSLParser::CloseScope()
 
 void HLSLParser::RegisterTypeName(const std::string& ident)
 {
-    typeNameSymbolTable_.Register(ident, true);
+    typeNameSymbolTable_.Register(ident, true, nullptr, false);
 }
 
 bool HLSLParser::IsRegisteredTypeName(const std::string& ident) const
