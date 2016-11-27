@@ -194,6 +194,23 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     }
 }
 
+IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
+{
+    /* Add name to structure declaration, if the structure is anonymous */
+    if (ast->structDecl && ast->structDecl->ident.empty() && !ast->aliasDecls.empty())
+    {
+        /* Use first alias name as structure name (alias names will disappear in GLSL output) */
+        ast->structDecl->ident = ast->aliasDecls.front()->ident;
+
+        /* Update type denoters of all alias declarations */
+        for (auto& aliasDecl : ast->aliasDecls)
+            aliasDecl->typeDenoter->SetIdentIfAnonymous(ast->structDecl->ident);
+    }
+
+    /* Default visitor */
+    Visitor::VisitAliasDeclStmnt(ast, args);
+}
+
 /* --- Statements --- */
 
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)

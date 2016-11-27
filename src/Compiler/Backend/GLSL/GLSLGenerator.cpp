@@ -1396,63 +1396,66 @@ void GLSLGenerator::WriteArrayDims(const std::vector<ExprPtr>& arrayDims)
 
 void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast)
 {
-    if (typeDenoter.IsVoid())
+    try
     {
-        /* Just write void type */
-        Write("void");
-    }
-    else if (typeDenoter.IsBase())
-    {
-        /* Map GLSL base type */
-        auto& baseTypeDen = static_cast<const BaseTypeDenoter&>(typeDenoter);
-        if (auto keyword = DataTypeToGLSLKeyword(baseTypeDen.dataType))
-            Write(*keyword);
-        else
-            Error("failed to map data type to GLSL keyword", ast);
-    }
-    else if (typeDenoter.IsTexture())
-    {
-        auto& textureTypeDen = static_cast<const TextureTypeDenoter&>(typeDenoter);
-        
-        /* Get texture type */
-        auto textureType = textureTypeDen.textureType;
-        if (textureType == BufferType::Undefined)
+        if (typeDenoter.IsVoid())
         {
-            if (auto texDecl = textureTypeDen.textureDeclRef)
-                textureType = texDecl->declStmntRef->textureType;
-            else
-                Error("missing reference to texture type denoter", ast);
+            /* Just write void type */
+            Write("void");
         }
+        else if (typeDenoter.IsBase())
+        {
+            /* Map GLSL base type */
+            auto& baseTypeDen = static_cast<const BaseTypeDenoter&>(typeDenoter);
+            if (auto keyword = DataTypeToGLSLKeyword(baseTypeDen.dataType))
+                Write(*keyword);
+            else
+                Error("failed to map data type to GLSL keyword", ast);
+        }
+        else if (typeDenoter.IsTexture())
+        {
+            auto& textureTypeDen = static_cast<const TextureTypeDenoter&>(typeDenoter);
+        
+            /* Get texture type */
+            auto textureType = textureTypeDen.textureType;
+            if (textureType == BufferType::Undefined)
+            {
+                if (auto texDecl = textureTypeDen.textureDeclRef)
+                    textureType = texDecl->declStmntRef->textureType;
+                else
+                    Error("missing reference to texture type denoter", ast);
+            }
 
-        /* Convert texture type to GLSL sampler type */
-        if (auto keyword = BufferTypeToGLSLKeyword(textureType))
-            Write(*keyword);
+            /* Convert texture type to GLSL sampler type */
+            if (auto keyword = BufferTypeToGLSLKeyword(textureType))
+                Write(*keyword);
+            else
+                Error("failed to map texture type to GLSL keyword", ast);
+        }
+        else if (typeDenoter.IsStruct())
+        {
+            /* Write struct identifier */
+            Write(typeDenoter.Ident());
+        }
+        else if (typeDenoter.IsAlias())
+        {
+            /* Write aliased type denoter */
+            WriteTypeDenoter(typeDenoter.GetAliased(), ast);
+        }
+        else if (typeDenoter.IsArray())
+        {
+            /* Write array type denoter */
+            auto& arrayTypeDen = static_cast<const ArrayTypeDenoter&>(typeDenoter);
+            WriteTypeDenoter(*arrayTypeDen.baseTypeDenoter, ast);
+            WriteArrayDims(arrayTypeDen.arrayDims);
+        }
         else
-            Error("failed to map texture type to GLSL keyword", ast);
+            Error("failed to determine GLSL data type", ast);
     }
-    else if (typeDenoter.IsStruct())
+    catch (const std::exception& e)
     {
-        /* Write struct identifier */
-        Write(typeDenoter.Ident());
+        Error(e.what(), ast);
     }
-    else if (typeDenoter.IsAlias())
-    {
-        /* Resolve typename of aliased type */
-        auto& aliasTypeDen = static_cast<const AliasTypeDenoter&>(typeDenoter);
-        if (aliasTypeDen.aliasDeclRef)
-            WriteTypeDenoter(*(aliasTypeDen.aliasDeclRef->typeDenoter), ast);
-        else
-            Error("missing reference to type alias '" + aliasTypeDen.ident + "'", ast);
-    }
-    else if (typeDenoter.IsArray())
-    {
-        /* Write array type denoter */
-        auto& arrayTypeDen = static_cast<const ArrayTypeDenoter&>(typeDenoter);
-        WriteTypeDenoter(*arrayTypeDen.baseTypeDenoter, ast);
-        WriteArrayDims(arrayTypeDen.arrayDims);
-    }
-    else
-        Error("failed to determine GLSL data type", ast);
 }
 
 void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax)

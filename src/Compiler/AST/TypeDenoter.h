@@ -85,6 +85,9 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Returns the type identifier (if it has one), e.g. for structs and type aliases.
     virtual std::string Ident() const;
 
+    // Sets the identifier of this type denoter if the aliased type is anonymous.
+    virtual void SetIdentIfAnonymous(const std::string& ident);
+
     // Returns a type denoter for the specified full variable identifier. Throws ASTRuntimeError on failure.
     virtual TypeDenoterPtr Get(const VarIdent* varIdent = nullptr);
 
@@ -193,6 +196,7 @@ struct StructTypeDenoter : public TypeDenoter
     Types Type() const override;
     std::string ToString() const override;
     std::string Ident() const override;
+    void SetIdentIfAnonymous(const std::string& ident) override;
 
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
 
@@ -212,6 +216,7 @@ struct AliasTypeDenoter : public TypeDenoter
     Types Type() const override;
     std::string ToString() const override;
     std::string Ident() const override;
+    void SetIdentIfAnonymous(const std::string& ident) override;
 
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
     TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;

@@ -46,6 +46,7 @@ class GLSLConverter : public Visitor
         DECL_VISIT_PROC( VarDecl          );
 
         DECL_VISIT_PROC( FunctionDecl     );
+        DECL_VISIT_PROC( AliasDeclStmnt   );
 
         DECL_VISIT_PROC( ForLoopStmnt     );
         DECL_VISIT_PROC( WhileLoopStmnt   );

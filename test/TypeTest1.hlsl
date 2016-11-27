@@ -38,9 +38,11 @@ S1_t1, S1_t1_a[5], S1_t1_b[1][2][3];
 
 typedef struct
 {
-	float x, y;
+	float y, x;
 }
-S1_t2;
+S1_t2, S1_t2_a[3];
+
+typedef S1_t2_a S1_t2_a_3;
 
 typedef struct S1 S1_t3;
 
@@ -97,6 +99,8 @@ float4 VS() : SV_Position
 	DWORD x = 0;
 	FLOAT x1 = 0;
 	S1_t2 x2 = 0;
+	S1_t2_a x3;
+	S1_t2_a_3 x4;
 //	return VECTOR(v0 + f1(), 1);
 	return float4(v0 + f1(), 1);
 }

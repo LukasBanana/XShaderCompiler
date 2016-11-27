@@ -91,6 +91,11 @@ std::string TypeDenoter::Ident() const
     return ""; // dummy
 }
 
+void TypeDenoter::SetIdentIfAnonymous(const std::string& ident)
+{
+    // dummy
+}
+
 TypeDenoterPtr TypeDenoter::Get(const VarIdent* varIdent)
 {
     if (varIdent)
@@ -312,6 +317,12 @@ std::string StructTypeDenoter::Ident() const
     return ident;
 }
 
+void StructTypeDenoter::SetIdentIfAnonymous(const std::string& ident)
+{
+    if (this->ident.empty())
+        this->ident = ident;
+}
+
 TypeDenoterPtr StructTypeDenoter::Get(const VarIdent* varIdent)
 {
     if (varIdent)
@@ -360,6 +371,12 @@ std::string AliasTypeDenoter::Ident() const
     return ident;
 }
 
+void AliasTypeDenoter::SetIdentIfAnonymous(const std::string& ident)
+{
+    if (this->ident.empty())
+        this->ident = ident;
+}
+
 TypeDenoterPtr AliasTypeDenoter::Get(const VarIdent* varIdent)
 {
     if (aliasDeclRef)
@@ -375,8 +392,8 @@ TypeDenoterPtr AliasTypeDenoter::GetFromArray(std::size_t numArrayIndices, const
 const TypeDenoter& AliasTypeDenoter::GetAliased() const
 {
     if (aliasDeclRef)
-        return *(aliasDeclRef->GetTypeDenoter());
-    RuntimeErr("missing reference to alias declaration");
+        return aliasDeclRef->GetTypeDenoter()->GetAliased();
+    RuntimeErr("missing reference to type alias '" + ident + "'");
 }
 
 
