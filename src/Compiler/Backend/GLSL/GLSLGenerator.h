@@ -89,13 +89,14 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
-        DECL_VISIT_PROC( StructDecl        );
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( VarType           );
         DECL_VISIT_PROC( VarIdent          );
 
-        DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( VarDecl           );
+        DECL_VISIT_PROC( StructDecl        );
+
+        DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( BufferDeclStmnt   );
         DECL_VISIT_PROC( TextureDeclStmnt  );
         DECL_VISIT_PROC( StructDeclStmnt   );

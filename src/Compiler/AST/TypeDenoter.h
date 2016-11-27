@@ -97,6 +97,9 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Returns either this type denoter or an aliased type.
     virtual const TypeDenoter& GetAliased() const;
 
+    // Returns the number of array dimensions. By default 0.
+    virtual unsigned int NumDimensions() const;
+
     // Returns either this type denoter (if 'arrayDims' is empty), or this type denoter as array with the specified dimension expressions.
     TypeDenoterPtr AsArray(const std::vector<ExprPtr>& arrayDims);
 
@@ -223,6 +226,8 @@ struct AliasTypeDenoter : public TypeDenoter
 
     const TypeDenoter& GetAliased() const override;
 
+    unsigned int NumDimensions() const override;
+
     std::string     ident;                      // Type identifier
     AliasDecl*      aliasDeclRef    = nullptr;  // Reference to the AliasDecl AST node.
 };
@@ -249,6 +254,8 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     // Returns the base type denoter or a new array type denoter with (|arrayDims| - |numArrayIndices|) dimensions.
     TypeDenoterPtr GetWithIndices(std::size_t numArrayIndices, const VarIdent* varIdent);
+
+    unsigned int NumDimensions() const override;
 
     TypeDenoterPtr          baseTypeDenoter;
     std::vector<ExprPtr>    arrayDims;          // Entries may be null

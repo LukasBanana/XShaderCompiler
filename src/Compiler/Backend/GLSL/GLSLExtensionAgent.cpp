@@ -24,6 +24,7 @@ static const GLSLExtension GLSLEXT_GL_ARB_uniform_buffer_object     { "GL_ARB_un
 static const GLSLExtension GLSLEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",       OutputShaderVersion::GLSL400 };
 static const GLSLExtension GLSLEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_language_420pack", OutputShaderVersion::GLSL420 };
 static const GLSLExtension GLSLEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_image_load_store",  OutputShaderVersion::GLSL420 };
+static const GLSLExtension GLSLEXT_GL_ARB_arrays_of_arrays          { "GL_ARB_arrays_of_arrays",         OutputShaderVersion::GLSL430 };
 
 
 /*
@@ -111,6 +112,16 @@ IMPLEMENT_VISIT_PROC(Attribute)
     /* Check for special attributes */
     if (ast->ident == "earlydepthstencil")
         AcquireExtension(GLSLEXT_GL_ARB_shader_image_load_store);
+}
+
+IMPLEMENT_VISIT_PROC(VarDecl)
+{
+    /* Check for arrays of arrays */
+    if (ast->GetTypeDenoter()->NumDimensions() >= 2)
+        AcquireExtension(GLSLEXT_GL_ARB_arrays_of_arrays);
+
+    /* Default visitor */
+    Visitor::VisitVarDecl(ast, args);
 }
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)

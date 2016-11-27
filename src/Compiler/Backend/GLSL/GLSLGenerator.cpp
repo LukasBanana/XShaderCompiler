@@ -322,57 +322,6 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         WriteFunctionCallStandard(ast);
 }
 
-IMPLEMENT_VISIT_PROC(StructDecl)
-{
-    if (!MustResolveStruct(ast))
-    {
-        if (ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput))
-        {
-            /* Write this structure as interface block (if structure doesn't need to be resolved) */
-            BeginLn();
-            {
-                if (ast->flags(StructDecl::isShaderInput))
-                    Write("in ");
-                else
-                    Write("out ");
-                Write(ast->ident);
-            }
-            EndLn();
-
-            OpenScope();
-            {
-                isInsideInterfaceBlock_ = true;
-
-                Visit(ast->members);
-
-                isInsideInterfaceBlock_ = false;
-            }
-            CloseScope();
-
-            WriteLn(ast->aliasName + ";");
-        }
-        else
-        {
-            bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
-
-            /* Write standard structure declaration */
-            BeginLn();
-            {
-                Write("struct");
-                if (!ast->ident.empty())
-                    Write(' ' + ast->ident);
-            }
-            EndLn();
-
-            OpenScope();
-            {
-                WriteStructDeclMembers(ast);
-            }
-            CloseScope(semicolon);
-        }
-    }
-}
-
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     /* Write case header */
@@ -422,6 +371,8 @@ IMPLEMENT_VISIT_PROC(VarIdent)
     }
 }
 
+/* --- Declarations --- */
+
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
     Write(ast->ident);
@@ -431,6 +382,57 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     {
         Write(" = ");
         Visit(ast->initializer);
+    }
+}
+
+IMPLEMENT_VISIT_PROC(StructDecl)
+{
+    if (!MustResolveStruct(ast))
+    {
+        if (ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput))
+        {
+            /* Write this structure as interface block (if structure doesn't need to be resolved) */
+            BeginLn();
+            {
+                if (ast->flags(StructDecl::isShaderInput))
+                    Write("in ");
+                else
+                    Write("out ");
+                Write(ast->ident);
+            }
+            EndLn();
+
+            OpenScope();
+            {
+                isInsideInterfaceBlock_ = true;
+
+                Visit(ast->members);
+
+                isInsideInterfaceBlock_ = false;
+            }
+            CloseScope();
+
+            WriteLn(ast->aliasName + ";");
+        }
+        else
+        {
+            bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
+
+            /* Write standard structure declaration */
+            BeginLn();
+            {
+                Write("struct");
+                if (!ast->ident.empty())
+                    Write(' ' + ast->ident);
+            }
+            EndLn();
+
+            OpenScope();
+            {
+                WriteStructDeclMembers(ast);
+            }
+            CloseScope(semicolon);
+        }
     }
 }
 
