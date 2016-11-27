@@ -20,6 +20,7 @@ namespace Xsc
  */
 
 static const GLSLExtension GLSLEXT_GL_EXT_gpu_shader4               { "GL_EXT_gpu_shader4",              OutputShaderVersion::GLSL130 };
+static const GLSLExtension GLSLEXT_GL_ARB_uniform_buffer_object     { "GL_ARB_uniform_buffer_object",    OutputShaderVersion::GLSL140 };
 static const GLSLExtension GLSLEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",       OutputShaderVersion::GLSL400 };
 static const GLSLExtension GLSLEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_language_420pack", OutputShaderVersion::GLSL420 };
 static const GLSLExtension GLSLEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_image_load_store",  OutputShaderVersion::GLSL420 };
@@ -123,9 +124,21 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     }
 }
 
+IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+{
+    AcquireExtension(GLSLEXT_GL_ARB_uniform_buffer_object);
+
+    /* Check for explicit binding point */
+    if (!ast->registerName.empty())
+        AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
+
+    /* Default visitor */
+    Visitor::VisitBufferDeclStmnt(ast, args);
+}
+
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
-    /* Check for explicit texture binding */
+    /* Check for explicit binding point */
     for (auto& name : ast->textureDecls)
     {
         if (!name->registerName.empty())
