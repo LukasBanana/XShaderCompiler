@@ -61,7 +61,6 @@ CommandFactory::CommandFactory()
     MakeCommand< DumpStatCommand    >();
     MakeCommand< DumpTimesCommand   >();
     MakeCommand< PPOnlyCommand      >();
-    MakeCommand< CommentsCommand    >();
     MakeCommand< MacroCommand       >();
     MakeCommand< PauseCommand       >();
     MakeCommand< PresettingCommand  >();

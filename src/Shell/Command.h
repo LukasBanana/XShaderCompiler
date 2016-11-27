@@ -82,7 +82,6 @@ DECL_SHELL_COMMAND( DumpASTCommand     );
 DECL_SHELL_COMMAND( DumpStatCommand    );
 DECL_SHELL_COMMAND( DumpTimesCommand   );
 DECL_SHELL_COMMAND( PPOnlyCommand      );
-DECL_SHELL_COMMAND( CommentsCommand    );
 DECL_SHELL_COMMAND( MacroCommand       );
 DECL_SHELL_COMMAND( PauseCommand       );
 DECL_SHELL_COMMAND( PresettingCommand  );

@@ -404,30 +404,6 @@ void PPOnlyCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
- * CommentsCommand class
- */
-
-std::vector<Command::Identifier> CommentsCommand::Idents() const
-{
-    return { { "--comments" } };
-}
-
-HelpDescriptor CommentsCommand::Help() const
-{
-    return
-    {
-        "--comments [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables commentaries output kept from the sources; default=" + CommandLine::GetBooleanTrue()
-    };
-}
-
-void CommentsCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.formatting.keepComments = cmdLine.AcceptBoolean(true);
-}
-
-
-/*
  * MacroCommand class
  */
 

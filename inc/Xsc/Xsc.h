@@ -30,7 +30,7 @@ namespace Xsc
 struct Formatting
 {
     //! Indentation string for code generation. By default std::string(4, ' ').
-    std::string indent              = "    ";
+    std::string indent      = "    ";
     
     /**
     \brief Prefix string for name mangling. By default "xsc_".
@@ -40,24 +40,13 @@ struct Formatting
     This prefix is added to all local function variables.
     \todo Remove this option and handle this workaround in an autmatic manner.
     */
-    std::string prefix              = "xsc_";
+    std::string prefix      = "xsc_";
 
     //! True if blanks are allowed. By default true.
-    bool        blanks              = true;
+    bool        blanks      = true;
 
     //! True if line marks are allowed. By default false.
-    bool        lineMarks           = false;
-
-    //! If true, (almost) all comments are kept in the output code. By default true.
-    bool        keepComments        = true;
-
-    #if 0
-    /**
-    If true, open curly braces are put at the end of a line. By default false.
-    \remarks Also called "egyptian brackets" like in Java coding styles.
-    */
-    bool        openBracesAtLineEnd = false;
-    #endif
+    bool        lineMarks   = false;
 };
 
 //! Structure for additional translation options.
