@@ -132,9 +132,8 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     /* Must the initializer type denoter changed? */
     if (ast->initializer)
     {
-        /* Convert expression if cast required */
-        auto varTypeDen = ast->declStmntRef->varType->typeDenoter->Get();
-        ConvertExprIfCastRequired(ast->initializer, *varTypeDen);
+        /* Convert initializer expression if cast required */
+        ConvertExprIfCastRequired(ast->initializer, *ast->GetTypeDenoter()->Get());
     }
 
     /* Default visitor */
@@ -254,6 +253,15 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
     Visitor::VisitLiteralExpr(ast, args);
 }
 
+IMPLEMENT_VISIT_PROC(BinaryExpr)
+{
+    /* Default visitor */
+    Visitor::VisitBinaryExpr(ast, args);
+
+    /* Convert right-hand-side expression if cast required */
+    ConvertExprIfCastRequired(ast->rhsExpr, *ast->lhsExpr->GetTypeDenoter()->Get());
+}
+
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
     /* Is the next sub expression again an unary expression? */
@@ -269,6 +277,18 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 
     /* Default visitor */
     Visitor::VisitUnaryExpr(ast, args);
+}
+
+IMPLEMENT_VISIT_PROC(VarAccessExpr)
+{
+    /* Default visitor */
+    Visitor::VisitVarAccessExpr(ast, args);
+
+    if (ast->assignExpr)
+    {
+        /* Convert assignment expression if cast required */
+        ConvertExprIfCastRequired(ast->assignExpr, *ast->GetTypeDenoter()->Get());
+    }
 }
 
 #undef IMPLEMENT_VISIT_PROC
@@ -387,7 +407,7 @@ void GLSLConverter::RegisterReservedVarIdents(const std::vector<VarDecl*>& varDe
         reservedVarIdents_.push_back(varDecl->ident);
 }
 
-std::unique_ptr<DataType> GLSLConverter::MustCastExprToDataType(TypeDenoter& const targetTypeDen, TypeDenoter& const sourceTypeDen)
+std::unique_ptr<DataType> GLSLConverter::MustCastExprToDataType(TypeDenoter& targetTypeDen, TypeDenoter& sourceTypeDen)
 {
     if (auto baseTargetTypeDen = targetTypeDen.As<BaseTypeDenoter>())
     {
@@ -410,7 +430,7 @@ std::unique_ptr<DataType> GLSLConverter::MustCastExprToDataType(TypeDenoter& con
     return nullptr;
 }
 
-void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, TypeDenoter& const targetTypeDen)
+void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, TypeDenoter& targetTypeDen)
 {
     if (auto dataType = MustCastExprToDataType(targetTypeDen, *expr->GetTypeDenoter()->Get()))
     {

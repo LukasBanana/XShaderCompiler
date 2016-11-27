@@ -54,7 +54,9 @@ class GLSLConverter : public Visitor
         DECL_VISIT_PROC( ExprStmnt        );
 
         DECL_VISIT_PROC( LiteralExpr      );
+        DECL_VISIT_PROC( BinaryExpr       );
         DECL_VISIT_PROC( UnaryExpr        );
+        DECL_VISIT_PROC( VarAccessExpr    );
 
         /* --- Helper functions for conversion --- */
 
@@ -97,10 +99,10 @@ class GLSLConverter : public Visitor
         void RegisterReservedVarIdents(const std::vector<VarDecl*>& varDecls);
 
         // Returns the data type to which an expression must be casted, if the target type denoter and the source type denoter are incompatible in GLSL.
-        std::unique_ptr<DataType> MustCastExprToDataType(TypeDenoter& const targetTypeDen, TypeDenoter& const sourceTypeDen);
+        std::unique_ptr<DataType> MustCastExprToDataType(TypeDenoter& targetTypeDen, TypeDenoter& sourceTypeDen);
 
         // Converts the expression to a cast expression if it is required for the specified target type.
-        void ConvertExprIfCastRequired(ExprPtr& expr, TypeDenoter& const targetTypeDen);
+        void ConvertExprIfCastRequired(ExprPtr& expr, TypeDenoter& targetTypeDen);
 
         /* === Members === */
 
