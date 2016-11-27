@@ -106,20 +106,20 @@ class GLSLConverter : public Visitor
 
         /* === Members === */
 
-        ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
+        ShaderTarget            shaderTarget_       = ShaderTarget::VertexShader;
 
-        std::string                 nameManglingPrefix_;
+        std::string             nameManglingPrefix_;
 
         /*
-        List of all reserved variable identifiers that come from a structure that must be resolved.
+        List of all variables with reserved identifiers that come from a structure that must be resolved.
         If a local variable uses a name from this list, it name must be modified with name mangling.
         */
-        std::vector<std::string>    reservedVarIdents_;
+        std::vector<VarDecl*>   reservedVarDecls_;
 
-        unsigned int                structDeclLevel_    = 0;
+        unsigned int            structDeclLevel_    = 0;
 
         // True if AST traversal is currently inside the main entry point (or its sub nodes).
-        bool                        isInsideEntryPoint_ = false;
+        bool                    isInsideEntryPoint_ = false;
 
 };
 

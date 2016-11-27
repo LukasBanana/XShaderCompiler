@@ -40,7 +40,21 @@ void GLSLConverter::Convert(
 
 IMPLEMENT_VISIT_PROC(Program)
 {
-    /* Register all input and output semantic variables are reserved identifiers */
+    /* Register all input and output semantic variables as reserved identifiers */
+    switch (shaderTarget_)
+    {
+        case ShaderTarget::VertexShader:
+            RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefs);
+            break;
+        case ShaderTarget::FragmentShader:
+            RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefs);
+            break;
+        case ShaderTarget::ComputeShader:
+            RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefs);
+            RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefs);
+            break;
+    }
+
     RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefsSV);
     RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefsSV);
 
@@ -328,10 +342,19 @@ bool GLSLConverter::MustResolveStruct(StructDecl* ast) const
 bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
 {
     /* Variable must be renamed if it's not inside a structure declaration and its name is reserved */
-    return (
+    return
+    (
         !IsInsideStructDecl() &&
         !ast->flags(VarDecl::isShaderInput) &&
-        std::find(reservedVarIdents_.begin(), reservedVarIdents_.end(), ast->ident) != reservedVarIdents_.end()
+        (
+            std::find_if(
+                reservedVarDecls_.begin(), reservedVarDecls_.end(),
+                [ast](VarDecl* varDecl)
+                {
+                    return (varDecl != ast && varDecl->ident == ast->ident);
+                }
+            ) != reservedVarDecls_.end()
+        )
     );
 }
 
@@ -339,6 +362,7 @@ void GLSLConverter::RenameVarDecl(VarDecl* ast)
 {
     /* Set new identifier for this variable */
     ast->ident = nameManglingPrefix_ + ast->ident;
+    ast->flags << VarDecl::wasRenamed;
 }
 
 bool GLSLConverter::HasVarDeclOfVarIdentSystemSemantic(VarIdent* varIdent) const
@@ -404,7 +428,14 @@ void GLSLConverter::MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt)
 void GLSLConverter::RegisterReservedVarIdents(const std::vector<VarDecl*>& varDecls)
 {
     for (auto& varDecl : varDecls)
-        reservedVarIdents_.push_back(varDecl->ident);
+    {
+        /* Also new variables for reserved identifiers must be renamed if the name is already reserved */
+        if (MustRenameVarDecl(varDecl))
+            RenameVarDecl(varDecl);
+
+        /* Add variable to reserved identifiers */
+        reservedVarDecls_.push_back(varDecl);
+    }
 }
 
 std::unique_ptr<DataType> GLSLConverter::MustCastExprToDataType(TypeDenoter& targetTypeDen, TypeDenoter& sourceTypeDen)

@@ -343,6 +343,7 @@ struct VarDecl : public Decl
         FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
         FLAG( isSystemValue,    2 ), // This variable is a system value.
         FLAG( disableCodeGen,   3 ), // Disables the code generation for this variable declaration.
+        FLAG( wasRenamed,       4 ), // This variable was renamed by a converter visitor.
 
         isShaderInputSV     = (isShaderInput  | isSystemValue), // This variable a used as shader input, and it is a system value.
         isShaderOutputSV    = (isShaderOutput | isSystemValue), // This variable a used as shader output, and it is a system value.
