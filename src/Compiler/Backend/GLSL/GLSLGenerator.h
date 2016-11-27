@@ -55,11 +55,14 @@ class GLSLGenerator : public Generator
         void Line(const TokenPtr& tkn);
         void Line(const AST* ast);
 
-        // Writes a new extensions
-        void AppendExtension(const std::string& extensionName);
-        void AppendRequiredExtensions(Program& ast);
-        void AppendAllReferencedIntrinsics(Program& ast);
-        void AppendClipIntrinsics();
+        // Writes the specified extension with ": enable"
+        void WriteExtension(const std::string& extensionName);
+
+        // Write GLSL version and required extensions
+        void WriteVersionAndExtensions(Program& ast);
+
+        void WriteReferencedIntrinsics(Program& ast);
+        void WriteClipIntrinsics();
 
         // Opens a new scope with '{'.
         void OpenScope();
@@ -175,7 +178,8 @@ class GLSLGenerator : public Generator
         /* === Members === */
 
         ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;
-        OutputShaderVersion     versionOut_             = OutputShaderVersion::GLSL330;
+        OutputShaderVersion     versionOut_             = OutputShaderVersion::GLSL;
+        bool                    allowExtensions_        = false;
         bool                    allowLineMarks_         = true;
         Statistics*             stats_                  = nullptr;
 

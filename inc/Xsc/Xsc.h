@@ -64,19 +64,22 @@ struct Formatting
 struct Options
 {
     //! True if warnings are allowed. By default false.
-    bool warnings       = false;
+    bool warnings           = false;
 
     //! If true, little code optimizations are performed. By default false.
-    bool optimize       = false;
+    bool optimize           = false;
 
-    //! If true, only the preprocessed source code will be written out.
-    bool preprocessOnly = false;
+    //! If true, only the preprocessed source code will be written out. By default false.
+    bool preprocessOnly     = false;
+
+    //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
+    bool allowExtensions    = false;
 
     //! If true, the abstract syntax tree (AST) will be written to the log output. By default false.
-    bool dumpAST        = false;
+    bool dumpAST            = false;
 
-    //! If true, the timings of the different compilation processes are written to the log output.
-    bool dumpTimes      = false;
+    //! If true, the timings of the different compilation processes are written to the log output. By default false.
+    bool dumpTimes          = false;
 };
 
 //! Structure for shader output statistics (e.g. texture/buffer binding points).
@@ -138,8 +141,8 @@ struct ShaderOutput
     //! Specifies the output stream. This will contain the output GLSL code. This must not be null when passed to the "CompileShader" functino!
     std::ostream*       sourceCode      = nullptr;
 
-    //! Specifies the output shader version (e.g. for "GLSL 1.20" use 'OutputShaderVersion::GLSL120'). By default OutputShaderVersion::GLSL330.
-    OutputShaderVersion shaderVersion   = OutputShaderVersion::GLSL330;
+    //! Specifies the output shader version. By default OutputShaderVersion::GLSL (to auto-detect minimum required version).
+    OutputShaderVersion shaderVersion   = OutputShaderVersion::GLSL;
 
     //! Output code formatting descriptor.
     Formatting          formatting;

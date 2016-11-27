@@ -23,25 +23,9 @@ namespace Xsc
 {
 
 
-XSC_EXPORT std::string TargetToString(const ShaderTarget target)
-{
-    switch (target)
-    {
-        case ShaderTarget::VertexShader:
-            return "Vertex Shader";
-        case ShaderTarget::FragmentShader:
-            return "Fragment Shader";
-        case ShaderTarget::GeometryShader:
-            return "Geometry Shader";
-        case ShaderTarget::TessellationControlShader:
-            return "Tessellation-Control Shader";
-        case ShaderTarget::TessellationEvaluationShader:
-            return "Tessellation-Evaluation Shader";
-        case ShaderTarget::ComputeShader:
-            return "Compute Shader";
-    }
-    return "";
-}
+/*
+ * Internal functions
+ */
 
 using Time      = std::chrono::system_clock;
 using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
@@ -137,6 +121,11 @@ static bool CompileShaderPrimary(
     return true;
 }
 
+
+/*
+ * Public functions
+ */
+
 XSC_EXPORT bool CompileShader(const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log)
 {
     std::array<TimePoint, 6> timePoints;
@@ -180,6 +169,52 @@ XSC_EXPORT bool CompileShader(const ShaderInput& inputDesc, const ShaderOutput& 
     }
 
     return result;
+}
+
+XSC_EXPORT std::string TargetToString(const ShaderTarget target)
+{
+    switch (target)
+    {
+        case ShaderTarget::VertexShader:                    return "Vertex Shader";
+        case ShaderTarget::FragmentShader:                  return "Fragment Shader";
+        case ShaderTarget::GeometryShader:                  return "Geometry Shader";
+        case ShaderTarget::TessellationControlShader:       return "Tessellation-Control Shader";
+        case ShaderTarget::TessellationEvaluationShader:    return "Tessellation-Evaluation Shader";
+        case ShaderTarget::ComputeShader:                   return "Compute Shader";
+    }
+    return "";
+}
+
+XSC_EXPORT std::string ShaderVersionToString(const InputShaderVersion shaderVersion)
+{
+    switch (shaderVersion)
+    {
+        case InputShaderVersion::HLSL3: return "HLSL 3.0";
+        case InputShaderVersion::HLSL4: return "HLSL 4.0";
+        case InputShaderVersion::HLSL5: return "HLSL 5.0";
+    }
+    return "";
+}
+
+XSC_EXPORT std::string ShaderVersionToString(const OutputShaderVersion shaderVersion)
+{
+    switch (shaderVersion)
+    {
+        case OutputShaderVersion::GLSL110:  return "GLSL 1.10";
+        case OutputShaderVersion::GLSL120:  return "GLSL 1.20";
+        case OutputShaderVersion::GLSL130:  return "GLSL 1.30";
+        case OutputShaderVersion::GLSL140:  return "GLSL 1.40";
+        case OutputShaderVersion::GLSL150:  return "GLSL 1.50";
+        case OutputShaderVersion::GLSL330:  return "GLSL 3.30";
+        case OutputShaderVersion::GLSL400:  return "GLSL 4.00";
+        case OutputShaderVersion::GLSL410:  return "GLSL 4.10";
+        case OutputShaderVersion::GLSL420:  return "GLSL 4.20";
+        case OutputShaderVersion::GLSL430:  return "GLSL 4.30";
+        case OutputShaderVersion::GLSL440:  return "GLSL 4.40";
+        case OutputShaderVersion::GLSL450:  return "GLSL 4.50";
+        case OutputShaderVersion::GLSL:     return "GLSL";
+    }
+    return "";
 }
 
 

@@ -24,8 +24,8 @@ namespace Xsc
 // GLSL extension type with name and minimum required GLSL version.
 struct GLSLExtension
 {
-    std::string extensionName;
-    int         requiredVersion;
+    std::string         extensionName;
+    OutputShaderVersion requiredVersion;
 };
 
 // GLSL extension agent visitor. Determines which GLSL extension are required for a given GLSL target version.
@@ -37,7 +37,9 @@ class GLSLExtensionAgent : private Visitor
         GLSLExtensionAgent();
 
         // Returns a set of strings with all required extensions for the specified program and target output GLSL version.
-        std::set<std::string> DetermineRequiredExtensions(Program& program, const OutputShaderVersion targetGLSLVersion);
+        std::set<std::string> DetermineRequiredExtensions(
+            Program& program, OutputShaderVersion& targetGLSLVersion, bool allowExtensions
+        );
 
     private:
         
@@ -58,8 +60,14 @@ class GLSLExtensionAgent : private Visitor
 
         /* === Members === */
 
-        // Target output GLSL version number.
-        int                                 targetGLSLVersion_  = 0;
+        // Target output GLSL version.
+        OutputShaderVersion                 targetGLSLVersion_  = OutputShaderVersion::GLSL330;
+
+        // Minimum required GLSL version.
+        OutputShaderVersion                 minGLSLVersion_     = OutputShaderVersion::GLSL130;
+
+        // GLSL extension output support.
+        bool                                allowExtensions_    = false;
 
         // Resulting set of required GLSL extensions.
         std::set<std::string>               extensions_;
