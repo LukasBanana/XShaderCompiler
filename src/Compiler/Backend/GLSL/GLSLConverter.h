@@ -10,6 +10,7 @@
 
 
 #include "Visitor.h"
+#include "TypeDenoter.h"
 #include <Xsc/Targets.h>
 #include <functional>
 #include <set>
@@ -94,6 +95,12 @@ class GLSLConverter : public Visitor
 
         // Registers the all specified variables as reserved identifiers.
         void RegisterReservedVarIdents(const std::vector<VarDecl*>& varDecls);
+
+        // Returns the data type to which an expression must be casted, if the target type denoter and the source type denoter are incompatible in GLSL.
+        std::unique_ptr<DataType> MustCastExprToDataType(TypeDenoter& const targetTypeDen, TypeDenoter& const sourceTypeDen);
+
+        // Converts the expression to a cast expression if it is required for the specified target type.
+        void ConvertExprIfCastRequired(ExprPtr& expr, TypeDenoter& const targetTypeDen);
 
         /* === Members === */
 

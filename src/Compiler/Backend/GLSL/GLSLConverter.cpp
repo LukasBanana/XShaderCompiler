@@ -129,6 +129,14 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     if (MustRenameVarDecl(ast))
         RenameVarDecl(ast);
 
+    /* Must the initializer type denoter changed? */
+    if (ast->initializer)
+    {
+        /* Convert expression if cast required */
+        auto varTypeDen = ast->declStmntRef->varType->typeDenoter->Get();
+        ConvertExprIfCastRequired(ast->initializer, *varTypeDen);
+    }
+
     /* Default visitor */
     Visitor::VisitVarDecl(ast, args);
 }
@@ -377,6 +385,38 @@ void GLSLConverter::RegisterReservedVarIdents(const std::vector<VarDecl*>& varDe
 {
     for (auto& varDecl : varDecls)
         reservedVarIdents_.push_back(varDecl->ident);
+}
+
+std::unique_ptr<DataType> GLSLConverter::MustCastExprToDataType(TypeDenoter& const targetTypeDen, TypeDenoter& const sourceTypeDen)
+{
+    if (auto baseTargetTypeDen = targetTypeDen.As<BaseTypeDenoter>())
+    {
+        if (auto baseSourceTypeDen = sourceTypeDen.As<BaseTypeDenoter>())
+        {
+            if (baseTargetTypeDen->dataType == DataType::UInt)
+            {
+                /* Cast to 'uint' */
+                if (baseSourceTypeDen->dataType == DataType::Int)
+                    return MakeUnique<DataType>(DataType::UInt);
+            }
+            else if (baseTargetTypeDen->dataType == DataType::Int)
+            {
+                /* Cast to 'int' */
+                if (baseSourceTypeDen->dataType == DataType::UInt)
+                    return MakeUnique<DataType>(DataType::Int);
+            }
+        }
+    }
+    return nullptr;
+}
+
+void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, TypeDenoter& const targetTypeDen)
+{
+    if (auto dataType = MustCastExprToDataType(targetTypeDen, *expr->GetTypeDenoter()->Get()))
+    {
+        /* Convert to cast expression with target data type if required */
+        expr = ASTFactory::MakeBaseTypeCastExpr(*dataType, expr);
+    }
 }
 
 

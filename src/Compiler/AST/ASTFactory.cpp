@@ -58,17 +58,17 @@ FunctionCallExprPtr MakeIntrinsicCallExpr(
     const Intrinsic intrinsic, const std::string& ident, const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments)
 {
     auto ast = MakeShared<FunctionCallExpr>(SourcePosition::ignore);
-
-    auto funcCall = MakeShared<FunctionCall>(SourcePosition::ignore);
-
-    funcCall->varIdent          = MakeShared<VarIdent>(SourcePosition::ignore);
-    funcCall->varIdent->ident   = ident;
-    funcCall->typeDenoter       = typeDenoter;
-    funcCall->arguments         = arguments;
-    funcCall->intrinsic         = intrinsic;
-
-    ast->call = funcCall;
-
+    {
+        auto funcCall = MakeShared<FunctionCall>(SourcePosition::ignore);
+        {
+            funcCall->varIdent          = MakeShared<VarIdent>(SourcePosition::ignore);
+            funcCall->varIdent->ident   = ident;
+            funcCall->typeDenoter       = typeDenoter;
+            funcCall->arguments         = arguments;
+            funcCall->intrinsic         = intrinsic;
+        }
+        ast->call = funcCall;
+    }
     return ast;
 }
 
@@ -119,17 +119,27 @@ ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall)
 CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue)
 {
     auto ast = MakeShared<CastExpr>(SourcePosition::ignore);
+    {
+        auto literalExpr = MakeShared<LiteralExpr>(SourcePosition::ignore);
+        {
+            literalExpr->dataType   = literalType;
+            literalExpr->value      = literalValue;
+        }
+        ast->typeExpr               = MakeShared<TypeNameExpr>(SourcePosition::ignore);
+        ast->typeExpr->typeDenoter  = typeDenoter;
+        ast->expr                   = literalExpr;
+    }
+    return ast;
+}
 
-    auto typeExpr = MakeShared<TypeNameExpr>(SourcePosition::ignore);
-    typeExpr->typeDenoter = typeDenoter;
-
-    auto literalExpr = MakeShared<LiteralExpr>(SourcePosition::ignore);
-    literalExpr->dataType   = literalType;
-    literalExpr->value      = literalValue;
-
-    ast->typeExpr   = typeExpr;
-    ast->expr       = literalExpr;
-
+CastExprPtr MakeBaseTypeCastExpr(const DataType dataType, const ExprPtr& subExpr)
+{
+    auto ast = MakeShared<CastExpr>(subExpr->area);
+    {
+        ast->typeExpr               = MakeShared<TypeNameExpr>(SourcePosition::ignore);
+        ast->typeExpr->typeDenoter  = MakeShared<BaseTypeDenoter>(dataType);
+        ast->expr                   = subExpr;
+    }
     return ast;
 }
 

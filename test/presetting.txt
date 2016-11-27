@@ -17,6 +17,9 @@
 #[NameMangling1]
 #--dump-ast -T compute -E CS -o output/NameMangling1.CS.glsl NameMangling1.hlsl
 
+[ExprTest4 VS]
+--dump-ast -T vertex -E VS -o output/ExprTest4.VS.glsl ExprTest4.hlsl
+
 #[ExprTest3 VS]
 #--dump-ast -T vertex -E VS -o output/ExprTest3.VS.glsl ExprTest3.hlsl
 
@@ -35,14 +38,14 @@
 #[ssct_reflect PS]
 #--dump-times --dump-stat -T fragment -E PS -O -I "../../misc/ssct_shader/" -o "../../misc/ssct_shader/ssct_reflect.PS.frag" "../../misc/ssct_shader/ssct_reflect.hlsl"
 
-[TestShader1.hlsl VS]
--T vertex -E VS -O -o output/TestShader1.VS.glsl TestShader1.hlsl
+#[TestShader1.hlsl VS]
+#-T vertex -E VS -O -o output/TestShader1.VS.glsl TestShader1.hlsl
 
-[TestShader1.hlsl PS]
--T fragment -E PS -O -o output/TestShader1.PS.glsl TestShader1.hlsl
+#[TestShader1.hlsl PS]
+#-T fragment -E PS -O -o output/TestShader1.PS.glsl TestShader1.hlsl
 
-[TestShader1.hlsl CS]
--T compute -E CS -O -o output/TestShader1.CS.glsl TestShader1.hlsl
+#[TestShader1.hlsl CS]
+#-T compute -E CS -O -o output/TestShader1.CS.glsl TestShader1.hlsl
 
 #[PPTest1.hlsl Vertex]
 #-T vertex -E VS -O -o output/PPTest1.VS.glsl PPTest1.hlsl
