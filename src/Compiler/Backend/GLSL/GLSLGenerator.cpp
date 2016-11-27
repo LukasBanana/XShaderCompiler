@@ -585,12 +585,15 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
     if (!ast->structDecl->flags(AST::isReachable))
         return;
 
-    Line(ast);
+    if (!MustResolveStruct(ast->structDecl.get()))
+    {
+        Line(ast);
 
-    bool semicolon = true;
-    Visit(ast->structDecl, &semicolon);
+        bool semicolon = true;
+        Visit(ast->structDecl, &semicolon);
 
-    Blank();
+        Blank();
+    }
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
