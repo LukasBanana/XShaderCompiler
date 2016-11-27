@@ -169,7 +169,10 @@ class GLSLGenerator : public Generator
         bool HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const;
 
         void WriteArrayDims(const std::vector<ExprPtr>& arrayDims);
-        void WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast);
+        
+        void WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast = nullptr);
+
+        //void WriteTypeDenoterCastProc(const TypeDenoter& targetTypeDenoter, const TypeDenoter& sourceTypeDenoter, const AST* ast = nullptr);
 
         void AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax = ~0);
 
@@ -186,6 +189,8 @@ class GLSLGenerator : public Generator
         bool                    allowExtensions_        = false;
         bool                    allowLineMarks_         = true;
         Statistics*             stats_                  = nullptr;
+
+        std::string             nameManglingPrefix_;
 
         // True if AST traversal is currently inside the main entry point (or its sub nodes).
         bool                    isInsideEntryPoint_     = false;
