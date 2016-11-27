@@ -209,7 +209,7 @@ static std::map<Semantic, GLSLSemanticDescriptor> GenerateSemanticMap()
         { T::DepthGreaterEqual,      { "gl_FragDepth"                 } }, // layout(depth_greater) out float gl_FragDepth;
         { T::DepthLessEqual,         { "gl_FragDepth"                 } }, // layout(depth_less) out float gl_FragDepth;
         { T::DispatchThreadID,       { "gl_GlobalInvocationID"        } },
-        { T::DomainLocation,         { "gl_TessCord"                  } },
+        { T::DomainLocation,         { "gl_TessCoord"                 } },
         { T::GroupID,                { "gl_WorkGroupID"               } },
         { T::GroupIndex,             { "gl_LocalInvocationIndex"      } },
         { T::GroupThreadID,          { "gl_LocalInvocationID"         } },
