@@ -143,6 +143,21 @@ CastExprPtr MakeBaseTypeCastExpr(const DataType dataType, const ExprPtr& subExpr
     return ast;
 }
 
+AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident)
+{
+    auto ast = MakeShared<AliasDeclStmnt>(SourcePosition::ignore);
+    {
+        auto aliasDecl = MakeShared<AliasDecl>(SourcePosition::ignore);
+        {
+            aliasDecl->ident        = ident;
+            aliasDecl->typeDenoter  = MakeShared<BaseTypeDenoter>(dataType);
+            aliasDecl->declStmntRef = ast.get();
+        }
+        ast->aliasDecls.push_back(aliasDecl);
+    }
+    return ast;
+}
+
 
 } // /namespace ASTFactory
 

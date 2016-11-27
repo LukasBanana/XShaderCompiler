@@ -83,6 +83,12 @@ class HLSLParser : public Parser
         // Returns true if the specified identifier is a valid type name within the current scope.
         bool IsRegisteredTypeName(const std::string& ident) const;
 
+        // Makes a new alias declaration statement and registers it's identifier in the symbol table.
+        AliasDeclStmntPtr MakeAndRegisterAliasDeclStmnt(const DataType dataType, const std::string& ident);
+
+        // Generates all pre defined type aliases (e.g. 'typedef int DWORD').
+        void GeneratePreDefinedTypeAliases(Program& ast);
+
         /* ----- Parsing ----- */
 
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);

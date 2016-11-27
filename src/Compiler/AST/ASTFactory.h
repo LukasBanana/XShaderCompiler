@@ -38,6 +38,8 @@ CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataTyp
 
 CastExprPtr MakeBaseTypeCastExpr(const DataType dataType, const ExprPtr& subExpr);
 
+AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident);
+
 
 } // /namespace ASTFactory
 

@@ -10,6 +10,7 @@
 #include "ConstExprEvaluator.h"
 #include "Helper.h"
 #include "AST.h"
+#include "ASTFactory.h"
 
 
 namespace Xsc
@@ -185,6 +186,35 @@ bool HLSLParser::IsRegisteredTypeName(const std::string& ident) const
     return typeNameSymbolTable_.Fetch(ident);
 }
 
+AliasDeclStmntPtr HLSLParser::MakeAndRegisterAliasDeclStmnt(const DataType dataType, const std::string& ident)
+{
+    auto ast = ASTFactory::MakeBaseTypeAlias(dataType, ident);
+    RegisterTypeName(ident);
+    return ast;
+}
+
+void HLSLParser::GeneratePreDefinedTypeAliases(Program& ast)
+{
+    static const std::vector<std::pair<DataType, std::string>> preDefinedTypes
+    {
+        { DataType::Int,          "DWORD"        },
+        { DataType::Float,        "FLOAT"        },
+        { DataType::Float4,       "VECTOR"       },
+        { DataType::Float4x4,     "MATRIX"       },
+        { DataType::String,       "STRING"       },
+      //{ DataType::Texture,      "TEXTURE"      },
+      //{ DataType::PixelShader,  "PIXELSHADER"  },
+      //{ DataType::VertexShader, "VERTEXSHADER" },
+    };
+
+    for (const auto& type : preDefinedTypes)
+    {
+        ast.globalStmnts.push_back(
+            MakeAndRegisterAliasDeclStmnt(type.first, type.second)
+        );
+    }
+}
+
 /* ------- Parse functions ------- */
 
 ProgramPtr HLSLParser::ParseProgram(const SourceCodePtr& source)
@@ -192,6 +222,9 @@ ProgramPtr HLSLParser::ParseProgram(const SourceCodePtr& source)
     auto ast = Make<Program>();
 
     OpenScope();
+
+    /* Generate pre-defined typedef-statements */
+    GeneratePreDefinedTypeAliases(*ast);
 
     /* Keep reference to preprocessed source code */
     ast->sourceCode = source;
@@ -564,7 +597,6 @@ AliasDeclPtr HLSLParser::ParseAliasDecl(TypeDenoterPtr typeDenoter)
     auto ast = Make<AliasDecl>();
 
     /* Parse alias identifier */
-    auto identTkn = Tkn();
     ast->ident = ParseIdent();
 
     /* Register type name in symbol table */

@@ -19,12 +19,11 @@ matrix<float, 3, 3> f1()
 	return (float3x3)0;
 }
 
-typedef int DWORD;
-typedef int DWORD;
+/*typedef int DWORD;
 typedef float FLOAT; 
 typedef vector <float, 4> VECTOR;
 typedef matrix <float, 4, 4> MATRIX;
-typedef string STRING;
+typedef string STRING;*/
 //typedef texture TEXTURE;
 //typedef pixelshader PIXELSHADER;
 //typedef vertexshader VERTEXSHADER;
