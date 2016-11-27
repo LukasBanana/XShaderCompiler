@@ -291,10 +291,10 @@ IMPLEMENT_VISIT_PROC(Program)
     /* Append default helper macros and functions */
     WriteReferencedIntrinsics(*ast);
 
-    if (shaderTarget_ == ShaderTarget::FragmentShader)
-        WriteFragmentShaderOutput();
-
-    WriteGlobalInputSemantics();
+    if (shaderTarget_ == ShaderTarget::VertexShader)
+        WriteGlobalInputSemantics();
+    else if (shaderTarget_ == ShaderTarget::FragmentShader)
+        WriteGlobalOutputSemantics();
 
     Visit(ast->globalStmnts);
 }
@@ -1105,6 +1105,41 @@ bool GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
     return false;
 }
 
+void GLSLGenerator::WriteGlobalOutputSemantics()
+{
+    auto& varDeclRefs = GetProgram()->entryPointRef->outputSemantics.varDeclRefs;
+
+    bool paramsWritten = false;
+
+    for (auto varDecl : varDeclRefs)
+    {
+        if (WriteGlobalOutputSemanticsVarDecl(varDecl))
+            paramsWritten = true;
+    }
+
+    if (paramsWritten)
+        Blank();
+}
+
+bool GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl)
+{
+    /* Write global variable definition statement */
+    BeginLn();
+    {
+        if (auto varSemantic = varDecl->FirstSemantic())
+            Write("layout(location = " + std::to_string(varSemantic->semantic.Index()) + ") out ");
+        else
+            Write("out ");
+
+        Visit(varDecl->declStmntRef->varType);
+
+        Write(" " + varDecl->ident + ";");
+    }
+    EndLn();
+
+    return true;
+}
+
 void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
 {
     #if 0
@@ -1170,11 +1205,11 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
         Error("missing output semantic", ast);
 }
 
+#if 0
+
 //TODO: refactor this function
 void GLSLGenerator::WriteFragmentShaderOutput()
 {
-    #if 0
-
     auto& outp = GetProgram()->outputSemantics;
 
     if (outp.returnType->symbolRef || outp.returnType->structDecl)
@@ -1228,9 +1263,9 @@ void GLSLGenerator::WriteFragmentShaderOutput()
     }
 
     Blank();
-
-    #endif
 }
+
+#endif
 
 void GLSLGenerator::WriteStructDeclMembers(StructDecl* ast)
 {

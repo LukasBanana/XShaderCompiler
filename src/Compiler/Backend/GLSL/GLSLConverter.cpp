@@ -107,6 +107,13 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     PopStructDeclLevel();
 }
 
+IMPLEMENT_VISIT_PROC(VarSemantic)
+{
+    /* Convert fragment target to user defined semantic, because gl_FragData is only available for GLSL 1.10 */
+    if (ast->semantic == Semantic::Target)
+        ast->semantic = Semantic::UserDefined;
+}
+
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
     /* Has the variable identifier a next identifier? */
