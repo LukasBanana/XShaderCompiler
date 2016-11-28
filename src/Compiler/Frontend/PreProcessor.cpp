@@ -312,9 +312,20 @@ TokenPtrString PreProcessor::ParseIdentAsTokenString()
             /* Perform macro expansion */
             auto& macro = *it->second;
             if (!macro.parameters.empty())
+            {
+                /* Replace identifier to macro with arguments */
                 tokenString.PushBack(ParseIdentArgumentsForMacro(identTkn, macro));
+            }
+            else if (macro.tokenString.Empty())
+            {
+                /* Replace identifier with single blank to avoid parsing problems in next pass */
+                tokenString.PushBack(Make<Token>(Tokens::WhiteSpaces, " "));
+            }
             else
+            {
+                /* Replace identifier with macro value */
                 tokenString.PushBack(macro.tokenString);
+            }
         }
         else
             tokenString.PushBack(identTkn);
