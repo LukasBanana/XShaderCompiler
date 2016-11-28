@@ -922,9 +922,20 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
 
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
-    Visit(ast->expr);
-    Write(".");
-    Visit(ast->varIdent);
+    /* Is the sub expression a literal expression? */
+    if (auto literalExpr = ast->expr->As<LiteralExpr>())
+    {
+        WriteDataType(SubscriptDataType(literalExpr->dataType, ast->varIdent->ident), ast);
+        Write("(");
+        Visit(literalExpr);
+        Write(")");
+    }
+    else
+    {
+        Visit(ast->expr);
+        Write(".");
+        Visit(ast->varIdent);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
@@ -1397,6 +1408,19 @@ void GLSLGenerator::WriteArrayDims(const std::vector<ExprPtr>& arrayDims)
     }
 }
 
+void GLSLGenerator::WriteDataType(DataType dataType, const AST* ast)
+{
+    /* Replace doubles with floats, if doubles are not supported */
+    if (versionOut_ < OutputShaderVersion::GLSL400)
+        dataType = DoubleToFloatDataType(dataType);
+
+    /* Map GLSL data type */
+    if (auto keyword = DataTypeToGLSLKeyword(dataType))
+        Write(*keyword);
+    else
+        Error("failed to map data type to GLSL keyword", ast);
+}
+
 void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast)
 {
     try
@@ -1406,24 +1430,18 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* 
             /* Just write void type */
             Write("void");
         }
-        else if (typeDenoter.IsBase())
+        else if (auto baseTypeDen = typeDenoter.As<BaseTypeDenoter>())
         {
             /* Map GLSL base type */
-            auto& baseTypeDen = static_cast<const BaseTypeDenoter&>(typeDenoter);
-            if (auto keyword = DataTypeToGLSLKeyword(baseTypeDen.dataType))
-                Write(*keyword);
-            else
-                Error("failed to map data type to GLSL keyword", ast);
+            WriteDataType(baseTypeDen->dataType, ast);
         }
-        else if (typeDenoter.IsTexture())
+        else if (auto textureTypeDen = typeDenoter.As<TextureTypeDenoter>())
         {
-            auto& textureTypeDen = static_cast<const TextureTypeDenoter&>(typeDenoter);
-        
             /* Get texture type */
-            auto textureType = textureTypeDen.textureType;
+            auto textureType = textureTypeDen->textureType;
             if (textureType == BufferType::Undefined)
             {
-                if (auto texDecl = textureTypeDen.textureDeclRef)
+                if (auto texDecl = textureTypeDen->textureDeclRef)
                     textureType = texDecl->declStmntRef->textureType;
                 else
                     Error("missing reference to texture type denoter", ast);
@@ -1445,12 +1463,11 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* 
             /* Write aliased type denoter */
             WriteTypeDenoter(typeDenoter.GetAliased(), ast);
         }
-        else if (typeDenoter.IsArray())
+        else if (auto arrayTypeDen = typeDenoter.As<ArrayTypeDenoter>())
         {
             /* Write array type denoter */
-            auto& arrayTypeDen = static_cast<const ArrayTypeDenoter&>(typeDenoter);
-            WriteTypeDenoter(*arrayTypeDen.baseTypeDenoter, ast);
-            WriteArrayDims(arrayTypeDen.arrayDims);
+            WriteTypeDenoter(*arrayTypeDen->baseTypeDenoter, ast);
+            WriteArrayDims(arrayTypeDen->arrayDims);
         }
         else
             Error("failed to determine GLSL data type", ast);

@@ -170,6 +170,7 @@ class GLSLGenerator : public Generator
 
         void WriteArrayDims(const std::vector<ExprPtr>& arrayDims);
         
+        void WriteDataType(DataType dataType, const AST* ast = nullptr);
         void WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast = nullptr);
 
         //void WriteTypeDenoterCastProc(const TypeDenoter& targetTypeDenoter, const TypeDenoter& sourceTypeDenoter, const AST* ast = nullptr);

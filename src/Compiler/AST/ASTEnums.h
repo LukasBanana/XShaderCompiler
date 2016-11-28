@@ -252,6 +252,9 @@ DataType SubscriptDataType(const DataType dataType, const std::string& subscript
 // Returns the data type for the specified literal token (BoolLiteral, IntLiteral, FloatLiteral, and StringLiteral).
 DataType TokenToDataType(const Token& tkn);
 
+// Returns the data type as non-double (i.e. replaces doubles by floats).
+DataType DoubleToFloatDataType(const DataType dataType);
+
 
 /* ----- StorageClass Enum ----- */
 

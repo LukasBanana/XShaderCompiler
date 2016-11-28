@@ -109,6 +109,13 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     {
         return (Type() == T::classType ? static_cast<T*>(this) : nullptr);
     }
+
+    // Returns this constant type denoter as the specified sub class if this type denoter has the correct type. Otherwise, null is returned.
+    template <typename T>
+    const T* As() const
+    {
+        return (Type() == T::classType ? static_cast<const T*>(this) : nullptr);
+    }
 };
 
 // Void type denoter.

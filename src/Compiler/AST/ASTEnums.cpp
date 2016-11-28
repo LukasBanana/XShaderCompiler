@@ -395,17 +395,17 @@ DataType BaseDataType(const DataType t)
     #undef FIND_BASETYPE
 }
 
+static int Idx(const DataType t)
+{
+    return static_cast<int>(t);
+};
+
 DataType VectorDataType(const DataType baseDataType, int vectorSize)
 {
     if (IsScalarType(baseDataType))
     {
         if (vectorSize >= 2 && vectorSize <= 4)
         {
-            auto Idx = [](const DataType t)
-            {
-                return static_cast<int>(t);
-            };
-
             auto offset = (Idx(baseDataType) - Idx(DataType::Bool));
             auto idx    = Idx(DataType::Bool2) + offset*3 + (vectorSize - 2);
 
@@ -430,11 +430,6 @@ DataType MatrixDataType(const DataType baseDataType, int rows, int columns)
 
         if (rows >= 2 && rows <= 4 && columns >= 2 && columns <= 4)
         {
-            auto Idx = [](const DataType t)
-            {
-                return static_cast<int>(t);
-            };
-
             auto offset = (Idx(baseDataType) - Idx(DataType::Bool));
             auto idx    = Idx(DataType::Bool2x2) + offset*9 + (rows - 2)*3 + (columns - 2);
 
@@ -592,6 +587,17 @@ DataType TokenToDataType(const Token& tkn)
             break;
     }
     return DataType::Undefined;
+}
+
+DataType DoubleToFloatDataType(const DataType dataType)
+{
+    if (dataType == DataType::Double)
+        return DataType::Float;
+    if (dataType >= DataType::Double2 && dataType <= DataType::Double4)
+        return static_cast<DataType>(Idx(dataType) - Idx(DataType::Double2) + Idx(DataType::Float2));
+    if (dataType >= DataType::Double2x2 && dataType <= DataType::Double4x4)
+        return static_cast<DataType>(Idx(dataType) - Idx(DataType::Double2x2) + Idx(DataType::Float2x2));
+    return dataType;
 }
 
 

@@ -20,10 +20,11 @@ float4 VS() : SV_Position
 	float h = - - - -.1+-2;
 	float i = +-+-+-.1;
 	float j = .1h;
-	float4 k = 1 .xxxx;
-	float4 l = 1X.xxxx;
+	float2 k = 1 .xx;
+	float3 l = 1X.xxx;
 	float4 m = 1. .xxxx;
 	float4 n = 1..xxxx;
+	float4 o = 1.0.xxxx;
 	
 	uint ui_a = 1;
 	
