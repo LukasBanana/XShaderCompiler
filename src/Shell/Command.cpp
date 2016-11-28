@@ -205,13 +205,12 @@ std::vector<Command::Identifier> PrefixCommand::Idents() const
 
 HelpDescriptor PrefixCommand::Help() const
 {
-    return { "--prefix PREFIX", "Prefix for local variables (use \"<none>\" to disable); default='_'" };
+    return { "--prefix PREFIX", "Prefix for name-mangling of variables with reserved names; default='xsc_'" };
 }
 
 void PrefixCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    auto prefix = cmdLine.Accept();
-    state.outputDesc.formatting.prefix = (prefix == "<none>" ? "" : prefix);
+    state.outputDesc.formatting.prefix = cmdLine.Accept();
 }
 
 
