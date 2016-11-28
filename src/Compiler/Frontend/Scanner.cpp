@@ -392,10 +392,6 @@ TokenPtr Scanner::ScanNumber(bool startWithDot)
         /* Check for floating-suffix */
         if (Is('f') || Is('F') || Is('h') || Is('H') || Is('l') || Is('L'))
             spell += TakeIt();
-
-        /* Check for following invalid characters */
-        if (std::isalpha(UChr()) || Is('.'))
-            Error("character '" + std::string(1, Chr()) + "' is not allowed immediately after floating-point literal");
     }
     else
     {
@@ -410,10 +406,6 @@ TokenPtr Scanner::ScanNumber(bool startWithDot)
         /* Check for integer-suffix */
         if (Is('u') || Is('U') || Is('l') || Is('L'))
             spell += TakeIt();
-        
-        /* Check for following invalid characters */
-        if (std::isalpha(UChr()) || Is('.'))
-            Error("character '" + std::string(1, Chr()) + "' is not allowed immediately after integer literal");
     }
 
     /* Create number token */
