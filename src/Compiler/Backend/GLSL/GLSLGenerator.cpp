@@ -1094,7 +1094,7 @@ void GLSLGenerator::WriteLocalOutputSemantics()
 bool GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
 {
     /* Is semantic of the variable declaration a system value semantic? */
-    if (auto varSemantic = varDecl->FirstSemantic())
+    if (varDecl->FirstSemantic() != nullptr)
     {
         /* Write local variable definition statement (without initialization) */
         BeginLn();

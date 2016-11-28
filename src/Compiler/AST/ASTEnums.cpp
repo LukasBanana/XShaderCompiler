@@ -588,6 +588,8 @@ DataType TokenToDataType(const Token& tkn)
             return FloatLiteralTokenToDataType(tkn);
         case Token::Types::StringLiteral:
             return DataType::String;
+        default:
+            break;
     }
     return DataType::Undefined;
 }

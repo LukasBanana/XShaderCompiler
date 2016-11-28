@@ -53,6 +53,8 @@ IMPLEMENT_VISIT_PROC(Program)
             RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefs);
             RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefs);
             break;
+        default:
+            break;
     }
 
     RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefsSV);
@@ -437,7 +439,7 @@ void GLSLConverter::MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt)
     /* Is this statement within the entry point? */
     if (isInsideEntryPoint_)
     {
-        if (auto returnStmnt = bodyStmnt->As<ReturnStmnt>())
+        if (bodyStmnt->Type() == AST::Types::ReturnStmnt)
         {
             auto codeBlockStmnt = MakeShared<CodeBlockStmnt>(bodyStmnt->area);
 
