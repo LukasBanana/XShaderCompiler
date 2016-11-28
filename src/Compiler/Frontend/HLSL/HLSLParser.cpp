@@ -1219,7 +1219,7 @@ ExprPtr HLSLParser::ParsePrimaryExpr()
 {
     /* Determine which kind of expression the next one is */
     if (IsLiteral())
-        return ParseLiteralExpr();
+        return ParseLiteralOrSuffixExpr();
     if (IsDataType() || Is(Tokens::Struct))
         return ParseTypeNameOrFunctionCallExpr();
     if (Is(Tokens::UnaryOp) || IsArithmeticUnaryExpr())
@@ -1233,6 +1233,18 @@ ExprPtr HLSLParser::ParsePrimaryExpr()
 
     ErrorUnexpected("expected primary expression");
     return nullptr;
+}
+
+ExprPtr HLSLParser::ParseLiteralOrSuffixExpr()
+{
+    /* Parse literal expression */
+    ExprPtr expr = ParseLiteralExpr();
+
+    /* Parse optional suffix expression */
+    if (Is(Tokens::Dot))
+        expr = ParseSuffixExpr(expr);
+
+    return UpdateSourceArea(expr);
 }
 
 LiteralExprPtr HLSLParser::ParseLiteralExpr()

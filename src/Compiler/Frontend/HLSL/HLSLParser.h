@@ -139,6 +139,7 @@ class HLSLParser : public Parser
 
         ExprPtr                         ParseExpr(bool allowComma = false, const ExprPtr& initExpr = nullptr);
         ExprPtr                         ParsePrimaryExpr() override;
+        ExprPtr                         ParseLiteralOrSuffixExpr();
         LiteralExprPtr                  ParseLiteralExpr();
         ExprPtr                         ParseTypeNameOrFunctionCallExpr();
         UnaryExprPtr                    ParseUnaryExpr();
