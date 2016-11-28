@@ -32,8 +32,8 @@
 [TypeTest2 VS]
 -T vertex -E VS -o output/TypeTest2.VS.glsl TypeTest2.hlsl
 
-#[FloatTest1 VS]
-#-T vertex -E VS -o output/FloatTest1.VS.glsl FloatTest1.hlsl
+[FloatTest1 VS]
+-T vertex -E VS -o output/FloatTest1.VS.glsl FloatTest1.hlsl
 
 #[StructInheritTest1 PS]
 #--dump-ast -T fragment -E PS -o output/StructInheritTest1.PS.glsl StructInheritTest1.hlsl
