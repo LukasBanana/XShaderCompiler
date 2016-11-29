@@ -36,6 +36,8 @@ class Shell
 
     private:
 
+        std::string GetDefaultOutputFilename(const std::string& filename);
+
         void Compile(const std::string& filename);
 
         void ShowStats(const Statistics& stats);

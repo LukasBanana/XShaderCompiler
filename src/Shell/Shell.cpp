@@ -7,6 +7,7 @@
 
 #include "Shell.h"
 #include "CommandFactory.h"
+#include "Helper.h"
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -142,18 +143,20 @@ static std::string TargetToExtension(const ShaderTarget shaderTarget)
     return "glsl";
 }
 
+std::string Shell::GetDefaultOutputFilename(const std::string& filename)
+{
+    return (ExtractFilename(filename) + "." + state_.inputDesc.entryPoint + "." + TargetToExtension(state_.inputDesc.shaderTarget));
+}
+
 void Shell::Compile(const std::string& filename)
 {
-    auto outputFilename = state_.outputFilename;
+    const auto  defaultOutputFilename   = GetDefaultOutputFilename(filename);
+    auto        outputFilename          = state_.outputFilename;
 
     if (outputFilename.empty())
-    {
-        /* Set default output filename */
-        outputFilename = ExtractFilename(filename);
-        if (!state_.inputDesc.entryPoint.empty())
-            outputFilename += "." + state_.inputDesc.entryPoint;
-        outputFilename += "." + TargetToExtension(state_.inputDesc.shaderTarget);
-    }
+        outputFilename = defaultOutputFilename;
+    else
+        Replace(outputFilename, "*", defaultOutputFilename);
 
     try
     {

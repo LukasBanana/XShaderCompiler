@@ -227,7 +227,7 @@ std::vector<Command::Identifier> OutputCommand::Idents() const
 
 HelpDescriptor OutputCommand::Help() const
 {
-    return { "-o, --output FILE", "Shader output file; default='<FILE>.<ENTRY>.<TARGET>'" };
+    return { "-o, --output FILE", "Shader output file (use '*' for default); default='<FILE>.<ENTRY>.<TARGET>'" };
 }
 
 void OutputCommand::Run(CommandLine& cmdLine, ShellState& state)

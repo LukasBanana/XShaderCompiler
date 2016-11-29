@@ -1,60 +1,63 @@
 
 [SemanticTest1 VS1]
--T vert -E VS1 -o output/SemanticTest1.VS1.glsl SemanticTest1.hlsl
+-T vert -E VS1 -o output/* SemanticTest1.hlsl
 
 [SemanticTest1 VS2]
--T vert -E VS2 -o output/SemanticTest1.VS2.glsl SemanticTest1.hlsl
+-T vert -E VS2 -o output/* SemanticTest1.hlsl
 
 [SemanticTest1 VS3]
--T vert -E VS3 -o output/SemanticTest1.VS3.glsl SemanticTest1.hlsl
+-T vert -E VS3 -o output/* SemanticTest1.hlsl
 
 [SemanticTest1 VS4]
--T vert -E VS4 -o output/SemanticTest1.VS4.glsl SemanticTest1.hlsl
+-T vert -E VS4 -o output/* SemanticTest1.hlsl
 
 [SemanticTest1 VS5]
--T vert -E VS5 -o output/SemanticTest1.VS5.glsl SemanticTest1.hlsl
+-T vert -E VS5 -o output/* SemanticTest1.hlsl
 
-#[NameMangling1]
-#--dump-ast -T comp -E CS -o output/NameMangling1.CS.glsl NameMangling1.hlsl
+#[NameMangling1 CS]
+#--dump-ast -T comp -E CS -o output/* NameMangling1.hlsl
 
 [ExprTest4 VS]
---dump-ast -T vert -E VS -o output/ExprTest4.VS.glsl ExprTest4.hlsl
+--dump-ast -T vert -E VS -o output/* ExprTest4.hlsl
 
 #[ExprTest3 VS]
-#--dump-ast -T vert -E VS -o output/ExprTest3.VS.glsl ExprTest3.hlsl
+#--dump-ast -T vert -E VS -o output/* ExprTest3.hlsl
 
 #[ExprTest2 CS]
-#-T comp -E CS -o output/ExprTest2.CS.glsl ExprTest2.hlsl
+#-T comp -E CS -o output/* ExprTest2.hlsl
 
 [TypeTest1 VS]
--T vert -E VS -o output/TypeTest1.VS.glsl TypeTest1.hlsl
+-T vert -E VS -o output/* TypeTest1.hlsl
 
 [TypeTest2 VS]
--T vert -E VS -o output/TypeTest2.VS.glsl TypeTest2.hlsl
+-T vert -E VS -o output/* TypeTest2.hlsl
 
 [FloatTest1 VS]
--T vert -E VS -o output/FloatTest1.VS.glsl FloatTest1.hlsl
+-T vert -E VS -o output/* FloatTest1.hlsl
 
 #[StructInheritTest1 PS]
-#--dump-ast -T frag -E PS -o output/StructInheritTest1.PS.glsl StructInheritTest1.hlsl
-
-[ssct_reflect PS]
---dump-times --dump-stat -T frag -E PS -O -I "../../misc/ssct_shader/" -o "../../misc/ssct_shader/ssct_reflect.PS.frag" "../../misc/ssct_shader/ssct_reflect.hlsl"
+#--dump-ast -T frag -E PS -o output/* StructInheritTest1.hlsl
 
 [TestShader1.hlsl VS]
--T vert -E VS -O -o output/TestShader1.VS.glsl TestShader1.hlsl
+-T vert -E VS -O -o output/* TestShader1.hlsl
 
 [TestShader1.hlsl PS]
--T frag -E PS -O -o output/TestShader1.PS.glsl TestShader1.hlsl
+-T frag -E PS -O -o output/* TestShader1.hlsl
 
 [TestShader1.hlsl CS]
--T comp -E CS -O -o output/TestShader1.CS.glsl TestShader1.hlsl
+-T comp -E CS -O -o output/* TestShader1.hlsl
 
-#[PPTest1.hlsl Vertex]
-#-T vert -E VS -O -o output/PPTest1.VS.glsl PPTest1.hlsl
+[ssct_reflect PS]
+--dump-times --dump-stat -T frag -E PS -O -I "../../misc/ssct_shader/" "../../misc/ssct_shader/ssct_reflect.hlsl"
+
+#[PPTest1.hlsl VS]
+#-T vert -E VS -O -o output/* PPTest1.hlsl
 
 #[PPTest1.hlsl -PP]
 #-PP -O -o output/PPTest1.post.hlsl PPTest1.hlsl
+
+
+### C++ PreProcessor Test ###
 
 #[test.cpp -PP]
 #-PP -O -o "../../misc/test.h" -I "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include" -I "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\atlmfc\include" -I "C:\Program Files (x86)\Windows Kits\10\Include\10.0.14393.0\ucrt" -I "C:\Program Files (x86)\Windows Kits\10\Include\10.0.14393.0\um" -I "C:\Program Files (x86)\Windows Kits\10\Include\10.0.14393.0\shared" -I "C:\Program Files (x86)\Windows Kits\10\Include\10.0.14393.0\winrt" "../../misc/test.cpp"
