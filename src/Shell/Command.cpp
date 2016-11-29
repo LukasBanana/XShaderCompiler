@@ -8,6 +8,7 @@
 #include "Command.h"
 #include "CommandFactory.h"
 #include "Shell.h"
+#include "Helper.h"
 #include <Xsc/ConsoleManip.h>
 #include <map>
 #include <fstream>
@@ -185,12 +186,13 @@ std::vector<Command::Identifier> IndentCommand::Idents() const
 
 HelpDescriptor IndentCommand::Help() const
 {
-    return { "--indent INDENT", "Code indentation string; default='    '" };
+    return { "--indent INDENT", "Code indentation string (use '\\t' for tabs); default='    '" };
 }
 
 void IndentCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.formatting.indent = cmdLine.Accept();
+    Replace(state.outputDesc.formatting.indent, "\\t", "\t");
 }
 
 
@@ -344,7 +346,7 @@ HelpDescriptor DumpTimesCommand::Help() const
     return
     {
         "--dump-times [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables debug output for timings of each compilation process; default=" + CommandLine::GetBooleanFalse()
+        "Enables/disables debug output for timings of each compilation step; default=" + CommandLine::GetBooleanFalse()
     };
 }
 

@@ -65,6 +65,9 @@ std::string ToLower(const std::string& s);
 // Converts the specified strin to upper case.
 std::string ToUpper(const std::string& s);
 
+// Replaces all occurances of 'from' in the string 's' by 'to'.
+void Replace(std::string& s, const std::string& from, const std::string& to);
+
 
 } // /namespace Xsc
 

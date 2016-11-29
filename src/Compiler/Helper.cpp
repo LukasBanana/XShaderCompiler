@@ -29,6 +29,12 @@ std::string ToUpper(const std::string& s)
     return t;
 }
 
+void Replace(std::string& s, const std::string& from, const std::string& to)
+{
+    for (std::size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos; pos += to.size())
+        s.replace(pos, from.size(), to);
+}
+
 
 } // /namespace Xsc
 
