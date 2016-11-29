@@ -7,8 +7,19 @@
 
 #define X
 
+float f1()
+{
+	return 1.0;
+}
+
 float4 VS() : SV_Position
 {
+	struct S
+	{
+		float val;
+	};
+	
+	S S_val;
 	
 	float a = 0.0;
 	float b = .0;
@@ -25,6 +36,10 @@ float4 VS() : SV_Position
 	float4 m = 1. .xxxx;
 	float4 n = 1..xxxx;
 	float4 o = 1.0.xxxx;
+	float4 p = 1 .xxxx.zz.y.xxxx;
+	float4 q = float2(0, 1).y.xxxx;
+	float4 r = f1().xxxx;
+	float4 s = S_val.val.xxxx;
 	
 	uint ui_a = 1;
 	
