@@ -21,9 +21,9 @@ namespace Xsc
 enum class ShaderTarget
 {
     VertexShader,                   //!< Vertex shader.
-    GeometryShader,                 //!< Geometry shader.
     TessellationControlShader,      //!< Tessellation-control (also Hull-) shader.
     TessellationEvaluationShader,   //!< Tessellation-evaluation (also Domain-) shader.
+    GeometryShader,                 //!< Geometry shader.
     FragmentShader,                 //!< Fragment (also Pixel-) shader.
     ComputeShader,                  //!< Compute shader.
 };

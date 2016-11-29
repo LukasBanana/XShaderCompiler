@@ -83,7 +83,7 @@ HelpDescriptor TargetCommand::Help() const
     return
     {
         "-T, --target TARGET", "Shader target; valid values:",
-        "vertex, fragment, geometry, tess-control, tess-evaluation, compute"
+        "vert, tesc, tese, geom, frag, comp"
     };
 }
 
@@ -92,12 +92,12 @@ void TargetCommand::Run(CommandLine& cmdLine, ShellState& state)
     state.inputDesc.shaderTarget = MapStringToType<ShaderTarget>(
         cmdLine.Accept(),
         {
-            { "vertex",          ShaderTarget::VertexShader                 },
-            { "fragment",        ShaderTarget::FragmentShader               },
-            { "geometry",        ShaderTarget::GeometryShader               },
-            { "tess-control",    ShaderTarget::TessellationControlShader    },
-            { "tess-evaluation", ShaderTarget::TessellationEvaluationShader },
-            { "compute",         ShaderTarget::ComputeShader                },
+            { "vert", ShaderTarget::VertexShader                 },
+            { "tesc", ShaderTarget::TessellationControlShader    },
+            { "tese", ShaderTarget::TessellationEvaluationShader },
+            { "geom", ShaderTarget::GeometryShader               },
+            { "frag", ShaderTarget::FragmentShader               },
+            { "comp", ShaderTarget::ComputeShader                },
         },
         "invalid shader target"
     );
