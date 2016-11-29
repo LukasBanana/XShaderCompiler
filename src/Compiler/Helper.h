@@ -49,9 +49,19 @@ T FromString(const std::string& s)
     return value;
 }
 
+// Removes all entries from the specified container which are equal to the specified type.
+template <typename Cont, typename Value>
+void EraseAll(Cont& container, Value value)
+{
+    container.erase(
+        std::remove(std::begin(container), std::end(container), value),
+        std::end(container)
+    );
+}
+
 // Removes all entries from the specified container for which the specified predicate is true.
 template <typename Cont, typename Pred>
-void EraseIf(Cont& container, Pred pred)
+void EraseAllIf(Cont& container, Pred pred)
 {
     container.erase(
         std::remove_if(std::begin(container), std::end(container), pred),

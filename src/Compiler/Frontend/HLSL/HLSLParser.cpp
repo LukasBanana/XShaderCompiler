@@ -321,7 +321,7 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
         else if (Is(Tokens::TypeModifier))
             ast->typeModifiers.push_back(AcceptIt()->Spell());
         else if (Is(Tokens::StorageClass))
-            ast->storageModifiers.push_back(ParseStorageClass());
+            ast->storageClasses.push_back(ParseStorageClass());
     }
 
     ast->varType = ParseVarType();
@@ -802,8 +802,8 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
     {
         if (Is(Tokens::StorageClass))
         {
-            /* Parse storage modifiers */
-            ast->storageModifiers.push_back(ParseStorageClass());
+            /* Parse storage class */
+            ast->storageClasses.push_back(ParseStorageClass());
         }
         else if (Is(Tokens::TypeModifier))
         {

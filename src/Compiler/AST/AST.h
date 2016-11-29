@@ -558,9 +558,9 @@ struct VarDeclStmnt : public Stmnt
     // Returns true if this variable declaration statement has the 'out' or 'inout'  input modifier.
     bool IsOutput() const;
 
-    std::string                 inputModifier;      // Input modifiers, e.g. in, out, inout, uniform.
-    std::vector<StorageClass>   storageModifiers;   // Storage classes (or interpolation modifiers), e.g. extern, nointerpolation, precise, etc.
-    std::vector<std::string>    typeModifiers;      // Type modifiers, e.g. const, row_major, column_major.
+    std::string                 inputModifier;  // Input modifiers, e.g. in, out, inout, uniform.
+    std::vector<StorageClass>   storageClasses; // Storage classes (or interpolation modifiers), e.g. extern, nointerpolation, precise, etc.
+    std::vector<std::string>    typeModifiers;  // Type modifiers, e.g. const, row_major, column_major.
     VarTypePtr                  varType;
     std::vector<VarDeclPtr>     varDecls;
 };

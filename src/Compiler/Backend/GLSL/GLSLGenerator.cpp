@@ -626,13 +626,14 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     BeginLn();
 
-    /* Write modifiers */
+    /* Write input modifiers */
     if (ast->flags(VarDeclStmnt::isShaderInput))
         Write("in ");
     else if (ast->flags(VarDeclStmnt::isShaderOutput))
         Write("out ");
 
-    for (auto storageClass : ast->storageModifiers)
+    /* Write storage classes */
+    for (auto storageClass : ast->storageClasses)
     {
         auto keyword = StorageClassToGLSLKeyword(storageClass);
         if (keyword)
@@ -641,6 +642,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
             Error("not all storage classes or interpolation modifiers can be mapped to GLSL keyword", ast);
     }
 
+    /* Write type modifiers */
     for (const auto& modifier : ast->typeModifiers)
     {
         if (modifier == "const")

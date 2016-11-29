@@ -87,7 +87,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     else if (ast->intrinsic == Intrinsic::Undefined)
     {
         /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
-        EraseIf(ast->arguments,
+        EraseAllIf(ast->arguments,
             [&](const ExprPtr& expr)
             {
                 return ExprContainsSampler(*expr);
@@ -172,7 +172,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         return;
 
     /* Remove parameters which contain a sampler state object, since GLSL does not support sampler states */
-    EraseIf(
+    EraseAllIf(
         ast->parameters,
         [&](const VarDeclStmntPtr& varDeclStmnt)
         {
@@ -194,6 +194,12 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         /* Default visitor */
         Visitor::VisitFunctionDecl(ast, args);
     }
+}
+
+IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+{
+    /* Remove all 'static' storage classes (reserved word in GLSL) */
+    EraseAll(ast->storageClasses, StorageClass::Static);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
