@@ -132,15 +132,21 @@ class GLSLGenerator : public Generator
 
         /* --- Helper functions for code generation --- */
 
+        /* --- Attribute --- */
+
         void WriteAttribute(Attribute* ast);
         void WriteAttributeNumThreads(Attribute* ast);
         void WriteAttributeEarlyDepthStencil();
+
+        /* --- Input semantics --- */
 
         void WriteLocalInputSemantics();
         bool WriteLocalInputSemanticsVarDecl(VarDecl* varDecl);
         
         void WriteGlobalInputSemantics();
         bool WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl);
+
+        /* --- Output semantics --- */
 
         void WriteLocalOutputSemantics();
         bool WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl);
@@ -152,7 +158,7 @@ class GLSLGenerator : public Generator
 
         //void WriteFragmentShaderOutput();
 
-        void WriteStructDeclMembers(StructDecl* ast);
+        /* --- VarIdent --- */
 
         // Returns the first VarIdent AST node which has a system value semantic, or null if no such AST node was found.
         VarIdent* FindSystemValueVarIdent(VarIdent* ast);
@@ -160,20 +166,22 @@ class GLSLGenerator : public Generator
         // Returns the final identifier string from the specified variable identifier.
         const std::string& FinalIdentFromVarIdent(VarIdent* ast);
 
+        void WriteVarIdent(VarIdent* ast, bool recursive = true);
+
         // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
         void WriteVarIdentOrSystemValue(VarIdent* ast);
-
-        void WriteParameter(VarDeclStmnt* ast);
-        void WriteScopedStmnt(Stmnt* ast);
-
-        bool HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const;
-
-        void WriteArrayDims(const std::vector<ExprPtr>& arrayDims);
         
+        void WriteSuffixVarIdentBegin(const TypeDenoter& lhsTypeDen, VarIdent* ast);
+        void WriteSuffixVarIdentEnd(const TypeDenoter& lhsTypeDen, VarIdent* ast);
+
+        /* --- Type denoter --- */
+
         void WriteDataType(DataType dataType, const AST* ast = nullptr);
         void WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast = nullptr);
 
         //void WriteTypeDenoterCastProc(const TypeDenoter& targetTypeDenoter, const TypeDenoter& sourceTypeDenoter, const AST* ast = nullptr);
+
+        /* --- Function call --- */
 
         void AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax = ~0);
 
@@ -183,19 +191,28 @@ class GLSLGenerator : public Generator
         void WriteFunctionCallIntrinsicAtomic(FunctionCall* ast);
         void WriteFunctionCallIntrinsicTex(FunctionCall* ast);
 
+        /* --- Misc --- */
+
+        void WriteStructDeclMembers(StructDecl* ast);
+
+        void WriteParameter(VarDeclStmnt* ast);
+        void WriteScopedStmnt(Stmnt* ast);
+
+        bool HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const;
+
+        void WriteArrayDims(const std::vector<ExprPtr>& arrayDims);
+
         /* === Members === */
 
-        ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;
-        OutputShaderVersion     versionOut_             = OutputShaderVersion::GLSL;
-        bool                    allowExtensions_        = false;
-        bool                    allowLineMarks_         = true;
-        Statistics*             stats_                  = nullptr;
+        ShaderTarget        shaderTarget_           = ShaderTarget::VertexShader;
+        OutputShaderVersion versionOut_             = OutputShaderVersion::GLSL;
+        bool                allowExtensions_        = false;
+        bool                allowLineMarks_         = true;
+        std::string         nameManglingPrefix_;
+        Statistics*         stats_                  = nullptr;
 
-        std::string             nameManglingPrefix_;
-
-        // True if AST traversal is currently inside the main entry point (or its sub nodes).
-        bool                    isInsideEntryPoint_     = false;
-        bool                    isInsideInterfaceBlock_ = false;
+        bool                isInsideEntryPoint_     = false;
+        bool                isInsideInterfaceBlock_ = false;
 
         #if 1//TODO: remove all HLSL type mappings from here
         std::map<std::string, std::string> texFuncMap_;         // <hlsl-function, glsl-function>

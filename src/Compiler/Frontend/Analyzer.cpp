@@ -63,6 +63,11 @@ void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const AST* ast)
     Error("undeclared identifier \"" + ident + "\"", ast);
 }
 
+void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const std::string& contextName, const AST* ast)
+{
+    Error("undeclared identifier \"" + ident + "\" in '" + contextName + "'", ast);
+}
+
 void Analyzer::ErrorInternal(const std::string& msg, const AST* ast)
 {
     reportHandler_.SubmitReport(false, Report::Types::Error, "internal error", msg, sourceCode_, (ast ? ast->area : SourceArea::ignore));
@@ -194,6 +199,20 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
     {
         Error(e.what(), ast);
     }
+    return nullptr;
+}
+
+VarDecl* Analyzer::FetchFromStructDecl(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast)
+{
+    if (structTypeDenoter.structDeclRef)
+    {
+        if (auto varDecl = structTypeDenoter.structDeclRef->Fetch(ident))
+            return varDecl;
+        else
+            ErrorUndeclaredIdent(ident, structTypeDenoter.ToString(), ast);
+    }
+    else
+        Error("missing reference to structure declaration in type denoter '" + structTypeDenoter.ToString() + "'", ast);
     return nullptr;
 }
 

@@ -434,6 +434,24 @@ IMPLEMENT_VISIT_PROC(TypeNameExpr)
     AnalyzeTypeDenoter(ast->typeDenoter, ast);
 }
 
+IMPLEMENT_VISIT_PROC(SuffixExpr)
+{
+    Visit(ast->expr);
+
+    /* Left-hand-side of the suffix expression must be either from type structure or base (for vector subscript) */
+    auto typeDenoter = ast->expr->GetTypeDenoter()->Get();
+
+    if (auto structTypeDen = typeDenoter->As<StructTypeDenoter>())
+    {
+        /* Fetch struct member variable declaration from next identifier */
+        if (auto memberVarDecl = FetchFromStructDecl(*structTypeDen, ast->varIdent->ident, ast->varIdent.get()))
+        {
+            /* Analyzer next identifier with fetched symbol */
+            AnalyzeVarIdentWithSymbol(ast->varIdent.get(), memberVarDecl);
+        }
+    }
+}
+
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     AnalyzeVarIdent(ast->varIdent.get());
@@ -651,7 +669,7 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
         if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
         {
             /* Fetch struct member variable declaration from next identifier */
-            if (auto memberVarDecl = structTypeDen->structDeclRef->Fetch(varIdent->next->ident))
+            if (auto memberVarDecl = FetchFromStructDecl(*structTypeDen, varIdent->next->ident, varIdent))
             {
                 /* Analyzer next identifier with fetched symbol */
                 AnalyzeVarIdentWithSymbol(varIdent->next.get(), memberVarDecl);

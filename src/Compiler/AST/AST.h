@@ -318,6 +318,9 @@ struct VarIdent : public TypedAST
     // Returns a type denoter for the symbol reference of the last variable identifier.
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    // Returns the type denoter for this AST node or the last sub node.
+    TypeDenoterPtr GetExplicitTypeDenoter(bool recursive);
+
     // Moves the next identifier into this one (i.e. removes the first identifier).
     void PopFront();
 

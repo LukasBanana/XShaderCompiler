@@ -39,8 +39,8 @@ void GLSLGenerator::GenerateCodePrimary(
     versionOut_         = outputDesc.shaderVersion;
     allowExtensions_    = outputDesc.options.allowExtensions;
     allowLineMarks_     = outputDesc.formatting.lineMarks;
-    stats_              = outputDesc.statistics;
     nameManglingPrefix_ = outputDesc.formatting.prefix;
+    stats_              = outputDesc.statistics;
 
     if (program.entryPointRef)
     {
@@ -359,17 +359,7 @@ IMPLEMENT_VISIT_PROC(VarType)
 
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
-    /* Write identifier */
-    Write(FinalIdentFromVarIdent(ast));
-
-    /* Write array index expressions */
-    WriteArrayDims(ast->arrayIndices);
-
-    if (ast->next)
-    {
-        Write(".");
-        Visit(ast->next);
-    }
+    WriteVarIdent(ast);
 }
 
 /* --- Declarations --- */
@@ -920,32 +910,21 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Write(")");
 }
 
-//TODO: incomplete for swizzle operator of scalar values
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
-    /* Is the sub expression a literal expression? */
     auto typeDenoter = ast->expr->GetTypeDenoter()->Get();
-    if (typeDenoter->IsScalar())
-    {
-        auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>();
 
-        WriteDataType(SubscriptDataType(baseTypeDen->dataType, ast->varIdent->ident), ast);
-        Write("(");
-        Visit(ast->expr);
-        Write(")");
+    /*
+    First write all scalar swizzle operations as vector constructors,
+    e.g. "1.0.xxxx" -> "vec4(1.0)", or "1.0.xx.y.xxx" -> "vec3(vec2(1.0).y)"
+    */
+    WriteSuffixVarIdentBegin(*typeDenoter, ast->varIdent.get());
 
-        if (ast->varIdent->next)
-        {
-            Write(".");
-            Visit(ast->varIdent->next);
-        }
-    }
-    else
-    {
-        Visit(ast->expr);
-        Write(".");
-        Visit(ast->varIdent);
-    }
+    /* Write left-hand-side expression of suffix */
+    Visit(ast->expr);
+
+    /* Write suffix identifiers with optional vector constructor endings (i.e. closing ')' brackets) */
+    WriteSuffixVarIdentEnd(*typeDenoter, ast->varIdent.get());
 }
 
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
@@ -991,6 +970,8 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 
 /* --- Helper functions for code generation --- */
 
+/* --- Attribute --- */
+
 void GLSLGenerator::WriteAttribute(Attribute* ast)
 {
     if (ast->ident == "numthreads")
@@ -1026,6 +1007,8 @@ void GLSLGenerator::WriteAttributeEarlyDepthStencil()
 {
     WriteLn("layout(early_fragment_tests) in;");
 }
+
+/* --- Input semantics --- */
 
 void GLSLGenerator::WriteLocalInputSemantics()
 {
@@ -1095,6 +1078,8 @@ bool GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 
     return true;
 }
+
+/* --- Output semantics --- */
 
 void GLSLGenerator::WriteLocalOutputSemantics()
 {
@@ -1291,12 +1276,7 @@ void GLSLGenerator::WriteFragmentShaderOutput()
 
 #endif
 
-void GLSLGenerator::WriteStructDeclMembers(StructDecl* ast)
-{
-    if (ast->baseStructRef)
-        WriteStructDeclMembers(ast->baseStructRef);
-    Visit(ast->members);
-}
+/* --- VarIdent --- */
 
 /*
 Find the first VarIdent with a system value semantic,
@@ -1327,6 +1307,21 @@ const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* ast)
 
     /* Return default identifier */
     return ast->ident;
+}
+
+void GLSLGenerator::WriteVarIdent(VarIdent* ast, bool recursive)
+{
+    /* Write identifier */
+    Write(FinalIdentFromVarIdent(ast));
+
+    /* Write array index expressions */
+    WriteArrayDims(ast->arrayIndices);
+
+    if (recursive && ast->next)
+    {
+        Write(".");
+        WriteVarIdent(ast->next.get());
+    }
 }
 
 /*
@@ -1360,63 +1355,65 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
     }
 }
 
-void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
+static TypeDenoterPtr GetTypeDenoterForSuffixVarIdent(const TypeDenoter& lhsTypeDen, VarIdent* ast)
 {
-    /* Write modifiers */
-    if (!ast->inputModifier.empty())
-        Write(ast->inputModifier + " ");
-
-    for (const auto& modifier : ast->typeModifiers)
+    if (lhsTypeDen.IsBase())
     {
-        if (modifier == "const")
-            Write(modifier + " ");
+        /* Get type denoter from vector subscript */
+        auto lhsBaseTypeDen = lhsTypeDen.As<BaseTypeDenoter>();
+        auto subscriptDataType = SubscriptDataType(lhsBaseTypeDen->dataType, ast->ident);
+        return std::make_shared<BaseTypeDenoter>(subscriptDataType);
     }
-
-    /* Write parameter type */
-    Visit(ast->varType);
-    Write(" ");
-
-    /* Write parameter identifier */
-    if (ast->varDecls.size() == 1)
-        Visit(ast->varDecls.front());
     else
-        Error("invalid number of variables in function parameter", ast);
-}
-
-void GLSLGenerator::WriteScopedStmnt(Stmnt* ast)
-{
-    if (ast)
     {
-        if (ast->Type() != AST::Types::CodeBlockStmnt)
-        {
-            IncIndent();
-            Visit(ast);
-            DecIndent();
-        }
-        else
-            Visit(ast);
+        /* Get type denoter from symbol reference (in VarIdent) */
+        return ast->GetExplicitTypeDenoter(false)->Get();
     }
 }
 
-bool GLSLGenerator::HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const
+void GLSLGenerator::WriteSuffixVarIdentBegin(const TypeDenoter& lhsTypeDen, VarIdent* ast)
 {
-    for (const auto& varSem : semantics)
+    /* First traverse sub nodes */
+    if (ast->next)
     {
-        if (IsSystemSemantic(varSem->semantic))
-            return true;
+        /* Get type denoter of current VarIdent AST node */
+        auto typeDenoter = GetTypeDenoterForSuffixVarIdent(lhsTypeDen, ast);
+        WriteSuffixVarIdentBegin(*typeDenoter, ast->next.get());
     }
-    return false;
+
+    /* Has this node a scalar type? */
+    if (lhsTypeDen.IsScalar())
+    {
+        auto lhsBaseTypeDen = lhsTypeDen.As<BaseTypeDenoter>();
+        WriteDataType(SubscriptDataType(lhsBaseTypeDen->dataType, ast->ident), ast);
+        Write("(");
+    }
 }
 
-void GLSLGenerator::WriteArrayDims(const std::vector<ExprPtr>& arrayDims)
+void GLSLGenerator::WriteSuffixVarIdentEnd(const TypeDenoter& lhsTypeDen, VarIdent* ast)
 {
-    for (auto& dim : arrayDims)
+    /* First write identifier */
+    if (lhsTypeDen.IsScalar())
     {
-        Write("[");
-        Visit(dim);
-        Write("]");
+        /* Close vector constructor */
+        Write(")");
+    }
+    else
+    {
+        /* Write next identifier */
+        Write(".");
+        WriteVarIdent(ast, false);
+    }
+
+    /* Now traverse sub nodes */
+    if (ast->next)
+    {
+        auto typeDenoter = GetTypeDenoterForSuffixVarIdent(lhsTypeDen, ast);
+        WriteSuffixVarIdentEnd(*typeDenoter, ast->next.get());
     }
 }
+
+/* --- Type denoter --- */
 
 void GLSLGenerator::WriteDataType(DataType dataType, const AST* ast)
 {
@@ -1507,6 +1504,8 @@ void GLSLGenerator::WriteTypeDenoterCastProc(const TypeDenoter& targetTypeDenote
 }
 
 #endif
+
+/* --- Function call --- */
 
 void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax)
 {
@@ -1661,6 +1660,73 @@ void GLSLGenerator::WriteFunctionCallIntrinsicTex(FunctionCall* ast)
     }
 
     Write(")");
+}
+
+/* --- Misc --- */
+
+void GLSLGenerator::WriteStructDeclMembers(StructDecl* ast)
+{
+    if (ast->baseStructRef)
+        WriteStructDeclMembers(ast->baseStructRef);
+    Visit(ast->members);
+}
+
+void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
+{
+    /* Write modifiers */
+    if (!ast->inputModifier.empty())
+        Write(ast->inputModifier + " ");
+
+    for (const auto& modifier : ast->typeModifiers)
+    {
+        if (modifier == "const")
+            Write(modifier + " ");
+    }
+
+    /* Write parameter type */
+    Visit(ast->varType);
+    Write(" ");
+
+    /* Write parameter identifier */
+    if (ast->varDecls.size() == 1)
+        Visit(ast->varDecls.front());
+    else
+        Error("invalid number of variables in function parameter", ast);
+}
+
+void GLSLGenerator::WriteScopedStmnt(Stmnt* ast)
+{
+    if (ast)
+    {
+        if (ast->Type() != AST::Types::CodeBlockStmnt)
+        {
+            IncIndent();
+            Visit(ast);
+            DecIndent();
+        }
+        else
+            Visit(ast);
+    }
+}
+
+bool GLSLGenerator::HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const
+{
+    for (const auto& varSem : semantics)
+    {
+        if (IsSystemSemantic(varSem->semantic))
+            return true;
+    }
+    return false;
+}
+
+void GLSLGenerator::WriteArrayDims(const std::vector<ExprPtr>& arrayDims)
+{
+    for (auto& dim : arrayDims)
+    {
+        Write("[");
+        Visit(dim);
+        Write("]");
+    }
 }
 
 

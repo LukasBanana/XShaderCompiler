@@ -75,8 +75,13 @@ VarIdent* VarIdent::LastVarIdent()
     return (next ? next->LastVarIdent() : this);
 }
 
-//TODO: incomplete for arrays of TextureDecl, and SamplerDecl!
 TypeDenoterPtr VarIdent::DeriveTypeDenoter()
+{
+    return GetExplicitTypeDenoter(true);
+}
+
+//TODO: incomplete for arrays of TextureDecl, and SamplerDecl!
+TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
 {
     if (symbolRef)
     {
@@ -86,7 +91,7 @@ TypeDenoterPtr VarIdent::DeriveTypeDenoter()
             case AST::Types::VarDecl:
             {
                 auto varDecl = static_cast<VarDecl*>(symbolRef);
-                return varDecl->GetTypeDenoter()->GetFromArray(arrayIndices.size(), next.get());
+                return varDecl->GetTypeDenoter()->GetFromArray(arrayIndices.size(), (recursive ? next.get() : nullptr));
             }
             break;
 

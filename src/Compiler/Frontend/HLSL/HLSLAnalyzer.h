@@ -75,6 +75,7 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( ReturnStmnt       );
 
         DECL_VISIT_PROC( TypeNameExpr      );
+        DECL_VISIT_PROC( SuffixExpr        );
         DECL_VISIT_PROC( VarAccessExpr     );
 
         /* --- Helper functions for context analysis --- */

@@ -23,6 +23,8 @@ namespace Xsc
 {
 
 
+struct StructTypeDenoter;
+
 // Context analyzer base class.
 class Analyzer : protected Visitor
 {
@@ -53,6 +55,7 @@ class Analyzer : protected Visitor
         
         void Error(const std::string& msg, const AST* ast = nullptr);
         void ErrorUndeclaredIdent(const std::string& ident, const AST* ast = nullptr);
+        void ErrorUndeclaredIdent(const std::string& ident, const std::string& contextName, const AST* ast = nullptr);
         void ErrorInternal(const std::string& msg, const AST* ast = nullptr);
 
         void Warning(const std::string& msg, const AST* ast = nullptr);
@@ -75,6 +78,8 @@ class Analyzer : protected Visitor
         AST* Fetch(const VarIdentPtr& ident);
         AST* FetchType(const std::string& ident, const AST* ast = nullptr);
         FunctionDecl* FetchFunctionDecl(const std::string& ident, const std::vector<ExprPtr>& args, const AST* ast = nullptr);
+
+        VarDecl* FetchFromStructDecl(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast = nullptr);
 
         StructDecl* FetchStructDeclFromIdent(const std::string& ident, const AST* ast = nullptr);
         StructDecl* FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter);
