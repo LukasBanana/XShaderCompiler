@@ -128,6 +128,20 @@ static std::string ExtractFilename(const std::string& filename)
     return (pos == std::string::npos ? filename : filename.substr(0, pos));
 }
 
+static std::string TargetToExtension(const ShaderTarget shaderTarget)
+{
+    switch (shaderTarget)
+    {
+        case ShaderTarget::VertexShader:                    return "vert";
+        case ShaderTarget::TessellationControlShader:       return "tesc";
+        case ShaderTarget::TessellationEvaluationShader:    return "tese";
+        case ShaderTarget::GeometryShader:                  return "geom";
+        case ShaderTarget::FragmentShader:                  return "frag";
+        case ShaderTarget::ComputeShader:                   return "comp";
+    }
+    return "glsl";
+}
+
 void Shell::Compile(const std::string& filename)
 {
     auto outputFilename = state_.outputFilename;
@@ -138,7 +152,7 @@ void Shell::Compile(const std::string& filename)
         outputFilename = ExtractFilename(filename);
         if (!state_.inputDesc.entryPoint.empty())
             outputFilename += "." + state_.inputDesc.entryPoint;
-        outputFilename += ".glsl";
+        outputFilename += "." + TargetToExtension(state_.inputDesc.shaderTarget);
     }
 
     try

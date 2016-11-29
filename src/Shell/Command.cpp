@@ -227,7 +227,7 @@ std::vector<Command::Identifier> OutputCommand::Idents() const
 
 HelpDescriptor OutputCommand::Help() const
 {
-    return { "-o, --output FILE", "Shader output file; default='<FILE>.<ENTRY>.glsl'" };
+    return { "-o, --output FILE", "Shader output file; default='<FILE>.<ENTRY>.<TARGET>'" };
 }
 
 void OutputCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -641,8 +641,8 @@ void HelpCommand::Run(CommandLine& cmdLine, ShellState& state)
     CommandFactory::Instance().GetHelpPrinter().PrintAll(std::cout, 2);
 
     std::cout << "Example:" << std::endl;
-    std::cout << "  xsc -E VS -T vertex Example.hlsl -E PS -T fragment Example.hlsl" << std::endl;
-    std::cout << "   -> Output files: 'Example.VS.glsl', and 'Example.PS.glsl'" << std::endl;
+    std::cout << "  xsc -E VS -T vert Example.hlsl -E PS -T frag Example.hlsl" << std::endl;
+    std::cout << "   -> Output files: 'Example.VS.vert', and 'Example.PS.frag'" << std::endl;
 }
 
 
