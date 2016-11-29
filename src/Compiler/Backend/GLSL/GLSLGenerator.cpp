@@ -920,15 +920,25 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Write(")");
 }
 
+//TODO: incomplete for swizzle operator of scalar values
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
     /* Is the sub expression a literal expression? */
-    if (auto literalExpr = ast->expr->As<LiteralExpr>())
+    auto typeDenoter = ast->expr->GetTypeDenoter()->Get();
+    if (typeDenoter->IsScalar())
     {
-        WriteDataType(SubscriptDataType(literalExpr->dataType, ast->varIdent->ident), ast);
+        auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>();
+
+        WriteDataType(SubscriptDataType(baseTypeDen->dataType, ast->varIdent->ident), ast);
         Write("(");
-        Visit(literalExpr);
+        Visit(ast->expr);
         Write(")");
+
+        if (ast->varIdent->next)
+        {
+            Write(".");
+            Visit(ast->varIdent->next);
+        }
     }
     else
     {
