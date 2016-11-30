@@ -9,6 +9,7 @@ struct S
 
 void f1()
 {
+	// Implicit type cast test
 	uint a = 0;
 	int b = 0;
 	uint d = 0u;
@@ -18,7 +19,6 @@ void f1()
 uint f2()
 {
 	return 1.5;
-	// ERROR -> no return statement
 }
 
 uint3 f3(float x)
