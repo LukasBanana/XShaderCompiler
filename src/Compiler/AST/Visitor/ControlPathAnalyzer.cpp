@@ -46,20 +46,25 @@ bool ControlPathAnalyzer::PopReturnPath()
 void ControlPathAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts)
 {
     /* Search for return statement */
+    bool hasReturnPath = false;
+
     for (auto& ast : stmnts)
     {
-        Visit(ast);
-
-        /* Return path found? */
-        if (PopReturnPath())
+        if (hasReturnPath)
         {
-            PushReturnPath(true);
-            return;
+            /* Mark all statmenets after return path as dead code */
+            ast->flags << AST::isDeadCode;
+        }
+        else
+        {
+            /* Search in statement for return path */
+            Visit(ast);
+            if (PopReturnPath())
+                hasReturnPath = true;
         }
     }
 
-    /* No return path found */
-    PushReturnPath(false);
+    PushReturnPath(hasReturnPath);
 }
 
 /* ------- Visit functions ------- */
@@ -76,12 +81,12 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    if (!ast->returnType->typeDenoter->IsVoid() && !ast->IsForwardDecl())
-    {
-        Visit(ast->codeBlock);
+    Visit(ast->codeBlock);
 
-        /* Return statement found in all control paths? */
-        if (!PopReturnPath())
+    /* Return statement found in all control paths? */
+    if (!PopReturnPath())
+    {
+        if (!ast->returnType->typeDenoter->IsVoid() && !ast->IsForwardDecl())
         {
             /* Mark function with non-return-path flag */
             ast->flags << FunctionDecl::hasNonReturnControlPath;

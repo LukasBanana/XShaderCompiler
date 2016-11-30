@@ -38,12 +38,14 @@ class GLSLConverter : public Visitor
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program          );
+        DECL_VISIT_PROC( CodeBlock        );
         DECL_VISIT_PROC( FunctionCall     );
-        DECL_VISIT_PROC( StructDecl       );
+        DECL_VISIT_PROC( SwitchCase       );
         DECL_VISIT_PROC( VarSemantic      );
         DECL_VISIT_PROC( VarIdent         );
 
         DECL_VISIT_PROC( VarDecl          );
+        DECL_VISIT_PROC( StructDecl       );
 
         DECL_VISIT_PROC( FunctionDecl     );
         DECL_VISIT_PROC( VarDeclStmnt     );
@@ -107,6 +109,9 @@ class GLSLConverter : public Visitor
 
         // Converts the expression to a cast expression if it is required for the specified target type.
         void ConvertExprIfCastRequired(ExprPtr& expr, TypeDenoter& targetTypeDen);
+
+        // Removes all statements that are marked as dead code.
+        void RemoveDeadCode(std::vector<StmntPtr>& stmnts);
 
         /* === Members === */
 

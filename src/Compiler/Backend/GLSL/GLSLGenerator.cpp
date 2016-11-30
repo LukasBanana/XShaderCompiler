@@ -47,16 +47,16 @@ void GLSLGenerator::GenerateCodePrimary(
     {
         try
         {
+            /* Mark all control paths */
+            {
+                ControlPathAnalyzer pathAnalyzer;
+                pathAnalyzer.MarkControlPaths(program);
+            }
+
             /* Mark all reachable AST nodes */
             {
                 ReferenceAnalyzer refAnalyzer;
                 refAnalyzer.MarkReferencesFromEntryPoint(program);
-            }
-
-            /* Mark all functions with incomplete control paths */
-            {
-                ControlPathAnalyzer pathAnalyzer;
-                pathAnalyzer.MarkControlPaths(program);
             }
 
             /* Convert AST for GLSL code generation */

@@ -37,9 +37,13 @@ class ReferenceAnalyzer : private Visitor
         // Marks the specified AST node as reachable and returns false if the AST node has already been marked as reachable.
         bool Reachable(AST* ast);
 
+        void VisitStmntList(const std::vector<StmntPtr>& stmnts);
+
         /* ----- Visitor implementation ----- */
 
+        DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
+        DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( VarType           );
         DECL_VISIT_PROC( VarIdent          );
 

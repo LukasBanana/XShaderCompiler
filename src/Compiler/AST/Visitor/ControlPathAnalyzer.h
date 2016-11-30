@@ -21,6 +21,7 @@ namespace Xsc
 Control path analyzer (must implement visitors for all statements).
 This helper class for the context analyzer marks all functions
 where not all control paths return a value (if the function is declared to have a return value).
+It also marks all statements as dead code, when they appear after a return path.
 */
 class ControlPathAnalyzer : private Visitor
 {

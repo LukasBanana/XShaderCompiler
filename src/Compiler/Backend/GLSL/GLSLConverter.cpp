@@ -63,6 +63,13 @@ IMPLEMENT_VISIT_PROC(Program)
     VISIT_DEFAULT(Program);
 }
 
+IMPLEMENT_VISIT_PROC(CodeBlock)
+{
+    RemoveDeadCode(ast->stmnts);
+
+    VISIT_DEFAULT(CodeBlock);
+}
+
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     if (ast->intrinsic == Intrinsic::Saturate)
@@ -97,13 +104,11 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     VISIT_DEFAULT(FunctionCall);
 }
 
-IMPLEMENT_VISIT_PROC(StructDecl)
+IMPLEMENT_VISIT_PROC(SwitchCase)
 {
-    PushStructDeclLevel();
-    {
-        VISIT_DEFAULT(StructDecl);
-    }
-    PopStructDeclLevel();
+    RemoveDeadCode(ast->stmnts);
+
+    VISIT_DEFAULT(SwitchCase);
 }
 
 IMPLEMENT_VISIT_PROC(VarSemantic)
@@ -158,6 +163,15 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
     /* Default visitor */
     VISIT_DEFAULT(VarDecl);
+}
+
+IMPLEMENT_VISIT_PROC(StructDecl)
+{
+    PushStructDeclLevel();
+    {
+        VISIT_DEFAULT(StructDecl);
+    }
+    PopStructDeclLevel();
 }
 
 /* --- Declaration statements --- */
@@ -494,6 +508,17 @@ void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, TypeDenoter& target
     {
         /* Convert to cast expression with target data type if required */
         expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
+    }
+}
+
+void GLSLConverter::RemoveDeadCode(std::vector<StmntPtr>& stmnts)
+{
+    for (auto it = stmnts.begin(); it != stmnts.end();)
+    {
+        if ((*it)->flags(AST::isDeadCode))
+            it = stmnts.erase(it);
+        else
+            ++it;
     }
 }
 

@@ -137,6 +137,7 @@ struct AST
     FLAG_ENUM
     {
         FLAG( isReachable, 30 ), // This AST node is reachable from the main entry point (i.e. the use-count >= 1).
+        FLAG( isDeadCode,  29 ), // This AST node is dead code (after return path).
     };
 
     // Returns this AST node as the specified sub class if this AST node has the correct type. Otherwise, null is returned.

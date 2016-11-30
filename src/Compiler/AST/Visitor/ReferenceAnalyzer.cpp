@@ -34,10 +34,24 @@ bool ReferenceAnalyzer::Reachable(AST* ast)
     return false;
 }
 
+void ReferenceAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts)
+{
+    for (auto& stmnt : stmnts)
+    {
+        if (!stmnt->flags(AST::isDeadCode))
+            Visit(stmnt);
+    }
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
     void ReferenceAnalyzer::Visit##AST_NAME(AST_NAME* ast, void* args)
+
+IMPLEMENT_VISIT_PROC(CodeBlock)
+{
+    VisitStmntList(ast->stmnts);
+}
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
@@ -49,6 +63,12 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         program_->usedIntrinsics.insert(ast->intrinsic);
 
     VISIT_DEFAULT(FunctionCall);
+}
+
+IMPLEMENT_VISIT_PROC(SwitchCase)
+{
+    Visit(ast->expr);
+    VisitStmntList(ast->stmnts);
 }
 
 IMPLEMENT_VISIT_PROC(VarType)
