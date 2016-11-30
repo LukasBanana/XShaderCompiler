@@ -5,6 +5,10 @@
 
 void f1()
 {
+	uint a = 0;
+	int b = 0;
+	uint d = 0u;
+	int c = 0u;
 }
 
 uint f2()

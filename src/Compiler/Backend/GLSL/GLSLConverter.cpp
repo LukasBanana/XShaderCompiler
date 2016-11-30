@@ -202,6 +202,9 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     /* Remove all 'static' storage classes (reserved word in GLSL) */
     EraseAll(ast->storageClasses, StorageClass::Static);
+
+    /* Default visitor */
+    Visitor::VisitVarDeclStmnt(ast, args);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
