@@ -89,6 +89,9 @@ DECL_PTR( InitializerExpr   );
 #define DECL_VISIT_PROC(CLASS_NAME) \
     void Visit##CLASS_NAME(CLASS_NAME* ast, void* args) override
 
+#define VISIT_DEFAULT(CLASS_NAME) \
+    Visitor::Visit##CLASS_NAME(ast, args)
+
 class Visitor
 {
     

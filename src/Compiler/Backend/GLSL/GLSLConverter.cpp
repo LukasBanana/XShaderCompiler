@@ -60,8 +60,7 @@ IMPLEMENT_VISIT_PROC(Program)
     RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefsSV);
     RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefsSV);
 
-    /* Default visitor */
-    Visitor::VisitProgram(ast, args);
+    VISIT_DEFAULT(Program);
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
@@ -95,16 +94,14 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         );
     }
 
-    /* Default visitor */
-    Visitor::VisitFunctionCall(ast, args);
+    VISIT_DEFAULT(FunctionCall);
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
     PushStructDeclLevel();
     {
-        /* Default visitor */
-        Visitor::VisitStructDecl(ast, args);
+        VISIT_DEFAULT(StructDecl);
     }
     PopStructDeclLevel();
 }
@@ -160,7 +157,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     }
 
     /* Default visitor */
-    Visitor::VisitVarDecl(ast, args);
+    VISIT_DEFAULT(VarDecl);
 }
 
 /* --- Declaration statements --- */
@@ -186,16 +183,12 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     {
         isInsideEntryPoint_ = true;
         {
-            /* Default visitor */
-            Visitor::VisitFunctionDecl(ast, args);
+            VISIT_DEFAULT(FunctionDecl);
         }
         isInsideEntryPoint_ = false;
     }
     else
-    {
-        /* Default visitor */
-        Visitor::VisitFunctionDecl(ast, args);
-    }
+        VISIT_DEFAULT(FunctionDecl);
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
@@ -203,8 +196,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     /* Remove all 'static' storage classes (reserved word in GLSL) */
     EraseAll(ast->storageClasses, StorageClass::Static);
 
-    /* Default visitor */
-    Visitor::VisitVarDeclStmnt(ast, args);
+    VISIT_DEFAULT(VarDeclStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
@@ -220,8 +212,7 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
             aliasDecl->typeDenoter->SetIdentIfAnonymous(ast->structDecl->ident);
     }
 
-    /* Default visitor */
-    Visitor::VisitAliasDeclStmnt(ast, args);
+    VISIT_DEFAULT(AliasDeclStmnt);
 }
 
 /* --- Statements --- */
@@ -231,8 +222,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
 
-    /* Default visitor */
-    Visitor::VisitForLoopStmnt(ast, args);
+    VISIT_DEFAULT(ForLoopStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
@@ -240,8 +230,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
 
-    /* Default visitor */
-    Visitor::VisitWhileLoopStmnt(ast, args);
+    VISIT_DEFAULT(WhileLoopStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
@@ -249,8 +238,7 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
 
-    /* Default visitor */
-    Visitor::VisitDoWhileLoopStmnt(ast, args);
+    VISIT_DEFAULT(DoWhileLoopStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(IfStmnt)
@@ -258,8 +246,7 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
 
-    /* Default visitor */
-    Visitor::VisitIfStmnt(ast, args);
+    VISIT_DEFAULT(IfStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(ElseStmnt)
@@ -267,8 +254,7 @@ IMPLEMENT_VISIT_PROC(ElseStmnt)
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
 
-    /* Default visitor */
-    Visitor::VisitElseStmnt(ast, args);
+    VISIT_DEFAULT(ElseStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(ExprStmnt)
@@ -280,14 +266,12 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
             ast->expr = ASTFactory::MakeSeparatedSinCosFunctionCalls(*funcCall);
     }
 
-    /* Default visitor */
-    Visitor::VisitExprStmnt(ast, args);
+    VISIT_DEFAULT(ExprStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
-    /* Default visitor */
-    Visitor::VisitReturnStmnt(ast, args);
+    VISIT_DEFAULT(ReturnStmnt);
 
     /* Convert return expression if cast required */
     if (currentFunctionDecl_)
@@ -310,14 +294,12 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
         }
     }
 
-    /* Default visitor */
-    Visitor::VisitLiteralExpr(ast, args);
+    VISIT_DEFAULT(LiteralExpr);
 }
 
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
-    /* Default visitor */
-    Visitor::VisitBinaryExpr(ast, args);
+    VISIT_DEFAULT(BinaryExpr);
 
     /* Convert right-hand-side expression if cast required */
     ConvertExprIfCastRequired(ast->rhsExpr, *ast->lhsExpr->GetTypeDenoter()->Get());
@@ -336,14 +318,12 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
         ast->expr = bracketExpr;
     }
 
-    /* Default visitor */
-    Visitor::VisitUnaryExpr(ast, args);
+    VISIT_DEFAULT(UnaryExpr);
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    /* Default visitor */
-    Visitor::VisitVarAccessExpr(ast, args);
+    VISIT_DEFAULT(VarAccessExpr);
 
     if (ast->assignExpr)
     {

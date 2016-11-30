@@ -48,7 +48,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     if (ast->intrinsic != Intrinsic::Undefined)
         program_->usedIntrinsics.insert(ast->intrinsic);
 
-    Visitor::VisitFunctionCall(ast, args);
+    VISIT_DEFAULT(FunctionCall);
 }
 
 IMPLEMENT_VISIT_PROC(VarType)
@@ -56,7 +56,7 @@ IMPLEMENT_VISIT_PROC(VarType)
     if (Reachable(ast))
     {
         Visit(ast->symbolRef);
-        Visitor::VisitVarType(ast, args);
+        VISIT_DEFAULT(VarType);
     }
 }
 
@@ -65,7 +65,7 @@ IMPLEMENT_VISIT_PROC(VarIdent)
     if (Reachable(ast))
     {
         Visit(ast->symbolRef);
-        Visitor::VisitVarIdent(ast, args);
+        VISIT_DEFAULT(VarIdent);
     }
 }
 
@@ -77,14 +77,14 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     {
         Visit(ast->declStmntRef);
         Visit(ast->bufferDeclRef);
-        Visitor::VisitVarDecl(ast, args);
+        VISIT_DEFAULT(VarDecl);
     }
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
     if (Reachable(ast))
-        Visitor::VisitStructDecl(ast, args);
+        VISIT_DEFAULT(StructDecl);
 }
 
 IMPLEMENT_VISIT_PROC(TextureDecl)
@@ -98,19 +98,19 @@ IMPLEMENT_VISIT_PROC(TextureDecl)
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (Reachable(ast))
-        Visitor::VisitFunctionDecl(ast, args);
+        VISIT_DEFAULT(FunctionDecl);
 }
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
     if (Reachable(ast))
-        Visitor::VisitBufferDeclStmnt(ast, args);
+        VISIT_DEFAULT(BufferDeclStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
     if (Reachable(ast))
-        Visitor::VisitTextureDeclStmnt(ast, args);
+        VISIT_DEFAULT(TextureDeclStmnt);
 }
 
 #undef IMPLEMENT_VISIT_PROC

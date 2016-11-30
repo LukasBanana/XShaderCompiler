@@ -60,8 +60,7 @@ bool Optimizer::CanRemoveStmnt(const Stmnt& ast) const
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    /* Default visitor */
-    Visitor::VisitCodeBlock(ast, args);
+    VISIT_DEFAULT(CodeBlock);
 
     /* Optimize statement list */
     OptimizeStmntList(ast->stmnts);
@@ -69,8 +68,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
-    /* Default visitor */
-    Visitor::VisitSwitchCase(ast, args);
+    VISIT_DEFAULT(SwitchCase);
 
     /* Optimize statement list */
     OptimizeStmntList(ast->stmnts);

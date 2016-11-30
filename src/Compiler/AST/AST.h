@@ -460,7 +460,8 @@ struct FunctionDecl : public Stmnt
 
     FLAG_ENUM
     {
-        FLAG( isEntryPoint, 0 ), // This function is the main entry point.
+        FLAG( isEntryPoint,            0 ), // This function is the main entry point.
+        FLAG( hasNonReturnControlPath, 1 ), // At least one control path does not return a value.
     };
 
     // Returns true if this function declaration is just a forward declaration (without function body).
