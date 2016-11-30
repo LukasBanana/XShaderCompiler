@@ -61,6 +61,11 @@ void Generator::ErrorInvalidNumArgs(const std::string& functionName, const AST* 
     Error("invalid number of arguments for " + functionName, ast);
 }
 
+void Generator::Warning(const std::string& msg, const AST* ast)
+{
+    reportHandler_.Warning(false, msg, program_->sourceCode.get(), (ast ? ast->area : SourceArea::ignore));
+}
+
 void Generator::BeginLn()
 {
     writer_.BeginLine();

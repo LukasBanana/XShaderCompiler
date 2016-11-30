@@ -76,13 +76,16 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    Visit(ast->codeBlock);
-
-    /* Return statement found in all control paths? */
-    if (!PopReturnPath())
+    if (!ast->returnType->typeDenoter->IsVoid() && !ast->IsForwardDecl())
     {
-        /* Mark function with non-return-path flag */
-        ast->flags << FunctionDecl::hasNonReturnControlPath;
+        Visit(ast->codeBlock);
+
+        /* Return statement found in all control paths? */
+        if (!PopReturnPath())
+        {
+            /* Mark function with non-return-path flag */
+            ast->flags << FunctionDecl::hasNonReturnControlPath;
+        }
     }
 }
 

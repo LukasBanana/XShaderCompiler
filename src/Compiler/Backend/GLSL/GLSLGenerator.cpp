@@ -11,10 +11,11 @@
 #include "GLSLKeywords.h"
 #include "GLSLIntrinsics.h"
 #include "GLSLHelper.h"
-#include "Exception.h"
 #include "ReferenceAnalyzer.h"
+#include "ControlPathAnalyzer.h"
 #include "TypeDenoter.h"
 #include "AST.h"
+#include "Exception.h"
 #include "Helper.h"
 #include <initializer_list>
 #include <algorithm>
@@ -50,6 +51,12 @@ void GLSLGenerator::GenerateCodePrimary(
             {
                 ReferenceAnalyzer refAnalyzer;
                 refAnalyzer.MarkReferencesFromEntryPoint(program);
+            }
+
+            /* Mark all functions with incomplete control paths */
+            {
+                ControlPathAnalyzer pathAnalyzer;
+                pathAnalyzer.MarkControlPaths(program);
             }
 
             /* Convert AST for GLSL code generation */
@@ -431,9 +438,20 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
+    /* Is this function reachable from the entry point? */
     if (!ast->flags(AST::isReachable))
+    {
+        /* Check for valid control paths */
+        if (ast->flags(FunctionDecl::hasNonReturnControlPath))
+            Warning("not all control paths in unreferenced function '" + ast->ident + "' return a value", ast);
         return;
+    }
 
+    /* Check for valid control paths */
+    if (ast->flags(FunctionDecl::hasNonReturnControlPath))
+        Error("not all control paths in function '" + ast->ident + "' return a value", ast);
+
+    /* Write line */
     Line(ast);
 
     /* Write function header */

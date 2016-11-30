@@ -22,7 +22,7 @@ uint3 f3(float x)
 	int3 v;
 	if (x > 20)
 		return v;
-//	return v*2;
+	return v*2;
 }
 
 float4 VS() : SV_Position
