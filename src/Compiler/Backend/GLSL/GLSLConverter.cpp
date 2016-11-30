@@ -167,6 +167,8 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
+    currentFunctionDecl_ = ast;
+
     /* Is function reachable? */
     if (!ast->flags(AST::isReachable))
         return;
@@ -277,6 +279,16 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
 
     /* Default visitor */
     Visitor::VisitExprStmnt(ast, args);
+}
+
+IMPLEMENT_VISIT_PROC(ReturnStmnt)
+{
+    /* Default visitor */
+    Visitor::VisitReturnStmnt(ast, args);
+
+    /* Convert return expression if cast required */
+    if (currentFunctionDecl_)
+        ConvertExprIfCastRequired(ast->expr, *currentFunctionDecl_->returnType->typeDenoter->Get());
 }
 
 /* --- Expressions --- */
@@ -476,17 +488,17 @@ std::unique_ptr<DataType> GLSLConverter::MustCastExprToDataType(TypeDenoter& tar
     {
         if (auto baseSourceTypeDen = sourceTypeDen.As<BaseTypeDenoter>())
         {
-            if (baseTargetTypeDen->dataType == DataType::UInt)
+            auto dstType = baseTargetTypeDen->dataType;
+            auto srcType = baseSourceTypeDen->dataType;
+
+            /* Check for type mismatch */
+            if ( ( IsUIntType    (dstType) && IsIntType     (srcType) ) ||
+                 ( IsIntType     (dstType) && IsUIntType    (srcType) ) ||
+                 ( IsRealType    (dstType) && IsIntegralType(srcType) ) ||
+                 ( IsIntegralType(dstType) && IsRealType    (srcType) ) )
             {
-                /* Cast to 'uint' */
-                if (baseSourceTypeDen->dataType == DataType::Int)
-                    return MakeUnique<DataType>(DataType::UInt);
-            }
-            else if (baseTargetTypeDen->dataType == DataType::Int)
-            {
-                /* Cast to 'int' */
-                if (baseSourceTypeDen->dataType == DataType::UInt)
-                    return MakeUnique<DataType>(DataType::Int);
+                /* Cast to destination type */
+                return MakeUnique<DataType>(dstType);
             }
         }
     }

@@ -1,21 +1,21 @@
 
-[SemanticTest1 VS1]
--T vert -E VS1 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS1]
+#-T vert -E VS1 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS2]
--T vert -E VS2 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS2]
+#-T vert -E VS2 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS3]
--T vert -E VS3 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS3]
+#-T vert -E VS3 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS4]
--T vert -E VS4 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS4]
+#-T vert -E VS4 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS5]
--T vert -E VS5 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS5]
+#-T vert -E VS5 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS6]
--T vert -E VS6 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS6]
+#-T vert -E VS6 -o output/* SemanticTest1.hlsl
 
 #[NameMangling1 CS]
 #--dump-ast -T comp -E CS -o output/* NameMangling1.hlsl
@@ -37,6 +37,9 @@
 
 [FloatTest1 VS]
 -T vert -E VS -o output/* FloatTest1.hlsl
+
+[FunctionDeclTest1 VS]
+-T vert -E VS -o output/* FunctionDeclTest1.hlsl
 
 #[StructInheritTest1 PS]
 #--dump-ast -T frag -E PS -o output/* StructInheritTest1.hlsl

@@ -55,6 +55,7 @@ class GLSLConverter : public Visitor
         DECL_VISIT_PROC( IfStmnt          );
         DECL_VISIT_PROC( ElseStmnt        );
         DECL_VISIT_PROC( ExprStmnt        );
+        DECL_VISIT_PROC( ReturnStmnt      );
 
         DECL_VISIT_PROC( LiteralExpr      );
         DECL_VISIT_PROC( BinaryExpr       );
@@ -109,7 +110,7 @@ class GLSLConverter : public Visitor
 
         /* === Members === */
 
-        ShaderTarget            shaderTarget_       = ShaderTarget::VertexShader;
+        ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;
 
         std::string             nameManglingPrefix_;
 
@@ -119,10 +120,12 @@ class GLSLConverter : public Visitor
         */
         std::vector<VarDecl*>   reservedVarDecls_;
 
-        unsigned int            structDeclLevel_    = 0;
+        unsigned int            structDeclLevel_        = 0;
 
         // True if AST traversal is currently inside the main entry point (or its sub nodes).
-        bool                    isInsideEntryPoint_ = false;
+        bool                    isInsideEntryPoint_     = false;
+
+        FunctionDecl*           currentFunctionDecl_    = nullptr;
 
 };
 
