@@ -234,6 +234,12 @@ bool IsRealType(const DataType t);
 // Returns true if the specified data type is an integral type (i.e. int, uint, and all vectors and matrices of these).
 bool IsIntegralType(const DataType t);
 
+// Returns true if the specified data type is an integer type (i.e. int, and all vectors and matrices of these).
+bool IsIntType(const DataType t);
+
+// Returns true if the specified data type is an unsigned-integer type (i.e. uint, and all vectors and matrices of these).
+bool IsUIntType(const DataType t);
+
 /*
 Returns the dimension of the specified data type interpreted as vector type.
 Values range from 1 to 4, but 0 for matrix types).

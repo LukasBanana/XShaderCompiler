@@ -248,6 +248,26 @@ bool IsIntegralType(const DataType t)
     );
 }
 
+bool IsIntType(const DataType t)
+{
+    return
+    (
+        (t == DataType::Int) ||
+        (t >= DataType::Int2 && t <= DataType::Int4) ||
+        (t >= DataType::Int2x2 && t <= DataType::Int4x4)
+    );
+}
+
+bool IsUIntType(const DataType t)
+{
+    return
+    (
+        (t == DataType::UInt) ||
+        (t >= DataType::UInt2 && t <= DataType::UInt4) ||
+        (t >= DataType::UInt2x2 && t <= DataType::UInt4x4)
+    );
+}
+
 int VectorTypeDim(const DataType t)
 {
     switch (t)
