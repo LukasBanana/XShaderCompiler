@@ -218,6 +218,36 @@ bool IsMatrixType(const DataType t)
     return (t >= DataType::Bool2x2 && t <= DataType::Double4x4);
 }
 
+bool IsBooleanType(const DataType t)
+{
+    return
+    (
+        (t == DataType::Bool) ||
+        (t >= DataType::Bool2 && t <= DataType::Bool4) ||
+        (t >= DataType::Bool2x2 && t <= DataType::Bool4x4)
+    );
+}
+
+bool IsRealType(const DataType t)
+{
+    return
+    (
+        (t >= DataType::Half && t <= DataType::Double) ||
+        (t >= DataType::Half2 && t <= DataType::Double4) ||
+        (t >= DataType::Half2x2 && t <= DataType::Double4x4)
+    );
+}
+
+bool IsIntegralType(const DataType t)
+{
+    return
+    (
+        (t >= DataType::Int && t <= DataType::UInt) ||
+        (t >= DataType::Int2 && t <= DataType::UInt4) ||
+        (t >= DataType::Int2x2 && t <= DataType::UInt4x4)
+    );
+}
+
 int VectorTypeDim(const DataType t)
 {
     switch (t)

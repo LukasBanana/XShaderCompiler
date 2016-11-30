@@ -225,6 +225,15 @@ bool IsVectorType(const DataType t);
 // Returns true if the specified data type is a matrix type.
 bool IsMatrixType(const DataType t);
 
+// Returns true if the specified data type is a boolean type (i.e. bool, and all vectors and matrices of these).
+bool IsBooleanType(const DataType t);
+
+// Returns true if the specified data type is a real type (i.e. half, float, double, and all vectors and matrices of these).
+bool IsRealType(const DataType t);
+
+// Returns true if the specified data type is an integral type (i.e. int, uint, and all vectors and matrices of these).
+bool IsIntegralType(const DataType t);
+
 /*
 Returns the dimension of the specified data type interpreted as vector type.
 Values range from 1 to 4, but 0 for matrix types).
