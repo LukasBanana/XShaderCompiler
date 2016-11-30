@@ -132,15 +132,26 @@ CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataTyp
     return ast;
 }
 
-CastExprPtr MakeBaseTypeCastExpr(const DataType dataType, const ExprPtr& subExpr)
+ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
 {
-    auto ast = MakeShared<CastExpr>(subExpr->area);
+    if (subExpr->Type() == AST::Types::LiteralExpr)
     {
-        ast->typeExpr               = MakeShared<TypeNameExpr>(SourcePosition::ignore);
-        ast->typeExpr->typeDenoter  = MakeShared<BaseTypeDenoter>(dataType);
-        ast->expr                   = subExpr;
+        /* Convert data type of literal expression */
+        auto literalExpr = std::static_pointer_cast<LiteralExpr>(subExpr);
+        literalExpr->ConvertDataType(dataType);
+        return literalExpr;
     }
-    return ast;
+    else
+    {
+        /* Make new cast expression */
+        auto ast = MakeShared<CastExpr>(subExpr->area);
+        {
+            ast->typeExpr               = MakeShared<TypeNameExpr>(SourcePosition::ignore);
+            ast->typeExpr->typeDenoter  = MakeShared<BaseTypeDenoter>(dataType);
+            ast->expr                   = subExpr;
+        }
+        return ast;
+    }
 }
 
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident)

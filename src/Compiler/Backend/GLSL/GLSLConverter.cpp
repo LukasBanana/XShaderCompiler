@@ -510,7 +510,7 @@ void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, TypeDenoter& target
     if (auto dataType = MustCastExprToDataType(targetTypeDen, *expr->GetTypeDenoter()->Get()))
     {
         /* Convert to cast expression with target data type if required */
-        expr = ASTFactory::MakeBaseTypeCastExpr(*dataType, expr);
+        expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
     }
 }
 

@@ -168,6 +168,8 @@ struct TypedAST : public AST
 
         virtual TypeDenoterPtr DeriveTypeDenoter() = 0;
 
+        void ResetBufferedTypeDenoter();
+
     private:
     
         TypeDenoterPtr bufferedTypeDenoter_;
@@ -700,7 +702,10 @@ struct LiteralExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    DataType        dataType    = DataType::Undefined;
+    // Converts the data type of this literal expr. This will also modify the value string.
+    void ConvertDataType(const DataType type);
+
+    DataType        dataType    = DataType::Undefined;  // Valid data types: String, Bool, Int, UInt, Half, Float, Double
     std::string     value;
 };
 

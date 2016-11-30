@@ -8,6 +8,7 @@
 #include "AST.h"
 #include "Exception.h"
 #include "HLSLIntrinsics.h"
+#include "Variant.h"
 
 #ifdef XSC_ENABLE_MEMORY_POOL
 #include "MemoryPool.h"
@@ -47,6 +48,11 @@ const TypeDenoterPtr& TypedAST::GetTypeDenoter()
     if (!bufferedTypeDenoter_)
         bufferedTypeDenoter_ = DeriveTypeDenoter();
     return bufferedTypeDenoter_;
+}
+
+void TypedAST::ResetBufferedTypeDenoter()
+{
+    bufferedTypeDenoter_.reset();
 }
 
 
@@ -466,6 +472,44 @@ TypeDenoterPtr ListExpr::DeriveTypeDenoter()
 TypeDenoterPtr LiteralExpr::DeriveTypeDenoter()
 {
     return std::make_shared<BaseTypeDenoter>(dataType);
+}
+
+void LiteralExpr::ConvertDataType(const DataType type)
+{
+    if (dataType != type)
+    {
+        /* Parse variant from value string */
+        auto variant = Variant::ParseFrom(value);
+
+        switch (type)
+        {
+            case DataType::Bool:
+                variant.ToBool();
+                value = variant.ToString();
+                break;
+
+            case DataType::Int:
+                variant.ToInt();
+                value = variant.ToString();
+                break;
+
+            case DataType::UInt:
+                variant.ToInt();
+                value = variant.ToString() + "u";
+                break;
+
+            case DataType::Half:
+            case DataType::Float:
+            case DataType::Double:
+                variant.ToReal();
+                value = variant.ToString();
+                break;
+        }
+
+        /* Set new data type and reset buffered type dentoer */
+        dataType = type;
+        ResetBufferedTypeDenoter();
+    }
 }
 
 

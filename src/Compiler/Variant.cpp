@@ -6,6 +6,8 @@
  */
 
 #include "Variant.h"
+#include "Helper.h"
+#include <sstream>
 
 
 namespace Xsc
@@ -300,6 +302,39 @@ int Variant::CompareWith(const Variant& rhs) const
     }
 
     return 0;
+}
+
+Variant Variant::ParseFrom(const std::string& s)
+{
+    if (s == "true")
+        return Variant(true);
+    else if (s == "false")
+        return Variant(false);
+    else if (s.find_first_of(".eE") != std::string::npos)
+        return Variant(FromString<Variant::RealType>(s));
+    else
+        return Variant(FromString<Variant::IntType>(s));
+}
+
+static std::string RealToString(Variant::RealType v)
+{
+    auto s = std::to_string(v);
+    s.erase(s.find_last_not_of('0') + 2, std::string::npos);
+    return s;
+}
+
+std::string Variant::ToString() const
+{
+    switch (Type())
+    {
+        case Types::Bool:
+            return (Bool() ? "true" : "false");
+        case Types::Int:
+            return std::to_string(Int());
+        case Types::Real:
+            return RealToString(Real());
+    }
+    return "";
 }
 
 

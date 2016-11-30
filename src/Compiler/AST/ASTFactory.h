@@ -36,7 +36,7 @@ ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall);
 
 CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue);
 
-CastExprPtr MakeBaseTypeCastExpr(const DataType dataType, const ExprPtr& subExpr);
+ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr);
 
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident);
 

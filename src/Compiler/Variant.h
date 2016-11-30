@@ -85,6 +85,10 @@ class Variant
             return type_;
         }
 
+        static Variant ParseFrom(const std::string& s);
+
+        std::string ToString() const;
+
     private:
 
         Types       type_   = Types::Int;
