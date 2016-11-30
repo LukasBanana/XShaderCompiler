@@ -264,6 +264,9 @@ struct SwitchCase : public AST
 {
     AST_INTERFACE(SwitchCase);
 
+    // Returns true, if this is a default case (if 'expr' is null).
+    bool IsDefaultCase() const;
+
     ExprPtr                 expr; // If null -> default case
     std::vector<StmntPtr>   stmnts;
 };

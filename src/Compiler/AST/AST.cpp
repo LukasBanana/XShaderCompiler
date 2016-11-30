@@ -208,6 +208,14 @@ TypeDenoterPtr AliasDecl::DeriveTypeDenoter()
 }
 
 
+/* ----- SwitchCase ----- */
+
+bool SwitchCase::IsDefaultCase() const
+{
+    return (expr == nullptr);
+}
+
+
 /* ----- PackOffset ----- */
 
 std::string PackOffset::ToString() const
