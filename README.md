@@ -15,7 +15,12 @@ License
 Status
 ------
 
-**Alpha Status**: *Do not use in production code!*
+**Version: 0.02 Alpha** (*Do not use in production code!*)
+
+##### Special Features: #####
+* Low Overhead Translation (i.e. avoidance of unnecessary wrapper functions)
+* Dead Code Removal
+* Meaningful Report Output
 
 ##### TODO List: #####
 * Common HLSL IO semantics to GLSL transformation.
