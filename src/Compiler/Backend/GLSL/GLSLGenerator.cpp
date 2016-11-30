@@ -1487,26 +1487,6 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* 
     }
 }
 
-//TODO: continue...
-#if 0
-
-void GLSLGenerator::WriteTypeDenoterCastProc(const TypeDenoter& targetTypeDenoter, const TypeDenoter& sourceTypeDenoter, const AST* ast)
-{
-    /* Write procedure name */
-    BeginLn();
-    {
-        WriteTypeDenoter(targetTypeDenoter, ast);
-        Write(" " + nameManglingPrefix_ + "cast");
-
-
-    }
-    EndLn();
-
-    //TODO: continue ...
-}
-
-#endif
-
 /* --- Function call --- */
 
 void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax)

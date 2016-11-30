@@ -179,8 +179,6 @@ class GLSLGenerator : public Generator
         void WriteDataType(DataType dataType, const AST* ast = nullptr);
         void WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast = nullptr);
 
-        //void WriteTypeDenoterCastProc(const TypeDenoter& targetTypeDenoter, const TypeDenoter& sourceTypeDenoter, const AST* ast = nullptr);
-
         /* --- Function call --- */
 
         void AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax = ~0);
