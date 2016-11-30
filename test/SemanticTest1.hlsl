@@ -62,4 +62,11 @@ float4 VS5(in VIn inp, float3 vTangent : TANGENT, out float3 tNormal : NORMAL) :
 	return mul(wvpMatrix, inp.vPos);
 }
 
+// VS6
+
+float4 VS6(in VIn inp, uniform float4 offset) : SV_Position
+{
+	return mul(wvpMatrix, inp.vPos + offset);
+}
+
 

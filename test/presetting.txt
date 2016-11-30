@@ -14,6 +14,9 @@
 [SemanticTest1 VS5]
 -T vert -E VS5 -o output/* SemanticTest1.hlsl
 
+[SemanticTest1 VS6]
+-T vert -E VS6 -o output/* SemanticTest1.hlsl
+
 #[NameMangling1 CS]
 #--dump-ast -T comp -E CS -o output/* NameMangling1.hlsl
 
