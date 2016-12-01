@@ -29,17 +29,20 @@
 #[ExprTest2 CS]
 #-T comp -E CS -o output/* ExprTest2.hlsl
 
-[TypeTest1 VS]
--T vert -E VS -o output/* TypeTest1.hlsl
+#[TypeTest1 VS]
+#-T vert -E VS -o output/* TypeTest1.hlsl
 
-[TypeTest2 VS]
--T vert -E VS -o output/* TypeTest2.hlsl
+#[TypeTest2 VS]
+#-T vert -E VS -o output/* TypeTest2.hlsl
 
-[FloatTest1 VS]
--T vert -E VS -o output/* FloatTest1.hlsl
+#[FloatTest1 VS]
+#-T vert -E VS -o output/* FloatTest1.hlsl
 
 [FunctionDeclTest1 VS]
 -T vert -E VS -o output/* FunctionDeclTest1.hlsl
+
+[StructTest1 PS]
+-T frag -E PS -o output/* StructTest1.hlsl
 
 #[StructInheritTest1 PS]
 #--dump-ast -T frag -E PS -o output/* StructInheritTest1.hlsl
