@@ -84,7 +84,7 @@ class Analyzer : protected Visitor
         StructDecl* FetchStructDeclFromIdent(const std::string& ident, const AST* ast = nullptr);
         StructDecl* FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter);
 
-        /* ----- State tracker functions ----- */
+        /* ----- Function declaration tracker ----- */
 
         void PushFunctionDeclLevel(bool isEntryPoint);
         void PopFunctionDeclLevel();
@@ -95,11 +95,21 @@ class Analyzer : protected Visitor
         // Returns true if the analyzer is currently inside the main entry point.
         bool InsideEntryPoint() const;
 
-        void PushStructDeclLevel();
-        void PopStructDeclLevel();
+        /* ----- Structure declaration tracker ----- */
+
+        void PushStructDecl(StructDecl* ast);
+        void PopStructDecl();
 
         // Returns true if the analyzer is currently inside a structure declaration.
         bool InsideStructDecl() const;
+
+        // Returns the stack (or rather the list) of all current, nested structure declarations.
+        inline const std::vector<StructDecl*>& GetStructDeclStack() const
+        {
+            return structDeclStack_;
+        }
+
+        /* ----- Function call tracker ----- */
 
         void PushFunctionCall(FunctionCall* ast);
         void PopFunctionCall();
@@ -131,7 +141,8 @@ class Analyzer : protected Visitor
         unsigned int                funcDeclLevel_              = 0;
         unsigned int                funcDeclLevelOfEntryPoint_  = ~0;
 
-        unsigned int                structDeclLevel_            = 0;
+        // Structure stack to collect all members with system value semantic (SV_...), and detect all nested structures.
+        std::vector<StructDecl*>    structDeclStack_;
 
         // Function call stack to join arguments with its function call.
         std::stack<FunctionCall*>   funcCallStack_;

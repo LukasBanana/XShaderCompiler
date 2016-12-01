@@ -138,7 +138,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         /* Store references to members with system value semantic (SV_...) in all parent structures */
         if (IsSystemSemantic(varSem->semantic))
         {
-            for (auto& structDecl : structStack_)
+            for (auto structDecl : GetStructDeclStack())
                 structDecl->systemValuesRef[ast->ident] = ast;
         }
     }
@@ -161,17 +161,13 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     /* Register struct identifier in symbol table */
     Register(ast->ident, ast);
 
-    structStack_.push_back(ast);
+    PushStructDecl(ast);
+    OpenScope();
     {
-        PushStructDeclLevel();
-        OpenScope();
-        {
-            Visit(ast->members);
-        }
-        CloseScope();
-        PopStructDeclLevel();
+        Visit(ast->members);
     }
-    structStack_.pop_back();
+    CloseScope();
+    PopStructDecl();
 }
 
 IMPLEMENT_VISIT_PROC(AliasDecl)

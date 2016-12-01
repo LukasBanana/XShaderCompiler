@@ -118,9 +118,6 @@ class HLSLAnalyzer : public Analyzer
         InputShaderVersion          versionIn_      = InputShaderVersion::HLSL5;
         ShaderVersion               shaderModel_    { 5, 0 };
 
-        // Structure stack to collect all members with system value semantic (SV_...), and detect all nested structures.
-        std::vector<StructDecl*>    structStack_;
-
 };
 
 

@@ -242,7 +242,7 @@ StructDecl* Analyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDeno
     return nullptr;
 }
 
-/* ----- State tracker functions ----- */
+/* ----- Function declaration tracker ----- */
 
 void Analyzer::PushFunctionDeclLevel(bool isEntryPoint)
 {
@@ -273,23 +273,38 @@ bool Analyzer::InsideEntryPoint() const
     return (funcDeclLevel_ >= funcDeclLevelOfEntryPoint_);
 }
 
-void Analyzer::PushStructDeclLevel()
+/* ----- Structure declaration tracker ----- */
+
+void Analyzer::PushStructDecl(StructDecl* ast)
 {
-    ++structDeclLevel_;
+    if (!structDeclStack_.empty())
+    {
+        /* Mark structure as nested structure */
+        ast->flags << StructDecl::isNestedStruct;
+
+        /* Add reference of the new structure to all parent structures */
+        for (auto parentStruct : structDeclStack_)
+            parentStruct->nestedStructDeclRefs.push_back(ast);
+    }
+
+    /* Push new structure onto stack */
+    structDeclStack_.push_back(ast);
 }
 
-void Analyzer::PopStructDeclLevel()
+void Analyzer::PopStructDecl()
 {
-    if (structDeclLevel_ > 0)
-        --structDeclLevel_;
+    if (!structDeclStack_.empty())
+        structDeclStack_.pop_back();
     else
         ErrorInternal("structure declaration level underflow");
 }
 
 bool Analyzer::InsideStructDecl() const
 {
-    return (structDeclLevel_ > 0);
+    return !structDeclStack_.empty();
 }
+
+/* ----- Function call tracker ----- */
 
 void Analyzer::PushFunctionCall(FunctionCall* ast)
 {
