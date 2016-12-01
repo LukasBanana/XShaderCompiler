@@ -20,7 +20,7 @@ namespace Xsc
 
 /*
 End-of-scope analyzer.
-This helper class for the context analyzer marks all statements
+This helper class for the context analyzer marks all return statements
 which are at the end of a scope (e.g. the 'isEndOfFunction' flag for the return statement).
 */
 class EndOfScopeAnalyzer : private Visitor

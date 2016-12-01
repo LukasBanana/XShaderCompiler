@@ -130,11 +130,19 @@ XSC_EXPORT bool CompileShader(const ShaderInput& inputDesc, const ShaderOutput& 
 {
     std::array<TimePoint, 6> timePoints;
 
+    /* Make copy of output descriptor to support validation without output stream */
+    std::stringstream dummyOutputStream;
+
+    auto outputDescCopy = outputDesc;
+
+    if (outputDescCopy.options.validateOnly)
+        outputDescCopy.sourceCode = &dummyOutputStream;
+
     /* Compile shader with primary function */
-    auto result = CompileShaderPrimary(inputDesc, outputDesc, log, timePoints);
+    auto result = CompileShaderPrimary(inputDesc, outputDescCopy, log, timePoints);
 
     /* Sort statistics */
-    if (outputDesc.statistics)
+    if (outputDescCopy.statistics)
     {
         auto SortStats = [](std::vector<Statistics::Binding>& objects)
         {
@@ -147,13 +155,13 @@ XSC_EXPORT bool CompileShader(const ShaderInput& inputDesc, const ShaderOutput& 
             );
         };
 
-        SortStats(outputDesc.statistics->textures);
-        SortStats(outputDesc.statistics->constantBuffers);
-        SortStats(outputDesc.statistics->fragmentTargets);
+        SortStats(outputDescCopy.statistics->textures);
+        SortStats(outputDescCopy.statistics->constantBuffers);
+        SortStats(outputDescCopy.statistics->fragmentTargets);
     }
 
     /* Dump timings */
-    if (outputDesc.options.dumpTimes && log)
+    if (outputDescCopy.options.dumpTimes && log)
     {
         auto PrintTimePoint = [log](const std::string& processName, const TimePoint startTime, const TimePoint endTime)
         {

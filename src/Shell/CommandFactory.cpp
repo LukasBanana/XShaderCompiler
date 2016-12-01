@@ -70,6 +70,7 @@ CommandFactory::CommandFactory()
     MakeCommand< VerboseCommand     >();
     MakeCommand< OptimizeCommand    >();
     MakeCommand< ExtensionCommand   >();
+    MakeCommand< ValidateCommand    >();
 }
 
 template <typename T, typename... Args>

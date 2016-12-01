@@ -61,6 +61,9 @@ struct Options
     //! If true, only the preprocessed source code will be written out. By default false.
     bool preprocessOnly     = false;
 
+    //! If true, the source code is only validated, but no output code will be generated. By default false.
+    bool validateOnly       = false;
+
     //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
     bool allowExtensions    = false;
 
@@ -106,19 +109,19 @@ struct ShaderInput
     std::shared_ptr<std::istream>   sourceCode;
 
     //! Specifies the input shader version (e.g. InputShaderVersion::HLSL5 for "HLSL 5"). By default InputShaderVersion::HLSL5.
-    InputShaderVersion              shaderVersion       = InputShaderVersion::HLSL5;
+    InputShaderVersion              shaderVersion   = InputShaderVersion::HLSL5;
 
-    //! Specifies the HLSL shader entry point. If may also be empty.
+    //! Specifies the HLSL shader entry point.
     std::string                     entryPoint;
     
     //! Specifies the target shader (Vertex, Fragment etc.).
-    ShaderTarget                    shaderTarget;
+    ShaderTarget                    shaderTarget    = ShaderTarget::VertexShader;
 
     /**
     \brief Optional pointer to the implementation of the "IncludeHandler" interface. By default null.
     \remarks If this is null, the default include handler will be used, which will include files with the STL input file streams.
     */
-    IncludeHandler*                 includeHandler      = nullptr;
+    IncludeHandler*                 includeHandler  = nullptr;
 };
 
 //! Shader output descriptor structure.

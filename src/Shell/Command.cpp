@@ -601,12 +601,12 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> VersionCommand::Idents() const
 {
-    return { { "--version" }, { "-v" } };
+    return { { "--version" } };
 }
 
 HelpDescriptor VersionCommand::Help() const
 {
-    return { "--version, -v", "Prints the version information" };
+    return { "--version", "Prints the version information" };
 }
 
 void VersionCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -735,6 +735,30 @@ HelpDescriptor ExtensionCommand::Help() const
 void ExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.options.allowExtensions = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * ValidateCommand class
+ */
+
+std::vector<Command::Identifier> ValidateCommand::Idents() const
+{
+    return { { "-Valid" }, { "--validate-only" } };
+}
+
+HelpDescriptor ValidateCommand::Help() const
+{
+    return
+    {
+        "-Valid, --validate-only [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables to only validate source code; default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void ValidateCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.validateOnly = cmdLine.AcceptBoolean(true);
 }
 
 

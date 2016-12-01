@@ -51,7 +51,9 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
 {
     if (cmdLine.ReachedEnd())
     {
-        std::cout << "no input : enter \"xsc --help\"" << std::endl;
+        /* Print help */
+        if (auto cmd = CommandFactory::Instance().Get("--help"))
+            cmd->Run(cmdLine, state_);
         return;
     }
 
@@ -197,23 +199,33 @@ void Shell::Compile(const std::string& filename)
         if (state_.dumpStats)
             state_.outputDesc.statistics = &stats;
 
-        /* Compile shader file */
-        output << "compile " << filename << " to " << outputFilename << std::endl;
+        /* Show compilation/validation status */
+        if (state_.outputDesc.options.validateOnly)
+            output << "validate \"" << filename << '\"' << std::endl;
+        else
+            output << "compile \"" << filename << "\" to \"" << outputFilename << '\"' << std::endl;
 
+        /* Compile shader file */
         auto result = CompileShader(state_.inputDesc, state_.outputDesc, &log);
 
+        /* Print all reports to the log output */
         log.PrintAll(state_.verbose, state_.outputDesc.options.warnings);
 
         if (result)
         {
-            output << "translation successful" << std::endl;
+            if (!state_.outputDesc.options.validateOnly)
+            {
+                output << "compilation successful" << std::endl;
 
-            /* Write result to output stream only on success */
-            std::ofstream outputFile(outputFilename);
-            if (!outputFile.good())
-                throw std::runtime_error("failed to write file: \"" + filename + "\"");
-
-            outputFile << outputStream.rdbuf();
+                /* Write result to output stream only on success */
+                std::ofstream outputFile(outputFilename);
+                if (outputFile.good())
+                    outputFile << outputStream.rdbuf();
+                else
+                    throw std::runtime_error("failed to write file: \"" + filename + "\"");
+            }
+            else
+                output << "validation successful" << std::endl;
         }
 
         /* Show output statistics (if enabled) */
