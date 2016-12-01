@@ -52,6 +52,11 @@ Variant ConstExprEvaluator::Pop()
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
     void ConstExprEvaluator::Visit##AST_NAME(AST_NAME* ast, void* args)
 
+IMPLEMENT_VISIT_PROC(NullExpr)
+{
+    IllegalExpr("dynamic array dimension");
+}
+
 IMPLEMENT_VISIT_PROC(ListExpr)
 {
     /* Only visit first sub-expression (when used as condExpr) */

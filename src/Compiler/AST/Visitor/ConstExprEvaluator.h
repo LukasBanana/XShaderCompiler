@@ -42,6 +42,7 @@ class ConstExprEvaluator : private Visitor
 
         /* --- Visitor implementation --- */
 
+        DECL_VISIT_PROC( NullExpr         );
         DECL_VISIT_PROC( ListExpr         );
         DECL_VISIT_PROC( LiteralExpr      );
         DECL_VISIT_PROC( TypeNameExpr     );
