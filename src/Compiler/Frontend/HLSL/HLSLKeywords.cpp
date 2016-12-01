@@ -232,6 +232,8 @@ static KeywordMapType GenerateKeywordMap()
         { "row_major",               T::TypeModifier    },
         { "column_major",            T::TypeModifier    },
 
+        { "inline",                  T::Inline          },
+
         { "technique",               T::Technique       },
         { "pass",                    T::Pass            },
         { "compile",                 T::Compile         },

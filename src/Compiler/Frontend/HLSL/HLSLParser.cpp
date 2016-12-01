@@ -666,6 +666,7 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
             return ParseVarDeclStmnt();
         case Tokens::LParen:
         case Tokens::Void:
+        case Tokens::Inline:
             return ParseFunctionDecl();
         default:
             return ParseStructDeclOrVarDeclOrFunctionDeclStmnt();
@@ -711,11 +712,18 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl(const VarTypePtr& returnType, cons
 {
     auto ast = Make<FunctionDecl>();
 
-    /* Parse function attributes and return type */
     if (returnType)
+    {
+        /* Take previously parsed return type */
         ast->returnType = returnType;
+    }
     else
     {
+        /* Parse (and ignore) optional 'inline' keyword */
+        if (Is(Tokens::Inline))
+            AcceptIt();
+
+        /* Parse function attributes and return type */
         ast->attribs    = ParseAttributeList();
         ast->returnType = ParseVarType(true);
     }

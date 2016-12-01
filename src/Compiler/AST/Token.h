@@ -116,6 +116,8 @@ class Token
             StorageClass,
             TypeModifier,       // const, row_major, column_major
 
+            Inline,             // inline
+
             /* --- Technique keywords --- */
             Technique,          // technique
             Pass,               // pass
