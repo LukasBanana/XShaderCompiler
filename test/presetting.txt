@@ -1,42 +1,42 @@
 
-#[SemanticTest1 VS1]
-#-T vert -E VS1 -o output/* SemanticTest1.hlsl
+[SemanticTest1 VS1]
+-T vert -E VS1 -o output/* SemanticTest1.hlsl
 
-#[SemanticTest1 VS2]
-#-T vert -E VS2 -o output/* SemanticTest1.hlsl
+[SemanticTest1 VS2]
+-T vert -E VS2 -o output/* SemanticTest1.hlsl
 
-#[SemanticTest1 VS3]
-#-T vert -E VS3 -o output/* SemanticTest1.hlsl
+[SemanticTest1 VS3]
+-T vert -E VS3 -o output/* SemanticTest1.hlsl
 
-#[SemanticTest1 VS4]
-#-T vert -E VS4 -o output/* SemanticTest1.hlsl
+[SemanticTest1 VS4]
+-T vert -E VS4 -o output/* SemanticTest1.hlsl
 
-#[SemanticTest1 VS5]
-#-T vert -E VS5 -o output/* SemanticTest1.hlsl
+[SemanticTest1 VS5]
+-T vert -E VS5 -o output/* SemanticTest1.hlsl
 
-#[SemanticTest1 VS6]
-#-T vert -E VS6 -o output/* SemanticTest1.hlsl
+[SemanticTest1 VS6]
+-T vert -E VS6 -o output/* SemanticTest1.hlsl
 
-#[NameMangling1 CS]
-#--show-ast -T comp -E CS -o output/* NameMangling1.hlsl
+[NameMangling1 CS]
+--show-ast -T comp -E CS -o output/* NameMangling1.hlsl
 
 [ExprTest4 VS]
 --show-ast -T vert -E VS -o output/* ExprTest4.hlsl
 
-#[ExprTest3 VS]
-#--show-ast -T vert -E VS -o output/* ExprTest3.hlsl
+[ExprTest3 VS]
+--show-ast -T vert -E VS -o output/* ExprTest3.hlsl
 
-#[ExprTest2 CS]
-#-T comp -E CS -o output/* ExprTest2.hlsl
+[ExprTest2 CS]
+-T comp -E CS -o output/* ExprTest2.hlsl
 
-#[TypeTest1 VS]
-#-T vert -E VS -o output/* TypeTest1.hlsl
+[TypeTest1 VS]
+-T vert -E VS -o output/* TypeTest1.hlsl
 
-#[TypeTest2 VS]
-#-T vert -E VS -o output/* TypeTest2.hlsl
+[TypeTest2 VS]
+-T vert -E VS -o output/* TypeTest2.hlsl
 
-#[FloatTest1 VS]
-#-T vert -E VS -o output/* FloatTest1.hlsl
+[FloatTest1 VS]
+-T vert -E VS -o output/* FloatTest1.hlsl
 
 [FunctionDeclTest1 VS]
 -T vert -E VS -o output/* FunctionDeclTest1.hlsl

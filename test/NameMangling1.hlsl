@@ -4,7 +4,7 @@
 
 float fract(float x)
 {
-	return x*2;
+	return frac(x);
 }
 
 int main()

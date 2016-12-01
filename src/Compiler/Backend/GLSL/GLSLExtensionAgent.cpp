@@ -43,10 +43,25 @@ GLSLExtensionAgent::GLSLExtensionAgent()
     };
 }
 
+static OutputShaderVersion GetMinGLSLVersionForTarget(const ShaderTarget shaderTarget)
+{
+    switch (shaderTarget)
+    {
+        case ShaderTarget::VertexShader:                    return OutputShaderVersion::GLSL110;
+        case ShaderTarget::TessellationControlShader:       return OutputShaderVersion::GLSL400;
+        case ShaderTarget::TessellationEvaluationShader:    return OutputShaderVersion::GLSL400;
+        case ShaderTarget::GeometryShader:                  return OutputShaderVersion::GLSL150;
+        case ShaderTarget::FragmentShader:                  return OutputShaderVersion::GLSL110;
+        case ShaderTarget::ComputeShader:                   return OutputShaderVersion::GLSL430; // actually 420, but only 430 supports local work group size
+    }
+    return OutputShaderVersion::GLSL110;
+}
+
 std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
-    Program& program, OutputShaderVersion& targetGLSLVersion, bool allowExtensions)
+    Program& program, OutputShaderVersion& targetGLSLVersion, const ShaderTarget shaderTarget, bool allowExtensions)
 {
     targetGLSLVersion_  = targetGLSLVersion;
+    minGLSLVersion_     = GetMinGLSLVersionForTarget(shaderTarget);
     allowExtensions_    = allowExtensions;
 
     Visit(&program);

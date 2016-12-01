@@ -18,4 +18,6 @@ float4 VS() : SV_Position
 	(A) - ((1));
 	(B) - ((1));
 	(X)0;
+	
+	return (float4)1;
 }

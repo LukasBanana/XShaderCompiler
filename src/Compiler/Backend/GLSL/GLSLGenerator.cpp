@@ -157,7 +157,9 @@ void GLSLGenerator::WriteVersionAndExtensions(Program& ast)
     {
         /* Determine all required GLSL extensions with the GLSL extension agent */
         GLSLExtensionAgent extensionAgent;
-        auto requiredExtensions = extensionAgent.DetermineRequiredExtensions(ast, versionOut_, allowExtensions_);
+        auto requiredExtensions = extensionAgent.DetermineRequiredExtensions(
+            ast, versionOut_, shaderTarget_, allowExtensions_
+        );
 
         /* Write GLSL version */
         Version(static_cast<int>(versionOut_));
