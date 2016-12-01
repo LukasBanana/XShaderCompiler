@@ -28,7 +28,7 @@ class ASTPrinter : private Visitor
     
     public:
         
-        void DumpAST(Program* program, Log& log);
+        void PrintAST(Program* program, Log& log);
 
     private:
         

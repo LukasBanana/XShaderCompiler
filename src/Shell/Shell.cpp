@@ -196,7 +196,7 @@ void Shell::Compile(const std::string& filename)
         includeHandler.searchPaths = state_.searchPaths;
         state_.inputDesc.includeHandler = &includeHandler;
 
-        if (state_.dumpStats)
+        if (state_.showStats)
             state_.outputDesc.statistics = &stats;
 
         /* Show compilation/validation status */
@@ -227,9 +227,16 @@ void Shell::Compile(const std::string& filename)
             else
                 output << "validation successful" << std::endl;
         }
+        else
+        {
+            if (state_.outputDesc.options.validateOnly)
+                output << "validation failed" << std::endl;
+            else
+                output << "compilation failed" << std::endl;
+        }
 
         /* Show output statistics (if enabled) */
-        if (state_.dumpStats)
+        if (state_.showStats)
             ShowStats(stats);
     }
     catch (const std::exception& err)

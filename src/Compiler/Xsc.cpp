@@ -90,11 +90,11 @@ static bool CompileShaderPrimary(
     HLSLAnalyzer analyzer(log);
     auto analyzerResult = analyzer.DecorateAST(*program, inputDesc, outputDesc);
 
-    /* Print debug output */
-    if (outputDesc.options.dumpAST && log)
+    /* Print AST */
+    if (outputDesc.options.showAST && log)
     {
         ASTPrinter printer;
-        printer.DumpAST(program.get(), *log);
+        printer.PrintAST(program.get(), *log);
     }
 
     if (!analyzerResult)
@@ -160,8 +160,8 @@ XSC_EXPORT bool CompileShader(const ShaderInput& inputDesc, const ShaderOutput& 
         SortStats(outputDescCopy.statistics->fragmentTargets);
     }
 
-    /* Dump timings */
-    if (outputDescCopy.options.dumpTimes && log)
+    /* Show timings */
+    if (outputDescCopy.options.showTimes && log)
     {
         auto PrintTimePoint = [log](const std::string& processName, const TimePoint startTime, const TimePoint endTime)
         {

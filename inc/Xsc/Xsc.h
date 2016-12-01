@@ -67,11 +67,11 @@ struct Options
     //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
     bool allowExtensions    = false;
 
-    //! If true, the abstract syntax tree (AST) will be written to the log output. By default false.
-    bool dumpAST            = false;
+    //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
+    bool showAST            = false;
 
     //! If true, the timings of the different compilation processes are written to the log output. By default false.
-    bool dumpTimes          = false;
+    bool showTimes          = false;
 };
 
 //! Structure for shader output statistics (e.g. texture/buffer binding points).

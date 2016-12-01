@@ -328,7 +328,7 @@ HelpDescriptor ShowASTCommand::Help() const
 
 void ShowASTCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.options.dumpAST = cmdLine.AcceptBoolean(true);
+    state.outputDesc.options.showAST = cmdLine.AcceptBoolean(true);
 }
 
 
@@ -352,7 +352,7 @@ HelpDescriptor ShowTimesCommand::Help() const
 
 void ShowTimesCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.options.dumpTimes = cmdLine.AcceptBoolean(true);
+    state.outputDesc.options.showTimes = cmdLine.AcceptBoolean(true);
 }
 
 
@@ -376,7 +376,7 @@ HelpDescriptor ShowStatCommand::Help() const
 
 void ShowStatCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.dumpStats = cmdLine.AcceptBoolean(true);
+    state.showStats = cmdLine.AcceptBoolean(true);
 }
 
 

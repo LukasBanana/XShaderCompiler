@@ -13,7 +13,7 @@ namespace Xsc
 {
 
 
-void ASTPrinter::DumpAST(Program* program, Log& log)
+void ASTPrinter::PrintAST(Program* program, Log& log)
 {
     log_ = &log;
     Visit(program);
@@ -269,12 +269,15 @@ IMPLEMENT_VISIT_PROC_DEFAULT(InitializerExpr)
 
 void ASTPrinter::Print(AST* ast, const std::string& astName, const std::string& info)
 {
-    std::string msg = astName + " (" + ast->area.Pos().ToString() + ")";
+    if (ast->area.Pos().IsValid())
+    {
+        std::string msg = astName + " (" + ast->area.Pos().ToString() + ")";
 
-    if (!info.empty())
-        msg += " \"" + info + "\"";
+        if (!info.empty())
+            msg += " \"" + info + "\"";
 
-    log_->SumitReport(Report(Report::Types::Info, msg));
+        log_->SumitReport(Report(Report::Types::Info, msg));
+    }
 }
 
 void ASTPrinter::IncIndent()

@@ -49,7 +49,7 @@ struct ShellState
     bool                            pauseApp            = false;
 
     // Show shader output statistics after compilation.
-    bool                            dumpStats           = false;
+    bool                            showStats           = false;
 };
 
 
