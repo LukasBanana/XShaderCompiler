@@ -60,6 +60,18 @@ IMPLEMENT_VISIT_PROC(Program)
     RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefsSV);
     RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefsSV);
 
+    /* Remove all variables which are sampler state objects, since GLSL does not support sampler states */
+    EraseAllIf(
+        ast->globalStmnts,
+        [&](const StmntPtr& stmnt)
+        {
+            if (auto varDeclStmnt = stmnt->As<VarDeclStmnt>())
+                return VarTypeIsSampler(*varDeclStmnt->varType);
+            else
+                return false;
+        }
+    );
+
     VISIT_DEFAULT(Program);
 }
 
@@ -168,14 +180,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 {
     LabelAnonymousStructDecl(ast);
 
-    /* Remove members which are sampler state objects, since GLSL does not support sampler states */
-    EraseAllIf(
-        ast->members,
-        [&](const VarDeclStmntPtr& varDeclStmnt)
-        {
-            return VarTypeIsSampler(*varDeclStmnt->varType);
-        }
-    );
+    RemoveSamplerVarDeclStmnts(ast->members);
 
     if (ast->members.empty())
     {
@@ -199,14 +204,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     currentFunctionDecl_ = ast;
 
-    /* Remove parameters which contain a sampler state object, since GLSL does not support sampler states */
-    EraseAllIf(
-        ast->parameters,
-        [&](const VarDeclStmntPtr& varDeclStmnt)
-        {
-            return VarTypeIsSampler(*varDeclStmnt->varType);
-        }
-    );
+    RemoveSamplerVarDeclStmnts(ast->parameters);
 
     if (ast->flags(FunctionDecl::isEntryPoint))
     {
@@ -544,6 +542,18 @@ void GLSLConverter::RemoveDeadCode(std::vector<StmntPtr>& stmnts)
         else
             ++it;
     }
+}
+
+void GLSLConverter::RemoveSamplerVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts)
+{
+    /* Remove all variables which are sampler state objects, since GLSL does not support sampler states */
+    EraseAllIf(
+        stmnts,
+        [&](const VarDeclStmntPtr& varDeclStmnt)
+        {
+            return VarTypeIsSampler(*varDeclStmnt->varType);
+        }
+    );
 }
 
 

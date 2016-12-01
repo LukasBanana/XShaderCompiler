@@ -116,6 +116,9 @@ class GLSLConverter : public Visitor
         // Removes all statements that are marked as dead code.
         void RemoveDeadCode(std::vector<StmntPtr>& stmnts);
 
+        // Removes all variable declarations which have a sampler state type.
+        void RemoveSamplerVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts);
+
         /* === Members === */
 
         ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;

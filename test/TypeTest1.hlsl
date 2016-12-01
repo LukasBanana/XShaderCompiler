@@ -19,6 +19,13 @@ matrix<float, 3, 3> f1()
 	return (float3x3)0;
 }
 
+/*texture tex0;
+sampler tex0Sampler = sampler_state
+{
+	texture = (tex0);
+	FILTER_STATE
+};*/
+
 /*typedef int DWORD;
 typedef float FLOAT; 
 typedef vector <float, 4> VECTOR;
@@ -27,6 +34,10 @@ typedef string STRING;*/
 //typedef texture TEXTURE;
 //typedef pixelshader PIXELSHADER;
 //typedef vertexshader VERTEXSHADER;
+
+typedef Texture2D TEXTURE;
+
+TEXTURE tex1;
 
 /* --- <typedef struct tests> --- */
 
@@ -94,6 +105,8 @@ float4 VS() : SV_Position
 	int c = (a += b);
 	
 	int f5_v = 1 + 4 + f5(3)[2].x;
+	
+	(TEXTURE)tex1;
 	
 	DWORD x = 0;
 	FLOAT x1 = 0;

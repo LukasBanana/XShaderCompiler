@@ -1472,6 +1472,10 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* 
         else
             Error("failed to determine GLSL data type", ast);
     }
+    catch (const Report& e)
+    {
+        throw e;
+    }
     catch (const std::exception& e)
     {
         Error(e.what(), ast);
