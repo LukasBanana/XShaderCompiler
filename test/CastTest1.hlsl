@@ -27,6 +27,10 @@ void f1(S3 s3)
 {
 }
 
+struct S4
+{
+};
+
 float4 VS() : SV_Position
 {
 	//S2 a;
@@ -34,6 +38,8 @@ float4 VS() : SV_Position
 	
 	S3 b;
 	f1(b);
+	
+	S4 c;
 	
 	SamplerState samplerState;
 	
