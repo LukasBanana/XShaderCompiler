@@ -169,6 +169,31 @@ AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& 
     return ast;
 }
 
+VarTypePtr MakeVarType(const DataType dataType)
+{
+    auto ast = MakeShared<VarType>(SourcePosition::ignore);
+    {
+        ast->typeDenoter = MakeShared<BaseTypeDenoter>(dataType);
+    }
+    return ast;
+}
+
+VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ident)
+{
+    auto ast = MakeShared<VarDeclStmnt>(SourcePosition::ignore);
+    {
+        ast->varType = MakeVarType(dataType);
+
+        auto varDecl = MakeShared<VarDecl>(SourcePosition::ignore);
+        {
+            varDecl->ident          = ident;
+            varDecl->declStmntRef   = ast.get();
+        }
+        ast->varDecls.push_back(varDecl);
+    }
+    return ast;
+}
+
 
 } // /namespace ASTFactory
 

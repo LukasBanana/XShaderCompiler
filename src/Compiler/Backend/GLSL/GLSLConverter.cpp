@@ -177,11 +177,20 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         }
     );
 
-    PushStructDeclLevel();
+    if (ast->members.empty())
     {
-        VISIT_DEFAULT(StructDecl);
+        /* Add dummy member if the structure is empty (GLSL does not support empty structures) */
+        auto dummyMember = ASTFactory::MakeVarDeclStmnt(DataType::Int, nameManglingPrefix_ + "dummy");
+        ast->members.push_back(dummyMember);
     }
-    PopStructDeclLevel();
+    else
+    {
+        PushStructDeclLevel();
+        {
+            VISIT_DEFAULT(StructDecl);
+        }
+        PopStructDeclLevel();
+    }
 }
 
 /* --- Declaration statements --- */
