@@ -189,9 +189,12 @@ class GLSLGenerator : public Generator
         void WriteFunctionCallIntrinsicAtomic(FunctionCall* ast);
         void WriteFunctionCallIntrinsicTex(FunctionCall* ast);
 
-        /* --- Misc --- */
+        /* --- Structure --- */
 
+        void WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool allowNestedStruct = false);
         void WriteStructDeclMembers(StructDecl* ast);
+
+        /* --- Misc --- */
 
         void WriteParameter(VarDeclStmnt* ast);
         void WriteScopedStmnt(Stmnt* ast);

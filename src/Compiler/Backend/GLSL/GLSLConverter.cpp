@@ -161,12 +161,13 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         ConvertExprIfCastRequired(ast->initializer, *ast->GetTypeDenoter()->Get());
     }
 
-    /* Default visitor */
     VISIT_DEFAULT(VarDecl);
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
+    LabelAnonymousStructDecl(ast);
+
     PushStructDeclLevel();
     {
         VISIT_DEFAULT(StructDecl);
@@ -404,6 +405,15 @@ void GLSLConverter::RenameVarDecl(VarDecl* ast)
     /* Set new identifier for this variable */
     ast->ident = nameManglingPrefix_ + ast->ident;
     ast->flags << VarDecl::wasRenamed;
+}
+
+void GLSLConverter::LabelAnonymousStructDecl(StructDecl* ast)
+{
+    if (ast->IsAnonymous())
+    {
+        ast->ident = nameManglingPrefix_ + "anonymous_struct" + std::to_string(anonymousStructCounter_);
+        ++anonymousStructCounter_;
+    }
 }
 
 bool GLSLConverter::HasVarDeclOfVarIdentSystemSemantic(VarIdent* varIdent) const

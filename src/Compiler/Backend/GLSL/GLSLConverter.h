@@ -86,6 +86,9 @@ class GLSLConverter : public Visitor
         // Renames the specified variable declaration with name mangling.
         void RenameVarDecl(VarDecl* ast);
 
+        // Labels the specified anonymous structure.
+        void LabelAnonymousStructDecl(StructDecl* ast);
+
         // Returns true if the variable identifier refers to a variable declaration which has a system semantic.
         bool HasVarDeclOfVarIdentSystemSemantic(VarIdent* varIdent) const;
 
@@ -126,6 +129,7 @@ class GLSLConverter : public Visitor
         std::vector<VarDecl*>   reservedVarDecls_;
 
         unsigned int            structDeclLevel_        = 0;
+        unsigned int            anonymousStructCounter_ = 0;
 
         // True if AST traversal is currently inside the main entry point (or its sub nodes).
         bool                    isInsideEntryPoint_     = false;

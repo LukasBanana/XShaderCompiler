@@ -162,11 +162,16 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     Register(ast->ident, ast);
 
     PushStructDecl(ast);
-    OpenScope();
     {
-        Visit(ast->members);
+        if (ast->flags(StructDecl::isNestedStruct) && !ast->IsAnonymous())
+            Error("nested structures must be anonymous", ast);
+
+        OpenScope();
+        {
+            Visit(ast->members);
+        }
+        CloseScope();
     }
-    CloseScope();
     PopStructDecl();
 }
 

@@ -42,7 +42,7 @@
 -T vert -E VS -o output/* FunctionDeclTest1.hlsl
 
 [StructTest1 PS]
--T frag -E PS -o output/* StructTest1.hlsl
+-T vert -E VS -o output/* StructTest1.hlsl
 
 #[StructInheritTest1 PS]
 #--show-ast -T frag -E PS -o output/* StructInheritTest1.hlsl

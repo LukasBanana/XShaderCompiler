@@ -4,18 +4,34 @@
 
 struct S1
 {
-	struct S1_1
+	struct
 	{
-		float x;
+		float a;
 	}
 	s1_1;
+	
+	struct
+	{
+		float b;
+	}
+	s1_2;
+	
+	struct
+	{
+		struct
+		{
+			float foo, bar;
+		}
+		s1_3_1;
+	}
+	s1_3;
 };
 
-float4 PS() : SV_Target
+float4 VS() : SV_Position
 {
 	S1 s1;
 	
-	return (float4)0;
+	return (float4)1;
 }
 
 

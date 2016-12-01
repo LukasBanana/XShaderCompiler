@@ -387,50 +387,21 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 {
     if (!MustResolveStruct(ast))
     {
-        if (ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput))
+        bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
+
+        /* Write all nested structures (if this is the root structure) */
+        if (!ast->flags(StructDecl::isNestedStruct))
         {
-            /* Write this structure as interface block (if structure doesn't need to be resolved) */
-            BeginLn();
+            /* Write nested structres in child-to-parent order */
+            for (auto nestedStruct = ast->nestedStructDeclRefs.rbegin(); nestedStruct != ast->nestedStructDeclRefs.rend(); ++nestedStruct)
             {
-                if (ast->flags(StructDecl::isShaderInput))
-                    Write("in ");
-                else
-                    Write("out ");
-                Write(ast->ident);
+                WriteStructDecl(*nestedStruct, true, true);
+                Blank();
             }
-            EndLn();
-
-            OpenScope();
-            {
-                isInsideInterfaceBlock_ = true;
-
-                Visit(ast->members);
-
-                isInsideInterfaceBlock_ = false;
-            }
-            CloseScope();
-
-            WriteLn(ast->aliasName + ";");
         }
-        else
-        {
-            bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
 
-            /* Write standard structure declaration */
-            BeginLn();
-            {
-                Write("struct");
-                if (!ast->ident.empty())
-                    Write(' ' + ast->ident);
-            }
-            EndLn();
-
-            OpenScope();
-            {
-                WriteStructDeclMembers(ast);
-            }
-            CloseScope(semicolon);
-        }
+        /* Write declaration of this structure (without nested structures) */
+        WriteStructDecl(ast, semicolon);
     }
 }
 
@@ -1662,7 +1633,60 @@ void GLSLGenerator::WriteFunctionCallIntrinsicTex(FunctionCall* ast)
     Write(")");
 }
 
-/* --- Misc --- */
+/* --- Structure --- */
+
+void GLSLGenerator::WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool allowNestedStruct)
+{
+    /* Is this a non-nested structure or are nested structures allowed in the current context? */
+    if (!ast->flags(StructDecl::isNestedStruct) || allowNestedStruct)
+    {
+        /* Is this an interface block or a standard structure? */
+        if (ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput))
+        {
+            /* Write this structure as interface block (if structure doesn't need to be resolved) */
+            BeginLn();
+            {
+                if (ast->flags(StructDecl::isShaderInput))
+                    Write("in ");
+                else
+                    Write("out ");
+                Write(ast->ident);
+            }
+            EndLn();
+
+            OpenScope();
+            {
+                isInsideInterfaceBlock_ = true;
+
+                Visit(ast->members);
+
+                isInsideInterfaceBlock_ = false;
+            }
+            CloseScope();
+
+            WriteLn(ast->aliasName + ";");
+        }
+        else
+        {
+            /* Write standard structure declaration */
+            BeginLn();
+            {
+                Write("struct");
+                if (!ast->ident.empty())
+                    Write(' ' + ast->ident);
+            }
+            EndLn();
+
+            OpenScope();
+            {
+                WriteStructDeclMembers(ast);
+            }
+            CloseScope(writeSemicolon);
+        }
+    }
+    else if (!writeSemicolon)
+        WriteLn(ast->ident);
+}
 
 void GLSLGenerator::WriteStructDeclMembers(StructDecl* ast)
 {
@@ -1670,6 +1694,8 @@ void GLSLGenerator::WriteStructDeclMembers(StructDecl* ast)
         WriteStructDeclMembers(ast->baseStructRef);
     Visit(ast->members);
 }
+
+/* --- Misc --- */
 
 void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
 {

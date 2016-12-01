@@ -556,7 +556,10 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
 
     /* Parse structure declaration */
     if (parseStructTkn)
+    {
         Accept(Tokens::Struct);
+        UpdateSourceArea(ast);
+    }
 
     if (Is(Tokens::Ident) || identTkn)
     {
