@@ -90,6 +90,7 @@ DECL_SHELL_COMMAND( HelpCommand        );
 DECL_SHELL_COMMAND( IncludePathCommand );
 DECL_SHELL_COMMAND( VerboseCommand     );
 DECL_SHELL_COMMAND( OptimizeCommand    );
+DECL_SHELL_COMMAND( ExtensionCommand   );
 
 #undef DECL_SHELL_COMMAND
 

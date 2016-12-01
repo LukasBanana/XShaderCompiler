@@ -51,7 +51,7 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
 {
     if (cmdLine.ReachedEnd())
     {
-        std::cout << "no input : enter \"xsc help\"" << std::endl;
+        std::cout << "no input : enter \"xsc --help\"" << std::endl;
         return;
     }
 
@@ -202,7 +202,7 @@ void Shell::Compile(const std::string& filename)
 
         auto result = CompileShader(state_.inputDesc, state_.outputDesc, &log);
 
-        log.PrintAll(state_.verbose);
+        log.PrintAll(state_.verbose, state_.outputDesc.options.warnings);
 
         if (result)
         {

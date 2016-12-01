@@ -35,11 +35,14 @@ void StdLog::SumitReport(const Report& report)
     }
 }
 
-void StdLog::PrintAll(bool verbose)
+void StdLog::PrintAll(bool verbose, bool warnings)
 {
     PrintAndClearReports(infos_, verbose);
-    PrintAndClearReports(warnings_, verbose, "WARNING(S)");
-    PrintAndClearReports(errors_, verbose, "ERROR(S)");
+
+    if (warnings)
+        PrintAndClearReports(warnings_, verbose, (warnings_.size() == 1 ? "WARNING" : "WARNINGS"));
+
+    PrintAndClearReports(errors_, verbose, (errors_.size() == 1 ? "ERROR": "ERRORS"));
 }
 
 using Colors = ConsoleManip::ColorFlags;

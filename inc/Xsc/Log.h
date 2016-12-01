@@ -72,7 +72,7 @@ class XSC_EXPORT StdLog : public Log
         void SumitReport(const Report& report) override;
 
         //! Prints all submitted reports to the standard output.
-        void PrintAll(bool verbose = true);
+        void PrintAll(bool verbose = true, bool warnings = true);
 
     private:
 

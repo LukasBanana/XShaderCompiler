@@ -60,7 +60,7 @@ std::vector<Command::Identifier> EntryCommand::Idents() const
 
 HelpDescriptor EntryCommand::Help() const
 {
-    return { "-E, --entry ENTRY", "HLSL shader entry point" };
+    return { "-E, --entry ENTRY", "Shader entry point" };
 }
 
 void EntryCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -624,12 +624,12 @@ void VersionCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> HelpCommand::Idents() const
 {
-    return { { "--help" }, { "help" }, { "-h" } };
+    return { { "--help" } };
 }
 
 HelpDescriptor HelpCommand::Help() const
 {
-    return { "--help, help, -h", "Prints this help reference" };
+    return { "--help", "Prints this help reference" };
 }
 
 void HelpCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -711,6 +711,30 @@ HelpDescriptor OptimizeCommand::Help() const
 void OptimizeCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.options.optimize = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * ExtensionCommand class
+ */
+
+std::vector<Command::Identifier> ExtensionCommand::Idents() const
+{
+    return { { "--extension" } };
+}
+
+HelpDescriptor ExtensionCommand::Help() const
+{
+    return
+    {
+        "--extension [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables shader extension output; default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void ExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.allowExtensions = cmdLine.AcceptBoolean(true);
 }
 
 

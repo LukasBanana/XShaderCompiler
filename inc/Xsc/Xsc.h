@@ -127,7 +127,7 @@ struct ShaderOutput
     //! Specifies the filename of the output shader code. This is an optional attribute, and only a hint to the compiler.
     std::string         filename;
 
-    //! Specifies the output stream. This will contain the output GLSL code. This must not be null when passed to the "CompileShader" functino!
+    //! Specifies the output stream. This will contain the output GLSL code. This must not be null when passed to the "CompileShader" function!
     std::ostream*       sourceCode      = nullptr;
 
     //! Specifies the output shader version. By default OutputShaderVersion::GLSL (to auto-detect minimum required version).
