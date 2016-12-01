@@ -53,16 +53,16 @@ void GLSLGenerator::GenerateCodePrimary(
                 pathAnalyzer.MarkControlPaths(program);
             }
 
-            /* Mark all reachable AST nodes */
-            {
-                ReferenceAnalyzer refAnalyzer;
-                refAnalyzer.MarkReferencesFromEntryPoint(program);
-            }
-
             /* Convert AST for GLSL code generation */
             {
                 GLSLConverter converter;
                 converter.Convert(program, inputDesc.shaderTarget, outputDesc.formatting.prefix);
+            }
+
+            /* Mark all reachable AST nodes */
+            {
+                ReferenceAnalyzer refAnalyzer;
+                refAnalyzer.MarkReferencesFromEntryPoint(program);
             }
 
             /* Write header */
