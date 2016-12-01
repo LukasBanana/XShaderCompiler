@@ -31,13 +31,13 @@ Status
 Offline Compiler
 ----------------
 
-The following command line translates the "Example.hlsl" shader file:
+The following command line translates the "Example.hlsl" file with the vertex shader entry point "VS", and the fragment shader entry point "PS":
 
 ```
-xsc -E VS -T vertex Example.hlsl -E PS -T fragment Example.hlsl
+xsc -E VS -T vert Example.hlsl -E PS -T frag Example.hlsl
 ```
 
-The result are two GLSL shader files: "Example.VS.glsl" and "Example.PS.glsl".
+The result are two GLSL shader files: "Example.VS.vert" and "Example.PS.frag".
 
 Library Usage
 -------------
