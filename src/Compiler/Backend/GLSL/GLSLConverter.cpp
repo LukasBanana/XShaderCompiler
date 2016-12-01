@@ -65,10 +65,11 @@ IMPLEMENT_VISIT_PROC(Program)
         ast->globalStmnts,
         [&](const StmntPtr& stmnt)
         {
+            if (stmnt->Type() == AST::Types::SamplerDeclStmnt)
+                return true;
             if (auto varDeclStmnt = stmnt->As<VarDeclStmnt>())
                 return VarTypeIsSampler(*varDeclStmnt->varType);
-            else
-                return false;
+            return false;
         }
     );
 
