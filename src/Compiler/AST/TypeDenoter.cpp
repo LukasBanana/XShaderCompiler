@@ -240,6 +240,37 @@ TypeDenoterPtr BaseTypeDenoter::Get(const VarIdent* varIdent)
     return TypeDenoter::Get(varIdent);
 }
 
+TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
+{
+    if (numArrayIndices > 0)
+    {
+        /* Convert vector or matrix type for array access */
+        if (IsVectorType(dataType))
+        {
+            /* Return scalar type */
+            if (numArrayIndices > 1)
+                RuntimeErr("too many array dimensions for vector type");
+            return std::make_shared<BaseTypeDenoter>(BaseDataType(dataType));
+        }
+        else if (IsMatrixType(dataType))
+        {
+            /* Return scalar or vector type */
+            if (numArrayIndices == 1)
+            {
+                auto matrixDim = MatrixTypeDim(dataType);
+                return std::make_shared<BaseTypeDenoter>(VectorDataType(BaseDataType(dataType), matrixDim.second));
+            }
+            if (numArrayIndices == 2)
+                return std::make_shared<BaseTypeDenoter>(BaseDataType(dataType));
+            if (numArrayIndices > 2)
+                RuntimeErr("too many array dimensions for matrix type");
+        }
+        else
+            RuntimeErr("array access without array type denoter");
+    }
+    return Get(varIdent);
+}
+
 /* ----- BufferTypeDenoter ----- */
 
 TypeDenoter::Types BufferTypeDenoter::Type() const

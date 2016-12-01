@@ -149,6 +149,7 @@ struct BaseTypeDenoter : public TypeDenoter
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 
     TypeDenoterPtr Get(const VarIdent* varIdent) override;
+    TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
 
     DataType dataType = DataType::Undefined;
 };
