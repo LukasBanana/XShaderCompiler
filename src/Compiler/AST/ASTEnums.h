@@ -334,6 +334,8 @@ enum class BufferType
     TextureCubeArray,
     Texture2DMS,
     Texture2DMSArray,
+
+    GenericTexture,             // Texture of unspecified dimension (used in DX9 effect files).
 };
 
 // Returns true if the specified buffer type is a RW (read/write) buffer type.

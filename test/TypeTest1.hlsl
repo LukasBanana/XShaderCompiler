@@ -19,12 +19,11 @@ matrix<float, 3, 3> f1()
 	return (float3x3)0;
 }
 
-/*texture tex0;
-sampler tex0Sampler = sampler_state
-{
-	texture = (tex0);
-	FILTER_STATE
-};*/
+texture tex0;
+
+#define FILTER_STATE MIPFILTER=NONE;MINFILTER=NONE;MAGFILTER=NONE;
+sampler texSampler1 = sampler_state { texture = (tex0); FILTER_STATE };
+sampler texSampler2 = sampler_state { texture = <tex0>; FILTER_STATE };
 
 /*typedef int DWORD;
 typedef float FLOAT; 
@@ -34,10 +33,6 @@ typedef string STRING;*/
 //typedef texture TEXTURE;
 //typedef pixelshader PIXELSHADER;
 //typedef vertexshader VERTEXSHADER;
-
-typedef Texture2D TEXTURE;
-
-TEXTURE tex1;
 
 /* --- <typedef struct tests> --- */
 
@@ -105,8 +100,6 @@ float4 VS() : SV_Position
 	int c = (a += b);
 	
 	int f5_v = 1 + 4 + f5(3)[2].x;
-	
-	(TEXTURE)tex1;
 	
 	DWORD x = 0;
 	FLOAT x1 = 0;

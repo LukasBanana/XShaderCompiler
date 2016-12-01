@@ -424,12 +424,24 @@ PackOffsetPtr HLSLParser::ParsePackOffset(bool parseColon)
     return ast;
 }
 
-ExprPtr HLSLParser::ParseArrayDimension()
+ExprPtr HLSLParser::ParseArrayDimension(bool allowDynamicDimension)
 {
+    ExprPtr ast;
+
     Accept(Tokens::LParen);
-    auto ast = ParseExpr();
+    
+    if (Is(Tokens::RParen))
+    {
+        if (!allowDynamicDimension)
+            Error("explicit array dimension expected", false);
+        ast = Make<NullExpr>();
+    }
+    else
+        ast = ParseExpr();
+
     Accept(Tokens::RParen);
-    return ast;
+
+    return UpdateSourceArea(ast);
 }
 
 ExprPtr HLSLParser::ParseInitializer()
@@ -491,7 +503,7 @@ VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& 
 
     /* Parse variable declaration */
     ast->ident          = (identTkn ? identTkn->Spell() : ParseIdent());
-    ast->arrayDims      = ParseArrayDimensionList();
+    ast->arrayDims      = ParseArrayDimensionList(true);
     ast->semantics      = ParseVarSemanticList();
     ast->annotations    = ParseAnnotationList();
 
@@ -538,8 +550,20 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl(SamplerDeclStmnt* declStmntRef)
     if (Is(Tokens::Colon))
         ast->registerName = ParseRegister(true);
 
-    /* Parse optional static sampler state */
-    if (Is(Tokens::LCurly))
+    /* Parse optional static sampler state (either for D3D9 or D3D10+ shaders) */
+    if (Is(Tokens::AssignOp, "="))
+    {
+        /* Parse optional "= sampler_state" assignment (DX9 only) */
+        AcceptIt();
+        Accept(Tokens::Sampler, "sampler_state");
+        Accept(Tokens::LCurly);
+        
+        ast->textureIdent = ParseSamplerStateTextureIdent();
+        ast->samplerValues = ParseSamplerValueList();
+
+        Accept(Tokens::RCurly);
+    }
+    else if (Is(Tokens::LCurly))
     {
         AcceptIt();
         ast->samplerValues = ParseSamplerValueList();
@@ -1560,12 +1584,12 @@ std::vector<ExprPtr> HLSLParser::ParseExprList(const Tokens listTerminatorToken,
     return exprs;
 }
 
-std::vector<ExprPtr> HLSLParser::ParseArrayDimensionList()
+std::vector<ExprPtr> HLSLParser::ParseArrayDimensionList(bool allowDynamicDimension)
 {
     std::vector<ExprPtr> arrayDims;
 
     while (Is(Tokens::LParen))
-        arrayDims.push_back(ParseArrayDimension());
+        arrayDims.push_back(ParseArrayDimension(allowDynamicDimension));
 
     return arrayDims;
 }
@@ -2056,6 +2080,33 @@ IndexedSemantic HLSLParser::ParseSemantic(bool parseColon)
     if (parseColon)
         Accept(Tokens::Colon);
     return HLSLKeywordToSemantic(ParseIdent());
+}
+
+std::string HLSLParser::ParseSamplerStateTextureIdent()
+{
+    std::string ident;
+
+    Accept(Tokens::Texture, "texture");
+    Accept(Tokens::AssignOp, "=");
+
+    if (Is(Tokens::LBracket))
+    {
+        AcceptIt();
+        ident = ParseIdent();
+        Accept(Tokens::RBracket);
+    }
+    else if (Is(Tokens::BinaryOp, "<"))
+    {
+        AcceptIt();
+        ident = ParseIdent();
+        Accept(Tokens::BinaryOp, ">");
+    }
+    else
+        ErrorUnexpected("expected '<' or '('");
+
+    Semi();
+
+    return ident;
 }
 
 

@@ -101,7 +101,7 @@ class HLSLParser : public Parser
         SamplerValuePtr                 ParseSamplerValue();
         AttributePtr                    ParseAttribute();
         PackOffsetPtr                   ParsePackOffset(bool parseColon = true);
-        ExprPtr                         ParseArrayDimension();
+        ExprPtr                         ParseArrayDimension(bool allowDynamicDimension = false);
         ExprPtr                         ParseInitializer();
         VarSemanticPtr                  ParseVarSemantic();
         VarIdentPtr                     ParseVarIdent();
@@ -157,7 +157,7 @@ class HLSLParser : public Parser
         std::vector<VarDeclStmntPtr>    ParseAnnotationList();
         std::vector<StmntPtr>           ParseStmntList();
         std::vector<ExprPtr>            ParseExprList(const Tokens listTerminatorToken, bool allowLastComma = false);
-        std::vector<ExprPtr>            ParseArrayDimensionList();
+        std::vector<ExprPtr>            ParseArrayDimensionList(bool allowDynamicDimension = false);
         std::vector<ExprPtr>            ParseArgumentList();
         std::vector<ExprPtr>            ParseInitializerList();
         std::vector<VarSemanticPtr>     ParseVarSemanticList();
@@ -194,6 +194,8 @@ class HLSLParser : public Parser
         BufferType                      ParseBufferType();
         //SamplerType                     ParseSamplerType();
         IndexedSemantic                 ParseSemantic(bool parseColon = true);
+
+        std::string                     ParseSamplerStateTextureIdent();
 
         /* === Members === */
 

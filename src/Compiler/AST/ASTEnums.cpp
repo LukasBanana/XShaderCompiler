@@ -668,7 +668,7 @@ bool IsRWBufferType(const BufferType t)
 
 bool IsTextureBufferType(const BufferType t)
 {
-    return (t >= BufferType::RWTexture1D && t <= BufferType::Texture2DMSArray);
+    return (t >= BufferType::RWTexture1D && t <= BufferType::GenericTexture);
 }
 
 

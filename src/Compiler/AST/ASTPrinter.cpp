@@ -212,6 +212,8 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 
 /* --- Expressions --- */
 
+IMPLEMENT_VISIT_PROC_DEFAULT(NullExpr)
+
 IMPLEMENT_VISIT_PROC_DEFAULT(ListExpr)
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)

@@ -173,9 +173,10 @@ static KeywordMapType GenerateKeywordMap()
         { "sampler3D",               T::Sampler         },
         { "samplerCUBE",             T::Sampler         },
         { "sampler_state",           T::Sampler         },
-        { "SamplerState",            T::Sampler         },
+        { "SamplerState",            T::Sampler         }, // since D3D10+
         { "SamplerComparisonState",  T::Sampler         }, // since D3D10+
 
+        { "texture",                 T::Texture         },
         { "Texture1D",               T::Texture         },
         { "Texture1DArray",          T::Texture         },
         { "Texture2D",               T::Texture         },
@@ -467,6 +468,8 @@ static std::map<std::string, BufferType> GenerateBufferTypeMap()
         { "TextureCubeArray",        T::TextureCubeArray        },
         { "Texture2DMS",             T::Texture2DMS             },
         { "Texture2DMSArray",        T::Texture2DMSArray        },
+
+        { "texture",                 T::GenericTexture          },
     };
 }
 

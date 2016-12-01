@@ -71,6 +71,7 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( ReturnStmnt       );
         DECL_VISIT_PROC( CtrlTransferStmnt );
 
+        DECL_VISIT_PROC( NullExpr          );
         DECL_VISIT_PROC( ListExpr          );
         DECL_VISIT_PROC( LiteralExpr       );
         DECL_VISIT_PROC( TypeNameExpr      );

@@ -466,6 +466,18 @@ TypeDenoterPtr FunctionDecl::GetTypeDenoterForArgs(const std::vector<ExprPtr>& /
 }
 
 
+/* ----- NullExpr ----- */
+
+TypeDenoterPtr NullExpr::DeriveTypeDenoter()
+{
+    /*
+    Return 'int' as type, because null expressions are only
+    used as dynamic array dimensions (which must be integral types)
+    */
+    return std::make_shared<BaseTypeDenoter>(DataType::Int);
+}
+
+
 /* ----- ListExpr ----- */
 
 TypeDenoterPtr ListExpr::DeriveTypeDenoter()

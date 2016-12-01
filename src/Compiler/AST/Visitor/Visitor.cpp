@@ -221,6 +221,11 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 
 /* --- Expressions --- */
 
+IMPLEMENT_VISIT_PROC(NullExpr)
+{
+    // do nothing
+}
+
 IMPLEMENT_VISIT_PROC(ListExpr)
 {
     Visit(ast->firstExpr);

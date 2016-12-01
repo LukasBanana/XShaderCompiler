@@ -106,6 +106,7 @@ struct AST
         ReturnStmnt,
         CtrlTransferStmnt,
 
+        NullExpr,
         ListExpr,
         LiteralExpr,
         TypeNameExpr,
@@ -397,6 +398,7 @@ struct SamplerDecl : public AST /*TODO --> public Decl*/
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
     std::string                     registerName;               // May be empty
+    std::string                     textureIdent;               // Optional variable identifier of the texture object (for DX9 effect files)
     std::vector<SamplerValuePtr>    samplerValues;              // State values for a sampler decl-ident.
 
     SamplerDeclStmnt*               declStmntRef    = nullptr;  // Reference to its declaration statmenet (parent node).
@@ -690,6 +692,14 @@ struct CtrlTransferStmnt : public Stmnt
 };
 
 /* --- Expressions --- */
+
+// Null expression (used for dynamic array dimensions).
+struct NullExpr : public Expr
+{
+    AST_INTERFACE(NullExpr);
+
+    TypeDenoterPtr DeriveTypeDenoter() override;
+};
 
 // List expression ( expr ',' expr ).
 struct ListExpr : public Expr
