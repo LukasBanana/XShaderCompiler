@@ -57,9 +57,9 @@ CommandFactory::CommandFactory()
     MakeCommand< WarnCommand        >();
     MakeCommand< BlanksCommand      >();
     MakeCommand< LineMarksCommand   >();
-    MakeCommand< DumpASTCommand     >();
-    MakeCommand< DumpStatCommand    >();
-    MakeCommand< DumpTimesCommand   >();
+    MakeCommand< ShowASTCommand     >();
+    MakeCommand< ShowStatCommand    >();
+    MakeCommand< ShowTimesCommand   >();
     MakeCommand< PPOnlyCommand      >();
     MakeCommand< MacroCommand       >();
     MakeCommand< PauseCommand       >();

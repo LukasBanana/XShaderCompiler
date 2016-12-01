@@ -309,72 +309,72 @@ void LineMarksCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
- * DumpASTCommand class
+ * ShowASTCommand class
  */
 
-std::vector<Command::Identifier> DumpASTCommand::Idents() const
+std::vector<Command::Identifier> ShowASTCommand::Idents() const
 {
-    return { { "--dump-ast" } };
+    return { { "--show-ast" } };
 }
 
-HelpDescriptor DumpASTCommand::Help() const
+HelpDescriptor ShowASTCommand::Help() const
 {
     return
     {
-        "--dump-ast [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables debug output for the abstract syntax tree (AST); default=" + CommandLine::GetBooleanFalse()
+        "--show-ast [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables debug output for the AST (Abstract Syntax Tree); default=" + CommandLine::GetBooleanFalse()
     };
 }
 
-void DumpASTCommand::Run(CommandLine& cmdLine, ShellState& state)
+void ShowASTCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.options.dumpAST = cmdLine.AcceptBoolean(true);
 }
 
 
 /*
- * DumpTimesCommand class
+ * ShowTimesCommand class
  */
 
-std::vector<Command::Identifier> DumpTimesCommand::Idents() const
+std::vector<Command::Identifier> ShowTimesCommand::Idents() const
 {
-    return { { "--dump-times" } };
+    return { { "--show-times" } };
 }
 
-HelpDescriptor DumpTimesCommand::Help() const
+HelpDescriptor ShowTimesCommand::Help() const
 {
     return
     {
-        "--dump-times [" + CommandLine::GetBooleanOption() + "]",
+        "--show-times [" + CommandLine::GetBooleanOption() + "]",
         "Enables/disables debug output for timings of each compilation step; default=" + CommandLine::GetBooleanFalse()
     };
 }
 
-void DumpTimesCommand::Run(CommandLine& cmdLine, ShellState& state)
+void ShowTimesCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.options.dumpTimes = cmdLine.AcceptBoolean(true);
 }
 
 
 /*
- * DumpStatCommand class
+ * ShowStatCommand class
  */
 
-std::vector<Command::Identifier> DumpStatCommand::Idents() const
+std::vector<Command::Identifier> ShowStatCommand::Idents() const
 {
-    return { { "--dump-stat" } };
+    return { { "--show-stat" } };
 }
 
-HelpDescriptor DumpStatCommand::Help() const
+HelpDescriptor ShowStatCommand::Help() const
 {
     return
     {
-        "--dump-stat [" + CommandLine::GetBooleanOption() + "]",
+        "--show-stat [" + CommandLine::GetBooleanOption() + "]",
         "Enables/disables debug output for shader output statistics; default=" + CommandLine::GetBooleanFalse()
     };
 }
 
-void DumpStatCommand::Run(CommandLine& cmdLine, ShellState& state)
+void ShowStatCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.dumpStats = cmdLine.AcceptBoolean(true);
 }

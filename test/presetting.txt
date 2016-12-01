@@ -18,13 +18,13 @@
 #-T vert -E VS6 -o output/* SemanticTest1.hlsl
 
 #[NameMangling1 CS]
-#--dump-ast -T comp -E CS -o output/* NameMangling1.hlsl
+#--show-ast -T comp -E CS -o output/* NameMangling1.hlsl
 
 [ExprTest4 VS]
---dump-ast -T vert -E VS -o output/* ExprTest4.hlsl
+--show-ast -T vert -E VS -o output/* ExprTest4.hlsl
 
 #[ExprTest3 VS]
-#--dump-ast -T vert -E VS -o output/* ExprTest3.hlsl
+#--show-ast -T vert -E VS -o output/* ExprTest3.hlsl
 
 #[ExprTest2 CS]
 #-T comp -E CS -o output/* ExprTest2.hlsl
@@ -45,7 +45,7 @@
 -T frag -E PS -o output/* StructTest1.hlsl
 
 #[StructInheritTest1 PS]
-#--dump-ast -T frag -E PS -o output/* StructInheritTest1.hlsl
+#--show-ast -T frag -E PS -o output/* StructInheritTest1.hlsl
 
 [TestShader1.hlsl VS]
 -T vert -E VS -O -o output/* TestShader1.hlsl
@@ -57,7 +57,7 @@
 -T comp -E CS -O -o output/* TestShader1.hlsl
 
 [ssct_reflect PS]
---dump-times --dump-stat -T frag -E PS -O -I "../../misc/ssct_shader/" "../../misc/ssct_shader/ssct_reflect.hlsl"
+--show-times --show-stat -T frag -E PS -O -I "../../misc/ssct_shader/" "../../misc/ssct_shader/ssct_reflect.hlsl"
 
 #[PPTest1.hlsl VS]
 #-T vert -E VS -O -o output/* PPTest1.hlsl
