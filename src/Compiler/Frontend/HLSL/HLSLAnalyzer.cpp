@@ -162,15 +162,15 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     Register(ast->ident, ast);
 
     structStack_.push_back(ast);
-
-    PushStructDeclLevel();
-    OpenScope();
     {
-        Visit(ast->members);
+        PushStructDeclLevel();
+        OpenScope();
+        {
+            Visit(ast->members);
+        }
+        CloseScope();
+        PopStructDeclLevel();
     }
-    CloseScope();
-    PopStructDeclLevel();
-
     structStack_.pop_back();
 }
 

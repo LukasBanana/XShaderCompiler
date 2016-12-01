@@ -409,8 +409,9 @@ struct StructDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,    0 ), // This structure is used as shader input.
-        FLAG( isShaderOutput,   1 ), // This structure is used as shader output.
+        FLAG( isShaderInput,  0 ), // This structure is used as shader input.
+        FLAG( isShaderOutput, 1 ), // This structure is used as shader output.
+        FLAG( isNestedStruct, 2 ), // This is a nested structure within another structure.
     };
 
     // Returns a descriptive string of the function signature (e.g. "struct s" or "struct <anonymous>").
@@ -432,6 +433,7 @@ struct StructDecl : public Decl
     StructDecl*                     baseStructRef   = nullptr;  // Optional reference to base struct
     std::string                     aliasName;                  // Alias name for input and output interface blocks of the DAST.
     std::map<std::string, VarDecl*> systemValuesRef;            // List of members with system value semantic (SV_...).
+    std::vector<StructDecl*>        nestedStructDeclRefs;       // References to all nested structures within this structure.
 };
 
 // Type alias declaration.
