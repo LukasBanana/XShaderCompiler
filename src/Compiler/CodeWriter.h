@@ -58,11 +58,19 @@ class CodeWriter : public IndentHandler
             return (*stream_);
         }
 
+        // Returns true if the code writer is currently in an open line (i.e. BeginLine was called without closing EndLine).
+        inline bool IsOpenLine() const
+        {
+            return openLine_;
+        }
+
     private:
         
         std::ostream*       stream_         = nullptr;
 
         std::stack<Options> optionsStack_;
+
+        bool                openLine_       = false;
 
 };
 

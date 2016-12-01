@@ -50,6 +50,8 @@ class Generator : protected Visitor
         void BeginLn();
         void EndLn();
         
+        bool IsOpenLine() const;
+        
         void Write(const std::string& text);
         void WriteLn(const std::string& text);
 

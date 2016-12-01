@@ -31,6 +31,12 @@ float4 VS() : SV_Position
 {
 	S1 s1;
 	
+	struct
+	{
+		float hello, world;
+	}
+	s2;
+	
 	return (float4)1;
 }
 

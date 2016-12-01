@@ -641,7 +641,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     /* Write variable type */
     if (ast->varType->structDecl)
     {
-        EndLn();
+        /* Do not end line here with "EndLn" */
         Visit(ast->varType);
         BeginLn();
     }
@@ -1685,7 +1685,11 @@ void GLSLGenerator::WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool a
         }
     }
     else if (!writeSemicolon)
-        WriteLn(ast->ident);
+    {
+        BeginLn();
+        Write(ast->ident + " ");
+        /* Do not end line here with "EndLn" */
+    }
 }
 
 void GLSLGenerator::WriteStructDeclMembers(StructDecl* ast)

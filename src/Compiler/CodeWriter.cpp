@@ -32,14 +32,27 @@ void CodeWriter::PopOptions()
 
 void CodeWriter::BeginLine()
 {
-    if (CurrentOptions().enableIndent)
-        Out() << FullIndent();
+    /* Check if previous line has ended */
+    if (!openLine_)
+    {
+        /* Begin a new line */
+        openLine_ = true;
+
+        /* Append indentation */
+        if (CurrentOptions().enableIndent)
+            Out() << FullIndent();
+    }
 }
 
 void CodeWriter::EndLine()
 {
-    if (CurrentOptions().enableNewLine)
+    /* Check if there is no open line */
+    if (openLine_ && CurrentOptions().enableNewLine)
+    {
+        /* End current line */
+        openLine_ = false;
         Out() << '\n';
+    }
 }
 
 void CodeWriter::Write(const std::string& text)

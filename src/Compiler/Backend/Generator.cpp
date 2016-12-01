@@ -76,6 +76,11 @@ void Generator::EndLn()
     writer_.EndLine();
 }
 
+bool Generator::IsOpenLine() const
+{
+    return writer_.IsOpenLine();
+}
+
 void Generator::Write(const std::string& text)
 {
     writer_.Write(text);
