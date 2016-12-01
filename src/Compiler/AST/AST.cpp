@@ -97,7 +97,14 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
             case AST::Types::VarDecl:
             {
                 auto varDecl = static_cast<VarDecl*>(symbolRef);
-                return varDecl->GetTypeDenoter()->GetFromArray(arrayIndices.size(), (recursive ? next.get() : nullptr));
+                try
+                {
+                    return varDecl->GetTypeDenoter()->GetFromArray(arrayIndices.size(), (recursive ? next.get() : nullptr));
+                }
+                catch (const std::exception& e)
+                {
+                    RuntimeErr(e.what(), this);
+                }
             }
             break;
 
@@ -653,7 +660,14 @@ TypeDenoterPtr SuffixExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
 {
-    return expr->GetTypeDenoter()->GetFromArray(arrayIndices.size());
+    try
+    {
+        return expr->GetTypeDenoter()->GetFromArray(arrayIndices.size());
+    }
+    catch (const std::exception& e)
+    {
+        RuntimeErr(e.what(), this);
+    }
 }
 
 
