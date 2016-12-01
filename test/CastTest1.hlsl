@@ -13,15 +13,29 @@ struct S1
 
 struct S2
 {
+	SamplerState samplerState;
 	float a;
 	S1 b;
 };
 
+struct S3
+{
+	SamplerState samplerState;
+};
+
+void f1(S3 s3)
+{
+}
 
 float4 VS() : SV_Position
 {
-	S2 a = (S2)0;
+	//S2 a;
+	//S2 a = (S2)0;
 	
+	S3 b;
+	f1(b);
+	
+	SamplerState samplerState;
 	
 	return (float4)1;
 }

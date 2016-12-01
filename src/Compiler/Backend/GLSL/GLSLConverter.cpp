@@ -168,6 +168,15 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 {
     LabelAnonymousStructDecl(ast);
 
+    /* Remove members which are sampler state objects, since GLSL does not support sampler states */
+    EraseAllIf(
+        ast->members,
+        [&](const VarDeclStmntPtr& varDeclStmnt)
+        {
+            return VarTypeIsSampler(*varDeclStmnt->varType);
+        }
+    );
+
     PushStructDeclLevel();
     {
         VISIT_DEFAULT(StructDecl);
@@ -180,10 +189,6 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     currentFunctionDecl_ = ast;
-
-    /* Is function reachable? */
-    if (!ast->flags(AST::isReachable))
-        return;
 
     /* Remove parameters which contain a sampler state object, since GLSL does not support sampler states */
     EraseAllIf(
@@ -373,7 +378,7 @@ bool GLSLConverter::ExprContainsSampler(Expr& ast) const
 
 bool GLSLConverter::VarTypeIsSampler(VarType& ast) const
 {
-    return ast.typeDenoter->IsSampler();
+    return ast.typeDenoter->Get()->IsSampler();
 }
 
 bool GLSLConverter::MustResolveStruct(StructDecl* ast) const

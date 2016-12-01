@@ -20,6 +20,9 @@
 [NameMangling1 CS]
 --show-ast -T comp -E CS -o output/* NameMangling1.hlsl
 
+[CastTest1 VS]
+-T vert -E VS -o output/* CastTest1.hlsl
+
 [ExprTest4 VS]
 --show-ast -T vert -E VS -o output/* ExprTest4.hlsl
 
