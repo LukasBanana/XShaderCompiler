@@ -452,7 +452,7 @@ ExprPtr HLSLParser::ParseInitializer()
 
 VarSemanticPtr HLSLParser::ParseVarSemantic()
 {
-    Accept(Tokens::Colon); // colon is only syntactic sugar, thus not port of the source area
+    Accept(Tokens::Colon); // colon is only syntactic sugar, thus not part of the source area
 
     auto ast = Make<VarSemantic>();
 
