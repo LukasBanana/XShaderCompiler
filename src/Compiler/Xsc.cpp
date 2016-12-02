@@ -183,6 +183,7 @@ XSC_EXPORT std::string TargetToString(const ShaderTarget target)
 {
     switch (target)
     {
+        case ShaderTarget::Undefined:                       return "Undefined";
         case ShaderTarget::VertexShader:                    return "Vertex Shader";
         case ShaderTarget::FragmentShader:                  return "Fragment Shader";
         case ShaderTarget::GeometryShader:                  return "Geometry Shader";

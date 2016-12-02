@@ -223,6 +223,21 @@ bool SwitchCase::IsDefaultCase() const
 }
 
 
+/* ----- Register ----- */
+
+std::string Register::ToString() const
+{
+    std::string s;
+
+    s += "register(";
+    s += std::string(1, RegisterTypeToChar(registerType));
+    s += std::to_string(slot);
+    s += ')';
+
+    return s;
+}
+
+
 /* ----- PackOffset ----- */
 
 std::string PackOffset::ToString() const

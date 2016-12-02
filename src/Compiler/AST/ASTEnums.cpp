@@ -685,6 +685,35 @@ bool IsD3D10SamplerType(const SamplerType t)
 }
 
 
+/* ----- RegisterType Enum ----- */
+
+RegisterType CharToRegisterType(char c)
+{
+    switch (c)
+    {
+        case 'b': return RegisterType::ConstantBuffer;
+        case 't': return RegisterType::TextureBuffer;
+        case 'c': return RegisterType::BufferOffset;
+        case 's': return RegisterType::Sampler;
+        case 'u': return RegisterType::UnorderedAccessView;
+    }
+    return RegisterType::Undefined;
+}
+
+char RegisterTypeToChar(const RegisterType t)
+{
+    switch (t)
+    {
+        case RegisterType::ConstantBuffer:      return 'b';
+        case RegisterType::TextureBuffer:       return 't';
+        case RegisterType::BufferOffset:        return 'c';
+        case RegisterType::Sampler:             return 's';
+        case RegisterType::UnorderedAccessView: return 'u';
+    }
+    return '\0';
+}
+
+
 /* ----- Semantic Enum ----- */
 
 bool IsSystemSemantic(const Semantic t)

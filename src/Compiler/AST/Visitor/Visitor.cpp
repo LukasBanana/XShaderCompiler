@@ -54,6 +54,11 @@ IMPLEMENT_VISIT_PROC(SamplerValue)
     Visit(ast->value);
 }
 
+IMPLEMENT_VISIT_PROC(Register)
+{
+    // do nothing
+}
+
 IMPLEMENT_VISIT_PROC(PackOffset)
 {
     // do nothing

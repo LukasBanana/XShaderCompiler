@@ -114,8 +114,8 @@ struct ShaderInput
     //! Specifies the HLSL shader entry point.
     std::string                     entryPoint;
     
-    //! Specifies the target shader (Vertex, Fragment etc.).
-    ShaderTarget                    shaderTarget    = ShaderTarget::VertexShader;
+    //! Specifies the target shader (Vertex, Fragment etc.). By default ShaderTarget::Undefined.
+    ShaderTarget                    shaderTarget    = ShaderTarget::Undefined;
 
     /**
     \brief Optional pointer to the implementation of the "IncludeHandler" interface. By default null.

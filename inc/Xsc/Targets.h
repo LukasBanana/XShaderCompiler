@@ -20,6 +20,8 @@ namespace Xsc
 //! Shader target enumeration.
 enum class ShaderTarget
 {
+    Undefined,                      //!< Undefined shader target.
+
     VertexShader,                   //!< Vertex shader.
     TessellationControlShader,      //!< Tessellation-control (also Hull-) shader.
     TessellationEvaluationShader,   //!< Tessellation-evaluation (also Domain-) shader.

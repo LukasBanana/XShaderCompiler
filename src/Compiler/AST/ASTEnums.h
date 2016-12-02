@@ -369,6 +369,27 @@ bool IsD3D9SamplerType(const SamplerType t);
 bool IsD3D10SamplerType(const SamplerType t);
 
 
+/* ----- RegisterType Enum ----- */
+
+// Register type enumeration.
+enum class RegisterType
+{
+    Undefined,
+
+    ConstantBuffer,         // 'b'-register
+    TextureBuffer,          // 't'-register
+    BufferOffset,           // 'c'-register
+    Sampler,                // 's'-register
+    UnorderedAccessView,    // 'u'-register
+};
+
+// Returns the register type for the specified register character (e.g. 'b' for ConstantBuffer).
+RegisterType CharToRegisterType(char c);
+
+// Returns the respective register character for the specified register type (e.g. 'b' for ConstantBuffer).
+char RegisterTypeToChar(const RegisterType t);
+
+
 /* ----- Intrinsic Enum ----- */
 
 /*

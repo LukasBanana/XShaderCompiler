@@ -9,6 +9,7 @@
 #define XSC_AST_H
 
 
+#include <Xsc/Targets.h>
 #include "Token.h"
 #include "Visitor.h"
 #include "Flags.h"
@@ -74,6 +75,7 @@ struct AST
         Attribute,
         SwitchCase,
         SamplerValue,
+        Register,
         PackOffset,
         VarSemantic,
         VarType,
@@ -273,6 +275,18 @@ struct SwitchCase : public AST
     std::vector<StmntPtr>   stmnts;
 };
 
+// Register (e.g. ": register(t0)").
+struct Register : public AST
+{
+    AST_INTERFACE(Register);
+
+    std::string ToString() const;
+
+    ShaderTarget    shaderTarget    = ShaderTarget::Undefined;  // Shader target (or profile). Undefined means all targets are affected.
+    RegisterType    registerType    = RegisterType::Undefined;
+    int             slot            = 0;                        // Zero-based register slot index. By default 0.
+};
+
 // Pack offset.
 struct PackOffset : public AST
 {
@@ -284,6 +298,7 @@ struct PackOffset : public AST
     std::string vectorComponent; // May be empty
 };
 
+//TODO: remove "packOffset" and "registerName" from this AST node!
 // Variable semantic.
 struct VarSemantic : public AST
 {
