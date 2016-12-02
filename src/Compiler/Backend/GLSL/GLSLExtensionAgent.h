@@ -66,6 +66,8 @@ class GLSLExtensionAgent : private Visitor
 
         /* === Members === */
 
+        ShaderTarget                        shaderTarget_       = ShaderTarget::Undefined;
+
         // Target output GLSL version.
         OutputShaderVersion                 targetGLSLVersion_  = OutputShaderVersion::GLSL330;
 

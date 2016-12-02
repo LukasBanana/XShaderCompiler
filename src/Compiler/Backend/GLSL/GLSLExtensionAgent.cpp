@@ -60,6 +60,7 @@ static OutputShaderVersion GetMinGLSLVersionForTarget(const ShaderTarget shaderT
 std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
     Program& program, OutputShaderVersion& targetGLSLVersion, const ShaderTarget shaderTarget, bool allowExtensions)
 {
+    shaderTarget_       = shaderTarget;
     targetGLSLVersion_  = targetGLSLVersion;
     minGLSLVersion_     = GetMinGLSLVersionForTarget(shaderTarget);
     allowExtensions_    = allowExtensions;
@@ -165,9 +166,9 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
     /* Check for explicit binding point */
-    for (auto& name : ast->textureDecls)
+    for (auto& texDecl : ast->textureDecls)
     {
-        if (!name->registerName.empty())
+        if (auto slotRegister = Register::GetForTarget(texDecl->slotRegisters, shaderTarget_))
             AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
     }
 

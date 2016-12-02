@@ -237,6 +237,16 @@ std::string Register::ToString() const
     return s;
 }
 
+Register* Register::GetForTarget(const std::vector<RegisterPtr>& registers, const ShaderTarget shaderTarget)
+{
+    for (const auto& slotRegister : registers)
+    {
+        if (slotRegister->shaderTarget == ShaderTarget::Undefined || slotRegister->shaderTarget == shaderTarget)
+            return slotRegister.get();
+    }
+    return nullptr;
+}
+
 
 /* ----- PackOffset ----- */
 

@@ -545,11 +545,8 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
                 int binding = -1;
 
                 /* Write uniform declaration */
-                if (!texDecl->registerName.empty())
-                {
-                    binding = FromString<int>(TRegister(texDecl->registerName, texDecl.get()));
-                    Write("layout(binding = " + TRegister(texDecl->registerName, texDecl.get()) + ") ");
-                }
+                if (auto slotRegister = Register::GetForTarget(texDecl->slotRegisters, shaderTarget_))
+                    Write("layout(binding = " + std::to_string(slotRegister->slot) + ") ");
 
                 Write("uniform " + *samplerType + " " + texDecl->ident + ";");
 

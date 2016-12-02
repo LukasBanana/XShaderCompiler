@@ -282,6 +282,9 @@ struct Register : public AST
 
     std::string ToString() const;
 
+    // Returns the first slot register for the specified shader target or null, if there is no register.
+    static Register* GetForTarget(const std::vector<RegisterPtr>& registers, const ShaderTarget shaderTarget);
+
     ShaderTarget    shaderTarget    = ShaderTarget::Undefined;  // Shader target (or profile). Undefined means all targets are affected.
     RegisterType    registerType    = RegisterType::Undefined;
     int             slot            = 0;                        // Zero-based register slot index. By default 0.
@@ -400,7 +403,7 @@ struct TextureDecl : public AST /*TODO --> public Decl*/
 
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
-    std::string                     registerName;               // TODO: replace by RegisterPtr
+    std::vector<RegisterPtr>        slotRegisters;              // May be null
 
     TextureDeclStmnt*               declStmntRef    = nullptr;  // Reference to its declaration statement (parent node).
 };

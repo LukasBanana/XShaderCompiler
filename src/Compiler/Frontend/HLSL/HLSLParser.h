@@ -161,6 +161,7 @@ class HLSLParser : public Parser
         std::vector<ExprPtr>            ParseArrayDimensionList(bool allowDynamicDimension = false);
         std::vector<ExprPtr>            ParseArgumentList();
         std::vector<ExprPtr>            ParseInitializerList();
+        std::vector<RegisterPtr>        ParseRegisterList(bool parseFirstColon = true);
         std::vector<VarSemanticPtr>     ParseVarSemanticList();
         std::vector<AttributePtr>       ParseAttributeList();
         std::vector<SwitchCasePtr>      ParseSwitchCaseList();

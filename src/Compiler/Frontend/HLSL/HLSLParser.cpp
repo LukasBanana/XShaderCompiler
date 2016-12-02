@@ -457,7 +457,7 @@ RegisterPtr HLSLParser::ParseRegister(bool parseColon)
         AcceptIt();
         auto subComponent = Accept(Tokens::IntLiteral)->Spell();
         ast->slot += FromString<int>(subComponent);
-        Accept(Tokens::LParen);
+        Accept(Tokens::RParen);
     }
 
     Accept(Tokens::RBracket);
@@ -590,13 +590,10 @@ TextureDeclPtr HLSLParser::ParseTextureDecl(TextureDeclStmnt* declStmntRef)
     /* Store reference to parent node */
     ast->declStmntRef = declStmntRef;
 
-    /* Parse identifier and array dimension list (array dimension can be optional) */
-    ast->ident      = ParseIdent();
-    ast->arrayDims  = ParseArrayDimensionList();
-
-    /* Parse register name (not allowed for local variables!) */
-    if (Is(Tokens::Colon))
-        ast->registerName = ParseRegister_OBSOLETE(true);
+    /* Parse identifier, optional array dimension list, and optional registers */
+    ast->ident          = ParseIdent();
+    ast->arrayDims      = ParseArrayDimensionList();
+    ast->slotRegisters  = ParseRegisterList();
 
     return ast;
 }
@@ -1684,6 +1681,20 @@ std::vector<ExprPtr> HLSLParser::ParseInitializerList()
     auto exprs = ParseExprList(Tokens::RCurly, true);
     Accept(Tokens::RCurly);
     return exprs;
+}
+
+std::vector<RegisterPtr> HLSLParser::ParseRegisterList(bool parseFirstColon)
+{
+    std::vector<RegisterPtr> registers;
+
+    if (parseFirstColon && Is(Tokens::Register))
+        registers.push_back(ParseRegister(false));
+
+    while (Is(Tokens::Colon))
+        registers.push_back(ParseRegister());
+
+
+    return registers;
 }
 
 std::vector<VarSemanticPtr> HLSLParser::ParseVarSemanticList()
