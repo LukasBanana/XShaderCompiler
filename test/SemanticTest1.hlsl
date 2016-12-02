@@ -2,9 +2,10 @@
 // I/O Semantic Test 1
 // 23/11/2016
 
-cbuffer Matrices
+cbuffer Matrices : register(c0)
 {
 	float4x4 wvpMatrix;
+	float4x4 wMatrix;
 };
 
 struct VIn
@@ -51,7 +52,7 @@ VOut VS3(VIn inp)
 void VS4(in VIn inp, out VOut outp)
 {
 	outp.tPos = mul(wvpMatrix, inp.vPos);
-	outp.tNormal = inp.vNormal;
+	outp.tNormal = mul(wMatrix, float4(inp.vNormal, 0)).xyz;
 }
 
 // VS5

@@ -402,12 +402,12 @@ AttributePtr HLSLParser::ParseAttribute()
 
 PackOffsetPtr HLSLParser::ParsePackOffset(bool parseColon)
 {
-    auto ast = Make<PackOffset>();
-
     /* Parse ': packoffset( IDENT (.COMPONENT)? )' */
     if (parseColon)
         Accept(Tokens::Colon);
     
+    auto ast = Make<PackOffset>();
+
     Accept(Tokens::PackOffset);
     Accept(Tokens::LBracket);
 
@@ -421,7 +421,7 @@ PackOffsetPtr HLSLParser::ParsePackOffset(bool parseColon)
 
     Accept(Tokens::RBracket);
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 ExprPtr HLSLParser::ParseArrayDimension(bool allowDynamicDimension)
@@ -772,6 +772,8 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
     /* Parse buffer header */
     ast->bufferType = Accept(Tokens::UniformBuffer)->Spell();
     ast->ident      = ParseIdent();
+
+    UpdateSourceArea(ast);
 
     /* Parse optional register */
     if (Is(Tokens::Colon))
