@@ -85,28 +85,21 @@ IMPLEMENT_VISIT_PROC(SamplerValue)
     DEFAULT_VISITOR(SamplerValue);
 }
 
+IMPLEMENT_VISIT_PROC(Register)
+{
+    Print(ast, ast->ToString());
+    DEFAULT_VISITOR(Register);
+}
+
 IMPLEMENT_VISIT_PROC(PackOffset)
 {
-    auto info = ast->registerName;
-
-    if (!ast->vectorComponent.empty())
-        info += " (" + ast->vectorComponent + ")";
-
-    Print(ast, "PackOffset", info);
-
+    Print(ast, ast->ToString());
     DEFAULT_VISITOR(PackOffset);
 }
 
 IMPLEMENT_VISIT_PROC(VarSemantic)
 {
-    //auto info = ast->semantic;
-    std::string info = "<Semantic>";
-
-    if (!ast->registerName.empty())
-        info += " (" + ast->registerName + ")";
-
-    Print(ast, "VarSemantic", info);
-
+    Print(ast, ast->ToString());
     DEFAULT_VISITOR(VarSemantic);
 }
 

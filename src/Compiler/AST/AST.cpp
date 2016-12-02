@@ -229,7 +229,7 @@ std::string Register::ToString() const
 {
     std::string s;
 
-    s += "register(";
+    s += "Register(";
     s += std::string(1, RegisterTypeToChar(registerType));
     s += std::to_string(slot);
     s += ')';
@@ -244,7 +244,7 @@ std::string PackOffset::ToString() const
 {
     std::string s;
 
-    s += "packoffset(";
+    s += "PackOffset(";
     s += registerName;
 
     if (!vectorComponent.empty())
@@ -267,7 +267,7 @@ std::string VarSemantic::ToString() const
     {
         std::string s;
 
-        s += "register(";
+        s += "Register(";
         s += registerName;
         s += ')';
 

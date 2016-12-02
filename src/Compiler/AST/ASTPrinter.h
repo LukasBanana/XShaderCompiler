@@ -40,6 +40,7 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( Attribute         );
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( SamplerValue      );
+        DECL_VISIT_PROC( Register          );
         DECL_VISIT_PROC( PackOffset        );
         DECL_VISIT_PROC( VarSemantic       );
         DECL_VISIT_PROC( VarType           );

@@ -307,8 +307,8 @@ struct VarSemantic : public AST
     std::string ToString() const;
 
     IndexedSemantic semantic        = Semantic::Undefined;
-    PackOffsetPtr   packOffset;
-    std::string     registerName;                           // May be empty
+    PackOffsetPtr   packOffset;                             // TODO: remove this member
+    std::string     registerName;                           // TODO: remove this member
 };
 
 // Variable data type.
@@ -400,7 +400,7 @@ struct TextureDecl : public AST /*TODO --> public Decl*/
 
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
-    std::string                     registerName;               // May be empty
+    std::string                     registerName;               // TODO: replace by RegisterPtr
 
     TextureDeclStmnt*               declStmntRef    = nullptr;  // Reference to its declaration statement (parent node).
 };
@@ -412,7 +412,7 @@ struct SamplerDecl : public AST /*TODO --> public Decl*/
 
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
-    std::string                     registerName;               // May be empty
+    std::string                     registerName;               // TODO: replace by RegisterPtr
     std::string                     textureIdent;               // Optional variable identifier of the texture object (for DX9 effect files)
     std::vector<SamplerValuePtr>    samplerValues;              // State values for a sampler decl-ident.
 
@@ -531,7 +531,7 @@ struct BufferDeclStmnt : public Stmnt
 
     std::string                     bufferType;
     std::string                     ident;
-    std::string                     registerName; // May be empty
+    std::string                     registerName; // TODO: replace by RegisterPtr
     std::vector<VarDeclStmntPtr>    members;
 };
 
