@@ -400,9 +400,74 @@ AttributePtr HLSLParser::ParseAttribute()
     return ast;
 }
 
+// https://msdn.microsoft.com/en-us/library/windows/desktop/bb509709#Profiles
+static ShaderTarget HLSLShaderProfileToTarget(const std::string& s)
+{
+    if (s.size() >= 2)
+    {
+        auto p = s.substr(0, 2);
+        if (p == "vs")
+            return ShaderTarget::VertexShader;
+        if (p == "hs")
+            return ShaderTarget::TessellationControlShader;
+        if (p == "ds")
+            return ShaderTarget::TessellationEvaluationShader;
+        if (p == "gs")
+            return ShaderTarget::GeometryShader;
+        if (p == "ps")
+            return ShaderTarget::FragmentShader;
+        if (p == "cs")
+            return ShaderTarget::ComputeShader;
+    }
+    return ShaderTarget::Undefined;
+}
+
+// ':' 'register' '(' (IDENT ',')? IDENT ('[' INT_LITERAL ']')? ')'
+RegisterPtr HLSLParser::ParseRegister(bool parseColon)
+{
+    /* Colon is only syntactic sugar, thus not part of the source area */
+    if (parseColon)
+        Accept(Tokens::Colon);
+    
+    auto ast = Make<Register>();
+
+    Accept(Tokens::Register);
+    Accept(Tokens::LBracket);
+
+    auto typeIdent = ParseIdent();
+
+    /* Pares optional shader profile */
+    if (Is(Tokens::Comma))
+    {
+        AcceptIt();
+        ast->shaderTarget = HLSLShaderProfileToTarget(typeIdent);
+        typeIdent = ParseIdent();
+    }
+
+    /* Set area offset to register type character */
+    ast->area.Offset(GetScanner().PreviousToken()->Pos());
+
+    /* Get register type and slot index from type identifier */
+    ast->registerType   = CharToRegisterType(typeIdent.front());
+    ast->slot           = FromString<int>(typeIdent.substr(1));
+
+    /* Parse optional sub component (is only added to slot index) */
+    if (Is(Tokens::LParen))
+    {
+        AcceptIt();
+        auto subComponent = Accept(Tokens::IntLiteral)->Spell();
+        ast->slot += FromString<int>(subComponent);
+        Accept(Tokens::LParen);
+    }
+
+    Accept(Tokens::RBracket);
+
+    return UpdateSourceArea(ast);
+}
+
+// ':' 'packoffset' '(' IDENT ('.' COMPONENT)? ')'
 PackOffsetPtr HLSLParser::ParsePackOffset(bool parseColon)
 {
-    /* Parse ': packoffset( IDENT (.COMPONENT)? )' */
     if (parseColon)
         Accept(Tokens::Colon);
     
@@ -452,12 +517,13 @@ ExprPtr HLSLParser::ParseInitializer()
 
 VarSemanticPtr HLSLParser::ParseVarSemantic()
 {
-    Accept(Tokens::Colon); // colon is only syntactic sugar, thus not part of the source area
+    /* Colon is only syntactic sugar, thus not part of the source area */
+    Accept(Tokens::Colon);
 
     auto ast = Make<VarSemantic>();
 
     if (Is(Tokens::Register))
-        ast->registerName = ParseRegister(false);
+        ast->registerName = ParseRegister_OBSOLETE(false);
     else if (Is(Tokens::PackOffset))
         ast->packOffset = ParsePackOffset(false);
     else
@@ -530,7 +596,7 @@ TextureDeclPtr HLSLParser::ParseTextureDecl(TextureDeclStmnt* declStmntRef)
 
     /* Parse register name (not allowed for local variables!) */
     if (Is(Tokens::Colon))
-        ast->registerName = ParseRegister(true);
+        ast->registerName = ParseRegister_OBSOLETE(true);
 
     return ast;
 }
@@ -548,7 +614,7 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl(SamplerDeclStmnt* declStmntRef)
 
     /* Parse register name (not allowed for local variables!) */
     if (Is(Tokens::Colon))
-        ast->registerName = ParseRegister(true);
+        ast->registerName = ParseRegister_OBSOLETE(true);
 
     /* Parse optional static sampler state (either for D3D9 or D3D10+ shaders) */
     if (Is(Tokens::AssignOp, "="))
@@ -777,7 +843,7 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
 
     /* Parse optional register */
     if (Is(Tokens::Colon))
-        ast->registerName = ParseRegister();
+        ast->registerName = ParseRegister_OBSOLETE();
 
     GetReportHandler().PushContextDesc(ast->bufferType + " " + ast->ident);
     {
@@ -1712,7 +1778,7 @@ std::string HLSLParser::ParseIdent()
     return Accept(Tokens::Ident)->Spell();
 }
 
-std::string HLSLParser::ParseRegister(bool parseColon)
+std::string HLSLParser::ParseRegister_OBSOLETE(bool parseColon)
 {
     if (localScope_)
         Error("semantics are not allowed in local scope", false, HLSLErr::ERR_SEMANTICS, false);

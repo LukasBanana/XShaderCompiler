@@ -100,6 +100,7 @@ class HLSLParser : public Parser
         SwitchCasePtr                   ParseSwitchCase();
         SamplerValuePtr                 ParseSamplerValue();
         AttributePtr                    ParseAttribute();
+        RegisterPtr                     ParseRegister(bool parseColon = true);
         PackOffsetPtr                   ParsePackOffset(bool parseColon = true);
         ExprPtr                         ParseArrayDimension(bool allowDynamicDimension = false);
         ExprPtr                         ParseInitializer();
@@ -169,7 +170,7 @@ class HLSLParser : public Parser
         std::vector<AliasDeclPtr>       ParseAliasDeclList(TypeDenoterPtr typeDenoter);
 
         std::string                     ParseIdent();
-        std::string                     ParseRegister(bool parseColon = true);
+        std::string                     ParseRegister_OBSOLETE(bool parseColon = true);
 
         TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true);
         TypeDenoterPtr                  ParseTypeDenoterPrimary();
