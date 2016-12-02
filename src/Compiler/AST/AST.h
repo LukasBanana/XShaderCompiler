@@ -190,7 +190,7 @@ struct Program : public AST
     AST_INTERFACE(Program)
 
     //TODO: remove this (and use 'entryPointRef' instead):
-    #if 1
+    #if 0
     struct OutputSemantics
     {
         VarType*        returnType              = nullptr;              // Either this ...
@@ -211,7 +211,7 @@ struct Program : public AST
     std::set<Intrinsic>     usedIntrinsics;             // Set of all used intrinsic (filled by the reference analyzer).
 
     //TODO: remove this (and use 'entryPointRef' instead):
-    #if 1
+    #if 0
     OutputSemantics         outputSemantics;            // Output semantics for the DAST
     #endif
 };
