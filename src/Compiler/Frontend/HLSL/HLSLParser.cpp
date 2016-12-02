@@ -439,8 +439,13 @@ RegisterPtr HLSLParser::ParseRegister(bool parseColon)
     /* Pares optional shader profile */
     if (Is(Tokens::Comma))
     {
-        AcceptIt();
         ast->shaderTarget = HLSLShaderProfileToTarget(typeIdent);
+
+        //TODO: only report a warning (or rather an error), if all valid profiles are checked correctly
+        //if (ast->shaderTarget == ShaderTarget::Undefined)
+        //    Warning("unknown shader profile: '" + typeIdent + "'");
+
+        AcceptIt();
         typeIdent = ParseIdent();
     }
 
@@ -450,6 +455,10 @@ RegisterPtr HLSLParser::ParseRegister(bool parseColon)
     /* Get register type and slot index from type identifier */
     ast->registerType   = CharToRegisterType(typeIdent.front());
     ast->slot           = FromString<int>(typeIdent.substr(1));
+
+    /* Validate register type and slot index */
+    if (ast->registerType == RegisterType::Undefined)
+        Warning("unknown slot register: '" + typeIdent.substr(0, 1) + "'");
 
     /* Parse optional sub component (is only added to slot index) */
     if (Is(Tokens::LParen))
@@ -590,7 +599,7 @@ TextureDeclPtr HLSLParser::ParseTextureDecl(TextureDeclStmnt* declStmntRef)
     /* Store reference to parent node */
     ast->declStmntRef = declStmntRef;
 
-    /* Parse identifier, optional array dimension list, and optional registers */
+    /* Parse identifier, optional array dimension list, and optional slot registers */
     ast->ident          = ParseIdent();
     ast->arrayDims      = ParseArrayDimensionList();
     ast->slotRegisters  = ParseRegisterList();
@@ -605,13 +614,10 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl(SamplerDeclStmnt* declStmntRef)
     /* Store reference to parent node */
     ast->declStmntRef = declStmntRef;
 
-    /* Parse identifier and array dimension list (array dimension can be optional) */
-    ast->ident      = ParseIdent();
-    ast->arrayDims  = ParseArrayDimensionList();
-
-    /* Parse register name (not allowed for local variables!) */
-    if (Is(Tokens::Colon))
-        ast->registerName = ParseRegister_OBSOLETE(true);
+    /* Parse identifier, optional array dimension list, and optional slot registers */
+    ast->ident          = ParseIdent();
+    ast->arrayDims      = ParseArrayDimensionList();
+    ast->slotRegisters  = ParseRegisterList();
 
     /* Parse optional static sampler state (either for D3D9 or D3D10+ shaders) */
     if (Is(Tokens::AssignOp, "="))

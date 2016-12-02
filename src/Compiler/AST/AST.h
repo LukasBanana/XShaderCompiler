@@ -403,7 +403,7 @@ struct TextureDecl : public AST /*TODO --> public Decl*/
 
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
-    std::vector<RegisterPtr>        slotRegisters;              // May be null
+    std::vector<RegisterPtr>        slotRegisters;
 
     TextureDeclStmnt*               declStmntRef    = nullptr;  // Reference to its declaration statement (parent node).
 };
@@ -415,7 +415,7 @@ struct SamplerDecl : public AST /*TODO --> public Decl*/
 
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
-    std::string                     registerName;               // TODO: replace by RegisterPtr
+    std::vector<RegisterPtr>        slotRegisters;
     std::string                     textureIdent;               // Optional variable identifier of the texture object (for DX9 effect files)
     std::vector<SamplerValuePtr>    samplerValues;              // State values for a sampler decl-ident.
 
