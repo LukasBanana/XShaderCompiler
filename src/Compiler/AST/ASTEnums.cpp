@@ -521,7 +521,7 @@ static DataType SubscriptDataTypeVector(const DataType dataType, const std::stri
     );
 
     if (!validSubscript)
-        InvalidArg("invalid vector subscript: '" + subscript + "'");
+        InvalidArg("invalid vector subscript '" + subscript + "' for " + DataTypeToString(dataType));
 
     return VectorDataType(BaseDataType(dataType), static_cast<int>(subscriptSize));
 }
