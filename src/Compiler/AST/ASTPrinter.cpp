@@ -87,19 +87,19 @@ IMPLEMENT_VISIT_PROC(SamplerValue)
 
 IMPLEMENT_VISIT_PROC(Register)
 {
-    Print(ast, ast->ToString());
+    Print(ast, "Register", ast->ToString());
     DEFAULT_VISITOR(Register);
 }
 
 IMPLEMENT_VISIT_PROC(PackOffset)
-{
-    Print(ast, ast->ToString());
+{ 
+    Print(ast, "PackOffset", ast->ToString());
     DEFAULT_VISITOR(PackOffset);
 }
 
 IMPLEMENT_VISIT_PROC(VarSemantic)
 {
-    Print(ast, ast->ToString());
+    Print(ast, "VarSemantic", ast->ToString());
     DEFAULT_VISITOR(VarSemantic);
 }
 
@@ -163,7 +163,7 @@ IMPLEMENT_VISIT_PROC_DEFAULT(VarDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
-    Print(ast, "BufferDeclStmnt", ast->ident + " (" + ast->bufferType + ")");
+    Print(ast, "BufferDeclStmnt", ast->ToString());
     DEFAULT_VISITOR(BufferDeclStmnt);
 }
 

@@ -403,6 +403,9 @@ RegisterType CharToRegisterType(char c);
 // Returns the respective register character for the specified register type (e.g. 'b' for ConstantBuffer).
 char RegisterTypeToChar(const RegisterType t);
 
+// Returns a descriptive string for the specified register type.
+std::string RegisterTypeToString(const RegisterType t);
+
 
 /* ----- Intrinsic Enum ----- */
 

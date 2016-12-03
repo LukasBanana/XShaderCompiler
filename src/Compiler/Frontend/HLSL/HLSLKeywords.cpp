@@ -439,6 +439,26 @@ StorageClass HLSLKeywordToStorageClass(const std::string& keyword)
 
 /* ----- BufferType Mapping ----- */
 
+static std::map<std::string, UniformBufferType> GenerateUniformBufferTypeMap()
+{
+    using T = UniformBufferType;
+
+    return
+    {
+        { "cbuffer", T::ConstantBuffer },
+        { "tbuffer", T::TextureBuffer  },
+    };
+}
+
+UniformBufferType HLSLKeywordToUniformBufferType(const std::string& keyword)
+{
+    static const auto typeMap = GenerateUniformBufferTypeMap();
+    return MapKeywordToType(typeMap, keyword, "buffer type");
+}
+
+
+/* ----- BufferType Mapping ----- */
+
 static std::map<std::string, BufferType> GenerateBufferTypeMap()
 {
     using T = BufferType;

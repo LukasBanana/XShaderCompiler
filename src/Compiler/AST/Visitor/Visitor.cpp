@@ -93,11 +93,13 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 IMPLEMENT_VISIT_PROC(TextureDecl)
 {
     Visit(ast->arrayDims);
+    Visit(ast->slotRegisters);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
     Visit(ast->arrayDims);
+    Visit(ast->slotRegisters);
     Visit(ast->samplerValues);
 }
 
@@ -125,6 +127,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
     Visit(ast->members);
+    Visit(ast->slotRegisters);
 }
 
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)

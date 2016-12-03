@@ -718,6 +718,19 @@ char RegisterTypeToChar(const RegisterType t)
     return '\0';
 }
 
+std::string RegisterTypeToString(const RegisterType t)
+{
+    switch (t)
+    {
+        case RegisterType::ConstantBuffer:      return "ConstantBuffer";
+        case RegisterType::TextureBuffer:       return "TextureBuffer";
+        case RegisterType::BufferOffset:        return "BufferOffset";
+        case RegisterType::Sampler:             return "Sampler";
+        case RegisterType::UnorderedAccessView: return "UnorderedAccessView";
+    }
+    return "";
+}
+
 
 /* ----- Semantic Enum ----- */
 

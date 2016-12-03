@@ -193,6 +193,7 @@ class HLSLParser : public Parser
 
         DataType                        ParseDataType(const std::string& keyword);
         StorageClass                    ParseStorageClass();
+        UniformBufferType               ParseUniformBufferType();
         BufferType                      ParseBufferType();
         //SamplerType                     ParseSamplerType();
         IndexedSemantic                 ParseSemantic(bool parseColon = true);

@@ -230,9 +230,13 @@ std::string Register::ToString() const
     std::string s;
 
     s += "Register(";
-    s += std::string(1, RegisterTypeToChar(registerType));
-    s += std::to_string(slot);
-    s += ')';
+    
+    if (registerType == RegisterType::Undefined)
+        s += "<undefined>";
+    else
+        s += RegisterTypeToString(registerType);
+
+    s += "[" + std::to_string(slot) + "])";
 
     return s;
 }
@@ -350,47 +354,6 @@ VarSemantic* VarDecl::FirstSemantic() const
 }
 
 
-/* ----- VarDelcStmnt ----- */
-
-std::string VarDeclStmnt::ToString(bool useVarNames) const
-{
-    auto s = varType->ToString();
-    
-    if (useVarNames)
-    {
-        for (std::size_t i = 0; i < varDecls.size(); ++i)
-        {
-            s += ' ';
-            s += varDecls[i]->ToString();
-            if (i + 1 < varDecls.size())
-                s += ',';
-        }
-    }
-
-    return s;
-}
-
-VarDecl* VarDeclStmnt::Fetch(const std::string& ident) const
-{
-    for (const auto& var : varDecls)
-    {
-        if (var->ident == ident)
-            return var.get();
-    }
-    return nullptr;
-}
-
-bool VarDeclStmnt::IsInput() const
-{
-    return (inputModifier == "in" || inputModifier == "inout" || inputModifier.empty());
-}
-
-bool VarDeclStmnt::IsOutput() const
-{
-    return (inputModifier == "out" || inputModifier == "inout");
-}
-
-
 /* ----- FunctionDecl ----- */
 
 void FunctionDecl::ParameterSemantics::Add(VarDecl* varDecl)
@@ -495,6 +458,69 @@ bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const T
 TypeDenoterPtr FunctionDecl::GetTypeDenoterForArgs(const std::vector<ExprPtr>& /*args*/)
 {
     return returnType->typeDenoter;
+}
+
+
+/* ----- BufferDeclStmnt ----- */
+
+std::string BufferDeclStmnt::ToString() const
+{
+    std::string s;
+
+    switch (bufferType)
+    {
+        case UniformBufferType::ConstantBuffer:
+            s = "cbuffer ";
+            break;
+        case UniformBufferType::TextureBuffer:
+            s = "tbuffer ";
+            break;
+    }
+
+    s += ident;
+
+    return s;
+}
+
+
+/* ----- VarDelcStmnt ----- */
+
+std::string VarDeclStmnt::ToString(bool useVarNames) const
+{
+    auto s = varType->ToString();
+    
+    if (useVarNames)
+    {
+        for (std::size_t i = 0; i < varDecls.size(); ++i)
+        {
+            s += ' ';
+            s += varDecls[i]->ToString();
+            if (i + 1 < varDecls.size())
+                s += ',';
+        }
+    }
+
+    return s;
+}
+
+VarDecl* VarDeclStmnt::Fetch(const std::string& ident) const
+{
+    for (const auto& var : varDecls)
+    {
+        if (var->ident == ident)
+            return var.get();
+    }
+    return nullptr;
+}
+
+bool VarDeclStmnt::IsInput() const
+{
+    return (inputModifier == "in" || inputModifier == "inout" || inputModifier.empty());
+}
+
+bool VarDeclStmnt::IsOutput() const
+{
+    return (inputModifier == "out" || inputModifier == "inout");
 }
 
 

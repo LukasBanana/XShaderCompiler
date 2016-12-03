@@ -532,10 +532,11 @@ struct BufferDeclStmnt : public Stmnt
 {
     AST_INTERFACE(BufferDeclStmnt);
 
-    //UniformBufferType               bufferType = UniformBufferType::Undefined;
-    std::string                     bufferType;
+    std::string ToString() const;
+
+    UniformBufferType               bufferType = UniformBufferType::Undefined;
     std::string                     ident;
-    std::string                     registerName; // TODO: replace by RegisterPtr
+    std::vector<RegisterPtr>        slotRegisters;
     std::vector<VarDeclStmntPtr>    members;
 };
 

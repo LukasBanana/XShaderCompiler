@@ -839,16 +839,15 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
     auto ast = Make<BufferDeclStmnt>();
 
     /* Parse buffer header */
-    ast->bufferType = Accept(Tokens::UniformBuffer)->Spell();
+    ast->bufferType = ParseUniformBufferType();
     ast->ident      = ParseIdent();
 
     UpdateSourceArea(ast);
 
-    /* Parse optional register */
-    if (Is(Tokens::Colon))
-        ast->registerName = ParseRegister_OBSOLETE();
+    /* Parse optional registers */
+    ast->slotRegisters = ParseRegisterList();
 
-    GetReportHandler().PushContextDesc(ast->bufferType + " " + ast->ident);
+    GetReportHandler().PushContextDesc(ast->ToString());
     {
         /* Parse buffer body */
         ast->members = ParseVarDeclStmntList();
@@ -2140,6 +2139,19 @@ StorageClass HLSLParser::ParseStorageClass()
         Error(e.what());
     }
     return StorageClass::Undefined;
+}
+
+UniformBufferType HLSLParser::ParseUniformBufferType()
+{
+    try
+    {
+        return HLSLKeywordToUniformBufferType(Accept(Tokens::UniformBuffer)->Spell());
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
+    return UniformBufferType::Undefined;
 }
 
 BufferType HLSLParser::ParseBufferType()

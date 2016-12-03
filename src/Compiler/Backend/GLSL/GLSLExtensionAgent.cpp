@@ -156,7 +156,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     AcquireExtension(GLSLEXT_GL_ARB_uniform_buffer_object);
 
     /* Check for explicit binding point */
-    if (!ast->registerName.empty())
+    if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, shaderTarget_))
         AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
 
     /* Default visitor */

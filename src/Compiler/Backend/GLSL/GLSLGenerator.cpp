@@ -508,8 +508,8 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     {
         Write("layout(std140");
 
-        if (!ast->registerName.empty())
-            Write(", binding = " + BRegister(ast->registerName, ast));
+        if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, shaderTarget_))
+            Write(", binding = " + std::to_string(slotRegister->slot));
 
         Write(") uniform ");
         Write(ast->ident);

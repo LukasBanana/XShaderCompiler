@@ -2,7 +2,7 @@
 // Register Test 1
 // 02/12/2016
 
-cbuffer Matrices : register(b1)//register(vs, b0) : register(ps, b1)
+cbuffer Matrices : register(vs, b0) : register(ps, b1)
 {
 	float4 diffuse;
 };
