@@ -158,6 +158,15 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
         { "texCUBEproj",                        { T::TexCubeProj,                       2, 1 } },
         { "transpose",                          { T::Transpose,                         1, 0 } },
         { "trunc",                              { T::Trunc,                             1, 0 } },
+
+        { "GetDimensions",                      { T::Texture_GetDimensions,             5, 0 } },
+        { "Load",                               { T::Texture_Load_1,                    4, 0 } },
+        { "Sample",                             { T::Texture_Sample_2,                  4, 0 } },
+        { "SampleBias",                         { T::Texture_SampleBias_3,              4, 0 } },
+        { "SampleCmp",                          { T::Texture_SampleCmp_3,               4, 0 } },
+        { "SampleCmpLevelZero",                 { T::Texture_SampleCmp_3,               4, 0 } }, // Identical to SampleCmp (but only for Level 0)
+        { "SampleGrad",                         { T::Texture_SampleGrad_4,              4, 0 } },
+        { "SampleLevel",                        { T::Texture_SampleLevel_3,             4, 0 } },
     };
 }
 
@@ -386,6 +395,30 @@ static std::map<Intrinsic, IntrinsicDescriptor> GenerateIntrinsicDescriptorMap()
         { T::TexCubeProj,                       { DataType::Float4, 2 } },
       //{ T::Transpose,                         {  }                    }, // special case
         { T::Trunc,                             { Arg1, 1 }             },
+
+        { T::Texture_GetDimensions,             { 3 }                   },
+        { T::Texture_Load_1,                    { DataType::Float4, 1 } },
+        { T::Texture_Load_2,                    { DataType::Float4, 2 } },
+        { T::Texture_Load_3,                    { DataType::Float4, 3 } },
+        { T::Texture_Sample_2,                  { DataType::Float4, 2 } },
+        { T::Texture_Sample_3,                  { DataType::Float4, 3 } },
+        { T::Texture_Sample_4,                  { DataType::Float4, 4 } },
+        { T::Texture_Sample_5,                  { DataType::Float4, 5 } },
+        { T::Texture_SampleBias_3,              { DataType::Float4, 3 } },
+        { T::Texture_SampleBias_4,              { DataType::Float4, 4 } },
+        { T::Texture_SampleBias_5,              { DataType::Float4, 5 } },
+        { T::Texture_SampleBias_6,              { DataType::Float4, 6 } },
+        { T::Texture_SampleCmp_3,               { DataType::Float4, 3 } },
+        { T::Texture_SampleCmp_4,               { DataType::Float4, 4 } },
+        { T::Texture_SampleCmp_5,               { DataType::Float4, 5 } },
+        { T::Texture_SampleCmp_6,               { DataType::Float4, 6 } },
+        { T::Texture_SampleGrad_4,              { DataType::Float4, 4 } },
+        { T::Texture_SampleGrad_5,              { DataType::Float4, 5 } },
+        { T::Texture_SampleGrad_6,              { DataType::Float4, 6 } },
+        { T::Texture_SampleGrad_7,              { DataType::Float4, 7 } },
+        { T::Texture_SampleLevel_3,             { DataType::Float4, 3 } },
+        { T::Texture_SampleLevel_4,             { DataType::Float4, 4 } },
+        { T::Texture_SampleLevel_5,             { DataType::Float4, 5 } },
     };
 }
 
