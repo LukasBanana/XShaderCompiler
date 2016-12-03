@@ -95,11 +95,6 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     PopFunctionCall();
 }
 
-/*IMPLEMENT_VISIT_PROC(VarSemantic)
-{
-    AnalyzeSemantic(ast->semantic);
-}*/
-
 IMPLEMENT_VISIT_PROC(VarType)
 {
     Visit(ast->structDecl);
@@ -530,26 +525,6 @@ void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
 }
 
 #endif
-
-VarSemanticPtr HLSLAnalyzer::FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics) const
-{
-    for (auto& varSem : varSemantics)
-    {
-        if (IsSystemSemantic(varSem->semantic))
-            return varSem;
-    }
-    return nullptr;
-}
-
-VarSemanticPtr HLSLAnalyzer::FetchUserDefinedSemantic(const std::vector<VarSemanticPtr>& varSemantics) const
-{
-    for (auto& varSem : varSemantics)
-    {
-        if (!IsSystemSemantic(varSem->semantic))
-            return varSem;
-    }
-    return nullptr;
-}
 
 void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
 {

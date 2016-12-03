@@ -1742,16 +1742,6 @@ void GLSLGenerator::WriteScopedStmnt(Stmnt* ast)
     }
 }
 
-bool GLSLGenerator::HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const
-{
-    for (const auto& varSem : semantics)
-    {
-        if (IsSystemSemantic(varSem->semantic))
-            return true;
-    }
-    return false;
-}
-
 void GLSLGenerator::WriteArrayDims(const std::vector<ExprPtr>& arrayDims)
 {
     for (auto& dim : arrayDims)

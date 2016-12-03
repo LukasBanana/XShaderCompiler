@@ -525,25 +525,6 @@ ExprPtr HLSLParser::ParseInitializer()
     return ParseExpr();
 }
 
-#if 0
-VarSemanticPtr HLSLParser::ParseVarSemantic()
-{
-    /* Colon is only syntactic sugar, thus not part of the source area */
-    Accept(Tokens::Colon);
-
-    auto ast = Make<VarSemantic>();
-
-    if (Is(Tokens::Register))
-        ast->registerName = ParseRegister_OBSOLETE(false);
-    else if (Is(Tokens::PackOffset))
-        ast->packOffset = ParsePackOffset(false);
-    else
-        ast->semantic = ParseSemantic(false);
-
-    return UpdateSourceArea(ast);
-}
-#endif
-
 VarIdentPtr HLSLParser::ParseVarIdent()
 {
     auto ast = Make<VarIdent>();
@@ -1707,18 +1688,6 @@ std::vector<RegisterPtr> HLSLParser::ParseRegisterList(bool parseFirstColon)
 
     return registers;
 }
-
-#if 0
-std::vector<VarSemanticPtr> HLSLParser::ParseVarSemanticList()
-{
-    std::vector<VarSemanticPtr> semantics;
-
-    while (Is(Tokens::Colon))
-        semantics.push_back(ParseVarSemantic());
-
-    return semantics;
-}
-#endif
 
 std::vector<AttributePtr> HLSLParser::ParseAttributeList()
 {

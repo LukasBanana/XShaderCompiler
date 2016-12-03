@@ -51,7 +51,6 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
-        //DECL_VISIT_PROC( VarSemantic       );
         DECL_VISIT_PROC( VarType           );
         
         DECL_VISIT_PROC( VarDecl           );
@@ -84,9 +83,6 @@ class HLSLAnalyzer : public Analyzer
         void DecorateEntryInOut(VarDeclStmnt* ast, bool isInput);
         void DecorateEntryInOut(VarType* ast, bool isInput);
         #endif
-
-        VarSemanticPtr FetchSystemValueSemantic(const std::vector<VarSemanticPtr>& varSemantics) const;
-        VarSemanticPtr FetchUserDefinedSemantic(const std::vector<VarSemanticPtr>& varSemantics) const;
 
         void AnalyzeFunctionCallStandard(FunctionCall* ast);
         void AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLIntrinsicEntry& intr);

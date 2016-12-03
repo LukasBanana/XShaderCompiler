@@ -226,29 +226,6 @@ std::string PackOffset::ToString() const
 }
 
 
-/* ----- VarSemantic ----- */
-
-std::string VarSemantic::ToString() const
-{
-    if (!registerName.empty())
-    {
-        std::string s;
-
-        s += "Register(";
-        s += registerName;
-        s += ')';
-
-        return s;
-    }
-
-    if (packOffset)
-        return packOffset->ToString();
-
-    //return semantic;
-    return "<Semantic>";
-}
-
-
 /* ----- VarType ----- */
 
 std::string VarType::ToString() const

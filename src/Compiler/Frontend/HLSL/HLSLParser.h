@@ -104,7 +104,6 @@ class HLSLParser : public Parser
         PackOffsetPtr                   ParsePackOffset(bool parseColon = true);
         ExprPtr                         ParseArrayDimension(bool allowDynamicDimension = false);
         ExprPtr                         ParseInitializer();
-        //VarSemanticPtr                  ParseVarSemantic();
         VarIdentPtr                     ParseVarIdent();
         VarTypePtr                      ParseVarType(bool parseVoidType = false);
 
@@ -162,7 +161,6 @@ class HLSLParser : public Parser
         std::vector<ExprPtr>            ParseArgumentList();
         std::vector<ExprPtr>            ParseInitializerList();
         std::vector<RegisterPtr>        ParseRegisterList(bool parseFirstColon = true);
-        //std::vector<VarSemanticPtr>     ParseVarSemanticList();
         std::vector<AttributePtr>       ParseAttributeList();
         std::vector<SwitchCasePtr>      ParseSwitchCaseList();
         std::vector<TextureDeclPtr>     ParseTextureDeclList(TextureDeclStmnt* declStmntRef);

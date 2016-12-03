@@ -77,7 +77,6 @@ struct AST
         SamplerValue,
         Register,
         PackOffset,
-        VarSemantic,
         VarType,
         VarIdent,
 
@@ -299,19 +298,6 @@ struct PackOffset : public AST
 
     std::string registerName;
     std::string vectorComponent; // May be empty
-};
-
-//TODO: remove "packOffset" and "registerName" from this AST node!
-// Variable semantic.
-struct VarSemantic : public AST
-{
-    AST_INTERFACE(VarSemantic);
-
-    std::string ToString() const;
-
-    IndexedSemantic semantic        = Semantic::Undefined;
-    PackOffsetPtr   packOffset;                             // TODO: remove this member
-    std::string     registerName;                           // TODO: remove this member
 };
 
 // Variable data type.

@@ -124,13 +124,6 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     VISIT_DEFAULT(SwitchCase);
 }
 
-IMPLEMENT_VISIT_PROC(VarSemantic)
-{
-    /* Convert fragment target to user defined semantic, because gl_FragData is only available for GLSL 1.10 */
-    if (ast->semantic == Semantic::Target)
-        ast->semantic = Semantic::UserDefined;
-}
-
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
     /* Has the variable identifier a next identifier? */
@@ -166,6 +159,8 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     /* Must this variable be renamed with name mangling? */
     if (MustRenameVarDecl(ast))
         RenameVarDecl(ast);
+
+    //ConvertSemantic(ast->semantic);
 
     /* Must the initializer type denoter changed? */
     if (ast->initializer)
@@ -556,6 +551,15 @@ void GLSLConverter::RemoveSamplerVarDeclStmnts(std::vector<VarDeclStmntPtr>& stm
         }
     );
 }
+
+#if 0
+void GLSLConverter::ConvertSemantic(IndexedSemantic& semantic)
+{
+    /* Convert fragment target to user defined semantic, because gl_FragData is only available for GLSL 1.10 */
+    if (semantic == Semantic::Target)
+        semantic = Semantic::UserDefined;
+}
+#endif
 
 
 } // /namespace Xsc

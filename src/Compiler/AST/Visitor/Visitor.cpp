@@ -64,11 +64,6 @@ IMPLEMENT_VISIT_PROC(PackOffset)
     // do nothing
 }
 
-IMPLEMENT_VISIT_PROC(VarSemantic)
-{
-    // do nothing
-}
-
 IMPLEMENT_VISIT_PROC(VarType)
 {
     Visit(ast->structDecl);

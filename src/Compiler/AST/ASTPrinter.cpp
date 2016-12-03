@@ -97,12 +97,6 @@ IMPLEMENT_VISIT_PROC(PackOffset)
     DEFAULT_VISITOR(PackOffset);
 }
 
-IMPLEMENT_VISIT_PROC(VarSemantic)
-{
-    Print(ast, "VarSemantic", ast->ToString());
-    DEFAULT_VISITOR(VarSemantic);
-}
-
 IMPLEMENT_VISIT_PROC(VarType)
 {
     Print(ast, "VarType", (ast->typeDenoter ? ast->typeDenoter->ToString() : ""));

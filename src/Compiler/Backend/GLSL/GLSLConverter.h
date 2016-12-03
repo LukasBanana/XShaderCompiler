@@ -41,7 +41,6 @@ class GLSLConverter : public Visitor
         DECL_VISIT_PROC( CodeBlock        );
         DECL_VISIT_PROC( FunctionCall     );
         DECL_VISIT_PROC( SwitchCase       );
-        DECL_VISIT_PROC( VarSemantic      );
         DECL_VISIT_PROC( VarIdent         );
 
         DECL_VISIT_PROC( VarDecl          );
@@ -118,6 +117,8 @@ class GLSLConverter : public Visitor
 
         // Removes all variable declarations which have a sampler state type.
         void RemoveSamplerVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts);
+
+        //void ConvertSemantic(IndexedSemantic& semantic);
 
         /* === Members === */
 

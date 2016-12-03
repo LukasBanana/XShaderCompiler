@@ -199,8 +199,6 @@ class GLSLGenerator : public Generator
         void WriteParameter(VarDeclStmnt* ast);
         void WriteScopedStmnt(Stmnt* ast);
 
-        bool HasSystemValueSemantic(const std::vector<VarSemanticPtr>& semantics) const;
-
         void WriteArrayDims(const std::vector<ExprPtr>& arrayDims);
 
         /* === Members === */
