@@ -42,8 +42,6 @@ class GLSLGenerator : public Generator
             const ShaderOutput& outputDesc
         ) override;
 
-        void EstablishMaps();
-
         // Writes a new single line comment.
         void Comment(const std::string& text);
 
@@ -181,7 +179,6 @@ class GLSLGenerator : public Generator
         void WriteFunctionCallIntrinsicMul(FunctionCall* ast);
         void WriteFunctionCallIntrinsicRcp(FunctionCall* ast);
         void WriteFunctionCallIntrinsicAtomic(FunctionCall* ast);
-        //void WriteFunctionCallIntrinsicTex(FunctionCall* ast);
 
         /* --- Structure --- */
 
@@ -206,11 +203,6 @@ class GLSLGenerator : public Generator
 
         bool                isInsideEntryPoint_     = false;
         bool                isInsideInterfaceBlock_ = false;
-
-        //TODO: remove all HLSL type mappings from here
-        #if 0
-        std::map<std::string, std::string> texFuncMap_;         // <hlsl-function, glsl-function>
-        #endif
 
 };
 

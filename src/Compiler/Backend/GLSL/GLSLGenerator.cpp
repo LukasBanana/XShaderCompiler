@@ -29,7 +29,6 @@ namespace Xsc
 GLSLGenerator::GLSLGenerator(Log* log) :
     Generator{ log }
 {
-    EstablishMaps();
 }
 
 void GLSLGenerator::GenerateCodePrimary(
@@ -100,24 +99,6 @@ void GLSLGenerator::GenerateCodePrimary(
 /*
  * ======= Private: =======
  */
-
-void GLSLGenerator::EstablishMaps()
-{
-    // TODO: remove all HLSL mappings from here !!!
-    #if 0
-    texFuncMap_ = std::map<std::string, std::string>
-    {
-        { "GetDimensions ",     "textureSize"   },
-        { "Load",               "texelFetch"    },
-        { "Sample",             "texture"       },
-        { "SampleBias",         "textureOffset" },
-        //{ "SampleCmp", "" },
-        //{ "SampleCmpLevelZero", "" },
-        { "SampleGrad",         "textureGrad"   },
-        { "SampleLevel",        "textureLod"    },
-    };
-    #endif
-}
 
 void GLSLGenerator::Comment(const std::string& text)
 {
@@ -323,10 +304,6 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         WriteFunctionCallIntrinsicMul(ast);
     else if (ast->intrinsic == Intrinsic::Rcp)
         WriteFunctionCallIntrinsicRcp(ast);
-    #if 0
-    else if (ast->flags(FunctionCall::isTexFunc))
-        WriteFunctionCallIntrinsicTex(ast);
-    #endif
     else if (ast->intrinsic >= Intrinsic::InterlockedAdd && ast->intrinsic <= Intrinsic::InterlockedXor)
         WriteFunctionCallIntrinsicAtomic(ast);
     else
@@ -1471,38 +1448,6 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
     else
         Error("failed to map intrinsic '" + ast->varIdent->ToString() + "' to GLSL keyword", ast);
 }
-
-//TODO: remove this
-#if 0
-void GLSLGenerator::WriteFunctionCallIntrinsicTex(FunctionCall* ast)
-{
-    if (!ast->varIdent->next)
-        Error("missing member function in texture intrinsic", ast);
-
-    /* Get function name */
-    const auto& memberFuncName = ast->varIdent->next->ident;
-
-    auto it = texFuncMap_.find(memberFuncName);
-    if (it == texFuncMap_.end())
-        Error("texture member function \"" + memberFuncName + "\" is not supported", ast);
-
-    const auto& funcName = it->second;
-
-    /* Write function call */
-    Write(funcName + "(");
-        
-    for (size_t i = 0; i < ast->arguments.size(); ++i)
-    {
-        const auto& arg = ast->arguments[i];
-            
-        Visit(arg);
-        if (i + 1 < ast->arguments.size())
-            Write(", ");
-    }
-
-    Write(")");
-}
-#endif
 
 /* --- Structure --- */
 

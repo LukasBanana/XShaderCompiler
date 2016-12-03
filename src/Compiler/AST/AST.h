@@ -225,13 +225,6 @@ struct FunctionCall : public AST
 {
     AST_INTERFACE(FunctionCall);
 
-    #if 0
-    FLAG_ENUM
-    {
-        FLAG( isTexFunc, 0 ), // This is a texture function (e.g. "tex.Sample" or "tex.Load").
-    };
-    #endif
-
     VarIdentPtr             varIdent;                           // Either this ...
     TypeDenoterPtr          typeDenoter;                        // ... or this is used.
     std::vector<ExprPtr>    arguments;
