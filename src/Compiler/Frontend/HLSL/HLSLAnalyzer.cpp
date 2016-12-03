@@ -507,32 +507,37 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLInt
     /* Decorate AST with intrinsic ID */
     ast->intrinsic = intr.intrinsic;
 
-    //TODO: refactor analysis of intrinsic function call arguments!
-    #if 1
-
-    /* Check if a specific intrinsic is used */
-    switch (intr.intrinsic)
+    /* Analyze special intrinsic types */
+    switch (ast->intrinsic)
     {
-        case Intrinsic::Mul:
-        {
-            /* Validate number of arguments */
-            for (std::size_t i = 2; i < ast->arguments.size(); ++i)
-                Error("too many arguments in \"mul\" intrinsic", ast->arguments[i].get());
-        }
-        break;
+        case Intrinsic::AsUInt:
+            if (ast->arguments.size() == 1)
+                ast->intrinsic = Intrinsic::AsUInt_2;
+            break;
+
+        case Intrinsic::Tex1D:
+            if (ast->arguments.size() == 4)
+                ast->intrinsic = Intrinsic::Tex1D_2;
+            break;
+
+        case Intrinsic::Tex2D:
+            if (ast->arguments.size() == 4)
+                ast->intrinsic = Intrinsic::Tex2D_2;
+            break;
+
+        case Intrinsic::Tex3D:
+            if (ast->arguments.size() == 4)
+                ast->intrinsic = Intrinsic::Tex3D_2;
+            break;
+
+        case Intrinsic::TexCube:
+            if (ast->arguments.size() == 4)
+                ast->intrinsic = Intrinsic::TexCube_2;
+            break;
 
         default:
-        {
-            if (intr.intrinsic >= Intrinsic::InterlockedAdd && intr.intrinsic <= Intrinsic::InterlockedXor)
-            {
-                if (ast->arguments.size() < 2)
-                    Error("interlocked intrinsics must have at least 2 arguments", ast);
-            }
-        }
-        break;
+            break;
     }
-
-    #endif
 }
 
 void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
