@@ -63,7 +63,7 @@
 -T comp -E CS -O -o output/* TestShader1.hlsl
 
 [ssct_reflect PS]
---show-times --show-stat -T frag -E PS -O -I "../../misc/ssct_shader/" "../../misc/ssct_shader/ssct_reflect.hlsl"
+--show-times --show-stat -T frag -E PS -I "../../misc/ssct_shader/" "../../misc/ssct_shader/ssct_reflect.hlsl"
 
 #[PPTest1.hlsl VS]
 #-T vert -E VS -O -o output/* PPTest1.hlsl

@@ -182,8 +182,6 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 {
     LabelAnonymousStructDecl(ast);
 
-    RemoveSamplerVarDeclStmnts(ast->members);
-
     if (ast->members.empty())
     {
         /* Add dummy member if the structure is empty (GLSL does not support empty structures) */
@@ -198,6 +196,8 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         }
         PopStructDeclLevel();
     }
+
+    RemoveSamplerVarDeclStmnts(ast->members);
 }
 
 /* --- Declaration statements --- */
@@ -205,8 +205,6 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     currentFunctionDecl_ = ast;
-
-    RemoveSamplerVarDeclStmnts(ast->parameters);
 
     if (ast->flags(FunctionDecl::isEntryPoint))
     {
@@ -218,6 +216,8 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     }
     else
         VISIT_DEFAULT(FunctionDecl);
+
+    RemoveSamplerVarDeclStmnts(ast->parameters);
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
