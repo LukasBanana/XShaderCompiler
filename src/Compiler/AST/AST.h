@@ -478,10 +478,7 @@ struct FunctionDecl : public Stmnt
     std::size_t NumMaxArgs() const;
 
     // Returns true if the specified type denoter matches the parameter.
-    virtual bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const;
-
-    // Returns a type denoter for the specified arguments (used to return generic type for intrinsics).
-    virtual TypeDenoterPtr GetTypeDenoterForArgs(const std::vector<ExprPtr>& args);
+    bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const;
 
     std::vector<AttributePtr>       attribs;                                // Attribute list
     VarTypePtr                      returnType;
