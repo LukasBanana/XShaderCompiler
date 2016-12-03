@@ -608,21 +608,16 @@ class IndexedSemantic
         IndexedSemantic(const IndexedSemantic&) = default;
         IndexedSemantic& operator = (const IndexedSemantic&) = default;
 
-        inline IndexedSemantic(Semantic semantic, int index = 0) :
-            semantic_   { semantic },
-            index_      { index    }
-        {
-        }
+        IndexedSemantic(Semantic semantic, int index = 0);
 
         inline operator Semantic() const
         {
             return semantic_;
         }
 
-        inline bool IsValid() const
-        {
-            return (semantic_ != Semantic::Undefined);
-        }
+        bool IsValid() const;
+        bool IsSystemValue() const;
+        bool IsUserDefined() const;
 
         std::string ToString() const;
 

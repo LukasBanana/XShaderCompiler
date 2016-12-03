@@ -732,12 +732,36 @@ std::string RegisterTypeToString(const RegisterType t)
 }
 
 
-/* ----- Semantic Enum ----- */
+/* ----- IndexedSemantic Class ----- */
+
+IndexedSemantic::IndexedSemantic(Semantic semantic, int index) :
+    semantic_   { semantic },
+    index_      { index    }
+{
+}
+
+bool IndexedSemantic::IsValid() const
+{
+    return (semantic_ != Semantic::Undefined);
+}
+
+bool IndexedSemantic::IsSystemValue() const
+{
+    return IsSystemSemantic(semantic_);
+}
+
+bool IndexedSemantic::IsUserDefined() const
+{
+    return IsUserSemantic(semantic_);
+}
 
 std::string IndexedSemantic::ToString() const
 {
     return (semantic_ == Semantic::UserDefined ? userDefined_ : SemanticToString(semantic_));
 }
+
+
+/* ----- Semantic Enum ----- */
 
 bool IsSystemSemantic(const Semantic t)
 {

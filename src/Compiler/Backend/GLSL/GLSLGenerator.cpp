@@ -589,13 +589,8 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         First check if code generation is disabled for variable declaration,
         then check if this is a system value semantic inside an interface block.
         */
-        #if 0
         if ( (*it)->flags(VarDecl::disableCodeGen) ||
-             ( isInsideInterfaceBlock_ && HasSystemValueSemantic((*it)->semantics) ) )
-        #else
-        if ( (*it)->flags(VarDecl::disableCodeGen) ||
-             ( isInsideInterfaceBlock_ && IsSystemSemantic((*it)->semantic) ) )
-        #endif
+             ( isInsideInterfaceBlock_ && (*it)->semantic.IsSystemValue() ) )
         {
             /*
             Code generation is disabled for this variable declaration
@@ -1184,7 +1179,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
             }
         }
     }
-    else if (IsSystemSemantic(semantic) && ast)
+    else if (semantic.IsSystemValue() && ast)
     {
         if (auto semanticKeyword = SemanticToGLSLKeyword(semantic))
         {
