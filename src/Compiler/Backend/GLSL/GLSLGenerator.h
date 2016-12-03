@@ -68,14 +68,6 @@ class GLSLGenerator : public Generator
         // Closes the current scope with '}'.
         void CloseScope(bool semicolon = false);
 
-        void ValidateRegisterPrefix(const std::string& registerName, char prefix, const AST* ast = nullptr);
-        int RegisterIndex(const std::string& registerName);
-
-        std::string BRegister(const std::string& registerName, const AST* ast = nullptr);
-        std::string TRegister(const std::string& registerName, const AST* ast = nullptr);
-        std::string SRegister(const std::string& registerName, const AST* ast = nullptr);
-        std::string URegister(const std::string& registerName, const AST* ast = nullptr);
-
         // Returns true if the specified AST structure must be resolved.
         bool MustResolveStruct(StructDecl* ast) const;
 

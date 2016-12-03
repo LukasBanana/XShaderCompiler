@@ -192,50 +192,6 @@ void GLSLGenerator::CloseScope(bool semicolon)
     WriteLn(semicolon ? "};" : "}");
 }
 
-void GLSLGenerator::ValidateRegisterPrefix(const std::string& registerName, char prefix, const AST* ast)
-{
-    if (registerName.empty() || registerName[0] != prefix)
-    {
-        Error(
-            "invalid register prefix '" + std::string(1, registerName[0]) +
-            "' (expected '" + std::string(1, prefix) + "')",
-            ast
-        );
-    }
-}
-
-int GLSLGenerator::RegisterIndex(const std::string& registerName)
-{
-    return std::stoi(registerName.substr(1));
-}
-
-//TODO: move this to GLSLConverter
-#if 1
-std::string GLSLGenerator::BRegister(const std::string& registerName, const AST* ast)
-{
-    ValidateRegisterPrefix(registerName, 'b', ast);
-    return registerName.substr(1);
-}
-
-std::string GLSLGenerator::TRegister(const std::string& registerName, const AST* ast)
-{
-    ValidateRegisterPrefix(registerName, 't', ast);
-    return registerName.substr(1);
-}
-
-std::string GLSLGenerator::SRegister(const std::string& registerName, const AST* ast)
-{
-    ValidateRegisterPrefix(registerName, 's', ast);
-    return registerName.substr(1);
-}
-
-std::string GLSLGenerator::URegister(const std::string& registerName, const AST* ast)
-{
-    ValidateRegisterPrefix(registerName, 'u', ast);
-    return registerName.substr(1);
-}
-#endif
-
 bool GLSLGenerator::MustResolveStruct(StructDecl* ast) const
 {
     return MustResolveStructForTarget(shaderTarget_, ast);
