@@ -189,7 +189,8 @@ class GLSLGenerator : public Generator
         ShaderTarget        shaderTarget_           = ShaderTarget::VertexShader;
         OutputShaderVersion versionOut_             = OutputShaderVersion::GLSL;
         bool                allowExtensions_        = false;
-        bool                allowLineMarks_         = true;
+        bool                explicitBinding_        = false;
+        bool                allowLineMarks_         = false;
         std::string         nameManglingPrefix_;
         Statistics*         stats_                  = nullptr;
 

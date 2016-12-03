@@ -58,12 +58,14 @@ static OutputShaderVersion GetMinGLSLVersionForTarget(const ShaderTarget shaderT
 }
 
 std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
-    Program& program, OutputShaderVersion& targetGLSLVersion, const ShaderTarget shaderTarget, bool allowExtensions)
+    Program& program, OutputShaderVersion& targetGLSLVersion,
+    const ShaderTarget shaderTarget, bool allowExtensions, bool explicitBinding)
 {
     shaderTarget_       = shaderTarget;
     targetGLSLVersion_  = targetGLSLVersion;
     minGLSLVersion_     = GetMinGLSLVersionForTarget(shaderTarget);
     allowExtensions_    = allowExtensions;
+    explicitBinding_    = explicitBinding;
 
     Visit(&program);
 
@@ -156,8 +158,11 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     AcquireExtension(GLSLEXT_GL_ARB_uniform_buffer_object);
 
     /* Check for explicit binding point */
-    if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, shaderTarget_))
-        AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
+    if (explicitBinding_)
+    {
+        if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, shaderTarget_))
+            AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
+    }
 
     /* Default visitor */
     Visitor::VisitBufferDeclStmnt(ast, args);
@@ -166,10 +171,13 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
 {
     /* Check for explicit binding point */
-    for (auto& texDecl : ast->textureDecls)
+    if (explicitBinding_)
     {
-        if (auto slotRegister = Register::GetForTarget(texDecl->slotRegisters, shaderTarget_))
-            AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
+        for (auto& texDecl : ast->textureDecls)
+        {
+            if (auto slotRegister = Register::GetForTarget(texDecl->slotRegisters, shaderTarget_))
+                AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
+        }
     }
 
     /* Default visitor */

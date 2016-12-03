@@ -66,6 +66,9 @@ struct Options
 
     //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
     bool allowExtensions    = false;
+    
+    //! If true, explicit binding slots are enabled. By default false.
+    bool explicitBinding    = false;
 
     //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
     bool showAST            = false;

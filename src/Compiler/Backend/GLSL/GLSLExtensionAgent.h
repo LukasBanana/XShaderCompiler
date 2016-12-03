@@ -41,7 +41,8 @@ class GLSLExtensionAgent : private Visitor
             Program& program,
             OutputShaderVersion& targetGLSLVersion,
             const ShaderTarget shaderTarget,
-            bool allowExtensions
+            bool allowExtensions,
+            bool explicitBinding
         );
 
     private:
@@ -74,8 +75,8 @@ class GLSLExtensionAgent : private Visitor
         // Minimum required GLSL version.
         OutputShaderVersion                 minGLSLVersion_     = OutputShaderVersion::GLSL130;
 
-        // GLSL extension output support.
         bool                                allowExtensions_    = false;
+        bool                                explicitBinding_    = false;
 
         // Resulting set of required GLSL extensions.
         std::set<std::string>               extensions_;

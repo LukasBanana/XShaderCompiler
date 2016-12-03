@@ -38,6 +38,7 @@ void GLSLGenerator::GenerateCodePrimary(
     shaderTarget_       = inputDesc.shaderTarget;
     versionOut_         = outputDesc.shaderVersion;
     allowExtensions_    = outputDesc.options.allowExtensions;
+    explicitBinding_    = outputDesc.options.explicitBinding;
     allowLineMarks_     = outputDesc.formatting.lineMarks;
     nameManglingPrefix_ = outputDesc.formatting.prefix;
     stats_              = outputDesc.statistics;
@@ -138,7 +139,7 @@ void GLSLGenerator::WriteVersionAndExtensions(Program& ast)
         /* Determine all required GLSL extensions with the GLSL extension agent */
         GLSLExtensionAgent extensionAgent;
         auto requiredExtensions = extensionAgent.DetermineRequiredExtensions(
-            ast, versionOut_, shaderTarget_, allowExtensions_
+            ast, versionOut_, shaderTarget_, allowExtensions_, explicitBinding_
         );
 
         /* Write GLSL version */
@@ -447,7 +448,8 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
         if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, shaderTarget_))
         {
-            Write(", binding = " + std::to_string(slotRegister->slot));
+            if (explicitBinding_)
+                Write(", binding = " + std::to_string(slotRegister->slot));
             binding = slotRegister->slot;
         }
 
@@ -491,7 +493,8 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
                 /* Write uniform declaration */
                 if (auto slotRegister = Register::GetForTarget(texDecl->slotRegisters, shaderTarget_))
                 {
-                    Write("layout(binding = " + std::to_string(slotRegister->slot) + ") ");
+                    if (explicitBinding_)
+                        Write("layout(binding = " + std::to_string(slotRegister->slot) + ") ");
                     binding = slotRegister->slot;
                 }
 
