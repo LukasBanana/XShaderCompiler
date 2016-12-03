@@ -181,7 +181,7 @@ class GLSLGenerator : public Generator
         void WriteFunctionCallIntrinsicMul(FunctionCall* ast);
         void WriteFunctionCallIntrinsicRcp(FunctionCall* ast);
         void WriteFunctionCallIntrinsicAtomic(FunctionCall* ast);
-        void WriteFunctionCallIntrinsicTex(FunctionCall* ast);
+        //void WriteFunctionCallIntrinsicTex(FunctionCall* ast);
 
         /* --- Structure --- */
 
@@ -207,7 +207,8 @@ class GLSLGenerator : public Generator
         bool                isInsideEntryPoint_     = false;
         bool                isInsideInterfaceBlock_ = false;
 
-        #if 1//TODO: remove all HLSL type mappings from here
+        //TODO: remove all HLSL type mappings from here
+        #if 0
         std::map<std::string, std::string> texFuncMap_;         // <hlsl-function, glsl-function>
         #endif
 

@@ -103,8 +103,8 @@ void GLSLGenerator::GenerateCodePrimary(
 
 void GLSLGenerator::EstablishMaps()
 {
-    #if 1 // TODO: remove all HLSL mappings from here !!!
-
+    // TODO: remove all HLSL mappings from here !!!
+    #if 0
     texFuncMap_ = std::map<std::string, std::string>
     {
         { "GetDimensions ",     "textureSize"   },
@@ -116,7 +116,6 @@ void GLSLGenerator::EstablishMaps()
         { "SampleGrad",         "textureGrad"   },
         { "SampleLevel",        "textureLod"    },
     };
-
     #endif
 }
 
@@ -324,8 +323,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         WriteFunctionCallIntrinsicMul(ast);
     else if (ast->intrinsic == Intrinsic::Rcp)
         WriteFunctionCallIntrinsicRcp(ast);
+    #if 0
     else if (ast->flags(FunctionCall::isTexFunc))
         WriteFunctionCallIntrinsicTex(ast);
+    #endif
     else if (ast->intrinsic >= Intrinsic::InterlockedAdd && ast->intrinsic <= Intrinsic::InterlockedXor)
         WriteFunctionCallIntrinsicAtomic(ast);
     else
@@ -1363,7 +1364,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
             if (keyword)
                 Write(*keyword);
             else
-                Error("failed to map intrinsic '" + ast->varIdent->ToString() + "' to GLSL keyword", ast);
+                Error("failed to map intrinsic '" + ast->varIdent->LastVarIdent()->ToString() + "' to GLSL keyword", ast);
         }
         else
         {
@@ -1471,6 +1472,8 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
         Error("failed to map intrinsic '" + ast->varIdent->ToString() + "' to GLSL keyword", ast);
 }
 
+//TODO: remove this
+#if 0
 void GLSLGenerator::WriteFunctionCallIntrinsicTex(FunctionCall* ast)
 {
     if (!ast->varIdent->next)
@@ -1499,6 +1502,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicTex(FunctionCall* ast)
 
     Write(")");
 }
+#endif
 
 /* --- Structure --- */
 

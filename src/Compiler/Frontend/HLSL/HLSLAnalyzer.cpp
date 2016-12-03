@@ -82,14 +82,43 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         /* Then analyze function name */
         if (ast->varIdent)
         {
-            auto name = ast->varIdent->ToString();
+            if (ast->varIdent->next)
+            {
+                /* Analyze variable identifier */
+                AnalyzeVarIdent(ast->varIdent.get());
 
-            /* Check if the function call refers to an intrinsic */
-            auto intrIt = HLSLIntrinsics().find(name);
-            if (intrIt != HLSLIntrinsics().end())
-                AnalyzeFunctionCallIntrinsic(ast, intrIt->second);
+                /* Check if the function call refers to an intrinsic */
+                auto intrIt = HLSLIntrinsics().find(ast->varIdent->next->ident);
+                if (intrIt != HLSLIntrinsics().end())
+                {
+                    auto intrinsic = intrIt->second.intrinsic;
+
+                    /* Verify intrinsic for respective object class */
+                    switch (ast->varIdent->symbolRef->Type())
+                    {
+                        case AST::Types::TextureDecl:
+                            if (!IsTextureIntrinsic(intrinsic))
+                                Error("invalid intrinsic '" + ast->varIdent->next->ident + "' for a texture object", ast);
+                            break;
+
+                        default:
+                            break;
+                    }
+
+                    AnalyzeFunctionCallIntrinsic(ast, intrIt->second);
+                }
+                else
+                    AnalyzeFunctionCallStandard(ast);
+            }
             else
-                AnalyzeFunctionCallStandard(ast);
+            {
+                /* Check if the function call refers to an intrinsic */
+                auto intrIt = HLSLIntrinsics().find(ast->varIdent->ident);
+                if (intrIt != HLSLIntrinsics().end())
+                    AnalyzeFunctionCallIntrinsic(ast, intrIt->second);
+                else
+                    AnalyzeFunctionCallStandard(ast);
+            }
         }
     }
     PopFunctionCall();
@@ -478,7 +507,7 @@ void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
         AnalyzeVarIdent(ast->varIdent.get());
 
         //TODO: refactor member functions!
-        #if 1
+        #if 0
         if (auto symbol = ast->varIdent->symbolRef)
         {
             if (symbol->Type() == AST::Types::TextureDecl)
@@ -508,35 +537,49 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLInt
     ast->intrinsic = intr.intrinsic;
 
     /* Analyze special intrinsic types */
-    switch (ast->intrinsic)
+    using T = Intrinsic;
+
+    struct IntrinsicConversion
     {
-        case Intrinsic::AsUInt_1:
-            if (ast->arguments.size() == 3)
-                ast->intrinsic = Intrinsic::AsUInt_3;
-            break;
+        T   standardIntrinsic;
+        int numArgs;
+        T   overloadedIntrinsic;
+    };
 
-        case Intrinsic::Tex1D_2:
-            if (ast->arguments.size() == 4)
-                ast->intrinsic = Intrinsic::Tex1D_4;
-            break;
+    static const std::vector<IntrinsicConversion> intrinsicConversions
+    {
+        { T::AsUInt_1,              3, T::AsUInt_3              },
+        { T::Tex1D_2,               4, T::Tex1D_4               },
+        { T::Tex2D_2,               4, T::Tex2D_4               },
+        { T::Tex3D_2,               4, T::Tex3D_4               },
+        { T::TexCube_2,             4, T::TexCube_4             },
+        { T::Texture_Load_1,        2, T::Texture_Load_2        },
+        { T::Texture_Load_1,        3, T::Texture_Load_3        },
+        { T::Texture_Sample_2,      3, T::Texture_Sample_3      },
+        { T::Texture_Sample_2,      4, T::Texture_Sample_4      },
+        { T::Texture_Sample_2,      5, T::Texture_Sample_5      },
+        { T::Texture_SampleBias_3,  4, T::Texture_SampleBias_4  },
+        { T::Texture_SampleBias_3,  5, T::Texture_SampleBias_5  },
+        { T::Texture_SampleBias_3,  6, T::Texture_SampleBias_6  },
+        { T::Texture_SampleCmp_3,   4, T::Texture_SampleCmp_4   },
+        { T::Texture_SampleCmp_3,   5, T::Texture_SampleCmp_5   },
+        { T::Texture_SampleCmp_3,   6, T::Texture_SampleCmp_6   },
+        { T::Texture_SampleGrad_4,  5, T::Texture_SampleGrad_5  },
+        { T::Texture_SampleGrad_4,  6, T::Texture_SampleGrad_6  },
+        { T::Texture_SampleGrad_4,  7, T::Texture_SampleGrad_7  },
+        { T::Texture_SampleLevel_3, 4, T::Texture_SampleLevel_4 },
+        { T::Texture_SampleLevel_3, 5, T::Texture_SampleLevel_5 },
+    };
 
-        case Intrinsic::Tex2D_2:
-            if (ast->arguments.size() == 4)
-                ast->intrinsic = Intrinsic::Tex2D_4;
+    for (const auto& conversion : intrinsicConversions)
+    {
+        /* Is another overloaded version of the intrinsic used? */
+        if (ast->intrinsic == conversion.standardIntrinsic && ast->arguments.size() == static_cast<std::size_t>(conversion.numArgs))
+        {
+            /* Convert intrinsic type */
+            ast->intrinsic = conversion.overloadedIntrinsic;
             break;
-
-        case Intrinsic::Tex3D_2:
-            if (ast->arguments.size() == 4)
-                ast->intrinsic = Intrinsic::Tex3D_4;
-            break;
-
-        case Intrinsic::TexCube_2:
-            if (ast->arguments.size() == 4)
-                ast->intrinsic = Intrinsic::TexCube_4;
-            break;
-
-        default:
-            break;
+        }
     }
 }
 

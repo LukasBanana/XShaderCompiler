@@ -44,6 +44,10 @@ VarTypePtr MakeVarType(const DataType dataType);
 
 VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ident);
 
+VarIdentPtr MakeVarIdent(const std::string& ident, AST* symbolRef = nullptr);
+
+VarAccessExprPtr MakeVarAccessExpr(const std::string& ident, AST* symbolRef = nullptr);
+
 
 } // /namespace ASTFactory
 

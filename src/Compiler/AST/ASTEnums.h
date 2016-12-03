@@ -583,6 +583,12 @@ enum class Intrinsic
     Texture_SampleLevel_5,
 };
 
+// Returns true if the specified intrinsic is a global intrinsic.
+bool IsGlobalIntrinsic(const Intrinsic t);
+
+// Returns true if the speciifed intrinsic belongs to a texture object.
+bool IsTextureIntrinsic(const Intrinsic t);
+
 
 /* ----- Semantic Enum ----- */
 

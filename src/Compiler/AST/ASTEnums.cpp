@@ -732,6 +732,19 @@ std::string RegisterTypeToString(const RegisterType t)
 }
 
 
+/* ----- Intrinsic Enum ----- */
+
+bool IsGlobalIntrinsic(const Intrinsic t)
+{
+    return (t >= Intrinsic::Abort && t <= Intrinsic::Trunc);
+}
+
+bool IsTextureIntrinsic(const Intrinsic t)
+{
+    return (t >= Intrinsic::Texture_GetDimensions && t <= Intrinsic::Texture_SampleLevel_5);
+}
+
+
 /* ----- IndexedSemantic Class ----- */
 
 IndexedSemantic::IndexedSemantic(Semantic semantic, int index) :

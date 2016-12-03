@@ -60,6 +60,9 @@ IMPLEMENT_VISIT_PROC(Program)
     RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefsSV);
     RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefsSV);
 
+    VISIT_DEFAULT(Program);
+
+    //TODO: do not remove these statements, instead mark it as disabled code (otherwise symbol references to these statements are corrupted!)
     /* Remove all variables which are sampler state objects, since GLSL does not support sampler states */
     EraseAllIf(
         ast->globalStmnts,
@@ -72,8 +75,6 @@ IMPLEMENT_VISIT_PROC(Program)
             return false;
         }
     );
-
-    VISIT_DEFAULT(Program);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
@@ -103,15 +104,20 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         else
             RuntimeErr("invalid number of arguments in intrinsic 'saturate'", ast);
     }
-    else if (ast->intrinsic == Intrinsic::Undefined)
+
+    /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
+    EraseAllIf(ast->arguments,
+        [&](const ExprPtr& expr)
+        {
+            return ExprContainsSampler(*expr);
+        }
+    );
+
+    /* Insert texture object as parameter into intrinsic arguments */
+    if (IsTextureIntrinsic(ast->intrinsic))
     {
-        /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
-        EraseAllIf(ast->arguments,
-            [&](const ExprPtr& expr)
-            {
-                return ExprContainsSampler(*expr);
-            }
-        );
+        auto texObjectArg = ASTFactory::MakeVarAccessExpr(ast->varIdent->ident, ast->varIdent->symbolRef);
+        ast->arguments.insert(ast->arguments.begin(), texObjectArg);
     }
 
     VISIT_DEFAULT(FunctionCall);

@@ -17,6 +17,12 @@ namespace ASTFactory
 {
 
 
+template <typename T, typename... Args>
+std::shared_ptr<T> MakeAST(Args&&... args)
+{
+    return MakeShared<T>(SourcePosition::ignore, std::forward<Args>(args)...);
+}
+
 Expr* FindSingleExpr(Expr* ast, const AST::Types searchedExprType)
 {
     while (ast)
@@ -57,11 +63,11 @@ VarIdentPtr FindSingleVarIdent(Expr* ast)
 FunctionCallExprPtr MakeIntrinsicCallExpr(
     const Intrinsic intrinsic, const std::string& ident, const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments)
 {
-    auto ast = MakeShared<FunctionCallExpr>(SourcePosition::ignore);
+    auto ast = MakeAST<FunctionCallExpr>();
     {
-        auto funcCall = MakeShared<FunctionCall>(SourcePosition::ignore);
+        auto funcCall = MakeAST<FunctionCall>();
         {
-            funcCall->varIdent          = MakeShared<VarIdent>(SourcePosition::ignore);
+            funcCall->varIdent          = MakeAST<VarIdent>();
             funcCall->varIdent->ident   = ident;
             funcCall->typeDenoter       = typeDenoter;
             funcCall->arguments         = arguments;
@@ -118,14 +124,14 @@ ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall)
 
 CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue)
 {
-    auto ast = MakeShared<CastExpr>(SourcePosition::ignore);
+    auto ast = MakeAST<CastExpr>();
     {
-        auto literalExpr = MakeShared<LiteralExpr>(SourcePosition::ignore);
+        auto literalExpr = MakeAST<LiteralExpr>();
         {
             literalExpr->dataType   = literalType;
             literalExpr->value      = literalValue;
         }
-        ast->typeExpr               = MakeShared<TypeNameExpr>(SourcePosition::ignore);
+        ast->typeExpr               = MakeAST<TypeNameExpr>();
         ast->typeExpr->typeDenoter  = typeDenoter;
         ast->expr                   = literalExpr;
     }
@@ -146,7 +152,7 @@ ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
         /* Make new cast expression */
         auto ast = MakeShared<CastExpr>(subExpr->area);
         {
-            ast->typeExpr               = MakeShared<TypeNameExpr>(SourcePosition::ignore);
+            ast->typeExpr               = MakeAST<TypeNameExpr>();
             ast->typeExpr->typeDenoter  = MakeShared<BaseTypeDenoter>(dataType);
             ast->expr                   = subExpr;
         }
@@ -156,9 +162,9 @@ ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
 
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident)
 {
-    auto ast = MakeShared<AliasDeclStmnt>(SourcePosition::ignore);
+    auto ast = MakeAST<AliasDeclStmnt>();
     {
-        auto aliasDecl = MakeShared<AliasDecl>(SourcePosition::ignore);
+        auto aliasDecl = MakeAST<AliasDecl>();
         {
             aliasDecl->ident        = ident;
             aliasDecl->typeDenoter  = MakeShared<BaseTypeDenoter>(dataType);
@@ -171,7 +177,7 @@ AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& 
 
 VarTypePtr MakeVarType(const DataType dataType)
 {
-    auto ast = MakeShared<VarType>(SourcePosition::ignore);
+    auto ast = MakeAST<VarType>();
     {
         ast->typeDenoter = MakeShared<BaseTypeDenoter>(dataType);
     }
@@ -180,16 +186,35 @@ VarTypePtr MakeVarType(const DataType dataType)
 
 VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ident)
 {
-    auto ast = MakeShared<VarDeclStmnt>(SourcePosition::ignore);
+    auto ast = MakeAST<VarDeclStmnt>();
     {
         ast->varType = MakeVarType(dataType);
 
-        auto varDecl = MakeShared<VarDecl>(SourcePosition::ignore);
+        auto varDecl = MakeAST<VarDecl>();
         {
             varDecl->ident          = ident;
             varDecl->declStmntRef   = ast.get();
         }
         ast->varDecls.push_back(varDecl);
+    }
+    return ast;
+}
+
+VarIdentPtr MakeVarIdent(const std::string& ident, AST* symbolRef)
+{
+    auto ast = MakeAST<VarIdent>();
+    {
+        ast->ident      = ident;
+        ast->symbolRef  = symbolRef;
+    }
+    return ast;
+}
+
+VarAccessExprPtr MakeVarAccessExpr(const std::string& ident, AST* symbolRef)
+{
+    auto ast = MakeAST<VarAccessExpr>();
+    {
+        ast->varIdent = MakeVarIdent(ident, symbolRef);
     }
     return ast;
 }
