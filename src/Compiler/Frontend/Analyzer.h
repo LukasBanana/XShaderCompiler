@@ -51,9 +51,9 @@ class Analyzer : protected Visitor
 
         /* ----- Report and error handling ----- */
 
-        void SubmitReport(bool isError, const std::string& msg, const AST* ast = nullptr);
+        void SubmitReport(bool isError, const std::string& msg, const AST* ast = nullptr, const HLSLErr errorCode = HLSLErr::Unknown);
         
-        void Error(const std::string& msg, const AST* ast = nullptr);
+        void Error(const std::string& msg, const AST* ast = nullptr, const HLSLErr errorCode = HLSLErr::Unknown);
         void ErrorUndeclaredIdent(const std::string& ident, const AST* ast = nullptr);
         void ErrorUndeclaredIdent(const std::string& ident, const std::string& contextName, const AST* ast = nullptr);
         void ErrorInternal(const std::string& msg, const AST* ast = nullptr);

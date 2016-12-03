@@ -2,7 +2,11 @@
 // Register Test 1
 // 02/12/2016
 
+#ifdef TEST_ERRORS
 cbuffer Matrices : register(vs, b0) : register(ps, b1)
+#else
+cbuffer Matrices : register(b1)
+#endif
 {
 	float4 diffuse;
 };

@@ -228,6 +228,16 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
+    /* Validate buffer slots */
+    if (ast->slotRegisters.size() > 1)
+        Error("buffers can only be bound to one slot", ast->slotRegisters[1].get(), HLSLErr::ERR_BIND_INVALID);
+
+    for (const auto& slotRegister : ast->slotRegisters)
+    {
+        if (slotRegister->shaderTarget != ShaderTarget::Undefined)
+            Error("user-defined constant buffer slots can not be target specific", slotRegister.get(), HLSLErr::ERR_TARGET_INVALID);
+    }
+
     for (auto& member : ast->members)
     {
         Visit(member);

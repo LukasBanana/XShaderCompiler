@@ -47,15 +47,15 @@ bool Analyzer::DecorateAST(
 
 /* ----- Report and error handling ----- */
 
-void Analyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast)
+void Analyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast, const HLSLErr errorCode)
 {
     auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
-    reportHandler_.SubmitReport(false, reportType, "context error", msg, sourceCode_, (ast ? ast->area : SourceArea::ignore));
+    reportHandler_.SubmitReport(false, reportType, "context error", msg, sourceCode_, (ast ? ast->area : SourceArea::ignore), errorCode);
 }
 
-void Analyzer::Error(const std::string& msg, const AST* ast)
+void Analyzer::Error(const std::string& msg, const AST* ast, const HLSLErr errorCode)
 {
-    SubmitReport(true, msg, ast);
+    SubmitReport(true, msg, ast, errorCode);
 }
 
 void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const AST* ast)
