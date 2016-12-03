@@ -510,29 +510,29 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLInt
     /* Analyze special intrinsic types */
     switch (ast->intrinsic)
     {
-        case Intrinsic::AsUInt:
-            if (ast->arguments.size() == 1)
-                ast->intrinsic = Intrinsic::AsUInt_2;
+        case Intrinsic::AsUInt_1:
+            if (ast->arguments.size() == 3)
+                ast->intrinsic = Intrinsic::AsUInt_3;
             break;
 
-        case Intrinsic::Tex1D:
+        case Intrinsic::Tex1D_2:
             if (ast->arguments.size() == 4)
-                ast->intrinsic = Intrinsic::Tex1D_2;
+                ast->intrinsic = Intrinsic::Tex1D_4;
             break;
 
-        case Intrinsic::Tex2D:
+        case Intrinsic::Tex2D_2:
             if (ast->arguments.size() == 4)
-                ast->intrinsic = Intrinsic::Tex2D_2;
+                ast->intrinsic = Intrinsic::Tex2D_4;
             break;
 
-        case Intrinsic::Tex3D:
+        case Intrinsic::Tex3D_2:
             if (ast->arguments.size() == 4)
-                ast->intrinsic = Intrinsic::Tex3D_2;
+                ast->intrinsic = Intrinsic::Tex3D_4;
             break;
 
-        case Intrinsic::TexCube:
+        case Intrinsic::TexCube_2:
             if (ast->arguments.size() == 4)
-                ast->intrinsic = Intrinsic::TexCube_2;
+                ast->intrinsic = Intrinsic::TexCube_4;
             break;
 
         default:
