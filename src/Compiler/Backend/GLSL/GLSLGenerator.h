@@ -43,15 +43,15 @@ class GLSLGenerator : public Generator
         ) override;
 
         // Writes a new single line comment.
-        void Comment(const std::string& text);
+        void WriteComment(const std::string& text);
 
         // Writes a "#version" directive.
-        void Version(int versionNumber);
+        void WriteVersion(int versionNumber);
 
         // Writes a "#line" directive.
-        void Line(int lineNumber);
-        void Line(const TokenPtr& tkn);
-        void Line(const AST* ast);
+        void WriteLineMark(int lineNumber);
+        void WriteLineMark(const TokenPtr& tkn);
+        void WriteLineMark(const AST* ast);
 
         // Writes the specified extension with ": enable"
         void WriteExtension(const std::string& extensionName);
