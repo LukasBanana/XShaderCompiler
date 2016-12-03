@@ -172,10 +172,10 @@ void GLSLGenerator::WriteReferencedIntrinsics(Program& ast)
 
 void GLSLGenerator::WriteClipIntrinsics()
 {
-    WriteLn("void clip(float x) { if (x < 0.0) discard; }");
+    WriteLn("void clip(float x) { if (x < 0.0) { discard; } }");
 
     for (const auto& typeName : std::vector<std::string>{ "vec2", "vec3", "vec4" })
-        WriteLn("void clip(" + typeName + " x) { if (any(lessThan(x, " + typeName + "(0.0)))) discard; }");
+        WriteLn("void clip(" + typeName + " x) { if (any(lessThan(x, " + typeName + "(0.0)))) { discard; } }");
 
     Blank();
 }

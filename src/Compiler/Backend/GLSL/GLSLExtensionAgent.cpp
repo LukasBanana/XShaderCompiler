@@ -21,7 +21,7 @@ namespace Xsc
 
 static const GLSLExtension GLSLEXT_GL_EXT_gpu_shader4               { "GL_EXT_gpu_shader4",              OutputShaderVersion::GLSL130 };
 static const GLSLExtension GLSLEXT_GL_ARB_uniform_buffer_object     { "GL_ARB_uniform_buffer_object",    OutputShaderVersion::GLSL140 };
-static const GLSLExtension GLSLEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",       OutputShaderVersion::GLSL400 };
+static const GLSLExtension GLSLEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",       OutputShaderVersion::GLSL450 };
 static const GLSLExtension GLSLEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_language_420pack", OutputShaderVersion::GLSL420 };
 static const GLSLExtension GLSLEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_image_load_store",  OutputShaderVersion::GLSL420 };
 static const GLSLExtension GLSLEXT_GL_ARB_arrays_of_arrays          { "GL_ARB_arrays_of_arrays",         OutputShaderVersion::GLSL430 };

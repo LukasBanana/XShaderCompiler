@@ -114,7 +114,7 @@ float4 PS(VertexOut inp) : SV_TARGET3
 	
 	float4 diffuse = lerp(
 		(float4)1.0,
-		#if 0
+		#if 1
 		saturate(tex.Sample(samplerState, inp.texCoord)),
 		#else
 		saturate(float4(1,1,1,1)),

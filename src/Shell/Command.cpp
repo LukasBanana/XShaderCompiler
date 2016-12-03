@@ -146,8 +146,8 @@ HelpDescriptor VersionOutCommand::Help() const
     return
     {
         "-Vout, --version-out VERSION", "Shader output version; default=GLSL; valid values:",
-        "GLSL110, GLSL120, GLSL130, GLSL140, GLSL150, GLSL330,\n" \
-        "GLSL400, GLSL410, GLSL420, GLSL430, GLSL440, GLSL450, GLSL"
+        "GLSL, GLSL130, GLSL140, GLSL150, GLSL330,\n" \
+        "GLSL400, GLSL410, GLSL420, GLSL430, GLSL440, GLSL450"
     };
 }
 
