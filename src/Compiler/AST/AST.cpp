@@ -168,53 +168,6 @@ void VarIdent::PopFront()
 }
 
 
-/* ----- StructDecl ----- */
-
-std::string StructDecl::SignatureToString() const
-{
-    return (IsAnonymous() ? "<anonymous>" : ident);
-}
-
-bool StructDecl::IsAnonymous() const
-{
-    return ident.empty();
-}
-
-VarDecl* StructDecl::Fetch(const std::string& ident) const
-{
-    /* Fetch symbol from base struct first */
-    if (baseStructRef)
-    {
-        auto varDecl = baseStructRef->Fetch(ident);
-        if (varDecl)
-            return varDecl;
-    }
-
-    /* Now fetch symbol from members */
-    for (const auto& varDeclStmnt : members)
-    {
-        auto symbol = varDeclStmnt->Fetch(ident);
-        if (symbol)
-            return symbol;
-    }
-
-    return nullptr;
-}
-
-TypeDenoterPtr StructDecl::DeriveTypeDenoter()
-{
-    return std::make_shared<StructTypeDenoter>(this);
-}
-
-
-/* ----- AliasDecl ----- */
-
-TypeDenoterPtr AliasDecl::DeriveTypeDenoter()
-{
-    return typeDenoter;
-}
-
-
 /* ----- SwitchCase ----- */
 
 bool SwitchCase::IsDefaultCase() const
@@ -351,6 +304,69 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter()
 VarSemantic* VarDecl::FirstSemantic() const
 {
     return (!semantics.empty() ? semantics.front().get() : nullptr);
+}
+
+
+/* ----- TextureDecl ----- */
+
+TypeDenoterPtr TextureDecl::DeriveTypeDenoter()
+{
+    return std::make_shared<TextureTypeDenoter>(this);
+}
+
+
+/* ----- SamplerDecl ----- */
+
+TypeDenoterPtr SamplerDecl::DeriveTypeDenoter()
+{
+    return std::make_shared<SamplerTypeDenoter>(this);
+}
+
+
+/* ----- StructDecl ----- */
+
+std::string StructDecl::SignatureToString() const
+{
+    return (IsAnonymous() ? "<anonymous>" : ident);
+}
+
+bool StructDecl::IsAnonymous() const
+{
+    return ident.empty();
+}
+
+VarDecl* StructDecl::Fetch(const std::string& ident) const
+{
+    /* Fetch symbol from base struct first */
+    if (baseStructRef)
+    {
+        auto varDecl = baseStructRef->Fetch(ident);
+        if (varDecl)
+            return varDecl;
+    }
+
+    /* Now fetch symbol from members */
+    for (const auto& varDeclStmnt : members)
+    {
+        auto symbol = varDeclStmnt->Fetch(ident);
+        if (symbol)
+            return symbol;
+    }
+
+    return nullptr;
+}
+
+TypeDenoterPtr StructDecl::DeriveTypeDenoter()
+{
+    return std::make_shared<StructTypeDenoter>(this);
+}
+
+
+/* ----- AliasDecl ----- */
+
+TypeDenoterPtr AliasDecl::DeriveTypeDenoter()
+{
+    return typeDenoter;
 }
 
 

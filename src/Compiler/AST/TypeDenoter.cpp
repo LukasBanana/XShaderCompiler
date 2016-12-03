@@ -294,6 +294,8 @@ TextureTypeDenoter::TextureTypeDenoter(BufferType textureType) :
 TextureTypeDenoter::TextureTypeDenoter(TextureDecl* textureDeclRef) :
     textureDeclRef{ textureDeclRef }
 {
+    if (textureDeclRef && textureDeclRef->declStmntRef)
+        textureType = textureDeclRef->declStmntRef->textureType;
 }
 
 TypeDenoter::Types TextureTypeDenoter::Type() const

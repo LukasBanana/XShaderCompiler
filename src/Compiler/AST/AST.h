@@ -397,9 +397,11 @@ struct VarDecl : public Decl
 };
 
 // Texture declaration.
-struct TextureDecl : public AST /*TODO --> public Decl*/
+struct TextureDecl : public Decl
 {
     AST_INTERFACE(TextureDecl);
+
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
@@ -409,9 +411,11 @@ struct TextureDecl : public AST /*TODO --> public Decl*/
 };
 
 // Sampler state declaration.
-struct SamplerDecl : public AST /*TODO --> public Decl*/
+struct SamplerDecl : public Decl
 {
     AST_INTERFACE(SamplerDecl);
+
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
