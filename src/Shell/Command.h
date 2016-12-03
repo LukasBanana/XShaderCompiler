@@ -92,6 +92,7 @@ DECL_SHELL_COMMAND( VerboseCommand     );
 DECL_SHELL_COMMAND( OptimizeCommand    );
 DECL_SHELL_COMMAND( ExtensionCommand   );
 DECL_SHELL_COMMAND( ValidateCommand    );
+DECL_SHELL_COMMAND( BindingCommand     );
 
 #undef DECL_SHELL_COMMAND
 

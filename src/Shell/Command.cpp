@@ -762,6 +762,30 @@ void ValidateCommand::Run(CommandLine& cmdLine, ShellState& state)
 }
 
 
+/*
+ * BindingCommand class
+ */
+
+std::vector<Command::Identifier> BindingCommand::Idents() const
+{
+    return { { "-EB" }, { "--explicit-bind" } };
+}
+
+HelpDescriptor BindingCommand::Help() const
+{
+    return
+    {
+        "-EB, --explicit-bind [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables explicit binding slots; default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void BindingCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.explicitBinding = cmdLine.AcceptBoolean(true);
+}
+
+
 } // /namespace Util
 
 } // /namespace Xsc
