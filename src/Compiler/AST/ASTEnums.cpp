@@ -111,9 +111,19 @@ BinaryOp StringToBinaryOp(const std::string& s)
     return StringToType(g_mapBinaryOp, s, "BinaryOp");
 }
 
+bool IsLogicalOp(const BinaryOp o)
+{
+    return (o >= BinaryOp::LogicalAnd && o <= BinaryOp::LogicalOr);
+}
+
 bool IsBitwiseOp(const BinaryOp o)
 {
     return (o >= BinaryOp::Or && o <= BinaryOp::RShift);
+}
+
+bool IsBooleanOp(const BinaryOp o)
+{
+    return (IsLogicalOp(o) || (o >= BinaryOp::Equal && o <= BinaryOp::GreaterEqual));
 }
 
 
@@ -137,6 +147,11 @@ std::string UnaryOpToString(const UnaryOp o)
 UnaryOp StringToUnaryOp(const std::string& s)
 {
     return StringToType(g_mapUnaryOp, s, "UnaryOp");
+}
+
+bool IsLogicalOp(const UnaryOp o)
+{
+    return (o == UnaryOp::LogicalNot);
 }
 
 bool IsBitwiseOp(const UnaryOp o)

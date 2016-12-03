@@ -629,7 +629,10 @@ TypeDenoterPtr BinaryExpr::DeriveTypeDenoter()
         );
     }
 
-    return lhsTypeDen;
+    if (IsBooleanOp(op))
+        return std::make_shared<BaseTypeDenoter>(DataType::Bool);
+    else
+        return lhsTypeDen;
 }
 
 
@@ -637,7 +640,12 @@ TypeDenoterPtr BinaryExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr UnaryExpr::DeriveTypeDenoter()
 {
-    return expr->GetTypeDenoter();
+    const auto& typeDen = expr->GetTypeDenoter();
+
+    if (IsLogicalOp(op))
+        return std::make_shared<BaseTypeDenoter>(DataType::Bool);
+    else
+        return typeDen;
 }
 
 

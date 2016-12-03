@@ -267,7 +267,7 @@ void Shell::ShowStatsFor(const std::vector<Statistics::Binding>& objects, const 
         if (!objects.empty())
         {
             /* Determine offset for right-aligned location index */
-            int maxLocation = 0;
+            int maxLocation = -1;
             for (const auto& obj : objects)
                 maxLocation = std::max(maxLocation, obj.location);
 
@@ -277,10 +277,13 @@ void Shell::ShowStatsFor(const std::vector<Statistics::Binding>& objects, const 
             for (const auto& obj : objects)
             {
                 output << indentHandler_.FullIndent();
-                if (obj.location >= 0)
-                    output << std::string(maxLocationLen - std::to_string(obj.location).size(), ' ') << obj.location << ": ";
-                else
-                    output << std::string(maxLocationLen, ' ') << "  ";
+                if (maxLocation >= 0)
+                {
+                    if (obj.location >= 0)
+                        output << std::string(maxLocationLen - std::to_string(obj.location).size(), ' ') << obj.location << ": ";
+                    else
+                        output << std::string(maxLocationLen, ' ') << "  ";
+                }
                 output << obj.ident << std::endl;
             }
         }

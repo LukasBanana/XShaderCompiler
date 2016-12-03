@@ -76,7 +76,9 @@ enum class BinaryOp
 std::string BinaryOpToString(const BinaryOp o);
 BinaryOp StringToBinaryOp(const std::string& s);
 
+bool IsLogicalOp(const BinaryOp o);
 bool IsBitwiseOp(const BinaryOp o);
+bool IsBooleanOp(const BinaryOp o);
 
 
 /* ----- UnaryOp Enum ----- */
@@ -98,6 +100,7 @@ enum class UnaryOp
 std::string UnaryOpToString(const UnaryOp o);
 UnaryOp StringToUnaryOp(const std::string& s);
 
+bool IsLogicalOp(const UnaryOp o);
 bool IsBitwiseOp(const UnaryOp o);
 
 
