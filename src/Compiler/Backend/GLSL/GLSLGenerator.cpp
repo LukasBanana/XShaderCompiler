@@ -1136,26 +1136,6 @@ bool GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl)
 
 void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
 {
-    //TODO: remove this
-    #if 0
-    auto& outp = GetProgram()->outputSemantics;
-
-    if (!outp.singleOutputVariable.empty())
-    {
-        BeginLn();
-        {
-            Write(outp.singleOutputVariable + " = ");
-            Visit(ast);
-            Write(";");
-        }
-        EndLn();
-    }
-    else if (outp.returnType->symbolRef)
-    {
-        //TODO!
-    }
-    #endif
-
     auto        entryPoint  = GetProgram()->entryPointRef;
     auto        semantic    = entryPoint->semantic;
     const auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefsSV;
@@ -1198,69 +1178,6 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
     else if (shaderTarget_ != ShaderTarget::ComputeShader)
         Error("missing output semantic", ast);
 }
-
-//TODO: remove this
-#if 0
-
-//TODO: refactor this function
-void GLSLGenerator::WriteFragmentShaderOutput()
-{
-    auto& outp = GetProgram()->outputSemantics;
-
-    if (outp.returnType->symbolRef || outp.returnType->structDecl)
-    {
-        /* Get structure AST node */
-        StructDecl* structAST = nullptr;
-
-        if (outp.returnType->symbolRef && outp.returnType->symbolRef->Type() == AST::Types::StructDecl)
-            structAST = dynamic_cast<StructDecl*>(outp.returnType->symbolRef);
-        else if (outp.returnType->structDecl)
-            structAST = outp.returnType->structDecl.get();
-
-        if (structAST)
-        {
-            for (const auto& member : structAST->members)
-            {
-                //TODO...
-            }
-        }
-    }
-    else
-    {
-        /* Write single output semantic declaration */
-        if (auto semanticKeyword = SemanticToGLSLKeyword(outp.functionSemantic))
-        {
-            if (outp.functionSemantic == Semantic::Target)
-            {
-                auto semanticIndex = outp.functionSemantic.Index();
-
-                if (IsVersionOut(130))
-                {
-                    BeginLn();
-                    {
-                        Write("layout(location = " + std::to_string(semanticIndex) + ") out ");
-                        Visit(outp.returnType);
-                        Write(" " + *semanticKeyword + ";");
-                    }
-                    EndLn();
-                    outp.singleOutputVariable = *semanticKeyword;
-                }
-                else
-                    outp.singleOutputVariable = "gl_FragData[" + std::to_string(semanticIndex) + "]";
-            }
-            else if (outp.functionSemantic == Semantic::Depth)
-                outp.singleOutputVariable = *semanticKeyword;
-            else
-                Error("invalid output semantic for fragment shader: \"" + *semanticKeyword + "\"");
-        }
-        else
-            Error("failed to map fragment shader output semantic to GLSL keyword");
-    }
-
-    Blank();
-}
-
-#endif
 
 /* --- VarIdent --- */
 

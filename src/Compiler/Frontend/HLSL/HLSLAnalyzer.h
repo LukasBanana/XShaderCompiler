@@ -79,11 +79,6 @@ class HLSLAnalyzer : public Analyzer
 
         /* --- Helper functions for context analysis --- */
 
-        #if 0
-        void DecorateEntryInOut(VarDeclStmnt* ast, bool isInput);
-        void DecorateEntryInOut(VarType* ast, bool isInput);
-        #endif
-
         void AnalyzeFunctionCallStandard(FunctionCall* ast);
         void AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLIntrinsicEntry& intr);
 

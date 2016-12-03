@@ -470,62 +470,6 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
 /* --- Helper functions for context analysis --- */
 
-#if 0
-
-//INCOMPLETE!
-void HLSLAnalyzer::DecorateEntryInOut(VarDeclStmnt* ast, bool isInput)
-{
-    const auto structFlag = (isInput ? StructDecl::isShaderInput : StructDecl::isShaderOutput);
-
-    /* Add flag to variable declaration statement */
-    ast->flags << (isInput ? VarDeclStmnt::isShaderInput : VarDeclStmnt::isShaderOutput);
-
-    /* Add flag to structure type */
-    auto& varType = ast->varType;
-    if (varType->structDecl)
-        varType->structDecl->flags << structFlag;
-
-    /* Add flag to optional symbol reference */
-    auto& symbolRef = varType->symbolRef;
-    if (symbolRef && symbolRef->Type() == AST::Types::StructDecl)
-    {
-        auto structDecl = dynamic_cast<StructDecl*>(symbolRef);
-        if (structDecl)
-        {
-            structDecl->flags << structFlag;
-            if (!ast->varDecls.empty())
-            {
-                /*
-                Set structure alias name;
-                This will be the name of the shader interface block
-                */
-                structDecl->aliasName = ast->varDecls.front()->ident;
-            }
-        }
-    }
-}
-
-//INCOMPLETE!
-void HLSLAnalyzer::DecorateEntryInOut(VarType* ast, bool isInput)
-{
-    const auto structFlag = (isInput ? StructDecl::isShaderInput : StructDecl::isShaderOutput);
-
-    /* Add flag to structure type */
-    if (ast->structDecl)
-        ast->structDecl->flags << structFlag;
-
-    /* Add flag to optional symbol reference */
-    auto& symbolRef = ast->symbolRef;
-    if (symbolRef && symbolRef->Type() == AST::Types::StructDecl)
-    {
-        auto structDecl = dynamic_cast<StructDecl*>(symbolRef);
-        if (structDecl)
-            structDecl->flags << structFlag;
-    }
-}
-
-#endif
-
 void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
 {
     /* Decorate function identifier (if it's a member function) */
@@ -696,21 +640,9 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
         AnalyzeEntryPointStructInOut(funcDecl, structTypeDen->structDeclRef, "", false);
     }
 
-    //TODO: refactor this
-    #if 0
-    /* Decorate program's input and output semantics */
-    program_->outputSemantics.returnType = funcDecl->returnType.get();
-    program_->outputSemantics.functionSemantic = funcDecl->semantic;
-
-    /* Add flags to input- and output parameters of the main entry point */
-    DecorateEntryInOut(funcDecl->returnType.get(), false);
-    for (auto& param : funcDecl->parameters)
-        DecorateEntryInOut(param.get(), true);
-
     /* Check if fragment shader use a slightly different screen space (VPOS vs. SV_Position) */
     if (shaderTarget_ == ShaderTarget::FragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
         program_->flags << Program::hasSM3ScreenSpace;
-    #endif
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param)

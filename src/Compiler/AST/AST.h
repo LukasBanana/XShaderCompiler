@@ -190,16 +190,6 @@ struct Program : public AST
 {   
     AST_INTERFACE(Program)
 
-    //TODO: remove this (and use 'entryPointRef' instead):
-    #if 0
-    struct OutputSemantics
-    {
-        VarType*        returnType              = nullptr;              // Either this ...
-        IndexedSemantic functionSemantic        = Semantic::Undefined;  // ... or this is used.
-        std::string     singleOutputVariable;                           // May be empty
-    };
-    #endif
-
     FLAG_ENUM
     {
         FLAG( hasSM3ScreenSpace, 0 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
@@ -210,11 +200,6 @@ struct Program : public AST
     SourceCodePtr           sourceCode;                 // Preprocessed source code
     FunctionDecl*           entryPointRef   = nullptr;  // Reference to the entry point function declaration.
     std::set<Intrinsic>     usedIntrinsics;             // Set of all used intrinsic (filled by the reference analyzer).
-
-    //TODO: remove this (and use 'entryPointRef' instead):
-    #if 0
-    OutputSemantics         outputSemantics;            // Output semantics for the DAST
-    #endif
 };
 
 // Code block.
