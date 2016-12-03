@@ -18,7 +18,7 @@
 -T vert -E VS6 -o output/* SemanticTest1.hlsl
 
 [RegisterTest1 PS]
--W -T frag -E PS -o output/* RegisterTest1.hlsl
+-T frag -E PS -o output/* RegisterTest1.hlsl
 
 [NameMangling1 CS]
 --show-ast -T comp -E CS -o output/* NameMangling1.hlsl

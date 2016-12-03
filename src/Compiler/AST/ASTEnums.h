@@ -302,15 +302,23 @@ enum class StorageClass
 bool IsInterpolationModifier(const StorageClass s);
 
 
+/* ----- UniformBufferType Enum ----- */
+
+enum class UniformBufferType
+{
+    Undefined,
+
+    ConstantBuffer, // Constant buffer ("cbuffer" in HLSL).
+    TextureBuffer,  // Texture buffer ("tbuffer" in HLSL).
+};
+
+
 /* ----- TextureType Enum ----- */
 
 // Buffer (and texture) object type enumeration.
 enum class BufferType
 {
     Undefined,
-
-    ConstantBuffer,             // Constant buffer ("cbuffer" in HLSL).
-    TextureBuffer,              // Texture buffer ("tbuffer" in HLSL).
 
     Buffer,
     StucturedBuffer,

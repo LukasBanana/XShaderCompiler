@@ -532,6 +532,7 @@ struct BufferDeclStmnt : public Stmnt
 {
     AST_INTERFACE(BufferDeclStmnt);
 
+    //UniformBufferType               bufferType = UniformBufferType::Undefined;
     std::string                     bufferType;
     std::string                     ident;
     std::string                     registerName; // TODO: replace by RegisterPtr
@@ -543,7 +544,7 @@ struct TextureDeclStmnt : public Stmnt
 {
     AST_INTERFACE(TextureDeclStmnt);
 
-    BufferType                  textureType = BufferType::Buffer;
+    BufferType                  textureType = BufferType::Undefined;
     std::string                 colorType;                          //TODO: replace with TypeDenoterPtr
     std::vector<TextureDeclPtr> textureDecls;
 };
