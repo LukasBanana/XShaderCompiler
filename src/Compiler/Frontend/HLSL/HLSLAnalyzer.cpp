@@ -95,10 +95,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     PopFunctionCall();
 }
 
-IMPLEMENT_VISIT_PROC(VarSemantic)
+/*IMPLEMENT_VISIT_PROC(VarSemantic)
 {
     AnalyzeSemantic(ast->semantic);
-}
+}*/
 
 IMPLEMENT_VISIT_PROC(VarType)
 {
@@ -131,16 +131,13 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
     Visit(ast->arrayDims);
 
-    for (auto& varSem : ast->semantics)
-    {
-        Visit(varSem);
+    AnalyzeSemantic(ast->semantic);
 
-        /* Store references to members with system value semantic (SV_...) in all parent structures */
-        if (IsSystemSemantic(varSem->semantic))
-        {
-            for (auto structDecl : GetStructDeclStack())
-                structDecl->systemValuesRef[ast->ident] = ast;
-        }
+    /* Store references to members with system value semantic (SV_...) in all parent structures */
+    if (IsSystemSemantic(ast->semantic))
+    {
+        for (auto structDecl : GetStructDeclStack())
+            structDecl->systemValuesRef[ast->ident] = ast;
     }
 
     if (ast->initializer)
@@ -691,9 +688,9 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
     //TODO: refactor analysis of system value semantics (SV_...)
     #if 1
     /* Check if this identifier contains a system semantic (SV_...) */
-    if (auto systemSemantic = FetchSystemValueSemantic(varDecl->semantics))
+    if (IsSystemSemantic(varDecl->semantic))
     {
-        varIdent->systemSemantic = systemSemantic->semantic;
+        varIdent->systemSemantic = varDecl->semantic;
 
         /* Check if the next identifiers contain a system semantic in their respective structure member */
         if (varDecl->declStmntRef)
@@ -711,8 +708,8 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
                         auto systemVal = structSymbol->systemValuesRef.find(ident->ident);
                         if (systemVal != structSymbol->systemValuesRef.end())
                         {
-                            if (auto identSemantic = FetchSystemValueSemantic(systemVal->second->semantics))
-                                ident->systemSemantic = identSemantic->semantic;
+                            if (IsSystemSemantic(systemVal->second->semantic))
+                                ident->systemSemantic = systemVal->second->semantic;
                         }
 
                         /* Check next identifier */
@@ -801,9 +798,9 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
     else
     {
         /* Has the variable a system value semantic? */
-        if (auto varSemantic = varDecl->FirstSemantic())
+        if (varDecl->semantic.IsValid())
         {
-            if (IsSystemSemantic(varSemantic->semantic))
+            if (IsSystemSemantic(varDecl->semantic))
                 varDecl->flags << VarDecl::isSystemValue;
         }
         else

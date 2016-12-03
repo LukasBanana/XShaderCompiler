@@ -734,6 +734,11 @@ std::string RegisterTypeToString(const RegisterType t)
 
 /* ----- Semantic Enum ----- */
 
+std::string IndexedSemantic::ToString() const
+{
+    return (semantic_ == Semantic::UserDefined ? userDefined_ : SemanticToString(semantic_));
+}
+
 bool IsSystemSemantic(const Semantic t)
 {
     return (t >= Semantic::ClipDistance && t <= Semantic::ViewportArrayIndex);
@@ -742,6 +747,47 @@ bool IsSystemSemantic(const Semantic t)
 bool IsUserSemantic(const Semantic t)
 {
     return (t == Semantic::UserDefined);
+}
+
+std::string SemanticToString(const Semantic t)
+{
+    #define CASE_TO_STRING(IDENT) case Semantic::IDENT: return ("SV_" + std::string(#IDENT))
+
+    switch (t)
+    {
+        CASE_TO_STRING( Undefined              );
+        CASE_TO_STRING( UserDefined            );
+        CASE_TO_STRING( ClipDistance           );
+        CASE_TO_STRING( CullDistance           );
+        CASE_TO_STRING( Coverage               );
+        CASE_TO_STRING( Depth                  );
+        CASE_TO_STRING( DepthGreaterEqual      );
+        CASE_TO_STRING( DepthLessEqual         );
+        CASE_TO_STRING( DispatchThreadID       );
+        CASE_TO_STRING( DomainLocation         );
+        CASE_TO_STRING( GroupID                );
+        CASE_TO_STRING( GroupIndex             );
+        CASE_TO_STRING( GroupThreadID          );
+        CASE_TO_STRING( GSInstanceID           );
+        CASE_TO_STRING( InnerCoverage          );
+        CASE_TO_STRING( InsideTessFactor       );
+        CASE_TO_STRING( InstanceID             );
+        CASE_TO_STRING( IsFrontFace            );
+        CASE_TO_STRING( OutputControlPointID   );
+        CASE_TO_STRING( Position               );
+        CASE_TO_STRING( PrimitiveID            );
+        CASE_TO_STRING( RenderTargetArrayIndex );
+        CASE_TO_STRING( SampleIndex            );
+        CASE_TO_STRING( StencilRef             );
+        CASE_TO_STRING( Target                 );
+        CASE_TO_STRING( TessFactor             );
+        CASE_TO_STRING( VertexID               );
+        CASE_TO_STRING( VertexPosition         );
+        CASE_TO_STRING( ViewportArrayIndex     );
+    }
+    return "";
+
+    #undef CASE_TO_STRING
 }
 
 

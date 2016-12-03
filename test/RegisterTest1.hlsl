@@ -30,7 +30,7 @@ SamplerState smpl1 : register(s1)
 	MINFILTER = POINT;
 };
 
-float4 PS(float2 texCoord : TEXCOORD) : SV_Target
+float4 PS(float2 texCoord : TEXCOORD) : SV_Target : SV_Target5
 {
 	tex0 = tex0;
 	//return tex0.Sample(smpl0, texCoord);

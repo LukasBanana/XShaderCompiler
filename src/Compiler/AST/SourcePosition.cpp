@@ -21,14 +21,14 @@ SourcePosition::SourcePosition(unsigned int row, unsigned int column, const Sour
 {
 }
 
-std::string SourcePosition::ToString() const
+std::string SourcePosition::ToString(bool printFilename) const
 {
     std::string s;
 
     auto r = row_;
     auto c = column_;
 
-    if (origin_)
+    if (printFilename && origin_)
     {
         if (!origin_->filename.empty())
         {

@@ -274,10 +274,10 @@ std::string VarDecl::ToString() const
         s += ']';
     }
 
-    for (const auto& sem : semantics)
+    if (semantic != Semantic::Undefined)
     {
         s += " : ";
-        s += sem->ToString();
+        s += semantic.ToString();
     }
 
     if (initializer)
@@ -299,11 +299,6 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter()
         return declStmntRef->varType->typeDenoter->AsArray(arrayDims);
     }
     RuntimeErr("missing reference to declaration statement to derive type denoter of variable identifier '" + ident + "'", this);
-}
-
-VarSemantic* VarDecl::FirstSemantic() const
-{
-    return (!semantics.empty() ? semantics.front().get() : nullptr);
 }
 
 

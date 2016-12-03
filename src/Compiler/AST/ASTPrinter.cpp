@@ -266,7 +266,7 @@ void ASTPrinter::Print(AST* ast, const std::string& astName, const std::string& 
 {
     if (ast->area.Pos().IsValid())
     {
-        std::string msg = astName + " (" + ast->area.Pos().ToString() + ")";
+        std::string msg = astName + " (" + ast->area.Pos().ToString(false) + ")";
 
         if (!info.empty())
             msg += " \"" + info + "\"";

@@ -44,7 +44,7 @@ class SourcePosition
         SourcePosition(unsigned int row, unsigned int column, const SourceOriginPtr& origin = nullptr);
 
         // Returns the source position as string in the format "Row:Column", e.g. "75:10".
-        std::string ToString() const;
+        std::string ToString(bool printFilename = true) const;
 
         // Increases the row by 1 and sets the column to 0.
         void IncRow();

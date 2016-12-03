@@ -525,6 +525,7 @@ ExprPtr HLSLParser::ParseInitializer()
     return ParseExpr();
 }
 
+#if 0
 VarSemanticPtr HLSLParser::ParseVarSemantic()
 {
     /* Colon is only syntactic sugar, thus not part of the source area */
@@ -541,6 +542,7 @@ VarSemanticPtr HLSLParser::ParseVarSemantic()
 
     return UpdateSourceArea(ast);
 }
+#endif
 
 VarIdentPtr HLSLParser::ParseVarIdent()
 {
@@ -580,7 +582,9 @@ VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& 
     /* Parse variable declaration */
     ast->ident          = (identTkn ? identTkn->Spell() : ParseIdent());
     ast->arrayDims      = ParseArrayDimensionList(true);
-    ast->semantics      = ParseVarSemanticList();
+
+    ParseVarDeclSemantic(*ast);
+
     ast->annotations    = ParseAnnotationList();
 
     /* Parse optional initializer expression */
@@ -814,8 +818,7 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl(const VarTypePtr& returnType, cons
     /* Parse parameters */
     ast->parameters = ParseParameterList();
     
-    if (Is(Tokens::Colon))
-        ast->semantic = ParseSemantic();
+    ParseFunctionDeclSemantic(*ast);
 
     ast->annotations = ParseAnnotationList();
 
@@ -1705,6 +1708,7 @@ std::vector<RegisterPtr> HLSLParser::ParseRegisterList(bool parseFirstColon)
     return registers;
 }
 
+#if 0
 std::vector<VarSemanticPtr> HLSLParser::ParseVarSemanticList()
 {
     std::vector<VarSemanticPtr> semantics;
@@ -1714,6 +1718,7 @@ std::vector<VarSemanticPtr> HLSLParser::ParseVarSemanticList()
 
     return semantics;
 }
+#endif
 
 std::vector<AttributePtr> HLSLParser::ParseAttributeList()
 {
@@ -2115,6 +2120,61 @@ void HLSLParser::ParseAndIgnoreTechnique()
         else if (Is(Tokens::EndOfStream))
             Error("missing closing brace '}' for open code block", braceTknStack.top().get());
         AcceptIt();
+    }
+}
+
+void HLSLParser::ParseVarDeclSemantic(VarDecl& varDecl, bool allowPackOffset)
+{
+    while (Is(Tokens::Colon))
+    {
+        /* Colon is only syntactic sugar, thus not part of the source area */
+        Accept(Tokens::Colon);
+
+        if (Is(Tokens::Register))
+        {
+            /* Parse and ignore registers for variable declarations */
+            Warning("register is ignore for variable declarations");
+            ParseRegister(false);
+        }
+        else if (Is(Tokens::PackOffset))
+        {
+            /* Parse pack offset (ignore previous pack offset) */
+            varDecl.packOffset = ParsePackOffset(false);
+            if (!allowPackOffset)
+                Error("packoffset is only allowed in a constant buffer", true, HLSLErr::ERR_PACK_OFFSET_IN_INVALID_SCOPE);
+        }
+        else
+        {
+            /* Parse semantic (ignore previous semantic) */
+            varDecl.semantic = ParseSemantic(false);
+        }
+    }
+}
+
+void HLSLParser::ParseFunctionDeclSemantic(FunctionDecl& funcDecl)
+{
+    while (Is(Tokens::Colon))
+    {
+        /* Colon is only syntactic sugar, thus not part of the source area */
+        Accept(Tokens::Colon);
+
+        if (Is(Tokens::Register))
+        {
+            /* Parse and ignore registers for variable declarations */
+            Warning("register is ignore for function declarations");
+            ParseRegister(false);
+        }
+        else if (Is(Tokens::PackOffset))
+        {
+            /* Report error and ignore packoffset */
+            Error("packoffset is only allowed in a constant buffer", true, HLSLErr::ERR_PACK_OFFSET_IN_INVALID_SCOPE);
+            ParsePackOffset(false);
+        }
+        else
+        {
+            /* Parse semantic (ignore previous semantic) */
+            funcDecl.semantic = ParseSemantic(false);
+        }
     }
 }
 

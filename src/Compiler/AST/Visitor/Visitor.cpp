@@ -85,7 +85,7 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
     Visit(ast->arrayDims);
-    Visit(ast->semantics);
+    Visit(ast->packOffset);
     Visit(ast->annotations);
     Visit(ast->initializer);
 }

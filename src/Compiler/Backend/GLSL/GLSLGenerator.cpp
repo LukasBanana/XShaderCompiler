@@ -589,8 +589,13 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         First check if code generation is disabled for variable declaration,
         then check if this is a system value semantic inside an interface block.
         */
+        #if 0
         if ( (*it)->flags(VarDecl::disableCodeGen) ||
              ( isInsideInterfaceBlock_ && HasSystemValueSemantic((*it)->semantics) ) )
+        #else
+        if ( (*it)->flags(VarDecl::disableCodeGen) ||
+             ( isInsideInterfaceBlock_ && IsSystemSemantic((*it)->semantic) ) )
+        #endif
         {
             /*
             Code generation is disabled for this variable declaration
@@ -1019,9 +1024,9 @@ void GLSLGenerator::WriteLocalInputSemantics()
 bool GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
 {
     /* Is semantic of the variable declaration a system value semantic? */
-    if (auto varSemantic = varDecl->FirstSemantic())
+    if (varDecl->semantic.IsValid())
     {
-        if (auto semanticKeyword = SemanticToGLSLKeyword(varSemantic->semantic))
+        if (auto semanticKeyword = SemanticToGLSLKeyword(varDecl->semantic))
         {
             /* Write local variable definition statement */
             BeginLn();
@@ -1032,7 +1037,7 @@ bool GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
             EndLn();
         }
         else
-            Error("failed to map semantic name to GLSL keyword", varSemantic);
+            Error("failed to map semantic name to GLSL keyword", varDecl);
 
         return true;
     }
@@ -1089,19 +1094,14 @@ void GLSLGenerator::WriteLocalOutputSemantics()
 
 bool GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
 {
-    /* Is semantic of the variable declaration a system value semantic? */
-    if (varDecl->FirstSemantic() != nullptr)
+    /* Write local variable definition statement (without initialization) */
+    BeginLn();
     {
-        /* Write local variable definition statement (without initialization) */
-        BeginLn();
-        {
-            Visit(varDecl->declStmntRef->varType);
-            Write(" " + varDecl->ident + ";");
-        }
-        EndLn();
-        return true;
+        Visit(varDecl->declStmntRef->varType);
+        Write(" " + varDecl->ident + ";");
     }
-    return false;
+    EndLn();
+    return true;
 }
 
 void GLSLGenerator::WriteGlobalOutputSemantics()
@@ -1125,8 +1125,8 @@ bool GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl)
     /* Write global variable definition statement */
     BeginLn();
     {
-        if (auto varSemantic = varDecl->FirstSemantic())
-            Write("layout(location = " + std::to_string(varSemantic->semantic.Index()) + ") out ");
+        if (varDecl->semantic.IsValid())
+            Write("layout(location = " + std::to_string(varDecl->semantic.Index()) + ") out ");
         else
             Write("out ");
 
@@ -1171,9 +1171,9 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
         /* Write system values */
         for (auto varDecl : varDeclRefs)
         {
-            if (auto varSemantic = varDecl->FirstSemantic())
+            if (varDecl->semantic.IsValid())
             {
-                if (auto semanticKeyword = SemanticToGLSLKeyword(varSemantic->semantic))
+                if (auto semanticKeyword = SemanticToGLSLKeyword(varDecl->semantic))
                 {
                     BeginLn();
                     {

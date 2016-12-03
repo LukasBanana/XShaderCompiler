@@ -619,6 +619,13 @@ class IndexedSemantic
             return semantic_;
         }
 
+        inline bool IsValid() const
+        {
+            return (semantic_ != Semantic::Undefined);
+        }
+
+        std::string ToString() const;
+
         // Returns the semantic index.
         inline int Index() const
         {
@@ -629,6 +636,7 @@ class IndexedSemantic
 
         Semantic    semantic_   = Semantic::Undefined;
         int         index_      = 0;
+        std::string userDefined_;
 
 };
 
@@ -637,6 +645,9 @@ bool IsSystemSemantic(const Semantic t);
 
 // Returns true if the specified semantic is a user defined semantic.
 bool IsUserSemantic(const Semantic t);
+
+// Returns the specified semantic as string.
+std::string SemanticToString(const Semantic t);
 
 
 } // /namespace Xsc
