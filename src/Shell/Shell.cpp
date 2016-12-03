@@ -42,9 +42,22 @@ static void PrintBackdoorEasterEgg(std::ostream& output)
 
 #endif
 
+Shell* Shell::instance_ = nullptr;
+
 Shell::Shell(std::ostream& output) :
     output{ output }
 {
+    Shell::instance_ = this;
+}
+
+Shell::~Shell()
+{
+    Shell::instance_ = nullptr;
+}
+
+Shell* Shell::Instance()
+{
+    return instance_;
 }
 
 void Shell::ExecuteCommandLine(CommandLine& cmdLine)

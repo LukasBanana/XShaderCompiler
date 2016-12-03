@@ -19,9 +19,22 @@ int main(int argc, char** argv)
 {
     Shell shell(std::cout);
 
-    /* Execute command line from optional init file */
+    /* Get filename of init file */
+    std::string filename(argv[0]);
+    std::size_t pos = 0;
+
+    if ( ( pos = filename.rfind("xsc") ) != std::string::npos )
     {
-        std::ifstream file("xsc.ini");
+        filename.resize(pos + 3);
+        filename += ".ini";
+
+        /* Execute command line from optional init file */
+        std::ifstream file;
+        
+        file.open(filename);
+        if (!file.good())
+            file.open("xsc.ini");
+
         if (file.good())
         {
             while (!file.eof())

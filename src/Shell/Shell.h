@@ -29,6 +29,9 @@ class Shell
     public:
         
         Shell(std::ostream& output);
+        ~Shell();
+
+        static Shell* Instance();
 
         void ExecuteCommandLine(CommandLine& cmdLine);
 
@@ -46,6 +49,8 @@ class Shell
 
         ShellState      state_;
         IndentHandler   indentHandler_;
+
+        static Shell*   instance_;
 
 };
 
