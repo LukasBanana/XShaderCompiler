@@ -21,7 +21,7 @@ namespace Xsc
 ErrorCode::ErrorCode(const HLSLErr errorCode)
 {
     if (errorCode != HLSLErr::Unknown)
-        str_ = "X" + std::to_string(static_cast<int>(errorCode)) + "=" + ErrToString(errorCode);
+        str_ = ErrToString(errorCode) + "(X" + std::to_string(static_cast<int>(errorCode)) + ")";
 }
 
 
