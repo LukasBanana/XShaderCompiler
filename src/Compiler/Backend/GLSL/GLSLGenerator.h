@@ -160,21 +160,11 @@ class GLSLGenerator : public Generator
 
         /* --- VarIdent --- */
 
-        #if 0
-        // Returns the first VarIdent AST node which has a system value semantic, or null if no such AST node was found.
-        VarIdent* FindSystemValueVarIdent(VarIdent* ast);
-        #endif
-
         // Returns the final identifier string from the specified variable identifier.
         const std::string& FinalIdentFromVarIdent(VarIdent* ast);
 
         void WriteVarIdent(VarIdent* ast, bool recursive = true);
 
-        #if 0
-        // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
-        void WriteVarIdentOrSystemValue(VarIdent* ast);
-        #endif
-        
         void WriteSuffixVarIdentBegin(const TypeDenoter& lhsTypeDen, VarIdent* ast);
         void WriteSuffixVarIdentEnd(const TypeDenoter& lhsTypeDen, VarIdent* ast);
 

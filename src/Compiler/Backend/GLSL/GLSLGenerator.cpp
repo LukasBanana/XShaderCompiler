@@ -1264,27 +1264,6 @@ void GLSLGenerator::WriteFragmentShaderOutput()
 
 /* --- VarIdent --- */
 
-//DISABLED: currently unused
-#if 0
-/*
-Find the first VarIdent with a system value semantic,
-and keep the remaining AST nodes (i.e. ast->next) which might be vector subscriptions (e.g. "gl_Position.xyz").
-*/
-VarIdent* GLSLGenerator::FindSystemValueVarIdent(VarIdent* ast)
-{
-    while (ast)
-    {
-        /* Check if current var-ident AST node has a system semantic */
-        if (SemanticToGLSLKeyword(ast->systemSemantic) != nullptr)
-            return ast;
-
-        /* Search in next var-ident AST node */
-        ast = ast->next.get();
-    }
-    return nullptr;
-}
-#endif
-
 const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* ast)
 {
     /* Check if a variable declaration has changed it's name during conversion */
@@ -1312,40 +1291,6 @@ void GLSLGenerator::WriteVarIdent(VarIdent* ast, bool recursive)
         WriteVarIdent(ast->next.get());
     }
 }
-
-//DISABLED: currently unused
-#if 0
-/*
-Writes either the variable identifier as it is (e.g. "vertexOutput.position.xyz"),
-or a system value if the identifier has a system value semantix (e.g. "gl_Position.xyz").
-*/
-void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
-{
-    /* Find system value semantic in variable identifier */
-    auto semanticVarIdent = FindSystemValueVarIdent(ast);
-    std::unique_ptr<std::string> semanticKeyword;
-
-    if (semanticVarIdent)
-        semanticKeyword = SemanticToGLSLKeyword(semanticVarIdent->systemSemantic);
-
-    if (semanticVarIdent && semanticKeyword)
-    {
-        /* Write shader target respective system semantic */
-        Write(*semanticKeyword);
-
-        if (semanticVarIdent->next)
-        {
-            Write(".");
-            Visit(semanticVarIdent->next);
-        }
-    }
-    else
-    {
-        /* Write default variable identifier */
-        Visit(ast);
-    }
-}
-#endif
 
 static TypeDenoterPtr GetTypeDenoterForSuffixVarIdent(const TypeDenoter& lhsTypeDen, VarIdent* ast)
 {

@@ -659,43 +659,6 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
             }
         }
     }
-
-    #if 0
-    /* Copy system semantic to variable identifier */
-    if (varDecl->semantic.IsSystemValue())
-        varIdent->systemSemantic = varDecl->semantic;
-
-    //TODO: refactor analysis of system value semantics (SV_...)
-    #if 1
-    /* Check if the next identifiers contain a system semantic in their respective structure member */
-    if (varDecl->declStmntRef)
-    {
-        auto varTypeSymbol = varDecl->declStmntRef->varType->symbolRef;
-        if (varTypeSymbol && varTypeSymbol->Type() == AST::Types::StructDecl)
-        {
-            auto structSymbol = dynamic_cast<StructDecl*>(varTypeSymbol);
-            if (structSymbol)
-            {
-                auto ident = varIdent->next.get();
-                while (ident)
-                {
-                    /* Search member in structure */
-                    auto systemVal = structSymbol->systemValuesRef.find(ident->ident);
-                    if (systemVal != structSymbol->systemValuesRef.end())
-                    {
-                        if (systemVal->second->semantic.IsSystemValue())
-                            ident->systemSemantic = systemVal->second->semantic;
-                    }
-
-                    /* Check next identifier */
-                    ident = ident->next.get();
-                }
-            }
-        }
-    }
-    #endif
-
-    #endif
 }
 
 void HLSLAnalyzer::AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, TextureDecl* textureDecl)
