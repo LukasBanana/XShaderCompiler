@@ -309,6 +309,9 @@ enum class BufferType
 {
     Undefined,
 
+    ConstantBuffer,             // Constant buffer ("cbuffer" in HLSL).
+    TextureBuffer,              // Texture buffer ("tbuffer" in HLSL).
+
     Buffer,
     StucturedBuffer,
     ByteAddressBuffer,
@@ -335,8 +338,11 @@ enum class BufferType
     Texture2DMS,
     Texture2DMSArray,
 
-    GenericTexture,             // Texture of unspecified dimension (used in DX9 effect files).
+    GenericTexture,             // Texture of unspecified dimension (used in DX9 effect files: "texture" keyword).
 };
+
+// Returns true if the specified buffer type is a storage buffer type (e.g. BufferType::Buffer, or BufferType::RWStructuredBuffer).
+bool IsStorageBufferType(const BufferType t);
 
 // Returns true if the specified buffer type is a RW (read/write) buffer type.
 bool IsRWBufferType(const BufferType t);

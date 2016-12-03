@@ -661,6 +661,11 @@ bool IsInterpolationModifier(const StorageClass s)
 
 /* ----- BufferType Enum ----- */
 
+bool IsStorageBufferType(const BufferType t)
+{
+    return (t >= BufferType::Buffer && t <= BufferType::ConsumeStructuredBuffer);
+}
+
 bool IsRWBufferType(const BufferType t)
 {
     return (t >= BufferType::RWBuffer && t <= BufferType::RWTexture3D);

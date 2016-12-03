@@ -445,6 +445,9 @@ static std::map<std::string, BufferType> GenerateBufferTypeMap()
 
     return
     {
+        { "cbuffer",                 T::ConstantBuffer          },
+        { "tbuffer",                 T::TextureBuffer           },
+
         { "Buffer",                  T::Buffer                  },
         { "StucturedBuffer",         T::StucturedBuffer         },
         { "ByteAddressBuffer",       T::ByteAddressBuffer       },
