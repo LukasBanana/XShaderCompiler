@@ -494,17 +494,16 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
 
     struct Presetting
     {
-        std::string                 title;
-        std::vector<std::string>    args;
+        std::string title;
+        CommandLine cmdLine;
     };
 
-    auto RunPresetting = [&](const Presetting& preset)
+    auto RunPresetting = [&](Presetting& preset)
     {
         std::cout << "run presetting: \"" << preset.title << "\"" << std::endl;
 
-        CommandLine subCmdLine(preset.args);
         Shell subShell(std::cout);
-        subShell.ExecuteCommandLine(subCmdLine);
+        subShell.ExecuteCommandLine(preset.cmdLine);
     };
 
     std::vector<Presetting> presettings;
@@ -526,34 +525,10 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
             if (!line.empty() && line.front() != commentChar)
             {
                 /* Parse command line arguments for current presetting */
-                std::size_t start = 0, end = 0;
-                while (start < line.size())
-                {
-                    start = line.find_first_not_of(' ', end);
-                    if (start >= line.size())
-                        break;
-
-                    if (line[start] == '\"')
-                    {
-                        end = line.find('\"', start + 1);
-                        if (end != std::string::npos)
-                        {
-                            preset.args.push_back(line.substr(start + 1, end - start - 1));
-                            ++end;
-                        }
-                    }
-                    else
-                    {
-                        end = line.find(' ', start + 1);
-                        if (end != std::string::npos)
-                            preset.args.push_back(line.substr(start, end - start));
-                        else
-                            preset.args.push_back(line.substr(start));
-                    }
-                }
+                preset.cmdLine = CommandLine(line);
 
                 /* Add presetting to the selection */
-                if (!preset.args.empty())
+                if (!preset.cmdLine.ReachedEnd())
                     presettings.emplace_back(std::move(preset));
             }
         }
@@ -578,7 +553,7 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
         if (idx == 0)
         {
             /* Run all presettings */
-            for (const auto& preset : presettings)
+            for (auto& preset : presettings)
                 RunPresetting(preset);
         }
         else if (idx > 0)

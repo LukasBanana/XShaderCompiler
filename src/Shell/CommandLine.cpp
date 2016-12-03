@@ -27,6 +27,36 @@ CommandLine::CommandLine(const std::vector<std::string>& args)
     args_.insert(args_.end(), args.begin(), args.end());
 }
 
+CommandLine::CommandLine(const std::string& line)
+{
+    /* Parse command line arguments */
+    std::size_t start = 0, end = 0;
+    while (start < line.size())
+    {
+        start = line.find_first_not_of(' ', end);
+        if (start >= line.size())
+            break;
+
+        if (line[start] == '\"')
+        {
+            end = line.find('\"', start + 1);
+            if (end != std::string::npos)
+            {
+                args_.push_back(line.substr(start + 1, end - start - 1));
+                ++end;
+            }
+        }
+        else
+        {
+            end = line.find(' ', start + 1);
+            if (end != std::string::npos)
+                args_.push_back(line.substr(start, end - start));
+            else
+                args_.push_back(line.substr(start));
+        }
+    }
+}
+
 std::string CommandLine::Get() const
 {
     return (args_.empty() ? "" : args_.front());

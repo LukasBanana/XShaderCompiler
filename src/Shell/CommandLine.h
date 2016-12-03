@@ -32,6 +32,7 @@ class CommandLine
 
         CommandLine(int argc, char** argv);
         CommandLine(const std::vector<std::string>& args);
+        explicit CommandLine(const std::string& line);
 
         // Returns the current argument or an empty string if the end has reached.
         std::string Get() const;
