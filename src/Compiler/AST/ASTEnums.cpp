@@ -740,6 +740,13 @@ IndexedSemantic::IndexedSemantic(Semantic semantic, int index) :
 {
 }
 
+IndexedSemantic::IndexedSemantic(const std::string& userDefined, int index) :
+    semantic_   { Semantic::UserDefined },
+    index_      { index                 },
+    userDefined_{ userDefined           }
+{
+}
+
 bool IndexedSemantic::IsValid() const
 {
     return (semantic_ != Semantic::Undefined);

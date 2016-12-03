@@ -562,7 +562,7 @@ static IndexedSemantic HLSLKeywordToSemanticD3D9(const CiString& ident)
     if (ident.size() >= 4)
         return HLSLKeywordToSemanticWithMap(ident, semanticMap);
     else
-        return Semantic::UserDefined;
+        return IndexedSemantic(std::string(ident.begin(), ident.end()));
 }
 
 static IndexedSemantic HLSLKeywordToSemanticD3D10(const CiString& ident)
@@ -604,7 +604,7 @@ static IndexedSemantic HLSLKeywordToSemanticD3D10(const CiString& ident)
     if (ident.size() >= 8 && ident.compare(0, 3, "SV_") == 0)
         return HLSLKeywordToSemanticWithMap(ident, semanticMap);
     else
-        return Semantic::UserDefined;
+        return IndexedSemantic(std::string(ident.begin(), ident.end()));
 }
 
 IndexedSemantic HLSLKeywordToSemantic(const std::string& ident, bool useD3D10Semantics)

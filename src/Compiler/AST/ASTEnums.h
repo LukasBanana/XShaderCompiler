@@ -609,6 +609,7 @@ class IndexedSemantic
         IndexedSemantic& operator = (const IndexedSemantic&) = default;
 
         IndexedSemantic(Semantic semantic, int index = 0);
+        IndexedSemantic(const std::string& userDefined, int index = 0);
 
         inline operator Semantic() const
         {
