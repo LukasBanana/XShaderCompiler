@@ -341,7 +341,9 @@ struct VarIdent : public TypedAST
     VarIdentPtr             next;                                   // Next identifier; may be null.
 
     AST*                    symbolRef       = nullptr;              // Symbol reference for DAST to the variable object; may be null.
+    #if 0
     IndexedSemantic         systemSemantic  = Semantic::Undefined;  // System semantic (SV_...) for DAST; may be undefined.
+    #endif
 };
 
 /* --- Declarations --- */

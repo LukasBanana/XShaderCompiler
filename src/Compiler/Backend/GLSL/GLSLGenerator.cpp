@@ -1136,8 +1136,8 @@ bool GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl)
 
 void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
 {
+    //TODO: remove this
     #if 0
-    //TODO: refactor this
     auto& outp = GetProgram()->outputSemantics;
 
     if (!outp.singleOutputVariable.empty())
@@ -1160,7 +1160,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
     auto        semantic    = entryPoint->semantic;
     const auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefsSV;
 
-    /* Prefer variables are system semantics */
+    /* Prefer variables that are system semantics */
     if (!varDeclRefs.empty())
     {
         /* Write system values */
@@ -1199,6 +1199,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
         Error("missing output semantic", ast);
 }
 
+//TODO: remove this
 #if 0
 
 //TODO: refactor this function
@@ -1263,6 +1264,8 @@ void GLSLGenerator::WriteFragmentShaderOutput()
 
 /* --- VarIdent --- */
 
+//DISABLED: currently unused
+#if 0
 /*
 Find the first VarIdent with a system value semantic,
 and keep the remaining AST nodes (i.e. ast->next) which might be vector subscriptions (e.g. "gl_Position.xyz").
@@ -1280,6 +1283,7 @@ VarIdent* GLSLGenerator::FindSystemValueVarIdent(VarIdent* ast)
     }
     return nullptr;
 }
+#endif
 
 const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* ast)
 {
@@ -1309,6 +1313,8 @@ void GLSLGenerator::WriteVarIdent(VarIdent* ast, bool recursive)
     }
 }
 
+//DISABLED: currently unused
+#if 0
 /*
 Writes either the variable identifier as it is (e.g. "vertexOutput.position.xyz"),
 or a system value if the identifier has a system value semantix (e.g. "gl_Position.xyz").
@@ -1339,6 +1345,7 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
         Visit(ast);
     }
 }
+#endif
 
 static TypeDenoterPtr GetTypeDenoterForSuffixVarIdent(const TypeDenoter& lhsTypeDen, VarIdent* ast)
 {

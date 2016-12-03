@@ -163,7 +163,7 @@ void VarIdent::PopFront()
         arrayIndices    = nextVarIdent->arrayIndices;
         next            = nextVarIdent->next;
         symbolRef       = nextVarIdent->symbolRef;
-        systemSemantic  = nextVarIdent->systemSemantic;
+        //systemSemantic  = nextVarIdent->systemSemantic;
     }
 }
 

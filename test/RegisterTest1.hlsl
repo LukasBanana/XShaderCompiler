@@ -8,7 +8,7 @@ cbuffer Matrices : register(vs, b0) : register(ps, b1)
 cbuffer Matrices : register(b1)
 #endif
 {
-	float4 diffuse;
+	float4 diffuse : FOO : packoffset(c4) : BAR : packoffset(c2.x);
 };
 
 //Buffer<float4> buffer0 : register(t0);
