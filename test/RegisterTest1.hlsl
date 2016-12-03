@@ -12,8 +12,19 @@ cbuffer Matrices : register(vs, b0) : register(ps, b1)
 Texture2D tex0 : register(vs, t[1])
                : register(ps, t1[2]);
 
+sampler2D tex1 = sampler_state
+{
+	texture = <tex0>;
+	MINFILTER = LINEAR;
+};
+
 SamplerState smpl0 : register(ps_5_0, s0)
                    : register(z[12]); // this register is ignored
+
+SamplerState smpl1 : register(s1)
+{
+	MINFILTER = POINT;
+};
 
 float4 PS(float2 texCoord : TEXCOORD) : SV_Target
 {

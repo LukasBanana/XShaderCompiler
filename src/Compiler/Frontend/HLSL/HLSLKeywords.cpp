@@ -172,9 +172,10 @@ static KeywordMapType GenerateKeywordMap()
         { "sampler2D",               T::Sampler         },
         { "sampler3D",               T::Sampler         },
         { "samplerCUBE",             T::Sampler         },
-        { "sampler_state",           T::Sampler         },
-        { "SamplerState",            T::Sampler         }, // since D3D10+
-        { "SamplerComparisonState",  T::Sampler         }, // since D3D10+
+
+        { "sampler_state",           T::SamplerState    },
+        { "SamplerState",            T::SamplerState    }, // since D3D10+
+        { "SamplerComparisonState",  T::SamplerState    }, // since D3D10+
 
         { "texture",                 T::Texture         },
         { "Texture1D",               T::Texture         },

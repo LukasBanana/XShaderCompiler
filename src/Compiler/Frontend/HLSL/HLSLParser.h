@@ -195,7 +195,7 @@ class HLSLParser : public Parser
         StorageClass                    ParseStorageClass();
         UniformBufferType               ParseUniformBufferType();
         BufferType                      ParseBufferType();
-        //SamplerType                     ParseSamplerType();
+        /*SamplerType*/std::string      ParseSamplerType();
         IndexedSemantic                 ParseSemantic(bool parseColon = true);
 
         std::string                     ParseSamplerStateTextureIdent();

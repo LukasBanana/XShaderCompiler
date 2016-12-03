@@ -76,7 +76,8 @@ bool HLSLParser::IsDataType() const
 {
     return
     (
-        IsBaseDataType() || Is(Tokens::Vector) || Is(Tokens::Matrix) || Is(Tokens::Texture) || Is(Tokens::Sampler)
+        IsBaseDataType() || Is(Tokens::Vector) || Is(Tokens::Matrix) ||
+        Is(Tokens::Texture) || Is(Tokens::Sampler) || Is(Tokens::SamplerState)
     );
 }
 
@@ -622,9 +623,9 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl(SamplerDeclStmnt* declStmntRef)
     /* Parse optional static sampler state (either for D3D9 or D3D10+ shaders) */
     if (Is(Tokens::AssignOp, "="))
     {
-        /* Parse optional "= sampler_state" assignment (DX9 only) */
+        /* Parse sampler state ("sampler_state" in DX9 only) */
         AcceptIt();
-        Accept(Tokens::Sampler, "sampler_state");
+        Accept(Tokens::SamplerState, "sampler_state");
         Accept(Tokens::LCurly);
         
         ast->textureIdent = ParseSamplerStateTextureIdent();
@@ -723,6 +724,7 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
     switch (TknType())
     {
         case Tokens::Sampler:
+        case Tokens::SamplerState:
             return ParseSamplerDeclStmnt();
         case Tokens::Texture:
             return ParseTextureDeclStmnt();
@@ -891,7 +893,7 @@ SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt()
 {
     auto ast = Make<SamplerDeclStmnt>();
 
-    ast->samplerType    = Accept(Tokens::Sampler)->Spell();
+    ast->samplerType    = ParseSamplerType();
     ast->samplerDecls   = ParseSamplerDeclList(ast.get());
 
     Semi();
@@ -1001,6 +1003,7 @@ StmntPtr HLSLParser::ParseStmnt()
         case Tokens::Typedef:
             return ParseAliasDeclStmnt();
         case Tokens::Sampler:
+        case Tokens::SamplerState:
             return ParseSamplerDeclStmnt();
         case Tokens::TypeModifier:
         case Tokens::StorageClass:
@@ -1858,7 +1861,7 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoterPrimary()
         return ParseStructTypeDenoter();
     else if (Is(Tokens::Texture))
         return ParseTextureTypeDenoter();
-    else if (Is(Tokens::Sampler))
+    else if (Is(Tokens::Sampler) || Is(Tokens::SamplerState))
         return ParseSamplerTypeDenoter();
     else
         ErrorUnexpected("expected type denoter", GetScanner().ActiveToken().get(), true);
@@ -2011,8 +2014,8 @@ TextureTypeDenoterPtr HLSLParser::ParseTextureTypeDenoter()
 SamplerTypeDenoterPtr HLSLParser::ParseSamplerTypeDenoter()
 {
     /* Make sampler type denoter */
-    //TODO: convert HLSL keyword to sampler type!
-    Accept(Tokens::Sampler);
+    //TODO: convert HLSL keyword to sampler type and pass it to the SamplerTypeDenoter
+    ParseSamplerType();
     return std::make_shared<SamplerTypeDenoter>();
 }
 
@@ -2167,8 +2170,9 @@ BufferType HLSLParser::ParseBufferType()
     return BufferType::Undefined;
 }
 
-/*SamplerType HLSLParser::ParseSamplerType()
+/*SamplerType*/std::string HLSLParser::ParseSamplerType()
 {
+    #if 0
     try
     {
         return HLSLKeywordToSamplerType(Accept(Tokens::Sampler)->Spell());
@@ -2178,7 +2182,14 @@ BufferType HLSLParser::ParseBufferType()
         Error(e.what());
     }
     return SamplerType::Undefined;
-}*/
+    #else
+    if (Is(Tokens::Sampler) || Is(Tokens::SamplerState))
+        return AcceptIt()->Spell();
+    else
+        ErrorUnexpected("expected sampler type denoter or sampler state");
+    return "";
+    #endif
+}
 
 IndexedSemantic HLSLParser::ParseSemantic(bool parseColon)
 {

@@ -84,7 +84,8 @@ std::string Token::TypeToString(const Types type)
         case Types::Reserved:           return "reserved keyword";
         case Types::Vector:             return "'vector' generic type denoter";
         case Types::Matrix:             return "'matrix' generic type denoter";
-        case Types::Sampler:            return "sampler state type denoter";
+        case Types::Sampler:            return "sampler type denoter";
+        case Types::SamplerState:       return "sampler state";
         case Types::Texture:            return "texture type denoter";
         case Types::StorageBuffer:      return "storage buffer type denoter";
         case Types::UniformBuffer:      return "uniform buffer type denoter";

@@ -64,9 +64,11 @@ class Token
             VectorType,         // ScalarType ('1'-'4')
             MatrixType,         // ScalarType ('1'-'4') 'x' ('1'-'4')
 
-            Sampler,            // sampler, sampler1D, sampler2D, sampler3D, samplerCUBE, sampler_state, SamplerState, SamplerComparisonState
+            Sampler,            // sampler, sampler1D, sampler2D, sampler3D, samplerCUBE
+            SamplerState,       // sampler_state, SamplerState, SamplerComparisonState
 
             /*
+            texture,
             Texture1D, Texture1DArray, Texture2D, Texture2DArray, Texture3D, TextureCube, TextureCubeArray,
             Texture2DMS, Texture2DMSArray, RWTexture1D, RWTexture1DArray, RWTexture2D, RWTexture2DArray, RWTexture3D
             */
