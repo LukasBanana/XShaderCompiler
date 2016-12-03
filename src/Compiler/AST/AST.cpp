@@ -442,11 +442,6 @@ bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const T
     return true;
 }
 
-TypeDenoterPtr FunctionDecl::GetTypeDenoterForArgs(const std::vector<ExprPtr>& /*args*/)
-{
-    return returnType->typeDenoter;
-}
-
 
 /* ----- BufferDeclStmnt ----- */
 
@@ -659,7 +654,7 @@ TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter()
 TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
 {
     if (call->funcDeclRef)
-        return call->funcDeclRef->GetTypeDenoterForArgs(call->arguments);
+        return call->funcDeclRef->returnType->typeDenoter;
     else if (call->typeDenoter)
         return call->typeDenoter;
     else if (call->intrinsic != Intrinsic::Undefined)
