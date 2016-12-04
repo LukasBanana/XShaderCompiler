@@ -5,6 +5,10 @@ Features
 
 * Cross (or trans-) compiles HLSL shader code (Shader Model 4 and 5) into GLSL
 * Simple to integrate into other projects
+* Low overhead translation (i.e. avoidance of unnecessary wrapper functions)
+* Dead code removal
+* Meaningful report output
+* Commentary preserving
 * Written in C++11
 
 License
@@ -21,12 +25,6 @@ Status
 ------
 
 **Version: 0.02 Alpha** (*Do not use in production code!*)
-
-##### Special Features: #####
-* Low Overhead Translation (i.e. avoidance of unnecessary wrapper functions)
-* Dead Code Removal
-* Meaningful Report Output
-* Commentary Preserving
 
 ##### TODO List: #####
 * Common HLSL IO semantics to GLSL transformation.
