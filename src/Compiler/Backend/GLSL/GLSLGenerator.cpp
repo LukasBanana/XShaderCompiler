@@ -223,6 +223,14 @@ bool GLSLGenerator::MustResolveStruct(StructDecl* ast) const
     return MustResolveStructForTarget(shaderTarget_, ast);
 }
 
+std::unique_ptr<std::string> GLSLGenerator::SystemValueToKeyword(const IndexedSemantic& semantic) const
+{
+    if (semantic == Semantic::Target && versionOut_ > OutputShaderVersion::GLSL120)
+        return MakeUnique<std::string>(semantic.ToString());
+    else
+        return SemanticToGLSLKeyword(semantic);
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -1134,7 +1142,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
     auto        semantic    = entryPoint->semantic;
     const auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefsSV;
 
-    /* Prefer variables that are system semantics */
+    /* Prefer variables from structure, rather than function return semantic */
     if (!varDeclRefs.empty())
     {
         /* Write system values */
@@ -1142,7 +1150,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
         {
             if (varDecl->semantic.IsValid())
             {
-                if (auto semanticKeyword = SemanticToGLSLKeyword(varDecl->semantic))
+                if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
                 {
                     BeginLn();
                     {
@@ -1155,7 +1163,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
     }
     else if (semantic.IsSystemValue() && ast)
     {
-        if (auto semanticKeyword = SemanticToGLSLKeyword(semantic))
+        if (auto semanticKeyword = SystemValueToKeyword(semantic))
         {
             BeginLn();
             {

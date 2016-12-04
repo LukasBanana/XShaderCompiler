@@ -71,6 +71,9 @@ class GLSLGenerator : public Generator
         // Returns true if the specified AST structure must be resolved.
         bool MustResolveStruct(StructDecl* ast) const;
 
+        // Returns the GLSL keyword for the specified system value semantic (special case is Semantic::Target).
+        std::unique_ptr<std::string> SystemValueToKeyword(const IndexedSemantic& semantic) const;
+
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
