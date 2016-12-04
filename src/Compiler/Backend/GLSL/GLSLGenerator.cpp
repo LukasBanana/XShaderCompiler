@@ -440,8 +440,8 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                 }
                 isInsideEntryPoint_ = false;
 
-                /* Is the last statement a return statement? */
-                if (ast->codeBlock->stmnts.empty() || ast->codeBlock->stmnts.back()->Type() != AST::Types::ReturnStmnt)
+                /* Is the last statement a return statement? (ignore if the function has a non-void return type) */
+                if ( ast->HasVoidReturnType() && ( ast->codeBlock->stmnts.empty() || ast->codeBlock->stmnts.back()->Type() != AST::Types::ReturnStmnt ) )
                 {
                     /* Write output semantic at the end of the code block, if no return statement was written before */
                     WriteOutputSemanticsAssignment(nullptr);

@@ -465,6 +465,9 @@ struct FunctionDecl : public Stmnt
 
     // Returns true if this function declaration is just a forward declaration (without function body).
     bool IsForwardDecl() const;
+
+    // Returns true if this function has a void return type.
+    bool HasVoidReturnType() const;
     
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
     std::string SignatureToString(bool useParamNames = true) const;

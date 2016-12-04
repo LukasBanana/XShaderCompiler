@@ -373,6 +373,11 @@ bool FunctionDecl::IsForwardDecl() const
     return (codeBlock == nullptr);
 }
 
+bool FunctionDecl::HasVoidReturnType() const
+{
+    return returnType->typeDenoter->IsVoid();
+}
+
 std::string FunctionDecl::SignatureToString(bool useParamNames) const
 {
     std::string s;
