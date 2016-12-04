@@ -50,6 +50,18 @@ class CommandFactory
         template <typename T, typename... Args>
         void MakeCommand(Args&&... args);
 
+        template <typename... Commands>
+        void MakeStandardCommands();
+
+        template <>
+        void MakeStandardCommands();
+
+        template <typename FirstCommand, typename... NextCommands>
+        void MakeStandardCommandsFirst();
+
+        template <typename FirstCommand, typename... NextCommands>
+        void MakeStandardCommandsNext();
+
         std::vector<std::unique_ptr<Command>>   commands_;
 
         HelpPrinter                             helpPrinter_;

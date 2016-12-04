@@ -6,6 +6,7 @@
  */
 
 #include "CommandFactory.h"
+#include <tuple>
 
 
 namespace Xsc
@@ -47,32 +48,35 @@ Command* CommandFactory::Get(const std::string& name, Command::Identifier* cmdId
 
 CommandFactory::CommandFactory()
 {
-    MakeCommand< EntryCommand       >();
-    MakeCommand< TargetCommand      >();
-    MakeCommand< VersionInCommand   >();
-    MakeCommand< VersionOutCommand  >();
-    MakeCommand< IndentCommand      >();
-    MakeCommand< PrefixCommand      >();
-    MakeCommand< OutputCommand      >();
-    MakeCommand< WarnCommand        >();
-    MakeCommand< BlanksCommand      >();
-    MakeCommand< LineMarksCommand   >();
-    MakeCommand< ShowASTCommand     >();
-    MakeCommand< ShowStatCommand    >();
-    MakeCommand< ShowTimesCommand   >();
-    MakeCommand< PPOnlyCommand      >();
-    MakeCommand< MacroCommand       >();
-    MakeCommand< PauseCommand       >();
-    MakeCommand< PresettingCommand  >();
-    MakeCommand< VersionCommand     >();
-    MakeCommand< HelpCommand        >();
-    MakeCommand< IncludePathCommand >();
-    MakeCommand< VerboseCommand     >();
-    MakeCommand< OptimizeCommand    >();
-    MakeCommand< ExtensionCommand   >();
-    MakeCommand< ValidateCommand    >();
-    MakeCommand< BindingCommand     >();
-    MakeCommand< CommentCommand     >();
+    MakeStandardCommands
+    <
+        EntryCommand,
+        TargetCommand,
+        VersionInCommand,
+        VersionOutCommand,
+        IndentCommand,
+        PrefixCommand,
+        OutputCommand,
+        WarnCommand,
+        BlanksCommand,
+        LineMarksCommand,
+        ShowASTCommand,
+        ShowStatCommand,
+        ShowTimesCommand,
+        PPOnlyCommand,
+        MacroCommand,
+        PauseCommand,
+        PresettingCommand,
+        VersionCommand,
+        HelpCommand,
+        IncludePathCommand,
+        VerboseCommand,
+        OptimizeCommand,
+        ExtensionCommand,
+        ValidateCommand,
+        BindingCommand,
+        CommentCommand
+    >();
 }
 
 template <typename T, typename... Args>
@@ -81,6 +85,31 @@ void CommandFactory::MakeCommand(Args&&... args)
     auto cmd = std::unique_ptr<T>(new T(std::forward<Args>(args)...));
     helpPrinter_.AppendCommandHelp(*cmd);
     commands_.emplace_back(std::move(cmd));
+}
+
+template <typename... Commands>
+void CommandFactory::MakeStandardCommands()
+{
+    MakeStandardCommandsFirst<Commands...>();
+    MakeStandardCommandsNext<Commands...>();
+}
+
+template <>
+void CommandFactory::MakeStandardCommands()
+{
+    // do nothing
+}
+
+template <typename FirstCommand, typename... NextCommands>
+void CommandFactory::MakeStandardCommandsFirst()
+{
+    MakeCommand<FirstCommand>();
+}
+
+template <typename FirstCommand, typename... NextCommands>
+void CommandFactory::MakeStandardCommandsNext()
+{
+    MakeStandardCommands<NextCommands...>();
 }
 
 
