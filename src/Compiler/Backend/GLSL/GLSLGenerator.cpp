@@ -112,6 +112,12 @@ void GLSLGenerator::WriteComment(const std::string& text)
 
         auto line = (end < text.size() ? text.substr(start, end - start) : text.substr(start));
 
+        #if 0
+        /* Get line boundaries */
+        bool firstLine  = (start == 0);
+        bool lastLine   = (end == std::string::npos);
+        #endif
+
         /* Write comment line */
         BeginLn();
         {

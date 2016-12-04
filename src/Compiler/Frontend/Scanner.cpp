@@ -100,6 +100,7 @@ TokenPtr Scanner::NextTokenScan(bool scanComments, bool scanWhiteSpaces)
         {
             /* Ignore white spaces and comments */
             comment_.clear();
+            commentFirstLine_ = true;
             bool hasComments = true;
 
             do
@@ -124,6 +125,7 @@ TokenPtr Scanner::NextTokenScan(bool scanComments, bool scanWhiteSpaces)
                 if (Is('/'))
                 {
                     StoreStartPos();
+                    commentStartPos_ = nextStartPos_.Column();
 
                     auto prevChr = TakeIt();
 
@@ -323,7 +325,7 @@ TokenPtr Scanner::ScanCommentBlock(bool scanComments)
     }
 
     /* Store commentary string */
-    AppendComment(spell);
+    AppendMultiLineComment(spell);
 
     if (scanComments)
     {
@@ -457,9 +459,40 @@ bool Scanner::ScanDigitSequence(std::string& spell)
 
 void Scanner::AppendComment(const std::string& s)
 {
-    if (!comment_.empty())
+    if (commentFirstLine_)
+        commentFirstLine_ = false;
+    else
         comment_ += '\n';
-    comment_ += s;
+
+    if (commentStartPos_ > 0)
+    {
+        /* Append left-trimed commentary string */
+        auto firstNot = s.find_first_not_of(" \t");
+        if (firstNot == std::string::npos)
+            comment_ += s;
+        else
+            comment_ += s.substr(std::min(firstNot, commentStartPos_ - 1));
+    }
+    else
+    {
+        /* Append full commentary string */
+        comment_ += s;
+    }
+}
+
+void Scanner::AppendMultiLineComment(const std::string& s)
+{
+    std::size_t start = 0, end = 0;
+
+    while (end < s.size())
+    {
+        /* Get next comment line */
+        end = s.find('\n', start);
+
+        AppendComment(end < s.size() ? s.substr(start, end - start) : s.substr(start));
+
+        start = end + 1;
+    }
 }
 
 

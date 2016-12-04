@@ -150,13 +150,14 @@ class Scanner
         TokenPtr NextTokenScan(bool scanComments, bool scanWhiteSpaces);
 
         void AppendComment(const std::string& s);
+        void AppendMultiLineComment(const std::string& s);
 
         /* === Members === */
 
         SourceCodePtr                               source_;
-        char                                        chr_ = 0;
+        char                                        chr_                = 0;
 
-        Log*                                        log_ = nullptr;
+        Log*                                        log_                = nullptr;
 
         SourcePosition                              nextStartPos_;
         TokenPtr                                    activeToken_;
@@ -164,7 +165,10 @@ class Scanner
 
         std::stack<TokenPtrString::ConstIterator>   tokenStringItStack_;
 
-        std::string                                 comment_;               // Active commentary string (in front of the next token).
+        // Active commentary string (in front of the next token).
+        std::string                                 comment_;
+        unsigned int                                commentStartPos_    = 0;
+        bool                                        commentFirstLine_   = false;
 
 };
 
