@@ -992,7 +992,7 @@ void GLSLGenerator::WriteLocalInputSemantics()
 void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
 {
     /* Is semantic of the variable declaration a system value semantic? */
-    if (auto semanticKeyword = SemanticToGLSLKeyword(varDecl->semantic))
+    if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
     {
         /* Write local variable definition statement */
         BeginLn();
