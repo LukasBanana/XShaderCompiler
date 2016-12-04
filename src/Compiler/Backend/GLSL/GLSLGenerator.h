@@ -71,9 +71,6 @@ class GLSLGenerator : public Generator
         // Returns true if the specified AST structure must be resolved.
         bool MustResolveStruct(StructDecl* ast) const;
 
-        // Returns true if the target version is greater than or equal to the specified version number.
-        bool IsVersionOut(int version) const;
-
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );

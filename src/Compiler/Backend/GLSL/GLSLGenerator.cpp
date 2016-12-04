@@ -223,11 +223,6 @@ bool GLSLGenerator::MustResolveStruct(StructDecl* ast) const
     return MustResolveStructForTarget(shaderTarget_, ast);
 }
 
-bool GLSLGenerator::IsVersionOut(int version) const
-{
-    return (static_cast<int>(versionOut_) >= version);
-}
-
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
