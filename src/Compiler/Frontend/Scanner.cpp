@@ -62,7 +62,7 @@ TokenPtr Scanner::PreviousToken() const
 
 
 /*
- * ======= Private: =======
+ * ======= Protected: =======
  */
 
 //private
@@ -99,7 +99,8 @@ TokenPtr Scanner::NextTokenScan(bool scanComments, bool scanWhiteSpaces)
         try
         {
             /* Ignore white spaces and comments */
-            bool comments = true;
+            comment_.clear();
+            bool hasComments = true;
 
             do
             {
@@ -153,9 +154,9 @@ TokenPtr Scanner::NextTokenScan(bool scanComments, bool scanWhiteSpaces)
                     }
                 }
                 else
-                    comments = false;
+                    hasComments = false;
             }
-            while (comments);
+            while (hasComments);
 
             /* Scan next token */
             StoreStartPos();
@@ -278,26 +279,28 @@ TokenPtr Scanner::ScanWhiteSpaces(bool includeNewLines)
 
 TokenPtr Scanner::ScanCommentLine(bool scanComments)
 {
+    std::string spell;
+
+    TakeIt(); // Ignore second '/' from commentary line beginning
+
+    while (!Is('\n'))
+        spell += TakeIt();
+
+    /* Store commentary string */
+    AppendComment(spell);
+
     if (scanComments)
     {
-        std::string spell = "//";
-
-        TakeIt(); // Ignore second '/' from commentary line beginning
-        while (chr_ != '\n')
-            spell += TakeIt();
-
+        spell = "//" + spell;
         return Make(Tokens::Comment, spell);
     }
-    else
-    {
-        Ignore([](char chr) { return chr != '\n'; });
-        return nullptr;
-    }
+    
+    return nullptr;
 }
 
 TokenPtr Scanner::ScanCommentBlock(bool scanComments)
 {
-    std::string spell = "/*";
+    std::string spell;
 
     TakeIt(); // Ignore first '*' from commentary block beginning
 
@@ -312,19 +315,23 @@ TokenPtr Scanner::ScanCommentBlock(bool scanComments)
                 TakeIt();
                 break;
             }
-            else if (scanComments)
+            else
                 spell += '*';
         }
-
-        if (scanComments)
-            spell += TakeIt();
         else
-            TakeIt();
+            spell += TakeIt();
     }
 
-    spell += "*/";
+    /* Store commentary string */
+    AppendComment(spell);
 
-    return (scanComments ? Make(Tokens::Comment, spell) : nullptr);
+    if (scanComments)
+    {
+        spell = "/*" + spell + "*/";
+        return Make(Tokens::Comment, spell);
+    }
+
+    return nullptr;
 }
 
 TokenPtr Scanner::ScanStringLiteral()
@@ -441,6 +448,18 @@ bool Scanner::ScanDigitSequence(std::string& spell)
         spell += TakeIt();
 
     return result;
+}
+
+
+/*
+ * ======= Private: =======
+ */
+
+void Scanner::AppendComment(const std::string& s)
+{
+    if (!comment_.empty())
+        comment_ += '\n';
+    comment_ += s;
 }
 
 

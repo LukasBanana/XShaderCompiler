@@ -201,6 +201,8 @@ class HLSLParser : public Parser
 
         std::string                     ParseSamplerStateTextureIdent();
 
+        void                            ParseStmntWithOptionalComment(std::vector<StmntPtr>& stmnts, const std::function<StmntPtr()>& parseFunction);
+
         /* === Members === */
 
         using TypeNameSymbolTable = SymbolTable<bool>;

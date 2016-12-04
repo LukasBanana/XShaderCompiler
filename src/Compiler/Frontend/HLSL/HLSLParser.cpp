@@ -246,7 +246,7 @@ ProgramPtr HLSLParser::ParseProgram(const SourceCodePtr& source)
             break;
 
         /* Parse next global declaration */
-        ast->globalStmnts.push_back(ParseGlobalStmnt());
+        ParseStmntWithOptionalComment(ast->globalStmnts, std::bind(&HLSLParser::ParseGlobalStmnt, this));
     }
 
     CloseScope();
@@ -347,7 +347,7 @@ SwitchCasePtr HLSLParser::ParseSwitchCase()
 
     /* Parse switch case statement list */
     while (!Is(Tokens::Case) && !Is(Tokens::Default) && !Is(Tokens::RCurly))
-        ast->stmnts.push_back(ParseStmnt());
+        ParseStmntWithOptionalComment(ast->stmnts, std::bind(&HLSLParser::ParseStmnt, this));
 
     return ast;
 }
@@ -1620,7 +1620,7 @@ std::vector<StmntPtr> HLSLParser::ParseStmntList()
     std::vector<StmntPtr> stmnts;
 
     while (!Is(Tokens::RCurly))
-        stmnts.push_back(ParseStmnt());
+        ParseStmntWithOptionalComment(stmnts, std::bind(&HLSLParser::ParseStmnt, this));
 
     return stmnts;
 }
@@ -2252,6 +2252,17 @@ std::string HLSLParser::ParseSamplerStateTextureIdent()
     Semi();
 
     return ident;
+}
+
+void HLSLParser::ParseStmntWithOptionalComment(std::vector<StmntPtr>& stmnts, const std::function<StmntPtr()>& parseFunction)
+{
+    /* Parse next statement with optional commentary */
+    auto comment = GetScanner().GetComment();
+
+    auto ast = parseFunction();
+    stmnts.push_back(ast);
+
+    ast->comment = std::move(comment);
 }
 
 

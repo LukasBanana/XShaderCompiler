@@ -103,7 +103,25 @@ void GLSLGenerator::GenerateCodePrimary(
 
 void GLSLGenerator::WriteComment(const std::string& text)
 {
-    WriteLn("// " + text);
+    std::size_t start = 0, end = 0;
+
+    while (end < text.size())
+    {
+        /* Get next comment line */
+        end = text.find('\n', start);
+
+        auto line = (end < text.size() ? text.substr(start, end - start) : text.substr(start));
+
+        /* Write comment line */
+        BeginLn();
+        {
+            Write("// ");
+            Write(line);
+        }
+        EndLn();
+
+        start = end + 1;
+    }
 }
 
 void GLSLGenerator::WriteVersion(int versionNumber)
@@ -243,14 +261,14 @@ IMPLEMENT_VISIT_PROC(Program)
     else if (shaderTarget_ == ShaderTarget::FragmentShader)
         WriteGlobalOutputSemantics();
 
-    Visit(ast->globalStmnts);
+    WriteStmntList(ast->globalStmnts, true);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
     OpenScope();
     {
-        Visit(ast->stmnts);
+        WriteStmntList(ast->stmnts);
     }
     CloseScope();
 }
@@ -408,7 +426,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                 /* Write code block (without additional scope) */
                 isInsideEntryPoint_ = true;
                 {
-                    Visit(ast->codeBlock->stmnts);
+                    WriteStmntList(ast->codeBlock->stmnts);
                 }
                 isInsideEntryPoint_ = false;
 
@@ -1501,6 +1519,28 @@ void GLSLGenerator::WriteStructDeclMembers(StructDecl* ast)
 }
 
 /* --- Misc --- */
+
+void GLSLGenerator::WriteStmntComment(Stmnt* ast, bool insertBlank)
+{
+    if (ast && !ast->comment.empty())
+    {
+        if (insertBlank)
+            Blank();
+        WriteComment(ast->comment);
+    }
+}
+
+void GLSLGenerator::WriteStmntList(const std::vector<StmntPtr>& stmnts, bool isGlobalScope)
+{
+    /* Write statements with optional commentaries */
+    for (std::size_t i = 0; i < stmnts.size(); ++i)
+    {
+        auto ast = stmnts[i].get();
+        if (!isGlobalScope || ast->flags(AST::isReachable))
+            WriteStmntComment(ast, (!isGlobalScope && (i > 0)));
+        Visit(ast);
+    }
+}
 
 void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
 {

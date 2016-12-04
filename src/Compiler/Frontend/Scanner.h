@@ -69,6 +69,12 @@ class Scanner
             return source_;
         }
 
+        // Returns the active commentary string, which is in front of the next token.
+        inline const std::string& GetComment() const
+        {
+            return comment_;
+        }
+
     protected:
         
         using Tokens = Token::Types;
@@ -143,6 +149,8 @@ class Scanner
 
         TokenPtr NextTokenScan(bool scanComments, bool scanWhiteSpaces);
 
+        void AppendComment(const std::string& s);
+
         /* === Members === */
 
         SourceCodePtr                               source_;
@@ -155,6 +163,8 @@ class Scanner
         TokenPtr                                    prevToken_;
 
         std::stack<TokenPtrString::ConstIterator>   tokenStringItStack_;
+
+        std::string                                 comment_;               // Active commentary string (in front of the next token).
 
 };
 

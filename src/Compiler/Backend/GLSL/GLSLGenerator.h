@@ -42,7 +42,7 @@ class GLSLGenerator : public Generator
             const ShaderOutput& outputDesc
         ) override;
 
-        // Writes a new single line comment.
+        // Writes a comment (single or multi-line comments).
         void WriteComment(const std::string& text);
 
         // Writes a "#version" directive.
@@ -178,6 +178,10 @@ class GLSLGenerator : public Generator
         void WriteStructDeclMembers(StructDecl* ast);
 
         /* --- Misc --- */
+
+        void WriteStmntComment(Stmnt* ast, bool insertBlank = false);
+
+        void WriteStmntList(const std::vector<StmntPtr>& stmnts, bool isGlobalScope = false);
 
         void WriteParameter(VarDeclStmnt* ast);
         void WriteScopedStmnt(Stmnt* ast);

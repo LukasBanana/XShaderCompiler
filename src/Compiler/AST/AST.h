@@ -156,7 +156,10 @@ struct AST
 /* --- Base AST nodes --- */
 
 // Statement AST base class.
-struct Stmnt : public AST {};
+struct Stmnt : public AST
+{
+    std::string comment;
+};
 
 // AST base class with type denoter.
 struct TypedAST : public AST
