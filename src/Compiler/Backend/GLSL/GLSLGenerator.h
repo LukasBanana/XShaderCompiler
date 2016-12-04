@@ -139,7 +139,7 @@ class GLSLGenerator : public Generator
         bool WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl);
         
         void WriteGlobalOutputSemantics();
-        bool WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl);
+        bool WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName = false);
 
         void WriteOutputSemanticsAssignment(Expr* ast);
 

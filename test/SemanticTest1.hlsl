@@ -72,9 +72,27 @@ float4 VS6(in VIn inp, uniform float4 offset) : SV_Position
 
 // PS1
 
-float4 PS1(in VOut inp) : SV_Target
+float4 PS1(in VOut inp) : SV_Target2
 {
 	return (float4)saturate(dot(float3(0, 0, 1), inp.tNormal));
+}
+
+// PS2
+
+struct POut
+{
+	float4 color0 : SV_Target0;
+	float4 color1 : SV_Target1;
+	float depth : SV_Depth;
+};
+
+POut PS2(in VOut inp)
+{
+	POut outp;
+	outp.color0 = float4(1, 2, 3, 4);
+	outp.color1 = float4(5, 6, 7, 8);
+	outp.depth = 0;
+	return outp;
 }
 
 

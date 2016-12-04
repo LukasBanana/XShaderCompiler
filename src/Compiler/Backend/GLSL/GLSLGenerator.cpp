@@ -1071,6 +1071,7 @@ bool GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
 
 void GLSLGenerator::WriteGlobalOutputSemantics()
 {
+    /* Write non-system-value output semantics */
     auto& varDeclRefs = GetProgram()->entryPointRef->outputSemantics.varDeclRefs;
 
     bool paramsWritten = false;
@@ -1079,6 +1080,18 @@ void GLSLGenerator::WriteGlobalOutputSemantics()
     {
         if (WriteGlobalOutputSemanticsVarDecl(varDecl))
             paramsWritten = true;
+    }
+
+    if (shaderTarget_ == ShaderTarget::FragmentShader && versionOut_ > OutputShaderVersion::GLSL120)
+    {
+        /* Write 'SV_Target' system-value output semantics */
+        auto& varDeclRefs = GetProgram()->entryPointRef->outputSemantics.varDeclRefsSV;
+
+        for (auto varDecl : varDeclRefs)
+        {
+            if (varDecl->semantic == Semantic::Target && WriteGlobalOutputSemanticsVarDecl(varDecl, true))
+                paramsWritten = true;
+        }
     }
 
     if (paramsWritten)
@@ -1098,7 +1111,7 @@ void GLSLGenerator::WriteGlobalOutputSemantics()
     #endif
 }
 
-bool GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl)
+bool GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName)
 {
     /* Write global variable definition statement */
     BeginLn();
@@ -1110,7 +1123,9 @@ bool GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl)
 
         Visit(varDecl->declStmntRef->varType);
 
-        Write(" " + varDecl->ident + ";");
+        Write(" ");
+        Write(useSemanticName ? varDecl->semantic.ToString() : varDecl->ident);
+        Write(";");
     }
     EndLn();
 

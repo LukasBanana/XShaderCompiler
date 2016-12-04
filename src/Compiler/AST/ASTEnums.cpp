@@ -794,7 +794,10 @@ bool IndexedSemantic::IsUserDefined() const
 
 std::string IndexedSemantic::ToString() const
 {
-    return (semantic_ == Semantic::UserDefined ? userDefined_ : SemanticToString(semantic_));
+    if (semantic_ == Semantic::UserDefined)
+        return userDefined_;
+    else
+        return (SemanticToString(semantic_) + std::to_string(index_));
 }
 
 
