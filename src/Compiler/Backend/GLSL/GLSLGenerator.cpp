@@ -225,7 +225,7 @@ bool GLSLGenerator::MustResolveStruct(StructDecl* ast) const
 
 bool GLSLGenerator::IsVersionOut(int version) const
 {
-    return static_cast<int>(versionOut_) >= version;
+    return (static_cast<int>(versionOut_) >= version);
 }
 
 /* ------- Visit functions ------- */
@@ -1461,7 +1461,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
 
 /* --- Structure --- */
 
-void GLSLGenerator::WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool allowNestedStruct)
+bool GLSLGenerator::WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool allowNestedStruct)
 {
     /* Is this a non-nested structure or are nested structures allowed in the current context? */
     if (!ast->flags(StructDecl::isNestedStruct) || allowNestedStruct)
@@ -1469,53 +1469,75 @@ void GLSLGenerator::WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool a
         /* Is this an interface block or a standard structure? */
         if (ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput))
         {
-            /* Write this structure as interface block (if structure doesn't need to be resolved) */
-            BeginLn();
-            {
-                if (ast->flags(StructDecl::isShaderInput))
-                    Write("in ");
-                else
-                    Write("out ");
-                Write(ast->ident);
-            }
-            EndLn();
-
-            OpenScope();
-            {
-                isInsideInterfaceBlock_ = true;
-
-                Visit(ast->members);
-
-                isInsideInterfaceBlock_ = false;
-            }
-            CloseScope();
-
-            WriteLn(ast->aliasName + ";");
+            /* Write structure as shader input/output block */
+            return WriteStructDeclInputOutputBlock(ast);
         }
         else
         {
             /* Write standard structure declaration */
-            BeginLn();
-            {
-                Write("struct");
-                if (!ast->ident.empty())
-                    Write(' ' + ast->ident);
-            }
-            EndLn();
-
-            OpenScope();
-            {
-                WriteStructDeclMembers(ast);
-            }
-            CloseScope(writeSemicolon);
+            return WriteStructDeclStandard(ast, writeSemicolon);
         }
     }
     else if (!writeSemicolon)
     {
+        /* Do not end line here with "EndLn" */
         BeginLn();
         Write(ast->ident + " ");
-        /* Do not end line here with "EndLn" */
     }
+    return false;
+}
+
+bool GLSLGenerator::WriteStructDeclStandard(StructDecl* ast, bool writeSemicolon)
+{
+    /* Write structure signature */
+    BeginLn();
+    {
+        Write("struct");
+        if (!ast->ident.empty())
+            Write(' ' + ast->ident);
+    }
+    EndLn();
+
+    /* Write structure members */
+    OpenScope();
+    {
+        WriteStructDeclMembers(ast);
+    }
+    CloseScope(writeSemicolon);
+
+    return true;
+}
+
+bool GLSLGenerator::WriteStructDeclInputOutputBlock(StructDecl* ast)
+{
+    /* Only write input/output block if there is a non-system-value member */
+    if (!ast->HasNonSystemValueMembers())
+        return false;
+    
+    /* Write this structure as interface block (if structure doesn't need to be resolved) */
+    BeginLn();
+    {
+        if (ast->flags(StructDecl::isShaderInput))
+            Write("in ");
+        else
+            Write("out ");
+        Write(ast->ident);
+    }
+    EndLn();
+
+    OpenScope();
+    {
+        isInsideInterfaceBlock_ = true;
+
+        WriteStructDeclMembers(ast);
+
+        isInsideInterfaceBlock_ = false;
+    }
+    CloseScope();
+
+    WriteLn(ast->aliasName + ";");
+
+    return true;
 }
 
 void GLSLGenerator::WriteStructDeclMembers(StructDecl* ast)

@@ -174,7 +174,9 @@ class GLSLGenerator : public Generator
 
         /* --- Structure --- */
 
-        void WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool allowNestedStruct = false);
+        bool WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool allowNestedStruct = false);
+        bool WriteStructDeclStandard(StructDecl* ast, bool writeSemicolon);
+        bool WriteStructDeclInputOutputBlock(StructDecl* ast);
         void WriteStructDeclMembers(StructDecl* ast);
 
         /* --- Misc --- */

@@ -326,6 +326,26 @@ TypeDenoterPtr StructDecl::DeriveTypeDenoter()
     return std::make_shared<StructTypeDenoter>(this);
 }
 
+bool StructDecl::HasNonSystemValueMembers() const
+{
+    /* Check if base structure has any non-system-value members */
+    if (baseStructRef && baseStructRef->HasNonSystemValueMembers())
+        return true;
+    
+    /* Search for non-system-value member */
+    for (const auto& member : members)
+    {
+        for (const auto& varDecl : member->varDecls)
+        {
+            if (!varDecl->semantic.IsSystemValue())
+                return true;
+        }
+    }
+
+    /* No non-system-value member found */
+    return false;
+}
+
 
 /* ----- AliasDecl ----- */
 

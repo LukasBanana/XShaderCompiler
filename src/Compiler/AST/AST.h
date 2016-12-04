@@ -241,7 +241,7 @@ struct Attribute : public AST
 {
     AST_INTERFACE(Attribute);
 
-    std::string             ident;
+    std::string             ident;      //TODO: change to AttributeType enum
     std::vector<ExprPtr>    arguments;
 };
 
@@ -415,6 +415,9 @@ struct StructDecl : public Decl
 
     // Returns a type denoter for this structure.
     TypeDenoterPtr DeriveTypeDenoter() override;
+
+    // Returns true if this structure has at least one member that is not a system value.
+    bool HasNonSystemValueMembers() const;
 
     std::string                     ident;                      // May be empty (for anonymous structures).
     std::string                     baseStructName;             // May be empty (if no inheritance is used).
