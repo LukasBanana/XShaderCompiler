@@ -759,6 +759,30 @@ void BindingCommand::Run(CommandLine& cmdLine, ShellState& state)
 }
 
 
+/*
+ * CommentCommand class
+ */
+
+std::vector<Command::Identifier> CommentCommand::Idents() const
+{
+    return { { "-Comments" } };
+}
+
+HelpDescriptor CommentCommand::Help() const
+{
+    return
+    {
+        "-Comments [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables commentary preservation; default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void CommentCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.preserveComments = cmdLine.AcceptBoolean(true);
+}
+
+
 } // /namespace Util
 
 } // /namespace Xsc

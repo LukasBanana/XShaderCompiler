@@ -72,6 +72,7 @@ CommandFactory::CommandFactory()
     MakeCommand< ExtensionCommand   >();
     MakeCommand< ValidateCommand    >();
     MakeCommand< BindingCommand     >();
+    MakeCommand< CommentCommand     >();
 }
 
 template <typename T, typename... Args>

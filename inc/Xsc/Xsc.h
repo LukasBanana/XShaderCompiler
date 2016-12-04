@@ -70,6 +70,9 @@ struct Options
     //! If true, explicit binding slots are enabled. By default false.
     bool explicitBinding    = false;
 
+    //! If true, commentaries are preserved for each statement. By default false.
+    bool preserveComments   = false;
+
     //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
     bool showAST            = false;
 

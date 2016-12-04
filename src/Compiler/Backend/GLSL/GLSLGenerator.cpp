@@ -39,6 +39,7 @@ void GLSLGenerator::GenerateCodePrimary(
     versionOut_         = outputDesc.shaderVersion;
     allowExtensions_    = outputDesc.options.allowExtensions;
     explicitBinding_    = outputDesc.options.explicitBinding;
+    preserveComments_   = outputDesc.options.preserveComments;
     allowLineMarks_     = outputDesc.formatting.lineMarks;
     nameManglingPrefix_ = outputDesc.formatting.prefix;
     stats_              = outputDesc.statistics;
@@ -1538,13 +1539,23 @@ void GLSLGenerator::WriteStmntComment(Stmnt* ast, bool insertBlank)
 
 void GLSLGenerator::WriteStmntList(const std::vector<StmntPtr>& stmnts, bool isGlobalScope)
 {
-    /* Write statements with optional commentaries */
-    for (std::size_t i = 0; i < stmnts.size(); ++i)
+    if (preserveComments_)
     {
-        auto ast = stmnts[i].get();
-        if (!isGlobalScope || ast->flags(AST::isReachable))
-            WriteStmntComment(ast, (!isGlobalScope && (i > 0)));
-        Visit(ast);
+        /* Write statements with optional commentaries */
+        for (std::size_t i = 0; i < stmnts.size(); ++i)
+        {
+            auto ast = stmnts[i].get();
+
+            if (!isGlobalScope || ast->flags(AST::isReachable))
+                WriteStmntComment(ast, (!isGlobalScope && (i > 0)));
+
+            Visit(ast);
+        }
+    }
+    else
+    {
+        /* Write statements only */
+        Visit(stmnts);
     }
 }
 

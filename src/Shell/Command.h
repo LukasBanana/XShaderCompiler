@@ -93,6 +93,7 @@ DECL_SHELL_COMMAND( OptimizeCommand    );
 DECL_SHELL_COMMAND( ExtensionCommand   );
 DECL_SHELL_COMMAND( ValidateCommand    );
 DECL_SHELL_COMMAND( BindingCommand     );
+DECL_SHELL_COMMAND( CommentCommand     );
 
 #undef DECL_SHELL_COMMAND
 

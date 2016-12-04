@@ -194,6 +194,7 @@ class GLSLGenerator : public Generator
         OutputShaderVersion versionOut_             = OutputShaderVersion::GLSL;
         bool                allowExtensions_        = false;
         bool                explicitBinding_        = false;
+        bool                preserveComments_       = false;
         bool                allowLineMarks_         = false;
         std::string         nameManglingPrefix_;
         Statistics*         stats_                  = nullptr;
