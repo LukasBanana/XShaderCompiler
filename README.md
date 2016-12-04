@@ -12,6 +12,11 @@ License
 
 3-Clause BSD License
 
+Documentation
+-------------
+
+- [XShaderCompiler Reference Manual](https://github.com/LukasBanana/XShaderCompiler/blob/master/docu/refman.pdf) (PDF)
+
 Status
 ------
 

@@ -22,6 +22,54 @@
 #include <memory>
 
 
+/**
+\mainpage
+Welcome to the XShaderCompiler, Version 0.02 Alpha
+
+Here is a quick start example:
+\code
+#include <Xsc/Xsc.h>
+#include <fstream>
+
+int main()
+{
+    // Open input and output streams
+    auto inputStream = std::make_shared<std::ifstream>("Example.hlsl");
+    std::ofstream outputStream("Example.vertex.glsl");
+
+    // Initialize shader input descriptor structure
+    Xsc::ShaderInput inputDesc;
+    {
+        inputDesc.sourceCode     = inputStream;
+        inputDesc.shaderVersion  = Xsc::InputShaderVersion::HLSL5;
+        inputDesc.entryPoint     = "VS";
+        inputDesc.shaderTarget   = Xsc::ShaderTarget::VertexShader;
+    }
+
+    // Initialize shader output descriptor structure
+    Xsc::ShaderOutput outputDesc;
+    {
+        outputDesc.sourceCode    = &outputStream;
+        outputDesc.shaderVersion = Xsc::OutputShaderVersion::GLSL330;
+    }
+
+    // Compile HLSL code into GLSL
+    Xsc::StdLog log;
+    bool result = Xsc::CompileShader(inputDesc, outputDesc, &log);
+
+    // Show compilation status
+    if (result)
+        std::cout << "Compilation successful" << std::endl;
+    else
+        std::cerr << "Compilation failed" << std::endl;
+
+    return 0;
+}
+\endcode
+*/
+
+
+//! Main XShaderCompiler namespace
 namespace Xsc
 {
 
@@ -38,7 +86,6 @@ struct Formatting
     input for vertex shaders or output for fragment shaders.
     Thus some identifiers of local variables may overlap with input variables.
     This prefix is added to all local function variables.
-    \todo Remove this option and handle this workaround in an autmatic manner.
     */
     std::string prefix      = "xsc_";
 

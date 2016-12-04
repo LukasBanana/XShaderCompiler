@@ -16,6 +16,7 @@
 namespace Xsc
 {
 
+//! Namespace for console manipulation
 namespace ConsoleManip
 {
 

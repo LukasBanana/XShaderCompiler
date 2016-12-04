@@ -41,8 +41,8 @@ enum class InputShaderVersion
 //! Output shader version enumeration.
 enum class OutputShaderVersion
 {
-    GLSL110 = 110,  //!< GLSL 1.10 (OpenGL 2.0).
-    GLSL120 = 120,  //!< GLSL 1.20 (OpenGL 2.1).
+    GLSL110 = 110,  //!< GLSL 1.10 (OpenGL 2.0). \note Currently not supported!
+    GLSL120 = 120,  //!< GLSL 1.20 (OpenGL 2.1). \note Currently not supported!
     GLSL130 = 130,  //!< GLSL 1.30 (OpenGL 3.0).
     GLSL140 = 140,  //!< GLSL 1.40 (OpenGL 3.1).
     GLSL150 = 150,  //!< GLSL 1.50 (OpenGL 3.2).
