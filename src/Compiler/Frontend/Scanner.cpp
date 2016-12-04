@@ -471,7 +471,7 @@ void Scanner::AppendComment(const std::string& s)
         if (firstNot == std::string::npos)
             comment_ += s;
         else
-            comment_ += s.substr(std::min(firstNot, commentStartPos_ - 1));
+            comment_ += s.substr(std::min(firstNot, static_cast<std::size_t>(commentStartPos_ - 1)));
     }
     else
     {
