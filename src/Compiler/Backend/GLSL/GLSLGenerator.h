@@ -128,18 +128,19 @@ class GLSLGenerator : public Generator
         /* --- Input semantics --- */
 
         void WriteLocalInputSemantics();
-        bool WriteLocalInputSemanticsVarDecl(VarDecl* varDecl);
+        void WriteLocalInputSemanticsVarDecl(VarDecl* varDecl);
         
         void WriteGlobalInputSemantics();
-        bool WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl);
+        void WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl);
 
         /* --- Output semantics --- */
 
         void WriteLocalOutputSemantics();
-        bool WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl);
+        void WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl);
         
         void WriteGlobalOutputSemantics();
-        bool WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName = false);
+        void WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName = false);
+        void WriteGlobalOutputSemanticsSlot(VarType* varType, const IndexedSemantic& semantic, const std::string& ident);
 
         void WriteOutputSemanticsAssignment(Expr* ast);
 

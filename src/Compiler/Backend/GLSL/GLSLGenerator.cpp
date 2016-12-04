@@ -974,58 +974,42 @@ void GLSLGenerator::WriteLocalInputSemantics()
 {
     auto& varDeclRefs = GetProgram()->entryPointRef->inputSemantics.varDeclRefsSV;
 
-    bool paramsWritten = false;
-
     for (auto varDecl : varDeclRefs)
-    {
-        if (WriteLocalInputSemanticsVarDecl(varDecl))
-            paramsWritten = true;
-    }
+        WriteLocalInputSemanticsVarDecl(varDecl);
 
-    if (paramsWritten)
+    if (!varDeclRefs.empty())
         Blank();
 }
 
-bool GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
+void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
 {
     /* Is semantic of the variable declaration a system value semantic? */
-    if (varDecl->semantic.IsValid())
+    if (auto semanticKeyword = SemanticToGLSLKeyword(varDecl->semantic))
     {
-        if (auto semanticKeyword = SemanticToGLSLKeyword(varDecl->semantic))
+        /* Write local variable definition statement */
+        BeginLn();
         {
-            /* Write local variable definition statement */
-            BeginLn();
-            {
-                Visit(varDecl->declStmntRef->varType);
-                Write(" " + varDecl->ident + " = " + *semanticKeyword + ";");
-            }
-            EndLn();
+            Visit(varDecl->declStmntRef->varType);
+            Write(" " + varDecl->ident + " = " + *semanticKeyword + ";");
         }
-        else
-            Error("failed to map semantic name to GLSL keyword", varDecl);
-
-        return true;
+        EndLn();
     }
-    return false;
+    else
+        Error("failed to map semantic name to GLSL keyword", varDecl);
 }
 
 void GLSLGenerator::WriteGlobalInputSemantics()
 {
     auto& varDeclRefs = GetProgram()->entryPointRef->inputSemantics.varDeclRefs;
 
-    bool paramsWritten = false;
-
     for (auto varDecl : varDeclRefs)
-    {
-        if (WriteGlobalInputSemanticsVarDecl(varDecl))
-            paramsWritten = true;
-    }
+        WriteGlobalInputSemanticsVarDecl(varDecl);
 
-    if (paramsWritten)
+    if (!varDeclRefs.empty())
         Blank();
 }
 
-bool GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
+void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 {
     /* Write global variable definition statement */
     BeginLn();
@@ -1035,8 +1019,6 @@ bool GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
         Write(" " + varDecl->ident + ";");
     }
     EndLn();
-
-    return true;
 }
 
 /* --- Output semantics --- */
@@ -1045,19 +1027,14 @@ void GLSLGenerator::WriteLocalOutputSemantics()
 {
     auto& varDeclRefs = GetProgram()->entryPointRef->outputSemantics.varDeclRefsSV;
 
-    bool paramsWritten = false;
-
     for (auto varDecl : varDeclRefs)
-    {
-        if (WriteLocalOutputSemanticsVarDecl(varDecl))
-            paramsWritten = true;
-    }
+        WriteLocalOutputSemanticsVarDecl(varDecl);
 
-    if (paramsWritten)
+    if (!varDeclRefs.empty())
         Blank();
 }
 
-bool GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
+void GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
 {
     /* Write local variable definition statement (without initialization) */
     BeginLn();
@@ -1066,31 +1043,44 @@ bool GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
         Write(" " + varDecl->ident + ";");
     }
     EndLn();
-    return true;
 }
 
 void GLSLGenerator::WriteGlobalOutputSemantics()
 {
-    /* Write non-system-value output semantics */
-    auto& varDeclRefs = GetProgram()->entryPointRef->outputSemantics.varDeclRefs;
+    auto entryPoint = GetProgram()->entryPointRef;
 
-    bool paramsWritten = false;
+    /* Write non-system-value output semantics */
+    auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefs;
+
+    bool paramsWritten = (!varDeclRefs.empty());
 
     for (auto varDecl : varDeclRefs)
-    {
-        if (WriteGlobalOutputSemanticsVarDecl(varDecl))
-            paramsWritten = true;
-    }
+        WriteGlobalOutputSemanticsVarDecl(varDecl);
 
+    /* Write 'SV_Target' system-value output semantics */
     if (shaderTarget_ == ShaderTarget::FragmentShader && versionOut_ > OutputShaderVersion::GLSL120)
     {
-        /* Write 'SV_Target' system-value output semantics */
-        auto& varDeclRefs = GetProgram()->entryPointRef->outputSemantics.varDeclRefsSV;
+        /* Write 'SV_Target' system-value output semantics from variables */
+        auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefsSV;
 
         for (auto varDecl : varDeclRefs)
         {
-            if (varDecl->semantic == Semantic::Target && WriteGlobalOutputSemanticsVarDecl(varDecl, true))
+            if (varDecl->semantic == Semantic::Target)
+            {
+                WriteGlobalOutputSemanticsVarDecl(varDecl, true);
                 paramsWritten = true;
+            }
+        }
+
+        /* Write 'SV_Target' system-value output semantic from entry point return semantic */
+        if (entryPoint->semantic == Semantic::Target)
+        {
+            WriteGlobalOutputSemanticsSlot(
+                entryPoint->returnType.get(),
+                entryPoint->semantic,
+                entryPoint->semantic.ToString()
+            );
+            paramsWritten = true;
         }
     }
 
@@ -1111,25 +1101,31 @@ void GLSLGenerator::WriteGlobalOutputSemantics()
     #endif
 }
 
-bool GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName)
+void GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName)
 {
     /* Write global variable definition statement */
+    WriteGlobalOutputSemanticsSlot(
+        varDecl->declStmntRef->varType.get(),
+        varDecl->semantic,
+        (useSemanticName ? varDecl->semantic.ToString() : varDecl->ident)
+    );
+}
+
+void GLSLGenerator::WriteGlobalOutputSemanticsSlot(VarType* varType, const IndexedSemantic& semantic, const std::string& ident)
+{
+    /* Write global output semantic slot */
     BeginLn();
     {
-        if (varDecl->semantic.IsValid())
-            Write("layout(location = " + std::to_string(varDecl->semantic.Index()) + ") out ");
+        if (semantic.IsValid() && explicitBinding_)
+            Write("layout(location = " + std::to_string(semantic.Index()) + ") out ");
         else
             Write("out ");
 
-        Visit(varDecl->declStmntRef->varType);
+        Visit(varType);
 
-        Write(" ");
-        Write(useSemanticName ? varDecl->semantic.ToString() : varDecl->ident);
-        Write(";");
+        Write(" " + ident + ";");
     }
     EndLn();
-
-    return true;
 }
 
 void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
