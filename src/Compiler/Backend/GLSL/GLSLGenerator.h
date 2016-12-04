@@ -195,7 +195,7 @@ class GLSLGenerator : public Generator
         bool                explicitBinding_        = false;
         bool                preserveComments_       = false;
         bool                allowLineMarks_         = false;
-        std::string         nameManglingPrefix_;
+        std::string         nameManglingPrefix_     = "xsc_";
         Statistics*         stats_                  = nullptr;
 
         bool                isInsideEntryPoint_     = false;

@@ -70,4 +70,11 @@ float4 VS6(in VIn inp, uniform float4 offset) : SV_Position
 	return mul(wvpMatrix, inp.vPos + offset);
 }
 
+// PS1
+
+float4 PS1(in VOut inp) : SV_Target
+{
+	return (float4)saturate(dot(float3(0, 0, 1), inp.tNormal));
+}
+
 
