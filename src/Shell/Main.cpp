@@ -53,6 +53,9 @@ int main(int argc, char** argv)
     CommandLine cmdLine(argc - 1, argv + 1);
     shell.ExecuteCommandLine(cmdLine);
 
+    /* Wait for user (if enabled) */
+    shell.WaitForUser();
+
     return 0;
 }
 

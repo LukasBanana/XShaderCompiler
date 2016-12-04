@@ -35,6 +35,8 @@ class Shell
 
         void ExecuteCommandLine(CommandLine& cmdLine);
 
+        void WaitForUser();
+
         std::ostream& output;
 
     private:

@@ -121,7 +121,10 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
         /* Print error message */
         std::cerr << e.what() << std::endl;
     }
+}
 
+void Shell::WaitForUser()
+{
     /* Wait for user input (if enabled) */
     #ifdef _WIN32
     if (state_.pauseApp)
