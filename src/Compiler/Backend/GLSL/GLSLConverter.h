@@ -61,6 +61,7 @@ class GLSLConverter : public Visitor
         DECL_VISIT_PROC( LiteralExpr      );
         DECL_VISIT_PROC( BinaryExpr       );
         DECL_VISIT_PROC( UnaryExpr        );
+        DECL_VISIT_PROC( CastExpr         );
         DECL_VISIT_PROC( VarAccessExpr    );
 
         /* --- Helper functions for conversion --- */

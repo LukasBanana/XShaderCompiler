@@ -31,10 +31,19 @@ struct S4
 {
 };
 
-float4 VS() : SV_Position
+struct VOut
 {
-	//S2 a;
+	float4 position : SV_Position;
+	float3 normal : NORMAL;
+};
+
+VOut VS()
+{
 	//S2 a = (S2)0;
+	VOut outp = (VOut)0;
+	
+	outp.position = (float4)1;
+	outp.normal = (float3)0;
 	
 	S3 b;
 	f1(b);
@@ -43,5 +52,5 @@ float4 VS() : SV_Position
 	
 	SamplerState samplerState;
 	
-	return (float4)1;
+	return outp;
 }

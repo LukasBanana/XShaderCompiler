@@ -350,6 +350,24 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
     VISIT_DEFAULT(UnaryExpr);
 }
 
+IMPLEMENT_VISIT_PROC(CastExpr)
+{
+    #if 0
+    /* Check if the expression must be extended for a struct c'tor */
+    if (auto structTypeDen = ast->typeExpr->typeDenoter->Get()->As<StructTypeDenoter>())
+    {
+        if (ast->expr->Type() == AST::Types::LiteralExpr)
+        {
+
+        }
+
+
+    }
+    #else
+    VISIT_DEFAULT(CastExpr);
+    #endif
+}
+
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     VISIT_DEFAULT(VarAccessExpr);
