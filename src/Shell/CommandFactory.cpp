@@ -94,6 +94,7 @@ void CommandFactory::MakeStandardCommands()
     MakeStandardCommandsNext<Commands...>();
 }
 
+// No declaration for template specialization (not allowed with GCC)
 template <>
 void CommandFactory::MakeStandardCommands()
 {

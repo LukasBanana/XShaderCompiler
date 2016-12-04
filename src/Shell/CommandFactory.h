@@ -53,9 +53,6 @@ class CommandFactory
         template <typename... Commands>
         void MakeStandardCommands();
 
-        //template <>
-        //void MakeStandardCommands();
-
         template <typename FirstCommand, typename... NextCommands>
         void MakeStandardCommandsFirst();
 
