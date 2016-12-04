@@ -21,6 +21,7 @@ Status
 * Low Overhead Translation (i.e. avoidance of unnecessary wrapper functions)
 * Dead Code Removal
 * Meaningful Report Output
+* Commentary Preserving
 
 ##### TODO List: #####
 * Common HLSL IO semantics to GLSL transformation.
