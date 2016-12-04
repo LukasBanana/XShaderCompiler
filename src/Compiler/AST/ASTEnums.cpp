@@ -724,6 +724,7 @@ char RegisterTypeToChar(const RegisterType t)
 {
     switch (t)
     {
+        case RegisterType::Undefined:           break;
         case RegisterType::ConstantBuffer:      return 'b';
         case RegisterType::TextureBuffer:       return 't';
         case RegisterType::BufferOffset:        return 'c';
@@ -737,6 +738,7 @@ std::string RegisterTypeToString(const RegisterType t)
 {
     switch (t)
     {
+        case RegisterType::Undefined:           break;
         case RegisterType::ConstantBuffer:      return "ConstantBuffer";
         case RegisterType::TextureBuffer:       return "TextureBuffer";
         case RegisterType::BufferOffset:        return "BufferOffset";

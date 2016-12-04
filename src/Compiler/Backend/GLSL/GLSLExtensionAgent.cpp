@@ -47,14 +47,15 @@ static OutputShaderVersion GetMinGLSLVersionForTarget(const ShaderTarget shaderT
 {
     switch (shaderTarget)
     {
-        case ShaderTarget::VertexShader:                    return OutputShaderVersion::GLSL110;
+        case ShaderTarget::Undefined:                       break;
+        case ShaderTarget::VertexShader:                    return OutputShaderVersion::GLSL130; // actually 110, but this compiler does not support GLSL < 130
         case ShaderTarget::TessellationControlShader:       return OutputShaderVersion::GLSL400;
         case ShaderTarget::TessellationEvaluationShader:    return OutputShaderVersion::GLSL400;
         case ShaderTarget::GeometryShader:                  return OutputShaderVersion::GLSL150;
-        case ShaderTarget::FragmentShader:                  return OutputShaderVersion::GLSL110;
+        case ShaderTarget::FragmentShader:                  return OutputShaderVersion::GLSL130; // actually 110, but this compiler does not support GLSL < 130
         case ShaderTarget::ComputeShader:                   return OutputShaderVersion::GLSL430; // actually 420, but only 430 supports local work group size
     }
-    return OutputShaderVersion::GLSL110;
+    return OutputShaderVersion::GLSL130; // actually 110, but this compiler does not support GLSL < 130
 }
 
 std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
@@ -160,7 +161,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     /* Check for explicit binding point */
     if (explicitBinding_)
     {
-        if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, shaderTarget_))
+        if (Register::GetForTarget(ast->slotRegisters, shaderTarget_) != nullptr)
             AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
     }
 
@@ -175,7 +176,7 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
     {
         for (auto& texDecl : ast->textureDecls)
         {
-            if (auto slotRegister = Register::GetForTarget(texDecl->slotRegisters, shaderTarget_))
+            if (Register::GetForTarget(texDecl->slotRegisters, shaderTarget_) != nullptr)
                 AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
         }
     }

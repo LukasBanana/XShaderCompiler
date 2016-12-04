@@ -241,14 +241,8 @@ std::string VarDecl::ToString() const
 
     s += ident;
 
-    for (const auto& expr : arrayDims)
-    {
-        s += '[';
-        //TODO: add "std::string Expr::ToString()" function!
-        //s += expr->ToString();
-        s += "???";
-        s += ']';
-    }
+    for (std::size_t i = 0; i < arrayDims.size(); ++i)
+        s += "[]";
 
     if (semantic != Semantic::Undefined)
     {
@@ -451,6 +445,9 @@ std::string BufferDeclStmnt::ToString() const
 
     switch (bufferType)
     {
+        case UniformBufferType::Undefined:
+            s = "<undefined buffer> ";
+            break;
         case UniformBufferType::ConstantBuffer:
             s = "cbuffer ";
             break;
@@ -563,6 +560,9 @@ void LiteralExpr::ConvertDataType(const DataType type)
             case DataType::Double:
                 variant.ToReal();
                 value = variant.ToString();
+                break;
+                
+            default:
                 break;
         }
 

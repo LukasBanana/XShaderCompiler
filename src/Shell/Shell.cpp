@@ -148,6 +148,7 @@ static std::string TargetToExtension(const ShaderTarget shaderTarget)
 {
     switch (shaderTarget)
     {
+        case ShaderTarget::Undefined:                       break;
         case ShaderTarget::VertexShader:                    return "vert";
         case ShaderTarget::TessellationControlShader:       return "tesc";
         case ShaderTarget::TessellationEvaluationShader:    return "tese";
