@@ -30,7 +30,6 @@ Status
 * Common HLSL IO semantics to GLSL transformation.
 * Geometry and Tessellation semantics.
 * 'interface' and 'class' declarations.
-* Cast expressions to a struct type is currently not supported (e.g. "(VertexOut)0").
 
 Offline Compiler
 ----------------
