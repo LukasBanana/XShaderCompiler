@@ -182,22 +182,21 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 {
     LabelAnonymousStructDecl(ast);
 
+    PushStructDeclLevel();
+    {
+        VISIT_DEFAULT(StructDecl);
+    }
+    PopStructDeclLevel();
+
+    RemoveSamplerVarDeclStmnts(ast->members);
+
+    /* Is this an empty structure? */
     if (ast->members.empty())
     {
         /* Add dummy member if the structure is empty (GLSL does not support empty structures) */
         auto dummyMember = ASTFactory::MakeVarDeclStmnt(DataType::Int, nameManglingPrefix_ + "dummy");
         ast->members.push_back(dummyMember);
     }
-    else
-    {
-        PushStructDeclLevel();
-        {
-            VISIT_DEFAULT(StructDecl);
-        }
-        PopStructDeclLevel();
-    }
-
-    RemoveSamplerVarDeclStmnts(ast->members);
 }
 
 /* --- Declaration statements --- */
@@ -352,20 +351,31 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
-    #if 0
     /* Check if the expression must be extended for a struct c'tor */
     if (auto structTypeDen = ast->typeExpr->typeDenoter->Get()->As<StructTypeDenoter>())
     {
+        /* Get the type denoter of all structure members */
+        auto structDecl = structTypeDen->structDeclRef;
+
+        std::vector<TypeDenoterPtr> memberTypeDens;
+        structDecl->CollectMemberTypeDenoters(memberTypeDens);
+
+        /* Convert sub expression for structure c'tor */
         if (ast->expr->Type() == AST::Types::LiteralExpr)
         {
-
+            /* Generate list expression with N copies literals (where N is the number of struct members) */
+            auto literalExpr = std::static_pointer_cast<LiteralExpr>(ast->expr);
+            ast->expr = ASTFactory::MakeConstructorListExpr(literalExpr, memberTypeDens);
         }
-
-
+        /*else if ()
+        {
+            //TODO: temporary variable must be created and inserted before this expression,
+            //      especially whan the sub expression contains a function call!
+            //...
+        }*/
     }
-    #else
+    
     VISIT_DEFAULT(CastExpr);
-    #endif
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)

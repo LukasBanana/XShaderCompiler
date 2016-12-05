@@ -419,6 +419,12 @@ struct StructDecl : public Decl
     // Returns true if this structure has at least one member that is not a system value.
     bool HasNonSystemValueMembers() const;
 
+    // Returns the total number of members (include all base structures.
+    std::size_t NumMembers() const;
+
+    // Returns a list with the type denoters of all members (including all base structures).
+    void CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens) const;
+
     std::string                     ident;                      // May be empty (for anonymous structures).
     std::string                     baseStructName;             // May be empty (if no inheritance is used).
     std::vector<VarDeclStmntPtr>    members;
@@ -792,7 +798,7 @@ struct BracketExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    ExprPtr expr;           // Inner expression
+    ExprPtr expr; // Inner expression
 };
 
 // Suffix expression (e.g. "foo().suffix").

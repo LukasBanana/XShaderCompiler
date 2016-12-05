@@ -194,6 +194,10 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         CloseScope();
     }
     PopStructDecl();
+
+    /* Report warning if structure is empty */
+    if (ast->NumMembers() == 0)
+        Warning("'" + ast->SignatureToString() + "' is completely empty", ast);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDecl)

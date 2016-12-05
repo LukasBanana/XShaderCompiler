@@ -347,7 +347,7 @@ TypeDenoter::Types StructTypeDenoter::Type() const
 
 std::string StructTypeDenoter::ToString() const
 {
-    return "struct " + (!ident.empty() ? ident : std::string("<anonymous>"));
+    return (structDeclRef ? structDeclRef->SignatureToString() : "struct <unknown>");
 }
 
 std::string StructTypeDenoter::Ident() const

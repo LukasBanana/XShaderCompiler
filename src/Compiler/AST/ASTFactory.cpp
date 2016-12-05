@@ -122,20 +122,25 @@ ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall)
         RuntimeErr("invalid number of arguments in intrinsic", &funcCall);
 }
 
-CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue)
+CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr)
 {
     auto ast = MakeAST<CastExpr>();
     {
-        auto literalExpr = MakeAST<LiteralExpr>();
-        {
-            literalExpr->dataType   = literalType;
-            literalExpr->value      = literalValue;
-        }
         ast->typeExpr               = MakeAST<TypeNameExpr>();
         ast->typeExpr->typeDenoter  = typeDenoter;
-        ast->expr                   = literalExpr;
+        ast->expr                   = valueExpr;
     }
     return ast;
+}
+
+CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue)
+{
+    auto literalExpr = MakeAST<LiteralExpr>();
+    {
+        literalExpr->dataType   = literalType;
+        literalExpr->value      = literalValue;
+    }
+    return MakeCastExpr(typeDenoter, literalExpr);
 }
 
 ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
@@ -217,6 +222,49 @@ VarAccessExprPtr MakeVarAccessExpr(const std::string& ident, AST* symbolRef)
         ast->varIdent = MakeVarIdent(ident, symbolRef);
     }
     return ast;
+}
+
+static ExprPtr MakeConstructorListExprPrimarySingle(const LiteralExprPtr& literalExpr, const TypeDenoterPtr& typeDen)
+{
+    if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+    {
+        /* Get the type denoter of all structure members */
+        auto structDecl = structTypeDen->structDeclRef;
+
+        std::vector<TypeDenoterPtr> memberTypeDens;
+        structDecl->CollectMemberTypeDenoters(memberTypeDens);
+
+        /* Generate list expression with N copies literals (where N is the number of struct members) */
+        return MakeCastExpr(typeDen, MakeConstructorListExpr(literalExpr, memberTypeDens));
+    }
+    else
+        return literalExpr;
+}
+
+static ExprPtr MakeConstructorListExprPrimary(
+    const LiteralExprPtr& literalExpr,
+    std::vector<TypeDenoterPtr>::const_iterator typeDensBegin,
+    std::vector<TypeDenoterPtr>::const_iterator typeDensEnd)
+{
+    if (typeDensBegin + 1 != typeDensEnd)
+    {
+        auto ast = MakeAST<ListExpr>();
+
+        ast->firstExpr = MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->Get());
+        ast->nextExpr = MakeConstructorListExprPrimary(literalExpr, typeDensBegin + 1, typeDensEnd);
+
+        return ast;
+    }
+    else
+        return MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->Get());
+}
+
+ExprPtr MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::vector<TypeDenoterPtr>& listTypeDens)
+{
+    if (listTypeDens.empty())
+        return nullptr;
+    else
+        return MakeConstructorListExprPrimary(literalExpr, listTypeDens.begin(), listTypeDens.end());
 }
 
 

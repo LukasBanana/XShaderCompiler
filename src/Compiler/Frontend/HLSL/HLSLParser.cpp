@@ -645,6 +645,7 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
         /* Parse structure name */
         tkn = Tkn();
         ast->ident = (identTkn ? identTkn->Spell() : ParseIdent());
+        UpdateSourceArea(ast);
 
         /* Register type name in symbol table */
         RegisterTypeName(ast->ident);
@@ -663,7 +664,7 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
         }
     }
 
-    GetReportHandler().PushContextDesc("struct " + ast->SignatureToString());
+    GetReportHandler().PushContextDesc(ast->SignatureToString());
     {
         /* Parse member variable declarations */
         auto members = ParseVarDeclStmntList();

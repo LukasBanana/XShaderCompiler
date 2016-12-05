@@ -292,7 +292,7 @@ TypeDenoterPtr SamplerDecl::DeriveTypeDenoter()
 
 std::string StructDecl::SignatureToString() const
 {
-    return (IsAnonymous() ? "<anonymous>" : ident);
+    return ("struct " + (IsAnonymous() ? "<anonymous>" : ident));
 }
 
 bool StructDecl::IsAnonymous() const
@@ -344,6 +344,34 @@ bool StructDecl::HasNonSystemValueMembers() const
 
     /* No non-system-value member found */
     return false;
+}
+
+std::size_t StructDecl::NumMembers() const
+{
+    std::size_t n = 0;
+
+    if (baseStructRef)
+        n += baseStructRef->NumMembers();
+
+    for (const auto& member : members)
+        n += member->varDecls.size();
+
+    return n;
+}
+
+void StructDecl::CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens) const
+{
+    /* First collect type denoters from base structure */
+    if (baseStructRef)
+        baseStructRef->CollectMemberTypeDenoters(memberTypeDens);
+
+    /* Collect type denoters from this structure */
+    for (const auto& member : members)
+    {
+        /* Add type denoter N times (where N is the number variable declaration within the member statement) */
+        for (std::size_t i = 0; i < member->varDecls.size(); ++i)
+            memberTypeDens.push_back(member->varType->typeDenoter);
+    }
 }
 
 

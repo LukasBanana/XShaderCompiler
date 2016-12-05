@@ -39,7 +39,8 @@ struct VOut
 
 VOut VS()
 {
-	//S2 a = (S2)0;
+	S2 a = (S2)0;
+	
 	VOut outp = (VOut)0;
 	
 	outp.position = (float4)1;

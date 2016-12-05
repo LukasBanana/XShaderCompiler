@@ -34,6 +34,7 @@ FunctionCallExprPtr MakeIntrinsicCallExpr(
 // Converts the specified function call from "sincos(x, s, c)" to "s = sin(x), c = cos(x)".
 ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall);
 
+CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr);
 CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue);
 
 ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr);
@@ -47,6 +48,9 @@ VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ide
 VarIdentPtr MakeVarIdent(const std::string& ident, AST* symbolRef = nullptr);
 
 VarAccessExprPtr MakeVarAccessExpr(const std::string& ident, AST* symbolRef = nullptr);
+
+// Return a list expression (or only the input expression) for the specified literal expression, so it can be used as constructor for a struct.
+ExprPtr MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::vector<TypeDenoterPtr>& listTypeDens);
 
 
 } // /namespace ASTFactory
