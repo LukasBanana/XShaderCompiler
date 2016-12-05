@@ -25,6 +25,7 @@ static const GLSLExtension GLSLEXT_GL_ARB_derivative_control        { "GL_ARB_de
 static const GLSLExtension GLSLEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_language_420pack", OutputShaderVersion::GLSL420 };
 static const GLSLExtension GLSLEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_image_load_store",  OutputShaderVersion::GLSL420 };
 static const GLSLExtension GLSLEXT_GL_ARB_arrays_of_arrays          { "GL_ARB_arrays_of_arrays",         OutputShaderVersion::GLSL430 };
+static const GLSLExtension GLSLEXT_GL_ARB_enhanced_layouts          { "GL_ARB_enhanced_layouts",         OutputShaderVersion::GLSL430 };
 
 
 /*
@@ -138,6 +139,10 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     /* Check for arrays of arrays */
     if (ast->GetTypeDenoter()->NumDimensions() >= 2)
         AcquireExtension(GLSLEXT_GL_ARB_arrays_of_arrays);
+
+    /* Check for packoffsets */
+    if (ast->packOffset)
+        AcquireExtension(GLSLEXT_GL_ARB_enhanced_layouts);
 
     /* Default visitor */
     Visitor::VisitVarDecl(ast, args);
