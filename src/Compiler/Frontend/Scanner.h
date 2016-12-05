@@ -33,6 +33,7 @@ class Scanner
         Scanner(Log* log = nullptr);
         virtual ~Scanner();
 
+        // Starts scanning the specified source code.
         bool ScanSource(const SourceCodePtr& source);
 
         // Pushes the specified token string onto the stack where further tokens will be parsed from the top of the stack.
@@ -123,21 +124,25 @@ class Scanner
 
         /* ----- Helper functions ----- */
 
+        // Returns true if the next character is a new-line character (i.e. '\n' or '\r').
         inline bool IsNewLine() const
         {
             return (chr_ == '\n' || chr_ == '\r');
         }
 
+        // Returns true if the next character is equal to the specified character.
         inline bool Is(char chr) const
         {
             return (chr_ == chr);
         }
 
+        // Returns the next character.
         inline char Chr() const
         {
             return chr_;
         }
 
+        // Returns the next character as 'unsigned char'.
         inline unsigned char UChr() const
         {
             return static_cast<unsigned char>(chr_);

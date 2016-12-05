@@ -158,8 +158,9 @@ void HLSLParser::ProcessDirective(const std::string& ident)
         else
             ErrorUnexpected(Tokens::StringLiteral);
 
+        /* Set new line number and filename */
         auto currentLine = static_cast<int>(GetScanner().PreviousToken()->Pos().Row());
-        GetScanner().Source()->NextSourceOrigin(filename, lineNo - currentLine - 1);
+        GetScanner().Source()->NextSourceOrigin(filename, (lineNo - currentLine - 1));
     }
     else
         Error("only '#line'-directives are allowed after pre-processing");
