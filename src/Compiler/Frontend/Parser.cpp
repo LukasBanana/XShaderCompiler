@@ -117,10 +117,11 @@ void Parser::PushScannerSource(const SourceCodePtr& source, const std::string& f
     if (!scanner->ScanSource(source))
         throw std::runtime_error("failed to scan source code");
 
-    AcceptIt();
-
     /* Set initial source origin for scanner */
     scanner->Source()->NextSourceOrigin(filename, 0);
+
+    /* Accept first token */
+    AcceptIt();
 }
 
 bool Parser::PopScannerSource()
