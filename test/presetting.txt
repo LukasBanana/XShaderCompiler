@@ -30,7 +30,7 @@
 --show-ast -T comp -E CS -o output/* NameMangling1.hlsl
 
 [CastTest1 VS]
--T vert -E VS -o output/* CastTest1.hlsl
+-Vout GLSL150 -T vert -E VS -o output/* CastTest1.hlsl
 
 [ExprTest4 VS]
 --show-ast -T vert -E VS -o output/* ExprTest4.hlsl
@@ -70,6 +70,9 @@
 
 [ssct_reflect PS]
 --show-times --show-stat -Comments -T frag -EB -E PS -I "../../misc/ssct_shader/" "../../misc/ssct_shader/ssct_reflect.hlsl"
+
+[ErrorTest1.hlsl VS]
+-T vert -E VertexMain -o output/* ErrorTest1.hlsl
 
 #[PPTest1.hlsl VS]
 #-T vert -E VS -O -o output/* PPTest1.hlsl
