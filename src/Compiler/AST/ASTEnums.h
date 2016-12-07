@@ -10,6 +10,8 @@
 
 
 #include <string>
+#include <vector>
+#include <set>
 
 
 namespace Xsc
@@ -584,6 +586,21 @@ enum class Intrinsic
     Texture_SampleLevel_3,
     Texture_SampleLevel_4,
     Texture_SampleLevel_5,
+};
+
+// Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>
+struct IntrinsicUsage
+{
+    struct ArgumentList
+    {
+        std::vector<DataType> argTypes;
+
+        inline bool operator < (const ArgumentList& rhs) const
+        {
+            return (argTypes < rhs.argTypes);
+        }
+    };
+    std::set<ArgumentList> usages;
 };
 
 // Returns true if the specified intrinsic is a global intrinsic.

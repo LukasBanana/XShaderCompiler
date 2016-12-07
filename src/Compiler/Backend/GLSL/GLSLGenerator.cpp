@@ -186,20 +186,6 @@ void GLSLGenerator::WriteVersionAndExtensions(Program& ast)
     }
 }
 
-void GLSLGenerator::WriteReferencedIntrinsics(Program& ast)
-{
-    auto Used = [&ast](Intrinsic intr)
-    {
-        return (ast.usedIntrinsics.find(intr) != ast.usedIntrinsics.end());
-    };
-
-    //TODO: currently unused (maybe remove wrapper functions entirely)
-    #if 0
-    if (Used(Intrinsic::FooBar))
-        WriteFooBarIntrinsics();
-    #endif
-}
-
 void GLSLGenerator::OpenScope()
 {
     WriteLn("{");
@@ -225,14 +211,14 @@ std::unique_ptr<std::string> GLSLGenerator::SystemValueToKeyword(const IndexedSe
         return SemanticToGLSLKeyword(semantic);
 }
 
-/*bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
+bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
 {
     static const std::set<Intrinsic> wrappedIntrinsics
     {
-        //...
+        Intrinsic::Clip
     };
     return (wrappedIntrinsics.find(intrinsic) != wrappedIntrinsics.end());
-}*/
+}
 
 /* ------- Visit functions ------- */
 
@@ -267,7 +253,7 @@ IMPLEMENT_VISIT_PROC(Program)
     }
 
     /* Append default helper macros and functions */
-    WriteReferencedIntrinsics(*ast);
+    WriteWrapperIntrinsics(*ast);
 
     if (shaderTarget_ == ShaderTarget::VertexShader)
         WriteGlobalInputSemantics();
@@ -292,8 +278,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         WriteFunctionCallIntrinsicMul(ast);
     else if (ast->intrinsic == Intrinsic::Rcp)
         WriteFunctionCallIntrinsicRcp(ast);
+    #if 0
     else if (ast->intrinsic == Intrinsic::Clip)
         WriteFunctionCallIntrinsicClip(ast);
+    #endif
     else if (ast->intrinsic >= Intrinsic::InterlockedAdd && ast->intrinsic <= Intrinsic::InterlockedXor)
         WriteFunctionCallIntrinsicAtomic(ast);
     else
@@ -1363,7 +1351,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
     /* Write function name */
     if (ast->varIdent)
     {
-        if (ast->intrinsic != Intrinsic::Undefined)// && !IsWrappedIntrinsic(ast->intrinsic))
+        if (ast->intrinsic != Intrinsic::Undefined && !IsWrappedIntrinsic(ast->intrinsic))
         {
             /* Write GLSL intrinsic keyword */
             auto keyword = IntrinsicToGLSLKeyword(ast->intrinsic);
@@ -1455,6 +1443,10 @@ void GLSLGenerator::WriteFunctionCallIntrinsicRcp(FunctionCall* ast)
         Error("invalid argument type for intrinsic 'rcp'", expr.get());
 }
 
+//DISABLED:
+// This function converts a 'clip'-intrinsic call into an if-statement.
+// Thus, it can only appear when the function call is wrapped inside an ExprStmnt (i.e. a standalone expression).
+#if 0
 void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* ast)
 {
     AssertIntrinsicNumArgs(ast, 1, 1);
@@ -1507,6 +1499,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* ast)
 
     Write(") { discard; }");
 }
+#endif
 
 void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
 {
@@ -1531,6 +1524,31 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
     }
     else
         Error("failed to map intrinsic '" + ast->varIdent->ToString() + "' to GLSL keyword", ast);
+}
+
+/* --- Intrinsics wrapper functions --- */
+
+void GLSLGenerator::WriteWrapperIntrinsics(Program& ast)
+{
+    auto Used = [&ast](Intrinsic intr) -> IntrinsicUsage*
+    {
+        auto it = ast.usedIntrinsics.find(intr);
+        return (it != ast.usedIntrinsics.end() ? &(it->second) : nullptr);
+    };
+
+    if (auto usage = Used(Intrinsic::Clip))
+        WriteWrapperIntrinsicsClip(*usage);
+}
+
+void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
+{
+    //TODO: only write version that are used
+    WriteLn("void clip(float x) { if (x < 0.0) { discard; } }");
+    WriteLn("void clip(vec2 x) { if (any(lessThan(x, vec2(0)))) { discard; } }");
+    WriteLn("void clip(vec3 x) { if (any(lessThan(x, vec3(0)))) { discard; } }");
+    WriteLn("void clip(vec4 x) { if (any(lessThan(x, vec4(0)))) { discard; } }");
+
+    Blank();
 }
 
 /* --- Structure --- */

@@ -15,5 +15,8 @@ float4 PS() : SV_Target
 	// Dummy vector alpha test
 	clip(diffuse.rgb - (float3)0.5);
 	
+	// Listed expression test
+	clip(diffuse.r), clip(diffuse.gb);
+	
 	return diffuse;
 }

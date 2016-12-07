@@ -60,7 +60,19 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
     /* Collect all used intrinsics */
     if (ast->intrinsic != Intrinsic::Undefined)
-        program_->usedIntrinsics.insert(ast->intrinsic);
+    {
+        /* Insert argument types (only base types) into usage list */
+        IntrinsicUsage::ArgumentList argList;
+        {
+            for (auto& arg : ast->arguments)
+            {
+                auto typeDen = arg->GetTypeDenoter()->Get();
+                if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
+                    argList.argTypes.push_back(baseTypeDen->dataType);
+            }
+        }
+        program_->usedIntrinsics[ast->intrinsic].usages.insert(argList);
+    }
 
     VISIT_DEFAULT(FunctionCall);
 }

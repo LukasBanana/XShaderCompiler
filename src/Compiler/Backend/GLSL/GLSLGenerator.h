@@ -60,9 +60,6 @@ class GLSLGenerator : public Generator
         // Write GLSL version and required extensions.
         void WriteVersionAndExtensions(Program& ast);
 
-        // Writes all required wrapper functions for referenced intrinsics.
-        void WriteReferencedIntrinsics(Program& ast);
-
         // Opens a new scope with '{'.
         void OpenScope();
 
@@ -76,7 +73,7 @@ class GLSLGenerator : public Generator
         std::unique_ptr<std::string> SystemValueToKeyword(const IndexedSemantic& semantic) const;
 
         // Returns true if there is a wrapper function for the specified intrinsic (e.g. "clip" intrinsic).
-        //bool IsWrappedIntrinsic(const Intrinsic intrinsic) const;
+        bool IsWrappedIntrinsic(const Intrinsic intrinsic) const;
 
         /* --- Visitor implementation --- */
 
@@ -177,6 +174,12 @@ class GLSLGenerator : public Generator
         void WriteFunctionCallIntrinsicRcp(FunctionCall* ast);
         void WriteFunctionCallIntrinsicClip(FunctionCall* ast);
         void WriteFunctionCallIntrinsicAtomic(FunctionCall* ast);
+
+        /* --- Intrinsics wrapper functions --- */
+
+        // Writes all required wrapper functions for referenced intrinsics.
+        void WriteWrapperIntrinsics(Program& ast);
+        void WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage);
 
         /* --- Structure --- */
 

@@ -198,11 +198,11 @@ struct Program : public AST
         FLAG( hasSM3ScreenSpace, 0 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
     };
 
-    std::vector<StmntPtr>   globalStmnts;               // Global declaration statements
+    std::vector<StmntPtr>               globalStmnts;               // Global declaration statements
 
-    SourceCodePtr           sourceCode;                 // Preprocessed source code
-    FunctionDecl*           entryPointRef   = nullptr;  // Reference to the entry point function declaration.
-    std::set<Intrinsic>     usedIntrinsics;             // Set of all used intrinsic (filled by the reference analyzer).
+    SourceCodePtr                       sourceCode;                 // Preprocessed source code
+    FunctionDecl*                       entryPointRef   = nullptr;  // Reference to the entry point function declaration.
+    std::map<Intrinsic, IntrinsicUsage> usedIntrinsics;             // Set of all used intrinsic (filled by the reference analyzer).
 };
 
 // Code block.

@@ -1226,7 +1226,7 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
         /* Parse function call as expression statement */
         auto ast = Make<ExprStmnt>();
         
-        ast->expr = ParseFunctionCallExpr(varIdent);
+        ast->expr = ParseExpr(true, ParseFunctionCallExpr(varIdent));
         Semi();
 
         return ast;
