@@ -765,19 +765,43 @@ void BindingCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> CommentCommand::Idents() const
 {
-    return { { "-Comments" } };
+    return { { "--comments" } };
 }
 
 HelpDescriptor CommentCommand::Help() const
 {
     return
     {
-        "-Comments [" + CommandLine::GetBooleanOption() + "]",
+        "--comments [" + CommandLine::GetBooleanOption() + "]",
         "Enables/disables commentary preservation; default=" + CommandLine::GetBooleanFalse()
     };
 }
 
 void CommentCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.preserveComments = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * WrapperCommand class
+ */
+
+std::vector<Command::Identifier> WrapperCommand::Idents() const
+{
+    return { { "--wrapper" } };
+}
+
+HelpDescriptor WrapperCommand::Help() const
+{
+    return
+    {
+        "--wrapper [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables the preference for intrinsic wrappers; default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void WrapperCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.options.preserveComments = cmdLine.AcceptBoolean(true);
 }

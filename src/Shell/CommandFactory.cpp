@@ -75,7 +75,8 @@ CommandFactory::CommandFactory()
         ExtensionCommand,
         ValidateCommand,
         BindingCommand,
-        CommentCommand
+        CommentCommand,
+        WrapperCommand
     >();
 }
 

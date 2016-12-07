@@ -414,15 +414,11 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
     /* Validate expression type by just calling the getter */
     GetTypeDenoterFrom(ast->expr.get());
 
-    /* Is this a function call statement? */
-    if (auto funcCallExpr = ast->expr->As<FunctionCallExpr>())
+    /* Analyze wrapper inlining for intrinsic calls */
+    if (!outputDesc_.options.preferWrappers)
     {
-        /* Is this a 'clip'-intrinsic call? */
-        if (funcCallExpr->call->intrinsic == Intrinsic::Clip)
-        {
-            /* The wrapper function for this intrinsic can be inlined */
-            funcCallExpr->call->flags << FunctionCall::canInlineIntrinsicWrapper;
-        }
+        if (auto funcCallExpr = ast->expr->As<FunctionCallExpr>())
+            AnalyzeIntrinsicWrapperInlining(funcCallExpr->call.get());
     }
 }
 
@@ -594,6 +590,16 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLInt
             ast->intrinsic = conversion.overloadedIntrinsic;
             break;
         }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(FunctionCall* ast)
+{
+    /* Is this a 'clip'-intrinsic call? */
+    if (ast->intrinsic == Intrinsic::Clip)
+    {
+        /* The wrapper function for this intrinsic can be inlined */
+        ast->flags << FunctionCall::canInlineIntrinsicWrapper;
     }
 }
 

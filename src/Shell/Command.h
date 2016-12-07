@@ -94,6 +94,7 @@ DECL_SHELL_COMMAND( ExtensionCommand   );
 DECL_SHELL_COMMAND( ValidateCommand    );
 DECL_SHELL_COMMAND( BindingCommand     );
 DECL_SHELL_COMMAND( CommentCommand     );
+DECL_SHELL_COMMAND( WrapperCommand     );
 
 #undef DECL_SHELL_COMMAND
 

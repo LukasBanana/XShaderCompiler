@@ -82,6 +82,8 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeFunctionCallStandard(FunctionCall* ast);
         void AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLIntrinsicEntry& intr);
 
+        void AnalyzeIntrinsicWrapperInlining(FunctionCall* ast);
+
         void AnalyzeVarIdent(VarIdent* varIdent);
         void AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol);
         void AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl* varDecl);

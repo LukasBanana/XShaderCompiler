@@ -120,6 +120,9 @@ struct Options
     //! If true, commentaries are preserved for each statement. By default false.
     bool preserveComments   = false;
 
+    //! If true, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.
+    bool preferWrappers     = false;
+
     //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
     bool showAST            = false;
 
