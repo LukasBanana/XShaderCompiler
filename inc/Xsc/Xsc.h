@@ -35,7 +35,7 @@ int main()
 {
     // Open input and output streams
     auto inputStream = std::make_shared<std::ifstream>("Example.hlsl");
-    std::ofstream outputStream("Example.vertex.glsl");
+    std::ofstream outputStream("Example.VS.vert");
 
     // Initialize shader input descriptor structure
     Xsc::ShaderInput inputDesc;
@@ -78,22 +78,22 @@ namespace Xsc
 struct Formatting
 {
     //! Indentation string for code generation. By default std::string(4, ' ').
-    std::string indent      = "    ";
+    std::string indent              = "    ";
     
-    /**
-    \brief Prefix string for name mangling. By default "xsc_".
-    \remarks This prefix is used because GLSL does not allow interface blocks as
-    input for vertex shaders or output for fragment shaders.
-    Thus some identifiers of local variables may overlap with input variables.
-    This prefix is added to all local function variables.
-    */
-    std::string prefix      = "xsc_";
+    //! Prefix string for name mangling. By default "xsc_".
+    std::string prefix              = "xsc_";
 
-    //! True if blanks are allowed. By default true.
-    bool        blanks      = true;
+    //! If true, blank lines are allowed. By default true.
+    bool        blanks              = true;
 
-    //! True if line marks are allowed. By default false.
-    bool        lineMarks   = false;
+    //! If true, line marks are allowed. By default false.
+    bool        lineMarks           = false;
+
+    //! If true, wrapper functions for special intrinsics are written in a compact formatting (i.e. all in one line). By default true.
+    bool        compactWrappers     = true;
+
+    //! If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default false.
+    bool        newLineOpenScope    = true;
 };
 
 //! Structure for additional translation options.
@@ -153,6 +153,9 @@ struct Statistics
 
     //! Fragment shader output targets.
     std::vector<Binding>        fragmentTargets;
+
+    //! Static sampler states.
+    //std::vector<SamplerState>   samplerStates;
 };
 
 //! Shader input descriptor structure.

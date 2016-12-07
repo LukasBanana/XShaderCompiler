@@ -42,6 +42,8 @@ void GLSLGenerator::GenerateCodePrimary(
     explicitBinding_    = outputDesc.options.explicitBinding;
     preserveComments_   = outputDesc.options.preserveComments;
     allowLineMarks_     = outputDesc.formatting.lineMarks;
+    compactWrappers_    = outputDesc.formatting.compactWrappers;
+    newLineOpenScope_   = outputDesc.formatting.newLineOpenScope;
     nameManglingPrefix_ = outputDesc.formatting.prefix;
     stats_              = outputDesc.statistics;
 
@@ -877,7 +879,7 @@ void GLSLGenerator::WriteScopeOpen(bool compact)
         /* Write new scope into same line */
         Write(" { ");
     }
-    else if (newLineOpenBrace_)
+    else if (newLineOpenScope_)
     {
         /* Write new scope into same line, and increment indentation */
         if (IsOpenLine())
