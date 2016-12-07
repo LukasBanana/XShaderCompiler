@@ -1,6 +1,6 @@
 
-[IntrinsicTest1 PS]
--T frag -E PS -o output/* IntrinsicTest1.hlsl
+['clip'-Intrinsic Test PS]
+-T frag -E PS -o output/* IntrinsicClip.hlsl
 
 [SemanticTest1 VS1]
 -T vert -E VS1 -o output/* SemanticTest1.hlsl

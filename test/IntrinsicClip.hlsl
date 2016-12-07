@@ -1,5 +1,5 @@
 
-// Intrinsic Test 1
+// 'clip'-Intrinsic Test
 // 07/12/2016
 
 cbuffer Colors : register(b0)
