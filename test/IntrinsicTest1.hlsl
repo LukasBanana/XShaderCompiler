@@ -16,7 +16,7 @@ float4 PS() : SV_Target
 	clip(diffuse.rgb - (float3)0.5);
 	
 	// Listed expression test
-	clip(diffuse.r), clip(diffuse.gb), clip((uint)(diffuse.a - 0.5));
+	clip(diffuse.r), clip((uint)(diffuse.a - 0.5));
 	
 	return diffuse;
 }

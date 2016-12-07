@@ -164,10 +164,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         WriteFunctionCallIntrinsicMul(ast);
     else if (ast->intrinsic == Intrinsic::Rcp)
         WriteFunctionCallIntrinsicRcp(ast);
-    #if 0
-    else if (ast->intrinsic == Intrinsic::Clip)
+    else if (ast->intrinsic == Intrinsic::Clip && ast->flags(FunctionCall::canInlineIntrinsicWrapper))
         WriteFunctionCallIntrinsicClip(ast);
-    #endif
     else if (ast->intrinsic >= Intrinsic::InterlockedAdd && ast->intrinsic <= Intrinsic::InterlockedXor)
         WriteFunctionCallIntrinsicAtomic(ast);
     else
@@ -1523,10 +1521,6 @@ void GLSLGenerator::WriteFunctionCallIntrinsicRcp(FunctionCall* ast)
         Error("invalid argument type for intrinsic 'rcp'", expr.get());
 }
 
-//DISABLED:
-// This function converts a 'clip'-intrinsic call into an if-statement.
-// Thus, it can only appear when the function call is wrapped inside an ExprStmnt (i.e. a standalone expression).
-#if 0
 void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* ast)
 {
     AssertIntrinsicNumArgs(ast, 1, 1);
@@ -1542,21 +1536,21 @@ void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* ast)
 
         if (baseTypeDen->IsVector())
         {
-            /* Convert to: 'if(any(lessThan(...)))' */
+            /* Convert to: 'any(lessThan(...))' */
             Write("any(lessThan(");
 
             auto binaryExpr = expr->As<BinaryExpr>();
 
             if (binaryExpr && binaryExpr->op == BinaryOp::Sub)
             {
-                /* Convert to: 'if(any(lessThan(LHS-EXPR, RHS-EXPR)))' */
+                /* Convert to: 'any(lessThan(LHS-EXPR, RHS-EXPR))' */
                 Visit(binaryExpr->lhsExpr);
                 Write(", ");
                 Visit(binaryExpr->rhsExpr);
             }
             else
             {
-                /* Convert to: 'if(any(lessThan(EXPR, TYPE(0))))' */
+                /* Convert to: 'any(lessThan(EXPR, TYPE(0)))' */
                 Visit(expr);
                 Write(", ");
                 WriteLiteral("0", *baseTypeDen, expr.get());
@@ -1566,10 +1560,23 @@ void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* ast)
         }
         else if (baseTypeDen->IsScalar())
         {
-            /* Convert to: 'if(EXPR < TYPE(0))' */
-            Visit(expr);
-            Write(" < ");
-            WriteLiteral("0", *baseTypeDen, expr.get());
+            /* Convert to: 'EXPR < ...' */
+            auto binaryExpr = expr->As<BinaryExpr>();
+
+            if (binaryExpr && binaryExpr->op == BinaryOp::Sub)
+            {
+                /* Convert to: 'LHS-EXPR < RHS-EXPR' */
+                Visit(binaryExpr->lhsExpr);
+                Write(" < ");
+                Visit(binaryExpr->rhsExpr);
+            }
+            else
+            {
+                /* Convert to: 'EXPR < TYPE(0)' */
+                Visit(expr);
+                Write(" < ");
+                WriteLiteral("0", *baseTypeDen, expr.get());
+            }
         }
         else
             Error("invalid argument type for intrinsic 'clip'", expr.get());
@@ -1577,9 +1584,15 @@ void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* ast)
     else
         Error("invalid argument type for intrinsic 'clip'", expr.get());
 
-    Write(") { discard; }");
+    Write(")");
+    
+    /* Write if-body (we are still inside an active line, so first 'EndLn', then 'BeginLn') */
+    EndLn();
+    IncIndent();
+    BeginLn();
+    Write("discard");
+    DecIndent();
 }
-#endif
 
 void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
 {

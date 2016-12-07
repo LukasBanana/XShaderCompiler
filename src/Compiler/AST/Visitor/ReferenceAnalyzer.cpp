@@ -58,8 +58,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     /* Mark function declaration as referenced */
     Visit(ast->funcDeclRef);
 
-    /* Collect all used intrinsics */
-    if (ast->intrinsic != Intrinsic::Undefined)
+    /* Collect all used intrinsics (if they can not be inlined) */
+    if (ast->intrinsic != Intrinsic::Undefined && !ast->flags(FunctionCall::canInlineIntrinsicWrapper))
     {
         /* Insert argument types (only base types) into usage list */
         IntrinsicUsage::ArgumentList argList;

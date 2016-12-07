@@ -413,6 +413,17 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
 
     /* Validate expression type by just calling the getter */
     GetTypeDenoterFrom(ast->expr.get());
+
+    /* Is this a function call statement? */
+    if (auto funcCallExpr = ast->expr->As<FunctionCallExpr>())
+    {
+        /* Is this a 'clip'-intrinsic call? */
+        if (funcCallExpr->call->intrinsic == Intrinsic::Clip)
+        {
+            /* The wrapper function for this intrinsic can be inlined */
+            funcCallExpr->call->flags << FunctionCall::canInlineIntrinsicWrapper;
+        }
+    }
 }
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)

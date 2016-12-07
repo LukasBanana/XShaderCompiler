@@ -229,6 +229,13 @@ struct FunctionCall : public AST
 {
     AST_INTERFACE(FunctionCall);
 
+    FLAG_ENUM
+    {
+        // If this function call is an intrinsic, it's wrapper function can be inlined (i.e. no wrapper function must be generated)
+        // e.g. "clip(a);" can not be converted to "if (a < 0) { discard; }".
+        FLAG( canInlineIntrinsicWrapper, 0 ),
+    };
+
     VarIdentPtr             varIdent;                           // Either this ...
     TypeDenoterPtr          typeDenoter;                        // ... or this is used.
     std::vector<ExprPtr>    arguments;
