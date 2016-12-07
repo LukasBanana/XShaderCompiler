@@ -71,7 +71,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                     argList.argTypes.push_back(baseTypeDen->dataType);
             }
         }
-        program_->usedIntrinsics[ast->intrinsic].usages.insert(argList);
+        program_->usedIntrinsics[ast->intrinsic].argLists.insert(argList);
     }
 
     VISIT_DEFAULT(FunctionCall);

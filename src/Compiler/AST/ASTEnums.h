@@ -600,7 +600,7 @@ struct IntrinsicUsage
             return (argTypes < rhs.argTypes);
         }
     };
-    std::set<ArgumentList> usages;
+    std::set<ArgumentList> argLists;
 };
 
 // Returns true if the specified intrinsic is a global intrinsic.

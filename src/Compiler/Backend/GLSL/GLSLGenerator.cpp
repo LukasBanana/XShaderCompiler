@@ -1570,13 +1570,45 @@ void GLSLGenerator::WriteWrapperIntrinsics(Program& ast)
 
 void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
 {
-    //TODO: only write version that are used
-    WriteLn("void clip(float x) { if (x < 0.0) { discard; } }");
-    WriteLn("void clip(vec2 x) { if (any(lessThan(x, vec2(0)))) { discard; } }");
-    WriteLn("void clip(vec3 x) { if (any(lessThan(x, vec3(0)))) { discard; } }");
-    WriteLn("void clip(vec4 x) { if (any(lessThan(x, vec4(0)))) { discard; } }");
+    //TODO: make this boolean optional for the user
+    //bool writeCompact = false;
 
-    Blank();
+    bool wrappersWritten = false;
+
+    for (const auto& argList : usage.argLists)
+    {
+        auto arg0Type = (!argList.argTypes.empty() ? argList.argTypes.front() : DataType::Undefined);
+        
+        if (IsScalarType(arg0Type) || IsVectorType(arg0Type))
+        {
+            BeginLn();
+            {
+                Write("void clip(");
+                WriteDataType(arg0Type);
+                Write(" x) { if (");
+
+                if (IsScalarType(arg0Type))
+                {
+                    Write("x < ");
+                    WriteLiteral("0", arg0Type);
+                }
+                else if (IsVectorType(arg0Type))
+                {
+                    Write("any(lessThan(x, ");
+                    WriteDataType(arg0Type);
+                    Write("(0)))");
+                }
+
+                Write(") { discard; } }");
+            }
+            EndLn();
+
+            wrappersWritten = true;
+        }
+    }
+
+    if (wrappersWritten)
+        Blank();
 }
 
 /* --- Structure --- */
