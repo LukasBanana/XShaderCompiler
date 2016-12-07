@@ -268,10 +268,12 @@ void Shell::ShowStats(const Statistics& stats)
     output << "statistics:" << std::endl;
     indentHandler_.IncIndent();
     {
-        ShowStatsFor(stats.macros, "macros");
-        ShowStatsFor(stats.textures, "texture bindings");
-        ShowStatsFor(stats.constantBuffers, "constant buffer bindings");
-        ShowStatsFor(stats.fragmentTargets, "fragment target bindings");
+        ShowStatsFor( stats.macros,          "macros"                   );
+        ShowStatsFor( stats.textures,        "texture bindings"         );
+        ShowStatsFor( stats.constantBuffers, "constant buffer bindings" );
+        ShowStatsFor( stats.fragmentTargets, "fragment target bindings" );
+        ShowStatsFor( stats.fragmentTargets, "fragment target bindings" );
+        ShowStatsFor( stats.samplerStates,   "sampler states"           );
     }
     indentHandler_.DecIndent();
 }
@@ -319,6 +321,40 @@ void Shell::ShowStatsFor(const std::vector<std::string>& idents, const std::stri
         {
             for (const auto& i : idents)
                 output << indentHandler_.FullIndent() << i << std::endl;
+        }
+        else
+            output << indentHandler_.FullIndent() << "< none >" << std::endl;
+    }
+    indentHandler_.DecIndent();
+}
+
+void Shell::ShowStatsFor(const std::map<std::string, SamplerState>& samplerStates, const std::string& title)
+{
+    output << indentHandler_.FullIndent() << title << ':' << std::endl;
+    indentHandler_.IncIndent();
+    {
+        if (!samplerStates.empty())
+        {
+            for (const auto& it : samplerStates)
+            {
+                output << indentHandler_.FullIndent() << it.first << std::endl;
+                indentHandler_.IncIndent();
+                {
+                    const auto& smpl = it.second;
+                    const auto& brdCol = smpl.borderColor;
+                    output << indentHandler_.FullIndent() << "AddressU       = " << static_cast<int>(smpl.addressU) << std::endl;
+                    output << indentHandler_.FullIndent() << "AddressV       = " << static_cast<int>(smpl.addressV) << std::endl;
+                    output << indentHandler_.FullIndent() << "AddressW       = " << static_cast<int>(smpl.addressW) << std::endl;
+                    output << indentHandler_.FullIndent() << "BorderColor    = { " << brdCol[0] << ", " << brdCol[1] << ", " << brdCol[2] << ", " << brdCol[3] << " }" << std::endl;
+                    output << indentHandler_.FullIndent() << "ComparisonFunc = " << static_cast<int>(smpl.comparisonFunc) << std::endl;
+                    output << indentHandler_.FullIndent() << "Filter         = " << static_cast<int>(smpl.filter) << std::endl;
+                    output << indentHandler_.FullIndent() << "MaxAnisotropy  = " << smpl.maxAnisotropy << std::endl;
+                    output << indentHandler_.FullIndent() << "MaxLOD         = " << smpl.maxLOD << std::endl;
+                    output << indentHandler_.FullIndent() << "MinLOD         = " << smpl.minLOD << std::endl;
+                    output << indentHandler_.FullIndent() << "MipLODBias     = " << smpl.mipLODBias << std::endl;
+                }
+                indentHandler_.DecIndent();
+            }
         }
         else
             output << indentHandler_.FullIndent() << "< none >" << std::endl;
