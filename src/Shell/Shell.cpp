@@ -272,7 +272,6 @@ void Shell::ShowStats(const Statistics& stats)
         ShowStatsFor( stats.textures,        "texture bindings"         );
         ShowStatsFor( stats.constantBuffers, "constant buffer bindings" );
         ShowStatsFor( stats.fragmentTargets, "fragment target bindings" );
-        ShowStatsFor( stats.fragmentTargets, "fragment target bindings" );
         ShowStatsFor( stats.samplerStates,   "sampler states"           );
     }
     indentHandler_.DecIndent();
