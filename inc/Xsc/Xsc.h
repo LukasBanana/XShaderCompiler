@@ -14,6 +14,7 @@
 #include "IncludeHandler.h"
 #include "Targets.h"
 #include "Version.h"
+#include "SamplerState.h"
 
 #include <string>
 #include <vector>
@@ -155,7 +156,7 @@ struct Statistics
     std::vector<Binding>        fragmentTargets;
 
     //! Static sampler states.
-    //std::vector<SamplerState>   samplerStates;
+    std::vector<SamplerState>   samplerStates;
 };
 
 //! Shader input descriptor structure.
