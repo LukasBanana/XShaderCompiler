@@ -193,18 +193,11 @@ void GLSLGenerator::WriteReferencedIntrinsics(Program& ast)
         return (ast.usedIntrinsics.find(intr) != ast.usedIntrinsics.end());
     };
 
-    if (Used(Intrinsic::Clip))
-        WriteClipIntrinsics();
-}
-
-void GLSLGenerator::WriteClipIntrinsics()
-{
-    WriteLn("void clip(float x) { if (x < 0.0) { discard; } }");
-
-    for (const auto& typeName : std::vector<std::string>{ "vec2", "vec3", "vec4" })
-        WriteLn("void clip(" + typeName + " x) { if (any(lessThan(x, " + typeName + "(0.0)))) { discard; } }");
-
-    Blank();
+    //TODO: currently unused (maybe remove wrapper functions entirely)
+    #if 0
+    if (Used(Intrinsic::FooBar))
+        WriteFooBarIntrinsics();
+    #endif
 }
 
 void GLSLGenerator::OpenScope()
@@ -232,14 +225,14 @@ std::unique_ptr<std::string> GLSLGenerator::SystemValueToKeyword(const IndexedSe
         return SemanticToGLSLKeyword(semantic);
 }
 
-bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
+/*bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
 {
     static const std::set<Intrinsic> wrappedIntrinsics
     {
-        Intrinsic::Clip, //...
+        //...
     };
     return (wrappedIntrinsics.find(intrinsic) != wrappedIntrinsics.end());
-}
+}*/
 
 /* ------- Visit functions ------- */
 
@@ -299,6 +292,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         WriteFunctionCallIntrinsicMul(ast);
     else if (ast->intrinsic == Intrinsic::Rcp)
         WriteFunctionCallIntrinsicRcp(ast);
+    else if (ast->intrinsic == Intrinsic::Clip)
+        WriteFunctionCallIntrinsicClip(ast);
     else if (ast->intrinsic >= Intrinsic::InterlockedAdd && ast->intrinsic <= Intrinsic::InterlockedXor)
         WriteFunctionCallIntrinsicAtomic(ast);
     else
@@ -1368,7 +1363,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
     /* Write function name */
     if (ast->varIdent)
     {
-        if (ast->intrinsic != Intrinsic::Undefined && !IsWrappedIntrinsic(ast->intrinsic))
+        if (ast->intrinsic != Intrinsic::Undefined)// && !IsWrappedIntrinsic(ast->intrinsic))
         {
             /* Write GLSL intrinsic keyword */
             auto keyword = IntrinsicToGLSLKeyword(ast->intrinsic);
@@ -1443,19 +1438,74 @@ void GLSLGenerator::WriteFunctionCallIntrinsicRcp(FunctionCall* ast)
     auto& expr = ast->arguments.front();
     auto typeDenoter = expr->GetTypeDenoter()->Get();
 
-    if (typeDenoter->IsBase())
+    if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
     {
         /* Convert this function call into a division */
         Write("(");
         {
-            WriteTypeDenoter(*typeDenoter, ast);
-            Write("(1) / (");
+            WriteTypeDenoter(*baseTypeDen, ast);
+            Write("(");
+            WriteLiteral("1", *baseTypeDen, ast);
+            Write(") / (");
             Visit(expr);
         }
         Write("))");
     }
     else
         Error("invalid argument type for intrinsic 'rcp'", expr.get());
+}
+
+void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* ast)
+{
+    AssertIntrinsicNumArgs(ast, 1, 1);
+
+    /* Get type denoter of argument expression */
+    auto& expr = ast->arguments.front();
+    auto typeDenoter = expr->GetTypeDenoter()->Get();
+
+    if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
+    {
+        /* Convert this function call into a condition */
+        Write("if (");
+
+        if (baseTypeDen->IsVector())
+        {
+            /* Convert to: 'if(any(lessThan(...)))' */
+            Write("any(lessThan(");
+
+            auto binaryExpr = expr->As<BinaryExpr>();
+
+            if (binaryExpr && binaryExpr->op == BinaryOp::Sub)
+            {
+                /* Convert to: 'if(any(lessThan(LHS-EXPR, RHS-EXPR)))' */
+                Visit(binaryExpr->lhsExpr);
+                Write(", ");
+                Visit(binaryExpr->rhsExpr);
+            }
+            else
+            {
+                /* Convert to: 'if(any(lessThan(EXPR, TYPE(0))))' */
+                Visit(expr);
+                Write(", ");
+                WriteLiteral("0", *baseTypeDen, expr.get());
+            }
+
+            Write("))");
+        }
+        else if (baseTypeDen->IsScalar())
+        {
+            /* Convert to: 'if(EXPR < TYPE(0))' */
+            Visit(expr);
+            Write(" < ");
+            WriteLiteral("0", *baseTypeDen, expr.get());
+        }
+        else
+            Error("invalid argument type for intrinsic 'clip'", expr.get());
+    }
+    else
+        Error("invalid argument type for intrinsic 'clip'", expr.get());
+
+    Write(") { discard; }");
 }
 
 void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
@@ -1651,6 +1701,37 @@ void GLSLGenerator::WriteArrayDims(const std::vector<ExprPtr>& arrayDims)
         Visit(dim);
         Write("]");
     }
+}
+
+void GLSLGenerator::WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast)
+{
+    if (baseTypeDen.IsScalar())
+    {
+        Write(value);
+
+        switch (baseTypeDen.dataType)
+        {
+            case DataType::UInt:
+                Write("u");
+                break;
+            case DataType::Float:
+                if (value.find_first_of(".eE") == std::string::npos)
+                    Write(".0");
+                Write("f");
+                break;
+            default:
+                break;
+        }
+    }
+    else if (baseTypeDen.IsVector())
+    {
+        WriteDataType(baseTypeDen.dataType, ast);
+        Write("(");
+        Write(value);
+        Write(")");
+    }
+    else
+        Error("failed to write type denoter for literal '" + value + "'", ast);
 }
 
 

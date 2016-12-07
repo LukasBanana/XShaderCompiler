@@ -23,6 +23,7 @@ namespace Xsc
 
 
 struct TypeDenoter;
+struct BaseTypeDenoter;
 
 // GLSL output code generator.
 class GLSLGenerator : public Generator
@@ -53,14 +54,14 @@ class GLSLGenerator : public Generator
         void WriteLineMark(const TokenPtr& tkn);
         void WriteLineMark(const AST* ast);
 
-        // Writes the specified extension with ": enable"
+        // Writes the specified extension with ": enable".
         void WriteExtension(const std::string& extensionName);
 
-        // Write GLSL version and required extensions
+        // Write GLSL version and required extensions.
         void WriteVersionAndExtensions(Program& ast);
 
+        // Writes all required wrapper functions for referenced intrinsics.
         void WriteReferencedIntrinsics(Program& ast);
-        void WriteClipIntrinsics();
 
         // Opens a new scope with '{'.
         void OpenScope();
@@ -75,7 +76,7 @@ class GLSLGenerator : public Generator
         std::unique_ptr<std::string> SystemValueToKeyword(const IndexedSemantic& semantic) const;
 
         // Returns true if there is a wrapper function for the specified intrinsic (e.g. "clip" intrinsic).
-        bool IsWrappedIntrinsic(const Intrinsic intrinsic) const;
+        //bool IsWrappedIntrinsic(const Intrinsic intrinsic) const;
 
         /* --- Visitor implementation --- */
 
@@ -174,6 +175,7 @@ class GLSLGenerator : public Generator
         void WriteFunctionCallStandard(FunctionCall* ast);
         void WriteFunctionCallIntrinsicMul(FunctionCall* ast);
         void WriteFunctionCallIntrinsicRcp(FunctionCall* ast);
+        void WriteFunctionCallIntrinsicClip(FunctionCall* ast);
         void WriteFunctionCallIntrinsicAtomic(FunctionCall* ast);
 
         /* --- Structure --- */
@@ -193,6 +195,8 @@ class GLSLGenerator : public Generator
         void WriteScopedStmnt(Stmnt* ast);
 
         void WriteArrayDims(const std::vector<ExprPtr>& arrayDims);
+
+        void WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast = nullptr);
 
         /* === Members === */
 
