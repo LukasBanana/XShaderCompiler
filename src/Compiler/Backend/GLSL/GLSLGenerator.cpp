@@ -103,101 +103,6 @@ void GLSLGenerator::GenerateCodePrimary(
  * ======= Private: =======
  */
 
-void GLSLGenerator::WriteComment(const std::string& text)
-{
-    std::size_t start = 0, end = 0;
-
-    while (end < text.size())
-    {
-        /* Get next comment line */
-        end = text.find('\n', start);
-
-        auto line = (end < text.size() ? text.substr(start, end - start) : text.substr(start));
-
-        #if 0
-        /* Get line boundaries */
-        bool firstLine  = (start == 0);
-        bool lastLine   = (end == std::string::npos);
-        #endif
-
-        /* Write comment line */
-        BeginLn();
-        {
-            Write("// ");
-            Write(line);
-        }
-        EndLn();
-
-        start = end + 1;
-    }
-}
-
-void GLSLGenerator::WriteVersion(int versionNumber)
-{
-    WriteLn("#version " + std::to_string(versionNumber));
-}
-
-void GLSLGenerator::WriteLineMark(int lineNumber)
-{
-    if (allowLineMarks_)
-        WriteLn("#line " + std::to_string(lineNumber));
-}
-
-void GLSLGenerator::WriteLineMark(const TokenPtr& tkn)
-{
-    WriteLineMark(tkn->Pos().Row());
-}
-
-void GLSLGenerator::WriteLineMark(const AST* ast)
-{
-    WriteLineMark(ast->area.Pos().Row());
-}
-
-void GLSLGenerator::WriteExtension(const std::string& extensionName)
-{
-    WriteLn("#extension " + extensionName + " : enable");// "require" or "enable"
-}
-
-void GLSLGenerator::WriteVersionAndExtensions(Program& ast)
-{
-    try
-    {
-        /* Determine all required GLSL extensions with the GLSL extension agent */
-        GLSLExtensionAgent extensionAgent;
-        auto requiredExtensions = extensionAgent.DetermineRequiredExtensions(
-            ast, versionOut_, shaderTarget_, allowExtensions_, explicitBinding_
-        );
-
-        /* Write GLSL version */
-        WriteVersion(static_cast<int>(versionOut_));
-        Blank();
-
-        /* Write all required extensions */
-        if (!requiredExtensions.empty())
-        {
-            for (const auto& ext : requiredExtensions)
-                WriteExtension(ext);
-            Blank();
-        }
-    }
-    catch (const std::exception& e)
-    {
-        Error(e.what());
-    }
-}
-
-void GLSLGenerator::OpenScope()
-{
-    WriteLn("{");
-    IncIndent();
-}
-
-void GLSLGenerator::CloseScope(bool semicolon)
-{
-    DecIndent();
-    WriteLn(semicolon ? "};" : "}");
-}
-
 bool GLSLGenerator::MustResolveStruct(StructDecl* ast) const
 {
     return MustResolveStructForTarget(shaderTarget_, ast);
@@ -228,13 +133,13 @@ bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
 IMPLEMENT_VISIT_PROC(Program)
 {
     /* Write version and required extensions first */
-    WriteVersionAndExtensions(*ast);
+    WriteProgramHeader();
 
     /* Write global input/output layouts */
     WriteGlobalLayouts();
 
     /* Append default helper macros and functions */
-    WriteWrapperIntrinsics(*ast);
+    WriteWrapperIntrinsics();
 
     if (shaderTarget_ == ShaderTarget::VertexShader)
         WriteGlobalInputSemantics();
@@ -246,11 +151,11 @@ IMPLEMENT_VISIT_PROC(Program)
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    OpenScope();
+    WriteScopeOpen();
     {
         WriteStmntList(ast->stmnts);
     }
-    CloseScope();
+    WriteScopeClose();
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
@@ -401,7 +306,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         /* Write function body */
         if (ast->flags(FunctionDecl::isEntryPoint))
         {
-            OpenScope();
+            WriteScopeOpen();
             {
                 /* Write input/output parameters of system values as local variables */
                 WriteLocalInputSemantics();
@@ -421,7 +326,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                     WriteOutputSemanticsAssignment(nullptr);
                 }
             }
-            CloseScope();
+            WriteScopeClose();
         }
         else
         {
@@ -464,11 +369,11 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     }
     EndLn();
 
-    OpenScope();
+    WriteScopeOpen();
     {
         Visit(ast->members);
     }
-    CloseScope(true);
+    WriteScopeClose(false, true);
 
     Blank();
 }
@@ -743,11 +648,11 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
     EndLn();
 
     /* Write switch cases */
-    OpenScope();
+    WriteScopeOpen();
     {
         Visit(ast->cases);
     }
-    CloseScope();
+    WriteScopeClose();
 }
 
 IMPLEMENT_VISIT_PROC(ExprStmnt)
@@ -911,6 +816,153 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 #undef IMPLEMENT_VISIT_PROC
 
 /* --- Helper functions for code generation --- */
+
+/* --- Basics --- */
+
+void GLSLGenerator::WriteComment(const std::string& text)
+{
+    std::size_t start = 0, end = 0;
+
+    while (end < text.size())
+    {
+        /* Get next comment line */
+        end = text.find('\n', start);
+
+        auto line = (end < text.size() ? text.substr(start, end - start) : text.substr(start));
+
+        #if 0
+        /* Get line boundaries */
+        bool firstLine  = (start == 0);
+        bool lastLine   = (end == std::string::npos);
+        #endif
+
+        /* Write comment line */
+        BeginLn();
+        {
+            Write("// ");
+            Write(line);
+        }
+        EndLn();
+
+        start = end + 1;
+    }
+}
+
+void GLSLGenerator::WriteLineMark(int lineNumber)
+{
+    if (allowLineMarks_)
+        WriteLn("#line " + std::to_string(lineNumber));
+}
+
+void GLSLGenerator::WriteLineMark(const TokenPtr& tkn)
+{
+    WriteLineMark(tkn->Pos().Row());
+}
+
+void GLSLGenerator::WriteLineMark(const AST* ast)
+{
+    WriteLineMark(ast->area.Pos().Row());
+}
+
+void GLSLGenerator::WriteScopeOpen(bool compact)
+{
+    if (compact)
+    {
+        /* Write new scope into same line */
+        Write(" { ");
+    }
+    else if (newLineOpenBrace_)
+    {
+        /* Write new scope into same line, and increment indentation */
+        if (IsOpenLine())
+        {
+            Write(" {");
+            EndLn();
+            IncIndent();
+            BeginLn();
+        }
+        else
+        {
+            WriteLn("{");
+            IncIndent();
+        }
+    }
+    else
+    {
+        /* Write new scope into new line, and increment indentation */
+        if (IsOpenLine())
+        {
+            EndLn();
+            WriteLn("{");
+            IncIndent();
+            BeginLn();
+        }
+        else
+        {
+            WriteLn("{");
+            IncIndent();
+        }
+    }
+}
+
+void GLSLGenerator::WriteScopeClose(bool compact, bool semicolon)
+{
+    if (compact)
+    {
+        /* Write scope ending into same line */
+        Write(semicolon ? " };" : " }");
+    }
+    else
+    {
+        bool open = IsOpenLine();
+        if (open)
+            EndLn();
+
+        /* Decrement indentation, and write scope ending into new line */
+        DecIndent();
+        WriteLn(semicolon ? "};" : "}");
+    }
+}
+
+/* --- Program --- */
+
+void GLSLGenerator::WriteProgramHeader()
+{
+    try
+    {
+        /* Determine all required GLSL extensions with the GLSL extension agent */
+        GLSLExtensionAgent extensionAgent;
+        auto requiredExtensions = extensionAgent.DetermineRequiredExtensions(
+            *GetProgram(), versionOut_, shaderTarget_, allowExtensions_, explicitBinding_
+        );
+
+        /* Write GLSL version */
+        WriteProgramHeaderVersion(static_cast<int>(versionOut_));
+        Blank();
+
+        /* Write all required extensions */
+        if (!requiredExtensions.empty())
+        {
+            for (const auto& ext : requiredExtensions)
+                WriteProgramHeaderExtension(ext);
+            Blank();
+        }
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
+}
+
+void GLSLGenerator::WriteProgramHeaderVersion(int versionNumber)
+{
+    WriteLn("#version " + std::to_string(versionNumber));
+}
+
+void GLSLGenerator::WriteProgramHeaderExtension(const std::string& extensionName)
+{
+    WriteLn("#extension " + extensionName + " : enable");// "require" or "enable"
+}
 
 /* --- Attributes --- */
 
@@ -1556,12 +1608,14 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
 
 /* --- Intrinsics wrapper functions --- */
 
-void GLSLGenerator::WriteWrapperIntrinsics(Program& ast)
+void GLSLGenerator::WriteWrapperIntrinsics()
 {
-    auto Used = [&ast](Intrinsic intr) -> IntrinsicUsage*
+    auto program = GetProgram();
+
+    auto Used = [program](Intrinsic intr) -> IntrinsicUsage*
     {
-        auto it = ast.usedIntrinsics.find(intr);
-        return (it != ast.usedIntrinsics.end() ? &(it->second) : nullptr);
+        auto it = program->usedIntrinsics.find(intr);
+        return (it != program->usedIntrinsics.end() ? &(it->second) : nullptr);
     };
 
     if (auto usage = Used(Intrinsic::Clip))
@@ -1571,7 +1625,7 @@ void GLSLGenerator::WriteWrapperIntrinsics(Program& ast)
 void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
 {
     //TODO: make this boolean optional for the user
-    //bool writeCompact = false;
+    bool writeCompact = true;
 
     bool wrappersWritten = false;
 
@@ -1583,23 +1637,36 @@ void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
         {
             BeginLn();
             {
+                /* Write function signature */
                 Write("void clip(");
                 WriteDataType(arg0Type);
-                Write(" x) { if (");
+                Write(" x)");
 
-                if (IsScalarType(arg0Type))
+                /* Write function body */
+                WriteScopeOpen(writeCompact);
                 {
-                    Write("x < ");
-                    WriteLiteral("0", arg0Type);
-                }
-                else if (IsVectorType(arg0Type))
-                {
-                    Write("any(lessThan(x, ");
-                    WriteDataType(arg0Type);
-                    Write("(0)))");
-                }
+                    Write("if (");
 
-                Write(") { discard; } }");
+                    if (IsScalarType(arg0Type))
+                    {
+                        Write("x < ");
+                        WriteLiteral("0", arg0Type);
+                    }
+                    else if (IsVectorType(arg0Type))
+                    {
+                        Write("any(lessThan(x, ");
+                        WriteDataType(arg0Type);
+                        Write("(0)))");
+                    }
+
+                    Write(")");
+                    WriteScopeOpen(writeCompact);
+                    {
+                        Write("discard;");
+                    }
+                    WriteScopeClose(writeCompact);
+                }
+                WriteScopeClose(writeCompact);
             }
             EndLn();
 
@@ -1651,11 +1718,11 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* ast, bool writeSemicolon
     EndLn();
 
     /* Write structure members */
-    OpenScope();
+    WriteScopeOpen();
     {
         WriteStructDeclMembers(ast);
     }
-    CloseScope(writeSemicolon);
+    WriteScopeClose(false, writeSemicolon);
 
     return true;
 }
@@ -1677,7 +1744,7 @@ bool GLSLGenerator::WriteStructDeclInputOutputBlock(StructDecl* ast)
     }
     EndLn();
 
-    OpenScope();
+    WriteScopeOpen();
     {
         isInsideInterfaceBlock_ = true;
 
@@ -1685,7 +1752,7 @@ bool GLSLGenerator::WriteStructDeclInputOutputBlock(StructDecl* ast)
 
         isInsideInterfaceBlock_ = false;
     }
-    CloseScope();
+    WriteScopeClose();
 
     WriteLn(ast->aliasName + ";");
 

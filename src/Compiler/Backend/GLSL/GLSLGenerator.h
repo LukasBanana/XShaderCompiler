@@ -43,29 +43,6 @@ class GLSLGenerator : public Generator
             const ShaderOutput& outputDesc
         ) override;
 
-        // Writes a comment (single or multi-line comments).
-        void WriteComment(const std::string& text);
-
-        // Writes a "#version" directive.
-        void WriteVersion(int versionNumber);
-
-        // Writes a "#line" directive.
-        void WriteLineMark(int lineNumber);
-        void WriteLineMark(const TokenPtr& tkn);
-        void WriteLineMark(const AST* ast);
-
-        // Writes the specified extension with ": enable".
-        void WriteExtension(const std::string& extensionName);
-
-        // Write GLSL version and required extensions.
-        void WriteVersionAndExtensions(Program& ast);
-
-        // Opens a new scope with '{'.
-        void OpenScope();
-
-        // Closes the current scope with '}'.
-        void CloseScope(bool semicolon = false);
-
         // Returns true if the specified AST structure must be resolved.
         bool MustResolveStruct(StructDecl* ast) const;
 
@@ -122,6 +99,24 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( InitializerExpr   );
 
         /* --- Helper functions for code generation --- */
+
+        /* --- Basics --- */
+
+        // Writes a comment (single or multi-line comments).
+        void WriteComment(const std::string& text);
+
+        void WriteLineMark(int lineNumber);
+        void WriteLineMark(const TokenPtr& tkn);
+        void WriteLineMark(const AST* ast);
+
+        void WriteScopeOpen(bool compact = false);
+        void WriteScopeClose(bool compact = false, bool semicolon = false);
+
+        /* --- Program --- */
+
+        void WriteProgramHeader();
+        void WriteProgramHeaderVersion(int versionNumber);
+        void WriteProgramHeaderExtension(const std::string& extensionName);
 
         /* --- Attributes --- */
 
@@ -183,7 +178,7 @@ class GLSLGenerator : public Generator
         /* --- Intrinsics wrapper functions --- */
 
         // Writes all required wrapper functions for referenced intrinsics.
-        void WriteWrapperIntrinsics(Program& ast);
+        void WriteWrapperIntrinsics();
         void WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage);
 
         /* --- Structure --- */
@@ -214,6 +209,7 @@ class GLSLGenerator : public Generator
         bool                explicitBinding_        = false;
         bool                preserveComments_       = false;
         bool                allowLineMarks_         = false;
+        bool                newLineOpenBrace_       = false;
         std::string         nameManglingPrefix_     = "xsc_";
         Statistics*         stats_                  = nullptr;
 
