@@ -20,6 +20,7 @@
 #include <initializer_list>
 #include <algorithm>
 #include <cctype>
+#include <set>
 
 
 namespace Xsc
@@ -229,6 +230,15 @@ std::unique_ptr<std::string> GLSLGenerator::SystemValueToKeyword(const IndexedSe
         return MakeUnique<std::string>(semantic.ToString());
     else
         return SemanticToGLSLKeyword(semantic);
+}
+
+bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
+{
+    static const std::set<Intrinsic> wrappedIntrinsics
+    {
+        Intrinsic::Clip, //...
+    };
+    return (wrappedIntrinsics.find(intrinsic) != wrappedIntrinsics.end());
 }
 
 /* ------- Visit functions ------- */
@@ -1358,7 +1368,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
     /* Write function name */
     if (ast->varIdent)
     {
-        if (ast->intrinsic != Intrinsic::Undefined)
+        if (ast->intrinsic != Intrinsic::Undefined && !IsWrappedIntrinsic(ast->intrinsic))
         {
             /* Write GLSL intrinsic keyword */
             auto keyword = IntrinsicToGLSLKeyword(ast->intrinsic);

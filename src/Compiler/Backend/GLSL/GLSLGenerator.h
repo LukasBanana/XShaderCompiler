@@ -74,6 +74,9 @@ class GLSLGenerator : public Generator
         // Returns the GLSL keyword for the specified system value semantic (special case is Semantic::Target).
         std::unique_ptr<std::string> SystemValueToKeyword(const IndexedSemantic& semantic) const;
 
+        // Returns true if there is a wrapper function for the specified intrinsic (e.g. "clip" intrinsic).
+        bool IsWrappedIntrinsic(const Intrinsic intrinsic) const;
+
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
