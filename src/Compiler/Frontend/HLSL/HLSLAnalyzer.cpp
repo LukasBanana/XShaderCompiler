@@ -40,6 +40,7 @@ void HLSLAnalyzer::DecorateASTPrimary(
     shaderTarget_   = inputDesc.shaderTarget;
     versionIn_      = inputDesc.shaderVersion;
     shaderModel_    = GetShaderModel(inputDesc.shaderVersion);
+    preferWrappers_ = outputDesc.options.preferWrappers;
 
     /* Decorate program AST */
     program_ = &program;
@@ -415,7 +416,7 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
     GetTypeDenoterFrom(ast->expr.get());
 
     /* Analyze wrapper inlining for intrinsic calls */
-    if (!outputDesc_.options.preferWrappers)
+    if (!preferWrappers_)
     {
         if (auto funcCallExpr = ast->expr->As<FunctionCallExpr>())
             AnalyzeIntrinsicWrapperInlining(funcCallExpr->call.get());

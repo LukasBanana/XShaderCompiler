@@ -103,13 +103,11 @@ class HLSLAnalyzer : public Analyzer
 
         Program*                    program_        = nullptr;
 
-        ShaderInput                 inputDesc_;
-        ShaderOutput                outputDesc_;
-
         std::string                 entryPoint_;
         ShaderTarget                shaderTarget_   = ShaderTarget::VertexShader;
         InputShaderVersion          versionIn_      = InputShaderVersion::HLSL5;
-        ShaderVersion               shaderModel_    { 5, 0 };
+        ShaderVersion               shaderModel_    = { 5, 0 };
+        bool                        preferWrappers_ = false;
 
 };
 

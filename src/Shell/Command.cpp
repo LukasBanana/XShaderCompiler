@@ -803,7 +803,7 @@ HelpDescriptor WrapperCommand::Help() const
 
 void WrapperCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.options.preserveComments = cmdLine.AcceptBoolean(true);
+    state.outputDesc.options.preferWrappers = cmdLine.AcceptBoolean(true);
 }
 
 
