@@ -853,19 +853,36 @@ TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
 {
     auto ast = Make<TextureDeclStmnt>();
 
+    auto textureTypeTkn = Tkn();
+
     ast->textureType = ParseBufferType();
 
-    /* Parse optional generic color type ('<' colorType '>') */
+    /* Parse optional template arguments */
     if (Is(Tokens::BinaryOp, "<"))
     {
-        AcceptIt();
+        PushParsingState({ true });
+        {
+            AcceptIt();
 
-        if (Is(Tokens::ScalarType) || Is(Tokens::VectorType))
-            ast->colorType = AcceptIt()->Spell();
-        else
-            ErrorUnexpected("expected scalar or vector type denoter");
+            /* Parse generic color type ('<' colorType '>') */
+            if (Is(Tokens::ScalarType) || Is(Tokens::VectorType))
+                ast->colorType = ParseDataType(AcceptIt()->Spell());
+            else
+                ErrorUnexpected("expected scalar or vector type denoter");
 
-        Accept(Tokens::BinaryOp, ">");
+            /* Parse optional number of samples */
+            if (Is(Tokens::Comma))
+            {
+                AcceptIt();
+                ast->numSamples = ParseAndEvaluateConstIntExpr();
+
+                if (ast->numSamples < 1 || ast->numSamples >= 128)
+                    Warning("number of samples in texture must be in the range [1, 128), but got " + std::to_string(ast->numSamples), textureTypeTkn.get());
+            }
+
+            Accept(Tokens::BinaryOp, ">");
+        }
+        PopParsingState();
     }
 
     ast->textureDecls = ParseTextureDeclList(ast.get());

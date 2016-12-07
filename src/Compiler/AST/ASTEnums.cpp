@@ -691,6 +691,11 @@ bool IsTextureBufferType(const BufferType t)
     return (t >= BufferType::RWTexture1D && t <= BufferType::GenericTexture);
 }
 
+bool IsTextureMSBufferType(const BufferType t)
+{
+    return (t >= BufferType::Texture2DMS && t <= BufferType::Texture2DMSArray);
+}
+
 
 /* ----- SamplerType Enum ----- */
 

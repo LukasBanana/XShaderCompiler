@@ -403,7 +403,15 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
                     binding = slotRegister->slot;
                 }
 
-                Write("uniform " + *samplerType + " " + texDecl->ident + ";");
+                Write("uniform ");
+
+                /* Write sampler type and identifier */
+                if (IsIntType(ast->colorType))
+                    Write("i");
+                else if (IsUIntType(ast->colorType))
+                    Write("u");
+
+                Write(*samplerType + " " + texDecl->ident + ";");
 
                 /* Track output statistics */
                 if (stats_)

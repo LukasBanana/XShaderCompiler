@@ -363,6 +363,9 @@ bool IsRWBufferType(const BufferType t);
 // Returns true if the specified buffer type is a texture buffer.
 bool IsTextureBufferType(const BufferType t);
 
+// Returns true if the specified buffer type is a multi-sampled texture buffer (i.e. Texture2DMS or Texture2DMSArray).
+bool IsTextureMSBufferType(const BufferType t);
+
 
 /* ----- SamplerType Enum ----- */
 
