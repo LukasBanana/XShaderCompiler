@@ -3,7 +3,7 @@
 -T frag -E PS -o output/* IntrinsicClip.hlsl
 
 [TextureObjects PS]
--W -T frag -E PS -o output/* TextureObjects.hlsl
+--show-stat -W -T frag -E PS -o output/* TextureObjects.hlsl
 
 [SemanticTest1 VS1]
 -T vert -E VS1 -o output/* SemanticTest1.hlsl

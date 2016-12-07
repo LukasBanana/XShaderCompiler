@@ -184,7 +184,7 @@ class HLSLParser : public Parser
         AliasTypeDenoterPtr             ParseAliasTypeDenoter(std::string ident = "");
 
         Variant                         ParseAndEvaluateConstExpr();
-        int                             ParseAndEvaluateConstIntExpr();
+        int                             ParseAndEvaluateConstExprInt();
         int                             ParseAndEvaluateVectorDimension();
 
         void                            ParseAndIgnoreTechnique();

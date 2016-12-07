@@ -11,6 +11,8 @@
 
 #include "Analyzer.h"
 #include "ShaderVersion.h"
+#include "Variant.h"
+#include <Xsc/SamplerState.h>
 #include <map>
 
 
@@ -44,7 +46,10 @@ class HLSLAnalyzer : public Analyzer
         Returns the current (top level) function in the call stack
         or null if the AST traversion is in the global scope.
         */
-        FunctionCall* CurrentFunction() const;
+        //FunctionCall* CurrentFunction() const;
+
+        Variant EvaluateConstExpr(Expr& expr);
+        float EvaluateConstExprFloat(Expr& expr);
 
         /* === Visitor implementation === */
 
@@ -98,6 +103,11 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeSemantic(IndexedSemantic& semantic);
 
         void AnalyzeEndOfScopes(FunctionDecl& funcDecl);
+
+        void AnalyzeSamplerValue(SamplerValue* ast, SamplerState& samplerState);
+        void AnalyzeSamplerValueFilter(const std::string& value, SamplerState::Filter& filter);
+        void AnalyzeSamplerValueTextureAddressMode(const std::string& value, SamplerState::TextureAddressMode& addressMode);
+        void AnalyzeSamplerValueComparisonFunc(const std::string& value, SamplerState::ComparisonFunc& comparisonFunc);
 
         /* === Members === */
 

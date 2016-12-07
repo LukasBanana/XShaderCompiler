@@ -8,9 +8,12 @@ SamplerState smpl0 : register(s0);
 
 SamplerState smpl1
 {
-	Filter = MIN_MAG_MIP_LINEAR;
+	Filter = ANISOTROPIC;
 	AddressU = MIRROR;
 	AddressV = CLAMP;
+//	BorderColor = { 1, 2, 3, 4 };
+	BorderColor = float4(2, 4, 0, 1);
+//	BorderColor = (float4)1;
 };
 
 Texture2D tex0 : register(t0);

@@ -94,7 +94,7 @@ struct SamplerState
     TextureAddressMode  addressV        = TextureAddressMode::Clamp;
     TextureAddressMode  addressW        = TextureAddressMode::Clamp;
     float               mipLODBias      = 0.0f;
-    unsigned int        maxAnisotropy   = 1;
+    unsigned int        maxAnisotropy   = 1u;
     ComparisonFunc      comparisonFunc  = ComparisonFunc::Never;
     float               borderColor[4]  = { 0.0f, 0.0f, 0.0f, 0.0f };
     float               minLOD          = -std::numeric_limits<float>::max();

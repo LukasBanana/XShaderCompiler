@@ -874,7 +874,7 @@ TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
             if (Is(Tokens::Comma))
             {
                 AcceptIt();
-                ast->numSamples = ParseAndEvaluateConstIntExpr();
+                ast->numSamples = ParseAndEvaluateConstExprInt();
 
                 if (ast->numSamples < 1 || ast->numSamples >= 128)
                     Warning("number of samples in texture must be in the range [1, 128), but got " + std::to_string(ast->numSamples), textureTypeTkn.get());
@@ -2061,7 +2061,7 @@ Variant HLSLParser::ParseAndEvaluateConstExpr()
     return Variant();
 }
 
-int HLSLParser::ParseAndEvaluateConstIntExpr()
+int HLSLParser::ParseAndEvaluateConstExprInt()
 {
     auto tkn = Tkn();
     auto value = ParseAndEvaluateConstExpr();
@@ -2075,7 +2075,7 @@ int HLSLParser::ParseAndEvaluateConstIntExpr()
 int HLSLParser::ParseAndEvaluateVectorDimension()
 {
     auto tkn = Tkn();
-    auto value = ParseAndEvaluateConstIntExpr();
+    auto value = ParseAndEvaluateConstExprInt();
 
     if (value < 1 || value > 4)
         Error("vector and matrix dimensions must be between 1 and 4", tkn.get());

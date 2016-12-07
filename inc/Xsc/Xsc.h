@@ -18,6 +18,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <istream>
 #include <ostream>
 #include <memory>
@@ -144,19 +145,19 @@ struct Statistics
     };
 
     //! All defined macros after pre-processing.
-    std::vector<std::string>    macros;
+    std::vector<std::string>            macros;
 
     //! Texture bindings.
-    std::vector<Binding>        textures;
+    std::vector<Binding>                textures;
 
     //! Constant buffer bindings.
-    std::vector<Binding>        constantBuffers;
+    std::vector<Binding>                constantBuffers;
 
     //! Fragment shader output targets.
-    std::vector<Binding>        fragmentTargets;
+    std::vector<Binding>                fragmentTargets;
 
-    //! Static sampler states.
-    std::vector<SamplerState>   samplerStates;
+    //! Static sampler states (identifier, states).
+    std::map<std::string, SamplerState> samplerStates;
 };
 
 //! Shader input descriptor structure.

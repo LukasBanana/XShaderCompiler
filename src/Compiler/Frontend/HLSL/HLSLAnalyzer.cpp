@@ -7,6 +7,7 @@
 
 #include "HLSLAnalyzer.h"
 #include "HLSLIntrinsics.h"
+#include "ConstExprEvaluator.h"
 #include "EndOfScopeAnalyzer.h"
 #include "Exception.h"
 #include "Helper.h"
@@ -53,6 +54,30 @@ void HLSLAnalyzer::DecorateASTPrimary(
 /*
  * ======= Private: =======
  */
+
+Variant HLSLAnalyzer::EvaluateConstExpr(Expr& expr)
+{
+    try
+    {
+        /* Evaluate expression and throw error on var-access */
+        ConstExprEvaluator exprEvaluator;
+        return exprEvaluator.EvaluateExpr(expr, [](VarAccessExpr* ast) -> Variant { throw ast; });
+    }
+    catch (const std::exception&)
+    {
+        return Variant();
+    }
+    catch (const VarAccessExpr*)
+    {
+        return Variant();
+    }
+    return Variant();
+}
+
+float HLSLAnalyzer::EvaluateConstExprFloat(Expr& expr)
+{
+    return static_cast<float>(EvaluateConstExpr(expr).ToReal());
+}
 
 /* ------- Visit functions ------- */
 
@@ -185,6 +210,17 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
     /* Register identifier for sampler */
     Register(ast->ident, ast);
+
+    /* Collect output statistics for sampler states */
+    if (statistics_)
+    {
+        SamplerState samplerState;
+        {
+            for (auto& value : ast->samplerValues)
+                AnalyzeSamplerValue(value.get(), samplerState);
+        }
+        statistics_->samplerStates[ast->ident] = samplerState;
+    }
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
@@ -797,6 +833,169 @@ void HLSLAnalyzer::AnalyzeEndOfScopes(FunctionDecl& funcDecl)
     EndOfScopeAnalyzer scopeAnalyzer;
     scopeAnalyzer.MarkEndOfScopesFromFunction(funcDecl);
 }
+
+void HLSLAnalyzer::AnalyzeSamplerValue(SamplerValue* ast, SamplerState& samplerState)
+{
+    const auto& name = ast->name;
+
+    /* Assign value to sampler state */
+    if (auto literalExpr = ast->value->As<LiteralExpr>())
+    {
+        const auto& value = literalExpr->value;
+
+        if (name == "MipLODBias")
+            samplerState.mipLODBias = FromString<float>(value);
+        else if (name == "MaxAnisotropy")
+            samplerState.maxAnisotropy = FromString<unsigned int>(value);
+        else if (name == "MinLOD")
+            samplerState.minLOD = FromString<float>(value);
+        else if (name == "MaxLOD")
+            samplerState.maxLOD = FromString<float>(value);
+    }
+    else if (auto varAccessExpr = ast->value->As<VarAccessExpr>())
+    {
+        const auto& value = varAccessExpr->varIdent->ident;
+
+        if (name == "Filter")
+            AnalyzeSamplerValueFilter(value, samplerState.filter);
+        else if (name == "AddressU")
+            AnalyzeSamplerValueTextureAddressMode(value, samplerState.addressU);
+        else if (name == "AddressV")
+            AnalyzeSamplerValueTextureAddressMode(value, samplerState.addressV);
+        else if (name == "AddressW")
+            AnalyzeSamplerValueTextureAddressMode(value, samplerState.addressW);
+        else if (name == "ComparisonFunc")
+            AnalyzeSamplerValueComparisonFunc(value, samplerState.comparisonFunc);
+    }
+    else if (name == "BorderColor")
+    {
+        try
+        {
+            if (auto funcCallExpr = ast->value->As<FunctionCallExpr>())
+            {
+                if (funcCallExpr->call->typeDenoter && funcCallExpr->call->typeDenoter->IsVector() && funcCallExpr->call->arguments.size() == 4)
+                {
+                    /* Evaluate sub expressions to constant floats */
+                    for (std::size_t i = 0; i < 4; ++i)
+                        samplerState.borderColor[i] = EvaluateConstExprFloat(*funcCallExpr->call->arguments[i]);
+                }
+                else
+                    throw std::string("invalid type or invalid number of arguments");
+            }
+            else if (auto castExpr = ast->value->As<CastExpr>())
+            {
+                /* Evaluate sub expression to constant float and copy into four sub values */
+                auto subValueSrc = EvaluateConstExprFloat(*castExpr->expr);
+                for (std::size_t i = 0; i < 4; ++i)
+                    samplerState.borderColor[i] = subValueSrc;
+            }
+            else if (auto initExpr = ast->value->As<InitializerExpr>())
+            {
+                if (initExpr->exprs.size() == 4)
+                {
+                    /* Evaluate sub expressions to constant floats */
+                    for (std::size_t i = 0; i < 4; ++i)
+                        samplerState.borderColor[i] = EvaluateConstExprFloat(*initExpr->exprs[i]);
+                }
+                else
+                    throw std::string("invalid number of arguments");
+            }
+        }
+        catch (const std::string& s)
+        {
+            Warning(s + " to initialize sampler value 'BorderColor'", ast->value.get());
+        }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeSamplerValueFilter(const std::string& value, SamplerState::Filter& filter)
+{
+    using T = SamplerState::Filter;
+
+    static const std::map<std::string, T> valueMap
+    {
+        { "MIN_MAG_MIP_POINT",                          T::MinMagMipPoint                       },
+        { "MIN_MAG_POINT_MIP_LINEAR",                   T::MinMagPointMipLinear                 },
+        { "MIN_POINT_MAG_LINEAR_MIP_POINT",             T::MinPointMagLinearMipPoint            },
+        { "MIN_POINT_MAG_MIP_LINEAR",                   T::MinPointMagMipLinear                 },
+        { "MIN_LINEAR_MAG_MIP_POINT",                   T::MinLinearMagMipPoint                 },
+        { "MIN_LINEAR_MAG_POINT_MIP_LINEAR",            T::MinLinearMagPointMipLinear           },
+        { "MIN_MAG_LINEAR_MIP_POINT",                   T::MinMagLinearMipPoint                 },
+        { "MIN_MAG_MIP_LINEAR",                         T::MinMagMipLinear                      },
+        { "ANISOTROPIC",                                T::Anisotropic                          },
+        { "COMPARISON_MIN_MAG_MIP_POINT",               T::ComparisonMinMagMipPoint             },
+        { "COMPARISON_MIN_MAG_POINT_MIP_LINEAR",        T::ComparisonMinMagPointMipLinear       },
+        { "COMPARISON_MIN_POINT_MAG_LINEAR_MIP_POINT",  T::ComparisonMinPointMagLinearMipPoint  },
+        { "COMPARISON_MIN_POINT_MAG_MIP_LINEAR",        T::ComparisonMinPointMagMipLinear       },
+        { "COMPARISON_MIN_LINEAR_MAG_MIP_POINT",        T::ComparisonMinLinearMagMipPoint       },
+        { "COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR", T::ComparisonMinLinearMagPointMipLinear },
+        { "COMPARISON_MIN_MAG_LINEAR_MIP_POINT",        T::ComparisonMinMagLinearMipPoint       },
+        { "COMPARISON_MIN_MAG_MIP_LINEAR",              T::ComparisonMinMagMipLinear            },
+        { "COMPARISON_ANISOTROPIC",                     T::ComparisonAnisotropic                },
+        { "MINIMUM_MIN_MAG_MIP_POINT",                  T::MinimumMinMagMipPoint                },
+        { "MINIMUM_MIN_MAG_POINT_MIP_LINEAR",           T::MinimumMinMagPointMipLinear          },
+        { "MINIMUM_MIN_POINT_MAG_LINEAR_MIP_POINT",     T::MinimumMinPointMagLinearMipPoint     },
+        { "MINIMUM_MIN_POINT_MAG_MIP_LINEAR",           T::MinimumMinPointMagMipLinear          },
+        { "MINIMUM_MIN_LINEAR_MAG_MIP_POINT",           T::MinimumMinLinearMagMipPoint          },
+        { "MINIMUM_MIN_LINEAR_MAG_POINT_MIP_LINEAR",    T::MinimumMinLinearMagPointMipLinear    },
+        { "MINIMUM_MIN_MAG_LINEAR_MIP_POINT",           T::MinimumMinMagLinearMipPoint          },
+        { "MINIMUM_MIN_MAG_MIP_LINEAR",                 T::MinimumMinMagMipLinear               },
+        { "MINIMUM_ANISOTROPIC",                        T::MinimumAnisotropic                   },
+        { "MAXIMUM_MIN_MAG_MIP_POINT",                  T::MaximumMinMagMipPoint                },
+        { "MAXIMUM_MIN_MAG_POINT_MIP_LINEAR",           T::MaximumMinMagPointMipLinear          },
+        { "MAXIMUM_MIN_POINT_MAG_LINEAR_MIP_POINT",     T::MaximumMinPointMagLinearMipPoint     },
+        { "MAXIMUM_MIN_POINT_MAG_MIP_LINEAR",           T::MaximumMinPointMagMipLinear          },
+        { "MAXIMUM_MIN_LINEAR_MAG_MIP_POINT",           T::MaximumMinLinearMagMipPoint          },
+        { "MAXIMUM_MIN_LINEAR_MAG_POINT_MIP_LINEAR",    T::MaximumMinLinearMagPointMipLinear    },
+        { "MAXIMUM_MIN_MAG_LINEAR_MIP_POINT",           T::MaximumMinMagLinearMipPoint          },
+        { "MAXIMUM_MIN_MAG_MIP_LINEAR",                 T::MaximumMinMagMipLinear               },
+        { "MAXIMUM_ANISOTROPIC",                        T::MaximumAnisotropic                   },
+    };
+
+    auto it = valueMap.find(value);
+    if (it != valueMap.end())
+        filter = it->second;
+}
+
+void HLSLAnalyzer::AnalyzeSamplerValueTextureAddressMode(const std::string& value, SamplerState::TextureAddressMode& addressMode)
+{
+    using T = SamplerState::TextureAddressMode;
+
+    static const std::map<std::string, T> valueMap
+    {
+        { "WRAP",        T::Wrap       },
+        { "MIRROR",      T::Mirror     },
+        { "CLAMP",       T::Clamp      },
+        { "BORDER",      T::Border     },
+        { "MIRROR_ONCE", T::MirrorOnce },
+    };
+
+    auto it = valueMap.find(value);
+    if (it != valueMap.end())
+        addressMode = it->second;
+}
+
+void HLSLAnalyzer::AnalyzeSamplerValueComparisonFunc(const std::string& value, SamplerState::ComparisonFunc& comparisonFunc)
+{
+    using T = SamplerState::ComparisonFunc;
+
+    static const std::map<std::string, T> valueMap
+    {
+        { "COMPARISON_NEVER",         T::Never        },
+        { "COMPARISON_LESS",          T::Less         },
+        { "COMPARISON_EQUAL",         T::Equal        },
+        { "COMPARISON_LESS_EQUAL",    T::LessEqual    },
+        { "COMPARISON_GREATER",       T::Greater      },
+        { "COMPARISON_NOT_EQUAL",     T::NotEqual     },
+        { "COMPARISON_GREATER_EQUAL", T::GreaterEqual },
+        { "COMPARISON_ALWAYS",        T::Always       },
+    };
+
+    auto it = valueMap.find(value);
+    if (it != valueMap.end())
+        comparisonFunc = it->second;
+}
+
 
 
 } // /namespace Xsc
