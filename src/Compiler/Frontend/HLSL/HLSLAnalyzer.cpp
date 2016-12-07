@@ -41,6 +41,7 @@ void HLSLAnalyzer::DecorateASTPrimary(
     versionIn_      = inputDesc.shaderVersion;
     shaderModel_    = GetShaderModel(inputDesc.shaderVersion);
     preferWrappers_ = outputDesc.options.preferWrappers;
+    statistics_     = outputDesc.statistics;
 
     /* Decorate program AST */
     program_ = &program;
@@ -174,6 +175,18 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     }
 }
 
+IMPLEMENT_VISIT_PROC(TextureDecl)
+{
+    /* Register identifier for texture */
+    Register(ast->ident, ast);
+}
+
+IMPLEMENT_VISIT_PROC(SamplerDecl)
+{
+    /* Register identifier for sampler */
+    Register(ast->ident, ast);
+}
+
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
     /* Find base struct-decl */
@@ -273,20 +286,6 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
         for (auto& varDecl : member->varDecls)
             varDecl->bufferDeclRef = ast;
     }
-}
-
-IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
-{
-    /* Register all texture declarations (register only in the statement) */
-    for (auto& textureDecl : ast->textureDecls)
-        Register(textureDecl->ident, textureDecl.get());
-}
-
-IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
-{
-    /* Register all sampler declarations (register only in the statement) */
-    for (auto& samplerDecl : ast->samplerDecls)
-        Register(samplerDecl->ident, samplerDecl.get());
 }
 
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)

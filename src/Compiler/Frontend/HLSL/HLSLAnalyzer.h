@@ -54,13 +54,13 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( VarType           );
         
         DECL_VISIT_PROC( VarDecl           );
+        DECL_VISIT_PROC( TextureDecl       );
+        DECL_VISIT_PROC( SamplerDecl       );
         DECL_VISIT_PROC( StructDecl        );
         DECL_VISIT_PROC( AliasDecl         );
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( BufferDeclStmnt   );
-        DECL_VISIT_PROC( TextureDeclStmnt  );
-        DECL_VISIT_PROC( SamplerDeclStmnt  );
         DECL_VISIT_PROC( StructDeclStmnt   );
         //DECL_VISIT_PROC( VarDeclStmnt      );
 
@@ -108,6 +108,7 @@ class HLSLAnalyzer : public Analyzer
         InputShaderVersion          versionIn_      = InputShaderVersion::HLSL5;
         ShaderVersion               shaderModel_    = { 5, 0 };
         bool                        preferWrappers_ = false;
+        Statistics*                 statistics_     = nullptr;
 
 };
 
