@@ -654,6 +654,10 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
             }
         }
     }
+
+    /* Has the variable the fragment coordinate semantic? */
+    if (varDecl->semantic == Semantic::Position && shaderTarget_ == ShaderTarget::FragmentShader)
+        program_->flags << Program::isFragCoordUsed;
 }
 
 void HLSLAnalyzer::AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, TextureDecl* textureDecl)

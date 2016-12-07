@@ -230,27 +230,8 @@ IMPLEMENT_VISIT_PROC(Program)
     /* Write version and required extensions first */
     WriteVersionAndExtensions(*ast);
 
-    /* Write 'gl_FragCoord' layout */
-    if (shaderTarget_ == ShaderTarget::FragmentShader)
-    {
-        BeginLn();
-        {
-            Write("layout(origin_upper_left");
-            if (GetProgram()->flags(Program::hasSM3ScreenSpace))
-                Write(", pixel_center_integer");
-            Write(") in vec4 gl_FragCoord;");
-        }
-        EndLn();
-        Blank();
-    }
-
-    /* Write entry point attributes */
-    if (!ast->entryPointRef->attribs.empty())
-    {
-        for (auto& attrib : ast->entryPointRef->attribs)
-            WriteAttribute(attrib.get());
-        Blank();
-    }
+    /* Write global input/output layouts */
+    WriteGlobalLayouts();
 
     /* Append default helper macros and functions */
     WriteWrapperIntrinsics(*ast);
@@ -931,7 +912,54 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 
 /* --- Helper functions for code generation --- */
 
-/* --- Attribute --- */
+/* --- Attributes --- */
+
+void GLSLGenerator::WriteGlobalLayouts()
+{
+    bool layoutsWritten = false;
+    auto program = GetProgram();
+
+    /* Write 'gl_FragCoord' layout */
+    if (shaderTarget_ == ShaderTarget::FragmentShader && program->flags(Program::isFragCoordUsed))
+    {
+        WriteGlobalLayoutFragCoord();
+        layoutsWritten = true;
+    }
+
+    /* Write global layouts from entry point attributes */
+    if (WriteEntryPointAttributes())
+        layoutsWritten = true;
+
+    if (layoutsWritten)
+        Blank();
+}
+
+void GLSLGenerator::WriteGlobalLayoutFragCoord()
+{
+    BeginLn();
+    {
+        Write("layout(origin_upper_left");
+        if (GetProgram()->flags(Program::hasSM3ScreenSpace))
+            Write(", pixel_center_integer");
+        Write(") in vec4 gl_FragCoord;");
+    }
+    EndLn();
+}
+
+bool GLSLGenerator::WriteEntryPointAttributes()
+{
+    auto entryPoint = GetProgram()->entryPointRef;
+
+    /* Write entry point attributes */
+    if (!entryPoint->attribs.empty())
+    {
+        for (auto& attrib : entryPoint->attribs)
+            WriteAttribute(attrib.get());
+        return true;
+    }
+
+    return false;
+}
 
 void GLSLGenerator::WriteAttribute(Attribute* ast)
 {

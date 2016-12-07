@@ -196,6 +196,7 @@ struct Program : public AST
     FLAG_ENUM
     {
         FLAG( hasSM3ScreenSpace, 0 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
+        FLAG( isFragCoordUsed,   1 ), // This shader program makes use of the fragment coordinate (SV_Position, gl_FragCoord).
     };
 
     std::vector<StmntPtr>               globalStmnts;               // Global declaration statements

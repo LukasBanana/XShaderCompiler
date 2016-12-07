@@ -123,7 +123,12 @@ class GLSLGenerator : public Generator
 
         /* --- Helper functions for code generation --- */
 
-        /* --- Attribute --- */
+        /* --- Attributes --- */
+
+        void WriteGlobalLayouts();
+        void WriteGlobalLayoutFragCoord();
+
+        bool WriteEntryPointAttributes();
 
         void WriteAttribute(Attribute* ast);
         void WriteAttributeNumThreads(Attribute* ast);
