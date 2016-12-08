@@ -31,7 +31,8 @@ class Generator : protected Visitor
             Program& program,
             const ShaderInput& inputDesc,
             const ShaderOutput& outputDesc,
-            Log* log = nullptr
+            Log* log = nullptr,
+            Reflection::ReflectionData* reflectionData = nullptr
         );
 
     protected:
@@ -39,7 +40,8 @@ class Generator : protected Visitor
         virtual void GenerateCodePrimary(
             Program& program,
             const ShaderInput& inputDesc,
-            const ShaderOutput& outputDesc
+            const ShaderOutput& outputDesc,
+            Reflection::ReflectionData* reflectionData
         ) = 0;
 
         void Error(const std::string& msg, const AST* ast = nullptr);

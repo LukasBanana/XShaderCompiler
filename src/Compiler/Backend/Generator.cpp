@@ -23,7 +23,7 @@ Generator::Generator(Log* log) :
 }
 
 bool Generator::GenerateCode(
-    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log)
+    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log, Reflection::ReflectionData* reflectionData)
 {
     /* Store parameters */
     writer_.SetIndent(outputDesc.formatting.indent);
@@ -34,7 +34,7 @@ bool Generator::GenerateCode(
     try
     {
         writer_.OutputStream(*outputDesc.sourceCode);
-        GenerateCodePrimary(program, inputDesc, outputDesc);
+        GenerateCodePrimary(program, inputDesc, outputDesc, reflectionData);
     }
     catch (const Report& err)
     {

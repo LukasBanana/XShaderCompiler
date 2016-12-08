@@ -10,7 +10,7 @@
 
 
 #include <Xsc/IndentHandler.h>
-#include <Xsc/SamplerState.h>
+#include <Xsc/Reflection.h>
 #include "ShellState.h"
 #include "CommandLine.h"
 #include <ostream>
@@ -46,10 +46,10 @@ class Shell
 
         void Compile(const std::string& filename);
 
-        void ShowStats(const Statistics& stats);
-        void ShowStatsFor(const std::vector<Statistics::Binding>& objects, const std::string& title);
-        void ShowStatsFor(const std::vector<std::string>& idents, const std::string& title);
-        void ShowStatsFor(const std::map<std::string, SamplerState>& samplerStates, const std::string& title);
+        void ShowReflection(const Reflection::ReflectionData& reflectionData);
+        void ShowReflectionFor(const std::vector<Reflection::BindingSlot>& objects, const std::string& title);
+        void ShowReflectionFor(const std::vector<std::string>& idents, const std::string& title);
+        void ShowReflectionFor(const std::map<std::string, Reflection::SamplerState>& samplerStates, const std::string& title);
 
         ShellState      state_;
         IndentHandler   indentHandler_;

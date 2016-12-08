@@ -206,15 +206,12 @@ void Shell::Compile(const std::string& filename)
         state_.outputDesc.sourceCode = &outputStream;
 
         /* Final setup before compilation */
-        StdLog          log;
-        IncludeHandler  includeHandler;
-        Statistics      stats;
+        StdLog                      log;
+        IncludeHandler              includeHandler;
+        Reflection::ReflectionData  reflectionData;
         
         includeHandler.searchPaths = state_.searchPaths;
         state_.inputDesc.includeHandler = &includeHandler;
-
-        if (state_.showStats)
-            state_.outputDesc.statistics = &stats;
 
         /* Show compilation/validation status */
         if (state_.outputDesc.options.validateOnly)
@@ -223,7 +220,12 @@ void Shell::Compile(const std::string& filename)
             output << "compile \"" << filename << "\" to \"" << outputFilename << '\"' << std::endl;
 
         /* Compile shader file */
-        auto result = CompileShader(state_.inputDesc, state_.outputDesc, &log);
+        auto result = CompileShader(
+            state_.inputDesc,
+            state_.outputDesc,
+            &log,
+            (state_.showStats ? &reflectionData : nullptr)
+        );
 
         /* Print all reports to the log output */
         log.PrintAll(state_.verbose, state_.outputDesc.options.warnings);
@@ -254,7 +256,7 @@ void Shell::Compile(const std::string& filename)
 
         /* Show output statistics (if enabled) */
         if (state_.showStats)
-            ShowStats(stats);
+            ShowReflection(reflectionData);
     }
     catch (const std::exception& err)
     {
@@ -263,21 +265,21 @@ void Shell::Compile(const std::string& filename)
     }
 }
 
-void Shell::ShowStats(const Statistics& stats)
+void Shell::ShowReflection(const Reflection::ReflectionData& reflectionData)
 {
-    output << "statistics:" << std::endl;
+    output << "code reflection:" << std::endl;
     indentHandler_.IncIndent();
     {
-        ShowStatsFor( stats.macros,          "macros"                   );
-        ShowStatsFor( stats.textures,        "texture bindings"         );
-        ShowStatsFor( stats.constantBuffers, "constant buffer bindings" );
-        ShowStatsFor( stats.fragmentTargets, "fragment target bindings" );
-        ShowStatsFor( stats.samplerStates,   "sampler states"           );
+        ShowReflectionFor( reflectionData.macros,          "macros"                   );
+        ShowReflectionFor( reflectionData.textures,        "texture bindings"         );
+        ShowReflectionFor( reflectionData.constantBuffers, "constant buffer bindings" );
+        ShowReflectionFor( reflectionData.fragmentTargets, "fragment target bindings" );
+        ShowReflectionFor( reflectionData.samplerStates,   "sampler states"           );
     }
     indentHandler_.DecIndent();
 }
 
-void Shell::ShowStatsFor(const std::vector<Statistics::Binding>& objects, const std::string& title)
+void Shell::ShowReflectionFor(const std::vector<Reflection::BindingSlot>& objects, const std::string& title)
 {
     output << indentHandler_.FullIndent() << title << ':' << std::endl;
     indentHandler_.IncIndent();
@@ -311,7 +313,7 @@ void Shell::ShowStatsFor(const std::vector<Statistics::Binding>& objects, const 
     indentHandler_.DecIndent();
 }
 
-void Shell::ShowStatsFor(const std::vector<std::string>& idents, const std::string& title)
+void Shell::ShowReflectionFor(const std::vector<std::string>& idents, const std::string& title)
 {
     output << indentHandler_.FullIndent() << title << ':' << std::endl;
     indentHandler_.IncIndent();
@@ -327,7 +329,7 @@ void Shell::ShowStatsFor(const std::vector<std::string>& idents, const std::stri
     indentHandler_.DecIndent();
 }
 
-void Shell::ShowStatsFor(const std::map<std::string, SamplerState>& samplerStates, const std::string& title)
+void Shell::ShowReflectionFor(const std::map<std::string, Reflection::SamplerState>& samplerStates, const std::string& title)
 {
     output << indentHandler_.FullIndent() << title << ':' << std::endl;
     indentHandler_.IncIndent();
@@ -341,12 +343,12 @@ void Shell::ShowStatsFor(const std::map<std::string, SamplerState>& samplerState
                 {
                     const auto& smpl = it.second;
                     const auto& brdCol = smpl.borderColor;
-                    output << indentHandler_.FullIndent() << "AddressU       = " << SamplerTextureAddressModeToString(smpl.addressU) << std::endl;
-                    output << indentHandler_.FullIndent() << "AddressV       = " << SamplerTextureAddressModeToString(smpl.addressV) << std::endl;
-                    output << indentHandler_.FullIndent() << "AddressW       = " << SamplerTextureAddressModeToString(smpl.addressW) << std::endl;
+                    output << indentHandler_.FullIndent() << "AddressU       = " << ToString(smpl.addressU) << std::endl;
+                    output << indentHandler_.FullIndent() << "AddressV       = " << ToString(smpl.addressV) << std::endl;
+                    output << indentHandler_.FullIndent() << "AddressW       = " << ToString(smpl.addressW) << std::endl;
                     output << indentHandler_.FullIndent() << "BorderColor    = { " << brdCol[0] << ", " << brdCol[1] << ", " << brdCol[2] << ", " << brdCol[3] << " }" << std::endl;
-                    output << indentHandler_.FullIndent() << "ComparisonFunc = " << SamplerComparisonFuncToString(smpl.comparisonFunc) << std::endl;
-                    output << indentHandler_.FullIndent() << "Filter         = " << SamplerFilterToString(smpl.filter) << std::endl;
+                    output << indentHandler_.FullIndent() << "ComparisonFunc = " << ToString(smpl.comparisonFunc) << std::endl;
+                    output << indentHandler_.FullIndent() << "Filter         = " << ToString(smpl.filter) << std::endl;
                     output << indentHandler_.FullIndent() << "MaxAnisotropy  = " << smpl.maxAnisotropy << std::endl;
                     output << indentHandler_.FullIndent() << "MaxLOD         = " << smpl.maxLOD << std::endl;
                     output << indentHandler_.FullIndent() << "MinLOD         = " << smpl.minLOD << std::endl;

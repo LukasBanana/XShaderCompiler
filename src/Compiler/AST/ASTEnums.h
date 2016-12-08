@@ -9,7 +9,7 @@
 #define XSC_AST_ENUMS_H
 
 
-#include <Xsc/SamplerState.h>
+#include <Xsc/Reflection.h>
 #include <string>
 #include <vector>
 #include <set>
@@ -700,22 +700,22 @@ bool IsUserSemantic(const Semantic t);
 std::string SemanticToString(const Semantic t);
 
 
-/* ----- SamplerState::Filter Enum ----- */
+/* ----- Reflection::Filter Enum ----- */
 
-std::string FilterToString(const SamplerState::Filter t);
-SamplerState::Filter StringToFilter(const std::string& s);
-
-
-/* ----- SamplerState::TextureAddressMode Enum ----- */
-
-std::string TexAddressModeToString(const SamplerState::TextureAddressMode t);
-SamplerState::TextureAddressMode StringToTexAddressMode(const std::string& s);
+std::string FilterToString(const Reflection::Filter t);
+Reflection::Filter StringToFilter(const std::string& s);
 
 
-/* ----- SamplerState::ComparisonFunc Enum ----- */
+/* ----- Reflection::TextureAddressMode Enum ----- */
 
-std::string CompareFuncToString(const SamplerState::ComparisonFunc t);
-SamplerState::ComparisonFunc StringToCompareFunc(const std::string& s);
+std::string TexAddressModeToString(const Reflection::TextureAddressMode t);
+Reflection::TextureAddressMode StringToTexAddressMode(const std::string& s);
+
+
+/* ----- Reflection::ComparisonFunc Enum ----- */
+
+std::string CompareFuncToString(const Reflection::ComparisonFunc t);
+Reflection::ComparisonFunc StringToCompareFunc(const std::string& s);
 
 
 } // /namespace Xsc

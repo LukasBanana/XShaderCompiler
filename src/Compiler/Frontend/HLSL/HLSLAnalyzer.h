@@ -12,7 +12,6 @@
 #include "Analyzer.h"
 #include "ShaderVersion.h"
 #include "Variant.h"
-#include <Xsc/SamplerState.h>
 #include <map>
 
 
@@ -39,7 +38,8 @@ class HLSLAnalyzer : public Analyzer
         void DecorateASTPrimary(
             Program& program,
             const ShaderInput& inputDesc,
-            const ShaderOutput& outputDesc
+            const ShaderOutput& outputDesc,
+            Reflection::ReflectionData* reflectionData
         ) override;
         
         /*
@@ -104,10 +104,10 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeEndOfScopes(FunctionDecl& funcDecl);
 
-        void AnalyzeSamplerValue(SamplerValue* ast, SamplerState& samplerState);
-        void AnalyzeSamplerValueFilter(const std::string& value, SamplerState::Filter& filter, const AST* ast = nullptr);
-        void AnalyzeSamplerValueTextureAddressMode(const std::string& value, SamplerState::TextureAddressMode& addressMode, const AST* ast = nullptr);
-        void AnalyzeSamplerValueComparisonFunc(const std::string& value, SamplerState::ComparisonFunc& comparisonFunc, const AST* ast = nullptr);
+        void AnalyzeSamplerValue(SamplerValue* ast, Reflection::SamplerState& samplerState);
+        void AnalyzeSamplerValueFilter(const std::string& value, Reflection::Filter& filter, const AST* ast = nullptr);
+        void AnalyzeSamplerValueTextureAddressMode(const std::string& value, Reflection::TextureAddressMode& addressMode, const AST* ast = nullptr);
+        void AnalyzeSamplerValueComparisonFunc(const std::string& value, Reflection::ComparisonFunc& comparisonFunc, const AST* ast = nullptr);
 
         /* === Members === */
 
@@ -118,7 +118,7 @@ class HLSLAnalyzer : public Analyzer
         InputShaderVersion          versionIn_      = InputShaderVersion::HLSL5;
         ShaderVersion               shaderModel_    = { 5, 0 };
         bool                        preferWrappers_ = false;
-        Statistics*                 statistics_     = nullptr;
+        Reflection::ReflectionData* reflectionData_ = nullptr;
 
 };
 

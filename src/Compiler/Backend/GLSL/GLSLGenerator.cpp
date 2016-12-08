@@ -33,7 +33,7 @@ GLSLGenerator::GLSLGenerator(Log* log) :
 }
 
 void GLSLGenerator::GenerateCodePrimary(
-    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
+    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Reflection::ReflectionData* reflectionData)
 {
     /* Store parameters */
     shaderTarget_       = inputDesc.shaderTarget;
@@ -45,7 +45,7 @@ void GLSLGenerator::GenerateCodePrimary(
     compactWrappers_    = outputDesc.formatting.compactWrappers;
     newLineOpenScope_   = outputDesc.formatting.newLineOpenScope;
     nameManglingPrefix_ = outputDesc.formatting.prefix;
-    stats_              = outputDesc.statistics;
+    reflectionData_     = reflectionData;
 
     if (program.entryPointRef)
     {
@@ -364,8 +364,8 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
         Write(ast->ident);
 
         /* Track output statistics */
-        if (stats_)
-            stats_->constantBuffers.push_back({ ast->ident, binding });
+        if (reflectionData_)
+            reflectionData_->constantBuffers.push_back({ ast->ident, binding });
     }
     EndLn();
 
@@ -416,8 +416,8 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
                 Write(*samplerType + " " + texDecl->ident + ";");
 
                 /* Track output statistics */
-                if (stats_)
-                    stats_->textures.push_back({ texDecl->ident, binding });
+                if (reflectionData_)
+                    reflectionData_->textures.push_back({ texDecl->ident, binding });
             }
             EndLn();
         }

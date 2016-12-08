@@ -40,7 +40,8 @@ class GLSLGenerator : public Generator
         void GenerateCodePrimary(
             Program& program,
             const ShaderInput& inputDesc,
-            const ShaderOutput& outputDesc
+            const ShaderOutput& outputDesc,
+            Reflection::ReflectionData* reflectionData
         ) override;
 
         // Returns true if the specified AST structure must be resolved.
@@ -203,19 +204,19 @@ class GLSLGenerator : public Generator
 
         /* === Members === */
 
-        ShaderTarget        shaderTarget_           = ShaderTarget::VertexShader;
-        OutputShaderVersion versionOut_             = OutputShaderVersion::GLSL;
-        bool                allowExtensions_        = false;
-        bool                explicitBinding_        = false;
-        bool                preserveComments_       = false;
-        bool                allowLineMarks_         = false;
-        bool                compactWrappers_        = true;
-        bool                newLineOpenScope_       = true;
-        std::string         nameManglingPrefix_     = "xsc_";
-        Statistics*         stats_                  = nullptr;
+        ShaderTarget                shaderTarget_           = ShaderTarget::VertexShader;
+        OutputShaderVersion         versionOut_             = OutputShaderVersion::GLSL;
+        bool                        allowExtensions_        = false;
+        bool                        explicitBinding_        = false;
+        bool                        preserveComments_       = false;
+        bool                        allowLineMarks_         = false;
+        bool                        compactWrappers_        = true;
+        bool                        newLineOpenScope_       = true;
+        std::string                 nameManglingPrefix_     = "xsc_";
+        Reflection::ReflectionData* reflectionData_         = nullptr;
 
-        bool                isInsideEntryPoint_     = false;
-        bool                isInsideInterfaceBlock_ = false;
+        bool                        isInsideEntryPoint_     = false;
+        bool                        isInsideInterfaceBlock_ = false;
 
 };
 

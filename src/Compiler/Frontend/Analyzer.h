@@ -36,7 +36,8 @@ class Analyzer : protected Visitor
         bool DecorateAST(
             Program& program,
             const ShaderInput& inputDesc,
-            const ShaderOutput& outputDesc
+            const ShaderOutput& outputDesc,
+            Reflection::ReflectionData* reflectionData = nullptr
         );
 
     protected:
@@ -46,7 +47,8 @@ class Analyzer : protected Visitor
         virtual void DecorateASTPrimary(
             Program& program,
             const ShaderInput& inputDesc,
-            const ShaderOutput& outputDesc
+            const ShaderOutput& outputDesc,
+            Reflection::ReflectionData* reflectionData
         ) = 0;
 
         /* ----- Report and error handling ----- */

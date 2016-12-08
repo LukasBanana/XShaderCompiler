@@ -34,7 +34,7 @@ HLSLAnalyzer::HLSLAnalyzer(Log* log) :
 }
 
 void HLSLAnalyzer::DecorateASTPrimary(
-    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
+    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Reflection::ReflectionData* reflectionData)
 {
     /* Store parameters */
     entryPoint_     = inputDesc.entryPoint;
@@ -42,7 +42,7 @@ void HLSLAnalyzer::DecorateASTPrimary(
     versionIn_      = inputDesc.shaderVersion;
     shaderModel_    = GetShaderModel(inputDesc.shaderVersion);
     preferWrappers_ = outputDesc.options.preferWrappers;
-    statistics_     = outputDesc.statistics;
+    reflectionData_ = reflectionData;
 
     /* Decorate program AST */
     program_ = &program;
@@ -212,14 +212,14 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
     Register(ast->ident, ast);
 
     /* Collect output statistics for sampler states */
-    if (statistics_)
+    if (reflectionData_)
     {
-        SamplerState samplerState;
+        Reflection::SamplerState samplerState;
         {
             for (auto& value : ast->samplerValues)
                 AnalyzeSamplerValue(value.get(), samplerState);
         }
-        statistics_->samplerStates[ast->ident] = samplerState;
+        reflectionData_->samplerStates[ast->ident] = samplerState;
     }
 }
 
@@ -834,7 +834,7 @@ void HLSLAnalyzer::AnalyzeEndOfScopes(FunctionDecl& funcDecl)
     scopeAnalyzer.MarkEndOfScopesFromFunction(funcDecl);
 }
 
-void HLSLAnalyzer::AnalyzeSamplerValue(SamplerValue* ast, SamplerState& samplerState)
+void HLSLAnalyzer::AnalyzeSamplerValue(SamplerValue* ast, Reflection::SamplerState& samplerState)
 {
     const auto& name = ast->name;
 
@@ -908,7 +908,7 @@ void HLSLAnalyzer::AnalyzeSamplerValue(SamplerValue* ast, SamplerState& samplerS
     }
 }
 
-void HLSLAnalyzer::AnalyzeSamplerValueFilter(const std::string& value, SamplerState::Filter& filter, const AST* ast)
+void HLSLAnalyzer::AnalyzeSamplerValueFilter(const std::string& value, Reflection::Filter& filter, const AST* ast)
 {
     try
     {
@@ -920,7 +920,7 @@ void HLSLAnalyzer::AnalyzeSamplerValueFilter(const std::string& value, SamplerSt
     }
 }
 
-void HLSLAnalyzer::AnalyzeSamplerValueTextureAddressMode(const std::string& value, SamplerState::TextureAddressMode& addressMode, const AST* ast)
+void HLSLAnalyzer::AnalyzeSamplerValueTextureAddressMode(const std::string& value, Reflection::TextureAddressMode& addressMode, const AST* ast)
 {
     try
     {
@@ -932,7 +932,7 @@ void HLSLAnalyzer::AnalyzeSamplerValueTextureAddressMode(const std::string& valu
     }
 }
 
-void HLSLAnalyzer::AnalyzeSamplerValueComparisonFunc(const std::string& value, SamplerState::ComparisonFunc& comparisonFunc, const AST* ast)
+void HLSLAnalyzer::AnalyzeSamplerValueComparisonFunc(const std::string& value, Reflection::ComparisonFunc& comparisonFunc, const AST* ast)
 {
     try
     {

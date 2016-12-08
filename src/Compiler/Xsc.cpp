@@ -32,7 +32,9 @@ using Time      = std::chrono::system_clock;
 using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 static bool CompileShaderPrimary(
-    const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log, std::array<TimePoint, 6>& timePoints)
+    const ShaderInput& inputDesc, const ShaderOutput& outputDesc,
+    Log* log, Reflection::ReflectionData* reflectionData,
+    std::array<TimePoint, 6>& timePoints)
 {
     auto SubmitError = [log](const char* msg)
     {
@@ -69,8 +71,8 @@ static bool CompileShaderPrimary(
         inputDesc.filename
     );
 
-    if (outputDesc.statistics)
-        outputDesc.statistics->macros = preProcessor.ListDefinedMacroIdents();
+    if (reflectionData)
+        reflectionData->macros = preProcessor.ListDefinedMacroIdents();
 
     if (!processedInput)
         return SubmitError("preprocessing input code failed");
@@ -94,7 +96,7 @@ static bool CompileShaderPrimary(
     timePoints[2] = Time::now();
 
     HLSLAnalyzer analyzer(log);
-    auto analyzerResult = analyzer.DecorateAST(*program, inputDesc, outputDesc);
+    auto analyzerResult = analyzer.DecorateAST(*program, inputDesc, outputDesc, reflectionData);
 
     /* Print AST */
     if (outputDesc.options.showAST && log)
@@ -119,7 +121,7 @@ static bool CompileShaderPrimary(
     timePoints[4] = Time::now();
 
     GLSLGenerator generator(log);
-    if (!generator.GenerateCode(*program, inputDesc, outputDesc, log))
+    if (!generator.GenerateCode(*program, inputDesc, outputDesc, log, reflectionData))
         return SubmitError("generating output code failed");
 
     timePoints[5] = Time::now();
@@ -132,7 +134,9 @@ static bool CompileShaderPrimary(
  * Public functions
  */
 
-XSC_EXPORT bool CompileShader(const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Log* log)
+XSC_EXPORT bool CompileShader(
+    const ShaderInput& inputDesc, const ShaderOutput& outputDesc,
+    Log* log, Reflection::ReflectionData* reflectionData)
 {
     std::array<TimePoint, 6> timePoints;
 
@@ -145,25 +149,25 @@ XSC_EXPORT bool CompileShader(const ShaderInput& inputDesc, const ShaderOutput& 
         outputDescCopy.sourceCode = &dummyOutputStream;
 
     /* Compile shader with primary function */
-    auto result = CompileShaderPrimary(inputDesc, outputDescCopy, log, timePoints);
+    auto result = CompileShaderPrimary(inputDesc, outputDescCopy, log, reflectionData, timePoints);
 
     /* Sort statistics */
-    if (outputDescCopy.statistics)
+    if (reflectionData)
     {
-        auto SortStats = [](std::vector<Statistics::Binding>& objects)
+        auto SortStats = [](std::vector<Reflection::BindingSlot>& objects)
         {
             std::sort(
                 objects.begin(), objects.end(),
-                [](const Statistics::Binding& lhs, const Statistics::Binding& rhs)
+                [](const Reflection::BindingSlot& lhs, const Reflection::BindingSlot& rhs)
                 {
                     return (lhs.location < rhs.location);
                 }
             );
         };
 
-        SortStats(outputDescCopy.statistics->textures);
-        SortStats(outputDescCopy.statistics->constantBuffers);
-        SortStats(outputDescCopy.statistics->fragmentTargets);
+        SortStats(reflectionData->textures);
+        SortStats(reflectionData->constantBuffers);
+        SortStats(reflectionData->fragmentTargets);
     }
 
     /* Show timings */
@@ -232,17 +236,17 @@ XSC_EXPORT std::string ShaderVersionToString(const OutputShaderVersion shaderVer
     return "";
 }
 
-XSC_EXPORT std::string SamplerFilterToString(const SamplerState::Filter t)
+XSC_EXPORT std::string ToString(const Reflection::Filter t)
 {
     return FilterToString(t);
 }
 
-XSC_EXPORT std::string SamplerTextureAddressModeToString(const SamplerState::TextureAddressMode t)
+XSC_EXPORT std::string ToString(const Reflection::TextureAddressMode t)
 {
     return TexAddressModeToString(t);
 }
 
-XSC_EXPORT std::string SamplerComparisonFuncToString(const SamplerState::ComparisonFunc t)
+XSC_EXPORT std::string ToString(const Reflection::ComparisonFunc t)
 {
     return CompareFuncToString(t);
 }

@@ -880,12 +880,12 @@ std::string SemanticToString(const Semantic t)
 }
 
 
-/* ----- SamplerState::Filter Enum ----- */
+/* ----- Reflection::Filter Enum ----- */
 
 namespace DetailsMap0
 {
 
-using T = SamplerState::Filter;
+using T = Reflection::Filter;
 
 static const std::map<std::string, T> g_mapFilter
 {
@@ -929,12 +929,12 @@ static const std::map<std::string, T> g_mapFilter
 
 } // /namespace DetailsMap0
 
-std::string FilterToString(const SamplerState::Filter t)
+std::string FilterToString(const Reflection::Filter t)
 {
     return TypeToStringSecondary(DetailsMap0::g_mapFilter, t, "SamplerState::Filter");
 }
 
-SamplerState::Filter StringToFilter(const std::string& s)
+Reflection::Filter StringToFilter(const std::string& s)
 {
     return StringToTypeSecondary(DetailsMap0::g_mapFilter, s, "SamplerState::Filter");
 }
@@ -945,7 +945,7 @@ SamplerState::Filter StringToFilter(const std::string& s)
 namespace DetailsMap1
 {
 
-using T = SamplerState::TextureAddressMode;
+using T = Reflection::TextureAddressMode;
 
 static const std::map<std::string, T> g_mapTexAddressMode
 {
@@ -958,12 +958,12 @@ static const std::map<std::string, T> g_mapTexAddressMode
 
 } // /namespace DetailsMap1
 
-std::string TexAddressModeToString(const SamplerState::TextureAddressMode t)
+std::string TexAddressModeToString(const Reflection::TextureAddressMode t)
 {
     return TypeToStringSecondary(DetailsMap1::g_mapTexAddressMode, t, "SamplerState::TextureAddressMode");
 }
 
-SamplerState::TextureAddressMode StringToTexAddressMode(const std::string& s)
+Reflection::TextureAddressMode StringToTexAddressMode(const std::string& s)
 {
     return StringToTypeSecondary(DetailsMap1::g_mapTexAddressMode, s, "SamplerState::TextureAddressMode");
 }
@@ -974,7 +974,7 @@ SamplerState::TextureAddressMode StringToTexAddressMode(const std::string& s)
 namespace DetailsMap2
 {
 
-using T = SamplerState::ComparisonFunc;
+using T = Reflection::ComparisonFunc;
 
 static const std::map<std::string, T> g_mapCompareFunc
 {
@@ -990,12 +990,12 @@ static const std::map<std::string, T> g_mapCompareFunc
 
 } // /namespace DetailsMap2
 
-std::string CompareFuncToString(const SamplerState::ComparisonFunc t)
+std::string CompareFuncToString(const Reflection::ComparisonFunc t)
 {
     return TypeToStringSecondary(DetailsMap2::g_mapCompareFunc, t, "SamplerState::ComparisonFunc");
 }
 
-SamplerState::ComparisonFunc StringToCompareFunc(const std::string& s)
+Reflection::ComparisonFunc StringToCompareFunc(const std::string& s)
 {
     return StringToTypeSecondary(DetailsMap2::g_mapCompareFunc, s, "SamplerState::ComparisonFunc");
 }

@@ -14,7 +14,7 @@
 #include "IncludeHandler.h"
 #include "Targets.h"
 #include "Version.h"
-#include "SamplerState.h"
+#include "Reflection.h"
 
 #include <string>
 #include <vector>
@@ -132,34 +132,6 @@ struct Options
     bool showTimes          = false;
 };
 
-//! Structure for shader output statistics (e.g. texture/buffer binding points).
-struct Statistics
-{
-    struct Binding
-    {
-        //! Identifier of the binding point.
-        std::string ident;
-
-        //! Zero based binding point or location. If this is -1, the location has not been set explicitly.
-        int         location;
-    };
-
-    //! All defined macros after pre-processing.
-    std::vector<std::string>            macros;
-
-    //! Texture bindings.
-    std::vector<Binding>                textures;
-
-    //! Constant buffer bindings.
-    std::vector<Binding>                constantBuffers;
-
-    //! Fragment shader output targets.
-    std::vector<Binding>                fragmentTargets;
-
-    //! Static sampler states (identifier, states).
-    std::map<std::string, SamplerState> samplerStates;
-};
-
 //! Shader input descriptor structure.
 struct ShaderInput
 {
@@ -202,26 +174,26 @@ struct ShaderOutput
 
     //! Additional options to configure the code generation.
     Options             options;
-
-    //! Optional output statistics. By default null.
-    Statistics*         statistics      = nullptr;
 };
 
 /**
 \brief Cross compiles the shader code from the specified input stream into the specified output shader code.
 \param[in] inputDesc Input shader code descriptor.
 \param[in] outputDesc Output shader code descriptor.
-\param[in] log Optional pointer to an output log. Inherit from the "Log" class interface.
+\param[in] log Optional pointer to an output log. Inherit from the "Log" class interface. By default null.
+\param[out] reflectionData Optional pointer to a code reflection data structure. By default null.
 \return True if the code has been translated successfully.
 \throw std::invalid_argument If either the input or output streams are null.
 \see ShaderInput
 \see ShaderOutput
 \see Log
+\see ReflectionData
 */
 XSC_EXPORT bool CompileShader(
-    const ShaderInput& inputDesc,
-    const ShaderOutput& outputDesc,
-    Log* log = nullptr
+    const ShaderInput&          inputDesc,
+    const ShaderOutput&         outputDesc,
+    Log*                        log             = nullptr,
+    Reflection::ReflectionData* reflectionData  = nullptr
 );
 
 
