@@ -11,6 +11,7 @@
 
 #include "Export.h"
 #include <limits>
+#include <string>
 
 
 namespace Xsc
@@ -100,6 +101,16 @@ struct SamplerState
     float               minLOD          = -std::numeric_limits<float>::max();
     float               maxLOD          = std::numeric_limits<float>::max();
 };
+
+
+//! Returns the string representation of the specified 'SamplerState::Filter' type.
+XSC_EXPORT std::string SamplerFilterToString(const SamplerState::Filter t);
+
+//! Returns the string representation of the specified 'SamplerState::TextureAddressMode' type.
+XSC_EXPORT std::string SamplerTextureAddressModeToString(const SamplerState::TextureAddressMode t);
+
+//! Returns the string representation of the specified 'SamplerState::ComparisonFunc' type.
+XSC_EXPORT std::string SamplerComparisonFuncToString(const SamplerState::ComparisonFunc t);
 
 
 } // /namespace Xsc

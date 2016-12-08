@@ -341,12 +341,12 @@ void Shell::ShowStatsFor(const std::map<std::string, SamplerState>& samplerState
                 {
                     const auto& smpl = it.second;
                     const auto& brdCol = smpl.borderColor;
-                    output << indentHandler_.FullIndent() << "AddressU       = " << static_cast<int>(smpl.addressU) << std::endl;
-                    output << indentHandler_.FullIndent() << "AddressV       = " << static_cast<int>(smpl.addressV) << std::endl;
-                    output << indentHandler_.FullIndent() << "AddressW       = " << static_cast<int>(smpl.addressW) << std::endl;
+                    output << indentHandler_.FullIndent() << "AddressU       = " << SamplerTextureAddressModeToString(smpl.addressU) << std::endl;
+                    output << indentHandler_.FullIndent() << "AddressV       = " << SamplerTextureAddressModeToString(smpl.addressV) << std::endl;
+                    output << indentHandler_.FullIndent() << "AddressW       = " << SamplerTextureAddressModeToString(smpl.addressW) << std::endl;
                     output << indentHandler_.FullIndent() << "BorderColor    = { " << brdCol[0] << ", " << brdCol[1] << ", " << brdCol[2] << ", " << brdCol[3] << " }" << std::endl;
-                    output << indentHandler_.FullIndent() << "ComparisonFunc = " << static_cast<int>(smpl.comparisonFunc) << std::endl;
-                    output << indentHandler_.FullIndent() << "Filter         = " << static_cast<int>(smpl.filter) << std::endl;
+                    output << indentHandler_.FullIndent() << "ComparisonFunc = " << SamplerComparisonFuncToString(smpl.comparisonFunc) << std::endl;
+                    output << indentHandler_.FullIndent() << "Filter         = " << SamplerFilterToString(smpl.filter) << std::endl;
                     output << indentHandler_.FullIndent() << "MaxAnisotropy  = " << smpl.maxAnisotropy << std::endl;
                     output << indentHandler_.FullIndent() << "MaxLOD         = " << smpl.maxLOD << std::endl;
                     output << indentHandler_.FullIndent() << "MinLOD         = " << smpl.minLOD << std::endl;

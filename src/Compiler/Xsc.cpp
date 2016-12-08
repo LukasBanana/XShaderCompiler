@@ -12,6 +12,7 @@
 #include "GLSLGenerator.h"
 #include "Optimizer.h"
 #include "ASTPrinter.h"
+#include "ASTEnums.h"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -229,6 +230,21 @@ XSC_EXPORT std::string ShaderVersionToString(const OutputShaderVersion shaderVer
         case OutputShaderVersion::GLSL:     return "GLSL";
     }
     return "";
+}
+
+XSC_EXPORT std::string SamplerFilterToString(const SamplerState::Filter t)
+{
+    return FilterToString(t);
+}
+
+XSC_EXPORT std::string SamplerTextureAddressModeToString(const SamplerState::TextureAddressMode t)
+{
+    return TexAddressModeToString(t);
+}
+
+XSC_EXPORT std::string SamplerComparisonFuncToString(const SamplerState::ComparisonFunc t)
+{
+    return CompareFuncToString(t);
 }
 
 
