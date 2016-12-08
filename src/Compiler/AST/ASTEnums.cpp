@@ -43,6 +43,26 @@ T StringToType(const std::map<T, std::string>& typeMap, const std::string& str, 
      MapFailed("string", typeName);
 }
 
+template <typename T>
+std::string TypeToStringSecondary(const std::map<std::string, T>& typeMap, const T& type, const char* typeName)
+{
+    for (const auto& entry : typeMap)
+    {
+        if (entry.second == type)
+            return entry.first;
+    }
+    MapFailed(typeName, "string");
+}
+
+template <typename T>
+T StringToTypeSecondary(const std::map<std::string, T>& typeMap, const std::string& str, const char* typeName)
+{
+    auto it = typeMap.find(str);
+    if (it != typeMap.end())
+        return it->second;
+    MapFailed("string", typeName);
+}
+
 
 /* ----- AssignOp Enum ----- */
 
@@ -857,6 +877,127 @@ std::string SemanticToString(const Semantic t)
     return "";
 
     #undef CASE_TO_STRING
+}
+
+
+/* ----- SamplerState::Filter Enum ----- */
+
+namespace DetailsMap0
+{
+
+using T = SamplerState::Filter;
+
+static const std::map<std::string, T> g_mapFilter
+{
+    { "MIN_MAG_MIP_POINT",                          T::MinMagMipPoint                       },
+    { "MIN_MAG_POINT_MIP_LINEAR",                   T::MinMagPointMipLinear                 },
+    { "MIN_POINT_MAG_LINEAR_MIP_POINT",             T::MinPointMagLinearMipPoint            },
+    { "MIN_POINT_MAG_MIP_LINEAR",                   T::MinPointMagMipLinear                 },
+    { "MIN_LINEAR_MAG_MIP_POINT",                   T::MinLinearMagMipPoint                 },
+    { "MIN_LINEAR_MAG_POINT_MIP_LINEAR",            T::MinLinearMagPointMipLinear           },
+    { "MIN_MAG_LINEAR_MIP_POINT",                   T::MinMagLinearMipPoint                 },
+    { "MIN_MAG_MIP_LINEAR",                         T::MinMagMipLinear                      },
+    { "ANISOTROPIC",                                T::Anisotropic                          },
+    { "COMPARISON_MIN_MAG_MIP_POINT",               T::ComparisonMinMagMipPoint             },
+    { "COMPARISON_MIN_MAG_POINT_MIP_LINEAR",        T::ComparisonMinMagPointMipLinear       },
+    { "COMPARISON_MIN_POINT_MAG_LINEAR_MIP_POINT",  T::ComparisonMinPointMagLinearMipPoint  },
+    { "COMPARISON_MIN_POINT_MAG_MIP_LINEAR",        T::ComparisonMinPointMagMipLinear       },
+    { "COMPARISON_MIN_LINEAR_MAG_MIP_POINT",        T::ComparisonMinLinearMagMipPoint       },
+    { "COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR", T::ComparisonMinLinearMagPointMipLinear },
+    { "COMPARISON_MIN_MAG_LINEAR_MIP_POINT",        T::ComparisonMinMagLinearMipPoint       },
+    { "COMPARISON_MIN_MAG_MIP_LINEAR",              T::ComparisonMinMagMipLinear            },
+    { "COMPARISON_ANISOTROPIC",                     T::ComparisonAnisotropic                },
+    { "MINIMUM_MIN_MAG_MIP_POINT",                  T::MinimumMinMagMipPoint                },
+    { "MINIMUM_MIN_MAG_POINT_MIP_LINEAR",           T::MinimumMinMagPointMipLinear          },
+    { "MINIMUM_MIN_POINT_MAG_LINEAR_MIP_POINT",     T::MinimumMinPointMagLinearMipPoint     },
+    { "MINIMUM_MIN_POINT_MAG_MIP_LINEAR",           T::MinimumMinPointMagMipLinear          },
+    { "MINIMUM_MIN_LINEAR_MAG_MIP_POINT",           T::MinimumMinLinearMagMipPoint          },
+    { "MINIMUM_MIN_LINEAR_MAG_POINT_MIP_LINEAR",    T::MinimumMinLinearMagPointMipLinear    },
+    { "MINIMUM_MIN_MAG_LINEAR_MIP_POINT",           T::MinimumMinMagLinearMipPoint          },
+    { "MINIMUM_MIN_MAG_MIP_LINEAR",                 T::MinimumMinMagMipLinear               },
+    { "MINIMUM_ANISOTROPIC",                        T::MinimumAnisotropic                   },
+    { "MAXIMUM_MIN_MAG_MIP_POINT",                  T::MaximumMinMagMipPoint                },
+    { "MAXIMUM_MIN_MAG_POINT_MIP_LINEAR",           T::MaximumMinMagPointMipLinear          },
+    { "MAXIMUM_MIN_POINT_MAG_LINEAR_MIP_POINT",     T::MaximumMinPointMagLinearMipPoint     },
+    { "MAXIMUM_MIN_POINT_MAG_MIP_LINEAR",           T::MaximumMinPointMagMipLinear          },
+    { "MAXIMUM_MIN_LINEAR_MAG_MIP_POINT",           T::MaximumMinLinearMagMipPoint          },
+    { "MAXIMUM_MIN_LINEAR_MAG_POINT_MIP_LINEAR",    T::MaximumMinLinearMagPointMipLinear    },
+    { "MAXIMUM_MIN_MAG_LINEAR_MIP_POINT",           T::MaximumMinMagLinearMipPoint          },
+    { "MAXIMUM_MIN_MAG_MIP_LINEAR",                 T::MaximumMinMagMipLinear               },
+    { "MAXIMUM_ANISOTROPIC",                        T::MaximumAnisotropic                   },
+};
+
+} // /namespace DetailsMap0
+
+std::string FilterToString(const SamplerState::Filter t)
+{
+    return TypeToStringSecondary(DetailsMap0::g_mapFilter, t, "SamplerState::Filter");
+}
+
+SamplerState::Filter StringToFilter(const std::string& s)
+{
+    return StringToTypeSecondary(DetailsMap0::g_mapFilter, s, "SamplerState::Filter");
+}
+
+
+/* ----- SamplerState::TextureAddressMode Enum ----- */
+
+namespace DetailsMap1
+{
+
+using T = SamplerState::TextureAddressMode;
+
+static const std::map<std::string, T> g_mapTexAddressMode
+{
+    { "WRAP",        T::Wrap       },
+    { "MIRROR",      T::Mirror     },
+    { "CLAMP",       T::Clamp      },
+    { "BORDER",      T::Border     },
+    { "MIRROR_ONCE", T::MirrorOnce },
+};
+
+} // /namespace DetailsMap1
+
+std::string TexAddressModeToString(const SamplerState::TextureAddressMode t)
+{
+    return TypeToStringSecondary(DetailsMap1::g_mapTexAddressMode, t, "SamplerState::TextureAddressMode");
+}
+
+SamplerState::TextureAddressMode StringToTexAddressMode(const std::string& s)
+{
+    return StringToTypeSecondary(DetailsMap1::g_mapTexAddressMode, s, "SamplerState::TextureAddressMode");
+}
+
+
+/* ----- SamplerState::ComparisonFunc Enum ----- */
+
+namespace DetailsMap2
+{
+
+using T = SamplerState::ComparisonFunc;
+
+static const std::map<std::string, T> g_mapCompareFunc
+{
+    { "COMPARISON_NEVER",         T::Never        },
+    { "COMPARISON_LESS",          T::Less         },
+    { "COMPARISON_EQUAL",         T::Equal        },
+    { "COMPARISON_LESS_EQUAL",    T::LessEqual    },
+    { "COMPARISON_GREATER",       T::Greater      },
+    { "COMPARISON_NOT_EQUAL",     T::NotEqual     },
+    { "COMPARISON_GREATER_EQUAL", T::GreaterEqual },
+    { "COMPARISON_ALWAYS",        T::Always       },
+};
+
+} // /namespace DetailsMap2
+
+std::string CompareFuncToString(const SamplerState::ComparisonFunc t)
+{
+    return TypeToStringSecondary(DetailsMap2::g_mapCompareFunc, t, "SamplerState::ComparisonFunc");
+}
+
+SamplerState::ComparisonFunc StringToCompareFunc(const std::string& s)
+{
+    return StringToTypeSecondary(DetailsMap2::g_mapCompareFunc, s, "SamplerState::ComparisonFunc");
 }
 
 

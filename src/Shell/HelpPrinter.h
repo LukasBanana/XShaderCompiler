@@ -49,10 +49,10 @@ class HelpPrinter
         void AppendCommandHelp(const Command& cmd);
 
         // Prints all previously added help entries to the specified output stream.
-        void PrintAll(std::ostream& output, std::size_t indentSize = 0) const;
+        void PrintAll(std::ostream& output, std::size_t indentSize = 0, bool printCompact = true) const;
 
         // Prints the help entry only for the specified shell command.
-        void Print(std::ostream& output, const std::string& commandName, std::size_t indentSize = 0) const;
+        void Print(std::ostream& output, const std::string& commandName, std::size_t indentSize = 0, bool printCompact = true) const;
 
     private:
 
@@ -63,6 +63,8 @@ class HelpPrinter
         };
 
         void PrintEntry(std::ostream& output, const HelpDescriptor& helpDesc, std::size_t indentSize) const;
+        void PrintEntryCompact(std::ostream& output, const HelpDescriptor& helpDesc, std::size_t indentSize) const;
+        void PrintHelpDetails(std::ostream& output, const std::string& details, std::size_t indentSize) const;
 
         std::vector<HelpEntry>  entries_;
         std::size_t             maxUsageLen_ = 0;

@@ -9,6 +9,7 @@
 #define XSC_AST_ENUMS_H
 
 
+#include <Xsc/SamplerState.h>
 #include <string>
 #include <vector>
 #include <set>
@@ -697,6 +698,24 @@ bool IsUserSemantic(const Semantic t);
 
 // Returns the specified semantic as string.
 std::string SemanticToString(const Semantic t);
+
+
+/* ----- SamplerState::Filter Enum ----- */
+
+std::string FilterToString(const SamplerState::Filter t);
+SamplerState::Filter StringToFilter(const std::string& s);
+
+
+/* ----- SamplerState::TextureAddressMode Enum ----- */
+
+std::string TexAddressModeToString(const SamplerState::TextureAddressMode t);
+SamplerState::TextureAddressMode StringToTexAddressMode(const std::string& s);
+
+
+/* ----- SamplerState::ComparisonFunc Enum ----- */
+
+std::string CompareFuncToString(const SamplerState::ComparisonFunc t);
+SamplerState::ComparisonFunc StringToCompareFunc(const std::string& s);
 
 
 } // /namespace Xsc

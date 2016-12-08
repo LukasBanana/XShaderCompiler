@@ -105,9 +105,9 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEndOfScopes(FunctionDecl& funcDecl);
 
         void AnalyzeSamplerValue(SamplerValue* ast, SamplerState& samplerState);
-        void AnalyzeSamplerValueFilter(const std::string& value, SamplerState::Filter& filter);
-        void AnalyzeSamplerValueTextureAddressMode(const std::string& value, SamplerState::TextureAddressMode& addressMode);
-        void AnalyzeSamplerValueComparisonFunc(const std::string& value, SamplerState::ComparisonFunc& comparisonFunc);
+        void AnalyzeSamplerValueFilter(const std::string& value, SamplerState::Filter& filter, const AST* ast = nullptr);
+        void AnalyzeSamplerValueTextureAddressMode(const std::string& value, SamplerState::TextureAddressMode& addressMode, const AST* ast = nullptr);
+        void AnalyzeSamplerValueComparisonFunc(const std::string& value, SamplerState::ComparisonFunc& comparisonFunc, const AST* ast = nullptr);
 
         /* === Members === */
 

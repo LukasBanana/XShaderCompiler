@@ -37,13 +37,18 @@ void HelpPrinter::AppendCommandHelp(const Command& cmd)
     );
 }
 
-void HelpPrinter::PrintAll(std::ostream& output, std::size_t indentSize) const
+void HelpPrinter::PrintAll(std::ostream& output, std::size_t indentSize, bool printCompact) const
 {
     for (const auto& entry : entries_)
-        PrintEntry(output, entry.desc, indentSize);
+    {
+        if (printCompact)
+            PrintEntryCompact(output, entry.desc, indentSize);
+        else
+            PrintEntry(output, entry.desc, indentSize);
+    }
 }
 
-void HelpPrinter::Print(std::ostream& output, const std::string& commandName, std::size_t indentSize) const
+void HelpPrinter::Print(std::ostream& output, const std::string& commandName, std::size_t indentSize, bool printCompact) const
 {
     auto cmd = CommandFactory::Instance().Get(commandName);
     if (cmd)
@@ -52,7 +57,10 @@ void HelpPrinter::Print(std::ostream& output, const std::string& commandName, st
         {
             if (entry.cmd == cmd)
             {
-                PrintEntry(output, entry.desc, indentSize);
+                if (printCompact)
+                    PrintEntryCompact(output, entry.desc, indentSize);
+                else
+                    PrintEntry(output, entry.desc, indentSize);
                 break;
             }
         }
@@ -69,20 +77,38 @@ void HelpPrinter::PrintEntry(std::ostream& output, const HelpDescriptor& helpDes
     std::string indent(indentSize, ' ');
     
     /* Print usage and brief help */
+    output << indent << helpDesc.usage << std::endl;
+    output << indent << indent << indent << helpDesc.brief << std::endl;
+
+    /* Print optional details */
+    PrintHelpDetails(output, helpDesc.details, (indentSize*4));
+
+    output << std::endl;
+}
+
+void HelpPrinter::PrintEntryCompact(std::ostream& output, const HelpDescriptor& helpDesc, std::size_t indentSize) const
+{
+    std::string indent(indentSize, ' ');
+    
+    /* Print usage and brief help */
     output
         << indent << helpDesc.usage << ' '
         << std::string(3u + maxUsageLen_ - helpDesc.usage.size(), '.') << ' '
         << helpDesc.brief << std::endl;
 
     /* Print optional details */
+    PrintHelpDetails(output, helpDesc.details, (indentSize*2 + 5u + maxUsageLen_));
+}
+
+void HelpPrinter::PrintHelpDetails(std::ostream& output, const std::string& details, std::size_t indentSize) const
+{
     std::size_t start = 0;
+    std::string indent(indentSize, ' ');
 
-    std::string detailsIndent(indentSize*2 + 5u + maxUsageLen_, ' ');
-
-    while (start < helpDesc.details.size())
+    while (start < details.size())
     {
-        auto end = helpDesc.details.find('\n', start);
-        output << detailsIndent << helpDesc.details.substr(start, end) << std::endl;
+        auto end = details.find('\n', start);
+        output << indent << details.substr(start, end) << std::endl;
         if (end != std::string::npos)
             start = end + 1;
         else
