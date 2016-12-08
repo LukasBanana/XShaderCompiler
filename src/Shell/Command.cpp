@@ -357,26 +357,26 @@ void ShowTimesCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
- * ShowStatCommand class
+ * ReflectCommand class
  */
 
-std::vector<Command::Identifier> ShowStatCommand::Idents() const
+std::vector<Command::Identifier> ReflectCommand::Idents() const
 {
-    return { { "--show-stat" } };
+    return { { "--reflect" } };
 }
 
-HelpDescriptor ShowStatCommand::Help() const
+HelpDescriptor ReflectCommand::Help() const
 {
     return
     {
-        "--show-stat [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables debug output for shader output statistics; default=" + CommandLine::GetBooleanFalse()
+        "--reflect [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables code reflection output; default=" + CommandLine::GetBooleanFalse()
     };
 }
 
-void ShowStatCommand::Run(CommandLine& cmdLine, ShellState& state)
+void ReflectCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.showStats = cmdLine.AcceptBoolean(true);
+    state.showReflection = cmdLine.AcceptBoolean(true);
 }
 
 

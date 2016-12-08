@@ -3,7 +3,7 @@
 -T frag -E PS -o output/* IntrinsicClip.hlsl
 
 [TextureObjects PS]
---show-stat -W -T frag -E PS -o output/* TextureObjects.hlsl
+--reflect -W -T frag -E PS -o output/* TextureObjects.hlsl
 
 [SemanticTest1 VS1]
 -T vert -E VS1 -o output/* SemanticTest1.hlsl
@@ -75,7 +75,7 @@
 -T comp -E CS -O -o output/* TestShader1.hlsl
 
 [ssct_reflect PS]
---show-times --show-stat -Comments -T frag -EB -E PS -I "../../misc/ssct_shader/" "../../misc/ssct_shader/ssct_reflect.hlsl"
+--show-times --reflect -Comments -T frag -EB -E PS -I "../../misc/ssct_shader/" "../../misc/ssct_shader/ssct_reflect.hlsl"
 
 [ErrorTest1.hlsl VS]
 -T vert -E VertexMain -o output/* ErrorTest1.hlsl

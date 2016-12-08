@@ -224,7 +224,7 @@ void Shell::Compile(const std::string& filename)
             state_.inputDesc,
             state_.outputDesc,
             &log,
-            (state_.showStats ? &reflectionData : nullptr)
+            (state_.showReflection ? &reflectionData : nullptr)
         );
 
         /* Print all reports to the log output */
@@ -255,7 +255,7 @@ void Shell::Compile(const std::string& filename)
         }
 
         /* Show output statistics (if enabled) */
-        if (state_.showStats)
+        if (state_.showReflection)
             ShowReflection(reflectionData);
     }
     catch (const std::exception& err)
