@@ -102,7 +102,7 @@ void GLSLExtensionAgent::AcquireExtension(const GLSLExtension& extension)
             /* Extensions not allowed -> runtime error */
             RuntimeErr(
                 "GLSL extension '" + extension.extensionName +
-                "' or shader output version '" + ShaderVersionToString(extension.requiredVersion) + "' required"
+                "' or shader output version '" + ToString(extension.requiredVersion) + "' required"
             );
         }
     }

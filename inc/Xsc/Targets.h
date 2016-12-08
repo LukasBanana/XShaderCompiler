@@ -58,13 +58,13 @@ enum class OutputShaderVersion
 
 
 //! Returns the specified shader target as string.
-XSC_EXPORT std::string TargetToString(const ShaderTarget target);
+XSC_EXPORT std::string ToString(const ShaderTarget target);
 
 //! Returns the specified shader input version as string.
-XSC_EXPORT std::string ShaderVersionToString(const InputShaderVersion shaderVersion);
+XSC_EXPORT std::string ToString(const InputShaderVersion shaderVersion);
 
 //! Returns the specified shader output version as string.
-XSC_EXPORT std::string ShaderVersionToString(const OutputShaderVersion shaderVersion);
+XSC_EXPORT std::string ToString(const OutputShaderVersion shaderVersion);
 
 
 } // /namespace Xsc

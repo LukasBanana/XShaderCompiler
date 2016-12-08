@@ -189,7 +189,7 @@ XSC_EXPORT bool CompileShader(
     return result;
 }
 
-XSC_EXPORT std::string TargetToString(const ShaderTarget target)
+XSC_EXPORT std::string ToString(const ShaderTarget target)
 {
     switch (target)
     {
@@ -204,7 +204,7 @@ XSC_EXPORT std::string TargetToString(const ShaderTarget target)
     return "";
 }
 
-XSC_EXPORT std::string ShaderVersionToString(const InputShaderVersion shaderVersion)
+XSC_EXPORT std::string ToString(const InputShaderVersion shaderVersion)
 {
     switch (shaderVersion)
     {
@@ -215,7 +215,7 @@ XSC_EXPORT std::string ShaderVersionToString(const InputShaderVersion shaderVers
     return "";
 }
 
-XSC_EXPORT std::string ShaderVersionToString(const OutputShaderVersion shaderVersion)
+XSC_EXPORT std::string ToString(const OutputShaderVersion shaderVersion)
 {
     switch (shaderVersion)
     {
