@@ -232,7 +232,7 @@ static std::map<Semantic, GLSLSemanticDescriptor> GenerateSemanticMap()
     };
 }
 
-std::unique_ptr<std::string> SemanticToGLSLKeyword(const IndexedSemantic& semantic)
+static std::unique_ptr<std::string> SemanticToGLSLKeywordPrimary(const IndexedSemantic& semantic)
 {
     static const auto typeMap = GenerateSemanticMap();
     if (auto type = MapTypeToKeyword(typeMap, Semantic(semantic)))
@@ -243,6 +243,23 @@ std::unique_ptr<std::string> SemanticToGLSLKeyword(const IndexedSemantic& semant
             return MakeUnique<std::string>(type->keyword);
     }
     return nullptr;
+}
+
+std::unique_ptr<std::string> SemanticToGLSLKeyword(const IndexedSemantic& semantic, bool useVulkanGLSL)
+{
+    if (useVulkanGLSL)
+    {
+        switch (semantic)
+        {
+            case Semantic::VertexID:
+                return MakeUnique<std::string>("gl_VertexIndex");
+            case Semantic::InstanceID:
+                return MakeUnique<std::string>("gl_InstanceIndex");
+            default:
+                break;
+        }
+    }
+    return SemanticToGLSLKeywordPrimary(semantic);
 }
 
 

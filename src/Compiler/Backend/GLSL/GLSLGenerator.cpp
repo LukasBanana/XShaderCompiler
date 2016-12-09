@@ -115,14 +115,14 @@ std::unique_ptr<std::string> GLSLGenerator::SystemValueToKeyword(const IndexedSe
     if (semantic == Semantic::Target && versionOut_ > OutputShaderVersion::GLSL120)
         return MakeUnique<std::string>(semantic.ToString());
     else
-        return SemanticToGLSLKeyword(semantic);
+        return SemanticToGLSLKeyword(semantic, IsVKSL(versionOut_));
 }
 
 bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
 {
     static const std::set<Intrinsic> wrappedIntrinsics
     {
-        Intrinsic::Clip
+        Intrinsic::Clip,
     };
     return (wrappedIntrinsics.find(intrinsic) != wrappedIntrinsics.end());
 }
@@ -945,7 +945,7 @@ void GLSLGenerator::WriteProgramHeader()
         );
 
         /* Write GLSL version */
-        WriteProgramHeaderVersion(static_cast<int>(versionOut_));
+        WriteProgramHeaderVersion();
         Blank();
 
         /* Write all required extensions */
@@ -962,8 +962,10 @@ void GLSLGenerator::WriteProgramHeader()
     }
 }
 
-void GLSLGenerator::WriteProgramHeaderVersion(int versionNumber)
+void GLSLGenerator::WriteProgramHeaderVersion()
 {
+    /* Convert output shader version into GLSL version number */
+    int versionNumber = (static_cast<int>(versionOut_)) & static_cast<int>(OutputShaderVersion::GLSL);
     WriteLn("#version " + std::to_string(versionNumber));
 }
 

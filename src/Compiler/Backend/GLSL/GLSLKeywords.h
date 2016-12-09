@@ -32,7 +32,9 @@ const std::string* StorageClassToGLSLKeyword(const StorageClass t);
 const std::string* BufferTypeToGLSLKeyword(const BufferType t);
 
 // Returns the GLSL keyword for the specified semantic.
-std::unique_ptr<std::string> SemanticToGLSLKeyword(const IndexedSemantic& semantic);
+// Special cases if 'useVulkanGLSL' is true.
+// see https://www.khronos.org/registry/vulkan/specs/misc/GL_KHR_vulkan_glsl.txt
+std::unique_ptr<std::string> SemanticToGLSLKeyword(const IndexedSemantic& semantic, bool useVulkanGLSL = false);
 
 
 } // /namespace Xsc

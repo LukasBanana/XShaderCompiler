@@ -251,6 +251,21 @@ XSC_EXPORT std::string ToString(const Reflection::ComparisonFunc t)
     return CompareFuncToString(t);
 }
 
+XSC_EXPORT bool IsGLSL(const OutputShaderVersion shaderVersion)
+{
+    return ((shaderVersion >= OutputShaderVersion::GLSL110 && shaderVersion <= OutputShaderVersion::GLSL450) || shaderVersion == OutputShaderVersion::GLSL);
+}
+
+XSC_EXPORT bool IsESSL(const OutputShaderVersion shaderVersion)
+{
+    return ((shaderVersion >= OutputShaderVersion::ESSL100 && shaderVersion <= OutputShaderVersion::ESSL320) || shaderVersion == OutputShaderVersion::ESSL);
+}
+
+XSC_EXPORT bool IsVKSL(const OutputShaderVersion shaderVersion)
+{
+    return (shaderVersion == OutputShaderVersion::VKSL450 || shaderVersion == OutputShaderVersion::VKSL);
+}
+
 
 } // /namespace Xsc
 

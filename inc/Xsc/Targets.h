@@ -41,19 +41,28 @@ enum class InputShaderVersion
 //! Output shader version enumeration.
 enum class OutputShaderVersion
 {
-    GLSL110 = 110,  //!< GLSL 1.10 (OpenGL 2.0). \note Currently not supported!
-    GLSL120 = 120,  //!< GLSL 1.20 (OpenGL 2.1). \note Currently not supported!
-    GLSL130 = 130,  //!< GLSL 1.30 (OpenGL 3.0).
-    GLSL140 = 140,  //!< GLSL 1.40 (OpenGL 3.1).
-    GLSL150 = 150,  //!< GLSL 1.50 (OpenGL 3.2).
-    GLSL330 = 330,  //!< GLSL 3.30 (OpenGL 3.3).
-    GLSL400 = 400,  //!< GLSL 4.00 (OpenGL 4.0).
-    GLSL410 = 410,  //!< GLSL 4.10 (OpenGL 4.1).
-    GLSL420 = 420,  //!< GLSL 4.20 (OpenGL 4.2).
-    GLSL430 = 430,  //!< GLSL 4.30 (OpenGL 4.3).
-    GLSL440 = 440,  //!< GLSL 4.40 (OpenGL 4.4).
-    GLSL450 = 450,  //!< GLSL 4.50 (OpenGL 4.5).
-    GLSL    = ~0,   //!< Auto-detect minimal required GLSL version.
+    GLSL110 = 110,                  //!< GLSL 1.10 (OpenGL 2.0). \note Currently not supported!
+    GLSL120 = 120,                  //!< GLSL 1.20 (OpenGL 2.1). \note Currently not supported!
+    GLSL130 = 130,                  //!< GLSL 1.30 (OpenGL 3.0).
+    GLSL140 = 140,                  //!< GLSL 1.40 (OpenGL 3.1).
+    GLSL150 = 150,                  //!< GLSL 1.50 (OpenGL 3.2).
+    GLSL330 = 330,                  //!< GLSL 3.30 (OpenGL 3.3).
+    GLSL400 = 400,                  //!< GLSL 4.00 (OpenGL 4.0).
+    GLSL410 = 410,                  //!< GLSL 4.10 (OpenGL 4.1).
+    GLSL420 = 420,                  //!< GLSL 4.20 (OpenGL 4.2).
+    GLSL430 = 430,                  //!< GLSL 4.30 (OpenGL 4.3).
+    GLSL440 = 440,                  //!< GLSL 4.40 (OpenGL 4.4).
+    GLSL450 = 450,                  //!< GLSL 4.50 (OpenGL 4.5).
+    GLSL    = 0x0000ffff,           //!< Auto-detect minimal required GLSL version (for OpenGL 2+).
+
+    ESSL100 = (0x00010000 + 100),   //!< ESSL 1.00 (OpenGL ES 2.0). \note Currently not supported!
+    ESSL300 = (0x00010000 + 300),   //!< ESSL 3.00 (OpenGL ES 3.0). \note Currently not supported!
+    ESSL310 = (0x00010000 + 310),   //!< ESSL 3.10 (OpenGL ES 3.1). \note Currently not supported!
+    ESSL320 = (0x00010000 + 320),   //!< ESSL 3.20 (OpenGL ES 3.2). \note Currently not supported!
+    ESSL    = 0x0001ffff,           //!< Auto-detect minimum required ESSL version (for OpenGL ES 2+). \note Currently not supported!
+
+    VKSL450 = (0x00020000 + 450),   //!< VKSL 4.50 (Vulkan 1.0).
+    VKSL    = 0x0002ffff,           //!< Auto-detect minimum required VKSL version (for Vulkan/SPIR-V).
 };
 
 
@@ -65,6 +74,15 @@ XSC_EXPORT std::string ToString(const InputShaderVersion shaderVersion);
 
 //! Returns the specified shader output version as string.
 XSC_EXPORT std::string ToString(const OutputShaderVersion shaderVersion);
+
+//! Returns true if the shader version specifies a GLSL shader (for OpenGL 2+).
+XSC_EXPORT bool IsGLSL(const OutputShaderVersion shaderVersion);
+
+//! Returns true if the shader version specifies an ESSL shader (for OpenGL ES 2+).
+XSC_EXPORT bool IsESSL(const OutputShaderVersion shaderVersion);
+
+//! Returns true if the shader version specifies a VKSL shader (for Vulkan).
+XSC_EXPORT bool IsVKSL(const OutputShaderVersion shaderVersion);
 
 
 } // /namespace Xsc

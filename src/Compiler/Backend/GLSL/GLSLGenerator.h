@@ -116,7 +116,7 @@ class GLSLGenerator : public Generator
         /* --- Program --- */
 
         void WriteProgramHeader();
-        void WriteProgramHeaderVersion(int versionNumber);
+        void WriteProgramHeaderVersion();
         void WriteProgramHeaderExtension(const std::string& extensionName);
 
         /* --- Attributes --- */

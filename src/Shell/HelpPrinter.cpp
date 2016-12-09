@@ -108,7 +108,7 @@ void HelpPrinter::PrintHelpDetails(std::ostream& output, const std::string& deta
     while (start < details.size())
     {
         auto end = details.find('\n', start);
-        output << indent << details.substr(start, end) << std::endl;
+        output << indent << (end == std::string::npos ? details.substr(start) : details.substr(start, end - start)) << std::endl;
         if (end != std::string::npos)
             start = end + 1;
         else

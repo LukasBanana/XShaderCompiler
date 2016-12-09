@@ -146,8 +146,11 @@ HelpDescriptor VersionOutCommand::Help() const
     return
     {
         "-Vout, --version-out VERSION", "Shader output version; default=GLSL; valid values:",
-        "GLSL, GLSL130, GLSL140, GLSL150, GLSL330,\n" \
-        "GLSL400, GLSL410, GLSL420, GLSL430, GLSL440, GLSL450"
+        (
+            "GLSL[110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450],\n" \
+            "ESSL[100, 300, 310, 320],\n" \
+            "VKSL[450]"
+        )
     };
 }
 
@@ -169,6 +172,15 @@ void VersionOutCommand::Run(CommandLine& cmdLine, ShellState& state)
             { "GLSL440", OutputShaderVersion::GLSL440 },
             { "GLSL450", OutputShaderVersion::GLSL450 },
             { "GLSL",    OutputShaderVersion::GLSL    },
+
+            { "ESSL100", OutputShaderVersion::ESSL100 },
+            { "ESSL300", OutputShaderVersion::ESSL300 },
+            { "ESSL310", OutputShaderVersion::ESSL310 },
+            { "ESSL320", OutputShaderVersion::ESSL320 },
+            { "ESSL",    OutputShaderVersion::ESSL    },
+
+            { "VKSL450", OutputShaderVersion::VKSL450 },
+            { "VKSL",    OutputShaderVersion::VKSL    },
         },
         "invalid output shader version"
     );
