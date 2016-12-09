@@ -193,8 +193,9 @@ class HLSLParser : public Parser
         void                            ParseFunctionDeclSemantic(FunctionDecl& funcDecl);
 
         DataType                        ParseDataType(const std::string& keyword);
-        StorageClass                    ParseStorageClass();
+        InterpModifier                  ParseInterpModifier();
         TypeModifier                    ParseTypeModifier();
+        StorageClass                    ParseStorageClass();
         UniformBufferType               ParseUniformBufferType();
         BufferType                      ParseBufferType();
         SamplerType                     ParseSamplerType();

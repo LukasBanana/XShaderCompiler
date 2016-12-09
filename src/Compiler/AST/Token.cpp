@@ -104,8 +104,9 @@ std::string Token::TypeToString(const Types type)
         case Types::CtrlTransfer:       return "control transfer";
         case Types::Return:             return "'return' keyword";
         case Types::InputModifier:      return "input modifier";
-        case Types::StorageClass:       return "storage modifier";
+        case Types::InterpModifier:     return "interpolation modifier";
         case Types::TypeModifier:       return "type modifier";
+        case Types::StorageClass:       return "storage class";
         case Types::Inline:             return "inline";
         case Types::Technique:          return "technique";
         case Types::Pass:               return "pass";

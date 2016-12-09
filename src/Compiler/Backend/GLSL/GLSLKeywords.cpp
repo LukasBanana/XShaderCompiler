@@ -121,20 +121,36 @@ static std::map<StorageClass, std::string> GenerateStorageClassMap()
         { T::Shared,          "shared"        },
         { T::GroupShared,     "shared"        },
         { T::Static,          "static"        },
-        { T::Uniform,         "uniform"       },
         { T::Volatile,        "volatile"      },
-
-        { T::NoInterpolation, "flat"          },
-        { T::Linear,          "smooth"        },
-        { T::Centroid,        "centroid"      },
-        { T::NoPerspective,   "noperspective" },
-        { T::Sample,          "sample"        },
     };
 }
 
 const std::string* StorageClassToGLSLKeyword(const StorageClass t)
 {
     static const auto typeMap = GenerateStorageClassMap();
+    return MapTypeToKeyword(typeMap, t);
+}
+
+
+/* ----- InterpModifier Mapping ----- */
+
+static std::map<InterpModifier, std::string> GenerateInterpModifierMap()
+{
+    using T = InterpModifier;
+
+    return
+    {
+        { T::Linear,          "smooth"        },
+        { T::Centroid,        "centroid"      },
+        { T::NoInterpolation, "flat"          },
+        { T::NoPerspective,   "noperspective" },
+        { T::Sample,          "sample"        },
+    };
+}
+
+const std::string* InterpModifierToGLSLKeyword(const InterpModifier t)
+{
+    static const auto typeMap = GenerateInterpModifierMap();
     return MapTypeToKeyword(typeMap, t);
 }
 

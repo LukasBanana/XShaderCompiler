@@ -30,6 +30,9 @@ DataType HLSLKeywordToDataType(const std::string& keyword);
 // Returns the storage class for the specified HLSL keyword or throws an std::runtime_error on failure.
 StorageClass HLSLKeywordToStorageClass(const std::string& keyword);
 
+// Returns the interpolation modifier for the specified HLSL keyword or throws an std::runtime_error on failure.
+InterpModifier HLSLKeywordToInterpModifier(const std::string& keyword);
+
 // Returns the type modifier for the specified HLSL keyword or throws an std::runtime_error on failure.
 TypeModifier HLSLKeywordToTypeModifier(const std::string& keyword);
 

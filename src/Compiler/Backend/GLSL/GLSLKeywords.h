@@ -28,6 +28,9 @@ const std::string* DataTypeToGLSLKeyword(const DataType t);
 // Returns the GLSL keyword for the specified storage class or null on failure.
 const std::string* StorageClassToGLSLKeyword(const StorageClass t);
 
+// Returns the GLSL keyword for the specified interpolation modifier or null on failure.
+const std::string* InterpModifierToGLSLKeyword(const InterpModifier t);
+
 // Returns the GLSL keyword for the specified buffer type or null on failure.
 const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLSL = false);
 

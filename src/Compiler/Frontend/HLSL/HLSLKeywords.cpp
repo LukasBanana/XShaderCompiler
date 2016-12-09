@@ -216,22 +216,22 @@ static KeywordMapType GenerateKeywordMap()
         { "out",                     T::InputModifier   },
         { "inout",                   T::InputModifier   },
 
-        { "extern",                  T::StorageClass    },
-        { "nointerpolation",         T::StorageClass    },
-        { "precise",                 T::StorageClass    },
-        { "shared",                  T::StorageClass    },
-        { "groupshared",             T::StorageClass    },
-        { "static",                  T::StorageClass    },
-      //{ "uniform",                 T::StorageClass    }, // Already used as "InputModifier"
-        { "volatile",                T::StorageClass    },
-        { "linear",                  T::StorageClass    },
-        { "centroid",                T::StorageClass    },
-        { "noperspective",           T::StorageClass    },
-        { "sample",                  T::StorageClass    },
+        { "linear",                  T::InterpModifier  },
+        { "centroid",                T::InterpModifier  },
+        { "nointerpolation",         T::InterpModifier  },
+        { "noperspective",           T::InterpModifier  },
+        { "sample",                  T::InterpModifier  },
 
         { "const",                   T::TypeModifier    },
         { "row_major",               T::TypeModifier    },
         { "column_major",            T::TypeModifier    },
+
+        { "extern",                  T::StorageClass    },
+        { "precise",                 T::StorageClass    },
+        { "shared",                  T::StorageClass    },
+        { "groupshared",             T::StorageClass    },
+        { "static",                  T::StorageClass    },
+        { "volatile",                T::StorageClass    },
 
         { "inline",                  T::Inline          },
 
@@ -420,14 +420,7 @@ static std::map<std::string, StorageClass> GenerateStorageClassMap()
         { "shared",          T::Shared          },
         { "groupshared",     T::GroupShared     },
         { "static",          T::Static          },
-        { "uniform",         T::Uniform         },
         { "volatile",        T::Volatile        },
-
-        { "nointerpolation", T::NoInterpolation },
-        { "linear",          T::Linear          },
-        { "centroid",        T::Centroid        },
-        { "noperspective",   T::NoPerspective   },
-        { "sample",          T::Sample          },
     };
 }
 
@@ -435,6 +428,29 @@ StorageClass HLSLKeywordToStorageClass(const std::string& keyword)
 {
     static const auto typeMap = GenerateStorageClassMap();
     return MapKeywordToType(typeMap, keyword, "storage class");
+}
+
+
+/* ----- InterpModifier Mapping ----- */
+
+static std::map<std::string, InterpModifier> GenerateInterpModifierMap()
+{
+    using T = InterpModifier;
+
+    return
+    {
+        { "linear",          T::Linear          },
+        { "centroid",        T::Centroid        },
+        { "nointerpolation", T::NoInterpolation },
+        { "noperspective",   T::NoPerspective   },
+        { "sample",          T::Sample          },
+    };
+}
+
+InterpModifier HLSLKeywordToInterpModifier(const std::string& keyword)
+{
+    static const auto typeMap = GenerateInterpModifierMap();
+    return MapKeywordToType(typeMap, keyword, "interpolation modifier");
 }
 
 

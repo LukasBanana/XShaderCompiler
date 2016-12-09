@@ -110,13 +110,9 @@ class Token
             Return,             // return
 
             InputModifier,      // in, out, inout, uniform
-
-            /*
-            extern, nointerpolation, precise, shared, groupshared, static,
-            uniform, volatile, linear, centroid, noperspective, sample
-            */
-            StorageClass,
+            InterpModifier,     // linear, centroid, nointerpolation, noperspective, sample
             TypeModifier,       // const, row_major, column_major
+            StorageClass,       // extern, precise, shared, groupshared, static, uniform, volatile
 
             Inline,             // inline
 

@@ -316,11 +316,11 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     auto ast = Make<VarDeclStmnt>();
 
     /* Parse parameter as single variable declaration */
-    while (Is(Tokens::InputModifier) || Is(Tokens::TypeModifier) || Is(Tokens::StorageClass))
+    while (Is(Tokens::InputModifier) || Is(Tokens::InterpModifier) || Is(Tokens::TypeModifier) || Is(Tokens::StorageClass))
     {
         if (Is(Tokens::InputModifier))
         {
-            /* Map input modifier to flags */
+            /* Parse input modifier */
             auto modifier = AcceptIt()->Spell();
 
             if (modifier == "in")
@@ -335,15 +335,20 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
             else if (modifier == "uniform")
                 ast->isUniform = true;
         }
-        else if (Is(Tokens::StorageClass))
+        else if (Is(Tokens::InterpModifier))
         {
-            /* Parse storage class */
-            ast->storageClasses.insert(ParseStorageClass());
+            /* Parse interpolation modifier */
+            ast->interpModifiers.insert(ParseInterpModifier());
         }
         else if (Is(Tokens::TypeModifier))
         {
             /* Parse type modifier (const, row_major, column_major) */
             ast->typeModifiers.insert(ParseTypeModifier());
+        }
+        else if (Is(Tokens::StorageClass))
+        {
+            /* Parse storage class */
+            ast->storageClasses.insert(ParseStorageClass());
         }
     }
 
@@ -740,6 +745,7 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
             return ParseBufferDeclStmnt();
         case Tokens::Typedef:
             return ParseAliasDeclStmnt();
+        case Tokens::InterpModifier:
         case Tokens::TypeModifier:
         case Tokens::StorageClass:
             return ParseVarDeclStmnt();
@@ -936,9 +942,14 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
             /* Parse storage class */
             ast->storageClasses.insert(ParseStorageClass());
         }
+        else if (Is(Tokens::InterpModifier))
+        {
+            /* Parse interpolation modifier */
+            ast->interpModifiers.insert(ParseInterpModifier());
+        }
         else if (Is(Tokens::TypeModifier))
         {
-            /* Parse type modifier (const, row_major, column_major) */
+            /* Parse type modifier */
             ast->typeModifiers.insert(ParseTypeModifier());
         }
         else if (Is(Tokens::Ident) || IsDataType())
@@ -1028,8 +1039,9 @@ StmntPtr HLSLParser::ParseStmnt()
         case Tokens::Sampler:
         case Tokens::SamplerState:
             return ParseSamplerDeclStmnt();
-        case Tokens::TypeModifier:
         case Tokens::StorageClass:
+        case Tokens::InterpModifier:
+        case Tokens::TypeModifier:
             return ParseVarDeclStmnt();
         default:
             break;
@@ -2198,17 +2210,17 @@ DataType HLSLParser::ParseDataType(const std::string& keyword)
     return DataType::Undefined;
 }
 
-StorageClass HLSLParser::ParseStorageClass()
+InterpModifier HLSLParser::ParseInterpModifier()
 {
     try
     {
-        return HLSLKeywordToStorageClass(Accept(Tokens::StorageClass)->Spell());
+        return HLSLKeywordToInterpModifier(Accept(Tokens::InterpModifier)->Spell());
     }
     catch (const std::exception& e)
     {
         Error(e.what());
     }
-    return StorageClass::Undefined;
+    return InterpModifier::Undefined;
 }
 
 TypeModifier HLSLParser::ParseTypeModifier()
@@ -2222,6 +2234,19 @@ TypeModifier HLSLParser::ParseTypeModifier()
         Error(e.what());
     }
     return TypeModifier::Undefined;
+}
+
+StorageClass HLSLParser::ParseStorageClass()
+{
+    try
+    {
+        return HLSLKeywordToStorageClass(Accept(Tokens::StorageClass)->Spell());
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
+    return StorageClass::Undefined;
 }
 
 UniformBufferType HLSLParser::ParseUniformBufferType()

@@ -706,14 +706,6 @@ DataType DoubleToFloatDataType(const DataType dataType)
 }
 
 
-/* ----- StorageClass Enum ----- */
-
-bool IsInterpolationModifier(const StorageClass s)
-{
-    return (s >= StorageClass::NoInterpolation && s <= StorageClass::Sample);
-}
-
-
 /* ----- BufferType Enum ----- */
 
 bool IsStorageBufferType(const BufferType t)

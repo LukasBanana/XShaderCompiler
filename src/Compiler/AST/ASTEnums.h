@@ -285,33 +285,33 @@ DataType DoubleToFloatDataType(const DataType dataType);
 
 /* ----- StorageClass Enum ----- */
 
-/*
-Variable storage class enumeration.
-This also contains the interpolation modifier for simplicity.
-*/
+// Variable storage class enumeration.
 enum class StorageClass
 {
     Undefined,
 
-    // Storage classes
     Extern,
     Precise,
     Shared,
     GroupShared,
     Static,
-    Uniform,
     Volatile,
+};
 
-    // Interpolation modifiers
+
+/* ----- InterpModifier Enum ----- */
+
+// Variable interpolation modifier enumeration.
+enum class InterpModifier
+{
+    Undefined,
+
     NoInterpolation,
     Linear,
     Centroid,
     NoPerspective,
     Sample,
 };
-
-// Returns true if the specified storage class is actually an interpolation modifier.
-bool IsInterpolationModifier(const StorageClass s);
 
 
 /* ----- StorageClass Enum ----- */
