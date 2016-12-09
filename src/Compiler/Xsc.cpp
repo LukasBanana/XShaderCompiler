@@ -11,6 +11,7 @@
 #include "HLSLAnalyzer.h"
 #include "GLSLGenerator.h"
 #include "Optimizer.h"
+#include "ReflectionAnalyzer.h"
 #include "ASTPrinter.h"
 #include "ASTEnums.h"
 #include <fstream>
@@ -96,7 +97,7 @@ static bool CompileShaderPrimary(
     timePoints[2] = Time::now();
 
     HLSLAnalyzer analyzer(log);
-    auto analyzerResult = analyzer.DecorateAST(*program, inputDesc, outputDesc, reflectionData);
+    auto analyzerResult = analyzer.DecorateAST(*program, inputDesc, outputDesc);
 
     /* Print AST */
     if (outputDesc.options.showAST && log)
@@ -121,10 +122,17 @@ static bool CompileShaderPrimary(
     timePoints[4] = Time::now();
 
     GLSLGenerator generator(log);
-    if (!generator.GenerateCode(*program, inputDesc, outputDesc, log, reflectionData))
+    if (!generator.GenerateCode(*program, inputDesc, outputDesc, log))
         return SubmitError("generating output code failed");
 
+    /* Reflect shader code */
     timePoints[5] = Time::now();
+
+    if (reflectionData)
+    {
+        ReflectionAnalyzer reflectAnalyzer(log);
+        reflectAnalyzer.Reflect(*program, inputDesc.shaderTarget, *reflectionData);
+    }
 
     return true;
 }
@@ -151,9 +159,9 @@ XSC_EXPORT bool CompileShader(
     /* Compile shader with primary function */
     auto result = CompileShaderPrimary(inputDesc, outputDescCopy, log, reflectionData, timePoints);
 
-    /* Sort statistics */
     if (reflectionData)
     {
+        /* Sort reflection */
         auto SortStats = [](std::vector<Reflection::BindingSlot>& objects)
         {
             std::sort(

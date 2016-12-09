@@ -34,7 +34,7 @@ HLSLAnalyzer::HLSLAnalyzer(Log* log) :
 }
 
 void HLSLAnalyzer::DecorateASTPrimary(
-    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Reflection::ReflectionData* reflectionData)
+    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
 {
     /* Store parameters */
     entryPoint_     = inputDesc.entryPoint;
@@ -42,7 +42,6 @@ void HLSLAnalyzer::DecorateASTPrimary(
     versionIn_      = inputDesc.shaderVersion;
     shaderModel_    = GetShaderModel(inputDesc.shaderVersion);
     preferWrappers_ = outputDesc.options.preferWrappers;
-    reflectionData_ = reflectionData;
 
     /* Decorate program AST */
     program_ = &program;
@@ -54,30 +53,6 @@ void HLSLAnalyzer::DecorateASTPrimary(
 /*
  * ======= Private: =======
  */
-
-Variant HLSLAnalyzer::EvaluateConstExpr(Expr& expr)
-{
-    try
-    {
-        /* Evaluate expression and throw error on var-access */
-        ConstExprEvaluator exprEvaluator;
-        return exprEvaluator.EvaluateExpr(expr, [](VarAccessExpr* ast) -> Variant { throw ast; });
-    }
-    catch (const std::exception&)
-    {
-        return Variant();
-    }
-    catch (const VarAccessExpr*)
-    {
-        return Variant();
-    }
-    return Variant();
-}
-
-float HLSLAnalyzer::EvaluateConstExprFloat(Expr& expr)
-{
-    return static_cast<float>(EvaluateConstExpr(expr).ToReal());
-}
 
 /* ------- Visit functions ------- */
 
@@ -210,17 +185,6 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
     /* Register identifier for sampler */
     Register(ast->ident, ast);
-
-    /* Collect output statistics for sampler states */
-    if (reflectionData_)
-    {
-        Reflection::SamplerState samplerState;
-        {
-            for (auto& value : ast->samplerValues)
-                AnalyzeSamplerValue(value.get(), samplerState);
-        }
-        reflectionData_->samplerStates[ast->ident] = samplerState;
-    }
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
@@ -833,117 +797,6 @@ void HLSLAnalyzer::AnalyzeEndOfScopes(FunctionDecl& funcDecl)
     EndOfScopeAnalyzer scopeAnalyzer;
     scopeAnalyzer.MarkEndOfScopesFromFunction(funcDecl);
 }
-
-void HLSLAnalyzer::AnalyzeSamplerValue(SamplerValue* ast, Reflection::SamplerState& samplerState)
-{
-    const auto& name = ast->name;
-
-    /* Assign value to sampler state */
-    if (auto literalExpr = ast->value->As<LiteralExpr>())
-    {
-        const auto& value = literalExpr->value;
-
-        if (name == "MipLODBias")
-            samplerState.mipLODBias = FromString<float>(value);
-        else if (name == "MaxAnisotropy")
-            samplerState.maxAnisotropy = FromString<unsigned int>(value);
-        else if (name == "MinLOD")
-            samplerState.minLOD = FromString<float>(value);
-        else if (name == "MaxLOD")
-            samplerState.maxLOD = FromString<float>(value);
-    }
-    else if (auto varAccessExpr = ast->value->As<VarAccessExpr>())
-    {
-        const auto& value = varAccessExpr->varIdent->ident;
-
-        if (name == "Filter")
-            AnalyzeSamplerValueFilter(value, samplerState.filter, ast);
-        else if (name == "AddressU")
-            AnalyzeSamplerValueTextureAddressMode(value, samplerState.addressU, ast);
-        else if (name == "AddressV")
-            AnalyzeSamplerValueTextureAddressMode(value, samplerState.addressV, ast);
-        else if (name == "AddressW")
-            AnalyzeSamplerValueTextureAddressMode(value, samplerState.addressW, ast);
-        else if (name == "ComparisonFunc")
-            AnalyzeSamplerValueComparisonFunc(value, samplerState.comparisonFunc, ast);
-    }
-    else if (name == "BorderColor")
-    {
-        try
-        {
-            if (auto funcCallExpr = ast->value->As<FunctionCallExpr>())
-            {
-                if (funcCallExpr->call->typeDenoter && funcCallExpr->call->typeDenoter->IsVector() && funcCallExpr->call->arguments.size() == 4)
-                {
-                    /* Evaluate sub expressions to constant floats */
-                    for (std::size_t i = 0; i < 4; ++i)
-                        samplerState.borderColor[i] = EvaluateConstExprFloat(*funcCallExpr->call->arguments[i]);
-                }
-                else
-                    throw std::string("invalid type or invalid number of arguments");
-            }
-            else if (auto castExpr = ast->value->As<CastExpr>())
-            {
-                /* Evaluate sub expression to constant float and copy into four sub values */
-                auto subValueSrc = EvaluateConstExprFloat(*castExpr->expr);
-                for (std::size_t i = 0; i < 4; ++i)
-                    samplerState.borderColor[i] = subValueSrc;
-            }
-            else if (auto initExpr = ast->value->As<InitializerExpr>())
-            {
-                if (initExpr->exprs.size() == 4)
-                {
-                    /* Evaluate sub expressions to constant floats */
-                    for (std::size_t i = 0; i < 4; ++i)
-                        samplerState.borderColor[i] = EvaluateConstExprFloat(*initExpr->exprs[i]);
-                }
-                else
-                    throw std::string("invalid number of arguments");
-            }
-        }
-        catch (const std::string& s)
-        {
-            Warning(s + " to initialize sampler value 'BorderColor'", ast->value.get());
-        }
-    }
-}
-
-void HLSLAnalyzer::AnalyzeSamplerValueFilter(const std::string& value, Reflection::Filter& filter, const AST* ast)
-{
-    try
-    {
-        filter = StringToFilter(value);
-    }
-    catch (const std::invalid_argument& e)
-    {
-        Warning(e.what(), ast);
-    }
-}
-
-void HLSLAnalyzer::AnalyzeSamplerValueTextureAddressMode(const std::string& value, Reflection::TextureAddressMode& addressMode, const AST* ast)
-{
-    try
-    {
-        addressMode = StringToTexAddressMode(value);
-    }
-    catch (const std::invalid_argument& e)
-    {
-        Warning(e.what(), ast);
-    }
-}
-
-void HLSLAnalyzer::AnalyzeSamplerValueComparisonFunc(const std::string& value, Reflection::ComparisonFunc& comparisonFunc, const AST* ast)
-{
-    try
-    {
-        comparisonFunc = StringToCompareFunc(value);
-    }
-    catch (const std::invalid_argument& e)
-    {
-        Warning(e.what(), ast);
-    }
-}
-
 
 
 } // /namespace Xsc

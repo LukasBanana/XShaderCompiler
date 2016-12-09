@@ -38,8 +38,7 @@ class HLSLAnalyzer : public Analyzer
         void DecorateASTPrimary(
             Program& program,
             const ShaderInput& inputDesc,
-            const ShaderOutput& outputDesc,
-            Reflection::ReflectionData* reflectionData
+            const ShaderOutput& outputDesc
         ) override;
         
         /*
@@ -47,9 +46,6 @@ class HLSLAnalyzer : public Analyzer
         or null if the AST traversion is in the global scope.
         */
         //FunctionCall* CurrentFunction() const;
-
-        Variant EvaluateConstExpr(Expr& expr);
-        float EvaluateConstExprFloat(Expr& expr);
 
         /* === Visitor implementation === */
 
@@ -104,21 +100,15 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeEndOfScopes(FunctionDecl& funcDecl);
 
-        void AnalyzeSamplerValue(SamplerValue* ast, Reflection::SamplerState& samplerState);
-        void AnalyzeSamplerValueFilter(const std::string& value, Reflection::Filter& filter, const AST* ast = nullptr);
-        void AnalyzeSamplerValueTextureAddressMode(const std::string& value, Reflection::TextureAddressMode& addressMode, const AST* ast = nullptr);
-        void AnalyzeSamplerValueComparisonFunc(const std::string& value, Reflection::ComparisonFunc& comparisonFunc, const AST* ast = nullptr);
-
         /* === Members === */
 
-        Program*                    program_        = nullptr;
+        Program*            program_        = nullptr;
 
-        std::string                 entryPoint_;
-        ShaderTarget                shaderTarget_   = ShaderTarget::VertexShader;
-        InputShaderVersion          versionIn_      = InputShaderVersion::HLSL5;
-        ShaderVersion               shaderModel_    = { 5, 0 };
-        bool                        preferWrappers_ = false;
-        Reflection::ReflectionData* reflectionData_ = nullptr;
+        std::string         entryPoint_;
+        ShaderTarget        shaderTarget_   = ShaderTarget::VertexShader;
+        InputShaderVersion  versionIn_      = InputShaderVersion::HLSL5;
+        ShaderVersion       shaderModel_    = { 5, 0 };
+        bool                preferWrappers_ = false;
 
 };
 

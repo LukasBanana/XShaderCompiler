@@ -33,7 +33,7 @@ GLSLGenerator::GLSLGenerator(Log* log) :
 }
 
 void GLSLGenerator::GenerateCodePrimary(
-    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Reflection::ReflectionData* reflectionData)
+    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
 {
     /* Store parameters */
     shaderTarget_       = inputDesc.shaderTarget;
@@ -45,7 +45,6 @@ void GLSLGenerator::GenerateCodePrimary(
     compactWrappers_    = outputDesc.formatting.compactWrappers;
     newLineOpenScope_   = outputDesc.formatting.newLineOpenScope;
     nameManglingPrefix_ = outputDesc.formatting.prefix;
-    reflectionData_     = reflectionData;
 
     if (program.entryPointRef)
     {
@@ -358,24 +357,17 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
     BeginLn();
     {
-        int binding = -1;
-
         /* Write uniform buffer declaration */
         Write("layout(std140");
 
-        if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, shaderTarget_))
+        if (explicitBinding_)
         {
-            if (explicitBinding_)
+            if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, shaderTarget_))
                 Write(", binding = " + std::to_string(slotRegister->slot));
-            binding = slotRegister->slot;
         }
 
         Write(") uniform ");
         Write(ast->ident);
-
-        /* Track output statistics */
-        if (reflectionData_)
-            reflectionData_->constantBuffers.push_back({ ast->ident, binding });
     }
     EndLn();
 
@@ -405,14 +397,11 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
         {
             BeginLn();
             {
-                int binding = -1;
-
                 /* Write uniform declaration */
-                if (auto slotRegister = Register::GetForTarget(texDecl->slotRegisters, shaderTarget_))
+                if (explicitBinding_)
                 {
-                    if (explicitBinding_)
+                    if (auto slotRegister = Register::GetForTarget(texDecl->slotRegisters, shaderTarget_))
                         Write("layout(binding = " + std::to_string(slotRegister->slot) + ") ");
-                    binding = slotRegister->slot;
                 }
 
                 Write("uniform ");
@@ -424,10 +413,6 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
                     Write("u");
 
                 Write(*samplerType + " " + texDecl->ident + ";");
-
-                /* Track output statistics */
-                if (reflectionData_)
-                    reflectionData_->textures.push_back({ texDecl->ident, binding });
             }
             EndLn();
         }

@@ -19,14 +19,14 @@ Analyzer::Analyzer(Log* log) :
 }
 
 bool Analyzer::DecorateAST(
-    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc, Reflection::ReflectionData* reflectionData)
+    Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
 {
     /* Decorate program AST */
     sourceCode_ = program.sourceCode.get();
 
     try
     {
-        DecorateASTPrimary(program, inputDesc, outputDesc, reflectionData);
+        DecorateASTPrimary(program, inputDesc, outputDesc);
     }
     catch (const ASTRuntimeError& e)
     {
