@@ -69,6 +69,22 @@ void EraseAllIf(Cont& container, Pred pred)
     );
 }
 
+// Removes all entries from the specified container for which the specified predicate is true.
+template <typename Source, typename Destination, typename Pred>
+void MoveAllIf(Source& source, Destination& destination, Pred pred)
+{
+    for (auto it = source.begin(); it != source.end();)
+    {
+        if (pred(*it))
+        {
+            destination.push_back(*it);
+            it = source.erase(it);
+        }
+        else
+            ++it;
+    }
+}
+
 // Converts the specified strin to lower case.
 std::string ToLower(const std::string& s);
 

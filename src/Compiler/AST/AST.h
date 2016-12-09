@@ -201,6 +201,8 @@ struct Program : public AST
 
     std::vector<StmntPtr>               globalStmnts;               // Global declaration statements
 
+    std::vector<ASTPtr>                 disabledAST;                // AST nodes that have been disabled for code generation (not part of the default visitor).
+
     SourceCodePtr                       sourceCode;                 // Preprocessed source code
     FunctionDecl*                       entryPointRef   = nullptr;  // Reference to the entry point function declaration.
     std::map<Intrinsic, IntrinsicUsage> usedIntrinsics;             // Set of all used intrinsic (filled by the reference analyzer).

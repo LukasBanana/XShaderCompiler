@@ -26,7 +26,9 @@ void ReflectionAnalyzer::Reflect(Program& program, const ShaderTarget shaderTarg
     program_        = (&program);
     data_           = (&reflectionData);
 
-    Visit(program_);
+    /* Visit both active and disabled code */
+    Visit(program_->globalStmnts);
+    Visit(program_->disabledAST);
 }
 
 

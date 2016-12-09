@@ -22,10 +22,11 @@ void GLSLConverter::Convert(
 {
     /* Store settings */
     shaderTarget_       = shaderTarget;
+    program_            = (&program);
     nameManglingPrefix_ = nameManglingPrefix;
 
     /* Visit program AST */
-    Visit(&program);
+    Visit(program_);
 }
 
 
@@ -64,8 +65,9 @@ IMPLEMENT_VISIT_PROC(Program)
 
     //TODO: do not remove these statements, instead mark it as disabled code (otherwise symbol references to these statements are corrupted!)
     /* Remove all variables which are sampler state objects, since GLSL does not support sampler states */
-    EraseAllIf(
+    MoveAllIf(
         ast->globalStmnts,
+        program_->disabledAST,
         [&](const StmntPtr& stmnt)
         {
             if (stmnt->Type() == AST::Types::SamplerDeclStmnt)
@@ -106,7 +108,9 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     }
 
     /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
-    EraseAllIf(ast->arguments,
+    MoveAllIf(
+        ast->arguments,
+        program_->disabledAST,
         [&](const ExprPtr& expr)
         {
             return ExprContainsSampler(*expr);
@@ -576,9 +580,10 @@ void GLSLConverter::RemoveDeadCode(std::vector<StmntPtr>& stmnts)
 
 void GLSLConverter::RemoveSamplerVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts)
 {
-    /* Remove all variables which are sampler state objects, since GLSL does not support sampler states */
-    EraseAllIf(
+    /* Move all variables to disabled code which are sampler state objects, since GLSL does not support sampler states */
+    MoveAllIf(
         stmnts,
+        program_->disabledAST,
         [&](const VarDeclStmntPtr& varDeclStmnt)
         {
             return VarTypeIsSampler(*varDeclStmnt->varType);

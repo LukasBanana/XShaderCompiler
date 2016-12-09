@@ -124,6 +124,7 @@ class GLSLConverter : public Visitor
         /* === Members === */
 
         ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;
+        Program*                program_                = nullptr;
 
         std::string             nameManglingPrefix_;
 
