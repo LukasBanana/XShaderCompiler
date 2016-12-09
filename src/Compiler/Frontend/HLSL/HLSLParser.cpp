@@ -2027,9 +2027,8 @@ TextureTypeDenoterPtr HLSLParser::ParseTextureTypeDenoter()
 SamplerTypeDenoterPtr HLSLParser::ParseSamplerTypeDenoter()
 {
     /* Make sampler type denoter */
-    //TODO: convert HLSL keyword to sampler type and pass it to the SamplerTypeDenoter
-    ParseSamplerType();
-    return std::make_shared<SamplerTypeDenoter>();
+    auto samplerType = ParseSamplerType();
+    return std::make_shared<SamplerTypeDenoter>(/*samplerType*/);
 }
 
 StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoter()
@@ -2251,25 +2250,20 @@ BufferType HLSLParser::ParseBufferType()
     return BufferType::Undefined;
 }
 
-/*SamplerType*/std::string HLSLParser::ParseSamplerType()
+SamplerType HLSLParser::ParseSamplerType()
 {
-    #if 0
     try
     {
-        return HLSLKeywordToSamplerType(Accept(Tokens::Sampler)->Spell());
+        if (Is(Tokens::Sampler) || Is(Tokens::SamplerState))
+            return HLSLKeywordToSamplerType(AcceptIt()->Spell());
+        else
+            ErrorUnexpected("expected sampler type denoter or sampler state");
     }
     catch (const std::exception& e)
     {
         Error(e.what());
     }
     return SamplerType::Undefined;
-    #else
-    if (Is(Tokens::Sampler) || Is(Tokens::SamplerState))
-        return AcceptIt()->Spell();
-    else
-        ErrorUnexpected("expected sampler type denoter or sampler state");
-    return "";
-    #endif
 }
 
 IndexedSemantic HLSLParser::ParseSemantic(bool parseColon)

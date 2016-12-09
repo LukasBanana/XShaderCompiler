@@ -399,16 +399,12 @@ enum class SamplerType
     Sampler2D,              // 'sampler2D' in D3D9
     Sampler3D,              // 'sampler3D' in D3D9
     SamplerCube,            // 'samplerCUBE' in D3D9
-    Sampler_State,          // 'sampler_state' in D3D9, e.g. "sampler texSampler = sampler_state { Texture = <texObject>; MinFilter = LINEAR; };"
-    SamplerState,           // 'SamplerState' in D3D10+, e.g. "SamplerState texSampler { Filter = MIN_MAG_MIP_LINEAR; };"
+    SamplerState,           // 'SamplerState' in D3D10+ or 'sampler_state' in D3D9
     SamplerComparisonState, // 'SamplerComparisonState' in D3D10+
 };
 
-// Returns true if the specified sampler type is a type from D3D9.
-bool IsD3D9SamplerType(const SamplerType t);
-
-// Returns true if the specified sampler type is a type from D3D10+.
-bool IsD3D10SamplerType(const SamplerType t);
+// Returns true if the specified sampler type is sampler state (i.e. SamplerState or SamplerComparisonState).
+bool IsSamplerStateType(const SamplerType t);
 
 
 /* ----- RegisterType Enum ----- */

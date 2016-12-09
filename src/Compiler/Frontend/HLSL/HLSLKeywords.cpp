@@ -524,6 +524,32 @@ BufferType HLSLKeywordToBufferType(const std::string& keyword)
 }
 
 
+/* ----- SamplerType Mapping ----- */
+
+static std::map<std::string, SamplerType> GenerateSamplerTypeMap()
+{
+    using T = SamplerType;
+
+    return
+    {
+        { "sampler",                T::Sampler                },
+        { "sampler1D",              T::Sampler1D              },
+        { "sampler2D",              T::Sampler2D              },
+        { "sampler3D",              T::Sampler3D              },
+        { "samplerCUBE",            T::SamplerCube            },
+        { "sampler_state",          T::SamplerState           },
+        { "SamplerState",           T::SamplerState           },
+        { "SamplerComparisonState", T::SamplerComparisonState },
+    };
+}
+
+SamplerType HLSLKeywordToSamplerType(const std::string& keyword)
+{
+    static const auto typeMap = GenerateSamplerTypeMap();
+    return MapKeywordToType(typeMap, keyword, "sampler type");
+}
+
+
 /* ----- Semantic Mapping ----- */
 
 struct HLSLSemanticDescriptor

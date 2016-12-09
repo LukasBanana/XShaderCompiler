@@ -158,7 +158,7 @@ struct AST
 // Statement AST base class.
 struct Stmnt : public AST
 {
-    std::string comment;
+    std::string comment; // Optional commentary for this statement.
 };
 
 // AST base class with type denoter.
@@ -545,7 +545,10 @@ struct SamplerDeclStmnt : public Stmnt
 {
     AST_INTERFACE(SamplerDeclStmnt);
 
-    std::string                 samplerType;
+    // Returns true if this sampler is a sampler state object (see 'IsSamplerStateType' function).
+    bool IsSamplerState() const;
+
+    SamplerType                 samplerType = SamplerType::Undefined;   // Sampler type (e.g. 'samplerCUBE' or 'SamplerState').
     std::vector<SamplerDeclPtr> samplerDecls;
 };
 

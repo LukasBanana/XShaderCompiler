@@ -161,8 +161,6 @@ class GLSLGenerator : public Generator
 
         void WriteOutputSemanticsAssignment(Expr* ast);
 
-        //void WriteFragmentShaderOutput();
-
         /* --- Uniforms --- */
 
         void WriteGlobalUniforms();

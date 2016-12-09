@@ -515,6 +515,14 @@ std::string BufferDeclStmnt::ToString() const
 }
 
 
+/* ----- SamplerDeclStmnt ----- */
+
+bool SamplerDeclStmnt::IsSamplerState() const
+{
+    return IsSamplerStateType(samplerType);
+}
+
+
 /* ----- VarDelcStmnt ----- */
 
 std::string VarDeclStmnt::ToString(bool useVarNames) const
