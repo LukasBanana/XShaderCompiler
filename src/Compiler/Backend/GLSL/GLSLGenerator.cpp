@@ -190,14 +190,18 @@ IMPLEMENT_VISIT_PROC(Program)
     /* Write global input/output layouts */
     WriteGlobalLayouts();
 
-    /* Append default helper macros and functions */
+    /* Write wrapper functions for special intrinsics */
     WriteWrapperIntrinsics();
 
+    /* Write global input/output semantics and uniforms */
     if (shaderTarget_ == ShaderTarget::VertexShader)
         WriteGlobalInputSemantics();
     else if (shaderTarget_ == ShaderTarget::FragmentShader)
         WriteGlobalOutputSemantics();
 
+    WriteGlobalUniforms();
+
+    /* Write global program statements */
     WriteStmntList(ast->globalStmnts, true);
 }
 
@@ -1310,6 +1314,45 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
     }
     else if (shaderTarget_ != ShaderTarget::ComputeShader)
         Error("missing output semantic", ast);
+}
+
+/* --- Uniforms --- */
+
+void GLSLGenerator::WriteGlobalUniforms()
+{
+    bool uniformsWritten = false;
+
+    for (auto& param : GetProgram()->entryPointRef->parameters)
+    {
+        if (param->isUniform)
+        {
+            WriteGlobalUniformsParameter(param.get());
+            uniformsWritten = true;
+        }
+    }
+
+    if (uniformsWritten)
+        Blank();
+}
+
+void GLSLGenerator::WriteGlobalUniformsParameter(VarDeclStmnt* param)
+{
+    /* Write uniform type */
+    BeginLn();
+    {
+        Write("uniform ");
+        Visit(param->varType);
+        Write(" ");
+
+        /* Write parameter identifier */
+        if (param->varDecls.size() == 1)
+            Visit(param->varDecls.front());
+        else
+            Error("invalid number of variables in function parameter", param);
+
+        Write(";");
+    }
+    EndLn();
 }
 
 /* --- VarIdent --- */

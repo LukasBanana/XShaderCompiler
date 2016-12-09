@@ -163,6 +163,11 @@ class GLSLGenerator : public Generator
 
         //void WriteFragmentShaderOutput();
 
+        /* --- Uniforms --- */
+
+        void WriteGlobalUniforms();
+        void WriteGlobalUniformsParameter(VarDeclStmnt* param);
+
         /* --- VarIdent --- */
 
         // Returns the final identifier string from the specified variable identifier.
