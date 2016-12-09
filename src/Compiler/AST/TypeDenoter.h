@@ -171,7 +171,7 @@ struct TextureTypeDenoter : public TypeDenoter
     static const Types classType = Types::Texture;
 
     TextureTypeDenoter() = default;
-    TextureTypeDenoter(BufferType textureType);
+    TextureTypeDenoter(const BufferType textureType);
     TextureTypeDenoter(TextureDecl* textureDeclRef);
 
     Types Type() const override;
@@ -187,12 +187,14 @@ struct SamplerTypeDenoter : public TypeDenoter
     static const Types classType = Types::Sampler;
 
     SamplerTypeDenoter() = default;
+    SamplerTypeDenoter(const SamplerType samplerType);
     SamplerTypeDenoter(SamplerDecl* samplerDeclRef);
 
     Types Type() const override;
     std::string ToString() const override;
 
-    SamplerDecl* samplerDeclRef = nullptr;
+    SamplerType     samplerType     = SamplerType::Undefined;
+    SamplerDecl*    samplerDeclRef  = nullptr;
 };
 
 // Struct type denoter.

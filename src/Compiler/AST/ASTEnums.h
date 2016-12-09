@@ -394,12 +394,11 @@ enum class SamplerType
 {
     Undefined,
 
-    Sampler,                // 'sampler' in D3D9
     Sampler1D,              // 'sampler1D' in D3D9
     Sampler2D,              // 'sampler2D' in D3D9
     Sampler3D,              // 'sampler3D' in D3D9
     SamplerCube,            // 'samplerCUBE' in D3D9
-    SamplerState,           // 'SamplerState' in D3D10+ or 'sampler_state' in D3D9
+    SamplerState,           // 'SamplerState' in D3D10+, or 'sampler IDENT = sampler_state' in D3D9
     SamplerComparisonState, // 'SamplerComparisonState' in D3D10+
 };
 

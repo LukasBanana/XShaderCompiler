@@ -286,7 +286,7 @@ std::string BufferTypeDenoter::ToString() const
 
 /* ----- TextureTypeDenoter ----- */
 
-TextureTypeDenoter::TextureTypeDenoter(BufferType textureType) :
+TextureTypeDenoter::TextureTypeDenoter(const BufferType textureType) :
     textureType{ textureType }
 {
 }
@@ -311,9 +311,16 @@ std::string TextureTypeDenoter::ToString() const
 
 /* ----- SamplerTypeDenoter ----- */
 
-SamplerTypeDenoter::SamplerTypeDenoter(SamplerDecl* samplerDeclRef) :
-    samplerDeclRef{ samplerDeclRef }
+SamplerTypeDenoter::SamplerTypeDenoter(const SamplerType samplerType) :
+    samplerType{ samplerType }
 {
+}
+
+SamplerTypeDenoter::SamplerTypeDenoter(SamplerDecl* samplerDeclRef) :
+    samplerDeclRef  { samplerDeclRef }
+{
+    if (samplerDeclRef && samplerDeclRef->declStmntRef)
+        samplerType = samplerDeclRef->declStmntRef->samplerType;
 }
 
 TypeDenoter::Types SamplerTypeDenoter::Type() const
@@ -323,7 +330,7 @@ TypeDenoter::Types SamplerTypeDenoter::Type() const
 
 std::string SamplerTypeDenoter::ToString() const
 {
-    return "sampler";
+    return (IsSamplerStateType(samplerType) ? "sampler state" : "sampler");
 }
 
 

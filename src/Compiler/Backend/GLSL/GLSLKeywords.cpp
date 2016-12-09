@@ -217,6 +217,31 @@ const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLS
 }
 
 
+/* ----- BufferType Mapping ----- */
+
+static std::map<SamplerType, std::string> GenerateSamplerTypeMap()
+{
+    using T = SamplerType;
+
+    return
+    {
+        { T::Sampler1D,              "sampler1D"   },
+        { T::Sampler2D,              "sampler2D"   },
+        { T::Sampler3D,              "sampler3D"   },
+        { T::SamplerCube,            "samplerCube" },
+      //{ T::SamplerState,           ""            },
+      //{ T::SamplerComparisonState, ""            },
+    };
+}
+
+const std::string* SamplerTypeToGLSLKeyword(const SamplerType t, bool useVulkanGLSL)
+{
+    static const auto typeMap = GenerateSamplerTypeMap();
+    static const std::string samplerTypeVKSL = "sampler";
+    return (useVulkanGLSL ? (&samplerTypeVKSL) : MapTypeToKeyword(typeMap, t));
+}
+
+
 /* ----- Semantic Mapping ----- */
 
 struct GLSLSemanticDescriptor

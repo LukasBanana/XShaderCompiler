@@ -62,6 +62,9 @@ class GLSLGenerator : public Generator
         // Returns the GLSL keyword for the specified buffer type or reports and error.
         const std::string* BufferTypeToKeyword(const BufferType bufferType, const AST* ast = nullptr);
 
+        // Returns the GLSL keyword for the specified sampler type or reports and error.
+        const std::string* SamplerTypeToKeyword(const SamplerType samplerType, const AST* ast = nullptr);
+
         // Returns true if the specified type denoter is compatible with the semantic (e.g. 'SV_VertexID' is incompatible with 'UInt').
         bool IsTypeCompatibleWithSemantic(const Semantic semantic, const TypeDenoter& typeDenoter);
 

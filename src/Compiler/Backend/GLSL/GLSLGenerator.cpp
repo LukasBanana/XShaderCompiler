@@ -145,6 +145,15 @@ const std::string* GLSLGenerator::BufferTypeToKeyword(const BufferType bufferTyp
     return nullptr;
 }
 
+const std::string* GLSLGenerator::SamplerTypeToKeyword(const SamplerType samplerType, const AST* ast)
+{
+    if (auto keyword = SamplerTypeToGLSLKeyword(samplerType, IsVKSL()))
+        return keyword;
+    else
+        Error("failed to map sampler type to GLSL sampler type", ast);
+    return nullptr;
+}
+
 bool GLSLGenerator::IsTypeCompatibleWithSemantic(const Semantic semantic, const TypeDenoter& typeDenoter)
 {
     if (auto baseTypeDen = typeDenoter.As<BaseTypeDenoter>())
@@ -1499,12 +1508,33 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
                 if (auto texDecl = textureTypeDen->textureDeclRef)
                     textureType = texDecl->declStmntRef->textureType;
                 else
-                    Error("missing reference to texture type denoter", ast);
+                    Error("missing reference to declaration in texture type denoter", ast);
             }
 
             /* Convert texture type to GLSL sampler type (or VKSL texture type) */
             if (auto keyword = BufferTypeToKeyword(textureType, ast))
                 Write(*keyword);
+        }
+        else if (auto samplerTypeDen = typeDenoter.As<SamplerTypeDenoter>())
+        {
+            /* Get sampler type */
+            auto samplerType = samplerTypeDen->samplerType;
+            if (samplerType == SamplerType::Undefined)
+            {
+                if (auto samplerDecl = samplerTypeDen->samplerDeclRef)
+                    samplerType = samplerDecl->declStmntRef->samplerType;
+                else
+                    Error("missing reference to declaration in sampler type denoter", ast);
+            }
+
+            if (!IsSamplerStateType(samplerType))
+            {
+                /* Convert sampler type to GLSL sampler type (or VKSL texture type) */
+                if (auto keyword = SamplerTypeToKeyword(samplerType, ast))
+                    Write(*keyword);
+            }
+            else
+                Error("can not translate sampler state object to GLSL sampler", ast);
         }
         else if (typeDenoter.IsStruct())
         {

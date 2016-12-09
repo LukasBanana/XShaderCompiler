@@ -2020,7 +2020,7 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseMatrixTypeDenoter()
 TextureTypeDenoterPtr HLSLParser::ParseTextureTypeDenoter()
 {
     /* Make texture type denoter */
-    auto textureType = HLSLKeywordToBufferType(Accept(Tokens::Texture)->Spell());
+    auto textureType = ParseBufferType();
     return std::make_shared<TextureTypeDenoter>(textureType);
 }
 
@@ -2028,7 +2028,7 @@ SamplerTypeDenoterPtr HLSLParser::ParseSamplerTypeDenoter()
 {
     /* Make sampler type denoter */
     auto samplerType = ParseSamplerType();
-    return std::make_shared<SamplerTypeDenoter>(/*samplerType*/);
+    return std::make_shared<SamplerTypeDenoter>(samplerType);
 }
 
 StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoter()
