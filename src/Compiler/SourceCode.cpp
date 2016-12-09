@@ -60,6 +60,13 @@ static bool FinalizeMarker(
     /* Copy input line into output line */
     lineOut = lineIn;
 
+    /* Replace all tabs with blanks after source area to make the line marker always fit ('\t' -> ' ') */
+    for (auto i = static_cast<std::size_t>(area.Pos().Column()); i < lineOut.size(); ++i)
+    {
+        if (lineOut[i] == '\t')
+            lineOut[i] = ' ';
+    }
+
     /* Construct the space offset */
     markerOut = std::string(area.Pos().Column() - 1, ' ');
 

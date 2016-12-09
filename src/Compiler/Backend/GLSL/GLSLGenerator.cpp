@@ -541,7 +541,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         if (keyword)
             Write(*keyword + " ");
         else
-            Error("not all storage classes can be mapped to GLSL keywords", ast);
+            Warning("not all storage classes can be mapped to GLSL keywords", ast);
     }
 
     /* Write interpolation modifiers */
@@ -551,7 +551,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         if (keyword)
             Write(*keyword + " ");
         else
-            Error("not all interpolation modifiers can be mapped to GLSL keywords", ast);
+            Warning("not all interpolation modifiers can be mapped to GLSL keywords", ast);
     }
 
     /* Write type modifiers */

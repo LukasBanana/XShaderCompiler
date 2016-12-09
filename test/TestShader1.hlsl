@@ -12,7 +12,7 @@ struct ParamStruct
 cbuffer VertexParam : register(b0)
 {
 	float4x4 wvpMatrix;
-	nointerpolation float3 normal[3][2]	: NORMAL, test3;
+	precise nointerpolation float3 normal[3][2]	: NORMAL, test3;
 	struct dataStruct { float2 v0, v1; int2 v2; } data[10];
 	ParamStruct param0;
 };
