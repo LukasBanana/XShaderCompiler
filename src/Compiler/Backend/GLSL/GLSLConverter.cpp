@@ -170,8 +170,6 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     if (MustRenameVarDecl(ast))
         RenameVarDecl(ast);
 
-    //ConvertSemantic(ast->semantic);
-
     /* Must the initializer type denoter changed? */
     if (ast->initializer)
     {
@@ -590,15 +588,6 @@ void GLSLConverter::RemoveSamplerVarDeclStmnts(std::vector<VarDeclStmntPtr>& stm
         }
     );
 }
-
-#if 0
-void GLSLConverter::ConvertSemantic(IndexedSemantic& semantic)
-{
-    /* Convert fragment target to user defined semantic, because gl_FragData is only available for GLSL 1.10 */
-    if (semantic == Semantic::Target)
-        semantic = Semantic::UserDefined;
-}
-#endif
 
 
 } // /namespace Xsc

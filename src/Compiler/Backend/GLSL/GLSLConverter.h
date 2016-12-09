@@ -119,8 +119,6 @@ class GLSLConverter : public Visitor
         // Removes all variable declarations which have a sampler state type.
         void RemoveSamplerVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts);
 
-        //void ConvertSemantic(IndexedSemantic& semantic);
-
         /* === Members === */
 
         ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;
