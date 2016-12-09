@@ -508,8 +508,8 @@ struct FunctionDecl : public Stmnt
     std::vector<VarDeclStmntPtr>    annotations;                            // Annotations can be ignored by analyzers and generators.
     CodeBlockPtr                    codeBlock;                              // May be null (if this AST node is a forward declaration).
 
-    ParameterSemantics              inputSemantics;
-    ParameterSemantics              outputSemantics;
+    ParameterSemantics              inputSemantics;                         // Entry point input semantics.
+    ParameterSemantics              outputSemantics;                        // Entry point output semantics.
 
     //TODO: currently unused
   //FunctionDecl*                   definitionRef   = nullptr;              // Reference to the actual function definition (only for forward declarations).
@@ -576,9 +576,13 @@ struct VarDeclStmnt : public Stmnt
     // Returns true if this variable declaration statement has the 'in' or 'inout' input modifier or an empty input modifier (input is default).
     bool IsInput() const;
 
-    // Returns true if this variable declaration statement has the 'out' or 'inout'  input modifier.
+    // Returns true if this variable declaration statement has the 'out' or 'inout' input modifier.
     bool IsOutput() const;
 
+    // Returns true if this variable declaration statement has the 'uniform' input modifier.
+    bool IsUniform() const;
+
+    //TODO: replace 'string inputModifier' by 'bool inMod, outMod, uniformMod'.
     std::string                 inputModifier;  // Input modifiers, e.g. in, out, inout, uniform.
     std::vector<StorageClass>   storageClasses; // Storage classes (or interpolation modifiers), e.g. extern, nointerpolation, precise, etc.
     std::vector<std::string>    typeModifiers;  // Type modifiers, e.g. const, row_major, column_major.

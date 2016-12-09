@@ -555,6 +555,11 @@ bool VarDeclStmnt::IsOutput() const
     return (inputModifier == "out" || inputModifier == "inout");
 }
 
+bool VarDeclStmnt::IsUniform() const
+{
+    return (inputModifier == "uniform");
+}
+
 
 /* ----- NullExpr ----- */
 
