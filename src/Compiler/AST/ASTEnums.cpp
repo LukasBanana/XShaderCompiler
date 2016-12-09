@@ -273,6 +273,26 @@ bool IsRealType(const DataType t)
     );
 }
 
+bool IsHalfRealType(const DataType t)
+{
+    return
+    (
+        t == DataType::Half ||
+        (t >= DataType::Half2 && t <= DataType::Half4) ||
+        (t >= DataType::Half2x2 && t <= DataType::Half4x4)
+    );
+}
+
+bool IsDoubleRealType(const DataType t)
+{
+    return
+    (
+        t == DataType::Double ||
+        (t >= DataType::Double2 && t <= DataType::Double4) ||
+        (t >= DataType::Double2x2 && t <= DataType::Double4x4)
+    );
+}
+
 bool IsIntegralType(const DataType t)
 {
     return

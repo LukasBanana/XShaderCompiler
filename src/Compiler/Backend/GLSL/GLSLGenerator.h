@@ -53,6 +53,12 @@ class GLSLGenerator : public Generator
         // Returns true if there is a wrapper function for the specified intrinsic (e.g. "clip" intrinsic).
         bool IsWrappedIntrinsic(const Intrinsic intrinsic) const;
 
+        // Returns true if the output shader language is ESSL (for OpenGL ES 2+).
+        bool IsESSL() const;
+
+        // Returns true if the output shader language is VKSL (for Vulkan/SPIR-V).
+        bool IsVKSL() const;
+
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
@@ -163,8 +169,8 @@ class GLSLGenerator : public Generator
 
         /* --- Type denoter --- */
 
-        void WriteDataType(DataType dataType, const AST* ast = nullptr);
-        void WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast = nullptr);
+        void WriteDataType(DataType dataType, bool writePrecisionSpecifier = false, const AST* ast = nullptr);
+        void WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writePrecisionSpecifier = false, const AST* ast = nullptr);
 
         /* --- Function call --- */
 

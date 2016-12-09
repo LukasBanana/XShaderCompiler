@@ -75,14 +75,14 @@ XSC_EXPORT std::string ToString(const InputShaderVersion shaderVersion);
 //! Returns the specified shader output version as string.
 XSC_EXPORT std::string ToString(const OutputShaderVersion shaderVersion);
 
-//! Returns true if the shader version specifies a GLSL shader (for OpenGL 2+).
-XSC_EXPORT bool IsGLSL(const OutputShaderVersion shaderVersion);
+//! Returns true if the shader version specifies GLSL (for OpenGL 2+).
+XSC_EXPORT bool IsLanguageGLSL(const OutputShaderVersion shaderVersion);
 
-//! Returns true if the shader version specifies an ESSL shader (for OpenGL ES 2+).
-XSC_EXPORT bool IsESSL(const OutputShaderVersion shaderVersion);
+//! Returns true if the shader version specifies ESSL (for OpenGL ES 2+).
+XSC_EXPORT bool IsLanguageESSL(const OutputShaderVersion shaderVersion);
 
-//! Returns true if the shader version specifies a VKSL shader (for Vulkan).
-XSC_EXPORT bool IsVKSL(const OutputShaderVersion shaderVersion);
+//! Returns true if the shader version specifies VKSL (for Vulkan).
+XSC_EXPORT bool IsLanguageVKSL(const OutputShaderVersion shaderVersion);
 
 
 } // /namespace Xsc

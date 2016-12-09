@@ -237,6 +237,12 @@ bool IsBooleanType(const DataType t);
 // Returns true if the specified data type is a real type (i.e. half, float, double, and all vectors and matrices of these).
 bool IsRealType(const DataType t);
 
+// Returns true if the specified data type is a half-precision real type (i.e. half, half2, half4x4 etc.).
+bool IsHalfRealType(const DataType t);
+
+// Returns true if the specified data type is a double-precision real type (i.e. double, double2, double4x4 etc.).
+bool IsDoubleRealType(const DataType t);
+
 // Returns true if the specified data type is an integral type (i.e. int, uint, and all vectors and matrices of these).
 bool IsIntegralType(const DataType t);
 

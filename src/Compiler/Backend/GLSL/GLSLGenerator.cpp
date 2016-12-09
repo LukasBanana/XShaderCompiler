@@ -115,7 +115,7 @@ std::unique_ptr<std::string> GLSLGenerator::SystemValueToKeyword(const IndexedSe
     if (semantic == Semantic::Target && versionOut_ > OutputShaderVersion::GLSL120)
         return MakeUnique<std::string>(semantic.ToString());
     else
-        return SemanticToGLSLKeyword(semantic, IsVKSL(versionOut_));
+        return SemanticToGLSLKeyword(semantic, IsVKSL());
 }
 
 bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
@@ -125,6 +125,16 @@ bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
         Intrinsic::Clip,
     };
     return (wrappedIntrinsics.find(intrinsic) != wrappedIntrinsics.end());
+}
+
+bool GLSLGenerator::IsESSL() const
+{
+    return IsLanguageESSL(versionOut_);
+}
+
+bool GLSLGenerator::IsVKSL() const
+{
+    return IsLanguageVKSL(versionOut_);
 }
 
 /* ------- Visit functions ------- */
@@ -205,7 +215,7 @@ IMPLEMENT_VISIT_PROC(VarType)
     if (ast->structDecl)
         Visit(ast->structDecl);
     else
-        WriteTypeDenoter(*ast->typeDenoter, ast);
+        WriteTypeDenoter(*ast->typeDenoter, IsESSL(), ast);
 }
 
 IMPLEMENT_VISIT_PROC(VarIdent)
@@ -722,7 +732,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(TypeNameExpr)
 {
-    WriteTypeDenoter(*ast->typeDenoter, ast);
+    WriteTypeDenoter(*ast->typeDenoter, false, ast);
 }
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
@@ -1324,7 +1334,7 @@ void GLSLGenerator::WriteSuffixVarIdentBegin(const TypeDenoter& lhsTypeDen, VarI
     if (lhsTypeDen.IsScalar())
     {
         auto lhsBaseTypeDen = lhsTypeDen.As<BaseTypeDenoter>();
-        WriteDataType(SubscriptDataType(lhsBaseTypeDen->dataType, ast->ident), ast);
+        WriteDataType(SubscriptDataType(lhsBaseTypeDen->dataType, ast->ident), false, ast);
         Write("(");
     }
 }
@@ -1354,11 +1364,20 @@ void GLSLGenerator::WriteSuffixVarIdentEnd(const TypeDenoter& lhsTypeDen, VarIde
 
 /* --- Type denoter --- */
 
-void GLSLGenerator::WriteDataType(DataType dataType, const AST* ast)
+void GLSLGenerator::WriteDataType(DataType dataType, bool writePrecisionSpecifier, const AST* ast)
 {
     /* Replace doubles with floats, if doubles are not supported */
     if (versionOut_ < OutputShaderVersion::GLSL400)
         dataType = DoubleToFloatDataType(dataType);
+
+    /* Write optional precision specifier */
+    if (writePrecisionSpecifier)
+    {
+        if (IsHalfRealType(dataType))
+            Write("mediump ");
+        else
+            Write("highp ");
+    }
 
     /* Map GLSL data type */
     if (auto keyword = DataTypeToGLSLKeyword(dataType))
@@ -1367,7 +1386,7 @@ void GLSLGenerator::WriteDataType(DataType dataType, const AST* ast)
         Error("failed to map data type to GLSL keyword", ast);
 }
 
-void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast)
+void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writePrecisionSpecifier, const AST* ast)
 {
     try
     {
@@ -1379,7 +1398,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* 
         else if (auto baseTypeDen = typeDenoter.As<BaseTypeDenoter>())
         {
             /* Map GLSL base type */
-            WriteDataType(baseTypeDen->dataType, ast);
+            WriteDataType(baseTypeDen->dataType, writePrecisionSpecifier, ast);
         }
         else if (auto textureTypeDen = typeDenoter.As<TextureTypeDenoter>())
         {
@@ -1407,12 +1426,12 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* 
         else if (typeDenoter.IsAlias())
         {
             /* Write aliased type denoter */
-            WriteTypeDenoter(typeDenoter.GetAliased(), ast);
+            WriteTypeDenoter(typeDenoter.GetAliased(), writePrecisionSpecifier, ast);
         }
         else if (auto arrayTypeDen = typeDenoter.As<ArrayTypeDenoter>())
         {
             /* Write array type denoter */
-            WriteTypeDenoter(*arrayTypeDen->baseTypeDenoter, ast);
+            WriteTypeDenoter(*arrayTypeDen->baseTypeDenoter, writePrecisionSpecifier, ast);
             WriteArrayDims(arrayTypeDen->arrayDims);
         }
         else
@@ -1459,7 +1478,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
     else if (ast->typeDenoter)
     {
         /* Write type denoter */
-        WriteTypeDenoter(*ast->typeDenoter, ast);
+        WriteTypeDenoter(*ast->typeDenoter, false, ast);
     }
     else
         Error("missing function name", ast);
@@ -1521,7 +1540,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicRcp(FunctionCall* ast)
         /* Convert this function call into a division */
         Write("(");
         {
-            WriteTypeDenoter(*baseTypeDen, ast);
+            WriteTypeDenoter(*baseTypeDen, false, ast);
             Write("(");
             WriteLiteral("1", *baseTypeDen, ast);
             Write(") / (");
@@ -1664,7 +1683,7 @@ void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
             {
                 /* Write function signature */
                 Write("void clip(");
-                WriteDataType(arg0Type);
+                WriteDataType(arg0Type, IsESSL());
                 Write(" x)");
 
                 /* Write function body */
@@ -1895,7 +1914,7 @@ void GLSLGenerator::WriteLiteral(const std::string& value, const BaseTypeDenoter
     }
     else if (baseTypeDen.IsVector())
     {
-        WriteDataType(baseTypeDen.dataType, ast);
+        WriteDataType(baseTypeDen.dataType, false, ast);
         Write("(");
         Write(value);
         Write(")");
