@@ -145,6 +145,38 @@ const std::string* GLSLGenerator::BufferTypeToKeyword(const BufferType bufferTyp
     return nullptr;
 }
 
+bool GLSLGenerator::IsTypeCompatibleWithSemantic(const Semantic semantic, const TypeDenoter& typeDenoter)
+{
+    if (auto baseTypeDen = typeDenoter.As<BaseTypeDenoter>())
+    {
+        auto dataType = baseTypeDen->dataType;
+
+        switch (semantic)
+        {
+            case Semantic::DispatchThreadID:
+            case Semantic::GroupID:
+            case Semantic::GroupThreadID:
+                return (dataType == DataType::UInt3);
+
+            case Semantic::GroupIndex:
+                return (dataType == DataType::UInt);
+
+            case Semantic::GSInstanceID:
+            case Semantic::InstanceID:
+            case Semantic::OutputControlPointID:
+            case Semantic::PrimitiveID:
+            case Semantic::SampleIndex:
+            case Semantic::VertexID:
+                return (dataType == DataType::Int);
+
+            default:
+                break;
+        }
+        return true;
+    }
+    return false;
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -1084,8 +1116,24 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
         /* Write local variable definition statement */
         BeginLn();
         {
-            Visit(varDecl->declStmntRef->varType);
-            Write(" " + varDecl->ident + " = " + *semanticKeyword + ";");
+            /* Write desired variable type and identifier */
+            auto varType = varDecl->declStmntRef->varType.get();
+
+            Visit(varType);
+            Write(" " + varDecl->ident + " = ");
+
+            /* Is a type conversion required? */
+            if (!IsTypeCompatibleWithSemantic(varDecl->semantic, *varType->typeDenoter->Get()))
+            {
+                /* Write type cast with semantic keyword */
+                Visit(varType);
+                Write("(" + *semanticKeyword + ");");
+            }
+            else
+            {
+                /* Write semantic keyword */
+                Write(*semanticKeyword + ";");
+            }
         }
         EndLn();
     }
