@@ -314,6 +314,19 @@ enum class StorageClass
 bool IsInterpolationModifier(const StorageClass s);
 
 
+/* ----- StorageClass Enum ----- */
+
+// Variable type modifier enumeration.
+enum class TypeModifier
+{
+    Undefined,
+
+    Const,
+    RowMajor,
+    ColumnMajor,
+};
+
+
 /* ----- UniformBufferType Enum ----- */
 
 enum class UniformBufferType

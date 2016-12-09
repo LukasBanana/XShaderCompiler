@@ -194,6 +194,7 @@ class HLSLParser : public Parser
 
         DataType                        ParseDataType(const std::string& keyword);
         StorageClass                    ParseStorageClass();
+        TypeModifier                    ParseTypeModifier();
         UniformBufferType               ParseUniformBufferType();
         BufferType                      ParseBufferType();
         /*SamplerType*/std::string      ParseSamplerType();

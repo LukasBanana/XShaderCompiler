@@ -335,10 +335,16 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
             else if (modifier == "uniform")
                 ast->isUniform = true;
         }
-        else if (Is(Tokens::TypeModifier))
-            ast->typeModifiers.push_back(AcceptIt()->Spell());
         else if (Is(Tokens::StorageClass))
+        {
+            /* Parse storage class */
             ast->storageClasses.push_back(ParseStorageClass());
+        }
+        else if (Is(Tokens::TypeModifier))
+        {
+            /* Parse type modifier (const, row_major, column_major) */
+            ast->typeModifiers.push_back(ParseTypeModifier());
+        }
     }
 
     ast->varType = ParseVarType();
@@ -933,8 +939,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
         else if (Is(Tokens::TypeModifier))
         {
             /* Parse type modifier (const, row_major, column_major) */
-            auto modifier = AcceptIt()->Spell();
-            ast->typeModifiers.push_back(modifier);
+            ast->typeModifiers.push_back(ParseTypeModifier());
         }
         else if (Is(Tokens::Ident) || IsDataType())
         {
@@ -2205,6 +2210,19 @@ StorageClass HLSLParser::ParseStorageClass()
         Error(e.what());
     }
     return StorageClass::Undefined;
+}
+
+TypeModifier HLSLParser::ParseTypeModifier()
+{
+    try
+    {
+        return HLSLKeywordToTypeModifier(Accept(Tokens::TypeModifier)->Spell());
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
+    return TypeModifier::Undefined;
 }
 
 UniformBufferType HLSLParser::ParseUniformBufferType()

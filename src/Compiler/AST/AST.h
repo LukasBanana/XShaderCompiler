@@ -577,7 +577,7 @@ struct VarDeclStmnt : public Stmnt
     bool                        isOutput        = false;    // Input modifier 'out'
     bool                        isUniform       = false;    // Input modifier 'uniform'
     std::vector<StorageClass>   storageClasses;             // Storage classes (or interpolation modifiers), e.g. extern, nointerpolation, precise, etc.
-    std::vector<std::string>    typeModifiers;              // Type modifiers, e.g. const, row_major, column_major.
+    std::vector<TypeModifier>   typeModifiers;              // Type modifiers, e.g. const, row_major, column_major.
     VarTypePtr                  varType;
     std::vector<VarDeclPtr>     varDecls;
 };

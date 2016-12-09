@@ -438,6 +438,27 @@ StorageClass HLSLKeywordToStorageClass(const std::string& keyword)
 }
 
 
+/* ----- TypeModifier Mapping ----- */
+
+static std::map<std::string, TypeModifier> GenerateTypeModifierMap()
+{
+    using T = TypeModifier;
+
+    return
+    {
+        { "const",        T::Const       },
+        { "row_major",    T::RowMajor    },
+        { "column_major", T::ColumnMajor },
+    };
+}
+
+TypeModifier HLSLKeywordToTypeModifier(const std::string& keyword)
+{
+    static const auto typeMap = GenerateTypeModifierMap();
+    return MapKeywordToType(typeMap, keyword, "type modifier");
+}
+
+
 /* ----- BufferType Mapping ----- */
 
 static std::map<std::string, UniformBufferType> GenerateUniformBufferTypeMap()

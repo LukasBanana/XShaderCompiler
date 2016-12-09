@@ -532,11 +532,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     }
 
     /* Write type modifiers */
-    for (const auto& modifier : ast->typeModifiers)
-    {
-        if (modifier == "const")
-            Write(modifier + " ");
-    }
+    WriteTypeModifiers(ast->typeModifiers);
 
     /* Write variable type */
     if (ast->varType->structDecl)
@@ -1406,6 +1402,15 @@ void GLSLGenerator::WriteSuffixVarIdentEnd(const TypeDenoter& lhsTypeDen, VarIde
 
 /* --- Type denoter --- */
 
+void GLSLGenerator::WriteTypeModifiers(const std::vector<TypeModifier>& typeModifiers)
+{
+    for (auto modifier : typeModifiers)
+    {
+        if (modifier == TypeModifier::Const)
+            Write("const ");
+    }
+}
+
 void GLSLGenerator::WriteDataType(DataType dataType, bool writePrecisionSpecifier, const AST* ast)
 {
     /* Replace doubles with floats, if doubles are not supported */
@@ -1895,11 +1900,8 @@ void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
             Write("out ");
     }
 
-    for (const auto& modifier : ast->typeModifiers)
-    {
-        if (modifier == "const")
-            Write(modifier + " ");
-    }
+    /* Write type modifiers */
+    WriteTypeModifiers(ast->typeModifiers);
 
     /* Write parameter type */
     Visit(ast->varType);
