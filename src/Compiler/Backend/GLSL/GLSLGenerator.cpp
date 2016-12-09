@@ -136,6 +136,15 @@ bool GLSLGenerator::IsVKSL() const
     return IsLanguageVKSL(versionOut_);
 }
 
+const std::string* GLSLGenerator::BufferTypeToKeyword(const BufferType bufferType, const AST* ast)
+{
+    if (auto keyword = BufferTypeToGLSLKeyword(bufferType, IsVKSL()))
+        return keyword;
+    else
+        Error("failed to map texture type to GLSL sampler type", ast);
+    return nullptr;
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -385,10 +394,10 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
     if (!ast->flags(AST::isReachable))
         return;
 
-    /* Determine GLSL sampler type */
-    auto samplerType = BufferTypeToGLSLKeyword(ast->textureType);
+    /* Determine GLSL sampler type (or VKSL texture type) */
+    auto samplerType = BufferTypeToKeyword(ast->textureType, ast);
     if (!samplerType)
-        Error("failed to map texture type to GLSL sampler type", ast);
+        return;
 
     /* Write texture samplers */
     for (auto& texDecl : ast->textureDecls)
@@ -1397,11 +1406,9 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
                     Error("missing reference to texture type denoter", ast);
             }
 
-            /* Convert texture type to GLSL sampler type */
-            if (auto keyword = BufferTypeToGLSLKeyword(textureType))
+            /* Convert texture type to GLSL sampler type (or VKSL texture type) */
+            if (auto keyword = BufferTypeToKeyword(textureType, ast))
                 Write(*keyword);
-            else
-                Error("failed to map texture type to GLSL keyword", ast);
         }
         else if (typeDenoter.IsStruct())
         {

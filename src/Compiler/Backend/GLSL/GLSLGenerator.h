@@ -58,6 +58,9 @@ class GLSLGenerator : public Generator
         // Returns true if the output shader language is VKSL (for Vulkan/SPIR-V).
         bool IsVKSL() const;
 
+        // Returns the GLSL keyword for the specified buffer type or reports and error.
+        const std::string* BufferTypeToKeyword(const BufferType bufferType, const AST* ast = nullptr);
+
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );

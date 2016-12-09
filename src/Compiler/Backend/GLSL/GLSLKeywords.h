@@ -29,7 +29,7 @@ const std::string* DataTypeToGLSLKeyword(const DataType t);
 const std::string* StorageClassToGLSLKeyword(const StorageClass t);
 
 // Returns the GLSL keyword for the specified buffer type or null on failure.
-const std::string* BufferTypeToGLSLKeyword(const BufferType t);
+const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLSL = false);
 
 // Returns the GLSL keyword for the specified semantic.
 // Special cases if 'useVulkanGLSL' is true.

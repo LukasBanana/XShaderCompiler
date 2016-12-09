@@ -175,10 +175,45 @@ static std::map<BufferType, std::string> GenerateBufferTypeMap()
     };
 }
 
-const std::string* BufferTypeToGLSLKeyword(const BufferType t)
+static std::map<BufferType, std::string> GenerateBufferTypeMapVKSL()
 {
-    static const auto typeMap = GenerateBufferTypeMap();
-    return MapTypeToKeyword(typeMap, t);
+    using T = BufferType;
+
+    return
+    {
+        { T::Buffer,                  "buffer"           },
+        { T::StucturedBuffer,         "buffer"           },
+        { T::ByteAddressBuffer,       "buffer"           },
+
+        { T::RWBuffer,                "buffer"           },
+        { T::RWStucturedBuffer,       "buffer"           },
+        { T::RWByteAddressBuffer,     "buffer"           },
+        { T::AppendStructuredBuffer,  "buffer"           },
+        { T::ConsumeStructuredBuffer, "buffer"           },
+
+      //{ T::RWTexture1D,             ""                 },
+      //{ T::RWTexture1DArray,        ""                 },
+      //{ T::RWTexture2D,             ""                 },
+      //{ T::RWTexture2DArray,        ""                 },
+      //{ T::RWTexture3D,             ""                 },
+
+        { T::Texture1D,               "texture1D"        },
+        { T::Texture1DArray,          "texture1DArray"   },
+        { T::Texture2D,               "texture2D"        },
+        { T::Texture2DArray,          "texture2DArray"   },
+        { T::Texture3D,               "texture3D"        },
+        { T::TextureCube,             "textureCube"      },
+        { T::TextureCubeArray,        "textureCubeArray" },
+        { T::Texture2DMS,             "texture2DMS"      },
+        { T::Texture2DMSArray,        "texture2DMSArray" },
+    };
+}
+
+const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLSL)
+{
+    static const auto typeMapGLSL = GenerateBufferTypeMap();
+    static const auto typeMapVKSL = GenerateBufferTypeMapVKSL();
+    return MapTypeToKeyword((useVulkanGLSL ? typeMapVKSL : typeMapGLSL), t);
 }
 
 
