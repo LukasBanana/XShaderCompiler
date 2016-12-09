@@ -1402,7 +1402,7 @@ void GLSLGenerator::WriteSuffixVarIdentEnd(const TypeDenoter& lhsTypeDen, VarIde
 
 /* --- Type denoter --- */
 
-void GLSLGenerator::WriteTypeModifiers(const std::vector<TypeModifier>& typeModifiers)
+void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifiers)
 {
     for (auto modifier : typeModifiers)
     {

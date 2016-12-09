@@ -15,6 +15,7 @@
 #include "Token.h"
 #include "ASTEnums.h"
 #include <map>
+#include <set>
 #include <vector>
 
 
@@ -174,7 +175,7 @@ class GLSLGenerator : public Generator
 
         /* --- Type denoter --- */
 
-        void WriteTypeModifiers(const std::vector<TypeModifier>& typeModifiers);
+        void WriteTypeModifiers(const std::set<TypeModifier>& typeModifiers);
         void WriteDataType(DataType dataType, bool writePrecisionSpecifier = false, const AST* ast = nullptr);
         void WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writePrecisionSpecifier = false, const AST* ast = nullptr);
 

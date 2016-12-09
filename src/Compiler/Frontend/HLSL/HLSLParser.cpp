@@ -338,12 +338,12 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
         else if (Is(Tokens::StorageClass))
         {
             /* Parse storage class */
-            ast->storageClasses.push_back(ParseStorageClass());
+            ast->storageClasses.insert(ParseStorageClass());
         }
         else if (Is(Tokens::TypeModifier))
         {
             /* Parse type modifier (const, row_major, column_major) */
-            ast->typeModifiers.push_back(ParseTypeModifier());
+            ast->typeModifiers.insert(ParseTypeModifier());
         }
     }
 
@@ -934,12 +934,12 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
         if (Is(Tokens::StorageClass))
         {
             /* Parse storage class */
-            ast->storageClasses.push_back(ParseStorageClass());
+            ast->storageClasses.insert(ParseStorageClass());
         }
         else if (Is(Tokens::TypeModifier))
         {
             /* Parse type modifier (const, row_major, column_major) */
-            ast->typeModifiers.push_back(ParseTypeModifier());
+            ast->typeModifiers.insert(ParseTypeModifier());
         }
         else if (Is(Tokens::Ident) || IsDataType())
         {

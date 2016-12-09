@@ -573,13 +573,13 @@ struct VarDeclStmnt : public Stmnt
     // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident) const;
 
-    bool                        isInput         = false;    // Input modifier 'in'
-    bool                        isOutput        = false;    // Input modifier 'out'
-    bool                        isUniform       = false;    // Input modifier 'uniform'
-    std::vector<StorageClass>   storageClasses;             // Storage classes (or interpolation modifiers), e.g. extern, nointerpolation, precise, etc.
-    std::vector<TypeModifier>   typeModifiers;              // Type modifiers, e.g. const, row_major, column_major.
-    VarTypePtr                  varType;
-    std::vector<VarDeclPtr>     varDecls;
+    bool                    isInput         = false;    // Input modifier 'in'
+    bool                    isOutput        = false;    // Input modifier 'out'
+    bool                    isUniform       = false;    // Input modifier 'uniform'
+    std::set<StorageClass>  storageClasses;             // Storage classes (or interpolation modifiers), e.g. extern, nointerpolation, precise, etc.
+    std::set<TypeModifier>  typeModifiers;              // Type modifiers, e.g. const, row_major, column_major.
+    VarTypePtr              varType;
+    std::vector<VarDeclPtr> varDecls;
 };
 
 // Type alias declaration statement.
