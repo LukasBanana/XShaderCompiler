@@ -1886,9 +1886,14 @@ void GLSLGenerator::WriteStmntList(const std::vector<StmntPtr>& stmnts, bool isG
 
 void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
 {
-    /* Write modifiers */
-    if (!ast->inputModifier.empty())
-        Write(ast->inputModifier + " ");
+    /* Write input modifier */
+    if (ast->isOutput)
+    {
+        if (ast->isInput)
+            Write("inout ");
+        else
+            Write("out ");
+    }
 
     for (const auto& modifier : ast->typeModifiers)
     {

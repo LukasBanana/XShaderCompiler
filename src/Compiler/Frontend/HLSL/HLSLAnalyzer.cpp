@@ -721,13 +721,22 @@ void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStm
 {
     auto varDecl = param->varDecls.front().get();
 
-    /* Analyze input semantic */
-    if (param->IsInput())
-        AnalyzeEntryPointParameterInOut(funcDecl, varDecl, true);
+    if (param->isUniform)
+    {
+        /* Verify input only semantic */
+        if (param->isOutput)
+            Error("uniforms can not be defined as output", varDecl);
+    }
+    else
+    {
+        /* Analyze input semantic */
+        if (param->isInput)
+            AnalyzeEntryPointParameterInOut(funcDecl, varDecl, true);
 
-    /* Analyze output semantic */
-    if (param->IsOutput())
-        AnalyzeEntryPointParameterInOut(funcDecl, varDecl, false);
+        /* Analyze output semantic */
+        if (param->isOutput)
+            AnalyzeEntryPointParameterInOut(funcDecl, varDecl, false);
+    }
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input)

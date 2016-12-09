@@ -319,7 +319,22 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     while (Is(Tokens::InputModifier) || Is(Tokens::TypeModifier) || Is(Tokens::StorageClass))
     {
         if (Is(Tokens::InputModifier))
-            ast->inputModifier = AcceptIt()->Spell();
+        {
+            /* Map input modifier to flags */
+            auto modifier = AcceptIt()->Spell();
+
+            if (modifier == "in")
+                ast->isInput = true;
+            else if (modifier == "out")
+                ast->isOutput = true;
+            else if (modifier == "inout")
+            {
+                ast->isInput = true;
+                ast->isOutput = true;
+            }
+            else if (modifier == "uniform")
+                ast->isUniform = true;
+        }
         else if (Is(Tokens::TypeModifier))
             ast->typeModifiers.push_back(AcceptIt()->Spell());
         else if (Is(Tokens::StorageClass))

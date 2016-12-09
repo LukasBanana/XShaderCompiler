@@ -545,21 +545,6 @@ VarDecl* VarDeclStmnt::Fetch(const std::string& ident) const
     return nullptr;
 }
 
-bool VarDeclStmnt::IsInput() const
-{
-    return (inputModifier == "in" || inputModifier == "inout" || inputModifier.empty());
-}
-
-bool VarDeclStmnt::IsOutput() const
-{
-    return (inputModifier == "out" || inputModifier == "inout");
-}
-
-bool VarDeclStmnt::IsUniform() const
-{
-    return (inputModifier == "uniform");
-}
-
 
 /* ----- NullExpr ----- */
 

@@ -573,19 +573,11 @@ struct VarDeclStmnt : public Stmnt
     // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident) const;
 
-    // Returns true if this variable declaration statement has the 'in' or 'inout' input modifier or an empty input modifier (input is default).
-    bool IsInput() const;
-
-    // Returns true if this variable declaration statement has the 'out' or 'inout' input modifier.
-    bool IsOutput() const;
-
-    // Returns true if this variable declaration statement has the 'uniform' input modifier.
-    bool IsUniform() const;
-
-    //TODO: replace 'string inputModifier' by 'bool inMod, outMod, uniformMod'.
-    std::string                 inputModifier;  // Input modifiers, e.g. in, out, inout, uniform.
-    std::vector<StorageClass>   storageClasses; // Storage classes (or interpolation modifiers), e.g. extern, nointerpolation, precise, etc.
-    std::vector<std::string>    typeModifiers;  // Type modifiers, e.g. const, row_major, column_major.
+    bool                        isInput         = false;    // Input modifier 'in'
+    bool                        isOutput        = false;    // Input modifier 'out'
+    bool                        isUniform       = false;    // Input modifier 'uniform'
+    std::vector<StorageClass>   storageClasses;             // Storage classes (or interpolation modifiers), e.g. extern, nointerpolation, precise, etc.
+    std::vector<std::string>    typeModifiers;              // Type modifiers, e.g. const, row_major, column_major.
     VarTypePtr                  varType;
     std::vector<VarDeclPtr>     varDecls;
 };
