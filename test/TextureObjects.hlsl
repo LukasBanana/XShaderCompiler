@@ -28,13 +28,13 @@ struct VOut
 };
 
 //float4 PS(float2 texCoord : TEXCOORD) : SV_Target
-float4 PS(VOut outp) : SV_Target
+float4 PS(VOut inp) : SV_Target
 {
 	float4 c = (float4)0;
 	
-	c += tex0.Sample(smpl0, outp.texCoord);
-	c += tex1.Sample(smpl0, outp.texCoord);
-	c += tex2.Load((int2)outp.texCoord, 0);
+	c += tex0.Sample(smpl0, inp.texCoord);
+	c += tex1.Sample(smpl0, inp.texCoord);
+	c += tex2.Load((int2)inp.texCoord, 0);
 	
 	return c;
 }

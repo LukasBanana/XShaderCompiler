@@ -26,9 +26,7 @@ void ReflectionAnalyzer::Reflect(Program& program, const ShaderTarget shaderTarg
     program_        = (&program);
     data_           = (&reflectionData);
 
-    /* Visit both active and disabled code */
-    Visit(program_->globalStmnts);
-    Visit(program_->disabledAST);
+    Visit(program_);
 }
 
 
@@ -77,6 +75,31 @@ float ReflectionAnalyzer::EvaluateConstExprFloat(Expr& expr)
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
     void ReflectionAnalyzer::Visit##AST_NAME(AST_NAME* ast, void* args)
+
+IMPLEMENT_VISIT_PROC(Program)
+{
+    /* Visit both active and disabled code */
+    Visit(ast->globalStmnts);
+    Visit(ast->disabledAST);
+
+    if (auto entryPoint = ast->entryPointRef)
+    {
+        /* Reflect input attributes */
+        for (auto varDecl : entryPoint->inputSemantics.varDeclRefs)
+            data_->inputAttributes.push_back({ varDecl->ident, varDecl->semantic.Index() });
+        for (auto varDecl : entryPoint->inputSemantics.varDeclRefsSV)
+            data_->inputAttributes.push_back({ varDecl->semantic.ToString(), varDecl->semantic.Index() });
+
+        /* Reflect output attributes */
+        for (auto varDecl : entryPoint->outputSemantics.varDeclRefs)
+            data_->outputAttributes.push_back({ varDecl->ident, varDecl->semantic.Index() });
+        for (auto varDecl : entryPoint->outputSemantics.varDeclRefsSV)
+            data_->outputAttributes.push_back({ varDecl->semantic.ToString(), varDecl->semantic.Index() });
+        
+        if (entryPoint->semantic.IsSystemValue())
+            data_->outputAttributes.push_back({ entryPoint->semantic.ToString(), entryPoint->semantic.Index() });
+    }
+}
 
 /* --- Declarations --- */
 

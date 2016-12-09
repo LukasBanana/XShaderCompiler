@@ -175,7 +175,8 @@ XSC_EXPORT bool CompileShader(
 
         SortStats(reflectionData->textures);
         SortStats(reflectionData->constantBuffers);
-        SortStats(reflectionData->fragmentTargets);
+        SortStats(reflectionData->inputAttributes);
+        SortStats(reflectionData->outputAttributes);
     }
 
     /* Show timings */

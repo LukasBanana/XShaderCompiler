@@ -1,10 +1,4 @@
 
-['clip'-Intrinsic PS]
--T frag -E PS -o output/* IntrinsicClip.hlsl
-
-[TextureObjects PS]
---reflect -W -T frag -E PS -o output/* TextureObjects.hlsl
-
 [SemanticTest1 VS1]
 -T vert -E VS1 -o output/* SemanticTest1.hlsl
 
@@ -28,6 +22,12 @@
 
 [SemanticTest1 PS2]
 -T frag -E PS2 -o output/* SemanticTest1.hlsl
+
+['clip'-Intrinsic PS]
+-T frag -E PS -o output/* IntrinsicClip.hlsl
+
+[TextureObjects PS]
+--reflect -W -T frag -E PS -o output/* TextureObjects.hlsl
 
 [RegisterTest1 PS]
 --show-ast -T frag -E PS -o output/* RegisterTest1.hlsl

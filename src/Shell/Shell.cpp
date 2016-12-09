@@ -270,11 +270,12 @@ void Shell::ShowReflection(const Reflection::ReflectionData& reflectionData)
     output << "code reflection:" << std::endl;
     indentHandler_.IncIndent();
     {
-        ShowReflectionFor( reflectionData.macros,          "macros"                   );
-        ShowReflectionFor( reflectionData.textures,        "texture bindings"         );
-        ShowReflectionFor( reflectionData.constantBuffers, "constant buffer bindings" );
-        ShowReflectionFor( reflectionData.fragmentTargets, "fragment target bindings" );
-        ShowReflectionFor( reflectionData.samplerStates,   "sampler states"           );
+        ShowReflectionFor( reflectionData.macros,           "macros"            );
+        ShowReflectionFor( reflectionData.textures,         "textures"          );
+        ShowReflectionFor( reflectionData.constantBuffers,  "constant buffers"  );
+        ShowReflectionFor( reflectionData.inputAttributes,  "input attributes"  );
+        ShowReflectionFor( reflectionData.outputAttributes, "output attributes" );
+        ShowReflectionFor( reflectionData.samplerStates,    "sampler states"    );
     }
     indentHandler_.DecIndent();
 }

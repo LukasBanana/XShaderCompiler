@@ -46,6 +46,8 @@ class ReflectionAnalyzer : private Visitor
 
         /* ----- Visitor implementation ----- */
 
+        DECL_VISIT_PROC( Program           );
+
         DECL_VISIT_PROC( SamplerDecl       );
 
         DECL_VISIT_PROC( BufferDeclStmnt   );

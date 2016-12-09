@@ -130,8 +130,11 @@ struct ReflectionData
     //! Constant buffer bindings.
     std::vector<BindingSlot>            constantBuffers;
 
-    //! Fragment shader output targets.
-    std::vector<BindingSlot>            fragmentTargets;
+    //! Shader input attributes.
+    std::vector<BindingSlot>            inputAttributes;
+
+    //! Shader output attributes.
+    std::vector<BindingSlot>            outputAttributes;
 
     //! Static sampler states (identifier, states).
     std::map<std::string, SamplerState> samplerStates;
