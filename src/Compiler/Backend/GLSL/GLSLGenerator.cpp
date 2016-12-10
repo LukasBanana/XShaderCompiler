@@ -141,7 +141,7 @@ const std::string* GLSLGenerator::BufferTypeToKeyword(const BufferType bufferTyp
     if (auto keyword = BufferTypeToGLSLKeyword(bufferType, IsVKSL()))
         return keyword;
     else
-        Error("failed to map texture type to GLSL sampler type", ast);
+        Error("failed to map buffer type to GLSL sampler type", ast);
     return nullptr;
 }
 
@@ -439,9 +439,9 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     if (!ast->flags(AST::isReachable))
         return;
 
-    /* Determine GLSL sampler type (or VKSL texture type) */
-    auto samplerType = BufferTypeToKeyword(ast->bufferType, ast);
-    if (!samplerType)
+    /* Determine GLSL buffer type (or GLSL sampler or VKSL texture type) */
+    auto bufferType = BufferTypeToKeyword(ast->bufferType, ast);
+    if (!bufferType)
         return;
 
     /* Write buffer declarations */
@@ -466,7 +466,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
                 else if (IsUIntType(ast->colorType))
                     Write("u");
 
-                Write(*samplerType + " " + bufferDecl->ident + ";");
+                Write(*bufferType + " " + bufferDecl->ident + ";");
             }
             EndLn();
         }
@@ -1516,10 +1516,10 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
                 if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
                     bufferType = bufferDecl->declStmntRef->bufferType;
                 else
-                    Error("missing reference to declaration in texture type denoter", ast);
+                    Error("missing reference to declaration in buffer type denoter", ast);
             }
 
-            /* Convert buffer type to GLSL sampler type (or VKSL texture type) */
+            /* Convert buffer type to GLSL buffer (or sampler type) */
             if (auto keyword = BufferTypeToKeyword(bufferType, ast))
                 Write(*keyword);
         }
@@ -1537,7 +1537,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
 
             if (!IsSamplerStateType(samplerType))
             {
-                /* Convert sampler type to GLSL sampler type (or VKSL texture type) */
+                /* Convert sampler type to GLSL sampler type */
                 if (auto keyword = SamplerTypeToKeyword(samplerType, ast))
                     Write(*keyword);
             }

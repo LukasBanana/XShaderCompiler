@@ -77,7 +77,7 @@ bool HLSLParser::IsDataType() const
     return
     (
         IsBaseDataType() || Is(Tokens::Vector) || Is(Tokens::Matrix) ||
-        Is(Tokens::Texture) || Is(Tokens::Sampler) || Is(Tokens::SamplerState)
+        Is(Tokens::Buffer) || Is(Tokens::Sampler) || Is(Tokens::SamplerState)
     );
 }
 
@@ -739,7 +739,7 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
         case Tokens::Sampler:
         case Tokens::SamplerState:
             return ParseSamplerDeclStmnt();
-        case Tokens::Texture:
+        case Tokens::Buffer:
             return ParseBufferDeclStmnt();
         case Tokens::UniformBuffer:
             return ParseUniformBufferDecl();
@@ -1884,7 +1884,7 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoterPrimary()
         return ParseAliasTypeDenoter();
     else if (Is(Tokens::Struct))
         return ParseStructTypeDenoter();
-    else if (Is(Tokens::Texture))
+    else if (Is(Tokens::Buffer))
         return ParseBufferTypeDenoter();
     else if (Is(Tokens::Sampler) || Is(Tokens::SamplerState))
         return ParseSamplerTypeDenoter();
@@ -2266,7 +2266,7 @@ BufferType HLSLParser::ParseBufferType()
 {
     try
     {
-        return HLSLKeywordToBufferType(Accept(Tokens::Texture)->Spell());
+        return HLSLKeywordToBufferType(Accept(Tokens::Buffer)->Spell());
     }
     catch (const std::exception& e)
     {
@@ -2302,7 +2302,7 @@ std::string HLSLParser::ParseSamplerStateTextureIdent()
 {
     std::string ident;
 
-    Accept(Tokens::Texture, "texture");
+    Accept(Tokens::Buffer, "texture");
     Accept(Tokens::AssignOp, "=");
 
     if (Is(Tokens::LBracket))

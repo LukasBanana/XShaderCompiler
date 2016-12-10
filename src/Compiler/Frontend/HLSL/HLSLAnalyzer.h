@@ -88,7 +88,7 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeVarIdent(VarIdent* varIdent);
         void AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol);
         void AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl* varDecl);
-        void AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, BufferDecl* textureDecl);
+        void AnalyzeVarIdentWithSymbolBufferDecl(VarIdent* varIdent, BufferDecl* bufferDecl);
         void AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, SamplerDecl* samplerDecl);
 
         void AnalyzeEntryPoint(FunctionDecl* funcDecl);

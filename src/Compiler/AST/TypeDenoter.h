@@ -151,7 +151,7 @@ struct BaseTypeDenoter : public TypeDenoter
     DataType dataType = DataType::Undefined;
 };
 
-// Texture type denoter.
+// Buffer type denoter.
 struct BufferTypeDenoter : public TypeDenoter
 {
     static const Types classType = Types::Buffer;

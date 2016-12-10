@@ -177,7 +177,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
-    /* Register identifier for texture */
+    /* Register identifier for buffer */
     Register(ast->ident, ast);
 }
 
@@ -637,7 +637,7 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol)
             AnalyzeVarIdentWithSymbolVarDecl(varIdent, static_cast<VarDecl*>(symbol));
             break;
         case AST::Types::BufferDecl:
-            AnalyzeVarIdentWithSymbolTextureDecl(varIdent, static_cast<BufferDecl*>(symbol));
+            AnalyzeVarIdentWithSymbolBufferDecl(varIdent, static_cast<BufferDecl*>(symbol));
             break;
         case AST::Types::SamplerDecl:
             AnalyzeVarIdentWithSymbolSamplerDecl(varIdent, static_cast<SamplerDecl*>(symbol));
@@ -677,7 +677,7 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
         program_->flags << Program::isFragCoordUsed;
 }
 
-void HLSLAnalyzer::AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, BufferDecl* textureDecl)
+void HLSLAnalyzer::AnalyzeVarIdentWithSymbolBufferDecl(VarIdent* varIdent, BufferDecl* bufferDecl)
 {
     //TODO...
 }

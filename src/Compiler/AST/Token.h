@@ -71,14 +71,10 @@ class Token
             texture,
             Texture1D, Texture1DArray, Texture2D, Texture2DArray, Texture3D, TextureCube, TextureCubeArray,
             Texture2DMS, Texture2DMSArray, RWTexture1D, RWTexture1DArray, RWTexture2D, RWTexture2DArray, RWTexture3D
-            */
-            Texture,
-
-            /*
             AppendStructuredBuffer, Buffer, ByteAddressBuffer, ConsumeStructuredBuffer,
             StructuredBuffer, RWBuffer, RWByteAddressBuffer, RWStructuredBuffer
             */
-            StorageBuffer,
+            Buffer,
 
             UniformBuffer,      // cbuffer, tbuffer
 
