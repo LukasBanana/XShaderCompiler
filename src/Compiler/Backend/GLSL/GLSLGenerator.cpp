@@ -444,17 +444,17 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     if (!samplerType)
         return;
 
-    /* Write texture samplers */
-    for (auto& texDecl : ast->bufferDecls)
+    /* Write buffer declarations */
+    for (auto& bufferDecl : ast->bufferDecls)
     {
-        if (texDecl->flags(AST::isReachable))
+        if (bufferDecl->flags(AST::isReachable))
         {
             BeginLn();
             {
                 /* Write uniform declaration */
                 if (explicitBinding_)
                 {
-                    if (auto slotRegister = Register::GetForTarget(texDecl->slotRegisters, shaderTarget_))
+                    if (auto slotRegister = Register::GetForTarget(bufferDecl->slotRegisters, shaderTarget_))
                         Write("layout(binding = " + std::to_string(slotRegister->slot) + ") ");
                 }
 
@@ -466,7 +466,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
                 else if (IsUIntType(ast->colorType))
                     Write("u");
 
-                Write(*samplerType + " " + texDecl->ident + ";");
+                Write(*samplerType + " " + bufferDecl->ident + ";");
             }
             EndLn();
         }
@@ -1507,19 +1507,19 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
             /* Map GLSL base type */
             WriteDataType(baseTypeDen->dataType, writePrecisionSpecifier, ast);
         }
-        else if (auto textureTypeDen = typeDenoter.As<TextureTypeDenoter>())
+        else if (auto bufferTypeDen = typeDenoter.As<BufferTypeDenoter>())
         {
-            /* Get texture type */
-            auto bufferType = textureTypeDen->bufferType;
+            /* Get buffer type */
+            auto bufferType = bufferTypeDen->bufferType;
             if (bufferType == BufferType::Undefined)
             {
-                if (auto texDecl = textureTypeDen->textureDeclRef)
-                    bufferType = texDecl->declStmntRef->bufferType;
+                if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
+                    bufferType = bufferDecl->declStmntRef->bufferType;
                 else
                     Error("missing reference to declaration in texture type denoter", ast);
             }
 
-            /* Convert texture type to GLSL sampler type (or VKSL texture type) */
+            /* Convert buffer type to GLSL sampler type (or VKSL texture type) */
             if (auto keyword = BufferTypeToKeyword(bufferType, ast))
                 Write(*keyword);
         }

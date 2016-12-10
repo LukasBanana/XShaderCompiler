@@ -28,7 +28,7 @@ namespace Xsc
 DECL_PTR( TypeDenoter        );
 DECL_PTR( VoidTypeDenoter    );
 DECL_PTR( BaseTypeDenoter    );
-DECL_PTR( TextureTypeDenoter );
+DECL_PTR( BufferTypeDenoter  );
 DECL_PTR( SamplerTypeDenoter );
 DECL_PTR( StructTypeDenoter  );
 DECL_PTR( AliasTypeDenoter   );
@@ -46,7 +46,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     {
         Void,
         Base,
-        Texture,
+        Buffer,
         Sampler,
         Struct,
         Alias,
@@ -68,7 +68,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     bool IsVoid() const;
     bool IsBase() const;
     bool IsSampler() const;
-    bool IsTexture() const;
+    bool IsBuffer() const;
     bool IsStruct() const;
     bool IsAlias() const;
     bool IsArray() const;
@@ -152,19 +152,19 @@ struct BaseTypeDenoter : public TypeDenoter
 };
 
 // Texture type denoter.
-struct TextureTypeDenoter : public TypeDenoter
+struct BufferTypeDenoter : public TypeDenoter
 {
-    static const Types classType = Types::Texture;
+    static const Types classType = Types::Buffer;
 
-    TextureTypeDenoter() = default;
-    TextureTypeDenoter(const BufferType bufferType);
-    TextureTypeDenoter(BufferDecl* textureDeclRef);
+    BufferTypeDenoter() = default;
+    BufferTypeDenoter(const BufferType bufferType);
+    BufferTypeDenoter(BufferDecl* bufferDeclRef);
 
     Types Type() const override;
     std::string ToString() const override;
 
     BufferType  bufferType      = BufferType::Undefined;
-    BufferDecl* textureDeclRef  = nullptr;
+    BufferDecl* bufferDeclRef   = nullptr;
 };
 
 // Sampler type denoter.

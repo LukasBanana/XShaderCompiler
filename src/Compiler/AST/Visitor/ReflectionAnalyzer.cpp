@@ -129,12 +129,12 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
     if (ast->flags(AST::isReachable))
     {
-        for (auto& texDecl : ast->bufferDecls)
+        for (auto& bufferDecl : ast->bufferDecls)
         {
-            if (texDecl->flags(AST::isReachable))
+            if (bufferDecl->flags(AST::isReachable))
             {
                 /* Reflect texture binding */
-                data_->textures.push_back({ texDecl->ident, GetBindingPoint(texDecl->slotRegisters) });
+                data_->textures.push_back({ bufferDecl->ident, GetBindingPoint(bufferDecl->slotRegisters) });
             }
         }
     }

@@ -371,7 +371,7 @@ struct VarDecl : public Decl
     UniformBufferDecl*              bufferDeclRef   = nullptr;  // Unifrom buffer declaration reference for DAST (optional parent-parent-node); may be null
 };
 
-// Texture declaration.
+// Buffer declaration.
 struct BufferDecl : public Decl
 {
     AST_INTERFACE(BufferDecl);

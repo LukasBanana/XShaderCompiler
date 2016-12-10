@@ -1885,7 +1885,7 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoterPrimary()
     else if (Is(Tokens::Struct))
         return ParseStructTypeDenoter();
     else if (Is(Tokens::Texture))
-        return ParseTextureTypeDenoter();
+        return ParseBufferTypeDenoter();
     else if (Is(Tokens::Sampler) || Is(Tokens::SamplerState))
         return ParseSamplerTypeDenoter();
     else
@@ -2029,11 +2029,11 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseMatrixTypeDenoter()
     return typeDenoter;
 }
 
-TextureTypeDenoterPtr HLSLParser::ParseTextureTypeDenoter()
+BufferTypeDenoterPtr HLSLParser::ParseBufferTypeDenoter()
 {
-    /* Make texture type denoter */
+    /* Make buffer type denoter */
     auto bufferType = ParseBufferType();
-    return std::make_shared<TextureTypeDenoter>(bufferType);
+    return std::make_shared<BufferTypeDenoter>(bufferType);
 }
 
 SamplerTypeDenoterPtr HLSLParser::ParseSamplerTypeDenoter()

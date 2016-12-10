@@ -178,7 +178,7 @@ class HLSLParser : public Parser
         BaseTypeDenoterPtr              ParseBaseTypeDenoter();
         BaseTypeDenoterPtr              ParseBaseVectorTypeDenoter();
         BaseTypeDenoterPtr              ParseBaseMatrixTypeDenoter();
-        TextureTypeDenoterPtr           ParseTextureTypeDenoter();
+        BufferTypeDenoterPtr            ParseBufferTypeDenoter();
         SamplerTypeDenoterPtr           ParseSamplerTypeDenoter();
         StructTypeDenoterPtr            ParseStructTypeDenoter();
         AliasTypeDenoterPtr             ParseAliasTypeDenoter(std::string ident = "");

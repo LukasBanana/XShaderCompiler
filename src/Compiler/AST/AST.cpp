@@ -111,7 +111,7 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
             case AST::Types::BufferDecl:
             {
                 auto textureDecl = static_cast<BufferDecl*>(symbolRef);
-                return std::make_shared<TextureTypeDenoter>(textureDecl);
+                return std::make_shared<BufferTypeDenoter>(textureDecl);
             }
             break;
 
@@ -276,7 +276,7 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter()
 
 TypeDenoterPtr BufferDecl::DeriveTypeDenoter()
 {
-    return std::make_shared<TextureTypeDenoter>(this);
+    return std::make_shared<BufferTypeDenoter>(this);
 }
 
 

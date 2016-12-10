@@ -51,9 +51,9 @@ bool TypeDenoter::IsSampler() const
     return (Type() == Types::Sampler);
 }
 
-bool TypeDenoter::IsTexture() const
+bool TypeDenoter::IsBuffer() const
 {
-    return (Type() == Types::Texture);
+    return (Type() == Types::Buffer);
 }
 
 bool TypeDenoter::IsStruct() const
@@ -267,28 +267,28 @@ TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const 
 }
 
 
-/* ----- TextureTypeDenoter ----- */
+/* ----- BufferTypeDenoter ----- */
 
-TextureTypeDenoter::TextureTypeDenoter(const BufferType bufferType) :
+BufferTypeDenoter::BufferTypeDenoter(const BufferType bufferType) :
     bufferType{ bufferType }
 {
 }
 
-TextureTypeDenoter::TextureTypeDenoter(BufferDecl* textureDeclRef) :
-    textureDeclRef{ textureDeclRef }
+BufferTypeDenoter::BufferTypeDenoter(BufferDecl* bufferDeclRef) :
+    bufferDeclRef{ bufferDeclRef }
 {
-    if (textureDeclRef && textureDeclRef->declStmntRef)
-        bufferType = textureDeclRef->declStmntRef->bufferType;
+    if (bufferDeclRef && bufferDeclRef->declStmntRef)
+        bufferType = bufferDeclRef->declStmntRef->bufferType;
 }
 
-TypeDenoter::Types TextureTypeDenoter::Type() const
+TypeDenoter::Types BufferTypeDenoter::Type() const
 {
-    return Types::Texture;
+    return Types::Buffer;
 }
 
-std::string TextureTypeDenoter::ToString() const
+std::string BufferTypeDenoter::ToString() const
 {
-    return "texture";
+    return "buffer";
 }
 
 

@@ -180,9 +180,9 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     /* Check for explicit binding point */
     if (explicitBinding_)
     {
-        for (auto& texDecl : ast->bufferDecls)
+        for (auto& bufferDecl : ast->bufferDecls)
         {
-            if (Register::GetForTarget(texDecl->slotRegisters, shaderTarget_) != nullptr)
+            if (Register::GetForTarget(bufferDecl->slotRegisters, shaderTarget_) != nullptr)
                 AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
         }
     }
