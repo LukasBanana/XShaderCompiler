@@ -175,12 +175,12 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     Visitor::VisitUniformBufferDecl(ast, args);
 }
 
-IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
     /* Check for explicit binding point */
     if (explicitBinding_)
     {
-        for (auto& texDecl : ast->textureDecls)
+        for (auto& texDecl : ast->bufferDecls)
         {
             if (Register::GetForTarget(texDecl->slotRegisters, shaderTarget_) != nullptr)
                 AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
@@ -188,11 +188,11 @@ IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
     }
 
     /* Check for multi-sampled textures */
-    if (IsTextureMSBufferType(ast->textureType))
+    if (IsTextureMSBufferType(ast->bufferType))
         AcquireExtension(GLSLEXT_GL_ARB_texture_multisample);
 
     /* Default visitor */
-    Visitor::VisitTextureDeclStmnt(ast, args);
+    Visitor::VisitBufferDeclStmnt(ast, args);
 }
 
 IMPLEMENT_VISIT_PROC(BinaryExpr)

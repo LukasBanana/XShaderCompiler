@@ -434,18 +434,18 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     Blank();
 }
 
-IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
     if (!ast->flags(AST::isReachable))
         return;
 
     /* Determine GLSL sampler type (or VKSL texture type) */
-    auto samplerType = BufferTypeToKeyword(ast->textureType, ast);
+    auto samplerType = BufferTypeToKeyword(ast->bufferType, ast);
     if (!samplerType)
         return;
 
     /* Write texture samplers */
-    for (auto& texDecl : ast->textureDecls)
+    for (auto& texDecl : ast->bufferDecls)
     {
         if (texDecl->flags(AST::isReachable))
         {
@@ -1510,17 +1510,17 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
         else if (auto textureTypeDen = typeDenoter.As<TextureTypeDenoter>())
         {
             /* Get texture type */
-            auto textureType = textureTypeDen->textureType;
-            if (textureType == BufferType::Undefined)
+            auto bufferType = textureTypeDen->bufferType;
+            if (bufferType == BufferType::Undefined)
             {
                 if (auto texDecl = textureTypeDen->textureDeclRef)
-                    textureType = texDecl->declStmntRef->textureType;
+                    bufferType = texDecl->declStmntRef->bufferType;
                 else
                     Error("missing reference to declaration in texture type denoter", ast);
             }
 
             /* Convert texture type to GLSL sampler type (or VKSL texture type) */
-            if (auto keyword = BufferTypeToKeyword(textureType, ast))
+            if (auto keyword = BufferTypeToKeyword(bufferType, ast))
                 Write(*keyword);
         }
         else if (auto samplerTypeDen = typeDenoter.As<SamplerTypeDenoter>())

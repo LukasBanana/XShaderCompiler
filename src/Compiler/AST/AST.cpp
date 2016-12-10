@@ -86,7 +86,7 @@ TypeDenoterPtr VarIdent::DeriveTypeDenoter()
     return GetExplicitTypeDenoter(true);
 }
 
-//TODO: incomplete for arrays of TextureDecl, and SamplerDecl!
+//TODO: incomplete for arrays of BufferDecl, and SamplerDecl!
 TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
 {
     if (symbolRef)
@@ -108,9 +108,9 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
             }
             break;
 
-            case AST::Types::TextureDecl:
+            case AST::Types::BufferDecl:
             {
-                auto textureDecl = static_cast<TextureDecl*>(symbolRef);
+                auto textureDecl = static_cast<BufferDecl*>(symbolRef);
                 return std::make_shared<TextureTypeDenoter>(textureDecl);
             }
             break;
@@ -272,9 +272,9 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter()
 }
 
 
-/* ----- TextureDecl ----- */
+/* ----- BufferDecl ----- */
 
-TypeDenoterPtr TextureDecl::DeriveTypeDenoter()
+TypeDenoterPtr BufferDecl::DeriveTypeDenoter()
 {
     return std::make_shared<TextureTypeDenoter>(this);
 }

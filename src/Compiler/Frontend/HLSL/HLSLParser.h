@@ -108,7 +108,7 @@ class HLSLParser : public Parser
         VarTypePtr                      ParseVarType(bool parseVoidType = false);
 
         VarDeclPtr                      ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
-        TextureDeclPtr                  ParseTextureDecl(TextureDeclStmnt* declStmntRef);
+        BufferDeclPtr                   ParseBufferDecl(BufferDeclStmnt* declStmntRef);
         SamplerDeclPtr                  ParseSamplerDecl(SamplerDeclStmnt* declStmntRef);
         StructDeclPtr                   ParseStructDecl(bool parseStructTkn = true, const TokenPtr& identTkn = nullptr);
         AliasDeclPtr                    ParseAliasDecl(TypeDenoterPtr typeDenoter);
@@ -117,7 +117,7 @@ class HLSLParser : public Parser
         StmntPtr                        ParseStructDeclOrVarDeclOrFunctionDeclStmnt();
         FunctionDeclPtr                 ParseFunctionDecl(const VarTypePtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
         UniformBufferDeclPtr            ParseUniformBufferDecl();
-        TextureDeclStmntPtr             ParseTextureDeclStmnt();
+        BufferDeclStmntPtr              ParseBufferDeclStmnt();
         SamplerDeclStmntPtr             ParseSamplerDeclStmnt();
         VarDeclStmntPtr                 ParseVarDeclStmnt();
         AliasDeclStmntPtr               ParseAliasDeclStmnt();
@@ -163,7 +163,7 @@ class HLSLParser : public Parser
         std::vector<RegisterPtr>        ParseRegisterList(bool parseFirstColon = true);
         std::vector<AttributePtr>       ParseAttributeList();
         std::vector<SwitchCasePtr>      ParseSwitchCaseList();
-        std::vector<TextureDeclPtr>     ParseTextureDeclList(TextureDeclStmnt* declStmntRef);
+        std::vector<BufferDeclPtr>      ParseBufferDeclList(BufferDeclStmnt* declStmntRef);
         std::vector<SamplerDeclPtr>     ParseSamplerDeclList(SamplerDeclStmnt* declStmntRef);
         std::vector<SamplerValuePtr>    ParseSamplerValueList();
         std::vector<AliasDeclPtr>       ParseAliasDeclList(TypeDenoterPtr typeDenoter);

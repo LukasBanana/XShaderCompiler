@@ -55,7 +55,7 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( VarType           );
         
         DECL_VISIT_PROC( VarDecl           );
-        DECL_VISIT_PROC( TextureDecl       );
+        DECL_VISIT_PROC( BufferDecl       );
         DECL_VISIT_PROC( SamplerDecl       );
         DECL_VISIT_PROC( StructDecl        );
         DECL_VISIT_PROC( AliasDecl         );
@@ -88,7 +88,7 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeVarIdent(VarIdent* varIdent);
         void AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol);
         void AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl* varDecl);
-        void AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, TextureDecl* textureDecl);
+        void AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, BufferDecl* textureDecl);
         void AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, SamplerDecl* samplerDecl);
 
         void AnalyzeEntryPoint(FunctionDecl* funcDecl);

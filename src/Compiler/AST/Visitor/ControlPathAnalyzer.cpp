@@ -99,7 +99,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     PushReturnPath(false);
 }
 
-IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
     PushReturnPath(false);
 }

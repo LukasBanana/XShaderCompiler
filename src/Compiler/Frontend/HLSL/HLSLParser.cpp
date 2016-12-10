@@ -605,9 +605,9 @@ VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& 
     return ast;
 }
 
-TextureDeclPtr HLSLParser::ParseTextureDecl(TextureDeclStmnt* declStmntRef)
+BufferDeclPtr HLSLParser::ParseBufferDecl(BufferDeclStmnt* declStmntRef)
 {
-    auto ast = Make<TextureDecl>();
+    auto ast = Make<BufferDecl>();
 
     /* Store reference to parent node */
     ast->declStmntRef = declStmntRef;
@@ -740,7 +740,7 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
         case Tokens::SamplerState:
             return ParseSamplerDeclStmnt();
         case Tokens::Texture:
-            return ParseTextureDeclStmnt();
+            return ParseBufferDeclStmnt();
         case Tokens::UniformBuffer:
             return ParseUniformBufferDecl();
         case Tokens::Typedef:
@@ -876,13 +876,13 @@ UniformBufferDeclPtr HLSLParser::ParseUniformBufferDecl()
     return ast;
 }
 
-TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
+BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
 {
-    auto ast = Make<TextureDeclStmnt>();
+    auto ast = Make<BufferDeclStmnt>();
 
     auto textureTypeTkn = Tkn();
 
-    ast->textureType = ParseBufferType();
+    ast->bufferType = ParseBufferType();
 
     /* Parse optional template arguments */
     if (Is(Tokens::BinaryOp, "<"))
@@ -912,7 +912,7 @@ TextureDeclStmntPtr HLSLParser::ParseTextureDeclStmnt()
         PopParsingState();
     }
 
-    ast->textureDecls = ParseTextureDeclList(ast.get());
+    ast->bufferDecls = ParseBufferDeclList(ast.get());
 
     Semi();
 
@@ -1760,19 +1760,19 @@ std::vector<SwitchCasePtr> HLSLParser::ParseSwitchCaseList()
     return cases;
 }
 
-std::vector<TextureDeclPtr> HLSLParser::ParseTextureDeclList(TextureDeclStmnt* declStmntRef)
+std::vector<BufferDeclPtr> HLSLParser::ParseBufferDeclList(BufferDeclStmnt* declStmntRef)
 {
-    std::vector<TextureDeclPtr> textureDecls;
+    std::vector<BufferDeclPtr> bufferDecls;
 
-    textureDecls.push_back(ParseTextureDecl(declStmntRef));
+    bufferDecls.push_back(ParseBufferDecl(declStmntRef));
 
     while (Is(Tokens::Comma))
     {
         AcceptIt();
-        textureDecls.push_back(ParseTextureDecl(declStmntRef));
+        bufferDecls.push_back(ParseBufferDecl(declStmntRef));
     }
 
-    return textureDecls;
+    return bufferDecls;
 }
 
 std::vector<SamplerDeclPtr> HLSLParser::ParseSamplerDeclList(SamplerDeclStmnt* declStmntRef)
@@ -2032,8 +2032,8 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseMatrixTypeDenoter()
 TextureTypeDenoterPtr HLSLParser::ParseTextureTypeDenoter()
 {
     /* Make texture type denoter */
-    auto textureType = ParseBufferType();
-    return std::make_shared<TextureTypeDenoter>(textureType);
+    auto bufferType = ParseBufferType();
+    return std::make_shared<TextureTypeDenoter>(bufferType);
 }
 
 SamplerTypeDenoterPtr HLSLParser::ParseSamplerTypeDenoter()

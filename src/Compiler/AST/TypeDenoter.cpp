@@ -269,16 +269,16 @@ TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const 
 
 /* ----- TextureTypeDenoter ----- */
 
-TextureTypeDenoter::TextureTypeDenoter(const BufferType textureType) :
-    textureType{ textureType }
+TextureTypeDenoter::TextureTypeDenoter(const BufferType bufferType) :
+    bufferType{ bufferType }
 {
 }
 
-TextureTypeDenoter::TextureTypeDenoter(TextureDecl* textureDeclRef) :
+TextureTypeDenoter::TextureTypeDenoter(BufferDecl* textureDeclRef) :
     textureDeclRef{ textureDeclRef }
 {
     if (textureDeclRef && textureDeclRef->declStmntRef)
-        textureType = textureDeclRef->declStmntRef->textureType;
+        bufferType = textureDeclRef->declStmntRef->bufferType;
 }
 
 TypeDenoter::Types TextureTypeDenoter::Type() const

@@ -125,11 +125,11 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     }
 }
 
-IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
     if (ast->flags(AST::isReachable))
     {
-        for (auto& texDecl : ast->textureDecls)
+        for (auto& texDecl : ast->bufferDecls)
         {
             if (texDecl->flags(AST::isReachable))
             {

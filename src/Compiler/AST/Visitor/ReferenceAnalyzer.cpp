@@ -119,7 +119,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         VISIT_DEFAULT(StructDecl);
 }
 
-IMPLEMENT_VISIT_PROC(TextureDecl)
+IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     if (Reachable(ast))
         Visit(ast->declStmntRef);
@@ -139,10 +139,10 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         VISIT_DEFAULT(UniformBufferDecl);
 }
 
-IMPLEMENT_VISIT_PROC(TextureDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
     if (Reachable(ast))
-        VISIT_DEFAULT(TextureDeclStmnt);
+        VISIT_DEFAULT(BufferDeclStmnt);
 }
 
 #undef IMPLEMENT_VISIT_PROC

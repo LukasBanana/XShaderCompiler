@@ -76,7 +76,7 @@ AST* ASTSymbolOverload::FetchVar(bool throwOnFailure)
 {
     auto ref = Fetch(throwOnFailure);
     auto type = ref->Type();
-    if (type != AST::Types::VarDecl && type != AST::Types::TextureDecl && type != AST::Types::SamplerDecl)
+    if (type != AST::Types::VarDecl && type != AST::Types::BufferDecl && type != AST::Types::SamplerDecl)
     {
         if (throwOnFailure)
             RuntimeErr("identifier '" + ident_ + "' does not name a variable");

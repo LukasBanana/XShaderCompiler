@@ -58,7 +58,7 @@ class GLSLExtensionAgent : private Visitor
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
-        DECL_VISIT_PROC( TextureDeclStmnt  );
+        DECL_VISIT_PROC( BufferDeclStmnt  );
 
         DECL_VISIT_PROC( BinaryExpr        );
         DECL_VISIT_PROC( UnaryExpr         );

@@ -49,11 +49,11 @@ class ReferenceAnalyzer : private Visitor
 
         DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( StructDecl        );
-        DECL_VISIT_PROC( TextureDecl       );
+        DECL_VISIT_PROC( BufferDecl       );
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
-        DECL_VISIT_PROC( TextureDeclStmnt  );
+        DECL_VISIT_PROC( BufferDeclStmnt  );
 
         /* === Members === */
 

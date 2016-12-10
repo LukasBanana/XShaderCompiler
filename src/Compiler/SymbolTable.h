@@ -177,7 +177,7 @@ class ASTSymbolOverload
         AST* Fetch(bool throwOnFailure = true);
 
         /*
-        Fetches a variable declaration (VarDecl, TextureDecl, SamplerDecl).
+        Fetches a variable declaration (VarDecl, BufferDecl, SamplerDecl).
         If there is more than one reference or the type does not fit, an std::runtime_error is thrown.
         */
         AST* FetchVar(bool throwOnFailure = true);

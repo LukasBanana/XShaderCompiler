@@ -81,8 +81,7 @@ struct AST
         VarIdent,
 
         VarDecl,
-        //BufferDecl,
-        TextureDecl,
+        BufferDecl,
         SamplerDecl,
         StructDecl,
         AliasDecl,
@@ -90,7 +89,7 @@ struct AST
         FunctionDecl,       // Do not use "Stmnt" postfix here (There are no declaration sub-nodes)
         UniformBufferDecl,  // Do not use "Stmnt" postfix here (There are no declaration sub-nodes)
         VarDeclStmnt,
-        TextureDeclStmnt,
+        BufferDeclStmnt,
         SamplerDeclStmnt,
         StructDeclStmnt,
         AliasDeclStmnt,     // Type alias (typedef)
@@ -373,9 +372,9 @@ struct VarDecl : public Decl
 };
 
 // Texture declaration.
-struct TextureDecl : public Decl
+struct BufferDecl : public Decl
 {
-    AST_INTERFACE(TextureDecl);
+    AST_INTERFACE(BufferDecl);
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
@@ -383,7 +382,7 @@ struct TextureDecl : public Decl
     std::vector<ExprPtr>            arrayDims;
     std::vector<RegisterPtr>        slotRegisters;
 
-    TextureDeclStmnt*               declStmntRef    = nullptr;  // Reference to its declaration statement (parent node).
+    BufferDeclStmnt*                declStmntRef    = nullptr;  // Reference to its declaration statement (parent node).
 };
 
 // Sampler state declaration.
@@ -528,15 +527,15 @@ struct UniformBufferDecl : public Stmnt
     std::vector<VarDeclStmntPtr>    members;
 };
 
-// Texture declaration.
-struct TextureDeclStmnt : public Stmnt
+// Buffer (and texture) declaration.
+struct BufferDeclStmnt : public Stmnt
 {
-    AST_INTERFACE(TextureDeclStmnt);
+    AST_INTERFACE(BufferDeclStmnt);
 
-    BufferType                  textureType     = BufferType::Undefined;
-    DataType                    colorType       = DataType::Float4;         // Sampling type. By default Float4.
-    int                         numSamples      = 1;                        // Number of samples in the range [1, 128]. By default 1.
-    std::vector<TextureDeclPtr> textureDecls;
+    BufferType                  bufferType  = BufferType::Undefined;
+    DataType                    colorType   = DataType::Float4;         // Sampling type. By default Float4.
+    int                         numSamples  = 1;                        // Number of samples in the range [1, 128]. By default 1.
+    std::vector<BufferDeclPtr>  bufferDecls;
 };
 
 // Sampler declaration.

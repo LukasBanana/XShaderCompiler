@@ -39,14 +39,14 @@ DECL_PTR( VarType           );
 DECL_PTR( VarIdent          );
 
 DECL_PTR( VarDecl           );
-DECL_PTR( TextureDecl       );
+DECL_PTR( BufferDecl       );
 DECL_PTR( SamplerDecl       );
 DECL_PTR( StructDecl        );
 DECL_PTR( AliasDecl         );
 
 DECL_PTR( FunctionDecl      );
 DECL_PTR( UniformBufferDecl );
-DECL_PTR( TextureDeclStmnt  );
+DECL_PTR( BufferDeclStmnt  );
 DECL_PTR( SamplerDeclStmnt  );
 DECL_PTR( StructDeclStmnt   );
 DECL_PTR( VarDeclStmnt      );
@@ -112,14 +112,14 @@ class Visitor
         VISITOR_VISIT_PROC( VarIdent          );
 
         VISITOR_VISIT_PROC( VarDecl           );
-        VISITOR_VISIT_PROC( TextureDecl       );
+        VISITOR_VISIT_PROC( BufferDecl       );
         VISITOR_VISIT_PROC( SamplerDecl       );
         VISITOR_VISIT_PROC( StructDecl        );
         VISITOR_VISIT_PROC( AliasDecl         );
 
         VISITOR_VISIT_PROC( FunctionDecl      );
         VISITOR_VISIT_PROC( UniformBufferDecl );
-        VISITOR_VISIT_PROC( TextureDeclStmnt  );
+        VISITOR_VISIT_PROC( BufferDeclStmnt  );
         VISITOR_VISIT_PROC( SamplerDeclStmnt  );
         VISITOR_VISIT_PROC( StructDeclStmnt   );
         VISITOR_VISIT_PROC( VarDeclStmnt      );

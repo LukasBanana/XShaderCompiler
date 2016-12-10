@@ -98,7 +98,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                     /* Verify intrinsic for respective object class */
                     switch (ast->varIdent->symbolRef->Type())
                     {
-                        case AST::Types::TextureDecl:
+                        case AST::Types::BufferDecl:
                             if (!IsTextureIntrinsic(intrinsic))
                                 Error("invalid intrinsic '" + ast->varIdent->next->ident + "' for a texture object", ast);
                             break;
@@ -175,7 +175,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     }
 }
 
-IMPLEMENT_VISIT_PROC(TextureDecl)
+IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     /* Register identifier for texture */
     Register(ast->ident, ast);
@@ -520,7 +520,7 @@ void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
         #if 0
         if (auto symbol = ast->varIdent->symbolRef)
         {
-            if (symbol->Type() == AST::Types::TextureDecl)
+            if (symbol->Type() == AST::Types::BufferDecl)
                 ast->flags << FunctionCall::isTexFunc;
         }
         #endif
@@ -636,8 +636,8 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol)
         case AST::Types::VarDecl:
             AnalyzeVarIdentWithSymbolVarDecl(varIdent, static_cast<VarDecl*>(symbol));
             break;
-        case AST::Types::TextureDecl:
-            AnalyzeVarIdentWithSymbolTextureDecl(varIdent, static_cast<TextureDecl*>(symbol));
+        case AST::Types::BufferDecl:
+            AnalyzeVarIdentWithSymbolTextureDecl(varIdent, static_cast<BufferDecl*>(symbol));
             break;
         case AST::Types::SamplerDecl:
             AnalyzeVarIdentWithSymbolSamplerDecl(varIdent, static_cast<SamplerDecl*>(symbol));
@@ -677,7 +677,7 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
         program_->flags << Program::isFragCoordUsed;
 }
 
-void HLSLAnalyzer::AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, TextureDecl* textureDecl)
+void HLSLAnalyzer::AnalyzeVarIdentWithSymbolTextureDecl(VarIdent* varIdent, BufferDecl* textureDecl)
 {
     //TODO...
 }
