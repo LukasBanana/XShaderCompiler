@@ -22,10 +22,19 @@ Documentation
 - [Getting Started with XShaderCompiler](https://github.com/LukasBanana/XShaderCompiler/blob/master/docu/GettingStarted/Getting%20Started%20with%20XShaderCompiler.pdf) (PDF)
 - [XShaderCompiler Reference Manual](https://github.com/LukasBanana/XShaderCompiler/blob/master/docu/refman.pdf) (PDF)
 
-Status
-------
+Progress
+--------
 
 **Version: 0.02 Alpha** (*Do not use in production code!*)
+
+| Feature | Progress | Remarks |
+|---------|:--------:|---------|
+| Vertex Shader | ~70% | |
+| Tessellation Control Shader | 0% | |
+| Tessellation Evaluation Shader | 0% | |
+| Geometry Shader | 0% | |
+| Fragment Shader | ~70% | |
+| Compute Shader | ~50% | (RW-)Buffer objects are in progress |
 
 ##### TODO List: #####
 * Common HLSL IO semantics to GLSL transformation.
