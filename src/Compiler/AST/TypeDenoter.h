@@ -28,7 +28,6 @@ namespace Xsc
 DECL_PTR( TypeDenoter        );
 DECL_PTR( VoidTypeDenoter    );
 DECL_PTR( BaseTypeDenoter    );
-DECL_PTR( BufferTypeDenoter  );
 DECL_PTR( TextureTypeDenoter );
 DECL_PTR( SamplerTypeDenoter );
 DECL_PTR( StructTypeDenoter  );
@@ -47,7 +46,6 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     {
         Void,
         Base,
-        Buffer,
         Texture,
         Sampler,
         Struct,
@@ -69,7 +67,6 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
 
     bool IsVoid() const;
     bool IsBase() const;
-    bool IsBuffer() const;
     bool IsSampler() const;
     bool IsTexture() const;
     bool IsStruct() const;
@@ -152,17 +149,6 @@ struct BaseTypeDenoter : public TypeDenoter
     TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
 
     DataType dataType = DataType::Undefined;
-};
-
-// Buffer type denoter.
-struct BufferTypeDenoter : public TypeDenoter
-{
-    static const Types classType = Types::Buffer;
-
-    Types Type() const override;
-    std::string ToString() const override;
-
-    UniformBufferDecl* bufferDeclRef = nullptr;
 };
 
 // Texture type denoter.

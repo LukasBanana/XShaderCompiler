@@ -46,11 +46,6 @@ bool TypeDenoter::IsBase() const
     return (Type() == Types::Base);
 }
 
-bool TypeDenoter::IsBuffer() const
-{
-    return (Type() == Types::Buffer);
-}
-
 bool TypeDenoter::IsSampler() const
 {
     return (Type() == Types::Sampler);
@@ -269,18 +264,6 @@ TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const 
             RuntimeErr("array access without array type denoter");
     }
     return Get(varIdent);
-}
-
-/* ----- BufferTypeDenoter ----- */
-
-TypeDenoter::Types BufferTypeDenoter::Type() const
-{
-    return Types::Buffer;
-}
-
-std::string BufferTypeDenoter::ToString() const
-{
-    return "uniform buffer";
 }
 
 
