@@ -29,6 +29,9 @@
 [TextureObjects PS]
 --reflect -W -T frag -E PS -o output/* TextureObjects.hlsl
 
+[BufferObjects CS]
+-W -T comp -E CS -o output/* BufferObjects.hlsl
+
 [RegisterTest1 PS]
 --show-ast -T frag -E PS -o output/* RegisterTest1.hlsl
 
@@ -38,47 +41,47 @@
 [CastTest1 VS]
 -Vout GLSL150 -T vert -E VS -o output/* CastTest1.hlsl
 
-[ExprTest4 VS]
---show-ast -T vert -E VS -o output/* ExprTest4.hlsl
+#[ExprTest4 VS]
+#--show-ast -T vert -E VS -o output/* ExprTest4.hlsl
 
-[ExprTest3 VS]
---show-ast -T vert -E VS -o output/* ExprTest3.hlsl
+#[ExprTest3 VS]
+#--show-ast -T vert -E VS -o output/* ExprTest3.hlsl
 
-[ExprTest2 CS]
--T comp -E CS -o output/* ExprTest2.hlsl
+#[ExprTest2 CS]
+#-T comp -E CS -o output/* ExprTest2.hlsl
 
-[TypeTest1 VS]
--T vert -E VS -o output/* TypeTest1.hlsl
+#[TypeTest1 VS]
+#-T vert -E VS -o output/* TypeTest1.hlsl
 
-[TypeTest2 VS]
--T vert -E VS -o output/* TypeTest2.hlsl
+#[TypeTest2 VS]
+#-T vert -E VS -o output/* TypeTest2.hlsl
 
-[FloatTest1 VS]
--T vert -E VS -o output/* FloatTest1.hlsl
+#[FloatTest1 VS]
+#-T vert -E VS -o output/* FloatTest1.hlsl
 
-[FunctionDeclTest1 VS]
--T vert -E VS -o output/* FunctionDeclTest1.hlsl
+#[FunctionDeclTest1 VS]
+#-T vert -E VS -o output/* FunctionDeclTest1.hlsl
 
-[StructTest1 PS]
--T vert -E VS -o output/* StructTest1.hlsl
+#[StructTest1 PS]
+#-T vert -E VS -o output/* StructTest1.hlsl
 
 #[StructInheritTest1 PS]
 #--show-ast -T frag -E PS -o output/* StructInheritTest1.hlsl
 
-[TestShader1.hlsl VS]
--T vert -E VS -O -o output/* TestShader1.hlsl
+#[TestShader1.hlsl VS]
+#-T vert -E VS -O -o output/* TestShader1.hlsl
 
-[TestShader1.hlsl PS]
--T frag -E PS -O -o output/* TestShader1.hlsl
+#[TestShader1.hlsl PS]
+#-T frag -E PS -O -o output/* TestShader1.hlsl
 
-[TestShader1.hlsl CS]
--T comp -E CS -O -o output/* TestShader1.hlsl
+#[TestShader1.hlsl CS]
+#-T comp -E CS -O -o output/* TestShader1.hlsl
 
-[ssct_reflect PS]
---show-times --reflect -Comments -T frag -EB -E PS -I "../../misc/ssct_shader/" "../../misc/ssct_shader/ssct_reflect.hlsl"
+#[ssct_reflect PS]
+#--show-times --reflect -Comments -T frag -EB -E PS -I "../../misc/ssct_shader/" "../../misc/ssct_shader/ssct_reflect.hlsl"
 
-[ErrorTest1.hlsl VS]
--T vert -E VertexMain -o output/* ErrorTest1.hlsl
+#[ErrorTest1.hlsl VS]
+#-T vert -E VertexMain -o output/* ErrorTest1.hlsl
 
 #[PPTest1.hlsl VS]
 #-T vert -E VS -O -o output/* PPTest1.hlsl

@@ -537,8 +537,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     /* Write storage classes */
     for (auto storageClass : ast->storageClasses)
     {
-        auto keyword = StorageClassToGLSLKeyword(storageClass);
-        if (keyword)
+        if (auto keyword = StorageClassToGLSLKeyword(storageClass))
             Write(*keyword + " ");
         else
             Warning("not all storage classes can be mapped to GLSL keywords", ast);
@@ -547,8 +546,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     /* Write interpolation modifiers */
     for (auto interpModifier : ast->interpModifiers)
     {
-        auto keyword = InterpModifierToGLSLKeyword(interpModifier);
-        if (keyword)
+        if (auto keyword = InterpModifierToGLSLKeyword(interpModifier))
             Write(*keyword + " ");
         else
             Warning("not all interpolation modifiers can be mapped to GLSL keywords", ast);
