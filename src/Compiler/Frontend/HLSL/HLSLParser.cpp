@@ -891,11 +891,8 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
         {
             AcceptIt();
 
-            /* Parse generic color type ('<' colorType '>') */
-            if (Is(Tokens::ScalarType) || Is(Tokens::VectorType))
-                ast->colorType = ParseDataType(AcceptIt()->Spell());
-            else
-                ErrorUnexpected("expected scalar or vector type denoter");
+            /* Parse generic type denoter ('<' TYPE '>') */
+            ast->genericTypeDenoter = ParseTypeDenoter(false);
 
             /* Parse optional number of samples */
             if (Is(Tokens::Comma))
@@ -903,8 +900,13 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
                 AcceptIt();
                 ast->numSamples = ParseAndEvaluateConstExprInt();
 
-                if (ast->numSamples < 1 || ast->numSamples >= 128)
-                    Warning("number of samples in texture must be in the range [1, 128), but got " + std::to_string(ast->numSamples), textureTypeTkn.get());
+                if (IsTextureMSBufferType(ast->bufferType))
+                {
+                    if (ast->numSamples < 1 || ast->numSamples >= 128)
+                        Warning("number of samples in texture must be in the range [1, 128), but got " + std::to_string(ast->numSamples), textureTypeTkn.get());
+                }
+                else
+                    Error("number of samples are only allowed for multi-sampled texture objects");
             }
 
             Accept(Tokens::BinaryOp, ">");

@@ -461,10 +461,16 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
                 Write("uniform ");
 
                 /* Write sampler type and identifier */
-                if (IsIntType(ast->colorType))
-                    Write("i");
-                else if (IsUIntType(ast->colorType))
-                    Write("u");
+                if (ast->genericTypeDenoter)
+                {
+                    if (auto baseTypeDen = ast->genericTypeDenoter->As<BaseTypeDenoter>())
+                    {
+                        if (IsIntType(baseTypeDen->dataType))
+                            Write("i");
+                        else if (IsUIntType(baseTypeDen->dataType))
+                            Write("u");
+                    }
+                }
 
                 Write(*bufferType + " " + bufferDecl->ident + ";");
             }

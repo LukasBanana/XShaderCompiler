@@ -26,6 +26,9 @@ void CS(uint3 groupID : SV_GroupID)
 	// Get global index
 	uint i = groupID.z*groupSize.x*groupSize.y + groupID.y*groupSize.x + groupID.x;
 	
+	// Structure buffer access test
+	float4 pos = lightSources[i].position;
+	
 	// Flip components
 	outBuffer[i] = inBuffer[i].wzxy;
 }
