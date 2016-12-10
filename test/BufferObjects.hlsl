@@ -11,6 +11,14 @@ Buffer<float4> inBuffer : register(t0);
 
 RWBuffer<float4> outBuffer : register(u0);
 
+struct Data
+{
+	float4 position;
+	float4 color;
+};
+
+StructuredBuffer<Data> lightSources : register(t1);
+
 
 [numthreads(1, 1, 1)]
 void CS(uint3 groupID : SV_GroupID)

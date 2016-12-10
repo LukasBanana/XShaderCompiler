@@ -346,11 +346,11 @@ enum class BufferType
     Undefined,
 
     Buffer,
-    StucturedBuffer,
+    StructuredBuffer,
     ByteAddressBuffer,
 
     RWBuffer,
-    RWStucturedBuffer,
+    RWStructuredBuffer,
     RWByteAddressBuffer,
     AppendStructuredBuffer,
     ConsumeStructuredBuffer,

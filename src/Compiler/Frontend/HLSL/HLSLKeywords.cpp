@@ -503,11 +503,11 @@ static std::map<std::string, BufferType> GenerateBufferTypeMap()
     return
     {
         { "Buffer",                  T::Buffer                  },
-        { "StucturedBuffer",         T::StucturedBuffer         },
+        { "StructuredBuffer",        T::StructuredBuffer        },
         { "ByteAddressBuffer",       T::ByteAddressBuffer       },
 
         { "RWBuffer",                T::RWBuffer                },
-        { "RWStucturedBuffer",       T::RWStucturedBuffer       },
+        { "RWStructuredBuffer",      T::RWStructuredBuffer      },
         { "RWByteAddressBuffer",     T::RWByteAddressBuffer     },
         { "AppendStructuredBuffer",  T::AppendStructuredBuffer  },
         { "ConsumeStructuredBuffer", T::ConsumeStructuredBuffer },

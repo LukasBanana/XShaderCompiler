@@ -164,11 +164,11 @@ static std::map<BufferType, std::string> GenerateBufferTypeMap()
     return
     {
         { T::Buffer,                  "buffer"           },
-        { T::StucturedBuffer,         "buffer"           },
+        { T::StructuredBuffer,         "buffer"           },
         { T::ByteAddressBuffer,       "buffer"           },
 
         { T::RWBuffer,                "buffer"           },
-        { T::RWStucturedBuffer,       "buffer"           },
+        { T::RWStructuredBuffer,       "buffer"           },
         { T::RWByteAddressBuffer,     "buffer"           },
         { T::AppendStructuredBuffer,  "buffer"           },
         { T::ConsumeStructuredBuffer, "buffer"           },
@@ -198,11 +198,11 @@ static std::map<BufferType, std::string> GenerateBufferTypeMapVKSL()
     return
     {
         { T::Buffer,                  "buffer"           },
-        { T::StucturedBuffer,         "buffer"           },
+        { T::StructuredBuffer,        "buffer"           },
         { T::ByteAddressBuffer,       "buffer"           },
 
         { T::RWBuffer,                "buffer"           },
-        { T::RWStucturedBuffer,       "buffer"           },
+        { T::RWStructuredBuffer,      "buffer"           },
         { T::RWByteAddressBuffer,     "buffer"           },
         { T::AppendStructuredBuffer,  "buffer"           },
         { T::ConsumeStructuredBuffer, "buffer"           },
