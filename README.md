@@ -29,11 +29,11 @@ Progress
 
 | Feature | Progress | Remarks |
 |---------|:--------:|---------|
-| Vertex Shader | ~70% | |
+| Vertex Shader | ~80% | |
 | Tessellation Control Shader | 0% | |
 | Tessellation Evaluation Shader | 0% | |
 | Geometry Shader | 0% | |
-| Fragment Shader | ~70% | |
+| Fragment Shader | ~80% | |
 | Compute Shader | ~50% | (RW-)Buffer objects are in progress |
 
 ##### TODO List: #####
