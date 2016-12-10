@@ -50,7 +50,7 @@ class ReflectionAnalyzer : private Visitor
 
         DECL_VISIT_PROC( SamplerDecl       );
 
-        DECL_VISIT_PROC( BufferDeclStmnt   );
+        DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( TextureDeclStmnt  );
 
         /* --- Helper functions for code reflection --- */

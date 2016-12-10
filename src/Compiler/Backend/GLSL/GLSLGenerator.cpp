@@ -401,7 +401,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     Blank();
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     if (!ast->flags(AST::isReachable))
         return;

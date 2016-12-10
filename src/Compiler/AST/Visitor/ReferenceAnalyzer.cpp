@@ -133,10 +133,10 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         VISIT_DEFAULT(FunctionDecl);
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     if (Reachable(ast))
-        VISIT_DEFAULT(BufferDeclStmnt);
+        VISIT_DEFAULT(UniformBufferDecl);
 }
 
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)

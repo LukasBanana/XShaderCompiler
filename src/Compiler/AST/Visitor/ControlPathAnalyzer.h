@@ -42,7 +42,7 @@ class ControlPathAnalyzer : private Visitor
         DECL_VISIT_PROC( CodeBlock         );
 
         DECL_VISIT_PROC( FunctionDecl      );
-        DECL_VISIT_PROC( BufferDeclStmnt   );
+        DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( TextureDeclStmnt  );
         DECL_VISIT_PROC( SamplerDeclStmnt  );
         DECL_VISIT_PROC( StructDeclStmnt   );

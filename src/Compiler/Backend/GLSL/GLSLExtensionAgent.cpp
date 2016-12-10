@@ -160,7 +160,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     }
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     AcquireExtension(GLSLEXT_GL_ARB_uniform_buffer_object);
 
@@ -172,7 +172,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     }
 
     /* Default visitor */
-    Visitor::VisitBufferDeclStmnt(ast, args);
+    Visitor::VisitUniformBufferDecl(ast, args);
 }
 
 IMPLEMENT_VISIT_PROC(TextureDeclStmnt)

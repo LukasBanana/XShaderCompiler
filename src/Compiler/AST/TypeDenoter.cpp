@@ -280,7 +280,7 @@ TypeDenoter::Types BufferTypeDenoter::Type() const
 
 std::string BufferTypeDenoter::ToString() const
 {
-    return "buffer";
+    return "uniform buffer";
 }
 
 

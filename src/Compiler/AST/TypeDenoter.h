@@ -162,7 +162,7 @@ struct BufferTypeDenoter : public TypeDenoter
     Types Type() const override;
     std::string ToString() const override;
 
-    BufferDeclStmnt* bufferDeclRef = nullptr;
+    UniformBufferDecl* bufferDeclRef = nullptr;
 };
 
 // Texture type denoter.

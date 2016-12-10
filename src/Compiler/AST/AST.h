@@ -87,13 +87,13 @@ struct AST
         StructDecl,
         AliasDecl,
 
-        FunctionDecl, // Do not use "Stmnt" postfix here (--> FunctionDecl can only appear in global scope)
+        FunctionDecl,       // Do not use "Stmnt" postfix here (There are no declaration sub-nodes)
+        UniformBufferDecl,  // Do not use "Stmnt" postfix here (There are no declaration sub-nodes)
         VarDeclStmnt,
-        BufferDeclStmnt,
         TextureDeclStmnt,
         SamplerDeclStmnt,
         StructDeclStmnt,
-        AliasDeclStmnt, // Type alias (typedef)
+        AliasDeclStmnt,     // Type alias (typedef)
 
         NullStmnt,
         CodeBlockStmnt,
@@ -369,7 +369,7 @@ struct VarDecl : public Decl
     ExprPtr                         initializer;
 
     VarDeclStmnt*                   declStmntRef    = nullptr;  // Reference to its declaration statement (parent node); may be null
-    BufferDeclStmnt*                bufferDeclRef   = nullptr;  // Buffer declaration reference for DAST (optional 'parent's parent node'); may be null
+    UniformBufferDecl*              bufferDeclRef   = nullptr;  // Unifrom buffer declaration reference for DAST (optional parent-parent-node); may be null
 };
 
 // Texture declaration.
@@ -515,11 +515,10 @@ struct FunctionDecl : public Stmnt
   //FunctionDecl*                   definitionRef   = nullptr;              // Reference to the actual function definition (only for forward declarations).
 };
 
-//TODO --> maybe separate this structure into "BufferDeclStmnt" and "BufferDecl" (like in the other declaration AST nodes)
 // Uniform buffer (cbuffer, tbuffer) declaration.
-struct BufferDeclStmnt : public Stmnt
+struct UniformBufferDecl : public Stmnt
 {
-    AST_INTERFACE(BufferDeclStmnt);
+    AST_INTERFACE(UniformBufferDecl);
 
     std::string ToString() const;
 

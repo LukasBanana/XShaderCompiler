@@ -116,7 +116,7 @@ class HLSLParser : public Parser
         StmntPtr                        ParseGlobalStmnt();
         StmntPtr                        ParseStructDeclOrVarDeclOrFunctionDeclStmnt();
         FunctionDeclPtr                 ParseFunctionDecl(const VarTypePtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
-        BufferDeclStmntPtr              ParseBufferDeclStmnt();
+        UniformBufferDeclPtr            ParseUniformBufferDecl();
         TextureDeclStmntPtr             ParseTextureDeclStmnt();
         SamplerDeclStmntPtr             ParseSamplerDeclStmnt();
         VarDeclStmntPtr                 ParseVarDeclStmnt();

@@ -265,7 +265,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     GetReportHandler().PopContextDesc();
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     /* Validate buffer slots */
     if (ast->slotRegisters.size() > 1)

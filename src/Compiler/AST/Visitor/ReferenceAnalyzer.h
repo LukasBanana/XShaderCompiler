@@ -52,7 +52,7 @@ class ReferenceAnalyzer : private Visitor
         DECL_VISIT_PROC( TextureDecl       );
 
         DECL_VISIT_PROC( FunctionDecl      );
-        DECL_VISIT_PROC( BufferDeclStmnt   );
+        DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( TextureDeclStmnt  );
 
         /* === Members === */

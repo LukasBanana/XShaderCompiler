@@ -116,7 +116,7 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 
 /* --- Declaration statements --- */
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     if (ast->flags(AST::isReachable))
     {

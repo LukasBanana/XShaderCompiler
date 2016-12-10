@@ -490,9 +490,9 @@ bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const T
 }
 
 
-/* ----- BufferDeclStmnt ----- */
+/* ----- UniformBufferDecl ----- */
 
-std::string BufferDeclStmnt::ToString() const
+std::string UniformBufferDecl::ToString() const
 {
     std::string s;
 

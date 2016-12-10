@@ -94,7 +94,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     }
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     PushReturnPath(false);
 }

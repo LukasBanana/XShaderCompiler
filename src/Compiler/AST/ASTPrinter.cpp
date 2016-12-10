@@ -155,10 +155,10 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC_DEFAULT(VarDeclStmnt)
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
-    Print(ast, "BufferDeclStmnt", ast->ToString());
-    DEFAULT_VISITOR(BufferDeclStmnt);
+    Print(ast, "UniformBufferDecl", ast->ToString());
+    DEFAULT_VISITOR(UniformBufferDecl);
 }
 
 IMPLEMENT_VISIT_PROC_DEFAULT(TextureDeclStmnt)

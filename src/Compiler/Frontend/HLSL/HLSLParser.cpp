@@ -742,7 +742,7 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
         case Tokens::Texture:
             return ParseTextureDeclStmnt();
         case Tokens::UniformBuffer:
-            return ParseBufferDeclStmnt();
+            return ParseUniformBufferDecl();
         case Tokens::Typedef:
             return ParseAliasDeclStmnt();
         case Tokens::InterpModifier:
@@ -849,9 +849,9 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl(const VarTypePtr& returnType, cons
     return ast;
 }
 
-BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
+UniformBufferDeclPtr HLSLParser::ParseUniformBufferDecl()
 {
-    auto ast = Make<BufferDeclStmnt>();
+    auto ast = Make<UniformBufferDecl>();
 
     /* Parse buffer header */
     ast->bufferType = ParseUniformBufferType();
