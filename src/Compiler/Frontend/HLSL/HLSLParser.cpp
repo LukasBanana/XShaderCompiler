@@ -880,7 +880,7 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
 {
     auto ast = Make<BufferDeclStmnt>();
 
-    auto textureTypeTkn = Tkn();
+    auto bufferTypeTkn = Tkn();
 
     ast->bufferType = ParseBufferType();
 
@@ -903,7 +903,7 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
                 if (IsTextureMSBufferType(ast->bufferType))
                 {
                     if (ast->numSamples < 1 || ast->numSamples >= 128)
-                        Warning("number of samples in texture must be in the range [1, 128), but got " + std::to_string(ast->numSamples), textureTypeTkn.get());
+                        Warning("number of samples in texture must be in the range [1, 128), but got " + std::to_string(ast->numSamples), bufferTypeTkn.get());
                 }
                 else
                     Error("number of samples are only allowed for multi-sampled texture objects");
@@ -913,6 +913,8 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
         }
         PopParsingState();
     }
+
+    UpdateSourceArea(ast);
 
     ast->bufferDecls = ParseBufferDeclList(ast.get());
 

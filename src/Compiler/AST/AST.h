@@ -533,7 +533,6 @@ struct BufferDeclStmnt : public Stmnt
     AST_INTERFACE(BufferDeclStmnt);
 
     BufferType                  bufferType          = BufferType::Undefined;
-  //DataType                    colorType           = DataType::Float4;         // Sampling type. By default Float4.
     TypeDenoterPtr              genericTypeDenoter;                             // May be null
     int                         numSamples          = 1;                        // Number of samples in the range [1, 128] (for multi-sampled textures). By default 1.
     std::vector<BufferDeclPtr>  bufferDecls;

@@ -41,12 +41,6 @@ class HLSLAnalyzer : public Analyzer
             const ShaderOutput& outputDesc
         ) override;
         
-        /*
-        Returns the current (top level) function in the call stack
-        or null if the AST traversion is in the global scope.
-        */
-        //FunctionCall* CurrentFunction() const;
-
         /* === Visitor implementation === */
 
         DECL_VISIT_PROC( Program           );
@@ -61,9 +55,8 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( AliasDecl         );
 
         DECL_VISIT_PROC( FunctionDecl      );
-        //DECL_VISIT_PROC( BufferDeclStmnt   );
+        DECL_VISIT_PROC( BufferDeclStmnt   );
         DECL_VISIT_PROC( UniformBufferDecl );
-        DECL_VISIT_PROC( StructDeclStmnt   );
       //DECL_VISIT_PROC( VarDeclStmnt      );
 
         DECL_VISIT_PROC( ForLoopStmnt      );

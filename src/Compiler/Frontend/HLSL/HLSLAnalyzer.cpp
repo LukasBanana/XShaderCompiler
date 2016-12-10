@@ -265,12 +265,14 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     GetReportHandler().PopContextDesc();
 }
 
-/*IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
+    /* Analyze generic type */
+    AnalyzeTypeDenoter(ast->genericTypeDenoter, ast);
 
-
-
-}*/
+    /* Analyze buffer declarations */
+    Visit(ast->bufferDecls);
+}
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
@@ -293,11 +295,6 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         for (auto& varDecl : member->varDecls)
             varDecl->bufferDeclRef = ast;
     }
-}
-
-IMPLEMENT_VISIT_PROC(StructDeclStmnt)
-{
-    Visit(ast->structDecl);
 }
 
 #if 0
