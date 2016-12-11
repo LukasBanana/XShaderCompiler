@@ -355,7 +355,7 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     ast->varType = ParseVarType();
     ast->varDecls.push_back(ParseVarDecl(ast.get()));
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 SwitchCasePtr HLSLParser::ParseSwitchCase()
@@ -789,7 +789,7 @@ StmntPtr HLSLParser::ParseStructDeclOrVarDeclOrFunctionDeclStmnt()
 
         Semi();
 
-        return ast;
+        return UpdateSourceArea(ast, ast->varType.get());
     }
 }
 
@@ -1258,7 +1258,7 @@ StmntPtr HLSLParser::ParseStructDeclOrVarDeclStmnt()
         varDeclStmnt->varDecls = ParseVarDeclList(varDeclStmnt.get());
         Semi();
 
-        return varDeclStmnt;
+        return UpdateSourceArea(varDeclStmnt);
     }
     else
         Semi();
@@ -1313,6 +1313,7 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
 
         ast->varType = Make<VarType>();
         ast->varType->typeDenoter = ParseAliasTypeDenoter(varIdent->ident);
+        UpdateSourceArea(ast->varType, varIdent.get());
 
         if (!varIdent->arrayIndices.empty())
         {
@@ -1323,7 +1324,7 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
         ast->varDecls = ParseVarDeclList(ast.get());
         Semi();
 
-        return ast;
+        return UpdateSourceArea(ast, varIdent.get());
     }
 
     ErrorUnexpected("expected variable declaration, assignment or function call statement");
