@@ -250,7 +250,6 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 IMPLEMENT_VISIT_PROC(FunctionCallExpr)
 {
     IllegalExpr("function call");
-    //Visit(ast->call);
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
@@ -260,8 +259,44 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
 
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
-    //Visit(ast->typeExpr);
     Visit(ast->expr);
+
+    auto value = Pop();
+
+    if (auto baseTypeDen = ast->typeExpr->GetTypeDenoter()->As<BaseTypeDenoter>())
+    {
+        switch (baseTypeDen->dataType)
+        {
+            case DataType::Bool:
+            {
+                Push(value.ToBool());
+            }
+            break;
+
+            case DataType::Int:
+            case DataType::UInt:
+            {
+                Push(value.ToInt());
+            }
+            break;
+
+            case DataType::Half:
+            case DataType::Float:
+            case DataType::Double:
+            {
+                Push(value.ToReal());
+            }
+            break;
+
+            default:
+            {
+                IllegalExpr("type cast '" + DataTypeToString(baseTypeDen->dataType) + "'");
+            }
+            break;
+        }
+    }
+    else
+        IllegalExpr("type cast");
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
