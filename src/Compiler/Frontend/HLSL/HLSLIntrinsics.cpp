@@ -194,6 +194,7 @@ class IntrinsicDescriptor
     public:
 
         IntrinsicDescriptor(int numArgs = 0);
+        IntrinsicDescriptor(int numArgsMin, int numArgsMax);
         IntrinsicDescriptor(DataType dataType, int numArgs = 0);
         IntrinsicDescriptor(ArgumentIndex takeByArgIndex, int numArgs = 0);
 
@@ -201,25 +202,35 @@ class IntrinsicDescriptor
 
     private:
 
-        int             numArgs_        = 0;
+        int             numArgsMin_     = 0;
+        int             numArgsMax_     = 0;
         DataType        dataType_       = DataType::Undefined;
         ArgumentIndex   takeByArgIndex_ = ArgUndefined;
 
 };
 
 IntrinsicDescriptor::IntrinsicDescriptor(int numArgs) :
-    numArgs_{ numArgs }
+    numArgsMin_{ numArgs },
+    numArgsMax_{ numArgs }
+{
+}
+
+IntrinsicDescriptor::IntrinsicDescriptor(int numArgsMin, int numArgsMax) :
+    numArgsMin_{ numArgsMin },
+    numArgsMax_{ numArgsMax }
 {
 }
 
 IntrinsicDescriptor::IntrinsicDescriptor(DataType dataType, int numArgs) :
-    numArgs_    { numArgs  },
+    numArgsMin_ { numArgs  },
+    numArgsMax_ { numArgs  },
     dataType_   { dataType }
 {
 }
 
 IntrinsicDescriptor::IntrinsicDescriptor(ArgumentIndex takeByArgIndex, int numArgs) :
-    numArgs_        { numArgs        },
+    numArgsMin_     { numArgs        },
+    numArgsMax_     { numArgs        },
     takeByArgIndex_ { takeByArgIndex }
 {
 }
@@ -227,8 +238,20 @@ IntrinsicDescriptor::IntrinsicDescriptor(ArgumentIndex takeByArgIndex, int numAr
 TypeDenoterPtr IntrinsicDescriptor::GetTypeDenoterWithArgs(const std::vector<ExprPtr>& args) const
 {
     /* Validate number of arguments */
-    if (numArgs_ >= 0 && static_cast<std::size_t>(numArgs_) != args.size())
-        RuntimeErr("invalid number of arguments for intrinsic");
+    if (numArgsMin_ >= 0)
+    {
+        auto numMin = static_cast<std::size_t>(numArgsMin_);
+        auto numMax = static_cast<std::size_t>(numArgsMax_);
+
+        if (args.size() < numMin || args.size() > numMax)
+        {
+            RuntimeErr(
+                "invalid number of arguments for intrinsic (expected " +
+                (numMin < numMax ? std::to_string(numMin) + "-" + std::to_string(numMax) : std::to_string(numMin)) +
+                ", but got " + std::to_string(args.size()) + ")"
+            );
+        }
+    }
 
     /* Find return type denoter with the specified arguments */
     if (dataType_ != DataType::Undefined)
@@ -277,7 +300,7 @@ static std::map<Intrinsic, IntrinsicDescriptor> GenerateIntrinsicDescriptorMap()
         { T::Cos,                               { Arg1, 1 }             },
         { T::CosH,                              { Arg1, 1 }             },
         { T::CountBits,                         { DataType::UInt, 1 }   },
-        { T::Cross,                             { DataType::Float3, 3 } },
+        { T::Cross,                             { DataType::Float3, 2 } },
         { T::D3DCOLORtoUBYTE4,                  { DataType::Int4, 1 }   },
         { T::DDX,                               { Arg1, 1 }             },
         { T::DDXCoarse,                         { Arg1, 1 }             },
@@ -313,15 +336,15 @@ static std::map<Intrinsic, IntrinsicDescriptor> GenerateIntrinsicDescriptorMap()
         { T::GetRenderTargetSamplePosition,     { DataType::Float2, 1 } },
         { T::GroupMemoryBarrier,                {  }                    },
         { T::GroupMemoryBarrierWithGroupSync,   {  }                    },
-        { T::InterlockedAdd,                    { 3 }                   },
-        { T::InterlockedAnd,                    { 3 }                   },
+        { T::InterlockedAdd,                    { 2, 3 }                },
+        { T::InterlockedAnd,                    { 2, 3 }                },
         { T::InterlockedCompareExchange,        { 4 }                   },
         { T::InterlockedCompareStore,           { 3 }                   },
         { T::InterlockedExchange,               { 3 }                   },
-        { T::InterlockedMax,                    { 3 }                   },
-        { T::InterlockedMin,                    { 3 }                   },
-        { T::InterlockedOr,                     { 3 }                   },
-        { T::InterlockedXor,                    { 3 }                   },
+        { T::InterlockedMax,                    { 2, 3 }                },
+        { T::InterlockedMin,                    { 2, 3 }                },
+        { T::InterlockedOr,                     { 2, 3 }                },
+        { T::InterlockedXor,                    { 2, 3 }                },
         { T::IsFinite,                          { Arg1, 1 }             }, // bool with size as input
         { T::IsInf,                             { Arg1, 1 }             }, // bool with size as input
         { T::IsNaN,                             { Arg1, 1 }             }, // bool with size as input

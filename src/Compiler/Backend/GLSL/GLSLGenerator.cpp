@@ -1563,8 +1563,9 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
 
 void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax)
 {
-    if (ast->arguments.size() < numArgsMin || ast->arguments.size() > numArgsMax)
-        Error("invalid number of arguments in intrinsic", ast);
+    auto numArgs = ast->arguments.size();
+    if (numArgs < numArgsMin || numArgs > numArgsMax)
+        Error("invalid number of arguments for intrinsic", ast);
 }
 
 void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)

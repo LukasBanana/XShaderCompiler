@@ -838,6 +838,7 @@ void HLSLAnalyzer::AnalyzeAttribute(Attribute* ast)
     auto it = attribNumArgsMap.find(ast->attributeType);
     std::size_t expectedNumArgs = (it != attribNumArgsMap.end() ? it->second : 0);
 
+    /* Validate number of arguments */
     auto numArgs = ast->arguments.size();
 
     if (numArgs < expectedNumArgs)
