@@ -71,17 +71,13 @@ IMPLEMENT_VISIT_PROC_DEFAULT(CodeBlock)
 
 IMPLEMENT_VISIT_PROC_DEFAULT(FunctionCall)
 
-IMPLEMENT_VISIT_PROC(Attribute)
-{
-    Print(ast, "Attribute", ast->ident);
-    DEFAULT_VISITOR(Attribute);
-}
+IMPLEMENT_VISIT_PROC_DEFAULT(Attribute)
 
 IMPLEMENT_VISIT_PROC_DEFAULT(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(SamplerValue)
 {
-    Print(ast, "SamplerValue", ast->name/* + " = " + ast->value->ToString()*/);
+    Print(ast, "SamplerValue", ast->name);
     DEFAULT_VISITOR(SamplerValue);
 }
 

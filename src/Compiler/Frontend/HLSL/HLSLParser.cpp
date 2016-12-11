@@ -402,7 +402,11 @@ AttributePtr HLSLParser::ParseAttribute()
 
     Accept(Tokens::LParen);
 
-    ast->ident = ParseIdent();
+    auto attribIdent = ParseIdent();
+    ast->attributeType = HLSLKeywordToAttributeType(attribIdent);
+
+    if (ast->attributeType == AttributeType::Undefined)
+        Warning("unknown attribute '" + attribIdent + "'");
 
     if (Is(Tokens::LBracket))
     {

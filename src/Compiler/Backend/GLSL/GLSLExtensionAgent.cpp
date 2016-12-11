@@ -131,7 +131,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 IMPLEMENT_VISIT_PROC(Attribute)
 {
     /* Check for special attributes */
-    if (ast->ident == "earlydepthstencil")
+    if (ast->attributeType == AttributeType::EarlyDepthStencil)
         AcquireExtension(GLSLEXT_GL_ARB_shader_image_load_store);
 }
 

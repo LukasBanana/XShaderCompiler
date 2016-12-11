@@ -250,7 +250,7 @@ struct Attribute : public AST
 {
     AST_INTERFACE(Attribute);
 
-    std::string             ident;      //TODO: change to AttributeType enum
+    AttributeType           attributeType   = AttributeType::Undefined;
     std::vector<ExprPtr>    arguments;
 };
 

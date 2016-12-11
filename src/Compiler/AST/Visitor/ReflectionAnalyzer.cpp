@@ -271,8 +271,14 @@ void ReflectionAnalyzer::ReflectAttributes(const std::vector<AttributePtr>& attr
 {
     for (const auto& attr : attribs)
     {
-        if (attr->ident == "numthreads")
-            ReflectAttributesNumThreads(attr.get());
+        switch (attr->attributeType)
+        {
+            case AttributeType::NumThreads:
+                ReflectAttributesNumThreads(attr.get());
+                break;
+            default:
+                break;
+        }
     }
 }
 

@@ -1047,10 +1047,18 @@ bool GLSLGenerator::WriteEntryPointAttributes()
 
 void GLSLGenerator::WriteAttribute(Attribute* ast)
 {
-    if (ast->ident == "numthreads")
-        WriteAttributeNumThreads(ast);
-    else if (ast->ident == "earlydepthstencil")
-        WriteAttributeEarlyDepthStencil();
+    switch (ast->attributeType)
+    {
+        case AttributeType::NumThreads:
+            WriteAttributeNumThreads(ast);
+            break;
+        case AttributeType::EarlyDepthStencil:
+            WriteAttributeEarlyDepthStencil();
+            break;
+        default:
+            // ignore other attributes
+            break;
+    }
 }
 
 void GLSLGenerator::WriteAttributeNumThreads(Attribute* ast)
