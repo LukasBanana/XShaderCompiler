@@ -328,12 +328,15 @@ FunctionCall* Analyzer::ActiveFunctionCall() const
 
 void Analyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
 {
-    if (auto structTypeDen = typeDenoter->As<StructTypeDenoter>())
-        AnalyzeStructTypeDenoter(*structTypeDen, ast);
-    else if (typeDenoter->IsAlias())
-        AnalyzeAliasTypeDenoter(typeDenoter, ast);
-    else if (auto arrayTypeDen = typeDenoter->As<ArrayTypeDenoter>())
-        AnalyzeTypeDenoter(arrayTypeDen->baseTypeDenoter, ast);
+    if (typeDenoter)
+    {
+        if (auto structTypeDen = typeDenoter->As<StructTypeDenoter>())
+            AnalyzeStructTypeDenoter(*structTypeDen, ast);
+        else if (typeDenoter->IsAlias())
+            AnalyzeAliasTypeDenoter(typeDenoter, ast);
+        else if (auto arrayTypeDen = typeDenoter->As<ArrayTypeDenoter>())
+            AnalyzeTypeDenoter(arrayTypeDen->baseTypeDenoter, ast);
+    }
 }
 
 void Analyzer::AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* ast)

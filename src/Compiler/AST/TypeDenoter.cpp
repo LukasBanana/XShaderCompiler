@@ -237,6 +237,8 @@ TypeDenoterPtr BaseTypeDenoter::Get(const VarIdent* varIdent)
 
 TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
 {
+    auto typeDenoter = Get(nullptr);
+
     if (numArrayIndices > 0)
     {
         /* Convert vector or matrix type for array access */
@@ -245,7 +247,8 @@ TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const 
             /* Return scalar type */
             if (numArrayIndices > 1)
                 RuntimeErr("too many array dimensions for vector type");
-            return std::make_shared<BaseTypeDenoter>(BaseDataType(dataType));
+            else
+                typeDenoter = std::make_shared<BaseTypeDenoter>(BaseDataType(dataType));
         }
         else if (IsMatrixType(dataType))
         {
@@ -253,17 +256,18 @@ TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const 
             if (numArrayIndices == 1)
             {
                 auto matrixDim = MatrixTypeDim(dataType);
-                return std::make_shared<BaseTypeDenoter>(VectorDataType(BaseDataType(dataType), matrixDim.second));
+                typeDenoter = std::make_shared<BaseTypeDenoter>(VectorDataType(BaseDataType(dataType), matrixDim.second));
             }
-            if (numArrayIndices == 2)
-                return std::make_shared<BaseTypeDenoter>(BaseDataType(dataType));
-            if (numArrayIndices > 2)
+            else if (numArrayIndices == 2)
+                typeDenoter = std::make_shared<BaseTypeDenoter>(BaseDataType(dataType));
+            else if (numArrayIndices > 2)
                 RuntimeErr("too many array dimensions for matrix type");
         }
         else
             RuntimeErr("array access without array type denoter");
     }
-    return Get(varIdent);
+
+    return typeDenoter->Get(varIdent);
 }
 
 
@@ -289,6 +293,25 @@ TypeDenoter::Types BufferTypeDenoter::Type() const
 std::string BufferTypeDenoter::ToString() const
 {
     return "buffer";
+}
+
+TypeDenoterPtr BufferTypeDenoter::Get(const VarIdent* varIdent)
+{
+    /*if (varIdent)
+    {
+        if (structDeclRef)
+        {
+            const auto& ident = varIdent->ident;
+            auto varDecl = structDeclRef->Fetch(ident);
+            if (varDecl)
+                return varDecl->GetTypeDenoter()->Get(varIdent->next.get());
+            else
+                RuntimeErr("identifier '" + ident + "' not found in 'struct " + structDeclRef->SignatureToString() + "'", varIdent);
+        }
+        else
+            RuntimeErr("missing reference to structure declaration", varIdent);
+    }*/
+    return TypeDenoter::Get(varIdent);
 }
 
 
@@ -362,7 +385,7 @@ TypeDenoterPtr StructTypeDenoter::Get(const VarIdent* varIdent)
             if (varDecl)
                 return varDecl->GetTypeDenoter()->Get(varIdent->next.get());
             else
-                RuntimeErr("identifier '" + ident + "' not found in 'struct " + structDeclRef->SignatureToString() + "'", varIdent);
+                RuntimeErr("identifier '" + ident + "' not found in '" + structDeclRef->SignatureToString() + "'", varIdent);
         }
         else
             RuntimeErr("missing reference to structure declaration", varIdent);

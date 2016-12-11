@@ -110,8 +110,32 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
 
             case AST::Types::BufferDecl:
             {
-                auto textureDecl = static_cast<BufferDecl*>(symbolRef);
-                return std::make_shared<BufferTypeDenoter>(textureDecl);
+                auto bufferDecl = static_cast<BufferDecl*>(symbolRef);
+
+                /* Get type denoter for buffer */
+                TypeDenoterPtr typeDenoter = std::make_shared<BufferTypeDenoter>(bufferDecl);
+
+                auto numArrayDim = arrayIndices.size();
+                if (numArrayDim > 0)
+                {
+                    /* Get generic type denoter */
+                    --numArrayDim;
+                    typeDenoter = bufferDecl->declStmntRef->GetGenericTypeDenoter();
+                }
+
+                try
+                {
+                    if (next)
+                        return typeDenoter->GetFromArray(numArrayDim, (recursive ? next.get() : nullptr));
+                    else if (numArrayDim > 0)
+                        return typeDenoter->GetFromArray(numArrayDim, nullptr);
+                    else
+                        return typeDenoter;
+                }
+                catch (const std::exception& e)
+                {
+                    RuntimeErr(e.what(), this);
+                }
             }
             break;
 
@@ -512,6 +536,14 @@ std::string UniformBufferDecl::ToString() const
     s += ident;
 
     return s;
+}
+
+
+/* ----- BufferDeclStmnt ----- */
+
+TypeDenoterPtr BufferDeclStmnt::GetGenericTypeDenoter() const
+{
+    return (genericTypeDenoter ? genericTypeDenoter : std::make_shared<BaseTypeDenoter>(DataType::Float4));
 }
 
 

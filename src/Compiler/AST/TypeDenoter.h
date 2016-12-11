@@ -163,6 +163,8 @@ struct BufferTypeDenoter : public TypeDenoter
     Types Type() const override;
     std::string ToString() const override;
 
+    TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
+
     BufferType  bufferType      = BufferType::Undefined;
     BufferDecl* bufferDeclRef   = nullptr;
 };

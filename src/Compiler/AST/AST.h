@@ -327,12 +327,12 @@ struct VarIdent : public TypedAST
     // Moves the next identifier into this one (i.e. removes the first identifier).
     void PopFront();
 
-    std::string             ident;                                  // Either this ..
-  //TypeDenoterPtr          typeDenoter;                            // ... or this is used
-    std::vector<ExprPtr>    arrayIndices;                           // Optional array indices
-    VarIdentPtr             next;                                   // Next identifier; may be null.
+    std::string             ident;                      // Either this ..
+  //TypeDenoterPtr          typeDenoter;                // ... or this is used
+    std::vector<ExprPtr>    arrayIndices;               // Optional array indices
+    VarIdentPtr             next;                       // Next identifier; may be null.
 
-    AST*                    symbolRef       = nullptr;              // Symbol reference for DAST to the variable object; may be null.
+    AST*                    symbolRef       = nullptr;  // Symbol reference for DAST to the variable object; may be null.
 };
 
 /* --- Declarations --- */
@@ -531,6 +531,8 @@ struct UniformBufferDecl : public Stmnt
 struct BufferDeclStmnt : public Stmnt
 {
     AST_INTERFACE(BufferDeclStmnt);
+
+    TypeDenoterPtr GetGenericTypeDenoter() const;
 
     BufferType                  bufferType          = BufferType::Undefined;
     TypeDenoterPtr              genericTypeDenoter;                             // May be null
