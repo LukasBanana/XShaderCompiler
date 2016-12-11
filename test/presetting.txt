@@ -30,7 +30,7 @@
 --reflect -W -T frag -E PS -o output/* TextureObjects.hlsl
 
 [BufferObjects CS]
--W -T comp -E CS -o output/* BufferObjects.hlsl
+-W -EB -T comp -E CS -o output/* BufferObjects.hlsl
 
 [RegisterTest1 PS]
 --show-ast -T frag -E PS -o output/* RegisterTest1.hlsl

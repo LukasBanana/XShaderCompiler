@@ -209,6 +209,12 @@ class GLSLGenerator : public Generator
         bool WriteStructDeclInputOutputBlock(StructDecl* ast);
         void WriteStructDeclMembers(StructDecl* ast);
 
+        /* --- BufferDecl --- */
+
+        void WriteBufferDecl(BufferDecl* ast);
+        void WriteBufferDeclTexture(BufferDecl* ast);
+        void WriteBufferDeclStorageBuffer(BufferDecl* ast);
+
         /* --- Misc --- */
 
         void WriteStmntComment(Stmnt* ast, bool insertBlank = false);

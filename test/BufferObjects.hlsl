@@ -20,18 +20,19 @@ struct Data
 	float4 color;
 };
 
-StructuredBuffer<Data> lightSources[10] : register(t1);
+StructuredBuffer<Data> lightSources : register(t1);
 
 
 [numthreads(1, 1, 5*9+(int)1.0)]
 void CS(uint3 groupID : SV_GroupID)
 {
-	// Structure buffer access test
-	int4 a = lightSources[0].position;
-	float4 b = tex0.Sample(smpl0[0], (float2)0);
+//	float4 color = tex0.Sample(smpl0[0], (float2)0);
 	
 	// Get global index
 	uint i = groupID.z*groupSize.x*groupSize.y + groupID.y*groupSize.x + groupID.x;
+	
+	// Structure buffer access test
+	int4 pos = lightSources[i].position;
 	
 	// Flip components
 	outBuffer[i] = inBuffer[i].wzxy;

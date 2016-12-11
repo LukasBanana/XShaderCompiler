@@ -436,49 +436,12 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
-    if (!ast->flags(AST::isReachable))
-        return;
-
-    /* Determine GLSL buffer type (or GLSL sampler or VKSL texture type) */
-    auto bufferType = BufferTypeToKeyword(ast->bufferType, ast);
-    if (!bufferType)
-        return;
-
-    /* Write buffer declarations */
-    for (auto& bufferDecl : ast->bufferDecls)
+    if (ast->flags(AST::isReachable))
     {
-        if (bufferDecl->flags(AST::isReachable))
-        {
-            BeginLn();
-            {
-                /* Write uniform declaration */
-                if (explicitBinding_)
-                {
-                    if (auto slotRegister = Register::GetForTarget(bufferDecl->slotRegisters, shaderTarget_))
-                        Write("layout(binding = " + std::to_string(slotRegister->slot) + ") ");
-                }
-
-                Write("uniform ");
-
-                /* Write sampler type and identifier */
-                if (ast->genericTypeDenoter)
-                {
-                    if (auto baseTypeDen = ast->genericTypeDenoter->As<BaseTypeDenoter>())
-                    {
-                        if (IsIntType(baseTypeDen->dataType))
-                            Write("i");
-                        else if (IsUIntType(baseTypeDen->dataType))
-                            Write("u");
-                    }
-                }
-
-                Write(*bufferType + " " + bufferDecl->ident + ";");
-            }
-            EndLn();
-        }
+        /* Write buffer declarations */
+        for (auto& bufferDecl : ast->bufferDecls)
+            WriteBufferDecl(bufferDecl.get());
     }
-
-    Blank();
 }
 
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
@@ -1949,6 +1912,91 @@ void GLSLGenerator::WriteStructDeclMembers(StructDecl* ast)
     if (ast->baseStructRef)
         WriteStructDeclMembers(ast->baseStructRef);
     Visit(ast->members);
+}
+
+/* --- BufferDecl --- */
+
+void GLSLGenerator::WriteBufferDecl(BufferDecl* ast)
+{
+    if (ast->flags(AST::isReachable))
+    {
+        if (IsTextureBufferType(ast->declStmntRef->bufferType))
+            WriteBufferDeclTexture(ast);
+        else
+            WriteBufferDeclStorageBuffer(ast);
+        Blank();
+    }
+}
+
+void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* ast)
+{
+    /* Determine GLSL sampler type (or VKSL texture type) */
+    auto bufferTypeKeyword = BufferTypeToKeyword(ast->declStmntRef->bufferType, ast->declStmntRef);
+    if (!bufferTypeKeyword)
+        return;
+
+    BeginLn();
+    {
+        /* Write uniform declaration */
+        if (explicitBinding_)
+        {
+            if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, shaderTarget_))
+                Write("layout(binding = " + std::to_string(slotRegister->slot) + ") ");
+        }
+
+        Write("uniform ");
+
+        /* Write sampler type and identifier */
+        if (auto genericTypeDen = ast->declStmntRef->genericTypeDenoter)
+        {
+            if (auto baseTypeDen = genericTypeDen->As<BaseTypeDenoter>())
+            {
+                if (IsIntType(baseTypeDen->dataType))
+                    Write("i");
+                else if (IsUIntType(baseTypeDen->dataType))
+                    Write("u");
+            }
+        }
+
+        Write(*bufferTypeKeyword + " " + ast->ident + ";");
+    }
+    EndLn();
+}
+
+void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* ast)
+{
+    /* Determine GLSL buffer type */
+    auto bufferTypeKeyword = BufferTypeToKeyword(ast->declStmntRef->bufferType, ast->declStmntRef);
+    if (!bufferTypeKeyword)
+        return;
+
+    /* Write buffer declaration */
+    BeginLn();
+    {
+        Write("layout(std430");
+
+        if (explicitBinding_)
+        {
+            if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, shaderTarget_))
+                Write(", binding = " + std::to_string(slotRegister->slot));
+        }
+
+        Write(") " + *bufferTypeKeyword + " " + nameManglingPrefix_ + ast->ident);
+    }
+    EndLn();
+
+    /* Write buffer array (of variable size) */
+    WriteScopeOpen();
+    {
+        BeginLn();
+        {
+            auto genericTypeDen = ast->declStmntRef->GetGenericTypeDenoter();
+            WriteTypeDenoter(*genericTypeDen, IsESSL(), ast);
+            Write(" " + ast->ident + "[];");
+        }
+        EndLn();
+    }
+    WriteScopeClose(false, true);
 }
 
 /* --- Misc --- */
