@@ -237,7 +237,7 @@ TypeDenoterPtr BaseTypeDenoter::Get(const VarIdent* varIdent)
 
 TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
 {
-    auto typeDenoter = Get(nullptr);
+    auto typeDenoter = Get();
 
     if (numArrayIndices > 0)
     {
@@ -295,23 +295,20 @@ std::string BufferTypeDenoter::ToString() const
     return "buffer";
 }
 
-TypeDenoterPtr BufferTypeDenoter::Get(const VarIdent* varIdent)
+TypeDenoterPtr BufferTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
 {
-    /*if (varIdent)
+    if (numArrayIndices > 0)
     {
-        if (structDeclRef)
+        /* Get generic type denoter */
+        if (bufferDeclRef->declStmntRef)
         {
-            const auto& ident = varIdent->ident;
-            auto varDecl = structDeclRef->Fetch(ident);
-            if (varDecl)
-                return varDecl->GetTypeDenoter()->Get(varIdent->next.get());
-            else
-                RuntimeErr("identifier '" + ident + "' not found in 'struct " + structDeclRef->SignatureToString() + "'", varIdent);
+            auto genericTypeDen = bufferDeclRef->declStmntRef->GetGenericTypeDenoter();
+            return genericTypeDen->GetFromArray(numArrayIndices - 1, varIdent);
         }
         else
-            RuntimeErr("missing reference to structure declaration", varIdent);
-    }*/
-    return TypeDenoter::Get(varIdent);
+            RuntimeErr("missing reference to buffer declaration", varIdent);
+    }
+    return Get(varIdent);
 }
 
 
@@ -455,16 +452,9 @@ unsigned int AliasTypeDenoter::NumDimensions() const
 
 /* ----- ArrayTypeDenoter ----- */
 
-static void ValidateArrayIndices(std::size_t numDims, std::size_t numArrayIndices, const AST* ast)
+static std::size_t GetReducedArrayIndices(std::size_t numDims, std::size_t numArrayIndices)
 {
-    /* Validate array dimensions for specified indices */
-    if (numArrayIndices > numDims)
-    {
-        RuntimeErr(
-            "too many array indices (expected " + std::to_string(numDims) +
-            " but got " + std::to_string(numArrayIndices) + ")", ast
-        );
-    }
+    return (numArrayIndices > numDims ? numArrayIndices - numDims : 0);
 }
 
 ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter) :
@@ -500,9 +490,6 @@ TypeDenoterPtr ArrayTypeDenoter::Get(const VarIdent* varIdent)
 {
     if (varIdent)
     {
-        /* Validate array dimensions */
-        ValidateArrayIndices(arrayDims.size(), varIdent->arrayIndices.size(), varIdent);
-
         /* Get base type denoter with next identifier */
         return GetWithIndices(varIdent->arrayIndices.size(), varIdent->next.get());
     }
@@ -511,9 +498,6 @@ TypeDenoterPtr ArrayTypeDenoter::Get(const VarIdent* varIdent)
 
 TypeDenoterPtr ArrayTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
 {
-    /* Validate array dimensions */
-    ValidateArrayIndices(arrayDims.size(), numArrayIndices, varIdent);
-
     /* Get base type denoter with identifier */
     return GetWithIndices(numArrayIndices, varIdent);
 }
@@ -561,7 +545,7 @@ TypeDenoterPtr ArrayTypeDenoter::GetWithIndices(std::size_t numArrayIndices, con
     }
 
     /* Get base type denoter with next identifier */
-    return baseTypeDenoter->Get(varIdent);
+    return baseTypeDenoter->GetFromArray(numArrayIndices - numDims, varIdent);
 }
 
 unsigned int ArrayTypeDenoter::NumDimensions() const

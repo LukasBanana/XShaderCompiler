@@ -86,7 +86,6 @@ TypeDenoterPtr VarIdent::DeriveTypeDenoter()
     return GetExplicitTypeDenoter(true);
 }
 
-//TODO: incomplete for arrays of BufferDecl, and SamplerDecl!
 TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
 {
     if (symbolRef)
@@ -111,26 +110,9 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
             case AST::Types::BufferDecl:
             {
                 auto bufferDecl = static_cast<BufferDecl*>(symbolRef);
-
-                /* Get type denoter for buffer */
-                TypeDenoterPtr typeDenoter = std::make_shared<BufferTypeDenoter>(bufferDecl);
-
-                auto numArrayDim = arrayIndices.size();
-                if (numArrayDim > 0)
-                {
-                    /* Get generic type denoter */
-                    --numArrayDim;
-                    typeDenoter = bufferDecl->declStmntRef->GetGenericTypeDenoter();
-                }
-
                 try
                 {
-                    if (next)
-                        return typeDenoter->GetFromArray(numArrayDim, (recursive ? next.get() : nullptr));
-                    else if (numArrayDim > 0)
-                        return typeDenoter->GetFromArray(numArrayDim, nullptr);
-                    else
-                        return typeDenoter;
+                    return bufferDecl->GetTypeDenoter()->GetFromArray(arrayIndices.size(), (recursive ? next.get() : nullptr));
                 }
                 catch (const std::exception& e)
                 {
@@ -142,7 +124,14 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
             case AST::Types::SamplerDecl:
             {
                 auto samplerDecl = static_cast<SamplerDecl*>(symbolRef);
-                return std::make_shared<SamplerTypeDenoter>(samplerDecl);
+                try
+                {
+                    return samplerDecl->GetTypeDenoter()->GetFromArray(arrayIndices.size(), (recursive ? next.get() : nullptr));
+                }
+                catch (const std::exception& e)
+                {
+                    RuntimeErr(e.what(), this);
+                }
             }
             break;
 
@@ -300,7 +289,7 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter()
 
 TypeDenoterPtr BufferDecl::DeriveTypeDenoter()
 {
-    return std::make_shared<BufferTypeDenoter>(this);
+    return std::make_shared<BufferTypeDenoter>(this)->AsArray(arrayDims);
 }
 
 
@@ -308,7 +297,7 @@ TypeDenoterPtr BufferDecl::DeriveTypeDenoter()
 
 TypeDenoterPtr SamplerDecl::DeriveTypeDenoter()
 {
-    return std::make_shared<SamplerTypeDenoter>(this);
+    return std::make_shared<SamplerTypeDenoter>(this)->AsArray(arrayDims);
 }
 
 

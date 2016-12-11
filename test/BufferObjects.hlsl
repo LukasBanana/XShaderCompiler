@@ -7,7 +7,8 @@ cbuffer Settings : register(b0)
 	uint3 groupSize;
 };
 
-Texture2D tex0;
+SamplerState smpl0[10];
+Texture2D tex0[10];
 
 Buffer<float4> inBuffer : register(t0);
 
@@ -19,7 +20,7 @@ struct Data
 	float4 color;
 };
 
-StructuredBuffer<Data> lightSources : register(t1);
+StructuredBuffer<Data> lightSources[10] : register(t1);
 
 
 [numthreads(1, 1, 5*9+(int)1.0)]
@@ -27,7 +28,7 @@ void CS(uint3 groupID : SV_GroupID)
 {
 	// Structure buffer access test
 	int4 a = lightSources[0].position;
-	float4 b = tex0.Load((int2)0);
+	float4 b = tex0.Sample(smpl0[0], (float2)0);
 	
 	// Get global index
 	uint i = groupID.z*groupSize.x*groupSize.y + groupID.y*groupSize.x + groupID.x;

@@ -145,7 +145,7 @@ struct BaseTypeDenoter : public TypeDenoter
     bool Equals(const TypeDenoter& rhs) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 
-    TypeDenoterPtr Get(const VarIdent* varIdent) override;
+    TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
     TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
 
     DataType dataType = DataType::Undefined;
@@ -163,7 +163,7 @@ struct BufferTypeDenoter : public TypeDenoter
     Types Type() const override;
     std::string ToString() const override;
 
-    TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
+    TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
 
     BufferType  bufferType      = BufferType::Undefined;
     BufferDecl* bufferDeclRef   = nullptr;
