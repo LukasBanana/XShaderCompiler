@@ -89,6 +89,10 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param);
         void AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input);
         void AnalyzeEntryPointStructInOut(FunctionDecl* funcDecl, StructDecl* structDecl, const std::string& structAliasName, bool input);
+        void AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& attribs);
+        void AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs);
+
+        void AnalyzeAttribute(Attribute* ast);
 
         void AnalyzeSemantic(IndexedSemantic& semantic);
 

@@ -719,6 +719,9 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
     /* Check if fragment shader use a slightly different screen space (VPOS vs. SV_Position) */
     if (shaderTarget_ == ShaderTarget::FragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
         program_->flags << Program::hasSM3ScreenSpace;
+
+    /* Analyze entry pointer attributes (also missing attributes such as "numthreads" for compute shaders) */
+    AnalyzeEntryPointAttributes(funcDecl->attribs);
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param)
@@ -793,6 +796,64 @@ void HLSLAnalyzer::AnalyzeEntryPointStructInOut(FunctionDecl* funcDecl, StructDe
         structDecl->flags << StructDecl::isShaderInput;
     else
         structDecl->flags << StructDecl::isShaderOutput;
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& attribs)
+{
+    switch (shaderTarget_)
+    {
+        case ShaderTarget::ComputeShader:
+            AnalyzeEntryPointAttributesComputeShader(attribs);
+            break;
+        default:
+            break;
+    }
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs)
+{
+    bool numThreadsFound = false;
+
+    for (const auto& attr : attribs)
+    {
+        if (attr->attributeType == AttributeType::NumThreads)
+        {
+            AnalyzeAttribute(attr.get());
+            numThreadsFound = true;
+        }
+    }
+
+    if (!numThreadsFound)
+        Error("missing 'numthreads' attribute for compute shader entry point");
+}
+
+void HLSLAnalyzer::AnalyzeAttribute(Attribute* ast)
+{
+    static const std::map<AttributeType, std::size_t> attribNumArgsMap
+    {
+        { AttributeType::NumThreads, 3 },
+    };
+
+    /* Get epxected number of arguments for attribute */
+    auto it = attribNumArgsMap.find(ast->attributeType);
+    std::size_t expectedNumArgs = (it != attribNumArgsMap.end() ? it->second : 0);
+
+    auto numArgs = ast->arguments.size();
+
+    if (numArgs < expectedNumArgs)
+    {
+        Error(
+            "too few arguments in attribute (expected " + std::to_string(expectedNumArgs) +
+            ", but got " + std::to_string(numArgs) + ")", ast
+        );
+    }
+    else if (numArgs > expectedNumArgs)
+    {
+        Error(
+            "too many arguments in attribute (expected " + std::to_string(expectedNumArgs) +
+            ", but got " + std::to_string(numArgs) + ")", ast->arguments[expectedNumArgs].get()
+        );
+    }
 }
 
 void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic)

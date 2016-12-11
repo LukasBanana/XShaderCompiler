@@ -455,6 +455,7 @@ enum class AttributeType
     SampReg,
     Unroll,
     Unused,
+    Xps,
 
     Domain,
     EarlyDepthStencil,

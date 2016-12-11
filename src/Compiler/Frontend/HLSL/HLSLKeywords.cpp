@@ -591,6 +591,7 @@ static std::map<std::string, AttributeType> GenerateAttributeTypeMap()
         { "sampreg",                   T::SampReg                   },
         { "unroll",                    T::Unroll                    },
         { "unused",                    T::Unused                    },
+        { "xps",                       T::Xps                       },
 
         { "domain",                    T::Domain                    },
         { "earlydepthstencil",         T::EarlyDepthStencil         },

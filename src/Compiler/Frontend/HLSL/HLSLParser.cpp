@@ -398,12 +398,14 @@ SamplerValuePtr HLSLParser::ParseSamplerValue()
 
 AttributePtr HLSLParser::ParseAttribute()
 {
-    auto ast = Make<Attribute>();
-
     Accept(Tokens::LParen);
+
+    auto ast = Make<Attribute>();
 
     auto attribIdent = ParseIdent();
     ast->attributeType = HLSLKeywordToAttributeType(attribIdent);
+
+    UpdateSourceArea(ast);
 
     if (ast->attributeType == AttributeType::Undefined)
         Warning("unknown attribute '" + attribIdent + "'");

@@ -785,7 +785,7 @@ std::string RegisterTypeToString(const RegisterType t)
 
 bool IsShaderModel3AttributeType(const AttributeType t)
 {
-    return (t >= AttributeType::Branch && t <= AttributeType::Unused);
+    return (t >= AttributeType::Branch && t <= AttributeType::Xps);
 }
 
 bool IsShaderModel5AttributeType(const AttributeType t)
