@@ -24,17 +24,17 @@ void ASTPrinter::PrintAST(Program* program, Log& log)
  * ======= Private: =======
  */
 
-class ScopedIndent
+class ScopedLogIndent
 {
     public:
         
-        inline ScopedIndent(Log& log) :
+        inline ScopedLogIndent(Log& log) :
             log_{ log }
         {
             log_.IncIndent();
         }
 
-        inline ~ScopedIndent()
+        inline ~ScopedLogIndent()
         {
             log_.DecIndent();
         }
@@ -45,7 +45,7 @@ class ScopedIndent
 
 };
 
-#define SCOPED_INDENT ScopedIndent indent(*log_)
+#define SCOPED_INDENT ScopedLogIndent indent(*log_)
 
 #define DEFAULT_VISITOR(AST_NAME)               \
     {                                           \
