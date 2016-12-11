@@ -34,7 +34,7 @@ Progress
 | Tessellation Evaluation Shader | 0% | |
 | Geometry Shader | 0% | |
 | Fragment Shader | ~80% | |
-| Compute Shader | ~50% | (RW-)Buffer objects are in progress |
+| Compute Shader | ~80% | |
 
 ##### TODO List: #####
 * Common HLSL IO semantics to GLSL transformation.
