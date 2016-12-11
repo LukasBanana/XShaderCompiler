@@ -1225,6 +1225,10 @@ ExprStmntPtr HLSLParser::ParseExprStmnt(const VarIdentPtr& varIdent)
     /* Parse expression statement */
     auto ast = Make<ExprStmnt>();
 
+    //TODO:
+    //  do not create a VarAccessExpr for 'varIdent'
+    //  -> instead pass it to the "ParseExpr" function,
+    //     which must then propagate it down to the value expression parser
     if (varIdent)
     {
         /* Make var-ident to a var-access expression */
@@ -1300,7 +1304,7 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
         }
         return ast;
     }
-    else if (Is(Tokens::UnaryOp, "++") || Is(Tokens::UnaryOp, "--"))
+    else if (Is(Tokens::UnaryOp, "++") || Is(Tokens::UnaryOp, "--"))// || Is(Tokens::BinaryOp) || Is(Tokens::TernaryOp))
     {
         /* Parse expression statement */
         return ParseExprStmnt(varIdent);
@@ -1327,7 +1331,7 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
         return UpdateSourceArea(ast, varIdent.get());
     }
 
-    ErrorUnexpected("expected variable declaration, assignment or function call statement");
+    ErrorUnexpected("expected variable declaration, assignment, or function call statement");
     
     return nullptr;
 }

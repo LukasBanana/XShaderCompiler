@@ -703,7 +703,7 @@ TypeDenoterPtr BinaryExpr::DeriveTypeDenoter()
     const auto& lhsTypeDen = lhsExpr->GetTypeDenoter();
     const auto& rhsTypeDen = rhsExpr->GetTypeDenoter();
 
-    if (!rhsTypeDen->IsCastableTo(*lhsTypeDen))
+    if (!rhsTypeDen->IsCastableTo(*lhsTypeDen) || !lhsTypeDen->IsCastableTo(*rhsTypeDen))
     {
         RuntimeErr(
             "can not cast '" + rhsTypeDen->ToString() + "' to '" + lhsTypeDen->ToString() +

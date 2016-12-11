@@ -34,7 +34,7 @@ void CS(uint3 groupID : SV_GroupID)
 	// Structure buffer access test
 	int4 pos = lightSources[i].position;
 	
-	Datas data = lightSources[i].position.x;
+	Data data = lightSources[i];
 	
 	// Flip components
 	outBuffer[i] = inBuffer[i].wzxy;
