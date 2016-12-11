@@ -565,6 +565,55 @@ SamplerType HLSLKeywordToSamplerType(const std::string& keyword)
 }
 
 
+/* ----- AttributeType Mapping ----- */
+
+static std::map<std::string, AttributeType> GenerateAttributeTypeMap()
+{
+    using T = AttributeType;
+
+    return
+    {
+        { "branch",                    T::Branch                    },
+        { "call",                      T::Call                      },
+        { "flatten",                   T::Flatten                   },
+        { "ifAll",                     T::IfAll                     },
+        { "ifAny",                     T::IfAny                     },
+        { "isolate",                   T::Isolate                   },
+        { "loop",                      T::Loop                      },
+        { "maxexports",                T::MaxExports                },
+        { "maxInstructionCount",       T::MaxInstructionCount       },
+        { "maxtempreg",                T::MaxTempReg                },
+        { "noExpressionOptimizations", T::NoExpressionOptimizations },
+        { "predicate",                 T::Predicate                 },
+        { "predicateBlock",            T::PredicateBlock            },
+        { "reduceTempRegUsage",        T::ReduceTempRegUsage        },
+        { "removeUnusedInputs",        T::RemoveUnusedInputs        },
+        { "sampreg",                   T::SampReg                   },
+        { "unroll",                    T::Unroll                    },
+        { "unused",                    T::Unused                    },
+
+        { "domain",                    T::Domain                    },
+        { "earlydepthstencil",         T::EarlyDepthStencil         },
+        { "instance",                  T::Instance                  },
+        { "maxtessfactor",             T::MaxTessFactor             },
+        { "maxvertexcount",            T::MaxVertexCount            },
+        { "numthreads",                T::NumThreads                },
+        { "outputcontrolpoints",       T::OutputControlPoints       },
+        { "outputtopology",            T::OutputTopology            },
+        { "partitioning",              T::Partitioning              },
+        { "patchsize",                 T::PatchSize                 },
+        { "patchconstantfunc",         T::PatchConstantFunc         },
+    };
+}
+
+AttributeType HLSLKeywordToAttributeType(const std::string& keyword)
+{
+    static const auto typeMap = GenerateAttributeTypeMap();
+    auto it = typeMap.find(keyword);
+    return (it != typeMap.end() ? it->second : AttributeType::Undefined);
+}
+
+
 /* ----- Semantic Mapping ----- */
 
 struct HLSLSemanticDescriptor

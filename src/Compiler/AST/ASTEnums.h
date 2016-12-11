@@ -430,6 +430,52 @@ char RegisterTypeToChar(const RegisterType t);
 std::string RegisterTypeToString(const RegisterType t);
 
 
+/* ----- AttributeType Enum ----- */
+
+// Attribute type enumeration (TODO: incomplete list).
+enum class AttributeType
+{
+    Undefined,
+
+    Branch,
+    Call,
+    Flatten,
+    IfAll,
+    IfAny,
+    Isolate,
+    Loop,
+    MaxExports,
+    MaxInstructionCount,
+    MaxTempReg,
+    NoExpressionOptimizations,
+    Predicate,
+    PredicateBlock,
+    ReduceTempRegUsage,
+    RemoveUnusedInputs,
+    SampReg,
+    Unroll,
+    Unused,
+
+    Domain,
+    EarlyDepthStencil,
+    Instance,
+    MaxTessFactor,
+    MaxVertexCount,
+    NumThreads,
+    OutputControlPoints,
+    OutputTopology,
+    Partitioning,
+    PatchSize,
+    PatchConstantFunc,
+};
+
+// Returns true if the specified attribute is supported since shader model 3.
+bool IsShaderModel3AttributeType(const AttributeType t);
+
+// Returns true if the specified attribute is supported since shader model 5.
+bool IsShaderModel5AttributeType(const AttributeType t);
+
+
 /* ----- Intrinsic Enum ----- */
 
 /*

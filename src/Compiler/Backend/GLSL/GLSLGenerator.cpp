@@ -1990,6 +1990,11 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* ast)
     {
         BeginLn();
         {
+            /* Write optional memory type qualifier */
+            if (!IsRWBufferType(ast->declStmntRef->bufferType))
+                Write("readonly ");
+
+            /* Write generic type denoterand identifier */
             auto genericTypeDen = ast->declStmntRef->GetGenericTypeDenoter();
             WriteTypeDenoter(*genericTypeDen, IsESSL(), ast);
             Write(" " + ast->ident + "[];");
