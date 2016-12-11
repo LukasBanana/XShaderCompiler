@@ -576,6 +576,12 @@ struct VarDeclStmnt : public Stmnt
     // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident) const;
 
+    // Returns true if this is an input parameter.
+    bool IsInput() const;
+
+    // Returns true if this is an output parameter.
+    bool IsOutput() const;
+
     bool                        isInput         = false;    // Input modifier 'in'
     bool                        isOutput        = false;    // Input modifier 'out'
     bool                        isUniform       = false;    // Input modifier 'uniform'

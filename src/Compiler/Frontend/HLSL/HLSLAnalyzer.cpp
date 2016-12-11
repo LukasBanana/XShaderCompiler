@@ -728,17 +728,17 @@ void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStm
     if (param->isUniform)
     {
         /* Verify input only semantic */
-        if (param->isOutput)
+        if (param->IsOutput())
             Error("uniforms can not be defined as output", varDecl);
     }
     else
     {
         /* Analyze input semantic */
-        if (param->isInput)
+        if (param->IsInput())
             AnalyzeEntryPointParameterInOut(funcDecl, varDecl, true);
 
         /* Analyze output semantic */
-        if (param->isOutput)
+        if (param->IsOutput())
             AnalyzeEntryPointParameterInOut(funcDecl, varDecl, false);
     }
 }

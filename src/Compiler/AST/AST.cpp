@@ -574,6 +574,16 @@ VarDecl* VarDeclStmnt::Fetch(const std::string& ident) const
     return nullptr;
 }
 
+bool VarDeclStmnt::IsInput() const
+{
+    return (isInput || !isOutput);
+}
+
+bool VarDeclStmnt::IsOutput() const
+{
+    return isOutput;
+}
+
 
 /* ----- NullExpr ----- */
 
