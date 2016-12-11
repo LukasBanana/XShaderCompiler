@@ -134,6 +134,9 @@ struct ReflectionData
     //! Texture bindings.
     std::vector<BindingSlot>            textures;
 
+    //! Storage buffer bindings.
+    std::vector<BindingSlot>            storageBuffers;
+
     //! Constant buffer bindings.
     std::vector<BindingSlot>            constantBuffers;
 

@@ -146,8 +146,17 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
         {
             if (bufferDecl->flags(AST::isReachable))
             {
-                /* Reflect texture binding */
-                data_->textures.push_back({ bufferDecl->ident, GetBindingPoint(bufferDecl->slotRegisters) });
+                /* Reflect texture or storage-buffer binding */
+                Reflection::BindingSlot bindingSlot;
+                {
+                    bindingSlot.ident       = bufferDecl->ident;
+                    bindingSlot.location    = GetBindingPoint(bufferDecl->slotRegisters);
+                };
+
+                if (IsTextureBufferType(ast->bufferType))
+                    data_->textures.push_back(bindingSlot);
+                else
+                    data_->storageBuffers.push_back(bindingSlot);
             }
         }
     }
