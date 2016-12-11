@@ -42,6 +42,7 @@ class ReflectionAnalyzer : private Visitor
         int GetBindingPoint(const std::vector<RegisterPtr>& slotRegisters) const;
 
         Variant EvaluateConstExpr(Expr& expr);
+        int EvaluateConstExprInt(Expr& expr);
         float EvaluateConstExprFloat(Expr& expr);
 
         /* ----- Visitor implementation ----- */
@@ -50,6 +51,7 @@ class ReflectionAnalyzer : private Visitor
 
         DECL_VISIT_PROC( SamplerDecl       );
 
+        DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( BufferDeclStmnt   );
 
@@ -59,6 +61,9 @@ class ReflectionAnalyzer : private Visitor
         void ReflectSamplerValueFilter(const std::string& value, Reflection::Filter& filter, const AST* ast = nullptr);
         void ReflectSamplerValueTextureAddressMode(const std::string& value, Reflection::TextureAddressMode& addressMode, const AST* ast = nullptr);
         void ReflectSamplerValueComparisonFunc(const std::string& value, Reflection::ComparisonFunc& comparisonFunc, const AST* ast = nullptr);
+
+        void ReflectAttributes(const std::vector<AttributePtr>& attribs);
+        void ReflectAttributesNumThreads(Attribute* ast);
 
         /* === Members === */
 

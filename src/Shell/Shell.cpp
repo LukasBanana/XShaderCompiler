@@ -256,112 +256,13 @@ void Shell::Compile(const std::string& filename)
 
         /* Show output statistics (if enabled) */
         if (state_.showReflection)
-            ShowReflection(reflectionData);
+            PrintReflection(output, reflectionData);
     }
     catch (const std::exception& err)
     {
         /* Print error message */
         output << err.what() << std::endl;
     }
-}
-
-void Shell::ShowReflection(const Reflection::ReflectionData& reflectionData)
-{
-    output << "code reflection:" << std::endl;
-    indentHandler_.IncIndent();
-    {
-        ShowReflectionFor( reflectionData.macros,           "macros"            );
-        ShowReflectionFor( reflectionData.textures,         "textures"          );
-        ShowReflectionFor( reflectionData.constantBuffers,  "constant buffers"  );
-        ShowReflectionFor( reflectionData.inputAttributes,  "input attributes"  );
-        ShowReflectionFor( reflectionData.outputAttributes, "output attributes" );
-        ShowReflectionFor( reflectionData.samplerStates,    "sampler states"    );
-    }
-    indentHandler_.DecIndent();
-}
-
-void Shell::ShowReflectionFor(const std::vector<Reflection::BindingSlot>& objects, const std::string& title)
-{
-    output << indentHandler_.FullIndent() << title << ':' << std::endl;
-    indentHandler_.IncIndent();
-    {
-        if (!objects.empty())
-        {
-            /* Determine offset for right-aligned location index */
-            int maxLocation = -1;
-            for (const auto& obj : objects)
-                maxLocation = std::max(maxLocation, obj.location);
-
-            std::size_t maxLocationLen = std::to_string(maxLocation).size();
-
-            /* Print binding points */
-            for (const auto& obj : objects)
-            {
-                output << indentHandler_.FullIndent();
-                if (maxLocation >= 0)
-                {
-                    if (obj.location >= 0)
-                        output << std::string(maxLocationLen - std::to_string(obj.location).size(), ' ') << obj.location << ": ";
-                    else
-                        output << std::string(maxLocationLen, ' ') << "  ";
-                }
-                output << obj.ident << std::endl;
-            }
-        }
-        else
-            output << indentHandler_.FullIndent() << "< none >" << std::endl;
-    }
-    indentHandler_.DecIndent();
-}
-
-void Shell::ShowReflectionFor(const std::vector<std::string>& idents, const std::string& title)
-{
-    output << indentHandler_.FullIndent() << title << ':' << std::endl;
-    indentHandler_.IncIndent();
-    {
-        if (!idents.empty())
-        {
-            for (const auto& i : idents)
-                output << indentHandler_.FullIndent() << i << std::endl;
-        }
-        else
-            output << indentHandler_.FullIndent() << "< none >" << std::endl;
-    }
-    indentHandler_.DecIndent();
-}
-
-void Shell::ShowReflectionFor(const std::map<std::string, Reflection::SamplerState>& samplerStates, const std::string& title)
-{
-    output << indentHandler_.FullIndent() << title << ':' << std::endl;
-    indentHandler_.IncIndent();
-    {
-        if (!samplerStates.empty())
-        {
-            for (const auto& it : samplerStates)
-            {
-                output << indentHandler_.FullIndent() << it.first << std::endl;
-                indentHandler_.IncIndent();
-                {
-                    const auto& smpl = it.second;
-                    const auto& brdCol = smpl.borderColor;
-                    output << indentHandler_.FullIndent() << "AddressU       = " << ToString(smpl.addressU) << std::endl;
-                    output << indentHandler_.FullIndent() << "AddressV       = " << ToString(smpl.addressV) << std::endl;
-                    output << indentHandler_.FullIndent() << "AddressW       = " << ToString(smpl.addressW) << std::endl;
-                    output << indentHandler_.FullIndent() << "BorderColor    = { " << brdCol[0] << ", " << brdCol[1] << ", " << brdCol[2] << ", " << brdCol[3] << " }" << std::endl;
-                    output << indentHandler_.FullIndent() << "ComparisonFunc = " << ToString(smpl.comparisonFunc) << std::endl;
-                    output << indentHandler_.FullIndent() << "Filter         = " << ToString(smpl.filter) << std::endl;
-                    output << indentHandler_.FullIndent() << "MaxAnisotropy  = " << smpl.maxAnisotropy << std::endl;
-                    output << indentHandler_.FullIndent() << "MaxLOD         = " << smpl.maxLOD << std::endl;
-                    output << indentHandler_.FullIndent() << "MinLOD         = " << smpl.minLOD << std::endl;
-                    output << indentHandler_.FullIndent() << "MipLODBias     = " << smpl.mipLODBias << std::endl;
-                }
-                indentHandler_.DecIndent();
-            }
-        }
-        else
-            output << indentHandler_.FullIndent() << "< none >" << std::endl;
-    }
-    indentHandler_.DecIndent();
 }
 
 

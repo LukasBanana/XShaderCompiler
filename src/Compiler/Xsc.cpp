@@ -12,6 +12,7 @@
 #include "GLSLGenerator.h"
 #include "Optimizer.h"
 #include "ReflectionAnalyzer.h"
+#include "ReflectionPrinter.h"
 #include "ASTPrinter.h"
 #include "ASTEnums.h"
 #include <fstream>
@@ -258,6 +259,12 @@ XSC_EXPORT std::string ToString(const Reflection::TextureAddressMode t)
 XSC_EXPORT std::string ToString(const Reflection::ComparisonFunc t)
 {
     return CompareFuncToString(t);
+}
+
+XSC_EXPORT void PrintReflection(std::ostream& stream, const Reflection::ReflectionData& reflectionData)
+{
+    ReflectionPrinter printer(stream);
+    printer.PrintReflection(reflectionData);
 }
 
 XSC_EXPORT bool IsLanguageGLSL(const OutputShaderVersion shaderVersion)

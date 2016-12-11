@@ -143,6 +143,7 @@ class GLSLGenerator : public Generator
 
         void WriteAttribute(Attribute* ast);
         void WriteAttributeNumThreads(Attribute* ast);
+        void WriteAttributeNumThreadsArgument(Expr* ast);
         void WriteAttributeEarlyDepthStencil();
 
         /* --- Input semantics --- */

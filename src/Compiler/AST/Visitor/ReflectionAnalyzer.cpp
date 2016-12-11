@@ -66,6 +66,11 @@ Variant ReflectionAnalyzer::EvaluateConstExpr(Expr& expr)
     return Variant();
 }
 
+int ReflectionAnalyzer::EvaluateConstExprInt(Expr& expr)
+{
+    return static_cast<int>(EvaluateConstExpr(expr).ToInt());
+}
+
 float ReflectionAnalyzer::EvaluateConstExprFloat(Expr& expr)
 {
     return static_cast<float>(EvaluateConstExpr(expr).ToReal());
@@ -115,6 +120,14 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 }
 
 /* --- Declaration statements --- */
+
+IMPLEMENT_VISIT_PROC(FunctionDecl)
+{
+    if (ast->flags(FunctionDecl::isEntryPoint))
+        ReflectAttributes(ast->attribs);
+
+    Visitor::VisitFunctionDecl(ast, args);
+}
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
@@ -251,6 +264,27 @@ void ReflectionAnalyzer::ReflectSamplerValueComparisonFunc(const std::string& va
     catch (const std::invalid_argument& e)
     {
         Warning(e.what(), ast);
+    }
+}
+
+void ReflectionAnalyzer::ReflectAttributes(const std::vector<AttributePtr>& attribs)
+{
+    for (const auto& attr : attribs)
+    {
+        if (attr->ident == "numthreads")
+            ReflectAttributesNumThreads(attr.get());
+    }
+}
+
+void ReflectionAnalyzer::ReflectAttributesNumThreads(Attribute* ast)
+{
+    /* Reflect "numthreads" attribute for compute shader */
+    if (shaderTarget_ == ShaderTarget::ComputeShader && ast->arguments.size() == 3)
+    {
+        /* Evaluate attribute arguments */
+        data_->numThreads.x = EvaluateConstExprInt(*ast->arguments[0]);
+        data_->numThreads.y = EvaluateConstExprInt(*ast->arguments[1]);
+        data_->numThreads.z = EvaluateConstExprInt(*ast->arguments[2]);
     }
 }
 

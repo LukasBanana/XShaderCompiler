@@ -49,6 +49,29 @@ class XSC_EXPORT IndentHandler
 
 };
 
+//! Helper class for temporary indentation.
+class ScopedIndent
+{
+
+    public:
+
+        inline ScopedIndent(IndentHandler& handler) :
+            handler_{ handler }
+        {
+            handler_.IncIndent();
+        }
+
+        inline ~ScopedIndent()
+        {
+            handler_.DecIndent();
+        }
+
+    private:
+
+        IndentHandler& handler_;
+
+};
+
 
 } // /namespace Xsc
 

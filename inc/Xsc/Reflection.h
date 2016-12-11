@@ -14,6 +14,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <ostream>
 
 
 namespace Xsc
@@ -118,6 +119,12 @@ struct BindingSlot
     int         location;
 };
 
+//! Number of threads within each work group of a compute shader.
+struct NumThreads
+{
+    int x = 0, y = 0, z = 0;
+};
+
 //! Structure for shader output statistics (e.g. texture/buffer binding points).
 struct ReflectionData
 {
@@ -138,6 +145,9 @@ struct ReflectionData
 
     //! Static sampler states (identifier, states).
     std::map<std::string, SamplerState> samplerStates;
+
+    //! 'numthreads' attribute of a compute shader.
+    NumThreads                          numThreads;
 };
 
 
@@ -152,6 +162,9 @@ XSC_EXPORT std::string ToString(const Reflection::TextureAddressMode t);
 
 //! Returns the string representation of the specified 'SamplerState::ComparisonFunc' type.
 XSC_EXPORT std::string ToString(const Reflection::ComparisonFunc t);
+
+//! Prints the reflection data into the output stream in a human readable format.
+XSC_EXPORT void PrintReflection(std::ostream& stream, const Reflection::ReflectionData& reflectionData);
 
 
 } // /namespace Xsc

@@ -46,13 +46,7 @@ class Shell
 
         void Compile(const std::string& filename);
 
-        void ShowReflection(const Reflection::ReflectionData& reflectionData);
-        void ShowReflectionFor(const std::vector<Reflection::BindingSlot>& objects, const std::string& title);
-        void ShowReflectionFor(const std::vector<std::string>& idents, const std::string& title);
-        void ShowReflectionFor(const std::map<std::string, Reflection::SamplerState>& samplerStates, const std::string& title);
-
         ShellState      state_;
-        IndentHandler   indentHandler_;
 
         static Shell*   instance_;
 
