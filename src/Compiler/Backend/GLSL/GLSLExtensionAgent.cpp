@@ -22,11 +22,13 @@ namespace Xsc
 static const GLSLExtension GLSLEXT_GL_EXT_gpu_shader4               { "GL_EXT_gpu_shader4",              OutputShaderVersion::GLSL130 };
 static const GLSLExtension GLSLEXT_GL_ARB_uniform_buffer_object     { "GL_ARB_uniform_buffer_object",    OutputShaderVersion::GLSL140 };
 static const GLSLExtension GLSLEXT_GL_ARB_texture_multisample       { "GL_ARB_texture_multisample",      OutputShaderVersion::GLSL150 };
+static const GLSLExtension GLSLEXT_GL_ARB_gpu_shader5               { "GL_ARB_gpu_shader5",              OutputShaderVersion::GLSL330 };
 static const GLSLExtension GLSLEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",       OutputShaderVersion::GLSL450 };
 static const GLSLExtension GLSLEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_language_420pack", OutputShaderVersion::GLSL420 };
 static const GLSLExtension GLSLEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_image_load_store",  OutputShaderVersion::GLSL420 };
 static const GLSLExtension GLSLEXT_GL_ARB_arrays_of_arrays          { "GL_ARB_arrays_of_arrays",         OutputShaderVersion::GLSL430 };
 static const GLSLExtension GLSLEXT_GL_ARB_enhanced_layouts          { "GL_ARB_enhanced_layouts",         OutputShaderVersion::GLSL430 };
+static const GLSLExtension GLSLEXT_GL_ARB_gpu_shader_int64          { "GL_ARB_gpu_shader_int64",         OutputShaderVersion::GLSL450 };
 
 
 /*
@@ -38,6 +40,10 @@ GLSLExtensionAgent::GLSLExtensionAgent()
     /* Establish intrinsic-to-extension map */
     intrinsicExtMap_ = std::map<Intrinsic, GLSLExtension>
     {
+        { Intrinsic::AsDouble,  GLSLEXT_GL_ARB_gpu_shader_int64   },
+        { Intrinsic::AsFloat,   GLSLEXT_GL_ARB_gpu_shader5        },
+        { Intrinsic::AsInt,     GLSLEXT_GL_ARB_gpu_shader5        },
+        { Intrinsic::AsUInt_1,  GLSLEXT_GL_ARB_gpu_shader5        },
         { Intrinsic::DDXCoarse, GLSLEXT_GL_ARB_derivative_control },
         { Intrinsic::DDXFine,   GLSLEXT_GL_ARB_derivative_control },
         { Intrinsic::DDYCoarse, GLSLEXT_GL_ARB_derivative_control },
