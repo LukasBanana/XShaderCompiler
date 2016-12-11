@@ -25,7 +25,7 @@ void ReflectionPrinter::PrintReflection(const Reflection::ReflectionData& reflec
     {
         PrintReflectionObjects  ( reflectionData.macros,           "Macros"            );
         PrintReflectionObjects  ( reflectionData.textures,         "Textures"          );
-        PrintReflectionObjects  ( reflectionData.storageBuffers,   "Storage Buffer"    );
+        PrintReflectionObjects  ( reflectionData.storageBuffers,   "Storage Buffers"   );
         PrintReflectionObjects  ( reflectionData.constantBuffers,  "Constant Buffers"  );
         PrintReflectionObjects  ( reflectionData.inputAttributes,  "Input Attributes"  );
         PrintReflectionObjects  ( reflectionData.outputAttributes, "Output Attributes" );
