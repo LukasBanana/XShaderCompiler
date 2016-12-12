@@ -1,30 +1,33 @@
 
-[SemanticTest1 VS1]
--T vert -E VS1 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS1]
+#-T vert -E VS1 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS2]
--T vert -E VS2 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS2]
+#-T vert -E VS2 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS3]
--T vert -E VS3 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS3]
+#-T vert -E VS3 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS4]
--T vert -E VS4 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS4]
+#-T vert -E VS4 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS5]
--T vert -E VS5 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS5]
+#-T vert -E VS5 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS6]
--T vert -E VS6 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS6]
+#-T vert -E VS6 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 PS1]
--T frag -E PS1 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 PS1]
+#-T frag -E PS1 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 PS2]
--T frag -E PS2 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 PS2]
+#-T frag -E PS2 -o output/* SemanticTest1.hlsl
 
-['clip'-Intrinsic PS]
--T frag -E PS -o output/* IntrinsicClip.hlsl
+#['clip'-Intrinsic PS]
+#-T frag -E PS -o output/* IntrinsicClip.hlsl
+
+[ArrayTest1 PS]
+-T vert -E VS -o output/* ArrayTest1.hlsl
 
 [TextureObjects PS]
 --reflect --show-ast -W -T frag -E PS -o output/* TextureObjects.hlsl
@@ -32,14 +35,14 @@
 [BufferObjects CS]
 -W -EB -T comp -E CS -o output/* BufferObjects.hlsl
 
-[RegisterTest1 PS]
---show-ast -T frag -E PS -o output/* RegisterTest1.hlsl
+#[RegisterTest1 PS]
+#--show-ast -T frag -E PS -o output/* RegisterTest1.hlsl
 
-[NameMangling1 CS]
---show-ast -T comp -E CS -o output/* NameMangling1.hlsl
+#[NameMangling1 CS]
+#--show-ast -T comp -E CS -o output/* NameMangling1.hlsl
 
-[CastTest1 VS]
--Vout GLSL150 -T vert -E VS -o output/* CastTest1.hlsl
+#[CastTest1 VS]
+#-Vout GLSL150 -T vert -E VS -o output/* CastTest1.hlsl
 
 #[ConstExpr VS]
 #-W -T vert -E VS -o output/* ConstExpr.hlsl
