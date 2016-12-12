@@ -385,18 +385,23 @@ TypeDenoterPtr Analyzer::GetTypeDenoterFrom(TypedAST* ast)
     return nullptr;
 }
 
-void Analyzer::ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, const AST* ast)
+void Analyzer::ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, const std::string& contextDesc, const AST* ast)
 {
     if (!sourceTypeDen.IsCastableTo(destTypeDen))
-        Error("can not cast '" + sourceTypeDen.ToString() + "' to '" + destTypeDen.ToString() + "'", ast);
+    {
+        std::string err = "can not cast '" + sourceTypeDen.ToString() + "' to '" + destTypeDen.ToString() + "'";
+        if (!contextDesc.empty())
+            err += " in " + contextDesc;
+        Error(err, ast);
+    }
 }
 
-void Analyzer::ValidateTypeCastFrom(TypedAST* sourceAST, TypedAST* destAST)
+void Analyzer::ValidateTypeCastFrom(TypedAST* sourceAST, TypedAST* destAST, const std::string& contextDesc)
 {
     if (auto sourceTypeDen = GetTypeDenoterFrom(sourceAST))
     {
         if (auto destTypeDen = GetTypeDenoterFrom(destAST))
-            ValidateTypeCast(*sourceTypeDen, *destTypeDen, sourceAST);
+            ValidateTypeCast(*sourceTypeDen, *destTypeDen, contextDesc, sourceAST);
     }
 }
 

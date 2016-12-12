@@ -171,7 +171,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         Visit(ast->initializer);
 
         /* Compare initializer type with var-decl type */
-        ValidateTypeCastFrom(ast->initializer.get(), ast);
+        ValidateTypeCastFrom(ast->initializer.get(), ast, "variable initialization");
     }
 }
 
@@ -505,7 +505,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     if (ast->assignExpr)
     {
         Visit(ast->assignExpr);
-        ValidateTypeCastFrom(ast->assignExpr.get(), ast->varIdent.get());
+        ValidateTypeCastFrom(ast->assignExpr.get(), ast->varIdent.get(), "variable assignment");
 
         /* Is the variable a valid l-value? */
         if (auto constIdent = ast->varIdent->FirstConstVarIdent())
