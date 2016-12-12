@@ -385,7 +385,7 @@ TypeDenoterPtr StructTypeDenoter::Get(const VarIdent* varIdent)
             const auto& ident = varIdent->ident;
             auto varDecl = structDeclRef->Fetch(ident);
             if (varDecl)
-                return varDecl->GetTypeDenoter()->Get(varIdent->next.get());
+                return varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size(), varIdent->next.get());
             else
                 RuntimeErr("identifier '" + ident + "' not found in '" + structDeclRef->SignatureToString() + "'", varIdent);
         }
