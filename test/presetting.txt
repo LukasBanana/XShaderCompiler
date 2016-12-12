@@ -41,8 +41,29 @@
 [CastTest1 VS]
 -Vout GLSL150 -T vert -E VS -o output/* CastTest1.hlsl
 
-[ConstExpr VS]
--W -T vert -E VS -o output/* ConstExpr.hlsl
+#[ConstExpr VS]
+#-W -T vert -E VS -o output/* ConstExpr.hlsl
+
+[TessellationTest1 VS]
+-W -T vert -E VS -o output/* TessellationTest1.hlsl
+
+[TessellationTest1 HS]
+-W -T tesc -E HS -o output/* TessellationTest1.hlsl
+
+[TessellationTest1 DS]
+-W -T tese -E DS -o output/* TessellationTest1.hlsl
+
+[TessellationTest1 PS]
+-W -T frag -E PS -o output/* TessellationTest1.hlsl
+
+[GeometryTest1 VS]
+-W -T vert -E VS -o output/* GeometryTest1.hlsl
+
+[GeometryTest1 GS]
+-W -T geom -E GS -o output/* GeometryTest1.hlsl
+
+[GeometryTest1 PS]
+-W -T frag -E PS -o output/* GeometryTest1.hlsl
 
 #[ExprTest4 VS]
 #--show-ast -T vert -E VS -o output/* ExprTest4.hlsl
