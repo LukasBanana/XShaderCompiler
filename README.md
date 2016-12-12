@@ -30,15 +30,16 @@ Progress
 | Feature | Progress | Remarks |
 |---------|:--------:|---------|
 | Vertex Shader | ~80% | |
-| Tessellation Control Shader | 0% | |
-| Tessellation Evaluation Shader | 0% | |
+| Tessellation Control Shader | 10% | |
+| Tessellation Evaluation Shader | 10% | |
 | Geometry Shader | 0% | |
 | Fragment Shader | ~80% | |
 | Compute Shader | ~80% | |
 
 ##### TODO List: #####
 * Common HLSL IO semantics to GLSL transformation.
-* Geometry and Tessellation semantics.
+* Geometry and Tessellation shader support.
+* Type denoter analysis clean-up.
 * 'interface' and 'class' declarations.
 
 Offline Compiler
