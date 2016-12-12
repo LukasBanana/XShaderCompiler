@@ -502,6 +502,8 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         Write("in ");
     else if (ast->flags(VarDeclStmnt::isShaderOutput))
         Write("out ");
+    else if (ast->isUniform)
+        Write("uniform ");
 
     /* Write storage classes */
     for (auto storageClass : ast->storageClasses)

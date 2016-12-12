@@ -582,6 +582,9 @@ struct VarDeclStmnt : public Stmnt
     // Returns true if this is an output parameter.
     bool IsOutput() const;
 
+    // Returns true if the 'const' type modifier or the 'uniform' input modifier is set.
+    bool IsConst() const;
+
     bool                        isInput         = false;    // Input modifier 'in'
     bool                        isOutput        = false;    // Input modifier 'out'
     bool                        isUniform       = false;    // Input modifier 'uniform'

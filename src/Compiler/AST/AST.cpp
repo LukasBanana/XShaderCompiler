@@ -584,6 +584,11 @@ bool VarDeclStmnt::IsOutput() const
     return isOutput;
 }
 
+bool VarDeclStmnt::IsConst() const
+{
+    return (isUniform || (typeModifiers.find(TypeModifier::Const) != typeModifiers.end()));
+}
+
 
 /* ----- NullExpr ----- */
 
