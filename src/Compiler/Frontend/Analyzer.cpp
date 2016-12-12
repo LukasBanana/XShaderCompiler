@@ -326,11 +326,13 @@ FunctionCall* Analyzer::ActiveFunctionCall() const
 
 /* ----- Analyzer functions ----- */
 
-void Analyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
+void Analyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast)
 {
     if (typeDenoter)
     {
-        if (auto structTypeDen = typeDenoter->As<StructTypeDenoter>())
+        if (auto bufferTypeDen = typeDenoter->As<BufferTypeDenoter>())
+            AnalyzeBufferTypeDenoter(*bufferTypeDen, ast);
+        else if (auto structTypeDen = typeDenoter->As<StructTypeDenoter>())
             AnalyzeStructTypeDenoter(*structTypeDen, ast);
         else if (typeDenoter->IsAlias())
             AnalyzeAliasTypeDenoter(typeDenoter, ast);
@@ -339,13 +341,18 @@ void Analyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
     }
 }
 
-void Analyzer::AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* ast)
+void Analyzer::AnalyzeBufferTypeDenoter(BufferTypeDenoter& bufferTypeDen, const AST* ast)
+{
+    AnalyzeTypeDenoter(bufferTypeDen.genericTypeDenoter, ast);
+}
+
+void Analyzer::AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, const AST* ast)
 {
     if (!structTypeDen.structDeclRef)
         structTypeDen.structDeclRef = FetchStructDeclFromIdent(structTypeDen.ident, ast);
 }
 
-void Analyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast)
+void Analyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast)
 {
     auto& aliasTypeDen = static_cast<AliasTypeDenoter&>(*typeDenoter);
     if (!aliasTypeDen.aliasDeclRef)

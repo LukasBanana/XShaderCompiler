@@ -119,9 +119,10 @@ class Analyzer : protected Visitor
 
         /* ----- Analyzer functions ----- */
 
-        void AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);
-        void AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, AST* ast);
-        void AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, AST* ast);
+        void AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast);
+        void AnalyzeBufferTypeDenoter(BufferTypeDenoter& bufferTypeDen, const AST* ast);
+        void AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, const AST* ast);
+        void AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast);
 
         TypeDenoterPtr GetTypeDenoterFrom(TypedAST* ast);
 
