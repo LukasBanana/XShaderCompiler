@@ -1502,7 +1502,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
             if (bufferType == BufferType::Undefined)
             {
                 if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
-                    bufferType = bufferDecl->declStmntRef->bufferType;
+                    bufferType = bufferDecl->GetBufferType();
                 else
                     Error("missing reference to declaration in buffer type denoter", ast);
             }
@@ -1931,7 +1931,7 @@ void GLSLGenerator::WriteBufferDecl(BufferDecl* ast)
 {
     if (ast->flags(AST::isReachable))
     {
-        if (IsTextureBufferType(ast->declStmntRef->bufferType))
+        if (IsTextureBufferType(ast->GetBufferType()))
             WriteBufferDeclTexture(ast);
         else
             WriteBufferDeclStorageBuffer(ast);
@@ -1942,7 +1942,7 @@ void GLSLGenerator::WriteBufferDecl(BufferDecl* ast)
 void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* ast)
 {
     /* Determine GLSL sampler type (or VKSL texture type) */
-    auto bufferTypeKeyword = BufferTypeToKeyword(ast->declStmntRef->bufferType, ast->declStmntRef);
+    auto bufferTypeKeyword = BufferTypeToKeyword(ast->GetBufferType(), ast->declStmntRef);
     if (!bufferTypeKeyword)
         return;
 
@@ -1958,7 +1958,7 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* ast)
         Write("uniform ");
 
         /* Write sampler type and identifier */
-        if (auto genericTypeDen = ast->declStmntRef->genericTypeDenoter)
+        if (auto genericTypeDen = ast->declStmntRef->typeDenoter->genericTypeDenoter)
         {
             if (auto baseTypeDen = genericTypeDen->As<BaseTypeDenoter>())
             {
@@ -1977,7 +1977,7 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* ast)
 void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* ast)
 {
     /* Determine GLSL buffer type */
-    auto bufferTypeKeyword = BufferTypeToKeyword(ast->declStmntRef->bufferType, ast->declStmntRef);
+    auto bufferTypeKeyword = BufferTypeToKeyword(ast->GetBufferType(), ast->declStmntRef);
     if (!bufferTypeKeyword)
         return;
 
@@ -2002,7 +2002,7 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* ast)
         BeginLn();
         {
             /* Write optional memory type qualifier */
-            if (!IsRWBufferType(ast->declStmntRef->bufferType))
+            if (!IsRWBufferType(ast->GetBufferType()))
                 Write("readonly ");
 
             /* Write generic type denoterand identifier */

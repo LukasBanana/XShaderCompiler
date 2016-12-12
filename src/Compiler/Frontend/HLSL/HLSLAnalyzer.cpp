@@ -268,7 +268,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
     /* Analyze generic type */
-    AnalyzeTypeDenoter(ast->genericTypeDenoter, ast);
+    AnalyzeTypeDenoter(ast->typeDenoter->genericTypeDenoter, ast);
 
     /* Analyze buffer declarations */
     Visit(ast->bufferDecls);

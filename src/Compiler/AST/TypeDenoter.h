@@ -61,6 +61,9 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Returns a simple string representation of this type denoter (e.g. "scalar type").
     virtual std::string ToString() const = 0;
 
+    // Returns a copy of this type denoter.
+    //virtual TypeDenoterPtr Copy() const = 0;
+
     virtual bool IsScalar() const;
     virtual bool IsVector() const;
     virtual bool IsMatrix() const;
@@ -165,8 +168,11 @@ struct BufferTypeDenoter : public TypeDenoter
 
     TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
 
-    BufferType  bufferType      = BufferType::Undefined;
-    BufferDecl* bufferDeclRef   = nullptr;
+    BufferType      bufferType          = BufferType::Undefined;
+    TypeDenoterPtr  genericTypeDenoter;                             // May be null
+    int             genericSize         = 1;                        // Either number of samples in [1, 128) (for multi-sampled textures), or patch size. By default 1.
+
+    BufferDecl*     bufferDeclRef       = nullptr;
 };
 
 // Sampler type denoter.
@@ -182,6 +188,7 @@ struct SamplerTypeDenoter : public TypeDenoter
     std::string ToString() const override;
 
     SamplerType     samplerType     = SamplerType::Undefined;
+
     SamplerDecl*    samplerDeclRef  = nullptr;
 };
 
@@ -202,6 +209,7 @@ struct StructTypeDenoter : public TypeDenoter
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
 
     std::string     ident;
+
     StructDecl*     structDeclRef = nullptr;    // Reference to the StructDecl AST node
 };
 
@@ -227,6 +235,7 @@ struct AliasTypeDenoter : public TypeDenoter
     unsigned int NumDimensions() const override;
 
     std::string     ident;                      // Type identifier
+
     AliasDecl*      aliasDeclRef    = nullptr;  // Reference to the AliasDecl AST node.
 };
 

@@ -859,39 +859,7 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
 {
     auto ast = Make<BufferDeclStmnt>();
 
-    auto bufferTypeTkn = Tkn();
-
-    ast->bufferType = ParseBufferType();
-
-    /* Parse optional template arguments */
-    if (Is(Tokens::BinaryOp, "<"))
-    {
-        PushParsingState({ true });
-        {
-            AcceptIt();
-
-            /* Parse generic type denoter ('<' TYPE '>') */
-            ast->genericTypeDenoter = ParseTypeDenoter(false);
-
-            /* Parse optional generic size */
-            if (Is(Tokens::Comma))
-            {
-                AcceptIt();
-                ast->genericSize = ParseAndEvaluateConstExprInt();
-
-                if (IsTextureMSBufferType(ast->bufferType))
-                {
-                    if (ast->genericSize < 1 || ast->genericSize >= 128)
-                        Warning("number of samples in texture must be in the range [1, 128), but got " + std::to_string(ast->genericSize), bufferTypeTkn.get());
-                }
-                else
-                    Error("number of samples are only allowed for multi-sampled texture objects");
-            }
-
-            Accept(Tokens::BinaryOp, ">");
-        }
-        PopParsingState();
-    }
+    ast->typeDenoter = ParseBufferTypeDenoter();
 
     UpdateSourceArea(ast);
 
@@ -2016,9 +1984,48 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseMatrixTypeDenoter()
 
 BufferTypeDenoterPtr HLSLParser::ParseBufferTypeDenoter()
 {
+    auto typeDenoter = std::make_shared<BufferTypeDenoter>();
+
     /* Make buffer type denoter */
-    auto bufferType = ParseBufferType();
-    return std::make_shared<BufferTypeDenoter>(bufferType);
+    auto bufferTypeTkn = Tkn();
+    typeDenoter->bufferType = ParseBufferType();
+
+    /* Parse optional template arguments */
+    if (Is(Tokens::BinaryOp, "<"))
+    {
+        PushParsingState({ true });
+        {
+            AcceptIt();
+
+            /* Parse generic type denoter ('<' TYPE '>') */
+            typeDenoter->genericTypeDenoter = ParseTypeDenoter(false);
+
+            /* Parse optional generic size */
+            if (Is(Tokens::Comma))
+            {
+                AcceptIt();
+                typeDenoter->genericSize = ParseAndEvaluateConstExprInt();
+
+                if (IsTextureMSBufferType(typeDenoter->bufferType))
+                {
+                    if (typeDenoter->genericSize < 1 || typeDenoter->genericSize >= 128)
+                    {
+                        Warning(
+                            "number of samples in texture must be in the range [1, 128), but got " +
+                            std::to_string(typeDenoter->genericSize), bufferTypeTkn.get()
+                        );
+                    }
+                }
+                else
+                    Error("illegal usage of generic size in texture, buffer, stream, or patch object");
+            }
+
+            Accept(Tokens::BinaryOp, ">");
+        }
+        PopParsingState();
+    }
+
+    return typeDenoter;
 }
 
 SamplerTypeDenoterPtr HLSLParser::ParseSamplerTypeDenoter()

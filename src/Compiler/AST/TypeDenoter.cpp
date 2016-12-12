@@ -282,7 +282,12 @@ BufferTypeDenoter::BufferTypeDenoter(BufferDecl* bufferDeclRef) :
     bufferDeclRef{ bufferDeclRef }
 {
     if (bufferDeclRef && bufferDeclRef->declStmntRef)
-        bufferType = bufferDeclRef->declStmntRef->bufferType;
+    {
+        auto sourceTypeDen = bufferDeclRef->declStmntRef->typeDenoter.get();
+        bufferType          = sourceTypeDen->bufferType;
+        genericTypeDenoter  = sourceTypeDen->genericTypeDenoter;
+        genericSize         = sourceTypeDen->genericSize;
+    }
 }
 
 TypeDenoter::Types BufferTypeDenoter::Type() const

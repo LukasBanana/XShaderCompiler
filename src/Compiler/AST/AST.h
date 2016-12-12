@@ -381,6 +381,9 @@ struct BufferDecl : public Decl
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    // Returns the buffer type of the parent's node type denoter.
+    BufferType GetBufferType() const;
+
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
     std::vector<RegisterPtr>        slotRegisters;
@@ -540,9 +543,12 @@ struct BufferDeclStmnt : public Stmnt
 
     TypeDenoterPtr GetGenericTypeDenoter() const;
 
+    #if 0
     BufferType                  bufferType          = BufferType::Undefined;
     TypeDenoterPtr              genericTypeDenoter;                             // May be null
     int                         genericSize         = 1;                        // Either number of samples in [1, 128) (for multi-sampled textures), or patch size. By default 1.
+    #endif
+    BufferTypeDenoterPtr        typeDenoter;
     std::vector<BufferDeclPtr>  bufferDecls;
 };
 
@@ -551,7 +557,9 @@ struct SamplerDeclStmnt : public Stmnt
 {
     AST_INTERFACE(SamplerDeclStmnt);
 
-    //SamplerType                 samplerType = SamplerType::Undefined;   // Sampler type (e.g. 'samplerCUBE' or 'SamplerState').
+    #if 0
+    SamplerType                 samplerType = SamplerType::Undefined;   // Sampler type (e.g. 'samplerCUBE' or 'SamplerState').
+    #endif
     SamplerTypeDenoterPtr       typeDenoter;
     std::vector<SamplerDeclPtr> samplerDecls;
 };

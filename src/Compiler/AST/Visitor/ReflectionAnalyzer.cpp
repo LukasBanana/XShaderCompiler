@@ -153,7 +153,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
                     bindingSlot.location    = GetBindingPoint(bufferDecl->slotRegisters);
                 };
 
-                if (IsTextureBufferType(ast->bufferType))
+                if (IsTextureBufferType(ast->typeDenoter->bufferType))
                     data_->textures.push_back(bindingSlot);
                 else
                     data_->storageBuffers.push_back(bindingSlot);

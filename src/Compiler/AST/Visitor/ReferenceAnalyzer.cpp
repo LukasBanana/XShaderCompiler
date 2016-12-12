@@ -143,9 +143,9 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
     if (Reachable(ast))
     {
-        if (ast->genericTypeDenoter)
+        if (auto genericTypeDenoter = ast->typeDenoter->genericTypeDenoter.get())
         {
-            if (auto structTypeDen = ast->genericTypeDenoter->As<StructTypeDenoter>())
+            if (auto structTypeDen = genericTypeDenoter->As<StructTypeDenoter>())
             {
                 /* Mark structure declaration of generic type denoter as referenced */
                 Visit(structTypeDen->structDeclRef);

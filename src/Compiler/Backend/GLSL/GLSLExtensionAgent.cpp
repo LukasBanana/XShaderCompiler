@@ -194,7 +194,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     }
 
     /* Check for multi-sampled textures */
-    if (IsTextureMSBufferType(ast->bufferType))
+    if (IsTextureMSBufferType(ast->typeDenoter->bufferType))
         AcquireExtension(GLSLEXT_GL_ARB_texture_multisample);
 
     /* Default visitor */
