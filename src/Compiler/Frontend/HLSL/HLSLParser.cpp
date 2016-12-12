@@ -877,12 +877,12 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
             if (Is(Tokens::Comma))
             {
                 AcceptIt();
-                ast->numSamples = ParseAndEvaluateConstExprInt();
+                ast->genericSize = ParseAndEvaluateConstExprInt();
 
                 if (IsTextureMSBufferType(ast->bufferType))
                 {
-                    if (ast->numSamples < 1 || ast->numSamples >= 128)
-                        Warning("number of samples in texture must be in the range [1, 128), but got " + std::to_string(ast->numSamples), bufferTypeTkn.get());
+                    if (ast->genericSize < 1 || ast->genericSize >= 128)
+                        Warning("number of samples in texture must be in the range [1, 128), but got " + std::to_string(ast->genericSize), bufferTypeTkn.get());
                 }
                 else
                     Error("number of samples are only allowed for multi-sampled texture objects");

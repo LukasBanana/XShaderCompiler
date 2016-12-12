@@ -539,7 +539,7 @@ struct BufferDeclStmnt : public Stmnt
 
     BufferType                  bufferType          = BufferType::Undefined;
     TypeDenoterPtr              genericTypeDenoter;                             // May be null
-    int                         numSamples          = 1;                        // Number of samples in the range [1, 128] (for multi-sampled textures). By default 1.
+    int                         genericSize         = 1;                        // Either number of samples in [1, 128) (for multi-sampled textures), or patch size. By default 1.
     std::vector<BufferDeclPtr>  bufferDecls;
 };
 
