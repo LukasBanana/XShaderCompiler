@@ -1984,9 +1984,10 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseMatrixTypeDenoter()
 
 BufferTypeDenoterPtr HLSLParser::ParseBufferTypeDenoter()
 {
+    /* Make buffer type denoter */
     auto typeDenoter = std::make_shared<BufferTypeDenoter>();
 
-    /* Make buffer type denoter */
+    /* Parse buffer type */
     auto bufferTypeTkn = Tkn();
     typeDenoter->bufferType = ParseBufferType();
 
@@ -2004,20 +2005,32 @@ BufferTypeDenoterPtr HLSLParser::ParseBufferTypeDenoter()
             if (Is(Tokens::Comma))
             {
                 AcceptIt();
-                typeDenoter->genericSize = ParseAndEvaluateConstExprInt();
+                auto genSize = ParseAndEvaluateConstExprInt();
 
                 if (IsTextureMSBufferType(typeDenoter->bufferType))
                 {
-                    if (typeDenoter->genericSize < 1 || typeDenoter->genericSize >= 128)
+                    if (genSize < 1 || genSize >= 128)
                     {
                         Warning(
                             "number of samples in texture must be in the range [1, 128), but got " +
-                            std::to_string(typeDenoter->genericSize), bufferTypeTkn.get()
+                            std::to_string(genSize), bufferTypeTkn.get()
+                        );
+                    }
+                }
+                else if (IsPatchBufferType(typeDenoter->bufferType))
+                {
+                    if (genSize < 1 || genSize > 64)
+                    {
+                        Warning(
+                            "number of control points in patch must be in the range [1, 64], but got " +
+                            std::to_string(genSize), bufferTypeTkn.get()
                         );
                     }
                 }
                 else
-                    Error("illegal usage of generic size in texture, buffer, stream, or patch object");
+                    Error("illegal usage of generic size in texture, buffer, or stream object");
+
+                typeDenoter->genericSize = genSize;
             }
 
             Accept(Tokens::BinaryOp, ">");

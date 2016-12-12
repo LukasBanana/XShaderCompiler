@@ -102,7 +102,7 @@ TypeDenoterPtr TypeDenoter::Get(const VarIdent* varIdent)
 TypeDenoterPtr TypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
 {
     if (numArrayIndices > 0)
-        RuntimeErr("array access without array type denoter");
+        RuntimeErr("array access without array type denoter", varIdent);
     else
         return Get(varIdent);
 }
@@ -305,7 +305,7 @@ TypeDenoterPtr BufferTypeDenoter::GetFromArray(std::size_t numArrayIndices, cons
     if (numArrayIndices > 0)
     {
         /* Get generic type denoter */
-        if (bufferDeclRef->declStmntRef)
+        if (bufferDeclRef && bufferDeclRef->declStmntRef)
         {
             auto genericTypeDen = bufferDeclRef->declStmntRef->GetGenericTypeDenoter();
             return genericTypeDen->GetFromArray(numArrayIndices - 1, varIdent);

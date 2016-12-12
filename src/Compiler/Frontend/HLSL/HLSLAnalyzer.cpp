@@ -668,15 +668,22 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
     if (varIdent->next)
     {
         /* Has variable a struct type denoter? */
-        auto varTypeDen = varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size());
-        if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
+        try
         {
-            /* Fetch struct member variable declaration from next identifier */
-            if (auto memberVarDecl = FetchFromStructDecl(*structTypeDen, varIdent->next->ident, varIdent))
+            auto varTypeDen = varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size());
+            if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
             {
-                /* Analyzer next identifier with fetched symbol */
-                AnalyzeVarIdentWithSymbol(varIdent->next.get(), memberVarDecl);
+                /* Fetch struct member variable declaration from next identifier */
+                if (auto memberVarDecl = FetchFromStructDecl(*structTypeDen, varIdent->next->ident, varIdent))
+                {
+                    /* Analyzer next identifier with fetched symbol */
+                    AnalyzeVarIdentWithSymbol(varIdent->next.get(), memberVarDecl);
+                }
             }
+        }
+        catch (const std::exception& e)
+        {
+            Error(e.what(), varIdent);
         }
     }
 
