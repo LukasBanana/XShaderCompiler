@@ -14,6 +14,7 @@
 #include "ShellState.h"
 #include "CommandLine.h"
 #include <ostream>
+#include <stack>
 
 
 namespace Xsc
@@ -38,6 +39,9 @@ class Shell
 
         void WaitForUser();
 
+        void PushState();
+        void PopState();
+
         std::ostream& output;
 
     private:
@@ -46,9 +50,10 @@ class Shell
 
         void Compile(const std::string& filename);
 
-        ShellState      state_;
+        ShellState              state_;
+        std::stack<ShellState>  stateStack_;
 
-        static Shell*   instance_;
+        static Shell*           instance_;
 
 };
 

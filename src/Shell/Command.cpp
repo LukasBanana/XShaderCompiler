@@ -513,7 +513,10 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
     auto RunPresetting = [&](Presetting& preset)
     {
         std::cout << "run presetting: \"" << preset.title << "\"" << std::endl;
-        Shell::Instance()->ExecuteCommandLine(preset.cmdLine);
+        auto shell = Shell::Instance();
+        shell->PushState();
+        shell->ExecuteCommandLine(preset.cmdLine);
+        shell->PopState();
     };
 
     std::vector<Presetting> presettings;

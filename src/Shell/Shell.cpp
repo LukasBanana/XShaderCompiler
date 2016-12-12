@@ -136,6 +136,17 @@ void Shell::WaitForUser()
     #endif
 }
 
+void Shell::PushState()
+{
+    stateStack_.push(state_);
+}
+
+void Shell::PopState()
+{
+    state_ = stateStack_.top();
+    stateStack_.pop();
+}
+
 
 /*
  * ======= Private: =======
