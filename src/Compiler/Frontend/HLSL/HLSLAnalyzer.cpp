@@ -507,12 +507,9 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
         Visit(ast->assignExpr);
         ValidateTypeCastFrom(ast->assignExpr.get(), ast->varIdent.get());
 
-        /* Is the variable declared as constant? */
-        if (auto varDecl = ast->varIdent->LastVarIdent()->symbolRef->As<VarDecl>())
-        {
-            if (varDecl->declStmntRef->IsConst())
-                Error("illegal assignment to l-value that is declared as constant", ast);
-        }
+        /* Is the variable a valid l-value? */
+        if (auto constIdent = ast->varIdent->FirstConstVarIdent())
+            Error("illegal assignment to l-value '" + constIdent->ident + "' that is declared as constant", ast);
     }
 }
 

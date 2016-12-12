@@ -318,6 +318,9 @@ struct VarIdent : public TypedAST
     // Returns the last identifier AST node.
     VarIdent* LastVarIdent();
 
+    // Returns the first identifier AST node that has a variable which is declared as constant.
+    VarIdent* FirstConstVarIdent();
+
     // Returns a type denoter for the symbol reference of the last variable identifier.
     TypeDenoterPtr DeriveTypeDenoter() override;
 

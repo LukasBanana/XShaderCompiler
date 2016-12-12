@@ -81,6 +81,21 @@ VarIdent* VarIdent::LastVarIdent()
     return (next ? next->LastVarIdent() : this);
 }
 
+VarIdent* VarIdent::FirstConstVarIdent()
+{
+    if (symbolRef)
+    {
+        if (auto varDecl = symbolRef->As<VarDecl>())
+        {
+            if (varDecl->declStmntRef->IsConst())
+                return this;
+            if (next)
+                return next->FirstConstVarIdent();
+        }
+    }
+    return nullptr;
+}
+
 TypeDenoterPtr VarIdent::DeriveTypeDenoter()
 {
     return GetExplicitTypeDenoter(true);
