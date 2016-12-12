@@ -906,7 +906,7 @@ SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt()
 {
     auto ast = Make<SamplerDeclStmnt>();
 
-    ast->samplerType    = ParseSamplerType();
+    ast->typeDenoter    = ParseSamplerTypeDenoter();
     ast->samplerDecls   = ParseSamplerDeclList(ast.get());
 
     Semi();

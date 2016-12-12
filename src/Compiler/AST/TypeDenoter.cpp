@@ -322,8 +322,8 @@ SamplerTypeDenoter::SamplerTypeDenoter(const SamplerType samplerType) :
 SamplerTypeDenoter::SamplerTypeDenoter(SamplerDecl* samplerDeclRef) :
     samplerDeclRef  { samplerDeclRef }
 {
-    if (samplerDeclRef && samplerDeclRef->declStmntRef)
-        samplerType = samplerDeclRef->declStmntRef->samplerType;
+    if (samplerDeclRef)
+        samplerType = samplerDeclRef->GetSamplerType();
 }
 
 TypeDenoter::Types SamplerTypeDenoter::Type() const

@@ -315,6 +315,11 @@ TypeDenoterPtr SamplerDecl::DeriveTypeDenoter()
     return std::make_shared<SamplerTypeDenoter>(this)->AsArray(arrayDims);
 }
 
+SamplerType SamplerDecl::GetSamplerType() const
+{
+    return (declStmntRef ? declStmntRef->typeDenoter->samplerType : SamplerType::Undefined);
+}
+
 
 /* ----- StructDecl ----- */
 
@@ -548,14 +553,6 @@ std::string UniformBufferDecl::ToString() const
 TypeDenoterPtr BufferDeclStmnt::GetGenericTypeDenoter() const
 {
     return (genericTypeDenoter ? genericTypeDenoter : std::make_shared<BaseTypeDenoter>(DataType::Float4));
-}
-
-
-/* ----- SamplerDeclStmnt ----- */
-
-bool SamplerDeclStmnt::IsSamplerState() const
-{
-    return IsSamplerStateType(samplerType);
 }
 
 

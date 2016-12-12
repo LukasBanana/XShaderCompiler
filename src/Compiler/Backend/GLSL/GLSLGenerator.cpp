@@ -1518,7 +1518,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
             if (samplerType == SamplerType::Undefined)
             {
                 if (auto samplerDecl = samplerTypeDen->samplerDeclRef)
-                    samplerType = samplerDecl->declStmntRef->samplerType;
+                    samplerType = samplerDecl->GetSamplerType();
                 else
                     Error("missing reference to declaration in sampler type denoter", ast);
             }

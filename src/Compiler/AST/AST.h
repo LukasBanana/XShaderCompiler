@@ -395,6 +395,9 @@ struct SamplerDecl : public Decl
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    // Returns the sampler type of the parent's node type denoter.
+    SamplerType GetSamplerType() const;
+
     std::string                     ident;
     std::vector<ExprPtr>            arrayDims;
     std::vector<RegisterPtr>        slotRegisters;
@@ -548,10 +551,8 @@ struct SamplerDeclStmnt : public Stmnt
 {
     AST_INTERFACE(SamplerDeclStmnt);
 
-    // Returns true if this sampler is a sampler state object (see 'IsSamplerStateType' function).
-    bool IsSamplerState() const;
-
-    SamplerType                 samplerType = SamplerType::Undefined;   // Sampler type (e.g. 'samplerCUBE' or 'SamplerState').
+    //SamplerType                 samplerType = SamplerType::Undefined;   // Sampler type (e.g. 'samplerCUBE' or 'SamplerState').
+    SamplerTypeDenoterPtr       typeDenoter;
     std::vector<SamplerDeclPtr> samplerDecls;
 };
 
