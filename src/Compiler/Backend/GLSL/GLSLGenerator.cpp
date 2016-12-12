@@ -1235,7 +1235,7 @@ void GLSLGenerator::WriteGlobalOutputSemantics()
     if (paramsWritten)
         Blank();
 
-    //TODO: this is incomplete
+    //TODO: move to ReflectionAnazyler
     #if 0
     /* Track output statistics */
     if (stats_)
@@ -1317,7 +1317,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
         else
             Error("failed to map output semantic to GLSL keyword", entryPoint);
     }
-    else if (shaderTarget_ != ShaderTarget::ComputeShader)
+    else if (shaderTarget_ == ShaderTarget::FragmentShader)
         Error("missing output semantic", ast);
 }
 

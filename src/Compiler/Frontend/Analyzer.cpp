@@ -343,6 +343,7 @@ void Analyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast)
 
 void Analyzer::AnalyzeBufferTypeDenoter(BufferTypeDenoter& bufferTypeDen, const AST* ast)
 {
+    /* Analyze generic type denoter (sub type denoter) */
     AnalyzeTypeDenoter(bufferTypeDen.genericTypeDenoter, ast);
 }
 

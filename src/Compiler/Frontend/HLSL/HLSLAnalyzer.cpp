@@ -888,7 +888,7 @@ void HLSLAnalyzer::AnalyzeAttribute(Attribute* ast)
 
 void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic)
 {
-    if (semantic == Semantic::Position && shaderTarget_ == ShaderTarget::VertexShader)
+    if (semantic == Semantic::Position && shaderTarget_ != ShaderTarget::FragmentShader)
     {
         /* Convert shader semantic to VertexPosition */
         semantic = IndexedSemantic(Semantic::VertexPosition, semantic.Index());
