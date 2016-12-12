@@ -2006,7 +2006,7 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* ast)
                 Write("readonly ");
 
             /* Write generic type denoterand identifier */
-            auto genericTypeDen = ast->declStmntRef->GetGenericTypeDenoter();
+            auto genericTypeDen = ast->declStmntRef->typeDenoter->GetGenericTypeDenoter();
             WriteTypeDenoter(*genericTypeDen, IsESSL(), ast);
             Write(" " + ast->ident + "[];");
         }

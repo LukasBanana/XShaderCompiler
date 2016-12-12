@@ -303,17 +303,13 @@ std::string BufferTypeDenoter::ToString() const
 TypeDenoterPtr BufferTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
 {
     if (numArrayIndices > 0)
-    {
-        /* Get generic type denoter */
-        if (bufferDeclRef && bufferDeclRef->declStmntRef)
-        {
-            auto genericTypeDen = bufferDeclRef->declStmntRef->GetGenericTypeDenoter();
-            return genericTypeDen->GetFromArray(numArrayIndices - 1, varIdent);
-        }
-        else
-            RuntimeErr("missing reference to buffer declaration", varIdent);
-    }
+        return GetGenericTypeDenoter()->GetFromArray(numArrayIndices - 1, varIdent);
     return Get(varIdent);
+}
+
+TypeDenoterPtr BufferTypeDenoter::GetGenericTypeDenoter() const
+{
+    return (genericTypeDenoter ? genericTypeDenoter : std::make_shared<BaseTypeDenoter>(DataType::Float4));
 }
 
 
@@ -434,7 +430,7 @@ TypeDenoterPtr AliasTypeDenoter::Get(const VarIdent* varIdent)
 {
     if (aliasDeclRef)
         return aliasDeclRef->GetTypeDenoter()->Get(varIdent);
-    RuntimeErr("missing reference to alias declaration", varIdent);
+    RuntimeErr("missing reference to alias declaration '" + ident + "'", varIdent);
 }
 
 TypeDenoterPtr AliasTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)

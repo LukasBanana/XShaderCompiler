@@ -553,17 +553,6 @@ std::string UniformBufferDecl::ToString() const
 }
 
 
-/* ----- BufferDeclStmnt ----- */
-
-TypeDenoterPtr BufferDeclStmnt::GetGenericTypeDenoter() const
-{
-    if (auto genTypeDenoter = typeDenoter->genericTypeDenoter)
-        return genTypeDenoter;
-    else
-        return std::make_shared<BaseTypeDenoter>(DataType::Float4);
-}
-
-
 /* ----- VarDelcStmnt ----- */
 
 std::string VarDeclStmnt::ToString(bool useVarNames) const

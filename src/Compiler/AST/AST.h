@@ -541,8 +541,6 @@ struct BufferDeclStmnt : public Stmnt
 {
     AST_INTERFACE(BufferDeclStmnt);
 
-    TypeDenoterPtr GetGenericTypeDenoter() const;
-
     #if 0
     BufferType                  bufferType          = BufferType::Undefined;
     TypeDenoterPtr              genericTypeDenoter;                             // May be null

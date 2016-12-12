@@ -27,10 +27,11 @@ struct VOut
 	float2 texCoord : TEXCOORD;
 };
 
-/*Texture2D<float4> GetTex0()
+//BUG: parser reads a texture declaration!
+Texture2D<float4> GetTex0()
 {
 	return tex0;
-}*/
+}
 
 float3 SampleNormal(Texture2D tex, float2 tc)
 {
@@ -42,8 +43,8 @@ float4 PS(VOut inp) : SV_Target
 {
 	float4 c = (float4)0;
 	
-//	float3 normal = SampleNormal(GetTex0(), inp.texCoord);
-	float3 normal = SampleNormal(tex0, inp.texCoord);
+	float3 normal = SampleNormal(GetTex0(), inp.texCoord);
+//	float3 normal = SampleNormal(tex0, inp.texCoord);
 	
 	c += tex0.Sample(smpl0, inp.texCoord);
 	c += tex1.Sample(smpl0, inp.texCoord);

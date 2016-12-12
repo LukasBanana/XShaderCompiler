@@ -168,6 +168,9 @@ struct BufferTypeDenoter : public TypeDenoter
 
     TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
 
+    // Always returns a valid generic type denoter. By default BaseTypeDenoter(Float4).
+    TypeDenoterPtr GetGenericTypeDenoter() const;
+
     BufferType      bufferType          = BufferType::Undefined;
     TypeDenoterPtr  genericTypeDenoter;                             // May be null
     int             genericSize         = 1;                        // Either number of samples in [1, 128) (for multi-sampled textures), or patch size. By default 1.

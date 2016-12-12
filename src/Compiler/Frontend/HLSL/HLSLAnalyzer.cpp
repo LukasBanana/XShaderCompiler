@@ -723,7 +723,7 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
     if (auto structTypeDen = returnTypeDen->As<StructTypeDenoter>())
     {
         /* Analyze entry point output structure */
-        AnalyzeEntryPointStructInOut(funcDecl, structTypeDen->structDeclRef, "", false);
+        AnalyzeEntryPointParameterInOutStruct(funcDecl, structTypeDen->structDeclRef, "", false);
     }
 
     /* Check if fragment shader use a slightly different screen space (VPOS vs. SV_Position) */
@@ -762,7 +762,12 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
     if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
     {
         /* Analyze entry point structure */
-        AnalyzeEntryPointStructInOut(funcDecl, structTypeDen->structDeclRef, varDecl->ident, input);
+        AnalyzeEntryPointParameterInOutStruct(funcDecl, structTypeDen->structDeclRef, varDecl->ident, input);
+    }
+    else if (auto bufferTypeDen = varTypeDen->As<BufferTypeDenoter>())
+    {
+        /* Analyze entry point buffer */
+        AnalyzeEntryPointParameterInOutBuffer(funcDecl, varDecl, bufferTypeDen, input);
     }
     else
     {
@@ -789,7 +794,7 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
     }
 }
 
-void HLSLAnalyzer::AnalyzeEntryPointStructInOut(FunctionDecl* funcDecl, StructDecl* structDecl, const std::string& structAliasName, bool input)
+void HLSLAnalyzer::AnalyzeEntryPointParameterInOutStruct(FunctionDecl* funcDecl, StructDecl* structDecl, const std::string& structAliasName, bool input)
 {
     /* Set structure alias name */
     structDecl->aliasName = structAliasName;
@@ -806,6 +811,20 @@ void HLSLAnalyzer::AnalyzeEntryPointStructInOut(FunctionDecl* funcDecl, StructDe
         structDecl->flags << StructDecl::isShaderInput;
     else
         structDecl->flags << StructDecl::isShaderOutput;
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointParameterInOutBuffer(FunctionDecl* funcDecl, VarDecl* varDecl, BufferTypeDenoter* bufferTypeDen, bool input)
+{
+    if (IsPatchBufferType(bufferTypeDen->bufferType))
+    {
+        //TODO...
+    }
+    else if (IsStreamBufferType(bufferTypeDen->bufferType))
+    {
+        //TODO...
+    }
+    else
+        Error("illegal buffer type for entry pointer " + std::string(input ? "input" : "output"), varDecl);
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& attribs)
