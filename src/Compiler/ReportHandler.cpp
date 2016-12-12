@@ -53,6 +53,15 @@ void ReportHandler::SubmitReport(
     bool breakWithExpection, const Report::Types type, const std::string& typeName,
     const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
 {
+    /* Check if error location has already been reported */
+    if (!breakWithExpection)
+    {
+        if (errorPositions_.find(area.Pos()) == errorPositions_.end())
+            errorPositions_.insert(area.Pos());
+        else
+            return;
+    }
+
     /* Initialize output message */
     auto outputMsg = typeName;
     

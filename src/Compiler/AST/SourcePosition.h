@@ -58,6 +58,9 @@ class SourcePosition
         // Reste the source position to (0:0).
         void Reset();
 
+        // Makes a strict-weak-order comparison between the two source positions.
+        bool operator < (const SourcePosition& rhs) const;
+
         // Returns the row of the source position, beginning with 1.
         inline unsigned int Row() const
         {

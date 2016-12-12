@@ -67,6 +67,21 @@ void SourcePosition::Reset()
     row_ = column_ = 0;
 }
 
+bool SourcePosition::operator < (const SourcePosition& rhs) const
+{
+    if (origin_.get() < rhs.origin_.get())
+        return true;
+    else if (origin_.get() > rhs.origin_.get())
+        return false;
+
+    if (row_ < rhs.row_)
+        return true;
+    if (row_ > rhs.row_)
+        return false;
+
+    return (column_ < rhs.column_);
+}
+
 
 } // /namespace Xsc
 

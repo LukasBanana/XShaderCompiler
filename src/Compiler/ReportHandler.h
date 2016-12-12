@@ -15,6 +15,7 @@
 #include <Xsc/Log.h>
 #include <string>
 #include <stack>
+#include <set>
 
 
 namespace Xsc
@@ -104,12 +105,14 @@ class ReportHandler
             const SourceArea& area
         );
 
-        std::string             reportTypeName_;
+        std::string                 reportTypeName_;
 
-        Log*                    log_                = nullptr;
-        bool                    hasErrors_          = false;
+        Log*                        log_                = nullptr;
+        bool                        hasErrors_          = false;
 
-        std::stack<std::string> contextDescStack_;
+        std::stack<std::string>     contextDescStack_;
+
+        std::set<SourcePosition>    errorPositions_;
 
 };
 
