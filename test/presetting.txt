@@ -27,7 +27,7 @@
 -T frag -E PS -o output/* IntrinsicClip.hlsl
 
 [TextureObjects PS]
---reflect -W -T frag -E PS -o output/* TextureObjects.hlsl
+--reflect --show-ast -W -T frag -E PS -o output/* TextureObjects.hlsl
 
 [BufferObjects CS]
 -W -EB -T comp -E CS -o output/* BufferObjects.hlsl

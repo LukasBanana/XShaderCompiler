@@ -192,6 +192,7 @@ static KeywordMapType GenerateKeywordMap()
         { "RWTexture2D",             T::Buffer          },
         { "RWTexture2DArray",        T::Buffer          },
         { "RWTexture3D",             T::Buffer          },
+
         { "Buffer",                  T::Buffer          },
         { "StructuredBuffer",        T::Buffer          },
         { "ByteAddressBuffer",       T::Buffer          },
@@ -200,6 +201,13 @@ static KeywordMapType GenerateKeywordMap()
         { "RWStructuredBuffer",      T::Buffer          },
         { "AppendStructuredBuffer",  T::Buffer          },
         { "ConsumeStructuredBuffer", T::Buffer          },
+
+        { "InputPatch",              T::Buffer          },
+        { "OutputPatch",             T::Buffer          },
+
+        { "PointStream",             T::Buffer          },
+        { "LineStream",              T::Buffer          },
+        { "TriangleStream",          T::Buffer          },
 
         { "cbuffer",                 T::UniformBuffer   },
         { "tbuffer",                 T::UniformBuffer   },
@@ -529,6 +537,13 @@ static std::map<std::string, BufferType> GenerateBufferTypeMap()
         { "Texture2DMSArray",        T::Texture2DMSArray        },
 
         { "texture",                 T::GenericTexture          },
+
+        { "InputPatch",              T::InputPatch              },
+        { "OutputPatch",             T::OutputPatch             },
+
+        { "PointStream",             T::PointStream             },
+        { "LineStream",              T::LineStream              },
+        { "TriangleStream",          T::TriangleStream          },
     };
 }
 

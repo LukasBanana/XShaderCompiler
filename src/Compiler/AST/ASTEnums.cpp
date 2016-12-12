@@ -728,6 +728,16 @@ bool IsTextureMSBufferType(const BufferType t)
     return (t >= BufferType::Texture2DMS && t <= BufferType::Texture2DMSArray);
 }
 
+bool IsPatchBufferType(const BufferType t)
+{
+    return (t >= BufferType::InputPatch && t <= BufferType::OutputPatch);
+}
+
+bool IsStreamBufferType(const BufferType t)
+{
+    return (t >= BufferType::PointStream && t <= BufferType::TriangleStream);
+}
+
 
 /* ----- SamplerType Enum ----- */
 

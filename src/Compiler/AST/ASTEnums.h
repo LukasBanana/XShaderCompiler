@@ -345,6 +345,7 @@ enum class BufferType
 {
     Undefined,
 
+    /* --- Storage Buffers --- */
     Buffer,
     StructuredBuffer,
     ByteAddressBuffer,
@@ -355,6 +356,7 @@ enum class BufferType
     AppendStructuredBuffer,
     ConsumeStructuredBuffer,
 
+    /* --- Textures --- */
     RWTexture1D,
     RWTexture1DArray,
     RWTexture2D,
@@ -372,6 +374,15 @@ enum class BufferType
     Texture2DMSArray,
 
     GenericTexture,             // Texture of unspecified dimension (used in DX9 effect files: "texture" keyword).
+
+    /* --- Patches --- */
+    InputPatch,
+    OutputPatch,
+
+    /* --- Streams --- */
+    PointStream,
+    LineStream,
+    TriangleStream,
 };
 
 // Returns true if the specified buffer type is a storage buffer type (e.g. BufferType::Buffer, or BufferType::RWStructuredBuffer).
@@ -385,6 +396,12 @@ bool IsTextureBufferType(const BufferType t);
 
 // Returns true if the specified buffer type is a multi-sampled texture buffer (i.e. Texture2DMS or Texture2DMSArray).
 bool IsTextureMSBufferType(const BufferType t);
+
+// Returns true if the specified buffer type is an input or output patch.
+bool IsPatchBufferType(const BufferType t);
+
+// Returns true if the specified buffer type is either a point-, line-, or triangle stream.
+bool IsStreamBufferType(const BufferType t);
 
 
 /* ----- SamplerType Enum ----- */

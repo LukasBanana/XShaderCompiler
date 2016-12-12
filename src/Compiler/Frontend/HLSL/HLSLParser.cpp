@@ -873,7 +873,7 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
             /* Parse generic type denoter ('<' TYPE '>') */
             ast->genericTypeDenoter = ParseTypeDenoter(false);
 
-            /* Parse optional number of samples */
+            /* Parse optional generic size */
             if (Is(Tokens::Comma))
             {
                 AcceptIt();
