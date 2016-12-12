@@ -57,6 +57,9 @@ class HLSLParser : public Parser
         // Returns true if the current token is part of an arithmetic unary expression, i.e. either '-' or '+'.
         bool IsArithmeticUnaryExpr() const;
 
+        // Returns true if the current token is a variable declaration modifier.
+        bool IsVarDeclModifier() const;
+
         // Converts the specified expression to a type name expression if it is a left-hand-side of a cast expression.
         TypeNameExprPtr MakeToTypeNameIfLhsOfCastExpr(const ExprPtr& expr);
 
@@ -204,6 +207,8 @@ class HLSLParser : public Parser
         std::string                     ParseSamplerStateTextureIdent();
 
         void                            ParseStmntWithOptionalComment(std::vector<StmntPtr>& stmnts, const std::function<StmntPtr()>& parseFunction);
+
+        bool                            ParseVarDeclStmntModifiers(VarDeclStmnt* ast);
 
         /* === Members === */
 

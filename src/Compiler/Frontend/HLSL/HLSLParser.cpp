@@ -96,6 +96,11 @@ bool HLSLParser::IsArithmeticUnaryExpr() const
     return (Is(Tokens::BinaryOp, "-") || Is(Tokens::BinaryOp, "+"));
 }
 
+bool HLSLParser::IsVarDeclModifier() const
+{
+    return (Is(Tokens::InputModifier) || Is(Tokens::InterpModifier) || Is(Tokens::TypeModifier) || Is(Tokens::StorageClass));
+}
+
 TypeNameExprPtr HLSLParser::MakeToTypeNameIfLhsOfCastExpr(const ExprPtr& expr)
 {
     /* Type name expression (float, int3 etc.) is always allowed for a cast expression */
@@ -316,41 +321,8 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     auto ast = Make<VarDeclStmnt>();
 
     /* Parse parameter as single variable declaration */
-    while (Is(Tokens::InputModifier) || Is(Tokens::InterpModifier) || Is(Tokens::TypeModifier) || Is(Tokens::StorageClass))
-    {
-        if (Is(Tokens::InputModifier))
-        {
-            /* Parse input modifier */
-            auto modifier = AcceptIt()->Spell();
-
-            if (modifier == "in")
-                ast->isInput = true;
-            else if (modifier == "out")
-                ast->isOutput = true;
-            else if (modifier == "inout")
-            {
-                ast->isInput = true;
-                ast->isOutput = true;
-            }
-            else if (modifier == "uniform")
-                ast->isUniform = true;
-        }
-        else if (Is(Tokens::InterpModifier))
-        {
-            /* Parse interpolation modifier */
-            ast->interpModifiers.insert(ParseInterpModifier());
-        }
-        else if (Is(Tokens::TypeModifier))
-        {
-            /* Parse type modifier (const, row_major, column_major) */
-            ast->typeModifiers.insert(ParseTypeModifier());
-        }
-        else if (Is(Tokens::StorageClass))
-        {
-            /* Parse storage class */
-            ast->storageClasses.insert(ParseStorageClass());
-        }
-    }
+    while (IsVarDeclModifier())
+        ParseVarDeclStmntModifiers(ast.get());
 
     ast->varType = ParseVarType();
     ast->varDecls.push_back(ParseVarDecl(ast.get()));
@@ -751,6 +723,7 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
             return ParseUniformBufferDecl();
         case Tokens::Typedef:
             return ParseAliasDeclStmnt();
+        case Tokens::InputModifier:
         case Tokens::InterpModifier:
         case Tokens::TypeModifier:
         case Tokens::StorageClass:
@@ -947,20 +920,10 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 
     while (true)
     {
-        if (Is(Tokens::StorageClass))
+        if (IsVarDeclModifier())
         {
-            /* Parse storage class */
-            ast->storageClasses.insert(ParseStorageClass());
-        }
-        else if (Is(Tokens::InterpModifier))
-        {
-            /* Parse interpolation modifier */
-            ast->interpModifiers.insert(ParseInterpModifier());
-        }
-        else if (Is(Tokens::TypeModifier))
-        {
-            /* Parse type modifier */
-            ast->typeModifiers.insert(ParseTypeModifier());
+            /* Parse variable declaration modifiers */
+            ParseVarDeclStmntModifiers(ast.get());
         }
         else if (Is(Tokens::Ident) || IsDataType())
         {
@@ -1239,7 +1202,10 @@ ExprStmntPtr HLSLParser::ParseExprStmnt(const VarIdentPtr& varIdent)
     {
         /* Make var-ident to a var-access expression */
         auto expr = Make<VarAccessExpr>();
-        expr->varIdent = varIdent;
+        {
+            expr->varIdent  = varIdent;
+            expr->area      = varIdent->area;
+        }
         ast->expr = ParseExpr(true, expr);
     }
     else
@@ -1300,13 +1266,16 @@ StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
         auto ast = Make<ExprStmnt>();
         {
             auto expr = Make<VarAccessExpr>();
+            {
+                expr->area          = varIdent->area;
+                expr->varIdent      = varIdent;
+                expr->assignOp      = StringToAssignOp(AcceptIt()->Spell());
+                UpdateSourceAreaOffset(expr);
+                expr->assignExpr    = ParseExpr(true);
+            }
+            ast->expr = UpdateSourceArea(expr);
 
-            expr->varIdent      = varIdent;
-            expr->assignOp      = StringToAssignOp(AcceptIt()->Spell());
-            expr->assignExpr    = ParseExpr(true);
             Semi();
-
-            ast->expr = expr;
         }
         return ast;
     }
@@ -1564,6 +1533,7 @@ VarAccessExprPtr HLSLParser::ParseVarAccessExpr(const VarIdentPtr& varIdent)
     /* Parse optional assign expression */
     if (Is(Tokens::AssignOp))
     {
+        UpdateSourceAreaOffset(ast);
         ast->assignOp   = StringToAssignOp(AcceptIt()->Spell());
         ast->assignExpr = ParseExpr();
     }
@@ -2349,6 +2319,46 @@ void HLSLParser::ParseStmntWithOptionalComment(std::vector<StmntPtr>& stmnts, co
     stmnts.push_back(ast);
 
     ast->comment = std::move(comment);
+}
+
+bool HLSLParser::ParseVarDeclStmntModifiers(VarDeclStmnt* ast)
+{
+    if (Is(Tokens::InputModifier))
+    {
+        /* Parse input modifier */
+        auto modifier = AcceptIt()->Spell();
+
+        if (modifier == "in")
+            ast->isInput = true;
+        else if (modifier == "out")
+            ast->isOutput = true;
+        else if (modifier == "inout")
+        {
+            ast->isInput = true;
+            ast->isOutput = true;
+        }
+        else if (modifier == "uniform")
+            ast->isUniform = true;
+    }
+    else if (Is(Tokens::InterpModifier))
+    {
+        /* Parse interpolation modifier */
+        ast->interpModifiers.insert(ParseInterpModifier());
+    }
+    else if (Is(Tokens::TypeModifier))
+    {
+        /* Parse type modifier (const, row_major, column_major) */
+        ast->typeModifiers.insert(ParseTypeModifier());
+    }
+    else if (Is(Tokens::StorageClass))
+    {
+        /* Parse storage class */
+        ast->storageClasses.insert(ParseStorageClass());
+    }
+    else
+        return false;
+
+    return true;
 }
 
 
