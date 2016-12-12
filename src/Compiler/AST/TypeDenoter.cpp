@@ -387,7 +387,7 @@ TypeDenoterPtr StructTypeDenoter::Get(const VarIdent* varIdent)
             if (varDecl)
                 return varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size(), varIdent->next.get());
             else
-                RuntimeErr("identifier '" + ident + "' not found in '" + structDeclRef->SignatureToString() + "'", varIdent);
+                RuntimeErr("identifier '" + ident + "' is not declared in '" + structDeclRef->SignatureToString() + "'", varIdent);
         }
         else
             RuntimeErr("missing reference to structure declaration", varIdent);

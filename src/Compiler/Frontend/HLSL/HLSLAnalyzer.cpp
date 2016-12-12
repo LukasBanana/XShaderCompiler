@@ -617,8 +617,7 @@ void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
     {
         try
         {
-            auto symbol = Fetch(varIdent->ident);
-            if (symbol)
+            if (auto symbol = Fetch(varIdent->ident))
                 AnalyzeVarIdentWithSymbol(varIdent, symbol);
             else
                 ErrorUndeclaredIdent(varIdent->ident, varIdent);
