@@ -497,6 +497,28 @@ bool IsShaderModel3AttributeType(const AttributeType t);
 bool IsShaderModel5AttributeType(const AttributeType t);
 
 
+/* ----- AttributeValue Enum ----- */
+
+// Value enumeration of required attributes (e.g. domain types for tess.-control shader).
+enum class AttributeValue
+{
+    DomainTri,
+    DomainQuad,
+    DomainIsoline,
+
+    PartitioningPoint,
+    PartitioningLine,
+    PartitioningTriangleCW,
+    PartitioningTriangleCCW,
+};
+
+// Returns true if the specified attribute value belongs to the 'domain' attribute.
+bool IsAttributeValueDomain(const AttributeValue t);
+
+// Returns true if the specified attribute value belongs to the 'partitioning' attribute.
+bool IsAttributeValuePartitioning(const AttributeValue t);
+
+
 /* ----- Intrinsic Enum ----- */
 
 /*

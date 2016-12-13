@@ -804,6 +804,19 @@ bool IsShaderModel5AttributeType(const AttributeType t)
 }
 
 
+/* ----- AttributeValue Enum ----- */
+
+bool IsAttributeValueDomain(const AttributeValue t)
+{
+    return (t >= AttributeValue::DomainTri && t <= AttributeValue::DomainIsoline);
+}
+
+bool IsAttributeValuePartitioning(const AttributeValue t)
+{
+    return (t >= AttributeValue::PartitioningPoint && t <= AttributeValue::PartitioningTriangleCCW);
+}
+
+
 /* ----- Intrinsic Enum ----- */
 
 bool IsGlobalIntrinsic(const Intrinsic t)
