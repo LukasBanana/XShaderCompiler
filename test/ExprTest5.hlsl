@@ -2,7 +2,8 @@
 // Expression Test 5
 // 13/12/2016
 
-float f1()
+[foobar]
+inline float f1()
 {
 	return 0;
 }

@@ -157,7 +157,8 @@ struct AST
 // Statement AST base class.
 struct Stmnt : public AST
 {
-    std::string comment; // Optional commentary for this statement.
+    std::string                 comment; // Optional commentary for this statement.
+    std::vector<AttributePtr>   attribs; // Attribute list. May be empty.
 };
 
 // AST base class with type denoter.
@@ -508,7 +509,6 @@ struct FunctionDecl : public Stmnt
     // Returns true if the specified type denoter matches the parameter.
     bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const;
 
-    std::vector<AttributePtr>       attribs;                                // Attribute list
     VarTypePtr                      returnType;
     std::string                     ident;
     std::vector<VarDeclStmntPtr>    parameters;
@@ -627,7 +627,6 @@ struct ForLoopStmnt : public Stmnt
 {
     AST_INTERFACE(ForLoopStmnt);
 
-    std::vector<AttributePtr>   attribs; // Attribute list
     StmntPtr                    initSmnt;
     ExprPtr                     condition;
     ExprPtr                     iteration;
@@ -639,7 +638,6 @@ struct WhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(WhileLoopStmnt);
 
-    std::vector<AttributePtr>   attribs; // Attribute list
     ExprPtr                     condition;
     StmntPtr                    bodyStmnt;
 };
@@ -649,7 +647,6 @@ struct DoWhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(DoWhileLoopStmnt);
 
-    std::vector<AttributePtr>   attribs; // Attribute list
     StmntPtr                    bodyStmnt;
     ExprPtr                     condition;
 };
@@ -659,7 +656,6 @@ struct IfStmnt : public Stmnt
 {
     AST_INTERFACE(IfStmnt);
 
-    std::vector<AttributePtr>   attribs;    // Attribute list
     ExprPtr                     condition;
     StmntPtr                    bodyStmnt;
     ElseStmntPtr                elseStmnt;  // May be null
@@ -678,7 +674,6 @@ struct SwitchStmnt : public Stmnt
 {
     AST_INTERFACE(SwitchStmnt);
 
-    std::vector<AttributePtr>   attribs; // Attribute list
     ExprPtr                     selector;
     std::vector<SwitchCasePtr>  cases;
 };

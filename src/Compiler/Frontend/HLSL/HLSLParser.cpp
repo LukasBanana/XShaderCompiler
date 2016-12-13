@@ -783,12 +783,14 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl(const VarTypePtr& returnType, cons
     }
     else
     {
+        /* Parse function attributes */
+        ast->attribs = ParseAttributeList();
+
         /* Parse (and ignore) optional 'inline' keyword */
         if (Is(Tokens::Inline))
             AcceptIt();
 
-        /* Parse function attributes and return type */
-        ast->attribs    = ParseAttributeList();
+        /* Parse return type */
         ast->returnType = ParseVarType(true);
     }
 
