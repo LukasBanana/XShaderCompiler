@@ -126,6 +126,8 @@ class HLSLParser : public Parser
         AliasDeclStmntPtr               ParseAliasDeclStmnt();
 
         StmntPtr                        ParseStmnt();
+        StmntPtr                        ParseStmntWithStructDecl();
+        StmntPtr                        ParseStmntWithVarIdent();
         NullStmntPtr                    ParseNullStmnt();
         CodeBlockStmntPtr               ParseCodeBlockStmnt();
         ForLoopStmntPtr                 ParseForLoopStmnt(const std::vector<AttributePtr>& attribs);
@@ -137,8 +139,6 @@ class HLSLParser : public Parser
         CtrlTransferStmntPtr            ParseCtrlTransferStmnt();
         ReturnStmntPtr                  ParseReturnStmnt();
         ExprStmntPtr                    ParseExprStmnt(const VarIdentPtr& varIdent = nullptr);
-        StmntPtr                        ParseStructDeclOrVarDeclStmnt();
-        StmntPtr                        ParseVarDeclOrAssignOrFunctionCallStmnt();
 
         ExprPtr                         ParseExpr(bool allowComma = false, const ExprPtr& initExpr = nullptr);
         ExprPtr                         ParsePrimaryExpr() override;

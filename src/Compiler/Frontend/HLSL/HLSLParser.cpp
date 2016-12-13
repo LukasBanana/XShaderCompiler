@@ -960,7 +960,7 @@ StmntPtr HLSLParser::ParseStmnt()
         case Tokens::Return:
             return ParseReturnStmnt();
         case Tokens::Ident:
-            return ParseVarDeclOrAssignOrFunctionCallStmnt();
+            return ParseStmntWithVarIdent();
         case Tokens::For:
             return ParseForLoopStmnt(attribs);
         case Tokens::While:
@@ -974,7 +974,7 @@ StmntPtr HLSLParser::ParseStmnt()
         case Tokens::CtrlTransfer:
             return ParseCtrlTransferStmnt();
         case Tokens::Struct:
-            return ParseStructDeclOrVarDeclStmnt();
+            return ParseStmntWithStructDecl();
         case Tokens::Typedef:
             return ParseAliasDeclStmnt();
         case Tokens::Sampler:
@@ -993,6 +993,101 @@ StmntPtr HLSLParser::ParseStmnt()
 
     /* Parse statement of arbitrary expression */
     return ParseExprStmnt();
+}
+
+StmntPtr HLSLParser::ParseStmntWithStructDecl()
+{
+    /* Parse structure declaration statement */
+    auto ast = Make<StructDeclStmnt>();
+    
+    ast->structDecl = ParseStructDecl();
+
+    if (!Is(Tokens::Semicolon))
+    {
+        /* Parse variable declaration with previous structure type */
+        auto varDeclStmnt = Make<VarDeclStmnt>();
+
+        varDeclStmnt->varType = MakeVarType(ast->structDecl);
+        
+        /* Parse variable declarations */
+        varDeclStmnt->varDecls = ParseVarDeclList(varDeclStmnt.get());
+        Semi();
+
+        return UpdateSourceArea(varDeclStmnt);
+    }
+    else
+        Semi();
+
+    return ast;
+}
+
+StmntPtr HLSLParser::ParseStmntWithVarIdent()
+{
+    /*
+    Parse variable identifier first [ ident ( '.' ident )* ],
+    then check if only a single identifier is required
+    */
+    auto varIdent = ParseVarIdent();
+    
+    if (Is(Tokens::LBracket))
+    {
+        /* Parse function call as expression statement */
+        auto ast = Make<ExprStmnt>();
+        
+        ast->expr = ParseExpr(true, ParseFunctionCallExpr(varIdent));
+        Semi();
+
+        return ast;
+    }
+    else if (Is(Tokens::AssignOp))
+    {
+        /* Parse assignment statement */
+        auto ast = Make<ExprStmnt>();
+        {
+            auto expr = Make<VarAccessExpr>();
+            {
+                expr->area          = varIdent->area;
+                expr->varIdent      = varIdent;
+                expr->assignOp      = StringToAssignOp(AcceptIt()->Spell());
+                UpdateSourceAreaOffset(expr);
+                expr->assignExpr    = ParseExpr(true);
+            }
+            ast->expr = UpdateSourceArea(expr);
+
+            Semi();
+        }
+        return ast;
+    }
+    else if (Is(Tokens::UnaryOp, "++") || Is(Tokens::UnaryOp, "--"))// || Is(Tokens::BinaryOp) || Is(Tokens::TernaryOp))
+    {
+        /* Parse expression statement */
+        return ParseExprStmnt(varIdent);
+    }
+
+    if (!varIdent->next)
+    {
+        /* Convert variable identifier to alias type denoter */
+        auto ast = Make<VarDeclStmnt>();
+
+        ast->varType = Make<VarType>();
+        ast->varType->typeDenoter = ParseAliasTypeDenoter(varIdent->ident);
+        UpdateSourceArea(ast->varType, varIdent.get());
+
+        if (!varIdent->arrayIndices.empty())
+        {
+            /* Convert variable identifier to array of alias type denoter */
+            ast->varType->typeDenoter = MakeShared<ArrayTypeDenoter>(ast->varType->typeDenoter, varIdent->arrayIndices);
+        }
+
+        ast->varDecls = ParseVarDeclList(ast.get());
+        Semi();
+
+        return UpdateSourceArea(ast, varIdent.get());
+    }
+
+    ErrorUnexpected("expected variable declaration, assignment, or function call statement");
+    
+    return nullptr;
 }
 
 NullStmntPtr HLSLParser::ParseNullStmnt()
@@ -1164,7 +1259,7 @@ ExprStmntPtr HLSLParser::ParseExprStmnt(const VarIdentPtr& varIdent)
 
     //TODO:
     //  do not create a VarAccessExpr for 'varIdent'
-    //  -> instead pass it to the "ParseExpr" function,
+    //  -> instead pass 'varIdent' to the "ParseExpr" function,
     //     which must then propagate it down to the value expression parser
     if (varIdent)
     {
@@ -1182,101 +1277,6 @@ ExprStmntPtr HLSLParser::ParseExprStmnt(const VarIdentPtr& varIdent)
     Semi();
 
     return ast;
-}
-
-StmntPtr HLSLParser::ParseStructDeclOrVarDeclStmnt()
-{
-    /* Parse structure declaration statement */
-    auto ast = Make<StructDeclStmnt>();
-    
-    ast->structDecl = ParseStructDecl();
-
-    if (!Is(Tokens::Semicolon))
-    {
-        /* Parse variable declaration with previous structure type */
-        auto varDeclStmnt = Make<VarDeclStmnt>();
-
-        varDeclStmnt->varType = MakeVarType(ast->structDecl);
-        
-        /* Parse variable declarations */
-        varDeclStmnt->varDecls = ParseVarDeclList(varDeclStmnt.get());
-        Semi();
-
-        return UpdateSourceArea(varDeclStmnt);
-    }
-    else
-        Semi();
-
-    return ast;
-}
-
-StmntPtr HLSLParser::ParseVarDeclOrAssignOrFunctionCallStmnt()
-{
-    /*
-    Parse variable identifier first [ ident ( '.' ident )* ],
-    then check if only a single identifier is required
-    */
-    auto varIdent = ParseVarIdent();
-    
-    if (Is(Tokens::LBracket))
-    {
-        /* Parse function call as expression statement */
-        auto ast = Make<ExprStmnt>();
-        
-        ast->expr = ParseExpr(true, ParseFunctionCallExpr(varIdent));
-        Semi();
-
-        return ast;
-    }
-    else if (Is(Tokens::AssignOp))
-    {
-        /* Parse assignment statement */
-        auto ast = Make<ExprStmnt>();
-        {
-            auto expr = Make<VarAccessExpr>();
-            {
-                expr->area          = varIdent->area;
-                expr->varIdent      = varIdent;
-                expr->assignOp      = StringToAssignOp(AcceptIt()->Spell());
-                UpdateSourceAreaOffset(expr);
-                expr->assignExpr    = ParseExpr(true);
-            }
-            ast->expr = UpdateSourceArea(expr);
-
-            Semi();
-        }
-        return ast;
-    }
-    else if (Is(Tokens::UnaryOp, "++") || Is(Tokens::UnaryOp, "--"))// || Is(Tokens::BinaryOp) || Is(Tokens::TernaryOp))
-    {
-        /* Parse expression statement */
-        return ParseExprStmnt(varIdent);
-    }
-
-    if (!varIdent->next)
-    {
-        /* Convert variable identifier to alias type denoter */
-        auto ast = Make<VarDeclStmnt>();
-
-        ast->varType = Make<VarType>();
-        ast->varType->typeDenoter = ParseAliasTypeDenoter(varIdent->ident);
-        UpdateSourceArea(ast->varType, varIdent.get());
-
-        if (!varIdent->arrayIndices.empty())
-        {
-            /* Convert variable identifier to array of alias type denoter */
-            ast->varType->typeDenoter = MakeShared<ArrayTypeDenoter>(ast->varType->typeDenoter, varIdent->arrayIndices);
-        }
-
-        ast->varDecls = ParseVarDeclList(ast.get());
-        Semi();
-
-        return UpdateSourceArea(ast, varIdent.get());
-    }
-
-    ErrorUnexpected("expected variable declaration, assignment, or function call statement");
-    
-    return nullptr;
 }
 
 /* --- Expressions --- */
