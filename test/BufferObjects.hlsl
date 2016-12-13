@@ -23,7 +23,7 @@ struct Data
 StructuredBuffer<Data> lightSources : register(t1);
 
 
-//[numthreads(1, 1, 5*9+(int)1.0)]
+[numthreads(1, 1, 5*9+(int)1.0)]
 void CS(uint3 groupID : SV_GroupID)
 {
 //	float4 color = tex0.Sample(smpl0[0], (float2)0);

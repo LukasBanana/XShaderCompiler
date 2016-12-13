@@ -75,6 +75,8 @@ void ReportHandler::SubmitReport(
         outputMsg += area.Pos().ToString();
         outputMsg += ") ";
     }
+    else
+        outputMsg += " ";
 
     /* Add error code */
     if (!errorCode.Get().empty())

@@ -1069,30 +1069,18 @@ void GLSLGenerator::WriteAttributeNumThreads(Attribute* ast)
     {
         BeginLn();
         {
-            Write("layout(local_size_x = ");
-            WriteAttributeNumThreadsArgument(ast->arguments[0].get());
+            const auto& numThreads = GetProgram()->layoutCompute.numThreads;
 
-            Write(", local_size_y = ");
-            WriteAttributeNumThreadsArgument(ast->arguments[1].get());
-
-            Write(", local_size_z = ");
-            WriteAttributeNumThreadsArgument(ast->arguments[2].get());
-
+            Write("layout(");
+            Write("local_size_x = " + std::to_string(numThreads[0]) + ", ");
+            Write("local_size_y = " + std::to_string(numThreads[1]) + ", ");
+            Write("local_size_z = " + std::to_string(numThreads[2]));
             Write(") in;");
         }
         EndLn();
     }
     else
         ErrorInvalidNumArgs("\"numthreads\" attribute", ast);
-}
-
-void GLSLGenerator::WriteAttributeNumThreadsArgument(Expr* ast)
-{
-    auto value = EvaluateConstExprInt(*ast);
-    if (value > 0)
-        Write(std::to_string(value));
-    else
-        Error("number of threads must be greater than zero", ast);
 }
 
 void GLSLGenerator::WriteAttributeEarlyDepthStencil()

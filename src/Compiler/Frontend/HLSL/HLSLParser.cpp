@@ -1430,7 +1430,7 @@ UnaryExprPtr HLSLParser::ParseUnaryExpr()
     ast->op     = StringToUnaryOp(AcceptIt()->Spell());
     ast->expr   = ParsePrimaryExpr();
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 /* ----- Parsing ----- */
