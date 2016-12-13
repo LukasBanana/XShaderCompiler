@@ -598,7 +598,7 @@ BufferDeclPtr HLSLParser::ParseBufferDecl(BufferDeclStmnt* declStmntRef)
     return ast;
 }
 
-SamplerDeclPtr HLSLParser::ParseSamplerDecl(SamplerDeclStmnt* declStmntRef)
+SamplerDeclPtr HLSLParser::ParseSamplerDecl(SamplerDeclStmnt* declStmntRef, const TokenPtr& identTkn)
 {
     auto ast = Make<SamplerDecl>();
 
@@ -606,7 +606,7 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl(SamplerDeclStmnt* declStmntRef)
     ast->declStmntRef = declStmntRef;
 
     /* Parse identifier, optional array dimension list, and optional slot registers */
-    ast->ident          = ParseIdent();
+    ast->ident          = ParseIdent(identTkn);
     ast->arrayDims      = ParseArrayDimensionList();
     ast->slotRegisters  = ParseRegisterList();
 
@@ -716,7 +716,7 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
     {
         case Tokens::Sampler:
         case Tokens::SamplerState:
-            return ParseSamplerDeclStmnt();
+            return ParseGlobalStmntWithSamplerTypeDenoter();
         case Tokens::Buffer:
             return ParseBufferDeclStmnt();
         case Tokens::UniformBuffer:
@@ -733,11 +733,11 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
         case Tokens::Inline:
             return ParseFunctionDecl();
         default:
-            return ParseStructDeclOrVarDeclOrFunctionDeclStmnt();
+            return ParseGlobalStmntWithVarType();
     }
 }
 
-StmntPtr HLSLParser::ParseStructDeclOrVarDeclOrFunctionDeclStmnt()
+StmntPtr HLSLParser::ParseGlobalStmntWithVarType()
 {
     auto varType = ParseVarType();
 
@@ -769,6 +769,26 @@ StmntPtr HLSLParser::ParseStructDeclOrVarDeclOrFunctionDeclStmnt()
         Semi();
 
         return UpdateSourceArea(ast, ast->varType.get());
+    }
+}
+
+StmntPtr HLSLParser::ParseGlobalStmntWithSamplerTypeDenoter()
+{
+    /* Parse sampler type denoter and identifier */
+    auto typeDenoter = ParseSamplerTypeDenoter();
+    auto identTkn = Accept(Tokens::Ident);
+
+    if (Is(Tokens::LBracket))
+    {
+        /* Make variable type from type denoter, then parse function declaration */
+        auto varType = Make<VarType>();
+        varType->typeDenoter = typeDenoter;
+        return ParseFunctionDecl(varType, identTkn);
+    }
+    else
+    {
+        /* Parse sampler declaration statement with sampler type denoter */
+        return ParseSamplerDeclStmnt(typeDenoter, identTkn);
     }
 }
 
@@ -872,12 +892,12 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt()
     return ast;
 }
 
-SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt()
+SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt(const SamplerTypeDenoterPtr& typeDenoter, const TokenPtr& identTkn)
 {
     auto ast = Make<SamplerDeclStmnt>();
 
-    ast->typeDenoter    = ParseSamplerTypeDenoter();
-    ast->samplerDecls   = ParseSamplerDeclList(ast.get());
+    ast->typeDenoter    = (typeDenoter ? typeDenoter : ParseSamplerTypeDenoter());
+    ast->samplerDecls   = ParseSamplerDeclList(ast.get(), identTkn);
 
     Semi();
 
@@ -1736,11 +1756,11 @@ std::vector<BufferDeclPtr> HLSLParser::ParseBufferDeclList(BufferDeclStmnt* decl
     return bufferDecls;
 }
 
-std::vector<SamplerDeclPtr> HLSLParser::ParseSamplerDeclList(SamplerDeclStmnt* declStmntRef)
+std::vector<SamplerDeclPtr> HLSLParser::ParseSamplerDeclList(SamplerDeclStmnt* declStmntRef, const TokenPtr& identTkn)
 {
     std::vector<SamplerDeclPtr> samplerDecls;
 
-    samplerDecls.push_back(ParseSamplerDecl(declStmntRef));
+    samplerDecls.push_back(ParseSamplerDecl(declStmntRef, identTkn));
 
     while (Is(Tokens::Comma))
     {
@@ -1778,9 +1798,9 @@ std::vector<AliasDeclPtr> HLSLParser::ParseAliasDeclList(TypeDenoterPtr typeDeno
 
 /* --- Others --- */
 
-std::string HLSLParser::ParseIdent()
+std::string HLSLParser::ParseIdent(const TokenPtr& identTkn)
 {
-    return Accept(Tokens::Ident)->Spell();
+    return (identTkn ? identTkn->Spell() : Accept(Tokens::Ident)->Spell());
 }
 
 std::string HLSLParser::ParseRegister_OBSOLETE(bool parseColon)
