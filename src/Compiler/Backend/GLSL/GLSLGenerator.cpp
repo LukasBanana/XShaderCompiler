@@ -1234,19 +1234,6 @@ void GLSLGenerator::WriteGlobalOutputSemantics()
 
     if (paramsWritten)
         Blank();
-
-    //TODO: move to ReflectionAnazyler
-    #if 0
-    /* Track output statistics */
-    if (stats_)
-    {
-        for (auto varDecl : GetProgram()->entryPointRef->outputSemantics.varDeclRefsSV)
-        {
-            if (varDecl->semantic.IsValid())
-                stats_->fragmentTargets.push_back({ varDecl->ident, varDecl->semantic.Index() });
-        }
-    }
-    #endif
 }
 
 void GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName)

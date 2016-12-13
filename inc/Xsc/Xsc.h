@@ -94,7 +94,10 @@ struct Formatting
     //! If true, wrapper functions for special intrinsics are written in a compact formatting (i.e. all in one line). By default true.
     bool        compactWrappers     = true;
 
-    //! If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default false.
+    /**
+    \brief If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default false.
+    \note Currently only supported for wrapper functions.
+    */
     bool        newLineOpenScope    = true;
 };
 
