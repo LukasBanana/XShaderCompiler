@@ -22,5 +22,11 @@ float4 VS() : SV_Position
 	[branch]
 	b ? 1 : 2;
 	
+	if (false) [loop];
+	
+	[foo(a)]
+	{
+	}
+	
 	return (float4)1;
 }

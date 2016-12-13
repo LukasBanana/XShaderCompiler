@@ -121,22 +121,26 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
+    Visit(ast->attribs);
     Visit(ast->members);
     Visit(ast->slotRegisters);
 }
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
+    Visit(ast->attribs);
     Visit(ast->bufferDecls);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
+    Visit(ast->attribs);
     Visit(ast->samplerDecls);
 }
 
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 {
+    Visit(ast->attribs);
     Visit(ast->structDecl);
 }
 
@@ -148,6 +152,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
 {
+    Visit(ast->attribs);
     Visit(ast->structDecl);
     Visit(ast->aliasDecls);
 }
@@ -156,11 +161,12 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(NullStmnt)
 {
-    // do nothing
+    Visit(ast->attribs);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
 {
+    Visit(ast->attribs);
     Visit(ast->codeBlock);
 }
 
@@ -197,6 +203,7 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
 
 IMPLEMENT_VISIT_PROC(ElseStmnt)
 {
+    Visit(ast->attribs);
     Visit(ast->bodyStmnt);
 }
 
@@ -209,17 +216,19 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
 
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
+    Visit(ast->attribs);
     Visit(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
+    Visit(ast->attribs);
     Visit(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 {
-    // do nothing
+    Visit(ast->attribs);
 }
 
 /* --- Expressions --- */

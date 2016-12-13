@@ -346,7 +346,7 @@ SwitchCasePtr HLSLParser::ParseSwitchCase()
 
     /* Parse switch case statement list */
     while (!Is(Tokens::Case) && !Is(Tokens::Default) && !Is(Tokens::RCurly))
-        ParseStmntWithOptionalComment(ast->stmnts, std::bind(&HLSLParser::ParseStmnt, this));
+        ParseStmntWithOptionalComment(ast->stmnts, std::bind(&HLSLParser::ParseStmnt, this, true));
 
     return ast;
 }
@@ -945,13 +945,25 @@ AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
 
 /* --- Statements --- */
 
-StmntPtr HLSLParser::ParseStmnt()
+StmntPtr HLSLParser::ParseStmnt(bool allowAttributes)
 {
-    /* Parse optional attributes */
-    std::vector<AttributePtr> attribs;
-    if (Is(Tokens::LParen))
-        attribs = ParseAttributeList();
+    if (allowAttributes)
+    {
+        /* Parse attributes and statement */
+        auto attribs = ParseAttributeList();
+        auto ast = ParseStmntPrimary();
+        ast->attribs = std::move(attribs);
+        return ast;
+    }
+    else
+    {
+        /* Parse statement only */
+        return ParseStmntPrimary();
+    }
+}
 
+StmntPtr HLSLParser::ParseStmntPrimary()
+{
     /* Determine which kind of statement the next one is */
     switch (TknType())
     {
@@ -964,15 +976,15 @@ StmntPtr HLSLParser::ParseStmnt()
         case Tokens::Ident:
             return ParseStmntWithVarIdent();
         case Tokens::For:
-            return ParseForLoopStmnt(attribs);
+            return ParseForLoopStmnt();
         case Tokens::While:
-            return ParseWhileLoopStmnt(attribs);
+            return ParseWhileLoopStmnt();
         case Tokens::Do:
-            return ParseDoWhileLoopStmnt(attribs);
+            return ParseDoWhileLoopStmnt();
         case Tokens::If:
-            return ParseIfStmnt(attribs);
+            return ParseIfStmnt();
         case Tokens::Switch:
-            return ParseSwitchStmnt(attribs);
+            return ParseSwitchStmnt();
         case Tokens::CtrlTransfer:
             return ParseCtrlTransferStmnt();
         case Tokens::Struct:
@@ -1099,16 +1111,15 @@ CodeBlockStmntPtr HLSLParser::ParseCodeBlockStmnt()
     return ast;
 }
 
-ForLoopStmntPtr HLSLParser::ParseForLoopStmnt(const std::vector<AttributePtr>& attribs)
+ForLoopStmntPtr HLSLParser::ParseForLoopStmnt()
 {
     auto ast = Make<ForLoopStmnt>();
-    ast->attribs = attribs;
 
-    /* Parse loop init */
+    /* Parse loop initializer statement (attributes not allowed here) */
     Accept(Tokens::For);
     Accept(Tokens::LBracket);
 
-    ast->initSmnt = ParseStmnt();
+    ast->initSmnt = ParseStmnt(false);
 
     /* Parse loop condExpr */
     if (!Is(Tokens::Semicolon))
@@ -1126,10 +1137,9 @@ ForLoopStmntPtr HLSLParser::ParseForLoopStmnt(const std::vector<AttributePtr>& a
     return ast;
 }
 
-WhileLoopStmntPtr HLSLParser::ParseWhileLoopStmnt(const std::vector<AttributePtr>& attribs)
+WhileLoopStmntPtr HLSLParser::ParseWhileLoopStmnt()
 {
     auto ast = Make<WhileLoopStmnt>();
-    ast->attribs = attribs;
 
     /* Parse loop condExpr */
     Accept(Tokens::While);
@@ -1144,10 +1154,9 @@ WhileLoopStmntPtr HLSLParser::ParseWhileLoopStmnt(const std::vector<AttributePtr
     return ast;
 }
 
-DoWhileLoopStmntPtr HLSLParser::ParseDoWhileLoopStmnt(const std::vector<AttributePtr>& attribs)
+DoWhileLoopStmntPtr HLSLParser::ParseDoWhileLoopStmnt()
 {
     auto ast = Make<DoWhileLoopStmnt>();
-    ast->attribs = attribs;
 
     /* Parse loop body */
     Accept(Tokens::Do);
@@ -1165,10 +1174,9 @@ DoWhileLoopStmntPtr HLSLParser::ParseDoWhileLoopStmnt(const std::vector<Attribut
     return ast;
 }
 
-IfStmntPtr HLSLParser::ParseIfStmnt(const std::vector<AttributePtr>& attribs)
+IfStmntPtr HLSLParser::ParseIfStmnt()
 {
     auto ast = Make<IfStmnt>();
-    ast->attribs = attribs;
 
     /* Parse if condExpr */
     Accept(Tokens::If);
@@ -1198,10 +1206,9 @@ ElseStmntPtr HLSLParser::ParseElseStmnt()
     return ast;
 }
 
-SwitchStmntPtr HLSLParser::ParseSwitchStmnt(const std::vector<AttributePtr>& attribs)
+SwitchStmntPtr HLSLParser::ParseSwitchStmnt()
 {
     auto ast = Make<SwitchStmnt>();
-    ast->attribs = attribs;
 
     /* Parse switch selector */
     Accept(Tokens::Switch);
@@ -1617,7 +1624,7 @@ std::vector<StmntPtr> HLSLParser::ParseStmntList()
     std::vector<StmntPtr> stmnts;
 
     while (!Is(Tokens::RCurly))
-        ParseStmntWithOptionalComment(stmnts, std::bind(&HLSLParser::ParseStmnt, this));
+        ParseStmntWithOptionalComment(stmnts, std::bind(&HLSLParser::ParseStmnt, this, true));
 
     return stmnts;
 }
