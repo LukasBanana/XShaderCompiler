@@ -957,6 +957,14 @@ StmntPtr HLSLParser::ParseStmnt(bool allowAttributes)
     }
     else
     {
+        /* Check if illegal attributes */
+        if (Is(Tokens::LParen))
+        {
+            /* Print error, but parse and ignore attributes */
+            Error("attributes not allowed in this context", false, HLSLErr::Unknown, false);
+            ParseAttributeList();
+        }
+
         /* Parse statement only */
         return ParseStmntPrimary();
     }

@@ -27,6 +27,12 @@ struct VOut
 	float2 texCoord : TEXCOORD;
 };
 
+//BUG: parser reads a sampler declaration!
+SamplerState GetSmpl0()
+{
+	return smpl0;
+}
+
 //BUG: parser reads a texture declaration!
 Texture2D<float4> GetTex0()
 {
@@ -47,7 +53,7 @@ float4 PS(VOut inp) : SV_Target
 //	float3 normal = SampleNormal(tex0, inp.texCoord);
 	
 	c += tex0.Sample(smpl0, inp.texCoord);
-	c += tex1.Sample(smpl0, inp.texCoord);
+	c += tex1.Sample(smpl0, inp.texCoord); // error: "Sample" not supported for non-floating-point texture formats
 	c += tex2.Load((int2)inp.texCoord, 0);
 	
 	return c;
