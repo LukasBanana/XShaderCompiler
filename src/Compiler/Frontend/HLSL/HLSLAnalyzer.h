@@ -32,6 +32,7 @@ class HLSLAnalyzer : public Analyzer
     private:
         
         using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
+        using OnValidAttributeValueProc = std::function<bool(const AttributeValue)>;
 
         /* === Functions === */
 
@@ -81,11 +82,15 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeIntrinsicWrapperInlining(FunctionCall* ast);
 
+        /* ----- Variable identifier ----- */
+
         void AnalyzeVarIdent(VarIdent* varIdent);
         void AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol);
         void AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl* varDecl);
         void AnalyzeVarIdentWithSymbolBufferDecl(VarIdent* varIdent, BufferDecl* bufferDecl);
         void AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, SamplerDecl* samplerDecl);
+
+        /* ----- Entry point ----- */
 
         void AnalyzeEntryPoint(FunctionDecl* funcDecl);
         void AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param);
@@ -96,12 +101,33 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesTessControlShader(const std::vector<AttributePtr>& attribs);
 
+        /* ----- Attributes ----- */
+
         bool AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedNumArgs);
         void AnalyzeAttributeNumThreads(Attribute* ast);
         void AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& value);
         void AnalyzeAttributeDomain(Attribute* ast);
-        void AnalyzeAttributeValue(Expr* argExpr, AttributeValue& value, const std::string& expectationDesc, const HLSLErr errorCode = HLSLErr::Unknown);
-        bool AnalyzeAttributeValuePrimary(Expr* argExpr, AttributeValue& value, std::string& literalValue);
+        void AnalyzeAttributeOutputControlPoints(Attribute* ast);
+        void AnalyzeAttributeOutputTopology(Attribute* ast);
+        void AnalyzeAttributePartitioning(Attribute* ast);
+        void AnalyzeAttributePatchConstantFunc(Attribute* ast);
+
+        void AnalyzeAttributeValue(
+            Expr* argExpr,
+            AttributeValue& value,
+            const OnValidAttributeValueProc& expectedValueFunc,
+            const std::string& expectationDesc,
+            const HLSLErr errorCode = HLSLErr::Unknown
+        );
+
+        bool AnalyzeAttributeValuePrimary(
+            Expr* argExpr,
+            AttributeValue& value,
+            const OnValidAttributeValueProc& expectedValueFunc,
+            std::string& literalValue
+        );
+
+        /* ----- Misc ----- */
 
         void AnalyzeSemantic(IndexedSemantic& semantic);
 

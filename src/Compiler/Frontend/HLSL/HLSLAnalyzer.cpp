@@ -627,6 +627,8 @@ void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(FunctionCall* ast)
     }
 }
 
+/* ----- Variable identifier ----- */
+
 void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
 {
     if (varIdent)
@@ -716,6 +718,8 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, Samp
 {
     //TODO...
 }
+
+/* ----- Entry point ----- */
 
 void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
 {
@@ -900,22 +904,22 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributesTessControlShader(const std::vecto
                 break;
 
             case AttributeType::OutputControlPoints:
-                //...
+                AnalyzeAttributeOutputControlPoints(attr.get());
                 foundOutputControlPoints = true;
                 break;
 
             case AttributeType::OutputTopology:
-                //...
+                AnalyzeAttributeOutputTopology(attr.get());
                 foundOutputTopology = true;
                 break;
 
             case AttributeType::Partitioning:
-                //...
+                AnalyzeAttributePartitioning(attr.get());
                 foundPartitioning = true;
                 break;
 
             case AttributeType::PatchConstantFunc:
-                //...
+                AnalyzeAttributePatchConstantFunc(attr.get());
                 foundPatchConstantFunc = true;
                 break;
 
@@ -931,6 +935,8 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributesTessControlShader(const std::vecto
     ErrorIfAttributeNotFound(foundPartitioning, "partitioning(mode)");
     ErrorIfAttributeNotFound(foundPatchConstantFunc, "patchconstantfunc(function)");
 }
+
+/* ----- Attributes ----- */
 
 bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedNumArgs)
 {
@@ -988,16 +994,62 @@ void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast)
         AnalyzeAttributeValue(
             ast->arguments[0].get(),
             program_->layoutTessControl.domainType,
+            IsAttributeValueDomain,
             "expected domain type parameter to be \"tri\", \"quad\", or \"isolane\"",
             HLSLErr::ERR_HSATTRIBUTE_INVALID
         );
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributeValue(Expr* argExpr, AttributeValue& value, const std::string& expectationDesc, const HLSLErr errorCode)
+void HLSLAnalyzer::AnalyzeAttributeOutputControlPoints(Attribute* ast)
+{
+    if (AnalyzeNumArgsAttribute(ast, 1))
+    {
+        //TODO...
+    }
+}
+
+void HLSLAnalyzer::AnalyzeAttributeOutputTopology(Attribute* ast)
+{
+    if (AnalyzeNumArgsAttribute(ast, 1))
+    {
+        AnalyzeAttributeValue(
+            ast->arguments[0].get(),
+            program_->layoutTessControl.topologyType,
+            IsAttributeValueOutputTopology,
+            "expected output topology parameter to be \"point\", \"line\", \"triangle_cw\", or \"triangle_ccw\"",
+            HLSLErr::ERR_HSATTRIBUTE_INVALID
+        );
+    }
+}
+
+void HLSLAnalyzer::AnalyzeAttributePartitioning(Attribute* ast)
+{
+    if (AnalyzeNumArgsAttribute(ast, 1))
+    {
+        AnalyzeAttributeValue(
+            ast->arguments[0].get(),
+            program_->layoutTessControl.partitioningMode,
+            IsAttributeValuePartitioning,
+            "expected partitioning mode parameter to be \"integer\", \"pow2\", \"fractional_even\", or \"fractional_odd\"",
+            HLSLErr::ERR_HSATTRIBUTE_INVALID
+        );
+    }
+}
+
+void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
+{
+    if (AnalyzeNumArgsAttribute(ast, 1))
+    {
+        //TODO...
+    }
+}
+
+void HLSLAnalyzer::AnalyzeAttributeValue(
+    Expr* argExpr, AttributeValue& value, const OnValidAttributeValueProc& expectedValueFunc, const std::string& expectationDesc, const HLSLErr errorCode)
 {
     std::string literalValue;
-    if (!AnalyzeAttributeValuePrimary(argExpr, value, literalValue))
+    if (!AnalyzeAttributeValuePrimary(argExpr, value, expectedValueFunc, literalValue))
     {
         if (literalValue.empty())
             Error(expectationDesc, argExpr, errorCode);
@@ -1006,16 +1058,20 @@ void HLSLAnalyzer::AnalyzeAttributeValue(Expr* argExpr, AttributeValue& value, c
     }
 }
 
-bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(Expr* argExpr, AttributeValue& value, std::string& literalValue)
+bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(
+    Expr* argExpr, AttributeValue& value, const OnValidAttributeValueProc& expectedValueFunc, std::string& literalValue)
 {
     if (auto literalExpr = argExpr->As<LiteralExpr>())
     {
+        /* Get string literal value, convert to entry entry, and search in expected value list */
         literalValue = literalExpr->GetStringValue();
         value = HLSLKeywordToAttributeValue(literalValue);
-        return (value != AttributeValue::Undefined);
+        return expectedValueFunc(value);
     }
     return false;
 }
+
+/* ----- Misc ----- */
 
 void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic)
 {

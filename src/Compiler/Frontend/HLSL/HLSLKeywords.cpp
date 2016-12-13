@@ -643,14 +643,19 @@ static std::map<std::string, AttributeValue> GenerateAttributeValueMap()
 
     return
     {
-        { "tri",          T::DomainTri               },
-        { "quad",         T::DomainQuad              },
-        { "isoline",      T::DomainIsoline           },
+        { "tri",             T::DomainTri                  },
+        { "quad",            T::DomainQuad                 },
+        { "isoline",         T::DomainIsoline              },
 
-        { "point",        T::PartitioningPoint       },
-        { "line",         T::PartitioningLine        },
-        { "triangle_cw",  T::PartitioningTriangleCW  },
-        { "triangle_ccw", T::PartitioningTriangleCCW },
+        { "point",           T::OutputTopologyPoint        },
+        { "line",            T::OutputTopologyLine         },
+        { "triangle_cw",     T::OutputTopologyTriangleCW   },
+        { "triangle_ccw",    T::OutputTopologyTriangleCCW  },
+
+        { "integer",         T::PartitioningInteger        },
+        { "pow2",            T::PartitioningPow2           },
+        { "fractional_even", T::PartitioningFractionalEven },
+        { "fractional_odd",  T::PartitioningFractionalOdd  },
     };
 }
 

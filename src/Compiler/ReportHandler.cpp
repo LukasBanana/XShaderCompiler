@@ -54,7 +54,7 @@ void ReportHandler::SubmitReport(
     const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
 {
     /* Check if error location has already been reported */
-    if (!breakWithExpection)
+    if (!breakWithExpection && area.Pos().IsValid())
     {
         if (errorPositions_.find(area.Pos()) == errorPositions_.end())
             errorPositions_.insert(area.Pos());

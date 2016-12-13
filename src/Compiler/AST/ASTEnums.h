@@ -508,14 +508,22 @@ enum class AttributeValue
     DomainQuad,
     DomainIsoline,
 
-    PartitioningPoint,
-    PartitioningLine,
-    PartitioningTriangleCW,
-    PartitioningTriangleCCW,
+    OutputTopologyPoint,
+    OutputTopologyLine,
+    OutputTopologyTriangleCW,
+    OutputTopologyTriangleCCW,
+
+    PartitioningInteger,
+    PartitioningPow2,
+    PartitioningFractionalEven,
+    PartitioningFractionalOdd,
 };
 
 // Returns true if the specified attribute value belongs to the 'domain' attribute.
 bool IsAttributeValueDomain(const AttributeValue t);
+
+// Returns true if the specified attribute value belongs to the 'outputtopology' attribute.
+bool IsAttributeValueOutputTopology(const AttributeValue t);
 
 // Returns true if the specified attribute value belongs to the 'partitioning' attribute.
 bool IsAttributeValuePartitioning(const AttributeValue t);

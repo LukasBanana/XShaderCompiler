@@ -811,9 +811,14 @@ bool IsAttributeValueDomain(const AttributeValue t)
     return (t >= AttributeValue::DomainTri && t <= AttributeValue::DomainIsoline);
 }
 
+bool IsAttributeValueOutputTopology(const AttributeValue t)
+{
+    return (t >= AttributeValue::OutputTopologyPoint && t <= AttributeValue::OutputTopologyTriangleCCW);
+}
+
 bool IsAttributeValuePartitioning(const AttributeValue t)
 {
-    return (t >= AttributeValue::PartitioningPoint && t <= AttributeValue::PartitioningTriangleCCW);
+    return (t >= AttributeValue::PartitioningInteger && t <= AttributeValue::PartitioningFractionalOdd);
 }
 
 

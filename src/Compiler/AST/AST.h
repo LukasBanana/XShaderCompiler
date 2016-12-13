@@ -207,6 +207,7 @@ struct Program : public AST
     struct LayoutTessControlShader
     {
         AttributeValue  domainType              = AttributeValue::Undefined;
+        AttributeValue  topologyType            = AttributeValue::Undefined;
         AttributeValue  partitioningMode        = AttributeValue::Undefined;
         FunctionDecl*   patchConstFunctionRef   = nullptr;
     };
