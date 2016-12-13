@@ -184,7 +184,7 @@ TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<T
                 ++tknIt;
 
                 /* Ignore following white spaces and comments */
-                while (tknIt != tknItEnd && !PreProcessorTokenOfInterestFunctor::IsOfInterest(*tknIt))
+                while (tknIt != tknItEnd && !DefaultTokenOfInterestFunctor::IsOfInterest(*tknIt))
                     ++tknIt;
                 
                 /* Iterate one token back since it will be incremented in the outer for-loop */

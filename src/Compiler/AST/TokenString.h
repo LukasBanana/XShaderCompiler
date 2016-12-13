@@ -226,12 +226,12 @@ std::ostream& operator << (std::ostream& lhs, const BasicTokenString<TokenType, 
 
 /* --- Default BasicTokenString types --- */
 
-struct PreProcessorTokenOfInterestFunctor
+struct DefaultTokenOfInterestFunctor
 {
     static bool IsOfInterest(const TokenPtr& token);
 };
 
-using TokenPtrString = BasicTokenString<TokenPtr, PreProcessorTokenOfInterestFunctor>;
+using TokenPtrString = BasicTokenString<TokenPtr, DefaultTokenOfInterestFunctor>;
 
 
 } // /namespace Xsc
