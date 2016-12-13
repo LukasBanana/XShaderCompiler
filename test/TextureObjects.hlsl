@@ -27,21 +27,19 @@ struct VOut
 	float2 texCoord : TEXCOORD;
 };
 
-//BUG: parser reads a sampler declaration!
-SamplerState GetSmpl0()
+SamplerState GetSmpl(SamplerState s)
 {
-	return smpl0;
+	return s;
 }
 
-//BUG: parser reads a texture declaration!
-Texture2D<float4> GetTex0()
+Texture2D<float4> GetTex(Texture2D<float4> t)
 {
-	return tex0;
+	return t;
 }
 
 float3 SampleNormal(Texture2D tex, float2 tc)
 {
-	return tex.Sample(smpl0, tc).rgb * 2.0 - 1.0;
+	return tex.Sample(GetSmpl(smpl0), tc).rgb * 2.0 - 1.0;
 }
 
 //float4 PS(float2 texCoord : TEXCOORD) : SV_Target
@@ -49,7 +47,7 @@ float4 PS(VOut inp) : SV_Target
 {
 	float4 c = (float4)0;
 	
-	float3 normal = SampleNormal(GetTex0(), inp.texCoord);
+	float3 normal = SampleNormal(GetTex(tex0), inp.texCoord);
 //	float3 normal = SampleNormal(tex0, inp.texCoord);
 	
 	c += tex0.Sample(smpl0, inp.texCoord);

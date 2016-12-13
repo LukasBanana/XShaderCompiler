@@ -180,13 +180,18 @@ AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& 
     return ast;
 }
 
-VarTypePtr MakeVarType(const DataType dataType)
+VarTypePtr MakeVarType(const TypeDenoterPtr& typeDenoter)
 {
     auto ast = MakeAST<VarType>();
     {
-        ast->typeDenoter = MakeShared<BaseTypeDenoter>(dataType);
+        ast->typeDenoter = typeDenoter;
     }
     return ast;
+}
+
+VarTypePtr MakeVarType(const DataType dataType)
+{
+    return MakeVarType(MakeShared<BaseTypeDenoter>(dataType));
 }
 
 VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ident)

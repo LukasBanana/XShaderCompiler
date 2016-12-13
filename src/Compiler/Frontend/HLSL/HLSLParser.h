@@ -111,7 +111,7 @@ class HLSLParser : public Parser
         VarTypePtr                      ParseVarType(bool parseVoidType = false);
 
         VarDeclPtr                      ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
-        BufferDeclPtr                   ParseBufferDecl(BufferDeclStmnt* declStmntRef);
+        BufferDeclPtr                   ParseBufferDecl(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         SamplerDeclPtr                  ParseSamplerDecl(SamplerDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         StructDeclPtr                   ParseStructDecl(bool parseStructTkn = true, const TokenPtr& identTkn = nullptr);
         AliasDeclPtr                    ParseAliasDecl(TypeDenoterPtr typeDenoter);
@@ -119,9 +119,10 @@ class HLSLParser : public Parser
         StmntPtr                        ParseGlobalStmnt();
         StmntPtr                        ParseGlobalStmntWithVarType();
         StmntPtr                        ParseGlobalStmntWithSamplerTypeDenoter();
+        StmntPtr                        ParseGlobalStmntWithBufferTypeDenoter();
         FunctionDeclPtr                 ParseFunctionDecl(const VarTypePtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
         UniformBufferDeclPtr            ParseUniformBufferDecl();
-        BufferDeclStmntPtr              ParseBufferDeclStmnt();
+        BufferDeclStmntPtr              ParseBufferDeclStmnt(const BufferTypeDenoterPtr& typeDenoter = nullptr, const TokenPtr& identTkn = nullptr);
         SamplerDeclStmntPtr             ParseSamplerDeclStmnt(const SamplerTypeDenoterPtr& typeDenoter = nullptr, const TokenPtr& identTkn = nullptr);
         VarDeclStmntPtr                 ParseVarDeclStmnt();
         AliasDeclStmntPtr               ParseAliasDeclStmnt();
@@ -168,7 +169,7 @@ class HLSLParser : public Parser
         std::vector<RegisterPtr>        ParseRegisterList(bool parseFirstColon = true);
         std::vector<AttributePtr>       ParseAttributeList();
         std::vector<SwitchCasePtr>      ParseSwitchCaseList();
-        std::vector<BufferDeclPtr>      ParseBufferDeclList(BufferDeclStmnt* declStmntRef);
+        std::vector<BufferDeclPtr>      ParseBufferDeclList(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         std::vector<SamplerDeclPtr>     ParseSamplerDeclList(SamplerDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         std::vector<SamplerValuePtr>    ParseSamplerValueList();
         std::vector<AliasDeclPtr>       ParseAliasDeclList(TypeDenoterPtr typeDenoter);
