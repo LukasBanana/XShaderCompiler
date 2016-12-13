@@ -587,12 +587,15 @@ struct VarDeclStmnt : public Stmnt
     // Returns true if the 'const' type modifier or the 'uniform' input modifier is set.
     bool IsConst() const;
 
+    // Returns true if any of the specified type modifiers is contained.
+    bool HasAnyTypeModifier(const std::vector<TypeModifier>& modifiers) const;
+
     bool                        isInput         = false;    // Input modifier 'in'
     bool                        isOutput        = false;    // Input modifier 'out'
     bool                        isUniform       = false;    // Input modifier 'uniform'
     std::set<StorageClass>      storageClasses;             // Storage classes, e.g. extern, precise, etc.
     std::set<InterpModifier>    interpModifiers;            // Interpolation modifiers, e.g. nointerpolation, linear, centroid etc.
-    std::set<TypeModifier>      typeModifiers;              // Type modifiers, e.g. const, row_major, column_major.
+    std::set<TypeModifier>      typeModifiers;              // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats).
     VarTypePtr                  varType;
     std::vector<VarDeclPtr>     varDecls;
 };

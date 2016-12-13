@@ -324,6 +324,9 @@ enum class TypeModifier
     Const,
     RowMajor,
     ColumnMajor,
+
+    SNorm,
+    UNorm,
 };
 
 

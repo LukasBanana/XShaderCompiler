@@ -29,6 +29,9 @@
 #[ExprTest5 VS]
 #--show-ast -W -T vert -E VS -o output/* ExprTest5.hlsl
 
+[TypeTest3 VS]
+-W -T vert -E VS -o output/* TypeTest3.hlsl
+
 [ArrayTest1 PS]
 -T vert -E VS -o output/* ArrayTest1.hlsl
 

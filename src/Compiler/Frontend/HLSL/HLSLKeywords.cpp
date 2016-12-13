@@ -232,6 +232,8 @@ static KeywordMapType GenerateKeywordMap()
         { "const",                   T::TypeModifier    },
         { "row_major",               T::TypeModifier    },
         { "column_major",            T::TypeModifier    },
+        { "snorm",                   T::TypeModifier    },
+        { "unorm",                   T::TypeModifier    },
 
         { "extern",                  T::StorageClass    },
         { "precise",                 T::StorageClass    },
@@ -472,6 +474,9 @@ static std::map<std::string, TypeModifier> GenerateTypeModifierMap()
         { "const",        T::Const       },
         { "row_major",    T::RowMajor    },
         { "column_major", T::ColumnMajor },
+
+        { "snorm",        T::SNorm       },
+        { "unorm",        T::UNorm       },
     };
 }
 

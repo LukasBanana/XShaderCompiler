@@ -107,7 +107,7 @@ class Token
 
             InputModifier,      // in, out, inout, uniform
             InterpModifier,     // linear, centroid, nointerpolation, noperspective, sample
-            TypeModifier,       // const, row_major, column_major
+            TypeModifier,       // const, row_major, column_major (also 'snorm' and 'unorm' for floats)
             StorageClass,       // extern, precise, shared, groupshared, static, uniform, volatile
 
             Inline,             // inline

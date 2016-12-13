@@ -297,12 +297,21 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     }
 }
 
-#if 0
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     Visit(ast->varType);
     Visit(ast->varDecls);
 
+    /* Is the 'snorm' or 'unorm' type modifier specified? */
+    if (ast->HasAnyTypeModifier({ TypeModifier::SNorm, TypeModifier::UNorm }))
+    {
+        /* Is this a floating-point type? */
+        auto baseTypeDen = ast->varType->typeDenoter->As<BaseTypeDenoter>();
+        if (!baseTypeDen || !IsRealType(baseTypeDen->dataType))
+            Error("'snorm' and 'unorm' type modifiers can only be used for floating-point types", ast->varType.get());
+    }
+
+    #if 0
     /* Decorate variable type */
     if (InsideEntryPoint() && ast->varDecls.empty())
     {
@@ -318,8 +327,8 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
             }
         }
     }
+    #endif
 }
-#endif
 
 /* --- Statements --- */
 
