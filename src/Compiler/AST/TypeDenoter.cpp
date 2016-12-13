@@ -453,11 +453,6 @@ unsigned int AliasTypeDenoter::NumDimensions() const
 
 /* ----- ArrayTypeDenoter ----- */
 
-static std::size_t GetReducedArrayIndices(std::size_t numDims, std::size_t numArrayIndices)
-{
-    return (numArrayIndices > numDims ? numArrayIndices - numDims : 0);
-}
-
 ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter) :
     baseTypeDenoter{ baseTypeDenoter }
 {

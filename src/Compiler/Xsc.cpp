@@ -242,6 +242,15 @@ XSC_EXPORT std::string ToString(const OutputShaderVersion shaderVersion)
         case OutputShaderVersion::GLSL440:  return "GLSL 4.40";
         case OutputShaderVersion::GLSL450:  return "GLSL 4.50";
         case OutputShaderVersion::GLSL:     return "GLSL";
+        
+        case OutputShaderVersion::ESSL100:  return "ESSL 1.00";
+        case OutputShaderVersion::ESSL300:  return "ESSL 3.00";
+        case OutputShaderVersion::ESSL310:  return "ESSL 3.10";
+        case OutputShaderVersion::ESSL320:  return "ESSL 3.20";
+        case OutputShaderVersion::ESSL:     return "ESSL";
+        
+        case OutputShaderVersion::VKSL450:  return "VKSL 4.50";
+        case OutputShaderVersion::VKSL:     return "VKSL";
     }
     return "";
 }
