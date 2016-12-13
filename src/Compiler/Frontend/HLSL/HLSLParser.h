@@ -140,7 +140,9 @@ class HLSLParser : public Parser
         ReturnStmntPtr                  ParseReturnStmnt();
         ExprStmntPtr                    ParseExprStmnt(const VarIdentPtr& varIdent = nullptr);
 
-        ExprPtr                         ParseExpr(bool allowComma = false, const ExprPtr& initExpr = nullptr);
+        ExprPtr                         ParseExpr(bool allowComma = false);
+        ExprPtr                         ParseExprContinued(const ExprPtr& initExpr, bool allowComma = false);
+        ExprPtr                         ParsePostExpr(ExprPtr expr, bool allowComma = false);
         ExprPtr                         ParsePrimaryExpr() override;
         ExprPtr                         ParseLiteralOrSuffixExpr();
         LiteralExprPtr                  ParseLiteralExpr();

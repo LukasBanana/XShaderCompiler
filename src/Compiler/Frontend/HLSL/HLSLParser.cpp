@@ -1034,7 +1034,7 @@ StmntPtr HLSLParser::ParseStmntWithVarIdent()
         /* Parse function call as expression statement */
         auto ast = Make<ExprStmnt>();
         
-        ast->expr = ParseExpr(true, ParseFunctionCallExpr(varIdent));
+        ast->expr = ParseExprContinued(ParseFunctionCallExpr(varIdent), true);
         Semi();
 
         return ast;
@@ -1269,7 +1269,7 @@ ExprStmntPtr HLSLParser::ParseExprStmnt(const VarIdentPtr& varIdent)
             expr->varIdent  = varIdent;
             expr->area      = varIdent->area;
         }
-        ast->expr = ParseExpr(true, expr);
+        ast->expr = ParseExprContinued(expr, true);
     }
     else
         ast->expr = ParseExpr(true);
@@ -1281,18 +1281,27 @@ ExprStmntPtr HLSLParser::ParseExprStmnt(const VarIdentPtr& varIdent)
 
 /* --- Expressions --- */
 
-ExprPtr HLSLParser::ParseExpr(bool allowComma, const ExprPtr& initExpr)
+ExprPtr HLSLParser::ParseExpr(bool allowComma)
 {
-    /* Parse primary expression */
-    ExprPtr ast = (initExpr ? initExpr : ParseGenericExpr());
+    /* Parse generic expression, then post expression */
+    return ParsePostExpr(ParseGenericExpr(), allowComma);
+}
 
+ExprPtr HLSLParser::ParseExprContinued(const ExprPtr& initExpr, bool allowComma)
+{
+    /* Parse post expression */
+    return ParsePostExpr(initExpr, allowComma);
+}
+
+ExprPtr HLSLParser::ParsePostExpr(ExprPtr expr, bool allowComma)
+{
     /* Parse optional post-unary expression (e.g. 'x++', 'x--') */
     if (Is(Tokens::UnaryOp))
     {
         auto unaryExpr = Make<PostUnaryExpr>();
-        unaryExpr->expr = ast;
+        unaryExpr->expr = expr;
         unaryExpr->op = StringToUnaryOp(AcceptIt()->Spell());
-        ast = unaryExpr;
+        expr = unaryExpr;
     }
 
     /* Parse optional list expression */
@@ -1301,13 +1310,13 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma, const ExprPtr& initExpr)
         AcceptIt();
 
         auto listExpr = Make<ListExpr>();
-        listExpr->firstExpr = ast;
+        listExpr->firstExpr = expr;
         listExpr->nextExpr = ParseExpr(true);
 
         return listExpr;
     }
 
-    return ast;
+    return expr;
 }
 
 ExprPtr HLSLParser::ParsePrimaryExpr()
