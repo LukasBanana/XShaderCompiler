@@ -12,7 +12,6 @@
 #include <Xsc/Xsc.h>
 #include "CodeWriter.h"
 #include "Visitor.h"
-#include "Variant.h"
 #include "ReportHandler.h"
 
 
@@ -72,15 +71,6 @@ class Generator : protected Visitor
         {
             return program_;
         }
-
-        // Evaluates the specified constant expression.
-        Variant EvaluateConstExpr(Expr& expr);
-
-        // Evaluates the specified constant integer expression.
-        int EvaluateConstExprInt(Expr& expr);
-
-        // Evaluates the specified constant floating-point expression.
-        float EvaluateConstExprFloat(Expr& expr);
 
     private:
 

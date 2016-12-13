@@ -6,7 +6,6 @@
  */
 
 #include "Generator.h"
-#include "ConstExprEvaluator.h"
 #include "AST.h"
 #include <sstream>
 #include <ctime>
@@ -127,41 +126,6 @@ std::string Generator::TimePoint() const
     s << std::put_time(std::localtime(&date), "%d/%m/%Y %H:%M:%S");
 
     return s.str();
-}
-
-Variant Generator::EvaluateConstExpr(Expr& expr)
-{
-    try
-    {
-        /* Evaluate expression and throw error on var-access */
-        ConstExprEvaluator exprEvaluator;
-        return exprEvaluator.EvaluateExpr(expr, [](VarAccessExpr* ast) -> Variant { throw ast; });
-    }
-    catch (const std::exception& e)
-    {
-        Error(e.what(), &expr);
-    }
-    catch (const VarAccessExpr* varAccessExpr)
-    {
-        Error("expected constant expression", varAccessExpr);
-    }
-    return Variant();
-}
-
-int Generator::EvaluateConstExprInt(Expr& expr)
-{
-    auto variant = EvaluateConstExpr(expr);
-    if (variant.Type() != Variant::Types::Int)
-        Warning("expected constant integer expression", &expr);
-    return static_cast<int>(variant.ToInt());
-}
-
-float Generator::EvaluateConstExprFloat(Expr& expr)
-{
-    auto variant = EvaluateConstExpr(expr);
-    if (variant.Type() != Variant::Types::Real)
-        Warning("expected constant floating-point expression", &expr);
-    return static_cast<float>(variant.ToReal());
 }
 
 
