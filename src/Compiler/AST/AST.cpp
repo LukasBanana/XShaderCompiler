@@ -678,6 +678,15 @@ void LiteralExpr::ConvertDataType(const DataType type)
     }
 }
 
+std::string LiteralExpr::GetStringValue() const
+{
+    /* Return string literal content (without the quotation marks) */
+    if (dataType == DataType::String && value.size() >= 2 && value.front() == '\"' && value.back() == '\"')
+        return value.substr(1, value.size() - 2);
+    else
+        return "";
+}
+
 
 /* ----- TypeNameExpr ----- */
 

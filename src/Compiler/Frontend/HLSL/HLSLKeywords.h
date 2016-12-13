@@ -48,6 +48,9 @@ SamplerType HLSLKeywordToSamplerType(const std::string& keyword);
 // Returns the attribute type for the specified HLSL keyword or returns AttributeType::Undefined.
 AttributeType HLSLKeywordToAttributeType(const std::string& keyword);
 
+// Returns the attribute value for the specified HLSL keyword or returns AttributeValue::Undefined.
+AttributeValue HLSLKeywordToAttributeValue(const std::string& keyword);
+
 // Returns the semantic for the specified identifier or Semantic::UserDefined if the identifier is not reserved.
 IndexedSemantic HLSLKeywordToSemantic(const std::string& ident, bool useD3D10Semantics = true);
 

@@ -635,6 +635,33 @@ AttributeType HLSLKeywordToAttributeType(const std::string& keyword)
 }
 
 
+/* ----- AttributeValue Mapping ----- */
+
+static std::map<std::string, AttributeValue> GenerateAttributeValueMap()
+{
+    using T = AttributeValue;
+
+    return
+    {
+        { "tri",          T::DomainTri               },
+        { "quad",         T::DomainQuad              },
+        { "isoline",      T::DomainIsoline           },
+
+        { "point",        T::PartitioningPoint       },
+        { "line",         T::PartitioningLine        },
+        { "triangle_cw",  T::PartitioningTriangleCW  },
+        { "triangle_ccw", T::PartitioningTriangleCCW },
+    };
+}
+
+AttributeValue HLSLKeywordToAttributeValue(const std::string& keyword)
+{
+    static const auto typeMap = GenerateAttributeValueMap();
+    auto it = typeMap.find(keyword);
+    return (it != typeMap.end() ? it->second : AttributeValue::Undefined);
+}
+
+
 /* ----- Semantic Mapping ----- */
 
 struct HLSLSemanticDescriptor

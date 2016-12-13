@@ -502,6 +502,8 @@ bool IsShaderModel5AttributeType(const AttributeType t);
 // Value enumeration of required attributes (e.g. domain types for tess.-control shader).
 enum class AttributeValue
 {
+    Undefined,
+
     DomainTri,
     DomainQuad,
     DomainIsoline,

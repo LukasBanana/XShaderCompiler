@@ -206,8 +206,9 @@ struct Program : public AST
 
     struct LayoutTessControlShader
     {
-        FunctionDecl* patchConstFunctionRef = nullptr;
-        //...
+        AttributeValue  domainType              = AttributeValue::Undefined;
+        AttributeValue  partitioningMode        = AttributeValue::Undefined;
+        FunctionDecl*   patchConstFunctionRef   = nullptr;
     };
 
     std::vector<StmntPtr>               globalStmnts;               // Global declaration statements
@@ -756,6 +757,9 @@ struct LiteralExpr : public Expr
 
     // Converts the data type of this literal expr. This will also modify the value string.
     void ConvertDataType(const DataType type);
+
+    // Returns the value of this literal if it is a string literal (excluding the quotation marks). Otherwise an empty string is returned.
+    std::string GetStringValue() const;
 
     DataType        dataType    = DataType::Undefined;  // Valid data types: String, Bool, Int, UInt, Half, Float, Double
     std::string     value;

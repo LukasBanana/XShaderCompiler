@@ -7,6 +7,7 @@
 
 #include "HLSLAnalyzer.h"
 #include "HLSLIntrinsics.h"
+#include "HLSLKeywords.h"
 #include "ConstExprEvaluator.h"
 #include "EndOfScopeAnalyzer.h"
 #include "Exception.h"
@@ -984,8 +985,36 @@ void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast)
 {
     if (AnalyzeNumArgsAttribute(ast, 1))
     {
-        //...
+        AnalyzeAttributeValue(
+            ast->arguments[0].get(),
+            program_->layoutTessControl.domainType,
+            "expected domain type parameter to be \"tri\", \"quad\", or \"isolane\"",
+            HLSLErr::ERR_HSATTRIBUTE_INVALID
+        );
     }
+}
+
+void HLSLAnalyzer::AnalyzeAttributeValue(Expr* argExpr, AttributeValue& value, const std::string& expectationDesc, const HLSLErr errorCode)
+{
+    std::string literalValue;
+    if (!AnalyzeAttributeValuePrimary(argExpr, value, literalValue))
+    {
+        if (literalValue.empty())
+            Error(expectationDesc, argExpr, errorCode);
+        else
+            Error(expectationDesc + ", but got '" + literalValue + "'", argExpr, errorCode);
+    }
+}
+
+bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(Expr* argExpr, AttributeValue& value, std::string& literalValue)
+{
+    if (auto literalExpr = argExpr->As<LiteralExpr>())
+    {
+        literalValue = literalExpr->GetStringValue();
+        value = HLSLKeywordToAttributeValue(literalValue);
+        return (value != AttributeValue::Undefined);
+    }
+    return false;
 }
 
 void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic)

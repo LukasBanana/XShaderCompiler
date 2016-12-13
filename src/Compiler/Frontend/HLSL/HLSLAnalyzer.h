@@ -100,6 +100,8 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeAttributeNumThreads(Attribute* ast);
         void AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& value);
         void AnalyzeAttributeDomain(Attribute* ast);
+        void AnalyzeAttributeValue(Expr* argExpr, AttributeValue& value, const std::string& expectationDesc, const HLSLErr errorCode = HLSLErr::Unknown);
+        bool AnalyzeAttributeValuePrimary(Expr* argExpr, AttributeValue& value, std::string& literalValue);
 
         void AnalyzeSemantic(IndexedSemantic& semantic);
 

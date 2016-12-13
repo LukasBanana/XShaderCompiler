@@ -56,7 +56,7 @@ OutputHS PatchConstantFuncHS(InputPatch<OutputVS, 4> inp)
 	return outp;
 }
 
-[domain("quad")]
+[domain("quads")]
 [partitioning("fractional_odd")]
 [outputtopology("triangle_ccw")] // <-- CCW for DirectD3D because projection works differently to OpenGL
 [outputcontrolpoints(4)]
