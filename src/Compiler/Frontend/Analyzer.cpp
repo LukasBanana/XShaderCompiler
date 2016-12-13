@@ -7,6 +7,7 @@
 
 #include "Analyzer.h"
 #include "Exception.h"
+#include "ConstExprEvaluator.h"
 
 
 namespace Xsc
@@ -411,6 +412,43 @@ void Analyzer::ValidateTypeCastFrom(TypedAST* sourceAST, TypedAST* destAST, cons
         if (auto destTypeDen = GetTypeDenoterFrom(destAST))
             ValidateTypeCast(*sourceTypeDen, *destTypeDen, contextDesc, sourceAST);
     }
+}
+
+/* ----- Const-expression evaluation ----- */
+
+Variant Analyzer::EvaluateConstExpr(Expr& expr)
+{
+    try
+    {
+        /* Evaluate expression and throw error on var-access */
+        ConstExprEvaluator exprEvaluator;
+        return exprEvaluator.EvaluateExpr(expr, [](VarAccessExpr* ast) -> Variant { throw ast; });
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what(), &expr);
+    }
+    catch (const VarAccessExpr* varAccessExpr)
+    {
+        Error("expected constant expression", varAccessExpr);
+    }
+    return Variant();
+}
+
+int Analyzer::EvaluateConstExprInt(Expr& expr)
+{
+    auto variant = EvaluateConstExpr(expr);
+    if (variant.Type() != Variant::Types::Int)
+        Warning("expected constant integer expression", &expr);
+    return static_cast<int>(variant.ToInt());
+}
+
+float Analyzer::EvaluateConstExprFloat(Expr& expr)
+{
+    auto variant = EvaluateConstExpr(expr);
+    if (variant.Type() != Variant::Types::Real)
+        Warning("expected constant floating-point expression", &expr);
+    return static_cast<float>(variant.ToReal());
 }
 
 

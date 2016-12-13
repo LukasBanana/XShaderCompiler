@@ -12,6 +12,7 @@
 #include <Xsc/Xsc.h>
 #include "ReportHandler.h"
 #include "Visitor.h"
+#include "Variant.h"
 #include "Token.h"
 #include "SymbolTable.h"
 #include "AST.h"
@@ -128,6 +129,17 @@ class Analyzer : protected Visitor
 
         void ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, const std::string& contextDesc, const AST* ast = nullptr);
         void ValidateTypeCastFrom(TypedAST* sourceAST, TypedAST* destAST, const std::string& contextDesc);
+
+        /* ----- Const-expression evaluation ----- */
+
+        // Evaluates the specified constant expression.
+        Variant EvaluateConstExpr(Expr& expr);
+
+        // Evaluates the specified constant integer expression.
+        int EvaluateConstExprInt(Expr& expr);
+
+        // Evaluates the specified constant floating-point expression.
+        float EvaluateConstExprFloat(Expr& expr);
 
     private:
 

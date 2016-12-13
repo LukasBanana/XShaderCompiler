@@ -40,6 +40,8 @@ class HLSLAnalyzer : public Analyzer
             const ShaderInput& inputDesc,
             const ShaderOutput& outputDesc
         ) override;
+
+        void ErrorIfAttributeNotFound(bool found, const std::string& attribDesc);
         
         /* === Visitor implementation === */
 
@@ -92,8 +94,12 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPointParameterInOutBuffer(FunctionDecl* funcDecl, VarDecl* varDecl, BufferTypeDenoter* bufferTypeDen, bool input);
         void AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs);
+        void AnalyzeEntryPointAttributesTessControlShader(const std::vector<AttributePtr>& attribs);
 
-        void AnalyzeAttribute(Attribute* ast);
+        bool AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedNumArgs);
+        void AnalyzeAttributeNumThreads(Attribute* ast);
+        void AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& value);
+        void AnalyzeAttributeDomain(Attribute* ast);
 
         void AnalyzeSemantic(IndexedSemantic& semantic);
 

@@ -54,6 +54,12 @@ void HLSLAnalyzer::DecorateASTPrimary(
  * ======= Private: =======
  */
 
+void HLSLAnalyzer::ErrorIfAttributeNotFound(bool found, const std::string& attribDesc)
+{
+    if (!found)
+        Error("missing '" + attribDesc + "' attribute for entry point", nullptr, HLSLErr::ERR_ATTRIBUTE);
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -843,6 +849,9 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& 
         case ShaderTarget::ComputeShader:
             AnalyzeEntryPointAttributesComputeShader(attribs);
             break;
+        case ShaderTarget::TessellationControlShader:
+            AnalyzeEntryPointAttributesTessControlShader(attribs);
+            break;
         default:
             break;
     }
@@ -850,32 +859,80 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& 
 
 void HLSLAnalyzer::AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs)
 {
-    bool numThreadsFound = false;
+    bool foundNumThreads = false;
 
+    /* Analyze required attributes */
     for (const auto& attr : attribs)
     {
-        if (attr->attributeType == AttributeType::NumThreads)
+        switch (attr->attributeType)
         {
-            AnalyzeAttribute(attr.get());
-            numThreadsFound = true;
+            case AttributeType::NumThreads:
+                AnalyzeAttributeNumThreads(attr.get());
+                foundNumThreads = true;
+                break;
+
+            default:
+                break;
         }
     }
 
-    if (!numThreadsFound)
-        Error("missing 'numthreads' attribute for compute shader entry point");
+    /* Check for missing attributes */
+    ErrorIfAttributeNotFound(foundNumThreads, "numthreads(x, y, z)");
 }
 
-void HLSLAnalyzer::AnalyzeAttribute(Attribute* ast)
+void HLSLAnalyzer::AnalyzeEntryPointAttributesTessControlShader(const std::vector<AttributePtr>& attribs)
 {
-    static const std::map<AttributeType, std::size_t> attribNumArgsMap
+    bool foundDomain                = false;
+    bool foundOutputControlPoints   = false;
+    bool foundOutputTopology        = false;
+    bool foundPartitioning          = false;
+    bool foundPatchConstantFunc     = false;
+
+    /* Analyze required attributes */
+    for (const auto& attr : attribs)
     {
-        { AttributeType::NumThreads, 3 },
-    };
+        switch (attr->attributeType)
+        {
+            case AttributeType::Domain:
+                AnalyzeAttributeDomain(attr.get());
+                foundDomain = true;
+                break;
 
-    /* Get epxected number of arguments for attribute */
-    auto it = attribNumArgsMap.find(ast->attributeType);
-    std::size_t expectedNumArgs = (it != attribNumArgsMap.end() ? it->second : 0);
+            case AttributeType::OutputControlPoints:
+                //...
+                foundOutputControlPoints = true;
+                break;
 
+            case AttributeType::OutputTopology:
+                //...
+                foundOutputTopology = true;
+                break;
+
+            case AttributeType::Partitioning:
+                //...
+                foundPartitioning = true;
+                break;
+
+            case AttributeType::PatchConstantFunc:
+                //...
+                foundPatchConstantFunc = true;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /* Check for missing attributes */
+    ErrorIfAttributeNotFound(foundDomain, "domain(type)");
+    ErrorIfAttributeNotFound(foundOutputControlPoints, "outputcontrolpoints(count)");
+    ErrorIfAttributeNotFound(foundOutputTopology, "outputtopology(topology)");
+    ErrorIfAttributeNotFound(foundPartitioning, "partitioning(mode)");
+    ErrorIfAttributeNotFound(foundPatchConstantFunc, "patchconstantfunc(function)");
+}
+
+bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedNumArgs)
+{
     /* Validate number of arguments */
     auto numArgs = ast->arguments.size();
 
@@ -883,15 +940,51 @@ void HLSLAnalyzer::AnalyzeAttribute(Attribute* ast)
     {
         Error(
             "too few arguments in attribute (expected " + std::to_string(expectedNumArgs) +
-            ", but got " + std::to_string(numArgs) + ")", ast
+            ", but got " + std::to_string(numArgs) + ")", ast, HLSLErr::ERR_ATTRIBUTE
         );
     }
     else if (numArgs > expectedNumArgs)
     {
         Error(
             "too many arguments in attribute (expected " + std::to_string(expectedNumArgs) +
-            ", but got " + std::to_string(numArgs) + ")", ast->arguments[expectedNumArgs].get()
+            ", but got " + std::to_string(numArgs) + ")", ast->arguments[expectedNumArgs].get(), HLSLErr::ERR_ATTRIBUTE
         );
+    }
+    else
+        return true;
+
+    return false;
+}
+
+void HLSLAnalyzer::AnalyzeAttributeNumThreads(Attribute* ast)
+{
+    if (AnalyzeNumArgsAttribute(ast, 3))
+    {
+        /* Evaluate and store all three thread counts in global layout */
+        for (int i = 0; i < 3; ++i)
+        {
+            AnalyzeAttributeNumThreadsArgument(
+                ast->arguments[i].get(),
+                program_->layoutCompute.numThreads[i]
+            );
+        }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& value)
+{
+    int exprValue = EvaluateConstExprInt(*ast);
+    if (exprValue > 0)
+        value = static_cast<unsigned int>(exprValue);
+    else
+        Error("number of threads must be greater than zero", ast);
+}
+
+void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast)
+{
+    if (AnalyzeNumArgsAttribute(ast, 1))
+    {
+        //...
     }
 }
 

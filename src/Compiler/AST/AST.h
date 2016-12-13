@@ -199,6 +199,17 @@ struct Program : public AST
         FLAG( isFragCoordUsed,   1 ), // This shader program makes use of the fragment coordinate (SV_Position, gl_FragCoord).
     };
 
+    struct LayoutComputeShader
+    {
+        unsigned int numThreads[3] = { 0 };
+    };
+
+    struct LayoutTessControlShader
+    {
+        FunctionDecl* patchConstFunctionRef = nullptr;
+        //...
+    };
+
     std::vector<StmntPtr>               globalStmnts;               // Global declaration statements
 
     std::vector<ASTPtr>                 disabledAST;                // AST nodes that have been disabled for code generation (not part of the default visitor).
@@ -206,6 +217,9 @@ struct Program : public AST
     SourceCodePtr                       sourceCode;                 // Preprocessed source code
     FunctionDecl*                       entryPointRef   = nullptr;  // Reference to the entry point function declaration.
     std::map<Intrinsic, IntrinsicUsage> usedIntrinsics;             // Set of all used intrinsic (filled by the reference analyzer).
+
+    LayoutComputeShader                 layoutCompute;              // Global program layout attributes for compute shader.
+    LayoutTessControlShader             layoutTessControl;          // Global program layout attributes for tessellation-control shader.
 };
 
 // Code block.
@@ -293,6 +307,7 @@ struct PackOffset : public AST
     std::string vectorComponent; // May be empty
 };
 
+//TODO: replace this AST class completely by TypeDenoter
 // Variable data type.
 struct VarType : public AST //TypedAST
 {
@@ -595,6 +610,7 @@ struct VarDeclStmnt : public Stmnt
     bool                        isUniform       = false;    // Input modifier 'uniform'
     std::set<StorageClass>      storageClasses;             // Storage classes, e.g. extern, precise, etc.
     std::set<InterpModifier>    interpModifiers;            // Interpolation modifiers, e.g. nointerpolation, linear, centroid etc.
+    //TODO: move 'typeModifiers' into TypeDenoter base class
     std::set<TypeModifier>      typeModifiers;              // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats).
     VarTypePtr                  varType;
     std::vector<VarDeclPtr>     varDecls;

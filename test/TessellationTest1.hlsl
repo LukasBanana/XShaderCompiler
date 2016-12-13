@@ -61,7 +61,7 @@ OutputHS PatchConstantFuncHS(InputPatch<OutputVS, 4> inp)
 [outputtopology("triangle_ccw")] // <-- CCW for DirectD3D because projection works differently to OpenGL
 [outputcontrolpoints(4)]
 [patchconstantfunc("PatchConstantFuncHS")]
-[maxtessfactor(64.0)]
+[maxtessfactor(64.0)] // optional
 OutputVS HS(InputPatch<OutputVS, 4> inp, uint id : SV_OutputControlPointID)
 {
 	OutputVS outp;
