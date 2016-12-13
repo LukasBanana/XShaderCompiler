@@ -138,11 +138,9 @@ class HLSLParser : public Parser
         SwitchStmntPtr                  ParseSwitchStmnt(const std::vector<AttributePtr>& attribs);
         CtrlTransferStmntPtr            ParseCtrlTransferStmnt();
         ReturnStmntPtr                  ParseReturnStmnt();
-        ExprStmntPtr                    ParseExprStmnt(const VarIdentPtr& varIdent = nullptr);
+        ExprStmntPtr                    ParseExprStmnt();
 
         ExprPtr                         ParseExpr(bool allowComma = false);
-        ExprPtr                         ParseExprContinued(const ExprPtr& initExpr, bool allowComma = false);
-        ExprPtr                         ParsePostExpr(ExprPtr expr, bool allowComma = false);
         ExprPtr                         ParsePrimaryExpr() override;
         ExprPtr                         ParseLiteralOrSuffixExpr();
         LiteralExprPtr                  ParseLiteralExpr();
@@ -151,7 +149,7 @@ class HLSLParser : public Parser
         ExprPtr                         ParseBracketOrCastExpr();
         SuffixExprPtr                   ParseSuffixExpr(const ExprPtr& expr);
         ArrayAccessExprPtr              ParseArrayAccessExpr(const ExprPtr& expr);
-        ExprPtr                         ParseVarAccessOrFunctionCallExpr();
+        ExprPtr                         ParseVarAccessOrFunctionCallExpr(VarIdentPtr varIdent = nullptr);
         VarAccessExprPtr                ParseVarAccessExpr(const VarIdentPtr& varIdent = nullptr);
         ExprPtr                         ParseFunctionCallExpr(const VarIdentPtr& varIdent = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
         InitializerExprPtr              ParseInitializerExpr();

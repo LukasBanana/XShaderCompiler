@@ -125,6 +125,14 @@ class Parser
         void PushParsingState(const ParsingState& state);
         void PopParsingState();
 
+        /*
+        Pushes the specified AST node onto the stack of pre-parsed AST nodes.
+        This can be used to pass AST nodes down a parsing function call stack (e.g. used for VarIdent which is used in many parsing functions).
+        This is meant to be used only for a few situations because care must be taken that none of these AST nodes will be ignored (i.e. lost in the stack).
+        */
+        void PushPreParsedAST(const ASTPtr& ast);
+        ASTPtr PopPreParsedAST();
+
         ExprPtr         ParseGenericExpr();
         TernaryExprPtr  ParseTernaryExpr(const ExprPtr& condExpr);
 
@@ -225,6 +233,7 @@ class Parser
 
         std::stack<ScannerStackEntry>   scannerStack_;
         std::stack<ParsingState>        parsingStateStack_;
+        std::stack<ASTPtr>              preParsedASTStack_;
 
         unsigned int                    unexpectedTokenCounter_ = 0;
         const unsigned int              unexpectedTokenLimit_   = 3; //< this should never be less than 1

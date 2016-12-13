@@ -27,7 +27,7 @@
 #-T frag -E PS -o output/* IntrinsicClip.hlsl
 
 [ExprTest5 VS]
--T vert -E VS -o output/* ExprTest5.hlsl
+--show-ast -T vert -E VS -o output/* ExprTest5.hlsl
 
 [ArrayTest1 PS]
 -T vert -E VS -o output/* ArrayTest1.hlsl

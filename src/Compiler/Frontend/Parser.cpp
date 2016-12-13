@@ -220,6 +220,22 @@ void Parser::PopParsingState()
     parsingStateStack_.pop();
 }
 
+void Parser::PushPreParsedAST(const ASTPtr& ast)
+{
+    preParsedASTStack_.push(ast);
+}
+
+ASTPtr Parser::PopPreParsedAST()
+{
+    if (!preParsedASTStack_.empty())
+    {
+        auto ast = preParsedASTStack_.top();
+        preParsedASTStack_.pop();
+        return ast;
+    }
+    return nullptr;
+}
+
 Parser::ParsingState Parser::ActiveParsingState() const
 {
     return (parsingStateStack_.empty() ? ParsingState{ false } : parsingStateStack_.top());

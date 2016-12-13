@@ -1029,15 +1029,11 @@ StmntPtr HLSLParser::ParseStmntWithVarIdent()
     */
     auto varIdent = ParseVarIdent();
     
-    if (Is(Tokens::LBracket))
+    if (Is(Tokens::LBracket) || Is(Tokens::UnaryOp) || Is(Tokens::BinaryOp) || Is(Tokens::TernaryOp))
     {
-        /* Parse function call as expression statement */
-        auto ast = Make<ExprStmnt>();
-        
-        ast->expr = ParseExprContinued(ParseFunctionCallExpr(varIdent), true);
-        Semi();
-
-        return ast;
+        /* Parse expression statement (function call, variable access, etc.) */
+        PushPreParsedAST(varIdent);
+        return ParseExprStmnt();
     }
     else if (Is(Tokens::AssignOp))
     {
@@ -1057,11 +1053,6 @@ StmntPtr HLSLParser::ParseStmntWithVarIdent()
             Semi();
         }
         return ast;
-    }
-    else if (Is(Tokens::UnaryOp, "++") || Is(Tokens::UnaryOp, "--"))// || Is(Tokens::BinaryOp) || Is(Tokens::TernaryOp))
-    {
-        /* Parse expression statement */
-        return ParseExprStmnt(varIdent);
     }
 
     if (!varIdent->next)
@@ -1252,27 +1243,12 @@ ReturnStmntPtr HLSLParser::ParseReturnStmnt()
     return ast;
 }
 
-ExprStmntPtr HLSLParser::ParseExprStmnt(const VarIdentPtr& varIdent)
+ExprStmntPtr HLSLParser::ParseExprStmnt()
 {
     /* Parse expression statement */
     auto ast = Make<ExprStmnt>();
 
-    //TODO:
-    //  do not create a VarAccessExpr for 'varIdent'
-    //  -> instead pass 'varIdent' to the "ParseExpr" function,
-    //     which must then propagate it down to the value expression parser
-    if (varIdent)
-    {
-        /* Make var-ident to a var-access expression */
-        auto expr = Make<VarAccessExpr>();
-        {
-            expr->varIdent  = varIdent;
-            expr->area      = varIdent->area;
-        }
-        ast->expr = ParseExprContinued(expr, true);
-    }
-    else
-        ast->expr = ParseExpr(true);
+    ast->expr = ParseExpr(true);
 
     Semi();
 
@@ -1284,24 +1260,15 @@ ExprStmntPtr HLSLParser::ParseExprStmnt(const VarIdentPtr& varIdent)
 ExprPtr HLSLParser::ParseExpr(bool allowComma)
 {
     /* Parse generic expression, then post expression */
-    return ParsePostExpr(ParseGenericExpr(), allowComma);
-}
+    auto ast = ParseGenericExpr();
 
-ExprPtr HLSLParser::ParseExprContinued(const ExprPtr& initExpr, bool allowComma)
-{
-    /* Parse post expression */
-    return ParsePostExpr(initExpr, allowComma);
-}
-
-ExprPtr HLSLParser::ParsePostExpr(ExprPtr expr, bool allowComma)
-{
     /* Parse optional post-unary expression (e.g. 'x++', 'x--') */
     if (Is(Tokens::UnaryOp))
     {
         auto unaryExpr = Make<PostUnaryExpr>();
-        unaryExpr->expr = expr;
+        unaryExpr->expr = ast;
         unaryExpr->op = StringToUnaryOp(AcceptIt()->Spell());
-        expr = unaryExpr;
+        ast = unaryExpr;
     }
 
     /* Parse optional list expression */
@@ -1310,17 +1277,29 @@ ExprPtr HLSLParser::ParsePostExpr(ExprPtr expr, bool allowComma)
         AcceptIt();
 
         auto listExpr = Make<ListExpr>();
-        listExpr->firstExpr = expr;
+        listExpr->firstExpr = ast;
         listExpr->nextExpr = ParseExpr(true);
 
         return listExpr;
     }
 
-    return expr;
+    return ast;
 }
 
 ExprPtr HLSLParser::ParsePrimaryExpr()
 {
+    /* Check if a pre-parsed AST node is available */
+    if (auto preParsedAST = PopPreParsedAST())
+    {
+        if (preParsedAST->Type() == AST::Types::VarIdent)
+        {
+            auto varIdent = std::static_pointer_cast<VarIdent>(preParsedAST);
+            return ParseVarAccessOrFunctionCallExpr(varIdent);
+        }
+        else
+            ErrorInternal("unexpected pre-parsed AST node", __FUNCTION__);
+    }
+
     /* Determine which kind of expression the next one is */
     if (IsLiteral())
         return ParseLiteralOrSuffixExpr();
@@ -1487,12 +1466,15 @@ ArrayAccessExprPtr HLSLParser::ParseArrayAccessExpr(const ExprPtr& expr)
     return UpdateSourceArea(ast, expr.get());
 }
 
-ExprPtr HLSLParser::ParseVarAccessOrFunctionCallExpr()
+ExprPtr HLSLParser::ParseVarAccessOrFunctionCallExpr(VarIdentPtr varIdent)
 {
     /* Parse variable identifier first (for variables and functions) */
-    auto varIdent = ParseVarIdent();
+    if (!varIdent)
+        varIdent = ParseVarIdent();
+    
     if (Is(Tokens::LBracket))
         return ParseFunctionCallExpr(varIdent);
+
     return ParseVarAccessExpr(varIdent);
 }
 
