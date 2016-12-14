@@ -242,7 +242,7 @@ struct SamplerValue : public AST
     ExprPtr     value;  // Sampler state value expression
 };
 
-//TODO: replaced this AST class by "FunctionCallExpr".
+//TODO: maybe merge this AST class into "FunctionCallExpr".
 // Function call.
 struct FunctionCall : public AST
 {
@@ -255,8 +255,8 @@ struct FunctionCall : public AST
         FLAG( canInlineIntrinsicWrapper, 0 ),
     };
 
-    VarIdentPtr             varIdent;                           // Either this ...
-    TypeDenoterPtr          typeDenoter;                        // ... or this is used.
+    VarIdentPtr             varIdent;                           // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
+    TypeDenoterPtr          typeDenoter;                        // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
     std::vector<ExprPtr>    arguments;
 
     FunctionDecl*           funcDeclRef = nullptr;              // Reference to the function declaration; may be null
