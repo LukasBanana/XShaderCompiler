@@ -100,6 +100,9 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Returns the number of array dimensions. By default 0.
     virtual unsigned int NumDimensions() const;
 
+    // Returns a pointer to the AST symbol reference or null if there is no such reference.
+    virtual AST* SymbolRef() const;
+
     // Returns either this type denoter (if 'arrayDims' is empty), or this type denoter as array with the specified dimension expressions.
     TypeDenoterPtr AsArray(const std::vector<ExprPtr>& arrayDims);
 
@@ -168,6 +171,8 @@ struct BufferTypeDenoter : public TypeDenoter
 
     TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
 
+    AST* SymbolRef() const override;
+
     // Always returns a valid generic type denoter. By default BaseTypeDenoter(Float4).
     TypeDenoterPtr GetGenericTypeDenoter() const;
 
@@ -190,6 +195,8 @@ struct SamplerTypeDenoter : public TypeDenoter
     Types Type() const override;
     std::string ToString() const override;
 
+    AST* SymbolRef() const override;
+
     SamplerType     samplerType     = SamplerType::Undefined;
 
     SamplerDecl*    samplerDeclRef  = nullptr;
@@ -206,8 +213,11 @@ struct StructTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+
     std::string Ident() const override;
     void SetIdentIfAnonymous(const std::string& ident) override;
+
+    AST* SymbolRef() const override;
 
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
 
@@ -227,6 +237,7 @@ struct AliasTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+
     std::string Ident() const override;
     void SetIdentIfAnonymous(const std::string& ident) override;
 
@@ -236,6 +247,8 @@ struct AliasTypeDenoter : public TypeDenoter
     const TypeDenoter& GetAliased() const override;
 
     unsigned int NumDimensions() const override;
+
+    AST* SymbolRef() const override;
 
     std::string     ident;                      // Type identifier
 
@@ -266,6 +279,8 @@ struct ArrayTypeDenoter : public TypeDenoter
     TypeDenoterPtr GetWithIndices(std::size_t numArrayIndices, const VarIdent* varIdent);
 
     unsigned int NumDimensions() const override;
+
+    AST* SymbolRef() const override;
 
     TypeDenoterPtr          baseTypeDenoter;
     std::vector<ExprPtr>    arrayDims;          // Entries may be null

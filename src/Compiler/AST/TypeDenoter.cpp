@@ -117,6 +117,11 @@ unsigned int TypeDenoter::NumDimensions() const
     return 0;
 }
 
+AST* TypeDenoter::SymbolRef() const
+{
+    return nullptr;
+}
+
 TypeDenoterPtr TypeDenoter::AsArray(const std::vector<ExprPtr>& arrayDims)
 {
     if (arrayDims.empty())
@@ -312,6 +317,11 @@ TypeDenoterPtr BufferTypeDenoter::GetGenericTypeDenoter() const
     return (genericTypeDenoter ? genericTypeDenoter : std::make_shared<BaseTypeDenoter>(DataType::Float4));
 }
 
+AST* BufferTypeDenoter::SymbolRef() const
+{
+    return bufferDeclRef;
+}
+
 
 /* ----- SamplerTypeDenoter ----- */
 
@@ -335,6 +345,11 @@ TypeDenoter::Types SamplerTypeDenoter::Type() const
 std::string SamplerTypeDenoter::ToString() const
 {
     return (IsSamplerStateType(samplerType) ? "sampler state" : "sampler");
+}
+
+AST* SamplerTypeDenoter::SymbolRef() const
+{
+    return samplerDeclRef;
 }
 
 
@@ -389,6 +404,11 @@ TypeDenoterPtr StructTypeDenoter::Get(const VarIdent* varIdent)
             RuntimeErr("missing reference to structure declaration", varIdent);
     }
     return TypeDenoter::Get(varIdent);
+}
+
+AST* StructTypeDenoter::SymbolRef() const
+{
+    return structDeclRef;
 }
 
 
@@ -448,6 +468,11 @@ const TypeDenoter& AliasTypeDenoter::GetAliased() const
 unsigned int AliasTypeDenoter::NumDimensions() const
 {
     return GetAliased().NumDimensions();
+}
+
+AST* AliasTypeDenoter::SymbolRef() const
+{
+    return aliasDeclRef;
 }
 
 
@@ -547,6 +572,11 @@ TypeDenoterPtr ArrayTypeDenoter::GetWithIndices(std::size_t numArrayIndices, con
 unsigned int ArrayTypeDenoter::NumDimensions() const
 {
     return (static_cast<unsigned int>(arrayDims.size()) + baseTypeDenoter->NumDimensions());
+}
+
+AST* ArrayTypeDenoter::SymbolRef() const
+{
+    return (baseTypeDenoter ? baseTypeDenoter->SymbolRef() : nullptr);
 }
 
 
