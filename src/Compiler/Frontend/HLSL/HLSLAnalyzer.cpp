@@ -521,23 +521,14 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
 void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
 {
-    /* Decorate function identifier (if it's a member function) */
     if (ast->varIdent->next)
     {
+        /* Analyze function identifier (if it's a member function) */
         AnalyzeVarIdent(ast->varIdent.get());
-
-        //TODO: refactor member functions!
-        #if 0
-        if (auto symbol = ast->varIdent->symbolRef)
-        {
-            if (symbol->Type() == AST::Types::BufferDecl)
-                ast->flags << FunctionCall::isTexFunc;
-        }
-        #endif
     }
     else
     {
-        /* Fetch function declaratino by arguments */
+        /* Fetch function declaration by arguments */
         ast->funcDeclRef = FetchFunctionDecl(ast->varIdent->ident, ast->arguments, ast);
     }
 }
