@@ -87,7 +87,7 @@ IMPLEMENT_VISIT_PROC(VarType)
 {
     if (Reachable(ast))
     {
-        Visit(ast->symbolRef);
+        Visit(ast->typeDenoter->SymbolRef());
         VISIT_DEFAULT(VarType);
     }
 }

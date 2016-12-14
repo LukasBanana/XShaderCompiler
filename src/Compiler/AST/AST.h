@@ -321,9 +321,6 @@ struct VarType : public AST //TypedAST
 
     StructDeclPtr   structDecl;             // Optional structure declaration
     TypeDenoterPtr  typeDenoter;
-
-    //TODO: replace this by 'typeDenoter' (but currently heavy use of this member)
-    AST*            symbolRef = nullptr;    // Symbol reference for DAST to the type definition; may be null.
 };
 
 // Variable (linked-list) identifier.

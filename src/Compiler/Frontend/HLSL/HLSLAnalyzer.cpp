@@ -138,20 +138,7 @@ IMPLEMENT_VISIT_PROC(VarType)
     Visit(ast->structDecl);
 
     if (ast->typeDenoter)
-    {
         AnalyzeTypeDenoter(ast->typeDenoter, ast);
-
-        //TODO: remove this
-        #if 1
-        if (!ast->typeDenoter->Ident().empty())
-        {
-            /* Decorate variable type */
-            auto symbol = Fetch(ast->typeDenoter->Ident());
-            if (symbol)
-                ast->symbolRef = symbol;
-        }
-        #endif
-    }
     else
         Error("missing variable type", ast);
 }
@@ -456,20 +443,19 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     {
         if (auto varAccessExpr = ast->expr->As<VarAccessExpr>())
         {
-            if (varAccessExpr->varIdent->symbolRef)
+            if (auto varSymbolRef = varAccessExpr->varIdent->symbolRef)
             {
-                if (auto varDecl = varAccessExpr->varIdent->symbolRef->As<VarDecl>())
+                if (auto varDecl = varSymbolRef->As<VarDecl>())
                 {
-                    if (varDecl->declStmntRef && varDecl->declStmntRef->varType)
+                    if (varDecl->declStmntRef)
                     {
                         /*
                         Variable declaration statement has been found,
                         now find the structure object to add the alias name for the interface block.
                         */
-                        auto varType = varDecl->declStmntRef->varType.get();
-                        if (varType->symbolRef)
+                        if (auto structSymbolRef = varDecl->GetTypeDenoter()->SymbolRef())
                         {
-                            if (auto structDecl = varType->symbolRef->As<StructDecl>())
+                            if (auto structDecl = structSymbolRef->As<StructDecl>())
                             {
                                 /* Store alias name for the interface block */
                                 structDecl->aliasName = varAccessExpr->varIdent->ident;
