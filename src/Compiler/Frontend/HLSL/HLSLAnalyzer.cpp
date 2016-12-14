@@ -639,10 +639,10 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol)
             AnalyzeVarIdentWithSymbolVarDecl(varIdent, static_cast<VarDecl*>(symbol));
             break;
         case AST::Types::BufferDecl:
-            AnalyzeVarIdentWithSymbolBufferDecl(varIdent, static_cast<BufferDecl*>(symbol));
+            //AnalyzeVarIdentWithSymbolBufferDecl(varIdent, static_cast<BufferDecl*>(symbol));
             break;
         case AST::Types::SamplerDecl:
-            AnalyzeVarIdentWithSymbolSamplerDecl(varIdent, static_cast<SamplerDecl*>(symbol));
+            //AnalyzeVarIdentWithSymbolSamplerDecl(varIdent, static_cast<SamplerDecl*>(symbol));
             break;
         case AST::Types::StructDecl:
             //...
@@ -686,7 +686,7 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
         program_->flags << Program::isFragCoordUsed;
 }
 
-void HLSLAnalyzer::AnalyzeVarIdentWithSymbolBufferDecl(VarIdent* varIdent, BufferDecl* bufferDecl)
+/*void HLSLAnalyzer::AnalyzeVarIdentWithSymbolBufferDecl(VarIdent* varIdent, BufferDecl* bufferDecl)
 {
     //TODO...
 }
@@ -694,7 +694,7 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolBufferDecl(VarIdent* varIdent, Buffe
 void HLSLAnalyzer::AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, SamplerDecl* samplerDecl)
 {
     //TODO...
-}
+}*/
 
 /* ----- Entry point ----- */
 
@@ -982,7 +982,17 @@ void HLSLAnalyzer::AnalyzeAttributeOutputControlPoints(Attribute* ast)
 {
     if (AnalyzeNumArgsAttribute(ast, 1))
     {
-        //TODO...
+        /* Get integer literal value and convert to integer */
+        auto countParamVariant = EvaluateConstExpr(*ast->arguments[0]);
+
+        int countParam = -1;
+        if (countParamVariant.Type() == Variant::Types::Int)
+            countParam = static_cast<int>(countParamVariant.Int());
+
+        if (countParam >= 0)
+            program_->layoutTessControl.outputControlPoints = static_cast<unsigned int>(countParam);
+        else
+            Error("expected output control point parameter to be an unsigned integer", ast->arguments[0].get(), HLSLErr::ERR_ATTRIBUTE);
     }
 }
 
@@ -992,7 +1002,7 @@ void HLSLAnalyzer::AnalyzeAttributeOutputTopology(Attribute* ast)
     {
         AnalyzeAttributeValue(
             ast->arguments[0].get(),
-            program_->layoutTessControl.topologyType,
+            program_->layoutTessControl.outputTopology,
             IsAttributeValueOutputTopology,
             "expected output topology parameter to be \"point\", \"line\", \"triangle_cw\", or \"triangle_ccw\"",
             HLSLErr::ERR_HSATTRIBUTE_INVALID
@@ -1006,7 +1016,7 @@ void HLSLAnalyzer::AnalyzeAttributePartitioning(Attribute* ast)
     {
         AnalyzeAttributeValue(
             ast->arguments[0].get(),
-            program_->layoutTessControl.partitioningMode,
+            program_->layoutTessControl.partitioning,
             IsAttributeValuePartitioning,
             "expected partitioning mode parameter to be \"integer\", \"pow2\", \"fractional_even\", or \"fractional_odd\"",
             HLSLErr::ERR_HSATTRIBUTE_INVALID
@@ -1040,7 +1050,7 @@ bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(
 {
     if (auto literalExpr = argExpr->As<LiteralExpr>())
     {
-        /* Get string literal value, convert to entry entry, and search in expected value list */
+        /* Get string literal value, convert to enum entry, and search in expected value list */
         literalValue = literalExpr->GetStringValue();
         value = HLSLKeywordToAttributeValue(literalValue);
         return expectedValueFunc(value);

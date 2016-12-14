@@ -59,7 +59,7 @@ OutputHS PatchConstantFuncHS(InputPatch<OutputVS, 4> inp)
 [domain("quad")]
 [partitioning("fractional_odd")]
 [outputtopology("triangle_ccw")]
-[outputcontrolpoints(4)]
+[outputcontrolpoints(4+2)]
 [patchconstantfunc("PatchConstantFuncHS")]
 [maxtessfactor(64.0)] // optional
 OutputVS HS(InputPatch<OutputVS, 4> inp, uint id : SV_OutputControlPointID)
