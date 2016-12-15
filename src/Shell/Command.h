@@ -69,6 +69,7 @@ class Command
     }
 
 DECL_SHELL_COMMAND( EntryCommand       );
+DECL_SHELL_COMMAND( SecndEntryCommand  );
 DECL_SHELL_COMMAND( TargetCommand      );
 DECL_SHELL_COMMAND( VersionInCommand   );
 DECL_SHELL_COMMAND( VersionOutCommand  );

@@ -51,6 +51,7 @@ CommandFactory::CommandFactory()
     MakeStandardCommands
     <
         EntryCommand,
+        SecndEntryCommand,
         TargetCommand,
         VersionInCommand,
         VersionOutCommand,

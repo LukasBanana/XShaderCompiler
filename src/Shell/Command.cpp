@@ -70,6 +70,26 @@ void EntryCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
+ * SecndEntryCommand class
+ */
+
+std::vector<Command::Identifier> SecndEntryCommand::Idents() const
+{
+    return { { "-E2" }, { "--entry2" } };
+}
+
+HelpDescriptor SecndEntryCommand::Help() const
+{
+    return { "-E2, --entry2 ENTRY", "Secondary shader entry point" };
+}
+
+void SecndEntryCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.inputDesc.secondaryEntryPoint = cmdLine.Accept();
+}
+
+
+/*
  * TargetCommand class
  */
 
