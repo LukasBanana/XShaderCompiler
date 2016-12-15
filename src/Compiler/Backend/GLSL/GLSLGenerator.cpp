@@ -1059,13 +1059,16 @@ bool GLSLGenerator::WriteGlobalLayoutsTessEvaluation(const Program::LayoutTessEv
         else
             Error("failed to map domain type to GLSL keyword (tessellation abstract patch type)");
 
-        Write(", ");
+        if (IsAttributeValuePartitioning(layout.partitioning))
+        {
+            Write(", ");
 
-        /* Map GLSL partitioning (spacing) */
-        if (auto keyword = AttributeValueToGLSLKeyword(layout.partitioning))
-            Write(*keyword);
-        else
-            Error("failed to map partitioning to GLSL keyword (tessellation spacing)");
+            /* Map GLSL partitioning (spacing) */
+            if (auto keyword = AttributeValueToGLSLKeyword(layout.partitioning))
+                Write(*keyword);
+            else
+                Error("failed to map partitioning to GLSL keyword (tessellation spacing)");
+        }
 
         if (IsAttributeValueTrianglePartitioning(layout.outputTopology))
         {

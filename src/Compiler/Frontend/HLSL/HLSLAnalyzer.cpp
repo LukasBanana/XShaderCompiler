@@ -831,6 +831,9 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& 
         case ShaderTarget::TessellationControlShader:
             AnalyzeEntryPointAttributesTessControlShader(attribs);
             break;
+        case ShaderTarget::TessellationEvaluationShader:
+            AnalyzeEntryPointAttributesTessEvaluationShader(attribs);
+            break;
         case ShaderTarget::FragmentShader:
             AnalyzeEntryPointAttributesFragmentShader(attribs);
             break;
@@ -891,6 +894,29 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributesTessControlShader(const std::vecto
     ErrorIfAttributeNotFound(foundOutputTopology, "outputtopology(topology)");
     ErrorIfAttributeNotFound(foundPartitioning, "partitioning(mode)");
     ErrorIfAttributeNotFound(foundPatchConstantFunc, "patchconstantfunc(function)");
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointAttributesTessEvaluationShader(const std::vector<AttributePtr>& attribs)
+{
+    bool foundDomain = false;
+
+    /* Analyze required attributes */
+    for (const auto& attr : attribs)
+    {
+        switch (attr->attributeType)
+        {
+            case AttributeType::Domain:
+                AnalyzeAttributeDomain(attr.get());
+                foundDomain = true;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /* Check for missing attributes */
+    ErrorIfAttributeNotFound(foundDomain, "domain(type)");
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointAttributesFragmentShader(const std::vector<AttributePtr>& attribs)
@@ -958,9 +984,6 @@ void HLSLAnalyzer::AnalyzeInactiveEntryPointAttributesTessEvaluationShader(const
     {
         switch (attr->attributeType)
         {
-            case AttributeType::Domain:
-                AnalyzeAttributeDomain(attr.get(), false);
-                break;
             case AttributeType::OutputTopology:
                 AnalyzeAttributeOutputTopology(attr.get(), false);
                 break;

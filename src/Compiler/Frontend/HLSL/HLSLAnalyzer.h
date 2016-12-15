@@ -99,6 +99,7 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPointParameterInOutBuffer(FunctionDecl* funcDecl, VarDecl* varDecl, BufferTypeDenoter* bufferTypeDen, bool input);
         void AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesTessControlShader(const std::vector<AttributePtr>& attribs);
+        void AnalyzeEntryPointAttributesTessEvaluationShader(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesFragmentShader(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs);
 
