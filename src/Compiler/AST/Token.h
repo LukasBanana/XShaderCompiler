@@ -83,6 +83,8 @@ class Token
 
             Void,               // void
 
+            PrimitiveType,      // point, line, lineadj, triangle, triangleadj
+
             /* --- Keywords --- */
             Reserved,           // reserved keyword (not allowed, but reserved for future use)
 

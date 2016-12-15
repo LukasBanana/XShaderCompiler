@@ -199,6 +199,7 @@ class HLSLParser : public Parser
         void                            ParseFunctionDeclSemantic(FunctionDecl& funcDecl);
 
         DataType                        ParseDataType(const std::string& keyword);
+        PrimitiveType                   ParsePrimitiveType();
         InterpModifier                  ParseInterpModifier();
         TypeModifier                    ParseTypeModifier();
         StorageClass                    ParseStorageClass();
@@ -211,7 +212,7 @@ class HLSLParser : public Parser
 
         void                            ParseStmntWithOptionalComment(std::vector<StmntPtr>& stmnts, const std::function<StmntPtr()>& parseFunction);
 
-        bool                            ParseVarDeclStmntModifiers(VarDeclStmnt* ast);
+        bool                            ParseVarDeclStmntModifiers(VarDeclStmnt* ast, bool allowPrimitiveType = false);
 
         /* === Members === */
 

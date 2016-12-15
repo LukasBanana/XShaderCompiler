@@ -283,6 +283,21 @@ DataType TokenToDataType(const Token& tkn);
 DataType DoubleToFloatDataType(const DataType dataType);
 
 
+/* ----- PrimitiveType Enum ----- */
+
+// Primitive type enumeration.
+enum class PrimitiveType
+{
+    Undefined,
+
+    Point,
+    Line,
+    LineAdj,
+    Triangle,
+    TriangleAdj,
+};
+
+
 /* ----- StorageClass Enum ----- */
 
 // Variable storage class enumeration.

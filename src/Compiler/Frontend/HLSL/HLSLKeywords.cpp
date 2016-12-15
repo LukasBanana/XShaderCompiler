@@ -148,6 +148,12 @@ static KeywordMapType GenerateKeywordMap()
 
         { "void",                    T::Void            },
 
+        { "point",                   T::PrimitiveType   },
+        { "line",                    T::PrimitiveType   },
+        { "lineadj",                 T::PrimitiveType   },
+        { "triangle",                T::PrimitiveType   },
+        { "triangleadj",             T::PrimitiveType   },
+
         { "vector",                  T::Vector          },
         { "matrix",                  T::Matrix          },
 
@@ -413,6 +419,29 @@ DataType HLSLKeywordToDataType(const std::string& keyword)
 {
     static const auto typeMap = GenerateDataTypeMap();
     return MapKeywordToType(typeMap, keyword, "data type");
+}
+
+
+/* ----- PrimitiveType Mapping ----- */
+
+static std::map<std::string, PrimitiveType> GeneratePrimitiveTypeMap()
+{
+    using T = PrimitiveType;
+
+    return
+    {
+        { "point",       T::Point       },
+        { "line",        T::Line        },
+        { "lineadj",     T::LineAdj     },
+        { "triangle",    T::Triangle    },
+        { "triangleadj", T::TriangleAdj },
+    };
+}
+
+PrimitiveType HLSLKeywordToPrimitiveType(const std::string& keyword)
+{
+    static const auto typeMap = GeneratePrimitiveTypeMap();
+    return MapKeywordToType(typeMap, keyword, "primitive type");
 }
 
 

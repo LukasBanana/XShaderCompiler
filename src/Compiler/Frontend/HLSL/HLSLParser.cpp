@@ -321,8 +321,8 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     auto ast = Make<VarDeclStmnt>();
 
     /* Parse parameter as single variable declaration */
-    while (IsVarDeclModifier())
-        ParseVarDeclStmntModifiers(ast.get());
+    while (IsVarDeclModifier() || Is(Tokens::PrimitiveType))
+        ParseVarDeclStmntModifiers(ast.get(), true);
 
     ast->varType = ParseVarType();
     ast->varDecls.push_back(ParseVarDecl(ast.get()));
@@ -2259,6 +2259,19 @@ DataType HLSLParser::ParseDataType(const std::string& keyword)
     return DataType::Undefined;
 }
 
+PrimitiveType HLSLParser::ParsePrimitiveType()
+{
+    try
+    {
+        return HLSLKeywordToPrimitiveType(Accept(Tokens::PrimitiveType)->Spell());
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
+    return PrimitiveType::Undefined;
+}
+
 InterpModifier HLSLParser::ParseInterpModifier()
 {
     try
@@ -2385,7 +2398,7 @@ void HLSLParser::ParseStmntWithOptionalComment(std::vector<StmntPtr>& stmnts, co
     ast->comment = std::move(comment);
 }
 
-bool HLSLParser::ParseVarDeclStmntModifiers(VarDeclStmnt* ast)
+bool HLSLParser::ParseVarDeclStmntModifiers(VarDeclStmnt* ast, bool allowPrimitiveType)
 {
     if (Is(Tokens::InputModifier))
     {
@@ -2418,6 +2431,21 @@ bool HLSLParser::ParseVarDeclStmntModifiers(VarDeclStmnt* ast)
     {
         /* Parse storage class */
         ast->storageClasses.insert(ParseStorageClass());
+    }
+    else if (Is(Tokens::PrimitiveType))
+    {
+        /* Parse primitive type */
+        if (!allowPrimitiveType)
+            Error("primitive type not allowed in this context", false, HLSLErr::Unknown, false);
+        
+        auto primitiveType = ParsePrimitiveType();
+
+        if (ast->primitiveType == PrimitiveType::Undefined)
+            ast->primitiveType = primitiveType;
+        else if (ast->primitiveType == primitiveType)
+            Error("duplicate primitive type specified", true, HLSLErr::Unknown, false);
+        else if (ast->primitiveType != primitiveType)
+            Error("conflicting primitive types", true, HLSLErr::Unknown, false);
     }
     else
         return false;
