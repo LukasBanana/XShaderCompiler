@@ -103,10 +103,10 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPointAttributesFragmentShader(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs);
 
-        /* ----- Inactive entry point ----- */
+        /* ----- Secondary entry point ----- */
 
-        void AnalyzeInactiveEntryPoint(FunctionDecl* funcDecl);
-        void AnalyzeInactiveEntryPointAttributesTessEvaluationShader(const std::vector<AttributePtr>& attribs);
+        void AnalyzeSecondaryEntryPoint(FunctionDecl* funcDecl);
+        void AnalyzeSecondaryEntryPointAttributesTessEvaluationShader(const std::vector<AttributePtr>& attribs);
 
         /* ----- Attributes ----- */
 
@@ -145,13 +145,16 @@ class HLSLAnalyzer : public Analyzer
 
         /* === Members === */
 
-        Program*            program_        = nullptr;
+        Program*            program_                    = nullptr;
 
         std::string         entryPoint_;
-        ShaderTarget        shaderTarget_   = ShaderTarget::VertexShader;
-        InputShaderVersion  versionIn_      = InputShaderVersion::HLSL5;
-        ShaderVersion       shaderModel_    = { 5, 0 };
-        bool                preferWrappers_ = false;
+        std::string         secondaryEntryPoint_;
+        bool                secondaryEntryPointFound_   = false;
+
+        ShaderTarget        shaderTarget_               = ShaderTarget::VertexShader;
+        InputShaderVersion  versionIn_                  = InputShaderVersion::HLSL5;
+        ShaderVersion       shaderModel_                = { 5, 0 };
+        bool                preferWrappers_             = false;
 
 };
 

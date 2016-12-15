@@ -149,6 +149,15 @@ struct ShaderInput
 
     //! Specifies the HLSL shader entry point.
     std::string                     entryPoint;
+
+    /**
+    \brief Specifies the secondary HLSL shader entry point.
+    \remarks This is only used for a Tessellation-Control Shader (alias Hull Shader) entry point,
+    when a Tessellation-Control Shader (alias Domain Shader) is the output target.
+    This is required to translate all Tessellation-Control attributes (i.e. "partitioning" and "outputtopology")
+    to the Tessellation-Evaluation output shader. If this is empty, the default values for these attributes are used.
+    */
+    std::string                     secondaryEntryPoint;
     
     //! Specifies the target shader (Vertex, Fragment etc.). By default ShaderTarget::Undefined.
     ShaderTarget                    shaderTarget    = ShaderTarget::Undefined;

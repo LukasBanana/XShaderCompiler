@@ -38,16 +38,21 @@ void HLSLAnalyzer::DecorateASTPrimary(
     Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
 {
     /* Store parameters */
-    entryPoint_     = inputDesc.entryPoint;
-    shaderTarget_   = inputDesc.shaderTarget;
-    versionIn_      = inputDesc.shaderVersion;
-    shaderModel_    = GetShaderModel(inputDesc.shaderVersion);
-    preferWrappers_ = outputDesc.options.preferWrappers;
+    entryPoint_             = inputDesc.entryPoint;
+    secondaryEntryPoint_    = inputDesc.secondaryEntryPoint;
+    shaderTarget_           = inputDesc.shaderTarget;
+    versionIn_              = inputDesc.shaderVersion;
+    shaderModel_            = GetShaderModel(inputDesc.shaderVersion);
+    preferWrappers_         = outputDesc.options.preferWrappers;
 
     /* Decorate program AST */
     program_ = &program;
 
     Visit(&program);
+
+    /* Check if secondary entry point has been found */
+    if (!secondaryEntryPoint_.empty() && !secondaryEntryPointFound_)
+        Warning("secondary entry point \"" + secondaryEntryPoint_ + "\" not found");
 }
 
 
@@ -222,7 +227,12 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     GetReportHandler().PushContextDesc(ast->SignatureToString(false));
 
-    const auto isEntryPoint = (ast->ident == entryPoint_);
+    /* Check for entry points */
+    const auto isEntryPoint             = (ast->ident == entryPoint_);
+    const auto isSecondaryEntryPoint    = (ast->ident == secondaryEntryPoint_);
+
+    if (isSecondaryEntryPoint)
+        secondaryEntryPointFound_ = true;
 
     /* Analyze function return semantic */
     AnalyzeSemantic(ast->semantic);
@@ -243,8 +253,8 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         /* Special case for the main entry point */
         if (isEntryPoint)
             AnalyzeEntryPoint(ast);
-        else
-            AnalyzeInactiveEntryPoint(ast);
+        else if (isSecondaryEntryPoint)
+            AnalyzeSecondaryEntryPoint(ast);
 
         /* Visit function body */
         PushFunctionDeclLevel(isEntryPoint);
@@ -960,24 +970,24 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributesComputeShader(const std::vector<At
 
 /* ----- Inactive entry point ----- */
 
-void HLSLAnalyzer::AnalyzeInactiveEntryPoint(FunctionDecl* funcDecl)
+void HLSLAnalyzer::AnalyzeSecondaryEntryPoint(FunctionDecl* funcDecl)
 {
     /*
-    The inactive entry point can be a function that is an entry point for another shader target.
+    The secondary entry point can be a function that is an entry point for another shader target.
     This is used to detect the entry point attributes from the tessellation-control shader,
     that are required for the tessellation-evaluation shader in GLSL (e.g. [partitioning(fractional_odd)] -> layout(fractional_odd_spacing)).
     */
     switch (shaderTarget_)
     {
         case ShaderTarget::TessellationEvaluationShader:
-            AnalyzeInactiveEntryPointAttributesTessEvaluationShader(funcDecl->attribs);
+            AnalyzeSecondaryEntryPointAttributesTessEvaluationShader(funcDecl->attribs);
             break;
         default:
             break;
     }
 }
 
-void HLSLAnalyzer::AnalyzeInactiveEntryPointAttributesTessEvaluationShader(const std::vector<AttributePtr>& attribs)
+void HLSLAnalyzer::AnalyzeSecondaryEntryPointAttributesTessEvaluationShader(const std::vector<AttributePtr>& attribs)
 {
     /* Analyze optional attributes */
     for (const auto& attr : attribs)
