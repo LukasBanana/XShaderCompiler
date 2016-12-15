@@ -371,6 +371,21 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         {
             WriteScopeOpen();
             {
+                if (shaderTarget_ == ShaderTarget::TessellationControlShader)
+                {
+                    //TODO:
+                    // THIS IS INCOMPLETE!!!
+                    // more work is to do, to translate the patch constant function to GLSL!)
+                    if (auto patchConstFunc = GetProgram()->layoutTessControl.patchConstFunctionRef)
+                    {
+                        /* Inline patch constant function into main entry point */
+                        WriteComment(patchConstFunc->ident);
+                        WriteLn("if (gl_InvocationID == 0)");
+                        Visit(patchConstFunc->codeBlock);
+                        Blank();
+                    }
+                }
+
                 /* Write input/output parameters of system values as local variables */
                 WriteLocalInputSemantics();
                 WriteLocalOutputSemantics();

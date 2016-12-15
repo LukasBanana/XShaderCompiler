@@ -1035,6 +1035,7 @@ void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
             /* Fetch patch constant function entry point */
             if (auto patchConstFunc = FetchFunctionDecl(literalValue))
             {
+                /* Decorate program AST node with function reference */
                 program_->layoutTessControl.patchConstFunctionRef = patchConstFunc;
             }
             else

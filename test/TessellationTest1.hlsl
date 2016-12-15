@@ -45,13 +45,15 @@ OutputHS PatchConstantFuncHS(InputPatch<OutputVS, 4> inp)
 {
 	OutputHS outp;
 	
+	// Set inner level
+	outp.inner[0] = tessLevelInner;
+	outp.inner[1] = tessLevelInner;
+	
+	// Set outer level
 	outp.edges[0] = tessLevelOuter;
 	outp.edges[1] = tessLevelOuter;
 	outp.edges[2] = tessLevelOuter;
 	outp.edges[3] = tessLevelOuter;
-	
-	outp.inner[0] = tessLevelInner;
-	outp.inner[1] = tessLevelInner;
 	
 	return outp;
 }
@@ -59,7 +61,7 @@ OutputHS PatchConstantFuncHS(InputPatch<OutputVS, 4> inp)
 [domain("quad")]
 [partitioning("fractional_odd")]
 [outputtopology("triangle_ccw")]
-[outputcontrolpoints(4+2)]
+[outputcontrolpoints(4)]
 [patchconstantfunc("PatchConstantFuncHS")]
 [maxtessfactor(64.0)] // optional
 OutputVS HS(InputPatch<OutputVS, 4> inp, uint id : SV_OutputControlPointID)
