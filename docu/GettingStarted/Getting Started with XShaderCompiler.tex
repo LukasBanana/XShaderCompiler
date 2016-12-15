@@ -271,6 +271,11 @@ That means, both the tessellation-control- \emph{and} the tessellation-evaluatio
 in the same shader source file (or at least in one of the included files) to guarantee a full translation of all information.
 Otherwise default values will be used.
 
+To specify the secondary entry point (in the above example ``\texttt{HullShader}'') use the
+\texttt{secondaryEntryPoint} member in the \texttt{Xsc::ShaderInput} structure
+or the ``\texttt{-E2, ----entry2 ENTRY}'' shell command.
+
+
 
 
 
