@@ -30,8 +30,8 @@ Progress
 | Feature | Progress | Remarks |
 |---------|:--------:|---------|
 | Vertex Shader | ~80% | |
-| Tessellation Control Shader | ~10% | |
-| Tessellation Evaluation Shader | ~10% | |
+| Tessellation Control Shader | ~20% | |
+| Tessellation Evaluation Shader | ~20% | |
 | Geometry Shader | 0% | |
 | Fragment Shader | ~80% | |
 | Compute Shader | ~80% | |

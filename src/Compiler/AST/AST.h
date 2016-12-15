@@ -323,7 +323,7 @@ struct PackOffset : public AST
     std::string vectorComponent; // May be empty
 };
 
-//TODO: replace this AST class completely by TypeDenoter
+//TODO: maybe replace this AST class completely by TypeDenoter
 // Variable data type.
 struct VarType : public AST //TypedAST
 {
