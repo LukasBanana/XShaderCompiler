@@ -199,11 +199,6 @@ struct Program : public AST
         FLAG( isFragCoordUsed,   1 ), // This shader program makes use of the fragment coordinate (SV_Position, gl_FragCoord).
     };
 
-    struct LayoutComputeShader
-    {
-        unsigned int numThreads[3] = { 0 };
-    };
-
     struct LayoutTessControlShader
     {
         unsigned int    outputControlPoints     = 0;
@@ -218,6 +213,16 @@ struct Program : public AST
         AttributeValue  outputTopology  = AttributeValue::Undefined;
     };
 
+    struct LayoutFragmentShader
+    {
+        bool earlyDepthStencil = false;
+    };
+
+    struct LayoutComputeShader
+    {
+        unsigned int numThreads[3] = { 0 };
+    };
+
     std::vector<StmntPtr>               globalStmnts;               // Global declaration statements
 
     std::vector<ASTPtr>                 disabledAST;                // AST nodes that have been disabled for code generation (not part of the default visitor).
@@ -226,9 +231,10 @@ struct Program : public AST
     FunctionDecl*                       entryPointRef   = nullptr;  // Reference to the entry point function declaration.
     std::map<Intrinsic, IntrinsicUsage> usedIntrinsics;             // Set of all used intrinsic (filled by the reference analyzer).
 
-    LayoutComputeShader                 layoutCompute;              // Global program layout attributes for compute shader.
-    LayoutTessControlShader             layoutTessControl;          // Global program layout attributes for tessellation-control shader.
-    LayoutTessEvaluationShader          layoutTessEvaluation;       // Global program layout attributes for tessellation-evaluation shader.
+    LayoutTessControlShader             layoutTessControl;          // Global program layout attributes for a tessellation-control shader.
+    LayoutTessEvaluationShader          layoutTessEvaluation;       // Global program layout attributes for a tessellation-evaluation shader.
+    LayoutFragmentShader                layoutFragment;             // Global program layout attributes for a fragment shader.
+    LayoutComputeShader                 layoutCompute;              // Global program layout attributes for a compute shader.
 };
 
 // Code block.

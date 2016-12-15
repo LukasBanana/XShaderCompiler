@@ -98,19 +98,22 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPointParameterInOutStruct(FunctionDecl* funcDecl, StructDecl* structDecl, const std::string& structAliasName, bool input);
         void AnalyzeEntryPointParameterInOutBuffer(FunctionDecl* funcDecl, VarDecl* varDecl, BufferTypeDenoter* bufferTypeDen, bool input);
         void AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& attribs);
-        void AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesTessControlShader(const std::vector<AttributePtr>& attribs);
+        void AnalyzeEntryPointAttributesFragmentShader(const std::vector<AttributePtr>& attribs);
+        void AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs);
 
         /* ----- Attributes ----- */
 
         bool AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedNumArgs);
-        void AnalyzeAttributeNumThreads(Attribute* ast);
-        void AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& value);
+        
         void AnalyzeAttributeDomain(Attribute* ast);
         void AnalyzeAttributeOutputControlPoints(Attribute* ast);
         void AnalyzeAttributeOutputTopology(Attribute* ast);
         void AnalyzeAttributePartitioning(Attribute* ast);
         void AnalyzeAttributePatchConstantFunc(Attribute* ast);
+
+        void AnalyzeAttributeNumThreads(Attribute* ast);
+        void AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& value);
 
         void AnalyzeAttributeValue(
             Expr* argExpr,

@@ -140,7 +140,7 @@ class GLSLGenerator : public Generator
         void WriteGlobalLayouts();
         bool WriteGlobalLayoutsTessControl(const Program::LayoutTessControlShader& layout);
         bool WriteGlobalLayoutsTessEvaluation(const Program::LayoutTessEvaluationShader& layout);
-        bool WriteGlobalLayoutsFragment();
+        bool WriteGlobalLayoutsFragment(const Program::LayoutFragmentShader& layout);
         bool WriteGlobalLayoutsCompute(const Program::LayoutComputeShader& layout);
 
         /* --- Input semantics --- */

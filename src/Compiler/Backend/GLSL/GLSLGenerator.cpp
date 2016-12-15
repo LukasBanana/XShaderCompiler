@@ -1017,26 +1017,28 @@ void GLSLGenerator::WriteGlobalLayouts()
 {
     auto program = GetProgram();
 
-    if (IsTessControlShader())
+    bool layoutsWritten = false;
+
+    switch (GetShaderTarget())
     {
-        if (WriteGlobalLayoutsTessControl(program->layoutTessControl))
-            Blank();
+        case ShaderTarget::TessellationControlShader:
+            layoutsWritten = WriteGlobalLayoutsTessControl(program->layoutTessControl);
+            break;
+        case ShaderTarget::TessellationEvaluationShader:
+            layoutsWritten = WriteGlobalLayoutsTessEvaluation(program->layoutTessEvaluation);
+            break;
+        case ShaderTarget::FragmentShader:
+            layoutsWritten = WriteGlobalLayoutsFragment(program->layoutFragment);
+            break;
+        case ShaderTarget::ComputeShader:
+            layoutsWritten = WriteGlobalLayoutsCompute(program->layoutCompute);
+            break;
+        default:
+            break;
     }
-    else if (IsTessEvaluationShader())
-    {
-        if (WriteGlobalLayoutsTessEvaluation(program->layoutTessEvaluation))
-            Blank();
-    }
-    else if (IsFragmentShader())
-    {
-        if (WriteGlobalLayoutsFragment())
-            Blank();
-    }
-    else if (IsComputeShader())
-    {
-        if (WriteGlobalLayoutsCompute(program->layoutCompute))
-            Blank();
-    }
+
+    if (layoutsWritten)
+        Blank();
 }
 
 bool GLSLGenerator::WriteGlobalLayoutsTessControl(const Program::LayoutTessControlShader& layout)
@@ -1051,7 +1053,7 @@ bool GLSLGenerator::WriteGlobalLayoutsTessEvaluation(const Program::LayoutTessEv
     return true;
 }
 
-bool GLSLGenerator::WriteGlobalLayoutsFragment()
+bool GLSLGenerator::WriteGlobalLayoutsFragment(const Program::LayoutFragmentShader& layout)
 {
     bool layoutsWritten = false;
 
@@ -1068,22 +1070,11 @@ bool GLSLGenerator::WriteGlobalLayoutsFragment()
         layoutsWritten = true;
     }
 
-    //TODO: refactor this
-    #if 1
-
-    const auto& attribs = GetProgram()->entryPointRef->attribs;
-    auto itEarlyDepthStencil = std::find_if(
-        attribs.begin(), attribs.end(),
-        [](const AttributePtr& attr)
-        {
-            return (attr->attributeType == AttributeType::EarlyDepthStencil);
-        }
-    );
-
-    if (itEarlyDepthStencil != attribs.end())
+    if (layout.earlyDepthStencil)
+    {
         WriteLn("layout(early_fragment_tests) in;");
-    
-    #endif
+        layoutsWritten = true;
+    }
 
     return layoutsWritten;
 }

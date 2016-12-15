@@ -826,38 +826,18 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& 
 {
     switch (shaderTarget_)
     {
-        case ShaderTarget::ComputeShader:
-            AnalyzeEntryPointAttributesComputeShader(attribs);
-            break;
         case ShaderTarget::TessellationControlShader:
             AnalyzeEntryPointAttributesTessControlShader(attribs);
+            break;
+        case ShaderTarget::FragmentShader:
+            AnalyzeEntryPointAttributesFragmentShader(attribs);
+            break;
+        case ShaderTarget::ComputeShader:
+            AnalyzeEntryPointAttributesComputeShader(attribs);
             break;
         default:
             break;
     }
-}
-
-void HLSLAnalyzer::AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs)
-{
-    bool foundNumThreads = false;
-
-    /* Analyze required attributes */
-    for (const auto& attr : attribs)
-    {
-        switch (attr->attributeType)
-        {
-            case AttributeType::NumThreads:
-                AnalyzeAttributeNumThreads(attr.get());
-                foundNumThreads = true;
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    /* Check for missing attributes */
-    ErrorIfAttributeNotFound(foundNumThreads, "numthreads(x, y, z)");
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointAttributesTessControlShader(const std::vector<AttributePtr>& attribs)
@@ -911,6 +891,45 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributesTessControlShader(const std::vecto
     ErrorIfAttributeNotFound(foundPatchConstantFunc, "patchconstantfunc(function)");
 }
 
+void HLSLAnalyzer::AnalyzeEntryPointAttributesFragmentShader(const std::vector<AttributePtr>& attribs)
+{
+    /* Analyze optional attributes */
+    for (const auto& attr : attribs)
+    {
+        switch (attr->attributeType)
+        {
+            case AttributeType::EarlyDepthStencil:
+                program_->layoutFragment.earlyDepthStencil = true;
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs)
+{
+    bool foundNumThreads = false;
+
+    /* Analyze required attributes */
+    for (const auto& attr : attribs)
+    {
+        switch (attr->attributeType)
+        {
+            case AttributeType::NumThreads:
+                AnalyzeAttributeNumThreads(attr.get());
+                foundNumThreads = true;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /* Check for missing attributes */
+    ErrorIfAttributeNotFound(foundNumThreads, "numthreads(x, y, z)");
+}
+
 /* ----- Attributes ----- */
 
 bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedNumArgs)
@@ -936,30 +955,6 @@ bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedN
         return true;
 
     return false;
-}
-
-void HLSLAnalyzer::AnalyzeAttributeNumThreads(Attribute* ast)
-{
-    if (AnalyzeNumArgsAttribute(ast, 3))
-    {
-        /* Evaluate and store all three thread counts in global layout */
-        for (int i = 0; i < 3; ++i)
-        {
-            AnalyzeAttributeNumThreadsArgument(
-                ast->arguments[i].get(),
-                program_->layoutCompute.numThreads[i]
-            );
-        }
-    }
-}
-
-void HLSLAnalyzer::AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& value)
-{
-    int exprValue = EvaluateConstExprInt(*ast);
-    if (exprValue > 0)
-        value = static_cast<unsigned int>(exprValue);
-    else
-        Error("number of threads must be greater than zero", ast);
 }
 
 void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast)
@@ -1044,6 +1039,30 @@ void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
         else
             Error("expected patch constant function parameter to be a string literal", ast->arguments[0].get(), HLSLErr::ERR_ATTRIBUTE);
     }
+}
+
+void HLSLAnalyzer::AnalyzeAttributeNumThreads(Attribute* ast)
+{
+    if (AnalyzeNumArgsAttribute(ast, 3))
+    {
+        /* Evaluate and store all three thread counts in global layout */
+        for (int i = 0; i < 3; ++i)
+        {
+            AnalyzeAttributeNumThreadsArgument(
+                ast->arguments[i].get(),
+                program_->layoutCompute.numThreads[i]
+            );
+        }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& value)
+{
+    int exprValue = EvaluateConstExprInt(*ast);
+    if (exprValue > 0)
+        value = static_cast<unsigned int>(exprValue);
+    else
+        Error("number of threads must be greater than zero", ast);
 }
 
 void HLSLAnalyzer::AnalyzeAttributeValue(
