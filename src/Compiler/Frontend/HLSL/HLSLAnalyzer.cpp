@@ -723,7 +723,7 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
 
     /* Check if fragment shader use a slightly different screen space (VPOS vs. SV_Position) */
     if (shaderTarget_ == ShaderTarget::FragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
-        program_->flags << Program::hasSM3ScreenSpace;
+        program_->layoutFragment.pixelCenterInteger = true;
 
     /* Analyze entry pointer attributes (also missing attributes such as "numthreads" for compute shaders) */
     AnalyzeEntryPointAttributes(funcDecl->attribs);

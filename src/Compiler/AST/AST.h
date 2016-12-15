@@ -195,8 +195,7 @@ struct Program : public AST
 
     FLAG_ENUM
     {
-        FLAG( hasSM3ScreenSpace, 0 ), // This shader program uses the Shader Model (SM) 3 screen space (VPOS vs. SV_Position).
-        FLAG( isFragCoordUsed,   1 ), // This shader program makes use of the fragment coordinate (SV_Position, gl_FragCoord).
+        FLAG( isFragCoordUsed, 1 ), // This shader program makes use of the fragment coordinate (SV_Position, gl_FragCoord).
     };
 
     struct LayoutTessControlShader
@@ -215,7 +214,8 @@ struct Program : public AST
 
     struct LayoutFragmentShader
     {
-        bool earlyDepthStencil = false;
+        bool pixelCenterInteger = false;    // True, if the pixel center is assumed to be integral. If false, pixel coordiante is assumed to have an (0.5, 0.5) offset.
+        bool earlyDepthStencil  = false;
     };
 
     struct LayoutComputeShader

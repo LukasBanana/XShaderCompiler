@@ -1062,7 +1062,7 @@ bool GLSLGenerator::WriteGlobalLayoutsFragment(const Program::LayoutFragmentShad
         BeginLn();
         {
             Write("layout(origin_upper_left");
-            if (GetProgram()->flags(Program::hasSM3ScreenSpace))
+            if (layout.pixelCenterInteger)
                 Write(", pixel_center_integer");
             Write(") in vec4 gl_FragCoord;");
         }
