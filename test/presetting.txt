@@ -60,7 +60,7 @@
 -W -T tesc -E HS -o output/* TessellationTest1.hlsl
 
 [TessellationTest1 DS]
--W -T tese -E DS -o output/* TessellationTest1.hlsl
+-W -T tese -E DS -E2 HS -o output/* TessellationTest1.hlsl
 
 [TessellationTest1 PS]
 -W -T frag -E PS -o output/* TessellationTest1.hlsl

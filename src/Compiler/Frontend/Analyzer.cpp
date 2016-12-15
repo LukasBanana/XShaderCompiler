@@ -51,7 +51,10 @@ bool Analyzer::DecorateAST(
 void Analyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast, const HLSLErr errorCode)
 {
     auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
-    reportHandler_.SubmitReport(false, reportType, "context error", msg, sourceCode_, (ast ? ast->area : SourceArea::ignore), errorCode);
+    reportHandler_.SubmitReport(
+        false, reportType, (isError ? "context error" : "warning"),
+        msg, sourceCode_, (ast ? ast->area : SourceArea::ignore), errorCode
+    );
 }
 
 void Analyzer::Error(const std::string& msg, const AST* ast, const HLSLErr errorCode)
