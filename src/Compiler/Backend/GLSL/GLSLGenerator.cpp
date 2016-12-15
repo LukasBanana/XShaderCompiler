@@ -14,7 +14,6 @@
 #include "ReferenceAnalyzer.h"
 #include "ControlPathAnalyzer.h"
 #include "TypeDenoter.h"
-#include "AST.h"
 #include "Exception.h"
 #include "Helper.h"
 #include <initializer_list>
@@ -1012,94 +1011,95 @@ void GLSLGenerator::WriteProgramHeaderExtension(const std::string& extensionName
     WriteLn("#extension " + extensionName + " : enable");// "require" or "enable"
 }
 
-/* --- Attributes --- */
+/* --- Layouts --- */
 
 void GLSLGenerator::WriteGlobalLayouts()
 {
-    bool layoutsWritten = false;
     auto program = GetProgram();
 
-    /* Write 'gl_FragCoord' layout */
-    if (IsFragmentShader() && program->flags(Program::isFragCoordUsed))
+    if (IsTessControlShader())
     {
-        WriteGlobalLayoutFragCoord();
-        layoutsWritten = true;
+        if (WriteGlobalLayoutsTessControl(program->layoutTessControl))
+            Blank();
     }
-
-    /* Write global layouts from entry point attributes */
-    if (WriteEntryPointAttributes())
-        layoutsWritten = true;
-
-    if (layoutsWritten)
-        Blank();
-}
-
-void GLSLGenerator::WriteGlobalLayoutFragCoord()
-{
-    BeginLn();
+    else if (IsTessEvaluationShader())
     {
-        Write("layout(origin_upper_left");
-        if (GetProgram()->flags(Program::hasSM3ScreenSpace))
-            Write(", pixel_center_integer");
-        Write(") in vec4 gl_FragCoord;");
+        if (WriteGlobalLayoutsTessEvaluation(program->layoutTessEvaluation))
+            Blank();
     }
-    EndLn();
-}
-
-bool GLSLGenerator::WriteEntryPointAttributes()
-{
-    auto entryPoint = GetProgram()->entryPointRef;
-
-    /* Write entry point attributes */
-    if (!entryPoint->attribs.empty())
+    else if (IsFragmentShader())
     {
-        for (auto& attrib : entryPoint->attribs)
-            WriteAttribute(attrib.get());
-        return true;
+        if (WriteGlobalLayoutsFragment())
+            Blank();
     }
-
-    return false;
-}
-
-void GLSLGenerator::WriteAttribute(Attribute* ast)
-{
-    switch (ast->attributeType)
+    else if (IsComputeShader())
     {
-        case AttributeType::NumThreads:
-            WriteAttributeNumThreads(ast);
-            break;
-        case AttributeType::EarlyDepthStencil:
-            WriteAttributeEarlyDepthStencil();
-            break;
-        default:
-            // ignore other attributes
-            break;
+        if (WriteGlobalLayoutsCompute(program->layoutCompute))
+            Blank();
     }
 }
 
-void GLSLGenerator::WriteAttributeNumThreads(Attribute* ast)
+bool GLSLGenerator::WriteGlobalLayoutsTessControl(const Program::LayoutTessControlShader& layout)
 {
-    if (ast->arguments.size() == 3)
+    WriteLn("layout(vertices = " + std::to_string(layout.outputControlPoints) + ") in;");
+    return true;
+}
+
+bool GLSLGenerator::WriteGlobalLayoutsTessEvaluation(const Program::LayoutTessEvaluationShader& layout)
+{
+    //TODO...
+    return true;
+}
+
+bool GLSLGenerator::WriteGlobalLayoutsFragment()
+{
+    bool layoutsWritten = false;
+
+    if (GetProgram()->flags(Program::isFragCoordUsed))
     {
         BeginLn();
         {
-            const auto& numThreads = GetProgram()->layoutCompute.numThreads;
-
-            Write("layout(");
-            Write("local_size_x = " + std::to_string(numThreads[0]) + ", ");
-            Write("local_size_y = " + std::to_string(numThreads[1]) + ", ");
-            Write("local_size_z = " + std::to_string(numThreads[2]));
-            Write(") in;");
+            Write("layout(origin_upper_left");
+            if (GetProgram()->flags(Program::hasSM3ScreenSpace))
+                Write(", pixel_center_integer");
+            Write(") in vec4 gl_FragCoord;");
         }
         EndLn();
+        layoutsWritten = true;
     }
-    else
-        ErrorInvalidNumArgs("\"numthreads\" attribute", ast);
+
+    //TODO: refactor this
+    #if 1
+
+    const auto& attribs = GetProgram()->entryPointRef->attribs;
+    auto itEarlyDepthStencil = std::find_if(
+        attribs.begin(), attribs.end(),
+        [](const AttributePtr& attr)
+        {
+            return (attr->attributeType == AttributeType::EarlyDepthStencil);
+        }
+    );
+
+    if (itEarlyDepthStencil != attribs.end())
+        WriteLn("layout(early_fragment_tests) in;");
+    
+    #endif
+
+    return layoutsWritten;
 }
 
-void GLSLGenerator::WriteAttributeEarlyDepthStencil()
+bool GLSLGenerator::WriteGlobalLayoutsCompute(const Program::LayoutComputeShader& layout)
 {
-    WriteLn("layout(early_fragment_tests) in;");
+    BeginLn();
+    {
+        Write("layout(");
+        Write("local_size_x = " + std::to_string(layout.numThreads[0]) + ", ");
+        Write("local_size_y = " + std::to_string(layout.numThreads[1]) + ", ");
+        Write("local_size_z = " + std::to_string(layout.numThreads[2]));
+        Write(") in;");
+    }
+    EndLn();
+    return true;
 }
 
 /* --- Input semantics --- */

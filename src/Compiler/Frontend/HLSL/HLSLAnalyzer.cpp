@@ -968,7 +968,7 @@ void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast)
     {
         AnalyzeAttributeValue(
             ast->arguments[0].get(),
-            program_->layoutTessControl.domainType,
+            program_->layoutTessEvaluation.domainType,
             IsAttributeValueDomain,
             "expected domain type parameter to be \"tri\", \"quad\", or \"isolane\"",
             HLSLErr::ERR_HSATTRIBUTE_INVALID
@@ -1000,7 +1000,7 @@ void HLSLAnalyzer::AnalyzeAttributeOutputTopology(Attribute* ast)
     {
         AnalyzeAttributeValue(
             ast->arguments[0].get(),
-            program_->layoutTessControl.outputTopology,
+            program_->layoutTessEvaluation.outputTopology,
             IsAttributeValueOutputTopology,
             "expected output topology parameter to be \"point\", \"line\", \"triangle_cw\", or \"triangle_ccw\"",
             HLSLErr::ERR_HSATTRIBUTE_INVALID
@@ -1014,7 +1014,7 @@ void HLSLAnalyzer::AnalyzeAttributePartitioning(Attribute* ast)
     {
         AnalyzeAttributeValue(
             ast->arguments[0].get(),
-            program_->layoutTessControl.partitioning,
+            program_->layoutTessEvaluation.partitioning,
             IsAttributeValuePartitioning,
             "expected partitioning mode parameter to be \"integer\", \"pow2\", \"fractional_even\", or \"fractional_odd\"",
             HLSLErr::ERR_HSATTRIBUTE_INVALID

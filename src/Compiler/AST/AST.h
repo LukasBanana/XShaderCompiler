@@ -206,12 +206,16 @@ struct Program : public AST
 
     struct LayoutTessControlShader
     {
-        AttributeValue  domainType              = AttributeValue::Undefined;
-        AttributeValue  partitioning            = AttributeValue::Undefined;
-        AttributeValue  outputTopology          = AttributeValue::Undefined;
         unsigned int    outputControlPoints     = 0;
         float           maxTessFactor           = 0.0f;
         FunctionDecl*   patchConstFunctionRef   = nullptr;
+    };
+
+    struct LayoutTessEvaluationShader
+    {
+        AttributeValue  domainType      = AttributeValue::Undefined;
+        AttributeValue  partitioning    = AttributeValue::Undefined;
+        AttributeValue  outputTopology  = AttributeValue::Undefined;
     };
 
     std::vector<StmntPtr>               globalStmnts;               // Global declaration statements
@@ -224,6 +228,7 @@ struct Program : public AST
 
     LayoutComputeShader                 layoutCompute;              // Global program layout attributes for compute shader.
     LayoutTessControlShader             layoutTessControl;          // Global program layout attributes for tessellation-control shader.
+    LayoutTessEvaluationShader          layoutTessEvaluation;       // Global program layout attributes for tessellation-evaluation shader.
 };
 
 // Code block.

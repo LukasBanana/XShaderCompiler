@@ -10,6 +10,7 @@
 
 
 #include <Xsc/Xsc.h>
+#include "AST.h"
 #include "Generator.h"
 #include "Visitor.h"
 #include "Token.h"
@@ -134,16 +135,13 @@ class GLSLGenerator : public Generator
         void WriteProgramHeaderVersion();
         void WriteProgramHeaderExtension(const std::string& extensionName);
 
-        /* --- Attributes --- */
+        /* --- Layouts --- */
 
         void WriteGlobalLayouts();
-        void WriteGlobalLayoutFragCoord();
-
-        bool WriteEntryPointAttributes();
-
-        void WriteAttribute(Attribute* ast);
-        void WriteAttributeNumThreads(Attribute* ast);
-        void WriteAttributeEarlyDepthStencil();
+        bool WriteGlobalLayoutsTessControl(const Program::LayoutTessControlShader& layout);
+        bool WriteGlobalLayoutsTessEvaluation(const Program::LayoutTessEvaluationShader& layout);
+        bool WriteGlobalLayoutsFragment();
+        bool WriteGlobalLayoutsCompute(const Program::LayoutComputeShader& layout);
 
         /* --- Input semantics --- */
 
