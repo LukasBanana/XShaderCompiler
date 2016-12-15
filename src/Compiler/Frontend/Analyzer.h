@@ -75,10 +75,12 @@ class Analyzer : protected Visitor
 
         void Register(const std::string& ident, AST* ast);
         
-        AST* Fetch(const std::string& ident);
+        AST* Fetch(const std::string& ident, const AST* ast = nullptr);
         AST* Fetch(const VarIdentPtr& ident);
         AST* FetchType(const std::string& ident, const AST* ast = nullptr);
+
         FunctionDecl* FetchFunctionDecl(const std::string& ident, const std::vector<ExprPtr>& args, const AST* ast = nullptr);
+        FunctionDecl* FetchFunctionDecl(const std::string& ident, const AST* ast = nullptr);
 
         VarDecl* FetchFromStructDecl(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast = nullptr);
 

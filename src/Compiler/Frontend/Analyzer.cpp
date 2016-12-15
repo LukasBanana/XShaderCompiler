@@ -116,35 +116,32 @@ void Analyzer::Register(const std::string& ident, AST* ast)
     }
 }
 
-AST* Analyzer::Fetch(const std::string& ident)
+AST* Analyzer::Fetch(const std::string& ident, const AST* ast)
 {
     try
     {
-        auto symbol = symTable_.Fetch(ident);
-        if (symbol)
+        if (auto symbol = symTable_.Fetch(ident))
             return symbol->Fetch();
         else
-            ErrorUndeclaredIdent(ident);
+            ErrorUndeclaredIdent(ident, ast);
     }
     catch (const std::exception& e)
     {
-        Error(e.what());
+        Error(e.what(), ast);
     }
     return nullptr;
 }
 
 AST* Analyzer::Fetch(const VarIdentPtr& ident)
 {
-    auto fullIdent = ident->ToString();
-    return Fetch(fullIdent);
+    return Fetch(ident->ToString(), ident.get());
 }
 
 AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
 {
     try
     {
-        auto symbol = symTable_.Fetch(ident);
-        if (symbol)
+        if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchType();
         else
             ErrorUndeclaredIdent(ident, ast);
@@ -161,8 +158,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
     try
     {
         /* Fetch symbol with identifier */
-        auto symbol = symTable_.Fetch(ident);
-        if (symbol)
+        if (auto symbol = symTable_.Fetch(ident))
         {
             /* Derive type denoters from arguments */
             std::vector<TypeDenoterPtr> argTypeDens;
@@ -195,6 +191,22 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
     {
         Error(e.what(), e.GetAST());
         return nullptr;
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what(), ast);
+    }
+    return nullptr;
+}
+
+FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const AST* ast)
+{
+    try
+    {
+        if (auto symbol = symTable_.Fetch(ident))
+            return symbol->FetchFunctionDecl();
+        else
+            ErrorUndeclaredIdent(ident, ast);
     }
     catch (const std::exception& e)
     {

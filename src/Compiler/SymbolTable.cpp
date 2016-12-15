@@ -100,6 +100,16 @@ AST* ASTSymbolOverload::FetchType(bool throwOnFailure)
     return ref;
 }
 
+FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(bool throwOnFailure)
+{
+    auto ref = Fetch(throwOnFailure);
+    if (auto funcDecl = ref->As<FunctionDecl>())
+        return funcDecl;
+    else if (throwOnFailure)
+        RuntimeErr("identifier '" + ident_ + "' does not name a function");
+    return nullptr;
+}
+
 FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoterPtr>& argTypeDenoters)
 {
     if (refs_.empty())

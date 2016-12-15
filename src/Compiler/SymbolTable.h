@@ -188,6 +188,9 @@ class ASTSymbolOverload
         */
         AST* FetchType(bool throwOnFailure = true);
 
+        // Returns the FunctionDecl AST node (if the function is not overloaded).
+        FunctionDecl* FetchFunctionDecl(bool throwOnFailure = true);
+
         // Returns the FunctionDecl AST node for the specified argument type denoter list (used to derive the overloaded function).
         FunctionDecl* FetchFunctionDecl(const std::vector<TypeDenoterPtr>& argTypeDenoters);
 

@@ -614,8 +614,6 @@ void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
         {
             if (auto symbol = Fetch(varIdent->ident))
                 AnalyzeVarIdentWithSymbol(varIdent, symbol);
-            else
-                ErrorUndeclaredIdent(varIdent->ident, varIdent);
         }
         catch (const ASTRuntimeError& e)
         {
@@ -1028,7 +1026,22 @@ void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
 {
     if (AnalyzeNumArgsAttribute(ast, 1))
     {
-        //TODO...
+        auto literalExpr = ast->arguments[0]->As<LiteralExpr>();
+        if (literalExpr && literalExpr->dataType == DataType::String)
+        {
+            /* Get string literal value, and fetch function name */
+            auto literalValue = literalExpr->GetStringValue();
+
+            /* Fetch patch constant function entry point */
+            if (auto patchConstFunc = FetchFunctionDecl(literalValue))
+            {
+                program_->layoutTessControl.patchConstFunctionRef = patchConstFunc;
+            }
+            else
+                Error("entry point '" + literalValue + "' for patch constant function not found", ast->arguments[0].get(), HLSLErr::ERR_ENTRYPOINT_NOT_FOUND);
+        }
+        else
+            Error("expected patch constant function parameter to be a string literal", ast->arguments[0].get(), HLSLErr::ERR_ATTRIBUTE);
     }
 }
 
