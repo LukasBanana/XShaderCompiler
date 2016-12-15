@@ -28,6 +28,7 @@ bool Generator::GenerateCode(
     /* Store parameters */
     writer_.SetIndent(outputDesc.formatting.indent);
 
+    shaderTarget_   = inputDesc.shaderTarget;
     allowBlanks_    = outputDesc.formatting.blanks;
     program_        = &program;
 
@@ -126,6 +127,36 @@ std::string Generator::TimePoint() const
     s << std::put_time(std::localtime(&date), "%d/%m/%Y %H:%M:%S");
 
     return s.str();
+}
+
+bool Generator::IsVertexShader() const
+{
+    return (shaderTarget_ == ShaderTarget::VertexShader);
+}
+
+bool Generator::IsTessControlShader() const
+{
+    return (shaderTarget_ == ShaderTarget::TessellationControlShader);
+}
+
+bool Generator::IsTessEvaluationShader() const
+{
+    return (shaderTarget_ == ShaderTarget::TessellationEvaluationShader);
+}
+
+bool Generator::IsGeometryShader() const
+{
+    return (shaderTarget_ == ShaderTarget::GeometryShader);
+}
+
+bool Generator::IsFragmentShader() const
+{
+    return (shaderTarget_ == ShaderTarget::FragmentShader);
+}
+
+bool Generator::IsComputeShader() const
+{
+    return (shaderTarget_ == ShaderTarget::ComputeShader);
 }
 
 

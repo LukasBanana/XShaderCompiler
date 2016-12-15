@@ -229,7 +229,6 @@ class GLSLGenerator : public Generator
 
         /* === Members === */
 
-        ShaderTarget        shaderTarget_           = ShaderTarget::VertexShader;
         OutputShaderVersion versionOut_             = OutputShaderVersion::GLSL;
         bool                allowExtensions_        = false;
         bool                explicitBinding_        = false;

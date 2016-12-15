@@ -72,12 +72,27 @@ class Generator : protected Visitor
             return program_;
         }
 
+        // Returns the shader target.
+        inline ShaderTarget GetShaderTarget() const
+        {
+            return shaderTarget_;
+        }
+
+        bool IsVertexShader() const;
+        bool IsTessControlShader() const;
+        bool IsTessEvaluationShader() const;
+        bool IsGeometryShader() const;
+        bool IsFragmentShader() const;
+        bool IsComputeShader() const;
+
     private:
 
         CodeWriter      writer_;
         ReportHandler   reportHandler_;
 
         Program*        program_        = nullptr;
+
+        ShaderTarget    shaderTarget_   = ShaderTarget::VertexShader;
 
         bool            allowBlanks_    = true;
 
