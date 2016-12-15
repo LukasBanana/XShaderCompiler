@@ -258,6 +258,37 @@ const std::string* SamplerTypeToGLSLKeyword(const SamplerType t, bool useVulkanG
 }
 
 
+/* ----- BufferType Mapping ----- */
+
+static std::map<AttributeValue, std::string> GenerateAttributeValueMap()
+{
+    using T = AttributeValue;
+
+    return
+    {
+        { T::DomainTri,                  "triangles"               },
+        { T::DomainQuad,                 "quads"                   },
+        { T::DomainIsoline,              "isolines"                },
+
+      //{ T::OutputTopologyPoint,        ""                        }, // ignored in GLSL
+      //{ T::OutputTopologyLine,         ""                        }, // ignored in GLSL
+        { T::OutputTopologyTriangleCW,   "cw"                      },
+        { T::OutputTopologyTriangleCCW,  "ccw"                     },
+
+        { T::PartitioningInteger,        "equal_spacing"           },
+        { T::PartitioningPow2,           "equal_spacing"           }, // ???
+        { T::PartitioningFractionalEven, "fractional_even_spacing" },
+        { T::PartitioningFractionalOdd,  "fractional_odd_spacing"  },
+    };
+}
+
+const std::string* AttributeValueToGLSLKeyword(const AttributeValue t)
+{
+    static const auto typeMap = GenerateAttributeValueMap();
+    return MapTypeToKeyword(typeMap, t);
+}
+
+
 /* ----- Semantic Mapping ----- */
 
 struct GLSLSemanticDescriptor

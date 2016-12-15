@@ -102,14 +102,19 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPointAttributesFragmentShader(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs);
 
+        /* ----- Inactive entry point ----- */
+
+        void AnalyzeInactiveEntryPoint(FunctionDecl* funcDecl);
+        void AnalyzeInactiveEntryPointAttributesTessEvaluationShader(const std::vector<AttributePtr>& attribs);
+
         /* ----- Attributes ----- */
 
-        bool AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedNumArgs);
+        bool AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedNumArgs, bool required = true);
         
-        void AnalyzeAttributeDomain(Attribute* ast);
+        void AnalyzeAttributeDomain(Attribute* ast, bool required = true);
+        void AnalyzeAttributeOutputTopology(Attribute* ast, bool required = true);
+        void AnalyzeAttributePartitioning(Attribute* ast, bool required = true);
         void AnalyzeAttributeOutputControlPoints(Attribute* ast);
-        void AnalyzeAttributeOutputTopology(Attribute* ast);
-        void AnalyzeAttributePartitioning(Attribute* ast);
         void AnalyzeAttributePatchConstantFunc(Attribute* ast);
 
         void AnalyzeAttributeNumThreads(Attribute* ast);
@@ -120,7 +125,8 @@ class HLSLAnalyzer : public Analyzer
             AttributeValue& value,
             const OnValidAttributeValueProc& expectedValueFunc,
             const std::string& expectationDesc,
-            const HLSLErr errorCode = HLSLErr::Unknown
+            const HLSLErr errorCode = HLSLErr::Unknown,
+            bool required = true
         );
 
         bool AnalyzeAttributeValuePrimary(

@@ -528,6 +528,8 @@ bool IsAttributeValueOutputTopology(const AttributeValue t);
 // Returns true if the specified attribute value belongs to the 'partitioning' attribute.
 bool IsAttributeValuePartitioning(const AttributeValue t);
 
+bool IsAttributeValueTrianglePartitioning(const AttributeValue t);
+
 
 /* ----- Intrinsic Enum ----- */
 

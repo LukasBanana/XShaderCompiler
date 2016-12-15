@@ -1049,7 +1049,38 @@ bool GLSLGenerator::WriteGlobalLayoutsTessControl(const Program::LayoutTessContr
 
 bool GLSLGenerator::WriteGlobalLayoutsTessEvaluation(const Program::LayoutTessEvaluationShader& layout)
 {
-    //TODO...
+    BeginLn();
+    {
+        Write("layout(");
+
+        /* Map GLSL domain type (abstract patch type) */
+        if (auto keyword = AttributeValueToGLSLKeyword(layout.domainType))
+            Write(*keyword);
+        else
+            Error("failed to map domain type to GLSL keyword (tessellation abstract patch type)");
+
+        Write(", ");
+
+        /* Map GLSL partitioning (spacing) */
+        if (auto keyword = AttributeValueToGLSLKeyword(layout.partitioning))
+            Write(*keyword);
+        else
+            Error("failed to map partitioning to GLSL keyword (tessellation spacing)");
+
+        if (IsAttributeValueTrianglePartitioning(layout.outputTopology))
+        {
+            Write(", ");
+
+            /* Map GLSL output topology (primitive ordering) */
+            if (auto keyword = AttributeValueToGLSLKeyword(layout.outputTopology))
+                Write(*keyword);
+            else
+                Error("failed to map output toplogy to GLSL keyword (tessellation primitive orderin)");
+        }
+
+        Write(") in;");
+    }
+    EndLn();
     return true;
 }
 

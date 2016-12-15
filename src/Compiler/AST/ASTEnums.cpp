@@ -821,6 +821,11 @@ bool IsAttributeValuePartitioning(const AttributeValue t)
     return (t >= AttributeValue::PartitioningInteger && t <= AttributeValue::PartitioningFractionalOdd);
 }
 
+bool IsAttributeValueTrianglePartitioning(const AttributeValue t)
+{
+    return (t >= AttributeValue::OutputTopologyTriangleCW && t <= AttributeValue::OutputTopologyTriangleCCW);
+}
+
 
 /* ----- Intrinsic Enum ----- */
 

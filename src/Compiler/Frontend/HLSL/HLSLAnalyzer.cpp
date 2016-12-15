@@ -243,6 +243,8 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         /* Special case for the main entry point */
         if (isEntryPoint)
             AnalyzeEntryPoint(ast);
+        else
+            AnalyzeInactiveEntryPoint(ast);
 
         /* Visit function body */
         PushFunctionDeclLevel(isEntryPoint);
@@ -930,26 +932,73 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributesComputeShader(const std::vector<At
     ErrorIfAttributeNotFound(foundNumThreads, "numthreads(x, y, z)");
 }
 
+/* ----- Inactive entry point ----- */
+
+void HLSLAnalyzer::AnalyzeInactiveEntryPoint(FunctionDecl* funcDecl)
+{
+    /*
+    The inactive entry point can be a function that is an entry point for another shader target.
+    This is used to detect the entry point attributes from the tessellation-control shader,
+    that are required for the tessellation-evaluation shader in GLSL (e.g. [partitioning(fractional_odd)] -> layout(fractional_odd_spacing)).
+    */
+    switch (shaderTarget_)
+    {
+        case ShaderTarget::TessellationEvaluationShader:
+            AnalyzeInactiveEntryPointAttributesTessEvaluationShader(funcDecl->attribs);
+            break;
+        default:
+            break;
+    }
+}
+
+void HLSLAnalyzer::AnalyzeInactiveEntryPointAttributesTessEvaluationShader(const std::vector<AttributePtr>& attribs)
+{
+    /* Analyze optional attributes */
+    for (const auto& attr : attribs)
+    {
+        switch (attr->attributeType)
+        {
+            case AttributeType::Domain:
+                AnalyzeAttributeDomain(attr.get(), false);
+                break;
+            case AttributeType::OutputTopology:
+                AnalyzeAttributeOutputTopology(attr.get(), false);
+                break;
+            case AttributeType::Partitioning:
+                AnalyzeAttributePartitioning(attr.get(), false);
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 /* ----- Attributes ----- */
 
-bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedNumArgs)
+bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedNumArgs, bool required)
 {
     /* Validate number of arguments */
     auto numArgs = ast->arguments.size();
 
     if (numArgs < expectedNumArgs)
     {
-        Error(
-            "too few arguments in attribute (expected " + std::to_string(expectedNumArgs) +
-            ", but got " + std::to_string(numArgs) + ")", ast, HLSLErr::ERR_ATTRIBUTE
-        );
+        if (required)
+        {
+            Error(
+                "too few arguments in attribute (expected " + std::to_string(expectedNumArgs) +
+                ", but got " + std::to_string(numArgs) + ")", ast, HLSLErr::ERR_ATTRIBUTE
+            );
+        }
     }
     else if (numArgs > expectedNumArgs)
     {
-        Error(
-            "too many arguments in attribute (expected " + std::to_string(expectedNumArgs) +
-            ", but got " + std::to_string(numArgs) + ")", ast->arguments[expectedNumArgs].get(), HLSLErr::ERR_ATTRIBUTE
-        );
+        if (required)
+        {
+            Error(
+                "too many arguments in attribute (expected " + std::to_string(expectedNumArgs) +
+                ", but got " + std::to_string(numArgs) + ")", ast->arguments[expectedNumArgs].get(), HLSLErr::ERR_ATTRIBUTE
+            );
+        }
     }
     else
         return true;
@@ -957,16 +1006,47 @@ bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedN
     return false;
 }
 
-void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast)
+void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast, bool required)
 {
-    if (AnalyzeNumArgsAttribute(ast, 1))
+    if (AnalyzeNumArgsAttribute(ast, 1, required))
     {
         AnalyzeAttributeValue(
             ast->arguments[0].get(),
             program_->layoutTessEvaluation.domainType,
             IsAttributeValueDomain,
             "expected domain type parameter to be \"tri\", \"quad\", or \"isolane\"",
-            HLSLErr::ERR_HSATTRIBUTE_INVALID
+            HLSLErr::ERR_HSATTRIBUTE_INVALID,
+            required
+        );
+    }
+}
+
+void HLSLAnalyzer::AnalyzeAttributeOutputTopology(Attribute* ast, bool required)
+{
+    if (AnalyzeNumArgsAttribute(ast, 1, required))
+    {
+        AnalyzeAttributeValue(
+            ast->arguments[0].get(),
+            program_->layoutTessEvaluation.outputTopology,
+            IsAttributeValueOutputTopology,
+            "expected output topology parameter to be \"point\", \"line\", \"triangle_cw\", or \"triangle_ccw\"",
+            HLSLErr::ERR_HSATTRIBUTE_INVALID,
+            required
+        );
+    }
+}
+
+void HLSLAnalyzer::AnalyzeAttributePartitioning(Attribute* ast, bool required)
+{
+    if (AnalyzeNumArgsAttribute(ast, 1, required))
+    {
+        AnalyzeAttributeValue(
+            ast->arguments[0].get(),
+            program_->layoutTessEvaluation.partitioning,
+            IsAttributeValuePartitioning,
+            "expected partitioning mode parameter to be \"integer\", \"pow2\", \"fractional_even\", or \"fractional_odd\"",
+            HLSLErr::ERR_HSATTRIBUTE_INVALID,
+            required
         );
     }
 }
@@ -986,34 +1066,6 @@ void HLSLAnalyzer::AnalyzeAttributeOutputControlPoints(Attribute* ast)
             program_->layoutTessControl.outputControlPoints = static_cast<unsigned int>(countParam);
         else
             Error("expected output control point parameter to be an unsigned integer", ast->arguments[0].get(), HLSLErr::ERR_ATTRIBUTE);
-    }
-}
-
-void HLSLAnalyzer::AnalyzeAttributeOutputTopology(Attribute* ast)
-{
-    if (AnalyzeNumArgsAttribute(ast, 1))
-    {
-        AnalyzeAttributeValue(
-            ast->arguments[0].get(),
-            program_->layoutTessEvaluation.outputTopology,
-            IsAttributeValueOutputTopology,
-            "expected output topology parameter to be \"point\", \"line\", \"triangle_cw\", or \"triangle_ccw\"",
-            HLSLErr::ERR_HSATTRIBUTE_INVALID
-        );
-    }
-}
-
-void HLSLAnalyzer::AnalyzeAttributePartitioning(Attribute* ast)
-{
-    if (AnalyzeNumArgsAttribute(ast, 1))
-    {
-        AnalyzeAttributeValue(
-            ast->arguments[0].get(),
-            program_->layoutTessEvaluation.partitioning,
-            IsAttributeValuePartitioning,
-            "expected partitioning mode parameter to be \"integer\", \"pow2\", \"fractional_even\", or \"fractional_odd\"",
-            HLSLErr::ERR_HSATTRIBUTE_INVALID
-        );
     }
 }
 
@@ -1066,10 +1118,11 @@ void HLSLAnalyzer::AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& v
 }
 
 void HLSLAnalyzer::AnalyzeAttributeValue(
-    Expr* argExpr, AttributeValue& value, const OnValidAttributeValueProc& expectedValueFunc, const std::string& expectationDesc, const HLSLErr errorCode)
+    Expr* argExpr, AttributeValue& value, const OnValidAttributeValueProc& expectedValueFunc,
+    const std::string& expectationDesc, const HLSLErr errorCode, bool required)
 {
     std::string literalValue;
-    if (!AnalyzeAttributeValuePrimary(argExpr, value, expectedValueFunc, literalValue))
+    if (!AnalyzeAttributeValuePrimary(argExpr, value, expectedValueFunc, literalValue) && required)
     {
         if (literalValue.empty())
             Error(expectationDesc, argExpr, errorCode);
