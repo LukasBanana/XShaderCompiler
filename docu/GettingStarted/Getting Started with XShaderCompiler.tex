@@ -38,20 +38,14 @@
 	frame = single,
 	tabsize = 4,
 	showstringspaces = false,
-	numbers = none
-}
-
-\lstdefinelanguage{hlslLanguage}
-{
+	numbers = none,
 	morekeywords = {
-		float2, float3, float4, float4x4 % ...
-	},
-}
-
-\lstdefinelanguage{glslLanguage}
-{
-	morekeywords = {
-		vec2, vec3, vec4, mat4 % ...
+		% HLSL
+		float2, float3, float4, float4x4,
+		domain, partitioning, outputtopology, outputcontrolpoints, patchconstantfunc, maxtessfactor,
+		% GLSL
+		vec2, vec3, vec4, mat4,
+		layout, in, out, inout,
 	},
 }
 
@@ -222,6 +216,61 @@ to a \texttt{float3} type within a concatenation like the `+' operator.
 
 %\newpage
 %\section{API Overview}
+
+
+
+
+%----------------------------------------------------------------------------------------
+%	LIMITATIONS
+%----------------------------------------------------------------------------------------
+
+\newpage
+\section{Limitations}
+
+There are several limitations for your HLSL shaders you want to translate to GLSL with the \XSC
+which are described in this section.
+
+\subsection{Tessellation Shaders}
+
+\emph{(The translation of tessellation shaders is currently in progress but here is a brief overview
+of the currently known limitations)}
+\\
+\\
+The most tessellation attributes in HLSL are specified for the tessellation-control shader (alias ``Hull Shader''),
+but a few of them are required for the tessellation-evaluation shader (alias ``Domain Shader'').
+These are: \texttt{partitioning}, and \texttt{outputtopology}. Here is an example of an HLSL Tessellation Shader:
+\begin{lstlisting}[title={\texttt{Example.hlsl}}]
+[domain("quad")]                         // Required for Tessellation-Control (in GLSL)
+[outputcontrolpoints(4)]                 // Required for Tessellation-Control (in GLSL)
+[patchconstantfunc("PatchConstantFunc")] // Required for Tessellation-Control (in GLSL)
+[partitioning("fractional_odd")]         // Required for Tessellation-Evaluation (in GLSL)
+[outputtopology("triangle_ccw")]         // Required for Tessellation-Evaluation (in GLSL)
+OutputHS HullShader(/* ... */)
+{
+	/* ... */
+}
+
+[domain("quad")]                         // Required for Tessellation-Evaluation (in GLSL)
+OutputDS DomainShader(/* ... */)
+{
+	/* ... */
+}
+\end{lstlisting}
+These attribute must be distributed into two GLSL shaders:
+\begin{lstlisting}[title={\texttt{Example.HullShader.tesc}}]
+layout(vertices = 4) in;
+/* ... */
+\end{lstlisting}
+\begin{lstlisting}[title={\texttt{Example.DomainShader.tese}}]
+layout(quads, fractional_odd_spacing, ccw) in;
+/* ... */
+\end{lstlisting}
+The information for \texttt{fractional\_odd\_spacing} and \texttt{ccw} in the \texttt{Example.DomainShader.tese} shader file
+are taken from the tessellation-control shader, although a tessellation-evaluation shader is written.
+That means, both the tessellation-control- \emph{and} the tessellation-evaluation shaders must be contained
+in the same shader source file (or at least in one of the included files) to guarantee a full translation of all information.
+Otherwise default values will be used.
+
 
 
 
