@@ -616,7 +616,7 @@ struct VarDeclStmnt : public Stmnt
     bool IsConst() const;
 
     // Returns true if any of the specified type modifiers is contained.
-    bool HasAnyTypeModifier(const std::vector<TypeModifier>& modifiers) const;
+    bool HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const;
 
     bool                        isInput         = false;    // Input modifier 'in'
     bool                        isOutput        = false;    // Input modifier 'out'

@@ -598,7 +598,7 @@ bool VarDeclStmnt::IsConst() const
     return (isUniform || (typeModifiers.find(TypeModifier::Const) != typeModifiers.end()));
 }
 
-bool VarDeclStmnt::HasAnyTypeModifier(const std::vector<TypeModifier>& modifiers) const
+bool VarDeclStmnt::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const
 {
     for (auto mod : modifiers)
     {

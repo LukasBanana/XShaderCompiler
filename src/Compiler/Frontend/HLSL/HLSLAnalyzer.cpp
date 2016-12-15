@@ -309,7 +309,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     Visit(ast->varDecls);
 
     /* Is the 'snorm' or 'unorm' type modifier specified? */
-    if (ast->HasAnyTypeModifier({ TypeModifier::SNorm, TypeModifier::UNorm }))
+    if (ast->HasAnyTypeModifierOf({ TypeModifier::SNorm, TypeModifier::UNorm }))
     {
         /* Is this a floating-point type? */
         auto baseTypeDen = ast->varType->typeDenoter->As<BaseTypeDenoter>();
