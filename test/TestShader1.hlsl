@@ -13,8 +13,9 @@ cbuffer VertexParam : register(b0)
 {
 	float4x4 wvpMatrix;
 	precise nointerpolation float3 normal[3][2]	: NORMAL, test3;
+	const centroid ParamStruct param0;
 	struct dataStruct { float2 v0, v1; int2 v2; } data[10];
-	ParamStruct param0;
+	ParamStruct param1;
 };
 
 cbuffer PixelParam : register(b1)

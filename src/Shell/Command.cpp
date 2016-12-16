@@ -360,7 +360,7 @@ HelpDescriptor LineFormatCommand::Help() const
 
 void LineFormatCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.formatting.lineMarks = cmdLine.AcceptBoolean(true);
+    state.outputDesc.formatting.lineSeparation = cmdLine.AcceptBoolean(true);
 }
 
 
