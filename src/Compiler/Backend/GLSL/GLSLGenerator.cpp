@@ -376,10 +376,13 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                     // more work is to do, to translate the patch constant function to GLSL!)
                     if (auto patchConstFunc = GetProgram()->layoutTessControl.patchConstFunctionRef)
                     {
-                        /* Inline patch constant function into main entry point */
-                        WriteComment(patchConstFunc->ident);
+                        /* Call patch constant function inside main entry point only for the first invocation */
                         WriteLn("if (gl_InvocationID == 0)");
-                        Visit(patchConstFunc->codeBlock);
+                        IncIndent();
+                        {
+                            WriteLn(patchConstFunc->ident + "();");
+                        }
+                        DecIndent();
                         Blank();
                     }
                 }

@@ -41,7 +41,7 @@ OutputVS VS(float3 position : POSITION)
 
 // HULL SHADER
 
-OutputHS PatchConstantFuncHS(InputPatch<OutputVS, 4> inp)
+OutputHS PatchConstantFuncHS(/*InputPatch<OutputVS, 4> inp*/)
 {
 	OutputHS outp;
 	

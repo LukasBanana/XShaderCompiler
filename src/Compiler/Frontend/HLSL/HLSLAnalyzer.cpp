@@ -716,6 +716,19 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
     /* Mark this function declaration with the entry point flag */
     funcDecl->flags << FunctionDecl::isEntryPoint;
 
+    /* Analyze function input/output */
+    AnalyzeEntryPointInputOutput(funcDecl);
+
+    /* Check if fragment shader use a slightly different screen space (VPOS vs. SV_Position) */
+    if (shaderTarget_ == ShaderTarget::FragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
+        program_->layoutFragment.pixelCenterInteger = true;
+
+    /* Analyze entry pointer attributes (also possibly missing attributes such as "numthreads" for compute shaders) */
+    AnalyzeEntryPointAttributes(funcDecl->attribs);
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
+{
     /* Analyze all function parameters */
     for (auto& param : funcDecl->parameters)
     {
@@ -725,20 +738,13 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
             Error("invalid number of variable declarations in function parameter", param.get());
     }
 
-    /* Analyze return type */
+    /* Analyze function return type */
     auto returnTypeDen = funcDecl->returnType->typeDenoter->Get();
     if (auto structTypeDen = returnTypeDen->As<StructTypeDenoter>())
     {
         /* Analyze entry point output structure */
         AnalyzeEntryPointParameterInOutStruct(funcDecl, structTypeDen->structDeclRef, "", false);
     }
-
-    /* Check if fragment shader use a slightly different screen space (VPOS vs. SV_Position) */
-    if (shaderTarget_ == ShaderTarget::FragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
-        program_->layoutFragment.pixelCenterInteger = true;
-
-    /* Analyze entry pointer attributes (also missing attributes such as "numthreads" for compute shaders) */
-    AnalyzeEntryPointAttributes(funcDecl->attribs);
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param)
@@ -972,6 +978,16 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributesComputeShader(const std::vector<At
 
 void HLSLAnalyzer::AnalyzeSecondaryEntryPoint(FunctionDecl* funcDecl)
 {
+    /* Only analyze secondary entry point once (this visitor might be called more than once) */
+    if (funcDecl->flags(FunctionDecl::isSecondaryEntryPoint))
+        return;
+
+    /* Mark this function declaration with the entry point flag */
+    funcDecl->flags << FunctionDecl::isSecondaryEntryPoint;
+
+    /* Analyze function input/output */
+    AnalyzeEntryPointInputOutput(funcDecl);
+
     /*
     The secondary entry point can be a function that is an entry point for another shader target.
     This is used to detect the entry point attributes from the tessellation-control shader,
@@ -1117,6 +1133,10 @@ void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
             {
                 /* Decorate program AST node with function reference */
                 program_->layoutTessControl.patchConstFunctionRef = patchConstFunc;
+
+                /* Decorate patch constant function as reachable (since it's referenced by the main entry point) */
+                AnalyzeSecondaryEntryPoint(patchConstFunc);
+                patchConstFunc->flags << AST::isReachable;
             }
             else
                 Error("entry point '" + literalValue + "' for patch constant function not found", ast->arguments[0].get(), HLSLErr::ERR_ENTRYPOINT_NOT_FOUND);

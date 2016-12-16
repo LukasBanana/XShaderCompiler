@@ -513,7 +513,8 @@ struct FunctionDecl : public Stmnt
     FLAG_ENUM
     {
         FLAG( isEntryPoint,            0 ), // This function is the main entry point.
-        FLAG( hasNonReturnControlPath, 1 ), // At least one control path does not return a value.
+        FLAG( isSecondaryEntryPoint,   1 ), // This function is a secondary entry point (e.g. patch constant function).
+        FLAG( hasNonReturnControlPath, 2 ), // At least one control path does not return a value.
     };
 
     // Returns true if this function declaration is just a forward declaration (without function body).

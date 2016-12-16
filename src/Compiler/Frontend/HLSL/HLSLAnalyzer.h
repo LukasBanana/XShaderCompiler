@@ -93,6 +93,7 @@ class HLSLAnalyzer : public Analyzer
         /* ----- Entry point ----- */
 
         void AnalyzeEntryPoint(FunctionDecl* funcDecl);
+        void AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl);
         void AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param);
         void AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input);
         void AnalyzeEntryPointParameterInOutStruct(FunctionDecl* funcDecl, StructDecl* structDecl, const std::string& structAliasName, bool input);
