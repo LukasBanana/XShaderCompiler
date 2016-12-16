@@ -29,12 +29,12 @@ Progress
 
 | Feature | Progress | Remarks |
 |---------|:--------:|---------|
-| Vertex Shader | ~80% | |
-| Tessellation Control Shader | ~20% | |
-| Tessellation Evaluation Shader | ~20% | |
-| Geometry Shader | 10% | |
-| Fragment Shader | ~80% | |
-| Compute Shader | ~80% | |
+| Vertex Shader | ~80% | Few language features are still left |
+| Tessellation Control Shader | ~20% | InputPatch and patch-constant-function translation in progress |
+| Tessellation Evaluation Shader | ~20% | OutputPatch translation in progress |
+| Geometry Shader | ~10% | Only parsing works |
+| Fragment Shader | ~80% | Few language features are still left |
+| Compute Shader | ~80% | Few language features are still left |
 
 ##### TODO List: #####
 * Common HLSL IO semantics to GLSL transformation.
