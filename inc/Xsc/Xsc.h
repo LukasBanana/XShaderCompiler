@@ -99,6 +99,9 @@ struct Formatting
     \note Currently only supported for wrapper functions.
     */
     bool        newLineOpenScope    = true;
+
+    //! If true, auto-formatting of line separation is allowed. By default true.
+    bool        lineSeparation      = true;
 };
 
 //! Structure for additional translation options.

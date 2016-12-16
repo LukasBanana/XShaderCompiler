@@ -100,7 +100,7 @@ class Generator : protected Visitor
         ShaderTarget    shaderTarget_           = ShaderTarget::VertexShader;
 
         bool            allowBlanks_            = true;
-        bool            allowFormattedLines_    = true;
+        bool            allowLineSeparation_    = true;
 
 };
 

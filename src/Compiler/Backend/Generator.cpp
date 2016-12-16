@@ -28,9 +28,10 @@ bool Generator::GenerateCode(
     /* Store parameters */
     writer_.SetIndent(outputDesc.formatting.indent);
 
-    shaderTarget_   = inputDesc.shaderTarget;
-    allowBlanks_    = outputDesc.formatting.blanks;
-    program_        = &program;
+    shaderTarget_           = inputDesc.shaderTarget;
+    allowBlanks_            = outputDesc.formatting.blanks;
+    allowLineSeparation_    = outputDesc.formatting.lineSeparation;
+    program_                = &program;
 
     try
     {
@@ -79,13 +80,13 @@ void Generator::EndLn()
 
 void Generator::BeginSep()
 {
-    if (allowFormattedLines_)
+    if (allowLineSeparation_)
         writer_.BeginSeparation();
 }
 
 void Generator::EndSep()
 {
-    if (allowFormattedLines_)
+    if (allowLineSeparation_)
         writer_.EndSeparation();
 }
 
