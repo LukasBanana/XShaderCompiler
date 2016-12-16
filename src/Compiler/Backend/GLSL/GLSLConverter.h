@@ -35,7 +35,7 @@ class GLSLConverter : public Visitor
 
     private:
         
-        /* --- Visitor implementation --- */
+        /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( Program          );
         DECL_VISIT_PROC( CodeBlock        );
@@ -64,7 +64,7 @@ class GLSLConverter : public Visitor
         DECL_VISIT_PROC( CastExpr         );
         DECL_VISIT_PROC( VarAccessExpr    );
 
-        /* --- Helper functions for conversion --- */
+        /* ----- Helper functions for conversion ----- */
 
         void PushStructDeclLevel();
         void PopStructDeclLevel();
@@ -107,17 +107,25 @@ class GLSLConverter : public Visitor
         // Registers the all specified variables as reserved identifiers.
         void RegisterReservedVarIdents(const std::vector<VarDecl*>& varDecls);
 
-        // Returns the data type to which an expression must be casted, if the target type denoter and the source type denoter are incompatible in GLSL.
-        std::unique_ptr<DataType> MustCastExprToDataType(TypeDenoter& targetTypeDen, TypeDenoter& sourceTypeDen);
+        // Returns the data type to which an expression must be casted, if the target data type and the source data type are incompatible in GLSL.
+        std::unique_ptr<DataType> MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize = false);
+        std::unique_ptr<DataType> MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize = false);
 
         // Converts the expression to a cast expression if it is required for the specified target type.
-        void ConvertExprIfCastRequired(ExprPtr& expr, TypeDenoter& targetTypeDen);
+        void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = false);
+        void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = false);
 
         // Removes all statements that are marked as dead code.
         void RemoveDeadCode(std::vector<StmntPtr>& stmnts);
 
         // Removes all variable declarations which have a sampler state type.
         void RemoveSamplerVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts);
+
+        /* ----- Conversion ----- */
+
+        void ConvertIntrinsicCall(FunctionCall* ast);
+        void ConvertIntrinsicCallSaturate(FunctionCall* ast);
+        void ConvertIntrinsicCallSample(FunctionCall* ast);
 
         /* === Members === */
 

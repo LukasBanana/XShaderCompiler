@@ -698,13 +698,13 @@ enum class Intrinsic
     Trunc,
 
     Texture_GetDimensions,
-    Texture_Load_1,
-    Texture_Load_2,
-    Texture_Load_3,
-    Texture_Sample_2,
-    Texture_Sample_3,
-    Texture_Sample_4,
-    Texture_Sample_5,
+    Texture_Load_1,         // Load(int[1,2,3,4] Location)
+    Texture_Load_2,         // Load(int[1,2,3,4] Location, int SampleIndex)
+    Texture_Load_3,         // Load(int[1,2,3,4] Location, int SampleIndex, int Offset)
+    Texture_Sample_2,       // Sample(SamplerState S, float[1,2,3,4] Location)
+    Texture_Sample_3,       // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset)
+    Texture_Sample_4,       // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, float Clamp)
+    Texture_Sample_5,       // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, float Clamp, out uint Status)
     Texture_SampleBias_3,
     Texture_SampleBias_4,
     Texture_SampleBias_5,

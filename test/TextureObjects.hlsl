@@ -50,9 +50,19 @@ float4 PS(VOut inp) : SV_Target
 	float3 normal = SampleNormal(GetTex(tex0), inp.texCoord);
 //	float3 normal = SampleNormal(tex0, inp.texCoord);
 	
+	// Sample
 	c += tex0.Sample(smpl0, inp.texCoord);
-	c += tex1.Sample(smpl0, inp.texCoord); // error: "Sample" not supported for non-floating-point texture formats
+	c += tex0.Sample(smpl0, inp.texCoord, 0);
+	
+	// Error: "Sample" not supported for non-floating-point texture formats
+	c += tex1.Sample(smpl0, inp.texCoord);
+	
+	// Load
 	c += tex2.Load((int2)inp.texCoord, 0);
+	
+	// SampleLevel
+	c += tex0.SampleLevel(smpl0, inp.texCoord, 0.0);
+	c += tex0.SampleLevel(smpl0, inp.texCoord, 0.0, 0);
 	
 	return c;
 }

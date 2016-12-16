@@ -36,7 +36,7 @@
 -T vert -E VS -o output/* ArrayTest1.hlsl
 
 [TextureObjects PS]
---reflect --show-ast -W -T frag -E PS -o output/* TextureObjects.hlsl
+-W -T frag -E PS -o output/* TextureObjects.hlsl
 
 [BufferObjects CS]
 -W -EB -T comp -E CS -o output/* BufferObjects.hlsl

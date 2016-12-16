@@ -88,24 +88,8 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    if (ast->intrinsic == Intrinsic::Saturate)
-    {
-        /* Convert "saturate(x)" to "clamp(x, genType(0), genType(1))" */
-        if (ast->arguments.size() == 1)
-        {
-            auto argTypeDen = ast->arguments.front()->GetTypeDenoter()->Get();
-            if (argTypeDen->IsBase())
-            {
-                ast->intrinsic = Intrinsic::Clamp;
-                ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, DataType::Int, "0"));
-                ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, DataType::Int, "1"));
-            }
-            else
-                RuntimeErr("invalid argument type denoter in intrinsic 'saturate'", ast->arguments.front().get());
-        }
-        else
-            RuntimeErr("invalid number of arguments in intrinsic 'saturate'", ast);
-    }
+    if (ast->intrinsic != Intrinsic::Undefined)
+        ConvertIntrinsicCall(ast);
 
     /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
     MoveAllIf(
@@ -533,32 +517,52 @@ void GLSLConverter::RegisterReservedVarIdents(const std::vector<VarDecl*>& varDe
     }
 }
 
-std::unique_ptr<DataType> GLSLConverter::MustCastExprToDataType(TypeDenoter& targetTypeDen, TypeDenoter& sourceTypeDen)
+std::unique_ptr<DataType> GLSLConverter::MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize)
+{
+    /* Check for type mismatch */
+    if ( ( matchTypeSize && VectorTypeDim(targetType) != VectorTypeDim(sourceType) ) ||
+         ( IsUIntType    (targetType) && IsIntType     (sourceType) ) ||
+         ( IsIntType     (targetType) && IsUIntType    (sourceType) ) ||
+         ( IsRealType    (targetType) && IsIntegralType(sourceType) ) ||
+         ( IsIntegralType(targetType) && IsRealType    (sourceType) ) )
+    {
+        /* Cast to target type required */
+        return MakeUnique<DataType>(targetType);
+    }
+    return nullptr;
+}
+
+std::unique_ptr<DataType> GLSLConverter::MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize)
 {
     if (auto baseTargetTypeDen = targetTypeDen.As<BaseTypeDenoter>())
     {
         if (auto baseSourceTypeDen = sourceTypeDen.As<BaseTypeDenoter>())
         {
-            auto dstType = baseTargetTypeDen->dataType;
-            auto srcType = baseSourceTypeDen->dataType;
-
-            /* Check for type mismatch */
-            if ( ( IsUIntType    (dstType) && IsIntType     (srcType) ) ||
-                 ( IsIntType     (dstType) && IsUIntType    (srcType) ) ||
-                 ( IsRealType    (dstType) && IsIntegralType(srcType) ) ||
-                 ( IsIntegralType(dstType) && IsRealType    (srcType) ) )
-            {
-                /* Cast to destination type */
-                return MakeUnique<DataType>(dstType);
-            }
+            return MustCastExprToDataType(
+                baseTargetTypeDen->dataType,
+                baseSourceTypeDen->dataType,
+                matchTypeSize
+            );
         }
     }
     return nullptr;
 }
 
-void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, TypeDenoter& targetTypeDen)
+void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize)
 {
-    if (auto dataType = MustCastExprToDataType(targetTypeDen, *expr->GetTypeDenoter()->Get()))
+    if (auto baseSourceTypeDen = expr->GetTypeDenoter()->Get()->As<BaseTypeDenoter>())
+    {
+        if (auto dataType = MustCastExprToDataType(targetType, baseSourceTypeDen->dataType, matchTypeSize))
+        {
+            /* Convert to cast expression with target data type if required */
+            expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
+        }
+    }
+}
+
+void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize)
+{
+    if (auto dataType = MustCastExprToDataType(targetTypeDen, *expr->GetTypeDenoter()->Get(), matchTypeSize))
     {
         /* Convert to cast expression with target data type if required */
         expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
@@ -587,6 +591,93 @@ void GLSLConverter::RemoveSamplerVarDeclStmnts(std::vector<VarDeclStmntPtr>& stm
             return VarTypeIsSampler(*varDeclStmnt->varType);
         }
     );
+}
+
+/* ----- Conversion ----- */
+
+void GLSLConverter::ConvertIntrinsicCall(FunctionCall* ast)
+{
+    switch (ast->intrinsic)
+    {
+        case Intrinsic::Saturate:
+            ConvertIntrinsicCallSaturate(ast);
+            break;
+        case Intrinsic::Texture_Sample_2:
+        case Intrinsic::Texture_Sample_3:
+        case Intrinsic::Texture_Sample_4:
+        case Intrinsic::Texture_Sample_5:
+            ConvertIntrinsicCallSample(ast);
+            break;
+        default:
+            break;
+    }
+}
+
+void GLSLConverter::ConvertIntrinsicCallSaturate(FunctionCall* ast)
+{
+    /* Convert "saturate(x)" to "clamp(x, genType(0), genType(1))" */
+    if (ast->arguments.size() == 1)
+    {
+        auto argTypeDen = ast->arguments.front()->GetTypeDenoter()->Get();
+        if (argTypeDen->IsBase())
+        {
+            ast->intrinsic = Intrinsic::Clamp;
+            ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, DataType::Int, "0"));
+            ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, DataType::Int, "1"));
+        }
+        else
+            RuntimeErr("invalid argument type denoter in intrinsic 'saturate'", ast->arguments.front().get());
+    }
+    else
+        RuntimeErr("invalid number of arguments in intrinsic 'saturate'", ast);
+}
+
+static int GetTextureVectorSize(const BufferType bufferType)
+{
+    switch (bufferType)
+    {
+        case BufferType::Texture1D:
+            return 1;
+        case BufferType::Texture1DArray:
+        case BufferType::Texture2D:
+        case BufferType::Texture2DMS:
+            return 2;
+        case BufferType::Texture2DArray:
+        case BufferType::Texture2DMSArray:
+        case BufferType::Texture3D:
+        case BufferType::TextureCube:
+            return 3;
+        case BufferType::TextureCubeArray:
+            return 4;
+        default:
+            break;
+    }
+    return 0;
+}
+
+void GLSLConverter::ConvertIntrinsicCallSample(FunctionCall* ast)
+{
+    /* Get buffer object from sample intrinsic call */
+    if (auto symbolRef = ast->varIdent->symbolRef)
+    {
+        if (auto bufferDecl = symbolRef->As<BufferDecl>())
+        {
+            /* Determine vector size for texture intrinsic parametes */
+            auto vectorSize = GetTextureVectorSize(bufferDecl->GetBufferType();
+
+            /* Convert arguments */
+            auto& args = ast->arguments;
+            auto numArgs = args.size();
+
+            /* Ensure argument: float[1,2,3,4] Location */
+            if (numArgs >= 2)
+                ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Float, vectorSize), true);
+
+            /* Ensure argument: int[1,2,3] Offset */
+            if (numArgs >= 3)
+                ConvertExprIfCastRequired(args[2], VectorDataType(DataType::Int, vectorSize), true);
+        }
+    }
 }
 
 

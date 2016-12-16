@@ -145,7 +145,7 @@ CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataTyp
 
 ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
 {
-    if (subExpr->Type() == AST::Types::LiteralExpr)
+    if (subExpr->Type() == AST::Types::LiteralExpr && IsScalarType(dataType))
     {
         /* Convert data type of literal expression */
         auto literalExpr = std::static_pointer_cast<LiteralExpr>(subExpr);
