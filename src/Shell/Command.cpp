@@ -341,6 +341,30 @@ void LineMarksCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
+ * LineFormatCommand class
+ */
+
+std::vector<Command::Identifier> LineFormatCommand::Idents() const
+{
+    return { { "--line-format" } };
+}
+
+HelpDescriptor LineFormatCommand::Help() const
+{
+    return
+    {
+        "--line-format [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables formatting of separated lines; default=" + CommandLine::GetBooleanTrue()
+    };
+}
+
+void LineFormatCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.formatting.lineMarks = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
  * ShowASTCommand class
  */
 

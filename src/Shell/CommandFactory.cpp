@@ -61,6 +61,7 @@ CommandFactory::CommandFactory()
         WarnCommand,
         BlanksCommand,
         LineMarksCommand,
+        LineFormatCommand,
         ShowASTCommand,
         ShowTimesCommand,
         ReflectCommand,

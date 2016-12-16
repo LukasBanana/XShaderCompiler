@@ -79,6 +79,7 @@ DECL_SHELL_COMMAND( OutputCommand      );
 DECL_SHELL_COMMAND( WarnCommand        );
 DECL_SHELL_COMMAND( BlanksCommand      );
 DECL_SHELL_COMMAND( LineMarksCommand   );
+DECL_SHELL_COMMAND( LineFormatCommand  );
 DECL_SHELL_COMMAND( ShowASTCommand     );
 DECL_SHELL_COMMAND( ShowTimesCommand   );
 DECL_SHELL_COMMAND( ReflectCommand     );
