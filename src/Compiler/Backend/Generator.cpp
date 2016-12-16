@@ -77,6 +77,23 @@ void Generator::EndLn()
     writer_.EndLine();
 }
 
+void Generator::BeginSep()
+{
+    if (allowFormattedLines_)
+        writer_.BeginSeparation();
+}
+
+void Generator::EndSep()
+{
+    if (allowFormattedLines_)
+        writer_.EndSeparation();
+}
+
+void Generator::Separator()
+{
+    writer_.Separator();
+}
+
 bool Generator::IsOpenLine() const
 {
     return writer_.IsOpenLine();

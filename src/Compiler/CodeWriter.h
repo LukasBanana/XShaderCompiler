@@ -12,6 +12,8 @@
 #include <Xsc/IndentHandler.h>
 #include <ostream>
 #include <stack>
+#include <vector>
+#include <list>
 
 
 namespace Xsc
@@ -44,11 +46,17 @@ class CodeWriter : public IndentHandler
         void PushOptions(const Options& options);
         void PopOptions();
 
+        void BeginSeparation();
+        void EndSeparation();
+
         void BeginLine();
         void EndLine();
 
         void Write(const std::string& text);
         void WriteLine(const std::string& text);
+
+        // Writes either a single space or a formatted separator.
+        void Separator();
 
         Options CurrentOptions() const;
 
@@ -66,11 +74,42 @@ class CodeWriter : public IndentHandler
 
     private:
         
-        std::ostream*       stream_         = nullptr;
+        struct SeparatedLine
+        {
+            std::string                 indent;
+            std::vector<std::string>    parts;
+
+            void Tab();
+
+            void Offsets(std::vector<std::size_t>& offsets) const;
+
+            SeparatedLine& operator << (const std::string& text);
+        };
+
+        struct SeparatedLineQueue
+        {
+            std::list<SeparatedLine> lines;
+
+            inline SeparatedLine& Current()
+            {
+                return lines.back();
+            }
+
+            inline const SeparatedLine& Current() const
+            {
+                return lines.back();
+            }
+        };
+
+        void FlushSeparatedLines(SeparatedLineQueue& lineQueue);
+
+        std::ostream*       stream_                 = nullptr;
 
         std::stack<Options> optionsStack_;
+        bool                openLine_               = false;
 
-        bool                openLine_       = false;
+        bool                lineSeparation_         = false;
+        SeparatedLineQueue  queuedSeparatedLines_;
 
 };
 

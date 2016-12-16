@@ -366,9 +366,11 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     EndLn();
 
     WriteScopeOpen();
+    BeginSep();
     {
         Visit(ast->members);
     }
+    EndSep();
     WriteScopeClose(false, true);
 
     Blank();
@@ -437,6 +439,8 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     BeginLn();
 
+    const bool hasStructDecl = (ast->varType->structDecl != nullptr);
+
     /* Write input modifiers */
     if (ast->flags(VarDeclStmnt::isShaderInput))
         Write("in ");
@@ -444,6 +448,9 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         Write("out ");
     else if (ast->isUniform)
         Write("uniform ");
+
+    if (!hasStructDecl)
+        Separator();
 
     /* Write storage classes */
     for (auto storageClass : ast->storageClasses)
@@ -466,6 +473,9 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     /* Write type modifiers */
     WriteTypeModifiers(ast->typeModifiers);
 
+    if (!hasStructDecl)
+        Separator();
+
     /* Write variable type */
     if (ast->varType->structDecl)
     {
@@ -477,6 +487,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     {
         Visit(ast->varType);
         Write(" ");
+        Separator();
     }
 
     /* Write variable declarations */
@@ -1925,9 +1936,15 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* ast, bool writeSemicolon
 
     /* Write structure members */
     WriteScopeOpen();
+    BeginSep();
     {
-        WriteStructDeclMembers(ast);
+        isInsideStructDecl_ = true;
+        {
+            WriteStructDeclMembers(ast);
+        }
+        isInsideStructDecl_ = false;
     }
+    EndSep();
     WriteScopeClose(false, writeSemicolon);
 
     return true;
@@ -1951,13 +1968,15 @@ bool GLSLGenerator::WriteStructDeclInputOutputBlock(StructDecl* ast)
     EndLn();
 
     WriteScopeOpen();
+    BeginSep();
     {
         isInsideInterfaceBlock_ = true;
-
-        WriteStructDeclMembers(ast);
-
+        {
+            WriteStructDeclMembers(ast);
+        }
         isInsideInterfaceBlock_ = false;
     }
+    EndSep();
     WriteScopeClose();
 
     WriteLn(ast->aliasName + ";");

@@ -110,8 +110,8 @@
 [TestShader1.hlsl CS]
 -T comp -E CS -O -o output/* TestShader1.hlsl
 
-#[ssct_reflect PS]
-#--show-times --reflect -Comments -T frag -EB -E PS -I "../../misc/ssct_shader/" "../../misc/ssct_shader/ssct_reflect.hlsl"
+[ssct_reflect PS]
+--show-times --reflect -Comments -T frag -EB -E PS -I "../../misc/ssct_shader/" "../../misc/ssct_shader/ssct_reflect.hlsl"
 
 #[ErrorTest1.hlsl VS]
 #-T vert -E VertexMain -o output/* ErrorTest1.hlsl

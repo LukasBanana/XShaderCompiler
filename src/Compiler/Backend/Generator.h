@@ -49,6 +49,11 @@ class Generator : protected Visitor
 
         void BeginLn();
         void EndLn();
+
+        void BeginSep();
+        void EndSep();
+
+        void Separator();
         
         bool IsOpenLine() const;
         
@@ -90,11 +95,12 @@ class Generator : protected Visitor
         CodeWriter      writer_;
         ReportHandler   reportHandler_;
 
-        Program*        program_        = nullptr;
+        Program*        program_                = nullptr;
 
-        ShaderTarget    shaderTarget_   = ShaderTarget::VertexShader;
+        ShaderTarget    shaderTarget_           = ShaderTarget::VertexShader;
 
-        bool            allowBlanks_    = true;
+        bool            allowBlanks_            = true;
+        bool            allowFormattedLines_    = true;
 
 };
 
