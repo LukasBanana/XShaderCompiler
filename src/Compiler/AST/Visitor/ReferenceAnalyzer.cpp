@@ -15,6 +15,7 @@ namespace Xsc
 
 void ReferenceAnalyzer::MarkReferencesFromEntryPoint(Program& program)
 {
+    /* Visit all entry points */
     program_ = &program;
     Visit(program.entryPointRef);
     Visit(program.layoutTessControl.patchConstFunctionRef);

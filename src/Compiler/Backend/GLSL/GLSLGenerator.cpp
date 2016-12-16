@@ -330,89 +330,13 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     /* Write line */
     WriteLineMark(ast);
 
-    /* Write function header */
-    BeginLn();
-    {
-        if (ast->flags(FunctionDecl::isEntryPoint))
-            Write("void main()");
-        else
-        {
-            Visit(ast->returnType);
-            Write(" " + ast->ident + "(");
-
-            /* Write parameters */
-            for (size_t i = 0; i < ast->parameters.size(); ++i)
-            {
-                WriteParameter(ast->parameters[i].get());
-                if (i + 1 < ast->parameters.size())
-                    Write(", ");
-            }
-
-            Write(")");
-
-            if (!ast->codeBlock)
-            {
-                /*
-                This is only a function forward declaration
-                -> finish with line terminator
-                */
-                Write(";");
-            }
-        }
-    }
-    EndLn();
-
-    if (ast->codeBlock)
-    {
-        /* Write function body */
-        if (ast->flags(FunctionDecl::isEntryPoint))
-        {
-            WriteScopeOpen();
-            {
-                if (IsTessControlShader())
-                {
-                    //TODO:
-                    // THIS IS INCOMPLETE!!!
-                    // more work is to do, to translate the patch constant function to GLSL!)
-                    if (auto patchConstFunc = GetProgram()->layoutTessControl.patchConstFunctionRef)
-                    {
-                        /* Call patch constant function inside main entry point only for the first invocation */
-                        WriteLn("if (gl_InvocationID == 0)");
-                        IncIndent();
-                        {
-                            WriteLn(patchConstFunc->ident + "();");
-                        }
-                        DecIndent();
-                        Blank();
-                    }
-                }
-
-                /* Write input/output parameters of system values as local variables */
-                WriteLocalInputSemantics();
-                WriteLocalOutputSemantics();
-
-                /* Write code block (without additional scope) */
-                isInsideEntryPoint_ = true;
-                {
-                    WriteStmntList(ast->codeBlock->stmnts);
-                }
-                isInsideEntryPoint_ = false;
-
-                /* Is the last statement a return statement? (ignore if the function has a non-void return type) */
-                if ( ast->HasVoidReturnType() && ( ast->codeBlock->stmnts.empty() || ast->codeBlock->stmnts.back()->Type() != AST::Types::ReturnStmnt ) )
-                {
-                    /* Write output semantic at the end of the code block, if no return statement was written before */
-                    WriteOutputSemanticsAssignment(nullptr);
-                }
-            }
-            WriteScopeClose();
-        }
-        else
-        {
-            /* Write default code block */
-            Visit(ast->codeBlock);
-        }
-    }
+    /* Write function declaration */
+    if (ast->flags(FunctionDecl::isEntryPoint))
+        WriteFunctionEntryPoint(ast);
+    else if (ast->flags(FunctionDecl::isSecondaryEntryPoint))
+        WriteFunctionSecondaryEntryPoint(ast);
+    else
+        WriteFunction(ast);
 
     Blank();
 }
@@ -1132,9 +1056,9 @@ bool GLSLGenerator::WriteGlobalLayoutsCompute(const Program::LayoutComputeShader
 
 /* --- Input semantics --- */
 
-void GLSLGenerator::WriteLocalInputSemantics()
+void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
 {
-    auto& varDeclRefs = GetProgram()->entryPointRef->inputSemantics.varDeclRefsSV;
+    auto& varDeclRefs = entryPoint->inputSemantics.varDeclRefsSV;
 
     for (auto varDecl : varDeclRefs)
         WriteLocalInputSemanticsVarDecl(varDecl);
@@ -1201,9 +1125,9 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 
 /* --- Output semantics --- */
 
-void GLSLGenerator::WriteLocalOutputSemantics()
+void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 {
-    auto& varDeclRefs = GetProgram()->entryPointRef->outputSemantics.varDeclRefsSV;
+    auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefsSV;
 
     for (auto varDecl : varDeclRefs)
         WriteLocalOutputSemanticsVarDecl(varDecl);
@@ -1576,6 +1500,112 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
     {
         Error(e.what(), ast);
     }
+}
+
+/* --- Function declaration --- */
+
+void GLSLGenerator::WriteFunction(FunctionDecl* ast)
+{
+    /* Write function header */
+    BeginLn();
+    {
+        Visit(ast->returnType);
+        Write(" " + ast->ident + "(");
+
+        /* Write parameters */
+        for (size_t i = 0; i < ast->parameters.size(); ++i)
+        {
+            WriteParameter(ast->parameters[i].get());
+            if (i + 1 < ast->parameters.size())
+                Write(", ");
+        }
+
+        Write(")");
+
+        if (!ast->codeBlock)
+        {
+            /*
+            This is only a function forward declaration
+            -> finish with line terminator
+            */
+            Write(";");
+        }
+    }
+    EndLn();
+
+    /* Write function body */
+    Visit(ast->codeBlock);
+}
+
+void GLSLGenerator::WriteFunctionEntryPoint(FunctionDecl* ast)
+{
+    if (!ast->codeBlock)
+        Error("missing function body in main entry point", ast);
+
+    /* Write function header */
+    WriteLn("void main()");
+
+    /* Write function body */
+    WriteScopeOpen();
+    {
+        if (IsTessControlShader())
+        {
+            //TODO:
+            // THIS IS INCOMPLETE!!!
+            // more work is to do, to translate the patch constant function to GLSL!)
+            if (auto patchConstFunc = GetProgram()->layoutTessControl.patchConstFunctionRef)
+            {
+                /* Call patch constant function inside main entry point only for the first invocation */
+                WriteLn("if (gl_InvocationID == 0)");
+                IncIndent();
+                {
+                    WriteLn(patchConstFunc->ident + "();");
+                }
+                DecIndent();
+                Blank();
+            }
+        }
+
+        WriteFunctionEntryPointBody(ast);
+    }
+    WriteScopeClose();
+}
+
+void GLSLGenerator::WriteFunctionEntryPointBody(FunctionDecl* ast)
+{
+    /* Write input/output parameters of system values as local variables */
+    WriteLocalInputSemantics(ast);
+    WriteLocalOutputSemantics(ast);
+
+    /* Write code block (without additional scope) */
+    isInsideEntryPoint_ = true;
+    {
+        WriteStmntList(ast->codeBlock->stmnts);
+    }
+    isInsideEntryPoint_ = false;
+
+    /* Is the last statement a return statement? (ignore if the function has a non-void return type) */
+    if ( ast->HasVoidReturnType() && ( ast->codeBlock->stmnts.empty() || ast->codeBlock->stmnts.back()->Type() != AST::Types::ReturnStmnt ) )
+    {
+        /* Write output semantic at the end of the code block, if no return statement was written before */
+        WriteOutputSemanticsAssignment(nullptr);
+    }
+}
+
+void GLSLGenerator::WriteFunctionSecondaryEntryPoint(FunctionDecl* ast)
+{
+    if (!ast->codeBlock)
+        Error("missing function body in secondary entry point", ast);
+
+    /* Write function header */
+    WriteLn("void " + ast->ident + "()");
+
+    /* Write function body */
+    WriteScopeOpen();
+    {
+        WriteFunctionEntryPointBody(ast);
+    }
+    WriteScopeClose();
 }
 
 /* --- Function call --- */

@@ -145,7 +145,7 @@ class GLSLGenerator : public Generator
 
         /* --- Input semantics --- */
 
-        void WriteLocalInputSemantics();
+        void WriteLocalInputSemantics(FunctionDecl* entryPoint);
         void WriteLocalInputSemanticsVarDecl(VarDecl* varDecl);
         
         void WriteGlobalInputSemantics();
@@ -153,7 +153,7 @@ class GLSLGenerator : public Generator
 
         /* --- Output semantics --- */
 
-        void WriteLocalOutputSemantics();
+        void WriteLocalOutputSemantics(FunctionDecl* entryPoint);
         void WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl);
         
         void WriteGlobalOutputSemantics();
@@ -182,6 +182,13 @@ class GLSLGenerator : public Generator
         void WriteTypeModifiers(const std::set<TypeModifier>& typeModifiers);
         void WriteDataType(DataType dataType, bool writePrecisionSpecifier = false, const AST* ast = nullptr);
         void WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writePrecisionSpecifier = false, const AST* ast = nullptr);
+
+        /* --- Function declaration --- */
+
+        void WriteFunction(FunctionDecl* ast);
+        void WriteFunctionEntryPoint(FunctionDecl* ast);
+        void WriteFunctionEntryPointBody(FunctionDecl* ast);
+        void WriteFunctionSecondaryEntryPoint(FunctionDecl* ast);
 
         /* --- Function call --- */
 
