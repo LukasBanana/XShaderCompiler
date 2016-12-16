@@ -107,6 +107,7 @@ class HLSLAnalyzer : public Analyzer
         /* ----- Secondary entry point ----- */
 
         void AnalyzeSecondaryEntryPoint(FunctionDecl* funcDecl);
+        void AnalyzeSecondaryEntryPointAttributes(const std::vector<AttributePtr>& attribs);
         void AnalyzeSecondaryEntryPointAttributesTessEvaluationShader(const std::vector<AttributePtr>& attribs);
 
         /* ----- Attributes ----- */

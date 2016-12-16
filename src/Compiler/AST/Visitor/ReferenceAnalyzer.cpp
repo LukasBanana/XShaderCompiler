@@ -17,6 +17,7 @@ void ReferenceAnalyzer::MarkReferencesFromEntryPoint(Program& program)
 {
     program_ = &program;
     Visit(program.entryPointRef);
+    Visit(program.layoutTessControl.patchConstFunctionRef);
 }
 
 
@@ -26,12 +27,7 @@ void ReferenceAnalyzer::MarkReferencesFromEntryPoint(Program& program)
 
 bool ReferenceAnalyzer::Reachable(AST* ast)
 {
-    if (!ast->flags(AST::isReachable))
-    {
-        ast->flags << AST::isReachable;
-        return true;
-    }
-    return false;
+    return ast->flags.SetOnce(AST::isReachable);
 }
 
 void ReferenceAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts)

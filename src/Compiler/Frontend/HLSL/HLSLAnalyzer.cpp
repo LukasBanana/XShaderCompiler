@@ -75,6 +75,10 @@ IMPLEMENT_VISIT_PROC(Program)
 {
     /* Analyze context of the entire program */
     Visit(ast->globalStmnts);
+
+    /* Check if fragment shader uses a slightly different screen space (VPOS vs. SV_Position) */
+    if (shaderTarget_ == ShaderTarget::FragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
+        program_->layoutFragment.pixelCenterInteger = true;
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
@@ -710,21 +714,18 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, Samp
 
 void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
 {
-    /* Store reference to entry point in root AST node */
-    program_->entryPointRef = funcDecl;
-
     /* Mark this function declaration with the entry point flag */
-    funcDecl->flags << FunctionDecl::isEntryPoint;
+    if (funcDecl->flags.SetOnce(FunctionDecl::isEntryPoint))
+    {
+        /* Store reference to entry point in root AST node */
+        program_->entryPointRef = funcDecl;
 
-    /* Analyze function input/output */
-    AnalyzeEntryPointInputOutput(funcDecl);
+        /* Analyze function input/output */
+        AnalyzeEntryPointInputOutput(funcDecl);
 
-    /* Check if fragment shader use a slightly different screen space (VPOS vs. SV_Position) */
-    if (shaderTarget_ == ShaderTarget::FragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
-        program_->layoutFragment.pixelCenterInteger = true;
-
-    /* Analyze entry pointer attributes (also possibly missing attributes such as "numthreads" for compute shaders) */
-    AnalyzeEntryPointAttributes(funcDecl->attribs);
+        /* Analyze entry pointer attributes (also possibly missing attributes such as "numthreads" for compute shaders) */
+        AnalyzeEntryPointAttributes(funcDecl->attribs);
+    }
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
@@ -978,16 +979,22 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributesComputeShader(const std::vector<At
 
 void HLSLAnalyzer::AnalyzeSecondaryEntryPoint(FunctionDecl* funcDecl)
 {
-    /* Only analyze secondary entry point once (this visitor might be called more than once) */
-    if (funcDecl->flags(FunctionDecl::isSecondaryEntryPoint))
-        return;
-
     /* Mark this function declaration with the entry point flag */
-    funcDecl->flags << FunctionDecl::isSecondaryEntryPoint;
+    if (funcDecl->flags.SetOnce(FunctionDecl::isSecondaryEntryPoint))
+    {
+        /* Store reference to secondary entry point in root AST node */
+        program_->layoutTessControl.patchConstFunctionRef = funcDecl;
 
-    /* Analyze function input/output */
-    AnalyzeEntryPointInputOutput(funcDecl);
+        /* Analyze function input/output (use same visitor as for the main entry pointer here) */
+        AnalyzeEntryPointInputOutput(funcDecl);
 
+        /* Analyze secondary entry pointer attributes */
+        AnalyzeSecondaryEntryPointAttributes(funcDecl->attribs);
+    }
+}
+
+void HLSLAnalyzer::AnalyzeSecondaryEntryPointAttributes(const std::vector<AttributePtr>& attribs)
+{
     /*
     The secondary entry point can be a function that is an entry point for another shader target.
     This is used to detect the entry point attributes from the tessellation-control shader,
@@ -996,7 +1003,7 @@ void HLSLAnalyzer::AnalyzeSecondaryEntryPoint(FunctionDecl* funcDecl)
     switch (shaderTarget_)
     {
         case ShaderTarget::TessellationEvaluationShader:
-            AnalyzeSecondaryEntryPointAttributesTessEvaluationShader(funcDecl->attribs);
+            AnalyzeSecondaryEntryPointAttributesTessEvaluationShader(attribs);
             break;
         default:
             break;
@@ -1131,12 +1138,8 @@ void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
             /* Fetch patch constant function entry point */
             if (auto patchConstFunc = FetchFunctionDecl(literalValue))
             {
-                /* Decorate program AST node with function reference */
-                program_->layoutTessControl.patchConstFunctionRef = patchConstFunc;
-
                 /* Decorate patch constant function as reachable (since it's referenced by the main entry point) */
                 AnalyzeSecondaryEntryPoint(patchConstFunc);
-                patchConstFunc->flags << AST::isReachable;
             }
             else
                 Error("entry point '" + literalValue + "' for patch constant function not found", ast->arguments[0].get(), HLSLErr::ERR_ENTRYPOINT_NOT_FOUND);
