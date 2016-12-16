@@ -52,7 +52,7 @@ float4 PS(VOut inp) : SV_Target
 	
 	// Sample
 	c += tex0.Sample(smpl0, inp.texCoord);
-	c += tex0.Sample(smpl0, inp.texCoord, 0);
+	c += tex0.Sample(smpl0, inp.texCoord, 0.0);
 	
 	// Error: "Sample" not supported for non-floating-point texture formats
 	c += tex1.Sample(smpl0, inp.texCoord);

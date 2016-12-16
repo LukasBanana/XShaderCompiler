@@ -663,7 +663,7 @@ void GLSLConverter::ConvertIntrinsicCallSample(FunctionCall* ast)
         if (auto bufferDecl = symbolRef->As<BufferDecl>())
         {
             /* Determine vector size for texture intrinsic parametes */
-            auto vectorSize = GetTextureVectorSize(bufferDecl->GetBufferType();
+            auto vectorSize = GetTextureVectorSize(bufferDecl->GetBufferType());
 
             /* Convert arguments */
             auto& args = ast->arguments;
