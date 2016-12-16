@@ -608,6 +608,11 @@ void GLSLConverter::ConvertIntrinsicCall(FunctionCall* ast)
         case Intrinsic::Texture_Sample_5:
             ConvertIntrinsicCallSample(ast);
             break;
+        case Intrinsic::Texture_SampleLevel_3:
+        case Intrinsic::Texture_SampleLevel_4:
+        case Intrinsic::Texture_SampleLevel_5:
+            ConvertIntrinsicCallSampleLevel(ast);
+            break;
         default:
             break;
     }
@@ -632,30 +637,7 @@ void GLSLConverter::ConvertIntrinsicCallSaturate(FunctionCall* ast)
         RuntimeErr("invalid number of arguments in intrinsic 'saturate'", ast);
 }
 
-static int GetTextureVectorSize(const BufferType bufferType)
-{
-    switch (bufferType)
-    {
-        case BufferType::Texture1D:
-            return 1;
-        case BufferType::Texture1DArray:
-        case BufferType::Texture2D:
-        case BufferType::Texture2DMS:
-            return 2;
-        case BufferType::Texture2DArray:
-        case BufferType::Texture2DMSArray:
-        case BufferType::Texture3D:
-        case BufferType::TextureCube:
-            return 3;
-        case BufferType::TextureCubeArray:
-            return 4;
-        default:
-            break;
-    }
-    return 0;
-}
-
-void GLSLConverter::ConvertIntrinsicCallSample(FunctionCall* ast)
+static int GetTextureVectorSizeFromIntrinsicCall(FunctionCall* ast)
 {
     /* Get buffer object from sample intrinsic call */
     if (auto symbolRef = ast->varIdent->symbolRef)
@@ -663,20 +645,62 @@ void GLSLConverter::ConvertIntrinsicCallSample(FunctionCall* ast)
         if (auto bufferDecl = symbolRef->As<BufferDecl>())
         {
             /* Determine vector size for texture intrinsic parametes */
-            auto vectorSize = GetTextureVectorSize(bufferDecl->GetBufferType());
-
-            /* Convert arguments */
-            auto& args = ast->arguments;
-            auto numArgs = args.size();
-
-            /* Ensure argument: float[1,2,3,4] Location */
-            if (numArgs >= 2)
-                ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Float, vectorSize), true);
-
-            /* Ensure argument: int[1,2,3] Offset */
-            if (numArgs >= 3)
-                ConvertExprIfCastRequired(args[2], VectorDataType(DataType::Int, vectorSize), true);
+            switch (bufferDecl->GetBufferType())
+            {
+                case BufferType::Texture1D:
+                    return 1;
+                case BufferType::Texture1DArray:
+                case BufferType::Texture2D:
+                case BufferType::Texture2DMS:
+                    return 2;
+                case BufferType::Texture2DArray:
+                case BufferType::Texture2DMSArray:
+                case BufferType::Texture3D:
+                case BufferType::TextureCube:
+                    return 3;
+                case BufferType::TextureCubeArray:
+                    return 4;
+                default:
+                    break;
+            }
         }
+    }
+    return 0;
+}
+
+void GLSLConverter::ConvertIntrinsicCallSample(FunctionCall* ast)
+{
+    /* Determine vector size for texture intrinsic */
+    if (auto vectorSize = GetTextureVectorSizeFromIntrinsicCall(ast))
+    {
+        /* Convert arguments */
+        auto& args = ast->arguments;
+
+        /* Ensure argument: float[1,2,3,4] Location */
+        if (args.size() >= 2)
+            ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Float, vectorSize), true);
+
+        /* Ensure argument: int[1,2,3] Offset */
+        if (args.size() >= 3)
+            ConvertExprIfCastRequired(args[2], VectorDataType(DataType::Int, vectorSize), true);
+    }
+}
+
+void GLSLConverter::ConvertIntrinsicCallSampleLevel(FunctionCall* ast)
+{
+    /* Determine vector size for texture intrinsic */
+    if (auto vectorSize = GetTextureVectorSizeFromIntrinsicCall(ast))
+    {
+        /* Convert arguments */
+        auto& args = ast->arguments;
+
+        /* Ensure argument: float[1,2,3,4] Location */
+        if (args.size() >= 2)
+            ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Float, vectorSize), true);
+
+        /* Ensure argument: int[1,2,3] Offset */
+        if (args.size() >= 4)
+            ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, vectorSize), true);
     }
 }
 

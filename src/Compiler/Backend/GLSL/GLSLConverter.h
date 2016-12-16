@@ -126,6 +126,7 @@ class GLSLConverter : public Visitor
         void ConvertIntrinsicCall(FunctionCall* ast);
         void ConvertIntrinsicCallSaturate(FunctionCall* ast);
         void ConvertIntrinsicCallSample(FunctionCall* ast);
+        void ConvertIntrinsicCallSampleLevel(FunctionCall* ast);
 
         /* === Members === */
 

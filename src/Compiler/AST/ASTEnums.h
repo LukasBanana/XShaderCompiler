@@ -717,9 +717,9 @@ enum class Intrinsic
     Texture_SampleGrad_5,
     Texture_SampleGrad_6,
     Texture_SampleGrad_7,
-    Texture_SampleLevel_3,
-    Texture_SampleLevel_4,
-    Texture_SampleLevel_5,
+    Texture_SampleLevel_3,  // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD)
+    Texture_SampleLevel_4,  // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD, int[1,2,3] Offset)
+    Texture_SampleLevel_5,  // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD, int[1,2,3] Offset, out uint Status)
 };
 
 // Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>
