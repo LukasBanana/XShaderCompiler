@@ -126,9 +126,6 @@ class GLSLGenerator : public Generator
         void WriteLineMark(const TokenPtr& tkn);
         void WriteLineMark(const AST* ast);
 
-        void WriteScopeOpen(bool compact = false);
-        void WriteScopeClose(bool compact = false, bool semicolon = false);
-
         /* --- Program --- */
 
         void WriteProgramHeader();
@@ -209,7 +206,7 @@ class GLSLGenerator : public Generator
         /* --- Structure --- */
 
         bool WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool allowNestedStruct = false);
-        bool WriteStructDeclStandard(StructDecl* ast, bool writeSemicolon);
+        bool WriteStructDeclStandard(StructDecl* ast, bool endWithSemicolon);
         bool WriteStructDeclInputOutputBlock(StructDecl* ast);
         void WriteStructDeclMembers(StructDecl* ast);
 
@@ -240,7 +237,7 @@ class GLSLGenerator : public Generator
         bool                preserveComments_       = false;
         bool                allowLineMarks_         = false;
         bool                compactWrappers_        = true;
-        bool                newLineOpenScope_       = true;
+        bool                alwaysBracedScopes_     = false;
         std::string         nameManglingPrefix_     = "xsc_";
 
         bool                isInsideEntryPoint_     = false;

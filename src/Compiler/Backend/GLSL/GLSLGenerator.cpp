@@ -41,7 +41,7 @@ void GLSLGenerator::GenerateCodePrimary(
     preserveComments_   = outputDesc.options.preserveComments;
     allowLineMarks_     = outputDesc.formatting.lineMarks;
     compactWrappers_    = outputDesc.formatting.compactWrappers;
-    newLineOpenScope_   = outputDesc.formatting.newLineOpenScope;
+    alwaysBracedScopes_ = true;//outputDesc.formatting.alwaysBracedScopes;
     nameManglingPrefix_ = outputDesc.formatting.prefix;
 
     if (program.entryPointRef)
@@ -365,13 +365,13 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     }
     EndLn();
 
-    WriteScopeOpen();
+    WriteScopeOpen(false, true);
     BeginSep();
     {
         Visit(ast->members);
     }
     EndSep();
-    WriteScopeClose(false, true);
+    WriteScopeClose();
 
     Blank();
 }
@@ -592,8 +592,6 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     Visit(ast->condition);
     Write(")");
     
-    EndLn();
-
     /* Write if body */
     WriteScopedStmnt(ast->bodyStmnt.get());
 
@@ -605,7 +603,7 @@ IMPLEMENT_VISIT_PROC(ElseStmnt)
     if (ast->bodyStmnt->Type() == AST::Types::IfStmnt)
     {
         /* Write else if statement */
-        BeginLn();
+        WriteScopeContinue();
         Write("else ");
 
         bool hasElseParentNode = true;
@@ -614,7 +612,8 @@ IMPLEMENT_VISIT_PROC(ElseStmnt)
     else
     {
         /* Write else statement */
-        WriteLn("else");
+        WriteScopeContinue();
+        Write("else");
         WriteScopedStmnt(ast->bodyStmnt.get());
     }
 }
@@ -845,66 +844,6 @@ void GLSLGenerator::WriteLineMark(const TokenPtr& tkn)
 void GLSLGenerator::WriteLineMark(const AST* ast)
 {
     WriteLineMark(ast->area.Pos().Row());
-}
-
-void GLSLGenerator::WriteScopeOpen(bool compact)
-{
-    if (compact)
-    {
-        /* Write new scope into same line */
-        Write(" { ");
-    }
-    else if (newLineOpenScope_)
-    {
-        /* Write new scope into same line, and increment indentation */
-        if (IsOpenLine())
-        {
-            Write(" {");
-            EndLn();
-            IncIndent();
-            BeginLn();
-        }
-        else
-        {
-            WriteLn("{");
-            IncIndent();
-        }
-    }
-    else
-    {
-        /* Write new scope into new line, and increment indentation */
-        if (IsOpenLine())
-        {
-            EndLn();
-            WriteLn("{");
-            IncIndent();
-            BeginLn();
-        }
-        else
-        {
-            WriteLn("{");
-            IncIndent();
-        }
-    }
-}
-
-void GLSLGenerator::WriteScopeClose(bool compact, bool semicolon)
-{
-    if (compact)
-    {
-        /* Write scope ending into same line */
-        Write(semicolon ? " };" : " }");
-    }
-    else
-    {
-        bool open = IsOpenLine();
-        if (open)
-            EndLn();
-
-        /* Decrement indentation, and write scope ending into new line */
-        DecIndent();
-        WriteLn(semicolon ? "};" : "}");
-    }
 }
 
 /* --- Program --- */
@@ -1519,31 +1458,30 @@ void GLSLGenerator::WriteFunction(FunctionDecl* ast)
 {
     /* Write function header */
     BeginLn();
+    
+    Visit(ast->returnType);
+    Write(" " + ast->ident + "(");
+
+    /* Write parameters */
+    for (size_t i = 0; i < ast->parameters.size(); ++i)
     {
-        Visit(ast->returnType);
-        Write(" " + ast->ident + "(");
-
-        /* Write parameters */
-        for (size_t i = 0; i < ast->parameters.size(); ++i)
-        {
-            WriteParameter(ast->parameters[i].get());
-            if (i + 1 < ast->parameters.size())
-                Write(", ");
-        }
-
-        Write(")");
-
-        if (!ast->codeBlock)
-        {
-            /*
-            This is only a function forward declaration
-            -> finish with line terminator
-            */
-            Write(";");
-        }
+        WriteParameter(ast->parameters[i].get());
+        if (i + 1 < ast->parameters.size())
+            Write(", ");
     }
-    EndLn();
 
+    Write(")");
+
+    if (!ast->codeBlock)
+    {
+        /*
+        This is only a function forward declaration
+        -> finish with line terminator
+        */
+        Write(";");
+        EndLn();
+    }
+    
     /* Write function body */
     Visit(ast->codeBlock);
 }
@@ -1881,9 +1819,9 @@ void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
                     {
                         Write("discard;");
                     }
-                    WriteScopeClose(writeCompact);
+                    WriteScopeClose();
                 }
-                WriteScopeClose(writeCompact);
+                WriteScopeClose();
             }
             EndLn();
 
@@ -1923,7 +1861,7 @@ bool GLSLGenerator::WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool a
     return false;
 }
 
-bool GLSLGenerator::WriteStructDeclStandard(StructDecl* ast, bool writeSemicolon)
+bool GLSLGenerator::WriteStructDeclStandard(StructDecl* ast, bool endWithSemicolon)
 {
     /* Write structure signature */
     BeginLn();
@@ -1935,13 +1873,13 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* ast, bool writeSemicolon
     EndLn();
 
     /* Write structure members */
-    WriteScopeOpen();
+    WriteScopeOpen(false, endWithSemicolon);
     BeginSep();
     {
         WriteStructDeclMembers(ast);
     }
     EndSep();
-    WriteScopeClose(false, writeSemicolon);
+    WriteScopeClose();
 
     return true;
 }
@@ -2059,7 +1997,7 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* ast)
     EndLn();
 
     /* Write buffer array (of variable size) */
-    WriteScopeOpen();
+    WriteScopeOpen(false, true);
     {
         BeginLn();
         {
@@ -2074,7 +2012,7 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* ast)
         }
         EndLn();
     }
-    WriteScopeClose(false, true);
+    WriteScopeClose();
 }
 
 /* --- Misc --- */
@@ -2142,9 +2080,11 @@ void GLSLGenerator::WriteScopedStmnt(Stmnt* ast)
     {
         if (ast->Type() != AST::Types::CodeBlockStmnt)
         {
-            IncIndent();
-            Visit(ast);
-            DecIndent();
+            WriteScopeOpen(false, false, alwaysBracedScopes_);
+            {
+                Visit(ast);
+            }
+            WriteScopeClose();
         }
         else
             Visit(ast);

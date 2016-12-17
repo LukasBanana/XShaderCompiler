@@ -49,22 +49,29 @@ class CodeWriter : public IndentHandler
         void BeginSeparation();
         void EndSeparation();
 
-        void BeginLine();
-        void EndLine();
-
-        void Write(const std::string& text);
-        void WriteLine(const std::string& text);
-
-        // Writes either a single space or a formatted separator.
+        // Inserts a separator if line separation formatting is currently enabled.
         void Separator();
 
-        Options CurrentOptions() const;
+        // Begins a new line and inserts the current indentation.
+        void BeginLine();
 
-        // Returns the output stream.
-        inline std::ostream& Out()
-        {
-            return (*stream_);
-        }
+        // Ends the current line and inserts the new-line character to the output stream.
+        void EndLine();
+
+        // Writes the 
+        void Write(const std::string& text);
+
+        // Shortcut for: BeginLine(), Write(text), EndLine().
+        void WriteLine(const std::string& text);
+
+        // Begins a new scope with the '{' character and adds a new line either befor or after this character.
+        void BeginScope(bool compact = false, bool endWithSemicolon = false, bool useBraces = true);
+
+        // Ends the current scope with the '}' character. If next command is not "ContinueScope", the line wil be ended first.
+        void EndScope();
+
+        // Continues the previously ended scope.
+        void ContinueScope();
 
         // Returns true if the code writer is currently in an open line (i.e. BeginLine was called without closing EndLine).
         inline bool IsOpenLine() const
@@ -72,8 +79,15 @@ class CodeWriter : public IndentHandler
             return openLine_;
         }
 
+        /* === Members === */
+
+        // Write new line for each scope.
+        bool newLineOpenScope = false;
+
     private:
         
+        /* === Structures === */
+
         struct SeparatedLine
         {
             std::string                 indent;
@@ -101,15 +115,45 @@ class CodeWriter : public IndentHandler
             }
         };
 
+        struct ScopeState
+        {
+            bool scopeCanContinue   = false;
+            bool scopeUsedBraces    = false;
+            bool beginLineQueued    = false;
+            bool endLineQueued      = false;
+        };
+
+        struct ScopeOptions
+        {
+            bool compact;
+            bool endWithSemicolon;
+            bool useBraces;
+        };
+
+        /* === Functions === */
+
+        Options CurrentOptions() const;
+
         void FlushSeparatedLines(SeparatedLineQueue& lineQueue);
 
-        std::ostream*       stream_                 = nullptr;
+        // Returns the output stream.
+        inline std::ostream& Out()
+        {
+            return (*stream_);
+        }
 
-        std::stack<Options> optionsStack_;
-        bool                openLine_               = false;
+        /* === Members === */
 
-        unsigned int        lineSeparationLevel_    = 0;
-        SeparatedLineQueue  queuedSeparatedLines_;
+        std::ostream*               stream_                 = nullptr;
+
+        std::stack<Options>         optionsStack_;
+        bool                        openLine_               = false;
+
+        unsigned int                lineSeparationLevel_    = 0;
+        SeparatedLineQueue          queuedSeparatedLines_;
+
+        ScopeState                  scopeState_;
+        std::stack<ScopeOptions>    scopeOptionStack_;
 
 };
 

@@ -101,6 +101,9 @@
 #[StructInheritTest1 PS]
 #--show-ast -T frag -E PS -o output/* StructInheritTest1.hlsl
 
+[FormattingTest1.hlsl VS]
+-T vert -E VS -O -o output/* FormattingTest1.hlsl
+
 [TestShader1.hlsl VS]
 -T vert -E VS -O -o output/* TestShader1.hlsl
 

@@ -55,6 +55,10 @@ class Generator : protected Visitor
 
         void Separator();
         
+        void WriteScopeOpen(bool compact = false, bool endWithSemicolon = false, bool useBraces = true);
+        void WriteScopeClose();
+        void WriteScopeContinue();
+
         bool IsOpenLine() const;
         
         void Write(const std::string& text);

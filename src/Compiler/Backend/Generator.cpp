@@ -28,10 +28,11 @@ bool Generator::GenerateCode(
     /* Store parameters */
     writer_.SetIndent(outputDesc.formatting.indent);
 
-    shaderTarget_           = inputDesc.shaderTarget;
-    allowBlanks_            = outputDesc.formatting.blanks;
-    allowLineSeparation_    = outputDesc.formatting.lineSeparation;
-    program_                = &program;
+    shaderTarget_               = inputDesc.shaderTarget;
+    allowBlanks_                = outputDesc.formatting.blanks;
+    allowLineSeparation_        = outputDesc.formatting.lineSeparation;
+    writer_.newLineOpenScope    = false;//outputDesc.formatting.newLineOpenScope;
+    program_                    = &program;
 
     try
     {
@@ -93,6 +94,21 @@ void Generator::EndSep()
 void Generator::Separator()
 {
     writer_.Separator();
+}
+
+void Generator::WriteScopeOpen(bool compact, bool endWithSemicolon, bool useBraces)
+{
+    writer_.BeginScope(compact, endWithSemicolon, useBraces);
+}
+
+void Generator::WriteScopeClose()
+{
+    writer_.EndScope();
+}
+
+void Generator::WriteScopeContinue()
+{
+    writer_.ContinueScope();
 }
 
 bool Generator::IsOpenLine() const

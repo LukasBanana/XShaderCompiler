@@ -49,11 +49,15 @@ void CodeWriter::EndSeparation()
 
 void CodeWriter::BeginLine()
 {
+    if (scopeState_.endLineQueued)
+        EndLine();
+
     /* Check if previous line has ended */
     if (!openLine_)
     {
         /* Begin a new line */
         openLine_ = true;
+        scopeState_.beginLineQueued = false;
 
         /* Write new line in queue */
         if (lineSeparationLevel_ > 0)
@@ -80,6 +84,7 @@ void CodeWriter::EndLine()
     {
         /* End current line */
         openLine_ = false;
+        scopeState_.endLineQueued = false;
 
         /* Append new-line character */
         if (lineSeparationLevel_ == 0)
@@ -89,6 +94,15 @@ void CodeWriter::EndLine()
 
 void CodeWriter::Write(const std::string& text)
 {
+    if (scopeState_.beginLineQueued)
+        BeginLine();
+
+    /*if (scopeState_.endLineQueued)
+    {
+        EndLine();
+        BeginLine();
+    }*/
+
     if (lineSeparationLevel_ > 0)
     {
         /* Push text into queue */
@@ -108,21 +122,140 @@ void CodeWriter::WriteLine(const std::string& text)
     EndLine();
 }
 
+void CodeWriter::BeginScope(bool compact, bool endWithSemicolon, bool useBraces)
+{
+    if (compact)
+    {
+        /* Write new scope into same line */
+        if (useBraces)
+            Write(" { ");
+        else
+            Write(" ");
+    }
+    else if (newLineOpenScope)
+    {
+        /* Write new scope into new line, and increment indentation */
+        if (IsOpenLine())
+        {
+            EndLine();
+            if (useBraces)
+                WriteLine("{");
+            IncIndent();
+            BeginLine();
+        }
+        else
+        {
+            if (useBraces)
+                WriteLine("{");
+            IncIndent();
+        }
+    }
+    else
+    {
+        /* Write new scope into same line, and increment indentation */
+        if (IsOpenLine())
+        {
+            if (useBraces)
+                Write(" {");
+            EndLine();
+            IncIndent();
+            BeginLine();
+        }
+        else
+        {
+            if (useBraces)
+                WriteLine("{");
+            IncIndent();
+        }
+    }
+
+    scopeOptionStack_.push({ compact, endWithSemicolon, useBraces });
+}
+
+void CodeWriter::EndScope()
+{
+    auto opt = scopeOptionStack_.top();
+    scopeOptionStack_.pop();
+
+    if (opt.compact)
+    {
+        /* Write scope ending into same line */
+        if (opt.useBraces)
+            Write(" }");
+        if (opt.endWithSemicolon)
+            Write(";");
+    }
+    else if (newLineOpenScope)
+    {
+        if (IsOpenLine())
+            EndLine();
+
+        /* Decrement indentation, and write scope ending into new line */
+        DecIndent();
+        BeginLine();
+        {
+            if (opt.useBraces)
+                Write("}");
+            if (opt.endWithSemicolon)
+                Write(";");
+        }
+        EndLine();
+    }
+    else
+    {
+        if (IsOpenLine())
+            EndLine();
+
+        /* Decrement indentation, and write scope ending into new line */
+        DecIndent();
+        scopeState_.beginLineQueued = true;
+
+        if (opt.useBraces)
+            Write("}");
+
+        if (opt.endWithSemicolon)
+        {
+            Write(";");
+            EndLine();
+        }
+        else
+        {
+            scopeState_.scopeCanContinue = true;
+            scopeState_.endLineQueued = true;
+        }
+
+        scopeState_.scopeUsedBraces = opt.useBraces;
+    }
+}
+
+void CodeWriter::ContinueScope()
+{
+    if (scopeState_.scopeCanContinue)
+    {
+        scopeState_.scopeCanContinue = false;
+        scopeState_.endLineQueued = false;
+        if (scopeState_.scopeUsedBraces)
+            Write(" ");
+    }
+    else
+        BeginLine();
+}
+
 void CodeWriter::Separator()
 {
     if (lineSeparationLevel_ > 0)
         queuedSeparatedLines_.Current().Tab();
 }
 
-CodeWriter::Options CodeWriter::CurrentOptions() const
-{
-    return (!optionsStack_.empty() ? optionsStack_.top() : Options());
-}
-
 
 /*
  * ======= Private: =======
  */
+
+CodeWriter::Options CodeWriter::CurrentOptions() const
+{
+    return (!optionsStack_.empty() ? optionsStack_.top() : Options());
+}
 
 void CodeWriter::FlushSeparatedLines(SeparatedLineQueue& lineQueue)
 {
