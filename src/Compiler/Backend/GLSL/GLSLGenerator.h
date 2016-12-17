@@ -232,13 +232,13 @@ class GLSLGenerator : public Generator
         /* === Members === */
 
         OutputShaderVersion versionOut_             = OutputShaderVersion::GLSL;
+        std::string         nameManglingPrefix_     = "xsc_";
         bool                allowExtensions_        = false;
         bool                explicitBinding_        = false;
         bool                preserveComments_       = false;
         bool                allowLineMarks_         = false;
         bool                compactWrappers_        = true;
         bool                alwaysBracedScopes_     = false;
-        std::string         nameManglingPrefix_     = "xsc_";
 
         bool                isInsideEntryPoint_     = false;
         bool                isInsideInterfaceBlock_ = false;

@@ -223,7 +223,7 @@ HelpDescriptor PrefixCommand::Help() const
 
 void PrefixCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.formatting.prefix = cmdLine.Accept();
+    state.outputDesc.nameManglingPrefix = cmdLine.Accept();
 }
 
 

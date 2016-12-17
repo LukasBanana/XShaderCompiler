@@ -81,9 +81,6 @@ struct Formatting
 {
     //! Indentation string for code generation. By default std::string(4, ' ').
     std::string indent              = "    ";
-    
-    //! Prefix string for name mangling. By default "xsc_".
-    std::string prefix              = "xsc_";
 
     //! If true, blank lines are allowed. By default true.
     bool        blanks              = true;
@@ -179,10 +176,13 @@ struct ShaderOutput
     std::string         filename;
 
     //! Specifies the output stream. This will contain the output GLSL code. This must not be null when passed to the "CompileShader" function!
-    std::ostream*       sourceCode      = nullptr;
+    std::ostream*       sourceCode          = nullptr;
 
     //! Specifies the output shader version. By default OutputShaderVersion::GLSL (to auto-detect minimum required version).
-    OutputShaderVersion shaderVersion   = OutputShaderVersion::GLSL;
+    OutputShaderVersion shaderVersion       = OutputShaderVersion::GLSL;
+    
+    //! Prefix string for name mangling. By default "xsc_".
+    std::string         nameManglingPrefix  = "xsc_";
 
     //! Output code formatting descriptor.
     Formatting          formatting;

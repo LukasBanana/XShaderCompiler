@@ -36,13 +36,13 @@ void GLSLGenerator::GenerateCodePrimary(
 {
     /* Store parameters */
     versionOut_         = outputDesc.shaderVersion;
+    nameManglingPrefix_ = outputDesc.nameManglingPrefix;
     allowExtensions_    = outputDesc.options.allowExtensions;
     explicitBinding_    = outputDesc.options.explicitBinding;
     preserveComments_   = outputDesc.options.preserveComments;
     allowLineMarks_     = outputDesc.formatting.lineMarks;
     compactWrappers_    = outputDesc.formatting.compactWrappers;
     alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
-    nameManglingPrefix_ = outputDesc.formatting.prefix;
 
     if (program.entryPointRef)
     {
@@ -57,7 +57,7 @@ void GLSLGenerator::GenerateCodePrimary(
             /* Convert AST for GLSL code generation */
             {
                 GLSLConverter converter;
-                converter.Convert(program, inputDesc.shaderTarget, outputDesc.formatting.prefix);
+                converter.Convert(program, inputDesc.shaderTarget, nameManglingPrefix_);
             }
 
             /* Mark all reachable AST nodes */
