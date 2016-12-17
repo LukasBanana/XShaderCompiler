@@ -37,14 +37,17 @@ void HelpPrinter::AppendCommandHelp(const Command& cmd)
     );
 }
 
-void HelpPrinter::PrintAll(std::ostream& output, std::size_t indentSize, bool printCompact) const
+void HelpPrinter::PrintAll(std::ostream& output, std::size_t indentSize, bool printCompact, long categories) const
 {
     for (const auto& entry : entries_)
     {
-        if (printCompact)
-            PrintEntryCompact(output, entry.desc, indentSize);
-        else
-            PrintEntry(output, entry.desc, indentSize);
+        if ((entry.desc.category & categories) != 0)
+        {
+            if (printCompact)
+                PrintEntryCompact(output, entry.desc, indentSize);
+            else
+                PrintEntry(output, entry.desc, indentSize);
+        }
     }
 }
 

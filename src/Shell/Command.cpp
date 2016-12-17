@@ -60,7 +60,12 @@ std::vector<Command::Identifier> EntryCommand::Idents() const
 
 HelpDescriptor EntryCommand::Help() const
 {
-    return { "-E, --entry ENTRY", "Shader entry point" };
+    return
+    {
+        "-E, --entry ENTRY",
+        "Shader entry point",
+        HelpCategory::Main
+    };
 }
 
 void EntryCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -80,7 +85,12 @@ std::vector<Command::Identifier> SecndEntryCommand::Idents() const
 
 HelpDescriptor SecndEntryCommand::Help() const
 {
-    return { "-E2, --entry2 ENTRY", "Secondary shader entry point" };
+    return
+    {
+        "-E2, --entry2 ENTRY",
+        "Secondary shader entry point",
+        HelpCategory::Main
+    };
 }
 
 void SecndEntryCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -103,7 +113,8 @@ HelpDescriptor TargetCommand::Help() const
     return
     {
         "-T, --target TARGET", "Shader target; valid values:",
-        "vert, tesc, tese, geom, frag, comp"
+        "vert, tesc, tese, geom, frag, comp",
+        HelpCategory::Main
     };
 }
 
@@ -135,7 +146,13 @@ std::vector<Command::Identifier> VersionInCommand::Idents() const
 
 HelpDescriptor VersionInCommand::Help() const
 {
-    return { "-Vin, --version-in VERSION", "Input shader version; default=HLSL5; valid values:", "HLSL3, HLSL4, HLSL5" };
+    return
+    {
+        "-Vin, --version-in VERSION",
+        "Input shader version; default=HLSL5; valid values:",
+        "HLSL3, HLSL4, HLSL5",
+        HelpCategory::Main
+    };
 }
 
 void VersionInCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -153,7 +170,7 @@ void VersionInCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
- * ShaderOutCommand class
+ * VersionOutCommand class
  */
 
 std::vector<Command::Identifier> VersionOutCommand::Idents() const
@@ -165,12 +182,14 @@ HelpDescriptor VersionOutCommand::Help() const
 {
     return
     {
-        "-Vout, --version-out VERSION", "Shader output version; default=GLSL; valid values:",
+        "-Vout, --version-out VERSION",
+        "Shader output version; default=GLSL; valid values:",
         (
             "GLSL[110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450],\n" \
             "ESSL[100, 300, 310, 320],\n" \
             "VKSL[450]"
-        )
+        ),
+        HelpCategory::Main
     };
 }
 
@@ -208,26 +227,6 @@ void VersionOutCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
- * PrefixCommand class
- */
-
-std::vector<Command::Identifier> PrefixCommand::Idents() const
-{
-    return { { "--prefix" } };
-}
-
-HelpDescriptor PrefixCommand::Help() const
-{
-    return { "--prefix PREFIX", "Prefix for name-mangling of variables with reserved names; default='xsc_'" };
-}
-
-void PrefixCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.nameManglingPrefix = cmdLine.Accept();
-}
-
-
-/*
  * OutputCommand class
  */
 
@@ -238,12 +237,66 @@ std::vector<Command::Identifier> OutputCommand::Idents() const
 
 HelpDescriptor OutputCommand::Help() const
 {
-    return { "-o, --output FILE", "Shader output file (use '*' for default); default='<FILE>.<ENTRY>.<TARGET>'" };
+    return
+    {
+        "-o, --output FILE",
+        "Shader output file (use '*' for default); default='<FILE>.<ENTRY>.<TARGET>'",
+        HelpCategory::Main
+    };
 }
 
 void OutputCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputFilename = cmdLine.Accept();
+}
+
+
+/*
+ * IncludePathCommand class
+ */
+
+std::vector<Command::Identifier> IncludePathCommand::Idents() const
+{
+    return { { "-I" }, { "--include-path" } };
+}
+
+HelpDescriptor IncludePathCommand::Help() const
+{
+    return
+    {
+        "-I, --include-path PATH",
+        "Adds PATH to the search include paths",
+        HelpCategory::Main
+    };
+}
+
+void IncludePathCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.searchPaths.push_back(cmdLine.Accept());
+}
+
+
+/*
+ * PrefixCommand class
+ */
+
+std::vector<Command::Identifier> PrefixCommand::Idents() const
+{
+    return { { "--prefix" } };
+}
+
+HelpDescriptor PrefixCommand::Help() const
+{
+    return
+    {
+        "--prefix PREFIX",
+        "Prefix for name-mangling of variables with reserved names; default='xsc_'"
+    };
+}
+
+void PrefixCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.nameManglingPrefix = cmdLine.Accept();
 }
 
 
@@ -268,171 +321,6 @@ HelpDescriptor WarnCommand::Help() const
 void WarnCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.options.warnings = cmdLine.AcceptBoolean(true);
-}
-
-
-/*
- * FormatBlanksCommand class
- */
-
-std::vector<Command::Identifier> FormatBlanksCommand::Idents() const
-{
-    return { { "-Fb" }, { "--format-blanks" } };
-}
-
-HelpDescriptor FormatBlanksCommand::Help() const
-{
-    return
-    {
-        "-Fb, --format-blanks [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables generation of blank lines between declarations; default=" + CommandLine::GetBooleanTrue()
-    };
-}
-
-void FormatBlanksCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.formatting.blanks = cmdLine.AcceptBoolean(true);
-}
-
-
-/*
- * FormatLineMarksCommand class
- */
-
-std::vector<Command::Identifier> FormatLineMarksCommand::Idents() const
-{
-    return { { "-Fline" }, { "--format-line-marks" } };
-}
-
-HelpDescriptor FormatLineMarksCommand::Help() const
-{
-    return
-    {
-        "-Fline, --format-line-marks [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables generation of line marks (e.g. '#line 30'); default=" + CommandLine::GetBooleanFalse()
-    };
-}
-
-void FormatLineMarksCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.formatting.lineMarks = cmdLine.AcceptBoolean(true);
-}
-
-
-/*
- * FormatIndentCommand class
- */
-
-std::vector<Command::Identifier> FormatIndentCommand::Idents() const
-{
-    return { { "-Fi" }, { "--format-indent" } };
-}
-
-HelpDescriptor FormatIndentCommand::Help() const
-{
-    return { "-Fi, --format-indent INDENT", "Code indentation string (use '\\t' for tabs); default='    '" };
-}
-
-void FormatIndentCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.formatting.indent = cmdLine.Accept();
-    Replace(state.outputDesc.formatting.indent, "\\t", "\t");
-}
-
-
-/*
- * FormatSeparationCommand class
- */
-
-std::vector<Command::Identifier> FormatSeparationCommand::Idents() const
-{
-    return { { "-Fsep" }, { "--format-separation" } };
-}
-
-HelpDescriptor FormatSeparationCommand::Help() const
-{
-    return
-    {
-        "-Fsep, --format-separation [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables formatting of line separation; default=" + CommandLine::GetBooleanTrue()
-    };
-}
-
-void FormatSeparationCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.formatting.lineSeparation = cmdLine.AcceptBoolean(true);
-}
-
-
-/*
- * FormatCompactCommand class
- */
-
-std::vector<Command::Identifier> FormatCompactCommand::Idents() const
-{
-    return { { "-Fcomp" }, { "--format-compact" } };
-}
-
-HelpDescriptor FormatCompactCommand::Help() const
-{
-    return
-    {
-        "-Fcomp, --format-compact [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables formatting of compact wrapper functions; default=" + CommandLine::GetBooleanTrue()
-    };
-}
-
-void FormatCompactCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.formatting.compactWrappers = cmdLine.AcceptBoolean(true);
-}
-
-
-/*
- * FormatBracedScopeCommand class
- */
-
-std::vector<Command::Identifier> FormatBracedScopeCommand::Idents() const
-{
-    return { { "-Fbscope" }, { "--format-braced-scope" } };
-}
-
-HelpDescriptor FormatBracedScopeCommand::Help() const
-{
-    return
-    {
-        "-Fbscope, --format-braced-scope [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables to always write braces for scopes; default=" + CommandLine::GetBooleanFalse()
-    };
-}
-
-void FormatBracedScopeCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.formatting.alwaysBracedScopes = cmdLine.AcceptBoolean(true);
-}
-
-
-/*
- * FormatNewLineScopeCommand class
- */
-
-std::vector<Command::Identifier> FormatNewLineScopeCommand::Idents() const
-{
-    return { { "-Fnls" }, { "--format-nl-scope" } };
-}
-
-HelpDescriptor FormatNewLineScopeCommand::Help() const
-{
-    return
-    {
-        "-Fnls, --format-nl-scope [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables to write open braces at a new line; default=" + CommandLine::GetBooleanTrue()
-    };
-}
-
-void FormatNewLineScopeCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.formatting.newLineOpenScope = cmdLine.AcceptBoolean(true);
 }
 
 
@@ -580,7 +468,11 @@ std::vector<Command::Identifier> PauseCommand::Idents() const
 
 HelpDescriptor PauseCommand::Help() const
 {
-    return { "--pause", "Waits for user input after the translation process" };
+    return
+    {
+        "--pause",
+        "Waits for user input after the translation process"
+    };
 }
 
 void PauseCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -600,7 +492,11 @@ std::vector<Command::Identifier> PresettingCommand::Idents() const
 
 HelpDescriptor PresettingCommand::Help() const
 {
-    return { "-PS, --presetting FILE", "Parse further arguments from the presetting file" };
+    return
+    {
+        "-PS, --presetting FILE",
+        "Parse further arguments from the presetting file"
+    };
 }
 
 void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -710,7 +606,11 @@ std::vector<Command::Identifier> VersionCommand::Idents() const
 
 HelpDescriptor VersionCommand::Help() const
 {
-    return { "--version", "Prints the version information" };
+    return
+    {
+        "--version",
+        "Prints the version information"
+    };
 }
 
 void VersionCommand::Run(CommandLine& cmdLine, ShellState& state)
@@ -733,40 +633,45 @@ std::vector<Command::Identifier> HelpCommand::Idents() const
 
 HelpDescriptor HelpCommand::Help() const
 {
-    return { "--help", "Prints this help reference" };
+    return
+    {
+        "--help",
+        "Prints this help reference"
+    };
 }
 
 void HelpCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
+    static const bool printCompact = false;
+    static const std::size_t indentSize = 2;
+
+    const auto& helpPrinter = CommandFactory::Instance().GetHelpPrinter();
+
+    auto PrintHeader = [](const std::string& label)
+    {
+        if (!printCompact)
+            std::cout << std::endl;
+        std::cout << label << ':' << std::endl;
+    };
+
+    /* Print usage */
     std::cout << "Usage:" << std::endl;
     std::cout << "  xsc (OPTION+ FILE)+" << std::endl;
-    std::cout << "Options:" << std::endl;
 
-    CommandFactory::Instance().GetHelpPrinter().PrintAll(std::cout, 2, false);
+    /* Print all options */
+    PrintHeader("Main Options");
+    helpPrinter.PrintAll(std::cout, indentSize, printCompact, HelpCategory::Main);
 
-    std::cout << "Example:" << std::endl;
+    PrintHeader("Common Options");
+    helpPrinter.PrintAll(std::cout, indentSize, printCompact, HelpCategory::Common);
+
+    PrintHeader("Formatting Options");
+    helpPrinter.PrintAll(std::cout, indentSize, printCompact, HelpCategory::Formatting);
+
+    /* Print usage example */
+    PrintHeader("Example");
     std::cout << "  xsc -E VS -T vert Example.hlsl -E PS -T frag Example.hlsl" << std::endl;
     std::cout << "   -> Output files: 'Example.VS.vert', and 'Example.PS.frag'" << std::endl;
-}
-
-
-/*
- * IncludePathCommand class
- */
-
-std::vector<Command::Identifier> IncludePathCommand::Idents() const
-{
-    return { { "-I" }, { "--include-path" } };
-}
-
-HelpDescriptor IncludePathCommand::Help() const
-{
-    return { "-I, --include-path PATH", "Adds PATH to the search include paths" };
-}
-
-void IncludePathCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.searchPaths.push_back(cmdLine.Accept());
 }
 
 
@@ -935,6 +840,182 @@ HelpDescriptor WrapperCommand::Help() const
 void WrapperCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.options.preferWrappers = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * FormatBlanksCommand class
+ */
+
+std::vector<Command::Identifier> FormatBlanksCommand::Idents() const
+{
+    return { { "-Fb" }, { "--format-blanks" } };
+}
+
+HelpDescriptor FormatBlanksCommand::Help() const
+{
+    return
+    {
+        "-Fb, --format-blanks [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables generation of blank lines between declarations; default=" + CommandLine::GetBooleanTrue(),
+        HelpCategory::Formatting
+    };
+}
+
+void FormatBlanksCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.formatting.blanks = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * FormatLineMarksCommand class
+ */
+
+std::vector<Command::Identifier> FormatLineMarksCommand::Idents() const
+{
+    return { { "-Flm" }, { "--format-line-marks" } };
+}
+
+HelpDescriptor FormatLineMarksCommand::Help() const
+{
+    return
+    {
+        "-Flm, --format-line-marks [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables generation of line marks (e.g. '#line 30'); default=" + CommandLine::GetBooleanFalse(),
+        HelpCategory::Formatting
+    };
+}
+
+void FormatLineMarksCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.formatting.lineMarks = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * FormatIndentCommand class
+ */
+
+std::vector<Command::Identifier> FormatIndentCommand::Idents() const
+{
+    return { { "-Fi" }, { "--format-indent" } };
+}
+
+HelpDescriptor FormatIndentCommand::Help() const
+{
+    return
+    {
+        "-Fi, --format-indent INDENT",
+        "Code indentation string (use '\\t' for tabs); default='    '",
+        HelpCategory::Formatting
+    };
+}
+
+void FormatIndentCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.formatting.indent = cmdLine.Accept();
+    Replace(state.outputDesc.formatting.indent, "\\t", "\t");
+}
+
+
+/*
+ * FormatLineSeparationCommand class
+ */
+
+std::vector<Command::Identifier> FormatLineSeparationCommand::Idents() const
+{
+    return { { "-Fls" }, { "--format-line-separation" } };
+}
+
+HelpDescriptor FormatLineSeparationCommand::Help() const
+{
+    return
+    {
+        "-Fls, --format-line-separation [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables formatting of line separation; default=" + CommandLine::GetBooleanTrue(),
+        HelpCategory::Formatting
+    };
+}
+
+void FormatLineSeparationCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.formatting.lineSeparation = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * FormatCompactWrappersCommand class
+ */
+
+std::vector<Command::Identifier> FormatCompactWrappersCommand::Idents() const
+{
+    return { { "-Fcw" }, { "--format-compact-wrappers" } };
+}
+
+HelpDescriptor FormatCompactWrappersCommand::Help() const
+{
+    return
+    {
+        "-Fcw, --format-compact-wrappers [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables formatting of compact wrapper functions; default=" + CommandLine::GetBooleanTrue(),
+        HelpCategory::Formatting
+    };
+}
+
+void FormatCompactWrappersCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.formatting.compactWrappers = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * FormatBracedScopeCommand class
+ */
+
+std::vector<Command::Identifier> FormatBracedScopeCommand::Idents() const
+{
+    return { { "-Fbs" }, { "--format-braced-scope" } };
+}
+
+HelpDescriptor FormatBracedScopeCommand::Help() const
+{
+    return
+    {
+        "-Fbs, --format-braced-scope [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables to always write braces for scopes; default=" + CommandLine::GetBooleanFalse(),
+        HelpCategory::Formatting
+    };
+}
+
+void FormatBracedScopeCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.formatting.alwaysBracedScopes = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * FormatNewLineScopeCommand class
+ */
+
+std::vector<Command::Identifier> FormatNewLineScopeCommand::Idents() const
+{
+    return { { "-Fnls" }, { "--format-newline-scope" } };
+}
+
+HelpDescriptor FormatNewLineScopeCommand::Help() const
+{
+    return
+    {
+        "-Fnls, --format-newline-scope [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables to write open braces at a new line; default=" + CommandLine::GetBooleanTrue(),
+        HelpCategory::Formatting
+    };
+}
+
+void FormatNewLineScopeCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.formatting.newLineOpenScope = cmdLine.AcceptBoolean(true);
 }
 
 

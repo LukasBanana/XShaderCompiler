@@ -58,13 +58,6 @@ CommandFactory::CommandFactory()
         PrefixCommand,
         OutputCommand,
         WarnCommand,
-        FormatBlanksCommand,
-        FormatLineMarksCommand,
-        FormatIndentCommand,
-        FormatSeparationCommand,
-        FormatCompactCommand,
-        FormatBracedScopeCommand,
-        FormatNewLineScopeCommand,
         ShowASTCommand,
         ShowTimesCommand,
         ReflectCommand,
@@ -81,7 +74,15 @@ CommandFactory::CommandFactory()
         ValidateCommand,
         BindingCommand,
         CommentCommand,
-        WrapperCommand
+        WrapperCommand,
+
+        FormatBlanksCommand,
+        FormatLineMarksCommand,
+        FormatIndentCommand,
+        FormatLineSeparationCommand,
+        FormatCompactWrappersCommand,
+        FormatBracedScopeCommand,
+        FormatNewLineScopeCommand
     >();
 }
 
