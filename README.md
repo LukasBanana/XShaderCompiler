@@ -25,7 +25,7 @@ Documentation
 Progress
 --------
 
-**Version: 0.02 Alpha** (*Do not use in production code!*)
+**Version: 0.03 Alpha** (*Do not use in production code!*)
 
 | Feature | Progress | Remarks |
 |---------|:--------:|---------|
