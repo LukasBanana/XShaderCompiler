@@ -97,10 +97,7 @@ struct Formatting
     //! If true, scopes are always written in braces. By default false.
     bool        alwaysBracedScopes  = false;
 
-    /**
-    \brief If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default false.
-    \note Currently only supported for wrapper functions.
-    */
+    //! If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default true.
     bool        newLineOpenScope    = true;
 
     //! If true, auto-formatting of line separation is allowed. By default true.

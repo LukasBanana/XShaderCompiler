@@ -31,7 +31,7 @@ bool Generator::GenerateCode(
     shaderTarget_               = inputDesc.shaderTarget;
     allowBlanks_                = outputDesc.formatting.blanks;
     allowLineSeparation_        = outputDesc.formatting.lineSeparation;
-    writer_.newLineOpenScope    = false;//outputDesc.formatting.newLineOpenScope;
+    writer_.newLineOpenScope    = outputDesc.formatting.newLineOpenScope;
     program_                    = &program;
 
     try

@@ -192,14 +192,18 @@ void CodeWriter::EndScope()
 
         /* Decrement indentation, and write scope ending into new line */
         DecIndent();
-        BeginLine();
+
+        if (opt.useBraces || opt.endWithSemicolon)
         {
-            if (opt.useBraces)
-                Write("}");
-            if (opt.endWithSemicolon)
-                Write(";");
+            BeginLine();
+            {
+                if (opt.useBraces)
+                    Write("}");
+                if (opt.endWithSemicolon)
+                    Write(";");
+            }
+            EndLine();
         }
-        EndLine();
     }
     else
     {
@@ -277,9 +281,10 @@ void CodeWriter::FlushSeparatedLines(SeparatedLineQueue& lineQueue)
 
             if (i + 1 < line.parts.size())
             {
-                /* Write tabbed spaces */
+                /* Write tabbed spaces (limit this to avoid bad_alloc exception on failure) */
+                static const std::size_t tabLimit = 50;
                 auto len = (offsets[i + 1] - offsets[i] - s.size());
-                if (len > 0)
+                if (len > 0 && len <= tabLimit)
                     Out() << std::string(len, ' ');
             }
         }

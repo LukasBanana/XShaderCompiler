@@ -41,7 +41,7 @@ void GLSLGenerator::GenerateCodePrimary(
     preserveComments_   = outputDesc.options.preserveComments;
     allowLineMarks_     = outputDesc.formatting.lineMarks;
     compactWrappers_    = outputDesc.formatting.compactWrappers;
-    alwaysBracedScopes_ = true;//outputDesc.formatting.alwaysBracedScopes;
+    alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
     nameManglingPrefix_ = outputDesc.formatting.prefix;
 
     if (program.entryPointRef)
@@ -437,8 +437,6 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     BeginLn();
 
-    const bool hasStructDecl = (ast->varType->structDecl != nullptr);
-
     /* Write input modifiers */
     if (ast->flags(VarDeclStmnt::isShaderInput))
         Write("in ");
@@ -447,8 +445,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     else if (ast->isUniform)
         Write("uniform ");
 
-    if (!hasStructDecl)
-        Separator();
+    Separator();
 
     /* Write storage classes */
     for (auto storageClass : ast->storageClasses)
@@ -470,9 +467,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     /* Write type modifiers */
     WriteTypeModifiers(ast->typeModifiers);
-
-    if (!hasStructDecl)
-        Separator();
+    Separator();
 
     /* Write variable type */
     if (ast->varType->structDecl)
@@ -485,8 +480,9 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     {
         Visit(ast->varType);
         Write(" ");
-        Separator();
     }
+
+    Separator();
 
     /* Write variable declarations */
     for (size_t i = 0; i < varDecls.size(); ++i)
@@ -1775,9 +1771,6 @@ void GLSLGenerator::WriteWrapperIntrinsics()
 
 void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
 {
-    //TODO: make this boolean optional for the user
-    bool writeCompact = true;
-
     bool wrappersWritten = false;
 
     for (const auto& argList : usage.argLists)
@@ -1794,7 +1787,7 @@ void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
                 Write(" x)");
 
                 /* Write function body */
-                WriteScopeOpen(writeCompact);
+                WriteScopeOpen(compactWrappers_);
                 {
                     Write("if (");
 
@@ -1811,7 +1804,7 @@ void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
                     }
 
                     Write(")");
-                    WriteScopeOpen(writeCompact);
+                    WriteScopeOpen(compactWrappers_);
                     {
                         Write("discard;");
                     }
