@@ -349,22 +349,20 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     /* Write uniform buffer header */
     WriteLineMark(ast);
 
+    /* Write uniform buffer declaration */
     BeginLn();
+    Write("layout(std140");
+
+    if (explicitBinding_)
     {
-        /* Write uniform buffer declaration */
-        Write("layout(std140");
-
-        if (explicitBinding_)
-        {
-            if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, GetShaderTarget()))
-                Write(", binding = " + std::to_string(slotRegister->slot));
-        }
-
-        Write(") uniform ");
-        Write(ast->ident);
+        if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, GetShaderTarget()))
+            Write(", binding = " + std::to_string(slotRegister->slot));
     }
-    EndLn();
 
+    Write(") uniform ");
+    Write(ast->ident);
+
+    /* Write uniform buffer members */
     WriteScopeOpen(false, true);
     BeginSep();
     {
@@ -531,22 +529,20 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
     /* Write loop header */
     BeginLn();
+    
+    Write("for (");
+
+    PushOptions({ false, false });
     {
-        Write("for (");
-
-        PushOptions({ false, false });
-        {
-            Visit(ast->initSmnt);
-            Write(" "); // initStmnt already has the ';'!
-            Visit(ast->condition);
-            Write("; ");
-            Visit(ast->iteration);
-        }
-        PopOptions();
-
-        Write(")");
+        Visit(ast->initSmnt);
+        Write(" "); // initStmnt already has the ';'!
+        Visit(ast->condition);
+        Write("; ");
+        Visit(ast->iteration);
     }
-    EndLn();
+    PopOptions();
+
+    Write(")");
 
     WriteScopedStmnt(ast->bodyStmnt.get());
 }
@@ -555,28 +551,28 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 {
     /* Write loop condExpr */
     BeginLn();
-    {
-        Write("while (");
-        Visit(ast->condition);
-        Write(")");
-    }
-    EndLn();
+    
+    Write("while (");
+    Visit(ast->condition);
+    Write(")");
 
     WriteScopedStmnt(ast->bodyStmnt.get());
 }
 
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 {
-    WriteLn("do");
+    BeginLn();
+
+    Write("do");
     WriteScopedStmnt(ast->bodyStmnt.get());
 
     /* Write loop condExpr */
-    BeginLn();
-    {
-        Write("while (");
-        Visit(ast->condition);
-        Write(");");
-    }
+    WriteScopeContinue();
+    
+    Write("while (");
+    Visit(ast->condition);
+    Write(");");
+    
     EndLn();
 }
 
@@ -622,12 +618,10 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
 {
     /* Write selector */
     BeginLn();
-    {
-        Write("switch (");
-        Visit(ast->selector);
-        Write(")");
-    }
-    EndLn();
+    
+    Write("switch (");
+    Visit(ast->selector);
+    Write(")");
 
     /* Write switch cases */
     WriteScopeOpen();
@@ -1492,7 +1486,8 @@ void GLSLGenerator::WriteFunctionEntryPoint(FunctionDecl* ast)
         Error("missing function body in main entry point", ast);
 
     /* Write function header */
-    WriteLn("void main()");
+    BeginLn();
+    Write("void main()");
 
     /* Write function body */
     WriteScopeOpen();
@@ -1547,7 +1542,8 @@ void GLSLGenerator::WriteFunctionSecondaryEntryPoint(FunctionDecl* ast)
         Error("missing function body in secondary entry point", ast);
 
     /* Write function header */
-    WriteLn("void " + ast->ident + "()");
+    BeginLn();
+    Write("void " + ast->ident + "()");
 
     /* Write function body */
     WriteScopeOpen();
@@ -1865,12 +1861,10 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* ast, bool endWithSemicol
 {
     /* Write structure signature */
     BeginLn();
-    {
-        Write("struct");
-        if (!ast->ident.empty())
-            Write(' ' + ast->ident);
-    }
-    EndLn();
+
+    Write("struct");
+    if (!ast->ident.empty())
+        Write(' ' + ast->ident);
 
     /* Write structure members */
     WriteScopeOpen(false, endWithSemicolon);
@@ -1892,14 +1886,12 @@ bool GLSLGenerator::WriteStructDeclInputOutputBlock(StructDecl* ast)
     
     /* Write this structure as interface block (if structure doesn't need to be resolved) */
     BeginLn();
-    {
-        if (ast->flags(StructDecl::isShaderInput))
-            Write("in ");
-        else
-            Write("out ");
-        Write(ast->ident);
-    }
-    EndLn();
+    
+    if (ast->flags(StructDecl::isShaderInput))
+        Write("in ");
+    else
+        Write("out ");
+    Write(ast->ident);
 
     WriteScopeOpen();
     BeginSep();

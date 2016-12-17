@@ -104,15 +104,7 @@ class CodeWriter : public IndentHandler
         {
             std::list<SeparatedLine> lines;
 
-            inline SeparatedLine& Current()
-            {
-                return lines.back();
-            }
-
-            inline const SeparatedLine& Current() const
-            {
-                return lines.back();
-            }
+            SeparatedLine& Current();
         };
 
         struct ScopeState

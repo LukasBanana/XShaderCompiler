@@ -2,10 +2,17 @@
 // Formatting Test 1
 // 17/12/2016
 
+cbuffer Settings : register(b0)
+{
+	float4x4 wvpMatrix;
+	const float4 foo, bar;
+	const struct { float y; } s1;
+};
+
 struct S0
 {
 	float x;
-	struct { float y; } s1;
+	const struct { float y; } s1;
 };
 
 int f1(int x)
@@ -15,6 +22,7 @@ int f1(int x)
 
 float4 VS() : SV_Position
 {
+	S0 s0;
 	float a = 0, b = 0;
 	int c = f1((int)b);
 	
@@ -43,6 +51,11 @@ float4 VS() : SV_Position
 		{
 			a += 0.1;
 		}
+		do
+		//{
+			a--;
+		//}
+		while (a > 1);
 	}
 	else
 	{
@@ -56,7 +69,7 @@ float4 VS() : SV_Position
 		}
 	}
 	
-	return (float4)1;
+	return mul(wvpMatrix, (float4)1);
 }
 
 

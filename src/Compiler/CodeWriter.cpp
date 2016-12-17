@@ -293,7 +293,7 @@ void CodeWriter::FlushSeparatedLines(SeparatedLineQueue& lineQueue)
 
 
 /*
- * TabSeparatedLine
+ * SeparatedLine
  */
 
 void CodeWriter::SeparatedLine::Tab()
@@ -305,8 +305,13 @@ void CodeWriter::SeparatedLine::Offsets(std::vector<std::size_t>& offsets) const
 {
     offsets.resize(std::max(offsets.size(), parts.size()));
 
-    for (std::size_t i = 0, pos = 0; i < parts.size(); ++i)
+    std::size_t shift = 0, i = 0;
+
+    for (std::size_t pos = 0; i < parts.size(); ++i)
     {
+        /* Remember last shift between previous and new offset */
+        shift = pos - offsets[i];
+
         /* Set new offset */
         offsets[i] = pos;
 
@@ -316,6 +321,10 @@ void CodeWriter::SeparatedLine::Offsets(std::vector<std::size_t>& offsets) const
             pos = std::max(pos + parts[i].size(), offsets[i + 1]);
         }
     }
+
+    /* Shift all remaining offsets */
+    for (; i < offsets.size(); ++i)
+        offsets[i] += shift;
 }
 
 CodeWriter::SeparatedLine& CodeWriter::SeparatedLine::operator << (const std::string& text)
@@ -324,6 +333,18 @@ CodeWriter::SeparatedLine& CodeWriter::SeparatedLine::operator << (const std::st
         Tab();
     parts.back() += text;
     return *this;
+}
+
+
+/*
+ * SeparatedLineQueue
+ */
+
+CodeWriter::SeparatedLine& CodeWriter::SeparatedLineQueue::Current()
+{
+    if (lines.empty())
+        lines.resize(lines.size() + 1);
+    return lines.back();
 }
 
 
