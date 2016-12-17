@@ -208,27 +208,6 @@ void VersionOutCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
- * IndentCommand class
- */
-
-std::vector<Command::Identifier> IndentCommand::Idents() const
-{
-    return { { "--indent" } };
-}
-
-HelpDescriptor IndentCommand::Help() const
-{
-    return { "--indent INDENT", "Code indentation string (use '\\t' for tabs); default='    '" };
-}
-
-void IndentCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.formatting.indent = cmdLine.Accept();
-    Replace(state.outputDesc.formatting.indent, "\\t", "\t");
-}
-
-
-/*
  * PrefixCommand class
  */
 
@@ -293,74 +272,167 @@ void WarnCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
- * BlanksCommand class
+ * FormatBlanksCommand class
  */
 
-std::vector<Command::Identifier> BlanksCommand::Idents() const
+std::vector<Command::Identifier> FormatBlanksCommand::Idents() const
 {
-    return { { "--blanks" } };
+    return { { "-Fb" }, { "--format-blanks" } };
 }
 
-HelpDescriptor BlanksCommand::Help() const
+HelpDescriptor FormatBlanksCommand::Help() const
 {
     return
     {
-        "--blanks [" + CommandLine::GetBooleanOption() + "]",
+        "-Fb, --format-blanks [" + CommandLine::GetBooleanOption() + "]",
         "Enables/disables generation of blank lines between declarations; default=" + CommandLine::GetBooleanTrue()
     };
 }
 
-void BlanksCommand::Run(CommandLine& cmdLine, ShellState& state)
+void FormatBlanksCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.formatting.blanks = cmdLine.AcceptBoolean(true);
 }
 
 
 /*
- * LineMarksCommand class
+ * FormatLineMarksCommand class
  */
 
-std::vector<Command::Identifier> LineMarksCommand::Idents() const
+std::vector<Command::Identifier> FormatLineMarksCommand::Idents() const
 {
-    return { { "--line-marks" } };
+    return { { "-Fline" }, { "--format-line-marks" } };
 }
 
-HelpDescriptor LineMarksCommand::Help() const
+HelpDescriptor FormatLineMarksCommand::Help() const
 {
     return
     {
-        "--line-marks [" + CommandLine::GetBooleanOption() + "]",
+        "-Fline, --format-line-marks [" + CommandLine::GetBooleanOption() + "]",
         "Enables/disables generation of line marks (e.g. '#line 30'); default=" + CommandLine::GetBooleanFalse()
     };
 }
 
-void LineMarksCommand::Run(CommandLine& cmdLine, ShellState& state)
+void FormatLineMarksCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.formatting.lineMarks = cmdLine.AcceptBoolean(true);
 }
 
 
 /*
- * LineFormatCommand class
+ * FormatIndentCommand class
  */
 
-std::vector<Command::Identifier> LineFormatCommand::Idents() const
+std::vector<Command::Identifier> FormatIndentCommand::Idents() const
 {
-    return { { "--line-format" } };
+    return { { "-Fi" }, { "--format-indent" } };
 }
 
-HelpDescriptor LineFormatCommand::Help() const
+HelpDescriptor FormatIndentCommand::Help() const
+{
+    return { "-Fi, --format-indent INDENT", "Code indentation string (use '\\t' for tabs); default='    '" };
+}
+
+void FormatIndentCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.formatting.indent = cmdLine.Accept();
+    Replace(state.outputDesc.formatting.indent, "\\t", "\t");
+}
+
+
+/*
+ * FormatSeparationCommand class
+ */
+
+std::vector<Command::Identifier> FormatSeparationCommand::Idents() const
+{
+    return { { "-Fsep" }, { "--format-separation" } };
+}
+
+HelpDescriptor FormatSeparationCommand::Help() const
 {
     return
     {
-        "--line-format [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables formatting of separated lines; default=" + CommandLine::GetBooleanTrue()
+        "-Fsep, --format-separation [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables formatting of line separation; default=" + CommandLine::GetBooleanTrue()
     };
 }
 
-void LineFormatCommand::Run(CommandLine& cmdLine, ShellState& state)
+void FormatSeparationCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.formatting.lineSeparation = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * FormatCompactCommand class
+ */
+
+std::vector<Command::Identifier> FormatCompactCommand::Idents() const
+{
+    return { { "-Fcomp" }, { "--format-compact" } };
+}
+
+HelpDescriptor FormatCompactCommand::Help() const
+{
+    return
+    {
+        "-Fcomp, --format-compact [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables formatting of compact wrapper functions; default=" + CommandLine::GetBooleanTrue()
+    };
+}
+
+void FormatCompactCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.formatting.compactWrappers = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * FormatBracedScopeCommand class
+ */
+
+std::vector<Command::Identifier> FormatBracedScopeCommand::Idents() const
+{
+    return { { "-Fbscope" }, { "--format-braced-scope" } };
+}
+
+HelpDescriptor FormatBracedScopeCommand::Help() const
+{
+    return
+    {
+        "-Fbscope, --format-braced-scope [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables to always write braces for scopes; default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void FormatBracedScopeCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.formatting.alwaysBracedScopes = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * FormatNewLineScopeCommand class
+ */
+
+std::vector<Command::Identifier> FormatNewLineScopeCommand::Idents() const
+{
+    return { { "-Fnls" }, { "--format-nl-scope" } };
+}
+
+HelpDescriptor FormatNewLineScopeCommand::Help() const
+{
+    return
+    {
+        "-Fnls, --format-nl-scope [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables to write open braces at a new line; default=" + CommandLine::GetBooleanTrue()
+    };
+}
+
+void FormatNewLineScopeCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.formatting.newLineOpenScope = cmdLine.AcceptBoolean(true);
 }
 
 
@@ -670,7 +742,7 @@ void HelpCommand::Run(CommandLine& cmdLine, ShellState& state)
     std::cout << "  xsc (OPTION+ FILE)+" << std::endl;
     std::cout << "Options:" << std::endl;
 
-    CommandFactory::Instance().GetHelpPrinter().PrintAll(std::cout, 2);
+    CommandFactory::Instance().GetHelpPrinter().PrintAll(std::cout, 2, false);
 
     std::cout << "Example:" << std::endl;
     std::cout << "  xsc -E VS -T vert Example.hlsl -E PS -T frag Example.hlsl" << std::endl;

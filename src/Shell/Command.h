@@ -68,35 +68,38 @@ class Command
             void Run(CommandLine& cmdLine, ShellState& state) override; \
     }
 
-DECL_SHELL_COMMAND( EntryCommand       );
-DECL_SHELL_COMMAND( SecndEntryCommand  );
-DECL_SHELL_COMMAND( TargetCommand      );
-DECL_SHELL_COMMAND( VersionInCommand   );
-DECL_SHELL_COMMAND( VersionOutCommand  );
-DECL_SHELL_COMMAND( IndentCommand      );
-DECL_SHELL_COMMAND( PrefixCommand      );
-DECL_SHELL_COMMAND( OutputCommand      );
-DECL_SHELL_COMMAND( WarnCommand        );
-DECL_SHELL_COMMAND( BlanksCommand      );
-DECL_SHELL_COMMAND( LineMarksCommand   );
-DECL_SHELL_COMMAND( LineFormatCommand  );
-DECL_SHELL_COMMAND( ShowASTCommand     );
-DECL_SHELL_COMMAND( ShowTimesCommand   );
-DECL_SHELL_COMMAND( ReflectCommand     );
-DECL_SHELL_COMMAND( PPOnlyCommand      );
-DECL_SHELL_COMMAND( MacroCommand       );
-DECL_SHELL_COMMAND( PauseCommand       );
-DECL_SHELL_COMMAND( PresettingCommand  );
-DECL_SHELL_COMMAND( VersionCommand     );
-DECL_SHELL_COMMAND( HelpCommand        );
-DECL_SHELL_COMMAND( IncludePathCommand );
-DECL_SHELL_COMMAND( VerboseCommand     );
-DECL_SHELL_COMMAND( OptimizeCommand    );
-DECL_SHELL_COMMAND( ExtensionCommand   );
-DECL_SHELL_COMMAND( ValidateCommand    );
-DECL_SHELL_COMMAND( BindingCommand     );
-DECL_SHELL_COMMAND( CommentCommand     );
-DECL_SHELL_COMMAND( WrapperCommand     );
+DECL_SHELL_COMMAND( EntryCommand              );
+DECL_SHELL_COMMAND( SecndEntryCommand         );
+DECL_SHELL_COMMAND( TargetCommand             );
+DECL_SHELL_COMMAND( VersionInCommand          );
+DECL_SHELL_COMMAND( VersionOutCommand         );
+DECL_SHELL_COMMAND( PrefixCommand             );
+DECL_SHELL_COMMAND( OutputCommand             );
+DECL_SHELL_COMMAND( WarnCommand               );
+DECL_SHELL_COMMAND( FormatBlanksCommand       );
+DECL_SHELL_COMMAND( FormatLineMarksCommand    );
+DECL_SHELL_COMMAND( FormatIndentCommand       );
+DECL_SHELL_COMMAND( FormatSeparationCommand   );
+DECL_SHELL_COMMAND( FormatCompactCommand      );
+DECL_SHELL_COMMAND( FormatBracedScopeCommand  );
+DECL_SHELL_COMMAND( FormatNewLineScopeCommand );
+DECL_SHELL_COMMAND( ShowASTCommand            );
+DECL_SHELL_COMMAND( ShowTimesCommand          );
+DECL_SHELL_COMMAND( ReflectCommand            );
+DECL_SHELL_COMMAND( PPOnlyCommand             );
+DECL_SHELL_COMMAND( MacroCommand              );
+DECL_SHELL_COMMAND( PauseCommand              );
+DECL_SHELL_COMMAND( PresettingCommand         );
+DECL_SHELL_COMMAND( VersionCommand            );
+DECL_SHELL_COMMAND( HelpCommand               );
+DECL_SHELL_COMMAND( IncludePathCommand        );
+DECL_SHELL_COMMAND( VerboseCommand            );
+DECL_SHELL_COMMAND( OptimizeCommand           );
+DECL_SHELL_COMMAND( ExtensionCommand          );
+DECL_SHELL_COMMAND( ValidateCommand           );
+DECL_SHELL_COMMAND( BindingCommand            );
+DECL_SHELL_COMMAND( CommentCommand            );
+DECL_SHELL_COMMAND( WrapperCommand            );
 
 #undef DECL_SHELL_COMMAND
 
