@@ -33,18 +33,17 @@ void CodeWriter::PopOptions()
 
 void CodeWriter::BeginSeparation()
 {
-    if (lineSeparation_)
-        EndSeparation();
-    else
-        lineSeparation_ = true;
+    if (lineSeparationLevel_ > 0)
+        FlushSeparatedLines(queuedSeparatedLines_);
+    ++lineSeparationLevel_;
 }
 
 void CodeWriter::EndSeparation()
 {
-    if (lineSeparation_)
+    if (lineSeparationLevel_ > 0)
     {
         FlushSeparatedLines(queuedSeparatedLines_);
-        lineSeparation_ = false;
+        --lineSeparationLevel_;
     }
 }
 
@@ -57,7 +56,7 @@ void CodeWriter::BeginLine()
         openLine_ = true;
 
         /* Write new line in queue */
-        if (lineSeparation_)
+        if (lineSeparationLevel_ > 0)
         {
             auto& lines = queuedSeparatedLines_.lines;
             lines.resize(lines.size() + 1);
@@ -66,7 +65,7 @@ void CodeWriter::BeginLine()
         /* Append indentation */
         if (CurrentOptions().enableIndent)
         {
-            if (lineSeparation_)
+            if (lineSeparationLevel_ > 0)
                 queuedSeparatedLines_.Current().indent = FullIndent();
             else
                 Out() << FullIndent();
@@ -83,14 +82,14 @@ void CodeWriter::EndLine()
         openLine_ = false;
 
         /* Append new-line character */
-        if (!lineSeparation_)
+        if (lineSeparationLevel_ == 0)
             Out() << '\n';
     }
 }
 
 void CodeWriter::Write(const std::string& text)
 {
-    if (lineSeparation_)
+    if (lineSeparationLevel_ > 0)
     {
         /* Push text into queue */
         queuedSeparatedLines_.Current() << text;
@@ -111,7 +110,7 @@ void CodeWriter::WriteLine(const std::string& text)
 
 void CodeWriter::Separator()
 {
-    if (lineSeparation_)
+    if (lineSeparationLevel_ > 0)
         queuedSeparatedLines_.Current().Tab();
 }
 

@@ -1938,11 +1938,7 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* ast, bool writeSemicolon
     WriteScopeOpen();
     BeginSep();
     {
-        isInsideStructDecl_ = true;
-        {
-            WriteStructDeclMembers(ast);
-        }
-        isInsideStructDecl_ = false;
+        WriteStructDeclMembers(ast);
     }
     EndSep();
     WriteScopeClose(false, writeSemicolon);

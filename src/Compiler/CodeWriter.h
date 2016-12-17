@@ -108,7 +108,7 @@ class CodeWriter : public IndentHandler
         std::stack<Options> optionsStack_;
         bool                openLine_               = false;
 
-        bool                lineSeparation_         = false;
+        unsigned int        lineSeparationLevel_    = 0;
         SeparatedLineQueue  queuedSeparatedLines_;
 
 };
