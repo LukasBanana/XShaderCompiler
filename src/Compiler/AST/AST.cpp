@@ -108,6 +108,12 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
         /* Derive type denoter from symbol reference */
         switch (symbolRef->Type())
         {
+            case AST::Types::FunctionDecl:
+            {
+                RuntimeErr("illegal type denoter of function object '" + ident + "'", this);
+            }
+            break;
+
             case AST::Types::VarDecl:
             {
                 auto varDecl = static_cast<VarDecl*>(symbolRef);

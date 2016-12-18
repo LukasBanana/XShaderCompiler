@@ -100,11 +100,11 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         /* Then analyze function name */
         if (ast->varIdent)
         {
+            /* Analyze variable identifier */
+            AnalyzeVarIdent(ast->varIdent.get());
+
             if (ast->varIdent->next)
             {
-                /* Analyze variable identifier */
-                AnalyzeVarIdent(ast->varIdent.get());
-
                 /* Check if the function call refers to an intrinsic */
                 auto intrIt = HLSLIntrinsics().find(ast->varIdent->next->ident);
                 if (intrIt != HLSLIntrinsics().end())
@@ -644,6 +644,9 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol)
 
     switch (symbol->Type())
     {
+        case AST::Types::FunctionDecl:
+            //...
+            break;
         case AST::Types::VarDecl:
             AnalyzeVarIdentWithSymbolVarDecl(varIdent, static_cast<VarDecl*>(symbol));
             break;

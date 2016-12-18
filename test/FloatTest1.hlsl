@@ -47,6 +47,7 @@ float4 VS() : SV_Position
 	float4 s = f1().xxxx;
 	float4 t = ((S_val))[0].val.xxxx.wwwz;
 	float4 u = f2().val.xxxx;
+	float4 v = b.xxxx;
 	
 	return float4(0, 0, 1, 1).zwzw;
 }
