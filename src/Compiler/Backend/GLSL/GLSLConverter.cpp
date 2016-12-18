@@ -704,6 +704,27 @@ void GLSLConverter::ConvertIntrinsicCallSampleLevel(FunctionCall* ast)
     }
 }
 
+//TODO: this is incomplete
+#if 0
+void GLSLConverter::ConvertVectorSubscriptExpr(ExprPtr& expr)
+{
+    auto typeDenoter = expr->GetTypeDenoter()->Get();
+    if (typeDenoter->IsVector())
+    {
+        if (auto suffixExpr = expr->As<SuffixExpr>())
+        {
+            //TODO...
+        }
+        else if (auto varAccessExpr = expr->As<VarAccessExpr>())
+        {
+            if (varAccessExpr->varIdent->next)
+
+
+        }
+    }
+}
+#endif
+
 
 } // /namespace Xsc
 

@@ -128,6 +128,9 @@ class GLSLConverter : public Visitor
         void ConvertIntrinsicCallSample(FunctionCall* ast);
         void ConvertIntrinsicCallSampleLevel(FunctionCall* ast);
 
+        // Converts the specified expression if a vector subscript is used on a scalar type expression.
+        //void ConvertVectorSubscriptExpr(ExprPtr& expr);
+
         /* === Members === */
 
         ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;
