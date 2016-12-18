@@ -10,6 +10,12 @@
 #include "SourceViewLanguageGLSL.h"
 
 
+wxBEGIN_EVENT_TABLE(Xsc::SourceView, wxStyledTextCtrl)
+    EVT_STC_CHARADDED(wxID_ANY, Xsc::SourceView::OnCharAdded)
+    EVT_KEY_DOWN(Xsc::SourceView::OnKeyDown)
+wxEND_EVENT_TABLE()
+
+
 namespace Xsc
 {
 
@@ -138,12 +144,48 @@ void SourceView::SetLanguage(const SourceViewLanguage language)
     Refresh();
 }
 
+void SourceView::SetCharEnterCallback(const CharEnterCallback& callback)
+{
+    charEnterCallback_ = callback;
+}
+
 
 /*
  * ======= Private: =======
  */
 
+void SourceView::OnCharAdded(wxStyledTextEvent& event)
+{
+    auto chr = static_cast<char>(event.GetKey());
+    auto currentLine = GetCurrentLine();
 
+    if (chr == '\n')
+    {
+        int lineIndent = 0;
+
+        if (currentLine > 0)
+            lineIndent = GetLineIndentation(currentLine - 1);
+        if (lineIndent == 0)
+            return;
+
+        SetLineIndentation(currentLine, lineIndent);
+        GotoPos(PositionFromLine(currentLine) + lineIndent);
+    }
+
+    if (charEnterCallback_)
+        charEnterCallback_(chr);
+}
+
+void SourceView::OnKeyDown(wxKeyEvent& event)
+{
+    if (event.GetKeyCode() == WXK_BACK)
+    {
+        if (charEnterCallback_)
+            charEnterCallback_('\b');
+    }
+
+    event.Skip();
+}
 
 
 } // /namespace Xsc

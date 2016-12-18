@@ -10,6 +10,7 @@
 
 
 #include <wx/stc/stc.h>
+#include <functional>
 
 
 namespace Xsc
@@ -25,15 +26,24 @@ enum class SourceViewLanguage
 class SourceView : public wxStyledTextCtrl
 {
 
+        DECLARE_EVENT_TABLE();
+
     public:
+
+        using CharEnterCallback = std::function<void(char)>;
 
         SourceView(wxWindow* parent, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize);
 
         void SetLanguage(const SourceViewLanguage language);
 
+        void SetCharEnterCallback(const CharEnterCallback& callback);
+
     private:
 
+        void OnCharAdded(wxStyledTextEvent& event);
+        void OnKeyDown(wxKeyEvent& event);
 
+        CharEnterCallback charEnterCallback_;
 
 };
 

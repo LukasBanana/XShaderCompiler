@@ -6,6 +6,8 @@
  */
 
 #include "DebuggerView.h"
+#include <sstream>
+#include <memory>
 
 
 namespace Xsc
@@ -154,12 +156,44 @@ void DebuggerView::CreateLayoutInputSourceView()
 {
     inputSourceView_ = new SourceView(subSplitter_, wxDefaultPosition, wxSize(200, 400));
     inputSourceView_->SetLanguage(SourceViewLanguage::HLSL);
+    inputSourceView_->SetCharEnterCallback(std::bind(&DebuggerView::OnInputSourceCharEnter, this, std::placeholders::_1));
 }
 
 void DebuggerView::CreateLayoutOutputSourceView()
 {
     outputSourceView_ = new SourceView(subSplitter_, wxDefaultPosition, wxSize(200, 400));
     outputSourceView_->SetLanguage(SourceViewLanguage::GLSL);
+    //outputSourceView_->SetReadOnly(true);
+}
+
+void DebuggerView::OnInputSourceCharEnter(char chr)
+{
+    TranslateInputToOutput();
+}
+
+void DebuggerView::TranslateInputToOutput()
+{
+    /* Initialize input source */
+    auto inputSource = std::make_shared<std::stringstream>();
+    *inputSource << inputSourceView_->GetText().ToStdString();
+    shaderInput_.sourceCode = inputSource;
+
+    /* Initialize output source */
+    std::stringstream outputSource;
+    shaderOutput_.sourceCode = (&outputSource);
+
+    #if 1
+    shaderInput_.entryPoint = "VS";
+    shaderInput_.shaderTarget = ShaderTarget::VertexShader;
+    #endif
+
+    /* Compile shader */
+    if (Xsc::CompileShader(shaderInput_, shaderOutput_))
+    {
+        /* Show output */
+        outputSourceView_->SetText(outputSource.str());
+        outputSourceView_->Refresh();
+    }
 }
 
 

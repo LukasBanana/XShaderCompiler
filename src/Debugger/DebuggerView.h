@@ -13,6 +13,7 @@
 #include <wx/splitter.h>
 #include <wx/propgrid/propgrid.h>
 #include "SourceView.h"
+#include <Xsc/Xsc.h>
 
 
 namespace Xsc
@@ -38,6 +39,10 @@ class DebuggerView : public wxFrame
         void CreateLayoutInputSourceView();
         void CreateLayoutOutputSourceView();
 
+        void OnInputSourceCharEnter(char chr);
+
+        void TranslateInputToOutput();
+
         wxSplitterWindow*   mainSplitter_       = nullptr;
         wxSplitterWindow*   subSplitter_        = nullptr;
 
@@ -45,6 +50,9 @@ class DebuggerView : public wxFrame
 
         SourceView*         inputSourceView_    = nullptr;
         SourceView*         outputSourceView_   = nullptr;
+
+        ShaderInput         shaderInput_;
+        ShaderOutput        shaderOutput_;
 
 };
 
