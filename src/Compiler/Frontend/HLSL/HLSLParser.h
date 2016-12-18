@@ -174,8 +174,8 @@ class HLSLParser : public Parser
         std::string                     ParseIdent(const TokenPtr& identTkn = nullptr);
         std::string                     ParseRegister_OBSOLETE(bool parseColon = true);
 
-        TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true);
-        TypeDenoterPtr                  ParseTypeDenoterPrimary();
+        TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true, StructDeclPtr* structDecl = nullptr);
+        TypeDenoterPtr                  ParseTypeDenoterPrimary(StructDeclPtr* structDecl = nullptr);
         TypeDenoterPtr                  ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl, bool allowVoidType = true);
         VoidTypeDenoterPtr              ParseVoidTypeDenoter();
         BaseTypeDenoterPtr              ParseBaseTypeDenoter();
@@ -184,6 +184,7 @@ class HLSLParser : public Parser
         BufferTypeDenoterPtr            ParseBufferTypeDenoter();
         SamplerTypeDenoterPtr           ParseSamplerTypeDenoter();
         StructTypeDenoterPtr            ParseStructTypeDenoter();
+        StructTypeDenoterPtr            ParseStructTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl);
         AliasTypeDenoterPtr             ParseAliasTypeDenoter(std::string ident = "");
 
         Variant                         ParseAndEvaluateConstExpr();
