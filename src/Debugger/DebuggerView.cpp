@@ -36,19 +36,17 @@ DebuggerView::DebuggerView(const wxPoint& pos, const wxSize& size) :
 
 void DebuggerView::CreateLayout()
 {
-    //mainSplitter_ = new wxSplitterWindow(this);
+    mainSplitter_ = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_LIVE_UPDATE);
 
     CreateLayoutPropertyGrid();
+    CreateLayoutSubSplitter();
 
-
-    //mainSplitter_->SplitHorizontally(propGrid_, nullptr);
-
-
+    mainSplitter_->SplitVertically(propGrid_, subSplitter_, 300);
 }
 
 void DebuggerView::CreateLayoutPropertyGrid()
 {
-    propGrid_ = new wxPropertyGrid(this/*mainSplitter_*/, wxID_ANY, wxDefaultPosition, wxSize(300, 600), wxPG_SPLITTER_AUTO_CENTER);
+    propGrid_ = new wxPropertyGrid(mainSplitter_, wxID_ANY, wxDefaultPosition, wxSize(200, 600), wxPG_SPLITTER_AUTO_CENTER);
 
     CreateLayoutPropertyGridShaderInput(*propGrid_);
     CreateLayoutPropertyGridShaderOutput(*propGrid_);
@@ -140,6 +138,28 @@ void DebuggerView::CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg)
     pg.Append(new wxBoolProperty("Always Braced Scopes"));
     pg.Append(new wxBoolProperty("New-Line Open Scope", wxPG_LABEL, true));
     pg.Append(new wxBoolProperty("Line Separation", wxPG_LABEL, true));
+}
+
+void DebuggerView::CreateLayoutSubSplitter()
+{
+    subSplitter_ = new wxSplitterWindow(mainSplitter_, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_LIVE_UPDATE);
+
+    CreateLayoutInputSourceView();
+    CreateLayoutOutputSourceView();
+
+    subSplitter_->SplitVertically(inputSourceView_, outputSourceView_);
+}
+
+void DebuggerView::CreateLayoutInputSourceView()
+{
+    inputSourceView_ = new SourceView(subSplitter_, wxDefaultPosition, wxSize(200, 400));
+    inputSourceView_->SetLanguage(SourceViewLanguage::HLSL);
+}
+
+void DebuggerView::CreateLayoutOutputSourceView()
+{
+    outputSourceView_ = new SourceView(subSplitter_, wxDefaultPosition, wxSize(200, 400));
+    outputSourceView_->SetLanguage(SourceViewLanguage::GLSL);
 }
 
 
