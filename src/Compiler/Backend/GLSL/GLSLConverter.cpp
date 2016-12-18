@@ -399,7 +399,7 @@ bool GLSLConverter::ExprContainsSampler(Expr& ast) const
     return ast.GetTypeDenoter()->Get()->IsSampler();
 }
 
-bool GLSLConverter::VarTypeIsSampler(VarType& ast) const
+bool GLSLConverter::VarTypeIsSampler(TypeName& ast) const
 {
     return ast.typeDenoter->Get()->IsSampler();
 }

@@ -142,7 +142,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     PopFunctionCall();
 }
 
-IMPLEMENT_VISIT_PROC(VarType)
+IMPLEMENT_VISIT_PROC(TypeName)
 {
     Visit(ast->structDecl);
 

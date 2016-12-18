@@ -538,9 +538,9 @@ VarIdentPtr HLSLParser::ParseVarIdent()
     return UpdateSourceArea(ast);
 }
 
-VarTypePtr HLSLParser::ParseVarType(bool parseVoidType)
+TypeNamePtr HLSLParser::ParseVarType(bool parseVoidType)
 {
-    auto ast = Make<VarType>();
+    auto ast = Make<TypeName>();
 
     /* Parse variable type denoter with optional struct declaration */
     ast->typeDenoter = ParseTypeDenoterWithStructDeclOpt(ast->structDecl);
@@ -798,7 +798,7 @@ StmntPtr HLSLParser::ParseGlobalStmntWithBufferTypeDenoter()
     }
 }
 
-FunctionDeclPtr HLSLParser::ParseFunctionDecl(const VarTypePtr& returnType, const TokenPtr& identTkn)
+FunctionDeclPtr HLSLParser::ParseFunctionDecl(const TypeNamePtr& returnType, const TokenPtr& identTkn)
 {
     auto ast = Make<FunctionDecl>();
 
@@ -924,7 +924,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
         else if (Is(Tokens::Ident) || IsDataType())
         {
             /* Parse type denoter */
-            ast->varType = Make<VarType>();
+            ast->varType = Make<TypeName>();
             ast->varType->typeDenoter = ParseTypeDenoter();
             UpdateSourceArea(ast->varType);
             break;
@@ -1108,7 +1108,7 @@ StmntPtr HLSLParser::ParseStmntWithVarIdent()
         /* Convert variable identifier to alias type denoter */
         auto ast = Make<VarDeclStmnt>();
 
-        ast->varType = Make<VarType>();
+        ast->varType = Make<TypeName>();
         ast->varType->typeDenoter = ParseAliasTypeDenoter(varIdent->ident);
         UpdateSourceArea(ast->varType, varIdent.get());
 

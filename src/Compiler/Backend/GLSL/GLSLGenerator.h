@@ -75,7 +75,7 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( SwitchCase        );
-        DECL_VISIT_PROC( VarType           );
+        DECL_VISIT_PROC( TypeName           );
         DECL_VISIT_PROC( VarIdent          );
 
         DECL_VISIT_PROC( VarDecl           );
@@ -155,7 +155,7 @@ class GLSLGenerator : public Generator
         
         void WriteGlobalOutputSemantics();
         void WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName = false);
-        void WriteGlobalOutputSemanticsSlot(VarType* varType, const IndexedSemantic& semantic, const std::string& ident);
+        void WriteGlobalOutputSemanticsSlot(TypeName* varType, const IndexedSemantic& semantic, const std::string& ident);
 
         void WriteOutputSemanticsAssignment(Expr* ast);
 

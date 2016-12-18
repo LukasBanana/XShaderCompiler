@@ -75,7 +75,7 @@ class GLSLConverter : public Visitor
         bool ExprContainsSampler(Expr& ast) const;
 
         // Returns true if the specified variable type is a sampler.
-        bool VarTypeIsSampler(VarType& ast) const;
+        bool VarTypeIsSampler(TypeName& ast) const;
 
         // Returns true if the specified structure declaration must be resolved.
         bool MustResolveStruct(StructDecl* ast) const;

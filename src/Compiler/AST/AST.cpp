@@ -253,14 +253,14 @@ std::string PackOffset::ToString() const
 }
 
 
-/* ----- VarType ----- */
+/* ----- TypeName ----- */
 
-std::string VarType::ToString() const
+std::string TypeName::ToString() const
 {
     return typeDenoter->ToString();
 }
 
-TypeDenoterPtr VarType::DeriveTypeDenoter()
+TypeDenoterPtr TypeName::DeriveTypeDenoter()
 {
     return typeDenoter;
 }

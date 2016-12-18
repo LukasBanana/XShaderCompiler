@@ -93,10 +93,10 @@ IMPLEMENT_VISIT_PROC(PackOffset)
     DEFAULT_VISITOR(PackOffset);
 }
 
-IMPLEMENT_VISIT_PROC(VarType)
+IMPLEMENT_VISIT_PROC(TypeName)
 {
-    Print(ast, "VarType", (ast->typeDenoter ? ast->typeDenoter->ToString() : ""));
-    DEFAULT_VISITOR(VarType);
+    Print(ast, "TypeName", ast->ToString());
+    DEFAULT_VISITOR(TypeName);
 }
 
 IMPLEMENT_VISIT_PROC(VarIdent)

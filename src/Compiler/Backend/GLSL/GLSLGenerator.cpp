@@ -281,7 +281,7 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 
 /* --- Variables --- */
 
-IMPLEMENT_VISIT_PROC(VarType)
+IMPLEMENT_VISIT_PROC(TypeName)
 {
     if (ast->structDecl)
         Visit(ast->structDecl);
@@ -1179,7 +1179,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool use
     );
 }
 
-void GLSLGenerator::WriteGlobalOutputSemanticsSlot(VarType* varType, const IndexedSemantic& semantic, const std::string& ident)
+void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeName* varType, const IndexedSemantic& semantic, const std::string& ident)
 {
     /* Write global output semantic slot */
     BeginLn();

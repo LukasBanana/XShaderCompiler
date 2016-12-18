@@ -64,7 +64,7 @@ IMPLEMENT_VISIT_PROC(PackOffset)
     // do nothing
 }
 
-IMPLEMENT_VISIT_PROC(VarType)
+IMPLEMENT_VISIT_PROC(TypeName)
 {
     Visit(ast->structDecl);
 }

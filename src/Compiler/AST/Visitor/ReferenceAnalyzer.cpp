@@ -82,12 +82,12 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     VisitStmntList(ast->stmnts);
 }
 
-IMPLEMENT_VISIT_PROC(VarType)
+IMPLEMENT_VISIT_PROC(TypeName)
 {
     if (Reachable(ast))
     {
         Visit(ast->typeDenoter->SymbolRef());
-        VISIT_DEFAULT(VarType);
+        VISIT_DEFAULT(TypeName);
     }
 }
 

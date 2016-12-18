@@ -77,7 +77,7 @@ struct AST
         SamplerValue,
         Register,
         PackOffset,
-        VarType,
+        TypeName,
         VarIdent,
 
         VarDecl,
@@ -321,16 +321,16 @@ struct PackOffset : public AST
 };
 
 // Type type with optional structure declaration.
-struct VarType : public TypedAST
+struct TypeName : public TypedAST
 {
-    AST_INTERFACE(VarType);
+    AST_INTERFACE(TypeName);
     
     // Returns the name of this type (either 'baseType' or 'structDecl->name').
     std::string ToString() const;
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    StructDeclPtr   structDecl;             // Optional structure declaration
+    StructDeclPtr   structDecl;     // Optional structure declaration
     TypeDenoterPtr  typeDenoter;
 };
 
@@ -536,7 +536,7 @@ struct FunctionDecl : public Stmnt
     // Returns true if the specified type denoter matches the parameter.
     bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const;
 
-    VarTypePtr                      returnType;
+    TypeNamePtr                     returnType;
     std::string                     ident;
     std::vector<VarDeclStmntPtr>    parameters;
     IndexedSemantic                 semantic        = Semantic::Undefined;  // May be undefined
@@ -627,7 +627,7 @@ struct VarDeclStmnt : public Stmnt
     std::set<TypeModifier>      typeModifiers;                              // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats)
     PrimitiveType               primitiveType   = PrimitiveType::Undefined; // Primitive type for geometry entry pointer parameters
 
-    VarTypePtr                  varType;
+    TypeNamePtr                 varType;
     std::vector<VarDeclPtr>     varDecls;
 };
 

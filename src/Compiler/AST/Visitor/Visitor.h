@@ -35,7 +35,7 @@ DECL_PTR( SwitchCase        );
 DECL_PTR( SamplerValue      );
 DECL_PTR( Register          );
 DECL_PTR( PackOffset        );
-DECL_PTR( VarType           );
+DECL_PTR( TypeName           );
 DECL_PTR( VarIdent          );
 
 DECL_PTR( VarDecl           );
@@ -108,7 +108,7 @@ class Visitor
         VISITOR_VISIT_PROC( SamplerValue      );
         VISITOR_VISIT_PROC( Register          );
         VISITOR_VISIT_PROC( PackOffset        );
-        VISITOR_VISIT_PROC( VarType           );
+        VISITOR_VISIT_PROC( TypeName           );
         VISITOR_VISIT_PROC( VarIdent          );
 
         VISITOR_VISIT_PROC( VarDecl           );

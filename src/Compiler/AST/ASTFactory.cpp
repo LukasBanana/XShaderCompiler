@@ -180,9 +180,9 @@ AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& 
     return ast;
 }
 
-VarTypePtr MakeVarType(const StructDeclPtr& structDecl)
+TypeNamePtr MakeVarType(const StructDeclPtr& structDecl)
 {
-    auto ast = MakeAST<VarType>();
+    auto ast = MakeAST<TypeName>();
     {
         ast->structDecl     = structDecl;
         ast->typeDenoter    = std::make_shared<StructTypeDenoter>(structDecl.get());
@@ -190,16 +190,16 @@ VarTypePtr MakeVarType(const StructDeclPtr& structDecl)
     return ast;
 }
 
-VarTypePtr MakeVarType(const TypeDenoterPtr& typeDenoter)
+TypeNamePtr MakeVarType(const TypeDenoterPtr& typeDenoter)
 {
-    auto ast = MakeAST<VarType>();
+    auto ast = MakeAST<TypeName>();
     {
         ast->typeDenoter = typeDenoter;
     }
     return ast;
 }
 
-VarTypePtr MakeVarType(const DataType dataType)
+TypeNamePtr MakeVarType(const DataType dataType)
 {
     return MakeVarType(MakeShared<BaseTypeDenoter>(dataType));
 }
