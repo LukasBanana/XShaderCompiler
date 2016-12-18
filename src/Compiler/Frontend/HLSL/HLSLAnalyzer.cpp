@@ -100,9 +100,6 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         /* Then analyze function name */
         if (ast->varIdent)
         {
-            /* Analyze variable identifier */
-            AnalyzeVarIdent(ast->varIdent.get());
-
             if (ast->varIdent->next)
             {
                 /* Check if the function call refers to an intrinsic */
@@ -110,6 +107,9 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                 if (intrIt != HLSLIntrinsics().end())
                 {
                     auto intrinsic = intrIt->second.intrinsic;
+
+                    /* Analyze variable identifier (symbolRef is needed next) */
+                    AnalyzeVarIdent(ast->varIdent.get());
 
                     /* Verify intrinsic for respective object class */
                     switch (ast->varIdent->symbolRef->Type())
