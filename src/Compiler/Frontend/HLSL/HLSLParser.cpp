@@ -314,7 +314,7 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     while (IsVarDeclModifier() || Is(Tokens::PrimitiveType))
         ParseVarDeclStmntModifiers(ast.get(), true);
 
-    ast->varType = ParseVarType();
+    ast->varType = ParseTypeName();
     ast->varDecls.push_back(ParseVarDecl(ast.get()));
 
     return UpdateSourceArea(ast);
@@ -538,7 +538,7 @@ VarIdentPtr HLSLParser::ParseVarIdent()
     return UpdateSourceArea(ast);
 }
 
-TypeNamePtr HLSLParser::ParseVarType(bool parseVoidType)
+TypeNamePtr HLSLParser::ParseTypeName(bool parseVoidType)
 {
     auto ast = Make<TypeName>();
 
@@ -723,19 +723,19 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
         case Tokens::Inline:
             return ParseFunctionDecl();
         default:
-            return ParseGlobalStmntWithVarType();
+            return ParseGlobalStmntWithTypeName();
     }
 }
 
-StmntPtr HLSLParser::ParseGlobalStmntWithVarType()
+StmntPtr HLSLParser::ParseGlobalStmntWithTypeName()
 {
-    auto varType = ParseVarType();
+    auto typeName = ParseTypeName();
 
-    if (varType->structDecl && Is(Tokens::Semicolon))
+    if (typeName->structDecl && Is(Tokens::Semicolon))
     {
         auto ast = Make<StructDeclStmnt>();
 
-        ast->structDecl = varType->structDecl;
+        ast->structDecl = typeName->structDecl;
         Semi();
 
         return ast;
@@ -746,14 +746,14 @@ StmntPtr HLSLParser::ParseGlobalStmntWithVarType()
     if (Is(Tokens::LBracket))
     {
         /* Parse function declaration statement */
-        return ParseFunctionDecl(varType, identTkn);
+        return ParseFunctionDecl(typeName, identTkn);
     }
     else
     {
         /* Parse variable declaration statement */
         auto ast = Make<VarDeclStmnt>();
 
-        ast->varType    = varType;
+        ast->varType    = typeName;
         ast->varDecls   = ParseVarDeclList(ast.get(), identTkn);
 
         Semi();
@@ -771,7 +771,7 @@ StmntPtr HLSLParser::ParseGlobalStmntWithSamplerTypeDenoter()
     if (Is(Tokens::LBracket))
     {
         /* Make variable type from type denoter, then parse function declaration */
-        return ParseFunctionDecl(ASTFactory::MakeVarType(typeDenoter), identTkn);
+        return ParseFunctionDecl(ASTFactory::MakeTypeName(typeDenoter), identTkn);
     }
     else
     {
@@ -789,7 +789,7 @@ StmntPtr HLSLParser::ParseGlobalStmntWithBufferTypeDenoter()
     if (Is(Tokens::LBracket))
     {
         /* Make variable type from type denoter, then parse function declaration */
-        return ParseFunctionDecl(ASTFactory::MakeVarType(typeDenoter), identTkn);
+        return ParseFunctionDecl(ASTFactory::MakeTypeName(typeDenoter), identTkn);
     }
     else
     {
@@ -817,7 +817,7 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl(const TypeNamePtr& returnType, con
             AcceptIt();
 
         /* Parse return type */
-        ast->returnType = ParseVarType(true);
+        ast->returnType = ParseTypeName(true);
     }
 
     /* Parse function identifier */
@@ -932,7 +932,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
         else if (Is(Tokens::Struct))
         {
             /* Parse structure variable type */
-            ast->varType = ASTFactory::MakeVarType(ParseStructDecl());
+            ast->varType = ASTFactory::MakeTypeName(ParseStructDecl());
             break;
         }
         else
@@ -1055,7 +1055,7 @@ StmntPtr HLSLParser::ParseStmntWithStructDecl()
         /* Parse variable declaration with previous structure type */
         auto varDeclStmnt = Make<VarDeclStmnt>();
 
-        varDeclStmnt->varType = ASTFactory::MakeVarType(ast->structDecl);
+        varDeclStmnt->varType = ASTFactory::MakeTypeName(ast->structDecl);
         
         /* Parse variable declarations */
         varDeclStmnt->varDecls = ParseVarDeclList(varDeclStmnt.get());
