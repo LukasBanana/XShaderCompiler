@@ -44,6 +44,8 @@ class DebuggerView : public wxFrame
 
         void OnInputSourceCharEnter(char chr);
 
+        void OnPropertyGridChange(wxPropertyGridEvent& event);
+
         void TranslateInputToOutput();
 
         wxSplitterWindow*   mainSplitter_       = nullptr;

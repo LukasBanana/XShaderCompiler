@@ -55,6 +55,8 @@ void DebuggerView::CreateLayoutPropertyGrid()
     CreateLayoutPropertyGridShaderOutput(*propGrid_);
     CreateLayoutPropertyGridOptions(*propGrid_);
     CreateLayoutPropertyGridFormatting(*propGrid_);
+
+    propGrid_->Bind(wxEVT_PG_CHANGED, &DebuggerView::OnPropertyGridChange, this);
 }
 
 void DebuggerView::CreateLayoutPropertyGridShaderInput(wxPropertyGrid& pg)
@@ -67,7 +69,7 @@ void DebuggerView::CreateLayoutPropertyGridShaderInput(wxPropertyGrid& pg)
         choices0.Add("HLSL4");
         choices0.Add("HLSL5");
     }
-    pg.Append(new wxEnumProperty("Shader Version", "Shader Input Version", choices0, 2));
+    pg.Append(new wxEnumProperty("Shader Version", "inputVersion", choices0, 2));
 
     wxPGChoices choices1;
     {
@@ -78,10 +80,10 @@ void DebuggerView::CreateLayoutPropertyGridShaderInput(wxPropertyGrid& pg)
         choices1.Add("Fragment Shader");
         choices1.Add("Compute Shader");
     }
-    pg.Append(new wxEnumProperty("Shader Target", wxPG_LABEL, choices1));
+    pg.Append(new wxEnumProperty("Shader Target", "target", choices1));
 
-    pg.Append(new wxStringProperty("Entry Point", wxPG_LABEL, ""));
-    pg.Append(new wxStringProperty("Secondary Entry Point", wxPG_LABEL, ""));
+    pg.Append(new wxStringProperty("Entry Point", "entry", ""));
+    pg.Append(new wxStringProperty("Secondary Entry Point", "secondaryEntry", ""));
 }
 
 void DebuggerView::CreateLayoutPropertyGridShaderOutput(wxPropertyGrid& pg)
@@ -113,34 +115,34 @@ void DebuggerView::CreateLayoutPropertyGridShaderOutput(wxPropertyGrid& pg)
         choices0.Add("VKSL (Auto-Detect)");
         choices0.Add("VKSL450");
     }
-    pg.Append(new wxEnumProperty("Shader Version", "Shader Output Version", choices0));
+    pg.Append(new wxEnumProperty("Shader Version", "outputVersion", choices0));
 
-    pg.Append(new wxStringProperty("Name Mangling Prefix", wxPG_LABEL, "xsc_"));
+    pg.Append(new wxStringProperty("Name Mangling Prefix", "prefix", "xsc_"));
 }
 
 void DebuggerView::CreateLayoutPropertyGridOptions(wxPropertyGrid& pg)
 {
     pg.Append(new wxPropertyCategory("Options"));
 
-    pg.Append(new wxBoolProperty("Allow Extensions"));
-    pg.Append(new wxBoolProperty("Explicit Binding"));
-    pg.Append(new wxBoolProperty("Optimize"));
-    pg.Append(new wxBoolProperty("Prefer Wrappers"));
-    pg.Append(new wxBoolProperty("Preprocess Only"));
-    pg.Append(new wxBoolProperty("Preserve Comments"));
+    pg.Append(new wxBoolProperty("Allow Extensions", "extensions"));
+    pg.Append(new wxBoolProperty("Explicit Binding", "binding"));
+    pg.Append(new wxBoolProperty("Optimize", "optimize"));
+    pg.Append(new wxBoolProperty("Prefer Wrappers", "wrappers"));
+    pg.Append(new wxBoolProperty("Preprocess Only", "preprocess"));
+    pg.Append(new wxBoolProperty("Preserve Comments", "comments"));
 }
 
 void DebuggerView::CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg)
 {
     pg.Append(new wxPropertyCategory("Formatting"));
 
-    pg.Append(new wxStringProperty("Indentation", wxPG_LABEL, "    "));
-    pg.Append(new wxBoolProperty("Blanks", wxPG_LABEL, true));
-    pg.Append(new wxBoolProperty("Line Marks"));
-    pg.Append(new wxBoolProperty("Compact Wrappers", wxPG_LABEL, true));
-    pg.Append(new wxBoolProperty("Always Braced Scopes"));
-    pg.Append(new wxBoolProperty("New-Line Open Scope", wxPG_LABEL, true));
-    pg.Append(new wxBoolProperty("Line Separation", wxPG_LABEL, true));
+    pg.Append(new wxStringProperty("Indentation", "indent", "    "));
+    pg.Append(new wxBoolProperty("Blanks", "blanks", true));
+    pg.Append(new wxBoolProperty("Line Marks", "lineMarks"));
+    pg.Append(new wxBoolProperty("Compact Wrappers", "compactWrappers", true));
+    pg.Append(new wxBoolProperty("Always Braced Scopes", "alwaysBracedScopes"));
+    pg.Append(new wxBoolProperty("New-Line Open Scope", "newLineOpenScope", true));
+    pg.Append(new wxBoolProperty("Line Separation", "lineSeparation", true));
 }
 
 void DebuggerView::CreateLayoutSubSplitter()
@@ -182,6 +184,64 @@ void DebuggerView::CreateLayoutOutputSourceView()
     //outputSourceView_->SetReadOnly(true);
 }
 
+void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
+{
+    auto p = event.GetProperty();
+    auto name = p->GetName();
+
+    auto ValueStr = [p]()
+    {
+        return p->GetValueAsString().ToStdString();
+    };
+
+    auto ValueInt = [p]()
+    {
+        return p->GetValue().GetInteger();
+    };
+
+    auto ValueBool = [p]()
+    {
+        return p->GetValue().GetBool();
+    };
+
+    if (name == "entry")
+        shaderInput_.entryPoint = ValueStr();
+    else if (name == "secondaryEntry")
+        shaderInput_.secondaryEntryPoint = ValueStr();
+    else if (name == "target")
+        shaderInput_.shaderTarget = static_cast<ShaderTarget>(static_cast<long>(ShaderTarget::VertexShader) + ValueInt());
+    else if (name == "prefix")
+        shaderOutput_.nameManglingPrefix = ValueStr();
+    else if (name == "indent")
+        shaderOutput_.formatting.indent = ValueStr();
+    else if (name == "extensions")
+        shaderOutput_.options.allowExtensions = ValueBool();
+    else if (name == "binding")
+        shaderOutput_.options.explicitBinding = ValueBool();
+    else if (name == "optimize")
+        shaderOutput_.options.optimize = ValueBool();
+    else if (name == "wrappers")
+        shaderOutput_.options.preferWrappers = ValueBool();
+    else if (name == "preprocess")
+        shaderOutput_.options.preprocessOnly = ValueBool();
+    else if (name == "comments")
+        shaderOutput_.options.preserveComments = ValueBool();
+    else if (name == "blanks")
+        shaderOutput_.formatting.blanks = ValueBool();
+    else if (name == "lineMarks")
+        shaderOutput_.formatting.lineMarks = ValueBool();
+    else if (name == "compactWrappers")
+        shaderOutput_.formatting.compactWrappers = ValueBool();
+    else if (name == "alwaysBracedScopes")
+        shaderOutput_.formatting.alwaysBracedScopes = ValueBool();
+    else if (name == "newLineOpenScope")
+        shaderOutput_.formatting.newLineOpenScope = ValueBool();
+    else if (name == "lineSeparation")
+        shaderOutput_.formatting.lineSeparation = ValueBool();
+
+    TranslateInputToOutput();
+}
+
 void DebuggerView::OnInputSourceCharEnter(char chr)
 {
     TranslateInputToOutput();
@@ -218,11 +278,6 @@ void DebuggerView::TranslateInputToOutput()
     /* Initialize output source */
     std::stringstream outputSource;
     shaderOutput_.sourceCode = (&outputSource);
-
-    #if 1
-    shaderInput_.entryPoint = "VS";
-    shaderInput_.shaderTarget = ShaderTarget::VertexShader;
-    #endif
 
     /* Compile shader */
     reportView_->Clear();
