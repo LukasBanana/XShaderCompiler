@@ -285,11 +285,11 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
-    VISIT_DEFAULT(ReturnStmnt);
-
     /* Convert return expression if cast required */
     if (currentFunctionDecl_)
         ConvertExprIfCastRequired(ast->expr, *currentFunctionDecl_->returnType->typeDenoter->Get());
+
+    VISIT_DEFAULT(ReturnStmnt);
 }
 
 /* --- Expressions --- */

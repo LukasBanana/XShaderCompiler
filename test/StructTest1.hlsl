@@ -36,7 +36,7 @@ S2_t f2()
 
 struct { float value; } f1()
 {
-	return 0;
+	return (struct { float value; })0;
 }
 
 float4 VS() : SV_Position
