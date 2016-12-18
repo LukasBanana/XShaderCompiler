@@ -116,7 +116,7 @@ float4 PS(VertexOut inp) : SV_TARGET3
 	float4 diffuse = lerp(
 		(float4)1.0,
 		saturate(tex.Sample(samplerState, inp.texCoord)),
-		inp.position.x
+		0//inp.position.x
 	);
 	
 	// dFdxCoarse requires GLSL 4.00 or the "GL_ARB_derivative_control" extension

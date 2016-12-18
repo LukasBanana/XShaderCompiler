@@ -13,10 +13,12 @@ namespace Xsc
 {
 
 
-void ReferenceAnalyzer::MarkReferencesFromEntryPoint(Program& program)
+void ReferenceAnalyzer::MarkReferencesFromEntryPoint(Program& program, const ShaderTarget shaderTarget)
 {
+    program_        = (&program);
+    shaderTarget_   = shaderTarget;
+
     /* Visit all entry points */
-    program_ = &program;
     Visit(program.entryPointRef);
     Visit(program.layoutTessControl.patchConstFunctionRef);
 }
@@ -151,6 +153,29 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
         VISIT_DEFAULT(BufferDeclStmnt);
     }
+}
+
+/* --- Expressions --- */
+
+IMPLEMENT_VISIT_PROC(VarAccessExpr)
+{
+    /* Mark symbol as used */
+    if (auto symbol = ast->varIdent->symbolRef)
+    {
+        symbol->flags << AST::isUsed;
+
+        /* Check if this symbol is the fragment coordinate (SV_Position/ gl_FragCoord) */
+        if (auto varDecl = symbol->As<VarDecl>())
+        {
+            if (varDecl->semantic == Semantic::Position && shaderTarget_ == ShaderTarget::FragmentShader)
+            {
+                /* Mark frag-coord usage in fragment program layout */
+                program_->layoutFragment.fragCoordUsed = true;
+            }
+        }
+    }
+
+    VISIT_DEFAULT(VarAccessExpr);
 }
 
 #undef IMPLEMENT_VISIT_PROC

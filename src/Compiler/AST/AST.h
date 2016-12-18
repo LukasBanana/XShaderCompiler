@@ -137,8 +137,9 @@ struct AST
 
     FLAG_ENUM
     {
-        FLAG( isReachable, 30 ), // This AST node is reachable from the main entry point (i.e. the use-count >= 1).
-        FLAG( isDeadCode,  29 ), // This AST node is dead code (after return path).
+        FLAG( isReachable, 30 ), // This AST node is reachable from the main entry point.
+        FLAG( isUsed,      29 ), // This AST node is used by another expression or statement (i.e. use-count >= 1).
+        FLAG( isDeadCode,  28 ), // This AST node is dead code (after return path).
     };
 
     // Returns this AST node as the specified sub class if this AST node has the correct type. Otherwise, null is returned.
@@ -193,11 +194,6 @@ struct Program : public AST
 {   
     AST_INTERFACE(Program)
 
-    FLAG_ENUM
-    {
-        FLAG( isFragCoordUsed, 1 ), // This shader program makes use of the fragment coordinate (SV_Position, gl_FragCoord).
-    };
-
     struct LayoutTessControlShader
     {
         unsigned int    outputControlPoints     = 0;
@@ -214,6 +210,7 @@ struct Program : public AST
 
     struct LayoutFragmentShader
     {
+        bool fragCoordUsed      = false;
         bool pixelCenterInteger = false;    // True, if the pixel center is assumed to be integral. If false, pixel coordiante is assumed to have an (0.5, 0.5) offset.
         bool earlyDepthStencil  = false;
     };

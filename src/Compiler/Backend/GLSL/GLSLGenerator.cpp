@@ -63,7 +63,7 @@ void GLSLGenerator::GenerateCodePrimary(
             /* Mark all reachable AST nodes */
             {
                 ReferenceAnalyzer refAnalyzer;
-                refAnalyzer.MarkReferencesFromEntryPoint(program);
+                refAnalyzer.MarkReferencesFromEntryPoint(program, inputDesc.shaderTarget);
             }
 
             /* Write header */
@@ -958,7 +958,7 @@ bool GLSLGenerator::WriteGlobalLayoutsFragment(const Program::LayoutFragmentShad
 {
     bool layoutsWritten = false;
 
-    if (GetProgram()->flags(Program::isFragCoordUsed))
+    if (GetProgram()->layoutFragment.fragCoordUsed)
     {
         BeginLn();
         {
@@ -1001,10 +1001,13 @@ void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
     auto& varDeclRefs = entryPoint->inputSemantics.varDeclRefsSV;
 
     for (auto varDecl : varDeclRefs)
-        WriteLocalInputSemanticsVarDecl(varDecl);
+    {
+        if (varDecl->flags(AST::isUsed))
+            WriteLocalInputSemanticsVarDecl(varDecl);
+    }
 
-    if (!varDeclRefs.empty())
-        Blank();
+    /*if (!varDeclRefs.empty())
+        Blank();*/
 }
 
 void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
@@ -1070,10 +1073,13 @@ void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
     auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefsSV;
 
     for (auto varDecl : varDeclRefs)
-        WriteLocalOutputSemanticsVarDecl(varDecl);
+    {
+        if (varDecl->flags(AST::isUsed))
+            WriteLocalOutputSemanticsVarDecl(varDecl);
+    }
 
-    if (!varDeclRefs.empty())
-        Blank();
+    /*if (!varDeclRefs.empty())
+        Blank();*/
 }
 
 void GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)

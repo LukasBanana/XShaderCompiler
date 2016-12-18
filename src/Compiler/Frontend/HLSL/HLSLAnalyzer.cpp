@@ -694,10 +694,6 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
             Error(e.what(), varIdent);
         }
     }
-
-    /* Has the variable the fragment coordinate semantic? */
-    if (varDecl->semantic == Semantic::Position && shaderTarget_ == ShaderTarget::FragmentShader)
-        program_->flags << Program::isFragCoordUsed;
 }
 
 /*void HLSLAnalyzer::AnalyzeVarIdentWithSymbolBufferDecl(VarIdent* varIdent, BufferDecl* bufferDecl)

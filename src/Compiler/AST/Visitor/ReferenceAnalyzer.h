@@ -30,7 +30,7 @@ class ReferenceAnalyzer : private Visitor
     public:
         
         // Marks all declarational AST nodes (i.e. function decl, structure decl etc.) that are reachable from the specififed entry point.
-        void MarkReferencesFromEntryPoint(Program& program);
+        void MarkReferencesFromEntryPoint(Program& program, const ShaderTarget shaderTarget);
 
     private:
         
@@ -55,9 +55,12 @@ class ReferenceAnalyzer : private Visitor
         DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( BufferDeclStmnt   );
 
+        DECL_VISIT_PROC( VarAccessExpr     );
+
         /* === Members === */
 
-        Program* program_ = nullptr;
+        Program*        program_        = nullptr;
+        ShaderTarget    shaderTarget_   = ShaderTarget::VertexShader;
 
 };
 
