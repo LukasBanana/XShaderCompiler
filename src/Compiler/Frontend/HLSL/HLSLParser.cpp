@@ -1367,7 +1367,7 @@ ExprPtr HLSLParser::ParsePrimaryExpr()
     if (Is(Tokens::Ident))
         return ParseVarAccessOrFunctionCallExpr();
 
-    ErrorUnexpected("expected primary expression");
+    ErrorUnexpected("expected primary expression", nullptr, true);
     return nullptr;
 }
 
