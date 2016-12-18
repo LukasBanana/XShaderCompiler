@@ -41,8 +41,8 @@ ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr);
 
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident);
 
+VarTypePtr MakeVarType(const StructDeclPtr& structDecl);
 VarTypePtr MakeVarType(const TypeDenoterPtr& typeDenoter);
-
 VarTypePtr MakeVarType(const DataType dataType);
 
 VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ident);

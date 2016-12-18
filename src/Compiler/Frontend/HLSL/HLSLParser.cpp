@@ -124,16 +124,6 @@ TypeNameExprPtr HLSLParser::MakeToTypeNameIfLhsOfCastExpr(const ExprPtr& expr)
     return nullptr;
 }
 
-VarTypePtr HLSLParser::MakeVarType(const StructDeclPtr& structDecl)
-{
-    auto ast = Make<VarType>();
-
-    ast->structDecl     = structDecl;
-    ast->typeDenoter    = std::make_shared<StructTypeDenoter>(structDecl.get());
-
-    return ast;
-}
-
 TokenPtr HLSLParser::AcceptIt()
 {
     auto tkn = Parser::AcceptIt();
@@ -942,7 +932,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
         else if (Is(Tokens::Struct))
         {
             /* Parse structure variable type */
-            ast->varType = MakeVarType(ParseStructDecl());
+            ast->varType = ASTFactory::MakeVarType(ParseStructDecl());
             break;
         }
         else
@@ -1065,7 +1055,7 @@ StmntPtr HLSLParser::ParseStmntWithStructDecl()
         /* Parse variable declaration with previous structure type */
         auto varDeclStmnt = Make<VarDeclStmnt>();
 
-        varDeclStmnt->varType = MakeVarType(ast->structDecl);
+        varDeclStmnt->varType = ASTFactory::MakeVarType(ast->structDecl);
         
         /* Parse variable declarations */
         varDeclStmnt->varDecls = ParseVarDeclList(varDeclStmnt.get());
