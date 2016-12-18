@@ -73,7 +73,7 @@ IMPLEMENT_VISIT_PROC(Program)
             if (stmnt->Type() == AST::Types::SamplerDeclStmnt)
                 return true;
             if (auto varDeclStmnt = stmnt->As<VarDeclStmnt>())
-                return VarTypeIsSampler(*varDeclStmnt->varType);
+                return TypeNameIsSampler(*varDeclStmnt->varType);
             return false;
         }
     );
@@ -399,9 +399,9 @@ bool GLSLConverter::ExprContainsSampler(Expr& ast) const
     return ast.GetTypeDenoter()->Get()->IsSampler();
 }
 
-bool GLSLConverter::VarTypeIsSampler(TypeName& ast) const
+bool GLSLConverter::TypeNameIsSampler(TypeName& ast) const
 {
-    return ast.typeDenoter->Get()->IsSampler();
+    return ast.GetTypeDenoter()->Get()->IsSampler();
 }
 
 bool GLSLConverter::MustResolveStruct(StructDecl* ast) const
@@ -588,7 +588,7 @@ void GLSLConverter::RemoveSamplerVarDeclStmnts(std::vector<VarDeclStmntPtr>& stm
         program_->disabledAST,
         [&](const VarDeclStmntPtr& varDeclStmnt)
         {
-            return VarTypeIsSampler(*varDeclStmnt->varType);
+            return TypeNameIsSampler(*varDeclStmnt->varType);
         }
     );
 }
