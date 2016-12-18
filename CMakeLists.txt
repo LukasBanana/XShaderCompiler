@@ -16,6 +16,7 @@ set(INSTALL_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "Instal
 # === Options ===
 
 option(XSC_BUILD_SHELL "Build XShaderCompiler shell 'xsc'" ON)
+option(XSC_BUILD_DEBUGGER "Build XShaderCompiler debugger 'xsc_debugger' (requires wxWidgets library)" OFF)
 option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
 option(XSC_MEMORY_POOL "Enables the memory pool for optimized memory allocation (Experimental)" OFF)
@@ -49,6 +50,7 @@ file(GLOB FilesSrcCompilerFrontendHLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Fronte
 file(GLOB FilesSrcCompilerBackend ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/*.*)
 file(GLOB FilesSrcCompilerBackendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL/*.*)
 file(GLOB FilesSrcShell ${PROJECT_SOURCE_DIR}/src/Shell/*.*)
+file(GLOB FilesSrcDebugger ${PROJECT_SOURCE_DIR}/src/Debugger/*.*)
 
 if(WIN32)
 	file(GLOB FilesSrcCompilerPlatform ${PROJECT_SOURCE_DIR}/src/Compiler/Platform/Win32/*.*)
@@ -73,7 +75,7 @@ set(
 # === Source group folders ===
 
 source_group("inc\\Xsc" FILES ${FilesInc})
-source_group("src" FILES ${FilesSrcCompiler} ${FilesSrcShell})
+source_group("src" FILES ${FilesSrcCompiler} ${FilesSrcShell} ${FilesSrcDebugger})
 source_group("src\\AST" FILES ${FilesSrcCompilerAST})
 source_group("src\\AST\\Visitor" FILES ${FilesSrcCompilerASTVisitor})
 source_group("src\\Platform" FILES ${FilesSrcCompilerPlatform})
@@ -111,6 +113,28 @@ if(XSC_BUILD_SHELL)
 	set_target_properties(xsc PROPERTIES LINKER_LANGUAGE CXX)
 	target_link_libraries(xsc xsc_core)
 	target_compile_features(xsc PRIVATE cxx_range_for)
+endif()
+
+if(XSC_BUILD_DEBUGGER)
+	if(WIN32)
+		add_executable(xsc_debugger WIN32 ${FilesSrcDebugger} "${PROJECT_SOURCE_DIR}/src/Debugger/Resources.rc")
+	else()
+		add_executable(xsc_debugger ${FilesSrcDebugger})
+	endif()
+	
+	set_target_properties(xsc_debugger PROPERTIES LINKER_LANGUAGE CXX)
+	target_link_libraries(xsc_debugger xsc_core)
+	target_compile_features(xsc_debugger PRIVATE cxx_range_for)
+	
+	# wxWidgets Libs
+	find_package(wxWidgets REQUIRED adv aui base core stc propgrid richtext scintilla)
+	if(wxWidgets_FOUND)
+		message("Found wxWidgets library")
+		include_directories(${wxWidgets_INCLUDE_DIRS})
+		target_link_libraries(xsc_debugger ${wxWidgets_LIBRARIES})
+	else(wxWidgets_FOUND)
+		message(SEND_ERROR "Missing wxWidgets library")
+	endif(wxWidgets_FOUND)
 endif()
 
 
