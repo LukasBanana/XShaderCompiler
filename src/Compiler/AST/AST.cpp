@@ -260,6 +260,11 @@ std::string VarType::ToString() const
     return typeDenoter->ToString();
 }
 
+TypeDenoterPtr VarType::DeriveTypeDenoter()
+{
+    return typeDenoter;
+}
+
 
 /* ----- VarDecl ----- */
 

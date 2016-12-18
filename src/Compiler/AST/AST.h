@@ -320,14 +320,15 @@ struct PackOffset : public AST
     std::string vectorComponent; // May be empty
 };
 
-//TODO: maybe replace this AST class completely by TypeDenoter
-// Variable data type.
-struct VarType : public AST //TypedAST
+// Type type with optional structure declaration.
+struct VarType : public TypedAST
 {
     AST_INTERFACE(VarType);
     
     // Returns the name of this type (either 'baseType' or 'structDecl->name').
     std::string ToString() const;
+
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     StructDeclPtr   structDecl;             // Optional structure declaration
     TypeDenoterPtr  typeDenoter;
