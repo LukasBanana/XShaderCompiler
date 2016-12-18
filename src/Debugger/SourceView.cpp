@@ -144,6 +144,19 @@ void SourceView::SetLanguage(const SourceViewLanguage language)
     Refresh();
 }
 
+void SourceView::SetTextAndRefresh(const wxString& text)
+{
+    int hScroll = GetScrollPos(wxHORIZONTAL);
+    int vScroll = GetScrollPos(wxVERTICAL);
+
+    SetText(text);
+
+    SetScrollPos(wxHORIZONTAL, hScroll);
+    SetScrollPos(wxVERTICAL, vScroll);
+
+    Refresh();
+}
+
 void SourceView::SetCharEnterCallback(const CharEnterCallback& callback)
 {
     charEnterCallback_ = callback;
@@ -178,13 +191,15 @@ void SourceView::OnCharAdded(wxStyledTextEvent& event)
 
 void SourceView::OnKeyDown(wxKeyEvent& event)
 {
-    if (event.GetKeyCode() == WXK_BACK)
+    wxStyledTextCtrl::OnKeyDown(event);
+
+    auto key = event.GetKeyCode();
+
+    if (key == WXK_BACK || key == WXK_DELETE)
     {
         if (charEnterCallback_)
             charEnterCallback_('\b');
     }
-
-    event.Skip();
 }
 
 

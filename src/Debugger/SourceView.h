@@ -36,6 +36,8 @@ class SourceView : public wxStyledTextCtrl
 
         void SetLanguage(const SourceViewLanguage language);
 
+        void SetTextAndRefresh(const wxString& text);
+
         void SetCharEnterCallback(const CharEnterCallback& callback);
 
     private:

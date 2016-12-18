@@ -9,11 +9,12 @@
 #define XSC_DEBUGGER_VIEW_H
 
 
+#include <Xsc/Xsc.h>
 #include <wx/frame.h>
 #include <wx/splitter.h>
 #include <wx/propgrid/propgrid.h>
 #include "SourceView.h"
-#include <Xsc/Xsc.h>
+#include "ReportView.h"
 
 
 namespace Xsc
@@ -36,6 +37,8 @@ class DebuggerView : public wxFrame
         void CreateLayoutPropertyGridOptions(wxPropertyGrid& pg);
         void CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg);
         void CreateLayoutSubSplitter();
+        void CreateLayoutReportView();
+        void CreateLayoutSourceSplitter();
         void CreateLayoutInputSourceView();
         void CreateLayoutOutputSourceView();
 
@@ -45,8 +48,11 @@ class DebuggerView : public wxFrame
 
         wxSplitterWindow*   mainSplitter_       = nullptr;
         wxSplitterWindow*   subSplitter_        = nullptr;
+        wxSplitterWindow*   sourceSplitter_        = nullptr;
 
         wxPropertyGrid*     propGrid_           = nullptr;
+
+        ReportView*         reportView_         = nullptr;
 
         SourceView*         inputSourceView_    = nullptr;
         SourceView*         outputSourceView_   = nullptr;

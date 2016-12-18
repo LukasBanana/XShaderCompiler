@@ -8,6 +8,7 @@
 #include "DebuggerView.h"
 #include <sstream>
 #include <memory>
+#include <vector>
 
 
 namespace Xsc
@@ -146,22 +147,37 @@ void DebuggerView::CreateLayoutSubSplitter()
 {
     subSplitter_ = new wxSplitterWindow(mainSplitter_, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_LIVE_UPDATE);
 
+    CreateLayoutReportView();
+    CreateLayoutSourceSplitter();
+
+    subSplitter_->SplitHorizontally(sourceSplitter_, reportView_, 600);
+}
+
+void DebuggerView::CreateLayoutReportView()
+{
+    reportView_ = new ReportView(subSplitter_, wxDefaultPosition, wxSize(400, 50));
+}
+
+void DebuggerView::CreateLayoutSourceSplitter()
+{
+    sourceSplitter_ = new wxSplitterWindow(subSplitter_, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_LIVE_UPDATE);
+
     CreateLayoutInputSourceView();
     CreateLayoutOutputSourceView();
 
-    subSplitter_->SplitVertically(inputSourceView_, outputSourceView_);
+    sourceSplitter_->SplitVertically(inputSourceView_, outputSourceView_);
 }
 
 void DebuggerView::CreateLayoutInputSourceView()
 {
-    inputSourceView_ = new SourceView(subSplitter_, wxDefaultPosition, wxSize(200, 400));
+    inputSourceView_ = new SourceView(sourceSplitter_, wxDefaultPosition, wxSize(200, 600));
     inputSourceView_->SetLanguage(SourceViewLanguage::HLSL);
     inputSourceView_->SetCharEnterCallback(std::bind(&DebuggerView::OnInputSourceCharEnter, this, std::placeholders::_1));
 }
 
 void DebuggerView::CreateLayoutOutputSourceView()
 {
-    outputSourceView_ = new SourceView(subSplitter_, wxDefaultPosition, wxSize(200, 400));
+    outputSourceView_ = new SourceView(sourceSplitter_, wxDefaultPosition, wxSize(200, 600));
     outputSourceView_->SetLanguage(SourceViewLanguage::GLSL);
     //outputSourceView_->SetReadOnly(true);
 }
@@ -170,6 +186,27 @@ void DebuggerView::OnInputSourceCharEnter(char chr)
 {
     TranslateInputToOutput();
 }
+
+class DebuggerLog : public Log
+{
+
+    public:
+
+        DebuggerLog(ReportView* reportView) :
+            reportView_{ reportView }
+        {
+        }
+
+        void SumitReport(const Report& report) override
+        {
+            reportView_->AddReport(report);
+        }
+
+    private:
+
+        ReportView* reportView_ = nullptr;
+
+};
 
 void DebuggerView::TranslateInputToOutput()
 {
@@ -188,11 +225,13 @@ void DebuggerView::TranslateInputToOutput()
     #endif
 
     /* Compile shader */
-    if (Xsc::CompileShader(shaderInput_, shaderOutput_))
+    reportView_->Clear();
+
+    DebuggerLog log(reportView_);
+    if (Xsc::CompileShader(shaderInput_, shaderOutput_, &log))
     {
         /* Show output */
-        outputSourceView_->SetText(outputSource.str());
-        outputSourceView_->Refresh();
+        outputSourceView_->SetTextAndRefresh(outputSource.str());
     }
 }
 
