@@ -26,6 +26,26 @@ namespace Xsc
 {
 
 
+/*
+ * Internal structures
+ */
+
+struct IfStmntArgs
+{
+    bool inHasElseParentNode;
+};
+
+struct StructDeclArgs
+{
+    bool inEndWithSemicolon;
+    bool outStructWritten;
+};
+
+
+/*
+ * GLSLGenerator class
+ */
+
 GLSLGenerator::GLSLGenerator(Log* log) :
     Generator{ log }
 {
@@ -292,21 +312,22 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 {
     if (!MustResolveStruct(ast))
     {
-        bool semicolon = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
-
         /* Write all nested structures (if this is the root structure) */
         if (!ast->flags(StructDecl::isNestedStruct))
         {
             /* Write nested structres in child-to-parent order */
             for (auto nestedStruct = ast->nestedStructDeclRefs.rbegin(); nestedStruct != ast->nestedStructDeclRefs.rend(); ++nestedStruct)
             {
-                WriteStructDecl(*nestedStruct, true, true);
-                Blank();
+                if (WriteStructDecl(*nestedStruct, true, true))
+                    Blank();
             }
         }
 
         /* Write declaration of this structure (without nested structures) */
-        WriteStructDecl(ast, semicolon);
+        if (auto structDeclArgs = reinterpret_cast<StructDeclArgs*>(args))
+            structDeclArgs->outStructWritten = WriteStructDecl(ast, structDeclArgs->inEndWithSemicolon);
+        else
+            WriteStructDecl(ast, false);
     }
 }
 
@@ -393,10 +414,13 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
     {
         WriteLineMark(ast);
 
-        bool semicolon = true;
-        Visit(ast->structDecl, &semicolon);
+        StructDeclArgs structDeclArgs;
+        structDeclArgs.inEndWithSemicolon = true;
 
-        Blank();
+        Visit(ast->structDecl, &structDeclArgs);
+
+        if (structDeclArgs.outStructWritten)
+            Blank();
     }
 }
 
@@ -502,10 +526,13 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
     {
         WriteLineMark(ast);
 
-        bool semicolon = true;
-        Visit(ast->structDecl, &semicolon);
+        StructDeclArgs structDeclArgs;
+        structDeclArgs.inEndWithSemicolon = true;
 
-        Blank();
+        Visit(ast->structDecl, &structDeclArgs);
+
+        if (structDeclArgs.outStructWritten)
+            Blank();
     }
 }
 
@@ -574,7 +601,7 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 
 IMPLEMENT_VISIT_PROC(IfStmnt)
 {
-    bool hasElseParentNode = (args != nullptr ? *reinterpret_cast<bool*>(&args) : false);
+    bool hasElseParentNode = (args != nullptr ? reinterpret_cast<IfStmntArgs*>(args)->inHasElseParentNode : false);
 
     /* Write if condExpr */
     if (!hasElseParentNode)
@@ -598,8 +625,14 @@ IMPLEMENT_VISIT_PROC(ElseStmnt)
         WriteScopeContinue();
         Write("else ");
 
-        bool hasElseParentNode = true;
-        Visit(ast->bodyStmnt, &hasElseParentNode);
+        if (ast->bodyStmnt->Type() == AST::Types::IfStmnt)
+        {
+            IfStmntArgs ifStmntArgs;
+            ifStmntArgs.inHasElseParentNode = true;
+            Visit(ast->bodyStmnt, &ifStmntArgs);
+        }
+        else
+            Visit(ast->bodyStmnt);
     }
     else
     {

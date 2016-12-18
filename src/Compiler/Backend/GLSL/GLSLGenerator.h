@@ -240,6 +240,7 @@ class GLSLGenerator : public Generator
         bool                compactWrappers_        = true;
         bool                alwaysBracedScopes_     = false;
 
+        bool                isInsideFunction_       = false;
         bool                isInsideEntryPoint_     = false;
         bool                isInsideInterfaceBlock_ = false;
 
