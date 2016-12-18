@@ -289,7 +289,9 @@ void CodeWriter::FlushSeparatedLines(SeparatedLineQueue& lineQueue)
             }
         }
 
-        Out() << '\n';
+        /* Append new-line if there are any parts, otherwise the line was not ended */
+        if (!line.parts.empty())
+            Out() << '\n';
     }
 
     /* Clear queue */
