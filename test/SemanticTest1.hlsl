@@ -75,7 +75,7 @@ float4 VS6(in VIn inp, in uniform float4 offset) : SV_Position
 
 float4 PS1(in VOut inp) : SV_Target2
 {
-	return (float4)saturate(dot(float3(0, 0, 1), inp.tNormal));
+	return (float4)saturate(dot(float3(0, 0, 1), inp.tNormal/* + inp.tPos*/));
 }
 
 // PS2

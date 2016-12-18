@@ -17,11 +17,11 @@
 #[SemanticTest1 VS6]
 #-T vert -E VS6 -o output/* SemanticTest1.hlsl
 
-#[SemanticTest1 PS1]
-#-T frag -E PS1 -o output/* SemanticTest1.hlsl
+[SemanticTest1 PS1]
+-T frag -E PS1 -o output/* SemanticTest1.hlsl
 
-#[SemanticTest1 PS2]
-#-T frag -E PS2 -o output/* SemanticTest1.hlsl
+[SemanticTest1 PS2]
+-T frag -E PS2 -o output/* SemanticTest1.hlsl
 
 #['clip'-Intrinsic PS]
 #-T frag -E PS -o output/* IntrinsicClip.hlsl

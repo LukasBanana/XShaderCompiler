@@ -19,16 +19,17 @@ namespace Xsc
  * Internal GL ARB extension descriptions
  */
 
-static const GLSLExtension GLSLEXT_GL_EXT_gpu_shader4               { "GL_EXT_gpu_shader4",              OutputShaderVersion::GLSL130 };
-static const GLSLExtension GLSLEXT_GL_ARB_uniform_buffer_object     { "GL_ARB_uniform_buffer_object",    OutputShaderVersion::GLSL140 };
-static const GLSLExtension GLSLEXT_GL_ARB_texture_multisample       { "GL_ARB_texture_multisample",      OutputShaderVersion::GLSL150 };
-static const GLSLExtension GLSLEXT_GL_ARB_gpu_shader5               { "GL_ARB_gpu_shader5",              OutputShaderVersion::GLSL330 };
-static const GLSLExtension GLSLEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",       OutputShaderVersion::GLSL450 };
-static const GLSLExtension GLSLEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_language_420pack", OutputShaderVersion::GLSL420 };
-static const GLSLExtension GLSLEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_image_load_store",  OutputShaderVersion::GLSL420 };
-static const GLSLExtension GLSLEXT_GL_ARB_arrays_of_arrays          { "GL_ARB_arrays_of_arrays",         OutputShaderVersion::GLSL430 };
-static const GLSLExtension GLSLEXT_GL_ARB_enhanced_layouts          { "GL_ARB_enhanced_layouts",         OutputShaderVersion::GLSL430 };
-static const GLSLExtension GLSLEXT_GL_ARB_gpu_shader_int64          { "GL_ARB_gpu_shader_int64",         OutputShaderVersion::GLSL450 };
+static const GLSLExtension GLSLEXT_GL_EXT_gpu_shader4               { "GL_EXT_gpu_shader4",                 OutputShaderVersion::GLSL130 };
+static const GLSLExtension GLSLEXT_GL_ARB_uniform_buffer_object     { "GL_ARB_uniform_buffer_object",       OutputShaderVersion::GLSL140 };
+static const GLSLExtension GLSLEXT_GL_ARB_texture_multisample       { "GL_ARB_texture_multisample",         OutputShaderVersion::GLSL150 };
+static const GLSLExtension GLSLEXT_GL_ARB_fragment_coord_conventions{ "GL_ARB_fragment_coord_conventions",  OutputShaderVersion::GLSL150 };
+static const GLSLExtension GLSLEXT_GL_ARB_gpu_shader5               { "GL_ARB_gpu_shader5",                 OutputShaderVersion::GLSL330 };
+static const GLSLExtension GLSLEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",          OutputShaderVersion::GLSL450 };
+static const GLSLExtension GLSLEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_language_420pack",    OutputShaderVersion::GLSL420 };
+static const GLSLExtension GLSLEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_image_load_store",     OutputShaderVersion::GLSL420 };
+static const GLSLExtension GLSLEXT_GL_ARB_arrays_of_arrays          { "GL_ARB_arrays_of_arrays",            OutputShaderVersion::GLSL430 };
+static const GLSLExtension GLSLEXT_GL_ARB_enhanced_layouts          { "GL_ARB_enhanced_layouts",            OutputShaderVersion::GLSL430 };
+static const GLSLExtension GLSLEXT_GL_ARB_gpu_shader_int64          { "GL_ARB_gpu_shader_int64",            OutputShaderVersion::GLSL450 };
 
 
 /*
@@ -120,6 +121,14 @@ void GLSLExtensionAgent::AcquireExtension(const GLSLExtension& extension)
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
     void GLSLExtensionAgent::Visit##AST_NAME(AST_NAME* ast, void* args)
 
+IMPLEMENT_VISIT_PROC(Program)
+{
+    if (ast->layoutFragment.fragCoordUsed)
+        AcquireExtension(GLSLEXT_GL_ARB_fragment_coord_conventions);
+
+    VISIT_DEFAULT(Program);
+}
+
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     /* Check for special intrinsics */
@@ -130,8 +139,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             AcquireExtension(it->second);
     }
 
-    /* Default visitor */
-    Visitor::VisitFunctionCall(ast, args);
+    VISIT_DEFAULT(FunctionCall);
 }
 
 IMPLEMENT_VISIT_PROC(Attribute)
@@ -151,8 +159,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     if (ast->packOffset)
         AcquireExtension(GLSLEXT_GL_ARB_enhanced_layouts);
 
-    /* Default visitor */
-    Visitor::VisitVarDecl(ast, args);
+    VISIT_DEFAULT(VarDecl);
 }
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
@@ -161,8 +168,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     {
         Visit(ast->attribs);
 
-        /* Default visitor */
-        Visitor::VisitFunctionDecl(ast, args);
+        VISIT_DEFAULT(FunctionDecl);
     }
 }
 
@@ -177,8 +183,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
             AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
     }
 
-    /* Default visitor */
-    Visitor::VisitUniformBufferDecl(ast, args);
+    VISIT_DEFAULT(UniformBufferDecl);
 }
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
@@ -197,8 +202,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     if (IsTextureMSBufferType(ast->typeDenoter->bufferType))
         AcquireExtension(GLSLEXT_GL_ARB_texture_multisample);
 
-    /* Default visitor */
-    Visitor::VisitBufferDeclStmnt(ast, args);
+    VISIT_DEFAULT(BufferDeclStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(BinaryExpr)
@@ -207,8 +211,7 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
     if (IsBitwiseOp(ast->op) || ast->op == BinaryOp::Mod)
         AcquireExtension(GLSLEXT_GL_EXT_gpu_shader4);
 
-    /* Default visitor */
-    Visitor::VisitBinaryExpr(ast, args);
+    VISIT_DEFAULT(BinaryExpr);
 }
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
@@ -217,8 +220,7 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
     if (IsBitwiseOp(ast->op))
         AcquireExtension(GLSLEXT_GL_EXT_gpu_shader4);
 
-    /* Default visitor */
-    Visitor::VisitUnaryExpr(ast, args);
+    VISIT_DEFAULT(UnaryExpr);
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
@@ -227,16 +229,14 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     if (IsBitwiseOp(ast->assignOp) || ast->assignOp == AssignOp::Mod)
         AcquireExtension(GLSLEXT_GL_EXT_gpu_shader4);
 
-    /* Default visitor */
-    Visitor::VisitVarAccessExpr(ast, args);
+    VISIT_DEFAULT(VarAccessExpr);
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
     AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
 
-    /* Default visitor */
-    Visitor::VisitInitializerExpr(ast, args);
+    VISIT_DEFAULT(InitializerExpr);
 }
 
 #undef IMPLEMENT_VISIT_PROC
