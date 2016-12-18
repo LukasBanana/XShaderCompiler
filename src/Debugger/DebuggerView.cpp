@@ -69,7 +69,7 @@ void DebuggerView::CreateLayoutPropertyGridShaderInput(wxPropertyGrid& pg)
         choices0.Add("HLSL4");
         choices0.Add("HLSL5");
     }
-    pg.Append(new wxEnumProperty("Shader Version", "inputVersion", choices0, 2));
+    pg.Append(new wxEnumProperty("Shader Version", "inputVersion", choices0, 2))->Enable(false);
 
     wxPGChoices choices1;
     {
@@ -115,7 +115,7 @@ void DebuggerView::CreateLayoutPropertyGridShaderOutput(wxPropertyGrid& pg)
         choices0.Add("VKSL (Auto-Detect)");
         choices0.Add("VKSL450");
     }
-    pg.Append(new wxEnumProperty("Shader Version", "outputVersion", choices0));
+    pg.Append(new wxEnumProperty("Shader Version", "outputVersion", choices0))->Enable(false);
 
     pg.Append(new wxStringProperty("Name Mangling Prefix", "prefix", "xsc_"));
 }
