@@ -1486,10 +1486,19 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
 void GLSLGenerator::WriteFunction(FunctionDecl* ast)
 {
     /* Write function header */
-    BeginLn();
-    
-    Visit(ast->returnType);
-    Write(" " + ast->ident + "(");
+    if (auto structDecl = ast->returnType->structDecl.get())
+    {
+        Visit(ast->returnType);
+        Blank();
+        BeginLn();
+        Write(structDecl->ident + " " + ast->ident + "(");
+    }
+    else
+    {
+        BeginLn();
+        Visit(ast->returnType);
+        Write(" " + ast->ident + "(");
+    }
 
     /* Write parameters */
     for (size_t i = 0; i < ast->parameters.size(); ++i)

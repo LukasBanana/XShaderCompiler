@@ -29,6 +29,11 @@ struct S1
 
 typedef struct S2 { float x, y; } S2_t;
 
+S2_t f2()
+{
+	return (S2_t)0;
+}
+
 struct { float value; } f1()
 {
 	return 0;
@@ -48,7 +53,7 @@ float4 VS() : SV_Position
 	}
 	s2;
 	
-	return (float4)f1().value;
+	return (float4)(f1().value + f2().x);
 }
 
 
