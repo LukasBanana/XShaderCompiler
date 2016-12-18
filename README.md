@@ -86,6 +86,12 @@ Output Example
 <p align="center">Meaningful output messages with line marker:</p>
 <p align="center"><img src="docu/screenshot_03.png" alt="docu/screenshot_03.png"/></p>
 
+Real-time Debugger
+------------------
+
+<p align="center">Example of the real-time debugger:</p>
+<p align="center"><img src="docu/xsc_debugger_example_01.gif" alt="docu/xsc_debugger_example_01.gif"/></p>
+
 A few thoughts on translating HLSL
 ----------------------------------
 
