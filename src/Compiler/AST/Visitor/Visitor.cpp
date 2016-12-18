@@ -252,7 +252,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(TypeNameExpr)
 {
-    // do nothing
+    Visit(ast->typeName);
 }
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)

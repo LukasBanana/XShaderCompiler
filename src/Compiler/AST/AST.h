@@ -320,7 +320,7 @@ struct PackOffset : public AST
     std::string vectorComponent; // May be empty
 };
 
-// Type type with optional structure declaration.
+// Type name with optional structure declaration.
 struct TypeName : public TypedAST
 {
     AST_INTERFACE(TypeName);
@@ -786,7 +786,7 @@ struct TypeNameExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    TypeDenoterPtr typeDenoter;
+    TypeNamePtr typeName;
 };
 
 // Ternary expression.

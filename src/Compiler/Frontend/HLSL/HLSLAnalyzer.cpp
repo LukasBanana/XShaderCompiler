@@ -493,11 +493,6 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
 /* --- Expressions --- */
 
-IMPLEMENT_VISIT_PROC(TypeNameExpr)
-{
-    AnalyzeTypeDenoter(ast->typeDenoter, ast);
-}
-
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
     Visit(ast->expr);

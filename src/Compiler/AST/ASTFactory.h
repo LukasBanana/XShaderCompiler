@@ -20,11 +20,15 @@ namespace ASTFactory
 {
 
 
+/* ----- Find functions ----- */
+
 // Returns the expression which contains a single expression of the specified type (within brackets), or null if not found.
 Expr* FindSingleExpr(Expr* ast, const AST::Types searchedExprType);
 
 FunctionCallPtr FindSingleFunctionCall(Expr* ast);
 VarIdentPtr FindSingleVarIdent(Expr* ast);
+
+/* ----- Make functions ----- */
 
 FunctionCallExprPtr MakeIntrinsicCallExpr(
     const Intrinsic intrinsic, const std::string& ident,

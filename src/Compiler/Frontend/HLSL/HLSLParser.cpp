@@ -115,7 +115,7 @@ TypeNameExprPtr HLSLParser::MakeToTypeNameIfLhsOfCastExpr(const ExprPtr& expr)
         {
             /* Convert the variable access into a type name expression */
             auto typeExpr = Make<TypeNameExpr>();
-            typeExpr->typeDenoter = std::make_shared<AliasTypeDenoter>(varAccessExpr->varIdent->ident);
+            typeExpr->typeName = ASTFactory::MakeTypeName(std::make_shared<AliasTypeDenoter>(varAccessExpr->varIdent->ident));
             return typeExpr;
         }
     }
@@ -1404,7 +1404,7 @@ ExprPtr HLSLParser::ParseTypeNameOrFunctionCallExpr()
 
     /* Return type name expression */
     auto ast = Make<TypeNameExpr>();
-    ast->typeDenoter = typeDenoter;
+    ast->typeName = ASTFactory::MakeTypeName(typeDenoter);
 
     return ast;
 }

@@ -23,6 +23,8 @@ std::shared_ptr<T> MakeAST(Args&&... args)
     return MakeShared<T>(SourcePosition::ignore, std::forward<Args>(args)...);
 }
 
+/* ----- Find functions ----- */
+
 Expr* FindSingleExpr(Expr* ast, const AST::Types searchedExprType)
 {
     while (ast)
@@ -59,6 +61,8 @@ VarIdentPtr FindSingleVarIdent(Expr* ast)
         return static_cast<VarAccessExpr*>(expr)->varIdent;
     return nullptr;
 }
+
+/* ----- Make functions ----- */
 
 FunctionCallExprPtr MakeIntrinsicCallExpr(
     const Intrinsic intrinsic, const std::string& ident, const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments)
@@ -126,9 +130,9 @@ CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& value
 {
     auto ast = MakeAST<CastExpr>();
     {
-        ast->typeExpr               = MakeAST<TypeNameExpr>();
-        ast->typeExpr->typeDenoter  = typeDenoter;
-        ast->expr                   = valueExpr;
+        ast->typeExpr           = MakeAST<TypeNameExpr>();
+        ast->typeExpr->typeName = MakeTypeName(typeDenoter);
+        ast->expr               = valueExpr;
     }
     return ast;
 }
@@ -157,9 +161,9 @@ ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
         /* Make new cast expression */
         auto ast = MakeShared<CastExpr>(subExpr->area);
         {
-            ast->typeExpr               = MakeAST<TypeNameExpr>();
-            ast->typeExpr->typeDenoter  = MakeShared<BaseTypeDenoter>(dataType);
-            ast->expr                   = subExpr;
+            ast->typeExpr           = MakeAST<TypeNameExpr>();
+            ast->typeExpr->typeName = MakeTypeName(MakeShared<BaseTypeDenoter>(dataType));
+            ast->expr               = subExpr;
         }
         return ast;
     }

@@ -697,7 +697,7 @@ std::string LiteralExpr::GetStringValue() const
 
 TypeDenoterPtr TypeNameExpr::DeriveTypeDenoter()
 {
-    return typeDenoter;
+    return typeName->GetTypeDenoter();
 }
 
 
