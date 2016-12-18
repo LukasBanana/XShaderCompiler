@@ -10,6 +10,9 @@
 
 
 #include <wx/frame.h>
+#include <wx/splitter.h>
+#include <wx/propgrid/propgrid.h>
+#include <wx/stc/stc.h>
 
 
 namespace Xsc
@@ -25,6 +28,17 @@ class DebuggerView : public wxFrame
 
     private:
 
+        void CreateLayout();
+        void CreateLayoutPropertyGrid();
+        void CreateLayoutPropertyGridShaderInput(wxPropertyGrid& pg);
+        void CreateLayoutPropertyGridShaderOutput(wxPropertyGrid& pg);
+        void CreateLayoutPropertyGridOptions(wxPropertyGrid& pg);
+        void CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg);
+
+        wxSplitterWindow*   mainSplitter_   = nullptr;
+        wxSplitterWindow*   subSplitter_    = nullptr;
+
+        wxPropertyGrid*     propGrid_       = nullptr;
 
 };
 

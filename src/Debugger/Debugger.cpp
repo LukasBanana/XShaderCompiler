@@ -7,7 +7,6 @@
 
 #include "Debugger.h"
 #include "DebuggerView.h"
-#include "WxHelper.h"
 
 
 namespace Xsc
@@ -21,7 +20,7 @@ bool Debugger::OnInit()
     if (!wxApp::OnInit())
         return false;
 
-    auto debuggerView = WxMake<DebuggerView>(wxDefaultPosition, wxSize(1280, 768));
+    auto debuggerView = new DebuggerView(wxDefaultPosition, wxSize(1280, 768));
     debuggerView->Show();
 
     return true;

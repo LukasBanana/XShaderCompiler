@@ -146,6 +146,9 @@ struct ShaderInput
 
     //! Specifies the input shader version (e.g. InputShaderVersion::HLSL5 for "HLSL 5"). By default InputShaderVersion::HLSL5.
     InputShaderVersion              shaderVersion   = InputShaderVersion::HLSL5;
+    
+    //! Specifies the target shader (Vertex, Fragment etc.). By default ShaderTarget::Undefined.
+    ShaderTarget                    shaderTarget    = ShaderTarget::Undefined;
 
     //! Specifies the HLSL shader entry point.
     std::string                     entryPoint;
@@ -158,9 +161,6 @@ struct ShaderInput
     to the Tessellation-Evaluation output shader. If this is empty, the default values for these attributes are used.
     */
     std::string                     secondaryEntryPoint;
-    
-    //! Specifies the target shader (Vertex, Fragment etc.). By default ShaderTarget::Undefined.
-    ShaderTarget                    shaderTarget    = ShaderTarget::Undefined;
 
     /**
     \brief Optional pointer to the implementation of the "IncludeHandler" interface. By default null.
