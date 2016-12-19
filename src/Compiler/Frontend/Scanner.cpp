@@ -244,6 +244,12 @@ void Scanner::ErrorUnexpected(char expectedChar)
     Error("unexpected character '" + std::string(1, chr) + "' (expected '" + std::string(1, expectedChar) + "')");
 }
 
+[[noreturn]]
+void Scanner::ErrorUnexpectedEOS()
+{
+    Error("unexpected end-of-stream");
+}
+
 /* ----- Scanning ----- */
 
 void Scanner::Ignore(const std::function<bool(char)>& pred)
@@ -343,7 +349,11 @@ TokenPtr Scanner::ScanStringLiteral()
     spell += Take('\"');
     
     while (!Is('\"'))
+    {
+        if (Is(0))
+            ErrorUnexpectedEOS();
         spell += TakeIt();
+    }
     
     spell += Take('\"');
 

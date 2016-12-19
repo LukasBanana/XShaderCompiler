@@ -755,10 +755,16 @@ void PreProcessor::ParseDirectivePragma()
             else if (command == "message")
             {
                 /* Parse message string */
-                if ((*++tokenIt)->Type() == Tokens::StringLiteral)
-                    GetReportHandler().SubmitReport(false, Report::Types::Info, "message", (*tokenIt)->SpellContent(), nullptr, (*tokenIt)->Area());
+                auto prevToken = tokenIt->get();
+                if (!(++tokenIt).ReachedEnd())
+                {
+                    if ((*tokenIt)->Type() == Tokens::StringLiteral)
+                        GetReportHandler().SubmitReport(false, Report::Types::Info, "message", (*tokenIt)->SpellContent(), nullptr, (*tokenIt)->Area());
+                    else
+                        ErrorUnexpected(Tokens::StringLiteral, tokenIt->get());
+                }
                 else
-                    ErrorUnexpected(Tokens::StringLiteral, tokenIt->get());
+                    Error("unexpected end of token string", prevToken);
             }
             else if (command == "def" || command == "pack_matrix" || command == "warning")
             {

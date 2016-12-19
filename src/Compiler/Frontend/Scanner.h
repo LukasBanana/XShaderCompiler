@@ -106,6 +106,9 @@ class Scanner
         [[noreturn]]
         void ErrorUnexpected(char expectedChar);
 
+        [[noreturn]]
+        void ErrorUnexpectedEOS();
+
         /* ----- Scanning ----- */
 
         // Ignores all characters which comply the specified predicate.
