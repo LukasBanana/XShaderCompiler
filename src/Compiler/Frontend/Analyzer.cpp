@@ -156,6 +156,22 @@ AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
     return nullptr;
 }
 
+VarDecl* Analyzer::FetchVarDecl(const std::string& ident, const AST* ast)
+{
+    try
+    {
+        if (auto symbol = symTable_.Fetch(ident))
+            return symbol->FetchVarDecl();
+        else
+            ErrorUndeclaredIdent(ident, ast);
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what(), ast);
+    }
+    return nullptr;
+}
+
 FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::vector<ExprPtr>& args, const AST* ast)
 {
     try
@@ -451,8 +467,7 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
             expr,
             [this](VarAccessExpr* ast) -> Variant
             {
-                //TODO: fetch variable and check for constness
-                throw ast;
+                return EvaluateConstVarAccessdExpr(*ast);
             }
         );
     }
@@ -465,6 +480,28 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
         Error("expected constant expression", varAccessExpr);
     }
     return Variant();
+}
+
+Variant Analyzer::EvaluateConstVarAccessdExpr(VarAccessExpr& expr)
+{
+    /* Find variable */
+    if (auto symbol = expr.varIdent->symbolRef)
+    {
+        if (auto varDecl = symbol->As<VarDecl>())
+        {
+            if (auto varDeclStmnt = varDecl->declStmntRef)
+            {
+                if (varDeclStmnt->IsConst() && varDecl->initializer)
+                {
+                    /* Evaluate initializer of constant variable */
+                    return EvaluateConstExpr(*varDecl->initializer);
+                }
+            }
+        }
+    }
+
+    /* Throw expression due to non-constness */
+    throw (&expr);
 }
 
 int Analyzer::EvaluateConstExprInt(Expr& expr)

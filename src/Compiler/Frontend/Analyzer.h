@@ -77,7 +77,10 @@ class Analyzer : protected Visitor
         
         AST* Fetch(const std::string& ident, const AST* ast = nullptr);
         AST* Fetch(const VarIdentPtr& ident);
+
         AST* FetchType(const std::string& ident, const AST* ast = nullptr);
+
+        VarDecl* FetchVarDecl(const std::string& ident, const AST* ast = nullptr);
 
         FunctionDecl* FetchFunctionDecl(const std::string& ident, const std::vector<ExprPtr>& args, const AST* ast = nullptr);
         FunctionDecl* FetchFunctionDecl(const std::string& ident, const AST* ast = nullptr);
@@ -139,6 +142,9 @@ class Analyzer : protected Visitor
 
         // Evaluates the specified constant expression.
         Variant EvaluateConstExpr(Expr& expr);
+
+        // Evaluates the specified constant variable access expression or throws the expression if it's not constant.
+        Variant EvaluateConstVarAccessdExpr(VarAccessExpr& expr);
 
         // Evaluates the specified constant integer expression.
         int EvaluateConstExprInt(Expr& expr);

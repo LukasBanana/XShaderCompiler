@@ -182,6 +182,9 @@ class ASTSymbolOverload
         */
         AST* FetchVar(bool throwOnFailure = true);
 
+        // Returns the VarDecl AST node.
+        VarDecl* FetchVarDecl(bool throwOnFailure = true);
+
         /*
         Fetches a type declaration (StructDecl, AliasDecl).
         If there is more than one reference or the type does not fit, an std::runtime_error is thrown.

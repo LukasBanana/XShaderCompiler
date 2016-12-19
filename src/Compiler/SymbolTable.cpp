@@ -74,30 +74,40 @@ AST* ASTSymbolOverload::Fetch(bool throwOnFailure)
 
 AST* ASTSymbolOverload::FetchVar(bool throwOnFailure)
 {
-    auto ref = Fetch(throwOnFailure);
-    auto type = ref->Type();
-    if (type != AST::Types::VarDecl && type != AST::Types::BufferDecl && type != AST::Types::SamplerDecl)
+    if (auto ref = Fetch(throwOnFailure))
     {
+        auto type = ref->Type();
+        if (type == AST::Types::VarDecl || type == AST::Types::BufferDecl || type == AST::Types::SamplerDecl)
+            return ref;
+        if (throwOnFailure)
+            RuntimeErr("identifier '" + ident_ + "' does not name a variable, buffer, or sampler");
+    }
+    return nullptr;
+}
+
+VarDecl* ASTSymbolOverload::FetchVarDecl(bool throwOnFailure)
+{
+    if (auto ref = Fetch(throwOnFailure))
+    {
+        if (auto varDecl = ref->As<VarDecl>())
+            return varDecl;
         if (throwOnFailure)
             RuntimeErr("identifier '" + ident_ + "' does not name a variable");
-        else
-            return nullptr;
     }
-    return ref;
+    return nullptr;
 }
 
 AST* ASTSymbolOverload::FetchType(bool throwOnFailure)
 {
-    auto ref = Fetch(throwOnFailure);
-    auto type = ref->Type();
-    if (type != AST::Types::StructDecl && type != AST::Types::AliasDecl)
+    if (auto ref = Fetch(throwOnFailure))
     {
+        auto type = ref->Type();
+        if (type == AST::Types::StructDecl || type == AST::Types::AliasDecl)
+            return ref;
         if (throwOnFailure)
             RuntimeErr("identifier '" + ident_ + "' does not name a type");
-        else
-            return nullptr;
     }
-    return ref;
+    return nullptr;
 }
 
 FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(bool throwOnFailure)
