@@ -281,10 +281,7 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(ArrayDimension)
 {
-    if (ast->dimension > 0)
-        Write("[" + std::to_string(ast->dimension) + "]");
-    else
-        Write("[]");
+    Write(ast->ToString());
 }
 
 IMPLEMENT_VISIT_PROC(TypeName)

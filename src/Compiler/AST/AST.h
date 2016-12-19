@@ -330,9 +330,12 @@ struct ArrayDimension : public TypedAST
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    ExprPtr expr;               // Array dimension expression. Must be a constant integer expression.
+    // Returns true if this array dimension has a dynamic size (i.e. size == 0).
+    bool HasDynamicSize() const;
 
-    int     dimension   = 0;    // Evaluated array dimension. Zero for dynamic array dimension.
+    ExprPtr expr;           // Array dimension expression. Must be a constant integer expression.
+
+    int     size    = 0;    // Evaluated array dimension size. Zero for dynamic array dimension.
 };
 
 // Type name with optional structure declaration.

@@ -148,9 +148,10 @@ IMPLEMENT_VISIT_PROC(ArrayDimension)
     {
         Visit(ast->expr);
 
+        /* Evalutate constant expression and store as array dimension size */
         auto value = EvaluateConstExprInt(*ast->expr);
 
-        ast->dimension = value;
+        ast->size = value;
     }
 }
 

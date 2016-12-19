@@ -267,8 +267,8 @@ std::string ArrayDimension::ToString() const
     std::string s;
 
     s += '[';
-    if (dimension > 0)
-        s += std::to_string(dimension);
+    if (size > 0)
+        s += std::to_string(size);
     s += ']';
 
     return s;
@@ -277,6 +277,11 @@ std::string ArrayDimension::ToString() const
 TypeDenoterPtr ArrayDimension::DeriveTypeDenoter()
 {
     return expr->GetTypeDenoter();
+}
+
+bool ArrayDimension::HasDynamicSize() const
+{
+    return (size == 0);
 }
 
 
