@@ -406,7 +406,7 @@ struct VarDecl : public Decl
     TypeDenoterPtr DeriveTypeDenoter() override;
 
     std::string                     ident;
-    std::vector<ExprPtr>            arrayDims;
+    std::vector<ArrayDimensionPtr>  arrayDims;
     IndexedSemantic                 semantic;
     PackOffsetPtr                   packOffset;
     std::vector<VarDeclStmntPtr>    annotations;                // Annotations can be ignored by analyzers and generators.
@@ -427,7 +427,7 @@ struct BufferDecl : public Decl
     BufferType GetBufferType() const;
 
     std::string                     ident;
-    std::vector<ExprPtr>            arrayDims;
+    std::vector<ArrayDimensionPtr>  arrayDims;
     std::vector<RegisterPtr>        slotRegisters;
 
     BufferDeclStmnt*                declStmntRef    = nullptr;  // Reference to its declaration statement (parent node).
@@ -444,7 +444,7 @@ struct SamplerDecl : public Decl
     SamplerType GetSamplerType() const;
 
     std::string                     ident;
-    std::vector<ExprPtr>            arrayDims;
+    std::vector<ArrayDimensionPtr>  arrayDims;
     std::vector<RegisterPtr>        slotRegisters;
     std::string                     textureIdent;               // Optional variable identifier of the texture object (for DX9 effect files)
     std::vector<SamplerValuePtr>    samplerValues;              // State values for a sampler decl-ident.

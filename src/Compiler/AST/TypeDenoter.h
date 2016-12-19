@@ -104,7 +104,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     virtual AST* SymbolRef() const;
 
     // Returns either this type denoter (if 'arrayDims' is empty), or this type denoter as array with the specified dimension expressions.
-    TypeDenoterPtr AsArray(const std::vector<ExprPtr>& arrayDims);
+    TypeDenoterPtr AsArray(const std::vector<ArrayDimensionPtr>& arrayDims);
 
     // Returns this type denoter as the specified sub class if this type denoter has the correct type. Otherwise, null is returned.
     template <typename T>
@@ -262,7 +262,7 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     ArrayTypeDenoter() = default;
     ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter);
-    ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter, const std::vector<ExprPtr>& arrayDims);
+    ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter, const std::vector<ArrayDimensionPtr>& arrayDims);
 
     Types Type() const override;
 
@@ -282,8 +282,8 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     AST* SymbolRef() const override;
 
-    TypeDenoterPtr          baseTypeDenoter;
-    std::vector<ExprPtr>    arrayDims;          // Entries may be null
+    TypeDenoterPtr                  baseTypeDenoter;
+    std::vector<ArrayDimensionPtr>  arrayDims;          // Entries may be null
 };
 
 

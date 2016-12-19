@@ -75,7 +75,8 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( SwitchCase        );
-        DECL_VISIT_PROC( TypeName           );
+        DECL_VISIT_PROC( ArrayDimension    );
+        DECL_VISIT_PROC( TypeName          );
         DECL_VISIT_PROC( VarIdent          );
 
         DECL_VISIT_PROC( VarDecl           );
@@ -225,7 +226,7 @@ class GLSLGenerator : public Generator
         void WriteParameter(VarDeclStmnt* ast);
         void WriteScopedStmnt(Stmnt* ast);
 
-        void WriteArrayDims(const std::vector<ExprPtr>& arrayDims);
+        void WriteArrayIndices(const std::vector<ExprPtr>& arrayDims);
 
         void WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast = nullptr);
 

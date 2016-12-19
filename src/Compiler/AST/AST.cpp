@@ -6,6 +6,7 @@
  */
 
 #include "AST.h"
+#include "ASTFactory.h"
 #include "Exception.h"
 #include "HLSLIntrinsics.h"
 #include "Variant.h"
@@ -263,7 +264,14 @@ std::string PackOffset::ToString() const
 
 std::string ArrayDimension::ToString() const
 {
-    return std::to_string(dimension);
+    std::string s;
+
+    s += '[';
+    if (dimension > 0)
+        s += std::to_string(dimension);
+    s += ']';
+
+    return s;
 }
 
 TypeDenoterPtr ArrayDimension::DeriveTypeDenoter()
@@ -884,7 +892,10 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
 {
     if (exprs.empty())
         RuntimeErr("can not derive type of initializer list with no elements", this);
-    return std::make_shared<ArrayTypeDenoter>(exprs.front()->GetTypeDenoter(), std::vector<ExprPtr>{ nullptr });
+    return std::make_shared<ArrayTypeDenoter>(
+        exprs.front()->GetTypeDenoter(),
+        ASTFactory::ConvertExprListToArrayDimensionList(std::vector<ExprPtr>{ nullptr })
+    );
 }
 
 unsigned int InitializerExpr::NumElements() const

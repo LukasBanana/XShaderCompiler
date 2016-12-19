@@ -494,9 +494,9 @@ PackOffsetPtr HLSLParser::ParsePackOffset(bool parseColon)
     return UpdateSourceArea(ast);
 }
 
-ExprPtr HLSLParser::ParseArrayDimension(bool allowDynamicDimension)
+ArrayDimensionPtr HLSLParser::ParseArrayDimension(bool allowDynamicDimension)
 {
-    ExprPtr ast;
+    auto ast = Make<ArrayDimension>();
 
     Accept(Tokens::LParen);
     
@@ -504,11 +504,25 @@ ExprPtr HLSLParser::ParseArrayDimension(bool allowDynamicDimension)
     {
         if (!allowDynamicDimension)
             Error("explicit array dimension expected", false);
-        ast = Make<NullExpr>();
+        ast->expr = Make<NullExpr>();
     }
     else
-        ast = ParseExpr();
+        ast->expr = ParseExpr();
 
+    Accept(Tokens::RParen);
+
+    return UpdateSourceArea(ast);
+}
+
+ExprPtr HLSLParser::ParseArrayIndex()
+{
+    auto area = Tkn()->Area();
+
+    Accept(Tokens::LParen);
+    
+    auto ast = ParseExpr();
+    ast->area = area;
+    
     Accept(Tokens::RParen);
 
     return UpdateSourceArea(ast);
@@ -526,7 +540,7 @@ VarIdentPtr HLSLParser::ParseVarIdent()
 
     /* Parse variable single identifier */
     ast->ident          = ParseIdent();
-    ast->arrayIndices   = ParseArrayDimensionList();
+    ast->arrayIndices   = ParseArrayIndexList();
     
     if (Is(Tokens::Dot))
     {
@@ -1115,7 +1129,10 @@ StmntPtr HLSLParser::ParseStmntWithVarIdent()
         if (!varIdent->arrayIndices.empty())
         {
             /* Convert variable identifier to array of alias type denoter */
-            ast->varType->typeDenoter = MakeShared<ArrayTypeDenoter>(ast->varType->typeDenoter, varIdent->arrayIndices);
+            ast->varType->typeDenoter = MakeShared<ArrayTypeDenoter>(
+                ast->varType->typeDenoter,
+                ASTFactory::ConvertExprListToArrayDimensionList(varIdent->arrayIndices)
+            );
         }
 
         ast->varDecls = ParseVarDeclList(ast.get());
@@ -1511,7 +1528,7 @@ ArrayAccessExprPtr HLSLParser::ParseArrayAccessExpr(const ExprPtr& expr)
 
     /* Take sub expression and parse array dimensions */
     ast->expr           = expr;
-    ast->arrayIndices   = ParseArrayDimensionList();
+    ast->arrayIndices   = ParseArrayIndexList();
 
     return UpdateSourceArea(ast, expr.get());
 }
@@ -1694,14 +1711,24 @@ std::vector<ExprPtr> HLSLParser::ParseExprList(const Tokens listTerminatorToken,
     return exprs;
 }
 
-std::vector<ExprPtr> HLSLParser::ParseArrayDimensionList(bool allowDynamicDimension)
+std::vector<ArrayDimensionPtr> HLSLParser::ParseArrayDimensionList(bool allowDynamicDimension)
 {
-    std::vector<ExprPtr> arrayDims;
+    std::vector<ArrayDimensionPtr> arrayDims;
 
     while (Is(Tokens::LParen))
         arrayDims.push_back(ParseArrayDimension(allowDynamicDimension));
 
     return arrayDims;
+}
+
+std::vector<ExprPtr> HLSLParser::ParseArrayIndexList()
+{
+    std::vector<ExprPtr> exprs;
+
+    while (Is(Tokens::LParen))
+        exprs.push_back(ParseArrayIndex());
+
+    return exprs;
 }
 
 std::vector<ExprPtr> HLSLParser::ParseArgumentList()

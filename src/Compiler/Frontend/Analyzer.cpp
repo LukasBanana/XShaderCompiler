@@ -447,7 +447,14 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
     {
         /* Evaluate expression and throw error on var-access */
         ConstExprEvaluator exprEvaluator;
-        return exprEvaluator.EvaluateExpr(expr, [](VarAccessExpr* ast) -> Variant { throw ast; });
+        return exprEvaluator.EvaluateExpr(
+            expr,
+            [this](VarAccessExpr* ast) -> Variant
+            {
+                //TODO: fetch variable and check for constness
+                throw ast;
+            }
+        );
     }
     catch (const std::exception& e)
     {

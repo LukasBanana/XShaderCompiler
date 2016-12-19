@@ -279,7 +279,13 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     DecIndent();
 }
 
-/* --- Variables --- */
+IMPLEMENT_VISIT_PROC(ArrayDimension)
+{
+    if (ast->dimension > 0)
+        Write("[" + std::to_string(ast->dimension) + "]");
+    else
+        Write("[]");
+}
 
 IMPLEMENT_VISIT_PROC(TypeName)
 {
@@ -299,7 +305,7 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
     Write(ast->ident);
-    WriteArrayDims(ast->arrayDims);
+    Visit(ast->arrayDims);
 
     if (ast->initializer)
     {
@@ -782,7 +788,7 @@ IMPLEMENT_VISIT_PROC(SuffixExpr)
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
 {
     Visit(ast->expr);
-    WriteArrayDims(ast->arrayIndices);
+    WriteArrayIndices(ast->arrayIndices);
 }
 
 IMPLEMENT_VISIT_PROC(CastExpr)
@@ -1301,7 +1307,7 @@ void GLSLGenerator::WriteVarIdent(VarIdent* ast, bool recursive)
     Write(FinalIdentFromVarIdent(ast));
 
     /* Write array index expressions */
-    WriteArrayDims(ast->arrayIndices);
+    WriteArrayIndices(ast->arrayIndices);
 
     if (recursive && ast->next)
     {
@@ -1466,7 +1472,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
         {
             /* Write array type denoter */
             WriteTypeDenoter(*arrayTypeDen->baseTypeDenoter, writePrecisionSpecifier, ast);
-            WriteArrayDims(arrayTypeDen->arrayDims);
+            Visit(arrayTypeDen->arrayDims);
         }
         else
             Error("failed to determine GLSL data type", ast);
@@ -2124,7 +2130,7 @@ void GLSLGenerator::WriteScopedStmnt(Stmnt* ast)
     }
 }
 
-void GLSLGenerator::WriteArrayDims(const std::vector<ExprPtr>& arrayDims)
+void GLSLGenerator::WriteArrayIndices(const std::vector<ExprPtr>& arrayDims)
 {
     for (auto& dim : arrayDims)
     {

@@ -122,7 +122,7 @@ AST* TypeDenoter::SymbolRef() const
     return nullptr;
 }
 
-TypeDenoterPtr TypeDenoter::AsArray(const std::vector<ExprPtr>& arrayDims)
+TypeDenoterPtr TypeDenoter::AsArray(const std::vector<ArrayDimensionPtr>& arrayDims)
 {
     if (arrayDims.empty())
         return shared_from_this();
@@ -483,7 +483,7 @@ ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter) :
 {
 }
 
-ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter, const std::vector<ExprPtr>& arrayDims) :
+ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter, const std::vector<ArrayDimensionPtr>& arrayDims) :
     baseTypeDenoter { baseTypeDenoter },
     arrayDims       { arrayDims       }
 {
@@ -501,8 +501,8 @@ std::string ArrayTypeDenoter::ToString() const
 
     auto typeName = baseTypeDenoter->ToString();
 
-    for (std::size_t i = 0; i < arrayDims.size(); ++i)
-        typeName += "[]";
+    for (const auto& dim : arrayDims)
+        typeName += dim->ToString();
 
     return typeName;
 }

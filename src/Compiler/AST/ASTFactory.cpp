@@ -147,28 +147,6 @@ CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataTyp
     return MakeCastExpr(typeDenoter, literalExpr);
 }
 
-ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
-{
-    if (subExpr->Type() == AST::Types::LiteralExpr && IsScalarType(dataType))
-    {
-        /* Convert data type of literal expression */
-        auto literalExpr = std::static_pointer_cast<LiteralExpr>(subExpr);
-        literalExpr->ConvertDataType(dataType);
-        return literalExpr;
-    }
-    else
-    {
-        /* Make new cast expression */
-        auto ast = MakeShared<CastExpr>(subExpr->area);
-        {
-            ast->typeExpr           = MakeAST<TypeNameExpr>();
-            ast->typeExpr->typeName = MakeTypeName(MakeShared<BaseTypeDenoter>(dataType));
-            ast->expr               = subExpr;
-        }
-        return ast;
-    }
-}
-
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident)
 {
     auto ast = MakeAST<AliasDeclStmnt>();
@@ -284,6 +262,53 @@ ExprPtr MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::ve
         return nullptr;
     else
         return MakeConstructorListExprPrimary(literalExpr, listTypeDens.begin(), listTypeDens.end());
+}
+
+/* ----- Convert functions ----- */
+
+ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
+{
+    if (subExpr->Type() == AST::Types::LiteralExpr && IsScalarType(dataType))
+    {
+        /* Convert data type of literal expression */
+        auto literalExpr = std::static_pointer_cast<LiteralExpr>(subExpr);
+        literalExpr->ConvertDataType(dataType);
+        return literalExpr;
+    }
+    else
+    {
+        /* Make new cast expression */
+        auto ast = MakeShared<CastExpr>(subExpr->area);
+        {
+            ast->typeExpr           = MakeAST<TypeNameExpr>();
+            ast->typeExpr->typeName = MakeTypeName(MakeShared<BaseTypeDenoter>(dataType));
+            ast->expr               = subExpr;
+        }
+        return ast;
+    }
+}
+
+ArrayDimensionPtr ConvertExprToArrayDimension(const ExprPtr& expr)
+{
+    auto ast = MakeAST<ArrayDimension>();
+
+    if (expr)
+    {
+        ast->area = expr->area;
+        ast->expr = expr;
+    }
+
+    return ast;
+}
+
+std::vector<ArrayDimensionPtr> ConvertExprListToArrayDimensionList(const std::vector<ExprPtr>& exprs)
+{
+    std::vector<ArrayDimensionPtr> arrayDims;
+
+    for (const auto& expr : exprs)
+        arrayDims.push_back(ConvertExprToArrayDimension(expr));
+
+    return arrayDims;
 }
 
 

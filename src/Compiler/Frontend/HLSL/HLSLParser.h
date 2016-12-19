@@ -102,7 +102,8 @@ class HLSLParser : public Parser
         AttributePtr                    ParseAttribute();
         RegisterPtr                     ParseRegister(bool parseColon = true);
         PackOffsetPtr                   ParsePackOffset(bool parseColon = true);
-        ExprPtr                         ParseArrayDimension(bool allowDynamicDimension = false);
+        ArrayDimensionPtr               ParseArrayDimension(bool allowDynamicDimension = false);
+        ExprPtr                         ParseArrayIndex();
         ExprPtr                         ParseInitializer();
         VarIdentPtr                     ParseVarIdent();
         TypeNamePtr                     ParseTypeName(bool parseVoidType = false);
@@ -160,7 +161,8 @@ class HLSLParser : public Parser
         std::vector<VarDeclStmntPtr>    ParseAnnotationList();
         std::vector<StmntPtr>           ParseStmntList();
         std::vector<ExprPtr>            ParseExprList(const Tokens listTerminatorToken, bool allowLastComma = false);
-        std::vector<ExprPtr>            ParseArrayDimensionList(bool allowDynamicDimension = false);
+        std::vector<ArrayDimensionPtr>  ParseArrayDimensionList(bool allowDynamicDimension = false);
+        std::vector<ExprPtr>            ParseArrayIndexList();
         std::vector<ExprPtr>            ParseArgumentList();
         std::vector<ExprPtr>            ParseInitializerList();
         std::vector<RegisterPtr>        ParseRegisterList(bool parseFirstColon = true);

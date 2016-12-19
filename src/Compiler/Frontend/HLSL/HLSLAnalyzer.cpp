@@ -142,6 +142,18 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     PopFunctionCall();
 }
 
+IMPLEMENT_VISIT_PROC(ArrayDimension)
+{
+    if (ast->expr)
+    {
+        Visit(ast->expr);
+
+        auto value = EvaluateConstExprInt(*ast->expr);
+
+        ast->dimension = value;
+    }
+}
+
 IMPLEMENT_VISIT_PROC(TypeName)
 {
     Visit(ast->structDecl);
