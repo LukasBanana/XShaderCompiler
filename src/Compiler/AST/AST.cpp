@@ -10,6 +10,7 @@
 #include "Exception.h"
 #include "HLSLIntrinsics.h"
 #include "Variant.h"
+#include <algorithm>
 
 #ifdef XSC_ENABLE_MEMORY_POOL
 #include "MemoryPool.h"
@@ -895,48 +896,89 @@ TypeDenoterPtr VarAccessExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
 {
-    return std::make_shared<ArrayTypeDenoter>(
-        GetElementsTypeDenoter(),
-        ASTFactory::ConvertExprListToArrayDimensionList(std::vector<ExprPtr>(exprs.size(), nullptr))
-    );
-}
-
-TypeDenoterPtr InitializerExpr::GetElementsTypeDenoter() const
-{
     if (exprs.empty())
         RuntimeErr("can not derive type of initializer list with no elements", this);
+
+    /* Start with a 1-dimension array type */
+    auto finalTypeDen = std::make_shared<ArrayTypeDenoter>();
+    finalTypeDen->arrayDims.push_back(ASTFactory::MakeArrayDimension(static_cast<int>(exprs.size())));
 
     TypeDenoterPtr elementsTypeDen;
 
     for (const auto& expr : exprs)
     {
-        TypeDenoterPtr typeDen;
+        TypeDenoterPtr subTypeDen;
 
         /* Get elements type denoter from sub expression */
-        if (auto subInitExpr = expr->As<InitializerExpr>())
-            typeDen = subInitExpr->GetElementsTypeDenoter();
-        else
-            typeDen = expr->GetTypeDenoter();
+        subTypeDen = expr->GetTypeDenoter();
 
         if (elementsTypeDen)
         {
             /* Check compatability with current output type dentoer */
-            if (!typeDen->IsCastableTo(*elementsTypeDen))
+            if (auto elementsArrayTypeDen = elementsTypeDen->As<ArrayTypeDenoter>())
+            {
+                /* Array types must have the same size */
+                if (auto arraySubTypeDen = subTypeDen->As<ArrayTypeDenoter>())
+                {
+                    const auto& lhsDims = elementsArrayTypeDen->arrayDims;
+                    const auto& rhsDims = arraySubTypeDen->arrayDims;
+
+                    const auto lhsNumElements = lhsDims.size();
+                    const auto rhsNumElements = rhsDims.size();
+
+                    if (lhsNumElements != rhsNumElements)
+                    {
+                        RuntimeErr(
+                            "array dimensions mismatch in initializer expression (expected " +
+                            std::to_string(lhsNumElements) + " dimension(s), but got " + std::to_string(rhsNumElements) + ")", expr.get()
+                        );
+                    }
+
+                    /* Array dimensions must have the same size */
+                    for (std::size_t i = 0; i < lhsNumElements; ++i)
+                    {
+                        const auto lhsSize = lhsDims[i]->size;
+                        const auto rhsSize = rhsDims[i]->size;
+
+                        if (lhsSize != rhsSize)
+                        {
+                            RuntimeErr(
+                                "array dimension size mismatch in initializer expression (expected " +
+                                std::to_string(lhsSize) + " element(s), but got " + std::to_string(rhsSize) + ")", expr.get()
+                            );
+                        }
+                    }
+                }
+                else
+                {
+                    RuntimeErr(
+                        "type mismatch in initializer expression (expected array '" + elementsTypeDen->ToString() +
+                        "', but got '" + subTypeDen->ToString() + "')", expr.get()
+                    );
+                }
+            }
+            else if (!subTypeDen->IsCastableTo(*elementsTypeDen))
             {
                 RuntimeErr(
-                    "can not cast '" + typeDen->ToString() + "' to '" +
+                    "can not cast '" + subTypeDen->ToString() + "' to '" +
                     elementsTypeDen->ToString() + "' in initializer expression", expr.get()
                 );
             }
         }
         else
         {
+            /* Insert sub array type with array dimensions and base type */
+            if (auto arraySubTypeDen = subTypeDen->As<const ArrayTypeDenoter>())
+                finalTypeDen->InsertSubArray(*arraySubTypeDen);
+            else
+                finalTypeDen->baseTypeDenoter = subTypeDen;
+
             /* Set first output type denoter */
-            elementsTypeDen = typeDen;
+            elementsTypeDen = subTypeDen;
         }
     }
 
-    return elementsTypeDen;
+    return finalTypeDen;
 }
 
 unsigned int InitializerExpr::NumElements() const

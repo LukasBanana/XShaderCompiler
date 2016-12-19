@@ -63,6 +63,10 @@ std::vector<ExprPtr> MakeArrayIndices(const std::vector<int>& arrayIndices);
 // Makes an statement with an array element assignment for the specified variable identifier, array indices, and value expression.
 ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr);
 
+ArrayDimensionPtr MakeArrayDimension(int arraySize);
+
+std::vector<ArrayDimensionPtr> MakeArrayDimensionList(const std::vector<int>& arraySizes);
+
 /* ----- Convert functions ----- */
 
 ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr);

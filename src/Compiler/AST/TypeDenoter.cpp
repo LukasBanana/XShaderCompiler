@@ -537,13 +537,21 @@ bool ArrayTypeDenoter::Equals(const TypeDenoter& rhs) const
 
 bool ArrayTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
-    if (Equals(targetType))
-        return true;
+    /* Is target also an array? */
+    const auto& targetAliased = targetType.GetAliased();
+    if (auto targetArray = targetAliased.As<ArrayTypeDenoter>())
+    {
+        if (baseTypeDenoter && targetArray->baseTypeDenoter)
+            return baseTypeDenoter->IsCastableTo(*targetArray->baseTypeDenoter);
+    }
+    
+    /* Check if base type denoter of this array is castable to the target type */
     if (baseTypeDenoter)
     {
         const auto& baseAliased = baseTypeDenoter->GetAliased();
         return (!baseAliased.IsArray() && baseAliased.IsCastableTo(targetType));
     }
+
     return false;
 }
 
@@ -577,6 +585,19 @@ unsigned int ArrayTypeDenoter::NumDimensions() const
 AST* ArrayTypeDenoter::SymbolRef() const
 {
     return (baseTypeDenoter ? baseTypeDenoter->SymbolRef() : nullptr);
+}
+
+void ArrayTypeDenoter::InsertSubArray(const ArrayTypeDenoter& subArrayTypeDenoter)
+{
+    /* Move array dimensions into final array type */
+    arrayDims.insert(
+        arrayDims.end(),
+        subArrayTypeDenoter.arrayDims.begin(),
+        subArrayTypeDenoter.arrayDims.end()
+    );
+
+    /* Replace base type denoter */
+    baseTypeDenoter = subArrayTypeDenoter.baseTypeDenoter;
 }
 
 std::vector<int> ArrayTypeDenoter::GetDimensionSizes() const

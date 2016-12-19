@@ -925,9 +925,6 @@ struct InitializerExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    // Returns the type denoter of the initializer elements.
-    TypeDenoterPtr GetElementsTypeDenoter() const;
-
     // Returns the number of scalar elements (with recursion).
     unsigned int NumElements() const;
 

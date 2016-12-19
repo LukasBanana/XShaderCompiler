@@ -282,6 +282,9 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     AST* SymbolRef() const override;
 
+    // Inserts the specified sub array type denoter to this type denoter, with all its array dimension, and replaces the base type denoter.
+    void InsertSubArray(const ArrayTypeDenoter& subArrayTypeDenoter);
+
     // Returns the array dimension sizes.
     std::vector<int> GetDimensionSizes() const;
 

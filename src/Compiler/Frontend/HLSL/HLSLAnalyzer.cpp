@@ -171,8 +171,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     Register(ast->ident, ast);
 
-    Visit(ast->arrayDims);
-
+    AnalyzeArrayDimensionList(ast->arrayDims);
     AnalyzeSemantic(ast->semantic);
 
     /* Store references to members with system value semantic (SV_...) in all parent structures */
@@ -1249,6 +1248,18 @@ void HLSLAnalyzer::AnalyzeEndOfScopes(FunctionDecl& funcDecl)
     /* Analyze end of scopes from function body */
     EndOfScopeAnalyzer scopeAnalyzer;
     scopeAnalyzer.MarkEndOfScopesFromFunction(funcDecl);
+}
+
+void HLSLAnalyzer::AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr>& arrayDims)
+{
+    Visit(arrayDims);
+
+    for (std::size_t i = 1; i < arrayDims.size(); ++i)
+    {
+        auto dim = arrayDims[i].get();
+        if (dim->HasDynamicSize())
+            Error("secondary array dimensions must be explicit", dim, HLSLErr::ERR_ARRAY_IMPLICIT_ORDER);
+    }
 }
 
 

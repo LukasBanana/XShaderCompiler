@@ -295,6 +295,26 @@ ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arra
     return ast;
 }
 
+ArrayDimensionPtr MakeArrayDimension(int arraySize)
+{
+    auto ast = MakeAST<ArrayDimension>();
+
+    ast->expr = MakeLiteralExpr(DataType::Int, std::to_string(arraySize));
+    ast->size = arraySize;
+
+    return ast;
+}
+
+std::vector<ArrayDimensionPtr> MakeArrayDimensionList(const std::vector<int>& arraySizes)
+{
+    std::vector<ArrayDimensionPtr> arrayDims;
+
+    for (auto dim : arraySizes)
+        arrayDims.push_back(MakeArrayDimension(dim));
+
+    return arrayDims;
+}
+
 /* ----- Convert functions ----- */
 
 ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)

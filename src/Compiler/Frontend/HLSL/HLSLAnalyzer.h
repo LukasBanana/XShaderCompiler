@@ -145,6 +145,8 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeEndOfScopes(FunctionDecl& funcDecl);
 
+        void AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr>& arrayDims);
+        
         /* === Members === */
 
         Program*            program_                    = nullptr;
