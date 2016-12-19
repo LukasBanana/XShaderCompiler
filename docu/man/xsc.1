@@ -1,0 +1,101 @@
+.TH XSC 1 "DECEMBER 2016" Linux "User Manuals"
+.SH NAME
+xsc \- X ("Cross") Shader Compiler for HLSL to GLSL translation
+.SH SYNOPSIS
+.B xsc
+.I OPTIONS+ FILE
+.B ...
+.SH DESCRIPTION
+.B xsc
+translates
+.B HLSL
+(
+.I DirectX High Level Shading Language
+) code (Shader Model 4 and 5) into
+.B GLSL
+(
+.I OpenGL Shading Language
+) code. The compiler provides several options to configure the output
+formatting, and also allows to only preprocess the shader code.
+.SH OPTIONS
+.IP "-E, --entry ENTRY
+Shader entry point, where
+.I ENTRY
+specifies the name of the entry point function.
+.IP "-E2, --entry2 ENTRY"
+Secondary shader entry point, where
+.I ENTRY
+specifies the name of the entry point function.
+This can be used to specify a
+.I patch constant function
+when a tessellation-evaluation shader (also
+.I domain shader
+) is begin compiled.
+.IP "-I, --include-path PATH"
+Adds the directory
+.I PATH
+to the search directories for include directives.
+.IP "-T, --target TARGET"
+Shader target that is to be processed, where
+.I TARGET
+can be one of the following values:
+.B vert
+(Vertex Shader),
+.B tesc
+(Tessellation-Control/ Hull Shader),
+.B tese
+(Tessellation-Evaluation/ Domain Shader),
+.B geom
+(Geometry Shader),
+.B frag
+(Fragment/ Pixel Shader),
+.B comp
+(Compute Shader).
+.IP "-Vin, --version-in VERSION"
+Input shader version, where
+.I VERSION
+can be one of the following values:
+.B HLSL3
+(HLSL Shader Model 3;
+.I Note that this profile is only partially supported
+),
+.B HLSL4
+(HLSL Shader Model 4),
+.B HLSL5
+(HLSL Shader Model 5).
+.IP "-Vout, --version-out VERSION"
+Shader output version, where
+.I VERSION
+can be one of the following values:
+.B GLSL[130, 140, 150, 330, 400, 410, 420, 430, 440, 450]
+(GLSL for OpenGL 3+),
+.B ESSL[100, 300, 310, 320]
+(GLSL for OpenGL ES 2+),
+.B VKSL[450]
+(GLSL for Vulkan).
+.IP "-o, --output OUTPUT"
+Shader output file, where
+.I OUTPUT
+specifies the filename, which can include the asterisk '*' character to be replaced
+by the default value, that is
+.B <FILE>.<ENTRY>.<TARGET>
+where
+.I <FILE>
+specifies the shader input file,
+.I <ENTRY>
+specifies the shader entry point, and
+.I <TARGET>
+specifies the shader target.
+.SH BOOLEAN OPTIONS
+.IP "--comments [ON|OFF]"
+Enables or disables commentary preservation. By default disabled.
+Note that only commentaries in front of a statement can be preserved.
+.IP "--extension [ON|OFF]"
+Enables or disables shader extension output. If enabled, shader extensions will be used
+to handle lower output versions, i.e.
+.B #extension GL_ARB_uniform_buffer_object : enable
+will be written to the shader output if a uniform buffer is used but the output shader version is restricted to
+.B GLSL130
+for instance. By default disabled.
+.SH AUTHOR
+Lukas Hermanns <www.twitter.com/LukasBanana>, <www.github.com/LukasBanana>
