@@ -374,7 +374,10 @@ void Analyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast)
         else if (typeDenoter->IsAlias())
             AnalyzeAliasTypeDenoter(typeDenoter, ast);
         else if (auto arrayTypeDen = typeDenoter->As<ArrayTypeDenoter>())
+        {
+            Visit(arrayTypeDen->arrayDims);
             AnalyzeTypeDenoter(arrayTypeDen->baseTypeDenoter, ast);
+        }
     }
 }
 
@@ -418,7 +421,7 @@ TypeDenoterPtr Analyzer::GetTypeDenoterFrom(TypedAST* ast)
     {
         try
         {
-            /* Validate and return type denoter of initializer expression */
+            /* Validate and return type denoter of typed AST */
             return ast->GetTypeDenoter();
         }
         catch (const ASTRuntimeError& e)
