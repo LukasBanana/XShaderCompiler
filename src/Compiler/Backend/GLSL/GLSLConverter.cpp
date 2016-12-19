@@ -773,33 +773,24 @@ void GLSLConverter::UnrollStmntsVarDeclInitializer(std::vector<StmntPtr>& unroll
         {
             /* Get dimension sizes of array type denoter */
             auto dimSizes = arrayTypeDen->GetDimensionSizes();
-
             std::vector<int> arrayIndices(dimSizes.size(), 0);
 
-            for (std::size_t i = 0; i < dimSizes.size(); ++i)
+            /* Generate array element assignments until no further array index can be fetched */
+            do
             {
-                /* Begin with right most array dimension */
-                std::size_t arrayDim = (dimSizes.size() - i - 1);
+                /* Fetch sub expression from initializer */
+                auto subExpr = initExpr->FetchSubExpr(arrayIndices);
 
-                /* Generate array element assignment */
-                for (int arraySize = dimSizes[arrayDim], arrayIdx = 0; arrayIdx < arraySize; ++arrayIdx)
-                {
-                    /* Set next array index */
-                    arrayIndices[arrayDim] = arrayIdx;
+                /* Make new statement for current array element assignment */
+                auto assignStmnt = ASTFactory::MakeArrayAssignStmnt(varDecl, arrayIndices, subExpr);
 
-                    /* Fetch sub expression from initializer */
-                    auto subExpr = initExpr->FetchSubExpr(arrayIndices);
-
-                    /* Make new statement for current array element assignment */
-                    auto assignStmnt = ASTFactory::MakeArrayAssignStmnt(varDecl, arrayIndices, subExpr);
-
-                    /* Append new statement to list */
-                    unrolledStmnts.push_back(assignStmnt);
-                }
-
-                /* Reset array index */
-                arrayIndices[arrayDim] = 0;
+                /* Append new statement to list */
+                unrolledStmnts.push_back(assignStmnt);
             }
+            while (initExpr->NextArrayIndices(arrayIndices));
+
+            /* Remove initializer after unrolling */
+            varDecl->initializer.reset();
         }
     }
 }

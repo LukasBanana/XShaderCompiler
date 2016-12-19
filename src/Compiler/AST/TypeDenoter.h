@@ -282,7 +282,7 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     AST* SymbolRef() const override;
 
-    // Returns the array dimension sizes or an empty list, if there is at least one dynamic array size.
+    // Returns the array dimension sizes.
     std::vector<int> GetDimensionSizes() const;
 
     TypeDenoterPtr                  baseTypeDenoter;

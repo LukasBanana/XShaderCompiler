@@ -976,7 +976,7 @@ static ExprPtr FetchSubExprFromInitializerExpr(const InitializerExpr* ast, const
 
             RuntimeErr("initializer expression expected for array access", expr.get());
         }
-        RuntimeErr("array index " + std::to_string(idx) + " out of bounds [0, " + std::to_string(ast->exprs.size()) + ") in initializer expression", ast);
+        RuntimeErr("not enough elements in initializer expression", ast);
     }
     RuntimeErr("not enough array indices specified for initializer expression", ast);
 }
@@ -984,6 +984,46 @@ static ExprPtr FetchSubExprFromInitializerExpr(const InitializerExpr* ast, const
 ExprPtr InitializerExpr::FetchSubExpr(const std::vector<int>& arrayIndices) const
 {
     return FetchSubExprFromInitializerExpr(this, arrayIndices, 0);
+}
+
+static bool NextArrayIndicesFromInitializerExpr(const InitializerExpr* ast, std::vector<int>& arrayIndices, std::size_t layer)
+{
+    if (layer < arrayIndices.size())
+    {
+        auto& idx = arrayIndices[layer];
+        if (idx >= 0 && static_cast<std::size_t>(idx) < ast->exprs.size())
+        {
+            auto expr = ast->exprs[idx];
+
+            if (auto subInitExpr = expr->As<const InitializerExpr>())
+            {
+                if (NextArrayIndicesFromInitializerExpr(subInitExpr, arrayIndices, layer + 1))
+                    return true;
+            }
+
+            /* Increment index */
+            ++idx;
+            
+            if (static_cast<std::size_t>(idx) == ast->exprs.size())
+            {
+                idx = 0;
+                return false;
+            }
+
+            return true;
+        }
+        else
+        {
+            /* Reset index */
+            idx = 0;
+        }
+    }
+    return false;
+}
+
+bool InitializerExpr::NextArrayIndices(std::vector<int>& arrayIndices) const
+{
+    return NextArrayIndicesFromInitializerExpr(this, arrayIndices, 0);
 }
 
 

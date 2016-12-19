@@ -584,12 +584,7 @@ std::vector<int> ArrayTypeDenoter::GetDimensionSizes() const
     std::vector<int> sizes;
 
     for (const auto& dim : arrayDims)
-    {
-        if (dim->size > 0)
-            sizes.push_back(dim->size);
-        else
-            return {};
-    }
+        sizes.push_back(dim->size);
 
     return sizes;
 }

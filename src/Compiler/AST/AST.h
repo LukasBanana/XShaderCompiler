@@ -934,6 +934,9 @@ struct InitializerExpr : public Expr
     // Fetches the sub expression with the specified array indices and throws an ASTRuntimeError on failure.
     ExprPtr FetchSubExpr(const std::vector<int>& arrayIndices) const;
 
+    // Returns the next array indices for a sub expression.
+    bool NextArrayIndices(std::vector<int>& arrayIndices) const;
+
     std::vector<ExprPtr> exprs;
 };
 
