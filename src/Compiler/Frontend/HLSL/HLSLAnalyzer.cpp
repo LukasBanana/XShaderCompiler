@@ -247,7 +247,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     /* Visit attributes */
     Visit(ast->attribs);
 
-    /* Visit function header */
+    /* Visit function return type */
     Visit(ast->returnType);
 
     OpenScope();
@@ -447,6 +447,27 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
+    /* Check if return expression matches the function return type */
+    if (auto funcDecl = ActiveFunctionDecl())
+    {
+        if (auto returnTypeDen = funcDecl->returnType->GetTypeDenoter())
+        {
+            if (returnTypeDen->IsVoid())
+            {
+                if (ast->expr)
+                    Error("illegal expression in return statement for function with 'void' return type", ast->expr.get());
+            }
+            else
+            {
+                if (!ast->expr)
+                    Error("missing expression in return statement for function with '" + returnTypeDen->ToString() + "' return type", ast);
+            }
+        }
+    }
+    else
+        Error("return statement outside function declaration", ast);
+
+    /* Analyze return expression */
     if (ast->expr)
     {
         Visit(ast->expr);
@@ -737,11 +758,13 @@ void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
     }
 
     /* Analyze function return type */
-    auto returnTypeDen = funcDecl->returnType->typeDenoter->Get();
-    if (auto structTypeDen = returnTypeDen->As<StructTypeDenoter>())
+    if (auto returnTypeDen = funcDecl->returnType->GetTypeDenoter()->Get())
     {
-        /* Analyze entry point output structure */
-        AnalyzeEntryPointParameterInOutStruct(funcDecl, structTypeDen->structDeclRef, "", false);
+        if (auto structTypeDen = returnTypeDen->As<StructTypeDenoter>())
+        {
+            /* Analyze entry point output structure */
+            AnalyzeEntryPointParameterInOutStruct(funcDecl, structTypeDen->structDeclRef, "", false);
+        }
     }
 }
 
