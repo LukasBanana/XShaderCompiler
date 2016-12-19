@@ -260,20 +260,20 @@ StructDecl* Analyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDeno
 
 /* ----- Function declaration tracker ----- */
 
-void Analyzer::PushFunctionDeclLevel(bool isEntryPoint)
+void Analyzer::PushFunctionDeclLevel(FunctionDecl* ast)
 {
-    ++funcDeclLevel_;
-    if (isEntryPoint)
-        funcDeclLevelOfEntryPoint_ = funcDeclLevel_;
+    funcDeclStack_.push(ast);
+    if (ast->flags(FunctionDecl::isEntryPoint))
+        funcDeclLevelOfEntryPoint_ = funcDeclStack_.size();
 }
 
 void Analyzer::PopFunctionDeclLevel()
 {
-    if (funcDeclLevel_ > 0)
+    if (!funcDeclStack_.empty())
     {
-        if (funcDeclLevelOfEntryPoint_ == funcDeclLevel_)
+        if (funcDeclLevelOfEntryPoint_ == funcDeclStack_.size())
             funcDeclLevelOfEntryPoint_ = ~0;
-        --funcDeclLevel_;
+        funcDeclStack_.pop();
     }
     else
         ErrorInternal("function declaration level underflow");
@@ -281,12 +281,17 @@ void Analyzer::PopFunctionDeclLevel()
 
 bool Analyzer::InsideFunctionDecl() const
 {
-    return (funcDeclLevel_ > 0);
+    return (!funcDeclStack_.empty());
 }
 
 bool Analyzer::InsideEntryPoint() const
 {
-    return (funcDeclLevel_ >= funcDeclLevelOfEntryPoint_);
+    return (funcDeclStack_.size() >= funcDeclLevelOfEntryPoint_);
+}
+
+FunctionDecl* Analyzer::ActiveFunctionDecl() const
+{
+    return (funcDeclStack_.empty() ? nullptr : funcDeclStack_.top());
 }
 
 /* ----- Structure declaration tracker ----- */
@@ -393,19 +398,24 @@ void Analyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* a
 
 TypeDenoterPtr Analyzer::GetTypeDenoterFrom(TypedAST* ast)
 {
-    try
+    if (ast)
     {
-        /* Validate and return type denoter of initializer expression */
-        return ast->GetTypeDenoter();
+        try
+        {
+            /* Validate and return type denoter of initializer expression */
+            return ast->GetTypeDenoter();
+        }
+        catch (const ASTRuntimeError& e)
+        {
+            Error(e.what(), e.GetAST());
+        }
+        catch (const std::exception& e)
+        {
+            Error(e.what(), ast);
+        }
     }
-    catch (const ASTRuntimeError& e)
-    {
-        Error(e.what(), e.GetAST());
-    }
-    catch (const std::exception& e)
-    {
-        Error(e.what(), ast);
-    }
+    else
+        ErrorInternal("null pointer passed to " + std::string(__FUNCTION__));
     return nullptr;
 }
 

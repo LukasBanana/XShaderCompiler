@@ -89,7 +89,7 @@ class Analyzer : protected Visitor
 
         /* ----- Function declaration tracker ----- */
 
-        void PushFunctionDeclLevel(bool isEntryPoint);
+        void PushFunctionDeclLevel(FunctionDecl* ast);
         void PopFunctionDeclLevel();
 
         // Returns true if the analyzer is currently inside a function declaration.
@@ -97,6 +97,9 @@ class Analyzer : protected Visitor
 
         // Returns true if the analyzer is currently inside the main entry point.
         bool InsideEntryPoint() const;
+
+        // Returns the active (inner most) function declaration or null if the analyzer is currently not inside a function declaration.
+        FunctionDecl* ActiveFunctionDecl() const;
 
         /* ----- Structure declaration tracker ----- */
 
@@ -153,8 +156,10 @@ class Analyzer : protected Visitor
         ASTSymbolOverloadTable      symTable_;
 
         // Current level of function declarations. Actually only 0 or 1 (but can be more if inner functions are supported).
-        unsigned int                funcDeclLevel_              = 0;
-        unsigned int                funcDeclLevelOfEntryPoint_  = ~0;
+        std::size_t                 funcDeclLevelOfEntryPoint_  = ~0;
+
+        // Function declaration stack.
+        std::stack<FunctionDecl*>   funcDeclStack_;
 
         // Structure stack to collect all members with system value semantic (SV_...), and detect all nested structures.
         std::vector<StructDecl*>    structDeclStack_;

@@ -261,7 +261,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             AnalyzeSecondaryEntryPoint(ast);
 
         /* Visit function body */
-        PushFunctionDeclLevel(isEntryPoint);
+        PushFunctionDeclLevel(ast);
         {
             Visit(ast->codeBlock);
         }
