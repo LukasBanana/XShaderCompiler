@@ -844,6 +844,30 @@ void WrapperCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
+ * UnrollInitializerCommand class
+ */
+
+std::vector<Command::Identifier> UnrollInitializerCommand::Idents() const
+{
+    return { { "-Uinit" }, { "--unroll-initializer" } };
+}
+
+HelpDescriptor UnrollInitializerCommand::Help() const
+{
+    return
+    {
+        "-Uinit, --unroll-initializer [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables unrolling of array initializers; default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void UnrollInitializerCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.unrollArrayInitializers = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
  * FormatBlanksCommand class
  */
 

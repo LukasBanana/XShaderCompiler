@@ -75,6 +75,7 @@ CommandFactory::CommandFactory()
         BindingCommand,
         CommentCommand,
         WrapperCommand,
+        UnrollInitializerCommand,
 
         FormatBlanksCommand,
         FormatLineMarksCommand,
