@@ -124,7 +124,7 @@ const std::string& CommandLine::GetBooleanFalse()
 
 const std::string CommandLine::GetBooleanOption()
 {
-    return (GetBooleanTrue() + '/' + GetBooleanFalse());
+    return (GetBooleanTrue() + '|' + GetBooleanFalse());
 }
 
 
