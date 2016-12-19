@@ -83,6 +83,8 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 {
     RemoveDeadCode(ast->stmnts);
 
+    UnrollStmnts(ast->stmnts);
+
     VISIT_DEFAULT(CodeBlock);
 }
 
@@ -727,6 +729,80 @@ void GLSLConverter::ConvertVectorSubscriptExpr(ExprPtr& expr)
     }
 }
 #endif
+
+/* ----- Unrolling ----- */
+
+void GLSLConverter::UnrollStmnts(std::vector<StmntPtr>& stmnts)
+{
+    for (auto it = stmnts.begin(); it != stmnts.end();)
+    {
+        std::vector<StmntPtr> unrolledStmnts;
+
+        auto ast = it->get();
+        if (auto varDeclStmnt = ast->As<VarDeclStmnt>())
+            UnrollStmntsVarDecl(unrolledStmnts, varDeclStmnt);
+
+        ++it;
+
+        if (!unrolledStmnts.empty())
+        {
+            it = stmnts.insert(it, unrolledStmnts.begin(), unrolledStmnts.end());
+            it += unrolledStmnts.size();
+        }
+    }
+}
+
+void GLSLConverter::UnrollStmntsVarDecl(std::vector<StmntPtr>& unrolledStmnts, VarDeclStmnt* ast)
+{
+    /* Unroll all array initializers */
+    for (const auto& varDecl : ast->varDecls)
+    {
+        if (varDecl->initializer)
+            UnrollStmntsVarDeclInitializer(unrolledStmnts, varDecl.get());
+    }
+}
+
+void GLSLConverter::UnrollStmntsVarDeclInitializer(std::vector<StmntPtr>& unrolledStmnts, VarDecl* varDecl)
+{
+    auto typeDen = varDecl->GetTypeDenoter()->Get();
+
+    if (auto arrayTypeDen = typeDen->As<ArrayTypeDenoter>())
+    {
+        /* Get initializer expression */
+        if (auto initExpr = varDecl->initializer->As<InitializerExpr>())
+        {
+            /* Get dimension sizes of array type denoter */
+            auto dimSizes = arrayTypeDen->GetDimensionSizes();
+
+            std::vector<int> arrayIndices(dimSizes.size(), 0);
+
+            for (std::size_t i = 0; i < dimSizes.size(); ++i)
+            {
+                /* Begin with right most array dimension */
+                std::size_t arrayDim = (dimSizes.size() - i - 1);
+
+                /* Generate array element assignment */
+                for (int arraySize = dimSizes[arrayDim], arrayIdx = 0; arrayIdx < arraySize; ++arrayIdx)
+                {
+                    /* Set next array index */
+                    arrayIndices[arrayDim] = arrayIdx;
+
+                    /* Fetch sub expression from initializer */
+                    auto subExpr = initExpr->FetchSubExpr(arrayIndices);
+
+                    /* Make new statement for current array element assignment */
+                    auto assignStmnt = ASTFactory::MakeArrayAssignStmnt(varDecl, arrayIndices, subExpr);
+
+                    /* Append new statement to list */
+                    unrolledStmnts.push_back(assignStmnt);
+                }
+
+                /* Reset array index */
+                arrayIndices[arrayDim] = 0;
+            }
+        }
+    }
+}
 
 
 } // /namespace Xsc

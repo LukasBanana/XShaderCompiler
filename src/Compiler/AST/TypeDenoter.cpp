@@ -579,6 +579,21 @@ AST* ArrayTypeDenoter::SymbolRef() const
     return (baseTypeDenoter ? baseTypeDenoter->SymbolRef() : nullptr);
 }
 
+std::vector<int> ArrayTypeDenoter::GetDimensionSizes() const
+{
+    std::vector<int> sizes;
+
+    for (const auto& dim : arrayDims)
+    {
+        if (dim->size > 0)
+            sizes.push_back(dim->size);
+        else
+            return {};
+    }
+
+    return sizes;
+}
+
 
 } // /namespace Xsc
 

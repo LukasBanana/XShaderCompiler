@@ -895,12 +895,48 @@ TypeDenoterPtr VarAccessExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
 {
+    return std::make_shared<ArrayTypeDenoter>(
+        GetElementsTypeDenoter(),
+        ASTFactory::ConvertExprListToArrayDimensionList(std::vector<ExprPtr>(exprs.size(), nullptr))
+    );
+}
+
+TypeDenoterPtr InitializerExpr::GetElementsTypeDenoter() const
+{
     if (exprs.empty())
         RuntimeErr("can not derive type of initializer list with no elements", this);
-    return std::make_shared<ArrayTypeDenoter>(
-        exprs.front()->GetTypeDenoter(),
-        ASTFactory::ConvertExprListToArrayDimensionList(std::vector<ExprPtr>{ nullptr })
-    );
+
+    TypeDenoterPtr elementsTypeDen;
+
+    for (const auto& expr : exprs)
+    {
+        TypeDenoterPtr typeDen;
+
+        /* Get elements type denoter from sub expression */
+        if (auto subInitExpr = expr->As<InitializerExpr>())
+            typeDen = subInitExpr->GetElementsTypeDenoter();
+        else
+            typeDen = expr->GetTypeDenoter();
+
+        if (elementsTypeDen)
+        {
+            /* Check compatability with current output type dentoer */
+            if (!typeDen->IsCastableTo(*elementsTypeDen))
+            {
+                RuntimeErr(
+                    "can not cast '" + typeDen->ToString() + "' to '" +
+                    elementsTypeDen->ToString() + "' in initializer expression", expr.get()
+                );
+            }
+        }
+        else
+        {
+            /* Set first output type denoter */
+            elementsTypeDen = typeDen;
+        }
+    }
+
+    return elementsTypeDen;
 }
 
 unsigned int InitializerExpr::NumElements() const
@@ -916,6 +952,38 @@ unsigned int InitializerExpr::NumElements() const
     }
 
     return n;
+}
+
+static ExprPtr FetchSubExprFromInitializerExpr(const InitializerExpr* ast, const std::vector<int>& arrayIndices, std::size_t layer)
+{
+    if (layer < arrayIndices.size())
+    {
+        /* Get sub expression by array index */
+        auto idx = arrayIndices[layer];
+        if (idx >= 0 && static_cast<std::size_t>(idx) < ast->exprs.size())
+        {
+            auto expr = ast->exprs[idx];
+            
+            if (layer + 1 == arrayIndices.size())
+            {
+                /* Return final sub expression */
+                return expr;
+            }
+
+            /* Continue search in next initializer expression */
+            if (auto subInitExpr = expr->As<const InitializerExpr>())
+                return FetchSubExprFromInitializerExpr(subInitExpr, arrayIndices, layer + 1);
+
+            RuntimeErr("initializer expression expected for array access", expr.get());
+        }
+        RuntimeErr("array index " + std::to_string(idx) + " out of bounds [0, " + std::to_string(ast->exprs.size()) + ") in initializer expression", ast);
+    }
+    RuntimeErr("not enough array indices specified for initializer expression", ast);
+}
+
+ExprPtr InitializerExpr::FetchSubExpr(const std::vector<int>& arrayIndices) const
+{
+    return FetchSubExprFromInitializerExpr(this, arrayIndices, 0);
 }
 
 

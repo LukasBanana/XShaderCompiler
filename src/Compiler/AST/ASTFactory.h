@@ -41,6 +41,8 @@ ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall);
 CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr);
 CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue);
 
+LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& literalValue);
+
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident);
 
 TypeNamePtr MakeTypeName(const StructDeclPtr& structDecl);
@@ -55,6 +57,11 @@ VarAccessExprPtr MakeVarAccessExpr(const std::string& ident, AST* symbolRef = nu
 
 // Return a list expression (or only the input expression) for the specified literal expression, so it can be used as constructor for a struct.
 ExprPtr MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::vector<TypeDenoterPtr>& listTypeDens);
+
+std::vector<ExprPtr> MakeArrayIndices(const std::vector<int>& arrayIndices);
+
+// Makes an statement with an array element assignment for the specified variable identifier, array indices, and value expression.
+ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr);
 
 /* ----- Convert functions ----- */
 

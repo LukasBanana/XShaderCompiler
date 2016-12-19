@@ -131,6 +131,12 @@ class GLSLConverter : public Visitor
         // Converts the specified expression if a vector subscript is used on a scalar type expression.
         //void ConvertVectorSubscriptExpr(ExprPtr& expr);
 
+        /* ----- Unrolling ----- */
+
+        void UnrollStmnts(std::vector<StmntPtr>& stmnts);
+        void UnrollStmntsVarDecl(std::vector<StmntPtr>& unrolledStmnts, VarDeclStmnt* ast);
+        void UnrollStmntsVarDeclInitializer(std::vector<StmntPtr>& unrolledStmnts, VarDecl* varDecl);
+
         /* === Members === */
 
         ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;

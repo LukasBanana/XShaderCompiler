@@ -139,12 +139,17 @@ CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& value
 
 CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue)
 {
-    auto literalExpr = MakeAST<LiteralExpr>();
+    return MakeCastExpr(typeDenoter, MakeLiteralExpr(literalType, literalValue));
+}
+
+LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& literalValue)
+{
+    auto ast = MakeAST<LiteralExpr>();
     {
-        literalExpr->dataType   = literalType;
-        literalExpr->value      = literalValue;
+        ast->dataType   = literalType;
+        ast->value      = literalValue;
     }
-    return MakeCastExpr(typeDenoter, literalExpr);
+    return ast;
 }
 
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident)
@@ -262,6 +267,32 @@ ExprPtr MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::ve
         return nullptr;
     else
         return MakeConstructorListExprPrimary(literalExpr, listTypeDens.begin(), listTypeDens.end());
+}
+
+std::vector<ExprPtr> MakeArrayIndices(const std::vector<int>& arrayIndices)
+{
+    std::vector<ExprPtr> exprs;
+
+    for (auto index : arrayIndices)
+        exprs.push_back(MakeLiteralExpr(DataType::Int, std::to_string(index)));
+
+    return exprs;
+}
+
+ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr)
+{
+    auto ast = MakeAST<ExprStmnt>();
+    {
+        auto expr = MakeAST<VarAccessExpr>();
+        {
+            expr->varIdent                  = MakeVarIdent(varDecl->ident, varDecl);
+            expr->varIdent->arrayIndices    = MakeArrayIndices(arrayIndices);
+            expr->assignOp                  = AssignOp::Set;
+            expr->assignExpr                = assignExpr;
+        }
+        ast->expr = expr;
+    }
+    return ast;
 }
 
 /* ----- Convert functions ----- */

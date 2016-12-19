@@ -925,8 +925,14 @@ struct InitializerExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    // Returns the type denoter of the initializer elements.
+    TypeDenoterPtr GetElementsTypeDenoter() const;
+
     // Returns the number of scalar elements (with recursion).
     unsigned int NumElements() const;
+
+    // Fetches the sub expression with the specified array indices and throws an ASTRuntimeError on failure.
+    ExprPtr FetchSubExpr(const std::vector<int>& arrayIndices) const;
 
     std::vector<ExprPtr> exprs;
 };
