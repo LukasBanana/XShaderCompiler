@@ -28,6 +28,9 @@ class DebuggerView : public wxFrame
 
         DebuggerView(const wxPoint& pos, const wxSize& size);
 
+        void SaveSettings();
+        void LoadSettings();
+
     private:
 
         void CreateLayout();
@@ -43,8 +46,8 @@ class DebuggerView : public wxFrame
         void CreateLayoutOutputSourceView();
 
         void OnInputSourceCharEnter(char chr);
-
         void OnPropertyGridChange(wxPropertyGridEvent& event);
+        void OnClose(wxCloseEvent& event);
 
         void TranslateInputToOutput();
 

@@ -9,6 +9,7 @@
 #include <sstream>
 #include <memory>
 #include <vector>
+#include <fstream>
 
 
 namespace Xsc
@@ -30,6 +31,44 @@ DebuggerView::DebuggerView(const wxPoint& pos, const wxSize& size) :
     CreateLayout();
 
     Centre();
+
+    Bind(wxEVT_CLOSE_WINDOW, &DebuggerView::OnClose, this);
+}
+
+static const std::string settingsFilename("XscDebuggerSettings");
+static const std::string codeFilename("XscDebuggerCode");
+
+void DebuggerView::SaveSettings()
+{
+    std::ofstream settingsFile(settingsFilename);
+    if (settingsFile.good())
+        settingsFile << propGrid_->SaveEditableState().ToStdString() << std::endl;
+
+    std::ofstream codeFile(codeFilename);
+    if (codeFile.good())
+        codeFile << inputSourceView_->GetText();
+}
+
+void DebuggerView::LoadSettings()
+{
+    std::ifstream settingsFile(settingsFilename);
+    if (settingsFile.good())
+    {
+        std::string state;
+        std::getline(settingsFile, state);
+        propGrid_->RestoreEditableState(state);
+    }
+
+    std::ifstream codeFile(codeFilename);
+    if (codeFile.good())
+    {
+        inputSourceView_->SetText(
+            std::string(
+                ( std::istreambuf_iterator<char>(codeFile) ),
+                ( std::istreambuf_iterator<char>() )
+            )
+        );
+    }
 }
 
 
@@ -245,6 +284,12 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
 void DebuggerView::OnInputSourceCharEnter(char chr)
 {
     TranslateInputToOutput();
+}
+
+void DebuggerView::OnClose(wxCloseEvent& event)
+{
+    SaveSettings();
+    event.Skip();
 }
 
 class DebuggerLog : public Log

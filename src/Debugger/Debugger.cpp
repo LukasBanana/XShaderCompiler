@@ -22,6 +22,7 @@ bool Debugger::OnInit()
 
     auto debuggerView = new DebuggerView(wxDefaultPosition, wxSize(1280, 768));
     debuggerView->Show();
+    debuggerView->LoadSettings();
 
     return true;
 }
