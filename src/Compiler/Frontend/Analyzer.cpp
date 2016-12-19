@@ -471,6 +471,10 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
             }
         );
     }
+    catch (const ASTRuntimeError& e)
+    {
+        Error(e.what(), (e.GetAST() ? e.GetAST() : &expr));
+    }
     catch (const std::exception& e)
     {
         Error(e.what(), &expr);

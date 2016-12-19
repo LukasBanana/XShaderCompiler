@@ -144,7 +144,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
 IMPLEMENT_VISIT_PROC(ArrayDimension)
 {
-    if (ast->expr)
+    if (ast->expr && ast->expr->Type() != AST::Types::NullExpr)
     {
         Visit(ast->expr);
 

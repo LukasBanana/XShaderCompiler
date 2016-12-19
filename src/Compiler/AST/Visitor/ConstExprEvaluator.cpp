@@ -8,6 +8,7 @@
 #include "ConstExprEvaluator.h"
 #include "AST.h"
 #include "Helper.h"
+#include "Exception.h"
 #include <sstream>
 
 
@@ -28,9 +29,9 @@ Variant ConstExprEvaluator::EvaluateExpr(Expr& ast, const OnVarAccessCallback& o
  */
 
 [[noreturn]]
-static void IllegalExpr(const std::string& exprName)
+static void IllegalExpr(const std::string& exprName, const AST* ast = nullptr)
 {
-    throw std::runtime_error("illegal " + exprName + " in constant expression");
+    RuntimeErr("illegal " + exprName + " in constant expression", ast);
 }
 
 void ConstExprEvaluator::Push(const Variant& v)
@@ -54,7 +55,7 @@ Variant ConstExprEvaluator::Pop()
 
 IMPLEMENT_VISIT_PROC(NullExpr)
 {
-    IllegalExpr("dynamic array dimension");
+    IllegalExpr("dynamic array dimension", ast);
 }
 
 IMPLEMENT_VISIT_PROC(ListExpr)
@@ -75,7 +76,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
             else if (ast->value == "false")
                 Push(false);
             else
-                IllegalExpr("boolean literal value '" + ast->value + "'");
+                IllegalExpr("boolean literal value '" + ast->value + "'", ast);
         }
         break;
 
@@ -101,7 +102,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
         default:
         {
-            IllegalExpr("literal type '" + DataTypeToString(ast->dataType) + "'");
+            IllegalExpr("literal type '" + DataTypeToString(ast->dataType) + "'", ast);
         }
         break;
     }
@@ -109,7 +110,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(TypeNameExpr)
 {
-    IllegalExpr("type specifier");
+    IllegalExpr("type specifier", ast);
 }
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
@@ -135,7 +136,7 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
     switch (ast->op)
     {
         case BinaryOp::Undefined:
-            IllegalExpr("binary operator");
+            IllegalExpr("binary operator", ast);
             break;
         case BinaryOp::LogicalAnd:
             Push(lhs.ToBool() && rhs.ToBool());
@@ -204,7 +205,7 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
     switch (ast->op)
     {
         case UnaryOp::Undefined:
-            IllegalExpr("unary operator");
+            IllegalExpr("unary operator", ast);
             break;
         case UnaryOp::LogicalNot:
             Push(!rhs.ToBool());
@@ -242,14 +243,14 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
             Push(lhs);
             break;
         default:
-            IllegalExpr("unary operator '" + UnaryOpToString(ast->op) + "'");
+            IllegalExpr("unary operator '" + UnaryOpToString(ast->op) + "'", ast);
             break;
     }
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCallExpr)
 {
-    IllegalExpr("function call");
+    IllegalExpr("function call", ast);
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
@@ -290,13 +291,13 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
             default:
             {
-                IllegalExpr("type cast '" + DataTypeToString(baseTypeDen->dataType) + "'");
+                IllegalExpr("type cast '" + DataTypeToString(baseTypeDen->dataType) + "'", ast);
             }
             break;
         }
     }
     else
-        IllegalExpr("type cast");
+        IllegalExpr("type cast", ast);
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
@@ -306,7 +307,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
-    IllegalExpr("initializer list");
+    IllegalExpr("initializer list", ast);
 }
 
 #undef IMPLEMENT_VISIT_PROC
