@@ -25,12 +25,13 @@ bool SourceCode::IsValid() const
 
 char SourceCode::Next()
 {
-    if (!IsValid())
-        return 0;
-
     /* Check if reader is at end-of-line */
     while (pos_.Column() >= currentLine_.size())
     {
+        /* Check if end-of-file is reached */
+        if (!IsValid() || stream_->eof())
+            return 0;
+
         /* Read new line in source file */
         std::getline(*stream_, currentLine_);
         currentLine_ += '\n';
@@ -38,10 +39,6 @@ char SourceCode::Next()
 
         /* Store current line for later reports */
         lines_.push_back(currentLine_);
-
-        /* Check if end-of-file is reached */
-        if (stream_->eof())
-            return 0;
     }
 
     /* Increment column and return current character */
