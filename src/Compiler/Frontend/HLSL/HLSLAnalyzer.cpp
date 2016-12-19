@@ -447,48 +447,51 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
-    Visit(ast->expr);
-
-    /* Validate expression type by just calling the getter */
-    GetTypeDenoterFrom(ast->expr.get());
-
-    //TODO: refactor this
-    #if 1
-    /* Analyze entry point return statement */
-    if (InsideEntryPoint())
+    if (ast->expr)
     {
-        if (auto varAccessExpr = ast->expr->As<VarAccessExpr>())
-        {
-            if (auto varSymbolRef = varAccessExpr->varIdent->symbolRef)
-            {
-                if (auto varDecl = varSymbolRef->As<VarDecl>())
-                {
-                    if (varDecl->declStmntRef)
-                    {
-                        /*
-                        Variable declaration statement has been found,
-                        now find the structure object to add the alias name for the interface block.
-                        */
-                        if (auto structSymbolRef = varDecl->GetTypeDenoter()->SymbolRef())
-                        {
-                            if (auto structDecl = structSymbolRef->As<StructDecl>())
-                            {
-                                /* Store alias name for the interface block */
-                                structDecl->aliasName = varAccessExpr->varIdent->ident;
+        Visit(ast->expr);
 
-                                /*
-                                Don't generate code for this variable declaration,
-                                because this variable is now already used as interface block.
-                                */
-                                varDecl->flags << VarDecl::disableCodeGen;
+        /* Validate expression type by just calling the getter */
+        GetTypeDenoterFrom(ast->expr.get());
+
+        //TODO: refactor this
+        #if 1
+        /* Analyze entry point return statement */
+        if (InsideEntryPoint())
+        {
+            if (auto varAccessExpr = ast->expr->As<VarAccessExpr>())
+            {
+                if (auto varSymbolRef = varAccessExpr->varIdent->symbolRef)
+                {
+                    if (auto varDecl = varSymbolRef->As<VarDecl>())
+                    {
+                        if (varDecl->declStmntRef)
+                        {
+                            /*
+                            Variable declaration statement has been found,
+                            now find the structure object to add the alias name for the interface block.
+                            */
+                            if (auto structSymbolRef = varDecl->GetTypeDenoter()->SymbolRef())
+                            {
+                                if (auto structDecl = structSymbolRef->As<StructDecl>())
+                                {
+                                    /* Store alias name for the interface block */
+                                    structDecl->aliasName = varAccessExpr->varIdent->ident;
+
+                                    /*
+                                    Don't generate code for this variable declaration,
+                                    because this variable is now already used as interface block.
+                                    */
+                                    varDecl->flags << VarDecl::disableCodeGen;
+                                }
                             }
                         }
                     }
                 }
             }
         }
+        #endif
     }
-    #endif
 }
 
 /* --- Expressions --- */
