@@ -64,6 +64,11 @@ IMPLEMENT_VISIT_PROC(PackOffset)
     // do nothing
 }
 
+IMPLEMENT_VISIT_PROC(ArrayDimension)
+{
+    Visit(ast->expr);
+}
+
 IMPLEMENT_VISIT_PROC(TypeName)
 {
     Visit(ast->structDecl);

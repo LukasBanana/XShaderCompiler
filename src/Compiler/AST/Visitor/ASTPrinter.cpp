@@ -93,6 +93,12 @@ IMPLEMENT_VISIT_PROC(PackOffset)
     DEFAULT_VISITOR(PackOffset);
 }
 
+IMPLEMENT_VISIT_PROC(ArrayDimension)
+{
+    Print(ast, "ArrayDimension", ast->ToString());
+    DEFAULT_VISITOR(ArrayDimension);
+}
+
 IMPLEMENT_VISIT_PROC(TypeName)
 {
     Print(ast, "TypeName", ast->ToString());

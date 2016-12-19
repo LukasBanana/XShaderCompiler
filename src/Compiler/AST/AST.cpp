@@ -259,6 +259,19 @@ std::string PackOffset::ToString() const
 }
 
 
+/* ----- ArrayDimension ----- */
+
+std::string ArrayDimension::ToString() const
+{
+    return std::to_string(dimension);
+}
+
+TypeDenoterPtr ArrayDimension::DeriveTypeDenoter()
+{
+    return expr->GetTypeDenoter();
+}
+
+
 /* ----- TypeName ----- */
 
 std::string TypeName::ToString() const

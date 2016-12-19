@@ -77,6 +77,7 @@ struct AST
         SamplerValue,
         Register,
         PackOffset,
+        ArrayDimension,
         TypeName,
         VarIdent,
 
@@ -318,6 +319,20 @@ struct PackOffset : public AST
 
     std::string registerName;
     std::string vectorComponent; // May be empty
+};
+
+// Array dimension with bufferd expression evaluation.
+struct ArrayDimension : public TypedAST
+{
+    AST_INTERFACE(ArrayDimension);
+
+    std::string ToString() const;
+
+    TypeDenoterPtr DeriveTypeDenoter() override;
+
+    ExprPtr expr;               // Array dimension expression. Must be a constant integer expression.
+
+    int     dimension   = 0;    // Evaluated array dimension. Zero for dynamic array dimension.
 };
 
 // Type name with optional structure declaration.

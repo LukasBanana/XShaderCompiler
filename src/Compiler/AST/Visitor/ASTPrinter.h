@@ -42,6 +42,7 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( SamplerValue      );
         DECL_VISIT_PROC( Register          );
         DECL_VISIT_PROC( PackOffset        );
+        DECL_VISIT_PROC( ArrayDimension    );
         DECL_VISIT_PROC( TypeName          );
         DECL_VISIT_PROC( VarIdent          );
 
