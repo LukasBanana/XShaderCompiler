@@ -1267,6 +1267,8 @@ CtrlTransferStmntPtr HLSLParser::ParseCtrlTransferStmnt()
     auto ctrlTransfer = Accept(Tokens::CtrlTransfer)->Spell();
     ast->transfer = StringToCtrlTransfer(ctrlTransfer);
 
+    UpdateSourceArea(ast);
+
     Semi();
 
     return ast;
@@ -1280,6 +1282,8 @@ ReturnStmntPtr HLSLParser::ParseReturnStmnt()
 
     if (!Is(Tokens::Semicolon))
         ast->expr = ParseExpr(true);
+
+    UpdateSourceArea(ast);
 
     Semi();
 

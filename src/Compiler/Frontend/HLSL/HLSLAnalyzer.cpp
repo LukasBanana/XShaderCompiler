@@ -229,7 +229,7 @@ IMPLEMENT_VISIT_PROC(AliasDecl)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    GetReportHandler().PushContextDesc(ast->SignatureToString(false));
+    GetReportHandler().PushContextDesc(ast->SignatureToString());
 
     /* Check for entry points */
     const auto isEntryPoint             = (ast->ident == entryPoint_);
