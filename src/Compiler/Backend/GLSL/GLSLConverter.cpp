@@ -18,12 +18,13 @@ namespace Xsc
 
 
 void GLSLConverter::Convert(
-    Program& program, const ShaderTarget shaderTarget, const std::string& nameManglingPrefix)
+    Program& program, const ShaderTarget shaderTarget, const std::string& nameManglingPrefix, const Options& options)
 {
     /* Store settings */
     shaderTarget_       = shaderTarget;
     program_            = (&program);
     nameManglingPrefix_ = nameManglingPrefix;
+    options_            = options;
 
     /* Visit program AST */
     Visit(program_);
@@ -740,7 +741,10 @@ void GLSLConverter::UnrollStmnts(std::vector<StmntPtr>& stmnts)
 
         auto ast = it->get();
         if (auto varDeclStmnt = ast->As<VarDeclStmnt>())
-            UnrollStmntsVarDecl(unrolledStmnts, varDeclStmnt);
+        {
+            if (options_.unrollArrayInitializers)
+                UnrollStmntsVarDecl(unrolledStmnts, varDeclStmnt);
+        }
 
         ++it;
 

@@ -105,34 +105,37 @@ struct Formatting
 struct Options
 {
     //! True if warnings are allowed. By default false.
-    bool warnings           = false;
+    bool warnings                   = false;
 
     //! If true, little code optimizations are performed. By default false.
-    bool optimize           = false;
+    bool optimize                   = false;
 
     //! If true, only the preprocessed source code will be written out. By default false.
-    bool preprocessOnly     = false;
+    bool preprocessOnly             = false;
 
     //! If true, the source code is only validated, but no output code will be generated. By default false.
-    bool validateOnly       = false;
+    bool validateOnly               = false;
 
     //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
-    bool allowExtensions    = false;
-    
+    bool allowExtensions            = false;
+
     //! If true, explicit binding slots are enabled. By default false.
-    bool explicitBinding    = false;
+    bool explicitBinding            = false;
 
     //! If true, commentaries are preserved for each statement. By default false.
-    bool preserveComments   = false;
+    bool preserveComments           = false;
 
     //! If true, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.
-    bool preferWrappers     = false;
+    bool preferWrappers             = false;
+
+    //! If true, array initializations will be unrolled. By default false.
+    bool unrollArrayInitializers    = false;
 
     //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
-    bool showAST            = false;
+    bool showAST                    = false;
 
     //! If true, the timings of the different compilation processes are written to the log output. By default false.
-    bool showTimes          = false;
+    bool showTimes                  = false;
 };
 
 //! Shader input descriptor structure.

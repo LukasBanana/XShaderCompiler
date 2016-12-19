@@ -11,7 +11,7 @@
 
 #include "Visitor.h"
 #include "TypeDenoter.h"
-#include <Xsc/Targets.h>
+#include <Xsc/Xsc.h>
 #include <functional>
 #include <set>
 
@@ -30,7 +30,8 @@ class GLSLConverter : public Visitor
         void Convert(
             Program& program,
             const ShaderTarget shaderTarget,
-            const std::string& nameManglingPrefix
+            const std::string& nameManglingPrefix,
+            const Options& options
         );
 
     private:
@@ -143,6 +144,7 @@ class GLSLConverter : public Visitor
         Program*                program_                = nullptr;
 
         std::string             nameManglingPrefix_;
+        Options                 options_;
 
         /*
         List of all variables with reserved identifiers that come from a structure that must be resolved.

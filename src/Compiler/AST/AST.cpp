@@ -894,6 +894,11 @@ TypeDenoterPtr VarAccessExpr::DeriveTypeDenoter()
 
 /* ----- InitializerExpr ----- */
 
+/*
+This function derives the type denoter of the initializer by getting the type denoter of each sub-expression.
+If a sub-expression is again an array type denoter, its array dimensions are inserted into the
+final return type denoter (see 'ArrayTypeDenoter::InsertSubArray' function)
+*/
 TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
 {
     if (exprs.empty())
