@@ -74,6 +74,15 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     OptimizeStmntList(ast->stmnts);
 }
 
+IMPLEMENT_VISIT_PROC(BracketExpr)
+{
+    VISIT_DEFAULT(BracketExpr);
+
+    /* Reduce inner brackets */
+    if (auto subBracketExpr = ast->expr->As<BracketExpr>())
+        ast->expr = subBracketExpr->expr;
+}
+
 #undef IMPLEMENT_VISIT_PROC
 
 
