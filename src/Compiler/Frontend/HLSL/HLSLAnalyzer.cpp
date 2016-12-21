@@ -778,6 +778,20 @@ void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
             AnalyzeEntryPointParameterInOutStruct(funcDecl, structTypeDen->structDeclRef, "", false);
         }
     }
+
+    /* Analyze system-value semantics */
+    std::vector<Semantic> inSemantics, outSemantics;
+
+    for (const auto& param : funcDecl->inputSemantics.varDeclRefsSV)
+        inSemantics.push_back(param->semantic);
+
+    for (const auto& param : funcDecl->outputSemantics.varDeclRefsSV)
+        outSemantics.push_back(param->semantic);
+
+    if (IsSystemSemantic(funcDecl->semantic))
+        outSemantics.push_back(funcDecl->semantic);
+
+    AnalyzeEntryPointSemantics(funcDecl, inSemantics, outSemantics);
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param)
@@ -1005,6 +1019,82 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributesComputeShader(const std::vector<At
 
     /* Check for missing attributes */
     ErrorIfAttributeNotFound(foundNumThreads, "numthreads(x, y, z)");
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std::vector<Semantic>& inSemantics, const std::vector<Semantic>& outSemantics)
+{
+    auto FindSemantics = [&](const std::vector<Semantic>& presentSemantics, const std::vector<Semantic>& searchSemantics, const std::string& desc)
+    {
+        for (auto sem : presentSemantics)
+        {
+            if (std::find(searchSemantics.begin(), searchSemantics.end(), sem) == searchSemantics.end())
+                Error(desc + " semantic '" + SemanticToString(sem) + "' in entry point '" + funcDecl->ident + "'", funcDecl);
+        }
+    };
+
+    auto ValidateInSemantics = [&](const std::vector<Semantic>& semantics)
+    {
+        FindSemantics(inSemantics, semantics, "invalid input");
+    };
+
+    auto ValidateOutSemantics = [&](const std::vector<Semantic>& semantics)
+    {
+        FindSemantics(outSemantics, semantics, "invalid output");
+    };
+
+    auto RequiredInSemantics = [&](const std::vector<Semantic>& semantics)
+    {
+        FindSemantics(semantics, inSemantics, "missing input");
+    };
+
+    auto RequiredOutSemantics = [&](const std::vector<Semantic>& semantics)
+    {
+        FindSemantics(semantics, outSemantics, "missing output");
+    };
+
+    using T = Semantic;
+
+    #define COMMON_SEMANTICS \
+        T::InstanceID, T::DepthGreaterEqual, T::DepthLessEqual, T::VertexID, T::PrimitiveID
+
+    switch (shaderTarget_)
+    {
+        case ShaderTarget::VertexShader:
+            ValidateInSemantics({ COMMON_SEMANTICS });
+            ValidateOutSemantics({ COMMON_SEMANTICS, T::VertexPosition });
+            break;
+
+        case ShaderTarget::TessellationControlShader:
+            ValidateInSemantics({ COMMON_SEMANTICS, T::VertexPosition, T::OutputControlPointID });
+            ValidateOutSemantics({ COMMON_SEMANTICS, T::VertexPosition, T::InsideTessFactor, T::TessFactor });
+            break;
+
+        case ShaderTarget::TessellationEvaluationShader:
+            ValidateInSemantics({ COMMON_SEMANTICS, T::VertexPosition, T::InsideTessFactor, T::TessFactor, T::DomainLocation });
+            ValidateOutSemantics({ COMMON_SEMANTICS, T::VertexPosition });
+            break;
+
+        case ShaderTarget::GeometryShader:
+            ValidateInSemantics({ COMMON_SEMANTICS, T::VertexPosition, T::GSInstanceID });
+            ValidateOutSemantics({ COMMON_SEMANTICS, T::VertexPosition, T::IsFrontFace, T::ViewportArrayIndex });
+            break;
+
+        case ShaderTarget::FragmentShader:
+            ValidateInSemantics({ COMMON_SEMANTICS, T::Coverage, T::InnerCoverage, T::Depth, T::SampleIndex, T::RenderTargetArrayIndex, T::Position, T::IsFrontFace });
+            ValidateOutSemantics({ COMMON_SEMANTICS, T::Coverage, T::InnerCoverage, T::Depth, T::SampleIndex, T::RenderTargetArrayIndex, T::Target, T::StencilRef });
+            RequiredOutSemantics({ T::Target });
+            break;
+
+        case ShaderTarget::ComputeShader:
+            ValidateInSemantics({ COMMON_SEMANTICS, T::GroupID, T::GroupIndex, T::GroupThreadID, T::DispatchThreadID });
+            ValidateOutSemantics({ COMMON_SEMANTICS, T::RenderTargetArrayIndex });
+            break;
+
+        default:
+            break;
+    }
+
+    #undef COMMON_SEMANTICS
 }
 
 /* ----- Inactive entry point ----- */

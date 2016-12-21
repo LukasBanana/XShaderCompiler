@@ -94,15 +94,19 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeEntryPoint(FunctionDecl* funcDecl);
         void AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl);
+        
         void AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param);
         void AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input);
         void AnalyzeEntryPointParameterInOutStruct(FunctionDecl* funcDecl, StructDecl* structDecl, const std::string& structAliasName, bool input);
         void AnalyzeEntryPointParameterInOutBuffer(FunctionDecl* funcDecl, VarDecl* varDecl, BufferTypeDenoter* bufferTypeDen, bool input);
+        
         void AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesTessControlShader(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesTessEvaluationShader(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesFragmentShader(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs);
+
+        void AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std::vector<Semantic>& inSemantics, const std::vector<Semantic>& outSemantics);
 
         /* ----- Secondary entry point ----- */
 
