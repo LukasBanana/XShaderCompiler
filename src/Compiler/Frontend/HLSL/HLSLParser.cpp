@@ -1141,7 +1141,7 @@ StmntPtr HLSLParser::ParseStmntWithVarIdent()
         return UpdateSourceArea(ast, varIdent.get());
     }
 
-    ErrorUnexpected("expected variable declaration, assignment, or function call statement");
+    ErrorUnexpected("expected variable declaration, assignment, or function call statement", nullptr, true);
     
     return nullptr;
 }
