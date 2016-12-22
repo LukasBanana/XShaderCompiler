@@ -800,8 +800,13 @@ class IndexedSemantic
             return semantic_;
         }
 
+        // Returns true if this the semantic is not undefined (Semantic::Undefined).
         bool IsValid() const;
+
+        // see Xsc::IsSystemSemantic
         bool IsSystemValue() const;
+
+        // see Xsc::IsUserSemantic
         bool IsUserDefined() const;
 
         std::string ToString() const;

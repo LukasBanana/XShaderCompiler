@@ -779,19 +779,26 @@ void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
         }
     }
 
-    /* Analyze system-value semantics */
-    std::vector<Semantic> inSemantics, outSemantics;
+    /*
+    Analyze system-value semantics.
+    -> Only for the main entry point, because this function is also used for
+       the optional secondary entry point, which might have another shader target.
+    */
+    if (funcDecl->flags(FunctionDecl::isEntryPoint))
+    {
+        std::vector<Semantic> inSemantics, outSemantics;
 
-    for (const auto& param : funcDecl->inputSemantics.varDeclRefsSV)
-        inSemantics.push_back(param->semantic);
+        for (const auto& param : funcDecl->inputSemantics.varDeclRefsSV)
+            inSemantics.push_back(param->semantic);
 
-    for (const auto& param : funcDecl->outputSemantics.varDeclRefsSV)
-        outSemantics.push_back(param->semantic);
+        for (const auto& param : funcDecl->outputSemantics.varDeclRefsSV)
+            outSemantics.push_back(param->semantic);
 
-    if (IsSystemSemantic(funcDecl->semantic))
-        outSemantics.push_back(funcDecl->semantic);
+        if (IsSystemSemantic(funcDecl->semantic))
+            outSemantics.push_back(funcDecl->semantic);
 
-    AnalyzeEntryPointSemantics(funcDecl, inSemantics, outSemantics);
+        AnalyzeEntryPointSemantics(funcDecl, inSemantics, outSemantics);
+    }
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param)
