@@ -58,22 +58,32 @@ Library Usage
 
 /* ... */
 
+// Input file stream (use std::stringstream for in-code shaders).
 auto inputStream = std::make_shared<std::ifstream>("Example.hlsl");
-std::ofstream outputStream("Example.vertex.glsl");
 
+// Output file stream (GLSL vertex shader)
+std::ofstream outputStream("Example.VS.vert");
+
+// Fill the shader input descriptor structure
 Xsc::ShaderInput inputDesc;
 inputDesc.sourceCode     = inputStream;
 inputDesc.shaderVersion  = Xsc::InputShaderVersion::HLSL5;
 inputDesc.entryPoint     = "VS";
 inputDesc.shaderTarget   = Xsc::ShaderTarget::VertexShader;
 
+// Fill the shader output descriptor structure
+// (Use 'outputDesc.options' and 'outputDesc.formatting' for more settings)
 Xsc::ShaderOutput outputDesc;
-outputDesc.sourceCode    = &outputStream;
-outputDesc.shaderVersion = Xsc::OutputShaderVersion::GLSL330;
+outputDesc.sourceCode = &outputStream;
+
+// Optional output log (can also be a custom class)
+Xsc::StdLog log;
+
+// Optional shader reflection data (for shader code feedback)
+Xsc::Reflection::ReflectionData reflectData;
 
 // Translate HLSL code into GLSL
-Xsc::StdLog log;
-bool result = Xsc::CompileShader(inputDesc, outputDesc, &log);
+bool result = Xsc::CompileShader(inputDesc, outputDesc, &log, &reflectData);
 ```
 
 Output Example
