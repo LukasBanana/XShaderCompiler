@@ -27,6 +27,8 @@ Progress
 
 **Version: 0.03 Alpha** (*Do not use in production code!*)
 
+See the [TODO.md](https://github.com/LukasBanana/XShaderCompiler/blob/master/TODO.md) file for more information.
+
 | Feature | Progress | Remarks |
 |---------|:--------:|---------|
 | Vertex Shader | ~80% | Few language features are still left |
@@ -35,12 +37,6 @@ Progress
 | Geometry Shader | ~10% | Only parsing works |
 | Fragment Shader | ~80% | Few language features are still left |
 | Compute Shader | ~80% | Few language features are still left |
-
-##### TODO List: #####
-* Common HLSL IO semantics to GLSL transformation.
-* Geometry and Tessellation shader support.
-* Type denoter analysis clean-up.
-* 'interface' and 'class' declarations.
 
 Offline Compiler
 ----------------
