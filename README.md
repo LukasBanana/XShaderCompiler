@@ -56,34 +56,41 @@ Library Usage
 #include <Xsc/Xsc.h>
 #include <fstream>
 
-/* ... */
+int main()
+{
+    /* ... */
 
-// Input file stream (use std::stringstream for in-code shaders).
-auto inputStream = std::make_shared<std::ifstream>("Example.hlsl");
+    // Input file stream (use std::stringstream for in-code shaders).
+    auto inputStream = std::make_shared<std::ifstream>("Example.hlsl");
 
-// Output file stream (GLSL vertex shader)
-std::ofstream outputStream("Example.VS.vert");
+    // Output file stream (GLSL vertex shader)
+    std::ofstream outputStream("Example.VS.vert");
 
-// Fill the shader input descriptor structure
-Xsc::ShaderInput inputDesc;
-inputDesc.sourceCode     = inputStream;
-inputDesc.shaderVersion  = Xsc::InputShaderVersion::HLSL5;
-inputDesc.entryPoint     = "VS";
-inputDesc.shaderTarget   = Xsc::ShaderTarget::VertexShader;
+    // Fill the shader input descriptor structure
+    Xsc::ShaderInput inputDesc;
+    inputDesc.sourceCode     = inputStream;
+    inputDesc.shaderVersion  = Xsc::InputShaderVersion::HLSL5;
+    inputDesc.entryPoint     = "VS";
+    inputDesc.shaderTarget   = Xsc::ShaderTarget::VertexShader;
 
-// Fill the shader output descriptor structure
-// (Use 'outputDesc.options' and 'outputDesc.formatting' for more settings)
-Xsc::ShaderOutput outputDesc;
-outputDesc.sourceCode = &outputStream;
+    // Fill the shader output descriptor structure
+    // (Use 'outputDesc.options' and 'outputDesc.formatting' for more settings)
+    Xsc::ShaderOutput outputDesc;
+    outputDesc.sourceCode = &outputStream;
 
-// Optional output log (can also be a custom class)
-Xsc::StdLog log;
+    // Optional output log (can also be a custom class)
+    Xsc::StdLog log;
 
-// Optional shader reflection data (for shader code feedback)
-Xsc::Reflection::ReflectionData reflectData;
+    // Optional shader reflection data (for shader code feedback)
+    Xsc::Reflection::ReflectionData reflectData;
 
-// Translate HLSL code into GLSL
-bool result = Xsc::CompileShader(inputDesc, outputDesc, &log, &reflectData);
+    // Translate HLSL code into GLSL
+    bool result = Xsc::CompileShader(inputDesc, outputDesc, &log, &reflectData);
+    
+    /* ... */
+    
+    return 0;
+}
 ```
 
 Output Example
@@ -95,7 +102,7 @@ Output Example
 Real-time Debugger
 ------------------
 
-<p align="center">Example of the real-time debugger:</p>
+<p align="center">Example of the real-time debugger (requires <a href="http://www.wxwidgets.org/">wxWidgets 3.1.0</a> or later):</p>
 <p align="center"><img src="docu/xsc_debugger_example_01.gif" alt="docu/xsc_debugger_example_01.gif"/></p>
 
 A few thoughts on translating HLSL
