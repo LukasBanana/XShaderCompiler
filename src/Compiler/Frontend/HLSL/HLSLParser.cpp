@@ -105,7 +105,7 @@ TypeNameExprPtr HLSLParser::MakeToTypeNameIfLhsOfCastExpr(const ExprPtr& expr)
 {
     /* Type name expression (float, int3 etc.) is always allowed for a cast expression */
     if (expr->Type() == AST::Types::TypeNameExpr)
-        return std::dynamic_pointer_cast<TypeNameExpr>(expr);
+        return std::static_pointer_cast<TypeNameExpr>(expr);
 
     /* Is this a variable identifier? */
     if (auto varAccessExpr = expr->As<VarAccessExpr>())
@@ -1142,7 +1142,6 @@ StmntPtr HLSLParser::ParseStmntWithVarIdent()
     }
 
     ErrorUnexpected("expected variable declaration, assignment, or function call statement", nullptr, true);
-    
     return nullptr;
 }
 
@@ -1869,8 +1868,8 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool allowVoidType, StructDeclPtr* s
         /* Parse void type denoter */
         if (allowVoidType)
             return ParseVoidTypeDenoter();
-        else
-            Error("'void' type not allowed in this context");
+
+        Error("'void' type not allowed in this context");
         return nullptr;
     }
     else
@@ -1914,8 +1913,8 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoterPrimary(StructDeclPtr* structDecl)
         return ParseBufferTypeDenoter();
     else if (Is(Tokens::Sampler) || Is(Tokens::SamplerState))
         return ParseSamplerTypeDenoter();
-    else
-        ErrorUnexpected("expected type denoter", GetScanner().ActiveToken().get(), true);
+
+    ErrorUnexpected("expected type denoter", GetScanner().ActiveToken().get(), true);
     return nullptr;
 }
 
