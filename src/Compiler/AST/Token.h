@@ -87,6 +87,7 @@ class Token
 
             /* --- Keywords --- */
             Reserved,           // reserved keyword (not allowed, but reserved for future use)
+            Unsupported,        // unsupported keyword (interface, class)
 
             Do,                 // do
             While,              // while

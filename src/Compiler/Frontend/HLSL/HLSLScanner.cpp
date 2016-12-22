@@ -178,6 +178,8 @@ TokenPtr HLSLScanner::ScanIdentifier()
     {
         if (it->second == Token::Types::Reserved)
             Error("keyword '" + spell + "' is reserved for future use");
+        else if (it->second == Token::Types::Unsupported)
+            Error("keyword '" + spell + "' is currently not supported");
         else
             return Make(it->second, spell);
     }

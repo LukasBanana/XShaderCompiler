@@ -285,6 +285,9 @@ static KeywordMapType GenerateKeywordMap()
         { "unsigned",                T::Reserved        },
         { "using",                   T::Reserved        },
         { "virtual",                 T::Reserved        },
+
+        { "interface",               T::Unsupported     },
+        { "class",                   T::Unsupported     },
     };
 }
 
