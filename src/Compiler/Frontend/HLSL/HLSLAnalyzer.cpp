@@ -1049,10 +1049,10 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
         FindSemantics(outSemantics, semantics, "invalid output");
     };
 
-    auto RequiredInSemantics = [&](const std::vector<Semantic>& semantics)
+    /*auto RequiredInSemantics = [&](const std::vector<Semantic>& semantics)
     {
         FindSemantics(semantics, inSemantics, "missing input");
-    };
+    };*/
 
     auto RequiredOutSemantics = [&](const std::vector<Semantic>& semantics)
     {
