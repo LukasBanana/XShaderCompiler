@@ -247,7 +247,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     const auto isEntryPoint             = (ast->ident == entryPoint_);
     const auto isSecondaryEntryPoint    = (ast->ident == secondaryEntryPoint_);
 
-    if (isSecondaryEntryPoint)
+    if (isSecondaryEntryPoint && !ast->IsForwardDecl())
         secondaryEntryPointFound_ = true;
 
     /* Analyze function return semantic */

@@ -564,8 +564,7 @@ struct FunctionDecl : public Stmnt
     ParameterSemantics              inputSemantics;                         // Entry point input semantics.
     ParameterSemantics              outputSemantics;                        // Entry point output semantics.
 
-    //TODO: currently unused
-  //FunctionDecl*                   definitionRef   = nullptr;              // Reference to the actual function definition (only for forward declarations).
+    FunctionDecl*                   funcImplRef   = nullptr;                // Reference to the function implementation (only for forward declarations).
 };
 
 // Uniform buffer (cbuffer, tbuffer) declaration.

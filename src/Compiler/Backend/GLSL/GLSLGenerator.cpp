@@ -1513,24 +1513,23 @@ void GLSLGenerator::WriteFunction(FunctionDecl* ast)
 
     Write(")");
 
-    if (!ast->codeBlock)
+    if (ast->codeBlock)
     {
-        /*
-        This is only a function forward declaration
-        -> finish with line terminator
-        */
+        /* Write function body */
+        Visit(ast->codeBlock);
+    }
+    else
+    {
+        /* This is only a function forward declaration, so finish with statement terminator */
         Write(";");
         EndLn();
     }
-    
-    /* Write function body */
-    Visit(ast->codeBlock);
 }
 
 void GLSLGenerator::WriteFunctionEntryPoint(FunctionDecl* ast)
 {
-    if (!ast->codeBlock)
-        Error("missing function body in main entry point", ast);
+    if (ast->IsForwardDecl())
+        return;
 
     /* Write function header */
     BeginLn();
@@ -1585,8 +1584,8 @@ void GLSLGenerator::WriteFunctionEntryPointBody(FunctionDecl* ast)
 
 void GLSLGenerator::WriteFunctionSecondaryEntryPoint(FunctionDecl* ast)
 {
-    if (!ast->codeBlock)
-        Error("missing function body in secondary entry point", ast);
+    if (ast->IsForwardDecl())
+        return;
 
     /* Write function header */
     BeginLn();

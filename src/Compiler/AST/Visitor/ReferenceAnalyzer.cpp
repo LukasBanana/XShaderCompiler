@@ -6,6 +6,7 @@
  */
 
 #include "ReferenceAnalyzer.h"
+#include "Exception.h"
 #include "AST.h"
 
 
@@ -129,7 +130,17 @@ IMPLEMENT_VISIT_PROC(BufferDecl)
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (Reachable(ast))
+    {
+        if (ast->IsForwardDecl())
+        {
+            if (ast->funcImplRef)
+                Visit(ast->funcImplRef);
+            else
+                RuntimeErr("missing function implementation for '" + ast->SignatureToString(false) + "'", ast);
+        }
+
         VISIT_DEFAULT(FunctionDecl);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)

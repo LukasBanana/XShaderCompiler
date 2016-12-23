@@ -39,17 +39,42 @@ bool ASTSymbolOverload::AddSymbolRef(AST* ast)
             return false;
         
         /* Is the new declaration a forward declaration? */
-        auto newFuncDecl = static_cast<const FunctionDecl*>(ast);
+        auto newFuncDecl = static_cast<FunctionDecl*>(ast);
         if (newFuncDecl->IsForwardDecl())
-            return true;
-
-        /* Are all previous declarations forward declarations or are the function signatures different? */
-        for (auto ref : refs_)
         {
-            auto funcDecl = static_cast<const FunctionDecl*>(ref);
-            if (!funcDecl->IsForwardDecl() && funcDecl->EqualsSignature(*newFuncDecl))
-                return false;
+            /* Decorate new forward declaration with the function implementation (if already registered in this symbol table) */
+            for (auto ref : refs_)
+            {
+                auto funcDecl = static_cast<FunctionDecl*>(ref);
+                if (!funcDecl->IsForwardDecl() && funcDecl->EqualsSignature(*newFuncDecl))
+                {
+                    newFuncDecl->funcImplRef = funcDecl;
+                    break;
+                }
+            }
+            return true;
         }
+        else
+        {
+            /* Are all previous declarations forward declarations, or are the function signatures different? */
+            for (auto ref : refs_)
+            {
+                auto funcDecl = static_cast<FunctionDecl*>(ref);
+                if (funcDecl->EqualsSignature(*newFuncDecl))
+                {
+                    if (funcDecl->IsForwardDecl())
+                    {
+                        /* Decorate forward declaration with the new function implementation */
+                        funcDecl->funcImplRef = newFuncDecl;
+                    }
+                    else
+                    {
+                        /* Duplicate function implementations found */
+                        return false;
+                    }
+                }
+            }
+        } // endif newFuncDecl->IsForwardDecl
     }
 
     /* Add AST reference to list */
