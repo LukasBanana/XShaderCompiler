@@ -131,6 +131,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (Reachable(ast))
     {
+        /* Is the forward declaration connected to its function implementation? */
         if (ast->IsForwardDecl())
         {
             if (ast->funcImplRef)

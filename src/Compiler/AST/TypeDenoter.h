@@ -157,7 +157,14 @@ struct BaseTypeDenoter : public TypeDenoter
     DataType dataType = DataType::Undefined;
 };
 
-// Buffer type denoter.
+/*
+Buffer type denoter with generic sub type and generic size. This type denoter has multiple usages:
+Read-Only Buffers (e.g. "StructuredBuffer"),
+Read/Write Buffers (e.g. "RWStructuredBuffer"),
+Textures (e.g. "Texture2D", "Texture2DMS<int, 4>", or "RWTexture3D<int>"),
+Input/Output Patches (e.g. "InputPatch<VertexInput, 4>"),
+Primitive Streams (e.g. "TriangleStream<VertexInput>").
+*/
 struct BufferTypeDenoter : public TypeDenoter
 {
     static const Types classType = Types::Buffer;
