@@ -731,6 +731,15 @@ void GLSLConverter::ConvertVectorSubscriptExpr(ExprPtr& expr)
 }
 #endif
 
+//TODO: this is incomplete
+#if 0
+void GLSLConverter::ConvertExprIfConstructorRequired(ExprPtr& expr)
+{
+    if (auto initExpr = expr->As<InitializerExpr>())
+        expr = ASTFactory::ConvertInitializerExprToTypeConstructor(initExpr);
+}
+#endif
+
 /* ----- Unrolling ----- */
 
 void GLSLConverter::UnrollStmnts(std::vector<StmntPtr>& stmnts)

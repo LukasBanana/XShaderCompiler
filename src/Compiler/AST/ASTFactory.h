@@ -75,6 +75,8 @@ ArrayDimensionPtr ConvertExprToArrayDimension(const ExprPtr& expr);
 
 std::vector<ArrayDimensionPtr> ConvertExprListToArrayDimensionList(const std::vector<ExprPtr>& exprs);
 
+//FunctionCallExprPtr ConvertInitializerExprToTypeConstructor(InitializerExpr* expr);
+
 
 } // /namespace ASTFactory
 

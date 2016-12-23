@@ -23,6 +23,12 @@ std::shared_ptr<T> MakeAST(Args&&... args)
     return MakeShared<T>(SourcePosition::ignore, std::forward<Args>(args)...);
 }
 
+template <typename T, typename Origin, typename... Args>
+std::shared_ptr<T> MakeASTWithOrigin(Origin origin, Args&&... args)
+{
+    return MakeShared<T>(origin->area, std::forward<Args>(args)...);
+}
+
 /* ----- Find functions ----- */
 
 Expr* FindSingleExpr(Expr* ast, const AST::Types searchedExprType)
@@ -361,6 +367,23 @@ std::vector<ArrayDimensionPtr> ConvertExprListToArrayDimensionList(const std::ve
 
     return arrayDims;
 }
+
+//TODO: this is incomplete
+#if 0
+FunctionCallExprPtr ConvertInitializerExprToTypeConstructor(InitializerExpr* expr)
+{
+    if (expr && !expr->exprs.empty())
+    {
+        auto ast = MakeASTWithOrigin<FunctionCallExpr>(expr);
+        {
+            ast->call = MakeASTWithOrigin<FunctionCall>(expr);
+
+            ast->call->typeDenoter = expr->
+        }
+        return ast;
+    }
+}
+#endif
 
 
 } // /namespace ASTFactory
