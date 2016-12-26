@@ -23,8 +23,11 @@
 #[SemanticTest1 PS2]
 #-T frag -E PS2 -o output/* SemanticTest1.hlsl
 
-[SemanticTest2 VS, PS]
--T vert -E VS -o output/* SemanticTest2.hlsl -T frag -E PS -o output/* SemanticTest2.hlsl
+[SemanticTest2 VS]
+-T vert -E VS -o output/* SemanticTest2.hlsl
+
+[SemanticTest2 PS]
+-T frag -E PS -o output/* SemanticTest2.hlsl
 
 #['clip'-Intrinsic PS]
 #-T frag -E PS -o output/* IntrinsicClip.hlsl

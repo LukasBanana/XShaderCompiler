@@ -370,30 +370,42 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     if (!ast->flags(AST::isReachable))
         return;
 
-    /* Write uniform buffer header */
-    WriteLineMark(ast);
-
-    /* Write uniform buffer declaration */
-    BeginLn();
-    Write("layout(std140");
-
-    if (explicitBinding_)
+    if (versionOut_ < OutputShaderVersion::GLSL140)
     {
-        if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, GetShaderTarget()))
-            Write(", binding = " + std::to_string(slotRegister->slot));
+        /* Write individual uniforms */
+        for (auto& varDeclStmnt : ast->members)
+        {
+            varDeclStmnt->isUniform = true;
+            Visit(varDeclStmnt);
+        }
     }
-
-    Write(") uniform ");
-    Write(ast->ident);
-
-    /* Write uniform buffer members */
-    WriteScopeOpen(false, true);
-    BeginSep();
+    else
     {
-        Visit(ast->members);
+        /* Write uniform buffer header */
+        WriteLineMark(ast);
+
+        /* Write uniform buffer declaration */
+        BeginLn();
+        Write("layout(std140");
+
+        if (explicitBinding_)
+        {
+            if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, GetShaderTarget()))
+                Write(", binding = " + std::to_string(slotRegister->slot));
+        }
+
+        Write(") uniform ");
+        Write(ast->ident);
+
+        /* Write uniform buffer members */
+        WriteScopeOpen(false, true);
+        BeginSep();
+        {
+            Visit(ast->members);
+        }
+        EndSep();
+        WriteScopeClose();
     }
-    EndSep();
-    WriteScopeClose();
 
     Blank();
 }

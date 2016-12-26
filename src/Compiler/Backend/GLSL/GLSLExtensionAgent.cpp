@@ -174,16 +174,22 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
-    AcquireExtension(GLSLEXT_GL_ARB_uniform_buffer_object);
-
-    /* Check for explicit binding point */
-    if (explicitBinding_)
+    if (ast->flags(AST::isReachable))
     {
-        if (Register::GetForTarget(ast->slotRegisters, shaderTarget_) != nullptr)
-            AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
-    }
+        if (targetGLSLVersion_ == OutputShaderVersion::GLSL || targetGLSLVersion_ >= OutputShaderVersion::GLSL140)
+        {
+            AcquireExtension(GLSLEXT_GL_ARB_uniform_buffer_object);
 
-    VISIT_DEFAULT(UniformBufferDecl);
+            /* Check for explicit binding point */
+            if (explicitBinding_)
+            {
+                if (Register::GetForTarget(ast->slotRegisters, shaderTarget_) != nullptr)
+                    AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
+            }
+
+            VISIT_DEFAULT(UniformBufferDecl);
+        }
+    }
 }
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
