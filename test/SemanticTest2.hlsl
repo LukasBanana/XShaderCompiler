@@ -2,9 +2,10 @@
 // I/O Semantic Test 2
 // 26/12/2016
 
+float4x4 wvpMatrix;
+
 cbuffer Matrices : register(b0)
 {
-	float4x4 wvpMatrix;
 	float4x4 wMatrix;
 };
 
