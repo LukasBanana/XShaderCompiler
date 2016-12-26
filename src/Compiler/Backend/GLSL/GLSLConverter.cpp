@@ -724,8 +724,9 @@ void GLSLConverter::ConvertVectorSubscriptExpr(ExprPtr& expr)
         else if (auto varAccessExpr = expr->As<VarAccessExpr>())
         {
             if (varAccessExpr->varIdent->next)
-
-
+            {
+                //TODO...
+            }
         }
     }
 }
