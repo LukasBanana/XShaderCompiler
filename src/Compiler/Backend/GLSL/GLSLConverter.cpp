@@ -447,7 +447,7 @@ void GLSLConverter::RenameVarDecl(VarDecl* ast, const std::string& ident)
 
 void GLSLConverter::RenameVarDecl(VarDecl* ast)
 {
-    RenameVarDecl(ast, ast->ident);
+    RenameVarDecl(ast, ast->FinalIdent());
 }
 
 void GLSLConverter::RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls)

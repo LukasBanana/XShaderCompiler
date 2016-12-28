@@ -33,6 +33,9 @@ DebuggerView::DebuggerView(const wxPoint& pos, const wxSize& size) :
     Centre();
 
     Bind(wxEVT_CLOSE_WINDOW, &DebuggerView::OnClose, this);
+
+    /* Initialize descriptor structure */
+    shaderInput_.shaderTarget = ShaderTarget::VertexShader;
 }
 
 static const std::string settingsFilename("XscDebuggerSettings");
