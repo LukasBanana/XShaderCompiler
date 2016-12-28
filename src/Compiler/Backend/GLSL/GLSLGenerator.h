@@ -45,9 +45,6 @@ class GLSLGenerator : public Generator
             const ShaderOutput& outputDesc
         ) override;
 
-        // Returns true if the specified AST structure must be resolved.
-        bool MustResolveStruct(StructDecl* ast) const;
-
         // Returns the GLSL keyword for the specified system value semantic (special case is Semantic::Target).
         std::unique_ptr<std::string> SystemValueToKeyword(const IndexedSemantic& semantic) const;
 

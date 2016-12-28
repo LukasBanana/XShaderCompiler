@@ -405,6 +405,9 @@ struct VarDecl : public Decl
     // Returns the variable declaration as string.
     std::string ToString() const;
 
+    // Returns the final identifier for this variable.
+    const std::string& FinalIdent() const;
+
     // Returns a type denoter for this variable declaration or throws an std::runtime_error if the type can not be derived.
     TypeDenoterPtr DeriveTypeDenoter() override;
 
@@ -417,6 +420,8 @@ struct VarDecl : public Decl
 
     VarDeclStmnt*                   declStmntRef    = nullptr;  // Reference to its declaration statement (parent node); may be null
     UniformBufferDecl*              bufferDeclRef   = nullptr;  // Unifrom buffer declaration reference for DAST (optional parent-parent-node); may be null
+
+    std::string                     renamedIdent;
 };
 
 // Buffer declaration.

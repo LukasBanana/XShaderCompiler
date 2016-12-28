@@ -9,6 +9,7 @@
 #include "Exception.h"
 #include "Token.h"
 #include <map>
+#include <algorithm>
 
 
 namespace Xsc
@@ -873,7 +874,12 @@ bool IndexedSemantic::IsUserDefined() const
 std::string IndexedSemantic::ToString() const
 {
     if (semantic_ == Semantic::UserDefined)
-        return userDefined_;
+    {
+        /* Return user defined semantics always in upper case */
+        std::string s = userDefined_;
+        std::transform(s.begin(), s.end(), s.begin(), ::toupper);
+        return s;
+    }
     else
         return (SemanticToString(semantic_) + std::to_string(index_));
 }

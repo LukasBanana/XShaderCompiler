@@ -46,16 +46,20 @@ IMPLEMENT_VISIT_PROC(Program)
     switch (shaderTarget_)
     {
         case ShaderTarget::VertexShader:
+            RenameInOutVarIdents(ast->entryPointRef->outputSemantics.varDeclRefs);
             RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefs);
-            break;
-        case ShaderTarget::FragmentShader:
             RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefs);
             break;
-        case ShaderTarget::ComputeShader:
+        case ShaderTarget::FragmentShader:
+            RenameInOutVarIdents(ast->entryPointRef->inputSemantics.varDeclRefs);
             RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefs);
             RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefs);
             break;
         default:
+            RenameInOutVarIdents(ast->entryPointRef->inputSemantics.varDeclRefs);
+            RenameInOutVarIdents(ast->entryPointRef->outputSemantics.varDeclRefs);
+            RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefs);
+            RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefs);
             break;
     }
 
@@ -427,18 +431,29 @@ bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
                 reservedVarDecls_.begin(), reservedVarDecls_.end(),
                 [ast](VarDecl* varDecl)
                 {
-                    return (varDecl != ast && varDecl->ident == ast->ident);
+                    return (varDecl != ast && varDecl->FinalIdent() == ast->FinalIdent());
                 }
             ) != reservedVarDecls_.end()
         )
     );
 }
 
-void GLSLConverter::RenameVarDecl(VarDecl* ast)
+void GLSLConverter::RenameVarDecl(VarDecl* ast, const std::string& ident)
 {
     /* Set new identifier for this variable */
-    ast->ident = nameManglingPrefix_ + ast->ident;
+    ast->renamedIdent = nameManglingPrefix_ + ident;
     ast->flags << VarDecl::wasRenamed;
+}
+
+void GLSLConverter::RenameVarDecl(VarDecl* ast)
+{
+    RenameVarDecl(ast, ast->ident);
+}
+
+void GLSLConverter::RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls)
+{
+    for (auto varDecl : varDecls)
+        RenameVarDecl(varDecl, "vary_" + varDecl->semantic.ToString());
 }
 
 void GLSLConverter::LabelAnonymousStructDecl(StructDecl* ast)
@@ -452,7 +467,7 @@ void GLSLConverter::LabelAnonymousStructDecl(StructDecl* ast)
 
 bool GLSLConverter::HasVarDeclOfVarIdentSystemSemantic(VarIdent* varIdent) const
 {
-    /* Has variable identifier a system reference? */
+    /* Has variable identifier a symbol reference? */
     if (varIdent->symbolRef)
     {
         /* Is this symbol reference a variable declaration? */
@@ -465,6 +480,28 @@ bool GLSLConverter::HasVarDeclOfVarIdentSystemSemantic(VarIdent* varIdent) const
     return false;
 }
 
+bool GLSLConverter::HasGlobalInOutVarDecl(VarIdent* varIdent) const
+{
+    /* Has variable identifier a symbol reference? */
+    if (varIdent->symbolRef)
+    {
+        /* Is this symbol reference a variable declaration? */
+        if (auto varDecl = varIdent->symbolRef->As<VarDecl>())
+        {
+            if (IsGlobalInoutVarDecl(varDecl, program_->entryPointRef->inputSemantics.varDeclRefs))
+                return true;
+            if (IsGlobalInoutVarDecl(varDecl, program_->entryPointRef->outputSemantics.varDeclRefs))
+                return true;
+        }
+    }
+    return false;
+}
+
+bool GLSLConverter::IsGlobalInoutVarDecl(VarDecl* varDecl, const std::vector<VarDecl*>& varDeclRefs) const
+{
+    return (std::find(varDeclRefs.begin(), varDeclRefs.end(), varDecl) != varDeclRefs.end());
+}
+
 void GLSLConverter::MakeVarIdentWithSystemSemanticLocal(VarIdent* ast)
 {
     auto root = ast;
@@ -472,13 +509,13 @@ void GLSLConverter::MakeVarIdentWithSystemSemanticLocal(VarIdent* ast)
     while (ast)
     {
         /* Has current variable declaration a system semantic? */
-        if (HasVarDeclOfVarIdentSystemSemantic(ast))
+        if (HasVarDeclOfVarIdentSystemSemantic(ast) || HasGlobalInOutVarDecl(ast))
         {
             /*
             Remove all leading AST nodes until this one, to convert this
             variable identifer to an identifier for a local variable
             */
-            while (root && !HasVarDeclOfVarIdentSystemSemantic(root))
+            while ( root && !( HasVarDeclOfVarIdentSystemSemantic(root) || HasGlobalInOutVarDecl(root) ) )
             {
                 root->PopFront();
                 root = root->next.get();

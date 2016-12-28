@@ -22,7 +22,7 @@ void VS(
 	out float2 texCoord : TEXCOORD,
 	out float4 tpos : SV_Position)
 {
-	tpos = mul(wvpMatrix, pos);
+	tpos = mul(wvpMatrix, pos); // BUG: pos must be implicitly casted to 'float4'
 	outp.normal = mul(wMatrix, float4(normal, 0)).xyz;
 	texCoord = tc;
 }

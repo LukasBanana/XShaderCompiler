@@ -327,6 +327,11 @@ std::string VarDecl::ToString() const
     return s;
 }
 
+const std::string& VarDecl::FinalIdent() const
+{
+    return (renamedIdent.empty() ? ident : renamedIdent);
+}
+
 TypeDenoterPtr VarDecl::DeriveTypeDenoter()
 {
     if (declStmntRef)

@@ -85,13 +85,20 @@ class GLSLConverter : public Visitor
         bool MustRenameVarDecl(VarDecl* ast) const;
 
         // Renames the specified variable declaration with name mangling.
+        void RenameVarDecl(VarDecl* ast, const std::string& ident);
         void RenameVarDecl(VarDecl* ast);
+
+        void RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls);
 
         // Labels the specified anonymous structure.
         void LabelAnonymousStructDecl(StructDecl* ast);
 
         // Returns true if the variable identifier refers to a variable declaration which has a system semantic.
         bool HasVarDeclOfVarIdentSystemSemantic(VarIdent* varIdent) const;
+
+        // Returns true if the variable identifier refers to a global input or output variable declaration.
+        bool HasGlobalInOutVarDecl(VarIdent* varIdent) const;
+        bool IsGlobalInoutVarDecl(VarDecl* varDecl, const std::vector<VarDecl*>& varDeclRefs) const;
 
         /*
         Changes the specified variable identifier to a local variable identifier

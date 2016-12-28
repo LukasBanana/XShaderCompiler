@@ -122,11 +122,6 @@ void GLSLGenerator::GenerateCodePrimary(
  * ======= Private: =======
  */
 
-bool GLSLGenerator::MustResolveStruct(StructDecl* ast) const
-{
-    return MustResolveStructForTarget(GetShaderTarget(), ast);
-}
-
 std::unique_ptr<std::string> GLSLGenerator::SystemValueToKeyword(const IndexedSemantic& semantic) const
 {
     if (semantic == Semantic::Target && versionOut_ > OutputShaderVersion::GLSL120)
@@ -220,13 +215,12 @@ IMPLEMENT_VISIT_PROC(Program)
     /* Write wrapper functions for special intrinsics */
     WriteWrapperIntrinsics();
 
-    /* Write global input/output semantics and uniforms */
-    if (IsVertexShader())
-        WriteGlobalInputSemantics();
-    else if (IsFragmentShader())
-        WriteGlobalOutputSemantics();
-
+    /* Write global uniform declarations */
     WriteGlobalUniforms();
+
+    /* Write global input/output semantics */
+    WriteGlobalInputSemantics();
+    WriteGlobalOutputSemantics();
 
     /* Write global program statements */
     WriteStmntList(ast->globalStmnts, true);
@@ -301,7 +295,7 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    Write(ast->ident);
+    Write(ast->FinalIdent());
     Visit(ast->arrayDims);
 
     if (ast->initializer)
@@ -313,7 +307,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    if (!MustResolveStruct(ast))
+    if (!ast->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
     {
         /* Write all nested structures (if this is the root structure) */
         if (!ast->flags(StructDecl::isNestedStruct))
@@ -425,7 +419,7 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
     if (!ast->structDecl->flags(AST::isReachable))
         return;
 
-    if (!MustResolveStruct(ast->structDecl.get()))
+    if (!ast->structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
     {
         WriteLineMark(ast);
 
@@ -1070,7 +1064,7 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
             auto varType = varDecl->declStmntRef->varType.get();
 
             Visit(varType);
-            Write(" " + varDecl->ident + " = ");
+            Write(" " + varDecl->FinalIdent() + " = ");
 
             /* Is a type conversion required? */
             if (!IsTypeCompatibleWithSemantic(varDecl->semantic, *varType->typeDenoter->Get()))
@@ -1109,7 +1103,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
     {
         Write("in ");
         Visit(varDecl->declStmntRef->varType);
-        Write(" " + varDecl->ident + ";");
+        Write(" " + varDecl->FinalIdent() + ";");
     }
     EndLn();
 }
@@ -1136,7 +1130,7 @@ void GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
     BeginLn();
     {
         Visit(varDecl->declStmntRef->varType);
-        Write(" " + varDecl->ident + ";");
+        Write(" " + varDecl->FinalIdent() + ";");
     }
     EndLn();
 }
@@ -1190,7 +1184,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool use
     WriteGlobalOutputSemanticsSlot(
         varDecl->declStmntRef->varType.get(),
         varDecl->semantic,
-        (useSemanticName ? varDecl->semantic.ToString() : varDecl->ident)
+        (useSemanticName ? varDecl->semantic.ToString() : varDecl->FinalIdent())
     );
 }
 
@@ -1229,7 +1223,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
                 {
                     BeginLn();
                     {
-                        Write(*semanticKeyword + " = " + varDecl->ident + ";");
+                        Write(*semanticKeyword + " = " + varDecl->FinalIdent() + ";");
                     }
                     EndLn();
                 }
@@ -1303,7 +1297,7 @@ const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* ast)
     if (ast->symbolRef)
     {
         if (auto varDecl = ast->symbolRef->As<VarDecl>())
-            return varDecl->ident;
+            return varDecl->FinalIdent();
     }
 
     /* Return default identifier */

@@ -1064,37 +1064,40 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
     #define COMMON_SEMANTICS \
         T::InstanceID, T::DepthGreaterEqual, T::DepthLessEqual, T::VertexID, T::PrimitiveID
 
+    #define COMMON_SEMANTICS_EX \
+        COMMON_SEMANTICS, T::ClipDistance, T::CullDistance
+
     switch (shaderTarget_)
     {
         case ShaderTarget::VertexShader:
             ValidateInSemantics({ COMMON_SEMANTICS });
-            ValidateOutSemantics({ COMMON_SEMANTICS, T::VertexPosition });
+            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition });
             break;
 
         case ShaderTarget::TessellationControlShader:
-            ValidateInSemantics({ COMMON_SEMANTICS, T::VertexPosition, T::OutputControlPointID });
-            ValidateOutSemantics({ COMMON_SEMANTICS, T::VertexPosition, T::InsideTessFactor, T::TessFactor });
+            ValidateInSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::OutputControlPointID });
+            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::InsideTessFactor, T::TessFactor });
             break;
 
         case ShaderTarget::TessellationEvaluationShader:
-            ValidateInSemantics({ COMMON_SEMANTICS, T::VertexPosition, T::InsideTessFactor, T::TessFactor, T::DomainLocation });
-            ValidateOutSemantics({ COMMON_SEMANTICS, T::VertexPosition });
+            ValidateInSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::InsideTessFactor, T::TessFactor, T::DomainLocation });
+            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition });
             break;
 
         case ShaderTarget::GeometryShader:
-            ValidateInSemantics({ COMMON_SEMANTICS, T::VertexPosition, T::GSInstanceID });
-            ValidateOutSemantics({ COMMON_SEMANTICS, T::VertexPosition, T::IsFrontFace, T::ViewportArrayIndex });
+            ValidateInSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::GSInstanceID });
+            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::IsFrontFace, T::ViewportArrayIndex });
             break;
 
         case ShaderTarget::FragmentShader:
-            ValidateInSemantics({ COMMON_SEMANTICS, T::Coverage, T::InnerCoverage, T::Depth, T::SampleIndex, T::RenderTargetArrayIndex, T::Position, T::IsFrontFace });
-            ValidateOutSemantics({ COMMON_SEMANTICS, T::Coverage, T::InnerCoverage, T::Depth, T::SampleIndex, T::RenderTargetArrayIndex, T::Target, T::StencilRef });
+            ValidateInSemantics({ COMMON_SEMANTICS_EX, T::Coverage, T::InnerCoverage, T::Depth, T::SampleIndex, T::RenderTargetArrayIndex, T::Position, T::IsFrontFace });
+            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::Coverage, T::InnerCoverage, T::Depth, T::SampleIndex, T::RenderTargetArrayIndex, T::Target, T::StencilRef });
             RequiredOutSemantics({ T::Target });
             break;
 
         case ShaderTarget::ComputeShader:
-            ValidateInSemantics({ COMMON_SEMANTICS, T::GroupID, T::GroupIndex, T::GroupThreadID, T::DispatchThreadID });
-            ValidateOutSemantics({ COMMON_SEMANTICS, T::RenderTargetArrayIndex });
+            ValidateInSemantics({ COMMON_SEMANTICS_EX, T::GroupID, T::GroupIndex, T::GroupThreadID, T::DispatchThreadID });
+            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::RenderTargetArrayIndex });
             break;
 
         default:
@@ -1102,6 +1105,7 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
     }
 
     #undef COMMON_SEMANTICS
+    #undef COMMON_SEMANTICS_EX
 }
 
 /* ----- Inactive entry point ----- */
