@@ -219,8 +219,17 @@ IMPLEMENT_VISIT_PROC(Program)
     WriteGlobalUniforms();
 
     /* Write global input/output semantics */
-    WriteGlobalInputSemantics();
-    WriteGlobalOutputSemantics();
+    BeginSep();
+    {
+        WriteGlobalInputSemantics();
+    }
+    EndSep();
+
+    BeginSep();
+    {
+        WriteGlobalOutputSemantics();
+    }
+    EndSep();
 
     /* Write global program statements */
     WriteStmntList(ast->globalStmnts, true);
@@ -480,25 +489,9 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     Separator();
 
-    /* Write storage classes */
-    for (auto storageClass : ast->storageClasses)
-    {
-        if (auto keyword = StorageClassToGLSLKeyword(storageClass))
-            Write(*keyword + " ");
-        else
-            Warning("not all storage classes can be mapped to GLSL keywords", ast);
-    }
-
-    /* Write interpolation modifiers */
-    for (auto interpModifier : ast->interpModifiers)
-    {
-        if (auto keyword = InterpModifierToGLSLKeyword(interpModifier))
-            Write(*keyword + " ");
-        else
-            Warning("not all interpolation modifiers can be mapped to GLSL keywords", ast);
-    }
-
-    /* Write type modifiers */
+    /* Write storage classes, interpolation modifiers, and type modifiers */
+    WriteStorageClasses(ast->storageClasses, ast);
+    WriteInterpModifiers(ast->interpModifiers, ast);
     WriteTypeModifiers(ast->typeModifiers);
     Separator();
 
@@ -1102,7 +1095,14 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
     BeginLn();
     {
         Write("in ");
+        Separator();
+
+        WriteInterpModifiers(varDecl->declStmntRef->interpModifiers, varDecl->declStmntRef);
+        Separator();
+
         Visit(varDecl->declStmntRef->varType);
+        Separator();
+
         Write(" " + varDecl->FinalIdent() + ";");
     }
     EndLn();
@@ -1184,21 +1184,28 @@ void GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool use
     WriteGlobalOutputSemanticsSlot(
         varDecl->declStmntRef->varType.get(),
         varDecl->semantic,
-        (useSemanticName ? varDecl->semantic.ToString() : varDecl->FinalIdent())
+        (useSemanticName ? varDecl->semantic.ToString() : varDecl->FinalIdent()),
+        varDecl->declStmntRef
     );
 }
 
-void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeName* varType, const IndexedSemantic& semantic, const std::string& ident)
+void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeName* varType, const IndexedSemantic& semantic, const std::string& ident, VarDeclStmnt* ast)
 {
     /* Write global output semantic slot */
     BeginLn();
     {
-        if (semantic.IsValid() && explicitBinding_)
+        if (semantic.IsSystemValue() && explicitBinding_)
             Write("layout(location = " + std::to_string(semantic.Index()) + ") out ");
         else
             Write("out ");
+        Separator();
+
+        if (ast)
+            WriteInterpModifiers(ast->interpModifiers, ast);
+        Separator();
 
         Visit(varType);
+        Separator();
 
         Write(" " + ident + ";");
     }
@@ -1378,6 +1385,28 @@ void GLSLGenerator::WriteSuffixVarIdentEnd(const TypeDenoter& lhsTypeDen, VarIde
 }
 
 /* --- Type denoter --- */
+
+void GLSLGenerator::WriteStorageClasses(const std::set<StorageClass>& storageClasses, const AST* ast)
+{
+    for (auto storage : storageClasses)
+    {
+        if (auto keyword = StorageClassToGLSLKeyword(storage))
+            Write(*keyword + " ");
+        else
+            Warning("not all storage classes can be mapped to GLSL keywords", ast);
+    }
+}
+
+void GLSLGenerator::WriteInterpModifiers(const std::set<InterpModifier>& interpModifiers, const AST* ast)
+{
+    for (auto modifier : interpModifiers)
+    {
+        if (auto keyword = InterpModifierToGLSLKeyword(modifier))
+            Write(*keyword + " ");
+        else
+            Warning("not all interpolation modifiers can be mapped to GLSL keywords", ast);
+    }
+}
 
 void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifiers)
 {

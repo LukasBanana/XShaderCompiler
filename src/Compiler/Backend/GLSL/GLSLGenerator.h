@@ -153,7 +153,7 @@ class GLSLGenerator : public Generator
         
         void WriteGlobalOutputSemantics();
         void WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName = false);
-        void WriteGlobalOutputSemanticsSlot(TypeName* varType, const IndexedSemantic& semantic, const std::string& ident);
+        void WriteGlobalOutputSemanticsSlot(TypeName* varType, const IndexedSemantic& semantic, const std::string& ident, VarDeclStmnt* ast = nullptr);
 
         void WriteOutputSemanticsAssignment(Expr* ast);
 
@@ -174,8 +174,12 @@ class GLSLGenerator : public Generator
 
         /* --- Type denoter --- */
 
+        void WriteStorageClasses(const std::set<StorageClass>& storageClasses, const AST* ast = nullptr);
+        void WriteInterpModifiers(const std::set<InterpModifier>& interpModifiers, const AST* ast = nullptr);
         void WriteTypeModifiers(const std::set<TypeModifier>& typeModifiers);
+
         void WriteDataType(DataType dataType, bool writePrecisionSpecifier = false, const AST* ast = nullptr);
+
         void WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writePrecisionSpecifier = false, const AST* ast = nullptr);
 
         /* --- Function declaration --- */
