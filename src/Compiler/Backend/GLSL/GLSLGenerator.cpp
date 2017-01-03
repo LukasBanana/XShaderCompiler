@@ -479,6 +479,11 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     BeginLn();
 
+    /* Write storage classes and interpolation modifiers (must be before in/out keywords) */
+    WriteInterpModifiers(ast->interpModifiers, ast);
+    WriteStorageClasses(ast->storageClasses, ast);
+    Separator();
+
     /* Write input modifiers */
     if (ast->flags(VarDeclStmnt::isShaderInput))
         Write("in ");
@@ -489,9 +494,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     Separator();
 
-    /* Write storage classes, interpolation modifiers, and type modifiers */
-    WriteStorageClasses(ast->storageClasses, ast);
-    WriteInterpModifiers(ast->interpModifiers, ast);
+    /* Write type modifiers */
     WriteTypeModifiers(ast->typeModifiers);
     Separator();
 
@@ -1094,10 +1097,10 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
     /* Write global variable definition statement */
     BeginLn();
     {
-        Write("in ");
+        WriteInterpModifiers(varDecl->declStmntRef->interpModifiers, varDecl->declStmntRef);
         Separator();
 
-        WriteInterpModifiers(varDecl->declStmntRef->interpModifiers, varDecl->declStmntRef);
+        Write("in ");
         Separator();
 
         Visit(varDecl->declStmntRef->varType);
@@ -1194,14 +1197,14 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeName* varType, const Inde
     /* Write global output semantic slot */
     BeginLn();
     {
+        if (ast)
+            WriteInterpModifiers(ast->interpModifiers, ast);
+        Separator();
+
         if (semantic.IsSystemValue() && explicitBinding_)
             Write("layout(location = " + std::to_string(semantic.Index()) + ") out ");
         else
             Write("out ");
-        Separator();
-
-        if (ast)
-            WriteInterpModifiers(ast->interpModifiers, ast);
         Separator();
 
         Visit(varType);

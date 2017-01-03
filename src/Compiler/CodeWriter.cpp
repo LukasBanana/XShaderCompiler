@@ -248,7 +248,13 @@ void CodeWriter::ContinueScope()
 void CodeWriter::Separator()
 {
     if (lineSeparationLevel_ > 0)
+    {
+        /* Dummy call to "Write" function, to guarantee correct separator output */
+        Write("");
+
+        /* Insert a new separator */
         queuedSeparatedLines_.Current().Tab();
+    }
 }
 
 
