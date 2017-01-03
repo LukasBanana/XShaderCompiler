@@ -343,9 +343,13 @@ TokenPtrString PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identTo
     {
         /*
         Interpret the macro usage only as plain identifier,
-        if the macro has parameters, but the macro usage has no arguments
+        if the macro has parameters, but the macro usage has no arguments.
+        Also append single blank, due to previously ignored white spaces.
         */
-        return identToken;
+        TokenPtrString tokenStr;
+        tokenStr.PushBack(identToken);
+        tokenStr.PushBack(Make<Token>(Tokens::WhiteSpaces, " "));
+        return tokenStr;
     }
 
     AcceptIt();
