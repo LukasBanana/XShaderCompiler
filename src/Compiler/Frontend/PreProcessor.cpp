@@ -86,18 +86,33 @@ bool PreProcessor::IsDefined(const std::string& ident) const
     return (macros_.find(ident) != macros_.end());
 }
 
-void PreProcessor::PushIfBlock(const TokenPtr& directiveToken, bool active, bool expectEndif)
+void PreProcessor::PushIfBlock(const TokenPtr& directiveToken, bool active, bool elseAllowed)
 {
     IfBlock ifBlock;
     {
         ifBlock.directiveToken  = directiveToken;
         ifBlock.directiveSource = GetScanner().GetSharedSource();
-        ifBlock.active          = (TopIfBlock().active && active);
-        ifBlock.expectEndif     = expectEndif;
+        ifBlock.parentActive    = TopIfBlock().active;
+        ifBlock.elseAllowed     = elseAllowed;
+        ifBlock.SetActive(active);
     }
     ifBlockStack_.push(ifBlock);
 
     WritePosToLineDirective();
+}
+
+void PreProcessor::SetIfBlock(const TokenPtr& directiveToken, bool active, bool elseAllowed)
+{
+    if (!ifBlockStack_.empty())
+    {
+        auto& ifBlock = ifBlockStack_.top();
+
+        ifBlock.directiveToken  = directiveToken;
+        ifBlock.elseAllowed     = elseAllowed;
+        ifBlock.SetActive(active);
+
+        WritePosToLineDirective();
+    }
 }
 
 void PreProcessor::PopIfBlock()
@@ -612,7 +627,7 @@ void PreProcessor::ParseDirectiveInclude()
 void PreProcessor::ParseDirectiveIf(bool skipEvaluation)
 {
     /* Parse condExpr */
-    ParseDirectiveIfOrElifCondition(skipEvaluation);
+    ParseDirectiveIfOrElifCondition(false, skipEvaluation);
 }
 
 // '#' 'ifdef' IDENT
@@ -652,60 +667,73 @@ void PreProcessor::ParseDirectiveIfndef(bool skipEvaluation)
 // '#' 'elif CONSTANT-EXPRESSION'
 void PreProcessor::ParseDirectiveElif(bool skipEvaluation)
 {
-    /* Check if '#endif'-directive is expected */
-    if (TopIfBlock().expectEndif)
+    /* Check if '#else'-directive is allowed */
+    if (!TopIfBlock().elseAllowed)
         Error("expected '#endif'-directive after previous '#else', but got '#elif'", true, HLSLErr::ERR_ELIF_ELSE);
 
-    /* Pop if-block and push new if-block in the condExpr-parse function */
-    PopIfBlock();
-
-    /* Parse condExpr */
-    ParseDirectiveIfOrElifCondition(skipEvaluation);
+    /* Pop if-block and parse next if-block in the condExpr-parse function */
+    auto parentIfCondition = TopIfBlock().parentActive;
+    ParseDirectiveIfOrElifCondition(true, skipEvaluation && !parentIfCondition);
 }
 
-void PreProcessor::ParseDirectiveIfOrElifCondition(bool skipEvaluation)
+void PreProcessor::ParseDirectiveIfOrElifCondition(bool isElseBranch, bool skipEvaluation)
 {
     auto tkn = GetScanner().PreviousToken();
 
-    /*
-    Parse condExpr token string, and wrap it inside a bracket expression
-    to easier find the legal end of the expression during parsing.
-    TODO: this is a work around to detect an illegal end of a constant expression.
-    */
-    TokenPtrString tokenString;
-    tokenString.PushBack(Make<Token>(Tokens::LBracket, "("));
-    tokenString.PushBack(ParseDirectiveTokenString(true));
-    tokenString.PushBack(Make<Token>(Tokens::RBracket, ")"));
-
-    /* Evalutate condExpr */
-    Variant condition;
-
-    PushTokenString(tokenString);
+    if (skipEvaluation)
     {
-        /* Build binary expression tree from token string */
-        auto conditionExpr = ParseExpr();
-
-        try
-        {
-            ConstExprEvaluator exprEval;
-            condition = exprEval.EvaluateExpr(*conditionExpr);
-        }
-        catch (const std::exception& e)
-        {
-            Error(e.what(), tkn.get());
-        }
-
-        #if 0
-        /* Check if token string has reached the end */
-        auto tokenStringIt = GetScanner().TopTokenStringIterator();
-        if (!tokenStringIt.ReachedEnd())
-            Error("illegal end of constant expression", tokenStringIt->get());
-        #endif
+        /* Push new if-block activation (and skip evaluation, due to currently inactive block) */
+        ParseDirectiveTokenString(true);
+        if (isElseBranch)
+            SetIfBlock(tkn);
+        else
+            PushIfBlock(tkn);
     }
-    PopTokenString();
+    else
+    {
+        /*
+        Parse condExpr token string, and wrap it inside a bracket expression
+        to easier find the legal end of the expression during parsing.
+        TODO: this is a work around to detect an illegal end of a constant expression.
+        */
+        TokenPtrString tokenString;
+        tokenString.PushBack(Make<Token>(Tokens::LBracket, "("));
+        tokenString.PushBack(ParseDirectiveTokenString(true));
+        tokenString.PushBack(Make<Token>(Tokens::RBracket, ")"));
 
-    /* Push new if-block */
-    PushIfBlock(tkn, condition.ToBool());
+        /* Evalutate condExpr */
+        Variant condition;
+
+        PushTokenString(tokenString);
+        {
+            /* Build binary expression tree from token string */
+            auto conditionExpr = ParseExpr();
+
+            try
+            {
+                ConstExprEvaluator exprEval;
+                condition = exprEval.EvaluateExpr(*conditionExpr);
+            }
+            catch (const std::exception& e)
+            {
+                Error(e.what(), tkn.get());
+            }
+
+            #if 0
+            /* Check if token string has reached the end */
+            auto tokenStringIt = GetScanner().TopTokenStringIterator();
+            if (!tokenStringIt.ReachedEnd())
+                Error("illegal end of constant expression", tokenStringIt->get());
+            #endif
+        }
+        PopTokenString();
+
+        /* Push new if-block */
+        if (isElseBranch)
+            SetIfBlock(tkn, condition.ToBool());
+        else
+            PushIfBlock(tkn, condition.ToBool());
+    }
 }
 
 // '#' 'else'
@@ -713,14 +741,12 @@ void PreProcessor::ParseDirectiveElse()
 {
     auto tkn = TopIfBlock().directiveToken;
 
-    /* Check if '#endif'-directive is expected */
-    if (TopIfBlock().expectEndif)
+    /* Check if '#else'-directive is allowed */
+    if (!TopIfBlock().elseAllowed)
         Error("expected '#endif'-directive after previous '#else', but got another '#else'", true, HLSLErr::ERR_ELSE_ELSE);
 
     /* Pop if-block and push new if-block with negated condExpr */
-    auto elseCondition = !TopIfBlock().active;
-    PopIfBlock();
-    PushIfBlock(tkn, elseCondition, true);
+    SetIfBlock(tkn, true, false);
 }
 
 // '#' 'endif'
@@ -983,6 +1009,18 @@ TokenPtrString PreProcessor::ParseArgumentTokenString()
     }
 
     return tokenString;
+}
+
+
+/*
+ * IfBlock structure
+ */
+
+void PreProcessor::IfBlock::SetActive(bool activate)
+{
+    active = (parentActive && !wasActive && activate);
+    if (active)
+        wasActive = true;
 }
 
 

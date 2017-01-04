@@ -57,17 +57,21 @@ class PreProcessor : public Parser
 
         struct Macro
         {
-            std::vector<std::string>    parameters;             //< Parameter identifiers
-            bool                        varArgs     = false;    //< Specifies whether macro supports variadic arguments
-            TokenPtrString              tokenString;            //< Macro definition value as token string
+            std::vector<std::string>    parameters;             // Parameter identifiers
+            bool                        varArgs     = false;    // Specifies whether macro supports variadic arguments
+            TokenPtrString              tokenString;            // Macro definition value as token string
         };
 
         struct IfBlock
         {
+            void SetActive(bool activate);
+
             TokenPtr        directiveToken;
             SourceCodePtr   directiveSource;
-            bool            active         = true;
-            bool            expectEndif    = false;
+            bool            parentActive    = true;     // Is the parent if-block active?
+            bool            active          = true;     // Is this if-block active?
+            bool            wasActive       = false;    // Was this if-block active?
+            bool            elseAllowed     = true;     // Is an else-block allowed?
         };
 
         using MacroPtr = std::shared_ptr<Macro>;
@@ -82,7 +86,8 @@ class PreProcessor : public Parser
         // Returns true if the specified symbol is defined.
         bool IsDefined(const std::string& ident) const;
 
-        void PushIfBlock(const TokenPtr& directiveToken, bool active = false, bool expectEndif = false);
+        void PushIfBlock(const TokenPtr& directiveToken, bool active = false, bool elseAllowed = true);
+        void SetIfBlock(const TokenPtr& directiveToken, bool active = false, bool elseAllowed = true);
         void PopIfBlock();
 
         // Returns the if-block state from the top of the stack. If the stack is empty, the default state is returned.
@@ -122,7 +127,7 @@ class PreProcessor : public Parser
         void            ParseDirectiveIfdef(bool skipEvaluation = false);
         void            ParseDirectiveIfndef(bool skipEvaluation = false);
         void            ParseDirectiveElif(bool skipEvaluation = false);
-        void            ParseDirectiveIfOrElifCondition(bool skipEvaluation = false);
+        void            ParseDirectiveIfOrElifCondition(bool isElseBranch, bool skipEvaluation = false);
         void            ParseDirectiveElse();
         void            ParseDirectiveEndif();
         void            ParseDirectivePragma();
