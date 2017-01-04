@@ -906,7 +906,7 @@ void GLSLGenerator::WriteProgramHeader()
 
 void GLSLGenerator::WriteProgramHeaderVersion()
 {
-    /* Convert output shader version into GLSL version number */
+    /* Convert output shader version into GLSL version number (with bitwise AND operator) */
     int versionNumber = (static_cast<int>(versionOut_)) & static_cast<int>(OutputShaderVersion::GLSL);
     WriteLn("#version " + std::to_string(versionNumber));
 }
@@ -1097,11 +1097,25 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
     /* Write global variable definition statement */
     BeginLn();
     {
-        WriteInterpModifiers(varDecl->declStmntRef->interpModifiers, varDecl->declStmntRef);
-        Separator();
+        if (versionOut_ <= OutputShaderVersion::GLSL120)
+        {
+            if (!varDecl->declStmntRef->interpModifiers.empty())
+                Warning("interpolation modifiers not supported for GLSL version 120 or below", varDecl);
 
-        Write("in ");
-        Separator();
+            if (GetShaderTarget() == ShaderTarget::VertexShader)
+                Write("attribute ");
+            else
+                Write("varying ");
+            Separator();
+        }
+        else
+        {
+            WriteInterpModifiers(varDecl->declStmntRef->interpModifiers, varDecl->declStmntRef);
+            Separator();
+
+            Write("in ");
+            Separator();
+        }
 
         Visit(varDecl->declStmntRef->varType);
         Separator();
@@ -1197,15 +1211,26 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeName* varType, const Inde
     /* Write global output semantic slot */
     BeginLn();
     {
-        if (ast)
-            WriteInterpModifiers(ast->interpModifiers, ast);
-        Separator();
+        if (versionOut_ <= OutputShaderVersion::GLSL120)
+        {
+            if (ast && !ast->interpModifiers.empty())
+                Warning("interpolation modifiers not supported for GLSL version 120 or below", ast);
 
-        if (semantic.IsSystemValue() && explicitBinding_)
-            Write("layout(location = " + std::to_string(semantic.Index()) + ") out ");
+            Write("varying ");
+            Separator();
+        }
         else
-            Write("out ");
-        Separator();
+        {
+            if (ast)
+                WriteInterpModifiers(ast->interpModifiers, ast);
+            Separator();
+
+            if (semantic.IsSystemValue() && explicitBinding_)
+                Write("layout(location = " + std::to_string(semantic.Index()) + ") out ");
+            else
+                Write("out ");
+            Separator();
+        }
 
         Visit(varType);
         Separator();

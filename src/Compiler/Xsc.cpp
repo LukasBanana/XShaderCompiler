@@ -51,11 +51,6 @@ static bool CompileShaderPrimary(
     if (!outputDesc.sourceCode)
         throw std::invalid_argument("output stream must not be null");
 
-    if (outputDesc.shaderVersion == OutputShaderVersion::GLSL110)
-        throw std::invalid_argument("output shader version 'GLSL 1.10' is not supported");
-    if (outputDesc.shaderVersion == OutputShaderVersion::GLSL120)
-        throw std::invalid_argument("output shader version 'GLSL 1.20' is not supported");
-
     /* Pre-process input code */
     timePoints[0] = Time::now();
 
