@@ -840,6 +840,11 @@ bool IsTextureIntrinsic(const Intrinsic t)
     return (t >= Intrinsic::Texture_GetDimensions && t <= Intrinsic::Texture_SampleLevel_5);
 }
 
+bool IsStreamOutputIntrinsic(const Intrinsic t)
+{
+    return (t >= Intrinsic::StreamOutput_Append && t <= Intrinsic::StreamOutput_RestartStrip);
+}
+
 
 /* ----- IndexedSemantic Class ----- */
 

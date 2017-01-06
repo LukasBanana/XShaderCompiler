@@ -82,6 +82,9 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeIntrinsicWrapperInlining(FunctionCall* ast);
 
+        bool AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* ast);
+        bool AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const BufferType bufferType, const std::string& ident, const AST* ast = nullptr);
+
         /* ----- Variable identifier ----- */
 
         void AnalyzeVarIdent(VarIdent* varIdent);

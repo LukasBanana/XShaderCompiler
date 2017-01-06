@@ -746,6 +746,9 @@ bool IsGlobalIntrinsic(const Intrinsic t);
 // Returns true if the speciifed intrinsic belongs to a texture object.
 bool IsTextureIntrinsic(const Intrinsic t);
 
+// Returns true if the speciifed intrinsic belongs to a stream-output object.
+bool IsStreamOutputIntrinsic(const Intrinsic t);
+
 
 /* ----- Semantic Enum ----- */
 

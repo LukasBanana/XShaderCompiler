@@ -112,23 +112,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                     AnalyzeVarIdent(ast->varIdent.get());
 
                     /* Verify intrinsic for respective object class */
-                    if (auto symbolRef = ast->varIdent->symbolRef)
-                    {
-                        switch (symbolRef->Type())
-                        {
-                            case AST::Types::BufferDecl:
-                                if (!IsTextureIntrinsic(intrinsic))
-                                    Error("invalid intrinsic '" + ast->varIdent->next->ident + "' for a buffer object", ast);
-                                break;
-
-                            default:
-                                break;
-                        }
-                    }
-                    else
-                        Error("intrinsic '" + ast->varIdent->next->ident + "' not declared in object '" + ast->varIdent->ident + "'", ast);
-
-                    AnalyzeFunctionCallIntrinsic(ast, intrIt->second);
+                    if (AnalyzeMemberIntrinsic(intrinsic, ast))
+                        AnalyzeFunctionCallIntrinsic(ast, intrIt->second);
                 }
                 else
                     AnalyzeFunctionCallStandard(ast);
@@ -660,6 +645,60 @@ void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(FunctionCall* ast)
         /* The wrapper function for this intrinsic can be inlined */
         ast->flags << FunctionCall::canInlineIntrinsicWrapper;
     }
+}
+
+bool HLSLAnalyzer::AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* ast)
+{
+    if (auto symbolRef = ast->varIdent->symbolRef)
+    {
+        if (auto varDecl = symbolRef->As<VarDecl>())
+        {
+            /* Analyze member intrinsic for buffer type */
+            auto typeDen = varDecl->GetTypeDenoter()->Get();
+            if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
+            {
+                if (AnalyzeMemberIntrinsicBuffer(intrinsic, bufferTypeDen->bufferType, ast->varIdent->next->ident, ast))
+                    return true;
+            }
+        }
+        else if (auto bufferDecl = symbolRef->As<BufferDecl>())
+        {
+            /* Analyze member intrinsic for buffer type */
+            if (AnalyzeMemberIntrinsicBuffer(intrinsic, bufferDecl->GetBufferType(), ast->varIdent->next->ident, ast))
+                return true;
+        }
+    }
+
+    /* Intrinsic not found in an object class */
+    Error("intrinsic '" + ast->varIdent->next->ident + "' not declared in object '" + ast->varIdent->ident + "'", ast);
+    return false;
+}
+
+bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const BufferType bufferType, const std::string& ident, const AST* ast)
+{
+    if (IsTextureBufferType(bufferType))
+    {
+        if (!IsTextureIntrinsic(intrinsic))
+            Error("invalid intrinsic '" + ident + "' for texture object", ast);
+        else
+            return true;
+    }
+    else if (IsStorageBufferType(bufferType))
+    {
+        //TODO
+        /*if (!IsStorageBufferIntrinsic(intrinsic))
+            Error("invalid intrinsic '" + ident + "' for storage-buffer object", ast);
+        else
+            return true;*/
+    }
+    else if (IsStreamBufferType(bufferType))
+    {
+        if (!IsStreamOutputIntrinsic(intrinsic))
+            Error("invalid intrinsic '" + ident + "' for stream-output object", ast);
+        else
+            return true;
+    }
+    return false;
 }
 
 /* ----- Variable identifier ----- */
