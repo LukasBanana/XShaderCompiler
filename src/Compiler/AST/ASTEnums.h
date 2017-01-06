@@ -720,6 +720,9 @@ enum class Intrinsic
     Texture_SampleLevel_3,  // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD)
     Texture_SampleLevel_4,  // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD, int[1,2,3] Offset)
     Texture_SampleLevel_5,  // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD, int[1,2,3] Offset, out uint Status)
+
+    StreamOutput_Append,
+    StreamOutput_RestartStrip,
 };
 
 // Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>

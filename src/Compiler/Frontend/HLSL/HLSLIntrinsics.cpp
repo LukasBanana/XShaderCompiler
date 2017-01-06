@@ -167,6 +167,9 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
         { "SampleCmpLevelZero",                 { T::Texture_SampleCmp_3,               4, 0 } }, // Identical to SampleCmp (but only for Level 0)
         { "SampleGrad",                         { T::Texture_SampleGrad_4,              4, 0 } },
         { "SampleLevel",                        { T::Texture_SampleLevel_3,             4, 0 } },
+
+        { "Append",                             { T::StreamOutput_Append,               4, 0 } },
+        { "RestartStrip",                       { T::StreamOutput_RestartStrip,         4, 0 } },
     };
 }
 
@@ -442,6 +445,9 @@ static std::map<Intrinsic, IntrinsicDescriptor> GenerateIntrinsicDescriptorMap()
         { T::Texture_SampleLevel_3,             { DataType::Float4, 3 } },
         { T::Texture_SampleLevel_4,             { DataType::Float4, 4 } },
         { T::Texture_SampleLevel_5,             { DataType::Float4, 5 } },
+
+        { T::StreamOutput_Append,               { 1 }                   },
+        { T::StreamOutput_RestartStrip,         { }                     },
     };
 }
 
