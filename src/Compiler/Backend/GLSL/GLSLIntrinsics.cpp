@@ -183,6 +183,9 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { T::Texture_SampleLevel_3,             "textureLod"            },
         { T::Texture_SampleLevel_4,             "textureLodOffset"      },
       //{ T::Texture_SampleLevel_5,             ""                      },
+
+        { T::StreamOutput_Append,               "EmitVertex"            },
+        { T::StreamOutput_RestartStrip,         "EndPrimitive"          },
     };
 }
 
