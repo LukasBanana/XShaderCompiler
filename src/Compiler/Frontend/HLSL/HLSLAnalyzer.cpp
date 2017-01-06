@@ -112,16 +112,21 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                     AnalyzeVarIdent(ast->varIdent.get());
 
                     /* Verify intrinsic for respective object class */
-                    switch (ast->varIdent->symbolRef->Type())
+                    if (auto symbolRef = ast->varIdent->symbolRef)
                     {
-                        case AST::Types::BufferDecl:
-                            if (!IsTextureIntrinsic(intrinsic))
-                                Error("invalid intrinsic '" + ast->varIdent->next->ident + "' for a texture object", ast);
-                            break;
+                        switch (symbolRef->Type())
+                        {
+                            case AST::Types::BufferDecl:
+                                if (!IsTextureIntrinsic(intrinsic))
+                                    Error("invalid intrinsic '" + ast->varIdent->next->ident + "' for a buffer object", ast);
+                                break;
 
-                        default:
-                            break;
+                            default:
+                                break;
+                        }
                     }
+                    else
+                        Error("intrinsic '" + ast->varIdent->next->ident + "' not declared in object '" + ast->varIdent->ident + "'", ast);
 
                     AnalyzeFunctionCallIntrinsic(ast, intrIt->second);
                 }
@@ -130,10 +135,16 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             }
             else
             {
-                /* Check if the function call refers to an intrinsic */
+                /* Does the function call refer to an intrinsic? */
                 auto intrIt = HLSLIntrinsics().find(ast->varIdent->ident);
                 if (intrIt != HLSLIntrinsics().end())
-                    AnalyzeFunctionCallIntrinsic(ast, intrIt->second);
+                {
+                    /* Is this a global intrinsic? */
+                    if (IsGlobalIntrinsic(intrIt->second.intrinsic))
+                        AnalyzeFunctionCallIntrinsic(ast, intrIt->second);
+                    else
+                        AnalyzeFunctionCallStandard(ast);
+                }
                 else
                     AnalyzeFunctionCallStandard(ast);
             }
