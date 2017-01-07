@@ -131,6 +131,9 @@ enum class DataType
 {
     Undefined,
 
+    // Object types,
+    Null,
+
     // String types,
     String,
 

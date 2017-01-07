@@ -88,7 +88,7 @@ bool HLSLParser::IsBaseDataType() const
 
 bool HLSLParser::IsLiteral() const
 {
-    return (Is(Tokens::BoolLiteral) || Is(Tokens::IntLiteral) || Is(Tokens::FloatLiteral) || Is(Tokens::StringLiteral));
+    return (Is(Tokens::NullLiteral) || Is(Tokens::BoolLiteral) || Is(Tokens::IntLiteral) || Is(Tokens::FloatLiteral) || Is(Tokens::StringLiteral));
 }
 
 bool HLSLParser::IsArithmeticUnaryExpr() const

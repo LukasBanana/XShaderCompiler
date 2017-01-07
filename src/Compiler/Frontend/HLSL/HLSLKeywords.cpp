@@ -38,6 +38,8 @@ static KeywordMapType GenerateKeywordMap()
 
         { "string",                  T::StringType      },
 
+        { "NULL",                    T::NullLiteral     },
+
         { "bool",                    T::ScalarType      },
         { "bool1",                   T::ScalarType      },
         { "bool1x1",                 T::ScalarType      },

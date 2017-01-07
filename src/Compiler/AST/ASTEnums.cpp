@@ -205,7 +205,9 @@ CtrlTransfer StringToCtrlTransfer(const std::string& s)
 
 std::string DataTypeToString(const DataType t, bool useTemplateSyntax)
 {
-    if (t == DataType::String)
+    if (t == DataType::Null)
+        return "null";
+    else if (t == DataType::String)
         return "string";
     else if (IsScalarType(t))
     {
@@ -689,6 +691,8 @@ DataType TokenToDataType(const Token& tkn)
             return FloatLiteralTokenToDataType(tkn);
         case Token::Types::StringLiteral:
             return DataType::String;
+        case Token::Types::NullLiteral:
+            return DataType::Null;
         default:
             break;
     }
