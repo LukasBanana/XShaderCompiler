@@ -84,7 +84,10 @@ static bool CompileShaderPrimary(
     timePoints[1] = Time::now();
 
     HLSLParser parser(log);
-    auto program = parser.ParseSource(std::make_shared<SourceCode>(std::move(processedInput)));
+    auto program = parser.ParseSource(
+        std::make_shared<SourceCode>(std::move(processedInput)),
+        (inputDesc.shaderVersion >= InputShaderVersion::HLSL4)
+    );
 
     if (!program)
         return SubmitError("parsing input code failed");

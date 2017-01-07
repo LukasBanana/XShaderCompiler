@@ -39,8 +39,10 @@ HLSLParser::HLSLParser(Log* log) :
 {
 }
 
-ProgramPtr HLSLParser::ParseSource(const SourceCodePtr& source)
+ProgramPtr HLSLParser::ParseSource(const SourceCodePtr& source, bool useD3D10Semantics)
 {
+    useD3D10Semantics_ = useD3D10Semantics;
+
     PushScannerSource(source);
 
     try
@@ -2388,7 +2390,7 @@ IndexedSemantic HLSLParser::ParseSemantic(bool parseColon)
 {
     if (parseColon)
         Accept(Tokens::Colon);
-    return HLSLKeywordToSemantic(ParseIdent());
+    return HLSLKeywordToSemantic(ParseIdent(), useD3D10Semantics_);
 }
 
 std::string HLSLParser::ParseSamplerStateTextureIdent()
