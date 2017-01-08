@@ -196,11 +196,12 @@ void DebuggerView::CreateLayoutSubSplitter()
     CreateLayoutSourceSplitter();
 
     subSplitter_->SplitHorizontally(sourceSplitter_, reportView_, 600);
+    subSplitter_->SetSashGravity(1.0);
 }
 
 void DebuggerView::CreateLayoutReportView()
 {
-    reportView_ = new ReportView(subSplitter_, wxDefaultPosition, wxSize(400, 50));
+    reportView_ = new ReportView(subSplitter_, wxDefaultPosition, wxSize(400, 100));
 }
 
 void DebuggerView::CreateLayoutSourceSplitter()
@@ -211,18 +212,19 @@ void DebuggerView::CreateLayoutSourceSplitter()
     CreateLayoutOutputSourceView();
 
     sourceSplitter_->SplitVertically(inputSourceView_, outputSourceView_);
+    sourceSplitter_->SetSashGravity(0.5);
 }
 
 void DebuggerView::CreateLayoutInputSourceView()
 {
-    inputSourceView_ = new SourceView(sourceSplitter_, wxDefaultPosition, wxSize(200, 600));
+    inputSourceView_ = new SourceView(sourceSplitter_, wxDefaultPosition, wxSize(100, 600));
     inputSourceView_->SetLanguage(SourceViewLanguage::HLSL);
     inputSourceView_->SetCharEnterCallback(std::bind(&DebuggerView::OnInputSourceCharEnter, this, std::placeholders::_1));
 }
 
 void DebuggerView::CreateLayoutOutputSourceView()
 {
-    outputSourceView_ = new SourceView(sourceSplitter_, wxDefaultPosition, wxSize(200, 600));
+    outputSourceView_ = new SourceView(sourceSplitter_, wxDefaultPosition, wxSize(100, 600));
     outputSourceView_->SetLanguage(SourceViewLanguage::GLSL);
     //outputSourceView_->SetReadOnly(true);
 }
