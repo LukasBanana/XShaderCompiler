@@ -27,6 +27,7 @@ namespace Xsc
 
 DECL_PTR( TypeDenoter        );
 DECL_PTR( VoidTypeDenoter    );
+DECL_PTR( NullTypeDenoter    );
 DECL_PTR( BaseTypeDenoter    );
 DECL_PTR( BufferTypeDenoter  );
 DECL_PTR( SamplerTypeDenoter );
@@ -45,6 +46,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     enum class Types
     {
         Void,
+        Null,
         Base,
         Buffer,
         Sampler,
@@ -69,6 +71,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     virtual bool IsMatrix() const;
 
     bool IsVoid() const;
+    bool IsNull() const;
     bool IsBase() const;
     bool IsSampler() const;
     bool IsBuffer() const;
@@ -130,6 +133,17 @@ struct VoidTypeDenoter : public TypeDenoter
     std::string ToString() const override;
 
     // Returns always false, since void type can not be casted to anything.
+    bool IsCastableTo(const TypeDenoter& targetType) const override;
+};
+
+// Null type denoter.
+struct NullTypeDenoter : public TypeDenoter
+{
+    static const Types classType = Types::Null;
+
+    Types Type() const override;
+    std::string ToString() const override;
+
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 };
 

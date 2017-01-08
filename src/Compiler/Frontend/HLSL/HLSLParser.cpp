@@ -1403,8 +1403,10 @@ LiteralExprPtr HLSLParser::ParseLiteralExpr()
     /* Parse literal */
     auto ast = Make<LiteralExpr>();
 
-    ast->dataType   = TokenToDataType(*Tkn());
-    ast->value      = AcceptIt()->Spell();
+    if (!Is(Tokens::NullLiteral))
+        ast->dataType = TokenToDataType(*Tkn());
+
+    ast->value = AcceptIt()->Spell();
 
     return UpdateSourceArea(ast);
 }

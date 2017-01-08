@@ -797,7 +797,10 @@ struct LiteralExpr : public Expr
     // Returns the value of this literal if it is a string literal (excluding the quotation marks). Otherwise an empty string is returned.
     std::string GetStringValue() const;
 
-    DataType        dataType    = DataType::Undefined;  // Valid data types: String, Bool, Int, UInt, Half, Float, Double
+    // Returns true if this is a NULL literal.
+    bool IsNull() const;
+
+    DataType        dataType    = DataType::Undefined;  // Valid data types: String, Bool, Int, UInt, Half, Float, Double; (Undefined for 'NULL')
     std::string     value;
 };
 

@@ -41,6 +41,11 @@ bool TypeDenoter::IsVoid() const
     return (Type() == Types::Void);
 }
 
+bool TypeDenoter::IsNull() const
+{
+    return (Type() == Types::Null);
+}
+
 bool TypeDenoter::IsBase() const
 {
     return (Type() == Types::Base);
@@ -150,6 +155,26 @@ bool VoidTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 }
 
 
+/* ----- NullTypeDenoter ----- */
+
+TypeDenoter::Types NullTypeDenoter::Type() const
+{
+    return Types::Null;
+}
+
+std::string NullTypeDenoter::ToString() const
+{
+    return "NULL";
+}
+
+bool NullTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
+{
+    /* Null literal is castable to all object types */
+    auto target = targetType.GetAliased().Type();
+    return (target == TypeDenoter::Types::Buffer || target == TypeDenoter::Types::Sampler);
+}
+
+
 /* ----- BaseTypeDenoter ----- */
 
 TypeDenoter::Types BaseTypeDenoter::Type() const
@@ -190,40 +215,31 @@ bool BaseTypeDenoter::Equals(const TypeDenoter& rhs) const
 // see https://msdn.microsoft.com/en-us/library/windows/desktop/bb172396(v=vs.85).aspx
 bool BaseTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
-    if (dataType == DataType::Null)
+    //TODO: this must be extended for a lot of casting variants!!!
+    #if 0
+    if (IsScalar())
+        return (targetType.Type() == Types::Base || targetType.Type() == Types::Struct);
+    else if (IsVector())
     {
-        /* Null literal is castable to all object types */
-        auto target = targetType.GetAliased().Type();
-        return (target == TypeDenoter::Types::Buffer || target == TypeDenoter::Types::Sampler);
+        if (targetType.IsVector())
+        {
+            auto& targetBaseType = static_cast<const BaseTypeDenoter&>(targetType);
+            return (targetType.IsVector() && VectorTypeDim(dataType) == VectorTypeDim(targetBaseType.dataType));
+        }
     }
-    else
+    else if (IsMatrix())
     {
-        //TODO: this must be extended for a lot of casting variants!!!
-        #if 0
-        if (IsScalar())
-            return (targetType.Type() == Types::Base || targetType.Type() == Types::Struct);
-        else if (IsVector())
+        if (targetType.IsMatrix())
         {
-            if (targetType.IsVector())
-            {
-                auto& targetBaseType = static_cast<const BaseTypeDenoter&>(targetType);
-                return (targetType.IsVector() && VectorTypeDim(dataType) == VectorTypeDim(targetBaseType.dataType));
-            }
+            auto& targetBaseType = static_cast<const BaseTypeDenoter&>(targetType);
+            return (targetType.IsVector() && MatrixTypeDim(dataType) == MatrixTypeDim(targetBaseType.dataType));
         }
-        else if (IsMatrix())
-        {
-            if (targetType.IsMatrix())
-            {
-                auto& targetBaseType = static_cast<const BaseTypeDenoter&>(targetType);
-                return (targetType.IsVector() && MatrixTypeDim(dataType) == MatrixTypeDim(targetBaseType.dataType));
-            }
-        }
-        return false;
-        #else
-        const auto& targetTypeAliased = targetType.GetAliased();
-        return (targetTypeAliased.Type() == Types::Base || targetTypeAliased.Type() == Types::Struct);
-        #endif
     }
+    return false;
+    #else
+    const auto& targetTypeAliased = targetType.GetAliased();
+    return (targetTypeAliased.Type() == Types::Base || targetTypeAliased.Type() == Types::Struct);
+    #endif
 }
 
 TypeDenoterPtr BaseTypeDenoter::Get(const VarIdent* varIdent)

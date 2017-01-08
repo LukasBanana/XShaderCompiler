@@ -309,8 +309,14 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
     if (ast->initializer)
     {
-        Write(" = ");
-        Visit(ast->initializer);
+        if (auto typeDen = ast->initializer->GetTypeDenoter()->Get())
+        {
+            if (!typeDen->IsNull())
+            {
+                Write(" = ");
+                Visit(ast->initializer);
+            }
+        }
     }
 }
 

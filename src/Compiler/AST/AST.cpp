@@ -677,7 +677,10 @@ TypeDenoterPtr ListExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr LiteralExpr::DeriveTypeDenoter()
 {
-    return std::make_shared<BaseTypeDenoter>(dataType);
+    if (IsNull())
+        return std::make_shared<NullTypeDenoter>();
+    else
+        return std::make_shared<BaseTypeDenoter>(dataType);
 }
 
 void LiteralExpr::ConvertDataType(const DataType type)
@@ -728,6 +731,11 @@ std::string LiteralExpr::GetStringValue() const
         return value.substr(1, value.size() - 2);
     else
         return "";
+}
+
+bool LiteralExpr::IsNull() const
+{
+    return (dataType == DataType::Undefined && value == "NULL");
 }
 
 
