@@ -79,8 +79,20 @@ std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
 
     Visit(&program);
 
-    if (targetGLSLVersion == OutputShaderVersion::GLSL)
-        targetGLSLVersion = minGLSLVersion_;
+    switch (targetGLSLVersion)
+    {
+        case OutputShaderVersion::GLSL:
+            targetGLSLVersion = minGLSLVersion_;
+            break;
+        case OutputShaderVersion::ESSL:
+            targetGLSLVersion = OutputShaderVersion::ESSL300;
+            break;
+        case OutputShaderVersion::VKSL:
+            targetGLSLVersion = OutputShaderVersion::VKSL450;
+            break;
+        default:
+            break;
+    }
 
     return std::move(extensions_);
 }
