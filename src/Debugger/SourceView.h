@@ -30,7 +30,8 @@ class SourceView : public wxStyledTextCtrl
 
     public:
 
-        using CharEnterCallback = std::function<void(char)>;
+        using CharEnterCallback = std::function<void(char chr)>;
+        using MoveCursorCallback = std::function<void(int line, int column)>;
 
         SourceView(wxWindow* parent, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize);
 
@@ -39,13 +40,15 @@ class SourceView : public wxStyledTextCtrl
         void SetTextAndRefresh(const wxString& text);
 
         void SetCharEnterCallback(const CharEnterCallback& callback);
+        void SetMoveCursorCallback(const MoveCursorCallback& callback);
 
     private:
 
         void OnCharAdded(wxStyledTextEvent& event);
         void OnKeyDown(wxKeyEvent& event);
 
-        CharEnterCallback charEnterCallback_;
+        CharEnterCallback   charEnterCallback_;
+        MoveCursorCallback  moveCursorCallback_;
 
 };
 

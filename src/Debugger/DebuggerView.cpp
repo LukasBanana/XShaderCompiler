@@ -87,6 +87,8 @@ void DebuggerView::CreateLayout()
     CreateLayoutSubSplitter();
 
     mainSplitter_->SplitVertically(propGrid_, subSplitter_, 300);
+
+    CreateLayoutStatusBar();
 }
 
 void DebuggerView::CreateLayoutPropertyGrid()
@@ -220,6 +222,13 @@ void DebuggerView::CreateLayoutInputSourceView()
     inputSourceView_ = new SourceView(sourceSplitter_, wxDefaultPosition, wxSize(100, 600));
     inputSourceView_->SetLanguage(SourceViewLanguage::HLSL);
     inputSourceView_->SetCharEnterCallback(std::bind(&DebuggerView::OnInputSourceCharEnter, this, std::placeholders::_1));
+    inputSourceView_->SetMoveCursorCallback(
+        [&](int line, int column)
+        {
+            SetStatusLine(line);
+            SetStatusColumn(column);
+        }
+    );
 }
 
 void DebuggerView::CreateLayoutOutputSourceView()
@@ -227,6 +236,18 @@ void DebuggerView::CreateLayoutOutputSourceView()
     outputSourceView_ = new SourceView(sourceSplitter_, wxDefaultPosition, wxSize(100, 600));
     outputSourceView_->SetLanguage(SourceViewLanguage::GLSL);
     //outputSourceView_->SetReadOnly(true);
+}
+
+void DebuggerView::CreateLayoutStatusBar()
+{
+    statusBar_ = CreateStatusBar(3);
+
+    int widths[] = { 200, 70, 70 };
+    statusBar_->SetStatusWidths(3, widths);
+
+    SetStatusReady(true);
+    SetStatusLine(1);
+    SetStatusColumn(1);
 }
 
 void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
@@ -323,6 +344,8 @@ class DebuggerLog : public Log
 
 void DebuggerView::TranslateInputToOutput()
 {
+    SetStatusReady(false);
+
     /* Initialize input source */
     auto inputSource = std::make_shared<std::stringstream>();
     *inputSource << inputSourceView_->GetText().ToStdString();
@@ -341,6 +364,24 @@ void DebuggerView::TranslateInputToOutput()
         /* Show output */
         outputSourceView_->SetTextAndRefresh(outputSource.str());
     }
+
+    SetStatusReady(true);
+}
+
+void DebuggerView::SetStatusReady(bool isReady)
+{
+    statusBar_->SetStatusText(isReady ? "Ready" : "Busy", 0);
+    statusBar_->Refresh();
+}
+
+void DebuggerView::SetStatusLine(int line)
+{
+    statusBar_->SetStatusText("Ln " + std::to_string(line), 1);
+}
+
+void DebuggerView::SetStatusColumn(int column)
+{
+    statusBar_->SetStatusText("Col " + std::to_string(column), 2);
 }
 
 
