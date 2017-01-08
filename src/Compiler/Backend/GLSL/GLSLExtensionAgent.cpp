@@ -64,7 +64,7 @@ static OutputShaderVersion GetMinGLSLVersionForTarget(const ShaderTarget shaderT
         case ShaderTarget::FragmentShader:                  return OutputShaderVersion::GLSL130; // actually 110, but this compiler does not support GLSL < 130
         case ShaderTarget::ComputeShader:                   return OutputShaderVersion::GLSL430; // actually 420, but only 430 supports local work group size
     }
-    return OutputShaderVersion::GLSL130; // actually 110, but this compiler does not support GLSL < 130
+    return OutputShaderVersion::GLSL130; // GLSL 110 and 120 are deprecated, so only output them when they are set explicitly
 }
 
 std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
