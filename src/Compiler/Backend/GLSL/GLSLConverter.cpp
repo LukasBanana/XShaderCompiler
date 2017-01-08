@@ -78,7 +78,7 @@ IMPLEMENT_VISIT_PROC(Program)
             if (stmnt->Type() == AST::Types::SamplerDeclStmnt)
                 return true;
             if (auto varDeclStmnt = stmnt->As<VarDeclStmnt>())
-                return TypeNameIsSampler(*varDeclStmnt->varType);
+                return IsSamplerStateTypeDenoter(varDeclStmnt->varType->GetTypeDenoter());
             return false;
         }
     );
@@ -104,7 +104,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         program_->disabledAST,
         [&](const ExprPtr& expr)
         {
-            return ExprContainsSampler(*expr);
+            return IsSamplerStateTypeDenoter(expr->GetTypeDenoter());
         }
     );
 
@@ -181,7 +181,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     }
     PopStructDeclLevel();
 
-    RemoveSamplerVarDeclStmnts(ast->members);
+    RemoveSamplerStateVarDeclStmnts(ast->members);
 
     /* Is this an empty structure? */
     if (ast->members.empty())
@@ -209,7 +209,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     else
         VISIT_DEFAULT(FunctionDecl);
 
-    RemoveSamplerVarDeclStmnts(ast->parameters);
+    RemoveSamplerStateVarDeclStmnts(ast->parameters);
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
@@ -404,14 +404,17 @@ bool GLSLConverter::IsInsideStructDecl() const
     return (structDeclLevel_ > 0);
 }
 
-bool GLSLConverter::ExprContainsSampler(Expr& ast) const
+bool GLSLConverter::IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter) const
 {
-    return ast.GetTypeDenoter()->Get()->IsSampler();
-}
-
-bool GLSLConverter::TypeNameIsSampler(TypeName& ast) const
-{
-    return ast.GetTypeDenoter()->Get()->IsSampler();
+    if (typeDenoter)
+    {
+        if (auto samplerTypeDen = typeDenoter->Get()->As<SamplerTypeDenoter>())
+        {
+            /* Is the sampler type a sampler-state type? */
+            return IsSamplerStateType(samplerTypeDen->samplerType);
+        }
+    }
+    return false;
 }
 
 bool GLSLConverter::MustResolveStruct(StructDecl* ast) const
@@ -623,7 +626,7 @@ void GLSLConverter::RemoveDeadCode(std::vector<StmntPtr>& stmnts)
     }
 }
 
-void GLSLConverter::RemoveSamplerVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts)
+void GLSLConverter::RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts)
 {
     /* Move all variables to disabled code which are sampler state objects, since GLSL does not support sampler states */
     MoveAllIf(
@@ -631,7 +634,7 @@ void GLSLConverter::RemoveSamplerVarDeclStmnts(std::vector<VarDeclStmntPtr>& stm
         program_->disabledAST,
         [&](const VarDeclStmntPtr& varDeclStmnt)
         {
-            return TypeNameIsSampler(*varDeclStmnt->varType);
+            return IsSamplerStateTypeDenoter(varDeclStmnt->varType->GetTypeDenoter());
         }
     );
 }
