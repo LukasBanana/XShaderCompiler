@@ -7,7 +7,7 @@
 
 #include "GLSLConverter.h"
 #include "GLSLHelper.h"
-#include "GLSLIntrinsics.h"
+#include "GLSLKeywords.h"
 #include "AST.h"
 #include "ASTFactory.h"
 #include "Exception.h"
@@ -646,11 +646,11 @@ void GLSLConverter::RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>
 
 bool GLSLConverter::RenameReservedFunctionName(const std::string& ident, std::string& renamedIdent)
 {
-    const auto& reservedNames = ReservedGLSLNames();
+    const auto& reservedKeywords = ReservedGLSLKeywords();
 
     /* Perform name mangling on output identifier if the input identifier is a reserved name */
-    auto it = reservedNames.find(ident);
-    if (it != reservedNames.end())
+    auto it = reservedKeywords.find(ident);
+    if (it != reservedKeywords.end())
     {
         renamedIdent = nameManglingPrefix_ + ident;
         return true;
