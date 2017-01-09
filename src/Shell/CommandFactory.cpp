@@ -76,6 +76,7 @@ CommandFactory::CommandFactory()
         CommentCommand,
         WrapperCommand,
         UnrollInitializerCommand,
+        ObfuscateCommand,
 
         FormatBlanksCommand,
         FormatLineMarksCommand,

@@ -646,7 +646,7 @@ void GLSLConverter::RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>
 
 bool GLSLConverter::RenameReservedKeyword(const std::string& ident, std::string& renamedIdent)
 {
-    if (options_.obfuscation)
+    if (options_.obfuscate)
     {
         /* Set output identifier to an obfuscated number */
         renamedIdent = "_" + std::to_string(obfuscationCounter_++);

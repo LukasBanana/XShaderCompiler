@@ -175,6 +175,7 @@ void DebuggerView::CreateLayoutPropertyGridOptions(wxPropertyGrid& pg)
     pg.Append(new wxBoolProperty("Preprocess Only", "preprocess"));
     pg.Append(new wxBoolProperty("Preserve Comments", "comments"));
     pg.Append(new wxBoolProperty("Unroll Array Initializers", "unrollInitializers"));
+    pg.Append(new wxBoolProperty("Obfuscate", "obfuscate"));
 }
 
 void DebuggerView::CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg)
@@ -345,6 +346,8 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderOutput_.options.preserveComments = ValueBool();
     else if (name == "unrollInitializers")
         shaderOutput_.options.unrollArrayInitializers = ValueBool();
+    else if (name == "obfuscate")
+        shaderOutput_.options.obfuscate = ValueBool();
     else if (name == "blanks")
         shaderOutput_.formatting.blanks = ValueBool();
     else if (name == "lineMarks")

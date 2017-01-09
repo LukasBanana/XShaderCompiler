@@ -132,7 +132,7 @@ struct Options
     bool unrollArrayInitializers    = false;
 
     //! If true, code obfuscation is performed. By default false.
-    bool obfuscation                = false;
+    bool obfuscate                  = false;
 
     //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
     bool showAST                    = false;

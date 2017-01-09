@@ -868,6 +868,30 @@ void UnrollInitializerCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
+ * ObfuscateCommand class
+ */
+
+std::vector<Command::Identifier> ObfuscateCommand::Idents() const
+{
+    return { { "--obfuscate" } };
+}
+
+HelpDescriptor ObfuscateCommand::Help() const
+{
+    return
+    {
+        "--obfuscate [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables code obfuscation; default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void ObfuscateCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.obfuscate = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
  * FormatBlanksCommand class
  */
 
