@@ -12,6 +12,7 @@
 #include "Token.h"
 #include "ASTEnums.h"
 #include <string>
+#include <set>
 
 
 namespace Xsc
@@ -20,6 +21,9 @@ namespace Xsc
 
 // Returns GLSL keyword for the specified intrinsic.
 const std::string* IntrinsicToGLSLKeyword(const Intrinsic intr);
+
+// Returns the set of all reserved GLSL names.
+const std::set<std::string>& ReservedGLSLNames();
 
 
 } // /namespace Xsc

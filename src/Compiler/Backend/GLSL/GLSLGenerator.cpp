@@ -1339,6 +1339,8 @@ const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* ast)
     {
         if (auto varDecl = ast->symbolRef->As<VarDecl>())
             return varDecl->FinalIdent();
+        if (auto funcDecl = ast->symbolRef->As<FunctionDecl>())
+            return funcDecl->FinalIdent();
     }
 
     /* Return default identifier */
@@ -1563,13 +1565,13 @@ void GLSLGenerator::WriteFunction(FunctionDecl* ast)
         Visit(ast->returnType);
         Blank();
         BeginLn();
-        Write(structDecl->ident + " " + ast->ident + "(");
+        Write(structDecl->ident + " " + ast->FinalIdent() + "(");
     }
     else
     {
         BeginLn();
         Visit(ast->returnType);
-        Write(" " + ast->ident + "(");
+        Write(" " + ast->FinalIdent() + "(");
     }
 
     /* Write parameters */
@@ -1658,7 +1660,7 @@ void GLSLGenerator::WriteFunctionSecondaryEntryPoint(FunctionDecl* ast)
 
     /* Write function header */
     BeginLn();
-    Write("void " + ast->ident + "()");
+    Write("void " + ast->FinalIdent() + "()");
 
     /* Write function body */
     WriteScopeOpen();

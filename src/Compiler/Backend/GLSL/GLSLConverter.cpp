@@ -7,6 +7,7 @@
 
 #include "GLSLConverter.h"
 #include "GLSLHelper.h"
+#include "GLSLIntrinsics.h"
 #include "AST.h"
 #include "ASTFactory.h"
 #include "Exception.h"
@@ -161,6 +162,8 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     if (MustRenameVarDecl(ast))
         RenameVarDecl(ast);
 
+    RenameReservedFunctionName(ast->ident, ast->renamedIdent);
+
     /* Must the initializer type denoter changed? */
     if (ast->initializer)
     {
@@ -197,6 +200,8 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     currentFunctionDecl_ = ast;
+
+    RenameReservedFunctionName(ast->ident, ast->renamedIdent);
 
     if (ast->flags(FunctionDecl::isEntryPoint))
     {
@@ -637,6 +642,21 @@ void GLSLConverter::RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>
             return IsSamplerStateTypeDenoter(varDeclStmnt->varType->GetTypeDenoter());
         }
     );
+}
+
+bool GLSLConverter::RenameReservedFunctionName(const std::string& ident, std::string& renamedIdent)
+{
+    const auto& reservedNames = ReservedGLSLNames();
+
+    /* Perform name mangling on output identifier if the input identifier is a reserved name */
+    auto it = reservedNames.find(ident);
+    if (it != reservedNames.end())
+    {
+        renamedIdent = nameManglingPrefix_ + ident;
+        return true;
+    }
+
+    return false;
 }
 
 /* ----- Conversion ----- */

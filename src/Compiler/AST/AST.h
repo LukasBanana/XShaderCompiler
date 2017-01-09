@@ -559,6 +559,9 @@ struct FunctionDecl : public Stmnt
     // Returns true if the specified type denoter matches the parameter.
     bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const;
 
+    // Returns the final identifier for this function.
+    const std::string& FinalIdent() const;
+
     TypeNamePtr                     returnType;
     std::string                     ident;
     std::vector<VarDeclStmntPtr>    parameters;
@@ -570,6 +573,8 @@ struct FunctionDecl : public Stmnt
     ParameterSemantics              outputSemantics;                        // Entry point output semantics.
 
     FunctionDecl*                   funcImplRef   = nullptr;                // Reference to the function implementation (only for forward declarations).
+
+    std::string                     renamedIdent;
 };
 
 // Uniform buffer (cbuffer, tbuffer) declaration.

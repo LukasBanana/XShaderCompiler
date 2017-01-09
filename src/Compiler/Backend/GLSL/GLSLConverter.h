@@ -126,6 +126,9 @@ class GLSLConverter : public Visitor
         // Removes all variable declarations which have a sampler state type.
         void RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts);
 
+        // Renames the specified identifier if it equals a reserved GLSL intrinsic or function name.
+        bool RenameReservedFunctionName(const std::string& ident, std::string& renamedIdent);
+
         /* ----- Conversion ----- */
 
         void ConvertIntrinsicCall(FunctionCall* ast);

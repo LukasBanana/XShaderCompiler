@@ -570,6 +570,11 @@ bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const T
     return true;
 }
 
+const std::string& FunctionDecl::FinalIdent() const
+{
+    return (renamedIdent.empty() ? ident : renamedIdent);
+}
+
 
 /* ----- UniformBufferDecl ----- */
 

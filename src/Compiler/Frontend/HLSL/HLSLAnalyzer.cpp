@@ -573,6 +573,9 @@ void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
     {
         /* Fetch function declaration by arguments */
         ast->funcDeclRef = FetchFunctionDecl(ast->varIdent->ident, ast->arguments, ast);
+
+        /* Also connect function declaration with the identifier of the function call */
+        ast->varIdent->symbolRef = ast->funcDeclRef;
     }
 }
 
