@@ -127,7 +127,7 @@ class GLSLConverter : public Visitor
         void RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts);
 
         // Renames the specified identifier if it equals a reserved GLSL intrinsic or function name.
-        bool RenameReservedFunctionName(const std::string& ident, std::string& renamedIdent);
+        bool RenameReservedKeyword(const std::string& ident, std::string& renamedIdent);
 
         /* ----- Conversion ----- */
 
@@ -165,10 +165,13 @@ class GLSLConverter : public Visitor
         unsigned int            structDeclLevel_        = 0;
         unsigned int            anonymousStructCounter_ = 0;
 
-        // True if AST traversal is currently inside the main entry point (or its sub nodes).
+        // True, if AST traversal is currently inside the main entry point (or its sub nodes).
         bool                    isInsideEntryPoint_     = false;
 
         FunctionDecl*           currentFunctionDecl_    = nullptr;
+
+        // True, if code obfuscation is enabled
+        unsigned int            obfuscationCounter_     = 0;
 
 };
 

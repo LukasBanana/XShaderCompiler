@@ -162,7 +162,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     if (MustRenameVarDecl(ast))
         RenameVarDecl(ast);
 
-    RenameReservedFunctionName(ast->ident, ast->renamedIdent);
+    RenameReservedKeyword(ast->ident, ast->renamedIdent);
 
     /* Must the initializer type denoter changed? */
     if (ast->initializer)
@@ -201,7 +201,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     currentFunctionDecl_ = ast;
 
-    RenameReservedFunctionName(ast->ident, ast->renamedIdent);
+    RenameReservedKeyword(ast->ident, ast->renamedIdent);
 
     if (ast->flags(FunctionDecl::isEntryPoint))
     {
@@ -644,19 +644,28 @@ void GLSLConverter::RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>
     );
 }
 
-bool GLSLConverter::RenameReservedFunctionName(const std::string& ident, std::string& renamedIdent)
+bool GLSLConverter::RenameReservedKeyword(const std::string& ident, std::string& renamedIdent)
 {
-    const auto& reservedKeywords = ReservedGLSLKeywords();
-
-    /* Perform name mangling on output identifier if the input identifier is a reserved name */
-    auto it = reservedKeywords.find(ident);
-    if (it != reservedKeywords.end())
+    if (options_.obfuscation)
     {
-        renamedIdent = nameManglingPrefix_ + ident;
+        /* Set output identifier to an obfuscated number */
+        renamedIdent = "_" + std::to_string(obfuscationCounter_++);
         return true;
     }
+    else
+    {
+        const auto& reservedKeywords = ReservedGLSLKeywords();
 
-    return false;
+        /* Perform name mangling on output identifier if the input identifier is a reserved name */
+        auto it = reservedKeywords.find(ident);
+        if (it != reservedKeywords.end())
+        {
+            renamedIdent = nameManglingPrefix_ + ident;
+            return true;
+        }
+
+        return false;
+    }
 }
 
 /* ----- Conversion ----- */
