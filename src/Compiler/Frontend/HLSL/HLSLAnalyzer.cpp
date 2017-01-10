@@ -876,9 +876,12 @@ void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStm
     }
 }
 
-void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input)
+void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input, TypeDenoterPtr varTypeDen)
 {
-    auto varTypeDen = varDecl->GetTypeDenoter()->Get();
+    /* Get type denoter from variable (if not already set) */
+    if (!varTypeDen)
+        varTypeDen = varDecl->GetTypeDenoter()->Get();
+
     if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
     {
         /* Analyze entry point structure */
@@ -889,28 +892,39 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
         /* Analyze entry point buffer */
         AnalyzeEntryPointParameterInOutBuffer(funcDecl, varDecl, bufferTypeDen, input);
     }
+    else if (auto arrayTypeDen = varTypeDen->As<ArrayTypeDenoter>())
+    {
+        /* Analyze base type of array type denoter */
+        AnalyzeEntryPointParameterInOut(funcDecl, varDecl, input, arrayTypeDen->baseTypeDenoter);
+    }
     else
     {
-        /* Has the variable a system value semantic? */
-        if (varDecl->semantic.IsValid())
-        {
-            if (varDecl->semantic.IsSystemValue())
-                varDecl->flags << VarDecl::isSystemValue;
-        }
-        else
-            Error("missing semantic in parameter '" + varDecl->ident + "' of entry point", varDecl);
+        /* Analyze single variable as input/output parameter */
+        AnalyzeEntryPointParameterInOutVariable(funcDecl, varDecl, input);
+    }
+}
 
-        /* Add variable declaration to the global input/output semantics */
-        if (input)
-        {
-            funcDecl->inputSemantics.Add(varDecl);
-            varDecl->flags << VarDecl::isShaderInput;
-        }
-        else
-        {
-            funcDecl->outputSemantics.Add(varDecl);
-            varDecl->flags << VarDecl::isShaderOutput;
-        }
+void HLSLAnalyzer::AnalyzeEntryPointParameterInOutVariable(FunctionDecl* funcDecl, VarDecl* varDecl, bool input)
+{
+    /* Has the variable a system value semantic? */
+    if (varDecl->semantic.IsValid())
+    {
+        if (varDecl->semantic.IsSystemValue())
+            varDecl->flags << VarDecl::isSystemValue;
+    }
+    else
+        Error("missing semantic in parameter '" + varDecl->ident + "' of entry point", varDecl);
+
+    /* Add variable declaration to the global input/output semantics */
+    if (input)
+    {
+        funcDecl->inputSemantics.Add(varDecl);
+        varDecl->flags << VarDecl::isShaderInput;
+    }
+    else
+    {
+        funcDecl->outputSemantics.Add(varDecl);
+        varDecl->flags << VarDecl::isShaderOutput;
     }
 }
 
