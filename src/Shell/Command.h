@@ -95,6 +95,7 @@ DECL_SHELL_COMMAND( BindingCommand               );
 DECL_SHELL_COMMAND( CommentCommand               );
 DECL_SHELL_COMMAND( WrapperCommand               );
 DECL_SHELL_COMMAND( UnrollInitializerCommand     );
+DECL_SHELL_COMMAND( ObfuscateCommand             );
 
 DECL_SHELL_COMMAND( FormatBlanksCommand          );
 DECL_SHELL_COMMAND( FormatLineMarksCommand       );

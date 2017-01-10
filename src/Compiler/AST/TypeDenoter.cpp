@@ -41,6 +41,11 @@ bool TypeDenoter::IsVoid() const
     return (Type() == Types::Void);
 }
 
+bool TypeDenoter::IsNull() const
+{
+    return (Type() == Types::Null);
+}
+
 bool TypeDenoter::IsBase() const
 {
     return (Type() == Types::Base);
@@ -147,6 +152,26 @@ bool VoidTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
     /* Void can not be casted to anything */
     return false;
+}
+
+
+/* ----- NullTypeDenoter ----- */
+
+TypeDenoter::Types NullTypeDenoter::Type() const
+{
+    return Types::Null;
+}
+
+std::string NullTypeDenoter::ToString() const
+{
+    return "NULL";
+}
+
+bool NullTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
+{
+    /* Null literal is castable to all object types */
+    auto target = targetType.GetAliased().Type();
+    return (target == TypeDenoter::Types::Buffer || target == TypeDenoter::Types::Sampler);
 }
 
 

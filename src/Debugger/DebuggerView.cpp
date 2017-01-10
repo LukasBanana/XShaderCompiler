@@ -87,6 +87,8 @@ void DebuggerView::CreateLayout()
     CreateLayoutSubSplitter();
 
     mainSplitter_->SplitVertically(propGrid_, subSplitter_, 300);
+
+    CreateLayoutStatusBar();
 }
 
 void DebuggerView::CreateLayoutPropertyGrid()
@@ -111,7 +113,7 @@ void DebuggerView::CreateLayoutPropertyGridShaderInput(wxPropertyGrid& pg)
         choices0.Add("HLSL4");
         choices0.Add("HLSL5");
     }
-    pg.Append(new wxEnumProperty("Shader Version", "inputVersion", choices0, 2))->Enable(false);
+    pg.Append(new wxEnumProperty("Shader Version", "inputVersion", choices0, 2));
 
     wxPGChoices choices1;
     {
@@ -157,7 +159,7 @@ void DebuggerView::CreateLayoutPropertyGridShaderOutput(wxPropertyGrid& pg)
         choices0.Add("VKSL (Auto-Detect)");
         choices0.Add("VKSL450");
     }
-    pg.Append(new wxEnumProperty("Shader Version", "outputVersion", choices0))->Enable(false);
+    pg.Append(new wxEnumProperty("Shader Version", "outputVersion", choices0));
 
     pg.Append(new wxStringProperty("Name Mangling Prefix", "prefix", "xsc_"));
 }
@@ -173,6 +175,7 @@ void DebuggerView::CreateLayoutPropertyGridOptions(wxPropertyGrid& pg)
     pg.Append(new wxBoolProperty("Preprocess Only", "preprocess"));
     pg.Append(new wxBoolProperty("Preserve Comments", "comments"));
     pg.Append(new wxBoolProperty("Unroll Array Initializers", "unrollInitializers"));
+    pg.Append(new wxBoolProperty("Obfuscate", "obfuscate"));
 }
 
 void DebuggerView::CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg)
@@ -196,11 +199,12 @@ void DebuggerView::CreateLayoutSubSplitter()
     CreateLayoutSourceSplitter();
 
     subSplitter_->SplitHorizontally(sourceSplitter_, reportView_, 600);
+    subSplitter_->SetSashGravity(1.0);
 }
 
 void DebuggerView::CreateLayoutReportView()
 {
-    reportView_ = new ReportView(subSplitter_, wxDefaultPosition, wxSize(400, 50));
+    reportView_ = new ReportView(subSplitter_, wxDefaultPosition, wxSize(400, 100));
 }
 
 void DebuggerView::CreateLayoutSourceSplitter()
@@ -211,20 +215,40 @@ void DebuggerView::CreateLayoutSourceSplitter()
     CreateLayoutOutputSourceView();
 
     sourceSplitter_->SplitVertically(inputSourceView_, outputSourceView_);
+    sourceSplitter_->SetSashGravity(0.5);
 }
 
 void DebuggerView::CreateLayoutInputSourceView()
 {
-    inputSourceView_ = new SourceView(sourceSplitter_, wxDefaultPosition, wxSize(200, 600));
+    inputSourceView_ = new SourceView(sourceSplitter_, wxDefaultPosition, wxSize(100, 600));
     inputSourceView_->SetLanguage(SourceViewLanguage::HLSL);
     inputSourceView_->SetCharEnterCallback(std::bind(&DebuggerView::OnInputSourceCharEnter, this, std::placeholders::_1));
+    inputSourceView_->SetMoveCursorCallback(
+        [&](int line, int column)
+        {
+            SetStatusLine(line);
+            SetStatusColumn(column);
+        }
+    );
 }
 
 void DebuggerView::CreateLayoutOutputSourceView()
 {
-    outputSourceView_ = new SourceView(sourceSplitter_, wxDefaultPosition, wxSize(200, 600));
+    outputSourceView_ = new SourceView(sourceSplitter_, wxDefaultPosition, wxSize(100, 600));
     outputSourceView_->SetLanguage(SourceViewLanguage::GLSL);
     //outputSourceView_->SetReadOnly(true);
+}
+
+void DebuggerView::CreateLayoutStatusBar()
+{
+    statusBar_ = CreateStatusBar(3);
+
+    int widths[] = { 200, 70, 70 };
+    statusBar_->SetStatusWidths(3, widths);
+
+    SetStatusReady(true);
+    SetStatusLine(1);
+    SetStatusColumn(1);
 }
 
 void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
@@ -247,12 +271,63 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         return p->GetValue().GetBool();
     };
 
+    auto GetInputVersion = [](int idx) -> InputShaderVersion
+    {
+        using T = InputShaderVersion;
+
+        static const T versions[] =
+        {
+            T::HLSL3,
+            T::HLSL4,
+            T::HLSL5,
+        };
+
+        return (idx >= 0 && idx < 3 ? versions[idx] : T::HLSL5);
+    };
+
+    auto GetOutputVersion = [](int idx) -> OutputShaderVersion
+    {
+        using T = OutputShaderVersion;
+
+        static const T versions[] =
+        {
+            T::GLSL,
+            T::GLSL110,
+            T::GLSL120,
+            T::GLSL130,
+            T::GLSL140,
+            T::GLSL150,
+            T::GLSL330,
+            T::GLSL400,
+            T::GLSL410,
+            T::GLSL420,
+            T::GLSL430,
+            T::GLSL440,
+            T::GLSL450,
+
+            T::ESSL,
+            T::ESSL100,
+            T::ESSL300,
+            T::ESSL310,
+            T::ESSL320,
+
+            T::VKSL,
+            T::VKSL450,
+        };
+
+        return (idx >= 0 && idx < 20 ? versions[idx] : T::GLSL);
+    };
+
     if (name == "entry")
         shaderInput_.entryPoint = ValueStr();
+    else if (name == "inputVersion")
+        shaderInput_.shaderVersion = GetInputVersion(ValueInt());
     else if (name == "secondaryEntry")
         shaderInput_.secondaryEntryPoint = ValueStr();
     else if (name == "target")
         shaderInput_.shaderTarget = static_cast<ShaderTarget>(static_cast<long>(ShaderTarget::VertexShader) + ValueInt());
+    else if (name == "outputVersion")
+        shaderOutput_.shaderVersion = GetOutputVersion(ValueInt());
     else if (name == "prefix")
         shaderOutput_.nameManglingPrefix = ValueStr();
     else if (name == "indent")
@@ -271,6 +346,8 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderOutput_.options.preserveComments = ValueBool();
     else if (name == "unrollInitializers")
         shaderOutput_.options.unrollArrayInitializers = ValueBool();
+    else if (name == "obfuscate")
+        shaderOutput_.options.obfuscate = ValueBool();
     else if (name == "blanks")
         shaderOutput_.formatting.blanks = ValueBool();
     else if (name == "lineMarks")
@@ -321,6 +398,8 @@ class DebuggerLog : public Log
 
 void DebuggerView::TranslateInputToOutput()
 {
+    SetStatusReady(false);
+
     /* Initialize input source */
     auto inputSource = std::make_shared<std::stringstream>();
     *inputSource << inputSourceView_->GetText().ToStdString();
@@ -339,6 +418,24 @@ void DebuggerView::TranslateInputToOutput()
         /* Show output */
         outputSourceView_->SetTextAndRefresh(outputSource.str());
     }
+
+    SetStatusReady(true);
+}
+
+void DebuggerView::SetStatusReady(bool isReady)
+{
+    statusBar_->SetStatusText(isReady ? "Ready" : "Busy", 0);
+    statusBar_->Refresh();
+}
+
+void DebuggerView::SetStatusLine(int line)
+{
+    statusBar_->SetStatusText("Ln " + std::to_string(line), 1);
+}
+
+void DebuggerView::SetStatusColumn(int column)
+{
+    statusBar_->SetStatusText("Col " + std::to_string(column), 2);
 }
 
 

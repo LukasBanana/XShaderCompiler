@@ -72,11 +72,8 @@ class GLSLConverter : public Visitor
 
         bool IsInsideStructDecl() const;
 
-        // Returns true if the specified expression contains a sampler object.
-        bool ExprContainsSampler(Expr& ast) const;
-
-        // Returns true if the specified variable type is a sampler.
-        bool TypeNameIsSampler(TypeName& ast) const;
+        // Returns true if the specified type denoter is a sampler state type.
+        bool IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter) const;
 
         // Returns true if the specified structure declaration must be resolved.
         bool MustResolveStruct(StructDecl* ast) const;
@@ -127,7 +124,10 @@ class GLSLConverter : public Visitor
         void RemoveDeadCode(std::vector<StmntPtr>& stmnts);
 
         // Removes all variable declarations which have a sampler state type.
-        void RemoveSamplerVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts);
+        void RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts);
+
+        // Renames the specified identifier if it equals a reserved GLSL intrinsic or function name.
+        bool RenameReservedKeyword(const std::string& ident, std::string& renamedIdent);
 
         /* ----- Conversion ----- */
 
@@ -165,10 +165,13 @@ class GLSLConverter : public Visitor
         unsigned int            structDeclLevel_        = 0;
         unsigned int            anonymousStructCounter_ = 0;
 
-        // True if AST traversal is currently inside the main entry point (or its sub nodes).
+        // True, if AST traversal is currently inside the main entry point (or its sub nodes).
         bool                    isInsideEntryPoint_     = false;
 
         FunctionDecl*           currentFunctionDecl_    = nullptr;
+
+        // True, if code obfuscation is enabled
+        unsigned int            obfuscationCounter_     = 0;
 
 };
 

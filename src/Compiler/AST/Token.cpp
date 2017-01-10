@@ -62,6 +62,7 @@ std::string Token::TypeToString(const Types type)
         case Types::IntLiteral:         return "integer literal";
         case Types::FloatLiteral:       return "floating-point literal";
         case Types::StringLiteral:      return "string literal";
+        case Types::NullLiteral:        return "null literal";
         case Types::AssignOp:           return "assign operator";
         case Types::BinaryOp:           return "binary operator";
         case Types::UnaryOp:            return "unary operator";

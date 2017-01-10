@@ -34,7 +34,7 @@ class HLSLParser : public Parser
         
         HLSLParser(Log* log = nullptr);
 
-        ProgramPtr ParseSource(const SourceCodePtr& source);
+        ProgramPtr ParseSource(const SourceCodePtr& source, bool useD3D10Semantics = true);
 
     private:
         
@@ -223,6 +223,9 @@ class HLSLParser : public Parser
 
         // Symbol table for type name (i.e. structure and typedef identifiers) to detect cast expression, which are not context free.
         TypeNameSymbolTable typeNameSymbolTable_;
+
+        // True, if semantics are parsed for D3D10+ shader.
+        bool                useD3D10Semantics_      = true;
 
 };
 

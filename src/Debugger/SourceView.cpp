@@ -162,6 +162,11 @@ void SourceView::SetCharEnterCallback(const CharEnterCallback& callback)
     charEnterCallback_ = callback;
 }
 
+void SourceView::SetMoveCursorCallback(const MoveCursorCallback& callback)
+{
+    moveCursorCallback_ = callback;
+}
+
 
 /*
  * ======= Private: =======
@@ -199,6 +204,12 @@ void SourceView::OnKeyDown(wxKeyEvent& event)
     {
         if (charEnterCallback_)
             charEnterCallback_('\b');
+    }
+
+    if (key == WXK_UP || key == WXK_DOWN || key == WXK_LEFT || key == WXK_RIGHT || key == WXK_HOME || key == WXK_END)
+    {
+        if (moveCursorCallback_)
+            moveCursorCallback_(GetCurrentLine() + 1, GetColumn(GetCurrentPos()) + 1);
     }
 }
 

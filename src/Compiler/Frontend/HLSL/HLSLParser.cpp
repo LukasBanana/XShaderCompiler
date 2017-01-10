@@ -39,8 +39,10 @@ HLSLParser::HLSLParser(Log* log) :
 {
 }
 
-ProgramPtr HLSLParser::ParseSource(const SourceCodePtr& source)
+ProgramPtr HLSLParser::ParseSource(const SourceCodePtr& source, bool useD3D10Semantics)
 {
+    useD3D10Semantics_ = useD3D10Semantics;
+
     PushScannerSource(source);
 
     try
@@ -88,7 +90,7 @@ bool HLSLParser::IsBaseDataType() const
 
 bool HLSLParser::IsLiteral() const
 {
-    return (Is(Tokens::BoolLiteral) || Is(Tokens::IntLiteral) || Is(Tokens::FloatLiteral) || Is(Tokens::StringLiteral));
+    return (Is(Tokens::NullLiteral) || Is(Tokens::BoolLiteral) || Is(Tokens::IntLiteral) || Is(Tokens::FloatLiteral) || Is(Tokens::StringLiteral));
 }
 
 bool HLSLParser::IsArithmeticUnaryExpr() const
@@ -1401,8 +1403,10 @@ LiteralExprPtr HLSLParser::ParseLiteralExpr()
     /* Parse literal */
     auto ast = Make<LiteralExpr>();
 
-    ast->dataType   = TokenToDataType(*Tkn());
-    ast->value      = AcceptIt()->Spell();
+    if (!Is(Tokens::NullLiteral))
+        ast->dataType = TokenToDataType(*Tkn());
+
+    ast->value = AcceptIt()->Spell();
 
     return UpdateSourceArea(ast);
 }
@@ -2388,7 +2392,7 @@ IndexedSemantic HLSLParser::ParseSemantic(bool parseColon)
 {
     if (parseColon)
         Accept(Tokens::Colon);
-    return HLSLKeywordToSemantic(ParseIdent());
+    return HLSLKeywordToSemantic(ParseIdent(), useD3D10Semantics_);
 }
 
 std::string HLSLParser::ParseSamplerStateTextureIdent()

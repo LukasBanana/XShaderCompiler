@@ -13,6 +13,7 @@
 #include "ASTEnums.h"
 #include <string>
 #include <memory>
+#include <set>
 
 
 namespace Xsc
@@ -44,6 +45,9 @@ const std::string* AttributeValueToGLSLKeyword(const AttributeValue t);
 // Special cases if 'useVulkanGLSL' is true.
 // see https://www.khronos.org/registry/vulkan/specs/misc/GL_KHR_vulkan_glsl.txt
 std::unique_ptr<std::string> SemanticToGLSLKeyword(const IndexedSemantic& semantic, bool useVulkanGLSL = false);
+
+// Returns the set of all reserved GLSL keywords (functions, intrinsics, types etc.).
+const std::set<std::string>& ReservedGLSLKeywords();
 
 
 } // /namespace Xsc
