@@ -6,6 +6,7 @@
  */
 
 #include "DebuggerView.h"
+#include <Xsc/Version.h>
 #include <sstream>
 #include <memory>
 #include <vector>
@@ -403,9 +404,10 @@ void DebuggerView::OnAbout(wxCommandEvent& event)
 {
     wxMessageBox(
         (
-            "XShaderCompiler and XscDebugger\n"
-            "Copyright (c) 2014-2017 by Lukas Hermanns\n"
-            "3-Clause BSD License"
+            wxString("XShaderCompiler and XscDebugger\n") +
+            wxString("Version ") + wxString(XSC_VERSION_STRING) + wxString("\n\n") +
+            wxString("Copyright (c) 2014-2017 by Lukas Hermanns\n\n") +
+            wxString("3-Clause BSD License")
         ),
         "About XscDebugger",
         wxICON_INFORMATION | wxOK | wxOK_DEFAULT | wxCENTRE,
