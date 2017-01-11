@@ -188,6 +188,15 @@ static std::map<BufferType, std::string> GenerateBufferTypeMap()
         { T::TextureCubeArray,        "samplerCubeArray" },
         { T::Texture2DMS,             "sampler2DMS"      },
         { T::Texture2DMSArray,        "sampler2DMSArray" },
+
+      //{ T::GenericTexture,          ""                 },
+
+      //{ T::InputPatch,              ""                 },
+      //{ T::OutputPatch,             ""                 },
+
+        { T::PointStream,             "points"           },
+        { T::LineStream,              "line_strip"       },
+        { T::TriangleStream,          "triangle_strip"   },
     };
 }
 
@@ -222,6 +231,15 @@ static std::map<BufferType, std::string> GenerateBufferTypeMapVKSL()
         { T::TextureCubeArray,        "textureCubeArray" },
         { T::Texture2DMS,             "texture2DMS"      },
         { T::Texture2DMSArray,        "texture2DMSArray" },
+
+      //{ T::GenericTexture,          ""                 },
+
+      //{ T::InputPatch,              ""                 },
+      //{ T::OutputPatch,             ""                 },
+
+        { T::PointStream,             "points"           },
+        { T::LineStream,              "line_strip"       },
+        { T::TriangleStream,          "triangle_strip"   },
     };
 }
 
@@ -285,6 +303,29 @@ static std::map<AttributeValue, std::string> GenerateAttributeValueMap()
 const std::string* AttributeValueToGLSLKeyword(const AttributeValue t)
 {
     static const auto typeMap = GenerateAttributeValueMap();
+    return MapTypeToKeyword(typeMap, t);
+}
+
+
+/* ----- PrimitiveType Mapping ----- */
+
+static std::map<PrimitiveType, std::string> GeneratePrimitiveTypeMap()
+{
+    using T = PrimitiveType;
+
+    return
+    {
+        { T::Point,       "points"              },
+        { T::Line,        "lines"               },
+        { T::LineAdj,     "lines_adjacency"     },
+        { T::Triangle,    "triangles"           },
+        { T::TriangleAdj, "triangles_adjacency" },
+    };
+}
+
+const std::string* PrimitiveTypeToGLSLKeyword(const PrimitiveType t)
+{
+    static const auto typeMap = GeneratePrimitiveTypeMap();
     return MapTypeToKeyword(typeMap, t);
 }
 

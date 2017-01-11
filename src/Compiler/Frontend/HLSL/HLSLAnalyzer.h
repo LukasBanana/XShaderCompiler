@@ -97,6 +97,7 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeEntryPoint(FunctionDecl* funcDecl);
         void AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl);
+        void AnalyzeEntryPointInputOutputGeometryShader(FunctionDecl* funcDecl);
         
         void AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param);
         void AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input, TypeDenoterPtr varTypeDen = nullptr);
@@ -107,6 +108,7 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesTessControlShader(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesTessEvaluationShader(const std::vector<AttributePtr>& attribs);
+        void AnalyzeEntryPointAttributesGeometryShader(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesFragmentShader(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs);
 
@@ -127,6 +129,8 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeAttributePartitioning(Attribute* ast, bool required = true);
         void AnalyzeAttributeOutputControlPoints(Attribute* ast);
         void AnalyzeAttributePatchConstantFunc(Attribute* ast);
+
+        void AnalyzeAttributeMaxVertexCount(Attribute* ast);
 
         void AnalyzeAttributeNumThreads(Attribute* ast);
         void AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& value);

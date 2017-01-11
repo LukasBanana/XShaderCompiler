@@ -938,6 +938,9 @@ void GLSLGenerator::WriteGlobalLayouts()
         case ShaderTarget::TessellationEvaluationShader:
             layoutsWritten = WriteGlobalLayoutsTessEvaluation(program->layoutTessEvaluation);
             break;
+        case ShaderTarget::GeometryShader:
+            layoutsWritten = WriteGlobalLayoutsGeometry(program->layoutGeometry);
+            break;
         case ShaderTarget::FragmentShader:
             layoutsWritten = WriteGlobalLayoutsFragment(program->layoutFragment);
             break;
@@ -995,6 +998,41 @@ bool GLSLGenerator::WriteGlobalLayoutsTessEvaluation(const Program::LayoutTessEv
         Write(") in;");
     }
     EndLn();
+    return true;
+}
+
+bool GLSLGenerator::WriteGlobalLayoutsGeometry(const Program::LayoutGeometryShader& layout)
+{
+    /* Write input layout */
+    BeginLn();
+    {
+        Write("layout(");
+
+        /* Map GLSL input primitive */
+        if (auto keyword = PrimitiveTypeToGLSLKeyword(layout.inputPrimitive))
+            Write(*keyword);
+        else
+            Error("failed to map input geometry primitive to GLSL keyword");
+
+        Write(") in;");
+    }
+    EndLn();
+
+    /* Write output layout */
+    BeginLn();
+    {
+        Write("layout(");
+
+        /* Map GLSL output primitive */
+        if (auto keyword = BufferTypeToGLSLKeyword(layout.outputPrimitive))
+            Write(*keyword);
+        else
+            Error("failed to map output geometry primitive to GLSL keyword");
+
+        Write(", max_vertices = " + std::to_string(layout.maxVertices) + ") out;");
+    }
+    EndLn();
+
     return true;
 }
 

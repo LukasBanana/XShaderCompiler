@@ -195,6 +195,7 @@ struct Program : public AST
 {   
     AST_INTERFACE(Program)
 
+    // Layout meta data for tessellation-control shaders
     struct LayoutTessControlShader
     {
         unsigned int    outputControlPoints     = 0;
@@ -202,6 +203,7 @@ struct Program : public AST
         FunctionDecl*   patchConstFunctionRef   = nullptr;
     };
 
+    // Layout meta data for tessellation-evaluation shaders
     struct LayoutTessEvaluationShader
     {
         AttributeValue  domainType      = AttributeValue::Undefined;
@@ -209,6 +211,15 @@ struct Program : public AST
         AttributeValue  outputTopology  = AttributeValue::Undefined;
     };
 
+    // Layout meta data for fragment shaders
+    struct LayoutGeometryShader
+    {
+        PrimitiveType   inputPrimitive  = PrimitiveType::Undefined;
+        BufferType      outputPrimitive = BufferType::Undefined;        // Must be PointStream, LineStream, or TriangleStream
+        unsigned int    maxVertices     = 0;
+    };
+
+    // Layout meta data for fragment shaders
     struct LayoutFragmentShader
     {
         bool fragCoordUsed      = false;
@@ -216,6 +227,7 @@ struct Program : public AST
         bool earlyDepthStencil  = false;
     };
 
+    // Layout meta data for compute shaders
     struct LayoutComputeShader
     {
         unsigned int numThreads[3] = { 0 };
@@ -231,6 +243,7 @@ struct Program : public AST
 
     LayoutTessControlShader             layoutTessControl;          // Global program layout attributes for a tessellation-control shader.
     LayoutTessEvaluationShader          layoutTessEvaluation;       // Global program layout attributes for a tessellation-evaluation shader.
+    LayoutGeometryShader                layoutGeometry;             // Global program layout attributes for a geometry shader.
     LayoutFragmentShader                layoutFragment;             // Global program layout attributes for a fragment shader.
     LayoutComputeShader                 layoutCompute;              // Global program layout attributes for a compute shader.
 };
