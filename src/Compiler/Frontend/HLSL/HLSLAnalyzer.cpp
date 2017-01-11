@@ -806,7 +806,7 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
         /* Analyze function input/output */
         AnalyzeEntryPointInputOutput(funcDecl);
 
-        /* Analyze entry pointer attributes (also possibly missing attributes such as "numthreads" for compute shaders) */
+        /* Analyze entry point attributes (also possibly missing attributes such as "numthreads" for compute shaders) */
         AnalyzeEntryPointAttributes(funcDecl->attribs);
     }
 }
@@ -975,10 +975,11 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOutBuffer(FunctionDecl* funcDecl,
     }
     else if (IsStreamBufferType(bufferTypeDen->bufferType))
     {
-        //TODO...
+        /* Analyze generic type of buffer type denoter */
+        AnalyzeEntryPointParameterInOut(funcDecl, varDecl, input, bufferTypeDen->genericTypeDenoter);
     }
     else
-        Error("illegal buffer type for entry pointer " + std::string(input ? "input" : "output"), varDecl);
+        Error("illegal buffer type for entry point " + std::string(input ? "input" : "output"), varDecl);
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& attribs)
@@ -1227,10 +1228,10 @@ void HLSLAnalyzer::AnalyzeSecondaryEntryPoint(FunctionDecl* funcDecl)
         /* Store reference to secondary entry point in root AST node */
         program_->layoutTessControl.patchConstFunctionRef = funcDecl;
 
-        /* Analyze function input/output (use same visitor as for the main entry pointer here) */
+        /* Analyze function input/output (use same visitor as for the main entry point here) */
         AnalyzeEntryPointInputOutput(funcDecl);
 
-        /* Analyze secondary entry pointer attributes */
+        /* Analyze secondary entry point attributes */
         AnalyzeSecondaryEntryPointAttributes(funcDecl->attribs);
     }
 }

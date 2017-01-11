@@ -20,7 +20,11 @@ namespace Xsc
 {
 
 
-// GLSL AST converter.
+/*
+GLSL AST converter.
+This class modifies the AST after context analysis to be conform with GLSL,
+e.g. remove arguments from intrinsic calls, that are not allowed in GLSL, such as sampler state objects.
+*/
 class GLSLConverter : public Visitor
 {
     
