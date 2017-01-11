@@ -34,7 +34,7 @@ See the [TODO.md](https://github.com/LukasBanana/XShaderCompiler/blob/master/TOD
 | Vertex Shader | ~80% | Few language features are still left |
 | Tessellation Control Shader | ~20% | InputPatch and patch-constant-function translation in progress |
 | Tessellation Evaluation Shader | ~20% | OutputPatch translation in progress |
-| Geometry Shader | ~10% | Only parsing works |
+| Geometry Shader | ~40% | Code generation is incomplete |
 | Fragment Shader | ~80% | Few language features are still left |
 | Compute Shader | ~80% | Few language features are still left |
 
