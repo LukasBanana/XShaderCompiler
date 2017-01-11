@@ -133,8 +133,9 @@ class GLSLConverter : public Visitor
 
         void ConvertIntrinsicCall(FunctionCall* ast);
         void ConvertIntrinsicCallSaturate(FunctionCall* ast);
-        void ConvertIntrinsicCallSample(FunctionCall* ast);
-        void ConvertIntrinsicCallSampleLevel(FunctionCall* ast);
+        void ConvertIntrinsicCallTextureSample(FunctionCall* ast);
+        void ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast);
+        void ConvertIntrinsicCallStreamOutputAppend(FunctionCall* ast);
 
         // Converts the specified expression if a vector subscript is used on a scalar type expression.
       //void ConvertVectorSubscriptExpr(ExprPtr& expr);
