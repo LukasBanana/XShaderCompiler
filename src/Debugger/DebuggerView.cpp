@@ -10,6 +10,9 @@
 #include <memory>
 #include <vector>
 #include <fstream>
+#include <wx/menu.h>
+#include <wx/mimetype.h>
+#include <wx/msgdlg.h>
 
 
 namespace Xsc
@@ -89,6 +92,7 @@ void DebuggerView::CreateLayout()
     mainSplitter_->SplitVertically(propGrid_, subSplitter_, 300);
 
     CreateLayoutStatusBar();
+    CreateLayoutMenuBar();
 }
 
 void DebuggerView::CreateLayoutPropertyGrid()
@@ -251,6 +255,26 @@ void DebuggerView::CreateLayoutStatusBar()
     SetStatusColumn(1);
 }
 
+void DebuggerView::CreateLayoutMenuBar()
+{
+    menuBar_ = new wxMenuBar();
+
+    auto menuDebugger = new wxMenu();
+    {
+        menuDebugger->Append(wxID_ABOUT, "&About");
+        menuDebugger->Append(wxID_HELP, "&Help");
+        menuDebugger->AppendSeparator();
+        menuDebugger->Append(wxID_EXIT, "&Quit");
+    }
+    menuBar_->Append(menuDebugger, "&XscDebugger");
+
+    Bind(wxEVT_MENU, &DebuggerView::OnAbout, this, wxID_ABOUT);
+    Bind(wxEVT_MENU, &DebuggerView::OnHelp, this, wxID_HELP);
+    Bind(wxEVT_MENU, &DebuggerView::OnQuit, this, wxID_EXIT);
+
+    SetMenuBar(menuBar_);
+}
+
 void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
 {
     auto p = event.GetProperty();
@@ -373,6 +397,34 @@ void DebuggerView::OnClose(wxCloseEvent& event)
 {
     SaveSettings();
     event.Skip();
+}
+
+void DebuggerView::OnAbout(wxCommandEvent& event)
+{
+    wxMessageBox(
+        (
+            "XShaderCompiler and XscDebugger\n"
+            "Copyright (c) 2014-2017 by Lukas Hermanns\n"
+            "3-Clause BSD License"
+        ),
+        "About XscDebugger",
+        wxICON_INFORMATION | wxOK | wxOK_DEFAULT | wxCENTRE,
+        this
+    );
+}
+
+void DebuggerView::OnHelp(wxCommandEvent& event)
+{
+    wxMimeTypesManager mimeTypeMngr;
+    auto fileType = mimeTypeMngr.GetFileTypeFromExtension("html");
+    auto command = fileType->GetOpenCommand("https://github.com/LukasBanana/XShaderCompiler");
+    wxExecute(command);
+}
+
+void DebuggerView::OnQuit(wxCommandEvent& event)
+{
+    SaveSettings();
+    Close();
 }
 
 class DebuggerLog : public Log

@@ -45,10 +45,15 @@ class DebuggerView : public wxFrame
         void CreateLayoutInputSourceView();
         void CreateLayoutOutputSourceView();
         void CreateLayoutStatusBar();
+        void CreateLayoutMenuBar();
 
         void OnInputSourceCharEnter(char chr);
         void OnPropertyGridChange(wxPropertyGridEvent& event);
         void OnClose(wxCloseEvent& event);
+
+        void OnAbout(wxCommandEvent& event);
+        void OnHelp(wxCommandEvent& event);
+        void OnQuit(wxCommandEvent& event);
 
         void TranslateInputToOutput();
 
@@ -57,6 +62,7 @@ class DebuggerView : public wxFrame
         void SetStatusColumn(int column);
 
         wxStatusBar*        statusBar_          = nullptr;
+        wxMenuBar*          menuBar_            = nullptr;
 
         wxSplitterWindow*   mainSplitter_       = nullptr;
         wxSplitterWindow*   subSplitter_        = nullptr;
