@@ -975,8 +975,13 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOutBuffer(FunctionDecl* funcDecl,
     }
     else if (IsStreamBufferType(bufferTypeDen->bufferType))
     {
-        /* Analyze generic type of buffer type denoter */
-        AnalyzeEntryPointParameterInOut(funcDecl, varDecl, input, bufferTypeDen->genericTypeDenoter);
+        if (bufferTypeDen->genericTypeDenoter)
+        {
+            /* Analyze generic type of buffer type denoter */
+            AnalyzeEntryPointParameterInOut(funcDecl, varDecl, input, bufferTypeDen->genericTypeDenoter);
+        }
+        else
+            Error("missing generic type denoter in stream buffer", varDecl);
     }
     else
         Error("illegal buffer type for entry point " + std::string(input ? "input" : "output"), varDecl);
