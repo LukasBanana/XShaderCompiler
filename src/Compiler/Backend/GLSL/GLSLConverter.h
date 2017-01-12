@@ -1,7 +1,7 @@
 /*
  * GLSLConverter.h
  * 
- * This file is part of the XShaderCompiler project (Copyright (c) 2014-2016 by Lukas Hermanns)
+ * This file is part of the XShaderCompiler project (Copyright (c) 2014-2017 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
@@ -20,7 +20,11 @@ namespace Xsc
 {
 
 
-// GLSL AST converter.
+/*
+GLSL AST converter.
+This class modifies the AST after context analysis to be conform with GLSL,
+e.g. remove arguments from intrinsic calls, that are not allowed in GLSL, such as sampler state objects.
+*/
 class GLSLConverter : public Visitor
 {
     
@@ -133,8 +137,9 @@ class GLSLConverter : public Visitor
 
         void ConvertIntrinsicCall(FunctionCall* ast);
         void ConvertIntrinsicCallSaturate(FunctionCall* ast);
-        void ConvertIntrinsicCallSample(FunctionCall* ast);
-        void ConvertIntrinsicCallSampleLevel(FunctionCall* ast);
+        void ConvertIntrinsicCallTextureSample(FunctionCall* ast);
+        void ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast);
+        void ConvertIntrinsicCallStreamOutputAppend(FunctionCall* ast);
 
         // Converts the specified expression if a vector subscript is used on a scalar type expression.
       //void ConvertVectorSubscriptExpr(ExprPtr& expr);

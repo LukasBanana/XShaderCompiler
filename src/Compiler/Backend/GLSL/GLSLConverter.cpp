@@ -1,7 +1,7 @@
 /*
  * GLSLConverter.cpp
  * 
- * This file is part of the XShaderCompiler project (Copyright (c) 2014-2016 by Lukas Hermanns)
+ * This file is part of the XShaderCompiler project (Copyright (c) 2014-2017 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
@@ -681,12 +681,15 @@ void GLSLConverter::ConvertIntrinsicCall(FunctionCall* ast)
         case Intrinsic::Texture_Sample_3:
         case Intrinsic::Texture_Sample_4:
         case Intrinsic::Texture_Sample_5:
-            ConvertIntrinsicCallSample(ast);
+            ConvertIntrinsicCallTextureSample(ast);
             break;
         case Intrinsic::Texture_SampleLevel_3:
         case Intrinsic::Texture_SampleLevel_4:
         case Intrinsic::Texture_SampleLevel_5:
-            ConvertIntrinsicCallSampleLevel(ast);
+            ConvertIntrinsicCallTextureSampleLevel(ast);
+            break;
+        case Intrinsic::StreamOutput_Append:
+            ConvertIntrinsicCallStreamOutputAppend(ast);
             break;
         default:
             break;
@@ -743,7 +746,7 @@ static int GetTextureVectorSizeFromIntrinsicCall(FunctionCall* ast)
     return 0;
 }
 
-void GLSLConverter::ConvertIntrinsicCallSample(FunctionCall* ast)
+void GLSLConverter::ConvertIntrinsicCallTextureSample(FunctionCall* ast)
 {
     /* Determine vector size for texture intrinsic */
     if (auto vectorSize = GetTextureVectorSizeFromIntrinsicCall(ast))
@@ -761,7 +764,7 @@ void GLSLConverter::ConvertIntrinsicCallSample(FunctionCall* ast)
     }
 }
 
-void GLSLConverter::ConvertIntrinsicCallSampleLevel(FunctionCall* ast)
+void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast)
 {
     /* Determine vector size for texture intrinsic */
     if (auto vectorSize = GetTextureVectorSizeFromIntrinsicCall(ast))
@@ -777,6 +780,12 @@ void GLSLConverter::ConvertIntrinsicCallSampleLevel(FunctionCall* ast)
         if (args.size() >= 4)
             ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, vectorSize), true);
     }
+}
+
+void GLSLConverter::ConvertIntrinsicCallStreamOutputAppend(FunctionCall* ast)
+{
+    /* Remove all arguments form this function call */
+    MoveAll(ast->arguments, program_->disabledAST);
 }
 
 //TODO: this is incomplete

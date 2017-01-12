@@ -1,7 +1,7 @@
 /*
  * GLSLGenerator.h
  * 
- * This file is part of the XShaderCompiler project (Copyright (c) 2014-2016 by Lukas Hermanns)
+ * This file is part of the XShaderCompiler project (Copyright (c) 2014-2017 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
@@ -135,6 +135,7 @@ class GLSLGenerator : public Generator
         void WriteGlobalLayouts();
         bool WriteGlobalLayoutsTessControl(const Program::LayoutTessControlShader& layout);
         bool WriteGlobalLayoutsTessEvaluation(const Program::LayoutTessEvaluationShader& layout);
+        bool WriteGlobalLayoutsGeometry(const Program::LayoutGeometryShader& layout);
         bool WriteGlobalLayoutsFragment(const Program::LayoutFragmentShader& layout);
         bool WriteGlobalLayoutsCompute(const Program::LayoutComputeShader& layout);
 

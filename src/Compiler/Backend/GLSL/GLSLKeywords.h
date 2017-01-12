@@ -1,7 +1,7 @@
 /*
  * GLSLKeywords.h
  * 
- * This file is part of the XShaderCompiler project (Copyright (c) 2014-2016 by Lukas Hermanns)
+ * This file is part of the XShaderCompiler project (Copyright (c) 2014-2017 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
@@ -40,6 +40,9 @@ const std::string* SamplerTypeToGLSLKeyword(const SamplerType t, bool useVulkanG
 
 // Returns the GLSL keyword for the specified attribut value or null on failure.
 const std::string* AttributeValueToGLSLKeyword(const AttributeValue t);
+
+// Returns the GLSL keyword for the specified geometry primtive type or null on failure.
+const std::string* PrimitiveTypeToGLSLKeyword(const PrimitiveType t);
 
 // Returns the GLSL keyword for the specified semantic.
 // Special cases if 'useVulkanGLSL' is true.

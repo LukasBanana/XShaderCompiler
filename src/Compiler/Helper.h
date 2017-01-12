@@ -1,7 +1,7 @@
 /*
  * Helper.h
  * 
- * This file is part of the XShaderCompiler project (Copyright (c) 2014-2016 by Lukas Hermanns)
+ * This file is part of the XShaderCompiler project (Copyright (c) 2014-2017 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <memory>
 #include <algorithm>
+#include <iterator>
 
 
 namespace Xsc
@@ -69,7 +70,15 @@ void EraseAllIf(Cont& container, Pred pred)
     );
 }
 
-// Removes all entries from the specified container for which the specified predicate is true.
+// Moves all entries from the source into the destination.
+template <typename Source, typename Destination>
+void MoveAll(Source& source, Destination& destination)
+{
+    std::move(std::begin(source), std::end(source), std::back_inserter(destination));
+    source.clear();
+}
+
+// Moves all entries from the source into the destination for which the specified predicate is true.
 template <typename Source, typename Destination, typename Pred>
 void MoveAllIf(Source& source, Destination& destination, Pred pred)
 {

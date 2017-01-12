@@ -1,7 +1,7 @@
 /*
  * HLSLAnalyzer.cpp
  * 
- * This file is part of the XShaderCompiler project (Copyright (c) 2014-2016 by Lukas Hermanns)
+ * This file is part of the XShaderCompiler project (Copyright (c) 2014-2017 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
@@ -806,7 +806,7 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
         /* Analyze function input/output */
         AnalyzeEntryPointInputOutput(funcDecl);
 
-        /* Analyze entry pointer attributes (also possibly missing attributes such as "numthreads" for compute shaders) */
+        /* Analyze entry point attributes (also possibly missing attributes such as "numthreads" for compute shaders) */
         AnalyzeEntryPointAttributes(funcDecl->attribs);
     }
 }
@@ -902,6 +902,26 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
         /* Analyze single variable as input/output parameter */
         AnalyzeEntryPointParameterInOutVariable(funcDecl, varDecl, input);
     }
+
+    /* Special case for geometry shader */
+    if (shaderTarget_ == ShaderTarget::GeometryShader)
+    {
+        if (input)
+        {
+            /* Fetch geometry input primitive type */
+            if (varDecl->declStmntRef->primitiveType != PrimitiveType::Undefined)
+                program_->layoutGeometry.inputPrimitive = varDecl->declStmntRef->primitiveType;
+        }
+        else
+        {
+            /* Fetch geometry output primitive type */
+            if (auto bufferTypeDen = varTypeDen->As<BufferTypeDenoter>())
+            {
+                if (IsStreamBufferType(bufferTypeDen->bufferType))
+                    program_->layoutGeometry.outputPrimitive = bufferTypeDen->bufferType;
+            }
+        }
+    }
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointParameterInOutVariable(FunctionDecl* funcDecl, VarDecl* varDecl, bool input)
@@ -955,10 +975,16 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOutBuffer(FunctionDecl* funcDecl,
     }
     else if (IsStreamBufferType(bufferTypeDen->bufferType))
     {
-        //TODO...
+        if (bufferTypeDen->genericTypeDenoter)
+        {
+            /* Analyze generic type of buffer type denoter */
+            AnalyzeEntryPointParameterInOut(funcDecl, varDecl, input, bufferTypeDen->genericTypeDenoter);
+        }
+        else
+            Error("missing generic type denoter in stream buffer", varDecl);
     }
     else
-        Error("illegal buffer type for entry pointer " + std::string(input ? "input" : "output"), varDecl);
+        Error("illegal buffer type for entry point " + std::string(input ? "input" : "output"), varDecl);
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& attribs)
@@ -970,6 +996,9 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& 
             break;
         case ShaderTarget::TessellationEvaluationShader:
             AnalyzeEntryPointAttributesTessEvaluationShader(attribs);
+            break;
+        case ShaderTarget::GeometryShader:
+            AnalyzeEntryPointAttributesGeometryShader(attribs);
             break;
         case ShaderTarget::FragmentShader:
             AnalyzeEntryPointAttributesFragmentShader(attribs);
@@ -1054,6 +1083,22 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributesTessEvaluationShader(const std::ve
 
     /* Check for missing attributes */
     ErrorIfAttributeNotFound(foundDomain, "domain(type)");
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointAttributesGeometryShader(const std::vector<AttributePtr>& attribs)
+{
+    /* Analyze optional attributes */
+    for (const auto& attr : attribs)
+    {
+        switch (attr->attributeType)
+        {
+            case AttributeType::MaxVertexCount:
+                AnalyzeAttributeMaxVertexCount(attr.get());
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointAttributesFragmentShader(const std::vector<AttributePtr>& attribs)
@@ -1188,10 +1233,10 @@ void HLSLAnalyzer::AnalyzeSecondaryEntryPoint(FunctionDecl* funcDecl)
         /* Store reference to secondary entry point in root AST node */
         program_->layoutTessControl.patchConstFunctionRef = funcDecl;
 
-        /* Analyze function input/output (use same visitor as for the main entry pointer here) */
+        /* Analyze function input/output (use same visitor as for the main entry point here) */
         AnalyzeEntryPointInputOutput(funcDecl);
 
-        /* Analyze secondary entry pointer attributes */
+        /* Analyze secondary entry point attributes */
         AnalyzeSecondaryEntryPointAttributes(funcDecl->attribs);
     }
 }
@@ -1349,6 +1394,18 @@ void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
         }
         else
             Error("expected patch constant function parameter to be a string literal", ast->arguments[0].get(), HLSLErr::ERR_ATTRIBUTE);
+    }
+}
+
+void HLSLAnalyzer::AnalyzeAttributeMaxVertexCount(Attribute* ast)
+{
+    if (AnalyzeNumArgsAttribute(ast, 1))
+    {
+        int exprValue = EvaluateConstExprInt(*ast->arguments[0]);
+        if (exprValue > 0)
+            program_->layoutGeometry.maxVertices = static_cast<unsigned int>(exprValue);
+        else
+            Error("maximal vertex count must be greater than zero", ast);
     }
 }
 
