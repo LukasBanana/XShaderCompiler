@@ -908,8 +908,11 @@ std::string SemanticToString(const Semantic t)
 
     switch (t)
     {
-        CASE_TO_STRING( Undefined              );
-        CASE_TO_STRING( UserDefined            );
+        case Semantic::Undefined:
+            return "<undefined>";
+        case Semantic::UserDefined:
+            return "<user-defined>";
+
         CASE_TO_STRING( ClipDistance           );
         CASE_TO_STRING( CullDistance           );
         CASE_TO_STRING( Coverage               );
