@@ -1146,7 +1146,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
             if (!varDecl->declStmntRef->interpModifiers.empty())
                 Warning("interpolation modifiers not supported for GLSL version 120 or below", varDecl);
 
-            if (GetShaderTarget() == ShaderTarget::VertexShader)
+            if (IsVertexShader())
                 Write("attribute ");
             else
                 Write("varying ");
