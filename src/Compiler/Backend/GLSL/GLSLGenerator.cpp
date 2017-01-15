@@ -1164,7 +1164,12 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
         Visit(varDecl->declStmntRef->varType);
         Separator();
 
-        Write(" " + varDecl->FinalIdent() + ";");
+        Write(" " + varDecl->FinalIdent());
+
+        if (varDecl->flags(VarDecl::isDynamicArray))
+            Write("[]");
+
+        Write(";");
     }
     EndLn();
 }
@@ -1246,27 +1251,29 @@ void GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool use
         varDecl->declStmntRef->varType.get(),
         varDecl->semantic,
         (useSemanticName ? varDecl->semantic.ToString() : varDecl->FinalIdent()),
-        varDecl->declStmntRef
+        varDecl
     );
 }
 
-void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeName* varType, const IndexedSemantic& semantic, const std::string& ident, VarDeclStmnt* ast)
+void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeName* varType, const IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl)
 {
     /* Write global output semantic slot */
     BeginLn();
     {
+        VarDeclStmnt* varDeclStmnt = (varDecl != nullptr ? varDecl->declStmntRef : nullptr);
+
         if (versionOut_ <= OutputShaderVersion::GLSL120)
         {
-            if (ast && !ast->interpModifiers.empty())
-                Warning("interpolation modifiers not supported for GLSL version 120 or below", ast);
+            if (varDeclStmnt && !varDeclStmnt->interpModifiers.empty())
+                Warning("interpolation modifiers not supported for GLSL version 120 or below", varDecl);
 
             Write("varying ");
             Separator();
         }
         else
         {
-            if (ast)
-                WriteInterpModifiers(ast->interpModifiers, ast);
+            if (varDeclStmnt)
+                WriteInterpModifiers(varDeclStmnt->interpModifiers, varDecl);
             Separator();
 
             if (semantic.IsSystemValue() && explicitBinding_)
@@ -1279,7 +1286,12 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeName* varType, const Inde
         Visit(varType);
         Separator();
 
-        Write(" " + ident + ";");
+        Write(" " + ident);
+
+        if (varDecl && varDecl->flags(VarDecl::isDynamicArray))
+            Write("[]");
+
+        Write(";");
     }
     EndLn();
 }

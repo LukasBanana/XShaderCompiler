@@ -199,22 +199,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    currentFunctionDecl_ = ast;
-
-    RenameReservedKeyword(ast->ident, ast->renamedIdent);
-
-    if (ast->flags(FunctionDecl::isEntryPoint))
-    {
-        isInsideEntryPoint_ = true;
-        {
-            VISIT_DEFAULT(FunctionDecl);
-        }
-        isInsideEntryPoint_ = false;
-    }
-    else
-        VISIT_DEFAULT(FunctionDecl);
-
-    RemoveSamplerStateVarDeclStmnts(ast->parameters);
+    ConvertFunctionDecl(ast);
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
@@ -669,6 +654,64 @@ bool GLSLConverter::RenameReservedKeyword(const std::string& ident, std::string&
 }
 
 /* ----- Conversion ----- */
+
+void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
+{
+    currentFunctionDecl_ = ast;
+
+    RenameReservedKeyword(ast->ident, ast->renamedIdent);
+
+    if (ast->flags(FunctionDecl::isEntryPoint))
+        ConvertFunctionDeclEntryPoint(ast);
+    else
+        ConvertFunctionDeclDefault(ast);
+
+    RemoveSamplerStateVarDeclStmnts(ast->parameters);
+}
+
+void GLSLConverter::ConvertFunctionDeclDefault(FunctionDecl* ast)
+{
+    /* Default visitor */
+    Visitor::VisitFunctionDecl(ast, nullptr);
+}
+
+void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
+{
+    isInsideEntryPoint_ = true;
+    {
+        /* Propagate array parameter declaration to input/output semantics */
+        for (auto param : ast->parameters)
+        {
+            if (!param->varDecls.empty())
+            {
+                auto varDecl = param->varDecls.front();
+                auto typeDen = varDecl->GetTypeDenoter()->Get();
+                if (auto arrayTypeDen = typeDen->As<ArrayTypeDenoter>())
+                {
+                    /* Mark this member and all structure members as dynamic array */
+                    varDecl->flags << VarDecl::isDynamicArray;
+
+                    if (auto structBaseTypeDen = arrayTypeDen->baseTypeDenoter->Get()->As<StructTypeDenoter>())
+                    {
+                        if (structBaseTypeDen->structDeclRef)
+                        {
+                            structBaseTypeDen->structDeclRef->ForEachVarDecl(
+                                [](VarDecl* member)
+                                {
+                                    member->flags << VarDecl::isDynamicArray;
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        /* Default visitor */
+        Visitor::VisitFunctionDecl(ast, nullptr);
+    }
+    isInsideEntryPoint_ = false;
+}
 
 void GLSLConverter::ConvertIntrinsicCall(FunctionCall* ast)
 {

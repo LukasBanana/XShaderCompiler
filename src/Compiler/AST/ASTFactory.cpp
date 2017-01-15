@@ -305,8 +305,16 @@ ArrayDimensionPtr MakeArrayDimension(int arraySize)
 {
     auto ast = MakeAST<ArrayDimension>();
 
-    ast->expr = MakeLiteralExpr(DataType::Int, std::to_string(arraySize));
-    ast->size = arraySize;
+    if (arraySize > 0)
+    {
+        ast->expr = MakeLiteralExpr(DataType::Int, std::to_string(arraySize));
+        ast->size = arraySize;
+    }
+    else
+    {
+        ast->expr = MakeAST<NullExpr>();
+        ast->size = 0;
+    }
 
     return ast;
 }

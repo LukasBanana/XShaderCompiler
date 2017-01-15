@@ -135,6 +135,10 @@ class GLSLConverter : public Visitor
 
         /* ----- Conversion ----- */
 
+        void ConvertFunctionDecl(FunctionDecl* ast);
+        void ConvertFunctionDeclDefault(FunctionDecl* ast);
+        void ConvertFunctionDeclEntryPoint(FunctionDecl* ast);
+
         void ConvertIntrinsicCall(FunctionCall* ast);
         void ConvertIntrinsicCallSaturate(FunctionCall* ast);
         void ConvertIntrinsicCallTextureSample(FunctionCall* ast);
