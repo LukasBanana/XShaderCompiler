@@ -195,10 +195,12 @@ void VarIdent::PopFront()
     if (next)
     {
         auto nextVarIdent = next;
-        ident           = nextVarIdent->ident;
-        arrayIndices    = nextVarIdent->arrayIndices;
-        next            = nextVarIdent->next;
-        symbolRef       = nextVarIdent->symbolRef;
+        
+        ident       = nextVarIdent->ident;
+        next        = nextVarIdent->next;
+        symbolRef   = nextVarIdent->symbolRef;
+
+        arrayIndices.insert(arrayIndices.end(), nextVarIdent->arrayIndices.begin(), nextVarIdent->arrayIndices.end());
     }
 }
 

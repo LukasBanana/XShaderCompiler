@@ -389,7 +389,7 @@ struct VarIdent : public TypedAST
     // Returns the type denoter for this AST node or the last sub node.
     TypeDenoterPtr GetExplicitTypeDenoter(bool recursive);
 
-    // Moves the next identifier into this one (i.e. removes the first identifier).
+    // Moves the next identifier into this one (i.e. removes the first identifier), and propagates the array indices.
     void PopFront();
 
     std::string             ident;                      // Either this ..
