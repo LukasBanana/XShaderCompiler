@@ -20,6 +20,7 @@
 #include <string>
 #include <set>
 #include <map>
+#include <functional>
 
 
 namespace Xsc
@@ -32,6 +33,9 @@ For simplicity only structs with public members are used here.
 */
 
 class Visitor;
+
+// Iteration callback for VarDecl AST nodes.
+using VarDeclIteratorFunctor = std::function<void(VarDecl* varDecl)>;
 
 /* --- Some helper macros --- */
 
@@ -385,7 +389,7 @@ struct VarIdent : public TypedAST
     // Returns the type denoter for this AST node or the last sub node.
     TypeDenoterPtr GetExplicitTypeDenoter(bool recursive);
 
-    // Moves the next identifier into this one (i.e. removes the first identifier).
+    // Moves the next identifier into this one (i.e. removes the first identifier), and propagates the array indices.
     void PopFront();
 
     std::string             ident;                      // Either this ..
@@ -410,6 +414,7 @@ struct VarDecl : public Decl
         FLAG( isSystemValue,    2 ), // This variable is a system value.
         FLAG( disableCodeGen,   3 ), // Disables the code generation for this variable declaration.
         FLAG( wasRenamed,       4 ), // This variable was renamed by a converter visitor.
+        FLAG( isDynamicArray,   5 ), // This variable is a dynamic array (for input/output semantics).
 
         isShaderInputSV     = (isShaderInput  | isSystemValue), // This variable a used as shader input, and it is a system value.
         isShaderOutputSV    = (isShaderOutput | isSystemValue), // This variable a used as shader output, and it is a system value.
@@ -505,6 +510,9 @@ struct StructDecl : public Decl
 
     // Returns a list with the type denoters of all members (including all base structures).
     void CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens) const;
+
+    // Iterates over each VarDecl AST node (included nested structures, and members in referenced structures).
+    void ForEachVarDecl(const VarDeclIteratorFunctor& iterator);
 
     std::string                     ident;                      // May be empty (for anonymous structures).
     std::string                     baseStructName;             // May be empty (if no inheritance is used).
@@ -656,6 +664,9 @@ struct VarDeclStmnt : public Stmnt
 
     // Returns true if any of the specified type modifiers is contained.
     bool HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const;
+
+    // Iterates over each VarDecl AST node.
+    void ForEachVarDecl(const VarDeclIteratorFunctor& iterator);
 
     bool                        isInput         = false;                    // Input modifier 'in'
     bool                        isOutput        = false;                    // Input modifier 'out'

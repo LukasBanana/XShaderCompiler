@@ -195,10 +195,12 @@ void VarIdent::PopFront()
     if (next)
     {
         auto nextVarIdent = next;
-        ident           = nextVarIdent->ident;
-        arrayIndices    = nextVarIdent->arrayIndices;
-        next            = nextVarIdent->next;
-        symbolRef       = nextVarIdent->symbolRef;
+        
+        ident       = nextVarIdent->ident;
+        next        = nextVarIdent->next;
+        symbolRef   = nextVarIdent->symbolRef;
+
+        arrayIndices.insert(arrayIndices.end(), nextVarIdent->arrayIndices.begin(), nextVarIdent->arrayIndices.end());
     }
 }
 
@@ -455,6 +457,27 @@ void StructDecl::CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTy
     }
 }
 
+void StructDecl::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
+{
+    /* Iterate over all base struct members */
+    if (baseStructRef)
+        baseStructRef->ForEachVarDecl(iterator);
+
+    for (auto& member : members)
+    {
+        /* Iterate over all sub-struct members */
+        auto typeDen = member->varType->GetTypeDenoter()->Get();
+        if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+        {
+            if (structTypeDen->structDeclRef)
+                structTypeDen->structDeclRef->ForEachVarDecl(iterator);
+        }
+
+        /* Iterate over all variables for current member */
+        member->ForEachVarDecl(iterator);
+    }
+}
+
 
 /* ----- AliasDecl ----- */
 
@@ -654,6 +677,12 @@ bool VarDeclStmnt::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifie
             return true;
     }
     return false;
+}
+
+void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
+{
+    for (auto& varDecl : varDecls)
+        iterator(varDecl.get());
 }
 
 
