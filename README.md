@@ -25,7 +25,7 @@ Documentation
 Progress
 --------
 
-**Version: 0.04 Alpha** (*Do not use in production code!*)
+**Version: 0.05 Alpha** (*Do not use in production code!*)
 
 See the [TODO.md](https://github.com/LukasBanana/XShaderCompiler/blob/master/TODO.md) file for more information.
 
