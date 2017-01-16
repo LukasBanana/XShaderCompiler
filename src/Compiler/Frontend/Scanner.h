@@ -119,6 +119,7 @@ class Scanner
         TokenPtr    ScanCommentLine(bool scanComments);
         TokenPtr    ScanCommentBlock(bool scanComments);
         TokenPtr    ScanStringLiteral();
+        TokenPtr    ScanCharLiteral();
         TokenPtr    ScanNumber(bool startWithDot = false);
         TokenPtr    ScanNumberOrDot();
         TokenPtr    ScanVarArg(std::string& spell);

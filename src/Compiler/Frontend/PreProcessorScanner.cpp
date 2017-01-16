@@ -50,6 +50,10 @@ TokenPtr PreProcessorScanner::ScanToken()
     if (Is('\"'))
         return ScanStringLiteral();
 
+    /* Scan character literal */
+    if (Is('\''))
+        return ScanCharLiteral();
+
     /* Scan operators */
     if (Is('='))
     {

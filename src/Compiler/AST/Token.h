@@ -37,6 +37,7 @@ class Token
             IntLiteral,         // digit+
             FloatLiteral,       // digit+ '.' digit+
             StringLiteral,      // '"' ANY+ '"'
+            CharLiteral,        // '\'' ANY '\''
             NullLiteral,        // NULL
 
             /* --- Operators --- */
