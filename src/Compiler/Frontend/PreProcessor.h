@@ -140,6 +140,8 @@ class PreProcessor : public Parser
         TokenPtrString  ParseDirectiveTokenString(bool expandDefinedDirective = false, bool ignoreComments = false);
         TokenPtrString  ParseArgumentTokenString();
 
+        std::string     ParseDefinedMacro();
+
         /* === Members === */
 
         IncludeHandler&                     includeHandler_;
