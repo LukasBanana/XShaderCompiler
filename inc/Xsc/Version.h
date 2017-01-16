@@ -13,10 +13,10 @@
 #define XSC_VERSION_MAJOR   0
 
 //! Xsc minor version number.
-#define XSC_VERSION_MINOR   4
+#define XSC_VERSION_MINOR   5
 
 //! Xsc version string in the form "X.YZ", where X is the major version, and YZ is the minor version.
-#define XSC_VERSION_STRING  "0.04 Alpha"
+#define XSC_VERSION_STRING  "0.05 Alpha"
 
 
 #endif
