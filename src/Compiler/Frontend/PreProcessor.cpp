@@ -847,7 +847,7 @@ void PreProcessor::ParseDirectiveError()
     for (const auto& tkn : tokenString.GetTokens())
         errorMsg += tkn->Spell();
 
-    //GetReportHandler().SubmitReport(true, Report::Types::Error, "error", errorMsg, GetScanner().Source(), tkn->Area());
+    GetReportHandler().SubmitReport(true, Report::Types::Error, "error", errorMsg, GetScanner().Source(), tkn->Area());
 }
 
 ExprPtr PreProcessor::ParseExpr()
