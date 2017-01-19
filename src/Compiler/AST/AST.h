@@ -666,6 +666,9 @@ struct VarDeclStmnt : public Stmnt
     // Returns true if the 'const' type modifier or the 'uniform' input modifier is set.
     bool IsConst() const;
 
+    // Inserts the specified type modifier. Overlapping matrix packings will be removed.
+    void SetTypeModifier(const TypeModifier modifier);
+
     // Returns true if any of the specified type modifiers is contained.
     bool HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const;
 
@@ -678,7 +681,6 @@ struct VarDeclStmnt : public Stmnt
     
     std::set<StorageClass>      storageClasses;                             // Storage classes, e.g. extern, precise, etc.
     std::set<InterpModifier>    interpModifiers;                            // Interpolation modifiers, e.g. nointerpolation, linear, centroid etc.
-    //TODO: move 'typeModifiers' into TypeDenoter base class
     std::set<TypeModifier>      typeModifiers;                              // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats)
     PrimitiveType               primitiveType   = PrimitiveType::Undefined; // Primitive type for geometry entry pointer parameters
 

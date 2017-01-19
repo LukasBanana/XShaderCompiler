@@ -379,6 +379,8 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     if (!ast->flags(AST::isReachable))
         return;
 
+    isInsideUniformBuffer_ = true;
+
     if (versionOut_ < OutputShaderVersion::GLSL140)
     {
         /* Write individual uniforms */
@@ -417,6 +419,8 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     }
 
     Blank();
+
+    isInsideUniformBuffer_ = false;
 }
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
@@ -1496,11 +1500,13 @@ void GLSLGenerator::WriteInterpModifiers(const std::set<InterpModifier>& interpM
 
 void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifiers)
 {
-    /* Write row/column major modifier */
-    if (typeModifiers.find(TypeModifier::RowMajor) != typeModifiers.end())
-        Write("layout(row_major) ");
-    else if (typeModifiers.find(TypeModifier::ColumnMajor) != typeModifiers.end())
-        Write("layout(column_major) ");
+    /* Matrix packing alignment can only be written for uniform buffers */
+    if (isInsideUniformBuffer_)
+    {
+        /* Only write 'row_major' type modifier (column major is the default) */
+        if (typeModifiers.find(TypeModifier::RowMajor) != typeModifiers.end())
+            Write("layout(row_major) ");
+    }
 
     /* Write const type modifier */
     if (typeModifiers.find(TypeModifier::Const) != typeModifiers.end())

@@ -796,7 +796,31 @@ void PreProcessor::ParseDirectivePragma()
                 else
                     Error("unexpected end of token string", prevToken);
             }
-            else if (command == "def" || command == "pack_matrix" || command == "warning")
+            else if (command == "pack_matrix")
+            {
+                auto prevToken = tokenIt->get();
+                try
+                {
+                    /* Parse matrix packing alignment: '#pragma pack_matrix(ALIGNMENT)' */
+                    tokenIt.AcceptIt();
+                    tokenIt.Accept(Tokens::LBracket);
+                    auto alignmentTkn = tokenIt.Accept(Tokens::Ident);
+                    tokenIt.Accept(Tokens::RBracket);
+                    
+                    /* Write pragma out */
+                    auto alignment = alignmentTkn->Spell();
+                    if (alignment == "row_major" || alignment == "column_major")
+                        Out() << "#pragma pack_matrix(" << alignment << ")";
+                    else
+                        Warning("unknown matrix pack alignment \"" + alignment + "\"", alignmentTkn.get());
+                }
+                catch (const std::exception& e)
+                {
+                    Warning(e.what(), prevToken);
+                    return;
+                }
+            }
+            else if (command == "def" || command == "warning")
             {
                 Warning("pragma \"" + command + "\" can currently not be handled", tokenIt->get());
                 return;

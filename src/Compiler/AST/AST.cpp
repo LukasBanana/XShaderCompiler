@@ -688,6 +688,18 @@ bool VarDeclStmnt::IsConst() const
     return (isUniform || (typeModifiers.find(TypeModifier::Const) != typeModifiers.end()));
 }
 
+void VarDeclStmnt::SetTypeModifier(const TypeModifier modifier)
+{
+    /* Remove overlapping modifier first */
+    if (modifier == TypeModifier::RowMajor)
+        typeModifiers.erase(TypeModifier::ColumnMajor);
+    else if (modifier == TypeModifier::ColumnMajor)
+        typeModifiers.erase(TypeModifier::RowMajor);
+
+    /* Insert new modifier */
+    typeModifiers.insert(modifier);
+}
+
 bool VarDeclStmnt::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const
 {
     for (auto mod : modifiers)
