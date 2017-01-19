@@ -203,3 +203,4 @@ Here is a short overview of High-Level differences between HLSL and GLSL:
 | Object-Oriented Intrinsics | Yes | No |
 | Multiple Entry Points | Yes | No |
 | Type Aliasing | Yes | No |
+| Implicit Type Conversion | Yes | Very Limited |
