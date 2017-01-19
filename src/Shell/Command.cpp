@@ -892,6 +892,30 @@ void ObfuscateCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
+ * RowMajorAlignmentCommand class
+ */
+
+std::vector<Command::Identifier> RowMajorAlignmentCommand::Idents() const
+{
+    return { { "--row-major" } };
+}
+
+HelpDescriptor RowMajorAlignmentCommand::Help() const
+{
+    return
+    {
+        "--row-major [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables row major packing alignment for matrices; default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void RowMajorAlignmentCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.rowMajorAlignment = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
  * FormatBlanksCommand class
  */
 
