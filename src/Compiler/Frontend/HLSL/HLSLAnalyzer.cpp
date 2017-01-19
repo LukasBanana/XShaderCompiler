@@ -576,6 +576,23 @@ void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
 
         /* Also connect function declaration with the identifier of the function call */
         ast->varIdent->symbolRef = ast->funcDeclRef;
+
+        if (auto funcDecl = ast->funcDeclRef)
+        {
+            /* Fetch argument expressions of all remaining parmeters */
+            for (std::size_t i = ast->arguments.size(), n = funcDecl->parameters.size(); i < n; ++i)
+            {
+                auto param = funcDecl->parameters[i].get();
+                if (!param->varDecls.empty())
+                {
+                    auto paramVar = param->varDecls.front().get();
+                    if (auto initExpr = paramVar->initializer.get())
+                        ast->defaultArgumentRefs.push_back(initExpr);
+                    else
+                        Error("missing initializer expression for default parameter '" + paramVar->ident + "'", paramVar);
+                }
+            }
+        }
     }
 }
 

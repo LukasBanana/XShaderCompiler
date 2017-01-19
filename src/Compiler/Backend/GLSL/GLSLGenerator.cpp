@@ -520,7 +520,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     Separator();
 
     /* Write variable declarations */
-    for (size_t i = 0; i < varDecls.size(); ++i)
+    for (std::size_t i = 0; i < varDecls.size(); ++i)
     {
         Visit(varDecls[i]);
         if (i + 1 < varDecls.size())
@@ -819,7 +819,7 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
     Write("{ ");
         
-    for (size_t i = 0; i < ast->exprs.size(); ++i)
+    for (std::size_t i = 0; i < ast->exprs.size(); ++i)
     {
         Visit(ast->exprs[i]);
         if (i + 1 < ast->exprs.size())
@@ -1625,7 +1625,7 @@ void GLSLGenerator::WriteFunction(FunctionDecl* ast)
     }
 
     /* Write parameters */
-    for (size_t i = 0; i < ast->parameters.size(); ++i)
+    for (std::size_t i = 0; i < ast->parameters.size(); ++i)
     {
         WriteParameter(ast->parameters[i].get());
         if (i + 1 < ast->parameters.size())
@@ -1760,10 +1760,14 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
     /* Write arguments */
     Write("(");
 
-    for (size_t i = 0; i < ast->arguments.size(); ++i)
+    for (std::size_t i = 0, n = ast->arguments.size(), m = n + ast->defaultArgumentRefs.size(); i < m; ++i)
     {
-        Visit(ast->arguments[i]);
-        if (i + 1 < ast->arguments.size())
+        if (i < n)
+            Visit(ast->arguments[i]);
+        else
+            Visit(ast->defaultArgumentRefs[i - n]);
+
+        if (i + 1 < m)
             Write(", ");
     }
 
@@ -2223,9 +2227,13 @@ void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
     Visit(ast->varType);
     Write(" ");
 
-    /* Write parameter identifier */
+    /* Write parameter identifier (without default initializer) */
     if (ast->varDecls.size() == 1)
-        Visit(ast->varDecls.front());
+    {
+        auto paramVar = ast->varDecls.front().get();
+        Write(paramVar->FinalIdent());
+        Visit(paramVar->arrayDims);
+    }
     else
         Error("invalid number of variables in function parameter", ast);
 }
