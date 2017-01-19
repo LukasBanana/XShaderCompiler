@@ -283,6 +283,9 @@ struct FunctionCall : public AST
         FLAG( canInlineIntrinsicWrapper, 0 ),
     };
 
+    // Returns a list of all argument expressions (including the default parameters).
+    std::vector<Expr*> GetArguments() const;
+
     VarIdentPtr             varIdent;                           // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
     TypeDenoterPtr          typeDenoter;                        // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
     std::vector<ExprPtr>    arguments;

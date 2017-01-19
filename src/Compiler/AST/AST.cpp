@@ -205,6 +205,25 @@ void VarIdent::PopFront()
 }
 
 
+/* ----- FunctionCall ----- */
+
+std::vector<Expr*> FunctionCall::GetArguments() const
+{
+    std::vector<Expr*> args;
+    args.reserve(arguments.size() + defaultArgumentRefs.size());
+
+    /* Add explicit arguments */
+    for (const auto& arg : arguments)
+        args.push_back(arg.get());
+
+    /* Add remaining default arguments */
+    for (auto arg : defaultArgumentRefs)
+        args.push_back(arg);
+
+    return args;
+}
+
+
 /* ----- SwitchCase ----- */
 
 bool SwitchCase::IsDefaultCase() const
