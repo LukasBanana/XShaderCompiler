@@ -1496,11 +1496,15 @@ void GLSLGenerator::WriteInterpModifiers(const std::set<InterpModifier>& interpM
 
 void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifiers)
 {
-    for (auto modifier : typeModifiers)
-    {
-        if (modifier == TypeModifier::Const)
-            Write("const ");
-    }
+    /* Write row/column major modifier */
+    if (typeModifiers.find(TypeModifier::RowMajor) != typeModifiers.end())
+        Write("layout(row_major) ");
+    else if (typeModifiers.find(TypeModifier::ColumnMajor) != typeModifiers.end())
+        Write("layout(column_major) ");
+
+    /* Write const type modifier */
+    if (typeModifiers.find(TypeModifier::Const) != typeModifiers.end())
+        Write("const ");
 }
 
 void GLSLGenerator::WriteDataType(DataType dataType, bool writePrecisionSpecifier, const AST* ast)
