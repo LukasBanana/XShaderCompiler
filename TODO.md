@@ -4,7 +4,6 @@ TODO List
 | Feature | Priority | Remarks |
 |---------|:--------:|---------|
 | Output semantic from casted return value in entry point | Very high | Is currently ignored in GLSL output. |
-| Matrix packing | High | Matrix packing (row- or column major) must be changable by pre-processor, type modifier, and compiler option. |
 | Braced initializer | High | Translation of braced initializers are incomplete. |
 | Geometry shader support | High | Geometry shaders can currently be parsed, but analysis and translation is incomplete. |
 | Tessellation shader support | High | Tessellation shader attributes are done, but in/out semantics are incomplete. |
