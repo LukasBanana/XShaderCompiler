@@ -34,7 +34,11 @@ class HLSLParser : public Parser
         
         HLSLParser(Log* log = nullptr);
 
-        ProgramPtr ParseSource(const SourceCodePtr& source, bool useD3D10Semantics = true);
+        ProgramPtr ParseSource(
+            const SourceCodePtr& source,
+            bool useD3D10Semantics = true,
+            bool rowMajorAlignment = false
+        );
 
     private:
         
@@ -230,7 +234,7 @@ class HLSLParser : public Parser
         bool                useD3D10Semantics_      = true;
 
         // True, if matrix packing is globally set to row major.
-        bool                rowMajorPacking_        = false;
+        bool                rowMajorAlignment_      = false;
 
 };
 

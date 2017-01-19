@@ -39,9 +39,10 @@ HLSLParser::HLSLParser(Log* log) :
 {
 }
 
-ProgramPtr HLSLParser::ParseSource(const SourceCodePtr& source, bool useD3D10Semantics)
+ProgramPtr HLSLParser::ParseSource(const SourceCodePtr& source, bool useD3D10Semantics, bool rowMajorAlignment)
 {
-    useD3D10Semantics_ = useD3D10Semantics;
+    useD3D10Semantics_  = useD3D10Semantics;
+    rowMajorAlignment_  = rowMajorAlignment;
 
     PushScannerSource(source);
 
@@ -196,9 +197,9 @@ void HLSLParser::ProcessDirectivePragma()
         /* Set matrix pack alignment */
         auto alignment = alignmentTkn->Spell();
         if (alignment == "row_major")
-            rowMajorPacking_ = true;
+            rowMajorAlignment_ = true;
         else if (alignment == "column_major")
-            rowMajorPacking_ = false;
+            rowMajorAlignment_ = false;
         else
             Error("unknown matrix pack alignment '" + alignment + "' (must be 'row_major' or 'column_major')", alignmentTkn.get());
     }
@@ -355,7 +356,7 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
 {
     auto ast = Make<VarDeclStmnt>();
 
-    if (rowMajorPacking_)
+    if (rowMajorAlignment_)
         ast->SetTypeModifier(TypeModifier::RowMajor);
 
     /* Parse parameter as single variable declaration */
@@ -976,7 +977,7 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 {
     auto ast = Make<VarDeclStmnt>();
 
-    if (rowMajorPacking_)
+    if (rowMajorAlignment_)
         ast->SetTypeModifier(TypeModifier::RowMajor);
 
     while (true)
