@@ -204,6 +204,16 @@ void VarIdent::PopFront()
     }
 }
 
+IndexedSemantic VarIdent::FetchSemantic() const
+{
+    if (symbolRef)
+    {
+        if (auto varDecl = symbolRef->As<VarDecl>())
+            return varDecl->semantic;
+    }
+    return Semantic::Undefined;
+}
+
 
 /* ----- FunctionCall ----- */
 

@@ -199,6 +199,45 @@ bool GLSLGenerator::IsTypeCompatibleWithSemantic(const Semantic semantic, const 
     return false;
 }
 
+bool GLSLGenerator::IsRValueSemantic(const Semantic semantic) const
+{
+    return !IsLValueSemantic(semantic);
+}
+
+bool GLSLGenerator::IsLValueSemantic(const Semantic semantic) const
+{
+    using T = Semantic;
+
+    static const std::set<T> lvalueSemantics
+    {
+        T::ClipDistance,
+        T::CullDistance,
+        T::Coverage,
+        T::Depth,
+        T::DepthGreaterEqual,
+        T::DepthLessEqual,
+        T::InnerCoverage,
+        T::InsideTessFactor,
+        T::RenderTargetArrayIndex,
+        T::StencilRef,
+        T::Target,
+        T::TessFactor,
+        T::VertexPosition,
+        T::ViewportArrayIndex,
+    };
+
+    #if 0
+    /* Check for special cases of current shader target */
+    switch (GetShaderTarget())
+    {
+        case ShaderTarget::FragmentShader:
+            break;
+    }
+    #endif
+
+    return (lvalueSemantics.find(semantic) != lvalueSemantics.end());
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -810,8 +849,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    //WriteVarIdentOrSystemValue(ast->varIdent.get());
-    Visit(ast->varIdent);
+    WriteVarIdentOrSystemValue(ast->varIdent.get());
     if (ast->assignExpr)
     {
         Write(" " + AssignOpToString(ast->assignOp) + " ");
@@ -1088,7 +1126,7 @@ void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
 
     for (auto varDecl : varDeclRefs)
     {
-        if (varDecl->flags(AST::isUsed))
+        if (varDecl->flags(AST::isUsed) && IsRValueSemantic(varDecl->semantic))
             WriteLocalInputSemanticsVarDecl(varDecl);
     }
 
@@ -1186,7 +1224,7 @@ void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 
     for (auto varDecl : varDeclRefs)
     {
-        if (varDecl->flags(AST::isUsed))
+        if (varDecl->flags(AST::isUsed) && IsRValueSemantic(varDecl->semantic))
             WriteLocalOutputSemanticsVarDecl(varDecl);
     }
 
@@ -1312,7 +1350,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
         /* Write system values */
         for (auto varDecl : varDeclRefs)
         {
-            if (varDecl->semantic.IsValid())
+            if (varDecl->semantic.IsValid() && IsRValueSemantic(varDecl->semantic))
             {
                 if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
                 {
@@ -1386,6 +1424,24 @@ void GLSLGenerator::WriteGlobalUniformsParameter(VarDeclStmnt* param)
 
 /* --- VarIdent --- */
 
+/*
+Find the first VarIdent with a system value semantic,
+and keep the remaining AST nodes (i.e. ast->next) which might be vector subscriptions (e.g. "gl_Position.xyz").
+*/
+VarIdent* GLSLGenerator::FindSystemValueVarIdent(VarIdent* ast)
+{
+    while (ast)
+    {
+        /* Check if current var-ident AST node has a system semantic */
+        if (SystemValueToKeyword(ast->FetchSemantic()) != nullptr)
+            return ast;
+
+        /* Search in next var-ident AST node */
+        ast = ast->next.get();
+    }
+    return nullptr;
+}
+
 const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* ast)
 {
     /* Check if a variable declaration has changed it's name during conversion */
@@ -1413,6 +1469,41 @@ void GLSLGenerator::WriteVarIdent(VarIdent* ast, bool recursive)
     {
         Write(".");
         WriteVarIdent(ast->next.get());
+    }
+}
+
+/*
+Writes either the variable identifier as it is (e.g. "vertexOutput.position.xyz"),
+or a system value if the identifier has a system value semantix (e.g. "gl_Position.xyz").
+*/
+void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
+{
+    /* Find system value semantic in variable identifier */
+    auto semanticVarIdent = FindSystemValueVarIdent(ast);
+    std::unique_ptr<std::string> semanticKeyword;
+
+    if (semanticVarIdent)
+    {
+        auto semantic = semanticVarIdent->FetchSemantic();
+        if (IsLValueSemantic(semantic))
+            semanticKeyword = SystemValueToKeyword(semantic);
+    }
+
+    if (semanticVarIdent && semanticKeyword)
+    {
+        /* Write shader target respective system semantic */
+        Write(*semanticKeyword);
+
+        if (semanticVarIdent->next)
+        {
+            Write(".");
+            Visit(semanticVarIdent->next);
+        }
+    }
+    else
+    {
+        /* Write default variable identifier */
+        Visit(ast);
     }
 }
 

@@ -396,6 +396,9 @@ struct VarIdent : public TypedAST
     // Moves the next identifier into this one (i.e. removes the first identifier), and propagates the array indices.
     void PopFront();
 
+    // Returns a semantic if this is an identifier to a variable which has a semantic.
+    IndexedSemantic FetchSemantic() const;
+
     std::string             ident;                      // Either this ..
   //TypeDenoterPtr          typeDenoter;                // ... or this is used
     std::vector<ExprPtr>    arrayIndices;               // Optional array indices

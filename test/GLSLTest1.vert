@@ -12,6 +12,7 @@ void f()
 
 void main()
 {
+	gl_VertexID += 1;
 	gl_Position = vec4(0);
 	f();
 	gl_Position = gl_Position.wzyx;
