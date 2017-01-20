@@ -796,7 +796,31 @@ void PreProcessor::ParseDirectivePragma()
                 else
                     Error("unexpected end of token string", prevToken);
             }
-            else if (command == "def" || command == "pack_matrix" || command == "warning")
+            else if (command == "pack_matrix")
+            {
+                auto prevToken = tokenIt->get();
+                try
+                {
+                    /* Parse matrix packing alignment: '#pragma pack_matrix(ALIGNMENT)' */
+                    tokenIt.AcceptIt();
+                    tokenIt.Accept(Tokens::LBracket);
+                    auto alignmentTkn = tokenIt.Accept(Tokens::Ident);
+                    tokenIt.Accept(Tokens::RBracket);
+                    
+                    /* Write pragma out */
+                    auto alignment = alignmentTkn->Spell();
+                    if (alignment == "row_major" || alignment == "column_major")
+                        Out() << "#pragma pack_matrix(" << alignment << ")";
+                    else
+                        Warning("unknown matrix pack alignment \"" + alignment + "\"", alignmentTkn.get());
+                }
+                catch (const std::exception& e)
+                {
+                    Warning(e.what(), prevToken);
+                    return;
+                }
+            }
+            else if (command == "def" || command == "warning")
             {
                 Warning("pragma \"" + command + "\" can currently not be handled", tokenIt->get());
                 return;
@@ -861,11 +885,26 @@ ExprPtr PreProcessor::ParsePrimaryExpr()
     {
         case Tokens::Ident:
         {
-            /* Parse identifier without macro expansion (this already happend at this point) */
-            auto ast = Make<VarAccessExpr>();
-            ast->varIdent = Make<VarIdent>();
-            ast->varIdent->ident = AcceptIt()->Spell();
-            return ast;
+            if (Tkn()->Spell() == "defined")
+            {
+                /* Generate new token for boolean literal (which is the replacement of the 'defined IDENT' directive) */
+                auto ast = Make<LiteralExpr>();
+                {
+                    ast->dataType   = DataType::Int;
+                    ast->value      = ParseDefinedMacro();
+                }
+                return ast;
+            }
+            else
+            {
+                /* Parse identifier without macro expansion (this already happend at this point) */
+                auto ast = Make<VarAccessExpr>();
+                {
+                    ast->varIdent = Make<VarIdent>();
+                    ast->varIdent->ident = AcceptIt()->Spell();
+                }
+                return ast;
+            }
         }
         break;
 
@@ -933,28 +972,9 @@ TokenPtrString PreProcessor::ParseDirectiveTokenString(bool expandDefinedDirecti
             {
                 if (expandDefinedDirective && Tkn()->Spell() == "defined")
                 {
-                    /* Parse 'defined IDENT' or 'defined (IDENT)' */
-                    AcceptIt();
-                    IgnoreWhiteSpaces();
-
-                    /* Parse macro identifier */
-                    std::string macroIdent;
-                    if (Is(Tokens::LBracket))
-                    {
-                        AcceptIt();
-                        IgnoreWhiteSpaces();
-                        macroIdent = Accept(Tokens::Ident)->Spell();
-                        IgnoreWhiteSpaces();
-                        Accept(Tokens::RBracket);
-                    }
-                    else
-                        macroIdent = Accept(Tokens::Ident)->Spell();
-
-                    /* Determine value of integer literal ('1' if macro is defined, '0' otherwise */
-                    std::string intLiteral = (IsDefined(macroIdent) ? "1" : "0");
-
                     /* Generate new token for boolean literal (which is the replacement of the 'defined IDENT' directive) */
-                    tokenString.PushBack(Make<Token>(Tokens::IntLiteral, std::move(intLiteral)));
+                    auto definedMacro = ParseDefinedMacro();
+                    tokenString.PushBack(Make<Token>(Tokens::IntLiteral, definedMacro));
                 }
                 else
                 {
@@ -1009,6 +1029,29 @@ TokenPtrString PreProcessor::ParseArgumentTokenString()
     }
 
     return tokenString;
+}
+
+std::string PreProcessor::ParseDefinedMacro()
+{
+    /* Parse 'defined IDENT' or 'defined (IDENT)' */
+    Accept(Tokens::Ident, "defined");
+    IgnoreWhiteSpaces();
+
+    /* Parse macro identifier */
+    std::string macroIdent;
+    if (Is(Tokens::LBracket))
+    {
+        AcceptIt();
+        IgnoreWhiteSpaces();
+        macroIdent = Accept(Tokens::Ident)->Spell();
+        IgnoreWhiteSpaces();
+        Accept(Tokens::RBracket);
+    }
+    else
+        macroIdent = Accept(Tokens::Ident)->Spell();
+
+    /* Determine value of integer literal ('1' if macro is defined, '0' otherwise */
+    return (IsDefined(macroIdent) ? "1" : "0");
 }
 
 

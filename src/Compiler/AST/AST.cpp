@@ -204,6 +204,35 @@ void VarIdent::PopFront()
     }
 }
 
+IndexedSemantic VarIdent::FetchSemantic() const
+{
+    if (symbolRef)
+    {
+        if (auto varDecl = symbolRef->As<VarDecl>())
+            return varDecl->semantic;
+    }
+    return Semantic::Undefined;
+}
+
+
+/* ----- FunctionCall ----- */
+
+std::vector<Expr*> FunctionCall::GetArguments() const
+{
+    std::vector<Expr*> args;
+    args.reserve(arguments.size() + defaultArgumentRefs.size());
+
+    /* Add explicit arguments */
+    for (const auto& arg : arguments)
+        args.push_back(arg.get());
+
+    /* Add remaining default arguments */
+    for (auto arg : defaultArgumentRefs)
+        args.push_back(arg);
+
+    return args;
+}
+
 
 /* ----- SwitchCase ----- */
 
@@ -667,6 +696,18 @@ bool VarDeclStmnt::IsOutput() const
 bool VarDeclStmnt::IsConst() const
 {
     return (isUniform || (typeModifiers.find(TypeModifier::Const) != typeModifiers.end()));
+}
+
+void VarDeclStmnt::SetTypeModifier(const TypeModifier modifier)
+{
+    /* Remove overlapping modifier first */
+    if (modifier == TypeModifier::RowMajor)
+        typeModifiers.erase(TypeModifier::ColumnMajor);
+    else if (modifier == TypeModifier::ColumnMajor)
+        typeModifiers.erase(TypeModifier::RowMajor);
+
+    /* Insert new modifier */
+    typeModifiers.insert(modifier);
 }
 
 bool VarDeclStmnt::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const

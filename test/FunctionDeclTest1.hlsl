@@ -27,9 +27,11 @@ uint3 f3(float x)
 	if (x > 20)
 	{
 		return v;
-		S s;
+		S s; // <- DEAD CODE
 	}
 	return v*2;
+	
+	// DEAD CODE
 	uint3 v2 = (uint3)0;
 	return v2*2;
 }

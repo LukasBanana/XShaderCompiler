@@ -199,6 +199,45 @@ bool GLSLGenerator::IsTypeCompatibleWithSemantic(const Semantic semantic, const 
     return false;
 }
 
+bool GLSLGenerator::IsRValueSemantic(const Semantic semantic) const
+{
+    return !IsLValueSemantic(semantic);
+}
+
+bool GLSLGenerator::IsLValueSemantic(const Semantic semantic) const
+{
+    using T = Semantic;
+
+    static const std::set<T> lvalueSemantics
+    {
+        T::ClipDistance,
+        T::CullDistance,
+        T::Coverage,
+        T::Depth,
+        T::DepthGreaterEqual,
+        T::DepthLessEqual,
+        T::InnerCoverage,
+        T::InsideTessFactor,
+        T::RenderTargetArrayIndex,
+        T::StencilRef,
+        T::Target,
+        T::TessFactor,
+        T::VertexPosition,
+        T::ViewportArrayIndex,
+    };
+
+    #if 0
+    /* Check for special cases of current shader target */
+    switch (GetShaderTarget())
+    {
+        case ShaderTarget::FragmentShader:
+            break;
+    }
+    #endif
+
+    return (lvalueSemantics.find(semantic) != lvalueSemantics.end());
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -410,7 +449,11 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         WriteScopeOpen(false, true);
         BeginSep();
         {
+            isInsideUniformBuffer_ = true;
+
             Visit(ast->members);
+
+            isInsideUniformBuffer_ = false;
         }
         EndSep();
         WriteScopeClose();
@@ -501,7 +544,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     Separator();
 
     /* Write type modifiers */
-    WriteTypeModifiers(ast->typeModifiers);
+    WriteTypeModifiers(ast->typeModifiers, ast->varType->GetTypeDenoter()->Get());
     Separator();
 
     /* Write variable type */
@@ -520,7 +563,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     Separator();
 
     /* Write variable declarations */
-    for (size_t i = 0; i < varDecls.size(); ++i)
+    for (std::size_t i = 0; i < varDecls.size(); ++i)
     {
         Visit(varDecls[i]);
         if (i + 1 < varDecls.size())
@@ -806,8 +849,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    //WriteVarIdentOrSystemValue(ast->varIdent.get());
-    Visit(ast->varIdent);
+    WriteVarIdentOrSystemValue(ast->varIdent.get());
     if (ast->assignExpr)
     {
         Write(" " + AssignOpToString(ast->assignOp) + " ");
@@ -819,7 +861,7 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
     Write("{ ");
         
-    for (size_t i = 0; i < ast->exprs.size(); ++i)
+    for (std::size_t i = 0; i < ast->exprs.size(); ++i)
     {
         Visit(ast->exprs[i]);
         if (i + 1 < ast->exprs.size())
@@ -1084,7 +1126,7 @@ void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
 
     for (auto varDecl : varDeclRefs)
     {
-        if (varDecl->flags(AST::isUsed))
+        if (varDecl->flags(AST::isUsed) && IsRValueSemantic(varDecl->semantic))
             WriteLocalInputSemanticsVarDecl(varDecl);
     }
 
@@ -1182,7 +1224,7 @@ void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 
     for (auto varDecl : varDeclRefs)
     {
-        if (varDecl->flags(AST::isUsed))
+        if (varDecl->flags(AST::isUsed) && IsRValueSemantic(varDecl->semantic))
             WriteLocalOutputSemanticsVarDecl(varDecl);
     }
 
@@ -1308,7 +1350,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
         /* Write system values */
         for (auto varDecl : varDeclRefs)
         {
-            if (varDecl->semantic.IsValid())
+            if (varDecl->semantic.IsValid() && IsRValueSemantic(varDecl->semantic))
             {
                 if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
                 {
@@ -1382,6 +1424,24 @@ void GLSLGenerator::WriteGlobalUniformsParameter(VarDeclStmnt* param)
 
 /* --- VarIdent --- */
 
+/*
+Find the first VarIdent with a system value semantic,
+and keep the remaining AST nodes (i.e. ast->next) which might be vector subscriptions (e.g. "gl_Position.xyz").
+*/
+VarIdent* GLSLGenerator::FindSystemValueVarIdent(VarIdent* ast)
+{
+    while (ast)
+    {
+        /* Check if current var-ident AST node has a system semantic */
+        if (SystemValueToKeyword(ast->FetchSemantic()) != nullptr)
+            return ast;
+
+        /* Search in next var-ident AST node */
+        ast = ast->next.get();
+    }
+    return nullptr;
+}
+
 const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* ast)
 {
     /* Check if a variable declaration has changed it's name during conversion */
@@ -1409,6 +1469,41 @@ void GLSLGenerator::WriteVarIdent(VarIdent* ast, bool recursive)
     {
         Write(".");
         WriteVarIdent(ast->next.get());
+    }
+}
+
+/*
+Writes either the variable identifier as it is (e.g. "vertexOutput.position.xyz"),
+or a system value if the identifier has a system value semantix (e.g. "gl_Position.xyz").
+*/
+void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
+{
+    /* Find system value semantic in variable identifier */
+    auto semanticVarIdent = FindSystemValueVarIdent(ast);
+    std::unique_ptr<std::string> semanticKeyword;
+
+    if (semanticVarIdent)
+    {
+        auto semantic = semanticVarIdent->FetchSemantic();
+        if (IsLValueSemantic(semantic))
+            semanticKeyword = SystemValueToKeyword(semantic);
+    }
+
+    if (semanticVarIdent && semanticKeyword)
+    {
+        /* Write shader target respective system semantic */
+        Write(*semanticKeyword);
+
+        if (semanticVarIdent->next)
+        {
+            Write(".");
+            Visit(semanticVarIdent->next);
+        }
+    }
+    else
+    {
+        /* Write default variable identifier */
+        Visit(ast);
     }
 }
 
@@ -1494,13 +1589,19 @@ void GLSLGenerator::WriteInterpModifiers(const std::set<InterpModifier>& interpM
     }
 }
 
-void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifiers)
+void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifiers, const TypeDenoterPtr& typeDenoter)
 {
-    for (auto modifier : typeModifiers)
+    /* Matrix packing alignment can only be written for uniform buffers */
+    if (isInsideUniformBuffer_ && typeDenoter && typeDenoter->IsMatrix())
     {
-        if (modifier == TypeModifier::Const)
-            Write("const ");
+        /* Only write 'row_major' type modifier (column major is the default) */
+        if (typeModifiers.find(TypeModifier::RowMajor) != typeModifiers.end())
+            Write("layout(row_major) ");
     }
+
+    /* Write const type modifier */
+    if (typeModifiers.find(TypeModifier::Const) != typeModifiers.end())
+        Write("const ");
 }
 
 void GLSLGenerator::WriteDataType(DataType dataType, bool writePrecisionSpecifier, const AST* ast)
@@ -1625,7 +1726,7 @@ void GLSLGenerator::WriteFunction(FunctionDecl* ast)
     }
 
     /* Write parameters */
-    for (size_t i = 0; i < ast->parameters.size(); ++i)
+    for (std::size_t i = 0; i < ast->parameters.size(); ++i)
     {
         WriteParameter(ast->parameters[i].get());
         if (i + 1 < ast->parameters.size())
@@ -1760,10 +1861,14 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
     /* Write arguments */
     Write("(");
 
-    for (size_t i = 0; i < ast->arguments.size(); ++i)
+    for (std::size_t i = 0, n = ast->arguments.size(), m = n + ast->defaultArgumentRefs.size(); i < m; ++i)
     {
-        Visit(ast->arguments[i]);
-        if (i + 1 < ast->arguments.size())
+        if (i < n)
+            Visit(ast->arguments[i]);
+        else
+            Visit(ast->defaultArgumentRefs[i - n]);
+
+        if (i + 1 < m)
             Write(", ");
     }
 
@@ -2217,15 +2322,19 @@ void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
     }
 
     /* Write type modifiers */
-    WriteTypeModifiers(ast->typeModifiers);
+    WriteTypeModifiers(ast->typeModifiers, ast->varType->GetTypeDenoter()->Get());
 
     /* Write parameter type */
     Visit(ast->varType);
     Write(" ");
 
-    /* Write parameter identifier */
+    /* Write parameter identifier (without default initializer) */
     if (ast->varDecls.size() == 1)
-        Visit(ast->varDecls.front());
+    {
+        auto paramVar = ast->varDecls.front().get();
+        Write(paramVar->FinalIdent());
+        Visit(paramVar->arrayDims);
+    }
     else
         Error("invalid number of variables in function parameter", ast);
 }

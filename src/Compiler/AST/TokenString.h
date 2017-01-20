@@ -74,6 +74,22 @@ class BasicTokenString
                     return (it_ == itEnd_);
                 }
 
+                ValueType AcceptIt()
+                {
+                    if (ReachedEnd())
+                        throw std::runtime_error("unexpected end of token stream");
+                    return *((*this)++);
+                }
+
+                ValueType Accept(const Token::Types type)
+                {
+                    if (ReachedEnd())
+                        throw std::runtime_error("unexpected end of token stream");
+                    if ((*it_)->Type() != type)
+                        throw std::runtime_error("unexpected token");
+                    return AcceptIt();
+                }
+
                 const ValueType& operator * ()
                 {
                     return *it_;

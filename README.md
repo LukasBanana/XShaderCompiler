@@ -25,7 +25,7 @@ Documentation
 Progress
 --------
 
-**Version: 0.04 Alpha** (*Do not use in production code!*)
+**Version: 0.05 Alpha** (*Do not use in production code!*)
 
 See the [TODO.md](https://github.com/LukasBanana/XShaderCompiler/blob/master/TODO.md) file for more information.
 
@@ -191,3 +191,16 @@ void main()
     SV_Target0 = color * NdotL;
 }
 ```
+Here is a short overview of High-Level differences between HLSL and GLSL:
+
+| Feature | HLSL | GLSL |
+|---------|:----:|:----:|
+| Separation of Textures and Samplers | Yes | Only for Vulkan |
+| Structure Inheritance | Yes | No |
+| Nested Structures | Yes | No |
+| Anonymous Structures | Yes | No |
+| Default Parameters | Yes | No |
+| Object-Oriented Intrinsics | Yes | No |
+| Multiple Entry Points | Yes | No |
+| Type Aliasing | Yes | No |
+| Implicit Type Conversion | Yes | Very Limited |

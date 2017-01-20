@@ -180,7 +180,9 @@ void DebuggerView::CreateLayoutPropertyGridOptions(wxPropertyGrid& pg)
     pg.Append(new wxBoolProperty("Preprocess Only", "preprocess"));
     pg.Append(new wxBoolProperty("Preserve Comments", "comments"));
     pg.Append(new wxBoolProperty("Unroll Array Initializers", "unrollInitializers"));
+    pg.Append(new wxBoolProperty("Row-Major Alignment", "rowMajor"));
     pg.Append(new wxBoolProperty("Obfuscate", "obfuscate"));
+    pg.Append(new wxBoolProperty("Show AST", "showAST"));
 }
 
 void DebuggerView::CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg)
@@ -371,8 +373,12 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderOutput_.options.preserveComments = ValueBool();
     else if (name == "unrollInitializers")
         shaderOutput_.options.unrollArrayInitializers = ValueBool();
+    else if (name == "rowMajor")
+        shaderOutput_.options.rowMajorAlignment = ValueBool();
     else if (name == "obfuscate")
         shaderOutput_.options.obfuscate = ValueBool();
+    else if (name == "showAST")
+        shaderOutput_.options.showAST = ValueBool();
     else if (name == "blanks")
         shaderOutput_.formatting.blanks = ValueBool();
     else if (name == "lineMarks")
@@ -441,7 +447,7 @@ class DebuggerLog : public Log
 
         void SumitReport(const Report& report) override
         {
-            reportView_->AddReport(report);
+            reportView_->AddReport(report, FullIndent());
         }
 
     private:
@@ -458,6 +464,7 @@ void DebuggerView::TranslateInputToOutput()
     auto inputSource = std::make_shared<std::stringstream>();
     *inputSource << inputSourceView_->GetText().ToStdString();
     shaderInput_.sourceCode = inputSource;
+    shaderInput_.filename = "<unnamed>";
 
     /* Initialize output source */
     std::stringstream outputSource;

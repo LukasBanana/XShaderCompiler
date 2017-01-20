@@ -283,12 +283,16 @@ struct FunctionCall : public AST
         FLAG( canInlineIntrinsicWrapper, 0 ),
     };
 
+    // Returns a list of all argument expressions (including the default parameters).
+    std::vector<Expr*> GetArguments() const;
+
     VarIdentPtr             varIdent;                           // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
     TypeDenoterPtr          typeDenoter;                        // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
     std::vector<ExprPtr>    arguments;
 
     FunctionDecl*           funcDeclRef = nullptr;              // Reference to the function declaration; may be null
     Intrinsic               intrinsic   = Intrinsic::Undefined; // Intrinsic ID (if this is an intrinsic).
+    std::vector<Expr*>      defaultArgumentRefs;                // Reference to default argument expressions of all remaining parameters
 };
 
 // Attribute (e.g. "[unroll]" or "[numthreads(x,y,z)]").
@@ -391,6 +395,9 @@ struct VarIdent : public TypedAST
 
     // Moves the next identifier into this one (i.e. removes the first identifier), and propagates the array indices.
     void PopFront();
+
+    // Returns a semantic if this is an identifier to a variable which has a semantic.
+    IndexedSemantic FetchSemantic() const;
 
     std::string             ident;                      // Either this ..
   //TypeDenoterPtr          typeDenoter;                // ... or this is used
@@ -662,6 +669,9 @@ struct VarDeclStmnt : public Stmnt
     // Returns true if the 'const' type modifier or the 'uniform' input modifier is set.
     bool IsConst() const;
 
+    // Inserts the specified type modifier. Overlapping matrix packings will be removed.
+    void SetTypeModifier(const TypeModifier modifier);
+
     // Returns true if any of the specified type modifiers is contained.
     bool HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const;
 
@@ -674,7 +684,6 @@ struct VarDeclStmnt : public Stmnt
     
     std::set<StorageClass>      storageClasses;                             // Storage classes, e.g. extern, precise, etc.
     std::set<InterpModifier>    interpModifiers;                            // Interpolation modifiers, e.g. nointerpolation, linear, centroid etc.
-    //TODO: move 'typeModifiers' into TypeDenoter base class
     std::set<TypeModifier>      typeModifiers;                              // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats)
     PrimitiveType               primitiveType   = PrimitiveType::Undefined; // Primitive type for geometry entry pointer parameters
 

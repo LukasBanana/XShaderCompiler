@@ -24,11 +24,11 @@ class ReportView : public wxListBox
 
         ReportView(wxWindow* parent, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize);
 
-        void AddReport(const Report& r);
+        void AddReport(const Report& r, const std::string& indent = "");
 
     private:
 
-        void Add(const std::string& s);
+        void Add(const std::string& indent, const std::string& s);
 
 };
 

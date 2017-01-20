@@ -34,7 +34,11 @@ class HLSLParser : public Parser
         
         HLSLParser(Log* log = nullptr);
 
-        ProgramPtr ParseSource(const SourceCodePtr& source, bool useD3D10Semantics = true);
+        ProgramPtr ParseSource(
+            const SourceCodePtr& source,
+            bool useD3D10Semantics = true,
+            bool rowMajorAlignment = false
+        );
 
     private:
         
@@ -68,6 +72,8 @@ class HLSLParser : public Parser
 
         // Processes the specified directive (only '#line'-directive are allowed after pre-processing).
         void ProcessDirective(const std::string& ident);
+        void ProcessDirectiveLine();
+        void ProcessDirectivePragma();
 
         /* ----- Symbol table ----- */
 
@@ -226,6 +232,9 @@ class HLSLParser : public Parser
 
         // True, if semantics are parsed for D3D10+ shader.
         bool                useD3D10Semantics_      = true;
+
+        // True, if matrix packing is globally set to row major.
+        bool                rowMajorAlignment_      = false;
 
 };
 

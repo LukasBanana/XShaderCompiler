@@ -360,6 +360,24 @@ TokenPtr Scanner::ScanStringLiteral()
     return Make(Tokens::StringLiteral, spell);
 }
 
+TokenPtr Scanner::ScanCharLiteral()
+{
+    std::string spell;
+
+    spell += Take('\'');
+    
+    while (!Is('\''))
+    {
+        if (Is(0))
+            ErrorUnexpectedEOS();
+        spell += TakeIt();
+    }
+    
+    spell += Take('\'');
+
+    return Make(Tokens::CharLiteral, spell);
+}
+
 // see https://msdn.microsoft.com/de-de/library/windows/desktop/bb509567(v=vs.85).aspx
 TokenPtr Scanner::ScanNumber(bool startWithDot)
 {

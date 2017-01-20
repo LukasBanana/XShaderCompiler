@@ -66,6 +66,12 @@ class GLSLGenerator : public Generator
         // Returns true if the specified type denoter is compatible with the semantic (e.g. 'SV_VertexID' is incompatible with 'UInt').
         bool IsTypeCompatibleWithSemantic(const Semantic semantic, const TypeDenoter& typeDenoter);
 
+        // Returns true if the speciifed semantic is an r-value (e.g. gl_VertexID is an r-value).
+        bool IsRValueSemantic(const Semantic semantic) const;
+
+        // Returns true if the speciifed semantic is an l-value (e.g. gl_VertexID is not an l-value).
+        bool IsLValueSemantic(const Semantic semantic) const;
+
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
@@ -165,10 +171,16 @@ class GLSLGenerator : public Generator
 
         /* --- VarIdent --- */
 
+        // Returns the first VarIdent AST node which has a system value semantic, or null if no such AST node was found.
+        VarIdent* FindSystemValueVarIdent(VarIdent* ast);
+
         // Returns the final identifier string from the specified variable identifier.
         const std::string& FinalIdentFromVarIdent(VarIdent* ast);
 
         void WriteVarIdent(VarIdent* ast, bool recursive = true);
+
+        // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
+        void WriteVarIdentOrSystemValue(VarIdent* ast);
 
         void WriteSuffixVarIdentBegin(const TypeDenoter& lhsTypeDen, VarIdent* ast);
         void WriteSuffixVarIdentEnd(const TypeDenoter& lhsTypeDen, VarIdent* ast);
@@ -177,7 +189,7 @@ class GLSLGenerator : public Generator
 
         void WriteStorageClasses(const std::set<StorageClass>& storageClasses, const AST* ast = nullptr);
         void WriteInterpModifiers(const std::set<InterpModifier>& interpModifiers, const AST* ast = nullptr);
-        void WriteTypeModifiers(const std::set<TypeModifier>& typeModifiers);
+        void WriteTypeModifiers(const std::set<TypeModifier>& typeModifiers, const TypeDenoterPtr& typeDenoter = nullptr);
 
         void WriteDataType(DataType dataType, bool writePrecisionSpecifier = false, const AST* ast = nullptr);
 
@@ -246,6 +258,7 @@ class GLSLGenerator : public Generator
         //bool                isInsideFunction_       = false;
         bool                isInsideEntryPoint_     = false;
         bool                isInsideInterfaceBlock_ = false;
+        bool                isInsideUniformBuffer_  = false;
 
 };
 

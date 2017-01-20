@@ -766,7 +766,7 @@ enum class Semantic
     DepthGreaterEqual,      // SV_DepthGreaterEqual, layout(depth_greater) out float gl_FragDepth;
     DepthLessEqual,         // SV_DepthLessEqual, layout(depth_less) out float gl_FragDepth;
     DispatchThreadID,       // SV_DispatchThreadID, gl_GlobalInvocationID
-    DomainLocation,         // SV_DomainLocation, gl_TessCord
+    DomainLocation,         // SV_DomainLocation, gl_TessCoord
     GroupID,                // SV_GroupID, gl_WorkGroupID
     GroupIndex,             // SV_GroupIndex, N/A
     GroupThreadID,          // SV_GroupThreadID, gl_LocalInvocationID

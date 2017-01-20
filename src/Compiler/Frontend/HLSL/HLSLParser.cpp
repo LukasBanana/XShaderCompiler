@@ -39,9 +39,10 @@ HLSLParser::HLSLParser(Log* log) :
 {
 }
 
-ProgramPtr HLSLParser::ParseSource(const SourceCodePtr& source, bool useD3D10Semantics)
+ProgramPtr HLSLParser::ParseSource(const SourceCodePtr& source, bool useD3D10Semantics, bool rowMajorAlignment)
 {
-    useD3D10Semantics_ = useD3D10Semantics;
+    useD3D10Semantics_  = useD3D10Semantics;
+    rowMajorAlignment_  = rowMajorAlignment;
 
     PushScannerSource(source);
 
@@ -139,28 +140,71 @@ TokenPtr HLSLParser::AcceptIt()
 
 void HLSLParser::ProcessDirective(const std::string& ident)
 {
-    if (ident == "line")
+    try
     {
-        int lineNo = 0;
-        std::string filename;
-
-        /* Parse '#line'-directive with base class "AcceptIt" functions to avoid recursive calls of this function */
-        if (Is(Tokens::IntLiteral))
-            lineNo = FromString<int>(Parser::AcceptIt()->Spell());
+        if (ident == "line")
+            ProcessDirectiveLine();
+        else if (ident == "pragma")
+            ProcessDirectivePragma();
         else
-            ErrorUnexpected(Tokens::IntLiteral);
+            Error("only '#line' and '#pragma' directives are allowed after pre-processing");
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
+}
 
-        if (Is(Tokens::StringLiteral))
-            filename = Parser::AcceptIt()->SpellContent();
+void HLSLParser::ProcessDirectiveLine()
+{
+    int lineNo = 0;
+    std::string filename;
+
+    /* Parse '#line'-directive with base class "AcceptIt" functions to avoid recursive calls of this function */
+    if (Is(Tokens::IntLiteral))
+        lineNo = FromString<int>(Parser::AcceptIt()->Spell());
+    else
+        ErrorUnexpected(Tokens::IntLiteral);
+
+    if (Is(Tokens::StringLiteral))
+        filename = Parser::AcceptIt()->SpellContent();
+    else
+        ErrorUnexpected(Tokens::StringLiteral);
+
+    /* Set new line number and filename */
+    auto currentLine = static_cast<int>(GetScanner().PreviousToken()->Pos().Row());
+    GetScanner().Source()->NextSourceOrigin(filename, (lineNo - currentLine - 1));
+}
+
+void HLSLParser::ProcessDirectivePragma()
+{
+    /* Parse 'pack_matrix' pragma */
+    if (Is(Tokens::Ident) && Tkn()->Spell() == "pack_matrix")
+    {
+        Parser::AcceptIt();
+
+        auto AcceptToken = [&](const Tokens type)
+        {
+            if (!Is(type))
+                throw std::runtime_error("unexpected token in 'pack_matrix' pragma directive");
+            return Parser::AcceptIt();
+        };
+
+        AcceptToken(Tokens::LBracket);
+        auto alignmentTkn = AcceptToken(Tokens::TypeModifier);
+        AcceptToken(Tokens::RBracket);
+
+        /* Set matrix pack alignment */
+        auto alignment = alignmentTkn->Spell();
+        if (alignment == "row_major")
+            rowMajorAlignment_ = true;
+        else if (alignment == "column_major")
+            rowMajorAlignment_ = false;
         else
-            ErrorUnexpected(Tokens::StringLiteral);
-
-        /* Set new line number and filename */
-        auto currentLine = static_cast<int>(GetScanner().PreviousToken()->Pos().Row());
-        GetScanner().Source()->NextSourceOrigin(filename, (lineNo - currentLine - 1));
+            Error("unknown matrix pack alignment '" + alignment + "' (must be 'row_major' or 'column_major')", alignmentTkn.get());
     }
     else
-        Error("only '#line'-directives are allowed after pre-processing");
+        Error("only 'pack_matrix' pragma directive is allowed after pre-processing");
 }
 
 /* ------- Symbol table ------- */
@@ -311,6 +355,9 @@ FunctionCallPtr HLSLParser::ParseFunctionCall(const TypeDenoterPtr& typeDenoter)
 VarDeclStmntPtr HLSLParser::ParseParameter()
 {
     auto ast = Make<VarDeclStmnt>();
+
+    if (rowMajorAlignment_)
+        ast->SetTypeModifier(TypeModifier::RowMajor);
 
     /* Parse parameter as single variable declaration */
     while (IsVarDeclModifier() || Is(Tokens::PrimitiveType))
@@ -929,6 +976,9 @@ SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt(const SamplerTypeDenoterPt
 VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 {
     auto ast = Make<VarDeclStmnt>();
+
+    if (rowMajorAlignment_)
+        ast->SetTypeModifier(TypeModifier::RowMajor);
 
     while (true)
     {
@@ -2459,8 +2509,8 @@ bool HLSLParser::ParseVarDeclStmntModifiers(VarDeclStmnt* ast, bool allowPrimiti
     }
     else if (Is(Tokens::TypeModifier))
     {
-        /* Parse type modifier (const, row_major, column_major) */
-        ast->typeModifiers.insert(ParseTypeModifier());
+        /* Parse type modifier (const, row_major, column_major, snorm, unorm) */
+        ast->SetTypeModifier(ParseTypeModifier());
     }
     else if (Is(Tokens::StorageClass))
     {
