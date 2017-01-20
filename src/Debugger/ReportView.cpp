@@ -19,19 +19,19 @@ ReportView::ReportView(wxWindow* parent, const wxPoint& pos, const wxSize& size)
     SetFont(font);
 }
 
-void ReportView::AddReport(const Report& r)
+void ReportView::AddReport(const Report& r, const std::string& indent)
 {
-    Add(r.Context());
-    Add(r.Message());
+    Add(indent, r.Context());
+    Add(indent, r.Message());
 
     if (r.HasLine())
     {
-        Add(r.Line());
-        Add(r.Marker());
+        Add(indent, r.Line());
+        Add(indent, r.Marker());
     }
 
     for (const auto& s : r.GetHints())
-        Add(s);
+        Add(indent, s);
 }
 
 
@@ -39,10 +39,10 @@ void ReportView::AddReport(const Report& r)
  * ======= Private: =======
  */
 
-void ReportView::Add(const std::string& s)
+void ReportView::Add(const std::string& indent, const std::string& s)
 {
     if (!s.empty())
-        Append(s);
+        Append(indent + s);
 }
 
 
