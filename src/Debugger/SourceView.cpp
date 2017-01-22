@@ -211,6 +211,12 @@ void SourceView::OnKeyDown(wxKeyEvent& event)
         if (moveCursorCallback_)
             moveCursorCallback_(GetCurrentLine() + 1, GetColumn(GetCurrentPos()) + 1);
     }
+
+    if (key == WXK_F5)
+    {
+        if (charEnterCallback_)
+            charEnterCallback_(0);
+    }
 }
 
 

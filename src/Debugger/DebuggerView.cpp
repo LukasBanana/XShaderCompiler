@@ -40,6 +40,8 @@ DebuggerView::DebuggerView(const wxPoint& pos, const wxSize& size) :
 
     /* Initialize descriptor structure */
     shaderInput_.shaderTarget = ShaderTarget::VertexShader;
+
+    inputSourceView_->SetFocus();
 }
 
 static const std::string settingsFilename("XscDebuggerSettings");
@@ -49,7 +51,10 @@ void DebuggerView::SaveSettings()
 {
     std::ofstream settingsFile(settingsFilename);
     if (settingsFile.good())
+    {
         settingsFile << propGrid_->SaveEditableState().ToStdString() << std::endl;
+        settingsFile << propGrid_->GetPropertyValueAsString("entry").ToStdString() << std::endl;
+    }
 
     std::ofstream codeFile(codeFilename);
     if (codeFile.good())
@@ -64,6 +69,10 @@ void DebuggerView::LoadSettings()
         std::string state;
         std::getline(settingsFile, state);
         propGrid_->RestoreEditableState(state);
+
+        std::getline(settingsFile, state);
+        propGrid_->SetPropertyValueString("entry", state);
+        shaderInput_.entryPoint = state;
     }
 
     std::ifstream codeFile(codeFilename);
