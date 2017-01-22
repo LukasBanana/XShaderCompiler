@@ -214,6 +214,16 @@ IndexedSemantic VarIdent::FetchSemantic() const
     return Semantic::Undefined;
 }
 
+VarDecl* VarIdent::FetchVarDecl() const
+{
+    if (symbolRef)
+    {
+        if (auto varDecl = symbolRef->As<VarDecl>())
+            return varDecl;
+    }
+    return nullptr;
+}
+
 
 /* ----- FunctionCall ----- */
 
@@ -361,6 +371,13 @@ std::string VarDecl::ToString() const
 const std::string& VarDecl::FinalIdent() const
 {
     return (renamedIdent.empty() ? ident : renamedIdent);
+}
+
+void VarDecl::Rename(const std::string& newIdent)
+{
+    /* Set new identifier for this variable and mark with 'renamed'-flag */
+    renamedIdent = newIdent;
+    flags << VarDecl::wasRenamed;
 }
 
 TypeDenoterPtr VarDecl::DeriveTypeDenoter()
@@ -527,6 +544,21 @@ void FunctionDecl::ParameterSemantics::Add(VarDecl* varDecl)
         else
             varDeclRefs.push_back(varDecl);
     }
+}
+
+bool FunctionDecl::ParameterSemantics::Contains(VarDecl* varDecl) const
+{
+    return
+    (
+        std::find(varDeclRefs.begin(), varDeclRefs.end(), varDecl) != varDeclRefs.end() ||
+        std::find(varDeclRefsSV.begin(), varDeclRefsSV.end(), varDecl) != varDeclRefsSV.end()
+    );
+}
+
+void FunctionDecl::ParameterSemantics::ForEach(const IteratorFunc& iterator)
+{
+    std::for_each(varDeclRefs.begin(), varDeclRefs.end(), iterator);
+    std::for_each(varDeclRefsSV.begin(), varDeclRefsSV.end(), iterator);
 }
 
 bool FunctionDecl::IsForwardDecl() const

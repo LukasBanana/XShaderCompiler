@@ -8,6 +8,7 @@
 #include "ReferenceAnalyzer.h"
 #include "Exception.h"
 #include "AST.h"
+#include <algorithm>
 
 
 namespace Xsc
@@ -53,6 +54,20 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     VisitStmntList(ast->stmnts);
 }
 
+//TODO: generalize this AST traversal!
+// Returns the variable from the specified expression.
+static VarDecl* GetVarDeclFromExpr(Expr* expr)
+{
+    if (auto bracketExpr = expr->As<BracketExpr>())
+        return GetVarDeclFromExpr(bracketExpr->expr.get());
+    if (auto varAccessExpr = expr->As<VarAccessExpr>())
+    {
+        if (auto symbol = varAccessExpr->varIdent->symbolRef)
+            return symbol->As<VarDecl>();
+    }
+    return nullptr;
+}
+
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     /* Mark function declaration as referenced */
@@ -72,6 +87,22 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             }
         }
         program_->usedIntrinsics[ast->intrinsic].argLists.insert(argList);
+    }
+
+    if (ast->funcDeclRef)
+    {
+        /* Mark all arguments, that are assigned to output parameters, as l-values */
+        const auto& arguments = ast->arguments;
+        const auto& parameters = ast->funcDeclRef->parameters;
+
+        for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+        {
+            if (parameters[i]->IsOutput())
+            {
+                if (auto varDecl = GetVarDeclFromExpr(arguments[i].get()))
+                    varDecl->flags << VarDecl::isLValue;
+            }
+        }
     }
 
     VISIT_DEFAULT(FunctionCall);
@@ -183,6 +214,12 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
             {
                 /* Mark frag-coord usage in fragment program layout */
                 program_->layoutFragment.fragCoordUsed = true;
+            }
+            
+            if (ast->assignExpr)
+            {
+                /* Mark variable as l-value */
+                varDecl->flags << VarDecl::isLValue;
             }
         }
     }

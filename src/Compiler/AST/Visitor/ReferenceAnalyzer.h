@@ -44,7 +44,7 @@ class ReferenceAnalyzer : private Visitor
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( SwitchCase        );
-        DECL_VISIT_PROC( TypeName           );
+        DECL_VISIT_PROC( TypeName          );
         DECL_VISIT_PROC( VarIdent          );
 
         DECL_VISIT_PROC( VarDecl           );

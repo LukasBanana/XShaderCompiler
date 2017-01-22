@@ -199,45 +199,6 @@ bool GLSLGenerator::IsTypeCompatibleWithSemantic(const Semantic semantic, const 
     return false;
 }
 
-bool GLSLGenerator::IsRValueSemantic(const Semantic semantic) const
-{
-    return !IsLValueSemantic(semantic);
-}
-
-bool GLSLGenerator::IsLValueSemantic(const Semantic semantic) const
-{
-    using T = Semantic;
-
-    static const std::set<T> lvalueSemantics
-    {
-        T::ClipDistance,
-        T::CullDistance,
-        T::Coverage,
-        T::Depth,
-        T::DepthGreaterEqual,
-        T::DepthLessEqual,
-        T::InnerCoverage,
-        T::InsideTessFactor,
-        T::RenderTargetArrayIndex,
-        T::StencilRef,
-        T::Target,
-        T::TessFactor,
-        T::VertexPosition,
-        T::ViewportArrayIndex,
-    };
-
-    #if 0
-    /* Check for special cases of current shader target */
-    switch (GetShaderTarget())
-    {
-        case ShaderTarget::FragmentShader:
-            break;
-    }
-    #endif
-
-    return (lvalueSemantics.find(semantic) != lvalueSemantics.end());
-}
-
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -260,13 +221,13 @@ IMPLEMENT_VISIT_PROC(Program)
     /* Write global input/output semantics */
     BeginSep();
     {
-        WriteGlobalInputSemantics();
+        WriteGlobalInputSemantics(GetProgram()->entryPointRef);
     }
     EndSep();
 
     BeginSep();
     {
-        WriteGlobalOutputSemantics();
+        WriteGlobalOutputSemantics(GetProgram()->entryPointRef);
     }
     EndSep();
 
@@ -1126,13 +1087,13 @@ bool GLSLGenerator::WriteGlobalLayoutsCompute(const Program::LayoutComputeShader
 
 void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
 {
-    auto& varDeclRefs = entryPoint->inputSemantics.varDeclRefsSV;
-
-    for (auto varDecl : varDeclRefs)
-    {
-        if (varDecl->flags(AST::isUsed) && IsRValueSemantic(varDecl->semantic))
-            WriteLocalInputSemanticsVarDecl(varDecl);
-    }
+    entryPoint->inputSemantics.ForEach(
+        [this](VarDecl* varDecl)
+        {
+            if (varDecl->flags(AST::isUsed) && varDecl->flags(VarDecl::isLValue))
+                WriteLocalInputSemanticsVarDecl(varDecl);
+        }
+    );
 
     /*if (!varDeclRefs.empty())
         Blank();*/
@@ -1141,7 +1102,15 @@ void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
 void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
 {
     /* Is semantic of the variable declaration a system value semantic? */
-    if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
+    auto semanticKeyword = SystemValueToKeyword(varDecl->semantic);
+
+    if (!semanticKeyword)
+    {
+        semanticKeyword = MakeUnique<std::string>(varDecl->FinalIdent());
+        varDecl->Rename(nameManglingPrefix_ + "temp_" + varDecl->ident);
+    }
+
+    //if ()
     {
         /* Write local variable definition statement */
         BeginLn();
@@ -1167,13 +1136,13 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
         }
         EndLn();
     }
-    else
-        Error("failed to map semantic name to GLSL keyword", varDecl);
+    /*else
+        Error("failed to map semantic name to GLSL keyword", varDecl);*/
 }
 
-void GLSLGenerator::WriteGlobalInputSemantics()
+void GLSLGenerator::WriteGlobalInputSemantics(FunctionDecl* entryPoint)
 {
-    auto& varDeclRefs = GetProgram()->entryPointRef->inputSemantics.varDeclRefs;
+    auto& varDeclRefs = entryPoint->inputSemantics.varDeclRefs;
 
     for (auto varDecl : varDeclRefs)
         WriteGlobalInputSemanticsVarDecl(varDecl);
@@ -1224,13 +1193,13 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 
 void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 {
-    auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefsSV;
-
-    for (auto varDecl : varDeclRefs)
-    {
-        if (varDecl->flags(AST::isUsed) && IsRValueSemantic(varDecl->semantic))
-            WriteLocalOutputSemanticsVarDecl(varDecl);
-    }
+    entryPoint->outputSemantics.ForEach(
+        [this](VarDecl* varDecl)
+        {
+            if (varDecl->flags(AST::isUsed) && varDecl->flags(VarDecl::isLValue))
+                WriteLocalOutputSemanticsVarDecl(varDecl);
+        }
+    );
 
     /*if (!varDeclRefs.empty())
         Blank();*/
@@ -1247,10 +1216,8 @@ void GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
     EndLn();
 }
 
-void GLSLGenerator::WriteGlobalOutputSemantics()
+void GLSLGenerator::WriteGlobalOutputSemantics(FunctionDecl* entryPoint)
 {
-    auto entryPoint = GetProgram()->entryPointRef;
-
     /* Write non-system-value output semantics */
     auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefs;
 
@@ -1351,10 +1318,11 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
     /* Prefer variables from structure, rather than function return semantic */
     if (!varDeclRefs.empty())
     {
+        #if 0
         /* Write system values */
         for (auto varDecl : varDeclRefs)
         {
-            if (varDecl->semantic.IsValid() && IsRValueSemantic(varDecl->semantic))
+            if (varDecl->semantic.IsValid() && varDecl->flags(VarDecl::isLValue))
             {
                 if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
                 {
@@ -1366,6 +1334,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
                 }
             }
         }
+        #endif
     }
     else if (semantic.IsSystemValue() && ast)
     {
@@ -1488,9 +1457,12 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
 
     if (semanticVarIdent)
     {
-        auto semantic = semanticVarIdent->FetchSemantic();
-        if (IsLValueSemantic(semantic))
-            semanticKeyword = SystemValueToKeyword(semantic);
+        if (auto varDecl = semanticVarIdent->FetchVarDecl())
+        {
+            /* Is this variable an entry-point output semantic, or an r-value? */
+            if (GetProgram()->entryPointRef->outputSemantics.Contains(varDecl) || !varDecl->flags(VarDecl::isLValue))
+                semanticKeyword = SystemValueToKeyword(varDecl->semantic);
+        }
     }
 
     if (semanticVarIdent && semanticKeyword)
@@ -1791,7 +1763,7 @@ void GLSLGenerator::WriteFunctionEntryPointBody(FunctionDecl* ast)
 {
     /* Write input/output parameters of system values as local variables */
     WriteLocalInputSemantics(ast);
-    WriteLocalOutputSemantics(ast);
+    //WriteLocalOutputSemantics(ast);
 
     /* Write code block (without additional scope) */
     isInsideEntryPoint_ = true;

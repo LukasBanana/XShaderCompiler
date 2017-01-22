@@ -66,12 +66,6 @@ class GLSLGenerator : public Generator
         // Returns true if the specified type denoter is compatible with the semantic (e.g. 'SV_VertexID' is incompatible with 'UInt').
         bool IsTypeCompatibleWithSemantic(const Semantic semantic, const TypeDenoter& typeDenoter);
 
-        // Returns true if the speciifed semantic is an r-value (e.g. gl_VertexID is an r-value).
-        bool IsRValueSemantic(const Semantic semantic) const;
-
-        // Returns true if the speciifed semantic is an l-value (e.g. gl_VertexID is not an l-value).
-        bool IsLValueSemantic(const Semantic semantic) const;
-
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
@@ -150,7 +144,7 @@ class GLSLGenerator : public Generator
         void WriteLocalInputSemantics(FunctionDecl* entryPoint);
         void WriteLocalInputSemanticsVarDecl(VarDecl* varDecl);
         
-        void WriteGlobalInputSemantics();
+        void WriteGlobalInputSemantics(FunctionDecl* entryPoint);
         void WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl);
 
         /* --- Output semantics --- */
@@ -158,7 +152,7 @@ class GLSLGenerator : public Generator
         void WriteLocalOutputSemantics(FunctionDecl* entryPoint);
         void WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl);
         
-        void WriteGlobalOutputSemantics();
+        void WriteGlobalOutputSemantics(FunctionDecl* entryPoint);
         void WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName = false);
         void WriteGlobalOutputSemanticsSlot(TypeName* varType, const IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl = nullptr);
 

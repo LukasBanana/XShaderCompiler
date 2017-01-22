@@ -399,6 +399,9 @@ struct VarIdent : public TypedAST
     // Returns a semantic if this is an identifier to a variable which has a semantic.
     IndexedSemantic FetchSemantic() const;
 
+    // Returns the variable AST node (if the symbol refers to one).
+    VarDecl* FetchVarDecl() const;
+
     std::string             ident;                      // Either this ..
   //TypeDenoterPtr          typeDenoter;                // ... or this is used
     std::vector<ExprPtr>    arrayIndices;               // Optional array indices
@@ -422,6 +425,7 @@ struct VarDecl : public Decl
         FLAG( disableCodeGen,   3 ), // Disables the code generation for this variable declaration.
         FLAG( wasRenamed,       4 ), // This variable was renamed by a converter visitor.
         FLAG( isDynamicArray,   5 ), // This variable is a dynamic array (for input/output semantics).
+        FLAG( isLValue,         6 ), // This variable is eventually an l-value (i.e. it will be written to).
 
         isShaderInputSV     = (isShaderInput  | isSystemValue), // This variable a used as shader input, and it is a system value.
         isShaderOutputSV    = (isShaderOutput | isSystemValue), // This variable a used as shader output, and it is a system value.
@@ -432,6 +436,9 @@ struct VarDecl : public Decl
 
     // Returns the final identifier for this variable.
     const std::string& FinalIdent() const;
+
+    // Renames this variable to the specified new identifier.
+    void Rename(const std::string& newIdent);
 
     // Returns a type denoter for this variable declaration or throws an std::runtime_error if the type can not be derived.
     TypeDenoterPtr DeriveTypeDenoter() override;
@@ -553,7 +560,11 @@ struct FunctionDecl : public Stmnt
 
     struct ParameterSemantics
     {
+        using IteratorFunc = std::function<void(VarDecl* varDecl)>;
+
         void Add(VarDecl* varDecl);
+        bool Contains(VarDecl* varDecl) const;
+        void ForEach(const IteratorFunc& iterator);
 
         std::vector<VarDecl*> varDeclRefs;      // References to all variable declarations of the user defined semantics
         std::vector<VarDecl*> varDeclRefsSV;    // References to all variable declarations of the system value semantics
