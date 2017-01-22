@@ -12,14 +12,8 @@ layout(std140) uniform Matrices
     mat4 wMatrix;
 };
 
-void f1(inout vec4 v)
-{
-    v.x += 1.0;
-}
-
 void main()
 {
-    f1(vPos);
     gl_Position = (wvpMatrix * vPos);
 }
 

@@ -58,6 +58,14 @@ void TypedAST::ResetBufferedTypeDenoter()
 }
 
 
+/* ----- Expr ----- */
+
+VarDecl* Expr::FetchVarDecl() const
+{
+    return nullptr;
+}
+
+
 /* ----- VarIdent ----- */
 
 std::string VarIdent::ToString() const
@@ -961,6 +969,11 @@ TypeDenoterPtr BracketExpr::DeriveTypeDenoter()
     return expr->GetTypeDenoter();
 }
 
+VarDecl* BracketExpr::FetchVarDecl() const
+{
+    return expr->FetchVarDecl();
+}
+
 
 /* ----- SuffixExpr ----- */
 
@@ -1009,6 +1022,11 @@ TypeDenoterPtr CastExpr::DeriveTypeDenoter()
 TypeDenoterPtr VarAccessExpr::DeriveTypeDenoter()
 {
     return varIdent->GetTypeDenoter();
+}
+
+VarDecl* VarAccessExpr::FetchVarDecl() const
+{
+    return varIdent->FetchVarDecl();
 }
 
 
