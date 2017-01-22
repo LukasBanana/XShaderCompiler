@@ -381,13 +381,6 @@ const std::string& VarDecl::FinalIdent() const
     return (renamedIdent.empty() ? ident : renamedIdent);
 }
 
-void VarDecl::Rename(const std::string& newIdent)
-{
-    /* Set new identifier for this variable and mark with 'renamed'-flag */
-    renamedIdent = newIdent;
-    flags << VarDecl::wasRenamed;
-}
-
 TypeDenoterPtr VarDecl::DeriveTypeDenoter()
 {
     if (declStmntRef)

@@ -433,7 +433,8 @@ bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
 
 void GLSLConverter::RenameVarDecl(VarDecl* ast, const std::string& ident)
 {
-    ast->Rename(nameManglingPrefix_ + ident);
+    /* Set new identifier for this variable */
+    ast->renamedIdent = (nameManglingPrefix_ + ident);
 }
 
 void GLSLConverter::RenameVarDecl(VarDecl* ast)

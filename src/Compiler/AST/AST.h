@@ -427,9 +427,8 @@ struct VarDecl : public Decl
         FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
         FLAG( isSystemValue,    2 ), // This variable is a system value.
         FLAG( disableCodeGen,   3 ), // Disables the code generation for this variable declaration.
-        FLAG( wasRenamed,       4 ), // This variable was renamed by a converter visitor.
-        FLAG( isDynamicArray,   5 ), // This variable is a dynamic array (for input/output semantics).
-        FLAG( isLValue,         6 ), // This variable is eventually an l-value (i.e. it will be written to).
+        FLAG( isDynamicArray,   4 ), // This variable is a dynamic array (for input/output semantics).
+        FLAG( isLValue,         5 ), // This variable is eventually an l-value (i.e. it will be written to).
 
         isShaderInputSV     = (isShaderInput  | isSystemValue), // This variable a used as shader input, and it is a system value.
         isShaderOutputSV    = (isShaderOutput | isSystemValue), // This variable a used as shader output, and it is a system value.
@@ -440,9 +439,6 @@ struct VarDecl : public Decl
 
     // Returns the final identifier for this variable.
     const std::string& FinalIdent() const;
-
-    // Renames this variable to the specified new identifier.
-    void Rename(const std::string& newIdent);
 
     // Returns a type denoter for this variable declaration or throws an std::runtime_error if the type can not be derived.
     TypeDenoterPtr DeriveTypeDenoter() override;
@@ -736,10 +732,10 @@ struct ForLoopStmnt : public Stmnt
 {
     AST_INTERFACE(ForLoopStmnt);
 
-    StmntPtr                    initSmnt;
-    ExprPtr                     condition;
-    ExprPtr                     iteration;
-    StmntPtr                    bodyStmnt;
+    StmntPtr    initSmnt;
+    ExprPtr     condition;
+    ExprPtr     iteration;
+    StmntPtr    bodyStmnt;
 };
 
 // 'while'-loop statement.
@@ -747,8 +743,8 @@ struct WhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(WhileLoopStmnt);
 
-    ExprPtr                     condition;
-    StmntPtr                    bodyStmnt;
+    ExprPtr     condition;
+    StmntPtr    bodyStmnt;
 };
 
 // 'do/while'-loop statement.
@@ -756,8 +752,8 @@ struct DoWhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(DoWhileLoopStmnt);
 
-    StmntPtr                    bodyStmnt;
-    ExprPtr                     condition;
+    StmntPtr    bodyStmnt;
+    ExprPtr     condition;
 };
 
 // 'if' statement.
@@ -765,9 +761,9 @@ struct IfStmnt : public Stmnt
 {
     AST_INTERFACE(IfStmnt);
 
-    ExprPtr                     condition;
-    StmntPtr                    bodyStmnt;
-    ElseStmntPtr                elseStmnt;  // May be null
+    ExprPtr         condition;
+    StmntPtr        bodyStmnt;
+    ElseStmntPtr    elseStmnt;  // May be null
 };
 
 // 'else' statement.

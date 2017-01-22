@@ -1107,7 +1107,7 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
     if (!semanticKeyword)
     {
         semanticKeyword = MakeUnique<std::string>(varDecl->FinalIdent());
-        varDecl->Rename(nameManglingPrefix_ + "temp_" + varDecl->ident);
+        varDecl->renamedIdent = (nameManglingPrefix_ + "temp_" + varDecl->ident);
     }
 
     //if ()
