@@ -849,7 +849,11 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
+    #if 1
     WriteVarIdentOrSystemValue(ast->varIdent.get());
+    #else
+    Visit(ast->varIdent);
+    #endif
     if (ast->assignExpr)
     {
         Write(" " + AssignOpToString(ast->assignOp) + " ");
