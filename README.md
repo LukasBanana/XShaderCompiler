@@ -204,4 +204,4 @@ Here is a short overview of High-Level differences between HLSL and GLSL:
 | Multiple Entry Points | Yes | No |
 | Type Aliasing | Yes | No |
 | L-Values of Input Semantics | Yes | No |
-| Implicit Type Conversion | Yes | Very Limited |
+| Implicit Type Conversion | Extensive | Restricted |
