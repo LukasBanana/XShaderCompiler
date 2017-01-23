@@ -485,36 +485,27 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
         //TODO: refactor this
         #if 1
-        /* Analyze entry point return statement */
+        /* Analyze entry point return statement (if a structure is returned from the entry point) */
         if (InsideEntryPoint())
         {
-            if (auto varAccessExpr = ast->expr->As<VarAccessExpr>())
+            if (auto varDecl = ast->expr->FetchVarDecl())
             {
-                if (auto varSymbolRef = varAccessExpr->varIdent->symbolRef)
+                /*
+                Variable declaration statement has been found,
+                now find the structure object to add the alias name for the interface block.
+                */
+                if (auto structSymbolRef = varDecl->GetTypeDenoter()->Get()->SymbolRef())
                 {
-                    if (auto varDecl = varSymbolRef->As<VarDecl>())
+                    if (auto structDecl = structSymbolRef->As<StructDecl>())
                     {
-                        if (varDecl->declStmntRef)
-                        {
-                            /*
-                            Variable declaration statement has been found,
-                            now find the structure object to add the alias name for the interface block.
-                            */
-                            if (auto structSymbolRef = varDecl->GetTypeDenoter()->SymbolRef())
-                            {
-                                if (auto structDecl = structSymbolRef->As<StructDecl>())
-                                {
-                                    /* Store alias name for the interface block */
-                                    structDecl->aliasName = varAccessExpr->varIdent->ident;
+                        /* Store alias name for the interface block */
+                        structDecl->aliasName = varDecl->ident;
 
-                                    /*
-                                    Don't generate code for this variable declaration,
-                                    because this variable is now already used as interface block.
-                                    */
-                                    varDecl->flags << VarDecl::disableCodeGen;
-                                }
-                            }
-                        }
+                        /*
+                        Don't generate code for this variable declaration,
+                        because this variable is now already used as interface block.
+                        */
+                        varDecl->flags << VarDecl::disableCodeGen;
                     }
                 }
             }
@@ -883,13 +874,11 @@ void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStm
     }
     else
     {
-        /* Analyze input semantic */
-        if (param->IsInput())
-            AnalyzeEntryPointParameterInOut(funcDecl, varDecl, true);
-
-        /* Analyze output semantic */
+        /* Analyze either output or input semantic ('inout' is interpreted as output) */
         if (param->IsOutput())
             AnalyzeEntryPointParameterInOut(funcDecl, varDecl, false);
+        else if (param->IsInput())
+            AnalyzeEntryPointParameterInOut(funcDecl, varDecl, true);
     }
 }
 
