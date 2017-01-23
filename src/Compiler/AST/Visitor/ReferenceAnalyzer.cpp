@@ -86,7 +86,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             if (parameters[i]->IsOutput())
             {
                 if (auto varDecl = arguments[i]->FetchVarDecl())
-                    varDecl->flags << VarDecl::isLValue;
+                    varDecl->flags << (AST::isUsed | VarDecl::isWrittenTo);
             }
         }
     }
@@ -188,9 +188,9 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    /* Mark symbol as used */
     if (auto symbol = ast->varIdent->symbolRef)
     {
+        /* Mark symbol as used */
         symbol->flags << AST::isUsed;
 
         /* Check if this symbol is the fragment coordinate (SV_Position/ gl_FragCoord) */
@@ -205,7 +205,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
             if (ast->assignExpr)
             {
                 /* Mark variable as l-value */
-                varDecl->flags << VarDecl::isLValue;
+                varDecl->flags << VarDecl::isWrittenTo;
             }
         }
     }

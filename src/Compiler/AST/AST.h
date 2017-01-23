@@ -428,7 +428,7 @@ struct VarDecl : public Decl
         FLAG( isSystemValue,    2 ), // This variable is a system value.
         FLAG( disableCodeGen,   3 ), // Disables the code generation for this variable declaration.
         FLAG( isDynamicArray,   4 ), // This variable is a dynamic array (for input/output semantics).
-        FLAG( isLValue,         5 ), // This variable is eventually an l-value (i.e. it will be written to).
+        FLAG( isWrittenTo,      5 ), // This variable is eventually written to.
 
         isShaderInputSV     = (isShaderInput  | isSystemValue), // This variable a used as shader input, and it is a system value.
         isShaderOutputSV    = (isShaderOutput | isSystemValue), // This variable a used as shader output, and it is a system value.

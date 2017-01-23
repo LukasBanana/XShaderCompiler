@@ -1091,7 +1091,7 @@ void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
     entryPoint->inputSemantics.ForEach(
         [this](VarDecl* varDecl)
         {
-            if (varDecl->flags(AST::isUsed) && varDecl->flags(VarDecl::isLValue))
+            if (varDecl->flags(VarDecl::isWrittenTo))
                 WriteLocalInputSemanticsVarDecl(varDecl);
         }
     );
@@ -1192,7 +1192,7 @@ void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
     entryPoint->outputSemantics.ForEach(
         [this](VarDecl* varDecl)
         {
-            if (varDecl->flags(AST::isUsed) && varDecl->flags(VarDecl::isLValue))
+            if (varDecl->flags(VarDecl::isWrittenTo))
                 WriteLocalOutputSemanticsVarDecl(varDecl);
         }
     );
@@ -1318,7 +1318,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
         /* Write system values */
         for (auto varDecl : varDeclRefs)
         {
-            if (varDecl->semantic.IsValid() && varDecl->flags(VarDecl::isLValue))
+            if (varDecl->semantic.IsValid() && varDecl->flags(VarDecl::isWrittenTo))
             {
                 if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
                 {
@@ -1456,7 +1456,7 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
         if (auto varDecl = semanticVarIdent->FetchVarDecl())
         {
             /* Is this variable an entry-point output semantic, or an r-value? */
-            if (GetProgram()->entryPointRef->outputSemantics.Contains(varDecl) || !varDecl->flags(VarDecl::isLValue))
+            if (GetProgram()->entryPointRef->outputSemantics.Contains(varDecl) || !varDecl->flags(VarDecl::isWrittenTo))
                 semanticKeyword = SystemValueToKeyword(varDecl->semantic);
         }
     }

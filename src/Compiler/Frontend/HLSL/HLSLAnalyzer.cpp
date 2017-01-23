@@ -966,11 +966,14 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOutStruct(FunctionDecl* funcDecl,
             AnalyzeEntryPointParameterInOut(funcDecl, memberVar.get(), input);
     }
 
+    //TODO: remove input/output blocks (i.e. always use single variables)
+    #if 1
     /* Mark structure as shader input/output */
     if (input)
         structDecl->flags << StructDecl::isShaderInput;
     else
         structDecl->flags << StructDecl::isShaderOutput;
+    #endif
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointParameterInOutBuffer(FunctionDecl* funcDecl, VarDecl* varDecl, BufferTypeDenoter* bufferTypeDen, bool input)
