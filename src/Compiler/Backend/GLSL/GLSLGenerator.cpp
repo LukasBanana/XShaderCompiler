@@ -323,7 +323,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    if (!ast->flags(StructDecl::isShaderInput) && !ast->flags(StructDecl::isShaderOutput))
+    if (!ast->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
     {
         /* Write all nested structures (if this is the root structure) */
         if (!ast->flags(StructDecl::isNestedStruct))
