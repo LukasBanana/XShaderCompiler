@@ -382,6 +382,11 @@ struct VarIdent : public TypedAST
 {
     AST_INTERFACE(VarIdent);
 
+    FLAG_ENUM
+    {
+        FLAG( isImmutable, 0 ), // This variable identifier must be written out as it is.
+    };
+
     // Returns the full var-ident string (with '.' separation).
     std::string ToString() const;
 
@@ -499,9 +504,10 @@ struct StructDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,  0 ), // This structure is used as shader input.
-        FLAG( isShaderOutput, 1 ), // This structure is used as shader output.
-        FLAG( isNestedStruct, 2 ), // This is a nested structure within another structure.
+        FLAG( isShaderInput,        0 ), // This structure is used as shader input.
+        FLAG( isShaderOutput,       1 ), // This structure is used as shader output.
+        FLAG( isNestedStruct,       2 ), // This is a nested structure within another structure.
+        FLAG( isNonEntryPointParam, 3 ), // This structure is eventually used as variable or parameter type of function other than the entry point.
     };
 
     // Returns a descriptive string of the function signature (e.g. "struct s" or "struct <anonymous>").

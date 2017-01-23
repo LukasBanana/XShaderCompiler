@@ -68,6 +68,12 @@ void GLSLGenerator::GenerateCodePrimary(
     {
         try
         {
+            /* Mark all reachable AST nodes */
+            {
+                ReferenceAnalyzer refAnalyzer;
+                refAnalyzer.MarkReferencesFromEntryPoint(program, inputDesc.shaderTarget);
+            }
+
             /* Mark all control paths */
             {
                 ControlPathAnalyzer pathAnalyzer;
@@ -78,12 +84,6 @@ void GLSLGenerator::GenerateCodePrimary(
             {
                 GLSLConverter converter;
                 converter.Convert(program, inputDesc.shaderTarget, nameManglingPrefix_, outputDesc.options);
-            }
-
-            /* Mark all reachable AST nodes */
-            {
-                ReferenceAnalyzer refAnalyzer;
-                refAnalyzer.MarkReferencesFromEntryPoint(program, inputDesc.shaderTarget);
             }
 
             /* Write header */
@@ -324,7 +324,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    if (!ast->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
+    if (ast->flags(StructDecl::isNonEntryPointParam) || !ast->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
     {
         isInsideStructDecl_ = true;
 
@@ -444,7 +444,7 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
     if (!ast->structDecl->flags(AST::isReachable))
         return;
 
-    if (!ast->structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
+    if (ast->structDecl->flags(StructDecl::isNonEntryPointParam) || !ast->structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
     {
         WriteLineMark(ast);
 
@@ -816,11 +816,11 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    #if 1
-    WriteVarIdentOrSystemValue(ast->varIdent.get());
-    #else
-    Visit(ast->varIdent);
-    #endif
+    if (ast->varIdent->flags(VarIdent::isImmutable))
+        Visit(ast->varIdent);
+    else
+        WriteVarIdentOrSystemValue(ast->varIdent.get());
+    
     if (ast->assignExpr)
     {
         Write(" " + AssignOpToString(ast->assignOp) + " ");
@@ -2081,6 +2081,8 @@ bool GLSLGenerator::WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool a
     /* Is this a non-nested structure or are nested structures allowed in the current context? */
     if (!ast->flags(StructDecl::isNestedStruct) || allowNestedStruct)
     {
+        //TODO: remove interface blocks
+        #if 0
         /* Is this an interface block or a standard structure? */
         if (ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput))
         {
@@ -2088,6 +2090,7 @@ bool GLSLGenerator::WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool a
             return WriteStructDeclInputOutputBlock(ast);
         }
         else
+        #endif
         {
             /* Write standard structure declaration */
             return WriteStructDeclStandard(ast, writeSemicolon);

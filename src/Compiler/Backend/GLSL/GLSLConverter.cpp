@@ -131,8 +131,27 @@ IMPLEMENT_VISIT_PROC(VarIdent)
     /* Has the variable identifier a next identifier? */
     if (ast->next)
     {
-        /* Pop front identifier node for global input/output variables */
-        PopFrontOfGlobalInOutVarIdent(ast);
+        /* Does this identifier refer to a variable declaration? */
+        if (auto varDecl = ast->FetchVarDecl())
+        {
+            /* Is its type denoter a structure? */
+            auto varTypeDen = varDecl->declStmntRef->varType->typeDenoter.get();
+            if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
+            {
+                /* Can the structure be resolved */
+                auto structDecl = structTypeDen->structDeclRef;
+                if (structDecl->flags(StructDecl::isNonEntryPointParam))
+                {
+                    /* Mark variable identifier to be immutable */
+                    ast->flags << VarIdent::isImmutable;
+                }
+                else
+                {
+                    /* Pop front identifier node for global input/output variables */
+                    PopFrontOfGlobalInOutVarIdent(ast);
+                }
+            }
+        }
     }
 }
 

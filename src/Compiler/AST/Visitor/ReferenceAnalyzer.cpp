@@ -157,7 +157,16 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                 RuntimeErr("missing function implementation for '" + ast->SignatureToString(false) + "'", ast);
         }
 
-        VISIT_DEFAULT(FunctionDecl);
+        if (ast->flags(FunctionDecl::isEntryPoint))
+        {
+            isInsideEntryPoint_ = true;
+            {
+                VISIT_DEFAULT(FunctionDecl);
+            }
+            isInsideEntryPoint_ = false;
+        }
+        else
+            VISIT_DEFAULT(FunctionDecl);
     }
 }
 
@@ -182,6 +191,52 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
         VISIT_DEFAULT(BufferDeclStmnt);
     }
+}
+
+bool ReferenceAnalyzer::IsVariableAnEntryPointParameter(VarDeclStmnt* var) const
+{
+    /* Is the variable a parameter of the entry point? */
+    const auto& entryPointParams = program_->entryPointRef->parameters;
+
+    auto entryPointIt = std::find_if(
+        entryPointParams.begin(), entryPointParams.end(),
+        [var](const VarDeclStmntPtr& param)
+        {
+            return (param.get() == var);
+        }
+    );
+
+    return (entryPointIt != entryPointParams.end());
+}
+
+IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+{
+    #if 0
+    if (isInsideEntryPoint_)
+    {
+        /* Is a variable declaration NOT used as entry point return value? */
+        //TODO...
+    }
+    else
+    #endif
+    {
+        /* Has this variable statement a struct type? */
+        auto typeDen = ast->varType->GetTypeDenoter()->Get();
+        if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+        {
+            if (auto structDecl = structTypeDen->structDeclRef)
+            {
+                /* Is this variable NOT a parameter of the entry point? */
+                if (!IsVariableAnEntryPointParameter(ast))
+                {
+                    /* Mark structure to be used as non-entry-point-parameter */
+                    structDecl->flags << StructDecl::isNonEntryPointParam;
+                }
+            }
+        }
+    }
+
+    VISIT_DEFAULT(VarDeclStmnt);
 }
 
 /* --- Expressions --- */
