@@ -129,28 +129,10 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
     /* Has the variable identifier a next identifier? */
-    if (ast->next && ast->symbolRef)
+    if (ast->next)
     {
-        /* Does this identifier refer to a variable declaration? */
-        if (auto varDecl = ast->symbolRef->As<VarDecl>())
-        {
-            /* Is its type denoter a structure? */
-            auto varTypeDen = varDecl->declStmntRef->varType->typeDenoter.get();
-            if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
-            {
-                /* Must the structure be resolved? */
-                if (MustResolveStruct(structTypeDen->structDeclRef))
-                {
-                    /* Remove first identifier */
-                    ast->PopFront();
-                }
-                else
-                {
-                    /* Has a sub node a system value semantic? */
-                    MakeVarIdentWithSystemSemanticLocal(ast);
-                }
-            }
-        }
+        /* Pop front identifier node for global input/output variables */
+        PopFrontOfGlobalInOutVarIdent(ast);
     }
 }
 
@@ -407,11 +389,6 @@ bool GLSLConverter::IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter)
     return false;
 }
 
-bool GLSLConverter::MustResolveStruct(StructDecl* ast) const
-{
-    return MustResolveStructForTarget(shaderTarget_, ast);
-}
-
 bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
 {
     /* Variable must be renamed if it's not inside a structure declaration and its name is reserved */
@@ -457,57 +434,33 @@ void GLSLConverter::LabelAnonymousStructDecl(StructDecl* ast)
     }
 }
 
-bool GLSLConverter::HasVarDeclOfVarIdentSystemSemantic(VarIdent* varIdent) const
-{
-    /* Has variable identifier a symbol reference? */
-    if (varIdent->symbolRef)
-    {
-        /* Is this symbol reference a variable declaration? */
-        if (auto varDecl = varIdent->symbolRef->As<VarDecl>())
-        {
-            /* Is semantic a system semantic? */
-            return varDecl->flags(VarDecl::isSystemValue);
-        }
-    }
-    return false;
-}
-
 bool GLSLConverter::HasGlobalInOutVarDecl(VarIdent* varIdent) const
 {
-    /* Has variable identifier a symbol reference? */
-    if (varIdent->symbolRef)
+    /* Has variable identifier a reference to a variable declaration? */
+    if (auto varDecl = varIdent->FetchVarDecl())
     {
-        /* Is this symbol reference a variable declaration? */
-        if (auto varDecl = varIdent->symbolRef->As<VarDecl>())
-        {
-            if (IsGlobalInoutVarDecl(varDecl, program_->entryPointRef->inputSemantics.varDeclRefs))
-                return true;
-            if (IsGlobalInoutVarDecl(varDecl, program_->entryPointRef->outputSemantics.varDeclRefs))
-                return true;
-        }
+        /* Is this variable a global input/output variable? */
+        auto entryPoint = program_->entryPointRef;
+        if (entryPoint->inputSemantics.Contains(varDecl) || entryPoint->outputSemantics.Contains(varDecl))
+            return true;
     }
     return false;
 }
 
-bool GLSLConverter::IsGlobalInoutVarDecl(VarDecl* varDecl, const std::vector<VarDecl*>& varDeclRefs) const
-{
-    return (std::find(varDeclRefs.begin(), varDeclRefs.end(), varDecl) != varDeclRefs.end());
-}
-
-void GLSLConverter::MakeVarIdentWithSystemSemanticLocal(VarIdent* ast)
+void GLSLConverter::PopFrontOfGlobalInOutVarIdent(VarIdent* ast)
 {
     auto root = ast;
 
     while (ast)
     {
         /* Has current variable declaration a system semantic? */
-        if (HasVarDeclOfVarIdentSystemSemantic(ast) || HasGlobalInOutVarDecl(ast))
+        if (HasGlobalInOutVarDecl(ast))
         {
             /*
             Remove all leading AST nodes until this one, to convert this
             variable identifer to an identifier for a local variable
             */
-            while ( root && !( HasVarDeclOfVarIdentSystemSemantic(root) || HasGlobalInOutVarDecl(root) ) )
+            while (root && !HasGlobalInOutVarDecl(root))
             {
                 root->PopFront();
                 root = root->next.get();

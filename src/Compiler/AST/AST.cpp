@@ -551,8 +551,8 @@ bool FunctionDecl::ParameterSemantics::Contains(VarDecl* varDecl) const
 {
     return
     (
-        std::find(varDeclRefs.begin(), varDeclRefs.end(), varDecl) != varDeclRefs.end() ||
-        std::find(varDeclRefsSV.begin(), varDeclRefsSV.end(), varDecl) != varDeclRefsSV.end()
+        ( std::find(varDeclRefs  .begin(), varDeclRefs  .end(), varDecl) != varDeclRefs  .end() ) ||
+        ( std::find(varDeclRefsSV.begin(), varDeclRefsSV.end(), varDecl) != varDeclRefsSV.end() )
     );
 }
 

@@ -79,9 +79,6 @@ class GLSLConverter : public Visitor
         // Returns true if the specified type denoter is a sampler state type.
         bool IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter) const;
 
-        // Returns true if the specified structure declaration must be resolved.
-        bool MustResolveStruct(StructDecl* ast) const;
-
         // Returns true if the specified variable declaration must be renamed.
         bool MustRenameVarDecl(VarDecl* ast) const;
 
@@ -94,18 +91,14 @@ class GLSLConverter : public Visitor
         // Labels the specified anonymous structure.
         void LabelAnonymousStructDecl(StructDecl* ast);
 
-        // Returns true if the variable identifier refers to a variable declaration which has a system semantic.
-        bool HasVarDeclOfVarIdentSystemSemantic(VarIdent* varIdent) const;
-
         // Returns true if the variable identifier refers to a global input or output variable declaration.
         bool HasGlobalInOutVarDecl(VarIdent* varIdent) const;
-        bool IsGlobalInoutVarDecl(VarDecl* varDecl, const std::vector<VarDecl*>& varDeclRefs) const;
 
         /*
         Changes the specified variable identifier to a local variable identifier
-        (without a leading structure instance name), if it refers to a variable with a system semantic.
+        (without a leading structure instance name), if it refers to a global input/output variable.
         */
-        void MakeVarIdentWithSystemSemanticLocal(VarIdent* ast);
+        void PopFrontOfGlobalInOutVarIdent(VarIdent* ast);
 
         /*
         Converts the specified statement to a code block and inserts itself into this code block (if it is a return statement within the entry point).
