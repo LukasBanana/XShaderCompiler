@@ -42,6 +42,11 @@ class ReferenceAnalyzer : private Visitor
         // Returns true if the specified variable is a paramter of the entry point.
         bool IsVariableAnEntryPointParameter(VarDeclStmnt* var) const;
 
+        void PushFunctionDecl(FunctionDecl* funcDecl);
+        void PopFunctionDecl();
+
+        bool IsInsideEntryPoint() const;
+
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( CodeBlock         );
@@ -63,10 +68,10 @@ class ReferenceAnalyzer : private Visitor
 
         /* === Members === */
 
-        Program*        program_            = nullptr;
-        ShaderTarget    shaderTarget_       = ShaderTarget::VertexShader;
+        Program*                    program_            = nullptr;
+        ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
         
-        bool            isInsideEntryPoint_ = false;
+        std::stack<FunctionDecl*>   funcDeclStack_;
 
 };
 

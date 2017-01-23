@@ -44,6 +44,37 @@ void ReferenceAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts)
     }
 }
 
+bool ReferenceAnalyzer::IsVariableAnEntryPointParameter(VarDeclStmnt* var) const
+{
+    /* Is the variable a parameter of the entry point? */
+    const auto& entryPointParams = program_->entryPointRef->parameters;
+
+    auto entryPointIt = std::find_if(
+        entryPointParams.begin(), entryPointParams.end(),
+        [var](const VarDeclStmntPtr& param)
+        {
+            return (param.get() == var);
+        }
+    );
+
+    return (entryPointIt != entryPointParams.end());
+}
+
+void ReferenceAnalyzer::PushFunctionDecl(FunctionDecl* funcDecl)
+{
+    funcDeclStack_.push(funcDecl);
+}
+
+void ReferenceAnalyzer::PopFunctionDecl()
+{
+    funcDeclStack_.pop();
+}
+
+bool ReferenceAnalyzer::IsInsideEntryPoint() const
+{
+    return (!funcDeclStack_.empty() && funcDeclStack_.top()->flags(FunctionDecl::isEntryPoint));
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -157,16 +188,11 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                 RuntimeErr("missing function implementation for '" + ast->SignatureToString(false) + "'", ast);
         }
 
-        if (ast->flags(FunctionDecl::isEntryPoint))
+        PushFunctionDecl(ast);
         {
-            isInsideEntryPoint_ = true;
-            {
-                VISIT_DEFAULT(FunctionDecl);
-            }
-            isInsideEntryPoint_ = false;
-        }
-        else
             VISIT_DEFAULT(FunctionDecl);
+        }
+        PopFunctionDecl();
     }
 }
 
@@ -193,32 +219,14 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     }
 }
 
-bool ReferenceAnalyzer::IsVariableAnEntryPointParameter(VarDeclStmnt* var) const
-{
-    /* Is the variable a parameter of the entry point? */
-    const auto& entryPointParams = program_->entryPointRef->parameters;
-
-    auto entryPointIt = std::find_if(
-        entryPointParams.begin(), entryPointParams.end(),
-        [var](const VarDeclStmntPtr& param)
-        {
-            return (param.get() == var);
-        }
-    );
-
-    return (entryPointIt != entryPointParams.end());
-}
-
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
-    #if 0
-    if (isInsideEntryPoint_)
+    if (IsInsideEntryPoint())
     {
         /* Is a variable declaration NOT used as entry point return value? */
         //TODO...
     }
     else
-    #endif
     {
         /* Has this variable statement a struct type? */
         auto typeDen = ast->varType->GetTypeDenoter()->Get();
