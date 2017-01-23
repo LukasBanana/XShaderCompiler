@@ -246,6 +246,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
+    /* Check for special cases of intrinsic function calls */
     if (ast->intrinsic == Intrinsic::Mul)
         WriteFunctionCallIntrinsicMul(ast);
     else if (ast->intrinsic == Intrinsic::Rcp)
@@ -1110,34 +1111,29 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
         varDecl->renamedIdent = (nameManglingPrefix_ + "temp_" + varDecl->ident);
     }
 
-    //if ()
+    /* Write local variable definition statement */
+    BeginLn();
     {
-        /* Write local variable definition statement */
-        BeginLn();
+        /* Write desired variable type and identifier */
+        auto varType = varDecl->declStmntRef->varType.get();
+
+        Visit(varType);
+        Write(" " + varDecl->FinalIdent() + " = ");
+
+        /* Is a type conversion required? */
+        if (!IsTypeCompatibleWithSemantic(varDecl->semantic, *varType->typeDenoter->Get()))
         {
-            /* Write desired variable type and identifier */
-            auto varType = varDecl->declStmntRef->varType.get();
-
+            /* Write type cast with semantic keyword */
             Visit(varType);
-            Write(" " + varDecl->FinalIdent() + " = ");
-
-            /* Is a type conversion required? */
-            if (!IsTypeCompatibleWithSemantic(varDecl->semantic, *varType->typeDenoter->Get()))
-            {
-                /* Write type cast with semantic keyword */
-                Visit(varType);
-                Write("(" + *semanticKeyword + ");");
-            }
-            else
-            {
-                /* Write semantic keyword */
-                Write(*semanticKeyword + ";");
-            }
+            Write("(" + *semanticKeyword + ");");
         }
-        EndLn();
+        else
+        {
+            /* Write semantic keyword */
+            Write(*semanticKeyword + ";");
+        }
     }
-    /*else
-        Error("failed to map semantic name to GLSL keyword", varDecl);*/
+    EndLn();
 }
 
 void GLSLGenerator::WriteGlobalInputSemantics(FunctionDecl* entryPoint)
@@ -1984,7 +1980,6 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
 {
     AssertIntrinsicNumArgs(ast, 2, 3);
 
-    //TODO: move this to another visitor (e.g. "GLSLConverter" or the like) which does some transformation on the AST
     /* Find atomic intrinsic mapping */
     auto keyword = IntrinsicToGLSLKeyword(ast->intrinsic);
     if (keyword)
