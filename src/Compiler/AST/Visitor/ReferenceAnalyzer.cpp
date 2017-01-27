@@ -7,6 +7,7 @@
 
 #include "ReferenceAnalyzer.h"
 #include "Exception.h"
+#include "ReportHandler.h"
 #include "AST.h"
 #include <algorithm>
 
@@ -92,18 +93,30 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     {
         /* Don't use forward declaration for call stack */
         if (funcDecl->funcImplRef)
-        {
-            /* Visit forward declaration as well */
-            Visit(funcDecl);
             funcDecl = funcDecl->funcImplRef;
-        }
 
         /* Check for recursive calls (if function is already on the call stack) */
-        if (std::find(funcCallStack_.begin(), funcCallStack_.end(), funcDecl) != funcCallStack_.end())
+        auto funcCallIt = std::find_if(
+            funcCallStack_.begin(), funcCallStack_.end(),
+            [funcDecl](FunctionCall* funcCall)
+            {
+                return (funcCall->GetFunctionImpl() == funcDecl);
+            }
+        );
+
+        if (funcCallIt != funcCallStack_.end())
+        {
+            /* Pass call stack to report handler */
+            ReportHandler::HintForNextReport("call stack:");
+            for (auto funcCall : funcCallStack_)
+                ReportHandler::HintForNextReport("  '" + funcCall->funcDeclRef->SignatureToString(false) + "' (" + funcCall->area.Pos().ToString() + ")");
+
+            /* Throw error message of recursive call */
             RuntimeErr("illegal recursive call of function '" + funcDecl->ident + "'", ast);
+        }
 
         /* Mark function declaration as referenced */
-        funcCallStack_.push_back(funcDecl);
+        funcCallStack_.push_back(ast);
         {
             Visit(funcDecl);
         }

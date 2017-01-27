@@ -251,6 +251,18 @@ std::vector<Expr*> FunctionCall::GetArguments() const
     return args;
 }
 
+FunctionDecl* FunctionCall::GetFunctionImpl() const
+{
+    if (auto funcDecl = funcDeclRef)
+    {
+        if (funcDecl->funcImplRef)
+            return funcDecl->funcImplRef;
+        else
+            return funcDecl;
+    }
+    return nullptr;
+}
+
 
 /* ----- SwitchCase ----- */
 

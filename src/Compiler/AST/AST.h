@@ -290,6 +290,9 @@ struct FunctionCall : public AST
     // Returns a list of all argument expressions (including the default parameters).
     std::vector<Expr*> GetArguments() const;
 
+    // Returns the function implementation of this function call, or null if not set.
+    FunctionDecl* GetFunctionImpl() const;
+
     VarIdentPtr             varIdent;                           // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
     TypeDenoterPtr          typeDenoter;                        // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
     std::vector<ExprPtr>    arguments;
