@@ -57,7 +57,7 @@ bool ASTSymbolOverload::AddSymbolRef(AST* ast)
         else
         {
             /* Are all previous declarations forward declarations, or are the function signatures different? */
-            for (auto ref : refs_)
+            for (auto& ref : refs_)
             {
                 auto funcDecl = static_cast<FunctionDecl*>(ref);
                 if (funcDecl->EqualsSignature(*newFuncDecl))
@@ -66,6 +66,10 @@ bool ASTSymbolOverload::AddSymbolRef(AST* ast)
                     {
                         /* Decorate forward declaration with the new function implementation */
                         funcDecl->funcImplRef = newFuncDecl;
+
+                        /* Replace reference with the new function declaration */
+                        ref = newFuncDecl;
+                        return true;
                     }
                     else
                     {
