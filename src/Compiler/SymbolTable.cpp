@@ -207,7 +207,7 @@ FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoter
         {
             ReportHandler::HintForNextReport("candidates are:");
             for (auto funcDecl : funcDeclCandidates)
-                ReportHandler::HintForNextReport("  '" + funcDecl->SignatureToString(false) + "'");
+                ReportHandler::HintForNextReport("  '" + funcDecl->SignatureToString(false) + "' (" + funcDecl->area.Pos().ToString() + ")");
         }
 
         /* Throw runtime error */

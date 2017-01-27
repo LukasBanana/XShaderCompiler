@@ -87,8 +87,19 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    /* Mark function declaration as referenced */
-    Visit(ast->funcDeclRef);
+    if (auto funcDecl = ast->funcDeclRef)
+    {
+        /* Check for recursive calls (if function is already on the call stack) */
+        if (std::find(funcCallStack_.begin(), funcCallStack_.end(), funcDecl) != funcCallStack_.end())
+            RuntimeErr("illegal recursive call of function '" + funcDecl->ident + "'", ast);
+
+        /* Mark function declaration as referenced */
+        funcCallStack_.push_back(funcDecl);
+        {
+            Visit(funcDecl);
+        }
+        funcCallStack_.pop_back();
+    }
 
     /* Collect all used intrinsics (if they can not be inlined) */
     if (ast->intrinsic != Intrinsic::Undefined && !ast->flags(FunctionCall::canInlineIntrinsicWrapper))

@@ -583,7 +583,7 @@ std::string FunctionDecl::SignatureToString(bool useParamNames) const
 
     for (std::size_t i = 0; i < parameters.size(); ++i)
     {
-        s += parameters[i]->ToString(useParamNames);
+        s += parameters[i]->ToString(useParamNames, true);
         if (i + 1 < parameters.size())
             s += ", ";
     }
@@ -688,7 +688,7 @@ std::string UniformBufferDecl::ToString() const
 
 /* ----- VarDelcStmnt ----- */
 
-std::string VarDeclStmnt::ToString(bool useVarNames) const
+std::string VarDeclStmnt::ToString(bool useVarNames, bool isParam) const
 {
     auto s = varType->ToString();
     
@@ -702,6 +702,9 @@ std::string VarDeclStmnt::ToString(bool useVarNames) const
                 s += ',';
         }
     }
+
+    if (isParam && !varDecls.empty() && varDecls.front()->initializer)
+        return '[' + s + ']';
 
     return s;
 }
