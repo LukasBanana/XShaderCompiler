@@ -607,17 +607,21 @@ struct FunctionDecl : public Stmnt
     // Returns the final identifier for this function.
     const std::string& FinalIdent() const;
 
+    // Sets the specified function AST node as the implementation of this forward declaration.
+    void SetFuncImplRef(FunctionDecl* funcDecl);
+
     TypeNamePtr                     returnType;
     std::string                     ident;
     std::vector<VarDeclStmntPtr>    parameters;
-    IndexedSemantic                 semantic        = Semantic::Undefined;  // May be undefined
-    std::vector<VarDeclStmntPtr>    annotations;                            // Annotations can be ignored by analyzers and generators.
-    CodeBlockPtr                    codeBlock;                              // May be null (if this AST node is a forward declaration).
+    IndexedSemantic                 semantic            = Semantic::Undefined;  // May be undefined
+    std::vector<VarDeclStmntPtr>    annotations;                                // Annotations can be ignored by analyzers and generators.
+    CodeBlockPtr                    codeBlock;                                  // May be null (if this AST node is a forward declaration).
 
-    ParameterSemantics              inputSemantics;                         // Entry point input semantics.
-    ParameterSemantics              outputSemantics;                        // Entry point output semantics.
+    ParameterSemantics              inputSemantics;                             // Entry point input semantics.
+    ParameterSemantics              outputSemantics;                            // Entry point output semantics.
 
-    FunctionDecl*                   funcImplRef   = nullptr;                // Reference to the function implementation (only for forward declarations).
+    FunctionDecl*                   funcImplRef         = nullptr;              // Reference to the function implementation (only for forward declarations).
+    std::vector<FunctionDecl*>      funcForwardDeclRefs;                        // Reference to all forward declarations (only for implementations).
 
     std::string                     renamedIdent;
 };

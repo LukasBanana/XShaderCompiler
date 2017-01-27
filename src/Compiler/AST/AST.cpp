@@ -660,6 +660,15 @@ const std::string& FunctionDecl::FinalIdent() const
     return (renamedIdent.empty() ? ident : renamedIdent);
 }
 
+void FunctionDecl::SetFuncImplRef(FunctionDecl* funcDecl)
+{
+    if (funcDecl && !funcDecl->IsForwardDecl() && IsForwardDecl())
+    {
+        funcImplRef = funcDecl;
+        funcDecl->funcForwardDeclRefs.push_back(this);
+    }
+}
+
 
 /* ----- UniformBufferDecl ----- */
 

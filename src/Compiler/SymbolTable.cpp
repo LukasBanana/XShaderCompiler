@@ -48,7 +48,7 @@ bool ASTSymbolOverload::AddSymbolRef(AST* ast)
                 auto funcDecl = static_cast<FunctionDecl*>(ref);
                 if (!funcDecl->IsForwardDecl() && funcDecl->EqualsSignature(*newFuncDecl))
                 {
-                    newFuncDecl->funcImplRef = funcDecl;
+                    newFuncDecl->SetFuncImplRef(funcDecl);
                     break;
                 }
             }
@@ -65,7 +65,7 @@ bool ASTSymbolOverload::AddSymbolRef(AST* ast)
                     if (funcDecl->IsForwardDecl())
                     {
                         /* Decorate forward declaration with the new function implementation */
-                        funcDecl->funcImplRef = newFuncDecl;
+                        funcDecl->SetFuncImplRef(newFuncDecl);
 
                         /* Replace reference with the new function declaration */
                         ref = newFuncDecl;

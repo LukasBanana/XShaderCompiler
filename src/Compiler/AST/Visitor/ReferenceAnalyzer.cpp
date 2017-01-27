@@ -87,8 +87,17 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
+    /* Visit all forward declarations first */
     if (auto funcDecl = ast->funcDeclRef)
     {
+        /* Don't use forward declaration for call stack */
+        if (funcDecl->funcImplRef)
+        {
+            /* Visit forward declaration as well */
+            Visit(funcDecl);
+            funcDecl = funcDecl->funcImplRef;
+        }
+
         /* Check for recursive calls (if function is already on the call stack) */
         if (std::find(funcCallStack_.begin(), funcCallStack_.end(), funcDecl) != funcCallStack_.end())
             RuntimeErr("illegal recursive call of function '" + funcDecl->ident + "'", ast);
@@ -197,6 +206,12 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                 Visit(ast->funcImplRef);
             else
                 RuntimeErr("missing function implementation for '" + ast->SignatureToString(false) + "'", ast);
+        }
+        else
+        {
+            /* Visit all forward declarations */
+            for (auto funcForwardDecl : ast->funcForwardDeclRefs)
+                Visit(funcForwardDecl);
         }
 
         PushFunctionDecl(ast);
