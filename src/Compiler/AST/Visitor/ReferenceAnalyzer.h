@@ -39,12 +39,20 @@ class ReferenceAnalyzer : private Visitor
 
         void VisitStmntList(const std::vector<StmntPtr>& stmnts);
 
+        // Returns true if the specified variable is a paramter of the entry point.
+        bool IsVariableAnEntryPointParameter(VarDeclStmnt* var) const;
+
+        void PushFunctionDecl(FunctionDecl* funcDecl);
+        void PopFunctionDecl();
+
+        bool IsInsideEntryPoint() const;
+
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( SwitchCase        );
-        DECL_VISIT_PROC( TypeName           );
+        DECL_VISIT_PROC( TypeName          );
         DECL_VISIT_PROC( VarIdent          );
 
         DECL_VISIT_PROC( VarDecl           );
@@ -54,13 +62,16 @@ class ReferenceAnalyzer : private Visitor
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( BufferDeclStmnt   );
+        DECL_VISIT_PROC( VarDeclStmnt      );
 
         DECL_VISIT_PROC( VarAccessExpr     );
 
         /* === Members === */
 
-        Program*        program_        = nullptr;
-        ShaderTarget    shaderTarget_   = ShaderTarget::VertexShader;
+        Program*                    program_            = nullptr;
+        ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
+        
+        std::stack<FunctionDecl*>   funcDeclStack_;
 
 };
 

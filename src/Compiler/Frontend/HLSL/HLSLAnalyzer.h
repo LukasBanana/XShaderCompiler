@@ -97,7 +97,7 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeEntryPoint(FunctionDecl* funcDecl);
         void AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl);
-        void AnalyzeEntryPointInputOutputGeometryShader(FunctionDecl* funcDecl);
+        //void AnalyzeEntryPointInputOutputGeometryShader(FunctionDecl* funcDecl);
         
         void AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param);
         void AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input, TypeDenoterPtr varTypeDen = nullptr);

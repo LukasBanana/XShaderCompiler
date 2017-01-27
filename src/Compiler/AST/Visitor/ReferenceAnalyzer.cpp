@@ -8,6 +8,7 @@
 #include "ReferenceAnalyzer.h"
 #include "Exception.h"
 #include "AST.h"
+#include <algorithm>
 
 
 namespace Xsc
@@ -43,6 +44,37 @@ void ReferenceAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts)
     }
 }
 
+bool ReferenceAnalyzer::IsVariableAnEntryPointParameter(VarDeclStmnt* var) const
+{
+    /* Is the variable a parameter of the entry point? */
+    const auto& entryPointParams = program_->entryPointRef->parameters;
+
+    auto entryPointIt = std::find_if(
+        entryPointParams.begin(), entryPointParams.end(),
+        [var](const VarDeclStmntPtr& param)
+        {
+            return (param.get() == var);
+        }
+    );
+
+    return (entryPointIt != entryPointParams.end());
+}
+
+void ReferenceAnalyzer::PushFunctionDecl(FunctionDecl* funcDecl)
+{
+    funcDeclStack_.push(funcDecl);
+}
+
+void ReferenceAnalyzer::PopFunctionDecl()
+{
+    funcDeclStack_.pop();
+}
+
+bool ReferenceAnalyzer::IsInsideEntryPoint() const
+{
+    return (!funcDeclStack_.empty() && funcDeclStack_.top()->flags(FunctionDecl::isEntryPoint));
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -72,6 +104,22 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             }
         }
         program_->usedIntrinsics[ast->intrinsic].argLists.insert(argList);
+    }
+
+    if (ast->funcDeclRef)
+    {
+        /* Mark all arguments, that are assigned to output parameters, as l-values */
+        const auto& arguments = ast->arguments;
+        const auto& parameters = ast->funcDeclRef->parameters;
+
+        for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+        {
+            if (parameters[i]->IsOutput())
+            {
+                if (auto varDecl = arguments[i]->FetchVarDecl())
+                    varDecl->flags << (AST::isUsed | VarDecl::isWrittenTo);
+            }
+        }
     }
 
     VISIT_DEFAULT(FunctionCall);
@@ -140,7 +188,11 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                 RuntimeErr("missing function implementation for '" + ast->SignatureToString(false) + "'", ast);
         }
 
-        VISIT_DEFAULT(FunctionDecl);
+        PushFunctionDecl(ast);
+        {
+            VISIT_DEFAULT(FunctionDecl);
+        }
+        PopFunctionDecl();
     }
 }
 
@@ -167,13 +219,41 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     }
 }
 
+IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+{
+    if (IsInsideEntryPoint())
+    {
+        /* Is a variable declaration NOT used as entry point return value? */
+        //TODO...
+    }
+    else
+    {
+        /* Has this variable statement a struct type? */
+        auto typeDen = ast->varType->GetTypeDenoter()->Get();
+        if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+        {
+            if (auto structDecl = structTypeDen->structDeclRef)
+            {
+                /* Is this variable NOT a parameter of the entry point? */
+                if (!IsVariableAnEntryPointParameter(ast))
+                {
+                    /* Mark structure to be used as non-entry-point-parameter */
+                    structDecl->flags << StructDecl::isNonEntryPointParam;
+                }
+            }
+        }
+    }
+
+    VISIT_DEFAULT(VarDeclStmnt);
+}
+
 /* --- Expressions --- */
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    /* Mark symbol as used */
     if (auto symbol = ast->varIdent->symbolRef)
     {
+        /* Mark symbol as used */
         symbol->flags << AST::isUsed;
 
         /* Check if this symbol is the fragment coordinate (SV_Position/ gl_FragCoord) */
@@ -183,6 +263,12 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
             {
                 /* Mark frag-coord usage in fragment program layout */
                 program_->layoutFragment.fragCoordUsed = true;
+            }
+            
+            if (ast->assignExpr)
+            {
+                /* Mark variable as l-value */
+                varDecl->flags << VarDecl::isWrittenTo;
             }
         }
     }

@@ -68,6 +68,12 @@ void GLSLGenerator::GenerateCodePrimary(
     {
         try
         {
+            /* Mark all reachable AST nodes */
+            {
+                ReferenceAnalyzer refAnalyzer;
+                refAnalyzer.MarkReferencesFromEntryPoint(program, inputDesc.shaderTarget);
+            }
+
             /* Mark all control paths */
             {
                 ControlPathAnalyzer pathAnalyzer;
@@ -78,12 +84,6 @@ void GLSLGenerator::GenerateCodePrimary(
             {
                 GLSLConverter converter;
                 converter.Convert(program, inputDesc.shaderTarget, nameManglingPrefix_, outputDesc.options);
-            }
-
-            /* Mark all reachable AST nodes */
-            {
-                ReferenceAnalyzer refAnalyzer;
-                refAnalyzer.MarkReferencesFromEntryPoint(program, inputDesc.shaderTarget);
             }
 
             /* Write header */
@@ -199,45 +199,6 @@ bool GLSLGenerator::IsTypeCompatibleWithSemantic(const Semantic semantic, const 
     return false;
 }
 
-bool GLSLGenerator::IsRValueSemantic(const Semantic semantic) const
-{
-    return !IsLValueSemantic(semantic);
-}
-
-bool GLSLGenerator::IsLValueSemantic(const Semantic semantic) const
-{
-    using T = Semantic;
-
-    static const std::set<T> lvalueSemantics
-    {
-        T::ClipDistance,
-        T::CullDistance,
-        T::Coverage,
-        T::Depth,
-        T::DepthGreaterEqual,
-        T::DepthLessEqual,
-        T::InnerCoverage,
-        T::InsideTessFactor,
-        T::RenderTargetArrayIndex,
-        T::StencilRef,
-        T::Target,
-        T::TessFactor,
-        T::VertexPosition,
-        T::ViewportArrayIndex,
-    };
-
-    #if 0
-    /* Check for special cases of current shader target */
-    switch (GetShaderTarget())
-    {
-        case ShaderTarget::FragmentShader:
-            break;
-    }
-    #endif
-
-    return (lvalueSemantics.find(semantic) != lvalueSemantics.end());
-}
-
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -260,13 +221,13 @@ IMPLEMENT_VISIT_PROC(Program)
     /* Write global input/output semantics */
     BeginSep();
     {
-        WriteGlobalInputSemantics();
+        WriteGlobalInputSemantics(GetProgram()->entryPointRef);
     }
     EndSep();
 
     BeginSep();
     {
-        WriteGlobalOutputSemantics();
+        WriteGlobalOutputSemantics(GetProgram()->entryPointRef);
     }
     EndSep();
 
@@ -285,6 +246,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
+    /* Check for special cases of intrinsic function calls */
     if (ast->intrinsic == Intrinsic::Mul)
         WriteFunctionCallIntrinsicMul(ast);
     else if (ast->intrinsic == Intrinsic::Rcp)
@@ -343,7 +305,8 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    Write(ast->FinalIdent());
+    Write(isInsideStructDecl_ ? ast->ident : ast->FinalIdent());
+
     Visit(ast->arrayDims);
 
     if (ast->initializer)
@@ -361,8 +324,10 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    if (!ast->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
+    if (ast->flags(StructDecl::isNonEntryPointParam) || !ast->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
     {
+        isInsideStructDecl_ = true;
+
         /* Write all nested structures (if this is the root structure) */
         if (!ast->flags(StructDecl::isNestedStruct))
         {
@@ -379,6 +344,8 @@ IMPLEMENT_VISIT_PROC(StructDecl)
             structDeclArgs->outStructWritten = WriteStructDecl(ast, structDeclArgs->inEndWithSemicolon);
         else
             WriteStructDecl(ast, false);
+
+        isInsideStructDecl_ = false;
     }
 }
 
@@ -477,7 +444,7 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
     if (!ast->structDecl->flags(AST::isReachable))
         return;
 
-    if (!ast->structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
+    if (ast->structDecl->flags(StructDecl::isNonEntryPointParam) || !ast->structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
     {
         WriteLineMark(ast);
 
@@ -849,7 +816,11 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    WriteVarIdentOrSystemValue(ast->varIdent.get());
+    if (ast->varIdent->flags(VarIdent::isImmutable))
+        Visit(ast->varIdent);
+    else
+        WriteVarIdentOrSystemValue(ast->varIdent.get());
+    
     if (ast->assignExpr)
     {
         Write(" " + AssignOpToString(ast->assignOp) + " ");
@@ -1122,13 +1093,13 @@ bool GLSLGenerator::WriteGlobalLayoutsCompute(const Program::LayoutComputeShader
 
 void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
 {
-    auto& varDeclRefs = entryPoint->inputSemantics.varDeclRefsSV;
-
-    for (auto varDecl : varDeclRefs)
-    {
-        if (varDecl->flags(AST::isUsed) && IsRValueSemantic(varDecl->semantic))
-            WriteLocalInputSemanticsVarDecl(varDecl);
-    }
+    entryPoint->inputSemantics.ForEach(
+        [this](VarDecl* varDecl)
+        {
+            if (varDecl->flags(VarDecl::isWrittenTo))
+                WriteLocalInputSemanticsVarDecl(varDecl);
+        }
+    );
 
     /*if (!varDeclRefs.empty())
         Blank();*/
@@ -1137,39 +1108,42 @@ void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
 void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
 {
     /* Is semantic of the variable declaration a system value semantic? */
-    if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
+    auto semanticKeyword = SystemValueToKeyword(varDecl->semantic);
+
+    if (!semanticKeyword)
     {
-        /* Write local variable definition statement */
-        BeginLn();
-        {
-            /* Write desired variable type and identifier */
-            auto varType = varDecl->declStmntRef->varType.get();
-
-            Visit(varType);
-            Write(" " + varDecl->FinalIdent() + " = ");
-
-            /* Is a type conversion required? */
-            if (!IsTypeCompatibleWithSemantic(varDecl->semantic, *varType->typeDenoter->Get()))
-            {
-                /* Write type cast with semantic keyword */
-                Visit(varType);
-                Write("(" + *semanticKeyword + ");");
-            }
-            else
-            {
-                /* Write semantic keyword */
-                Write(*semanticKeyword + ";");
-            }
-        }
-        EndLn();
+        semanticKeyword = MakeUnique<std::string>(varDecl->FinalIdent());
+        varDecl->renamedIdent = (nameManglingPrefix_ + "temp_" + varDecl->ident);
     }
-    else
-        Error("failed to map semantic name to GLSL keyword", varDecl);
+
+    /* Write local variable definition statement */
+    BeginLn();
+    {
+        /* Write desired variable type and identifier */
+        auto varType = varDecl->declStmntRef->varType.get();
+
+        Visit(varType);
+        Write(" " + varDecl->FinalIdent() + " = ");
+
+        /* Is a type conversion required? */
+        if (!IsTypeCompatibleWithSemantic(varDecl->semantic, *varType->typeDenoter->Get()))
+        {
+            /* Write type cast with semantic keyword */
+            Visit(varType);
+            Write("(" + *semanticKeyword + ");");
+        }
+        else
+        {
+            /* Write semantic keyword */
+            Write(*semanticKeyword + ";");
+        }
+    }
+    EndLn();
 }
 
-void GLSLGenerator::WriteGlobalInputSemantics()
+void GLSLGenerator::WriteGlobalInputSemantics(FunctionDecl* entryPoint)
 {
-    auto& varDeclRefs = GetProgram()->entryPointRef->inputSemantics.varDeclRefs;
+    auto& varDeclRefs = entryPoint->inputSemantics.varDeclRefs;
 
     for (auto varDecl : varDeclRefs)
         WriteGlobalInputSemanticsVarDecl(varDecl);
@@ -1220,13 +1194,13 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 
 void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 {
-    auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefsSV;
-
-    for (auto varDecl : varDeclRefs)
-    {
-        if (varDecl->flags(AST::isUsed) && IsRValueSemantic(varDecl->semantic))
-            WriteLocalOutputSemanticsVarDecl(varDecl);
-    }
+    entryPoint->outputSemantics.ForEach(
+        [this](VarDecl* varDecl)
+        {
+            if (varDecl->flags(VarDecl::isWrittenTo))
+                WriteLocalOutputSemanticsVarDecl(varDecl);
+        }
+    );
 
     /*if (!varDeclRefs.empty())
         Blank();*/
@@ -1243,10 +1217,8 @@ void GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
     EndLn();
 }
 
-void GLSLGenerator::WriteGlobalOutputSemantics()
+void GLSLGenerator::WriteGlobalOutputSemantics(FunctionDecl* entryPoint)
 {
-    auto entryPoint = GetProgram()->entryPointRef;
-
     /* Write non-system-value output semantics */
     auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefs;
 
@@ -1347,10 +1319,11 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
     /* Prefer variables from structure, rather than function return semantic */
     if (!varDeclRefs.empty())
     {
+        #if 0
         /* Write system values */
         for (auto varDecl : varDeclRefs)
         {
-            if (varDecl->semantic.IsValid() && IsRValueSemantic(varDecl->semantic))
+            if (varDecl->semantic.IsValid() && varDecl->flags(VarDecl::isWrittenTo))
             {
                 if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
                 {
@@ -1362,6 +1335,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
                 }
             }
         }
+        #endif
     }
     else if (semantic.IsSystemValue() && ast)
     {
@@ -1484,9 +1458,12 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
 
     if (semanticVarIdent)
     {
-        auto semantic = semanticVarIdent->FetchSemantic();
-        if (IsLValueSemantic(semantic))
-            semanticKeyword = SystemValueToKeyword(semantic);
+        if (auto varDecl = semanticVarIdent->FetchVarDecl())
+        {
+            /* Is this variable an entry-point output semantic, or an r-value? */
+            if (GetProgram()->entryPointRef->outputSemantics.Contains(varDecl) || !varDecl->flags(VarDecl::isWrittenTo))
+                semanticKeyword = SystemValueToKeyword(varDecl->semantic);
+        }
     }
 
     if (semanticVarIdent && semanticKeyword)
@@ -1787,7 +1764,7 @@ void GLSLGenerator::WriteFunctionEntryPointBody(FunctionDecl* ast)
 {
     /* Write input/output parameters of system values as local variables */
     WriteLocalInputSemantics(ast);
-    WriteLocalOutputSemantics(ast);
+    //WriteLocalOutputSemantics(ast);
 
     /* Write code block (without additional scope) */
     isInsideEntryPoint_ = true;
@@ -2008,7 +1985,6 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
 {
     AssertIntrinsicNumArgs(ast, 2, 3);
 
-    //TODO: move this to another visitor (e.g. "GLSLConverter" or the like) which does some transformation on the AST
     /* Find atomic intrinsic mapping */
     auto keyword = IntrinsicToGLSLKeyword(ast->intrinsic);
     if (keyword)
@@ -2105,6 +2081,8 @@ bool GLSLGenerator::WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool a
     /* Is this a non-nested structure or are nested structures allowed in the current context? */
     if (!ast->flags(StructDecl::isNestedStruct) || allowNestedStruct)
     {
+        //TODO: remove interface blocks
+        #if 0
         /* Is this an interface block or a standard structure? */
         if (ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput))
         {
@@ -2112,6 +2090,7 @@ bool GLSLGenerator::WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool a
             return WriteStructDeclInputOutputBlock(ast);
         }
         else
+        #endif
         {
             /* Write standard structure declaration */
             return WriteStructDeclStandard(ast, writeSemicolon);

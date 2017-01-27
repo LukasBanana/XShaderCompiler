@@ -189,7 +189,11 @@ struct TypedAST : public AST
 };
 
 // Expression AST base class.
-struct Expr : public TypedAST {};
+struct Expr : public TypedAST
+{
+    // Returns the variable or null if this is not just a single variable expression.
+    virtual VarDecl* FetchVarDecl() const;
+};
 
 // Declaration AST base class.
 struct Decl : public TypedAST {};
@@ -378,6 +382,11 @@ struct VarIdent : public TypedAST
 {
     AST_INTERFACE(VarIdent);
 
+    FLAG_ENUM
+    {
+        FLAG( isImmutable, 0 ), // This variable identifier must be written out as it is.
+    };
+
     // Returns the full var-ident string (with '.' separation).
     std::string ToString() const;
 
@@ -398,6 +407,9 @@ struct VarIdent : public TypedAST
 
     // Returns a semantic if this is an identifier to a variable which has a semantic.
     IndexedSemantic FetchSemantic() const;
+
+    // Returns the variable AST node (if the symbol refers to one).
+    VarDecl* FetchVarDecl() const;
 
     std::string             ident;                      // Either this ..
   //TypeDenoterPtr          typeDenoter;                // ... or this is used
@@ -420,8 +432,8 @@ struct VarDecl : public Decl
         FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
         FLAG( isSystemValue,    2 ), // This variable is a system value.
         FLAG( disableCodeGen,   3 ), // Disables the code generation for this variable declaration.
-        FLAG( wasRenamed,       4 ), // This variable was renamed by a converter visitor.
-        FLAG( isDynamicArray,   5 ), // This variable is a dynamic array (for input/output semantics).
+        FLAG( isDynamicArray,   4 ), // This variable is a dynamic array (for input/output semantics).
+        FLAG( isWrittenTo,      5 ), // This variable is eventually written to.
 
         isShaderInputSV     = (isShaderInput  | isSystemValue), // This variable a used as shader input, and it is a system value.
         isShaderOutputSV    = (isShaderOutput | isSystemValue), // This variable a used as shader output, and it is a system value.
@@ -492,9 +504,10 @@ struct StructDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,  0 ), // This structure is used as shader input.
-        FLAG( isShaderOutput, 1 ), // This structure is used as shader output.
-        FLAG( isNestedStruct, 2 ), // This is a nested structure within another structure.
+        FLAG( isShaderInput,        0 ), // This structure is used as shader input.
+        FLAG( isShaderOutput,       1 ), // This structure is used as shader output.
+        FLAG( isNestedStruct,       2 ), // This is a nested structure within another structure.
+        FLAG( isNonEntryPointParam, 3 ), // This structure is eventually used as variable or parameter type of function other than the entry point.
     };
 
     // Returns a descriptive string of the function signature (e.g. "struct s" or "struct <anonymous>").
@@ -553,7 +566,11 @@ struct FunctionDecl : public Stmnt
 
     struct ParameterSemantics
     {
+        using IteratorFunc = std::function<void(VarDecl* varDecl)>;
+
         void Add(VarDecl* varDecl);
+        bool Contains(VarDecl* varDecl) const;
+        void ForEach(const IteratorFunc& iterator);
 
         std::vector<VarDecl*> varDeclRefs;      // References to all variable declarations of the user defined semantics
         std::vector<VarDecl*> varDeclRefsSV;    // References to all variable declarations of the system value semantics
@@ -721,10 +738,10 @@ struct ForLoopStmnt : public Stmnt
 {
     AST_INTERFACE(ForLoopStmnt);
 
-    StmntPtr                    initSmnt;
-    ExprPtr                     condition;
-    ExprPtr                     iteration;
-    StmntPtr                    bodyStmnt;
+    StmntPtr    initSmnt;
+    ExprPtr     condition;
+    ExprPtr     iteration;
+    StmntPtr    bodyStmnt;
 };
 
 // 'while'-loop statement.
@@ -732,8 +749,8 @@ struct WhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(WhileLoopStmnt);
 
-    ExprPtr                     condition;
-    StmntPtr                    bodyStmnt;
+    ExprPtr     condition;
+    StmntPtr    bodyStmnt;
 };
 
 // 'do/while'-loop statement.
@@ -741,8 +758,8 @@ struct DoWhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(DoWhileLoopStmnt);
 
-    StmntPtr                    bodyStmnt;
-    ExprPtr                     condition;
+    StmntPtr    bodyStmnt;
+    ExprPtr     condition;
 };
 
 // 'if' statement.
@@ -750,9 +767,9 @@ struct IfStmnt : public Stmnt
 {
     AST_INTERFACE(IfStmnt);
 
-    ExprPtr                     condition;
-    StmntPtr                    bodyStmnt;
-    ElseStmntPtr                elseStmnt;  // May be null
+    ExprPtr         condition;
+    StmntPtr        bodyStmnt;
+    ElseStmntPtr    elseStmnt;  // May be null
 };
 
 // 'else' statement.
@@ -915,6 +932,8 @@ struct BracketExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    VarDecl* FetchVarDecl() const override;
+
     ExprPtr expr; // Inner expression
 };
 
@@ -957,6 +976,8 @@ struct VarAccessExpr : public Expr
     AST_INTERFACE(VarAccessExpr);
 
     TypeDenoterPtr DeriveTypeDenoter() override;
+
+    VarDecl* FetchVarDecl() const override;
 
     VarIdentPtr varIdent;
     AssignOp    assignOp    = AssignOp::Undefined;  // May be undefined

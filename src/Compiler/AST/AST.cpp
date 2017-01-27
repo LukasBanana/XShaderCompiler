@@ -58,6 +58,14 @@ void TypedAST::ResetBufferedTypeDenoter()
 }
 
 
+/* ----- Expr ----- */
+
+VarDecl* Expr::FetchVarDecl() const
+{
+    return nullptr;
+}
+
+
 /* ----- VarIdent ----- */
 
 std::string VarIdent::ToString() const
@@ -212,6 +220,16 @@ IndexedSemantic VarIdent::FetchSemantic() const
             return varDecl->semantic;
     }
     return Semantic::Undefined;
+}
+
+VarDecl* VarIdent::FetchVarDecl() const
+{
+    if (symbolRef)
+    {
+        if (auto varDecl = symbolRef->As<VarDecl>())
+            return varDecl;
+    }
+    return nullptr;
 }
 
 
@@ -527,6 +545,21 @@ void FunctionDecl::ParameterSemantics::Add(VarDecl* varDecl)
         else
             varDeclRefs.push_back(varDecl);
     }
+}
+
+bool FunctionDecl::ParameterSemantics::Contains(VarDecl* varDecl) const
+{
+    return
+    (
+        ( std::find(varDeclRefs  .begin(), varDeclRefs  .end(), varDecl) != varDeclRefs  .end() ) ||
+        ( std::find(varDeclRefsSV.begin(), varDeclRefsSV.end(), varDecl) != varDeclRefsSV.end() )
+    );
+}
+
+void FunctionDecl::ParameterSemantics::ForEach(const IteratorFunc& iterator)
+{
+    std::for_each(varDeclRefs.begin(), varDeclRefs.end(), iterator);
+    std::for_each(varDeclRefsSV.begin(), varDeclRefsSV.end(), iterator);
 }
 
 bool FunctionDecl::IsForwardDecl() const
@@ -929,6 +962,11 @@ TypeDenoterPtr BracketExpr::DeriveTypeDenoter()
     return expr->GetTypeDenoter();
 }
 
+VarDecl* BracketExpr::FetchVarDecl() const
+{
+    return expr->FetchVarDecl();
+}
+
 
 /* ----- SuffixExpr ----- */
 
@@ -977,6 +1015,11 @@ TypeDenoterPtr CastExpr::DeriveTypeDenoter()
 TypeDenoterPtr VarAccessExpr::DeriveTypeDenoter()
 {
     return varIdent->GetTypeDenoter();
+}
+
+VarDecl* VarAccessExpr::FetchVarDecl() const
+{
+    return varIdent->FetchVarDecl();
 }
 
 
