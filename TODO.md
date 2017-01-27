@@ -9,3 +9,11 @@ TODO List
 | Tessellation shader support | High | Tessellation shader attributes are done, but in/out semantics are incomplete. |
 | Type denoter analysis clean-up | Medium | Few more things should be moved from AST nodes into TypeDenoter classes (e.g. constness). |
 | 'interface' and 'class' declarations | Low | Interfaces and classes can currently not even be parsed. |
+
+
+Known Issues
+------------
+
+| Issue | Remarks |
+|-------|---------|
+| Parsing interpolation modifiers as identifier | Interpolation modifiers (e.g. 'sample', or 'nointerpolation') are currently not allowed to be used as identifiers |
