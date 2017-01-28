@@ -2440,9 +2440,17 @@ SamplerType HLSLParser::ParseSamplerType()
 
 IndexedSemantic HLSLParser::ParseSemantic(bool parseColon)
 {
-    if (parseColon)
-        Accept(Tokens::Colon);
-    return HLSLKeywordToSemantic(ParseIdent(), useD3D10Semantics_);
+    try
+    {
+        if (parseColon)
+            Accept(Tokens::Colon);
+        return HLSLKeywordToSemantic(ParseIdent(), useD3D10Semantics_);
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
+    return Semantic::UserDefined;
 }
 
 std::string HLSLParser::ParseSamplerStateTextureIdent()
