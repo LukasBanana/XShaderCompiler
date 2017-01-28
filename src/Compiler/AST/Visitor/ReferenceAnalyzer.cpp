@@ -7,6 +7,7 @@
 
 #include "ReferenceAnalyzer.h"
 #include "Exception.h"
+#include "ReportHandler.h"
 #include "AST.h"
 #include <algorithm>
 
@@ -87,8 +88,40 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    /* Mark function declaration as referenced */
-    Visit(ast->funcDeclRef);
+    /* Visit all forward declarations first */
+    if (auto funcDecl = ast->funcDeclRef)
+    {
+        /* Don't use forward declaration for call stack */
+        if (funcDecl->funcImplRef)
+            funcDecl = funcDecl->funcImplRef;
+
+        /* Check for recursive calls (if function is already on the call stack) */
+        auto funcCallIt = std::find_if(
+            funcCallStack_.begin(), funcCallStack_.end(),
+            [funcDecl](FunctionCall* funcCall)
+            {
+                return (funcCall->GetFunctionImpl() == funcDecl);
+            }
+        );
+
+        if (funcCallIt != funcCallStack_.end())
+        {
+            /* Pass call stack to report handler */
+            ReportHandler::HintForNextReport("call stack:");
+            for (auto funcCall : funcCallStack_)
+                ReportHandler::HintForNextReport("  '" + funcCall->funcDeclRef->SignatureToString(false) + "' (" + funcCall->area.Pos().ToString() + ")");
+
+            /* Throw error message of recursive call */
+            RuntimeErr("illegal recursive call of function '" + funcDecl->ident + "'", ast);
+        }
+
+        /* Mark function declaration as referenced */
+        funcCallStack_.push_back(ast);
+        {
+            Visit(funcDecl);
+        }
+        funcCallStack_.pop_back();
+    }
 
     /* Collect all used intrinsics (if they can not be inlined) */
     if (ast->intrinsic != Intrinsic::Undefined && !ast->flags(FunctionCall::canInlineIntrinsicWrapper))
@@ -186,6 +219,12 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                 Visit(ast->funcImplRef);
             else
                 RuntimeErr("missing function implementation for '" + ast->SignatureToString(false) + "'", ast);
+        }
+        else
+        {
+            /* Visit all forward declarations */
+            for (auto funcForwardDecl : ast->funcForwardDeclRefs)
+                Visit(funcForwardDecl);
         }
 
         PushFunctionDecl(ast);

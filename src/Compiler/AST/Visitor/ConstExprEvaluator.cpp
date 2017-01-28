@@ -169,9 +169,13 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
             Push(lhs * rhs);
             break;
         case BinaryOp::Div:
+            if (lhs.Type() == Variant::Types::Int && rhs.Int() == 0)
+                IllegalExpr("division by zero", ast);
             Push(lhs / rhs);
             break;
         case BinaryOp::Mod:
+            if (lhs.Type() == Variant::Types::Int && rhs.Int() == 0)
+                IllegalExpr("division by zero", ast);
             Push(lhs % rhs);
             break;
         case BinaryOp::Equal:

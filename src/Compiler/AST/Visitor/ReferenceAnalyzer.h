@@ -72,6 +72,7 @@ class ReferenceAnalyzer : private Visitor
         ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
         
         std::stack<FunctionDecl*>   funcDeclStack_;
+        std::vector<FunctionCall*>  funcCallStack_;
 
 };
 

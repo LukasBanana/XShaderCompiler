@@ -290,6 +290,9 @@ struct FunctionCall : public AST
     // Returns a list of all argument expressions (including the default parameters).
     std::vector<Expr*> GetArguments() const;
 
+    // Returns the function implementation of this function call, or null if not set.
+    FunctionDecl* GetFunctionImpl() const;
+
     VarIdentPtr             varIdent;                           // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
     TypeDenoterPtr          typeDenoter;                        // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
     std::vector<ExprPtr>    arguments;
@@ -607,17 +610,21 @@ struct FunctionDecl : public Stmnt
     // Returns the final identifier for this function.
     const std::string& FinalIdent() const;
 
+    // Sets the specified function AST node as the implementation of this forward declaration.
+    void SetFuncImplRef(FunctionDecl* funcDecl);
+
     TypeNamePtr                     returnType;
     std::string                     ident;
     std::vector<VarDeclStmntPtr>    parameters;
-    IndexedSemantic                 semantic        = Semantic::Undefined;  // May be undefined
-    std::vector<VarDeclStmntPtr>    annotations;                            // Annotations can be ignored by analyzers and generators.
-    CodeBlockPtr                    codeBlock;                              // May be null (if this AST node is a forward declaration).
+    IndexedSemantic                 semantic            = Semantic::Undefined;  // May be undefined
+    std::vector<VarDeclStmntPtr>    annotations;                                // Annotations can be ignored by analyzers and generators.
+    CodeBlockPtr                    codeBlock;                                  // May be null (if this AST node is a forward declaration).
 
-    ParameterSemantics              inputSemantics;                         // Entry point input semantics.
-    ParameterSemantics              outputSemantics;                        // Entry point output semantics.
+    ParameterSemantics              inputSemantics;                             // Entry point input semantics.
+    ParameterSemantics              outputSemantics;                            // Entry point output semantics.
 
-    FunctionDecl*                   funcImplRef   = nullptr;                // Reference to the function implementation (only for forward declarations).
+    FunctionDecl*                   funcImplRef         = nullptr;              // Reference to the function implementation (only for forward declarations).
+    std::vector<FunctionDecl*>      funcForwardDeclRefs;                        // Reference to all forward declarations (only for implementations).
 
     std::string                     renamedIdent;
 };
@@ -672,7 +679,7 @@ struct VarDeclStmnt : public Stmnt
     };
 
     // Returns the var-decl statement as string.
-    std::string ToString(bool useVarNames = true) const;
+    std::string ToString(bool useVarNames = true, bool isParam = false) const;
     
     // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident) const;

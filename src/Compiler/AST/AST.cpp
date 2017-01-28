@@ -251,6 +251,18 @@ std::vector<Expr*> FunctionCall::GetArguments() const
     return args;
 }
 
+FunctionDecl* FunctionCall::GetFunctionImpl() const
+{
+    if (auto funcDecl = funcDeclRef)
+    {
+        if (funcDecl->funcImplRef)
+            return funcDecl->funcImplRef;
+        else
+            return funcDecl;
+    }
+    return nullptr;
+}
+
 
 /* ----- SwitchCase ----- */
 
@@ -583,7 +595,7 @@ std::string FunctionDecl::SignatureToString(bool useParamNames) const
 
     for (std::size_t i = 0; i < parameters.size(); ++i)
     {
-        s += parameters[i]->ToString(useParamNames);
+        s += parameters[i]->ToString(useParamNames, true);
         if (i + 1 < parameters.size())
             s += ", ";
     }
@@ -660,6 +672,15 @@ const std::string& FunctionDecl::FinalIdent() const
     return (renamedIdent.empty() ? ident : renamedIdent);
 }
 
+void FunctionDecl::SetFuncImplRef(FunctionDecl* funcDecl)
+{
+    if (funcDecl && !funcDecl->IsForwardDecl() && IsForwardDecl())
+    {
+        funcImplRef = funcDecl;
+        funcDecl->funcForwardDeclRefs.push_back(this);
+    }
+}
+
 
 /* ----- UniformBufferDecl ----- */
 
@@ -688,7 +709,7 @@ std::string UniformBufferDecl::ToString() const
 
 /* ----- VarDelcStmnt ----- */
 
-std::string VarDeclStmnt::ToString(bool useVarNames) const
+std::string VarDeclStmnt::ToString(bool useVarNames, bool isParam) const
 {
     auto s = varType->ToString();
     
@@ -702,6 +723,9 @@ std::string VarDeclStmnt::ToString(bool useVarNames) const
                 s += ',';
         }
     }
+
+    if (isParam && !varDecls.empty() && varDecls.front()->initializer)
+        return '[' + s + ']';
 
     return s;
 }
