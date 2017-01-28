@@ -149,6 +149,17 @@ FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(bool throwOnFailure)
     return nullptr;
 }
 
+template <typename Container>
+void ListAllFuncCandidates(const Container& candidates)
+{
+    ReportHandler::HintForNextReport("candidates are:");
+    for (auto ref : candidates)
+    {
+        auto funcDecl = static_cast<FunctionDecl*>(ref);
+        ReportHandler::HintForNextReport("  '" + funcDecl->ToString(false) + "' (" + funcDecl->area.Pos().ToString() + ")");
+    }
+};
+
 FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoterPtr>& argTypeDenoters)
 {
     if (refs_.empty())
@@ -161,6 +172,10 @@ FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoter
 
     if (!ValidateNumArgsForFunctionDecl(numArgs))
     {
+        /* Add candidate signatures to report hints */
+        ListAllFuncCandidates(refs_);
+
+        /* Throw runtime error */
         RuntimeErr(
             "function '" + ident_ + "' does not take " + std::to_string(numArgs) + " " +
             std::string(numArgs == 1 ? "parameter" : "parameters")
@@ -207,18 +222,13 @@ FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoter
             argTypeNames = "void";
 
         /* Add candidate signatures to report hints */
-        if (!funcDeclCandidates.empty())
-        {
-            ReportHandler::HintForNextReport("candidates are:");
-            for (auto funcDecl : funcDeclCandidates)
-                ReportHandler::HintForNextReport("  '" + funcDecl->SignatureToString(false) + "' (" + funcDecl->area.Pos().ToString() + ")");
-        }
+        if (funcDeclCandidates.empty())
+            ListAllFuncCandidates(refs_);
+        else
+            ListAllFuncCandidates(funcDeclCandidates);
 
         /* Throw runtime error */
-        RuntimeErr(
-            "ambiguous function call (" + std::to_string(funcDeclCandidates.size()) +
-            " candidates) with arguments: (" + argTypeNames + ")"
-        );
+        RuntimeErr("ambiguous function call '" + ident_ + "(" + argTypeNames + ")'");
     }
 
     return funcDeclCandidates.front();

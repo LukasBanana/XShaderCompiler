@@ -739,7 +739,7 @@ static IndexedSemantic HLSLKeywordToSemanticWithMap(const CiString& ident, const
         else if (ident == s.first)
             return s.second.semantic;
     }
-    return Semantic::UserDefined;
+    return IndexedSemantic(std::string(ident.begin(), ident.end()));
 }
 
 static IndexedSemantic HLSLKeywordToSemanticD3D9(const CiString& ident)
@@ -799,8 +799,13 @@ static IndexedSemantic HLSLKeywordToSemanticD3D10(const CiString& ident)
     };
 
     /* Has identifier at the the length of the shortest semantic? */
-    if (ident.size() >= 8 && ident.compare(0, 3, "SV_") == 0)
-        return HLSLKeywordToSemanticWithMap(ident, semanticMap);
+    if (ident.size() >= 4 && ident.compare(0, 3, "SV_") == 0)
+    {
+        auto semantic = HLSLKeywordToSemanticWithMap(ident, semanticMap);
+        if (semantic.IsUserDefined())
+            throw std::runtime_error("invalid system value semantic \"" + std::string(ident.begin(), ident.end()) + "\"");
+        return semantic;
+    }
     else
         return IndexedSemantic(std::string(ident.begin(), ident.end()));
 }

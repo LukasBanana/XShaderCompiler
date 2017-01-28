@@ -109,10 +109,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             /* Pass call stack to report handler */
             ReportHandler::HintForNextReport("call stack:");
             for (auto funcCall : funcCallStack_)
-                ReportHandler::HintForNextReport("  '" + funcCall->funcDeclRef->SignatureToString(false) + "' (" + funcCall->area.Pos().ToString() + ")");
+                ReportHandler::HintForNextReport("  '" + funcCall->funcDeclRef->ToString(false) + "' (" + funcCall->area.Pos().ToString() + ")");
 
             /* Throw error message of recursive call */
-            RuntimeErr("illegal recursive call of function '" + funcDecl->ident + "'", ast);
+            RuntimeErr("illegal recursive call of function '" + funcDecl->ToString() + "'", ast);
         }
 
         /* Mark function declaration as referenced */
@@ -218,7 +218,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             if (ast->funcImplRef)
                 Visit(ast->funcImplRef);
             else
-                RuntimeErr("missing function implementation for '" + ast->SignatureToString(false) + "'", ast);
+                RuntimeErr("missing function implementation for '" + ast->ToString(false) + "'", ast);
         }
         else
         {
