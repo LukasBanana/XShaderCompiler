@@ -112,7 +112,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                 ReportHandler::HintForNextReport("  '" + funcCall->funcDeclRef->ToString(false) + "' (" + funcCall->area.Pos().ToString() + ")");
 
             /* Throw error message of recursive call */
-            RuntimeErr("illegal recursive call of function '" + funcDecl->ident + "'", ast);
+            RuntimeErr("illegal recursive call of function '" + funcDecl->ToString() + "'", ast);
         }
 
         /* Mark function declaration as referenced */
