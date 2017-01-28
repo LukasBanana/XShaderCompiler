@@ -398,7 +398,7 @@ TypeDenoter::Types StructTypeDenoter::Type() const
 
 std::string StructTypeDenoter::ToString() const
 {
-    return (structDeclRef ? structDeclRef->SignatureToString() : "struct <unknown>");
+    return (structDeclRef ? structDeclRef->ToString() : "struct <unknown>");
 }
 
 std::string StructTypeDenoter::Ident() const
@@ -423,7 +423,7 @@ TypeDenoterPtr StructTypeDenoter::Get(const VarIdent* varIdent)
             if (varDecl)
                 return varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size(), varIdent->next.get());
             else
-                RuntimeErr("identifier '" + ident + "' is not declared in '" + structDeclRef->SignatureToString() + "'", varIdent);
+                RuntimeErr("identifier '" + ident + "' is not declared in '" + structDeclRef->ToString() + "'", varIdent);
         }
         else
             RuntimeErr("missing reference to structure declaration", varIdent);

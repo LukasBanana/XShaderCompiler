@@ -514,7 +514,7 @@ struct StructDecl : public Decl
     };
 
     // Returns a descriptive string of the function signature (e.g. "struct s" or "struct <anonymous>").
-    std::string SignatureToString() const;
+    std::string ToString() const;
 
     // Returns true if this is an anonymous structure.
     bool IsAnonymous() const;
@@ -593,7 +593,7 @@ struct FunctionDecl : public Stmnt
     bool HasVoidReturnType() const;
     
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
-    std::string SignatureToString(bool useParamNames = true) const;
+    std::string ToString(bool useParamNames = true) const;
 
     // Returns true if the specified function declaration has the same signature as this function.
     bool EqualsSignature(const FunctionDecl& rhs) const;

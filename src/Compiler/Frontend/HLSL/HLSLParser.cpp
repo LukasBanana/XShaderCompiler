@@ -722,7 +722,7 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
         }
     }
 
-    GetReportHandler().PushContextDesc(ast->SignatureToString());
+    GetReportHandler().PushContextDesc(ast->ToString());
     {
         /* Parse member variable declarations */
         auto members = ParseVarDeclStmntList();
@@ -907,7 +907,7 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl(const TypeNamePtr& returnType, con
         AcceptIt();
     else
     {
-        GetReportHandler().PushContextDesc(ast->SignatureToString(false));
+        GetReportHandler().PushContextDesc(ast->ToString(false));
         {
             localScope_ = true;
             ast->codeBlock = ParseCodeBlock();

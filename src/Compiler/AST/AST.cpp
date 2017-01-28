@@ -170,9 +170,9 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
             {
                 auto structDecl = static_cast<StructDecl*>(symbolRef);
                 if (next)
-                    RuntimeErr("can not directly access members of 'struct " + structDecl->SignatureToString() + "'", next.get());
+                    RuntimeErr("can not directly access members of 'struct " + structDecl->ToString() + "'", next.get());
                 if (!arrayIndices.empty())
-                    RuntimeErr("can not directly acces array of 'struct " + structDecl->SignatureToString() + "'", this);
+                    RuntimeErr("can not directly acces array of 'struct " + structDecl->ToString() + "'", this);
                 return structDecl->GetTypeDenoter()->Get();
             }
             break;
@@ -432,7 +432,7 @@ SamplerType SamplerDecl::GetSamplerType() const
 
 /* ----- StructDecl ----- */
 
-std::string StructDecl::SignatureToString() const
+std::string StructDecl::ToString() const
 {
     return ("struct " + (IsAnonymous() ? "<anonymous>" : ident));
 }
@@ -584,7 +584,7 @@ bool FunctionDecl::HasVoidReturnType() const
     return returnType->typeDenoter->IsVoid();
 }
 
-std::string FunctionDecl::SignatureToString(bool useParamNames) const
+std::string FunctionDecl::ToString(bool useParamNames) const
 {
     std::string s;
 

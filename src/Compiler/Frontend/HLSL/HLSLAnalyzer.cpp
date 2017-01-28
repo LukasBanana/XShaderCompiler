@@ -222,7 +222,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
     /* Report warning if structure is empty */
     if (ast->NumMembers() == 0)
-        Warning("'" + ast->SignatureToString() + "' is completely empty", ast);
+        Warning("'" + ast->ToString() + "' is completely empty", ast);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDecl)
@@ -237,7 +237,7 @@ IMPLEMENT_VISIT_PROC(AliasDecl)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    GetReportHandler().PushContextDesc(ast->SignatureToString());
+    GetReportHandler().PushContextDesc(ast->ToString());
 
     /* Check for entry points */
     const auto isEntryPoint             = (ast->ident == entryPoint_);
