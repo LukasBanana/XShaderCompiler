@@ -106,6 +106,9 @@ UnaryOp StringToUnaryOp(const std::string& s);
 bool IsLogicalOp(const UnaryOp o);
 bool IsBitwiseOp(const UnaryOp o);
 
+// Returns true if the specified unary operator is only for l-values (e.g. ++x or --x).
+bool IsLValueOp(const UnaryOp o);
+
 
 /* ----- CtrlTransfer Enum ----- */
 

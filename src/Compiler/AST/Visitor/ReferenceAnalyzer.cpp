@@ -281,6 +281,34 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 /* --- Expressions --- */
 
+IMPLEMENT_VISIT_PROC(UnaryExpr)
+{
+    if (IsLValueOp(ast->op))
+    {
+        if (auto varDecl = ast->expr->FetchVarDecl())
+        {
+            /* Mark variable as l-value */
+            varDecl->flags << VarDecl::isWrittenTo;
+        }
+    }
+
+    VISIT_DEFAULT(UnaryExpr);
+}
+
+IMPLEMENT_VISIT_PROC(PostUnaryExpr)
+{
+    if (IsLValueOp(ast->op))
+    {
+        if (auto varDecl = ast->expr->FetchVarDecl())
+        {
+            /* Mark variable as l-value */
+            varDecl->flags << VarDecl::isWrittenTo;
+        }
+    }
+
+    VISIT_DEFAULT(PostUnaryExpr);
+}
+
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     if (auto symbol = ast->varIdent->symbolRef)
