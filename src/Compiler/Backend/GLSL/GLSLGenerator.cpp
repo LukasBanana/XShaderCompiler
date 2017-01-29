@@ -1221,6 +1221,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 
 void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 {
+    //TODO: maybe remove this??? (currently unused)
     #if 0
     entryPoint->outputSemantics.ForEach(
         [this](VarDecl* varDecl)
@@ -1360,6 +1361,10 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
     auto        semantic    = entryPoint->semantic;
     const auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefsSV;
 
+    /* Write wrapped structures */
+    for (const auto& paramStruct : entryPoint->paramStructs)
+        WriteOutputSemanticsAssignmentStructDeclParam(paramStruct.paramVar, paramStruct.structDecl);
+
     /* Prefer variables from structure, rather than function return semantic */
     if (!varDeclRefs.empty())
     {
@@ -1370,13 +1375,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
             if (varDecl->semantic.IsValid() && varDecl->flags(VarDecl::isWrittenTo))
             {
                 if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
-                {
-                    BeginLn();
-                    {
-                        Write(*semanticKeyword + " = " + varDecl->FinalIdent() + ";");
-                    }
-                    EndLn();
-                }
+                    WriteLn(*semanticKeyword + " = " + varDecl->FinalIdent() + ";");
             }
         }
         #endif
@@ -1399,6 +1398,23 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
     }
     else if (IsFragmentShader())
         Error("missing output semantic", ast);
+}
+
+void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(VarDecl* paramVar, StructDecl* structDecl)
+{
+    if (structDecl && structDecl->flags(StructDecl::isNonEntryPointParam) && structDecl->flags(StructDecl::isShaderOutput))
+    {
+        /* Write global shader input to local variable assignments */
+        structDecl->ForEachVarDecl(
+            [&](VarDecl* varDecl)
+            {
+                if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
+                    WriteLn(*semanticKeyword + " = " + paramVar->ident + "." + varDecl->ident + ";");
+                else
+                    WriteLn(varDecl->FinalIdent() + " = " + paramVar->ident + "." + varDecl->ident + ";");
+            }
+        );
+    }
 }
 
 /* --- Uniforms --- */

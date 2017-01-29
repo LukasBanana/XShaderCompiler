@@ -483,21 +483,24 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         /* Validate expression type by just calling the getter */
         GetTypeDenoterFrom(ast->expr.get());
 
-        //TODO: refactor this
-        #if 1
         /* Analyze entry point return statement (if a structure is returned from the entry point) */
         if (InsideEntryPoint())
         {
             if (auto varDecl = ast->expr->FetchVarDecl())
             {
-                /*
-                Variable declaration statement has been found,
-                now find the structure object to add the alias name for the interface block.
-                */
+                /* Mark variable declaration as entry-pointer return */
+                varDecl->declStmntRef->flags << VarDeclStmnt::isEntryPointReturn;
+
                 if (auto structSymbolRef = varDecl->GetTypeDenoter()->Get()->SymbolRef())
                 {
                     if (auto structDecl = structSymbolRef->As<StructDecl>())
                     {
+                        /* Add variable as parameter-structure to entry point */
+                        if (program_->entryPointRef)
+                            program_->entryPointRef->paramStructs.push_back({ varDecl, structDecl });
+
+                        //TODO: refactor this
+                        #if 1
                         /* Store alias name for the interface block */
                         structDecl->aliasName = varDecl->ident;
 
@@ -506,11 +509,11 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
                         because this variable is now already used as interface block.
                         */
                         varDecl->flags << VarDecl::disableCodeGen;
+                        #endif
                     }
                 }
             }
         }
-        #endif
     }
 }
 
@@ -810,6 +813,19 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
     {
         /* Store reference to entry point in root AST node */
         program_->entryPointRef = funcDecl;
+
+        /* Add all parameter structures to entry point */
+        for (auto& param : funcDecl->parameters)
+        {
+            if (auto varType = param->varType->GetTypeDenoter()->Get())
+            {
+                if (auto structTypeDen = varType->As<StructTypeDenoter>())
+                {
+                    if (auto structDecl = structTypeDen->structDeclRef)
+                        funcDecl->paramStructs.push_back({ param->varDecls.front().get(), structDecl });
+                }
+            }
+        }
 
         /* Analyze function input/output */
         AnalyzeEntryPointInputOutput(funcDecl);

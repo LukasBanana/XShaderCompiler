@@ -579,6 +579,12 @@ struct FunctionDecl : public Stmnt
         std::vector<VarDecl*> varDeclRefsSV;    // References to all variable declarations of the system value semantics
     };
 
+    struct ParameterStructure
+    {
+        VarDecl*    paramVar;
+        StructDecl* structDecl;
+    };
+
     FLAG_ENUM
     {
         FLAG( isEntryPoint,            0 ), // This function is the main entry point.
@@ -625,6 +631,8 @@ struct FunctionDecl : public Stmnt
 
     FunctionDecl*                   funcImplRef         = nullptr;              // Reference to the function implementation (only for forward declarations).
     std::vector<FunctionDecl*>      funcForwardDeclRefs;                        // Reference to all forward declarations (only for implementations).
+
+    std::vector<ParameterStructure> paramStructs;                               // Parameter with structure type (only for entry point).
 
     std::string                     renamedIdent;
 };
@@ -674,9 +682,10 @@ struct VarDeclStmnt : public Stmnt
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,    0 ), // This variable is used as shader input.
-        FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
-        FLAG( isParameter,      2 ), // This variable is a function parameter (flag should be set during parsing).
+        FLAG( isShaderInput,        0 ), // This variable is used as shader input.
+        FLAG( isShaderOutput,       1 ), // This variable is used as shader output.
+        FLAG( isParameter,          2 ), // This variable is a function parameter (flag should be set during parsing).
+        FLAG( isEntryPointReturn,   3 ), // This variable is used as entry point return value.
     };
 
     // Returns the var-decl statement as string.

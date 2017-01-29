@@ -260,17 +260,21 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
-    /* Has this variable statement a struct type? */
-    auto typeDen = ast->varType->GetTypeDenoter()->Get();
-    if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+    /* Is a variable declaration NOT used as entry point return value? */
+    if (!IsInsideEntryPoint() || !ast->flags(VarDeclStmnt::isEntryPointReturn))
     {
-        if (auto structDecl = structTypeDen->structDeclRef)
+        /* Has this variable statement a struct type? */
+        auto typeDen = ast->varType->GetTypeDenoter()->Get();
+        if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
         {
-            /* Is this variable NOT a parameter of the entry point? */
-            if (!IsVariableAnEntryPointParameter(ast))
+            if (auto structDecl = structTypeDen->structDeclRef)
             {
-                /* Mark structure to be used as non-entry-point-parameter */
-                structDecl->flags << StructDecl::isNonEntryPointParam;
+                /* Is this variable NOT a parameter of the entry point? */
+                if (!IsVariableAnEntryPointParameter(ast))
+                {
+                    /* Mark structure to be used as non-entry-point-parameter */
+                    structDecl->flags << StructDecl::isNonEntryPointParam;
+                }
             }
         }
     }
