@@ -1101,8 +1101,14 @@ void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
         }
     );
 
-    /*if (!varDeclRefs.empty())
-        Blank();*/
+    for (auto& param : entryPoint->parameters)
+    {
+        if (auto varType = param->varType->GetTypeDenoter()->Get())
+        {
+            if (auto structTypeDen = varType->As<StructTypeDenoter>())
+                WriteLocalInputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
+        }
+    }
 }
 
 void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
@@ -1139,6 +1145,27 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
         }
     }
     EndLn();
+}
+
+void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl)
+{
+    if (structDecl && structDecl->flags(StructDecl::isNonEntryPointParam) && structDecl->flags(StructDecl::isShaderInput))
+    {
+        /* Write parameter as variable declaration */
+        Visit(param);
+
+        /* Write global shader input to local variable assignments */
+        auto paramVar = param->varDecls.front().get();
+
+        structDecl->ForEachVarDecl(
+            [&](VarDecl* varDecl)
+            {
+                WriteLn(
+                    paramVar->ident + "." + varDecl->ident + " = " + varDecl->FinalIdent() + ";"
+                );
+            }
+        );
+    }
 }
 
 void GLSLGenerator::WriteGlobalInputSemantics(FunctionDecl* entryPoint)
@@ -1194,6 +1221,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 
 void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 {
+    #if 0
     entryPoint->outputSemantics.ForEach(
         [this](VarDecl* varDecl)
         {
@@ -1201,9 +1229,16 @@ void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
                 WriteLocalOutputSemanticsVarDecl(varDecl);
         }
     );
+    #endif
 
-    /*if (!varDeclRefs.empty())
-        Blank();*/
+    for (auto& param : entryPoint->parameters)
+    {
+        if (auto varType = param->varType->GetTypeDenoter()->Get())
+        {
+            if (auto structTypeDen = varType->As<StructTypeDenoter>())
+                WriteLocalOutputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
+        }
+    }
 }
 
 void GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
@@ -1215,6 +1250,15 @@ void GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
         Write(" " + varDecl->FinalIdent() + ";");
     }
     EndLn();
+}
+
+void GLSLGenerator::WriteLocalOutputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl)
+{
+    if (structDecl && structDecl->flags(StructDecl::isNonEntryPointParam) && structDecl->flags(StructDecl::isShaderOutput))
+    {
+        /* Write parameter as variable declaration */
+        Visit(param);
+    }
 }
 
 void GLSLGenerator::WriteGlobalOutputSemantics(FunctionDecl* entryPoint)
@@ -1764,7 +1808,7 @@ void GLSLGenerator::WriteFunctionEntryPointBody(FunctionDecl* ast)
 {
     /* Write input/output parameters of system values as local variables */
     WriteLocalInputSemantics(ast);
-    //WriteLocalOutputSemantics(ast);
+    WriteLocalOutputSemantics(ast);
 
     /* Write code block (without additional scope) */
     isInsideEntryPoint_ = true;
