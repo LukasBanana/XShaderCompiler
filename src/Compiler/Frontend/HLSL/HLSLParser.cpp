@@ -366,6 +366,9 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     ast->varType = ParseTypeName();
     ast->varDecls.push_back(ParseVarDecl(ast.get()));
 
+    /* Mark with 'parameter' flag */
+    ast->flags << VarDeclStmnt::isParameter;
+
     return UpdateSourceArea(ast);
 }
 

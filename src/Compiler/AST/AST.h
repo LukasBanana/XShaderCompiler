@@ -674,8 +674,9 @@ struct VarDeclStmnt : public Stmnt
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,    2 ), // This variable is used as shader input.
-        FLAG( isShaderOutput,   3 ), // This variable is used as shader output.
+        FLAG( isShaderInput,    0 ), // This variable is used as shader input.
+        FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
+        FLAG( isParameter,      2 ), // This variable is a function parameter (flag should be set during parsing).
     };
 
     // Returns the var-decl statement as string.
