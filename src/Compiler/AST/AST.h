@@ -431,12 +431,13 @@ struct VarDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,    0 ), // This variable is used as shader input.
-        FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
-        FLAG( isSystemValue,    2 ), // This variable is a system value.
-        FLAG( disableCodeGen,   3 ), // Disables the code generation for this variable declaration.
-        FLAG( isDynamicArray,   4 ), // This variable is a dynamic array (for input/output semantics).
-        FLAG( isWrittenTo,      5 ), // This variable is eventually written to.
+        FLAG( isShaderInput,        0 ), // This variable is used as shader input.
+        FLAG( isShaderOutput,       1 ), // This variable is used as shader output.
+        FLAG( isSystemValue,        2 ), // This variable is a system value.
+        FLAG( isDynamicArray,       3 ), // This variable is a dynamic array (for input/output semantics).
+        FLAG( isWrittenTo,          4 ), // This variable is eventually written to.
+        FLAG( isEntryPointReturn,   5 ), // This variable is used as entry point return value.
+        FLAG( isEntryPointLocal,    6 ), // This variable is a local variable of the entry point.
 
         isShaderInputSV     = (isShaderInput  | isSystemValue), // This variable a used as shader input, and it is a system value.
         isShaderOutputSV    = (isShaderOutput | isSystemValue), // This variable a used as shader output, and it is a system value.
@@ -685,7 +686,6 @@ struct VarDeclStmnt : public Stmnt
         FLAG( isShaderInput,        0 ), // This variable is used as shader input.
         FLAG( isShaderOutput,       1 ), // This variable is used as shader output.
         FLAG( isParameter,          2 ), // This variable is a function parameter (flag should be set during parsing).
-        FLAG( isEntryPointReturn,   3 ), // This variable is used as entry point return value.
     };
 
     // Returns the var-decl statement as string.

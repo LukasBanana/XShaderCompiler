@@ -188,6 +188,27 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     if (Reachable(ast))
     {
+        /* Is a variable declaration NOT used as entry point return value? */
+        if (!IsInsideEntryPoint() || !ast->flags(VarDecl::isEntryPointReturn))
+        {
+            auto declStmnt = ast->declStmntRef;
+
+            /* Has this variable statement a struct type? */
+            auto typeDen = declStmnt->varType->GetTypeDenoter()->Get();
+            if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+            {
+                if (auto structDecl = structTypeDen->structDeclRef)
+                {
+                    /* Is this variable NOT a parameter of the entry point? */
+                    if (!IsVariableAnEntryPointParameter(declStmnt))
+                    {
+                        /* Mark structure to be used as non-entry-point-parameter */
+                        structDecl->flags << StructDecl::isNonEntryPointParam;
+                    }
+                }
+            }
+        }
+
         Visit(ast->declStmntRef);
         Visit(ast->bufferDeclRef);
         VISIT_DEFAULT(VarDecl);
@@ -256,30 +277,6 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
         VISIT_DEFAULT(BufferDeclStmnt);
     }
-}
-
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
-{
-    /* Is a variable declaration NOT used as entry point return value? */
-    if (!IsInsideEntryPoint() || !ast->flags(VarDeclStmnt::isEntryPointReturn))
-    {
-        /* Has this variable statement a struct type? */
-        auto typeDen = ast->varType->GetTypeDenoter()->Get();
-        if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
-        {
-            if (auto structDecl = structTypeDen->structDeclRef)
-            {
-                /* Is this variable NOT a parameter of the entry point? */
-                if (!IsVariableAnEntryPointParameter(ast))
-                {
-                    /* Mark structure to be used as non-entry-point-parameter */
-                    structDecl->flags << StructDecl::isNonEntryPointParam;
-                }
-            }
-        }
-    }
-
-    VISIT_DEFAULT(VarDeclStmnt);
 }
 
 /* --- Expressions --- */

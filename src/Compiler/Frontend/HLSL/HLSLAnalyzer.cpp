@@ -488,8 +488,8 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         {
             if (auto varDecl = ast->expr->FetchVarDecl())
             {
-                /* Mark variable declaration as entry-pointer return */
-                varDecl->declStmntRef->flags << VarDeclStmnt::isEntryPointReturn;
+                /* Mark variable as entry-pointer return */
+                varDecl->flags << VarDecl::isEntryPointReturn;
 
                 if (auto structSymbolRef = varDecl->GetTypeDenoter()->Get()->SymbolRef())
                 {
@@ -498,18 +498,9 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
                         /* Add variable as parameter-structure to entry point */
                         if (program_->entryPointRef)
                             program_->entryPointRef->paramStructs.push_back({ varDecl, structDecl });
-
-                        //TODO: refactor this
-                        #if 1
-                        /* Store alias name for the interface block */
-                        structDecl->aliasName = varDecl->ident;
-
-                        /*
-                        Don't generate code for this variable declaration,
-                        because this variable is now already used as interface block.
-                        */
-                        varDecl->flags << VarDecl::disableCodeGen;
-                        #endif
+                        
+                        /* Mark variable as local variable of the entry-point */
+                        varDecl->flags << VarDecl::isEntryPointLocal;
                     }
                 }
             }
