@@ -16,6 +16,8 @@
 namespace Xsc
 {
 
+class Variant;
+
 namespace ASTFactory
 {
 
@@ -42,6 +44,7 @@ CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& value
 CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue);
 
 LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& literalValue);
+LiteralExprPtr MakeLiteralExpr(const Variant& literalValue);
 
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident);
 

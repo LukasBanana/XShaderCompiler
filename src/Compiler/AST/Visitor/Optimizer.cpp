@@ -6,6 +6,8 @@
  */
 
 #include "Optimizer.h"
+#include "ConstExprEvaluator.h"
+#include "ASTFactory.h"
 #include "AST.h"
 
 
@@ -35,6 +37,28 @@ void Optimizer::OptimizeStmntList(std::vector<StmntPtr>& stmnts)
     }
 }
 
+void Optimizer::OptimizeExpr(ExprPtr& expr)
+{
+    if (expr)
+    {
+        try
+        {
+            /* Try to evaluate expression */
+            ConstExprEvaluator exprEval;
+            auto exprValue = exprEval.EvaluateExpr(*expr, [](VarAccessExpr* ast) -> Variant { throw ast; });
+            expr = ASTFactory::MakeLiteralExpr(exprValue);
+        }
+        catch (const std::exception&)
+        {
+            /* ignore this exception */
+        }
+        catch (VarAccessExpr*)
+        {
+            /* ignore this exception */
+        }
+    }
+}
+
 bool Optimizer::CanRemoveStmnt(const Stmnt& ast) const
 {
     /* Remove if node is null-statement */
@@ -60,18 +84,106 @@ bool Optimizer::CanRemoveStmnt(const Stmnt& ast) const
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    VISIT_DEFAULT(CodeBlock);
-
-    /* Optimize statement list */
     OptimizeStmntList(ast->stmnts);
+    VISIT_DEFAULT(CodeBlock);
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
-    VISIT_DEFAULT(SwitchCase);
-
-    /* Optimize statement list */
     OptimizeStmntList(ast->stmnts);
+    VISIT_DEFAULT(SwitchCase);
+}
+
+IMPLEMENT_VISIT_PROC(ArrayDimension)
+{
+    OptimizeExpr(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(VarDecl)
+{
+    OptimizeExpr(ast->initializer);
+}
+
+IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+{
+    Visit(ast->initSmnt);
+    OptimizeExpr(ast->condition);
+    OptimizeExpr(ast->iteration);
+    Visit(ast->bodyStmnt);
+}
+
+IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+{
+    OptimizeExpr(ast->condition);
+    Visit(ast->bodyStmnt);
+}
+
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+{
+    OptimizeExpr(ast->condition);
+    Visit(ast->bodyStmnt);
+}
+
+IMPLEMENT_VISIT_PROC(IfStmnt)
+{
+    OptimizeExpr(ast->condition);
+    Visit(ast->bodyStmnt);
+    Visit(ast->elseStmnt);
+}
+
+IMPLEMENT_VISIT_PROC(ElseStmnt)
+{
+    Visit(ast->bodyStmnt);
+}
+
+IMPLEMENT_VISIT_PROC(SwitchStmnt)
+{
+    OptimizeExpr(ast->selector);
+    Visit(ast->cases);
+}
+
+IMPLEMENT_VISIT_PROC(ExprStmnt)
+{
+    OptimizeExpr(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(ReturnStmnt)
+{
+    OptimizeExpr(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(ListExpr)
+{
+    VISIT_DEFAULT(ListExpr);
+    OptimizeExpr(ast->firstExpr);
+    OptimizeExpr(ast->nextExpr);
+}
+
+IMPLEMENT_VISIT_PROC(TernaryExpr)
+{
+    VISIT_DEFAULT(TernaryExpr);
+    OptimizeExpr(ast->condExpr);
+    OptimizeExpr(ast->thenExpr);
+    OptimizeExpr(ast->elseExpr);
+}
+
+IMPLEMENT_VISIT_PROC(BinaryExpr)
+{
+    VISIT_DEFAULT(BinaryExpr);
+    OptimizeExpr(ast->lhsExpr);
+    OptimizeExpr(ast->rhsExpr);
+}
+
+IMPLEMENT_VISIT_PROC(UnaryExpr)
+{
+    VISIT_DEFAULT(UnaryExpr);
+    OptimizeExpr(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(PostUnaryExpr)
+{
+    VISIT_DEFAULT(PostUnaryExpr);
+    OptimizeExpr(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
@@ -81,6 +193,34 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     /* Reduce inner brackets */
     if (auto subBracketExpr = ast->expr->As<BracketExpr>())
         ast->expr = subBracketExpr->expr;
+
+    OptimizeExpr(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(SuffixExpr)
+{
+    VISIT_DEFAULT(SuffixExpr);
+    OptimizeExpr(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+{
+    VISIT_DEFAULT(ArrayAccessExpr);
+    for (auto& subExpr : ast->arrayIndices)
+        OptimizeExpr(subExpr);
+}
+
+IMPLEMENT_VISIT_PROC(CastExpr)
+{
+    VISIT_DEFAULT(CastExpr);
+    OptimizeExpr(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(InitializerExpr)
+{
+    VISIT_DEFAULT(InitializerExpr);
+    for (auto& subExpr : ast->exprs)
+        OptimizeExpr(subExpr);
 }
 
 #undef IMPLEMENT_VISIT_PROC

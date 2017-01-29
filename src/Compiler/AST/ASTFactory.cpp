@@ -8,6 +8,7 @@
 #include "ASTFactory.h"
 #include "Helper.h"
 #include "Exception.h"
+#include "Variant.h"
 
 
 namespace Xsc
@@ -156,6 +157,20 @@ LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& li
         ast->value      = literalValue;
     }
     return ast;
+}
+
+LiteralExprPtr MakeLiteralExpr(const Variant& literalValue)
+{
+    switch (literalValue.Type())
+    {
+        case Variant::Types::Bool:
+            return MakeLiteralExpr(DataType::Bool, std::to_string(literalValue.Bool()));
+        case Variant::Types::Int:
+            return MakeLiteralExpr(DataType::Int, std::to_string(literalValue.Int()));
+        case Variant::Types::Real:
+            return MakeLiteralExpr(DataType::Float, std::to_string(literalValue.Real()));
+    }
+    return MakeLiteralExpr(DataType::Int, "0");
 }
 
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident)
