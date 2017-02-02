@@ -21,8 +21,8 @@ namespace Xsc
 /*
 Object reference analyzer.
 This helper class for the context analyzer marks all functions
-which are used from the beginning of the shader entry point.
-All other functions will be removed from the code generation.
+which are used (or rather referenced) from the beginning of the shader entry point.
+All other functions will be ignored by the code generator.
 */
 class ReferenceAnalyzer : private Visitor
 {

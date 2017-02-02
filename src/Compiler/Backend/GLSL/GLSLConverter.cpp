@@ -70,6 +70,7 @@ IMPLEMENT_VISIT_PROC(Program)
     VISIT_DEFAULT(Program);
 
     //TODO: do not remove these statements, instead mark it as disabled code (otherwise symbol references to these statements are corrupted!)
+    #if 1
     /* Remove all variables which are sampler state objects, since GLSL does not support sampler states */
     MoveAllIf(
         ast->globalStmnts,
@@ -83,6 +84,7 @@ IMPLEMENT_VISIT_PROC(Program)
             return false;
         }
     );
+    #endif
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
