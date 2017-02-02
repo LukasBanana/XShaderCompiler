@@ -267,19 +267,13 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    if (auto symbol = ast->varIdent->symbolRef)
+    /* Check if this symbol is the fragment coordinate (SV_Position/ gl_FragCoord) */
+    if (auto varDecl = ast->FetchVarDecl())
     {
-        /* Mark symbol as used */
-        symbol->flags << AST::isUsed;
-
-        /* Check if this symbol is the fragment coordinate (SV_Position/ gl_FragCoord) */
-        if (auto varDecl = symbol->As<VarDecl>())
+        if (varDecl->semantic == Semantic::Position && shaderTarget_ == ShaderTarget::FragmentShader)
         {
-            if (varDecl->semantic == Semantic::Position && shaderTarget_ == ShaderTarget::FragmentShader)
-            {
-                /* Mark frag-coord usage in fragment program layout */
-                program_->layoutFragment.fragCoordUsed = true;
-            }
+            /* Mark frag-coord usage in fragment program layout */
+            program_->layoutFragment.fragCoordUsed = true;
         }
     }
 
