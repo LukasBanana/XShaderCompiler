@@ -76,6 +76,28 @@ bool ReferenceAnalyzer::IsInsideEntryPoint() const
     return (!funcDeclStack_.empty() && funcDeclStack_.top()->flags(FunctionDecl::isEntryPoint));
 }
 
+void ReferenceAnalyzer::MarkLValueVarIdent(VarIdent* varIdent)
+{
+    while (varIdent)
+    {
+        if (auto varDecl = varIdent->FetchVarDecl())
+        {
+            /* Mark variable as l-value */
+            varDecl->flags << VarDecl::isWrittenTo;
+        }
+        varIdent = varIdent->next.get();
+    }
+}
+
+void ReferenceAnalyzer::MarkLValueExpr(Expr* expr)
+{
+    if (expr)
+    {
+        if (auto varIdent = expr->FetchVarIdent())
+            MarkLValueVarIdent(varIdent);
+    }
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -138,6 +160,14 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         }
         program_->usedIntrinsics[ast->intrinsic].argLists.insert(argList);
     }
+
+    /* Mark all arguments, that are assigned to output parameters, as l-values */
+    ast->ForEachOutputArgument(
+        [this](Expr* argExpr)
+        {
+            MarkLValueExpr(argExpr);
+        }
+    );
 
     VISIT_DEFAULT(FunctionCall);
 }
@@ -265,16 +295,39 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 /* --- Expressions --- */
 
+IMPLEMENT_VISIT_PROC(UnaryExpr)
+{
+    MarkLValueExpr(ast->expr.get());
+    VISIT_DEFAULT(UnaryExpr);
+}
+
+IMPLEMENT_VISIT_PROC(PostUnaryExpr)
+{
+    MarkLValueExpr(ast->expr.get());
+    VISIT_DEFAULT(PostUnaryExpr);
+}
+
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    /* Check if this symbol is the fragment coordinate (SV_Position/ gl_FragCoord) */
-    if (auto varDecl = ast->FetchVarDecl())
+    if (auto varIdent = ast->FetchVarIdent())
     {
-        if (varDecl->semantic == Semantic::Position && shaderTarget_ == ShaderTarget::FragmentShader)
+        /* Check if this symbol is the fragment coordinate (SV_Position/ gl_FragCoord) */
+        while (varIdent)
         {
-            /* Mark frag-coord usage in fragment program layout */
-            program_->layoutFragment.fragCoordUsed = true;
+            if (auto varDecl = varIdent->FetchVarDecl())
+            {
+                if (varDecl->semantic == Semantic::Position && shaderTarget_ == ShaderTarget::FragmentShader)
+                {
+                    /* Mark frag-coord usage in fragment program layout */
+                    program_->layoutFragment.fragCoordUsed = true;
+                    break;
+                }
+            }
+            varIdent = varIdent->next.get();
         }
+
+        if (ast->assignExpr)
+            MarkLValueVarIdent(ast->varIdent.get());
     }
 
     VISIT_DEFAULT(VarAccessExpr);

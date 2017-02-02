@@ -37,6 +37,9 @@ class Visitor;
 // Iteration callback for VarDecl AST nodes.
 using VarDeclIteratorFunctor = std::function<void(VarDecl* varDecl)>;
 
+// Iteration callback for Expr AST nodes.
+using ExprIteratorFunctor = std::function<void(Expr* expr)>;
+
 /* --- Some helper macros --- */
 
 #define AST_INTERFACE(CLASS_NAME)                               \
@@ -294,6 +297,9 @@ struct FunctionCall : public AST
 
     // Returns the function implementation of this function call, or null if not set.
     FunctionDecl* GetFunctionImpl() const;
+
+    // Iterates over each argument expression that is assigned to an output parameter.
+    void ForEachOutputArgument(const ExprIteratorFunctor& iterator);
 
     VarIdentPtr             varIdent;                           // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
     TypeDenoterPtr          typeDenoter;                        // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").

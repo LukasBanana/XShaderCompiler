@@ -256,6 +256,20 @@ FunctionDecl* FunctionCall::GetFunctionImpl() const
     return nullptr;
 }
 
+void FunctionCall::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
+{
+    if (funcDeclRef && iterator)
+    {
+        const auto& parameters = funcDeclRef->parameters;
+
+        for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+        {
+            if (parameters[i]->IsOutput())
+                iterator(arguments[i].get());
+        }
+    }
+}
+
 
 /* ----- SwitchCase ----- */
 

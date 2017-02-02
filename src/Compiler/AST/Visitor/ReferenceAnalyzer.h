@@ -47,7 +47,8 @@ class ReferenceAnalyzer : private Visitor
 
         bool IsInsideEntryPoint() const;
 
-        //void MarkVariableLValue(VarIdent* varIdent);
+        void MarkLValueVarIdent(VarIdent* varIdent);
+        void MarkLValueExpr(Expr* expr);
 
         /* ----- Visitor implementation ----- */
 
@@ -65,6 +66,8 @@ class ReferenceAnalyzer : private Visitor
         DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( BufferDeclStmnt   );
 
+        DECL_VISIT_PROC( UnaryExpr         );
+        DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( VarAccessExpr     );
 
         /* === Members === */

@@ -135,18 +135,13 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             }
         }
 
-        /* Mark all arguments, that are assigned to output parameters, as l-values */
-        if (ast->funcDeclRef)
-        {
-            const auto& arguments = ast->arguments;
-            const auto& parameters = ast->funcDeclRef->parameters;
-
-            for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+        /* Analyze all l-value arguments that are assigned to output parameters */
+        ast->ForEachOutputArgument(
+            [this](Expr* argExpr)
             {
-                if (parameters[i]->IsOutput())
-                    AnalyzeLValueExpr(arguments[i].get(), arguments[i].get());
+                AnalyzeLValueExpr(argExpr, argExpr);
             }
-        }
+        );
     }
     PopFunctionCall();
 }
@@ -835,9 +830,6 @@ void HLSLAnalyzer::AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast)
                     (ast != nullptr ? ast : varIdent), HLSLErr::ERR_LVALUE_EXPECTED
                 );
             }
-
-            /* Mark variable as l-value */
-            varDecl->flags << VarDecl::isWrittenTo;
         }
         varIdent = varIdent->next.get();
     }
