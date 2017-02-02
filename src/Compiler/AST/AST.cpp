@@ -99,14 +99,14 @@ VarIdent* VarIdent::Last()
     return (next ? next->Last() : this);
 }
 
-VarIdent* VarIdent::FirstConstVarIdent()
+VarIdent* VarIdent::FirstConst()
 {
     if (auto varDecl = FetchVarDecl())
     {
         if (varDecl->declStmntRef->IsConst())
             return this;
         if (next)
-            return next->FirstConstVarIdent();
+            return next->FirstConst();
     }
     return nullptr;
 }

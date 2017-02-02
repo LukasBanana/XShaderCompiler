@@ -134,6 +134,19 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                     AnalyzeFunctionCallStandard(ast);
             }
         }
+
+        /* Mark all arguments, that are assigned to output parameters, as l-values */
+        if (ast->funcDeclRef)
+        {
+            const auto& arguments = ast->arguments;
+            const auto& parameters = ast->funcDeclRef->parameters;
+
+            for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+            {
+                if (parameters[i]->IsOutput())
+                    AnalyzeLValueExpr(arguments[i].get(), arguments[i].get());
+            }
+        }
     }
     PopFunctionCall();
 }
@@ -510,6 +523,22 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
 /* --- Expressions --- */
 
+IMPLEMENT_VISIT_PROC(UnaryExpr)
+{
+    Visit(ast->expr);
+
+    if (IsLValueOp(ast->op))
+        AnalyzeLValueExpr(ast->expr.get(), ast);
+}
+
+IMPLEMENT_VISIT_PROC(PostUnaryExpr)
+{
+    Visit(ast->expr);
+
+    if (IsLValueOp(ast->op))
+        AnalyzeLValueExpr(ast->expr.get(), ast);
+}
+
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
     Visit(ast->expr);
@@ -536,10 +565,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     {
         Visit(ast->assignExpr);
         ValidateTypeCastFrom(ast->assignExpr.get(), ast->varIdent.get(), "variable assignment");
-
-        /* Is the variable a valid l-value? */
-        if (auto constIdent = ast->varIdent->FirstConstVarIdent())
-            Error("illegal assignment to l-value '" + constIdent->ident + "' that is declared as constant", ast);
+        AnalyzeLValueVarIdent(ast->varIdent.get(), ast);
     }
 }
 
@@ -794,6 +820,31 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, Samp
 {
     //TODO...
 }*/
+
+void HLSLAnalyzer::AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast)
+{
+    while (varIdent)
+    {
+        if (auto varDecl = varIdent->FetchVarDecl())
+        {
+            /* Is the variable declared as constant? */
+            if (varDecl->declStmntRef->IsConst())
+                Error("illegal assignment to l-value '" + varIdent->ident + "' that is declared as constant", (ast != nullptr ? ast : varIdent));
+
+            /* Mark variable as l-value */
+            varDecl->flags << VarDecl::isWrittenTo;
+        }
+        varIdent = varIdent->next.get();
+    }
+}
+
+void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast)
+{
+    if (auto varIdent = expr->FetchVarIdent())
+        AnalyzeLValueVarIdent(varIdent, ast);
+    /*else
+        ;*/
+}
 
 /* ----- Entry point ----- */
 

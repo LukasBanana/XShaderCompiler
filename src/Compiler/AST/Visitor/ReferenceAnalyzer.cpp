@@ -76,19 +76,6 @@ bool ReferenceAnalyzer::IsInsideEntryPoint() const
     return (!funcDeclStack_.empty() && funcDeclStack_.top()->flags(FunctionDecl::isEntryPoint));
 }
 
-void ReferenceAnalyzer::MarkVariableLValue(VarIdent* varIdent)
-{
-    while (varIdent)
-    {
-        if (auto varDecl = varIdent->FetchVarDecl())
-        {
-            /* Mark variable as l-value */
-            varDecl->flags << (AST::isUsed | VarDecl::isWrittenTo);
-        }
-        varIdent = varIdent->next.get();
-    }
-}
-
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -150,22 +137,6 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             }
         }
         program_->usedIntrinsics[ast->intrinsic].argLists.insert(argList);
-    }
-
-    if (ast->funcDeclRef)
-    {
-        /* Mark all arguments, that are assigned to output parameters, as l-values */
-        const auto& arguments = ast->arguments;
-        const auto& parameters = ast->funcDeclRef->parameters;
-
-        for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
-        {
-            if (parameters[i]->IsOutput())
-            {
-                if (auto varIdent = arguments[i]->FetchVarIdent())
-                    MarkVariableLValue(varIdent);
-            }
-        }
     }
 
     VISIT_DEFAULT(FunctionCall);
@@ -294,28 +265,6 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 /* --- Expressions --- */
 
-IMPLEMENT_VISIT_PROC(UnaryExpr)
-{
-    if (IsLValueOp(ast->op))
-    {
-        if (auto varIdent = ast->expr->FetchVarIdent())
-            MarkVariableLValue(varIdent);
-    }
-
-    VISIT_DEFAULT(UnaryExpr);
-}
-
-IMPLEMENT_VISIT_PROC(PostUnaryExpr)
-{
-    if (IsLValueOp(ast->op))
-    {
-        if (auto varIdent = ast->expr->FetchVarIdent())
-            MarkVariableLValue(varIdent);
-    }
-
-    VISIT_DEFAULT(PostUnaryExpr);
-}
-
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     if (auto symbol = ast->varIdent->symbolRef)
@@ -331,9 +280,6 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
                 /* Mark frag-coord usage in fragment program layout */
                 program_->layoutFragment.fragCoordUsed = true;
             }
-            
-            if (ast->assignExpr)
-                MarkVariableLValue(ast->varIdent.get());
         }
     }
 
