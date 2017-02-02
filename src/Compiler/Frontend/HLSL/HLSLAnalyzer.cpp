@@ -829,7 +829,12 @@ void HLSLAnalyzer::AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast)
         {
             /* Is the variable declared as constant? */
             if (varDecl->declStmntRef->IsConst())
-                Error("illegal assignment to l-value '" + varIdent->ident + "' that is declared as constant", (ast != nullptr ? ast : varIdent));
+            {
+                Error(
+                    "illegal assignment to l-value '" + varIdent->ident + "' that is declared as constant",
+                    (ast != nullptr ? ast : varIdent), HLSLErr::ERR_LVALUE_EXPECTED
+                );
+            }
 
             /* Mark variable as l-value */
             varDecl->flags << VarDecl::isWrittenTo;
@@ -842,8 +847,8 @@ void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast)
 {
     if (auto varIdent = expr->FetchVarIdent())
         AnalyzeLValueVarIdent(varIdent, ast);
-    /*else
-        ;*/
+    else
+        Error("illegal assignment to r-value expression", ast, HLSLErr::ERR_LVALUE_EXPECTED);
 }
 
 /* ----- Entry point ----- */
