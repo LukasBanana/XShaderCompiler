@@ -1886,7 +1886,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
             if (keyword)
                 Write(*keyword);
             else
-                Error("failed to map intrinsic '" + ast->varIdent->LastVarIdent()->ToString() + "' to GLSL keyword", ast);
+                Error("failed to map intrinsic '" + ast->varIdent->Last()->ToString() + "' to GLSL keyword", ast);
         }
         else
         {

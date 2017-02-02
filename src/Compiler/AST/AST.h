@@ -397,7 +397,7 @@ struct VarIdent : public TypedAST
     std::string ToString() const;
 
     // Returns the last identifier AST node.
-    VarIdent* LastVarIdent();
+    VarIdent* Last();
 
     // Returns the first identifier AST node that has a variable which is declared as constant.
     VarIdent* FirstConstVarIdent();

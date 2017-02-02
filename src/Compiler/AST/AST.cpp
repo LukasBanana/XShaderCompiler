@@ -94,22 +94,19 @@ std::string VarIdent::ToString() const
     return name;
 }
 
-VarIdent* VarIdent::LastVarIdent()
+VarIdent* VarIdent::Last()
 {
-    return (next ? next->LastVarIdent() : this);
+    return (next ? next->Last() : this);
 }
 
 VarIdent* VarIdent::FirstConstVarIdent()
 {
-    if (symbolRef)
+    if (auto varDecl = FetchVarDecl())
     {
-        if (auto varDecl = symbolRef->As<VarDecl>())
-        {
-            if (varDecl->declStmntRef->IsConst())
-                return this;
-            if (next)
-                return next->FirstConstVarIdent();
-        }
+        if (varDecl->declStmntRef->IsConst())
+            return this;
+        if (next)
+            return next->FirstConstVarIdent();
     }
     return nullptr;
 }
