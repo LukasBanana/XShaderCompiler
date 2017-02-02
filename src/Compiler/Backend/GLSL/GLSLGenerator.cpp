@@ -467,10 +467,10 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     for (auto it = varDecls.begin(); it != varDecls.end();)
     {
         auto var = it->get();
-        auto varType = var->GetTypeDenoter()->Get();
+        const auto& baseVarType = var->GetTypeDenoter()->GetBase();
 
         StructDecl* structDecl = nullptr;
-        if (auto structTypeDen = varType->As<StructTypeDenoter>())
+        if (auto structTypeDen = baseVarType.As<const StructTypeDenoter>())
             structDecl = structTypeDen->structDeclRef;
 
         /*

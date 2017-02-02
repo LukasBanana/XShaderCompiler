@@ -117,6 +117,11 @@ const TypeDenoter& TypeDenoter::GetAliased() const
     return *this;
 }
 
+const TypeDenoter& TypeDenoter::GetBase() const
+{
+    return *this;
+}
+
 unsigned int TypeDenoter::NumDimensions() const
 {
     return 0;
@@ -490,6 +495,11 @@ const TypeDenoter& AliasTypeDenoter::GetAliased() const
     RuntimeErr("missing reference to type alias '" + ident + "'");
 }
 
+const TypeDenoter& AliasTypeDenoter::GetBase() const
+{
+    return GetAliased().GetBase();
+}
+
 unsigned int AliasTypeDenoter::NumDimensions() const
 {
     return GetAliased().NumDimensions();
@@ -600,6 +610,11 @@ TypeDenoterPtr ArrayTypeDenoter::GetWithIndices(std::size_t numArrayIndices, con
 
     /* Get base type denoter with next identifier */
     return baseTypeDenoter->GetFromArray(numArrayIndices - numDims, varIdent);
+}
+
+const TypeDenoter& ArrayTypeDenoter::GetBase() const
+{
+    return baseTypeDenoter->GetBase();
 }
 
 unsigned int ArrayTypeDenoter::NumDimensions() const
