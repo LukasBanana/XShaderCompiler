@@ -76,6 +76,19 @@ bool ReferenceAnalyzer::IsInsideEntryPoint() const
     return (!funcDeclStack_.empty() && funcDeclStack_.top()->flags(FunctionDecl::isEntryPoint));
 }
 
+void ReferenceAnalyzer::MarkVariableLValue(VarIdent* varIdent)
+{
+    while (varIdent)
+    {
+        if (auto varDecl = varIdent->FetchVarDecl())
+        {
+            /* Mark variable as l-value */
+            varDecl->flags << (AST::isUsed | VarDecl::isWrittenTo);
+        }
+        varIdent = varIdent->next.get();
+    }
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -149,8 +162,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         {
             if (parameters[i]->IsOutput())
             {
-                if (auto varDecl = arguments[i]->FetchVarDecl())
-                    varDecl->flags << (AST::isUsed | VarDecl::isWrittenTo);
+                if (auto varIdent = arguments[i]->FetchVarIdent())
+                    MarkVariableLValue(varIdent);
             }
         }
     }
@@ -285,11 +298,8 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
     if (IsLValueOp(ast->op))
     {
-        if (auto varDecl = ast->expr->FetchVarDecl())
-        {
-            /* Mark variable as l-value */
-            varDecl->flags << VarDecl::isWrittenTo;
-        }
+        if (auto varIdent = ast->expr->FetchVarIdent())
+            MarkVariableLValue(varIdent);
     }
 
     VISIT_DEFAULT(UnaryExpr);
@@ -299,11 +309,8 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 {
     if (IsLValueOp(ast->op))
     {
-        if (auto varDecl = ast->expr->FetchVarDecl())
-        {
-            /* Mark variable as l-value */
-            varDecl->flags << VarDecl::isWrittenTo;
-        }
+        if (auto varIdent = ast->expr->FetchVarIdent())
+            MarkVariableLValue(varIdent);
     }
 
     VISIT_DEFAULT(PostUnaryExpr);
@@ -326,10 +333,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
             }
             
             if (ast->assignExpr)
-            {
-                /* Mark variable as l-value */
-                varDecl->flags << VarDecl::isWrittenTo;
-            }
+                MarkVariableLValue(ast->varIdent.get());
         }
     }
 

@@ -47,6 +47,8 @@ class ReferenceAnalyzer : private Visitor
 
         bool IsInsideEntryPoint() const;
 
+        void MarkVariableLValue(VarIdent* varIdent);
+
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( CodeBlock         );

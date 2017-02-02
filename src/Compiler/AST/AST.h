@@ -192,7 +192,10 @@ struct TypedAST : public AST
 struct Expr : public TypedAST
 {
     // Returns the variable or null if this is not just a single variable expression.
-    virtual VarDecl* FetchVarDecl() const;
+    VarDecl* FetchVarDecl() const;
+
+    // Returns the variable identifier or null if this is not just a single variable eVarDe
+    virtual VarIdent* FetchVarIdent() const;
 };
 
 // Declaration AST base class.
@@ -949,7 +952,7 @@ struct BracketExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    VarDecl* FetchVarDecl() const override;
+    VarIdent* FetchVarIdent() const override;
 
     ExprPtr expr; // Inner expression
 };
@@ -994,7 +997,7 @@ struct VarAccessExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    VarDecl* FetchVarDecl() const override;
+    VarIdent* FetchVarIdent() const override;
 
     VarIdentPtr varIdent;
     AssignOp    assignOp    = AssignOp::Undefined;  // May be undefined

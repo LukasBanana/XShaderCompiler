@@ -62,6 +62,14 @@ void TypedAST::ResetBufferedTypeDenoter()
 
 VarDecl* Expr::FetchVarDecl() const
 {
+    if (auto varIdent = FetchVarIdent())
+        return varIdent->FetchVarDecl();
+    else
+        return nullptr;
+}
+
+VarIdent* Expr::FetchVarIdent() const
+{
     return nullptr;
 }
 
@@ -986,9 +994,9 @@ TypeDenoterPtr BracketExpr::DeriveTypeDenoter()
     return expr->GetTypeDenoter();
 }
 
-VarDecl* BracketExpr::FetchVarDecl() const
+VarIdent* BracketExpr::FetchVarIdent() const
 {
-    return expr->FetchVarDecl();
+    return expr->FetchVarIdent();
 }
 
 
@@ -1041,9 +1049,9 @@ TypeDenoterPtr VarAccessExpr::DeriveTypeDenoter()
     return varIdent->GetTypeDenoter();
 }
 
-VarDecl* VarAccessExpr::FetchVarDecl() const
+VarIdent* VarAccessExpr::FetchVarIdent() const
 {
-    return varIdent->FetchVarDecl();
+    return varIdent.get();
 }
 
 
