@@ -731,6 +731,7 @@ bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const
 
 void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
 {
+    /* Analyze variable identifier itself */
     if (varIdent)
     {
         try
@@ -746,6 +747,13 @@ void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
         {
             Error(e.what(), varIdent);
         }
+    }
+
+    /* Analyze array indices */
+    while (varIdent)
+    {
+        Visit(varIdent->arrayIndices);
+        varIdent = varIdent->next.get();
     }
 }
 
