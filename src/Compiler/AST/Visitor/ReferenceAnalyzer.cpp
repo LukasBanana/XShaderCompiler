@@ -203,7 +203,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     if (Reachable(ast))
     {
         /* Is a variable declaration NOT used as entry point return value? */
-        if (!IsInsideEntryPoint() || !ast->flags(VarDecl::isEntryPointReturn))
+        if (!IsInsideEntryPoint() || !ast->flags(VarDecl::isEntryPointOutput))
         {
             auto declStmnt = ast->declStmntRef;
 

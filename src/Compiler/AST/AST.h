@@ -441,7 +441,7 @@ struct VarDecl : public Decl
         FLAG( isSystemValue,        2 ), // This variable is a system value.
         FLAG( isDynamicArray,       3 ), // This variable is a dynamic array (for input/output semantics).
         FLAG( isWrittenTo,          4 ), // This variable is eventually written to.
-        FLAG( isEntryPointReturn,   5 ), // This variable is used as entry point return value.
+        FLAG( isEntryPointOutput,   5 ), // This variable is used as entry point output (return value, output parameter, stream output).
         FLAG( isEntryPointLocal,    6 ), // This variable is a local variable of the entry point.
 
         isShaderInputSV     = (isShaderInput  | isSystemValue), // This variable a used as shader input, and it is a system value.

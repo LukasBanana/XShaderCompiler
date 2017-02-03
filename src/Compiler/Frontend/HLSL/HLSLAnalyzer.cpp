@@ -496,8 +496,8 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         {
             if (auto varDecl = ast->expr->FetchVarDecl())
             {
-                /* Mark variable as entry-pointer return */
-                varDecl->flags << VarDecl::isEntryPointReturn;
+                /* Mark variable as entry-pointer output */
+                varDecl->flags << VarDecl::isEntryPointOutput;
 
                 if (auto structSymbolRef = varDecl->GetTypeDenoter()->Get()->SymbolRef())
                 {
