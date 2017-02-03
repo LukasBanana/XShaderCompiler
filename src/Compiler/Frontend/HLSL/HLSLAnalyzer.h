@@ -84,8 +84,8 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeIntrinsicWrapperInlining(FunctionCall* ast);
 
-        bool AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* ast);
-        bool AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const BufferType bufferType, const std::string& ident, const AST* ast = nullptr);
+        bool AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* funcCall);
+        bool AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const FunctionCall* funcCall, const BufferType bufferType);
 
         /* ----- Variable identifier ----- */
 
@@ -118,6 +118,8 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs);
 
         void AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std::vector<Semantic>& inSemantics, const std::vector<Semantic>& outSemantics);
+
+        void AnalyzeEntryPointOutput(VarDecl* varDecl);
 
         /* ----- Secondary entry point ----- */
 

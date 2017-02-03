@@ -493,26 +493,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
         /* Analyze entry point return statement (if a structure is returned from the entry point) */
         if (InsideEntryPoint())
-        {
-            if (auto varDecl = ast->expr->FetchVarDecl())
-            {
-                /* Mark variable as entry-pointer output */
-                varDecl->flags << VarDecl::isEntryPointOutput;
-
-                if (auto structSymbolRef = varDecl->GetTypeDenoter()->Get()->SymbolRef())
-                {
-                    if (auto structDecl = structSymbolRef->As<StructDecl>())
-                    {
-                        /* Add variable as parameter-structure to entry point */
-                        if (program_->entryPointRef)
-                            program_->entryPointRef->paramStructs.push_back({ varDecl, structDecl });
-                        
-                        /* Mark variable as local variable of the entry-point */
-                        varDecl->flags << VarDecl::isEntryPointLocal;
-                    }
-                }
-            }
-        }
+            AnalyzeEntryPointOutput(ast->expr->FetchVarDecl());
     }
 }
 
@@ -673,9 +654,9 @@ void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(FunctionCall* ast)
     }
 }
 
-bool HLSLAnalyzer::AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* ast)
+bool HLSLAnalyzer::AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* funcCall)
 {
-    if (auto symbolRef = ast->varIdent->symbolRef)
+    if (auto symbolRef = funcCall->varIdent->symbolRef)
     {
         if (auto varDecl = symbolRef->As<VarDecl>())
         {
@@ -683,47 +664,58 @@ bool HLSLAnalyzer::AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const Funct
             auto typeDen = varDecl->GetTypeDenoter()->Get();
             if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
             {
-                if (AnalyzeMemberIntrinsicBuffer(intrinsic, bufferTypeDen->bufferType, ast->varIdent->next->ident, ast))
+                if (AnalyzeMemberIntrinsicBuffer(intrinsic, funcCall, bufferTypeDen->bufferType))
                     return true;
             }
         }
         else if (auto bufferDecl = symbolRef->As<BufferDecl>())
         {
             /* Analyze member intrinsic for buffer type */
-            if (AnalyzeMemberIntrinsicBuffer(intrinsic, bufferDecl->GetBufferType(), ast->varIdent->next->ident, ast))
+            if (AnalyzeMemberIntrinsicBuffer(intrinsic, funcCall, bufferDecl->GetBufferType()))
                 return true;
         }
     }
 
     /* Intrinsic not found in an object class */
-    Error("intrinsic '" + ast->varIdent->next->ident + "' not declared in object '" + ast->varIdent->ident + "'", ast);
+    Error("intrinsic '" + funcCall->varIdent->next->ident + "' not declared in object '" + funcCall->varIdent->ident + "'", funcCall);
     return false;
 }
 
-bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const BufferType bufferType, const std::string& ident, const AST* ast)
+bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const FunctionCall* funcCall, const BufferType bufferType)
 {
+    const auto& ident = funcCall->varIdent->next->ident;
+
     if (IsTextureBufferType(bufferType))
     {
-        if (!IsTextureIntrinsic(intrinsic))
-            Error("invalid intrinsic '" + ident + "' for texture object", ast);
-        else
+        if (IsTextureIntrinsic(intrinsic))
             return true;
+        else
+            Error("invalid intrinsic '" + ident + "' for texture object", funcCall);
     }
     else if (IsStorageBufferType(bufferType))
     {
         //TODO
-        /*if (!IsStorageBufferIntrinsic(intrinsic))
-            Error("invalid intrinsic '" + ident + "' for storage-buffer object", ast);
+        /*if (IsStorageBufferIntrinsic(intrinsic))
+            return true;
         else
-            return true;*/
+            Error("invalid intrinsic '" + ident + "' for storage-buffer object", funcCall);*/
     }
     else if (IsStreamBufferType(bufferType))
     {
-        if (!IsStreamOutputIntrinsic(intrinsic))
-            Error("invalid intrinsic '" + ident + "' for stream-output object", ast);
-        else
+        if (IsStreamOutputIntrinsic(intrinsic))
+        {
+            /* Check for entry point output parameters with "StreamOutput::Append" intrinsic */
+            if (InsideEntryPoint() && intrinsic == Intrinsic::StreamOutput_Append)
+            {
+                for (const auto& arg : funcCall->arguments)
+                    AnalyzeEntryPointOutput(arg->FetchVarDecl());
+            }
             return true;
+        }
+        else
+            Error("invalid intrinsic '" + ident + "' for stream-output object", funcCall);
     }
+
     return false;
 }
 
@@ -1290,6 +1282,28 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
 
     #undef COMMON_SEMANTICS
     #undef COMMON_SEMANTICS_EX
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointOutput(VarDecl* varDecl)
+{
+    if (varDecl)
+    {
+        /* Mark variable as entry-pointer output */
+        varDecl->flags << VarDecl::isEntryPointOutput;
+
+        if (auto structSymbolRef = varDecl->GetTypeDenoter()->Get()->SymbolRef())
+        {
+            if (auto structDecl = structSymbolRef->As<StructDecl>())
+            {
+                /* Add variable as parameter-structure to entry point */
+                if (program_->entryPointRef)
+                    program_->entryPointRef->paramStructs.push_back({ varDecl, structDecl });
+                        
+                /* Mark variable as local variable of the entry-point */
+                varDecl->flags << VarDecl::isEntryPointLocal;
+            }
+        }
+    }
 }
 
 /* ----- Inactive entry point ----- */
