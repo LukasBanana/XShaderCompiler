@@ -75,6 +75,30 @@ VarIdent* Expr::FetchVarIdent() const
 }
 
 
+/* ----- Program ----- */
+
+void Program::RegisterIntrinsicUsage(const Intrinsic intrinsic, const std::vector<ExprPtr>& arguments)
+{
+    /* Insert argument types (only base types) into usage list */
+    IntrinsicUsage::ArgumentList argList;
+    {
+        for (auto& arg : arguments)
+        {
+            auto typeDen = arg->GetTypeDenoter()->Get();
+            if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
+                argList.argTypes.push_back(baseTypeDen->dataType);
+        }
+    }
+    usedIntrinsics[intrinsic].argLists.insert(argList);
+}
+
+const IntrinsicUsage* Program::FetchIntrinsicUsage(const Intrinsic intrinsic) const
+{
+    auto it = usedIntrinsics.find(intrinsic);
+    return (it != usedIntrinsics.end() ? &(it->second) : nullptr);
+}
+
+
 /* ----- VarIdent ----- */
 
 std::string VarIdent::ToString() const

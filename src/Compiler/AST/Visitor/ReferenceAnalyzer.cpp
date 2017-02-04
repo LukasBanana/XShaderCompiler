@@ -140,19 +140,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
     /* Collect all used intrinsics (if they can not be inlined) */
     if (ast->intrinsic != Intrinsic::Undefined && !ast->flags(FunctionCall::canInlineIntrinsicWrapper))
-    {
-        /* Insert argument types (only base types) into usage list */
-        IntrinsicUsage::ArgumentList argList;
-        {
-            for (auto& arg : ast->arguments)
-            {
-                auto typeDen = arg->GetTypeDenoter()->Get();
-                if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
-                    argList.argTypes.push_back(baseTypeDen->dataType);
-            }
-        }
-        program_->usedIntrinsics[ast->intrinsic].argLists.insert(argList);
-    }
+        program_->RegisterIntrinsicUsage(ast->intrinsic, ast->arguments);
 
     /* Mark all arguments, that are assigned to output parameters, as l-values */
     ast->ForEachOutputArgument(

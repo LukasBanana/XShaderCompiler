@@ -2078,15 +2078,9 @@ void GLSLGenerator::WriteWrapperIntrinsics()
 {
     auto program = GetProgram();
 
-    auto Used = [program](Intrinsic intr) -> IntrinsicUsage*
-    {
-        auto it = program->usedIntrinsics.find(intr);
-        return (it != program->usedIntrinsics.end() ? &(it->second) : nullptr);
-    };
-
-    if (auto usage = Used(Intrinsic::Clip))
+    if (auto usage = program->FetchIntrinsicUsage(Intrinsic::Clip))
         WriteWrapperIntrinsicsClip(*usage);
-    if (auto usage = Used(Intrinsic::SinCos))
+    if (auto usage = program->FetchIntrinsicUsage(Intrinsic::SinCos))
         WriteWrapperIntrinsicsSinCos(*usage);
 }
 

@@ -249,6 +249,12 @@ struct Program : public AST
         unsigned int numThreads[3] = { 0 };
     };
 
+    // Registers a usage of an intrinsic with the specified arguments (only base types).
+    void RegisterIntrinsicUsage(const Intrinsic intrinsic, const std::vector<ExprPtr>& arguments);
+
+    // Returns a usage-container of the specified intrinsic or null if the specified intrinsic was not registered to be used.
+    const IntrinsicUsage* FetchIntrinsicUsage(const Intrinsic intrinsic) const;
+
     std::vector<StmntPtr>               globalStmnts;               // Global declaration statements
 
     std::vector<ASTPtr>                 disabledAST;                // AST nodes that have been disabled for code generation (not part of the default visitor).
