@@ -167,11 +167,6 @@ class GLSLConverter : public Visitor
         unsigned int            structDeclLevel_        = 0;
         unsigned int            anonymousStructCounter_ = 0;
 
-        // True, if AST traversal is currently inside the main entry point (or its sub nodes).
-        bool                    isInsideEntryPoint_     = false;
-
-        FunctionDecl*           currentFunctionDecl_    = nullptr;
-
         // True, if code obfuscation is enabled
         unsigned int            obfuscationCounter_     = 0;
 

@@ -202,7 +202,11 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    ConvertFunctionDecl(ast);
+    PushFunctionDecl(ast);
+    {
+        ConvertFunctionDecl(ast);
+    }
+    PopFunctionDecl();
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
@@ -288,8 +292,8 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     if (ast->expr)
     {
         /* Convert return expression if cast required */
-        if (currentFunctionDecl_)
-            ConvertExprIfCastRequired(ast->expr, *currentFunctionDecl_->returnType->typeDenoter->Get());
+        if (ActiveFunctionDecl())
+            ConvertExprIfCastRequired(ast->expr, *ActiveFunctionDecl()->returnType->typeDenoter->Get());
     }
 
     VISIT_DEFAULT(ReturnStmnt);
@@ -499,7 +503,7 @@ void GLSLConverter::PopFrontOfGlobalInOutVarIdent(VarIdent* ast)
 void GLSLConverter::MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt)
 {
     /* Is this statement within the entry point? */
-    if (isInsideEntryPoint_)
+    if (InsideEntryPoint())
     {
         if (bodyStmnt->Type() == AST::Types::ReturnStmnt)
         {
@@ -630,8 +634,6 @@ bool GLSLConverter::RenameReservedKeyword(const std::string& ident, std::string&
 
 void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
 {
-    currentFunctionDecl_ = ast;
-
     RenameReservedKeyword(ast->ident, ast->renamedIdent);
 
     if (ast->flags(FunctionDecl::isEntryPoint))
@@ -650,40 +652,36 @@ void GLSLConverter::ConvertFunctionDeclDefault(FunctionDecl* ast)
 
 void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
 {
-    isInsideEntryPoint_ = true;
+    /* Propagate array parameter declaration to input/output semantics */
+    for (auto param : ast->parameters)
     {
-        /* Propagate array parameter declaration to input/output semantics */
-        for (auto param : ast->parameters)
+        if (!param->varDecls.empty())
         {
-            if (!param->varDecls.empty())
+            auto varDecl = param->varDecls.front();
+            auto typeDen = varDecl->GetTypeDenoter()->Get();
+            if (auto arrayTypeDen = typeDen->As<ArrayTypeDenoter>())
             {
-                auto varDecl = param->varDecls.front();
-                auto typeDen = varDecl->GetTypeDenoter()->Get();
-                if (auto arrayTypeDen = typeDen->As<ArrayTypeDenoter>())
-                {
-                    /* Mark this member and all structure members as dynamic array */
-                    varDecl->flags << VarDecl::isDynamicArray;
+                /* Mark this member and all structure members as dynamic array */
+                varDecl->flags << VarDecl::isDynamicArray;
 
-                    if (auto structBaseTypeDen = arrayTypeDen->baseTypeDenoter->Get()->As<StructTypeDenoter>())
+                if (auto structBaseTypeDen = arrayTypeDen->baseTypeDenoter->Get()->As<StructTypeDenoter>())
+                {
+                    if (structBaseTypeDen->structDeclRef)
                     {
-                        if (structBaseTypeDen->structDeclRef)
-                        {
-                            structBaseTypeDen->structDeclRef->ForEachVarDecl(
-                                [](VarDecl* member)
-                                {
-                                    member->flags << VarDecl::isDynamicArray;
-                                }
-                            );
-                        }
+                        structBaseTypeDen->structDeclRef->ForEachVarDecl(
+                            [](VarDecl* member)
+                            {
+                                member->flags << VarDecl::isDynamicArray;
+                            }
+                        );
                     }
                 }
             }
         }
-
-        /* Default visitor */
-        Visitor::VisitFunctionDecl(ast, nullptr);
     }
-    isInsideEntryPoint_ = false;
+
+    /* Default visitor */
+    Visitor::VisitFunctionDecl(ast, nullptr);
 }
 
 void GLSLConverter::ConvertIntrinsicCall(FunctionCall* ast)
