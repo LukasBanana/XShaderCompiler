@@ -150,6 +150,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         }
     );
 
+    //TODO: also mark l-values arguments for intrinsic with output parameters!!!
+
     VISIT_DEFAULT(FunctionCall);
 }
 
