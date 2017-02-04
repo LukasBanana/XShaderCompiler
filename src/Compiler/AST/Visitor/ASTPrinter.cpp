@@ -51,7 +51,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    Print(ast, "FunctionCall");
+    Print(ast, "FunctionCall", (ast->varIdent ? ast->varIdent->Last()->ident : ""));
     PushNode();
     {
         Visit(ast->varIdent);
