@@ -61,19 +61,12 @@ bool ReferenceAnalyzer::IsVariableAnEntryPointParameter(VarDeclStmnt* var) const
     return (entryPointIt != entryPointParams.end());
 }
 
-void ReferenceAnalyzer::PushFunctionDecl(FunctionDecl* funcDecl)
+bool ReferenceAnalyzer::IsActiveFunctionDeclEntryPoint() const
 {
-    funcDeclStack_.push(funcDecl);
-}
-
-void ReferenceAnalyzer::PopFunctionDecl()
-{
-    funcDeclStack_.pop();
-}
-
-bool ReferenceAnalyzer::IsInsideEntryPoint() const
-{
-    return (!funcDeclStack_.empty() && funcDeclStack_.top()->flags(FunctionDecl::isEntryPoint));
+    if (auto funcDecl = ActiveFunctionDecl())
+        return funcDecl->flags(FunctionDecl::isEntryPoint);
+    else
+        return false;
 }
 
 void ReferenceAnalyzer::MarkLValueVarIdent(VarIdent* varIdent)
@@ -203,7 +196,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     if (Reachable(ast))
     {
         /* Is a variable declaration NOT used as entry point return value? */
-        if (!IsInsideEntryPoint() || !ast->flags(VarDecl::isEntryPointOutput))
+        if (!IsActiveFunctionDeclEntryPoint() || !ast->flags(VarDecl::isEntryPointOutput))
         {
             auto declStmnt = ast->declStmntRef;
 

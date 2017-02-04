@@ -42,10 +42,8 @@ class ReferenceAnalyzer : private Visitor
         // Returns true if the specified variable is a paramter of the entry point.
         bool IsVariableAnEntryPointParameter(VarDeclStmnt* var) const;
 
-        void PushFunctionDecl(FunctionDecl* funcDecl);
-        void PopFunctionDecl();
-
-        bool IsInsideEntryPoint() const;
+        // Returns true if the active function declaration is the main entry point.
+        bool IsActiveFunctionDeclEntryPoint() const;
 
         void MarkLValueVarIdent(VarIdent* varIdent);
         void MarkLValueExpr(Expr* expr);
@@ -75,7 +73,6 @@ class ReferenceAnalyzer : private Visitor
         Program*                    program_            = nullptr;
         ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
         
-        std::stack<FunctionDecl*>   funcDeclStack_;
         std::vector<FunctionCall*>  funcCallStack_;
 
 };
