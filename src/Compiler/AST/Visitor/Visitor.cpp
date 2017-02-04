@@ -322,8 +322,99 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
     Visit(ast->exprs);
 }
 
-
 #undef IMPLEMENT_VISIT_PROC
+
+
+/*
+ * ======= Private: =======
+ */
+
+/* ----- Function declaration tracker ----- */
+
+void Visitor::PushFunctionDeclLevel(FunctionDecl* ast)
+{
+    funcDeclStack_.push(ast);
+    if (ast->flags(FunctionDecl::isEntryPoint))
+        funcDeclLevelOfEntryPoint_ = funcDeclStack_.size();
+}
+
+void Visitor::PopFunctionDeclLevel()
+{
+    if (!funcDeclStack_.empty())
+    {
+        if (funcDeclLevelOfEntryPoint_ == funcDeclStack_.size())
+            funcDeclLevelOfEntryPoint_ = ~0;
+        funcDeclStack_.pop();
+    }
+    else
+        throw std::underflow_error("function declaration level underflow");
+}
+
+bool Visitor::InsideFunctionDecl() const
+{
+    return (!funcDeclStack_.empty());
+}
+
+bool Visitor::InsideEntryPoint() const
+{
+    return (funcDeclStack_.size() >= funcDeclLevelOfEntryPoint_);
+}
+
+FunctionDecl* Visitor::ActiveFunctionDecl() const
+{
+    return (funcDeclStack_.empty() ? nullptr : funcDeclStack_.top());
+}
+
+/* ----- Structure declaration tracker ----- */
+
+void Visitor::PushStructDecl(StructDecl* ast)
+{
+    if (!structDeclStack_.empty())
+    {
+        /* Mark structure as nested structure */
+        ast->flags << StructDecl::isNestedStruct;
+
+        /* Add reference of the new structure to all parent structures */
+        for (auto parentStruct : structDeclStack_)
+            parentStruct->nestedStructDeclRefs.push_back(ast);
+    }
+
+    /* Push new structure onto stack */
+    structDeclStack_.push_back(ast);
+}
+
+void Visitor::PopStructDecl()
+{
+    if (!structDeclStack_.empty())
+        structDeclStack_.pop_back();
+    else
+        throw std::underflow_error("structure declaration level underflow");
+}
+
+bool Visitor::InsideStructDecl() const
+{
+    return (!structDeclStack_.empty());
+}
+
+/* ----- Function call tracker ----- */
+
+void Visitor::PushFunctionCall(FunctionCall* ast)
+{
+    funcCallStack_.push(ast);
+}
+
+void Visitor::PopFunctionCall()
+{
+    if (!funcCallStack_.empty())
+        funcCallStack_.pop();
+    else
+        throw std::underflow_error("function call stack underflow");
+}
+
+FunctionCall* Visitor::ActiveFunctionCall() const
+{
+    return (funcCallStack_.empty() ? nullptr : funcCallStack_.top());
+}
 
 
 } // /namespace Xsc

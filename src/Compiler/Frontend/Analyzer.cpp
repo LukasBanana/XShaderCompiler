@@ -33,6 +33,10 @@ bool Analyzer::DecorateAST(
     {
         Error(e.what(), e.GetAST());
     }
+    catch (const std::underflow_error& e)
+    {
+        ErrorInternal(e.what());
+    }
     catch (const std::exception& e)
     {
         Error(e.what());
@@ -291,93 +295,6 @@ StructDecl* Analyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDeno
             return FetchStructDeclFromTypeDenoter(*(aliasDecl->typeDenoter));
     }
     return nullptr;
-}
-
-/* ----- Function declaration tracker ----- */
-
-void Analyzer::PushFunctionDeclLevel(FunctionDecl* ast)
-{
-    funcDeclStack_.push(ast);
-    if (ast->flags(FunctionDecl::isEntryPoint))
-        funcDeclLevelOfEntryPoint_ = funcDeclStack_.size();
-}
-
-void Analyzer::PopFunctionDeclLevel()
-{
-    if (!funcDeclStack_.empty())
-    {
-        if (funcDeclLevelOfEntryPoint_ == funcDeclStack_.size())
-            funcDeclLevelOfEntryPoint_ = ~0;
-        funcDeclStack_.pop();
-    }
-    else
-        ErrorInternal("function declaration level underflow");
-}
-
-bool Analyzer::InsideFunctionDecl() const
-{
-    return (!funcDeclStack_.empty());
-}
-
-bool Analyzer::InsideEntryPoint() const
-{
-    return (funcDeclStack_.size() >= funcDeclLevelOfEntryPoint_);
-}
-
-FunctionDecl* Analyzer::ActiveFunctionDecl() const
-{
-    return (funcDeclStack_.empty() ? nullptr : funcDeclStack_.top());
-}
-
-/* ----- Structure declaration tracker ----- */
-
-void Analyzer::PushStructDecl(StructDecl* ast)
-{
-    if (!structDeclStack_.empty())
-    {
-        /* Mark structure as nested structure */
-        ast->flags << StructDecl::isNestedStruct;
-
-        /* Add reference of the new structure to all parent structures */
-        for (auto parentStruct : structDeclStack_)
-            parentStruct->nestedStructDeclRefs.push_back(ast);
-    }
-
-    /* Push new structure onto stack */
-    structDeclStack_.push_back(ast);
-}
-
-void Analyzer::PopStructDecl()
-{
-    if (!structDeclStack_.empty())
-        structDeclStack_.pop_back();
-    else
-        ErrorInternal("structure declaration level underflow");
-}
-
-bool Analyzer::InsideStructDecl() const
-{
-    return !structDeclStack_.empty();
-}
-
-/* ----- Function call tracker ----- */
-
-void Analyzer::PushFunctionCall(FunctionCall* ast)
-{
-    funcCallStack_.push(ast);
-}
-
-void Analyzer::PopFunctionCall()
-{
-    if (funcCallStack_.empty())
-        ErrorInternal("function call stack underflow");
-    else
-        funcCallStack_.pop();
-}
-
-FunctionCall* Analyzer::ActiveFunctionCall() const
-{
-    return (funcCallStack_.empty() ? nullptr : funcCallStack_.top());
 }
 
 /* ----- Analyzer functions ----- */

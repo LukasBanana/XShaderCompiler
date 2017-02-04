@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <vector>
+#include <stack>
 
 
 namespace Xsc
@@ -170,6 +171,56 @@ class Visitor
             for (const auto& ast : astList)
                 Visit(ast, args);
         }
+
+        /* ----- Function declaration tracker ----- */
+
+        void PushFunctionDeclLevel(FunctionDecl* ast);
+        void PopFunctionDeclLevel();
+
+        // Returns true if the analyzer is currently inside a function declaration.
+        bool InsideFunctionDecl() const;
+
+        // Returns true if the analyzer is currently inside the main entry point.
+        bool InsideEntryPoint() const;
+
+        // Returns the active (inner most) function declaration or null if the analyzer is currently not inside a function declaration.
+        FunctionDecl* ActiveFunctionDecl() const;
+
+        /* ----- Structure declaration tracker ----- */
+
+        void PushStructDecl(StructDecl* ast);
+        void PopStructDecl();
+
+        // Returns true if the analyzer is currently inside a structure declaration.
+        bool InsideStructDecl() const;
+
+        // Returns the stack (or rather the list) of all current, nested structure declarations.
+        inline const std::vector<StructDecl*>& GetStructDeclStack() const
+        {
+            return structDeclStack_;
+        }
+
+        /* ----- Function call tracker ----- */
+
+        void PushFunctionCall(FunctionCall* ast);
+        void PopFunctionCall();
+
+        // Returns the active (inner most) function call or null if the analyzer is currently not inside a function call.
+        FunctionCall* ActiveFunctionCall() const;
+
+    private:
+
+        // Current level of function declarations. Actually only 0 or 1 (but can be more if inner functions are supported).
+        std::size_t                 funcDeclLevelOfEntryPoint_  = ~0;
+
+        // Function declaration stack.
+        std::stack<FunctionDecl*>   funcDeclStack_;
+
+        // Structure stack to collect all members with system value semantic (SV_...), and detect all nested structures.
+        std::vector<StructDecl*>    structDeclStack_;
+
+        // Function call stack to join arguments with its function call.
+        std::stack<FunctionCall*>   funcCallStack_;
 
 };
 
