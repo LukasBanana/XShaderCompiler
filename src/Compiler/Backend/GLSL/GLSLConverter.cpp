@@ -181,11 +181,11 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 {
     LabelAnonymousStructDecl(ast);
 
-    PushStructDeclLevel();
+    PushStructDecl(ast);
     {
         VISIT_DEFAULT(StructDecl);
     }
-    PopStructDeclLevel();
+    PopStructDecl();
 
     RemoveSamplerStateVarDeclStmnts(ast->members);
 
@@ -386,21 +386,6 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
 /* --- Helper functions for conversion --- */
 
-void GLSLConverter::PushStructDeclLevel()
-{
-    ++structDeclLevel_;
-}
-
-void GLSLConverter::PopStructDeclLevel()
-{
-    --structDeclLevel_;
-}
-
-bool GLSLConverter::IsInsideStructDecl() const
-{
-    return (structDeclLevel_ > 0);
-}
-
 bool GLSLConverter::IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter) const
 {
     if (typeDenoter)
@@ -419,7 +404,7 @@ bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
     /* Variable must be renamed if it's not inside a structure declaration and its name is reserved */
     return
     (
-        !IsInsideStructDecl() &&
+        !InsideStructDecl() &&
         !ast->flags(VarDecl::isShaderInput) &&
         (
             std::find_if(

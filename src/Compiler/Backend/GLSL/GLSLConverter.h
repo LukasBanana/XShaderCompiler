@@ -71,11 +71,6 @@ class GLSLConverter : public Visitor
 
         /* ----- Helper functions for conversion ----- */
 
-        void PushStructDeclLevel();
-        void PopStructDeclLevel();
-
-        bool IsInsideStructDecl() const;
-
         // Returns true if the specified type denoter is a sampler state type.
         bool IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter) const;
 
@@ -164,7 +159,6 @@ class GLSLConverter : public Visitor
         */
         std::vector<VarDecl*>   reservedVarDecls_;
 
-        unsigned int            structDeclLevel_        = 0;
         unsigned int            anonymousStructCounter_ = 0;
 
         // True, if code obfuscation is enabled
