@@ -133,7 +133,10 @@ struct AST
 
     virtual ~AST();
     
+    // Returns the AST node type.
     virtual Types Type() const = 0;
+
+    // Calls the respective visit-function of the specified visitor.
     virtual void Visit(Visitor* visitor, void* args = nullptr) = 0;
 
     #ifdef XSC_ENABLE_MEMORY_POOL
@@ -206,7 +209,7 @@ struct Decl : public TypedAST {};
 // Program AST root.
 struct Program : public AST
 {   
-    AST_INTERFACE(Program)
+    AST_INTERFACE(Program);
 
     // Layout meta data for tessellation-control shaders
     struct LayoutTessControlShader
