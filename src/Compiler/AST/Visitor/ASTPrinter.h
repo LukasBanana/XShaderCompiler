@@ -92,12 +92,23 @@ class ASTPrinter : private Visitor
 
         void Print(AST* ast, const std::string& astName, const std::string& info = "");
 
-        void IncIndent();
-        void DecIndent();
+        void PushNode(bool signalLastSubNode = false);
+        void PopNode();
+        void SignalLastSubNode();
+
+        void WriteNodeHierarchyLevel(std::string& s);
+
+        template <typename T>
+        void VisitAndSignalLast(T ast);
+
+        template <typename T>
+        void VisitAndSignalLast(const std::vector<T>& astList);
 
         /* === Members === */
 
-        Log* log_ = nullptr;
+        Log*                log_ = nullptr;
+
+        std::vector<bool>   lastSubNodeStack_;
 
 };
 
