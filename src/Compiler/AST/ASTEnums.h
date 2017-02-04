@@ -740,6 +740,8 @@ struct IntrinsicUsage
             return (argTypes < rhs.argTypes);
         }
     };
+
+    // Set of all argument lists that where used for an intrinsic.
     std::set<ArgumentList> argLists;
 };
 

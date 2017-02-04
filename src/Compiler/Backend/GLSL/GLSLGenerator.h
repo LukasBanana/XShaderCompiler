@@ -214,6 +214,7 @@ class GLSLGenerator : public Generator
         // Writes all required wrapper functions for referenced intrinsics.
         void WriteWrapperIntrinsics();
         void WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage);
+        void WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage);
 
         /* --- Structure --- */
 

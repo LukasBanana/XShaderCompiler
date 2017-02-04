@@ -274,18 +274,6 @@ IMPLEMENT_VISIT_PROC(ElseStmnt)
     VISIT_DEFAULT(ElseStmnt);
 }
 
-IMPLEMENT_VISIT_PROC(ExprStmnt)
-{
-    if (auto funcCall = ASTFactory::FindSingleFunctionCall(ast->expr.get()))
-    {
-        /* Is this a special intrinsic function call? */
-        if (funcCall->intrinsic == Intrinsic::SinCos)
-            ast->expr = ASTFactory::MakeSeparatedSinCosFunctionCalls(*funcCall);
-    }
-
-    VISIT_DEFAULT(ExprStmnt);
-}
-
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     if (ast->expr)
@@ -545,27 +533,6 @@ std::unique_ptr<DataType> GLSLConverter::MustCastExprToDataType(const TypeDenote
     return nullptr;
 }
 
-void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize)
-{
-    if (auto baseSourceTypeDen = expr->GetTypeDenoter()->Get()->As<BaseTypeDenoter>())
-    {
-        if (auto dataType = MustCastExprToDataType(targetType, baseSourceTypeDen->dataType, matchTypeSize))
-        {
-            /* Convert to cast expression with target data type if required */
-            expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
-        }
-    }
-}
-
-void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize)
-{
-    if (auto dataType = MustCastExprToDataType(targetTypeDen, *expr->GetTypeDenoter()->Get(), matchTypeSize))
-    {
-        /* Convert to cast expression with target data type if required */
-        expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
-    }
-}
-
 void GLSLConverter::RemoveDeadCode(std::vector<StmntPtr>& stmnts)
 {
     for (auto it = stmnts.begin(); it != stmnts.end();)
@@ -816,6 +783,28 @@ void GLSLConverter::ConvertExprIfConstructorRequired(ExprPtr& expr)
         expr = ASTFactory::ConvertInitializerExprToTypeConstructor(initExpr);
 }
 #endif
+
+// Converts the expression to a cast expression if it is required for the specified target type.
+void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize)
+{
+    if (auto baseSourceTypeDen = expr->GetTypeDenoter()->Get()->As<BaseTypeDenoter>())
+    {
+        if (auto dataType = MustCastExprToDataType(targetType, baseSourceTypeDen->dataType, matchTypeSize))
+        {
+            /* Convert to cast expression with target data type if required */
+            expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
+        }
+    }
+}
+
+void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize)
+{
+    if (auto dataType = MustCastExprToDataType(targetTypeDen, *expr->GetTypeDenoter()->Get(), matchTypeSize))
+    {
+        /* Convert to cast expression with target data type if required */
+        expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
+    }
+}
 
 /* ----- Unrolling ----- */
 

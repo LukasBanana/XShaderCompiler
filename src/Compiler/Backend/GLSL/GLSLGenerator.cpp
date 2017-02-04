@@ -134,6 +134,7 @@ bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
     static const std::set<Intrinsic> wrappedIntrinsics
     {
         Intrinsic::Clip,
+        Intrinsic::SinCos,
     };
     return (wrappedIntrinsics.find(intrinsic) != wrappedIntrinsics.end());
 }
@@ -2085,6 +2086,8 @@ void GLSLGenerator::WriteWrapperIntrinsics()
 
     if (auto usage = Used(Intrinsic::Clip))
         WriteWrapperIntrinsicsClip(*usage);
+    if (auto usage = Used(Intrinsic::SinCos))
+        WriteWrapperIntrinsicsSinCos(*usage);
 }
 
 void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
@@ -2127,6 +2130,42 @@ void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
                         Write("discard;");
                     }
                     WriteScopeClose();
+                }
+                WriteScopeClose();
+            }
+            EndLn();
+
+            wrappersWritten = true;
+        }
+    }
+
+    if (wrappersWritten)
+        Blank();
+}
+
+void GLSLGenerator::WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage)
+{
+    bool wrappersWritten = false;
+
+    for (const auto& argList : usage.argLists)
+    {
+        if (argList.argTypes.size() == 3)
+        {
+            BeginLn();
+            {
+                /* Write function signature */
+                Write("void sincos(");
+                WriteDataType(argList.argTypes[0], IsESSL());
+                Write(" x, out ");
+                WriteDataType(argList.argTypes[1], IsESSL());
+                Write(" s, out ");
+                WriteDataType(argList.argTypes[2], IsESSL());
+                Write(" c)");
+
+                /* Write function body */
+                WriteScopeOpen(compactWrappers_);
+                {
+                    Write("s = sin(x), c = cos(x);");
                 }
                 WriteScopeClose();
             }

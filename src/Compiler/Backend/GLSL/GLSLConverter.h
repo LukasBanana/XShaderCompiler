@@ -60,7 +60,6 @@ class GLSLConverter : public Visitor
         DECL_VISIT_PROC( DoWhileLoopStmnt );
         DECL_VISIT_PROC( IfStmnt          );
         DECL_VISIT_PROC( ElseStmnt        );
-        DECL_VISIT_PROC( ExprStmnt        );
         DECL_VISIT_PROC( ReturnStmnt      );
 
         DECL_VISIT_PROC( LiteralExpr      );
@@ -108,10 +107,6 @@ class GLSLConverter : public Visitor
         std::unique_ptr<DataType> MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize = false);
         std::unique_ptr<DataType> MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize = false);
 
-        // Converts the expression to a cast expression if it is required for the specified target type.
-        void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = false);
-        void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = false);
-
         // Removes all statements that are marked as dead code.
         void RemoveDeadCode(std::vector<StmntPtr>& stmnts);
 
@@ -138,6 +133,9 @@ class GLSLConverter : public Visitor
 
         // Converts the expression to a type constructor (i.e. function call) if it's an initializer expression.
       //void ConvertExprIfConstructorRequired(ExprPtr& expr);
+
+        void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = false);
+        void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = false);
 
         /* ----- Unrolling ----- */
 
