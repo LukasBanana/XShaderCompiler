@@ -64,12 +64,27 @@ void Analyzer::Error(const std::string& msg, const AST* ast, const HLSLErr error
 
 void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const AST* ast)
 {
-    Error("undeclared identifier \"" + ident + "\"", ast);
+    ErrorUndeclaredIdent(ident, "", ast);
 }
 
 void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const std::string& contextName, const AST* ast)
 {
-    Error("undeclared identifier \"" + ident + "\" in '" + contextName + "'", ast);
+    std::string s;
+
+    /* Construct error message */
+    s += "undeclared identifier \"" + ident + "\"";
+
+    /* Add descriptive context name */
+    if (!contextName.empty())
+        s += " in '" + contextName + "'";
+
+    /* Search a similar identifier for a suggestion */
+    auto similar = symTable_.FetchSimilar(ident);
+    if (!similar.empty())
+        s += "; did you mean \"" + similar + "\"?";
+
+    /* Report error message */
+    Error(s, ast);
 }
 
 void Analyzer::ErrorInternal(const std::string& msg, const AST* ast)
