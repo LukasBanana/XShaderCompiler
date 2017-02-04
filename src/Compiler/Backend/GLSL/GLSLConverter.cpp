@@ -6,7 +6,6 @@
  */
 
 #include "GLSLConverter.h"
-#include "GLSLHelper.h"
 #include "GLSLKeywords.h"
 #include "AST.h"
 #include "ASTFactory.h"

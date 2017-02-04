@@ -10,7 +10,6 @@
 #include "GLSLConverter.h"
 #include "GLSLKeywords.h"
 #include "GLSLIntrinsics.h"
-#include "GLSLHelper.h"
 #include "ReferenceAnalyzer.h"
 #include "ControlPathAnalyzer.h"
 #include "TypeDenoter.h"
