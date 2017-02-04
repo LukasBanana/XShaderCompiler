@@ -277,11 +277,11 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             AnalyzeSecondaryEntryPoint(ast);
 
         /* Visit function body */
-        PushFunctionDeclLevel(ast);
+        PushFunctionDecl(ast);
         {
             Visit(ast->codeBlock);
         }
-        PopFunctionDeclLevel();
+        PopFunctionDecl();
 
         /* Analyze last statement of function body ('isEndOfFunction' flag) */
         AnalyzeEndOfScopes(*ast);

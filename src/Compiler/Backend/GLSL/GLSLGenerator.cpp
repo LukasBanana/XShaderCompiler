@@ -370,12 +370,16 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     WriteLineMark(ast);
 
     /* Write function declaration */
-    if (ast->flags(FunctionDecl::isEntryPoint))
-        WriteFunctionEntryPoint(ast);
-    else if (ast->flags(FunctionDecl::isSecondaryEntryPoint))
-        WriteFunctionSecondaryEntryPoint(ast);
-    else
-        WriteFunction(ast);
+    PushFunctionDecl(ast);
+    {
+        if (ast->flags(FunctionDecl::isEntryPoint))
+            WriteFunctionEntryPoint(ast);
+        else if (ast->flags(FunctionDecl::isSecondaryEntryPoint))
+            WriteFunctionSecondaryEntryPoint(ast);
+        else
+            WriteFunction(ast);
+    }
+    PopFunctionDecl();
 
     Blank();
 }
@@ -700,7 +704,7 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
-    if (isInsideEntryPoint_)
+    if (InsideEntryPoint() || InsideSecondaryEntryPoint())
     {
         /* Write all output semantics assignment with the expression of the return statement */
         WriteOutputSemanticsAssignment(ast->expr.get());
@@ -1834,11 +1838,7 @@ void GLSLGenerator::WriteFunctionEntryPointBody(FunctionDecl* ast)
     WriteLocalOutputSemantics(ast);
 
     /* Write code block (without additional scope) */
-    isInsideEntryPoint_ = true;
-    {
-        WriteStmntList(ast->codeBlock->stmnts);
-    }
-    isInsideEntryPoint_ = false;
+    WriteStmntList(ast->codeBlock->stmnts);
 
     /* Is the last statement a return statement? (ignore if the function has a non-void return type) */
     if ( ast->HasVoidReturnType() && ( ast->codeBlock->stmnts.empty() || ast->codeBlock->stmnts.back()->Type() != AST::Types::ReturnStmnt ) )
