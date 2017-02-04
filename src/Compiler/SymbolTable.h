@@ -141,7 +141,7 @@ class SymbolTable
         std::string FetchSimilar(const std::string& ident) const
         {
             /* Find similar identifiers */
-            const std::string* similarIdent = nullptr;
+            const std::string* similar = nullptr;
             unsigned int dist = ~0;
 
             for (const auto& symbol : symTable_)
@@ -149,14 +149,14 @@ class SymbolTable
                 auto d = StringDistance(ident, symbol.first);
                 if (d < dist)
                 {
-                    similarIdent = (&symbol.first);
+                    similar = (&symbol.first);
                     dist = d;
                 }
             }
 
             /* Check if the distance is not too large */
-            if (similarIdent != nullptr && dist < ident.size())
-                return *similarIdent;
+            if (similar != nullptr && dist < ident.size())
+                return *similar;
 
             /* No similarities found */
             return "";

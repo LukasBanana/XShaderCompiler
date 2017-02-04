@@ -528,6 +528,9 @@ struct StructDecl : public Decl
     // Returns the VarDecl AST node inside this struct decl for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident) const;
 
+    // Returns an identifier that is similar to the specified identifier (for suggestions of typos)
+    std::string FetchSimilar(const std::string& ident);
+
     // Returns a type denoter for this structure.
     TypeDenoterPtr DeriveTypeDenoter() override;
 

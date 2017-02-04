@@ -10,6 +10,7 @@
 #include "Exception.h"
 #include "HLSLIntrinsics.h"
 #include "Variant.h"
+#include "SymbolTable.h"
 #include <algorithm>
 
 #ifdef XSC_ENABLE_MEMORY_POOL
@@ -468,6 +469,40 @@ VarDecl* StructDecl::Fetch(const std::string& ident) const
     }
 
     return nullptr;
+}
+
+std::string StructDecl::FetchSimilar(const std::string& ident)
+{
+    /* Collect identifiers of all structure members */
+    std::vector<std::string> similarIdents;
+
+    ForEachVarDecl(
+        [&similarIdents](VarDecl* varDecl)
+        {
+            similarIdents.push_back(varDecl->ident);
+        }
+    );
+
+    /* Find similar identifiers */
+    const std::string* similar = nullptr;
+    unsigned int dist = ~0;
+
+    for (const auto& symbol : similarIdents)
+    {
+        auto d = StringDistance(ident, symbol);
+        if (d < dist)
+        {
+            similar = (&symbol);
+            dist = d;
+        }
+    }
+
+    /* Check if the distance is not too large */
+    if (similar != nullptr && dist < ident.size())
+        return *similar;
+
+    /* No similarities found */
+    return "";
 }
 
 TypeDenoterPtr StructDecl::DeriveTypeDenoter()

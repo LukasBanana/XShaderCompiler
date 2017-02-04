@@ -64,10 +64,15 @@ void Analyzer::Error(const std::string& msg, const AST* ast, const HLSLErr error
 
 void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const AST* ast)
 {
-    ErrorUndeclaredIdent(ident, "", ast);
+    ErrorUndeclaredIdent(ident, "", "", ast);
 }
 
 void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const std::string& contextName, const AST* ast)
+{
+    ErrorUndeclaredIdent(ident, contextName, "", ast);
+}
+
+void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const std::string& contextName, const std::string& similarIdent, const AST* ast)
 {
     std::string s;
 
@@ -78,10 +83,9 @@ void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const std::string&
     if (!contextName.empty())
         s += " in '" + contextName + "'";
 
-    /* Search a similar identifier for a suggestion */
-    auto similar = symTable_.FetchSimilar(ident);
-    if (!similar.empty())
-        s += "; did you mean \"" + similar + "\"?";
+    /* Add similar identifier for a suggestion */
+    if (!similarIdent.empty())
+        s += "; did you mean \"" + similarIdent + "\"?";
 
     /* Report error message */
     Error(s, ast);
@@ -141,7 +145,7 @@ AST* Analyzer::Fetch(const std::string& ident, const AST* ast)
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->Fetch();
         else
-            ErrorUndeclaredIdent(ident, ast);
+            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -162,7 +166,7 @@ AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchType();
         else
-            ErrorUndeclaredIdent(ident, ast);
+            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -178,7 +182,7 @@ VarDecl* Analyzer::FetchVarDecl(const std::string& ident, const AST* ast)
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchVarDecl();
         else
-            ErrorUndeclaredIdent(ident, ast);
+            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -219,7 +223,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
             return symbol->FetchFunctionDecl(argTypeDens);
         }
         else
-            ErrorUndeclaredIdent(ident, ast);
+            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
     }
     catch (const ASTRuntimeError& e)
     {
@@ -240,7 +244,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const AST* a
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchFunctionDecl();
         else
-            ErrorUndeclaredIdent(ident, ast);
+            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -251,12 +255,12 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const AST* a
 
 VarDecl* Analyzer::FetchFromStructDecl(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast)
 {
-    if (structTypeDenoter.structDeclRef)
+    if (auto structDecl = structTypeDenoter.structDeclRef)
     {
-        if (auto varDecl = structTypeDenoter.structDeclRef->Fetch(ident))
+        if (auto varDecl = structDecl->Fetch(ident))
             return varDecl;
         else
-            ErrorUndeclaredIdent(ident, structTypeDenoter.ToString(), ast);
+            ErrorUndeclaredIdent(ident, structDecl->ToString(), structDecl->FetchSimilar(ident), ast);
     }
     else
         Error("missing reference to structure declaration in type denoter '" + structTypeDenoter.ToString() + "'", ast);
