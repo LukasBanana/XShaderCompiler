@@ -305,7 +305,7 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    Write(isInsideStructDecl_ ? ast->ident : ast->FinalIdent());
+    Write(InsideStructDecl() ? ast->ident : ast->FinalIdent());
 
     Visit(ast->arrayDims);
 
@@ -326,7 +326,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 {
     if (ast->flags(StructDecl::isNonEntryPointParam) || !ast->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
     {
-        isInsideStructDecl_ = true;
+        PushStructDecl(ast);
 
         /* Write all nested structures (if this is the root structure) */
         if (!ast->flags(StructDecl::isNestedStruct))
@@ -345,7 +345,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         else
             WriteStructDecl(ast, false);
 
-        isInsideStructDecl_ = false;
+        PopStructDecl();
     }
 }
 

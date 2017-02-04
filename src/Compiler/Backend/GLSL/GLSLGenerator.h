@@ -254,7 +254,6 @@ class GLSLGenerator : public Generator
 
         bool                isInsideInterfaceBlock_ = false;
         bool                isInsideUniformBuffer_  = false;
-        bool                isInsideStructDecl_     = false;
 
 };
 
