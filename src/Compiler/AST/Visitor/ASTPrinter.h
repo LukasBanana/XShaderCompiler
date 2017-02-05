@@ -32,6 +32,12 @@ class ASTPrinter : private Visitor
 
     private:
         
+        struct PrintableTree
+        {
+            std::string                 label;
+            std::vector<PrintableTree>  children;
+        };
+
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
@@ -90,25 +96,20 @@ class ASTPrinter : private Visitor
 
         /* --- Helper functions --- */
 
-        void Print(AST* ast, const std::string& astName, const std::string& info = "");
+        std::string WriteLabel(AST* ast, const std::string& astName, const std::string& info = "");
+        void Print(Log& log, const PrintableTree& tree);
 
-        void PushNode(bool signalLastSubNode = false);
-        void PopNode();
-        void SignalLastSubNode();
+        bool PushPrintable(const std::string& label);
+        void PopPrintable();
 
-        void WriteNodeHierarchyLevel(std::string& s);
-
-        template <typename T>
-        void VisitAndSignalLast(T ast);
-
-        template <typename T>
-        void VisitAndSignalLast(const std::vector<T>& astList);
+        PrintableTree* TopPrintable();
 
         /* === Members === */
 
-        Log*                log_ = nullptr;
+        PrintableTree               treeRoot_;
+        std::stack<PrintableTree*>  parentNodeStack_;
 
-        std::vector<bool>   lastSubNodeStack_;
+        std::vector<bool>           lastSubNodeStack_;
 
 };
 
