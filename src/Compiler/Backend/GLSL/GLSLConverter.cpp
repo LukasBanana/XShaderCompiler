@@ -450,7 +450,7 @@ void GLSLConverter::PopFrontOfGlobalInOutVarIdent(VarIdent* ast)
 
     while (ast)
     {
-        /* Has current variable declaration a system semantic? */
+        /* Refers the current identifier to a global input/output variable? */
         if (HasGlobalInOutVarDecl(ast))
         {
             /*
