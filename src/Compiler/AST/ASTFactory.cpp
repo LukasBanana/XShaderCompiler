@@ -149,6 +149,16 @@ CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataTyp
     return MakeCastExpr(typeDenoter, MakeLiteralExpr(literalType, literalValue));
 }
 
+SuffixExprPtr MakeSuffixExpr(const ExprPtr& expr, const VarIdentPtr& varIdent)
+{
+    auto ast = MakeAST<SuffixExpr>();
+    {
+        ast->expr       = expr;
+        ast->varIdent   = varIdent;
+    }
+    return ast;
+}
+
 LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& literalValue)
 {
     auto ast = MakeAST<LiteralExpr>();

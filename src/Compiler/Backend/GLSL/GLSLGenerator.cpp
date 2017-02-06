@@ -796,6 +796,7 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
 
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
+    #if 1
     auto typeDenoter = ast->expr->GetTypeDenoter()->Get();
 
     /*
@@ -809,6 +810,11 @@ IMPLEMENT_VISIT_PROC(SuffixExpr)
 
     /* Write suffix identifiers with optional vector constructor endings (i.e. closing ')' brackets) */
     WriteSuffixVarIdentEnd(*typeDenoter, ast->varIdent.get());
+    #else
+    Visit(ast->expr);
+    Write(".");
+    Visit(ast->varIdent);
+    #endif
 }
 
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)

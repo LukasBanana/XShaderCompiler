@@ -110,6 +110,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         }
     );
 
+    /* Convert argument expressions */
+    for (auto& expr : ast->arguments)
+        ConvertVectorSubscriptExpr(expr);
+
     /* Insert texture object as parameter into intrinsic arguments */
     if (IsTextureIntrinsic(ast->intrinsic))
     {
@@ -169,7 +173,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     /* Must the initializer type denoter changed? */
     if (ast->initializer)
     {
-        /* Convert initializer expression if cast required */
+        ConvertVectorSubscriptExpr(ast->initializer);
         ConvertExprIfCastRequired(ast->initializer, *ast->GetTypeDenoter()->Get());
     }
 
@@ -274,11 +278,18 @@ IMPLEMENT_VISIT_PROC(ElseStmnt)
     VISIT_DEFAULT(ElseStmnt);
 }
 
+IMPLEMENT_VISIT_PROC(ExprStmnt)
+{
+    ConvertVectorSubscriptExpr(ast->expr);
+    VISIT_DEFAULT(ExprStmnt);
+}
+
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     if (ast->expr)
     {
-        /* Convert return expression if cast required */
+        /* Convert return expression */
+        ConvertVectorSubscriptExpr(ast->expr);
         if (ActiveFunctionDecl())
             ConvertExprIfCastRequired(ast->expr, *ActiveFunctionDecl()->returnType->typeDenoter->Get());
     }
@@ -309,7 +320,7 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
     VISIT_DEFAULT(BinaryExpr);
 
-    /* Convert right-hand-side expression if cast required */
+    /* Convert right-hand-side expression (if cast required) */
     ConvertExprIfCastRequired(ast->rhsExpr, *ast->lhsExpr->GetTypeDenoter()->Get());
 }
 
@@ -364,7 +375,8 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
     if (ast->assignExpr)
     {
-        /* Convert assignment expression if cast required */
+        /* Convert assignment expression */
+        ConvertVectorSubscriptExpr(ast->assignExpr);
         ConvertExprIfCastRequired(ast->assignExpr, *ast->GetTypeDenoter()->Get());
     }
 }
@@ -753,27 +765,44 @@ void GLSLConverter::ConvertIntrinsicCallStreamOutputAppend(FunctionCall* ast)
     MoveAll(ast->arguments, program_->disabledAST);
 }
 
-//TODO: this is incomplete
-#if 0
-void GLSLConverter::ConvertVectorSubscriptExpr(ExprPtr& expr)
+bool GLSLConverter::ConvertVectorSubscriptExpr(ExprPtr& expr)
 {
-    auto typeDenoter = expr->GetTypeDenoter()->Get();
-    if (typeDenoter->IsVector())
+    if (expr)
     {
-        if (auto suffixExpr = expr->As<SuffixExpr>())
+        /* Remove outer most vector subscripts from scalar types (i.e. 'scalarValue.xxx.xyz' to '((float3)scalarValue).xyz' */
+        auto varIdent = expr->FetchVarIdent();
+        while (varIdent && varIdent->next)
         {
-            //TODO...
-        }
-        else if (auto varAccessExpr = expr->As<VarAccessExpr>())
-        {
-            if (varAccessExpr->varIdent->next)
+            if (!varIdent->next->symbolRef)
             {
-                //TODO...
+                auto typeDen = varIdent->GetExplicitTypeDenoter(false);
+                if (typeDen->IsScalar())
+                {
+                    auto baseTypeDen = typeDen->As<BaseTypeDenoter>();
+
+                    /* Drop suffix (but store shared pointer) */
+                    auto suffixIdent = varIdent->next;
+                    varIdent->next.reset();
+
+                    /* Convert vector subscript to cast expression */
+                    auto vectorType     = SubscriptDataType(baseTypeDen->dataType, suffixIdent->ident);
+                    auto vectorTypeDen  = std::make_shared<BaseTypeDenoter>(vectorType);
+                    auto castExpr       = ASTFactory::MakeCastExpr(vectorTypeDen, expr);
+
+                    /* Does the suffix expression also has a sub-suffix expression? */
+                    if (suffixIdent->next)
+                        expr = ASTFactory::MakeSuffixExpr(castExpr, suffixIdent->next);
+                    else
+                        expr = castExpr;
+
+                    return true;
+                }
             }
+            varIdent = varIdent->next.get();
         }
     }
+    return false;
 }
-#endif
 
 //TODO: this is incomplete
 #if 0

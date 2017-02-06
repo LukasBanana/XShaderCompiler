@@ -199,7 +199,7 @@ struct Expr : public TypedAST
     // Returns the variable or null if this is not just a single variable expression.
     VarDecl* FetchVarDecl() const;
 
-    // Returns the variable identifier or null if this is not just a single variable eVarDe
+    // Returns the variable identifier or null if this is not just a single variable expression
     virtual VarIdent* FetchVarIdent() const;
 };
 
@@ -977,6 +977,9 @@ struct SuffixExpr : public Expr
     AST_INTERFACE(SuffixExpr);
 
     TypeDenoterPtr DeriveTypeDenoter() override;
+
+    //TODO: not sure if this expression node should have this overloaded function???
+    //VarIdent* FetchVarIdent() const override;
 
     ExprPtr     expr;       // Sub expression (left hand side)
     VarIdentPtr varIdent;   // Suffix var identifier (right hand side)

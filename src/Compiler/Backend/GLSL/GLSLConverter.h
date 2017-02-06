@@ -60,6 +60,7 @@ class GLSLConverter : public Visitor
         DECL_VISIT_PROC( DoWhileLoopStmnt );
         DECL_VISIT_PROC( IfStmnt          );
         DECL_VISIT_PROC( ElseStmnt        );
+        DECL_VISIT_PROC( ExprStmnt        );
         DECL_VISIT_PROC( ReturnStmnt      );
 
         DECL_VISIT_PROC( LiteralExpr      );
@@ -129,10 +130,10 @@ class GLSLConverter : public Visitor
         void ConvertIntrinsicCallStreamOutputAppend(FunctionCall* ast);
 
         // Converts the specified expression if a vector subscript is used on a scalar type expression.
-      //void ConvertVectorSubscriptExpr(ExprPtr& expr);
+        bool ConvertVectorSubscriptExpr(ExprPtr& expr);
 
         // Converts the expression to a type constructor (i.e. function call) if it's an initializer expression.
-      //void ConvertExprIfConstructorRequired(ExprPtr& expr);
+        //void ConvertExprIfConstructorRequired(ExprPtr& expr);
 
         void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = false);
         void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = false);
