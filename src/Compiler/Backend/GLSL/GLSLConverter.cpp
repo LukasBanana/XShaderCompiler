@@ -112,7 +112,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
     /* Convert argument expressions */
     for (auto& expr : ast->arguments)
-        ConvertVectorSubscriptExpr(expr);
+        ConvertExprVectorSubscript(expr);
 
     /* Insert texture object as parameter into intrinsic arguments */
     if (IsTextureIntrinsic(ast->intrinsic))
@@ -173,7 +173,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     /* Must the initializer type denoter changed? */
     if (ast->initializer)
     {
-        ConvertVectorSubscriptExpr(ast->initializer);
+        ConvertExprVectorSubscript(ast->initializer);
         ConvertExprIfCastRequired(ast->initializer, *ast->GetTypeDenoter()->Get());
     }
 
@@ -280,7 +280,7 @@ IMPLEMENT_VISIT_PROC(ElseStmnt)
 
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
-    ConvertVectorSubscriptExpr(ast->expr);
+    ConvertExprVectorSubscript(ast->expr);
     VISIT_DEFAULT(ExprStmnt);
 }
 
@@ -289,7 +289,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     if (ast->expr)
     {
         /* Convert return expression */
-        ConvertVectorSubscriptExpr(ast->expr);
+        ConvertExprVectorSubscript(ast->expr);
         if (ActiveFunctionDecl())
             ConvertExprIfCastRequired(ast->expr, *ActiveFunctionDecl()->returnType->typeDenoter->Get());
     }
@@ -376,7 +376,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     if (ast->assignExpr)
     {
         /* Convert assignment expression */
-        ConvertVectorSubscriptExpr(ast->assignExpr);
+        ConvertExprVectorSubscript(ast->assignExpr);
         ConvertExprIfCastRequired(ast->assignExpr, *ast->GetTypeDenoter()->Get());
     }
 }
@@ -766,7 +766,7 @@ void GLSLConverter::ConvertIntrinsicCallStreamOutputAppend(FunctionCall* ast)
 }
 
 //TODO: clean this up!!!
-void GLSLConverter::ConvertVectorSubscriptExpr(ExprPtr& expr)
+void GLSLConverter::ConvertExprVectorSubscript(ExprPtr& expr)
 {
     if (expr)
     {
@@ -812,7 +812,7 @@ void GLSLConverter::ConvertVectorSubscriptExpr(ExprPtr& expr)
                     else
                         expr = castExpr;
 
-                    ConvertVectorSubscriptExpr(expr);
+                    ConvertExprVectorSubscript(expr);
                     return;
                 }
                 else if (typeDen->IsVector())
@@ -854,7 +854,7 @@ void GLSLConverter::ConvertVectorSubscriptExpr(ExprPtr& expr)
                         else
                             expr = castExpr;
 
-                        ConvertVectorSubscriptExpr(expr);
+                        ConvertExprVectorSubscript(expr);
                         return;
                     }
                 }

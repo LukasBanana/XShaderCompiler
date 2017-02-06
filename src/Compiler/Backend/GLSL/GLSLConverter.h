@@ -130,7 +130,7 @@ class GLSLConverter : public Visitor
         void ConvertIntrinsicCallStreamOutputAppend(FunctionCall* ast);
 
         // Converts the specified expression if a vector subscript is used on a scalar type expression.
-        void ConvertVectorSubscriptExpr(ExprPtr& expr);
+        void ConvertExprVectorSubscript(ExprPtr& expr);
 
         // Converts the expression to a type constructor (i.e. function call) if it's an initializer expression.
         //void ConvertExprIfConstructorRequired(ExprPtr& expr);
