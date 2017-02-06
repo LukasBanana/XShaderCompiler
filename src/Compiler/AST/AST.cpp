@@ -1065,11 +1065,6 @@ TypeDenoterPtr SuffixExpr::DeriveTypeDenoter()
     return expr->GetTypeDenoter()->Get(varIdent.get());
 }
 
-/*VarIdent* SuffixExpr::FetchVarIdent() const
-{
-    return varIdent.get();
-}*/
-
 
 /* ----- ArrayAccessExpr ----- */
 

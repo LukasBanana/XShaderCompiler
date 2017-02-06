@@ -978,9 +978,6 @@ struct SuffixExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    //TODO: not sure if this expression node should have this overloaded function???
-    //VarIdent* FetchVarIdent() const override;
-
     ExprPtr     expr;       // Sub expression (left hand side)
     VarIdentPtr varIdent;   // Suffix var identifier (right hand side)
 };

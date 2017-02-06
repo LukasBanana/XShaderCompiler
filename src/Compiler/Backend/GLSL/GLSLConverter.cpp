@@ -765,29 +765,46 @@ void GLSLConverter::ConvertIntrinsicCallStreamOutputAppend(FunctionCall* ast)
     MoveAll(ast->arguments, program_->disabledAST);
 }
 
-bool GLSLConverter::ConvertVectorSubscriptExpr(ExprPtr& expr)
+//TODO: clean this up!!!
+void GLSLConverter::ConvertVectorSubscriptExpr(ExprPtr& expr)
 {
     if (expr)
     {
-        /* Remove outer most vector subscripts from scalar types (i.e. 'scalarValue.xxx.xyz' to '((float3)scalarValue).xyz' */
-        auto varIdent = expr->FetchVarIdent();
-        while (varIdent && varIdent->next)
+        if (auto suffixExpr = expr->As<SuffixExpr>())
         {
-            if (!varIdent->next->symbolRef)
+            /* Get type denoter of sub expression */
+            auto typeDen = suffixExpr->expr->GetTypeDenoter()->Get();
+            VarIdentPtr* suffixIdentRef = &(suffixExpr->varIdent);
+            bool keepParentSuffix = false;
+
+            /* Remove outer most vector subscripts from scalar types (i.e. 'func().xxx.xyz' to '((float3)func()).xyz' */
+            auto varIdent = suffixExpr->varIdent.get();
+            while (varIdent)
             {
-                auto typeDen = varIdent->GetExplicitTypeDenoter(false);
-                if (typeDen->IsScalar())
+                if (varIdent->symbolRef)
+                {
+                    /* Get type denoter for current variable identifier */
+                    typeDen = varIdent->GetExplicitTypeDenoter(false);
+                    suffixIdentRef = &(varIdent->next);
+                    keepParentSuffix = true;
+                }
+                else if (typeDen->IsScalar())
                 {
                     auto baseTypeDen = typeDen->As<BaseTypeDenoter>();
 
                     /* Drop suffix (but store shared pointer) */
-                    auto suffixIdent = varIdent->next;
-                    varIdent->next.reset();
+                    auto suffixIdent = *suffixIdentRef;
+                    suffixIdentRef->reset();
 
                     /* Convert vector subscript to cast expression */
                     auto vectorType     = SubscriptDataType(baseTypeDen->dataType, suffixIdent->ident);
                     auto vectorTypeDen  = std::make_shared<BaseTypeDenoter>(vectorType);
-                    auto castExpr       = ASTFactory::MakeCastExpr(vectorTypeDen, expr);
+
+                    ExprPtr castExpr;
+                    if (keepParentSuffix)
+                        castExpr = ASTFactory::MakeCastExpr(vectorTypeDen, expr);
+                    else
+                        castExpr = ASTFactory::MakeCastExpr(vectorTypeDen, suffixExpr->expr);
 
                     /* Does the suffix expression also has a sub-suffix expression? */
                     if (suffixIdent->next)
@@ -795,13 +812,56 @@ bool GLSLConverter::ConvertVectorSubscriptExpr(ExprPtr& expr)
                     else
                         expr = castExpr;
 
-                    return true;
+                    ConvertVectorSubscriptExpr(expr);
+                    return;
                 }
+                else if (typeDen->IsVector())
+                {
+                    auto baseTypeDen = typeDen->As<BaseTypeDenoter>();
+                    auto vectorType = SubscriptDataType(baseTypeDen->dataType, varIdent->ident);
+                    typeDen = std::make_shared<BaseTypeDenoter>(vectorType);
+                    suffixIdentRef = &(varIdent->next);
+                    keepParentSuffix = true;
+                }
+                varIdent = varIdent->next.get();
             }
-            varIdent = varIdent->next.get();
+        }
+        else
+        {
+            /* Remove outer most vector subscripts from scalar types (i.e. 'scalarValue.xxx.xyz' to '((float3)scalarValue).xyz' */
+            auto varIdent = expr->FetchVarIdent();
+            while (varIdent && varIdent->next)
+            {
+                if (!varIdent->next->symbolRef)
+                {
+                    auto typeDen = varIdent->GetExplicitTypeDenoter(false);
+                    if (typeDen->IsScalar())
+                    {
+                        auto baseTypeDen = typeDen->As<BaseTypeDenoter>();
+
+                        /* Drop suffix (but store shared pointer) */
+                        auto suffixIdent = varIdent->next;
+                        varIdent->next.reset();
+
+                        /* Convert vector subscript to cast expression */
+                        auto vectorType     = SubscriptDataType(baseTypeDen->dataType, suffixIdent->ident);
+                        auto vectorTypeDen  = std::make_shared<BaseTypeDenoter>(vectorType);
+                        auto castExpr       = ASTFactory::MakeCastExpr(vectorTypeDen, expr);
+
+                        /* Does the suffix expression also has a sub-suffix expression? */
+                        if (suffixIdent->next)
+                            expr = ASTFactory::MakeSuffixExpr(castExpr, suffixIdent->next);
+                        else
+                            expr = castExpr;
+
+                        ConvertVectorSubscriptExpr(expr);
+                        return;
+                    }
+                }
+                varIdent = varIdent->next.get();
+            }
         }
     }
-    return false;
 }
 
 //TODO: this is incomplete

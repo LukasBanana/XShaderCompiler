@@ -179,8 +179,11 @@ class GLSLGenerator : public Generator
         // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
         void WriteVarIdentOrSystemValue(VarIdent* ast);
 
+        //TODO: remove this (replaced by GLSLConverter)
+        #if 0
         void WriteSuffixVarIdentBegin(const TypeDenoter& lhsTypeDen, VarIdent* ast);
         void WriteSuffixVarIdentEnd(const TypeDenoter& lhsTypeDen, VarIdent* ast);
+        #endif
 
         /* --- Type denoter --- */
 

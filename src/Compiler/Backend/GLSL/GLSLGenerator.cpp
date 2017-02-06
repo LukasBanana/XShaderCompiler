@@ -796,7 +796,7 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
 
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
-    #if 1
+    #if 0
     auto typeDenoter = ast->expr->GetTypeDenoter()->Get();
 
     /*
@@ -1577,6 +1577,8 @@ static TypeDenoterPtr GetTypeDenoterForSuffixVarIdent(const TypeDenoter& lhsType
     }
 }
 
+//TODO: remove this (replaced by GLSLConverter)
+#if 0
 void GLSLGenerator::WriteSuffixVarIdentBegin(const TypeDenoter& lhsTypeDen, VarIdent* ast)
 {
     /* First traverse sub nodes */
@@ -1618,6 +1620,7 @@ void GLSLGenerator::WriteSuffixVarIdentEnd(const TypeDenoter& lhsTypeDen, VarIde
         WriteSuffixVarIdentEnd(*typeDenoter, ast->next.get());
     }
 }
+#endif
 
 /* --- Type denoter --- */
 
