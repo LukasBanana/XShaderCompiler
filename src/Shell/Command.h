@@ -83,6 +83,7 @@ DECL_SHELL_COMMAND( ShowTimesCommand             );
 DECL_SHELL_COMMAND( ReflectCommand               );
 DECL_SHELL_COMMAND( PPOnlyCommand                );
 DECL_SHELL_COMMAND( MacroCommand                 );
+DECL_SHELL_COMMAND( VertexShaderInputSemanticsCommand );
 DECL_SHELL_COMMAND( PauseCommand                 );
 DECL_SHELL_COMMAND( PresettingCommand            );
 DECL_SHELL_COMMAND( VersionCommand               );
