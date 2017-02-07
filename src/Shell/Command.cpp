@@ -458,15 +458,15 @@ void MacroCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
-* UserSemanticsCommand class
+* VertexShaderInputSemanticsCommand class
 */
 
-std::vector<Command::Identifier> UserSemanticsCommand::Idents() const
+std::vector<Command::Identifier> VertexShaderInputSemanticsCommand::Idents() const
 {
     return{ { "-S", true } };
 }
 
-HelpDescriptor UserSemanticsCommand::Help() const
+HelpDescriptor VertexShaderInputSemanticsCommand::Help() const
 {
     return
     {
@@ -475,7 +475,7 @@ HelpDescriptor UserSemanticsCommand::Help() const
     };
 }
 
-void UserSemanticsCommand::Run(CommandLine& cmdLine, ShellState& state)
+void VertexShaderInputSemanticsCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     auto arg = cmdLine.Accept();
 
