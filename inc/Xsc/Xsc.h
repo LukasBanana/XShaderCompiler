@@ -122,6 +122,9 @@ struct Options
     //! If true, explicit binding slots are enabled. By default false.
     bool explicitBinding            = false;
 
+    //! Contains the name to location mapping for vertex shader input (used only when explicitBinding is true)
+    std::vector<std::pair<std::string, int>> vertexShaderInputSemanticMapping;
+
     //! If true, commentaries are preserved for each statement. By default false.
     bool preserveComments           = false;
 
