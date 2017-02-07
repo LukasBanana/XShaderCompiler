@@ -638,7 +638,7 @@ void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
                     if (structBaseTypeDen->structDeclRef)
                     {
                         structBaseTypeDen->structDeclRef->ForEachVarDecl(
-                            [](VarDecl* member)
+                            [](VarDeclPtr& member)
                             {
                                 member->flags << VarDecl::isDynamicArray;
                             }

@@ -528,7 +528,7 @@ std::string StructDecl::FetchSimilar(const std::string& ident)
     std::vector<std::string> similarIdents;
 
     ForEachVarDecl(
-        [&similarIdents](VarDecl* varDecl)
+        [&similarIdents](VarDeclPtr& varDecl)
         {
             similarIdents.push_back(varDecl->ident);
         }
@@ -873,7 +873,7 @@ bool VarDeclStmnt::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifie
 void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
 {
     for (auto& varDecl : varDecls)
-        iterator(varDecl.get());
+        iterator(varDecl);
 }
 
 

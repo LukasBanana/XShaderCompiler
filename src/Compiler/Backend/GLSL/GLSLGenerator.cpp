@@ -1159,7 +1159,7 @@ void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param,
         auto paramVar = param->varDecls.front().get();
 
         structDecl->ForEachVarDecl(
-            [&](VarDecl* varDecl)
+            [&](VarDeclPtr& varDecl)
             {
                 WriteLn(
                     paramVar->ident + "." + varDecl->ident + " = " + varDecl->FinalIdent() + ";"
@@ -1407,7 +1407,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(VarDecl* param
     {
         /* Write global shader input to local variable assignments */
         structDecl->ForEachVarDecl(
-            [&](VarDecl* varDecl)
+            [&](VarDeclPtr& varDecl)
             {
                 if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
                     WriteLn(*semanticKeyword + " = " + paramVar->ident + "." + varDecl->ident + ";");

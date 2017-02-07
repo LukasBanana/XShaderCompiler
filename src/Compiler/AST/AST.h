@@ -35,7 +35,7 @@ For simplicity only structs with public members are used here.
 class Visitor;
 
 // Iteration callback for VarDecl AST nodes.
-using VarDeclIteratorFunctor = std::function<void(VarDecl* varDecl)>;
+using VarDeclIteratorFunctor = std::function<void(VarDeclPtr& varDecl)>;
 
 // Iteration callback for Expr AST nodes.
 using ExprIteratorFunctor = std::function<void(ExprPtr& expr)>;
