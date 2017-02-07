@@ -131,6 +131,8 @@ class GLSLConverter : public Visitor
 
         // Converts the specified expression if a vector subscript is used on a scalar type expression.
         void ConvertExprVectorSubscript(ExprPtr& expr);
+        void ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* suffixExpr);
+        void ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* varIdent);
 
         // Converts the expression to a type constructor (i.e. function call) if it's an initializer expression.
         //void ConvertExprIfConstructorRequired(ExprPtr& expr);
