@@ -37,6 +37,9 @@ class Visitor;
 // Iteration callback for VarDecl AST nodes.
 using VarDeclIteratorFunctor = std::function<void(VarDecl* varDecl)>;
 
+// Iteration callback for Expr AST nodes.
+using ExprIteratorFunctor = std::function<void(Expr* expr)>;
+
 /* --- Some helper macros --- */
 
 #define AST_INTERFACE(CLASS_NAME)                               \
@@ -130,7 +133,10 @@ struct AST
 
     virtual ~AST();
     
+    // Returns the AST node type.
     virtual Types Type() const = 0;
+
+    // Calls the respective visit-function of the specified visitor.
     virtual void Visit(Visitor* visitor, void* args = nullptr) = 0;
 
     #ifdef XSC_ENABLE_MEMORY_POOL
@@ -143,8 +149,7 @@ struct AST
     FLAG_ENUM
     {
         FLAG( isReachable, 30 ), // This AST node is reachable from the main entry point.
-        FLAG( isUsed,      29 ), // This AST node is used by another expression or statement (i.e. use-count >= 1).
-        FLAG( isDeadCode,  28 ), // This AST node is dead code (after return path).
+        FLAG( isDeadCode,  29 ), // This AST node is dead code (after return path).
     };
 
     // Returns this AST node as the specified sub class if this AST node has the correct type. Otherwise, null is returned.
@@ -192,7 +197,10 @@ struct TypedAST : public AST
 struct Expr : public TypedAST
 {
     // Returns the variable or null if this is not just a single variable expression.
-    virtual VarDecl* FetchVarDecl() const;
+    VarDecl* FetchVarDecl() const;
+
+    // Returns the variable identifier or null if this is not just a single variable expression
+    virtual VarIdent* FetchVarIdent() const;
 };
 
 // Declaration AST base class.
@@ -201,7 +209,7 @@ struct Decl : public TypedAST {};
 // Program AST root.
 struct Program : public AST
 {   
-    AST_INTERFACE(Program)
+    AST_INTERFACE(Program);
 
     // Layout meta data for tessellation-control shaders
     struct LayoutTessControlShader
@@ -240,6 +248,12 @@ struct Program : public AST
     {
         unsigned int numThreads[3] = { 0 };
     };
+
+    // Registers a usage of an intrinsic with the specified arguments (only base types).
+    void RegisterIntrinsicUsage(const Intrinsic intrinsic, const std::vector<ExprPtr>& arguments);
+
+    // Returns a usage-container of the specified intrinsic or null if the specified intrinsic was not registered to be used.
+    const IntrinsicUsage* FetchIntrinsicUsage(const Intrinsic intrinsic) const;
 
     std::vector<StmntPtr>               globalStmnts;               // Global declaration statements
 
@@ -292,6 +306,9 @@ struct FunctionCall : public AST
 
     // Returns the function implementation of this function call, or null if not set.
     FunctionDecl* GetFunctionImpl() const;
+
+    // Iterates over each argument expression that is assigned to an output parameter.
+    void ForEachOutputArgument(const ExprIteratorFunctor& iterator);
 
     VarIdentPtr             varIdent;                           // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
     TypeDenoterPtr          typeDenoter;                        // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
@@ -394,10 +411,7 @@ struct VarIdent : public TypedAST
     std::string ToString() const;
 
     // Returns the last identifier AST node.
-    VarIdent* LastVarIdent();
-
-    // Returns the first identifier AST node that has a variable which is declared as constant.
-    VarIdent* FirstConstVarIdent();
+    VarIdent* Last();
 
     // Returns a type denoter for the symbol reference of the last variable identifier.
     TypeDenoterPtr DeriveTypeDenoter() override;
@@ -431,12 +445,13 @@ struct VarDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,    0 ), // This variable is used as shader input.
-        FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
-        FLAG( isSystemValue,    2 ), // This variable is a system value.
-        FLAG( disableCodeGen,   3 ), // Disables the code generation for this variable declaration.
-        FLAG( isDynamicArray,   4 ), // This variable is a dynamic array (for input/output semantics).
-        FLAG( isWrittenTo,      5 ), // This variable is eventually written to.
+        FLAG( isShaderInput,        0 ), // This variable is used as shader input.
+        FLAG( isShaderOutput,       1 ), // This variable is used as shader output.
+        FLAG( isSystemValue,        2 ), // This variable is a system value.
+        FLAG( isDynamicArray,       3 ), // This variable is a dynamic array (for input/output semantics).
+        FLAG( isWrittenTo,          4 ), // This variable is eventually written to.
+        FLAG( isEntryPointOutput,   5 ), // This variable is used as entry point output (return value, output parameter, stream output).
+        FLAG( isEntryPointLocal,    6 ), // This variable is a local variable of the entry point.
 
         isShaderInputSV     = (isShaderInput  | isSystemValue), // This variable a used as shader input, and it is a system value.
         isShaderOutputSV    = (isShaderOutput | isSystemValue), // This variable a used as shader output, and it is a system value.
@@ -522,6 +537,9 @@ struct StructDecl : public Decl
     // Returns the VarDecl AST node inside this struct decl for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident) const;
 
+    // Returns an identifier that is similar to the specified identifier (for suggestions of typos)
+    std::string FetchSimilar(const std::string& ident);
+
     // Returns a type denoter for this structure.
     TypeDenoterPtr DeriveTypeDenoter() override;
 
@@ -579,6 +597,12 @@ struct FunctionDecl : public Stmnt
         std::vector<VarDecl*> varDeclRefsSV;    // References to all variable declarations of the system value semantics
     };
 
+    struct ParameterStructure
+    {
+        VarDecl*    paramVar;
+        StructDecl* structDecl;
+    };
+
     FLAG_ENUM
     {
         FLAG( isEntryPoint,            0 ), // This function is the main entry point.
@@ -625,6 +649,8 @@ struct FunctionDecl : public Stmnt
 
     FunctionDecl*                   funcImplRef         = nullptr;              // Reference to the function implementation (only for forward declarations).
     std::vector<FunctionDecl*>      funcForwardDeclRefs;                        // Reference to all forward declarations (only for implementations).
+
+    std::vector<ParameterStructure> paramStructs;                               // Parameter with structure type (only for entry point).
 
     std::string                     renamedIdent;
 };
@@ -674,8 +700,9 @@ struct VarDeclStmnt : public Stmnt
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,    2 ), // This variable is used as shader input.
-        FLAG( isShaderOutput,   3 ), // This variable is used as shader output.
+        FLAG( isShaderInput,        0 ), // This variable is used as shader input.
+        FLAG( isShaderOutput,       1 ), // This variable is used as shader output.
+        FLAG( isParameter,          2 ), // This variable is a function parameter (flag should be set during parsing).
     };
 
     // Returns the var-decl statement as string.
@@ -939,7 +966,7 @@ struct BracketExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    VarDecl* FetchVarDecl() const override;
+    VarIdent* FetchVarIdent() const override;
 
     ExprPtr expr; // Inner expression
 };
@@ -984,7 +1011,7 @@ struct VarAccessExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    VarDecl* FetchVarDecl() const override;
+    VarIdent* FetchVarIdent() const override;
 
     VarIdentPtr varIdent;
     AssignOp    assignOp    = AssignOp::Undefined;  // May be undefined

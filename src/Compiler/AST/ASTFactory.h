@@ -16,6 +16,8 @@
 namespace Xsc
 {
 
+class Variant;
+
 namespace ASTFactory
 {
 
@@ -41,7 +43,10 @@ ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall);
 CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr);
 CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue);
 
+SuffixExprPtr MakeSuffixExpr(const ExprPtr& expr, const VarIdentPtr& varIdent);
+
 LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& literalValue);
+LiteralExprPtr MakeLiteralExpr(const Variant& literalValue);
 
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident);
 

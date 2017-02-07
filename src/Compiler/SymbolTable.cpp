@@ -9,10 +9,80 @@
 #include "Exception.h"
 #include "ReportHandler.h"
 #include <algorithm>
+#include <cctype>
 
 
 namespace Xsc
 {
+
+
+static unsigned int StringDistancePrimary(const std::string& lhs, const std::string& rhs, unsigned int shiftOnUneq)
+{
+    static const unsigned int diffUneqCaseEq    = 1;
+    static const unsigned int diffUneq          = 2;
+
+    /* Check for case sensitive differences */
+    unsigned int diff = 0, sim = 0;
+    std::size_t shift = 0;
+
+    for (std::size_t i = 0; (i + shift < lhs.size() && i < rhs.size()); ++i)
+    {
+        auto a = lhs[i + shift];
+        auto b = rhs[i];
+
+        if (a == b)
+            sim += diffUneq;
+        else
+        {
+            if (std::toupper(a) == std::toupper(b))
+            {
+                diff += diffUneqCaseEq;
+                sim += diffUneqCaseEq;
+            }
+            else
+            {
+                diff += diffUneq;
+                if (shiftOnUneq > 0)
+                {
+                    --shiftOnUneq;
+                    ++shift;
+                }
+            }
+        }
+    }
+
+    return (diff >= sim ? ~0 : diff);
+}
+
+unsigned int StringDistance(const std::string& a, const std::string& b)
+{
+    static const unsigned int maxDist = ~0;
+    static const unsigned int maxLenDiff = 3;
+    static const unsigned int maxShift = 2;
+
+    if (a == b)
+        return 0;
+
+    unsigned int dist = maxDist;
+
+    if ( ( a.size() == b.size() ) ||
+         ( a.size() > b.size() && a.size() <= b.size() + maxLenDiff ) ||
+         ( b.size() > a.size() && b.size() <= a.size() + maxLenDiff ) )
+    {
+        for (unsigned int shift = 0; shift <= maxShift; ++shift)
+        {
+            dist = std::min(
+                {
+                    dist,
+                    StringDistancePrimary(a, b, shift),
+                    StringDistancePrimary(b, a, shift)
+                }
+            );
+        }
+    }
+
+    return dist;
+}
 
 
 ASTSymbolOverload::ASTSymbolOverload(const std::string& ident, AST* ast) :

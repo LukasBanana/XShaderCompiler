@@ -322,8 +322,108 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
     Visit(ast->exprs);
 }
 
-
 #undef IMPLEMENT_VISIT_PROC
+
+
+/*
+ * ======= Private: =======
+ */
+
+/* ----- Function declaration tracker ----- */
+
+void Visitor::PushFunctionDecl(FunctionDecl* ast)
+{
+    funcDeclStack_.push(ast);
+    if (ast->flags(FunctionDecl::isEntryPoint))
+        stackLevelOfEntryPoint_ = funcDeclStack_.size();
+    else if (ast->flags(FunctionDecl::isSecondaryEntryPoint))
+        stackLevelOf2ndEntryPoint_ = funcDeclStack_.size();
+}
+
+void Visitor::PopFunctionDecl()
+{
+    if (!funcDeclStack_.empty())
+    {
+        if (stackLevelOfEntryPoint_ == funcDeclStack_.size())
+            stackLevelOfEntryPoint_ = ~0;
+        if (stackLevelOf2ndEntryPoint_ == funcDeclStack_.size())
+            stackLevelOf2ndEntryPoint_ = ~0;
+        funcDeclStack_.pop();
+    }
+    else
+        throw std::underflow_error("function declaration level underflow");
+}
+
+bool Visitor::InsideFunctionDecl() const
+{
+    return (!funcDeclStack_.empty());
+}
+
+bool Visitor::InsideEntryPoint() const
+{
+    return (funcDeclStack_.size() >= stackLevelOfEntryPoint_);
+}
+
+bool Visitor::InsideSecondaryEntryPoint() const
+{
+    return (funcDeclStack_.size() >= stackLevelOf2ndEntryPoint_);
+}
+
+FunctionDecl* Visitor::ActiveFunctionDecl() const
+{
+    return (funcDeclStack_.empty() ? nullptr : funcDeclStack_.top());
+}
+
+/* ----- Function call tracker ----- */
+
+void Visitor::PushFunctionCall(FunctionCall* ast)
+{
+    funcCallStack_.push(ast);
+}
+
+void Visitor::PopFunctionCall()
+{
+    if (!funcCallStack_.empty())
+        funcCallStack_.pop();
+    else
+        throw std::underflow_error("function call stack underflow");
+}
+
+FunctionCall* Visitor::ActiveFunctionCall() const
+{
+    return (funcCallStack_.empty() ? nullptr : funcCallStack_.top());
+}
+
+/* ----- Structure declaration tracker ----- */
+
+void Visitor::PushStructDecl(StructDecl* ast)
+{
+    if (!structDeclStack_.empty())
+    {
+        /* Mark structure as nested structure */
+        ast->flags << StructDecl::isNestedStruct;
+
+        /* Add reference of the new structure to all parent structures */
+        for (auto parentStruct : structDeclStack_)
+            parentStruct->nestedStructDeclRefs.push_back(ast);
+    }
+
+    /* Push new structure onto stack */
+    structDeclStack_.push_back(ast);
+}
+
+void Visitor::PopStructDecl()
+{
+    if (!structDeclStack_.empty())
+        structDeclStack_.pop_back();
+    else
+        throw std::underflow_error("structure declaration level underflow");
+}
+
+bool Visitor::InsideStructDecl() const
+{
+    return (!structDeclStack_.empty());
+}
 
 
 } // /namespace Xsc

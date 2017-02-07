@@ -143,6 +143,7 @@ class GLSLGenerator : public Generator
 
         void WriteLocalInputSemantics(FunctionDecl* entryPoint);
         void WriteLocalInputSemanticsVarDecl(VarDecl* varDecl);
+        void WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl);
         
         void WriteGlobalInputSemantics(FunctionDecl* entryPoint);
         void WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl);
@@ -151,12 +152,14 @@ class GLSLGenerator : public Generator
 
         void WriteLocalOutputSemantics(FunctionDecl* entryPoint);
         void WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl);
+        void WriteLocalOutputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl);
         
         void WriteGlobalOutputSemantics(FunctionDecl* entryPoint);
         void WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName = false);
         void WriteGlobalOutputSemanticsSlot(TypeName* varType, const IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl = nullptr);
 
         void WriteOutputSemanticsAssignment(Expr* ast);
+        void WriteOutputSemanticsAssignmentStructDeclParam(VarDecl* paramVar, StructDecl* structDecl);
 
         /* --- Uniforms --- */
 
@@ -176,8 +179,11 @@ class GLSLGenerator : public Generator
         // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
         void WriteVarIdentOrSystemValue(VarIdent* ast);
 
+        //TODO: remove this (replaced by GLSLConverter)
+        #if 0
         void WriteSuffixVarIdentBegin(const TypeDenoter& lhsTypeDen, VarIdent* ast);
         void WriteSuffixVarIdentEnd(const TypeDenoter& lhsTypeDen, VarIdent* ast);
+        #endif
 
         /* --- Type denoter --- */
 
@@ -211,6 +217,7 @@ class GLSLGenerator : public Generator
         // Writes all required wrapper functions for referenced intrinsics.
         void WriteWrapperIntrinsics();
         void WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage);
+        void WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage);
 
         /* --- Structure --- */
 
@@ -249,11 +256,8 @@ class GLSLGenerator : public Generator
         bool                compactWrappers_        = true;
         bool                alwaysBracedScopes_     = false;
 
-        //bool                isInsideFunction_       = false;
-        bool                isInsideEntryPoint_     = false;
         bool                isInsideInterfaceBlock_ = false;
         bool                isInsideUniformBuffer_  = false;
-        bool                isInsideStructDecl_     = false;
 
 };
 

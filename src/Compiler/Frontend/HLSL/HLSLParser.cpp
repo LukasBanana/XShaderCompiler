@@ -366,6 +366,9 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     ast->varType = ParseTypeName();
     ast->varDecls.push_back(ParseVarDecl(ast.get()));
 
+    /* Mark with 'parameter' flag */
+    ast->flags << VarDeclStmnt::isParameter;
+
     return UpdateSourceArea(ast);
 }
 
@@ -1383,6 +1386,10 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma)
         auto unaryExpr = Make<PostUnaryExpr>();
         unaryExpr->expr = ast;
         unaryExpr->op = StringToUnaryOp(AcceptIt()->Spell());
+        
+        UpdateSourceArea(unaryExpr, ast.get());
+        UpdateSourceAreaOffset(unaryExpr);
+
         ast = unaryExpr;
     }
 

@@ -6,7 +6,6 @@
  */
 
 #include "GLSLConverter.h"
-#include "GLSLHelper.h"
 #include "GLSLKeywords.h"
 #include "AST.h"
 #include "ASTFactory.h"
@@ -70,6 +69,7 @@ IMPLEMENT_VISIT_PROC(Program)
     VISIT_DEFAULT(Program);
 
     //TODO: do not remove these statements, instead mark it as disabled code (otherwise symbol references to these statements are corrupted!)
+    #if 1
     /* Remove all variables which are sampler state objects, since GLSL does not support sampler states */
     MoveAllIf(
         ast->globalStmnts,
@@ -83,6 +83,7 @@ IMPLEMENT_VISIT_PROC(Program)
             return false;
         }
     );
+    #endif
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
@@ -108,6 +109,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             return IsSamplerStateTypeDenoter(expr->GetTypeDenoter());
         }
     );
+
+    /* Convert argument expressions */
+    for (auto& expr : ast->arguments)
+        ConvertExprVectorSubscript(expr);
 
     /* Insert texture object as parameter into intrinsic arguments */
     if (IsTextureIntrinsic(ast->intrinsic))
@@ -168,7 +173,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     /* Must the initializer type denoter changed? */
     if (ast->initializer)
     {
-        /* Convert initializer expression if cast required */
+        ConvertExprVectorSubscript(ast->initializer);
         ConvertExprIfCastRequired(ast->initializer, *ast->GetTypeDenoter()->Get());
     }
 
@@ -179,11 +184,11 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 {
     LabelAnonymousStructDecl(ast);
 
-    PushStructDeclLevel();
+    PushStructDecl(ast);
     {
         VISIT_DEFAULT(StructDecl);
     }
-    PopStructDeclLevel();
+    PopStructDecl();
 
     RemoveSamplerStateVarDeclStmnts(ast->members);
 
@@ -200,7 +205,11 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    ConvertFunctionDecl(ast);
+    PushFunctionDecl(ast);
+    {
+        ConvertFunctionDecl(ast);
+    }
+    PopFunctionDecl();
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
@@ -271,13 +280,7 @@ IMPLEMENT_VISIT_PROC(ElseStmnt)
 
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
-    if (auto funcCall = ASTFactory::FindSingleFunctionCall(ast->expr.get()))
-    {
-        /* Is this a special intrinsic function call? */
-        if (funcCall->intrinsic == Intrinsic::SinCos)
-            ast->expr = ASTFactory::MakeSeparatedSinCosFunctionCalls(*funcCall);
-    }
-
+    ConvertExprVectorSubscript(ast->expr);
     VISIT_DEFAULT(ExprStmnt);
 }
 
@@ -285,9 +288,10 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     if (ast->expr)
     {
-        /* Convert return expression if cast required */
-        if (currentFunctionDecl_)
-            ConvertExprIfCastRequired(ast->expr, *currentFunctionDecl_->returnType->typeDenoter->Get());
+        /* Convert return expression */
+        ConvertExprVectorSubscript(ast->expr);
+        if (ActiveFunctionDecl())
+            ConvertExprIfCastRequired(ast->expr, *ActiveFunctionDecl()->returnType->typeDenoter->Get());
     }
 
     VISIT_DEFAULT(ReturnStmnt);
@@ -316,7 +320,7 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
     VISIT_DEFAULT(BinaryExpr);
 
-    /* Convert right-hand-side expression if cast required */
+    /* Convert right-hand-side expression (if cast required) */
     ConvertExprIfCastRequired(ast->rhsExpr, *ast->lhsExpr->GetTypeDenoter()->Get());
 }
 
@@ -371,7 +375,8 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
     if (ast->assignExpr)
     {
-        /* Convert assignment expression if cast required */
+        /* Convert assignment expression */
+        ConvertExprVectorSubscript(ast->assignExpr);
         ConvertExprIfCastRequired(ast->assignExpr, *ast->GetTypeDenoter()->Get());
     }
 }
@@ -379,21 +384,6 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 #undef IMPLEMENT_VISIT_PROC
 
 /* --- Helper functions for conversion --- */
-
-void GLSLConverter::PushStructDeclLevel()
-{
-    ++structDeclLevel_;
-}
-
-void GLSLConverter::PopStructDeclLevel()
-{
-    --structDeclLevel_;
-}
-
-bool GLSLConverter::IsInsideStructDecl() const
-{
-    return (structDeclLevel_ > 0);
-}
 
 bool GLSLConverter::IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter) const
 {
@@ -413,7 +403,7 @@ bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
     /* Variable must be renamed if it's not inside a structure declaration and its name is reserved */
     return
     (
-        !IsInsideStructDecl() &&
+        !InsideStructDecl() &&
         !ast->flags(VarDecl::isShaderInput) &&
         (
             std::find_if(
@@ -472,7 +462,7 @@ void GLSLConverter::PopFrontOfGlobalInOutVarIdent(VarIdent* ast)
 
     while (ast)
     {
-        /* Has current variable declaration a system semantic? */
+        /* Refers the current identifier to a global input/output variable? */
         if (HasGlobalInOutVarDecl(ast))
         {
             /*
@@ -497,7 +487,7 @@ void GLSLConverter::PopFrontOfGlobalInOutVarIdent(VarIdent* ast)
 void GLSLConverter::MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt)
 {
     /* Is this statement within the entry point? */
-    if (isInsideEntryPoint_)
+    if (InsideEntryPoint())
     {
         if (bodyStmnt->Type() == AST::Types::ReturnStmnt)
         {
@@ -555,27 +545,6 @@ std::unique_ptr<DataType> GLSLConverter::MustCastExprToDataType(const TypeDenote
     return nullptr;
 }
 
-void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize)
-{
-    if (auto baseSourceTypeDen = expr->GetTypeDenoter()->Get()->As<BaseTypeDenoter>())
-    {
-        if (auto dataType = MustCastExprToDataType(targetType, baseSourceTypeDen->dataType, matchTypeSize))
-        {
-            /* Convert to cast expression with target data type if required */
-            expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
-        }
-    }
-}
-
-void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize)
-{
-    if (auto dataType = MustCastExprToDataType(targetTypeDen, *expr->GetTypeDenoter()->Get(), matchTypeSize))
-    {
-        /* Convert to cast expression with target data type if required */
-        expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
-    }
-}
-
 void GLSLConverter::RemoveDeadCode(std::vector<StmntPtr>& stmnts)
 {
     for (auto it = stmnts.begin(); it != stmnts.end();)
@@ -628,8 +597,6 @@ bool GLSLConverter::RenameReservedKeyword(const std::string& ident, std::string&
 
 void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
 {
-    currentFunctionDecl_ = ast;
-
     RenameReservedKeyword(ast->ident, ast->renamedIdent);
 
     if (ast->flags(FunctionDecl::isEntryPoint))
@@ -648,40 +615,36 @@ void GLSLConverter::ConvertFunctionDeclDefault(FunctionDecl* ast)
 
 void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
 {
-    isInsideEntryPoint_ = true;
+    /* Propagate array parameter declaration to input/output semantics */
+    for (auto param : ast->parameters)
     {
-        /* Propagate array parameter declaration to input/output semantics */
-        for (auto param : ast->parameters)
+        if (!param->varDecls.empty())
         {
-            if (!param->varDecls.empty())
+            auto varDecl = param->varDecls.front();
+            auto typeDen = varDecl->GetTypeDenoter()->Get();
+            if (auto arrayTypeDen = typeDen->As<ArrayTypeDenoter>())
             {
-                auto varDecl = param->varDecls.front();
-                auto typeDen = varDecl->GetTypeDenoter()->Get();
-                if (auto arrayTypeDen = typeDen->As<ArrayTypeDenoter>())
-                {
-                    /* Mark this member and all structure members as dynamic array */
-                    varDecl->flags << VarDecl::isDynamicArray;
+                /* Mark this member and all structure members as dynamic array */
+                varDecl->flags << VarDecl::isDynamicArray;
 
-                    if (auto structBaseTypeDen = arrayTypeDen->baseTypeDenoter->Get()->As<StructTypeDenoter>())
+                if (auto structBaseTypeDen = arrayTypeDen->baseTypeDenoter->Get()->As<StructTypeDenoter>())
+                {
+                    if (structBaseTypeDen->structDeclRef)
                     {
-                        if (structBaseTypeDen->structDeclRef)
-                        {
-                            structBaseTypeDen->structDeclRef->ForEachVarDecl(
-                                [](VarDecl* member)
-                                {
-                                    member->flags << VarDecl::isDynamicArray;
-                                }
-                            );
-                        }
+                        structBaseTypeDen->structDeclRef->ForEachVarDecl(
+                            [](VarDecl* member)
+                            {
+                                member->flags << VarDecl::isDynamicArray;
+                            }
+                        );
                     }
                 }
             }
         }
-
-        /* Default visitor */
-        Visitor::VisitFunctionDecl(ast, nullptr);
     }
-    isInsideEntryPoint_ = false;
+
+    /* Default visitor */
+    Visitor::VisitFunctionDecl(ast, nullptr);
 }
 
 void GLSLConverter::ConvertIntrinsicCall(FunctionCall* ast)
@@ -802,27 +765,104 @@ void GLSLConverter::ConvertIntrinsicCallStreamOutputAppend(FunctionCall* ast)
     MoveAll(ast->arguments, program_->disabledAST);
 }
 
-//TODO: this is incomplete
-#if 0
-void GLSLConverter::ConvertVectorSubscriptExpr(ExprPtr& expr)
+//TODO: clean this up!!!
+void GLSLConverter::ConvertExprVectorSubscript(ExprPtr& expr)
 {
-    auto typeDenoter = expr->GetTypeDenoter()->Get();
-    if (typeDenoter->IsVector())
+    if (expr)
     {
         if (auto suffixExpr = expr->As<SuffixExpr>())
         {
-            //TODO...
-        }
-        else if (auto varAccessExpr = expr->As<VarAccessExpr>())
-        {
-            if (varAccessExpr->varIdent->next)
+            /* Get type denoter of sub expression */
+            auto typeDen = suffixExpr->expr->GetTypeDenoter()->Get();
+            VarIdentPtr* suffixIdentRef = &(suffixExpr->varIdent);
+            bool keepParentSuffix = false;
+
+            /* Remove outer most vector subscripts from scalar types (i.e. 'func().xxx.xyz' to '((float3)func()).xyz' */
+            auto varIdent = suffixExpr->varIdent.get();
+            while (varIdent)
             {
-                //TODO...
+                if (varIdent->symbolRef)
+                {
+                    /* Get type denoter for current variable identifier */
+                    typeDen = varIdent->GetExplicitTypeDenoter(false);
+                    suffixIdentRef = &(varIdent->next);
+                    keepParentSuffix = true;
+                }
+                else if (typeDen->IsScalar())
+                {
+                    auto baseTypeDen = typeDen->As<BaseTypeDenoter>();
+
+                    /* Drop suffix (but store shared pointer) */
+                    auto suffixIdent = *suffixIdentRef;
+                    suffixIdentRef->reset();
+
+                    /* Convert vector subscript to cast expression */
+                    auto vectorType     = SubscriptDataType(baseTypeDen->dataType, suffixIdent->ident);
+                    auto vectorTypeDen  = std::make_shared<BaseTypeDenoter>(vectorType);
+
+                    ExprPtr castExpr;
+                    if (keepParentSuffix)
+                        castExpr = ASTFactory::MakeCastExpr(vectorTypeDen, expr);
+                    else
+                        castExpr = ASTFactory::MakeCastExpr(vectorTypeDen, suffixExpr->expr);
+
+                    /* Does the suffix expression also has a sub-suffix expression? */
+                    if (suffixIdent->next)
+                        expr = ASTFactory::MakeSuffixExpr(castExpr, suffixIdent->next);
+                    else
+                        expr = castExpr;
+
+                    ConvertExprVectorSubscript(expr);
+                    return;
+                }
+                else if (typeDen->IsVector())
+                {
+                    auto baseTypeDen = typeDen->As<BaseTypeDenoter>();
+                    auto vectorType = SubscriptDataType(baseTypeDen->dataType, varIdent->ident);
+                    typeDen = std::make_shared<BaseTypeDenoter>(vectorType);
+                    suffixIdentRef = &(varIdent->next);
+                    keepParentSuffix = true;
+                }
+                varIdent = varIdent->next.get();
+            }
+        }
+        else
+        {
+            /* Remove outer most vector subscripts from scalar types (i.e. 'scalarValue.xxx.xyz' to '((float3)scalarValue).xyz' */
+            auto varIdent = expr->FetchVarIdent();
+            while (varIdent && varIdent->next)
+            {
+                if (!varIdent->next->symbolRef)
+                {
+                    auto typeDen = varIdent->GetExplicitTypeDenoter(false);
+                    if (typeDen->IsScalar())
+                    {
+                        auto baseTypeDen = typeDen->As<BaseTypeDenoter>();
+
+                        /* Drop suffix (but store shared pointer) */
+                        auto suffixIdent = varIdent->next;
+                        varIdent->next.reset();
+
+                        /* Convert vector subscript to cast expression */
+                        auto vectorType     = SubscriptDataType(baseTypeDen->dataType, suffixIdent->ident);
+                        auto vectorTypeDen  = std::make_shared<BaseTypeDenoter>(vectorType);
+                        auto castExpr       = ASTFactory::MakeCastExpr(vectorTypeDen, expr);
+
+                        /* Does the suffix expression also has a sub-suffix expression? */
+                        if (suffixIdent->next)
+                            expr = ASTFactory::MakeSuffixExpr(castExpr, suffixIdent->next);
+                        else
+                            expr = castExpr;
+
+                        ConvertExprVectorSubscript(expr);
+                        return;
+                    }
+                }
+                varIdent = varIdent->next.get();
             }
         }
     }
 }
-#endif
 
 //TODO: this is incomplete
 #if 0
@@ -832,6 +872,28 @@ void GLSLConverter::ConvertExprIfConstructorRequired(ExprPtr& expr)
         expr = ASTFactory::ConvertInitializerExprToTypeConstructor(initExpr);
 }
 #endif
+
+// Converts the expression to a cast expression if it is required for the specified target type.
+void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize)
+{
+    if (auto baseSourceTypeDen = expr->GetTypeDenoter()->Get()->As<BaseTypeDenoter>())
+    {
+        if (auto dataType = MustCastExprToDataType(targetType, baseSourceTypeDen->dataType, matchTypeSize))
+        {
+            /* Convert to cast expression with target data type if required */
+            expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
+        }
+    }
+}
+
+void GLSLConverter::ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize)
+{
+    if (auto dataType = MustCastExprToDataType(targetTypeDen, *expr->GetTypeDenoter()->Get(), matchTypeSize))
+    {
+        /* Convert to cast expression with target data type if required */
+        expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
+    }
+}
 
 /* ----- Unrolling ----- */
 

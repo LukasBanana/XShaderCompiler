@@ -30,14 +30,37 @@ class Optimizer : private Visitor
         
         void OptimizeStmntList(std::vector<StmntPtr>& stmnts);
 
+        void OptimizeExpr(ExprPtr& expr);
+
         bool CanRemoveStmnt(const Stmnt& ast) const;
 
         /* ----- Visitor implementation ----- */
+ 
+        DECL_VISIT_PROC( CodeBlock         );
+        DECL_VISIT_PROC( SwitchCase        );
+        DECL_VISIT_PROC( ArrayDimension    );
 
-        DECL_VISIT_PROC( CodeBlock   );
-        DECL_VISIT_PROC( SwitchCase  );
+        DECL_VISIT_PROC( VarDecl           );
 
-        DECL_VISIT_PROC( BracketExpr );
+        DECL_VISIT_PROC( ForLoopStmnt      );
+        DECL_VISIT_PROC( WhileLoopStmnt    );
+        DECL_VISIT_PROC( DoWhileLoopStmnt  );
+        DECL_VISIT_PROC( IfStmnt           );
+        DECL_VISIT_PROC( ElseStmnt         );
+        DECL_VISIT_PROC( SwitchStmnt       );
+        DECL_VISIT_PROC( ExprStmnt         );
+        DECL_VISIT_PROC( ReturnStmnt       );
+
+        DECL_VISIT_PROC( ListExpr          );
+        DECL_VISIT_PROC( TernaryExpr       );
+        DECL_VISIT_PROC( BinaryExpr        );
+        DECL_VISIT_PROC( UnaryExpr         );
+        DECL_VISIT_PROC( PostUnaryExpr     );
+        DECL_VISIT_PROC( BracketExpr       );
+        DECL_VISIT_PROC( SuffixExpr        );
+        DECL_VISIT_PROC( ArrayAccessExpr   );
+        DECL_VISIT_PROC( CastExpr          );
+        DECL_VISIT_PROC( InitializerExpr   );
 
 };
 

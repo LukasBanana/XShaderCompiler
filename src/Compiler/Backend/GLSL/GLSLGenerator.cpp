@@ -10,7 +10,6 @@
 #include "GLSLConverter.h"
 #include "GLSLKeywords.h"
 #include "GLSLIntrinsics.h"
-#include "GLSLHelper.h"
 #include "ReferenceAnalyzer.h"
 #include "ControlPathAnalyzer.h"
 #include "TypeDenoter.h"
@@ -135,6 +134,7 @@ bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
     static const std::set<Intrinsic> wrappedIntrinsics
     {
         Intrinsic::Clip,
+        Intrinsic::SinCos,
     };
     return (wrappedIntrinsics.find(intrinsic) != wrappedIntrinsics.end());
 }
@@ -305,7 +305,7 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    Write(isInsideStructDecl_ ? ast->ident : ast->FinalIdent());
+    Write(InsideStructDecl() ? ast->ident : ast->FinalIdent());
 
     Visit(ast->arrayDims);
 
@@ -326,7 +326,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 {
     if (ast->flags(StructDecl::isNonEntryPointParam) || !ast->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
     {
-        isInsideStructDecl_ = true;
+        PushStructDecl(ast);
 
         /* Write all nested structures (if this is the root structure) */
         if (!ast->flags(StructDecl::isNestedStruct))
@@ -345,7 +345,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         else
             WriteStructDecl(ast, false);
 
-        isInsideStructDecl_ = false;
+        PopStructDecl();
     }
 }
 
@@ -370,12 +370,16 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     WriteLineMark(ast);
 
     /* Write function declaration */
-    if (ast->flags(FunctionDecl::isEntryPoint))
-        WriteFunctionEntryPoint(ast);
-    else if (ast->flags(FunctionDecl::isSecondaryEntryPoint))
-        WriteFunctionSecondaryEntryPoint(ast);
-    else
-        WriteFunction(ast);
+    PushFunctionDecl(ast);
+    {
+        if (ast->flags(FunctionDecl::isEntryPoint))
+            WriteFunctionEntryPoint(ast);
+        else if (ast->flags(FunctionDecl::isSecondaryEntryPoint))
+            WriteFunctionSecondaryEntryPoint(ast);
+        else
+            WriteFunction(ast);
+    }
+    PopFunctionDecl();
 
     Blank();
 }
@@ -466,12 +470,19 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     #if 1
     for (auto it = varDecls.begin(); it != varDecls.end();)
     {
+        auto var = it->get();
+        const auto& baseVarType = var->GetTypeDenoter()->GetBase();
+
+        StructDecl* structDecl = nullptr;
+        if (auto structTypeDen = baseVarType.As<const StructTypeDenoter>())
+            structDecl = structTypeDen->structDeclRef;
+
         /*
         First check if code generation is disabled for variable declaration,
         then check if this is a system value semantic inside an interface block.
         */
-        if ( (*it)->flags(VarDecl::disableCodeGen) ||
-             ( isInsideInterfaceBlock_ && (*it)->semantic.IsSystemValue() ) )
+        if ( ( var->flags(VarDecl::isEntryPointLocal) && ( !structDecl || !structDecl->flags(StructDecl::isNonEntryPointParam) ) ) ||
+             ( isInsideInterfaceBlock_ && var->semantic.IsSystemValue() ) )
         {
             /*
             Code generation is disabled for this variable declaration
@@ -693,7 +704,7 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
-    if (isInsideEntryPoint_)
+    if (InsideEntryPoint() || InsideSecondaryEntryPoint())
     {
         /* Write all output semantics assignment with the expression of the return statement */
         WriteOutputSemanticsAssignment(ast->expr.get());
@@ -785,6 +796,7 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
 
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
+    #if 0
     auto typeDenoter = ast->expr->GetTypeDenoter()->Get();
 
     /*
@@ -798,6 +810,11 @@ IMPLEMENT_VISIT_PROC(SuffixExpr)
 
     /* Write suffix identifiers with optional vector constructor endings (i.e. closing ')' brackets) */
     WriteSuffixVarIdentEnd(*typeDenoter, ast->varIdent.get());
+    #else
+    Visit(ast->expr);
+    Write(".");
+    Visit(ast->varIdent);
+    #endif
 }
 
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
@@ -1101,8 +1118,14 @@ void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
         }
     );
 
-    /*if (!varDeclRefs.empty())
-        Blank();*/
+    for (auto& param : entryPoint->parameters)
+    {
+        if (auto varType = param->varType->GetTypeDenoter()->Get())
+        {
+            if (auto structTypeDen = varType->As<StructTypeDenoter>())
+                WriteLocalInputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
+        }
+    }
 }
 
 void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
@@ -1139,6 +1162,27 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
         }
     }
     EndLn();
+}
+
+void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl)
+{
+    if (structDecl && structDecl->flags(StructDecl::isNonEntryPointParam) && structDecl->flags(StructDecl::isShaderInput))
+    {
+        /* Write parameter as variable declaration */
+        Visit(param);
+
+        /* Write global shader input to local variable assignments */
+        auto paramVar = param->varDecls.front().get();
+
+        structDecl->ForEachVarDecl(
+            [&](VarDecl* varDecl)
+            {
+                WriteLn(
+                    paramVar->ident + "." + varDecl->ident + " = " + varDecl->FinalIdent() + ";"
+                );
+            }
+        );
+    }
 }
 
 void GLSLGenerator::WriteGlobalInputSemantics(FunctionDecl* entryPoint)
@@ -1194,6 +1238,8 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 
 void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 {
+    //TODO: maybe remove this??? (currently unused)
+    #if 0
     entryPoint->outputSemantics.ForEach(
         [this](VarDecl* varDecl)
         {
@@ -1201,9 +1247,16 @@ void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
                 WriteLocalOutputSemanticsVarDecl(varDecl);
         }
     );
+    #endif
 
-    /*if (!varDeclRefs.empty())
-        Blank();*/
+    for (auto& param : entryPoint->parameters)
+    {
+        if (auto varType = param->varType->GetTypeDenoter()->Get())
+        {
+            if (auto structTypeDen = varType->As<StructTypeDenoter>())
+                WriteLocalOutputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
+        }
+    }
 }
 
 void GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
@@ -1215,6 +1268,15 @@ void GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
         Write(" " + varDecl->FinalIdent() + ";");
     }
     EndLn();
+}
+
+void GLSLGenerator::WriteLocalOutputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl)
+{
+    if (structDecl && structDecl->flags(StructDecl::isNonEntryPointParam) && structDecl->flags(StructDecl::isShaderOutput))
+    {
+        /* Write parameter as variable declaration */
+        Visit(param);
+    }
 }
 
 void GLSLGenerator::WriteGlobalOutputSemantics(FunctionDecl* entryPoint)
@@ -1316,6 +1378,10 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
     auto        semantic    = entryPoint->semantic;
     const auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefsSV;
 
+    /* Write wrapped structures */
+    for (const auto& paramStruct : entryPoint->paramStructs)
+        WriteOutputSemanticsAssignmentStructDeclParam(paramStruct.paramVar, paramStruct.structDecl);
+
     /* Prefer variables from structure, rather than function return semantic */
     if (!varDeclRefs.empty())
     {
@@ -1326,13 +1392,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
             if (varDecl->semantic.IsValid() && varDecl->flags(VarDecl::isWrittenTo))
             {
                 if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
-                {
-                    BeginLn();
-                    {
-                        Write(*semanticKeyword + " = " + varDecl->FinalIdent() + ";");
-                    }
-                    EndLn();
-                }
+                    WriteLn(*semanticKeyword + " = " + varDecl->FinalIdent() + ";");
             }
         }
         #endif
@@ -1355,6 +1415,23 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
     }
     else if (IsFragmentShader())
         Error("missing output semantic", ast);
+}
+
+void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(VarDecl* paramVar, StructDecl* structDecl)
+{
+    if (structDecl && structDecl->flags(StructDecl::isNonEntryPointParam) && structDecl->flags(StructDecl::isShaderOutput))
+    {
+        /* Write global shader input to local variable assignments */
+        structDecl->ForEachVarDecl(
+            [&](VarDecl* varDecl)
+            {
+                if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
+                    WriteLn(*semanticKeyword + " = " + paramVar->ident + "." + varDecl->ident + ";");
+                else
+                    WriteLn(varDecl->FinalIdent() + " = " + paramVar->ident + "." + varDecl->ident + ";");
+            }
+        );
+    }
 }
 
 /* --- Uniforms --- */
@@ -1500,6 +1577,8 @@ static TypeDenoterPtr GetTypeDenoterForSuffixVarIdent(const TypeDenoter& lhsType
     }
 }
 
+//TODO: remove this (replaced by GLSLConverter)
+#if 0
 void GLSLGenerator::WriteSuffixVarIdentBegin(const TypeDenoter& lhsTypeDen, VarIdent* ast)
 {
     /* First traverse sub nodes */
@@ -1541,6 +1620,7 @@ void GLSLGenerator::WriteSuffixVarIdentEnd(const TypeDenoter& lhsTypeDen, VarIde
         WriteSuffixVarIdentEnd(*typeDenoter, ast->next.get());
     }
 }
+#endif
 
 /* --- Type denoter --- */
 
@@ -1764,14 +1844,10 @@ void GLSLGenerator::WriteFunctionEntryPointBody(FunctionDecl* ast)
 {
     /* Write input/output parameters of system values as local variables */
     WriteLocalInputSemantics(ast);
-    //WriteLocalOutputSemantics(ast);
+    WriteLocalOutputSemantics(ast);
 
     /* Write code block (without additional scope) */
-    isInsideEntryPoint_ = true;
-    {
-        WriteStmntList(ast->codeBlock->stmnts);
-    }
-    isInsideEntryPoint_ = false;
+    WriteStmntList(ast->codeBlock->stmnts);
 
     /* Is the last statement a return statement? (ignore if the function has a non-void return type) */
     if ( ast->HasVoidReturnType() && ( ast->codeBlock->stmnts.empty() || ast->codeBlock->stmnts.back()->Type() != AST::Types::ReturnStmnt ) )
@@ -1819,7 +1895,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
             if (keyword)
                 Write(*keyword);
             else
-                Error("failed to map intrinsic '" + ast->varIdent->LastVarIdent()->ToString() + "' to GLSL keyword", ast);
+                Error("failed to map intrinsic '" + ast->varIdent->Last()->ToString() + "' to GLSL keyword", ast);
         }
         else
         {
@@ -2011,14 +2087,10 @@ void GLSLGenerator::WriteWrapperIntrinsics()
 {
     auto program = GetProgram();
 
-    auto Used = [program](Intrinsic intr) -> IntrinsicUsage*
-    {
-        auto it = program->usedIntrinsics.find(intr);
-        return (it != program->usedIntrinsics.end() ? &(it->second) : nullptr);
-    };
-
-    if (auto usage = Used(Intrinsic::Clip))
+    if (auto usage = program->FetchIntrinsicUsage(Intrinsic::Clip))
         WriteWrapperIntrinsicsClip(*usage);
+    if (auto usage = program->FetchIntrinsicUsage(Intrinsic::SinCos))
+        WriteWrapperIntrinsicsSinCos(*usage);
 }
 
 void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
@@ -2061,6 +2133,42 @@ void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
                         Write("discard;");
                     }
                     WriteScopeClose();
+                }
+                WriteScopeClose();
+            }
+            EndLn();
+
+            wrappersWritten = true;
+        }
+    }
+
+    if (wrappersWritten)
+        Blank();
+}
+
+void GLSLGenerator::WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage)
+{
+    bool wrappersWritten = false;
+
+    for (const auto& argList : usage.argLists)
+    {
+        if (argList.argTypes.size() == 3)
+        {
+            BeginLn();
+            {
+                /* Write function signature */
+                Write("void sincos(");
+                WriteDataType(argList.argTypes[0], IsESSL());
+                Write(" x, out ");
+                WriteDataType(argList.argTypes[1], IsESSL());
+                Write(" s, out ");
+                WriteDataType(argList.argTypes[2], IsESSL());
+                Write(" c)");
+
+                /* Write function body */
+                WriteScopeOpen(compactWrappers_);
+                {
+                    Write("s = sin(x), c = cos(x);");
                 }
                 WriteScopeClose();
             }

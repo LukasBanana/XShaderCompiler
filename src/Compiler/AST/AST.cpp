@@ -10,6 +10,7 @@
 #include "Exception.h"
 #include "HLSLIntrinsics.h"
 #include "Variant.h"
+#include "SymbolTable.h"
 #include <algorithm>
 
 #ifdef XSC_ENABLE_MEMORY_POOL
@@ -62,7 +63,39 @@ void TypedAST::ResetBufferedTypeDenoter()
 
 VarDecl* Expr::FetchVarDecl() const
 {
+    if (auto varIdent = FetchVarIdent())
+        return varIdent->FetchVarDecl();
+    else
+        return nullptr;
+}
+
+VarIdent* Expr::FetchVarIdent() const
+{
     return nullptr;
+}
+
+
+/* ----- Program ----- */
+
+void Program::RegisterIntrinsicUsage(const Intrinsic intrinsic, const std::vector<ExprPtr>& arguments)
+{
+    /* Insert argument types (only base types) into usage list */
+    IntrinsicUsage::ArgumentList argList;
+    {
+        for (auto& arg : arguments)
+        {
+            auto typeDen = arg->GetTypeDenoter()->Get();
+            if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
+                argList.argTypes.push_back(baseTypeDen->dataType);
+        }
+    }
+    usedIntrinsics[intrinsic].argLists.insert(argList);
+}
+
+const IntrinsicUsage* Program::FetchIntrinsicUsage(const Intrinsic intrinsic) const
+{
+    auto it = usedIntrinsics.find(intrinsic);
+    return (it != usedIntrinsics.end() ? &(it->second) : nullptr);
 }
 
 
@@ -86,24 +119,9 @@ std::string VarIdent::ToString() const
     return name;
 }
 
-VarIdent* VarIdent::LastVarIdent()
+VarIdent* VarIdent::Last()
 {
-    return (next ? next->LastVarIdent() : this);
-}
-
-VarIdent* VarIdent::FirstConstVarIdent()
-{
-    if (symbolRef)
-    {
-        if (auto varDecl = symbolRef->As<VarDecl>())
-        {
-            if (varDecl->declStmntRef->IsConst())
-                return this;
-            if (next)
-                return next->FirstConstVarIdent();
-        }
-    }
-    return nullptr;
+    return (next ? next->Last() : this);
 }
 
 TypeDenoterPtr VarIdent::DeriveTypeDenoter()
@@ -261,6 +279,20 @@ FunctionDecl* FunctionCall::GetFunctionImpl() const
             return funcDecl;
     }
     return nullptr;
+}
+
+void FunctionCall::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
+{
+    if (funcDeclRef && iterator)
+    {
+        const auto& parameters = funcDeclRef->parameters;
+
+        for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+        {
+            if (parameters[i]->IsOutput())
+                iterator(arguments[i].get());
+        }
+    }
 }
 
 
@@ -461,6 +493,40 @@ VarDecl* StructDecl::Fetch(const std::string& ident) const
     }
 
     return nullptr;
+}
+
+std::string StructDecl::FetchSimilar(const std::string& ident)
+{
+    /* Collect identifiers of all structure members */
+    std::vector<std::string> similarIdents;
+
+    ForEachVarDecl(
+        [&similarIdents](VarDecl* varDecl)
+        {
+            similarIdents.push_back(varDecl->ident);
+        }
+    );
+
+    /* Find similar identifiers */
+    const std::string* similar = nullptr;
+    unsigned int dist = ~0;
+
+    for (const auto& symbol : similarIdents)
+    {
+        auto d = StringDistance(ident, symbol);
+        if (d < dist)
+        {
+            similar = (&symbol);
+            dist = d;
+        }
+    }
+
+    /* Check if the distance is not too large */
+    if (similar != nullptr && dist < ident.size())
+        return *similar;
+
+    /* No similarities found */
+    return "";
 }
 
 TypeDenoterPtr StructDecl::DeriveTypeDenoter()
@@ -986,9 +1052,9 @@ TypeDenoterPtr BracketExpr::DeriveTypeDenoter()
     return expr->GetTypeDenoter();
 }
 
-VarDecl* BracketExpr::FetchVarDecl() const
+VarIdent* BracketExpr::FetchVarIdent() const
 {
-    return expr->FetchVarDecl();
+    return expr->FetchVarIdent();
 }
 
 
@@ -1041,9 +1107,9 @@ TypeDenoterPtr VarAccessExpr::DeriveTypeDenoter()
     return varIdent->GetTypeDenoter();
 }
 
-VarDecl* VarAccessExpr::FetchVarDecl() const
+VarIdent* VarAccessExpr::FetchVarIdent() const
 {
-    return varIdent->FetchVarDecl();
+    return varIdent.get();
 }
 
 

@@ -71,11 +71,6 @@ class GLSLConverter : public Visitor
 
         /* ----- Helper functions for conversion ----- */
 
-        void PushStructDeclLevel();
-        void PopStructDeclLevel();
-
-        bool IsInsideStructDecl() const;
-
         // Returns true if the specified type denoter is a sampler state type.
         bool IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter) const;
 
@@ -113,10 +108,6 @@ class GLSLConverter : public Visitor
         std::unique_ptr<DataType> MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize = false);
         std::unique_ptr<DataType> MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize = false);
 
-        // Converts the expression to a cast expression if it is required for the specified target type.
-        void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = false);
-        void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = false);
-
         // Removes all statements that are marked as dead code.
         void RemoveDeadCode(std::vector<StmntPtr>& stmnts);
 
@@ -139,10 +130,13 @@ class GLSLConverter : public Visitor
         void ConvertIntrinsicCallStreamOutputAppend(FunctionCall* ast);
 
         // Converts the specified expression if a vector subscript is used on a scalar type expression.
-      //void ConvertVectorSubscriptExpr(ExprPtr& expr);
+        void ConvertExprVectorSubscript(ExprPtr& expr);
 
         // Converts the expression to a type constructor (i.e. function call) if it's an initializer expression.
-      //void ConvertExprIfConstructorRequired(ExprPtr& expr);
+        //void ConvertExprIfConstructorRequired(ExprPtr& expr);
+
+        void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = false);
+        void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = false);
 
         /* ----- Unrolling ----- */
 
@@ -164,13 +158,7 @@ class GLSLConverter : public Visitor
         */
         std::vector<VarDecl*>   reservedVarDecls_;
 
-        unsigned int            structDeclLevel_        = 0;
         unsigned int            anonymousStructCounter_ = 0;
-
-        // True, if AST traversal is currently inside the main entry point (or its sub nodes).
-        bool                    isInsideEntryPoint_     = false;
-
-        FunctionDecl*           currentFunctionDecl_    = nullptr;
 
         // True, if code obfuscation is enabled
         unsigned int            obfuscationCounter_     = 0;

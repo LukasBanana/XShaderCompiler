@@ -61,19 +61,34 @@ bool ReferenceAnalyzer::IsVariableAnEntryPointParameter(VarDeclStmnt* var) const
     return (entryPointIt != entryPointParams.end());
 }
 
-void ReferenceAnalyzer::PushFunctionDecl(FunctionDecl* funcDecl)
+bool ReferenceAnalyzer::IsActiveFunctionDeclEntryPoint() const
 {
-    funcDeclStack_.push(funcDecl);
+    if (auto funcDecl = ActiveFunctionDecl())
+        return funcDecl->flags(FunctionDecl::isEntryPoint);
+    else
+        return false;
 }
 
-void ReferenceAnalyzer::PopFunctionDecl()
+void ReferenceAnalyzer::MarkLValueVarIdent(VarIdent* varIdent)
 {
-    funcDeclStack_.pop();
+    while (varIdent)
+    {
+        if (auto varDecl = varIdent->FetchVarDecl())
+        {
+            /* Mark variable as l-value */
+            varDecl->flags << VarDecl::isWrittenTo;
+        }
+        varIdent = varIdent->next.get();
+    }
 }
 
-bool ReferenceAnalyzer::IsInsideEntryPoint() const
+void ReferenceAnalyzer::MarkLValueExpr(Expr* expr)
 {
-    return (!funcDeclStack_.empty() && funcDeclStack_.top()->flags(FunctionDecl::isEntryPoint));
+    if (expr)
+    {
+        if (auto varIdent = expr->FetchVarIdent())
+            MarkLValueVarIdent(varIdent);
+    }
 }
 
 /* ------- Visit functions ------- */
@@ -125,35 +140,17 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
     /* Collect all used intrinsics (if they can not be inlined) */
     if (ast->intrinsic != Intrinsic::Undefined && !ast->flags(FunctionCall::canInlineIntrinsicWrapper))
-    {
-        /* Insert argument types (only base types) into usage list */
-        IntrinsicUsage::ArgumentList argList;
-        {
-            for (auto& arg : ast->arguments)
-            {
-                auto typeDen = arg->GetTypeDenoter()->Get();
-                if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
-                    argList.argTypes.push_back(baseTypeDen->dataType);
-            }
-        }
-        program_->usedIntrinsics[ast->intrinsic].argLists.insert(argList);
-    }
+        program_->RegisterIntrinsicUsage(ast->intrinsic, ast->arguments);
 
-    if (ast->funcDeclRef)
-    {
-        /* Mark all arguments, that are assigned to output parameters, as l-values */
-        const auto& arguments = ast->arguments;
-        const auto& parameters = ast->funcDeclRef->parameters;
-
-        for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+    /* Mark all arguments, that are assigned to output parameters, as l-values */
+    ast->ForEachOutputArgument(
+        [this](Expr* argExpr)
         {
-            if (parameters[i]->IsOutput())
-            {
-                if (auto varDecl = arguments[i]->FetchVarDecl())
-                    varDecl->flags << (AST::isUsed | VarDecl::isWrittenTo);
-            }
+            MarkLValueExpr(argExpr);
         }
-    }
+    );
+
+    //TODO: also mark l-values arguments for intrinsic with output parameters!!!
 
     VISIT_DEFAULT(FunctionCall);
 }
@@ -188,6 +185,27 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     if (Reachable(ast))
     {
+        /* Is a variable declaration NOT used as entry point return value? */
+        if (!IsActiveFunctionDeclEntryPoint() || !ast->flags(VarDecl::isEntryPointOutput))
+        {
+            auto declStmnt = ast->declStmntRef;
+
+            /* Has this variable statement a struct type? */
+            auto typeDen = declStmnt->varType->GetTypeDenoter()->Get();
+            if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+            {
+                if (auto structDecl = structTypeDen->structDeclRef)
+                {
+                    /* Is this variable NOT a parameter of the entry point? */
+                    if (!IsVariableAnEntryPointParameter(declStmnt))
+                    {
+                        /* Mark structure to be used as non-entry-point-parameter */
+                        structDecl->flags << StructDecl::isNonEntryPointParam;
+                    }
+                }
+            }
+        }
+
         Visit(ast->declStmntRef);
         Visit(ast->bufferDeclRef);
         VISIT_DEFAULT(VarDecl);
@@ -258,58 +276,41 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     }
 }
 
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
-{
-    if (IsInsideEntryPoint())
-    {
-        /* Is a variable declaration NOT used as entry point return value? */
-        //TODO...
-    }
-    else
-    {
-        /* Has this variable statement a struct type? */
-        auto typeDen = ast->varType->GetTypeDenoter()->Get();
-        if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
-        {
-            if (auto structDecl = structTypeDen->structDeclRef)
-            {
-                /* Is this variable NOT a parameter of the entry point? */
-                if (!IsVariableAnEntryPointParameter(ast))
-                {
-                    /* Mark structure to be used as non-entry-point-parameter */
-                    structDecl->flags << StructDecl::isNonEntryPointParam;
-                }
-            }
-        }
-    }
+/* --- Expressions --- */
 
-    VISIT_DEFAULT(VarDeclStmnt);
+IMPLEMENT_VISIT_PROC(UnaryExpr)
+{
+    MarkLValueExpr(ast->expr.get());
+    VISIT_DEFAULT(UnaryExpr);
 }
 
-/* --- Expressions --- */
+IMPLEMENT_VISIT_PROC(PostUnaryExpr)
+{
+    MarkLValueExpr(ast->expr.get());
+    VISIT_DEFAULT(PostUnaryExpr);
+}
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    if (auto symbol = ast->varIdent->symbolRef)
+    if (auto varIdent = ast->FetchVarIdent())
     {
-        /* Mark symbol as used */
-        symbol->flags << AST::isUsed;
-
         /* Check if this symbol is the fragment coordinate (SV_Position/ gl_FragCoord) */
-        if (auto varDecl = symbol->As<VarDecl>())
+        while (varIdent)
         {
-            if (varDecl->semantic == Semantic::Position && shaderTarget_ == ShaderTarget::FragmentShader)
+            if (auto varDecl = varIdent->FetchVarDecl())
             {
-                /* Mark frag-coord usage in fragment program layout */
-                program_->layoutFragment.fragCoordUsed = true;
+                if (varDecl->semantic == Semantic::Position && shaderTarget_ == ShaderTarget::FragmentShader)
+                {
+                    /* Mark frag-coord usage in fragment program layout */
+                    program_->layoutFragment.fragCoordUsed = true;
+                    break;
+                }
             }
-            
-            if (ast->assignExpr)
-            {
-                /* Mark variable as l-value */
-                varDecl->flags << VarDecl::isWrittenTo;
-            }
+            varIdent = varIdent->next.get();
         }
+
+        if (ast->assignExpr)
+            MarkLValueVarIdent(ast->varIdent.get());
     }
 
     VISIT_DEFAULT(VarAccessExpr);

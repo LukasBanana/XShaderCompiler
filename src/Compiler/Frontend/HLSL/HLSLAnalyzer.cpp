@@ -134,6 +134,14 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                     AnalyzeFunctionCallStandard(ast);
             }
         }
+
+        /* Analyze all l-value arguments that are assigned to output parameters */
+        ast->ForEachOutputArgument(
+            [this](Expr* argExpr)
+            {
+                AnalyzeLValueExpr(argExpr, argExpr);
+            }
+        );
     }
     PopFunctionCall();
 }
@@ -269,11 +277,11 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             AnalyzeSecondaryEntryPoint(ast);
 
         /* Visit function body */
-        PushFunctionDeclLevel(ast);
+        PushFunctionDecl(ast);
         {
             Visit(ast->codeBlock);
         }
-        PopFunctionDeclLevel();
+        PopFunctionDecl();
 
         /* Analyze last statement of function body ('isEndOfFunction' flag) */
         AnalyzeEndOfScopes(*ast);
@@ -483,38 +491,29 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         /* Validate expression type by just calling the getter */
         GetTypeDenoterFrom(ast->expr.get());
 
-        //TODO: refactor this
-        #if 1
         /* Analyze entry point return statement (if a structure is returned from the entry point) */
         if (InsideEntryPoint())
-        {
-            if (auto varDecl = ast->expr->FetchVarDecl())
-            {
-                /*
-                Variable declaration statement has been found,
-                now find the structure object to add the alias name for the interface block.
-                */
-                if (auto structSymbolRef = varDecl->GetTypeDenoter()->Get()->SymbolRef())
-                {
-                    if (auto structDecl = structSymbolRef->As<StructDecl>())
-                    {
-                        /* Store alias name for the interface block */
-                        structDecl->aliasName = varDecl->ident;
-
-                        /*
-                        Don't generate code for this variable declaration,
-                        because this variable is now already used as interface block.
-                        */
-                        varDecl->flags << VarDecl::disableCodeGen;
-                    }
-                }
-            }
-        }
-        #endif
+            AnalyzeEntryPointOutput(ast->expr->FetchVarDecl());
     }
 }
 
 /* --- Expressions --- */
+
+IMPLEMENT_VISIT_PROC(UnaryExpr)
+{
+    Visit(ast->expr);
+
+    if (IsLValueOp(ast->op))
+        AnalyzeLValueExpr(ast->expr.get(), ast);
+}
+
+IMPLEMENT_VISIT_PROC(PostUnaryExpr)
+{
+    Visit(ast->expr);
+
+    if (IsLValueOp(ast->op))
+        AnalyzeLValueExpr(ast->expr.get(), ast);
+}
 
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
@@ -542,10 +541,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     {
         Visit(ast->assignExpr);
         ValidateTypeCastFrom(ast->assignExpr.get(), ast->varIdent.get(), "variable assignment");
-
-        /* Is the variable a valid l-value? */
-        if (auto constIdent = ast->varIdent->FirstConstVarIdent())
-            Error("illegal assignment to l-value '" + constIdent->ident + "' that is declared as constant", ast);
+        AnalyzeLValueVarIdent(ast->varIdent.get(), ast);
     }
 }
 
@@ -658,9 +654,9 @@ void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(FunctionCall* ast)
     }
 }
 
-bool HLSLAnalyzer::AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* ast)
+bool HLSLAnalyzer::AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* funcCall)
 {
-    if (auto symbolRef = ast->varIdent->symbolRef)
+    if (auto symbolRef = funcCall->varIdent->symbolRef)
     {
         if (auto varDecl = symbolRef->As<VarDecl>())
         {
@@ -668,47 +664,58 @@ bool HLSLAnalyzer::AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const Funct
             auto typeDen = varDecl->GetTypeDenoter()->Get();
             if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
             {
-                if (AnalyzeMemberIntrinsicBuffer(intrinsic, bufferTypeDen->bufferType, ast->varIdent->next->ident, ast))
+                if (AnalyzeMemberIntrinsicBuffer(intrinsic, funcCall, bufferTypeDen->bufferType))
                     return true;
             }
         }
         else if (auto bufferDecl = symbolRef->As<BufferDecl>())
         {
             /* Analyze member intrinsic for buffer type */
-            if (AnalyzeMemberIntrinsicBuffer(intrinsic, bufferDecl->GetBufferType(), ast->varIdent->next->ident, ast))
+            if (AnalyzeMemberIntrinsicBuffer(intrinsic, funcCall, bufferDecl->GetBufferType()))
                 return true;
         }
     }
 
     /* Intrinsic not found in an object class */
-    Error("intrinsic '" + ast->varIdent->next->ident + "' not declared in object '" + ast->varIdent->ident + "'", ast);
+    Error("intrinsic '" + funcCall->varIdent->next->ident + "' not declared in object '" + funcCall->varIdent->ident + "'", funcCall);
     return false;
 }
 
-bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const BufferType bufferType, const std::string& ident, const AST* ast)
+bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const FunctionCall* funcCall, const BufferType bufferType)
 {
+    const auto& ident = funcCall->varIdent->next->ident;
+
     if (IsTextureBufferType(bufferType))
     {
-        if (!IsTextureIntrinsic(intrinsic))
-            Error("invalid intrinsic '" + ident + "' for texture object", ast);
-        else
+        if (IsTextureIntrinsic(intrinsic))
             return true;
+        else
+            Error("invalid intrinsic '" + ident + "' for texture object", funcCall);
     }
     else if (IsStorageBufferType(bufferType))
     {
         //TODO
-        /*if (!IsStorageBufferIntrinsic(intrinsic))
-            Error("invalid intrinsic '" + ident + "' for storage-buffer object", ast);
+        /*if (IsStorageBufferIntrinsic(intrinsic))
+            return true;
         else
-            return true;*/
+            Error("invalid intrinsic '" + ident + "' for storage-buffer object", funcCall);*/
     }
     else if (IsStreamBufferType(bufferType))
     {
-        if (!IsStreamOutputIntrinsic(intrinsic))
-            Error("invalid intrinsic '" + ident + "' for stream-output object", ast);
-        else
+        if (IsStreamOutputIntrinsic(intrinsic))
+        {
+            /* Check for entry point output parameters with "StreamOutput::Append" intrinsic */
+            if (InsideEntryPoint() && intrinsic == Intrinsic::StreamOutput_Append)
+            {
+                for (const auto& arg : funcCall->arguments)
+                    AnalyzeEntryPointOutput(arg->FetchVarDecl());
+            }
             return true;
+        }
+        else
+            Error("invalid intrinsic '" + ident + "' for stream-output object", funcCall);
     }
+
     return false;
 }
 
@@ -716,6 +723,7 @@ bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const
 
 void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
 {
+    /* Analyze variable identifier itself */
     if (varIdent)
     {
         try
@@ -731,6 +739,13 @@ void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
         {
             Error(e.what(), varIdent);
         }
+    }
+
+    /* Analyze array indices */
+    while (varIdent)
+    {
+        Visit(varIdent->arrayIndices);
+        varIdent = varIdent->next.get();
     }
 }
 
@@ -801,6 +816,33 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, Samp
     //TODO...
 }*/
 
+void HLSLAnalyzer::AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast)
+{
+    while (varIdent)
+    {
+        if (auto varDecl = varIdent->FetchVarDecl())
+        {
+            /* Is the variable declared as constant? */
+            if (varDecl->declStmntRef->IsConst())
+            {
+                Error(
+                    "illegal assignment to l-value '" + varIdent->ident + "' that is declared as constant",
+                    (ast != nullptr ? ast : varIdent), HLSLErr::ERR_LVALUE_EXPECTED
+                );
+            }
+        }
+        varIdent = varIdent->next.get();
+    }
+}
+
+void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast)
+{
+    if (auto varIdent = expr->FetchVarIdent())
+        AnalyzeLValueVarIdent(varIdent, ast);
+    else
+        Error("illegal assignment to r-value expression", ast, HLSLErr::ERR_LVALUE_EXPECTED);
+}
+
 /* ----- Entry point ----- */
 
 void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
@@ -810,6 +852,19 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
     {
         /* Store reference to entry point in root AST node */
         program_->entryPointRef = funcDecl;
+
+        /* Add all parameter structures to entry point */
+        for (auto& param : funcDecl->parameters)
+        {
+            if (auto varType = param->varType->GetTypeDenoter()->Get())
+            {
+                if (auto structTypeDen = varType->As<StructTypeDenoter>())
+                {
+                    if (auto structDecl = structTypeDen->structDeclRef)
+                        funcDecl->paramStructs.push_back({ param->varDecls.front().get(), structDecl });
+                }
+            }
+        }
 
         /* Analyze function input/output */
         AnalyzeEntryPointInputOutput(funcDecl);
@@ -1227,6 +1282,28 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
 
     #undef COMMON_SEMANTICS
     #undef COMMON_SEMANTICS_EX
+}
+
+void HLSLAnalyzer::AnalyzeEntryPointOutput(VarDecl* varDecl)
+{
+    if (varDecl)
+    {
+        /* Mark variable as entry-pointer output */
+        varDecl->flags << VarDecl::isEntryPointOutput;
+
+        if (auto structSymbolRef = varDecl->GetTypeDenoter()->Get()->SymbolRef())
+        {
+            if (auto structDecl = structSymbolRef->As<StructDecl>())
+            {
+                /* Add variable as parameter-structure to entry point */
+                if (program_->entryPointRef)
+                    program_->entryPointRef->paramStructs.push_back({ varDecl, structDecl });
+                        
+                /* Mark variable as local variable of the entry-point */
+                varDecl->flags << VarDecl::isEntryPointLocal;
+            }
+        }
+    }
 }
 
 /* ----- Inactive entry point ----- */

@@ -33,6 +33,10 @@ bool Analyzer::DecorateAST(
     {
         Error(e.what(), e.GetAST());
     }
+    catch (const std::underflow_error& e)
+    {
+        ErrorInternal(e.what());
+    }
     catch (const std::exception& e)
     {
         Error(e.what());
@@ -64,12 +68,31 @@ void Analyzer::Error(const std::string& msg, const AST* ast, const HLSLErr error
 
 void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const AST* ast)
 {
-    Error("undeclared identifier \"" + ident + "\"", ast);
+    ErrorUndeclaredIdent(ident, "", "", ast);
 }
 
 void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const std::string& contextName, const AST* ast)
 {
-    Error("undeclared identifier \"" + ident + "\" in '" + contextName + "'", ast);
+    ErrorUndeclaredIdent(ident, contextName, "", ast);
+}
+
+void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const std::string& contextName, const std::string& similarIdent, const AST* ast)
+{
+    std::string s;
+
+    /* Construct error message */
+    s += "undeclared identifier \"" + ident + "\"";
+
+    /* Add descriptive context name */
+    if (!contextName.empty())
+        s += " in '" + contextName + "'";
+
+    /* Add similar identifier for a suggestion */
+    if (!similarIdent.empty())
+        s += "; did you mean \"" + similarIdent + "\"?";
+
+    /* Report error message */
+    Error(s, ast);
 }
 
 void Analyzer::ErrorInternal(const std::string& msg, const AST* ast)
@@ -126,7 +149,7 @@ AST* Analyzer::Fetch(const std::string& ident, const AST* ast)
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->Fetch();
         else
-            ErrorUndeclaredIdent(ident, ast);
+            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -147,7 +170,7 @@ AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchType();
         else
-            ErrorUndeclaredIdent(ident, ast);
+            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -163,7 +186,7 @@ VarDecl* Analyzer::FetchVarDecl(const std::string& ident, const AST* ast)
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchVarDecl();
         else
-            ErrorUndeclaredIdent(ident, ast);
+            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -204,7 +227,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
             return symbol->FetchFunctionDecl(argTypeDens);
         }
         else
-            ErrorUndeclaredIdent(ident, ast);
+            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
     }
     catch (const ASTRuntimeError& e)
     {
@@ -225,7 +248,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const AST* a
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchFunctionDecl();
         else
-            ErrorUndeclaredIdent(ident, ast);
+            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -236,12 +259,12 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const AST* a
 
 VarDecl* Analyzer::FetchFromStructDecl(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast)
 {
-    if (structTypeDenoter.structDeclRef)
+    if (auto structDecl = structTypeDenoter.structDeclRef)
     {
-        if (auto varDecl = structTypeDenoter.structDeclRef->Fetch(ident))
+        if (auto varDecl = structDecl->Fetch(ident))
             return varDecl;
         else
-            ErrorUndeclaredIdent(ident, structTypeDenoter.ToString(), ast);
+            ErrorUndeclaredIdent(ident, structDecl->ToString(), structDecl->FetchSimilar(ident), ast);
     }
     else
         Error("missing reference to structure declaration in type denoter '" + structTypeDenoter.ToString() + "'", ast);
@@ -272,93 +295,6 @@ StructDecl* Analyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDeno
             return FetchStructDeclFromTypeDenoter(*(aliasDecl->typeDenoter));
     }
     return nullptr;
-}
-
-/* ----- Function declaration tracker ----- */
-
-void Analyzer::PushFunctionDeclLevel(FunctionDecl* ast)
-{
-    funcDeclStack_.push(ast);
-    if (ast->flags(FunctionDecl::isEntryPoint))
-        funcDeclLevelOfEntryPoint_ = funcDeclStack_.size();
-}
-
-void Analyzer::PopFunctionDeclLevel()
-{
-    if (!funcDeclStack_.empty())
-    {
-        if (funcDeclLevelOfEntryPoint_ == funcDeclStack_.size())
-            funcDeclLevelOfEntryPoint_ = ~0;
-        funcDeclStack_.pop();
-    }
-    else
-        ErrorInternal("function declaration level underflow");
-}
-
-bool Analyzer::InsideFunctionDecl() const
-{
-    return (!funcDeclStack_.empty());
-}
-
-bool Analyzer::InsideEntryPoint() const
-{
-    return (funcDeclStack_.size() >= funcDeclLevelOfEntryPoint_);
-}
-
-FunctionDecl* Analyzer::ActiveFunctionDecl() const
-{
-    return (funcDeclStack_.empty() ? nullptr : funcDeclStack_.top());
-}
-
-/* ----- Structure declaration tracker ----- */
-
-void Analyzer::PushStructDecl(StructDecl* ast)
-{
-    if (!structDeclStack_.empty())
-    {
-        /* Mark structure as nested structure */
-        ast->flags << StructDecl::isNestedStruct;
-
-        /* Add reference of the new structure to all parent structures */
-        for (auto parentStruct : structDeclStack_)
-            parentStruct->nestedStructDeclRefs.push_back(ast);
-    }
-
-    /* Push new structure onto stack */
-    structDeclStack_.push_back(ast);
-}
-
-void Analyzer::PopStructDecl()
-{
-    if (!structDeclStack_.empty())
-        structDeclStack_.pop_back();
-    else
-        ErrorInternal("structure declaration level underflow");
-}
-
-bool Analyzer::InsideStructDecl() const
-{
-    return !structDeclStack_.empty();
-}
-
-/* ----- Function call tracker ----- */
-
-void Analyzer::PushFunctionCall(FunctionCall* ast)
-{
-    funcCallStack_.push(ast);
-}
-
-void Analyzer::PopFunctionCall()
-{
-    if (funcCallStack_.empty())
-        ErrorInternal("function call stack underflow");
-    else
-        funcCallStack_.pop();
-}
-
-FunctionCall* Analyzer::ActiveFunctionCall() const
-{
-    return (funcCallStack_.empty() ? nullptr : funcCallStack_.top());
 }
 
 /* ----- Analyzer functions ----- */

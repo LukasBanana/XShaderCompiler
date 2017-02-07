@@ -8,6 +8,7 @@
 #include "ASTFactory.h"
 #include "Helper.h"
 #include "Exception.h"
+#include "Variant.h"
 
 
 namespace Xsc
@@ -148,6 +149,16 @@ CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataTyp
     return MakeCastExpr(typeDenoter, MakeLiteralExpr(literalType, literalValue));
 }
 
+SuffixExprPtr MakeSuffixExpr(const ExprPtr& expr, const VarIdentPtr& varIdent)
+{
+    auto ast = MakeAST<SuffixExpr>();
+    {
+        ast->expr       = expr;
+        ast->varIdent   = varIdent;
+    }
+    return ast;
+}
+
 LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& literalValue)
 {
     auto ast = MakeAST<LiteralExpr>();
@@ -156,6 +167,20 @@ LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& li
         ast->value      = literalValue;
     }
     return ast;
+}
+
+LiteralExprPtr MakeLiteralExpr(const Variant& literalValue)
+{
+    switch (literalValue.Type())
+    {
+        case Variant::Types::Bool:
+            return MakeLiteralExpr(DataType::Bool, std::to_string(literalValue.Bool()));
+        case Variant::Types::Int:
+            return MakeLiteralExpr(DataType::Int, std::to_string(literalValue.Int()));
+        case Variant::Types::Real:
+            return MakeLiteralExpr(DataType::Float, std::to_string(literalValue.Real()));
+    }
+    return MakeLiteralExpr(DataType::Int, "0");
 }
 
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident)

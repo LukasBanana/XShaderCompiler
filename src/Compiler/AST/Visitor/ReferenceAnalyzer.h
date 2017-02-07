@@ -21,8 +21,8 @@ namespace Xsc
 /*
 Object reference analyzer.
 This helper class for the context analyzer marks all functions
-which are used from the beginning of the shader entry point.
-All other functions will be removed from the code generation.
+which are used (or rather referenced) from the beginning of the shader entry point.
+All other functions will be ignored by the code generator.
 */
 class ReferenceAnalyzer : private Visitor
 {
@@ -42,10 +42,11 @@ class ReferenceAnalyzer : private Visitor
         // Returns true if the specified variable is a paramter of the entry point.
         bool IsVariableAnEntryPointParameter(VarDeclStmnt* var) const;
 
-        void PushFunctionDecl(FunctionDecl* funcDecl);
-        void PopFunctionDecl();
+        // Returns true if the active function declaration is the main entry point.
+        bool IsActiveFunctionDeclEntryPoint() const;
 
-        bool IsInsideEntryPoint() const;
+        void MarkLValueVarIdent(VarIdent* varIdent);
+        void MarkLValueExpr(Expr* expr);
 
         /* ----- Visitor implementation ----- */
 
@@ -62,8 +63,9 @@ class ReferenceAnalyzer : private Visitor
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( BufferDeclStmnt   );
-        DECL_VISIT_PROC( VarDeclStmnt      );
 
+        DECL_VISIT_PROC( UnaryExpr         );
+        DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( VarAccessExpr     );
 
         /* === Members === */
@@ -71,7 +73,6 @@ class ReferenceAnalyzer : private Visitor
         Program*                    program_            = nullptr;
         ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
         
-        std::stack<FunctionDecl*>   funcDeclStack_;
         std::vector<FunctionCall*>  funcCallStack_;
 
 };

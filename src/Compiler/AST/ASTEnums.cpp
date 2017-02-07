@@ -180,6 +180,11 @@ bool IsBitwiseOp(const UnaryOp o)
     return (o == UnaryOp::Not);
 }
 
+bool IsLValueOp(const UnaryOp o)
+{
+    return (o == UnaryOp::Inc || o == UnaryOp::Dec);
+}
+
 
 /* ----- CtrlTransfer Enum ----- */
 

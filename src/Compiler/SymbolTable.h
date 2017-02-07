@@ -21,6 +21,10 @@ namespace Xsc
 {
 
 
+// Returns the ranked distance between the two strings.
+unsigned int StringDistance(const std::string& a, const std::string& b);
+
+
 template <typename T>
 struct GenericDefaultValue
 {
@@ -131,6 +135,31 @@ class SymbolTable
                 return it->second.top().symbol;
             else
                 return GenericDefaultValue<SymbolType>::Get();
+        }
+
+        // Returns an identifier that is similar to the specified identifier (for suggestions of typos)
+        std::string FetchSimilar(const std::string& ident) const
+        {
+            /* Find similar identifiers */
+            const std::string* similar = nullptr;
+            unsigned int dist = ~0;
+
+            for (const auto& symbol : symTable_)
+            {
+                auto d = StringDistance(ident, symbol.first);
+                if (d < dist)
+                {
+                    similar = (&symbol.first);
+                    dist = d;
+                }
+            }
+
+            /* Check if the distance is not too large */
+            if (similar != nullptr && dist < ident.size())
+                return *similar;
+
+            /* No similarities found */
+            return "";
         }
 
         // Returns current scope level.

@@ -72,6 +72,8 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( ExprStmnt         );
         DECL_VISIT_PROC( ReturnStmnt       );
 
+        DECL_VISIT_PROC( UnaryExpr         );
+        DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( SuffixExpr        );
         DECL_VISIT_PROC( VarAccessExpr     );
 
@@ -82,8 +84,8 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeIntrinsicWrapperInlining(FunctionCall* ast);
 
-        bool AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* ast);
-        bool AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const BufferType bufferType, const std::string& ident, const AST* ast = nullptr);
+        bool AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* funcCall);
+        bool AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const FunctionCall* funcCall, const BufferType bufferType);
 
         /* ----- Variable identifier ----- */
 
@@ -92,6 +94,9 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl* varDecl);
       //void AnalyzeVarIdentWithSymbolBufferDecl(VarIdent* varIdent, BufferDecl* bufferDecl);
       //void AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, SamplerDecl* samplerDecl);
+
+        void AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast = nullptr);
+        void AnalyzeLValueExpr(Expr* expr, const AST* ast = nullptr);
 
         /* ----- Entry point ----- */
 
@@ -113,6 +118,8 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPointAttributesComputeShader(const std::vector<AttributePtr>& attribs);
 
         void AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std::vector<Semantic>& inSemantics, const std::vector<Semantic>& outSemantics);
+
+        void AnalyzeEntryPointOutput(VarDecl* varDecl);
 
         /* ----- Secondary entry point ----- */
 

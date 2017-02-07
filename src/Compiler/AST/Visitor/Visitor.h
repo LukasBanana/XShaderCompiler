@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <vector>
+#include <stack>
 
 
 namespace Xsc
@@ -170,6 +171,62 @@ class Visitor
             for (const auto& ast : astList)
                 Visit(ast, args);
         }
+
+        /* ----- Function declaration tracker ----- */
+
+        void PushFunctionDecl(FunctionDecl* ast);
+        void PopFunctionDecl();
+
+        // Returns true if the visitor is currently inside a function declaration.
+        bool InsideFunctionDecl() const;
+
+        // Returns true if the visitor is currently inside the main entry point.
+        bool InsideEntryPoint() const;
+
+        // Returns true if the visitor is currently inside the secondary entry point.
+        bool InsideSecondaryEntryPoint() const;
+
+        // Returns the active (inner most) function declaration or null if the analyzer is currently not inside a function declaration.
+        FunctionDecl* ActiveFunctionDecl() const;
+
+        /* ----- Function call tracker ----- */
+
+        void PushFunctionCall(FunctionCall* ast);
+        void PopFunctionCall();
+
+        // Returns the active (inner most) function call or null if the analyzer is currently not inside a function call.
+        FunctionCall* ActiveFunctionCall() const;
+
+        /* ----- Structure declaration tracker ----- */
+
+        void PushStructDecl(StructDecl* ast);
+        void PopStructDecl();
+
+        // Returns true if the analyzer is currently inside a structure declaration.
+        bool InsideStructDecl() const;
+
+        // Returns the stack (or rather the list) of all current, nested structure declarations.
+        inline const std::vector<StructDecl*>& GetStructDeclStack() const
+        {
+            return structDeclStack_;
+        }
+
+    private:
+
+        // Function declaration stack.
+        std::stack<FunctionDecl*>   funcDeclStack_;
+
+        // Function call stack to join arguments with its function call.
+        std::stack<FunctionCall*>   funcCallStack_;
+
+        // Structure stack to collect all members with system value semantic (SV_...), and detect all nested structures.
+        std::vector<StructDecl*>    structDeclStack_;
+
+        // Function declaration level of the main entry point.
+        std::size_t                 stackLevelOfEntryPoint_     = ~0;
+
+        // Function declaration level of the secondary entry point.
+        std::size_t                 stackLevelOf2ndEntryPoint_  = ~0;
 
 };
 
