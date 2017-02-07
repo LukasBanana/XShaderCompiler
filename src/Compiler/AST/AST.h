@@ -35,10 +35,13 @@ For simplicity only structs with public members are used here.
 class Visitor;
 
 // Iteration callback for VarDecl AST nodes.
-using VarDeclIteratorFunctor = std::function<void(VarDecl* varDecl)>;
+using VarDeclIteratorFunctor = std::function<void(VarDeclPtr& varDecl)>;
 
 // Iteration callback for Expr AST nodes.
-using ExprIteratorFunctor = std::function<void(Expr* expr)>;
+using ExprIteratorFunctor = std::function<void(ExprPtr& expr)>;
+
+// Iteration callback for argument-parameter associations.
+using ArgumentParameterFunctor = std::function<void(ExprPtr& argument, VarDeclPtr& parameter)>;
 
 /* --- Some helper macros --- */
 
@@ -310,6 +313,9 @@ struct FunctionCall : public AST
     // Iterates over each argument expression that is assigned to an output parameter.
     void ForEachOutputArgument(const ExprIteratorFunctor& iterator);
 
+    // Iterates over each argument expression together with its associated parameter.
+    void ForEachArgumentWithParameter(const ArgumentParameterFunctor& iterator);
+
     VarIdentPtr             varIdent;                           // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
     TypeDenoterPtr          typeDenoter;                        // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
     std::vector<ExprPtr>    arguments;
@@ -419,6 +425,9 @@ struct VarIdent : public TypedAST
     // Returns the type denoter for this AST node or the last sub node.
     TypeDenoterPtr GetExplicitTypeDenoter(bool recursive);
 
+    // Returns a type denoter for the vector subscript of this identifier or throws a runtime error on failure.
+    BaseTypeDenoterPtr GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const;
+
     // Moves the next identifier into this one (i.e. removes the first identifier), and propagates the array indices.
     void PopFront();
 
@@ -428,12 +437,11 @@ struct VarIdent : public TypedAST
     // Returns the variable AST node (if the symbol refers to one).
     VarDecl* FetchVarDecl() const;
 
-    std::string             ident;                      // Either this ..
-  //TypeDenoterPtr          typeDenoter;                // ... or this is used
+    std::string             ident;                      // Atomic identifier.
     std::vector<ExprPtr>    arrayIndices;               // Optional array indices
     VarIdentPtr             next;                       // Next identifier; may be null.
 
-    AST*                    symbolRef       = nullptr;  // Symbol reference for DAST to the variable object; may be null.
+    AST*                    symbolRef       = nullptr;  // Symbol reference for DAST to the variable object; may be null (e.g. for vector subscripts)
 };
 
 /* --- Declarations --- */

@@ -37,13 +37,18 @@ FunctionCallExprPtr MakeIntrinsicCallExpr(
     const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments
 );
 
+//TODO: remove this (unused)
+#if 0
 // Converts the specified function call from "sincos(x, s, c)" to "s = sin(x), c = cos(x)".
 ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall);
+#endif
 
 CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr);
 CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue);
 
 SuffixExprPtr MakeSuffixExpr(const ExprPtr& expr, const VarIdentPtr& varIdent);
+
+ExprPtr MakeCastOrSuffixCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr, const VarIdentPtr& suffixVarIdent);
 
 LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& literalValue);
 LiteralExprPtr MakeLiteralExpr(const Variant& literalValue);

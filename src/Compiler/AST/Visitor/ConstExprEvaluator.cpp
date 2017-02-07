@@ -262,6 +262,18 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Visit(ast->expr);
 }
 
+IMPLEMENT_VISIT_PROC(SuffixExpr)
+{
+    //TODO: incomplete!
+    Visit(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+{
+    //TODO: incomplete!
+    Visit(ast->expr);
+}
+
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
     Visit(ast->expr);

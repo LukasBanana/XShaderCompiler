@@ -216,6 +216,24 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
     RuntimeErr("missing symbol reference to derive type denoter of variable identifier '" + ident + "'", this);
 }
 
+BaseTypeDenoterPtr VarIdent::GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const
+{
+    if (auto baseTypeDen = baseTypeDenoter.As<BaseTypeDenoter>())
+    {
+        try
+        {
+            /* Get vector type from subscript */
+            auto vectorType = SubscriptDataType(baseTypeDen->dataType, ident);
+            return std::make_shared<BaseTypeDenoter>(vectorType);
+        }
+        catch (const std::exception& e)
+        {
+            RuntimeErr(e.what(), this);
+        }
+    }
+    RuntimeErr("invalid base type denoter for vector subscript", this);
+}
+
 void VarIdent::PopFront()
 {
     if (next)
@@ -286,12 +304,21 @@ void FunctionCall::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
     if (funcDeclRef && iterator)
     {
         const auto& parameters = funcDeclRef->parameters;
-
         for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
         {
             if (parameters[i]->IsOutput())
-                iterator(arguments[i].get());
+                iterator(arguments[i]);
         }
+    }
+}
+
+void FunctionCall::ForEachArgumentWithParameter(const ArgumentParameterFunctor& iterator)
+{
+    if (funcDeclRef && iterator)
+    {
+        const auto& parameters = funcDeclRef->parameters;
+        for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+            iterator(arguments[i], parameters[i]->varDecls.front());
     }
 }
 
@@ -501,7 +528,7 @@ std::string StructDecl::FetchSimilar(const std::string& ident)
     std::vector<std::string> similarIdents;
 
     ForEachVarDecl(
-        [&similarIdents](VarDecl* varDecl)
+        [&similarIdents](VarDeclPtr& varDecl)
         {
             similarIdents.push_back(varDecl->ident);
         }
@@ -846,7 +873,7 @@ bool VarDeclStmnt::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifie
 void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
 {
     for (auto& varDecl : varDecls)
-        iterator(varDecl.get());
+        iterator(varDecl);
 }
 
 

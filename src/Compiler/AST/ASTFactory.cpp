@@ -89,6 +89,8 @@ FunctionCallExprPtr MakeIntrinsicCallExpr(
     return ast;
 }
 
+//TODO: remove this (unused)
+#if 0
 ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall)
 {
     if (funcCall.arguments.size() == 3)
@@ -132,6 +134,7 @@ ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall)
     else
         RuntimeErr("invalid number of arguments in intrinsic", &funcCall);
 }
+#endif
 
 CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr)
 {
@@ -151,12 +154,21 @@ CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataTyp
 
 SuffixExprPtr MakeSuffixExpr(const ExprPtr& expr, const VarIdentPtr& varIdent)
 {
-    auto ast = MakeAST<SuffixExpr>();
+    auto ast = MakeASTWithOrigin<SuffixExpr>(expr);
     {
         ast->expr       = expr;
         ast->varIdent   = varIdent;
     }
     return ast;
+}
+
+ExprPtr MakeCastOrSuffixCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr, const VarIdentPtr& suffixVarIdent)
+{
+    auto castExpr = ASTFactory::MakeCastExpr(typeDenoter, valueExpr);
+    if (suffixVarIdent)
+        return MakeSuffixExpr(castExpr, suffixVarIdent);
+    else
+        return castExpr;
 }
 
 LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& literalValue)
