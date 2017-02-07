@@ -222,11 +222,14 @@ void ExprConverter::IfFlaggedConvertExprIntoBracket(ExprPtr& expr)
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     VISIT_DEFAULT(FunctionCall);
+
+    for (auto& funcArg : ast->arguments)
+        IfFlaggedConvertExprVectorSubscript(funcArg);
+
     ast->ForEachArgumentWithParameter(
         [this](ExprPtr& funcArg, VarDeclPtr& funcParam)
         {
             auto paramTypeDen = funcParam->GetTypeDenoter()->Get();
-            IfFlaggedConvertExprVectorSubscript(funcArg);
             IfFlaggedConvertExprIfCastRequired(funcArg, *paramTypeDen);
         }
     );
