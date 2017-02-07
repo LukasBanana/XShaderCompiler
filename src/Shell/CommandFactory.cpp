@@ -63,6 +63,7 @@ CommandFactory::CommandFactory()
         ReflectCommand,
         PPOnlyCommand,
         MacroCommand,
+        UserSemanticsCommand,
         PauseCommand,
         PresettingCommand,
         VersionCommand,
