@@ -67,6 +67,10 @@ class ExprConverter : public Visitor
         void ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* suffixExpr);
         void ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* varIdent);
 
+        void IfFlaggedConvertExprVectorSubscript(ExprPtr& expr);
+        void IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen);
+        void IfFlaggedConvertExprIntoBracket(ExprPtr& expr);
+
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( FunctionCall     );

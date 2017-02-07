@@ -137,12 +137,14 @@ void ExprConverter::ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* 
         }
         else if (typeDen->IsScalar())
         {
-            /* Drop suffix (but store shared pointer) */
+            /* Store shared pointer */
             auto suffixIdent = *suffixIdentRef;
-            suffixIdentRef->reset();
 
             /* Convert vector subscript to cast expression */
             auto vectorTypeDen = suffixIdent->GetTypeDenoterFromSubscript(*typeDen);
+
+            /* Now drop suffix (shared pointer remain if 'GetTypeDenoterFromSubscript' throws and local 'suffixIdent' is the only reference!) */
+            suffixIdentRef->reset();
 
             /* Drop outer suffix expression if there is no suffix identifier (i.e. suffixExpr->varIdent) */
             ExprPtr castExpr;
@@ -171,12 +173,16 @@ void ExprConverter::ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* 
             auto typeDen = varIdent->GetExplicitTypeDenoter(false);
             if (typeDen->IsScalar())
             {
-                /* Drop suffix (but store shared pointer) */
+                /* Store shared pointer */
                 auto suffixIdent = varIdent->next;
-                varIdent->next.reset();
 
                 /* Convert vector subscript to cast expression */
                 auto vectorTypeDen = suffixIdent->GetTypeDenoterFromSubscript(*typeDen);
+
+                /* Now drop suffix (shared pointer remain if 'GetTypeDenoterFromSubscript' throws and local 'suffixIdent' is the only reference!) */
+                varIdent->next.reset();
+
+                /* Convert to cast expression */
                 expr = ASTFactory::MakeCastOrSuffixCastExpr(vectorTypeDen, expr, suffixIdent->next);
 
                 /* Repeat conversion until not vector subscripts remains */
@@ -190,6 +196,24 @@ void ExprConverter::ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* 
     }
 }
 
+void ExprConverter::IfFlaggedConvertExprVectorSubscript(ExprPtr& expr)
+{
+    if (conversionFlags_(ConvertVectorSubscripts))
+        ConvertExprVectorSubscript(expr);
+}
+
+void ExprConverter::IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen)
+{
+    if (conversionFlags_(ConvertImplicitCasts))
+        ConvertExprIfCastRequired(expr, targetTypeDen);
+}
+
+void ExprConverter::IfFlaggedConvertExprIntoBracket(ExprPtr& expr)
+{
+    if (conversionFlags_(WrapUnaryExpr))
+        ConvertExprIntoBracket(expr);
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -197,31 +221,27 @@ void ExprConverter::ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* 
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    /* Convert argument expressions */
+    VISIT_DEFAULT(FunctionCall);
     ast->ForEachArgumentWithParameter(
         [this](ExprPtr& funcArg, VarDeclPtr& funcParam)
         {
             auto paramTypeDen = funcParam->GetTypeDenoter()->Get();
-            ConvertExprVectorSubscript(funcArg);
-            ConvertExprIfCastRequired(funcArg, *paramTypeDen);
+            IfFlaggedConvertExprVectorSubscript(funcArg);
+            IfFlaggedConvertExprIfCastRequired(funcArg, *paramTypeDen);
         }
     );
-
-    VISIT_DEFAULT(FunctionCall);
 }
 
 /* --- Declarations --- */
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    /* Must the initializer type denoter changed? */
+    VISIT_DEFAULT(VarDecl);
     if (ast->initializer)
     {
-        ConvertExprVectorSubscript(ast->initializer);
-        ConvertExprIfCastRequired(ast->initializer, *ast->GetTypeDenoter()->Get());
+        IfFlaggedConvertExprVectorSubscript(ast->initializer);
+        IfFlaggedConvertExprIfCastRequired(ast->initializer, *ast->GetTypeDenoter()->Get());
     }
-
-    VISIT_DEFAULT(VarDecl);
 }
 
 /* --- Declaration statements --- */
@@ -239,46 +259,45 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
-    ConvertExprVectorSubscript(ast->condition);
-    ConvertExprVectorSubscript(ast->iteration);
     VISIT_DEFAULT(ForLoopStmnt);
+    IfFlaggedConvertExprVectorSubscript(ast->condition);
+    IfFlaggedConvertExprVectorSubscript(ast->iteration);
 }
 
 IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 {
-    ConvertExprVectorSubscript(ast->condition);
     VISIT_DEFAULT(WhileLoopStmnt);
+    IfFlaggedConvertExprVectorSubscript(ast->condition);
 }
 
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 {
-    ConvertExprVectorSubscript(ast->condition);
     VISIT_DEFAULT(DoWhileLoopStmnt);
+    IfFlaggedConvertExprVectorSubscript(ast->condition);
 }
 
 IMPLEMENT_VISIT_PROC(IfStmnt)
 {
-    ConvertExprVectorSubscript(ast->condition);
     VISIT_DEFAULT(IfStmnt);
+    IfFlaggedConvertExprVectorSubscript(ast->condition);
 }
 
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
-    ConvertExprVectorSubscript(ast->expr);
     VISIT_DEFAULT(ExprStmnt);
+    IfFlaggedConvertExprVectorSubscript(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
+    VISIT_DEFAULT(ReturnStmnt);
     if (ast->expr)
     {
         /* Convert return expression */
-        ConvertExprVectorSubscript(ast->expr);
-        if (ActiveFunctionDecl())
-            ConvertExprIfCastRequired(ast->expr, *ActiveFunctionDecl()->returnType->typeDenoter->Get());
+        IfFlaggedConvertExprVectorSubscript(ast->expr);
+        if (auto funcDecl = ActiveFunctionDecl())
+            IfFlaggedConvertExprIfCastRequired(ast->expr, *(funcDecl->returnType->typeDenoter->Get()));
     }
-
-    VISIT_DEFAULT(ReturnStmnt);
 }
 
 /* --- Expressions --- */
@@ -286,46 +305,42 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
     VISIT_DEFAULT(TernaryExpr);
-    ConvertExprVectorSubscript(ast->condExpr);
-    ConvertExprVectorSubscript(ast->thenExpr);
-    ConvertExprVectorSubscript(ast->elseExpr);
+    IfFlaggedConvertExprVectorSubscript(ast->condExpr);
+    IfFlaggedConvertExprVectorSubscript(ast->thenExpr);
+    IfFlaggedConvertExprVectorSubscript(ast->elseExpr);
 }
 
+// Convert right-hand-side expression (if cast required)
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
     VISIT_DEFAULT(BinaryExpr);
-
-    /* Convert right-hand-side expression (if cast required) */
-    ConvertExprVectorSubscript(ast->lhsExpr);
-    ConvertExprVectorSubscript(ast->rhsExpr);
-    ConvertExprIfCastRequired(ast->rhsExpr, *ast->lhsExpr->GetTypeDenoter()->Get());
+    IfFlaggedConvertExprVectorSubscript(ast->lhsExpr);
+    IfFlaggedConvertExprVectorSubscript(ast->rhsExpr);
+    IfFlaggedConvertExprIfCastRequired(ast->rhsExpr, *ast->lhsExpr->GetTypeDenoter()->Get());
 }
 
+// Wrap unary expression if the next sub expression is again an unary expression
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    /* Is the next sub expression again an unary expression? */
-    if (ast->expr->Type() == AST::Types::UnaryExpr)
-        ConvertExprIntoBracket(ast->expr);
-
-    ConvertExprVectorSubscript(ast->expr);
-
     VISIT_DEFAULT(UnaryExpr);
+    IfFlaggedConvertExprVectorSubscript(ast->expr);
+    if (ast->expr->Type() == AST::Types::UnaryExpr)
+        IfFlaggedConvertExprIntoBracket(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
-    ConvertExprVectorSubscript(ast->expr);
     VISIT_DEFAULT(CastExpr);
+    IfFlaggedConvertExprVectorSubscript(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     VISIT_DEFAULT(VarAccessExpr);
-
     if (ast->assignExpr)
     {
-        ConvertExprVectorSubscript(ast->assignExpr);
-        ConvertExprIfCastRequired(ast->assignExpr, *ast->GetTypeDenoter()->Get());
+        IfFlaggedConvertExprVectorSubscript(ast->assignExpr);
+        IfFlaggedConvertExprIfCastRequired(ast->assignExpr, *ast->GetTypeDenoter()->Get());
     }
 }
 
