@@ -38,7 +38,10 @@ class Visitor;
 using VarDeclIteratorFunctor = std::function<void(VarDecl* varDecl)>;
 
 // Iteration callback for Expr AST nodes.
-using ExprIteratorFunctor = std::function<void(Expr* expr)>;
+using ExprIteratorFunctor = std::function<void(ExprPtr& expr)>;
+
+// Iteration callback for argument-parameter associations.
+using ArgumentParameterFunctor = std::function<void(ExprPtr& argument, VarDeclPtr& parameter)>;
 
 /* --- Some helper macros --- */
 
@@ -309,6 +312,9 @@ struct FunctionCall : public AST
 
     // Iterates over each argument expression that is assigned to an output parameter.
     void ForEachOutputArgument(const ExprIteratorFunctor& iterator);
+
+    // Iterates over each argument expression together with its associated parameter.
+    void ForEachArgumentWithParameter(const ArgumentParameterFunctor& iterator);
 
     VarIdentPtr             varIdent;                           // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
     TypeDenoterPtr          typeDenoter;                        // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").

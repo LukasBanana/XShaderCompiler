@@ -304,12 +304,21 @@ void FunctionCall::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
     if (funcDeclRef && iterator)
     {
         const auto& parameters = funcDeclRef->parameters;
-
         for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
         {
             if (parameters[i]->IsOutput())
-                iterator(arguments[i].get());
+                iterator(arguments[i]);
         }
+    }
+}
+
+void FunctionCall::ForEachArgumentWithParameter(const ArgumentParameterFunctor& iterator)
+{
+    if (funcDeclRef && iterator)
+    {
+        const auto& parameters = funcDeclRef->parameters;
+        for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+            iterator(arguments[i], parameters[i]->varDecls.front());
     }
 }
 

@@ -144,9 +144,9 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
     /* Mark all arguments, that are assigned to output parameters, as l-values */
     ast->ForEachOutputArgument(
-        [this](Expr* argExpr)
+        [this](ExprPtr& argExpr)
         {
-            MarkLValueExpr(argExpr);
+            MarkLValueExpr(argExpr.get());
         }
     );
 

@@ -111,8 +111,14 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     );
 
     /* Convert argument expressions */
-    for (auto& expr : ast->arguments)
-        ConvertExprVectorSubscript(expr);
+    ast->ForEachArgumentWithParameter(
+        [this](ExprPtr& funcArg, VarDeclPtr& funcParam)
+        {
+            auto paramTypeDen = funcParam->GetTypeDenoter()->Get();
+            ConvertExprVectorSubscript(funcArg);
+            ConvertExprIfCastRequired(funcArg, *paramTypeDen);
+        }
+    );
 
     /* Insert texture object as parameter into intrinsic arguments */
     if (IsTextureIntrinsic(ast->intrinsic))

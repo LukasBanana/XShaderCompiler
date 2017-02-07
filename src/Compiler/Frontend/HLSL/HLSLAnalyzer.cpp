@@ -137,9 +137,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
         /* Analyze all l-value arguments that are assigned to output parameters */
         ast->ForEachOutputArgument(
-            [this](Expr* argExpr)
+            [this](ExprPtr& argExpr)
             {
-                AnalyzeLValueExpr(argExpr, argExpr);
+                auto expr = argExpr.get();
+                AnalyzeLValueExpr(expr, expr);
             }
         );
     }

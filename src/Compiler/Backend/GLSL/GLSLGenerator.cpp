@@ -796,25 +796,9 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
 
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
-    #if 0
-    auto typeDenoter = ast->expr->GetTypeDenoter()->Get();
-
-    /*
-    First write all scalar swizzle operations as vector constructors,
-    e.g. "1.0.xxxx" -> "vec4(1.0)", or "1.0.xx.y.xxx" -> "vec3(vec2(1.0).y)"
-    */
-    WriteSuffixVarIdentBegin(*typeDenoter, ast->varIdent.get());
-
-    /* Write left-hand-side expression of suffix */
-    Visit(ast->expr);
-
-    /* Write suffix identifiers with optional vector constructor endings (i.e. closing ')' brackets) */
-    WriteSuffixVarIdentEnd(*typeDenoter, ast->varIdent.get());
-    #else
     Visit(ast->expr);
     Write(".");
     Visit(ast->varIdent);
-    #endif
 }
 
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
@@ -1576,51 +1560,6 @@ static TypeDenoterPtr GetTypeDenoterForSuffixVarIdent(const TypeDenoter& lhsType
         return ast->GetExplicitTypeDenoter(false)->Get();
     }
 }
-
-//TODO: remove this (replaced by GLSLConverter)
-#if 0
-void GLSLGenerator::WriteSuffixVarIdentBegin(const TypeDenoter& lhsTypeDen, VarIdent* ast)
-{
-    /* First traverse sub nodes */
-    if (ast->next)
-    {
-        /* Get type denoter of current VarIdent AST node */
-        auto typeDenoter = GetTypeDenoterForSuffixVarIdent(lhsTypeDen, ast);
-        WriteSuffixVarIdentBegin(*typeDenoter, ast->next.get());
-    }
-
-    /* Has this node a scalar type? */
-    if (lhsTypeDen.IsScalar())
-    {
-        auto lhsBaseTypeDen = lhsTypeDen.As<BaseTypeDenoter>();
-        WriteDataType(SubscriptDataType(lhsBaseTypeDen->dataType, ast->ident), false, ast);
-        Write("(");
-    }
-}
-
-void GLSLGenerator::WriteSuffixVarIdentEnd(const TypeDenoter& lhsTypeDen, VarIdent* ast)
-{
-    /* First write identifier */
-    if (lhsTypeDen.IsScalar())
-    {
-        /* Close vector constructor */
-        Write(")");
-    }
-    else
-    {
-        /* Write next identifier */
-        Write(".");
-        WriteVarIdent(ast, false);
-    }
-
-    /* Now traverse sub nodes */
-    if (ast->next)
-    {
-        auto typeDenoter = GetTypeDenoterForSuffixVarIdent(lhsTypeDen, ast);
-        WriteSuffixVarIdentEnd(*typeDenoter, ast->next.get());
-    }
-}
-#endif
 
 /* --- Type denoter --- */
 
