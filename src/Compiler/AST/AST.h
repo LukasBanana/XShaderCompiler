@@ -428,12 +428,11 @@ struct VarIdent : public TypedAST
     // Returns the variable AST node (if the symbol refers to one).
     VarDecl* FetchVarDecl() const;
 
-    std::string             ident;                      // Either this ..
-  //TypeDenoterPtr          typeDenoter;                // ... or this is used
+    std::string             ident;                      // Atomic identifier.
     std::vector<ExprPtr>    arrayIndices;               // Optional array indices
     VarIdentPtr             next;                       // Next identifier; may be null.
 
-    AST*                    symbolRef       = nullptr;  // Symbol reference for DAST to the variable object; may be null.
+    AST*                    symbolRef       = nullptr;  // Symbol reference for DAST to the variable object; may be null (e.g. for vector subscripts)
 };
 
 /* --- Declarations --- */
