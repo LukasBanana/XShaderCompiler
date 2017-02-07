@@ -48,6 +48,8 @@ CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataTyp
 
 SuffixExprPtr MakeSuffixExpr(const ExprPtr& expr, const VarIdentPtr& varIdent);
 
+ExprPtr MakeCastOrSuffixCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr, const VarIdentPtr& suffixVarIdent);
+
 LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& literalValue);
 LiteralExprPtr MakeLiteralExpr(const Variant& literalValue);
 

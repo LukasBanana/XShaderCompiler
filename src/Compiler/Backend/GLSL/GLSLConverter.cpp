@@ -765,7 +765,6 @@ void GLSLConverter::ConvertIntrinsicCallStreamOutputAppend(FunctionCall* ast)
     MoveAll(ast->arguments, program_->disabledAST);
 }
 
-//TODO: clean this up!!!
 void GLSLConverter::ConvertExprVectorSubscript(ExprPtr& expr)
 {
     if (expr)
@@ -780,12 +779,11 @@ void GLSLConverter::ConvertExprVectorSubscript(ExprPtr& expr)
 void GLSLConverter::ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* suffixExpr)
 {
     /* Get type denoter of sub expression */
-    auto typeDen = suffixExpr->expr->GetTypeDenoter()->Get();
-    VarIdentPtr* suffixIdentRef = &(suffixExpr->varIdent);
-    bool keepParentSuffix = false;
+    auto typeDen        = suffixExpr->expr->GetTypeDenoter()->Get();
+    auto suffixIdentRef = &(suffixExpr->varIdent);
+    auto varIdent       = suffixExpr->varIdent.get();
 
     /* Remove outer most vector subscripts from scalar types (i.e. 'func().xxx.xyz' to '((float3)func()).xyz' */
-    auto varIdent = suffixExpr->varIdent.get();
     while (varIdent)
     {
         if (varIdent->symbolRef)
@@ -793,7 +791,12 @@ void GLSLConverter::ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* 
             /* Get type denoter for current variable identifier */
             typeDen = varIdent->GetExplicitTypeDenoter(false);
             suffixIdentRef = &(varIdent->next);
-            keepParentSuffix = true;
+        }
+        else if (typeDen->IsVector())
+        {
+            /* Get type denoter for current variable identifier from vector subscript */
+            typeDen = varIdent->GetTypeDenoterFromSubscript(*typeDen);
+            suffixIdentRef = &(varIdent->next);
         }
         else if (typeDen->IsScalar())
         {
@@ -804,27 +807,19 @@ void GLSLConverter::ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* 
             /* Convert vector subscript to cast expression */
             auto vectorTypeDen = suffixIdent->GetTypeDenoterFromSubscript(*typeDen);
 
+            /* Drop outer suffix expression if there is no suffix identifier (i.e. suffixExpr->varIdent) */
             ExprPtr castExpr;
-            if (keepParentSuffix)
-                castExpr = ASTFactory::MakeCastExpr(vectorTypeDen, expr);
+            if (suffixExpr->varIdent)
+                expr = ASTFactory::MakeCastOrSuffixCastExpr(vectorTypeDen, expr, suffixIdent->next);
             else
-                castExpr = ASTFactory::MakeCastExpr(vectorTypeDen, suffixExpr->expr);
+                expr = ASTFactory::MakeCastOrSuffixCastExpr(vectorTypeDen, suffixExpr->expr, suffixIdent->next);
 
-            /* Does the suffix expression also has a sub-suffix expression? */
-            if (suffixIdent->next)
-                expr = ASTFactory::MakeSuffixExpr(castExpr, suffixIdent->next);
-            else
-                expr = castExpr;
-
+            /* Repeat conversion until not vector subscripts remains */
             ConvertExprVectorSubscript(expr);
             return;
         }
-        else if (typeDen->IsVector())
-        {
-            typeDen = varIdent->GetTypeDenoterFromSubscript(*typeDen);
-            suffixIdentRef = &(varIdent->next);
-            keepParentSuffix = true;
-        }
+
+        /* Go to next identifier */
         varIdent = varIdent->next.get();
     }
 }
@@ -844,19 +839,16 @@ void GLSLConverter::ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* 
                 varIdent->next.reset();
 
                 /* Convert vector subscript to cast expression */
-                auto vectorTypeDen  = suffixIdent->GetTypeDenoterFromSubscript(*typeDen);
-                auto castExpr       = ASTFactory::MakeCastExpr(vectorTypeDen, expr);
+                auto vectorTypeDen = suffixIdent->GetTypeDenoterFromSubscript(*typeDen);
+                expr = ASTFactory::MakeCastOrSuffixCastExpr(vectorTypeDen, expr, suffixIdent->next);
 
-                /* Does the suffix expression also has a sub-suffix expression? */
-                if (suffixIdent->next)
-                    expr = ASTFactory::MakeSuffixExpr(castExpr, suffixIdent->next);
-                else
-                    expr = castExpr;
-
+                /* Repeat conversion until not vector subscripts remains */
                 ConvertExprVectorSubscript(expr);
                 return;
             }
         }
+
+        /* Go to next identifier */
         varIdent = varIdent->next.get();
     }
 }

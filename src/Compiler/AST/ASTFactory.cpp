@@ -162,6 +162,15 @@ SuffixExprPtr MakeSuffixExpr(const ExprPtr& expr, const VarIdentPtr& varIdent)
     return ast;
 }
 
+ExprPtr MakeCastOrSuffixCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr, const VarIdentPtr& suffixVarIdent)
+{
+    auto castExpr = ASTFactory::MakeCastExpr(typeDenoter, valueExpr);
+    if (suffixVarIdent)
+        return MakeSuffixExpr(castExpr, suffixVarIdent);
+    else
+        return castExpr;
+}
+
 LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& literalValue)
 {
     auto ast = MakeAST<LiteralExpr>();
