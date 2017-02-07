@@ -419,6 +419,9 @@ struct VarIdent : public TypedAST
     // Returns the type denoter for this AST node or the last sub node.
     TypeDenoterPtr GetExplicitTypeDenoter(bool recursive);
 
+    // Returns a type denoter for the vector subscript of this identifier or throws a runtime error on failure.
+    BaseTypeDenoterPtr GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const;
+
     // Moves the next identifier into this one (i.e. removes the first identifier), and propagates the array indices.
     void PopFront();
 

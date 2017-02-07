@@ -216,6 +216,24 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
     RuntimeErr("missing symbol reference to derive type denoter of variable identifier '" + ident + "'", this);
 }
 
+BaseTypeDenoterPtr VarIdent::GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const
+{
+    if (auto baseTypeDen = baseTypeDenoter.As<BaseTypeDenoter>())
+    {
+        try
+        {
+            /* Get vector type from subscript */
+            auto vectorType = SubscriptDataType(baseTypeDen->dataType, ident);
+            return std::make_shared<BaseTypeDenoter>(vectorType);
+        }
+        catch (const std::exception& e)
+        {
+            RuntimeErr(e.what(), this);
+        }
+    }
+    RuntimeErr("invalid base type denoter for vector subscript", this);
+}
+
 void VarIdent::PopFront()
 {
     if (next)
