@@ -85,15 +85,30 @@ void ExprConverter::ConvertExprIntoBracket(ExprPtr& expr)
 std::unique_ptr<DataType> ExprConverter::MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize)
 {
     /* Check for type mismatch */
-    if ( ( matchTypeSize && VectorTypeDim(targetType) != VectorTypeDim(sourceType) ) ||
-         ( IsUIntType    (targetType) && IsIntType     (sourceType) ) ||
-         ( IsIntType     (targetType) && IsUIntType    (sourceType) ) ||
-         ( IsRealType    (targetType) && IsIntegralType(sourceType) ) ||
-         ( IsIntegralType(targetType) && IsRealType    (sourceType) ) )
+    auto targetDim = VectorTypeDim(targetType);
+    auto sourceDim = VectorTypeDim(sourceType);
+
+    if ( ( targetDim != sourceDim && matchTypeSize ) ||
+         (  IsUIntType      (targetType) &&  IsIntType       (sourceType) ) ||
+         (  IsIntType       (targetType) &&  IsUIntType      (sourceType) ) ||
+         (  IsRealType      (targetType) &&  IsIntegralType  (sourceType) ) ||
+         (  IsIntegralType  (targetType) &&  IsRealType      (sourceType) ) ||
+         ( !IsDoubleRealType(targetType) &&  IsDoubleRealType(sourceType) ) ||
+         (  IsDoubleRealType(targetType) && !IsDoubleRealType(sourceType) ) )
     {
-        /* Cast to target type required */
-        return MakeUnique<DataType>(targetType);
+        if (targetDim != sourceDim && !matchTypeSize)
+        {
+            /* Return target base type with source dimension as required cast type */
+            return MakeUnique<DataType>(VectorDataType(BaseDataType(targetType), VectorTypeDim(sourceType)));
+        }
+        else
+        {
+            /* Return target type as required cast type */
+            return MakeUnique<DataType>(targetType);
+        }
     }
+
+    /* No type cast required */
     return nullptr;
 }
 
@@ -202,10 +217,10 @@ void ExprConverter::IfFlaggedConvertExprVectorSubscript(ExprPtr& expr)
         ConvertExprVectorSubscript(expr);
 }
 
-void ExprConverter::IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen)
+void ExprConverter::IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize)
 {
     if (conversionFlags_(ConvertImplicitCasts))
-        ConvertExprIfCastRequired(expr, targetTypeDen);
+        ConvertExprIfCastRequired(expr, targetTypeDen, matchTypeSize);
 }
 
 void ExprConverter::IfFlaggedConvertExprIntoBracket(ExprPtr& expr)
@@ -220,29 +235,53 @@ TypeDenoterPtr ExprConverter::FindCommonTypeDenoter(const TypeDenoterPtr& lhsTyp
     if (lhsTypeDen->IsScalar() && rhsTypeDen->IsScalar())
         return FindCommonTypeDenoterScalarAndScalar(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>());
 
-    /* Scalar and Vector/Matrix */
-    if ( lhsTypeDen->IsScalar() && ( rhsTypeDen->IsVector() || rhsTypeDen->IsMatrix() ) )
-        return FindCommonTypeDenoterScalarAndMatrix(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>());
+    /* Scalar and Vector */
+    if (lhsTypeDen->IsScalar() && rhsTypeDen->IsVector())
+        return FindCommonTypeDenoterScalarAndVector(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>());
 
-    /* Vector/Matrix and Scalar */
-    if ( ( lhsTypeDen->IsVector() || lhsTypeDen->IsMatrix() ) && rhsTypeDen->IsScalar() )
-        return FindCommonTypeDenoterScalarAndMatrix(rhsTypeDen->As<BaseTypeDenoter>(), lhsTypeDen->As<BaseTypeDenoter>());
+    /* Vector and Scalar */
+    if (lhsTypeDen->IsVector() && rhsTypeDen->IsScalar())
+        return FindCommonTypeDenoterScalarAndVector(rhsTypeDen->As<BaseTypeDenoter>(), lhsTypeDen->As<BaseTypeDenoter>());
+
+    /* Vector and Vector */
+    if (lhsTypeDen->IsVector() && rhsTypeDen->IsVector())
+        return FindCommonTypeDenoterVectorAndVector(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>());
 
     /* Default type */
     return FindCommonTypeDenoterAnyAndAny(lhsTypeDen.get(), rhsTypeDen.get());
 }
 
-TypeDenoterPtr ExprConverter::FindCommonTypeDenoterScalarAndScalar(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen)
+static DataType HighestOrderDataType(DataType lhs, DataType rhs, DataType highestType = DataType::Float) //Double//Float
 {
-    /* Return data type with highest order of both types: max{ lhs, rhs }, where order is the integral enum value (bool < int < uint < float ...) */
-    auto highestOrder = std::max(static_cast<int>(lhsTypeDen->dataType), static_cast<int>(rhsTypeDen->dataType));
-    return std::make_shared<BaseTypeDenoter>(static_cast<DataType>(highestOrder));
+    /*
+    Return data type with highest order of both types: max{ lhs, rhs },
+    where order is the integral enum value (bool < int < uint < float ...)
+    */
+    auto highestOrder = std::max({ static_cast<int>(lhs), static_cast<int>(rhs) });
+    auto clampedOrder = std::min({ highestOrder, static_cast<int>(highestType) });
+    return static_cast<DataType>(clampedOrder);
 }
 
-TypeDenoterPtr ExprConverter::FindCommonTypeDenoterScalarAndMatrix(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen)
+TypeDenoterPtr ExprConverter::FindCommonTypeDenoterScalarAndScalar(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen)
 {
-    return lhsTypeDen->Get();
-    //return nullptr;
+    auto commonType = HighestOrderDataType(lhsTypeDen->dataType, rhsTypeDen->dataType);
+    return std::make_shared<BaseTypeDenoter>(commonType);
+}
+
+TypeDenoterPtr ExprConverter::FindCommonTypeDenoterScalarAndVector(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen)
+{
+    auto commonType = HighestOrderDataType(lhsTypeDen->dataType, BaseDataType(rhsTypeDen->dataType));
+    auto rhsDim = VectorTypeDim(rhsTypeDen->dataType);
+    return std::make_shared<BaseTypeDenoter>(VectorDataType(commonType, rhsDim));
+}
+
+TypeDenoterPtr ExprConverter::FindCommonTypeDenoterVectorAndVector(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen)
+{
+    auto commonType = HighestOrderDataType(BaseDataType(lhsTypeDen->dataType), BaseDataType(rhsTypeDen->dataType));
+    auto lhsDim = VectorTypeDim(lhsTypeDen->dataType);
+    auto rhsDim = VectorTypeDim(rhsTypeDen->dataType);
+    auto highestDim = std::max(lhsDim, rhsDim);
+    return std::make_shared<BaseTypeDenoter>(VectorDataType(commonType, highestDim));
 }
 
 TypeDenoterPtr ExprConverter::FindCommonTypeDenoterAnyAndAny(TypeDenoter* lhsTypeDen, TypeDenoter* rhsTypeDen)
@@ -358,9 +397,11 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
     IfFlaggedConvertExprVectorSubscript(ast->lhsExpr);
     IfFlaggedConvertExprVectorSubscript(ast->rhsExpr);
 
+    bool matchTypeSize = (ast->op != BinaryOp::Mul && ast->op != BinaryOp::Div);
+
     auto commonTypeDen = FindCommonTypeDenoter(ast->lhsExpr->GetTypeDenoter()->Get(), ast->rhsExpr->GetTypeDenoter()->Get());
-    IfFlaggedConvertExprIfCastRequired(ast->lhsExpr, *commonTypeDen);
-    IfFlaggedConvertExprIfCastRequired(ast->rhsExpr, *commonTypeDen);
+    IfFlaggedConvertExprIfCastRequired(ast->lhsExpr, *commonTypeDen, matchTypeSize);
+    IfFlaggedConvertExprIfCastRequired(ast->rhsExpr, *commonTypeDen, matchTypeSize);
 
     ast->ResetTypeDenoter();
 }

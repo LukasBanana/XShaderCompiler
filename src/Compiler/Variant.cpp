@@ -316,12 +316,27 @@ Variant Variant::ParseFrom(const std::string& s)
         return Variant(FromString<Variant::IntType>(s));
 }
 
+static void CropStringRight(std::string& s, std::size_t pos)
+{
+    if (pos < s.size())
+        s.erase(pos, std::string::npos);
+}
+
 static std::string RealToString(Variant::RealType v)
 {
     auto s = std::to_string(v);
-    auto pos = s.find_last_not_of('0');
-    if (pos + 2 < s.size())
-        s.erase(pos + 2, std::string::npos);
+    auto posFract = s.find('.');
+    if (posFract != std::string::npos)
+    {
+        auto pos = s.find_last_not_of('0');
+        if (pos != std::string::npos)
+        {
+            if (pos == posFract)
+                CropStringRight(s, pos + 2);
+            else
+                CropStringRight(s, pos + 1);
+        }
+    }
     return s;
 }
 

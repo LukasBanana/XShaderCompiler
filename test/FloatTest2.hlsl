@@ -14,5 +14,7 @@ float4 VS(float x : TEXCOORD0) : SV_Position
     float3 h = 1 + g + 2;
     float3 i = h*2.0;
     float3 j = h*2;
+    float3 k = h+2.0;
+    float3 l = h+2;
     return 1;
 }
