@@ -214,6 +214,43 @@ void ExprConverter::IfFlaggedConvertExprIntoBracket(ExprPtr& expr)
         ConvertExprIntoBracket(expr);
 }
 
+TypeDenoterPtr ExprConverter::FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeDen, const TypeDenoterPtr& rhsTypeDen)
+{
+    /* Scalar and Scalar */
+    if (lhsTypeDen->IsScalar() && rhsTypeDen->IsScalar())
+        return FindCommonTypeDenoterScalarAndScalar(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>());
+
+    /* Scalar and Vector/Matrix */
+    if ( lhsTypeDen->IsScalar() && ( rhsTypeDen->IsVector() || rhsTypeDen->IsMatrix() ) )
+        return FindCommonTypeDenoterScalarAndMatrix(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>());
+
+    /* Vector/Matrix and Scalar */
+    if ( ( lhsTypeDen->IsVector() || lhsTypeDen->IsMatrix() ) && rhsTypeDen->IsScalar() )
+        return FindCommonTypeDenoterScalarAndMatrix(rhsTypeDen->As<BaseTypeDenoter>(), lhsTypeDen->As<BaseTypeDenoter>());
+
+    /* Default type */
+    return FindCommonTypeDenoterAnyAndAny(lhsTypeDen.get(), rhsTypeDen.get());
+}
+
+TypeDenoterPtr ExprConverter::FindCommonTypeDenoterScalarAndScalar(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen)
+{
+    /* Return data type with highest order of both types: max{ lhs, rhs }, where order is the integral enum value (bool < int < uint < float ...) */
+    auto highestOrder = std::max(static_cast<int>(lhsTypeDen->dataType), static_cast<int>(rhsTypeDen->dataType));
+    return std::make_shared<BaseTypeDenoter>(static_cast<DataType>(highestOrder));
+}
+
+TypeDenoterPtr ExprConverter::FindCommonTypeDenoterScalarAndMatrix(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen)
+{
+    return lhsTypeDen->Get();
+    //return nullptr;
+}
+
+TypeDenoterPtr ExprConverter::FindCommonTypeDenoterAnyAndAny(TypeDenoter* lhsTypeDen, TypeDenoter* rhsTypeDen)
+{
+    /* Always use type of left hand side */
+    return lhsTypeDen->Get();
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -299,7 +336,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         /* Convert return expression */
         IfFlaggedConvertExprVectorSubscript(ast->expr);
         if (auto funcDecl = ActiveFunctionDecl())
-            IfFlaggedConvertExprIfCastRequired(ast->expr, *(funcDecl->returnType->typeDenoter->Get()));
+            IfFlaggedConvertExprIfCastRequired(ast->expr, *(funcDecl->returnType->GetTypeDenoter()->Get()));
     }
 }
 
@@ -317,9 +354,17 @@ IMPLEMENT_VISIT_PROC(TernaryExpr)
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
     VISIT_DEFAULT(BinaryExpr);
+    
     IfFlaggedConvertExprVectorSubscript(ast->lhsExpr);
     IfFlaggedConvertExprVectorSubscript(ast->rhsExpr);
+
+    #if 0
     IfFlaggedConvertExprIfCastRequired(ast->rhsExpr, *ast->lhsExpr->GetTypeDenoter()->Get());
+    #else
+    auto commonTypeDen = FindCommonTypeDenoter(ast->lhsExpr->GetTypeDenoter()->Get(), ast->rhsExpr->GetTypeDenoter()->Get());
+    IfFlaggedConvertExprIfCastRequired(ast->lhsExpr, *commonTypeDen);
+    IfFlaggedConvertExprIfCastRequired(ast->rhsExpr, *commonTypeDen);
+    #endif
 }
 
 // Wrap unary expression if the next sub expression is again an unary expression

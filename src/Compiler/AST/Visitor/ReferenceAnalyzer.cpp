@@ -280,13 +280,15 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    MarkLValueExpr(ast->expr.get());
+    if (IsLValueOp(ast->op))
+        MarkLValueExpr(ast->expr.get());
     VISIT_DEFAULT(UnaryExpr);
 }
 
 IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 {
-    MarkLValueExpr(ast->expr.get());
+    if (IsLValueOp(ast->op))
+        MarkLValueExpr(ast->expr.get());
     VISIT_DEFAULT(PostUnaryExpr);
 }
 
