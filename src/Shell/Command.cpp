@@ -482,15 +482,11 @@ void SemanticCommand::Run(CommandLine& cmdLine, ShellState& state)
     auto pos = arg.find('=');
     if (pos != std::string::npos && pos + 1 < arg.size())
     {
+        /* Get semantic name and location index */
         auto ident = arg.substr(0, pos);
         auto value = arg.substr(pos + 1);
-        char *end;
-        long valueLong = std::strtol(value.c_str(), &end, 10);
-
-        if (*end == 0 && errno != ERANGE)
-            state.outputDesc.vertexSemantics.push_back({ ident, valueLong });
-        else
-            throw std::runtime_error("vertex attribute value is invalid \"" + arg + "\"");
+        auto locIndex = std::atoi(value.c_str());
+        state.outputDesc.vertexSemantics.push_back({ ident, locIndex });
     }
     else
         throw std::runtime_error("vertex attribute value expected for \"" + arg + "\"");
