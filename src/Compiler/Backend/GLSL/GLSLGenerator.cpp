@@ -1545,22 +1545,6 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
     }
 }
 
-static TypeDenoterPtr GetTypeDenoterForSuffixVarIdent(const TypeDenoter& lhsTypeDen, VarIdent* ast)
-{
-    if (lhsTypeDen.IsBase())
-    {
-        /* Get type denoter from vector subscript */
-        auto lhsBaseTypeDen = lhsTypeDen.As<BaseTypeDenoter>();
-        auto subscriptDataType = SubscriptDataType(lhsBaseTypeDen->dataType, ast->ident);
-        return std::make_shared<BaseTypeDenoter>(subscriptDataType);
-    }
-    else
-    {
-        /* Get type denoter from symbol reference (in VarIdent) */
-        return ast->GetExplicitTypeDenoter(false)->Get();
-    }
-}
-
 /* --- Type denoter --- */
 
 void GLSLGenerator::WriteStorageClasses(const std::set<StorageClass>& storageClasses, const AST* ast)
