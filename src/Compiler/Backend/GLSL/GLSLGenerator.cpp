@@ -62,6 +62,10 @@ void GLSLGenerator::GenerateCodePrimary(
     allowLineMarks_     = outputDesc.formatting.lineMarks;
     compactWrappers_    = outputDesc.formatting.compactWrappers;
     alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
+    for (const auto& s : outputDesc.options.vertexShaderInputSemanticMapping)
+    {
+        vertexShaderInputSemanticMapping_.insert(std::pair<CiString, int>(ToCiString(s.first), s.second));
+    }
 
     if (program.entryPointRef)
     {
@@ -1201,7 +1205,16 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
             WriteInterpModifiers(varDecl->declStmntRef->interpModifiers, varDecl->declStmntRef);
             Separator();
 
-            Write("in ");
+            if (explicitBinding_ && IsVertexShader() && varDecl->semantic.IsValid())
+            {
+                auto it = vertexShaderInputSemanticMapping_.find(ToCiString(varDecl->semantic.ToString()));
+                if (it != vertexShaderInputSemanticMapping_.end())
+                    Write("layout(location = " + std::to_string(it->second) + ") in ");
+                else
+                    Write("in ");
+            }
+            else
+                Write("in ");
             Separator();
         }
 

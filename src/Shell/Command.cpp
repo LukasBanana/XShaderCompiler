@@ -458,6 +458,47 @@ void MacroCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
+* VertexShaderInputSemanticsCommand class
+*/
+
+std::vector<Command::Identifier> VertexShaderInputSemanticsCommand::Idents() const
+{
+    return{ { "-S", true } };
+}
+
+HelpDescriptor VertexShaderInputSemanticsCommand::Help() const
+{
+    return
+    {
+        "-S<IDENT>=VALUE",
+        "Adds the vertex input semantic <IDENT> binding to VALUE"
+    };
+}
+
+void VertexShaderInputSemanticsCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    auto arg = cmdLine.Accept();
+
+    auto pos = arg.find('=');
+    if (pos != std::string::npos && pos + 1 < arg.size())
+    {
+        auto semantic = arg.substr(0, pos);
+        auto value = arg.substr(pos + 1);
+        char *end;
+        long valueLong = std::strtol(value.c_str(), &end, 10);
+        if (*end == 0 && errno != ERANGE)
+        {
+            state.outputDesc.options.vertexShaderInputSemanticMapping.push_back(std::pair<std::string, int>(semantic, valueLong));
+        }
+        else
+            throw std::runtime_error("vertex input semantic value is invalid \"" + arg + "\"");
+    }
+    else
+        throw std::runtime_error("vertex input semantic value expected for \"" + arg + "\"");
+}
+
+
+/*
  * PauseCommand class
  */
 

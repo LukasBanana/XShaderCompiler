@@ -15,6 +15,7 @@
 #include "Visitor.h"
 #include "Token.h"
 #include "ASTEnums.h"
+#include "CiString.h"
 #include <map>
 #include <set>
 #include <vector>
@@ -253,6 +254,7 @@ class GLSLGenerator : public Generator
         bool                isInsideInterfaceBlock_ = false;
         bool                isInsideUniformBuffer_  = false;
 
+        std::map<CiString, int> vertexShaderInputSemanticMapping_;
 };
 
 
