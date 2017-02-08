@@ -98,8 +98,11 @@
 #[TypeTest2 VS]
 #-T vert -E VS -o output/* TypeTest2.hlsl
 
-#[FloatTest1 VS]
-#-T vert -E VS -o output/* FloatTest1.hlsl
+[FloatTest1 VS]
+-T vert -E VS -o output/* FloatTest1.hlsl
+
+[FloatTest2 VS]
+-T vert -E VS -o output/* FloatTest2.hlsl
 
 #[FunctionDeclTest1 VS]
 #-T vert -E VS -o output/* FunctionDeclTest1.hlsl

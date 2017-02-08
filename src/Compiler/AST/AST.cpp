@@ -53,7 +53,7 @@ const TypeDenoterPtr& TypedAST::GetTypeDenoter()
     return bufferedTypeDenoter_;
 }
 
-void TypedAST::ResetBufferedTypeDenoter()
+void TypedAST::ResetTypeDenoter()
 {
     bufferedTypeDenoter_.reset();
 }
@@ -945,7 +945,7 @@ void LiteralExpr::ConvertDataType(const DataType type)
 
         /* Set new data type and reset buffered type dentoer */
         dataType = type;
-        ResetBufferedTypeDenoter();
+        ResetTypeDenoter();
     }
 }
 

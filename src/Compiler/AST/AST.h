@@ -184,11 +184,12 @@ struct TypedAST : public AST
         // Returns a type denoter for AST or throws an std::runtime_error if a type denoter can not be derived.
         const TypeDenoterPtr& GetTypeDenoter();
 
+        // Resets the buffered type denoter.
+        void ResetTypeDenoter();
+
     protected:
 
         virtual TypeDenoterPtr DeriveTypeDenoter() = 0;
-
-        void ResetBufferedTypeDenoter();
 
     private:
     
@@ -888,7 +889,7 @@ struct LiteralExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    // Converts the data type of this literal expr. This will also modify the value string.
+    // Converts the data type of this literal expr, resets the buffered type denoter (see ResetTypeDenoter), and modifies the value string.
     void ConvertDataType(const DataType type);
 
     // Returns the value of this literal if it is a string literal (excluding the quotation marks). Otherwise an empty string is returned.

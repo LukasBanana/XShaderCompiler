@@ -358,13 +358,11 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
     IfFlaggedConvertExprVectorSubscript(ast->lhsExpr);
     IfFlaggedConvertExprVectorSubscript(ast->rhsExpr);
 
-    #if 0
-    IfFlaggedConvertExprIfCastRequired(ast->rhsExpr, *ast->lhsExpr->GetTypeDenoter()->Get());
-    #else
     auto commonTypeDen = FindCommonTypeDenoter(ast->lhsExpr->GetTypeDenoter()->Get(), ast->rhsExpr->GetTypeDenoter()->Get());
     IfFlaggedConvertExprIfCastRequired(ast->lhsExpr, *commonTypeDen);
     IfFlaggedConvertExprIfCastRequired(ast->rhsExpr, *commonTypeDen);
-    #endif
+
+    ast->ResetTypeDenoter();
 }
 
 // Wrap unary expression if the next sub expression is again an unary expression

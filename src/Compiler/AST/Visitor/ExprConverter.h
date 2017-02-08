@@ -47,8 +47,8 @@ class ExprConverter : public Visitor
 
         void ConvertExprVectorSubscript(ExprPtr& expr);
 
-        void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = false);
-        void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = false);
+        void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = true);
+        void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
 
         // Converts the expression to a type constructor (i.e. function call) if it's an initializer expression.
         //void ConvertExprIfConstructorRequired(ExprPtr& expr);
@@ -60,8 +60,8 @@ class ExprConverter : public Visitor
         /* === Functions === */
 
         // Returns the data type to which an expression must be casted, if the target data type and the source data type are incompatible in GLSL.
-        std::unique_ptr<DataType> MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize = false);
-        std::unique_ptr<DataType> MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize = false);
+        std::unique_ptr<DataType> MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize);
+        std::unique_ptr<DataType> MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize);
 
         // Converts the specified expression if a vector subscript is used on a scalar type expression.
         void ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* suffixExpr);
