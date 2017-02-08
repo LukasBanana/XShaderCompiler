@@ -319,7 +319,9 @@ Variant Variant::ParseFrom(const std::string& s)
 static std::string RealToString(Variant::RealType v)
 {
     auto s = std::to_string(v);
-    s.erase(s.find_last_not_of('0') + 2, std::string::npos);
+    auto pos = s.find_last_not_of('0');
+    if (pos + 2 < s.size())
+        s.erase(pos + 2, std::string::npos);
     return s;
 }
 
