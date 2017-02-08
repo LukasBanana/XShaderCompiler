@@ -11,6 +11,7 @@
 
 #include "Visitor.h"
 #include "TypeDenoter.h"
+#include "ExprConverter.h"
 #include <Xsc/Xsc.h>
 #include <functional>
 #include <set>
@@ -60,14 +61,9 @@ class GLSLConverter : public Visitor
         DECL_VISIT_PROC( DoWhileLoopStmnt );
         DECL_VISIT_PROC( IfStmnt          );
         DECL_VISIT_PROC( ElseStmnt        );
-        DECL_VISIT_PROC( ExprStmnt        );
-        DECL_VISIT_PROC( ReturnStmnt      );
 
         DECL_VISIT_PROC( LiteralExpr      );
-        DECL_VISIT_PROC( BinaryExpr       );
-        DECL_VISIT_PROC( UnaryExpr        );
         DECL_VISIT_PROC( CastExpr         );
-        DECL_VISIT_PROC( VarAccessExpr    );
 
         /* ----- Helper functions for conversion ----- */
 
@@ -104,10 +100,6 @@ class GLSLConverter : public Visitor
         // Registers the all specified variables as reserved identifiers.
         void RegisterReservedVarIdents(const std::vector<VarDecl*>& varDecls);
 
-        // Returns the data type to which an expression must be casted, if the target data type and the source data type are incompatible in GLSL.
-        std::unique_ptr<DataType> MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize = false);
-        std::unique_ptr<DataType> MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize = false);
-
         // Removes all statements that are marked as dead code.
         void RemoveDeadCode(std::vector<StmntPtr>& stmnts);
 
@@ -129,17 +121,6 @@ class GLSLConverter : public Visitor
         void ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast);
         void ConvertIntrinsicCallStreamOutputAppend(FunctionCall* ast);
 
-        // Converts the specified expression if a vector subscript is used on a scalar type expression.
-        void ConvertExprVectorSubscript(ExprPtr& expr);
-        void ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* suffixExpr);
-        void ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* varIdent);
-
-        // Converts the expression to a type constructor (i.e. function call) if it's an initializer expression.
-        //void ConvertExprIfConstructorRequired(ExprPtr& expr);
-
-        void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = false);
-        void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = false);
-
         /* ----- Unrolling ----- */
 
         void UnrollStmnts(std::vector<StmntPtr>& stmnts);
@@ -147,6 +128,8 @@ class GLSLConverter : public Visitor
         void UnrollStmntsVarDeclInitializer(std::vector<StmntPtr>& unrolledStmnts, VarDecl* varDecl);
 
         /* === Members === */
+
+        ExprConverter           exprConverter_;
 
         ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;
         Program*                program_                = nullptr;
