@@ -365,17 +365,17 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
     Visit(ast->attribs);
 
+    /*
+    Visit inner for-loop AST nodes without new scope (except the loop body).
+    This rule is different in HLSL compared to C++ or other languages!
+    */
+    Visit(ast->initSmnt);
+    Visit(ast->condition);
+    Visit(ast->iteration);
+
     OpenScope();
     {
-        Visit(ast->initSmnt);
-        Visit(ast->condition);
-        Visit(ast->iteration);
-
-        OpenScope();
-        {
-            Visit(ast->bodyStmnt);
-        }
-        CloseScope();
+        Visit(ast->bodyStmnt);
     }
     CloseScope();
 }
