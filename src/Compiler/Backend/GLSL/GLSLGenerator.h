@@ -242,19 +242,19 @@ class GLSLGenerator : public Generator
 
         /* === Members === */
 
-        OutputShaderVersion versionOut_             = OutputShaderVersion::GLSL;
-        std::string         nameManglingPrefix_     = "xsc_";
-        bool                allowExtensions_        = false;
-        bool                explicitBinding_        = false;
-        bool                preserveComments_       = false;
-        bool                allowLineMarks_         = false;
-        bool                compactWrappers_        = true;
-        bool                alwaysBracedScopes_     = false;
+        OutputShaderVersion     versionOut_             = OutputShaderVersion::GLSL;
+        std::string             nameManglingPrefix_     = "xsc_";
+        std::map<CiString, int> vertexSemanticsMap_;
 
-        bool                isInsideInterfaceBlock_ = false;
-        bool                isInsideUniformBuffer_  = false;
+        bool                    allowExtensions_        = false;
+        bool                    explicitBinding_        = false;
+        bool                    preserveComments_       = false;
+        bool                    allowLineMarks_         = false;
+        bool                    compactWrappers_        = true;
+        bool                    alwaysBracedScopes_     = false;
 
-        std::map<CiString, int> vertexShaderInputSemanticMapping_;
+        bool                    isInsideInterfaceBlock_ = false;
+        bool                    isInsideUniformBuffer_  = false;
 };
 
 

@@ -122,9 +122,6 @@ struct Options
     //! If true, explicit binding slots are enabled. By default false.
     bool explicitBinding            = false;
 
-    //! Contains the name to location mapping for vertex shader input (used only when explicitBinding is true)
-    std::vector<std::pair<std::string, int>> vertexShaderInputSemanticMapping;
-
     //! If true, commentaries are preserved for each statement. By default false.
     bool preserveComments           = false;
 
@@ -181,26 +178,36 @@ struct ShaderInput
     IncludeHandler*                 includeHandler  = nullptr;
 };
 
+//! Vertex shader semantic (or rather attribute) layout structure.
+struct VertexSemantic
+{
+    std::string semantic;
+    int         location;
+};
+
 //! Shader output descriptor structure.
 struct ShaderOutput
 {
     //! Specifies the filename of the output shader code. This is an optional attribute, and only a hint to the compiler.
-    std::string         filename;
+    std::string                 filename;
 
     //! Specifies the output stream. This will contain the output GLSL code. This must not be null when passed to the "CompileShader" function!
-    std::ostream*       sourceCode          = nullptr;
+    std::ostream*               sourceCode          = nullptr;
 
     //! Specifies the output shader version. By default OutputShaderVersion::GLSL (to auto-detect minimum required version).
-    OutputShaderVersion shaderVersion       = OutputShaderVersion::GLSL;
+    OutputShaderVersion         shaderVersion       = OutputShaderVersion::GLSL;
     
     //! Prefix string for name mangling. By default "xsc_".
-    std::string         nameManglingPrefix  = "xsc_";
+    std::string                 nameManglingPrefix  = "xsc_";
+
+    //! Optional list of vertex semantic layouts, to bind a vertex attribute (semantic name) to a location index (only used when 'explicitBinding' is true).
+    std::vector<VertexSemantic> vertexSemantics;
 
     //! Output code formatting descriptor.
-    Formatting          formatting;
+    Formatting                  formatting;
 
     //! Additional options to configure the code generation.
-    Options             options;
+    Options                     options;
 };
 
 /**
