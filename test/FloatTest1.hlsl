@@ -1,5 +1,5 @@
 
-// HLSL Translator: Floating-point Scanner Test 1
+// HLSL Translator: Floating-point Test 1 (to test scanner and expression conversion)
 // 05/11/2016
 
 
