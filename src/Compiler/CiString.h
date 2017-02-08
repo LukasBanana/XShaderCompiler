@@ -77,6 +77,12 @@ inline CiString ToCiString(const std::string& s)
     return CiString(s.begin(), s.end());
 }
 
+// Converts the specified CiString into an std::string.
+inline std::string ToString(const CiString& s)
+{
+    return std::string(s.begin(), s.end());
+}
+
 
 } // /namespace Xsc
 

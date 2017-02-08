@@ -67,6 +67,9 @@ class GLSLGenerator : public Generator
         // Returns true if the specified type denoter is compatible with the semantic (e.g. 'SV_VertexID' is incompatible with 'UInt').
         bool IsTypeCompatibleWithSemantic(const Semantic semantic, const TypeDenoter& typeDenoter);
 
+        // Report warning of optional reminaing feedback.
+        void ReportOptionalFeedback();
+
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
@@ -242,19 +245,25 @@ class GLSLGenerator : public Generator
 
         /* === Members === */
 
-        OutputShaderVersion     versionOut_             = OutputShaderVersion::GLSL;
-        std::string             nameManglingPrefix_     = "xsc_";
-        std::map<CiString, int> vertexSemanticsMap_;
+        struct VertexSemanticLoc
+        {
+            int     location;
+            bool    found;
+        };
 
-        bool                    allowExtensions_        = false;
-        bool                    explicitBinding_        = false;
-        bool                    preserveComments_       = false;
-        bool                    allowLineMarks_         = false;
-        bool                    compactWrappers_        = true;
-        bool                    alwaysBracedScopes_     = false;
+        OutputShaderVersion                     versionOut_             = OutputShaderVersion::GLSL;
+        std::string                             nameManglingPrefix_     = "xsc_";
+        std::map<CiString, VertexSemanticLoc>   vertexSemanticsMap_;
 
-        bool                    isInsideInterfaceBlock_ = false;
-        bool                    isInsideUniformBuffer_  = false;
+        bool                                    allowExtensions_        = false;
+        bool                                    explicitBinding_        = false;
+        bool                                    preserveComments_       = false;
+        bool                                    allowLineMarks_         = false;
+        bool                                    compactWrappers_        = true;
+        bool                                    alwaysBracedScopes_     = false;
+
+        bool                                    isInsideInterfaceBlock_ = false;
+        bool                                    isInsideUniformBuffer_  = false;
 };
 
 
