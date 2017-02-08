@@ -16,4 +16,4 @@ Known Issues
 
 | Issue | Remarks |
 |-------|---------|
-| Parsing interpolation modifiers as identifier | Interpolation modifiers (e.g. 'sample', or 'nointerpolation') are currently not allowed to be used as identifiers |
+| Implicit type conversion | In progress |
