@@ -390,6 +390,7 @@ struct ArrayDimension : public TypedAST
     int     size    = 0;    // Evaluated array dimension size. Zero for dynamic array dimension.
 };
 
+//TODO: rename to "TypeSpecifier"
 // Type name with optional structure declaration.
 struct TypeName : public TypedAST
 {
@@ -747,7 +748,7 @@ struct VarDeclStmnt : public Stmnt
     std::set<TypeModifier>      typeModifiers;                              // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats)
     PrimitiveType               primitiveType   = PrimitiveType::Undefined; // Primitive type for geometry entry pointer parameters
 
-    TypeNamePtr                 varType;
+    TypeNamePtr                 varType; //TODO: rename to "typeSpecifier"
     std::vector<VarDeclPtr>     varDecls;
 };
 
@@ -902,6 +903,7 @@ struct LiteralExpr : public Expr
     std::string     value;
 };
 
+//TODO: remove this AST class (directly use "TypeName")
 // Type name expression (used for simpler cast-expression parsing).
 struct TypeNameExpr : public Expr
 {
@@ -1009,6 +1011,7 @@ struct CastExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    //TODO: maybe remove "TypeNameExpr typeExpr" and directly use "TypeName typeName" member?
     TypeNameExprPtr typeExpr;   // Cast type name expression
     ExprPtr         expr;       // Value expression
 };
