@@ -140,9 +140,9 @@ CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& value
 {
     auto ast = MakeAST<CastExpr>();
     {
-        ast->typeSpecifier                  = MakeAST<TypeSpecifierExpr>();
-        ast->typeSpecifier->typeSpecifier   = MakeTypeSpecifier(typeDenoter);
-        ast->expr                           = valueExpr;
+        ast->typeSpecifier          = MakeTypeSpecifier(typeDenoter);
+        ast->typeSpecifier->area    = valueExpr->area;
+        ast->expr                   = valueExpr;
     }
     return ast;
 }
@@ -217,6 +217,7 @@ TypeSpecifierPtr MakeTypeSpecifier(const StructDeclPtr& structDecl)
         ast->structDecl     = structDecl;
         ast->typeDenoter    = std::make_shared<StructTypeDenoter>(structDecl.get());
     }
+    ast->area = ast->structDecl->area;
     return ast;
 }
 
@@ -382,9 +383,9 @@ ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
         /* Make new cast expression */
         auto ast = MakeShared<CastExpr>(subExpr->area);
         {
-            ast->typeSpecifier                  = MakeAST<TypeSpecifierExpr>();
-            ast->typeSpecifier->typeSpecifier   = MakeTypeSpecifier(MakeShared<BaseTypeDenoter>(dataType));
-            ast->expr                           = subExpr;
+            ast->typeSpecifier          = MakeTypeSpecifier(MakeShared<BaseTypeDenoter>(dataType));
+            ast->typeSpecifier->area    = subExpr->area;
+            ast->expr                   = subExpr;
         }
         return ast;
     }

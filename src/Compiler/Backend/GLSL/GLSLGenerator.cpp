@@ -847,7 +847,7 @@ IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
 
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
-    Visit(ast->typeSpecifier);
+    WriteTypeDenoter(*ast->typeSpecifier->typeDenoter, false, ast);
     Write("(");
     Visit(ast->expr);
     Write(")");

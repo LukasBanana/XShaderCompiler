@@ -104,11 +104,11 @@ bool HLSLParser::IsVarDeclModifier() const
     return (Is(Tokens::InputModifier) || Is(Tokens::InterpModifier) || Is(Tokens::TypeModifier) || Is(Tokens::StorageClass));
 }
 
-TypeSpecifierExprPtr HLSLParser::MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& expr)
+TypeSpecifierPtr HLSLParser::MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& expr)
 {
-    /* Type name expression (float, int3 etc.) is always allowed for a cast expression */
-    if (expr->Type() == AST::Types::TypeSpecifierExpr)
-        return std::static_pointer_cast<TypeSpecifierExpr>(expr);
+    /* Type specifier expression (float, int3 etc.) is always allowed for a cast expression */
+    if (auto typeSpecifierExpr = expr->As<TypeSpecifierExpr>())
+        return typeSpecifierExpr->typeSpecifier;
 
     /* Is this a variable identifier? */
     if (auto varAccessExpr = expr->As<VarAccessExpr>())
@@ -116,10 +116,8 @@ TypeSpecifierExprPtr HLSLParser::MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr&
         /* Check if the identifier refers to a type name */
         if (!varAccessExpr->varIdent->next && IsRegisteredTypeName(varAccessExpr->varIdent->ident))
         {
-            /* Convert the variable access into a type name expression */
-            auto typeSpecifier = Make<TypeSpecifierExpr>();
-            typeSpecifier->typeSpecifier = ASTFactory::MakeTypeSpecifier(std::make_shared<AliasTypeDenoter>(varAccessExpr->varIdent->ident));
-            return typeSpecifier;
+            /* Convert the variable access into a type specifier */
+            return ASTFactory::MakeTypeSpecifier(std::make_shared<AliasTypeDenoter>(varAccessExpr->varIdent->ident));
         }
     }
 
@@ -1486,11 +1484,13 @@ ExprPtr HLSLParser::ParseTypeNameOrFunctionCallExpr()
 
     /* Return type name expression */
     auto ast = Make<TypeSpecifierExpr>();
+    {
+        ast->typeSpecifier               = ASTFactory::MakeTypeSpecifier(typeDenoter);
+        ast->typeSpecifier->structDecl   = structDecl;
+    }
+    UpdateSourceArea(ast->typeSpecifier, structDecl.get());
 
-    ast->typeSpecifier               = ASTFactory::MakeTypeSpecifier(typeDenoter);
-    ast->typeSpecifier->structDecl   = structDecl;
-
-    return ast;
+    return UpdateSourceArea(ast, structDecl.get());
 }
 
 UnaryExprPtr HLSLParser::ParseUnaryExpr()
