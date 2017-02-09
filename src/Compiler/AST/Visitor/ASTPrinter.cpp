@@ -90,9 +90,9 @@ IMPLEMENT_VISIT_PROC(ArrayDimension)
     PRINT_AST_EXT(ArrayDimension, ast->ToString());
 }
 
-IMPLEMENT_VISIT_PROC(TypeName)
+IMPLEMENT_VISIT_PROC(TypeSpecifier)
 {
-    PRINT_AST_EXT(TypeName, ast->ToString());
+    PRINT_AST_EXT(TypeSpecifier, ast->ToString());
 }
 
 IMPLEMENT_VISIT_PROC(VarIdent)

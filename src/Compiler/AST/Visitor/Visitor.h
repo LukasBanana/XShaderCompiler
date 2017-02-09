@@ -37,7 +37,7 @@ DECL_PTR( SamplerValue      );
 DECL_PTR( Register          );
 DECL_PTR( PackOffset        );
 DECL_PTR( ArrayDimension    );
-DECL_PTR( TypeName          );
+DECL_PTR( TypeSpecifier     );
 DECL_PTR( VarIdent          );
 
 DECL_PTR( VarDecl           );
@@ -111,7 +111,7 @@ class Visitor
         VISITOR_VISIT_PROC( Register          );
         VISITOR_VISIT_PROC( PackOffset        );
         VISITOR_VISIT_PROC( ArrayDimension    );
-        VISITOR_VISIT_PROC( TypeName          );
+        VISITOR_VISIT_PROC( TypeSpecifier     );
         VISITOR_VISIT_PROC( VarIdent          );
 
         VISITOR_VISIT_PROC( VarDecl           );

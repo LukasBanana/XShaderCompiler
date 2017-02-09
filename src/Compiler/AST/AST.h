@@ -88,7 +88,7 @@ struct AST
         Register,
         PackOffset,
         ArrayDimension,
-        TypeName,
+        TypeSpecifier,
         VarIdent,
 
         VarDecl,
@@ -390,13 +390,12 @@ struct ArrayDimension : public TypedAST
     int     size    = 0;    // Evaluated array dimension size. Zero for dynamic array dimension.
 };
 
-//TODO: rename to "TypeSpecifier"
-// Type name with optional structure declaration.
-struct TypeName : public TypedAST
+// Type specifier with optional structure declaration.
+struct TypeSpecifier : public TypedAST
 {
-    AST_INTERFACE(TypeName);
+    AST_INTERFACE(TypeSpecifier);
     
-    // Returns the name of this type (either 'baseType' or 'structDecl->name').
+    // Returns the name of this type: typeDenoter->ToString().
     std::string ToString() const;
 
     TypeDenoterPtr DeriveTypeDenoter() override;
@@ -647,7 +646,7 @@ struct FunctionDecl : public Stmnt
     // Sets the specified function AST node as the implementation of this forward declaration.
     void SetFuncImplRef(FunctionDecl* funcDecl);
 
-    TypeNamePtr                     returnType;
+    TypeSpecifierPtr                returnType;
     std::string                     ident;
     std::vector<VarDeclStmntPtr>    parameters;
     IndexedSemantic                 semantic            = Semantic::Undefined;  // May be undefined
@@ -748,7 +747,7 @@ struct VarDeclStmnt : public Stmnt
     std::set<TypeModifier>      typeModifiers;                              // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats)
     PrimitiveType               primitiveType   = PrimitiveType::Undefined; // Primitive type for geometry entry pointer parameters
 
-    TypeNamePtr                 typeSpecifier;
+    TypeSpecifierPtr            typeSpecifier;
     std::vector<VarDeclPtr>     varDecls;
 };
 
@@ -911,7 +910,7 @@ struct TypeNameExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    TypeNamePtr typeName;
+    TypeSpecifierPtr typeName;
 };
 
 // Ternary expression.

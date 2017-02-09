@@ -326,7 +326,7 @@ IMPLEMENT_VISIT_PROC(ArrayDimension)
     Write(ast->ToString());
 }
 
-IMPLEMENT_VISIT_PROC(TypeName)
+IMPLEMENT_VISIT_PROC(TypeSpecifier)
 {
     if (ast->structDecl)
         Visit(ast->structDecl);
@@ -1365,7 +1365,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool use
     );
 }
 
-void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeName* typeSpecifier, const IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl)
+void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier, const IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl)
 {
     /* Write global output semantic slot */
     BeginLn();

@@ -69,7 +69,7 @@ IMPLEMENT_VISIT_PROC(ArrayDimension)
     Visit(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(TypeName)
+IMPLEMENT_VISIT_PROC(TypeSpecifier)
 {
     Visit(ast->structDecl);
 }

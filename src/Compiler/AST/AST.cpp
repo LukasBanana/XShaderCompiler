@@ -406,14 +406,14 @@ bool ArrayDimension::HasDynamicSize() const
 }
 
 
-/* ----- TypeName ----- */
+/* ----- TypeSpecifier ----- */
 
-std::string TypeName::ToString() const
+std::string TypeSpecifier::ToString() const
 {
     return typeDenoter->ToString();
 }
 
-TypeDenoterPtr TypeName::DeriveTypeDenoter()
+TypeDenoterPtr TypeSpecifier::DeriveTypeDenoter()
 {
     return typeDenoter;
 }
