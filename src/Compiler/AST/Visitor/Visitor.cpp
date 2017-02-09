@@ -152,7 +152,7 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     Visit(ast->attribs);
-    Visit(ast->varType);
+    Visit(ast->typeSpecifier);
     Visit(ast->varDecls);
 }
 

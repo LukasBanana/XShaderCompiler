@@ -191,7 +191,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
             auto declStmnt = ast->declStmntRef;
 
             /* Has this variable statement a struct type? */
-            auto typeDen = declStmnt->varType->GetTypeDenoter()->Get();
+            auto typeDen = declStmnt->typeSpecifier->GetTypeDenoter()->Get();
             if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
             {
                 if (auto structDecl = structTypeDen->structDeclRef)

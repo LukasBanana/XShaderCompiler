@@ -363,7 +363,7 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     while (IsVarDeclModifier() || Is(Tokens::PrimitiveType))
         ParseVarDeclStmntModifiers(ast.get(), true);
 
-    ast->varType = ParseTypeName();
+    ast->typeSpecifier = ParseTypeName();
     ast->varDecls.push_back(ParseVarDecl(ast.get()));
 
     /* Mark with 'parameter' flag */
@@ -819,12 +819,12 @@ StmntPtr HLSLParser::ParseGlobalStmntWithTypeName()
         /* Parse variable declaration statement */
         auto ast = Make<VarDeclStmnt>();
 
-        ast->varType    = typeName;
-        ast->varDecls   = ParseVarDeclList(ast.get(), identTkn);
+        ast->typeSpecifier  = typeName;
+        ast->varDecls       = ParseVarDeclList(ast.get(), identTkn);
 
         Semi();
 
-        return UpdateSourceArea(ast, ast->varType.get());
+        return UpdateSourceArea(ast, ast->typeSpecifier.get());
     }
 }
 
@@ -993,15 +993,15 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
         else if (Is(Tokens::Ident) || IsDataType())
         {
             /* Parse type denoter */
-            ast->varType = Make<TypeName>();
-            ast->varType->typeDenoter = ParseTypeDenoter();
-            UpdateSourceArea(ast->varType);
+            ast->typeSpecifier = Make<TypeName>();
+            ast->typeSpecifier->typeDenoter = ParseTypeDenoter();
+            UpdateSourceArea(ast->typeSpecifier);
             break;
         }
         else if (Is(Tokens::Struct))
         {
             /* Parse structure variable type */
-            ast->varType = ASTFactory::MakeTypeName(ParseStructDecl());
+            ast->typeSpecifier = ASTFactory::MakeTypeName(ParseStructDecl());
             break;
         }
         else
@@ -1124,7 +1124,7 @@ StmntPtr HLSLParser::ParseStmntWithStructDecl()
         /* Parse variable declaration with previous structure type */
         auto varDeclStmnt = Make<VarDeclStmnt>();
 
-        varDeclStmnt->varType = ASTFactory::MakeTypeName(ast->structDecl);
+        varDeclStmnt->typeSpecifier = ASTFactory::MakeTypeName(ast->structDecl);
         
         /* Parse variable declarations */
         varDeclStmnt->varDecls = ParseVarDeclList(varDeclStmnt.get());
@@ -1177,15 +1177,15 @@ StmntPtr HLSLParser::ParseStmntWithVarIdent()
         /* Convert variable identifier to alias type denoter */
         auto ast = Make<VarDeclStmnt>();
 
-        ast->varType = Make<TypeName>();
-        ast->varType->typeDenoter = ParseAliasTypeDenoter(varIdent->ident);
-        UpdateSourceArea(ast->varType, varIdent.get());
+        ast->typeSpecifier = Make<TypeName>();
+        ast->typeSpecifier->typeDenoter = ParseAliasTypeDenoter(varIdent->ident);
+        UpdateSourceArea(ast->typeSpecifier, varIdent.get());
 
         if (!varIdent->arrayIndices.empty())
         {
             /* Convert variable identifier to array of alias type denoter */
-            ast->varType->typeDenoter = MakeShared<ArrayTypeDenoter>(
-                ast->varType->typeDenoter,
+            ast->typeSpecifier->typeDenoter = MakeShared<ArrayTypeDenoter>(
+                ast->typeSpecifier->typeDenoter,
                 ASTFactory::ConvertExprListToArrayDimensionList(varIdent->arrayIndices)
             );
         }

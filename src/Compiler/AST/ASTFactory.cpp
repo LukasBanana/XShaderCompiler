@@ -238,7 +238,7 @@ VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ide
 {
     auto ast = MakeAST<VarDeclStmnt>();
     {
-        ast->varType = MakeTypeName(dataType);
+        ast->typeSpecifier = MakeTypeName(dataType);
 
         auto varDecl = MakeAST<VarDecl>();
         {

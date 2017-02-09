@@ -82,7 +82,7 @@ IMPLEMENT_VISIT_PROC(Program)
             if (stmnt->Type() == AST::Types::SamplerDeclStmnt)
                 return true;
             if (auto varDeclStmnt = stmnt->As<VarDeclStmnt>())
-                return IsSamplerStateTypeDenoter(varDeclStmnt->varType->GetTypeDenoter());
+                return IsSamplerStateTypeDenoter(varDeclStmnt->typeSpecifier->GetTypeDenoter());
             return false;
         }
     );
@@ -139,7 +139,7 @@ IMPLEMENT_VISIT_PROC(VarIdent)
         if (auto varDecl = ast->FetchVarDecl())
         {
             /* Is its type denoter a structure? */
-            auto varTypeDen = varDecl->declStmntRef->varType->typeDenoter.get();
+            auto varTypeDen = varDecl->declStmntRef->typeSpecifier->typeDenoter.get();
             if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
             {
                 /* Can the structure be resolved */
@@ -470,7 +470,7 @@ void GLSLConverter::RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>
         program_->disabledAST,
         [&](const VarDeclStmntPtr& varDeclStmnt)
         {
-            return IsSamplerStateTypeDenoter(varDeclStmnt->varType->GetTypeDenoter());
+            return IsSamplerStateTypeDenoter(varDeclStmnt->typeSpecifier->GetTypeDenoter());
         }
     );
 }

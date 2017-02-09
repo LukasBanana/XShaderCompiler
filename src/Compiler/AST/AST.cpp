@@ -457,7 +457,7 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter()
     if (declStmntRef)
     {
         /* Get base type denoter from declaration statement */
-        return declStmntRef->varType->typeDenoter->AsArray(arrayDims);
+        return declStmntRef->typeSpecifier->typeDenoter->AsArray(arrayDims);
     }
     RuntimeErr("missing reference to declaration statement to derive type denoter of variable identifier '" + ident + "'", this);
 }
@@ -605,7 +605,7 @@ void StructDecl::CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTy
     {
         /* Add type denoter N times (where N is the number variable declaration within the member statement) */
         for (std::size_t i = 0; i < member->varDecls.size(); ++i)
-            memberTypeDens.push_back(member->varType->typeDenoter);
+            memberTypeDens.push_back(member->typeSpecifier->typeDenoter);
     }
 }
 
@@ -618,7 +618,7 @@ void StructDecl::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
     for (auto& member : members)
     {
         /* Iterate over all sub-struct members */
-        auto typeDen = member->varType->GetTypeDenoter()->Get();
+        auto typeDen = member->typeSpecifier->GetTypeDenoter()->Get();
         if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
         {
             if (structTypeDen->structDeclRef)
@@ -707,8 +707,8 @@ bool FunctionDecl::EqualsSignature(const FunctionDecl& rhs) const
     /* Compare parameter type denoters */
     for (std::size_t i = 0; i < parameters.size(); ++i)
     {
-        auto lhsTypeDen = parameters[i]->varType->typeDenoter.get();
-        auto rhsTypeDen = rhs.parameters[i]->varType->typeDenoter.get();
+        auto lhsTypeDen = parameters[i]->typeSpecifier->typeDenoter.get();
+        auto rhsTypeDen = rhs.parameters[i]->typeSpecifier->typeDenoter.get();
 
         if (!lhsTypeDen->Equals(*rhsTypeDen))
             return false;
@@ -742,7 +742,7 @@ bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const T
         return false;
 
     /* Get type denoters to compare */
-    auto paramTypeDen = parameters[paramIndex]->varType->typeDenoter.get();
+    auto paramTypeDen = parameters[paramIndex]->typeSpecifier->typeDenoter.get();
 
     /* Check for explicit compatability: are they equal? */
     if (!argType.Equals(*paramTypeDen))
@@ -804,7 +804,7 @@ std::string UniformBufferDecl::ToString() const
 
 std::string VarDeclStmnt::ToString(bool useVarNames, bool isParam) const
 {
-    auto s = varType->ToString();
+    auto s = typeSpecifier->ToString();
     
     if (useVarNames)
     {

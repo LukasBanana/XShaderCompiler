@@ -560,19 +560,19 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     Separator();
 
     /* Write type modifiers */
-    WriteTypeModifiers(ast->typeModifiers, ast->varType->GetTypeDenoter()->Get());
+    WriteTypeModifiers(ast->typeModifiers, ast->typeSpecifier->GetTypeDenoter()->Get());
     Separator();
 
     /* Write variable type */
-    if (ast->varType->structDecl)
+    if (ast->typeSpecifier->structDecl)
     {
         /* Do not end line here with "EndLn" */
-        Visit(ast->varType);
+        Visit(ast->typeSpecifier);
         BeginLn();
     }
     else
     {
-        Visit(ast->varType);
+        Visit(ast->typeSpecifier);
         Write(" ");
     }
 
@@ -1142,9 +1142,9 @@ void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
 
     for (auto& param : entryPoint->parameters)
     {
-        if (auto varType = param->varType->GetTypeDenoter()->Get())
+        if (auto typeSpecifier = param->typeSpecifier->GetTypeDenoter()->Get())
         {
-            if (auto structTypeDen = varType->As<StructTypeDenoter>())
+            if (auto structTypeDen = typeSpecifier->As<StructTypeDenoter>())
                 WriteLocalInputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
         }
     }
@@ -1165,16 +1165,16 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
     BeginLn();
     {
         /* Write desired variable type and identifier */
-        auto varType = varDecl->declStmntRef->varType.get();
+        auto typeSpecifier = varDecl->declStmntRef->typeSpecifier.get();
 
-        Visit(varType);
+        Visit(typeSpecifier);
         Write(" " + varDecl->FinalIdent() + " = ");
 
         /* Is a type conversion required? */
-        if (!IsTypeCompatibleWithSemantic(varDecl->semantic, *varType->typeDenoter->Get()))
+        if (!IsTypeCompatibleWithSemantic(varDecl->semantic, *typeSpecifier->typeDenoter->Get()))
         {
             /* Write type cast with semantic keyword */
-            Visit(varType);
+            Visit(typeSpecifier);
             Write("(" + *semanticKeyword + ");");
         }
         else
@@ -1255,7 +1255,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
             Separator();
         }
 
-        Visit(varDecl->declStmntRef->varType);
+        Visit(varDecl->declStmntRef->typeSpecifier);
         Separator();
 
         Write(" " + varDecl->FinalIdent());
@@ -1285,9 +1285,9 @@ void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 
     for (auto& param : entryPoint->parameters)
     {
-        if (auto varType = param->varType->GetTypeDenoter()->Get())
+        if (auto typeSpecifier = param->typeSpecifier->GetTypeDenoter()->Get())
         {
-            if (auto structTypeDen = varType->As<StructTypeDenoter>())
+            if (auto structTypeDen = typeSpecifier->As<StructTypeDenoter>())
                 WriteLocalOutputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
         }
     }
@@ -1298,7 +1298,7 @@ void GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
     /* Write local variable definition statement (without initialization) */
     BeginLn();
     {
-        Visit(varDecl->declStmntRef->varType);
+        Visit(varDecl->declStmntRef->typeSpecifier);
         Write(" " + varDecl->FinalIdent() + ";");
     }
     EndLn();
@@ -1358,14 +1358,14 @@ void GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool use
 {
     /* Write global variable definition statement */
     WriteGlobalOutputSemanticsSlot(
-        varDecl->declStmntRef->varType.get(),
+        varDecl->declStmntRef->typeSpecifier.get(),
         varDecl->semantic,
         (useSemanticName ? varDecl->semantic.ToString() : varDecl->FinalIdent()),
         varDecl
     );
 }
 
-void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeName* varType, const IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl)
+void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeName* typeSpecifier, const IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl)
 {
     /* Write global output semantic slot */
     BeginLn();
@@ -1393,7 +1393,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeName* varType, const Inde
             Separator();
         }
 
-        Visit(varType);
+        Visit(typeSpecifier);
         Separator();
 
         Write(" " + ident);
@@ -1493,7 +1493,7 @@ void GLSLGenerator::WriteGlobalUniformsParameter(VarDeclStmnt* param)
     BeginLn();
     {
         Write("uniform ");
-        Visit(param->varType);
+        Visit(param->typeSpecifier);
         Write(" ");
 
         /* Write parameter identifier */
@@ -2382,10 +2382,10 @@ void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
     }
 
     /* Write type modifiers */
-    WriteTypeModifiers(ast->typeModifiers, ast->varType->GetTypeDenoter()->Get());
+    WriteTypeModifiers(ast->typeModifiers, ast->typeSpecifier->GetTypeDenoter()->Get());
 
     /* Write parameter type */
-    Visit(ast->varType);
+    Visit(ast->typeSpecifier);
     Write(" ");
 
     /* Write parameter identifier (without default initializer) */

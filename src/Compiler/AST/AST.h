@@ -748,7 +748,7 @@ struct VarDeclStmnt : public Stmnt
     std::set<TypeModifier>      typeModifiers;                              // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats)
     PrimitiveType               primitiveType   = PrimitiveType::Undefined; // Primitive type for geometry entry pointer parameters
 
-    TypeNamePtr                 varType; //TODO: rename to "typeSpecifier"
+    TypeNamePtr                 typeSpecifier;
     std::vector<VarDeclPtr>     varDecls;
 };
 
