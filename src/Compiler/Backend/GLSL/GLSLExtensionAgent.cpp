@@ -71,14 +71,37 @@ std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
     Program& program, OutputShaderVersion& targetGLSLVersion,
     const ShaderTarget shaderTarget, bool allowExtensions, bool explicitBinding)
 {
+    /* Store parameters */
     shaderTarget_       = shaderTarget;
     targetGLSLVersion_  = targetGLSLVersion;
     minGLSLVersion_     = GetMinGLSLVersionForTarget(shaderTarget);
     allowExtensions_    = allowExtensions;
     explicitBinding_    = explicitBinding;
 
+    /* Global layout extensions */
+    switch (shaderTarget)
+    {
+        case ShaderTarget::VertexShader:
+            //TODO:
+            /* Check for explicit binding point or vertex semantics */
+            //if (explicitBinding_)
+            //    AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
+            break;
+            
+        case ShaderTarget::FragmentShader:
+            /* Check for explicit binding point (fragment shader has always binding slots) */
+            if (explicitBinding_)
+                AcquireExtension(GLSLEXT_GL_ARB_shading_language_420pack);
+            break;
+
+        default:
+            break;
+    }
+
+    /* Visit AST program */
     Visit(&program);
 
+    /* Return final target GLSL version */
     switch (targetGLSLVersion)
     {
         case OutputShaderVersion::GLSL:
