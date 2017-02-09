@@ -292,7 +292,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
     /* Check if the expression must be extended for a struct c'tor */
-    if (auto structTypeDen = ast->typeExpr->GetTypeDenoter()->Get()->As<StructTypeDenoter>())
+    if (auto structTypeDen = ast->typeSpecifier->GetTypeDenoter()->Get()->As<StructTypeDenoter>())
     {
         /* Get the type denoter of all structure members */
         auto structDecl = structTypeDen->structDeclRef;

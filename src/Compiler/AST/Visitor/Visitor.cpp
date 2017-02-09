@@ -307,7 +307,7 @@ IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
 
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
-    Visit(ast->typeExpr);
+    Visit(ast->typeSpecifier);
     Visit(ast->expr);
 }
 

@@ -117,9 +117,9 @@ TypeNameExprPtr HLSLParser::MakeToTypeNameIfLhsOfCastExpr(const ExprPtr& expr)
         if (!varAccessExpr->varIdent->next && IsRegisteredTypeName(varAccessExpr->varIdent->ident))
         {
             /* Convert the variable access into a type name expression */
-            auto typeExpr = Make<TypeNameExpr>();
-            typeExpr->typeName = ASTFactory::MakeTypeName(std::make_shared<AliasTypeDenoter>(varAccessExpr->varIdent->ident));
-            return typeExpr;
+            auto typeSpecifier = Make<TypeNameExpr>();
+            typeSpecifier->typeName = ASTFactory::MakeTypeName(std::make_shared<AliasTypeDenoter>(varAccessExpr->varIdent->ident));
+            return typeSpecifier;
         }
     }
 
@@ -1542,9 +1542,9 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
         /* Return cast expression */
         auto ast = Make<CastExpr>();
         
-        ast->area       = area;
-        ast->typeExpr   = typeNameExpr;
-        ast->expr       = ParsePrimaryExpr();
+        ast->area           = area;
+        ast->typeSpecifier  = typeNameExpr;
+        ast->expr           = ParsePrimaryExpr();
 
         return UpdateSourceArea(ast);
     }

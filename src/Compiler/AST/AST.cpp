@@ -1112,7 +1112,7 @@ TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr CastExpr::DeriveTypeDenoter()
 {
-    const auto& castTypeDen = typeExpr->GetTypeDenoter();
+    const auto& castTypeDen = typeSpecifier->GetTypeDenoter();
     const auto& valueTypeDen = expr->GetTypeDenoter();
 
     if (!valueTypeDen->IsCastableTo(*castTypeDen))

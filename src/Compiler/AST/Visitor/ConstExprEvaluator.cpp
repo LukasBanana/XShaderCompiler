@@ -280,7 +280,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
     auto value = Pop();
 
-    if (auto baseTypeDen = ast->typeExpr->GetTypeDenoter()->As<BaseTypeDenoter>())
+    if (auto baseTypeDen = ast->typeSpecifier->GetTypeDenoter()->As<BaseTypeDenoter>())
     {
         switch (baseTypeDen->dataType)
         {

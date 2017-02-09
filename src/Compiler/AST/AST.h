@@ -1012,8 +1012,8 @@ struct CastExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter() override;
 
     //TODO: maybe remove "TypeNameExpr typeExpr" and directly use "TypeName typeName" member?
-    TypeNameExprPtr typeExpr;   // Cast type name expression
-    ExprPtr         expr;       // Value expression
+    TypeNameExprPtr typeSpecifier;  // Cast type name expression
+    ExprPtr         expr;           // Value expression
 };
 
 // Variable access expression.
