@@ -17,3 +17,5 @@ Known Issues
 | Issue | Remarks |
 |-------|---------|
 | Implicit type conversion | In progress |
+| User defined semantic as entry point return semantic | e.g. `float3 VS() : WORLDPOS { return 1; }` does not translate correctly. |
+| Sampler types for DX9 shaders | Samplers (e.g. `sampler2D`) are ignored, even for HLSL3 |
