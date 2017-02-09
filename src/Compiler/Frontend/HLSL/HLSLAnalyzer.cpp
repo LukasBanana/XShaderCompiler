@@ -269,7 +269,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
     OpenScope();
     {
-        Visit(ast->parameters);
+        /* Analyze parameters (especially their types) */
+        for (auto& param : ast->parameters)
+            AnalyzeParameter(param.get());
 
         /* Special case for the main entry point */
         if (isEntryPoint)
@@ -1572,6 +1574,16 @@ void HLSLAnalyzer::AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr
         if (dim->HasDynamicSize())
             Error("secondary array dimensions must be explicit", dim, HLSLErr::ERR_ARRAY_IMPLICIT_ORDER);
     }
+}
+
+void HLSLAnalyzer::AnalyzeParameter(VarDeclStmnt* param)
+{
+    /* Default visitor for parameter */
+    Visit(param);
+
+    /* Check for structure definition */
+    if (auto structDecl = param->varType->structDecl.get())
+        Error("structure '" + structDecl->ToString() + "' can not be defined in a parameter type", param);
 }
 
 
