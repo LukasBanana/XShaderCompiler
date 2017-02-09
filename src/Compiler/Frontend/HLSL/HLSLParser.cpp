@@ -227,10 +227,11 @@ bool HLSLParser::IsRegisteredTypeName(const std::string& ident) const
     return typeNameSymbolTable_.Fetch(ident);
 }
 
-AliasDeclStmntPtr HLSLParser::MakeAndRegisterAliasDeclStmnt(const DataType dataType, const std::string& ident)
+AliasDeclStmntPtr HLSLParser::MakeAndRegisterBuildinAlias(const DataType dataType, const std::string& ident)
 {
     auto ast = ASTFactory::MakeBaseTypeAlias(dataType, ident);
     RegisterTypeName(ident);
+    ast->flags << AST::isBuildIn;
     return ast;
 }
 
@@ -251,7 +252,7 @@ void HLSLParser::GeneratePreDefinedTypeAliases(Program& ast)
     for (const auto& type : preDefinedTypes)
     {
         ast.globalStmnts.push_back(
-            MakeAndRegisterAliasDeclStmnt(type.first, type.second)
+            MakeAndRegisterBuildinAlias(type.first, type.second)
         );
     }
 }

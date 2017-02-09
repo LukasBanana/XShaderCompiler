@@ -35,15 +35,17 @@ void ASTPrinter::PrintAST(Program* program, Log& log)
 /* ------- Visit functions ------- */
 
 #define PRINT_AST(AST_NAME)                         \
-    if (PushPrintable(WriteLabel(ast, #AST_NAME)))  \
+    if (!ast->flags(AST::isBuildIn))                \
     {                                               \
+        PushPrintable(WriteLabel(ast, #AST_NAME));  \
         VISIT_DEFAULT(AST_NAME);                    \
         PopPrintable();                             \
     }
 
 #define PRINT_AST_EXT(AST_NAME, INFO)                       \
-    if (PushPrintable(WriteLabel(ast, #AST_NAME, INFO)))    \
+    if (!ast->flags(AST::isBuildIn))                        \
     {                                                       \
+        PushPrintable(WriteLabel(ast, #AST_NAME, INFO));    \
         VISIT_DEFAULT(AST_NAME);                            \
         PopPrintable();                                     \
     }
@@ -236,23 +238,19 @@ IMPLEMENT_VISIT_PROC_DEFAULT(InitializerExpr)
 
 std::string ASTPrinter::WriteLabel(AST* ast, const std::string& astName, const std::string& info)
 {
-    if (ast->area.Pos().IsValid())
-    {
-        std::string s;
+    std::string s;
         
-        /* Append AST name */
-        s = astName;
+    /* Append AST name */
+    s = astName;
 
-        /* Append source position */
-        s += " (" + ast->area.Pos().ToString(false) + ")";
+    /* Append source position */
+    s += " (" + ast->area.Pos().ToString(false) + ")";
 
-        /* Append brief information */
-        if (!info.empty())
-            s += " \"" + info + "\"";
+    /* Append brief information */
+    if (!info.empty())
+        s += " \"" + info + "\"";
 
-        return s;
-    }
-    return "";
+    return s;
 }
 
 void ASTPrinter::Print(Log& log, const PrintableTree& tree)

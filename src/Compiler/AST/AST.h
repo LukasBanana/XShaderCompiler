@@ -153,6 +153,7 @@ struct AST
     {
         FLAG( isReachable, 30 ), // This AST node is reachable from the main entry point.
         FLAG( isDeadCode,  29 ), // This AST node is dead code (after return path).
+        FLAG( isBuildIn,   28 ), // This AST node is a build-in node (not part of the actual program source).
     };
 
     // Returns this AST node as the specified sub class if this AST node has the correct type. Otherwise, null is returned.

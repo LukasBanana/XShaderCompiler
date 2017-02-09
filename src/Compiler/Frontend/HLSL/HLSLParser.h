@@ -90,7 +90,7 @@ class HLSLParser : public Parser
         bool IsRegisteredTypeName(const std::string& ident) const;
 
         // Makes a new alias declaration statement and registers it's identifier in the symbol table.
-        AliasDeclStmntPtr MakeAndRegisterAliasDeclStmnt(const DataType dataType, const std::string& ident);
+        AliasDeclStmntPtr MakeAndRegisterBuildinAlias(const DataType dataType, const std::string& ident);
 
         // Generates all pre defined type aliases (e.g. 'typedef int DWORD').
         void GeneratePreDefinedTypeAliases(Program& ast);
