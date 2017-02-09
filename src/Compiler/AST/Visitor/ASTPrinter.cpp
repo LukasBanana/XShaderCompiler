@@ -191,9 +191,9 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
     PRINT_AST_EXT(LiteralExpr, ast->value);
 }
 
-IMPLEMENT_VISIT_PROC(TypeNameExpr)
+IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
 {
-    PRINT_AST_EXT(TypeNameExpr, ast->GetTypeDenoter()->ToString());
+    PRINT_AST_EXT(TypeSpecifierExpr, ast->GetTypeDenoter()->ToString());
 }
 
 IMPLEMENT_VISIT_PROC_DEFAULT(TernaryExpr)

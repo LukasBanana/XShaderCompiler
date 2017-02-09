@@ -787,7 +787,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
     Write(ast->value);
 }
 
-IMPLEMENT_VISIT_PROC(TypeNameExpr)
+IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
 {
     WriteTypeDenoter(*ast->typeSpecifier->typeDenoter, false, ast);
 }

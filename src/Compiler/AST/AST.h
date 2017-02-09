@@ -120,7 +120,7 @@ struct AST
         NullExpr,
         ListExpr,
         LiteralExpr,
-        TypeNameExpr,
+        TypeSpecifierExpr,
         TernaryExpr,
         BinaryExpr,
         UnaryExpr,
@@ -904,9 +904,9 @@ struct LiteralExpr : public Expr
 
 //TODO: remove this AST class (directly use "TypeName")
 // Type name expression (used for simpler cast-expression parsing).
-struct TypeNameExpr : public Expr
+struct TypeSpecifierExpr : public Expr
 {
-    AST_INTERFACE(TypeNameExpr);
+    AST_INTERFACE(TypeSpecifierExpr);
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
@@ -1011,8 +1011,8 @@ struct CastExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter() override;
 
     //TODO: maybe remove "TypeNameExpr typeExpr" and directly use "TypeName typeName" member?
-    TypeNameExprPtr typeSpecifier;  // Cast type name expression
-    ExprPtr         expr;           // Value expression
+    TypeSpecifierExprPtr    typeSpecifier;  // Cast type name expression
+    ExprPtr                 expr;           // Value expression
 };
 
 // Variable access expression.

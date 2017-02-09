@@ -140,7 +140,7 @@ CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& value
 {
     auto ast = MakeAST<CastExpr>();
     {
-        ast->typeSpecifier                  = MakeAST<TypeNameExpr>();
+        ast->typeSpecifier                  = MakeAST<TypeSpecifierExpr>();
         ast->typeSpecifier->typeSpecifier   = MakeTypeSpecifier(typeDenoter);
         ast->expr                           = valueExpr;
     }
@@ -382,7 +382,7 @@ ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
         /* Make new cast expression */
         auto ast = MakeShared<CastExpr>(subExpr->area);
         {
-            ast->typeSpecifier                  = MakeAST<TypeNameExpr>();
+            ast->typeSpecifier                  = MakeAST<TypeSpecifierExpr>();
             ast->typeSpecifier->typeSpecifier   = MakeTypeSpecifier(MakeShared<BaseTypeDenoter>(dataType));
             ast->expr                           = subExpr;
         }

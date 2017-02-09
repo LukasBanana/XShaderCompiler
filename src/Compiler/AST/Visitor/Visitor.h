@@ -69,7 +69,7 @@ DECL_PTR( CtrlTransferStmnt );
 DECL_PTR( NullExpr          );
 DECL_PTR( ListExpr          );
 DECL_PTR( LiteralExpr       );
-DECL_PTR( TypeNameExpr      );
+DECL_PTR( TypeSpecifierExpr );
 DECL_PTR( TernaryExpr       );
 DECL_PTR( BinaryExpr        );
 DECL_PTR( UnaryExpr         );
@@ -143,7 +143,7 @@ class Visitor
         VISITOR_VISIT_PROC( NullExpr          );
         VISITOR_VISIT_PROC( ListExpr          );
         VISITOR_VISIT_PROC( LiteralExpr       );
-        VISITOR_VISIT_PROC( TypeNameExpr      );
+        VISITOR_VISIT_PROC( TypeSpecifierExpr );
         VISITOR_VISIT_PROC( TernaryExpr       );
         VISITOR_VISIT_PROC( BinaryExpr        );
         VISITOR_VISIT_PROC( UnaryExpr         );

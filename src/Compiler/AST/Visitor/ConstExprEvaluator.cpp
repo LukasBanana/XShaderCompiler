@@ -108,7 +108,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
     }
 }
 
-IMPLEMENT_VISIT_PROC(TypeNameExpr)
+IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
 {
     IllegalExpr("type specifier", ast);
 }

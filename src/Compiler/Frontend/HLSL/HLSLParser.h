@@ -65,7 +65,7 @@ class HLSLParser : public Parser
         bool IsVarDeclModifier() const;
 
         // Converts the specified expression to a type name expression if it is a left-hand-side of a cast expression.
-        TypeNameExprPtr MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& expr);
+        TypeSpecifierExprPtr MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& expr);
 
         // Overrides the token accept function to process all directives before the actual parsing.
         TokenPtr AcceptIt() override;

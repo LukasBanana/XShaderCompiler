@@ -42,21 +42,21 @@ class ConstExprEvaluator : private Visitor
 
         /* --- Visitor implementation --- */
 
-        DECL_VISIT_PROC( NullExpr         );
-        DECL_VISIT_PROC( ListExpr         );
-        DECL_VISIT_PROC( LiteralExpr      );
-        DECL_VISIT_PROC( TypeNameExpr     );
-        DECL_VISIT_PROC( TernaryExpr      );
-        DECL_VISIT_PROC( BinaryExpr       );
-        DECL_VISIT_PROC( UnaryExpr        );
-        DECL_VISIT_PROC( PostUnaryExpr    );
-        DECL_VISIT_PROC( FunctionCallExpr );
-        DECL_VISIT_PROC( BracketExpr      );
-        DECL_VISIT_PROC( SuffixExpr       );
-        DECL_VISIT_PROC( ArrayAccessExpr  );
-        DECL_VISIT_PROC( CastExpr         );
-        DECL_VISIT_PROC( VarAccessExpr    );
-        DECL_VISIT_PROC( InitializerExpr  );
+        DECL_VISIT_PROC( NullExpr          );
+        DECL_VISIT_PROC( ListExpr          );
+        DECL_VISIT_PROC( LiteralExpr       );
+        DECL_VISIT_PROC( TypeSpecifierExpr );
+        DECL_VISIT_PROC( TernaryExpr       );
+        DECL_VISIT_PROC( BinaryExpr        );
+        DECL_VISIT_PROC( UnaryExpr         );
+        DECL_VISIT_PROC( PostUnaryExpr     );
+        DECL_VISIT_PROC( FunctionCallExpr  );
+        DECL_VISIT_PROC( BracketExpr       );
+        DECL_VISIT_PROC( SuffixExpr        );
+        DECL_VISIT_PROC( ArrayAccessExpr   );
+        DECL_VISIT_PROC( CastExpr          );
+        DECL_VISIT_PROC( VarAccessExpr     );
+        DECL_VISIT_PROC( InitializerExpr   );
 
         /* === Members === */
 

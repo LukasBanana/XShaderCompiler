@@ -104,11 +104,11 @@ bool HLSLParser::IsVarDeclModifier() const
     return (Is(Tokens::InputModifier) || Is(Tokens::InterpModifier) || Is(Tokens::TypeModifier) || Is(Tokens::StorageClass));
 }
 
-TypeNameExprPtr HLSLParser::MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& expr)
+TypeSpecifierExprPtr HLSLParser::MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& expr)
 {
     /* Type name expression (float, int3 etc.) is always allowed for a cast expression */
-    if (expr->Type() == AST::Types::TypeNameExpr)
-        return std::static_pointer_cast<TypeNameExpr>(expr);
+    if (expr->Type() == AST::Types::TypeSpecifierExpr)
+        return std::static_pointer_cast<TypeSpecifierExpr>(expr);
 
     /* Is this a variable identifier? */
     if (auto varAccessExpr = expr->As<VarAccessExpr>())
@@ -117,7 +117,7 @@ TypeNameExprPtr HLSLParser::MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& expr
         if (!varAccessExpr->varIdent->next && IsRegisteredTypeName(varAccessExpr->varIdent->ident))
         {
             /* Convert the variable access into a type name expression */
-            auto typeSpecifier = Make<TypeNameExpr>();
+            auto typeSpecifier = Make<TypeSpecifierExpr>();
             typeSpecifier->typeSpecifier = ASTFactory::MakeTypeSpecifier(std::make_shared<AliasTypeDenoter>(varAccessExpr->varIdent->ident));
             return typeSpecifier;
         }
@@ -1485,7 +1485,7 @@ ExprPtr HLSLParser::ParseTypeNameOrFunctionCallExpr()
     }
 
     /* Return type name expression */
-    auto ast = Make<TypeNameExpr>();
+    auto ast = Make<TypeSpecifierExpr>();
 
     ast->typeSpecifier               = ASTFactory::MakeTypeSpecifier(typeDenoter);
     ast->typeSpecifier->structDecl   = structDecl;

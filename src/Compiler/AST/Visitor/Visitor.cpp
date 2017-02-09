@@ -255,7 +255,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
     // do nothing
 }
 
-IMPLEMENT_VISIT_PROC(TypeNameExpr)
+IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
 {
     Visit(ast->typeSpecifier);
 }

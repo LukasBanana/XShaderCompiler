@@ -964,9 +964,9 @@ bool LiteralExpr::IsNull() const
 }
 
 
-/* ----- TypeNameExpr ----- */
+/* ----- TypeSpecifierExpr ----- */
 
-TypeDenoterPtr TypeNameExpr::DeriveTypeDenoter()
+TypeDenoterPtr TypeSpecifierExpr::DeriveTypeDenoter()
 {
     return typeSpecifier->GetTypeDenoter();
 }
