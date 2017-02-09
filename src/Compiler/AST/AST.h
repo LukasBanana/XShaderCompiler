@@ -902,7 +902,6 @@ struct LiteralExpr : public Expr
     std::string     value;
 };
 
-//TODO: remove this AST class (directly use "TypeName")
 // Type name expression (used for simpler cast-expression parsing).
 struct TypeSpecifierExpr : public Expr
 {

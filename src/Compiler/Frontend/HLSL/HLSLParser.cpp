@@ -1424,7 +1424,7 @@ ExprPtr HLSLParser::ParsePrimaryExpr()
     if (IsLiteral())
         return ParseLiteralOrSuffixExpr();
     if (IsDataType() || Is(Tokens::Struct))
-        return ParseTypeNameOrFunctionCallExpr();
+        return ParseTypeSpecifierOrFunctionCallExpr();
     if (Is(Tokens::UnaryOp) || IsArithmeticUnaryExpr())
         return ParseUnaryExpr();
     if (Is(Tokens::LBracket))
@@ -1466,7 +1466,7 @@ LiteralExprPtr HLSLParser::ParseLiteralExpr()
     return UpdateSourceArea(ast);
 }
 
-ExprPtr HLSLParser::ParseTypeNameOrFunctionCallExpr()
+ExprPtr HLSLParser::ParseTypeSpecifierOrFunctionCallExpr()
 {
     /* Parse type denoter with optional structure delcaration */
     if (!IsDataType() && !Is(Tokens::Struct))

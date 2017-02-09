@@ -151,7 +151,7 @@ class HLSLParser : public Parser
         ExprPtr                         ParsePrimaryExpr() override;
         ExprPtr                         ParseLiteralOrSuffixExpr();
         LiteralExprPtr                  ParseLiteralExpr();
-        ExprPtr                         ParseTypeNameOrFunctionCallExpr();
+        ExprPtr                         ParseTypeSpecifierOrFunctionCallExpr();
         UnaryExprPtr                    ParseUnaryExpr();
         ExprPtr                         ParseBracketOrCastExpr();
         SuffixExprPtr                   ParseSuffixExpr(const ExprPtr& expr);
