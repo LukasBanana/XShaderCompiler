@@ -104,7 +104,7 @@ bool HLSLParser::IsVarDeclModifier() const
     return (Is(Tokens::InputModifier) || Is(Tokens::InterpModifier) || Is(Tokens::TypeModifier) || Is(Tokens::StorageClass));
 }
 
-TypeNameExprPtr HLSLParser::MakeToTypeNameIfLhsOfCastExpr(const ExprPtr& expr)
+TypeNameExprPtr HLSLParser::MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& expr)
 {
     /* Type name expression (float, int3 etc.) is always allowed for a cast expression */
     if (expr->Type() == AST::Types::TypeNameExpr)
@@ -1537,13 +1537,13 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     Parse cast expression if the expression inside the bracket is the left-hand-side of a cast expression,
     which is checked by the symbol table, because HLSL cast expressions are not context free.
     */
-    if (auto typeNameExpr = MakeToTypeNameIfLhsOfCastExpr(expr))
+    if (auto typeSpecifier = MakeTypeSpecifierIfLhsOfCastExpr(expr))
     {
         /* Return cast expression */
         auto ast = Make<CastExpr>();
         
         ast->area           = area;
-        ast->typeSpecifier  = typeNameExpr;
+        ast->typeSpecifier  = typeSpecifier;
         ast->expr           = ParsePrimaryExpr();
 
         return UpdateSourceArea(ast);
