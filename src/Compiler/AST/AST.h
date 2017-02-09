@@ -910,7 +910,7 @@ struct TypeNameExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    TypeSpecifierPtr typeName;
+    TypeSpecifierPtr typeSpecifier;
 };
 
 // Ternary expression.

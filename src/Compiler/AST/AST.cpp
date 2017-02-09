@@ -968,7 +968,7 @@ bool LiteralExpr::IsNull() const
 
 TypeDenoterPtr TypeNameExpr::DeriveTypeDenoter()
 {
-    return typeName->GetTypeDenoter();
+    return typeSpecifier->GetTypeDenoter();
 }
 
 

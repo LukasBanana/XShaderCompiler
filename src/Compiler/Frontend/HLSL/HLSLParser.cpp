@@ -118,7 +118,7 @@ TypeNameExprPtr HLSLParser::MakeToTypeNameIfLhsOfCastExpr(const ExprPtr& expr)
         {
             /* Convert the variable access into a type name expression */
             auto typeSpecifier = Make<TypeNameExpr>();
-            typeSpecifier->typeName = ASTFactory::MakeTypeSpecifier(std::make_shared<AliasTypeDenoter>(varAccessExpr->varIdent->ident));
+            typeSpecifier->typeSpecifier = ASTFactory::MakeTypeSpecifier(std::make_shared<AliasTypeDenoter>(varAccessExpr->varIdent->ident));
             return typeSpecifier;
         }
     }
@@ -795,13 +795,13 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
 
 StmntPtr HLSLParser::ParseGlobalStmntWithTypeSpecifier()
 {
-    auto typeName = ParseTypeSpecifier();
+    auto typeSpecifier = ParseTypeSpecifier();
 
-    if (typeName->structDecl && Is(Tokens::Semicolon))
+    if (typeSpecifier->structDecl && Is(Tokens::Semicolon))
     {
         auto ast = Make<StructDeclStmnt>();
 
-        ast->structDecl = typeName->structDecl;
+        ast->structDecl = typeSpecifier->structDecl;
         Semi();
 
         return ast;
@@ -812,14 +812,14 @@ StmntPtr HLSLParser::ParseGlobalStmntWithTypeSpecifier()
     if (Is(Tokens::LBracket))
     {
         /* Parse function declaration statement */
-        return ParseFunctionDecl(typeName, identTkn);
+        return ParseFunctionDecl(typeSpecifier, identTkn);
     }
     else
     {
         /* Parse variable declaration statement */
         auto ast = Make<VarDeclStmnt>();
 
-        ast->typeSpecifier  = typeName;
+        ast->typeSpecifier  = typeSpecifier;
         ast->varDecls       = ParseVarDeclList(ast.get(), identTkn);
 
         Semi();
@@ -1487,8 +1487,8 @@ ExprPtr HLSLParser::ParseTypeNameOrFunctionCallExpr()
     /* Return type name expression */
     auto ast = Make<TypeNameExpr>();
 
-    ast->typeName               = ASTFactory::MakeTypeSpecifier(typeDenoter);
-    ast->typeName->structDecl   = structDecl;
+    ast->typeSpecifier               = ASTFactory::MakeTypeSpecifier(typeDenoter);
+    ast->typeSpecifier->structDecl   = structDecl;
 
     return ast;
 }

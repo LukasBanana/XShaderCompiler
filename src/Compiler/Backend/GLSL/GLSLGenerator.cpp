@@ -789,7 +789,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(TypeNameExpr)
 {
-    WriteTypeDenoter(*ast->typeName->typeDenoter, false, ast);
+    WriteTypeDenoter(*ast->typeSpecifier->typeDenoter, false, ast);
 }
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
