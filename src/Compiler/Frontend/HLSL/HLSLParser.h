@@ -112,7 +112,7 @@ class HLSLParser : public Parser
         ExprPtr                         ParseArrayIndex();
         ExprPtr                         ParseInitializer();
         VarIdentPtr                     ParseVarIdent();
-        TypeSpecifierPtr                ParseTypeName(bool parseVoidType = false);
+        TypeSpecifierPtr                ParseTypeSpecifier(bool parseVoidType = false);
 
         VarDeclPtr                      ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         BufferDeclPtr                   ParseBufferDecl(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
@@ -121,7 +121,7 @@ class HLSLParser : public Parser
         AliasDeclPtr                    ParseAliasDecl(TypeDenoterPtr typeDenoter);
 
         StmntPtr                        ParseGlobalStmnt();
-        StmntPtr                        ParseGlobalStmntWithTypeName();
+        StmntPtr                        ParseGlobalStmntWithTypeSpecifier();
         StmntPtr                        ParseGlobalStmntWithSamplerTypeDenoter();
         StmntPtr                        ParseGlobalStmntWithBufferTypeDenoter();
         FunctionDeclPtr                 ParseFunctionDecl(const TypeSpecifierPtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);

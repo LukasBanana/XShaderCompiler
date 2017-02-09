@@ -141,7 +141,7 @@ CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& value
     auto ast = MakeAST<CastExpr>();
     {
         ast->typeSpecifier              = MakeAST<TypeNameExpr>();
-        ast->typeSpecifier->typeName    = MakeTypeName(typeDenoter);
+        ast->typeSpecifier->typeName    = MakeTypeSpecifier(typeDenoter);
         ast->expr                       = valueExpr;
     }
     return ast;
@@ -210,7 +210,7 @@ AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& 
     return ast;
 }
 
-TypeSpecifierPtr MakeTypeName(const StructDeclPtr& structDecl)
+TypeSpecifierPtr MakeTypeSpecifier(const StructDeclPtr& structDecl)
 {
     auto ast = MakeAST<TypeSpecifier>();
     {
@@ -220,7 +220,7 @@ TypeSpecifierPtr MakeTypeName(const StructDeclPtr& structDecl)
     return ast;
 }
 
-TypeSpecifierPtr MakeTypeName(const TypeDenoterPtr& typeDenoter)
+TypeSpecifierPtr MakeTypeSpecifier(const TypeDenoterPtr& typeDenoter)
 {
     auto ast = MakeAST<TypeSpecifier>();
     {
@@ -229,16 +229,16 @@ TypeSpecifierPtr MakeTypeName(const TypeDenoterPtr& typeDenoter)
     return ast;
 }
 
-TypeSpecifierPtr MakeTypeName(const DataType dataType)
+TypeSpecifierPtr MakeTypeSpecifier(const DataType dataType)
 {
-    return MakeTypeName(MakeShared<BaseTypeDenoter>(dataType));
+    return MakeTypeSpecifier(MakeShared<BaseTypeDenoter>(dataType));
 }
 
 VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ident)
 {
     auto ast = MakeAST<VarDeclStmnt>();
     {
-        ast->typeSpecifier = MakeTypeName(dataType);
+        ast->typeSpecifier = MakeTypeSpecifier(dataType);
 
         auto varDecl = MakeAST<VarDecl>();
         {
@@ -383,7 +383,7 @@ ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
         auto ast = MakeShared<CastExpr>(subExpr->area);
         {
             ast->typeSpecifier              = MakeAST<TypeNameExpr>();
-            ast->typeSpecifier->typeName    = MakeTypeName(MakeShared<BaseTypeDenoter>(dataType));
+            ast->typeSpecifier->typeName    = MakeTypeSpecifier(MakeShared<BaseTypeDenoter>(dataType));
             ast->expr                       = subExpr;
         }
         return ast;

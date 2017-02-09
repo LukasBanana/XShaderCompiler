@@ -55,9 +55,9 @@ LiteralExprPtr MakeLiteralExpr(const Variant& literalValue);
 
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident);
 
-TypeSpecifierPtr MakeTypeName(const StructDeclPtr& structDecl);
-TypeSpecifierPtr MakeTypeName(const TypeDenoterPtr& typeDenoter);
-TypeSpecifierPtr MakeTypeName(const DataType dataType);
+TypeSpecifierPtr MakeTypeSpecifier(const StructDeclPtr& structDecl);
+TypeSpecifierPtr MakeTypeSpecifier(const TypeDenoterPtr& typeDenoter);
+TypeSpecifierPtr MakeTypeSpecifier(const DataType dataType);
 
 VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ident);
 
