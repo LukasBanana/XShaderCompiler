@@ -704,6 +704,8 @@ enum class Intrinsic
     Texture_Load_1,             // Load(int[1,2,3,4] Location)
     Texture_Load_2,             // Load(int[1,2,3,4] Location, int SampleIndex)
     Texture_Load_3,             // Load(int[1,2,3,4] Location, int SampleIndex, int Offset)
+    //Texture_Gather_3,           // Gather(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset)
+    //Texture_Gather_4,           // Gather(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, out uint Status)
     Texture_Sample_2,           // Sample(SamplerState S, float[1,2,3,4] Location)
     Texture_Sample_3,           // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset)
     Texture_Sample_4,           // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, float Clamp)
