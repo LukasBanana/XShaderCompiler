@@ -17,8 +17,8 @@ endmacro()
 
 find_path(XSC_INCLUDE_DIR Xsc/Xsc.h)
 
-find_library(XSC_LIBRARY NAMES XShaderCompiler)
-find_library(XSC_LIBRARY_DEBUG NAMES XShaderCompiler)
+find_library(XSC_LIBRARY NAMES xsc_core)
+find_library(XSC_LIBRARY_DEBUG NAMES xsc_core)
 
 # Setup package handle
 
@@ -34,4 +34,4 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(
 
 if(XSC_FOUND)
 	_XSC_APPEND_LIBRARIES(XSC_LIBRARIES XSC_LIBRARY)
-endif(HTLIB_FOUND)
+endif(XSC_FOUND)
