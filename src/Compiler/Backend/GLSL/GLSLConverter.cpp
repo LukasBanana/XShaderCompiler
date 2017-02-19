@@ -157,6 +157,8 @@ IMPLEMENT_VISIT_PROC(VarIdent)
             }
         }
     }
+    
+    VISIT_DEFAULT(VarIdent);
 }
 
 /* --- Declarations --- */
