@@ -1608,10 +1608,10 @@ void GLSLGenerator::WriteVarIdent(VarIdent* ast, bool recursive)
 Writes either the variable identifier as it is (e.g. "vertexOutput.position.xyz"),
 or a system value if the identifier has a system value semantix (e.g. "gl_Position.xyz").
 */
-void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
+void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* varIdent)
 {
     /* Find system value semantic in variable identifier */
-    auto semanticVarIdent = FindSystemValueVarIdent(ast);
+    auto semanticVarIdent = FindSystemValueVarIdent(varIdent);
 
     std::unique_ptr<std::string> semanticKeyword;
     Flags varFlags;
@@ -1632,13 +1632,13 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
     if (semanticVarIdent && semanticKeyword)
     {
         /* Write "gl_in[]" or "gl_out[]" in front of identifier */
-        if (!ast->arrayIndices.empty())
+        if (!varIdent->arrayIndices.empty())
         {
             if (varFlags(VarDecl::isShaderOutput))
                 Write("gl_out");
             else
                 Write("gl_in");
-            WriteArrayIndices(ast->arrayIndices);
+            WriteArrayIndices(varIdent->arrayIndices);
             Write(".");
         }
 
@@ -1654,7 +1654,7 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
     else
     {
         /* Write default variable identifier */
-        Visit(ast);
+        Visit(varIdent);
     }
 }
 
@@ -1919,43 +1919,43 @@ void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArg
         Error("invalid number of arguments for intrinsic", ast);
 }
 
-void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
+void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* funcCall)
 {
     /* Write function name */
-    if (ast->varIdent)
+    if (funcCall->varIdent)
     {
-        if (ast->intrinsic != Intrinsic::Undefined && !IsWrappedIntrinsic(ast->intrinsic))
+        if (funcCall->intrinsic != Intrinsic::Undefined && !IsWrappedIntrinsic(funcCall->intrinsic))
         {
             /* Write GLSL intrinsic keyword */
-            auto keyword = IntrinsicToGLSLKeyword(ast->intrinsic);
+            auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic);
             if (keyword)
                 Write(*keyword);
             else
-                Error("failed to map intrinsic '" + ast->varIdent->Last()->ToString() + "' to GLSL keyword", ast);
+                Error("failed to map intrinsic '" + funcCall->varIdent->Last()->ToString() + "' to GLSL keyword", funcCall);
         }
         else
         {
             /* Write function identifier */
-            Visit(ast->varIdent);
+            Visit(funcCall->varIdent);
         }
     }
-    else if (ast->typeDenoter)
+    else if (funcCall->typeDenoter)
     {
         /* Write type denoter */
-        WriteTypeDenoter(*ast->typeDenoter, false, ast);
+        WriteTypeDenoter(*funcCall->typeDenoter, false, funcCall);
     }
     else
-        Error("missing function name", ast);
+        Error("missing function name", funcCall);
 
     /* Write arguments */
     Write("(");
 
-    for (std::size_t i = 0, n = ast->arguments.size(), m = n + ast->defaultArgumentRefs.size(); i < m; ++i)
+    for (std::size_t i = 0, n = funcCall->arguments.size(), m = n + funcCall->defaultArgumentRefs.size(); i < m; ++i)
     {
         if (i < n)
-            Visit(ast->arguments[i]);
+            Visit(funcCall->arguments[i]);
         else
-            Visit(ast->defaultArgumentRefs[i - n]);
+            Visit(funcCall->defaultArgumentRefs[i - n]);
 
         if (i + 1 < m)
             Write(", ");
@@ -1964,9 +1964,9 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* ast)
     Write(")");
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicMul(FunctionCall* ast)
+void GLSLGenerator::WriteFunctionCallIntrinsicMul(FunctionCall* funcCall)
 {
-    AssertIntrinsicNumArgs(ast, 2, 2);
+    AssertIntrinsicNumArgs(funcCall, 2, 2);
 
     auto WriteMulArgument = [&](const ExprPtr& expr)
     {
@@ -1988,19 +1988,19 @@ void GLSLGenerator::WriteFunctionCallIntrinsicMul(FunctionCall* ast)
     /* Convert this function call into a multiplication */
     Write("(");
     {
-        WriteMulArgument(ast->arguments[0]);
+        WriteMulArgument(funcCall->arguments[0]);
         Write(" * ");
-        WriteMulArgument(ast->arguments[1]);
+        WriteMulArgument(funcCall->arguments[1]);
     }
     Write(")");
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicRcp(FunctionCall* ast)
+void GLSLGenerator::WriteFunctionCallIntrinsicRcp(FunctionCall* funcCall)
 {
-    AssertIntrinsicNumArgs(ast, 1, 1);
+    AssertIntrinsicNumArgs(funcCall, 1, 1);
 
     /* Get type denoter of argument expression */
-    auto& expr = ast->arguments.front();
+    auto& expr = funcCall->arguments.front();
     auto typeDenoter = expr->GetTypeDenoter()->Get();
 
     if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
@@ -2008,9 +2008,9 @@ void GLSLGenerator::WriteFunctionCallIntrinsicRcp(FunctionCall* ast)
         /* Convert this function call into a division */
         Write("(");
         {
-            WriteTypeDenoter(*baseTypeDen, false, ast);
+            WriteTypeDenoter(*baseTypeDen, false, funcCall);
             Write("(");
-            WriteLiteral("1", *baseTypeDen, ast);
+            WriteLiteral("1", *baseTypeDen, funcCall);
             Write(") / (");
             Visit(expr);
         }
@@ -2020,12 +2020,12 @@ void GLSLGenerator::WriteFunctionCallIntrinsicRcp(FunctionCall* ast)
         Error("invalid argument type for intrinsic 'rcp'", expr.get());
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* ast)
+void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* funcCall)
 {
-    AssertIntrinsicNumArgs(ast, 1, 1);
+    AssertIntrinsicNumArgs(funcCall, 1, 1);
 
     /* Get type denoter of argument expression */
-    auto& expr = ast->arguments.front();
+    auto& expr = funcCall->arguments.front();
     auto typeDenoter = expr->GetTypeDenoter()->Get();
 
     if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
@@ -2093,28 +2093,28 @@ void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* ast)
     DecIndent();
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
+void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* funcCall)
 {
-    AssertIntrinsicNumArgs(ast, 2, 3);
+    AssertIntrinsicNumArgs(funcCall, 2, 3);
 
     /* Find atomic intrinsic mapping */
-    auto keyword = IntrinsicToGLSLKeyword(ast->intrinsic);
+    auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic);
     if (keyword)
     {
         /* Write function call */
-        if (ast->arguments.size() >= 3)
+        if (funcCall->arguments.size() >= 3)
         {
-            Visit(ast->arguments[2]);
+            Visit(funcCall->arguments[2]);
             Write(" = ");
         }
         Write(*keyword + "(");
-        Visit(ast->arguments[0]);
+        Visit(funcCall->arguments[0]);
         Write(", ");
-        Visit(ast->arguments[1]);
+        Visit(funcCall->arguments[1]);
         Write(")");
     }
     else
-        Error("failed to map intrinsic '" + ast->varIdent->ToString() + "' to GLSL keyword", ast);
+        Error("failed to map intrinsic '" + funcCall->varIdent->ToString() + "' to GLSL keyword", funcCall);
 }
 
 void GLSLGenerator::WriteFunctionCallIntrinsicStreamOutputAppend(FunctionCall* funcCall)
@@ -2233,49 +2233,49 @@ void GLSLGenerator::WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage)
 
 /* --- Structure --- */
 
-bool GLSLGenerator::WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool allowNestedStruct)
+bool GLSLGenerator::WriteStructDecl(StructDecl* structDecl, bool writeSemicolon, bool allowNestedStruct)
 {
     /* Is this a non-nested structure or are nested structures allowed in the current context? */
-    if (!ast->flags(StructDecl::isNestedStruct) || allowNestedStruct)
+    if (!structDecl->flags(StructDecl::isNestedStruct) || allowNestedStruct)
     {
         //TODO: remove interface blocks
         #if 0
         /* Is this an interface block or a standard structure? */
-        if (ast->flags(StructDecl::isShaderInput) || ast->flags(StructDecl::isShaderOutput))
+        if (structDecl->flags(StructDecl::isShaderInput) || structDecl->flags(StructDecl::isShaderOutput))
         {
             /* Write structure as shader input/output block */
-            return WriteStructDeclInputOutputBlock(ast);
+            return WriteStructDeclInputOutputBlock(structDecl);
         }
         else
         #endif
         {
             /* Write standard structure declaration */
-            return WriteStructDeclStandard(ast, writeSemicolon);
+            return WriteStructDeclStandard(structDecl, writeSemicolon);
         }
     }
     else if (!writeSemicolon)
     {
         /* Do not end line here with "EndLn" */
         BeginLn();
-        Write(ast->ident + " ");
+        Write(structDecl->ident + " ");
     }
     return false;
 }
 
-bool GLSLGenerator::WriteStructDeclStandard(StructDecl* ast, bool endWithSemicolon)
+bool GLSLGenerator::WriteStructDeclStandard(StructDecl* structDecl, bool endWithSemicolon)
 {
     /* Write structure signature */
     BeginLn();
 
     Write("struct");
-    if (!ast->ident.empty())
-        Write(' ' + ast->ident);
+    if (!structDecl->ident.empty())
+        Write(' ' + structDecl->ident);
 
     /* Write structure members */
     WriteScopeOpen(false, endWithSemicolon);
     BeginSep();
     {
-        WriteStructDeclMembers(ast);
+        WriteStructDeclMembers(structDecl);
     }
     EndSep();
     WriteScopeClose();
@@ -2283,63 +2283,63 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* ast, bool endWithSemicol
     return true;
 }
 
-bool GLSLGenerator::WriteStructDeclInputOutputBlock(StructDecl* ast)
+bool GLSLGenerator::WriteStructDeclInputOutputBlock(StructDecl* structDecl)
 {
     /* Only write input/output block if there is a non-system-value member */
-    if (!ast->HasNonSystemValueMembers())
+    if (!structDecl->HasNonSystemValueMembers())
         return false;
     
     /* Write this structure as interface block (if structure doesn't need to be resolved) */
     BeginLn();
     
-    if (ast->flags(StructDecl::isShaderInput))
+    if (structDecl->flags(StructDecl::isShaderInput))
         Write("in ");
     else
         Write("out ");
-    Write(ast->ident);
+    Write(structDecl->ident);
 
     WriteScopeOpen();
     BeginSep();
     {
         isInsideInterfaceBlock_ = true;
         {
-            WriteStructDeclMembers(ast);
+            WriteStructDeclMembers(structDecl);
         }
         isInsideInterfaceBlock_ = false;
     }
     EndSep();
     WriteScopeClose();
 
-    WriteLn(ast->aliasName + ";");
+    WriteLn(structDecl->aliasName + ";");
 
     return true;
 }
 
-void GLSLGenerator::WriteStructDeclMembers(StructDecl* ast)
+void GLSLGenerator::WriteStructDeclMembers(StructDecl* structDecl)
 {
-    if (ast->baseStructRef)
-        WriteStructDeclMembers(ast->baseStructRef);
-    Visit(ast->members);
+    if (structDecl->baseStructRef)
+        WriteStructDeclMembers(structDecl->baseStructRef);
+    Visit(structDecl->members);
 }
 
 /* --- BufferDecl --- */
 
-void GLSLGenerator::WriteBufferDecl(BufferDecl* ast)
+void GLSLGenerator::WriteBufferDecl(BufferDecl* bufferDecl)
 {
-    if (ast->flags(AST::isReachable))
+    if (bufferDecl->flags(AST::isReachable))
     {
-        if (IsTextureBufferType(ast->GetBufferType()))
-            WriteBufferDeclTexture(ast);
+        if (IsTextureBufferType(bufferDecl->GetBufferType()))
+            WriteBufferDeclTexture(bufferDecl);
         else
-            WriteBufferDeclStorageBuffer(ast);
+            WriteBufferDeclStorageBuffer(bufferDecl);
         Blank();
     }
 }
 
-void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* ast)
+void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
 {
     /* Determine GLSL sampler type (or VKSL texture type) */
-    auto bufferTypeKeyword = BufferTypeToKeyword(ast->GetBufferType(), ast->declStmntRef);
+    auto bufferTypeKeyword = BufferTypeToKeyword(bufferDecl->GetBufferType(), bufferDecl->declStmntRef);
     if (!bufferTypeKeyword)
         return;
 
@@ -2348,14 +2348,14 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* ast)
         /* Write uniform declaration */
         if (explicitBinding_)
         {
-            if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, GetShaderTarget()))
+            if (auto slotRegister = Register::GetForTarget(bufferDecl->slotRegisters, GetShaderTarget()))
                 Write("layout(binding = " + std::to_string(slotRegister->slot) + ") ");
         }
 
         Write("uniform ");
 
         /* Write sampler type and identifier */
-        if (auto genericTypeDen = ast->declStmntRef->typeDenoter->genericTypeDenoter)
+        if (auto genericTypeDen = bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter)
         {
             if (auto baseTypeDen = genericTypeDen->As<BaseTypeDenoter>())
             {
@@ -2366,15 +2366,15 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* ast)
             }
         }
 
-        Write(*bufferTypeKeyword + " " + ast->ident + ";");
+        Write(*bufferTypeKeyword + " " + bufferDecl->ident + ";");
     }
     EndLn();
 }
 
-void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* ast)
+void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
 {
     /* Determine GLSL buffer type */
-    auto bufferTypeKeyword = BufferTypeToKeyword(ast->GetBufferType(), ast->declStmntRef);
+    auto bufferTypeKeyword = BufferTypeToKeyword(bufferDecl->GetBufferType(), bufferDecl->declStmntRef);
     if (!bufferTypeKeyword)
         return;
 
@@ -2385,11 +2385,11 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* ast)
 
         if (explicitBinding_)
         {
-            if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, GetShaderTarget()))
+            if (auto slotRegister = Register::GetForTarget(bufferDecl->slotRegisters, GetShaderTarget()))
                 Write(", binding = " + std::to_string(slotRegister->slot));
         }
 
-        Write(") " + *bufferTypeKeyword + " " + nameManglingPrefix_ + ast->ident);
+        Write(") " + *bufferTypeKeyword + " " + nameManglingPrefix_ + bufferDecl->ident);
     }
     EndLn();
 
@@ -2399,13 +2399,13 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* ast)
         BeginLn();
         {
             /* Write optional memory type qualifier */
-            if (!IsRWBufferType(ast->GetBufferType()))
+            if (!IsRWBufferType(bufferDecl->GetBufferType()))
                 Write("readonly ");
 
             /* Write generic type denoterand identifier */
-            auto genericTypeDen = ast->declStmntRef->typeDenoter->GetGenericTypeDenoter();
-            WriteTypeDenoter(*genericTypeDen, IsESSL(), ast);
-            Write(" " + ast->ident + "[];");
+            auto genericTypeDen = bufferDecl->declStmntRef->typeDenoter->GetGenericTypeDenoter();
+            WriteTypeDenoter(*genericTypeDen, IsESSL(), bufferDecl);
+            Write(" " + bufferDecl->ident + "[];");
         }
         EndLn();
     }

@@ -204,11 +204,11 @@ class GLSLGenerator : public Generator
 
         void AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax = ~0);
 
-        void WriteFunctionCallStandard(FunctionCall* ast);
-        void WriteFunctionCallIntrinsicMul(FunctionCall* ast);
-        void WriteFunctionCallIntrinsicRcp(FunctionCall* ast);
-        void WriteFunctionCallIntrinsicClip(FunctionCall* ast);
-        void WriteFunctionCallIntrinsicAtomic(FunctionCall* ast);
+        void WriteFunctionCallStandard(FunctionCall* funcCall);
+        void WriteFunctionCallIntrinsicMul(FunctionCall* funcCall);
+        void WriteFunctionCallIntrinsicRcp(FunctionCall* funcCall);
+        void WriteFunctionCallIntrinsicClip(FunctionCall* funcCall);
+        void WriteFunctionCallIntrinsicAtomic(FunctionCall* funcCall);
         void WriteFunctionCallIntrinsicStreamOutputAppend(FunctionCall* funcCall);
 
         /* --- Intrinsics wrapper functions --- */
@@ -220,16 +220,16 @@ class GLSLGenerator : public Generator
 
         /* --- Structure --- */
 
-        bool WriteStructDecl(StructDecl* ast, bool writeSemicolon, bool allowNestedStruct = false);
-        bool WriteStructDeclStandard(StructDecl* ast, bool endWithSemicolon);
-        bool WriteStructDeclInputOutputBlock(StructDecl* ast);
-        void WriteStructDeclMembers(StructDecl* ast);
+        bool WriteStructDecl(StructDecl* structDecl, bool writeSemicolon, bool allowNestedStruct = false);
+        bool WriteStructDeclStandard(StructDecl* structDecl, bool endWithSemicolon);
+        bool WriteStructDeclInputOutputBlock(StructDecl* structDecl);
+        void WriteStructDeclMembers(StructDecl* structDecl);
 
         /* --- BufferDecl --- */
 
-        void WriteBufferDecl(BufferDecl* ast);
-        void WriteBufferDeclTexture(BufferDecl* ast);
-        void WriteBufferDeclStorageBuffer(BufferDecl* ast);
+        void WriteBufferDecl(BufferDecl* bufferDecl);
+        void WriteBufferDeclTexture(BufferDecl* bufferDecl);
+        void WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl);
 
         /* --- Misc --- */
 
