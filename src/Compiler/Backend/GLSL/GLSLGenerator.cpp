@@ -1201,22 +1201,46 @@ void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param,
 
         /* Write global shader input to local variable assignments */
         auto paramVar = param->varDecls.front().get();
-
-        //if (paramVar->arrayDims.empty())
+        
+        if (paramVar->arrayDims.empty())
         {
             structDecl->ForEachVarDecl(
                 [&](VarDeclPtr& varDecl)
                 {
-                    WriteLn(
-                        paramVar->ident + "." + varDecl->ident + " = " + varDecl->FinalIdent() + ";"
-                    );
+                    BeginLn();
+                    {
+                        Write(paramVar->ident + "." + varDecl->ident + " = ");
+                        WriteVarDeclIdentOrSystemValue(varDecl.get());
+                        Write(";");
+                    }
+                    EndLn();
                 }
             );
         }
-        /*else
+        else if (paramVar->arrayDims.size() == 1)
         {
+            /* Get array dimension sizes from parameter */
+            auto arraySize = paramVar->arrayDims.front()->size;
 
-        }*/
+            for (int i = 0; i < arraySize; ++i)
+            {
+                /* Construct array indices output string */
+                structDecl->ForEachVarDecl(
+                    [&](VarDeclPtr& varDecl)
+                    {
+                        BeginLn();
+                        {
+                            Write(paramVar->ident + "[" + std::to_string(i) + "]." + varDecl->ident + " = ");
+                            WriteVarDeclIdentOrSystemValue(varDecl.get(), i);
+                            Write(";");
+                        }
+                        EndLn();
+                    }
+                );
+            }
+        }
+        else
+            Error("too many array indices for shader input parameter", paramVar);
     }
 }
 
@@ -1589,18 +1613,18 @@ const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* varIdent)
     return varIdent->ident;
 }
 
-void GLSLGenerator::WriteVarIdent(VarIdent* ast, bool recursive)
+void GLSLGenerator::WriteVarIdent(VarIdent* varIdent, bool recursive)
 {
     /* Write identifier */
-    Write(FinalIdentFromVarIdent(ast));
+    Write(FinalIdentFromVarIdent(varIdent));
 
     /* Write array index expressions */
-    WriteArrayIndices(ast->arrayIndices);
+    WriteArrayIndices(varIdent->arrayIndices);
 
-    if (recursive && ast->next)
+    if (recursive && varIdent->next)
     {
         Write(".");
-        WriteVarIdent(ast->next.get());
+        WriteVarIdent(varIdent->next.get());
     }
 }
 
@@ -1655,6 +1679,29 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* varIdent)
     {
         /* Write default variable identifier */
         Visit(varIdent);
+    }
+}
+
+void GLSLGenerator::WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIndex)
+{
+    /* Find system value semantic in variable identifier */
+    if (auto semanticVarIdent = SystemValueToKeyword(varDecl->semantic))
+    {
+        if (arrayIndex >= 0)
+        {
+            if (varDecl->flags(VarDecl::isShaderOutput))
+                Write("gl_out");
+            else
+                Write("gl_in");
+            Write("[" + std::to_string(arrayIndex) + "].");
+        }
+        Write(*semanticVarIdent);
+    }
+    else
+    {
+        Write(varDecl->FinalIdent());
+        if (arrayIndex >= 0)
+            Write("[" + std::to_string(arrayIndex) + "]");
     }
 }
 

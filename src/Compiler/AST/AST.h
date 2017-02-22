@@ -386,6 +386,9 @@ struct ArrayDimension : public TypedAST
     // Returns true if this array dimension has a dynamic size (i.e. size == 0).
     bool HasDynamicSize() const;
 
+    // Returns the array dimension sizes as integral vector.
+    static std::vector<int> GetArrayDimensionSizes(const std::vector<ArrayDimensionPtr>& arrayDims);
+
     ExprPtr expr;           // Array dimension expression. Must be a constant integer expression.
 
     int     size    = 0;    // Evaluated array dimension size. Zero for dynamic array dimension.

@@ -181,7 +181,10 @@ class GLSLGenerator : public Generator
         void WriteVarIdent(VarIdent* ast, bool recursive = true);
 
         // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
-        void WriteVarIdentOrSystemValue(VarIdent* ast);
+        void WriteVarIdentOrSystemValue(VarIdent* varIdent);
+
+        // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
+        void WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIndex = -1);
 
         /* --- Type denoter --- */
 
