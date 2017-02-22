@@ -1061,7 +1061,9 @@ bool GLSLGenerator::WriteGlobalLayoutsGeometry(const Program::LayoutGeometryShad
         Write("layout(");
 
         /* Map GLSL input primitive */
-        if (auto keyword = PrimitiveTypeToGLSLKeyword(layout.inputPrimitive))
+        if (layout.inputPrimitive == PrimitiveType::Undefined)
+            Error("missing input primitive type for geometry shader");
+        else if (auto keyword = PrimitiveTypeToGLSLKeyword(layout.inputPrimitive))
             Write(*keyword);
         else
             Error("failed to map input geometry primitive to GLSL keyword");
@@ -1076,7 +1078,9 @@ bool GLSLGenerator::WriteGlobalLayoutsGeometry(const Program::LayoutGeometryShad
         Write("layout(");
 
         /* Map GLSL output primitive */
-        if (auto keyword = BufferTypeToGLSLKeyword(layout.outputPrimitive))
+        if (layout.outputPrimitive == BufferType::Undefined)
+            Error("missing output primitive type for geometry shader");
+        else if (auto keyword = BufferTypeToGLSLKeyword(layout.outputPrimitive))
             Write(*keyword);
         else
             Error("failed to map output geometry primitive to GLSL keyword");
