@@ -180,7 +180,6 @@ class HLSLParser : public Parser
         std::vector<AliasDeclPtr>       ParseAliasDeclList(TypeDenoterPtr typeDenoter);
 
         std::string                     ParseIdent(const TokenPtr& identTkn = nullptr);
-        std::string                     ParseRegister_OBSOLETE(bool parseColon = true);
 
         TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true, StructDeclPtr* structDecl = nullptr);
         TypeDenoterPtr                  ParseTypeDenoterPrimary(StructDeclPtr* structDecl = nullptr);

@@ -1904,25 +1904,6 @@ std::string HLSLParser::ParseIdent(const TokenPtr& identTkn)
     return (identTkn ? identTkn->Spell() : Accept(Tokens::Ident)->Spell());
 }
 
-std::string HLSLParser::ParseRegister_OBSOLETE(bool parseColon)
-{
-    if (localScope_)
-        Error("semantics are not allowed in local scope", false, HLSLErr::ERR_SEMANTICS, false);
-
-    /* Parse ': register(IDENT)' */
-    if (parseColon)
-        Accept(Tokens::Colon);
-    
-    Accept(Tokens::Register);
-    Accept(Tokens::LBracket);
-
-    auto registerName = ParseIdent();
-
-    Accept(Tokens::RBracket);
-
-    return registerName;
-}
-
 TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool allowVoidType, StructDeclPtr* structDecl)
 {
     if (Is(Tokens::Void))
