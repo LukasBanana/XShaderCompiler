@@ -1613,10 +1613,10 @@ const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* varIdent)
     return varIdent->ident;
 }
 
-void GLSLGenerator::WriteVarIdent(VarIdent* varIdent, bool recursive)
+void GLSLGenerator::WriteVarIdent(VarIdent* varIdent, bool recursive, bool originalIdent)
 {
     /* Write identifier */
-    Write(FinalIdentFromVarIdent(varIdent));
+    Write(originalIdent ? varIdent->ident : FinalIdentFromVarIdent(varIdent));
 
     /* Write array index expressions */
     WriteArrayIndices(varIdent->arrayIndices);
@@ -1624,7 +1624,7 @@ void GLSLGenerator::WriteVarIdent(VarIdent* varIdent, bool recursive)
     if (recursive && varIdent->next)
     {
         Write(".");
-        WriteVarIdent(varIdent->next.get());
+        WriteVarIdent(varIdent->next.get(), true, true);
     }
 }
 

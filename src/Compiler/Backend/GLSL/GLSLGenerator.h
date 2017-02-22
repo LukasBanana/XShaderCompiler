@@ -178,7 +178,7 @@ class GLSLGenerator : public Generator
         // Returns the final identifier string from the specified variable identifier.
         const std::string& FinalIdentFromVarIdent(VarIdent* varIdent);
 
-        void WriteVarIdent(VarIdent* ast, bool recursive = true);
+        void WriteVarIdent(VarIdent* ast, bool recursive = true, bool originalIdent = false);
 
         // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
         void WriteVarIdentOrSystemValue(VarIdent* varIdent);

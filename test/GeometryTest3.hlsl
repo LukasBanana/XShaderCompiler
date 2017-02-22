@@ -10,7 +10,11 @@ struct VSOutput
 	float4 color : COLORIN;
 };
 
-void ProcessVS(inout VSOutput o) {}
+void ProcessVS(inout VSOutput o)
+{
+	o.position = 1;
+	o.color = 2;
+}
 
 VSOutput VS(uint id : SV_VertexID)
 {
@@ -40,8 +44,17 @@ struct GSOutput
 	float4 color : COLOR;
 };
 
-void ProcessGS1(inout GSOutput o) {}
-void ProcessGS2(inout GSOutput o, VSOutput i) {}
+void ProcessGS1(inout GSOutput o)
+{
+	o.position = 3;
+	o.color = 4;
+}
+
+void ProcessGS2(inout GSOutput o, VSOutput i)
+{
+	o.position = i.position;
+	o.color = i.color;
+}
 
 [maxvertexcount(2)]
 void GS(line VSOutput input[2], inout TriangleStream<GSOutput> stream)
