@@ -293,6 +293,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         WriteFunctionCallIntrinsicClip(ast);
     else if (ast->intrinsic >= Intrinsic::InterlockedAdd && ast->intrinsic <= Intrinsic::InterlockedXor)
         WriteFunctionCallIntrinsicAtomic(ast);
+    else if (ast->intrinsic == Intrinsic::StreamOutput_Append)
+        WriteFunctionCallIntrinsicStreamOutputAppend(ast);
     else
         WriteFunctionCallStandard(ast);
 }
@@ -1410,52 +1412,63 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
     EndLn();
 }
 
-void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr)
+void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListedExpr)
 {
     auto        entryPoint  = GetProgram()->entryPointRef;
     auto        semantic    = entryPoint->semantic;
     const auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefsSV;
 
+    /* Fetch variable identifier if expression is set */
+    VarIdent* exprVarIdent = nullptr;
+    if (expr)
+        exprVarIdent = expr->FetchVarIdent();
+
     /* Write wrapped structures */
     for (const auto& paramStruct : entryPoint->paramStructs)
-        WriteOutputSemanticsAssignmentStructDeclParam(paramStruct);
+    {
+        if (paramStruct.varIdent == nullptr || paramStruct.varIdent == exprVarIdent)
+            WriteOutputSemanticsAssignmentStructDeclParam(paramStruct, writeAsListedExpr);
+    }
 
     /* Prefer variables from structure, rather than function return semantic */
-    if (!varDeclRefs.empty())
+    if (varDeclRefs.empty())
     {
-        #if 0
-        /* Write system values */
-        for (auto varDecl : varDeclRefs)
+        if (semantic.IsSystemValue() && expr)
         {
-            if (varDecl->semantic.IsValid() && varDecl->flags(VarDecl::isWrittenTo))
+            if (auto semanticKeyword = SystemValueToKeyword(semantic))
             {
-                if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
-                    WriteLn(*semanticKeyword + " = " + varDecl->FinalIdent() + ";");
+                if (writeAsListedExpr)
+                {
+                    Write(*semanticKeyword);
+                    Write(" = ");
+                    Visit(expr);
+                    Write(", ");
+                }
+                else
+                {
+                    auto openLine = IsOpenLine();
+                    if (!openLine)
+                        BeginLn();
+                    
+                    Write(*semanticKeyword);
+                    Write(" = ");
+                    Visit(expr);
+                    Write(";");
+                    
+                    EndLn();
+                    if (openLine)
+                        BeginLn();
+                }
             }
+            else
+                Error("failed to map output semantic to GLSL keyword", entryPoint);
         }
-        #endif
+        else if (IsFragmentShader())
+            Error("missing output semantic", expr);
     }
-    else if (semantic.IsSystemValue() && expr)
-    {
-        if (auto semanticKeyword = SystemValueToKeyword(semantic))
-        {
-            BeginLn();
-            {
-                Write(*semanticKeyword);
-                Write(" = ");
-                Visit(expr);
-                Write(";");
-            }
-            EndLn();
-        }
-        else
-            Error("failed to map output semantic to GLSL keyword", entryPoint);
-    }
-    else if (IsFragmentShader())
-        Error("missing output semantic", expr);
 }
 
-void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(const FunctionDecl::ParameterStructure& paramStruct)
+void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(const FunctionDecl::ParameterStructure& paramStruct, bool writeAsListedExpr)
 {
     auto paramIdent = paramStruct.varIdent;
     auto paramVar = paramStruct.varDecl;
@@ -1467,7 +1480,9 @@ void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(const Function
         structDecl->ForEachVarDecl(
             [&](VarDeclPtr& varDecl)
             {
-                BeginLn();
+                auto openLine = IsOpenLine();
+                if (!writeAsListedExpr && !openLine)
+                    BeginLn();
 
                 if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
                     Write(*semanticKeyword);
@@ -1481,9 +1496,14 @@ void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(const Function
                 else
                     Write(paramVar->ident);
 
-                Write("." + varDecl->ident + ";");
+                Write("." + varDecl->ident + (writeAsListedExpr ? ", " : ";"));
 
-                EndLn();
+                if (!writeAsListedExpr)
+                {
+                    EndLn();
+                    if (openLine)
+                        BeginLn();
+                }
             }
         );
     }
@@ -2088,6 +2108,19 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* ast)
     }
     else
         Error("failed to map intrinsic '" + ast->varIdent->ToString() + "' to GLSL keyword", ast);
+}
+
+void GLSLGenerator::WriteFunctionCallIntrinsicStreamOutputAppend(FunctionCall* funcCall)
+{
+    /* Write output semantic assignments by intrinsic argument */
+    if (funcCall->arguments.size() == 1)
+    {
+        auto expr = funcCall->arguments.front().get();
+        WriteOutputSemanticsAssignment(expr, true);
+    }
+
+    /* Write "EmitVertex" intrinsic */
+    Write("EmitVertex()");
 }
 
 /* --- Intrinsics wrapper functions --- */

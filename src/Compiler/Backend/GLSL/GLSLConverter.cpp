@@ -573,9 +573,6 @@ void GLSLConverter::ConvertIntrinsicCall(FunctionCall* ast)
         case Intrinsic::Texture_SampleLevel_5:
             ConvertIntrinsicCallTextureSampleLevel(ast);
             break;
-        case Intrinsic::StreamOutput_Append:
-            ConvertIntrinsicCallStreamOutputAppend(ast);
-            break;
         default:
             break;
     }
@@ -665,12 +662,6 @@ void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast)
         if (args.size() >= 4)
             exprConverter_.ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, vectorSize), true);
     }
-}
-
-void GLSLConverter::ConvertIntrinsicCallStreamOutputAppend(FunctionCall* ast)
-{
-    /* Remove all arguments form this function call */
-    MoveAll(ast->arguments, program_->disabledAST);
 }
 
 /* ----- Unrolling ----- */
