@@ -118,7 +118,7 @@ void PreProcessor::SetIfBlock(const TokenPtr& directiveToken, bool active, bool 
 void PreProcessor::PopIfBlock()
 {
     if (ifBlockStack_.empty())
-        Error("missing '#if'-directive to closing '#endif', '#else', or '#elif'", true, HLSLErr::ERR_ENDIF);
+        Error("missing '#if'-directive to closing '#endif', '#else', or '#elif'", true);
     else
         ifBlockStack_.pop();
 
@@ -669,7 +669,7 @@ void PreProcessor::ParseDirectiveElif(bool skipEvaluation)
 {
     /* Check if '#else'-directive is allowed */
     if (!TopIfBlock().elseAllowed)
-        Error("expected '#endif'-directive after previous '#else', but got '#elif'", true, HLSLErr::ERR_ELIF_ELSE);
+        Error("expected '#endif'-directive after previous '#else', but got '#elif'", true);
 
     /* Pop if-block and parse next if-block in the condExpr-parse function */
     auto parentIfCondition = TopIfBlock().parentActive;
@@ -743,7 +743,7 @@ void PreProcessor::ParseDirectiveElse()
 
     /* Check if '#else'-directive is allowed */
     if (!TopIfBlock().elseAllowed)
-        Error("expected '#endif'-directive after previous '#else', but got another '#else'", true, HLSLErr::ERR_ELSE_ELSE);
+        Error("expected '#endif'-directive after previous '#else', but got another '#else'", true);
 
     /* Pop if-block and push new if-block with negated condExpr */
     SetIfBlock(tkn, true, false);

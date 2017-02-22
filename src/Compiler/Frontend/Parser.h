@@ -11,7 +11,6 @@
 
 #include <Xsc/Log.h>
 #include "Scanner.h"
-#include "HLSLErr.h"
 #include "ASTEnums.h"
 #include "ReportHandler.h"
 #include "Visitor.h"
@@ -53,8 +52,8 @@ class Parser
 
         /* ----- Report Handling ----- */
 
-        void Error(const std::string& msg, const Token* tkn, const HLSLErr errorCode = HLSLErr::Unknown, bool breakWithExpection = true);
-        void Error(const std::string& msg, bool prevToken = true, const HLSLErr errorCode = HLSLErr::Unknown, bool breakWithExpection = true);
+        void Error(const std::string& msg, const Token* tkn, bool breakWithExpection = true);
+        void Error(const std::string& msg, bool prevToken = true, bool breakWithExpection = true);
 
         void ErrorUnexpected(const std::string& hint = "", const Token* tkn = nullptr, bool breakWithExpection = false);
         void ErrorUnexpected(const Tokens type, const Token* tkn = nullptr, bool breakWithExpection = false);

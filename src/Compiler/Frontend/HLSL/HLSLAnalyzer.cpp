@@ -63,7 +63,7 @@ void HLSLAnalyzer::DecorateASTPrimary(
 void HLSLAnalyzer::ErrorIfAttributeNotFound(bool found, const std::string& attribDesc)
 {
     if (!found)
-        Error("missing '" + attribDesc + "' attribute for entry point", nullptr, HLSLErr::ERR_ATTRIBUTE);
+        Error("missing '" + attribDesc + "' attribute for entry point", nullptr);
 }
 
 /* ------- Visit functions ------- */
@@ -307,12 +307,12 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     /* Validate buffer slots */
     if (ast->slotRegisters.size() > 1)
-        Error("buffers can only be bound to one slot", ast->slotRegisters[1].get(), HLSLErr::ERR_BIND_INVALID);
+        Error("buffers can only be bound to one slot", ast->slotRegisters[1].get());
 
     for (const auto& slotRegister : ast->slotRegisters)
     {
         if (slotRegister->shaderTarget != ShaderTarget::Undefined)
-            Error("user-defined constant buffer slots can not be target specific", slotRegister.get(), HLSLErr::ERR_TARGET_INVALID);
+            Error("user-defined constant buffer slots can not be target specific", slotRegister.get());
     }
 
     for (auto& member : ast->members)
@@ -830,7 +830,7 @@ void HLSLAnalyzer::AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast)
             {
                 Error(
                     "illegal assignment to l-value '" + varIdent->ident + "' that is declared as constant",
-                    (ast != nullptr ? ast : varIdent), HLSLErr::ERR_LVALUE_EXPECTED
+                    (ast != nullptr ? ast : varIdent)
                 );
             }
         }
@@ -843,7 +843,7 @@ void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast)
     if (auto varIdent = expr->FetchVarIdent())
         AnalyzeLValueVarIdent(varIdent, ast);
     else
-        Error("illegal assignment to r-value expression", ast, HLSLErr::ERR_LVALUE_EXPECTED);
+        Error("illegal assignment to r-value expression", ast);
 }
 
 /* ----- Entry point ----- */
@@ -1376,7 +1376,7 @@ bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedN
         {
             Error(
                 "too few arguments in attribute (expected " + std::to_string(expectedNumArgs) +
-                ", but got " + std::to_string(numArgs) + ")", ast, HLSLErr::ERR_ATTRIBUTE
+                ", but got " + std::to_string(numArgs) + ")", ast
             );
         }
     }
@@ -1386,7 +1386,7 @@ bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedN
         {
             Error(
                 "too many arguments in attribute (expected " + std::to_string(expectedNumArgs) +
-                ", but got " + std::to_string(numArgs) + ")", ast->arguments[expectedNumArgs].get(), HLSLErr::ERR_ATTRIBUTE
+                ", but got " + std::to_string(numArgs) + ")", ast->arguments[expectedNumArgs].get()
             );
         }
     }
@@ -1405,7 +1405,6 @@ void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast, bool required)
             program_->layoutTessEvaluation.domainType,
             IsAttributeValueDomain,
             "expected domain type parameter to be \"tri\", \"quad\", or \"isolane\"",
-            HLSLErr::ERR_HSATTRIBUTE_INVALID,
             required
         );
     }
@@ -1420,7 +1419,6 @@ void HLSLAnalyzer::AnalyzeAttributeOutputTopology(Attribute* ast, bool required)
             program_->layoutTessEvaluation.outputTopology,
             IsAttributeValueOutputTopology,
             "expected output topology parameter to be \"point\", \"line\", \"triangle_cw\", or \"triangle_ccw\"",
-            HLSLErr::ERR_HSATTRIBUTE_INVALID,
             required
         );
     }
@@ -1435,7 +1433,6 @@ void HLSLAnalyzer::AnalyzeAttributePartitioning(Attribute* ast, bool required)
             program_->layoutTessEvaluation.partitioning,
             IsAttributeValuePartitioning,
             "expected partitioning mode parameter to be \"integer\", \"pow2\", \"fractional_even\", or \"fractional_odd\"",
-            HLSLErr::ERR_HSATTRIBUTE_INVALID,
             required
         );
     }
@@ -1455,7 +1452,7 @@ void HLSLAnalyzer::AnalyzeAttributeOutputControlPoints(Attribute* ast)
         if (countParam >= 0)
             program_->layoutTessControl.outputControlPoints = static_cast<unsigned int>(countParam);
         else
-            Error("expected output control point parameter to be an unsigned integer", ast->arguments[0].get(), HLSLErr::ERR_ATTRIBUTE);
+            Error("expected output control point parameter to be an unsigned integer", ast->arguments[0].get());
     }
 }
 
@@ -1476,10 +1473,10 @@ void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
                 AnalyzeSecondaryEntryPoint(patchConstFunc);
             }
             else
-                Error("entry point '" + literalValue + "' for patch constant function not found", ast->arguments[0].get(), HLSLErr::ERR_ENTRYPOINT_NOT_FOUND);
+                Error("entry point '" + literalValue + "' for patch constant function not found", ast->arguments[0].get());
         }
         else
-            Error("expected patch constant function parameter to be a string literal", ast->arguments[0].get(), HLSLErr::ERR_ATTRIBUTE);
+            Error("expected patch constant function parameter to be a string literal", ast->arguments[0].get());
     }
 }
 
@@ -1521,15 +1518,15 @@ void HLSLAnalyzer::AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& v
 
 void HLSLAnalyzer::AnalyzeAttributeValue(
     Expr* argExpr, AttributeValue& value, const OnValidAttributeValueProc& expectedValueFunc,
-    const std::string& expectationDesc, const HLSLErr errorCode, bool required)
+    const std::string& expectationDesc, bool required)
 {
     std::string literalValue;
     if (!AnalyzeAttributeValuePrimary(argExpr, value, expectedValueFunc, literalValue) && required)
     {
         if (literalValue.empty())
-            Error(expectationDesc, argExpr, errorCode);
+            Error(expectationDesc, argExpr);
         else
-            Error(expectationDesc + ", but got '" + literalValue + "'", argExpr, errorCode);
+            Error(expectationDesc + ", but got '" + literalValue + "'", argExpr);
     }
 }
 
@@ -1572,7 +1569,7 @@ void HLSLAnalyzer::AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr
     {
         auto dim = arrayDims[i].get();
         if (dim->HasDynamicSize())
-            Error("secondary array dimensions must be explicit", dim, HLSLErr::ERR_ARRAY_IMPLICIT_ORDER);
+            Error("secondary array dimensions must be explicit", dim);
     }
 }
 

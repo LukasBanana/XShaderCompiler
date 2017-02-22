@@ -36,21 +36,21 @@ static SourceArea GetTokenArea(const Token* tkn)
     return (tkn != nullptr ? tkn->Area() : SourceArea::ignore);
 }
 
-void Parser::Error(const std::string& msg, const Token* tkn, const HLSLErr errorCode, bool breakWithExpection)
+void Parser::Error(const std::string& msg, const Token* tkn, bool breakWithExpection)
 {
     /* Always break with an exception when the end of stream has been reached */
     if (tkn->Type() == Tokens::EndOfStream)
         breakWithExpection = true;
 
     /* Report error with the report handler */
-    reportHandler_.Error(breakWithExpection, msg, GetScanner().Source(), GetTokenArea(tkn), errorCode);
+    reportHandler_.Error(breakWithExpection, msg, GetScanner().Source(), GetTokenArea(tkn));
 }
 
-void Parser::Error(const std::string& msg, bool prevToken, const HLSLErr errorCode, bool breakWithExpection)
+void Parser::Error(const std::string& msg, bool prevToken, bool breakWithExpection)
 {
     /* Get token and submit error */
     auto tkn = (prevToken ? GetScanner().PreviousToken().get() : GetScanner().ActiveToken().get());
-    Error(msg, tkn, errorCode, breakWithExpection);
+    Error(msg, tkn, breakWithExpection);
 }
 
 void Parser::ErrorUnexpected(const std::string& hint, const Token* tkn, bool breakWithExpection)
@@ -68,7 +68,7 @@ void Parser::ErrorUnexpected(const std::string& hint, const Token* tkn, bool bre
         msg += " (" + hint + ")";
 
     /* Submit error */
-    Error(msg, tkn, HLSLErr::Unknown, breakWithExpection);
+    Error(msg, tkn, breakWithExpection);
 
     /* Ignore unexpected token to produce further reports */
     AcceptIt();
@@ -455,7 +455,7 @@ void Parser::AssertTokenSpell(const std::string& spell)
         IncUnexpectedTokenCounter();
 
         /* Submit error */
-        Error("unexpected token spelling '" + tkn_->Spell() + "' (expected '" + spell + "')", true, HLSLErr::Unknown, false);
+        Error("unexpected token spelling '" + tkn_->Spell() + "' (expected '" + spell + "')", true, false);
 
         /* Ignore unexpected token to produce further reports */
         AcceptIt();

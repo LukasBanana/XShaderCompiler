@@ -147,7 +147,6 @@ class HLSLAnalyzer : public Analyzer
             AttributeValue& value,
             const OnValidAttributeValueProc& expectedValueFunc,
             const std::string& expectationDesc,
-            const HLSLErr errorCode = HLSLErr::Unknown,
             bool required = true
         );
 
