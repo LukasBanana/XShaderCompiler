@@ -186,8 +186,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     if (Reachable(ast))
     {
         /* Is a variable declaration NOT used as entry point return value? */
-        if ( !IsActiveFunctionDeclEntryPoint() || !ast->flags(VarDecl::isEntryPointOutput) ||
-             ( shaderTarget_ == ShaderTarget::GeometryShader && ( !ast->arrayDims.empty() ) ) )
+        if (!IsActiveFunctionDeclEntryPoint() || !ast->flags(VarDecl::isEntryPointOutput) || shaderTarget_ == ShaderTarget::GeometryShader)
         {
             auto declStmnt = ast->declStmntRef;
 
@@ -197,11 +196,15 @@ IMPLEMENT_VISIT_PROC(VarDecl)
             {
                 if (auto structDecl = structTypeDen->structDeclRef)
                 {
-                    /* Is this variable NOT a parameter of the entry point? */
-                    if (!IsVariableAnEntryPointParameter(declStmnt))
+                    /* Is the structure used for more than one instance? */
+                    if (!IsActiveFunctionDeclEntryPoint() || !ast->flags(VarDecl::isEntryPointOutput) || structDecl->HasMultipleShaderOutputInstances())
                     {
-                        /* Mark structure to be used as non-entry-point-parameter */
-                        structDecl->flags << StructDecl::isNonEntryPointParam;
+                        /* Is this variable NOT a parameter of the entry point? */
+                        if (!IsVariableAnEntryPointParameter(declStmnt))
+                        {
+                            /* Mark structure to be used as non-entry-point-parameter */
+                            structDecl->flags << StructDecl::isNonEntryPointParam;
+                        }
                     }
                 }
             }

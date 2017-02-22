@@ -583,14 +583,18 @@ struct StructDecl : public Decl
     // Iterates over each VarDecl AST node (included nested structures, and members in referenced structures).
     void ForEachVarDecl(const VarDeclIteratorFunctor& iterator);
 
-    std::string                     ident;                              // May be empty (for anonymous structures).
-    std::string                     baseStructName;                     // May be empty (if no inheritance is used).
+    // Returns true if this structure is used more than once as entry point output (either through variable arrays or multiple variable declarations).
+    bool HasMultipleShaderOutputInstances() const;
+
+    std::string                     ident;                                  // May be empty (for anonymous structures).
+    std::string                     baseStructName;                         // May be empty (if no inheritance is used).
     std::vector<VarDeclStmntPtr>    members;
 
-    StructDecl*                     baseStructRef           = nullptr;  // Optional reference to base struct
-    std::string                     aliasName;                          // Alias name for input and output interface blocks of the DAST.
-    std::map<std::string, VarDecl*> systemValuesRef;                    // List of members with system value semantic (SV_...).
-    std::vector<StructDecl*>        nestedStructDeclRefs;               // References to all nested structures within this structure.
+    StructDecl*                     baseStructRef               = nullptr;  // Optional reference to base struct
+    std::string                     aliasName;                              // Alias name for input and output interface blocks of the DAST.
+    std::map<std::string, VarDecl*> systemValuesRef;                        // List of members with system value semantic (SV_...).
+    std::vector<StructDecl*>        nestedStructDeclRefs;                   // References to all nested structures within this structure.
+    std::set<VarDecl*>              shaderOutputVarDeclRefs;                // References to all variables from this structure that are used as entry point outputs.
 };
 
 // Type alias declaration.

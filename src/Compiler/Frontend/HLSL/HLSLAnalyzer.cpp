@@ -1300,6 +1300,9 @@ void HLSLAnalyzer::AnalyzeEntryPointOutput(VarIdent* varIdent)
             {
                 if (auto structDecl = structSymbolRef->As<StructDecl>())
                 {
+                    /* Add variable as instance to this structure as entry point output */
+                    structDecl->shaderOutputVarDeclRefs.insert(varDecl);
+
                     /* Add variable as parameter-structure to entry point */
                     if (program_->entryPointRef)
                         program_->entryPointRef->paramStructs.push_back({ varIdent, varDecl, structDecl });

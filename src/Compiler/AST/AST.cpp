@@ -639,6 +639,17 @@ void StructDecl::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
     }
 }
 
+bool StructDecl::HasMultipleShaderOutputInstances() const
+{
+    auto numInstances = shaderOutputVarDeclRefs.size();
+    if (numInstances == 1)
+    {
+        auto varDecl = *shaderOutputVarDeclRefs.begin();
+        return (!varDecl->arrayDims.empty());
+    }
+    return (numInstances > 1);
+}
+
 
 /* ----- AliasDecl ----- */
 
