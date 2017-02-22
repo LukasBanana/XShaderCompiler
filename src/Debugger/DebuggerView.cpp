@@ -47,6 +47,17 @@ DebuggerView::DebuggerView(const wxPoint& pos, const wxSize& size) :
 static const std::string settingsFilename("XscDebuggerSettings");
 static const std::string codeFilename("XscDebuggerCode");
 
+static void RemoveCharFromString(std::string& s, char c)
+{
+    for (auto it = s.begin(); it != s.end();)
+    {
+        if (*it == c)
+            it = s.erase(it);
+        else
+            ++it;
+    }
+}
+
 void DebuggerView::SaveSettings()
 {
     std::ofstream settingsFile(settingsFilename);
@@ -58,7 +69,11 @@ void DebuggerView::SaveSettings()
 
     std::ofstream codeFile(codeFilename);
     if (codeFile.good())
-        codeFile << inputSourceView_->GetText();
+    {
+        auto sourceCode = inputSourceView_->GetText().ToStdString();
+        RemoveCharFromString(sourceCode, '\r');
+        codeFile << sourceCode;
+    }
 }
 
 void DebuggerView::LoadSettings()
