@@ -1210,7 +1210,7 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
     {
         for (auto sem : presentSemantics)
         {
-            if (std::find(searchSemantics.begin(), searchSemantics.end(), sem) == searchSemantics.end())
+            if (IsSystemSemantic(sem) && std::find(searchSemantics.begin(), searchSemantics.end(), sem) == searchSemantics.end())
                 Error(desc + " semantic '" + SemanticToString(sem) + "' in entry point '" + funcDecl->ident + "'", funcDecl);
         }
     };

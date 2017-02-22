@@ -1375,9 +1375,9 @@ void GLSLGenerator::WriteGlobalOutputSemantics(FunctionDecl* entryPoint)
             }
         }
 
-        /* Write 'SV_Target' system-value output semantic from entry point return semantic */
         if (entryPoint->semantic == Semantic::Target)
         {
+            /* Write 'SV_Target' system-value output semantic from entry point return semantic */
             WriteGlobalOutputSemanticsSlot(
                 entryPoint->returnType.get(),
                 entryPoint->semantic,
@@ -1385,6 +1385,16 @@ void GLSLGenerator::WriteGlobalOutputSemantics(FunctionDecl* entryPoint)
             );
             paramsWritten = true;
         }
+    }
+
+    if (entryPoint->semantic.IsUserDefined())
+    {
+        /* Write user-defined output semantic from entry point return semantic */
+        WriteGlobalOutputSemanticsSlot(
+            entryPoint->returnType.get(),
+            entryPoint->semantic,
+            nameManglingPrefix_ + "vary_" + entryPoint->semantic.ToString()
+        );
     }
 
     if (paramsWritten)
@@ -1468,31 +1478,28 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
         {
             if (auto semanticKeyword = SystemValueToKeyword(semantic))
             {
-                if (writeAsListedExpr)
+                BeginLn();
                 {
-                    Write(*semanticKeyword);
-                    Write(" = ");
-                    Visit(expr);
-                    Write(", ");
-                }
-                else
-                {
-                    auto openLine = IsOpenLine();
-                    if (!openLine)
-                        BeginLn();
-                    
                     Write(*semanticKeyword);
                     Write(" = ");
                     Visit(expr);
                     Write(";");
-                    
-                    EndLn();
-                    if (openLine)
-                        BeginLn();
                 }
+                EndLn();
             }
             else
                 Error("failed to map output semantic to GLSL keyword", entryPoint);
+        }
+        else if (semantic.IsUserDefined() && expr)
+        {
+            BeginLn();
+            {
+                Write(nameManglingPrefix_ + "vary_" + semantic.ToString());
+                Write(" = ");
+                Visit(expr);
+                Write(";");
+            }
+            EndLn();
         }
         else if (IsFragmentShader())
             Error("missing output semantic", expr);
