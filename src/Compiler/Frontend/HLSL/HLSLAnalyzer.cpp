@@ -496,7 +496,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
         /* Analyze entry point return statement (if a structure is returned from the entry point) */
         if (InsideEntryPoint())
-            AnalyzeEntryPointOutput(ast->expr->FetchVarDecl());
+            AnalyzeEntryPointOutput(ast->expr->FetchVarIdent());
     }
 }
 
@@ -711,7 +711,7 @@ bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const
             if (InsideEntryPoint() && intrinsic == Intrinsic::StreamOutput_Append)
             {
                 for (const auto& arg : funcCall->arguments)
-                    AnalyzeEntryPointOutput(arg->FetchVarDecl());
+                    AnalyzeEntryPointOutput(arg->FetchVarIdent());
             }
             return true;
         }
@@ -864,7 +864,7 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
                 if (auto structTypeDen = typeSpecifier->As<StructTypeDenoter>())
                 {
                     if (auto structDecl = structTypeDen->structDeclRef)
-                        funcDecl->paramStructs.push_back({ param->varDecls.front().get(), structDecl });
+                        funcDecl->paramStructs.push_back({ nullptr, param->varDecls.front().get(), structDecl });
                 }
             }
         }
@@ -1287,23 +1287,26 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
     #undef COMMON_SEMANTICS_EX
 }
 
-void HLSLAnalyzer::AnalyzeEntryPointOutput(VarDecl* varDecl)
+void HLSLAnalyzer::AnalyzeEntryPointOutput(VarIdent* varIdent)
 {
-    if (varDecl)
+    if (varIdent)
     {
-        /* Mark variable as entry-pointer output */
-        varDecl->flags << VarDecl::isEntryPointOutput;
-
-        if (auto structSymbolRef = varDecl->GetTypeDenoter()->Get()->SymbolRef())
+        if (auto varDecl = varIdent->FetchVarDecl())
         {
-            if (auto structDecl = structSymbolRef->As<StructDecl>())
+            /* Mark variable as entry-pointer output */
+            varDecl->flags << VarDecl::isEntryPointOutput;
+
+            if (auto structSymbolRef = varDecl->GetTypeDenoter()->Get()->SymbolRef())
             {
-                /* Add variable as parameter-structure to entry point */
-                if (program_->entryPointRef)
-                    program_->entryPointRef->paramStructs.push_back({ varDecl, structDecl });
+                if (auto structDecl = structSymbolRef->As<StructDecl>())
+                {
+                    /* Add variable as parameter-structure to entry point */
+                    if (program_->entryPointRef)
+                        program_->entryPointRef->paramStructs.push_back({ varIdent, varDecl, structDecl });
                         
-                /* Mark variable as local variable of the entry-point */
-                varDecl->flags << VarDecl::isEntryPointLocal;
+                    /* Mark variable as local variable of the entry-point */
+                    varDecl->flags << VarDecl::isEntryPointLocal;
+                }
             }
         }
     }

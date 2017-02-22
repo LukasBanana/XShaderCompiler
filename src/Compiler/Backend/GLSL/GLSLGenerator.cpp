@@ -1418,7 +1418,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr)
 
     /* Write wrapped structures */
     for (const auto& paramStruct : entryPoint->paramStructs)
-        WriteOutputSemanticsAssignmentStructDeclParam(paramStruct.paramVar, paramStruct.structDecl);
+        WriteOutputSemanticsAssignmentStructDeclParam(paramStruct);
 
     /* Prefer variables from structure, rather than function return semantic */
     if (!varDeclRefs.empty())
@@ -1455,18 +1455,35 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr)
         Error("missing output semantic", expr);
 }
 
-void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(VarDecl* paramVar, StructDecl* structDecl)
+void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(const FunctionDecl::ParameterStructure& paramStruct)
 {
+    auto paramIdent = paramStruct.varIdent;
+    auto paramVar = paramStruct.varDecl;
+    auto structDecl = paramStruct.structDecl;
+
     if (structDecl && structDecl->flags(StructDecl::isNonEntryPointParam) && structDecl->flags(StructDecl::isShaderOutput))
     {
         /* Write global shader input to local variable assignments */
         structDecl->ForEachVarDecl(
             [&](VarDeclPtr& varDecl)
             {
+                BeginLn();
+
                 if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
-                    WriteLn(*semanticKeyword + " = " + paramVar->ident + "." + varDecl->ident + ";");
+                    Write(*semanticKeyword);
                 else
-                    WriteLn(varDecl->FinalIdent() + " = " + paramVar->ident + "." + varDecl->ident + ";");
+                    Write(varDecl->FinalIdent());
+
+                Write(" = ");
+
+                if (paramIdent)
+                    Visit(paramIdent);
+                else
+                    Write(paramVar->ident);
+
+                Write("." + varDecl->ident + ";");
+
+                EndLn();
             }
         );
     }

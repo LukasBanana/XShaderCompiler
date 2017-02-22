@@ -624,7 +624,8 @@ struct FunctionDecl : public Stmnt
 
     struct ParameterStructure
     {
-        VarDecl*    paramVar;
+        VarIdent*   varIdent;   // Either this is used ...
+        VarDecl*    varDecl;    // ... or this
         StructDecl* structDecl;
     };
 

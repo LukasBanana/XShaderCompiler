@@ -119,7 +119,7 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std::vector<Semantic>& inSemantics, const std::vector<Semantic>& outSemantics);
 
-        void AnalyzeEntryPointOutput(VarDecl* varDecl);
+        void AnalyzeEntryPointOutput(VarIdent* varIdent);
 
         /* ----- Secondary entry point ----- */
 
