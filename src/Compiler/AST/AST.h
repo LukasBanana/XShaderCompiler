@@ -436,8 +436,23 @@ struct VarIdent : public TypedAST
     // Returns a semantic if this is an identifier to a variable which has a semantic.
     IndexedSemantic FetchSemantic() const;
 
+    // Returns the specified type of AST node from the symbol (if the symbol refers to one).
+    template <typename T>
+    T* FetchSymbol() const
+    {
+        if (symbolRef)
+        {
+            if (auto ast = symbolRef->As<T>())
+                return ast;
+        }
+        return nullptr;
+    }
+
     // Returns the variable AST node (if the symbol refers to one).
     VarDecl* FetchVarDecl() const;
+
+    // Returns the function declaration AST node (if the symbol refers to one).
+    FunctionDecl* FetchFunctionDecl() const;
 
     std::string             ident;                      // Atomic identifier.
     std::vector<ExprPtr>    arrayIndices;               // Optional array indices
