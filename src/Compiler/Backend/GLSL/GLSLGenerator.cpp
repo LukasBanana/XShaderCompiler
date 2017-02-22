@@ -1202,14 +1202,21 @@ void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param,
         /* Write global shader input to local variable assignments */
         auto paramVar = param->varDecls.front().get();
 
-        structDecl->ForEachVarDecl(
-            [&](VarDeclPtr& varDecl)
-            {
-                WriteLn(
-                    paramVar->ident + "." + varDecl->ident + " = " + varDecl->FinalIdent() + ";"
-                );
-            }
-        );
+        //if (paramVar->arrayDims.empty())
+        {
+            structDecl->ForEachVarDecl(
+                [&](VarDeclPtr& varDecl)
+                {
+                    WriteLn(
+                        paramVar->ident + "." + varDecl->ident + " = " + varDecl->FinalIdent() + ";"
+                    );
+                }
+            );
+        }
+        /*else
+        {
+
+        }*/
     }
 }
 
