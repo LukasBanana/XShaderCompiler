@@ -10,7 +10,6 @@
 
 
 #include "SourceArea.h"
-#include "HLSLErr.h"
 #include <Xsc/Report.h>
 #include <Xsc/Log.h>
 #include <string>
@@ -24,28 +23,6 @@ namespace Xsc
 
 class SourceCode;
 
-// Error code wrapper for string representation.
-class ErrorCode
-{
-
-    public:
-
-        ErrorCode() = default;
-        ErrorCode(const HLSLErr errorCode);
-        //other may follow: e.g. "ErrorCode(const GLSLErr errorCode)"
-
-        // Returns the error code as string.
-        inline const std::string& Get() const
-        {
-            return str_;
-        }
-
-    private:
-
-        std::string str_;
-
-};
-
 // Report handler class for simpler error and warning handling.
 class ReportHandler
 {
@@ -58,16 +35,14 @@ class ReportHandler
             bool breakWithExpection,
             const std::string& msg,
             SourceCode* sourceCode = nullptr,
-            const SourceArea& area = SourceArea::ignore,
-            const ErrorCode& errorCode = ErrorCode()
+            const SourceArea& area = SourceArea::ignore
         );
 
         void Warning(
             bool breakWithExpection,
             const std::string& msg,
             SourceCode* sourceCode = nullptr,
-            const SourceArea& area = SourceArea::ignore,
-            const ErrorCode& errorCode = ErrorCode()
+            const SourceArea& area = SourceArea::ignore
         );
 
         void SubmitReport(
@@ -76,8 +51,7 @@ class ReportHandler
             const std::string& typeName,
             const std::string& msg,
             SourceCode* sourceCode = nullptr,
-            const SourceArea& area = SourceArea::ignore,
-            const ErrorCode& errorCode = ErrorCode()
+            const SourceArea& area = SourceArea::ignore
         );
 
         // Returns true if any errors have been submitted.

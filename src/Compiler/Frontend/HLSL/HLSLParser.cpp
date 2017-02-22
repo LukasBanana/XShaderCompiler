@@ -1055,7 +1055,7 @@ StmntPtr HLSLParser::ParseStmnt(bool allowAttributes)
         if (Is(Tokens::LParen))
         {
             /* Print error, but parse and ignore attributes */
-            Error("attributes not allowed in this context", false, HLSLErr::Unknown, false);
+            Error("attributes not allowed in this context", false, false);
             ParseAttributeList();
         }
 
@@ -2283,7 +2283,7 @@ void HLSLParser::ParseVarDeclSemantic(VarDecl& varDecl, bool allowPackOffset)
             /* Parse pack offset (ignore previous pack offset) */
             varDecl.packOffset = ParsePackOffset(false);
             if (!allowPackOffset)
-                Error("packoffset is only allowed in a constant buffer", true, HLSLErr::ERR_PACK_OFFSET_IN_INVALID_SCOPE);
+                Error("packoffset is only allowed in a constant buffer", true);
         }
         else
         {
@@ -2309,7 +2309,7 @@ void HLSLParser::ParseFunctionDeclSemantic(FunctionDecl& funcDecl)
         else if (Is(Tokens::PackOffset))
         {
             /* Report error and ignore packoffset */
-            Error("packoffset is only allowed in a constant buffer", true, HLSLErr::ERR_PACK_OFFSET_IN_INVALID_SCOPE);
+            Error("packoffset is only allowed in a constant buffer", true);
             ParsePackOffset(false);
         }
         else
@@ -2518,16 +2518,16 @@ bool HLSLParser::ParseVarDeclStmntModifiers(VarDeclStmnt* ast, bool allowPrimiti
     {
         /* Parse primitive type */
         if (!allowPrimitiveType)
-            Error("primitive type not allowed in this context", false, HLSLErr::Unknown, false);
+            Error("primitive type not allowed in this context", false, false);
         
         auto primitiveType = ParsePrimitiveType();
 
         if (ast->primitiveType == PrimitiveType::Undefined)
             ast->primitiveType = primitiveType;
         else if (ast->primitiveType == primitiveType)
-            Error("duplicate primitive type specified", true, HLSLErr::Unknown, false);
+            Error("duplicate primitive type specified", true, false);
         else if (ast->primitiveType != primitiveType)
-            Error("conflicting primitive types", true, HLSLErr::Unknown, false);
+            Error("conflicting primitive types", true, false);
     }
     else
         return false;

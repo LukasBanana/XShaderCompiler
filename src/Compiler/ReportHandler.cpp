@@ -14,21 +14,6 @@ namespace Xsc
 {
 
 
-/*
- * ErrorCode class
- */
-
-ErrorCode::ErrorCode(const HLSLErr errorCode)
-{
-    if (errorCode != HLSLErr::Unknown)
-        str_ = ErrToString(errorCode) + "(X" + std::to_string(static_cast<int>(errorCode)) + ")";
-}
-
-
-/*
- * ReportHandler class
- */
-
 static std::vector<std::string> g_hintQueue;
 
 ReportHandler::ReportHandler(const std::string& reportTypeName, Log* log) :
@@ -38,20 +23,20 @@ ReportHandler::ReportHandler(const std::string& reportTypeName, Log* log) :
 }
 
 void ReportHandler::Error(
-    bool breakWithExpection, const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
+    bool breakWithExpection, const std::string& msg, SourceCode* sourceCode, const SourceArea& area)
 {
-    SubmitReport(breakWithExpection, Report::Types::Error, (reportTypeName_ + " error"), msg, sourceCode, area, errorCode);
+    SubmitReport(breakWithExpection, Report::Types::Error, (reportTypeName_ + " error"), msg, sourceCode, area);
 }
 
 void ReportHandler::Warning(
-    bool breakWithExpection, const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
+    bool breakWithExpection, const std::string& msg, SourceCode* sourceCode, const SourceArea& area)
 {
-    SubmitReport(breakWithExpection, Report::Types::Warning, "warning", msg, sourceCode, area, errorCode);
+    SubmitReport(breakWithExpection, Report::Types::Warning, "warning", msg, sourceCode, area);
 }
 
 void ReportHandler::SubmitReport(
     bool breakWithExpection, const Report::Types type, const std::string& typeName,
-    const std::string& msg, SourceCode* sourceCode, const SourceArea& area, const ErrorCode& errorCode)
+    const std::string& msg, SourceCode* sourceCode, const SourceArea& area)
 {
     /* Check if error location has already been reported */
     if (!breakWithExpection && area.Pos().IsValid())
@@ -77,10 +62,6 @@ void ReportHandler::SubmitReport(
     }
     else
         outputMsg += " ";
-
-    /* Add error code */
-    if (!errorCode.Get().empty())
-        outputMsg += "[" + errorCode.Get() + "] ";
 
     outputMsg += ": ";
 
