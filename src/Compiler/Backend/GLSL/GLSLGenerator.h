@@ -162,7 +162,7 @@ class GLSLGenerator : public Generator
         void WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName = false);
         void WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier, const IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl = nullptr);
 
-        void WriteOutputSemanticsAssignment(Expr* ast);
+        void WriteOutputSemanticsAssignment(Expr* expr);
         void WriteOutputSemanticsAssignmentStructDeclParam(VarDecl* paramVar, StructDecl* structDecl);
 
         /* --- Uniforms --- */
@@ -173,10 +173,10 @@ class GLSLGenerator : public Generator
         /* --- VarIdent --- */
 
         // Returns the first VarIdent AST node which has a system value semantic, or null if no such AST node was found.
-        VarIdent* FindSystemValueVarIdent(VarIdent* ast);
+        VarIdent* FindSystemValueVarIdent(VarIdent* varIdent);
 
         // Returns the final identifier string from the specified variable identifier.
-        const std::string& FinalIdentFromVarIdent(VarIdent* ast);
+        const std::string& FinalIdentFromVarIdent(VarIdent* varIdent);
 
         void WriteVarIdent(VarIdent* ast, bool recursive = true);
 

@@ -1410,7 +1410,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
     EndLn();
 }
 
-void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
+void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr)
 {
     auto        entryPoint  = GetProgram()->entryPointRef;
     auto        semantic    = entryPoint->semantic;
@@ -1435,7 +1435,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
         }
         #endif
     }
-    else if (semantic.IsSystemValue() && ast)
+    else if (semantic.IsSystemValue() && expr)
     {
         if (auto semanticKeyword = SystemValueToKeyword(semantic))
         {
@@ -1443,7 +1443,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
             {
                 Write(*semanticKeyword);
                 Write(" = ");
-                Visit(ast);
+                Visit(expr);
                 Write(";");
             }
             EndLn();
@@ -1452,7 +1452,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* ast)
             Error("failed to map output semantic to GLSL keyword", entryPoint);
     }
     else if (IsFragmentShader())
-        Error("missing output semantic", ast);
+        Error("missing output semantic", expr);
 }
 
 void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(VarDecl* paramVar, StructDecl* structDecl)
@@ -1517,33 +1517,32 @@ void GLSLGenerator::WriteGlobalUniformsParameter(VarDeclStmnt* param)
 Find the first VarIdent with a system value semantic,
 and keep the remaining AST nodes (i.e. ast->next) which might be vector subscriptions (e.g. "gl_Position.xyz").
 */
-VarIdent* GLSLGenerator::FindSystemValueVarIdent(VarIdent* ast)
+VarIdent* GLSLGenerator::FindSystemValueVarIdent(VarIdent* varIdent)
 {
-    while (ast)
+    while (varIdent)
     {
         /* Check if current var-ident AST node has a system semantic */
-        if (SystemValueToKeyword(ast->FetchSemantic()) != nullptr)
-            return ast;
+        if (SystemValueToKeyword(varIdent->FetchSemantic()) != nullptr)
+            return varIdent;
 
         /* Search in next var-ident AST node */
-        ast = ast->next.get();
+        varIdent = varIdent->next.get();
     }
     return nullptr;
 }
 
-const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* ast)
+const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* varIdent)
 {
     /* Check if a variable declaration has changed it's name during conversion */
-    if (ast->symbolRef)
-    {
-        if (auto varDecl = ast->symbolRef->As<VarDecl>())
-            return varDecl->FinalIdent();
-        if (auto funcDecl = ast->symbolRef->As<FunctionDecl>())
-            return funcDecl->FinalIdent();
-    }
+    if (auto varDecl = varIdent->FetchVarDecl())
+        return varDecl->FinalIdent();
+
+    /* Check if a function declaration has changed it's name during conversion */
+    if (auto funcDecl = varIdent->FetchFunctionDecl())
+        return funcDecl->FinalIdent();
 
     /* Return default identifier */
-    return ast->ident;
+    return varIdent->ident;
 }
 
 void GLSLGenerator::WriteVarIdent(VarIdent* ast, bool recursive)
