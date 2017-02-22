@@ -5,7 +5,6 @@ TODO List
 |---------|:--------:|---------|
 | Output semantic from casted return value in entry point | Very high | Is currently ignored in GLSL output. |
 | Braced initializer | High | Translation of braced initializers are incomplete. |
-| Geometry shader support | High | Geometry shaders can currently be parsed, but analysis and translation is incomplete. |
 | Tessellation shader support | High | Tessellation shader attributes are done, but in/out semantics are incomplete. |
 | Type denoter analysis clean-up | Medium | Few more things should be moved from AST nodes into TypeDenoter classes (e.g. constness). |
 | 'interface' and 'class' declarations | Low | Interfaces and classes can currently not even be parsed. |
@@ -19,4 +18,3 @@ Known Issues
 | Implicit type conversion | In progress |
 | User defined semantic as entry point return semantic | e.g. `float3 VS() : WORLDPOS { return 1; }` does not translate correctly. |
 | Sampler types for DX9 shaders | Samplers (e.g. `sampler2D`) are ignored, even for HLSL3 |
-| Anonymous structs | Anonymous structs are not allowed as parameter type or cast type |
