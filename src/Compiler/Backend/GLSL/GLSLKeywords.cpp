@@ -657,6 +657,16 @@ const std::set<std::string>& ReservedGLSLKeywords()
         "EmitStreamVertex",
         "EndPrimitive",
         "EndStreamPrimitive",
+
+        // Reserved words (for future use)
+        "input",
+        "output",
+        "typedef",
+        "template",
+        "this",
+        "goto",
+        "inline",
+        "noinline",
     };
 
     return reservedNames;

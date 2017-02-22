@@ -1209,7 +1209,7 @@ void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param,
                 {
                     BeginLn();
                     {
-                        Write(paramVar->ident + "." + varDecl->ident + " = ");
+                        Write(paramVar->FinalIdent() + "." + varDecl->ident + " = ");
                         WriteVarDeclIdentOrSystemValue(varDecl.get());
                         Write(";");
                     }
@@ -1230,7 +1230,7 @@ void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param,
                     {
                         BeginLn();
                         {
-                            Write(paramVar->ident + "[" + std::to_string(i) + "]." + varDecl->ident + " = ");
+                            Write(paramVar->FinalIdent() + "[" + std::to_string(i) + "]." + varDecl->ident + " = ");
                             WriteVarDeclIdentOrSystemValue(varDecl.get(), i);
                             Write(";");
                         }
