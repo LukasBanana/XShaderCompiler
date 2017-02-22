@@ -187,7 +187,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     {
         /* Is a variable declaration NOT used as entry point return value? */
         if ( !IsActiveFunctionDeclEntryPoint() || !ast->flags(VarDecl::isEntryPointOutput) ||
-             ( shaderTarget_ == ShaderTarget::GeometryShader /*&& ( !ast->arrayDims.empty() )*/ ) )
+             ( shaderTarget_ == ShaderTarget::GeometryShader && ( !ast->arrayDims.empty() ) ) )
         {
             auto declStmnt = ast->declStmntRef;
 
