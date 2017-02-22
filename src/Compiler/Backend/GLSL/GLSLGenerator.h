@@ -205,7 +205,7 @@ class GLSLGenerator : public Generator
 
         /* --- Function call --- */
 
-        void AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax = ~0);
+        void AssertIntrinsicNumArgs(FunctionCall* funcCall, std::size_t numArgsMin, std::size_t numArgsMax = ~0);
 
         void WriteFunctionCallStandard(FunctionCall* funcCall);
         void WriteFunctionCallIntrinsicMul(FunctionCall* funcCall);

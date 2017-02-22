@@ -1658,10 +1658,10 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* varIdent)
         /* Write "gl_in[]" or "gl_out[]" in front of identifier */
         if (!varIdent->arrayIndices.empty())
         {
-            if (varFlags(VarDecl::isShaderOutput))
-                Write("gl_out");
-            else
+            if (varFlags(VarDecl::isShaderInput))
                 Write("gl_in");
+            else
+                Write("gl_out");
             WriteArrayIndices(varIdent->arrayIndices);
             Write(".");
         }
@@ -1689,10 +1689,10 @@ void GLSLGenerator::WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIn
     {
         if (arrayIndex >= 0)
         {
-            if (varDecl->flags(VarDecl::isShaderOutput))
-                Write("gl_out");
-            else
+            if (varDecl->flags(VarDecl::isShaderInput))
                 Write("gl_in");
+            else
+                Write("gl_out");
             Write("[" + std::to_string(arrayIndex) + "].");
         }
         Write(*semanticVarIdent);
@@ -1959,11 +1959,11 @@ void GLSLGenerator::WriteFunctionSecondaryEntryPoint(FunctionDecl* ast)
 
 /* --- Function call --- */
 
-void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* ast, std::size_t numArgsMin, std::size_t numArgsMax)
+void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* funcCall, std::size_t numArgsMin, std::size_t numArgsMax)
 {
-    auto numArgs = ast->arguments.size();
+    auto numArgs = funcCall->arguments.size();
     if (numArgs < numArgsMin || numArgs > numArgsMax)
-        Error("invalid number of arguments for intrinsic", ast);
+        Error("invalid number of arguments for intrinsic", funcCall);
 }
 
 void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* funcCall)
@@ -2145,8 +2145,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* funcCall)
     AssertIntrinsicNumArgs(funcCall, 2, 3);
 
     /* Find atomic intrinsic mapping */
-    auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic);
-    if (keyword)
+    if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
     {
         /* Write function call */
         if (funcCall->arguments.size() >= 3)
@@ -2166,12 +2165,11 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* funcCall)
 
 void GLSLGenerator::WriteFunctionCallIntrinsicStreamOutputAppend(FunctionCall* funcCall)
 {
+    AssertIntrinsicNumArgs(funcCall, 1, 1);
+
     /* Write output semantic assignments by intrinsic argument */
-    if (funcCall->arguments.size() == 1)
-    {
-        auto expr = funcCall->arguments.front().get();
-        WriteOutputSemanticsAssignment(expr, true);
-    }
+    auto expr = funcCall->arguments.front().get();
+    WriteOutputSemanticsAssignment(expr, true);
 
     /* Write "EmitVertex" intrinsic */
     Write("EmitVertex()");
