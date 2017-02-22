@@ -20,6 +20,8 @@ class Flags
     public:
         
         Flags() = default;
+        Flags(const Flags&) = default;
+        Flags& operator = (const Flags&) = default;
 
         // Initializes the object with the specified flags.
         inline Flags(unsigned int flags) :

@@ -1569,12 +1569,17 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
 {
     /* Find system value semantic in variable identifier */
     auto semanticVarIdent = FindSystemValueVarIdent(ast);
+
     std::unique_ptr<std::string> semanticKeyword;
+    Flags varFlags;
 
     if (semanticVarIdent)
     {
         if (auto varDecl = semanticVarIdent->FetchVarDecl())
         {
+            /* Copy flags from variable */
+            varFlags = varDecl->flags;
+
             /* Is this variable an entry-point output semantic, or an r-value? */
             if (GetProgram()->entryPointRef->outputSemantics.Contains(varDecl) || !varDecl->flags(VarDecl::isWrittenTo))
                 semanticKeyword = SystemValueToKeyword(varDecl->semantic);
@@ -1583,6 +1588,17 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* ast)
 
     if (semanticVarIdent && semanticKeyword)
     {
+        /* Write "gl_in[]" or "gl_out[]" in front of identifier */
+        if (!ast->arrayIndices.empty())
+        {
+            if (varFlags(VarDecl::isShaderOutput))
+                Write("gl_out");
+            else
+                Write("gl_in");
+            WriteArrayIndices(ast->arrayIndices);
+            Write(".");
+        }
+
         /* Write shader target respective system semantic */
         Write(*semanticKeyword);
 
