@@ -731,7 +731,7 @@ void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
     {
         try
         {
-            if (auto symbol = Fetch(varIdent->ident))
+            if (auto symbol = Fetch(varIdent->ident, varIdent))
                 AnalyzeVarIdentWithSymbol(varIdent, symbol);
         }
         catch (const ASTRuntimeError& e)
