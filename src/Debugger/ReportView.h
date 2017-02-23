@@ -10,14 +10,14 @@
 
 
 #include <Xsc/Log.h>
-#include <wx/listbox.h>
+#include <wx/richtext/richtextctrl.h>
 
 
 namespace Xsc
 {
 
 
-class ReportView : public wxListBox
+class ReportView : public wxRichTextCtrl
 {
 
     public:
@@ -28,7 +28,7 @@ class ReportView : public wxListBox
 
     private:
 
-        void Add(const std::string& indent, const std::string& s);
+        void WriteLine(const std::string& indent, const std::string& s, const wxColour& color = *wxWHITE);
 
 };
 

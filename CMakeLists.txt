@@ -127,7 +127,7 @@ if(XSC_BUILD_DEBUGGER)
 	target_compile_features(xsc_debugger PRIVATE cxx_range_for)
 	
 	# wxWidgets Libs
-	find_package(wxWidgets REQUIRED adv aui base core stc propgrid richtext scintilla)
+	find_package(wxWidgets REQUIRED adv aui base core stc propgrid richtext html xml scintilla)
 	if(wxWidgets_FOUND)
 		message("Found wxWidgets library")
 		include_directories(${wxWidgets_INCLUDE_DIRS})
