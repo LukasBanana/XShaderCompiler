@@ -16,7 +16,7 @@ namespace Xsc
 static const char* keywordsHLSL0 =
 (
     "break continue if else switch case default return for while do typedef namespace true false compile " \
-    "const void struct static extern register packoffset volatile inline target nointerpolation shared uniform " \
+    "const void struct static extern register packoffset volatile inline target nointerpolation noperspective shared uniform " \
     "row_major column_major unroll loop flatten branch earlydepthstencil domain instance maxtessfactor " \
     "outputcontrolpoints outputtopology partitioning patchconstantfunc numthreads maxvertexcount precise" \
     "abs acos all AllMemoryBarrier AllMemoryBarrierWithGroupSync any asdouble asfloat asin asint asuint atan atan2 " \
