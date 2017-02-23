@@ -39,7 +39,7 @@ void HLSLAnalyzer::DecorateASTPrimary(
 {
     /* Store parameters */
     entryPoint_             = inputDesc.entryPoint;
-    secondaryEntryPoint_    = inputDesc.secondaryEntryPoint;
+    secondaryEntryPoint_    = (inputDesc.shaderTarget == ShaderTarget::TessellationEvaluationShader ? inputDesc.secondaryEntryPoint : "");
     shaderTarget_           = inputDesc.shaderTarget;
     versionIn_              = inputDesc.shaderVersion;
     shaderModel_            = GetShaderModel(inputDesc.shaderVersion);
@@ -1317,13 +1317,14 @@ void HLSLAnalyzer::AnalyzeEntryPointOutput(VarIdent* varIdent)
 
 /* ----- Inactive entry point ----- */
 
-void HLSLAnalyzer::AnalyzeSecondaryEntryPoint(FunctionDecl* funcDecl)
+void HLSLAnalyzer::AnalyzeSecondaryEntryPoint(FunctionDecl* funcDecl, bool isPatchConstantFunc)
 {
     /* Mark this function declaration with the entry point flag */
     if (funcDecl->flags.SetOnce(FunctionDecl::isSecondaryEntryPoint))
     {
-        /* Store reference to secondary entry point in root AST node */
-        program_->layoutTessControl.patchConstFunctionRef = funcDecl;
+        /* Store reference to patch constant function in root AST node */
+        if (isPatchConstantFunc)
+            program_->layoutTessControl.patchConstFunctionRef = funcDecl;
 
         /* Analyze function input/output (use same visitor as for the main entry point here) */
         AnalyzeEntryPointInputOutput(funcDecl);
@@ -1476,7 +1477,7 @@ void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
             if (auto patchConstFunc = FetchFunctionDecl(literalValue))
             {
                 /* Decorate patch constant function as reachable (since it's referenced by the main entry point) */
-                AnalyzeSecondaryEntryPoint(patchConstFunc);
+                AnalyzeSecondaryEntryPoint(patchConstFunc, true);
             }
             else
                 Error("entry point '" + literalValue + "' for patch constant function not found", ast->arguments[0].get());
