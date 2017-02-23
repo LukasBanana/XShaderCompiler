@@ -1411,7 +1411,7 @@ void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast, bool required)
             ast->arguments[0].get(),
             program_->layoutTessEvaluation.domainType,
             IsAttributeValueDomain,
-            "expected domain type parameter to be \"tri\", \"quad\", or \"isolane\"",
+            "expected domain type parameter to be \"tri\", \"quad\", or \"isoline\"",
             required
         );
     }
