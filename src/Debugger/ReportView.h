@@ -17,6 +17,12 @@ namespace Xsc
 {
 
 
+struct ReportedError
+{
+    int         line;
+    wxString    text;
+};
+
 class ReportView : public wxRichTextCtrl
 {
 
@@ -24,11 +30,22 @@ class ReportView : public wxRichTextCtrl
 
         ReportView(wxWindow* parent, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize);
 
+        void ClearAll();
+
         void AddReport(const Report& r, const std::string& indent = "");
+
+        inline const std::vector<ReportedError>& GetReportedErrors() const
+        {
+            return reportedErrors_;
+        }
 
     private:
 
         void WriteLine(const std::string& indent, const std::string& s, const wxColour& color = *wxWHITE);
+
+        void AddReportedError(const std::string& message);
+
+        std::vector<ReportedError> reportedErrors_;
 
 };
 

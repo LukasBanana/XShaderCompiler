@@ -495,7 +495,8 @@ void DebuggerView::TranslateInputToOutput()
     shaderOutput_.sourceCode = (&outputSource);
 
     /* Compile shader */
-    reportView_->Clear();
+    inputSourceView_->ClearAnnotations();
+    reportView_->ClearAll();
 
     DebuggerLog log(reportView_);
     if (Xsc::CompileShader(shaderInput_, shaderOutput_, &log))
@@ -503,6 +504,10 @@ void DebuggerView::TranslateInputToOutput()
         /* Show output */
         outputSourceView_->SetTextAndRefresh(outputSource.str());
     }
+
+    /* Show annotations */
+    for (const auto& err : reportView_->GetReportedErrors())
+        inputSourceView_->AddAnnotation(err.line - 1, err.text);
 
     SetStatusReady(true);
 }

@@ -20,6 +20,8 @@ namespace Xsc
 {
 
 
+static const int g_AnnotationStyle = (wxSTC_STYLE_LASTPREDEFINED + 1);
+
 SourceView::SourceView(wxWindow* parent, const wxPoint& pos, const wxSize& size) :
     wxStyledTextCtrl{ parent, wxID_ANY, pos, size }
 {
@@ -39,6 +41,7 @@ SourceView::SourceView(wxWindow* parent, const wxPoint& pos, const wxSize& size)
     SetIndentationGuides(4);
     SetWrapMode(wxSTC_WRAP_NONE);
     SetIndent(4);
+    AnnotationSetVisible(wxSTC_ANNOTATION_BOXED);
 
     /* Initialize line number */
     int lineNoID = 0;
@@ -120,6 +123,11 @@ SourceView::SourceView(wxWindow* parent, const wxPoint& pos, const wxSize& size)
     StyleSetItalic(wxSTC_C_COMMENTDOC,              true);
     StyleSetItalic(wxSTC_C_COMMENTDOCKEYWORD,       true);
     StyleSetItalic(wxSTC_C_COMMENTDOCKEYWORDERROR,  true);
+
+    /* Annotations style */
+    StyleSetBackground(g_AnnotationStyle, wxColour(244, 220, 220));
+    StyleSetForeground(g_AnnotationStyle, *wxBLACK);
+    StyleSetSizeFractional(g_AnnotationStyle, (StyleGetSizeFractional(wxSTC_STYLE_DEFAULT)*4)/5);
 }
 
 void SourceView::SetLanguage(const SourceViewLanguage language)
@@ -165,6 +173,17 @@ void SourceView::SetCharEnterCallback(const CharEnterCallback& callback)
 void SourceView::SetMoveCursorCallback(const MoveCursorCallback& callback)
 {
     moveCursorCallback_ = callback;
+}
+
+void SourceView::AddAnnotation(int line, const wxString& text)
+{
+    AnnotationSetText(line, text);
+    AnnotationSetStyle(line, g_AnnotationStyle);
+}
+
+void SourceView::ClearAnnotations()
+{
+    AnnotationClearAll();
 }
 
 

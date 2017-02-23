@@ -42,6 +42,9 @@ class SourceView : public wxStyledTextCtrl
         void SetCharEnterCallback(const CharEnterCallback& callback);
         void SetMoveCursorCallback(const MoveCursorCallback& callback);
 
+        void AddAnnotation(int line, const wxString& text);
+        void ClearAnnotations();
+
     private:
 
         void OnCharAdded(wxStyledTextEvent& event);

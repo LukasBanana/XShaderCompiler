@@ -31,6 +31,12 @@ static std::string ReplaceTabs(const std::string& s)
     return ns;
 }
 
+void ReportView::ClearAll()
+{
+    Clear();
+    reportedErrors_.clear();
+}
+
 void ReportView::AddReport(const Report& r, const std::string& indent)
 {
     /* Append context information */
@@ -38,7 +44,11 @@ void ReportView::AddReport(const Report& r, const std::string& indent)
 
     /* Append actual message */
     if (r.Type() == Report::Types::Error)
+    {
         WriteLine(indent, r.Message(), wxColour(255, 30, 30));
+        if (r.HasLine())
+            AddReportedError(r.Message());
+    }
     else if (r.Type() == Report::Types::Warning)
         WriteLine(indent, r.Message(), wxColour(255, 255, 0));
     else
@@ -93,6 +103,36 @@ void ReportView::WriteLine(const std::string& indent, const std::string& s, cons
         BeginTextColour(color);
         WriteText(indent + s + '\n');
         EndTextColour();
+    }
+}
+
+void ReportView::AddReportedError(const std::string& message)
+{
+    auto posLBracket = message.find('(');
+    if (posLBracket != std::string::npos)
+    {
+        auto posRBracket = message.find(')', posLBracket);
+        if (posRBracket != std::string::npos)
+        {
+            auto posColon0 = message.find(':', posLBracket);
+            if (posColon0 != std::string::npos)
+            {
+                ++posColon0;
+                auto posColon1 = message.find(':', posColon0);
+                if (posColon1 != std::string::npos)
+                {
+                    auto lineNoStr = message.substr(posColon0, posColon1 - posColon0);
+                    auto lineNo = std::stoi(lineNoStr);
+
+                    auto posColon2 = message.find(':', posRBracket);
+                    if (posColon2 != std::string::npos)
+                    {
+                        posColon2 += 2;
+                        reportedErrors_.push_back({ lineNo, message.substr(posColon2) });
+                    }
+                }
+            }
+        }
     }
 }
 
