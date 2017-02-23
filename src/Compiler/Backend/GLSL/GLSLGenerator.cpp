@@ -547,8 +547,12 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     BeginLn();
 
     /* Write storage classes and interpolation modifiers (must be before in/out keywords) */
-    WriteInterpModifiers(ast->interpModifiers, ast);
-    WriteStorageClasses(ast->storageClasses, ast);
+    if (!InsideStructDecl())
+    {
+        WriteInterpModifiers(ast->interpModifiers, ast);
+        WriteStorageClasses(ast->storageClasses, ast);
+    }
+
     Separator();
 
     /* Write input modifiers */
@@ -1395,6 +1399,7 @@ void GLSLGenerator::WriteGlobalOutputSemantics(FunctionDecl* entryPoint)
             entryPoint->semantic,
             nameManglingPrefix_ + "vary_" + entryPoint->semantic.ToString()
         );
+        paramsWritten = true;
     }
 
     if (paramsWritten)
