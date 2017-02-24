@@ -406,6 +406,8 @@ enum class BufferType
     TriangleStream,
 };
 
+std::string BufferTypeToString(const BufferType t);
+
 // Returns true if the specified buffer type is a storage buffer type (e.g. BufferType::Buffer, or BufferType::RWStructuredBuffer).
 bool IsStorageBufferType(const BufferType t);
 
