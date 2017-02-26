@@ -77,7 +77,7 @@ class GLSLConverter : public Visitor
         void RenameVarDecl(VarDecl* ast, const std::string& ident);
         void RenameVarDecl(VarDecl* ast);
 
-        void RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls);
+        void RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, bool useSemanticOnly = false);
 
         // Labels the specified anonymous structure.
         void LabelAnonymousStructDecl(StructDecl* ast);

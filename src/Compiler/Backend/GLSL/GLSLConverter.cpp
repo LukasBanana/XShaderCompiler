@@ -45,29 +45,32 @@ void GLSLConverter::Convert(
 
 IMPLEMENT_VISIT_PROC(Program)
 {
+	auto entryPoint = ast->entryPointRef;
+
     /* Register all input and output semantic variables as reserved identifiers */
     switch (shaderTarget_)
     {
         case ShaderTarget::VertexShader:
-            RenameInOutVarIdents(ast->entryPointRef->outputSemantics.varDeclRefs);
-            RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefs);
-            RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefs);
+            //RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs, true);
+            RenameInOutVarIdents(entryPoint->outputSemantics.varDeclRefs);
+            RegisterReservedVarIdents(entryPoint->inputSemantics.varDeclRefs);
+            RegisterReservedVarIdents(entryPoint->outputSemantics.varDeclRefs);
             break;
         case ShaderTarget::FragmentShader:
-            RenameInOutVarIdents(ast->entryPointRef->inputSemantics.varDeclRefs);
-            RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefs);
-            RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefs);
+            RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs);
+            RegisterReservedVarIdents(entryPoint->inputSemantics.varDeclRefs);
+            RegisterReservedVarIdents(entryPoint->outputSemantics.varDeclRefs);
             break;
         default:
-            RenameInOutVarIdents(ast->entryPointRef->inputSemantics.varDeclRefs);
-            RenameInOutVarIdents(ast->entryPointRef->outputSemantics.varDeclRefs);
-            RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefs);
-            RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefs);
+            RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs);
+            RenameInOutVarIdents(entryPoint->outputSemantics.varDeclRefs);
+            RegisterReservedVarIdents(entryPoint->inputSemantics.varDeclRefs);
+            RegisterReservedVarIdents(entryPoint->outputSemantics.varDeclRefs);
             break;
     }
 
-    RegisterReservedVarIdents(ast->entryPointRef->inputSemantics.varDeclRefsSV);
-    RegisterReservedVarIdents(ast->entryPointRef->outputSemantics.varDeclRefsSV);
+    RegisterReservedVarIdents(entryPoint->inputSemantics.varDeclRefsSV);
+    RegisterReservedVarIdents(entryPoint->outputSemantics.varDeclRefsSV);
 
     VISIT_DEFAULT(Program);
 
@@ -367,10 +370,15 @@ void GLSLConverter::RenameVarDecl(VarDecl* ast)
     RenameVarDecl(ast, ast->FinalIdent());
 }
 
-void GLSLConverter::RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls)
+void GLSLConverter::RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, bool useSemanticOnly)
 {
-    for (auto varDecl : varDecls)
-        RenameVarDecl(varDecl, "vary_" + varDecl->semantic.ToString());
+	for (auto varDecl : varDecls)
+	{
+		if (useSemanticOnly)
+			varDecl->renamedIdent = varDecl->semantic.ToString();
+		else
+			RenameVarDecl(varDecl, "vary_" + varDecl->semantic.ToString());
+	}
 }
 
 void GLSLConverter::LabelAnonymousStructDecl(StructDecl* ast)
