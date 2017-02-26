@@ -403,7 +403,8 @@ bool ArrayDimension::HasDynamicSize() const
     return (size == 0);
 }
 
-std::vector<int> GetArrayDimensionSizes(const std::vector<ArrayDimensionPtr>& arrayDims)
+#if 0 //UNUSED
+std::vector<int> ArrayDimension::GetArrayDimensionSizes(const std::vector<ArrayDimensionPtr>& arrayDims)
 {
     std::vector<int> sizes;
     sizes.reserve(arrayDims.size());
@@ -413,6 +414,7 @@ std::vector<int> GetArrayDimensionSizes(const std::vector<ArrayDimensionPtr>& ar
 
     return sizes;
 }
+#endif
 
 
 /* ----- TypeSpecifier ----- */
