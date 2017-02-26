@@ -978,7 +978,7 @@ std::string SemanticToString(const Semantic t)
         CASE_TO_STRING( InstanceID             );
         CASE_TO_STRING( IsFrontFace            );
         CASE_TO_STRING( OutputControlPointID   );
-        CASE_TO_STRING( Position               );
+        CASE_TO_STRING( FragCoord              );
         CASE_TO_STRING( PrimitiveID            );
         CASE_TO_STRING( RenderTargetArrayIndex );
         CASE_TO_STRING( SampleIndex            );

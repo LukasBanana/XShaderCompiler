@@ -1262,7 +1262,7 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
         case ShaderTarget::FragmentShader:
             if (versionIn_ >= InputShaderVersion::HLSL4)
             {
-                ValidateInSemantics({ COMMON_SEMANTICS_EX, T::Coverage, T::InnerCoverage, T::Depth, T::SampleIndex, T::RenderTargetArrayIndex, T::Position, T::IsFrontFace });
+                ValidateInSemantics({ COMMON_SEMANTICS_EX, T::Coverage, T::InnerCoverage, T::Depth, T::SampleIndex, T::RenderTargetArrayIndex, T::FragCoord, T::IsFrontFace });
                 ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::Coverage, T::InnerCoverage, T::Depth, T::SampleIndex, T::RenderTargetArrayIndex, T::Target, T::StencilRef });
             }
             RequiredOutSemantics({ T::Target });
@@ -1548,7 +1548,7 @@ bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(
 
 void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic)
 {
-    if (semantic == Semantic::Position && shaderTarget_ != ShaderTarget::FragmentShader)
+    if (semantic == Semantic::FragCoord && shaderTarget_ != ShaderTarget::FragmentShader)
     {
         /* Convert shader semantic to VertexPosition */
         semantic = IndexedSemantic(Semantic::VertexPosition, semantic.Index());

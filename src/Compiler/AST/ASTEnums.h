@@ -785,7 +785,7 @@ enum class Semantic
     InstanceID,             // SV_InstanceID, gl_InstanceID (GLSL), gl_InstanceIndex (Vulkan)
     IsFrontFace,            // VFACE (D3D9), SV_IsFrontFace (D3D10+), gl_FrontFacing
     OutputControlPointID,   // SV_OutputControlPointID, gl_InvocationID
-    Position,               // VPOS (D3D9), SV_Position (D3D10+), gl_FragCoord
+    FragCoord,              // VPOS (D3D9), SV_Position (D3D10+), gl_FragCoord
     PrimitiveID,            // SV_PrimitiveID, gl_PrimitiveID
     RenderTargetArrayIndex, // SV_RenderTargetArrayIndex, gl_Layer
     SampleIndex,            // SV_SampleIndex, gl_SampleID

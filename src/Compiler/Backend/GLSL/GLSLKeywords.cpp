@@ -367,7 +367,7 @@ static std::map<Semantic, GLSLSemanticDescriptor> GenerateSemanticMap()
         { T::InstanceID,             { "gl_InstanceID"                } }, // gl_InstanceID (GLSL), gl_InstanceIndex (Vulkan)
         { T::IsFrontFace,            { "gl_FrontFacing"               } },
         { T::OutputControlPointID,   { "gl_InvocationID"              } },
-        { T::Position,               { "gl_FragCoord"                 } },
+        { T::FragCoord,               { "gl_FragCoord"                 } },
         { T::PrimitiveID,            { "gl_PrimitiveID"               } },
         { T::RenderTargetArrayIndex, { "gl_Layer"                     } },
         { T::SampleIndex,            { "gl_SampleID"                  } },

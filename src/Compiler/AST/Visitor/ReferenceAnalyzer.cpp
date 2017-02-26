@@ -305,7 +305,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
         {
             if (auto varDecl = varIdent->FetchVarDecl())
             {
-                if (varDecl->semantic == Semantic::Position && shaderTarget_ == ShaderTarget::FragmentShader)
+                if (varDecl->semantic == Semantic::FragCoord && shaderTarget_ == ShaderTarget::FragmentShader)
                 {
                     /* Mark frag-coord usage in fragment program layout */
                     program_->layoutFragment.fragCoordUsed = true;
