@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 #include <fstream>
+#include <cctype>
 #include <wx/menu.h>
 #include <wx/mimetype.h>
 #include <wx/msgdlg.h>
@@ -519,20 +520,32 @@ void DebuggerView::TranslateInputToOutput()
     std::stringstream outputSource;
     shaderOutput_.sourceCode = (&outputSource);
 
-    /* Compile shader */
     inputSourceView_->ClearAnnotations();
     reportView_->ClearAll();
 
-    DebuggerLog log(reportView_);
-    if (Xsc::CompileShader(shaderInput_, shaderOutput_, &log))
+    try
     {
-        /* Show output */
-        outputSourceView_->SetTextAndRefresh(outputSource.str());
-    }
+        /* Compile shader */
+        DebuggerLog log(reportView_);
+        if (Xsc::CompileShader(shaderInput_, shaderOutput_, &log))
+        {
+            /* Show output */
+            outputSourceView_->SetTextAndRefresh(outputSource.str());
+        }
 
-    /* Show annotations */
-    for (const auto& err : reportView_->GetReportedErrors())
-        inputSourceView_->AddAnnotation(err.line - 1, err.text);
+        /* Show annotations */
+        for (const auto& err : reportView_->GetReportedErrors())
+            inputSourceView_->AddAnnotation(err.line - 1, err.text);
+    }
+    catch (const std::exception& e)
+    {
+        /* Show message box with error message */
+        std::string s = e.what();
+        if (!s.empty())
+            s[0] = std::toupper(s[0]);
+        s += '!';
+        wxMessageBox(s, "Invalid Input", wxOK | wxICON_WARNING, this);
+    }
 
     SetStatusReady(true);
 }

@@ -48,8 +48,26 @@ static bool CompileShaderPrimary(
     /* Validate arguments */
     if (!inputDesc.sourceCode)
         throw std::invalid_argument("input stream must not be null");
+    
     if (!outputDesc.sourceCode)
         throw std::invalid_argument("output stream must not be null");
+
+    const auto& nameMngl = outputDesc.nameMangling;
+    
+    if (nameMngl.reservedWordPrefix.empty())
+        throw std::invalid_argument("name mangling prefix for reserved words must not be empty");
+
+    if (nameMngl.temporaryPrefix.empty())
+        throw std::invalid_argument("name mangling prefix for temporary variables must not be empty");
+    
+    if ( nameMngl.reservedWordPrefix == nameMngl.inputPrefix     ||
+         nameMngl.reservedWordPrefix == nameMngl.outputPrefix    ||
+         nameMngl.reservedWordPrefix == nameMngl.temporaryPrefix ||
+         nameMngl.temporaryPrefix    == nameMngl.inputPrefix     ||
+         nameMngl.temporaryPrefix    == nameMngl.outputPrefix )
+    {
+        throw std::invalid_argument("name mangling prefix for reserved words and temporary variables must not be equal to any other prefix");
+    }
 
     /* Pre-process input code */
     timePoints[0] = Time::now();

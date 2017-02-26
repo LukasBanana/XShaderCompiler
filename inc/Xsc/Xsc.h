@@ -155,13 +155,13 @@ struct NameMangling
 
     /**
     \brief Name mangling prefix for reserved words (such as "texture", "main", "sin" etc.). By default "xsr_".
-    \remarks This must not be equal to any of the other prefixes.
+    \remarks This must not be equal to any of the other prefixes and it must not be empty.
     */
     std::string     reservedWordPrefix  = "xsr_";
 
     /**
     \brief Name mangling prefix for temporary variables. By default "xst_".
-    \remarks This must not be equal to any of the other prefixes.
+    \remarks This must not be equal to any of the other prefixes and it must not be empty.
     */
     std::string     temporaryPrefix     = "xst_";
 
