@@ -71,7 +71,7 @@ void HelpPrinter::PrintHelpReference(std::ostream& output, std::size_t indentSiz
     if (!entireReference)
     {
         PrintHeader("Hint");
-        output << "  Use 'xsc --help' for more details";
+        output << "  Use 'xsc --help' for more details" << std::endl;
     }
 }
 
