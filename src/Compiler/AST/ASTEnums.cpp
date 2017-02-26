@@ -907,7 +907,7 @@ IndexedSemantic::IndexedSemantic(const std::string& userDefined) :
 {
     /* Extract index from user defined semantic (all right-most numeric characters) */
     auto pos = userDefined.find_last_not_of("0123456789");
-    if (pos != std::string::npos)
+    if (pos != std::string::npos && pos + 1 < userDefined.size())
     {
         ++pos;
         userDefined_ = userDefined.substr(0, pos);

@@ -1476,39 +1476,60 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
     /* Write assignment to single function return semantic */
     auto semantic = entryPoint->semantic;
 
-    if (expr && semantic.IsValid())
+    if (expr)
     {
-        if (semantic.IsSystemValue())
+        if (semantic.IsValid())
         {
-            if (auto semanticKeyword = SystemValueToKeyword(semantic))
+            if (semantic.IsSystemValue())
+            {
+                if (auto semanticKeyword = SystemValueToKeyword(semantic))
+                {
+                    BeginLn();
+                    {
+                        Write(*semanticKeyword);
+                        Write(" = ");
+                        Visit(expr);
+                        Write(";");
+                    }
+                    EndLn();
+                }
+                else
+                    Error("failed to map output semantic to GLSL keyword", entryPoint);
+            }
+            else if (semantic.IsUserDefined())
             {
                 BeginLn();
                 {
-                    Write(*semanticKeyword);
+                    Write(nameMangling_.outputPrefix + semantic.ToString());
                     Write(" = ");
                     Visit(expr);
                     Write(";");
                 }
                 EndLn();
             }
-            else
-                Error("failed to map output semantic to GLSL keyword", entryPoint);
         }
-        else if (semantic.IsUserDefined())
+        else if (entryPoint->paramStructs.empty())
         {
+            /* Store result in temporary variable */
+            const auto tempVarIdent = nameMangling_.temporaryPrefix + "output";
+
             BeginLn();
             {
-                Write(nameMangling_.outputPrefix + semantic.ToString());
-                Write(" = ");
+                Visit(entryPoint->returnType);
+                Write(" " + tempVarIdent + " = ");
                 Visit(expr);
                 Write(";");
             }
             EndLn();
+
+            if (auto structDecl = entryPoint->returnType->GetStructDeclRef())
+                WriteOutputSemanticsAssignmentStructDeclParam({ nullptr, nullptr, structDecl }, writeAsListedExpr, tempVarIdent);
         }
     }
 }
 
-void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(const FunctionDecl::ParameterStructure& paramStruct, bool writeAsListedExpr)
+void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(
+    const FunctionDecl::ParameterStructure& paramStruct, bool writeAsListedExpr, const std::string& tempVarIdent)
 {
     auto paramIdent = paramStruct.varIdent;
     auto paramVar = paramStruct.varDecl;
@@ -1533,8 +1554,10 @@ void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(const Function
 
                 if (paramIdent)
                     Visit(paramIdent);
-                else
+                else if (paramVar)
                     Write(paramVar->ident);
+                else
+                    Write(tempVarIdent);
 
                 Write("." + varDecl->ident + (writeAsListedExpr ? ", " : ";"));
 

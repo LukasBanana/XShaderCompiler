@@ -163,7 +163,9 @@ class GLSLGenerator : public Generator
         void WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier, const IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl = nullptr);
 
         void WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListedExpr = false);
-        void WriteOutputSemanticsAssignmentStructDeclParam(const FunctionDecl::ParameterStructure& paramStruct, bool writeAsListedExpr = false);
+        void WriteOutputSemanticsAssignmentStructDeclParam(
+            const FunctionDecl::ParameterStructure& paramStruct, bool writeAsListedExpr = false, const std::string& tempVarIdent = "output"
+        );
 
         /* --- Uniforms --- */
 
