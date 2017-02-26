@@ -28,10 +28,11 @@ struct HelpCategory
 {
     enum
     {
-        Main        = (1 << 0),
-        Common      = (1 << 1),
-        Formatting  = (1 << 2),
-        All         = ~0,
+        Main         = (1 << 0),
+        Common       = (1 << 1),
+        Formatting   = (1 << 2),
+        NameMangling = (1 << 3),
+        All          = ~0,
     };
 };
 

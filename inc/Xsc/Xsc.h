@@ -228,11 +228,11 @@ struct ShaderOutput
     //! Optional list of vertex semantic layouts, to bind a vertex attribute (semantic name) to a location index (only used when 'explicitBinding' is true).
     std::vector<VertexSemantic> vertexSemantics;
 
-    //! Output code formatting descriptor.
-    Formatting                  formatting;
-
     //! Additional options to configure the code generation.
     Options                     options;
+
+    //! Output code formatting descriptor.
+    Formatting                  formatting;
     
     //! Specifies the options for name mangling.
     NameMangling                nameMangling;

@@ -55,7 +55,8 @@ CommandFactory::CommandFactory()
         TargetCommand,
         VersionInCommand,
         VersionOutCommand,
-        PrefixCommand,
+        IncludePathCommand,
+
         OutputCommand,
         WarnCommand,
         ShowASTCommand,
@@ -68,7 +69,6 @@ CommandFactory::CommandFactory()
         PresettingCommand,
         VersionCommand,
         HelpCommand,
-        IncludePathCommand,
         VerboseCommand,
         OptimizeCommand,
         ExtensionCommand,
@@ -86,7 +86,13 @@ CommandFactory::CommandFactory()
         FormatLineSeparationCommand,
         FormatCompactWrappersCommand,
         FormatBracedScopeCommand,
-        FormatNewLineScopeCommand
+        FormatNewLineScopeCommand,
+
+        PrefixInputCommand,
+        PrefixOutputCommand,
+        PrefixReservedWordCommand,
+        PrefixTemporaryCommand,
+        AlwaysUseSemanticsCommand
     >();
 }
 
