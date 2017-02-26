@@ -379,8 +379,8 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderInput_.shaderTarget = static_cast<ShaderTarget>(static_cast<long>(ShaderTarget::VertexShader) + ValueInt());
     else if (name == "outputVersion")
         shaderOutput_.shaderVersion = GetOutputVersion(ValueInt());
-    else if (name == "prefix")
-        shaderOutput_.nameManglingPrefix = ValueStr();
+    /*else if (name == "prefix")
+        shaderOutput_.nameManglingPrefix = ValueStr();*/
     else if (name == "indent")
         shaderOutput_.formatting.indent = ValueStr();
     else if (name == "extensions")

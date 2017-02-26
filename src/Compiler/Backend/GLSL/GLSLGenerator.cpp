@@ -55,8 +55,7 @@ void GLSLGenerator::GenerateCodePrimary(
 {
     /* Store parameters */
     versionOut_         = outputDesc.shaderVersion;
-    nameManglingPrefix_ = outputDesc.nameManglingPrefix;
-
+    nameMangling_       = outputDesc.nameMangling;
     allowExtensions_    = outputDesc.options.allowExtensions;
     explicitBinding_    = outputDesc.options.explicitBinding;
     preserveComments_   = outputDesc.options.preserveComments;
@@ -86,7 +85,7 @@ void GLSLGenerator::GenerateCodePrimary(
             /* Convert AST for GLSL code generation */
             {
                 GLSLConverter converter;
-                converter.Convert(program, inputDesc.shaderTarget, nameManglingPrefix_, outputDesc.options);
+                converter.Convert(program, inputDesc.shaderTarget, nameMangling_, outputDesc.options);
             }
 
             /* Write header */
@@ -1168,7 +1167,7 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
     if (!semanticKeyword)
     {
         semanticKeyword = MakeUnique<std::string>(varDecl->FinalIdent());
-        varDecl->renamedIdent = (nameManglingPrefix_ + "temp_" + varDecl->ident);
+        varDecl->renamedIdent = (nameMangling_.temporaryPrefix + varDecl->ident);
     }
 
     /* Write local variable definition statement */
@@ -1397,7 +1396,7 @@ void GLSLGenerator::WriteGlobalOutputSemantics(FunctionDecl* entryPoint)
         WriteGlobalOutputSemanticsSlot(
             entryPoint->returnType.get(),
             entryPoint->semantic,
-            nameManglingPrefix_ + "vary_" + entryPoint->semantic.ToString()
+            nameMangling_.outputPrefix + entryPoint->semantic.ToString()
         );
         paramsWritten = true;
     }
@@ -1499,7 +1498,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
         {
             BeginLn();
             {
-                Write(nameManglingPrefix_ + "vary_" + semantic.ToString());
+                Write(nameMangling_.outputPrefix + semantic.ToString());
                 Write(" = ");
                 Visit(expr);
                 Write(";");
@@ -2446,7 +2445,7 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
                 Write(", binding = " + std::to_string(slotRegister->slot));
         }
 
-        Write(") " + *bufferTypeKeyword + " " + nameManglingPrefix_ + bufferDecl->ident);
+        Write(") " + *bufferTypeKeyword + " " + nameMangling_.temporaryPrefix + bufferDecl->ident);
     }
     EndLn();
 

@@ -144,6 +144,34 @@ struct Options
     bool showTimes                  = false;
 };
 
+//! Name mangling descriptor structure for shader input/output variables (also referred to as "varyings"), temporary variables, and reserved keywords.
+struct NameMangling
+{
+    //! Name mangling prefix for shader input variables. By default "xsv_".
+    std::string     inputPrefix         = "xsv_";
+
+    //! Name mangling prefix for shader output variables. By default "xsv_".
+    std::string     outputPrefix        = "xsv_";
+
+    /**
+    \brief Name mangling prefix for reserved words (such as "texture", "main", "sin" etc.). By default "xsr_".
+    \remarks This must not be equal to any of the other prefixes.
+    */
+    std::string     reservedWordPrefix  = "xsr_";
+
+    /**
+    \brief Name mangling prefix for temporary variables. By default "xst_".
+    \remarks This must not be equal to any of the other prefixes.
+    */
+    std::string     temporaryPrefix     = "xst_";
+
+    /**
+    If true, shader input/output variables are always renamed to their semantics,
+    even for vertex input and fragment output. Otherwise, their original identifiers are used.
+    */
+    bool            useAlwaysSemantics  = false;
+};
+
 //! Shader input descriptor structure.
 struct ShaderInput
 {
@@ -196,9 +224,6 @@ struct ShaderOutput
 
     //! Specifies the output shader version. By default OutputShaderVersion::GLSL (to auto-detect minimum required version).
     OutputShaderVersion         shaderVersion       = OutputShaderVersion::GLSL;
-    
-    //! Prefix string for name mangling. By default "xsc_".
-    std::string                 nameManglingPrefix  = "xsc_";
 
     //! Optional list of vertex semantic layouts, to bind a vertex attribute (semantic name) to a location index (only used when 'explicitBinding' is true).
     std::vector<VertexSemantic> vertexSemantics;
@@ -208,6 +233,9 @@ struct ShaderOutput
 
     //! Additional options to configure the code generation.
     Options                     options;
+    
+    //! Specifies the options for name mangling.
+    NameMangling                nameMangling;
 };
 
 /**

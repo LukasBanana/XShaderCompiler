@@ -18,12 +18,12 @@ namespace Xsc
 
 
 void GLSLConverter::Convert(
-    Program& program, const ShaderTarget shaderTarget, const std::string& nameManglingPrefix, const Options& options)
+    Program& program, const ShaderTarget shaderTarget, const NameMangling& nameMangling, const Options& options)
 {
     /* Store settings */
     shaderTarget_       = shaderTarget;
     program_            = (&program);
-    nameManglingPrefix_ = nameManglingPrefix;
+    nameMangling_       = nameMangling;
     options_            = options;
 
     /* First convert expressions */
@@ -51,19 +51,19 @@ IMPLEMENT_VISIT_PROC(Program)
     switch (shaderTarget_)
     {
         case ShaderTarget::VertexShader:
-            //RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs, true);
-            RenameInOutVarIdents(entryPoint->outputSemantics.varDeclRefs);
+            //RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs, true, true);
+            RenameInOutVarIdents(entryPoint->outputSemantics.varDeclRefs, false);
             RegisterReservedVarIdents(entryPoint->inputSemantics.varDeclRefs);
             RegisterReservedVarIdents(entryPoint->outputSemantics.varDeclRefs);
             break;
         case ShaderTarget::FragmentShader:
-            RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs);
+            RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs, true);
             RegisterReservedVarIdents(entryPoint->inputSemantics.varDeclRefs);
             RegisterReservedVarIdents(entryPoint->outputSemantics.varDeclRefs);
             break;
         default:
-            RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs);
-            RenameInOutVarIdents(entryPoint->outputSemantics.varDeclRefs);
+            RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs, true);
+            RenameInOutVarIdents(entryPoint->outputSemantics.varDeclRefs, false);
             RegisterReservedVarIdents(entryPoint->inputSemantics.varDeclRefs);
             RegisterReservedVarIdents(entryPoint->outputSemantics.varDeclRefs);
             break;
@@ -193,7 +193,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     if (ast->members.empty())
     {
         /* Add dummy member if the structure is empty (GLSL does not support empty structures) */
-        auto dummyMember = ASTFactory::MakeVarDeclStmnt(DataType::Int, nameManglingPrefix_ + "dummy");
+        auto dummyMember = ASTFactory::MakeVarDeclStmnt(DataType::Int, nameMangling_.temporaryPrefix + "dummy");
         ast->members.push_back(dummyMember);
     }
 }
@@ -362,7 +362,7 @@ bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
 void GLSLConverter::RenameVarDecl(VarDecl* ast, const std::string& ident)
 {
     /* Set new identifier for this variable */
-    ast->renamedIdent = (nameManglingPrefix_ + ident);
+    ast->renamedIdent = (nameMangling_.temporaryPrefix + ident);
 }
 
 void GLSLConverter::RenameVarDecl(VarDecl* ast)
@@ -370,14 +370,16 @@ void GLSLConverter::RenameVarDecl(VarDecl* ast)
     RenameVarDecl(ast, ast->FinalIdent());
 }
 
-void GLSLConverter::RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, bool useSemanticOnly)
+void GLSLConverter::RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, bool input, bool useSemanticOnly)
 {
     for (auto varDecl : varDecls)
     {
         if (useSemanticOnly)
             varDecl->renamedIdent = varDecl->semantic.ToString();
+        else if (input)
+            varDecl->renamedIdent = nameMangling_.inputPrefix + varDecl->semantic.ToString();
         else
-            RenameVarDecl(varDecl, "vary_" + varDecl->semantic.ToString());
+            varDecl->renamedIdent = nameMangling_.outputPrefix + varDecl->semantic.ToString();
     }
 }
 
@@ -385,7 +387,7 @@ void GLSLConverter::LabelAnonymousStructDecl(StructDecl* ast)
 {
     if (ast->IsAnonymous())
     {
-        ast->ident = nameManglingPrefix_ + "anonymous_struct" + std::to_string(anonymousStructCounter_);
+        ast->ident = nameMangling_.temporaryPrefix + "anonymous_struct" + std::to_string(anonymousStructCounter_);
         ++anonymousStructCounter_;
     }
 }
@@ -501,7 +503,7 @@ bool GLSLConverter::RenameReservedKeyword(const std::string& ident, std::string&
         auto it = reservedKeywords.find(ident);
         if (it != reservedKeywords.end())
         {
-            renamedIdent = nameManglingPrefix_ + ident;
+            renamedIdent = nameMangling_.reservedWordPrefix + ident;
             return true;
         }
 
