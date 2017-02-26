@@ -51,23 +51,25 @@ IMPLEMENT_VISIT_PROC(Program)
     switch (shaderTarget_)
     {
         case ShaderTarget::VertexShader:
-            //RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs, true, true);
+            if (nameMangling_.useAlwaysSemantics)
+                RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs, true, true);
             RenameInOutVarIdents(entryPoint->outputSemantics.varDeclRefs, false);
-            RegisterReservedVarIdents(entryPoint->inputSemantics.varDeclRefs);
-            RegisterReservedVarIdents(entryPoint->outputSemantics.varDeclRefs);
             break;
+
         case ShaderTarget::FragmentShader:
             RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs, true);
-            RegisterReservedVarIdents(entryPoint->inputSemantics.varDeclRefs);
-            RegisterReservedVarIdents(entryPoint->outputSemantics.varDeclRefs);
+            if (nameMangling_.useAlwaysSemantics)
+                RenameInOutVarIdents(entryPoint->outputSemantics.varDeclRefs, false, true);
             break;
+
         default:
             RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs, true);
             RenameInOutVarIdents(entryPoint->outputSemantics.varDeclRefs, false);
-            RegisterReservedVarIdents(entryPoint->inputSemantics.varDeclRefs);
-            RegisterReservedVarIdents(entryPoint->outputSemantics.varDeclRefs);
             break;
     }
+
+    RegisterReservedVarIdents(entryPoint->inputSemantics.varDeclRefs);
+    RegisterReservedVarIdents(entryPoint->outputSemantics.varDeclRefs);
 
     RegisterReservedVarIdents(entryPoint->inputSemantics.varDeclRefsSV);
     RegisterReservedVarIdents(entryPoint->outputSemantics.varDeclRefsSV);
