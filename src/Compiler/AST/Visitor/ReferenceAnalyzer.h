@@ -70,8 +70,8 @@ class ReferenceAnalyzer : private Visitor
 
         /* === Members === */
 
-        Program*                    program_            = nullptr;
-        ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
+        Program*                    program_        = nullptr;
+        ShaderTarget                shaderTarget_   = ShaderTarget::VertexShader;
         
         std::vector<FunctionCall*>  funcCallStack_;
 

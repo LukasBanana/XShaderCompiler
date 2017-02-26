@@ -808,12 +808,16 @@ class IndexedSemantic
         IndexedSemantic& operator = (const IndexedSemantic&) = default;
 
         IndexedSemantic(Semantic semantic, int index = 0);
-        IndexedSemantic(const std::string& userDefined, int index = 0);
+        IndexedSemantic(const std::string& userDefined);
+        IndexedSemantic(const IndexedSemantic& rhs, int index);
 
         inline operator Semantic() const
         {
             return semantic_;
         }
+
+        // Compares this semantic with the specified semantic for a strict-weak-order (SWO).
+        bool operator < (const IndexedSemantic& rhs) const;
 
         // Returns true if this the semantic is not undefined (Semantic::Undefined).
         bool IsValid() const;
@@ -825,6 +829,9 @@ class IndexedSemantic
         bool IsUserDefined() const;
 
         std::string ToString() const;
+
+        // Resest this semantic to undefined.
+        void Reset();
 
         // Returns the semantic index.
         inline int Index() const

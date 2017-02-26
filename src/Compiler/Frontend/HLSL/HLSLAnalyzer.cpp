@@ -918,6 +918,44 @@ void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
 
         AnalyzeEntryPointSemantics(funcDecl, inSemantics, outSemantics);
     }
+
+    /* Override all output semantics if the function has a return type semantic */
+    if (funcDecl->semantic.IsValid() && !funcDecl->outputSemantics.Empty())
+    {
+        int semanticIndex = 0;
+
+        funcDecl->outputSemantics.ForEach(
+            [&](VarDecl* varDecl)
+            {
+                varDecl->semantic = IndexedSemantic(funcDecl->semantic, semanticIndex);
+                ++semanticIndex;
+            }
+        );
+
+        funcDecl->outputSemantics.UpdateDistribution();
+
+        funcDecl->semantic.Reset();
+    }
+
+    /* Check if there are duplicate output semantics */
+    std::map<IndexedSemantic, int> outputSemanticCounter;
+
+    funcDecl->outputSemantics.ForEach(
+        [&outputSemanticCounter](VarDecl* varDecl)
+        {
+            auto it = outputSemanticCounter.find(varDecl->semantic);
+            if (it != outputSemanticCounter.end())
+                ++it->second;
+            else
+                outputSemanticCounter.insert({ varDecl->semantic, 1 });
+        }
+    );
+
+    for (const auto it : outputSemanticCounter)
+    {
+        if (it.second > 1)
+            Error("duplicate use of output semantic '" + it.first.ToString() + "'");
+    }
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param)

@@ -1459,9 +1459,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
 
 void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListedExpr)
 {
-    auto        entryPoint  = GetProgram()->entryPointRef;
-    auto        semantic    = entryPoint->semantic;
-    const auto& varDeclRefs = entryPoint->outputSemantics.varDeclRefsSV;
+    auto entryPoint = GetProgram()->entryPointRef;
 
     /* Fetch variable identifier if expression is set */
     VarIdent* exprVarIdent = nullptr;
@@ -1475,10 +1473,12 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
             WriteOutputSemanticsAssignmentStructDeclParam(paramStruct, writeAsListedExpr);
     }
 
-    /* Prefer variables from structure, rather than function return semantic */
-    if (varDeclRefs.empty())
+    /* Write assignment to single function return semantic */
+    auto semantic = entryPoint->semantic;
+
+    if (expr && semantic.IsValid())
     {
-        if (semantic.IsSystemValue() && expr)
+        if (semantic.IsSystemValue())
         {
             if (auto semanticKeyword = SystemValueToKeyword(semantic))
             {
@@ -1494,7 +1494,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
             else
                 Error("failed to map output semantic to GLSL keyword", entryPoint);
         }
-        else if (semantic.IsUserDefined() && expr)
+        else if (semantic.IsUserDefined())
         {
             BeginLn();
             {
@@ -1505,8 +1505,6 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
             }
             EndLn();
         }
-        else if (IsFragmentShader())
-            Error("missing output semantic", expr);
     }
 }
 

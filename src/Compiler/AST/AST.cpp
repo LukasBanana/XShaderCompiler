@@ -429,6 +429,15 @@ TypeDenoterPtr TypeSpecifier::DeriveTypeDenoter()
     return typeDenoter;
 }
 
+StructDecl* TypeSpecifier::GetStructDeclRef()
+{
+    auto typeDen = typeDenoter->Get();
+    if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+        return structTypeDen->structDeclRef;
+    else
+        return nullptr;
+}
+
 
 /* ----- VarDecl ----- */
 
@@ -687,6 +696,38 @@ void FunctionDecl::ParameterSemantics::ForEach(const IteratorFunc& iterator)
 {
     std::for_each(varDeclRefs.begin(), varDeclRefs.end(), iterator);
     std::for_each(varDeclRefsSV.begin(), varDeclRefsSV.end(), iterator);
+}
+
+bool FunctionDecl::ParameterSemantics::Empty() const
+{
+    return (varDeclRefs.empty() && varDeclRefsSV.empty());
+}
+
+void FunctionDecl::ParameterSemantics::UpdateDistribution()
+{
+    /* Move system-value semantics */
+    for (auto it = varDeclRefs.begin(); it != varDeclRefs.end();)
+    {
+        if ((*it)->semantic.IsSystemValue())
+        {
+            varDeclRefsSV.push_back(*it);
+            it = varDeclRefs.erase(it);
+        }
+        else
+            ++it;
+    }
+
+    /* Move non-system-value semantics */
+    for (auto it = varDeclRefsSV.begin(); it != varDeclRefsSV.end();)
+    {
+        if (!(*it)->semantic.IsSystemValue())
+        {
+            varDeclRefs.push_back(*it);
+            it = varDeclRefsSV.erase(it);
+        }
+        else
+            ++it;
+    }
 }
 
 bool FunctionDecl::IsForwardDecl() const

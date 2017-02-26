@@ -902,11 +902,38 @@ IndexedSemantic::IndexedSemantic(Semantic semantic, int index) :
 {
 }
 
-IndexedSemantic::IndexedSemantic(const std::string& userDefined, int index) :
-    semantic_   { Semantic::UserDefined },
-    index_      { index                 },
-    userDefined_{ userDefined           }
+IndexedSemantic::IndexedSemantic(const std::string& userDefined) :
+    semantic_{ Semantic::UserDefined }
 {
+    /* Extract index from user defined semantic (all right-most numeric characters) */
+    auto pos = userDefined.find_last_not_of("0123456789");
+    if (pos != std::string::npos)
+    {
+        ++pos;
+        userDefined_ = userDefined.substr(0, pos);
+        auto indexStr = userDefined.substr(pos);
+        index_ = std::atoi(indexStr.c_str());
+    }
+    else
+        userDefined_ = userDefined;
+}
+
+IndexedSemantic::IndexedSemantic(const IndexedSemantic& rhs, int index) :
+    semantic_   { rhs.semantic_    },
+    index_      { index            },
+    userDefined_{ rhs.userDefined_ }
+{
+}
+
+bool IndexedSemantic::operator < (const IndexedSemantic& rhs) const
+{
+    if (semantic_ > rhs.semantic_) return false;
+    if (semantic_ < rhs.semantic_) return true;
+
+    if (index_ > rhs.index_) return false;
+    if (index_ < rhs.index_) return true;
+
+    return userDefined_ < rhs.userDefined_;
 }
 
 bool IndexedSemantic::IsValid() const
@@ -926,15 +953,27 @@ bool IndexedSemantic::IsUserDefined() const
 
 std::string IndexedSemantic::ToString() const
 {
+    std::string s;
+
     if (semantic_ == Semantic::UserDefined)
     {
         /* Return user defined semantics always in upper case */
-        std::string s = userDefined_;
+        s = userDefined_;
         std::transform(s.begin(), s.end(), s.begin(), ::toupper);
-        return s;
     }
     else
-        return (SemanticToString(semantic_) + std::to_string(index_));
+        s = SemanticToString(semantic_);
+    
+    s += std::to_string(index_);
+
+    return s;
+}
+
+void IndexedSemantic::Reset()
+{
+    semantic_   = Semantic::Undefined;
+    index_      = 0;
+    userDefined_.clear();
 }
 
 

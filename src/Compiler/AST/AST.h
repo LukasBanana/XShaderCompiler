@@ -406,6 +406,9 @@ struct TypeSpecifier : public TypedAST
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    // Returns the StructDecl reference of this type denoter or null if there is no such reference.
+    StructDecl* GetStructDeclRef();
+
     StructDeclPtr   structDecl;     // Optional structure declaration
     TypeDenoterPtr  typeDenoter;
 };
@@ -626,6 +629,12 @@ struct FunctionDecl : public Stmnt
         void Add(VarDecl* varDecl);
         bool Contains(VarDecl* varDecl) const;
         void ForEach(const IteratorFunc& iterator);
+
+        // Returns true if both lists are empty.
+        bool Empty() const;
+
+        // Updates the distribution of system-value and non-system-value semantics.
+        void UpdateDistribution();
 
         std::vector<VarDecl*> varDeclRefs;      // References to all variable declarations of the user defined semantics
         std::vector<VarDecl*> varDeclRefsSV;    // References to all variable declarations of the system value semantics
