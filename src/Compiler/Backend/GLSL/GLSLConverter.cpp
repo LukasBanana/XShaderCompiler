@@ -45,7 +45,7 @@ void GLSLConverter::Convert(
 
 IMPLEMENT_VISIT_PROC(Program)
 {
-	auto entryPoint = ast->entryPointRef;
+    auto entryPoint = ast->entryPointRef;
 
     /* Register all input and output semantic variables as reserved identifiers */
     switch (shaderTarget_)
@@ -372,13 +372,13 @@ void GLSLConverter::RenameVarDecl(VarDecl* ast)
 
 void GLSLConverter::RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, bool useSemanticOnly)
 {
-	for (auto varDecl : varDecls)
-	{
-		if (useSemanticOnly)
-			varDecl->renamedIdent = varDecl->semantic.ToString();
-		else
-			RenameVarDecl(varDecl, "vary_" + varDecl->semantic.ToString());
-	}
+    for (auto varDecl : varDecls)
+    {
+        if (useSemanticOnly)
+            varDecl->renamedIdent = varDecl->semantic.ToString();
+        else
+            RenameVarDecl(varDecl, "vary_" + varDecl->semantic.ToString());
+    }
 }
 
 void GLSLConverter::LabelAnonymousStructDecl(StructDecl* ast)
