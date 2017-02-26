@@ -35,7 +35,7 @@ class GLSLConverter : public Visitor
         void Convert(
             Program& program,
             const ShaderTarget shaderTarget,
-            const std::string& nameManglingPrefix,
+            const NameMangling& nameMangling,
             const Options& options
         );
 
@@ -77,7 +77,7 @@ class GLSLConverter : public Visitor
         void RenameVarDecl(VarDecl* ast, const std::string& ident);
         void RenameVarDecl(VarDecl* ast);
 
-        void RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, bool useSemanticOnly = false);
+        void RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, bool input, bool useSemanticOnly = false);
 
         // Labels the specified anonymous structure.
         void LabelAnonymousStructDecl(StructDecl* ast);
@@ -133,7 +133,7 @@ class GLSLConverter : public Visitor
         ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;
         Program*                program_                = nullptr;
 
-        std::string             nameManglingPrefix_;
+        NameMangling            nameMangling_;
         Options                 options_;
 
         /*

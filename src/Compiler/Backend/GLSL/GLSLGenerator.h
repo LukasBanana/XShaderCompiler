@@ -256,7 +256,7 @@ class GLSLGenerator : public Generator
         };
 
         OutputShaderVersion                     versionOut_             = OutputShaderVersion::GLSL;
-        std::string                             nameManglingPrefix_     = "xsc_";
+        NameMangling                            nameMangling_;
         std::map<CiString, VertexSemanticLoc>   vertexSemanticsMap_;
 
         bool                                    allowExtensions_        = false;

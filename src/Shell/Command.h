@@ -76,7 +76,6 @@ DECL_SHELL_COMMAND( VersionOutCommand            );
 DECL_SHELL_COMMAND( OutputCommand                );
 DECL_SHELL_COMMAND( IncludePathCommand           );
 
-DECL_SHELL_COMMAND( PrefixCommand                );
 DECL_SHELL_COMMAND( WarnCommand                  );
 DECL_SHELL_COMMAND( ShowASTCommand               );
 DECL_SHELL_COMMAND( ShowTimesCommand             );
@@ -106,6 +105,12 @@ DECL_SHELL_COMMAND( FormatLineSeparationCommand  );
 DECL_SHELL_COMMAND( FormatCompactWrappersCommand );
 DECL_SHELL_COMMAND( FormatBracedScopeCommand     );
 DECL_SHELL_COMMAND( FormatNewLineScopeCommand    );
+
+DECL_SHELL_COMMAND( PrefixInputCommand           );
+DECL_SHELL_COMMAND( PrefixOutputCommand          );
+DECL_SHELL_COMMAND( PrefixReservedWordCommand    );
+DECL_SHELL_COMMAND( PrefixTemporaryCommand       );
+DECL_SHELL_COMMAND( AlwaysUseSemanticsCommand    );
 
 #undef DECL_SHELL_COMMAND
 

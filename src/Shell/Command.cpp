@@ -277,30 +277,6 @@ void IncludePathCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
- * PrefixCommand class
- */
-
-std::vector<Command::Identifier> PrefixCommand::Idents() const
-{
-    return { { "--prefix" } };
-}
-
-HelpDescriptor PrefixCommand::Help() const
-{
-    return
-    {
-        "--prefix PREFIX",
-        "Prefix for name-mangling of variables with reserved names; default='xsc_'"
-    };
-}
-
-void PrefixCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.nameManglingPrefix = cmdLine.Accept();
-}
-
-
-/*
  * WarnCommand class
  */
 
@@ -672,42 +648,13 @@ HelpDescriptor HelpCommand::Help() const
     return
     {
         "--help",
-        "Prints this help reference"
+        "Prints the help reference"
     };
 }
 
 void HelpCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    static const bool printCompact = false;
-    static const std::size_t indentSize = 2;
-
-    const auto& helpPrinter = CommandFactory::Instance().GetHelpPrinter();
-
-    auto PrintHeader = [](const std::string& label)
-    {
-        if (!printCompact)
-            std::cout << std::endl;
-        std::cout << label << ':' << std::endl;
-    };
-
-    /* Print usage */
-    std::cout << "Usage:" << std::endl;
-    std::cout << "  xsc (OPTION+ FILE)+" << std::endl;
-
-    /* Print all options */
-    PrintHeader("Main Options");
-    helpPrinter.PrintAll(std::cout, indentSize, printCompact, HelpCategory::Main);
-
-    PrintHeader("Common Options");
-    helpPrinter.PrintAll(std::cout, indentSize, printCompact, HelpCategory::Common);
-
-    PrintHeader("Formatting Options");
-    helpPrinter.PrintAll(std::cout, indentSize, printCompact, HelpCategory::Formatting);
-
-    /* Print usage example */
-    PrintHeader("Example");
-    std::cout << "  xsc -E VS -T vert Example.hlsl -E PS -T frag Example.hlsl" << std::endl;
-    std::cout << "   -> Output files: 'Example.VS.vert', and 'Example.PS.frag'" << std::endl;
+    CommandFactory::Instance().GetHelpPrinter().PrintHelpReference(std::cout, 2, false, true);
 }
 
 
@@ -1124,6 +1071,131 @@ HelpDescriptor FormatNewLineScopeCommand::Help() const
 void FormatNewLineScopeCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.formatting.newLineOpenScope = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * PrefixInputCommand class
+ */
+
+std::vector<Command::Identifier> PrefixInputCommand::Idents() const
+{
+    return { { "-Pin", "--prefix-input" } };
+}
+
+HelpDescriptor PrefixInputCommand::Help() const
+{
+    return
+    {
+        "-Pin, --prefix-input PREFIX",
+        "Prefix for name-mangling of input variables; default='xsv_'",
+        HelpCategory::NameMangling
+    };
+}
+
+void PrefixInputCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.nameMangling.inputPrefix = cmdLine.Accept();
+}
+
+
+/*
+ * PrefixOutputCommand class
+ */
+
+std::vector<Command::Identifier> PrefixOutputCommand::Idents() const
+{
+    return { { "-Pout", "--prefix-output" } };
+}
+
+HelpDescriptor PrefixOutputCommand::Help() const
+{
+    return
+    {
+        "-Pout, --prefix-output PREFIX",
+        "Prefix for name-mangling of output variables; default='xsv_'",
+        HelpCategory::NameMangling
+    };
+}
+
+void PrefixOutputCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.nameMangling.outputPrefix = cmdLine.Accept();
+}
+
+
+/*
+ * PrefixReservedWordCommand class
+ */
+
+std::vector<Command::Identifier> PrefixReservedWordCommand::Idents() const
+{
+    return { { "-Prw", "--prefix-reserved-word" } };
+}
+
+HelpDescriptor PrefixReservedWordCommand::Help() const
+{
+    return
+    {
+        "-Prw, --prefix-reserved-word PREFIX",
+        "Prefix for name-mangling of reserved words; default='xsr_'",
+        HelpCategory::NameMangling
+    };
+}
+
+void PrefixReservedWordCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.nameMangling.reservedWordPrefix = cmdLine.Accept();
+}
+
+
+/*
+ * PrefixTemporaryCommand class
+ */
+
+std::vector<Command::Identifier> PrefixTemporaryCommand::Idents() const
+{
+    return { { "-Ptmp", "--prefix-temporary" } };
+}
+
+HelpDescriptor PrefixTemporaryCommand::Help() const
+{
+    return
+    {
+        "-Ptmp, --prefix-temporary PREFIX",
+        "Prefix for name-mangling of temporary ariables; default='xst_'",
+        HelpCategory::NameMangling
+    };
+}
+
+void PrefixTemporaryCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.nameMangling.temporaryPrefix = cmdLine.Accept();
+}
+
+
+/*
+ * AlwaysUseSemanticsCommand class
+ */
+
+std::vector<Command::Identifier> AlwaysUseSemanticsCommand::Idents() const
+{
+    return { { "-Pas", "--prefix-always-semantics" } };
+}
+
+HelpDescriptor AlwaysUseSemanticsCommand::Help() const
+{
+    return
+    {
+        "-Pas, --prefix-always-semantics [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables to always use semantics for input/output variables; default=" + CommandLine::GetBooleanFalse(),
+        HelpCategory::NameMangling
+    };
+}
+
+void AlwaysUseSemanticsCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.nameMangling.useAlwaysSemantics = cmdLine.AcceptBoolean(true);
 }
 
 

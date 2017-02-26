@@ -64,9 +64,8 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
 {
     if (cmdLine.ReachedEnd())
     {
-        /* Print help */
-        if (auto cmd = CommandFactory::Instance().Get("--help"))
-            cmd->Run(cmdLine, state_);
+        /* Print brief help */
+        CommandFactory::Instance().GetHelpPrinter().PrintHelpReference(std::cout);
         return;
     }
 
@@ -89,9 +88,7 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
             #endif
 
             Command::Identifier cmdIdent;
-            auto cmd = CommandFactory::Instance().Get(cmdName, &cmdIdent);
-
-            if (cmd)
+            if (auto cmd = CommandFactory::Instance().Get(cmdName, &cmdIdent))
             {
                 /* Check if value is included within the command name */
                 if (cmdIdent.includesValue)

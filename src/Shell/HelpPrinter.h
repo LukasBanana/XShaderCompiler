@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <string>
+#include <ostream>
 
 
 namespace Xsc
@@ -27,10 +28,11 @@ struct HelpCategory
 {
     enum
     {
-        Main        = (1 << 0),
-        Common      = (1 << 1),
-        Formatting  = (1 << 2),
-        All         = ~0,
+        Main         = (1 << 0),
+        Common       = (1 << 1),
+        Formatting   = (1 << 2),
+        NameMangling = (1 << 3),
+        All          = ~0,
     };
 };
 
@@ -72,11 +74,23 @@ class HelpPrinter
         // Appends the help entry for the specified shell command.
         void AppendCommandHelp(const Command& cmd);
 
+        // Prints the help reference (either entire or only a brief reference).
+        void PrintHelpReference(
+            std::ostream& output, std::size_t indentSize = 2,
+            bool printCompact = true, bool entireReference = false
+        ) const;
+
         // Prints all previously added help entries to the specified output stream.
-        void PrintAll(std::ostream& output, std::size_t indentSize = 0, bool printCompact = true, long categories = HelpCategory::All) const;
+        void PrintAll(
+            std::ostream& output, std::size_t indentSize = 0, bool printCompact = true,
+            long categories = HelpCategory::All, long categoriesSet = HelpCategory::All
+        ) const;
 
         // Prints the help entry only for the specified shell command.
-        void Print(std::ostream& output, const std::string& commandName, std::size_t indentSize = 0, bool printCompact = true) const;
+        void Print(
+            std::ostream& output, const std::string& commandName,
+            std::size_t indentSize = 0, bool printCompact = true
+        ) const;
 
     private:
 
@@ -86,12 +100,13 @@ class HelpPrinter
             HelpDescriptor  desc;
         };
 
+        std::size_t GetMaxUsageLen(long categories = HelpCategory::All) const;
+
         void PrintEntry(std::ostream& output, const HelpDescriptor& helpDesc, std::size_t indentSize) const;
-        void PrintEntryCompact(std::ostream& output, const HelpDescriptor& helpDesc, std::size_t indentSize) const;
+        void PrintEntryCompact(std::ostream& output, const HelpDescriptor& helpDesc, std::size_t indentSize, std::size_t maxUsageLen) const;
         void PrintHelpDetails(std::ostream& output, const std::string& details, std::size_t indentSize) const;
 
         std::vector<HelpEntry>  entries_;
-        std::size_t             maxUsageLen_ = 0;
 
 };
 

@@ -128,6 +128,7 @@ void DebuggerView::CreateLayoutPropertyGrid()
     CreateLayoutPropertyGridShaderOutput(*propGrid_);
     CreateLayoutPropertyGridOptions(*propGrid_);
     CreateLayoutPropertyGridFormatting(*propGrid_);
+    CreateLayoutPropertyGridNameMangling(*propGrid_);
 
     propGrid_->Bind(wxEVT_PG_CHANGED, &DebuggerView::OnPropertyGridChange, this);
 }
@@ -189,8 +190,6 @@ void DebuggerView::CreateLayoutPropertyGridShaderOutput(wxPropertyGrid& pg)
         choices0.Add("VKSL450");
     }
     pg.Append(new wxEnumProperty("Shader Version", "outputVersion", choices0));
-
-    pg.Append(new wxStringProperty("Name Mangling Prefix", "prefix", "xsc_"));
 }
 
 void DebuggerView::CreateLayoutPropertyGridOptions(wxPropertyGrid& pg)
@@ -220,6 +219,17 @@ void DebuggerView::CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg)
     pg.Append(new wxBoolProperty("Always Braced Scopes", "alwaysBracedScopes"));
     pg.Append(new wxBoolProperty("New-Line Open Scope", "newLineOpenScope", true));
     pg.Append(new wxBoolProperty("Line Separation", "lineSeparation", true));
+}
+
+void DebuggerView::CreateLayoutPropertyGridNameMangling(wxPropertyGrid& pg)
+{
+    pg.Append(new wxPropertyCategory("Name Mangling"));
+
+    pg.Append(new wxStringProperty("Input Prefix", "prefixInput", "xsv_"));
+    pg.Append(new wxStringProperty("Output Prefix", "prefixOutput", "xsv_"));
+    pg.Append(new wxStringProperty("Reserved Word Prefix", "prefixReserved", "xsr_"));
+    pg.Append(new wxStringProperty("Temporary Prefix", "prefixTemp", "xst_"));
+    pg.Append(new wxBoolProperty("Use Always Semantics", "useAlwaysSemantics", false));
 }
 
 void DebuggerView::CreateLayoutSubSplitter()
@@ -369,6 +379,7 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         return (idx >= 0 && idx < 20 ? versions[idx] : T::GLSL);
     };
 
+    /* --- Main options --- */
     if (name == "entry")
         shaderInput_.entryPoint = ValueStr();
     else if (name == "inputVersion")
@@ -379,8 +390,8 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderInput_.shaderTarget = static_cast<ShaderTarget>(static_cast<long>(ShaderTarget::VertexShader) + ValueInt());
     else if (name == "outputVersion")
         shaderOutput_.shaderVersion = GetOutputVersion(ValueInt());
-    else if (name == "prefix")
-        shaderOutput_.nameManglingPrefix = ValueStr();
+
+    /* --- Common options --- */
     else if (name == "indent")
         shaderOutput_.formatting.indent = ValueStr();
     else if (name == "extensions")
@@ -403,6 +414,8 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderOutput_.options.obfuscate = ValueBool();
     else if (name == "showAST")
         shaderOutput_.options.showAST = ValueBool();
+
+    /* --- Formatting --- */
     else if (name == "blanks")
         shaderOutput_.formatting.blanks = ValueBool();
     else if (name == "lineMarks")
@@ -415,6 +428,18 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderOutput_.formatting.newLineOpenScope = ValueBool();
     else if (name == "lineSeparation")
         shaderOutput_.formatting.lineSeparation = ValueBool();
+
+    /* --- Name mangling --- */
+    else if (name == "prefixInput")
+        shaderOutput_.nameMangling.inputPrefix = ValueStr();
+    else if (name == "prefixOutput")
+        shaderOutput_.nameMangling.outputPrefix = ValueStr();
+    else if (name == "prefixReserved")
+        shaderOutput_.nameMangling.reservedWordPrefix = ValueStr();
+    else if (name == "prefixTemp")
+        shaderOutput_.nameMangling.temporaryPrefix = ValueStr();
+    else if (name == "useAlwaysSemantics")
+        shaderOutput_.nameMangling.useAlwaysSemantics = ValueBool();
 
     TranslateInputToOutput();
 }
