@@ -672,42 +672,13 @@ HelpDescriptor HelpCommand::Help() const
     return
     {
         "--help",
-        "Prints this help reference"
+        "Prints the help reference"
     };
 }
 
 void HelpCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    static const bool printCompact = false;
-    static const std::size_t indentSize = 2;
-
-    const auto& helpPrinter = CommandFactory::Instance().GetHelpPrinter();
-
-    auto PrintHeader = [](const std::string& label)
-    {
-        if (!printCompact)
-            std::cout << std::endl;
-        std::cout << label << ':' << std::endl;
-    };
-
-    /* Print usage */
-    std::cout << "Usage:" << std::endl;
-    std::cout << "  xsc (OPTION+ FILE)+" << std::endl;
-
-    /* Print all options */
-    PrintHeader("Main Options");
-    helpPrinter.PrintAll(std::cout, indentSize, printCompact, HelpCategory::Main);
-
-    PrintHeader("Common Options");
-    helpPrinter.PrintAll(std::cout, indentSize, printCompact, HelpCategory::Common);
-
-    PrintHeader("Formatting Options");
-    helpPrinter.PrintAll(std::cout, indentSize, printCompact, HelpCategory::Formatting);
-
-    /* Print usage example */
-    PrintHeader("Example");
-    std::cout << "  xsc -E VS -T vert Example.hlsl -E PS -T frag Example.hlsl" << std::endl;
-    std::cout << "   -> Output files: 'Example.VS.vert', and 'Example.PS.frag'" << std::endl;
+    CommandFactory::Instance().GetHelpPrinter().PrintHelpReference(std::cout, 2, false, true);
 }
 
 
