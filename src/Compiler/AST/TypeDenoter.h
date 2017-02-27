@@ -193,6 +193,8 @@ struct BufferTypeDenoter : public TypeDenoter
     Types Type() const override;
     std::string ToString() const override;
 
+    bool Equals(const TypeDenoter& rhs) const override;
+
     TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
 
     AST* SymbolRef() const override;

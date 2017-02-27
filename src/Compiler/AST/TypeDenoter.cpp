@@ -332,7 +332,33 @@ TypeDenoter::Types BufferTypeDenoter::Type() const
 
 std::string BufferTypeDenoter::ToString() const
 {
-    return "buffer";
+    auto s = BufferTypeToString(bufferType);
+
+    if (genericTypeDenoter)
+    {
+        s += '<';
+        s += genericTypeDenoter->ToString();
+        s += '>';
+    }
+
+    return s;
+}
+
+bool BufferTypeDenoter::Equals(const TypeDenoter& rhs) const
+{
+    /* Are both types buffer type denoters? */
+    if (auto rhsBufferType = rhs.As<BufferTypeDenoter>())
+    {
+        if (bufferType == rhsBufferType->bufferType)
+        {
+            /* Are the generic sub type denoters equal? */
+            if (genericTypeDenoter && rhsBufferType->genericTypeDenoter)
+                return genericTypeDenoter->Equals(*rhsBufferType->genericTypeDenoter);
+            else if (!genericTypeDenoter && !rhsBufferType->genericTypeDenoter)
+                return true;
+        }
+    }
+    return false;
 }
 
 TypeDenoterPtr BufferTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
