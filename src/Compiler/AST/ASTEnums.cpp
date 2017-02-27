@@ -716,40 +716,40 @@ DataType DoubleToFloatDataType(const DataType dataType)
 
 static const std::map<BufferType, std::string> g_mapBufferType
 {
-    { BufferType::Buffer,                  "buffer"                         },
-    { BufferType::StructuredBuffer,        "structured buffer"              },
-    { BufferType::ByteAddressBuffer,       "byte address buffer"            },
+    { BufferType::Buffer,                  "Buffer"                  },
+    { BufferType::StructuredBuffer,        "StructuredBuffer"        },
+    { BufferType::ByteAddressBuffer,       "ByteAddressBuffer"       },
 
-    { BufferType::RWBuffer,                "RW buffer"                      },
-    { BufferType::RWStructuredBuffer,      "RW structured buffer"           },
-    { BufferType::RWByteAddressBuffer,     "RW byte address buffer"         },
-    { BufferType::AppendStructuredBuffer,  "append structured buffer"       },
-    { BufferType::ConsumeStructuredBuffer, "consume structured buffer"      },
+    { BufferType::RWBuffer,                "RWBuffer"                },
+    { BufferType::RWStructuredBuffer,      "RWStructuredBuffer"      },
+    { BufferType::RWByteAddressBuffer,     "RWByteAddressBuffer"     },
+    { BufferType::AppendStructuredBuffer,  "AppendStructuredBuffer"  },
+    { BufferType::ConsumeStructuredBuffer, "ConsumeStructuredBuffer" },
 
-    { BufferType::RWTexture1D,             "RW 1D texture"                  },
-    { BufferType::RWTexture1DArray,        "RW 1D array texture"            },
-    { BufferType::RWTexture2D,             "RW 2D texture"                  },
-    { BufferType::RWTexture2DArray,        "RW 2D array texture"            },
-    { BufferType::RWTexture3D,             "RW 3D texture"                  },
+    { BufferType::RWTexture1D,             "RWTexture1D"             },
+    { BufferType::RWTexture1DArray,        "RWTexture1DArray"        },
+    { BufferType::RWTexture2D,             "RWTexture2D"             },
+    { BufferType::RWTexture2DArray,        "RWTexture2DArray"        },
+    { BufferType::RWTexture3D,             "RWTexture3D"             },
 
-    { BufferType::Texture1D,               "1D texture1D"                   },
-    { BufferType::Texture1DArray,          "1D array texture"               },
-    { BufferType::Texture2D,               "2D texture"                     },
-    { BufferType::Texture2DArray,          "2D array texture"               },
-    { BufferType::Texture3D,               "3D texture"                     },
-    { BufferType::TextureCube,             "cube texture"                   },
-    { BufferType::TextureCubeArray,        "cube array texture"             },
-    { BufferType::Texture2DMS,             "2D multi-sampled texture"       },
-    { BufferType::Texture2DMSArray,        "2D multi-sampled array texture" },
+    { BufferType::Texture1D,               "Texture1D"               },
+    { BufferType::Texture1DArray,          "Texture1DArray"          },
+    { BufferType::Texture2D,               "Texture2D"               },
+    { BufferType::Texture2DArray,          "Texture2DArray"          },
+    { BufferType::Texture3D,               "Texture3D"               },
+    { BufferType::TextureCube,             "TextureCube"             },
+    { BufferType::TextureCubeArray,        "TextureCubeArray"        },
+    { BufferType::Texture2DMS,             "Texture2DMS"             },
+    { BufferType::Texture2DMSArray,        "Texture2DMSArray"        },
 
-    { BufferType::GenericTexture,          "generic texture"                },
+    { BufferType::GenericTexture,          "Texture"                 },
 
-    { BufferType::InputPatch,              "input patch"                    },
-    { BufferType::OutputPatch,             "output patch"                   },
+    { BufferType::InputPatch,              "InputPatch"              },
+    { BufferType::OutputPatch,             "OutputPatch"             },
 
-    { BufferType::PointStream,             "point stream"                   },
-    { BufferType::LineStream,              "line stream"                    },
-    { BufferType::TriangleStream,          "triangle stream"                },
+    { BufferType::PointStream,             "PointStream"             },
+    { BufferType::LineStream,              "LineStream"              },
+    { BufferType::TriangleStream,          "TriangleStream"          },
 };
 
 std::string BufferTypeToString(const BufferType t)
