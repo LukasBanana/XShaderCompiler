@@ -258,14 +258,18 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     /* Analyze function return semantic */
     AnalyzeSemantic(ast->semantic);
 
-    /* Register function declaration in symbol table */
-    Register(ast->ident, ast);
-
     /* Visit attributes */
     Visit(ast->attribs);
 
     /* Visit function return type */
     Visit(ast->returnType);
+
+    /* Analyze parameter type denoters (required before function can be registered in symbol table) */
+    for (auto& param : ast->parameters)
+        AnalyzeTypeDenoter(param->typeSpecifier->typeDenoter, param->typeSpecifier.get());
+
+    /* Register function declaration in symbol table (after return type and parameter types) */
+    Register(ast->ident, ast);
 
     OpenScope();
     {
