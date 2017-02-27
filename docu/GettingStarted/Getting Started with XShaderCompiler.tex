@@ -88,13 +88,10 @@ see \href{https://www.opengl.org/wiki/OpenGL_Shading_Language}{www.opengl.org}).
 \newpage
 \section{Progress}
 
-This project is still in its early steps. This document is written for \XSC \textbf{Version 0.05 Alpha}.
+This project is still in its early steps. This document is written for \XSC \textbf{Version 0.06 Alpha}.
 
 \subsection{ToDo List}
-\begin{itemize}
-	\item \textbf{Geometry Shader Semantic}
-	\item \textbf{Tessellation Shader Semantic}
-\end{itemize}
+See \href{https://github.com/LukasBanana/XShaderCompiler/blob/master/TODO.md}{TODO.md file on github.com}
 
 
 %----------------------------------------------------------------------------------------
@@ -106,14 +103,16 @@ This project is still in its early steps. This document is written for \XSC \tex
 
 The offline compiler (named \texttt{xsc}) can be used to cross-compile your shaders without building any custom application.
 It has similar commands like other common compilers (such as GCC), e.g. \texttt{-O} to enable optimization.
-To show the description of all commands, type simply \texttt{xsc} or \texttt{xsc --help} into a terminal or command line.
+To show the description of all commands, type simply \texttt{xsc} or \texttt{xsc ----help} into a terminal or command line.
 
 \subsection{Commands}
 
-Here is an overview of the most important commands:
+Here is a brief overview of the most important commands:
 \begin{itemize}
 	\item[] \textbf{\texttt{-T, ----target \textit{TARGET}}} \\
 	Sets the shader target specified by \texttt{\textit{TARGET}}.
+	These values are adopted from LunarG's reference compiler
+	\href{https://www.khronos.org/opengles/sdk/tools/Reference-Compiler/}{\texttt{glslang}}.
 	Valid values for \texttt{\textit{TARGET}} are:
 	\begin{itemize}
 		\item[] \textbf{\texttt{vert}} (for \textbf{Vert}ex Shader)
@@ -168,46 +167,33 @@ Here is an overview of the most important commands:
 	
 \end{itemize}
 
-\subsection{Error Output}
+\subsection{Example}
 
-\XSC has an extensive report handler for meaningful output messages.
-It even has a line marker, to show the source line where the error (or warning) occured.
-This can be very handy because the line marker acts like a picture, and a picture is worth a thousand words ;-)
-Take a look at the following example, where the slot register `\texttt{b0}' uses a target specific profile
-(here `\texttt{vs}' for the Vertex Shader):
-\begin{figure}[H]
-	\centering
-	\includegraphics{images/error_output1}
-	\caption{Error output example of \XSC.}
-	\label{fig:error_output1}
-\end{figure}
-There are a couple of things displayed in this error message, which we will go thorugh step by step:
-\begin{enumerate}
-	\item \textbf{\texttt{context error}} \\
-	This indicates that the error occured during the context analysis. The compilation phases are:
-	\emph{pre-processing}, \emph{syntax parsing}, \emph{context analysis},
-	\emph{post-processing} (optimization and conversion for the target language), and \emph{code generation}.
-	
-	\item \textbf{\texttt{(ErrorTest1.hlsl:4:20)}} \\
-	The part in the brackets shows the source position in the input code.
-	Here the filename is ``\texttt{ErrorTest1.hlsl}'', the row is 4, and the column is 20.
-	
-	\item \textbf{\texttt{[ERR\_TARGET\_INVALID(X3515)]}} \\
-	This part does only appear in a couple of types of errors. It shows the error code, which is commonly only
-	displayed as the number within the brackets, but the \XSC also shows the identifier.
-	
-	\item \textbf{\texttt{user-defined constant buffer slots can not be target specific}} \\
-	This is the actual error message, which describes the compilation conflict.
-\end{enumerate}
-Here is another example how the line marker can show very intuitively what the problem is:
-\begin{figure}[H]
-	\centering
-	\includegraphics{images/error_output2}
-	\caption{Error output example of \XSC.}
-	\label{fig:error_output2}
-\end{figure}
-Here the variable \texttt{light}, which is from type \texttt{struct Light}, can not be casted
-to a \texttt{float3} type within a concatenation like the `+' operator.
+Here is a small use case example. Consider the following minimal HLSL vertex shader,
+stored in a file named ``\texttt{Example.hlsl}'':
+\begin{lstlisting}
+float4 VertexMain(float3 coord : COORD) : SV_Position
+{
+    return float4(coord, 1);
+}
+\end{lstlisting}
+Now enter the following into your command prompt:
+
+\texttt{xsc -T vert -E VertexMain Example.hlsl}
+\\ \\
+\noindent
+The resulting GLSL shader will be stored in a file named ``\texttt{Example.VertexMain.vert}'', and looks like this:
+\begin{lstlisting}
+#version 130
+
+in vec3 coord;
+
+void main()
+{
+    gl_Position = vec4(coord, 1);
+}
+\end{lstlisting}
+
 
 
 %----------------------------------------------------------------------------------------
