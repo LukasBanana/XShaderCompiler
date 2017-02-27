@@ -26,7 +26,7 @@
 
 /**
 \mainpage
-Welcome to the XShaderCompiler, Version 0.06 Alpha
+Welcome to the XShaderCompiler, Version 0.07 Alpha
 
 Here is a quick start example:
 \code
