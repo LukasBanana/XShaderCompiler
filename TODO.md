@@ -16,4 +16,6 @@ Known Issues
 | Issue | Remarks |
 |-------|---------|
 | Implicit type conversion | In progress |
+| Intrinsic argument type matching | Type matching is incomplete for intrinsic function calls |
+| Vector less-then comparison | 'vec_a < vec_b' must be converted to 'lessThan(vec_a, vec_b)' for instance |
 | Sampler types for DX9 shaders | Samplers (e.g. `sampler2D`) are ignored, even for HLSL3 |
