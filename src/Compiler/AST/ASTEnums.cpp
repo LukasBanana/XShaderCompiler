@@ -885,7 +885,7 @@ bool IsGlobalIntrinsic(const Intrinsic t)
 
 bool IsTextureIntrinsic(const Intrinsic t)
 {
-    return (t >= Intrinsic::Texture_GetDimensions && t <= Intrinsic::Texture_CalculateLevelOfDetailUnclamped);
+    return (t >= Intrinsic::Texture_GetDimensions && t <= Intrinsic::Texture_QueryLodUnclamped);
 }
 
 bool IsStreamOutputIntrinsic(const Intrinsic t)
