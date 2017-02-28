@@ -22,6 +22,7 @@ namespace Xsc
 static const GLSLExtension GLSLEXT_GL_EXT_gpu_shader4               { "GL_EXT_gpu_shader4",                 OutputShaderVersion::GLSL130 };
 static const GLSLExtension GLSLEXT_GL_ARB_uniform_buffer_object     { "GL_ARB_uniform_buffer_object",       OutputShaderVersion::GLSL140 };
 static const GLSLExtension GLSLEXT_GL_ARB_texture_multisample       { "GL_ARB_texture_multisample",         OutputShaderVersion::GLSL150 };
+static const GLSLExtension GLSLEXT_GL_ARB_texture_query_lod         { "GL_ARB_texture_query_lod",           OutputShaderVersion::GLSL400 };
 static const GLSLExtension GLSLEXT_GL_ARB_fragment_coord_conventions{ "GL_ARB_fragment_coord_conventions",  OutputShaderVersion::GLSL150 };
 static const GLSLExtension GLSLEXT_GL_ARB_gpu_shader5               { "GL_ARB_gpu_shader5",                 OutputShaderVersion::GLSL330 };
 static const GLSLExtension GLSLEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",          OutputShaderVersion::GLSL450 };
@@ -41,14 +42,16 @@ GLSLExtensionAgent::GLSLExtensionAgent()
     /* Establish intrinsic-to-extension map */
     intrinsicExtMap_ = std::map<Intrinsic, GLSLExtension>
     {
-        { Intrinsic::AsDouble,  GLSLEXT_GL_ARB_gpu_shader_int64   },
-        { Intrinsic::AsFloat,   GLSLEXT_GL_ARB_gpu_shader5        },
-        { Intrinsic::AsInt,     GLSLEXT_GL_ARB_gpu_shader5        },
-        { Intrinsic::AsUInt_1,  GLSLEXT_GL_ARB_gpu_shader5        },
-        { Intrinsic::DDXCoarse, GLSLEXT_GL_ARB_derivative_control },
-        { Intrinsic::DDXFine,   GLSLEXT_GL_ARB_derivative_control },
-        { Intrinsic::DDYCoarse, GLSLEXT_GL_ARB_derivative_control },
-        { Intrinsic::DDYFine,   GLSLEXT_GL_ARB_derivative_control },
+        { Intrinsic::AsDouble,                  GLSLEXT_GL_ARB_gpu_shader_int64   },
+        { Intrinsic::AsFloat,                   GLSLEXT_GL_ARB_gpu_shader5        },
+        { Intrinsic::AsInt,                     GLSLEXT_GL_ARB_gpu_shader5        },
+        { Intrinsic::AsUInt_1,                  GLSLEXT_GL_ARB_gpu_shader5        },
+        { Intrinsic::DDXCoarse,                 GLSLEXT_GL_ARB_derivative_control },
+        { Intrinsic::DDXFine,                   GLSLEXT_GL_ARB_derivative_control },
+        { Intrinsic::DDYCoarse,                 GLSLEXT_GL_ARB_derivative_control },
+        { Intrinsic::DDYFine,                   GLSLEXT_GL_ARB_derivative_control },
+        { Intrinsic::Texture_QueryLod,          GLSLEXT_GL_ARB_texture_query_lod  },
+        { Intrinsic::Texture_QueryLodUnclamped, GLSLEXT_GL_ARB_texture_query_lod  },
     };
 }
 

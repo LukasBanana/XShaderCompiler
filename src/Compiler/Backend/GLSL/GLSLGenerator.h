@@ -70,6 +70,9 @@ class GLSLGenerator : public Generator
         // Report warning of optional reminaing feedback.
         void ReportOptionalFeedback();
 
+        // Error for intrinsics, that can not be mapped to GLSL keywords.
+        void ErrorIntrinsic(const std::string& intrinsicName, const AST* ast = nullptr);
+
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
@@ -215,6 +218,7 @@ class GLSLGenerator : public Generator
         void WriteFunctionCallIntrinsicClip(FunctionCall* funcCall);
         void WriteFunctionCallIntrinsicAtomic(FunctionCall* funcCall);
         void WriteFunctionCallIntrinsicStreamOutputAppend(FunctionCall* funcCall);
+        void WriteFunctionCallIntrinsicTextureQueryLod(FunctionCall* funcCall, bool clamped);
 
         /* --- Intrinsics wrapper functions --- */
 

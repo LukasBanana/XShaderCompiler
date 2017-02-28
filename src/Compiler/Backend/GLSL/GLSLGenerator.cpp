@@ -236,6 +236,11 @@ void GLSLGenerator::ReportOptionalFeedback()
     }
 }
 
+void GLSLGenerator::ErrorIntrinsic(const std::string& intrinsicName, const AST* ast)
+{
+    Error("failed to map intrinsic '" + intrinsicName + "' to GLSL keyword", ast);
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -294,6 +299,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         WriteFunctionCallIntrinsicAtomic(ast);
     else if (ast->intrinsic == Intrinsic::StreamOutput_Append)
         WriteFunctionCallIntrinsicStreamOutputAppend(ast);
+    else if (ast->intrinsic == Intrinsic::Texture_QueryLod)
+        WriteFunctionCallIntrinsicTextureQueryLod(ast, true);
+    else if (ast->intrinsic == Intrinsic::Texture_QueryLodUnclamped)
+        WriteFunctionCallIntrinsicTextureQueryLod(ast, false);
     else
         WriteFunctionCallStandard(ast);
 }
@@ -2010,7 +2019,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* funcCall)
             if (keyword)
                 Write(*keyword);
             else
-                Error("failed to map intrinsic '" + funcCall->varIdent->Last()->ToString() + "' to GLSL keyword", funcCall);
+                ErrorIntrinsic(funcCall->varIdent->Last()->ToString(), funcCall);
         }
         else
         {
@@ -2192,7 +2201,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* funcCall)
         Write(")");
     }
     else
-        Error("failed to map intrinsic '" + funcCall->varIdent->ToString() + "' to GLSL keyword", funcCall);
+        ErrorIntrinsic(funcCall->varIdent->ToString(), funcCall);
 }
 
 void GLSLGenerator::WriteFunctionCallIntrinsicStreamOutputAppend(FunctionCall* funcCall)
@@ -2205,6 +2214,27 @@ void GLSLGenerator::WriteFunctionCallIntrinsicStreamOutputAppend(FunctionCall* f
 
     /* Write "EmitVertex" intrinsic */
     Write("EmitVertex()");
+}
+
+// "CalculateLevelOfDetail"          -> "textureQueryLod(...).y"
+// "CalculateLevelOfDetailUnclamped" -> "textureQueryLod(...).x"
+void GLSLGenerator::WriteFunctionCallIntrinsicTextureQueryLod(FunctionCall* funcCall, bool clamped)
+{
+    AssertIntrinsicNumArgs(funcCall, 2, 2);
+
+    /* Find 'textureQueryLod' intrinsic mapping */
+    if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
+    {
+        /* Write function call */
+        Write(*keyword + "(");
+        Visit(funcCall->arguments[0]);
+        Write(", ");
+        Visit(funcCall->arguments[1]);
+        Write(").");
+        Write(clamped ? "y" : "x");
+    }
+    else
+        ErrorIntrinsic(funcCall->varIdent->ToString(), funcCall);
 }
 
 /* --- Intrinsics wrapper functions --- */
