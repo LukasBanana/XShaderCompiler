@@ -70,6 +70,12 @@ void GLSLGenerator::GenerateCodePrimary(
     {
         try
         {
+            /*
+            TODO:
+            mark function usage only AFTER GLSLConverter!
+            After all SamplerState objects are removed from function arguments.
+            */
+
             /* Mark all reachable AST nodes */
             {
                 ReferenceAnalyzer refAnalyzer;
