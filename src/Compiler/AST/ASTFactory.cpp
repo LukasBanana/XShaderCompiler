@@ -32,19 +32,19 @@ std::shared_ptr<T> MakeASTWithOrigin(Origin origin, Args&&... args)
 
 /* ----- Find functions ----- */
 
-Expr* FindSingleExpr(Expr* ast, const AST::Types searchedExprType)
+Expr* FindSingleExpr(Expr* expr, const AST::Types searchedExprType)
 {
-    while (ast)
+    while (expr)
     {
-        if (ast->Type() == searchedExprType)
+        if (expr->Type() == searchedExprType)
         {
             /* Searched expression found */
-            return ast;
+            return expr;
         }
-        else if (ast->Type() == AST::Types::BracketExpr)
+        else if (expr->Type() == AST::Types::BracketExpr)
         {
             /* Continue search in inner bracket expression */
-            ast = static_cast<BracketExpr*>(ast)->expr.get();
+            expr = static_cast<BracketExpr*>(expr)->expr.get();
         }
         else
         {
@@ -88,53 +88,6 @@ FunctionCallExprPtr MakeIntrinsicCallExpr(
     }
     return ast;
 }
-
-//TODO: remove this (unused)
-#if 0
-ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall)
-{
-    if (funcCall.arguments.size() == 3)
-    {
-        /*
-        Convert "sincos(x, s, c)" expression into "s = sin(x), c = cos(x)" (ListExpr)
-        see https://msdn.microsoft.com/en-us/library/windows/desktop/bb509652(v=vs.85).aspx
-        */
-        auto listExpr = MakeShared<ListExpr>(funcCall.area);
-
-        auto arg0 = funcCall.arguments[0];
-        auto arg1 = funcCall.arguments[1];
-        auto arg2 = funcCall.arguments[2];
-
-        if (auto varOutSin = ASTFactory::FindSingleVarIdent(arg1.get()))
-        {
-            /* Make "s = sin(x)" expression */
-            auto sinExpr = MakeShared<VarAccessExpr>(funcCall.area);
-            sinExpr->varIdent   = varOutSin;
-            sinExpr->assignOp   = AssignOp::Set;
-            sinExpr->assignExpr = MakeIntrinsicCallExpr(Intrinsic::Sin, "sin", arg1->GetTypeDenoter(), { arg0 });
-            listExpr->firstExpr = sinExpr;
-        }
-        else
-            RuntimeErr("single variable identifier expected in intrinsic 'sincos'", arg1.get());
-
-        if (auto varOutCos = ASTFactory::FindSingleVarIdent(arg2.get()))
-        {
-            /* Make "c = cos(x)" expression */
-            auto cosExpr = MakeShared<VarAccessExpr>(funcCall.area);
-            cosExpr->varIdent   = varOutCos;
-            cosExpr->assignOp   = AssignOp::Set;
-            cosExpr->assignExpr = MakeIntrinsicCallExpr(Intrinsic::Cos, "cos", arg2->GetTypeDenoter(), { arg0 });
-            listExpr->nextExpr = cosExpr;
-        }
-        else
-            RuntimeErr("single variable identifier expected in intrinsic 'sincos'", arg2.get());
-
-        return listExpr;
-    }
-    else
-        RuntimeErr("invalid number of arguments in intrinsic", &funcCall);
-}
-#endif
 
 CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr)
 {
@@ -430,6 +383,20 @@ FunctionCallExprPtr ConvertInitializerExprToTypeConstructor(InitializerExpr* exp
     }
 }
 #endif
+
+/* ----- Intrinsic make functions ----- */
+
+FunctionDeclPtr MakeIntrinsic(Intrinsic intrinsic, const TypeSpecifierPtr& returnType, const std::vector<VarDeclStmntPtr>& parameters)
+{
+    auto funcDecl = MakeAST<FunctionDecl>();
+    {
+        funcDecl->returnType    = returnType;
+        //funcDecl->ident         = IntrinsicToString(intrinsic);
+        //funcDecl->intrinsic     = intrinsic;
+        funcDecl->parameters    = parameters;
+    }
+    return funcDecl;
+}
 
 
 } // /namespace ASTFactory

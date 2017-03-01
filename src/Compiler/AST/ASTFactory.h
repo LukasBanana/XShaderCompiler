@@ -25,7 +25,7 @@ namespace ASTFactory
 /* ----- Find functions ----- */
 
 // Returns the expression which contains a single expression of the specified type (within brackets), or null if not found.
-Expr* FindSingleExpr(Expr* ast, const AST::Types searchedExprType);
+Expr* FindSingleExpr(Expr* expr, const AST::Types searchedExprType);
 
 FunctionCallPtr FindSingleFunctionCall(Expr* ast);
 VarIdentPtr FindSingleVarIdent(Expr* ast);
@@ -36,12 +36,6 @@ FunctionCallExprPtr MakeIntrinsicCallExpr(
     const Intrinsic intrinsic, const std::string& ident,
     const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments
 );
-
-//TODO: remove this (unused)
-#if 0
-// Converts the specified function call from "sincos(x, s, c)" to "s = sin(x), c = cos(x)".
-ListExprPtr MakeSeparatedSinCosFunctionCalls(FunctionCall& funcCall);
-#endif
 
 CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr);
 CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue);
@@ -86,6 +80,11 @@ ArrayDimensionPtr ConvertExprToArrayDimension(const ExprPtr& expr);
 std::vector<ArrayDimensionPtr> ConvertExprListToArrayDimensionList(const std::vector<ExprPtr>& exprs);
 
 //FunctionCallExprPtr ConvertInitializerExprToTypeConstructor(InitializerExpr* expr);
+
+/* ----- Intrinsic make functions ----- */
+
+FunctionDeclPtr MakeIntrinsic(Intrinsic intrinsic, const TypeSpecifierPtr& returnType, std::vector<VarDeclStmntPtr>&& parameters);
+FunctionDeclPtr MakeIntrinsic(Intrinsic intrinsic, const TypeSpecifierPtr& returnType, const std::vector<VarDeclStmntPtr>& parameters);
 
 
 } // /namespace ASTFactory
