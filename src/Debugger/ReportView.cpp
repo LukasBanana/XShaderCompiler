@@ -65,8 +65,8 @@ void ReportView::AddReport(const Report& r, const std::string& indent)
         if (start != std::string::npos && !mark.empty())
         {
             auto a = indent + line.substr(0, start);
-            auto b = line.substr(start, end - start);
-            auto c = line.substr(end);
+            auto b = (end < line.size() ? line.substr(start, end - start) : "");
+            auto c = (end < line.size() ? line.substr(end) : "");
 
             BeginTextColour(wxColour(0, 180, 180));
             WriteText(indent + line.substr(0, start));
