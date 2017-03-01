@@ -1121,11 +1121,18 @@ TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter()
 TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
 {
     if (call->funcDeclRef)
+    {
+        /* Return type denoter of associated function declaration */
         return call->funcDeclRef->returnType->typeDenoter;
+    }
     else if (call->typeDenoter)
+    {
+        /* Return type denoter fo type constructor */
         return call->typeDenoter;
+    }
     else if (call->intrinsic != Intrinsic::Undefined)
     {
+        /* Return type denoter of associated intrinsic */
         try
         {
             return GetTypeDenoterForHLSLIntrinsicWithArgs(call->intrinsic, call->arguments);
