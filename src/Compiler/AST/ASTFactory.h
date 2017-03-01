@@ -59,7 +59,10 @@ ExprStmntPtr                    MakeArrayAssignStmnt(VarDecl* varDecl, const std
 
 ArrayDimensionPtr               MakeArrayDimension(int arraySize);
 
-FunctionDeclPtr                 MakeIntrinsicFunctionDecl(const Intrinsic intrinsic, const TypeSpecifierPtr& returnType, const std::vector<VarDeclStmntPtr>& parameters);
+FunctionDeclPtr                 MakeIntrinsicFunctionDecl(
+    const Intrinsic intrinsic, const std::string& ident,
+    const TypeSpecifierPtr& returnType, const std::vector<VarDeclStmntPtr>& parameters
+);
 
 /* ----- Make list functions ----- */
 

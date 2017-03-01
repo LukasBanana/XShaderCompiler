@@ -273,14 +273,15 @@ ArrayDimensionPtr MakeArrayDimension(int arraySize)
     return ast;
 }
 
-FunctionDeclPtr MakeIntrinsicFunctionDecl(const Intrinsic intrinsic, const TypeSpecifierPtr& returnType, const std::vector<VarDeclStmntPtr>& parameters)
+FunctionDeclPtr MakeIntrinsicFunctionDecl(
+    const Intrinsic intrinsic, const std::string& ident, const TypeSpecifierPtr& returnType, const std::vector<VarDeclStmntPtr>& parameters)
 {
     auto ast = MakeAST<FunctionDecl>();
     {
         ast->returnType    = returnType;
-        //ast->ident         = IntrinsicToString(intrinsic);
-        //ast->intrinsic     = intrinsic;
+        ast->ident         = ident;
         ast->parameters    = parameters;
+        ast->intrinsic     = intrinsic;
     }
     return ast;
 }
