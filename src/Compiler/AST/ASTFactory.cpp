@@ -30,45 +30,6 @@ std::shared_ptr<T> MakeASTWithOrigin(Origin origin, Args&&... args)
     return MakeShared<T>(origin->area, std::forward<Args>(args)...);
 }
 
-/* ----- Find functions ----- */
-
-Expr* FindSingleExpr(Expr* expr, const AST::Types searchedExprType)
-{
-    while (expr)
-    {
-        if (expr->Type() == searchedExprType)
-        {
-            /* Searched expression found */
-            return expr;
-        }
-        else if (expr->Type() == AST::Types::BracketExpr)
-        {
-            /* Continue search in inner bracket expression */
-            expr = static_cast<BracketExpr*>(expr)->expr.get();
-        }
-        else
-        {
-            /* Other expressions are not allowed for this search => stop searching */
-            break;
-        }
-    }
-    return nullptr;
-}
-
-FunctionCallPtr FindSingleFunctionCall(Expr* ast)
-{
-    if (auto expr = FindSingleExpr(ast, AST::Types::FunctionCallExpr))
-        return static_cast<FunctionCallExpr*>(expr)->call;
-    return nullptr;
-}
-
-VarIdentPtr FindSingleVarIdent(Expr* ast)
-{
-    if (auto expr = FindSingleExpr(ast, AST::Types::VarAccessExpr))
-        return static_cast<VarAccessExpr*>(expr)->varIdent;
-    return nullptr;
-}
-
 /* ----- Make functions ----- */
 
 FunctionCallExprPtr MakeIntrinsicCallExpr(
