@@ -64,21 +64,20 @@ void ReportView::AddReport(const Report& r, const std::string& indent)
         
         if (start != std::string::npos && !mark.empty())
         {
-            auto a = indent + line.substr(0, start);
-            auto b = (end < line.size() ? line.substr(start, end - start) : "");
-            auto c = (end < line.size() ? line.substr(end) : "");
-
             BeginTextColour(wxColour(0, 180, 180));
             WriteText(indent + line.substr(0, start));
             EndTextColour();
 
-            BeginTextColour(wxColour(50, 255, 255));
-            WriteText(line.substr(start, end - start));
-            EndTextColour();
+            if (end < line.size())
+            {
+                BeginTextColour(wxColour(50, 255, 255));
+                WriteText(line.substr(start, end - start));
+                EndTextColour();
 
-            BeginTextColour(wxColour(0, 180, 180));
-            WriteText(line.substr(end) + '\n');
-            EndTextColour();
+                BeginTextColour(wxColour(0, 180, 180));
+                WriteText(line.substr(end) + '\n');
+                EndTextColour();
+            }
         }
         else
             WriteLine(indent, line, wxColour(50, 255, 255));
