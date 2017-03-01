@@ -735,11 +735,6 @@ bool FunctionDecl::IsForwardDecl() const
     return (codeBlock == nullptr);
 }
 
-bool FunctionDecl::IsIntrinsic() const
-{
-    return (intrinsic != Intrinsic::Undefined);
-}
-
 bool FunctionDecl::HasVoidReturnType() const
 {
     return returnType->typeDenoter->IsVoid();

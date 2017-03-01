@@ -657,9 +657,6 @@ struct FunctionDecl : public Stmnt
     // Returns true if this function declaration is just a forward declaration (without function body).
     bool IsForwardDecl() const;
 
-    // Returns true if this function declaration is an intrinsic.
-    bool IsIntrinsic() const;
-
     // Returns true if this function has a void return type.
     bool HasVoidReturnType() const;
     
@@ -698,8 +695,6 @@ struct FunctionDecl : public Stmnt
     std::vector<FunctionDecl*>      funcForwardDeclRefs;                        // Reference to all forward declarations (only for implementations).
 
     std::vector<ParameterStructure> paramStructs;                               // Parameter with structure type (only for entry point).
-
-    Intrinsic                       intrinsic           = Intrinsic::Undefined; // Intrinsic ID (if this is the declaration of an intrinsic).
 
     std::string                     renamedIdent;
 };

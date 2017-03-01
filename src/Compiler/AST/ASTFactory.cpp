@@ -273,19 +273,6 @@ ArrayDimensionPtr MakeArrayDimension(int arraySize)
     return ast;
 }
 
-FunctionDeclPtr MakeIntrinsicFunctionDecl(
-    const Intrinsic intrinsic, const std::string& ident, const TypeSpecifierPtr& returnType, const std::vector<VarDeclStmntPtr>& parameters)
-{
-    auto ast = MakeAST<FunctionDecl>();
-    {
-        ast->returnType    = returnType;
-        ast->ident         = ident;
-        ast->parameters    = parameters;
-        ast->intrinsic     = intrinsic;
-    }
-    return ast;
-}
-
 /* ----- Make list functions ----- */
 
 std::vector<ExprPtr> MakeArrayIndices(const std::vector<int>& arrayIndices)
