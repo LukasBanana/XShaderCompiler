@@ -161,9 +161,6 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeSemantic(IndexedSemantic& semantic);
 
-        void AnalyzeFunctionEndOfScopes(FunctionDecl& funcDecl);
-        void AnalyzeFunctionControlPath(FunctionDecl& funcDecl);
-
         void AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr>& arrayDims);
 
         void AnalyzeParameter(VarDeclStmnt* param);

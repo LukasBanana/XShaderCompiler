@@ -98,6 +98,9 @@ class Analyzer : protected Visitor
         void AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, const AST* ast);
         void AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast);
 
+        void AnalyzeFunctionEndOfScopes(FunctionDecl& funcDecl);
+        void AnalyzeFunctionControlPath(FunctionDecl& funcDecl);
+
         TypeDenoterPtr GetTypeDenoterFrom(TypedAST* ast);
 
         void ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, const std::string& contextDesc, const AST* ast = nullptr);

@@ -8,9 +8,6 @@
 #include "HLSLAnalyzer.h"
 #include "HLSLIntrinsics.h"
 #include "HLSLKeywords.h"
-#include "ConstExprEvaluator.h"
-#include "EndOfScopeAnalyzer.h"
-#include "ControlPathAnalyzer.h"
 #include "Exception.h"
 #include "Helper.h"
 
@@ -1597,20 +1594,6 @@ void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic)
         /* Convert shader semantic to VertexPosition */
         semantic = IndexedSemantic(Semantic::VertexPosition, semantic.Index());
     }
-}
-
-void HLSLAnalyzer::AnalyzeFunctionEndOfScopes(FunctionDecl& funcDecl)
-{
-    /* Analyze end of scopes from function body */
-    EndOfScopeAnalyzer scopeAnalyzer;
-    scopeAnalyzer.MarkEndOfScopesFromFunction(funcDecl);
-}
-
-void HLSLAnalyzer::AnalyzeFunctionControlPath(FunctionDecl& funcDecl)
-{
-    /* Mark control paths from function body */
-    ControlPathAnalyzer pathAnalyzer;
-    pathAnalyzer.MarkControlPathsFromFunction(funcDecl);
 }
 
 void HLSLAnalyzer::AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr>& arrayDims)

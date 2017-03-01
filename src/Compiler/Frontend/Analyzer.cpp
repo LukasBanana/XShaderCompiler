@@ -8,6 +8,8 @@
 #include "Analyzer.h"
 #include "Exception.h"
 #include "ConstExprEvaluator.h"
+#include "EndOfScopeAnalyzer.h"
+#include "ControlPathAnalyzer.h"
 
 
 namespace Xsc
@@ -349,6 +351,20 @@ void Analyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* a
             }
         }
     }
+}
+
+void Analyzer::AnalyzeFunctionEndOfScopes(FunctionDecl& funcDecl)
+{
+    /* Analyze end of scopes from function body */
+    EndOfScopeAnalyzer scopeAnalyzer;
+    scopeAnalyzer.MarkEndOfScopesFromFunction(funcDecl);
+}
+
+void Analyzer::AnalyzeFunctionControlPath(FunctionDecl& funcDecl)
+{
+    /* Mark control paths from function body */
+    ControlPathAnalyzer pathAnalyzer;
+    pathAnalyzer.MarkControlPathsFromFunction(funcDecl);
 }
 
 TypeDenoterPtr Analyzer::GetTypeDenoterFrom(TypedAST* ast)
