@@ -45,30 +45,6 @@ void ReferenceAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts)
     }
 }
 
-bool ReferenceAnalyzer::IsVariableAnEntryPointParameter(VarDeclStmnt* var) const
-{
-    /* Is the variable a parameter of the entry point? */
-    const auto& entryPointParams = program_->entryPointRef->parameters;
-
-    auto entryPointIt = std::find_if(
-        entryPointParams.begin(), entryPointParams.end(),
-        [var](const VarDeclStmntPtr& param)
-        {
-            return (param.get() == var);
-        }
-    );
-
-    return (entryPointIt != entryPointParams.end());
-}
-
-bool ReferenceAnalyzer::IsActiveFunctionDeclEntryPoint() const
-{
-    if (auto funcDecl = ActiveFunctionDecl())
-        return funcDecl->flags(FunctionDecl::isEntryPoint);
-    else
-        return false;
-}
-
 void ReferenceAnalyzer::MarkLValueVarIdent(VarIdent* varIdent)
 {
     while (varIdent)
@@ -150,7 +126,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         }
     );
 
-    //TODO: also mark l-values arguments for intrinsic with output parameters!!!
+    //TODO: also mark l-value arguments for intrinsic with output parameters!!!
 
     VISIT_DEFAULT(FunctionCall);
 }
@@ -185,27 +161,6 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     if (Reachable(ast))
     {
-        /* Is a variable declaration NOT used as entry point return value? */
-        if (!IsActiveFunctionDeclEntryPoint() || !ast->flags(VarDecl::isEntryPointOutput) || shaderTarget_ == ShaderTarget::GeometryShader)
-        {
-            auto declStmnt = ast->declStmntRef;
-
-            /* Has this variable statement a struct type? */
-            if (auto structDecl = declStmnt->typeSpecifier->GetStructDeclRef())
-            {
-                /* Is the structure used for more than one instance? */
-                if (!IsActiveFunctionDeclEntryPoint() || !ast->flags(VarDecl::isEntryPointOutput) || structDecl->HasMultipleShaderOutputInstances())
-                {
-                    /* Is this variable NOT a parameter of the entry point? */
-                    if (!IsVariableAnEntryPointParameter(declStmnt))
-                    {
-                        /* Mark structure to be used as non-entry-point-parameter */
-                        structDecl->flags << StructDecl::isNonEntryPointParam;
-                    }
-                }
-            }
-        }
-
         Visit(ast->declStmntRef);
         Visit(ast->bufferDeclRef);
         VISIT_DEFAULT(VarDecl);
@@ -243,21 +198,6 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             /* Visit all forward declarations */
             for (auto funcForwardDecl : ast->funcForwardDeclRefs)
                 Visit(funcForwardDecl);
-        }
-
-        /* Is a variable declaration NOT used as entry point return value? */
-        if (!ast->flags(FunctionDecl::isEntryPoint) || shaderTarget_ == ShaderTarget::GeometryShader)
-        {
-            /* Has the return type specifier a struct type? */
-            if (auto structDecl = ast->returnType->GetStructDeclRef())
-            {
-                /* Is the structure used for more than one instance? */
-                if (!ast->flags(FunctionDecl::isEntryPoint) || structDecl->HasMultipleShaderOutputInstances())
-                {
-                    /* Mark structure to be used as non-entry-point-parameter */
-                    structDecl->flags << StructDecl::isNonEntryPointParam;
-                }
-            }
         }
 
         PushFunctionDecl(ast);

@@ -11,6 +11,7 @@
 #include "GLSLKeywords.h"
 #include "GLSLIntrinsics.h"
 #include "ReferenceAnalyzer.h"
+#include "StructParameterAnalyzer.h"
 #include "ControlPathAnalyzer.h"
 #include "TypeDenoter.h"
 #include "Exception.h"
@@ -70,16 +71,10 @@ void GLSLGenerator::GenerateCodePrimary(
     {
         try
         {
-            /*
-            TODO:
-            mark function usage only AFTER GLSLConverter!
-            After all SamplerState objects are removed from function arguments.
-            */
-
-            /* Mark all reachable AST nodes */
+            /* Mark all structures that are used for another reason than entry-point parameter */
             {
-                ReferenceAnalyzer refAnalyzer;
-                refAnalyzer.MarkReferencesFromEntryPoint(program, inputDesc.shaderTarget);
+                StructParameterAnalyzer structAnalyzer;
+                structAnalyzer.MarkStructsFromEntryPoint(program, inputDesc.shaderTarget);
             }
 
             /* Mark all control paths */
@@ -92,6 +87,12 @@ void GLSLGenerator::GenerateCodePrimary(
             {
                 GLSLConverter converter;
                 converter.Convert(program, inputDesc.shaderTarget, nameMangling_, outputDesc.options);
+            }
+
+            /* Mark all reachable AST nodes */
+            {
+                ReferenceAnalyzer refAnalyzer;
+                refAnalyzer.MarkReferencesFromEntryPoint(program, inputDesc.shaderTarget);
             }
 
             /* Write header */
