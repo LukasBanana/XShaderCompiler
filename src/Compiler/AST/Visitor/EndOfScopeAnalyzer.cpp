@@ -13,9 +13,9 @@ namespace Xsc
 {
 
 
-void EndOfScopeAnalyzer::MarkEndOfScopesFromFunction(FunctionDecl& ast)
+void EndOfScopeAnalyzer::MarkEndOfScopesFromFunction(FunctionDecl& funcDecl)
 {
-    Visit(ast.codeBlock);
+    Visit(funcDecl.codeBlock);
 }
 
 

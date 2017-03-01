@@ -28,7 +28,7 @@ class EndOfScopeAnalyzer : private Visitor
     
     public:
         
-        void MarkEndOfScopesFromFunction(FunctionDecl& ast);
+        void MarkEndOfScopesFromFunction(FunctionDecl& funcDecl);
 
     private:
         

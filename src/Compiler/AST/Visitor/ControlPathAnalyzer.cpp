@@ -13,13 +13,9 @@ namespace Xsc
 {
 
 
-void ControlPathAnalyzer::MarkControlPaths(Program& program)
+void ControlPathAnalyzer::MarkControlPathsFromFunction(FunctionDecl& funcDecl)
 {
-    for (auto& stmnt : program.globalStmnts)
-    {
-        if (stmnt->Type() == AST::Types::FunctionDecl)
-            Visit(stmnt);
-    }
+    Visit(&funcDecl);
 }
 
 

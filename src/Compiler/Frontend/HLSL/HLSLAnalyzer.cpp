@@ -10,6 +10,7 @@
 #include "HLSLKeywords.h"
 #include "ConstExprEvaluator.h"
 #include "EndOfScopeAnalyzer.h"
+#include "ControlPathAnalyzer.h"
 #include "Exception.h"
 #include "Helper.h"
 
@@ -290,8 +291,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         }
         PopFunctionDecl();
 
-        /* Analyze last statement of function body ('isEndOfFunction' flag) */
-        AnalyzeEndOfScopes(*ast);
+        /* Analyze last statement of function body ('isEndOfFunction' flag), and control paths */
+        AnalyzeFunctionEndOfScopes(*ast);
+        AnalyzeFunctionControlPath(*ast);
     }
     CloseScope();
 
@@ -1597,11 +1599,18 @@ void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic)
     }
 }
 
-void HLSLAnalyzer::AnalyzeEndOfScopes(FunctionDecl& funcDecl)
+void HLSLAnalyzer::AnalyzeFunctionEndOfScopes(FunctionDecl& funcDecl)
 {
     /* Analyze end of scopes from function body */
     EndOfScopeAnalyzer scopeAnalyzer;
     scopeAnalyzer.MarkEndOfScopesFromFunction(funcDecl);
+}
+
+void HLSLAnalyzer::AnalyzeFunctionControlPath(FunctionDecl& funcDecl)
+{
+    /* Mark control paths from function body */
+    ControlPathAnalyzer pathAnalyzer;
+    pathAnalyzer.MarkControlPathsFromFunction(funcDecl);
 }
 
 void HLSLAnalyzer::AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr>& arrayDims)

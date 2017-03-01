@@ -12,7 +12,6 @@
 #include "GLSLIntrinsics.h"
 #include "ReferenceAnalyzer.h"
 #include "StructParameterAnalyzer.h"
-#include "ControlPathAnalyzer.h"
 #include "TypeDenoter.h"
 #include "Exception.h"
 #include "Helper.h"
@@ -75,12 +74,6 @@ void GLSLGenerator::GenerateCodePrimary(
             {
                 StructParameterAnalyzer structAnalyzer;
                 structAnalyzer.MarkStructsFromEntryPoint(program, inputDesc.shaderTarget);
-            }
-
-            /* Mark all control paths */
-            {
-                ControlPathAnalyzer pathAnalyzer;
-                pathAnalyzer.MarkControlPaths(program);
             }
 
             /* Convert AST for GLSL code generation */
