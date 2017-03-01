@@ -302,11 +302,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     for (auto& funcArg : ast->arguments)
         IfFlaggedConvertExprVectorSubscript(funcArg);
 
-    ast->ForEachArgumentWithParameter(
-        [this](ExprPtr& funcArg, VarDeclPtr& funcParam)
+    ast->ForEachArgumentWithParameterType(
+        [this](ExprPtr& funcArg, const TypeDenoter& paramTypeDen)
         {
-            auto paramTypeDen = funcParam->GetTypeDenoter()->Get();
-            IfFlaggedConvertExprIfCastRequired(funcArg, *paramTypeDen);
+            IfFlaggedConvertExprIfCastRequired(funcArg, paramTypeDen);
         }
     );
 }

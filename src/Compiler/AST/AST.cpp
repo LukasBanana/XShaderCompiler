@@ -299,24 +299,55 @@ FunctionDecl* FunctionCall::GetFunctionImpl() const
 
 void FunctionCall::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
 {
-    if (funcDeclRef && iterator)
+    if (iterator)
     {
-        const auto& parameters = funcDeclRef->parameters;
-        for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+        if (funcDeclRef)
         {
-            if (parameters[i]->IsOutput())
-                iterator(arguments[i]);
+            const auto& parameters = funcDeclRef->parameters;
+            for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+            {
+                if (parameters[i]->IsOutput())
+                    iterator(arguments[i]);
+            }
+        }
+        else
+        {
+            //TODO: add iteration for intrinics ...
         }
     }
 }
 
-void FunctionCall::ForEachArgumentWithParameter(const ArgumentParameterFunctor& iterator)
+void FunctionCall::ForEachArgumentWithParameterType(const ArgumentParameterTypeFunctor& iterator)
 {
-    if (funcDeclRef && iterator)
+    if (iterator)
     {
-        const auto& parameters = funcDeclRef->parameters;
-        for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
-            iterator(arguments[i], parameters[i]->varDecls.front());
+        if (funcDeclRef)
+        {
+            const auto& parameters = funcDeclRef->parameters;
+            for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+            {
+                auto param = parameters[i]->varDecls.front();
+                auto paramTypeDen = param->GetTypeDenoter()->Get();
+                iterator(arguments[i], *paramTypeDen);
+            }
+        }
+        else
+        {
+            //TODO: add iteration for intrinics ...
+
+            #if 0 //TESTING
+
+            if (arguments.size() >= 2)
+            {
+                for (std::size_t i = 0, n = arguments.size(); i < n; ++i)
+                {
+                    auto paramTypeDen = arguments[1]->GetTypeDenoter()->Get();
+                    iterator(arguments[i], *paramTypeDen);
+                }
+            }
+
+            #endif
+        }
     }
 }
 
