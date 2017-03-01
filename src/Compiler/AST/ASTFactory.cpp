@@ -239,16 +239,6 @@ ExprPtr MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::ve
 
 #endif
 
-std::vector<ExprPtr> MakeArrayIndices(const std::vector<int>& arrayIndices)
-{
-    std::vector<ExprPtr> exprs;
-
-    for (auto index : arrayIndices)
-        exprs.push_back(MakeLiteralExpr(DataType::Int, std::to_string(index)));
-
-    return exprs;
-}
-
 ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr)
 {
     auto ast = MakeAST<ExprStmnt>();
@@ -268,19 +258,43 @@ ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arra
 ArrayDimensionPtr MakeArrayDimension(int arraySize)
 {
     auto ast = MakeAST<ArrayDimension>();
-
-    if (arraySize > 0)
     {
-        ast->expr = MakeLiteralExpr(DataType::Int, std::to_string(arraySize));
-        ast->size = arraySize;
+        if (arraySize > 0)
+        {
+            ast->expr = MakeLiteralExpr(DataType::Int, std::to_string(arraySize));
+            ast->size = arraySize;
+        }
+        else
+        {
+            ast->expr = MakeAST<NullExpr>();
+            ast->size = 0;
+        }
     }
-    else
-    {
-        ast->expr = MakeAST<NullExpr>();
-        ast->size = 0;
-    }
-
     return ast;
+}
+
+FunctionDeclPtr MakeIntrinsic(Intrinsic intrinsic, const TypeSpecifierPtr& returnType, const std::vector<VarDeclStmntPtr>& parameters)
+{
+    auto ast = MakeAST<FunctionDecl>();
+    {
+        ast->returnType    = returnType;
+        //ast->ident         = IntrinsicToString(intrinsic);
+        //ast->intrinsic     = intrinsic;
+        ast->parameters    = parameters;
+    }
+    return ast;
+}
+
+/* ----- Make list functions ----- */
+
+std::vector<ExprPtr> MakeArrayIndices(const std::vector<int>& arrayIndices)
+{
+    std::vector<ExprPtr> exprs;
+
+    for (auto index : arrayIndices)
+        exprs.push_back(MakeLiteralExpr(DataType::Int, std::to_string(index)));
+
+    return exprs;
 }
 
 std::vector<ArrayDimensionPtr> MakeArrayDimensionList(const std::vector<int>& arraySizes)
@@ -299,10 +313,12 @@ ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
 {
     if (subExpr->Type() == AST::Types::LiteralExpr && IsScalarType(dataType))
     {
-        /* Convert data type of literal expression */
-        auto literalExpr = std::static_pointer_cast<LiteralExpr>(subExpr);
-        literalExpr->ConvertDataType(dataType);
-        return literalExpr;
+        /* Convert data type into literal expression */
+        auto ast = std::static_pointer_cast<LiteralExpr>(subExpr);
+        {
+            ast->ConvertDataType(dataType);
+        }
+        return ast;
     }
     else
     {
@@ -320,13 +336,13 @@ ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
 ArrayDimensionPtr ConvertExprToArrayDimension(const ExprPtr& expr)
 {
     auto ast = MakeAST<ArrayDimension>();
-
-    if (expr)
     {
-        ast->area = expr->area;
-        ast->expr = expr;
+        if (expr)
+        {
+            ast->area = expr->area;
+            ast->expr = expr;
+        }
     }
-
     return ast;
 }
 
@@ -338,37 +354,6 @@ std::vector<ArrayDimensionPtr> ConvertExprListToArrayDimensionList(const std::ve
         arrayDims.push_back(ConvertExprToArrayDimension(expr));
 
     return arrayDims;
-}
-
-//TODO: this is incomplete
-#if 0
-FunctionCallExprPtr ConvertInitializerExprToTypeConstructor(InitializerExpr* expr)
-{
-    if (expr && !expr->exprs.empty())
-    {
-        auto ast = MakeASTWithOrigin<FunctionCallExpr>(expr);
-        {
-            ast->call = MakeASTWithOrigin<FunctionCall>(expr);
-
-            ast->call->typeDenoter = expr->
-        }
-        return ast;
-    }
-}
-#endif
-
-/* ----- Intrinsic make functions ----- */
-
-FunctionDeclPtr MakeIntrinsic(Intrinsic intrinsic, const TypeSpecifierPtr& returnType, const std::vector<VarDeclStmntPtr>& parameters)
-{
-    auto funcDecl = MakeAST<FunctionDecl>();
-    {
-        funcDecl->returnType    = returnType;
-        //funcDecl->ident         = IntrinsicToString(intrinsic);
-        //funcDecl->intrinsic     = intrinsic;
-        funcDecl->parameters    = parameters;
-    }
-    return funcDecl;
 }
 
 

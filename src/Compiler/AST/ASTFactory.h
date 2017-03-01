@@ -54,12 +54,16 @@ VarAccessExprPtr MakeVarAccessExpr(const std::string& ident, AST* symbolRef = nu
 // Return a list expression (or only the input expression) for the specified literal expression, so it can be used as constructor for a struct.
 ExprPtr MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::vector<TypeDenoterPtr>& listTypeDens);
 
-std::vector<ExprPtr> MakeArrayIndices(const std::vector<int>& arrayIndices);
-
 // Makes an statement with an array element assignment for the specified variable identifier, array indices, and value expression.
 ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr);
 
 ArrayDimensionPtr MakeArrayDimension(int arraySize);
+
+FunctionDeclPtr MakeIntrinsic(Intrinsic intrinsic, const TypeSpecifierPtr& returnType, const std::vector<VarDeclStmntPtr>& parameters);
+
+/* ----- Make list functions ----- */
+
+std::vector<ExprPtr> MakeArrayIndices(const std::vector<int>& arrayIndices);
 
 std::vector<ArrayDimensionPtr> MakeArrayDimensionList(const std::vector<int>& arraySizes);
 
@@ -70,13 +74,6 @@ ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr);
 ArrayDimensionPtr ConvertExprToArrayDimension(const ExprPtr& expr);
 
 std::vector<ArrayDimensionPtr> ConvertExprListToArrayDimensionList(const std::vector<ExprPtr>& exprs);
-
-//FunctionCallExprPtr ConvertInitializerExprToTypeConstructor(InitializerExpr* expr);
-
-/* ----- Intrinsic make functions ----- */
-
-FunctionDeclPtr MakeIntrinsic(Intrinsic intrinsic, const TypeSpecifierPtr& returnType, std::vector<VarDeclStmntPtr>&& parameters);
-FunctionDeclPtr MakeIntrinsic(Intrinsic intrinsic, const TypeSpecifierPtr& returnType, const std::vector<VarDeclStmntPtr>& parameters);
 
 
 } // /namespace ASTFactory
