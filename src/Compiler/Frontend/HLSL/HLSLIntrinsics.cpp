@@ -10,6 +10,8 @@
 #include "Helper.h"
 #include "Exception.h"
 
+#include "ASTFactory.h"//TESTING
+
 
 namespace Xsc
 {
@@ -545,6 +547,54 @@ TypeDenoterPtr GetTypeDenoterForHLSLIntrinsicWithArgs(const Intrinsic intrinsic,
             RuntimeErr("failed to derive type denoter for intrinsic");
     }
 }
+
+// TESTING ENVIRONEMNT
+#if 1
+
+std::vector<FunctionDeclPtr> GenerateHLSLIntrinsicFunctionDecls()
+{
+    /* Map all intrinsic IDs to their identifiers */
+    auto IntrIdx = [](const Intrinsic intr)
+    {
+        return (static_cast<std::size_t>(intr) - static_cast<std::size_t>(Intrinsic::Undefined));
+    };
+
+    const auto numIdents = IntrIdx(Intrinsic::StreamOutput_RestartStrip) + 1;
+
+    std::vector<std::string> intrinsicIdents(numIdents);
+    std::vector<FunctionDeclPtr> funcDecls;
+
+    for (const auto& it : HLSLIntrinsics())
+        intrinsicIdents[IntrIdx(it.second.intrinsic)] = it.first;
+
+    /* Fill empty identifiers */
+    const std::string* lastIdent = nullptr;
+    for (std::size_t i = 0; i < numIdents; ++i)
+    {
+        if (intrinsicIdents[i].empty())
+        {
+            if (lastIdent)
+                intrinsicIdents[i] = *lastIdent;
+        }
+        else
+            lastIdent = &(intrinsicIdents[i]);
+    }
+
+    auto DeclareIntrinsic = [&](const Intrinsic intrinsic, const TypeSpecifierPtr& returnType, const std::vector<VarDeclStmntPtr>& parameters)
+    {
+        /* Generate function declaration */
+        const auto& ident = intrinsicIdents[IntrIdx(intrinsic)];
+        auto ast = ASTFactory::MakeIntrinsicFunctionDecl(intrinsic, ident, returnType, parameters);
+        funcDecls.push_back(ast);
+    };
+
+
+
+
+    return funcDecls;
+}
+
+#endif
 
 
 } // /namespace Xsc

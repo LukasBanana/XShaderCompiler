@@ -39,6 +39,13 @@ const HLSLIntrinsicsMap& HLSLIntrinsics();
 // Returns a type denoter for the specified intrinsic call and its arguments.
 TypeDenoterPtr GetTypeDenoterForHLSLIntrinsicWithArgs(const Intrinsic intrinsic, const std::vector<ExprPtr>& args);
 
+// TESTING ENVIRONEMNT
+#if 1
+
+std::vector<FunctionDeclPtr> GenerateHLSLIntrinsicFunctionDecls();
+
+#endif
+
 
 } // /namespace Xsc
 

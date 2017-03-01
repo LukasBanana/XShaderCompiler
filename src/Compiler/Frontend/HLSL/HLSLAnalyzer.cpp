@@ -43,6 +43,11 @@ void HLSLAnalyzer::DecorateASTPrimary(
     shaderModel_            = GetShaderModel(inputDesc.shaderVersion);
     preferWrappers_         = outputDesc.options.preferWrappers;
 
+    //TESTING
+    #if 1
+    GenerateHLSLIntrinsicFunctionDecls();
+    #endif
+
     /* Decorate program AST */
     program_ = &program;
 
