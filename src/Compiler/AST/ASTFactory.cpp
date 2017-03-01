@@ -184,21 +184,31 @@ VarAccessExprPtr MakeVarAccessExpr(const std::string& ident, AST* symbolRef)
     return ast;
 }
 
+/*
+TODO:
+This is currently being used to convert a scalar-to-struct cast expression
+into a struct-constructor expression (e.g. "(S)0" -> "S(0, 0, 0)").
+This is done by using a list-expression instead of an argument list for the constructor.
+This should be changed, because a list-expression is not meant to be used as argument list!
+-> see GLSLConverter::VisitCastExpr
+*/
+#if 1
+
 static ExprPtr MakeConstructorListExprPrimarySingle(const LiteralExprPtr& literalExpr, const TypeDenoterPtr& typeDen)
 {
     if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
     {
-        /* Get the type denoter of all structure members */
-        auto structDecl = structTypeDen->structDeclRef;
+        if (auto structDecl = structTypeDen->structDeclRef)
+        {
+            /* Get the type denoter of all structure members */
+            std::vector<TypeDenoterPtr> memberTypeDens;
+            structDecl->CollectMemberTypeDenoters(memberTypeDens);
 
-        std::vector<TypeDenoterPtr> memberTypeDens;
-        structDecl->CollectMemberTypeDenoters(memberTypeDens);
-
-        /* Generate list expression with N copies literals (where N is the number of struct members) */
-        return MakeCastExpr(typeDen, MakeConstructorListExpr(literalExpr, memberTypeDens));
+            /* Generate list expression with N copies of the literal (where N is the number of struct members) */
+            return MakeCastExpr(typeDen, MakeConstructorListExpr(literalExpr, memberTypeDens));
+        }
     }
-    else
-        return literalExpr;
+    return literalExpr;
 }
 
 static ExprPtr MakeConstructorListExprPrimary(
@@ -209,10 +219,10 @@ static ExprPtr MakeConstructorListExprPrimary(
     if (typeDensBegin + 1 != typeDensEnd)
     {
         auto ast = MakeAST<ListExpr>();
-
-        ast->firstExpr = MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->Get());
-        ast->nextExpr = MakeConstructorListExprPrimary(literalExpr, typeDensBegin + 1, typeDensEnd);
-
+        {
+            ast->firstExpr  = MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->Get());
+            ast->nextExpr   = MakeConstructorListExprPrimary(literalExpr, typeDensBegin + 1, typeDensEnd);
+        }
         return ast;
     }
     else
@@ -226,6 +236,8 @@ ExprPtr MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::ve
     else
         return MakeConstructorListExprPrimary(literalExpr, listTypeDens.begin(), listTypeDens.end());
 }
+
+#endif
 
 std::vector<ExprPtr> MakeArrayIndices(const std::vector<int>& arrayIndices)
 {

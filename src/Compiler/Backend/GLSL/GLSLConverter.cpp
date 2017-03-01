@@ -279,6 +279,11 @@ IMPLEMENT_VISIT_PROC(ElseStmnt)
 
 /* --- Expressions --- */
 
+//TODO:
+//  move this to "ExprConverter" class,
+//  and make a correct conversion of "CastExpr" for a struct-constructor (don't use list expression here)
+#if 1
+
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
     /* Replace 'h' and 'H' suffix with 'f' suffix */
@@ -301,29 +306,32 @@ IMPLEMENT_VISIT_PROC(CastExpr)
     /* Check if the expression must be extended for a struct c'tor */
     if (auto structTypeDen = ast->typeSpecifier->GetTypeDenoter()->Get()->As<StructTypeDenoter>())
     {
-        /* Get the type denoter of all structure members */
-        auto structDecl = structTypeDen->structDeclRef;
-
-        std::vector<TypeDenoterPtr> memberTypeDens;
-        structDecl->CollectMemberTypeDenoters(memberTypeDens);
-
-        /* Convert sub expression for structure c'tor */
-        if (ast->expr->Type() == AST::Types::LiteralExpr)
+        if (auto structDecl = structTypeDen->structDeclRef)
         {
-            /* Generate list expression with N copies literals (where N is the number of struct members) */
-            auto literalExpr = std::static_pointer_cast<LiteralExpr>(ast->expr);
-            ast->expr = ASTFactory::MakeConstructorListExpr(literalExpr, memberTypeDens);
+            /* Get the type denoter of all structure members */
+            std::vector<TypeDenoterPtr> memberTypeDens;
+            structDecl->CollectMemberTypeDenoters(memberTypeDens);
+
+            /* Convert sub expression for structure c'tor */
+            if (ast->expr->Type() == AST::Types::LiteralExpr)
+            {
+                /* Generate list expression with N copies literals (where N is the number of struct members) */
+                auto literalExpr = std::static_pointer_cast<LiteralExpr>(ast->expr);
+                ast->expr = ASTFactory::MakeConstructorListExpr(literalExpr, memberTypeDens);
+            }
+            /*else if ()
+            {
+                //TODO: temporary variable must be created and inserted before this expression,
+                //      especially whan the sub expression contains a function call!
+                //...
+            }*/
         }
-        /*else if ()
-        {
-            //TODO: temporary variable must be created and inserted before this expression,
-            //      especially whan the sub expression contains a function call!
-            //...
-        }*/
     }
     
     VISIT_DEFAULT(CastExpr);
 }
+
+#endif
 
 #undef IMPLEMENT_VISIT_PROC
 
