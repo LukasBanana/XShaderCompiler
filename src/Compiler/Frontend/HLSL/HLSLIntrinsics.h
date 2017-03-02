@@ -34,10 +34,6 @@ struct HLSLIntrinsicEntry
 
 using HLSLIntrinsicsMap = std::map<std::string, HLSLIntrinsicEntry>;
 
-//TODO: replace this function by HLSLIntrinsicAdept::GetIntrinsicReturnType
-// Returns a type denoter for the specified intrinsic call and its arguments.
-TypeDenoterPtr GetTypeDenoterForHLSLIntrinsicWithArgs(const Intrinsic intrinsic, const std::vector<ExprPtr>& args);
-
 
 // IntrinsicAdept interface implementation for HLSL frontend.
 class HLSLIntrinsicAdept : public IntrinsicAdept

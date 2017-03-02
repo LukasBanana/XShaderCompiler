@@ -8,7 +8,7 @@
 #include "AST.h"
 #include "ASTFactory.h"
 #include "Exception.h"
-#include "HLSLIntrinsics.h"
+#include "IntrinsicAdept.h"
 #include "Variant.h"
 #include "SymbolTable.h"
 #include <algorithm>
@@ -286,7 +286,7 @@ TypeDenoterPtr FunctionCall::DeriveTypeDenoter()
         /* Return type denoter of associated intrinsic */
         try
         {
-            return GetTypeDenoterForHLSLIntrinsicWithArgs(intrinsic, arguments);
+            return IntrinsicAdept::Get().GetIntrinsicReturnType(intrinsic, arguments);
         }
         catch (const std::exception& e)
         {
@@ -331,6 +331,7 @@ void FunctionCall::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
     {
         if (funcDeclRef)
         {
+            /* Get output parameters from associated function declaration */
             const auto& parameters = funcDeclRef->parameters;
             for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
             {
@@ -338,9 +339,15 @@ void FunctionCall::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
                     iterator(arguments[i]);
             }
         }
-        else
+        else if (intrinsic != Intrinsic::Undefined)
         {
-            //TODO: add iteration for intrinics ...
+            /* Get output parameters from associated intrinsic */
+            const auto outputParamIndices = IntrinsicAdept::Get().GetIntrinsicOutputParameterIndices(intrinsic);
+            for (auto paramIndex : outputParamIndices)
+            {
+                if (paramIndex < arguments.size())
+                    iterator(arguments[paramIndex]);
+            }
         }
     }
 }
@@ -351,6 +358,7 @@ void FunctionCall::ForEachArgumentWithParameterType(const ArgumentParameterTypeF
     {
         if (funcDeclRef)
         {
+            /* Get parameter type denoters from associated function declaration */
             const auto& parameters = funcDeclRef->parameters;
             for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
             {
@@ -359,22 +367,12 @@ void FunctionCall::ForEachArgumentWithParameterType(const ArgumentParameterTypeF
                 iterator(arguments[i], *paramTypeDen);
             }
         }
-        else
+        else if (intrinsic != Intrinsic::Undefined)
         {
-            //TODO: add iteration for intrinics ...
-
-            #if 0 //TESTING
-
-            if (arguments.size() >= 2)
-            {
-                for (std::size_t i = 0, n = arguments.size(); i < n; ++i)
-                {
-                    auto paramTypeDen = arguments[1]->GetTypeDenoter()->Get();
-                    iterator(arguments[i], *paramTypeDen);
-                }
-            }
-
-            #endif
+            /* Get parameter type denoters from associated intrinsic */
+            const auto paramTypeDenoters = IntrinsicAdept::Get().GetIntrinsicParameterTypes(intrinsic, arguments);
+            for (std::size_t i = 0, n = std::min(arguments.size(), paramTypeDenoters.size()); i < n; ++i)
+                iterator(arguments[i], *paramTypeDenoters[i]);
         }
     }
 }
