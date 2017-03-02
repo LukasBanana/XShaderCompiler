@@ -14,8 +14,21 @@ namespace Xsc
 {
 
 
+static IntrinsicAdept* g_intrinsicAdeptInstance = nullptr;
+
+IntrinsicAdept::IntrinsicAdept()
+{
+    g_intrinsicAdeptInstance = this;
+}
+
 IntrinsicAdept::~IntrinsicAdept()
 {
+    g_intrinsicAdeptInstance = nullptr;
+}
+
+const IntrinsicAdept& IntrinsicAdept::Get()
+{
+    return *g_intrinsicAdeptInstance;
 }
 
 const std::string& IntrinsicAdept::GetIntrinsicIdent(const Intrinsic intrinsic) const
@@ -29,6 +42,29 @@ const std::string& IntrinsicAdept::GetIntrinsicIdent(const Intrinsic intrinsic) 
 /*
  * ======= Protected: =======
  */
+
+void IntrinsicAdept::SetIntrinsicIdent(const Intrinsic intrinsic, const std::string& ident)
+{
+    const auto idx = INTRINSIC_IDX(intrinsic);
+    if (idx < intrinsicIdents_.size())
+        intrinsicIdents_[idx] = ident;
+}
+
+void IntrinsicAdept::FillOverloadedIntrinsicIdents()
+{
+    const std::string* prevIdent = nullptr;
+
+    for (auto& ident : intrinsicIdents_)
+    {
+        if (ident.empty())
+        {
+            if (prevIdent)
+                ident = *prevIdent;
+        }
+        else
+            prevIdent = (&ident);
+    }
+}
 
 [[noreturn]]
 void IntrinsicAdept::ThrowAmbiguousIntrinsicCall(const Intrinsic intrinsic, const std::vector<ExprPtr>& args)

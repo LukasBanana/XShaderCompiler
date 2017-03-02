@@ -29,7 +29,13 @@ class IntrinsicAdept
     
     public:
         
+        IntrinsicAdept(const IntrinsicAdept&) = delete;
+        IntrinsicAdept& operator = (const IntrinsicAdept&) = delete;
+
         virtual ~IntrinsicAdept();
+
+        // Returns the active intrinsic adept instance.
+        static const IntrinsicAdept& Get();
 
         // Returns the identifier of the specified intrinsic or "<undefined>" if the input ID is out of range.
         const std::string& GetIntrinsicIdent(const Intrinsic intrinsic) const;
@@ -44,6 +50,14 @@ class IntrinsicAdept
         virtual std::vector<std::size_t> GetIntrinsicOutputParameterIndices(const Intrinsic intrinsic) const = 0;
 
     protected:
+
+        IntrinsicAdept();
+
+        // Sets the identifier of the specified intrinsic.
+        void SetIntrinsicIdent(const Intrinsic intrinsic, const std::string& ident);
+
+        // Fill all remaining intrinsic identifiers for overloaded intrinsics.
+        void FillOverloadedIntrinsicIdents();
 
         [[noreturn]]
         void ThrowAmbiguousIntrinsicCall(const Intrinsic intrinsic, const std::vector<ExprPtr>& args);

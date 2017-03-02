@@ -545,6 +545,12 @@ TypeDenoterPtr GetTypeDenoterForHLSLIntrinsicWithArgs(const Intrinsic intrinsic,
 
 HLSLIntrinsicAdept::HLSLIntrinsicAdept()
 {
+    /* Initialize intrinsic identifiers */
+    for (const auto& it : HLSLIntrinsicAdept::GetIntrinsicMap())
+        SetIntrinsicIdent(it.second.intrinsic, it.first);
+
+    /* Fill remaining identifiers (for overloaded intrinsics) */
+    FillOverloadedIntrinsicIdents();
 }
 
 TypeDenoterPtr HLSLIntrinsicAdept::GetIntrinsicReturnType(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const

@@ -9,6 +9,7 @@
 #include "PreProcessor.h"
 #include "HLSLParser.h"
 #include "HLSLAnalyzer.h"
+#include "HLSLIntrinsics.h"
 #include "GLSLGenerator.h"
 #include "Optimizer.h"
 #include "ReflectionAnalyzer.h"
@@ -97,6 +98,10 @@ static bool CompileShaderPrimary(
         (*outputDesc.sourceCode) << processedInput->rdbuf();
         return true;
     }
+
+    //TODO: make this more dynamic
+    /* Establish intrinsic adept */
+    auto intrinsicAdpet = MakeUnique<HLSLIntrinsicAdept>();
 
     /* Parse HLSL input code */
     timePoints[1] = Time::now();
