@@ -548,6 +548,7 @@ bool IsAttributeValueOutputTopology(const AttributeValue t);
 // Returns true if the specified attribute value belongs to the 'partitioning' attribute.
 bool IsAttributeValuePartitioning(const AttributeValue t);
 
+// Returns true if the specified attribute value is a triangle 'partitioning' attribute, i.e. either OutputTopologyTriangleCW or OutputTopologyTriangleCCW.
 bool IsAttributeValueTrianglePartitioning(const AttributeValue t);
 
 
@@ -644,7 +645,6 @@ enum class Intrinsic
     ModF,
     MSAD4,
     Mul,
-    Noise,
     Normalize,
     Pow,
     PrintF,

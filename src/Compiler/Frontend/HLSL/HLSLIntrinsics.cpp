@@ -105,7 +105,6 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
         { "modf",                             { T::ModF,                             1, 1 } },
         { "msad4",                            { T::MSAD4,                            5, 0 } },
         { "mul",                              { T::Mul,                              1, 0 } },
-        { "noise",                            { T::Noise,                            1, 1 } },
         { "normalize",                        { T::Normalize,                        1, 1 } },
         { "pow",                              { T::Pow,                              1, 1 } },
         { "printf",                           { T::PrintF,                           4, 0 } },
@@ -360,7 +359,6 @@ static std::map<Intrinsic, IntrinsicDescriptor> GenerateIntrinsicDescriptorMap()
         { T::ModF,                             { Arg1, 2 }             },
         { T::MSAD4,                            { DataType::UInt4, 3 }  },
       //{ T::Mul,                              {  }                    }, // special case
-        { T::Noise,                            { DataType::Float, 1 }  },
         { T::Normalize,                        { Arg1, 1 }             },
         { T::Pow,                              { Arg1, 2 }             },
         { T::PrintF,                           { -1 }                  },

@@ -102,7 +102,6 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { T::ModF,                             "modf"                  },
       //{ T::MSAD4,                            ""                      },
       //{ T::Mul,                              ""                      },
-        { T::Noise,                            "noise"                 },
         { T::Normalize,                        "normalize"             },
         { T::Pow,                              "pow"                   },
       //{ T::PrintF,                           ""                      },
