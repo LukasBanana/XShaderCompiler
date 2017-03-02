@@ -560,7 +560,30 @@ std::vector<TypeDenoterPtr> HLSLIntrinsicAdept::GetIntrinsicParameterTypes(const
 
 std::vector<std::size_t> HLSLIntrinsicAdept::GetIntrinsicOutputParameterIndices(const Intrinsic intrinsic) const
 {
-    return {}; // TODO...
+    switch (intrinsic)
+    {
+        // asuint(double value, out uint lowbits, out uint highbits)
+        case Intrinsic::AsUInt_3:
+            return { 1, 2 };
+
+        // InterlockedAdd(R dest, T value, out T original_value)
+        case Intrinsic::InterlockedAdd:
+        case Intrinsic::InterlockedAnd:
+        case Intrinsic::InterlockedExchange:
+        case Intrinsic::InterlockedMax:
+        case Intrinsic::InterlockedMin:
+        case Intrinsic::InterlockedOr:
+        case Intrinsic::InterlockedXor:
+            return { 2 };
+
+        // sincos(x, out s, out c)
+        case Intrinsic::SinCos:
+            return { 1, 2 };
+
+        default:
+            break;
+    }
+    return {};
 }
 
 const HLSLIntrinsicsMap& HLSLIntrinsicAdept::GetIntrinsicMap()
