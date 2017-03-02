@@ -22,9 +22,10 @@ namespace Xsc
 static const GLSLExtension GLSLEXT_GL_EXT_gpu_shader4               { "GL_EXT_gpu_shader4",                 OutputShaderVersion::GLSL130 };
 static const GLSLExtension GLSLEXT_GL_ARB_uniform_buffer_object     { "GL_ARB_uniform_buffer_object",       OutputShaderVersion::GLSL140 };
 static const GLSLExtension GLSLEXT_GL_ARB_texture_multisample       { "GL_ARB_texture_multisample",         OutputShaderVersion::GLSL150 };
-static const GLSLExtension GLSLEXT_GL_ARB_texture_query_lod         { "GL_ARB_texture_query_lod",           OutputShaderVersion::GLSL400 };
 static const GLSLExtension GLSLEXT_GL_ARB_fragment_coord_conventions{ "GL_ARB_fragment_coord_conventions",  OutputShaderVersion::GLSL150 };
 static const GLSLExtension GLSLEXT_GL_ARB_gpu_shader5               { "GL_ARB_gpu_shader5",                 OutputShaderVersion::GLSL330 };
+static const GLSLExtension GLSLEXT_GL_ARB_texture_query_lod         { "GL_ARB_texture_query_lod",           OutputShaderVersion::GLSL400 };
+static const GLSLExtension GLSLEXT_GL_ARB_gpu_shader_fp64           { "GL_ARB_gpu_shader_fp64",             OutputShaderVersion::GLSL400 };
 static const GLSLExtension GLSLEXT_GL_ARB_derivative_control        { "GL_ARB_derivative_control",          OutputShaderVersion::GLSL450 };
 static const GLSLExtension GLSLEXT_GL_ARB_shading_language_420pack  { "GL_ARB_shading_language_420pack",    OutputShaderVersion::GLSL420 };
 static const GLSLExtension GLSLEXT_GL_ARB_shader_image_load_store   { "GL_ARB_shader_image_load_store",     OutputShaderVersion::GLSL420 };
@@ -52,6 +53,7 @@ GLSLExtensionAgent::GLSLExtensionAgent()
         { Intrinsic::DDYFine,                   GLSLEXT_GL_ARB_derivative_control },
         { Intrinsic::Texture_QueryLod,          GLSLEXT_GL_ARB_texture_query_lod  },
         { Intrinsic::Texture_QueryLodUnclamped, GLSLEXT_GL_ARB_texture_query_lod  },
+        { Intrinsic::LdExp,                     GLSLEXT_GL_ARB_gpu_shader_fp64    },
     };
 }
 
