@@ -101,8 +101,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             if (ast->varIdent->next)
             {
                 /* Check if the function call refers to an intrinsic */
-                auto intrIt = HLSLIntrinsics().find(ast->varIdent->next->ident);
-                if (intrIt != HLSLIntrinsics().end())
+                auto intrIt = HLSLIntrinsicAdept::GetIntrinsicMap().find(ast->varIdent->next->ident);
+                if (intrIt != HLSLIntrinsicAdept::GetIntrinsicMap().end())
                 {
                     auto intrinsic = intrIt->second.intrinsic;
 
@@ -119,8 +119,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             else
             {
                 /* Does the function call refer to an intrinsic? */
-                auto intrIt = HLSLIntrinsics().find(ast->varIdent->ident);
-                if (intrIt != HLSLIntrinsics().end())
+                auto intrIt = HLSLIntrinsicAdept::GetIntrinsicMap().find(ast->varIdent->ident);
+                if (intrIt != HLSLIntrinsicAdept::GetIntrinsicMap().end())
                 {
                     /* Is this a global intrinsic? */
                     if (IsGlobalIntrinsic(intrIt->second.intrinsic))

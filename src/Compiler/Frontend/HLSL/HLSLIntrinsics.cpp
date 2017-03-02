@@ -175,12 +175,6 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
     };
 }
 
-const HLSLIntrinsicsMap& HLSLIntrinsics()
-{
-    static const HLSLIntrinsicsMap intrinsicMap = GenerateIntrinsicMap();
-    return intrinsicMap;
-}
-
 
 /* ----- GetTypeDenoterForHLSLIntrinsicWithArgs ----- */
 
@@ -544,6 +538,34 @@ TypeDenoterPtr GetTypeDenoterForHLSLIntrinsicWithArgs(const Intrinsic intrinsic,
         else
             RuntimeErr("failed to derive type denoter for intrinsic");
     }
+}
+
+
+/* ----- HLSLIntrinsicAdept class ----- */
+
+HLSLIntrinsicAdept::HLSLIntrinsicAdept()
+{
+}
+
+TypeDenoterPtr HLSLIntrinsicAdept::GetIntrinsicReturnType(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const
+{
+    return nullptr; // TODO...
+}
+
+std::vector<TypeDenoterPtr> HLSLIntrinsicAdept::GetIntrinsicParameterTypes(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const
+{
+    return {}; // TODO...
+}
+
+std::vector<std::size_t> HLSLIntrinsicAdept::GetIntrinsicOutputParameterIndices(const Intrinsic intrinsic) const
+{
+    return {}; // TODO...
+}
+
+const HLSLIntrinsicsMap& HLSLIntrinsicAdept::GetIntrinsicMap()
+{
+    static const HLSLIntrinsicsMap intrinsicMap = GenerateIntrinsicMap();
+    return intrinsicMap;
 }
 
 

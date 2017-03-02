@@ -7,6 +7,7 @@
 
 #include "IntrinsicAdept.h"
 #include "Exception.h"
+#include "AST.h"
 
 
 namespace Xsc
@@ -32,9 +33,19 @@ const std::string& IntrinsicAdept::GetIntrinsicIdent(const Intrinsic intrinsic) 
 [[noreturn]]
 void IntrinsicAdept::ThrowAmbiguousIntrinsicCall(const Intrinsic intrinsic, const std::vector<ExprPtr>& args)
 {
-    std::string s = "ambiguous intrinsic call";
+    std::string s = "ambiguous intrinsic call '";
 
-    //TODO: add more detailed message with argument types ...
+    s += GetIntrinsicIdent(intrinsic);
+    s += '(';
+
+    for (std::size_t i = 0, n = args.size(); i < n; ++i)
+    {
+        s += args[i]->GetTypeDenoter()->ToString();
+        if (i + 1 < n)
+            s += ", ";
+    }
+
+    s += ")'";
 
     RuntimeErr(s);
 }
