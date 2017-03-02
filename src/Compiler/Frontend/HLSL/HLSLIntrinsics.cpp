@@ -175,7 +175,7 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
 }
 
 
-/* ----- GetTypeDenoterForHLSLIntrinsicWithArgs ----- */
+/* ----- IntrinsicSignature class ----- */
 
 enum ArgumentIndex
 {
@@ -186,15 +186,15 @@ enum ArgumentIndex
     Arg3            = 2,
 };
 
-class IntrinsicDescriptor
+class IntrinsicSignature
 {
     
     public:
 
-        IntrinsicDescriptor(int numArgs = 0);
-        IntrinsicDescriptor(int numArgsMin, int numArgsMax);
-        IntrinsicDescriptor(DataType dataType, int numArgs = 0);
-        IntrinsicDescriptor(ArgumentIndex takeByArgIndex, int numArgs = 0);
+        IntrinsicSignature(int numArgs = 0);
+        IntrinsicSignature(int numArgsMin, int numArgsMax);
+        IntrinsicSignature(DataType dataType, int numArgs = 0);
+        IntrinsicSignature(ArgumentIndex takeByArgIndex, int numArgs = 0);
 
         TypeDenoterPtr GetTypeDenoterWithArgs(const std::vector<ExprPtr>& args) const;
 
@@ -207,33 +207,33 @@ class IntrinsicDescriptor
 
 };
 
-IntrinsicDescriptor::IntrinsicDescriptor(int numArgs) :
+IntrinsicSignature::IntrinsicSignature(int numArgs) :
     numArgsMin_{ numArgs },
     numArgsMax_{ numArgs }
 {
 }
 
-IntrinsicDescriptor::IntrinsicDescriptor(int numArgsMin, int numArgsMax) :
+IntrinsicSignature::IntrinsicSignature(int numArgsMin, int numArgsMax) :
     numArgsMin_{ numArgsMin },
     numArgsMax_{ numArgsMax }
 {
 }
 
-IntrinsicDescriptor::IntrinsicDescriptor(DataType dataType, int numArgs) :
+IntrinsicSignature::IntrinsicSignature(DataType dataType, int numArgs) :
     numArgsMin_ { numArgs  },
     numArgsMax_ { numArgs  },
     dataType_   { dataType }
 {
 }
 
-IntrinsicDescriptor::IntrinsicDescriptor(ArgumentIndex takeByArgIndex, int numArgs) :
+IntrinsicSignature::IntrinsicSignature(ArgumentIndex takeByArgIndex, int numArgs) :
     numArgsMin_     { numArgs        },
     numArgsMax_     { numArgs        },
     takeByArgIndex_ { takeByArgIndex }
 {
 }
 
-TypeDenoterPtr IntrinsicDescriptor::GetTypeDenoterWithArgs(const std::vector<ExprPtr>& args) const
+TypeDenoterPtr IntrinsicSignature::GetTypeDenoterWithArgs(const std::vector<ExprPtr>& args) const
 {
     /* Validate number of arguments */
     if (numArgsMin_ >= 0)
@@ -270,7 +270,7 @@ TypeDenoterPtr IntrinsicDescriptor::GetTypeDenoterWithArgs(const std::vector<Exp
     }
 }
 
-static std::map<Intrinsic, IntrinsicDescriptor> GenerateIntrinsicDescriptorMap()
+static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
 {
     using T = Intrinsic;
 
@@ -541,10 +541,10 @@ TypeDenoterPtr HLSLIntrinsicAdept::GetIntrinsicReturnType(const Intrinsic intrin
     }
     else
     {
-        /* Get type denoter from intrinsic map */
-        static const auto intrinsicMap = GenerateIntrinsicDescriptorMap();
-        auto it = intrinsicMap.find(intrinsic);
-        if (it != intrinsicMap.end())
+        /* Get type denoter from intrinsic signature map */
+        static const auto intrinsicSignatureMap = GenerateIntrinsicSignatureMap();
+        auto it = intrinsicSignatureMap.find(intrinsic);
+        if (it != intrinsicSignatureMap.end())
             return it->second.GetTypeDenoterWithArgs(args);
         else
             RuntimeErr("failed to derive type denoter for intrinsic");
