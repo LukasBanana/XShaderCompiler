@@ -295,7 +295,7 @@ struct SamplerValue : public AST
 
 //TODO: maybe merge this AST class into "FunctionCallExpr".
 // Function call.
-struct FunctionCall : public AST
+struct FunctionCall : public TypedAST
 {
     AST_INTERFACE(FunctionCall);
 
@@ -305,6 +305,8 @@ struct FunctionCall : public AST
         // e.g. "clip(a), clip(b);" can not be inlined, due to the list expression.
         FLAG( canInlineIntrinsicWrapper, 0 ),
     };
+
+    TypeDenoterPtr DeriveTypeDenoter() override;
 
     // Returns a list of all argument expressions (including the default parameters).
     std::vector<Expr*> GetArguments() const;

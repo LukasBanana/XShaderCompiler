@@ -269,6 +269,34 @@ FunctionDecl* VarIdent::FetchFunctionDecl() const
 
 /* ----- FunctionCall ----- */
 
+TypeDenoterPtr FunctionCall::DeriveTypeDenoter()
+{
+    if (funcDeclRef)
+    {
+        /* Return type denoter of associated function declaration */
+        return funcDeclRef->returnType->typeDenoter;
+    }
+    else if (typeDenoter)
+    {
+        /* Return type denoter fo type constructor */
+        return typeDenoter;
+    }
+    else if (intrinsic != Intrinsic::Undefined)
+    {
+        /* Return type denoter of associated intrinsic */
+        try
+        {
+            return GetTypeDenoterForHLSLIntrinsicWithArgs(intrinsic, arguments);
+        }
+        catch (const std::exception& e)
+        {
+            RuntimeErr(e.what(), this);
+        }
+    }
+    else
+        RuntimeErr("missing function reference to derive expression type", this);
+}
+
 std::vector<Expr*> FunctionCall::GetArguments() const
 {
     std::vector<Expr*> args;
@@ -1146,30 +1174,7 @@ TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
 {
-    if (call->funcDeclRef)
-    {
-        /* Return type denoter of associated function declaration */
-        return call->funcDeclRef->returnType->typeDenoter;
-    }
-    else if (call->typeDenoter)
-    {
-        /* Return type denoter fo type constructor */
-        return call->typeDenoter;
-    }
-    else if (call->intrinsic != Intrinsic::Undefined)
-    {
-        /* Return type denoter of associated intrinsic */
-        try
-        {
-            return GetTypeDenoterForHLSLIntrinsicWithArgs(call->intrinsic, call->arguments);
-        }
-        catch (const std::exception& e)
-        {
-            RuntimeErr(e.what(), this);
-        }
-    }
-    else
-        RuntimeErr("missing function reference to derive expression type", this);
+    return call->GetTypeDenoter();
 }
 
 
