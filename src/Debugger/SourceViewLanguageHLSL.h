@@ -57,7 +57,18 @@ static const char* keywordsHLSL1 =
     "RWByteAddressBuffer PointStream TriangleStream LineStream InputPatch OutputPatch SV_ClipDistance SV_CullDistance " \
     "SV_Target SV_DispatchThreadID SV_DomainLocation SV_GroupID SV_GroupIndex SV_GroupThreadID SV_GSInstanceID " \
     "SV_TessFactor SV_InsideTessFactor SV_OutputControlPointID SV_Coverage SV_Depth SV_Position SV_IsFrontFace " \
-    "SV_RenderTargetArrayIndex SV_SampleIndex SV_ViewportArrayIndex SV_InstanceID SV_PrimitiveID SV_VertexID"
+    "SV_RenderTargetArrayIndex SV_SampleIndex SV_ViewportArrayIndex SV_InstanceID SV_PrimitiveID SV_VertexID " \
+    "min16float min16float1 min16float1x1 min10float min10float1 min10float1x1 min16int " \
+    "min16int1 min16int1x1 min12int min12int1 min12int1x1 min16uint min16uint1 min16uint1x1 " \
+    "min16float2 min16float3 min16float4 min10float2 min10float3 min10float4 min16int2 " \
+    "min16int3 min16int4 min12int2 min12int3 min12int4 min16uint2 min16uint3 min16uint4 " \
+    "min16float2x2 min16float2x3 min16float2x4 min16float3x2 min16float3x3 min16float3x4 " \
+    "min16float4x2 min16float4x3 min16float4x4 min10float2x2 min10float2x3 min10float2x4 " \
+    "min10float3x2 min10float3x3 min10float3x4 min10float4x2 min10float4x3 min10float4x4 " \
+    "min16int2x2 min16int2x3 min16int2x4 min16int3x2 min16int3x3 min16int3x4 min16int4x2 " \
+    "min16int4x3 min16int4x4 min12int2x2 min12int2x3 min12int2x4 min12int3x2 min12int3x3 " \
+    "min12int3x4 min12int4x2 min12int4x3 min12int4x4 min16uint2x2 min16uint2x3 min16uint2x4 " \
+    "min16uint3x2 min16uint3x3 min16uint3x4 min16uint4x2 min16uint4x3 min16uint4x4"
 );
 
 
