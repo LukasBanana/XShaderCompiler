@@ -125,6 +125,9 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     {
         return (Type() == T::classType ? static_cast<const T*>(this) : nullptr);
     }
+
+    // Find the best suitable common type denoter for both left and right hand side type denoters.
+    static TypeDenoterPtr FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeDen, const TypeDenoterPtr& rhsTypeDen);
 };
 
 // Void type denoter.

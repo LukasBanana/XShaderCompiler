@@ -8,6 +8,7 @@
 #include "TypeDenoter.h"
 #include "Exception.h"
 #include "AST.h"
+#include <algorithm>
 
 
 namespace Xsc
@@ -138,6 +139,67 @@ TypeDenoterPtr TypeDenoter::AsArray(const std::vector<ArrayDimensionPtr>& arrayD
         return shared_from_this();
     else
         return std::make_shared<ArrayTypeDenoter>(shared_from_this(), arrayDims);
+}
+
+static DataType HighestOrderDataType(DataType lhs, DataType rhs, DataType highestType = DataType::Float) //Double//Float
+{
+    /*
+    Return data type with highest order of both types: max{ lhs, rhs },
+    where order is the integral enum value (bool < int < uint < float ...)
+    */
+    auto highestOrder = std::max({ static_cast<int>(lhs), static_cast<int>(rhs) });
+    auto clampedOrder = std::min({ highestOrder, static_cast<int>(highestType) });
+    return static_cast<DataType>(clampedOrder);
+}
+
+static TypeDenoterPtr FindCommonTypeDenoterScalarAndScalar(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen)
+{
+    auto commonType = HighestOrderDataType(lhsTypeDen->dataType, rhsTypeDen->dataType);
+    return std::make_shared<BaseTypeDenoter>(commonType);
+}
+
+static TypeDenoterPtr FindCommonTypeDenoterScalarAndVector(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen)
+{
+    auto commonType = HighestOrderDataType(lhsTypeDen->dataType, BaseDataType(rhsTypeDen->dataType));
+    auto rhsDim = VectorTypeDim(rhsTypeDen->dataType);
+    return std::make_shared<BaseTypeDenoter>(VectorDataType(commonType, rhsDim));
+}
+
+static TypeDenoterPtr FindCommonTypeDenoterVectorAndVector(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen)
+{
+    auto commonType = HighestOrderDataType(BaseDataType(lhsTypeDen->dataType), BaseDataType(rhsTypeDen->dataType));
+    auto lhsDim = VectorTypeDim(lhsTypeDen->dataType);
+    auto rhsDim = VectorTypeDim(rhsTypeDen->dataType);
+    auto highestDim = std::max(lhsDim, rhsDim);
+    return std::make_shared<BaseTypeDenoter>(VectorDataType(commonType, highestDim));
+}
+
+static TypeDenoterPtr FindCommonTypeDenoterAnyAndAny(TypeDenoter* lhsTypeDen, TypeDenoter* rhsTypeDen)
+{
+    /* Always use type of left hand side */
+    return lhsTypeDen->Get();
+}
+
+TypeDenoterPtr TypeDenoter::FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeDen, const TypeDenoterPtr& rhsTypeDen)
+{
+    /* Scalar and Scalar */
+    if (lhsTypeDen->IsScalar() && rhsTypeDen->IsScalar())
+        return FindCommonTypeDenoterScalarAndScalar(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>());
+
+    /* Scalar and Vector */
+    if (lhsTypeDen->IsScalar() && rhsTypeDen->IsVector())
+        return FindCommonTypeDenoterScalarAndVector(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>());
+
+    /* Vector and Scalar */
+    if (lhsTypeDen->IsVector() && rhsTypeDen->IsScalar())
+        return FindCommonTypeDenoterScalarAndVector(rhsTypeDen->As<BaseTypeDenoter>(), lhsTypeDen->As<BaseTypeDenoter>());
+
+    /* Vector and Vector */
+    if (lhsTypeDen->IsVector() && rhsTypeDen->IsVector())
+        return FindCommonTypeDenoterVectorAndVector(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>());
+
+    /* Default type */
+    return FindCommonTypeDenoterAnyAndAny(lhsTypeDen.get(), rhsTypeDen.get());
 }
 
 
