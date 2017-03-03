@@ -1297,7 +1297,7 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
 
         case ShaderTarget::GeometryShader:
             ValidateInSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::GSInstanceID });
-            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::IsFrontFace, T::ViewportArrayIndex });
+            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::IsFrontFace, T::ViewportArrayIndex, T::RenderTargetArrayIndex });
             break;
 
         case ShaderTarget::FragmentShader:
@@ -1311,7 +1311,7 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
 
         case ShaderTarget::ComputeShader:
             ValidateInSemantics({ COMMON_SEMANTICS_EX, T::GroupID, T::GroupIndex, T::GroupThreadID, T::DispatchThreadID });
-            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::RenderTargetArrayIndex });
+            ValidateOutSemantics({ COMMON_SEMANTICS_EX });
             break;
 
         default:
