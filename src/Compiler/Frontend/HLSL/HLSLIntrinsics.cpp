@@ -186,60 +186,54 @@ enum ArgumentIndex
     Arg3            = 2,
 };
 
-class IntrinsicSignature
+struct IntrinsicSignature
 {
-    
-    public:
+    IntrinsicSignature(int numArgs = 0);
+    IntrinsicSignature(int numArgsMin, int numArgsMax);
+    IntrinsicSignature(DataType returnTypeFixed, int numArgs = 0);
+    IntrinsicSignature(ArgumentIndex returnTypeByArgIndex, int numArgs = 0);
 
-        IntrinsicSignature(int numArgs = 0);
-        IntrinsicSignature(int numArgsMin, int numArgsMax);
-        IntrinsicSignature(DataType dataType, int numArgs = 0);
-        IntrinsicSignature(ArgumentIndex takeByArgIndex, int numArgs = 0);
+    TypeDenoterPtr GetTypeDenoterWithArgs(const std::vector<ExprPtr>& args) const;
 
-        TypeDenoterPtr GetTypeDenoterWithArgs(const std::vector<ExprPtr>& args) const;
-
-    private:
-
-        int             numArgsMin_     = 0;
-        int             numArgsMax_     = 0;
-        DataType        dataType_       = DataType::Undefined;
-        ArgumentIndex   takeByArgIndex_ = ArgUndefined;
-
+    int             numArgsMin              = 0;
+    int             numArgsMax              = 0;
+    DataType        returnTypeFixed         = DataType::Undefined;
+    ArgumentIndex   returnTypeByArgIndex    = ArgUndefined;
 };
 
 IntrinsicSignature::IntrinsicSignature(int numArgs) :
-    numArgsMin_{ numArgs },
-    numArgsMax_{ numArgs }
+    numArgsMin { numArgs },
+    numArgsMax { numArgs }
 {
 }
 
 IntrinsicSignature::IntrinsicSignature(int numArgsMin, int numArgsMax) :
-    numArgsMin_{ numArgsMin },
-    numArgsMax_{ numArgsMax }
+    numArgsMin { numArgsMin },
+    numArgsMax { numArgsMax }
 {
 }
 
-IntrinsicSignature::IntrinsicSignature(DataType dataType, int numArgs) :
-    numArgsMin_ { numArgs  },
-    numArgsMax_ { numArgs  },
-    dataType_   { dataType }
+IntrinsicSignature::IntrinsicSignature(DataType returnTypeFixed, int numArgs) :
+    numArgsMin      { numArgs         },
+    numArgsMax      { numArgs         },
+    returnTypeFixed { returnTypeFixed }
 {
 }
 
-IntrinsicSignature::IntrinsicSignature(ArgumentIndex takeByArgIndex, int numArgs) :
-    numArgsMin_     { numArgs        },
-    numArgsMax_     { numArgs        },
-    takeByArgIndex_ { takeByArgIndex }
+IntrinsicSignature::IntrinsicSignature(ArgumentIndex returnTypeByArgIndex, int numArgs) :
+    numArgsMin           { numArgs              },
+    numArgsMax           { numArgs              },
+    returnTypeByArgIndex { returnTypeByArgIndex }
 {
 }
 
 TypeDenoterPtr IntrinsicSignature::GetTypeDenoterWithArgs(const std::vector<ExprPtr>& args) const
 {
     /* Validate number of arguments */
-    if (numArgsMin_ >= 0)
+    if (numArgsMin >= 0)
     {
-        auto numMin = static_cast<std::size_t>(numArgsMin_);
-        auto numMax = static_cast<std::size_t>(numArgsMax_);
+        auto numMin = static_cast<std::size_t>(numArgsMin);
+        auto numMax = static_cast<std::size_t>(numArgsMax);
 
         if (args.size() < numMin || args.size() > numMax)
         {
@@ -251,23 +245,20 @@ TypeDenoterPtr IntrinsicSignature::GetTypeDenoterWithArgs(const std::vector<Expr
         }
     }
 
-    /* Find return type denoter with the specified arguments */
-    if (dataType_ != DataType::Undefined)
+    /* Return fixed base type denoter */
+    if (returnTypeFixed != DataType::Undefined)
+        return MakeShared<BaseTypeDenoter>(returnTypeFixed);
+
+    /* Take type denoter from argument */
+    if (returnTypeByArgIndex != ArgUndefined)
     {
-        /* Return fixed base type denoter */
-        return MakeShared<BaseTypeDenoter>(dataType_);
+        auto idx = static_cast<std::size_t>(returnTypeByArgIndex);
+        if (idx < args.size())
+            return args[idx]->GetTypeDenoter();
     }
-    else if (takeByArgIndex_ != ArgUndefined)
-    {
-        /* Take type denoter from argument */
-        auto idx = static_cast<std::size_t>(takeByArgIndex_);
-        return args[idx]->GetTypeDenoter();
-    }
-    else
-    {
-        /* Return default void type denoter */
-        return MakeShared<VoidTypeDenoter>();
-    }
+
+    /* Return default void type denoter */
+    return MakeShared<VoidTypeDenoter>();
 }
 
 static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
@@ -447,6 +438,8 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
     };
 }
 
+static const auto g_intrinsicSignatureMap = GenerateIntrinsicSignatureMap();
+
 
 /* ----- HLSLIntrinsicAdept class ----- */
 
@@ -462,98 +455,35 @@ HLSLIntrinsicAdept::HLSLIntrinsicAdept()
 
 TypeDenoterPtr HLSLIntrinsicAdept::GetIntrinsicReturnType(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const
 {
-    if (intrinsic == Intrinsic::Mul)
+    switch (intrinsic)
     {
-        /* Validate number of arguments */
-        if (args.size() != 2)
-            RuntimeErr("invalid number of arguments for intrinsic");
-
-        auto type0 = args[0]->GetTypeDenoter();
-        auto type1 = args[1]->GetTypeDenoter();
-
-        if (type0->IsScalar())
-            return type1;
-        
-        if (type0->IsVector())
-        {
-            if (type1->IsScalar())
-                return type0;
-
-            if (type1->IsVector())
-            {
-                auto baseDataType0 = BaseDataType(static_cast<BaseTypeDenoter&>(*type0).dataType);
-                return MakeShared<BaseTypeDenoter>(baseDataType0); // scalar
-            }
-
-            if (type1->IsMatrix())
-            {
-                auto dataType1      = static_cast<BaseTypeDenoter&>(*type1).dataType;
-                auto baseDataType1  = BaseDataType(dataType1);
-                auto matrixTypeDim1 = MatrixTypeDim(dataType1);
-                return MakeShared<BaseTypeDenoter>(VectorDataType(baseDataType1, matrixTypeDim1.second));
-            }
-        }
-
-        if (type0->IsMatrix())
-        {
-            if (type1->IsScalar())
-                return type0;
-
-            if (type1->IsVector())
-            {
-                auto dataType0      = static_cast<BaseTypeDenoter&>(*type0).dataType;
-                auto baseDataType0  = BaseDataType(dataType0);
-                auto matrixTypeDim0 = MatrixTypeDim(dataType0);
-                return MakeShared<BaseTypeDenoter>(VectorDataType(baseDataType0, matrixTypeDim0.first));
-            }
-
-            if (type1->IsMatrix())
-            {
-                auto dataType0      = static_cast<BaseTypeDenoter&>(*type0).dataType;
-                auto baseDataType0  = BaseDataType(dataType0);
-                auto matrixTypeDim0 = MatrixTypeDim(dataType0);
-                auto dataType1      = static_cast<BaseTypeDenoter&>(*type1).dataType;
-                auto matrixTypeDim1 = MatrixTypeDim(dataType1);
-                return MakeShared<BaseTypeDenoter>(MatrixDataType(baseDataType0, matrixTypeDim0.first, matrixTypeDim1.second));
-            }
-        }
-
-        RuntimeErr("invalid arguments in intrinsic 'mul'");
-    }
-    else if (intrinsic == Intrinsic::Transpose)
-    {
-        /* Validate number of arguments */
-        if (args.size() != 1)
-            RuntimeErr("invalid number of arguments for intrinsic");
-
-        auto type0 = args[0]->GetTypeDenoter();
-
-        if (type0->IsMatrix())
-        {
-            /* Convert MxN matrix type to NxM matrix type */
-            auto dataType0      = static_cast<BaseTypeDenoter&>(*type0).dataType;
-            auto baseDataType0  = BaseDataType(dataType0);
-            auto matrixTypeDim0 = MatrixTypeDim(dataType0);
-            return MakeShared<BaseTypeDenoter>(MatrixDataType(baseDataType0, matrixTypeDim0.second, matrixTypeDim0.first));
-        }
-
-        RuntimeErr("invalid arguments in intrinsic 'transpose'");
-    }
-    else
-    {
-        /* Get type denoter from intrinsic signature map */
-        static const auto intrinsicSignatureMap = GenerateIntrinsicSignatureMap();
-        auto it = intrinsicSignatureMap.find(intrinsic);
-        if (it != intrinsicSignatureMap.end())
-            return it->second.GetTypeDenoterWithArgs(args);
-        else
-            RuntimeErr("failed to derive type denoter for intrinsic");
+        case Intrinsic::Mul:
+            return DeriveReturnTypeMul(args);
+        case Intrinsic::Transpose:
+            return DeriveReturnTypeTranspose(args);
+        default:
+            return DeriveReturnType(intrinsic, args);
     }
 }
 
 std::vector<TypeDenoterPtr> HLSLIntrinsicAdept::GetIntrinsicParameterTypes(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const
 {
-    return {}; // TODO...
+    std::vector<TypeDenoterPtr> paramTypeDenoters;
+
+    switch (intrinsic)
+    {
+        case Intrinsic::Mul:
+            DeriveParameterTypesMul(paramTypeDenoters, args);
+            break;
+        case Intrinsic::Transpose:
+            DeriveParameterTypesTranspose(paramTypeDenoters, args);
+            break;
+        default:
+            DeriveParameterTypes(paramTypeDenoters, intrinsic, args);
+            break;
+    }
+
+    return paramTypeDenoters;
 }
 
 std::vector<std::size_t> HLSLIntrinsicAdept::GetIntrinsicOutputParameterIndices(const Intrinsic intrinsic) const
@@ -588,6 +518,125 @@ const HLSLIntrinsicsMap& HLSLIntrinsicAdept::GetIntrinsicMap()
 {
     static const HLSLIntrinsicsMap intrinsicMap = GenerateIntrinsicMap();
     return intrinsicMap;
+}
+
+
+/*
+ * ======= Private: =======
+ */
+
+TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnType(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const
+{
+    /* Get type denoter from intrinsic signature map */
+    auto it = g_intrinsicSignatureMap.find(intrinsic);
+    if (it != g_intrinsicSignatureMap.end())
+        return it->second.GetTypeDenoterWithArgs(args);
+    else
+        RuntimeErr("failed to derive type denoter for intrinsic '" + GetIntrinsicIdent(intrinsic) + "'");
+}
+
+TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMul(const std::vector<ExprPtr>& args) const
+{
+    /* Validate number of arguments */
+    if (args.size() != 2)
+        RuntimeErr("invalid number of arguments for intrinsic 'mul'");
+
+    auto type0 = args[0]->GetTypeDenoter();
+    auto type1 = args[1]->GetTypeDenoter();
+
+    if (type0->IsScalar())
+        return type1;
+        
+    if (type0->IsVector())
+    {
+        if (type1->IsScalar())
+            return type0;
+
+        if (type1->IsVector())
+        {
+            auto baseDataType0 = BaseDataType(static_cast<BaseTypeDenoter&>(*type0).dataType);
+            return MakeShared<BaseTypeDenoter>(baseDataType0); // scalar
+        }
+
+        if (type1->IsMatrix())
+        {
+            auto dataType1      = static_cast<BaseTypeDenoter&>(*type1).dataType;
+            auto baseDataType1  = BaseDataType(dataType1);
+            auto matrixTypeDim1 = MatrixTypeDim(dataType1);
+            return MakeShared<BaseTypeDenoter>(VectorDataType(baseDataType1, matrixTypeDim1.second));
+        }
+    }
+
+    if (type0->IsMatrix())
+    {
+        if (type1->IsScalar())
+            return type0;
+
+        if (type1->IsVector())
+        {
+            auto dataType0      = static_cast<BaseTypeDenoter&>(*type0).dataType;
+            auto baseDataType0  = BaseDataType(dataType0);
+            auto matrixTypeDim0 = MatrixTypeDim(dataType0);
+            return MakeShared<BaseTypeDenoter>(VectorDataType(baseDataType0, matrixTypeDim0.first));
+        }
+
+        if (type1->IsMatrix())
+        {
+            auto dataType0      = static_cast<BaseTypeDenoter&>(*type0).dataType;
+            auto baseDataType0  = BaseDataType(dataType0);
+            auto matrixTypeDim0 = MatrixTypeDim(dataType0);
+            auto dataType1      = static_cast<BaseTypeDenoter&>(*type1).dataType;
+            auto matrixTypeDim1 = MatrixTypeDim(dataType1);
+            return MakeShared<BaseTypeDenoter>(MatrixDataType(baseDataType0, matrixTypeDim0.first, matrixTypeDim1.second));
+        }
+    }
+
+    RuntimeErr("invalid arguments in intrinsic 'mul'");
+}
+
+TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeTranspose(const std::vector<ExprPtr>& args) const
+{
+    /* Validate number of arguments */
+    if (args.size() != 1)
+        RuntimeErr("invalid number of arguments for intrinsic 'transpose'");
+
+    auto type0 = args[0]->GetTypeDenoter();
+
+    if (type0->IsMatrix())
+    {
+        /* Convert MxN matrix type to NxM matrix type */
+        auto dataType0      = static_cast<BaseTypeDenoter&>(*type0).dataType;
+        auto baseDataType0  = BaseDataType(dataType0);
+        auto matrixTypeDim0 = MatrixTypeDim(dataType0);
+        return MakeShared<BaseTypeDenoter>(MatrixDataType(baseDataType0, matrixTypeDim0.second, matrixTypeDim0.first));
+    }
+
+    RuntimeErr("invalid arguments in intrinsic 'transpose'");
+}
+
+void HLSLIntrinsicAdept::DeriveParameterTypes(std::vector<TypeDenoterPtr>& paramTypeDenoters, const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const
+{
+    /* Get type denoter from intrinsic signature map */
+    auto it = g_intrinsicSignatureMap.find(intrinsic);
+    if (it != g_intrinsicSignatureMap.end())
+    {
+        
+
+
+        //TODO...
+    }
+    else
+        RuntimeErr("failed to derive parameter type denoter for intrinsic '" + GetIntrinsicIdent(intrinsic) + "'");
+}
+
+void HLSLIntrinsicAdept::DeriveParameterTypesMul(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const
+{
+    //TODO...
+}
+
+void HLSLIntrinsicAdept::DeriveParameterTypesTranspose(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const
+{
+    //TODO...
 }
 
 

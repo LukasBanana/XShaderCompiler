@@ -52,6 +52,16 @@ class HLSLIntrinsicAdept : public IntrinsicAdept
         // Returns the intrinsics map (Intrinsic name -> Intrinsic ID and minimum HLSL shader model).
         static const HLSLIntrinsicsMap& GetIntrinsicMap();
 
+    private:
+
+        TypeDenoterPtr DeriveReturnType(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const;
+        TypeDenoterPtr DeriveReturnTypeMul(const std::vector<ExprPtr>& args) const;
+        TypeDenoterPtr DeriveReturnTypeTranspose(const std::vector<ExprPtr>& args) const;
+
+        void DeriveParameterTypes(std::vector<TypeDenoterPtr>& paramTypeDenoters, const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const;
+        void DeriveParameterTypesMul(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const;
+        void DeriveParameterTypesTranspose(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const;
+
 };
 
 
