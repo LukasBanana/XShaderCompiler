@@ -68,7 +68,7 @@ void ReportView::AddReport(const Report& r, const std::string& indent)
             WriteText(indent + line.substr(0, start));
             EndTextColour();
 
-            if (end < line.size())
+            if (end <= line.size())
             {
                 BeginTextColour(wxColour(50, 255, 255));
                 WriteText(line.substr(start, end - start));
@@ -78,6 +78,8 @@ void ReportView::AddReport(const Report& r, const std::string& indent)
                 WriteText(line.substr(end) + '\n');
                 EndTextColour();
             }
+            else
+                WriteText('\n');
         }
         else
             WriteLine(indent, line, wxColour(50, 255, 255));
