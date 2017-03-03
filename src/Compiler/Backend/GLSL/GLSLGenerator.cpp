@@ -1211,48 +1211,58 @@ void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param,
         /* Write parameter as variable declaration */
         Visit(param);
 
-        /* Write global shader input to local variable assignments */
-        auto paramVar = param->varDecls.front().get();
+        BeginSep();
+        {
+            /* Write global shader input to local variable assignments */
+            auto paramVar = param->varDecls.front().get();
         
-        if (paramVar->arrayDims.empty())
-        {
-            structDecl->ForEachVarDecl(
-                [&](VarDeclPtr& varDecl)
-                {
-                    BeginLn();
-                    {
-                        Write(paramVar->FinalIdent() + "." + varDecl->ident + " = ");
-                        WriteVarDeclIdentOrSystemValue(varDecl.get());
-                        Write(";");
-                    }
-                    EndLn();
-                }
-            );
-        }
-        else if (paramVar->arrayDims.size() == 1)
-        {
-            /* Get array dimension sizes from parameter */
-            auto arraySize = paramVar->arrayDims.front()->size;
-
-            for (int i = 0; i < arraySize; ++i)
+            if (paramVar->arrayDims.empty())
             {
-                /* Construct array indices output string */
                 structDecl->ForEachVarDecl(
                     [&](VarDeclPtr& varDecl)
                     {
                         BeginLn();
                         {
-                            Write(paramVar->FinalIdent() + "[" + std::to_string(i) + "]." + varDecl->ident + " = ");
-                            WriteVarDeclIdentOrSystemValue(varDecl.get(), i);
+                            Separator();
+                            Write(paramVar->FinalIdent() + "." + varDecl->ident);
+                            Separator();
+                            Write(" = ");
+                            WriteVarDeclIdentOrSystemValue(varDecl.get());
                             Write(";");
                         }
                         EndLn();
                     }
                 );
             }
+            else if (paramVar->arrayDims.size() == 1)
+            {
+                /* Get array dimension sizes from parameter */
+                auto arraySize = paramVar->arrayDims.front()->size;
+
+                for (int i = 0; i < arraySize; ++i)
+                {
+                    /* Construct array indices output string */
+                    structDecl->ForEachVarDecl(
+                        [&](VarDeclPtr& varDecl)
+                        {
+                            BeginLn();
+                            {
+                                Separator();
+                                Write(paramVar->FinalIdent() + "[" + std::to_string(i) + "]." + varDecl->ident);
+                                Separator();
+                                Write(" = ");
+                                WriteVarDeclIdentOrSystemValue(varDecl.get(), i);
+                                Write(";");
+                            }
+                            EndLn();
+                        }
+                    );
+                }
+            }
+            else
+                Error("too many array indices for shader input parameter", paramVar);
         }
-        else
-            Error("too many array indices for shader input parameter", paramVar);
+        EndSep();
     }
 }
 
