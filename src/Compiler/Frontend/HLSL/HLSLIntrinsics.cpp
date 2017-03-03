@@ -620,10 +620,31 @@ void HLSLIntrinsicAdept::DeriveParameterTypes(std::vector<TypeDenoterPtr>& param
     auto it = g_intrinsicSignatureMap.find(intrinsic);
     if (it != g_intrinsicSignatureMap.end())
     {
-        
+        //INCOMPLETE
+        #if 1
 
+        if (!args.empty() && IsGlobalIntrinsic(intrinsic))
+        {
+            /* Find common type denoter for all arguments */
+            TypeDenoterPtr commonTypeDenoter = args[0]->GetTypeDenoter()->Get();
+
+            for (std::size_t i = 1, n = args.size(); i < n; ++i)
+            {
+                commonTypeDenoter = TypeDenoter::FindCommonTypeDenoter(
+                    commonTypeDenoter,
+                    args[i]->GetTypeDenoter()->Get()
+                );
+            }
+
+            /* Add parameter type denoter */
+            paramTypeDenoters.resize(args.size());
+            for (std::size_t i = 0, n = args.size(); i < n; ++i)
+                paramTypeDenoters[i] = commonTypeDenoter;
+        }
 
         //TODO...
+
+        #endif
     }
     else
         RuntimeErr("failed to derive parameter type denoter for intrinsic '" + GetIntrinsicIdent(intrinsic) + "'");
