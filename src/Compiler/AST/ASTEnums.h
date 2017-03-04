@@ -79,8 +79,16 @@ enum class BinaryOp
 std::string BinaryOpToString(const BinaryOp o);
 BinaryOp StringToBinaryOp(const std::string& s);
 
+// Returns true if the specified binary operator is a logical operator (&&, ||).
 bool IsLogicalOp(const BinaryOp o);
+
+// Returns true if the specified binary operator is a bitwise operator (|, ^, &, <<, >>).
 bool IsBitwiseOp(const BinaryOp o);
+
+// Returns true if the specified binary operator is a comparison operator (==, !=, <, >, <=, >=).
+bool IsCompareOp(const BinaryOp o);
+
+// Returns true if the specified binary operator is a boolean operator, i.e. either logical or compare operator.
 bool IsBooleanOp(const BinaryOp o);
 
 
@@ -599,6 +607,7 @@ enum class Intrinsic
     Distance,
     Dot,
     Dst,
+    Equal,                              // GLSL only
     ErrorF,
     EvaluateAttributeAtCentroid,
     EvaluateAttributeAtSample,
@@ -618,6 +627,8 @@ enum class Intrinsic
     FWidth,
     GetRenderTargetSampleCount,
     GetRenderTargetSamplePosition,
+    GreaterThan,                        // GLSL only
+    GreaterThanEqual,                   // GLSL only
     GroupMemoryBarrier,
     GroupMemoryBarrierWithGroupSync,
     InterlockedAdd,
@@ -635,6 +646,8 @@ enum class Intrinsic
     LdExp,
     Length,
     Lerp,
+    LessThan,                           // GLSL only
+    LessThanEqual,                      // GLSL only
     Lit,
     Log,
     Log10,
@@ -646,6 +659,7 @@ enum class Intrinsic
     MSAD4,
     Mul,
     Normalize,
+    NotEqual,                           // GLSL only
     Pow,
     PrintF,
     Process2DQuadTessFactorsAvg,

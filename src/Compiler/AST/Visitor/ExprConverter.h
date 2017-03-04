@@ -37,15 +37,17 @@ class ExprConverter : public Visitor
         enum : unsigned int
         {
             ConvertVectorSubscripts = (1 << 0),
-            ConvertImplicitCasts    = (1 << 1),
-            WrapUnaryExpr           = (1 << 2),
-            All                     = (ConvertVectorSubscripts | ConvertImplicitCasts | WrapUnaryExpr),
+            ConvertVectorCompare    = (1 << 1),
+            ConvertImplicitCasts    = (1 << 2),
+            WrapUnaryExpr           = (1 << 3),
+            All                     = (ConvertVectorSubscripts | ConvertImplicitCasts | ConvertVectorCompare | WrapUnaryExpr),
         };
 
         // Converts the expressions in the specified AST.
         void Convert(Program& program, const Flags& conversionFlags);
 
         void ConvertExprVectorSubscript(ExprPtr& expr);
+        void ConvertExprVectorCompare(ExprPtr& expr);
 
         void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = true);
         void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
@@ -68,6 +70,7 @@ class ExprConverter : public Visitor
         void ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* varIdent);
 
         void IfFlaggedConvertExprVectorSubscript(ExprPtr& expr);
+        void IfFlaggedConvertExprVectorCompare(ExprPtr& expr);
         void IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
         void IfFlaggedConvertExprIntoBracket(ExprPtr& expr);
 
@@ -89,6 +92,7 @@ class ExprConverter : public Visitor
         DECL_VISIT_PROC( TernaryExpr      );
         DECL_VISIT_PROC( BinaryExpr       );
         DECL_VISIT_PROC( UnaryExpr        );
+        DECL_VISIT_PROC( BracketExpr      );
         DECL_VISIT_PROC( CastExpr         );
         DECL_VISIT_PROC( VarAccessExpr    );
 

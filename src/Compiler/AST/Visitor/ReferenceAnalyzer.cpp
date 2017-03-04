@@ -235,7 +235,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
-    if (ast->IsVectorCompare())
+    if (ast->IsVectorCondition())
     {
         /* Register usage of ternary-vector-compare operator intrinsic */
         auto typeDen = ast->GetTypeDenoter()->Get();

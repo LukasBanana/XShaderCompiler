@@ -56,6 +56,7 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { T::Distance,                         "distance"              },
         { T::Dot,                              "dot"                   },
       //{ T::Dst,                              ""                      },
+        { T::Equal,                            "equal"                 }, // GLSL only
       //{ T::ErrorF,                           ""                      },
         { T::EvaluateAttributeAtCentroid,      "interpolateAtCentroid" },
         { T::EvaluateAttributeAtSample,        "interpolateAtSample"   },
@@ -75,6 +76,8 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { T::FWidth,                           "fwidth"                },
       //{ T::GetRenderTargetSampleCount,       ""                      },
       //{ T::GetRenderTargetSamplePosition,    ""                      },
+        { T::GreaterThan,                      "greaterThan"           }, // GLSL only
+        { T::GreaterThanEqual,                 "greaterThanEqual"      }, // GLSL only
         { T::GroupMemoryBarrier,               "groupMemoryBarrier"    },
         { T::GroupMemoryBarrierWithGroupSync,  "barrier"               }, // ??? groupMemoryBarrier and barrier
         { T::InterlockedAdd,                   "atomicAdd"             },
@@ -92,6 +95,8 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { T::LdExp,                            "ldexp"                 },
         { T::Length,                           "length"                },
         { T::Lerp,                             "mix"                   },
+        { T::LessThan,                         "lessThan"              }, // GLSL only
+        { T::LessThanEqual,                    "lessThanEqual"         }, // GLSL only
       //{ T::Lit,                              ""                      },
         { T::Log,                              "log"                   },
       //{ T::Log10,                            ""                      },
@@ -102,7 +107,8 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { T::ModF,                             "modf"                  },
       //{ T::MSAD4,                            ""                      },
       //{ T::Mul,                              ""                      },
-        { T::Normalize,                        "normalize"             },
+        { T::Normalize,                        "normalize"             }, // GLSL only
+        { T::NotEqual,                         "notEqual"              },
         { T::Pow,                              "pow"                   },
       //{ T::PrintF,                           ""                      },
       //{ T::Process2DQuadTessFactorsAvg,      ""                      },

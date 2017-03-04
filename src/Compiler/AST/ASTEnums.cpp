@@ -142,9 +142,14 @@ bool IsBitwiseOp(const BinaryOp o)
     return (o >= BinaryOp::Or && o <= BinaryOp::RShift);
 }
 
+bool IsCompareOp(const BinaryOp o)
+{
+    return (o >= BinaryOp::Equal && o <= BinaryOp::GreaterEqual);
+}
+
 bool IsBooleanOp(const BinaryOp o)
 {
-    return (IsLogicalOp(o) || (o >= BinaryOp::Equal && o <= BinaryOp::GreaterEqual));
+    return (IsLogicalOp(o) || IsCompareOp(o));
 }
 
 

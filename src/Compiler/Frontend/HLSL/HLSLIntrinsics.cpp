@@ -59,6 +59,7 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
         { "distance",                         { T::Distance,                         1, 1 } },
         { "dot",                              { T::Dot,                              1, 0 } },
         { "dst",                              { T::Dst,                              5, 0 } },
+      //{ "",                                 { T::Equal,                            0, 0 } }, // GLSL only
         { "errorf",                           { T::ErrorF,                           4, 0 } },
         { "EvaluateAttributeAtCentroid",      { T::EvaluateAttributeAtCentroid,      5, 0 } },
         { "EvaluateAttributeAtSample",        { T::EvaluateAttributeAtSample,        5, 0 } },
@@ -78,6 +79,8 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
         { "fwidth",                           { T::FWidth,                           2, 1 } },
         { "GetRenderTargetSampleCount",       { T::GetRenderTargetSampleCount,       4, 0 } },
         { "GetRenderTargetSamplePosition",    { T::GetRenderTargetSamplePosition,    4, 0 } },
+      //{ "",                                 { T::GreaterThan,                      0, 0 } }, // GLSL only
+      //{ "",                                 { T::GreaterThanEqual,                 0, 0 } }, // GLSL only
         { "GroupMemoryBarrier",               { T::GroupMemoryBarrier,               5, 0 } },
         { "GroupMemoryBarrierWithGroupSync",  { T::GroupMemoryBarrierWithGroupSync,  5, 0 } },
         { "InterlockedAdd",                   { T::InterlockedAdd,                   5, 0 } },
@@ -95,6 +98,8 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
         { "ldexp",                            { T::LdExp,                            1, 1 } },
         { "length",                           { T::Length,                           1, 1 } },
         { "lerp",                             { T::Lerp,                             1, 1 } },
+      //{ "",                                 { T::LessThan,                         0, 0 } }, // GLSL only
+      //{ "",                                 { T::LessThanEqual,                    0, 0 } }, // GLSL only
         { "lit",                              { T::Lit,                              1, 1 } },
         { "log",                              { T::Log,                              1, 1 } },
         { "log10",                            { T::Log10,                            1, 1 } },
@@ -106,6 +111,7 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
         { "msad4",                            { T::MSAD4,                            5, 0 } },
         { "mul",                              { T::Mul,                              1, 0 } },
         { "normalize",                        { T::Normalize,                        1, 1 } },
+      //{ ""                                  { T::NotEqual,                         0, 0 } }, // GLSL only
         { "pow",                              { T::Pow,                              1, 1 } },
         { "printf",                           { T::PrintF,                           4, 0 } },
         { "Process2DQuadTessFactorsAvg",      { T::Process2DQuadTessFactorsAvg,      5, 0 } },
@@ -312,7 +318,7 @@ TypeDenoterPtr IntrinsicSignature::GetTypeDenoterWithArgs(const std::vector<Expr
         /* Return fixed base type denoter */
         const auto returnTypeFixed = IntrinsicReturnTypeToDataType(returnType);
         if (returnTypeFixed != DataType::Undefined)
-            return MakeShared<BaseTypeDenoter>(returnTypeFixed);
+            return std::make_shared<BaseTypeDenoter>(returnTypeFixed);
 
         /* Take type denoter from argument */
         const auto returnTypeByArgIndex = IntrinsicReturnTypeToArgIndex(returnType);
@@ -321,7 +327,7 @@ TypeDenoterPtr IntrinsicSignature::GetTypeDenoterWithArgs(const std::vector<Expr
     }
 
     /* Return default void type denoter */
-    return MakeShared<VoidTypeDenoter>();
+    return std::make_shared<VoidTypeDenoter>();
 }
 
 static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
@@ -369,6 +375,7 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::Dot,                              { Ret::Float,       2    } }, // float or int with size of input
         { T::Dst,                              { Ret::GenericArg0, 2    } },
         { T::ErrorF,                           {                  -1    } },
+        { T::Equal,                            { Ret::Bool,        2    } }, // GLSL only
         { T::EvaluateAttributeAtCentroid,      { Ret::GenericArg0, 1    } },
         { T::EvaluateAttributeAtSample,        { Ret::GenericArg0, 2    } },
         { T::EvaluateAttributeSnapped,         { Ret::GenericArg0, 2    } },
@@ -387,6 +394,8 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::FWidth,                           { Ret::GenericArg0, 1    } },
         { T::GetRenderTargetSampleCount,       { Ret::UInt              } },
         { T::GetRenderTargetSamplePosition,    { Ret::Float2,      1    } },
+        { T::GreaterThan,                      { Ret::Bool,        2    } }, // GLSL only
+        { T::GreaterThanEqual,                 { Ret::Bool,        2    } }, // GLSL only
         { T::GroupMemoryBarrier,               {                        } },
         { T::GroupMemoryBarrierWithGroupSync,  {                        } },
         { T::InterlockedAdd,                   {                   2, 3 } },
@@ -404,6 +413,8 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::LdExp,                            { Ret::GenericArg0, 2    } }, // float with size as input
         { T::Length,                           { Ret::Float,       1    } },
         { T::Lerp,                             { Ret::GenericArg0, 3    } },
+        { T::LessThan,                         { Ret::Bool,        2    } }, // GLSL only
+        { T::LessThanEqual,                    { Ret::Bool,        2    } }, // GLSL only
         { T::Lit,                              { Ret::GenericArg0, 3    } },
         { T::Log,                              { Ret::GenericArg0, 1    } },
         { T::Log10,                            { Ret::GenericArg0, 1    } },
@@ -415,6 +426,7 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::MSAD4,                            { Ret::UInt4,       3    } },
       //{ T::Mul,                              {                        } }, // special case
         { T::Normalize,                        { Ret::GenericArg0, 1    } },
+        { T::NotEqual,                         { Ret::Bool,        2    } }, // GLSL only
         { T::Pow,                              { Ret::GenericArg0, 2    } },
         { T::PrintF,                           {                  -1    } },
         { T::Process2DQuadTessFactorsAvg,      {                   5    } },
@@ -525,6 +537,13 @@ TypeDenoterPtr HLSLIntrinsicAdept::GetIntrinsicReturnType(const Intrinsic intrin
             return DeriveReturnTypeMul(args);
         case Intrinsic::Transpose:
             return DeriveReturnTypeTranspose(args);
+        case Intrinsic::Equal:
+        case Intrinsic::NotEqual:
+        case Intrinsic::LessThan:
+        case Intrinsic::LessThanEqual:
+        case Intrinsic::GreaterThan:
+        case Intrinsic::GreaterThanEqual:
+            return DeriveReturnTypeVectorCompare(args);
         default:
             return DeriveReturnType(intrinsic, args);
     }
@@ -619,7 +638,7 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMul(const std::vector<ExprPtr
         if (type1->IsVector())
         {
             auto baseDataType0 = BaseDataType(static_cast<BaseTypeDenoter&>(*type0).dataType);
-            return MakeShared<BaseTypeDenoter>(baseDataType0); // scalar
+            return std::make_shared<BaseTypeDenoter>(baseDataType0); // scalar
         }
 
         if (type1->IsMatrix())
@@ -627,7 +646,7 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMul(const std::vector<ExprPtr
             auto dataType1      = static_cast<BaseTypeDenoter&>(*type1).dataType;
             auto baseDataType1  = BaseDataType(dataType1);
             auto matrixTypeDim1 = MatrixTypeDim(dataType1);
-            return MakeShared<BaseTypeDenoter>(VectorDataType(baseDataType1, matrixTypeDim1.second));
+            return std::make_shared<BaseTypeDenoter>(VectorDataType(baseDataType1, matrixTypeDim1.second));
         }
     }
 
@@ -641,7 +660,7 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMul(const std::vector<ExprPtr
             auto dataType0      = static_cast<BaseTypeDenoter&>(*type0).dataType;
             auto baseDataType0  = BaseDataType(dataType0);
             auto matrixTypeDim0 = MatrixTypeDim(dataType0);
-            return MakeShared<BaseTypeDenoter>(VectorDataType(baseDataType0, matrixTypeDim0.first));
+            return std::make_shared<BaseTypeDenoter>(VectorDataType(baseDataType0, matrixTypeDim0.first));
         }
 
         if (type1->IsMatrix())
@@ -651,7 +670,7 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMul(const std::vector<ExprPtr
             auto matrixTypeDim0 = MatrixTypeDim(dataType0);
             auto dataType1      = static_cast<BaseTypeDenoter&>(*type1).dataType;
             auto matrixTypeDim1 = MatrixTypeDim(dataType1);
-            return MakeShared<BaseTypeDenoter>(MatrixDataType(baseDataType0, matrixTypeDim0.first, matrixTypeDim1.second));
+            return std::make_shared<BaseTypeDenoter>(MatrixDataType(baseDataType0, matrixTypeDim0.first, matrixTypeDim1.second));
         }
     }
 
@@ -664,7 +683,7 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeTranspose(const std::vector<E
     if (args.size() != 1)
         RuntimeErr("invalid number of arguments for intrinsic 'transpose'");
 
-    auto type0 = args[0]->GetTypeDenoter();
+    auto type0 = args[0]->GetTypeDenoter()->Get();
 
     if (type0->IsMatrix())
     {
@@ -672,10 +691,27 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeTranspose(const std::vector<E
         auto dataType0      = static_cast<BaseTypeDenoter&>(*type0).dataType;
         auto baseDataType0  = BaseDataType(dataType0);
         auto matrixTypeDim0 = MatrixTypeDim(dataType0);
-        return MakeShared<BaseTypeDenoter>(MatrixDataType(baseDataType0, matrixTypeDim0.second, matrixTypeDim0.first));
+        return std::make_shared<BaseTypeDenoter>(MatrixDataType(baseDataType0, matrixTypeDim0.second, matrixTypeDim0.first));
     }
 
     RuntimeErr("invalid arguments in intrinsic 'transpose'");
+}
+
+TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeVectorCompare(const std::vector<ExprPtr>& args) const
+{
+    /* Validate number of arguments */
+    if (args.size() != 2)
+        RuntimeErr("invalid number of arguments for vector-compare intrinsic");
+
+    auto type0 = args[0]->GetTypeDenoter()->Get();
+
+    if (auto baseType0 = type0->As<BaseTypeDenoter>())
+    {
+        const auto vecTypeSize = VectorTypeDim(baseType0->dataType);
+        return std::make_shared<BaseTypeDenoter>(VectorDataType(DataType::Bool, vecTypeSize));
+    }
+
+    return type0;
 }
 
 /*

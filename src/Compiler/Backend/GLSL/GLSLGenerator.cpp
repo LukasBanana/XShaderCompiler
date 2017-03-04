@@ -2365,7 +2365,7 @@ void GLSLGenerator::WriteWrapperIntrinsicsTernaryVectorCompare(const IntrinsicUs
             {
                 /* Write function signature */
                 WriteDataType(argType, IsESSL());
-                Write(" " + nameMangling_.temporaryPrefix + "ternaryVectorCompare(");
+                Write(" " + nameMangling_.temporaryPrefix + "ternaryVecComp(");
                 WriteDataType(VectorDataType(DataType::Bool, argVecSize), IsESSL());
                 Write(" cond, ");
                 WriteDataType(argType, IsESSL());

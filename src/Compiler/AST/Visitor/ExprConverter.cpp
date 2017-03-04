@@ -36,6 +36,43 @@ void ExprConverter::ConvertExprVectorSubscript(ExprPtr& expr)
     }
 }
 
+static Intrinsic CompareOpToIntrinsic(const BinaryOp op)
+{
+    switch (op)
+    {
+        case BinaryOp::Equal:           return Intrinsic::Equal;
+        case BinaryOp::NotEqual:        return Intrinsic::NotEqual;
+        case BinaryOp::Less:            return Intrinsic::LessThan;
+        case BinaryOp::Greater:         return Intrinsic::GreaterThan;
+        case BinaryOp::LessEqual:       return Intrinsic::LessThanEqual;
+        case BinaryOp::GreaterEqual:    return Intrinsic::GreaterThanEqual;
+    }
+    return Intrinsic::Undefined;
+}
+
+void ExprConverter::ConvertExprVectorCompare(ExprPtr& expr)
+{
+    if (expr)
+    {
+        if (auto binaryExpr = expr->As<BinaryExpr>())
+        {
+            if (IsCompareOp(binaryExpr->op))
+            {
+                auto typeDen = binaryExpr->GetTypeDenoter()->Get();
+                if (typeDen->IsVector())
+                {
+                    /* Convert comparison operator into intrinsic */
+                    auto intrinsic = CompareOpToIntrinsic(binaryExpr->op);
+                    expr = ASTFactory::MakeIntrinsicCallExpr(
+                        intrinsic, "vec_compare", nullptr,
+                        { binaryExpr->lhsExpr, binaryExpr->rhsExpr }
+                    );
+                }
+            }
+        }
+    }
+}
+
 // Converts the expression to a cast expression if it is required for the specified target type.
 void ExprConverter::ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize)
 {
@@ -217,6 +254,12 @@ void ExprConverter::IfFlaggedConvertExprVectorSubscript(ExprPtr& expr)
         ConvertExprVectorSubscript(expr);
 }
 
+void ExprConverter::IfFlaggedConvertExprVectorCompare(ExprPtr& expr)
+{
+    if (conversionFlags_(ConvertVectorCompare))
+        ConvertExprVectorCompare(expr);
+}
+
 void ExprConverter::IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize)
 {
     if (conversionFlags_(ConvertImplicitCasts))
@@ -257,6 +300,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     if (ast->initializer)
     {
         IfFlaggedConvertExprVectorSubscript(ast->initializer);
+        IfFlaggedConvertExprVectorCompare(ast->initializer);
         IfFlaggedConvertExprIfCastRequired(ast->initializer, *ast->GetTypeDenoter()->Get());
     }
 }
@@ -277,32 +321,40 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
     VISIT_DEFAULT(ForLoopStmnt);
+    
     IfFlaggedConvertExprVectorSubscript(ast->condition);
+    IfFlaggedConvertExprVectorCompare(ast->condition);
+
     IfFlaggedConvertExprVectorSubscript(ast->iteration);
+    IfFlaggedConvertExprVectorCompare(ast->iteration);
 }
 
 IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 {
     VISIT_DEFAULT(WhileLoopStmnt);
     IfFlaggedConvertExprVectorSubscript(ast->condition);
+    IfFlaggedConvertExprVectorCompare(ast->condition);
 }
 
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 {
     VISIT_DEFAULT(DoWhileLoopStmnt);
     IfFlaggedConvertExprVectorSubscript(ast->condition);
+    IfFlaggedConvertExprVectorCompare(ast->condition);
 }
 
 IMPLEMENT_VISIT_PROC(IfStmnt)
 {
     VISIT_DEFAULT(IfStmnt);
     IfFlaggedConvertExprVectorSubscript(ast->condition);
+    IfFlaggedConvertExprVectorCompare(ast->condition);
 }
 
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
     VISIT_DEFAULT(ExprStmnt);
     IfFlaggedConvertExprVectorSubscript(ast->expr);
+    IfFlaggedConvertExprVectorCompare(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
@@ -322,9 +374,14 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
     VISIT_DEFAULT(TernaryExpr);
+
     IfFlaggedConvertExprVectorSubscript(ast->condExpr);
     IfFlaggedConvertExprVectorSubscript(ast->thenExpr);
     IfFlaggedConvertExprVectorSubscript(ast->elseExpr);
+
+    IfFlaggedConvertExprVectorCompare(ast->condExpr);
+    IfFlaggedConvertExprVectorCompare(ast->thenExpr);
+    IfFlaggedConvertExprVectorCompare(ast->elseExpr);
 }
 
 // Convert right-hand-side expression (if cast required)
@@ -334,6 +391,9 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
     
     IfFlaggedConvertExprVectorSubscript(ast->lhsExpr);
     IfFlaggedConvertExprVectorSubscript(ast->rhsExpr);
+
+    IfFlaggedConvertExprVectorCompare(ast->lhsExpr);
+    IfFlaggedConvertExprVectorCompare(ast->rhsExpr);
 
     bool matchTypeSize = (ast->op != BinaryOp::Mul && ast->op != BinaryOp::Div);
 
@@ -352,15 +412,28 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
     VISIT_DEFAULT(UnaryExpr);
+
     IfFlaggedConvertExprVectorSubscript(ast->expr);
+    IfFlaggedConvertExprVectorCompare(ast->expr);
+
     if (ast->expr->Type() == AST::Types::UnaryExpr)
         IfFlaggedConvertExprIntoBracket(ast->expr);
+}
+
+IMPLEMENT_VISIT_PROC(BracketExpr)
+{
+    VISIT_DEFAULT(BracketExpr);
+
+    IfFlaggedConvertExprVectorSubscript(ast->expr);
+    IfFlaggedConvertExprVectorCompare(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
     VISIT_DEFAULT(CastExpr);
+
     IfFlaggedConvertExprVectorSubscript(ast->expr);
+    IfFlaggedConvertExprVectorCompare(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
@@ -369,6 +442,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     if (ast->assignExpr)
     {
         IfFlaggedConvertExprVectorSubscript(ast->assignExpr);
+        IfFlaggedConvertExprVectorCompare(ast->assignExpr);
         IfFlaggedConvertExprIfCastRequired(ast->assignExpr, *ast->GetTypeDenoter()->Get());
     }
 }

@@ -1166,7 +1166,7 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
     return commonTypeDen;
 }
 
-bool TernaryExpr::IsVectorCompare() const
+bool TernaryExpr::IsVectorCondition() const
 {
     auto condTypeDen = condExpr->GetTypeDenoter()->Get();
 
