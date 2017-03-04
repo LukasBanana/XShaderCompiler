@@ -996,6 +996,15 @@ void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
         iterator(varDecl);
 }
 
+void VarDeclStmnt::MakeImplicitConst()
+{
+    if (!IsConst() && storageClasses.find(StorageClass::Static) == storageClasses.end())
+    {
+        flags << VarDeclStmnt::isImplicitConst;
+        isUniform = true;
+    }
+}
+
 
 /* ----- NullExpr ----- */
 

@@ -746,9 +746,10 @@ struct VarDeclStmnt : public Stmnt
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,        0 ), // This variable is used as shader input.
-        FLAG( isShaderOutput,       1 ), // This variable is used as shader output.
-        FLAG( isParameter,          2 ), // This variable is a function parameter (flag should be set during parsing).
+        FLAG( isShaderInput,    0 ), // This variable is used as shader input.
+        FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
+        FLAG( isParameter,      2 ), // This variable is a function parameter (flag should be set during parsing).
+        FLAG( isImplicitConst,  3 ), // This variable is implicitly declared as constant.
     };
 
     // Returns the var-decl statement as string.
@@ -774,6 +775,9 @@ struct VarDeclStmnt : public Stmnt
 
     // Iterates over each VarDecl AST node.
     void ForEachVarDecl(const VarDeclIteratorFunctor& iterator);
+
+    // Makes this var-decl statement implicitly constant, iff not explicitly declared as constant (see 'isUniform' and 'isImplicitlyConst').
+    void MakeImplicitConst();
 
     bool                        isInput         = false;                    // Input modifier 'in'
     bool                        isOutput        = false;                    // Input modifier 'out'
