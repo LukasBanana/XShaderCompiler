@@ -963,6 +963,9 @@ struct TernaryExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    // Returns true if the conditional expression is a vector comparison (i.e. of type Bool2, Bool3, or Bool4).
+    bool IsVectorCompare() const;
+
     ExprPtr condExpr; // Condition expression
     ExprPtr thenExpr; // <then> case expression
     ExprPtr elseExpr; // <else> case expression

@@ -1130,7 +1130,7 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
         );
     }
 
-    /* Return common type of both sub expressions */
+    /* Find common type denoter for both sub expressions */
     const auto& thenTypeDen = thenExpr->GetTypeDenoter();
     const auto& elseTypeDen = elseExpr->GetTypeDenoter();
 
@@ -1142,7 +1142,42 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
         );
     }
 
-    return TypeDenoter::FindCommonTypeDenoter(thenTypeDen, elseTypeDen);
+    auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(thenTypeDen, elseTypeDen);
+
+    /* Get common boolean type denoter from condition expression */
+    auto condTypeDenAliased = condExpr->GetTypeDenoter()->Get();
+
+    if (auto baseTypeDen = condTypeDenAliased->As<BaseTypeDenoter>())
+    {
+        /* Is the condition a boolean vector type? */
+        const auto condDataType = baseTypeDen->dataType;
+        if (condDataType >= DataType::Bool2 && condDataType <= DataType::Bool4)
+        {
+            /* Is the sub type denoter a base type denoter? */
+            if (auto baseSubTypeDen = commonTypeDen->As<BaseTypeDenoter>())
+            {
+                /* Return common type denoter, based on conditional expression type dimension */
+                const auto subDataType = VectorDataType(baseSubTypeDen->dataType, VectorTypeDim(condDataType));
+                return std::make_shared<BaseTypeDenoter>(subDataType);
+            }
+        }
+    }
+
+    return commonTypeDen;
+}
+
+bool TernaryExpr::IsVectorCompare() const
+{
+    auto condTypeDen = condExpr->GetTypeDenoter()->Get();
+
+    if (auto baseTypeDen = condTypeDen->As<BaseTypeDenoter>())
+    {
+        /* Is the condition a boolean vector type? */
+        const auto condDataType = baseTypeDen->dataType;
+        return (condDataType >= DataType::Bool2 && condDataType <= DataType::Bool4);
+    }
+
+    return false;
 }
 
 
