@@ -109,6 +109,8 @@ class Analyzer : protected Visitor
         void ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, const std::string& contextDesc, const AST* ast = nullptr);
         void ValidateTypeCastFrom(TypedAST* sourceAST, TypedAST* destAST, const std::string& contextDesc);
 
+        void AnalyzeConditionalExpression(Expr* expr);
+
         /* ----- Const-expression evaluation ----- */
 
         // Evaluates the specified constant expression.

@@ -381,7 +381,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
     This rule is different in HLSL compared to C++ or other languages!
     */
     Visit(ast->initSmnt);
-    Visit(ast->condition);
+    AnalyzeConditionalExpression(ast->condition.get());
     Visit(ast->iteration);
 
     OpenScope();
@@ -399,7 +399,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 
     OpenScope();
     {
-        Visit(ast->condition);
+        AnalyzeConditionalExpression(ast->condition.get());
         Visit(ast->bodyStmnt);
     }
     CloseScope();
@@ -414,7 +414,7 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
     OpenScope();
     {
         Visit(ast->bodyStmnt);
-        Visit(ast->condition);
+        AnalyzeConditionalExpression(ast->condition.get());
     }
     CloseScope();
 }
@@ -427,7 +427,7 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
 
     OpenScope();
     {
-        Visit(ast->condition);
+        AnalyzeConditionalExpression(ast->condition.get());
         Visit(ast->bodyStmnt);
     }
     CloseScope();

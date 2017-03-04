@@ -415,6 +415,17 @@ void Analyzer::ValidateTypeCastFrom(TypedAST* sourceAST, TypedAST* destAST, cons
     }
 }
 
+void Analyzer::AnalyzeConditionalExpression(Expr* expr)
+{
+    /* Visit expression tree */
+    Visit(expr);
+
+    /* Verify boolean type denoter in conditional expression */
+    auto condTypeDen = expr->GetTypeDenoter()->Get();
+    if (!condTypeDen->IsScalar())
+        Error("conditional expression must evaluate to scalar, but got '" + condTypeDen->ToString() + "'", expr);
+}
+
 /* ----- Const-expression evaluation ----- */
 
 Variant Analyzer::EvaluateConstExpr(Expr& expr)

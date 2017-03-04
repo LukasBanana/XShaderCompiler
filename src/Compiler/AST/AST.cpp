@@ -1150,14 +1150,14 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
     if (auto baseTypeDen = condTypeDenAliased->As<BaseTypeDenoter>())
     {
         /* Is the condition a boolean vector type? */
-        const auto condDataType = baseTypeDen->dataType;
-        if (condDataType >= DataType::Bool2 && condDataType <= DataType::Bool4)
+        const auto condVecSize = VectorTypeDim(baseTypeDen->dataType);
+        if (condVecSize > 1)
         {
             /* Is the sub type denoter a base type denoter? */
             if (auto baseSubTypeDen = commonTypeDen->As<BaseTypeDenoter>())
             {
                 /* Return common type denoter, based on conditional expression type dimension */
-                const auto subDataType = VectorDataType(baseSubTypeDen->dataType, VectorTypeDim(condDataType));
+                const auto subDataType = VectorDataType(baseSubTypeDen->dataType, condVecSize);
                 return std::make_shared<BaseTypeDenoter>(subDataType);
             }
         }
@@ -1173,8 +1173,8 @@ bool TernaryExpr::IsVectorCompare() const
     if (auto baseTypeDen = condTypeDen->As<BaseTypeDenoter>())
     {
         /* Is the condition a boolean vector type? */
-        const auto condDataType = baseTypeDen->dataType;
-        return (condDataType >= DataType::Bool2 && condDataType <= DataType::Bool4);
+        const auto condVecSize = VectorTypeDim(baseTypeDen->dataType);
+        return (condVecSize > 1);
     }
 
     return false;
