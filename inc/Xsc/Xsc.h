@@ -88,8 +88,8 @@ struct Formatting
     //! If true, line marks are allowed. By default false.
     bool        lineMarks           = false;
 
-    //! If true, wrapper functions for special intrinsics are written in a compact formatting (i.e. all in one line). By default true.
-    bool        compactWrappers     = true;
+    //! If true, wrapper functions for special intrinsics are written in a compact formatting (i.e. all in one line). By default false.
+    bool        compactWrappers     = false;
 
     //! If true, scopes are always written in braces. By default false.
     bool        alwaysBracedScopes  = false;
