@@ -2257,8 +2257,6 @@ void GLSLGenerator::WriteWrapperIntrinsics()
         WriteWrapperIntrinsicsClip(*usage);
     if (auto usage = program->FetchIntrinsicUsage(Intrinsic::SinCos))
         WriteWrapperIntrinsicsSinCos(*usage);
-    if (auto usage = program->FetchIntrinsicUsage(Intrinsic::Op_TernaryVectorCompare))
-        WriteWrapperIntrinsicsTernaryVectorCompare(*usage);
 }
 
 void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
@@ -2337,72 +2335,6 @@ void GLSLGenerator::WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage)
                 WriteScopeOpen(compactWrappers_);
                 {
                     Write("s = sin(x), c = cos(x);");
-                }
-                WriteScopeClose();
-            }
-            EndLn();
-
-            wrappersWritten = true;
-        }
-    }
-
-    if (wrappersWritten)
-        Blank();
-}
-
-void GLSLGenerator::WriteWrapperIntrinsicsTernaryVectorCompare(const IntrinsicUsage& usage)
-{
-    bool wrappersWritten = false;
-
-    for (const auto& argList : usage.argLists)
-    {
-        if (argList.argTypes.size() == 1)
-        {
-            const auto argType = argList.argTypes[0];
-            const auto argVecSize = VectorTypeDim(argType);
-
-            BeginLn();
-            {
-                /* Write function signature */
-                WriteDataType(argType, IsESSL());
-                Write(" " + nameMangling_.temporaryPrefix + "ternaryVecComp(");
-                WriteDataType(VectorDataType(DataType::Bool, argVecSize), IsESSL());
-                Write(" cond, ");
-                WriteDataType(argType, IsESSL());
-                Write(" thenResult, ");
-                WriteDataType(argType, IsESSL());
-                Write(" elseResult)");
-
-                /* Write function body */
-                WriteScopeOpen();
-                {
-                    BeginLn();
-                    {
-                        Write("return ");
-                        WriteDataType(argType, IsESSL());
-                        Write("(");
-                    }
-                    EndLn();
-
-                    WriteScopeOpen(false, false, false);
-                    {
-                        static const char vectorSubscripts[] = { 'x', 'y', 'z', 'w' };
-
-                        for (int i = 0; i < argVecSize; ++i)
-                        {
-                            BeginLn();
-                            {
-                                const auto vecSubscript = std::string(1, vectorSubscripts[i]);
-                                Write("cond." + vecSubscript + " ? thenResult." + vecSubscript + " : elseResult." + vecSubscript);
-                                if (i + 1 < argVecSize)
-                                    Write(", ");
-                            }
-                            EndLn();
-                        }
-                    }
-                    WriteScopeClose();
-                
-                    WriteLn(");");
                 }
                 WriteScopeClose();
             }

@@ -226,7 +226,6 @@ class GLSLGenerator : public Generator
         void WriteWrapperIntrinsics();
         void WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage);
         void WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage);
-        void WriteWrapperIntrinsicsTernaryVectorCompare(const IntrinsicUsage& usage);
 
         /* --- Structure --- */
 

@@ -193,8 +193,6 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
 
         { T::StreamOutput_Append,              "EmitVertex"            },
         { T::StreamOutput_RestartStrip,        "EndPrimitive"          },
-
-      //{ T::Op_TernaryVectorCompare,          ""                      }, // special case
     };
 }
 

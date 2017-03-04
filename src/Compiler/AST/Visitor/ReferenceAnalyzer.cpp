@@ -233,19 +233,6 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 /* --- Expressions --- */
 
-IMPLEMENT_VISIT_PROC(TernaryExpr)
-{
-    if (ast->IsVectorCondition())
-    {
-        /* Register usage of ternary-vector-compare operator intrinsic */
-        auto typeDen = ast->GetTypeDenoter()->Get();
-        if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
-            program_->RegisterIntrinsicUsage(Intrinsic::Op_TernaryVectorCompare, { baseTypeDen->dataType });
-    }
-
-    VISIT_DEFAULT(TernaryExpr);
-}
-
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
     if (IsLValueOp(ast->op))
