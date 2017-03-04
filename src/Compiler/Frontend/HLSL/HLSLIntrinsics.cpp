@@ -177,28 +177,97 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
 
 /* ----- IntrinsicSignature class ----- */
 
-enum ArgumentIndex
+enum class IntrinsicReturnType
 {
-    ArgUndefined    = -1,
+    Void,
+    
+    Bool,
+    Int,
+    Int2,
+    Int3,
+    Int4,
+    UInt,
+    UInt2,
+    UInt3,
+    UInt4,
+    Float,
+    Float2,
+    Float3,
+    Float4,
+    Double,
 
-    Arg1            = 0,
-    Arg2            = 1,
-    Arg3            = 2,
+    GenericArg0,    // Get return type from first argument (index 0)
+    GenericArg1,    // Get return type from second argument (index 1)
+    GenericArg2,    // Get return type from thrid argument (index 2)
 };
+
+static DataType IntrinsicReturnTypeToDataType(const IntrinsicReturnType t)
+{
+    switch (t)
+    {
+        case IntrinsicReturnType::Bool:     return DataType::Bool;
+        case IntrinsicReturnType::Int:      return DataType::Int;
+        case IntrinsicReturnType::Int2:     return DataType::Int2;
+        case IntrinsicReturnType::Int3:     return DataType::Int3;
+        case IntrinsicReturnType::Int4:     return DataType::Int4;
+        case IntrinsicReturnType::UInt:     return DataType::UInt;
+        case IntrinsicReturnType::UInt2:    return DataType::UInt2;
+        case IntrinsicReturnType::UInt3:    return DataType::UInt3;
+        case IntrinsicReturnType::UInt4:    return DataType::UInt4;
+        case IntrinsicReturnType::Float:    return DataType::Float;
+        case IntrinsicReturnType::Float2:   return DataType::Float2;
+        case IntrinsicReturnType::Float3:   return DataType::Float3;
+        case IntrinsicReturnType::Float4:   return DataType::Float4;
+        case IntrinsicReturnType::Double:   return DataType::Double;
+        default:                            return DataType::Undefined;
+    }
+}
+
+static std::size_t IntrinsicReturnTypeToArgIndex(const IntrinsicReturnType t)
+{
+    switch (t)
+    {
+        case IntrinsicReturnType::GenericArg0:  return 0;
+        case IntrinsicReturnType::GenericArg1:  return 1;
+        case IntrinsicReturnType::GenericArg2:  return 2;
+        default:                                return ~0;
+    }
+}
+
+static TypeDenoterPtr DeriveCommonTypeDenoter(std::size_t majorArgIndex, const std::vector<ExprPtr>& args)
+{
+    if (majorArgIndex < args.size())
+    {
+        /* Find common type denoter for all arguments */
+        TypeDenoterPtr commonTypeDenoter = args[majorArgIndex]->GetTypeDenoter()->Get();
+
+        for (std::size_t i = 0, n = args.size(); i < n; ++i)
+        {
+            if (i != majorArgIndex)
+            {
+                commonTypeDenoter = TypeDenoter::FindCommonTypeDenoter(
+                    commonTypeDenoter,
+                    args[i]->GetTypeDenoter()->Get()
+                );
+            }
+        }
+
+        return commonTypeDenoter;
+    }
+    return nullptr;
+}
 
 struct IntrinsicSignature
 {
     IntrinsicSignature(int numArgs = 0);
     IntrinsicSignature(int numArgsMin, int numArgsMax);
-    IntrinsicSignature(DataType returnTypeFixed, int numArgs = 0);
-    IntrinsicSignature(ArgumentIndex returnTypeByArgIndex, int numArgs = 0);
+    IntrinsicSignature(IntrinsicReturnType returnType, int numArgs = 0);
 
     TypeDenoterPtr GetTypeDenoterWithArgs(const std::vector<ExprPtr>& args) const;
 
-    int             numArgsMin              = 0;
-    int             numArgsMax              = 0;
-    DataType        returnTypeFixed         = DataType::Undefined;
-    ArgumentIndex   returnTypeByArgIndex    = ArgUndefined;
+    IntrinsicReturnType returnType = IntrinsicReturnType::Void;
+    int                 numArgsMin = 0;
+    int                 numArgsMax = 0;
 };
 
 IntrinsicSignature::IntrinsicSignature(int numArgs) :
@@ -213,17 +282,10 @@ IntrinsicSignature::IntrinsicSignature(int numArgsMin, int numArgsMax) :
 {
 }
 
-IntrinsicSignature::IntrinsicSignature(DataType returnTypeFixed, int numArgs) :
-    numArgsMin      { numArgs         },
-    numArgsMax      { numArgs         },
-    returnTypeFixed { returnTypeFixed }
-{
-}
-
-IntrinsicSignature::IntrinsicSignature(ArgumentIndex returnTypeByArgIndex, int numArgs) :
-    numArgsMin           { numArgs              },
-    numArgsMax           { numArgs              },
-    returnTypeByArgIndex { returnTypeByArgIndex }
+IntrinsicSignature::IntrinsicSignature(IntrinsicReturnType returnType, int numArgs) :
+    returnType { returnType },
+    numArgsMin { numArgs    },
+    numArgsMax { numArgs    }
 {
 }
 
@@ -245,16 +307,17 @@ TypeDenoterPtr IntrinsicSignature::GetTypeDenoterWithArgs(const std::vector<Expr
         }
     }
 
-    /* Return fixed base type denoter */
-    if (returnTypeFixed != DataType::Undefined)
-        return MakeShared<BaseTypeDenoter>(returnTypeFixed);
-
-    /* Take type denoter from argument */
-    if (returnTypeByArgIndex != ArgUndefined)
+    if (returnType != IntrinsicReturnType::Void)
     {
-        auto idx = static_cast<std::size_t>(returnTypeByArgIndex);
-        if (idx < args.size())
-            return args[idx]->GetTypeDenoter();
+        /* Return fixed base type denoter */
+        const auto returnTypeFixed = IntrinsicReturnTypeToDataType(returnType);
+        if (returnTypeFixed != DataType::Undefined)
+            return MakeShared<BaseTypeDenoter>(returnTypeFixed);
+
+        /* Take type denoter from argument */
+        const auto returnTypeByArgIndex = IntrinsicReturnTypeToArgIndex(returnType);
+        if (returnTypeByArgIndex < args.size())
+            return DeriveCommonTypeDenoter(returnTypeByArgIndex, args);
     }
 
     /* Return default void type denoter */
@@ -264,65 +327,66 @@ TypeDenoterPtr IntrinsicSignature::GetTypeDenoterWithArgs(const std::vector<Expr
 static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
 {
     using T = Intrinsic;
+    using Ret = IntrinsicReturnType;
 
     return
     {
         { T::Abort,                            {                        } },
-        { T::Abs,                              { Arg1,             1    } },
-        { T::ACos,                             { Arg1,             1    } },
-        { T::All,                              { DataType::Bool,   1    } },
+        { T::Abs,                              { Ret::GenericArg0, 1    } },
+        { T::ACos,                             { Ret::GenericArg0, 1    } },
+        { T::All,                              { Ret::Bool,        1    } },
         { T::AllMemoryBarrier,                 {                        } },
         { T::AllMemoryBarrierWithGroupSync,    {                        } },
-        { T::Any,                              { DataType::Bool,   1    } },
-        { T::AsDouble,                         { DataType::Double, 2    } },
-        { T::AsFloat,                          { Arg1,             1    } },
-        { T::ASin,                             { Arg1,             1    } },
-        { T::AsInt,                            { Arg1,             1    } },
-        { T::AsUInt_1,                         { Arg1,             1    } },
+        { T::Any,                              { Ret::Bool,        1    } },
+        { T::AsDouble,                         { Ret::Double,      2    } },
+        { T::AsFloat,                          { Ret::GenericArg0, 1    } },
+        { T::ASin,                             { Ret::GenericArg0, 1    } },
+        { T::AsInt,                            { Ret::GenericArg0, 1    } },
+        { T::AsUInt_1,                         { Ret::GenericArg0, 1    } },
         { T::AsUInt_3,                         {                   3    } },
-        { T::ATan,                             { Arg1,             1    } },
-        { T::ATan2,                            { Arg2,             2    } },
-        { T::Ceil,                             { Arg1,             1    } },
-        { T::CheckAccessFullyMapped,           { DataType::Bool,   1    } },
-        { T::Clamp,                            { Arg1,             3    } },
+        { T::ATan,                             { Ret::GenericArg0, 1    } },
+        { T::ATan2,                            { Ret::GenericArg1, 2    } },
+        { T::Ceil,                             { Ret::GenericArg0, 1    } },
+        { T::CheckAccessFullyMapped,           { Ret::Bool,        1    } },
+        { T::Clamp,                            { Ret::GenericArg0, 3    } },
         { T::Clip,                             {                   1    } },
-        { T::Cos,                              { Arg1,             1    } },
-        { T::CosH,                             { Arg1,             1    } },
-        { T::CountBits,                        { DataType::UInt,   1    } },
-        { T::Cross,                            { DataType::Float3, 2    } },
-        { T::D3DCOLORtoUBYTE4,                 { DataType::Int4,   1    } },
-        { T::DDX,                              { Arg1,             1    } },
-        { T::DDXCoarse,                        { Arg1,             1    } },
-        { T::DDXFine,                          { Arg1,             1    } },
-        { T::DDY,                              { Arg1,             1    } },
-        { T::DDYCoarse,                        { Arg1,             1    } },
-        { T::DDYFine,                          { Arg1,             1    } },
-        { T::Degrees,                          { Arg1,             1    } },
-        { T::Determinant,                      { DataType::Float,  1    } },
+        { T::Cos,                              { Ret::GenericArg0, 1    } },
+        { T::CosH,                             { Ret::GenericArg0, 1    } },
+        { T::CountBits,                        { Ret::UInt,        1    } },
+        { T::Cross,                            { Ret::Float3,      2    } },
+        { T::D3DCOLORtoUBYTE4,                 { Ret::Int4,        1    } },
+        { T::DDX,                              { Ret::GenericArg0, 1    } },
+        { T::DDXCoarse,                        { Ret::GenericArg0, 1    } },
+        { T::DDXFine,                          { Ret::GenericArg0, 1    } },
+        { T::DDY,                              { Ret::GenericArg0, 1    } },
+        { T::DDYCoarse,                        { Ret::GenericArg0, 1    } },
+        { T::DDYFine,                          { Ret::GenericArg0, 1    } },
+        { T::Degrees,                          { Ret::GenericArg0, 1    } },
+        { T::Determinant,                      { Ret::Float,       1    } },
         { T::DeviceMemoryBarrier,              {                        } },
         { T::DeviceMemoryBarrierWithGroupSync, {                        } },
-        { T::Distance,                         { DataType::Float,  2    } },
-        { T::Dot,                              { DataType::Float,  2    } }, // float or int with size of input
-        { T::Dst,                              { Arg1,             2    } },
+        { T::Distance,                         { Ret::Float,       2    } },
+        { T::Dot,                              { Ret::Float,       2    } }, // float or int with size of input
+        { T::Dst,                              { Ret::GenericArg0, 2    } },
         { T::ErrorF,                           {                  -1    } },
-        { T::EvaluateAttributeAtCentroid,      { Arg1,             1    } },
-        { T::EvaluateAttributeAtSample,        { Arg1,             2    } },
-        { T::EvaluateAttributeSnapped,         { Arg1,             2    } },
-        { T::Exp,                              { Arg1,             1    } },
-        { T::Exp2,                             { Arg1,             1    } },
-        { T::F16toF32,                         { DataType::Float,  1    } },
-        { T::F32toF16,                         { DataType::UInt,   1    } },
-        { T::FaceForward,                      { Arg1,             3    } },
-        { T::FirstBitHigh,                     { DataType::Int,    1    } },
-        { T::FirstBitLow,                      { DataType::Int,    1    } },
-        { T::Floor,                            { Arg1,             1    } },
-        { T::FMA,                              { Arg1,             3    } },
-        { T::FMod,                             { Arg1,             2    } },
-        { T::Frac,                             { Arg1,             1    } },
-        { T::FrExp,                            { Arg1,             2    } },
-        { T::FWidth,                           { Arg1,             1    } },
-        { T::GetRenderTargetSampleCount,       { DataType::UInt         } },
-        { T::GetRenderTargetSamplePosition,    { DataType::Float2, 1    } },
+        { T::EvaluateAttributeAtCentroid,      { Ret::GenericArg0, 1    } },
+        { T::EvaluateAttributeAtSample,        { Ret::GenericArg0, 2    } },
+        { T::EvaluateAttributeSnapped,         { Ret::GenericArg0, 2    } },
+        { T::Exp,                              { Ret::GenericArg0, 1    } },
+        { T::Exp2,                             { Ret::GenericArg0, 1    } },
+        { T::F16toF32,                         { Ret::Float,       1    } },
+        { T::F32toF16,                         { Ret::UInt,        1    } },
+        { T::FaceForward,                      { Ret::GenericArg0, 3    } },
+        { T::FirstBitHigh,                     { Ret::Int,         1    } },
+        { T::FirstBitLow,                      { Ret::Int,         1    } },
+        { T::Floor,                            { Ret::GenericArg0, 1    } },
+        { T::FMA,                              { Ret::GenericArg0, 3    } },
+        { T::FMod,                             { Ret::GenericArg0, 2    } },
+        { T::Frac,                             { Ret::GenericArg0, 1    } },
+        { T::FrExp,                            { Ret::GenericArg0, 2    } },
+        { T::FWidth,                           { Ret::GenericArg0, 1    } },
+        { T::GetRenderTargetSampleCount,       { Ret::UInt              } },
+        { T::GetRenderTargetSamplePosition,    { Ret::Float2,      1    } },
         { T::GroupMemoryBarrier,               {                        } },
         { T::GroupMemoryBarrierWithGroupSync,  {                        } },
         { T::InterlockedAdd,                   {                   2, 3 } },
@@ -334,24 +398,24 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::InterlockedMin,                   {                   2, 3 } },
         { T::InterlockedOr,                    {                   2, 3 } },
         { T::InterlockedXor,                   {                   2, 3 } },
-        { T::IsFinite,                         { Arg1,             1    } }, // bool with size as input
-        { T::IsInf,                            { Arg1,             1    } }, // bool with size as input
-        { T::IsNaN,                            { Arg1,             1    } }, // bool with size as input
-        { T::LdExp,                            { Arg1,             2    } }, // float with size as input
-        { T::Length,                           { DataType::Float,  1    } },
-        { T::Lerp,                             { Arg1,             3    } },
-        { T::Lit,                              { Arg1,             3    } },
-        { T::Log,                              { Arg1,             1    } },
-        { T::Log10,                            { Arg1,             1    } },
-        { T::Log2,                             { Arg1,             1    } },
-        { T::MAD,                              { Arg1,             3    } },
-        { T::Max,                              { Arg1,             2    } },
-        { T::Min,                              { Arg1,             2    } },
-        { T::ModF,                             { Arg1,             2    } },
-        { T::MSAD4,                            { DataType::UInt4,  3    } },
+        { T::IsFinite,                         { Ret::GenericArg0, 1    } }, // bool with size as input
+        { T::IsInf,                            { Ret::GenericArg0, 1    } }, // bool with size as input
+        { T::IsNaN,                            { Ret::GenericArg0, 1    } }, // bool with size as input
+        { T::LdExp,                            { Ret::GenericArg0, 2    } }, // float with size as input
+        { T::Length,                           { Ret::Float,       1    } },
+        { T::Lerp,                             { Ret::GenericArg0, 3    } },
+        { T::Lit,                              { Ret::GenericArg0, 3    } },
+        { T::Log,                              { Ret::GenericArg0, 1    } },
+        { T::Log10,                            { Ret::GenericArg0, 1    } },
+        { T::Log2,                             { Ret::GenericArg0, 1    } },
+        { T::MAD,                              { Ret::GenericArg0, 3    } },
+        { T::Max,                              { Ret::GenericArg0, 2    } },
+        { T::Min,                              { Ret::GenericArg0, 2    } },
+        { T::ModF,                             { Ret::GenericArg0, 2    } },
+        { T::MSAD4,                            { Ret::UInt4,       3    } },
       //{ T::Mul,                              {                        } }, // special case
-        { T::Normalize,                        { Arg1,             1    } },
-        { T::Pow,                              { Arg1,             2    } },
+        { T::Normalize,                        { Ret::GenericArg0, 1    } },
+        { T::Pow,                              { Ret::GenericArg0, 2    } },
         { T::PrintF,                           {                  -1    } },
         { T::Process2DQuadTessFactorsAvg,      {                   5    } },
         { T::Process2DQuadTessFactorsMax,      {                   5    } },
@@ -363,75 +427,75 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::ProcessTriTessFactorsAvg,         {                   5    } },
         { T::ProcessTriTessFactorsMax,         {                   5    } },
         { T::ProcessTriTessFactorsMin,         {                   5    } },
-        { T::Radians,                          { Arg1,             1    } },
-        { T::Rcp,                              { Arg1,             1    } },
-        { T::Reflect,                          { Arg1,             2    } },
-        { T::Refract,                          { Arg1,             3    } },
-        { T::ReverseBits,                      { DataType::UInt,   1    } },
-        { T::Round,                            { Arg1,             1    } },
-        { T::RSqrt,                            { Arg1,             1    } },
-        { T::Saturate,                         { Arg1,             1    } },
-        { T::Sign,                             { Arg1,             1    } },
-        { T::Sin,                              { Arg1,             1    } },
+        { T::Radians,                          { Ret::GenericArg0, 1    } },
+        { T::Rcp,                              { Ret::GenericArg0, 1    } },
+        { T::Reflect,                          { Ret::GenericArg0, 2    } },
+        { T::Refract,                          { Ret::GenericArg0, 3    } },
+        { T::ReverseBits,                      { Ret::UInt,        1    } },
+        { T::Round,                            { Ret::GenericArg0, 1    } },
+        { T::RSqrt,                            { Ret::GenericArg0, 1    } },
+        { T::Saturate,                         { Ret::GenericArg0, 1    } },
+        { T::Sign,                             { Ret::GenericArg0, 1    } },
+        { T::Sin,                              { Ret::GenericArg0, 1    } },
         { T::SinCos,                           {                   3    } },
-        { T::SinH,                             { Arg1,             1    } },
-        { T::SmoothStep,                       { Arg3,             3    } },
-        { T::Sqrt,                             { Arg1,             1    } },
-        { T::Step,                             { Arg1,             2    } },
-        { T::Tan,                              { Arg1,             1    } },
-        { T::TanH,                             { Arg1,             1    } },
-        { T::Tex1D_2,                          { DataType::Float4, 2    } },
-        { T::Tex1D_4,                          { DataType::Float4, 4    } },
-        { T::Tex1DBias,                        { DataType::Float4, 2    } },
-        { T::Tex1DGrad,                        { DataType::Float4, 4    } },
-        { T::Tex1DLod,                         { DataType::Float4, 2    } },
-        { T::Tex1DProj,                        { DataType::Float4, 2    } },
-        { T::Tex2D_2,                          { DataType::Float4, 2    } },
-        { T::Tex2D_4,                          { DataType::Float4, 4    } },
-        { T::Tex2DBias,                        { DataType::Float4, 2    } },
-        { T::Tex2DGrad,                        { DataType::Float4, 4    } },
-        { T::Tex2DLod,                         { DataType::Float4, 2    } },
-        { T::Tex2DProj,                        { DataType::Float4, 2    } },
-        { T::Tex3D_2,                          { DataType::Float4, 2    } },
-        { T::Tex3D_4,                          { DataType::Float4, 4    } },
-        { T::Tex3DBias,                        { DataType::Float4, 2    } },
-        { T::Tex3DGrad,                        { DataType::Float4, 4    } },
-        { T::Tex3DLod,                         { DataType::Float4, 2    } },
-        { T::Tex3DProj,                        { DataType::Float4, 2    } },
-        { T::TexCube_2,                        { DataType::Float4, 2    } },
-        { T::TexCube_4,                        { DataType::Float4, 4    } },
-        { T::TexCubeBias,                      { DataType::Float4, 2    } },
-        { T::TexCubeGrad,                      { DataType::Float4, 4    } },
-        { T::TexCubeLod,                       { DataType::Float4, 2    } },
-        { T::TexCubeProj,                      { DataType::Float4, 2    } },
-      //{ T::Transpose,                        {                        } }, // special case
-        { T::Trunc,                            { Arg1,             1    } },
+        { T::SinH,                             { Ret::GenericArg0, 1    } },
+        { T::SmoothStep,                       { Ret::GenericArg2, 3    } },
+        { T::Sqrt,                             { Ret::GenericArg0, 1    } },
+        { T::Step,                             { Ret::GenericArg0, 2    } },
+        { T::Tan,                              { Ret::GenericArg0, 1    } },
+        { T::TanH,                             { Ret::GenericArg0, 1    } },
+        { T::Tex1D_2,                          { Ret::Float4,      2    } },
+        { T::Tex1D_4,                          { Ret::Float4,      4    } },
+        { T::Tex1DBias,                        { Ret::Float4,      2    } },
+        { T::Tex1DGrad,                        { Ret::Float4,      4    } },
+        { T::Tex1DLod,                         { Ret::Float4,      2    } },
+        { T::Tex1DProj,                        { Ret::Float4,      2    } },
+        { T::Tex2D_2,                          { Ret::Float4,      2    } },
+        { T::Tex2D_4,                          { Ret::Float4,      4    } },
+        { T::Tex2DBias,                        { Ret::Float4,      2    } },
+        { T::Tex2DGrad,                        { Ret::Float4,      4    } },
+        { T::Tex2DLod,                         { Ret::Float4,      2    } },
+        { T::Tex2DProj,                        { Ret::Float4,      2    } },
+        { T::Tex3D_2,                          { Ret::Float4,      2    } },
+        { T::Tex3D_4,                          { Ret::Float4,      4    } },
+        { T::Tex3DBias,                        { Ret::Float4,      2    } },
+        { T::Tex3DGrad,                        { Ret::Float4,      4    } },
+        { T::Tex3DLod,                         { Ret::Float4,      2    } },
+        { T::Tex3DProj,                        { Ret::Float4,      2    } },
+        { T::TexCube_2,                        { Ret::Float4,      2    } },
+        { T::TexCube_4,                        { Ret::Float4,      4    } },
+        { T::TexCubeBias,                      { Ret::Float4,      2    } },
+        { T::TexCubeGrad,                      { Ret::Float4,      4    } },
+        { T::TexCubeLod,                       { Ret::Float4,      2    } },
+        { T::TexCubeProj,                      { Ret::Float4,      2    } },
+      //{ T::Transpose,                        {                   } }, // special case
+        { T::Trunc,                            { Ret::GenericArg0, 1    } },
 
         { T::Texture_GetDimensions,            {                   3    } },
-        { T::Texture_Load_1,                   { DataType::Float4, 1    } },
-        { T::Texture_Load_2,                   { DataType::Float4, 2    } },
-        { T::Texture_Load_3,                   { DataType::Float4, 3    } },
-        { T::Texture_Sample_2,                 { DataType::Float4, 2    } },
-        { T::Texture_Sample_3,                 { DataType::Float4, 3    } },
-        { T::Texture_Sample_4,                 { DataType::Float4, 4    } },
-        { T::Texture_Sample_5,                 { DataType::Float4, 5    } },
-        { T::Texture_SampleBias_3,             { DataType::Float4, 3    } },
-        { T::Texture_SampleBias_4,             { DataType::Float4, 4    } },
-        { T::Texture_SampleBias_5,             { DataType::Float4, 5    } },
-        { T::Texture_SampleBias_6,             { DataType::Float4, 6    } },
-        { T::Texture_SampleCmp_3,              { DataType::Float4, 3    } },
-        { T::Texture_SampleCmp_4,              { DataType::Float4, 4    } },
-        { T::Texture_SampleCmp_5,              { DataType::Float4, 5    } },
-        { T::Texture_SampleCmp_6,              { DataType::Float4, 6    } },
-        { T::Texture_SampleGrad_4,             { DataType::Float4, 4    } },
-        { T::Texture_SampleGrad_5,             { DataType::Float4, 5    } },
-        { T::Texture_SampleGrad_6,             { DataType::Float4, 6    } },
-        { T::Texture_SampleGrad_7,             { DataType::Float4, 7    } },
-        { T::Texture_SampleLevel_3,            { DataType::Float4, 3    } },
-        { T::Texture_SampleLevel_4,            { DataType::Float4, 4    } },
-        { T::Texture_SampleLevel_5,            { DataType::Float4, 5    } },
-        { T::Texture_QueryLod,                 { DataType::Float,  2    } },
-        { T::Texture_QueryLodUnclamped,        { DataType::Float,  2    } },
+        { T::Texture_Load_1,                   { Ret::Float4,      1    } },
+        { T::Texture_Load_2,                   { Ret::Float4,      2    } },
+        { T::Texture_Load_3,                   { Ret::Float4,      3    } },
+        { T::Texture_Sample_2,                 { Ret::Float4,      2    } },
+        { T::Texture_Sample_3,                 { Ret::Float4,      3    } },
+        { T::Texture_Sample_4,                 { Ret::Float4,      4    } },
+        { T::Texture_Sample_5,                 { Ret::Float4,      5    } },
+        { T::Texture_SampleBias_3,             { Ret::Float4,      3    } },
+        { T::Texture_SampleBias_4,             { Ret::Float4,      4    } },
+        { T::Texture_SampleBias_5,             { Ret::Float4,      5    } },
+        { T::Texture_SampleBias_6,             { Ret::Float4,      6    } },
+        { T::Texture_SampleCmp_3,              { Ret::Float4,      3    } },
+        { T::Texture_SampleCmp_4,              { Ret::Float4,      4    } },
+        { T::Texture_SampleCmp_5,              { Ret::Float4,      5    } },
+        { T::Texture_SampleCmp_6,              { Ret::Float4,      6    } },
+        { T::Texture_SampleGrad_4,             { Ret::Float4,      4    } },
+        { T::Texture_SampleGrad_5,             { Ret::Float4,      5    } },
+        { T::Texture_SampleGrad_6,             { Ret::Float4,      6    } },
+        { T::Texture_SampleGrad_7,             { Ret::Float4,      7    } },
+        { T::Texture_SampleLevel_3,            { Ret::Float4,      3    } },
+        { T::Texture_SampleLevel_4,            { Ret::Float4,      4    } },
+        { T::Texture_SampleLevel_5,            { Ret::Float4,      5    } },
+        { T::Texture_QueryLod,                 { Ret::Float,       2    } },
+        { T::Texture_QueryLodUnclamped,        { Ret::Float,       2    } },
 
         { T::StreamOutput_Append,              {                   1    } },
         { T::StreamOutput_RestartStrip,        {                        } },
@@ -614,37 +678,27 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeTranspose(const std::vector<E
     RuntimeErr("invalid arguments in intrinsic 'transpose'");
 }
 
+/*
+TODO:
+This is a temporary solution to derive parameter types of intrinsic.
+Currently all global intrinsics use a common type denoter for all parameters.
+*/
 void HLSLIntrinsicAdept::DeriveParameterTypes(std::vector<TypeDenoterPtr>& paramTypeDenoters, const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const
 {
     /* Get type denoter from intrinsic signature map */
     auto it = g_intrinsicSignatureMap.find(intrinsic);
     if (it != g_intrinsicSignatureMap.end())
     {
-        //INCOMPLETE
-        #if 1
-
         if (!args.empty() && IsGlobalIntrinsic(intrinsic))
         {
             /* Find common type denoter for all arguments */
-            TypeDenoterPtr commonTypeDenoter = args[0]->GetTypeDenoter()->Get();
-
-            for (std::size_t i = 1, n = args.size(); i < n; ++i)
-            {
-                commonTypeDenoter = TypeDenoter::FindCommonTypeDenoter(
-                    commonTypeDenoter,
-                    args[i]->GetTypeDenoter()->Get()
-                );
-            }
+            auto commonTypeDenoter = DeriveCommonTypeDenoter(0, args);
 
             /* Add parameter type denoter */
             paramTypeDenoters.resize(args.size());
             for (std::size_t i = 0, n = args.size(); i < n; ++i)
                 paramTypeDenoters[i] = commonTypeDenoter;
         }
-
-        //TODO...
-
-        #endif
     }
     else
         RuntimeErr("failed to derive parameter type denoter for intrinsic '" + GetIntrinsicIdent(intrinsic) + "'");
