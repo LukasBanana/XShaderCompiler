@@ -254,6 +254,9 @@ struct Program : public AST
         unsigned int numThreads[3] = { 0 };
     };
 
+    // Registers a usage of an intrinsic with the specified argument data types (only base types).
+    void RegisterIntrinsicUsage(const Intrinsic intrinsic, const std::vector<DataType>& argumentDataTypes);
+
     // Registers a usage of an intrinsic with the specified arguments (only base types).
     void RegisterIntrinsicUsage(const Intrinsic intrinsic, const std::vector<ExprPtr>& arguments);
 

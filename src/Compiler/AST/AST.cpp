@@ -77,11 +77,24 @@ VarIdent* Expr::FetchVarIdent() const
 
 /* ----- Program ----- */
 
+void Program::RegisterIntrinsicUsage(const Intrinsic intrinsic, const std::vector<DataType>& argumentDataTypes)
+{
+    /* Insert argument types (only base types) into usage list */
+    IntrinsicUsage::ArgumentList argList;
+    {
+        argList.argTypes.reserve(argumentDataTypes.size());
+        for (auto dataType : argumentDataTypes)
+            argList.argTypes.push_back(dataType);
+    }
+    usedIntrinsics[intrinsic].argLists.insert(argList);
+}
+
 void Program::RegisterIntrinsicUsage(const Intrinsic intrinsic, const std::vector<ExprPtr>& arguments)
 {
     /* Insert argument types (only base types) into usage list */
     IntrinsicUsage::ArgumentList argList;
     {
+        argList.argTypes.reserve(arguments.size());
         for (auto& arg : arguments)
         {
             auto typeDen = arg->GetTypeDenoter()->Get();
@@ -1117,7 +1130,7 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
         );
     }
 
-    /* Return type of 'then'-branch sub expresion if the types are compatible */
+    /* Return common type of both sub expressions */
     const auto& thenTypeDen = thenExpr->GetTypeDenoter();
     const auto& elseTypeDen = elseExpr->GetTypeDenoter();
 
@@ -1129,7 +1142,7 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
         );
     }
 
-    return thenTypeDen;
+    return TypeDenoter::FindCommonTypeDenoter(thenTypeDen, elseTypeDen);
 }
 
 

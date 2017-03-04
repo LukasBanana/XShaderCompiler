@@ -238,7 +238,27 @@ IMPLEMENT_VISIT_PROC(TernaryExpr)
     /* Get common boolean type denoter from condition expression */
     auto condTypeDenoter = ast->condExpr->GetTypeDenoter()->Get();
 
-    //TODO...
+    if (auto baseTypeDen = condTypeDenoter->As<BaseTypeDenoter>())
+    {
+        /* Is the condition a boolean vector type? */
+        const auto condDataType = baseTypeDen->dataType;
+        if (condDataType >= DataType::Bool2 && condDataType <= DataType::Bool4)
+        {
+            /* Find common type denoter of sub expressions */
+            auto subTypeDen = TypeDenoter::FindCommonTypeDenoter(
+                ast->thenExpr->GetTypeDenoter(),
+                ast->elseExpr->GetTypeDenoter()
+            );
+
+            /* Is the sub type denoter a base type denoter? */
+            if (auto baseSubTypeDen = subTypeDen->As<BaseTypeDenoter>())
+            {
+                /* Register usage of ternary-vector-compare operator intrinsic */
+                const auto subDataType = VectorDataType(baseSubTypeDen->dataType, VectorTypeDim(condDataType));
+                program_->RegisterIntrinsicUsage(Intrinsic::Op_TernaryVectorCompare, { subDataType });
+            }
+        }
+    }
 
     VISIT_DEFAULT(TernaryExpr);
 }
