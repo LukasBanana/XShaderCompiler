@@ -208,6 +208,14 @@ static ExprPtr MakeConstructorListExprPrimarySingle(const LiteralExprPtr& litera
             return MakeCastExpr(typeDen, MakeConstructorListExpr(literalExpr, memberTypeDens));
         }
     }
+    else if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
+    {
+        if (!baseTypeDen->IsScalar())
+        {
+            /* Make a cast expression for this vector or matrix type */
+            return MakeCastExpr(typeDen, literalExpr);
+        }
+    }
     return literalExpr;
 }
 
