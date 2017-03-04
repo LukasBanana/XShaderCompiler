@@ -299,6 +299,11 @@ StructDecl* Analyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDeno
     return nullptr;
 }
 
+bool Analyzer::InsideGlobalScope() const
+{
+    return symTable_.InsideGlobalScope();
+}
+
 /* ----- Analyzer functions ----- */
 
 void Analyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast)

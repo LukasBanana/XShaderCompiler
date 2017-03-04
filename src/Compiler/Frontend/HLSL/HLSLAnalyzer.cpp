@@ -331,6 +331,11 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
+    /* Global variables are implicitly constant (or rather uniform) */
+    if (InsideGlobalScope())
+        ast->MakeImplicitConst();
+
+    /* Analyze type specifier and variable declarations */
     Visit(ast->typeSpecifier);
     Visit(ast->varDecls);
 
@@ -343,6 +348,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
             Error("'snorm' and 'unorm' type modifiers can only be used for floating-point types", ast->typeSpecifier.get());
     }
 
+    //TODO: remove this, if it's no longer of intereset
     #if 0
     /* Decorate variable type */
     if (InsideEntryPoint() && ast->varDecls.empty())
@@ -831,10 +837,15 @@ void HLSLAnalyzer::AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast)
             /* Is the variable declared as constant? */
             if (varDecl->declStmntRef->IsConst())
             {
-                Error(
-                    "illegal assignment to l-value '" + varIdent->ident + "' that is declared as constant",
-                    (ast != nullptr ? ast : varIdent)
-                );
+                /* Construct error message depending if the variable is implicitly or explicitly declared as constant */
+                std::string s = "illegal assignment to l-value '" + varIdent->ident + "' that is ";
+
+                if (varDecl->declStmntRef->flags(VarDeclStmnt::isImplicitConst))
+                    s += "implicitly ";
+
+                s += "declared as constant";
+
+                Error(s, (ast != nullptr ? ast : varIdent));
             }
         }
         varIdent = varIdent->next.get();
