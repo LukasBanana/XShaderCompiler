@@ -2257,12 +2257,8 @@ void GLSLGenerator::WriteWrapperIntrinsics()
         WriteWrapperIntrinsicsClip(*usage);
     if (auto usage = program->FetchIntrinsicUsage(Intrinsic::SinCos))
         WriteWrapperIntrinsicsSinCos(*usage);
-
-    #if 1
-    IntrinsicUsage usg;
-    usg.argLists.insert({ { DataType::Float3 } });
-    WriteWrapperIntrinsicsTernaryVectorCompare(usg);
-    #endif
+    if (auto usage = program->FetchIntrinsicUsage(Intrinsic::Op_TernaryVectorCompare))
+        WriteWrapperIntrinsicsTernaryVectorCompare(*usage);
 }
 
 void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)

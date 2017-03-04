@@ -732,6 +732,8 @@ enum class Intrinsic
 
     StreamOutput_Append,        // Append(StreamDataType)
     StreamOutput_RestartStrip,  // RestartStrip()
+
+    Op_TernaryVectorCompare,    // Ternary vector compare operator (e.g. 'vec_lhs < vec_rhs ? vec_a : vec_b')
 };
 
 // Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>
@@ -759,6 +761,9 @@ bool IsTextureIntrinsic(const Intrinsic t);
 
 // Returns true if the speciifed intrinsic belongs to a stream-output object.
 bool IsStreamOutputIntrinsic(const Intrinsic t);
+
+// Returns true if the speciifed intrinsic belongs to an operator that is core in a shading language.
+bool IsOperatorIntrinsic(const Intrinsic t);
 
 
 /* ----- Semantic Enum ----- */

@@ -893,6 +893,11 @@ bool IsStreamOutputIntrinsic(const Intrinsic t)
     return (t >= Intrinsic::StreamOutput_Append && t <= Intrinsic::StreamOutput_RestartStrip);
 }
 
+bool IsOperatorIntrinsic(const Intrinsic t)
+{
+    return (t == Intrinsic::Op_TernaryVectorCompare);
+}
+
 
 /* ----- IndexedSemantic Class ----- */
 

@@ -233,6 +233,16 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 /* --- Expressions --- */
 
+IMPLEMENT_VISIT_PROC(TernaryExpr)
+{
+    /* Get common boolean type denoter from condition expression */
+    auto condTypeDenoter = ast->condExpr->GetTypeDenoter()->Get();
+
+    //TODO...
+
+    VISIT_DEFAULT(TernaryExpr);
+}
+
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
     if (IsLValueOp(ast->op))
