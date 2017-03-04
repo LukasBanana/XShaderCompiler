@@ -91,6 +91,9 @@ class Analyzer : protected Visitor
         StructDecl* FetchStructDeclFromIdent(const std::string& ident, const AST* ast = nullptr);
         StructDecl* FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter);
 
+        // Returns true if the visitor is currently inside the global scope (i.e. out of any function declaration).
+        bool InsideGlobalScope() const;
+
         /* ----- Analyzer functions ----- */
 
         void AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast);

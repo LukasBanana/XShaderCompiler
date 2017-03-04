@@ -343,6 +343,11 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
             Error("'snorm' and 'unorm' type modifiers can only be used for floating-point types", ast->typeSpecifier.get());
     }
 
+    /* Global variables are implicit constant (or rather uniforms) */
+    if (InsideGlobalScope() && !ast->IsConst())
+        ast->isUniform = true;
+
+    //TODO: remove this, if it's no longer of intereset
     #if 0
     /* Decorate variable type */
     if (InsideEntryPoint() && ast->varDecls.empty())

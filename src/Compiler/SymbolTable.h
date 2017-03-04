@@ -168,6 +168,12 @@ class SymbolTable
             return scopeStack_.size();
         }
 
+        // Returns true if the symbol table is currently inside the global scope (i.e. scope level = 1).
+        bool InsideGlobalScope() const
+        {
+            return (ScopeLevel() == 1);
+        }
+
     private:
         
         struct Symbol
