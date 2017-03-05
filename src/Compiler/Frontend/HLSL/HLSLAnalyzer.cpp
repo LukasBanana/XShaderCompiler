@@ -245,27 +245,10 @@ IMPLEMENT_VISIT_PROC(StructDecl)
             parentStruct->nestedStructDeclRefs.push_back(ast);
     }
 
-    /* Register struct identifier in symbol table */
-    Register(ast->ident, ast);
-
-    PushStructDecl(ast);
-    {
-        if (ast->flags(StructDecl::isNestedStruct) && !ast->IsAnonymous())
-            Error("nested structures must be anonymous", ast);
-
-        OpenScope();
-        {
-            Visit(ast->localStmnts);
-        }
-        CloseScope();
-    }
-    PopStructDecl();
-
-    /* Report warning if structure is empty */
-    if (ast->NumVarMembers() == 0)
-        Warning("'" + ast->ToString() + "' is completely empty", ast);
-
-    /* Remove member variables that override members from base structure */
+    /*
+    Remove member variables that override members from base structure;
+    This must be done before variables are registerd in symbol table!
+    */
     if (ast->baseStructRef)
     {
         for (auto it = ast->varMembers.begin(); it != ast->varMembers.end();)
@@ -293,6 +276,26 @@ IMPLEMENT_VISIT_PROC(StructDecl)
                 ++it;
         }
     }
+
+    /* Register struct identifier in symbol table */
+    Register(ast->ident, ast);
+
+    PushStructDecl(ast);
+    {
+        if (ast->flags(StructDecl::isNestedStruct) && !ast->IsAnonymous())
+            Error("nested structures must be anonymous", ast);
+
+        OpenScope();
+        {
+            Visit(ast->localStmnts);
+        }
+        CloseScope();
+    }
+    PopStructDecl();
+
+    /* Report warning if structure is empty */
+    if (ast->NumVarMembers() == 0)
+        Warning("'" + ast->ToString() + "' is completely empty", ast);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDecl)

@@ -129,6 +129,7 @@ void Analyzer::Register(const std::string& ident, AST* ast)
 {
     try
     {
+        /* Register symbol in global symbol table */
         symTable_.Register(
             ident,
             std::make_shared<ASTSymbolOverload>(ident, ast),
@@ -148,10 +149,22 @@ AST* Analyzer::Fetch(const std::string& ident, const AST* ast)
 {
     try
     {
+        /* If we are inside the local scope of a member function -> try to fetch symbol from parent structure */
+        if (auto funcDecl = ActiveFunctionDecl())
+        {
+            if (auto structDecl = funcDecl->structDeclRef)
+            {
+                if (auto symbol = structDecl->Fetch(ident))
+                    return symbol;
+            }
+        }
+
+        /* Fetch symbol from global symbol table */
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->Fetch();
-        else
-            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
+        
+        /* Report undefined identifier error */
+        ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
     }
     catch (const std::exception& e)
     {
