@@ -422,6 +422,26 @@ bool Visitor::InsideStructDecl() const
     return (!structDeclStack_.empty());
 }
 
+/* ----- Structure declaration tracker ----- */
+
+void Visitor::PushUniformBufferDecl(UniformBufferDecl* ast)
+{
+    uniformBufferDeclStack_.push_back(ast);
+}
+
+void Visitor::PopUniformBufferDecl()
+{
+    if (!uniformBufferDeclStack_.empty())
+        uniformBufferDeclStack_.pop_back();
+    else
+        throw std::underflow_error("uniform buffer declaration level underflow");
+}
+
+bool Visitor::InsideUniformBufferDecl() const
+{
+    return (!uniformBufferDeclStack_.empty());
+}
+
 
 } // /namespace Xsc
 

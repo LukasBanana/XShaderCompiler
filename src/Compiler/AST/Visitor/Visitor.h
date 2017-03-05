@@ -214,22 +214,39 @@ class Visitor
             return structDeclStack_;
         }
 
+        /* ----- Structure declaration tracker ----- */
+
+        void PushUniformBufferDecl(UniformBufferDecl* ast);
+        void PopUniformBufferDecl();
+
+        // Returns true if the analyzer is currently inside a uniform buffer declaration.
+        bool InsideUniformBufferDecl() const;
+
+        // Returns the stack (or rather the list) of all current, nested structure declarations.
+        inline const std::vector<UniformBufferDecl*>& GetUniformBufferDeclStack() const
+        {
+            return uniformBufferDeclStack_;
+        }
+
     private:
 
         // Function declaration stack.
-        std::stack<FunctionDecl*>   funcDeclStack_;
+        std::stack<FunctionDecl*>       funcDeclStack_;
 
         // Function call stack to join arguments with its function call.
-        std::stack<FunctionCall*>   funcCallStack_;
+        std::stack<FunctionCall*>       funcCallStack_;
 
         // Structure stack to collect all members with system value semantic (SV_...), and detect all nested structures.
-        std::vector<StructDecl*>    structDeclStack_;
+        std::vector<StructDecl*>        structDeclStack_;
+
+        // Uniform buffer declaration stack.
+        std::vector<UniformBufferDecl*> uniformBufferDeclStack_;
 
         // Function declaration level of the main entry point.
-        std::size_t                 stackLevelOfEntryPoint_     = ~0;
+        std::size_t                     stackLevelOfEntryPoint_     = ~0;
 
         // Function declaration level of the secondary entry point.
-        std::size_t                 stackLevelOf2ndEntryPoint_  = ~0;
+        std::size_t                     stackLevelOf2ndEntryPoint_  = ~0;
 
 };
 

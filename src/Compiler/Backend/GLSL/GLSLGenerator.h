@@ -273,7 +273,6 @@ class GLSLGenerator : public Generator
         bool                                    alwaysBracedScopes_     = false;
 
         bool                                    isInsideInterfaceBlock_ = false;
-        bool                                    isInsideUniformBuffer_  = false;
 };
 
 

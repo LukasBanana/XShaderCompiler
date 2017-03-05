@@ -257,6 +257,16 @@ void HLSLParser::GeneratePreDefinedTypeAliases(Program& ast)
     }
 }
 
+VarDeclStmntPtr HLSLParser::MakeVarDeclStmntWithPackAlignment()
+{
+    auto ast = Make<VarDeclStmnt>();
+
+    if (rowMajorAlignment_)
+        ast->SetTypeModifier(TypeModifier::RowMajor);
+
+    return ast;
+}
+
 /* ------- Parse functions ------- */
 
 ProgramPtr HLSLParser::ParseProgram(const SourceCodePtr& source)
@@ -347,10 +357,7 @@ FunctionCallPtr HLSLParser::ParseFunctionCall(const TypeDenoterPtr& typeDenoter)
 
 VarDeclStmntPtr HLSLParser::ParseParameter()
 {
-    auto ast = Make<VarDeclStmnt>();
-
-    if (rowMajorAlignment_)
-        ast->SetTypeModifier(TypeModifier::RowMajor);
+    auto ast = MakeVarDeclStmntWithPackAlignment();
 
     /* Parse parameter as single variable declaration */
     while (IsVarDeclModifier() || Is(Tokens::PrimitiveType))
@@ -845,7 +852,7 @@ StmntPtr HLSLParser::ParseGlobalStmntWithTypeSpecifier()
     else
     {
         /* Parse variable declaration statement */
-        auto ast = Make<VarDeclStmnt>();
+        auto ast = MakeVarDeclStmntWithPackAlignment();
 
         ast->typeSpecifier  = typeSpecifier;
         ast->varDecls       = ParseVarDeclList(ast.get(), identTkn);
@@ -1020,10 +1027,7 @@ SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt(const SamplerTypeDenoterPt
 
 VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 {
-    auto ast = Make<VarDeclStmnt>();
-
-    if (rowMajorAlignment_)
-        ast->SetTypeModifier(TypeModifier::RowMajor);
+    auto ast = MakeVarDeclStmntWithPackAlignment();
 
     while (true)
     {
@@ -1165,7 +1169,7 @@ StmntPtr HLSLParser::ParseStmntWithStructDecl()
     if (!Is(Tokens::Semicolon))
     {
         /* Parse variable declaration with previous structure type */
-        auto varDeclStmnt = Make<VarDeclStmnt>();
+        auto varDeclStmnt = MakeVarDeclStmntWithPackAlignment();
 
         varDeclStmnt->typeSpecifier = ASTFactory::MakeTypeSpecifier(ast->structDecl);
         
@@ -1218,7 +1222,7 @@ StmntPtr HLSLParser::ParseStmntWithVarIdent()
     if (!varIdent->next)
     {
         /* Convert variable identifier to alias type denoter */
-        auto ast = Make<VarDeclStmnt>();
+        auto ast = MakeVarDeclStmntWithPackAlignment();
 
         ast->typeSpecifier = Make<TypeSpecifier>();
         ast->typeSpecifier->typeDenoter = ParseAliasTypeDenoter(varIdent->ident);

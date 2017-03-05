@@ -95,6 +95,9 @@ class HLSLParser : public Parser
         // Generates all pre defined type aliases (e.g. 'typedef int DWORD').
         void GeneratePreDefinedTypeAliases(Program& ast);
 
+        // Creates a new var-decl statement with the current matrix pack alignment type modifier.
+        VarDeclStmntPtr MakeVarDeclStmntWithPackAlignment();
+
         /* ----- Parsing ----- */
 
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);

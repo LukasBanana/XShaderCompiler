@@ -388,13 +388,17 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
             Error("user-defined constant buffer slots can not be target specific", slotRegister.get());
     }
 
-    Visit(ast->localStmnts);
+    PushUniformBufferDecl(ast);
+    {
+        Visit(ast->localStmnts);
+    }
+    PopUniformBufferDecl();
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     /* Global variables are implicitly constant (or rather uniform) */
-    if (InsideGlobalScope())
+    if (InsideGlobalScope() && !InsideUniformBufferDecl())
         ast->MakeImplicitConst();
 
     /* Analyze type specifier and variable declarations */

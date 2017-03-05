@@ -468,11 +468,11 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         WriteScopeOpen(false, true);
         BeginSep();
         {
-            isInsideUniformBuffer_ = true;
-
-            Visit(ast->varMembers);
-
-            isInsideUniformBuffer_ = false;
+            PushUniformBufferDecl(ast);
+            {
+                Visit(ast->varMembers);
+            }
+            PopUniformBufferDecl();
         }
         EndSep();
         WriteScopeClose();
@@ -1783,7 +1783,7 @@ void GLSLGenerator::WriteInterpModifiers(const std::set<InterpModifier>& interpM
 void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifiers, const TypeDenoterPtr& typeDenoter)
 {
     /* Matrix packing alignment can only be written for uniform buffers */
-    if (isInsideUniformBuffer_ && typeDenoter && typeDenoter->IsMatrix())
+    if (InsideUniformBufferDecl() && typeDenoter && typeDenoter->IsMatrix())
     {
         /* Only write 'row_major' type modifier (column major is the default) */
         if (typeModifiers.find(TypeModifier::RowMajor) != typeModifiers.end())
