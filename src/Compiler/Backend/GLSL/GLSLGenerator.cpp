@@ -440,7 +440,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     if (versionOut_ < OutputShaderVersion::GLSL140)
     {
         /* Write individual uniforms */
-        for (auto& varDeclStmnt : ast->members)
+        for (auto& varDeclStmnt : ast->varMembers)
         {
             varDeclStmnt->isUniform = true;
             Visit(varDeclStmnt);
@@ -470,7 +470,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         {
             isInsideUniformBuffer_ = true;
 
-            Visit(ast->members);
+            Visit(ast->varMembers);
 
             isInsideUniformBuffer_ = false;
         }
@@ -2436,7 +2436,7 @@ void GLSLGenerator::WriteStructDeclMembers(StructDecl* structDecl)
 {
     if (structDecl->baseStructRef)
         WriteStructDeclMembers(structDecl->baseStructRef);
-    Visit(structDecl->members);
+    Visit(structDecl->varMembers);
 }
 
 /* --- BufferDecl --- */

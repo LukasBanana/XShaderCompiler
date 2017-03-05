@@ -727,8 +727,8 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
     GetReportHandler().PushContextDesc(ast->ToString());
     {
         /* Parse member variable declarations */
-        auto members = ParseVarDeclStmntList();
-        ast->members.insert(ast->members.end(), members.begin(), members.end());
+        auto varMembers = ParseVarDeclStmntList();
+        ast->varMembers.insert(ast->varMembers.end(), varMembers.begin(), varMembers.end());
     }
     GetReportHandler().PopContextDesc();
 
@@ -937,7 +937,7 @@ UniformBufferDeclPtr HLSLParser::ParseUniformBufferDecl()
     GetReportHandler().PushContextDesc(ast->ToString());
     {
         /* Parse buffer body */
-        ast->members = ParseVarDeclStmntList();
+        ast->varMembers = ParseVarDeclStmntList();
 
         /* Parse optional semicolon (this seems to be optional for cbuffer, and tbuffer) */
         if (Is(Tokens::Semicolon))
@@ -1684,17 +1684,17 @@ std::vector<VarDeclPtr> HLSLParser::ParseVarDeclList(VarDeclStmnt* declStmntRef,
 
 std::vector<VarDeclStmntPtr> HLSLParser::ParseVarDeclStmntList()
 {
-    std::vector<VarDeclStmntPtr> members;
+    std::vector<VarDeclStmntPtr> varMembers;
 
     Accept(Tokens::LCurly);
 
     /* Parse all variable declaration statements */
     while (!Is(Tokens::RCurly))
-        members.push_back(ParseVarDeclStmnt());
+        varMembers.push_back(ParseVarDeclStmnt());
 
     AcceptIt();
 
-    return members;
+    return varMembers;
 }
 
 std::vector<VarDeclStmntPtr> HLSLParser::ParseParameterList()

@@ -585,7 +585,7 @@ struct StructDecl : public Decl
     bool HasNonSystemValueMembers() const;
 
     // Returns the total number of members (include all base structures).
-    std::size_t NumMembers() const;
+    std::size_t NumVarMembers() const;
 
     // Returns a list with the type denoters of all members (including all base structures).
     void CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens) const;
@@ -598,7 +598,7 @@ struct StructDecl : public Decl
 
     std::string                     ident;                                  // May be empty (for anonymous structures).
     std::string                     baseStructName;                         // May be empty (if no inheritance is used).
-    std::vector<VarDeclStmntPtr>    members;
+    std::vector<VarDeclStmntPtr>    varMembers;
 
     StructDecl*                     baseStructRef               = nullptr;  // Optional reference to base struct
     std::string                     aliasName;                              // Alias name for input and output interface blocks of the DAST.
@@ -714,7 +714,7 @@ struct UniformBufferDecl : public Stmnt
     UniformBufferType               bufferType = UniformBufferType::Undefined;
     std::string                     ident;
     std::vector<RegisterPtr>        slotRegisters;
-    std::vector<VarDeclStmntPtr>    members;
+    std::vector<VarDeclStmntPtr>    varMembers;
 };
 
 // Buffer (and texture) declaration.

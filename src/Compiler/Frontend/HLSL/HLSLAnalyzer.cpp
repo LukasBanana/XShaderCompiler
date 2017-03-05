@@ -221,20 +221,20 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
         OpenScope();
         {
-            Visit(ast->members);
+            Visit(ast->varMembers);
         }
         CloseScope();
     }
     PopStructDecl();
 
     /* Report warning if structure is empty */
-    if (ast->NumMembers() == 0)
+    if (ast->NumVarMembers() == 0)
         Warning("'" + ast->ToString() + "' is completely empty", ast);
 
     /* Remove member variables that override members from base structure */
     if (ast->baseStructRef)
     {
-        for (auto it = ast->members.begin(); it != ast->members.end();)
+        for (auto it = ast->varMembers.begin(); it != ast->varMembers.end();)
         {
             /* Remove all duplicate variables in current declaration statement */
             auto varDeclStmnt = it->get();
@@ -254,7 +254,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
             /* Remove member if variable declaration statement has no more variables */
             if (varDeclStmnt->varDecls.empty())
-                it = ast->members.erase(it);
+                it = ast->varMembers.erase(it);
             else
                 ++it;
         }
@@ -347,7 +347,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
             Error("user-defined constant buffer slots can not be target specific", slotRegister.get());
     }
 
-    for (auto& member : ast->members)
+    for (auto& member : ast->varMembers)
     {
         Visit(member);
 
@@ -1099,7 +1099,7 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOutStruct(FunctionDecl* funcDecl,
     structDecl->aliasName = structAliasName;
 
     /* Analyze all structure members */
-    for (auto& member : structDecl->members)
+    for (auto& member : structDecl->varMembers)
     {
         for (auto& memberVar : member->varDecls)
             AnalyzeEntryPointParameterInOut(funcDecl, memberVar.get(), input);

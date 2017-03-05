@@ -105,7 +105,7 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    Visit(ast->members);
+    Visit(ast->varMembers);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDecl)
@@ -127,7 +127,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     Visit(ast->attribs);
-    Visit(ast->members);
+    Visit(ast->varMembers);
     Visit(ast->slotRegisters);
 }
 

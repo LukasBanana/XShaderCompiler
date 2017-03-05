@@ -201,9 +201,9 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
             {
                 auto structDecl = static_cast<StructDecl*>(symbolRef);
                 if (next)
-                    RuntimeErr("can not directly access members of 'struct " + structDecl->ToString() + "'", next.get());
+                    RuntimeErr("can not directly access members of '" + structDecl->ToString() + "'", next.get());
                 if (!arrayIndices.empty())
-                    RuntimeErr("can not directly acces array of 'struct " + structDecl->ToString() + "'", this);
+                    RuntimeErr("can not directly acces array of '" + structDecl->ToString() + "'", this);
                 return structDecl->GetTypeDenoter()->Get();
             }
             break;
@@ -602,7 +602,7 @@ VarDecl* StructDecl::Fetch(const std::string& ident, const StructDecl** owner) c
     }
 
     /* Now fetch symbol from members */
-    for (const auto& varDeclStmnt : members)
+    for (const auto& varDeclStmnt : varMembers)
     {
         auto symbol = varDeclStmnt->Fetch(ident);
         if (symbol)
@@ -662,7 +662,7 @@ bool StructDecl::HasNonSystemValueMembers() const
         return true;
     
     /* Search for non-system-value member */
-    for (const auto& member : members)
+    for (const auto& member : varMembers)
     {
         for (const auto& varDecl : member->varDecls)
         {
@@ -675,14 +675,14 @@ bool StructDecl::HasNonSystemValueMembers() const
     return false;
 }
 
-std::size_t StructDecl::NumMembers() const
+std::size_t StructDecl::NumVarMembers() const
 {
     std::size_t n = 0;
 
     if (baseStructRef)
-        n += baseStructRef->NumMembers();
+        n += baseStructRef->NumVarMembers();
 
-    for (const auto& member : members)
+    for (const auto& member : varMembers)
         n += member->varDecls.size();
 
     return n;
@@ -695,7 +695,7 @@ void StructDecl::CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTy
         baseStructRef->CollectMemberTypeDenoters(memberTypeDens);
 
     /* Collect type denoters from this structure */
-    for (const auto& member : members)
+    for (const auto& member : varMembers)
     {
         /* Add type denoter N times (where N is the number variable declaration within the member statement) */
         for (std::size_t i = 0; i < member->varDecls.size(); ++i)
@@ -709,7 +709,7 @@ void StructDecl::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
     if (baseStructRef)
         baseStructRef->ForEachVarDecl(iterator);
 
-    for (auto& member : members)
+    for (auto& member : varMembers)
     {
         /* Iterate over all sub-struct members */
         auto typeDen = member->typeSpecifier->GetTypeDenoter()->Get();

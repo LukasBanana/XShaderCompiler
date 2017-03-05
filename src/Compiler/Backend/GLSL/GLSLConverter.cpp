@@ -189,14 +189,14 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     }
     PopStructDecl();
 
-    RemoveSamplerStateVarDeclStmnts(ast->members);
+    RemoveSamplerStateVarDeclStmnts(ast->varMembers);
 
     /* Is this an empty structure? */
-    if (ast->NumMembers() == 0)
+    if (ast->NumVarMembers() == 0)
     {
         /* Add dummy member if the structure is empty (GLSL does not support empty structures) */
         auto dummyMember = ASTFactory::MakeVarDeclStmnt(DataType::Int, nameMangling_.temporaryPrefix + "dummy");
-        ast->members.push_back(dummyMember);
+        ast->varMembers.push_back(dummyMember);
     }
 }
 
