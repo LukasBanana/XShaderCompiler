@@ -130,8 +130,8 @@ class GLSLConverter : public Visitor
 
         ExprConverter           exprConverter_;
 
-        ShaderTarget            shaderTarget_           = ShaderTarget::VertexShader;
-        Program*                program_                = nullptr;
+        ShaderTarget            shaderTarget_       = ShaderTarget::VertexShader;
+        Program*                program_            = nullptr;
 
         NameMangling            nameMangling_;
         Options                 options_;
@@ -142,10 +142,8 @@ class GLSLConverter : public Visitor
         */
         std::vector<VarDecl*>   reservedVarDecls_;
 
-        unsigned int            anonymousStructCounter_ = 0;
-
-        // True, if code obfuscation is enabled
-        unsigned int            obfuscationCounter_     = 0;
+        unsigned int            anonymCounter_      = 0;
+        unsigned int            obfuscationCounter_ = 0;
 
 };
 

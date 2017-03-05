@@ -397,8 +397,8 @@ void GLSLConverter::LabelAnonymousStructDecl(StructDecl* ast)
 {
     if (ast->IsAnonymous())
     {
-        ast->ident = nameMangling_.temporaryPrefix + "anonymous_struct" + std::to_string(anonymousStructCounter_);
-        ++anonymousStructCounter_;
+        ast->ident = nameMangling_.temporaryPrefix + "anonym" + std::to_string(anonymCounter_);
+        ++anonymCounter_;
     }
 }
 
