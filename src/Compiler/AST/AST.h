@@ -596,15 +596,19 @@ struct StructDecl : public Decl
     // Returns true if this structure is used more than once as entry point output (either through variable arrays or multiple variable declarations).
     bool HasMultipleShaderOutputInstances() const;
 
-    std::string                     ident;                                  // May be empty (for anonymous structures).
-    std::string                     baseStructName;                         // May be empty (if no inheritance is used).
-    std::vector<VarDeclStmntPtr>    varMembers;
+    std::string                     ident;                              // May be empty (for anonymous structures).
+    std::string                     baseStructName;                     // May be empty (if no inheritance is used).
+    std::vector<StmntPtr>           localStmnts;                        // Local declaration statements
 
-    StructDecl*                     baseStructRef               = nullptr;  // Optional reference to base struct
-    std::string                     aliasName;                              // Alias name for input and output interface blocks of the DAST.
-    std::map<std::string, VarDecl*> systemValuesRef;                        // List of members with system value semantic (SV_...).
-    std::vector<StructDecl*>        nestedStructDeclRefs;                   // References to all nested structures within this structure.
-    std::set<VarDecl*>              shaderOutputVarDeclRefs;                // References to all variables from this structure that are used as entry point outputs.
+    std::vector<VarDeclStmntPtr>    varMembers;                         // List of all member variable declaration statements.
+    std::vector<FunctionDeclPtr>    funcMembers;                        // List of all member function declarations.
+
+    StructDeclStmnt*                declStmntRef            = nullptr;  // Reference to its declaration statement (parent node).
+    StructDecl*                     baseStructRef           = nullptr;  // Optional reference to base struct
+    std::string                     aliasName;                          // Alias name for input and output interface blocks of the DAST.
+    std::map<std::string, VarDecl*> systemValuesRef;                    // List of members with system value semantic (SV_...).
+    std::vector<StructDecl*>        nestedStructDeclRefs;               // References to all nested structures within this structure.
+    std::set<VarDecl*>              shaderOutputVarDeclRefs;            // References to all variables from this structure that are used as entry point outputs.
 };
 
 // Type alias declaration.
@@ -617,7 +621,7 @@ struct AliasDecl : public Decl
     std::string     ident;                  // Type identifier
     TypeDenoterPtr  typeDenoter;            // Type denoter of the aliased type
 
-    AliasDeclStmnt* declStmntRef = nullptr; // Reference to decl-stmnt.
+    AliasDeclStmnt* declStmntRef = nullptr; // Reference to its declaration statement (parent node).
 };
 
 /* --- Declaration statements --- */
@@ -711,10 +715,12 @@ struct UniformBufferDecl : public Stmnt
 
     std::string ToString() const;
 
-    UniformBufferType               bufferType = UniformBufferType::Undefined;
+    UniformBufferType               bufferType      = UniformBufferType::Undefined;
     std::string                     ident;
     std::vector<RegisterPtr>        slotRegisters;
-    std::vector<VarDeclStmntPtr>    varMembers;
+    std::vector<StmntPtr>           localStmnts;                                    // Local declaration statements
+
+    std::vector<VarDeclStmntPtr>    varMembers;                                     // List of all member variable declaration statements.
 };
 
 // Buffer (and texture) declaration.

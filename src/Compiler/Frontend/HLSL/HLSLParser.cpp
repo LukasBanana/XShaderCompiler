@@ -274,13 +274,7 @@ ProgramPtr HLSLParser::ParseProgram(const SourceCodePtr& source)
     while (true)
     {
         /* Ignore all null statements and techniques */
-        while (Is(Tokens::Semicolon) || Is(Tokens::Technique))
-        {
-            if (Is(Tokens::Technique))
-                ParseAndIgnoreTechnique();
-            else
-                AcceptIt();
-        }
+        ParseAndIgnoreTechniquesAndNullStmnts();
 
         /* Check if end of stream has been reached */
         if (Is(Tokens::EndOfStream))
@@ -727,8 +721,23 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
     GetReportHandler().PushContextDesc(ast->ToString());
     {
         /* Parse member variable declarations */
-        auto varMembers = ParseVarDeclStmntList();
-        ast->varMembers.insert(ast->varMembers.end(), varMembers.begin(), varMembers.end());
+        ast->localStmnts = ParseLocalStmntList();
+        
+        for (auto& stmnt : ast->localStmnts)
+        {
+            switch (stmnt->Type())
+            {
+                case AST::Types::VarDeclStmnt:
+                    ast->varMembers.push_back(std::static_pointer_cast<VarDeclStmnt>(stmnt));
+                    break;
+                case AST::Types::FunctionDecl:
+                    ast->funcMembers.push_back(std::static_pointer_cast<FunctionDecl>(stmnt));
+                    break;
+                default:
+                    Error("illegal declaration statement inside declaration of '" + ast->ToString() + "'", stmnt->area, false);
+                    break;
+            }
+        }
     }
     GetReportHandler().PopContextDesc();
 
@@ -801,6 +810,8 @@ StmntPtr HLSLParser::ParseGlobalStmntWithTypeSpecifier()
         auto ast = Make<StructDeclStmnt>();
 
         ast->structDecl = typeSpecifier->structDecl;
+        ast->structDecl->declStmntRef = ast.get();
+
         Semi();
 
         return ast;
@@ -937,7 +948,13 @@ UniformBufferDeclPtr HLSLParser::ParseUniformBufferDecl()
     GetReportHandler().PushContextDesc(ast->ToString());
     {
         /* Parse buffer body */
-        ast->varMembers = ParseVarDeclStmntList();
+        ast->localStmnts = ParseLocalStmntList();
+
+        for (auto& stmnt : ast->localStmnts)
+        {
+            if (stmnt->Type() == AST::Types::VarDeclStmnt) 
+                ast->varMembers.push_back(std::static_pointer_cast<VarDeclStmnt>(stmnt));
+        }
 
         /* Parse optional semicolon (this seems to be optional for cbuffer, and tbuffer) */
         if (Is(Tokens::Semicolon))
@@ -1034,7 +1051,7 @@ AliasDeclStmntPtr HLSLParser::ParseAliasDeclStmnt()
     for (auto& decl : ast->aliasDecls)
         decl->declStmntRef = ast.get();
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 /* --- Statements --- */
@@ -1117,6 +1134,7 @@ StmntPtr HLSLParser::ParseStmntWithStructDecl()
     auto ast = Make<StructDeclStmnt>();
     
     ast->structDecl = ParseStructDecl();
+    ast->structDecl->declStmntRef = ast.get();
 
     if (!Is(Tokens::Semicolon))
     {
@@ -1664,6 +1682,25 @@ InitializerExprPtr HLSLParser::ParseInitializerExpr()
 
 /* --- Lists --- */
 
+std::vector<StmntPtr> HLSLParser::ParseLocalStmntList()
+{
+    std::vector<StmntPtr> stmnts;
+
+    Accept(Tokens::LCurly);
+
+    /* Parse all variable declaration statements */
+    while (!Is(Tokens::RCurly))
+    {
+        /* Parse next global declaration (ignore techniques and null statements) */
+        ParseAndIgnoreTechniquesAndNullStmnts();
+        ParseStmntWithOptionalComment(stmnts, std::bind(&HLSLParser::ParseGlobalStmnt, this));
+    }
+
+    AcceptIt();
+
+    return stmnts;
+}
+
 std::vector<VarDeclPtr> HLSLParser::ParseVarDeclList(VarDeclStmnt* declStmntRef, TokenPtr firstIdentTkn)
 {
     std::vector<VarDeclPtr> varDecls;
@@ -1680,21 +1717,6 @@ std::vector<VarDeclPtr> HLSLParser::ParseVarDeclList(VarDeclStmnt* declStmntRef,
     }
 
     return varDecls;
-}
-
-std::vector<VarDeclStmntPtr> HLSLParser::ParseVarDeclStmntList()
-{
-    std::vector<VarDeclStmntPtr> varMembers;
-
-    Accept(Tokens::LCurly);
-
-    /* Parse all variable declaration statements */
-    while (!Is(Tokens::RCurly))
-        varMembers.push_back(ParseVarDeclStmnt());
-
-    AcceptIt();
-
-    return varMembers;
 }
 
 std::vector<VarDeclStmntPtr> HLSLParser::ParseParameterList()
@@ -2235,6 +2257,18 @@ int HLSLParser::ParseAndEvaluateVectorDimension()
         Error("vector and matrix dimensions must be between 1 and 4", tkn.get());
 
     return value;
+}
+
+void HLSLParser::ParseAndIgnoreTechniquesAndNullStmnts()
+{
+    /* Ignore all null statements and techniques */
+    while (Is(Tokens::Semicolon) || Is(Tokens::Technique))
+    {
+        if (Is(Tokens::Technique))
+            ParseAndIgnoreTechnique();
+        else
+            AcceptIt();
+    }
 }
 
 void HLSLParser::ParseAndIgnoreTechnique()

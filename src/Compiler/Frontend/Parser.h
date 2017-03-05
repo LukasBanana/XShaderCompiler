@@ -52,6 +52,7 @@ class Parser
 
         /* ----- Report Handling ----- */
 
+        void Error(const std::string& msg, const SourceArea& area, bool breakWithExpection = true);
         void Error(const std::string& msg, const Token* tkn, bool breakWithExpection = true);
         void Error(const std::string& msg, bool prevToken = true, bool breakWithExpection = true);
 

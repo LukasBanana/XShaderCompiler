@@ -161,8 +161,8 @@ class HLSLParser : public Parser
         ExprPtr                         ParseFunctionCallExpr(const VarIdentPtr& varIdent = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
         InitializerExprPtr              ParseInitializerExpr();
 
+        std::vector<StmntPtr>           ParseLocalStmntList();
         std::vector<VarDeclPtr>         ParseVarDeclList(VarDeclStmnt* declStmntRef, TokenPtr firstIdentTkn = nullptr);
-        std::vector<VarDeclStmntPtr>    ParseVarDeclStmntList();
         std::vector<VarDeclStmntPtr>    ParseParameterList();
         std::vector<VarDeclStmntPtr>    ParseAnnotationList();
         std::vector<StmntPtr>           ParseStmntList();
@@ -198,6 +198,7 @@ class HLSLParser : public Parser
         int                             ParseAndEvaluateConstExprInt();
         int                             ParseAndEvaluateVectorDimension();
 
+        void                            ParseAndIgnoreTechniquesAndNullStmnts();
         void                            ParseAndIgnoreTechnique();
 
         void                            ParseVarDeclSemantic(VarDecl& varDecl, bool allowPackOffset = true);

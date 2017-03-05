@@ -33,7 +33,7 @@ void ReferenceAnalyzer::MarkReferencesFromEntryPoint(Program& program, const Sha
 
 bool ReferenceAnalyzer::Reachable(AST* ast)
 {
-    return ast->flags.SetOnce(AST::isReachable);
+    return (ast ? ast->flags.SetOnce(AST::isReachable) : false);
 }
 
 void ReferenceAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts)
@@ -170,7 +170,10 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
     if (Reachable(ast))
+    {
         VISIT_DEFAULT(StructDecl);
+        Reachable(ast->declStmntRef);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(BufferDecl)

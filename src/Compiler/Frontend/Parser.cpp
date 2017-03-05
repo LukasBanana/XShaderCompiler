@@ -36,14 +36,20 @@ static SourceArea GetTokenArea(const Token* tkn)
     return (tkn != nullptr ? tkn->Area() : SourceArea::ignore);
 }
 
+void Parser::Error(const std::string& msg, const SourceArea& area, bool breakWithExpection)
+{
+    /* Report error with the report handler */
+    reportHandler_.Error(breakWithExpection, msg, GetScanner().Source(), area);
+}
+
 void Parser::Error(const std::string& msg, const Token* tkn, bool breakWithExpection)
 {
     /* Always break with an exception when the end of stream has been reached */
-    if (tkn->Type() == Tokens::EndOfStream)
+    if (tkn != nullptr && tkn->Type() == Tokens::EndOfStream)
         breakWithExpection = true;
 
-    /* Report error with the report handler */
-    reportHandler_.Error(breakWithExpection, msg, GetScanner().Source(), GetTokenArea(tkn));
+    /* Report error from token source area */
+    Error(msg, GetTokenArea(tkn), breakWithExpection);
 }
 
 void Parser::Error(const std::string& msg, bool prevToken, bool breakWithExpection)
