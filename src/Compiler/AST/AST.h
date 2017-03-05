@@ -444,7 +444,7 @@ struct VarIdent : public TypedAST
     BaseTypeDenoterPtr GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const;
 
     // Moves the next identifier into this one (i.e. removes the first identifier), and propagates the array indices.
-    void PopFront();
+    void PopFront(bool accumulateArrayIndices = true);
 
     // Returns a semantic if this is an identifier to a variable which has a semantic.
     IndexedSemantic FetchSemantic() const;

@@ -340,7 +340,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     /* Is this variable a member of the active owner structure? */
-    if (auto symbol = ast->varIdent->Last()->symbolRef)
+    if (auto symbol = ast->varIdent->symbolRef)
     {
         if (auto varDecl = symbol->As<VarDecl>())
         {
@@ -772,7 +772,7 @@ void GLSLConverter::ConvertFunctionCall(FunctionCall* ast)
 
                 /* Remove all identifiers except the last one */
                 while (ast->varIdent->next)
-                    ast->varIdent->PopFront();
+                    ast->varIdent->PopFront(false);
             }
             else
             {

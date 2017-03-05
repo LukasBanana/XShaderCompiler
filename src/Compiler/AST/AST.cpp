@@ -248,7 +248,7 @@ BaseTypeDenoterPtr VarIdent::GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDe
     RuntimeErr("invalid base type denoter for vector subscript", this);
 }
 
-void VarIdent::PopFront()
+void VarIdent::PopFront(bool accumulateArrayIndices)
 {
     if (next)
     {
@@ -258,7 +258,10 @@ void VarIdent::PopFront()
         next        = nextVarIdent->next;
         symbolRef   = nextVarIdent->symbolRef;
 
-        arrayIndices.insert(arrayIndices.end(), nextVarIdent->arrayIndices.begin(), nextVarIdent->arrayIndices.end());
+        if (accumulateArrayIndices)
+            arrayIndices.insert(arrayIndices.end(), nextVarIdent->arrayIndices.begin(), nextVarIdent->arrayIndices.end());
+        else
+            arrayIndices = nextVarIdent->arrayIndices;
     }
 }
 
