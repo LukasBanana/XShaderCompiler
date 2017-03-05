@@ -597,16 +597,14 @@ VarDecl* StructDecl::Fetch(const std::string& ident, const StructDecl** owner) c
     /* Fetch symbol from base struct first */
     if (baseStructRef)
     {
-        auto varDecl = baseStructRef->Fetch(ident, owner);
-        if (varDecl)
-            return varDecl;
+        if (auto symbol = baseStructRef->Fetch(ident, owner))
+            return symbol;
     }
 
     /* Now fetch symbol from members */
     for (const auto& varDeclStmnt : varMembers)
     {
-        auto symbol = varDeclStmnt->Fetch(ident);
-        if (symbol)
+        if (auto symbol = varDeclStmnt->Fetch(ident))
         {
             if (owner)
                 *owner = this;
@@ -615,6 +613,34 @@ VarDecl* StructDecl::Fetch(const std::string& ident, const StructDecl** owner) c
     }
 
     return nullptr;
+}
+
+FunctionDecl* StructDecl::FetchFunctionDecl(const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters, const StructDecl** owner) const
+{
+    /* Fetch symbol from base struct first */
+    if (baseStructRef)
+    {
+        if (auto symbol = baseStructRef->FetchFunctionDecl(ident, argTypeDenoters, owner))
+            return symbol;
+    }
+
+    /* Now fetch symbol from members */
+    std::vector<FunctionDecl*> funcDeclList;
+    funcDeclList.reserve(funcMembers.size());
+
+    for (const auto& funcDecl : funcMembers)
+    {
+        if (funcDecl->ident == ident)
+            funcDeclList.push_back(funcDecl.get());
+    }
+
+    if (funcDeclList.empty())
+        return nullptr;
+
+    if (owner)
+        *owner = this;
+
+    return FunctionDecl::FetchFunctionDeclFromList(funcDeclList, ident, argTypeDenoters, false);
 }
 
 std::string StructDecl::FetchSimilar(const std::string& ident)
@@ -824,11 +850,22 @@ std::string FunctionDecl::ToString(bool useParamNames) const
 {
     std::string s;
 
+    /* Append return type */
     s += returnType->ToString();
     s += ' ';
+
+    /* Append optional owner structure */
+    if (structDeclRef)
+    {
+        s += structDeclRef->ident;
+        s += "::";
+    }
+
+    /* Append identifier */
     s += ident;
     s += '(';
 
+    /* Append parameter types */
     for (std::size_t i = 0; i < parameters.size(); ++i)
     {
         s += parameters[i]->ToString(useParamNames, true);
@@ -953,24 +990,35 @@ static void ListAllFuncCandidates(const std::vector<FunctionDecl*>& candidates)
 };
 
 FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
-    const std::vector<FunctionDecl*>& funcDeclList, const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters)
+    const std::vector<FunctionDecl*>& funcDeclList, const std::string& ident,
+    const std::vector<TypeDenoterPtr>& argTypeDenoters, bool throwErrorIfNoMatch)
 {
     if (funcDeclList.empty())
-        RuntimeErr("undefined symbol '" + ident + "'");
+    {
+        if (throwErrorIfNoMatch)
+            RuntimeErr("undefined symbol '" + ident + "'");
+        else
+            return nullptr;
+    }
 
     /* Validate number of arguments for function call */
     const auto numArgs = argTypeDenoters.size();
 
     if (!ValidateNumArgsForFunctionDecl(funcDeclList, numArgs))
     {
-        /* Add candidate signatures to report hints */
-        ListAllFuncCandidates(funcDeclList);
+        if (throwErrorIfNoMatch)
+        {
+            /* Add candidate signatures to report hints */
+            ListAllFuncCandidates(funcDeclList);
 
-        /* Throw runtime error */
-        RuntimeErr(
-            "function '" + ident + "' does not take " + std::to_string(numArgs) + " " +
-            std::string(numArgs == 1 ? "parameter" : "parameters")
-        );
+            /* Throw runtime error */
+            RuntimeErr(
+                "function '" + ident + "' does not take " + std::to_string(numArgs) + " " +
+                std::string(numArgs == 1 ? "parameter" : "parameters")
+            );
+        }
+        else
+            return nullptr;
     }
 
     /* Find best fit with explicit argument types */
@@ -995,6 +1043,9 @@ FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
     /* Check for ambiguous function call */
     if (funcDeclCandidates.size() != 1)
     {
+        if (funcDeclCandidates.empty() && !throwErrorIfNoMatch)
+            return nullptr;
+
         /* Construct descriptive string for argument type names */
         std::string argTypeNames;
 

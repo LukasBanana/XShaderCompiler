@@ -157,7 +157,7 @@ bool ASTSymbolOverload::AddSymbolRef(AST* ast)
     return true;
 }
 
-AST* ASTSymbolOverload::Fetch(bool throwOnFailure)
+AST* ASTSymbolOverload::Fetch(bool throwOnFailure) const
 {
     if (throwOnFailure)
     {
@@ -171,7 +171,7 @@ AST* ASTSymbolOverload::Fetch(bool throwOnFailure)
         return (refs_.size() == 1 ? refs_.front() : nullptr);
 }
 
-AST* ASTSymbolOverload::FetchVar(bool throwOnFailure)
+AST* ASTSymbolOverload::FetchVar(bool throwOnFailure) const
 {
     if (auto ref = Fetch(throwOnFailure))
     {
@@ -184,7 +184,7 @@ AST* ASTSymbolOverload::FetchVar(bool throwOnFailure)
     return nullptr;
 }
 
-VarDecl* ASTSymbolOverload::FetchVarDecl(bool throwOnFailure)
+VarDecl* ASTSymbolOverload::FetchVarDecl(bool throwOnFailure) const
 {
     if (auto ref = Fetch(throwOnFailure))
     {
@@ -196,7 +196,7 @@ VarDecl* ASTSymbolOverload::FetchVarDecl(bool throwOnFailure)
     return nullptr;
 }
 
-AST* ASTSymbolOverload::FetchType(bool throwOnFailure)
+AST* ASTSymbolOverload::FetchType(bool throwOnFailure) const
 {
     if (auto ref = Fetch(throwOnFailure))
     {
@@ -209,7 +209,7 @@ AST* ASTSymbolOverload::FetchType(bool throwOnFailure)
     return nullptr;
 }
 
-FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(bool throwOnFailure)
+FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(bool throwOnFailure) const
 {
     auto ref = Fetch(throwOnFailure);
     if (auto funcDecl = ref->As<FunctionDecl>())
@@ -219,7 +219,7 @@ FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(bool throwOnFailure)
     return nullptr;
 }
 
-FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoterPtr>& argTypeDenoters)
+FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoterPtr>& argTypeDenoters) const
 {
     if (refs_.empty())
         RuntimeErr("undefined symbol '" + ident_ + "'");

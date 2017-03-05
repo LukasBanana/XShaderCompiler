@@ -374,6 +374,14 @@ FunctionDecl* Visitor::ActiveFunctionDecl() const
     return (funcDeclStack_.empty() ? nullptr : funcDeclStack_.top());
 }
 
+StructDecl* Visitor::ActiveFunctionStructDecl() const
+{
+    if (auto funcDecl = ActiveFunctionDecl())
+        return funcDecl->structDeclRef;
+    else
+        return nullptr;
+}
+
 /* ----- Function call tracker ----- */
 
 void Visitor::PushFunctionCall(FunctionCall* ast)

@@ -573,8 +573,12 @@ struct StructDecl : public Decl
     // Returns true if this is an anonymous structure.
     bool IsAnonymous() const;
 
+    //TODO: rename to "FetchVarDecl"
     // Returns the VarDecl AST node inside this struct decl for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident, const StructDecl** owner = nullptr) const;
+
+    // Returns the FunctionDecl AST node for the specified argument type denoter list (used to derive the overloaded function).
+    FunctionDecl* FetchFunctionDecl(const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters, const StructDecl** owner = nullptr) const;
 
     // Returns an identifier that is similar to the specified identifier (for suggestions of typos)
     std::string FetchSimilar(const std::string& ident);
@@ -697,7 +701,8 @@ struct FunctionDecl : public Stmnt
     // Fetches the function declaration from the list that matches the specified argument types.
     static FunctionDecl* FetchFunctionDeclFromList(
         const std::vector<FunctionDecl*>& funcDeclList,
-        const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters
+        const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters,
+        bool throwErrorIfNoMatch = true
     );
 
     TypeSpecifierPtr                returnType;

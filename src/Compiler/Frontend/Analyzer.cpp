@@ -150,13 +150,10 @@ AST* Analyzer::Fetch(const std::string& ident, const AST* ast)
     try
     {
         /* If we are inside the local scope of a member function -> try to fetch symbol from parent structure */
-        if (auto funcDecl = ActiveFunctionDecl())
+        if (auto structDecl = ActiveFunctionStructDecl())
         {
-            if (auto structDecl = funcDecl->structDeclRef)
-            {
-                if (auto symbol = structDecl->Fetch(ident))
-                    return symbol;
-            }
+            if (auto symbol = structDecl->Fetch(ident))
+                return symbol;
         }
 
         /* Fetch symbol from global symbol table */
@@ -214,35 +211,25 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
 {
     try
     {
-        /* Fetch symbol with identifier */
-        if (auto symbol = symTable_.Fetch(ident))
+        /* Get type denoters from arguments */
+        std::vector<TypeDenoterPtr> argTypeDens;
+        if (!CollectArgumentTypeDenoters(args, argTypeDens))
+            return false;
+
+        if (auto structDecl = ActiveFunctionStructDecl())
         {
-            /* Derive type denoters from arguments */
-            std::vector<TypeDenoterPtr> argTypeDens;
-
-            for (const auto& arg : args)
-            {
-                try
-                {
-                    argTypeDens.push_back(arg->GetTypeDenoter());
-                }
-                catch (const ASTRuntimeError& e)
-                {
-                    Error(e.what(), e.GetAST());
-                    return nullptr;
-                }
-                catch (const std::exception& e)
-                {
-                    Error(e.what(), arg.get());
-                    return nullptr;
-                }
-            }
-
-            /* Fetch function call with argument type denoters */
-            return symbol->FetchFunctionDecl(argTypeDens);
+            /* Fetch function with argument type denoters form structure */
+            if (auto funcDecl = structDecl->FetchFunctionDecl(ident, argTypeDens))
+                return funcDecl;
         }
-        else
-            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
+
+        /* Fetch function with argument type denoters from global symbol table */
+        if (auto symbol = symTable_.Fetch(ident))
+            return symbol->FetchFunctionDecl(argTypeDens);
+        
+        /* Check if identifier exists but does not name a function */
+        if (auto symbol = Fetch(ident, ast))
+            Error("identifier '" + ident + "' does not name a function", ast);
     }
     catch (const ASTRuntimeError& e)
     {
@@ -272,14 +259,35 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const AST* a
     return nullptr;
 }
 
-VarDecl* Analyzer::FetchFromStructDecl(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast)
+VarDecl* Analyzer::FetchFromStruct(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast)
 {
     if (auto structDecl = structTypeDenoter.structDeclRef)
     {
-        if (auto varDecl = structDecl->Fetch(ident))
-            return varDecl;
+        if (auto symbol = structDecl->Fetch(ident))
+            return symbol;
         else
             ErrorUndeclaredIdent(ident, structDecl->ToString(), structDecl->FetchSimilar(ident), ast);
+    }
+    else
+        Error("missing reference to structure declaration in type denoter '" + structTypeDenoter.ToString() + "'", ast);
+    return nullptr;
+}
+
+FunctionDecl* Analyzer::FetchFunctionDeclFromStruct(
+    const StructTypeDenoter& structTypeDenoter, const std::string& ident,
+    const std::vector<ExprPtr>& args, const AST* ast)
+{
+    if (auto structDecl = structTypeDenoter.structDeclRef)
+    {
+        /* Get type denoters from arguments */
+        std::vector<TypeDenoterPtr> argTypeDens;
+        if (CollectArgumentTypeDenoters(args, argTypeDens))
+        {
+            if (auto symbol = structDecl->FetchFunctionDecl(ident, argTypeDens))
+                return symbol;
+            else
+                ErrorUndeclaredIdent(ident, structDecl->ToString(), structDecl->FetchSimilar(ident), ast);
+        }
     }
     else
         Error("missing reference to structure declaration in type denoter '" + structTypeDenoter.ToString() + "'", ast);
@@ -506,6 +514,33 @@ float Analyzer::EvaluateConstExprFloat(Expr& expr)
     if (variant.Type() != Variant::Types::Real)
         Warning("expected constant floating-point expression", &expr);
     return static_cast<float>(variant.ToReal());
+}
+
+
+/*
+ * ======= Private: =======
+ */
+
+bool Analyzer::CollectArgumentTypeDenoters(const std::vector<ExprPtr>& args, std::vector<TypeDenoterPtr>& argTypeDens)
+{
+    for (const auto& arg : args)
+    {
+        try
+        {
+            argTypeDens.push_back(arg->GetTypeDenoter());
+        }
+        catch (const ASTRuntimeError& e)
+        {
+            Error(e.what(), e.GetAST());
+            return false;
+        }
+        catch (const std::exception& e)
+        {
+            Error(e.what(), arg.get());
+            return false;
+        }
+    }
+    return true;
 }
 
 

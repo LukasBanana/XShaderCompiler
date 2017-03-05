@@ -86,7 +86,12 @@ class Analyzer : protected Visitor
         FunctionDecl* FetchFunctionDecl(const std::string& ident, const std::vector<ExprPtr>& args, const AST* ast = nullptr);
         FunctionDecl* FetchFunctionDecl(const std::string& ident, const AST* ast = nullptr);
 
-        VarDecl* FetchFromStructDecl(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast = nullptr);
+        VarDecl* FetchFromStruct(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast = nullptr);
+
+        FunctionDecl* FetchFunctionDeclFromStruct(
+            const StructTypeDenoter& structTypeDenoter, const std::string& ident,
+            const std::vector<ExprPtr>& args, const AST* ast = nullptr
+        );
 
         StructDecl* FetchStructDeclFromIdent(const std::string& ident, const AST* ast = nullptr);
         StructDecl* FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter);
@@ -126,6 +131,10 @@ class Analyzer : protected Visitor
         float EvaluateConstExprFloat(Expr& expr);
 
     private:
+
+        /* === Functions === */
+
+        bool CollectArgumentTypeDenoters(const std::vector<ExprPtr>& args, std::vector<TypeDenoterPtr>& argTypeDens);
 
         /* === Members === */
 

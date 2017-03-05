@@ -332,8 +332,12 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     for (auto& param : ast->parameters)
         AnalyzeTypeDenoter(param->typeSpecifier->typeDenoter, param->typeSpecifier.get());
 
-    /* Register function declaration in symbol table (after return type and parameter types) */
-    Register(ast->ident, ast);
+    /* Only use global symbol table for non-member functions */
+    if (!ast->IsMemberFunction())
+    {
+        /* Register function declaration in symbol table (after return type and parameter types) */
+        Register(ast->ident, ast);
+    }
 
     OpenScope();
     {
@@ -595,7 +599,7 @@ IMPLEMENT_VISIT_PROC(SuffixExpr)
     if (auto structTypeDen = typeDenoter->As<StructTypeDenoter>())
     {
         /* Fetch struct member variable declaration from next identifier */
-        if (auto memberVarDecl = FetchFromStructDecl(*structTypeDen, ast->varIdent->ident, ast->varIdent.get()))
+        if (auto memberVarDecl = FetchFromStruct(*structTypeDen, ast->varIdent->ident, ast->varIdent.get()))
         {
             /* Analyzer next identifier with fetched symbol */
             AnalyzeVarIdentWithSymbol(ast->varIdent.get(), memberVarDecl);
@@ -621,33 +625,32 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
 void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
 {
-    if (ast->varIdent->next)
+    /* Analyze function identifier (if it's a member function) */
+    AnalyzeFunctionVarIdent(ast->varIdent.get(), ast->arguments);
+
+    /* Fetch function declaration by arguments */
+    if (auto symbol = ast->varIdent->Last()->symbolRef)
     {
-        /* Analyze function identifier (if it's a member function) */
-        AnalyzeVarIdent(ast->varIdent.get());
+        if (auto funcDecl = symbol->As<FunctionDecl>())
+            ast->funcDeclRef = funcDecl;
     }
-    else
+
+    /* Also connect function declaration with the identifier of the function call */
+    ast->varIdent->symbolRef = ast->funcDeclRef;
+
+    if (auto funcDecl = ast->funcDeclRef)
     {
-        /* Fetch function declaration by arguments */
-        ast->funcDeclRef = FetchFunctionDecl(ast->varIdent->ident, ast->arguments, ast);
-
-        /* Also connect function declaration with the identifier of the function call */
-        ast->varIdent->symbolRef = ast->funcDeclRef;
-
-        if (auto funcDecl = ast->funcDeclRef)
+        /* Fetch argument expressions of all remaining parmeters */
+        for (std::size_t i = ast->arguments.size(), n = funcDecl->parameters.size(); i < n; ++i)
         {
-            /* Fetch argument expressions of all remaining parmeters */
-            for (std::size_t i = ast->arguments.size(), n = funcDecl->parameters.size(); i < n; ++i)
+            auto param = funcDecl->parameters[i].get();
+            if (!param->varDecls.empty())
             {
-                auto param = funcDecl->parameters[i].get();
-                if (!param->varDecls.empty())
-                {
-                    auto paramVar = param->varDecls.front().get();
-                    if (auto initExpr = paramVar->initializer.get())
-                        ast->defaultArgumentRefs.push_back(initExpr);
-                    else
-                        Error("missing initializer expression for default parameter '" + paramVar->ident + "'", paramVar);
-                }
+                auto paramVar = param->varDecls.front().get();
+                if (auto initExpr = paramVar->initializer.get())
+                    ast->defaultArgumentRefs.push_back(initExpr);
+                else
+                    Error("missing initializer expression for default parameter '" + paramVar->ident + "'", paramVar);
             }
         }
     }
@@ -812,11 +815,7 @@ void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
     }
 
     /* Analyze array indices */
-    while (varIdent)
-    {
-        Visit(varIdent->arrayIndices);
-        varIdent = varIdent->next.get();
-    }
+    AnalyzeVarIdentArrayIndices(varIdent);
 }
 
 void HLSLAnalyzer::AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol)
@@ -826,23 +825,14 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol)
 
     switch (symbol->Type())
     {
-        case AST::Types::FunctionDecl:
-            //...
-            break;
         case AST::Types::VarDecl:
             AnalyzeVarIdentWithSymbolVarDecl(varIdent, static_cast<VarDecl*>(symbol));
             break;
         case AST::Types::BufferDecl:
-            //AnalyzeVarIdentWithSymbolBufferDecl(varIdent, static_cast<BufferDecl*>(symbol));
-            break;
         case AST::Types::SamplerDecl:
-            //AnalyzeVarIdentWithSymbolSamplerDecl(varIdent, static_cast<SamplerDecl*>(symbol));
-            break;
         case AST::Types::StructDecl:
-            //...
-            break;
         case AST::Types::AliasDecl:
-            //...
+        case AST::Types::FunctionDecl:
             break;
         default:
             Error("invalid symbol reference to variable identifier '" + varIdent->ToString() + "'", varIdent);
@@ -862,10 +852,10 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
             if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
             {
                 /* Fetch struct member variable declaration from next identifier */
-                if (auto memberVarDecl = FetchFromStructDecl(*structTypeDen, varIdent->next->ident, varIdent))
+                if (auto structMember = FetchFromStruct(*structTypeDen, varIdent->next->ident, varIdent))
                 {
                     /* Analyzer next identifier with fetched symbol */
-                    AnalyzeVarIdentWithSymbol(varIdent->next.get(), memberVarDecl);
+                    AnalyzeVarIdentWithSymbol(varIdent->next.get(), structMember);
                 }
             }
         }
@@ -876,15 +866,101 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl*
     }
 }
 
-/*void HLSLAnalyzer::AnalyzeVarIdentWithSymbolBufferDecl(VarIdent* varIdent, BufferDecl* bufferDecl)
+void HLSLAnalyzer::AnalyzeFunctionVarIdent(VarIdent* varIdent, const std::vector<ExprPtr>& args)
 {
-    //TODO...
+    /* Analyze variable identifier itself */
+    if (varIdent)
+    {
+        try
+        {
+            if (varIdent->next)
+            {
+                if (auto symbol = Fetch(varIdent->ident, varIdent))
+                    AnalyzeFunctionVarIdentWithSymbol(varIdent, args, symbol);
+            }
+            else
+            {
+                if (auto symbol = FetchFunctionDecl(varIdent->ident, args, varIdent))
+                    AnalyzeFunctionVarIdentWithSymbol(varIdent, args, symbol);
+            }
+        }
+        catch (const ASTRuntimeError& e)
+        {
+            Error(e.what(), e.GetAST());
+        }
+        catch (const std::exception& e)
+        {
+            Error(e.what(), varIdent);
+        }
+    }
+
+    /* Analyze array indices */
+    AnalyzeVarIdentArrayIndices(varIdent);
 }
 
-void HLSLAnalyzer::AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, SamplerDecl* samplerDecl)
+void HLSLAnalyzer::AnalyzeFunctionVarIdentWithSymbol(VarIdent* varIdent, const std::vector<ExprPtr>& args, AST* symbol)
 {
-    //TODO...
-}*/
+    /* Decorate variable identifier with this symbol */
+    varIdent->symbolRef = symbol;
+
+    switch (symbol->Type())
+    {
+        case AST::Types::VarDecl:
+            AnalyzeFunctionVarIdentWithSymbolVarDecl(varIdent, args, static_cast<VarDecl*>(symbol));
+            break;
+        case AST::Types::BufferDecl:
+        case AST::Types::SamplerDecl:
+        case AST::Types::StructDecl:
+        case AST::Types::AliasDecl:
+        case AST::Types::FunctionDecl:
+            break;
+        default:
+            Error("invalid symbol reference to variable identifier '" + varIdent->ToString() + "'", varIdent);
+            break;
+    }
+}
+
+void HLSLAnalyzer::AnalyzeFunctionVarIdentWithSymbolVarDecl(VarIdent* varIdent, const std::vector<ExprPtr>& args, VarDecl* varDecl)
+{
+    /* Decorate next identifier */
+    if (varIdent->next)
+    {
+        /* Has variable a struct type denoter? */
+        try
+        {
+            auto varTypeDen = varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size());
+            if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
+            {
+                /* Fetch struct member from next identifier */
+                AST* symbol = nullptr;
+
+                if (varIdent->next->next)
+                    symbol = FetchFromStruct(*structTypeDen, varIdent->next->ident, varIdent);
+                else
+                    symbol = FetchFunctionDeclFromStruct(*structTypeDen, varIdent->next->ident, args, varIdent);
+
+                if (symbol)
+                {
+                    /* Analyzer next identifier with fetched symbol */
+                    AnalyzeFunctionVarIdentWithSymbol(varIdent->next.get(), args, symbol);
+                }
+            }
+        }
+        catch (const std::exception& e)
+        {
+            Error(e.what(), varIdent);
+        }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeVarIdentArrayIndices(VarIdent* varIdent)
+{
+    while (varIdent)
+    {
+        Visit(varIdent->arrayIndices);
+        varIdent = varIdent->next.get();
+    }
+}
 
 void HLSLAnalyzer::AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast)
 {

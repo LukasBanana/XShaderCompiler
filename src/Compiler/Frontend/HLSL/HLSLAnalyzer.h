@@ -92,8 +92,12 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeVarIdent(VarIdent* varIdent);
         void AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol);
         void AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl* varDecl);
-      //void AnalyzeVarIdentWithSymbolBufferDecl(VarIdent* varIdent, BufferDecl* bufferDecl);
-      //void AnalyzeVarIdentWithSymbolSamplerDecl(VarIdent* varIdent, SamplerDecl* samplerDecl);
+
+        void AnalyzeFunctionVarIdent(VarIdent* varIdent, const std::vector<ExprPtr>& args);
+        void AnalyzeFunctionVarIdentWithSymbol(VarIdent* varIdent, const std::vector<ExprPtr>& args, AST* symbol);
+        void AnalyzeFunctionVarIdentWithSymbolVarDecl(VarIdent* varIdent, const std::vector<ExprPtr>& args, VarDecl* varDecl);
+
+        void AnalyzeVarIdentArrayIndices(VarIdent* varIdent);
 
         void AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast = nullptr);
         void AnalyzeLValueExpr(Expr* expr, const AST* ast = nullptr);
