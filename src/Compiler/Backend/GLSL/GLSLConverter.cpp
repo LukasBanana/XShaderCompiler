@@ -116,6 +116,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
         ConvertIntrinsicCall(ast);
     }
+    else
+        ConvertFunctionCall(ast);
 
     /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
     MoveAllIf(
@@ -335,6 +337,33 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 #endif
 
+IMPLEMENT_VISIT_PROC(VarAccessExpr)
+{
+    /* Is this variable a member of the active owner structure? */
+    if (auto symbol = ast->varIdent->Last()->symbolRef)
+    {
+        if (auto varDecl = symbol->As<VarDecl>())
+        {
+            if (auto structDecl = varDecl->structDeclRef)
+            {
+                if (auto selfParam = ActiveSelfParameter())
+                {
+                    if (auto activeStructDecl = ActiveStructDecl())
+                    {
+                        if (structDecl == activeStructDecl || structDecl->IsBaseOf(*activeStructDecl))
+                        {
+                            /* Push 'self'-parameter identifier at the front of the current variable identifier */
+                            ast->varIdent = ASTFactory::MakeVarIdentPushFront(selfParam->ident, selfParam, ast->varIdent);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    VISIT_DEFAULT(VarAccessExpr);
+}
+
 #undef IMPLEMENT_VISIT_PROC
 
 /* --- Helper functions for conversion --- */
@@ -523,10 +552,49 @@ bool GLSLConverter::RenameReservedKeyword(const std::string& ident, std::string&
     }
 }
 
+void GLSLConverter::PushSelfParameter(VarDecl* parameter)
+{
+    selfParamStack_.push_back(parameter);
+}
+
+void GLSLConverter::PopSelfParameter()
+{
+    if (!selfParamStack_.empty())
+        return selfParamStack_.pop_back();
+    else
+        throw std::underflow_error("'self'-parameter level underflow");
+}
+
+VarDecl* GLSLConverter::ActiveSelfParameter() const
+{
+    return (selfParamStack_.empty() ? nullptr : selfParamStack_.back());
+}
+
 /* ----- Conversion ----- */
 
 void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
 {
+    /* Convert member function to global function */
+    VarDecl* selfParamVar = nullptr;
+
+    if (auto structDecl = ast->structDeclRef)
+    {
+        /* Rename function */
+        ast->renamedIdent = nameMangling_.temporaryPrefix + structDecl->ident + "_" + ast->ident;
+
+        /* Insert parameter of 'self' object */
+        auto selfParamTypeDen   = std::make_shared<StructTypeDenoter>(structDecl);
+        auto selfParamType      = ASTFactory::MakeTypeSpecifier(selfParamTypeDen);
+        auto selfParam          = ASTFactory::MakeVarDeclStmnt(selfParamType, nameMangling_.temporaryPrefix + "self");
+
+        ast->parameters.insert(ast->parameters.begin(), selfParam);
+
+        selfParamVar = selfParam->varDecls.front().get();
+    }
+
+    if (selfParamVar)
+        PushSelfParameter(selfParamVar);
+
     RenameReservedKeyword(ast->ident, ast->renamedIdent);
 
     if (ast->flags(FunctionDecl::isEntryPoint))
@@ -535,6 +603,9 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
         ConvertFunctionDeclDefault(ast);
 
     RemoveSamplerStateVarDeclStmnts(ast->parameters);
+
+    if (selfParamVar)
+        PopSelfParameter();
 }
 
 void GLSLConverter::ConvertFunctionDeclDefault(FunctionDecl* ast)
@@ -683,6 +754,39 @@ void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast)
         /* Ensure argument: int[1,2,3] Offset */
         if (args.size() >= 4)
             exprConverter_.ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, vectorSize), true);
+    }
+}
+
+void GLSLConverter::ConvertFunctionCall(FunctionCall* ast)
+{
+    if (auto funcDecl = ast->funcDeclRef)
+    {
+        if (funcDecl->IsMemberFunction())
+        {
+            if (ast->varIdent->next)
+            {
+                /* Move first variable identifier as argument into the function call */
+                auto objectVarIdent = ASTFactory::MakeVarIdentWithoutLast(*ast->varIdent);
+                auto objectArg = ASTFactory::MakeVarAccessExpr(objectVarIdent);
+                ast->arguments.insert(ast->arguments.begin(), objectArg);
+
+                /* Remove all identifiers except the last one */
+                while (ast->varIdent->next)
+                    ast->varIdent->PopFront();
+            }
+            else
+            {
+                /* Insert current 'self'-parameter as argument into the function call */
+                if (auto selfParam = ActiveSelfParameter())
+                {
+                    auto objectVarIdent = ASTFactory::MakeVarIdent(selfParam->ident, selfParam);
+                    auto objectArg = ASTFactory::MakeVarAccessExpr(objectVarIdent);
+                    ast->arguments.insert(ast->arguments.begin(), objectArg);
+                }
+                else
+                    RuntimeErr("missing 'self'-parameter for member function: " + funcDecl->ToString(), ast);
+            }
+        }
     }
 }
 

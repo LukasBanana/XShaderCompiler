@@ -197,7 +197,7 @@ class Visitor
         void PushFunctionCall(FunctionCall* ast);
         void PopFunctionCall();
 
-        // Returns the active (inner most) function call or null if the analyzer is currently not inside a function call.
+        // Returns the active (inner most) function call or null if the visitor is currently not inside a function call.
         FunctionCall* ActiveFunctionCall() const;
 
         /* ----- Structure declaration tracker ----- */
@@ -207,6 +207,9 @@ class Visitor
 
         // Returns true if the analyzer is currently inside a structure declaration.
         bool InsideStructDecl() const;
+
+        // Returns the active (inner most) structure declaration or null if the visitor is currently not inside a structure declaration.
+        StructDecl* ActiveStructDecl() const;
 
         // Returns the stack (or rather the list) of all current, nested structure declarations.
         inline const std::vector<StructDecl*>& GetStructDeclStack() const

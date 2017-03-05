@@ -45,12 +45,19 @@ TypeSpecifierPtr                MakeTypeSpecifier(const StructDeclPtr& structDec
 TypeSpecifierPtr                MakeTypeSpecifier(const TypeDenoterPtr& typeDenoter);
 TypeSpecifierPtr                MakeTypeSpecifier(const DataType dataType);
 
+VarDeclStmntPtr                 MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident);
 VarDeclStmntPtr                 MakeVarDeclStmnt(const DataType dataType, const std::string& ident);
 
 VarIdentPtr                     MakeVarIdent(const std::string& ident, AST* symbolRef = nullptr);
 
 // Makes a new VarIdent instance with only the first node of the specified identifier.
 VarIdentPtr                     MakeVarIdentFirst(const VarIdent& varIdent);
+
+// Makes a new VarIdent instance with all nodes of the specified identifier except the last one.
+VarIdentPtr                     MakeVarIdentWithoutLast(const VarIdent& varIdent);
+
+// Makes a new VarIdent instance by adding the specified new identifier with symbol reference at the front of the specified VarIdent.
+VarIdentPtr                     MakeVarIdentPushFront(const std::string& firstIdent, AST* symbolRef, const VarIdentPtr& next);
 
 VarAccessExprPtr                MakeVarAccessExpr(const VarIdentPtr& varIdent);
 VarAccessExprPtr                MakeVarAccessExpr(const std::string& ident, AST* symbolRef = nullptr);

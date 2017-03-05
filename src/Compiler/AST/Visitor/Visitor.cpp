@@ -422,6 +422,11 @@ bool Visitor::InsideStructDecl() const
     return (!structDeclStack_.empty());
 }
 
+StructDecl* Visitor::ActiveStructDecl() const
+{
+    return (structDeclStack_.empty() ? nullptr : structDeclStack_.back());
+}
+
 /* ----- Structure declaration tracker ----- */
 
 void Visitor::PushUniformBufferDecl(UniformBufferDecl* ast)

@@ -375,24 +375,24 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     if (ast->flags(StructDecl::isNonEntryPointParam) || !ast->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
     {
         PushStructDecl(ast);
-
-        /* Write all nested structures (if this is the root structure) */
-        if (!ast->flags(StructDecl::isNestedStruct))
         {
-            /* Write nested structres in child-to-parent order */
-            for (auto nestedStruct = ast->nestedStructDeclRefs.rbegin(); nestedStruct != ast->nestedStructDeclRefs.rend(); ++nestedStruct)
+            /* Write all nested structures (if this is the root structure) */
+            if (!ast->flags(StructDecl::isNestedStruct))
             {
-                if (WriteStructDecl(*nestedStruct, true, true))
-                    Blank();
+                /* Write nested structres in child-to-parent order */
+                for (auto nestedStruct = ast->nestedStructDeclRefs.rbegin(); nestedStruct != ast->nestedStructDeclRefs.rend(); ++nestedStruct)
+                {
+                    if (WriteStructDecl(*nestedStruct, true, true))
+                        Blank();
+                }
             }
+
+            /* Write declaration of this structure (without nested structures) */
+            if (auto structDeclArgs = reinterpret_cast<StructDeclArgs*>(args))
+                structDeclArgs->outStructWritten = WriteStructDecl(ast, structDeclArgs->inEndWithSemicolon);
+            else
+                WriteStructDecl(ast, false);
         }
-
-        /* Write declaration of this structure (without nested structures) */
-        if (auto structDeclArgs = reinterpret_cast<StructDeclArgs*>(args))
-            structDeclArgs->outStructWritten = WriteStructDecl(ast, structDeclArgs->inEndWithSemicolon);
-        else
-            WriteStructDecl(ast, false);
-
         PopStructDecl();
     }
 }
@@ -500,6 +500,7 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
     {
         WriteLineMark(ast);
 
+        /* Visit structure declaration */
         StructDeclArgs structDeclArgs;
         structDeclArgs.inEndWithSemicolon = true;
 
@@ -507,6 +508,9 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 
         if (structDeclArgs.outStructWritten)
             Blank();
+
+        /* Visit all member functions */
+        Visit(ast->structDecl->funcMembers);
     }
 }
 

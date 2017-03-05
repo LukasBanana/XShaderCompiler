@@ -762,6 +762,18 @@ bool StructDecl::HasMultipleShaderOutputInstances() const
     return (numInstances > 1);
 }
 
+bool StructDecl::IsBaseOf(const StructDecl& subStructDecl) const
+{
+    if (subStructDecl.baseStructRef)
+    {
+        if (subStructDecl.baseStructRef == this)
+            return true;
+        else
+            return IsBaseOf(*subStructDecl.baseStructRef);
+    }
+    return false;
+}
+
 
 /* ----- AliasDecl ----- */
 

@@ -64,6 +64,7 @@ class GLSLConverter : public Visitor
 
         DECL_VISIT_PROC( LiteralExpr      );
         DECL_VISIT_PROC( CastExpr         );
+        DECL_VISIT_PROC( VarAccessExpr    );
 
         /* ----- Helper functions for conversion ----- */
 
@@ -109,6 +110,11 @@ class GLSLConverter : public Visitor
         // Renames the specified identifier if it equals a reserved GLSL intrinsic or function name.
         bool RenameReservedKeyword(const std::string& ident, std::string& renamedIdent);
 
+        void PushSelfParameter(VarDecl* parameter);
+        void PopSelfParameter();
+
+        VarDecl* ActiveSelfParameter() const;
+
         /* ----- Conversion ----- */
 
         void ConvertFunctionDecl(FunctionDecl* ast);
@@ -119,6 +125,8 @@ class GLSLConverter : public Visitor
         void ConvertIntrinsicCallSaturate(FunctionCall* ast);
         void ConvertIntrinsicCallTextureSample(FunctionCall* ast);
         void ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast);
+
+        void ConvertFunctionCall(FunctionCall* ast);
 
         /* ----- Unrolling ----- */
 
@@ -141,6 +149,9 @@ class GLSLConverter : public Visitor
         If a local variable uses a name from this list, it name must be modified with name mangling.
         */
         std::vector<VarDecl*>   reservedVarDecls_;
+
+        // Stack with information of the current 'self' parameter of a member function.
+        std::vector<VarDecl*>   selfParamStack_;
 
         unsigned int            anonymCounter_      = 0;
         unsigned int            obfuscationCounter_ = 0;

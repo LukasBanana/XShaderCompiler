@@ -601,6 +601,9 @@ struct StructDecl : public Decl
     // Returns true if this structure is used more than once as entry point output (either through variable arrays or multiple variable declarations).
     bool HasMultipleShaderOutputInstances() const;
 
+    // Returns true if this structure is a base of the specified sub structure.
+    bool IsBaseOf(const StructDecl& subStructDecl) const;
+
     std::string                     ident;                              // May be empty (for anonymous structures).
     std::string                     baseStructName;                     // May be empty (if no inheritance is used).
     std::vector<StmntPtr>           localStmnts;                        // Local declaration statements

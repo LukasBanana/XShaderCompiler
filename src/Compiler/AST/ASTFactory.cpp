@@ -149,11 +149,11 @@ TypeSpecifierPtr MakeTypeSpecifier(const DataType dataType)
     return MakeTypeSpecifier(MakeShared<BaseTypeDenoter>(dataType));
 }
 
-VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ident)
+VarDeclStmntPtr MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident)
 {
     auto ast = MakeAST<VarDeclStmnt>();
     {
-        ast->typeSpecifier = MakeTypeSpecifier(dataType);
+        ast->typeSpecifier = typeSpecifier;
 
         auto varDecl = MakeAST<VarDecl>();
         {
@@ -163,6 +163,11 @@ VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ide
         ast->varDecls.push_back(varDecl);
     }
     return ast;
+}
+
+VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ident)
+{
+    return MakeVarDeclStmnt(MakeTypeSpecifier(dataType), ident);
 }
 
 VarIdentPtr MakeVarIdent(const std::string& ident, AST* symbolRef)
@@ -182,6 +187,34 @@ VarIdentPtr MakeVarIdentFirst(const VarIdent& varIdent)
         ast->ident          = varIdent.ident;
         ast->arrayIndices   = varIdent.arrayIndices;
         ast->symbolRef      = varIdent.symbolRef;
+    }
+    return ast;
+}
+
+VarIdentPtr MakeVarIdentWithoutLast(const VarIdent& varIdent)
+{
+    if (varIdent.next)
+    {
+        auto ast = MakeAST<VarIdent>();
+        {
+            ast->ident          = varIdent.ident;
+            ast->arrayIndices   = varIdent.arrayIndices;
+            ast->symbolRef      = varIdent.symbolRef;
+            ast->next           = MakeVarIdentWithoutLast(*varIdent.next);
+        }
+        return ast;
+    }
+    else
+        return nullptr;
+}
+
+VarIdentPtr MakeVarIdentPushFront(const std::string& firstIdent, AST* symbolRef, const VarIdentPtr& next)
+{
+    auto ast = MakeAST<VarIdent>();
+    {
+        ast->ident          = firstIdent;
+        ast->next           = next;
+        ast->symbolRef      = symbolRef;
     }
     return ast;
 }
