@@ -612,22 +612,29 @@ VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& 
     auto ast = Make<VarDecl>();
 
     /* Store reference to parent node */
-    ast->declStmntRef   = declStmntRef;
+    ast->declStmntRef = declStmntRef;
 
     /* Parse variable declaration */
-    ast->ident          = (identTkn ? identTkn->Spell() : ParseIdent());
-    ast->arrayDims      = ParseArrayDimensionList(true);
+    if (identTkn)
+    {
+        ast->ident = identTkn->Spell();
+        ast->area = identTkn->Area();
+    }
+    else
+    {
+        ast->ident = ParseIdent();
+        ast->area.Update(ast->ident);
+    }
+
+    ast->arrayDims = ParseArrayDimensionList(true);
 
     ParseVarDeclSemantic(*ast);
 
-    ast->annotations    = ParseAnnotationList();
+    ast->annotations = ParseAnnotationList();
 
     /* Parse optional initializer expression */
     if (Is(Tokens::AssignOp, "="))
         ast->initializer = ParseInitializer();
-
-    /* Update source area */
-    ast->area.Update(ast->ident);
 
     return ast;
 }
