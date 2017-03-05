@@ -591,12 +591,12 @@ bool StructDecl::IsAnonymous() const
     return ident.empty();
 }
 
-VarDecl* StructDecl::Fetch(const std::string& ident) const
+VarDecl* StructDecl::Fetch(const std::string& ident, const StructDecl** owner) const
 {
     /* Fetch symbol from base struct first */
     if (baseStructRef)
     {
-        auto varDecl = baseStructRef->Fetch(ident);
+        auto varDecl = baseStructRef->Fetch(ident, owner);
         if (varDecl)
             return varDecl;
     }
@@ -606,7 +606,11 @@ VarDecl* StructDecl::Fetch(const std::string& ident) const
     {
         auto symbol = varDeclStmnt->Fetch(ident);
         if (symbol)
+        {
+            if (owner)
+                *owner = this;
             return symbol;
+        }
     }
 
     return nullptr;

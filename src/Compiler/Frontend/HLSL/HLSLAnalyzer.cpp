@@ -230,6 +230,35 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     /* Report warning if structure is empty */
     if (ast->NumMembers() == 0)
         Warning("'" + ast->ToString() + "' is completely empty", ast);
+
+    /* Remove member variables that override members from base structure */
+    if (ast->baseStructRef)
+    {
+        for (auto it = ast->members.begin(); it != ast->members.end();)
+        {
+            /* Remove all duplicate variables in current declaration statement */
+            auto varDeclStmnt = it->get();
+            for (auto itVar = varDeclStmnt->varDecls.begin(); itVar != varDeclStmnt->varDecls.end();)
+            {
+                /* Does the base structure has a variable with the same identifier? */
+                auto varDecl = itVar->get();
+                const StructDecl* varDeclOwner = nullptr;
+                if (ast->baseStructRef->Fetch(varDecl->ident, &varDeclOwner))
+                {
+                    Warning("member variable '" + varDecl->ident + "' overrides member of base '" + varDeclOwner->ToString() + "'", varDecl);
+                    itVar = varDeclStmnt->varDecls.erase(itVar);
+                }
+                else
+                    ++itVar;
+            }
+
+            /* Remove member if variable declaration statement has no more variables */
+            if (varDeclStmnt->varDecls.empty())
+                it = ast->members.erase(it);
+            else
+                ++it;
+        }
+    }
 }
 
 IMPLEMENT_VISIT_PROC(AliasDecl)

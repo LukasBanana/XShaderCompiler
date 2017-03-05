@@ -573,7 +573,7 @@ struct StructDecl : public Decl
     bool IsAnonymous() const;
 
     // Returns the VarDecl AST node inside this struct decl for the specified identifier, or null if there is no such VarDecl.
-    VarDecl* Fetch(const std::string& ident) const;
+    VarDecl* Fetch(const std::string& ident, const StructDecl** owner = nullptr) const;
 
     // Returns an identifier that is similar to the specified identifier (for suggestions of typos)
     std::string FetchSimilar(const std::string& ident);
