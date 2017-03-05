@@ -640,8 +640,6 @@ void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
     }
 
     /* Also connect function declaration with the identifier of the function call */
-    ast->varIdent->symbolRef = ast->funcDeclRef;
-
     if (auto funcDecl = ast->funcDeclRef)
     {
         /* Fetch argument expressions of all remaining parmeters */
