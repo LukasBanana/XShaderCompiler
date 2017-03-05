@@ -2483,7 +2483,11 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
             }
         }
 
-        Write(*bufferTypeKeyword + " " + bufferDecl->ident + ";");
+        Write(*bufferTypeKeyword + " " + bufferDecl->ident);
+
+        /* Write array dimensions and statement terminator */
+        Visit(bufferDecl->arrayDims);
+        Write(";");
     }
     EndLn();
 }

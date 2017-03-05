@@ -106,7 +106,16 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     if (ast->intrinsic != Intrinsic::Undefined)
+    {
+        /* Insert texture object as parameter into intrinsic arguments */
+        if (IsTextureIntrinsic(ast->intrinsic))
+        {
+            auto varAccessExpr = ASTFactory::MakeVarAccessExpr(ASTFactory::MakeVarIdentFirst(*ast->varIdent));
+            ast->arguments.insert(ast->arguments.begin(), varAccessExpr);
+        }
+
         ConvertIntrinsicCall(ast);
+    }
 
     /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
     MoveAllIf(
@@ -117,13 +126,6 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             return IsSamplerStateTypeDenoter(expr->GetTypeDenoter());
         }
     );
-
-    /* Insert texture object as parameter into intrinsic arguments */
-    if (IsTextureIntrinsic(ast->intrinsic))
-    {
-        auto texObjectArg = ASTFactory::MakeVarAccessExpr(ast->varIdent->ident, ast->varIdent->symbolRef);
-        ast->arguments.insert(ast->arguments.begin(), texObjectArg);
-    }
 
     VISIT_DEFAULT(FunctionCall);
 }

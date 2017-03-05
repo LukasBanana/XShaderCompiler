@@ -175,13 +175,29 @@ VarIdentPtr MakeVarIdent(const std::string& ident, AST* symbolRef)
     return ast;
 }
 
-VarAccessExprPtr MakeVarAccessExpr(const std::string& ident, AST* symbolRef)
+VarIdentPtr MakeVarIdentFirst(const VarIdent& varIdent)
+{
+    auto ast = MakeAST<VarIdent>();
+    {
+        ast->ident          = varIdent.ident;
+        ast->arrayIndices   = varIdent.arrayIndices;
+        ast->symbolRef      = varIdent.symbolRef;
+    }
+    return ast;
+}
+
+VarAccessExprPtr MakeVarAccessExpr(const VarIdentPtr& varIdent)
 {
     auto ast = MakeAST<VarAccessExpr>();
     {
-        ast->varIdent = MakeVarIdent(ident, symbolRef);
+        ast->varIdent = varIdent;
     }
     return ast;
+}
+
+VarAccessExprPtr MakeVarAccessExpr(const std::string& ident, AST* symbolRef)
+{
+    return MakeVarAccessExpr(MakeVarIdent(ident, symbolRef));
 }
 
 /*

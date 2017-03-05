@@ -221,12 +221,14 @@ IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     /* Register identifier for buffer */
     Register(ast->ident, ast);
+    Visit(ast->arrayDims);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
     /* Register identifier for sampler */
     Register(ast->ident, ast);
+    Visit(ast->arrayDims);
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)

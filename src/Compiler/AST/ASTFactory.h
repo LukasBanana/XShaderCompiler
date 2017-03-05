@@ -49,6 +49,10 @@ VarDeclStmntPtr                 MakeVarDeclStmnt(const DataType dataType, const 
 
 VarIdentPtr                     MakeVarIdent(const std::string& ident, AST* symbolRef = nullptr);
 
+// Makes a new VarIdent instance with only the first node of the specified identifier.
+VarIdentPtr                     MakeVarIdentFirst(const VarIdent& varIdent);
+
+VarAccessExprPtr                MakeVarAccessExpr(const VarIdentPtr& varIdent);
 VarAccessExprPtr                MakeVarAccessExpr(const std::string& ident, AST* symbolRef = nullptr);
 
 // Return a list expression (or only the input expression) for the specified literal expression, so it can be used as constructor for a struct.
