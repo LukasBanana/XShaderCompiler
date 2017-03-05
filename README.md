@@ -199,6 +199,7 @@ Here is a short overview of High-Level differences between HLSL and GLSL:
 | Structure Inheritance | Yes | No |
 | Nested Structures | Yes | No |
 | Anonymous Structures | Yes | No |
+| Structure Member Functions | Yes | No |
 | Default Parameters | Yes | No |
 | Object-Oriented Intrinsics | Yes | No |
 | Multiple Entry Points | Yes | No |
