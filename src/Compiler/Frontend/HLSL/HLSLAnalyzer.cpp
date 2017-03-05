@@ -72,7 +72,31 @@ void HLSLAnalyzer::ErrorIfAttributeNotFound(bool found, const std::string& attri
 IMPLEMENT_VISIT_PROC(Program)
 {
     /* Analyze context of the entire program */
-    Visit(ast->globalStmnts);
+    for (auto it = ast->globalStmnts.begin(); it != ast->globalStmnts.end(); ++it)
+    {
+        auto stmnt = it->get();
+        
+        /* Visit current global statement */
+        Visit(stmnt);
+
+        if (auto uniformBufferDecl = stmnt->As<UniformBufferDecl>())
+        {
+            /* Move all non-variable-declaration statements from buffer declaration into global scope */
+            for (auto itSub = uniformBufferDecl->localStmnts.begin(); itSub != uniformBufferDecl->localStmnts.end();)
+            {
+                auto subStmnt = itSub->get();
+                if (subStmnt->Type() != AST::Types::VarDeclStmnt)
+                {
+                    /* Move current sub statement from uniform buffer into global scope */
+                    ++it;
+                    it = ast->globalStmnts.insert(it, *itSub);
+                    itSub = uniformBufferDecl->localStmnts.erase(itSub);
+                }
+                else
+                    ++itSub;
+            }
+        }
+    }
 
     /* Check if fragment shader uses a slightly different screen space (VPOS vs. SV_Position) */
     if (shaderTarget_ == ShaderTarget::FragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
@@ -221,7 +245,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
         OpenScope();
         {
-            Visit(ast->varMembers);
+            Visit(ast->localStmnts);
         }
         CloseScope();
     }
@@ -347,15 +371,17 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
             Error("user-defined constant buffer slots can not be target specific", slotRegister.get());
     }
 
-    for (auto& member : ast->varMembers)
-    {
-        Visit(member);
+    Visit(ast->localStmnts);
 
-        //TODO: move this to the HLSLParser!
+    //TODO: move this to the HLSLParser!
+    #if 1
+    for (auto& varDeclStmnt : ast->varMembers)
+    {
         /* Decorate all members with a reference to this buffer declaration */
-        for (auto& varDecl : member->varDecls)
+        for (auto& varDecl : varDeclStmnt->varDecls)
             varDecl->bufferDeclRef = ast;
     }
+    #endif
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
