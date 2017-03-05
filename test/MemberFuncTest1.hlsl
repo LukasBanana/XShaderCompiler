@@ -14,19 +14,41 @@ cbuffer Settings
 };
 
 // Foo bar
-struct A { float a; };
+struct A
+{
+    float a;
+    
+    void no_op() {}
+};
+
+float f3(int x, int y)
+{
+    return 3;
+}
 
 struct S : A
 {
     // Foo bar
-	float a;
-	
-    struct {} test;
-    
+    int b;
+	//float a;
+    //struct {} test;
     //typedef float FLOAT;
-	float f2()
+    
+    float f3()
+    {
+        return 1;
+    }
+    
+    float f3(float x = 0)
+    {
+        return 2 + x;
+    }
+    
+	float f2(float pos)
 	{
-		return 2;//x*2;
+        A tmp;
+        tmp.no_op();
+		return 2 + a + f3(a) + pos;//x*2;
 	}
 };
 
@@ -35,11 +57,12 @@ float4 VS() : SV_Position
 {
     A a;
     
-	S s;
-	s.a = 1;
+	S s = (S)0;
     
-    #if 0
-	return s.f();
+    //s();
+    
+    #if 1
+	return s.f2(1);
     #else
     return s.a*2 + f1();
     #endif
