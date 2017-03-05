@@ -814,6 +814,11 @@ bool FunctionDecl::HasVoidReturnType() const
     return returnType->typeDenoter->IsVoid();
 }
 
+bool FunctionDecl::IsMemberFunction() const
+{
+    return (structDeclRef != nullptr);
+}
+
 std::string FunctionDecl::ToString(bool useParamNames) const
 {
     std::string s;

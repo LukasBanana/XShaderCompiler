@@ -512,7 +512,8 @@ struct VarDecl : public Decl
     ExprPtr                         initializer;
 
     VarDeclStmnt*                   declStmntRef    = nullptr;  // Reference to its declaration statement (parent node); may be null
-    UniformBufferDecl*              bufferDeclRef   = nullptr;  // Unifrom buffer declaration reference for DAST (optional parent-parent-node); may be null
+    UniformBufferDecl*              bufferDeclRef   = nullptr;  // Uniform buffer declaration reference for DAST (optional parent-parent-node); may be null
+    StructDecl*                     structDeclRef   = nullptr;  // Structure declaration reference for DAST (optional parent-parent-node); may be null
 
     std::string                     renamedIdent;
 };
@@ -668,6 +669,9 @@ struct FunctionDecl : public Stmnt
 
     // Returns true if this function has a void return type.
     bool HasVoidReturnType() const;
+
+    // Returns true if this is a member function (member of a structure).
+    bool IsMemberFunction() const;
     
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
     std::string ToString(bool useParamNames = true) const;
@@ -702,6 +706,7 @@ struct FunctionDecl : public Stmnt
 
     FunctionDecl*                   funcImplRef         = nullptr;              // Reference to the function implementation (only for forward declarations).
     std::vector<FunctionDecl*>      funcForwardDeclRefs;                        // Reference to all forward declarations (only for implementations).
+    StructDecl*                     structDeclRef       = nullptr;              // Structure declaration reference if this is a member function; may be null
 
     std::vector<ParameterStructure> paramStructs;                               // Parameter with structure type (only for entry point).
 

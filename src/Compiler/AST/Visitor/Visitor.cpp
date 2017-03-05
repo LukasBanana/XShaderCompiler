@@ -398,17 +398,6 @@ FunctionCall* Visitor::ActiveFunctionCall() const
 
 void Visitor::PushStructDecl(StructDecl* ast)
 {
-    if (!structDeclStack_.empty())
-    {
-        /* Mark structure as nested structure */
-        ast->flags << StructDecl::isNestedStruct;
-
-        /* Add reference of the new structure to all parent structures */
-        for (auto parentStruct : structDeclStack_)
-            parentStruct->nestedStructDeclRefs.push_back(ast);
-    }
-
-    /* Push new structure onto stack */
     structDeclStack_.push_back(ast);
 }
 

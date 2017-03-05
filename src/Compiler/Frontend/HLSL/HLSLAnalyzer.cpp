@@ -235,6 +235,16 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     if (!ast->baseStructName.empty())
         ast->baseStructRef = FetchStructDeclFromIdent(ast->baseStructName);
 
+    if (!GetStructDeclStack().empty())
+    {
+        /* Mark structure as nested structure */
+        ast->flags << StructDecl::isNestedStruct;
+
+        /* Add reference of this structure to all parent structures */
+        for (auto parentStruct : GetStructDeclStack())
+            parentStruct->nestedStructDeclRefs.push_back(ast);
+    }
+
     /* Register struct identifier in symbol table */
     Register(ast->ident, ast);
 
@@ -372,16 +382,6 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     }
 
     Visit(ast->localStmnts);
-
-    //TODO: move this to the HLSLParser!
-    #if 1
-    for (auto& varDeclStmnt : ast->varMembers)
-    {
-        /* Decorate all members with a reference to this buffer declaration */
-        for (auto& varDecl : varDeclStmnt->varDecls)
-            varDecl->bufferDeclRef = ast;
-    }
-    #endif
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)

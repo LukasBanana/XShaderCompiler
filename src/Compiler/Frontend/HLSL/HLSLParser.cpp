@@ -738,6 +738,17 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
                     break;
             }
         }
+
+        /* Decorate all member variables with a reference to this structure declaration */
+        for (auto& varDeclStmnt : ast->varMembers)
+        {
+            for (auto& varDecl : varDeclStmnt->varDecls)
+                varDecl->structDeclRef = ast.get();
+        }
+
+        /* Decorate all member functions with a reference to this structure declaration */
+        for (auto& funcDecl : ast->funcMembers)
+            funcDecl->structDeclRef = ast.get();
     }
     GetReportHandler().PopContextDesc();
 
@@ -950,10 +961,18 @@ UniformBufferDeclPtr HLSLParser::ParseUniformBufferDecl()
         /* Parse buffer body */
         ast->localStmnts = ParseLocalStmntList();
 
+        /* Copy variable declarations into separated list */
         for (auto& stmnt : ast->localStmnts)
         {
-            if (stmnt->Type() == AST::Types::VarDeclStmnt) 
+            if (stmnt->Type() == AST::Types::VarDeclStmnt)
                 ast->varMembers.push_back(std::static_pointer_cast<VarDeclStmnt>(stmnt));
+        }
+
+        /* Decorate all member variables with a reference to this buffer declaration */
+        for (auto& varDeclStmnt : ast->varMembers)
+        {
+            for (auto& varDecl : varDeclStmnt->varDecls)
+                varDecl->bufferDeclRef = ast.get();
         }
 
         /* Parse optional semicolon (this seems to be optional for cbuffer, and tbuffer) */
