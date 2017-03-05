@@ -244,7 +244,8 @@ class GLSLGenerator : public Generator
 
         void WriteStmntComment(Stmnt* ast, bool insertBlank = false);
 
-        void WriteStmntList(const std::vector<StmntPtr>& stmnts, bool isGlobalScope = false);
+        template <typename T>
+        void WriteStmntList(const std::vector<T>& stmnts, bool isGlobalScope = false);
 
         void WriteParameter(VarDeclStmnt* ast);
         void WriteScopedStmnt(Stmnt* ast);

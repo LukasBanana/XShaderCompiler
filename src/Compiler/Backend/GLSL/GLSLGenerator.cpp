@@ -510,7 +510,7 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
             Blank();
 
         /* Visit all member functions */
-        Visit(ast->structDecl->funcMembers);
+        WriteStmntList(ast->structDecl->funcMembers);
     }
 }
 
@@ -2549,7 +2549,8 @@ void GLSLGenerator::WriteStmntComment(Stmnt* ast, bool insertBlank)
     }
 }
 
-void GLSLGenerator::WriteStmntList(const std::vector<StmntPtr>& stmnts, bool isGlobalScope)
+template <typename T>
+void GLSLGenerator::WriteStmntList(const std::vector<T>& stmnts, bool isGlobalScope)
 {
     if (preserveComments_)
     {
