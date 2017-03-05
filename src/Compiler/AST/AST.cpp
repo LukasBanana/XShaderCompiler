@@ -11,6 +11,7 @@
 #include "IntrinsicAdept.h"
 #include "Variant.h"
 #include "SymbolTable.h"
+#include "ReportHandler.h"
 #include <algorithm>
 
 #ifdef XSC_ENABLE_MEMORY_POOL
@@ -878,6 +879,20 @@ std::size_t FunctionDecl::NumMaxArgs() const
     return parameters.size();
 }
 
+const std::string& FunctionDecl::FinalIdent() const
+{
+    return (renamedIdent.empty() ? ident : renamedIdent);
+}
+
+void FunctionDecl::SetFuncImplRef(FunctionDecl* funcDecl)
+{
+    if (funcDecl && !funcDecl->IsForwardDecl() && IsForwardDecl())
+    {
+        funcImplRef = funcDecl;
+        funcDecl->funcForwardDeclRefs.push_back(this);
+    }
+}
+
 bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const
 {
     if (paramIndex >= parameters.size())
@@ -902,18 +917,110 @@ bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const T
     return true;
 }
 
-const std::string& FunctionDecl::FinalIdent() const
+static bool ValidateNumArgsForFunctionDecl(const std::vector<FunctionDecl*>& funcDeclList, std::size_t numArgs)
 {
-    return (renamedIdent.empty() ? ident : renamedIdent);
+    for (auto funcDecl : funcDeclList)
+    {
+        /* Are the number of arguments sufficient? */
+        if (numArgs >= funcDecl->NumMinArgs() && numArgs <= funcDecl->NumMaxArgs())
+            return true;
+    }
+    return false;
 }
 
-void FunctionDecl::SetFuncImplRef(FunctionDecl* funcDecl)
+static bool MatchFunctionDeclWithArgs(
+    FunctionDecl& funcDecl, const std::vector<TypeDenoterPtr>& typeDens, bool implicitTypeConversion)
 {
-    if (funcDecl && !funcDecl->IsForwardDecl() && IsForwardDecl())
+    auto numArgs = typeDens.size();
+    if (numArgs >= funcDecl.NumMinArgs() && numArgs <= funcDecl.NumMaxArgs())
     {
-        funcImplRef = funcDecl;
-        funcDecl->funcForwardDeclRefs.push_back(this);
+        for (std::size_t i = 0, n = std::min(typeDens.size(), funcDecl.parameters.size()); i < n; ++i)
+        {
+            /* Match argument type denoter to parameter */
+            if (!funcDecl.MatchParameterWithTypeDenoter(i, *typeDens[i], implicitTypeConversion))
+                return false;
+        }
+        return true;
     }
+    return false;
+}
+
+static void ListAllFuncCandidates(const std::vector<FunctionDecl*>& candidates)
+{
+    ReportHandler::HintForNextReport("candidates are:");
+    for (auto funcDecl : candidates)
+        ReportHandler::HintForNextReport("  '" + funcDecl->ToString(false) + "' (" + funcDecl->area.Pos().ToString() + ")");
+};
+
+FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
+    const std::vector<FunctionDecl*>& funcDeclList, const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters)
+{
+    if (funcDeclList.empty())
+        RuntimeErr("undefined symbol '" + ident + "'");
+
+    /* Validate number of arguments for function call */
+    const auto numArgs = argTypeDenoters.size();
+
+    if (!ValidateNumArgsForFunctionDecl(funcDeclList, numArgs))
+    {
+        /* Add candidate signatures to report hints */
+        ListAllFuncCandidates(funcDeclList);
+
+        /* Throw runtime error */
+        RuntimeErr(
+            "function '" + ident + "' does not take " + std::to_string(numArgs) + " " +
+            std::string(numArgs == 1 ? "parameter" : "parameters")
+        );
+    }
+
+    /* Find best fit with explicit argument types */
+    std::vector<FunctionDecl*> funcDeclCandidates;
+
+    for (auto funcDecl : funcDeclList)
+    {
+        if (MatchFunctionDeclWithArgs(*funcDecl, argTypeDenoters, false))
+            funcDeclCandidates.push_back(funcDecl);
+    }
+
+    /* Nothing found? -> find first fit with implicit argument types */
+    if (funcDeclCandidates.empty())
+    {
+        for (auto funcDecl : funcDeclList)
+        {
+            if (MatchFunctionDeclWithArgs(*funcDecl, argTypeDenoters, true))
+                funcDeclCandidates.push_back(funcDecl);
+        }
+    }
+
+    /* Check for ambiguous function call */
+    if (funcDeclCandidates.size() != 1)
+    {
+        /* Construct descriptive string for argument type names */
+        std::string argTypeNames;
+
+        if (numArgs > 0)
+        {
+            for (std::size_t i = 0; i < numArgs; ++i)
+            {
+                argTypeNames += argTypeDenoters[i]->ToString();
+                if (i + 1 < numArgs)
+                    argTypeNames += ", ";
+            }
+        }
+        else
+            argTypeNames = "void";
+
+        /* Add candidate signatures to report hints */
+        if (funcDeclCandidates.empty())
+            ListAllFuncCandidates(funcDeclList);
+        else
+            ListAllFuncCandidates(funcDeclCandidates);
+
+        /* Throw runtime error */
+        RuntimeErr("ambiguous function call '" + ident + "(" + argTypeNames + ")'");
+    }
+
+    return funcDeclCandidates.front();
 }
 
 

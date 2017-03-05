@@ -234,14 +234,6 @@ class ASTSymbolOverload
 
     private:
 
-        bool ValidateNumArgsForFunctionDecl(std::size_t numArgs);
-
-        bool MatchFunctionDeclWithArgs(
-            FunctionDecl& funcDecl,
-            const std::vector<TypeDenoterPtr>& typeDens,
-            bool implicitTypeConversion
-        );
-
         std::string         ident_;
         std::vector<AST*>   refs_;
 

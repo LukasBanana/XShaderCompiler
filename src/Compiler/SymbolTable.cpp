@@ -219,17 +219,6 @@ FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(bool throwOnFailure)
     return nullptr;
 }
 
-template <typename Container>
-void ListAllFuncCandidates(const Container& candidates)
-{
-    ReportHandler::HintForNextReport("candidates are:");
-    for (auto ref : candidates)
-    {
-        auto funcDecl = static_cast<FunctionDecl*>(ref);
-        ReportHandler::HintForNextReport("  '" + funcDecl->ToString(false) + "' (" + funcDecl->area.Pos().ToString() + ")");
-    }
-};
-
 FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoterPtr>& argTypeDenoters)
 {
     if (refs_.empty())
@@ -237,105 +226,20 @@ FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoter
     if (refs_.front()->Type() != AST::Types::FunctionDecl)
         RuntimeErr("identifier '" + ident_ + "' does not name a function");
 
-    /* Validate number of arguments for function call */
-    const auto numArgs = argTypeDenoters.size();
-
-    if (!ValidateNumArgsForFunctionDecl(numArgs))
-    {
-        /* Add candidate signatures to report hints */
-        ListAllFuncCandidates(refs_);
-
-        /* Throw runtime error */
-        RuntimeErr(
-            "function '" + ident_ + "' does not take " + std::to_string(numArgs) + " " +
-            std::string(numArgs == 1 ? "parameter" : "parameters")
-        );
-    }
-
-    /* Find best fit with explicit argument types */
-    std::vector<FunctionDecl*> funcDeclCandidates;
+    /* Convert symbol references to function declaration pointers */
+    std::vector<FunctionDecl*> funcDeclList;
+    funcDeclList.reserve(refs_.size());
 
     for (auto ref : refs_)
     {
-        auto funcDecl = static_cast<FunctionDecl*>(ref);
-        if (MatchFunctionDeclWithArgs(*funcDecl, argTypeDenoters, false))
-            funcDeclCandidates.push_back(funcDecl);
-    }
-
-    /* Nothing found? -> find first fit with implicit argument types */
-    if (funcDeclCandidates.empty())
-    {
-        for (auto ref : refs_)
-        {
-            auto funcDecl = static_cast<FunctionDecl*>(ref);
-            if (MatchFunctionDeclWithArgs(*funcDecl, argTypeDenoters, true))
-                funcDeclCandidates.push_back(funcDecl);
-        }
-    }
-
-    /* Check for ambiguous function call */
-    if (funcDeclCandidates.size() != 1)
-    {
-        /* Construct descriptive string for argument type names */
-        std::string argTypeNames;
-
-        if (numArgs > 0)
-        {
-            for (std::size_t i = 0; i < numArgs; ++i)
-            {
-                argTypeNames += argTypeDenoters[i]->ToString();
-                if (i + 1 < numArgs)
-                    argTypeNames += ", ";
-            }
-        }
+        if (auto funcDecl = ref->As<FunctionDecl>())
+            funcDeclList.push_back(funcDecl);
         else
-            argTypeNames = "void";
-
-        /* Add candidate signatures to report hints */
-        if (funcDeclCandidates.empty())
-            ListAllFuncCandidates(refs_);
-        else
-            ListAllFuncCandidates(funcDeclCandidates);
-
-        /* Throw runtime error */
-        RuntimeErr("ambiguous function call '" + ident_ + "(" + argTypeNames + ")'");
+            RuntimeErr("symbol '" + ident_ + "' is ambiguous");
     }
 
-    return funcDeclCandidates.front();
-}
-
-
-/*
- * ======= Private: =======
- */
-
-bool ASTSymbolOverload::ValidateNumArgsForFunctionDecl(std::size_t numArgs)
-{
-    for (auto ref : refs_)
-    {
-        /* Are the number of arguments sufficient? */
-        auto funcDecl = static_cast<FunctionDecl*>(ref);
-        if (numArgs >= funcDecl->NumMinArgs() && numArgs <= funcDecl->NumMaxArgs())
-            return true;
-    }
-    return false;
-}
-
-bool ASTSymbolOverload::MatchFunctionDeclWithArgs(
-    FunctionDecl& funcDecl, const std::vector<TypeDenoterPtr>& typeDens, bool implicitTypeConversion)
-{
-    auto numArgs = typeDens.size();
-    if (numArgs >= funcDecl.NumMinArgs() && numArgs <= funcDecl.NumMaxArgs())
-    {
-        for (std::size_t i = 0, n = std::min(typeDens.size(), funcDecl.parameters.size()); i < n; ++i)
-        {
-            /* Match argument type denoter to parameter */
-            if (!funcDecl.MatchParameterWithTypeDenoter(i, *typeDens[i], implicitTypeConversion))
-                return false;
-        }
-        return true;
-    }
-    return false;
+    /* Fetch function declaration from list */
+    return FunctionDecl::FetchFunctionDeclFromList(funcDeclList, ident_, argTypeDenoters);
 }
 
 

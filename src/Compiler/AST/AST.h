@@ -685,14 +685,20 @@ struct FunctionDecl : public Stmnt
     // Returns the maximal number of arguments for a call to this function (this is merely: parameters.size()).
     std::size_t NumMaxArgs() const;
 
-    // Returns true if the specified type denoter matches the parameter.
-    bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const;
-
     // Returns the final identifier for this function.
     const std::string& FinalIdent() const;
 
     // Sets the specified function AST node as the implementation of this forward declaration.
     void SetFuncImplRef(FunctionDecl* funcDecl);
+
+    // Returns true if the specified type denoter matches the parameter.
+    bool MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const;
+
+    // Fetches the function declaration from the list that matches the specified argument types.
+    static FunctionDecl* FetchFunctionDeclFromList(
+        const std::vector<FunctionDecl*>& funcDeclList,
+        const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters
+    );
 
     TypeSpecifierPtr                returnType;
     std::string                     ident;
