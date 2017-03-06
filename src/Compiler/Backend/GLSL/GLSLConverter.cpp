@@ -339,7 +339,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
-    /* Is this variable a member of the active owner structure? */
+    /* Is this variable a member of the active owner structure (like 'this->memberVar')? */
     if (auto symbol = ast->varIdent->symbolRef)
     {
         if (auto varDecl = symbol->As<VarDecl>())

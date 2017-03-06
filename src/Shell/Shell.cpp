@@ -30,14 +30,14 @@ namespace Util
 
 static void PrintBackdoorEasterEgg(std::ostream& output)
 {
-    std::cout << "here is your backdoor :-)" << std::endl;
-    std::cout << " _____ " << std::endl;
-    std::cout << "| ___ |" << std::endl;
-    std::cout << "||___||" << std::endl;
-    std::cout << "|   ~o|" << std::endl;
-    std::cout << "|     |" << std::endl;
-    std::cout << "|_____|" << std::endl;
-    std::cout << "-------" << std::endl;
+    output << "here is your backdoor :-)" << std::endl;
+    output << " _____ " << std::endl;
+    output << "| ___ |" << std::endl;
+    output << "||___||" << std::endl;
+    output << "|   ~o|" << std::endl;
+    output << "|     |" << std::endl;
+    output << "|_____|" << std::endl;
+    output << "-------" << std::endl;
 }
 
 #endif
@@ -65,7 +65,7 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
     if (cmdLine.ReachedEnd())
     {
         /* Print brief help */
-        CommandFactory::Instance().GetHelpPrinter().PrintHelpReference(std::cout);
+        CommandFactory::Instance().GetHelpPrinter().PrintHelpReference(output);
         return;
     }
 
@@ -110,13 +110,20 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
                 /* Reset output filename and entry point */
                 state_.outputFilename.clear();
                 state_.inputDesc.entryPoint.clear();
+                state_.actionPerformed = true;
             }
+        }
+
+        if (!state_.actionPerformed)
+        {
+            /* Print hint that no action has been performed */
+            output << "no action performed" << std::endl;
         }
     }
     catch (const std::exception& e)
     {
         /* Print error message */
-        std::cerr << e.what() << std::endl;
+        output << e.what() << std::endl;
     }
 }
 
@@ -126,9 +133,9 @@ void Shell::WaitForUser()
     #ifdef _WIN32
     if (state_.pauseApp)
     {
-        std::cout << "press any key to continue ...";
+        output << "press any key to continue ...";
         int i = _getch();
-        std::cout << std::endl;
+        output << std::endl;
     }
     #endif
 }

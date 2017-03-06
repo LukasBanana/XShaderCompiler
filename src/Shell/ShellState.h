@@ -49,7 +49,10 @@ struct ShellState
     bool                            pauseApp            = false;
 
     // Show code reflection output after compilation.
-    bool                            showReflection           = false;
+    bool                            showReflection      = false;
+
+    // True, if any meaningful action has been performed (e.g. printed version or compiled any files).
+    bool                            actionPerformed     = false;
 };
 
 

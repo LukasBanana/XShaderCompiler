@@ -541,6 +541,7 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
         shell->PushState();
         shell->ExecuteCommandLine(preset.cmdLine);
         shell->PopState();
+        state.actionPerformed = true;
     };
 
     std::vector<Presetting> presettings;
@@ -604,6 +605,13 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
         /* First single presetting */
         RunPresetting(presettings.front());
     }
+    else
+    {
+        /* Tell user that no presettings are defined */
+        std::cout << "no presettings defined" << std::endl;
+    }
+
+    state.actionPerformed = true;
 }
 
 
@@ -631,6 +639,7 @@ void VersionCommand::Run(CommandLine& cmdLine, ShellState& state)
     std::cout << "XShaderCompiler ( Version " << XSC_VERSION_STRING << " )" << std::endl;
     std::cout << "Copyright (c) 2014-2017 by Lukas Hermanns" << std::endl;
     std::cout << "3-Clause BSD License" << std::endl;
+    state.actionPerformed = true;
 }
 
 
@@ -655,6 +664,7 @@ HelpDescriptor HelpCommand::Help() const
 void HelpCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     CommandFactory::Instance().GetHelpPrinter().PrintHelpReference(std::cout, 2, false, true);
+    state.actionPerformed = true;
 }
 
 
