@@ -2029,8 +2029,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* funcCall)
         if (funcCall->intrinsic != Intrinsic::Undefined && !IsWrappedIntrinsic(funcCall->intrinsic))
         {
             /* Write GLSL intrinsic keyword */
-            auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic);
-            if (keyword)
+            if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
                 Write(*keyword);
             else
                 ErrorIntrinsic(funcCall->varIdent->Last()->ToString(), funcCall);
