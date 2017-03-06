@@ -182,6 +182,12 @@ IMPLEMENT_VISIT_PROC(BufferDecl)
         Visit(ast->declStmntRef);
 }
 
+IMPLEMENT_VISIT_PROC(SamplerDecl)
+{
+    if (Reachable(ast))
+        Visit(ast->declStmntRef);
+}
+
 /* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
@@ -232,6 +238,11 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
         VISIT_DEFAULT(BufferDeclStmnt);
     }
+}
+
+IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
+{
+    Reachable(ast);
 }
 
 /* --- Expressions --- */

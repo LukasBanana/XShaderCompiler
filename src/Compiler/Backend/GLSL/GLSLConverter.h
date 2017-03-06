@@ -36,7 +36,8 @@ class GLSLConverter : public Visitor
             Program& program,
             const ShaderTarget shaderTarget,
             const NameMangling& nameMangling,
-            const Options& options
+            const Options& options,
+            bool isVKSL
         );
 
     private:
@@ -143,6 +144,7 @@ class GLSLConverter : public Visitor
 
         NameMangling            nameMangling_;
         Options                 options_;
+        bool                    isVKSL_             = false;
 
         /*
         List of all variables with reserved identifiers that come from a structure that must be resolved.

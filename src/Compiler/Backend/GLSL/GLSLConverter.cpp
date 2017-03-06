@@ -18,13 +18,14 @@ namespace Xsc
 
 
 void GLSLConverter::Convert(
-    Program& program, const ShaderTarget shaderTarget, const NameMangling& nameMangling, const Options& options)
+    Program& program, const ShaderTarget shaderTarget, const NameMangling& nameMangling, const Options& options, bool isVKSL)
 {
     /* Store settings */
     shaderTarget_       = shaderTarget;
     program_            = (&program);
     nameMangling_       = nameMangling;
     options_            = options;
+    isVKSL_             = isVKSL;
 
     /* First convert expressions */
     exprConverter_.Convert(program, ExprConverter::All);
@@ -78,19 +79,22 @@ IMPLEMENT_VISIT_PROC(Program)
 
     //TODO: do not remove these statements, instead mark it as disabled code (otherwise symbol references to these statements are corrupted!)
     #if 1
-    /* Remove all variables which are sampler state objects, since GLSL does not support sampler states */
-    MoveAllIf(
-        ast->globalStmnts,
-        program_->disabledAST,
-        [&](const StmntPtr& stmnt)
-        {
-            if (stmnt->Type() == AST::Types::SamplerDeclStmnt)
-                return true;
-            if (auto varDeclStmnt = stmnt->As<VarDeclStmnt>())
-                return IsSamplerStateTypeDenoter(varDeclStmnt->typeSpecifier->GetTypeDenoter());
-            return false;
-        }
-    );
+    if (!isVKSL_)
+    {
+        /* Remove all variables which are sampler state objects, since GLSL does not support sampler states */
+        MoveAllIf(
+            ast->globalStmnts,
+            program_->disabledAST,
+            [&](const StmntPtr& stmnt)
+            {
+                if (stmnt->Type() == AST::Types::SamplerDeclStmnt)
+                    return true;
+                if (auto varDeclStmnt = stmnt->As<VarDeclStmnt>())
+                    return IsSamplerStateTypeDenoter(varDeclStmnt->typeSpecifier->GetTypeDenoter());
+                return false;
+            }
+        );
+    }
     #endif
 }
 
@@ -105,15 +109,18 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
-    MoveAllIf(
-        ast->arguments,
-        program_->disabledAST,
-        [&](const ExprPtr& expr)
-        {
-            return IsSamplerStateTypeDenoter(expr->GetTypeDenoter());
-        }
-    );
+    if (!isVKSL_)
+    {
+        /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
+        MoveAllIf(
+            ast->arguments,
+            program_->disabledAST,
+            [&](const ExprPtr& expr)
+            {
+                return IsSamplerStateTypeDenoter(expr->GetTypeDenoter());
+            }
+        );
+    }
 
     if (ast->intrinsic != Intrinsic::Undefined)
     {
@@ -193,7 +200,8 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     }
     PopStructDecl();
 
-    RemoveSamplerStateVarDeclStmnts(ast->varMembers);
+    if (!isVKSL_)
+        RemoveSamplerStateVarDeclStmnts(ast->varMembers);
 
     /* Is this an empty structure? */
     if (ast->NumVarMembers() == 0)
@@ -602,7 +610,8 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
     else
         ConvertFunctionDeclDefault(ast);
 
-    RemoveSamplerStateVarDeclStmnts(ast->parameters);
+    if (!isVKSL_)
+        RemoveSamplerStateVarDeclStmnts(ast->parameters);
 
     if (selfParamVar)
         PopSelfParameter();

@@ -85,10 +85,12 @@ class GLSLGenerator : public Generator
 
         DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( StructDecl        );
+        DECL_VISIT_PROC( SamplerDecl       );
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( BufferDeclStmnt   );
+        DECL_VISIT_PROC( SamplerDeclStmnt  );
         DECL_VISIT_PROC( StructDeclStmnt   );
         DECL_VISIT_PROC( VarDeclStmnt      );
         DECL_VISIT_PROC( AliasDeclStmnt    );

@@ -25,13 +25,10 @@ static const char* keywordsGLSL0 =
     "packDouble2x32 unpackDouble2x32 packHalf2x16 unpackHalf2x16 length distance dot cross normalize faceforward " \
     "reflect refract matrixCompMult outerProduct transpose determinant inverse lessThan lessThanEqual greaterThan " \
     "greaterThanEqual equal notEqual any all not uaddCarry usubBorrow umulExtended imulExtended bitfieldExtract " \
-    "bitfieldInsert bitfieldReverse findLSB bitCount findMSB textureSize textureQueryLod textureQueryLevels " \
+    "bitfieldInsert bitfieldReverse findLSB bitCount findMSB textureSize textureSamples textureQueryLod textureQueryLevels " \
     "texture textureProj textureLod textureOffset texelFetch texelFetchOffset textureProjOffset textureLodOffset " \
     "textureProjLod textureProjLodOffset textureGrad textureGradOffset textureProjGrad textureProjGradOffset " \
-    "textureGather textureGatherOffset textureGatherOffsets texture1D  texture1DProj texture1DLod texture1DProjLod " \
-    "texture2D texture2DProj texture2DLod texture2DProjLod texture3D texture3DProj texture3DLod texture3DProjLod " \
-    "textureCube textureCubeLod textureSamples shadow1D shadow2D shadow1DProj shadow2DProj shadow1DLod shadow2DLod"
-    "shadow1DProjLod shadow2DProjLod atomicCounterIncrement atomicCounterDecrement atomicCounter atomicAdd " \
+    "textureGather textureGatherOffset textureGatherOffsets atomicCounterIncrement atomicCounterDecrement atomicCounter atomicAdd " \
     "atomicMin atomicMax atomicAnd atomicOr atomicXor atomicExchange atomicCompSwap imageSize imageLoad imageStore " \
     "imageAtomicAdd imageAtomicMin imageAtomicMax imageAtomicAnd imageAtomicOr imageAtomicXor imageAtomicExchange " \
     "imageAtomicCompSwap dFdx dFdy fwidth interpolateAtCentroid interpolateAtSample interpolateAtOffset noise1 " \
@@ -41,7 +38,7 @@ static const char* keywordsGLSL0 =
 
 static const char* keywordsGLSL1 =
 (
-    "sampler1D sampler2D sampler3D samplerCube sampler1DShadow sampler2DShadow samplerCubeShadow sampler1DArray " \
+    "sampler sampler1D sampler2D sampler3D samplerCube sampler1DShadow sampler2DShadow samplerCubeShadow sampler1DArray " \
     "sampler2DArray sampler1DArrayShadow sampler2DArrayShadow isampler1D isampler2D isampler3D isamplerCube " \
     "isampler1DArray isampler2DArray usampler1D usampler2D usampler3D usamplerCube usampler1DArray usampler2DArray " \
     "sampler2DRect sampler2DRectShadow isampler2DRect usampler2DRect samplerBuffer isamplerBuffer usamplerBuffer " \
@@ -50,6 +47,7 @@ static const char* keywordsGLSL1 =
     "image3D iimage3D uimage3D image2DRect iimage2DRect uimage2DRect imageCube iimageCube uimageCube imageBuffer " \
     "iimageBuffer uimageBuffer image1DArray iimage1DArray uimage1DArray image2DArray iimage2DArray uimage2DArray " \
     "imageCubeArray iimageCubeArray uimageCubeArray image2DMS iimage2DMS uimage2DMS image2DMSArray iimage2DMSArray " \
+    "texture1D texture2D texture3D textureCube " \
     "uimage2DMSArray atomic_uint mat2 mat3 mat4 dmat2 dmat3 dmat4 mat2x2 mat2x3 mat2x4 dmat2x2 dmat2x3 dmat2x4 mat3x2 " \
     "mat3x3 mat3x4 dmat3x2 dmat3x3 dmat3x4 mat4x2 mat4x3 mat4x4 dmat4x2 dmat4x3 dmat4x4 vec2 vec3 vec4 ivec2 ivec3 " \
     "ivec4 bvec2 bvec3 bvec4 dvec2 dvec3 dvec4 float double int void bool uint uvec2 uvec3 uvec4 gl_NumWorkGroups " \

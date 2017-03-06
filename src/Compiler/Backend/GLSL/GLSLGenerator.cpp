@@ -79,7 +79,7 @@ void GLSLGenerator::GenerateCodePrimary(
             /* Convert AST for GLSL code generation */
             {
                 GLSLConverter converter;
-                converter.Convert(program, inputDesc.shaderTarget, nameMangling_, outputDesc.options);
+                converter.Convert(program, inputDesc.shaderTarget, nameMangling_, outputDesc.options, IsVKSL());
             }
 
             /* Mark all reachable AST nodes */
@@ -397,6 +397,31 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     }
 }
 
+IMPLEMENT_VISIT_PROC(SamplerDecl)
+{
+    if (IsVKSL() && ast->flags(AST::isReachable))
+    {
+        BeginLn();
+        {
+            /* Write uniform declaration */
+            if (explicitBinding_)
+            {
+                if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, GetShaderTarget()))
+                    Write("layout(binding = " + std::to_string(slotRegister->slot) + ") ");
+            }
+
+            Write("uniform sampler " + ast->ident);
+
+            /* Write array dimensions and statement terminator */
+            Visit(ast->arrayDims);
+            Write(";");
+        }
+        EndLn();
+
+        Blank();
+    }
+}
+
 /* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
@@ -489,6 +514,12 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
         for (auto& bufferDecl : ast->bufferDecls)
             WriteBufferDecl(bufferDecl.get());
     }
+}
+
+IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
+{
+    if (IsVKSL() && ast->flags(AST::isReachable))
+        Visit(ast->samplerDecls);
 }
 
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
@@ -1114,7 +1145,8 @@ bool GLSLGenerator::WriteGlobalLayoutsFragment(const Program::LayoutFragmentShad
 {
     bool layoutsWritten = false;
 
-    if (GetProgram()->layoutFragment.fragCoordUsed)
+    /* Define 'gl_FragCoord' origin to upper-left (not required for Vulkan) */
+    if (!IsVKSL() && GetProgram()->layoutFragment.fragCoordUsed)
     {
         BeginLn();
         {
