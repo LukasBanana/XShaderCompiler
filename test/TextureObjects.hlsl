@@ -16,6 +16,17 @@ SamplerState smpl1
 //	BorderColor = (float4)1;
 };
 
+SamplerComparisonState smplComp1
+{
+	// sampler state
+	Filter = COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+	AddressU = MIRROR;
+	AddressV = MIRROR;
+
+	// sampler comparison state
+	ComparisonFunc = LESS;
+};
+
 Texture2D tex0 : register(t0);
 
 Texture2D<int4> tex1 : register(t1);

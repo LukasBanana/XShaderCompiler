@@ -1137,14 +1137,14 @@ using T = Reflection::ComparisonFunc;
 
 static const std::map<std::string, T> g_mapCompareFunc
 {
-    { "COMPARISON_NEVER",         T::Never        },
-    { "COMPARISON_LESS",          T::Less         },
-    { "COMPARISON_EQUAL",         T::Equal        },
-    { "COMPARISON_LESS_EQUAL",    T::LessEqual    },
-    { "COMPARISON_GREATER",       T::Greater      },
-    { "COMPARISON_NOT_EQUAL",     T::NotEqual     },
-    { "COMPARISON_GREATER_EQUAL", T::GreaterEqual },
-    { "COMPARISON_ALWAYS",        T::Always       },
+    { "NEVER",         T::Never        },
+    { "LESS",          T::Less         },
+    { "EQUAL",         T::Equal        },
+    { "LESS_EQUAL",    T::LessEqual    },
+    { "GREATER",       T::Greater      },
+    { "NOT_EQUAL",     T::NotEqual     },
+    { "GREATER_EQUAL", T::GreaterEqual },
+    { "ALWAYS",        T::Always       },
 };
 
 } // /namespace DetailsMap2
