@@ -16,5 +16,6 @@ Known Issues
 | Issue | Remarks |
 |-------|---------|
 | Implicit type conversion | **in progress** |
-| Intrinsic argument type matching | Type matching is incomplete for intrinsic function calls; **in progress** |
-| Sampler types for DX9 shaders | Samplers (e.g. `sampler2D`) are ignored, even for HLSL3 |
+| Intrinsic argument type matching | Type matching is incomplete for intrinsic function calls. **in progress** |
+| Sampler types for DX9 shaders | Samplers (e.g. `sampler2D`) are ignored, even for HLSL3. |
+| Braced initializers | For lower GLSL versions, braced initializers must be translated to the respective type constructor. |
