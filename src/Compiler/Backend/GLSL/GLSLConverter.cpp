@@ -105,6 +105,16 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
+    /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
+    MoveAllIf(
+        ast->arguments,
+        program_->disabledAST,
+        [&](const ExprPtr& expr)
+        {
+            return IsSamplerStateTypeDenoter(expr->GetTypeDenoter());
+        }
+    );
+
     if (ast->intrinsic != Intrinsic::Undefined)
     {
         /* Insert texture object as parameter into intrinsic arguments */
@@ -118,16 +128,6 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     }
     else
         ConvertFunctionCall(ast);
-
-    /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
-    MoveAllIf(
-        ast->arguments,
-        program_->disabledAST,
-        [&](const ExprPtr& expr)
-        {
-            return IsSamplerStateTypeDenoter(expr->GetTypeDenoter());
-        }
-    );
 
     VISIT_DEFAULT(FunctionCall);
 }
