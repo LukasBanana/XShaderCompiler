@@ -166,7 +166,7 @@ const std::string* GLSLGenerator::BufferTypeToKeyword(const BufferType bufferTyp
 
 const std::string* GLSLGenerator::SamplerTypeToKeyword(const SamplerType samplerType, const AST* ast)
 {
-    if (auto keyword = SamplerTypeToGLSLKeyword(samplerType, IsVKSL()))
+    if (auto keyword = SamplerTypeToGLSLKeyword(samplerType))
         return keyword;
     else
         Error("failed to map sampler type to GLSL sampler type", ast);
@@ -1887,7 +1887,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
                     Error("missing reference to declaration in sampler type denoter", ast);
             }
 
-            if (!IsSamplerStateType(samplerType))
+            if (!IsSamplerStateType(samplerType) || IsVKSL())
             {
                 /* Convert sampler type to GLSL sampler type */
                 if (auto keyword = SamplerTypeToKeyword(samplerType, ast))

@@ -50,6 +50,45 @@ FunctionCallExprPtr MakeIntrinsicCallExpr(
     return ast;
 }
 
+static SamplerType TextureTypeToSamplerType(const BufferType t)
+{
+    switch (t)
+    {
+        case BufferType::Texture1D:
+        case BufferType::Texture1DArray:
+            return SamplerType::Sampler1D;
+        case BufferType::Texture2D:
+        case BufferType::Texture2DArray:
+            return SamplerType::Sampler2D;
+        case BufferType::Texture3D:
+            return SamplerType::Sampler3D;
+        case BufferType::TextureCube:
+        case BufferType::TextureCubeArray:
+            return SamplerType::SamplerCube;
+        default:
+            return SamplerType::Undefined;
+    }
+}
+
+FunctionCallExprPtr MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, const ExprPtr& samplerObjectExpr)
+{
+    auto ast = MakeAST<FunctionCallExpr>();
+    {
+        auto funcCall = MakeAST<FunctionCall>();
+        {
+            auto typeDen = textureObjectExpr->GetTypeDenoter()->Get();
+            if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
+            {
+                funcCall->typeDenoter = std::make_shared<SamplerTypeDenoter>(TextureTypeToSamplerType(bufferTypeDen->bufferType));
+                funcCall->arguments.push_back(textureObjectExpr);
+                funcCall->arguments.push_back(samplerObjectExpr);
+            }
+        }
+        ast->call = funcCall;
+    }
+    return ast;
+}
+
 CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr)
 {
     auto ast = MakeAST<CastExpr>();

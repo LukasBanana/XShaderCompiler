@@ -29,6 +29,8 @@ FunctionCallExprPtr             MakeIntrinsicCallExpr(
     const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments
 );
 
+FunctionCallExprPtr             MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, const ExprPtr& samplerObjectExpr);
+
 CastExprPtr                     MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr);
 CastExprPtr                     MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue);
 

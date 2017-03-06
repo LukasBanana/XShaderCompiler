@@ -36,7 +36,7 @@ const std::string* InterpModifierToGLSLKeyword(const InterpModifier t);
 const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLSL = false);
 
 // Returns the GLSL keyword for the specified sampler type or null on failure.
-const std::string* SamplerTypeToGLSLKeyword(const SamplerType t, bool useVulkanGLSL = false);
+const std::string* SamplerTypeToGLSLKeyword(const SamplerType t);
 
 // Returns the GLSL keyword for the specified attribut value or null on failure.
 const std::string* AttributeValueToGLSLKeyword(const AttributeValue t);

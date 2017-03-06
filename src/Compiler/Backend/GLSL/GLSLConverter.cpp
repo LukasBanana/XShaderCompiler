@@ -124,11 +124,27 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
     if (ast->intrinsic != Intrinsic::Undefined)
     {
-        /* Insert texture object as parameter into intrinsic arguments */
         if (IsTextureIntrinsic(ast->intrinsic))
         {
-            auto varAccessExpr = ASTFactory::MakeVarAccessExpr(ASTFactory::MakeVarIdentFirst(*ast->varIdent));
-            ast->arguments.insert(ast->arguments.begin(), varAccessExpr);
+            auto texObjectExpr = ASTFactory::MakeVarAccessExpr(ASTFactory::MakeVarIdentFirst(*ast->varIdent));
+            if (isVKSL_)
+            {
+                /* Replace sampler state argument by sampler/texture binding call */
+                if (!ast->arguments.empty())
+                {
+                    auto arg0 = ast->arguments.front().get();
+                    if (IsSamplerStateTypeDenoter(arg0->GetTypeDenoter()))
+                    {
+                        auto bindCallExpr = ASTFactory::MakeTextureSamplerBindingCallExpr(texObjectExpr, ast->arguments[0]);
+                        ast->arguments[0] = bindCallExpr;
+                    }
+                }
+            }
+            else
+            {
+                /* Insert texture object as parameter into intrinsic arguments */
+                ast->arguments.insert(ast->arguments.begin(), texObjectExpr);
+            }
         }
 
         ConvertIntrinsicCall(ast);

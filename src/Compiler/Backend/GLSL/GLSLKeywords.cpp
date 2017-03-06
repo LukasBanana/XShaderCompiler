@@ -263,16 +263,15 @@ static std::map<SamplerType, std::string> GenerateSamplerTypeMap()
         { T::Sampler2D,              "sampler2D"   },
         { T::Sampler3D,              "sampler3D"   },
         { T::SamplerCube,            "samplerCube" },
-      //{ T::SamplerState,           ""            },
-      //{ T::SamplerComparisonState, ""            },
+        { T::SamplerState,           "sampler"     }, // Only for Vulkan
+        { T::SamplerComparisonState, "sampler"     }, // Only for Vulkan
     };
 }
 
-const std::string* SamplerTypeToGLSLKeyword(const SamplerType t, bool useVulkanGLSL)
+const std::string* SamplerTypeToGLSLKeyword(const SamplerType t)
 {
     static const auto typeMap = GenerateSamplerTypeMap();
-    static const std::string samplerTypeVKSL = "sampler";
-    return (useVulkanGLSL ? (&samplerTypeVKSL) : MapTypeToKeyword(typeMap, t));
+    return MapTypeToKeyword(typeMap, t);
 }
 
 
