@@ -403,13 +403,9 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
     {
         BeginLn();
         {
-            /* Write uniform declaration */
-            if (explicitBinding_)
-            {
-                if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, GetShaderTarget()))
-                    Write("layout(binding = " + std::to_string(slotRegister->slot) + ") ");
-            }
+            WriteBindingSlot(ast->slotRegisters);
 
+            /* Write uniform declaration */
             Write("uniform sampler " + ast->ident);
 
             /* Write array dimensions and statement terminator */
@@ -480,11 +476,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         BeginLn();
         Write("layout(std140");
 
-        if (explicitBinding_)
-        {
-            if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, GetShaderTarget()))
-                Write(", binding = " + std::to_string(slotRegister->slot));
-        }
+        WriteBindingSlot(ast->slotRegisters, false);
 
         Write(") uniform ");
         Write(ast->ident);
@@ -2498,11 +2490,7 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
     BeginLn();
     {
         /* Write uniform declaration */
-        if (explicitBinding_)
-        {
-            if (auto slotRegister = Register::GetForTarget(bufferDecl->slotRegisters, GetShaderTarget()))
-                Write("layout(binding = " + std::to_string(slotRegister->slot) + ") ");
-        }
+        WriteBindingSlot(bufferDecl->slotRegisters);
 
         Write("uniform ");
 
@@ -2688,6 +2676,25 @@ void GLSLGenerator::WriteLiteral(const std::string& value, const BaseTypeDenoter
     }
     else
         Error("failed to write type denoter for literal '" + value + "'", ast);
+}
+
+void GLSLGenerator::WriteBindingSlot(const std::vector<RegisterPtr>& slotRegisters, bool writeCompleteLayout)
+{
+    if (explicitBinding_)
+    {
+        if (auto slotRegister = Register::GetForTarget(slotRegisters, GetShaderTarget()))
+        {
+            if (writeCompleteLayout)
+                Write("layout(");
+            else
+                Write(", ");
+            
+            Write("binding = " + std::to_string(slotRegister->slot));
+
+            if (writeCompleteLayout)
+                Write(") ");
+        }
+    }
 }
 
 

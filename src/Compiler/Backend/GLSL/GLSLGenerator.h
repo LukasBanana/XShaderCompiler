@@ -256,6 +256,8 @@ class GLSLGenerator : public Generator
 
         void WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast = nullptr);
 
+        void WriteBindingSlot(const std::vector<RegisterPtr>& slotRegisters, bool writeCompleteLayout = true);
+
         /* === Members === */
 
         struct VertexSemanticLoc
