@@ -219,7 +219,11 @@ struct Expr : public TypedAST
 };
 
 // Declaration AST base class.
-struct Decl : public TypedAST {};
+struct Decl : public TypedAST
+{
+    // Identifier of the declaration object (may be empty, e.g. for anonymous structures).
+    std::string ident;
+};
 
 // Program AST root.
 struct Program : public AST
@@ -253,8 +257,13 @@ struct Program : public AST
     // Layout meta data for fragment shaders
     struct LayoutFragmentShader
     {
+        // True, if fragment coordinate (SV_Position) is used inside a fragment shader.
         bool fragCoordUsed      = false;
-        bool pixelCenterInteger = false;    // True, if the pixel center is assumed to be integral. If false, pixel coordiante is assumed to have an (0.5, 0.5) offset.
+        
+        // True, if pixel center is assumed to be integral, otherwise pixel center is assumed to have an (0.5, 0.5) offset.
+        bool pixelCenterInteger = false;
+
+        // True, if the [earlydepthstencil] attribute is specified for the fragment shader entry point.
         bool earlyDepthStencil  = false;
     };
 
@@ -514,7 +523,6 @@ struct VarDecl : public Decl
     // Returns a type denoter for this variable declaration or throws an std::runtime_error if the type can not be derived.
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    std::string                     ident;
     std::vector<ArrayDimensionPtr>  arrayDims;
     IndexedSemantic                 semantic;
     PackOffsetPtr                   packOffset;
@@ -538,7 +546,6 @@ struct BufferDecl : public Decl
     // Returns the buffer type of the parent's node type denoter.
     BufferType GetBufferType() const;
 
-    std::string                     ident;
     std::vector<ArrayDimensionPtr>  arrayDims;
     std::vector<RegisterPtr>        slotRegisters;
 
@@ -555,7 +562,6 @@ struct SamplerDecl : public Decl
     // Returns the sampler type of the parent's node type denoter.
     SamplerType GetSamplerType() const;
 
-    std::string                     ident;
     std::vector<ArrayDimensionPtr>  arrayDims;
     std::vector<RegisterPtr>        slotRegisters;
     std::string                     textureIdent;               // Optional variable identifier of the texture object (for DX9 effect files)
@@ -614,7 +620,6 @@ struct StructDecl : public Decl
     // Returns true if this structure is a base of the specified sub structure.
     bool IsBaseOf(const StructDecl& subStructDecl) const;
 
-    std::string                     ident;                              // May be empty (for anonymous structures).
     std::string                     baseStructName;                     // May be empty (if no inheritance is used).
     std::vector<StmntPtr>           localStmnts;                        // Local declaration statements
 
@@ -636,7 +641,6 @@ struct AliasDecl : public Decl
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    std::string     ident;                  // Type identifier
     TypeDenoterPtr  typeDenoter;            // Type denoter of the aliased type
 
     AliasDeclStmnt* declStmntRef = nullptr; // Reference to its declaration statement (parent node).
