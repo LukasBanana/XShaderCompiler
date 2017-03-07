@@ -179,7 +179,7 @@ IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
     Visit(ast->attribs);
-    Visit(ast->initSmnt);
+    Visit(ast->initStmnt);
     Visit(ast->condition);
     Visit(ast->iteration);
     Visit(ast->bodyStmnt);

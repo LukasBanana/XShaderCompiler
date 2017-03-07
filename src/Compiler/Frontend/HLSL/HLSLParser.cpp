@@ -1271,7 +1271,7 @@ ForLoopStmntPtr HLSLParser::ParseForLoopStmnt()
     Accept(Tokens::For);
     Accept(Tokens::LBracket);
 
-    ast->initSmnt = ParseStmnt(false);
+    ast->initStmnt = ParseStmnt(false);
 
     /* Parse loop condExpr */
     if (!Is(Tokens::Semicolon))

@@ -857,7 +857,7 @@ struct ForLoopStmnt : public Stmnt
 {
     AST_INTERFACE(ForLoopStmnt);
 
-    StmntPtr    initSmnt; //TODO: rename to "initStmnt"
+    StmntPtr    initStmnt;
     ExprPtr     condition;
     ExprPtr     iteration;
     StmntPtr    bodyStmnt;

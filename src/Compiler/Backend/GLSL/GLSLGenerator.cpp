@@ -668,7 +668,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
     PushOptions({ false, false });
     {
-        Visit(ast->initSmnt);
+        Visit(ast->initStmnt);
         Write(" "); // initStmnt already has the ';'!
         Visit(ast->condition);
         Write("; ");

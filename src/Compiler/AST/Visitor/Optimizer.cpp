@@ -106,7 +106,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
-    Visit(ast->initSmnt);
+    Visit(ast->initStmnt);
     OptimizeExpr(ast->condition);
     OptimizeExpr(ast->iteration);
     Visit(ast->bodyStmnt);
