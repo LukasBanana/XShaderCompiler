@@ -13,7 +13,9 @@ void VS()
 	for (int i = 2; i < 10; ++i)
 	{
 		int i = 3;
-		//int i = 4;
+		{
+			int i = 4;
+		}
 	}
 	
 	#if 0

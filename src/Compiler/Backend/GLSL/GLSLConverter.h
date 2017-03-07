@@ -12,6 +12,7 @@
 #include "Visitor.h"
 #include "TypeDenoter.h"
 #include "ExprConverter.h"
+#include "SymbolTable.h"
 #include <Xsc/Xsc.h>
 #include <functional>
 #include <set>
@@ -57,15 +58,31 @@ class GLSLConverter : public Visitor
         DECL_VISIT_PROC( VarDeclStmnt     );
         DECL_VISIT_PROC( AliasDeclStmnt   );
 
+        DECL_VISIT_PROC( CodeBlockStmnt   );
         DECL_VISIT_PROC( ForLoopStmnt     );
         DECL_VISIT_PROC( WhileLoopStmnt   );
         DECL_VISIT_PROC( DoWhileLoopStmnt );
         DECL_VISIT_PROC( IfStmnt          );
         DECL_VISIT_PROC( ElseStmnt        );
+        DECL_VISIT_PROC( SwitchStmnt      );
 
         DECL_VISIT_PROC( LiteralExpr      );
         DECL_VISIT_PROC( CastExpr         );
         DECL_VISIT_PROC( VarAccessExpr    );
+
+        /* ----- Scope functions ----- */
+
+        // Opens a new scope in the smybol table.
+        void OpenScope();
+
+        // Closes the current scope in the symbol table.
+        void CloseScope();
+
+        // Registers the AST node in the current scope with the specified identifier.
+        void Register(const std::string& ident);
+
+        // Tries to fetch an AST node with the specified identifier from the symbol table and reports an error on failure.
+        bool FetchFromCurrentScope(const std::string& ident) const;
 
         /* ----- Helper functions for conversion ----- */
 
@@ -136,6 +153,9 @@ class GLSLConverter : public Visitor
         void UnrollStmntsVarDeclInitializer(std::vector<StmntPtr>& unrolledStmnts, VarDecl* varDecl);
 
         /* === Members === */
+
+        // Symbol table to determine which variables must be renamed (scope rules are different between HLSL and GLSL).
+        SymbolTable<bool>       symTable_;
 
         ExprConverter           exprConverter_;
 

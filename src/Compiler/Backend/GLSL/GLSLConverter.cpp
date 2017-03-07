@@ -17,6 +17,20 @@ namespace Xsc
 {
 
 
+/*
+ * Internal structures
+ */
+
+struct CodeBlockStmntArgs
+{
+    bool disableNewScope;
+};
+
+
+/*
+ * GLSLConverter class
+ */
+
 void GLSLConverter::Convert(
     Program& program, const ShaderTarget shaderTarget, const NameMangling& nameMangling, const Options& options, bool isVKSL)
 {
@@ -203,6 +217,8 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
     RenameReservedKeyword(ast->ident, ast->renamedIdent);
 
+    Register(ast->FinalIdent());
+
     VISIT_DEFAULT(VarDecl);
 }
 
@@ -211,9 +227,11 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     LabelAnonymousStructDecl(ast);
 
     PushStructDecl(ast);
+    OpenScope();
     {
         VISIT_DEFAULT(StructDecl);
     }
+    CloseScope();
     PopStructDecl();
 
     if (!isVKSL_)
@@ -233,9 +251,11 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     PushFunctionDecl(ast);
+    OpenScope();
     {
         ConvertFunctionDecl(ast);
     }
+    CloseScope();
     PopFunctionDecl();
 }
 
@@ -265,12 +285,45 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
 
 /* --- Statements --- */
 
+IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
+{
+    bool disableNewScope = (args != nullptr ? reinterpret_cast<CodeBlockStmntArgs*>(args)->disableNewScope : false);
+
+    if (!disableNewScope)
+    {
+        OpenScope();
+        {
+            VISIT_DEFAULT(CodeBlockStmnt);
+        }
+        CloseScope();
+    }
+    else
+        VISIT_DEFAULT(CodeBlockStmnt);
+}
+
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
 
-    VISIT_DEFAULT(ForLoopStmnt);
+    Visit(ast->attribs);
+    OpenScope();
+    {
+        Visit(ast->initStmnt);
+        Visit(ast->condition);
+        Visit(ast->iteration);
+
+        if (ast->bodyStmnt->Type() == AST::Types::CodeBlockStmnt)
+        {
+            /* Do NOT open a new scope for the body code block in GLSL */
+            CodeBlockStmntArgs bodyStmntArgs;
+            bodyStmntArgs.disableNewScope = true;
+            Visit(ast->bodyStmnt, &bodyStmntArgs);
+        }
+        else
+            Visit(ast->bodyStmnt);
+    }
+    CloseScope();
 }
 
 IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
@@ -278,7 +331,11 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
 
-    VISIT_DEFAULT(WhileLoopStmnt);
+    OpenScope();
+    {
+        VISIT_DEFAULT(WhileLoopStmnt);
+    }
+    CloseScope();
 }
 
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
@@ -286,7 +343,11 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
 
-    VISIT_DEFAULT(DoWhileLoopStmnt);
+    OpenScope();
+    {
+        VISIT_DEFAULT(DoWhileLoopStmnt);
+    }
+    CloseScope();
 }
 
 IMPLEMENT_VISIT_PROC(IfStmnt)
@@ -294,7 +355,11 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
 
-    VISIT_DEFAULT(IfStmnt);
+    OpenScope();
+    {
+        VISIT_DEFAULT(IfStmnt);
+    }
+    CloseScope();
 }
 
 IMPLEMENT_VISIT_PROC(ElseStmnt)
@@ -302,7 +367,20 @@ IMPLEMENT_VISIT_PROC(ElseStmnt)
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
 
-    VISIT_DEFAULT(ElseStmnt);
+    OpenScope();
+    {
+        VISIT_DEFAULT(ElseStmnt);
+    }
+    CloseScope();
+}
+
+IMPLEMENT_VISIT_PROC(SwitchStmnt)
+{
+    OpenScope();
+    {
+        VISIT_DEFAULT(SwitchStmnt);
+    }
+    CloseScope();
 }
 
 /* --- Expressions --- */
@@ -390,6 +468,28 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
 #undef IMPLEMENT_VISIT_PROC
 
+/* ----- Scope functions ----- */
+
+void GLSLConverter::OpenScope()
+{
+    symTable_.OpenScope();
+}
+
+void GLSLConverter::CloseScope()
+{
+    symTable_.CloseScope();
+}
+
+void GLSLConverter::Register(const std::string& ident)
+{
+    symTable_.Register(ident, true);
+}
+
+bool GLSLConverter::FetchFromCurrentScope(const std::string& ident) const
+{
+    return symTable_.FetchFromCurrentScope(ident);
+}
+
 /* --- Helper functions for conversion --- */
 
 bool GLSLConverter::IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter) const
@@ -407,19 +507,25 @@ bool GLSLConverter::IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter)
 
 bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
 {
-    /* Variable must be renamed if it's not inside a structure declaration and its name is reserved */
+    /*
+    Variable must be renamed if it's not inside a structure declaration and its name is reserved,
+    or the identifier has already been declared in the current scope
+    */
     return
     (
-        !InsideStructDecl() &&
-        !ast->flags(VarDecl::isShaderInput) &&
+        FetchFromCurrentScope(ast->FinalIdent()) ||
         (
-            std::find_if(
-                reservedVarDecls_.begin(), reservedVarDecls_.end(),
-                [ast](VarDecl* varDecl)
-                {
-                    return (varDecl != ast && varDecl->FinalIdent() == ast->FinalIdent());
-                }
-            ) != reservedVarDecls_.end()
+            !InsideStructDecl() &&
+            !ast->flags(VarDecl::isShaderInput) &&
+            (
+                std::find_if(
+                    reservedVarDecls_.begin(), reservedVarDecls_.end(),
+                    [ast](VarDecl* varDecl)
+                    {
+                        return (varDecl != ast && varDecl->FinalIdent() == ast->FinalIdent());
+                    }
+                ) != reservedVarDecls_.end()
+            )
         )
     );
 }
