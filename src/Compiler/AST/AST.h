@@ -179,6 +179,9 @@ struct AST
 // Statement AST base class.
 struct Stmnt : public AST
 {
+    // Collects all variable-, buffer-, and sampler AST nodes with their identifiers in the specified map.
+    virtual void CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const;
+
     std::string                 comment; // Optional commentary for this statement.
     std::vector<AttributePtr>   attribs; // Attribute list. May be empty.
 };
@@ -754,6 +757,9 @@ struct BufferDeclStmnt : public Stmnt
 {
     AST_INTERFACE(BufferDeclStmnt);
 
+    // Implements Stmnt::CollectDeclIdents
+    void CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const override;
+
     BufferTypeDenoterPtr        typeDenoter;
     std::vector<BufferDeclPtr>  bufferDecls;
 };
@@ -762,6 +768,9 @@ struct BufferDeclStmnt : public Stmnt
 struct SamplerDeclStmnt : public Stmnt
 {
     AST_INTERFACE(SamplerDeclStmnt);
+
+    // Implements Stmnt::CollectDeclIdents
+    void CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const override;
 
     SamplerTypeDenoterPtr       typeDenoter;
     std::vector<SamplerDeclPtr> samplerDecls;
@@ -786,6 +795,9 @@ struct VarDeclStmnt : public Stmnt
         FLAG( isParameter,      2 ), // This variable is a function parameter (flag should be set during parsing).
         FLAG( isImplicitConst,  3 ), // This variable is implicitly declared as constant.
     };
+
+    // Implements Stmnt::CollectDeclIdents
+    void CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const override;
 
     // Returns the var-decl statement as string.
     std::string ToString(bool useVarNames = true, bool isParam = false) const;

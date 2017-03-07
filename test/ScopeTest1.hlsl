@@ -16,11 +16,13 @@ void VS()
 		//int i = 4;
 	}
 	
+	#if 0
 	SamplerState s;
 	for (SamplerState s; false; )
 	{
 		SamplerState s;
 		//SamplerState s;
 	}
+	#endif
 }
 

@@ -45,6 +45,14 @@ void AST::operator delete (void* ptr)
 #endif
 
 
+/* ----- Stmnt ----- */
+
+void Stmnt::CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const
+{
+    // dummy
+}
+
+
 /* ----- TypedAST ----- */
 
 const TypeDenoterPtr& TypedAST::GetTypeDenoter()
@@ -1115,7 +1123,31 @@ std::string UniformBufferDecl::ToString() const
 }
 
 
+/* ----- BufferDeclStmnt ----- */
+
+void BufferDeclStmnt::CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const
+{
+    for (const auto& ast : bufferDecls)
+        declASTIdents[ast.get()] = ast->ident;
+}
+
+
+/* ----- SamplerDeclStmnt ----- */
+
+void SamplerDeclStmnt::CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const
+{
+    for (const auto& ast : samplerDecls)
+        declASTIdents[ast.get()] = ast->ident;
+}
+
+
 /* ----- VarDelcStmnt ----- */
+
+void VarDeclStmnt::CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const
+{
+    for (const auto& ast : varDecls)
+        declASTIdents[ast.get()] = ast->ident;
+}
 
 std::string VarDeclStmnt::ToString(bool useVarNames, bool isParam) const
 {
