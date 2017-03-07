@@ -109,6 +109,7 @@ static bool CompileShaderPrimary(
     HLSLParser parser(log);
     auto program = parser.ParseSource(
         std::make_shared<SourceCode>(std::move(processedInput)),
+        outputDesc.nameMangling,
         (inputDesc.shaderVersion >= InputShaderVersion::HLSL4),
         outputDesc.options.rowMajorAlignment
     );

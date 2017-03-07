@@ -384,6 +384,33 @@ ExprPtr Parser::ParseValueExpr()
     return ParsePrimaryExpr();
 }
 
+/* ----- Common ----- */
+
+const std::string* Parser::FindNameManglingPrefix(const std::string& ident) const
+{
+    auto FindPrefix = [&ident](const std::string& prefix) -> const std::string*
+    {
+        if (ident.compare(0, prefix.size(), prefix) == 0)
+            return &prefix;
+        else
+            return nullptr;
+    };
+
+    if (auto prefix = FindPrefix(nameMangling_.inputPrefix))
+        return prefix;
+
+    if (auto prefix = FindPrefix(nameMangling_.outputPrefix))
+        return prefix;
+
+    if (auto prefix = FindPrefix(nameMangling_.reservedWordPrefix))
+        return prefix;
+
+    if (auto prefix = FindPrefix(nameMangling_.temporaryPrefix))
+        return prefix;
+
+    return nullptr;
+}
+
 
 /*
  * ======= Private: =======

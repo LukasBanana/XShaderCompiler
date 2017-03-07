@@ -39,10 +39,13 @@ HLSLParser::HLSLParser(Log* log) :
 {
 }
 
-ProgramPtr HLSLParser::ParseSource(const SourceCodePtr& source, bool useD3D10Semantics, bool rowMajorAlignment)
+ProgramPtr HLSLParser::ParseSource(
+    const SourceCodePtr& source, const NameMangling& nameMangling, bool useD3D10Semantics, bool rowMajorAlignment)
 {
     useD3D10Semantics_  = useD3D10Semantics;
     rowMajorAlignment_  = rowMajorAlignment;
+
+    GetNameMangling() = nameMangling;
 
     PushScannerSource(source);
 
@@ -1951,9 +1954,19 @@ std::vector<AliasDeclPtr> HLSLParser::ParseAliasDeclList(TypeDenoterPtr typeDeno
 
 /* --- Others --- */
 
-std::string HLSLParser::ParseIdent(const TokenPtr& identTkn)
+std::string HLSLParser::ParseIdent(TokenPtr identTkn)
 {
-    return (identTkn ? identTkn->Spell() : Accept(Tokens::Ident)->Spell());
+    /* Parse identifier */
+    if (!identTkn)
+        identTkn = Accept(Tokens::Ident);
+
+    auto ident = identTkn->Spell();
+
+    /* Check overlapping of reserved prefixes for name mangling */
+    if (auto prefix = FindNameManglingPrefix(ident))
+        Error("identifier '" + ident + "' conflicts with reserved name mangling prefix '" + *prefix + "'", identTkn.get(), false);
+
+    return ident;
 }
 
 TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool allowVoidType, StructDeclPtr* structDecl)

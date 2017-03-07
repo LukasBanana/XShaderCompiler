@@ -36,6 +36,7 @@ class HLSLParser : public Parser
 
         ProgramPtr ParseSource(
             const SourceCodePtr& source,
+            const NameMangling& nameMangling,
             bool useD3D10Semantics = true,
             bool rowMajorAlignment = false
         );
@@ -182,7 +183,7 @@ class HLSLParser : public Parser
         std::vector<SamplerValuePtr>    ParseSamplerValueList();
         std::vector<AliasDeclPtr>       ParseAliasDeclList(TypeDenoterPtr typeDenoter);
 
-        std::string                     ParseIdent(const TokenPtr& identTkn = nullptr);
+        std::string                     ParseIdent(TokenPtr identTkn = nullptr);
 
         TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true, StructDeclPtr* structDecl = nullptr);
         TypeDenoterPtr                  ParseTypeDenoterPrimary(StructDeclPtr* structDecl = nullptr);

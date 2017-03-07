@@ -162,11 +162,20 @@ class Parser
             return log_;
         }
 
-        // Returns the report handler.
+        // Returns a reference to the report handler.
         inline ReportHandler& GetReportHandler()
         {
             return reportHandler_;
         }
+
+        // Returns a reference to the name mangling options.
+        inline NameMangling& GetNameMangling()
+        {
+            return nameMangling_;
+        }
+
+        // Returns a pointer to the name mangling prefix the specified identifier conflicts with, or null if no conflict exists.
+        const std::string* FindNameManglingPrefix(const std::string& ident) const;
 
         // Makes a new shared pointer of the specified AST node class.
         template <typename T, typename... Args>
@@ -227,6 +236,7 @@ class Parser
         /* === Members === */
 
         ReportHandler                   reportHandler_;
+        NameMangling                    nameMangling_;
 
         Log*                            log_                    = nullptr;
         TokenPtr                        tkn_;
