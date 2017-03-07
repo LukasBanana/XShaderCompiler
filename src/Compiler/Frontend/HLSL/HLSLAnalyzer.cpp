@@ -445,16 +445,22 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
     Visit(ast->attribs);
 
     /*
-    Visit inner for-loop AST nodes without new scope (except the loop body).
-    This rule is different in HLSL compared to C++ or other languages!
+    Scope rules inside for-loop are different in HLSL compared to C++ or other languages!
+    Variable declarations inside a for-loop header, that conflict with previously defined variables, will result in a warning.
     */
-    Visit(ast->initSmnt);
-    AnalyzeConditionalExpression(ast->condition.get());
-    Visit(ast->iteration);
+    //TODO: check for duplicate variables from 'ast->initStmnt'
 
     OpenScope();
     {
-        Visit(ast->bodyStmnt);
+        Visit(ast->initSmnt);
+        AnalyzeConditionalExpression(ast->condition.get());
+        Visit(ast->iteration);
+
+        OpenScope();
+        {
+            Visit(ast->bodyStmnt);
+        }
+        CloseScope();
     }
     CloseScope();
 }
