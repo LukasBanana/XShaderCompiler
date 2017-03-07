@@ -71,21 +71,34 @@ class Analyzer : protected Visitor
 
         /* ----- Symbol table functions ----- */
 
+        // Opens a new scope in the smybol table.
         void OpenScope();
+
+        // Closes the current scope in the symbol table.
         void CloseScope();
 
+        // Registers the AST node in the current scope with the specified identifier.
         void Register(const std::string& ident, AST* ast);
         
+        // Tries to fetch an AST node with the specified identifier from the symbol table and reports an error on failure.
         AST* Fetch(const std::string& ident, const AST* ast = nullptr);
-        AST* Fetch(const VarIdentPtr& ident);
 
+        // Tries to fetch an AST node with the specified identifier from the current scope of the symbol table and returns null on failure.
+        AST* FetchFromCurrentScopeOrNull(const std::string& ident) const;
+
+        // Tries to fetch a 'StructDecl' or 'AliasDecl' with the specified identifier from the symbol table and reports an error on failure.
         AST* FetchType(const std::string& ident, const AST* ast = nullptr);
 
+        // Tries to fetch a 'VarDecl' with the specified identifier from the symbol table and reports an error on failure.
         VarDecl* FetchVarDecl(const std::string& ident, const AST* ast = nullptr);
 
+        // Tries to fetch a 'FunctionDecl' with the specified identifier and arguments from the symbol table and reports an error on failure.
         FunctionDecl* FetchFunctionDecl(const std::string& ident, const std::vector<ExprPtr>& args, const AST* ast = nullptr);
+
+        // Tries to fetch a 'FunctionDecl' with the specified identifier from the symbol table and reports an error on failure (used for patch-constant-function).
         FunctionDecl* FetchFunctionDecl(const std::string& ident, const AST* ast = nullptr);
 
+        // Tries to fetch a 'VarDecl' with the specified identifier from the structure type denoter and reports an error on failure.
         VarDecl* FetchFromStruct(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast = nullptr);
 
         FunctionDecl* FetchFunctionDeclFromStruct(

@@ -170,9 +170,13 @@ AST* Analyzer::Fetch(const std::string& ident, const AST* ast)
     return nullptr;
 }
 
-AST* Analyzer::Fetch(const VarIdentPtr& ident)
+AST* Analyzer::FetchFromCurrentScopeOrNull(const std::string& ident) const
 {
-    return Fetch(ident->ToString(), ident.get());
+    /* Fetch symbol from current scope of global symbol table */
+    if (auto symbol = symTable_.FetchFromCurrentScope(ident))
+        return symbol->Fetch(false);
+    else
+        return nullptr;
 }
 
 AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
