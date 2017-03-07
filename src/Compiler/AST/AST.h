@@ -481,6 +481,9 @@ struct VarIdent : public TypedAST
         return nullptr;
     }
 
+    // Returns the declaration AST node (if the symbol refers to one).
+    Decl* FetchDecl() const;
+
     // Returns the variable AST node (if the symbol refers to one).
     VarDecl* FetchVarDecl() const;
 

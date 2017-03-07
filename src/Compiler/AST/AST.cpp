@@ -281,6 +281,17 @@ IndexedSemantic VarIdent::FetchSemantic() const
         return Semantic::Undefined;
 }
 
+Decl* VarIdent::FetchDecl() const
+{
+    if (symbolRef)
+    {
+        const auto t = symbolRef->Type();
+        if (t == AST::Types::VarDecl || t == AST::Types::StructDecl || t == AST::Types::BufferDecl || t == AST::Types::SamplerDecl)
+            return static_cast<Decl*>(symbolRef);
+    }
+    return nullptr;
+}
+
 VarDecl* VarIdent::FetchVarDecl() const
 {
     return FetchSymbol<VarDecl>();

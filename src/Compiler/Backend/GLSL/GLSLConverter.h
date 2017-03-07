@@ -85,7 +85,10 @@ class GLSLConverter : public Visitor
         void Register(const std::string& ident);
 
         // Renames the identifier of the specified declaration object (if required) and registers its identifier.
-        void RegisterDeclIdent(Decl* obj);
+        void RegisterDeclIdent(Decl* obj, bool global = false);
+
+        // Registers the identifiers of all specified variables (see RegisterDeclIdent).
+        void RegisterGlobalDeclIdents(const std::vector<VarDecl*>& varDecls);
 
         // Tries to fetch an AST node with the specified identifier from the symbol table and reports an error on failure.
         bool FetchFromCurrentScope(const std::string& ident) const;
@@ -121,9 +124,6 @@ class GLSLConverter : public Visitor
         This is used to ensure a new scope within a control flow statement (e.g. if-statement).
         */
         void MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt);
-
-        // Registers the all specified variables as reserved identifiers.
-        void RegisterReservedVarIdents(const std::vector<VarDecl*>& varDecls);
 
         // Removes all statements that are marked as dead code.
         void RemoveDeadCode(std::vector<StmntPtr>& stmnts);
@@ -161,28 +161,28 @@ class GLSLConverter : public Visitor
         /* === Members === */
 
         // Symbol table to determine which variables must be renamed (scope rules are different between HLSL and GLSL).
-        SymbolTable<bool>       symTable_;
+        SymbolTable<bool>           symTable_;
 
-        ExprConverter           exprConverter_;
+        ExprConverter               exprConverter_;
 
-        ShaderTarget            shaderTarget_       = ShaderTarget::VertexShader;
-        Program*                program_            = nullptr;
+        ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
+        Program*                    program_            = nullptr;
 
-        NameMangling            nameMangling_;
-        Options                 options_;
-        bool                    isVKSL_             = false;
+        NameMangling                nameMangling_;
+        Options                     options_;
+        bool                        isVKSL_             = false;
 
         /*
         List of all variables with reserved identifiers that come from a structure that must be resolved.
         If a local variable uses a name from this list, it name must be modified with name mangling.
         */
-        std::vector<VarDecl*>   reservedVarDecls_;
+        std::vector<const Decl*>    globalReservedDecls_;
 
         // Stack with information of the current 'self' parameter of a member function.
-        std::vector<VarDecl*>   selfParamStack_;
+        std::vector<VarDecl*>       selfParamStack_;
 
-        unsigned int            anonymCounter_      = 0;
-        unsigned int            obfuscationCounter_ = 0;
+        unsigned int                anonymCounter_      = 0;
+        unsigned int                obfuscationCounter_ = 0;
 
 };
 

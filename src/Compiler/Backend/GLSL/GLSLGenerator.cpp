@@ -1680,13 +1680,13 @@ VarIdent* GLSLGenerator::FindSystemValueVarIdent(VarIdent* varIdent)
 
 const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* varIdent)
 {
-    /* Check if a variable declaration has changed it's name during conversion */
-    if (auto varDecl = varIdent->FetchVarDecl())
-        return varDecl->ident;
-
     /* Check if a function declaration has changed it's name during conversion */
     if (auto funcDecl = varIdent->FetchFunctionDecl())
         return funcDecl->ident;
+
+    /* Check if a declaration object (variable, structure, sampler, buffer) has changed it's name during conversion */
+    if (auto obj = varIdent->FetchDecl())
+        return obj->ident;
 
     /* Return default identifier */
     return varIdent->ident;
@@ -1896,10 +1896,13 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
             else
                 Error("can not translate sampler state object to GLSL sampler", ast);
         }
-        else if (typeDenoter.IsStruct())
+        else if (auto structTypeDen = typeDenoter.As<StructTypeDenoter>())
         {
-            /* Write struct identifier */
-            Write(typeDenoter.Ident());
+            /* Write struct identifier (either from structure declaration or stored identifier) */
+            if (auto structDecl = structTypeDen->structDeclRef)
+                Write(structDecl->ident);
+            else
+                Write(typeDenoter.Ident());
         }
         else if (typeDenoter.IsAlias())
         {

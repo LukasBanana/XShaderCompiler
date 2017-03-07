@@ -19,13 +19,16 @@ Identifier::Identifier(const std::string& original) :
 
 Identifier& Identifier::operator = (const Identifier& rhs)
 {
-    renamed_ = rhs.Final();
+    *this = rhs.Final();
     return *this;
 }
 
 Identifier& Identifier::operator = (const std::string& s)
 {
-    renamed_ = s;
+    if (original_.empty())
+        original_ = s;
+    else
+        renamed_ = s;
     return *this;
 }
 
