@@ -211,15 +211,45 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    /* Must this variable be renamed with name mangling? */
+    /* Rename variable if required */
     if (MustRenameVarDecl(ast))
         RenameVarDecl(ast);
-
     RenameReservedKeyword(ast->ident, ast->renamedIdent);
 
+    /* Register variable identifier in symbol table */
     Register(ast->FinalIdent());
 
     VISIT_DEFAULT(VarDecl);
+}
+
+IMPLEMENT_VISIT_PROC(BufferDecl)
+{
+    #if 0
+    /* Rename variable if required */
+    if (MustRenameVarDecl(ast))
+        RenameVarDecl(ast);
+    RenameReservedKeyword(ast->ident, ast->renamedIdent);
+    #endif
+
+    /* Register buffer identifier in symbol table */
+    Register(ast->ident);
+
+    VISIT_DEFAULT(BufferDecl);
+}
+
+IMPLEMENT_VISIT_PROC(SamplerDecl)
+{
+    #if 0
+    /* Rename variable if required */
+    if (MustRenameVarDecl(ast))
+        RenameVarDecl(ast);
+    RenameReservedKeyword(ast->ident, ast->renamedIdent);
+    #endif
+
+    /* Register sampler identifier in symbol table */
+    Register(ast->ident);
+
+    VISIT_DEFAULT(SamplerDecl);
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
