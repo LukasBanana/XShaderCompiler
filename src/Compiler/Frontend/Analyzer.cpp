@@ -214,7 +214,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
         /* Get type denoters from arguments */
         std::vector<TypeDenoterPtr> argTypeDens;
         if (!CollectArgumentTypeDenoters(args, argTypeDens))
-            return false;
+            return nullptr;
 
         if (auto structDecl = ActiveFunctionStructDecl())
         {
@@ -228,7 +228,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
             return symbol->FetchFunctionDecl(argTypeDens);
         
         /* Check if identifier exists but does not name a function */
-        if (auto symbol = Fetch(ident, ast))
+        if (Fetch(ident, ast) != nullptr)
             Error("identifier '" + ident + "' does not name a function", ast);
     }
     catch (const ASTRuntimeError& e)

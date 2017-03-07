@@ -46,8 +46,8 @@ static Intrinsic CompareOpToIntrinsic(const BinaryOp op)
         case BinaryOp::Greater:         return Intrinsic::GreaterThan;
         case BinaryOp::LessEqual:       return Intrinsic::LessThanEqual;
         case BinaryOp::GreaterEqual:    return Intrinsic::GreaterThanEqual;
+        default:                        return Intrinsic::Undefined;
     }
-    return Intrinsic::Undefined;
 }
 
 void ExprConverter::ConvertExprVectorCompare(ExprPtr& expr)
