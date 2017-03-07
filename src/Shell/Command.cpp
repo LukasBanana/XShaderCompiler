@@ -544,8 +544,11 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
             shell->ExecuteCommandLine(preset.cmdLine);
 
             #ifdef XSC_ENABLE_POST_VALIDATION
-            std::string cmd = "glslangValidator " + shell->GetLastOutputFilename();
-            system(cmd.c_str());
+            if (!shell->GetLastOutputFilename().empty())
+            {
+                std::string cmd = "glslangValidator " + shell->GetLastOutputFilename();
+                system(cmd.c_str());
+            }
             #endif
         }
         shell->PopState();
