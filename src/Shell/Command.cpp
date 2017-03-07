@@ -538,9 +538,18 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
     {
         std::cout << "run presetting: \"" << preset.title << "\"" << std::endl;
         auto shell = Shell::Instance();
+        
         shell->PushState();
-        shell->ExecuteCommandLine(preset.cmdLine);
+        {
+            shell->ExecuteCommandLine(preset.cmdLine);
+
+            #ifdef XSC_ENABLE_POST_VALIDATION
+            std::string cmd = "glslangValidator " + shell->GetLastOutputFilename();
+            system(cmd.c_str());
+            #endif
+        }
         shell->PopState();
+
         state.actionPerformed = true;
     };
 

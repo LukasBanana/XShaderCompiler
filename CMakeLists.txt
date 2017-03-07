@@ -20,6 +20,7 @@ option(XSC_BUILD_DEBUGGER "Build XShaderCompiler debugger 'xsc_debugger' (requir
 option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
 option(XSC_MEMORY_POOL "Enables the memory pool for optimized memory allocation (Experimental)" OFF)
+option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings with 'glslangValidator'" OFF)
 
 
 # === Preprocessor definitions ===
@@ -36,6 +37,10 @@ endif()
 
 if(XSC_MEMORY_POOL)
 	add_definitions(-DXSC_ENABLE_MEMORY_POOL)
+endif()
+
+if(XSC_ENABLE_POST_VALIDATION)
+	add_definitions(-DXSC_ENABLE_POST_VALIDATION)
 endif()
 
 

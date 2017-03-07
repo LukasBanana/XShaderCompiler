@@ -177,13 +177,15 @@ static std::string TargetToExtension(const ShaderTarget shaderTarget)
     return "glsl";
 }
 
-std::string Shell::GetDefaultOutputFilename(const std::string& filename)
+std::string Shell::GetDefaultOutputFilename(const std::string& filename) const
 {
     return (ExtractFilename(filename) + "." + state_.inputDesc.entryPoint + "." + TargetToExtension(state_.inputDesc.shaderTarget));
 }
 
 void Shell::Compile(const std::string& filename)
 {
+    lastOutputFilename_.clear();
+
     const auto  defaultOutputFilename   = GetDefaultOutputFilename(filename);
     auto        outputFilename          = state_.outputFilename;
 
@@ -261,6 +263,9 @@ void Shell::Compile(const std::string& filename)
                     outputFile << outputStream.rdbuf();
                 else
                     throw std::runtime_error("failed to write file: \"" + filename + "\"");
+
+                /* Store output filename after successful compilation */
+                lastOutputFilename_ = outputFilename;
             }
             else if (state_.verbose)
                 output << "validation successful" << std::endl;

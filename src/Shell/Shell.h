@@ -42,16 +42,24 @@ class Shell
         void PushState();
         void PopState();
 
+        // Returns the previously compiled output filename or an empty string, if the previous compilation has failed.
+        inline const std::string& GetLastOutputFilename() const
+        {
+            return lastOutputFilename_;
+        }
+
         std::ostream& output;
 
     private:
 
-        std::string GetDefaultOutputFilename(const std::string& filename);
+        std::string GetDefaultOutputFilename(const std::string& filename) const;
 
         void Compile(const std::string& filename);
 
         ShellState              state_;
         std::stack<ShellState>  stateStack_;
+
+        std::string             lastOutputFilename_;
 
         static Shell*           instance_;
 
