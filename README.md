@@ -1,5 +1,7 @@
 # XShaderCompiler ("Cross Shader Compiler") #
 
+<p align="center"><img src="docu/Xsc_Logo.png"/></p>
+
 Features
 --------
 
