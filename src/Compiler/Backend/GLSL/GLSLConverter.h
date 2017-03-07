@@ -84,6 +84,9 @@ class GLSLConverter : public Visitor
         // Registers the AST node in the current scope with the specified identifier.
         void Register(const std::string& ident);
 
+        // Renames the identifier of the specified declaration object (if required) and registers its identifier.
+        void RegisterDeclIdent(Decl* obj);
+
         // Tries to fetch an AST node with the specified identifier from the symbol table and reports an error on failure.
         bool FetchFromCurrentScope(const std::string& ident) const;
 
@@ -93,11 +96,11 @@ class GLSLConverter : public Visitor
         bool IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter) const;
 
         // Returns true if the specified variable declaration must be renamed.
-        bool MustRenameVarDecl(VarDecl* ast) const;
+        bool MustRenameDeclIdent(const Decl* obj) const;
 
         // Renames the specified variable declaration with name mangling.
         void RenameIdent(Identifier& ident);
-        void RenameVarDecl(VarDecl* ast);
+        void RenameDeclIdent(Decl* obj);
 
         void RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, bool input, bool useSemanticOnly = false);
 

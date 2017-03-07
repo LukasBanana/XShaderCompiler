@@ -211,40 +211,19 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    /* Rename variable if required */
-    if (MustRenameVarDecl(ast))
-        RenameVarDecl(ast);
-    RenameReservedKeyword(ast->ident);
-
-    /* Register variable identifier in symbol table */
-    Register(ast->ident);
-
+    RegisterDeclIdent(ast);
     VISIT_DEFAULT(VarDecl);
 }
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
-    /* Rename variable if required */
-    //if (MustRenameVarDecl(ast))
-    //    RenameVarDecl(ast);
-    RenameReservedKeyword(ast->ident);
-
-    /* Register buffer identifier in symbol table */
-    Register(ast->ident);
-
+    RegisterDeclIdent(ast);
     VISIT_DEFAULT(BufferDecl);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
-    /* Rename variable if required */
-    //if (MustRenameVarDecl(ast))
-    //    RenameVarDecl(ast);
-    RenameReservedKeyword(ast->ident);
-
-    /* Register sampler identifier in symbol table */
-    Register(ast->ident);
-
+    RegisterDeclIdent(ast);
     VISIT_DEFAULT(SamplerDecl);
 }
 
@@ -511,6 +490,19 @@ void GLSLConverter::Register(const std::string& ident)
     symTable_.Register(ident, true);
 }
 
+void GLSLConverter::RegisterDeclIdent(Decl* obj)
+{
+    /* Rename declaration object if required */
+    if (MustRenameDeclIdent(obj))
+        RenameDeclIdent(obj);
+
+    /* Rename declaration object if it has a reserved keyword */
+    RenameReservedKeyword(obj->ident);
+
+    /* Register identifier in symbol table */
+    Register(obj->ident);
+}
+
 bool GLSLConverter::FetchFromCurrentScope(const std::string& ident) const
 {
     return symTable_.FetchFromCurrentScope(ident);
@@ -531,29 +523,35 @@ bool GLSLConverter::IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter)
     return false;
 }
 
-bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
+bool GLSLConverter::MustRenameDeclIdent(const Decl* obj) const
 {
-    /*
-    Variable must be renamed if it's not inside a structure declaration and its name is reserved,
-    or the identifier has already been declared in the current scope
-    */
-    return
-    (
-        FetchFromCurrentScope(ast->ident) ||
+    /* Check if identifier has already been declared in the current scope */
+    if (FetchFromCurrentScope(obj->ident))
+        return true;
+
+    if (auto varDeclObj = obj->As<VarDecl>())
+    {
+        /*
+        Variables must be renamed if they are not inside a structure declaration and their names are reserved,
+        or the identifier has already been declared in the current scope
+        */
+        return
         (
             !InsideStructDecl() &&
-            !ast->flags(VarDecl::isShaderInput) &&
+            !varDeclObj->flags(VarDecl::isShaderInput) &&
             (
                 std::find_if(
                     reservedVarDecls_.begin(), reservedVarDecls_.end(),
-                    [ast](VarDecl* varDecl)
+                    [varDeclObj](VarDecl* varDecl)
                     {
-                        return (varDecl != ast && varDecl->ident == ast->ident);
+                        return (varDecl != varDeclObj && varDecl->ident == varDeclObj->ident);
                     }
                 ) != reservedVarDecls_.end()
             )
-        )
-    );
+        );
+    }
+
+    return false;
 }
 
 void GLSLConverter::RenameIdent(Identifier& ident)
@@ -561,9 +559,9 @@ void GLSLConverter::RenameIdent(Identifier& ident)
     ident.AppendPrefix(nameMangling_.temporaryPrefix);
 }
 
-void GLSLConverter::RenameVarDecl(VarDecl* ast)
+void GLSLConverter::RenameDeclIdent(Decl* obj)
 {
-    RenameIdent(ast->ident);
+    RenameIdent(obj->ident);
 }
 
 void GLSLConverter::RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, bool input, bool useSemanticOnly)
@@ -651,8 +649,8 @@ void GLSLConverter::RegisterReservedVarIdents(const std::vector<VarDecl*>& varDe
     for (auto& varDecl : varDecls)
     {
         /* Also new variables for reserved identifiers must be renamed if the name is already reserved */
-        if (MustRenameVarDecl(varDecl))
-            RenameVarDecl(varDecl);
+        if (MustRenameDeclIdent(varDecl))
+            RenameDeclIdent(varDecl);
 
         /* Add variable to reserved identifiers */
         reservedVarDecls_.push_back(varDecl);
