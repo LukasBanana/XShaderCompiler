@@ -222,6 +222,9 @@ struct Expr : public TypedAST
 // Declaration AST base class.
 struct Decl : public TypedAST
 {
+    // Returns a descriptive string of the type signature.
+    virtual std::string ToString() const;
+
     // Identifier of the declaration object (may be empty, e.g. for anonymous structures).
     Identifier ident;
 };
@@ -519,7 +522,7 @@ struct VarDecl : public Decl
     };
 
     // Returns the variable declaration as string.
-    std::string ToString() const;
+    std::string ToString() const override;
 
     // Returns a type denoter for this variable declaration or throws an std::runtime_error if the type can not be derived.
     TypeDenoterPtr DeriveTypeDenoter() override;
@@ -582,8 +585,8 @@ struct StructDecl : public Decl
         FLAG( isNonEntryPointParam, 3 ), // This structure is eventually used as variable or parameter type of function other than the entry point.
     };
 
-    // Returns a descriptive string of the function signature (e.g. "struct s" or "struct <anonymous>").
-    std::string ToString() const;
+    // Returns a descriptive string of the structure signature (e.g. "struct s" or "struct <anonymous>").
+    std::string ToString() const override;
 
     // Returns true if this is an anonymous structure.
     bool IsAnonymous() const;

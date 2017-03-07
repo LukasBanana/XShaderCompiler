@@ -84,6 +84,14 @@ VarIdent* Expr::FetchVarIdent() const
 }
 
 
+/* ----- Decl ----- */
+
+std::string Decl::ToString() const
+{
+    return ident.Original();
+}
+
+
 /* ----- Program ----- */
 
 void Program::RegisterIntrinsicUsage(const Intrinsic intrinsic, const std::vector<DataType>& argumentDataTypes)
@@ -221,9 +229,9 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
             {
                 auto aliasDecl = static_cast<AliasDecl*>(symbolRef);
                 if (next)
-                    RuntimeErr("can not directly access members of '" + aliasDecl->ident + "'", next.get());
+                    RuntimeErr("can not directly access members of '" + aliasDecl->ToString() + "'", next.get());
                 if (!arrayIndices.empty())
-                    RuntimeErr("can not directly access array of '" + aliasDecl->ident + "'", this);
+                    RuntimeErr("can not directly access array of '" + aliasDecl->ToString() + "'", this);
                 return aliasDecl->GetTypeDenoter()->Get();
             }
             break;
@@ -647,7 +655,7 @@ FunctionDecl* StructDecl::FetchFunctionDecl(const std::string& ident, const std:
 
     for (const auto& funcDecl : funcMembers)
     {
-        if (funcDecl->ident == ident)
+        if (funcDecl->ident.Original() == ident)
             funcDeclList.push_back(funcDecl.get());
     }
 
@@ -668,7 +676,7 @@ std::string StructDecl::FetchSimilar(const std::string& ident)
     ForEachVarDecl(
         [&similarIdents](VarDeclPtr& varDecl)
         {
-            similarIdents.push_back(varDecl->ident);
+            similarIdents.push_back(varDecl->ident.Original());
         }
     );
 
@@ -1175,7 +1183,7 @@ VarDecl* VarDeclStmnt::Fetch(const std::string& ident) const
 {
     for (const auto& var : varDecls)
     {
-        if (var->ident == ident)
+        if (var->ident.Original() == ident)
             return var.get();
     }
     return nullptr;

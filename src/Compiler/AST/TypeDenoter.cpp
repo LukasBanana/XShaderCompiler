@@ -512,8 +512,7 @@ TypeDenoterPtr StructTypeDenoter::Get(const VarIdent* varIdent)
         if (structDeclRef)
         {
             const auto& ident = varIdent->ident;
-            auto varDecl = structDeclRef->Fetch(ident);
-            if (varDecl)
+            if (auto varDecl = structDeclRef->Fetch(ident))
                 return varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size(), varIdent->next.get());
             else
                 RuntimeErr("identifier '" + ident + "' is not declared in '" + structDeclRef->ToString() + "'", varIdent);
