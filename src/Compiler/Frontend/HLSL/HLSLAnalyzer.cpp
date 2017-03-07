@@ -438,6 +438,30 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
 /* --- Statements --- */
 
+// Returns a list of (AST, Identifier)-pairs of all declarations of the specified statement
+static std::vector<std::pair<const AST*, std::string>> GetDeclIdents(const Stmnt* stmnt)
+{
+    std::vector<std::pair<const AST*, std::string>> astIdentPairs;
+
+    if (auto declStmnt = stmnt->As<VarDeclStmnt>())
+    {
+        for (const auto& decl : declStmnt->varDecls)
+            astIdentPairs.push_back({ decl.get(), decl->ident });
+    }
+    else if (auto declStmnt = stmnt->As<BufferDeclStmnt>())
+    {
+        for (const auto& decl : declStmnt->bufferDecls)
+            astIdentPairs.push_back({ decl.get(), decl->ident });
+    }
+    else if (auto declStmnt = stmnt->As<SamplerDeclStmnt>())
+    {
+        for (const auto& decl : declStmnt->samplerDecls)
+            astIdentPairs.push_back({ decl.get(), decl->ident });
+    }
+
+    return astIdentPairs;
+}
+
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
     WarningOnNullStmnt(ast->bodyStmnt, "for loop");
@@ -448,7 +472,20 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
     Scope rules inside for-loop are different in HLSL compared to C++ or other languages!
     Variable declarations inside a for-loop header, that conflict with previously defined variables, will result in a warning.
     */
-    //TODO: check for duplicate variables from 'ast->initStmnt'
+    for (const auto& astIdentPair : GetDeclIdents(ast->initSmnt.get()))
+    {
+        if (auto symbol = FetchFromCurrentScopeOrNull(astIdentPair.second))
+        {
+            if (symbol->Type() == AST::Types::VarDecl || symbol->Type() == AST::Types::BufferDecl || symbol->Type() == AST::Types::SamplerDecl)
+            {
+                /* Report warning of conflicting variable declaration */
+                Warning(
+                    "declaration of '" + astIdentPair.second + "' shadows a previous local at (" +
+                    symbol->area.Pos().ToString() + ")", astIdentPair.first
+                );
+            }
+        }
+    }
 
     OpenScope();
     {

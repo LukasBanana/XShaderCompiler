@@ -163,6 +163,13 @@ struct AST
         return (Type() == T::classType ? static_cast<T*>(this) : nullptr);
     }
 
+    // Returns this AST node as the specified sub class if this AST node has the correct type. Otherwise, null is returned.
+    template <typename T>
+    const T* As() const
+    {
+        return (Type() == T::classType ? static_cast<const T*>(this) : nullptr);
+    }
+
     SourceArea  area;
     Flags       flags;
 };
@@ -850,7 +857,7 @@ struct ForLoopStmnt : public Stmnt
 {
     AST_INTERFACE(ForLoopStmnt);
 
-    StmntPtr    initSmnt;
+    StmntPtr    initSmnt; //TODO: rename to "initStmnt"
     ExprPtr     condition;
     ExprPtr     iteration;
     StmntPtr    bodyStmnt;

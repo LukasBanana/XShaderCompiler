@@ -124,10 +124,7 @@ class SymbolTable
             return true;
         }
 
-        /*
-        Returns the symbol with the specified identifer which is in
-        the deepest scope, or null if there is no such symbol.
-        */
+        // Returns the symbol with the specified identifer which is in the deepest scope, or null if there is no such symbol.
         SymbolType Fetch(const std::string& ident) const
         {
             auto it = symTable_.find(ident);
@@ -135,6 +132,19 @@ class SymbolTable
                 return it->second.top().symbol;
             else
                 return GenericDefaultValue<SymbolType>::Get();
+        }
+
+        // Returns the symbol with the specified identifer which is in the current scope, or null if there is no such symbol.
+        SymbolType FetchFromCurrentScope(const std::string& ident) const
+        {
+            auto it = symTable_.find(ident);
+            if (it != symTable_.end() && !it->second.empty())
+            {
+                const auto& sym = it->second.top();
+                if (sym.scopeLevel == ScopeLevel())
+                    return sym.symbol;
+            }
+            return GenericDefaultValue<SymbolType>::Get();
         }
 
         // Returns an identifier that is similar to the specified identifier (for suggestions of typos)
