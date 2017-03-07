@@ -353,7 +353,7 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    Write(InsideStructDecl() ? ast->ident.Original() : ast->ident);
+    Write(InsideStructDecl() ? ast->ident.Original() : ast->ident.Final());
 
     Visit(ast->arrayDims);
 
@@ -1458,7 +1458,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool use
     WriteGlobalOutputSemanticsSlot(
         varDecl->declStmntRef->typeSpecifier.get(),
         varDecl->semantic,
-        (useSemanticName ? varDecl->semantic.ToString() : varDecl->ident),
+        (useSemanticName ? varDecl->semantic.ToString() : varDecl->ident.Final()),
         varDecl
     );
 }
