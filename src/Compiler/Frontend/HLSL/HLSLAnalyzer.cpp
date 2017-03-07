@@ -15,15 +15,6 @@
 namespace Xsc
 {
 
-/*
- * Internal structures
- */
-
-struct CodeBlockArgs
-{
-    bool disableNewScope;
-};
-
 
 /*
  * Internal functions
@@ -123,18 +114,7 @@ IMPLEMENT_VISIT_PROC(Program)
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    bool disableNewScope = (args != nullptr ? reinterpret_cast<CodeBlockArgs*>(args)->disableNewScope : false);
-
-    if (!disableNewScope)
-    {
-        OpenScope();
-        {
-            Visit(ast->stmnts);
-        }
-        CloseScope();
-    }
-    else
-        Visit(ast->stmnts);
+    Visit(ast->stmnts);
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
@@ -381,9 +361,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         /* Visit function body (without new scope) */
         PushFunctionDecl(ast);
         {
-            CodeBlockArgs codeBlockArgs;
-            codeBlockArgs.disableNewScope = true;
-            Visit(ast->codeBlock, &codeBlockArgs);
+            Visit(ast->codeBlock);
         }
         PopFunctionDecl();
 
@@ -464,6 +442,16 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 }
 
 /* --- Statements --- */
+
+IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
+{
+    Visit(ast->attribs);
+    OpenScope();
+    {
+        Visit(ast->codeBlock);
+    }
+    CloseScope();
+}
 
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {

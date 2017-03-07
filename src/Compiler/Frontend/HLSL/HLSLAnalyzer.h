@@ -63,6 +63,7 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( VarDeclStmnt      );
 
+        DECL_VISIT_PROC( CodeBlockStmnt    );
         DECL_VISIT_PROC( ForLoopStmnt      );
         DECL_VISIT_PROC( WhileLoopStmnt    );
         DECL_VISIT_PROC( DoWhileLoopStmnt  );
