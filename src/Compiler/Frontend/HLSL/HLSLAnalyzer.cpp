@@ -15,6 +15,19 @@
 namespace Xsc
 {
 
+/*
+ * Internal structures
+ */
+
+struct CodeBlockArgs
+{
+    bool disableNewScope;
+};
+
+
+/*
+ * Internal functions
+ */
 
 static ShaderVersion GetShaderModel(const InputShaderVersion v)
 {
@@ -26,6 +39,11 @@ static ShaderVersion GetShaderModel(const InputShaderVersion v)
     }
     return { 1, 0 };
 }
+
+
+/*
+ * HLSLAnalyzer class
+ */
 
 HLSLAnalyzer::HLSLAnalyzer(Log* log) :
     Analyzer{ log }
@@ -105,11 +123,18 @@ IMPLEMENT_VISIT_PROC(Program)
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    OpenScope();
+    bool disableNewScope = (args != nullptr ? reinterpret_cast<CodeBlockArgs*>(args)->disableNewScope : false);
+
+    if (!disableNewScope)
     {
-        Visit(ast->stmnts);
+        OpenScope();
+        {
+            Visit(ast->stmnts);
+        }
+        CloseScope();
     }
-    CloseScope();
+    else
+        Visit(ast->stmnts);
 }
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
@@ -353,10 +378,12 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         else if (isSecondaryEntryPoint)
             AnalyzeSecondaryEntryPoint(ast);
 
-        /* Visit function body */
+        /* Visit function body (without new scope) */
         PushFunctionDecl(ast);
         {
-            Visit(ast->codeBlock);
+            CodeBlockArgs codeBlockArgs;
+            codeBlockArgs.disableNewScope = true;
+            Visit(ast->codeBlock, &codeBlockArgs);
         }
         PopFunctionDecl();
 
