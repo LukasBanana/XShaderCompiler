@@ -229,10 +229,13 @@ void Shell::Compile(const std::string& filename)
         state_.inputDesc.includeHandler = &includeHandler;
 
         /* Show compilation/validation status */
-        if (state_.outputDesc.options.validateOnly)
-            output << "validate \"" << filename << '\"' << std::endl;
-        else
-            output << "compile \"" << filename << "\" to \"" << outputFilename << '\"' << std::endl;
+        if (state_.verbose)
+        {
+            if (state_.outputDesc.options.validateOnly)
+                output << "validate \"" << filename << '\"' << std::endl;
+            else
+                output << "compile \"" << filename << "\" to \"" << outputFilename << '\"' << std::endl;
+        }
 
         /* Compile shader file */
         auto result = CompileShader(
@@ -249,7 +252,8 @@ void Shell::Compile(const std::string& filename)
         {
             if (!state_.outputDesc.options.validateOnly)
             {
-                output << "compilation successful" << std::endl;
+                if (state_.verbose)
+                    output << "compilation successful" << std::endl;
 
                 /* Write result to output stream only on success */
                 std::ofstream outputFile(outputFilename);
@@ -258,11 +262,12 @@ void Shell::Compile(const std::string& filename)
                 else
                     throw std::runtime_error("failed to write file: \"" + filename + "\"");
             }
-            else
+            else if (state_.verbose)
                 output << "validation successful" << std::endl;
         }
         else
         {
+            /* Always print message on failure */
             if (state_.outputDesc.options.validateOnly)
                 output << "validation failed" << std::endl;
             else
