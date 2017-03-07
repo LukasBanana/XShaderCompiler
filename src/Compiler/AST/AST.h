@@ -16,6 +16,7 @@
 #include "ASTEnums.h"
 #include "SourceCode.h"
 #include "TypeDenoter.h"
+#include "Identifier.h"
 #include <vector>
 #include <string>
 #include <set>
@@ -222,7 +223,7 @@ struct Expr : public TypedAST
 struct Decl : public TypedAST
 {
     // Identifier of the declaration object (may be empty, e.g. for anonymous structures).
-    std::string ident;
+    Identifier ident;
 };
 
 // Program AST root.
@@ -517,9 +518,6 @@ struct VarDecl : public Decl
     // Returns the variable declaration as string.
     std::string ToString() const;
 
-    // Returns the final identifier for this variable.
-    const std::string& FinalIdent() const;
-
     // Returns a type denoter for this variable declaration or throws an std::runtime_error if the type can not be derived.
     TypeDenoterPtr DeriveTypeDenoter() override;
 
@@ -532,8 +530,6 @@ struct VarDecl : public Decl
     VarDeclStmnt*                   declStmntRef    = nullptr;  // Reference to its declaration statement (parent node); may be null
     UniformBufferDecl*              bufferDeclRef   = nullptr;  // Uniform buffer declaration reference for DAST (optional parent-parent-node); may be null
     StructDecl*                     structDeclRef   = nullptr;  // Structure declaration reference for DAST (optional parent-parent-node); may be null
-
-    std::string                     renamedIdent;
 };
 
 // Buffer declaration.
@@ -706,9 +702,6 @@ struct FunctionDecl : public Stmnt
     // Returns the maximal number of arguments for a call to this function (this is merely: parameters.size()).
     std::size_t NumMaxArgs() const;
 
-    // Returns the final identifier for this function.
-    const std::string& FinalIdent() const;
-
     // Sets the specified function AST node as the implementation of this forward declaration.
     void SetFuncImplRef(FunctionDecl* funcDecl);
 
@@ -723,7 +716,7 @@ struct FunctionDecl : public Stmnt
     );
 
     TypeSpecifierPtr                returnType;
-    std::string                     ident;
+    Identifier                      ident;
     std::vector<VarDeclStmntPtr>    parameters;
     IndexedSemantic                 semantic            = Semantic::Undefined;  // May be undefined
     std::vector<VarDeclStmntPtr>    annotations;                                // Annotations can be ignored by analyzers and generators.
@@ -737,8 +730,6 @@ struct FunctionDecl : public Stmnt
     StructDecl*                     structDeclRef       = nullptr;              // Structure declaration reference if this is a member function; may be null
 
     std::vector<ParameterStructure> paramStructs;                               // Parameter with structure type (only for entry point).
-
-    std::string                     renamedIdent;
 };
 
 // Uniform buffer (cbuffer, tbuffer) declaration.

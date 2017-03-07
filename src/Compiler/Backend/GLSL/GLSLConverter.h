@@ -13,6 +13,7 @@
 #include "TypeDenoter.h"
 #include "ExprConverter.h"
 #include "SymbolTable.h"
+#include "Identifier.h"
 #include <Xsc/Xsc.h>
 #include <functional>
 #include <set>
@@ -95,7 +96,7 @@ class GLSLConverter : public Visitor
         bool MustRenameVarDecl(VarDecl* ast) const;
 
         // Renames the specified variable declaration with name mangling.
-        void RenameVarDecl(VarDecl* ast, const std::string& ident);
+        void RenameIdent(Identifier& ident);
         void RenameVarDecl(VarDecl* ast);
 
         void RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, bool input, bool useSemanticOnly = false);
@@ -128,7 +129,7 @@ class GLSLConverter : public Visitor
         void RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts);
 
         // Renames the specified identifier if it equals a reserved GLSL intrinsic or function name.
-        bool RenameReservedKeyword(const std::string& ident, std::string& renamedIdent);
+        bool RenameReservedKeyword(Identifier& ident);
 
         void PushSelfParameter(VarDecl* parameter);
         void PopSelfParameter();

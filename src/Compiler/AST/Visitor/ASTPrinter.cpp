@@ -106,22 +106,22 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    PRINT_AST_EXT(VarDecl, ast->ident);
+    PRINT_AST_EXT(VarDecl, ast->ident.Original());
 }
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
-    PRINT_AST_EXT(BufferDecl, ast->ident);
+    PRINT_AST_EXT(BufferDecl, ast->ident.Original());
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
-    PRINT_AST_EXT(SamplerDecl, ast->ident);
+    PRINT_AST_EXT(SamplerDecl, ast->ident.Original());
 }
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    auto info = ast->ident;
+    auto info = ast->ident.Original();
     if (!ast->baseStructName.empty())
         info += " : " + ast->baseStructName;
 
@@ -130,14 +130,14 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
 IMPLEMENT_VISIT_PROC(AliasDecl)
 {
-    PRINT_AST_EXT(AliasDecl, ast->ident);
+    PRINT_AST_EXT(AliasDecl, ast->ident.Original());
 }
 
 /* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    PRINT_AST_EXT(FunctionDecl, ast->ident);
+    PRINT_AST_EXT(FunctionDecl, ast->ToString());
 }
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)

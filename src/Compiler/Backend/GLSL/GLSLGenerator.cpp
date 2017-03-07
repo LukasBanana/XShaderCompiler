@@ -353,7 +353,7 @@ IMPLEMENT_VISIT_PROC(VarIdent)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    Write(InsideStructDecl() ? ast->ident : ast->FinalIdent());
+    Write(InsideStructDecl() ? ast->ident.Original() : ast->ident);
 
     Visit(ast->arrayDims);
 
@@ -1203,8 +1203,8 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
 
     if (!semanticKeyword)
     {
-        semanticKeyword = MakeUnique<std::string>(varDecl->FinalIdent());
-        varDecl->renamedIdent = (nameMangling_.temporaryPrefix + varDecl->ident);
+        semanticKeyword = MakeUnique<std::string>(varDecl->ident);
+        varDecl->ident.AppendPrefix(nameMangling_.temporaryPrefix);
     }
 
     /* Write local variable definition statement */
@@ -1214,7 +1214,7 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
         auto typeSpecifier = varDecl->declStmntRef->typeSpecifier.get();
 
         Visit(typeSpecifier);
-        Write(" " + varDecl->FinalIdent() + " = ");
+        Write(" " + varDecl->ident + " = ");
 
         /* Is a type conversion required? */
         if (!IsTypeCompatibleWithSemantic(varDecl->semantic, *typeSpecifier->typeDenoter->Get()))
@@ -1252,7 +1252,7 @@ void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param,
                         BeginLn();
                         {
                             Separator();
-                            Write(paramVar->FinalIdent() + "." + varDecl->ident);
+                            Write(paramVar->ident + "." + varDecl->ident.Original());
                             Separator();
                             Write(" = ");
                             WriteVarDeclIdentOrSystemValue(varDecl.get());
@@ -1276,7 +1276,7 @@ void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param,
                             BeginLn();
                             {
                                 Separator();
-                                Write(paramVar->FinalIdent() + "[" + std::to_string(i) + "]." + varDecl->ident);
+                                Write(paramVar->ident + "[" + std::to_string(i) + "]." + varDecl->ident.Original());
                                 Separator();
                                 Write(" = ");
                                 WriteVarDeclIdentOrSystemValue(varDecl.get(), i);
@@ -1345,7 +1345,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
         Visit(varDecl->declStmntRef->typeSpecifier);
         Separator();
 
-        Write(" " + varDecl->FinalIdent());
+        Write(" " + varDecl->ident);
 
         if (varDecl->flags(VarDecl::isDynamicArray))
             Write("[]");
@@ -1386,7 +1386,7 @@ void GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
     BeginLn();
     {
         Visit(varDecl->declStmntRef->typeSpecifier);
-        Write(" " + varDecl->FinalIdent() + ";");
+        Write(" " + varDecl->ident + ";");
     }
     EndLn();
 }
@@ -1458,7 +1458,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool use
     WriteGlobalOutputSemanticsSlot(
         varDecl->declStmntRef->typeSpecifier.get(),
         varDecl->semantic,
-        (useSemanticName ? varDecl->semantic.ToString() : varDecl->FinalIdent()),
+        (useSemanticName ? varDecl->semantic.ToString() : varDecl->ident),
         varDecl
     );
 }
@@ -1595,7 +1595,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(
                 if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
                     Write(*semanticKeyword);
                 else
-                    Write(varDecl->FinalIdent());
+                    Write(varDecl->ident);
 
                 Write(" = ");
 
@@ -1682,11 +1682,11 @@ const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* varIdent)
 {
     /* Check if a variable declaration has changed it's name during conversion */
     if (auto varDecl = varIdent->FetchVarDecl())
-        return varDecl->FinalIdent();
+        return varDecl->ident;
 
     /* Check if a function declaration has changed it's name during conversion */
     if (auto funcDecl = varIdent->FetchFunctionDecl())
-        return funcDecl->FinalIdent();
+        return funcDecl->ident;
 
     /* Return default identifier */
     return varIdent->ident;
@@ -1778,7 +1778,7 @@ void GLSLGenerator::WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIn
     }
     else
     {
-        Write(varDecl->FinalIdent());
+        Write(varDecl->ident);
         if (arrayIndex >= 0)
             Write("[" + std::to_string(arrayIndex) + "]");
     }
@@ -1935,13 +1935,13 @@ void GLSLGenerator::WriteFunction(FunctionDecl* ast)
         Visit(ast->returnType);
         Blank();
         BeginLn();
-        Write(structDecl->ident + " " + ast->FinalIdent() + "(");
+        Write(structDecl->ident + " " + ast->ident + "(");
     }
     else
     {
         BeginLn();
         Visit(ast->returnType);
-        Write(" " + ast->FinalIdent() + "(");
+        Write(" " + ast->ident + "(");
     }
 
     /* Write parameters */
@@ -2026,7 +2026,7 @@ void GLSLGenerator::WriteFunctionSecondaryEntryPoint(FunctionDecl* ast)
 
     /* Write function header */
     BeginLn();
-    Write("void " + ast->FinalIdent() + "()");
+    Write("void " + ast->ident + "()");
 
     /* Write function body */
     WriteScopeOpen();
@@ -2412,7 +2412,7 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* structDecl, bool endWith
     BeginLn();
 
     Write("struct");
-    if (!structDecl->ident.empty())
+    if (!structDecl->ident.Empty())
         Write(' ' + structDecl->ident);
 
     /* Write structure members */
@@ -2613,7 +2613,7 @@ void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
     if (ast->varDecls.size() == 1)
     {
         auto paramVar = ast->varDecls.front().get();
-        Write(paramVar->FinalIdent());
+        Write(paramVar->ident);
         Visit(paramVar->arrayDims);
     }
     else

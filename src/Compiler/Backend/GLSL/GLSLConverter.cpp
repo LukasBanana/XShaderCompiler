@@ -214,22 +214,20 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     /* Rename variable if required */
     if (MustRenameVarDecl(ast))
         RenameVarDecl(ast);
-    RenameReservedKeyword(ast->ident, ast->renamedIdent);
+    RenameReservedKeyword(ast->ident);
 
     /* Register variable identifier in symbol table */
-    Register(ast->FinalIdent());
+    Register(ast->ident);
 
     VISIT_DEFAULT(VarDecl);
 }
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
-    #if 0
     /* Rename variable if required */
-    if (MustRenameVarDecl(ast))
-        RenameVarDecl(ast);
-    RenameReservedKeyword(ast->ident, ast->renamedIdent);
-    #endif
+    //if (MustRenameVarDecl(ast))
+    //    RenameVarDecl(ast);
+    RenameReservedKeyword(ast->ident);
 
     /* Register buffer identifier in symbol table */
     Register(ast->ident);
@@ -239,12 +237,10 @@ IMPLEMENT_VISIT_PROC(BufferDecl)
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
-    #if 0
     /* Rename variable if required */
-    if (MustRenameVarDecl(ast))
-        RenameVarDecl(ast);
-    RenameReservedKeyword(ast->ident, ast->renamedIdent);
-    #endif
+    //if (MustRenameVarDecl(ast))
+    //    RenameVarDecl(ast);
+    RenameReservedKeyword(ast->ident);
 
     /* Register sampler identifier in symbol table */
     Register(ast->ident);
@@ -300,7 +296,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
 {
     /* Add name to structure declaration, if the structure is anonymous */
-    if (ast->structDecl && ast->structDecl->ident.empty() && !ast->aliasDecls.empty())
+    if (ast->structDecl && ast->structDecl->ident.Empty() && !ast->aliasDecls.empty())
     {
         /* Use first alias name as structure name (alias names will disappear in GLSL output) */
         ast->structDecl->ident = ast->aliasDecls.front()->ident;
@@ -543,7 +539,7 @@ bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
     */
     return
     (
-        FetchFromCurrentScope(ast->FinalIdent()) ||
+        FetchFromCurrentScope(ast->ident) ||
         (
             !InsideStructDecl() &&
             !ast->flags(VarDecl::isShaderInput) &&
@@ -552,7 +548,7 @@ bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
                     reservedVarDecls_.begin(), reservedVarDecls_.end(),
                     [ast](VarDecl* varDecl)
                     {
-                        return (varDecl != ast && varDecl->FinalIdent() == ast->FinalIdent());
+                        return (varDecl != ast && varDecl->ident == ast->ident);
                     }
                 ) != reservedVarDecls_.end()
             )
@@ -560,15 +556,14 @@ bool GLSLConverter::MustRenameVarDecl(VarDecl* ast) const
     );
 }
 
-void GLSLConverter::RenameVarDecl(VarDecl* ast, const std::string& ident)
+void GLSLConverter::RenameIdent(Identifier& ident)
 {
-    /* Set new identifier for this variable */
-    ast->renamedIdent = (nameMangling_.temporaryPrefix + ident);
+    ident.AppendPrefix(nameMangling_.temporaryPrefix);
 }
 
 void GLSLConverter::RenameVarDecl(VarDecl* ast)
 {
-    RenameVarDecl(ast, ast->FinalIdent());
+    RenameIdent(ast->ident);
 }
 
 void GLSLConverter::RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, bool input, bool useSemanticOnly)
@@ -576,11 +571,11 @@ void GLSLConverter::RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, 
     for (auto varDecl : varDecls)
     {
         if (useSemanticOnly)
-            varDecl->renamedIdent = varDecl->semantic.ToString();
+            varDecl->ident = varDecl->semantic.ToString();
         else if (input)
-            varDecl->renamedIdent = nameMangling_.inputPrefix + varDecl->semantic.ToString();
+            varDecl->ident = nameMangling_.inputPrefix + varDecl->semantic.ToString();
         else
-            varDecl->renamedIdent = nameMangling_.outputPrefix + varDecl->semantic.ToString();
+            varDecl->ident = nameMangling_.outputPrefix + varDecl->semantic.ToString();
     }
 }
 
@@ -688,12 +683,12 @@ void GLSLConverter::RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>
     );
 }
 
-bool GLSLConverter::RenameReservedKeyword(const std::string& ident, std::string& renamedIdent)
+bool GLSLConverter::RenameReservedKeyword(Identifier& ident)
 {
     if (options_.obfuscate)
     {
         /* Set output identifier to an obfuscated number */
-        renamedIdent = "_" + std::to_string(obfuscationCounter_++);
+        ident = "_" + std::to_string(obfuscationCounter_++);
         return true;
     }
     else
@@ -704,7 +699,7 @@ bool GLSLConverter::RenameReservedKeyword(const std::string& ident, std::string&
         auto it = reservedKeywords.find(ident);
         if (it != reservedKeywords.end())
         {
-            renamedIdent = nameMangling_.reservedWordPrefix + ident;
+            ident.AppendPrefix(nameMangling_.reservedWordPrefix);
             return true;
         }
 
@@ -740,7 +735,7 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
     if (auto structDecl = ast->structDeclRef)
     {
         /* Rename function */
-        ast->renamedIdent = nameMangling_.temporaryPrefix + structDecl->ident + "_" + ast->ident;
+        ast->ident = nameMangling_.temporaryPrefix + structDecl->ident + "_" + ast->ident;
 
         /* Insert parameter of 'self' object */
         auto selfParamTypeDen   = std::make_shared<StructTypeDenoter>(structDecl);
@@ -755,7 +750,7 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
     if (selfParamVar)
         PushSelfParameter(selfParamVar);
 
-    RenameReservedKeyword(ast->ident, ast->renamedIdent);
+    RenameReservedKeyword(ast->ident);
 
     if (ast->flags(FunctionDecl::isEntryPoint))
         ConvertFunctionDeclEntryPoint(ast);

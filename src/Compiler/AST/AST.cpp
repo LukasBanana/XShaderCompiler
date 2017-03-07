@@ -527,7 +527,7 @@ std::string VarDecl::ToString() const
 {
     std::string s;
 
-    s += ident;
+    s += ident.Original();
 
     for (std::size_t i = 0; i < arrayDims.size(); ++i)
         s += "[]";
@@ -547,11 +547,6 @@ std::string VarDecl::ToString() const
     }
 
     return s;
-}
-
-const std::string& VarDecl::FinalIdent() const
-{
-    return (renamedIdent.empty() ? ident : renamedIdent);
 }
 
 TypeDenoterPtr VarDecl::DeriveTypeDenoter()
@@ -595,12 +590,12 @@ SamplerType SamplerDecl::GetSamplerType() const
 
 std::string StructDecl::ToString() const
 {
-    return ("struct " + (IsAnonymous() ? "<anonymous>" : ident));
+    return ("struct " + (IsAnonymous() ? "<anonymous>" : ident.Original()));
 }
 
 bool StructDecl::IsAnonymous() const
 {
-    return ident.empty();
+    return ident.Empty();
 }
 
 VarDecl* StructDecl::Fetch(const std::string& ident, const StructDecl** owner) const
@@ -880,12 +875,12 @@ std::string FunctionDecl::ToString(bool useParamNames) const
     /* Append optional owner structure */
     if (structDeclRef)
     {
-        s += structDeclRef->ident;
+        s += structDeclRef->ident.Original();
         s += "::";
     }
 
     /* Append identifier */
-    s += ident;
+    s += ident.Original();
     s += '(';
 
     /* Append parameter types */
@@ -937,11 +932,6 @@ std::size_t FunctionDecl::NumMinArgs() const
 std::size_t FunctionDecl::NumMaxArgs() const
 {
     return parameters.size();
-}
-
-const std::string& FunctionDecl::FinalIdent() const
-{
-    return (renamedIdent.empty() ? ident : renamedIdent);
 }
 
 void FunctionDecl::SetFuncImplRef(FunctionDecl* funcDecl)
