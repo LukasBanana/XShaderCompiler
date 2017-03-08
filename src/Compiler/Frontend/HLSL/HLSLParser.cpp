@@ -260,9 +260,9 @@ void HLSLParser::GeneratePreDefinedTypeAliases(Program& ast)
     }
 }
 
-VarDeclStmntPtr HLSLParser::MakeVarDeclStmntWithPackAlignment()
+TypeSpecifierPtr HLSLParser::MakeTypeSpecifierWithPackAlignment()
 {
-    auto ast = Make<VarDeclStmnt>();
+    auto ast = Make<TypeSpecifier>();
 
     if (rowMajorAlignment_)
         ast->SetTypeModifier(TypeModifier::RowMajor);
@@ -360,7 +360,7 @@ FunctionCallPtr HLSLParser::ParseFunctionCall(const TypeDenoterPtr& typeDenoter)
 
 VarDeclStmntPtr HLSLParser::ParseParameter()
 {
-    auto ast = MakeVarDeclStmntWithPackAlignment();
+    auto ast = Make<VarDeclStmnt>();
 
     /* Parse parameter as single variable declaration */
     ast->typeSpecifier = ParseTypeSpecifier();
@@ -606,7 +606,7 @@ VarIdentPtr HLSLParser::ParseVarIdent()
 
 TypeSpecifierPtr HLSLParser::ParseTypeSpecifier(bool parseVoidType)
 {
-    auto ast = Make<TypeSpecifier>();
+    auto ast = MakeTypeSpecifierWithPackAlignment();
 
     /* Parse modifiers and primitive types */
     while (IsModifier() || Is(Tokens::PrimitiveType))
@@ -816,11 +816,6 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
             return ParseUniformBufferDecl();
         case Tokens::Typedef:
             return ParseAliasDeclStmnt();
-        case Tokens::InputModifier:
-        case Tokens::InterpModifier:
-        case Tokens::TypeModifier:
-        case Tokens::StorageClass:
-            return ParseVarDeclStmnt();
         case Tokens::LParen:
         case Tokens::Void:
         case Tokens::Inline:
@@ -832,10 +827,13 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
 
 StmntPtr HLSLParser::ParseGlobalStmntWithTypeSpecifier()
 {
+    /* Parse type specifier */
     auto typeSpecifier = ParseTypeSpecifier();
 
+    /* Is this only a struct declaration? */
     if (typeSpecifier->structDecl && Is(Tokens::Semicolon))
     {
+        /* Convert type specifier into struct declaration statement */
         auto ast = Make<StructDeclStmnt>();
 
         ast->structDecl = typeSpecifier->structDecl;
@@ -846,8 +844,10 @@ StmntPtr HLSLParser::ParseGlobalStmntWithTypeSpecifier()
         return ast;
     }
 
+    /* Parse identifier */
     auto identTkn = Accept(Tokens::Ident);
 
+    /* Is this a function declaration? */
     if (Is(Tokens::LBracket))
     {
         /* Parse function declaration statement */
@@ -856,7 +856,7 @@ StmntPtr HLSLParser::ParseGlobalStmntWithTypeSpecifier()
     else
     {
         /* Parse variable declaration statement */
-        auto ast = MakeVarDeclStmntWithPackAlignment();
+        auto ast = Make<VarDeclStmnt>();
 
         ast->typeSpecifier  = typeSpecifier;
         ast->varDecls       = ParseVarDeclList(ast.get(), identTkn);
@@ -1031,38 +1031,12 @@ SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt(const SamplerTypeDenoterPt
 
 VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 {
-    auto ast = MakeVarDeclStmntWithPackAlignment();
+    auto ast = Make<VarDeclStmnt>();
 
-    while (true)
-    {
-        if (IsModifier())
-        {
-            /* Parse variable declaration modifiers */
-            if (!ast->typeSpecifier)
-                ast->typeSpecifier = Make<TypeSpecifier>();
-            ParseModifiers(ast->typeSpecifier.get());
-        }
-        else if (Is(Tokens::Ident) || IsDataType())
-        {
-            /* Parse type denoter */
-            if (!ast->typeSpecifier)
-                ast->typeSpecifier = Make<TypeSpecifier>();
-            ast->typeSpecifier->typeDenoter = ParseTypeDenoter();
-            UpdateSourceArea(ast->typeSpecifier);
-            break;
-        }
-        else if (Is(Tokens::Struct))
-        {
-            /* Parse structure variable type */
-            ast->typeSpecifier = ASTFactory::MakeTypeSpecifier(ParseStructDecl());
-            break;
-        }
-        else
-            ErrorUnexpected();
-    }
+    /* Parse type specifier and all variable declarations */
+    ast->typeSpecifier  = ParseTypeSpecifier();
+    ast->varDecls       = ParseVarDeclList(ast.get());
 
-    /* Parse variable declarations */
-    ast->varDecls = ParseVarDeclList(ast.get());
     Semi();
 
     return UpdateSourceArea(ast);
@@ -1176,7 +1150,7 @@ StmntPtr HLSLParser::ParseStmntWithStructDecl()
     if (!Is(Tokens::Semicolon))
     {
         /* Parse variable declaration with previous structure type */
-        auto varDeclStmnt = MakeVarDeclStmntWithPackAlignment();
+        auto varDeclStmnt = Make<VarDeclStmnt>();
 
         varDeclStmnt->typeSpecifier = ASTFactory::MakeTypeSpecifier(ast->structDecl);
         
@@ -1229,10 +1203,11 @@ StmntPtr HLSLParser::ParseStmntWithVarIdent()
     if (!varIdent->next)
     {
         /* Convert variable identifier to alias type denoter */
-        auto ast = MakeVarDeclStmntWithPackAlignment();
+        auto ast = Make<VarDeclStmnt>();
 
-        ast->typeSpecifier = Make<TypeSpecifier>();
+        ast->typeSpecifier              = MakeTypeSpecifierWithPackAlignment();
         ast->typeSpecifier->typeDenoter = ParseAliasTypeDenoter(varIdent->ident);
+
         UpdateSourceArea(ast->typeSpecifier, varIdent.get());
 
         if (!varIdent->arrayIndices.empty())

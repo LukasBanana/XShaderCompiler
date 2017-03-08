@@ -1474,11 +1474,10 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
     BeginLn();
     {
         VarDeclStmnt* varDeclStmnt = (varDecl != nullptr ? varDecl->declStmntRef : nullptr);
-        const auto& interpModifiers = varDeclStmnt->typeSpecifier->interpModifiers;
 
         if (versionOut_ <= OutputShaderVersion::GLSL120)
         {
-            if (varDeclStmnt && !interpModifiers.empty())
+            if (varDeclStmnt && !varDeclStmnt->typeSpecifier->interpModifiers.empty())
                 Warning("interpolation modifiers not supported for GLSL version 120 or below", varDecl);
 
             Write("varying ");
@@ -1487,7 +1486,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
         else
         {
             if (varDeclStmnt)
-                WriteInterpModifiers(interpModifiers, varDecl);
+                WriteInterpModifiers(varDeclStmnt->typeSpecifier->interpModifiers, varDecl);
             Separator();
 
             if (semantic.IsSystemValue() && explicitBinding_)

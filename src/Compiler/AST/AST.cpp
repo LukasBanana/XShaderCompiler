@@ -522,7 +522,29 @@ std::vector<int> ArrayDimension::GetArrayDimensionSizes(const std::vector<ArrayD
 
 std::string TypeSpecifier::ToString() const
 {
-    return typeDenoter->ToString();
+    std::string s;
+
+    /*
+    Use members 'isInput' and 'isOutput' instead of functions 'IsInput()' and 'IsOutput()',
+    to only reflect the explicitly written type specifier!
+    */
+    if (isInput && isOutput)
+        s += "inout ";
+    else if (isInput)
+        s += "in ";
+    else if (isOutput)
+        s += "out ";
+
+    if (isUniform)
+        s += "uniform ";
+    
+    if (IsConst())
+        s += "const ";
+
+    /* Append type denoter */
+    s += typeDenoter->ToString();
+
+    return s;
 }
 
 TypeDenoterPtr TypeSpecifier::DeriveTypeDenoter()

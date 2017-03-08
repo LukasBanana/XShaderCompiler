@@ -97,7 +97,7 @@ class HLSLParser : public Parser
         void GeneratePreDefinedTypeAliases(Program& ast);
 
         // Creates a new var-decl statement with the current matrix pack alignment type modifier.
-        VarDeclStmntPtr MakeVarDeclStmntWithPackAlignment();
+        TypeSpecifierPtr MakeTypeSpecifierWithPackAlignment();
 
         /* ----- Parsing ----- */
 
