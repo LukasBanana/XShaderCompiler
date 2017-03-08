@@ -601,7 +601,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     Separator();
 
     /* Write type modifiers */
-    WriteTypeModifiers(ast->typeModifiers, ast->typeSpecifier->GetTypeDenoter()->Get());
+    WriteTypeModifiersFrom(ast->typeSpecifier);
     Separator();
 
     /* Write variable type */
@@ -1826,6 +1826,11 @@ void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifie
         Write("const ");
 }
 
+void GLSLGenerator::WriteTypeModifiersFrom(const TypeSpecifierPtr& typeSpecifier)
+{
+    WriteTypeModifiers(typeSpecifier->typeModifiers, typeSpecifier->GetTypeDenoter()->Get());
+}
+
 void GLSLGenerator::WriteDataType(DataType dataType, bool writePrecisionSpecifier, const AST* ast)
 {
     /* Replace doubles with floats, if doubles are not supported */
@@ -2609,7 +2614,7 @@ void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
     }
 
     /* Write type modifiers */
-    WriteTypeModifiers(ast->typeModifiers, ast->typeSpecifier->GetTypeDenoter()->Get());
+    WriteTypeModifiersFrom(ast->typeSpecifier);
 
     /* Write parameter type */
     Visit(ast->typeSpecifier);

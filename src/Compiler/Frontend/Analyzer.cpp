@@ -491,7 +491,7 @@ Variant Analyzer::EvaluateConstVarAccessdExpr(VarAccessExpr& expr)
         {
             if (auto varDeclStmnt = varDecl->declStmntRef)
             {
-                if (varDeclStmnt->IsConst() && varDecl->initializer)
+                if (varDeclStmnt->IsConstOrUniform() && varDecl->initializer)
                 {
                     /* Evaluate initializer of constant variable */
                     return EvaluateConstExpr(*varDecl->initializer);

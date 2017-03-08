@@ -539,6 +539,33 @@ StructDecl* TypeSpecifier::GetStructDeclRef()
         return nullptr;
 }
 
+bool TypeSpecifier::IsConst() const
+{
+    return (typeModifiers.find(TypeModifier::Const) != typeModifiers.end());
+}
+
+void TypeSpecifier::SetTypeModifier(const TypeModifier modifier)
+{
+    /* Remove overlapping modifier first */
+    if (modifier == TypeModifier::RowMajor)
+        typeModifiers.erase(TypeModifier::ColumnMajor);
+    else if (modifier == TypeModifier::ColumnMajor)
+        typeModifiers.erase(TypeModifier::RowMajor);
+
+    /* Insert new modifier */
+    typeModifiers.insert(modifier);
+}
+
+bool TypeSpecifier::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const
+{
+    for (auto mod : modifiers)
+    {
+        if (typeModifiers.find(mod) != typeModifiers.end())
+            return true;
+    }
+    return false;
+}
+
 
 /* ----- VarDecl ----- */
 
@@ -1199,31 +1226,19 @@ bool VarDeclStmnt::IsOutput() const
     return isOutput;
 }
 
-bool VarDeclStmnt::IsConst() const
+bool VarDeclStmnt::IsConstOrUniform() const
 {
-    return (isUniform || (typeModifiers.find(TypeModifier::Const) != typeModifiers.end()));
+    return (isUniform || typeSpecifier->IsConst());
 }
 
 void VarDeclStmnt::SetTypeModifier(const TypeModifier modifier)
 {
-    /* Remove overlapping modifier first */
-    if (modifier == TypeModifier::RowMajor)
-        typeModifiers.erase(TypeModifier::ColumnMajor);
-    else if (modifier == TypeModifier::ColumnMajor)
-        typeModifiers.erase(TypeModifier::RowMajor);
-
-    /* Insert new modifier */
-    typeModifiers.insert(modifier);
+    typeSpecifier->SetTypeModifier(modifier);
 }
 
 bool VarDeclStmnt::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const
 {
-    for (auto mod : modifiers)
-    {
-        if (typeModifiers.find(mod) != typeModifiers.end())
-            return true;
-    }
-    return false;
+    return typeSpecifier->HasAnyTypeModifierOf(modifiers);
 }
 
 void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
@@ -1234,7 +1249,7 @@ void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
 
 void VarDeclStmnt::MakeImplicitConst()
 {
-    if (!IsConst() && storageClasses.find(StorageClass::Static) == storageClasses.end())
+    if (!IsConstOrUniform() && storageClasses.find(StorageClass::Static) == storageClasses.end())
     {
         flags << VarDeclStmnt::isImplicitConst;
         isUniform = true;

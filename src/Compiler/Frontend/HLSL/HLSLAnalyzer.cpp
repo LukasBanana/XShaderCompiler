@@ -1010,7 +1010,7 @@ void HLSLAnalyzer::AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast)
         if (auto varDecl = varIdent->FetchVarDecl())
         {
             /* Is the variable declared as constant? */
-            if (varDecl->declStmntRef->IsConst())
+            if (varDecl->declStmntRef->IsConstOrUniform())
             {
                 /* Construct error message depending if the variable is implicitly or explicitly declared as constant */
                 std::string s = "illegal assignment to l-value '" + varIdent->ident + "' that is ";

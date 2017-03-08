@@ -437,8 +437,18 @@ struct TypeSpecifier : public TypedAST
     // Returns the StructDecl reference of this type denoter or null if there is no such reference.
     StructDecl* GetStructDeclRef();
 
-    StructDeclPtr   structDecl;     // Optional structure declaration
-    TypeDenoterPtr  typeDenoter;
+    // Returns true if the 'const' type modifier is set.
+    bool IsConst() const;
+
+    // Inserts the specified type modifier. Overlapping matrix packings will be removed.
+    void SetTypeModifier(const TypeModifier modifier);
+
+    // Returns true if any of the specified type modifiers is contained.
+    bool HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const;
+
+    StructDeclPtr           structDecl;     // Optional structure declaration
+    std::set<TypeModifier>  typeModifiers;  // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats)
+    TypeDenoterPtr          typeDenoter;
 };
 
 // Variable (linked-list) identifier.
@@ -813,7 +823,7 @@ struct VarDeclStmnt : public Stmnt
     bool IsOutput() const;
 
     // Returns true if the 'const' type modifier or the 'uniform' input modifier is set.
-    bool IsConst() const;
+    bool IsConstOrUniform() const;
 
     // Inserts the specified type modifier. Overlapping matrix packings will be removed.
     void SetTypeModifier(const TypeModifier modifier);
@@ -833,9 +843,7 @@ struct VarDeclStmnt : public Stmnt
     
     std::set<StorageClass>      storageClasses;                             // Storage classes, e.g. extern, precise, etc.
     std::set<InterpModifier>    interpModifiers;                            // Interpolation modifiers, e.g. nointerpolation, linear, centroid etc.
-    std::set<TypeModifier>      typeModifiers;                              // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats)
     PrimitiveType               primitiveType   = PrimitiveType::Undefined; // Primitive type for geometry entry pointer parameters
-
     TypeSpecifierPtr            typeSpecifier;
     std::vector<VarDeclPtr>     varDecls;
 };
