@@ -94,9 +94,14 @@ void Parser::ErrorInternal(const std::string& msg, const std::string& procName)
     reportHandler_.Error(true, msg + " (in function: " + procName + ")");
 }
 
+void Parser::Warning(const std::string& msg, const SourceArea& area)
+{
+    reportHandler_.Warning(false, msg, GetScanner().Source(), area);
+}
+
 void Parser::Warning(const std::string& msg, const Token* tkn)
 {
-    reportHandler_.Warning(false, msg, GetScanner().Source(), GetTokenArea(tkn));
+    Warning(msg, GetTokenArea(tkn));
 }
 
 void Parser::Warning(const std::string& msg, bool prevToken)

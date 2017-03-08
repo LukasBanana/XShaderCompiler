@@ -189,12 +189,7 @@ IMPLEMENT_VISIT_PROC(ArrayDimension)
 
 IMPLEMENT_VISIT_PROC(TypeSpecifier)
 {
-    Visit(ast->structDecl);
-
-    if (ast->typeDenoter)
-        AnalyzeTypeDenoter(ast->typeDenoter, ast);
-    else
-        Error("missing variable type", ast);
+    AnalyzeTypeSpecifier(ast);
 }
 
 /* --- Declarations --- */
@@ -1799,6 +1794,9 @@ void HLSLAnalyzer::AnalyzeParameter(VarDeclStmnt* param)
 {
     /* Default visitor for parameter */
     Visit(param);
+
+    /* Analyze parameter type specifier */
+    AnalyzeTypeSpecifierForParameter(param->typeSpecifier.get());
 
     /* Check for structure definition */
     if (auto structDecl = param->typeSpecifier->structDecl.get())

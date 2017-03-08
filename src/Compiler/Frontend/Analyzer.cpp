@@ -383,6 +383,22 @@ void Analyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* a
     }
 }
 
+void Analyzer::AnalyzeTypeSpecifier(TypeSpecifier* typeSpecifier)
+{
+    Visit(typeSpecifier->structDecl);
+
+    if (typeSpecifier->typeDenoter)
+        AnalyzeTypeDenoter(typeSpecifier->typeDenoter, typeSpecifier);
+    else
+        Error("missing variable type", typeSpecifier);
+}
+
+void Analyzer::AnalyzeTypeSpecifierForParameter(TypeSpecifier* typeSpecifier)
+{
+    if (typeSpecifier->isOutput && typeSpecifier->isUniform)
+        Error("type attributes 'out' and 'inout' can not be used together with 'uniform' for a parameter", typeSpecifier);
+}
+
 void Analyzer::AnalyzeFunctionEndOfScopes(FunctionDecl& funcDecl)
 {
     /* Analyze end of scopes from function body */

@@ -61,6 +61,7 @@ class Parser
 
         void ErrorInternal(const std::string& msg, const std::string& procName);
 
+        void Warning(const std::string& msg, const SourceArea& area);
         void Warning(const std::string& msg, const Token* tkn);
         void Warning(const std::string& msg, bool prevToken = true);
 

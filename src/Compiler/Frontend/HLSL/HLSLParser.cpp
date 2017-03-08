@@ -1454,6 +1454,8 @@ ExprPtr HLSLParser::ParsePrimaryExpr()
     /* Determine which kind of expression the next one is */
     if (IsLiteral())
         return ParseLiteralOrSuffixExpr();
+    if (IsModifier())
+        return ParseTypeSpecifierExpr();
     if (IsDataType() || Is(Tokens::Struct))
         return ParseTypeSpecifierOrFunctionCallExpr();
     if (Is(Tokens::UnaryOp) || IsArithmeticUnaryExpr())
@@ -1524,6 +1526,16 @@ ExprPtr HLSLParser::ParseTypeSpecifierOrFunctionCallExpr()
     return UpdateSourceArea(ast, structDecl.get());
 }
 
+TypeSpecifierExprPtr HLSLParser::ParseTypeSpecifierExpr()
+{
+    auto ast = Make<TypeSpecifierExpr>();
+
+    /* Parse type specifier */
+    ast->typeSpecifier = ParseTypeSpecifier();
+
+    return UpdateSourceArea(ast);
+}
+
 UnaryExprPtr HLSLParser::ParseUnaryExpr()
 {
     if (!Is(Tokens::UnaryOp) && !IsArithmeticUnaryExpr())
@@ -1572,9 +1584,12 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     {
         /* Return cast expression */
         auto ast = Make<CastExpr>();
-        
+
+        /* Take type specifier for cast expression */
         ast->area           = area;
         ast->typeSpecifier  = typeSpecifier;
+
+        /* Parse sub expression */
         ast->expr           = ParsePrimaryExpr();
 
         return UpdateSourceArea(ast);

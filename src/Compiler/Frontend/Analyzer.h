@@ -119,6 +119,9 @@ class Analyzer : protected Visitor
         void AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, const AST* ast);
         void AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast);
 
+        void AnalyzeTypeSpecifier(TypeSpecifier* typeSpecifier);
+        void AnalyzeTypeSpecifierForParameter(TypeSpecifier* typeSpecifier);
+
         void AnalyzeFunctionEndOfScopes(FunctionDecl& funcDecl);
         void AnalyzeFunctionControlPath(FunctionDecl& funcDecl);
 
