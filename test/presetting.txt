@@ -141,6 +141,6 @@
 -T vert -E VS -o output/* IntrinsicTest1.hlsl
 
 [ScopeTest1 VS]
--T vert -E VS -o output/* ScopeTest1.hlsl
+-T vert -E VS -Vout VKSL -o output/* ScopeTest1.hlsl
 
 

@@ -42,6 +42,12 @@ class Shell
         void PushState();
         void PopState();
 
+        // Returns the current shell state.
+        inline const ShellState& GetState() const
+        {
+            return state_;
+        }
+
         // Returns the previously compiled output filename or an empty string, if the previous compilation has failed.
         inline const std::string& GetLastOutputFilename() const
         {

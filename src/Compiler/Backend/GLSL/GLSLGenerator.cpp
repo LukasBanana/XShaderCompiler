@@ -399,13 +399,13 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
-    if (IsVKSL() && ast->flags(AST::isReachable))
+    if (IsVKSL())
     {
         BeginLn();
         {
             WriteBindingSlot(ast->slotRegisters);
 
-            /* Write uniform declaration */
+            /* Write uniform sampler declaration (sampler declarations must only appear in global scope) */
             Write("uniform sampler " + ast->ident);
 
             /* Write array dimensions and statement terminator */
@@ -668,7 +668,10 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
     PushOptions({ false, false });
     {
-        Visit(ast->initStmnt);
+        if (ast->initStmnt->Type() == AST::Types::SamplerDeclStmnt && !IsVKSL())
+            Write(";");
+        else
+            Visit(ast->initStmnt);
         Write(" "); // initStmnt already has the ';'!
         Visit(ast->condition);
         Write("; ");

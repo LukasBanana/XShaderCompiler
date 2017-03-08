@@ -544,11 +544,25 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
             shell->ExecuteCommandLine(preset.cmdLine);
 
             #ifdef XSC_ENABLE_POST_VALIDATION
+            
             if (!shell->GetLastOutputFilename().empty())
             {
-                std::string cmd = "glslangValidator " + shell->GetLastOutputFilename();
+                /* Build command to run glslangValidator for the previous output file */
+                std::string cmd = "glslangValidator ";
+                
+                if (IsLanguageVKSL(shell->GetState().outputDesc.shaderVersion))
+                    cmd += "-V ";
+
+                cmd += shell->GetLastOutputFilename();
+
+                /* Print command to standard output */
+                if (shell->GetState().verbose)
+                    std::cout << cmd << std::endl;
+
+                /* Run command */
                 system(cmd.c_str());
             }
+
             #endif
         }
         shell->PopState();
