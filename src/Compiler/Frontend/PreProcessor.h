@@ -45,7 +45,8 @@ class PreProcessor : public Parser
         std::unique_ptr<std::iostream> Process(
             const SourceCodePtr& input,
             const std::string& filename = "",
-            bool writeLineMarks = true
+            bool writeLineMarks = true,
+            bool enableGLSLDirectives = false
         );
 
         // Returns a list of all defined macro identifiers after pre-processing.
@@ -133,6 +134,8 @@ class PreProcessor : public Parser
         void            ParseDirectivePragma();
         void            ParseDirectiveLine();
         void            ParseDirectiveError();
+        void            ParseDirectiveVersion();
+        void            ParseDirectiveExtension();
 
         ExprPtr         ParseExpr();
         ExprPtr         ParsePrimaryExpr() override;
@@ -157,7 +160,10 @@ class PreProcessor : public Parser
         */
         std::stack<IfBlock>                 ifBlockStack_;
 
-        bool                                writeLineMarks_ = true;
+        bool                                writeLineMarks_         = true;
+
+        // Enables pre-processor directives for GLSL (i.e. '#version' and '#extension')
+        bool                                enableGLSLDirectives_   = false;
 
 };
 

@@ -207,9 +207,9 @@ void Parser::PopTokenString()
     GetScanner().PopTokenString();
 }
 
-void Parser::IgnoreWhiteSpaces(bool includeNewLines)//, bool includeComments)
+void Parser::IgnoreWhiteSpaces(bool includeNewLines, bool includeComments)
 {
-    while ( Is(Tokens::WhiteSpaces) || ( includeNewLines && Is(Tokens::NewLines) ) /*|| ( includeComments && Is(Tokens::Comment) )*/ )
+    while ( Is(Tokens::WhiteSpaces) || ( includeNewLines && Is(Tokens::NewLines) ) || ( includeComments && Is(Tokens::Comment) ) )
         AcceptIt();
 }
 

@@ -89,7 +89,7 @@ class Parser
         void PopTokenString();
 
         // Ignores the next tokens if they are white spaces and optionally new lines.
-        void IgnoreWhiteSpaces(bool includeNewLines = false);//, bool includeComments = true);
+        void IgnoreWhiteSpaces(bool includeNewLines = false, bool includeComments = false);
         void IgnoreNewLines();
 
         /* ----- Source area ----- */
