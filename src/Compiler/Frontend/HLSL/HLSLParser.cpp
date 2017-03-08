@@ -102,7 +102,7 @@ bool HLSLParser::IsArithmeticUnaryExpr() const
     return (Is(Tokens::BinaryOp, "-") || Is(Tokens::BinaryOp, "+"));
 }
 
-bool HLSLParser::IsVarDeclModifier() const
+bool HLSLParser::IsModifier() const
 {
     return (Is(Tokens::InputModifier) || Is(Tokens::InterpModifier) || Is(Tokens::TypeModifier) || Is(Tokens::StorageClass));
 }
@@ -363,9 +363,6 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     auto ast = MakeVarDeclStmntWithPackAlignment();
 
     /* Parse parameter as single variable declaration */
-    while (IsVarDeclModifier() || Is(Tokens::PrimitiveType))
-        ParseVarDeclStmntModifiers(ast.get(), true);
-
     ast->typeSpecifier = ParseTypeSpecifier();
     ast->varDecls.push_back(ParseVarDecl(ast.get()));
 
@@ -610,6 +607,10 @@ VarIdentPtr HLSLParser::ParseVarIdent()
 TypeSpecifierPtr HLSLParser::ParseTypeSpecifier(bool parseVoidType)
 {
     auto ast = Make<TypeSpecifier>();
+
+    /* Parse modifiers and primitive types */
+    while (IsModifier() || Is(Tokens::PrimitiveType))
+        ParseModifiers(ast.get(), true);
 
     /* Parse variable type denoter with optional struct declaration */
     ast->typeDenoter = ParseTypeDenoterWithStructDeclOpt(ast->structDecl);
@@ -1034,15 +1035,18 @@ VarDeclStmntPtr HLSLParser::ParseVarDeclStmnt()
 
     while (true)
     {
-        if (IsVarDeclModifier())
+        if (IsModifier())
         {
             /* Parse variable declaration modifiers */
-            ParseVarDeclStmntModifiers(ast.get());
+            if (!ast->typeSpecifier)
+                ast->typeSpecifier = Make<TypeSpecifier>();
+            ParseModifiers(ast->typeSpecifier.get());
         }
         else if (Is(Tokens::Ident) || IsDataType())
         {
             /* Parse type denoter */
-            ast->typeSpecifier = Make<TypeSpecifier>();
+            if (!ast->typeSpecifier)
+                ast->typeSpecifier = Make<TypeSpecifier>();
             ast->typeSpecifier->typeDenoter = ParseTypeDenoter();
             UpdateSourceArea(ast->typeSpecifier);
             break;
@@ -2557,7 +2561,7 @@ void HLSLParser::ParseStmntWithOptionalComment(std::vector<StmntPtr>& stmnts, co
     ast->comment = std::move(comment);
 }
 
-bool HLSLParser::ParseVarDeclStmntModifiers(VarDeclStmnt* ast, bool allowPrimitiveType)
+bool HLSLParser::ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiveType)
 {
     if (Is(Tokens::InputModifier))
     {
@@ -2565,31 +2569,31 @@ bool HLSLParser::ParseVarDeclStmntModifiers(VarDeclStmnt* ast, bool allowPrimiti
         auto modifier = AcceptIt()->Spell();
 
         if (modifier == "in")
-            ast->isInput = true;
+            typeSpecifier->isInput = true;
         else if (modifier == "out")
-            ast->isOutput = true;
+            typeSpecifier->isOutput = true;
         else if (modifier == "inout")
         {
-            ast->isInput = true;
-            ast->isOutput = true;
+            typeSpecifier->isInput = true;
+            typeSpecifier->isOutput = true;
         }
         else if (modifier == "uniform")
-            ast->isUniform = true;
+            typeSpecifier->isUniform = true;
     }
     else if (Is(Tokens::InterpModifier))
     {
         /* Parse interpolation modifier */
-        ast->interpModifiers.insert(ParseInterpModifier());
+        typeSpecifier->interpModifiers.insert(ParseInterpModifier());
     }
     else if (Is(Tokens::TypeModifier))
     {
         /* Parse type modifier (const, row_major, column_major, snorm, unorm) */
-        ast->SetTypeModifier(ParseTypeModifier());
+        typeSpecifier->SetTypeModifier(ParseTypeModifier());
     }
     else if (Is(Tokens::StorageClass))
     {
         /* Parse storage class */
-        ast->storageClasses.insert(ParseStorageClass());
+        typeSpecifier->storageClasses.insert(ParseStorageClass());
     }
     else if (Is(Tokens::PrimitiveType))
     {
@@ -2599,11 +2603,11 @@ bool HLSLParser::ParseVarDeclStmntModifiers(VarDeclStmnt* ast, bool allowPrimiti
         
         auto primitiveType = ParsePrimitiveType();
 
-        if (ast->primitiveType == PrimitiveType::Undefined)
-            ast->primitiveType = primitiveType;
-        else if (ast->primitiveType == primitiveType)
+        if (typeSpecifier->primitiveType == PrimitiveType::Undefined)
+            typeSpecifier->primitiveType = primitiveType;
+        else if (typeSpecifier->primitiveType == primitiveType)
             Error("duplicate primitive type specified", true, false);
-        else if (ast->primitiveType != primitiveType)
+        else if (typeSpecifier->primitiveType != primitiveType)
             Error("conflicting primitive types", true, false);
     }
     else

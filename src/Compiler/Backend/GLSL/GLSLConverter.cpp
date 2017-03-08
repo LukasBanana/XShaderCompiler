@@ -267,8 +267,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
+    //TODO: move this to "TypeSpecifier" !!!
     /* Remove 'static' storage class (reserved word in GLSL) */
-    ast->storageClasses.erase(StorageClass::Static);
+    ast->typeSpecifier->storageClasses.erase(StorageClass::Static);
 
     VISIT_DEFAULT(VarDeclStmnt);
 }

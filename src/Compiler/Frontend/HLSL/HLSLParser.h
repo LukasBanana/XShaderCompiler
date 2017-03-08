@@ -62,8 +62,8 @@ class HLSLParser : public Parser
         // Returns true if the current token is part of an arithmetic unary expression, i.e. either '-' or '+'.
         bool IsArithmeticUnaryExpr() const;
 
-        // Returns true if the current token is a variable declaration modifier.
-        bool IsVarDeclModifier() const;
+        // Returns true if the current token is a modifier of a type specifier.
+        bool IsModifier() const;
 
         // Converts the specified expression to a type name expression if it is a left-hand-side of a cast expression.
         TypeSpecifierPtr MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& expr);
@@ -222,7 +222,7 @@ class HLSLParser : public Parser
 
         void                            ParseStmntWithOptionalComment(std::vector<StmntPtr>& stmnts, const std::function<StmntPtr()>& parseFunction);
 
-        bool                            ParseVarDeclStmntModifiers(VarDeclStmnt* ast, bool allowPrimitiveType = false);
+        bool                            ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiveType = false);
 
         /* === Members === */
 

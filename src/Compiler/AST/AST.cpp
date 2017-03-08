@@ -539,9 +539,24 @@ StructDecl* TypeSpecifier::GetStructDeclRef()
         return nullptr;
 }
 
+bool TypeSpecifier::IsInput() const
+{
+    return (isInput || !isOutput);
+}
+
+bool TypeSpecifier::IsOutput() const
+{
+    return isOutput;
+}
+
 bool TypeSpecifier::IsConst() const
 {
     return (typeModifiers.find(TypeModifier::Const) != typeModifiers.end());
+}
+
+bool TypeSpecifier::IsConstOrUniform() const
+{
+    return (IsConst() || isUniform);
 }
 
 void TypeSpecifier::SetTypeModifier(const TypeModifier modifier)
@@ -1218,17 +1233,22 @@ VarDecl* VarDeclStmnt::Fetch(const std::string& ident) const
 
 bool VarDeclStmnt::IsInput() const
 {
-    return (isInput || !isOutput);
+    return typeSpecifier->IsInput();
 }
 
 bool VarDeclStmnt::IsOutput() const
 {
-    return isOutput;
+    return typeSpecifier->IsOutput();
+}
+
+bool VarDeclStmnt::IsUniform() const
+{
+    return typeSpecifier->isUniform;
 }
 
 bool VarDeclStmnt::IsConstOrUniform() const
 {
-    return (isUniform || typeSpecifier->IsConst());
+    return typeSpecifier->IsConstOrUniform();
 }
 
 void VarDeclStmnt::SetTypeModifier(const TypeModifier modifier)
@@ -1249,10 +1269,10 @@ void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
 
 void VarDeclStmnt::MakeImplicitConst()
 {
-    if (!IsConstOrUniform() && storageClasses.find(StorageClass::Static) == storageClasses.end())
+    if (!IsConstOrUniform() && typeSpecifier->storageClasses.find(StorageClass::Static) == typeSpecifier->storageClasses.end())
     {
         flags << VarDeclStmnt::isImplicitConst;
-        isUniform = true;
+        typeSpecifier->isUniform = true;
     }
 }
 

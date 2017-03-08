@@ -437,8 +437,17 @@ struct TypeSpecifier : public TypedAST
     // Returns the StructDecl reference of this type denoter or null if there is no such reference.
     StructDecl* GetStructDeclRef();
 
+    // Returns true if this is an input parameter.
+    bool IsInput() const;
+
+    // Returns true if this is an output parameter.
+    bool IsOutput() const;
+
     // Returns true if the 'const' type modifier is set.
     bool IsConst() const;
+
+    // Returns true if the 'const' type modifier or the 'uniform' input modifier is set.
+    bool IsConstOrUniform() const;
 
     // Inserts the specified type modifier. Overlapping matrix packings will be removed.
     void SetTypeModifier(const TypeModifier modifier);
@@ -446,9 +455,17 @@ struct TypeSpecifier : public TypedAST
     // Returns true if any of the specified type modifiers is contained.
     bool HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const;
 
-    StructDeclPtr           structDecl;     // Optional structure declaration
-    std::set<TypeModifier>  typeModifiers;  // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats)
-    TypeDenoterPtr          typeDenoter;
+    bool                        isInput         = false;                    // Input modifier 'in'
+    bool                        isOutput        = false;                    // Input modifier 'out'
+    bool                        isUniform       = false;                    // Input modifier 'uniform'
+    
+    std::set<StorageClass>      storageClasses;                             // Storage classes, e.g. extern, precise, etc.
+    std::set<InterpModifier>    interpModifiers;                            // Interpolation modifiers, e.g. nointerpolation, linear, centroid etc.
+    std::set<TypeModifier>      typeModifiers;                              // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats)
+    PrimitiveType               primitiveType   = PrimitiveType::Undefined; // Primitive type for geometry entry pointer parameters
+    StructDeclPtr               structDecl;                                 // Optional structure declaration
+
+    TypeDenoterPtr              typeDenoter;
 };
 
 // Variable (linked-list) identifier.
@@ -822,6 +839,9 @@ struct VarDeclStmnt : public Stmnt
     // Returns true if this is an output parameter.
     bool IsOutput() const;
 
+    // Returns true if this is a uniform.
+    bool IsUniform() const;
+
     // Returns true if the 'const' type modifier or the 'uniform' input modifier is set.
     bool IsConstOrUniform() const;
 
@@ -837,15 +857,8 @@ struct VarDeclStmnt : public Stmnt
     // Makes this var-decl statement implicitly constant, iff not explicitly declared as constant (see 'isUniform' and 'isImplicitlyConst').
     void MakeImplicitConst();
 
-    bool                        isInput         = false;                    // Input modifier 'in'
-    bool                        isOutput        = false;                    // Input modifier 'out'
-    bool                        isUniform       = false;                    // Input modifier 'uniform'
-    
-    std::set<StorageClass>      storageClasses;                             // Storage classes, e.g. extern, precise, etc.
-    std::set<InterpModifier>    interpModifiers;                            // Interpolation modifiers, e.g. nointerpolation, linear, centroid etc.
-    PrimitiveType               primitiveType   = PrimitiveType::Undefined; // Primitive type for geometry entry pointer parameters
-    TypeSpecifierPtr            typeSpecifier;
-    std::vector<VarDeclPtr>     varDecls;
+    TypeSpecifierPtr        typeSpecifier;
+    std::vector<VarDeclPtr> varDecls;
 };
 
 // Type alias declaration statement.

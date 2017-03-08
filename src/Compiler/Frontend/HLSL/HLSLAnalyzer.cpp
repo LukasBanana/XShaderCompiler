@@ -1151,7 +1151,7 @@ void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStm
 {
     auto varDecl = param->varDecls.front().get();
 
-    if (param->isUniform)
+    if (param->IsUniform())
     {
         /* Verify input only semantic */
         if (param->IsOutput())
@@ -1200,8 +1200,9 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
         if (input)
         {
             /* Fetch geometry input primitive type */
-            if (varDecl->declStmntRef->primitiveType != PrimitiveType::Undefined)
-                program_->layoutGeometry.inputPrimitive = varDecl->declStmntRef->primitiveType;
+            const auto primitiveType = varDecl->declStmntRef->typeSpecifier->primitiveType;
+            if (primitiveType != PrimitiveType::Undefined)
+                program_->layoutGeometry.inputPrimitive = primitiveType;
         }
         else
         {
