@@ -45,12 +45,34 @@ class PreProcessor : public Parser
         std::unique_ptr<std::iostream> Process(
             const SourceCodePtr& input,
             const std::string& filename = "",
-            bool writeLineMarks = true,
-            bool enableGLSLDirectives = false
+            bool writeLineMarks = true
         );
 
         // Returns a list of all defined macro identifiers after pre-processing.
         std::vector<std::string> ListDefinedMacroIdents() const;
+
+    protected:
+
+        // Parses the specified directive, that is not part of the standard pre-processor directive (e.g. "version" or "extension" for GLSL).
+        virtual void ParseDirective(const std::string& directive, bool ignoreUnknown);
+
+        // Defines a macro with the specified identifier.
+        void DefineMacro(const std::string& ident);
+
+        // Defines a macro with the specified identifier and value token string.
+        void DefineMacro(const std::string& ident, const TokenPtrString& value);
+
+        // Defines a macro with the specified identifier, value token string, and parameters.
+        void DefineMacro(const std::string& ident, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs = false);
+
+        // Returns true if the specified macro identifier is defined.
+        bool IsDefined(const std::string& ident) const;
+
+        // Returns the output stream as reference.
+        inline std::stringstream& Out()
+        {
+            return *output_;
+        }
 
     private:
         
@@ -84,9 +106,6 @@ class PreProcessor : public Parser
         void PushScannerSource(const SourceCodePtr& source, const std::string& filename = "") override;
         bool PopScannerSource() override;
 
-        // Returns true if the specified symbol is defined.
-        bool IsDefined(const std::string& ident) const;
-
         void PushIfBlock(const TokenPtr& directiveToken, bool active = false, bool elseAllowed = true);
         void SetIfBlock(const TokenPtr& directiveToken, bool active = false, bool elseAllowed = true);
         void PopIfBlock();
@@ -102,12 +121,6 @@ class PreProcessor : public Parser
 
         // Writes a '#line'-directive to the output with the current source position and filename.
         void WritePosToLineDirective();
-
-        // Returns the output stream as reference.
-        inline std::stringstream& Out()
-        {
-            return *output_;
-        }
 
         /* ----- Parsing ----- */
 
@@ -134,8 +147,6 @@ class PreProcessor : public Parser
         void            ParseDirectivePragma();
         void            ParseDirectiveLine();
         void            ParseDirectiveError();
-        void            ParseDirectiveVersion();
-        void            ParseDirectiveExtension();
 
         ExprPtr         ParseExpr();
         ExprPtr         ParsePrimaryExpr() override;
@@ -161,9 +172,6 @@ class PreProcessor : public Parser
         std::stack<IfBlock>                 ifBlockStack_;
 
         bool                                writeLineMarks_         = true;
-
-        // Enables pre-processor directives for GLSL (i.e. '#version' and '#extension')
-        bool                                enableGLSLDirectives_   = false;
 
 };
 

@@ -23,11 +23,10 @@ PreProcessor::PreProcessor(IncludeHandler& includeHandler, Log* log) :
 }
 
 std::unique_ptr<std::iostream> PreProcessor::Process(
-    const SourceCodePtr& input, const std::string& filename, bool writeLineMarks, bool enableGLSLDirectives)
+    const SourceCodePtr& input, const std::string& filename, bool writeLineMarks)
 {
-    output_                 = MakeUnique<std::stringstream>();
-    writeLineMarks_         = writeLineMarks;
-    enableGLSLDirectives_   = true;//enableGLSLDirectives;
+    output_         = MakeUnique<std::stringstream>();
+    writeLineMarks_ = writeLineMarks;
 
     PushScannerSource(input, filename);
 
@@ -58,6 +57,73 @@ std::vector<std::string> PreProcessor::ListDefinedMacroIdents() const
 
 
 /*
+ * ======= Protected: =======
+ */
+
+void PreProcessor::ParseDirective(const std::string& directive, bool ignoreUnknown)
+{
+    if (directive == "define")
+        ParseDirectiveDefine();
+    else if (directive == "undef")
+        ParseDirectiveUndef();
+    else if (directive == "include")
+        ParseDirectiveInclude();
+    else if (directive == "if")
+        ParseDirectiveIf();
+    else if (directive == "ifdef")
+        ParseDirectiveIfdef();
+    else if (directive == "ifndef")
+        ParseDirectiveIfndef();
+    else if (directive == "elif")
+        ParseDirectiveElif();
+    else if (directive == "else")
+        ParseDirectiveElse();
+    else if (directive == "endif")
+        ParseDirectiveEndif();
+    else if (directive == "pragma")
+        ParseDirectivePragma();
+    else if (directive == "line")
+        ParseDirectiveLine();
+    else if (directive == "error")
+        ParseDirectiveError();
+    else
+    {
+        if (ignoreUnknown)
+            Warning("unknown preprocessor directive: \"" + directive + "\"");
+        else
+            Error("unknown preprocessor directive: \"" + directive + "\"", true, false);
+        ParseDirectiveTokenString();
+    }
+}
+
+void PreProcessor::DefineMacro(const std::string& ident)
+{
+    DefineMacro(ident, {}, {});
+}
+
+void PreProcessor::DefineMacro(const std::string& ident, const TokenPtrString& value)
+{
+    DefineMacro(ident, value, {});
+}
+
+void PreProcessor::DefineMacro(const std::string& ident, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs)
+{
+    auto macro = std::make_shared<Macro>();
+    {
+        macro->parameters   = parameters;
+        macro->varArgs      = varArgs;
+        macro->tokenString  = value;
+    }
+    macros_[ident] = macro;
+}
+
+bool PreProcessor::IsDefined(const std::string& ident) const
+{
+    return (macros_.find(ident) != macros_.end());
+}
+
+
+/*
  * ======= Private: =======
  */
 
@@ -81,11 +147,6 @@ bool PreProcessor::PopScannerSource()
         return true;
     }
     return false;
-}
-
-bool PreProcessor::IsDefined(const std::string& ident) const
-{
-    return (macros_.find(ident) != macros_.end());
 }
 
 void PreProcessor::PushIfBlock(const TokenPtr& directiveToken, bool active, bool elseAllowed)
@@ -420,42 +481,8 @@ void PreProcessor::ParseMisc()
 void PreProcessor::ParseDirective()
 {
     /* Parse pre-processor directive */
-    auto directive = Accept(Tokens::Directive)->Spell();
-
-    if (directive == "define")
-        ParseDirectiveDefine();
-    else if (directive == "undef")
-        ParseDirectiveUndef();
-    else if (directive == "include")
-        ParseDirectiveInclude();
-    else if (directive == "if")
-        ParseDirectiveIf();
-    else if (directive == "ifdef")
-        ParseDirectiveIfdef();
-    else if (directive == "ifndef")
-        ParseDirectiveIfndef();
-    else if (directive == "elif")
-        ParseDirectiveElif();
-    else if (directive == "else")
-        ParseDirectiveElse();
-    else if (directive == "endif")
-        ParseDirectiveEndif();
-    else if (directive == "pragma")
-        ParseDirectivePragma();
-    else if (directive == "line")
-        ParseDirectiveLine();
-    else if (directive == "error")
-        ParseDirectiveError();
-    else if (directive == "version")
-        ParseDirectiveVersion();
-    else if (directive == "extension")
-        ParseDirectiveExtension();
-    else
-    {
-        /* Ignore unknown preprocessor directives */
-        Warning("unknown preprocessor directive: \"" + directive + "\"");
-        ParseDirectiveTokenString();
-    }
+    const auto directive = Accept(Tokens::Directive)->Spell();
+    ParseDirective(directive, true);
 }
 
 void PreProcessor::ParseAnyIfDirectiveAndSkipValidation()
@@ -878,99 +905,6 @@ void PreProcessor::ParseDirectiveError()
         errorMsg += tkn->Spell();
 
     GetReportHandler().SubmitReport(true, Report::Types::Error, "error", errorMsg, GetScanner().Source(), tkn->Area());
-}
-
-// '#' 'version' NUMBER PROFILE?
-void PreProcessor::ParseDirectiveVersion()
-{
-    if (enableGLSLDirectives_)
-    {
-        std::string version, profile;
-
-        /* Parse version number */
-        IgnoreWhiteSpaces();
-        version = Accept(Tokens::IntLiteral)->Spell();
-
-        /* Verify GLSL version number */
-        const auto versionNo = FromString<int>(version);
-
-        static const int versionListGLSL[] =
-        {
-            110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450,
-        };
-
-        if (std::find(std::begin(versionListGLSL), std::end(versionListGLSL), versionNo) == std::end(versionListGLSL))
-            Error("unknown GLSL version '" + version + "'", true, false);
-
-        /* Parse profile */
-        bool isCompatibilityProfile = false;
-
-        IgnoreWhiteSpaces();
-        if (Is(Tokens::Ident))
-        {
-            profile = Accept(Tokens::Ident)->Spell();
-
-            if (versionNo < 150)
-                Error("versions before 150 do not allow a profile token", true, false);
-
-            if (profile == "core")
-                isCompatibilityProfile = false;
-            else if (profile == "compatibility")
-                isCompatibilityProfile = true;
-            else
-                Error("invalid version profile '" + profile + "' (must be 'core' or 'compatibility')", true, false);
-        }
-
-        /* Write out version */
-        Out() << "#version " << version;
-        
-        if (versionNo >= 150)
-        {
-            if (isCompatibilityProfile)
-                Out() << " compatibility";
-            else
-                Out() << " core";
-        }
-    }
-    else
-    {
-        /* Ignore disabled preprocessor directives */
-        Warning("'#version'-directive only supported in GLSL");
-        ParseDirectiveTokenString();
-    }
-}
-
-// '#' 'extension' EXTENSION ':' BEHAVIOR
-void PreProcessor::ParseDirectiveExtension()
-{
-    if (enableGLSLDirectives_)
-    {
-        /* Parse extension name */
-        IgnoreWhiteSpaces(false, true);
-        auto extension = Accept(Tokens::Ident)->Spell();
-
-        //TODO: verify GLSL version ...
-
-        /* Parse behavior */
-        IgnoreWhiteSpaces(false, true);
-        Accept(Tokens::Colon);
-
-        IgnoreWhiteSpaces(false, true);
-        auto behavior = Accept(Tokens::Ident)->Spell();
-
-        /* Verify behavior */
-        if (behavior != "enable" && behavior != "require" && behavior != "warn" && behavior != "disable")
-            Error("invalid extension behavior '" + behavior + "' (must be 'enable', 'require', 'warn', or 'disable')", true, false);
-
-        /* Write out extension */
-        Out() << "#extension " << extension << " : " << behavior;
-    }
-    else
-    {
-        /* Ignore disabled preprocessor directives */
-        Warning("'#extension'-directive only supported in GLSL");
-        ParseDirectiveTokenString();
-    }
 }
 
 ExprPtr PreProcessor::ParseExpr()
