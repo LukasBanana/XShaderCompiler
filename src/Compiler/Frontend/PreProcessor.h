@@ -65,6 +65,9 @@ class PreProcessor : public Parser
         // Defines a macro with the specified identifier, value token string, and parameters.
         void DefineMacro(const TokenPtr& identTkn, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs = false);
 
+        // Defines a standard macro (i.e. not part of the source code) with value set to integer literal '1'.
+        void DefineStandardMacro(const std::string& ident, int intValue = 1);
+
         // Removes the macro definition with the specified identifier.
         void UndefineMacro(const std::string& ident, const Token* tkn = nullptr);
 

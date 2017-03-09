@@ -150,6 +150,17 @@ void PreProcessor::DefineMacro(const TokenPtr& identTkn, const TokenPtrString& v
     macros_[ident] = macro;
 }
 
+void PreProcessor::DefineStandardMacro(const std::string& ident, int intValue)
+{
+    auto identTkn = std::make_shared<Token>(SourcePosition::ignore, Token::Types::Ident, ident);
+    auto valueTkn = std::make_shared<Token>(SourcePosition::ignore, Token::Types::IntLiteral, std::to_string(intValue));
+
+    TokenPtrString valueTokenString;
+    valueTokenString.PushBack(valueTkn);
+
+    DefineMacro(identTkn, valueTokenString);
+}
+
 void PreProcessor::UndefineMacro(const std::string& ident, const Token* tkn)
 {
     /* Remove macro */

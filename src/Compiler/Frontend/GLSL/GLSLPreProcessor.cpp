@@ -73,7 +73,7 @@ void GLSLPreProcessor::ParseDirectiveVersion()
 
     /* Write out version */
     Out() << "#version " << version;
-        
+
     if (versionNo >= 150)
     {
         if (isCompatibilityProfile)
@@ -81,6 +81,16 @@ void GLSLPreProcessor::ParseDirectiveVersion()
         else
             Out() << " core";
     }
+
+    /*
+    Define standard macros 'GL_core_profile' and 'GL_compatibility_profile'
+    see https://www.khronos.org/opengl/wiki/Core_Language_(GLSL)#Standard_macros
+    */
+    DefineStandardMacro("GL_core_profile");
+    if (isCompatibilityProfile)
+        DefineStandardMacro("GL_compatibility_profile");
+
+    DefineStandardMacro("__VERSION__", versionNo);
 }
 
 // '#' 'extension' EXTENSION ':' BEHAVIOR
