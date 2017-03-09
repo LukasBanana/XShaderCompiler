@@ -116,17 +116,17 @@ void ReportView::AddReportedError(const std::string& message)
         if (posRBracket != std::string::npos)
         {
             auto posColon0 = message.find(':', posLBracket);
-            if (posColon0 != std::string::npos)
+            if (posColon0 != std::string::npos && posLBracket < posColon0 && posColon0 < posRBracket)
             {
                 ++posColon0;
                 auto posColon1 = message.find(':', posColon0);
-                if (posColon1 != std::string::npos)
+                if (posColon1 != std::string::npos && posColon1 < posRBracket)
                 {
                     auto lineNoStr = message.substr(posColon0, posColon1 - posColon0);
                     auto lineNo = std::stoi(lineNoStr);
 
                     auto posColon2 = message.find(':', posRBracket);
-                    if (posColon2 != std::string::npos)
+                    if (posColon2 != std::string::npos && posRBracket < posColon2)
                     {
                         posColon2 += 2;
                         reportedErrors_.push_back({ lineNo, message.substr(posColon2) });
