@@ -262,7 +262,7 @@ void Shell::Compile(const std::string& filename)
                 if (outputFile.good())
                     outputFile << outputStream.rdbuf();
                 else
-                    throw std::runtime_error("failed to write file: \"" + filename + "\"");
+                    throw std::runtime_error("failed to write file: \"" + outputFilename + "\"");
 
                 /* Store output filename after successful compilation */
                 lastOutputFilename_ = outputFilename;
