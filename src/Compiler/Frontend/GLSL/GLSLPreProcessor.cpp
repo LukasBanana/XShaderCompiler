@@ -6,6 +6,8 @@
  */
 
 #include "GLSLPreProcessor.h"
+#include "GLSLExtensions.h"
+#include <algorithm>
 
 
 namespace Xsc
@@ -100,7 +102,10 @@ void GLSLPreProcessor::ParseDirectiveExtension()
     IgnoreWhiteSpaces(false, true);
     auto extension = Accept(Tokens::Ident)->Spell();
 
-    //TODO: verify GLSL version ...
+    /* Verify extension */
+    const auto& extList = GetGLSLExtensionRefList();
+    if (std::find(extList.begin(), extList.end(), extension) == extList.end())
+        Error("extension not supported: " + extension, true, false);
 
     /* Parse behavior */
     IgnoreWhiteSpaces(false, true);

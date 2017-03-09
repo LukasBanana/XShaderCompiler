@@ -9,6 +9,9 @@
 #define XSC_GLSL_EXTENSIONS_H
 
 
+#include <vector>
+
+
 namespace Xsc
 {
 
@@ -115,6 +118,10 @@ static const char* E_GL_OES_texture_3D                              = "GL_OES_te
 static const char* E_GL_OES_texture_buffer                          = "GL_OES_texture_buffer";
 static const char* E_GL_OES_texture_cube_map_array                  = "GL_OES_texture_cube_map_array";
 static const char* E_GL_OES_texture_storage_multisample_2d_array    = "GL_OES_texture_storage_multisample_2d_array";
+
+
+// Returns a list of pointers to all GLSL extension strings.
+const std::vector<const char*>& GetGLSLExtensionRefList();
 
 
 } // /namespace Xsc
