@@ -96,25 +96,68 @@ void PreProcessor::ParseDirective(const std::string& directive, bool ignoreUnkno
     }
 }
 
-void PreProcessor::DefineMacro(const std::string& ident)
+void PreProcessor::DefineMacro(const TokenPtr& identTkn)
 {
-    DefineMacro(ident, {}, {});
+    DefineMacro(identTkn, {}, {});
 }
 
-void PreProcessor::DefineMacro(const std::string& ident, const TokenPtrString& value)
+void PreProcessor::DefineMacro(const TokenPtr& identTkn, const TokenPtrString& value)
 {
-    DefineMacro(ident, value, {});
+    DefineMacro(identTkn, value, {});
 }
 
-void PreProcessor::DefineMacro(const std::string& ident, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs)
+void PreProcessor::DefineMacro(const TokenPtr& identTkn, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs)
 {
+    if (!identTkn)
+        throw std::invalid_argument("invalid argument for macro identifier token");
+
+    /* Create new macro object */
     auto macro = std::make_shared<Macro>();
+    
+    macro->identTkn     = identTkn;
+    macro->parameters   = parameters;
+    macro->varArgs      = varArgs;
+    macro->tokenString  = value;
+
+    /* Check if identifier is already defined */
+    const auto& ident = identTkn->Spell();
+
+    auto previousMacroIt = macros_.find(ident);
+    if (previousMacroIt != macros_.end())
     {
-        macro->parameters   = parameters;
-        macro->varArgs      = varArgs;
-        macro->tokenString  = value;
+        /* Now compare previous and new definition */
+        auto previousMacro = previousMacroIt->second;
+
+        /* Compare parameters and body */
+        auto mismatchParam  = (previousMacro->parameters != macro->parameters || previousMacro->varArgs != macro->varArgs);
+        auto mismatchBody   = (previousMacro->tokenString != macro->tokenString);
+
+        /* Construct warning message */
+        std::string warnMsg = "redefinition of macro \"" + ident + "\"";
+
+        if (mismatchParam && mismatchBody)
+            warnMsg += " with mismatch in parameter list and body definition";
+        else if (mismatchParam)
+            warnMsg += " with mismatch in parameter list";
+        else if (mismatchBody)
+            warnMsg += " with mismatch in body definition";
+
+        ReportHandler::HintForNextReport("previous definition at (" + previousMacro->identTkn->Pos().ToString() + ")");
+        Warning(warnMsg, identTkn.get());
     }
+
+    /* Register symbol as new macro */
     macros_[ident] = macro;
+}
+
+void PreProcessor::UndefineMacro(const std::string& ident, const Token* tkn)
+{
+    /* Remove macro */
+    auto it = macros_.find(ident);
+    if (it != macros_.end())
+        macros_.erase(it);
+    else
+        Warning("failed to undefine macro \"" + ident + "\"", tkn);
 }
 
 bool PreProcessor::IsDefined(const std::string& ident) const
@@ -510,18 +553,10 @@ void PreProcessor::ParseDirectiveDefine()
 {
     /* Parse identifier */
     IgnoreWhiteSpaces();
-
     auto identTkn = Accept(Tokens::Ident);
-    auto ident = identTkn->Spell();
-
-    /* Check if identifier is already defined */
-    MacroPtr previousMacro;
-    auto previousMacroIt = macros_.find(ident);
-    if (previousMacroIt != macros_.end())
-        previousMacro = previousMacroIt->second;
 
     /* Make new macro symbol */
-    auto macro = std::make_shared<Macro>();
+    Macro macro;
 
     /* Parse optional parameters */
     if (Is(Tokens::LBracket))
@@ -539,7 +574,7 @@ void PreProcessor::ParseDirectiveDefine()
                 if (Is(Tokens::VarArg))
                 {
                     AcceptIt();
-                    macro->varArgs = true;
+                    macro.varArgs = true;
                     IgnoreWhiteSpaces();
                     break;
                 }
@@ -549,7 +584,7 @@ void PreProcessor::ParseDirectiveDefine()
                     auto paramIdent = Accept(Tokens::Ident)->Spell();
                     IgnoreWhiteSpaces();
 
-                    macro->parameters.push_back(paramIdent);
+                    macro.parameters.push_back(paramIdent);
 
                     /* Check if parameter list is finished */
                     if (!Is(Tokens::Comma))
@@ -563,50 +598,23 @@ void PreProcessor::ParseDirectiveDefine()
         Accept(Tokens::RBracket);
     }
 
-    /* Ignore white spaces and check for end of line */
+    /* Parse optional value */
     IgnoreWhiteSpaces();
     if (!Is(Tokens::NewLines))
-    {
-        /* Parse optional value */
-        macro->tokenString = ParseDirectiveTokenString(false, true);
-
-        /* Now compare previous and new definition */
-        if (previousMacro)
-        {
-            /* Compare parameters and body */
-            auto mismatchParam  = (previousMacro->parameters != macro->parameters || previousMacro->varArgs != macro->varArgs);
-            auto mismatchBody   = (previousMacro->tokenString != macro->tokenString);
-
-            /* Construct warning message */
-            std::string warnMsg = "redefinition of macro \"" + ident + "\"";
-
-            if (mismatchParam && mismatchBody)
-                warnMsg += " with mismatch in parameter list and body definition";
-            else if (mismatchParam)
-                warnMsg += " with mismatch in parameter list";
-            else if (mismatchBody)
-                warnMsg += " with mismatch in body definition";
-
-            Warning(warnMsg, identTkn.get());
-        }
-    }
+        macro.tokenString = ParseDirectiveTokenString(false, true);
 
     /* Register symbol as new macro */
-    macros_[ident] = macro;
+    DefineMacro(identTkn, macro.tokenString, macro.parameters, macro.varArgs);
 }
 
 void PreProcessor::ParseDirectiveUndef()
 {
     /* Parse identifier */
     IgnoreWhiteSpaces();
-    auto ident = Accept(Tokens::Ident)->Spell();
+    auto identTkn = Accept(Tokens::Ident);
 
     /* Remove macro */
-    auto it = macros_.find(ident);
-    if (it != macros_.end())
-        macros_.erase(it);
-    else
-        Warning("failed to undefine macro \"" + ident + "\"");
+    UndefineMacro(identTkn->Spell(), identTkn.get());
 }
 
 // '#' 'include' ('<' TOKEN-STRING '>' | STRING-LITERAL)

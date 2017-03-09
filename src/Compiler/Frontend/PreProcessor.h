@@ -57,13 +57,16 @@ class PreProcessor : public Parser
         virtual void ParseDirective(const std::string& directive, bool ignoreUnknown);
 
         // Defines a macro with the specified identifier.
-        void DefineMacro(const std::string& ident);
+        void DefineMacro(const TokenPtr& identTkn);
 
         // Defines a macro with the specified identifier and value token string.
-        void DefineMacro(const std::string& ident, const TokenPtrString& value);
+        void DefineMacro(const TokenPtr& identTkn, const TokenPtrString& value);
 
         // Defines a macro with the specified identifier, value token string, and parameters.
-        void DefineMacro(const std::string& ident, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs = false);
+        void DefineMacro(const TokenPtr& identTkn, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs = false);
+
+        // Removes the macro definition with the specified identifier.
+        void UndefineMacro(const std::string& ident, const Token* tkn = nullptr);
 
         // Returns true if the specified macro identifier is defined.
         bool IsDefined(const std::string& ident) const;
@@ -80,6 +83,7 @@ class PreProcessor : public Parser
 
         struct Macro
         {
+            TokenPtr                    identTkn;               // Macro identifier token
             std::vector<std::string>    parameters;             // Parameter identifiers
             bool                        varArgs     = false;    // Specifies whether macro supports variadic arguments
             TokenPtrString              tokenString;            // Macro definition value as token string
