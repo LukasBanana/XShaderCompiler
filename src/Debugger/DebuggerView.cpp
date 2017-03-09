@@ -143,6 +143,10 @@ void DebuggerView::CreateLayoutPropertyGridShaderInput(wxPropertyGrid& pg)
         choices0.Add("HLSL3");
         choices0.Add("HLSL4");
         choices0.Add("HLSL5");
+
+        choices0.Add("GLSL");
+        choices0.Add("ESSL");
+        choices0.Add("VKSL");
     }
     pg.Append(new wxEnumProperty("Shader Version", "inputVersion", choices0, 2));
 
@@ -342,9 +346,13 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
             T::HLSL3,
             T::HLSL4,
             T::HLSL5,
+
+            T::GLSL,
+            T::ESSL,
+            T::VKSL,
         };
 
-        return (idx >= 0 && idx < 3 ? versions[idx] : T::HLSL5);
+        return (idx >= 0 && idx < 6 ? versions[idx] : T::HLSL5);
     };
 
     auto GetOutputVersion = [](int idx) -> OutputShaderVersion

@@ -33,9 +33,13 @@ enum class ShaderTarget
 //! Input shader version enumeration.
 enum class InputShaderVersion
 {
-    HLSL3 = 3, //!< HLSL Shader Model 3.0 (DirectX 9).
-    HLSL4 = 4, //!< HLSL Shader Model 4.0 (DirectX 10).
-    HLSL5 = 5, //!< HLSL Shader Model 5.0 (DirectX 11).
+    HLSL3   = 3,            //!< HLSL Shader Model 3.0 (DirectX 9).
+    HLSL4   = 4,            //!< HLSL Shader Model 4.0 (DirectX 10).
+    HLSL5   = 5,            //!< HLSL Shader Model 5.0 (DirectX 11).
+
+    GLSL    = 0x0000ffff,   //!< GLSL (OpenGL).
+    ESSL    = 0x0001ffff,   //!< GLSL (OpenGL ES).
+    VKSL    = 0x0002ffff,   //!< GLSL (Vulkan).
 };
 
 //! Output shader version enumeration.
@@ -75,13 +79,19 @@ XSC_EXPORT std::string ToString(const InputShaderVersion shaderVersion);
 //! Returns the specified shader output version as string.
 XSC_EXPORT std::string ToString(const OutputShaderVersion shaderVersion);
 
-//! Returns true if the shader version specifies GLSL (for OpenGL 2+).
+//! Returns true if the shader input version specifies HLSL (for DirectX).
+XSC_EXPORT bool IsLanguageHLSL(const InputShaderVersion shaderVersion);
+
+//! Returns true if the shader input version specifies GLSL (for OpenGL, OpenGL ES, and Vulkan).
+XSC_EXPORT bool IsLanguageGLSL(const InputShaderVersion shaderVersion);
+
+//! Returns true if the shader output version specifies GLSL (for OpenGL 2+).
 XSC_EXPORT bool IsLanguageGLSL(const OutputShaderVersion shaderVersion);
 
-//! Returns true if the shader version specifies ESSL (for OpenGL ES 2+).
+//! Returns true if the shader output version specifies ESSL (for OpenGL ES 2+).
 XSC_EXPORT bool IsLanguageESSL(const OutputShaderVersion shaderVersion);
 
-//! Returns true if the shader version specifies VKSL (for Vulkan).
+//! Returns true if the shader output version specifies VKSL (for Vulkan).
 XSC_EXPORT bool IsLanguageVKSL(const OutputShaderVersion shaderVersion);
 
 

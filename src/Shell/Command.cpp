@@ -150,7 +150,7 @@ HelpDescriptor VersionInCommand::Help() const
     {
         "-Vin, --version-in VERSION",
         "Input shader version; default=HLSL5; valid values:",
-        "HLSL3, HLSL4, HLSL5",
+        "HLSL3, HLSL4, HLSL5, GLSL, ESSL, VKSL",
         HelpCategory::Main
     };
 }
@@ -163,6 +163,9 @@ void VersionInCommand::Run(CommandLine& cmdLine, ShellState& state)
             { "HLSL3", InputShaderVersion::HLSL3 },
             { "HLSL4", InputShaderVersion::HLSL4 },
             { "HLSL5", InputShaderVersion::HLSL5 },
+            { "GLSL",  InputShaderVersion::GLSL  },
+            { "ESSL",  InputShaderVersion::ESSL  },
+            { "VKSL",  InputShaderVersion::VKSL  },
         },
         "invalid input shader version"
     );

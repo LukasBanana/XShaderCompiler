@@ -101,6 +101,7 @@ include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/AST")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/AST/Visitor")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/HLSL")
+include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/GLSL")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL")
 
