@@ -522,7 +522,29 @@ std::vector<int> ArrayDimension::GetArrayDimensionSizes(const std::vector<ArrayD
 
 std::string TypeSpecifier::ToString() const
 {
-    return typeDenoter->ToString();
+    std::string s;
+
+    /*
+    Use members 'isInput' and 'isOutput' instead of functions 'IsInput()' and 'IsOutput()',
+    to only reflect the explicitly written type specifier!
+    */
+    if (isInput && isOutput)
+        s += "inout ";
+    else if (isInput)
+        s += "in ";
+    else if (isOutput)
+        s += "out ";
+
+    if (isUniform)
+        s += "uniform ";
+    
+    if (IsConst())
+        s += "const ";
+
+    /* Append type denoter */
+    s += typeDenoter->ToString();
+
+    return s;
 }
 
 TypeDenoterPtr TypeSpecifier::DeriveTypeDenoter()
@@ -537,6 +559,48 @@ StructDecl* TypeSpecifier::GetStructDeclRef()
         return structTypeDen->structDeclRef;
     else
         return nullptr;
+}
+
+bool TypeSpecifier::IsInput() const
+{
+    return (isInput || !isOutput);
+}
+
+bool TypeSpecifier::IsOutput() const
+{
+    return isOutput;
+}
+
+bool TypeSpecifier::IsConst() const
+{
+    return (typeModifiers.find(TypeModifier::Const) != typeModifiers.end());
+}
+
+bool TypeSpecifier::IsConstOrUniform() const
+{
+    return (IsConst() || isUniform);
+}
+
+void TypeSpecifier::SetTypeModifier(const TypeModifier modifier)
+{
+    /* Remove overlapping modifier first */
+    if (modifier == TypeModifier::RowMajor)
+        typeModifiers.erase(TypeModifier::ColumnMajor);
+    else if (modifier == TypeModifier::ColumnMajor)
+        typeModifiers.erase(TypeModifier::RowMajor);
+
+    /* Insert new modifier */
+    typeModifiers.insert(modifier);
+}
+
+bool TypeSpecifier::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const
+{
+    for (auto mod : modifiers)
+    {
+        if (typeModifiers.find(mod) != typeModifiers.end())
+            return true;
+    }
+    return false;
 }
 
 
@@ -1191,39 +1255,32 @@ VarDecl* VarDeclStmnt::Fetch(const std::string& ident) const
 
 bool VarDeclStmnt::IsInput() const
 {
-    return (isInput || !isOutput);
+    return typeSpecifier->IsInput();
 }
 
 bool VarDeclStmnt::IsOutput() const
 {
-    return isOutput;
+    return typeSpecifier->IsOutput();
 }
 
-bool VarDeclStmnt::IsConst() const
+bool VarDeclStmnt::IsUniform() const
 {
-    return (isUniform || (typeModifiers.find(TypeModifier::Const) != typeModifiers.end()));
+    return typeSpecifier->isUniform;
+}
+
+bool VarDeclStmnt::IsConstOrUniform() const
+{
+    return typeSpecifier->IsConstOrUniform();
 }
 
 void VarDeclStmnt::SetTypeModifier(const TypeModifier modifier)
 {
-    /* Remove overlapping modifier first */
-    if (modifier == TypeModifier::RowMajor)
-        typeModifiers.erase(TypeModifier::ColumnMajor);
-    else if (modifier == TypeModifier::ColumnMajor)
-        typeModifiers.erase(TypeModifier::RowMajor);
-
-    /* Insert new modifier */
-    typeModifiers.insert(modifier);
+    typeSpecifier->SetTypeModifier(modifier);
 }
 
 bool VarDeclStmnt::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const
 {
-    for (auto mod : modifiers)
-    {
-        if (typeModifiers.find(mod) != typeModifiers.end())
-            return true;
-    }
-    return false;
+    return typeSpecifier->HasAnyTypeModifierOf(modifiers);
 }
 
 void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
@@ -1234,10 +1291,10 @@ void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
 
 void VarDeclStmnt::MakeImplicitConst()
 {
-    if (!IsConst() && storageClasses.find(StorageClass::Static) == storageClasses.end())
+    if (!IsConstOrUniform() && typeSpecifier->storageClasses.find(StorageClass::Static) == typeSpecifier->storageClasses.end())
     {
         flags << VarDeclStmnt::isImplicitConst;
-        isUniform = true;
+        typeSpecifier->isUniform = true;
     }
 }
 

@@ -189,12 +189,7 @@ IMPLEMENT_VISIT_PROC(ArrayDimension)
 
 IMPLEMENT_VISIT_PROC(TypeSpecifier)
 {
-    Visit(ast->structDecl);
-
-    if (ast->typeDenoter)
-        AnalyzeTypeDenoter(ast->typeDenoter, ast);
-    else
-        Error("missing variable type", ast);
+    AnalyzeTypeSpecifier(ast);
 }
 
 /* --- Declarations --- */
@@ -1010,7 +1005,7 @@ void HLSLAnalyzer::AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast)
         if (auto varDecl = varIdent->FetchVarDecl())
         {
             /* Is the variable declared as constant? */
-            if (varDecl->declStmntRef->IsConst())
+            if (varDecl->declStmntRef->IsConstOrUniform())
             {
                 /* Construct error message depending if the variable is implicitly or explicitly declared as constant */
                 std::string s = "illegal assignment to l-value '" + varIdent->ident + "' that is ";
@@ -1151,7 +1146,7 @@ void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStm
 {
     auto varDecl = param->varDecls.front().get();
 
-    if (param->isUniform)
+    if (param->IsUniform())
     {
         /* Verify input only semantic */
         if (param->IsOutput())
@@ -1200,8 +1195,9 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
         if (input)
         {
             /* Fetch geometry input primitive type */
-            if (varDecl->declStmntRef->primitiveType != PrimitiveType::Undefined)
-                program_->layoutGeometry.inputPrimitive = varDecl->declStmntRef->primitiveType;
+            const auto primitiveType = varDecl->declStmntRef->typeSpecifier->primitiveType;
+            if (primitiveType != PrimitiveType::Undefined)
+                program_->layoutGeometry.inputPrimitive = primitiveType;
         }
         else
         {
@@ -1798,6 +1794,9 @@ void HLSLAnalyzer::AnalyzeParameter(VarDeclStmnt* param)
 {
     /* Default visitor for parameter */
     Visit(param);
+
+    /* Analyze parameter type specifier */
+    AnalyzeTypeSpecifierForParameter(param->typeSpecifier.get());
 
     /* Check for structure definition */
     if (auto structDecl = param->typeSpecifier->structDecl.get())

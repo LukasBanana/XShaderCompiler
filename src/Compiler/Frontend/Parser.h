@@ -61,6 +61,7 @@ class Parser
 
         void ErrorInternal(const std::string& msg, const std::string& procName);
 
+        void Warning(const std::string& msg, const SourceArea& area);
         void Warning(const std::string& msg, const Token* tkn);
         void Warning(const std::string& msg, bool prevToken = true);
 
@@ -88,7 +89,7 @@ class Parser
         void PopTokenString();
 
         // Ignores the next tokens if they are white spaces and optionally new lines.
-        void IgnoreWhiteSpaces(bool includeNewLines = false);//, bool includeComments = true);
+        void IgnoreWhiteSpaces(bool includeNewLines = false, bool includeComments = false);
         void IgnoreNewLines();
 
         /* ----- Source area ----- */

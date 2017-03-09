@@ -198,6 +198,7 @@ class GLSLGenerator : public Generator
         void WriteStorageClasses(const std::set<StorageClass>& storageClasses, const AST* ast = nullptr);
         void WriteInterpModifiers(const std::set<InterpModifier>& interpModifiers, const AST* ast = nullptr);
         void WriteTypeModifiers(const std::set<TypeModifier>& typeModifiers, const TypeDenoterPtr& typeDenoter = nullptr);
+        void WriteTypeModifiersFrom(const TypeSpecifierPtr& typeSpecifier);
 
         void WriteDataType(DataType dataType, bool writePrecisionSpecifier = false, const AST* ast = nullptr);
 

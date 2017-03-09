@@ -463,7 +463,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         /* Write individual uniforms */
         for (auto& varDeclStmnt : ast->varMembers)
         {
-            varDeclStmnt->isUniform = true;
+            varDeclStmnt->typeSpecifier->isUniform = true;
             Visit(varDeclStmnt);
         }
     }
@@ -584,8 +584,8 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     /* Write storage classes and interpolation modifiers (must be before in/out keywords) */
     if (!InsideStructDecl())
     {
-        WriteInterpModifiers(ast->interpModifiers, ast);
-        WriteStorageClasses(ast->storageClasses, ast);
+        WriteInterpModifiers(ast->typeSpecifier->interpModifiers, ast);
+        WriteStorageClasses(ast->typeSpecifier->storageClasses, ast);
     }
 
     Separator();
@@ -595,13 +595,13 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         Write("in ");
     else if (ast->flags(VarDeclStmnt::isShaderOutput))
         Write("out ");
-    else if (ast->isUniform)
+    else if (ast->IsUniform())
         Write("uniform ");
 
     Separator();
 
     /* Write type modifiers */
-    WriteTypeModifiers(ast->typeModifiers, ast->typeSpecifier->GetTypeDenoter()->Get());
+    WriteTypeModifiersFrom(ast->typeSpecifier);
     Separator();
 
     /* Write variable type */
@@ -1313,9 +1313,11 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
     /* Write global variable definition statement */
     BeginLn();
     {
+        const auto& interpModifiers = varDecl->declStmntRef->typeSpecifier->interpModifiers;
+
         if (versionOut_ <= OutputShaderVersion::GLSL120)
         {
-            if (!varDecl->declStmntRef->interpModifiers.empty())
+            if (!interpModifiers.empty())
                 Warning("interpolation modifiers not supported for GLSL version 120 or below", varDecl);
 
             if (IsVertexShader())
@@ -1326,7 +1328,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
         }
         else
         {
-            WriteInterpModifiers(varDecl->declStmntRef->interpModifiers, varDecl->declStmntRef);
+            WriteInterpModifiers(interpModifiers, varDecl->declStmntRef);
             Separator();
 
             if (explicitBinding_ && IsVertexShader() && varDecl->semantic.IsValid())
@@ -1475,7 +1477,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
 
         if (versionOut_ <= OutputShaderVersion::GLSL120)
         {
-            if (varDeclStmnt && !varDeclStmnt->interpModifiers.empty())
+            if (varDeclStmnt && !varDeclStmnt->typeSpecifier->interpModifiers.empty())
                 Warning("interpolation modifiers not supported for GLSL version 120 or below", varDecl);
 
             Write("varying ");
@@ -1484,7 +1486,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
         else
         {
             if (varDeclStmnt)
-                WriteInterpModifiers(varDeclStmnt->interpModifiers, varDecl);
+                WriteInterpModifiers(varDeclStmnt->typeSpecifier->interpModifiers, varDecl);
             Separator();
 
             if (semantic.IsSystemValue() && explicitBinding_)
@@ -1630,7 +1632,7 @@ void GLSLGenerator::WriteGlobalUniforms()
 
     for (auto& param : GetProgram()->entryPointRef->parameters)
     {
-        if (param->isUniform)
+        if (param->IsUniform())
         {
             WriteGlobalUniformsParameter(param.get());
             uniformsWritten = true;
@@ -1824,6 +1826,11 @@ void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifie
     /* Write const type modifier */
     if (typeModifiers.find(TypeModifier::Const) != typeModifiers.end())
         Write("const ");
+}
+
+void GLSLGenerator::WriteTypeModifiersFrom(const TypeSpecifierPtr& typeSpecifier)
+{
+    WriteTypeModifiers(typeSpecifier->typeModifiers, typeSpecifier->GetTypeDenoter()->Get());
 }
 
 void GLSLGenerator::WriteDataType(DataType dataType, bool writePrecisionSpecifier, const AST* ast)
@@ -2609,7 +2616,7 @@ void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
     }
 
     /* Write type modifiers */
-    WriteTypeModifiers(ast->typeModifiers, ast->typeSpecifier->GetTypeDenoter()->Get());
+    WriteTypeModifiersFrom(ast->typeSpecifier);
 
     /* Write parameter type */
     Visit(ast->typeSpecifier);
