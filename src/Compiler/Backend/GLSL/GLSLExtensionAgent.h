@@ -40,7 +40,7 @@ class GLSLExtensionAgent : private Visitor
 
     private:
         
-        void AcquireExtension(const char* extension);
+        void AcquireExtension(const std::string& extension);
 
         /* --- Visitor implementation --- */
 

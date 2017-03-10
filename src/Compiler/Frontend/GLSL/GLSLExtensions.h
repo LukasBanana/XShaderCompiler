@@ -9,7 +9,8 @@
 #define XSC_GLSL_EXTENSIONS_H
 
 
-#include <vector>
+#include <string>
+#include <map>
 
 
 namespace Xsc
@@ -120,8 +121,8 @@ static const char* E_GL_OES_texture_cube_map_array                  = "GL_OES_te
 static const char* E_GL_OES_texture_storage_multisample_2d_array    = "GL_OES_texture_storage_multisample_2d_array";
 
 
-// Returns a list of pointers to all GLSL extension strings.
-const std::vector<const char*>& GetGLSLExtensionRefList();
+// Returns a map of GLSL extension strings with their minimum required version number (default is 110).
+const std::map<std::string, int>& GetGLSLExtensionVersionMap();
 
 
 } // /namespace Xsc

@@ -17,34 +17,6 @@ namespace Xsc
 
 
 /*
- * Internal GL ARB extension descriptions
- */
-
-//TODO: move this to "GetGLSLExtensionRefList()"
-static std::map<const char*, OutputShaderVersion> GenerateExtensionVersionMap()
-{
-    return
-    {
-        { E_GL_EXT_gpu_shader4,                OutputShaderVersion::GLSL130 },
-        { E_GL_ARB_uniform_buffer_object,      OutputShaderVersion::GLSL140 },
-        { E_GL_ARB_texture_multisample,        OutputShaderVersion::GLSL150 },
-        { E_GL_ARB_fragment_coord_conventions, OutputShaderVersion::GLSL150 },
-        { E_GL_ARB_gpu_shader5,                OutputShaderVersion::GLSL330 },
-        { E_GL_ARB_texture_query_lod,          OutputShaderVersion::GLSL400 },
-        { E_GL_ARB_gpu_shader_fp64,            OutputShaderVersion::GLSL400 },
-        { E_GL_ARB_derivative_control,         OutputShaderVersion::GLSL450 },
-        { E_GL_ARB_shading_language_420pack,   OutputShaderVersion::GLSL420 },
-        { E_GL_ARB_shader_image_load_store,    OutputShaderVersion::GLSL420 },
-        { E_GL_ARB_arrays_of_arrays,           OutputShaderVersion::GLSL430 },
-        { E_GL_ARB_enhanced_layouts,           OutputShaderVersion::GLSL430 },
-        { E_GL_ARB_gpu_shader_int64,           OutputShaderVersion::GLSL450 },
-    };
-}
-
-static const std::map<const char*, OutputShaderVersion> g_extensionVersionMap = GenerateExtensionVersionMap();
-
-
-/*
  * GLSLExtensionAgent class
  */
 
@@ -140,15 +112,13 @@ std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
  * ======= Private: =======
  */
 
-void GLSLExtensionAgent::AcquireExtension(const char* extension)
+void GLSLExtensionAgent::AcquireExtension(const std::string& extension)
 {
     /* Find extension in version map */
-    const auto extensionName = std::string(extension);
-
-    auto it = g_extensionVersionMap.find(extension);
-    if (it != g_extensionVersionMap.end())
+    auto it = GetGLSLExtensionVersionMap().find(extension);
+    if (it != GetGLSLExtensionVersionMap().end())
     {
-        const auto requiredVersion = it->second;
+        const auto requiredVersion = static_cast<OutputShaderVersion>(it->second);
 
         if (targetGLSLVersion_ == OutputShaderVersion::GLSL)
         {
@@ -160,20 +130,20 @@ void GLSLExtensionAgent::AcquireExtension(const char* extension)
             if (allowExtensions_)
             {
                 /* Add extension to the resulting set, if the target GLSL version is less than the required extension version */
-                extensions_.insert(extensionName);
+                extensions_.insert(extension);
             }
             else
             {
                 /* Extensions not allowed -> runtime error */
                 RuntimeErr(
-                    "GLSL extension '" + extensionName +
+                    "GLSL extension '" + extension +
                     "' or shader output version '" + ToString(requiredVersion) + "' required"
                 );
             }
         }
     }
     else
-        RuntimeErr("no GLSL version is registered for the extension '" + extensionName + "'");
+        RuntimeErr("no GLSL version is registered for the extension '" + extension + "'");
 }
 
 
