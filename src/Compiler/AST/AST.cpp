@@ -1292,7 +1292,7 @@ void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
 void VarDeclStmnt::MakeImplicitConst()
 {
     if (!IsConstOrUniform() && typeSpecifier->storageClasses.find(StorageClass::Static) == typeSpecifier->storageClasses.end()
-		&& typeSpecifier->storageClasses.find(StorageClass::GroupShared) == typeSpecifier->storageClasses.end())
+        && typeSpecifier->storageClasses.find(StorageClass::GroupShared) == typeSpecifier->storageClasses.end())
     {
         flags << VarDeclStmnt::isImplicitConst;
         typeSpecifier->isUniform = true;
