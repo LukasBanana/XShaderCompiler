@@ -90,6 +90,7 @@ DECL_SHELL_COMMAND( HelpCommand                  );
 DECL_SHELL_COMMAND( VerboseCommand               );
 DECL_SHELL_COMMAND( OptimizeCommand              );
 DECL_SHELL_COMMAND( ExtensionCommand             );
+DECL_SHELL_COMMAND( EnumExtensionCommand         );
 DECL_SHELL_COMMAND( ValidateCommand              );
 DECL_SHELL_COMMAND( BindingCommand               );
 DECL_SHELL_COMMAND( CommentCommand               );

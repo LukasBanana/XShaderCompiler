@@ -8,10 +8,11 @@
 #include <Xsc/Xsc.h>
 #include "PreProcessor.h"
 #include "GLSLPreProcessor.h"
+#include "GLSLExtensions.h"
+#include "GLSLGenerator.h"
 #include "HLSLParser.h"
 #include "HLSLAnalyzer.h"
 #include "HLSLIntrinsics.h"
-#include "GLSLGenerator.h"
 #include "Optimizer.h"
 #include "ReflectionAnalyzer.h"
 #include "ReflectionPrinter.h"
@@ -364,6 +365,11 @@ XSC_EXPORT bool IsLanguageESSL(const OutputShaderVersion shaderVersion)
 XSC_EXPORT bool IsLanguageVKSL(const OutputShaderVersion shaderVersion)
 {
     return (shaderVersion == OutputShaderVersion::VKSL450 || shaderVersion == OutputShaderVersion::VKSL);
+}
+
+XSC_EXPORT const std::map<std::string, int>& GetGLSLExtensionEnumeration()
+{
+    return GetGLSLExtensionVersionMap();
 }
 
 

@@ -11,6 +11,7 @@
 
 #include "Export.h"
 #include <string>
+#include <map>
 
 
 namespace Xsc
@@ -93,6 +94,9 @@ XSC_EXPORT bool IsLanguageESSL(const OutputShaderVersion shaderVersion);
 
 //! Returns true if the shader output version specifies VKSL (for Vulkan).
 XSC_EXPORT bool IsLanguageVKSL(const OutputShaderVersion shaderVersion);
+
+//! Returns the enumeration of all supported GLSL extensions as a map of extension name and version number.
+XSC_EXPORT const std::map<std::string, int>& GetGLSLExtensionEnumeration();
 
 
 } // /namespace Xsc

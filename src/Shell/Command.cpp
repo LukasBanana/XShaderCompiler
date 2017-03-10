@@ -9,6 +9,7 @@
 #include "CommandFactory.h"
 #include "Shell.h"
 #include "Helper.h"
+#include <Xsc/Targets.h>
 #include <Xsc/ConsoleManip.h>
 #include <map>
 #include <fstream>
@@ -766,6 +767,32 @@ HelpDescriptor ExtensionCommand::Help() const
 void ExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.options.allowExtensions = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * EnumExtensionCommand class
+ */
+
+std::vector<Command::Identifier> EnumExtensionCommand::Idents() const
+{
+    return { { "--enum-extensions" } };
+}
+
+HelpDescriptor EnumExtensionCommand::Help() const
+{
+    return
+    {
+        "--enum-extensions",
+        "Enumerates all supported GLSL extensions"
+    };
+}
+
+void EnumExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    for (const auto& it : GetGLSLExtensionEnumeration())
+        std::cout << it.first << std::endl;
+    state.actionPerformed = true;
 }
 
 
