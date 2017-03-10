@@ -214,7 +214,7 @@ static std::map<BufferType, std::string> GenerateBufferTypeMap()
         { T::Texture2DMS,             "sampler2DMS"      },
         { T::Texture2DMSArray,        "sampler2DMSArray" },
 
-      //{ T::GenericTexture,          ""                 },
+        { T::GenericTexture,          "sampler2D"        }, //TODO: determine correct sampler type by its use
 
       //{ T::InputPatch,              ""                 },
       //{ T::OutputPatch,             ""                 },
