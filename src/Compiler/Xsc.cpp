@@ -7,10 +7,12 @@
 
 #include <Xsc/Xsc.h>
 #include "PreProcessor.h"
+#include "GLSLPreProcessor.h"
+#include "GLSLExtensions.h"
+#include "GLSLGenerator.h"
 #include "HLSLParser.h"
 #include "HLSLAnalyzer.h"
 #include "HLSLIntrinsics.h"
-#include "GLSLGenerator.h"
 #include "Optimizer.h"
 #include "ReflectionAnalyzer.h"
 #include "ReflectionPrinter.h"
@@ -70,25 +72,30 @@ static bool CompileShaderPrimary(
         throw std::invalid_argument("name mangling prefix for reserved words and temporary variables must not be equal to any other prefix");
     }
 
-    /* Pre-process input code */
+    /* ----- Pre-processing ----- */
+
     timePoints[0] = Time::now();
 
     std::unique_ptr<IncludeHandler> stdIncludeHandler;
     if (!inputDesc.includeHandler)
         stdIncludeHandler = std::unique_ptr<IncludeHandler>(new IncludeHandler());
 
-    PreProcessor preProcessor(
-        (inputDesc.includeHandler != nullptr ? *inputDesc.includeHandler : *stdIncludeHandler),
-        log
-    );
+    auto includeHandler = (inputDesc.includeHandler != nullptr ? inputDesc.includeHandler : stdIncludeHandler.get());
 
-    auto processedInput = preProcessor.Process(
+    std::unique_ptr<PreProcessor> preProcessor;
+
+    if (IsLanguageHLSL(inputDesc.shaderVersion))
+        preProcessor = MakeUnique<PreProcessor>(*includeHandler, log);
+    else if (IsLanguageGLSL(inputDesc.shaderVersion))
+        preProcessor = MakeUnique<GLSLPreProcessor>(*includeHandler, log);
+
+    auto processedInput = preProcessor->Process(
         std::make_shared<SourceCode>(inputDesc.sourceCode),
         inputDesc.filename
     );
 
     if (reflectionData)
-        reflectionData->macros = preProcessor.ListDefinedMacroIdents();
+        reflectionData->macros = preProcessor->ListDefinedMacroIdents();
 
     if (!processedInput)
         return SubmitError("preprocessing input code failed");
@@ -99,29 +106,43 @@ static bool CompileShaderPrimary(
         return true;
     }
 
-    //TODO: make this more dynamic
-    /* Establish intrinsic adept */
-    auto intrinsicAdpet = MakeUnique<HLSLIntrinsicAdept>();
+    /* ----- Parsing ----- */
 
-    /* Parse HLSL input code */
     timePoints[1] = Time::now();
 
-    HLSLParser parser(log);
-    auto program = parser.ParseSource(
-        std::make_shared<SourceCode>(std::move(processedInput)),
-        outputDesc.nameMangling,
-        (inputDesc.shaderVersion >= InputShaderVersion::HLSL4),
-        outputDesc.options.rowMajorAlignment
-    );
+    std::unique_ptr<IntrinsicAdept> intrinsicAdpet;
+    ProgramPtr program;
+
+    if (IsLanguageHLSL(inputDesc.shaderVersion))
+    {
+        /* Establish intrinsic adept */
+        intrinsicAdpet = MakeUnique<HLSLIntrinsicAdept>();
+
+        /* Parse HLSL input code */
+        HLSLParser parser(log);
+        program = parser.ParseSource(
+            std::make_shared<SourceCode>(std::move(processedInput)),
+            outputDesc.nameMangling,
+            (inputDesc.shaderVersion >= InputShaderVersion::HLSL4),
+            outputDesc.options.rowMajorAlignment
+        );
+    }
 
     if (!program)
         return SubmitError("parsing input code failed");
 
-    /* Small context analysis */
+    /* ----- Context analysis ----- */
+
     timePoints[2] = Time::now();
 
-    HLSLAnalyzer analyzer(log);
-    auto analyzerResult = analyzer.DecorateAST(*program, inputDesc, outputDesc);
+    bool analyzerResult = false;
+
+    if (IsLanguageHLSL(inputDesc.shaderVersion))
+    {
+        /* Analyse HLSL program */
+        HLSLAnalyzer analyzer(log);
+        analyzerResult = analyzer.DecorateAST(*program, inputDesc, outputDesc);
+    }
 
     /* Print AST */
     if (outputDesc.options.showAST && log)
@@ -142,14 +163,24 @@ static bool CompileShaderPrimary(
         optimizer.Optimize(*program);
     }
 
-    /* Generate GLSL output code */
+    /* ----- Code generation ----- */
+
     timePoints[4] = Time::now();
 
-    GLSLGenerator generator(log);
-    if (!generator.GenerateCode(*program, inputDesc, outputDesc, log))
+    bool generatorResult = false;
+
+    if (IsLanguageGLSL(outputDesc.shaderVersion) || IsLanguageESSL(outputDesc.shaderVersion) || IsLanguageVKSL(outputDesc.shaderVersion))
+    {
+        /* Generate GLSL output code */
+        GLSLGenerator generator(log);
+        generatorResult = generator.GenerateCode(*program, inputDesc, outputDesc, log);
+    }
+
+    if (!generatorResult)
         return SubmitError("generating output code failed");
 
-    /* Reflect shader code */
+    /* ----- Code reflection ----- */
+
     timePoints[5] = Time::now();
 
     if (reflectionData)
@@ -171,6 +202,14 @@ XSC_EXPORT bool CompileShader(
     Log* log, Reflection::ReflectionData* reflectionData)
 {
     std::array<TimePoint, 6> timePoints;
+
+    /* Check for supported feature */
+    if (!IsLanguageHLSL(inputDesc.shaderVersion) && !outputDesc.options.preprocessOnly)
+    {
+        if (log)
+            log->SumitReport(Report(Report::Types::Error, "only pre-processing supported for shaders other than HLSL"));
+        return false;
+    }
 
     /* Make copy of output descriptor to support validation without output stream */
     std::stringstream dummyOutputStream;
@@ -244,6 +283,10 @@ XSC_EXPORT std::string ToString(const InputShaderVersion shaderVersion)
         case InputShaderVersion::HLSL3: return "HLSL 3.0";
         case InputShaderVersion::HLSL4: return "HLSL 4.0";
         case InputShaderVersion::HLSL5: return "HLSL 5.0";
+
+        case InputShaderVersion::GLSL:  return "GLSL";
+        case InputShaderVersion::ESSL:  return "ESSL";
+        case InputShaderVersion::VKSL:  return "VKSL";
     }
     return "";
 }
@@ -299,6 +342,16 @@ XSC_EXPORT void PrintReflection(std::ostream& stream, const Reflection::Reflecti
     printer.PrintReflection(reflectionData);
 }
 
+XSC_EXPORT bool IsLanguageHLSL(const InputShaderVersion shaderVersion)
+{
+    return (shaderVersion >= InputShaderVersion::HLSL3 && shaderVersion <= InputShaderVersion::HLSL5);
+}
+
+XSC_EXPORT bool IsLanguageGLSL(const InputShaderVersion shaderVersion)
+{
+    return (shaderVersion >= InputShaderVersion::GLSL && shaderVersion <= InputShaderVersion::VKSL);
+}
+
 XSC_EXPORT bool IsLanguageGLSL(const OutputShaderVersion shaderVersion)
 {
     return ((shaderVersion >= OutputShaderVersion::GLSL110 && shaderVersion <= OutputShaderVersion::GLSL450) || shaderVersion == OutputShaderVersion::GLSL);
@@ -312,6 +365,11 @@ XSC_EXPORT bool IsLanguageESSL(const OutputShaderVersion shaderVersion)
 XSC_EXPORT bool IsLanguageVKSL(const OutputShaderVersion shaderVersion)
 {
     return (shaderVersion == OutputShaderVersion::VKSL450 || shaderVersion == OutputShaderVersion::VKSL);
+}
+
+XSC_EXPORT const std::map<std::string, int>& GetGLSLExtensionEnumeration()
+{
+    return GetGLSLExtensionVersionMap();
 }
 
 

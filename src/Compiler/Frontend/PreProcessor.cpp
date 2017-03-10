@@ -96,58 +96,37 @@ void PreProcessor::ParseDirective(const std::string& directive, bool ignoreUnkno
     }
 }
 
-void PreProcessor::DefineMacro(const TokenPtr& identTkn)
+void PreProcessor::DefineMacro(const Macro& macro)
 {
-    DefineMacro(identTkn, {}, {});
-}
-
-void PreProcessor::DefineMacro(const TokenPtr& identTkn, const TokenPtrString& value)
-{
-    DefineMacro(identTkn, value, {});
-}
-
-void PreProcessor::DefineMacro(const TokenPtr& identTkn, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs)
-{
-    if (!identTkn)
+    if (!macro.identTkn)
         throw std::invalid_argument("invalid argument for macro identifier token");
 
-    /* Create new macro object */
-    auto macro = std::make_shared<Macro>();
-    
-    macro->identTkn     = identTkn;
-    macro->parameters   = parameters;
-    macro->varArgs      = varArgs;
-    macro->tokenString  = value;
-
-    /* Check if identifier is already defined */
-    const auto& ident = identTkn->Spell();
-
-    auto previousMacroIt = macros_.find(ident);
-    if (previousMacroIt != macros_.end())
+    if (OnDefineMacro(macro))
     {
-        /* Now compare previous and new definition */
-        auto previousMacro = previousMacroIt->second;
+        /* Check if identifier is already defined */
+        const auto& ident = macro.identTkn->Spell();
 
-        /* Compare parameters and body */
-        auto mismatchParam  = (previousMacro->parameters != macro->parameters || previousMacro->varArgs != macro->varArgs);
-        auto mismatchBody   = (previousMacro->tokenString != macro->tokenString);
+        auto previousMacroIt = macros_.find(ident);
+        if (previousMacroIt != macros_.end())
+        {
+            if (!OnRedefineMacro(macro, *previousMacroIt->second))
+                return;
+        }
 
-        /* Construct warning message */
-        std::string warnMsg = "redefinition of macro \"" + ident + "\"";
-
-        if (mismatchParam && mismatchBody)
-            warnMsg += " with mismatch in parameter list and body definition";
-        else if (mismatchParam)
-            warnMsg += " with mismatch in parameter list";
-        else if (mismatchBody)
-            warnMsg += " with mismatch in body definition";
-
-        ReportHandler::HintForNextReport("previous definition at (" + previousMacro->identTkn->Pos().ToString() + ")");
-        Warning(warnMsg, identTkn.get());
+        /* Create new macro and register symbol */
+        macros_[ident] = std::make_shared<Macro>(macro);
     }
+}
 
-    /* Register symbol as new macro */
-    macros_[ident] = macro;
+void PreProcessor::DefineStandardMacro(const std::string& ident, int intValue)
+{
+    auto identTkn = std::make_shared<Token>(SourcePosition::ignore, Token::Types::Ident, ident);
+    auto valueTkn = std::make_shared<Token>(SourcePosition::ignore, Token::Types::IntLiteral, std::to_string(intValue));
+
+    TokenPtrString valueTokenString;
+    valueTokenString.PushBack(valueTkn);
+
+    DefineMacro({ identTkn, valueTokenString, {}, false, true });
 }
 
 void PreProcessor::UndefineMacro(const std::string& ident, const Token* tkn)
@@ -155,7 +134,10 @@ void PreProcessor::UndefineMacro(const std::string& ident, const Token* tkn)
     /* Remove macro */
     auto it = macros_.find(ident);
     if (it != macros_.end())
-        macros_.erase(it);
+    {
+        if (OnUndefineMacro(*it->second))
+            macros_.erase(it);
+    }
     else
         Warning("failed to undefine macro \"" + ident + "\"", tkn);
 }
@@ -163,6 +145,43 @@ void PreProcessor::UndefineMacro(const std::string& ident, const Token* tkn)
 bool PreProcessor::IsDefined(const std::string& ident) const
 {
     return (macros_.find(ident) != macros_.end());
+}
+
+bool PreProcessor::OnDefineMacro(const Macro& macro)
+{
+    /* Always allow to define any macros per default */
+    return true;
+}
+
+bool PreProcessor::OnRedefineMacro(const Macro& macro, const Macro& previousMacro)
+{
+    /* Compare parameters and body */
+    auto mismatchParam  = (previousMacro.parameters != macro.parameters || previousMacro.varArgs != macro.varArgs);
+    auto mismatchBody   = (previousMacro.tokenString != macro.tokenString);
+
+    /* Construct warning message */
+    std::string warnMsg = "redefinition of macro \"" + macro.identTkn->Spell() + "\"";
+
+    if (mismatchParam && mismatchBody)
+        warnMsg += " with mismatch in parameter list and body definition";
+    else if (mismatchParam)
+        warnMsg += " with mismatch in parameter list";
+    else if (mismatchBody)
+        warnMsg += " with mismatch in body definition";
+
+    if (auto previousMacroPos = previousMacro.identTkn->Pos())
+        ReportHandler::HintForNextReport("previous definition at (" + previousMacroPos.ToString() + ")");
+
+    Warning(warnMsg, macro.identTkn.get());
+
+    /* Always allow to redefine macros per default */
+    return true;
+}
+
+bool PreProcessor::OnUndefineMacro(const Macro& macro)
+{
+    /* Always allow to undefine macros per default */
+    return true;
 }
 
 
@@ -556,7 +575,7 @@ void PreProcessor::ParseDirectiveDefine()
     auto identTkn = Accept(Tokens::Ident);
 
     /* Make new macro symbol */
-    Macro macro;
+    Macro macro { identTkn };
 
     /* Parse optional parameters */
     if (Is(Tokens::LBracket))
@@ -604,7 +623,7 @@ void PreProcessor::ParseDirectiveDefine()
         macro.tokenString = ParseDirectiveTokenString(false, true);
 
     /* Register symbol as new macro */
-    DefineMacro(identTkn, macro.tokenString, macro.parameters, macro.varArgs);
+    DefineMacro(macro);
 }
 
 void PreProcessor::ParseDirectiveUndef()
@@ -1093,6 +1112,32 @@ std::string PreProcessor::ParseDefinedMacro()
 
     /* Determine value of integer literal ('1' if macro is defined, '0' otherwise */
     return (IsDefined(macroIdent) ? "1" : "0");
+}
+
+
+/*
+ * Macro structure
+ */
+
+PreProcessor::Macro::Macro(const TokenPtr& identTkn) :
+    identTkn { identTkn }
+{
+}
+
+PreProcessor::Macro::Macro(const TokenPtr& identTkn, const TokenPtrString& value) :
+    identTkn    { identTkn },
+    tokenString { value    }
+{
+}
+
+PreProcessor::Macro::Macro(
+    const TokenPtr& identTkn, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs, bool stdMacro) :
+        identTkn    { identTkn   },
+        tokenString { value      },
+        parameters  { parameters },
+        varArgs     { varArgs    },
+        stdMacro    { stdMacro   }
+{
 }
 
 

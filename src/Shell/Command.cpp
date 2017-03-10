@@ -9,6 +9,7 @@
 #include "CommandFactory.h"
 #include "Shell.h"
 #include "Helper.h"
+#include <Xsc/Targets.h>
 #include <Xsc/ConsoleManip.h>
 #include <map>
 #include <fstream>
@@ -150,7 +151,7 @@ HelpDescriptor VersionInCommand::Help() const
     {
         "-Vin, --version-in VERSION",
         "Input shader version; default=HLSL5; valid values:",
-        "HLSL3, HLSL4, HLSL5",
+        "HLSL3, HLSL4, HLSL5, GLSL, ESSL, VKSL",
         HelpCategory::Main
     };
 }
@@ -163,6 +164,9 @@ void VersionInCommand::Run(CommandLine& cmdLine, ShellState& state)
             { "HLSL3", InputShaderVersion::HLSL3 },
             { "HLSL4", InputShaderVersion::HLSL4 },
             { "HLSL5", InputShaderVersion::HLSL5 },
+            { "GLSL",  InputShaderVersion::GLSL  },
+            { "ESSL",  InputShaderVersion::ESSL  },
+            { "VKSL",  InputShaderVersion::VKSL  },
         },
         "invalid input shader version"
     );
@@ -763,6 +767,32 @@ HelpDescriptor ExtensionCommand::Help() const
 void ExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.options.allowExtensions = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
+ * EnumExtensionCommand class
+ */
+
+std::vector<Command::Identifier> EnumExtensionCommand::Idents() const
+{
+    return { { "--enum-extensions" } };
+}
+
+HelpDescriptor EnumExtensionCommand::Help() const
+{
+    return
+    {
+        "--enum-extensions",
+        "Enumerates all supported GLSL extensions"
+    };
+}
+
+void EnumExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    for (const auto& it : GetGLSLExtensionEnumeration())
+        std::cout << it.first << std::endl;
+    state.actionPerformed = true;
 }
 
 

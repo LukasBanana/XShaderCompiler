@@ -53,23 +53,47 @@ class PreProcessor : public Parser
 
     protected:
 
+        // Macro object structure.
+        struct Macro
+        {
+            Macro() = default;
+            Macro(const Macro&) = default;
+            Macro& operator = (const Macro&) = default;
+
+            Macro(const TokenPtr& identTkn);
+            Macro(const TokenPtr& identTkn, const TokenPtrString& value);
+            Macro(const TokenPtr& identTkn, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs = false, bool stdMacro = false);
+
+            TokenPtr                    identTkn;               // Macro identifier token
+            TokenPtrString              tokenString;            // Macro definition value as token string
+            std::vector<std::string>    parameters;             // Parameter identifiers
+            bool                        varArgs     = false;    // Specifies whether the macro supports variadic arguments
+            bool                        stdMacro    = false;    // Specifies whether the macro is a standard macro (i.e. part of the language) or not
+        };
+
         // Parses the specified directive, that is not part of the standard pre-processor directive (e.g. "version" or "extension" for GLSL).
         virtual void ParseDirective(const std::string& directive, bool ignoreUnknown);
 
-        // Defines a macro with the specified identifier.
-        void DefineMacro(const TokenPtr& identTkn);
-
-        // Defines a macro with the specified identifier and value token string.
-        void DefineMacro(const TokenPtr& identTkn, const TokenPtrString& value);
-
         // Defines a macro with the specified identifier, value token string, and parameters.
-        void DefineMacro(const TokenPtr& identTkn, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs = false);
+        void DefineMacro(const Macro& macro);
+
+        // Defines a standard macro (i.e. not part of the source code) with value set to integer literal '1'.
+        void DefineStandardMacro(const std::string& ident, int intValue = 1);
 
         // Removes the macro definition with the specified identifier.
         void UndefineMacro(const std::string& ident, const Token* tkn = nullptr);
 
         // Returns true if the specified macro identifier is defined.
         bool IsDefined(const std::string& ident) const;
+
+        // Callback function when a macro is about to be defined
+        virtual bool OnDefineMacro(const Macro& macro);
+
+        // Callback function when a macro is about to be redefined, returns true if the redefinition is allowed.
+        virtual bool OnRedefineMacro(const Macro& macro, const Macro& previousMacro);
+
+        // Callback function when a macro is about to be undefined, return true if the undefinition is allowed.
+        virtual bool OnUndefineMacro(const Macro& macro);
 
         // Returns the output stream as reference.
         inline std::stringstream& Out()
@@ -80,14 +104,6 @@ class PreProcessor : public Parser
     private:
         
         /* === Structures === */
-
-        struct Macro
-        {
-            TokenPtr                    identTkn;               // Macro identifier token
-            std::vector<std::string>    parameters;             // Parameter identifiers
-            bool                        varArgs     = false;    // Specifies whether macro supports variadic arguments
-            TokenPtrString              tokenString;            // Macro definition value as token string
-        };
 
         struct IfBlock
         {

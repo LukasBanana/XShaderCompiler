@@ -21,13 +21,6 @@ namespace Xsc
 {
 
 
-// GLSL extension type with name and minimum required GLSL version.
-struct GLSLExtension
-{
-    std::string         extensionName;
-    OutputShaderVersion requiredVersion;
-};
-
 // GLSL extension agent visitor. Determines which GLSL extension are required for a given GLSL target version.
 class GLSLExtensionAgent : private Visitor
 {
@@ -47,7 +40,7 @@ class GLSLExtensionAgent : private Visitor
 
     private:
         
-        void AcquireExtension(const GLSLExtension& extension);
+        void AcquireExtension(const std::string& extension);
 
         /* --- Visitor implementation --- */
 
@@ -83,7 +76,7 @@ class GLSLExtensionAgent : private Visitor
         std::set<std::string>               extensions_;
 
         // Intrinsic name to GLSL extension map.
-        std::map<Intrinsic, GLSLExtension>  intrinsicExtMap_;
+        std::map<Intrinsic, const char*>    intrinsicExtMap_;
 
 };
 

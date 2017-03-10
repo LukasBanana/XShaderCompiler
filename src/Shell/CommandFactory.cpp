@@ -72,6 +72,7 @@ CommandFactory::CommandFactory()
         VerboseCommand,
         OptimizeCommand,
         ExtensionCommand,
+        EnumExtensionCommand,
         ValidateCommand,
         BindingCommand,
         CommentCommand,
