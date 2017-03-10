@@ -603,6 +603,16 @@ bool TypeSpecifier::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifi
     return false;
 }
 
+bool TypeSpecifier::HasAnyStorageClassesOf(const std::vector<StorageClass>& modifiers) const
+{
+    for (auto mod : modifiers)
+    {
+        if (storageClasses.find(mod) != storageClasses.end())
+            return true;
+    }
+    return false;
+}
+
 
 /* ----- VarDecl ----- */
 
@@ -1291,8 +1301,8 @@ void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
 
 void VarDeclStmnt::MakeImplicitConst()
 {
-    if (!IsConstOrUniform() && typeSpecifier->storageClasses.find(StorageClass::Static) == typeSpecifier->storageClasses.end()
-        && typeSpecifier->storageClasses.find(StorageClass::GroupShared) == typeSpecifier->storageClasses.end())
+    if ( !IsConstOrUniform() &&
+         !typeSpecifier->HasAnyStorageClassesOf({ StorageClass::Static, StorageClass::GroupShared }) )
     {
         flags << VarDeclStmnt::isImplicitConst;
         typeSpecifier->isUniform = true;

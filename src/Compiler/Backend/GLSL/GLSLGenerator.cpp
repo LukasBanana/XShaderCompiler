@@ -65,8 +65,8 @@ void GLSLGenerator::GenerateCodePrimary(
 
     for (const auto& s : outputDesc.vertexSemantics)
     {
-        CiString semantic = ToCiString(s.semantic);
-        vertexSemanticsMap_[semantic] = { s.location, 0 };
+        const auto semanticCi = ToCiString(s.semantic);
+        vertexSemanticsMap_[semanticCi] = { s.location, 0 };
     }
 
     if (program.entryPointRef)
