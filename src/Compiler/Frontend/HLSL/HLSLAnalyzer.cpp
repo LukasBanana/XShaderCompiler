@@ -27,8 +27,8 @@ static ShaderVersion GetShaderModel(const InputShaderVersion v)
         case InputShaderVersion::HLSL3: return { 3, 0 };
         case InputShaderVersion::HLSL4: return { 4, 0 };
         case InputShaderVersion::HLSL5: return { 5, 0 };
+        default:                        return { 1, 0 };
     }
-    return { 1, 0 };
 }
 
 
