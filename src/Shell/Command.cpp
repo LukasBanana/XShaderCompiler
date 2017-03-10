@@ -557,7 +557,9 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
                 if (IsLanguageVKSL(shell->GetState().outputDesc.shaderVersion))
                     cmd += "-V ";
 
+                cmd += '\"';
                 cmd += shell->GetLastOutputFilename();
+                cmd += '\"';
 
                 /* Print command to standard output */
                 if (shell->GetState().verbose)
