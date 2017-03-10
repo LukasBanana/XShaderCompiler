@@ -64,7 +64,10 @@ void GLSLGenerator::GenerateCodePrimary(
     alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
 
     for (const auto& s : outputDesc.vertexSemantics)
-        vertexSemanticsMap_[ToCiString(s.semantic)] = { s.location, 0 };
+    {
+        CiString semantic = ToCiString(s.semantic);
+        vertexSemanticsMap_[semantic] = { s.location, 0 };
+    }
 
     if (program.entryPointRef)
     {
