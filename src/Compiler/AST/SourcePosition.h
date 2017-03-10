@@ -52,7 +52,7 @@ class SourcePosition
         // Increases the column by 1.
         void IncColumn();
 
-        // Returns ture if this is a valid source position. False if row and column are 0.
+        // Returns true if this is a valid source position. False if row and column are 0.
         bool IsValid() const;
 
         // Reste the source position to (0:0).
@@ -77,6 +77,12 @@ class SourcePosition
         inline void SetOrigin(const SourceOriginPtr& origin)
         {
             origin_ = origin;
+        }
+
+        // Equivalent to a call to 'IsValid()'.
+        inline operator bool () const
+        {
+            return IsValid();
         }
 
     private:
