@@ -541,14 +541,14 @@ struct VarDecl : public Decl
     {
         FLAG( isShaderInput,        0 ), // This variable is used as shader input.
         FLAG( isShaderOutput,       1 ), // This variable is used as shader output.
-        FLAG( isSystemValue,        2 ), // This variable is a system value.
+        FLAG( isSystemValue,        2 ), // This variable is a system value (e.g. SV_Position/ gl_Position).
         FLAG( isDynamicArray,       3 ), // This variable is a dynamic array (for input/output semantics).
         FLAG( isWrittenTo,          4 ), // This variable is eventually written to.
         FLAG( isEntryPointOutput,   5 ), // This variable is used as entry point output (return value, output parameter, stream output).
         FLAG( isEntryPointLocal,    6 ), // This variable is a local variable of the entry point.
 
-        isShaderInputSV     = (isShaderInput  | isSystemValue), // This variable a used as shader input, and it is a system value.
-        isShaderOutputSV    = (isShaderOutput | isSystemValue), // This variable a used as shader output, and it is a system value.
+        isShaderInputSV     = (isShaderInput  | isSystemValue), // This variable is used as shader input, and it is a system value.
+        isShaderOutputSV    = (isShaderOutput | isSystemValue), // This variable is used as shader output, and it is a system value.
     };
 
     // Returns the variable declaration as string.
