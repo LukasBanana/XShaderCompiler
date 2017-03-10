@@ -101,41 +101,21 @@ void PreProcessor::DefineMacro(const Macro& macro)
     if (!macro.identTkn)
         throw std::invalid_argument("invalid argument for macro identifier token");
 
-    /* Create new macro object */
-    auto macroObj = std::make_shared<Macro>();
-    *macroObj = macro;
-
-    /* Check if identifier is already defined */
-    const auto& ident = macro.identTkn->Spell();
-
-    auto previousMacroIt = macros_.find(ident);
-    if (previousMacroIt != macros_.end())
+    if (OnDefineMacro(macro))
     {
-        /* Now compare previous and new definition */
-        auto previousMacro = previousMacroIt->second;
+        /* Check if identifier is already defined */
+        const auto& ident = macro.identTkn->Spell();
 
-        /* Compare parameters and body */
-        auto mismatchParam  = (previousMacro->parameters != macroObj->parameters || previousMacro->varArgs != macroObj->varArgs);
-        auto mismatchBody   = (previousMacro->tokenString != macroObj->tokenString);
+        auto previousMacroIt = macros_.find(ident);
+        if (previousMacroIt != macros_.end())
+        {
+            if (!OnRedefineMacro(macro, *previousMacroIt->second))
+                return;
+        }
 
-        /* Construct warning message */
-        std::string warnMsg = "redefinition of macro \"" + ident + "\"";
-
-        if (mismatchParam && mismatchBody)
-            warnMsg += " with mismatch in parameter list and body definition";
-        else if (mismatchParam)
-            warnMsg += " with mismatch in parameter list";
-        else if (mismatchBody)
-            warnMsg += " with mismatch in body definition";
-
-        if (auto previousMacroPos = previousMacro->identTkn->Pos())
-            ReportHandler::HintForNextReport("previous definition at (" + previousMacroPos.ToString() + ")");
-
-        Warning(warnMsg, macroObj->identTkn.get());
+        /* Create new macro and register symbol */
+        macros_[ident] = std::make_shared<Macro>(macro);
     }
-
-    /* Register symbol as new macro */
-    macros_[ident] = macroObj;
 }
 
 void PreProcessor::DefineStandardMacro(const std::string& ident, int intValue)
@@ -154,7 +134,10 @@ void PreProcessor::UndefineMacro(const std::string& ident, const Token* tkn)
     /* Remove macro */
     auto it = macros_.find(ident);
     if (it != macros_.end())
-        macros_.erase(it);
+    {
+        if (OnUndefineMacro(*it->second))
+            macros_.erase(it);
+    }
     else
         Warning("failed to undefine macro \"" + ident + "\"", tkn);
 }
@@ -162,6 +145,43 @@ void PreProcessor::UndefineMacro(const std::string& ident, const Token* tkn)
 bool PreProcessor::IsDefined(const std::string& ident) const
 {
     return (macros_.find(ident) != macros_.end());
+}
+
+bool PreProcessor::OnDefineMacro(const Macro& macro)
+{
+    /* Always allow to define any macros per default */
+    return true;
+}
+
+bool PreProcessor::OnRedefineMacro(const Macro& macro, const Macro& previousMacro)
+{
+    /* Compare parameters and body */
+    auto mismatchParam  = (previousMacro.parameters != macro.parameters || previousMacro.varArgs != macro.varArgs);
+    auto mismatchBody   = (previousMacro.tokenString != macro.tokenString);
+
+    /* Construct warning message */
+    std::string warnMsg = "redefinition of macro \"" + macro.identTkn->Spell() + "\"";
+
+    if (mismatchParam && mismatchBody)
+        warnMsg += " with mismatch in parameter list and body definition";
+    else if (mismatchParam)
+        warnMsg += " with mismatch in parameter list";
+    else if (mismatchBody)
+        warnMsg += " with mismatch in body definition";
+
+    if (auto previousMacroPos = previousMacro.identTkn->Pos())
+        ReportHandler::HintForNextReport("previous definition at (" + previousMacroPos.ToString() + ")");
+
+    Warning(warnMsg, macro.identTkn.get());
+
+    /* Always allow to redefine macros per default */
+    return true;
+}
+
+bool PreProcessor::OnUndefineMacro(const Macro& macro)
+{
+    /* Always allow to undefine macros per default */
+    return true;
 }
 
 

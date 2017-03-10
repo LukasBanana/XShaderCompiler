@@ -32,10 +32,18 @@ class GLSLPreProcessor : public PreProcessor
 
     private:
         
+        bool OnDefineMacro(const Macro& macro) override;
+        bool OnRedefineMacro(const Macro& macro, const Macro& previousMacro) override;
+        bool OnUndefineMacro(const Macro& macro) override;
+
         void ParseDirective(const std::string& directive, bool ignoreUnknown) override;
 
         void ParseDirectiveVersion();
         void ParseDirectiveExtension();
+
+        /* === Members === */
+
+        int versionNo_ = 0;
 
 };
 

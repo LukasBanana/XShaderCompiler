@@ -74,8 +74,6 @@ class PreProcessor : public Parser
         // Parses the specified directive, that is not part of the standard pre-processor directive (e.g. "version" or "extension" for GLSL).
         virtual void ParseDirective(const std::string& directive, bool ignoreUnknown);
 
-        //virtual void OnRedefineMacro(const std::string& ident, bool isStandardMacro);
-
         // Defines a macro with the specified identifier, value token string, and parameters.
         void DefineMacro(const Macro& macro);
 
@@ -87,6 +85,15 @@ class PreProcessor : public Parser
 
         // Returns true if the specified macro identifier is defined.
         bool IsDefined(const std::string& ident) const;
+
+        // Callback function when a macro is about to be defined
+        virtual bool OnDefineMacro(const Macro& macro);
+
+        // Callback function when a macro is about to be redefined, returns true if the redefinition is allowed.
+        virtual bool OnRedefineMacro(const Macro& macro, const Macro& previousMacro);
+
+        // Callback function when a macro is about to be undefined, return true if the undefinition is allowed.
+        virtual bool OnUndefineMacro(const Macro& macro);
 
         // Returns the output stream as reference.
         inline std::stringstream& Out()
