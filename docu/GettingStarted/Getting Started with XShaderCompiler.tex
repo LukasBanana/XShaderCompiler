@@ -88,7 +88,7 @@ see \href{https://www.opengl.org/wiki/OpenGL_Shading_Language}{www.opengl.org}).
 \newpage
 \section{Progress}
 
-This project is still in its early steps. This document is written for \XSC \textbf{Version 0.06 Alpha}.
+This project is still in its early steps. This document is written for \XSC \textbf{Version 0.07 Alpha}.
 
 \subsection{ToDo List}
 See \href{https://github.com/LukasBanana/XShaderCompiler/blob/master/TODO.md}{TODO.md file on github.com}
@@ -141,9 +141,12 @@ Here is a brief overview of the most important commands:
 	Sets the input shader version specified by \texttt{\textit{VERSION}}.
 	Valid values for \texttt{\textit{VERSION}} are:
 	\begin{itemize}
-		\item[] \textbf{\texttt{HLSL3}} (for HLSL Shader Model 3)
-		\item[] \textbf{\texttt{HLSL4}} (for HLSL Shader Model 4)
-		\item[] \textbf{\texttt{HLSL5}} (for HLSL Shader Model 5) \textit{default value}
+		\item[] \textbf{\texttt{HLSL3}} (Shader Model 3)
+		\item[] \textbf{\texttt{HLSL4}} (Shader Model 4)
+		\item[] \textbf{\texttt{HLSL5}} (Shader Model 5) \textit{default value}
+		\item[] \textbf{\texttt{GLSL}} (GLSL for OpenGL) \textit{only pre-processing supported}
+		\item[] \textbf{\texttt{ESSL}} (GLSL for OpenGL ES) \textit{only pre-processing supported}
+		\item[] \textbf{\texttt{VKSL}} (GLSL for Vulkan) \textit{only pre-processing supported}
 	\end{itemize}
 	
 	\item[] \textbf{\texttt{-Vout, ----version-out \textit{VERSION}}} \\
@@ -151,8 +154,8 @@ Here is a brief overview of the most important commands:
 	Valid values for \texttt{\textit{VERSION}} are:
 	\begin{itemize}
 		\item[] \textbf{\texttt{GLSL}} (for automatic deduction of the minimal required GLSL version) \textit{default value}
-		\item[] \textbf{\texttt{GLSL110}} (for GLSL 1.10) \textit{not supported yet}
-		\item[] \textbf{\texttt{GLSL120}} (for GLSL 1.20) \textit{not supported yet}
+		\item[] \textbf{\texttt{GLSL110}} (for GLSL 1.10) \textit{only partially supported}
+		\item[] \textbf{\texttt{GLSL120}} (for GLSL 1.20) \textit{only partially supported}
 		\item[] \textbf{\texttt{GLSL130}} (for GLSL 1.30)
 		\item[] \textbf{\texttt{GLSL140}} (for GLSL 1.40)
 		\item[] \textbf{\texttt{GLSL150}} (for GLSL 1.50)
