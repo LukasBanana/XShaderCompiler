@@ -163,9 +163,12 @@ void GLSLPreProcessor::ParseDirectiveExtension()
     auto extension = Accept(Tokens::Ident)->Spell();
 
     /* Verify extension */
-    const auto& extMap = GetGLSLExtensionVersionMap();
-    if (extMap.find(extension) == extMap.end())
-        Error("extension not supported: " + extension, true, false);
+    if (extension != "all")
+    {
+        const auto& extMap = GetGLSLExtensionVersionMap();
+        if (extMap.find(extension) == extMap.end())
+            Error("extension not supported: " + extension, true, false);
+    }
 
     /* Parse behavior */
     IgnoreWhiteSpaces(false, true);
