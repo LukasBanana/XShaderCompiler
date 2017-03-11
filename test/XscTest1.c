@@ -79,7 +79,7 @@ void TestCompile()
     // Compile shader
     puts(in.sourceCode);
 
-    if (XscCompileShader(&in, &out))
+    if (XscCompileShader(&in, &out, XSC_DEFAULT_LOG))
     {
         puts("*** COMPILATION SUCCESSFUL ***\n");
         if (outputCode != NULL)

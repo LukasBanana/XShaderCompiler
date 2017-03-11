@@ -126,7 +126,7 @@ static bool ValidateShaderOutput(const struct XscShaderOutput* s)
 
 
 /*
- * Internal classes
+ * IncludeHandlerC class
  */
 
 class IncludeHandlerC : public Xsc::IncludeHandler
@@ -140,7 +140,7 @@ class IncludeHandlerC : public Xsc::IncludeHandler
 
     private:
 
-        struct XscIncludeHandler handler_;
+        XscIncludeHandler handler_;
 
 };
 
@@ -164,6 +164,63 @@ std::unique_ptr<std::istream> IncludeHandlerC::Include(const std::string& filena
     return std::move(stream);
 }
 
+
+/*
+ * LogC class
+ */
+
+class LogC : public Xsc::Log
+{
+
+    public:
+
+        LogC(const XscLog* handler);
+
+        void SumitReport(const Xsc::Report& report) override;
+        
+    private:
+
+        XscLog handler_;
+
+};
+
+LogC::LogC(const XscLog* handler)
+{
+    if (handler != NULL && handler != XSC_DEFAULT_LOG)
+        handler_.handleReportPfn = handler->handleReportPfn;
+    else
+        handler_.handleReportPfn = NULL;
+}
+
+void LogC::SumitReport(const Xsc::Report& report)
+{
+    if (handler_.handleReportPfn)
+    {
+        /* Initialize report for C API */
+        XscReport r;
+
+        std::vector<const char*> hints;
+        for (const auto& h : report.GetHints())
+            hints.push_back(h.c_str());
+
+        r.type          = static_cast<XscReportType>(report.Type());
+        r.context       = report.Context().c_str();
+        r.message       = report.Message().c_str();
+        r.line          = report.Line().c_str();
+        r.marker        = report.Marker().c_str();
+        r.hints         = hints.data();
+        r.hintsCount    = hints.size();
+
+        /* Pass report to callback */
+        handler_.handleReportPfn(&r, FullIndent().c_str());
+    }
+}
+
+
+/*
+ * Internal context
+ */
+
 struct CompilerContext
 {
     std::string outputCode;
@@ -178,9 +235,9 @@ static struct CompilerContext g_compilerContext;
 
 XSC_EXPORT bool XscCompileShader(
     const struct XscShaderInput* inputDesc,
-    const struct XscShaderOutput* outputDesc/*,
-    XscLog* log,
-    XscReflectionData* reflectionData*/)
+    const struct XscShaderOutput* outputDesc,
+    const struct XscLog* log/*,
+    struct XscReflectionData* reflectionData*/)
 {
     if (!ValidateShaderInput(inputDesc) || !ValidateShaderOutput(outputDesc))
         return false;
@@ -248,15 +305,29 @@ XSC_EXPORT bool XscCompileShader(
     out.nameMangling.temporaryPrefix    = ReadStringC(outputDesc->nameMangling.temporaryPrefix);
     out.nameMangling.useAlwaysSemantics = outputDesc->nameMangling.useAlwaysSemantics;
 
+    /* Initialize log */
+    Xsc::StdLog logPrimaryStd;
+    LogC logPrimary(log);
+
+    Xsc::Log* logPrimaryRef = nullptr;
+    if (log == XSC_DEFAULT_LOG)
+        logPrimaryRef = (&logPrimaryStd);
+    else
+        logPrimaryRef = (&logPrimary);
+
     /* Compile shader with C++ API */
-    if (Xsc::CompileShader(in, out))
+    bool result = Xsc::CompileShader(in, out, logPrimaryRef);
+
+    if (result)
     {
         g_compilerContext.outputCode = outputStream.str();
         *outputDesc->sourceCode = g_compilerContext.outputCode.c_str();
-        return true;
     }
 
-    return false;
+    if (log == XSC_DEFAULT_LOG)
+        logPrimaryStd.PrintAll();
+
+    return result;
 }
 
 XSC_EXPORT void XscShaderTargetToString(const enum XscShaderTarget target, char* str, size_t maxSize)

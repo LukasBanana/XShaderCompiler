@@ -9,9 +9,6 @@
 #define XSC_INCLUDE_HANDLER_C_H
 
 
-#include <Xsc/Export.h>
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
