@@ -511,6 +511,9 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
 
         { T::StreamOutput_Append,              {                   1    } },
         { T::StreamOutput_RestartStrip,        {                        } },
+
+        { T::Image_Load,                       { Ret::Float4,      2    } },
+        { T::Image_Store,                      {                   3    } },
     };
 }
 
