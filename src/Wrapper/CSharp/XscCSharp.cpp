@@ -6,14 +6,33 @@
  */
 
 #include <Xsc/Xsc.h>
+#include <sstream>
 #include <vcclr.h>
 
 #using <System.dll>
 #using <System.Core.dll>
+#using <System.Runtime.InteropServices.dll>
 
 
 using namespace System;
+using namespace System::Runtime::InteropServices;
 
+
+static std::string ToStdString(String^ s)
+{
+    std::string out;
+
+    if (s != nullptr)
+    {
+        auto inputSourceCodePtr = Marshal::StringToHGlobalAnsi(s);
+        {
+            out = (char*)(void*)inputSourceCodePtr;
+        }
+        Marshal::FreeHGlobal(inputSourceCodePtr);
+    }
+
+    return out;
+}
 
 public ref class XscCompiler
 {
@@ -174,15 +193,395 @@ public ref class XscCompiler
 
         };
 
-        XscCompiler()
+        //! Formatting descriptor structure for the output shader.
+        ref class OutputFormatting
         {
+
+            public:
+
+                OutputFormatting()
+                {
+                    Indent              = gcnew String("    ");
+                    Blanks              = true;
+                    LineMarks           = false;
+                    CompactWrappers     = false;
+                    AlwaysBracedScopes  = false;
+                    NewLineOpenScope    = true;
+                    LineSeparation      = true;
+                }
+
+                //! Indentation string for code generation. By default 4 spaces.
+                property String^    Indent;
+
+                //! If true, blank lines are allowed. By default true.
+                property bool       Blanks;
+
+                //! If true, line marks are allowed. By default false.
+                property bool       LineMarks;
+
+                //! If true, wrapper functions for special intrinsics are written in a compact formatting (i.e. all in one line). By default false.
+                property bool       CompactWrappers;
+
+                //! If true, scopes are always written in braces. By default false.
+                property bool       AlwaysBracedScopes;
+
+                //! If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default true.
+                property bool       NewLineOpenScope;
+
+                //! If true, auto-formatting of line separation is allowed. By default true.
+                property bool       LineSeparation;
+
+        };
+
+        //! Structure for additional translation options.
+        ref class OutputOptions
+        {
+
+            public:
+
+                OutputOptions()
+                {
+                    Warnings                = false;
+                    Optimize                = false;
+                    PreprocessOnly          = false;
+                    ValidateOnly            = false;
+                    AllowExtensions         = false;
+                    ExplicitBinding         = false;
+                    PreserveComments        = false;
+                    PreferWrappers          = false;
+                    UnrollArrayInitializers = false;
+                    RowMajorAlignment       = false;
+                    Obfuscate               = false;
+                    ShowAST                 = false;
+                    ShowTimes               = false;
+                }
+
+                //! True if warnings are allowed. By default false.
+                property bool Warnings;
+
+                //! If true, little code optimizations are performed. By default false.
+                property bool Optimize;
+
+                //! If true, only the preprocessed source code will be written out. By default false.
+                property bool PreprocessOnly;
+
+                //! If true, the source code is only validated, but no output code will be generated. By default false.
+                property bool ValidateOnly;
+
+                //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
+                property bool AllowExtensions;
+
+                //! If true, explicit binding slots are enabled. By default false.
+                property bool ExplicitBinding;
+
+                //! If true, commentaries are preserved for each statement. By default false.
+                property bool PreserveComments;
+
+                //! If true, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.
+                property bool PreferWrappers;
+
+                //! If true, array initializations will be unrolled. By default false.
+                property bool UnrollArrayInitializers;
+
+                //! If true, matrices have row-major alignment. Otherwise the matrices have column-major alignment. By default false.
+                property bool RowMajorAlignment;
+
+                //! If true, code obfuscation is performed. By default false.
+                property bool Obfuscate;
+
+                //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
+                property bool ShowAST;
+
+                //! If true, the timings of the different compilation processes are written to the log output. By default false.
+                property bool ShowTimes;
+
+        };
+
+        //! Name mangling descriptor structure for shader input/output variables (also referred to as "varyings"), temporary variables, and reserved keywords.
+        ref class OutputNameMangling
+        {
+
+            public:
+
+                OutputNameMangling()
+                {
+                    InputPrefix         = gcnew String("xsv_");
+                    OutputPrefix        = gcnew String("xsv_");
+                    ReservedWordPrefix  = gcnew String("xsr_");
+                    TemporaryPrefix     = gcnew String("xst_");
+                    UseAlwaysSemantics  = false;
+                }
+
+                //! Name mangling prefix for shader input variables. By default "xsv_".
+                property String^    InputPrefix;
+
+                //! Name mangling prefix for shader output variables. By default "xsv_".
+                property String^    OutputPrefix;
+
+                /**
+                \brief Name mangling prefix for reserved words (such as "texture", "main", "sin" etc.). By default "xsr_".
+                \remarks This must not be equal to any of the other prefixes and it must not be empty.
+                */
+                property String^    ReservedWordPrefix;
+
+                /**
+                \brief Name mangling prefix for temporary variables. By default "xst_".
+                \remarks This must not be equal to any of the other prefixes and it must not be empty.
+                */
+                property String^    TemporaryPrefix;
+
+                /**
+                If true, shader input/output variables are always renamed to their semantics,
+                even for vertex input and fragment output. Otherwise, their original identifiers are used. By default false.
+                */
+                property bool       UseAlwaysSemantics;
+
+        };
+
+        ref class SourceIncludeHandler abstract
+        {
+
+            public:
+                
+                /**
+                \brief Returns an input stream for the specified filename.
+                \param[in] includeName Specifies the include filename.
+                \param[in] useSearchPathsFirst Specifies whether to first use the search paths to find the file.
+                \return Content of the new input file.
+                */
+                virtual String^ Include(String^ filename, bool useSearchPathsFirst) = 0;
+
+        };
+
+        //! Shader input descriptor structure.
+        ref class ShaderInput
+        {
+
+            public:
+
+                ShaderInput()
+                {
+                    Filename            = nullptr;
+                    SourceCode          = gcnew String("");
+                    ShaderVersion       = InputShaderVersion::HLSL5;
+                    Target              = ShaderTarget::Undefined;
+                    EntryPoint          = gcnew String("main");
+                    SecondaryEntryPoint = nullptr;
+                    IncludeHandler      = nullptr;
+                }
+
+                //! Specifies the filename of the input shader code. This is an optional attribute, and only a hint to the compiler.
+                property String^                        Filename;
+
+                //! Specifies the input source code stream.
+                property String^                        SourceCode;
+
+                //! Specifies the input shader version (e.g. InputShaderVersion.HLSL5 for "HLSL 5"). By default InputShaderVersion.HLSL5.
+                property InputShaderVersion             ShaderVersion;
+    
+                //! Specifies the target shader (Vertex, Fragment etc.). By default ShaderTarget::Undefined.
+                property ShaderTarget                   Target;
+
+                //! Specifies the HLSL shader entry point. By default "main".
+                property String^                        EntryPoint;
+
+                /**
+                \brief Specifies the secondary HLSL shader entry point.
+                \remarks This is only used for a Tessellation-Control Shader (alias Hull Shader) entry point,
+                when a Tessellation-Control Shader (alias Domain Shader) is the output target.
+                This is required to translate all Tessellation-Control attributes (i.e. "partitioning" and "outputtopology")
+                to the Tessellation-Evaluation output shader. If this is empty, the default values for these attributes are used.
+                */
+                property String^                        SecondaryEntryPoint;
+
+                /**
+                \brief Optional handler to handle '#include'-directives. By default null.
+                \remarks If this is null, the default include handler will be used, which will include files with the STL input file streams.
+                */
+                property SourceIncludeHandler^          IncludeHandler;
+
+        };
+
+        //! Vertex shader semantic (or rather attribute) layout structure.
+        ref class VertexSemantic
+        {
+
+            public:
+
+                VertexSemantic()
+                {
+                    Semantic = nullptr;
+                    Location = 0;
+                }
+
+                //! Specifies the shader semantic (or rather attribute).
+                property String^    Semantic;
+
+                //! Specifies the binding location.
+                property int        Location;
+
+        };
+
+        //! Shader output descriptor structure.
+        ref class ShaderOutput
+        {
+
+            public:
+
+                ShaderOutput()
+                {
+                    Filename        = nullptr;
+                    SourceCode      = gcnew String("");
+                    ShaderVersion   = OutputShaderVersion::GLSL;
+                    VertexSemantics = gcnew Collections::Generic::List<VertexSemantic^>();
+                    Options         = gcnew OutputOptions();
+                    Formatting      = gcnew OutputFormatting();
+                    NameMangling    = gcnew OutputNameMangling();
+                }
+
+                //! Specifies the filename of the output shader code. This is an optional attribute, and only a hint to the compiler.
+                property String^                                        Filename;
+
+                //! Specifies the output source code stream. This will contain the output code. This must not be null when passed to the "CompileShader" function!
+                property String^                                        SourceCode;
+
+                //! Specifies the output shader version. By default OutputShaderVersion::GLSL (to auto-detect minimum required version).
+                property OutputShaderVersion                            ShaderVersion;
+                
+                //! Optional list of vertex semantic layouts, to bind a vertex attribute (semantic name) to a location index (only used when 'explicitBinding' is true).
+                property Collections::Generic::List<VertexSemantic^>^   VertexSemantics;
+
+                //! Additional options to configure the code generation.
+                property OutputOptions^                                 Options;
+
+                //! Output code formatting descriptor.
+                property OutputFormatting^                              Formatting;
+    
+                //! Specifies the options for name mangling.
+                property OutputNameMangling^                            NameMangling;
+
+        };
+
+        /**
+        \brief Cross compiles the shader code from the specified input stream into the specified output shader code.
+        \param[in] inputDesc Input shader code descriptor.
+        \param[in] outputDesc Output shader code descriptor.
+        \param[in] log Optional pointer to an output log. Inherit from the "Log" class interface. By default null.
+        \param[out] reflectionData Optional pointer to a code reflection data structure. By default null.
+        \return True if the code has been translated successfully.
+        \throw ArgumentNullException If either the input or output streams are null.
+        \see ShaderInput
+        \see ShaderOutput
+        \see Log
+        \see ReflectionData
+        */
+        bool CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc)
+        {
+            /* Validate input arguments */
+            if (inputDesc == nullptr)
+                throw gcnew ArgumentNullException(gcnew String("inputDesc"));
+            if (outputDesc == nullptr)
+                throw gcnew ArgumentNullException(gcnew String("outputDesc"));
+            if (inputDesc->SourceCode == nullptr)
+                throw gcnew ArgumentNullException(gcnew String("inputDesc.SourceCode"));
+            if (outputDesc->Options == nullptr)
+                throw gcnew ArgumentNullException(gcnew String("outputDesc.Options"));
+            if (outputDesc->Formatting == nullptr)
+                throw gcnew ArgumentNullException(gcnew String("outputDesc.Formatting"));
+            if (outputDesc->NameMangling == nullptr)
+                throw gcnew ArgumentNullException(gcnew String("outputDesc.NameMangling"));
+
+            /* Copy input descriptor */
+            Xsc::ShaderInput in;
+
+            //IncludeHandlerCSharp includeHandler(inputDesc->includeHandler);
+
+            auto inputStream = std::make_shared<std::stringstream>();
+            *inputStream << ToStdString(inputDesc->SourceCode);
+
+            in.filename             = ToStdString(inputDesc->Filename);
+            in.sourceCode           = inputStream;
+            in.shaderVersion        = static_cast<Xsc::InputShaderVersion>(inputDesc->ShaderVersion);
+            in.shaderTarget         = static_cast<Xsc::ShaderTarget>(inputDesc->Target);
+            in.entryPoint           = ToStdString(inputDesc->EntryPoint);
+            in.secondaryEntryPoint  = ToStdString(inputDesc->SecondaryEntryPoint);
+            //in.includeHandler       = (&includeHandler);
+
+            /* Copy output descriptor */
+            Xsc::ShaderOutput out;
+
+            std::stringstream outputStream;
+
+            out.filename        = ToStdString(outputDesc->Filename);
+            out.sourceCode      = (&outputStream);
+            out.shaderVersion   = static_cast<Xsc::OutputShaderVersion>(outputDesc->ShaderVersion);
+
+            /*out.vertexSemantics.resize(outputDesc->vertexSemanticsCount);
+            for (size_t i = 0; i < outputDesc->vertexSemanticsCount; ++i)
+            {
+                out.vertexSemantics[i].semantic = ReadStringC(outputDesc->vertexSemantics[i].semantic);
+                out.vertexSemantics[i].location = outputDesc->vertexSemantics[i].location;
+            }*/
+
+            /* Copy output options descriptor */
+            out.options.warnings                = outputDesc->Options->Warnings;
+            out.options.optimize                = outputDesc->Options->Optimize;
+            out.options.preprocessOnly          = outputDesc->Options->PreprocessOnly;
+            out.options.validateOnly            = outputDesc->Options->ValidateOnly;
+            out.options.allowExtensions         = outputDesc->Options->AllowExtensions;
+            out.options.explicitBinding         = outputDesc->Options->ExplicitBinding;
+            out.options.preserveComments        = outputDesc->Options->PreserveComments;
+            out.options.preferWrappers          = outputDesc->Options->PreferWrappers;
+            out.options.unrollArrayInitializers = outputDesc->Options->UnrollArrayInitializers;
+            out.options.rowMajorAlignment       = outputDesc->Options->RowMajorAlignment;
+            out.options.obfuscate               = outputDesc->Options->Obfuscate;
+            out.options.showAST                 = outputDesc->Options->ShowAST;
+            out.options.showTimes               = outputDesc->Options->ShowTimes;
+
+            /* Copy output formatting descriptor */
+            out.formatting.indent               = ToStdString(outputDesc->Formatting->Indent);
+            out.formatting.blanks               = outputDesc->Formatting->Blanks;
+            out.formatting.lineMarks            = outputDesc->Formatting->LineMarks;
+            out.formatting.compactWrappers      = outputDesc->Formatting->CompactWrappers;
+            out.formatting.alwaysBracedScopes   = outputDesc->Formatting->AlwaysBracedScopes;
+            out.formatting.newLineOpenScope     = outputDesc->Formatting->NewLineOpenScope;
+            out.formatting.lineSeparation       = outputDesc->Formatting->LineSeparation;
+
+            /* Copy output name mangling descriptor */
+            out.nameMangling.inputPrefix        = ToStdString(outputDesc->NameMangling->InputPrefix);
+            out.nameMangling.outputPrefix       = ToStdString(outputDesc->NameMangling->OutputPrefix);
+            out.nameMangling.reservedWordPrefix = ToStdString(outputDesc->NameMangling->ReservedWordPrefix);
+            out.nameMangling.temporaryPrefix    = ToStdString(outputDesc->NameMangling->TemporaryPrefix);
+            out.nameMangling.useAlwaysSemantics = outputDesc->NameMangling->UseAlwaysSemantics;
+
+            /* Compile shader */
+            bool result = false;
+
+            try
+            {
+                result = Xsc::CompileShader(in, out);
+            }
+            catch (const std::exception& e)
+            {
+                throw gcnew Exception(gcnew String(e.what()));
+            }
+
+            /* Copy output code */
+            if (result)
+            {
+                /* Copy output code */
+                auto outputCode = outputStream.str();
+                outputDesc->SourceCode = gcnew String(outputCode.c_str());
+
+                /* Copy reflection */
+                /*if (reflectionData != NULL)
+                    CopyReflection(g_compilerContext.reflection, reflectionData);*/
+            }
+
+            return result;
         }
 
-        ~XscCompiler()
-        {
-        }
-
-        /// Returns the compiler version.
+        //! Returns the compiler version.
         property String ^ Version
         {
             String ^ get()
@@ -191,7 +590,7 @@ public ref class XscCompiler
             }
         }
 
-        /// Returns a dictionary of all supported GLSL extensions with their minimum required version number.
+        //! Returns a dictionary of all supported GLSL extensions with their minimum required version number.
         property Collections::Generic::Dictionary<String^, int>^ GLSLExtensionEnumeration
         {
             Collections::Generic::Dictionary<String^, int>^ get()
