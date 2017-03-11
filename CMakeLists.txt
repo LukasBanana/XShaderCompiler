@@ -21,6 +21,7 @@ option(XSC_BUILD_TESTS "Build all test applications" OFF)
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
 option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings with 'glslangValidator'" OFF)
 option(XSC_ENABLE_C_API "Enables the C API (ISO C99)" OFF)
+option(XSC_ENABLE_CSHARP_API "Enables the C# API" OFF)
 option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
 option(XSC_MEMORY_POOL "Enables the memory pool for optimized memory allocation (Experimental)" OFF)
 
@@ -76,6 +77,9 @@ endif()
 if(NOT XSC_ENABLE_C_API)
 	list(REMOVE_ITEM FilesSrcCompiler "${PROJECT_SOURCE_DIR}/src/Compiler/XscC.cpp")
 endif()
+
+set(FilesXscCSharp "${PROJECT_SOURCE_DIR}/src/Compiler/XscCSharp.cpp")
+list(REMOVE_ITEM FilesSrcCompiler ${FilesXscCSharp})
 
 set(
 	FilesCompilerAll
@@ -135,6 +139,15 @@ endif()
 
 set_target_properties(xsc_core PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_features(xsc_core PRIVATE cxx_range_for)
+
+# Library core for C#
+if(XSC_ENABLE_CSHARP_API)
+	add_library(xsc_core_csharp SHARED ${FilesXscCSharp})
+	set_target_properties(xsc_core_csharp PROPERTIES LINKER_LANGUAGE CXX)
+	set_target_properties(xsc_core_csharp PROPERTIES COMPILE_FLAGS "/clr /LD")
+	target_link_libraries(xsc_core_csharp xsc_core)
+	target_compile_features(xsc_core_csharp PRIVATE cxx_range_for)
+endif()
 
 # Shell application
 if(XSC_BUILD_SHELL)
