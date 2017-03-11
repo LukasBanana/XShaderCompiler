@@ -20,6 +20,7 @@ option(XSC_BUILD_DEBUGGER "Build XShaderCompiler debugger 'xsc_debugger' (requir
 option(XSC_BUILD_TESTS "Build all test applications" OFF)
 
 option(XSC_BUILD_WRAPPER_C "Build C wrapper (ISO C99)" OFF)
+option(XSC_BUILD_WRAPPER_CSHARP "Build C# wrapper" OFF)
 
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
 option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings with 'glslangValidator'" OFF)
@@ -64,6 +65,7 @@ file(GLOB FilesSrcCompilerBackendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Backend
 file(GLOB FilesSrcShell ${PROJECT_SOURCE_DIR}/src/Shell/*.*)
 file(GLOB FilesSrcDebugger ${PROJECT_SOURCE_DIR}/src/Debugger/*.*)
 file(GLOB FilesSrcWrapperC ${PROJECT_SOURCE_DIR}/src/Wrapper/C/*.*)
+#file(GLOB FilesSrcWrapperCSharp ${PROJECT_SOURCE_DIR}/src/Wrapper/CSharp/*.*)
 
 set(FilesTest ${PROJECT_SOURCE_DIR}/test)
 
@@ -138,6 +140,16 @@ if(XSC_BUILD_WRAPPER_C)
 	set_target_properties(xsc_core_c PROPERTIES LINKER_LANGUAGE CXX)
 	target_link_libraries(xsc_core_c xsc_core)
 	target_compile_features(xsc_core_c PRIVATE cxx_range_for)
+endif()
+
+# C# wrapper
+if(WIN32 AND XSC_BUILD_WRAPPER_CSHARP)
+	add_subdirectory(src/Wrapper/CSharp)
+#	add_library(xsc_core_csharp SHARED ${FilesSrcWrapperCSharp})
+#	set_target_properties(xsc_core_csharp PROPERTIES LINKER_LANGUAGE CXX)
+#	set_target_properties(xsc_core_csharp PROPERTIES COMPILE_FLAGS "/CLR")
+#	target_link_libraries(xsc_core_csharp xsc_core)
+#	target_compile_features(xsc_core_csharp PRIVATE cxx_range_for)
 endif()
 
 # Shell application
