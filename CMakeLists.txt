@@ -18,9 +18,12 @@ set(INSTALL_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "Instal
 option(XSC_BUILD_SHELL "Build XShaderCompiler shell 'xsc'" ON)
 option(XSC_BUILD_DEBUGGER "Build XShaderCompiler debugger 'xsc_debugger' (requires wxWidgets library)" OFF)
 option(XSC_BUILD_TESTS "Build all test applications" OFF)
+
+option(XSC_BUILD_WRAPPER_C "Build C wrapper (ISO C99)" OFF)
+
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
 option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings with 'glslangValidator'" OFF)
-option(XSC_ENABLE_C_API "Enables the C API (ISO C99)" OFF)
+
 option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
 option(XSC_MEMORY_POOL "Enables the memory pool for optimized memory allocation (Experimental)" OFF)
 
@@ -45,10 +48,6 @@ if(XSC_ENABLE_POST_VALIDATION)
 	add_definitions(-DXSC_ENABLE_POST_VALIDATION)
 endif()
 
-if(XSC_ENABLE_C_API)
-	add_definitions(-DXSC_ENABLE_C_API)
-endif()
-
 
 # === Global files ===
 
@@ -64,6 +63,7 @@ file(GLOB FilesSrcCompilerBackend ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/*.*
 file(GLOB FilesSrcCompilerBackendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL/*.*)
 file(GLOB FilesSrcShell ${PROJECT_SOURCE_DIR}/src/Shell/*.*)
 file(GLOB FilesSrcDebugger ${PROJECT_SOURCE_DIR}/src/Debugger/*.*)
+file(GLOB FilesSrcWrapperC ${PROJECT_SOURCE_DIR}/src/Wrapper/C/*.*)
 
 set(FilesTest ${PROJECT_SOURCE_DIR}/test)
 
@@ -71,10 +71,6 @@ if(WIN32)
 	file(GLOB FilesSrcCompilerPlatform ${PROJECT_SOURCE_DIR}/src/Compiler/Platform/Win32/*.*)
 else()
 	file(GLOB FilesSrcCompilerPlatform ${PROJECT_SOURCE_DIR}/src/Compiler/Platform/Unix/*.*)
-endif()
-
-if(NOT XSC_ENABLE_C_API)
-	list(REMOVE_ITEM FilesSrcCompiler "${PROJECT_SOURCE_DIR}/src/Compiler/XscC.cpp")
 endif()
 
 set(
@@ -90,10 +86,6 @@ set(
 	${FilesSrcCompilerBackend}
 	${FilesSrcCompilerBackendGLSL}
 )
-
-if(XSC_ENABLE_C_API)
-	set(FilesCompilerAll ${FilesCompilerAll} ${FilesIncC})
-endif()
 
 
 # === Source group folders ===
@@ -136,6 +128,18 @@ endif()
 set_target_properties(xsc_core PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_features(xsc_core PRIVATE cxx_range_for)
 
+# C wrapper
+if(XSC_BUILD_WRAPPER_C)
+	if(XSC_SHARED_LIB)
+		add_library(xsc_core_c SHARED ${FilesSrcWrapperC})
+	else()
+		add_library(xsc_core_c STATIC ${FilesSrcWrapperC})
+	endif()
+	set_target_properties(xsc_core_c PROPERTIES LINKER_LANGUAGE CXX)
+	target_link_libraries(xsc_core_c xsc_core)
+	target_compile_features(xsc_core_c PRIVATE cxx_range_for)
+endif()
+
 # Shell application
 if(XSC_BUILD_SHELL)
 	add_executable(xsc ${FilesSrcShell})
@@ -168,10 +172,12 @@ if(XSC_BUILD_DEBUGGER)
 endif()
 
 if(XSC_BUILD_TESTS)
-	# 
-	add_executable(xsc_Test1 "${FilesTest}/XscTest1.c")
-	set_target_properties(xsc_Test1 PROPERTIES LINKER_LANGUAGE C)
-	target_link_libraries(xsc_Test1 xsc_core)
+	# Test C wrapper
+	if(XSC_BUILD_WRAPPER_C)
+		add_executable(XscTest_CWrapper "${FilesTest}/XscTest_CWrapper.c")
+		set_target_properties(XscTest_CWrapper PROPERTIES LINKER_LANGUAGE C)
+		target_link_libraries(XscTest_CWrapper xsc_core_c)
+	endif()
 endif()
 
 
