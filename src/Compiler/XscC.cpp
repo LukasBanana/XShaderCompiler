@@ -19,29 +19,29 @@ extern "C" {
  * Public functions
  */
 
-static void InitializeFormatting(XscFormatting* s)
+static void InitializeFormatting(struct XscFormatting* s)
 {
 }
 
-static void InitializeOptions(XscOptions* s)
+static void InitializeOptions(struct XscOptions* s)
 {
 }
 
-static void InitializeNameMangling(XscNameMangling* s)
+static void InitializeNameMangling(struct XscNameMangling* s)
 {
 }
 
-static void InitializeShaderInput(XscShaderInput* s)
+static void InitializeShaderInput(struct XscShaderInput* s)
 {
     //s->filename         = NULL;
     //s->shaderVersion    = ;
 }
 
-static void InitializeShaderOutput(XscShaderOutput* s)
+static void InitializeShaderOutput(struct XscShaderOutput* s)
 {
 }
 
-XSC_EXPORT void XscInitialize(XscShaderInput* inputDesc, XscShaderOutput* outputDesc)
+XSC_EXPORT void XscInitialize(struct XscShaderInput* inputDesc, struct XscShaderOutput* outputDesc)
 {
     if (inputDesc != NULL)
         InitializeShaderInput(inputDesc);
@@ -50,8 +50,8 @@ XSC_EXPORT void XscInitialize(XscShaderInput* inputDesc, XscShaderOutput* output
 }
 
 XSC_EXPORT bool XscCompileShader(
-    const XscShaderInput* inputDesc,
-    const XscShaderOutput* outputDesc/*,
+    const struct XscShaderInput* inputDesc,
+    const struct XscShaderOutput* outputDesc/*,
     XscLog* log,
     XscReflectionData* reflectionData*/)
 {
@@ -70,42 +70,42 @@ static void CopyStringC(const std::string& src, char* dest, size_t maxSize)
     }
 }
 
-XSC_EXPORT void XscShaderTargetToString(const XscShaderTarget target, char* str, size_t maxSize)
+XSC_EXPORT void XscShaderTargetToString(const enum XscShaderTarget target, char* str, size_t maxSize)
 {
     CopyStringC(Xsc::ToString(static_cast<Xsc::ShaderTarget>(target)), str, maxSize);
 }
 
-XSC_EXPORT void XscInputShaderVersionToString(const XscShaderVersion shaderVersion, char* str, size_t maxSize)
+XSC_EXPORT void XscInputShaderVersionToString(const enum XscShaderVersion shaderVersion, char* str, size_t maxSize)
 {
     CopyStringC(Xsc::ToString(static_cast<Xsc::InputShaderVersion>(shaderVersion)), str, maxSize);
 }
 
-XSC_EXPORT void XscOutputShaderVersionToString(const XscShaderVersion shaderVersion, char* str, size_t maxSize)
+XSC_EXPORT void XscOutputShaderVersionToString(const enum XscShaderVersion shaderVersion, char* str, size_t maxSize)
 {
     CopyStringC(Xsc::ToString(static_cast<Xsc::OutputShaderVersion>(shaderVersion)), str, maxSize);
 }
 
-XSC_EXPORT bool XscIsInputLanguageHLSL(const XscShaderVersion shaderVersion)
+XSC_EXPORT bool XscIsInputLanguageHLSL(const enum XscShaderVersion shaderVersion)
 {
     return Xsc::IsLanguageHLSL(static_cast<Xsc::InputShaderVersion>(shaderVersion));
 }
 
-XSC_EXPORT bool XscIsInputLanguageGLSL(const XscShaderVersion shaderVersion)
+XSC_EXPORT bool XscIsInputLanguageGLSL(const enum XscShaderVersion shaderVersion)
 {
     return Xsc::IsLanguageGLSL(static_cast<Xsc::InputShaderVersion>(shaderVersion));
 }
 
-XSC_EXPORT bool XscIsOutputLanguageGLSL(const XscShaderVersion shaderVersion)
+XSC_EXPORT bool XscIsOutputLanguageGLSL(const enum XscShaderVersion shaderVersion)
 {
     return Xsc::IsLanguageGLSL(static_cast<Xsc::OutputShaderVersion>(shaderVersion));
 }
 
-XSC_EXPORT bool XscIsOutputLanguageESSL(const XscShaderVersion shaderVersion)
+XSC_EXPORT bool XscIsOutputLanguageESSL(const enum XscShaderVersion shaderVersion)
 {
     return Xsc::IsLanguageESSL(static_cast<Xsc::OutputShaderVersion>(shaderVersion));
 }
 
-XSC_EXPORT bool XscIsOutputLanguageVKSL(const XscShaderVersion shaderVersion)
+XSC_EXPORT bool XscIsOutputLanguageVKSL(const enum XscShaderVersion shaderVersion)
 {
     return Xsc::IsLanguageVKSL(static_cast<Xsc::OutputShaderVersion>(shaderVersion));
 }

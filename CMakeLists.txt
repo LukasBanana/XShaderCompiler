@@ -17,6 +17,7 @@ set(INSTALL_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "Instal
 
 option(XSC_BUILD_SHELL "Build XShaderCompiler shell 'xsc'" ON)
 option(XSC_BUILD_DEBUGGER "Build XShaderCompiler debugger 'xsc_debugger' (requires wxWidgets library)" OFF)
+option(XSC_BUILD_TESTS "Build all test applications" OFF)
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
 option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings with 'glslangValidator'" OFF)
 option(XSC_ENABLE_C_API "Enables the C API (ISO C99)" OFF)
@@ -63,6 +64,8 @@ file(GLOB FilesSrcCompilerBackend ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/*.*
 file(GLOB FilesSrcCompilerBackendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL/*.*)
 file(GLOB FilesSrcShell ${PROJECT_SOURCE_DIR}/src/Shell/*.*)
 file(GLOB FilesSrcDebugger ${PROJECT_SOURCE_DIR}/src/Debugger/*.*)
+
+set(FilesTest ${PROJECT_SOURCE_DIR}/test)
 
 if(WIN32)
 	file(GLOB FilesSrcCompilerPlatform ${PROJECT_SOURCE_DIR}/src/Compiler/Platform/Win32/*.*)
@@ -123,6 +126,7 @@ include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL")
 
 # === Executable ===
 
+# Library core
 if(XSC_SHARED_LIB)
 	add_library(xsc_core SHARED ${FilesCompilerAll})
 else()
@@ -132,6 +136,7 @@ endif()
 set_target_properties(xsc_core PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_features(xsc_core PRIVATE cxx_range_for)
 
+# Shell application
 if(XSC_BUILD_SHELL)
 	add_executable(xsc ${FilesSrcShell})
 	set_target_properties(xsc PROPERTIES LINKER_LANGUAGE CXX)
@@ -139,6 +144,7 @@ if(XSC_BUILD_SHELL)
 	target_compile_features(xsc PRIVATE cxx_range_for)
 endif()
 
+# Debugger UI aplication
 if(XSC_BUILD_DEBUGGER)
 	if(WIN32)
 		add_executable(xsc_debugger WIN32 ${FilesSrcDebugger} "${PROJECT_SOURCE_DIR}/src/Debugger/Resources.rc")
@@ -159,6 +165,13 @@ if(XSC_BUILD_DEBUGGER)
 	else(wxWidgets_FOUND)
 		message(SEND_ERROR "Missing wxWidgets library")
 	endif(wxWidgets_FOUND)
+endif()
+
+if(XSC_BUILD_TESTS)
+	# 
+	add_executable(xsc_Test1 "${FilesTest}/XscTest1.c")
+	set_target_properties(xsc_Test1 PROPERTIES LINKER_LANGUAGE C)
+	target_link_libraries(xsc_Test1 xsc_core)
 endif()
 
 

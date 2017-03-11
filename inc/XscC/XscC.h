@@ -126,10 +126,10 @@ struct XscShaderInput
     //std::shared_ptr<std::istream>   sourceCode;
 
     //! Specifies the input shader version (e.g. XscHLSL5 for "HLSL 5"). By default XscHLSL5.
-    XscShaderVersion                shaderVersion;
+    enum XscShaderVersion           shaderVersion;
     
     //! Specifies the target shader (Vertex, Fragment etc.). By default XscUndefinedShader.
-    XscShaderTarget                 shaderTarget;
+    enum XscShaderTarget            shaderTarget;
 
     //! Specifies the HLSL shader entry point. By default NULL.
     const char*                     entryPoint;
@@ -147,7 +147,7 @@ struct XscShaderInput
     \brief Optional pointer to the implementation of the "IncludeHandler" interface. By default null.
     \remarks If this is null, the default include handler will be used, which will include files with the STL input file streams.
     */
-    //XscIncludeHandler*              includeHandler  = nullptr;
+    //struct XscIncludeHandler*       includeHandler  = nullptr;
 };
 
 //! Vertex shader semantic (or rather attribute) layout structure.
@@ -161,28 +161,28 @@ struct XscVertexSemantic
 struct XscShaderOutput
 {
     //! Specifies the filename of the output shader code. This is an optional attribute, and only a hint to the compiler.
-    const char*                 filename;
+    const char*                     filename;
 
     //! Specifies the output stream. This will contain the output GLSL code. This must not be null when passed to the "CompileShader" function!
-    //std::ostream*               sourceCode;
+    //std::ostream*                   sourceCode;
 
     //! Specifies the output shader version. By default XscGLSL (to auto-detect minimum required version).
-    XscShaderVersion            shaderVersion;
+    enum XscShaderVersion           shaderVersion;
 
     //! Optional list of vertex semantic layouts, to bind a vertex attribute (semantic name) to a location index (only used when 'explicitBinding' is true). By default NULL.
-    const XscVertexSemantic*    vertexSemantics;
+    const struct XscVertexSemantic* vertexSemantics;
 
     //! Number of elements the 'vertexSemantics' member points to. By default 0.
-    size_t                      vertexSemanticsCount;
+    size_t                          vertexSemanticsCount;
 
     //! Additional options to configure the code generation.
-    XscOptions                  options;
+    struct XscOptions               options;
 
     //! Output code formatting descriptor.
-    XscFormatting               formatting;
+    struct XscFormatting            formatting;
     
     //! Specifies the options for name mangling.
-    XscNameMangling             nameMangling;
+    struct XscNameMangling          nameMangling;
 };
 
 /**
@@ -190,7 +190,7 @@ struct XscShaderOutput
 \param[out] inputDesc Input shader code descriptor. If NULL, this structure is not initialized.
 \param[out] outputDesc Output shader code descriptor. If NULL, this structure is not initialized.
 */
-XSC_EXPORT void XscInitialize(XscShaderInput* inputDesc, XscShaderOutput* outputDesc);
+XSC_EXPORT void XscInitialize(struct XscShaderInput* inputDesc, struct XscShaderOutput* outputDesc);
 
 /**
 \brief Cross compiles the shader code from the specified input stream into the specified output shader code.
@@ -206,10 +206,10 @@ XSC_EXPORT void XscInitialize(XscShaderInput* inputDesc, XscShaderOutput* output
 \see ReflectionData
 */
 XSC_EXPORT bool XscCompileShader(
-    const XscShaderInput*   inputDesc,
-    const XscShaderOutput*  outputDesc/*,
-    XscLog*                 log,
-    XscReflectionData*      reflectionData*/
+    const struct XscShaderInput*    inputDesc,
+    const struct XscShaderOutput*   outputDesc/*,
+    XscLog*                         log,
+    XscReflectionData*              reflectionData*/
 );
 
 
