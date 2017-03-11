@@ -1,5 +1,5 @@
 /*
- * Xsc.cpp
+ * XscC.cpp
  * 
  * This file is part of the XShaderCompiler project (Copyright (c) 2014-2017 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
@@ -36,7 +36,6 @@ static std::string ReadStringC(const char* src)
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 
 /*
