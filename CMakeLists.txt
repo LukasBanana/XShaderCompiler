@@ -17,10 +17,11 @@ set(INSTALL_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "Instal
 
 option(XSC_BUILD_SHELL "Build XShaderCompiler shell 'xsc'" ON)
 option(XSC_BUILD_DEBUGGER "Build XShaderCompiler debugger 'xsc_debugger' (requires wxWidgets library)" OFF)
-option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
-option(XSC_MEMORY_POOL "Enables the memory pool for optimized memory allocation (Experimental)" OFF)
 option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings with 'glslangValidator'" OFF)
+option(XSC_ENABLE_C_API "Enables the C API (ISO C99)" OFF)
+option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
+option(XSC_MEMORY_POOL "Enables the memory pool for optimized memory allocation (Experimental)" OFF)
 
 
 # === Preprocessor definitions ===
@@ -43,10 +44,15 @@ if(XSC_ENABLE_POST_VALIDATION)
 	add_definitions(-DXSC_ENABLE_POST_VALIDATION)
 endif()
 
+if(XSC_ENABLE_C_API)
+	add_definitions(-DXSC_ENABLE_C_API)
+endif()
+
 
 # === Global files ===
 
 file(GLOB FilesInc ${PROJECT_SOURCE_DIR}/inc/Xsc/*.*)
+file(GLOB FilesIncC ${PROJECT_SOURCE_DIR}/inc/XscC/*.*)
 file(GLOB FilesSrcCompiler ${PROJECT_SOURCE_DIR}/src/Compiler/*.*)
 file(GLOB FilesSrcCompilerAST ${PROJECT_SOURCE_DIR}/src/Compiler/AST/*.*)
 file(GLOB FilesSrcCompilerASTVisitor ${PROJECT_SOURCE_DIR}/src/Compiler/AST/Visitor/*.*)
@@ -64,6 +70,10 @@ else()
 	file(GLOB FilesSrcCompilerPlatform ${PROJECT_SOURCE_DIR}/src/Compiler/Platform/Unix/*.*)
 endif()
 
+if(NOT XSC_ENABLE_C_API)
+	list(REMOVE_ITEM FilesSrcCompiler "${PROJECT_SOURCE_DIR}/src/Compiler/XscC.cpp")
+endif()
+
 set(
 	FilesCompilerAll
 	${FilesInc}
@@ -78,10 +88,15 @@ set(
 	${FilesSrcCompilerBackendGLSL}
 )
 
+if(XSC_ENABLE_C_API)
+	set(FilesCompilerAll ${FilesCompilerAll} ${FilesIncC})
+endif()
+
 
 # === Source group folders ===
 
 source_group("inc\\Xsc" FILES ${FilesInc})
+source_group("inc\\XscC" FILES ${FilesIncC})
 source_group("src" FILES ${FilesSrcCompiler} ${FilesSrcShell} ${FilesSrcDebugger})
 source_group("src\\AST" FILES ${FilesSrcCompilerAST})
 source_group("src\\AST\\Visitor" FILES ${FilesSrcCompilerASTVisitor})
