@@ -167,7 +167,7 @@ struct NameMangling
 
     /**
     If true, shader input/output variables are always renamed to their semantics,
-    even for vertex input and fragment output. Otherwise, their original identifiers are used.
+    even for vertex input and fragment output. Otherwise, their original identifiers are used. By default false.
     */
     bool            useAlwaysSemantics  = false;
 };
@@ -178,7 +178,7 @@ struct ShaderInput
     //! Specifies the filename of the input shader code. This is an optional attribute, and only a hint to the compiler.
     std::string                     filename;
 
-    //! Specifies the input stream. This must be valid HLSL code.
+    //! Specifies the input source code stream.
     std::shared_ptr<std::istream>   sourceCode;
 
     //! Specifies the input shader version (e.g. InputShaderVersion::HLSL5 for "HLSL 5"). By default InputShaderVersion::HLSL5.
@@ -187,8 +187,8 @@ struct ShaderInput
     //! Specifies the target shader (Vertex, Fragment etc.). By default ShaderTarget::Undefined.
     ShaderTarget                    shaderTarget    = ShaderTarget::Undefined;
 
-    //! Specifies the HLSL shader entry point.
-    std::string                     entryPoint;
+    //! Specifies the HLSL shader entry point. By default "main".
+    std::string                     entryPoint      = "main";
 
     /**
     \brief Specifies the secondary HLSL shader entry point.
@@ -209,7 +209,10 @@ struct ShaderInput
 //! Vertex shader semantic (or rather attribute) layout structure.
 struct VertexSemantic
 {
+    //! Specifies the shader semantic (or rather attribute).
     std::string semantic;
+
+    //! Specifies the binding location.
     int         location;
 };
 
@@ -219,7 +222,7 @@ struct ShaderOutput
     //! Specifies the filename of the output shader code. This is an optional attribute, and only a hint to the compiler.
     std::string                 filename;
 
-    //! Specifies the output stream. This will contain the output GLSL code. This must not be null when passed to the "CompileShader" function!
+    //! Specifies the output source code stream. This will contain the output code. This must not be null when passed to the "CompileShader" function!
     std::ostream*               sourceCode          = nullptr;
 
     //! Specifies the output shader version. By default OutputShaderVersion::GLSL (to auto-detect minimum required version).

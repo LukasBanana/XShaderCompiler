@@ -17,10 +17,12 @@ set(INSTALL_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "Instal
 
 option(XSC_BUILD_SHELL "Build XShaderCompiler shell 'xsc'" ON)
 option(XSC_BUILD_DEBUGGER "Build XShaderCompiler debugger 'xsc_debugger' (requires wxWidgets library)" OFF)
-option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
+option(XSC_BUILD_TESTS "Build all test applications" OFF)
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
-option(XSC_MEMORY_POOL "Enables the memory pool for optimized memory allocation (Experimental)" OFF)
 option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings with 'glslangValidator'" OFF)
+option(XSC_ENABLE_C_API "Enables the C API (ISO C99)" OFF)
+option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
+option(XSC_MEMORY_POOL "Enables the memory pool for optimized memory allocation (Experimental)" OFF)
 
 
 # === Preprocessor definitions ===
@@ -43,10 +45,15 @@ if(XSC_ENABLE_POST_VALIDATION)
 	add_definitions(-DXSC_ENABLE_POST_VALIDATION)
 endif()
 
+if(XSC_ENABLE_C_API)
+	add_definitions(-DXSC_ENABLE_C_API)
+endif()
+
 
 # === Global files ===
 
 file(GLOB FilesInc ${PROJECT_SOURCE_DIR}/inc/Xsc/*.*)
+file(GLOB FilesIncC ${PROJECT_SOURCE_DIR}/inc/XscC/*.*)
 file(GLOB FilesSrcCompiler ${PROJECT_SOURCE_DIR}/src/Compiler/*.*)
 file(GLOB FilesSrcCompilerAST ${PROJECT_SOURCE_DIR}/src/Compiler/AST/*.*)
 file(GLOB FilesSrcCompilerASTVisitor ${PROJECT_SOURCE_DIR}/src/Compiler/AST/Visitor/*.*)
@@ -58,10 +65,16 @@ file(GLOB FilesSrcCompilerBackendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Backend
 file(GLOB FilesSrcShell ${PROJECT_SOURCE_DIR}/src/Shell/*.*)
 file(GLOB FilesSrcDebugger ${PROJECT_SOURCE_DIR}/src/Debugger/*.*)
 
+set(FilesTest ${PROJECT_SOURCE_DIR}/test)
+
 if(WIN32)
 	file(GLOB FilesSrcCompilerPlatform ${PROJECT_SOURCE_DIR}/src/Compiler/Platform/Win32/*.*)
 else()
 	file(GLOB FilesSrcCompilerPlatform ${PROJECT_SOURCE_DIR}/src/Compiler/Platform/Unix/*.*)
+endif()
+
+if(NOT XSC_ENABLE_C_API)
+	list(REMOVE_ITEM FilesSrcCompiler "${PROJECT_SOURCE_DIR}/src/Compiler/XscC.cpp")
 endif()
 
 set(
@@ -78,10 +91,15 @@ set(
 	${FilesSrcCompilerBackendGLSL}
 )
 
+if(XSC_ENABLE_C_API)
+	set(FilesCompilerAll ${FilesCompilerAll} ${FilesIncC})
+endif()
+
 
 # === Source group folders ===
 
 source_group("inc\\Xsc" FILES ${FilesInc})
+source_group("inc\\XscC" FILES ${FilesIncC})
 source_group("src" FILES ${FilesSrcCompiler} ${FilesSrcShell} ${FilesSrcDebugger})
 source_group("src\\AST" FILES ${FilesSrcCompilerAST})
 source_group("src\\AST\\Visitor" FILES ${FilesSrcCompilerASTVisitor})
@@ -108,6 +126,7 @@ include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL")
 
 # === Executable ===
 
+# Library core
 if(XSC_SHARED_LIB)
 	add_library(xsc_core SHARED ${FilesCompilerAll})
 else()
@@ -117,6 +136,7 @@ endif()
 set_target_properties(xsc_core PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_features(xsc_core PRIVATE cxx_range_for)
 
+# Shell application
 if(XSC_BUILD_SHELL)
 	add_executable(xsc ${FilesSrcShell})
 	set_target_properties(xsc PROPERTIES LINKER_LANGUAGE CXX)
@@ -124,6 +144,7 @@ if(XSC_BUILD_SHELL)
 	target_compile_features(xsc PRIVATE cxx_range_for)
 endif()
 
+# Debugger UI aplication
 if(XSC_BUILD_DEBUGGER)
 	if(WIN32)
 		add_executable(xsc_debugger WIN32 ${FilesSrcDebugger} "${PROJECT_SOURCE_DIR}/src/Debugger/Resources.rc")
@@ -144,6 +165,13 @@ if(XSC_BUILD_DEBUGGER)
 	else(wxWidgets_FOUND)
 		message(SEND_ERROR "Missing wxWidgets library")
 	endif(wxWidgets_FOUND)
+endif()
+
+if(XSC_BUILD_TESTS)
+	# 
+	add_executable(xsc_Test1 "${FilesTest}/XscTest1.c")
+	set_target_properties(xsc_Test1 PROPERTIES LINKER_LANGUAGE C)
+	target_link_libraries(xsc_Test1 xsc_core)
 endif()
 
 
