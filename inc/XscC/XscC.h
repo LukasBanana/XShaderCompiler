@@ -14,6 +14,7 @@
 #include "TargetsC.h"
 #include "LogC.h"
 #include "IncludeHandlerC.h"
+#include "ReflectionC.h"
 #include <stdbool.h>
 
 
@@ -199,9 +200,8 @@ XSC_EXPORT void XscInitialize(struct XscShaderInput* inputDesc, struct XscShader
 \param[in] inputDesc Input shader code descriptor.
 \param[in] outputDesc Output shader code descriptor.
 \param[in] log Optional pointer to an output log. This can be NULL (to ignore log) or XSC_DEFAULT_LOG (to use the default log).
-\param[out] reflectionData Optional pointer to a code reflection data structure. By default null.
+\param[out] reflectionData Optional pointer to a code reflection data structure. If NULL, no reflection data is written out.
 \return True if the code has been translated successfully.
-\throw std::invalid_argument If either the input or output streams are null.
 \see ShaderInput
 \see ShaderOutput
 \see Log
@@ -210,8 +210,8 @@ XSC_EXPORT void XscInitialize(struct XscShaderInput* inputDesc, struct XscShader
 XSC_EXPORT bool XscCompileShader(
     const struct XscShaderInput*    inputDesc,
     const struct XscShaderOutput*   outputDesc,
-    const struct XscLog*            log/*,
-    struct XscReflectionData*       reflectionData*/
+    const struct XscLog*            log,
+    struct XscReflectionData*       reflectionData
 );
 
 

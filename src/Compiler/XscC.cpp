@@ -16,14 +16,14 @@
  * Internal functions
  */
 
-static void WriteStringC(const std::string& src, char* dest, size_t maxSize)
+static void WriteStringC(const std::string& src, char* dst, size_t maxSize)
 {
-    if (dest != NULL)
+    if (dst != NULL)
     {
         if (src.size() < maxSize)
-            strncpy(dest, src.c_str(), maxSize);
+            strncpy(dst, src.c_str(), maxSize);
         else
-            memset(dest, 0, maxSize);
+            memset(dst, 0, maxSize);
     }
 }
 
@@ -37,6 +37,33 @@ static std::string ReadStringC(const char* src)
 extern "C" {
 #endif
 
+
+
+/*
+ * Internal context
+ */
+
+struct CompilerContext
+{
+    std::string                     outputCode;
+
+    Xsc::Reflection::ReflectionData reflection;
+
+    std::vector<const char*>        macros;
+    std::vector<XscBindingSlot>     textures;
+    std::vector<XscBindingSlot>     storageBuffers;
+    std::vector<XscBindingSlot>     constantBuffers;
+    std::vector<XscBindingSlot>     inputAttributes;
+    std::vector<XscBindingSlot>     outputAttributes;
+    std::vector<XscSamplerState>    samplerStates;
+};
+
+static struct CompilerContext g_compilerContext;
+
+
+/*
+ * Internal functions
+ */
 
 static void InitializeFormatting(struct XscFormatting* s)
 {
@@ -122,6 +149,79 @@ static bool ValidateShaderInput(const struct XscShaderInput* s)
 static bool ValidateShaderOutput(const struct XscShaderOutput* s)
 {
     return (s != NULL && s->sourceCode != NULL && (s->vertexSemanticsCount == 0 || s->vertexSemantics != NULL));
+}
+
+static void CopyReflection(const Xsc::Reflection::ReflectionData& src, struct XscReflectionData* dst)
+{
+    /* Fill context buffers */
+    for (const auto& s : src.macros)
+        g_compilerContext.macros.push_back(s.c_str());
+
+    for (const auto& s : src.textures)
+        g_compilerContext.textures.push_back({ s.ident.c_str(), s.location });
+
+    for (const auto& s : src.textures)
+        g_compilerContext.storageBuffers.push_back({ s.ident.c_str(), s.location });
+
+    for (const auto& s : src.textures)
+        g_compilerContext.constantBuffers.push_back({ s.ident.c_str(), s.location });
+
+    for (const auto& s : src.textures)
+        g_compilerContext.inputAttributes.push_back({ s.ident.c_str(), s.location });
+
+    for (const auto& s : src.textures)
+        g_compilerContext.outputAttributes.push_back({ s.ident.c_str(), s.location });
+
+    for (const auto& s : src.samplerStates)
+    {
+        g_compilerContext.samplerStates.push_back(
+            {
+                s.first.c_str(),
+                static_cast<XscFilter>(s.second.filter),
+                static_cast<XscTextureAddressMode>(s.second.addressU),
+                static_cast<XscTextureAddressMode>(s.second.addressV),
+                static_cast<XscTextureAddressMode>(s.second.addressW),
+                s.second.mipLODBias,
+                s.second.maxAnisotropy,
+                static_cast<XscComparisonFunc>(s.second.comparisonFunc),
+                {
+                    s.second.borderColor[0],
+                    s.second.borderColor[1],
+                    s.second.borderColor[2],
+                    s.second.borderColor[3]
+                },
+                s.second.minLOD,
+                s.second.maxLOD,
+            }
+        );
+    }
+
+    /* Set references to output buffers */
+    dst->macros                 = g_compilerContext.macros.data();
+    dst->macrosCount            = g_compilerContext.macros.size();
+
+    dst->textures               = g_compilerContext.textures.data();
+    dst->texturesCount          = g_compilerContext.textures.size();
+
+    dst->storageBuffers         = g_compilerContext.storageBuffers.data();
+    dst->storageBuffersCount    = g_compilerContext.storageBuffers.size();
+            
+    dst->constantBuffers        = g_compilerContext.constantBuffers.data();
+    dst->constantBufferCounts   = g_compilerContext.constantBuffers.size();
+            
+    dst->inputAttributes        = g_compilerContext.inputAttributes.data();
+    dst->inputAttributesCount   = g_compilerContext.inputAttributes.size();
+            
+    dst->outputAttributes       = g_compilerContext.outputAttributes.data();
+    dst->outputAttributesCount  = g_compilerContext.outputAttributes.size();
+
+    dst->samplerStates          = g_compilerContext.samplerStates.data();
+    dst->samplerStatesCount     = g_compilerContext.samplerStates.size();
+
+    /* Copy remaining data fields */
+    dst->numThreads.x = src.numThreads.x;
+    dst->numThreads.y = src.numThreads.y;
+    dst->numThreads.z = src.numThreads.z;
 }
 
 
@@ -218,26 +318,14 @@ void LogC::SumitReport(const Xsc::Report& report)
 
 
 /*
- * Internal context
- */
-
-struct CompilerContext
-{
-    std::string outputCode;
-};
-
-static struct CompilerContext g_compilerContext;
-
-
-/*
  * Public functions
  */
 
 XSC_EXPORT bool XscCompileShader(
     const struct XscShaderInput* inputDesc,
     const struct XscShaderOutput* outputDesc,
-    const struct XscLog* log/*,
-    struct XscReflectionData* reflectionData*/)
+    const struct XscLog* log,
+    struct XscReflectionData* reflectionData)
 {
     if (!ValidateShaderInput(inputDesc) || !ValidateShaderOutput(outputDesc))
         return false;
@@ -316,18 +404,52 @@ XSC_EXPORT bool XscCompileShader(
         logPrimaryRef = (&logPrimary);
 
     /* Compile shader with C++ API */
-    bool result = Xsc::CompileShader(in, out, logPrimaryRef);
+    bool result = false;
+    
+    try
+    {
+        result = Xsc::CompileShader(
+            in,
+            out,
+            logPrimaryRef,
+            (reflectionData != NULL ? &(g_compilerContext.reflection) : NULL)
+        );
+    }
+    catch (const std::exception& e)
+    {
+        fprintf(stderr, "%s", e.what());
+    }
 
     if (result)
     {
+        /* Copy output code */
         g_compilerContext.outputCode = outputStream.str();
         *outputDesc->sourceCode = g_compilerContext.outputCode.c_str();
+
+        /* Copy reflection */
+        if (reflectionData != NULL)
+            CopyReflection(g_compilerContext.reflection, reflectionData);
     }
 
     if (log == XSC_DEFAULT_LOG)
         logPrimaryStd.PrintAll();
 
     return result;
+}
+
+XSC_EXPORT void XscFilterToString(const enum XscFilter t, char* str, size_t maxSize)
+{
+    WriteStringC(Xsc::ToString(static_cast<Xsc::Reflection::Filter>(t)), str, maxSize);
+}
+
+XSC_EXPORT void XscTextureAddressModeToString(const enum XscTextureAddressMode t, char* str, size_t maxSize)
+{
+    WriteStringC(Xsc::ToString(static_cast<Xsc::Reflection::TextureAddressMode>(t)), str, maxSize);
+}
+
+XSC_EXPORT void XscComparisonFuncToString(const enum XscComparisonFunc t, char* str, size_t maxSize)
+{
+    WriteStringC(Xsc::ToString(static_cast<Xsc::Reflection::ComparisonFunc>(t)), str, maxSize);
 }
 
 XSC_EXPORT void XscShaderTargetToString(const enum XscShaderTarget target, char* str, size_t maxSize)

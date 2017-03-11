@@ -79,7 +79,9 @@ void TestCompile()
     // Compile shader
     puts(in.sourceCode);
 
-    if (XscCompileShader(&in, &out, XSC_DEFAULT_LOG))
+    struct XscReflectionData reflect;
+
+    if (XscCompileShader(&in, &out, XSC_DEFAULT_LOG, &reflect))
     {
         puts("*** COMPILATION SUCCESSFUL ***\n");
         if (outputCode != NULL)
