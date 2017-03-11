@@ -22,45 +22,53 @@ extern "C" {
 //! Shader target enumeration.
 enum XscShaderTarget
 {
-    XscUndefinedShader,                 //!< Undefined shader target.
+    XscETargetUndefined,                    //!< Undefined shader target.
 
-    XscVertexShader,                   //!< Vertex shader.
-    XscTessellationControlShader,      //!< Tessellation-control (also Hull-) shader.
-    XscTessellationEvaluationShader,   //!< Tessellation-evaluation (also Domain-) shader.
-    XscGeometryShader,                 //!< Geometry shader.
-    XscFragmentShader,                 //!< Fragment (also Pixel-) shader.
-    XscComputeShader,                  //!< Compute shader.
+    XscETargetVertexShader,                 //!< Vertex shader.
+    XscETargetTessellationControlShader,    //!< Tessellation-control (also Hull-) shader.
+    XscETargetTessellationEvaluationShader, //!< Tessellation-evaluation (also Domain-) shader.
+    XscETargetGeometryShader,               //!< Geometry shader.
+    XscETargetFragmentShader,               //!< Fragment (also Pixel-) shader.
+    XscETargetComputeShader,                //!< Compute shader.
 };
 
-//! Input/output shader version enumeration.
-enum XscShaderVersion
+//! Output shader version enumeration.
+enum XscInputShaderVersion
 {
-    XscHLSL3    = 3,
-    XscHLSL4    = 4,
-    XscHLSL5    = 5,
+    XscEInputHLSL3  = 3,            //!< HLSL Shader Model 3.0 (DirectX 9).
+    XscEInputHLSL4  = 4,            //!< HLSL Shader Model 4.0 (DirectX 10).
+    XscEInputHLSL5  = 5,            //!< HLSL Shader Model 5.0 (DirectX 11).
 
-    XscGLSL110  = 110,                 //!< GLSL 1.10 (OpenGL 2.0).
-    XscGLSL120  = 120,                 //!< GLSL 1.20 (OpenGL 2.1).
-    XscGLSL130  = 130,                 //!< GLSL 1.30 (OpenGL 3.0).
-    XscGLSL140  = 140,                 //!< GLSL 1.40 (OpenGL 3.1).
-    XscGLSL150  = 150,                 //!< GLSL 1.50 (OpenGL 3.2).
-    XscGLSL330  = 330,                 //!< GLSL 3.30 (OpenGL 3.3).
-    XscGLSL400  = 400,                 //!< GLSL 4.00 (OpenGL 4.0).
-    XscGLSL410  = 410,                 //!< GLSL 4.10 (OpenGL 4.1).
-    XscGLSL420  = 420,                 //!< GLSL 4.20 (OpenGL 4.2).
-    XscGLSL430  = 430,                 //!< GLSL 4.30 (OpenGL 4.3).
-    XscGLSL440  = 440,                 //!< GLSL 4.40 (OpenGL 4.4).
-    XscGLSL450  = 450,                 //!< GLSL 4.50 (OpenGL 4.5).
-    XscGLSL     = 0x0000ffff,          //!< Auto-detect minimal required GLSL version (for OpenGL 2+).
+    XscEInputGLSL   = 0x0000ffff,   //!< GLSL (OpenGL).
+    XscEInputESSL   = 0x0001ffff,   //!< GLSL (OpenGL ES).
+    XscEInputVKSL   = 0x0002ffff,   //!< GLSL (Vulkan).
+};
 
-    XscESSL100  = (0x00010000 + 100),  //!< ESSL 1.00 (OpenGL ES 2.0). \note Currently not supported!
-    XscESSL300  = (0x00010000 + 300),  //!< ESSL 3.00 (OpenGL ES 3.0). \note Currently not supported!
-    XscESSL310  = (0x00010000 + 310),  //!< ESSL 3.10 (OpenGL ES 3.1). \note Currently not supported!
-    XscESSL320  = (0x00010000 + 320),  //!< ESSL 3.20 (OpenGL ES 3.2). \note Currently not supported!
-    XscESSL     = 0x0001ffff,          //!< Auto-detect minimum required ESSL version (for OpenGL ES 2+). \note Currently not supported!
+//! Output shader version enumeration.
+enum XscOutputShaderVersion
+{
+    XscEOutputGLSL110   = 110,                 //!< GLSL 1.10 (OpenGL 2.0).
+    XscEOutputGLSL120   = 120,                 //!< GLSL 1.20 (OpenGL 2.1).
+    XscEOutputGLSL130   = 130,                 //!< GLSL 1.30 (OpenGL 3.0).
+    XscEOutputGLSL140   = 140,                 //!< GLSL 1.40 (OpenGL 3.1).
+    XscEOutputGLSL150   = 150,                 //!< GLSL 1.50 (OpenGL 3.2).
+    XscEOutputGLSL330   = 330,                 //!< GLSL 3.30 (OpenGL 3.3).
+    XscEOutputGLSL400   = 400,                 //!< GLSL 4.00 (OpenGL 4.0).
+    XscEOutputGLSL410   = 410,                 //!< GLSL 4.10 (OpenGL 4.1).
+    XscEOutputGLSL420   = 420,                 //!< GLSL 4.20 (OpenGL 4.2).
+    XscEOutputGLSL430   = 430,                 //!< GLSL 4.30 (OpenGL 4.3).
+    XscEOutputGLSL440   = 440,                 //!< GLSL 4.40 (OpenGL 4.4).
+    XscEOutputGLSL450   = 450,                 //!< GLSL 4.50 (OpenGL 4.5).
+    XscEOutputGLSL      = 0x0000ffff,          //!< Auto-detect minimal required GLSL version (for OpenGL 2+).
 
-    XscVKSL450  = (0x00020000 + 450),  //!< VKSL 4.50 (Vulkan 1.0).
-    XscVKSL     = 0x0002ffff,           //!< Auto-detect minimum required VKSL version (for Vulkan/SPIR-V).
+    XscEOutputESSL100   = (0x00010000 + 100),  //!< ESSL 1.00 (OpenGL ES 2.0). \note Currently not supported!
+    XscEOutputESSL300   = (0x00010000 + 300),  //!< ESSL 3.00 (OpenGL ES 3.0). \note Currently not supported!
+    XscEOutputESSL310   = (0x00010000 + 310),  //!< ESSL 3.10 (OpenGL ES 3.1). \note Currently not supported!
+    XscEOutputESSL320   = (0x00010000 + 320),  //!< ESSL 3.20 (OpenGL ES 3.2). \note Currently not supported!
+    XscEOutputESSL      = 0x0001ffff,          //!< Auto-detect minimum required ESSL version (for OpenGL ES 2+). \note Currently not supported!
+
+    XscEOutputVKSL450   = (0x00020000 + 450),  //!< VKSL 4.50 (Vulkan 1.0).
+    XscEOutputVKSL      = 0x0002ffff,           //!< Auto-detect minimum required VKSL version (for Vulkan/SPIR-V).
 };
 
 
@@ -68,25 +76,25 @@ enum XscShaderVersion
 XSC_EXPORT void XscShaderTargetToString(const enum XscShaderTarget target, char* str, size_t maxSize);
 
 //! Returns the specified shader input version as string.
-XSC_EXPORT void XscInputShaderVersionToString(const enum XscShaderVersion shaderVersion, char* str, size_t maxSize);
+XSC_EXPORT void XscInputShaderVersionToString(const enum XscInputShaderVersion shaderVersion, char* str, size_t maxSize);
 
 //! Returns the specified shader output version as string.
-XSC_EXPORT void XscOutputShaderVersionToString(const enum XscShaderVersion shaderVersion, char* str, size_t maxSize);
+XSC_EXPORT void XscOutputShaderVersionToString(const enum XscOutputShaderVersion shaderVersion, char* str, size_t maxSize);
 
 //! Returns true if the shader input version specifies HLSL (for DirectX).
-XSC_EXPORT bool XscIsInputLanguageHLSL(const enum XscShaderVersion shaderVersion);
+XSC_EXPORT bool XscIsInputLanguageHLSL(const enum XscInputShaderVersion shaderVersion);
 
 //! Returns true if the shader input version specifies GLSL (for OpenGL, OpenGL ES, and Vulkan).
-XSC_EXPORT bool XscIsInputLanguageGLSL(const enum XscShaderVersion shaderVersion);
+XSC_EXPORT bool XscIsInputLanguageGLSL(const enum XscInputShaderVersion shaderVersion);
 
 //! Returns true if the shader output version specifies GLSL (for OpenGL 2+).
-XSC_EXPORT bool XscIsOutputLanguageGLSL(const enum XscShaderVersion shaderVersion);
+XSC_EXPORT bool XscIsOutputLanguageGLSL(const enum XscOutputShaderVersion shaderVersion);
 
 //! Returns true if the shader output version specifies ESSL (for OpenGL ES 2+).
-XSC_EXPORT bool XscIsOutputLanguageESSL(const enum XscShaderVersion shaderVersion);
+XSC_EXPORT bool XscIsOutputLanguageESSL(const enum XscOutputShaderVersion shaderVersion);
 
 //! Returns true if the shader output version specifies VKSL (for Vulkan).
-XSC_EXPORT bool XscIsOutputLanguageVKSL(const enum XscShaderVersion shaderVersion);
+XSC_EXPORT bool XscIsOutputLanguageVKSL(const enum XscOutputShaderVersion shaderVersion);
 
 /**
 \brief Returns the enumeration of all supported GLSL extensions as a map of extension name and version number.

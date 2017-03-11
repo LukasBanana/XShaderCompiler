@@ -64,7 +64,7 @@ HelpDescriptor EntryCommand::Help() const
     return
     {
         "-E, --entry ENTRY",
-        "Shader entry point",
+        "Shader entry point; default=main",
         HelpCategory::Main
     };
 }

@@ -1,51 +1,46 @@
 /*
- * IncludeHandler.h
+ * IncludeHandlerC.h
  * 
  * This file is part of the XShaderCompiler project (Copyright (c) 2014-2017 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef XSC_INCLUDE_HANDLER_H
-#define XSC_INCLUDE_HANDLER_H
+#ifndef XSC_INCLUDE_HANDLER_C_H
+#define XSC_INCLUDE_HANDLER_C_H
 
 
-#include "Export.h"
-#include <string>
-#include <istream>
-#include <memory>
-#include <vector>
+#include <Xsc/Export.h>
 
 
-namespace Xsc
-{
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 /**
-\brief Interface for handling new include streams.
-\remarks The default implementation will read the files from an std::ifstream.
+\brief Function callback interface for handling '#include'-directives.
+\param[in] filename Specifies the include filename.
+\param[in] searchPaths Specifies an array of include paths. The last entry in this array is NULL.
+\param[in] useSearchPathsFirst Specifies whether search paths are to be used first, to find the include file.
+\return Pointer to the source code of the included file, or NULL to ignore this include directive.
 */
-class XSC_EXPORT IncludeHandler
+typedef const char* (*XSC_PFN_HANDLE_INCLUDE)(const char* filename, const char** searchPaths, bool useSearchPathsFirst);
+
+
+//! Include handler structure.
+struct XscIncludeHandler
 {
-    
-    public:
-        
-        virtual ~IncludeHandler();
+    //! Function pointer to handle the '#include'-directives.
+    XSC_PFN_HANDLE_INCLUDE  handleIncludePfn;
 
-        /**
-        \brief Returns an input stream for the specified filename.
-        \param[in] includeName Specifies the include filename.
-        \param[in] useSearchPathsFirst Specifies whether to first use the search paths to find the file.
-        \return Unique pointer to the new input stream.
-        */
-        virtual std::unique_ptr<std::istream> Include(const std::string& filename, bool useSearchPathsFirst);
-        
-        //! List of search paths.
-        std::vector<std::string> searchPaths;
-
+    //! Pointer to an array of search paths. This must be either NULL, point to an array where the last entry is always NULL.
+    const char**            searchPaths;
 };
 
 
-} // /namespace Xsc
+#ifdef __cplusplus
+} // /extern "C"
+#endif
 
 
 #endif

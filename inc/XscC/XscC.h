@@ -12,6 +12,7 @@
 #include <Xsc/Export.h>
 #include <Xsc/Version.h>
 #include "TargetsC.h"
+#include "IncludeHandlerC.h"
 #include <stdbool.h>
 
 
@@ -111,9 +112,9 @@ struct XscNameMangling
 
     /**
     If true, shader input/output variables are always renamed to their semantics,
-    even for vertex input and fragment output. Otherwise, their original identifiers are used.
+    even for vertex input and fragment output. Otherwise, their original identifiers are used. By default false.
     */
-    const bool* useAlwaysSemantics;
+    bool        useAlwaysSemantics;
 };
 
 //! Shader input descriptor structure.
@@ -122,20 +123,20 @@ struct XscShaderInput
     //! Specifies the filename of the input shader code. This is an optional attribute, and only a hint to the compiler. By default NULL.
     const char*                     filename;
 
-    //! Specifies the input stream. This must be valid HLSL code.
-    //std::shared_ptr<std::istream>   sourceCode;
+    //! Specifies the input source code. This must not be null when passed to the "XscCompileShader" function!
+    const char*                     sourceCode;
 
-    //! Specifies the input shader version (e.g. XscHLSL5 for "HLSL 5"). By default XscHLSL5.
-    enum XscShaderVersion           shaderVersion;
+    //! Specifies the input shader version (e.g. XscEInputHLSL5 for "HLSL 5"). By default XscEInputHLSL5.
+    enum XscInputShaderVersion      shaderVersion;
     
     //! Specifies the target shader (Vertex, Fragment etc.). By default XscUndefinedShader.
     enum XscShaderTarget            shaderTarget;
 
-    //! Specifies the HLSL shader entry point. By default NULL.
+    //! Specifies the HLSL shader entry point. By default "main".
     const char*                     entryPoint;
 
     /**
-    \brief Specifies the secondary HLSL shader entry point.
+    \brief Specifies the secondary HLSL shader entry point. By default NULL.
     \remarks This is only used for a Tessellation-Control Shader (alias Hull Shader) entry point,
     when a Tessellation-Control Shader (alias Domain Shader) is the output target.
     This is required to translate all Tessellation-Control attributes (i.e. "partitioning" and "outputtopology")
@@ -143,17 +144,17 @@ struct XscShaderInput
     */
     const char*                     secondaryEntryPoint;
 
-    /**
-    \brief Optional pointer to the implementation of the "IncludeHandler" interface. By default null.
-    \remarks If this is null, the default include handler will be used, which will include files with the STL input file streams.
-    */
-    //struct XscIncludeHandler*       includeHandler  = nullptr;
+    //! Include handler member which contains a function pointer to handle '#include'-directives.
+    struct XscIncludeHandler        includeHandler;
 };
 
 //! Vertex shader semantic (or rather attribute) layout structure.
 struct XscVertexSemantic
 {
+    //! Specifies the shader semantic (or rather attribute).
     const char* semantic;
+
+    //! Specifies the binding location.
     int         location;
 };
 
@@ -163,11 +164,11 @@ struct XscShaderOutput
     //! Specifies the filename of the output shader code. This is an optional attribute, and only a hint to the compiler.
     const char*                     filename;
 
-    //! Specifies the output stream. This will contain the output GLSL code. This must not be null when passed to the "CompileShader" function!
-    //std::ostream*                   sourceCode;
+    //! Specifies the output source code. This will contain the output code. This must not be null when passed to the "XscCompileShader" function!
+    const char**                    sourceCode;
 
-    //! Specifies the output shader version. By default XscGLSL (to auto-detect minimum required version).
-    enum XscShaderVersion           shaderVersion;
+    //! Specifies the output shader version. By default XscEOutputGLSL (to auto-detect minimum required version).
+    enum XscOutputShaderVersion     shaderVersion;
 
     //! Optional list of vertex semantic layouts, to bind a vertex attribute (semantic name) to a location index (only used when 'explicitBinding' is true). By default NULL.
     const struct XscVertexSemantic* vertexSemantics;
