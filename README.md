@@ -14,6 +14,12 @@ Features
 * Commentary preserving
 * Written in C++11
 
+Language Bindings
+-----------------
+
+* C Wrapper (ISO C99)
+* C# Wrapper
+
 License
 -------
 
@@ -22,8 +28,8 @@ License
 Documentation
 -------------
 
-- [Getting Started with XShaderCompiler](https://github.com/LukasBanana/XShaderCompiler/blob/master/docu/GettingStarted/Getting%20Started%20with%20XShaderCompiler.pdf) (PDF)
-- [XShaderCompiler Reference Manual](https://github.com/LukasBanana/XShaderCompiler/blob/master/docu/refman.pdf) (PDF)
+* [Getting Started with XShaderCompiler](https://github.com/LukasBanana/XShaderCompiler/blob/master/docu/GettingStarted/Getting%20Started%20with%20XShaderCompiler.pdf) (PDF)
+* [XShaderCompiler Reference Manual](https://github.com/LukasBanana/XShaderCompiler/blob/master/docu/refman.pdf) (PDF)
 
 Progress
 --------
