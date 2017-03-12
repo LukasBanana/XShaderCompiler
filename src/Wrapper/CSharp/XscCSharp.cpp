@@ -194,6 +194,94 @@ public ref class XscCompiler
 
         };
 
+        ref class BindingSlot
+        {
+
+            public:
+
+                BindingSlot()
+                {
+                    Ident = nullptr;
+                    Location = 0;
+                }
+
+                BindingSlot(String^ ident, int location)
+                {
+                    Ident = ident;
+                    Location = location;
+                }
+
+                //! Identifier of the binding point.
+                property String^    Ident;
+
+                //! Zero based binding point or location. If this is -1, the location has not been set explicitly.
+                property int        Location;
+
+        };
+
+        //! Number of threads within each work group of a compute shader.
+        ref class ComputeThreads
+        {
+
+            public:
+
+                ComputeThreads()
+                {
+                    X = 0;
+                    Y = 0;
+                    Z = 0;
+                }
+
+                ComputeThreads(int x, int y, int z)
+                {
+                    X = x;
+                    Y = y;
+                    Z = z;
+                }
+
+                //! Number of shader compute threads in X dimension.
+                property int X;
+
+                //! Number of shader compute threads in Y dimension.
+                property int Y;
+
+                //! Number of shader compute threads in Z dimension.
+                property int Z;
+
+        };
+
+        //! Structure for shader output statistics (e.g. texture/buffer binding points).
+        ref class ReflectionData
+        {
+
+            public:
+
+                //! All defined macros after pre-processing.
+                property Collections::Generic::List<String^>^                       Macros;
+
+                //! Texture bindings.
+                property Collections::Generic::List<BindingSlot^>^                  Textures;
+
+                //! Storage buffer bindings.
+                property Collections::Generic::List<BindingSlot^>^                  StorageBuffers;
+
+                //! Constant buffer bindings.
+                property Collections::Generic::List<BindingSlot^>^                  ConstantBuffers;
+
+                //! Shader input attributes.
+                property Collections::Generic::List<BindingSlot^>^                  InputAttributes;
+
+                //! Shader output attributes.
+                property Collections::Generic::List<BindingSlot^>^                  OutputAttributes;
+
+                //! Static sampler states (identifier, states).
+                property Collections::Generic::Dictionary<String^, SamplerState^>^  SamplerStates;
+
+                //! 'numthreads' attribute of a compute shader.
+                property ComputeThreads^                                            NumThreads;
+
+        };
+
         //! Formatting descriptor structure for the output shader.
         ref class OutputFormatting
         {
@@ -641,7 +729,7 @@ public ref class XscCompiler
         \param[in] inputDesc Input shader code descriptor.
         \param[in] outputDesc Output shader code descriptor.
         \param[in] log Optional output log. Inherit from the "Log" class interface. By default null.
-        \param[out] reflectionData Optional pointer to a code reflection data structure. By default null.
+        \param[out] reflectionData Optional code reflection data. By default null.
         \return True if the code has been translated successfully.
         \throw ArgumentNullException If either the input or output streams are null.
         \see ShaderInput
@@ -649,12 +737,18 @@ public ref class XscCompiler
         \see Log
         \see ReflectionData
         */
-        bool CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc, Log^ log);
+        bool CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc, Log^ log, ReflectionData^ reflectionData);
 
-        //! \see CompileShader(ShaderInput^, ShaderOutput^, Log^)
+        //! \see CompileShader(ShaderInput^, ShaderOutput^, Log^, ReflectionData^)
+        bool CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc, Log^ log)
+        {
+            return CompileShader(inputDesc, outputDesc, log, nullptr);
+        }
+
+        //! \see CompileShader(ShaderInput^, ShaderOutput^, Log^, ReflectionData^)
         bool CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc)
         {
-            return CompileShader(inputDesc, outputDesc, nullptr);
+            return CompileShader(inputDesc, outputDesc, nullptr, nullptr);
         }
 
         //! Returns the compiler version.
@@ -792,7 +886,18 @@ class LogCSharp : public Xsc::Log
  * XscCompiler class implementation
  */
 
-bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc, Log^ log)
+static Collections::Generic::List<XscCompiler::BindingSlot^>^ ToManagedList(const std::vector<Xsc::Reflection::BindingSlot>& src)
+{
+    auto dst = gcnew Collections::Generic::List<XscCompiler::BindingSlot^>();
+
+    for (const auto& s : src)
+        dst->Add(gcnew XscCompiler::BindingSlot(gcnew String(s.ident.c_str()), s.location));
+
+
+    return dst;
+}
+
+bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc, Log^ log, ReflectionData^ reflectionData)
 {
     /* Validate input arguments */
     if (inputDesc == nullptr)
@@ -876,11 +981,17 @@ bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc
 
     /* Compile shader */
     bool result = false;
+    Xsc::Reflection::ReflectionData reflect;
     LogCSharp logCSharp(log);
 
     try
     {
-        result = Xsc::CompileShader(in, out, (log != nullptr ? &logCSharp : nullptr));
+        result = Xsc::CompileShader(
+            in,
+            out,
+            (log != nullptr ? &logCSharp : nullptr),
+            (reflectionData != nullptr ? &reflect : nullptr)
+        );
     }
     catch (const std::exception& e)
     {
@@ -895,8 +1006,56 @@ bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc
         outputDesc->SourceCode = gcnew String(outputCode.c_str());
 
         /* Copy reflection */
-        /*if (reflectionData != NULL)
-            CopyReflection(g_compilerContext.reflection, reflectionData);*/
+        if (reflectionData != nullptr)
+        {
+            const auto& src = reflect;
+            auto dst = reflectionData;
+
+            /* Copy macro reflection */
+            dst->Macros = gcnew Collections::Generic::List<String^>();
+            for (const auto& s : src.macros)
+                dst->Macros->Add(gcnew String(s.c_str()));
+
+            /* Copy binding slots reflection */
+            dst->Textures           = ToManagedList(src.textures);
+            dst->StorageBuffers     = ToManagedList(src.storageBuffers);
+            dst->ConstantBuffers    = ToManagedList(src.constantBuffers);
+            dst->InputAttributes    = ToManagedList(src.inputAttributes);
+            dst->OutputAttributes   = ToManagedList(src.outputAttributes);
+
+            /* Copy sampler states reflection */
+            dst->SamplerStates = gcnew Collections::Generic::Dictionary<String^, SamplerState^>();
+            for (const auto& s : src.samplerStates)
+            {
+                auto sampler = gcnew SamplerState();
+                {
+                    sampler->TextureFilter  = static_cast<Filter>(s.second.filter);
+                    sampler->AddressU       = static_cast<TextureAddressMode>(s.second.addressU);
+                    sampler->AddressV       = static_cast<TextureAddressMode>(s.second.addressV);
+                    sampler->AddressW       = static_cast<TextureAddressMode>(s.second.addressW);
+                    sampler->MipLODBias     = s.second.mipLODBias;
+                    sampler->MaxAnisotropy  = s.second.maxAnisotropy;
+                    sampler->ComparisonFunc = static_cast<Comparison>(s.second.comparisonFunc);
+                    sampler->BorderColor    = gcnew array<float>
+                    {
+                        s.second.borderColor[0],
+                        s.second.borderColor[1],
+                        s.second.borderColor[2],
+                        s.second.borderColor[3]
+                    };
+                    sampler->MinLOD         = s.second.minLOD;
+                    sampler->MaxLOD         = s.second.maxLOD;
+                }
+                dst->SamplerStates->Add(gcnew String(s.first.c_str()), sampler);
+            }
+
+            /* Copy compute threads reflection */
+            dst->NumThreads = gcnew ComputeThreads(
+                src.numThreads.x,
+                src.numThreads.y,
+                src.numThreads.z
+            );
+        }
     }
 
     return result;
