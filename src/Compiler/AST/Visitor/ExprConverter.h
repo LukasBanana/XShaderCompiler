@@ -40,46 +40,60 @@ class ExprConverter : public Visitor
             ConvertVectorSubscripts = (1 << 0),
             ConvertVectorCompare    = (1 << 1),
             ConvertImplicitCasts    = (1 << 2),
-            WrapUnaryExpr           = (1 << 3),
-            ConvertImageAccess      = (1 << 4),
+            ConvertImageAccess      = (1 << 3),
+            WrapUnaryExpr           = (1 << 4),
+
+            // All conversion flags commonly used before visiting the sub nodes.
+            AllPreVisit             = (ConvertVectorCompare | ConvertImageAccess),
+
+            // All conversion flags commonly used after visiting the sub nodes.
+            AllPostVisit            = (ConvertVectorSubscripts),
+
+            // All conversion flags.
             All                     = (ConvertVectorSubscripts | ConvertImplicitCasts | ConvertVectorCompare | WrapUnaryExpr | ConvertImageAccess),
         };
 
         // Converts the expressions in the specified AST.
         void Convert(Program& program, const Flags& conversionFlags);
 
-        void ConvertExprVectorSubscript(ExprPtr& expr);
-        void ConvertExprVectorCompare(ExprPtr& expr);
-        void ConvertExprImageAccess(ExprPtr& expr);
-
         void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = true);
         void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
-
-        // Converts the expression to a type constructor (i.e. function call) if it's an initializer expression.
-        //void ConvertExprIfConstructorRequired(ExprPtr& expr);
-
-        void ConvertExprIntoBracket(ExprPtr& expr);
 
     private:
         
         /* === Functions === */
 
-        // Returns the data type to which an expression must be casted, if the target data type and the source data type are incompatible in GLSL.
+        // Returns the data type to which an expression must be casted, if the target data type and the source data type are incompatible.
         std::unique_ptr<DataType> MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize);
         std::unique_ptr<DataType> MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize);
 
-        // Converts the specified expression if a vector subscript is used on a scalar type expression.
+        /* ----- Conversion ----- */
+
+        // Converts the expression according to the specified flags (if enabled in the current conversion).
+        void ConvertExpr(ExprPtr& expr, const Flags& flags);
+
+        // Converts the list of expressions (see ConvertExpr).
+        void ConvertExprList(std::vector<ExprPtr>& exprList, const Flags& flags);
+
+        // Converts the expression if a vector subscript is used on a scalar type expression.
+        void ConvertExprVectorSubscript(ExprPtr& expr);
         void ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* suffixExpr);
         void ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* varIdent);
+        
+        // Converts the expression from a vector comparison to the respective intrinsic call (e.g. "a < b" -> "lessThan(a, b)").
+        void ConvertExprVectorCompare(ExprPtr& expr);
+        void ConvertExprVectorCompareBinary(ExprPtr& expr, BinaryExpr* binaryExpr);
+        void ConvertExprVectorCompareTernary(ExprPtr& expr, TernaryExpr* ternaryExpr);
 
+        // Converts the expression from an image access to the respective intrinsic call (e.g. "image[int2(1, 2)]" -> "imageLoad(image, ivec2(1, 2))").
+        void ConvertExprImageAccess(ExprPtr& expr);
         void ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr* varAccessExpr);
         void ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr);
+        
+        // Moves the expression as sub expression into a bracket (e.g. "- -x" -> "-(-x)").
+        void ConvertExprIntoBracket(ExprPtr& expr);
 
-        void IfFlaggedConvertExprVectorSubscript(ExprPtr& expr);
-        void IfFlaggedConvertExprVectorCompare(ExprPtr& expr);
         void IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
-        void IfFlaggedConvertExprIntoBracket(ExprPtr& expr);
-        void IfFlaggedConvertExprImageAccess(ExprPtr& expr);
 
         /* ----- Visitor implementation ----- */
 

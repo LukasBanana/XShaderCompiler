@@ -25,161 +25,6 @@ void ExprConverter::Convert(Program& program, const Flags& conversionFlags)
         Visit(&program);
 }
 
-void ExprConverter::ConvertExprVectorSubscript(ExprPtr& expr)
-{
-    if (expr)
-    {
-        if (auto suffixExpr = expr->As<SuffixExpr>())
-            ConvertExprVectorSubscriptSuffix(expr, suffixExpr);
-        else
-            ConvertExprVectorSubscriptVarIdent(expr, expr->FetchVarIdent());
-    }
-}
-
-static Intrinsic CompareOpToIntrinsic(const BinaryOp op)
-{
-    switch (op)
-    {
-        case BinaryOp::Equal:           return Intrinsic::Equal;
-        case BinaryOp::NotEqual:        return Intrinsic::NotEqual;
-        case BinaryOp::Less:            return Intrinsic::LessThan;
-        case BinaryOp::Greater:         return Intrinsic::GreaterThan;
-        case BinaryOp::LessEqual:       return Intrinsic::LessThanEqual;
-        case BinaryOp::GreaterEqual:    return Intrinsic::GreaterThanEqual;
-        default:                        return Intrinsic::Undefined;
-    }
-}
-
-void ExprConverter::ConvertExprVectorCompare(ExprPtr& expr)
-{
-    if (expr)
-    {
-        if (auto binaryExpr = expr->As<BinaryExpr>())
-        {
-            /* Convert vector comparison */
-            if (IsCompareOp(binaryExpr->op))
-            {
-                auto typeDen = binaryExpr->GetTypeDenoter()->Get();
-                if (typeDen->IsVector())
-                {
-                    /* Convert comparison operator into intrinsic */
-                    auto intrinsic = CompareOpToIntrinsic(binaryExpr->op);
-                    expr = ASTFactory::MakeIntrinsicCallExpr(
-                        intrinsic, "vec_compare", nullptr,
-                        { binaryExpr->lhsExpr, binaryExpr->rhsExpr }
-                    );
-                }
-            }
-        }
-        else if (auto ternaryExpr = expr->As<TernaryExpr>())
-        {
-            /* Convert ternary to 'lerp' intrinsic, if the condition is a vector comparison */
-            if (ternaryExpr->IsVectorCondition())
-            {
-                expr = ASTFactory::MakeIntrinsicCallExpr(
-                    Intrinsic::Lerp, "lerp", nullptr,
-                    { ternaryExpr->thenExpr, ternaryExpr->elseExpr, ternaryExpr->condExpr }
-                );
-            }
-        }
-    }
-}
-
-void ExprConverter::ConvertExprImageAccess(ExprPtr& expr)
-{
-    if (expr && !expr->flags(Expr::wasConverted))
-    {
-        /* Is this an array access to an image buffer or texture? */
-        if (auto varAccessExpr = expr->As<VarAccessExpr>())
-            ConvertExprImageAccessVarAccess(expr, varAccessExpr);
-        else if (auto arrayAccessExpr = expr->As<ArrayAccessExpr>())
-            ConvertExprImageAccessArrayAccess(expr, arrayAccessExpr);
-    }
-}
-
-//private
-void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr* varAccessExpr)
-{
-    /* Is this the variable a buffer declaration? */
-    if (auto bufferDecl = varAccessExpr->varIdent->FetchSymbol<BufferDecl>())
-    {
-        /* Is the buffer declaration a read/write texture? */
-        const auto bufferType = bufferDecl->GetBufferType();
-        if (IsRWTextureBufferType(bufferType))
-        {
-            /* Get buffer type denoter from array indices of identifier */
-            auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetFromArray(
-                varAccessExpr->varIdent->arrayIndices.size()
-            );
-
-            if (!varAccessExpr->varIdent->arrayIndices.empty())
-            {
-                /* Translate reads to imageLoad() function call */
-                if (varAccessExpr->assignOp == AssignOp::Undefined)
-                {
-                    /* Make first argument expression */
-                    auto arg0Expr = ASTFactory::MakeVarAccessExpr(varAccessExpr->varIdent->ident, bufferDecl);
-                    arg0Expr->flags << Expr::wasConverted;
-
-                    /* Get second argument expression (last array index) */
-                    auto arg1Expr = varAccessExpr->varIdent->arrayIndices.back();
-
-                    /* Convert expression to intrinsic call */
-                    expr = ASTFactory::MakeIntrinsicCallExpr(
-                        Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
-                    );
-                }
-                /* Translate writes to imageStore() function call */
-                else // Write
-                {
-                    // TODO - Handle different kind of set operations
-                }
-            }
-            else
-                RuntimeErr("missing array index in operator of '" + bufferTypeDen->ToString() + "'", varAccessExpr);
-        }
-    }
-}
-
-//private
-void ExprConverter::ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr)
-{
-    /* Fetch variable identifier from inner sub expression */
-    if (auto varIdent = arrayAccessExpr->expr->FetchVarIdent())
-    {
-        /* Is this the variable a buffer declaration? */
-        if (auto bufferDecl = varIdent->FetchSymbol<BufferDecl>())
-        {
-            /* Is the buffer declaration a read/write texture? */
-            const auto bufferType = bufferDecl->GetBufferType();
-            if (IsRWTextureBufferType(bufferType))
-            {
-                /* Get buffer type denoter from array indices of array access plus identifier */
-                auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetFromArray(
-                    arrayAccessExpr->arrayIndices.size() + varIdent->arrayIndices.size()
-                );
-
-                if (!arrayAccessExpr->arrayIndices.empty())
-                {
-                    /* Make first argument expression */
-                    auto arg0Expr = ASTFactory::MakeVarAccessExpr(varIdent->ident, bufferDecl);
-                    arg0Expr->flags << Expr::wasConverted;
-
-                    /* Get second argument expression (last array index) */
-                    auto arg1Expr = arrayAccessExpr->arrayIndices.back();
-
-                    /* Convert expression to intrinsic call */
-                    expr = ASTFactory::MakeIntrinsicCallExpr(
-                        Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
-                    );
-                }
-                else
-                    RuntimeErr("missing array index in operator of '" + bufferTypeDen->ToString() + "'", arrayAccessExpr);
-            }
-        }
-    }
-}
-
 // Converts the expression to a cast expression if it is required for the specified target type.
 void ExprConverter::ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize)
 {
@@ -201,15 +46,6 @@ void ExprConverter::ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& 
         expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
     }
 }
-
-//TODO: this is incomplete
-#if 0
-void ExprConverter::ConvertExprIfConstructorRequired(ExprPtr& expr)
-{
-    if (auto initExpr = expr->As<InitializerExpr>())
-        expr = ASTFactory::ConvertInitializerExprToTypeConstructor(initExpr);
-}
-#endif
 
 void ExprConverter::ConvertExprIntoBracket(ExprPtr& expr)
 {
@@ -266,6 +102,42 @@ std::unique_ptr<DataType> ExprConverter::MustCastExprToDataType(const TypeDenote
         }
     }
     return nullptr;
+}
+
+/* ----- Conversion ----- */
+
+void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
+{
+    auto enabled = Flags(flags & conversionFlags_);
+
+    if (enabled(ConvertVectorCompare))
+        ConvertExprVectorCompare(expr);
+
+    if (enabled(ConvertImageAccess))
+        ConvertExprImageAccess(expr);
+
+    if (enabled(ConvertVectorSubscripts))
+        ConvertExprVectorSubscript(expr);
+
+    if (enabled(WrapUnaryExpr))
+        ConvertExprIntoBracket(expr);
+}
+
+void ExprConverter::ConvertExprList(std::vector<ExprPtr>& exprList, const Flags& flags)
+{
+    for (auto& expr : exprList)
+        ConvertExpr(expr, flags);
+}
+
+void ExprConverter::ConvertExprVectorSubscript(ExprPtr& expr)
+{
+    if (expr)
+    {
+        if (auto suffixExpr = expr->As<SuffixExpr>())
+            ConvertExprVectorSubscriptSuffix(expr, suffixExpr);
+        else
+            ConvertExprVectorSubscriptVarIdent(expr, expr->FetchVarIdent());
+    }
 }
 
 void ExprConverter::ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* suffixExpr)
@@ -351,34 +223,158 @@ void ExprConverter::ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* 
     }
 }
 
-void ExprConverter::IfFlaggedConvertExprVectorSubscript(ExprPtr& expr)
+static Intrinsic CompareOpToIntrinsic(const BinaryOp op)
 {
-    if (conversionFlags_(ConvertVectorSubscripts))
-        ConvertExprVectorSubscript(expr);
+    switch (op)
+    {
+        case BinaryOp::Equal:           return Intrinsic::Equal;
+        case BinaryOp::NotEqual:        return Intrinsic::NotEqual;
+        case BinaryOp::Less:            return Intrinsic::LessThan;
+        case BinaryOp::Greater:         return Intrinsic::GreaterThan;
+        case BinaryOp::LessEqual:       return Intrinsic::LessThanEqual;
+        case BinaryOp::GreaterEqual:    return Intrinsic::GreaterThanEqual;
+        default:                        return Intrinsic::Undefined;
+    }
 }
 
-void ExprConverter::IfFlaggedConvertExprVectorCompare(ExprPtr& expr)
+void ExprConverter::ConvertExprVectorCompare(ExprPtr& expr)
 {
-    if (conversionFlags_(ConvertVectorCompare))
-        ConvertExprVectorCompare(expr);
+    if (expr)
+    {
+        if (auto binaryExpr = expr->As<BinaryExpr>())
+            ConvertExprVectorCompareBinary(expr, binaryExpr);
+        else if (auto ternaryExpr = expr->As<TernaryExpr>())
+            ConvertExprVectorCompareTernary(expr, ternaryExpr);
+    }
+}
+
+void ExprConverter::ConvertExprVectorCompareBinary(ExprPtr& expr, BinaryExpr* binaryExpr)
+{
+    /* Convert vector comparison */
+    if (IsCompareOp(binaryExpr->op))
+    {
+        auto typeDen = binaryExpr->GetTypeDenoter()->Get();
+        if (typeDen->IsVector())
+        {
+            /* Convert comparison operator into intrinsic */
+            auto intrinsic = CompareOpToIntrinsic(binaryExpr->op);
+            expr = ASTFactory::MakeIntrinsicCallExpr(
+                intrinsic, "vec_compare", nullptr,
+                { binaryExpr->lhsExpr, binaryExpr->rhsExpr }
+            );
+        }
+    }
+}
+
+void ExprConverter::ConvertExprVectorCompareTernary(ExprPtr& expr, TernaryExpr* ternaryExpr)
+{
+    /* Convert ternary to 'lerp' intrinsic, if the condition is a vector comparison */
+    if (ternaryExpr->IsVectorCondition())
+    {
+        expr = ASTFactory::MakeIntrinsicCallExpr(
+            Intrinsic::Lerp, "lerp", nullptr,
+            { ternaryExpr->thenExpr, ternaryExpr->elseExpr, ternaryExpr->condExpr }
+        );
+    }
+}
+
+void ExprConverter::ConvertExprImageAccess(ExprPtr& expr)
+{
+    if (expr && !expr->flags(Expr::wasConverted))
+    {
+        /* Is this an array access to an image buffer or texture? */
+        if (auto varAccessExpr = expr->As<VarAccessExpr>())
+            ConvertExprImageAccessVarAccess(expr, varAccessExpr);
+        else if (auto arrayAccessExpr = expr->As<ArrayAccessExpr>())
+            ConvertExprImageAccessArrayAccess(expr, arrayAccessExpr);
+    }
+}
+
+void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr* varAccessExpr)
+{
+    /* Is this the variable a buffer declaration? */
+    if (auto bufferDecl = varAccessExpr->varIdent->FetchSymbol<BufferDecl>())
+    {
+        /* Is the buffer declaration a read/write texture? */
+        const auto bufferType = bufferDecl->GetBufferType();
+        if (IsRWTextureBufferType(bufferType))
+        {
+            /* Get buffer type denoter from array indices of identifier */
+            auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetFromArray(
+                varAccessExpr->varIdent->arrayIndices.size()
+            );
+
+            if (!varAccessExpr->varIdent->arrayIndices.empty())
+            {
+                /* Translate reads to imageLoad() function call */
+                if (varAccessExpr->assignOp == AssignOp::Undefined)
+                {
+                    /* Make first argument expression */
+                    auto arg0Expr = ASTFactory::MakeVarAccessExpr(varAccessExpr->varIdent->ident, bufferDecl);
+                    arg0Expr->flags << Expr::wasConverted;
+
+                    /* Get second argument expression (last array index) */
+                    auto arg1Expr = varAccessExpr->varIdent->arrayIndices.back();
+
+                    /* Convert expression to intrinsic call */
+                    expr = ASTFactory::MakeIntrinsicCallExpr(
+                        Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
+                    );
+                }
+                /* Translate writes to imageStore() function call */
+                else // Write
+                {
+                    // TODO - Handle different kind of set operations
+                }
+            }
+            else
+                RuntimeErr("missing array index in operator of '" + bufferTypeDen->ToString() + "'", varAccessExpr);
+        }
+    }
+}
+
+void ExprConverter::ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr)
+{
+    /* Fetch variable identifier from inner sub expression */
+    if (auto varIdent = arrayAccessExpr->expr->FetchVarIdent())
+    {
+        /* Is this the variable a buffer declaration? */
+        if (auto bufferDecl = varIdent->FetchSymbol<BufferDecl>())
+        {
+            /* Is the buffer declaration a read/write texture? */
+            const auto bufferType = bufferDecl->GetBufferType();
+            if (IsRWTextureBufferType(bufferType))
+            {
+                /* Get buffer type denoter from array indices of array access plus identifier */
+                auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetFromArray(
+                    arrayAccessExpr->arrayIndices.size() + varIdent->arrayIndices.size()
+                );
+
+                if (!arrayAccessExpr->arrayIndices.empty())
+                {
+                    /* Make first argument expression */
+                    auto arg0Expr = ASTFactory::MakeVarAccessExpr(varIdent->ident, bufferDecl);
+                    arg0Expr->flags << Expr::wasConverted;
+
+                    /* Get second argument expression (last array index) */
+                    auto arg1Expr = arrayAccessExpr->arrayIndices.back();
+
+                    /* Convert expression to intrinsic call */
+                    expr = ASTFactory::MakeIntrinsicCallExpr(
+                        Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
+                    );
+                }
+                else
+                    RuntimeErr("missing array index in operator of '" + bufferTypeDen->ToString() + "'", arrayAccessExpr);
+            }
+        }
+    }
 }
 
 void ExprConverter::IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize)
 {
     if (conversionFlags_(ConvertImplicitCasts))
         ConvertExprIfCastRequired(expr, targetTypeDen, matchTypeSize);
-}
-
-void ExprConverter::IfFlaggedConvertExprIntoBracket(ExprPtr& expr)
-{
-    if (conversionFlags_(WrapUnaryExpr))
-        ConvertExprIntoBracket(expr);
-}
-
-void ExprConverter::IfFlaggedConvertExprImageAccess(ExprPtr& expr)
-{
-    if (conversionFlags_(ConvertImageAccess))
-        ConvertExprImageAccess(expr);
 }
 
 /* ------- Visit functions ------- */
@@ -388,16 +384,11 @@ void ExprConverter::IfFlaggedConvertExprImageAccess(ExprPtr& expr)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    for (auto& funcArg : ast->arguments)
+    ConvertExprList(ast->arguments, AllPreVisit);
     {
-        IfFlaggedConvertExprVectorCompare(funcArg);
-        IfFlaggedConvertExprImageAccess(funcArg);
+        VISIT_DEFAULT(FunctionCall);
     }
-
-    VISIT_DEFAULT(FunctionCall);
-
-    for (auto& funcArg : ast->arguments)
-        IfFlaggedConvertExprVectorSubscript(funcArg);
+    ConvertExprList(ast->arguments, AllPostVisit);
 
     ast->ForEachArgumentWithParameterType(
         [this](ExprPtr& funcArg, const TypeDenoter& paramTypeDen)
@@ -413,12 +404,12 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     if (ast->initializer)
     {
-        IfFlaggedConvertExprVectorCompare(ast->initializer);
-        IfFlaggedConvertExprImageAccess(ast->initializer);
+        ConvertExpr(ast->initializer, AllPreVisit);
+        {
+            VISIT_DEFAULT(VarDecl);
+        }
+        ConvertExpr(ast->initializer, AllPostVisit);
 
-        VISIT_DEFAULT(VarDecl);
-
-        IfFlaggedConvertExprVectorSubscript(ast->initializer);
         IfFlaggedConvertExprIfCastRequired(ast->initializer, *ast->GetTypeDenoter()->Get());
     }
     else
@@ -440,64 +431,61 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
-    IfFlaggedConvertExprVectorCompare(ast->condition);
-    IfFlaggedConvertExprVectorCompare(ast->iteration);
-
-    IfFlaggedConvertExprImageAccess(ast->condition);
-    IfFlaggedConvertExprImageAccess(ast->iteration);
-
-    VISIT_DEFAULT(ForLoopStmnt);
-    
-    IfFlaggedConvertExprVectorSubscript(ast->condition);
-    IfFlaggedConvertExprVectorSubscript(ast->iteration);
+    ConvertExpr(ast->condition, AllPreVisit);
+    ConvertExpr(ast->iteration, AllPreVisit);
+    {
+        VISIT_DEFAULT(ForLoopStmnt);
+    }
+    ConvertExpr(ast->condition, AllPostVisit);
+    ConvertExpr(ast->iteration, AllPostVisit);
 }
 
 IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 {
-    IfFlaggedConvertExprVectorCompare(ast->condition);
-
-    VISIT_DEFAULT(WhileLoopStmnt);
-
-    IfFlaggedConvertExprVectorSubscript(ast->condition);
+    ConvertExpr(ast->condition, AllPreVisit);
+    {
+        VISIT_DEFAULT(WhileLoopStmnt);
+    }
+    ConvertExpr(ast->condition, AllPostVisit);
 }
 
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 {
-    IfFlaggedConvertExprVectorCompare(ast->condition);
-    IfFlaggedConvertExprImageAccess(ast->condition);
-
-    VISIT_DEFAULT(DoWhileLoopStmnt);
-
-    IfFlaggedConvertExprVectorSubscript(ast->condition);
+    ConvertExpr(ast->condition, AllPreVisit);
+    {
+        VISIT_DEFAULT(DoWhileLoopStmnt);
+    }
+    ConvertExpr(ast->condition, AllPostVisit);
 }
 
 IMPLEMENT_VISIT_PROC(IfStmnt)
 {
-    IfFlaggedConvertExprVectorCompare(ast->condition);
-    IfFlaggedConvertExprImageAccess(ast->condition);
-
-    VISIT_DEFAULT(IfStmnt);
-
-    IfFlaggedConvertExprVectorSubscript(ast->condition);
+    ConvertExpr(ast->condition, AllPreVisit);
+    {
+        VISIT_DEFAULT(IfStmnt);
+    }
+    ConvertExpr(ast->condition, AllPostVisit);
 }
 
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
-    IfFlaggedConvertExprVectorCompare(ast->expr);
-    IfFlaggedConvertExprImageAccess(ast->expr);
-
-    VISIT_DEFAULT(ExprStmnt);
-
-    IfFlaggedConvertExprVectorSubscript(ast->expr);
+    ConvertExpr(ast->expr, AllPreVisit);
+    {
+        VISIT_DEFAULT(ExprStmnt);
+    }
+    ConvertExpr(ast->expr, AllPostVisit);
 }
 
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
-    VISIT_DEFAULT(ReturnStmnt);
     if (ast->expr)
     {
-        /* Convert return expression */
-        IfFlaggedConvertExprVectorSubscript(ast->expr);
+        ConvertExpr(ast->expr, AllPreVisit);
+        {
+            VISIT_DEFAULT(ReturnStmnt);
+        }
+        ConvertExpr(ast->expr, AllPostVisit);
+
         if (auto funcDecl = ActiveFunctionDecl())
             IfFlaggedConvertExprIfCastRequired(ast->expr, *(funcDecl->returnType->GetTypeDenoter()->Get()));
     }
@@ -507,35 +495,29 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
-    IfFlaggedConvertExprVectorCompare(ast->condExpr);
-    IfFlaggedConvertExprVectorCompare(ast->thenExpr);
-    IfFlaggedConvertExprVectorCompare(ast->elseExpr);
-
-    IfFlaggedConvertExprImageAccess(ast->condExpr);
-    IfFlaggedConvertExprImageAccess(ast->thenExpr);
-    IfFlaggedConvertExprImageAccess(ast->elseExpr);
-
-    VISIT_DEFAULT(TernaryExpr);
-
-    IfFlaggedConvertExprVectorSubscript(ast->condExpr);
-    IfFlaggedConvertExprVectorSubscript(ast->thenExpr);
-    IfFlaggedConvertExprVectorSubscript(ast->elseExpr);
+    ConvertExpr(ast->condExpr, AllPreVisit);
+    ConvertExpr(ast->thenExpr, AllPreVisit);
+    ConvertExpr(ast->elseExpr, AllPreVisit);
+    {
+        VISIT_DEFAULT(TernaryExpr);
+    }
+    ConvertExpr(ast->condExpr, AllPostVisit);
+    ConvertExpr(ast->thenExpr, AllPostVisit);
+    ConvertExpr(ast->elseExpr, AllPostVisit);
 }
 
 // Convert right-hand-side expression (if cast required)
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
-    IfFlaggedConvertExprVectorCompare(ast->lhsExpr);
-    IfFlaggedConvertExprVectorCompare(ast->rhsExpr);
+    ConvertExpr(ast->lhsExpr, AllPreVisit);
+    ConvertExpr(ast->rhsExpr, AllPreVisit);
+    {
+        VISIT_DEFAULT(BinaryExpr);
+    }
+    ConvertExpr(ast->lhsExpr, AllPostVisit);
+    ConvertExpr(ast->rhsExpr, AllPostVisit);
 
-    IfFlaggedConvertExprImageAccess(ast->lhsExpr);
-    IfFlaggedConvertExprImageAccess(ast->rhsExpr);
-
-    VISIT_DEFAULT(BinaryExpr);
-    
-    IfFlaggedConvertExprVectorSubscript(ast->lhsExpr);
-    IfFlaggedConvertExprVectorSubscript(ast->rhsExpr);
-
+    /* Convert sub expressions if cast required, then reset type denoter */
     bool matchTypeSize = (ast->op != BinaryOp::Mul && ast->op != BinaryOp::Div);
 
     auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(
@@ -552,47 +534,44 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 // Wrap unary expression if the next sub expression is again an unary expression
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    IfFlaggedConvertExprVectorCompare(ast->expr);
-    IfFlaggedConvertExprImageAccess(ast->expr);
-
-    VISIT_DEFAULT(UnaryExpr);
-
-    IfFlaggedConvertExprVectorSubscript(ast->expr);
+    ConvertExpr(ast->expr, AllPreVisit);
+    {
+        VISIT_DEFAULT(UnaryExpr);
+    }
+    ConvertExpr(ast->expr, AllPostVisit);
 
     if (ast->expr->Type() == AST::Types::UnaryExpr)
-        IfFlaggedConvertExprIntoBracket(ast->expr);
+        ConvertExpr(ast->expr, WrapUnaryExpr);
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
 {
-    IfFlaggedConvertExprVectorCompare(ast->expr);
-    IfFlaggedConvertExprImageAccess(ast->expr);
-
-    VISIT_DEFAULT(BracketExpr);
-
-    IfFlaggedConvertExprVectorSubscript(ast->expr);
+    ConvertExpr(ast->expr, AllPreVisit);
+    {
+        VISIT_DEFAULT(BracketExpr);
+    }
+    ConvertExpr(ast->expr, AllPostVisit);
 }
 
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
-    IfFlaggedConvertExprVectorCompare(ast->expr);
-    IfFlaggedConvertExprImageAccess(ast->expr);
-
-    VISIT_DEFAULT(CastExpr);
-
-    IfFlaggedConvertExprVectorSubscript(ast->expr);
+    ConvertExpr(ast->expr, AllPreVisit);
+    {
+        VISIT_DEFAULT(CastExpr);
+    }
+    ConvertExpr(ast->expr, AllPostVisit);
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     if (ast->assignExpr)
     {
-        IfFlaggedConvertExprVectorCompare(ast->assignExpr);
-        IfFlaggedConvertExprImageAccess(ast->assignExpr);
+        ConvertExpr(ast->assignExpr, AllPreVisit);
+        {
+            VISIT_DEFAULT(VarAccessExpr);
+        }
+        ConvertExpr(ast->assignExpr, AllPostVisit);
 
-        VISIT_DEFAULT(VarAccessExpr);
-
-        IfFlaggedConvertExprVectorSubscript(ast->assignExpr);
         IfFlaggedConvertExprIfCastRequired(ast->assignExpr, *ast->GetTypeDenoter()->Get());
     }
     else
