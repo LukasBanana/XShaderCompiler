@@ -422,8 +422,8 @@ bool IsStorageBufferType(const BufferType t);
 // Returns true if the specified buffer type is a RW (read/write) buffer type.
 bool IsRWBufferType(const BufferType t);
 
-// Returns true if the specified buffer type is represented in GLSL via a type with 'image' in its name.
-bool IsImageType(const BufferType t);
+// Returns true if the specified buffer type is a RW (read/write) texture buffer type (represented in GLSL with 'image...').
+bool IsRWTextureBufferType(const BufferType t);
 
 // Returns true if the specified buffer type is a texture buffer.
 bool IsTextureBufferType(const BufferType t);

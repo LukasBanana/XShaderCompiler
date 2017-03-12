@@ -212,6 +212,11 @@ struct TypedAST : public AST
 // Expression AST base class.
 struct Expr : public TypedAST
 {
+    FLAG_ENUM
+    {
+        FLAG( wasConverted, 0 ), // This expression has already been converted.
+    };
+
     // Returns the variable or null if this is not just a single variable expression.
     VarDecl* FetchVarDecl() const;
 

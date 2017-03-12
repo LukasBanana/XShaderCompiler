@@ -87,46 +87,98 @@ void ExprConverter::ConvertExprVectorCompare(ExprPtr& expr)
 
 void ExprConverter::ConvertExprImageAccess(ExprPtr& expr)
 {
-    if (expr)
+    if (expr && !expr->flags(Expr::wasConverted))
     {
         /* Is this an array access to an image buffer or texture? */
         if (auto varAccessExpr = expr->As<VarAccessExpr>())
-        {
-            if (auto symbol = varAccessExpr->varIdent->symbolRef)
-            {
-                if (auto bufferDecl = symbol->As<BufferDecl>())
-                {
-                    BufferType bufferType = bufferDecl->GetBufferType();
-                    if (IsImageType(bufferType))
-                    {
-                        if (varAccessExpr->varIdent->arrayIndices.size() == 1)
-                        {
-                            /* Translate reads to imageLoad() function call.  */
-                            if (varAccessExpr->assignOp == AssignOp::Undefined)
-                            {
-                                expr = ASTFactory::MakeIntrinsicCallExpr(
-                                    Intrinsic::Image_Load, "imageLoad", bufferDecl->DeriveTypeDenoter(),
-                                    {
-                                        ASTFactory::MakeVarAccessExpr(ASTFactory::MakeVarIdent(varAccessExpr->varIdent->ident, symbol)),
-                                        varAccessExpr->varIdent->arrayIndices[0] 
-                                    });
+            ConvertExprImageAccessVarAccess(expr, varAccessExpr);
+        else if (auto arrayAccessExpr = expr->As<ArrayAccessExpr>())
+            ConvertExprImageAccessArrayAccess(expr, arrayAccessExpr);
+    }
+}
 
-                            }
-                            /* Translate writes to imageStore() function call. */
-                            else // Write
-                            {
-                                // TODO - Handle different kind of set operations
-                            }
-                        }
-                        else if(varAccessExpr->varIdent->arrayIndices.size() != 0)
-                            RuntimeErr("invalid number of array indices in image accessor", varAccessExpr);
-                    }
+//private
+void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr* varAccessExpr)
+{
+    /* Is this the variable a buffer declaration? */
+    if (auto bufferDecl = varAccessExpr->varIdent->FetchSymbol<BufferDecl>())
+    {
+        /* Is the buffer declaration a read/write texture? */
+        const auto bufferType = bufferDecl->GetBufferType();
+        if (IsRWTextureBufferType(bufferType))
+        {
+            /* Get buffer type denoter from array indices of identifier */
+            auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetFromArray(
+                varAccessExpr->varIdent->arrayIndices.size()
+            );
+
+            if (!varAccessExpr->varIdent->arrayIndices.empty())
+            {
+                /* Translate reads to imageLoad() function call */
+                if (varAccessExpr->assignOp == AssignOp::Undefined)
+                {
+                    /* Make first argument expression */
+                    auto arg0Expr = ASTFactory::MakeVarAccessExpr(varAccessExpr->varIdent->ident, bufferDecl);
+                    arg0Expr->flags << Expr::wasConverted;
+
+                    /* Get second argument expression (last array index) */
+                    auto arg1Expr = varAccessExpr->varIdent->arrayIndices.back();
+
+                    /* Convert expression to intrinsic call */
+                    expr = ASTFactory::MakeIntrinsicCallExpr(
+                        Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
+                    );
+                }
+                /* Translate writes to imageStore() function call */
+                else // Write
+                {
+                    // TODO - Handle different kind of set operations
                 }
             }
+            else
+                RuntimeErr("missing array index in operator of '" + bufferTypeDen->ToString() + "'", varAccessExpr);
         }
     }
 }
 
+//private
+void ExprConverter::ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr)
+{
+    /* Fetch variable identifier from inner sub expression */
+    if (auto varIdent = arrayAccessExpr->expr->FetchVarIdent())
+    {
+        /* Is this the variable a buffer declaration? */
+        if (auto bufferDecl = varIdent->FetchSymbol<BufferDecl>())
+        {
+            /* Is the buffer declaration a read/write texture? */
+            const auto bufferType = bufferDecl->GetBufferType();
+            if (IsRWTextureBufferType(bufferType))
+            {
+                /* Get buffer type denoter from array indices of array access plus identifier */
+                auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetFromArray(
+                    arrayAccessExpr->arrayIndices.size() + varIdent->arrayIndices.size()
+                );
+
+                if (!arrayAccessExpr->arrayIndices.empty())
+                {
+                    /* Make first argument expression */
+                    auto arg0Expr = ASTFactory::MakeVarAccessExpr(varIdent->ident, bufferDecl);
+                    arg0Expr->flags << Expr::wasConverted;
+
+                    /* Get second argument expression (last array index) */
+                    auto arg1Expr = arrayAccessExpr->arrayIndices.back();
+
+                    /* Convert expression to intrinsic call */
+                    expr = ASTFactory::MakeIntrinsicCallExpr(
+                        Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
+                    );
+                }
+                else
+                    RuntimeErr("missing array index in operator of '" + bufferTypeDen->ToString() + "'", arrayAccessExpr);
+            }
+        }
+    }
+}
 
 // Converts the expression to a cast expression if it is required for the specified target type.
 void ExprConverter::ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize)
@@ -341,10 +393,10 @@ void ExprConverter::IfFlaggedConvertExprImageAccess(ExprPtr& expr)
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     for (auto& funcArg : ast->arguments)
+    {
         IfFlaggedConvertExprVectorCompare(funcArg);
-
-    for (auto& funcArg : ast->arguments)
         IfFlaggedConvertExprImageAccess(funcArg);
+    }
 
     VISIT_DEFAULT(FunctionCall);
 

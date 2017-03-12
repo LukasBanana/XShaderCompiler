@@ -72,6 +72,9 @@ class ExprConverter : public Visitor
         void ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* suffixExpr);
         void ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* varIdent);
 
+        void ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr* varAccessExpr);
+        void ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr);
+
         void IfFlaggedConvertExprVectorSubscript(ExprPtr& expr);
         void IfFlaggedConvertExprVectorCompare(ExprPtr& expr);
         void IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
