@@ -20,3 +20,4 @@ Known Issues
 | Intrinsic argument type matching | Type matching is incomplete for intrinsic function calls. **in progress** |
 | Sampler types for DX9 shaders | Samplers (e.g. `sampler2D`) are ignored, even for HLSL3. |
 | Braced initializers | For lower GLSL versions, braced initializers must be translated to the respective type constructor. |
+| Assignment to variable in brackets | Parsing assignments to variables that are inside a bracket fail, e.g. `(x) = 1;` |
