@@ -58,17 +58,16 @@ xsc -E VS -T vert Example.hlsl -E PS -T frag Example.hlsl
 
 The result are two GLSL shader files: "Example.VS.vert" and "Example.PS.frag".
 
-Library Usage
--------------
+Library Usage (C++)
+-------------------
 
 ```cpp
 #include <Xsc/Xsc.h>
 #include <fstream>
+#include <iostream>
 
 int main()
 {
-    /* ... */
-
     // Input file stream (use std::stringstream for in-code shaders).
     auto inputStream = std::make_shared<std::ifstream>("Example.hlsl");
 
@@ -83,7 +82,7 @@ int main()
     inputDesc.shaderTarget   = Xsc::ShaderTarget::VertexShader;
 
     // Fill the shader output descriptor structure
-    // (Use 'outputDesc.options', 'outputDesc.formatting', and 'outputDesc.nameMangling' for more settings)
+    // Use outputDesc.options, outputDesc.formatting, and outputDesc.nameMangling for more settings
     Xsc::ShaderOutput outputDesc;
     outputDesc.sourceCode = &outputStream;
 
@@ -94,11 +93,75 @@ int main()
     Xsc::Reflection::ReflectionData reflectData;
 
     // Translate HLSL code into GLSL
-    bool result = Xsc::CompileShader(inputDesc, outputDesc, &log, &reflectData);
-    
-    /* ... */
-    
+	try
+	{
+		bool result = Xsc::CompileShader(inputDesc, outputDesc, &log, &reflectData);
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+
     return 0;
+}
+```
+
+Library Usage (C#)
+------------------
+
+```cs
+using System;
+using System.IO;
+
+namespace Example
+{
+    class Program
+    {
+        static void Main()
+        {
+            // Create instance of the XShaderCompiler
+            var compiler = new XscCompiler();
+
+            // Read input shader code
+            var inputCode = File.ReadAllText("Example.hlsl");
+
+            // Output filename (GLSL vertex shader)
+            var outputCodeFilename = "Example.VS.vert";
+
+            // Fill the shader input descriptor structure
+            var inputDesc = new XscCompiler.ShaderInput();
+            inputDesc.SourceCode     = inputCode;
+            inputDesc.ShaderVersion  = XscCompiler.InputShaderVersion.HLSL5;
+            inputDesc.EntryPoint     = "VS";
+            inputDesc.Target         = XscCompiler.ShaderTarget.VertexShader;
+
+            // Fill the shader output descriptor structure
+            // Use outputDesc.Options, outputDesc.Formatting, and outputDesc.MameMangling for more settings
+            var outputDesc = new XscCompiler.ShaderOutput();
+
+            // Optional output log (can also be a custom class)
+            var log = XscCompiler.StandardLog;
+
+            // Optional shader reflection data (for shader code feedback)
+            var reflectData = new XscCompiler.ReflectionData();
+
+            // Translate HLSL code into GLSL
+            try
+            {
+                bool result = compiler.CompileShader(inputDesc, outputDesc, &log, &reflectData);
+
+                if (result)
+                {
+                    // Write output shader code
+                    File.WriteAllText(outputCodeFilename, shaderOutput.SourceCode);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+    }
 }
 ```
 
