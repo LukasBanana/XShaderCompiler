@@ -422,6 +422,9 @@ bool IsStorageBufferType(const BufferType t);
 // Returns true if the specified buffer type is a RW (read/write) buffer type.
 bool IsRWBufferType(const BufferType t);
 
+// Returns true if the specified buffer type is a RW (read/write) texture buffer type (represented in GLSL with 'image...').
+bool IsRWTextureBufferType(const BufferType t);
+
 // Returns true if the specified buffer type is a texture buffer.
 bool IsTextureBufferType(const BufferType t);
 
@@ -746,6 +749,9 @@ enum class Intrinsic
 
     StreamOutput_Append,        // Append(StreamDataType)
     StreamOutput_RestartStrip,  // RestartStrip()
+
+    Image_Store,                // GLSL only
+    Image_Load,                 // GLSL only
 };
 
 // Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>

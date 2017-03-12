@@ -108,7 +108,7 @@ TypeDenoterPtr TypeDenoter::Get(const VarIdent* varIdent)
 TypeDenoterPtr TypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
 {
     if (numArrayIndices > 0)
-        RuntimeErr("array access without array type denoter", varIdent);
+        RuntimeErr("array access not allowed for '" + ToString() + "'", varIdent);
     else
         return Get(varIdent);
 }
@@ -361,7 +361,7 @@ TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const 
                 RuntimeErr("too many array dimensions for matrix type");
         }
         else
-            RuntimeErr("array access without array type denoter");
+            return TypeDenoter::GetFromArray(numArrayIndices, varIdent);
     }
 
     return typeDenoter->Get(varIdent);

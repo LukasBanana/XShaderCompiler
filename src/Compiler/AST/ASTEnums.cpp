@@ -772,6 +772,12 @@ bool IsRWBufferType(const BufferType t)
     return (t >= BufferType::RWBuffer && t <= BufferType::RWTexture3D);
 }
 
+bool IsRWTextureBufferType(const BufferType t)
+{
+    // TODO: RWBuffer should map to 'imageBuffer', but it currently maps to 'buffer' (SSBO), so we ignore it here for now
+    return (t >= BufferType::RWTexture1D && t <= BufferType::RWTexture3D);
+}
+
 bool IsTextureBufferType(const BufferType t)
 {
     return (t >= BufferType::RWTexture1D && t <= BufferType::GenericTexture);
