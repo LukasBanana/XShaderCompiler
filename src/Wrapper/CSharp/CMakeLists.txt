@@ -26,4 +26,9 @@ target_link_libraries(xsc_core_csharp xsc_core)
 target_compile_features(xsc_core_csharp PRIVATE cxx_range_for)
 
 
+# === Installation Rules ===
 
+install(
+	TARGETS xsc_core_csharp
+	DESTINATION ${INSTALL_OUTPUT_PATH}
+)
