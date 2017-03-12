@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/ihfukm86am2f27e5?svg=true)](https://ci.appveyor.com/api/projects/status/ihfukm86am2f27e5?svg=true)
+
 # XShaderCompiler ("Cross Shader Compiler") #
 
 <p align="center"><img src="docu/Xsc_Logo.png"/></p>
