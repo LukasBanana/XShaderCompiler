@@ -213,12 +213,8 @@ void ExprConverter::ConvertExprIfConstructorRequired(ExprPtr& expr)
 
 void ExprConverter::ConvertExprIntoBracket(ExprPtr& expr)
 {
-    /* Insert bracket expression */
-    auto bracketExpr = MakeShared<BracketExpr>(expr->area);
-    {
-        bracketExpr->expr = expr;
-    }
-    expr = bracketExpr;
+    /* Move expression as sub expression into bracket */
+    expr = ASTFactory::MakeBracketExpr(expr);
 }
 
 

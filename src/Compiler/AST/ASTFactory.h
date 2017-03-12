@@ -64,6 +64,9 @@ VarIdentPtr                     MakeVarIdentPushFront(const std::string& firstId
 VarAccessExprPtr                MakeVarAccessExpr(const VarIdentPtr& varIdent);
 VarAccessExprPtr                MakeVarAccessExpr(const std::string& ident, AST* symbolRef = nullptr);
 
+// Makes a new bracket expression with the specified sub expression (source area is copied).
+BracketExprPtr                  MakeBracketExpr(const ExprPtr& expr);
+
 // Return a list expression (or only the input expression) for the specified literal expression, so it can be used as constructor for a struct.
 ExprPtr                         MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::vector<TypeDenoterPtr>& listTypeDens);
 

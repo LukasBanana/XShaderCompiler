@@ -272,6 +272,15 @@ VarAccessExprPtr MakeVarAccessExpr(const std::string& ident, AST* symbolRef)
     return MakeVarAccessExpr(MakeVarIdent(ident, symbolRef));
 }
 
+BracketExprPtr MakeBracketExpr(const ExprPtr& expr)
+{
+    auto ast = MakeASTWithOrigin<BracketExpr>(expr);
+    {
+        ast->expr = expr;
+    }
+    return ast;
+}
+
 /*
 TODO:
 This is currently being used to convert a scalar-to-struct cast expression
