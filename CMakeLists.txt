@@ -20,6 +20,7 @@ option(XSC_BUILD_DEBUGGER "Build XShaderCompiler debugger 'xsc_debugger' (requir
 option(XSC_BUILD_TESTS "Build all test applications" OFF)
 
 option(XSC_BUILD_WRAPPER_C "Build C wrapper (ISO C99)" OFF)
+option(XSC_BUILD_WRAPPER_CSHARP "Build C# wrapper" OFF)
 
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
 option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings with 'glslangValidator'" OFF)
@@ -64,6 +65,7 @@ file(GLOB FilesSrcCompilerBackendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Backend
 file(GLOB FilesSrcShell ${PROJECT_SOURCE_DIR}/src/Shell/*.*)
 file(GLOB FilesSrcDebugger ${PROJECT_SOURCE_DIR}/src/Debugger/*.*)
 file(GLOB FilesSrcWrapperC ${PROJECT_SOURCE_DIR}/src/Wrapper/C/*.*)
+#file(GLOB FilesSrcWrapperCSharp ${PROJECT_SOURCE_DIR}/src/Wrapper/CSharp/*.*)
 
 set(FilesTest ${PROJECT_SOURCE_DIR}/test)
 
@@ -128,17 +130,7 @@ endif()
 set_target_properties(xsc_core PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_features(xsc_core PRIVATE cxx_range_for)
 
-# C wrapper
-if(XSC_BUILD_WRAPPER_C)
-	if(XSC_SHARED_LIB)
-		add_library(xsc_core_c SHARED ${FilesSrcWrapperC})
-	else()
-		add_library(xsc_core_c STATIC ${FilesSrcWrapperC})
-	endif()
-	set_target_properties(xsc_core_c PROPERTIES LINKER_LANGUAGE CXX)
-	target_link_libraries(xsc_core_c xsc_core)
-	target_compile_features(xsc_core_c PRIVATE cxx_range_for)
-endif()
+set(XSC_INSTALL_TARGETS "xsc_core")
 
 # Shell application
 if(XSC_BUILD_SHELL)
@@ -146,6 +138,7 @@ if(XSC_BUILD_SHELL)
 	set_target_properties(xsc PROPERTIES LINKER_LANGUAGE CXX)
 	target_link_libraries(xsc xsc_core)
 	target_compile_features(xsc PRIVATE cxx_range_for)
+	set(XSC_INSTALL_TARGETS ${XSC_INSTALL_TARGETS} "xsc")
 endif()
 
 # Debugger UI aplication
@@ -169,6 +162,28 @@ if(XSC_BUILD_DEBUGGER)
 	else(wxWidgets_FOUND)
 		message(SEND_ERROR "Missing wxWidgets library")
 	endif(wxWidgets_FOUND)
+	
+	set(XSC_INSTALL_TARGETS ${XSC_INSTALL_TARGETS} "xsc_debugger")
+endif()
+
+# C wrapper
+if(XSC_BUILD_WRAPPER_C)
+	if(XSC_SHARED_LIB)
+		add_library(xsc_core_c SHARED ${FilesSrcWrapperC})
+	else()
+		add_library(xsc_core_c STATIC ${FilesSrcWrapperC})
+	endif()
+	
+	set_target_properties(xsc_core_c PROPERTIES LINKER_LANGUAGE CXX)
+	target_link_libraries(xsc_core_c xsc_core)
+	target_compile_features(xsc_core_c PRIVATE cxx_range_for)
+	
+	set(XSC_INSTALL_TARGETS ${XSC_INSTALL_TARGETS} "xsc_core_c")
+endif()
+
+# C# wrapper
+if(WIN32 AND XSC_BUILD_WRAPPER_CSHARP)
+	add_subdirectory(src/Wrapper/CSharp)
 endif()
 
 if(XSC_BUILD_TESTS)
@@ -181,10 +196,37 @@ if(XSC_BUILD_TESTS)
 endif()
 
 
+# === Show summary ===
+
+message("~~~ Build Summary ~~~")
+
+if(XSC_SHARED_LIB)
+	message("Build Core: xsc_core (SHARED)")
+else()
+	message("Build Core: xsc_core (STATIC)")
+endif()
+
+if(XSC_BUILD_SHELL)
+	message("Build Shell: xsc")
+endif()
+
+if(XSC_BUILD_DEBUGGER)
+	message("Build Debugger: xsc_debugger")
+endif()
+
+if(XSC_BUILD_WRAPPER_C)
+	message("Build C Wrapper: xsc_core_c")
+endif()
+
+if(XSC_BUILD_WRAPPER_CSHARP)
+	message("Build C# Wrapper: xsc_core_csharp")
+endif()
+
+
 # === Installation Rules ===
 
 install(
-	TARGETS xsc_core xsc
+	TARGETS ${XSC_INSTALL_TARGETS}
 	DESTINATION ${INSTALL_OUTPUT_PATH}
 )
 

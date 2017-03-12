@@ -122,7 +122,14 @@ struct BindingSlot
 //! Number of threads within each work group of a compute shader.
 struct NumThreads
 {
-    int x = 0, y = 0, z = 0;
+    //! Number of shader compute threads in X dimension.
+    int x = 0;
+
+    //! Number of shader compute threads in Y dimension.
+    int y = 0;
+
+    //! Number of shader compute threads in Z dimension.
+    int z = 0;
 };
 
 //! Structure for shader output statistics (e.g. texture/buffer binding points).
