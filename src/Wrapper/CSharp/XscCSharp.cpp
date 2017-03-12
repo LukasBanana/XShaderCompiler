@@ -34,6 +34,7 @@ static std::string ToStdString(String^ s)
     return out;
 }
 
+//! XscCompiler library main class.
 public ref class XscCompiler
 {
 
@@ -338,6 +339,7 @@ public ref class XscCompiler
 
         };
 
+        //! Shader source include handler interface.
         ref class SourceIncludeHandler abstract
         {
 
@@ -462,11 +464,183 @@ public ref class XscCompiler
 
         };
 
+        //! Compiler report class.
+        ref class Report
+        {
+
+            public:
+
+                //! Report types enumeration.
+                enum class Types
+                {
+                    Info,       //!< Standard information.
+                    Warning,    //!< Warning message.
+                    Error       //!< Error message.
+                };
+                
+                Report(Types type, String^ message)
+                {
+                    Type    = type;
+                    Message = message;
+                }
+
+                Report(Types type, String^ message, String^ context)
+                {
+                    Type    = type;
+                    Context = context;
+                    Message = message;
+                }
+
+                Report(Types type, String^ message, String^ line, String^ marker)
+                {
+                    Type    = type;
+                    Message = message;
+                    Line    = line;
+                    Marker  = marker;
+                }
+
+                Report(Types type, String^ message, String^ line, String^ marker, String^ context)
+                {
+                    Type    = type;
+                    Context = context;
+                    Message = message;
+                    Line    = line;
+                    Marker  = marker;
+                }
+
+                Report(Types type, String^ message, String^ line, String^ marker, String^ context, Collections::Generic::List<String^>^ hints)
+                {
+                    Type    = type;
+                    Context = context;
+                    Message = message;
+                    Line    = line;
+                    Marker  = marker;
+                    Hints   = hints;
+                }
+
+                //! Specifies the type of this report.
+                property Types                                  Type;
+
+                //! Returns the context description string (e.g. a function name where the report occured). This may also be empty.
+                property String^                                Context;
+
+                //! Returns the message string.
+                property String^                                Message;
+
+                //! Returns the line string where the report occured. This line never has new-line characters at its end.
+                property String^                                Line;
+
+                //! Returns the line marker string to highlight the area where the report occured.
+                property String^                                Marker;
+
+                //! Returns the list of optional hints of the report.
+                property Collections::Generic::List<String^>^   Hints;
+
+                /**
+                \brief Returns true if this report has a line with line marker.
+                \see Line
+                \see Marker
+                */
+                property bool HasLine
+                {
+                    bool get()
+                    {
+                        return (Line != nullptr && !Line->Empty);
+                    }
+                }
+
+        };
+
+        //! Log base class.
+        ref class Log abstract
+        {
+
+            public:
+
+                //! Submits the specified report with the current indentation.
+                virtual void SubmitReport(Report^ report, String^ indent) = 0;
+
+                //! Prints all submitted reports to the standard output.
+                void PrintAll()
+                {
+                    PrintAll(true, true);
+                }
+
+                //! Prints all submitted reports to the standard output.
+                virtual void PrintAll(bool verbose, bool warnings) = 0;
+
+        };
+
+    private:
+
+        //! Standard output log (uses standard output to submit a report).
+        ref class StdLog : public Log
+        {
+
+            public:
+
+                StdLog()
+                {
+                    stdLog_ = new Xsc::StdLog();
+                }
+
+                ~StdLog()
+                {
+                    delete stdLog_;
+                }
+
+                void SubmitReport(Report^ report, String^ indent) override
+                {
+                    if (report != nullptr && indent != nullptr)
+                    {
+                        /* Copy managed report into native report */
+                        Xsc::Report r(
+                            static_cast<Xsc::Report::Types>(report->Type),
+                            ToStdString(report->Message),
+                            ToStdString(report->Line),
+                            ToStdString(report->Marker),
+                            ToStdString(report->Context)
+                        );
+
+                        /* Copy hint array into managed report */
+                        if (report->Hints != nullptr)
+                        {
+                            std::vector<std::string> hints(report->Hints->Count);
+
+                            for (int i = 0; i < report->Hints->Count; ++i)
+                                hints[i] = ToStdString(report->Hints[i]);
+
+                            r.TakeHints(std::move(hints));
+                        }
+
+                        /* Submit report to native standard log and print immediately */
+                        stdLog_->SumitReport(r);
+                    }
+                }
+
+                void PrintAll(bool verbose, bool warnings) override
+                {
+                    stdLog_->PrintAll(verbose, warnings);
+                }
+
+            private:
+
+                Xsc::StdLog* stdLog_ = nullptr;
+
+        };
+
+    public:
+
+        XscCompiler()
+        {
+            StandardLog = gcnew StdLog();
+        }
+
         /**
         \brief Cross compiles the shader code from the specified input stream into the specified output shader code.
         \param[in] inputDesc Input shader code descriptor.
         \param[in] outputDesc Output shader code descriptor.
-        \param[in] log Optional pointer to an output log. Inherit from the "Log" class interface. By default null.
+        \param[in] log Optional output log. Inherit from the "Log" class interface. By default null.
         \param[out] reflectionData Optional pointer to a code reflection data structure. By default null.
         \return True if the code has been translated successfully.
         \throw ArgumentNullException If either the input or output streams are null.
@@ -475,110 +649,12 @@ public ref class XscCompiler
         \see Log
         \see ReflectionData
         */
+        bool CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc, Log^ log);
+
+        //! \see CompileShader(ShaderInput^, ShaderOutput^, Log^)
         bool CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc)
         {
-            /* Validate input arguments */
-            if (inputDesc == nullptr)
-                throw gcnew ArgumentNullException(gcnew String("inputDesc"));
-            if (outputDesc == nullptr)
-                throw gcnew ArgumentNullException(gcnew String("outputDesc"));
-            if (inputDesc->SourceCode == nullptr)
-                throw gcnew ArgumentNullException(gcnew String("inputDesc.SourceCode"));
-            if (outputDesc->Options == nullptr)
-                throw gcnew ArgumentNullException(gcnew String("outputDesc.Options"));
-            if (outputDesc->Formatting == nullptr)
-                throw gcnew ArgumentNullException(gcnew String("outputDesc.Formatting"));
-            if (outputDesc->NameMangling == nullptr)
-                throw gcnew ArgumentNullException(gcnew String("outputDesc.NameMangling"));
-
-            /* Copy input descriptor */
-            Xsc::ShaderInput in;
-
-            //IncludeHandlerCSharp includeHandler(inputDesc->includeHandler);
-
-            auto inputStream = std::make_shared<std::stringstream>();
-            *inputStream << ToStdString(inputDesc->SourceCode);
-
-            in.filename             = ToStdString(inputDesc->Filename);
-            in.sourceCode           = inputStream;
-            in.shaderVersion        = static_cast<Xsc::InputShaderVersion>(inputDesc->ShaderVersion);
-            in.shaderTarget         = static_cast<Xsc::ShaderTarget>(inputDesc->Target);
-            in.entryPoint           = ToStdString(inputDesc->EntryPoint);
-            in.secondaryEntryPoint  = ToStdString(inputDesc->SecondaryEntryPoint);
-            //in.includeHandler       = (&includeHandler);
-
-            /* Copy output descriptor */
-            Xsc::ShaderOutput out;
-
-            std::stringstream outputStream;
-
-            out.filename        = ToStdString(outputDesc->Filename);
-            out.sourceCode      = (&outputStream);
-            out.shaderVersion   = static_cast<Xsc::OutputShaderVersion>(outputDesc->ShaderVersion);
-
-            /*out.vertexSemantics.resize(outputDesc->vertexSemanticsCount);
-            for (size_t i = 0; i < outputDesc->vertexSemanticsCount; ++i)
-            {
-                out.vertexSemantics[i].semantic = ReadStringC(outputDesc->vertexSemantics[i].semantic);
-                out.vertexSemantics[i].location = outputDesc->vertexSemantics[i].location;
-            }*/
-
-            /* Copy output options descriptor */
-            out.options.warnings                = outputDesc->Options->Warnings;
-            out.options.optimize                = outputDesc->Options->Optimize;
-            out.options.preprocessOnly          = outputDesc->Options->PreprocessOnly;
-            out.options.validateOnly            = outputDesc->Options->ValidateOnly;
-            out.options.allowExtensions         = outputDesc->Options->AllowExtensions;
-            out.options.explicitBinding         = outputDesc->Options->ExplicitBinding;
-            out.options.preserveComments        = outputDesc->Options->PreserveComments;
-            out.options.preferWrappers          = outputDesc->Options->PreferWrappers;
-            out.options.unrollArrayInitializers = outputDesc->Options->UnrollArrayInitializers;
-            out.options.rowMajorAlignment       = outputDesc->Options->RowMajorAlignment;
-            out.options.obfuscate               = outputDesc->Options->Obfuscate;
-            out.options.showAST                 = outputDesc->Options->ShowAST;
-            out.options.showTimes               = outputDesc->Options->ShowTimes;
-
-            /* Copy output formatting descriptor */
-            out.formatting.indent               = ToStdString(outputDesc->Formatting->Indent);
-            out.formatting.blanks               = outputDesc->Formatting->Blanks;
-            out.formatting.lineMarks            = outputDesc->Formatting->LineMarks;
-            out.formatting.compactWrappers      = outputDesc->Formatting->CompactWrappers;
-            out.formatting.alwaysBracedScopes   = outputDesc->Formatting->AlwaysBracedScopes;
-            out.formatting.newLineOpenScope     = outputDesc->Formatting->NewLineOpenScope;
-            out.formatting.lineSeparation       = outputDesc->Formatting->LineSeparation;
-
-            /* Copy output name mangling descriptor */
-            out.nameMangling.inputPrefix        = ToStdString(outputDesc->NameMangling->InputPrefix);
-            out.nameMangling.outputPrefix       = ToStdString(outputDesc->NameMangling->OutputPrefix);
-            out.nameMangling.reservedWordPrefix = ToStdString(outputDesc->NameMangling->ReservedWordPrefix);
-            out.nameMangling.temporaryPrefix    = ToStdString(outputDesc->NameMangling->TemporaryPrefix);
-            out.nameMangling.useAlwaysSemantics = outputDesc->NameMangling->UseAlwaysSemantics;
-
-            /* Compile shader */
-            bool result = false;
-
-            try
-            {
-                result = Xsc::CompileShader(in, out);
-            }
-            catch (const std::exception& e)
-            {
-                throw gcnew Exception(gcnew String(e.what()));
-            }
-
-            /* Copy output code */
-            if (result)
-            {
-                /* Copy output code */
-                auto outputCode = outputStream.str();
-                outputDesc->SourceCode = gcnew String(outputCode.c_str());
-
-                /* Copy reflection */
-                /*if (reflectionData != NULL)
-                    CopyReflection(g_compilerContext.reflection, reflectionData);*/
-            }
-
-            return result;
+            return CompileShader(inputDesc, outputDesc, nullptr);
         }
 
         //! Returns the compiler version.
@@ -604,13 +680,227 @@ public ref class XscCompiler
             }
         }
 
+        //! Returns the standard log.
+        property Log^ StandardLog
+        {
+            Log^ get()
+            {
+                return standardLog_;
+            }
+            private: void set(Log^ value)
+            {
+                standardLog_ = value;
+            }
+        }
 
     private:
 
-
+        Log^ standardLog_;
 
 };
 
+
+/*
+ * Wrapper classes
+ */
+
+class IncludeHandlerCSharp : public Xsc::IncludeHandler
+{
+
+    private:
+
+        using HandlerRefType = gcroot<XscCompiler::SourceIncludeHandler^>;
+
+        std::unique_ptr<HandlerRefType> handler_;
+
+    public:
+
+        IncludeHandlerCSharp(XscCompiler::SourceIncludeHandler^ handler)
+        {
+            if (handler != nullptr)
+            {
+                handler_ = std::unique_ptr<HandlerRefType>(new HandlerRefType());
+                *handler_ = handler;
+            }
+        }
+
+        std::unique_ptr<std::istream> Include(const std::string& filename, bool useSearchPathsFirst) override
+        {
+            auto stream = std::unique_ptr<std::stringstream>(new std::stringstream());
+
+            if (handler_)
+            {
+                /* Include from handler and convert to std::string */
+                auto sourceCode = (*handler_)->Include(gcnew String(filename.c_str()), useSearchPathsFirst);
+                *stream << ToStdString(sourceCode);
+            }
+
+            return std::move(stream);
+        }
+
+};
+
+class LogCSharp : public Xsc::Log
+{
+
+    private:
+
+        using HandlerRefType = gcroot<XscCompiler::Log^>;
+
+        std::unique_ptr<HandlerRefType> handler_;
+
+    public:
+
+        LogCSharp(XscCompiler::Log^ handler)
+        {
+            if (handler != nullptr)
+            {
+                handler_ = std::unique_ptr<HandlerRefType>(new HandlerRefType());
+                *handler_ = handler;
+            }
+        }
+
+        void SumitReport(const Xsc::Report& report) override
+        {
+            if (handler_)
+            {
+                /* Copy hints into managed hints */
+                auto managedHints = gcnew Collections::Generic::List<String^>();
+
+                for (const auto& hint : report.GetHints())
+                    managedHints->Add(gcnew String(hint.c_str()));
+
+                /* Copy report into managed report */
+                auto managedReport = gcnew XscCompiler::Report(
+                    static_cast<XscCompiler::Report::Types>(report.Type()),
+                    gcnew String(report.Message().c_str()),
+                    gcnew String(report.Line().c_str()),
+                    gcnew String(report.Marker().c_str()),
+                    gcnew String(report.Context().c_str()),
+                    managedHints
+                );
+
+                /* Submit report to managed handler */
+                (*handler_)->SubmitReport(managedReport, gcnew String(FullIndent().c_str()));
+            }
+        }
+
+};
+
+
+/*
+ * XscCompiler class implementation
+ */
+
+bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc, Log^ log)
+{
+    /* Validate input arguments */
+    if (inputDesc == nullptr)
+        throw gcnew ArgumentNullException(gcnew String("inputDesc"));
+    if (outputDesc == nullptr)
+        throw gcnew ArgumentNullException(gcnew String("outputDesc"));
+    if (inputDesc->SourceCode == nullptr)
+        throw gcnew ArgumentNullException(gcnew String("inputDesc.SourceCode"));
+    if (outputDesc->Options == nullptr)
+        throw gcnew ArgumentNullException(gcnew String("outputDesc.Options"));
+    if (outputDesc->Formatting == nullptr)
+        throw gcnew ArgumentNullException(gcnew String("outputDesc.Formatting"));
+    if (outputDesc->NameMangling == nullptr)
+        throw gcnew ArgumentNullException(gcnew String("outputDesc.NameMangling"));
+
+    /* Copy input descriptor */
+    Xsc::ShaderInput in;
+
+    IncludeHandlerCSharp includeHandler(inputDesc->IncludeHandler);
+
+    auto inputStream = std::make_shared<std::stringstream>();
+    *inputStream << ToStdString(inputDesc->SourceCode);
+
+    in.filename             = ToStdString(inputDesc->Filename);
+    in.sourceCode           = inputStream;
+    in.shaderVersion        = static_cast<Xsc::InputShaderVersion>(inputDesc->ShaderVersion);
+    in.shaderTarget         = static_cast<Xsc::ShaderTarget>(inputDesc->Target);
+    in.entryPoint           = ToStdString(inputDesc->EntryPoint);
+    in.secondaryEntryPoint  = ToStdString(inputDesc->SecondaryEntryPoint);
+    in.includeHandler       = (&includeHandler);
+
+    /* Copy output descriptor */
+    Xsc::ShaderOutput out;
+
+    std::stringstream outputStream;
+
+    out.filename        = ToStdString(outputDesc->Filename);
+    out.sourceCode      = (&outputStream);
+    out.shaderVersion   = static_cast<Xsc::OutputShaderVersion>(outputDesc->ShaderVersion);
+
+    if (outputDesc->VertexSemantics != nullptr)
+    {
+        out.vertexSemantics.resize(outputDesc->VertexSemantics->Count);
+        for (int i = 0; i < outputDesc->VertexSemantics->Count; ++i)
+        {
+            out.vertexSemantics[i].semantic = ToStdString(outputDesc->VertexSemantics[i]->Semantic);
+            out.vertexSemantics[i].location = outputDesc->VertexSemantics[i]->Location;
+        }
+    }
+
+    /* Copy output options descriptor */
+    out.options.warnings                = outputDesc->Options->Warnings;
+    out.options.optimize                = outputDesc->Options->Optimize;
+    out.options.preprocessOnly          = outputDesc->Options->PreprocessOnly;
+    out.options.validateOnly            = outputDesc->Options->ValidateOnly;
+    out.options.allowExtensions         = outputDesc->Options->AllowExtensions;
+    out.options.explicitBinding         = outputDesc->Options->ExplicitBinding;
+    out.options.preserveComments        = outputDesc->Options->PreserveComments;
+    out.options.preferWrappers          = outputDesc->Options->PreferWrappers;
+    out.options.unrollArrayInitializers = outputDesc->Options->UnrollArrayInitializers;
+    out.options.rowMajorAlignment       = outputDesc->Options->RowMajorAlignment;
+    out.options.obfuscate               = outputDesc->Options->Obfuscate;
+    out.options.showAST                 = outputDesc->Options->ShowAST;
+    out.options.showTimes               = outputDesc->Options->ShowTimes;
+
+    /* Copy output formatting descriptor */
+    out.formatting.indent               = ToStdString(outputDesc->Formatting->Indent);
+    out.formatting.blanks               = outputDesc->Formatting->Blanks;
+    out.formatting.lineMarks            = outputDesc->Formatting->LineMarks;
+    out.formatting.compactWrappers      = outputDesc->Formatting->CompactWrappers;
+    out.formatting.alwaysBracedScopes   = outputDesc->Formatting->AlwaysBracedScopes;
+    out.formatting.newLineOpenScope     = outputDesc->Formatting->NewLineOpenScope;
+    out.formatting.lineSeparation       = outputDesc->Formatting->LineSeparation;
+
+    /* Copy output name mangling descriptor */
+    out.nameMangling.inputPrefix        = ToStdString(outputDesc->NameMangling->InputPrefix);
+    out.nameMangling.outputPrefix       = ToStdString(outputDesc->NameMangling->OutputPrefix);
+    out.nameMangling.reservedWordPrefix = ToStdString(outputDesc->NameMangling->ReservedWordPrefix);
+    out.nameMangling.temporaryPrefix    = ToStdString(outputDesc->NameMangling->TemporaryPrefix);
+    out.nameMangling.useAlwaysSemantics = outputDesc->NameMangling->UseAlwaysSemantics;
+
+    /* Compile shader */
+    bool result = false;
+    LogCSharp logCSharp(log);
+
+    try
+    {
+        result = Xsc::CompileShader(in, out, (log != nullptr ? &logCSharp : nullptr));
+    }
+    catch (const std::exception& e)
+    {
+        throw gcnew Exception(gcnew String(e.what()));
+    }
+
+    /* Copy output code */
+    if (result)
+    {
+        /* Copy output code */
+        auto outputCode = outputStream.str();
+        outputDesc->SourceCode = gcnew String(outputCode.c_str());
+
+        /* Copy reflection */
+        /*if (reflectionData != NULL)
+            CopyReflection(g_compilerContext.reflection, reflectionData);*/
+    }
+
+    return result;
+}
 
 
 
