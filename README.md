@@ -122,15 +122,9 @@ namespace Example
             // Create instance of the XShaderCompiler
             var compiler = new XscCompiler();
 
-            // Read input shader code
-            var inputCode = File.ReadAllText("Example.hlsl");
-
-            // Output filename (GLSL vertex shader)
-            var outputCodeFilename = "Example.VS.vert";
-
             // Fill the shader input descriptor structure
             var inputDesc = new XscCompiler.ShaderInput();
-            inputDesc.SourceCode     = inputCode;
+            inputDesc.SourceCode     = File.ReadAllText("Example.hlsl");
             inputDesc.ShaderVersion  = XscCompiler.InputShaderVersion.HLSL5;
             inputDesc.EntryPoint     = "VS";
             inputDesc.Target         = XscCompiler.ShaderTarget.VertexShader;
@@ -153,7 +147,7 @@ namespace Example
                 if (result)
                 {
                     // Write output shader code
-                    File.WriteAllText(outputCodeFilename, shaderOutput.SourceCode);
+                    File.WriteAllText("Example.VS.vert", shaderOutput.SourceCode);
                 }
             }
             catch (Exception e)
