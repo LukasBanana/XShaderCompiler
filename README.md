@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/ihfukm86am2f27e5?svg=true)](https://ci.appveyor.com/api/projects/status/ihfukm86am2f27e5?svg=true)
+[![Build status](https://ci.appveyor.com/api/projects/status/ihfukm86am2f27e5?svg=true)](https://ci.appveyor.com/project/LukasBanana/xshadercompiler)
 
 # XShaderCompiler ("Cross Shader Compiler") #
 
