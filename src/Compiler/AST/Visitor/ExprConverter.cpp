@@ -85,6 +85,49 @@ void ExprConverter::ConvertExprVectorCompare(ExprPtr& expr)
     }
 }
 
+void ExprConverter::ConvertExprImageAccess(ExprPtr& expr)
+{
+    if (expr)
+    {
+        /* Is this an array access to an image buffer or texture? */
+        if (auto varAccessExpr = expr->As<VarAccessExpr>())
+        {
+            if (auto symbol = varAccessExpr->varIdent->symbolRef)
+            {
+                if (auto bufferDecl = symbol->As<BufferDecl>())
+                {
+                    BufferType bufferType = bufferDecl->GetBufferType();
+                    if (IsImageType(bufferType))
+                    {
+                        if (varAccessExpr->varIdent->arrayIndices.size() == 1)
+                        {
+                            /* Translate reads to imageLoad() function call.  */
+                            if (varAccessExpr->assignOp == AssignOp::Undefined)
+                            {
+                                expr = ASTFactory::MakeIntrinsicCallExpr(
+                                    Intrinsic::Image_Load, "imageLoad", bufferDecl->DeriveTypeDenoter(),
+                                    {
+                                        ASTFactory::MakeVarAccessExpr(ASTFactory::MakeVarIdent(varAccessExpr->varIdent->ident, symbol)),
+                                        varAccessExpr->varIdent->arrayIndices[0] 
+                                    });
+
+                            }
+                            /* Translate writes to imageStore() function call. */
+                            else // Write
+                            {
+                                // TODO - Handle different kind of set operations
+                            }
+                        }
+                        else if(varAccessExpr->varIdent->arrayIndices.size() != 0)
+                            RuntimeErr("invalid number of array indices in image accessor", varAccessExpr);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 // Converts the expression to a cast expression if it is required for the specified target type.
 void ExprConverter::ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize)
 {
@@ -284,6 +327,12 @@ void ExprConverter::IfFlaggedConvertExprIntoBracket(ExprPtr& expr)
         ConvertExprIntoBracket(expr);
 }
 
+void ExprConverter::IfFlaggedConvertExprImageAccess(ExprPtr& expr)
+{
+    if (conversionFlags_(ConvertImageAccess))
+        ConvertExprImageAccess(expr);
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -293,6 +342,9 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     for (auto& funcArg : ast->arguments)
         IfFlaggedConvertExprVectorCompare(funcArg);
+
+    for (auto& funcArg : ast->arguments)
+        IfFlaggedConvertExprImageAccess(funcArg);
 
     VISIT_DEFAULT(FunctionCall);
 
@@ -314,6 +366,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     if (ast->initializer)
     {
         IfFlaggedConvertExprVectorCompare(ast->initializer);
+        IfFlaggedConvertExprImageAccess(ast->initializer);
 
         VISIT_DEFAULT(VarDecl);
 
@@ -342,6 +395,9 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
     IfFlaggedConvertExprVectorCompare(ast->condition);
     IfFlaggedConvertExprVectorCompare(ast->iteration);
 
+    IfFlaggedConvertExprImageAccess(ast->condition);
+    IfFlaggedConvertExprImageAccess(ast->iteration);
+
     VISIT_DEFAULT(ForLoopStmnt);
     
     IfFlaggedConvertExprVectorSubscript(ast->condition);
@@ -360,6 +416,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 {
     IfFlaggedConvertExprVectorCompare(ast->condition);
+    IfFlaggedConvertExprImageAccess(ast->condition);
 
     VISIT_DEFAULT(DoWhileLoopStmnt);
 
@@ -369,6 +426,7 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 IMPLEMENT_VISIT_PROC(IfStmnt)
 {
     IfFlaggedConvertExprVectorCompare(ast->condition);
+    IfFlaggedConvertExprImageAccess(ast->condition);
 
     VISIT_DEFAULT(IfStmnt);
 
@@ -378,6 +436,7 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
     IfFlaggedConvertExprVectorCompare(ast->expr);
+    IfFlaggedConvertExprImageAccess(ast->expr);
 
     VISIT_DEFAULT(ExprStmnt);
 
@@ -404,6 +463,10 @@ IMPLEMENT_VISIT_PROC(TernaryExpr)
     IfFlaggedConvertExprVectorCompare(ast->thenExpr);
     IfFlaggedConvertExprVectorCompare(ast->elseExpr);
 
+    IfFlaggedConvertExprImageAccess(ast->condExpr);
+    IfFlaggedConvertExprImageAccess(ast->thenExpr);
+    IfFlaggedConvertExprImageAccess(ast->elseExpr);
+
     VISIT_DEFAULT(TernaryExpr);
 
     IfFlaggedConvertExprVectorSubscript(ast->condExpr);
@@ -416,6 +479,9 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
     IfFlaggedConvertExprVectorCompare(ast->lhsExpr);
     IfFlaggedConvertExprVectorCompare(ast->rhsExpr);
+
+    IfFlaggedConvertExprImageAccess(ast->lhsExpr);
+    IfFlaggedConvertExprImageAccess(ast->rhsExpr);
 
     VISIT_DEFAULT(BinaryExpr);
     
@@ -439,6 +505,7 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
     IfFlaggedConvertExprVectorCompare(ast->expr);
+    IfFlaggedConvertExprImageAccess(ast->expr);
 
     VISIT_DEFAULT(UnaryExpr);
 
@@ -451,6 +518,7 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 IMPLEMENT_VISIT_PROC(BracketExpr)
 {
     IfFlaggedConvertExprVectorCompare(ast->expr);
+    IfFlaggedConvertExprImageAccess(ast->expr);
 
     VISIT_DEFAULT(BracketExpr);
 
@@ -460,6 +528,7 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
     IfFlaggedConvertExprVectorCompare(ast->expr);
+    IfFlaggedConvertExprImageAccess(ast->expr);
 
     VISIT_DEFAULT(CastExpr);
 
@@ -471,6 +540,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     if (ast->assignExpr)
     {
         IfFlaggedConvertExprVectorCompare(ast->assignExpr);
+        IfFlaggedConvertExprImageAccess(ast->assignExpr);
 
         VISIT_DEFAULT(VarAccessExpr);
 

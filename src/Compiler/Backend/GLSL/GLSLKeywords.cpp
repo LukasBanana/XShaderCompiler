@@ -198,11 +198,11 @@ static std::map<BufferType, std::string> GenerateBufferTypeMap()
         { T::AppendStructuredBuffer,  "buffer"           },
         { T::ConsumeStructuredBuffer, "buffer"           },
 
-      //{ T::RWTexture1D,             ""                 },
-      //{ T::RWTexture1DArray,        ""                 },
-      //{ T::RWTexture2D,             ""                 },
-      //{ T::RWTexture2DArray,        ""                 },
-      //{ T::RWTexture3D,             ""                 },
+        { T::RWTexture1D,             "image1D"          },
+        { T::RWTexture1DArray,        "image1DArray"     },
+        { T::RWTexture2D,             "image2D"          },
+        { T::RWTexture2DArray,        "image2DArray"     },
+        { T::RWTexture3D,             "image3D"          },
 
         { T::Texture1D,               "sampler1D"        },
         { T::Texture1DArray,          "sampler1DArray"   },
@@ -241,11 +241,11 @@ static std::map<BufferType, std::string> GenerateBufferTypeMapVKSL()
         { T::AppendStructuredBuffer,  "buffer"           },
         { T::ConsumeStructuredBuffer, "buffer"           },
 
-      //{ T::RWTexture1D,             ""                 },
-      //{ T::RWTexture1DArray,        ""                 },
-      //{ T::RWTexture2D,             ""                 },
-      //{ T::RWTexture2DArray,        ""                 },
-      //{ T::RWTexture3D,             ""                 },
+        { T::RWTexture1D,             "image1D"          },
+        { T::RWTexture1DArray,        "image1DArray"     },
+        { T::RWTexture2D,             "image2D"          },
+        { T::RWTexture2DArray,        "image2DArray"     },
+        { T::RWTexture3D,             "image3D"          },
 
         { T::Texture1D,               "texture1D"        },
         { T::Texture1DArray,          "texture1DArray"   },

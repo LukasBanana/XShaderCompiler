@@ -27,6 +27,7 @@ This helper class modifies the AST after context analysis and supports the follo
 1. Eliminate vector subscripts from scalar types
 2. Convert implicit casts to explicit casts
 3. Wrap nested unary expression into brackets (e.g. "- - a" -> "-(-a)")
+4. Convert access to 'image' types through array indexers to imageStore/imageLoad calls (e.g. myImage[index] = 5 -> imageStore(myImage, index, 5))
 */
 class ExprConverter : public Visitor
 {
@@ -40,7 +41,8 @@ class ExprConverter : public Visitor
             ConvertVectorCompare    = (1 << 1),
             ConvertImplicitCasts    = (1 << 2),
             WrapUnaryExpr           = (1 << 3),
-            All                     = (ConvertVectorSubscripts | ConvertImplicitCasts | ConvertVectorCompare | WrapUnaryExpr),
+            ConvertImageAccess      = (1 << 4),
+            All                     = (ConvertVectorSubscripts | ConvertImplicitCasts | ConvertVectorCompare | WrapUnaryExpr | ConvertImageAccess),
         };
 
         // Converts the expressions in the specified AST.
@@ -48,6 +50,7 @@ class ExprConverter : public Visitor
 
         void ConvertExprVectorSubscript(ExprPtr& expr);
         void ConvertExprVectorCompare(ExprPtr& expr);
+        void ConvertExprImageAccess(ExprPtr& expr);
 
         void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = true);
         void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
@@ -73,6 +76,7 @@ class ExprConverter : public Visitor
         void IfFlaggedConvertExprVectorCompare(ExprPtr& expr);
         void IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
         void IfFlaggedConvertExprIntoBracket(ExprPtr& expr);
+        void IfFlaggedConvertExprImageAccess(ExprPtr& expr);
 
         /* ----- Visitor implementation ----- */
 

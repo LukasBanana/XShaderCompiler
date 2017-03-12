@@ -193,6 +193,9 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
 
         { T::StreamOutput_Append,              "EmitVertex"            },
         { T::StreamOutput_RestartStrip,        "EndPrimitive"          },
+
+        { T::Image_Load,                       "imageLoad"             },
+        { T::Image_Store,                      "imageStore"            },
     };
 }
 
