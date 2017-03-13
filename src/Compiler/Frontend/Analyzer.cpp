@@ -220,7 +220,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
         
         /* Check if identifier exists but does not name a function */
         if (Fetch(ident, ast) != nullptr)
-            Error(R_IdentDoesNotNameAFunction(ident), ast);
+            Error(R_IdentIsNotFunc(ident), ast);
     }
     catch (const ASTRuntimeError& e)
     {

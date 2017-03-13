@@ -18,6 +18,7 @@ DECL_REPORT( Syntax,                            "syntax"                        
 DECL_REPORT( Context,                           "context"                                                                                           );
 DECL_REPORT( Reflection,                        "reflection"                                                                                        );
 DECL_REPORT( CodeGeneration,                    "code generation"                                                                                   );
+DECL_REPORT( CodeReflection,                    "core reflection"                                                                                   );
 DECL_REPORT( ContextError,                      "context error"                                                                                     );
 DECL_REPORT( InternalError,                     "internal error"                                                                                    );
 DECL_REPORT( In,                                "in"                                                                                                ); // e.g. "error in 'context'"
@@ -30,6 +31,7 @@ DECL_REPORT( TessEvaluationShader,              "tessellation-evaluation shader"
 DECL_REPORT( GeometryShader,                    "geometry shader"                                                                                   );
 DECL_REPORT( FragmentShader,                    "fragment shader"                                                                                   );
 DECL_REPORT( ComputeShader,                     "compute shader"                                                                                    );
+DECL_REPORT( InvalidOutputStream,               "invalid output stream"                                                                             );
 
 /* ----- Token ----- */
 
@@ -89,7 +91,6 @@ DECL_REPORT( PPDirectiveConcat,                 "preprocessor directive concaten
 DECL_REPORT( PPLineBreak,                       "preprocessor line break"                                                                           );
 DECL_REPORT( EndOfStream,                       "end-of-stream"                                                                                     );
 
-
 /* ----- AST ----- */
 
 DECL_REPORT( IllegalTypeOfFuncObj,              "illegal type denoter of function object '{0}'"                                                     );
@@ -100,11 +101,8 @@ DECL_REPORT( InvalidSubscriptBaseType,          "invalid base type denoter for v
 DECL_REPORT( MissingVarIdentSymbolRef,          "missing symbol reference to derive type denoter of variable identifier '{0}'"                      );
 DECL_REPORT( MissingFuncRefToDeriveExprType,    "missing function reference to derive expression type"                                              );
 DECL_REPORT( MissingDeclStmntRefToDeriveType,   "missing reference to declaration statement to derive type denoter of variable identifier '{0}'"    );
-DECL_REPORT( UndefinedSymbol,                   "undefined symbol '{0}'"                                                                            );
 DECL_REPORT( FuncDoesntTake1Param,              "function '{0}' does not take {1} parameter"                                                        );
 DECL_REPORT( FuncDoesntTakeNParams,             "function '{0}' does not take {1} parameters"                                                       );
-DECL_REPORT( AmbiguousFuncCall,                 "ambiguous function call '{0}({1})'"                                                                );
-DECL_REPORT( AmbiguousIntrinsicCall,            "ambiguous intrinsic call[ '{0}']"                                                                  );
 DECL_REPORT( TernaryExpr,                       "ternary expression"                                                                                );
 DECL_REPORT( BinaryExpr,                        "binary expression '{0}'"                                                                           );
 DECL_REPORT( CastExpr,                          "cast expression"                                                                                   );
@@ -117,7 +115,6 @@ DECL_REPORT( TypeMismatchInInitializer,         "type mismatch in initializer ex
 DECL_REPORT( ExpectedInitializerForArrayAccess, "initializer expression expected for array access"                                                  );
 DECL_REPORT( NotEnoughElementsInInitializer,    "not enough elements in initializer expression"                                                     );
 DECL_REPORT( NotEnoughIndicesForInitializer,    "not enough array indices specified for initializer expression"                                     );
-
 
 /* ----- ASTEnums ----- */
 
@@ -142,7 +139,6 @@ DECL_REPORT( InvalidIntrinsicArgType,           "invalid argument type denoter f
 DECL_REPORT( InvalidIntrinsicArgCount,          "invalid number of arguments for intrinsic[ '{0}'][ (expected {1}, but got {2})]"                   );
 DECL_REPORT( InvalidIntrinsicArgs,              "invalid arguments for intrinsic[ '{0}']"                                                           );
 
-
 /* ----- TypeDenoter ------ */
 
 DECL_REPORT( VarIdentCantBeResolved,            "variable identifier can not be resolved"                                                           );
@@ -153,13 +149,22 @@ DECL_REPORT( MissingRefToAliasDecl,             "missing reference to alias decl
 DECL_REPORT( MissingBaseTypeInArray,            "missing base type in array type denoter"                                                           );
 DECL_REPORT( MissingRefInTypeDen,               "missing reference to declaration[ in {0}]"                                                         );
 
+/* ----- SymbolTable ----- */
+
+DECL_REPORT( UndefinedSymbol,                   "undefined symbol '{0}'"                                                                            );
+DECL_REPORT( AmbiguousSymbol,                   "symbol '{0}' is ambiguous"                                                                         );
+DECL_REPORT( AmbiguousFuncCall,                 "ambiguous function call '{0}({1})'"                                                                );
+DECL_REPORT( AmbiguousIntrinsicCall,            "ambiguous intrinsic call[ '{0}']"                                                                  );
+DECL_REPORT( IdentIsNotFunc,                    "identifier '{0}' does not name a function"                                                         );
+DECL_REPORT( IdentIsNotVar,                     "identifier '{0}' does not name a variable"                                                         );
+DECL_REPORT( IdentIsNotType,                    "identifier '{0}' does not name a type"                                                             );
+DECL_REPORT( IdentIsNotVarOrBufferOrSampler,    "identifier '{0}' does not name a variable, buffer, or sampler"                                     );
 
 /* ----- Scanner ----- */
 
 DECL_REPORT( LexicalError,                      "lexical error"                                                                                     );
 DECL_REPORT( UnexpectedChar,                    "unexpected character '{0}'[ (expected '{1}')]"                                                     );
 DECL_REPORT( MissingDigitSequenceAfterExpr,     "missing digit-sequence after exponent part"                                                        );
-
 
 /* ----- Parser ----- */
 
@@ -174,7 +179,6 @@ DECL_REPORT( MissingScanner,                    "missing token scanner"         
 DECL_REPORT( SubExprMustNotBeEmpty,             "sub-expressions must not be empty"                                                                 );
 DECL_REPORT( SubExprAndOpsUncorrelated,         "sub-expressions and operators have uncorrelated number of elements"                                );
 DECL_REPORT( TooManySyntaxErrors,               "too many syntax errors"                                                                            );
-
 
 /* ----- PreProcessor ----- */
 
@@ -199,12 +203,10 @@ DECL_REPORT( UnexpectedEndOfTokenString,        "unexpected end of token string"
 DECL_REPORT( RemainingTokensInPragma,           "remaining unhandled tokens in '#pragma'-directive"                                                 );
 DECL_REPORT( EmptyPragma,                       "empty '#pragma'-directive"                                                                         );
 
-
 /* ----- Analyzer ----- */
 
 DECL_REPORT( UndeclaredIdent,                   "undeclared identifier \"{0}\"[ in '{1}'][; did you mean \"{2}\"?]"                                 );
 DECL_REPORT( StatementWithEmptyBody,            "<{0}> statement with empty body"                                                                   );
-DECL_REPORT( IdentDoesNotNameAFunction,         "identifier '{0}' does not name a function"                                                         );
 DECL_REPORT( MissingReferenceToStructInType,    "missing reference to structure declaration in type denoter '{0}'"                                  );
 DECL_REPORT( MissingVariableType,               "missing variable type"                                                                             );
 DECL_REPORT( ParameterCantBeUniformAndOut,      "type attributes 'out' and 'inout' can not be used together with 'uniform' for a parameter"         );
@@ -214,7 +216,6 @@ DECL_REPORT( ConditionalExprNotScalar,          "conditional expression must eva
 DECL_REPORT( ExpectedConstExpr,                 "expected constant expression"                                                                      );
 DECL_REPORT( ExpectedConstIntExpr,              "expected constant integer expression"                                                              );
 DECL_REPORT( ExpectedConstFloatExpr,            "expected constant floating-point expression"                                                       );
-
 
 /* ----- ConstExprEvaluator ----- */
 
@@ -228,11 +229,9 @@ DECL_REPORT( DivisionByZero,                    "division by zero"              
 DECL_REPORT( TypeCast,                          "type cast '{0}'"                                                                                   );
 DECL_REPORT( InitializerList,                   "initializer list"                                                                                  );
 
-
 /* ----- ExprConverter ----- */
 
 DECL_REPORT( MissingArrayIndexInOp,             "missing array index in operator of '{0}'"                                                          );
-
 
 /* ------ ReferenceAnalyzer ----- */
 
@@ -240,25 +239,21 @@ DECL_REPORT( CallStack,                         "call stack"                    
 DECL_REPORT( IllegalRecursiveCall,              "illegal recursive call[ of function '{0}']"                                                        );
 DECL_REPORT( MissingFuncImpl,                   "missing function implementation[ for '{0}']"                                                       );
 
-
 /* ------ ReflectionAnalyzer ----- */
 
 DECL_REPORT( InvalidTypeOrArgCount,             "invalid type or invalid number of arguments"                                                       );
 DECL_REPORT( InvalidArgCount,                   "invalid number of arguments[ for {0}]"                                                             );
 DECL_REPORT( FailedToInitializeSamplerValue,    "{0} to initialize sampler value '{1}'"                                                             );
 
-
 /* ----- GLSLConverter ----- */
 
 DECL_REPORT( SelfParamLevelUnderflow,           "'self'-parameter level underflow"                                                                  );
 DECL_REPORT( MissingSelfParamForMemberFunc,     "missing 'self'-parameter for member function: {0}"                                                 );
 
-
 /* ----- GLSLExtensionAgent ----- */
 
 DECL_REPORT( GLSLExtensionOrVersionRequired,    "GLSL extension '{0}' or shader output version '{1}' required"                                      );
 DECL_REPORT( NoGLSLExtensionVersionRegisterd,   "no GLSL version is registered for the extension '{0}'"                                             );
-
 
 /* ----- GLSLGenerator ----- */
 
@@ -285,7 +280,6 @@ DECL_REPORT( NotAllInterpModMappedToGLSL,       "not all interpolation modifiers
 DECL_REPORT( CantTranslateSamplerToGLSL,        "can not translate sampler state object to GLSL sampler"                                            );
 DECL_REPORT( FailedToWriteLiteralType,          "failed to write type denoter for literal[ '{0}']"                                                  );
 
-
 /* ----- GLSLPreProcessor ----- */
 
 DECL_REPORT( MacrosBeginWithGLReserved,         "macros beginning with 'GL_' are reserved[: {0}]"                                                   );
@@ -299,17 +293,20 @@ DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (
 DECL_REPORT( ExtensionNotSupported,             "extension not supported[: {0}]"                                                                    );
 DECL_REPORT( InvalidGLSLExtensionBehavior,      "invalid extension behavior '{0}' (must be 'enable', 'require', 'warn', or 'disable')"              );
 
-
 /* ----- HLSLIntrinsics ----- */
 
 DECL_REPORT( FailedToDeriveIntrinsicType,       "failed to derive type denoter for intrinsic[ '{0}']"                                               );
 DECL_REPORT( FailedToDeriveIntrinsicParamType,  "failed to derive parameter type denoter for intrinsic[ '{0}']"                                     );
 
-
 /* ----- HLSLKeywords ----- */
 
 DECL_REPORT( FailedToMapFromHLSLKeyword,        "failed to map HLSL keyword '{0}' to {1}"                                                           );
-DECL_REPORT( InvalidSystemValueSemantic,        "invalid system value semantic \"{0}\"" );
+DECL_REPORT( InvalidSystemValueSemantic,        "invalid system value semantic \"{0}\""                                                             );
+
+/* ----- HLSLScanner ----- */
+
+DECL_REPORT( KeywordReservedForFutureUse,       "keyword[ '{0}'] is reserved for future use"                                                        );
+DECL_REPORT( KeywordNotSupportedYet,            "keyword[ '{0}'] is currently not supported"                                                        );
 
 
 

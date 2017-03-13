@@ -7,6 +7,7 @@
 
 #include "HLSLScanner.h"
 #include "HLSLKeywords.h"
+#include "ReportIdents.h"
 #include <cctype>
 
 
@@ -177,9 +178,9 @@ TokenPtr HLSLScanner::ScanIdentifier()
     if (it != HLSLKeywords().end())
     {
         if (it->second == Token::Types::Reserved)
-            Error("keyword '" + spell + "' is reserved for future use");
+            Error(R_KeywordReservedForFutureUse(spell));
         else if (it->second == Token::Types::Unsupported)
-            Error("keyword '" + spell + "' is currently not supported");
+            Error(R_KeywordNotSupportedYet(spell));
         else
             return Make(it->second, spell);
     }
