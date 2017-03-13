@@ -16,6 +16,7 @@ DECL_REPORT( Error,                             "error"                         
 DECL_REPORT( Syntax,                            "syntax"                                                                                            );
 DECL_REPORT( Context,                           "context"                                                                                           );
 DECL_REPORT( Reflection,                        "reflection"                                                                                        );
+DECL_REPORT( CodeGeneration,                    "code generation"                                                                                   );
 DECL_REPORT( ContextError,                      "context error"                                                                                     );
 DECL_REPORT( InternalError,                     "internal error"                                                                                    );
 DECL_REPORT( In,                                "in"                                                                                                ); // e.g. "error in 'context'"
@@ -213,7 +214,7 @@ DECL_REPORT( MissingFuncImpl,                   "missing function implementation
 /* ------ ReflectionAnalyzer ----- */
 
 DECL_REPORT( InvalidTypeOrArgCount,             "invalid type or invalid number of arguments"                                                       );
-DECL_REPORT( InvalidArgCount,                   "invalid number of arguments"                                                                       );
+DECL_REPORT( InvalidArgCount,                   "invalid number of arguments[ for {0}]"                                                             );
 DECL_REPORT( FailedToInitializeSamplerValue,    "{0} to initialize sampler value '{1}'"                                                             );
 
 

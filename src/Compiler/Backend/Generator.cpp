@@ -7,6 +7,7 @@
 
 #include "Generator.h"
 #include "AST.h"
+#include "ReportIdents.h"
 #include <sstream>
 #include <ctime>
 #include <chrono>
@@ -18,7 +19,7 @@ namespace Xsc
 
 
 Generator::Generator(Log* log) :
-    reportHandler_{ "code generation", log }
+    reportHandler_{ R_CodeGeneration, log }
 {
 }
 
@@ -57,11 +58,6 @@ bool Generator::GenerateCode(
 void Generator::Error(const std::string& msg, const AST* ast)
 {
     reportHandler_.Error(true, msg, program_->sourceCode.get(), (ast ? ast->area : SourceArea::ignore));
-}
-
-void Generator::ErrorInvalidNumArgs(const std::string& functionName, const AST* ast)
-{
-    Error("invalid number of arguments for " + functionName, ast);
 }
 
 void Generator::Warning(const std::string& msg, const AST* ast)
