@@ -33,11 +33,27 @@ void ToStringList(std::vector<std::string>& list)
 ReportIdent::ReportIdent(const char* s) :
     s_{ s }
 {
+    /*
+    Check if there is any special character inside the string,
+    which can be used to join the string (see JoinString function).
+    */
+    while (*s != '\0')
+    {
+        if (*s == '\\' || *s == '{' || *s == '}' || *s == '[' || *s == ']')
+        {
+            canJoin_ = true;
+            break;
+        }
+        ++s;
+    }
 }
 
 std::string ReportIdent::Join(const std::vector<std::string>& values) const
 {
-    return JoinString(s_, values);
+    if (canJoin_)
+        return JoinString(s_, values);
+    else
+        return std::string(s_);
 }
 
 

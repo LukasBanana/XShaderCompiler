@@ -6,6 +6,7 @@
  */
 
 #include "Parser.h"
+#include "ReportIdents.h"
 #include "AST.h"
 #include <algorithm>
 
@@ -24,8 +25,8 @@ Parser::~Parser()
  */
 
 Parser::Parser(Log* log) :
-    reportHandler_  { "syntax", log },
-    log_            { log           }
+    reportHandler_  { R_Syntax(), log },
+    log_            { log             }
 {
 }
 
@@ -67,14 +68,8 @@ void Parser::ErrorUnexpected(const std::string& hint, const Token* tkn, bool bre
     /* Increment unexpected token counter */
     IncUnexpectedTokenCounter();
 
-    /* Construct error message */
-    std::string msg = "unexpected token: " + Token::TypeToString(tkn->Type());
-
-    if (!hint.empty())
-        msg += " (" + hint + ")";
-
     /* Submit error */
-    Error(msg, tkn, breakWithExpection);
+    Error(R_UnexpectedToken(Token::TypeToString(tkn->Type()), hint), tkn, breakWithExpection);
 
     /* Ignore unexpected token to produce further reports */
     AcceptIt();
@@ -86,12 +81,12 @@ void Parser::ErrorUnexpected(const Tokens type, const Token* tkn, bool breakWith
     if (typeName.empty())
         ErrorUnexpected("", tkn, breakWithExpection);
     else
-        ErrorUnexpected("expected: " + typeName, tkn, breakWithExpection);
+        ErrorUnexpected(R_Expected() + ": " + typeName, tkn, breakWithExpection);
 }
 
 void Parser::ErrorInternal(const std::string& msg, const std::string& procName)
 {
-    reportHandler_.Error(true, msg + " (in function: " + procName + ")");
+    reportHandler_.Error(true, msg + R_InFunction(procName));
 }
 
 void Parser::Warning(const std::string& msg, const SourceArea& area)
@@ -120,13 +115,13 @@ void Parser::PushScannerSource(const SourceCodePtr& source, const std::string& f
     /* Make a new token scanner */
     auto scanner = MakeScanner();
     if (!scanner)
-        throw std::runtime_error("failed to create token scanner");
+        throw std::runtime_error(R_FailedToCreateScanner());
 
     scannerStack_.push({ scanner, filename, nullptr });
 
     /* Start scanning */
     if (!scanner->ScanSource(source))
-        throw std::runtime_error("failed to scan source code");
+        throw std::runtime_error(R_FailedToScanSource());
 
     /* Set initial source origin for scanner */
     scanner->Source()->NextSourceOrigin(filename, 0);
@@ -155,7 +150,7 @@ bool Parser::PopScannerSource()
 Scanner& Parser::GetScanner()
 {
     if (scannerStack_.empty())
-        throw std::runtime_error("missing token scanner");
+        throw std::runtime_error(R_MissingScanner());
     return *(scannerStack_.top().scanner);
 }
 
@@ -185,7 +180,7 @@ TokenPtr Parser::AcceptIt()
 {
     /* Check if end-of-stream has already reached */
     if (tkn_ && tkn_->Type() == Tokens::EndOfStream)
-        Error("unexpected end-of-stream", tkn_.get());
+        Error(R_UnexpectedEndOfStream(), tkn_.get());
 
     /* Scan next token and return previous one */
     auto prevTkn = tkn_;
@@ -425,12 +420,12 @@ ExprPtr Parser::BuildBinaryExprTree(
     std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops, std::vector<SourcePosition>& opsPos)
 {
     if (exprs.empty())
-        ErrorInternal("sub-expressions must not be empty", __FUNCTION__);
+        ErrorInternal(R_SubExprMustNotBeEmpty(), __FUNCTION__);
 
     if (exprs.size() > 1)
     {
         if (exprs.size() != ops.size() + 1 || exprs.size() != opsPos.size() + 1)
-            ErrorInternal("sub-expressions and operators have uncorrelated number of elements", __FUNCTION__);
+            ErrorInternal(R_SubExprAndOpsUncorrelated(), __FUNCTION__);
 
         auto ast = Make<BinaryExpr>();
 
@@ -465,7 +460,7 @@ void Parser::IncUnexpectedTokenCounter()
 
     /* Track how many errors of this kind happend without a single accepted token */
     if (unexpectedTokenCounter_ > unexpectedTokenLimit_)
-        reportHandler_.SubmitReport(true, Report::Types::Error, "error", "too many syntax errors");
+        reportHandler_.SubmitReport(true, Report::Types::Error, R_Error(), R_TooManySyntaxErrors());
 }
 
 void Parser::AssertTokenType(const Tokens type)
@@ -493,7 +488,7 @@ void Parser::AssertTokenSpell(const std::string& spell)
         IncUnexpectedTokenCounter();
 
         /* Submit error */
-        Error("unexpected token spelling '" + tkn_->Spell() + "' (expected '" + spell + "')", true, false);
+        Error(R_UnexpectedTokenSpell(tkn_->Spell(), spell), true, false);
 
         /* Ignore unexpected token to produce further reports */
         AcceptIt();

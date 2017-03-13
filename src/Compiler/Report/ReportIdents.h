@@ -110,9 +110,16 @@ class ReportIdent
             return Join(values);
         }
 
+        // Returns only the string without any transformation.
+        inline operator std::string () const
+        {
+            return Join({});
+        }
+
     private:
         
-        const char* s_;
+        const char* s_          = nullptr;
+        bool        canJoin_    = false;
 
 };
 
