@@ -11,6 +11,7 @@
 #include "ASTFactory.h"
 #include "Exception.h"
 #include "Helper.h"
+#include "ReportIdents.h"
 
 
 namespace Xsc
@@ -328,7 +329,7 @@ void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr
                 }
             }
             else
-                RuntimeErr("missing array index in operator of '" + bufferTypeDen->ToString() + "'", varAccessExpr);
+                RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), varAccessExpr);
         }
     }
 }
@@ -365,7 +366,7 @@ void ExprConverter::ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccess
                     );
                 }
                 else
-                    RuntimeErr("missing array index in operator of '" + bufferTypeDen->ToString() + "'", arrayAccessExpr);
+                    RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), arrayAccessExpr);
             }
         }
     }

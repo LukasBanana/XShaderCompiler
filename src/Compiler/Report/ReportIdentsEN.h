@@ -20,6 +20,7 @@ DECL_REPORT( InternalError,                     "internal error"                
 DECL_REPORT( In,                                "in"                                                                                                ); // e.g. "error in 'context'"
 DECL_REPORT( Anonymous,                         "anonymous"                                                                                         );
 DECL_REPORT( CandidatesAre,                     "candidates are"                                                                                    );
+DECL_REPORT( StackUnderflow,                    "stack underflow[ in {0}]"                                                                          );
 
 
 /* ----- Token ----- */
@@ -31,9 +32,9 @@ DECL_REPORT( FloatLiteral,                      "floating-point literal"        
 DECL_REPORT( StringLiteral,                     "string literal"                                                                                    );
 DECL_REPORT( CharLiteral,                       "character literal"                                                                                 );
 DECL_REPORT( NullLiteral,                       "null literal"                                                                                      );
-DECL_REPORT( AssignOp,                          "assign operator"                                                                                   );
-DECL_REPORT( BinaryOp,                          "binary operator"                                                                                   );
-DECL_REPORT( UnaryOp,                           "unary operator"                                                                                    );
+DECL_REPORT( AssignOp,                          "assign operator[ '{0}']"                                                                           );
+DECL_REPORT( BinaryOp,                          "binary operator[ '{0}']"                                                                           );
+DECL_REPORT( UnaryOp,                           "unary operator[ '{0}']"                                                                            );
 DECL_REPORT( TernaryOp,                         "ternary operator"                                                                                  );
 DECL_REPORT( StringType,                        "string type denoter"                                                                               );
 DECL_REPORT( ScalarType,                        "scalar type denoter"                                                                               );
@@ -168,6 +169,24 @@ DECL_REPORT( ConditionalExprNotScalar,          "conditional expression must eva
 DECL_REPORT( ExpectedConstExpr,                 "expected constant expression"                                                                      );
 DECL_REPORT( ExpectedConstIntExpr,              "expected constant integer expression"                                                              );
 DECL_REPORT( ExpectedConstFloatExpr,            "expected constant floating-point expression"                                                       );
+
+
+/* ----- ConstExprEvaluator ----- */
+
+DECL_REPORT( ExprEvaluator,                     "expression evaluator"                                                                              );
+DECL_REPORT( IllegalExprInConstExpr,            "illegal {0} in constant expression"                                                                );
+DECL_REPORT( DynamicArrayDim,                   "dynamic array dimension"                                                                           );
+DECL_REPORT( BoolLiteralValue,                  "boolean literal value '{0}'"                                                                       );
+DECL_REPORT( LiteralType,                       "literal type '{0}'"                                                                                );
+DECL_REPORT( TypeSpecifier,                     "type specifier"                                                                                    );
+DECL_REPORT( DivisionByZero,                    "division by zero"                                                                                  );
+DECL_REPORT( TypeCast,                          "type cast '{0}'"                                                                                   );
+DECL_REPORT( InitializerList,                   "initializer list"                                                                                  );
+
+
+/* ----- ExprConverter ----- */
+
+DECL_REPORT( MissingArrayIndexInOp,             "missing array index in operator of '{0}'"                                                          );
 
 
 #endif
