@@ -11,6 +11,7 @@
 
 /* ----- Common ----- */
 
+DECL_REPORT( Message,                           "message"                                                                                           );
 DECL_REPORT( Warning,                           "warning"                                                                                           );
 DECL_REPORT( Error,                             "error"                                                                                             );
 DECL_REPORT( Syntax,                            "syntax"                                                                                            );
@@ -103,6 +104,7 @@ DECL_REPORT( UndefinedSymbol,                   "undefined symbol '{0}'"        
 DECL_REPORT( FuncDoesntTake1Param,              "function '{0}' does not take {1} parameter"                                                        );
 DECL_REPORT( FuncDoesntTakeNParams,             "function '{0}' does not take {1} parameters"                                                       );
 DECL_REPORT( AmbiguousFuncCall,                 "ambiguous function call '{0}({1})'"                                                                );
+DECL_REPORT( AmbiguousIntrinsicCall,            "ambiguous intrinsic call[ '{0}']"                                                                  );
 DECL_REPORT( TernaryExpr,                       "ternary expression"                                                                                );
 DECL_REPORT( BinaryExpr,                        "binary expression '{0}'"                                                                           );
 DECL_REPORT( CastExpr,                          "cast expression"                                                                                   );
@@ -168,6 +170,30 @@ DECL_REPORT( MissingScanner,                    "missing token scanner"         
 DECL_REPORT( SubExprMustNotBeEmpty,             "sub-expressions must not be empty"                                                                 );
 DECL_REPORT( SubExprAndOpsUncorrelated,         "sub-expressions and operators have uncorrelated number of elements"                                );
 DECL_REPORT( TooManySyntaxErrors,               "too many syntax errors"                                                                            );
+
+
+/* ----- PreProcessor ----- */
+
+DECL_REPORT( UnknownPPDirective,                "unknown preprocessor directive: \"{0}\""                                                           );
+DECL_REPORT( UnknownMatrixPackAlignment,        "unknown matrix pack alignment \"{0}\""                                                             );
+DECL_REPORT( UnknownPragma,                     "unknown pragma: \"{0}\""                                                                           );
+DECL_REPORT( InvalidMacroIdentTokenArg,         "invalid argument for macro identifier token"                                                       );
+DECL_REPORT( FailedToUndefMacro,                "failed to undefine macro \"{0}\""                                                                  );
+DECL_REPORT( MacroRedef,                        "redefinition of macro \"{0}\"[ {1}]"                                                               );
+DECL_REPORT( PrevDefinitionAt,                  "previous definition at ({0})"                                                                      );
+DECL_REPORT( WithMismatchInParamListAndBody,    "with mismatch in parameter list and body definition"                                               );
+DECL_REPORT( WithMismatchInParamList,           "with mismatch in parameter list"                                                                   );
+DECL_REPORT( WithMismatchInBody,                "with mismatch in body definition"                                                                  );
+DECL_REPORT( MissingIfDirective,                "missing '#if'-directive to closing '#endif', '#else', or '#elif'"                                  );
+DECL_REPORT( MissingEndIfDirective,             "missing '#endif'-directive for open '#if', '#ifdef', or '#ifndef'"                                 );
+DECL_REPORT( TooManyArgsForMacro,               "too many arguments for macro \"{0}\"[ (expected {1} but got {2})]"                                 );
+DECL_REPORT( TooFewArgsForMacro,                "too few arguments for macro \"{0}\"[ (expected {1} but got {2})]"                                  );
+DECL_REPORT( ExpectedEndIfDirective,            "expected '#endif'-directive after previous '#else'[, but got '{0}']"                               );
+DECL_REPORT( PragmaCantBeHandled,               "pragma \"{0}\" can currently not be handled"                                                       );
+DECL_REPORT( UnexpectedTokenInPragma,           "unexpected token in '#pragam'-directive"                                                           );
+DECL_REPORT( UnexpectedEndOfTokenString,        "unexpected end of token string"                                                                    );
+DECL_REPORT( RemainingTokensInPragma,           "remaining unhandled tokens in '#pragma'-directive"                                                 );
+DECL_REPORT( EmptyPragma,                       "empty '#pragma'-directive"                                                                         );
 
 
 /* ----- Analyzer ----- */
@@ -256,6 +282,20 @@ DECL_REPORT( NotAllStorageClassesMappedToGLSL,  "not all storage classes can be 
 DECL_REPORT( NotAllInterpModMappedToGLSL,       "not all interpolation modifiers can be mapped to GLSL keywords"                                    );
 DECL_REPORT( CantTranslateSamplerToGLSL,        "can not translate sampler state object to GLSL sampler"                                            );
 DECL_REPORT( FailedToWriteLiteralType,          "failed to write type denoter for literal[ '{0}']"                                                  );
+
+
+/* ----- GLSLPreProcessor ----- */
+
+DECL_REPORT( MacrosBeginWithGLReserved,         "macros beginning with 'GL_' are reserved[: {0}]"                                                   );
+DECL_REPORT( MacrosWithTwoUnderscoresReserved,  "macros containing consecutive underscores '__' are reserved[: {0}]"                                );
+DECL_REPORT( IllegalRedefOfStdMacro,            "illegal redefinition of standard macro[: {0}]"                                                     );
+DECL_REPORT( IllegalUndefOfStdMacro,            "illegal undefinition of standard macro[: {0}]"                                                     );
+DECL_REPORT( VersionMustBeFirstDirective,       "'#version'-directive must be the first directive"                                                  );
+DECL_REPORT( UnknwonGLSLVersion,                "unknown GLSL version '{0}'"                                                                        );
+DECL_REPORT( NoProfileForGLSLVersionBefore150,  "versions before 150 do not allow a profile token"                                                  );
+DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (must be 'core' or 'compatibility')"                                 );
+DECL_REPORT( ExtensionNotSupported,             "extension not supported[: {0}]"                                                                    );
+DECL_REPORT( InvalidGLSLExtensionBehavior,      "invalid extension behavior '{0}' (must be 'enable', 'require', 'warn', or 'disable')"              );
 
 
 #endif

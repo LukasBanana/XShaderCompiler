@@ -9,6 +9,7 @@
 #include "AST.h"
 #include "ConstExprEvaluator.h"
 #include "Helper.h"
+#include "ReportIdents.h"
 #include <sstream>
 
 
@@ -89,9 +90,9 @@ void PreProcessor::ParseDirective(const std::string& directive, bool ignoreUnkno
     else
     {
         if (ignoreUnknown)
-            Warning("unknown preprocessor directive: \"" + directive + "\"");
+            Warning(R_UnknownPPDirective(directive));
         else
-            Error("unknown preprocessor directive: \"" + directive + "\"", true, false);
+            Error(R_UnknownPPDirective(directive), true, false);
         ParseDirectiveTokenString();
     }
 }
@@ -99,7 +100,7 @@ void PreProcessor::ParseDirective(const std::string& directive, bool ignoreUnkno
 void PreProcessor::DefineMacro(const Macro& macro)
 {
     if (!macro.identTkn)
-        throw std::invalid_argument("invalid argument for macro identifier token");
+        throw std::invalid_argument(R_InvalidMacroIdentTokenArg);
 
     if (OnDefineMacro(macro))
     {
@@ -139,7 +140,7 @@ void PreProcessor::UndefineMacro(const std::string& ident, const Token* tkn)
             macros_.erase(it);
     }
     else
-        Warning("failed to undefine macro \"" + ident + "\"", tkn);
+        Warning(R_FailedToUndefMacro(ident), tkn);
 }
 
 bool PreProcessor::IsDefined(const std::string& ident) const
@@ -160,19 +161,19 @@ bool PreProcessor::OnRedefineMacro(const Macro& macro, const Macro& previousMacr
     auto mismatchBody   = (previousMacro.tokenString != macro.tokenString);
 
     /* Construct warning message */
-    std::string warnMsg = "redefinition of macro \"" + macro.identTkn->Spell() + "\"";
+    std::string contextDesc;
 
     if (mismatchParam && mismatchBody)
-        warnMsg += " with mismatch in parameter list and body definition";
+        contextDesc = R_WithMismatchInParamListAndBody;
     else if (mismatchParam)
-        warnMsg += " with mismatch in parameter list";
+        contextDesc = R_WithMismatchInParamList;
     else if (mismatchBody)
-        warnMsg += " with mismatch in body definition";
+        contextDesc = R_WithMismatchInBody;
 
     if (auto previousMacroPos = previousMacro.identTkn->Pos())
-        ReportHandler::HintForNextReport("previous definition at (" + previousMacroPos.ToString() + ")");
+        ReportHandler::HintForNextReport(R_PrevDefinitionAt(previousMacroPos.ToString()));
 
-    Warning(warnMsg, macro.identTkn.get());
+    Warning(R_MacroRedef(macro.identTkn->Spell(), contextDesc), macro.identTkn.get());
 
     /* Always allow to redefine macros per default */
     return true;
@@ -243,7 +244,7 @@ void PreProcessor::SetIfBlock(const TokenPtr& directiveToken, bool active, bool 
 void PreProcessor::PopIfBlock()
 {
     if (ifBlockStack_.empty())
-        Error("missing '#if'-directive to closing '#endif', '#else', or '#elif'", true);
+        Error(R_MissingIfDirective, true);
     else
         ifBlockStack_.pop();
 
@@ -406,7 +407,7 @@ void PreProcessor::ParseProgram()
         const auto& ifBlock = ifBlockStack_.top();
         GetReportHandler().Error(
             false,
-            "missing '#endif'-directive for open '#if', '#ifdef', or '#ifndef'",
+            R_MissingEndIfDirective,
             ifBlock.directiveSource.get(),
             ifBlock.directiveToken->Area()
         );
@@ -521,12 +522,9 @@ TokenPtrString PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identTo
         std::string errorMsg;
 
         if (arguments.size() > macro.parameters.size())
-            errorMsg = "too many";
+            errorMsg = R_TooManyArgsForMacro(identToken->Spell(), macro.parameters.size(), arguments.size());
         if (arguments.size() < macro.parameters.size())
-            errorMsg = "too few";
-
-        errorMsg += " arguments for macro \"" + identToken->Spell() + "\"";
-        errorMsg += " (expected " + std::to_string(macro.parameters.size()) + " but got " + std::to_string(arguments.size()) + ")";
+            errorMsg = R_TooFewArgsForMacro(identToken->Spell(), macro.parameters.size(), arguments.size());
 
         Error(errorMsg, identToken.get());
     }
@@ -729,7 +727,7 @@ void PreProcessor::ParseDirectiveElif(bool skipEvaluation)
 {
     /* Check if '#else'-directive is allowed */
     if (!TopIfBlock().elseAllowed)
-        Error("expected '#endif'-directive after previous '#else', but got '#elif'", true);
+        Error(R_ExpectedEndIfDirective("#elif"), true);
 
     /* Pop if-block and parse next if-block in the condExpr-parse function */
     auto parentIfCondition = TopIfBlock().parentActive;
@@ -803,7 +801,7 @@ void PreProcessor::ParseDirectiveElse()
 
     /* Check if '#else'-directive is allowed */
     if (!TopIfBlock().elseAllowed)
-        Error("expected '#endif'-directive after previous '#else', but got another '#else'", true);
+        Error(R_ExpectedEndIfDirective("#else"), true);
 
     /* Pop if-block and push new if-block with negated condExpr */
     SetIfBlock(tkn, true, false);
@@ -849,12 +847,12 @@ void PreProcessor::ParseDirectivePragma()
                 if (!(++tokenIt).ReachedEnd())
                 {
                     if ((*tokenIt)->Type() == Tokens::StringLiteral)
-                        GetReportHandler().SubmitReport(false, Report::Types::Info, "message", (*tokenIt)->SpellContent(), nullptr, (*tokenIt)->Area());
+                        GetReportHandler().SubmitReport(false, Report::Types::Info, R_Message, (*tokenIt)->SpellContent(), nullptr, (*tokenIt)->Area());
                     else
                         ErrorUnexpected(Tokens::StringLiteral, tokenIt->get());
                 }
                 else
-                    Error("unexpected end of token string", prevToken);
+                    Error(R_UnexpectedEndOfTokenString, prevToken);
             }
             else if (command == "pack_matrix")
             {
@@ -872,7 +870,7 @@ void PreProcessor::ParseDirectivePragma()
                     if (alignment == "row_major" || alignment == "column_major")
                         Out() << "#pragma pack_matrix(" << alignment << ")";
                     else
-                        Warning("unknown matrix pack alignment \"" + alignment + "\"", alignmentTkn.get());
+                        Warning(R_UnknownMatrixPackAlignment(alignment), alignmentTkn.get());
                 }
                 catch (const std::exception& e)
                 {
@@ -882,21 +880,21 @@ void PreProcessor::ParseDirectivePragma()
             }
             else if (command == "def" || command == "warning")
             {
-                Warning("pragma \"" + command + "\" can currently not be handled", tokenIt->get());
+                Warning(R_PragmaCantBeHandled(command), tokenIt->get());
                 return;
             }
             else
-                Warning("unknown pragma: \"" + command + "\"", tokenIt->get());
+                Warning(R_UnknownPragma(command), tokenIt->get());
         }
         else
-            Warning("unexpected token in '#pragam'-directive", tokenIt->get());
+            Warning(R_UnexpectedTokenInPragma, tokenIt->get());
 
         /* Check if there are remaining unused tokens in the token string */
         if (!(++tokenIt).ReachedEnd())
-            Warning("remaining unhandled tokens in '#pragma'-directive", tokenIt->get());
+            Warning(R_RemainingTokensInPragma, tokenIt->get());
     }
     else
-        Warning("empty '#pragma'-directive", tkn.get());
+        Warning(R_EmptyPragma, tkn.get());
 }
 
 // '#' 'line' NUMBER STRING-LITERAL?
@@ -931,7 +929,7 @@ void PreProcessor::ParseDirectiveError()
     for (const auto& tkn : tokenString.GetTokens())
         errorMsg += tkn->Spell();
 
-    GetReportHandler().SubmitReport(true, Report::Types::Error, "error", errorMsg, GetScanner().Source(), tkn->Area());
+    GetReportHandler().SubmitReport(true, Report::Types::Error, R_Error, errorMsg, GetScanner().Source(), tkn->Area());
 }
 
 ExprPtr PreProcessor::ParseExpr()
@@ -1002,7 +1000,7 @@ ExprPtr PreProcessor::ParsePrimaryExpr()
 
         default:
         {
-            ErrorUnexpected("expected constant expression", nullptr, true);
+            ErrorUnexpected(R_ExpectedConstExpr, nullptr, true);
         }
         break;
     }
