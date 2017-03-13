@@ -391,7 +391,7 @@ static std::map<Semantic, GLSLSemanticDescriptor> GenerateSemanticMap()
         { T::InstanceID,             { "gl_InstanceID"                } }, // gl_InstanceID (GLSL), gl_InstanceIndex (Vulkan)
         { T::IsFrontFace,            { "gl_FrontFacing"               } },
         { T::OutputControlPointID,   { "gl_InvocationID"              } },
-        { T::FragCoord,               { "gl_FragCoord"                 } },
+        { T::FragCoord,              { "gl_FragCoord"                 } },
         { T::PrimitiveID,            { "gl_PrimitiveID"               } },
         { T::RenderTargetArrayIndex, { "gl_Layer"                     } },
         { T::SampleIndex,            { "gl_SampleID"                  } },
@@ -513,6 +513,7 @@ const std::set<std::string>& ReservedGLSLKeywords()
 
         "buffer",
 
+        // Sampler types
         "sampler1D",
         "sampler2D",
         "sampler3D",
@@ -556,6 +557,43 @@ const std::set<std::string>& ReservedGLSLKeywords()
         "sampler1DArrayShadow",
         "sampler2DArrayShadow",
         "samplerCubeArrayShadow",
+
+        // Image types
+        "image1D",
+        "image2D",
+        "image3D",
+        "image2DRect",
+        "imageCube",
+        "imageBuffer",
+        "image1DArray",
+        "image2DArray",
+        "imageCubeArray",
+        "image2DMS",
+        "image2DMSArray",
+
+        "iimage1D",
+        "iimage2D",
+        "iimage3D",
+        "iimage2DRect",
+        "iimageCube",
+        "iimageBuffer",
+        "iimage1DArray",
+        "iimage2DArray",
+        "iimageCubeArray",
+        "iimage2DMS",
+        "iimage2DMSArray",
+
+        "uimage1D",
+        "uimage2D",
+        "uimage3D",
+        "uimage2DRect",
+        "uimageCube",
+        "uimageBuffer",
+        "uimage1DArray",
+        "uimage2DArray",
+        "uimageCubeArray",
+        "uimage2DMS",
+        "uimage2DMSArray",
 
         // Built-in variables,
         "gl_ClipDistance",
