@@ -126,17 +126,21 @@ DECL_REPORT( SamplerType,                       "sampler type"                  
 DECL_REPORT( BufferType,                        "buffer type"                                                                                       );
 DECL_REPORT( Intrinsic,                         "intrinsic[ '{0}']"                                                                                 );
 DECL_REPORT( DomainType,                        "domain type"                                                                                       );
+DECL_REPORT( PrimitiveType,                     "primitive type"                                                                                    );
 DECL_REPORT( Partitioning,                      "partitioning"                                                                                      );
 DECL_REPORT( OutputToplogy,                     "output toplogy"                                                                                    );
 DECL_REPORT( Undefined,                         "<undefined>"                                                                                       );
 DECL_REPORT( UserDefined,                       "<user-defined>"                                                                                    );
 DECL_REPORT( FailedToMap,                       "failed to map {0} to {1}"                                                                          );
 DECL_REPORT( VectorSubscriptCantHaveNComps,     "vector subscript can not have {0} components"                                                      );
+DECL_REPORT( IncompleteMatrixSubscript,         "incomplete matrix subscript: '{0}'"                                                                );
 DECL_REPORT( InvalidVectorDimension,            "invalid vector dimension (must be in the range \\[1, 4\\], but got {0})"                           );
 DECL_REPORT( InvalidVectorSubscript,            "invalid vector subscript '{0}' for {1}"                                                            );
 DECL_REPORT( InvalidMatrixDimension,            "invalid matrix dimension (must be in the range \\[1, 4\\] x \\[1, 4\\], but got {0} x {1})"        );
-DECL_REPORT( IncompleteMatrixSubscript,         "incomplete matrix subscript: '{0}'"                                                                );
 DECL_REPORT( InvalidCharInMatrixSubscript,      "invalid character '{0}' in [{2}-based ]matrix subscript: '{1}'"                                    );
+DECL_REPORT( InvalidIntrinsicArgType,           "invalid argument type denoter for intrinsic[ '{0}']"                                               );
+DECL_REPORT( InvalidIntrinsicArgCount,          "invalid number of arguments for intrinsic[ '{0}'][ (expected {1}, but got {2})]"                   );
+DECL_REPORT( InvalidIntrinsicArgs,              "invalid arguments for intrinsic[ '{0}']"                                                           );
 
 
 /* ----- TypeDenoter ------ */
@@ -247,8 +251,6 @@ DECL_REPORT( FailedToInitializeSamplerValue,    "{0} to initialize sampler value
 /* ----- GLSLConverter ----- */
 
 DECL_REPORT( SelfParamLevelUnderflow,           "'self'-parameter level underflow"                                                                  );
-DECL_REPORT( InvalidIntrinsicArgType,           "invalid argument type denoter for intrinsic[ '{0}']"                                               );
-DECL_REPORT( InvalidIntrinsicArgCount,          "invalid number of arguments for intrinsic[ '{0}']"                                                 );
 DECL_REPORT( MissingSelfParamForMemberFunc,     "missing 'self'-parameter for member function: {0}"                                                 );
 
 
@@ -296,6 +298,19 @@ DECL_REPORT( NoProfileForGLSLVersionBefore150,  "versions before 150 do not allo
 DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (must be 'core' or 'compatibility')"                                 );
 DECL_REPORT( ExtensionNotSupported,             "extension not supported[: {0}]"                                                                    );
 DECL_REPORT( InvalidGLSLExtensionBehavior,      "invalid extension behavior '{0}' (must be 'enable', 'require', 'warn', or 'disable')"              );
+
+
+/* ----- HLSLIntrinsics ----- */
+
+DECL_REPORT( FailedToDeriveIntrinsicType,       "failed to derive type denoter for intrinsic[ '{0}']"                                               );
+DECL_REPORT( FailedToDeriveIntrinsicParamType,  "failed to derive parameter type denoter for intrinsic[ '{0}']"                                     );
+
+
+/* ----- HLSLKeywords ----- */
+
+DECL_REPORT( FailedToMapFromHLSLKeyword,        "failed to map HLSL keyword '{0}' to {1}"                                                           );
+DECL_REPORT( InvalidSystemValueSemantic,        "invalid system value semantic \"{0}\"" );
+
 
 
 #endif
