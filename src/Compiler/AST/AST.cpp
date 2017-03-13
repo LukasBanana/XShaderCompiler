@@ -440,7 +440,7 @@ std::string Register::ToString() const
     s += "Register(";
     
     if (registerType == RegisterType::Undefined)
-        s += "<undefined>";
+        s += R_Undefined;
     else
         s += RegisterTypeToString(registerType);
 

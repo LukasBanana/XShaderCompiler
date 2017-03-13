@@ -109,6 +109,19 @@ DECL_REPORT( NotEnoughElementsInInitializer,    "not enough elements in initiali
 DECL_REPORT( NotEnoughIndicesForInitializer,    "not enough array indices specified for initializer expression"                                     );
 
 
+/* ----- ASTEnums ----- */
+
+DECL_REPORT( Undefined,                         "<undefined>"                                                                                       );
+DECL_REPORT( UserDefined,                       "<user-defined>"                                                                                    );
+DECL_REPORT( FailedToMap,                       "failed to map {0} to {1}"                                                                          );
+DECL_REPORT( VectorSubscriptCantHaveNComps,     "vector subscript can not have {0} components"                                                      );
+DECL_REPORT( InvalidVectorDimension,            "invalid vector dimension (must be in the range \\[1, 4\\], but got {0})"                           );
+DECL_REPORT( InvalidVectorSubscript,            "invalid vector subscript '{0}' for {1}"                                                            );
+DECL_REPORT( InvalidMatrixDimension,            "invalid matrix dimension (must be in the range \\[1, 4\\] x \\[1, 4\\], but got {0} x {1})"        );
+DECL_REPORT( IncompleteMatrixSubscript,         "incomplete matrix subscript: '{0}'"                                                                );
+DECL_REPORT( InvalidCharInMatrixSubscript,      "invalid character '{0}' in [{2}-based ]matrix subscript: '{1}'"                                    );
+
+
 /* ----- TypeDenoter ------ */
 
 DECL_REPORT( VarIdentCantBeResolved,            "variable identifier can not be resolved"                                                           );
