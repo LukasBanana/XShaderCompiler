@@ -104,9 +104,19 @@ DECL_REPORT( CantDeriveTypeOfEmptyInitializer,  "can not derive type of initiali
 DECL_REPORT( ArrayDimMismatchInInitializer,     "array dimensions mismatch in initializer expression (expected {0} dimension(s), but got {1})"      );
 DECL_REPORT( ArrayDimSizeMismatchInInitializer, "array dimension size mismatch in initializer expression (expected {0} element(s), but got {1})"    );
 DECL_REPORT( TypeMismatchInInitializer,         "type mismatch in initializer expression (expected array '{0}', but got '{1}')"                     );
-DECL_REPORT( ExpectedInitializerForArrayAccess, "initializer expression expected for array access" );
-DECL_REPORT( NotEnoughElementsInInitializer,    "not enough elements in initializer expression" );
-DECL_REPORT( NotEnoughIndicesForInitializer,    "not enough array indices specified for initializer expression" );
+DECL_REPORT( ExpectedInitializerForArrayAccess, "initializer expression expected for array access"                                                  );
+DECL_REPORT( NotEnoughElementsInInitializer,    "not enough elements in initializer expression"                                                     );
+DECL_REPORT( NotEnoughIndicesForInitializer,    "not enough array indices specified for initializer expression"                                     );
+
+
+/* ----- TypeDenoter ------ */
+
+DECL_REPORT( VarIdentCantBeResolved,            "variable identifier can not be resolved"                                                           );
+DECL_REPORT( IllegalArrayAccess,                "array access not allowed[ for '{0}']"                                                              );
+DECL_REPORT( TooManyArrayDimensions,            "too many array dimensions[ for '{0}']"                                                             );
+DECL_REPORT( MissingRefToStructDecl,            "missing reference to structure declaration[ '{0}']"                                                );
+DECL_REPORT( MissingRefToAliasDecl,             "missing reference to alias declaration[ '{0}']"                                                    );
+DECL_REPORT( MissingBaseTypeInArray,            "missing base type in array type denoter"                                                           );
 
 
 /* ----- Scanner ----- */

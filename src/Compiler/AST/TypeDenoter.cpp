@@ -8,6 +8,7 @@
 #include "TypeDenoter.h"
 #include "Exception.h"
 #include "AST.h"
+#include "ReportIdents.h"
 #include <algorithm>
 
 
@@ -100,7 +101,7 @@ void TypeDenoter::SetIdentIfAnonymous(const std::string& ident)
 TypeDenoterPtr TypeDenoter::Get(const VarIdent* varIdent)
 {
     if (varIdent)
-        RuntimeErr("variable identifier could not be resolved", varIdent);
+        RuntimeErr(R_VarIdentCantBeResolved, varIdent);
     else
         return shared_from_this();
 }
@@ -108,7 +109,7 @@ TypeDenoterPtr TypeDenoter::Get(const VarIdent* varIdent)
 TypeDenoterPtr TypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
 {
     if (numArrayIndices > 0)
-        RuntimeErr("array access not allowed for '" + ToString() + "'", varIdent);
+        RuntimeErr(R_IllegalArrayAccess(ToString()), varIdent);
     else
         return Get(varIdent);
 }
@@ -343,7 +344,7 @@ TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const 
         {
             /* Return scalar type */
             if (numArrayIndices > 1)
-                RuntimeErr("too many array dimensions for vector type");
+                RuntimeErr(R_TooManyArrayDimensions(R_VectorType));
             else
                 typeDenoter = std::make_shared<BaseTypeDenoter>(BaseDataType(dataType));
         }
@@ -358,7 +359,7 @@ TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const 
             else if (numArrayIndices == 2)
                 typeDenoter = std::make_shared<BaseTypeDenoter>(BaseDataType(dataType));
             else if (numArrayIndices > 2)
-                RuntimeErr("too many array dimensions for matrix type");
+                RuntimeErr(R_TooManyArrayDimensions(R_MatrixType));
         }
         else
             return TypeDenoter::GetFromArray(numArrayIndices, varIdent);
@@ -513,12 +514,21 @@ TypeDenoterPtr StructTypeDenoter::Get(const VarIdent* varIdent)
         {
             const auto& ident = varIdent->ident;
             if (auto varDecl = structDeclRef->Fetch(ident))
-                return varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size(), varIdent->next.get());
+            {
+                return varDecl->GetTypeDenoter()->GetFromArray(
+                    varIdent->arrayIndices.size(), varIdent->next.get()
+                );
+            }
             else
-                RuntimeErr("identifier '" + ident + "' is not declared in '" + structDeclRef->ToString() + "'", varIdent);
+            {
+                RuntimeErr(
+                    R_UndeclaredIdent(ident, structDeclRef->ToString(), structDeclRef->FetchSimilar(ident)),
+                    varIdent
+                );
+            }
         }
         else
-            RuntimeErr("missing reference to structure declaration", varIdent);
+            RuntimeErr(R_MissingRefToStructDecl(ident), varIdent);
     }
     return TypeDenoter::Get(varIdent);
 }
@@ -567,7 +577,7 @@ TypeDenoterPtr AliasTypeDenoter::Get(const VarIdent* varIdent)
 {
     if (aliasDeclRef)
         return aliasDeclRef->GetTypeDenoter()->Get(varIdent);
-    RuntimeErr("missing reference to alias declaration '" + ident + "'", varIdent);
+    RuntimeErr(R_MissingRefToAliasDecl(ident), varIdent);
 }
 
 TypeDenoterPtr AliasTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
@@ -579,7 +589,7 @@ const TypeDenoter& AliasTypeDenoter::GetAliased() const
 {
     if (aliasDeclRef)
         return aliasDeclRef->GetTypeDenoter()->GetAliased();
-    RuntimeErr("missing reference to type alias '" + ident + "'");
+    RuntimeErr(R_MissingRefToAliasDecl(ident));
 }
 
 const TypeDenoter& AliasTypeDenoter::GetBase() const
@@ -619,7 +629,7 @@ TypeDenoter::Types ArrayTypeDenoter::Type() const
 std::string ArrayTypeDenoter::ToString() const
 {
     if (!baseTypeDenoter)
-        throw std::runtime_error("missing base type in array type denoter");
+        throw std::runtime_error(R_MissingBaseTypeInArray);
 
     auto typeName = baseTypeDenoter->ToString();
 
