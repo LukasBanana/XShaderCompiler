@@ -7,6 +7,7 @@
 
 #include "ReportIdents.h"
 #include <cstdlib>
+#include <stdexcept>
 
 
 namespace Xsc
@@ -17,6 +18,12 @@ namespace Xsc
 
 template <>
 void ToStringListPrimary<std::size_t>(std::vector<std::string>& list, const std::size_t& value)
+{
+    list.push_back(std::to_string(value));
+}
+
+template <>
+void ToStringListPrimary<int>(std::vector<std::string>& list, const int& value)
 {
     list.push_back(std::to_string(value));
 }

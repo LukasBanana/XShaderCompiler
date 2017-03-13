@@ -59,6 +59,9 @@ void ToStringListPrimary(std::vector<std::string>& list, const T& value)
 template <>
 void ToStringListPrimary<std::size_t>(std::vector<std::string>& list, const std::size_t& value);
 
+template <>
+void ToStringListPrimary<int>(std::vector<std::string>& list, const int& value);
+
 // Forward declaration (required for GCC and clang)
 template <typename... Args>
 void ToStringList(std::vector<std::string>& list, Args&&... args);
