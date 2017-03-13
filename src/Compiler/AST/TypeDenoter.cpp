@@ -344,7 +344,7 @@ TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const 
         {
             /* Return scalar type */
             if (numArrayIndices > 1)
-                RuntimeErr(R_TooManyArrayDimensions(R_VectorType));
+                RuntimeErr(R_TooManyArrayDimensions(R_VectorTypeDen));
             else
                 typeDenoter = std::make_shared<BaseTypeDenoter>(BaseDataType(dataType));
         }
@@ -359,7 +359,7 @@ TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const 
             else if (numArrayIndices == 2)
                 typeDenoter = std::make_shared<BaseTypeDenoter>(BaseDataType(dataType));
             else if (numArrayIndices > 2)
-                RuntimeErr(R_TooManyArrayDimensions(R_MatrixType));
+                RuntimeErr(R_TooManyArrayDimensions(R_MatrixTypeDen));
         }
         else
             return TypeDenoter::GetFromArray(numArrayIndices, varIdent);

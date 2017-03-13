@@ -22,7 +22,12 @@ DECL_REPORT( In,                                "in"                            
 DECL_REPORT( Anonymous,                         "anonymous"                                                                                         );
 DECL_REPORT( CandidatesAre,                     "candidates are"                                                                                    );
 DECL_REPORT( StackUnderflow,                    "stack underflow[ in {0}]"                                                                          );
-
+DECL_REPORT( VertexShader,                      "vertex shader"                                                                                     );
+DECL_REPORT( TessControlShader,                 "tessellation-control shader"                                                                       );
+DECL_REPORT( TessEvaluationShader,              "tessellation-evaluation shader"                                                                    );
+DECL_REPORT( GeometryShader,                    "geometry shader"                                                                                   );
+DECL_REPORT( FragmentShader,                    "fragment shader"                                                                                   );
+DECL_REPORT( ComputeShader,                     "compute shader"                                                                                    );
 
 /* ----- Token ----- */
 
@@ -37,19 +42,19 @@ DECL_REPORT( AssignOp,                          "assign operator[ '{0}']"       
 DECL_REPORT( BinaryOp,                          "binary operator[ '{0}']"                                                                           );
 DECL_REPORT( UnaryOp,                           "unary operator[ '{0}']"                                                                            );
 DECL_REPORT( TernaryOp,                         "ternary operator"                                                                                  );
-DECL_REPORT( StringType,                        "string type denoter"                                                                               );
-DECL_REPORT( ScalarType,                        "scalar type denoter"                                                                               );
-DECL_REPORT( VectorType,                        "vector type denoter"                                                                               );
-DECL_REPORT( MatrixType,                        "matrix type denoter"                                                                               );
-DECL_REPORT( VoidType,                          "void type denoter"                                                                                 );
-DECL_REPORT( PrimitiveType,                     "primitive type denoter"                                                                            );
+DECL_REPORT( StringTypeDen,                     "string type denoter"                                                                               );
+DECL_REPORT( ScalarTypeDen,                     "scalar type denoter"                                                                               );
+DECL_REPORT( VectorTypeDen,                     "vector type denoter"                                                                               );
+DECL_REPORT( MatrixTypeDen,                     "matrix type denoter"                                                                               );
+DECL_REPORT( VoidTypeDen,                       "void type denoter"                                                                                 );
+DECL_REPORT( PrimitiveTypeDen,                  "primitive type denoter"                                                                            );
 DECL_REPORT( ReservedWord,                      "reserved keyword"                                                                                  );
-DECL_REPORT( VectorGenericType,                 "vector generic type denoter"                                                                       );
-DECL_REPORT( MatrixGenericType,                 "matrix generic type denoter"                                                                       );
-DECL_REPORT( SamplerType,                       "sampler type denoter"                                                                              );
+DECL_REPORT( VectorGenericTypeDen,              "vector generic type denoter"                                                                       );
+DECL_REPORT( MatrixGenericTypeDen,              "matrix generic type denoter"                                                                       );
+DECL_REPORT( SamplerTypeDen,                    "sampler type denoter"                                                                              );
 DECL_REPORT( SamplerState,                      "sampler state"                                                                                     );
-DECL_REPORT( BufferType,                        "buffer type denoter"                                                                               );
-DECL_REPORT( UniformBufferType,                 "uniform buffer type denoter"                                                                       );
+DECL_REPORT( BufferTypeDen,                     "buffer type denoter"                                                                               );
+DECL_REPORT( UniformBufferTypeDen,              "uniform buffer type denoter"                                                                       );
 DECL_REPORT( KeywordDo,                         "'do' keyword"                                                                                      );
 DECL_REPORT( KeywordWhile,                      "'while' keyword"                                                                                   );
 DECL_REPORT( KeywordFor,                        "'for' keyword"                                                                                     );
@@ -113,6 +118,13 @@ DECL_REPORT( NotEnoughIndicesForInitializer,    "not enough array indices specif
 
 /* ----- ASTEnums ----- */
 
+DECL_REPORT( DataType,                          "data type"                                                                                         );
+DECL_REPORT( SamplerType,                       "sampler type"                                                                                      );
+DECL_REPORT( BufferType,                        "buffer type"                                                                                       );
+DECL_REPORT( Intrinsic,                         "intrinsic[ '{0}']"                                                                                 );
+DECL_REPORT( DomainType,                        "domain type"                                                                                       );
+DECL_REPORT( Partitioning,                      "partitioning"                                                                                      );
+DECL_REPORT( OutputToplogy,                     "output toplogy"                                                                                    );
 DECL_REPORT( Undefined,                         "<undefined>"                                                                                       );
 DECL_REPORT( UserDefined,                       "<user-defined>"                                                                                    );
 DECL_REPORT( FailedToMap,                       "failed to map {0} to {1}"                                                                          );
@@ -132,6 +144,7 @@ DECL_REPORT( TooManyArrayDimensions,            "too many array dimensions[ for 
 DECL_REPORT( MissingRefToStructDecl,            "missing reference to structure declaration[ '{0}']"                                                );
 DECL_REPORT( MissingRefToAliasDecl,             "missing reference to alias declaration[ '{0}']"                                                    );
 DECL_REPORT( MissingBaseTypeInArray,            "missing base type in array type denoter"                                                           );
+DECL_REPORT( MissingRefInTypeDen,               "missing reference to declaration[ in {0}]"                                                         );
 
 
 /* ----- Scanner ----- */
@@ -207,8 +220,8 @@ DECL_REPORT( FailedToInitializeSamplerValue,    "{0} to initialize sampler value
 /* ----- GLSLConverter ----- */
 
 DECL_REPORT( SelfParamLevelUnderflow,           "'self'-parameter level underflow"                                                                  );
-DECL_REPORT( InvalidIntrinsicArgType,           "invalid argument type denoter in intrinsic '{0}'"                                                  );
-DECL_REPORT( InvalidIntrinsicArgCount,          "invalid number of arguments in intrinsic '{0}'"                                                    );
+DECL_REPORT( InvalidIntrinsicArgType,           "invalid argument type denoter for intrinsic[ '{0}']"                                               );
+DECL_REPORT( InvalidIntrinsicArgCount,          "invalid number of arguments for intrinsic[ '{0}']"                                                 );
 DECL_REPORT( MissingSelfParamForMemberFunc,     "missing 'self'-parameter for member function: {0}"                                                 );
 
 
@@ -216,6 +229,32 @@ DECL_REPORT( MissingSelfParamForMemberFunc,     "missing 'self'-parameter for me
 
 DECL_REPORT( GLSLExtensionOrVersionRequired,    "GLSL extension '{0}' or shader output version '{1}' required"                                      );
 DECL_REPORT( NoGLSLExtensionVersionRegisterd,   "no GLSL version is registered for the extension '{0}'"                                             );
+
+
+/* ----- GLSLGenerator ----- */
+
+DECL_REPORT( EntryPointNotFound,                "entry point \"{0}\" not found"                                                                     );
+DECL_REPORT( FailedToMapToGLSLKeyword,          "failed to map {0} to GLSL keyword[ ({1})]"                                                         );
+DECL_REPORT( TessAbstractPatchType,             "tessellation abstract patch type"                                                                  );
+DECL_REPORT( TessSpacing,                       "tessellation spacing"                                                                              );
+DECL_REPORT( TessPrimitiveOrdering,             "tessellation primitive ordering"                                                                   );
+DECL_REPORT( InputGeometryPrimitive,            "input geometry primitive"                                                                          );
+DECL_REPORT( OutputGeometryPrimitive,           "output geometry primitive"                                                                         );
+DECL_REPORT( OutputSemantic,                    "output semantic"                                                                                   );
+DECL_REPORT( VertexSemanticNotFound,            "vertex semantic '{0}' specified but not found"                                                     );
+DECL_REPORT( MultiUseOfVertexSemanticLocation,  "multiple usage of vertex semantic location ({0})[ (used {1} times)]"                               );
+DECL_REPORT( InvalidControlPathInUnrefFunc,     "not all control paths in unreferenced function '{0}' return a value"                               );
+DECL_REPORT( InvalidControlPathInFunc,          "not all control paths in function '{0}' return a value"                                            );
+DECL_REPORT( MissingInputPrimitiveType,         "missing input primitive type[ for {0}]"                                                            );
+DECL_REPORT( MissingOutputPrimitiveType,        "missing output primitive type[ for {0}]"                                                           );
+DECL_REPORT( MissingFuncName,                   "missing function name"                                                                             );
+DECL_REPORT( TooManyIndicesForShaderInputParam, "too many array indices for shader input parameter"                                                 );
+DECL_REPORT( InterpModNotSupportedForGLSL120,   "interpolation modifiers not supported for GLSL version 120 or below"                               );
+DECL_REPORT( InvalidParamVarCount,              "invalid number of variables in function parameter"                                                 );
+DECL_REPORT( NotAllStorageClassesMappedToGLSL,  "not all storage classes can be mapped to GLSL keywords"                                            );
+DECL_REPORT( NotAllInterpModMappedToGLSL,       "not all interpolation modifiers can be mapped to GLSL keywords"                                    );
+DECL_REPORT( CantTranslateSamplerToGLSL,        "can not translate sampler state object to GLSL sampler"                                            );
+DECL_REPORT( FailedToWriteLiteralType,          "failed to write type denoter for literal[ '{0}']"                                                  );
 
 
 #endif
