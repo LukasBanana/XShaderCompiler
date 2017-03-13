@@ -100,7 +100,7 @@ class ReportIdent
         ReportIdent(const char* s);
 
         // see JoinString
-        std::string Join(const std::vector<std::string>& values) const;
+        std::string Join(const std::vector<std::string>& values = {}) const;
 
         template <typename... Args>
         std::string operator () (Args&&... args) const
@@ -122,6 +122,19 @@ class ReportIdent
         bool        canJoin_    = false;
 
 };
+
+
+// Returns lhs.Join() + rhs
+inline std::string operator + (const ReportIdent& lhs, const std::string& rhs)
+{
+    return lhs.Join() + rhs;
+}
+
+// Returns lhs + rhs.Join()
+inline std::string operator + (const std::string& lhs, const ReportIdent& rhs)
+{
+    return lhs + rhs.Join();
+}
 
 
 /* ----- Localized global report strings ------ */

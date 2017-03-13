@@ -228,7 +228,7 @@ TokenPtr Scanner::Make(const Token::Types& type, std::string& spell, const Sourc
 [[noreturn]]
 void Scanner::Error(const std::string& msg)
 {
-    throw Report(Report::Types::Error, R_LexicalError() + " (" + Pos().ToString() + ") : " + msg);
+    throw Report(Report::Types::Error, R_LexicalError + " (" + Pos().ToString() + ") : " + msg);
 }
 
 [[noreturn]]
@@ -248,7 +248,7 @@ void Scanner::ErrorUnexpected(char expectedChar)
 [[noreturn]]
 void Scanner::ErrorUnexpectedEOS()
 {
-    Error(R_UnexpectedEndOfStream());
+    Error(R_UnexpectedEndOfStream);
 }
 
 /* ----- Scanning ----- */
@@ -424,7 +424,7 @@ TokenPtr Scanner::ScanNumber(bool startWithDot)
 
             /* Scan exponent digit sequence */
             if (!ScanDigitSequence(spell))
-                Error(R_MissingDigitSequenceAfterExpr());
+                Error(R_MissingDigitSequenceAfterExpr);
         }
 
         /* Check for floating-suffix */
