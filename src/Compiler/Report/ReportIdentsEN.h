@@ -126,6 +126,7 @@ DECL_REPORT( DomainType,                        "domain type"                   
 DECL_REPORT( PrimitiveType,                     "primitive type"                                                                                    );
 DECL_REPORT( Partitioning,                      "partitioning"                                                                                      );
 DECL_REPORT( OutputToplogy,                     "output toplogy"                                                                                    );
+DECL_REPORT( Attributes,                        "attributes"                                                                                        );
 DECL_REPORT( Undefined,                         "<undefined>"                                                                                       );
 DECL_REPORT( UserDefined,                       "<user-defined>"                                                                                    );
 DECL_REPORT( FailedToMap,                       "failed to map {0} to {1}"                                                                          );
@@ -172,6 +173,10 @@ DECL_REPORT( UnexpectedToken,                   "unexpected token: {0}[ ({1})]" 
 DECL_REPORT( UnexpectedEndOfStream,             "unexpected end-of-stream"                                                                          );
 DECL_REPORT( UnexpectedTokenSpell,              "unexpected token spelling '{0}'[ (expected '{1}')]"                                                );
 DECL_REPORT( Expected,                          "expected"                                                                                          );
+DECL_REPORT( ExpectedPrimaryExpr,               "expected primary expression"                                                                       );
+DECL_REPORT( ExpectedLiteralExpr,               "expected literal expression"                                                                       );
+DECL_REPORT( ExpectedTypeDen,                   "expected type denoter"                                                                             );
+DECL_REPORT( ExpectedBaseTypeDen,               "expected base type denoter"                                                                        );
 DECL_REPORT( InFunction,                        " (in function: {0})"                                                                               );
 DECL_REPORT( FailedToCreateScanner,             "failed to create token scanner"                                                                    );
 DECL_REPORT( FailedToScanSource,                "failed to scan source code"                                                                        );
@@ -179,11 +184,13 @@ DECL_REPORT( MissingScanner,                    "missing token scanner"         
 DECL_REPORT( SubExprMustNotBeEmpty,             "sub-expressions must not be empty"                                                                 );
 DECL_REPORT( SubExprAndOpsUncorrelated,         "sub-expressions and operators have uncorrelated number of elements"                                );
 DECL_REPORT( TooManySyntaxErrors,               "too many syntax errors"                                                                            );
+DECL_REPORT( IdentNameManglingConflict,         "identifier '{0}' conflicts with reserved name mangling prefix '{1}'"                               );
+DECL_REPORT( NotAllowedInThisContext,           "{0} not allowed in this context"                                                                   );
 
 /* ----- PreProcessor ----- */
 
 DECL_REPORT( UnknownPPDirective,                "unknown preprocessor directive: \"{0}\""                                                           );
-DECL_REPORT( UnknownMatrixPackAlignment,        "unknown matrix pack alignment \"{0}\""                                                             );
+DECL_REPORT( UnknownMatrixPackAlignment,        "unknown matrix pack alignment: \"{0}\" (must be \"row_major\" or \"column_major\")"                );
 DECL_REPORT( UnknownPragma,                     "unknown pragma: \"{0}\""                                                                           );
 DECL_REPORT( InvalidMacroIdentTokenArg,         "invalid argument for macro identifier token"                                                       );
 DECL_REPORT( FailedToUndefMacro,                "failed to undefine macro \"{0}\""                                                                  );
@@ -287,7 +294,7 @@ DECL_REPORT( MacrosWithTwoUnderscoresReserved,  "macros containing consecutive u
 DECL_REPORT( IllegalRedefOfStdMacro,            "illegal redefinition of standard macro[: {0}]"                                                     );
 DECL_REPORT( IllegalUndefOfStdMacro,            "illegal undefinition of standard macro[: {0}]"                                                     );
 DECL_REPORT( VersionMustBeFirstDirective,       "'#version'-directive must be the first directive"                                                  );
-DECL_REPORT( UnknwonGLSLVersion,                "unknown GLSL version '{0}'"                                                                        );
+DECL_REPORT( UnknwonGLSLVersion,                "unknown GLSL version: '{0}'"                                                                        );
 DECL_REPORT( NoProfileForGLSLVersionBefore150,  "versions before 150 do not allow a profile token"                                                  );
 DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (must be 'core' or 'compatibility')"                                 );
 DECL_REPORT( ExtensionNotSupported,             "extension not supported[: {0}]"                                                                    );
@@ -308,6 +315,34 @@ DECL_REPORT( InvalidSystemValueSemantic,        "invalid system value semantic \
 DECL_REPORT( KeywordReservedForFutureUse,       "keyword[ '{0}'] is reserved for future use"                                                        );
 DECL_REPORT( KeywordNotSupportedYet,            "keyword[ '{0}'] is currently not supported"                                                        );
 
+/* ----- HLSLParser ----- */
+
+DECL_REPORT( UnknownAttribute,                  "unknown attribute: '{0}'"                                                                          );
+DECL_REPORT( UnknownSlotRegister,               "unknown slot register: '{0}'"                                                                      );
+DECL_REPORT( ExpectedExplicitArrayDim,          "explicit array dimension expected"                                                                 );
+DECL_REPORT( ExpectedVarOrAssignOrFuncCall,     "expected variable declaration, assignment, or function call statement"                             );
+DECL_REPORT( ExpectedTypeNameOrFuncCall,        "expected type name or function call expression"                                                    );
+DECL_REPORT( ExpectedUnaryExprOp,               "expected unary expression operator"                                                                );
+DECL_REPORT( UnexpectedTokenInPackMatrixPragma, "unexpected token in '#pragma pack_matrix'-directive"                                               );
+DECL_REPORT( UnexpectedPreParsedAST,            "unexpected pre-parsed AST node"                                                                    );
+DECL_REPORT( InvalidHLSLDirectiveAfterPP,       "only '#line' and '#pragma' directives are allowed after pre-processing"                            );
+DECL_REPORT( InvalidHLSLPragmaAfterPP,          "only 'pack_matrix' pragma directive is allowed after pre-processing"                               );
+DECL_REPORT( IllegalRecursiveInheritance,       "recursive inheritance is not allowed"                                                              );
+DECL_REPORT( IllegalMultipleInheritance,        "multiple inheritance is not allowed"                                                               );
+DECL_REPORT( IllegalDeclStmntInsideDeclOf,      "illegal declaration statement inside declaration of '{0}'"                                         );
+DECL_REPORT( IllegalBufferTypeGenericSize,      "illegal usage of generic size in texture, buffer, or stream object"                                );
+DECL_REPORT( IllegalPackOffset,                 "packoffset is only allowed in a constant buffer"                                                   );
+DECL_REPORT( TextureSampleCountLimitIs128,      "number of samples in texture must be in the range [1, 128), but got {0}"                           );
+DECL_REPORT( PatchCtrlPointLimitIs64,           "number of control points in patch must be in the range [1, 64], but got {0}"                       );
+DECL_REPORT( VectorAndMatrixDimOutOfRange,      "vector and matrix dimensions must be in the range [1, 4], but got {0}"                             );
+DECL_REPORT( TechniquesAreIgnored,              "techniques are ignored"                                                                            );
+DECL_REPORT( MissingClosingBrace,               "missing closing brace '}' for open code block"                                                     );
+DECL_REPORT( RegisterIgnoredForVarDecls,        "register is ignore for variable declarations"                                                      );
+DECL_REPORT( RegisterIgnoredForFuncDecls,       "register is ignore for function declarations"                                                      );
+DECL_REPORT( ExpectedSamplerOrSamplerState,     "expected sampler type denoter or sampler state"                                                    );
+DECL_REPORT( ExpectedOpenBracketOrAngleBracket, "expected '<' or '('"                                                                               );
+DECL_REPORT( DuplicatedPrimitiveType,           "duplicate primitive type specified"                                                                );
+DECL_REPORT( ConflictingPrimitiveTypes,         "conflicting primitive types"                                                                       );
 
 
 #endif
