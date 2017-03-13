@@ -17,33 +17,7 @@ namespace Xsc
 {
 
 
-/* ----- Localized global report strings ------ */
-
-#define DECL_REPORT(NAME, VALUE) static const char* R_##NAME = #VALUE
-
-#include "ReportIdentsEN.h"
-
-#undef DECL_REPORT
-
-
-/* ----- Global functions ----- */
-
-#if 0
-class ReportIdent
-{
-
-    public:
-        
-        ReportIdent(const char* s);
-
-        std::string operator () (const std::vector<std::string>& values) const;
-
-    private:
-        
-        const char* s_;
-
-};
-#endif
+/* ----- Functions ----- */
 
 /*
 Joins the specified report string with its values.
@@ -72,6 +46,82 @@ Throw:
   std::invalid_argument If there is an incomplete optional part, i.e. a missing closing ']' (e.g. "[")
 */
 std::string JoinString(const std::string& s, const std::vector<std::string>& values);
+
+
+/* ----- Templates ----- */
+
+template <typename T>
+void ToStringListPrimary(std::vector<std::string>& list, const T& value)
+{
+    list.push_back(value);
+}
+
+template <>
+void ToStringListPrimary<std::size_t>(std::vector<std::string>& list, const std::size_t& value);
+
+// Forward declaration (required for GCC and clang)
+template <typename... Args>
+void ToStringList(std::vector<std::string>& list, Args&&... args);
+
+template <typename Arg0, typename... ArgsN>
+void ToStringListSecondary(std::vector<std::string>& list, Arg0&& arg0, ArgsN&&... argsN)
+{
+    ToStringListPrimary(list, std::forward<Arg0>(arg0));
+    ToStringList(list, std::forward<ArgsN>(argsN)...);
+}
+
+template <typename... Args>
+void ToStringList(std::vector<std::string>& list, Args&&... args)
+{
+    ToStringListSecondary(list, std::forward<Args>(args)...);
+}
+
+template <typename Arg0>
+void ToStringListSecondary(std::vector<std::string>& list, Arg0&& arg0)
+{
+    ToStringListPrimary(list, std::forward<Arg0>(arg0));
+}
+
+
+/* ----- Classes ----- */
+
+class ReportIdent
+{
+
+    public:
+        
+        ReportIdent() = default;
+        ReportIdent(const ReportIdent&) = default;
+        ReportIdent& operator = (const ReportIdent&) = default;
+
+        ReportIdent(const char* s);
+
+        // see JoinString
+        std::string Join(const std::vector<std::string>& values) const;
+
+        template <typename... Args>
+        std::string operator () (Args&&... args) const
+        {
+            std::vector<std::string> values;
+            ToStringList(values, std::forward<Args>(args)...);
+            return Join(values);
+        }
+
+    private:
+        
+        const char* s_;
+
+};
+
+
+/* ----- Localized global report strings ------ */
+
+#define DECL_REPORT(NAME, VALUE) \
+    static const Xsc::ReportIdent R_##NAME { VALUE }
+
+#include "ReportIdentsEN.h"
+
+#undef DECL_REPORT
 
 
 } // /namespace Xsc

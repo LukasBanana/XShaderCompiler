@@ -10,6 +10,7 @@
 #include "ConstExprEvaluator.h"
 #include "EndOfScopeAnalyzer.h"
 #include "ControlPathAnalyzer.h"
+#include "ReportIdents.h"
 
 
 namespace Xsc
@@ -80,21 +81,8 @@ void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const std::string&
 
 void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const std::string& contextName, const std::string& similarIdent, const AST* ast)
 {
-    std::string s;
-
-    /* Construct error message */
-    s += "undeclared identifier \"" + ident + "\"";
-
-    /* Add descriptive context name */
-    if (!contextName.empty())
-        s += " in '" + contextName + "'";
-
-    /* Add similar identifier for a suggestion */
-    if (!similarIdent.empty())
-        s += "; did you mean \"" + similarIdent + "\"?";
-
-    /* Report error message */
-    Error(s, ast);
+    //Error(JoinString(R_UndeclaredIdent, { ident, contextName, similarIdent }), ast);
+    Error(R_UndeclaredIdent(ident, contextName, similarIdent), ast);
 }
 
 void Analyzer::ErrorInternal(const std::string& msg, const AST* ast)
