@@ -21,6 +21,12 @@ void ToStringListPrimary<std::size_t>(std::vector<std::string>& list, const std:
     list.push_back(std::to_string(value));
 }
 
+template <>
+void ToStringList(std::vector<std::string>& list)
+{
+    // dummy
+}
+
 
 /* ----- Classes ----- */
 

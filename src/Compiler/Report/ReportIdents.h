@@ -76,6 +76,9 @@ void ToStringList(std::vector<std::string>& list, Args&&... args)
     ToStringListSecondary(list, std::forward<Args>(args)...);
 }
 
+template <>
+void ToStringList(std::vector<std::string>& list);
+
 template <typename Arg0>
 void ToStringListSecondary(std::vector<std::string>& list, Arg0&& arg0)
 {
