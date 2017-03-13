@@ -12,6 +12,7 @@
 #include "Variant.h"
 #include "SymbolTable.h"
 #include "ReportHandler.h"
+#include "ReportIdents.h"
 #include <algorithm>
 
 #ifdef XSC_ENABLE_MEMORY_POOL
@@ -168,7 +169,7 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
         {
             case AST::Types::FunctionDecl:
             {
-                RuntimeErr("illegal type denoter of function object '" + ident + "'", this);
+                RuntimeErr(R_IllegalTypeOfFuncObj(ident), this);
             }
             break;
 
@@ -218,9 +219,9 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
             {
                 auto structDecl = static_cast<StructDecl*>(symbolRef);
                 if (next)
-                    RuntimeErr("can not directly access members of '" + structDecl->ToString() + "'", next.get());
+                    RuntimeErr(R_CantDirectlyAccessMembersOf(structDecl->ToString()), next.get());
                 if (!arrayIndices.empty())
-                    RuntimeErr("can not directly acces array of '" + structDecl->ToString() + "'", this);
+                    RuntimeErr(R_CantDirectlyAccessArrayOf(structDecl->ToString()), this);
                 return structDecl->GetTypeDenoter()->Get();
             }
             break;
@@ -229,21 +230,21 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
             {
                 auto aliasDecl = static_cast<AliasDecl*>(symbolRef);
                 if (next)
-                    RuntimeErr("can not directly access members of '" + aliasDecl->ToString() + "'", next.get());
+                    RuntimeErr(R_CantDirectlyAccessMembersOf(aliasDecl->ToString()), next.get());
                 if (!arrayIndices.empty())
-                    RuntimeErr("can not directly access array of '" + aliasDecl->ToString() + "'", this);
+                    RuntimeErr(R_CantDirectlyAccessArrayOf(aliasDecl->ToString()), this);
                 return aliasDecl->GetTypeDenoter()->Get();
             }
             break;
             
             default:
             {
-                RuntimeErr("unknown type of symbol reference to derive type denoter of variable identifier '" + ident + "'", this);
+                RuntimeErr(R_UnknownTypeOfVarIdentSymbolRef(ident), this);
             }
             break;
         }
     }
-    RuntimeErr("missing symbol reference to derive type denoter of variable identifier '" + ident + "'", this);
+    RuntimeErr(R_MissingVarIdentSymbolRef(ident), this);
 }
 
 BaseTypeDenoterPtr VarIdent::GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const
@@ -261,7 +262,7 @@ BaseTypeDenoterPtr VarIdent::GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDe
             RuntimeErr(e.what(), this);
         }
     }
-    RuntimeErr("invalid base type denoter for vector subscript", this);
+    RuntimeErr(R_InvalidSubscriptBaseType, this);
 }
 
 void VarIdent::PopFront(bool accumulateArrayIndices)
@@ -338,7 +339,7 @@ TypeDenoterPtr FunctionCall::DeriveTypeDenoter()
         }
     }
     else
-        RuntimeErr("missing function reference to derive expression type", this);
+        RuntimeErr(R_MissingFuncRefToDeriveExprType, this);
 }
 
 std::vector<Expr*> FunctionCall::GetArguments() const
@@ -649,7 +650,7 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter()
         /* Get base type denoter from declaration statement */
         return declStmntRef->typeSpecifier->typeDenoter->AsArray(arrayDims);
     }
-    RuntimeErr("missing reference to declaration statement to derive type denoter of variable identifier '" + ident + "'", this);
+    RuntimeErr(R_MissingDeclStmntRefToDeriveType(ident), this);
 }
 
 
@@ -683,7 +684,7 @@ SamplerType SamplerDecl::GetSamplerType() const
 
 std::string StructDecl::ToString() const
 {
-    return ("struct " + (IsAnonymous() ? "<anonymous>" : ident.Original()));
+    return ("struct " + (IsAnonymous() ? ("<" + R_Anonymous + ">") : ident.Original()));
 }
 
 bool StructDecl::IsAnonymous() const
@@ -1090,7 +1091,7 @@ static bool MatchFunctionDeclWithArgs(
 
 static void ListAllFuncCandidates(const std::vector<FunctionDecl*>& candidates)
 {
-    ReportHandler::HintForNextReport("candidates are:");
+    ReportHandler::HintForNextReport(R_CandidatesAre + ":");
     for (auto funcDecl : candidates)
         ReportHandler::HintForNextReport("  '" + funcDecl->ToString(false) + "' (" + funcDecl->area.Pos().ToString() + ")");
 };
@@ -1102,7 +1103,7 @@ FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
     if (funcDeclList.empty())
     {
         if (throwErrorIfNoMatch)
-            RuntimeErr("undefined symbol '" + ident + "'");
+            RuntimeErr(R_UndefinedSymbol(ident));
         else
             return nullptr;
     }
@@ -1118,10 +1119,10 @@ FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
             ListAllFuncCandidates(funcDeclList);
 
             /* Throw runtime error */
-            RuntimeErr(
-                "function '" + ident + "' does not take " + std::to_string(numArgs) + " " +
-                std::string(numArgs == 1 ? "parameter" : "parameters")
-            );
+            if (numArgs == 1)
+                RuntimeErr(R_FuncDoesntTake1Param(ident, numArgs));
+            else
+                RuntimeErr(R_FuncDoesntTakeNParams(ident, numArgs));
         }
         else
             return nullptr;
@@ -1174,7 +1175,7 @@ FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
             ListAllFuncCandidates(funcDeclCandidates);
 
         /* Throw runtime error */
-        RuntimeErr("ambiguous function call '" + ident + "(" + argTypeNames + ")'");
+        RuntimeErr(R_AmbiguousFuncCall(ident, argTypeNames));
     }
 
     return funcDeclCandidates.front();
@@ -1416,8 +1417,8 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
     if (!condTypeDen->IsCastableTo(boolTypeDen))
     {
         RuntimeErr(
-            "can not cast '" + condTypeDen->ToString() + "' to '" +
-            boolTypeDen.ToString() + "' in condition of ternary expression", condExpr.get()
+            R_IllegalCast(condTypeDen->ToString(), boolTypeDen.ToString(), R_ConditionOfTernaryExpr),
+            condExpr.get()
         );
     }
 
@@ -1428,8 +1429,8 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
     if (!elseTypeDen->IsCastableTo(*thenTypeDen))
     {
         RuntimeErr(
-            "can not cast '" + elseTypeDen->ToString() + "' to '" +
-            thenTypeDen->ToString() + "' in ternary expression", this
+            R_IllegalCast(elseTypeDen->ToString(), thenTypeDen->ToString(), R_TernaryExpr),
+            this
         );
     }
 
@@ -1483,8 +1484,8 @@ TypeDenoterPtr BinaryExpr::DeriveTypeDenoter()
     if (!rhsTypeDen->IsCastableTo(*lhsTypeDen) || !lhsTypeDen->IsCastableTo(*rhsTypeDen))
     {
         RuntimeErr(
-            "can not cast '" + rhsTypeDen->ToString() + "' to '" + lhsTypeDen->ToString() +
-            "' in binary expression '" + BinaryOpToString(op) + "'", this
+            R_IllegalCast(rhsTypeDen->ToString(), lhsTypeDen->ToString(), R_BinaryExpr(BinaryOpToString(op))),
+            this
         );
     }
 
@@ -1581,8 +1582,8 @@ TypeDenoterPtr CastExpr::DeriveTypeDenoter()
     if (!valueTypeDen->IsCastableTo(*castTypeDen))
     {
         RuntimeErr(
-            "can not cast '" + valueTypeDen->ToString() + "' to '" +
-            castTypeDen->ToString() + "' in cast expression", this
+            R_IllegalCast(valueTypeDen->ToString(), castTypeDen->ToString(), R_CastExpr),
+            this
         );
     }
 
@@ -1613,7 +1614,7 @@ final return type denoter (see 'ArrayTypeDenoter::InsertSubArray' function)
 TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
 {
     if (exprs.empty())
-        RuntimeErr("can not derive type of initializer list with no elements", this);
+        RuntimeErr(R_CantDeriveTypeOfEmptyInitializer, this);
 
     /* Start with a 1-dimension array type */
     auto finalTypeDen = std::make_shared<ArrayTypeDenoter>();
@@ -1643,12 +1644,7 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
                     const auto rhsNumElements = rhsDims.size();
 
                     if (lhsNumElements != rhsNumElements)
-                    {
-                        RuntimeErr(
-                            "array dimensions mismatch in initializer expression (expected " +
-                            std::to_string(lhsNumElements) + " dimension(s), but got " + std::to_string(rhsNumElements) + ")", expr.get()
-                        );
-                    }
+                        RuntimeErr(R_ArrayDimMismatchInInitializer(lhsNumElements, rhsNumElements), expr.get());
 
                     /* Array dimensions must have the same size */
                     for (std::size_t i = 0; i < lhsNumElements; ++i)
@@ -1657,27 +1653,22 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
                         const auto rhsSize = rhsDims[i]->size;
 
                         if (lhsSize != rhsSize)
-                        {
-                            RuntimeErr(
-                                "array dimension size mismatch in initializer expression (expected " +
-                                std::to_string(lhsSize) + " element(s), but got " + std::to_string(rhsSize) + ")", expr.get()
-                            );
-                        }
+                            RuntimeErr(R_ArrayDimSizeMismatchInInitializer(lhsSize, rhsSize), expr.get());
                     }
                 }
                 else
                 {
                     RuntimeErr(
-                        "type mismatch in initializer expression (expected array '" + elementsTypeDen->ToString() +
-                        "', but got '" + subTypeDen->ToString() + "')", expr.get()
+                        R_TypeMismatchInInitializer(elementsTypeDen->ToString(), subTypeDen->ToString()),
+                        expr.get()
                     );
                 }
             }
             else if (!subTypeDen->IsCastableTo(*elementsTypeDen))
             {
                 RuntimeErr(
-                    "can not cast '" + subTypeDen->ToString() + "' to '" +
-                    elementsTypeDen->ToString() + "' in initializer expression", expr.get()
+                    R_IllegalCast(subTypeDen->ToString(), elementsTypeDen->ToString(), R_InitializerExpr),
+                    expr.get()
                 );
             }
         }
@@ -1732,11 +1723,11 @@ static ExprPtr FetchSubExprFromInitializerExpr(const InitializerExpr* ast, const
             if (auto subInitExpr = expr->As<const InitializerExpr>())
                 return FetchSubExprFromInitializerExpr(subInitExpr, arrayIndices, layer + 1);
 
-            RuntimeErr("initializer expression expected for array access", expr.get());
+            RuntimeErr(R_ExpectedInitializerForArrayAccess, expr.get());
         }
-        RuntimeErr("not enough elements in initializer expression", ast);
+        RuntimeErr(R_NotEnoughElementsInInitializer, ast);
     }
-    RuntimeErr("not enough array indices specified for initializer expression", ast);
+    RuntimeErr(R_NotEnoughIndicesForInitializer, ast);
 }
 
 ExprPtr InitializerExpr::FetchSubExpr(const std::vector<int>& arrayIndices) const
