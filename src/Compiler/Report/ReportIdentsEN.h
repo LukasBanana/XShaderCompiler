@@ -13,8 +13,9 @@
 
 DECL_REPORT( Warning,                           "warning"                                                                                           );
 DECL_REPORT( Error,                             "error"                                                                                             );
-DECL_REPORT( Context,                           "context"                                                                                           );
 DECL_REPORT( Syntax,                            "syntax"                                                                                            );
+DECL_REPORT( Context,                           "context"                                                                                           );
+DECL_REPORT( Reflection,                        "reflection"                                                                                        );
 DECL_REPORT( ContextError,                      "context error"                                                                                     );
 DECL_REPORT( InternalError,                     "internal error"                                                                                    );
 DECL_REPORT( In,                                "in"                                                                                                ); // e.g. "error in 'context'"
@@ -187,6 +188,20 @@ DECL_REPORT( InitializerList,                   "initializer list"              
 /* ----- ExprConverter ----- */
 
 DECL_REPORT( MissingArrayIndexInOp,             "missing array index in operator of '{0}'"                                                          );
+
+
+/* ------ ReferenceAnalyzer ----- */
+
+DECL_REPORT( CallStack,                         "call stack"                                                                                        );
+DECL_REPORT( IllegalRecursiveCall,              "illegal recursive call[ of function '{0}']"                                                        );
+DECL_REPORT( MissingFuncImpl,                   "missing function implementation[ for '{0}']"                                                       );
+
+
+/* ------ ReflectionAnalyzer ----- */
+
+DECL_REPORT( InvalidTypeOrArgCount,             "invalid type or invalid number of arguments"                                                       );
+DECL_REPORT( InvalidArgCount,                   "invalid number of arguments"                                                                       );
+DECL_REPORT( FailedToInitializeSamplerValue,    "{0} to initialize sampler value '{1}'"                                                             );
 
 
 #endif
