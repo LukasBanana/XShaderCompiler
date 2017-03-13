@@ -204,6 +204,20 @@ DECL_REPORT( InvalidArgCount,                   "invalid number of arguments"   
 DECL_REPORT( FailedToInitializeSamplerValue,    "{0} to initialize sampler value '{1}'"                                                             );
 
 
+/* ----- GLSLConverter ----- */
+
+DECL_REPORT( SelfParamLevelUnderflow,           "'self'-parameter level underflow"                                                                  );
+DECL_REPORT( InvalidIntrinsicArgType,           "invalid argument type denoter in intrinsic '{0}'"                                                  );
+DECL_REPORT( InvalidIntrinsicArgCount,          "invalid number of arguments in intrinsic '{0}'"                                                    );
+DECL_REPORT( MissingSelfParamForMemberFunc,     "missing 'self'-parameter for member function: {0}"                                                 );
+
+
+/* ----- GLSLExtensionAgent ----- */
+
+DECL_REPORT( GLSLExtensionOrVersionRequired,    "GLSL extension '{0}' or shader output version '{1}' required"                                      );
+DECL_REPORT( NoGLSLExtensionVersionRegisterd,   "no GLSL version is registered for the extension '{0}'"                                             );
+
+
 #endif
 
 

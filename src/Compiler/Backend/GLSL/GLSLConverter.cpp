@@ -11,6 +11,7 @@
 #include "ASTFactory.h"
 #include "Exception.h"
 #include "Helper.h"
+#include "ReportIdents.h"
 
 
 namespace Xsc
@@ -716,7 +717,7 @@ void GLSLConverter::PopSelfParameter()
     if (!selfParamStack_.empty())
         return selfParamStack_.pop_back();
     else
-        throw std::underflow_error("'self'-parameter level underflow");
+        throw std::underflow_error(R_SelfParamLevelUnderflow);
 }
 
 VarDecl* GLSLConverter::ActiveSelfParameter() const
@@ -839,10 +840,10 @@ void GLSLConverter::ConvertIntrinsicCallSaturate(FunctionCall* ast)
             ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, DataType::Int, "1"));
         }
         else
-            RuntimeErr("invalid argument type denoter in intrinsic 'saturate'", ast->arguments.front().get());
+            RuntimeErr(R_InvalidIntrinsicArgType("saturate"), ast->arguments.front().get());
     }
     else
-        RuntimeErr("invalid number of arguments in intrinsic 'saturate'", ast);
+        RuntimeErr(R_InvalidIntrinsicArgCount("saturate"), ast);
 }
 
 static int GetTextureVectorSizeFromIntrinsicCall(FunctionCall* ast)
@@ -939,7 +940,7 @@ void GLSLConverter::ConvertFunctionCall(FunctionCall* ast)
                     ast->arguments.insert(ast->arguments.begin(), objectArg);
                 }
                 else
-                    RuntimeErr("missing 'self'-parameter for member function: " + funcDecl->ToString(), ast);
+                    RuntimeErr(R_MissingSelfParamForMemberFunc(funcDecl->ToString()), ast);
             }
         }
     }
