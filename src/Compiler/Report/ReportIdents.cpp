@@ -71,7 +71,7 @@ Returns true, if all values have been joined to the output string,
 i.e. they are set for the repsective index {N} and they are non-empty.
 */
 static bool JoinStringSub(
-    const std::string& in, std::size_t& pos, std::string& out, const std::vector<std::string>& values)
+    const std::string& in, std::size_t& pos, std::string& out, const std::vector<std::string>& values, bool optional)
 {
     bool escapeChar         = false;
     bool replacedAllValues  = true;
@@ -112,20 +112,32 @@ static bool JoinStringSub(
                 const auto idx = static_cast<std::size_t>(std::atoi(idxStr.c_str()));
                 if (idx < values.size())
                 {
+                    /* Append value to output string */
                     const auto& val = values[idx];
                     if (val.empty())
                         replacedAllValues = false;
                     else
                         out.append(val);
                 }
-                else
+                else if (optional)
+                {
+                    /* This sub string will not be added to the final output string */
                     replacedAllValues = false;
+                }
+                else
+                {
+                    /* If this value replacement was not optional -> error */
+                    throw std::out_of_range(
+                        "index (" + std::to_string(idx) + ") out of range [0, " +
+                        std::to_string(values.size() + 1) + ") in report identifier: " + in
+                    );
+                }
             }
             else if (c == '[')
             {
                 /* Parse optional part with recursive call */
                 std::string outOpt;
-                if (JoinStringSub(in, pos, outOpt, values))
+                if (JoinStringSub(in, pos, outOpt, values, true))
                     out.append(outOpt);
             }
             else if (c == ']')
@@ -153,7 +165,7 @@ std::string JoinString(const std::string& s, const std::vector<std::string>& val
     std::size_t pos = 0;
     
     /* Join sub string */
-    JoinStringSub(s, pos, out, values);
+    JoinStringSub(s, pos, out, values, false);
 
     /* Check if position has been reached the end of the input string */
     if (pos != s.size())

@@ -42,6 +42,7 @@ Examples:
   JoinString("one {0}[, two {1}][, three {2}]", { "1", "", "3" })   --> "one 1, three 3"
 
 Throw:
+  std::out_of_range If a value index, that is not optional, is out of range
   std::invalid_argument If there is an incomplete escape character (e.g. "\\")
   std::invalid_argument If there is an incomplete optional part, i.e. a missing closing ']' (e.g. "[")
 */
