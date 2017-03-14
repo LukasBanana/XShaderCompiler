@@ -164,16 +164,19 @@ DECL_REPORT( IdentIsNotFunc,                    "identifier '{0}' does not name 
 DECL_REPORT( IdentIsNotVar,                     "identifier '{0}' does not name a variable"                                                                     );
 DECL_REPORT( IdentIsNotType,                    "identifier '{0}' does not name a type"                                                                         );
 DECL_REPORT( IdentIsNotVarOrBufferOrSampler,    "identifier '{0}' does not name a variable, buffer, or sampler"                                                 );
+DECL_REPORT( IdentAlreadyDeclared,              "identifier '{0}' already declared in this scope"                                                               );
+DECL_REPORT( NoActiveScopeToRegisterSymbol,     "no active scope to register symbol"                                                                            );
 
 /* ----- Scanner ----- */
 
 DECL_REPORT( LexicalError,                      "lexical error"                                                                                                 );
 DECL_REPORT( UnexpectedChar,                    "unexpected character '{0}'[ (expected '{1}')]"                                                                 );
 DECL_REPORT( MissingDigitSequenceAfterExpr,     "missing digit-sequence after exponent part"                                                                    );
+DECL_REPORT( MissingDecimalPartInFloat,         "missing decimal part in floating-point number" );
 
 /* ----- Parser ----- */
 
-DECL_REPORT( UnexpectedToken,                   "unexpected token: {0}[ ({1})]"                                                                                 );
+DECL_REPORT( UnexpectedToken,                   "unexpected token[: {0}[ ({1})]]"                                                                               );
 DECL_REPORT( UnexpectedEndOfStream,             "unexpected end-of-stream"                                                                                      );
 DECL_REPORT( UnexpectedTokenSpell,              "unexpected token spelling '{0}'[ (expected '{1}')]"                                                            );
 DECL_REPORT( Expected,                          "expected"                                                                                                      );
@@ -214,6 +217,13 @@ DECL_REPORT( UnexpectedEndOfTokenString,        "unexpected end of token string"
 DECL_REPORT( RemainingTokensInPragma,           "remaining unhandled tokens in '#pragma'-directive"                                                             );
 DECL_REPORT( EmptyPragma,                       "empty '#pragma'-directive"                                                                                     );
 
+/* ----- Visitor ----- */
+
+DECL_REPORT( FuncDeclStackUnderflow,            "function declaration stack underflow"                                                                          ); // internal error
+DECL_REPORT( FuncCallStackUnderflow,            "function call stack underflow"                                                                                 ); // internal error
+DECL_REPORT( StructDeclStackUnderflow,          "structure declaration stack underflow"                                                                         );
+DECL_REPORT( UniformBufferDeclStackUnderflow,   "uniform buffer declaration stack underflow" );
+
 /* ----- Analyzer ----- */
 
 DECL_REPORT( UndeclaredIdent,                   "undeclared identifier \"{0}\"[ in '{1}'][; did you mean \"{2}\"?]"                                             );
@@ -244,13 +254,13 @@ DECL_REPORT( InitializerList,                   "initializer list"              
 
 DECL_REPORT( MissingArrayIndexInOp,             "missing array index in operator of '{0}'"                                                                      );
 
-/* ------ ReferenceAnalyzer ----- */
+/* ----- ReferenceAnalyzer ----- */
 
 DECL_REPORT( CallStack,                         "call stack"                                                                                                    );
 DECL_REPORT( IllegalRecursiveCall,              "illegal recursive call[ of function '{0}']"                                                                    );
 DECL_REPORT( MissingFuncImpl,                   "missing function implementation[ for '{0}']"                                                                   );
 
-/* ------ ReflectionAnalyzer ----- */
+/* ----- ReflectionAnalyzer ----- */
 
 DECL_REPORT( InvalidTypeOrArgCount,             "invalid type or invalid number of arguments"                                                                   );
 DECL_REPORT( InvalidArgCount,                   "invalid number of arguments[ for {0}]"                                                                         );
@@ -270,6 +280,8 @@ DECL_REPORT( NoGLSLExtensionVersionRegisterd,   "no GLSL version is registered f
 
 DECL_REPORT( EntryPointNotFound,                "entry point \"{0}\" not found"                                                                                 );
 DECL_REPORT( FailedToMapToGLSLKeyword,          "failed to map {0} to GLSL keyword[ ({1})]"                                                                     );
+DECL_REPORT( FailedToWriteLiteralType,          "failed to write type denoter for literal[ '{0}']"                                                              );
+DECL_REPORT( FailedToDetermineGLSLDataType,     "failed to determine GLSL data type" );
 DECL_REPORT( TessAbstractPatchType,             "tessellation abstract patch type"                                                                              );
 DECL_REPORT( TessSpacing,                       "tessellation spacing"                                                                                          );
 DECL_REPORT( TessPrimitiveOrdering,             "tessellation primitive ordering"                                                                               );
@@ -285,11 +297,10 @@ DECL_REPORT( MissingOutputPrimitiveType,        "missing output primitive type[ 
 DECL_REPORT( MissingFuncName,                   "missing function name"                                                                                         );
 DECL_REPORT( TooManyIndicesForShaderInputParam, "too many array indices for shader input parameter"                                                             );
 DECL_REPORT( InterpModNotSupportedForGLSL120,   "interpolation modifiers not supported for GLSL version 120 or below"                                           );
-DECL_REPORT( InvalidParamVarCount,              "invalid number of variables in function parameter"                                                             );
+DECL_REPORT( InvalidParamVarCount,              "invalid number of variables in function parameter"                                                             ); // internal error
 DECL_REPORT( NotAllStorageClassesMappedToGLSL,  "not all storage classes can be mapped to GLSL keywords"                                                        );
 DECL_REPORT( NotAllInterpModMappedToGLSL,       "not all interpolation modifiers can be mapped to GLSL keywords"                                                );
 DECL_REPORT( CantTranslateSamplerToGLSL,        "can not translate sampler state object to GLSL sampler"                                                        );
-DECL_REPORT( FailedToWriteLiteralType,          "failed to write type denoter for literal[ '{0}']"                                                              );
 
 /* ----- GLSLPreProcessor ----- */
 
@@ -392,8 +403,21 @@ DECL_REPORT( ExpectedOutputCtrlPointParamToBe,  "expected output control point p
 DECL_REPORT( ExpectedPatchFuncParamToBe,        "expected patch constant function parameter to be a string literal"                                             );
 DECL_REPORT( EntryPointForPatchFuncNotFound,    "entry point \"{0}\" for patch constant function not found"                                                     );
 DECL_REPORT( MaxVertexCountMustBeGreaterZero,   "maximal vertex count must be greater than zero"                                                                );
+DECL_REPORT( NumThreadsMustBeGreaterZero,       "number of threads must be greater than zero"                                                                   );
 DECL_REPORT( SecondaryArrayDimMustBeExplicit,   "secondary array dimensions must be explicit"                                                                   );
 DECL_REPORT( StructsCantBeDefinedInParam,       "structures can not be defined in a parameter type[: '{0}']"                                                    );
+
+/* ----- Xsc ----- */
+
+DECL_REPORT( InputStreamCantBeNull,             "input stream must not be null"                                                                                 );
+DECL_REPORT( OutputStreamCantBeNull,            "output stream must not be null"                                                                                );
+DECL_REPORT( NameManglingPrefixResCantBeEmpty,  "name mangling prefix for reserved words must not be empty"                                                     );
+DECL_REPORT( NameManglingPrefixTmpCantBeEmpty,  "name mangling prefix for temporary variables must not be empty"                                                );
+DECL_REPORT( NameManglingPrefixOverlap,         "name mangling prefix for reserved words and temporary variables must not be equal to any other prefix"         );
+DECL_REPORT( PreProcessingSourceFailed,         "preprocessing input code failed"                                                                               );
+DECL_REPORT( ParsingSourceFailed,               "parsing input code failed"                                                                                     );
+DECL_REPORT( AnalyzingSourceFailed,             "analyzing input code failed"                                                                                   );
+DECL_REPORT( GeneratingOutputCodeFailed,        "generating output code failed"                                                                                 );
 
 
 #endif

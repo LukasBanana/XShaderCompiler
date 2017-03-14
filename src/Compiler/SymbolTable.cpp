@@ -17,6 +17,10 @@ namespace Xsc
 {
 
 
+/*
+ * Global (and internal) functions
+ */
+
 static unsigned int StringDistancePrimary(const std::string& lhs, const std::string& rhs, unsigned int shiftOnUneq)
 {
     static const unsigned int diffUneqCaseEq    = 1;
@@ -85,6 +89,22 @@ unsigned int StringDistance(const std::string& a, const std::string& b)
     return dist;
 }
 
+[[noreturn]]
+void RuntimeErrNoActiveScope()
+{
+    RuntimeErr(R_NoActiveScopeToRegisterSymbol);
+}
+
+[[noreturn]]
+void RuntimeErrIdentAlreadyDeclared(const std::string& ident)
+{
+    RuntimeErr(R_IdentAlreadyDeclared(ident));
+}
+
+
+/*
+ * ASTSymbolOverload class
+ */
 
 ASTSymbolOverload::ASTSymbolOverload(const std::string& ident, AST* ast) :
     ident_{ ident }

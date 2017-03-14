@@ -1738,7 +1738,7 @@ void HLSLAnalyzer::AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& v
     if (exprValue > 0)
         value = static_cast<unsigned int>(exprValue);
     else
-        Error("number of threads must be greater than zero", ast);
+        Error(R_NumThreadsMustBeGreaterZero, ast);
 }
 
 void HLSLAnalyzer::AnalyzeAttributeValue(

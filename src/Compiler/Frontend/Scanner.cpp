@@ -411,7 +411,7 @@ TokenPtr Scanner::ScanNumber(bool startWithDot)
         postDigits = ScanDigitSequence(spell);
 
         if (!preDigits && !postDigits)
-            Error("missing decimal part in floating-point number");
+            Error(R_MissingDecimalPartInFloat);
 
         /* Check for exponent-part */
         if (Is('e') || Is('E'))

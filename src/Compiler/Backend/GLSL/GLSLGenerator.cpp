@@ -1925,7 +1925,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
             Visit(arrayTypeDen->arrayDims);
         }
         else
-            Error("failed to determine GLSL data type", ast);
+            Error(R_FailedToDetermineGLSLDataType, ast);
     }
     catch (const Report& e)
     {
@@ -2629,7 +2629,7 @@ void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
         Visit(paramVar->arrayDims);
     }
     else
-        Error("invalid number of variables in function parameter", ast);
+        Error(R_InvalidParamVarCount, ast);
 }
 
 void GLSLGenerator::WriteScopedStmnt(Stmnt* ast)
