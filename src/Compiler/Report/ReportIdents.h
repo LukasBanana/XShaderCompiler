@@ -146,7 +146,8 @@ inline std::string operator + (const std::string& lhs, const ReportIdent& rhs)
 #define DECL_REPORT(NAME, VALUE) \
     static const Xsc::ReportIdent R_##NAME { VALUE }
 
-#include "ReportIdentsEN.h"
+//#include "ReportIdentsEN.h"
+#include "ReportIdentsDE.h"
 
 #undef DECL_REPORT
 
