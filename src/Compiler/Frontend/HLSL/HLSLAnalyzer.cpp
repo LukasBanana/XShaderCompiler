@@ -10,6 +10,7 @@
 #include "HLSLKeywords.h"
 #include "Exception.h"
 #include "Helper.h"
+#include "ReportIdents.h"
 
 
 namespace Xsc
@@ -59,7 +60,7 @@ void HLSLAnalyzer::DecorateASTPrimary(
 
     /* Check if secondary entry point has been found */
     if (!secondaryEntryPoint_.empty() && !secondaryEntryPointFound_)
-        Warning("secondary entry point \"" + secondaryEntryPoint_ + "\" not found");
+        Warning(R_SecondEntryPointNotFound(secondaryEntryPoint_));
 }
 
 
@@ -70,7 +71,7 @@ void HLSLAnalyzer::DecorateASTPrimary(
 void HLSLAnalyzer::ErrorIfAttributeNotFound(bool found, const std::string& attribDesc)
 {
     if (!found)
-        Error("missing '" + attribDesc + "' attribute for entry point", nullptr);
+        Error(R_MissingAttributeForEntryPoint(attribDesc), nullptr);
 }
 
 /* ------- Visit functions ------- */
@@ -213,7 +214,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         Visit(ast->initializer);
 
         /* Compare initializer type with var-decl type */
-        ValidateTypeCastFrom(ast->initializer.get(), ast, "variable initialization");
+        ValidateTypeCastFrom(ast->initializer.get(), ast, R_VarInitialization);
     }
 }
 
@@ -264,7 +265,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
                 const StructDecl* varDeclOwner = nullptr;
                 if (ast->baseStructRef->Fetch(varDecl->ident, &varDeclOwner))
                 {
-                    Warning("member variable '" + varDecl->ident + "' overrides member of base '" + varDeclOwner->ToString() + "'", varDecl);
+                    Warning(R_VariableOverridesMemberOfBase(varDecl->ident, varDeclOwner->ToString()), varDecl);
                     itVar = varDeclStmnt->varDecls.erase(itVar);
                 }
                 else
@@ -285,7 +286,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     PushStructDecl(ast);
     {
         if (ast->flags(StructDecl::isNestedStruct) && !ast->IsAnonymous())
-            Error("nested structures must be anonymous", ast);
+            Error(R_NestedStructsMustBeAnonymous, ast);
 
         OpenScope();
         {
@@ -297,7 +298,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
     /* Report warning if structure is empty */
     if (ast->NumVarMembers() == 0)
-        Warning("'" + ast->ToString() + "' is completely empty", ast);
+        Warning(R_IsCompletelyEmpty(ast->ToString()), ast);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDecl)
@@ -382,12 +383,12 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     /* Validate buffer slots */
     if (ast->slotRegisters.size() > 1)
-        Error("buffers can only be bound to one slot", ast->slotRegisters[1].get());
+        Error(R_BufferCanOnlyHaveOneSlot, ast->slotRegisters[1].get());
 
     for (const auto& slotRegister : ast->slotRegisters)
     {
         if (slotRegister->shaderTarget != ShaderTarget::Undefined)
-            Error("user-defined constant buffer slots can not be target specific", slotRegister.get());
+            Error(R_UserCBuffersCantBeTargetSpecific, slotRegister.get());
     }
 
     PushUniformBufferDecl(ast);
@@ -413,7 +414,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         /* Is this a floating-point type? */
         auto baseTypeDen = ast->typeSpecifier->typeDenoter->As<BaseTypeDenoter>();
         if (!baseTypeDen || !IsRealType(baseTypeDen->dataType))
-            Error("'snorm' and 'unorm' type modifiers can only be used for floating-point types", ast->typeSpecifier.get());
+            Error(R_IllegalUseOfNormModifiers, ast->typeSpecifier.get());
     }
 
     //TODO: remove this, if it's no longer of intereset
@@ -468,10 +469,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
             if (symbol->Type() == AST::Types::VarDecl || symbol->Type() == AST::Types::BufferDecl || symbol->Type() == AST::Types::SamplerDecl)
             {
                 /* Report warning of conflicting variable declaration */
-                Warning(
-                    "declaration of '" + it.second + "' shadows a previous local at (" +
-                    symbol->area.Pos().ToString() + ")", it.first
-                );
+                Warning(R_DeclShadowsPreviousLocal(it.second, symbol->area.Pos().ToString()), it.first);
             }
         }
     }
@@ -583,17 +581,17 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
             if (returnTypeDen->IsVoid())
             {
                 if (ast->expr)
-                    Error("illegal expression in return statement for function with 'void' return type", ast->expr.get());
+                    Error(R_IllegalExprInReturnForVoidFunc, ast->expr.get());
             }
             else
             {
                 if (!ast->expr)
-                    Error("missing expression in return statement for function with '" + returnTypeDen->ToString() + "' return type", ast);
+                    Error(R_MissingExprInReturnForFunc(returnTypeDen->ToString()), ast);
             }
         }
     }
     else
-        Error("return statement outside function declaration", ast);
+        Error(R_ReturnOutsideFuncDecl, ast);
 
     /* Analyze return expression */
     if (ast->expr)
@@ -652,7 +650,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     if (ast->assignExpr)
     {
         Visit(ast->assignExpr);
-        ValidateTypeCastFrom(ast->assignExpr.get(), ast->varIdent.get(), "variable assignment");
+        ValidateTypeCastFrom(ast->assignExpr.get(), ast->varIdent.get(), R_VarAssignment);
         AnalyzeLValueVarIdent(ast->varIdent.get(), ast);
     }
 }
@@ -686,7 +684,7 @@ void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
                 if (auto initExpr = paramVar->initializer.get())
                     ast->defaultArgumentRefs.push_back(initExpr);
                 else
-                    Error("missing initializer expression for default parameter '" + paramVar->ident + "'", paramVar);
+                    Error(R_MissingInitializerForDefaultParam(paramVar->ident), paramVar);
             }
         }
     }
@@ -698,8 +696,10 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLInt
     if (shaderModel_ < intr.minShaderModel)
     {
         Warning(
-            "intrinsic '" + ast->varIdent->ToString() + "' requires shader model " + intr.minShaderModel.ToString() +
-            ", but only " + shaderModel_.ToString() + " is specified", ast
+            R_InvalidShaderModelForIntrinsic(
+                ast->varIdent->ToString(), intr.minShaderModel.ToString(), shaderModel_.ToString()
+            ),
+            ast
         );
     }
 
@@ -786,7 +786,7 @@ bool HLSLAnalyzer::AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const Funct
     }
 
     /* Intrinsic not found in an object class */
-    Error("intrinsic '" + funcCall->varIdent->next->ident + "' not declared in object '" + funcCall->varIdent->ident + "'", funcCall);
+    Error(R_IntrinsicNotDeclaredInObject(funcCall->varIdent->next->ident, funcCall->varIdent->ident), funcCall);
     return false;
 }
 
@@ -799,7 +799,7 @@ bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const
         if (IsTextureIntrinsic(intrinsic))
             return true;
         else
-            Error("invalid intrinsic '" + ident + "' for texture object", funcCall);
+            Error(R_InvalidIntrinsicForTexture(ident), funcCall);
     }
     else if (IsStorageBufferType(bufferType))
     {
@@ -807,7 +807,7 @@ bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const
         /*if (IsStorageBufferIntrinsic(intrinsic))
             return true;
         else
-            Error("invalid intrinsic '" + ident + "' for storage-buffer object", funcCall);*/
+            Error(R_InvalidIntrinsicForStorageBuffer(ident), funcCall);*/
     }
     else if (IsStreamBufferType(bufferType))
     {
@@ -822,7 +822,7 @@ bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const
             return true;
         }
         else
-            Error("invalid intrinsic '" + ident + "' for stream-output object", funcCall);
+            Error(R_InvalidIntrinsicForStreamOutput(ident), funcCall);
     }
 
     return false;
@@ -871,7 +871,7 @@ void HLSLAnalyzer::AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol)
         case AST::Types::FunctionDecl:
             break;
         default:
-            Error("invalid symbol reference to variable identifier '" + varIdent->ToString() + "'", varIdent);
+            Error(R_InvalidSymbolRefToVarIdent(varIdent->ToString()), varIdent);
             break;
     }
 }
@@ -951,7 +951,7 @@ void HLSLAnalyzer::AnalyzeFunctionVarIdentWithSymbol(VarIdent* varIdent, const s
         case AST::Types::FunctionDecl:
             break;
         default:
-            Error("invalid symbol reference to variable identifier '" + varIdent->ToString() + "'", varIdent);
+            Error(R_InvalidSymbolRefToVarIdent(varIdent->ToString()), varIdent);
             break;
     }
 }
@@ -1008,14 +1008,13 @@ void HLSLAnalyzer::AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast)
             if (varDecl->declStmntRef->IsConstOrUniform())
             {
                 /* Construct error message depending if the variable is implicitly or explicitly declared as constant */
-                std::string s = "illegal assignment to l-value '" + varIdent->ident + "' that is ";
-
-                if (varDecl->declStmntRef->flags(VarDeclStmnt::isImplicitConst))
-                    s += "implicitly ";
-
-                s += "declared as constant";
-
-                Error(s, (ast != nullptr ? ast : varIdent));
+                Error(
+                    R_IllegalLValueAssignmentToConst(
+                        varIdent->ident,
+                        (varDecl->declStmntRef->flags(VarDeclStmnt::isImplicitConst) ? R_Implicitly : "")
+                    ),
+                    (ast != nullptr ? ast : varIdent)
+                );
             }
         }
         varIdent = varIdent->next.get();
@@ -1027,7 +1026,7 @@ void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast)
     if (auto varIdent = expr->FetchVarIdent())
         AnalyzeLValueVarIdent(varIdent, ast);
     else
-        Error("illegal assignment to r-value expression", ast);
+        Error(R_IllegalRValueAssignment, ast);
 }
 
 /* ----- Entry point ----- */
@@ -1069,7 +1068,7 @@ void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
         if (param->varDecls.size() == 1)
             AnalyzeEntryPointParameter(funcDecl, param.get());
         else
-            Error("invalid number of variable declarations in function parameter", param.get());
+            Error(R_InvalidVarDeclCountInParam, param.get());
     }
 
     /* Analyze function return type */
@@ -1138,7 +1137,7 @@ void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
     for (const auto it : outputSemanticCounter)
     {
         if (it.second > 1)
-            Error("duplicate use of output semantic '" + it.first.ToString() + "'");
+            Error(R_DuplicateUseOfOutputSemantic(it.first.ToString()));
     }
 }
 
@@ -1150,7 +1149,7 @@ void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStm
     {
         /* Verify input only semantic */
         if (param->IsOutput())
-            Error("uniforms can not be defined as output", varDecl);
+            Error(R_UniformCantBeOutput, varDecl);
     }
     else
     {
@@ -1220,7 +1219,7 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOutVariable(FunctionDecl* funcDec
             varDecl->flags << VarDecl::isSystemValue;
     }
     else
-        Error("missing semantic in parameter '" + varDecl->ident + "' of entry point", varDecl);
+        Error(R_MissingSemanticInEntryPointParam(varDecl->ident), varDecl);
 
     /* Add variable declaration to the global input/output semantics */
     if (input)
@@ -1262,10 +1261,10 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOutBuffer(FunctionDecl* funcDecl,
         if (bufferTypeDen->genericTypeDenoter)
             AnalyzeEntryPointParameterInOut(funcDecl, varDecl, input, bufferTypeDen->genericTypeDenoter);
         else
-            Error("missing generic type denoter in " + BufferTypeToString(bufferTypeDen->bufferType), varDecl);
+            Error(R_MissingGenericTypeDen(BufferTypeToString(bufferTypeDen->bufferType)), varDecl);
     }
     else
-        Error("illegal buffer type for entry point " + std::string(input ? "input" : "output"), varDecl);
+        Error(R_IllegalBufferTypeForEntryPoint(input ? R_Input : R_Output), varDecl);
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& attribs)
@@ -1423,33 +1422,33 @@ void HLSLAnalyzer::AnalyzeEntryPointAttributesComputeShader(const std::vector<At
 
 void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std::vector<Semantic>& inSemantics, const std::vector<Semantic>& outSemantics)
 {
-    auto FindSemantics = [&](const std::vector<Semantic>& presentSemantics, const std::vector<Semantic>& searchSemantics, const std::string& desc)
+    auto FindSemantics = [&](const std::vector<Semantic>& presentSemantics, const std::vector<Semantic>& searchSemantics, const ReportIdent& reportIdent)
     {
         for (auto sem : presentSemantics)
         {
             if (IsSystemSemantic(sem) && std::find(searchSemantics.begin(), searchSemantics.end(), sem) == searchSemantics.end())
-                Error(desc + " semantic '" + SemanticToString(sem) + "' in entry point '" + funcDecl->ident + "'", funcDecl);
+                Error(reportIdent(SemanticToString(sem), funcDecl->ident), funcDecl);
         }
     };
 
     auto ValidateInSemantics = [&](const std::vector<Semantic>& semantics)
     {
-        FindSemantics(inSemantics, semantics, "invalid input");
+        FindSemantics(inSemantics, semantics, R_InvalidInputSemanticInEntryPoint);
     };
 
     auto ValidateOutSemantics = [&](const std::vector<Semantic>& semantics)
     {
-        FindSemantics(outSemantics, semantics, "invalid output");
+        FindSemantics(outSemantics, semantics, R_InvalidOutputSemanticInEntryPoint);
     };
-
+    
     /*auto RequiredInSemantics = [&](const std::vector<Semantic>& semantics)
     {
-        FindSemantics(semantics, inSemantics, "missing input");
+        FindSemantics(semantics, inSemantics, R_MissingInputSemanticInEntryPoint);
     };*/
 
     auto RequiredOutSemantics = [&](const std::vector<Semantic>& semantics)
     {
-        FindSemantics(semantics, outSemantics, "missing output");
+        FindSemantics(semantics, outSemantics, R_MissingOutputSemanticInEntryPoint);
     };
 
     using T = Semantic;
@@ -1594,13 +1593,15 @@ bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedN
     /* Validate number of arguments */
     auto numArgs = ast->arguments.size();
 
+    //TODO: add "AttributeTypeToString" function
+
     if (numArgs < expectedNumArgs)
     {
         if (required)
         {
             Error(
-                "too few arguments in attribute (expected " + std::to_string(expectedNumArgs) +
-                ", but got " + std::to_string(numArgs) + ")", ast
+                R_TooFewArgsForAttribute(""/*AttributeTypeToString(ast->attributeType)*/, expectedNumArgs, numArgs),
+                ast
             );
         }
     }
@@ -1609,8 +1610,8 @@ bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedN
         if (required)
         {
             Error(
-                "too many arguments in attribute (expected " + std::to_string(expectedNumArgs) +
-                ", but got " + std::to_string(numArgs) + ")", ast->arguments[expectedNumArgs].get()
+                R_TooManyArgsForAttribute(""/*AttributeTypeToString(ast->attributeType)*/, expectedNumArgs, numArgs),
+                ast
             );
         }
     }
@@ -1628,7 +1629,7 @@ void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast, bool required)
             ast->arguments[0].get(),
             program_->layoutTessEvaluation.domainType,
             IsAttributeValueDomain,
-            "expected domain type parameter to be \"tri\", \"quad\", or \"isoline\"",
+            R_ExpectedDomainTypeParamToBe,
             required
         );
     }
@@ -1642,7 +1643,7 @@ void HLSLAnalyzer::AnalyzeAttributeOutputTopology(Attribute* ast, bool required)
             ast->arguments[0].get(),
             program_->layoutTessEvaluation.outputTopology,
             IsAttributeValueOutputTopology,
-            "expected output topology parameter to be \"point\", \"line\", \"triangle_cw\", or \"triangle_ccw\"",
+            R_ExpectedOutputTopologyParamToBe,
             required
         );
     }
@@ -1656,7 +1657,7 @@ void HLSLAnalyzer::AnalyzeAttributePartitioning(Attribute* ast, bool required)
             ast->arguments[0].get(),
             program_->layoutTessEvaluation.partitioning,
             IsAttributeValuePartitioning,
-            "expected partitioning mode parameter to be \"integer\", \"pow2\", \"fractional_even\", or \"fractional_odd\"",
+            R_ExpectedPartitioningModeParamToBe,
             required
         );
     }
@@ -1676,7 +1677,7 @@ void HLSLAnalyzer::AnalyzeAttributeOutputControlPoints(Attribute* ast)
         if (countParam >= 0)
             program_->layoutTessControl.outputControlPoints = static_cast<unsigned int>(countParam);
         else
-            Error("expected output control point parameter to be an unsigned integer", ast->arguments[0].get());
+            Error(R_ExpectedOutputCtrlPointParamToBe, ast->arguments[0].get());
     }
 }
 
@@ -1697,10 +1698,10 @@ void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
                 AnalyzeSecondaryEntryPoint(patchConstFunc, true);
             }
             else
-                Error("entry point '" + literalValue + "' for patch constant function not found", ast->arguments[0].get());
+                Error(R_EntryPointForPatchFuncNotFound(literalValue), ast->arguments[0].get());
         }
         else
-            Error("expected patch constant function parameter to be a string literal", ast->arguments[0].get());
+            Error(R_ExpectedPatchFuncParamToBe, ast->arguments[0].get());
     }
 }
 
@@ -1712,7 +1713,7 @@ void HLSLAnalyzer::AnalyzeAttributeMaxVertexCount(Attribute* ast)
         if (exprValue > 0)
             program_->layoutGeometry.maxVertices = static_cast<unsigned int>(exprValue);
         else
-            Error("maximal vertex count must be greater than zero", ast);
+            Error(R_MaxVertexCountMustBeGreaterZero, ast);
     }
 }
 
@@ -1746,12 +1747,7 @@ void HLSLAnalyzer::AnalyzeAttributeValue(
 {
     std::string literalValue;
     if (!AnalyzeAttributeValuePrimary(argExpr, value, expectedValueFunc, literalValue) && required)
-    {
-        if (literalValue.empty())
-            Error(expectationDesc, argExpr);
-        else
-            Error(expectationDesc + ", but got '" + literalValue + "'", argExpr);
-    }
+        Error(expectationDesc + R_ButGot(literalValue), argExpr);
 }
 
 bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(
@@ -1786,7 +1782,7 @@ void HLSLAnalyzer::AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr
     {
         auto dim = arrayDims[i].get();
         if (dim->HasDynamicSize())
-            Error("secondary array dimensions must be explicit", dim);
+            Error(R_SecondaryArrayDimMustBeExplicit, dim);
     }
 }
 
@@ -1800,7 +1796,7 @@ void HLSLAnalyzer::AnalyzeParameter(VarDeclStmnt* param)
 
     /* Check for structure definition */
     if (auto structDecl = param->typeSpecifier->structDecl.get())
-        Error("structure '" + structDecl->ToString() + "' can not be defined in a parameter type", param);
+        Error(R_StructsCantBeDefinedInParam(structDecl->ToString()), param);
 }
 
 
