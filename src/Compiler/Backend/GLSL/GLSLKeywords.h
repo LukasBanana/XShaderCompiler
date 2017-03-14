@@ -26,6 +26,9 @@ bool IsGLSLKeyword(const std::string& ident);
 // Returns the GLSL keyword for the specified data type or null on failure.
 const std::string* DataTypeToGLSLKeyword(const DataType t);
 
+// Returns the GLSL image format keyword for the specified data type or null on failure.
+const std::string* DataTypeToImageFormatGLSLKeyword(const DataType t);
+
 // Returns the GLSL keyword for the specified storage class or null on failure.
 const std::string* StorageClassToGLSLKeyword(const StorageClass t);
 
