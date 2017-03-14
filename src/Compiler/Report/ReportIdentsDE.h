@@ -137,7 +137,7 @@ DECL_REPORT( FailedToMap,                       "Abbildung von {0} auf {1} fehlg
 DECL_REPORT( VectorSubscriptCantHaveNComps,     "Vektor Index kann keine {0} Komponenten haben"                                                                 );
 DECL_REPORT( IncompleteMatrixSubscript,         "unvollständiger Matrix Index: '{0}'"                                                                           );
 DECL_REPORT( InvalidVectorDimension,            "ungültige Vektor Dimension (muss im Intervall \\[1, 4\\] liegen, aber erhielt {0})"                            );
-DECL_REPORT( InvalidVectorSubscript,            "ungültige Vektor Index '{0}' für {1}"                                                                          );
+DECL_REPORT( InvalidVectorSubscript,            "ungültiger Vektor Index '{0}' für {1}"                                                                         );
 DECL_REPORT( InvalidMatrixDimension,            "ungültige Matrix Dimension (muss im Intervall \\[1, 4\\] x \\[1, 4\\] liegen, aber erhielt {0} x {1})"         );
 DECL_REPORT( InvalidCharInMatrixSubscript,      "ungültiges Zeichen '{0}' in [{2}-basiertem ]Matrix Index: '{1}'"                                               );
 DECL_REPORT( InvalidIntrinsicArgType,           "ungültiger Argument Typbezeichner für Intrinsic[ '{0}']"                                                       );
