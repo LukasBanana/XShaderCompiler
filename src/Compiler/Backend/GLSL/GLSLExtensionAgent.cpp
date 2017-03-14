@@ -9,6 +9,7 @@
 #include "GLSLExtensions.h"
 #include "AST.h"
 #include "Exception.h"
+#include "ReportIdents.h"
 #include <algorithm>
 
 
@@ -44,11 +45,11 @@ static OutputShaderVersion GetMinGLSLVersionForTarget(const ShaderTarget shaderT
     switch (shaderTarget)
     {
         case ShaderTarget::Undefined:                       break;
-        case ShaderTarget::VertexShader:                    return OutputShaderVersion::GLSL130; // actually 110, but this compiler does not support GLSL < 130
+        case ShaderTarget::VertexShader:                    return OutputShaderVersion::GLSL130; // default is 130, but 110 can be used manually
         case ShaderTarget::TessellationControlShader:       return OutputShaderVersion::GLSL400;
         case ShaderTarget::TessellationEvaluationShader:    return OutputShaderVersion::GLSL400;
         case ShaderTarget::GeometryShader:                  return OutputShaderVersion::GLSL150;
-        case ShaderTarget::FragmentShader:                  return OutputShaderVersion::GLSL130; // actually 110, but this compiler does not support GLSL < 130
+        case ShaderTarget::FragmentShader:                  return OutputShaderVersion::GLSL130; // default is 130, but 110 can be used manually
         case ShaderTarget::ComputeShader:                   return OutputShaderVersion::GLSL430; // actually 420, but only 430 supports local work group size
     }
     return OutputShaderVersion::GLSL130; // GLSL 110 and 120 are deprecated, so only output them when they are set explicitly
@@ -135,15 +136,12 @@ void GLSLExtensionAgent::AcquireExtension(const std::string& extension)
             else
             {
                 /* Extensions not allowed -> runtime error */
-                RuntimeErr(
-                    "GLSL extension '" + extension +
-                    "' or shader output version '" + ToString(requiredVersion) + "' required"
-                );
+                RuntimeErr(R_GLSLExtensionOrVersionRequired(extension, ToString(requiredVersion)));
             }
         }
     }
     else
-        RuntimeErr("no GLSL version is registered for the extension '" + extension + "'");
+        RuntimeErr(R_NoGLSLExtensionVersionRegisterd(extension));
 }
 
 

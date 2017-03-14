@@ -10,6 +10,7 @@
 #include "ConstExprEvaluator.h"
 #include "EndOfScopeAnalyzer.h"
 #include "ControlPathAnalyzer.h"
+#include "ReportIdents.h"
 
 
 namespace Xsc
@@ -17,7 +18,7 @@ namespace Xsc
 
 
 Analyzer::Analyzer(Log* log) :
-    reportHandler_{ "context", log }
+    reportHandler_{ R_Context(), log }
 {
 }
 
@@ -58,7 +59,7 @@ void Analyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast
 {
     auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
     reportHandler_.SubmitReport(
-        false, reportType, (isError ? "context error" : "warning"),
+        false, reportType, (isError ? R_ContextError() : R_Warning()),
         msg, sourceCode_, (ast ? ast->area : SourceArea::ignore)
     );
 }
@@ -80,26 +81,12 @@ void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const std::string&
 
 void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const std::string& contextName, const std::string& similarIdent, const AST* ast)
 {
-    std::string s;
-
-    /* Construct error message */
-    s += "undeclared identifier \"" + ident + "\"";
-
-    /* Add descriptive context name */
-    if (!contextName.empty())
-        s += " in '" + contextName + "'";
-
-    /* Add similar identifier for a suggestion */
-    if (!similarIdent.empty())
-        s += "; did you mean \"" + similarIdent + "\"?";
-
-    /* Report error message */
-    Error(s, ast);
+    Error(R_UndeclaredIdent(ident, contextName, similarIdent), ast);
 }
 
 void Analyzer::ErrorInternal(const std::string& msg, const AST* ast)
 {
-    reportHandler_.SubmitReport(false, Report::Types::Error, "internal error", msg, sourceCode_, (ast ? ast->area : SourceArea::ignore));
+    reportHandler_.SubmitReport(false, Report::Types::Error, R_InternalError(), msg, sourceCode_, (ast ? ast->area : SourceArea::ignore));
 }
 
 void Analyzer::Warning(const std::string& msg, const AST* ast)
@@ -110,7 +97,7 @@ void Analyzer::Warning(const std::string& msg, const AST* ast)
 void Analyzer::WarningOnNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName)
 {
     if (ast && ast->Type() == AST::Types::NullStmnt)
-        Warning("<" + stmntTypeName + "> statement with empty body", ast.get());
+        Warning(R_StatementWithEmptyBody(stmntTypeName), ast.get());
 }
 
 /* ----- Symbol table functions ----- */
@@ -233,7 +220,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
         
         /* Check if identifier exists but does not name a function */
         if (Fetch(ident, ast) != nullptr)
-            Error("identifier '" + ident + "' does not name a function", ast);
+            Error(R_IdentIsNotFunc(ident), ast);
     }
     catch (const ASTRuntimeError& e)
     {
@@ -273,7 +260,7 @@ VarDecl* Analyzer::FetchFromStruct(const StructTypeDenoter& structTypeDenoter, c
             ErrorUndeclaredIdent(ident, structDecl->ToString(), structDecl->FetchSimilar(ident), ast);
     }
     else
-        Error("missing reference to structure declaration in type denoter '" + structTypeDenoter.ToString() + "'", ast);
+        Error(R_MissingReferenceToStructInType(structTypeDenoter.ToString()), ast);
     return nullptr;
 }
 
@@ -294,7 +281,7 @@ FunctionDecl* Analyzer::FetchFunctionDeclFromStruct(
         }
     }
     else
-        Error("missing reference to structure declaration in type denoter '" + structTypeDenoter.ToString() + "'", ast);
+        Error(R_MissingReferenceToStructInType(structTypeDenoter.ToString()), ast);
     return nullptr;
 }
 
@@ -390,13 +377,13 @@ void Analyzer::AnalyzeTypeSpecifier(TypeSpecifier* typeSpecifier)
     if (typeSpecifier->typeDenoter)
         AnalyzeTypeDenoter(typeSpecifier->typeDenoter, typeSpecifier);
     else
-        Error("missing variable type", typeSpecifier);
+        Error(R_MissingVariableType(), typeSpecifier);
 }
 
 void Analyzer::AnalyzeTypeSpecifierForParameter(TypeSpecifier* typeSpecifier)
 {
     if (typeSpecifier->isOutput && typeSpecifier->isUniform)
-        Error("type attributes 'out' and 'inout' can not be used together with 'uniform' for a parameter", typeSpecifier);
+        Error(R_ParameterCantBeUniformAndOut(), typeSpecifier);
 }
 
 void Analyzer::AnalyzeFunctionEndOfScopes(FunctionDecl& funcDecl)
@@ -432,19 +419,14 @@ TypeDenoterPtr Analyzer::GetTypeDenoterFrom(TypedAST* ast)
         }
     }
     else
-        ErrorInternal("null pointer passed to " + std::string(__FUNCTION__));
+        ErrorInternal(R_NullPointerArgument(__FUNCTION__));
     return nullptr;
 }
 
 void Analyzer::ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, const std::string& contextDesc, const AST* ast)
 {
     if (!sourceTypeDen.IsCastableTo(destTypeDen))
-    {
-        std::string err = "can not cast '" + sourceTypeDen.ToString() + "' to '" + destTypeDen.ToString() + "'";
-        if (!contextDesc.empty())
-            err += " in " + contextDesc;
-        Error(err, ast);
-    }
+        Error(R_IllegalCast(sourceTypeDen.ToString(), destTypeDen.ToString(), contextDesc), ast);
 }
 
 void Analyzer::ValidateTypeCastFrom(TypedAST* sourceAST, TypedAST* destAST, const std::string& contextDesc)
@@ -464,7 +446,7 @@ void Analyzer::AnalyzeConditionalExpression(Expr* expr)
     /* Verify boolean type denoter in conditional expression */
     auto condTypeDen = expr->GetTypeDenoter()->Get();
     if (!condTypeDen->IsScalar())
-        Error("conditional expression must evaluate to scalar, but got '" + condTypeDen->ToString() + "'", expr);
+        Error(R_ConditionalExprNotScalar(condTypeDen->ToString()), expr);
 }
 
 /* ----- Const-expression evaluation ----- */
@@ -493,7 +475,7 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
     }
     catch (const VarAccessExpr* varAccessExpr)
     {
-        Error("expected constant expression", varAccessExpr);
+        Error(R_ExpectedConstExpr(), varAccessExpr);
     }
     return Variant();
 }
@@ -524,7 +506,7 @@ int Analyzer::EvaluateConstExprInt(Expr& expr)
 {
     auto variant = EvaluateConstExpr(expr);
     if (variant.Type() != Variant::Types::Int)
-        Warning("expected constant integer expression", &expr);
+        Warning(R_ExpectedConstIntExpr(), &expr);
     return static_cast<int>(variant.ToInt());
 }
 
@@ -532,7 +514,7 @@ float Analyzer::EvaluateConstExprFloat(Expr& expr)
 {
     auto variant = EvaluateConstExpr(expr);
     if (variant.Type() != Variant::Types::Real)
-        Warning("expected constant floating-point expression", &expr);
+        Warning(R_ExpectedConstFloatExpr(), &expr);
     return static_cast<float>(variant.ToReal());
 }
 

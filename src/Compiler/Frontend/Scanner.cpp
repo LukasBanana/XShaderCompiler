@@ -7,6 +7,7 @@
 
 #include "Scanner.h"
 #include "Helper.h"
+#include "ReportIdents.h"
 #include <cctype>
 
 
@@ -227,27 +228,27 @@ TokenPtr Scanner::Make(const Token::Types& type, std::string& spell, const Sourc
 [[noreturn]]
 void Scanner::Error(const std::string& msg)
 {
-    throw Report(Report::Types::Error, "lexical error (" + Pos().ToString() + ") : " + msg);
+    throw Report(Report::Types::Error, R_LexicalError + " (" + Pos().ToString() + ") : " + msg);
 }
 
 [[noreturn]]
 void Scanner::ErrorUnexpected()
 {
     auto chr = TakeIt();
-    Error("unexpected character '" + std::string(1, chr) + "'");
+    Error(R_UnexpectedChar(std::string(1, chr)));
 }
 
 [[noreturn]]
 void Scanner::ErrorUnexpected(char expectedChar)
 {
     auto chr = TakeIt();
-    Error("unexpected character '" + std::string(1, chr) + "' (expected '" + std::string(1, expectedChar) + "')");
+    Error(R_UnexpectedChar(std::string(1, chr), std::string(1, expectedChar)));
 }
 
 [[noreturn]]
 void Scanner::ErrorUnexpectedEOS()
 {
-    Error("unexpected end-of-stream");
+    Error(R_UnexpectedEndOfStream);
 }
 
 /* ----- Scanning ----- */
@@ -410,7 +411,7 @@ TokenPtr Scanner::ScanNumber(bool startWithDot)
         postDigits = ScanDigitSequence(spell);
 
         if (!preDigits && !postDigits)
-            Error("missing decimal part in floating-point number");
+            Error(R_MissingDecimalPartInFloat);
 
         /* Check for exponent-part */
         if (Is('e') || Is('E'))
@@ -423,7 +424,7 @@ TokenPtr Scanner::ScanNumber(bool startWithDot)
 
             /* Scan exponent digit sequence */
             if (!ScanDigitSequence(spell))
-                Error("missing digit-sequence after exponent part");
+                Error(R_MissingDigitSequenceAfterExpr);
         }
 
         /* Check for floating-suffix */

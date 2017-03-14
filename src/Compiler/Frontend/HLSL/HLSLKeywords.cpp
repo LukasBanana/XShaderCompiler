@@ -8,6 +8,8 @@
 #include "HLSLKeywords.h"
 #include "CiString.h"
 #include "Helper.h"
+#include "ReportIdents.h"
+#include "Exception.h"
 #include <vector>
 
 
@@ -22,7 +24,7 @@ T MapKeywordToType(const std::map<std::string, T>& typeMap, const std::string& k
     if (it != typeMap.end())
         return it->second;
     else
-        throw std::runtime_error("failed to map keyword '" + keyword + "' to " + typeName);
+        RuntimeErr(R_FailedToMapFromHLSLKeyword(keyword, typeName));
 }
 
 /* ----- HLSL Keywords ----- */
@@ -579,7 +581,7 @@ static std::map<std::string, DataType> GenerateDataTypeMap()
 DataType HLSLKeywordToDataType(const std::string& keyword)
 {
     static const auto typeMap = GenerateDataTypeMap();
-    return MapKeywordToType(typeMap, keyword, "data type");
+    return MapKeywordToType(typeMap, keyword, R_DataType);
 }
 
 
@@ -602,7 +604,7 @@ static std::map<std::string, PrimitiveType> GeneratePrimitiveTypeMap()
 PrimitiveType HLSLKeywordToPrimitiveType(const std::string& keyword)
 {
     static const auto typeMap = GeneratePrimitiveTypeMap();
-    return MapKeywordToType(typeMap, keyword, "primitive type");
+    return MapKeywordToType(typeMap, keyword, R_PrimitiveType);
 }
 
 
@@ -626,7 +628,7 @@ static std::map<std::string, StorageClass> GenerateStorageClassMap()
 StorageClass HLSLKeywordToStorageClass(const std::string& keyword)
 {
     static const auto typeMap = GenerateStorageClassMap();
-    return MapKeywordToType(typeMap, keyword, "storage class");
+    return MapKeywordToType(typeMap, keyword, R_StorageClass);
 }
 
 
@@ -649,7 +651,7 @@ static std::map<std::string, InterpModifier> GenerateInterpModifierMap()
 InterpModifier HLSLKeywordToInterpModifier(const std::string& keyword)
 {
     static const auto typeMap = GenerateInterpModifierMap();
-    return MapKeywordToType(typeMap, keyword, "interpolation modifier");
+    return MapKeywordToType(typeMap, keyword, R_InterpModifier);
 }
 
 
@@ -673,7 +675,7 @@ static std::map<std::string, TypeModifier> GenerateTypeModifierMap()
 TypeModifier HLSLKeywordToTypeModifier(const std::string& keyword)
 {
     static const auto typeMap = GenerateTypeModifierMap();
-    return MapKeywordToType(typeMap, keyword, "type modifier");
+    return MapKeywordToType(typeMap, keyword, R_TypeModifier);
 }
 
 
@@ -693,7 +695,7 @@ static std::map<std::string, UniformBufferType> GenerateUniformBufferTypeMap()
 UniformBufferType HLSLKeywordToUniformBufferType(const std::string& keyword)
 {
     static const auto typeMap = GenerateUniformBufferTypeMap();
-    return MapKeywordToType(typeMap, keyword, "buffer type");
+    return MapKeywordToType(typeMap, keyword, R_BufferType);
 }
 
 
@@ -745,7 +747,7 @@ static std::map<std::string, BufferType> GenerateBufferTypeMap()
 BufferType HLSLKeywordToBufferType(const std::string& keyword)
 {
     static const auto typeMap = GenerateBufferTypeMap();
-    return MapKeywordToType(typeMap, keyword, "buffer type");
+    return MapKeywordToType(typeMap, keyword, R_BufferType);
 }
 
 
@@ -771,7 +773,7 @@ static std::map<std::string, SamplerType> GenerateSamplerTypeMap()
 SamplerType HLSLKeywordToSamplerType(const std::string& keyword)
 {
     static const auto typeMap = GenerateSamplerTypeMap();
-    return MapKeywordToType(typeMap, keyword, "sampler type");
+    return MapKeywordToType(typeMap, keyword, R_SamplerType);
 }
 
 
@@ -959,7 +961,7 @@ static IndexedSemantic HLSLKeywordToSemanticD3D10(const CiString& ident)
     {
         auto semantic = HLSLKeywordToSemanticWithMap(ident, semanticMap);
         if (semantic.IsUserDefined())
-            throw std::runtime_error("invalid system value semantic \"" + std::string(ident.begin(), ident.end()) + "\"");
+            RuntimeErr(R_InvalidSystemValueSemantic(std::string(ident.begin(), ident.end())));
         return semantic;
     }
     else

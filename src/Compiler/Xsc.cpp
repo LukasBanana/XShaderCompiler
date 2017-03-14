@@ -18,6 +18,7 @@
 #include "ReflectionPrinter.h"
 #include "ASTPrinter.h"
 #include "ASTEnums.h"
+#include "ReportIdents.h"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -41,7 +42,7 @@ static bool CompileShaderPrimary(
     Log* log, Reflection::ReflectionData* reflectionData,
     std::array<TimePoint, 6>& timePoints)
 {
-    auto SubmitError = [log](const char* msg)
+    auto SubmitError = [log](const std::string& msg)
     {
         if (log)
             log->SumitReport(Report(Report::Types::Error, msg));
@@ -50,18 +51,18 @@ static bool CompileShaderPrimary(
 
     /* Validate arguments */
     if (!inputDesc.sourceCode)
-        throw std::invalid_argument("input stream must not be null");
+        throw std::invalid_argument(R_InputStreamCantBeNull);
     
     if (!outputDesc.sourceCode)
-        throw std::invalid_argument("output stream must not be null");
+        throw std::invalid_argument(R_OutputStreamCantBeNull);
 
     const auto& nameMngl = outputDesc.nameMangling;
     
     if (nameMngl.reservedWordPrefix.empty())
-        throw std::invalid_argument("name mangling prefix for reserved words must not be empty");
+        throw std::invalid_argument(R_NameManglingPrefixResCantBeEmpty);
 
     if (nameMngl.temporaryPrefix.empty())
-        throw std::invalid_argument("name mangling prefix for temporary variables must not be empty");
+        throw std::invalid_argument(R_NameManglingPrefixTmpCantBeEmpty);
     
     if ( nameMngl.reservedWordPrefix == nameMngl.inputPrefix     ||
          nameMngl.reservedWordPrefix == nameMngl.outputPrefix    ||
@@ -69,7 +70,7 @@ static bool CompileShaderPrimary(
          nameMngl.temporaryPrefix    == nameMngl.inputPrefix     ||
          nameMngl.temporaryPrefix    == nameMngl.outputPrefix )
     {
-        throw std::invalid_argument("name mangling prefix for reserved words and temporary variables must not be equal to any other prefix");
+        throw std::invalid_argument(R_NameManglingPrefixOverlap);
     }
 
     /* ----- Pre-processing ----- */
@@ -98,7 +99,7 @@ static bool CompileShaderPrimary(
         reflectionData->macros = preProcessor->ListDefinedMacroIdents();
 
     if (!processedInput)
-        return SubmitError("preprocessing input code failed");
+        return SubmitError(R_PreProcessingSourceFailed);
 
     if (outputDesc.options.preprocessOnly)
     {
@@ -129,7 +130,7 @@ static bool CompileShaderPrimary(
     }
 
     if (!program)
-        return SubmitError("parsing input code failed");
+        return SubmitError(R_ParsingSourceFailed);
 
     /* ----- Context analysis ----- */
 
@@ -152,7 +153,7 @@ static bool CompileShaderPrimary(
     }
 
     if (!analyzerResult)
-        return SubmitError("analyzing input code failed");
+        return SubmitError(R_AnalyzingSourceFailed);
 
     /* Optimize AST */
     timePoints[3] = Time::now();
@@ -177,7 +178,7 @@ static bool CompileShaderPrimary(
     }
 
     if (!generatorResult)
-        return SubmitError("generating output code failed");
+        return SubmitError(R_GeneratingOutputCodeFailed);
 
     /* ----- Code reflection ----- */
 

@@ -8,6 +8,7 @@
 #include "ASTEnums.h"
 #include "Exception.h"
 #include "Token.h"
+#include "ReportIdents.h"
 #include <map>
 #include <algorithm>
 
@@ -21,7 +22,7 @@ namespace Xsc
 [[noreturn]]
 static void MapFailed(const std::string& from, const std::string& to)
 {
-    throw std::invalid_argument("failed to map " + from + " to " + to);
+    throw std::invalid_argument(R_FailedToMap(from, to));
 }
 
 template <typename T>
@@ -246,7 +247,7 @@ std::string DataTypeToString(const DataType t, bool useTemplateSyntax)
         else
             return DataTypeToString(BaseDataType(t)) + std::to_string(dim.first) + "x" + std::to_string(dim.second);
     }
-    return "<undefined>";
+    return R_Undefined;
 }
 
 bool IsScalarType(const DataType t)
@@ -574,11 +575,11 @@ static DataType SubscriptDataTypeVector(const DataType dataType, const std::stri
     auto subscriptSize = subscript.size();
 
     if (subscriptSize < 1 || subscriptSize > 4)
-        InvalidArg("vector subscript can not have " + std::to_string(subscriptSize) + " components");
+        InvalidArg(R_VectorSubscriptCantHaveNComps(subscriptSize));
 
     /* Validate vector subscript */
     if (vectorSize < 1 || vectorSize > 4)
-        InvalidArg("invalid vector dimension (must be in the range [1, 4], but got " + std::to_string(vectorSize) + ")");
+        InvalidArg(R_InvalidVectorDimension(vectorSize));
 
     bool validSubscript =
     (
@@ -587,7 +588,7 @@ static DataType SubscriptDataTypeVector(const DataType dataType, const std::stri
     );
 
     if (!validSubscript)
-        InvalidArg("invalid vector subscript '" + subscript + "' for " + DataTypeToString(dataType));
+        InvalidArg(R_InvalidVectorSubscript(subscript, DataTypeToString(dataType)));
 
     return VectorDataType(BaseDataType(dataType), static_cast<int>(subscriptSize));
 }
@@ -600,20 +601,15 @@ static DataType SubscriptDataTypeMatrix(const DataType dataType, const std::stri
 {
     /* Validate matrix subscript */
     if (rows < 1 || rows > 4 || cols < 1 || cols > 4)
-    {
-        InvalidArg(
-            "invalid matrix dimension (must be in the range [1, 4] x [1, 4], but got " +
-            std::to_string(rows) + " x " + std::to_string(cols) + ")"
-        );
-    }
+        InvalidArg(R_InvalidMatrixDimension(rows, cols));
 
     /* Parse all matrix row-column subscriptions (e.g. zero-based "_m00", or one-based "_11") */
     auto ParseNextSubscript = [](const std::string& s, std::size_t& i)
     {
         if (i + 3 > s.size())
-            InvalidArg("incomplete matrix subscript: '" + s + "'");
+            InvalidArg(R_IncompleteMatrixSubscript(s));
         if (s[i] != '_')
-            InvalidArg("invalid character '" + std::string(1, s[i]) + "' in matrix subscript: '" + s + "'");
+            InvalidArg(R_InvalidCharInMatrixSubscript(std::string(1, s[i]), s));
         ++i;
 
         char zeroBase = 1;
@@ -622,7 +618,7 @@ static DataType SubscriptDataTypeMatrix(const DataType dataType, const std::stri
             ++i;
             zeroBase = 0;
             if (i + 2 > s.size())
-                InvalidArg("incomplete matrix subscript: '" + s + "'");
+                InvalidArg(R_IncompleteMatrixSubscript(s));
         }
         
         for (int j = 0; j < 2; ++j)
@@ -630,8 +626,9 @@ static DataType SubscriptDataTypeMatrix(const DataType dataType, const std::stri
             if (s[i] < '0' + zeroBase || s[i] > '3' + zeroBase)
             {
                 InvalidArg(
-                    "invalid character '" + std::string(1, s[i]) + "' in " +
-                    std::string(zeroBase == 0 ? "zero" : "one") + "-based matrix subscript: '" + s + "'"
+                    R_InvalidCharInMatrixSubscript(
+                        std::string(1, s[i]), s, (zeroBase == 0 ? "zero" : "one")
+                    )
                 );
             }
             ++i;
@@ -1007,9 +1004,9 @@ std::string SemanticToString(const Semantic t)
     switch (t)
     {
         case Semantic::Undefined:
-            return "<undefined>";
+            return R_Undefined;
         case Semantic::UserDefined:
-            return "<user-defined>";
+            return R_UserDefined;
 
         CASE_TO_STRING( ClipDistance           );
         CASE_TO_STRING( CullDistance           );

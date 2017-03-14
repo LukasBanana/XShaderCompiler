@@ -6,6 +6,7 @@
  */
 
 #include "CodeWriter.h"
+#include "ReportIdents.h"
 #include <algorithm>
 
 
@@ -17,7 +18,7 @@ void CodeWriter::OutputStream(std::ostream& stream)
 {
     stream_ = &stream;
     if (!stream_->good())
-        throw std::runtime_error("invalid output stream");
+        throw std::runtime_error(R_InvalidOutputStream);
 }
 
 void CodeWriter::PushOptions(const Options& options)

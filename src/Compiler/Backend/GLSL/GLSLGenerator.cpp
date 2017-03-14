@@ -15,6 +15,7 @@
 #include "TypeDenoter.h"
 #include "Exception.h"
 #include "Helper.h"
+#include "ReportIdents.h"
 #include <initializer_list>
 #include <algorithm>
 #include <cctype>
@@ -122,7 +123,7 @@ void GLSLGenerator::GenerateCodePrimary(
         }
     }
     else
-        Error("entry point \"" + inputDesc.entryPoint + "\" not found");
+        Error(R_EntryPointNotFound(inputDesc.entryPoint));
 }
 
 
@@ -163,7 +164,7 @@ const std::string* GLSLGenerator::BufferTypeToKeyword(const BufferType bufferTyp
     if (auto keyword = BufferTypeToGLSLKeyword(bufferType, IsVKSL()))
         return keyword;
     else
-        Error("failed to map buffer type to GLSL sampler type", ast);
+        Error(R_FailedToMapToGLSLKeyword(R_BufferType), ast);
     return nullptr;
 }
 
@@ -172,7 +173,7 @@ const std::string* GLSLGenerator::SamplerTypeToKeyword(const SamplerType sampler
     if (auto keyword = SamplerTypeToGLSLKeyword(samplerType))
         return keyword;
     else
-        Error("failed to map sampler type to GLSL sampler type", ast);
+        Error(R_FailedToMapToGLSLKeyword(R_SamplerType), ast);
     return nullptr;
 }
 
@@ -222,26 +223,21 @@ void GLSLGenerator::ReportOptionalFeedback()
             if (sem.found)
                 ++locationUseCount[sem.location];
             else
-                Warning("vertex semantic '" + ToString(vertSemantic.first) + "' specified but not found");
+                Warning(R_VertexSemanticNotFound(ToString(vertSemantic.first)));
         }
 
         /* Check for multiple usages of vertex semantic locations */
         for (const auto& loc : locationUseCount)
         {
             if (loc.second > 1)
-            {
-                Warning(
-                    "multiple usage of vertex semantic location (" + std::to_string(loc.first) +
-                    ") (used " + std::to_string(loc.second) + " times)"
-                );
-            }
+                Warning(R_MultiUseOfVertexSemanticLocation(loc.first, loc.second));
         }
     }
 }
 
 void GLSLGenerator::ErrorIntrinsic(const std::string& intrinsicName, const AST* ast)
 {
-    Error("failed to map intrinsic '" + intrinsicName + "' to GLSL keyword", ast);
+    Error(R_FailedToMapToGLSLKeyword(R_Intrinsic(intrinsicName)), ast);
 }
 
 /* ------- Visit functions ------- */
@@ -430,13 +426,13 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     {
         /* Check for valid control paths */
         if (ast->flags(FunctionDecl::hasNonReturnControlPath))
-            Warning("not all control paths in unreferenced function '" + ast->ident + "' return a value", ast);
+            Warning(R_InvalidControlPathInUnrefFunc(ast->ToString()), ast);
         return;
     }
 
     /* Check for valid control paths */
     if (ast->flags(FunctionDecl::hasNonReturnControlPath))
-        Error("not all control paths in function '" + ast->ident + "' return a value", ast);
+        Error(R_InvalidControlPathInFunc(ast->ToString()), ast);
 
     /* Write line */
     WriteLineMark(ast);
@@ -1070,7 +1066,7 @@ bool GLSLGenerator::WriteGlobalLayoutsTessEvaluation(const Program::LayoutTessEv
         if (auto keyword = AttributeValueToGLSLKeyword(layout.domainType))
             Write(*keyword);
         else
-            Error("failed to map domain type to GLSL keyword (tessellation abstract patch type)");
+            Error(R_FailedToMapToGLSLKeyword(R_DomainType, R_TessAbstractPatchType));
 
         if (IsAttributeValuePartitioning(layout.partitioning))
         {
@@ -1080,7 +1076,7 @@ bool GLSLGenerator::WriteGlobalLayoutsTessEvaluation(const Program::LayoutTessEv
             if (auto keyword = AttributeValueToGLSLKeyword(layout.partitioning))
                 Write(*keyword);
             else
-                Error("failed to map partitioning to GLSL keyword (tessellation spacing)");
+                Error(R_FailedToMapToGLSLKeyword(R_Partitioning, R_TessSpacing));
         }
 
         if (IsAttributeValueTrianglePartitioning(layout.outputTopology))
@@ -1091,7 +1087,7 @@ bool GLSLGenerator::WriteGlobalLayoutsTessEvaluation(const Program::LayoutTessEv
             if (auto keyword = AttributeValueToGLSLKeyword(layout.outputTopology))
                 Write(*keyword);
             else
-                Error("failed to map output toplogy to GLSL keyword (tessellation primitive orderin)");
+                Error(R_FailedToMapToGLSLKeyword(R_OutputToplogy, R_TessPrimitiveOrdering));
         }
 
         Write(") in;");
@@ -1109,11 +1105,11 @@ bool GLSLGenerator::WriteGlobalLayoutsGeometry(const Program::LayoutGeometryShad
 
         /* Map GLSL input primitive */
         if (layout.inputPrimitive == PrimitiveType::Undefined)
-            Error("missing input primitive type for geometry shader");
+            Error(R_MissingInputPrimitiveType(R_GeometryShader));
         else if (auto keyword = PrimitiveTypeToGLSLKeyword(layout.inputPrimitive))
             Write(*keyword);
         else
-            Error("failed to map input geometry primitive to GLSL keyword");
+            Error(R_FailedToMapToGLSLKeyword(R_InputGeometryPrimitive));
 
         Write(") in;");
     }
@@ -1126,11 +1122,11 @@ bool GLSLGenerator::WriteGlobalLayoutsGeometry(const Program::LayoutGeometryShad
 
         /* Map GLSL output primitive */
         if (layout.outputPrimitive == BufferType::Undefined)
-            Error("missing output primitive type for geometry shader");
+            Error(R_MissingOutputPrimitiveType(R_GeometryShader));
         else if (auto keyword = BufferTypeToGLSLKeyword(layout.outputPrimitive))
             Write(*keyword);
         else
-            Error("failed to map output geometry primitive to GLSL keyword");
+            Error(R_FailedToMapToGLSLKeyword(R_OutputGeometryPrimitive));
 
         Write(", max_vertices = " + std::to_string(layout.maxVertices) + ") out;");
     }
@@ -1294,7 +1290,7 @@ void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param,
                 }
             }
             else
-                Error("too many array indices for shader input parameter", paramVar);
+                Error(R_TooManyIndicesForShaderInputParam, paramVar);
         }
         EndSep();
     }
@@ -1321,7 +1317,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
         if (versionOut_ <= OutputShaderVersion::GLSL120)
         {
             if (!interpModifiers.empty())
-                Warning("interpolation modifiers not supported for GLSL version 120 or below", varDecl);
+                Warning(R_InterpModNotSupportedForGLSL120, varDecl);
 
             if (IsVertexShader())
                 Write("attribute ");
@@ -1481,7 +1477,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
         if (versionOut_ <= OutputShaderVersion::GLSL120)
         {
             if (varDeclStmnt && !varDeclStmnt->typeSpecifier->interpModifiers.empty())
-                Warning("interpolation modifiers not supported for GLSL version 120 or below", varDecl);
+                Warning(R_InterpModNotSupportedForGLSL120, varDecl);
 
             Write("varying ");
             Separator();
@@ -1549,7 +1545,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
                     EndLn();
                 }
                 else
-                    Error("failed to map output semantic to GLSL keyword", entryPoint);
+                    Error(R_FailedToMapToGLSLKeyword(R_OutputSemantic), entryPoint);
             }
             else if (semantic.IsUserDefined())
             {
@@ -1659,7 +1655,7 @@ void GLSLGenerator::WriteGlobalUniformsParameter(VarDeclStmnt* param)
         if (param->varDecls.size() == 1)
             Visit(param->varDecls.front());
         else
-            Error("invalid number of variables in function parameter", param);
+            Error(R_InvalidParamVarCount, param);
 
         Write(";");
     }
@@ -1801,7 +1797,7 @@ void GLSLGenerator::WriteStorageClasses(const std::set<StorageClass>& storageCla
         if (auto keyword = StorageClassToGLSLKeyword(storage))
             Write(*keyword + " ");
         else
-            Warning("not all storage classes can be mapped to GLSL keywords", ast);
+            Warning(R_NotAllStorageClassesMappedToGLSL, ast);
     }
 }
 
@@ -1812,7 +1808,7 @@ void GLSLGenerator::WriteInterpModifiers(const std::set<InterpModifier>& interpM
         if (auto keyword = InterpModifierToGLSLKeyword(modifier))
             Write(*keyword + " ");
         else
-            Warning("not all interpolation modifiers can be mapped to GLSL keywords", ast);
+            Warning(R_NotAllInterpModMappedToGLSL, ast);
     }
 }
 
@@ -1855,7 +1851,7 @@ void GLSLGenerator::WriteDataType(DataType dataType, bool writePrecisionSpecifie
     if (auto keyword = DataTypeToGLSLKeyword(dataType))
         Write(*keyword);
     else
-        Error("failed to map data type to GLSL keyword", ast);
+        Error(R_FailedToMapToGLSLKeyword(R_DataType), ast);
 }
 
 void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writePrecisionSpecifier, const AST* ast)
@@ -1881,7 +1877,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
                 if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
                     bufferType = bufferDecl->GetBufferType();
                 else
-                    Error("missing reference to declaration in buffer type denoter", ast);
+                    Error(R_MissingRefInTypeDen(R_BufferTypeDen), ast);
             }
 
             /* Convert buffer type to GLSL buffer (or sampler type) */
@@ -1897,7 +1893,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
                 if (auto samplerDecl = samplerTypeDen->samplerDeclRef)
                     samplerType = samplerDecl->GetSamplerType();
                 else
-                    Error("missing reference to declaration in sampler type denoter", ast);
+                    Error(R_MissingRefInTypeDen(R_SamplerTypeDen), ast);
             }
 
             if (!IsSamplerStateType(samplerType) || IsVKSL())
@@ -1907,7 +1903,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
                     Write(*keyword);
             }
             else
-                Error("can not translate sampler state object to GLSL sampler", ast);
+                Error(R_CantTranslateSamplerToGLSL, ast);
         }
         else if (auto structTypeDen = typeDenoter.As<StructTypeDenoter>())
         {
@@ -1929,7 +1925,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
             Visit(arrayTypeDen->arrayDims);
         }
         else
-            Error("failed to determine GLSL data type", ast);
+            Error(R_FailedToDetermineGLSLDataType, ast);
     }
     catch (const Report& e)
     {
@@ -2058,7 +2054,7 @@ void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* funcCall, std::size_t n
 {
     auto numArgs = funcCall->arguments.size();
     if (numArgs < numArgsMin || numArgs > numArgsMax)
-        Error("invalid number of arguments for intrinsic", funcCall);
+        Error(R_InvalidIntrinsicArgCount(funcCall->varIdent->Last()->ident), funcCall);
 }
 
 void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* funcCall)
@@ -2086,7 +2082,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* funcCall)
         WriteTypeDenoter(*funcCall->typeDenoter, false, funcCall);
     }
     else
-        Error("missing function name", funcCall);
+        Error(R_MissingFuncName, funcCall);
 
     /* Write arguments */
     Write("(");
@@ -2158,7 +2154,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicRcp(FunctionCall* funcCall)
         Write("))");
     }
     else
-        Error("invalid argument type for intrinsic 'rcp'", expr.get());
+        Error(R_InvalidIntrinsicArgType("rcp"), expr.get());
 }
 
 void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* funcCall)
@@ -2219,10 +2215,10 @@ void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* funcCall)
             }
         }
         else
-            Error("invalid argument type for intrinsic 'clip'", expr.get());
+            Error(R_InvalidIntrinsicArgType("clip"), expr.get());
     }
     else
-        Error("invalid argument type for intrinsic 'clip'", expr.get());
+        Error(R_InvalidIntrinsicArgType("clip"), expr.get());
 
     Write(")");
     
@@ -2633,7 +2629,7 @@ void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
         Visit(paramVar->arrayDims);
     }
     else
-        Error("invalid number of variables in function parameter", ast);
+        Error(R_InvalidParamVarCount, ast);
 }
 
 void GLSLGenerator::WriteScopedStmnt(Stmnt* ast)
@@ -2691,7 +2687,7 @@ void GLSLGenerator::WriteLiteral(const std::string& value, const BaseTypeDenoter
         Write(")");
     }
     else
-        Error("failed to write type denoter for literal '" + value + "'", ast);
+        Error(R_FailedToWriteLiteralType(value), ast);
 }
 
 void GLSLGenerator::WriteBindingSlot(const std::vector<RegisterPtr>& slotRegisters, bool writeCompleteLayout)
