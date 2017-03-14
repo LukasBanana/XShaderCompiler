@@ -43,8 +43,6 @@ class Generator : protected Visitor
         ) = 0;
 
         void Error(const std::string& msg, const AST* ast = nullptr);
-        void ErrorInvalidNumArgs(const std::string& functionName, const AST* ast = nullptr);
-
         void Warning(const std::string& msg, const AST* ast = nullptr);
 
         void BeginLn();

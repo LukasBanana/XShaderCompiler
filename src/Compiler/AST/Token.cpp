@@ -6,6 +6,7 @@
  */
 
 #include "Token.h"
+#include "ReportIdents.h"
 
 #ifdef XSC_ENABLE_MEMORY_POOL
 #include "MemoryPool.h"
@@ -57,17 +58,17 @@ std::string Token::TypeToString(const Types type)
 {
     switch (type)
     {
-        case Types::Ident:              return "identifier";
-        case Types::BoolLiteral:        return "boolean literal";
-        case Types::IntLiteral:         return "integer literal";
-        case Types::FloatLiteral:       return "floating-point literal";
-        case Types::StringLiteral:      return "string literal";
-        case Types::CharLiteral:        return "character literal";
-        case Types::NullLiteral:        return "null literal";
-        case Types::AssignOp:           return "assign operator";
-        case Types::BinaryOp:           return "binary operator";
-        case Types::UnaryOp:            return "unary operator";
-        case Types::TernaryOp:          return "ternary operator";
+        case Types::Ident:              return R_Identifier;
+        case Types::BoolLiteral:        return R_BoolLiteral;
+        case Types::IntLiteral:         return R_IntLiteral;
+        case Types::FloatLiteral:       return R_FloatLiteral;
+        case Types::StringLiteral:      return R_StringLiteral;
+        case Types::CharLiteral:        return R_CharLiteral;
+        case Types::NullLiteral:        return R_NullLiteral;
+        case Types::AssignOp:           return R_AssignOp;
+        case Types::BinaryOp:           return R_BinaryOp;
+        case Types::UnaryOp:            return R_UnaryOp;
+        case Types::TernaryOp:          return R_TernaryOp;
         case Types::Dot:                return "'.'";
         case Types::Colon:              return "':'";
         case Types::Semicolon:          return "';'";
@@ -78,50 +79,50 @@ std::string Token::TypeToString(const Types type)
         case Types::RCurly:             return "'}'";
         case Types::LParen:             return "'['";
         case Types::RParen:             return "']'";
-        case Types::StringType:         return "string type denoter";
-        case Types::ScalarType:         return "scalar type denoter";
-        case Types::VectorType:         return "vector type denoter";
-        case Types::MatrixType:         return "matrix type denoter";
-        case Types::Void:               return "'void' type denoter";
-        case Types::PrimitiveType:      return "primitive type denoter";
-        case Types::Reserved:           return "reserved keyword";
-        case Types::Vector:             return "'vector' generic type denoter";
-        case Types::Matrix:             return "'matrix' generic type denoter";
-        case Types::Sampler:            return "sampler type denoter";
-        case Types::SamplerState:       return "sampler state";
-        case Types::Buffer:             return "buffer type denoter";
-        case Types::UniformBuffer:      return "uniform buffer type denoter";
-        case Types::Do:                 return "'do' keyword";
-        case Types::While:              return "'while' keyword";
-        case Types::For:                return "'for' keyword";
-        case Types::If:                 return "'if' keyword";
-        case Types::Else:               return "'else' keyword";
-        case Types::Switch:             return "'switch' keyword";
-        case Types::Case:               return "'case' keyword";
-        case Types::Default:            return "'default' keyword";
-        case Types::Typedef:            return "'typedef' keyword";
-        case Types::Struct:             return "'struct' keyword";
-        case Types::Register:           return "'register' keyword";
-        case Types::PackOffset:         return "'packoffset' keyword";
-        case Types::CtrlTransfer:       return "control transfer";
-        case Types::Return:             return "'return' keyword";
-        case Types::InputModifier:      return "input modifier";
-        case Types::InterpModifier:     return "interpolation modifier";
-        case Types::TypeModifier:       return "type modifier";
-        case Types::StorageClass:       return "storage class";
-        case Types::Inline:             return "inline";
-        case Types::Technique:          return "technique";
-        case Types::Pass:               return "pass";
-        case Types::Compile:            return "compile";
-        case Types::Directive:          return "preprocessor directive";
-        case Types::DirectiveConcat:    return "preprocessor directive concatenation";
-        case Types::Comment:            return "comment";
-        case Types::WhiteSpaces:        return "white spaces";
-        case Types::NewLines:           return "new-line characters";
-        case Types::LineBreak:          return "preprocessor line break";
-        case Types::VarArg:             return "variadic argument specifier";
-        case Types::Misc:               return "miscellaneous";
-        case Types::EndOfStream:        return "end-of-stream";
+        case Types::StringType:         return R_StringTypeDen;
+        case Types::ScalarType:         return R_ScalarTypeDen;
+        case Types::VectorType:         return R_VectorTypeDen;
+        case Types::MatrixType:         return R_MatrixTypeDen;
+        case Types::Void:               return R_VoidTypeDen;
+        case Types::PrimitiveType:      return R_PrimitiveTypeDen;
+        case Types::Reserved:           return R_ReservedWord;
+        case Types::Vector:             return R_VectorGenericTypeDen;
+        case Types::Matrix:             return R_MatrixGenericTypeDen;
+        case Types::Sampler:            return R_SamplerTypeDen;
+        case Types::SamplerState:       return R_SamplerState;
+        case Types::Buffer:             return R_BufferTypeDen;
+        case Types::UniformBuffer:      return R_UniformBufferTypeDen;
+        case Types::Do:                 return R_KeywordDo;
+        case Types::While:              return R_KeywordWhile;
+        case Types::For:                return R_KeywordFor;
+        case Types::If:                 return R_KeywordIf;
+        case Types::Else:               return R_KeywordElse;
+        case Types::Switch:             return R_KeywordSwitch;
+        case Types::Case:               return R_KeywordCase;
+        case Types::Default:            return R_KeywordDefault;
+        case Types::Typedef:            return R_KeywordTypedef;
+        case Types::Struct:             return R_KeywordStruct;
+        case Types::Register:           return R_KeywordRegister;
+        case Types::PackOffset:         return R_KeywordPackOffset;
+        case Types::CtrlTransfer:       return R_CtrlTransfer;
+        case Types::Return:             return R_KeywordReturn;
+        case Types::InputModifier:      return R_InputModifier;
+        case Types::InterpModifier:     return R_InterpModifier;
+        case Types::TypeModifier:       return R_TypeModifier;
+        case Types::StorageClass:       return R_StorageClass;
+        case Types::Inline:             return R_KeywordInline;
+        case Types::Technique:          return R_KeywordTechnique;
+        case Types::Pass:               return R_KeywordPass;
+        case Types::Compile:            return R_KeywordCompile;
+        case Types::Directive:          return R_PPDirective;
+        case Types::DirectiveConcat:    return R_PPDirectiveConcat;
+        case Types::Comment:            return R_Comment;
+        case Types::WhiteSpaces:        return R_WhiteSpaces;
+        case Types::NewLines:           return R_NewLineChars;
+        case Types::LineBreak:          return R_PPLineBreak;
+        case Types::VarArg:             return R_VarArgSpecifier;
+        case Types::Misc:               return R_Misc;
+        case Types::EndOfStream:        return R_EndOfStream;
         default:                        break;
     }
     return "";

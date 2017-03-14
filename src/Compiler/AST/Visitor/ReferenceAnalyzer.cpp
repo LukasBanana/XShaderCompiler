@@ -9,6 +9,7 @@
 #include "Exception.h"
 #include "ReportHandler.h"
 #include "AST.h"
+#include "ReportIdents.h"
 #include <algorithm>
 
 
@@ -98,12 +99,12 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
         if (funcCallIt != funcCallStack_.end())
         {
             /* Pass call stack to report handler */
-            ReportHandler::HintForNextReport("call stack:");
+            ReportHandler::HintForNextReport(R_CallStack + ":");
             for (auto funcCall : funcCallStack_)
                 ReportHandler::HintForNextReport("  '" + funcCall->funcDeclRef->ToString(false) + "' (" + funcCall->area.Pos().ToString() + ")");
 
             /* Throw error message of recursive call */
-            RuntimeErr("illegal recursive call of function '" + funcDecl->ToString() + "'", ast);
+            RuntimeErr(R_IllegalRecursiveCall(funcDecl->ToString()), ast);
         }
 
         /* Mark function declaration as referenced */
@@ -125,8 +126,6 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             MarkLValueExpr(argExpr.get());
         }
     );
-
-    //TODO: also mark l-value arguments for intrinsic with output parameters!!!
 
     VISIT_DEFAULT(FunctionCall);
 }
@@ -200,7 +199,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             if (ast->funcImplRef)
                 Visit(ast->funcImplRef);
             else
-                RuntimeErr("missing function implementation for '" + ast->ToString(false) + "'", ast);
+                RuntimeErr(R_MissingFuncImpl(ast->ToString(false)), ast);
         }
         else
         {

@@ -351,13 +351,13 @@ struct FunctionCall : public TypedAST
     // Iterates over each argument expression together with its associated parameter.
     void ForEachArgumentWithParameterType(const ArgumentParameterTypeFunctor& iterator);
 
-    VarIdentPtr             varIdent;                           // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
-    TypeDenoterPtr          typeDenoter;                        // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
+    VarIdentPtr             varIdent;                                   // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
+    TypeDenoterPtr          typeDenoter;                                // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
     std::vector<ExprPtr>    arguments;
 
-    FunctionDecl*           funcDeclRef = nullptr;              // Reference to the function declaration; may be null
-    Intrinsic               intrinsic   = Intrinsic::Undefined; // Intrinsic ID (if this is an intrinsic).
-    std::vector<Expr*>      defaultArgumentRefs;                // Reference to default argument expressions of all remaining parameters
+    FunctionDecl*           funcDeclRef         = nullptr;              // Reference to the function declaration; may be null
+    Intrinsic               intrinsic           = Intrinsic::Undefined; // Intrinsic ID (if this is an intrinsic).
+    std::vector<Expr*>      defaultArgumentRefs;                        // Reference to default argument expressions of all remaining parameters
 };
 
 // Attribute (e.g. "[unroll]" or "[numthreads(x,y,z)]").

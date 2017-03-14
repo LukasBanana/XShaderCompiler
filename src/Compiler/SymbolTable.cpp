@@ -8,6 +8,7 @@
 #include "SymbolTable.h"
 #include "Exception.h"
 #include "ReportHandler.h"
+#include "ReportIdents.h"
 #include <algorithm>
 #include <cctype>
 
@@ -15,6 +16,10 @@
 namespace Xsc
 {
 
+
+/*
+ * Global (and internal) functions
+ */
 
 static unsigned int StringDistancePrimary(const std::string& lhs, const std::string& rhs, unsigned int shiftOnUneq)
 {
@@ -84,6 +89,22 @@ unsigned int StringDistance(const std::string& a, const std::string& b)
     return dist;
 }
 
+[[noreturn]]
+void RuntimeErrNoActiveScope()
+{
+    RuntimeErr(R_NoActiveScopeToRegisterSymbol);
+}
+
+[[noreturn]]
+void RuntimeErrIdentAlreadyDeclared(const std::string& ident)
+{
+    RuntimeErr(R_IdentAlreadyDeclared(ident));
+}
+
+
+/*
+ * ASTSymbolOverload class
+ */
 
 ASTSymbolOverload::ASTSymbolOverload(const std::string& ident, AST* ast) :
     ident_{ ident }
@@ -162,9 +183,9 @@ AST* ASTSymbolOverload::Fetch(bool throwOnFailure) const
     if (throwOnFailure)
     {
         if (refs_.empty())
-            RuntimeErr("undefined symbol '" + ident_ + "'");
+            RuntimeErr(R_UndefinedSymbol(ident_));
         if (refs_.size() > 1)
-            RuntimeErr("symbol '" + ident_ + "' is ambiguous");
+            RuntimeErr(R_AmbiguousSymbol(ident_));
         return refs_.front();
     }
     else
@@ -179,7 +200,7 @@ AST* ASTSymbolOverload::FetchVar(bool throwOnFailure) const
         if (type == AST::Types::VarDecl || type == AST::Types::BufferDecl || type == AST::Types::SamplerDecl)
             return ref;
         if (throwOnFailure)
-            RuntimeErr("identifier '" + ident_ + "' does not name a variable, buffer, or sampler");
+            RuntimeErr(R_IdentIsNotVarOrBufferOrSampler(ident_));
     }
     return nullptr;
 }
@@ -191,7 +212,7 @@ VarDecl* ASTSymbolOverload::FetchVarDecl(bool throwOnFailure) const
         if (auto varDecl = ref->As<VarDecl>())
             return varDecl;
         if (throwOnFailure)
-            RuntimeErr("identifier '" + ident_ + "' does not name a variable");
+            RuntimeErr(R_IdentIsNotVar(ident_));
     }
     return nullptr;
 }
@@ -204,7 +225,7 @@ AST* ASTSymbolOverload::FetchType(bool throwOnFailure) const
         if (type == AST::Types::StructDecl || type == AST::Types::AliasDecl)
             return ref;
         if (throwOnFailure)
-            RuntimeErr("identifier '" + ident_ + "' does not name a type");
+            RuntimeErr(R_IdentIsNotType(ident_));
     }
     return nullptr;
 }
@@ -215,16 +236,16 @@ FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(bool throwOnFailure) const
     if (auto funcDecl = ref->As<FunctionDecl>())
         return funcDecl;
     else if (throwOnFailure)
-        RuntimeErr("identifier '" + ident_ + "' does not name a function");
+        RuntimeErr(R_IdentIsNotFunc(ident_));
     return nullptr;
 }
 
 FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoterPtr>& argTypeDenoters) const
 {
     if (refs_.empty())
-        RuntimeErr("undefined symbol '" + ident_ + "'");
+        RuntimeErr(R_UndefinedSymbol(ident_));
     if (refs_.front()->Type() != AST::Types::FunctionDecl)
-        RuntimeErr("identifier '" + ident_ + "' does not name a function");
+        RuntimeErr(R_IdentIsNotFunc(ident_));
 
     /* Convert symbol references to function declaration pointers */
     std::vector<FunctionDecl*> funcDeclList;
@@ -235,7 +256,7 @@ FunctionDecl* ASTSymbolOverload::FetchFunctionDecl(const std::vector<TypeDenoter
         if (auto funcDecl = ref->As<FunctionDecl>())
             funcDeclList.push_back(funcDecl);
         else
-            RuntimeErr("symbol '" + ident_ + "' is ambiguous");
+            RuntimeErr(R_AmbiguousSymbol(ident_));
     }
 
     /* Fetch function declaration from list */

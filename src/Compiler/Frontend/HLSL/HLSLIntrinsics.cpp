@@ -9,6 +9,7 @@
 #include "AST.h"
 #include "Helper.h"
 #include "Exception.h"
+#include "ReportIdents.h"
 
 
 namespace Xsc
@@ -306,9 +307,11 @@ TypeDenoterPtr IntrinsicSignature::GetTypeDenoterWithArgs(const std::vector<Expr
         if (args.size() < numMin || args.size() > numMax)
         {
             RuntimeErr(
-                "invalid number of arguments for intrinsic (expected " +
-                (numMin < numMax ? std::to_string(numMin) + "-" + std::to_string(numMax) : std::to_string(numMin)) +
-                ", but got " + std::to_string(args.size()) + ")"
+                R_InvalidIntrinsicArgCount(
+                    "",
+                    (numMin < numMax ? std::to_string(numMin) + "-" + std::to_string(numMax) : std::to_string(numMin)),
+                    args.size()
+                )
             );
         }
     }
@@ -618,14 +621,14 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnType(const Intrinsic intrinsic, c
     if (it != g_intrinsicSignatureMap.end())
         return it->second.GetTypeDenoterWithArgs(args);
     else
-        RuntimeErr("failed to derive type denoter for intrinsic '" + GetIntrinsicIdent(intrinsic) + "'");
+        RuntimeErr(R_FailedToDeriveIntrinsicType(GetIntrinsicIdent(intrinsic)));
 }
 
 TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMul(const std::vector<ExprPtr>& args) const
 {
     /* Validate number of arguments */
     if (args.size() != 2)
-        RuntimeErr("invalid number of arguments for intrinsic 'mul'");
+        RuntimeErr(R_InvalidIntrinsicArgCount("mul"));
 
     auto type0 = args[0]->GetTypeDenoter();
     auto type1 = args[1]->GetTypeDenoter();
@@ -677,14 +680,14 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMul(const std::vector<ExprPtr
         }
     }
 
-    RuntimeErr("invalid arguments in intrinsic 'mul'");
+    RuntimeErr(R_InvalidIntrinsicArgs("mul"));
 }
 
 TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeTranspose(const std::vector<ExprPtr>& args) const
 {
     /* Validate number of arguments */
     if (args.size() != 1)
-        RuntimeErr("invalid number of arguments for intrinsic 'transpose'");
+        RuntimeErr(R_InvalidIntrinsicArgCount("transpose"));
 
     auto type0 = args[0]->GetTypeDenoter()->Get();
 
@@ -697,14 +700,14 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeTranspose(const std::vector<E
         return std::make_shared<BaseTypeDenoter>(MatrixDataType(baseDataType0, matrixTypeDim0.second, matrixTypeDim0.first));
     }
 
-    RuntimeErr("invalid arguments in intrinsic 'transpose'");
+    RuntimeErr(R_InvalidIntrinsicArgs("transpose"));
 }
 
 TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeVectorCompare(const std::vector<ExprPtr>& args) const
 {
     /* Validate number of arguments */
     if (args.size() != 2)
-        RuntimeErr("invalid number of arguments for vector-compare intrinsic");
+        RuntimeErr(R_InvalidIntrinsicArgCount("vector-compare"));
 
     auto type0 = args[0]->GetTypeDenoter()->Get();
 
@@ -740,7 +743,7 @@ void HLSLIntrinsicAdept::DeriveParameterTypes(std::vector<TypeDenoterPtr>& param
         }
     }
     else
-        RuntimeErr("failed to derive parameter type denoter for intrinsic '" + GetIntrinsicIdent(intrinsic) + "'");
+        RuntimeErr(R_FailedToDeriveIntrinsicParamType(GetIntrinsicIdent(intrinsic)));
 }
 
 void HLSLIntrinsicAdept::DeriveParameterTypesMul(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const

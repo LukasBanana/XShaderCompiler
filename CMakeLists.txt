@@ -28,6 +28,8 @@ option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings wi
 option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
 option(XSC_MEMORY_POOL "Enables the memory pool for optimized memory allocation (Experimental)" OFF)
 
+#set(XSC_REPORT_LANGUAGE "EN" CACHE STRING "Language of the report output (supported values: 'EN')")
+
 
 # === Preprocessor definitions ===
 
@@ -62,6 +64,7 @@ file(GLOB FilesSrcCompilerFrontendHLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Fronte
 file(GLOB FilesSrcCompilerFrontendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/GLSL/*.*)
 file(GLOB FilesSrcCompilerBackend ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/*.*)
 file(GLOB FilesSrcCompilerBackendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL/*.*)
+file(GLOB FilesSrcCompilerReport ${PROJECT_SOURCE_DIR}/src/Compiler/Report/*.*)
 file(GLOB FilesSrcShell ${PROJECT_SOURCE_DIR}/src/Shell/*.*)
 file(GLOB FilesSrcDebugger ${PROJECT_SOURCE_DIR}/src/Debugger/*.*)
 file(GLOB FilesSrcWrapperC ${PROJECT_SOURCE_DIR}/src/Wrapper/C/*.*)
@@ -87,6 +90,7 @@ set(
 	${FilesSrcCompilerFrontendGLSL}
 	${FilesSrcCompilerBackend}
 	${FilesSrcCompilerBackendGLSL}
+	${FilesSrcCompilerReport}
 )
 
 
@@ -103,6 +107,7 @@ source_group("src\\Frontend\\HLSL" FILES ${FilesSrcCompilerFrontendHLSL})
 source_group("src\\Frontend\\GLSL" FILES ${FilesSrcCompilerFrontendGLSL})
 source_group("src\\Backend" FILES ${FilesSrcCompilerBackend})
 source_group("src\\Backend\\GLSL" FILES ${FilesSrcCompilerBackendGLSL})
+source_group("src\\Report" FILES ${FilesSrcCompilerReport})
 
 
 # === Include directories ===
@@ -116,6 +121,7 @@ include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/HLSL")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/GLSL")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL")
+include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Report")
 
 
 # === Executable ===

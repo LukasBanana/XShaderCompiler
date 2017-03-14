@@ -7,6 +7,7 @@
 
 #include "Visitor.h"
 #include "AST.h"
+#include "ReportIdents.h"
 
 
 namespace Xsc
@@ -351,7 +352,7 @@ void Visitor::PopFunctionDecl()
         funcDeclStack_.pop();
     }
     else
-        throw std::underflow_error("function declaration level underflow");
+        throw std::underflow_error(R_FuncDeclStackUnderflow);
 }
 
 bool Visitor::InsideFunctionDecl() const
@@ -394,7 +395,7 @@ void Visitor::PopFunctionCall()
     if (!funcCallStack_.empty())
         funcCallStack_.pop();
     else
-        throw std::underflow_error("function call stack underflow");
+        throw std::underflow_error(R_FuncCallStackUnderflow);
 }
 
 FunctionCall* Visitor::ActiveFunctionCall() const
@@ -414,7 +415,7 @@ void Visitor::PopStructDecl()
     if (!structDeclStack_.empty())
         structDeclStack_.pop_back();
     else
-        throw std::underflow_error("structure declaration level underflow");
+        throw std::underflow_error(R_StructDeclStackUnderflow);
 }
 
 bool Visitor::InsideStructDecl() const
@@ -439,7 +440,7 @@ void Visitor::PopUniformBufferDecl()
     if (!uniformBufferDeclStack_.empty())
         uniformBufferDeclStack_.pop_back();
     else
-        throw std::underflow_error("uniform buffer declaration level underflow");
+        throw std::underflow_error(R_UniformBufferDeclStackUnderflow);
 }
 
 bool Visitor::InsideUniformBufferDecl() const
