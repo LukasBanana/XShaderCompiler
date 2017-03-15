@@ -134,20 +134,25 @@ const IntrinsicUsage* Program::FetchIntrinsicUsage(const Intrinsic intrinsic) co
 
 std::string VarIdent::ToString() const
 {
-    std::string name;
+    std::string s;
+
     auto ast = this;
     while (true)
     {
-        name += ast->ident;
+        s += ast->ident;
         if (ast->next)
         {
             ast = ast->next.get();
-            name += ".";
+            if (ast->nextIsStatic)
+                s += "::";
+            else
+                s += ".";
         }
         else
             break;
     }
-    return name;
+
+    return s;
 }
 
 VarIdent* VarIdent::Last()

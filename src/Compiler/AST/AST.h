@@ -530,6 +530,7 @@ struct VarIdent : public TypedAST
 
     std::string             ident;                      // Atomic identifier.
     std::vector<ExprPtr>    arrayIndices;               // Optional array indices
+    bool                    nextIsStatic    = false;    // Specifies whether the next node is concatenated with the static double-colon token '::'.
     VarIdentPtr             next;                       // Next identifier; may be null.
 
     AST*                    symbolRef       = nullptr;  // Symbol reference for DAST to the variable object; may be null (e.g. for vector subscripts)
