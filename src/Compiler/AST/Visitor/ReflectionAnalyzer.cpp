@@ -9,6 +9,7 @@
 #include "ConstExprEvaluator.h"
 #include "AST.h"
 #include "Helper.h"
+#include "ReportIdents.h"
 
 
 namespace Xsc
@@ -16,7 +17,7 @@ namespace Xsc
 
 
 ReflectionAnalyzer::ReflectionAnalyzer(Log* log) :
-    reportHandler_{ "reflection", log }
+    reportHandler_{ R_Reflection, log }
 {
 }
 
@@ -212,7 +213,7 @@ void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::Samp
                         samplerState.borderColor[i] = EvaluateConstExprFloat(*funcCallExpr->call->arguments[i]);
                 }
                 else
-                    throw std::string("invalid type or invalid number of arguments");
+                    throw std::string(R_InvalidTypeOrArgCount);
             }
             else if (auto castExpr = ast->value->As<CastExpr>())
             {
@@ -230,12 +231,12 @@ void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::Samp
                         samplerState.borderColor[i] = EvaluateConstExprFloat(*initExpr->exprs[i]);
                 }
                 else
-                    throw std::string("invalid number of arguments");
+                    throw std::string(R_InvalidArgCount);
             }
         }
         catch (const std::string& s)
         {
-            Warning(s + " to initialize sampler value 'BorderColor'", ast->value.get());
+            Warning(R_FailedToInitializeSamplerValue(s, "BorderColor"), ast->value.get());
         }
     }
 }

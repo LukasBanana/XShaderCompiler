@@ -7,6 +7,7 @@
 
 #include "GLSLPreProcessor.h"
 #include "GLSLExtensions.h"
+#include "ReportIdents.h"
 #include <algorithm>
 
 
@@ -33,7 +34,7 @@ bool GLSLPreProcessor::OnDefineMacro(const Macro& macro)
         /* Macros beginning with 'GL_' are reserved */
         if (ident.compare(0, 3, "GL_") == 0)
         {
-            Error("macros beginning with 'GL_' are reserved: " + ident, macro.identTkn.get(), false);
+            Error(R_MacrosBeginWithGLReserved(ident), macro.identTkn.get(), false);
             return false;
         }
 
@@ -43,7 +44,7 @@ bool GLSLPreProcessor::OnDefineMacro(const Macro& macro)
         {
             auto sourceArea = macro.identTkn->Area();
             sourceArea.Offset(static_cast<unsigned int>(underscorePos));
-            Error("macros containing consecutive underscores '__' are reserved: " + ident, sourceArea, false);
+            Error(R_MacrosWithTwoUnderscoresReserved(ident), sourceArea, false);
             return false;
         }
     }
@@ -54,7 +55,7 @@ bool GLSLPreProcessor::OnRedefineMacro(const Macro& macro, const Macro& previous
 {
     if (previousMacro.stdMacro)
     {
-        Error("illegal redefinition of standard macro: " + previousMacro.identTkn->Spell(), macro.identTkn.get(), false);
+        Error(R_IllegalRedefOfStdMacro(previousMacro.identTkn->Spell()), macro.identTkn.get(), false);
         return false;
     }
     else
@@ -65,7 +66,7 @@ bool GLSLPreProcessor::OnUndefineMacro(const Macro& macro)
 {
     if (macro.stdMacro)
     {
-        Error("illegal undefinition of standard macro: " + macro.identTkn->Spell(), macro.identTkn.get(), false);
+        Error(R_IllegalUndefOfStdMacro(macro.identTkn->Spell()), macro.identTkn.get(), false);
         return false;
     }
     else
@@ -87,7 +88,7 @@ void GLSLPreProcessor::ParseDirective(const std::string& directive, bool ignoreU
         if (versionNo_ == 0)
         {
             versionNo_ = 1;
-            Error("'#version'-directive must be the first directive", true, false);
+            Error(R_VersionMustBeFirstDirective, true, false);
         }
 
         PreProcessor::ParseDirective(directive, ignoreUnknown);
@@ -112,7 +113,7 @@ void GLSLPreProcessor::ParseDirectiveVersion()
     };
 
     if (std::find(std::begin(versionListGLSL), std::end(versionListGLSL), versionNo_) == std::end(versionListGLSL))
-        Error("unknown GLSL version '" + version + "'", true, false);
+        Error(R_UnknwonGLSLVersion(version), true, false);
 
     /* Parse profile */
     bool isCompatibilityProfile = false;
@@ -123,14 +124,14 @@ void GLSLPreProcessor::ParseDirectiveVersion()
         profile = Accept(Tokens::Ident)->Spell();
 
         if (versionNo_ < 150)
-            Error("versions before 150 do not allow a profile token", true, false);
+            Error(R_NoProfileForGLSLVersionBefore150, true, false);
 
         if (profile == "core")
             isCompatibilityProfile = false;
         else if (profile == "compatibility")
             isCompatibilityProfile = true;
         else
-            Error("invalid version profile '" + profile + "' (must be 'core' or 'compatibility')", true, false);
+            Error(R_InvalidGLSLVersionProfile(profile), true, false);
     }
 
     /* Write out version */
@@ -167,7 +168,7 @@ void GLSLPreProcessor::ParseDirectiveExtension()
     {
         const auto& extMap = GetGLSLExtensionVersionMap();
         if (extMap.find(extension) == extMap.end())
-            Error("extension not supported: " + extension, true, false);
+            Error(R_ExtensionNotSupported(extension), true, false);
     }
 
     /* Parse behavior */
@@ -179,7 +180,7 @@ void GLSLPreProcessor::ParseDirectiveExtension()
 
     /* Verify behavior */
     if (behavior != "enable" && behavior != "require" && behavior != "warn" && behavior != "disable")
-        Error("invalid extension behavior '" + behavior + "' (must be 'enable', 'require', 'warn', or 'disable')", true, false);
+        Error(R_InvalidGLSLExtensionBehavior(behavior), true, false);
 
     /* Write out extension */
     Out() << "#extension " << extension << " : " << behavior;

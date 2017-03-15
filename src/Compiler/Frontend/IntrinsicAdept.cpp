@@ -8,6 +8,7 @@
 #include "IntrinsicAdept.h"
 #include "Exception.h"
 #include "AST.h"
+#include "ReportIdents.h"
 
 
 namespace Xsc
@@ -69,7 +70,7 @@ void IntrinsicAdept::FillOverloadedIntrinsicIdents()
 [[noreturn]]
 void IntrinsicAdept::ThrowAmbiguousIntrinsicCall(const Intrinsic intrinsic, const std::vector<ExprPtr>& args)
 {
-    std::string s = "ambiguous intrinsic call '";
+    std::string s;
 
     s += GetIntrinsicIdent(intrinsic);
     s += '(';
@@ -81,9 +82,9 @@ void IntrinsicAdept::ThrowAmbiguousIntrinsicCall(const Intrinsic intrinsic, cons
             s += ", ";
     }
 
-    s += ")'";
+    s += ')';
 
-    RuntimeErr(s);
+    RuntimeErr(R_AmbiguousIntrinsicCall(s));
 }
 
 

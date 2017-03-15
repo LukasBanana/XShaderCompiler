@@ -1,146 +1,155 @@
 
-[SemanticTest1 VS1]
--T vert -E VS1 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS1]
+#-T vert -E VS1 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS2]
--T vert -E VS2 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS2]
+#-T vert -E VS2 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS3]
--T vert -E VS3 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS3]
+#-T vert -E VS3 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS4]
--T vert -E VS4 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS4]
+#-T vert -E VS4 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS5]
--T vert -E VS5 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS5]
+#-T vert -E VS5 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 VS6]
--T vert -E VS6 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 VS6]
+#-T vert -E VS6 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 PS1]
--T frag -E PS1 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 PS1]
+#-T frag -E PS1 -o output/* SemanticTest1.hlsl
 
-[SemanticTest1 PS2]
--T frag -E PS2 -o output/* SemanticTest1.hlsl
+#[SemanticTest1 PS2]
+#-T frag -E PS2 -o output/* SemanticTest1.hlsl
 
-[SemanticTest2 VS]
--Vout GLSL120 -T vert -E VS -o output/* SemanticTest2.hlsl
+#[SemanticTest2 VS]
+#-T vert -E VS -Vout GLSL120 -o output/* SemanticTest2.hlsl
 
-[SemanticTest2 PS]
--Vout GLSL120 -T frag -E PS -o output/* SemanticTest2.hlsl
+#[SemanticTest2 PS]
+#-T frag -E PS -Vout GLSL120 -o output/* SemanticTest2.hlsl
 
-[SemanticTest4 VS (Vertex-Attrib-Layouts)]
--W -T vert -E VS -EB -Scoord=0 -Stexcoord0=1 -Stexcoord1=2 -Snormal=3 -o output/* SemanticTest4.hlsl
+#[SemanticTest4 VS (Vertex-Attrib-Layouts)]
+#-T vert -E VS -W -EB -Scoord=0 -Stexcoord0=1 -Stexcoord1=2 -Snormal=3 -o output/* SemanticTest4.hlsl
 
-['clip'-Intrinsic PS]
--T frag -E PS -o output/* IntrinsicClip.hlsl
+#['clip'-Intrinsic PS]
+#-T frag -E PS -o output/* IntrinsicClip.hlsl
 
-[ExprTest5 VS]
--W -T vert -E VS -o output/* ExprTest5.hlsl
+#[ExprTest5 VS]
+#-T vert -E VS -W -o output/* ExprTest5.hlsl
 
-[ArrayTest1 PS]
--T vert -E VS -o output/* ArrayTest1.hlsl
+#[ArrayTest1 PS]
+#-T vert -E VS -o output/* ArrayTest1.hlsl
 
-[TextureObjects PS]
--W --comments -T frag -E PS -o output/* TextureObjects.hlsl
+#[TextureObjects PS]
+#-T frag -E PS -W --comments -o output/* TextureObjects.hlsl
 
-[BufferObjects CS]
--W -EB -T comp -E CS -o output/* BufferObjects.hlsl
+#[BufferObjects CS]
+#-T comp -E CS -W -EB -o output/* BufferObjects.hlsl
 
-[RegisterTest1 PS]
--T frag -E PS -o output/* RegisterTest1.hlsl
+#[RegisterTest1 PS]
+#-T frag -E PS -o output/* RegisterTest1.hlsl
 
-[NameMangling1 CS]
--T comp -E CS -o output/* NameMangling1.hlsl
+#[NameMangling1 CS]
+#-T comp -E CS -o output/* NameMangling1.hlsl
 
-[CastTest1 VS]
--Vout GLSL150 -T vert -E VS -o output/* CastTest1.hlsl
+#[CastTest1 VS]
+#-T vert -E VS -Vout GLSL150 -o output/* CastTest1.hlsl
 
-[ConstExpr VS]
--W -T vert -E VS -o output/* ConstExpr.hlsl
+#[ConstExpr VS]
+#-T vert -E VS -W -o output/* ConstExpr.hlsl
 
-[TessellationTest1 VS]
--W -T vert -E VS -o output/* TessellationTest1.hlsl
+#[TessellationTest1 VS]
+#-T vert -E VS -W -o output/* TessellationTest1.hlsl
 
-[TessellationTest1 HS]
--W -T tesc -E HS -o output/* TessellationTest1.hlsl
+#[TessellationTest1 HS]
+#-T tesc -E HS -W -o output/* TessellationTest1.hlsl
 
-[TessellationTest1 DS]
--W -T tese -E DS -E2 PatchConstantFuncHS -o output/* TessellationTest1.hlsl
+#[TessellationTest1 DS]
+#-T tese -E DS -W -E2 PatchConstantFuncHS -o output/* TessellationTest1.hlsl
 
-[TessellationTest1 PS]
--W -T frag -E PS -o output/* TessellationTest1.hlsl
+#[TessellationTest1 PS]
+#-T frag -E PS -W -o output/* TessellationTest1.hlsl
 
-[GeometryTest1 VS]
--W -T vert -E VS -o output/* GeometryTest1.hlsl
+#[GeometryTest1 VS]
+#-T vert -E VS -W -o output/* GeometryTest1.hlsl
 
-[GeometryTest1 GS]
--W -T geom -E GS -o output/* GeometryTest1.hlsl
+#[GeometryTest1 GS]
+#-T geom -E GS -W -o output/* GeometryTest1.hlsl
 
-[GeometryTest1 PS]
--W -T frag -E PS -o output/* GeometryTest1.hlsl
+#[GeometryTest1 PS]
+#-T frag -E PS -W -o output/* GeometryTest1.hlsl
 
-[ExprTest4 VS]
--T vert -E VS -o output/* ExprTest4.hlsl
+#[ExprTest4 VS]
+#-T vert -E VS -o output/* ExprTest4.hlsl
 
-[ExprTest3 VS]
--T vert -E VS -o output/* ExprTest3.hlsl
+#[ExprTest3 VS]
+#-T vert -E VS -o output/* ExprTest3.hlsl
 
-[ExprTest2 CS]
--T comp -E CS -o output/* ExprTest2.hlsl
+#[ExprTest2 CS]
+#-T comp -E CS -o output/* ExprTest2.hlsl
 
-[TypeTest1 VS]
--T vert -E VS -o output/* TypeTest1.hlsl
+#[TypeTest1 VS]
+#-T vert -E VS -o output/* TypeTest1.hlsl
 
-[TypeTest2 VS]
--T vert -E VS -o output/* TypeTest2.hlsl
+#[TypeTest2 VS]
+#-T vert -E VS -o output/* TypeTest2.hlsl
 
-[TypeTest3 VS]
--W -T vert -E VS -o output/* TypeTest3.hlsl
+#[TypeTest3 VS]
+#-T vert -E VS -W -o output/* TypeTest3.hlsl
 
-[FloatTest1 VS]
--T vert -E VS -o output/* FloatTest1.hlsl
+#[FloatTest1 VS]
+#-T vert -E VS -o output/* FloatTest1.hlsl
 
-[FloatTest2 VS]
--T vert -E VS -o output/* FloatTest2.hlsl
+#[FloatTest2 VS]
+#-T vert -E VS -o output/* FloatTest2.hlsl
 
-[FunctionDeclTest1 VS]
--T vert -E VS -o output/* FunctionDeclTest1.hlsl
+#[FunctionDeclTest1 VS]
+#-T vert -E VS -o output/* FunctionDeclTest1.hlsl
 
-[StructTest1 PS]
--T vert -E VS -o output/* StructTest1.hlsl
+#[StructTest1 PS]
+#-T vert -E VS -o output/* StructTest1.hlsl
 
-[StructInheritTest1 PS]
--T frag -E PS -o output/* StructInheritTest1.hlsl
+#[StructInheritTest1 PS]
+#-T frag -E PS -o output/* StructInheritTest1.hlsl
 
-[FormattingTest1 VS]
--T vert -E VS -O -o output/* FormattingTest1.hlsl
+#[FormattingTest1 VS]
+#-T vert -E VS -O -o output/* FormattingTest1.hlsl
 
-[TestShader1 VS]
--T vert -E VS -O -o output/* TestShader1.hlsl
+#[TestShader1 VS]
+#-T vert -E VS -O -o output/* TestShader1.hlsl
 
-[TestShader1 PS]
--T frag -E PS -O -o output/* TestShader1.hlsl
+#[TestShader1 PS]
+#-T frag -E PS -O -o output/* TestShader1.hlsl
 
-[TestShader1 CS]
--T comp -E CS -O -o output/* TestShader1.hlsl
+#[TestShader1 CS]
+#-T comp -E CS -O -o output/* TestShader1.hlsl
 
-[ErrorTest1 VS]
--T vert -E VertexMain -o output/* ErrorTest1.hlsl
+#[ErrorTest1 VS]
+#-T vert -E VertexMain -o output/* ErrorTest1.hlsl
 
-[PPTest1 VS]
--T vert -E VS -O -o output/* PPTest1.hlsl
+#[PPTest1 VS]
+#-T vert -E VS -O -o output/* PPTest1.hlsl
 
-[PPTest1 -PP]
--PP -O -o output/PPTest1.post.hlsl PPTest1.hlsl
+#[PPTest1 -PP]
+#-PP -O -o output/PPTest1.post.hlsl PPTest1.hlsl
 
-[FuncOverloadTest1 PS]
--T frag -E PS -o output/* FuncOverloadTest1.hlsl
+#[FuncOverloadTest1 PS]
+#-T frag -E PS -o output/* FuncOverloadTest1.hlsl
 
-[IntrinsicTest1 VS]
--T vert -E VS -o output/* IntrinsicTest1.hlsl
+#[IntrinsicTest1 VS]
+#-T vert -E VS -o output/* IntrinsicTest1.hlsl
 
-[ScopeTest1 VS]
--T vert -E VS -Vout VKSL -o output/* ScopeTest1.hlsl
+#[ScopeTest1 VKSL/VS]
+#-T vert -E VS -Vout VKSL -o output/* ScopeTest1.hlsl
+
+[MemberFuncTest1 PS]
+-T frag -E PS -o output/* MemberFuncTest1.hlsl
+
+[MemberFuncTest2 PS]
+-T frag -E PS -o output/* MemberFuncTest2.hlsl
+
+[MemberFuncTest3 PS]
+-T frag -E PS -o output/* MemberFuncTest3.hlsl
 
 

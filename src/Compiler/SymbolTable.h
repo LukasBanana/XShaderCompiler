@@ -24,6 +24,12 @@ namespace Xsc
 // Returns the ranked distance between the two strings.
 unsigned int StringDistance(const std::string& a, const std::string& b);
 
+[[noreturn]]
+void RuntimeErrNoActiveScope();
+
+[[noreturn]]
+void RuntimeErrIdentAlreadyDeclared(const std::string& ident);
+
 
 template <typename T>
 struct GenericDefaultValue
@@ -96,7 +102,7 @@ class SymbolTable
         {
             /* Validate input parameters */
             if (scopeStack_.empty())
-                throw std::runtime_error("no active scope to register symbol");
+                RuntimeErrNoActiveScope();
             if (ident.empty())
                 return false;
 
@@ -111,7 +117,7 @@ class SymbolTable
                     if (overrideProc && overrideProc(entry.symbol))
                         return true;
                     else if (throwOnFailure)
-                        throw std::runtime_error("identifier '" + ident + "' already declared in this scope");
+                        RuntimeErrIdentAlreadyDeclared(ident);
                     else
                         return false;
                 }

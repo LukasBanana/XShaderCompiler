@@ -6,6 +6,7 @@
  */
 
 #include "ReflectionPrinter.h"
+#include "ReportIdents.h"
 #include <algorithm>
 
 
@@ -20,7 +21,7 @@ ReflectionPrinter::ReflectionPrinter(std::ostream& output) :
 
 void ReflectionPrinter::PrintReflection(const Reflection::ReflectionData& reflectionData)
 {
-    output_ << "code reflection:" << std::endl;
+    output_ << R_CodeReflection() << ':' << std::endl;
     indentHandler_.IncIndent();
     {
         PrintReflectionObjects  ( reflectionData.macros,           "Macros"            );

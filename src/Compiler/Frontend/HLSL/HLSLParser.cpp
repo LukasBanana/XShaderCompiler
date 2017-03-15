@@ -11,6 +11,7 @@
 #include "Helper.h"
 #include "AST.h"
 #include "ASTFactory.h"
+#include "ReportIdents.h"
 
 
 namespace Xsc
@@ -148,7 +149,7 @@ void HLSLParser::ProcessDirective(const std::string& ident)
         else if (ident == "pragma")
             ProcessDirectivePragma();
         else
-            Error("only '#line' and '#pragma' directives are allowed after pre-processing");
+            Error(R_InvalidHLSLDirectiveAfterPP);
     }
     catch (const std::exception& e)
     {
@@ -187,7 +188,7 @@ void HLSLParser::ProcessDirectivePragma()
         auto AcceptToken = [&](const Tokens type)
         {
             if (!Is(type))
-                throw std::runtime_error("unexpected token in 'pack_matrix' pragma directive");
+                throw std::runtime_error(R_UnexpectedTokenInPackMatrixPragma);
             return Parser::AcceptIt();
         };
 
@@ -202,10 +203,10 @@ void HLSLParser::ProcessDirectivePragma()
         else if (alignment == "column_major")
             rowMajorAlignment_ = false;
         else
-            Error("unknown matrix pack alignment '" + alignment + "' (must be 'row_major' or 'column_major')", alignmentTkn.get());
+            Error(R_UnknownMatrixPackAlignment(alignment), alignmentTkn.get());
     }
     else
-        Error("only 'pack_matrix' pragma directive is allowed after pre-processing");
+        Error(R_InvalidHLSLPragmaAfterPP);
 }
 
 /* ------- Symbol table ------- */
@@ -422,7 +423,7 @@ AttributePtr HLSLParser::ParseAttribute()
     UpdateSourceArea(ast);
 
     if (ast->attributeType == AttributeType::Undefined)
-        Warning("unknown attribute '" + attribIdent + "'");
+        Warning(R_UnknownAttribute(attribIdent));
 
     if (Is(Tokens::LBracket))
     {
@@ -506,7 +507,7 @@ RegisterPtr HLSLParser::ParseRegister(bool parseColon)
 
     /* Validate register type and slot index */
     if (ast->registerType == RegisterType::Undefined)
-        Warning("unknown slot register: '" + typeIdent.substr(0, 1) + "'");
+        Warning(R_UnknownSlotRegister(typeIdent.substr(0, 1)));
 
     /* Parse optional sub component (is only added to slot index) */
     if (Is(Tokens::LParen))
@@ -555,7 +556,7 @@ ArrayDimensionPtr HLSLParser::ParseArrayDimension(bool allowDynamicDimension)
     if (Is(Tokens::RParen))
     {
         if (!allowDynamicDimension)
-            Error("explicit array dimension expected", false);
+            Error(R_ExpectedExplicitArrayDim, false);
         ast->expr = Make<NullExpr>();
     }
     else
@@ -729,10 +730,10 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
 
             ast->baseStructName = ParseIdent();
             if (ast->baseStructName == ast->ident)
-                Error("recursive inheritance is not allowed");
+                Error(R_IllegalRecursiveInheritance);
 
             if (Is(Tokens::Comma))
-                Error("multiple inheritance is not allowed", false);
+                Error(R_IllegalMultipleInheritance, false);
         }
     }
 
@@ -752,7 +753,7 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
                     ast->funcMembers.push_back(std::static_pointer_cast<FunctionDecl>(stmnt));
                     break;
                 default:
-                    Error("illegal declaration statement inside declaration of '" + ast->ToString() + "'", stmnt->area, false);
+                    Error(R_IllegalDeclStmntInsideDeclOf(ast->ToString()), stmnt->area, false);
                     break;
             }
         }
@@ -1079,11 +1080,11 @@ StmntPtr HLSLParser::ParseStmnt(bool allowAttributes)
     }
     else
     {
-        /* Check if illegal attributes */
+        /* Check for illegal attributes */
         if (Is(Tokens::LParen))
         {
             /* Print error, but parse and ignore attributes */
-            Error("attributes not allowed in this context", false, false);
+            Error(R_NotAllowedInThisContext(R_Attributes), false, false);
             ParseAttributeList();
         }
 
@@ -1225,7 +1226,8 @@ StmntPtr HLSLParser::ParseStmntWithVarIdent()
         return UpdateSourceArea(ast, varIdent.get());
     }
 
-    ErrorUnexpected("expected variable declaration, assignment, or function call statement", nullptr, true);
+    ErrorUnexpected(R_ExpectedVarOrAssignOrFuncCall, nullptr, true);
+
     return nullptr;
 }
 
@@ -1448,7 +1450,7 @@ ExprPtr HLSLParser::ParsePrimaryExpr()
             return ParseVarAccessOrFunctionCallExpr(varIdent);
         }
         else
-            ErrorInternal("unexpected pre-parsed AST node", __FUNCTION__);
+            ErrorInternal(R_UnexpectedPreParsedAST, __FUNCTION__);
     }
 
     /* Determine which kind of expression the next one is */
@@ -1467,7 +1469,8 @@ ExprPtr HLSLParser::ParsePrimaryExpr()
     if (Is(Tokens::Ident))
         return ParseVarAccessOrFunctionCallExpr();
 
-    ErrorUnexpected("expected primary expression", nullptr, true);
+    ErrorUnexpected(R_ExpectedPrimaryExpr, nullptr, true);
+
     return nullptr;
 }
 
@@ -1486,7 +1489,7 @@ ExprPtr HLSLParser::ParseLiteralOrSuffixExpr()
 LiteralExprPtr HLSLParser::ParseLiteralExpr()
 {
     if (!IsLiteral())
-        ErrorUnexpected("expected literal expression");
+        ErrorUnexpected(R_ExpectedLiteralExpr);
 
     /* Parse literal */
     auto ast = Make<LiteralExpr>();
@@ -1503,7 +1506,7 @@ ExprPtr HLSLParser::ParseTypeSpecifierOrFunctionCallExpr()
 {
     /* Parse type denoter with optional structure delcaration */
     if (!IsDataType() && !Is(Tokens::Struct))
-        ErrorUnexpected("expected type name or function call expression");
+        ErrorUnexpected(R_ExpectedTypeNameOrFuncCall);
 
     StructDeclPtr structDecl;
     auto typeDenoter = ParseTypeDenoter(true, &structDecl);
@@ -1539,7 +1542,7 @@ TypeSpecifierExprPtr HLSLParser::ParseTypeSpecifierExpr()
 UnaryExprPtr HLSLParser::ParseUnaryExpr()
 {
     if (!Is(Tokens::UnaryOp) && !IsArithmeticUnaryExpr())
-        ErrorUnexpected("expected unary expression operator");
+        ErrorUnexpected(R_ExpectedUnaryExprOp);
 
     /* Parse unary expression */
     auto ast = Make<UnaryExpr>();
@@ -1958,7 +1961,7 @@ std::string HLSLParser::ParseIdent(TokenPtr identTkn)
 
     /* Check overlapping of reserved prefixes for name mangling */
     if (auto prefix = FindNameManglingPrefix(ident))
-        Error("identifier '" + ident + "' conflicts with reserved name mangling prefix '" + *prefix + "'", identTkn.get(), false);
+        Error(R_IdentNameManglingConflict(ident, *prefix), identTkn.get(), false);
 
     return ident;
 }
@@ -1971,7 +1974,7 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool allowVoidType, StructDeclPtr* s
         if (allowVoidType)
             return ParseVoidTypeDenoter();
 
-        Error("'void' type not allowed in this context");
+        Error(R_NotAllowedInThisContext(R_VoidTypeDen));
         return nullptr;
     }
     else
@@ -2016,7 +2019,7 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoterPrimary(StructDeclPtr* structDecl)
     else if (Is(Tokens::Sampler) || Is(Tokens::SamplerState))
         return ParseSamplerTypeDenoter();
 
-    ErrorUnexpected("expected type denoter", GetScanner().ActiveToken().get(), true);
+    ErrorUnexpected(R_ExpectedTypeDen, GetScanner().ActiveToken().get(), true);
     return nullptr;
 }
 
@@ -2045,7 +2048,7 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseTypeDenoter()
         typeDenoter->dataType = ParseDataType(keyword);
         return typeDenoter;
     }
-    ErrorUnexpected("expected base type denoter", nullptr, true);
+    ErrorUnexpected(R_ExpectedBaseTypeDen, nullptr, true);
     return nullptr;
 }
 
@@ -2154,25 +2157,15 @@ BufferTypeDenoterPtr HLSLParser::ParseBufferTypeDenoter()
                 if (IsTextureMSBufferType(typeDenoter->bufferType))
                 {
                     if (genSize < 1 || genSize >= 128)
-                    {
-                        Warning(
-                            "number of samples in texture must be in the range [1, 128), but got " +
-                            std::to_string(genSize), bufferTypeTkn.get()
-                        );
-                    }
+                        Warning(R_TextureSampleCountLimitIs128(genSize), bufferTypeTkn.get());
                 }
                 else if (IsPatchBufferType(typeDenoter->bufferType))
                 {
                     if (genSize < 1 || genSize > 64)
-                    {
-                        Warning(
-                            "number of control points in patch must be in the range [1, 64], but got " +
-                            std::to_string(genSize), bufferTypeTkn.get()
-                        );
-                    }
+                        Warning(R_PatchCtrlPointLimitIs64(genSize), bufferTypeTkn.get());
                 }
                 else
-                    Error("illegal usage of generic size in texture, buffer, or stream object");
+                    Error(R_IllegalBufferTypeGenericSize);
 
                 typeDenoter->genericSize = genSize;
             }
@@ -2268,7 +2261,7 @@ Variant HLSLParser::ParseAndEvaluateConstExpr()
     }
     catch (const VarAccessExpr* expr)
     {
-        GetReportHandler().Error(true, "expected constant expression", GetScanner().Source(), expr->area);
+        GetReportHandler().Error(true, R_ExpectedConstExpr, GetScanner().Source(), expr->area);
     }
 
     return Variant();
@@ -2280,7 +2273,7 @@ int HLSLParser::ParseAndEvaluateConstExprInt()
     auto value = ParseAndEvaluateConstExpr();
 
     if (value.Type() != Variant::Types::Int)
-        Error("expected integral constant expression", tkn.get());
+        Error(R_ExpectedConstIntExpr, tkn.get());
 
     return static_cast<int>(value.Int());
 }
@@ -2291,7 +2284,7 @@ int HLSLParser::ParseAndEvaluateVectorDimension()
     auto value = ParseAndEvaluateConstExprInt();
 
     if (value < 1 || value > 4)
-        Error("vector and matrix dimensions must be between 1 and 4", tkn.get());
+        Error(R_VectorAndMatrixDimOutOfRange(value), tkn.get());
 
     return value;
 }
@@ -2313,7 +2306,7 @@ void HLSLParser::ParseAndIgnoreTechnique()
     /* Only expect 'technique' keyword */
     Accept(Tokens::Technique);
 
-    Warning("techniques are ignored");
+    Warning(R_TechniquesAreIgnored);
 
     /* Ignore all tokens until the first opening brace */
     std::stack<TokenPtr> braceTknStack;
@@ -2331,7 +2324,7 @@ void HLSLParser::ParseAndIgnoreTechnique()
         else if (Is(Tokens::RCurly))
             braceTknStack.pop();
         else if (Is(Tokens::EndOfStream))
-            Error("missing closing brace '}' for open code block", braceTknStack.top().get());
+            Error(R_MissingClosingBrace, braceTknStack.top().get());
         AcceptIt();
     }
 }
@@ -2346,7 +2339,7 @@ void HLSLParser::ParseVarDeclSemantic(VarDecl& varDecl, bool allowPackOffset)
         if (Is(Tokens::Register))
         {
             /* Parse and ignore registers for variable declarations */
-            Warning("register is ignore for variable declarations");
+            Warning(R_RegisterIgnoredForVarDecls);
             ParseRegister(false);
         }
         else if (Is(Tokens::PackOffset))
@@ -2354,7 +2347,7 @@ void HLSLParser::ParseVarDeclSemantic(VarDecl& varDecl, bool allowPackOffset)
             /* Parse pack offset (ignore previous pack offset) */
             varDecl.packOffset = ParsePackOffset(false);
             if (!allowPackOffset)
-                Error("packoffset is only allowed in a constant buffer", true);
+                Error(R_IllegalPackOffset, true);
         }
         else
         {
@@ -2374,13 +2367,13 @@ void HLSLParser::ParseFunctionDeclSemantic(FunctionDecl& funcDecl)
         if (Is(Tokens::Register))
         {
             /* Parse and ignore registers for variable declarations */
-            Warning("register is ignore for function declarations");
+            Warning(R_RegisterIgnoredForFuncDecls);
             ParseRegister(false);
         }
         else if (Is(Tokens::PackOffset))
         {
             /* Report error and ignore packoffset */
-            Error("packoffset is only allowed in a constant buffer", true);
+            Error(R_IllegalPackOffset, true);
             ParsePackOffset(false);
         }
         else
@@ -2489,7 +2482,7 @@ SamplerType HLSLParser::ParseSamplerType()
         if (Is(Tokens::Sampler) || Is(Tokens::SamplerState))
             return HLSLKeywordToSamplerType(AcceptIt()->Spell());
         else
-            ErrorUnexpected("expected sampler type denoter or sampler state");
+            ErrorUnexpected(R_ExpectedSamplerOrSamplerState);
     }
     catch (const std::exception& e)
     {
@@ -2533,7 +2526,7 @@ std::string HLSLParser::ParseSamplerStateTextureIdent()
         Accept(Tokens::BinaryOp, ">");
     }
     else
-        ErrorUnexpected("expected '<' or '('");
+        ErrorUnexpected(R_ExpectedOpenBracketOrAngleBracket);
 
     Semi();
 
@@ -2589,16 +2582,16 @@ bool HLSLParser::ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiv
     {
         /* Parse primitive type */
         if (!allowPrimitiveType)
-            Error("primitive type not allowed in this context", false, false);
+            Error(R_NotAllowedInThisContext(R_PrimitiveType), false, false);
         
         auto primitiveType = ParsePrimitiveType();
 
         if (typeSpecifier->primitiveType == PrimitiveType::Undefined)
             typeSpecifier->primitiveType = primitiveType;
         else if (typeSpecifier->primitiveType == primitiveType)
-            Error("duplicate primitive type specified", true, false);
+            Error(R_DuplicatedPrimitiveType, true, false);
         else if (typeSpecifier->primitiveType != primitiveType)
-            Error("conflicting primitive types", true, false);
+            Error(R_ConflictingPrimitiveTypes, true, false);
     }
     else
         return false;

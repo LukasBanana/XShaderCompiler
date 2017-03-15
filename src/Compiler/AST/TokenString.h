@@ -18,6 +18,9 @@ namespace Xsc
 {
 
 
+void AssertReachedEnd(bool reachedEnd);
+void AssertCurrentTokenType(const Token::Types type, const Token::Types expectedType);
+
 /*
 Token string template class.
 This is a helper class to iterate only over a list of tokens that are of interest (e.g. to ignore white spaces).
@@ -76,17 +79,14 @@ class BasicTokenString
 
                 ValueType AcceptIt()
                 {
-                    if (ReachedEnd())
-                        throw std::runtime_error("unexpected end of token stream");
+                    AssertReachedEnd(ReachedEnd());
                     return *((*this)++);
                 }
 
                 ValueType Accept(const Token::Types type)
                 {
-                    if (ReachedEnd())
-                        throw std::runtime_error("unexpected end of token stream");
-                    if ((*it_)->Type() != type)
-                        throw std::runtime_error("unexpected token");
+                    AssertReachedEnd(ReachedEnd());
+                    AssertCurrentTokenType((*it_)->Type(), type);
                     return AcceptIt();
                 }
 

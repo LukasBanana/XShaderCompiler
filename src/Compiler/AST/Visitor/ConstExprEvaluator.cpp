@@ -9,6 +9,7 @@
 #include "AST.h"
 #include "Helper.h"
 #include "Exception.h"
+#include "ReportIdents.h"
 #include <sstream>
 
 
@@ -31,7 +32,7 @@ Variant ConstExprEvaluator::EvaluateExpr(Expr& ast, const OnVarAccessCallback& o
 [[noreturn]]
 static void IllegalExpr(const std::string& exprName, const AST* ast = nullptr)
 {
-    RuntimeErr("illegal " + exprName + " in constant expression", ast);
+    RuntimeErr(R_IllegalExprInConstExpr(exprName), ast);
 }
 
 void ConstExprEvaluator::Push(const Variant& v)
@@ -42,7 +43,7 @@ void ConstExprEvaluator::Push(const Variant& v)
 Variant ConstExprEvaluator::Pop()
 {
     if (variantStack_.empty())
-        throw std::runtime_error("stack underflow in expression evaluator");
+        throw std::runtime_error(R_StackUnderflow(R_ExprEvaluator));
     auto v = variantStack_.top();
     variantStack_.pop();
     return v;
@@ -55,7 +56,7 @@ Variant ConstExprEvaluator::Pop()
 
 IMPLEMENT_VISIT_PROC(NullExpr)
 {
-    IllegalExpr("dynamic array dimension", ast);
+    IllegalExpr(R_DynamicArrayDim, ast);
 }
 
 IMPLEMENT_VISIT_PROC(ListExpr)
@@ -76,7 +77,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
             else if (ast->value == "false")
                 Push(false);
             else
-                IllegalExpr("boolean literal value '" + ast->value + "'", ast);
+                IllegalExpr(R_BoolLiteralValue(ast->value), ast);
         }
         break;
 
@@ -102,7 +103,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
         default:
         {
-            IllegalExpr("literal type '" + DataTypeToString(ast->dataType) + "'", ast);
+            IllegalExpr(R_LiteralType(DataTypeToString(ast->dataType)), ast);
         }
         break;
     }
@@ -110,7 +111,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
 {
-    IllegalExpr("type specifier", ast);
+    IllegalExpr(R_TypeSpecifier, ast);
 }
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
@@ -136,7 +137,7 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
     switch (ast->op)
     {
         case BinaryOp::Undefined:
-            IllegalExpr("binary operator", ast);
+            IllegalExpr(R_BinaryOp, ast);
             break;
         case BinaryOp::LogicalAnd:
             Push(lhs.ToBool() && rhs.ToBool());
@@ -170,12 +171,12 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
             break;
         case BinaryOp::Div:
             if (lhs.Type() == Variant::Types::Int && rhs.Int() == 0)
-                IllegalExpr("division by zero", ast);
+                IllegalExpr(R_DivisionByZero, ast);
             Push(lhs / rhs);
             break;
         case BinaryOp::Mod:
             if (lhs.Type() == Variant::Types::Int && rhs.Int() == 0)
-                IllegalExpr("division by zero", ast);
+                IllegalExpr(R_DivisionByZero, ast);
             Push(lhs % rhs);
             break;
         case BinaryOp::Equal:
@@ -209,7 +210,7 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
     switch (ast->op)
     {
         case UnaryOp::Undefined:
-            IllegalExpr("unary operator", ast);
+            IllegalExpr(R_UnaryOp, ast);
             break;
         case UnaryOp::LogicalNot:
             Push(!rhs.ToBool());
@@ -247,7 +248,7 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
             Push(lhs);
             break;
         default:
-            IllegalExpr("unary operator '" + UnaryOpToString(ast->op) + "'", ast);
+            IllegalExpr(R_UnaryOp(UnaryOpToString(ast->op)), ast);
             break;
     }
 }
@@ -307,13 +308,13 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
             default:
             {
-                IllegalExpr("type cast '" + DataTypeToString(baseTypeDen->dataType) + "'", ast);
+                IllegalExpr(R_TypeCast(DataTypeToString(baseTypeDen->dataType)), ast);
             }
             break;
         }
     }
     else
-        IllegalExpr("type cast", ast);
+        IllegalExpr(R_TypeCast, ast);
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
@@ -323,7 +324,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
-    IllegalExpr("initializer list", ast);
+    IllegalExpr(R_InitializerList, ast);
 }
 
 #undef IMPLEMENT_VISIT_PROC
