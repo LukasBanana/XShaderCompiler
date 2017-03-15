@@ -291,24 +291,6 @@ void ExprConverter::ConvertExprImageAccess(ExprPtr& expr)
     }
 }
 
-static BinaryOp AssignOpToBinaryOp(const AssignOp op)
-{
-    switch (op)
-    {
-        case AssignOp::Add:         return BinaryOp::Add;
-        case AssignOp::Sub:         return BinaryOp::Sub;
-        case AssignOp::Mul:         return BinaryOp::Mul;
-        case AssignOp::Div:         return BinaryOp::Div;
-        case AssignOp::Mod:         return BinaryOp::Mod;
-        case AssignOp::LShift:      return BinaryOp::LShift;
-        case AssignOp::RShift:      return BinaryOp::RShift;
-        case AssignOp::Or:          return BinaryOp::Or;
-        case AssignOp::And:         return BinaryOp::And;
-        case AssignOp::Xor:         return BinaryOp::Xor;
-        default:                    return BinaryOp::Undefined;
-    }
-}
-
 void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr* varAccessExpr)
 {
     /* Is this the variable a buffer declaration? */
@@ -354,7 +336,7 @@ void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr
                     ExprPtr arg2Expr;
 
                     /* If its a normal assignment, then assign expression is the store value */
-                    if(varAccessExpr->assignOp == AssignOp::Set)
+                    if (varAccessExpr->assignOp == AssignOp::Set)
                         arg2Expr = varAccessExpr->assignExpr;
                     else 
                     {
@@ -364,7 +346,7 @@ void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr
                         );
 
                         auto rhsExpr = varAccessExpr->assignExpr;
-                        BinaryOp binaryOp = AssignOpToBinaryOp(varAccessExpr->assignOp);
+                        const auto binaryOp = AssignOpToBinaryOp(varAccessExpr->assignOp);
 
                         arg2Expr = ASTFactory::MakeBinaryExpr(lhsExpr, binaryOp, rhsExpr);
                     }

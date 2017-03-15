@@ -133,6 +133,24 @@ BinaryOp StringToBinaryOp(const std::string& s)
     return StringToType(g_mapBinaryOp, s, "BinaryOp");
 }
 
+BinaryOp AssignOpToBinaryOp(const AssignOp op)
+{
+    switch (op)
+    {
+        case AssignOp::Add:     return BinaryOp::Add;
+        case AssignOp::Sub:     return BinaryOp::Sub;
+        case AssignOp::Mul:     return BinaryOp::Mul;
+        case AssignOp::Div:     return BinaryOp::Div;
+        case AssignOp::Mod:     return BinaryOp::Mod;
+        case AssignOp::LShift:  return BinaryOp::LShift;
+        case AssignOp::RShift:  return BinaryOp::RShift;
+        case AssignOp::Or:      return BinaryOp::Or;
+        case AssignOp::And:     return BinaryOp::And;
+        case AssignOp::Xor:     return BinaryOp::Xor;
+        default:                return BinaryOp::Undefined;
+    }
+}
+
 bool IsLogicalOp(const BinaryOp o)
 {
     return (o >= BinaryOp::LogicalAnd && o <= BinaryOp::LogicalOr);

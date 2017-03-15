@@ -2511,7 +2511,6 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
     BeginLn();
     {
         /* Write uniform declaration */
-
         bool imageFormatWritten = false;
         if (auto genericTypeDen = bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter)
         {
@@ -2526,7 +2525,7 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
         
         WriteBindingSlot(bufferDecl->slotRegisters, !imageFormatWritten);
 
-        if(imageFormatWritten)
+        if (imageFormatWritten)
             Write(") ");
 
         Write("uniform ");
