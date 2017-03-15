@@ -1080,13 +1080,14 @@ struct PostUnaryExpr : public Expr
     UnaryOp op      = UnaryOp::Undefined;
 };
 
-// Function call expression.
+// Function call expression (e.g. "foo()" or "foo().bar()" or "foo()[0].bar()").
 struct FunctionCallExpr : public Expr
 {
     AST_INTERFACE(FunctionCallExpr);
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    //ExprPtr         expr;   // Optional (left hand side) sub expression; may be null
     FunctionCallPtr call;
 };
 
@@ -1102,6 +1103,7 @@ struct BracketExpr : public Expr
     ExprPtr expr; // Inner expression
 };
 
+//TODO: maybe replace this by "VarAccessExpr"
 // Suffix expression (e.g. "foo().suffix").
 struct SuffixExpr : public Expr
 {
