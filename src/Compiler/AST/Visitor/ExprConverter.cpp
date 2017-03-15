@@ -325,7 +325,36 @@ void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr
                 /* Translate writes to imageStore() function call */
                 else // Write
                 {
-                    // TODO - Handle different kind of set operations
+                    /* Make first argument expression */
+                    auto arg0Expr = ASTFactory::MakeVarAccessExpr(varAccessExpr->varIdent->ident, bufferDecl);
+                    arg0Expr->flags << Expr::wasConverted;
+
+                    /* Get second argument expression (last array index) */
+                    auto arg1Expr = varAccessExpr->varIdent->arrayIndices.back();
+
+                    /* Get third argument expression (store value) */
+                    ExprPtr arg2Expr;
+
+                    /* If its a normal assignment, then assign expression is the store value */
+                    if (varAccessExpr->assignOp == AssignOp::Set)
+                        arg2Expr = varAccessExpr->assignExpr;
+                    else 
+                    {
+                        /* Otherwise must be compound assignment, in which case we need to do a read as well */
+                        auto lhsExpr = ASTFactory::MakeIntrinsicCallExpr(
+                            Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
+                        );
+
+                        auto rhsExpr = varAccessExpr->assignExpr;
+                        const auto binaryOp = AssignOpToBinaryOp(varAccessExpr->assignOp);
+
+                        arg2Expr = ASTFactory::MakeBinaryExpr(lhsExpr, binaryOp, rhsExpr);
+                    }
+
+                    /* Convert expression to intrinsic call */
+                    expr = ASTFactory::MakeIntrinsicCallExpr(
+                        Intrinsic::Image_Store, "imageStore", nullptr, { arg0Expr, arg1Expr, arg2Expr }
+                    );
                 }
             }
             else

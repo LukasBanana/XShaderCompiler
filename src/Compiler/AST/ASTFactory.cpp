@@ -124,6 +124,17 @@ ExprPtr MakeCastOrSuffixCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPt
         return castExpr;
 }
 
+BinaryExprPtr MakeBinaryExpr(const ExprPtr& lhsExpr, const BinaryOp op, const ExprPtr& rhsExpr)
+{
+    auto ast = MakeAST<BinaryExpr>();
+    {
+        ast->lhsExpr    = lhsExpr;
+        ast->op         = op;
+        ast->rhsExpr    = rhsExpr;
+    }
+    return ast;
+}
+
 LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& literalValue)
 {
     auto ast = MakeAST<LiteralExpr>();

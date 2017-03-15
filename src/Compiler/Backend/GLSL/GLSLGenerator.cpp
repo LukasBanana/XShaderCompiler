@@ -177,6 +177,15 @@ const std::string* GLSLGenerator::SamplerTypeToKeyword(const SamplerType sampler
     return nullptr;
 }
 
+const std::string* GLSLGenerator::DataTypeToImageFormatKeyword(const DataType dataType, const AST* ast)
+{
+    if (auto keyword = DataTypeToImageFormatGLSLKeyword(dataType))
+        return keyword;
+    else
+        Error(R_FailedToMapToGLSLKeyword(R_DataType), ast);
+    return nullptr;
+}
+
 bool GLSLGenerator::IsTypeCompatibleWithSemantic(const Semantic semantic, const TypeDenoter& typeDenoter)
 {
     if (auto baseTypeDen = typeDenoter.As<BaseTypeDenoter>())
@@ -2502,7 +2511,22 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
     BeginLn();
     {
         /* Write uniform declaration */
-        WriteBindingSlot(bufferDecl->slotRegisters);
+        bool imageFormatWritten = false;
+        if (auto genericTypeDen = bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter)
+        {
+            if (auto baseTypeDen = genericTypeDen->As<BaseTypeDenoter>())
+            {
+                auto imageFormatKeyword = DataTypeToImageFormatKeyword(baseTypeDen->dataType, bufferDecl);
+                Write("layout(" + *imageFormatKeyword);
+
+                imageFormatWritten = true;
+            }
+        }
+        
+        WriteBindingSlot(bufferDecl->slotRegisters, !imageFormatWritten);
+
+        if (imageFormatWritten)
+            Write(") ");
 
         Write("uniform ");
 
