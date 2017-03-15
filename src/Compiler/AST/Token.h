@@ -49,6 +49,7 @@ class Token
             /* --- Punctuation --- */
             Dot,                // .
             Colon,              // :
+            DColon,             // ::
             Semicolon,          // ;
             Comma,              // ,
 
