@@ -189,18 +189,18 @@ Consider the following structure declarations:
 ```cs
 struct Material
 {
-	float getShininess();
+    float getShininess();
 };
 
 struct Light
 {
-	Material material;
+    Material material;
 };
 
 struct Scene
 {
-	static Scene getMain();
-	Light[2] getLights();
+    static Scene getMain();
+    Light[2] getLights();
 };
 ```
 
