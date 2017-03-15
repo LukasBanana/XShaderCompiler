@@ -291,6 +291,24 @@ void ExprConverter::ConvertExprImageAccess(ExprPtr& expr)
     }
 }
 
+static BinaryOp AssignOpToBinaryOp(const AssignOp op)
+{
+    switch (op)
+    {
+        case AssignOp::Add:         return BinaryOp::Add;
+        case AssignOp::Sub:         return BinaryOp::Sub;
+        case AssignOp::Mul:         return BinaryOp::Mul;
+        case AssignOp::Div:         return BinaryOp::Div;
+        case AssignOp::Mod:         return BinaryOp::Mod;
+        case AssignOp::LShift:      return BinaryOp::LShift;
+        case AssignOp::RShift:      return BinaryOp::RShift;
+        case AssignOp::Or:          return BinaryOp::Or;
+        case AssignOp::And:         return BinaryOp::And;
+        case AssignOp::Xor:         return BinaryOp::Xor;
+        default:                    return BinaryOp::Undefined;
+    }
+}
+
 void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr* varAccessExpr)
 {
     /* Is this the variable a buffer declaration? */
@@ -325,7 +343,36 @@ void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr
                 /* Translate writes to imageStore() function call */
                 else // Write
                 {
-                    // TODO - Handle different kind of set operations
+                    /* Make first argument expression */
+                    auto arg0Expr = ASTFactory::MakeVarAccessExpr(varAccessExpr->varIdent->ident, bufferDecl);
+                    arg0Expr->flags << Expr::wasConverted;
+
+                    /* Get second argument expression (last array index) */
+                    auto arg1Expr = varAccessExpr->varIdent->arrayIndices.back();
+
+                    /* Get third argument expression (store value) */
+                    ExprPtr arg2Expr;
+
+                    /* If its a normal assignment, then assign expression is the store value */
+                    if(varAccessExpr->assignOp == AssignOp::Set)
+                        arg2Expr = varAccessExpr->assignExpr;
+                    else 
+                    {
+                        /* Otherwise must be compound assignment, in which case we need to do a read as well */
+                        auto lhsExpr = ASTFactory::MakeIntrinsicCallExpr(
+                            Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
+                        );
+
+                        auto rhsExpr = varAccessExpr->assignExpr;
+                        BinaryOp binaryOp = AssignOpToBinaryOp(varAccessExpr->assignOp);
+
+                        arg2Expr = ASTFactory::MakeBinaryExpr(lhsExpr, binaryOp, rhsExpr);
+                    }
+
+                    /* Convert expression to intrinsic call */
+                    expr = ASTFactory::MakeIntrinsicCallExpr(
+                        Intrinsic::Image_Store, "imageStore", nullptr, { arg0Expr, arg1Expr, arg2Expr }
+                    );
                 }
             }
             else

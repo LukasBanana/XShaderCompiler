@@ -132,6 +132,32 @@ const std::string* DataTypeToGLSLKeyword(const DataType t)
     return MapTypeToKeyword(typeMap, t);
 }
 
+/* ----- DataType (image format) Mapping ----- */
+
+static std::map<DataType, std::string> GenerateDataTypeImageFormatMap()
+{
+    using T = DataType;
+
+    return
+    {
+        { T::Int,       "r32i" },
+        { T::Int2,      "rg32i" },
+        { T::Int4,      "rgba32i" },
+        { T::UInt,      "r32ui" },
+        { T::UInt2,     "rg32ui" },
+        { T::UInt4,     "rgba32ui" },
+        { T::Float,     "r32f" },
+        { T::Float2,    "rg32f" },
+        { T::Float4,    "rgba32f" },
+    };
+}
+
+const std::string* DataTypeToImageFormatGLSLKeyword(const DataType t)
+{
+    static const auto typeMap = GenerateDataTypeImageFormatMap();
+    return MapTypeToKeyword(typeMap, t);
+}
+
 
 /* ----- StorageClass Mapping ----- */
 
