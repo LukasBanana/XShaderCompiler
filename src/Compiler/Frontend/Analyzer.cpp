@@ -132,12 +132,14 @@ void Analyzer::Register(const std::string& ident, AST* ast)
     }
 }
 
+//TODO: first fetch from local scope, then structure, then global scope
 AST* Analyzer::Fetch(const std::string& ident, const AST* ast)
 {
     try
     {
         /* If we are inside the local scope of a member function -> try to fetch symbol from parent structure */
-        if (auto structDecl = ActiveFunctionStructDecl())
+        auto structDecl = ActiveFunctionStructDecl();
+        if (structDecl)
         {
             if (auto symbol = structDecl->Fetch(ident))
                 return symbol;
@@ -148,7 +150,7 @@ AST* Analyzer::Fetch(const std::string& ident, const AST* ast)
             return symbol->Fetch();
         
         /* Report undefined identifier error */
-        ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
+        ErrorUndeclaredIdent(ident, "", FetchSimilarIdent(ident, structDecl), ast);
     }
     catch (const std::exception& e)
     {
@@ -173,7 +175,7 @@ AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchType();
         else
-            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
+            ErrorUndeclaredIdent(ident, "", FetchSimilarIdent(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -189,7 +191,7 @@ VarDecl* Analyzer::FetchVarDecl(const std::string& ident, const AST* ast)
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchVarDecl();
         else
-            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
+            ErrorUndeclaredIdent(ident, "", FetchSimilarIdent(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -241,7 +243,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const AST* a
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchFunctionDecl();
         else
-            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
+            ErrorUndeclaredIdent(ident, "", FetchSimilarIdent(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -287,8 +289,7 @@ FunctionDecl* Analyzer::FetchFunctionDeclFromStruct(
 
 StructDecl* Analyzer::FetchStructDeclFromIdent(const std::string& ident, const AST* ast)
 {
-    auto symbol = FetchType(ident, ast);
-    if (symbol)
+    if (auto symbol = FetchType(ident, ast))
     {
         if (symbol->Type() == AST::Types::StructDecl)
             return static_cast<StructDecl*>(symbol);
@@ -543,6 +544,24 @@ bool Analyzer::CollectArgumentTypeDenoters(const std::vector<ExprPtr>& args, std
         }
     }
     return true;
+}
+
+std::string Analyzer::FetchSimilarIdent(const std::string& ident, StructDecl* structDecl) const
+{
+    /* Search in symbol table */
+    auto similarIdent = symTable_.FetchSimilar(ident);
+    if (!similarIdent.empty())
+        return similarIdent;
+
+    /* Search in active function structure */
+    if (structDecl)
+    {
+        similarIdent = structDecl->FetchSimilar(ident);
+        if (!similarIdent.empty())
+            return similarIdent;
+    }
+
+    return "";
 }
 
 

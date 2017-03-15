@@ -7,7 +7,6 @@ struct VOut
 	float4 position : SV_POSITION;
 	float3 worldPos : WORLDPOS;
 	float3 normal : NORMAL;
-	float4 color : COLOR;
 };
 
 struct Light
@@ -31,7 +30,7 @@ struct Light
 
 float4 PS(VOut i) : SV_Target
 {
-	return i.color * Light::GetLight().Shade(i.worldPos, i.normal);
+	return Light::GetLight().Shade(i.worldPos, i.normal);
 }
 
 

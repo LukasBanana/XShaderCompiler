@@ -189,7 +189,7 @@ class Visitor
         // Returns the active (inner most) function declaration or null if the analyzer is currently not inside a function declaration.
         FunctionDecl* ActiveFunctionDecl() const;
 
-        // Returns the structure the actuve (inner most) function declaration belongs to or null if no such structure exists.
+        // Returns the structure the active (inner most) member function declaration belongs to or null if no such structure exists.
         StructDecl* ActiveFunctionStructDecl() const;
 
         /* ----- Function call tracker ----- */
