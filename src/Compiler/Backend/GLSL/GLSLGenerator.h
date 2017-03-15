@@ -266,6 +266,10 @@ class GLSLGenerator : public Generator
         void WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast = nullptr);
 
         void WriteLayout(const std::initializer_list<LayoutEntryFunctor>& entryFunctors);
+        void WriteLayout(const std::string& value);
+        void WriteLayoutGlobal(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor, const std::string& modifier);
+        void WriteLayoutGlobalIn(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor = nullptr);
+        void WriteLayoutGlobalOut(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor = nullptr);
         void WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters);
         void WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast = nullptr);
 
