@@ -1087,7 +1087,8 @@ struct FunctionCallExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    //ExprPtr         expr;   // Optional (left hand side) sub expression; may be null
+    //TODO: add "prefixExpr"
+    //ExprPtr         prefixExpr;   // Optional (left hand side) sub expression; may be null
     FunctionCallPtr call;
 };
 
@@ -1122,6 +1123,7 @@ struct ArrayAccessExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    //TODO: rename this "prefixExpr" to make the post-order traversal clear
     ExprPtr                 expr;           // Sub expression (left hand side)
     std::vector<ExprPtr>    arrayIndices;   // Array indices (right hand side)
 };
@@ -1146,6 +1148,8 @@ struct VarAccessExpr : public Expr
 
     VarIdent* FetchVarIdent() const override;
 
+    //TODO: add "prefixExpr" and make this a replacement to "SuffixExpr"
+    //ExprPtr   prefixExpr;                         // Optional sub expression (left hand side); may be null
     VarIdentPtr varIdent;
     AssignOp    assignOp    = AssignOp::Undefined;  // May be undefined
     ExprPtr     assignExpr;                         // May be null
