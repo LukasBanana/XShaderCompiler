@@ -19,6 +19,8 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <initializer_list>
+#include <functional>
 
 
 namespace Xsc
@@ -38,6 +40,9 @@ class GLSLGenerator : public Generator
 
     private:
         
+        // Function callback interface for entries in a layout qualifier.
+        using LayoutEntryFunctor = std::function<void()>;
+
         /* === Functions === */
 
         void GenerateCodePrimary(
@@ -260,7 +265,9 @@ class GLSLGenerator : public Generator
 
         void WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast = nullptr);
 
-        void WriteBindingSlot(const std::vector<RegisterPtr>& slotRegisters, bool writeCompleteLayout = true);
+        void WriteLayout(const std::initializer_list<LayoutEntryFunctor>& entryFunctors);
+        void WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters);
+        void WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast = nullptr);
 
         /* === Members === */
 

@@ -411,7 +411,10 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
     {
         BeginLn();
         {
-            WriteBindingSlot(ast->slotRegisters);
+            /* Write layout binding */
+            WriteLayout(
+                { [&]() { WriteLayoutBinding(ast->slotRegisters); } }
+            );
 
             /* Write uniform sampler declaration (sampler declarations must only appear in global scope) */
             Write("uniform sampler " + ast->ident);
@@ -482,11 +485,14 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 
         /* Write uniform buffer declaration */
         BeginLn();
-        Write("layout(std140");
 
-        WriteBindingSlot(ast->slotRegisters, false);
+        WriteLayout(
+            {
+                [&]() { Write("std140"); },
+                [&]() { WriteLayoutBinding(ast->slotRegisters); },
+            }
+        );
 
-        Write(") uniform ");
         Write(ast->ident);
 
         /* Write uniform buffer members */
@@ -2511,22 +2517,12 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
     BeginLn();
     {
         /* Write uniform declaration */
-        bool imageFormatWritten = false;
-        if (auto genericTypeDen = bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter)
-        {
-            if (auto baseTypeDen = genericTypeDen->As<BaseTypeDenoter>())
+        WriteLayout(
             {
-                auto imageFormatKeyword = DataTypeToImageFormatKeyword(baseTypeDen->dataType, bufferDecl);
-                Write("layout(" + *imageFormatKeyword);
-
-                imageFormatWritten = true;
+                [&]() { WriteLayoutImageFormat(bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter, bufferDecl); },
+                [&]() { WriteLayoutBinding(bufferDecl->slotRegisters); },
             }
-        }
-        
-        WriteBindingSlot(bufferDecl->slotRegisters, !imageFormatWritten);
-
-        if (imageFormatWritten)
-            Write(") ");
+        );
 
         Write("uniform ");
 
@@ -2714,21 +2710,55 @@ void GLSLGenerator::WriteLiteral(const std::string& value, const BaseTypeDenoter
         Error(R_FailedToWriteLiteralType(value), ast);
 }
 
-void GLSLGenerator::WriteBindingSlot(const std::vector<RegisterPtr>& slotRegisters, bool writeCompleteLayout)
+void GLSLGenerator::WriteLayout(const std::initializer_list<LayoutEntryFunctor>& entryFunctors)
+{
+    PushWritePrefix("layout(");
+    {
+        bool firstWritten = false;
+
+        for (const auto& entryFunc : entryFunctors)
+        {
+            /* Write comma separator, if this is not the first entry */
+            if (firstWritten)
+            {
+                /* Push comman separator as prefix for the next layout entry */
+                PushWritePrefix(", ");
+                {
+                    entryFunc();
+                }
+                PopWritePrefix();
+            }
+            else
+            {
+                /* Call function for the first layout entry */
+                entryFunc();
+                firstWritten = true;
+            }
+        }
+
+        if (TopWritePrefix())
+            Write(") ");
+    }
+    PopWritePrefix();
+}
+
+void GLSLGenerator::WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters)
 {
     if (explicitBinding_)
     {
         if (auto slotRegister = Register::GetForTarget(slotRegisters, GetShaderTarget()))
-        {
-            if (writeCompleteLayout)
-                Write("layout(");
-            else
-                Write(", ");
-            
             Write("binding = " + std::to_string(slotRegister->slot));
+    }
+}
 
-            if (writeCompleteLayout)
-                Write(") ");
+void GLSLGenerator::WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast)
+{
+    if (typeDenoter)
+    {
+        if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
+        {
+            if (auto keyword = DataTypeToImageFormatKeyword(baseTypeDen->dataType, ast))
+                Write(*keyword);
         }
     }
 }

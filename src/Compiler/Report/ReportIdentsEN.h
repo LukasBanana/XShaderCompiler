@@ -172,7 +172,7 @@ DECL_REPORT( NoActiveScopeToRegisterSymbol,     "no active scope to register sym
 DECL_REPORT( LexicalError,                      "lexical error"                                                                                                 );
 DECL_REPORT( UnexpectedChar,                    "unexpected character '{0}'[ (expected '{1}')]"                                                                 );
 DECL_REPORT( MissingDigitSequenceAfterExpr,     "missing digit-sequence after exponent part"                                                                    );
-DECL_REPORT( MissingDecimalPartInFloat,         "missing decimal part in floating-point number" );
+DECL_REPORT( MissingDecimalPartInFloat,         "missing decimal part in floating-point number"                                                                 );
 
 /* ----- Parser ----- */
 
@@ -221,8 +221,9 @@ DECL_REPORT( EmptyPragma,                       "empty '#pragma'-directive"     
 
 DECL_REPORT( FuncDeclStackUnderflow,            "function declaration stack underflow"                                                                          ); // internal error
 DECL_REPORT( FuncCallStackUnderflow,            "function call stack underflow"                                                                                 ); // internal error
-DECL_REPORT( StructDeclStackUnderflow,          "structure declaration stack underflow"                                                                         );
-DECL_REPORT( UniformBufferDeclStackUnderflow,   "uniform buffer declaration stack underflow" );
+DECL_REPORT( StructDeclStackUnderflow,          "structure declaration stack underflow"                                                                         ); // internal error
+DECL_REPORT( UniformBufferDeclStackUnderflow,   "uniform buffer declaration stack underflow"                                                                    ); // internal error
+DECL_REPORT( WritePrefixStackUnderflow,         "write prefix stack underflow"                                                                                  ); // internal error
 
 /* ----- Analyzer ----- */
 
@@ -281,7 +282,7 @@ DECL_REPORT( NoGLSLExtensionVersionRegisterd,   "no GLSL version is registered f
 DECL_REPORT( EntryPointNotFound,                "entry point \"{0}\" not found"                                                                                 );
 DECL_REPORT( FailedToMapToGLSLKeyword,          "failed to map {0} to GLSL keyword[ ({1})]"                                                                     );
 DECL_REPORT( FailedToWriteLiteralType,          "failed to write type denoter for literal[ '{0}']"                                                              );
-DECL_REPORT( FailedToDetermineGLSLDataType,     "failed to determine GLSL data type" );
+DECL_REPORT( FailedToDetermineGLSLDataType,     "failed to determine GLSL data type"                                                                            );
 DECL_REPORT( TessAbstractPatchType,             "tessellation abstract patch type"                                                                              );
 DECL_REPORT( TessSpacing,                       "tessellation spacing"                                                                                          );
 DECL_REPORT( TessPrimitiveOrdering,             "tessellation primitive ordering"                                                                               );

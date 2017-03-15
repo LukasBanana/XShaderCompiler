@@ -68,6 +68,13 @@ class Generator : protected Visitor
         void PushOptions(const CodeWriter::Options& options);
         void PopOptions();
 
+        // Push the specified text to the write-prefix which will be written in front of the text of the next "Write"/"WriteLn" call.
+        void PushWritePrefix(const std::string& text);
+        void PopWritePrefix();
+
+        // Returns true, if the current (top most) write prefix was written out.
+        bool TopWritePrefix() const;
+
         void Blank();
 
         // Returns the current date and time point (can be used in a headline comment).
@@ -94,15 +101,32 @@ class Generator : protected Visitor
 
     private:
 
-        CodeWriter      writer_;
-        ReportHandler   reportHandler_;
+        /*
+        Prefix text that can be written in front of the text of the next "Write"/"WriteLn" call.
+        This can be used to insert an optional output text before it is clear, if this text is need.
+        E.g. to write "layout(std140)", the prefix "layout(" can be used and only written if "std140" will be written afterwards,
+        otherwise the entire "layout(...)" expression can be omitted.
+        */
+        struct WritePrefix
+        {
+            std::string text;       // Specifies the prefix text.
+            bool        written;    // Specifies whether this prefix has already been written out.
+        };
 
-        Program*        program_                = nullptr;
+        // Writes all prefixes that have not already been written.
+        void FlushWritePrefixes();
 
-        ShaderTarget    shaderTarget_           = ShaderTarget::VertexShader;
+        CodeWriter                  writer_;
+        ReportHandler               reportHandler_;
 
-        bool            allowBlanks_            = true;
-        bool            allowLineSeparation_    = true;
+        Program*                    program_                = nullptr;
+
+        ShaderTarget                shaderTarget_           = ShaderTarget::VertexShader;
+
+        bool                        allowBlanks_            = true;
+        bool                        allowLineSeparation_    = true;
+
+        std::vector<WritePrefix>    writePrefixStack_;
 
 };
 
