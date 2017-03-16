@@ -1,8 +1,8 @@
 
-# Developer Notes #
+# Developer Notes: Abstract Syntax Tree (AST) #
 
-Abstract Syntax Tree (AST)
---------------------------
+First Approach
+--------------
 
 Since there is no complete HLSL grammar specification I know of,
 the overall structure of the AST comes from many trials and erros (and might still change).
@@ -228,8 +228,77 @@ FunctionCallExpr
              `-identifier = "getShininess"
 ```
 
+Second Approach
+---------------
 
+Maybe it's better to always have **pre-order** traversal and replace the `VarIdent` class completely,
+i.e. a new class `ObjectExpr` will replace the `VarAccessExpr` and only has an atomic **identifier string**,
+and a direct reference to a **declaration object**, which can be `VarDecl`, `BufferDecl`, `SamplerDecl`, or `StructDecl`.
 
+This means the `FunctionCall` class will only have an atomic **identifier string** as well, instead of a `VarIdent` instance.
+The `nextIsStatic` member (as proposed in the first approach) will be renamed to `isStatic` and is contained
+in both `FunctionCallExpr` and `ObjectExpr` since both types can be a static member of a class (or rather structure).
 
+Also the assignment of `ObjectExpr` (or rather `VarAccessExpr`) should be moved into a separated AST class `AssignExpr`,
+to allow expressions like `( x = 1 ) = 2`.
 
+Specification:
+```
+ObjectExpr : Expr {
+    Expr              prefixExpression     [Optional]
+    Boolean           isStatic             [Optional]
+    String            identifier
+    
+    Ref<Decl>         symbolRef            [Optional]  --> VarDecl, BufferDecl, SamplerDecl, StructDecl
+}
+
+AssignExpr : Expr {
+    Expr              lvalueExpression
+    AssinOp           assignOperator
+    Expr              rvalueExpression
+}
+
+ArrayAccessExpr : Expr {
+    Expr              prefixExpression
+    List<Expr>        arrayIndices
+}
+
+FunctionCallExpr : Expr {
+    Expr              prefixExpression     [Optional]
+    Boolean           isStatic             [Optional]
+    FunctionCall      call
+}
+
+BracketExpr : Expr {
+    Expr              subExpression
+}
+
+FunctionCall {
+    String            identifier
+    
+    Ref<FunctionDecl> funcDeclRef          [Optional]
+}
+```
+
+Example: `( Scene::getMain().getLights() )[1].material.getShininess()`
+```cs
+FunctionCallExpr
+ |-prefixExpression (ObjectExpr)
+ |  |-prefixExpression (ArrayAccessExpr)
+ |  |  |-prefixExpression (BracketExpr)
+ |  |  |  `-subExpression (FunctionCallExpr)
+ |  |  |     |-prefixExpression (FunctionCallExpr)
+ |  |  |     |  |-prefixExpression (ObjectExpr)
+ |  |  |     |  |  `-identifier = "Scene"
+ |  |  |     |  |-isStatic = true
+ |  |  |     |  `-call (FunctionCall)
+ |  |  |     |     `-identifier = "getMain"
+ |  |  |     `-call (FunctionCall)
+ |  |  |        `-identifier = "getLights"
+ |  |  `-arrayIndices[0] (LiteralExpr)
+ |  |     `-literal = "1"
+ |  `-identifier = "material"
+ `-call (FunctionCall)
+    `-identifier = "getShininess"
+```
 
