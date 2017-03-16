@@ -319,6 +319,8 @@ CodeBlockPtr HLSLParser::ParseCodeBlock()
     return ast;
 }
 
+#if 1//TODO: remove
+
 FunctionCallPtr HLSLParser::ParseFunctionCall(VarIdentPtr varIdent)
 {
     auto ast = Make<FunctionCall>();
@@ -345,6 +347,34 @@ FunctionCallPtr HLSLParser::ParseFunctionCall(VarIdentPtr varIdent)
 
     return ast;
 }
+
+#endif
+
+#if 1//TODO: make this standard (and rename)
+
+FunctionCallPtr HLSLParser::ParseFunctionCall_NEW(const TokenPtr& identTkn)
+{
+    auto ast = Make<FunctionCall>();
+
+    /* Parse function name */
+    if (identTkn)
+    {
+        ast->ident = identTkn->Spell();
+        ast->area = identTkn->Area();
+    }
+    else
+    {
+        ast->ident = ParseIdent();
+        UpdateSourceArea(ast);
+    }
+
+    /* Parse argument list */
+    ast->arguments = ParseArgumentList();
+
+    return ast;
+}
+
+#endif
 
 FunctionCallPtr HLSLParser::ParseFunctionCall(const TypeDenoterPtr& typeDenoter)
 {
@@ -587,6 +617,8 @@ ExprPtr HLSLParser::ParseInitializer()
     return ParseExpr();
 }
 
+#if 1//TODO: remove
+
 VarIdentPtr HLSLParser::ParseVarIdent()
 {
     auto ast = Make<VarIdent>();
@@ -604,6 +636,8 @@ VarIdentPtr HLSLParser::ParseVarIdent()
 
     return UpdateSourceArea(ast);
 }
+
+#endif
 
 TypeSpecifierPtr HLSLParser::ParseTypeSpecifier(bool parseVoidType)
 {
@@ -1105,7 +1139,12 @@ StmntPtr HLSLParser::ParseStmntPrimary()
         case Tokens::Return:
             return ParseReturnStmnt();
         case Tokens::Ident:
+            //TODO: remove this
+            #if 0
             return ParseStmntWithVarIdent();
+            #else
+            return ParseStmntWithIdent();
+            #endif
         case Tokens::For:
             return ParseForLoopStmnt();
         case Tokens::While:
@@ -1166,6 +1205,8 @@ StmntPtr HLSLParser::ParseStmntWithStructDecl()
 
     return ast;
 }
+
+#if 1//TODO: remove
 
 StmntPtr HLSLParser::ParseStmntWithVarIdent()
 {
@@ -1230,6 +1271,63 @@ StmntPtr HLSLParser::ParseStmntWithVarIdent()
 
     return nullptr;
 }
+
+#endif
+
+#if 1//TODO: make this standard
+
+StmntPtr HLSLParser::ParseStmntWithIdent()
+{
+    /* Parse the identifier as object expression (can be converted later) */
+    auto objExpr = ParseObjectExpr();
+
+    if (Is(Tokens::LBracket) || Is(Tokens::UnaryOp) || Is(Tokens::BinaryOp) || Is(Tokens::TernaryOp))
+    {
+        /* Parse expression statement (function call, variable access, etc.) */
+        PushPreParsedAST(objExpr);
+        return ParseExprStmnt();
+    }
+    else if (Is(Tokens::AssignOp))
+    {
+        /* Parse assignment statement */
+        auto ast = Make<ExprStmnt>();
+        {
+            auto expr = Make<AssignExpr>();
+            {
+                expr->area          = objExpr->area;
+                expr->lvalueExpr    = objExpr;
+                expr->op            = StringToAssignOp(AcceptIt()->Spell());
+                UpdateSourceAreaOffset(expr);
+                expr->rvalueExpr    = ParseExpr(true);
+            }
+            ast->expr = UpdateSourceArea(expr);
+
+            Semi();
+        }
+        return UpdateSourceArea(ast);
+    }
+    else if (!objExpr->prefixExpr)
+    {
+        /* Convert variable identifier to alias type denoter */
+        auto ast = Make<VarDeclStmnt>();
+
+        ast->typeSpecifier              = MakeTypeSpecifierWithPackAlignment();
+        ast->typeSpecifier->typeDenoter = ParseTypeDenoterWithArrayOpt(ParseAliasTypeDenoter(objExpr->ident));
+
+        UpdateSourceArea(ast->typeSpecifier, objExpr.get());
+
+        ast->varDecls = ParseVarDeclList(ast.get());
+        Semi();
+
+        return UpdateSourceArea(ast, objExpr.get());
+    }
+
+    ErrorUnexpected(R_ExpectedVarOrAssignOrFuncCall, nullptr, true);
+
+    return nullptr;
+}
+
+#endif
 
 NullStmntPtr HLSLParser::ParseNullStmnt()
 {
@@ -1441,14 +1539,47 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma)
 
 ExprPtr HLSLParser::ParsePrimaryExpr()
 {
+    /* Primary prefix of primary expression */
+    auto expr = ParsePrimaryExprPrefix();
+
+    /* Parse optional suffix expressions */
+    while (true)
+    {
+        if (Is(Tokens::LParen))
+            expr = ParseArrayAccessExpr(expr);
+        else if (Is(Tokens::Dot) || Is(Tokens::DColon))
+            expr = ParseObjectOrFunctionCallExpr(expr);
+        else if (Is(Tokens::AssignOp))
+            expr = ParseAssignExpr(expr);
+        else
+            break;
+    }
+
+    return UpdateSourceArea(expr);
+}
+
+ExprPtr HLSLParser::ParsePrimaryExprPrefix()
+{
     /* Check if a pre-parsed AST node is available */
     if (auto preParsedAST = PopPreParsedAST())
     {
-        if (preParsedAST->Type() == AST::Types::VarIdent)
+        #if 1//TODO: make this standard
+        if (preParsedAST->Type() == AST::Types::ObjectExpr)
+        {
+            auto objExpr = std::static_pointer_cast<ObjectExpr>(preParsedAST);
+            if (Is(Tokens::LBracket))
+                return ParseFunctionCallExpr_NEW(objExpr);
+            else
+                return objExpr;
+        }
+        #endif
+        #if 1//TODO: remove
+        else if (preParsedAST->Type() == AST::Types::VarIdent)
         {
             auto varIdent = std::static_pointer_cast<VarIdent>(preParsedAST);
             return ParseVarAccessOrFunctionCallExpr(varIdent);
         }
+        #endif
         else
             ErrorInternal(R_UnexpectedPreParsedAST, __FUNCTION__);
     }
@@ -1467,7 +1598,14 @@ ExprPtr HLSLParser::ParsePrimaryExpr()
     if (Is(Tokens::LCurly))
         return ParseInitializerExpr();
     if (Is(Tokens::Ident))
+    {
+        //TODO: remove
+        #if 0
         return ParseVarAccessOrFunctionCallExpr();
+        #else
+        return ParseObjectOrFunctionCallExpr();
+        #endif
+    }
 
     ErrorUnexpected(R_ExpectedPrimaryExpr, nullptr, true);
 
@@ -1515,7 +1653,12 @@ ExprPtr HLSLParser::ParseTypeSpecifierOrFunctionCallExpr()
     if (Is(Tokens::LBracket) && !structDecl)
     {
         /* Return function call expression */
+        //TODO: remove this
+        #if 0
         return ParseFunctionCallExpr(nullptr, typeDenoter);
+        #else
+        return ParseFunctionCallExpr_NEW(nullptr, typeDenoter);
+        #endif
     }
 
     /* Return type name expression */
@@ -1604,6 +1747,8 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     ast->area = area;
     ast->expr = expr;
 
+    //TODO: remove
+    #if 0
     expr = ast;
 
     /* Parse optional array-access expression */
@@ -1615,7 +1760,12 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
         expr = ParseSuffixExpr(expr);
 
     return UpdateSourceArea(expr);
+    #else
+    return UpdateSourceArea(ast);
+    #endif
 }
+
+#if 1//TODO: remove
 
 SuffixExprPtr HLSLParser::ParseSuffixExpr(const ExprPtr& expr)
 {
@@ -1629,29 +1779,6 @@ SuffixExprPtr HLSLParser::ParseSuffixExpr(const ExprPtr& expr)
     ast->varIdent = ParseVarIdent();
 
     return UpdateSourceArea(ast, expr.get());
-}
-
-ArrayAccessExprPtr HLSLParser::ParseArrayAccessExpr(const ExprPtr& expr)
-{
-    auto ast = Make<ArrayAccessExpr>();
-
-    /* Take sub expression and parse array dimensions */
-    ast->expr           = expr;
-    ast->arrayIndices   = ParseArrayIndexList();
-
-    return UpdateSourceArea(ast, expr.get());
-}
-
-ExprPtr HLSLParser::ParseVarAccessOrFunctionCallExpr(VarIdentPtr varIdent)
-{
-    /* Parse variable identifier first (for variables and functions) */
-    if (!varIdent)
-        varIdent = ParseVarIdent();
-    
-    if (Is(Tokens::LBracket))
-        return ParseFunctionCallExpr(varIdent);
-
-    return ParseVarAccessExpr(varIdent);
 }
 
 VarAccessExprPtr HLSLParser::ParseVarAccessExpr(const VarIdentPtr& varIdent)
@@ -1675,6 +1802,94 @@ VarAccessExprPtr HLSLParser::ParseVarAccessExpr(const VarIdentPtr& varIdent)
 
     return UpdateSourceArea(ast);
 }
+
+ExprPtr HLSLParser::ParseVarAccessOrFunctionCallExpr(VarIdentPtr varIdent)
+{
+    /* Parse variable identifier first (for variables and functions) */
+    if (!varIdent)
+        varIdent = ParseVarIdent();
+    
+    if (Is(Tokens::LBracket))
+        return ParseFunctionCallExpr(varIdent);
+
+    return ParseVarAccessExpr(varIdent);
+}
+
+#endif
+
+#if 1//TODO: make this standard
+
+ObjectExprPtr HLSLParser::ParseObjectExpr(const ExprPtr& expr)
+{
+    auto ast = Make<ObjectExpr>();
+
+    /* Take sub expression and parse identifier */
+    ast->prefixExpr = expr;
+
+    if (ast->prefixExpr != nullptr)
+    {
+        /* Parse '::' or '.' prefix */
+        if (Is(Tokens::DColon))
+        {
+            AcceptIt();
+            ast->isStatic = true;
+        }
+        else if (Is(Tokens::Dot))
+            AcceptIt();
+        else
+            ErrorUnexpected(R_ExpectedIdentPrefix);
+    }
+
+    ast->ident = ParseIdent();
+
+    return UpdateSourceArea(ast);
+}
+
+AssignExprPtr HLSLParser::ParseAssignExpr(const ExprPtr& expr)
+{
+    auto ast = Make<AssignExpr>();
+
+    /* Take sub expression and parse assignment */
+    ast->lvalueExpr = expr;
+
+    /* Parse assign expression */
+    if (Is(Tokens::AssignOp))
+    {
+        UpdateSourceAreaOffset(ast);
+        ast->op         = StringToAssignOp(AcceptIt()->Spell());
+        ast->rvalueExpr = ParseExpr();
+    }
+    else
+        ErrorUnexpected(Tokens::AssignOp);
+
+    return UpdateSourceArea(ast);
+}
+
+ExprPtr HLSLParser::ParseObjectOrFunctionCallExpr(const ExprPtr& expr)
+{
+    /* Parse variable identifier first (for variables and functions) */
+    auto objExpr = ParseObjectExpr(expr);
+    
+    if (Is(Tokens::LBracket))
+        return ParseFunctionCallExpr_NEW(objExpr);
+
+    return objExpr;
+}
+
+#endif
+
+ArrayAccessExprPtr HLSLParser::ParseArrayAccessExpr(const ExprPtr& expr)
+{
+    auto ast = Make<ArrayAccessExpr>();
+
+    /* Take sub expression and parse array dimensions */
+    ast->expr           = expr;
+    ast->arrayIndices   = ParseArrayIndexList();
+
+    return UpdateSourceArea(ast, expr.get());
+}
+
+#if 1//TODO: remove
 
 ExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIdent, const TypeDenoterPtr& typeDenoter)
 {
@@ -1701,6 +1916,42 @@ ExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIdent, const Typ
 
     return expr;
 }
+
+#endif
+
+#if 1//TODO: make this standard
+
+FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr_NEW(const ObjectExprPtr& objExpr, const TypeDenoterPtr& typeDenoter)
+{
+    /* Parse function call expression */
+    auto ast = Make<FunctionCallExpr>();
+
+    if (objExpr)
+    {
+        /* Make new identifier token with source position form input */
+        auto identTkn = std::make_shared<Token>(objExpr->area.Pos(), Tokens::Ident, objExpr->ident);
+
+        /* Parse function call and take prefix expression from input */
+        ast->prefixExpr = objExpr->prefixExpr;
+        ast->isStatic   = objExpr->isStatic;
+        ast->call       = ParseFunctionCall_NEW(identTkn);
+    }
+    else if (typeDenoter)
+    {
+        /* Parse function call with type denoter */
+        ast->call = ParseFunctionCall(typeDenoter);
+    }
+    else
+    {
+        /* Parse completely new function call */
+        ast->call = ParseFunctionCall_NEW();
+    }
+
+    /* Update source area */
+    return UpdateSourceArea(ast, ast->call.get());
+}
+
+#endif
 
 InitializerExprPtr HLSLParser::ParseInitializerExpr()
 {
@@ -2029,6 +2280,20 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& stru
         return ParseStructTypeDenoterWithStructDeclOpt(structDecl);
     else
         return ParseTypeDenoter(allowVoidType);
+}
+
+TypeDenoterPtr HLSLParser::ParseTypeDenoterWithArrayOpt(const TypeDenoterPtr& baseTypeDenoter)
+{
+    if (Is(Tokens::LParen))
+    {
+        auto arrayTypeDenoter = std::make_shared<ArrayTypeDenoter>(baseTypeDenoter);
+
+        /* Parse array dimension list */
+        arrayTypeDenoter->arrayDims = ParseArrayDimensionList();
+
+        return arrayTypeDenoter;
+    }
+    return baseTypeDenoter;
 }
 
 VoidTypeDenoterPtr HLSLParser::ParseVoidTypeDenoter()

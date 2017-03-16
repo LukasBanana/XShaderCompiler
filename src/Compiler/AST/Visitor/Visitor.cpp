@@ -75,11 +75,13 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
     Visit(ast->structDecl);
 }
 
+#if 1//TODO: remove
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
     Visit(ast->arrayIndices);
     Visit(ast->next);
 }
+#endif
 
 /* --- Declarations --- */
 
@@ -286,6 +288,7 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 
 IMPLEMENT_VISIT_PROC(FunctionCallExpr)
 {
+    Visit(ast->prefixExpr);
     Visit(ast->call);
 }
 
@@ -314,12 +317,13 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
 IMPLEMENT_VISIT_PROC(AssignExpr)
 {
-
+    Visit(ast->lvalueExpr);
+    Visit(ast->rvalueExpr);
 }
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
-
+    Visit(ast->prefixExpr);
 }
 
 #endif

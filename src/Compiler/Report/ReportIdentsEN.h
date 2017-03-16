@@ -340,6 +340,7 @@ DECL_REPORT( ExpectedExplicitArrayDim,          "explicit array dimension expect
 DECL_REPORT( ExpectedVarOrAssignOrFuncCall,     "expected variable declaration, assignment, or function call statement"                                         );
 DECL_REPORT( ExpectedTypeNameOrFuncCall,        "expected type name or function call expression"                                                                );
 DECL_REPORT( ExpectedUnaryExprOp,               "expected unary expression operator"                                                                            );
+DECL_REPORT( ExpectedIdentPrefix,               "expected '::' or '.' identifier prefix"                                                                        );
 DECL_REPORT( UnexpectedTokenInPackMatrixPragma, "unexpected token in '#pragma pack_matrix'-directive"                                                           );
 DECL_REPORT( UnexpectedPreParsedAST,            "unexpected pre-parsed AST node"                                                                                );
 DECL_REPORT( InvalidHLSLDirectiveAfterPP,       "only '#line' and '#pragma' directives are allowed after pre-processing"                                        );

@@ -1624,7 +1624,7 @@ TypeDenoterPtr ObjectExpr::GetExplicitTypeDenoter()
     else if (prefixExpr)
     {
         /* Get type denoter of prefix (if used) */
-        auto typeDenoter = prefixExpr->GetTypeDenoter();
+        return prefixExpr->GetTypeDenoter()->GetSub(this);
     }
     
     RuntimeErr(R_MissingVarIdentSymbolRef(ident), this);
@@ -1648,12 +1648,11 @@ BaseTypeDenoterPtr ObjectExpr::GetTypeDenoterFromSubscript(TypeDenoter& baseType
     RuntimeErr(R_InvalidSubscriptBaseType, this);
 }
 
+#if 0
 bool ObjectExpr::IsLValue() const
 {
-    
-
-    return false;
 }
+#endif
 
 
 /* ----- ArrayAccessExpr ----- */

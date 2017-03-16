@@ -1123,9 +1123,11 @@ struct FunctionCallExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    //TODO: add "prefixExpr"
+    //TODO: make this standard
+    #if 1
     ExprPtr         prefixExpr;             // Optional prefix expression; may be null.
     bool            isStatic    = false;    // Specifies whether this function is a static member.
+    #endif
     FunctionCallPtr call;
 };
 
@@ -1202,7 +1204,10 @@ struct ObjectExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    //TODO: override "IsLValue"
+    #if 0
     bool IsLValue() const override;
+    #endif
 
     // Returns the type denoter for this AST node or the last sub node.
     TypeDenoterPtr GetExplicitTypeDenoter();
