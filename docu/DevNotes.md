@@ -208,19 +208,19 @@ Example: `( Scene::getMain().getLights() )[1].material.getShininess()`
 ```cs
 FunctionCallExpr
  |-prefixExpression (ArrayAccessExpr)
- | |-prefixExpression (BracketExpr)
- | |  `-subExpression (FunctionCallExpr)
- | |     |-prefixExpression (FunctionCallExpr)
- | |     |  `-call (FunctionCall)
- | |     |     `-functionName (VarIdnet)
- | |     |        |-identifier = "Scene"
- | |     |        |-nextIsStatic = true
- | |     |        `-next (VarIdent)
- | |     |           `-identifier = "getMain"
- | |     `-call (FunctionCall)
- | |        `-identifier = "getLightList"
- | `-arrayIndices[0] (LiteralExpr)
- |    `-literal = "1"
+ |  |-prefixExpression (BracketExpr)
+ |  |  `-subExpression (FunctionCallExpr)
+ |  |     |-prefixExpression (FunctionCallExpr)
+ |  |     |  `-call (FunctionCall)
+ |  |     |     `-functionName (VarIdnet)
+ |  |     |        |-identifier = "Scene"
+ |  |     |        |-nextIsStatic = true
+ |  |     |        `-next (VarIdent)
+ |  |     |           `-identifier = "getMain"
+ |  |     `-call (FunctionCall)
+ |  |        `-identifier = "getLightList"
+ |  `-arrayIndices[0] (LiteralExpr)
+ |     `-literal = "1"
  `-call (FunctionCall)
     `-functionName (VarIdent)
        `-identifier = "material"
