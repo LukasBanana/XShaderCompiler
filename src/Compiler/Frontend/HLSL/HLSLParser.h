@@ -104,7 +104,7 @@ class HLSLParser : public Parser
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);
 
         CodeBlockPtr                    ParseCodeBlock();
-        #if 1//TODO: remove
+        #if 0//TODO: remove
         FunctionCallPtr                 ParseFunctionCall(VarIdentPtr varIdent = nullptr);
         #endif
         #if 1//TODO: make this standard
@@ -120,7 +120,7 @@ class HLSLParser : public Parser
         ArrayDimensionPtr               ParseArrayDimension(bool allowDynamicDimension = false);
         ExprPtr                         ParseArrayIndex();
         ExprPtr                         ParseInitializer();
-        #if 1//TODO: remove
+        #if 0//TODO: remove
         VarIdentPtr                     ParseVarIdent();
         #endif
         TypeSpecifierPtr                ParseTypeSpecifier(bool parseVoidType = false);
@@ -145,7 +145,7 @@ class HLSLParser : public Parser
         StmntPtr                        ParseStmnt(bool allowAttributes = true);
         StmntPtr                        ParseStmntPrimary();
         StmntPtr                        ParseStmntWithStructDecl();
-        #if 1//TODO: remove
+        #if 0//TODO: remove
         StmntPtr                        ParseStmntWithVarIdent();
         #endif
         #if 1//TODO: 
@@ -166,13 +166,16 @@ class HLSLParser : public Parser
         ExprPtr                         ParseExpr(bool allowComma = false);
         ExprPtr                         ParsePrimaryExpr() override;
         ExprPtr                         ParsePrimaryExprPrefix();
+        ExprPtr                         ParseExprWithSuffixOpt(ExprPtr expr);
+        #if 0//TODO: remove
         ExprPtr                         ParseLiteralOrSuffixExpr();
+        #endif
         LiteralExprPtr                  ParseLiteralExpr();
         ExprPtr                         ParseTypeSpecifierOrFunctionCallExpr();
         TypeSpecifierExprPtr            ParseTypeSpecifierExpr();
         UnaryExprPtr                    ParseUnaryExpr();
         ExprPtr                         ParseBracketOrCastExpr();
-        #if 1//TODO: remove
+        #if 0//TODO: remove
         SuffixExprPtr                   ParseSuffixExpr(const ExprPtr& expr);
         VarAccessExprPtr                ParseVarAccessExpr(const VarIdentPtr& varIdent = nullptr);
         ExprPtr                         ParseVarAccessOrFunctionCallExpr(VarIdentPtr varIdent = nullptr);
@@ -183,7 +186,7 @@ class HLSLParser : public Parser
         ExprPtr                         ParseObjectOrFunctionCallExpr(const ExprPtr& expr = nullptr);
         #endif
         ArrayAccessExprPtr              ParseArrayAccessExpr(const ExprPtr& expr);
-        #if 1//TODO: remove
+        #if 0//TODO: remove
         ExprPtr                         ParseFunctionCallExpr(const VarIdentPtr& varIdent = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
         #endif
         #if 1//TODO: make this standard

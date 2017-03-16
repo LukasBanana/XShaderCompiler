@@ -319,7 +319,7 @@ CodeBlockPtr HLSLParser::ParseCodeBlock()
     return ast;
 }
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 FunctionCallPtr HLSLParser::ParseFunctionCall(VarIdentPtr varIdent)
 {
@@ -617,7 +617,7 @@ ExprPtr HLSLParser::ParseInitializer()
     return ParseExpr();
 }
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 VarIdentPtr HLSLParser::ParseVarIdent()
 {
@@ -1206,7 +1206,7 @@ StmntPtr HLSLParser::ParseStmntWithStructDecl()
     return ast;
 }
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 StmntPtr HLSLParser::ParseStmntWithVarIdent()
 {
@@ -1281,30 +1281,15 @@ StmntPtr HLSLParser::ParseStmntWithIdent()
     /* Parse the identifier as object expression (can be converted later) */
     auto objExpr = ParseObjectExpr();
 
+    ExprPtr expr = objExpr;
+    if (Is(Tokens::LParen) || Is(Tokens::Dot) || Is(Tokens::DColon) || Is(Tokens::AssignOp))
+        expr = ParseExprWithSuffixOpt(expr);
+
     if (Is(Tokens::LBracket) || Is(Tokens::UnaryOp) || Is(Tokens::BinaryOp) || Is(Tokens::TernaryOp))
     {
         /* Parse expression statement (function call, variable access, etc.) */
-        PushPreParsedAST(objExpr);
+        PushPreParsedAST(expr);
         return ParseExprStmnt();
-    }
-    else if (Is(Tokens::AssignOp))
-    {
-        /* Parse assignment statement */
-        auto ast = Make<ExprStmnt>();
-        {
-            auto expr = Make<AssignExpr>();
-            {
-                expr->area          = objExpr->area;
-                expr->lvalueExpr    = objExpr;
-                expr->op            = StringToAssignOp(AcceptIt()->Spell());
-                UpdateSourceAreaOffset(expr);
-                expr->rvalueExpr    = ParseExpr(true);
-            }
-            ast->expr = UpdateSourceArea(expr);
-
-            Semi();
-        }
-        return UpdateSourceArea(ast);
     }
     else if (!objExpr->prefixExpr)
     {
@@ -1540,22 +1525,7 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma)
 ExprPtr HLSLParser::ParsePrimaryExpr()
 {
     /* Primary prefix of primary expression */
-    auto expr = ParsePrimaryExprPrefix();
-
-    /* Parse optional suffix expressions */
-    while (true)
-    {
-        if (Is(Tokens::LParen))
-            expr = ParseArrayAccessExpr(expr);
-        else if (Is(Tokens::Dot) || Is(Tokens::DColon))
-            expr = ParseObjectOrFunctionCallExpr(expr);
-        else if (Is(Tokens::AssignOp))
-            expr = ParseAssignExpr(expr);
-        else
-            break;
-    }
-
-    return UpdateSourceArea(expr);
+    return ParseExprWithSuffixOpt(ParsePrimaryExprPrefix());
 }
 
 ExprPtr HLSLParser::ParsePrimaryExprPrefix()
@@ -1573,7 +1543,7 @@ ExprPtr HLSLParser::ParsePrimaryExprPrefix()
                 return objExpr;
         }
         #endif
-        #if 1//TODO: remove
+        #if 0//TODO: remove
         else if (preParsedAST->Type() == AST::Types::VarIdent)
         {
             auto varIdent = std::static_pointer_cast<VarIdent>(preParsedAST);
@@ -1586,7 +1556,13 @@ ExprPtr HLSLParser::ParsePrimaryExprPrefix()
 
     /* Determine which kind of expression the next one is */
     if (IsLiteral())
+    {
+        #if 0//TODO: remove
         return ParseLiteralOrSuffixExpr();
+        #else
+        return ParseLiteralExpr();
+        #endif
+    }
     if (IsModifier())
         return ParseTypeSpecifierExpr();
     if (IsDataType() || Is(Tokens::Struct))
@@ -1599,8 +1575,7 @@ ExprPtr HLSLParser::ParsePrimaryExprPrefix()
         return ParseInitializerExpr();
     if (Is(Tokens::Ident))
     {
-        //TODO: remove
-        #if 0
+        #if 0//TODO: remove
         return ParseVarAccessOrFunctionCallExpr();
         #else
         return ParseObjectOrFunctionCallExpr();
@@ -1612,6 +1587,25 @@ ExprPtr HLSLParser::ParsePrimaryExprPrefix()
     return nullptr;
 }
 
+ExprPtr HLSLParser::ParseExprWithSuffixOpt(ExprPtr expr)
+{
+    /* Parse optional suffix expressions */
+    while (true)
+    {
+        if (Is(Tokens::LParen))
+            expr = ParseArrayAccessExpr(expr);
+        else if (Is(Tokens::Dot) || Is(Tokens::DColon))
+            expr = ParseObjectOrFunctionCallExpr(expr);
+        else if (Is(Tokens::AssignOp))
+            expr = ParseAssignExpr(expr);
+        else
+            break;
+    }
+
+    return UpdateSourceArea(expr);
+}
+
+#if 0//TODO: remove
 ExprPtr HLSLParser::ParseLiteralOrSuffixExpr()
 {
     /* Parse literal expression */
@@ -1623,6 +1617,7 @@ ExprPtr HLSLParser::ParseLiteralOrSuffixExpr()
 
     return UpdateSourceArea(expr);
 }
+#endif
 
 LiteralExprPtr HLSLParser::ParseLiteralExpr()
 {
@@ -1765,7 +1760,7 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
     #endif
 }
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 SuffixExprPtr HLSLParser::ParseSuffixExpr(const ExprPtr& expr)
 {
@@ -1889,7 +1884,7 @@ ArrayAccessExprPtr HLSLParser::ParseArrayAccessExpr(const ExprPtr& expr)
     return UpdateSourceArea(ast, expr.get());
 }
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 ExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIdent, const TypeDenoterPtr& typeDenoter)
 {
