@@ -15,7 +15,7 @@ which stands for "variable identifier", but it does also refer to functions, sam
 
 ### `VarIdent` ###
 
-`VarIdent` holds primarily an atomic **identifier string** and a `VarIdent` **sub-node**.
+`VarIdent` holds primarily an atomic **identifier string** and an optional **next variable identifier**.
 It is traversed in **pre-order**, meaning the identifier string is used first, and then the sub nodes.
 This AST node also has a list of **array indices** that can optionally appear between the sub nodes,
 and a boolean member to specify wether the next sub node is a **static member**:
@@ -206,7 +206,7 @@ struct Scene
 
 Example: `( Scene::getMain().getLights() )[1].material.getShininess()`
 ```cs
-FunctionCallExspr
+FunctionCallExpr
  |-prefixExpression (ArrayAccessExpr)
  | |-prefixExpression (BracketExpr)
  | |  `-subExpression (FunctionCallExpr)
