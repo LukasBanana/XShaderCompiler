@@ -161,7 +161,7 @@ class HLSLParser : public Parser
         SwitchStmntPtr                  ParseSwitchStmnt();
         CtrlTransferStmntPtr            ParseCtrlTransferStmnt();
         ReturnStmntPtr                  ParseReturnStmnt();
-        ExprStmntPtr                    ParseExprStmnt();
+        ExprStmntPtr                    ParseExprStmnt(const ExprPtr& expr = nullptr);
 
         ExprPtr                         ParseExpr(bool allowComma = false);
         ExprPtr                         ParsePrimaryExpr() override;
@@ -190,7 +190,7 @@ class HLSLParser : public Parser
         ExprPtr                         ParseFunctionCallExpr(const VarIdentPtr& varIdent = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
         #endif
         #if 1//TODO: make this standard
-        FunctionCallExprPtr             ParseFunctionCallExpr_NEW(const ObjectExprPtr& objExpr = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
+        FunctionCallExprPtr             ParseFunctionCallExpr_NEW(const ObjectExprPtr& objectExpr = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
         #endif
         InitializerExprPtr              ParseInitializerExpr();
 

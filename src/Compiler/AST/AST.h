@@ -1171,8 +1171,6 @@ struct VarAccessExpr : public Expr
 
     VarIdent* FetchVarIdent() const override;
 
-    //TODO: add "prefixExpr" and make this a replacement to "SuffixExpr"
-    //ExprPtr   prefixExpr;                         // Optional sub expression (left hand side); may be null
     VarIdentPtr varIdent;
     AssignOp    assignOp    = AssignOp::Undefined;  // May be undefined
     ExprPtr     assignExpr;                         // May be null

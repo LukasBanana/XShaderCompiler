@@ -224,7 +224,10 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
     PRINT_AST_EXT(PostUnaryExpr, UnaryOpToString(ast->op));
 }
 
-IMPLEMENT_VISIT_PROC_DEFAULT(FunctionCallExpr)
+IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+{
+    PRINT_AST_EXT(FunctionCallExpr, ast->call->ident);
+}
 
 IMPLEMENT_VISIT_PROC_DEFAULT(BracketExpr)
 

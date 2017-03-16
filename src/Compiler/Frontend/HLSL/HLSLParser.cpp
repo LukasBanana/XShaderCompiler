@@ -114,6 +114,8 @@ TypeSpecifierPtr HLSLParser::MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& exp
     if (auto typeSpecifierExpr = expr->As<TypeSpecifierExpr>())
         return typeSpecifierExpr->typeSpecifier;
 
+    //TODO: remove
+    #if 0
     /* Is this a variable identifier? */
     if (auto varAccessExpr = expr->As<VarAccessExpr>())
     {
@@ -124,6 +126,18 @@ TypeSpecifierPtr HLSLParser::MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& exp
             return ASTFactory::MakeTypeSpecifier(std::make_shared<AliasTypeDenoter>(varAccessExpr->varIdent->ident));
         }
     }
+    #else
+    /* Is this an object expression? */
+    if (auto objectExpr = expr->As<ObjectExpr>())
+    {
+        /* Check if the identifier refers to a type name */
+        if (IsRegisteredTypeName(objectExpr->ident))
+        {
+            /* Convert the variable access into a type specifier */
+            return ASTFactory::MakeTypeSpecifier(std::make_shared<AliasTypeDenoter>(objectExpr->ident));
+        }
+    }
+    #endif
 
     /* No type name expression */
     return nullptr;
@@ -1276,14 +1290,14 @@ StmntPtr HLSLParser::ParseStmntWithVarIdent()
 
 #if 1//TODO: make this standard
 
+// ~~~~~~~~~~~~ INCOMPLETE ~~~~~~~~~~~~~~~
+
 StmntPtr HLSLParser::ParseStmntWithIdent()
 {
     /* Parse the identifier as object expression (can be converted later) */
-    auto objExpr = ParseObjectExpr();
+    auto objectExpr = ParseObjectExpr();
 
-    ExprPtr expr = objExpr;
-    if (Is(Tokens::LParen) || Is(Tokens::Dot) || Is(Tokens::DColon) || Is(Tokens::AssignOp))
-        expr = ParseExprWithSuffixOpt(expr);
+    auto expr = ParseExprWithSuffixOpt(objectExpr);
 
     if (Is(Tokens::LBracket) || Is(Tokens::UnaryOp) || Is(Tokens::BinaryOp) || Is(Tokens::TernaryOp))
     {
@@ -1291,21 +1305,28 @@ StmntPtr HLSLParser::ParseStmntWithIdent()
         PushPreParsedAST(expr);
         return ParseExprStmnt();
     }
-    else if (!objExpr->prefixExpr)
+    else if (Is(Tokens::Semicolon))
+    {
+        /* Return immediatly with expression statement */
+        return ParseExprStmnt(expr);
+    }
+    else if (expr == objectExpr)
     {
         /* Convert variable identifier to alias type denoter */
         auto ast = Make<VarDeclStmnt>();
 
         ast->typeSpecifier              = MakeTypeSpecifierWithPackAlignment();
-        ast->typeSpecifier->typeDenoter = ParseTypeDenoterWithArrayOpt(ParseAliasTypeDenoter(objExpr->ident));
+        ast->typeSpecifier->typeDenoter = ParseTypeDenoterWithArrayOpt(ParseAliasTypeDenoter(objectExpr->ident));
 
-        UpdateSourceArea(ast->typeSpecifier, objExpr.get());
+        UpdateSourceArea(ast->typeSpecifier, objectExpr.get());
 
         ast->varDecls = ParseVarDeclList(ast.get());
         Semi();
 
-        return UpdateSourceArea(ast, objExpr.get());
+        return UpdateSourceArea(ast, objectExpr.get());
     }
+    else
+        return ParseExprStmnt(expr);
 
     ErrorUnexpected(R_ExpectedVarOrAssignOrFuncCall, nullptr, true);
 
@@ -1475,16 +1496,22 @@ ReturnStmntPtr HLSLParser::ParseReturnStmnt()
     return ast;
 }
 
-ExprStmntPtr HLSLParser::ParseExprStmnt()
+ExprStmntPtr HLSLParser::ParseExprStmnt(const ExprPtr& expr)
 {
     /* Parse expression statement */
     auto ast = Make<ExprStmnt>();
 
-    ast->expr = ParseExpr(true);
+    if (expr)
+    {
+        ast->expr = expr;
+        ast->area = expr->area;
+    }
+    else
+        ast->expr = ParseExpr(true);
 
     Semi();
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 /* --- Expressions --- */
@@ -1536,11 +1563,11 @@ ExprPtr HLSLParser::ParsePrimaryExprPrefix()
         #if 1//TODO: make this standard
         if (preParsedAST->Type() == AST::Types::ObjectExpr)
         {
-            auto objExpr = std::static_pointer_cast<ObjectExpr>(preParsedAST);
+            auto objectExpr = std::static_pointer_cast<ObjectExpr>(preParsedAST);
             if (Is(Tokens::LBracket))
-                return ParseFunctionCallExpr_NEW(objExpr);
+                return ParseFunctionCallExpr_NEW(objectExpr);
             else
-                return objExpr;
+                return objectExpr;
         }
         #endif
         #if 0//TODO: remove
@@ -1816,18 +1843,16 @@ ExprPtr HLSLParser::ParseVarAccessOrFunctionCallExpr(VarIdentPtr varIdent)
 
 ObjectExprPtr HLSLParser::ParseObjectExpr(const ExprPtr& expr)
 {
-    auto ast = Make<ObjectExpr>();
+    /* Parse prefix token if prefix expression is specified  */
+    bool isStatic = false;
 
-    /* Take sub expression and parse identifier */
-    ast->prefixExpr = expr;
-
-    if (ast->prefixExpr != nullptr)
+    if (expr != nullptr)
     {
         /* Parse '::' or '.' prefix */
         if (Is(Tokens::DColon))
         {
             AcceptIt();
-            ast->isStatic = true;
+            isStatic = true;
         }
         else if (Is(Tokens::Dot))
             AcceptIt();
@@ -1835,7 +1860,12 @@ ObjectExprPtr HLSLParser::ParseObjectExpr(const ExprPtr& expr)
             ErrorUnexpected(R_ExpectedIdentPrefix);
     }
 
-    ast->ident = ParseIdent();
+    auto ast = Make<ObjectExpr>();
+
+    /* Take sub expression and parse identifier */
+    ast->prefixExpr = expr;
+    ast->isStatic   = isStatic;
+    ast->ident      = ParseIdent();
 
     return UpdateSourceArea(ast);
 }
@@ -1863,12 +1893,12 @@ AssignExprPtr HLSLParser::ParseAssignExpr(const ExprPtr& expr)
 ExprPtr HLSLParser::ParseObjectOrFunctionCallExpr(const ExprPtr& expr)
 {
     /* Parse variable identifier first (for variables and functions) */
-    auto objExpr = ParseObjectExpr(expr);
+    auto objectExpr = ParseObjectExpr(expr);
     
     if (Is(Tokens::LBracket))
-        return ParseFunctionCallExpr_NEW(objExpr);
+        return ParseFunctionCallExpr_NEW(objectExpr);
 
-    return objExpr;
+    return objectExpr;
 }
 
 #endif
@@ -1916,19 +1946,19 @@ ExprPtr HLSLParser::ParseFunctionCallExpr(const VarIdentPtr& varIdent, const Typ
 
 #if 1//TODO: make this standard
 
-FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr_NEW(const ObjectExprPtr& objExpr, const TypeDenoterPtr& typeDenoter)
+FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr_NEW(const ObjectExprPtr& objectExpr, const TypeDenoterPtr& typeDenoter)
 {
     /* Parse function call expression */
     auto ast = Make<FunctionCallExpr>();
 
-    if (objExpr)
+    if (objectExpr)
     {
         /* Make new identifier token with source position form input */
-        auto identTkn = std::make_shared<Token>(objExpr->area.Pos(), Tokens::Ident, objExpr->ident);
+        auto identTkn = std::make_shared<Token>(objectExpr->area.Pos(), Tokens::Ident, objectExpr->ident);
 
         /* Parse function call and take prefix expression from input */
-        ast->prefixExpr = objExpr->prefixExpr;
-        ast->isStatic   = objExpr->isStatic;
+        ast->prefixExpr = objectExpr->prefixExpr;
+        ast->isStatic   = objectExpr->isStatic;
         ast->call       = ParseFunctionCall_NEW(identTkn);
     }
     else if (typeDenoter)
