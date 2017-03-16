@@ -38,7 +38,9 @@ DECL_PTR( Register          );
 DECL_PTR( PackOffset        );
 DECL_PTR( ArrayDimension    );
 DECL_PTR( TypeSpecifier     );
+#if 1
 DECL_PTR( VarIdent          );
+#endif
 
 DECL_PTR( VarDecl           );
 DECL_PTR( BufferDecl        );
@@ -76,10 +78,14 @@ DECL_PTR( UnaryExpr         );
 DECL_PTR( PostUnaryExpr     );
 DECL_PTR( FunctionCallExpr  );
 DECL_PTR( BracketExpr       );
+#if 1
 DECL_PTR( SuffixExpr        );
+DECL_PTR( VarAccessExpr     );
+#endif
+DECL_PTR( ObjectExpr        );
+DECL_PTR( AssignExpr        );
 DECL_PTR( ArrayAccessExpr   );
 DECL_PTR( CastExpr          );
-DECL_PTR( VarAccessExpr     );
 DECL_PTR( InitializerExpr   );
 
 #undef DECL_PTR
@@ -150,10 +156,14 @@ class Visitor
         VISITOR_VISIT_PROC( PostUnaryExpr     );
         VISITOR_VISIT_PROC( FunctionCallExpr  );
         VISITOR_VISIT_PROC( BracketExpr       );
+        #if 1
         VISITOR_VISIT_PROC( SuffixExpr        );
+        VISITOR_VISIT_PROC( VarAccessExpr     );
+        #endif
+        VISITOR_VISIT_PROC( AssignExpr        );
+        VISITOR_VISIT_PROC( ObjectExpr        );
         VISITOR_VISIT_PROC( ArrayAccessExpr   );
         VISITOR_VISIT_PROC( CastExpr          );
-        VISITOR_VISIT_PROC( VarAccessExpr     );
         VISITOR_VISIT_PROC( InitializerExpr   );
 
     protected:

@@ -98,6 +98,8 @@ void TypeDenoter::SetIdentIfAnonymous(const std::string& ident)
     // dummy
 }
 
+#if 1//TODO: remove
+
 TypeDenoterPtr TypeDenoter::Get(const VarIdent* varIdent)
 {
     if (varIdent)
@@ -113,6 +115,35 @@ TypeDenoterPtr TypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarI
     else
         return Get(varIdent);
 }
+
+#endif
+
+#if 1//TODO: make this standard
+
+TypeDenoterPtr TypeDenoter::GetSub(const Expr* expr)
+{
+    if (expr)
+    {
+        if (auto objExpr = expr->As<ObjectExpr>())
+            return GetSubObject(*objExpr);
+        if (auto arrayExpr = expr->As<ArrayAccessExpr>())
+            return GetSubArray(*arrayExpr);
+        RuntimeErr(R_InvalidExprForSubTypeDen(ToString()), expr);
+    }
+    return shared_from_this();
+}
+
+TypeDenoterPtr TypeDenoter::GetSubObject(const ObjectExpr& expr)
+{
+    RuntimeErr(R_VarIdentCantBeResolved, &expr);
+}
+
+TypeDenoterPtr TypeDenoter::GetSubArray(const ArrayAccessExpr& expr)
+{
+    RuntimeErr(R_IllegalArrayAccess(ToString()), &expr);
+}
+
+#endif
 
 const TypeDenoter& TypeDenoter::GetAliased() const
 {
@@ -368,6 +399,21 @@ TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const 
     return typeDenoter->Get(varIdent);
 }
 
+//TODO: use this
+#if 1
+
+TypeDenoterPtr BaseTypeDenoter::GetSubObject(const ObjectExpr& expr)
+{
+
+}
+
+TypeDenoterPtr BaseTypeDenoter::GetSubArray(const ArrayAccessExpr& expr)
+{
+
+}
+
+#endif
+
 
 /* ----- BufferTypeDenoter ----- */
 
@@ -463,7 +509,7 @@ TypeDenoter::Types SamplerTypeDenoter::Type() const
 
 std::string SamplerTypeDenoter::ToString() const
 {
-    return (IsSamplerStateType(samplerType) ? "sampler state" : "sampler");
+    return (IsSamplerStateType(samplerType) ? "SamplerState" : "Sampler");
 }
 
 AST* SamplerTypeDenoter::SymbolRef() const

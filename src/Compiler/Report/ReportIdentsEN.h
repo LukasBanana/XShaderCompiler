@@ -153,6 +153,7 @@ DECL_REPORT( MissingRefToStructDecl,            "missing reference to structure 
 DECL_REPORT( MissingRefToAliasDecl,             "missing reference to alias declaration[ '{0}']"                                                                );
 DECL_REPORT( MissingBaseTypeInArray,            "missing base type in array type denoter"                                                                       );
 DECL_REPORT( MissingRefInTypeDen,               "missing reference to declaration[ in {0}]"                                                                     );
+DECL_REPORT( InvalidExprForSubTypeDen,          "invalid expression to derive sub type denoter[ for '{0}']"                                                     );
 
 /* ----- SymbolTable ----- */
 

@@ -294,11 +294,35 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Visit(ast->expr);
 }
 
+#if 1
+
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
     Visit(ast->expr);
     Visit(ast->varIdent);
 }
+
+IMPLEMENT_VISIT_PROC(VarAccessExpr)
+{
+    Visit(ast->varIdent);
+    Visit(ast->assignExpr);
+}
+
+#endif
+
+#if 1
+
+IMPLEMENT_VISIT_PROC(AssignExpr)
+{
+
+}
+
+IMPLEMENT_VISIT_PROC(ObjectExpr)
+{
+
+}
+
+#endif
 
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
 {
@@ -310,12 +334,6 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 {
     Visit(ast->typeSpecifier);
     Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
-{
-    Visit(ast->varIdent);
-    Visit(ast->assignExpr);
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)

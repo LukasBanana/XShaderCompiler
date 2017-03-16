@@ -90,7 +90,9 @@ struct AST
         PackOffset,
         ArrayDimension,
         TypeSpecifier,
+        #if 1//TODO: remove
         VarIdent,
+        #endif
 
         VarDecl,
         BufferDecl,
@@ -128,10 +130,16 @@ struct AST
         PostUnaryExpr,
         FunctionCallExpr,
         BracketExpr,
+        #if 1//TODO: remove
         SuffixExpr,
+        VarAccessExpr,
+        #endif
+        #if 1//TODO: make this standard
+        ObjectExpr,
+        AssignExpr,
+        #endif
         ArrayAccessExpr,
         CastExpr,
-        VarAccessExpr,
         InitializerExpr,
     };
 
@@ -220,8 +228,23 @@ struct Expr : public TypedAST
     // Returns the variable or null if this is not just a single variable expression.
     VarDecl* FetchVarDecl() const;
 
+    //TODO: remove this
+    #if 1
     // Returns the variable identifier or null if this is not just a single variable expression
     virtual VarIdent* FetchVarIdent() const;
+    #endif
+    
+    //TODO: all Expr classes must implement this
+    #if 0
+    // Returns a descriptive string of this expression. By default the name of the expression type is returned.
+    virtual std::string ToString() const = 0;
+    #endif
+
+    //TODO: overload these functions in a couple of Expr classes
+    #if 1
+    // Returns true if this is an l-value expression. Otherwise, it is an r-value expression. By default false.
+    virtual bool IsLValue() const;
+    #endif
 };
 
 // Declaration AST base class.
@@ -351,7 +374,15 @@ struct FunctionCall : public TypedAST
     // Iterates over each argument expression together with its associated parameter.
     void ForEachArgumentWithParameterType(const ArgumentParameterTypeFunctor& iterator);
 
+    //TODO: replace VarIdent by atomic identifier string
+    #if 1
     VarIdentPtr             varIdent;                                   // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
+    #endif
+
+    //TODO: make the standard as a replacement to "varIdent"
+    #if 1
+    std::string             ident;                                      // Function name identifier
+    #endif
     TypeDenoterPtr          typeDenoter;                                // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
     std::vector<ExprPtr>    arguments;
 
@@ -434,7 +465,7 @@ struct TypeSpecifier : public TypedAST
 {
     AST_INTERFACE(TypeSpecifier);
     
-    // Returns the name of this type: typeDenoter->ToString().
+    // Returns the name of this type and all modifiers.
     std::string ToString() const;
 
     TypeDenoterPtr DeriveTypeDenoter() override;
@@ -475,6 +506,9 @@ struct TypeSpecifier : public TypedAST
 
     TypeDenoterPtr              typeDenoter;
 };
+
+//TODO: remove this AST class
+#if 1
 
 // Variable (linked-list) identifier.
 struct VarIdent : public TypedAST
@@ -535,6 +569,8 @@ struct VarIdent : public TypedAST
 
     AST*                    symbolRef       = nullptr;  // Symbol reference for DAST to the variable object; may be null (e.g. for vector subscripts)
 };
+
+#endif
 
 /* --- Declarations --- */
 
@@ -1046,7 +1082,7 @@ struct TernaryExpr : public Expr
     ExprPtr elseExpr; // <else> case expression
 };
 
-// Binary expressions.
+// Binary expression.
 struct BinaryExpr : public Expr
 {
     AST_INTERFACE(BinaryExpr);
@@ -1058,7 +1094,7 @@ struct BinaryExpr : public Expr
     ExprPtr     rhsExpr;                        // Right-hand-side expression
 };
 
-// (Pre-) Unary expressions.
+// (Pre-) Unary expression.
 struct UnaryExpr : public Expr
 {
     AST_INTERFACE(UnaryExpr);
@@ -1069,7 +1105,7 @@ struct UnaryExpr : public Expr
     ExprPtr expr;
 };
 
-// Post unary expressions (e.g. x++, x--)
+// Post unary expression (e.g. x++, x--)
 struct PostUnaryExpr : public Expr
 {
     AST_INTERFACE(PostUnaryExpr);
@@ -1088,7 +1124,8 @@ struct FunctionCallExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter() override;
 
     //TODO: add "prefixExpr"
-    //ExprPtr         prefixExpr;   // Optional (left hand side) sub expression; may be null
+    ExprPtr         prefixExpr;             // Optional prefix expression; may be null.
+    bool            isStatic    = false;    // Specifies whether this function is a static member.
     FunctionCallPtr call;
 };
 
@@ -1104,7 +1141,9 @@ struct BracketExpr : public Expr
     ExprPtr expr; // Inner expression
 };
 
-//TODO: maybe replace this by "VarAccessExpr"
+//TODO: replace this by "ObjectExpr"
+#if 1
+
 // Suffix expression (e.g. "foo().suffix").
 struct SuffixExpr : public Expr
 {
@@ -1115,6 +1154,70 @@ struct SuffixExpr : public Expr
     ExprPtr     expr;       // Sub expression (left hand side)
     VarIdentPtr varIdent;   // Suffix var identifier (right hand side)
 };
+
+#endif
+
+//TODO: replace by "ObjectExpr" and "AssignExpr"
+#if 1
+
+// Variable access expression.
+struct VarAccessExpr : public Expr
+{
+    AST_INTERFACE(VarAccessExpr);
+
+    TypeDenoterPtr DeriveTypeDenoter() override;
+
+    VarIdent* FetchVarIdent() const override;
+
+    //TODO: add "prefixExpr" and make this a replacement to "SuffixExpr"
+    //ExprPtr   prefixExpr;                         // Optional sub expression (left hand side); may be null
+    VarIdentPtr varIdent;
+    AssignOp    assignOp    = AssignOp::Undefined;  // May be undefined
+    ExprPtr     assignExpr;                         // May be null
+};
+
+#endif
+
+//TODO: make these AST classes standard (it will replace "VarAccessExpr" and "SuffixExpr")
+#if 1
+
+// Assignment expression.
+struct AssignExpr : public Expr
+{
+    AST_INTERFACE(AssignExpr);
+
+    TypeDenoterPtr DeriveTypeDenoter() override;
+
+    bool IsLValue() const override;
+
+    ExprPtr     lvalueExpr;                     // L-value expression
+    AssignOp    op      = AssignOp::Undefined;  // Assignment operator
+    ExprPtr     rvalueExpr;                     // R-value expression
+};
+
+// Object access expression.
+struct ObjectExpr : public Expr
+{
+    AST_INTERFACE(ObjectExpr);
+
+    TypeDenoterPtr DeriveTypeDenoter() override;
+
+    bool IsLValue() const override;
+
+    // Returns the type denoter for this AST node or the last sub node.
+    TypeDenoterPtr GetExplicitTypeDenoter();
+
+    // Returns a type denoter for the vector subscript of this identifier or throws a runtime error on failure.
+    BaseTypeDenoterPtr GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const;
+
+    ExprPtr     prefixExpr;             // Optional prefix expression; may be null.
+    bool        isStatic    = false;    // Specifies whether this object is a static member.
+    std::string ident;                  // Object identifier.
+
+    Decl*       symbolRef   = nullptr;  // Optional symbol reference to the object declaration; may be null (e.g. for vector subscripts)
+};
+
+#endif
 
 // Array-access expression (e.g. "foo()[arrayAccess]").
 struct ArrayAccessExpr : public Expr
@@ -1137,22 +1240,6 @@ struct CastExpr : public Expr
 
     TypeSpecifierPtr    typeSpecifier;  // Cast type name expression
     ExprPtr             expr;           // Value expression
-};
-
-// Variable access expression.
-struct VarAccessExpr : public Expr
-{
-    AST_INTERFACE(VarAccessExpr);
-
-    TypeDenoterPtr DeriveTypeDenoter() override;
-
-    VarIdent* FetchVarIdent() const override;
-
-    //TODO: add "prefixExpr" and make this a replacement to "SuffixExpr"
-    //ExprPtr   prefixExpr;                         // Optional sub expression (left hand side); may be null
-    VarIdentPtr varIdent;
-    AssignOp    assignOp    = AssignOp::Undefined;  // May be undefined
-    ExprPtr     assignExpr;                         // May be null
 };
 
 // Initializer list expression.

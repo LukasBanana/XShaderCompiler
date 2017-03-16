@@ -91,11 +91,28 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Sets the identifier of this type denoter if the aliased type is anonymous.
     virtual void SetIdentIfAnonymous(const std::string& ident);
 
+    //TODO replace this by "GetSub"
+    #if 1
     // Returns a type denoter for the specified full variable identifier. Throws ASTRuntimeError on failure.
     virtual TypeDenoterPtr Get(const VarIdent* varIdent = nullptr);
 
     // Returns a type denoter for the specified array access and full variable identifier. Throws ASTRuntimeError on failure.
     virtual TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr);
+    #endif
+
+    //TODO: make this standard (as replacement of "Get" and "GetFromArray")
+    #if 1
+    
+    // Returns a sub type denoter for the specified expression.
+    TypeDenoterPtr GetSub(const Expr* expr);
+
+    // Returns a sub type denoter for the identifier of the specified object expression.
+    virtual TypeDenoterPtr GetSubObject(const ObjectExpr& expr);
+
+    // Returns a sub type denoter for the array indices of the specified array access expression.
+    virtual TypeDenoterPtr GetSubArray(const ArrayAccessExpr& expr);
+
+    #endif
 
     // Returns either this type denoter or an aliased type.
     virtual const TypeDenoter& GetAliased() const;
@@ -171,8 +188,15 @@ struct BaseTypeDenoter : public TypeDenoter
     bool Equals(const TypeDenoter& rhs) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 
+    #if 1//TODO: remove
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
     TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
+    #endif
+
+    #if 1//TODO: use this
+    TypeDenoterPtr GetSubObject(const ObjectExpr& expr) override;
+    TypeDenoterPtr GetSubArray(const ArrayAccessExpr& expr) override;
+    #endif
 
     DataType dataType = DataType::Undefined;
 };
@@ -247,7 +271,13 @@ struct StructTypeDenoter : public TypeDenoter
 
     AST* SymbolRef() const override;
 
+    #if 1//TODO: remove
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
+    #endif
+
+    #if 1//TODO: use this
+    TypeDenoterPtr GetSubObject(const ObjectExpr& expr) override;
+    #endif
 
     std::string     ident;                      // Type identifier
 
@@ -269,8 +299,15 @@ struct AliasTypeDenoter : public TypeDenoter
     std::string Ident() const override;
     void SetIdentIfAnonymous(const std::string& ident) override;
 
+    #if 1//TODO: remove
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
     TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
+    #endif
+
+    #if 1//TODO: use this
+    TypeDenoterPtr GetSubObject(const ObjectExpr& expr) override;
+    TypeDenoterPtr GetSubArray(const ArrayAccessExpr& expr) override;
+    #endif
 
     const TypeDenoter& GetAliased() const override;
     const TypeDenoter& GetBase() const override;
@@ -298,8 +335,15 @@ struct ArrayTypeDenoter : public TypeDenoter
     // Throws std::runtime_error if 'baseTypeDenoter' is null.
     std::string ToString() const override;
 
+    #if 1//TODO: remove
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
     TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
+    #endif
+
+    #if 1//TODO: use this
+    TypeDenoterPtr GetSubObject(const ObjectExpr& expr) override;
+    TypeDenoterPtr GetSubArray(const ArrayAccessExpr& expr) override;
+    #endif
 
     bool Equals(const TypeDenoter& rhs) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;

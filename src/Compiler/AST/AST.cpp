@@ -84,6 +84,11 @@ VarIdent* Expr::FetchVarIdent() const
     return nullptr;
 }
 
+bool Expr::IsLValue() const
+{
+    return false;
+}
+
 
 /* ----- Decl ----- */
 
@@ -1562,6 +1567,105 @@ TypeDenoterPtr SuffixExpr::DeriveTypeDenoter()
 }
 
 
+//TODO: replace by "ObjectExpr" and "AssignExpr"
+#if 1
+/* ----- VarAccessExpr ----- */
+
+TypeDenoterPtr VarAccessExpr::DeriveTypeDenoter()
+{
+    return varIdent->GetTypeDenoter();
+}
+
+VarIdent* VarAccessExpr::FetchVarIdent() const
+{
+    return varIdent.get();
+}
+#endif
+
+
+/* ----- AssignExpr ----- */
+
+TypeDenoterPtr AssignExpr::DeriveTypeDenoter()
+{
+    return lvalueExpr->GetTypeDenoter();
+}
+
+bool AssignExpr::IsLValue() const
+{
+    return lvalueExpr->IsLValue();
+}
+
+
+/* ----- ObjectExpr ----- */
+
+TypeDenoterPtr ObjectExpr::DeriveTypeDenoter()
+{
+    return GetExplicitTypeDenoter();
+}
+
+TypeDenoterPtr ObjectExpr::GetExplicitTypeDenoter()
+{
+    /* Derive type denoter from symbol reference */
+    if (symbolRef)
+    {
+        if (auto varDecl = symbolRef->As<VarDecl>())
+        {
+            return varDecl->GetTypeDenoter();
+        }
+        else if (auto bufferDecl = symbolRef->As<BufferDecl>())
+        {
+            return bufferDecl->GetTypeDenoter();
+        }
+        else if (auto samplerDecl = symbolRef->As<SamplerDecl>())
+        {
+            return samplerDecl->GetTypeDenoter();
+        }
+        else if (auto structDecl = symbolRef->As<StructDecl>())
+        {
+            return structDecl->GetTypeDenoter();
+        }
+        else if (auto aliasDecl = symbolRef->As<AliasDecl>())
+        {
+            return aliasDecl->GetTypeDenoter();
+        }
+        else
+            RuntimeErr(R_UnknownTypeOfVarIdentSymbolRef(ident), this);
+    }
+    else if (prefixExpr)
+    {
+        /* Get type denoter of prefix (if used) */
+        auto typeDenoter = prefixExpr->GetTypeDenoter();
+    }
+    
+    RuntimeErr(R_MissingVarIdentSymbolRef(ident), this);
+}
+
+BaseTypeDenoterPtr ObjectExpr::GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const
+{
+    if (auto baseTypeDen = baseTypeDenoter.As<BaseTypeDenoter>())
+    {
+        try
+        {
+            /* Get vector type from subscript */
+            auto vectorType = SubscriptDataType(baseTypeDen->dataType, ident);
+            return std::make_shared<BaseTypeDenoter>(vectorType);
+        }
+        catch (const std::exception& e)
+        {
+            RuntimeErr(e.what(), this);
+        }
+    }
+    RuntimeErr(R_InvalidSubscriptBaseType, this);
+}
+
+bool ObjectExpr::IsLValue() const
+{
+    
+
+    return false;
+}
+
+
 /* ----- ArrayAccessExpr ----- */
 
 TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
@@ -1593,19 +1697,6 @@ TypeDenoterPtr CastExpr::DeriveTypeDenoter()
     }
 
     return castTypeDen;
-}
-
-
-/* ----- VarAccessExpr ----- */
-
-TypeDenoterPtr VarAccessExpr::DeriveTypeDenoter()
-{
-    return varIdent->GetTypeDenoter();
-}
-
-VarIdent* VarAccessExpr::FetchVarIdent() const
-{
-    return varIdent.get();
 }
 
 
