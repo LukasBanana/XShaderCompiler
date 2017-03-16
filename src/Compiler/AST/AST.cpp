@@ -1661,7 +1661,7 @@ TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
 {
     try
     {
-        return expr->GetTypeDenoter()->GetFromArray(arrayIndices.size());
+        return prefixExpr->GetTypeDenoter()->GetFromArray(arrayIndices.size());
     }
     catch (const std::exception& e)
     {

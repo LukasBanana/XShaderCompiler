@@ -330,7 +330,7 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
 
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
 {
-    Visit(ast->expr);
+    Visit(ast->prefixExpr);
     Visit(ast->arrayIndices);
 }
 

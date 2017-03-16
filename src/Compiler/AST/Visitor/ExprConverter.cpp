@@ -366,7 +366,7 @@ void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr
 void ExprConverter::ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr)
 {
     /* Fetch variable identifier from inner sub expression */
-    if (auto varIdent = arrayAccessExpr->expr->FetchVarIdent())
+    if (auto varIdent = arrayAccessExpr->prefixExpr->FetchVarIdent())
     {
         /* Is this the variable a buffer declaration? */
         if (auto bufferDecl = varIdent->FetchSymbol<BufferDecl>())

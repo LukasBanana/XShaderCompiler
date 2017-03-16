@@ -899,7 +899,7 @@ IMPLEMENT_VISIT_PROC(SuffixExpr)
 
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
 {
-    Visit(ast->expr);
+    Visit(ast->prefixExpr);
     WriteArrayIndices(ast->arrayIndices);
 }
 

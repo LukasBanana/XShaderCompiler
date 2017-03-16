@@ -272,7 +272,7 @@ IMPLEMENT_VISIT_PROC(SuffixExpr)
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
 {
     //TODO: incomplete!
-    Visit(ast->expr);
+    Visit(ast->prefixExpr);
 }
 
 IMPLEMENT_VISIT_PROC(CastExpr)

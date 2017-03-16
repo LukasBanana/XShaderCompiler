@@ -1878,7 +1878,7 @@ ArrayAccessExprPtr HLSLParser::ParseArrayAccessExpr(const ExprPtr& expr)
     auto ast = Make<ArrayAccessExpr>();
 
     /* Take sub expression and parse array dimensions */
-    ast->expr           = expr;
+    ast->prefixExpr           = expr;
     ast->arrayIndices   = ParseArrayIndexList();
 
     return UpdateSourceArea(ast, expr.get());
