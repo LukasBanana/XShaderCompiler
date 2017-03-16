@@ -104,13 +104,13 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     #if 1
     
     // Returns a sub type denoter for the specified expression.
-    TypeDenoterPtr GetSub(const Expr* expr);
+    TypeDenoterPtr GetSub(const Expr* expr = nullptr);
 
     // Returns a sub type denoter for the identifier of the specified object expression.
-    virtual TypeDenoterPtr GetSubObject(const ObjectExpr& expr);
+    virtual TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr);
 
     // Returns a sub type denoter for the array indices of the specified array access expression.
-    virtual TypeDenoterPtr GetSubArray(const ArrayAccessExpr& expr);
+    virtual TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr);
 
     #endif
 
@@ -194,8 +194,8 @@ struct BaseTypeDenoter : public TypeDenoter
     #endif
 
     #if 1//TODO: use this
-    TypeDenoterPtr GetSubObject(const ObjectExpr& expr) override;
-    TypeDenoterPtr GetSubArray(const ArrayAccessExpr& expr) override;
+    TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
+    TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
     #endif
 
     DataType dataType = DataType::Undefined;
@@ -276,7 +276,7 @@ struct StructTypeDenoter : public TypeDenoter
     #endif
 
     #if 1//TODO: use this
-    TypeDenoterPtr GetSubObject(const ObjectExpr& expr) override;
+    TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
     #endif
 
     std::string     ident;                      // Type identifier
@@ -305,8 +305,8 @@ struct AliasTypeDenoter : public TypeDenoter
     #endif
 
     #if 1//TODO: use this
-    TypeDenoterPtr GetSubObject(const ObjectExpr& expr) override;
-    TypeDenoterPtr GetSubArray(const ArrayAccessExpr& expr) override;
+    TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
+    TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
     #endif
 
     const TypeDenoter& GetAliased() const override;
@@ -338,18 +338,17 @@ struct ArrayTypeDenoter : public TypeDenoter
     #if 1//TODO: remove
     TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
     TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
+
+    // Returns the base type denoter or a new array type denoter with (|arrayDims| - |numArrayIndices|) dimensions.
+    TypeDenoterPtr GetWithIndices(std::size_t numArrayIndices, const VarIdent* varIdent);
     #endif
 
     #if 1//TODO: use this
-    TypeDenoterPtr GetSubObject(const ObjectExpr& expr) override;
-    TypeDenoterPtr GetSubArray(const ArrayAccessExpr& expr) override;
+    TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
     #endif
 
     bool Equals(const TypeDenoter& rhs) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
-
-    // Returns the base type denoter or a new array type denoter with (|arrayDims| - |numArrayIndices|) dimensions.
-    TypeDenoterPtr GetWithIndices(std::size_t numArrayIndices, const VarIdent* varIdent);
 
     const TypeDenoter& GetBase() const override;
 

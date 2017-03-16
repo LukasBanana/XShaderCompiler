@@ -1226,6 +1226,9 @@ struct ArrayAccessExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    // Returns the number of array indices (shortcut for "arrayIndices.size()").
+    std::size_t NumIndices() const;
+
     //TODO: rename this "prefixExpr" to make the post-order traversal clear
     ExprPtr                 expr;           // Sub expression (left hand side)
     std::vector<ExprPtr>    arrayIndices;   // Array indices (right hand side)

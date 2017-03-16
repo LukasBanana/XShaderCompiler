@@ -1605,29 +1605,19 @@ TypeDenoterPtr ObjectExpr::DeriveTypeDenoter()
 
 TypeDenoterPtr ObjectExpr::GetExplicitTypeDenoter()
 {
-    /* Derive type denoter from symbol reference */
     if (symbolRef)
     {
+        /* Derive type denoter from symbol reference */
         if (auto varDecl = symbolRef->As<VarDecl>())
-        {
             return varDecl->GetTypeDenoter();
-        }
         else if (auto bufferDecl = symbolRef->As<BufferDecl>())
-        {
             return bufferDecl->GetTypeDenoter();
-        }
         else if (auto samplerDecl = symbolRef->As<SamplerDecl>())
-        {
             return samplerDecl->GetTypeDenoter();
-        }
         else if (auto structDecl = symbolRef->As<StructDecl>())
-        {
             return structDecl->GetTypeDenoter();
-        }
         else if (auto aliasDecl = symbolRef->As<AliasDecl>())
-        {
             return aliasDecl->GetTypeDenoter();
-        }
         else
             RuntimeErr(R_UnknownTypeOfVarIdentSymbolRef(ident), this);
     }
@@ -1678,6 +1668,11 @@ TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
     {
         RuntimeErr(e.what(), this);
     }
+}
+
+std::size_t ArrayAccessExpr::NumIndices() const
+{
+    return arrayIndices.size();
 }
 
 
