@@ -40,7 +40,9 @@ class ReferenceAnalyzer : private Visitor
 
         void VisitStmntList(const std::vector<StmntPtr>& stmnts);
 
+        #if 0//TODO: remove
         void MarkLValueVarIdent(VarIdent* varIdent);
+        #endif
         void MarkLValueExpr(Expr* expr);
 
         /* ----- Visitor implementation ----- */
@@ -49,7 +51,9 @@ class ReferenceAnalyzer : private Visitor
         DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( TypeSpecifier     );
+        #if 0//TODO: remove
         DECL_VISIT_PROC( VarIdent          );
+        #endif
 
         DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( StructDecl        );
@@ -63,7 +67,13 @@ class ReferenceAnalyzer : private Visitor
 
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
+        #if 0//TODO: remove
         DECL_VISIT_PROC( VarAccessExpr     );
+        #endif
+        #if 1//TODO: make this standard
+        DECL_VISIT_PROC( ObjectExpr        );
+        DECL_VISIT_PROC( AssignExpr        );
+        #endif
 
         /* === Members === */
 

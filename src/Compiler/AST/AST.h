@@ -258,6 +258,11 @@ struct Expr : public TypedAST
 // Declaration AST base class.
 struct Decl : public TypedAST
 {
+    FLAG_ENUM
+    {
+        FLAG( isWrittenTo, 0 ), // This declaration object is eventually written to.
+    };
+
     // Returns a descriptive string of the type signature.
     virtual std::string ToString() const;
 
@@ -592,11 +597,10 @@ struct VarDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,        0 ), // This variable is used as shader input.
-        FLAG( isShaderOutput,       1 ), // This variable is used as shader output.
-        FLAG( isSystemValue,        2 ), // This variable is a system value (e.g. SV_Position/ gl_Position).
-        FLAG( isDynamicArray,       3 ), // This variable is a dynamic array (for input/output semantics).
-        FLAG( isWrittenTo,          4 ), // This variable is eventually written to.
+        FLAG( isShaderInput,        1 ), // This variable is used as shader input.
+        FLAG( isShaderOutput,       2 ), // This variable is used as shader output.
+        FLAG( isSystemValue,        3 ), // This variable is a system value (e.g. SV_Position/ gl_Position).
+        FLAG( isDynamicArray,       4 ), // This variable is a dynamic array (for input/output semantics).
         FLAG( isEntryPointOutput,   5 ), // This variable is used as entry point output (return value, output parameter, stream output).
         FLAG( isEntryPointLocal,    6 ), // This variable is a local variable of the entry point.
 
@@ -665,10 +669,10 @@ struct StructDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,        0 ), // This structure is used as shader input.
-        FLAG( isShaderOutput,       1 ), // This structure is used as shader output.
-        FLAG( isNestedStruct,       2 ), // This is a nested structure within another structure.
-        FLAG( isNonEntryPointParam, 3 ), // This structure is eventually used as variable or parameter type of function other than the entry point.
+        FLAG( isShaderInput,        1 ), // This structure is used as shader input.
+        FLAG( isShaderOutput,       2 ), // This structure is used as shader output.
+        FLAG( isNestedStruct,       3 ), // This is a nested structure within another structure.
+        FLAG( isNonEntryPointParam, 4 ), // This structure is eventually used as variable or parameter type of function other than the entry point.
     };
 
     // Returns a descriptive string of the structure signature (e.g. "struct s" or "struct <anonymous>").

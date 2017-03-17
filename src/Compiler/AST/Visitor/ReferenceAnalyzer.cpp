@@ -46,6 +46,8 @@ void ReferenceAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts)
     }
 }
 
+#if 0//TODO: remove
+
 void ReferenceAnalyzer::MarkLValueVarIdent(VarIdent* varIdent)
 {
     while (varIdent)
@@ -53,18 +55,30 @@ void ReferenceAnalyzer::MarkLValueVarIdent(VarIdent* varIdent)
         if (auto varDecl = varIdent->FetchVarDecl())
         {
             /* Mark variable as l-value */
-            varDecl->flags << VarDecl::isWrittenTo;
+            varDecl->flags << Decl::isWrittenTo;
         }
         varIdent = varIdent->next.get();
     }
 }
 
+#endif
+
 void ReferenceAnalyzer::MarkLValueExpr(Expr* expr)
 {
     if (expr)
     {
+        #if 0//TODO: remove
         if (auto varIdent = expr->FetchVarIdent())
             MarkLValueVarIdent(varIdent);
+        #endif
+        if (auto lvalueExpr = expr->FetchLValueExpr())
+        {
+            if (auto symbol = lvalueExpr->symbolRef)
+            {
+                /* Mark symbol that it is written to */
+                symbol->flags << Decl::isWrittenTo;
+            }
+        }
     }
 }
 
@@ -145,6 +159,8 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
     }
 }
 
+#if 0//TODO: remove
+
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
     if (Reachable(ast))
@@ -153,6 +169,8 @@ IMPLEMENT_VISIT_PROC(VarIdent)
         VISIT_DEFAULT(VarIdent);
     }
 }
+
+#endif
 
 /* --- Declarations --- */
 
@@ -260,6 +278,8 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
     VISIT_DEFAULT(PostUnaryExpr);
 }
 
+#if 0//TODO: remove
+
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     if (auto varIdent = ast->FetchVarIdent())
@@ -285,6 +305,38 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
     VISIT_DEFAULT(VarAccessExpr);
 }
+
+#endif
+
+#if 1//TODO: make this standard
+
+IMPLEMENT_VISIT_PROC(ObjectExpr)
+{
+    /* Check if this symbol is the fragment coordinate (SV_Position/ gl_FragCoord) */
+    if (auto varDecl = ast->FetchVarDecl())
+    {
+        if (varDecl->semantic == Semantic::FragCoord && shaderTarget_ == ShaderTarget::FragmentShader)
+        {
+            /* Mark frag-coord usage in fragment program layout */
+            program_->layoutFragment.fragCoordUsed = true;
+        }
+    }
+
+    /* Visit symbol reference and sub nodes */
+    Visit(ast->symbolRef);
+
+    VISIT_DEFAULT(ObjectExpr);
+}
+
+IMPLEMENT_VISIT_PROC(AssignExpr)
+{
+    /* Mark l-value expression */
+    MarkLValueExpr(ast->lvalueExpr.get());
+
+    VISIT_DEFAULT(AssignExpr);
+}
+
+#endif
 
 #undef IMPLEMENT_VISIT_PROC
 
