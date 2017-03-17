@@ -104,13 +104,8 @@ class HLSLParser : public Parser
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);
 
         CodeBlockPtr                    ParseCodeBlock();
-        #if 0//TODO: remove
-        FunctionCallPtr                 ParseFunctionCall(VarIdentPtr varIdent = nullptr);
-        #endif
-        #if 1//TODO: make this standard
-        FunctionCallPtr                 ParseFunctionCall_NEW(const TokenPtr& identTkn = nullptr);
-        #endif
-        FunctionCallPtr                 ParseFunctionCall(const TypeDenoterPtr& typeDenoter);
+        FunctionCallPtr                 ParseFunctionCall(const TokenPtr& identTkn = nullptr);
+        FunctionCallPtr                 ParseFunctionCallAsTypeCtor(const TypeDenoterPtr& typeDenoter);
         VarDeclStmntPtr                 ParseParameter();
         SwitchCasePtr                   ParseSwitchCase();
         SamplerValuePtr                 ParseSamplerValue();
@@ -120,9 +115,6 @@ class HLSLParser : public Parser
         ArrayDimensionPtr               ParseArrayDimension(bool allowDynamicDimension = false);
         ExprPtr                         ParseArrayIndex();
         ExprPtr                         ParseInitializer();
-        #if 0//TODO: remove
-        VarIdentPtr                     ParseVarIdent();
-        #endif
         TypeSpecifierPtr                ParseTypeSpecifier(bool parseVoidType = false);
 
         VarDeclPtr                      ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
@@ -145,12 +137,7 @@ class HLSLParser : public Parser
         StmntPtr                        ParseStmnt(bool allowAttributes = true);
         StmntPtr                        ParseStmntPrimary();
         StmntPtr                        ParseStmntWithStructDecl();
-        #if 0//TODO: remove
-        StmntPtr                        ParseStmntWithVarIdent();
-        #endif
-        #if 1//TODO: 
         StmntPtr                        ParseStmntWithIdent();
-        #endif
         NullStmntPtr                    ParseNullStmnt();
         CodeBlockStmntPtr               ParseCodeBlockStmnt();
         ForLoopStmntPtr                 ParseForLoopStmnt();
@@ -167,31 +154,16 @@ class HLSLParser : public Parser
         ExprPtr                         ParsePrimaryExpr() override;
         ExprPtr                         ParsePrimaryExprPrefix();
         ExprPtr                         ParseExprWithSuffixOpt(ExprPtr expr);
-        #if 0//TODO: remove
-        ExprPtr                         ParseLiteralOrSuffixExpr();
-        #endif
         LiteralExprPtr                  ParseLiteralExpr();
         ExprPtr                         ParseTypeSpecifierOrFunctionCallExpr();
         TypeSpecifierExprPtr            ParseTypeSpecifierExpr();
         UnaryExprPtr                    ParseUnaryExpr();
         ExprPtr                         ParseBracketOrCastExpr();
-        #if 0//TODO: remove
-        SuffixExprPtr                   ParseSuffixExpr(const ExprPtr& expr);
-        VarAccessExprPtr                ParseVarAccessExpr(const VarIdentPtr& varIdent = nullptr);
-        ExprPtr                         ParseVarAccessOrFunctionCallExpr(VarIdentPtr varIdent = nullptr);
-        #endif
-        #if 1//TODO: make this standard
         ObjectExprPtr                   ParseObjectExpr(const ExprPtr& expr = nullptr);
         AssignExprPtr                   ParseAssignExpr(const ExprPtr& expr);
         ExprPtr                         ParseObjectOrFunctionCallExpr(const ExprPtr& expr = nullptr);
-        #endif
         ArrayAccessExprPtr              ParseArrayAccessExpr(const ExprPtr& expr);
-        #if 0//TODO: remove
-        ExprPtr                         ParseFunctionCallExpr(const VarIdentPtr& varIdent = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
-        #endif
-        #if 1//TODO: make this standard
-        FunctionCallExprPtr             ParseFunctionCallExpr_NEW(const ObjectExprPtr& objectExpr = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
-        #endif
+        FunctionCallExprPtr             ParseFunctionCallExpr(const ObjectExprPtr& objectExpr = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
         InitializerExprPtr              ParseInitializerExpr();
 
         std::vector<StmntPtr>           ParseLocalStmntList();

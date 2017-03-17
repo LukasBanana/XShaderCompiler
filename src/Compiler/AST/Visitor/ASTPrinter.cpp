@@ -224,9 +224,14 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
     PRINT_AST_EXT(PostUnaryExpr, UnaryOpToString(ast->op));
 }
 
+static std::string IdentWithPrefixOpt(bool hasPrefix, bool isStatic, const std::string& ident)
+{
+    return ((hasPrefix ? (isStatic ? "::" : ".") : "") + ident);
+}
+
 IMPLEMENT_VISIT_PROC(FunctionCallExpr)
 {
-    PRINT_AST_EXT(FunctionCallExpr, ast->call->ident);
+    PRINT_AST_EXT(FunctionCallExpr, IdentWithPrefixOpt(ast->prefixExpr != nullptr, ast->isStatic, ast->call->ident));
 }
 
 IMPLEMENT_VISIT_PROC_DEFAULT(BracketExpr)
@@ -241,7 +246,7 @@ IMPLEMENT_VISIT_PROC_DEFAULT(VarAccessExpr)
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
-    PRINT_AST_EXT(ObjectExpr, (ast->prefixExpr != nullptr ? (ast->isStatic ? "::" : ".") : "") + ast->ident);
+    PRINT_AST_EXT(ObjectExpr, IdentWithPrefixOpt(ast->prefixExpr != nullptr, ast->isStatic, ast->ident));
 }
 
 IMPLEMENT_VISIT_PROC_DEFAULT(AssignExpr)
