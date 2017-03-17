@@ -625,6 +625,12 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
         AnalyzeLValueExpr(ast->expr.get(), ast);
 }
 
+IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+{
+    AnalyzeFunctionCallExpr(ast);
+}
+
+
 #if 1//TODO: remove
 
 IMPLEMENT_VISIT_PROC(SuffixExpr)
@@ -685,6 +691,150 @@ IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
 #undef IMPLEMENT_VISIT_PROC
 
 /* --- Helper functions for context analysis --- */
+
+#if 1//TODO: make this standard
+
+void HLSLAnalyzer::AnalyzeFunctionCallExpr(FunctionCallExpr* expr)
+{
+    try
+    {
+        /* Analyze prefix expression first */
+        if (expr->prefixExpr)
+        {
+            /* Visit prefix expression first */
+            Visit(expr->prefixExpr);
+
+            /* Analyze functin call with type denoter from prefix expression */
+            const auto& prefixTypeDen = expr->prefixExpr->GetTypeDenoter()->GetAliased();
+            AnalyzeFunctionCall(expr->call.get(), expr->isStatic, &prefixTypeDen);
+        }
+        else
+        {
+            /* Analyze function call */
+            AnalyzeFunctionCall(expr->call.get());
+        }
+    }
+    catch (const ASTRuntimeError& e)
+    {
+        Error(e.what(), e.GetAST());
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what(), expr);
+    }
+}
+
+void HLSLAnalyzer::AnalyzeFunctionCall(FunctionCall* funcCall, bool isStatic, const TypeDenoter* prefixTypeDenoter)
+{
+    PushFunctionCall(funcCall);
+    {
+        /* Analyze function arguments first */
+        Visit(funcCall->arguments);
+
+        /* Then analyze function name */
+        if (!funcCall->ident.empty())
+        {
+            /* Is this an intrinsic function call? */
+            auto intrIt = HLSLIntrinsicAdept::GetIntrinsicMap().find(funcCall->ident);
+            if (intrIt != HLSLIntrinsicAdept::GetIntrinsicMap().end())
+            {
+                /* Analyze function call of intrinsic */
+                AnalyzeFunctionCallIntrinsic_NEW(funcCall, intrIt->second, isStatic, prefixTypeDenoter);
+            }
+            else
+            {
+                /* Analyze function call of standard function declaration */
+                AnalyzeFunctionCallStandard_NEW(funcCall, isStatic, prefixTypeDenoter);
+            }
+        }
+
+        /* Analyze all l-value arguments that are assigned to output parameters */
+        funcCall->ForEachOutputArgument(
+            [this](ExprPtr& argExpr)
+            {
+                AnalyzeLValueExpr(argExpr.get());
+            }
+        );
+    }
+    PopFunctionCall();
+}
+
+void HLSLAnalyzer::AnalyzeFunctionCallStandard_NEW(FunctionCall* funcCall, bool isStatic, const TypeDenoter* prefixTypeDenoter)
+{
+    if (prefixTypeDenoter)
+    {
+        /* Fetch function declaration from prefix type */
+
+        //TODO...
+
+    }
+    else
+    {
+        /* Fetch function declaration with identifier from function call */
+        if (auto symbol = FetchFunctionDecl(funcCall->ident, funcCall->arguments, funcCall))
+        {
+            /* Decorate function call with symbol reference */
+            funcCall->funcDeclRef = symbol;
+        }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic_NEW(FunctionCall* funcCall, const HLSLIntrinsicEntry& intr, bool isStatic, const TypeDenoter* prefixTypeDenoter)
+{
+    const auto intrinsic = intr.intrinsic;
+
+    /* Decoarte function call with intrinsic ID */
+    funcCall->intrinsic = intrinsic;
+
+    /* No intrinsics can be called static */
+    if (isStatic)
+        Error(R_IllegalStaticIntrinsicCall(funcCall->ident), funcCall);
+
+    if (IsGlobalIntrinsic(intrinsic))
+    {
+        if (prefixTypeDenoter)
+        {
+            /* Report error on global intrinsic with prefix expression */
+            Error(
+                R_InvalidGlobalIntrinsicForType(funcCall->ident, prefixTypeDenoter->ToString()),
+                funcCall
+            );
+        }
+        else
+        {
+            //TODO...
+        }
+    }
+    else
+    {
+        if (prefixTypeDenoter)
+        {
+            if (auto structTypeDen = prefixTypeDenoter->As<StructTypeDenoter>())
+            {
+                /* Analyze member function call with struct prefix type */
+                //AnalyzeFunctionCallExprWithStruct(funcCall, *structTypeDen);
+            }
+            else if (auto bufferTypeDen = prefixTypeDenoter->As<BufferTypeDenoter>())
+            {
+                /* Analyze member function call with buffer prefix type */
+
+            }
+            else
+            {
+                //TODO...
+            }
+        }
+        else
+        {
+            /* Report error on non-global intrinsic without prefix expression */
+            Error(R_InvalidClassIntrinsic(funcCall->ident), funcCall);
+        }
+    }
+}
+
+#endif
+
+#if 1//TODO: remove
 
 void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
 {
@@ -855,6 +1005,8 @@ bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const
 
     return false;
 }
+
+#endif
 
 #if 1//TODO: replace this by "ObjectExpr" and "FunctionCallExpr"
 
@@ -1075,7 +1227,7 @@ void HLSLAnalyzer::AnalyzeObjectExpr(ObjectExpr* expr)
         if (expr->prefixExpr)
         {
             /* Visit prefix expression first */
-            Visit(expr->prefixExpr.get());
+            Visit(expr->prefixExpr);
 
             /* Get type denoter from prefix expression */
             const auto& prefixTypeDen = expr->prefixExpr->GetTypeDenoter()->GetAliased();

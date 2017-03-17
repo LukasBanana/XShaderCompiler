@@ -75,6 +75,7 @@ class HLSLAnalyzer : public Analyzer
 
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
+        DECL_VISIT_PROC( FunctionCallExpr  );
         #if 1//TODO: remove
         DECL_VISIT_PROC( SuffixExpr        );
         DECL_VISIT_PROC( VarAccessExpr     );
@@ -85,7 +86,15 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( ArrayAccessExpr   );
         #endif
 
-        /* --- Helper functions for context analysis --- */
+        /* ----- Function call ----- */
+
+        void AnalyzeFunctionCallExpr(FunctionCallExpr* expr);
+
+        void AnalyzeFunctionCall(FunctionCall* funcCall, bool isStatic = false, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeFunctionCallStandard_NEW(FunctionCall* funcCall, bool isStatic = false, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeFunctionCallIntrinsic_NEW(FunctionCall* funcCall, const HLSLIntrinsicEntry& intr, bool isStatic = false, const TypeDenoter* prefixTypeDenoter = nullptr);
+
+        #if 1//TODO: remove
 
         void AnalyzeFunctionCallStandard(FunctionCall* ast);
         void AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLIntrinsicEntry& intr);
@@ -94,6 +103,8 @@ class HLSLAnalyzer : public Analyzer
 
         bool AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* funcCall);
         bool AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const FunctionCall* funcCall, const BufferType bufferType);
+
+        #endif
 
         #if 1//TODO: replace this by "ObjectExpr" and "FunctionCallExpr"
 

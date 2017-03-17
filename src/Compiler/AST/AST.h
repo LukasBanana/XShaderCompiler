@@ -358,7 +358,7 @@ struct SamplerValue : public AST
     ExprPtr     value;  // Sampler state value expression
 };
 
-//TODO: maybe merge this AST class into "FunctionCallExpr".
+//TODO: merge this AST class into "FunctionCallExpr".
 // Function call.
 struct FunctionCall : public TypedAST
 {
@@ -392,7 +392,7 @@ struct FunctionCall : public TypedAST
 
     //TODO: make the standard as a replacement to "varIdent"
     #if 1
-    std::string             ident;                                      // Function name identifier
+    std::string             ident;                                      // Function name identifier (this is mpty for type constructors)
     #endif
     TypeDenoterPtr          typeDenoter;                                // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
     std::vector<ExprPtr>    arguments;

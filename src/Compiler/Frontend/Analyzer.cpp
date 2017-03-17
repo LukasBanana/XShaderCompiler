@@ -229,9 +229,10 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
         if (!CollectArgumentTypeDenoters(args, argTypeDens))
             return nullptr;
 
+        /* First search member function (with implicit 'self'-pointer) */
         if (auto structDecl = ActiveFunctionStructDecl())
         {
-            /* Fetch function with argument type denoters form structure */
+            /* Fetch function with argument type denoters from structure */
             if (auto funcDecl = structDecl->FetchFunctionDecl(ident, argTypeDens))
                 return funcDecl;
         }

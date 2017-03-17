@@ -139,7 +139,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
     if (ast->intrinsic != Intrinsic::Undefined)
     {
-        if (IsTextureIntrinsic(ast->intrinsic))
+        if (IsTextureIntrinsic(ast->intrinsic) && ast->varIdent)
         {
             auto texObjectExpr = ASTFactory::MakeVarAccessExpr(ASTFactory::MakeVarIdentFirst(*ast->varIdent));
             if (isVKSL_)
@@ -849,28 +849,31 @@ void GLSLConverter::ConvertIntrinsicCallSaturate(FunctionCall* ast)
 static int GetTextureVectorSizeFromIntrinsicCall(FunctionCall* ast)
 {
     /* Get buffer object from sample intrinsic call */
-    if (auto symbolRef = ast->varIdent->symbolRef)
+    if (ast->varIdent)
     {
-        if (auto bufferDecl = symbolRef->As<BufferDecl>())
+        if (auto symbolRef = ast->varIdent->symbolRef)
         {
-            /* Determine vector size for texture intrinsic parametes */
-            switch (bufferDecl->GetBufferType())
+            if (auto bufferDecl = symbolRef->As<BufferDecl>())
             {
-                case BufferType::Texture1D:
-                    return 1;
-                case BufferType::Texture1DArray:
-                case BufferType::Texture2D:
-                case BufferType::Texture2DMS:
-                    return 2;
-                case BufferType::Texture2DArray:
-                case BufferType::Texture2DMSArray:
-                case BufferType::Texture3D:
-                case BufferType::TextureCube:
-                    return 3;
-                case BufferType::TextureCubeArray:
-                    return 4;
-                default:
-                    break;
+                /* Determine vector size for texture intrinsic parametes */
+                switch (bufferDecl->GetBufferType())
+                {
+                    case BufferType::Texture1D:
+                        return 1;
+                    case BufferType::Texture1DArray:
+                    case BufferType::Texture2D:
+                    case BufferType::Texture2DMS:
+                        return 2;
+                    case BufferType::Texture2DArray:
+                    case BufferType::Texture2DMSArray:
+                    case BufferType::Texture3D:
+                    case BufferType::TextureCube:
+                        return 3;
+                    case BufferType::TextureCubeArray:
+                        return 4;
+                    default:
+                        break;
+                }
             }
         }
     }
