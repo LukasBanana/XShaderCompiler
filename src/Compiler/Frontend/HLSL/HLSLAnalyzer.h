@@ -78,7 +78,7 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( FunctionCallExpr  );
-        #if 1//TODO: remove
+        #if 0//TODO: remove
         DECL_VISIT_PROC( SuffixExpr        );
         DECL_VISIT_PROC( VarAccessExpr     );
         #endif
@@ -98,18 +98,18 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeFunctionCallIntrinsicPrimary(FunctionCall* funcCall, const HLSLIntrinsicEntry& intr);
         void AnalyzeFunctionCallIntrinsicFromBufferType(const FunctionCall* funcCall, const BufferType bufferType);
 
-        #if 1//TODO: remove
+        void AnalyzeIntrinsicWrapperInlining(FunctionCall* funcCall);
+
+        #if 0//TODO: remove
 
         void AnalyzeFunctionCallStandard_OBSOLETE(FunctionCall* ast);
-
-        void AnalyzeIntrinsicWrapperInlining(FunctionCall* ast);
 
         bool AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* funcCall);
         bool AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const FunctionCall* funcCall, const BufferType bufferType);
 
         #endif
 
-        #if 1//TODO: replace this by "ObjectExpr" and "FunctionCallExpr"
+        #if 0//TODO: replace this by "ObjectExpr" and "FunctionCallExpr"
 
         /* ----- Variable identifier ----- */
 

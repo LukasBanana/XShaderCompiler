@@ -635,7 +635,7 @@ IMPLEMENT_VISIT_PROC(FunctionCallExpr)
 }
 
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
@@ -961,9 +961,19 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicFromBufferType(const FunctionCall
     }
 }
 
+void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(FunctionCall* funcCall)
+{
+    /* Is this a 'clip'-intrinsic call? */
+    if (funcCall->intrinsic == Intrinsic::Clip)
+    {
+        /* The wrapper function for this intrinsic can be inlined */
+        funcCall->flags << FunctionCall::canInlineIntrinsicWrapper;
+    }
+}
+
 #endif
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 void HLSLAnalyzer::AnalyzeFunctionCallStandard_OBSOLETE(FunctionCall* ast)
 {
@@ -993,16 +1003,6 @@ void HLSLAnalyzer::AnalyzeFunctionCallStandard_OBSOLETE(FunctionCall* ast)
                     Error(R_MissingInitializerForDefaultParam(paramVar->ident), paramVar);
             }
         }
-    }
-}
-
-void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(FunctionCall* ast)
-{
-    /* Is this a 'clip'-intrinsic call? */
-    if (ast->intrinsic == Intrinsic::Clip)
-    {
-        /* The wrapper function for this intrinsic can be inlined */
-        ast->flags << FunctionCall::canInlineIntrinsicWrapper;
     }
 }
 
@@ -1073,7 +1073,7 @@ bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const
 
 #endif
 
-#if 1//TODO: replace this by "ObjectExpr" and "FunctionCallExpr"
+#if 0//TODO: replace this by "ObjectExpr" and "FunctionCallExpr"
 
 /* ----- Variable identifier ----- */
 
