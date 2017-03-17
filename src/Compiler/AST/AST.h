@@ -228,8 +228,7 @@ struct Expr : public TypedAST
     // Returns the variable or null if this is not just a single variable expression.
     VarDecl* FetchVarDecl() const;
 
-    //TODO: remove this
-    #if 1
+    #if 1 //TODO: remove this
     // Returns the variable identifier or null if this is not just a single variable expression
     virtual VarIdent* FetchVarIdent() const;
     #endif
@@ -242,8 +241,17 @@ struct Expr : public TypedAST
 
     //TODO: overload these functions in a couple of Expr classes
     #if 1
-    // Returns the first node in the expression tree that is an l-value (may also be constant!), or null if there is no l-value. By default null.
+    /*
+    Returns the first node in the expression tree that is an l-value (may also be constant!),
+    or null if there is no l-value. By default null.
+    */
     virtual const ObjectExpr* FetchLValueExpr() const;
+
+    /*
+    Returns the first node in the expression tree that is an type object expression,
+    i.e. an ObjectExpr node with a reference to a StructDecl or AliasDecl. By default null.
+    */
+    virtual const ObjectExpr* FetchTypeObjectExpr() const;
     #endif
 };
 
@@ -1145,6 +1153,7 @@ struct BracketExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter() override;
 
     const ObjectExpr* FetchLValueExpr() const override;
+    const ObjectExpr* FetchTypeObjectExpr() const override;
 
     #if 1//TODO: remove
     VarIdent* FetchVarIdent() const override;
@@ -1199,6 +1208,7 @@ struct AssignExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter() override;
 
     const ObjectExpr* FetchLValueExpr() const override;
+    const ObjectExpr* FetchTypeObjectExpr() const override;
 
     ExprPtr     lvalueExpr;                     // L-value expression
     AssignOp    op      = AssignOp::Undefined;  // Assignment operator
@@ -1213,6 +1223,7 @@ struct ObjectExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter() override;
 
     const ObjectExpr* FetchLValueExpr() const override;
+    const ObjectExpr* FetchTypeObjectExpr() const override;
 
     // Returns the type denoter for this AST node or the last sub node.
     TypeDenoterPtr GetExplicitTypeDenoter();

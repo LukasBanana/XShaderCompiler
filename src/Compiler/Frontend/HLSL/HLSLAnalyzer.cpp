@@ -743,6 +743,7 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLInt
         T   overloadedIntrinsic;
     };
 
+    //TODO: move this into a different file (maybe HLSLIntrinsics.cpp)
     static const std::vector<IntrinsicConversion> intrinsicConversions
     {
         { T::AsUInt_1,              3, T::AsUInt_3              },
@@ -1076,7 +1077,7 @@ void HLSLAnalyzer::AnalyzeObjectExpr(ObjectExpr* expr)
             /* Visit prefix expression first */
             Visit(expr->prefixExpr.get());
 
-            /* Now get type denoter from prefix expression */
+            /* Get type denoter from prefix expression */
             const auto& prefixTypeDen = expr->prefixExpr->GetTypeDenoter()->GetAliased();
 
             if (auto structTypeDen = prefixTypeDen.As<StructTypeDenoter>())
@@ -1110,6 +1111,63 @@ void HLSLAnalyzer::AnalyzeObjectExprWithStruct(ObjectExpr* expr, const StructTyp
 {
     /* Fetch struct member variable declaration from next identifier */
     expr->symbolRef = FetchFromStruct(structTypeDen, expr->ident, expr);
+
+    /* Check if struct member and identifier are both static or non-static */
+    if (expr->symbolRef && expr->prefixExpr)
+    {
+        /* Check if static/non-static access is allowed */
+        if (AnalyzeStaticAccessExpr(expr->prefixExpr.get(), expr, expr->isStatic))
+        {
+            /* Check if member and declaration object are equally static/non-static */
+            AnalyzeStaticTypeSpecifier(expr->symbolRef->FetchTypeSpecifier(), expr->ident, expr, expr->isStatic);
+        }
+    }
+}
+
+bool HLSLAnalyzer::AnalyzeStaticAccessExpr(const Expr* prefixExpr, const Expr* expr, bool isStatic)
+{
+    /* Fetch static type expression from prefix expression */
+    if (auto staticTypeExpr = prefixExpr->FetchTypeObjectExpr())
+    {
+        if (!isStatic)
+        {
+            Error(R_IllegalNonStaticAccessToType(staticTypeExpr->ident), expr);
+            return false;
+        }
+    }
+    else
+    {
+        if (isStatic)
+        {
+            Error(R_IllegalStaticAccessToNonType, expr);
+            return false;
+        }
+    }
+    return true;
+}
+
+bool HLSLAnalyzer::AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier, const std::string& ident, const Expr* expr, bool isStatic)
+{
+    if (typeSpecifier)
+    {
+        if (typeSpecifier->HasAnyStorageClassesOf({ StorageClass::Static }))
+        {
+            if (!isStatic)
+            {
+                Error(R_IllegalNonStaticAccessToMember(ident), expr);
+                return false;
+            }
+        }
+        else
+        {
+            if (isStatic)
+            {
+                Error(R_IllegalStaticAccessToMember(ident), expr);
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 void HLSLAnalyzer::AnalyzeLValueExpr(const Expr* expr, const AST* ast)
@@ -1148,7 +1206,22 @@ void HLSLAnalyzer::AnalyzeLValueExpr(const Expr* expr, const AST* ast)
 
 void HLSLAnalyzer::AnalyzeArrayAccessExpr(ArrayAccessExpr* expr)
 {
-    //TODO...
+    try
+    {
+        /* Visit prefix expression first */
+        Visit(expr->prefixExpr.get());
+
+        /* Just query the type denoter for the array access expression */
+        expr->GetTypeDenoter();
+    }
+    catch (const ASTRuntimeError& e)
+    {
+        Error(e.what(), e.GetAST());
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what(), expr);
+    }
 }
 
 #endif

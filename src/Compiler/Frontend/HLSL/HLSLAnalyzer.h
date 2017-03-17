@@ -121,6 +121,9 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeObjectExpr(ObjectExpr* expr);
         void AnalyzeObjectExprWithStruct(ObjectExpr* expr, const StructTypeDenoter& structTypeDen);
 
+        bool AnalyzeStaticAccessExpr(const Expr* prefixExpr, const Expr* expr, bool isStatic);
+        bool AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier, const std::string& ident, const Expr* expr, bool isStatic);
+
         void AnalyzeLValueExpr(const Expr* expr, const AST* ast = nullptr);
 
         /* ----- Array access expression ----- */

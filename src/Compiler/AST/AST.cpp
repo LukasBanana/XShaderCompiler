@@ -79,12 +79,19 @@ VarDecl* Expr::FetchVarDecl() const
         return nullptr;
 }
 
+#if 1 //TODO: remove this
 VarIdent* Expr::FetchVarIdent() const
 {
     return nullptr;
 }
+#endif
 
 const ObjectExpr* Expr::FetchLValueExpr() const
+{
+    return nullptr;
+}
+
+const ObjectExpr* Expr::FetchTypeObjectExpr() const
 {
     return nullptr;
 }
@@ -1572,6 +1579,11 @@ const ObjectExpr* BracketExpr::FetchLValueExpr() const
     return expr->FetchLValueExpr();
 }
 
+const ObjectExpr* BracketExpr::FetchTypeObjectExpr() const
+{
+    return expr->FetchTypeObjectExpr();
+}
+
 #if 1//TODO: remove
 VarIdent* BracketExpr::FetchVarIdent() const
 {
@@ -1616,6 +1628,11 @@ const ObjectExpr* AssignExpr::FetchLValueExpr() const
     return lvalueExpr->FetchLValueExpr();
 }
 
+const ObjectExpr* AssignExpr::FetchTypeObjectExpr() const
+{
+    return lvalueExpr->FetchTypeObjectExpr();
+}
+
 
 /* ----- ObjectExpr ----- */
 
@@ -1645,6 +1662,23 @@ const ObjectExpr* ObjectExpr::FetchLValueExpr() const
         return prefixExpr->FetchLValueExpr();
     }
     return this;
+}
+
+const ObjectExpr* ObjectExpr::FetchTypeObjectExpr() const
+{
+    if (symbolRef)
+    {
+        /* Fetch type declaration from symbol reference */
+        switch (symbolRef->Type())
+        {
+            case AST::Types::StructDecl:
+            case AST::Types::AliasDecl:
+                return this;
+            default:
+                break;
+        }
+    }
+    return nullptr;
 }
 
 TypeDenoterPtr ObjectExpr::GetExplicitTypeDenoter()

@@ -398,6 +398,10 @@ DECL_REPORT( IllegalExprInReturnForVoidFunc,    "illegal expression in return st
 DECL_REPORT( IllegalBufferTypeForEntryPoint,    "illegal buffer type for entry point[ {0}]"                                                                     );
 DECL_REPORT( IllegalLValueAssignmentToConst,    "illegal assignment to l-value '{0}' that is[ {1}] declared as constant"                                        );
 DECL_REPORT( IllegalRValueAssignment,           "illegal assignment to r-value expression"                                                                      );
+DECL_REPORT( IllegalNonStaticAccessToMember,    "illegal non-static access to static structure member[ '{0}']"                                                  );
+DECL_REPORT( IllegalStaticAccessToMember,       "illegal static access to non-static structure member[ '{0}']"                                                  );
+DECL_REPORT( IllegalNonStaticAccessToType,      "illegal non-static access to type[ '{0}']"                                                                     );
+DECL_REPORT( IllegalStaticAccessToNonType,      "illegal static access to non-type expression"                                                                  );
 DECL_REPORT( DuplicateUseOfOutputSemantic,      "duplicate use of output semantic '{0}'"                                                                        );
 DECL_REPORT( UniformCantBeOutput,               "uniforms can not be defined as output"                                                                         );
 DECL_REPORT( TooManyArgsForAttribute,           "too many arguments for attribute[ '{0}'][ (expected {1}, but got {2})]"                                        );
