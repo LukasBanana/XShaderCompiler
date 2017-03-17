@@ -222,7 +222,13 @@ struct BufferTypeDenoter : public TypeDenoter
 
     bool Equals(const TypeDenoter& rhs) const override;
 
+    #if 1//TODO: remove
     TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
+    #endif
+
+    #if 1//TODO: use this
+    TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
+    #endif
 
     AST* SymbolRef() const override;
 

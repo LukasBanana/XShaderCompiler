@@ -514,12 +514,28 @@ bool BufferTypeDenoter::Equals(const TypeDenoter& rhs) const
     return false;
 }
 
+#if 1//TODO: remove
+
 TypeDenoterPtr BufferTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
 {
     if (numArrayIndices > 0)
         return GetGenericTypeDenoter()->GetFromArray(numArrayIndices - 1, varIdent);
     return Get(varIdent);
 }
+
+#endif
+
+#if 1//TODO: use this
+
+TypeDenoterPtr BufferTypeDenoter::GetSubArray(const std::size_t numArrayIndices, const AST* ast)
+{
+    if (numArrayIndices > 0)
+        return GetGenericTypeDenoter()->GetSubArray(numArrayIndices - 1, ast);
+    else
+        return shared_from_this();
+}
+
+#endif
 
 TypeDenoterPtr BufferTypeDenoter::GetGenericTypeDenoter() const
 {
