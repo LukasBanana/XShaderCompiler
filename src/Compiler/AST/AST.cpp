@@ -84,9 +84,9 @@ VarIdent* Expr::FetchVarIdent() const
     return nullptr;
 }
 
-bool Expr::IsLValue() const
+const ObjectExpr* Expr::FetchLValueExpr() const
 {
-    return false;
+    return nullptr;
 }
 
 
@@ -95,6 +95,11 @@ bool Expr::IsLValue() const
 std::string Decl::ToString() const
 {
     return ident.Original();
+}
+
+TypeSpecifier* Decl::FetchTypeSpecifier() const
+{
+    return nullptr;
 }
 
 
@@ -134,6 +139,8 @@ const IntrinsicUsage* Program::FetchIntrinsicUsage(const Intrinsic intrinsic) co
     return (it != usedIntrinsics.end() ? &(it->second) : nullptr);
 }
 
+
+#if 1//TODO: remove
 
 /* ----- VarIdent ----- */
 
@@ -320,6 +327,8 @@ FunctionDecl* VarIdent::FetchFunctionDecl() const
 {
     return FetchSymbol<FunctionDecl>();
 }
+
+#endif
 
 
 /* ----- FunctionCall ----- */
@@ -661,6 +670,11 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter()
         return declStmntRef->typeSpecifier->typeDenoter->AsArray(arrayDims);
     }
     RuntimeErr(R_MissingDeclStmntRefToDeriveType(ident), this);
+}
+
+TypeSpecifier* VarDecl::FetchTypeSpecifier() const
+{
+    return (declStmntRef != nullptr ? declStmntRef->typeSpecifier.get() : nullptr);
 }
 
 
@@ -1553,10 +1567,17 @@ TypeDenoterPtr BracketExpr::DeriveTypeDenoter()
     return expr->GetTypeDenoter();
 }
 
+const ObjectExpr* BracketExpr::FetchLValueExpr() const
+{
+    return expr->FetchLValueExpr();
+}
+
+#if 1//TODO: remove
 VarIdent* BracketExpr::FetchVarIdent() const
 {
     return expr->FetchVarIdent();
 }
+#endif
 
 
 /* ----- SuffixExpr ----- */
@@ -1590,9 +1611,9 @@ TypeDenoterPtr AssignExpr::DeriveTypeDenoter()
     return lvalueExpr->GetTypeDenoter();
 }
 
-bool AssignExpr::IsLValue() const
+const ObjectExpr* AssignExpr::FetchLValueExpr() const
 {
-    return lvalueExpr->IsLValue();
+    return lvalueExpr->FetchLValueExpr();
 }
 
 
@@ -1603,6 +1624,29 @@ TypeDenoterPtr ObjectExpr::DeriveTypeDenoter()
     return GetExplicitTypeDenoter();
 }
 
+const ObjectExpr* ObjectExpr::FetchLValueExpr() const
+{
+    if (symbolRef)
+    {
+        /* Fetch l-value from symbol reference */
+        switch (symbolRef->Type())
+        {
+            case AST::Types::VarDecl:
+            case AST::Types::BufferDecl:
+            case AST::Types::SamplerDecl:
+                return this;
+            default:
+                return nullptr;
+        }
+    }
+    else if (prefixExpr)
+    {
+        /* Fetch l-value from prefix expression */
+        return prefixExpr->FetchLValueExpr();
+    }
+    return this;
+}
+
 TypeDenoterPtr ObjectExpr::GetExplicitTypeDenoter()
 {
     if (symbolRef)
@@ -1610,16 +1654,16 @@ TypeDenoterPtr ObjectExpr::GetExplicitTypeDenoter()
         /* Derive type denoter from symbol reference */
         if (auto varDecl = symbolRef->As<VarDecl>())
             return varDecl->GetTypeDenoter();
-        else if (auto bufferDecl = symbolRef->As<BufferDecl>())
+        if (auto bufferDecl = symbolRef->As<BufferDecl>())
             return bufferDecl->GetTypeDenoter();
-        else if (auto samplerDecl = symbolRef->As<SamplerDecl>())
+        if (auto samplerDecl = symbolRef->As<SamplerDecl>())
             return samplerDecl->GetTypeDenoter();
-        else if (auto structDecl = symbolRef->As<StructDecl>())
+        if (auto structDecl = symbolRef->As<StructDecl>())
             return structDecl->GetTypeDenoter();
-        else if (auto aliasDecl = symbolRef->As<AliasDecl>())
+        if (auto aliasDecl = symbolRef->As<AliasDecl>())
             return aliasDecl->GetTypeDenoter();
-        else
-            RuntimeErr(R_UnknownTypeOfVarIdentSymbolRef(ident), this);
+
+        RuntimeErr(R_UnknownTypeOfVarIdentSymbolRef(ident), this);
     }
     else if (prefixExpr)
     {
@@ -1666,7 +1710,11 @@ TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
 {
     try
     {
+        #if 0//TODO: remove
         return prefixExpr->GetTypeDenoter()->GetFromArray(arrayIndices.size());
+        #else
+        return prefixExpr->GetTypeDenoter()->GetSub(this);
+        #endif
     }
     catch (const std::exception& e)
     {

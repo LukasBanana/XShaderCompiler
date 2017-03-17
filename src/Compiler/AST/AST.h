@@ -242,8 +242,8 @@ struct Expr : public TypedAST
 
     //TODO: overload these functions in a couple of Expr classes
     #if 1
-    // Returns true if this is an l-value expression. Otherwise, it is an r-value expression. By default false.
-    virtual bool IsLValue() const;
+    // Returns the first node in the expression tree that is an l-value (may also be constant!), or null if there is no l-value. By default null.
+    virtual const ObjectExpr* FetchLValueExpr() const;
     #endif
 };
 
@@ -252,6 +252,9 @@ struct Decl : public TypedAST
 {
     // Returns a descriptive string of the type signature.
     virtual std::string ToString() const;
+
+    // Returns the type specifier of this declaration object, or null if there is no type specifier. By default null.
+    virtual TypeSpecifier* FetchTypeSpecifier() const;
 
     // Identifier of the declaration object (may be empty, e.g. for anonymous structures).
     Identifier ident;
@@ -598,6 +601,9 @@ struct VarDecl : public Decl
 
     // Returns a type denoter for this variable declaration or throws an std::runtime_error if the type can not be derived.
     TypeDenoterPtr DeriveTypeDenoter() override;
+
+    // Returns the type specifier of the declaration statemnt reference (if set).
+    TypeSpecifier* FetchTypeSpecifier() const override;
 
     std::vector<ArrayDimensionPtr>  arrayDims;
     IndexedSemantic                 semantic;
@@ -1138,7 +1144,11 @@ struct BracketExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    const ObjectExpr* FetchLValueExpr() const override;
+
+    #if 1//TODO: remove
     VarIdent* FetchVarIdent() const override;
+    #endif
 
     ExprPtr expr; // Inner expression
 };
@@ -1188,7 +1198,7 @@ struct AssignExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    bool IsLValue() const override;
+    const ObjectExpr* FetchLValueExpr() const override;
 
     ExprPtr     lvalueExpr;                     // L-value expression
     AssignOp    op      = AssignOp::Undefined;  // Assignment operator
@@ -1202,10 +1212,7 @@ struct ObjectExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    //TODO: override "IsLValue"
-    #if 0
-    bool IsLValue() const override;
-    #endif
+    const ObjectExpr* FetchLValueExpr() const override;
 
     // Returns the type denoter for this AST node or the last sub node.
     TypeDenoterPtr GetExplicitTypeDenoter();

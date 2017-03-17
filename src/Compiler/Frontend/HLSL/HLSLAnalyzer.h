@@ -75,8 +75,15 @@ class HLSLAnalyzer : public Analyzer
 
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
+        #if 1//TODO: remove
         DECL_VISIT_PROC( SuffixExpr        );
         DECL_VISIT_PROC( VarAccessExpr     );
+        #endif
+        #if 1//TODO: make this standard
+        DECL_VISIT_PROC( AssignExpr        );
+        DECL_VISIT_PROC( ObjectExpr        );
+        DECL_VISIT_PROC( ArrayAccessExpr   );
+        #endif
 
         /* --- Helper functions for context analysis --- */
 
@@ -87,6 +94,8 @@ class HLSLAnalyzer : public Analyzer
 
         bool AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* funcCall);
         bool AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const FunctionCall* funcCall, const BufferType bufferType);
+
+        #if 1//TODO: replace this by "ObjectExpr" and "FunctionCallExpr"
 
         /* ----- Variable identifier ----- */
 
@@ -101,7 +110,24 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeVarIdentArrayIndices(VarIdent* varIdent);
 
         void AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast = nullptr);
-        void AnalyzeLValueExpr(Expr* expr, const AST* ast = nullptr);
+        //void AnalyzeLValueExpr(Expr* expr, const AST* ast = nullptr);
+
+        #endif
+
+        #if 1//TODO: make this standard
+
+        /* ----- Object expressions ----- */
+
+        void AnalyzeObjectExpr(ObjectExpr* expr);
+        void AnalyzeObjectExprWithStruct(ObjectExpr* expr, const StructTypeDenoter& structTypeDen);
+
+        void AnalyzeLValueExpr(const Expr* expr, const AST* ast = nullptr);
+
+        /* ----- Array access expression ----- */
+
+        void AnalyzeArrayAccessExpr(ArrayAccessExpr* expr);
+
+        #endif
 
         /* ----- Entry point ----- */
 

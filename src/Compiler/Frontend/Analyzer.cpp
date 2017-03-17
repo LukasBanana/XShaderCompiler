@@ -168,6 +168,26 @@ AST* Analyzer::FetchFromCurrentScopeOrNull(const std::string& ident) const
         return nullptr;
 }
 
+Decl* Analyzer::FetchDecl(const std::string& ident, const AST* ast)
+{
+    if (auto symbol = Fetch(ident, ast))
+    {
+        switch (symbol->Type())
+        {
+            case AST::Types::VarDecl:
+            case AST::Types::BufferDecl:
+            case AST::Types::SamplerDecl:
+            case AST::Types::StructDecl:
+            case AST::Types::AliasDecl:
+                return static_cast<Decl*>(symbol);
+            default:
+                Error(R_IdentIsNotDecl(ident), ast);
+                break;
+        }
+    }
+    return nullptr;
+}
+
 AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
 {
     try

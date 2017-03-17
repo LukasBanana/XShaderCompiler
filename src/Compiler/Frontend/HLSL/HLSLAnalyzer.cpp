@@ -168,7 +168,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             [this](ExprPtr& argExpr)
             {
                 auto expr = argExpr.get();
-                AnalyzeLValueExpr(expr, expr);
+                AnalyzeLValueExpr(expr);
             }
         );
     }
@@ -625,6 +625,8 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
         AnalyzeLValueExpr(ast->expr.get(), ast);
 }
 
+#if 1//TODO: remove
+
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
     Visit(ast->expr);
@@ -654,6 +656,31 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
         AnalyzeLValueVarIdent(ast->varIdent.get(), ast);
     }
 }
+
+#endif
+
+#if 1//TODO: make this standard
+
+IMPLEMENT_VISIT_PROC(AssignExpr)
+{
+    Visit(ast->lvalueExpr);
+    Visit(ast->rvalueExpr);
+
+    ValidateTypeCastFrom(ast->rvalueExpr.get(), ast->lvalueExpr.get(), R_VarAssignment);
+    AnalyzeLValueExpr(ast->lvalueExpr.get(), ast);
+}
+
+IMPLEMENT_VISIT_PROC(ObjectExpr)
+{
+    AnalyzeObjectExpr(ast);
+}
+
+IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+{
+    AnalyzeArrayAccessExpr(ast);
+}
+
+#endif
 
 #undef IMPLEMENT_VISIT_PROC
 
@@ -827,6 +854,8 @@ bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const
 
     return false;
 }
+
+#if 1//TODO: replace this by "ObjectExpr" and "FunctionCallExpr"
 
 /* ----- Variable identifier ----- */
 
@@ -1021,13 +1050,108 @@ void HLSLAnalyzer::AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast)
     }
 }
 
-void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast)
+/*void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast)
 {
+    if (!ast)
+        ast = expr;
     if (auto varIdent = expr->FetchVarIdent())
         AnalyzeLValueVarIdent(varIdent, ast);
     else
         Error(R_IllegalRValueAssignment, ast);
+}*/
+
+#endif
+
+#if 1//TODO: make this standard
+
+/* ----- Object expressions ----- */
+
+void HLSLAnalyzer::AnalyzeObjectExpr(ObjectExpr* expr)
+{
+    try
+    {
+        /* Analyze prefix expression first */
+        if (expr->prefixExpr)
+        {
+            /* Visit prefix expression first */
+            Visit(expr->prefixExpr.get());
+
+            /* Now get type denoter from prefix expression */
+            const auto& prefixTypeDen = expr->prefixExpr->GetTypeDenoter()->GetAliased();
+
+            if (auto structTypeDen = prefixTypeDen.As<StructTypeDenoter>())
+            {
+                /* Analyze object expression with struct prefix type */
+                AnalyzeObjectExprWithStruct(expr, *structTypeDen);
+            }
+            else if (prefixTypeDen.IsBase())
+            {
+                /* Just query the type denoter for the object expression */
+                expr->GetTypeDenoter();
+            }
+        }
+        else
+        {
+            /* Decorate object expression with symbol reference */
+            expr->symbolRef = FetchDecl(expr->ident, expr);
+        }
+    }
+    catch (const ASTRuntimeError& e)
+    {
+        Error(e.what(), e.GetAST());
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what(), expr);
+    }
 }
+
+void HLSLAnalyzer::AnalyzeObjectExprWithStruct(ObjectExpr* expr, const StructTypeDenoter& structTypeDen)
+{
+    /* Fetch struct member variable declaration from next identifier */
+    expr->symbolRef = FetchFromStruct(structTypeDen, expr->ident, expr);
+}
+
+void HLSLAnalyzer::AnalyzeLValueExpr(const Expr* expr, const AST* ast)
+{
+    /* Fetch l-value from expression */
+    if (auto lvalueExpr = expr->FetchLValueExpr())
+    {
+        if (auto symbol = lvalueExpr->symbolRef)
+        {
+            if (auto varDecl = symbol->As<VarDecl>())
+            {
+                if (varDecl->declStmntRef->IsConstOrUniform())
+                {
+                    /* Construct error message depending if the variable is implicitly or explicitly declared as constant */
+                    Error(
+                        R_IllegalLValueAssignmentToConst(
+                            lvalueExpr->ident,
+                            (varDecl->declStmntRef->flags(VarDeclStmnt::isImplicitConst) ? R_Implicitly : "")
+                        ),
+                        (ast != nullptr ? ast : lvalueExpr)
+                    );
+                }
+            }
+        }
+        else
+        {
+            Error(
+                R_MissingObjectExprSymbolRef(lvalueExpr->ident),
+                (ast != nullptr ? ast : lvalueExpr)
+            );
+        }
+    }
+}
+
+/* ----- Array access expression ----- */
+
+void HLSLAnalyzer::AnalyzeArrayAccessExpr(ArrayAccessExpr* expr)
+{
+    //TODO...
+}
+
+#endif
 
 /* ----- Entry point ----- */
 

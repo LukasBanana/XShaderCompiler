@@ -1149,7 +1149,7 @@ StmntPtr HLSLParser::ParseStmntWithStructDecl()
 
 #if 1//TODO: clean this up!!!
 
-// ~~~~~~~~~~~~ INCOMPLETE ~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~ MIGHT BE INCOMPLETE ~~~~~~~~~~~~~~~
 
 StmntPtr HLSLParser::ParseStmntWithIdent()
 {
