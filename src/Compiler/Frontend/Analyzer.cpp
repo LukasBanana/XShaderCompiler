@@ -291,20 +291,42 @@ FunctionDecl* Analyzer::FetchFunctionDeclFromStruct(
     const StructTypeDenoter& structTypeDenoter, const std::string& ident,
     const std::vector<ExprPtr>& args, const AST* ast)
 {
-    if (auto structDecl = structTypeDenoter.structDeclRef)
+    try
     {
-        /* Get type denoters from arguments */
-        std::vector<TypeDenoterPtr> argTypeDens;
-        if (CollectArgumentTypeDenoters(args, argTypeDens))
+        if (auto structDecl = structTypeDenoter.structDeclRef)
         {
-            if (auto symbol = structDecl->FetchFunctionDecl(ident, argTypeDens))
-                return symbol;
-            else
-                ErrorUndeclaredIdent(ident, structDecl->ToString(), structDecl->FetchSimilar(ident), ast);
+            /* Get type denoters from arguments */
+            std::vector<TypeDenoterPtr> argTypeDens;
+            if (CollectArgumentTypeDenoters(args, argTypeDens))
+            {
+                /* Fetch function from structure */
+                if (auto symbol = structDecl->FetchFunctionDecl(ident, argTypeDens, nullptr, true))
+                    return symbol;
+                else
+                {
+                    /* Check if member is declared in structure, but does not name a function */
+                    if (structDecl->Fetch(ident) != nullptr)
+                        Error(R_IdentIsNotFunc(ident), ast);
+                    else
+                    {
+                        /* Report error and fetch similar identifier from structure */
+                        ErrorUndeclaredIdent(ident, structDecl->ToString(), structDecl->FetchSimilar(ident), ast);
+                    }
+                }
+            }
         }
+        else
+            Error(R_MissingReferenceToStructInType(structTypeDenoter.ToString()), ast);
     }
-    else
-        Error(R_MissingReferenceToStructInType(structTypeDenoter.ToString()), ast);
+    catch (const ASTRuntimeError& e)
+    {
+        Error(e.what(), e.GetAST());
+        return nullptr;
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what(), ast);
+    }
     return nullptr;
 }
 

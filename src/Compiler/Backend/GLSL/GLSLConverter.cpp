@@ -920,7 +920,7 @@ void GLSLConverter::ConvertFunctionCall(FunctionCall* ast)
 {
     if (auto funcDecl = ast->funcDeclRef)
     {
-        if (funcDecl->IsMemberFunction())
+        if (funcDecl->IsMemberFunction() && ast->varIdent)
         {
             if (ast->varIdent->next)
             {

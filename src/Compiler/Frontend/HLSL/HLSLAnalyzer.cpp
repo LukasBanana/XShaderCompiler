@@ -118,6 +118,8 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     Visit(ast->stmnts);
 }
 
+#if 0//TODO: remove
+
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     PushFunctionCall(ast);
@@ -141,10 +143,10 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
 
                     /* Verify intrinsic for respective object class */
                     if (AnalyzeMemberIntrinsic(intrinsic, ast))
-                        AnalyzeFunctionCallIntrinsic(ast, intrIt->second);
+                        AnalyzeFunctionCallIntrinsicPrimary(ast, intrIt->second);
                 }
                 else
-                    AnalyzeFunctionCallStandard(ast);
+                    AnalyzeFunctionCallStandard_OBSOLETE(ast);
             }
             else
             {
@@ -154,12 +156,12 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
                 {
                     /* Is this a global intrinsic? */
                     if (IsGlobalIntrinsic(intrIt->second.intrinsic))
-                        AnalyzeFunctionCallIntrinsic(ast, intrIt->second);
+                        AnalyzeFunctionCallIntrinsicPrimary(ast, intrIt->second);
                     else
-                        AnalyzeFunctionCallStandard(ast);
+                        AnalyzeFunctionCallStandard_OBSOLETE(ast);
                 }
                 else
-                    AnalyzeFunctionCallStandard(ast);
+                    AnalyzeFunctionCallStandard_OBSOLETE(ast);
             }
         }
 
@@ -174,6 +176,8 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     }
     PopFunctionCall();
 }
+
+#endif
 
 IMPLEMENT_VISIT_PROC(ArrayDimension)
 {
@@ -706,7 +710,7 @@ void HLSLAnalyzer::AnalyzeFunctionCallExpr(FunctionCallExpr* expr)
 
             /* Analyze functin call with type denoter from prefix expression */
             const auto& prefixTypeDen = expr->prefixExpr->GetTypeDenoter()->GetAliased();
-            AnalyzeFunctionCall(expr->call.get(), expr->isStatic, &prefixTypeDen);
+            AnalyzeFunctionCall(expr->call.get(), expr->isStatic, expr->prefixExpr.get(), &prefixTypeDen);
         }
         else
         {
@@ -724,7 +728,8 @@ void HLSLAnalyzer::AnalyzeFunctionCallExpr(FunctionCallExpr* expr)
     }
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCall(FunctionCall* funcCall, bool isStatic, const TypeDenoter* prefixTypeDenoter)
+void HLSLAnalyzer::AnalyzeFunctionCall(
+    FunctionCall* funcCall, bool isStatic, const Expr* prefixExpr, const TypeDenoter* prefixTypeDenoter)
 {
     PushFunctionCall(funcCall);
     {
@@ -739,12 +744,12 @@ void HLSLAnalyzer::AnalyzeFunctionCall(FunctionCall* funcCall, bool isStatic, co
             if (intrIt != HLSLIntrinsicAdept::GetIntrinsicMap().end())
             {
                 /* Analyze function call of intrinsic */
-                AnalyzeFunctionCallIntrinsic_NEW(funcCall, intrIt->second, isStatic, prefixTypeDenoter);
+                AnalyzeFunctionCallIntrinsic(funcCall, intrIt->second, isStatic, prefixTypeDenoter);
             }
             else
             {
                 /* Analyze function call of standard function declaration */
-                AnalyzeFunctionCallStandard_NEW(funcCall, isStatic, prefixTypeDenoter);
+                AnalyzeFunctionCallStandard(funcCall, isStatic, prefixExpr, prefixTypeDenoter);
             }
         }
 
@@ -759,14 +764,25 @@ void HLSLAnalyzer::AnalyzeFunctionCall(FunctionCall* funcCall, bool isStatic, co
     PopFunctionCall();
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCallStandard_NEW(FunctionCall* funcCall, bool isStatic, const TypeDenoter* prefixTypeDenoter)
+void HLSLAnalyzer::AnalyzeFunctionCallStandard(
+    FunctionCall* funcCall, bool isStatic, const Expr* prefixExpr, const TypeDenoter* prefixTypeDenoter)
 {
     if (prefixTypeDenoter)
     {
         /* Fetch function declaration from prefix type */
-
-        //TODO...
-
+        if (auto structTypeDen = prefixTypeDenoter->As<StructTypeDenoter>())
+        {
+            /* Fetch function declaration from struct prefix type */
+            funcCall->funcDeclRef = FetchFunctionDeclFromStruct(*structTypeDen, funcCall->ident, funcCall->arguments, funcCall);
+        }
+        else
+        {
+            /* Report error on class intrinsic for wrong type */
+            Error(
+                R_InvalidMemberFuncForType(funcCall->ident, prefixTypeDenoter->ToString()),
+                funcCall
+            );
+        }
     }
     else
     {
@@ -777,14 +793,34 @@ void HLSLAnalyzer::AnalyzeFunctionCallStandard_NEW(FunctionCall* funcCall, bool 
             funcCall->funcDeclRef = symbol;
         }
     }
+
+    /* Analyze static function */
+    if (auto funcDecl = funcCall->funcDeclRef)
+    {
+        /* Check if static/non-static access is allowed */
+        if (AnalyzeStaticAccessExpr(prefixExpr, isStatic, funcCall))
+        {
+            /* Check if function call and function declaration are equally static/non-static */
+            if (isStatic)
+            {
+                if (!funcDecl->IsStatic())
+                    Error(R_IllegalStaticFuncCall(funcDecl->ToString()), funcCall);
+            }
+            else
+            {
+                if (funcDecl->IsStatic())
+                    Error(R_IllegalNonStaticFuncCall(funcDecl->ToString()), funcCall);
+            }
+        }
+    }
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic_NEW(FunctionCall* funcCall, const HLSLIntrinsicEntry& intr, bool isStatic, const TypeDenoter* prefixTypeDenoter)
+void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* funcCall, const HLSLIntrinsicEntry& intr, bool isStatic, const TypeDenoter* prefixTypeDenoter)
 {
     const auto intrinsic = intr.intrinsic;
 
     /* Decoarte function call with intrinsic ID */
-    funcCall->intrinsic = intrinsic;
+    AnalyzeFunctionCallIntrinsicPrimary(funcCall, intr);
 
     /* No intrinsics can be called static */
     if (isStatic)
@@ -800,28 +836,23 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic_NEW(FunctionCall* funcCall, cons
                 funcCall
             );
         }
-        else
-        {
-            //TODO...
-        }
     }
     else
     {
         if (prefixTypeDenoter)
         {
-            if (auto structTypeDen = prefixTypeDenoter->As<StructTypeDenoter>())
-            {
-                /* Analyze member function call with struct prefix type */
-                //AnalyzeFunctionCallExprWithStruct(funcCall, *structTypeDen);
-            }
-            else if (auto bufferTypeDen = prefixTypeDenoter->As<BufferTypeDenoter>())
+            if (auto bufferTypeDen = prefixTypeDenoter->As<BufferTypeDenoter>())
             {
                 /* Analyze member function call with buffer prefix type */
-
+                AnalyzeFunctionCallIntrinsicFromBufferType(funcCall, bufferTypeDen->bufferType);
             }
             else
             {
-                //TODO...
+                /* Report error on class intrinsic for wrong type */
+                Error(
+                    R_InvalidClassIntrinsicForType(funcCall->ident, prefixTypeDenoter->ToString()),
+                    funcCall
+                );
             }
         }
         else
@@ -832,65 +863,30 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic_NEW(FunctionCall* funcCall, cons
     }
 }
 
-#endif
-
-#if 1//TODO: remove
-
-void HLSLAnalyzer::AnalyzeFunctionCallStandard(FunctionCall* ast)
-{
-    /* Analyze function identifier (if it's a member function) */
-    AnalyzeFunctionVarIdent(ast->varIdent.get(), ast->arguments);
-
-    /* Fetch function declaration by arguments */
-    if (auto symbol = ast->varIdent->Last()->symbolRef)
-    {
-        if (auto funcDecl = symbol->As<FunctionDecl>())
-            ast->funcDeclRef = funcDecl;
-    }
-
-    /* Also connect function declaration with the identifier of the function call */
-    if (auto funcDecl = ast->funcDeclRef)
-    {
-        /* Fetch argument expressions of all remaining parmeters */
-        for (std::size_t i = ast->arguments.size(), n = funcDecl->parameters.size(); i < n; ++i)
-        {
-            auto param = funcDecl->parameters[i].get();
-            if (!param->varDecls.empty())
-            {
-                auto paramVar = param->varDecls.front().get();
-                if (auto initExpr = paramVar->initializer.get())
-                    ast->defaultArgumentRefs.push_back(initExpr);
-                else
-                    Error(R_MissingInitializerForDefaultParam(paramVar->ident), paramVar);
-            }
-        }
-    }
-}
-
-void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLIntrinsicEntry& intr)
+void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicPrimary(FunctionCall* funcCall, const HLSLIntrinsicEntry& intr)
 {
     /* Check shader input version */
     if (shaderModel_ < intr.minShaderModel)
     {
         Warning(
             R_InvalidShaderModelForIntrinsic(
-                ast->varIdent->ToString(), intr.minShaderModel.ToString(), shaderModel_.ToString()
+                funcCall->varIdent->ToString(), intr.minShaderModel.ToString(), shaderModel_.ToString()
             ),
-            ast
+            funcCall
         );
     }
 
     /* Decorate AST with intrinsic ID */
-    ast->intrinsic = intr.intrinsic;
+    funcCall->intrinsic = intr.intrinsic;
 
     /* Analyze special intrinsic types */
     using T = Intrinsic;
 
     struct IntrinsicConversion
     {
-        T   standardIntrinsic;
-        int numArgs;
-        T   overloadedIntrinsic;
+        T           standardIntrinsic;
+        std::size_t numArgs;
+        T           overloadedIntrinsic;
     };
 
     //TODO: move this into a different file (maybe HLSLIntrinsics.cpp)
@@ -922,11 +918,80 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLInt
     for (const auto& conversion : intrinsicConversions)
     {
         /* Is another overloaded version of the intrinsic used? */
-        if (ast->intrinsic == conversion.standardIntrinsic && ast->arguments.size() == static_cast<std::size_t>(conversion.numArgs))
+        if (funcCall->intrinsic == conversion.standardIntrinsic && funcCall->arguments.size() == conversion.numArgs)
         {
             /* Convert intrinsic type */
-            ast->intrinsic = conversion.overloadedIntrinsic;
+            funcCall->intrinsic = conversion.overloadedIntrinsic;
             break;
+        }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicFromBufferType(const FunctionCall* funcCall, const BufferType bufferType)
+{
+    const auto intrinsic = funcCall->intrinsic;
+    const auto& ident = funcCall->ident;
+
+    if (IsTextureBufferType(bufferType))
+    {
+        /* Check if texture intrinsic is used to texture buffer type */
+        if (!IsTextureIntrinsic(intrinsic))
+            Error(R_InvalidIntrinsicForTexture(ident), funcCall);
+    }
+    else if (IsRWTextureBufferType(bufferType))
+    {
+        /* Check if image load/store intrinsic is used to RW-texture buffer type */
+        if (!IsImageIntrinsic(intrinsic))
+            Error(R_InvalidIntrinsicForRWTexture(ident), funcCall);
+    }
+    else if (IsStreamBufferType(bufferType))
+    {
+        /* Check if stream-output intrinsic is used to stream-output buffer type */
+        if (IsStreamOutputIntrinsic(intrinsic))
+        {
+            /* Check for entry point output parameters with "StreamOutput::Append" intrinsic */
+            if (InsideEntryPoint() && intrinsic == Intrinsic::StreamOutput_Append)
+            {
+                for (const auto& arg : funcCall->arguments)
+                    AnalyzeEntryPointOutput(arg->FetchLValueExpr());
+            }
+        }
+        else
+            Error(R_InvalidIntrinsicForStreamOutput(ident), funcCall);
+    }
+}
+
+#endif
+
+#if 1//TODO: remove
+
+void HLSLAnalyzer::AnalyzeFunctionCallStandard_OBSOLETE(FunctionCall* ast)
+{
+    /* Analyze function identifier (if it's a member function) */
+    AnalyzeFunctionVarIdent(ast->varIdent.get(), ast->arguments);
+
+    /* Fetch function declaration by arguments */
+    if (auto symbol = ast->varIdent->Last()->symbolRef)
+    {
+        if (auto funcDecl = symbol->As<FunctionDecl>())
+            ast->funcDeclRef = funcDecl;
+    }
+
+    /* Also connect function declaration with the identifier of the function call */
+    if (auto funcDecl = ast->funcDeclRef)
+    {
+        /* Fetch argument expressions of all remaining parmeters */
+        for (std::size_t i = ast->arguments.size(), n = funcDecl->parameters.size(); i < n; ++i)
+        {
+            auto param = funcDecl->parameters[i].get();
+            if (!param->varDecls.empty())
+            {
+                auto paramVar = param->varDecls.front().get();
+                if (auto initExpr = paramVar->initializer.get())
+                    ast->defaultArgumentRefs.push_back(initExpr);
+                else
+                    Error(R_MissingInitializerForDefaultParam(paramVar->ident), paramVar);
+            }
         }
     }
 }
@@ -1268,7 +1333,7 @@ void HLSLAnalyzer::AnalyzeObjectExprWithStruct(ObjectExpr* expr, const StructTyp
     if (expr->symbolRef && expr->prefixExpr)
     {
         /* Check if static/non-static access is allowed */
-        if (AnalyzeStaticAccessExpr(expr->prefixExpr.get(), expr, expr->isStatic))
+        if (AnalyzeStaticAccessExpr(expr->prefixExpr.get(), expr->isStatic, expr))
         {
             /* Check if member and declaration object are equally static/non-static */
             AnalyzeStaticTypeSpecifier(expr->symbolRef->FetchTypeSpecifier(), expr->ident, expr, expr->isStatic);
@@ -1276,23 +1341,26 @@ void HLSLAnalyzer::AnalyzeObjectExprWithStruct(ObjectExpr* expr, const StructTyp
     }
 }
 
-bool HLSLAnalyzer::AnalyzeStaticAccessExpr(const Expr* prefixExpr, const Expr* expr, bool isStatic)
+bool HLSLAnalyzer::AnalyzeStaticAccessExpr(const Expr* prefixExpr, bool isStatic, const AST* ast)
 {
-    /* Fetch static type expression from prefix expression */
-    if (auto staticTypeExpr = prefixExpr->FetchTypeObjectExpr())
+    if (prefixExpr)
     {
-        if (!isStatic)
+        /* Fetch static type expression from prefix expression */
+        if (auto staticTypeExpr = prefixExpr->FetchTypeObjectExpr())
         {
-            Error(R_IllegalNonStaticAccessToType(staticTypeExpr->ident), expr);
-            return false;
+            if (!isStatic)
+            {
+                Error(R_IllegalNonStaticAccessToType(staticTypeExpr->ident), ast);
+                return false;
+            }
         }
-    }
-    else
-    {
-        if (isStatic)
+        else
         {
-            Error(R_IllegalStaticAccessToNonType, expr);
-            return false;
+            if (isStatic)
+            {
+                Error(R_IllegalStaticAccessToNonType, ast);
+                return false;
+            }
         }
     }
     return true;
@@ -1396,7 +1464,7 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
                 if (auto structTypeDen = typeSpecifier->As<StructTypeDenoter>())
                 {
                     if (auto structDecl = structTypeDen->structDeclRef)
-                        funcDecl->paramStructs.push_back({ nullptr, param->varDecls.front().get(), structDecl });
+                        funcDecl->paramStructs.push_back({ nullptr, nullptr, param->varDecls.front().get(), structDecl });
                 }
             }
         }
@@ -1852,13 +1920,15 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
     #undef COMMON_SEMANTICS_EX
 }
 
+#if 1//TODO: replace by "AnalyzeEntryPointOutput(ObjectExpr*)" function
+
 void HLSLAnalyzer::AnalyzeEntryPointOutput(VarIdent* varIdent)
 {
     if (varIdent)
     {
         if (auto varDecl = varIdent->FetchVarDecl())
         {
-            /* Mark variable as entry-pointer output */
+            /* Mark variable as entry-point output */
             varDecl->flags << VarDecl::isEntryPointOutput;
 
             if (auto structSymbolRef = varDecl->GetTypeDenoter()->Get()->SymbolRef())
@@ -1870,7 +1940,7 @@ void HLSLAnalyzer::AnalyzeEntryPointOutput(VarIdent* varIdent)
 
                     /* Add variable as parameter-structure to entry point */
                     if (program_->entryPointRef)
-                        program_->entryPointRef->paramStructs.push_back({ varIdent, varDecl, structDecl });
+                        program_->entryPointRef->paramStructs.push_back({ varIdent, nullptr, varDecl, structDecl });
                         
                     /* Mark variable as local variable of the entry-point */
                     varDecl->flags << VarDecl::isEntryPointLocal;
@@ -1879,6 +1949,42 @@ void HLSLAnalyzer::AnalyzeEntryPointOutput(VarIdent* varIdent)
         }
     }
 }
+
+#endif
+
+#if 1//TODO: make this standard
+
+// ~~~~~~~~~ TODO: refactore 'program_->entryPointRef->paramStructs' !!! ~~~~~~~~~~
+
+void HLSLAnalyzer::AnalyzeEntryPointOutput(const ObjectExpr* objectExpr)
+{
+    if (objectExpr)
+    {
+        if (auto varDecl = objectExpr->FetchVarDecl())
+        {
+            /* Mark variable as entry-point output */
+            varDecl->flags << VarDecl::isEntryPointOutput;
+
+            if (auto structSymbolRef = varDecl->GetTypeDenoter()->GetAliased().SymbolRef())
+            {
+                if (auto structDecl = structSymbolRef->As<StructDecl>())
+                {
+                    /* Add variable as instance to this structure as entry point output */
+                    structDecl->shaderOutputVarDeclRefs.insert(varDecl);
+
+                    /* Add variable as parameter-structure to entry point */
+                    if (program_->entryPointRef)
+                        program_->entryPointRef->paramStructs.push_back({ nullptr, objectExpr, varDecl, structDecl });
+                        
+                    /* Mark variable as local variable of the entry-point */
+                    varDecl->flags << VarDecl::isEntryPointLocal;
+                }
+            }
+        }
+    }
+}
+
+#endif
 
 /* ----- Inactive entry point ----- */
 

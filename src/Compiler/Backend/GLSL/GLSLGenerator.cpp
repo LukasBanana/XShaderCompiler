@@ -1619,7 +1619,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
             EndLn();
 
             if (auto structDecl = entryPoint->returnType->GetStructDeclRef())
-                WriteOutputSemanticsAssignmentStructDeclParam({ nullptr, nullptr, structDecl }, writeAsListedExpr, tempVarIdent);
+                WriteOutputSemanticsAssignmentStructDeclParam({ nullptr, nullptr, nullptr, structDecl }, writeAsListedExpr, tempVarIdent);
         }
     }
 }
@@ -2105,6 +2105,8 @@ void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* funcCall, std::size_t n
 void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* funcCall)
 {
     /* Write function name */
+    //TODO: replace this by "funcCall->ident"
+    #if 0
     if (funcCall->varIdent)
     {
         if (funcCall->intrinsic != Intrinsic::Undefined && !IsWrappedIntrinsic(funcCall->intrinsic))
@@ -2120,6 +2122,30 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* funcCall)
             /* Write function identifier */
             Visit(funcCall->varIdent);
         }
+    }
+    #endif
+    if (funcCall->intrinsic != Intrinsic::Undefined)
+    {
+        if (!IsWrappedIntrinsic(funcCall->intrinsic))
+        {
+            /* Write GLSL intrinsic keyword */
+            if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
+                Write(*keyword);
+            else
+                ErrorIntrinsic(funcCall->varIdent->Last()->ToString(), funcCall);
+        }
+        else if (!funcCall->ident.empty())
+        {
+            /* Write wrapper function name */
+            Write(funcCall->ident);
+        }
+        else
+            Error(R_MissingFuncName, funcCall);
+    }
+    else if (auto funcDecl = funcCall->funcDeclRef)
+    {
+        /* Write final identifier of function declaration */
+        Write(funcDecl->ident);
     }
     else if (funcCall->typeDenoter)
     {

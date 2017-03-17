@@ -649,8 +649,14 @@ std::string VarDecl::ToString() const
 
     s += ident.Original();
 
-    for (std::size_t i = 0; i < arrayDims.size(); ++i)
-        s += "[]";
+    //for (std::size_t i = 0; i < arrayDims.size(); ++i)
+    for (const auto& dim : arrayDims)
+    {
+        s += '[';
+        if (dim->size > 0)
+            s += std::to_string(dim->size);
+        s += ']';
+    }
 
     if (semantic != Semantic::Undefined)
     {
@@ -658,13 +664,13 @@ std::string VarDecl::ToString() const
         s += semantic.ToString();
     }
 
-    if (initializer)
+    /*if (initializer)
     {
         s += " = ";
         //TODO: see above
         s += "???";
         //s += initializer->ToString();
-    }
+    }*/
 
     return s;
 }
@@ -746,7 +752,8 @@ VarDecl* StructDecl::Fetch(const std::string& ident, const StructDecl** owner) c
     return nullptr;
 }
 
-FunctionDecl* StructDecl::FetchFunctionDecl(const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters, const StructDecl** owner) const
+FunctionDecl* StructDecl::FetchFunctionDecl(
+    const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters, const StructDecl** owner, bool throwErrorIfNoMatch) const
 {
     /* Fetch symbol from base struct first */
     if (baseStructRef)
@@ -771,7 +778,7 @@ FunctionDecl* StructDecl::FetchFunctionDecl(const std::string& ident, const std:
     if (owner)
         *owner = this;
 
-    return FunctionDecl::FetchFunctionDeclFromList(funcDeclList, ident, argTypeDenoters, false);
+    return FunctionDecl::FetchFunctionDeclFromList(funcDeclList, ident, argTypeDenoters, throwErrorIfNoMatch);
 }
 
 std::string StructDecl::FetchSimilar(const std::string& ident)
@@ -987,6 +994,11 @@ bool FunctionDecl::HasVoidReturnType() const
 bool FunctionDecl::IsMemberFunction() const
 {
     return (structDeclRef != nullptr);
+}
+
+bool FunctionDecl::IsStatic() const
+{
+    return returnType->HasAnyStorageClassesOf({ StorageClass::Static });
 }
 
 std::string FunctionDecl::ToString(bool useParamNames) const

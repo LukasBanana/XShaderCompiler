@@ -380,10 +380,12 @@ DECL_REPORT( VarInitialization,                 "variable initialization"       
 DECL_REPORT( IntrinsicNotDeclaredInObject,      "intrinsic '{0}' not declared in object '{1}'"                                                                  );
 DECL_REPORT( InvalidShaderModelForIntrinsic,    "intrinsic '{0}' requires shader model {1}, but only {2} is specified"                                          );
 DECL_REPORT( InvalidIntrinsicForTexture,        "invalid intrinsic '{0}' for texture object"                                                                    );
-DECL_REPORT( InvalidIntrinsicForStorageBuffer,  "invalid intrinsic '{0}' for storage-buffer object"                                                             );
+DECL_REPORT( InvalidIntrinsicForRWTexture,      "invalid intrinsic '{0}' for RW-texture object"                                                                 );
 DECL_REPORT( InvalidIntrinsicForStreamOutput,   "invalid intrinsic '{0}' for stream-output object"                                                              );
 DECL_REPORT( InvalidGlobalIntrinsicForType,     "invalid global intrinsic '{0}' for type '{1}'"                                                                 );
-DECL_REPORT( InvalidClassIntrinsic,             "invalid class intrinsic '{0}' for global functin call"                                                         );
+DECL_REPORT( InvalidClassIntrinsicForType,      "invalid class intrinsic '{0}' for type '{1}'"                                                                  );
+DECL_REPORT( InvalidClassIntrinsic,             "invalid class intrinsic '{0}' for global function call"                                                        );
+DECL_REPORT( InvalidMemberFuncForType,          "invalid member function '{0}' for type '{1}'"                                                                  );
 DECL_REPORT( InvalidSymbolRefToVarIdent,        "invalid symbol reference to variable identifier '{0}'"                                                         );
 DECL_REPORT( InvalidVarDeclCountInParam,        "invalid number of variable declarations in function parameter"                                                 ); // internal error
 DECL_REPORT( InvalidInputSemanticInEntryPoint,  "invalid input semantic '{0}' in entry point '{1}'"                                                             );
@@ -405,6 +407,8 @@ DECL_REPORT( IllegalStaticAccessToMember,       "illegal static access to non-st
 DECL_REPORT( IllegalNonStaticAccessToType,      "illegal non-static access to type[ '{0}']"                                                                     );
 DECL_REPORT( IllegalStaticAccessToNonType,      "illegal static access to non-type expression"                                                                  );
 DECL_REPORT( IllegalStaticIntrinsicCall,        "illegal static call to intrinsic[ '{0}']"                                                                      );
+DECL_REPORT( IllegalStaticFuncCall,             "illegal static call to function[ '{0}']"                                                                       );
+DECL_REPORT( IllegalNonStaticFuncCall,          "illegal call to static function[ '{0}']"                                                                       );
 DECL_REPORT( DuplicateUseOfOutputSemantic,      "duplicate use of output semantic '{0}'"                                                                        );
 DECL_REPORT( UniformCantBeOutput,               "uniforms can not be defined as output"                                                                         );
 DECL_REPORT( TooManyArgsForAttribute,           "too many arguments for attribute[ '{0}'][ (expected {1}, but got {2})]"                                        );

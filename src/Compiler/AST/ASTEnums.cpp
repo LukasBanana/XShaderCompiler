@@ -919,6 +919,11 @@ bool IsStreamOutputIntrinsic(const Intrinsic t)
     return (t >= Intrinsic::StreamOutput_Append && t <= Intrinsic::StreamOutput_RestartStrip);
 }
 
+bool IsImageIntrinsic(const Intrinsic t)
+{
+    return (t >= Intrinsic::Image_Load && t <= Intrinsic::Image_Store);
+}
+
 
 /* ----- IndexedSemantic Class ----- */
 

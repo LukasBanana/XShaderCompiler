@@ -48,7 +48,9 @@ class HLSLAnalyzer : public Analyzer
 
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
+        #if 0//TODO: remove
         DECL_VISIT_PROC( FunctionCall      );
+        #endif
         DECL_VISIT_PROC( ArrayDimension    );
         DECL_VISIT_PROC( TypeSpecifier     );
         
@@ -90,14 +92,15 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeFunctionCallExpr(FunctionCallExpr* expr);
 
-        void AnalyzeFunctionCall(FunctionCall* funcCall, bool isStatic = false, const TypeDenoter* prefixTypeDenoter = nullptr);
-        void AnalyzeFunctionCallStandard_NEW(FunctionCall* funcCall, bool isStatic = false, const TypeDenoter* prefixTypeDenoter = nullptr);
-        void AnalyzeFunctionCallIntrinsic_NEW(FunctionCall* funcCall, const HLSLIntrinsicEntry& intr, bool isStatic = false, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeFunctionCall(FunctionCall* funcCall, bool isStatic = false, const Expr* prefixExpr = nullptr, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeFunctionCallStandard(FunctionCall* funcCall, bool isStatic = false, const Expr* prefixExpr = nullptr, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeFunctionCallIntrinsic(FunctionCall* funcCall, const HLSLIntrinsicEntry& intr, bool isStatic = false, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeFunctionCallIntrinsicPrimary(FunctionCall* funcCall, const HLSLIntrinsicEntry& intr);
+        void AnalyzeFunctionCallIntrinsicFromBufferType(const FunctionCall* funcCall, const BufferType bufferType);
 
         #if 1//TODO: remove
 
-        void AnalyzeFunctionCallStandard(FunctionCall* ast);
-        void AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLIntrinsicEntry& intr);
+        void AnalyzeFunctionCallStandard_OBSOLETE(FunctionCall* ast);
 
         void AnalyzeIntrinsicWrapperInlining(FunctionCall* ast);
 
@@ -132,7 +135,7 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeObjectExpr(ObjectExpr* expr);
         void AnalyzeObjectExprWithStruct(ObjectExpr* expr, const StructTypeDenoter& structTypeDen);
 
-        bool AnalyzeStaticAccessExpr(const Expr* prefixExpr, const Expr* expr, bool isStatic);
+        bool AnalyzeStaticAccessExpr(const Expr* prefixExpr, bool isStatic, const AST* ast = nullptr);
         bool AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier, const std::string& ident, const Expr* expr, bool isStatic);
 
         void AnalyzeLValueExpr(const Expr* expr, const AST* ast = nullptr);
@@ -164,7 +167,13 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std::vector<Semantic>& inSemantics, const std::vector<Semantic>& outSemantics);
 
+        #if 1//TODO: replace by "AnalyzeEntryPointOutput(ObjectExpr*)" function
         void AnalyzeEntryPointOutput(VarIdent* varIdent);
+        #endif
+
+        #if 1//TODO: make this standard
+        void AnalyzeEntryPointOutput(const ObjectExpr* objectExpr);
+        #endif
 
         /* ----- Secondary entry point ----- */
 

@@ -682,7 +682,10 @@ struct StructDecl : public Decl
     VarDecl* Fetch(const std::string& ident, const StructDecl** owner = nullptr) const;
 
     // Returns the FunctionDecl AST node for the specified argument type denoter list (used to derive the overloaded function).
-    FunctionDecl* FetchFunctionDecl(const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters, const StructDecl** owner = nullptr) const;
+    FunctionDecl* FetchFunctionDecl(
+        const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters,
+        const StructDecl** owner = nullptr, bool throwErrorIfNoMatch = false
+    ) const;
 
     // Returns an identifier that is similar to the specified identifier (for suggestions of typos)
     std::string FetchSimilar(const std::string& ident);
@@ -761,9 +764,14 @@ struct FunctionDecl : public Stmnt
 
     struct ParameterStructure
     {
-        VarIdent*   varIdent;   // Either this is used ...
-        VarDecl*    varDecl;    // ... or this
-        StructDecl* structDecl;
+        #if 1//TODO: replace by "objectExpr"
+        VarIdent*           varIdent;   // Either this is used ...
+        #endif
+        #if 1//TODO: make this standard
+        const ObjectExpr*   objectExpr;
+        #endif
+        VarDecl*            varDecl;    // ... or this
+        StructDecl*         structDecl;
     };
 
     FLAG_ENUM
@@ -781,6 +789,9 @@ struct FunctionDecl : public Stmnt
 
     // Returns true if this is a member function (member of a structure).
     bool IsMemberFunction() const;
+
+    // Returns true if this is a static function (see TypeSpecifier::HasAnyStorageClassesOf).
+    bool IsStatic() const;
     
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
     std::string ToString(bool useParamNames = true) const;
