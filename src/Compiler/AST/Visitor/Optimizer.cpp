@@ -37,6 +37,7 @@ void Optimizer::OptimizeStmntList(std::vector<StmntPtr>& stmnts)
     }
 }
 
+//TODO: exceptional path should not be used to cancel evaluation here!
 void Optimizer::OptimizeExpr(ExprPtr& expr)
 {
     if (expr)
@@ -45,14 +46,14 @@ void Optimizer::OptimizeExpr(ExprPtr& expr)
         {
             /* Try to evaluate expression */
             ConstExprEvaluator exprEval;
-            auto exprValue = exprEval.EvaluateExpr(*expr, [](VarAccessExpr* ast) -> Variant { throw ast; });
+            auto exprValue = exprEval.EvaluateExpr(*expr, [](ObjectExpr* expr) -> Variant { throw expr; });
             expr = ASTFactory::MakeLiteralExpr(exprValue);
         }
         catch (const std::exception&)
         {
             /* ignore this exception */
         }
-        catch (VarAccessExpr*)
+        catch (const ObjectExpr*)
         {
             /* ignore this exception */
         }

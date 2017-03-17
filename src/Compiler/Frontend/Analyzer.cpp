@@ -460,9 +460,9 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
         ConstExprEvaluator exprEvaluator;
         return exprEvaluator.EvaluateExpr(
             expr,
-            [this](VarAccessExpr* ast) -> Variant
+            [this](ObjectExpr* expr) -> Variant
             {
-                return EvaluateConstVarAccessdExpr(*ast);
+                return EvaluateConstExprObject(*expr);
             }
         );
     }
@@ -474,27 +474,24 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
     {
         Error(e.what(), &expr);
     }
-    catch (const VarAccessExpr* varAccessExpr)
+    catch (const ObjectExpr* expr)
     {
-        Error(R_ExpectedConstExpr(), varAccessExpr);
+        Error(R_ExpectedConstExpr, expr);
     }
     return Variant();
 }
 
-Variant Analyzer::EvaluateConstVarAccessdExpr(VarAccessExpr& expr)
+Variant Analyzer::EvaluateConstExprObject(const ObjectExpr& expr)
 {
-    /* Find variable */
-    if (auto symbol = expr.varIdent->symbolRef)
+    /* Fetch variable from expression */
+    if (auto varDecl = expr.FetchVarDecl())
     {
-        if (auto varDecl = symbol->As<VarDecl>())
+        if (auto varDeclStmnt = varDecl->declStmntRef)
         {
-            if (auto varDeclStmnt = varDecl->declStmntRef)
+            if (varDeclStmnt->IsConstOrUniform() && varDecl->initializer)
             {
-                if (varDeclStmnt->IsConstOrUniform() && varDecl->initializer)
-                {
-                    /* Evaluate initializer of constant variable */
-                    return EvaluateConstExpr(*varDecl->initializer);
-                }
+                /* Evaluate initializer of constant variable */
+                return EvaluateConstExpr(*varDecl->initializer);
             }
         }
     }

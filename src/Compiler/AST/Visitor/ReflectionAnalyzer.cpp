@@ -54,13 +54,13 @@ Variant ReflectionAnalyzer::EvaluateConstExpr(Expr& expr)
     {
         /* Evaluate expression and throw error on var-access */
         ConstExprEvaluator exprEvaluator;
-        return exprEvaluator.EvaluateExpr(expr, [](VarAccessExpr* ast) -> Variant { throw ast; });
+        return exprEvaluator.EvaluateExpr(expr, [](ObjectExpr* expr) -> Variant { throw expr; });
     }
     catch (const std::exception&)
     {
         return Variant();
     }
-    catch (const VarAccessExpr*)
+    catch (const ObjectExpr*)
     {
         return Variant();
     }

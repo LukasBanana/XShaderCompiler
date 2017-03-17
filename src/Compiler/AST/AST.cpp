@@ -1648,6 +1648,11 @@ BaseTypeDenoterPtr ObjectExpr::GetTypeDenoterFromSubscript(TypeDenoter& baseType
     RuntimeErr(R_InvalidSubscriptBaseType, this);
 }
 
+VarDecl* ObjectExpr::FetchVarDecl() const
+{
+    return FetchSymbol<VarDecl>();
+}
+
 #if 0
 bool ObjectExpr::IsLValue() const
 {

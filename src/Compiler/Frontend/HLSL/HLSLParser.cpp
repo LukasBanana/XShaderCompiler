@@ -2255,15 +2255,15 @@ Variant HLSLParser::ParseAndEvaluateConstExpr()
 
     try
     {
-        /* Evaluate expression and throw error on var-access */
+        /* Evaluate expression and throw error on object access */
         ConstExprEvaluator exprEvaluator;
-        return exprEvaluator.EvaluateExpr(*expr, [](VarAccessExpr* ast) -> Variant { throw ast; });
+        return exprEvaluator.EvaluateExpr(*expr, [](ObjectExpr* expr) -> Variant { throw expr; });
     }
     catch (const std::exception& e)
     {
         Error(e.what(), tkn.get());
     }
-    catch (const VarAccessExpr* expr)
+    catch (const ObjectExpr* expr)
     {
         GetReportHandler().Error(true, R_ExpectedConstExpr, GetScanner().Source(), expr->area);
     }

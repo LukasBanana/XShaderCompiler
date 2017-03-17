@@ -251,6 +251,7 @@ DECL_REPORT( TypeSpecifier,                     "type specifier"                
 DECL_REPORT( DivisionByZero,                    "division by zero"                                                                                              );
 DECL_REPORT( TypeCast,                          "type cast '{0}'"                                                                                               );
 DECL_REPORT( InitializerList,                   "initializer list"                                                                                              );
+DECL_REPORT( FunctionCall,                      "function call"                                                                                                 );
 
 /* ----- ExprConverter ----- */
 

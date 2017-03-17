@@ -137,8 +137,8 @@ class Analyzer : protected Visitor
         // Evaluates the specified constant expression.
         Variant EvaluateConstExpr(Expr& expr);
 
-        // Evaluates the specified constant variable access expression or throws the expression if it's not constant.
-        Variant EvaluateConstVarAccessdExpr(VarAccessExpr& expr);
+        // Evaluates the specified constant object expression or throws the expression if it's not constant.
+        Variant EvaluateConstExprObject(const ObjectExpr& expr);
 
         // Evaluates the specified constant integer expression.
         int EvaluateConstExprInt(Expr& expr);

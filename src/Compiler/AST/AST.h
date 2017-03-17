@@ -1213,6 +1213,21 @@ struct ObjectExpr : public Expr
     // Returns a type denoter for the vector subscript of this identifier or throws a runtime error on failure.
     BaseTypeDenoterPtr GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const;
 
+    // Returns the specified type of AST node from the symbol (if the symbol refers to one).
+    template <typename T>
+    T* FetchSymbol() const
+    {
+        if (symbolRef)
+        {
+            if (auto ast = symbolRef->As<T>())
+                return ast;
+        }
+        return nullptr;
+    }
+
+    // Returns the variable AST node (if the symbol refers to one).
+    VarDecl* FetchVarDecl() const;
+
     ExprPtr     prefixExpr;             // Optional prefix expression; may be null.
     bool        isStatic    = false;    // Specifies whether this object is a static member.
     std::string ident;                  // Object identifier.

@@ -17,9 +17,9 @@ namespace Xsc
 {
 
 
-Variant ConstExprEvaluator::EvaluateExpr(Expr& ast, const OnVarAccessCallback& onVarAccessCallback)
+Variant ConstExprEvaluator::EvaluateExpr(Expr& ast, const OnObjectExprCallback& onObjectExprCallback)
 {
-    onVarAccessCallback_ = (onVarAccessCallback ? onVarAccessCallback : [](VarAccessExpr* ast) { return Variant(Variant::IntType(0)); });
+    onObjectExprCallback_ = (onObjectExprCallback ? onObjectExprCallback : [](ObjectExpr*) { return Variant(Variant::IntType(0)); });
     Visit(&ast);
     return Pop();
 }
@@ -255,7 +255,7 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 
 IMPLEMENT_VISIT_PROC(FunctionCallExpr)
 {
-    IllegalExpr("function call", ast);
+    IllegalExpr(R_FunctionCall, ast);
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
@@ -263,10 +263,14 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Visit(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(SuffixExpr)
+IMPLEMENT_VISIT_PROC(AssignExpr)
 {
-    //TODO: incomplete!
-    Visit(ast->expr);
+    IllegalExpr(R_VarAssignment, ast);
+}
+
+IMPLEMENT_VISIT_PROC(ObjectExpr)
+{
+    Push(onObjectExprCallback_(ast));
 }
 
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
@@ -315,11 +319,6 @@ IMPLEMENT_VISIT_PROC(CastExpr)
     }
     else
         IllegalExpr(R_TypeCast, ast);
-}
-
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
-{
-    Push(onVarAccessCallback_(ast));
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
