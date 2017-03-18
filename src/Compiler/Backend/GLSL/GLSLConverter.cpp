@@ -731,6 +731,13 @@ bool GLSLConverter::RenameReservedKeyword(Identifier& ident)
             return true;
         }
 
+        /* Check if identifier begins with "gl_" */
+        if (ident.Final().compare(0, 3, "gl_") == 0)
+        {
+            ident.AppendPrefix(nameMangling_.reservedWordPrefix);
+            return true;
+        }
+
         return false;
     }
 }
