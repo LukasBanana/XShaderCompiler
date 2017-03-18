@@ -118,7 +118,9 @@ class Visitor
         VISITOR_VISIT_PROC( PackOffset        );
         VISITOR_VISIT_PROC( ArrayDimension    );
         VISITOR_VISIT_PROC( TypeSpecifier     );
+        #if 1//TODO: remove
         VISITOR_VISIT_PROC( VarIdent          );
+        #endif
 
         VISITOR_VISIT_PROC( VarDecl           );
         VISITOR_VISIT_PROC( BufferDecl        );
@@ -160,8 +162,10 @@ class Visitor
         VISITOR_VISIT_PROC( SuffixExpr        );
         VISITOR_VISIT_PROC( VarAccessExpr     );
         #endif
+        #if 1//TODO: make this standard
         VISITOR_VISIT_PROC( AssignExpr        );
         VISITOR_VISIT_PROC( ObjectExpr        );
+        #endif
         VISITOR_VISIT_PROC( ArrayAccessExpr   );
         VISITOR_VISIT_PROC( CastExpr          );
         VISITOR_VISIT_PROC( InitializerExpr   );
