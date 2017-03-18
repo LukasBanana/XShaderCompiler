@@ -418,7 +418,8 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
     /* Check if the expression must be extended for a struct c'tor */
-    if (auto structTypeDen = ast->typeSpecifier->GetTypeDenoter()->Get()->As<StructTypeDenoter>())
+    const auto& typeDen = ast->typeSpecifier->GetTypeDenoter()->GetAliased();
+    if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
     {
         if (auto structDecl = structTypeDen->structDeclRef)
         {
@@ -526,7 +527,7 @@ bool GLSLConverter::IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter)
 {
     if (typeDenoter)
     {
-        if (auto samplerTypeDen = typeDenoter->Get()->As<SamplerTypeDenoter>())
+        if (auto samplerTypeDen = typeDenoter->GetAliased().As<SamplerTypeDenoter>())
         {
             /* Is the sampler type a sampler-state type? */
             return IsSamplerStateType(samplerTypeDen->samplerType);
@@ -778,13 +779,14 @@ void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
         if (!param->varDecls.empty())
         {
             auto varDecl = param->varDecls.front();
-            auto typeDen = varDecl->GetTypeDenoter()->Get();
-            if (auto arrayTypeDen = typeDen->As<ArrayTypeDenoter>())
+            const auto& typeDen = varDecl->GetTypeDenoter()->GetAliased();
+            if (auto arrayTypeDen = typeDen.As<ArrayTypeDenoter>())
             {
                 /* Mark this member and all structure members as dynamic array */
                 varDecl->flags << VarDecl::isDynamicArray;
 
-                if (auto structBaseTypeDen = arrayTypeDen->baseTypeDenoter->Get()->As<StructTypeDenoter>())
+                const auto& baseTypeDen = arrayTypeDen->baseTypeDenoter->GetAliased();
+                if (auto structBaseTypeDen = baseTypeDen.As<StructTypeDenoter>())
                 {
                     if (structBaseTypeDen->structDeclRef)
                     {
@@ -832,7 +834,7 @@ void GLSLConverter::ConvertIntrinsicCallSaturate(FunctionCall* ast)
     /* Convert "saturate(x)" to "clamp(x, genType(0), genType(1))" */
     if (ast->arguments.size() == 1)
     {
-        auto argTypeDen = ast->arguments.front()->GetTypeDenoter()->Get();
+        auto argTypeDen = ast->arguments.front()->GetTypeDenoter()->GetSub();
         if (argTypeDen->IsBase())
         {
             ast->intrinsic = Intrinsic::Clamp;
@@ -986,9 +988,8 @@ void GLSLConverter::UnrollStmntsVarDecl(std::vector<StmntPtr>& unrolledStmnts, V
 
 void GLSLConverter::UnrollStmntsVarDeclInitializer(std::vector<StmntPtr>& unrolledStmnts, VarDecl* varDecl)
 {
-    auto typeDen = varDecl->GetTypeDenoter()->Get();
-
-    if (auto arrayTypeDen = typeDen->As<ArrayTypeDenoter>())
+    const auto& typeDen = varDecl->GetTypeDenoter()->GetAliased();
+    if (auto arrayTypeDen = typeDen.As<ArrayTypeDenoter>())
     {
         /* Get initializer expression */
         if (auto initExpr = varDecl->initializer->As<InitializerExpr>())

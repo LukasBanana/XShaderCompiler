@@ -29,7 +29,8 @@ void ExprConverter::Convert(Program& program, const Flags& conversionFlags)
 // Converts the expression to a cast expression if it is required for the specified target type.
 void ExprConverter::ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize)
 {
-    if (auto baseSourceTypeDen = expr->GetTypeDenoter()->Get()->As<BaseTypeDenoter>())
+    const auto& sourceTypeDen = expr->GetTypeDenoter()->GetAliased();
+    if (auto baseSourceTypeDen = sourceTypeDen.As<BaseTypeDenoter>())
     {
         if (auto dataType = MustCastExprToDataType(targetType, baseSourceTypeDen->dataType, matchTypeSize))
         {
@@ -41,7 +42,7 @@ void ExprConverter::ConvertExprIfCastRequired(ExprPtr& expr, const DataType targ
 
 void ExprConverter::ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize)
 {
-    if (auto dataType = MustCastExprToDataType(targetTypeDen, *expr->GetTypeDenoter()->Get(), matchTypeSize))
+    if (auto dataType = MustCastExprToDataType(targetTypeDen, expr->GetTypeDenoter()->GetAliased(), matchTypeSize))
     {
         /* Convert to cast expression with target data type if required */
         expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
@@ -144,7 +145,7 @@ void ExprConverter::ConvertExprVectorSubscript(ExprPtr& expr)
 void ExprConverter::ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* suffixExpr)
 {
     /* Get type denoter of sub expression */
-    auto typeDen        = suffixExpr->expr->GetTypeDenoter()->Get();
+    auto typeDen        = suffixExpr->expr->GetTypeDenoter()->GetSub();
     auto suffixIdentRef = &(suffixExpr->varIdent);
     auto varIdent       = suffixExpr->varIdent.get();
 
@@ -254,8 +255,8 @@ void ExprConverter::ConvertExprVectorCompareBinary(ExprPtr& expr, BinaryExpr* bi
     /* Convert vector comparison */
     if (IsCompareOp(binaryExpr->op))
     {
-        auto typeDen = binaryExpr->GetTypeDenoter()->Get();
-        if (typeDen->IsVector())
+        const auto& typeDen = binaryExpr->GetTypeDenoter()->GetAliased();
+        if (typeDen.IsVector())
         {
             /* Convert comparison operator into intrinsic */
             auto intrinsic = CompareOpToIntrinsic(binaryExpr->op);
@@ -440,7 +441,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         }
         ConvertExpr(ast->initializer, AllPostVisit);
 
-        IfFlaggedConvertExprIfCastRequired(ast->initializer, *ast->GetTypeDenoter()->Get());
+        IfFlaggedConvertExprIfCastRequired(ast->initializer, ast->GetTypeDenoter()->GetAliased());
     }
     else
         VISIT_DEFAULT(VarDecl);
@@ -517,7 +518,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         ConvertExpr(ast->expr, AllPostVisit);
 
         if (auto funcDecl = ActiveFunctionDecl())
-            IfFlaggedConvertExprIfCastRequired(ast->expr, *(funcDecl->returnType->GetTypeDenoter()->Get()));
+            IfFlaggedConvertExprIfCastRequired(ast->expr, funcDecl->returnType->GetTypeDenoter()->GetAliased());
     }
 }
 
@@ -551,8 +552,8 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
     bool matchTypeSize = (ast->op != BinaryOp::Mul && ast->op != BinaryOp::Div);
 
     auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(
-        ast->lhsExpr->GetTypeDenoter()->Get(),
-        ast->rhsExpr->GetTypeDenoter()->Get()
+        ast->lhsExpr->GetTypeDenoter()->GetSub(),
+        ast->rhsExpr->GetTypeDenoter()->GetSub()
     );
 
     IfFlaggedConvertExprIfCastRequired(ast->lhsExpr, *commonTypeDen, matchTypeSize);
@@ -602,7 +603,7 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
         }
         ConvertExpr(ast->assignExpr, AllPostVisit);
 
-        IfFlaggedConvertExprIfCastRequired(ast->assignExpr, *ast->GetTypeDenoter()->Get());
+        IfFlaggedConvertExprIfCastRequired(ast->assignExpr, ast->GetTypeDenoter()->GetAliased());
     }
     else
         VISIT_DEFAULT(VarAccessExpr);
