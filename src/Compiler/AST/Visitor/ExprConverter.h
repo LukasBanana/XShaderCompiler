@@ -86,11 +86,7 @@ class ExprConverter : public Visitor
 
         // Converts the expression from an image access to the respective intrinsic call (e.g. "image[int2(1, 2)]" -> "imageLoad(image, ivec2(1, 2))").
         void ConvertExprImageAccess(ExprPtr& expr);
-        #if 0//TODO: remove
-        void ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr* varAccessExpr);
-        #else
         void ConvertExprImageAccessAssign(ExprPtr& expr, AssignExpr* assignExpr);
-        #endif
         void ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr, AssignExpr* assignExpr = nullptr);
         
         // Moves the expression as sub expression into a bracket (e.g. "- -x" -> "-(-x)").

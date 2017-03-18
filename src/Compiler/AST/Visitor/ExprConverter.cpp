@@ -215,101 +215,18 @@ void ExprConverter::ConvertExprImageAccess(ExprPtr& expr)
     if (!expr->flags(Expr::wasConverted))
     {
         /* Is this an array access to an image buffer or texture? */
-        #if 0
-        if (auto varAccessExpr = expr->As<VarAccessExpr>())
-            ConvertExprImageAccessVarAccess(expr, varAccessExpr);
-        #else
         if (auto assignExpr = expr->As<AssignExpr>())
             ConvertExprImageAccessAssign(expr, assignExpr);
-        #endif
         else if (auto arrayAccessExpr = expr->As<ArrayAccessExpr>())
             ConvertExprImageAccessArrayAccess(expr, arrayAccessExpr);
     }
 }
-
-#if 0//TODO: remove
-
-void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr* varAccessExpr)
-{
-    /* Is this the variable a buffer declaration? */
-    if (auto bufferDecl = varAccessExpr->varIdent->FetchSymbol<BufferDecl>())
-    {
-        /* Is the buffer declaration a read/write texture? */
-        const auto bufferType = bufferDecl->GetBufferType();
-        if (IsRWTextureBufferType(bufferType))
-        {
-            /* Get buffer type denoter from array indices of identifier */
-            auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetFromArray(
-                varAccessExpr->varIdent->arrayIndices.size()
-            );
-
-            if (!varAccessExpr->varIdent->arrayIndices.empty())
-            {
-                /* Translate reads to imageLoad() function call */
-                if (varAccessExpr->assignOp == AssignOp::Undefined)
-                {
-                    /* Make first argument expression */
-                    auto arg0Expr = ASTFactory::MakeVarAccessExpr(varAccessExpr->varIdent->ident, bufferDecl);
-                    arg0Expr->flags << Expr::wasConverted;
-
-                    /* Get second argument expression (last array index) */
-                    auto arg1Expr = varAccessExpr->varIdent->arrayIndices.back();
-
-                    /* Convert expression to intrinsic call */
-                    expr = ASTFactory::MakeIntrinsicCallExpr(
-                        Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
-                    );
-                }
-                /* Translate writes to imageStore() function call */
-                else // Write
-                {
-                    /* Make first argument expression */
-                    auto arg0Expr = ASTFactory::MakeVarAccessExpr(varAccessExpr->varIdent->ident, bufferDecl);
-                    arg0Expr->flags << Expr::wasConverted;
-
-                    /* Get second argument expression (last array index) */
-                    auto arg1Expr = varAccessExpr->varIdent->arrayIndices.back();
-
-                    /* Get third argument expression (store value) */
-                    ExprPtr arg2Expr;
-
-                    /* If its a normal assignment, then assign expression is the store value */
-                    if (varAccessExpr->assignOp == AssignOp::Set)
-                        arg2Expr = varAccessExpr->assignExpr;
-                    else 
-                    {
-                        /* Otherwise must be compound assignment, in which case we need to do a read as well */
-                        auto lhsExpr = ASTFactory::MakeIntrinsicCallExpr(
-                            Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
-                        );
-
-                        auto rhsExpr = varAccessExpr->assignExpr;
-                        const auto binaryOp = AssignOpToBinaryOp(varAccessExpr->assignOp);
-
-                        arg2Expr = ASTFactory::MakeBinaryExpr(lhsExpr, binaryOp, rhsExpr);
-                    }
-
-                    /* Convert expression to intrinsic call */
-                    expr = ASTFactory::MakeIntrinsicCallExpr(
-                        Intrinsic::Image_Store, "imageStore", nullptr, { arg0Expr, arg1Expr, arg2Expr }
-                    );
-                }
-            }
-            else
-                RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), varAccessExpr);
-        }
-    }
-}
-
-#else
 
 void ExprConverter::ConvertExprImageAccessAssign(ExprPtr& expr, AssignExpr* assignExpr)
 {
     if (auto arrayAccessExpr = assignExpr->lvalueExpr->As<ArrayAccessExpr>())
         ConvertExprImageAccessArrayAccess(expr, arrayAccessExpr, assignExpr);
 }
-
-#endif
 
 /*
 ~~~~~~~~~~ TODO: ~~~~~~~~~~
