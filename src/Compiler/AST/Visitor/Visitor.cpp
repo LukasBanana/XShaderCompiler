@@ -303,14 +303,6 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
 
 #if 1//TODO: remove
 
-IMPLEMENT_VISIT_PROC(SuffixExpr)
-{
-    #if 0
-    Visit(ast->expr);
-    Visit(ast->varIdent);
-    #endif
-}
-
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     #if 0

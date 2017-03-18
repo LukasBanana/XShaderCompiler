@@ -1633,14 +1633,6 @@ VarIdent* BracketExpr::FetchVarIdent() const
 #endif
 
 
-/* ----- SuffixExpr ----- */
-
-TypeDenoterPtr SuffixExpr::DeriveTypeDenoter()
-{
-    return expr->GetTypeDenoter()->Get(varIdent.get());
-}
-
-
 //TODO: replace by "ObjectExpr" and "AssignExpr"
 #if 1
 /* ----- VarAccessExpr ----- */

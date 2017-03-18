@@ -892,13 +892,6 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
 
 #if 0//TODO: remove
 
-IMPLEMENT_VISIT_PROC(SuffixExpr)
-{
-    Visit(ast->expr);
-    Write(".");
-    Visit(ast->varIdent);
-}
-
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     if (ast->varIdent->flags(VarIdent::isImmutable))

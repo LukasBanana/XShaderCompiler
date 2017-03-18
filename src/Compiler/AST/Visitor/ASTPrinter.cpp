@@ -65,12 +65,7 @@ IMPLEMENT_VISIT_PROC_DEFAULT(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    //TODO: remove
-    #if 0
-    PRINT_AST_EXT(FunctionCall, (ast->varIdent ? ast->varIdent->Last()->ident : ""));
-    #else
     PRINT_AST_EXT(FunctionCall, ast->ident);
-    #endif
 }
 
 IMPLEMENT_VISIT_PROC_DEFAULT(Attribute)
@@ -101,15 +96,6 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
 {
     PRINT_AST_EXT(TypeSpecifier, ast->ToString());
 }
-
-#if 1//TODO: remove
-
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    PRINT_AST_EXT(VarIdent, ast->ident);
-}
-
-#endif
 
 /* --- Declaration --- */
 
@@ -236,22 +222,12 @@ IMPLEMENT_VISIT_PROC(FunctionCallExpr)
 
 IMPLEMENT_VISIT_PROC_DEFAULT(BracketExpr)
 
-#if 1//TODO: remove
-IMPLEMENT_VISIT_PROC_DEFAULT(SuffixExpr)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(VarAccessExpr)
-#endif
-
-#if 1//TODO: make this standard
-
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
     PRINT_AST_EXT(ObjectExpr, IdentWithPrefixOpt(ast->prefixExpr != nullptr, ast->isStatic, ast->ident));
 }
 
 IMPLEMENT_VISIT_PROC_DEFAULT(AssignExpr)
-
-#endif
 
 IMPLEMENT_VISIT_PROC_DEFAULT(ArrayAccessExpr)
 

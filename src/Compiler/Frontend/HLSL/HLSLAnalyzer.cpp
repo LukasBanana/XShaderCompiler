@@ -636,24 +636,6 @@ IMPLEMENT_VISIT_PROC(FunctionCallExpr)
 
 #if 0//TODO: remove
 
-IMPLEMENT_VISIT_PROC(SuffixExpr)
-{
-    Visit(ast->expr);
-
-    /* Left-hand-side of the suffix expression must be either from type structure or base (for vector subscript) */
-    auto typeDenoter = ast->expr->GetTypeDenoter()->Get();
-
-    if (auto structTypeDen = typeDenoter->As<StructTypeDenoter>())
-    {
-        /* Fetch struct member variable declaration from next identifier */
-        if (auto memberVarDecl = FetchFromStruct(*structTypeDen, ast->varIdent->ident, ast->varIdent.get()))
-        {
-            /* Analyzer next identifier with fetched symbol */
-            AnalyzeVarIdentWithSymbol(ast->varIdent.get(), memberVarDecl);
-        }
-    }
-}
-
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     AnalyzeVarIdent(ast->varIdent.get());

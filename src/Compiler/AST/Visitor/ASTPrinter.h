@@ -50,9 +50,6 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( PackOffset        );
         DECL_VISIT_PROC( ArrayDimension    );
         DECL_VISIT_PROC( TypeSpecifier     );
-        #if 1//TODO: remove
-        DECL_VISIT_PROC( VarIdent          );
-        #endif
 
         DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( BufferDecl        );
@@ -90,14 +87,8 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( FunctionCallExpr  );
         DECL_VISIT_PROC( BracketExpr       );
-        #if 1//TODO: remove
-        DECL_VISIT_PROC( SuffixExpr        );
-        DECL_VISIT_PROC( VarAccessExpr     );
-        #endif
-        #if 1//TODO: make this standard
         DECL_VISIT_PROC( ObjectExpr        );
         DECL_VISIT_PROC( AssignExpr        );
-        #endif
         DECL_VISIT_PROC( ArrayAccessExpr   );
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( InitializerExpr   );

@@ -131,7 +131,6 @@ struct AST
         FunctionCallExpr,
         BracketExpr,
         #if 1//TODO: remove
-        SuffixExpr,
         VarAccessExpr,
         #endif
         #if 1//TODO: make this standard
@@ -1186,22 +1185,6 @@ struct BracketExpr : public Expr
     ExprPtr expr; // Inner expression
 };
 
-//TODO: replace this by "ObjectExpr"
-#if 1
-
-// Suffix expression (e.g. "foo().suffix").
-struct SuffixExpr : public Expr
-{
-    AST_INTERFACE(SuffixExpr);
-
-    TypeDenoterPtr DeriveTypeDenoter() override;
-
-    ExprPtr     expr;       // Sub expression (left hand side)
-    VarIdentPtr varIdent;   // Suffix var identifier (right hand side)
-};
-
-#endif
-
 //TODO: replace by "ObjectExpr" and "AssignExpr"
 #if 1
 
@@ -1221,7 +1204,7 @@ struct VarAccessExpr : public Expr
 
 #endif
 
-//TODO: make these AST classes standard (it will replace "VarAccessExpr" and "SuffixExpr")
+//TODO: make this standard
 #if 1
 
 // Assignment expression.
