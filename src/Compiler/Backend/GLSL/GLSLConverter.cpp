@@ -865,11 +865,11 @@ void GLSLConverter::ConvertIntrinsicCallSaturate(FunctionCall* ast)
 static int GetTextureVectorSizeFromIntrinsicCall(FunctionCall* ast)
 {
     /* Get buffer object from sample intrinsic call */
-    if (ast->varIdent)
+    if (const auto& prefixExpr = ast->exprRef->prefixExpr)
     {
-        if (auto symbolRef = ast->varIdent->symbolRef)
+        if (auto lvalueExpr = ast->exprRef->prefixExpr->FetchLValueExpr())
         {
-            if (auto bufferDecl = symbolRef->As<BufferDecl>())
+            if (auto bufferDecl = lvalueExpr->FetchSymbol<BufferDecl>())
             {
                 /* Determine vector size for texture intrinsic parametes */
                 switch (bufferDecl->GetBufferType())

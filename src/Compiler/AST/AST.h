@@ -401,15 +401,7 @@ struct FunctionCall : public TypedAST
     // Inserts the specified argument expression at the front of the argument list.
     void PushArgumentFront(ExprPtr&& expr);
 
-    //TODO: replace VarIdent by atomic identifier string
-    #if 1
-    VarIdentPtr             varIdent;                                   // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
-    #endif
-
-    //TODO: make the standard as a replacement to "varIdent"
-    #if 1
-    std::string             ident;                                      // Function name identifier (this is mpty for type constructors)
-    #endif
+    std::string             ident;                                      // Function name identifier (this is empty for type constructors)
     TypeDenoterPtr          typeDenoter;                                // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
     std::vector<ExprPtr>    arguments;
 

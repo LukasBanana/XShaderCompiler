@@ -2130,7 +2130,7 @@ void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* funcCall, std::size_t n
 {
     auto numArgs = funcCall->arguments.size();
     if (numArgs < numArgsMin || numArgs > numArgsMax)
-        Error(R_InvalidIntrinsicArgCount(funcCall->varIdent->Last()->ident), funcCall);
+        Error(R_InvalidIntrinsicArgCount(funcCall->ident), funcCall);
 }
 
 void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* funcCall)
@@ -2163,7 +2163,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* funcCall)
             if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
                 Write(*keyword);
             else
-                ErrorIntrinsic(funcCall->varIdent->Last()->ToString(), funcCall);
+                ErrorIntrinsic(funcCall->ident, funcCall);
         }
         else if (!funcCall->ident.empty())
         {
@@ -2352,7 +2352,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* funcCall)
         Write(")");
     }
     else
-        ErrorIntrinsic(funcCall->varIdent->ToString(), funcCall);
+        ErrorIntrinsic(funcCall->ident, funcCall);
 }
 
 void GLSLGenerator::WriteFunctionCallIntrinsicStreamOutputAppend(FunctionCall* funcCall)
@@ -2385,7 +2385,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicTextureQueryLod(FunctionCall* func
         Write(clamped ? "y" : "x");
     }
     else
-        ErrorIntrinsic(funcCall->varIdent->ToString(), funcCall);
+        ErrorIntrinsic(funcCall->ident, funcCall);
 }
 
 /* --- Intrinsics wrapper functions --- */
