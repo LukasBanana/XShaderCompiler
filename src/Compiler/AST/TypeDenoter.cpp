@@ -98,28 +98,6 @@ void TypeDenoter::SetIdentIfAnonymous(const std::string& ident)
     // dummy
 }
 
-#if 0//TODO: remove
-
-TypeDenoterPtr TypeDenoter::Get(const VarIdent* varIdent)
-{
-    if (varIdent)
-        RuntimeErr(R_VarIdentCantBeResolved, varIdent);
-    else
-        return shared_from_this();
-}
-
-TypeDenoterPtr TypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
-{
-    if (numArrayIndices > 0)
-        RuntimeErr(R_IllegalArrayAccess(ToString()), varIdent);
-    else
-        return Get(varIdent);
-}
-
-#endif
-
-#if 1//TODO: make this standard
-
 TypeDenoterPtr TypeDenoter::GetSub(const Expr* expr)
 {
     if (expr)
@@ -145,8 +123,6 @@ TypeDenoterPtr TypeDenoter::GetSubArray(const std::size_t numArrayIndices, const
     else
         return shared_from_this();
 }
-
-#endif
 
 const TypeDenoter& TypeDenoter::GetAliased() const
 {
@@ -344,68 +320,6 @@ bool BaseTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     #endif
 }
 
-#if 0//TODO: remove
-
-TypeDenoterPtr BaseTypeDenoter::Get(const VarIdent* varIdent)
-{
-    if (varIdent)
-    {
-        /* Resolve vector/matrix subscript (swizzle operator) */
-        try
-        {
-            auto subscriptDataType = SubscriptDataType(dataType, varIdent->ident);
-            auto subscriptTypeDenoter = std::make_shared<BaseTypeDenoter>(subscriptDataType);
-            return subscriptTypeDenoter->Get(varIdent->next.get());
-        }
-        catch (const ASTRuntimeError&)
-        {
-            throw;
-        }
-        catch (const std::exception& e)
-        {
-            RuntimeErr(e.what(), varIdent);
-        }
-    }
-    return TypeDenoter::Get(varIdent);
-}
-
-TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
-{
-    auto typeDenoter = Get();
-
-    if (numArrayIndices > 0)
-    {
-        /* Convert vector or matrix type for array access */
-        if (IsVectorType(dataType))
-        {
-            /* Return scalar type */
-            if (numArrayIndices > 1)
-                RuntimeErr(R_TooManyArrayDimensions(R_VectorTypeDen));
-            else
-                typeDenoter = std::make_shared<BaseTypeDenoter>(BaseDataType(dataType));
-        }
-        else if (IsMatrixType(dataType))
-        {
-            /* Return scalar or vector type */
-            if (numArrayIndices == 1)
-            {
-                auto matrixDim = MatrixTypeDim(dataType);
-                typeDenoter = std::make_shared<BaseTypeDenoter>(VectorDataType(BaseDataType(dataType), matrixDim.second));
-            }
-            else if (numArrayIndices == 2)
-                typeDenoter = std::make_shared<BaseTypeDenoter>(BaseDataType(dataType));
-            else if (numArrayIndices > 2)
-                RuntimeErr(R_TooManyArrayDimensions(R_MatrixTypeDen));
-        }
-        else
-            return TypeDenoter::GetFromArray(numArrayIndices, varIdent);
-    }
-
-    return typeDenoter->Get(varIdent);
-}
-
-#endif
-
 TypeDenoterPtr BaseTypeDenoter::GetSubObject(const std::string& ident, const AST* ast)
 {
     /* Resolve vector/matrix subscript (swizzle operator) */
@@ -509,17 +423,6 @@ bool BufferTypeDenoter::Equals(const TypeDenoter& rhs) const
     return false;
 }
 
-#if 0//TODO: remove
-
-TypeDenoterPtr BufferTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
-{
-    if (numArrayIndices > 0)
-        return GetGenericTypeDenoter()->GetFromArray(numArrayIndices - 1, varIdent);
-    return Get(varIdent);
-}
-
-#endif
-
 TypeDenoterPtr BufferTypeDenoter::GetSubArray(const std::size_t numArrayIndices, const AST* ast)
 {
     if (numArrayIndices > 0)
@@ -603,37 +506,6 @@ void StructTypeDenoter::SetIdentIfAnonymous(const std::string& ident)
         this->ident = ident;
 }
 
-#if 0//TODO: remove
-
-TypeDenoterPtr StructTypeDenoter::Get(const VarIdent* varIdent)
-{
-    if (varIdent)
-    {
-        if (structDeclRef)
-        {
-            const auto& ident = varIdent->ident;
-            if (auto varDecl = structDeclRef->Fetch(ident))
-            {
-                return varDecl->GetTypeDenoter()->GetFromArray(
-                    varIdent->arrayIndices.size(), varIdent->next.get()
-                );
-            }
-            else
-            {
-                RuntimeErr(
-                    R_UndeclaredIdent(ident, structDeclRef->ToString(), structDeclRef->FetchSimilar(ident)),
-                    varIdent
-                );
-            }
-        }
-        else
-            RuntimeErr(R_MissingRefToStructDecl(ident), varIdent);
-    }
-    return TypeDenoter::Get(varIdent);
-}
-
-#endif
-
 TypeDenoterPtr StructTypeDenoter::GetSubObject(const std::string& ident, const AST* ast)
 {
     if (structDeclRef)
@@ -693,22 +565,6 @@ void AliasTypeDenoter::SetIdentIfAnonymous(const std::string& ident)
     if (this->ident.empty())
         this->ident = ident;
 }
-
-#if 0//TODO: remove
-
-TypeDenoterPtr AliasTypeDenoter::Get(const VarIdent* varIdent)
-{
-    if (aliasDeclRef)
-        return aliasDeclRef->GetTypeDenoter()->Get(varIdent);
-    RuntimeErr(R_MissingRefToAliasDecl(ident), varIdent);
-}
-
-TypeDenoterPtr AliasTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
-{
-    return Get()->GetFromArray(numArrayIndices, varIdent);
-}
-
-#endif
 
 TypeDenoterPtr AliasTypeDenoter::GetSub(const Expr* expr)
 {
@@ -787,48 +643,6 @@ std::string ArrayTypeDenoter::ToString() const
 
     return typeName;
 }
-
-#if 0//TODO: remove
-
-TypeDenoterPtr ArrayTypeDenoter::Get(const VarIdent* varIdent)
-{
-    if (varIdent)
-    {
-        /* Get base type denoter with next identifier */
-        return GetWithIndices(varIdent->arrayIndices.size(), varIdent->next.get());
-    }
-    return TypeDenoter::Get(varIdent);
-}
-
-TypeDenoterPtr ArrayTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
-{
-    /* Get base type denoter with identifier */
-    return GetWithIndices(numArrayIndices, varIdent);
-}
-
-TypeDenoterPtr ArrayTypeDenoter::GetWithIndices(std::size_t numArrayIndices, const VarIdent* varIdent)
-{
-    auto numDims = arrayDims.size();
-    
-    if (numArrayIndices == 0)
-    {
-        /* Just return this array type denoter */
-        return shared_from_this();
-    }
-
-    if (numArrayIndices < numDims)
-    {
-        /* Make new array type denoter with less dimensions */
-        auto subArrayDims = arrayDims;
-        subArrayDims.resize(numDims - numArrayIndices);
-        return std::make_shared<ArrayTypeDenoter>(baseTypeDenoter, subArrayDims);
-    }
-
-    /* Get base type denoter with next identifier */
-    return baseTypeDenoter->GetFromArray(numArrayIndices - numDims, varIdent);
-}
-
-#endif
 
 TypeDenoterPtr ArrayTypeDenoter::GetSubArray(const std::size_t numArrayIndices, const AST* ast)
 {
