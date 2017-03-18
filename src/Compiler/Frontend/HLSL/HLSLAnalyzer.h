@@ -101,10 +101,6 @@ class HLSLAnalyzer : public Analyzer
         bool AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* funcCall);
         bool AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const FunctionCall* funcCall, const BufferType bufferType);
 
-        #endif
-
-        #if 0//TODO: replace this by "ObjectExpr" and "FunctionCallExpr"
-
         /* ----- Variable identifier ----- */
 
         void AnalyzeVarIdent(VarIdent* varIdent);
@@ -122,8 +118,6 @@ class HLSLAnalyzer : public Analyzer
 
         #endif
 
-        #if 1//TODO: make this standard
-
         /* ----- Object expressions ----- */
 
         void AnalyzeObjectExpr(ObjectExpr* expr);
@@ -137,8 +131,6 @@ class HLSLAnalyzer : public Analyzer
         /* ----- Array access expression ----- */
 
         void AnalyzeArrayAccessExpr(ArrayAccessExpr* expr);
-
-        #endif
 
         /* ----- Entry point ----- */
 

@@ -488,9 +488,9 @@ void Analyzer::AnalyzeConditionalExpression(Expr* expr)
     Visit(expr);
 
     /* Verify boolean type denoter in conditional expression */
-    auto condTypeDen = expr->GetTypeDenoter()->Get();
-    if (!condTypeDen->IsScalar())
-        Error(R_ConditionalExprNotScalar(condTypeDen->ToString()), expr);
+    const auto& condTypeDen = expr->GetTypeDenoter()->GetAliased();
+    if (!condTypeDen.IsScalar())
+        Error(R_ConditionalExprNotScalar(condTypeDen.ToString()), expr);
 }
 
 /* ----- Const-expression evaluation ----- */

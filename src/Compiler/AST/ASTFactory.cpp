@@ -75,8 +75,8 @@ FunctionCallExprPtr MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObje
     {
         auto funcCall = MakeAST<FunctionCall>();
         {
-            auto typeDen = textureObjectExpr->GetTypeDenoter()->Get();
-            if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
+            const auto& typeDen = textureObjectExpr->GetTypeDenoter()->GetAliased();
+            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
             {
                 funcCall->typeDenoter = std::make_shared<SamplerTypeDenoter>(TextureTypeToSamplerType(bufferTypeDen->bufferType));
                 funcCall->arguments.push_back(textureObjectExpr);
@@ -278,13 +278,13 @@ static ExprPtr MakeConstructorListExprPrimary(
     {
         auto ast = MakeAST<ListExpr>();
         {
-            ast->firstExpr  = MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->Get());
+            ast->firstExpr  = MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->GetSub());
             ast->nextExpr   = MakeConstructorListExprPrimary(literalExpr, typeDensBegin + 1, typeDensEnd);
         }
         return ast;
     }
     else
-        return MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->Get());
+        return MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->GetSub());
 }
 
 ExprPtr MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::vector<TypeDenoterPtr>& listTypeDens)

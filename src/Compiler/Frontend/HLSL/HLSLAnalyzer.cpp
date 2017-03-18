@@ -1032,10 +1032,6 @@ bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const
     return false;
 }
 
-#endif
-
-#if 0//TODO: replace this by "ObjectExpr" and "FunctionCallExpr"
-
 /* ----- Variable identifier ----- */
 
 void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
@@ -1241,8 +1237,6 @@ void HLSLAnalyzer::AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast)
 
 #endif
 
-#if 1//TODO: make this standard
-
 /* ----- Object expressions ----- */
 
 void HLSLAnalyzer::AnalyzeObjectExpr(ObjectExpr* expr)
@@ -1404,8 +1398,6 @@ void HLSLAnalyzer::AnalyzeArrayAccessExpr(ArrayAccessExpr* expr)
         Error(e.what(), expr);
     }
 }
-
-#endif
 
 /* ----- Entry point ----- */
 

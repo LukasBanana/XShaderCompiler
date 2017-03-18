@@ -98,7 +98,7 @@ void TypeDenoter::SetIdentIfAnonymous(const std::string& ident)
     // dummy
 }
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 TypeDenoterPtr TypeDenoter::Get(const VarIdent* varIdent)
 {
@@ -212,7 +212,7 @@ static TypeDenoterPtr FindCommonTypeDenoterVectorAndVector(BaseTypeDenoter* lhsT
 static TypeDenoterPtr FindCommonTypeDenoterAnyAndAny(TypeDenoter* lhsTypeDen, TypeDenoter* rhsTypeDen)
 {
     /* Always use type of left hand side */
-    return lhsTypeDen->Get();
+    return lhsTypeDen->GetSub();
 }
 
 TypeDenoterPtr TypeDenoter::FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeDen, const TypeDenoterPtr& rhsTypeDen)
@@ -344,7 +344,7 @@ bool BaseTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     #endif
 }
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 TypeDenoterPtr BaseTypeDenoter::Get(const VarIdent* varIdent)
 {
@@ -406,9 +406,6 @@ TypeDenoterPtr BaseTypeDenoter::GetFromArray(std::size_t numArrayIndices, const 
 
 #endif
 
-//TODO: use this
-#if 1
-
 TypeDenoterPtr BaseTypeDenoter::GetSubObject(const std::string& ident, const AST* ast)
 {
     /* Resolve vector/matrix subscript (swizzle operator) */
@@ -455,8 +452,6 @@ TypeDenoterPtr BaseTypeDenoter::GetSubArray(const std::size_t numArrayIndices, c
 
     return GetSub();
 }
-
-#endif
 
 
 /* ----- BufferTypeDenoter ----- */
@@ -514,7 +509,7 @@ bool BufferTypeDenoter::Equals(const TypeDenoter& rhs) const
     return false;
 }
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 TypeDenoterPtr BufferTypeDenoter::GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent)
 {
@@ -525,8 +520,6 @@ TypeDenoterPtr BufferTypeDenoter::GetFromArray(std::size_t numArrayIndices, cons
 
 #endif
 
-#if 1//TODO: use this
-
 TypeDenoterPtr BufferTypeDenoter::GetSubArray(const std::size_t numArrayIndices, const AST* ast)
 {
     if (numArrayIndices > 0)
@@ -534,8 +527,6 @@ TypeDenoterPtr BufferTypeDenoter::GetSubArray(const std::size_t numArrayIndices,
     else
         return shared_from_this();
 }
-
-#endif
 
 TypeDenoterPtr BufferTypeDenoter::GetGenericTypeDenoter() const
 {
@@ -612,7 +603,7 @@ void StructTypeDenoter::SetIdentIfAnonymous(const std::string& ident)
         this->ident = ident;
 }
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 TypeDenoterPtr StructTypeDenoter::Get(const VarIdent* varIdent)
 {
@@ -643,9 +634,6 @@ TypeDenoterPtr StructTypeDenoter::Get(const VarIdent* varIdent)
 
 #endif
 
-//TODO: use this
-#if 1
-
 TypeDenoterPtr StructTypeDenoter::GetSubObject(const std::string& ident, const AST* ast)
 {
     if (structDeclRef)
@@ -665,8 +653,6 @@ TypeDenoterPtr StructTypeDenoter::GetSubObject(const std::string& ident, const A
     }
     RuntimeErr(R_MissingRefToStructDecl(ident), ast);
 }
-
-#endif
 
 AST* StructTypeDenoter::SymbolRef() const
 {
@@ -708,7 +694,7 @@ void AliasTypeDenoter::SetIdentIfAnonymous(const std::string& ident)
         this->ident = ident;
 }
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 TypeDenoterPtr AliasTypeDenoter::Get(const VarIdent* varIdent)
 {
@@ -723,9 +709,6 @@ TypeDenoterPtr AliasTypeDenoter::GetFromArray(std::size_t numArrayIndices, const
 }
 
 #endif
-
-//TODO: use this
-#if 1
 
 TypeDenoterPtr AliasTypeDenoter::GetSub(const Expr* expr)
 {
@@ -750,8 +733,6 @@ TypeDenoterPtr AliasTypeDenoter::GetSubArray(const std::size_t numArrayIndices, 
     else
         RuntimeErr(R_MissingRefToAliasDecl(ident), ast);
 }
-
-#endif
 
 const TypeDenoter& AliasTypeDenoter::GetAliased() const
 {
@@ -807,7 +788,7 @@ std::string ArrayTypeDenoter::ToString() const
     return typeName;
 }
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 TypeDenoterPtr ArrayTypeDenoter::Get(const VarIdent* varIdent)
 {
@@ -849,9 +830,6 @@ TypeDenoterPtr ArrayTypeDenoter::GetWithIndices(std::size_t numArrayIndices, con
 
 #endif
 
-//TODO: use this
-#if 1
-
 TypeDenoterPtr ArrayTypeDenoter::GetSubArray(const std::size_t numArrayIndices, const AST* ast)
 {
     const auto numDims = arrayDims.size();
@@ -873,8 +851,6 @@ TypeDenoterPtr ArrayTypeDenoter::GetSubArray(const std::size_t numArrayIndices, 
     /* Get base type denoter with next identifier */
     return baseTypeDenoter->GetSubArray(numArrayIndices - numDims, ast);
 }
-
-#endif
 
 bool ArrayTypeDenoter::Equals(const TypeDenoter& rhs) const
 {

@@ -130,8 +130,8 @@ void Program::RegisterIntrinsicUsage(const Intrinsic intrinsic, const std::vecto
         argList.argTypes.reserve(arguments.size());
         for (auto& arg : arguments)
         {
-            auto typeDen = arg->GetTypeDenoter()->Get();
-            if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
+            const auto& typeDen = arg->GetTypeDenoter()->GetAliased();
+            if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
                 argList.argTypes.push_back(baseTypeDen->dataType);
         }
     }
@@ -151,6 +151,7 @@ const IntrinsicUsage* Program::FetchIntrinsicUsage(const Intrinsic intrinsic) co
 
 std::string VarIdent::ToString() const
 {
+    #if 0//TODO: remove
     std::string s;
 
     auto ast = this;
@@ -170,6 +171,9 @@ std::string VarIdent::ToString() const
     }
 
     return s;
+    #else
+    return "ILLEGAL VarIdent INSTANCE";
+    #endif
 }
 
 VarIdent* VarIdent::Last()
@@ -184,6 +188,7 @@ TypeDenoterPtr VarIdent::DeriveTypeDenoter()
 
 TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
 {
+    #if 0//TODO: remove
     if (symbolRef)
     {
         /* Derive type denoter from symbol reference */
@@ -266,11 +271,13 @@ TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
             break;
         }
     }
+    #endif
     RuntimeErr(R_MissingVarIdentSymbolRef(ident), this);
 }
 
 BaseTypeDenoterPtr VarIdent::GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const
 {
+    #if 0//TODO: remove
     if (auto baseTypeDen = baseTypeDenoter.As<BaseTypeDenoter>())
     {
         try
@@ -284,11 +291,13 @@ BaseTypeDenoterPtr VarIdent::GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDe
             RuntimeErr(e.what(), this);
         }
     }
+    #endif
     RuntimeErr(R_InvalidSubscriptBaseType, this);
 }
 
 void VarIdent::PopFront(bool accumulateArrayIndices)
 {
+    #if 0//TODO: remove
     if (next)
     {
         auto nextVarIdent = next;
@@ -302,6 +311,9 @@ void VarIdent::PopFront(bool accumulateArrayIndices)
         else
             arrayIndices = nextVarIdent->arrayIndices;
     }
+    #else
+    RuntimeErr("C++ FUNCTION '" + std::string(__FUNCTION__) + "' MUST BE REMOVED!", this);
+    #endif
 }
 
 IndexedSemantic VarIdent::FetchSemantic() const
@@ -432,8 +444,8 @@ void FunctionCall::ForEachArgumentWithParameterType(const ArgumentParameterTypeF
             for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
             {
                 auto param = parameters[i]->varDecls.front();
-                auto paramTypeDen = param->GetTypeDenoter()->Get();
-                iterator(arguments[i], *paramTypeDen);
+                const auto& paramTypeDen = param->GetTypeDenoter()->GetAliased();
+                iterator(arguments[i], paramTypeDen);
             }
         }
         else if (intrinsic != Intrinsic::Undefined)
@@ -589,8 +601,8 @@ TypeDenoterPtr TypeSpecifier::DeriveTypeDenoter()
 
 StructDecl* TypeSpecifier::GetStructDeclRef()
 {
-    auto typeDen = typeDenoter->Get();
-    if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+    const auto& typeDen = typeDenoter->GetAliased();
+    if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
         return structTypeDen->structDeclRef;
     else
         return nullptr;
@@ -885,8 +897,8 @@ void StructDecl::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
     for (auto& member : varMembers)
     {
         /* Iterate over all sub-struct members */
-        auto typeDen = member->typeSpecifier->GetTypeDenoter()->Get();
-        if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+        const auto& typeDen = member->typeSpecifier->GetTypeDenoter()->GetAliased();
+        if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
         {
             if (structTypeDen->structDeclRef)
                 structTypeDen->structDeclRef->ForEachVarDecl(iterator);
@@ -1488,9 +1500,9 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
     auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(thenTypeDen, elseTypeDen);
 
     /* Get common boolean type denoter from condition expression */
-    auto condTypeDenAliased = condExpr->GetTypeDenoter()->Get();
+    const auto& condTypeDenAliased = condExpr->GetTypeDenoter()->GetAliased();
 
-    if (auto baseTypeDen = condTypeDenAliased->As<BaseTypeDenoter>())
+    if (auto baseTypeDen = condTypeDenAliased.As<BaseTypeDenoter>())
     {
         /* Is the condition a boolean vector type? */
         const auto condVecSize = VectorTypeDim(baseTypeDen->dataType);
@@ -1511,9 +1523,9 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
 
 bool TernaryExpr::IsVectorCondition() const
 {
-    auto condTypeDen = condExpr->GetTypeDenoter()->Get();
+    const auto& condTypeDen = condExpr->GetTypeDenoter()->GetAliased();
 
-    if (auto baseTypeDen = condTypeDen->As<BaseTypeDenoter>())
+    if (auto baseTypeDen = condTypeDen.As<BaseTypeDenoter>())
     {
         /* Is the condition a boolean vector type? */
         const auto condVecSize = VectorTypeDim(baseTypeDen->dataType);
