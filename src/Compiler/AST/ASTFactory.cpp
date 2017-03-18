@@ -39,11 +39,10 @@ FunctionCallExprPtr MakeIntrinsicCallExpr(
     {
         auto funcCall = MakeAST<FunctionCall>();
         {
-            funcCall->varIdent          = MakeAST<VarIdent>();
-            funcCall->varIdent->ident   = ident;
-            funcCall->typeDenoter       = typeDenoter;
-            funcCall->arguments         = arguments;
-            funcCall->intrinsic         = intrinsic;
+            funcCall->ident         = ident;
+            funcCall->typeDenoter   = typeDenoter;
+            funcCall->arguments     = arguments;
+            funcCall->intrinsic     = intrinsic;
         }
         ast->call = funcCall;
     }
@@ -104,27 +103,6 @@ CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataTyp
 {
     return MakeCastExpr(typeDenoter, MakeLiteralExpr(literalType, literalValue));
 }
-
-#if 0//TODO: remove
-SuffixExprPtr MakeSuffixExpr(const ExprPtr& expr, const VarIdentPtr& varIdent)
-{
-    auto ast = MakeASTWithOrigin<SuffixExpr>(expr);
-    {
-        ast->expr       = expr;
-        ast->varIdent   = varIdent;
-    }
-    return ast;
-}
-
-ExprPtr MakeCastOrSuffixCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr, const VarIdentPtr& suffixVarIdent)
-{
-    auto castExpr = ASTFactory::MakeCastExpr(typeDenoter, valueExpr);
-    if (suffixVarIdent)
-        return MakeSuffixExpr(castExpr, suffixVarIdent);
-    else
-        return castExpr;
-}
-#endif
 
 BinaryExprPtr MakeBinaryExpr(const ExprPtr& lhsExpr, const BinaryOp op, const ExprPtr& rhsExpr)
 {
@@ -222,75 +200,6 @@ VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ide
     return MakeVarDeclStmnt(MakeTypeSpecifier(dataType), ident);
 }
 
-#if 0//TODO: remove
-
-VarIdentPtr MakeVarIdent(const std::string& ident, AST* symbolRef)
-{
-    auto ast = MakeAST<VarIdent>();
-    {
-        ast->ident      = ident;
-        ast->symbolRef  = symbolRef;
-    }
-    return ast;
-}
-
-VarIdentPtr MakeVarIdentFirst(const VarIdent& varIdent)
-{
-    auto ast = MakeAST<VarIdent>();
-    {
-        ast->ident          = varIdent.ident;
-        ast->arrayIndices   = varIdent.arrayIndices;
-        ast->symbolRef      = varIdent.symbolRef;
-    }
-    return ast;
-}
-
-VarIdentPtr MakeVarIdentWithoutLast(const VarIdent& varIdent)
-{
-    if (varIdent.next)
-    {
-        auto ast = MakeAST<VarIdent>();
-        {
-            ast->ident          = varIdent.ident;
-            ast->arrayIndices   = varIdent.arrayIndices;
-            ast->symbolRef      = varIdent.symbolRef;
-            ast->next           = MakeVarIdentWithoutLast(*varIdent.next);
-        }
-        return ast;
-    }
-    else
-        return nullptr;
-}
-
-VarIdentPtr MakeVarIdentPushFront(const std::string& firstIdent, AST* symbolRef, const VarIdentPtr& next)
-{
-    auto ast = MakeAST<VarIdent>();
-    {
-        ast->ident          = firstIdent;
-        ast->next           = next;
-        ast->symbolRef      = symbolRef;
-    }
-    return ast;
-}
-
-VarAccessExprPtr MakeVarAccessExpr(const VarIdentPtr& varIdent)
-{
-    auto ast = MakeAST<VarAccessExpr>();
-    {
-        ast->varIdent = varIdent;
-    }
-    return ast;
-}
-
-VarAccessExprPtr MakeVarAccessExpr(const std::string& ident, AST* symbolRef)
-{
-    return MakeVarAccessExpr(MakeVarIdent(ident, symbolRef));
-}
-
-#endif
-
-#if 1//TODO: make this standard
-
 ObjectExprPtr MakeObjectExpr(const std::string& ident, Decl* symbolRef)
 {
     auto ast = MakeAST<ObjectExpr>();
@@ -315,8 +224,6 @@ ArrayAccessExprPtr MakeArrayAccessExpr(const ExprPtr& prefixExpr, const std::vec
     }
     return ast;
 }
-
-#endif
 
 BracketExprPtr MakeBracketExpr(const ExprPtr& expr)
 {
@@ -394,16 +301,6 @@ ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arra
 {
     auto ast = MakeAST<ExprStmnt>();
     {
-        #if 0//TODO: remove
-        auto expr = MakeAST<VarAccessExpr>();
-        {
-            expr->varIdent                  = MakeVarIdent(varDecl->ident, varDecl);
-            expr->varIdent->arrayIndices    = MakeArrayIndices(arrayIndices);
-            expr->assignOp                  = AssignOp::Set;
-            expr->assignExpr                = assignExpr;
-        }
-        ast->expr = expr;
-        #else
         auto assignExpr = MakeAST<AssignExpr>();
         {
             assignExpr->lvalueExpr  = MakeArrayAccessExpr(MakeObjectExpr(varDecl), arrayIndices);
@@ -411,7 +308,6 @@ ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arra
             assignExpr->rvalueExpr  = assignExpr;
         }
         ast->expr = assignExpr;
-        #endif
     }
     return ast;
 }

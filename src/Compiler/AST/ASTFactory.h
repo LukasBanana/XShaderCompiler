@@ -34,12 +34,6 @@ FunctionCallExprPtr             MakeTextureSamplerBindingCallExpr(const ExprPtr&
 CastExprPtr                     MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr);
 CastExprPtr                     MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue);
 
-#if 0//TODO: remove
-SuffixExprPtr                   MakeSuffixExpr(const ExprPtr& expr, const VarIdentPtr& varIdent);
-
-ExprPtr                         MakeCastOrSuffixCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr, const VarIdentPtr& suffixVarIdent = nullptr);
-#endif
-
 BinaryExprPtr                   MakeBinaryExpr(const ExprPtr& lhsExpr, const BinaryOp op, const ExprPtr& rhsExpr);
 
 LiteralExprPtr                  MakeLiteralExpr(const DataType literalType, const std::string& literalValue);
@@ -54,32 +48,10 @@ TypeSpecifierPtr                MakeTypeSpecifier(const DataType dataType);
 VarDeclStmntPtr                 MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident);
 VarDeclStmntPtr                 MakeVarDeclStmnt(const DataType dataType, const std::string& ident);
 
-#if 0//TODO: remove
-
-VarIdentPtr                     MakeVarIdent(const std::string& ident, AST* symbolRef = nullptr);
-
-// Makes a new VarIdent instance with only the first node of the specified identifier.
-VarIdentPtr                     MakeVarIdentFirst(const VarIdent& varIdent);
-
-// Makes a new VarIdent instance with all nodes of the specified identifier except the last one.
-VarIdentPtr                     MakeVarIdentWithoutLast(const VarIdent& varIdent);
-
-// Makes a new VarIdent instance by adding the specified new identifier with symbol reference at the front of the specified VarIdent.
-VarIdentPtr                     MakeVarIdentPushFront(const std::string& firstIdent, AST* symbolRef, const VarIdentPtr& next);
-
-VarAccessExprPtr                MakeVarAccessExpr(const VarIdentPtr& varIdent);
-VarAccessExprPtr                MakeVarAccessExpr(const std::string& ident, AST* symbolRef = nullptr);
-
-#endif
-
-#if 1//TODO: make this standard
-
 ObjectExprPtr                   MakeObjectExpr(const std::string& ident, Decl* symbolRef = nullptr);
 ObjectExprPtr                   MakeObjectExpr(Decl* symbolRef);
 
 ArrayAccessExprPtr              MakeArrayAccessExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices);
-
-#endif
 
 // Makes a new bracket expression with the specified sub expression (source area is copied).
 BracketExprPtr                  MakeBracketExpr(const ExprPtr& expr);
