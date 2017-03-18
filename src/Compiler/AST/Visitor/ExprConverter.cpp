@@ -157,21 +157,6 @@ void ExprConverter::ConvertExprVectorSubscriptObject(ExprPtr& expr, ObjectExpr* 
     }
 }
 
-//TODO: make this a public function -> move to "ASTEnums.h/.cpp" files
-static Intrinsic CompareOpToIntrinsic(const BinaryOp op)
-{
-    switch (op)
-    {
-        case BinaryOp::Equal:           return Intrinsic::Equal;
-        case BinaryOp::NotEqual:        return Intrinsic::NotEqual;
-        case BinaryOp::Less:            return Intrinsic::LessThan;
-        case BinaryOp::Greater:         return Intrinsic::GreaterThan;
-        case BinaryOp::LessEqual:       return Intrinsic::LessThanEqual;
-        case BinaryOp::GreaterEqual:    return Intrinsic::GreaterThanEqual;
-        default:                        return Intrinsic::Undefined;
-    }
-}
-
 void ExprConverter::ConvertExprVectorCompare(ExprPtr& expr)
 {
     if (auto binaryExpr = expr->As<BinaryExpr>())
