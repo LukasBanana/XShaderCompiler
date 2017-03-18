@@ -1347,33 +1347,42 @@ bool HLSLAnalyzer::AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier
 
 void HLSLAnalyzer::AnalyzeLValueExpr(const Expr* expr, const AST* ast)
 {
-    /* Fetch l-value from expression */
-    if (auto lvalueExpr = expr->FetchLValueExpr())
+    if (expr)
     {
-        if (auto symbol = lvalueExpr->symbolRef)
+        /* Fetch l-value from expression */
+        if (auto lvalueExpr = expr->FetchLValueExpr())
+            AnalyzeLValueExprObject(lvalueExpr, ast);
+    }
+}
+
+void HLSLAnalyzer::AnalyzeLValueExprObject(const ObjectExpr* objectExpr, const AST* ast)
+{
+    /* Analyze prefix expression as l-value */
+    AnalyzeLValueExpr(objectExpr->prefixExpr.get(), ast);
+
+    if (auto symbol = objectExpr->symbolRef)
+    {
+        if (auto varDecl = symbol->As<VarDecl>())
         {
-            if (auto varDecl = symbol->As<VarDecl>())
+            if (varDecl->declStmntRef->IsConstOrUniform())
             {
-                if (varDecl->declStmntRef->IsConstOrUniform())
-                {
-                    /* Construct error message depending if the variable is implicitly or explicitly declared as constant */
-                    Error(
-                        R_IllegalLValueAssignmentToConst(
-                            lvalueExpr->ident,
-                            (varDecl->declStmntRef->flags(VarDeclStmnt::isImplicitConst) ? R_Implicitly : "")
-                        ),
-                        (ast != nullptr ? ast : lvalueExpr)
-                    );
-                }
+                /* Construct error message depending if the variable is implicitly or explicitly declared as constant */
+                Error(
+                    R_IllegalLValueAssignmentToConst(
+                        objectExpr->ident,
+                        (varDecl->declStmntRef->flags(VarDeclStmnt::isImplicitConst) ? R_Implicitly : "")
+                    ),
+                    (ast != nullptr ? ast : objectExpr)
+                );
             }
         }
-        else
-        {
-            Error(
-                R_MissingObjectExprSymbolRef(lvalueExpr->ident),
-                (ast != nullptr ? ast : lvalueExpr)
-            );
-        }
+    }
+    else
+    {
+        Error(
+            R_MissingObjectExprSymbolRef(objectExpr->ident),
+            (ast != nullptr ? ast : objectExpr)
+        );
     }
 }
 

@@ -279,6 +279,8 @@ class GLSLGenerator : public Generator
         void WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast = nullptr);
 
         void WriteObjectExpr(const ObjectExpr& objectExpr);
+        void WriteObjectExprIdent(const ObjectExpr& objectExpr);
+        void WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectExpr, Decl* symbol);
 
         /* === Members === */
 

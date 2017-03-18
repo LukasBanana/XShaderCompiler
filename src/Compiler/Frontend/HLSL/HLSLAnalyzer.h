@@ -127,6 +127,7 @@ class HLSLAnalyzer : public Analyzer
         bool AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier, const std::string& ident, const Expr* expr, bool isStatic);
 
         void AnalyzeLValueExpr(const Expr* expr, const AST* ast = nullptr);
+        void AnalyzeLValueExprObject(const ObjectExpr* objectExpr, const AST* ast = nullptr);
 
         /* ----- Array access expression ----- */
 

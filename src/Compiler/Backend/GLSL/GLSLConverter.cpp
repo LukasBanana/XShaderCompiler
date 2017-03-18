@@ -187,7 +187,7 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     VISIT_DEFAULT(SwitchCase);
 }
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 IMPLEMENT_VISIT_PROC(VarIdent)
 {

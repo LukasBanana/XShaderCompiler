@@ -46,38 +46,30 @@ void ReferenceAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts)
     }
 }
 
-#if 0//TODO: remove
-
-void ReferenceAnalyzer::MarkLValueVarIdent(VarIdent* varIdent)
-{
-    while (varIdent)
-    {
-        if (auto varDecl = varIdent->FetchVarDecl())
-        {
-            /* Mark variable as l-value */
-            varDecl->flags << Decl::isWrittenTo;
-        }
-        varIdent = varIdent->next.get();
-    }
-}
-
-#endif
-
-void ReferenceAnalyzer::MarkLValueExpr(Expr* expr)
+void ReferenceAnalyzer::MarkLValueExpr(const Expr* expr)
 {
     if (expr)
     {
-        #if 0//TODO: remove
-        if (auto varIdent = expr->FetchVarIdent())
-            MarkLValueVarIdent(varIdent);
-        #endif
-        if (auto lvalueExpr = expr->FetchLValueExpr())
+        if (auto objectExpr = expr->As<ObjectExpr>())
+            MarkLValueExprObject(objectExpr);
+        else if (auto bracketExpr = expr->As<BracketExpr>())
+            MarkLValueExpr(bracketExpr->expr.get());
+        else if (auto arrayAccessExpr = expr->As<ArrayAccessExpr>())
+            MarkLValueExpr(arrayAccessExpr->prefixExpr.get());
+    }
+}
+
+void ReferenceAnalyzer::MarkLValueExprObject(const ObjectExpr* objectExpr)
+{
+    if (objectExpr)
+    {
+        /* Mark prefix expression as l-value */
+        MarkLValueExpr(objectExpr->prefixExpr.get());
+
+        if (auto symbol = objectExpr->symbolRef)
         {
-            if (auto symbol = lvalueExpr->symbolRef)
-            {
-                /* Mark symbol that it is written to */
-                symbol->flags << Decl::isWrittenTo;
-            }
+            /* Mark symbol that it is written to */
+            symbol->flags << Decl::isWrittenTo;
         }
     }
 }
@@ -158,19 +150,6 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
         VISIT_DEFAULT(TypeSpecifier);
     }
 }
-
-#if 0//TODO: remove
-
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    if (Reachable(ast))
-    {
-        Visit(ast->symbolRef);
-        VISIT_DEFAULT(VarIdent);
-    }
-}
-
-#endif
 
 /* --- Declarations --- */
 
