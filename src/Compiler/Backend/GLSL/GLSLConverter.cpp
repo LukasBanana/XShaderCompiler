@@ -187,6 +187,8 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     VISIT_DEFAULT(SwitchCase);
 }
 
+#if 1//TODO: remove
+
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
     /* Has the variable identifier a next identifier? */
@@ -217,6 +219,8 @@ IMPLEMENT_VISIT_PROC(VarIdent)
     
     VISIT_DEFAULT(VarIdent);
 }
+
+#endif
 
 /* --- Declarations --- */
 
@@ -458,37 +462,6 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 #endif
 
-#if 0//TODO: remove
-
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
-{
-    /* Is this variable a member of the active owner structure (like 'this->memberVar')? */
-    if (auto symbol = ast->varIdent->symbolRef)
-    {
-        if (auto varDecl = symbol->As<VarDecl>())
-        {
-            if (auto structDecl = varDecl->structDeclRef)
-            {
-                if (auto selfParam = ActiveSelfParameter())
-                {
-                    if (auto activeStructDecl = ActiveStructDecl())
-                    {
-                        if (structDecl == activeStructDecl || structDecl->IsBaseOf(*activeStructDecl))
-                        {
-                            /* Push 'self'-parameter identifier at the front of the current variable identifier */
-                            ast->varIdent = ASTFactory::MakeVarIdentPushFront(selfParam->ident, selfParam, ast->varIdent);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    VISIT_DEFAULT(VarAccessExpr);
-}
-
-#else
-
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
     /* Is this object a member of the active owner structure (like 'this->memberVar')? */
@@ -504,7 +477,7 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
                     {
                         if (structDecl == activeStructDecl || structDecl->IsBaseOf(*activeStructDecl))
                         {
-                            /* Push 'self'-parameter identifier at the front of the current variable identifier */
+                            /* Make the 'self'-parameter the new prefix expression */
                             ast->prefixExpr = ASTFactory::MakeObjectExpr(selfParam);
                         }
                     }
@@ -515,8 +488,6 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
 
     VISIT_DEFAULT(ObjectExpr);
 }
-
-#endif
 
 #undef IMPLEMENT_VISIT_PROC
 
@@ -967,54 +938,21 @@ void GLSLConverter::ConvertFunctionCall(FunctionCall* ast)
     {
         if (funcDecl->IsMemberFunction())
         {
-            #if 0//TODO: remove
-            if (ast->varIdent && ast->varIdent->next)
-            {
-                /* Move first variable identifier as argument into the function call */
-                auto objectVarIdent = ASTFactory::MakeVarIdentWithoutLast(*ast->varIdent);
-                auto objectArg = ASTFactory::MakeVarAccessExpr(objectVarIdent);
-                ast->arguments.insert(ast->arguments.begin(), objectArg);
-
-                /* Remove all identifiers except the last one */
-                while (ast->varIdent->next)
-                    ast->varIdent->PopFront(false);
-            }
-            else
-            {
-                /* Insert current 'self'-parameter as argument into the function call */
-                if (auto selfParam = ActiveSelfParameter())
-                {
-                    #if 0
-                    auto objectVarIdent = ASTFactory::MakeVarIdent(selfParam->ident, selfParam);
-                    auto objectArg = ASTFactory::MakeVarAccessExpr(objectVarIdent);
-                    ast->arguments.insert(ast->arguments.begin(), objectArg);
-                    #else
-                    auto selfParamArgExpr = ASTFactory::MakeObjectExpr(selfParam);
-                    ast->arguments.insert(ast->arguments.begin(), selfParamArgExpr);
-                    #endif
-                }
-                else
-                    RuntimeErr(R_MissingSelfParamForMemberFunc(funcDecl->ToString()), ast);
-            }
-            #else
             if (ast->exprRef->prefixExpr)
             {
-                /* Move first variable identifier as argument into the function call */
-                ast->arguments.insert(ast->arguments.begin(), ast->exprRef->prefixExpr);
-                ast->exprRef->prefixExpr = nullptr;
+                /* Move prefix expression as argument into the function call */
+                ast->PushArgumentFront(std::move(ast->exprRef->prefixExpr));
             }
             else
             {
                 if (auto selfParam = ActiveSelfParameter())
                 {
                     /* Insert current 'self'-parameter as argument into the function call */
-                    auto selfParamArgExpr = ASTFactory::MakeObjectExpr(selfParam);
-                    ast->arguments.insert(ast->arguments.begin(), selfParamArgExpr);
+                    ast->PushArgumentFront(ASTFactory::MakeObjectExpr(selfParam));
                 }
                 else
                     RuntimeErr(R_MissingSelfParamForMemberFunc(funcDecl->ToString()), ast);
             }
-            #endif
         }
     }
 }

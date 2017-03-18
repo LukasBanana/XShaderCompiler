@@ -453,6 +453,16 @@ void FunctionCall::ForEachArgumentWithParameterType(const ArgumentParameterTypeF
     }
 }
 
+void FunctionCall::PushArgumentFront(const ExprPtr& expr)
+{
+    arguments.insert(arguments.begin(), expr);
+}
+
+void FunctionCall::PushArgumentFront(ExprPtr&& expr)
+{
+    arguments.insert(arguments.begin(), std::move(expr));
+}
+
 
 /* ----- SwitchCase ----- */
 

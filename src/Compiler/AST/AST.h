@@ -395,6 +395,12 @@ struct FunctionCall : public TypedAST
     // Iterates over each argument expression together with its associated parameter.
     void ForEachArgumentWithParameterType(const ArgumentParameterTypeFunctor& iterator);
 
+    // Inserts the specified argument expression at the front of the argument list.
+    void PushArgumentFront(const ExprPtr& expr);
+
+    // Inserts the specified argument expression at the front of the argument list.
+    void PushArgumentFront(ExprPtr&& expr);
+
     //TODO: replace VarIdent by atomic identifier string
     #if 1
     VarIdentPtr             varIdent;                                   // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
