@@ -56,7 +56,7 @@ class GLSLExtensionAgent : private Visitor
 
         DECL_VISIT_PROC( BinaryExpr        );
         DECL_VISIT_PROC( UnaryExpr         );
-        DECL_VISIT_PROC( VarAccessExpr     );
+        DECL_VISIT_PROC( AssignExpr        );
         DECL_VISIT_PROC( InitializerExpr   );
 
         /* === Members === */

@@ -297,7 +297,7 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Visit(ast->expr);
 }
 
-#if 1
+#if 1//TODO: remove
 
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {

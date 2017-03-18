@@ -607,7 +607,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
         /* Analyze entry point return statement (if a structure is returned from the entry point) */
         if (InsideEntryPoint())
-            AnalyzeEntryPointOutput(ast->expr->FetchVarIdent());
+            AnalyzeEntryPointOutput(ast->expr->FetchLValueExpr());
     }
 }
 
@@ -870,7 +870,7 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicPrimary(FunctionCall* funcCall, c
     {
         Warning(
             R_InvalidShaderModelForIntrinsic(
-                funcCall->varIdent->ToString(), intr.minShaderModel.ToString(), shaderModel_.ToString()
+                funcCall->ident, intr.minShaderModel.ToString(), shaderModel_.ToString()
             ),
             funcCall
         );
@@ -1653,21 +1653,24 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOutVariable(FunctionDecl* funcDec
 
 void HLSLAnalyzer::AnalyzeEntryPointParameterInOutStruct(FunctionDecl* funcDecl, StructDecl* structDecl, const std::string& structAliasName, bool input)
 {
-    /* Set structure alias name */
-    structDecl->aliasName = structAliasName;
-
-    /* Analyze all structure members */
-    for (auto& member : structDecl->varMembers)
+    if (structDecl)
     {
-        for (auto& memberVar : member->varDecls)
-            AnalyzeEntryPointParameterInOut(funcDecl, memberVar.get(), input);
-    }
+        /* Set structure alias name */
+        structDecl->aliasName = structAliasName;
 
-    /* Mark structure as shader input/output */
-    if (input)
-        structDecl->flags << StructDecl::isShaderInput;
-    else
-        structDecl->flags << StructDecl::isShaderOutput;
+        /* Analyze all structure members */
+        for (auto& member : structDecl->varMembers)
+        {
+            for (auto& memberVar : member->varDecls)
+                AnalyzeEntryPointParameterInOut(funcDecl, memberVar.get(), input);
+        }
+
+        /* Mark structure as shader input/output */
+        if (input)
+            structDecl->flags << StructDecl::isShaderInput;
+        else
+            structDecl->flags << StructDecl::isShaderOutput;
+    }
 }
 
 void HLSLAnalyzer::AnalyzeEntryPointParameterInOutBuffer(FunctionDecl* funcDecl, VarDecl* varDecl, BufferTypeDenoter* bufferTypeDen, bool input)
@@ -1920,7 +1923,7 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
     #undef COMMON_SEMANTICS_EX
 }
 
-#if 1//TODO: replace by "AnalyzeEntryPointOutput(ObjectExpr*)" function
+#if 0//TODO: replace by "AnalyzeEntryPointOutput(ObjectExpr*)" function
 
 void HLSLAnalyzer::AnalyzeEntryPointOutput(VarIdent* varIdent)
 {

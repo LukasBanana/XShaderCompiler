@@ -258,13 +258,13 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
     VISIT_DEFAULT(UnaryExpr);
 }
 
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
+IMPLEMENT_VISIT_PROC(AssignExpr)
 {
     /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
-    if (IsBitwiseOp(ast->assignOp) || ast->assignOp == AssignOp::Mod)
+    if (IsBitwiseOp(ast->op) || ast->op == AssignOp::Mod)
         AcquireExtension(E_GL_EXT_gpu_shader4);
 
-    VISIT_DEFAULT(VarAccessExpr);
+    VISIT_DEFAULT(AssignExpr);
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)

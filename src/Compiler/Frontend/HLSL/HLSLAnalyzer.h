@@ -167,7 +167,7 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std::vector<Semantic>& inSemantics, const std::vector<Semantic>& outSemantics);
 
-        #if 1//TODO: replace by "AnalyzeEntryPointOutput(ObjectExpr*)" function
+        #if 0//TODO: replace by "AnalyzeEntryPointOutput(ObjectExpr*)" function
         void AnalyzeEntryPointOutput(VarIdent* varIdent);
         #endif
 
