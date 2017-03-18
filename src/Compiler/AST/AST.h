@@ -241,9 +241,10 @@ struct Expr : public TypedAST
 
     //TODO: overload these functions in a couple of Expr classes
     #if 1
+    
     /*
-    Returns the first node in the expression tree that is an l-value (may also be constant!),
-    or null if there is no l-value. By default null.
+    Returns the first node in the expression tree that is an l-value (may also be constant!), or null if there is no l-value.
+    If the return value is non-null, the object expression must refer to a declaration object. By default null.
     */
     virtual const ObjectExpr* FetchLValueExpr() const;
 
@@ -252,6 +253,10 @@ struct Expr : public TypedAST
     i.e. an ObjectExpr node with a reference to a StructDecl or AliasDecl. By default null.
     */
     virtual const ObjectExpr* FetchTypeObjectExpr() const;
+
+    // Returns the semantic of this expression, or Semantic::Undefined if this expression has no semantic.
+    virtual IndexedSemantic FetchSemantic() const;
+
     #endif
 };
 
@@ -1153,6 +1158,8 @@ struct FunctionCallExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    IndexedSemantic FetchSemantic() const override;
+
     //TODO: make this standard
     #if 1
     ExprPtr         prefixExpr;             // Optional prefix expression; may be null.
@@ -1170,6 +1177,7 @@ struct BracketExpr : public Expr
 
     const ObjectExpr* FetchLValueExpr() const override;
     const ObjectExpr* FetchTypeObjectExpr() const override;
+    IndexedSemantic FetchSemantic() const override;
 
     #if 1//TODO: remove
     VarIdent* FetchVarIdent() const override;
@@ -1240,6 +1248,7 @@ struct ObjectExpr : public Expr
 
     const ObjectExpr* FetchLValueExpr() const override;
     const ObjectExpr* FetchTypeObjectExpr() const override;
+    IndexedSemantic FetchSemantic() const override;
 
     // Returns the type denoter for this AST node or the last sub node.
     TypeDenoterPtr GetExplicitTypeDenoter();

@@ -352,10 +352,12 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
         WriteTypeDenoter(*ast->typeDenoter, IsESSL(), ast);
 }
 
+#if 0//TODO: remove
 IMPLEMENT_VISIT_PROC(VarIdent)
 {
     WriteVarIdent(ast);
 }
+#endif
 
 /* --- Declarations --- */
 
@@ -890,25 +892,13 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Write(")");
 }
 
+#if 0//TODO: remove
+
 IMPLEMENT_VISIT_PROC(SuffixExpr)
 {
     Visit(ast->expr);
     Write(".");
     Visit(ast->varIdent);
-}
-
-IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
-{
-    Visit(ast->prefixExpr);
-    WriteArrayIndices(ast->arrayIndices);
-}
-
-IMPLEMENT_VISIT_PROC(CastExpr)
-{
-    WriteTypeDenoter(*ast->typeSpecifier->typeDenoter, false, ast);
-    Write("(");
-    Visit(ast->expr);
-    Write(")");
 }
 
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
@@ -923,6 +913,49 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
         Write(" " + AssignOpToString(ast->assignOp) + " ");
         Visit(ast->assignExpr);
     }
+}
+
+#endif
+
+#if 1//TODO: make this standard
+
+IMPLEMENT_VISIT_PROC(ObjectExpr)
+{
+    /* Write prefix expression */
+    if (ast->prefixExpr && !ast->isStatic)
+    {
+        Visit(ast->prefixExpr);
+        Write(".");
+    }
+
+    /* Write final identifier from symbol reference, or original identififer from expression */
+    if (auto symbol = ast->symbolRef)
+        Write(symbol->ident);
+    else
+        Write(ast->ident);
+}
+
+IMPLEMENT_VISIT_PROC(AssignExpr)
+{
+    Visit(ast->lvalueExpr);
+    Write(" " + AssignOpToString(ast->op) + " ");
+    Visit(ast->rvalueExpr);
+}
+
+#endif
+
+IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+{
+    Visit(ast->prefixExpr);
+    WriteArrayIndices(ast->arrayIndices);
+}
+
+IMPLEMENT_VISIT_PROC(CastExpr)
+{
+    WriteTypeDenoter(*ast->typeSpecifier->typeDenoter, false, ast);
+    Write("(");
+    Visit(ast->expr);
+    Write(")");
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
@@ -1707,6 +1740,8 @@ void GLSLGenerator::WriteGlobalUniformsParameter(VarDeclStmnt* param)
     EndLn();
 }
 
+#if 0//TODO: remove
+
 /* --- VarIdent --- */
 
 /*
@@ -1810,10 +1845,12 @@ void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* varIdent)
     }
 }
 
+#endif
+
 void GLSLGenerator::WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIndex)
 {
     /* Find system value semantic in variable identifier */
-    if (auto semanticVarIdent = SystemValueToKeyword(varDecl->semantic))
+    if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
     {
         if (arrayIndex >= 0)
         {
@@ -1823,7 +1860,7 @@ void GLSLGenerator::WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIn
                 Write("gl_out");
             Write("[" + std::to_string(arrayIndex) + "].");
         }
-        Write(*semanticVarIdent);
+        Write(*semanticKeyword);
     }
     else
     {

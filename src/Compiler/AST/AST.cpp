@@ -96,6 +96,11 @@ const ObjectExpr* Expr::FetchTypeObjectExpr() const
     return nullptr;
 }
 
+IndexedSemantic Expr::FetchSemantic() const
+{
+    return Semantic::Undefined;
+}
+
 
 /* ----- Decl ----- */
 
@@ -1578,6 +1583,15 @@ TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
     return call->GetTypeDenoter();
 }
 
+IndexedSemantic FunctionCallExpr::FetchSemantic() const
+{
+    /* Return semantic of function declaration */
+    if (call->funcDeclRef)
+        return call->funcDeclRef->semantic;
+    else
+        return Semantic::Undefined;
+}
+
 
 /* ----- BracketExpr ----- */
 
@@ -1594,6 +1608,11 @@ const ObjectExpr* BracketExpr::FetchLValueExpr() const
 const ObjectExpr* BracketExpr::FetchTypeObjectExpr() const
 {
     return expr->FetchTypeObjectExpr();
+}
+
+IndexedSemantic BracketExpr::FetchSemantic() const
+{
+    return expr->FetchSemantic();
 }
 
 #if 1//TODO: remove
@@ -1691,6 +1710,22 @@ const ObjectExpr* ObjectExpr::FetchTypeObjectExpr() const
         }
     }
     return nullptr;
+}
+
+IndexedSemantic ObjectExpr::FetchSemantic() const
+{
+    if (symbolRef)
+    {
+        /* Fetch semantic from variable declaration */
+        if (auto varDecl = symbolRef->As<VarDecl>())
+            return varDecl->semantic;
+    }
+    else if (prefixExpr)
+    {
+        /* Fetch semantic from prefix expression */
+        return prefixExpr->FetchSemantic();
+    }
+    return Semantic::Undefined;
 }
 
 TypeDenoterPtr ObjectExpr::GetExplicitTypeDenoter()

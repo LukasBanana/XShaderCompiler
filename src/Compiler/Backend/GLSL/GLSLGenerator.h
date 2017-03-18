@@ -89,7 +89,9 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( ArrayDimension    );
         DECL_VISIT_PROC( TypeSpecifier     );
+        #if 0//TODO: remove
         DECL_VISIT_PROC( VarIdent          );
+        #endif
 
         DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( StructDecl        );
@@ -124,10 +126,16 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( FunctionCallExpr  );
         DECL_VISIT_PROC( BracketExpr       );
+        #if 0//TODO: remove
         DECL_VISIT_PROC( SuffixExpr        );
+        DECL_VISIT_PROC( VarAccessExpr     );
+        #endif
+        #if 1//TODO: make this standard
+        DECL_VISIT_PROC( ObjectExpr        );
+        DECL_VISIT_PROC( AssignExpr        );
+        #endif
         DECL_VISIT_PROC( ArrayAccessExpr   );
         DECL_VISIT_PROC( CastExpr          );
-        DECL_VISIT_PROC( VarAccessExpr     );
         DECL_VISIT_PROC( InitializerExpr   );
 
         /* --- Helper functions for code generation --- */
@@ -187,6 +195,8 @@ class GLSLGenerator : public Generator
 
         /* --- VarIdent --- */
 
+        #if 0//TODO: remove
+
         // Returns the first VarIdent AST node which has a system value semantic, or null if no such AST node was found.
         VarIdent* FindSystemValueVarIdent(VarIdent* varIdent);
 
@@ -197,6 +207,8 @@ class GLSLGenerator : public Generator
 
         // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
         void WriteVarIdentOrSystemValue(VarIdent* varIdent);
+
+        #endif
 
         // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
         void WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIndex = -1);
