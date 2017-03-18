@@ -423,6 +423,17 @@ bool BufferTypeDenoter::Equals(const TypeDenoter& rhs) const
     return false;
 }
 
+TypeDenoterPtr BufferTypeDenoter::GetSubObject(const std::string& ident, const AST* ast)
+{
+    //TODO: current not supported
+    //TODO: must be abstracted for different frontends!
+    if (ident == "mips")
+    {
+        RuntimeErr(R_NotImplementedYet(ToString() + ".mips", __FUNCTION__), ast);
+    }
+    return TypeDenoter::GetSubObject(ident, ast);
+}
+
 TypeDenoterPtr BufferTypeDenoter::GetSubArray(const std::size_t numArrayIndices, const AST* ast)
 {
     if (numArrayIndices > 0)

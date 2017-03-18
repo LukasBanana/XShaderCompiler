@@ -36,6 +36,7 @@ DECL_REPORT( ComputeShader,                     "compute shader"                
 DECL_REPORT( InvalidOutputStream,               "invalid output stream"                                                                                         );
 DECL_REPORT( Implicitly,                        "implicitly"                                                                                                    );
 DECL_REPORT( ButGot,                            "[, but got {0}]"                                                                                               );
+DECL_REPORT( NotImplementedYet,                 "[{0} ]not implemented yet[ (in '{1}')]"                                                                        );
 
 /* ----- Token ----- */
 

@@ -201,6 +201,7 @@ struct BufferTypeDenoter : public TypeDenoter
 
     bool Equals(const TypeDenoter& rhs) const override;
 
+    TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
     TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
 
     AST* SymbolRef() const override;
