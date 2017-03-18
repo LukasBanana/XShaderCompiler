@@ -138,102 +138,7 @@ void ExprConverter::ConvertExprVectorSubscript(ExprPtr& expr)
 {
     if (auto objectExpr = expr->As<ObjectExpr>())
         ConvertExprVectorSubscriptObject(expr, objectExpr);
-    #if 0
-    if (auto suffixExpr = expr->As<SuffixExpr>())
-        ConvertExprVectorSubscriptSuffix(expr, suffixExpr);
-    else
-        ConvertExprVectorSubscriptVarIdent(expr, expr->FetchVarIdent());
-    #endif
 }
-
-#if 0//TODO: remove
-
-void ExprConverter::ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* suffixExpr)
-{
-    /* Get type denoter of sub expression */
-    auto typeDen        = suffixExpr->expr->GetTypeDenoter()->GetSub();
-    auto suffixIdentRef = &(suffixExpr->varIdent);
-    auto varIdent       = suffixExpr->varIdent.get();
-
-    /* Remove outer most vector subscripts from scalar types (i.e. 'func().xxx.xyz' to '((float3)func()).xyz' */
-    while (varIdent)
-    {
-        if (varIdent->symbolRef)
-        {
-            /* Get type denoter for current variable identifier */
-            typeDen = varIdent->GetExplicitTypeDenoter(false);
-            suffixIdentRef = &(varIdent->next);
-        }
-        else if (typeDen->IsVector())
-        {
-            /* Get type denoter for current variable identifier from vector subscript */
-            typeDen = varIdent->GetTypeDenoterFromSubscript(*typeDen);
-            suffixIdentRef = &(varIdent->next);
-        }
-        else if (typeDen->IsScalar())
-        {
-            /* Store shared pointer */
-            auto suffixIdent = *suffixIdentRef;
-
-            /* Convert vector subscript to cast expression */
-            auto vectorTypeDen = suffixIdent->GetTypeDenoterFromSubscript(*typeDen);
-
-            /* Now drop suffix (shared pointer remain if 'GetTypeDenoterFromSubscript' throws and local 'suffixIdent' is the only reference!) */
-            suffixIdentRef->reset();
-
-            /* Drop outer suffix expression if there is no suffix identifier (i.e. suffixExpr->varIdent) */
-            ExprPtr castExpr;
-            if (suffixExpr->varIdent)
-                expr = ASTFactory::MakeCastOrSuffixCastExpr(vectorTypeDen, expr, suffixIdent->next);
-            else
-                expr = ASTFactory::MakeCastOrSuffixCastExpr(vectorTypeDen, suffixExpr->expr, suffixIdent->next);
-
-            /* Repeat conversion until not vector subscripts remains */
-            ConvertExprVectorSubscript(expr);
-            return;
-        }
-
-        /* Go to next identifier */
-        varIdent = varIdent->next.get();
-    }
-}
-
-void ExprConverter::ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* varIdent)
-{
-    /* Remove outer most vector subscripts from scalar types (i.e. 'scalarValue.xxx.xyz' to '((float3)scalarValue).xyz' */
-    while (varIdent && varIdent->next)
-    {
-        if (!varIdent->next->symbolRef)
-        {
-            auto typeDen = varIdent->GetExplicitTypeDenoter(false);
-            if (typeDen->IsScalar())
-            {
-                /* Store shared pointer */
-                auto suffixIdent = varIdent->next;
-
-                /* Convert vector subscript to cast expression */
-                auto vectorTypeDen = suffixIdent->GetTypeDenoterFromSubscript(*typeDen);
-
-                /* Now drop suffix (shared pointer remain if 'GetTypeDenoterFromSubscript' throws and local 'suffixIdent' is the only reference!) */
-                varIdent->next.reset();
-
-                /* Convert to cast expression */
-                expr = ASTFactory::MakeCastOrSuffixCastExpr(vectorTypeDen, expr, suffixIdent->next);
-
-                /* Repeat conversion until not vector subscripts remains */
-                ConvertExprVectorSubscript(expr);
-                return;
-            }
-        }
-
-        /* Go to next identifier */
-        varIdent = varIdent->next.get();
-    }
-}
-
-#endif
-
-#if 1//TODO: make this standard
 
 void ExprConverter::ConvertExprVectorSubscriptObject(ExprPtr& expr, ObjectExpr* objectExpr)
 {
@@ -251,8 +156,6 @@ void ExprConverter::ConvertExprVectorSubscriptObject(ExprPtr& expr, ObjectExpr* 
         }
     }
 }
-
-#endif
 
 //TODO: make this a public function -> move to "ASTEnums.h/.cpp" files
 static Intrinsic CompareOpToIntrinsic(const BinaryOp op)
@@ -312,12 +215,19 @@ void ExprConverter::ConvertExprImageAccess(ExprPtr& expr)
     if (!expr->flags(Expr::wasConverted))
     {
         /* Is this an array access to an image buffer or texture? */
+        #if 0
         if (auto varAccessExpr = expr->As<VarAccessExpr>())
             ConvertExprImageAccessVarAccess(expr, varAccessExpr);
+        #else
+        if (auto objectExpr = expr->As<ObjectExpr>())
+            ConvertExprImageAccessObject(expr, objectExpr);
+        #endif
         else if (auto arrayAccessExpr = expr->As<ArrayAccessExpr>())
             ConvertExprImageAccessArrayAccess(expr, arrayAccessExpr);
     }
 }
+
+#if 0//TODO: remove
 
 void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr* varAccessExpr)
 {
@@ -390,6 +300,15 @@ void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr
         }
     }
 }
+
+#else
+
+void ExprConverter::ConvertExprImageAccessObject(ExprPtr& expr, ObjectExpr* objectExpr)
+{
+    //TODO...
+}
+
+#endif
 
 void ExprConverter::ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr)
 {
@@ -602,6 +521,15 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
         ConvertExpr(ast->expr, WrapUnaryExpr);
 }
 
+IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+{
+    ConvertExpr(ast->prefixExpr, AllPreVisit);
+    {
+        VISIT_DEFAULT(FunctionCallExpr);
+    }
+    ConvertExpr(ast->prefixExpr, AllPostVisit);
+}
+
 IMPLEMENT_VISIT_PROC(BracketExpr)
 {
     ConvertExpr(ast->expr, AllPreVisit);
@@ -619,26 +547,6 @@ IMPLEMENT_VISIT_PROC(CastExpr)
     }
     ConvertExpr(ast->expr, AllPostVisit);
 }
-
-#if 0//TODO: remove
-
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
-{
-    if (ast->assignExpr)
-    {
-        ConvertExpr(ast->assignExpr, AllPreVisit);
-        {
-            VISIT_DEFAULT(VarAccessExpr);
-        }
-        ConvertExpr(ast->assignExpr, AllPostVisit);
-
-        IfFlaggedConvertExprIfCastRequired(ast->assignExpr, ast->GetTypeDenoter()->GetAliased());
-    }
-    else
-        VISIT_DEFAULT(VarAccessExpr);
-}
-
-#endif
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
