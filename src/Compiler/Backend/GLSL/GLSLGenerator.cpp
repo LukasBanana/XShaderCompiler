@@ -352,13 +352,6 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
         WriteTypeDenoter(*ast->typeDenoter, IsESSL(), ast);
 }
 
-#if 0//TODO: remove
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    WriteVarIdent(ast);
-}
-#endif
-
 /* --- Declarations --- */
 
 IMPLEMENT_VISIT_PROC(VarDecl)
@@ -892,20 +885,7 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
-    /* Write prefix expression */
-    if (ast->prefixExpr && !ast->isStatic)
-    {
-        Visit(ast->prefixExpr);
-        Write(".");
-    }
-
-    /* Write final identifier from symbol reference, or original identififer from expression */
-    if (ast->flags(ObjectExpr::isImmutable))
-        Write(ast->ident);
-    else if (auto symbol = ast->symbolRef)
-        Write(symbol->ident);
-    else
-        Write(ast->ident);
+    WriteObjectExpr(*ast);
 }
 
 IMPLEMENT_VISIT_PROC(AssignExpr)
@@ -947,7 +927,7 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 
 /* --- Helper functions for code generation --- */
 
-/* --- Basics --- */
+/* ----- Basics ----- */
 
 void GLSLGenerator::WriteComment(const std::string& text)
 {
@@ -994,7 +974,7 @@ void GLSLGenerator::WriteLineMark(const AST* ast)
     WriteLineMark(ast->area.Pos().Row());
 }
 
-/* --- Program --- */
+/* ----- Program ----- */
 
 void GLSLGenerator::WriteProgramHeader()
 {
@@ -1036,7 +1016,7 @@ void GLSLGenerator::WriteProgramHeaderExtension(const std::string& extensionName
     WriteLn("#extension " + extensionName + " : enable");// "require" or "enable"
 }
 
-/* --- Layouts --- */
+/* ----- Global layouts ----- */
 
 void GLSLGenerator::WriteGlobalLayouts()
 {
@@ -1215,7 +1195,94 @@ bool GLSLGenerator::WriteGlobalLayoutsCompute(const Program::LayoutComputeShader
     return true;
 }
 
-/* --- Input semantics --- */
+/* ----- Layout ----- */
+
+void GLSLGenerator::WriteLayout(const std::initializer_list<LayoutEntryFunctor>& entryFunctors)
+{
+    PushWritePrefix("layout(");
+    {
+        bool firstWritten = false;
+
+        for (const auto& entryFunc : entryFunctors)
+        {
+            /* Write comma separator, if this is not the first entry */
+            if (firstWritten)
+            {
+                /* Push comman separator as prefix for the next layout entry */
+                PushWritePrefix(", ");
+                {
+                    entryFunc();
+                }
+                PopWritePrefix();
+            }
+            else
+            {
+                /* Call function for the first layout entry */
+                entryFunc();
+                firstWritten = true;
+            }
+        }
+
+        if (TopWritePrefix())
+            Write(") ");
+    }
+    PopWritePrefix();
+}
+
+void GLSLGenerator::WriteLayout(const std::string& value)
+{
+    WriteLayout({ [&]() { Write(value); } });
+}
+
+void GLSLGenerator::WriteLayoutGlobal(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor, const std::string& modifier)
+{
+    BeginLn();
+    {
+        WriteLayout(entryFunctors);
+        if (varFunctor)
+        {
+            Write(modifier + ' ');
+            varFunctor();
+            Write(";");
+        }
+        else
+            Write(modifier + ';');
+    }
+    EndLn();
+}
+
+void GLSLGenerator::WriteLayoutGlobalIn(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor)
+{
+    WriteLayoutGlobal(entryFunctors, varFunctor, "in");
+}
+
+void GLSLGenerator::WriteLayoutGlobalOut(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor)
+{
+    WriteLayoutGlobal(entryFunctors, varFunctor, "out");
+}
+
+void GLSLGenerator::WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters)
+{
+    if (explicitBinding_)
+    {
+        if (auto slotRegister = Register::GetForTarget(slotRegisters, GetShaderTarget()))
+            Write("binding = " + std::to_string(slotRegister->slot));
+    }
+}
+
+void GLSLGenerator::WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast)
+{
+    if (typeDenoter)
+    {
+        if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
+        {
+            if (auto keyword = DataTypeToImageFormatKeyword(baseTypeDen->dataType, ast))
+                Write(*keyword);
+        }
+    }
+}
+
+/* ----- Input semantics ----- */
 
 void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
 {
@@ -1400,7 +1467,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
     EndLn();
 }
 
-/* --- Output semantics --- */
+/* ----- Output semantics ----- */
 
 void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 {
@@ -1565,7 +1632,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
     /* Write wrapped structures */
     for (const auto& paramStruct : entryPoint->paramStructs)
     {
-        if (paramStruct.varIdent == nullptr || paramStruct.objectExpr == lvalueExpr)
+        if (paramStruct.objectExpr == nullptr || paramStruct.objectExpr == lvalueExpr)
             WriteOutputSemanticsAssignmentStructDeclParam(paramStruct, writeAsListedExpr);
     }
 
@@ -1607,29 +1674,29 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
         else if (entryPoint->paramStructs.empty())
         {
             /* Store result in temporary variable */
-            const auto tempVarIdent = nameMangling_.temporaryPrefix + "output";
+            const auto tempIdent = nameMangling_.temporaryPrefix + "output";
 
             BeginLn();
             {
                 Visit(entryPoint->returnType);
-                Write(" " + tempVarIdent + " = ");
+                Write(" " + tempIdent + " = ");
                 Visit(expr);
                 Write(";");
             }
             EndLn();
 
             if (auto structDecl = entryPoint->returnType->GetStructDeclRef())
-                WriteOutputSemanticsAssignmentStructDeclParam({ nullptr, nullptr, nullptr, structDecl }, writeAsListedExpr, tempVarIdent);
+                WriteOutputSemanticsAssignmentStructDeclParam({ nullptr, nullptr, nullptr, structDecl }, writeAsListedExpr, tempIdent);
         }
     }
 }
 
 void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(
-    const FunctionDecl::ParameterStructure& paramStruct, bool writeAsListedExpr, const std::string& tempVarIdent)
+    const FunctionDecl::ParameterStructure& paramStruct, bool writeAsListedExpr, const std::string& tempIdent)
 {
-    auto paramIdent = paramStruct.varIdent;
-    auto paramVar   = paramStruct.varDecl;
-    auto structDecl = paramStruct.structDecl;
+    auto paramObject    = paramStruct.objectExpr;
+    auto paramVar       = paramStruct.varDecl;
+    auto structDecl     = paramStruct.structDecl;
 
     if (structDecl && structDecl->flags(StructDecl::isNonEntryPointParam) && structDecl->flags(StructDecl::isShaderOutput))
     {
@@ -1648,12 +1715,12 @@ void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(
 
                 Write(" = ");
 
-                if (paramIdent)
-                    Visit(paramIdent);
+                if (paramObject)
+                    WriteObjectExpr(*paramObject);
                 else if (paramVar)
                     Write(paramVar->ident);
                 else
-                    Write(tempVarIdent);
+                    Write(tempIdent);
 
                 Write("." + varDecl->ident + (writeAsListedExpr ? ", " : ";"));
 
@@ -1668,7 +1735,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(
     }
 }
 
-/* --- Uniforms --- */
+/* ----- Uniforms ----- */
 
 void GLSLGenerator::WriteGlobalUniforms()
 {
@@ -1709,7 +1776,7 @@ void GLSLGenerator::WriteGlobalUniformsParameter(VarDeclStmnt* param)
 
 #if 0//TODO: remove
 
-/* --- VarIdent --- */
+/* ----- VarIdent ----- */
 
 /*
 Find the first VarIdent with a system value semantic,
@@ -1837,7 +1904,7 @@ void GLSLGenerator::WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIn
     }
 }
 
-/* --- Type denoter --- */
+/* ----- Type denoter ----- */
 
 void GLSLGenerator::WriteStorageClasses(const std::set<StorageClass>& storageClasses, const AST* ast)
 {
@@ -1986,7 +2053,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
     }
 }
 
-/* --- Function declaration --- */
+/* ----- Function declaration ----- */
 
 void GLSLGenerator::WriteFunction(FunctionDecl* ast)
 {
@@ -2097,7 +2164,7 @@ void GLSLGenerator::WriteFunctionSecondaryEntryPoint(FunctionDecl* ast)
     WriteScopeClose();
 }
 
-/* --- Function call --- */
+/* ----- Function call ----- */
 
 void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* funcCall, std::size_t numArgsMin, std::size_t numArgsMax)
 {
@@ -2361,7 +2428,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicTextureQueryLod(FunctionCall* func
         ErrorIntrinsic(funcCall->ident, funcCall);
 }
 
-/* --- Intrinsics wrapper functions --- */
+/* ----- Intrinsics wrapper ----- */
 
 void GLSLGenerator::WriteWrapperIntrinsics()
 {
@@ -2462,7 +2529,7 @@ void GLSLGenerator::WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage)
         Blank();
 }
 
-/* --- Structure --- */
+/* ----- Structure ----- */
 
 bool GLSLGenerator::WriteStructDecl(StructDecl* structDecl, bool writeSemicolon, bool allowNestedStruct)
 {
@@ -2553,7 +2620,7 @@ void GLSLGenerator::WriteStructDeclMembers(StructDecl* structDecl)
     Visit(structDecl->varMembers);
 }
 
-/* --- BufferDecl --- */
+/* ----- BufferDecl ----- */
 
 void GLSLGenerator::WriteBufferDecl(BufferDecl* bufferDecl)
 {
@@ -2646,7 +2713,7 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
     WriteScopeClose();
 }
 
-/* --- Misc --- */
+/* ----- Misc ----- */
 
 void GLSLGenerator::WriteStmntComment(Stmnt* ast, bool insertBlank)
 {
@@ -2768,89 +2835,22 @@ void GLSLGenerator::WriteLiteral(const std::string& value, const BaseTypeDenoter
         Error(R_FailedToWriteLiteralType(value), ast);
 }
 
-void GLSLGenerator::WriteLayout(const std::initializer_list<LayoutEntryFunctor>& entryFunctors)
+void GLSLGenerator::WriteObjectExpr(const ObjectExpr& objectExpr)
 {
-    PushWritePrefix("layout(");
+    /* Write prefix expression */
+    if (objectExpr.prefixExpr && !objectExpr.isStatic)
     {
-        bool firstWritten = false;
-
-        for (const auto& entryFunc : entryFunctors)
-        {
-            /* Write comma separator, if this is not the first entry */
-            if (firstWritten)
-            {
-                /* Push comman separator as prefix for the next layout entry */
-                PushWritePrefix(", ");
-                {
-                    entryFunc();
-                }
-                PopWritePrefix();
-            }
-            else
-            {
-                /* Call function for the first layout entry */
-                entryFunc();
-                firstWritten = true;
-            }
-        }
-
-        if (TopWritePrefix())
-            Write(") ");
+        Visit(objectExpr.prefixExpr);
+        Write(".");
     }
-    PopWritePrefix();
-}
 
-void GLSLGenerator::WriteLayout(const std::string& value)
-{
-    WriteLayout({ [&]() { Write(value); } });
-}
-
-void GLSLGenerator::WriteLayoutGlobal(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor, const std::string& modifier)
-{
-    BeginLn();
-    {
-        WriteLayout(entryFunctors);
-        if (varFunctor)
-        {
-            Write(modifier + ' ');
-            varFunctor();
-            Write(";");
-        }
-        else
-            Write(modifier + ';');
-    }
-    EndLn();
-}
-
-void GLSLGenerator::WriteLayoutGlobalIn(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor)
-{
-    WriteLayoutGlobal(entryFunctors, varFunctor, "in");
-}
-
-void GLSLGenerator::WriteLayoutGlobalOut(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor)
-{
-    WriteLayoutGlobal(entryFunctors, varFunctor, "out");
-}
-
-void GLSLGenerator::WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters)
-{
-    if (explicitBinding_)
-    {
-        if (auto slotRegister = Register::GetForTarget(slotRegisters, GetShaderTarget()))
-            Write("binding = " + std::to_string(slotRegister->slot));
-    }
-}
-
-void GLSLGenerator::WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast)
-{
-    if (typeDenoter)
-    {
-        if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
-        {
-            if (auto keyword = DataTypeToImageFormatKeyword(baseTypeDen->dataType, ast))
-                Write(*keyword);
-        }
-    }
+    /* Write final identifier from symbol reference, or original identififer from expression */
+    if (objectExpr.flags(ObjectExpr::isImmutable))
+        Write(objectExpr.ident);
+    else if (auto symbol = objectExpr.symbolRef)
+        Write(symbol->ident);
+    else
+        Write(objectExpr.ident);
 }
 
 

@@ -89,9 +89,6 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( ArrayDimension    );
         DECL_VISIT_PROC( TypeSpecifier     );
-        #if 0//TODO: remove
-        DECL_VISIT_PROC( VarIdent          );
-        #endif
 
         DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( StructDecl        );
@@ -134,7 +131,7 @@ class GLSLGenerator : public Generator
 
         /* --- Helper functions for code generation --- */
 
-        /* --- Basics --- */
+        /* ----- Basics ----- */
 
         // Writes a comment (single or multi-line comments).
         void WriteComment(const std::string& text);
@@ -143,13 +140,13 @@ class GLSLGenerator : public Generator
         void WriteLineMark(const TokenPtr& tkn);
         void WriteLineMark(const AST* ast);
 
-        /* --- Program --- */
+        /* ----- Program ----- */
 
         void WriteProgramHeader();
         void WriteProgramHeaderVersion();
         void WriteProgramHeaderExtension(const std::string& extensionName);
 
-        /* --- Layouts --- */
+        /* ----- Global layouts ----- */
 
         void WriteGlobalLayouts();
         bool WriteGlobalLayoutsTessControl(const Program::LayoutTessControlShader& layout);
@@ -158,7 +155,17 @@ class GLSLGenerator : public Generator
         bool WriteGlobalLayoutsFragment(const Program::LayoutFragmentShader& layout);
         bool WriteGlobalLayoutsCompute(const Program::LayoutComputeShader& layout);
 
-        /* --- Input semantics --- */
+        /* ----- Layout ----- */
+
+        void WriteLayout(const std::initializer_list<LayoutEntryFunctor>& entryFunctors);
+        void WriteLayout(const std::string& value);
+        void WriteLayoutGlobal(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor, const std::string& modifier);
+        void WriteLayoutGlobalIn(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor = nullptr);
+        void WriteLayoutGlobalOut(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor = nullptr);
+        void WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters);
+        void WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast = nullptr);
+
+        /* ----- Input semantics ----- */
 
         void WriteLocalInputSemantics(FunctionDecl* entryPoint);
         void WriteLocalInputSemanticsVarDecl(VarDecl* varDecl);
@@ -167,7 +174,7 @@ class GLSLGenerator : public Generator
         void WriteGlobalInputSemantics(FunctionDecl* entryPoint);
         void WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl);
 
-        /* --- Output semantics --- */
+        /* ----- Output semantics ----- */
 
         void WriteLocalOutputSemantics(FunctionDecl* entryPoint);
         void WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl);
@@ -179,17 +186,17 @@ class GLSLGenerator : public Generator
 
         void WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListedExpr = false);
         void WriteOutputSemanticsAssignmentStructDeclParam(
-            const FunctionDecl::ParameterStructure& paramStruct, bool writeAsListedExpr = false, const std::string& tempVarIdent = "output"
+            const FunctionDecl::ParameterStructure& paramStruct, bool writeAsListedExpr = false, const std::string& tempIdent = "output"
         );
 
-        /* --- Uniforms --- */
+        /* ----- Uniforms ----- */
 
         void WriteGlobalUniforms();
         void WriteGlobalUniformsParameter(VarDeclStmnt* param);
 
-        /* --- VarIdent --- */
-
         #if 0//TODO: remove
+
+        /* ----- VarIdent ----- */
 
         // Returns the first VarIdent AST node which has a system value semantic, or null if no such AST node was found.
         VarIdent* FindSystemValueVarIdent(VarIdent* varIdent);
@@ -207,7 +214,7 @@ class GLSLGenerator : public Generator
         // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
         void WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIndex = -1);
 
-        /* --- Type denoter --- */
+        /* ----- Type denoter ----- */
 
         void WriteStorageClasses(const std::set<StorageClass>& storageClasses, const AST* ast = nullptr);
         void WriteInterpModifiers(const std::set<InterpModifier>& interpModifiers, const AST* ast = nullptr);
@@ -218,14 +225,14 @@ class GLSLGenerator : public Generator
 
         void WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writePrecisionSpecifier = false, const AST* ast = nullptr);
 
-        /* --- Function declaration --- */
+        /* ----- Function declaration ----- */
 
         void WriteFunction(FunctionDecl* ast);
         void WriteFunctionEntryPoint(FunctionDecl* ast);
         void WriteFunctionEntryPointBody(FunctionDecl* ast);
         void WriteFunctionSecondaryEntryPoint(FunctionDecl* ast);
 
-        /* --- Function call --- */
+        /* ----- Function call ----- */
 
         void AssertIntrinsicNumArgs(FunctionCall* funcCall, std::size_t numArgsMin, std::size_t numArgsMax = ~0);
 
@@ -237,27 +244,27 @@ class GLSLGenerator : public Generator
         void WriteFunctionCallIntrinsicStreamOutputAppend(FunctionCall* funcCall);
         void WriteFunctionCallIntrinsicTextureQueryLod(FunctionCall* funcCall, bool clamped);
 
-        /* --- Intrinsics wrapper functions --- */
+        /* ----- Intrinsics wrapper ----- */
 
         // Writes all required wrapper functions for referenced intrinsics.
         void WriteWrapperIntrinsics();
         void WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage);
         void WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage);
 
-        /* --- Structure --- */
+        /* ----- Structure ----- */
 
         bool WriteStructDecl(StructDecl* structDecl, bool writeSemicolon, bool allowNestedStruct = false);
         bool WriteStructDeclStandard(StructDecl* structDecl, bool endWithSemicolon);
         bool WriteStructDeclInputOutputBlock(StructDecl* structDecl);
         void WriteStructDeclMembers(StructDecl* structDecl);
 
-        /* --- BufferDecl --- */
+        /* ----- BufferDecl ----- */
 
         void WriteBufferDecl(BufferDecl* bufferDecl);
         void WriteBufferDeclTexture(BufferDecl* bufferDecl);
         void WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl);
 
-        /* --- Misc --- */
+        /* ----- Misc ----- */
 
         void WriteStmntComment(Stmnt* ast, bool insertBlank = false);
 
@@ -271,13 +278,7 @@ class GLSLGenerator : public Generator
 
         void WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast = nullptr);
 
-        void WriteLayout(const std::initializer_list<LayoutEntryFunctor>& entryFunctors);
-        void WriteLayout(const std::string& value);
-        void WriteLayoutGlobal(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor, const std::string& modifier);
-        void WriteLayoutGlobalIn(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor = nullptr);
-        void WriteLayoutGlobalOut(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor = nullptr);
-        void WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters);
-        void WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast = nullptr);
+        void WriteObjectExpr(const ObjectExpr& objectExpr);
 
         /* === Members === */
 
