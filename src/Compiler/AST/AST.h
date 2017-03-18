@@ -757,9 +757,6 @@ struct FunctionDecl : public Stmnt
 
     struct ParameterStructure
     {
-        #if 1//TODO: replace by "objectExpr"
-        VarIdent*           varIdent;
-        #endif
         const ObjectExpr*   objectExpr; // Either this is used ...
         VarDecl*            varDecl;    // ... or this
         StructDecl*         structDecl;

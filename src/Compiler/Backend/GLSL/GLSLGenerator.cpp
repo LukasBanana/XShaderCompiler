@@ -1686,7 +1686,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
             EndLn();
 
             if (auto structDecl = entryPoint->returnType->GetStructDeclRef())
-                WriteOutputSemanticsAssignmentStructDeclParam({ nullptr, nullptr, nullptr, structDecl }, writeAsListedExpr, tempIdent);
+                WriteOutputSemanticsAssignmentStructDeclParam({ nullptr, nullptr, structDecl }, writeAsListedExpr, tempIdent);
         }
     }
 }

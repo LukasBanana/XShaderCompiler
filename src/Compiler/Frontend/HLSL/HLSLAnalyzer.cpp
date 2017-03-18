@@ -1424,7 +1424,7 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
             if (auto structTypeDen = typeDenoter.As<StructTypeDenoter>())
             {
                 if (auto structDecl = structTypeDen->structDeclRef)
-                    funcDecl->paramStructs.push_back({ nullptr, nullptr, param->varDecls.front().get(), structDecl });
+                    funcDecl->paramStructs.push_back({ nullptr, param->varDecls.front().get(), structDecl });
             }
         }
 
@@ -1934,7 +1934,7 @@ void HLSLAnalyzer::AnalyzeEntryPointOutput(const ObjectExpr* objectExpr)
 
                     /* Add variable as parameter-structure to entry point */
                     if (program_->entryPointRef)
-                        program_->entryPointRef->paramStructs.push_back({ nullptr, objectExpr, varDecl, structDecl });
+                        program_->entryPointRef->paramStructs.push_back({ objectExpr, varDecl, structDecl });
                         
                     /* Mark variable as local variable of the entry-point */
                     varDecl->flags << VarDecl::isEntryPointLocal;
