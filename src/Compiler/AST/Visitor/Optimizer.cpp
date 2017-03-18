@@ -198,10 +198,17 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     OptimizeExpr(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(SuffixExpr)
+IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
-    VISIT_DEFAULT(SuffixExpr);
-    OptimizeExpr(ast->expr);
+    VISIT_DEFAULT(ObjectExpr);
+    OptimizeExpr(ast->prefixExpr);
+}
+
+IMPLEMENT_VISIT_PROC(AssignExpr)
+{
+    VISIT_DEFAULT(AssignExpr);
+    OptimizeExpr(ast->lvalueExpr);
+    OptimizeExpr(ast->rvalueExpr);
 }
 
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
