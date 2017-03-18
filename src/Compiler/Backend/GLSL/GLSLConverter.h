@@ -113,6 +113,11 @@ class GLSLConverter : public Visitor
         // Labels the specified anonymous structure.
         void LabelAnonymousStructDecl(StructDecl* ast);
 
+        // Returns true if the variable is a global input/output variable declaration.
+        bool IsGlobalInOutVarDecl(VarDecl* varDecl) const;
+
+        #if 0//TODO: remove
+        
         // Returns true if the variable identifier refers to a global input or output variable declaration.
         bool HasGlobalInOutVarDecl(VarIdent* varIdent) const;
 
@@ -121,6 +126,8 @@ class GLSLConverter : public Visitor
         (without a leading structure instance name), if it refers to a global input/output variable.
         */
         void PopFrontOfGlobalInOutVarIdent(VarIdent* ast);
+
+        #endif
 
         /*
         Converts the specified statement to a code block and inserts itself into this code block (if it is a return statement within the entry point).
@@ -154,6 +161,8 @@ class GLSLConverter : public Visitor
         void ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast);
 
         void ConvertFunctionCall(FunctionCall* ast);
+
+        void ConvertEntryPointStructPrefix(ExprPtr& expr, ObjectExpr* objectExpr);
 
         /* ----- Unrolling ----- */
 

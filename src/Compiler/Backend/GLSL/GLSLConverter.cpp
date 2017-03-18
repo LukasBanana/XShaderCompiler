@@ -464,9 +464,14 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
-    /* Is this object a member of the active owner structure (like 'this->memberVar')? */
-    if (!ast->prefixExpr)
+    if (ast->prefixExpr)
     {
+        /* Convert prefix expression if it's the identifier of an entry-point struct instance */
+        ConvertEntryPointStructPrefix(ast->prefixExpr, ast);
+    }
+    else
+    {
+        /* Is this object a member of the active owner structure (like 'this->memberVar')? */
         if (auto selfParam = ActiveSelfParameter())
         {
             if (auto activeStructDecl = ActiveStructDecl())
@@ -485,7 +490,7 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
             }
         }
     }
-
+    
     VISIT_DEFAULT(ObjectExpr);
 }
 
@@ -616,17 +621,23 @@ void GLSLConverter::LabelAnonymousStructDecl(StructDecl* ast)
     }
 }
 
-bool GLSLConverter::HasGlobalInOutVarDecl(VarIdent* varIdent) const
+bool GLSLConverter::IsGlobalInOutVarDecl(VarDecl* varDecl) const
 {
-    /* Has variable identifier a reference to a variable declaration? */
-    if (auto varDecl = varIdent->FetchVarDecl())
+    if (varDecl)
     {
         /* Is this variable a global input/output variable? */
         auto entryPoint = program_->entryPointRef;
-        if (entryPoint->inputSemantics.Contains(varDecl) || entryPoint->outputSemantics.Contains(varDecl))
-            return true;
+        return (entryPoint->inputSemantics.Contains(varDecl) || entryPoint->outputSemantics.Contains(varDecl));
     }
     return false;
+}
+
+#if 0//TODO: remove
+
+bool GLSLConverter::HasGlobalInOutVarDecl(VarIdent* varIdent) const
+{
+    /* Has variable identifier a reference to a variable declaration? */
+    return IsGlobalInOutVarDecl(varIdent->FetchVarDecl());
 }
 
 void GLSLConverter::PopFrontOfGlobalInOutVarIdent(VarIdent* ast)
@@ -656,6 +667,8 @@ void GLSLConverter::PopFrontOfGlobalInOutVarIdent(VarIdent* ast)
         ast = ast->next.get();
     }
 }
+
+#endif
 
 void GLSLConverter::MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt)
 {
@@ -952,6 +965,40 @@ void GLSLConverter::ConvertFunctionCall(FunctionCall* ast)
                 }
                 else
                     RuntimeErr(R_MissingSelfParamForMemberFunc(funcDecl->ToString()), ast);
+            }
+        }
+    }
+}
+
+/*
+~~~~~~~~~~~~~~~ TODO: refactor this ~~~~~~~~~~~~~~~
+*/
+void GLSLConverter::ConvertEntryPointStructPrefix(ExprPtr& expr, ObjectExpr* objectExpr)
+{
+    if (auto lvalueExpr = expr->FetchLValueExpr())
+    {
+        /* Does this l-value refer to a variable declaration? */
+        if (auto varDecl = lvalueExpr->FetchVarDecl())
+        {
+            /* Is its type denoter a structure? */
+            const auto& varTypeDen = varDecl->GetTypeDenoter()->GetAliased();
+            if (auto structTypeDen = varTypeDen.As<StructTypeDenoter>())
+            {
+                /* Can the structure be resolved */
+                if (auto structDecl = structTypeDen->structDeclRef)
+                {
+                    if (structDecl->flags(StructDecl::isNonEntryPointParam))
+                    {
+                        /* Mark object expression as immutable */
+                        objectExpr->flags << ObjectExpr::isImmutable;
+                    }
+                    else
+                    {
+                        /* Drop prefix expression for global input/output variables */
+                        if (IsGlobalInOutVarDecl(objectExpr->FetchVarDecl()))
+                            expr.reset();
+                    }
+                }
             }
         }
     }
