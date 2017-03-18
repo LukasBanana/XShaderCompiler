@@ -222,20 +222,12 @@ struct Expr : public TypedAST
     // Returns the variable or null if this is not just a single variable expression.
     VarDecl* FetchVarDecl() const;
 
-    #if 1 //TODO: remove this
-    // Returns the variable identifier or null if this is not just a single variable expression
-    virtual VarIdent* FetchVarIdent() const;
-    #endif
-    
     //TODO: all Expr classes must implement this
     #if 0
     // Returns a descriptive string of this expression. By default the name of the expression type is returned.
     virtual std::string ToString() const = 0;
     #endif
 
-    //TODO: overload these functions in a couple of Expr classes
-    #if 1
-    
     /*
     Returns the first node in the expression tree that is an l-value (may also be constant!), or null if there is no l-value.
     If the return value is non-null, the object expression must refer to a declaration object. By default null.
@@ -250,8 +242,6 @@ struct Expr : public TypedAST
 
     // Returns the semantic of this expression, or Semantic::Undefined if this expression has no semantic.
     virtual IndexedSemantic FetchSemantic() const;
-
-    #endif
 };
 
 // Declaration AST base class.
@@ -770,9 +760,7 @@ struct FunctionDecl : public Stmnt
         #if 1//TODO: replace by "objectExpr"
         VarIdent*           varIdent;   // Either this is used ...
         #endif
-        #if 1//TODO: make this standard
         const ObjectExpr*   objectExpr;
-        #endif
         VarDecl*            varDecl;    // ... or this
         StructDecl*         structDecl;
     };
@@ -1154,11 +1142,8 @@ struct FunctionCallExpr : public Expr
 
     IndexedSemantic FetchSemantic() const override;
 
-    //TODO: make this standard
-    #if 1
     ExprPtr         prefixExpr;             // Optional prefix expression; may be null.
     bool            isStatic    = false;    // Specifies whether this function is a static member.
-    #endif
     FunctionCallPtr call;
 };
 
@@ -1173,15 +1158,8 @@ struct BracketExpr : public Expr
     const ObjectExpr* FetchTypeObjectExpr() const override;
     IndexedSemantic FetchSemantic() const override;
 
-    #if 1//TODO: remove
-    VarIdent* FetchVarIdent() const override;
-    #endif
-
     ExprPtr expr; // Inner expression
 };
-
-//TODO: make this standard
-#if 1
 
 // Assignment expression.
 struct AssignExpr : public Expr
@@ -1241,8 +1219,6 @@ struct ObjectExpr : public Expr
 
     Decl*       symbolRef   = nullptr;  // Optional symbol reference to the object declaration; may be null (e.g. for vector subscripts)
 };
-
-#endif
 
 // Array-access expression (e.g. "foo()[arrayAccess]").
 struct ArrayAccessExpr : public Expr

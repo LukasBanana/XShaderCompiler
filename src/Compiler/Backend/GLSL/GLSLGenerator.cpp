@@ -1558,14 +1558,14 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
     auto entryPoint = GetProgram()->entryPointRef;
 
     /* Fetch variable identifier if expression is set */
-    VarIdent* exprVarIdent = nullptr;
+    const ObjectExpr* lvalueExpr = nullptr;
     if (expr)
-        exprVarIdent = expr->FetchVarIdent();
+        lvalueExpr = expr->FetchLValueExpr();
 
     /* Write wrapped structures */
     for (const auto& paramStruct : entryPoint->paramStructs)
     {
-        if (paramStruct.varIdent == nullptr || paramStruct.varIdent == exprVarIdent)
+        if (paramStruct.varIdent == nullptr || paramStruct.objectExpr == lvalueExpr)
             WriteOutputSemanticsAssignmentStructDeclParam(paramStruct, writeAsListedExpr);
     }
 

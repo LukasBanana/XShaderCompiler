@@ -73,18 +73,11 @@ void TypedAST::ResetTypeDenoter()
 
 VarDecl* Expr::FetchVarDecl() const
 {
-    if (auto varIdent = FetchVarIdent())
-        return varIdent->FetchVarDecl();
+    if (auto lvalueExpr = FetchLValueExpr())
+        return lvalueExpr->FetchVarDecl();
     else
         return nullptr;
 }
-
-#if 1 //TODO: remove this
-VarIdent* Expr::FetchVarIdent() const
-{
-    return nullptr;
-}
-#endif
 
 const ObjectExpr* Expr::FetchLValueExpr() const
 {
@@ -1624,13 +1617,6 @@ IndexedSemantic BracketExpr::FetchSemantic() const
 {
     return expr->FetchSemantic();
 }
-
-#if 1//TODO: remove
-VarIdent* BracketExpr::FetchVarIdent() const
-{
-    return expr->FetchVarIdent();
-}
-#endif
 
 
 /* ----- AssignExpr ----- */
