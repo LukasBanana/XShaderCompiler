@@ -287,6 +287,7 @@ DECL_REPORT( NoGLSLExtensionVersionRegisterd,   "no GLSL version is registered f
 
 DECL_REPORT( EntryPointNotFound,                "entry point \"{0}\" not found"                                                                                 );
 DECL_REPORT( FailedToMapToGLSLKeyword,          "failed to map {0} to GLSL keyword[ ({1})]"                                                                     );
+DECL_REPORT( FailedToMapGLSLImageDataType,      "failed to map data type to image format GLSL keyword"                                                          );
 DECL_REPORT( FailedToWriteLiteralType,          "failed to write type denoter for literal[ '{0}']"                                                              );
 DECL_REPORT( FailedToDetermineGLSLDataType,     "failed to determine GLSL data type"                                                                            );
 DECL_REPORT( TessAbstractPatchType,             "tessellation abstract patch type"                                                                              );

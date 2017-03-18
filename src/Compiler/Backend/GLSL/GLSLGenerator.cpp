@@ -182,7 +182,7 @@ const std::string* GLSLGenerator::DataTypeToImageFormatKeyword(const DataType da
     if (auto keyword = DataTypeToImageFormatGLSLKeyword(dataType))
         return keyword;
     else
-        Error(R_FailedToMapToGLSLKeyword(R_DataType), ast);
+        Error(R_FailedToMapGLSLImageDataType, ast);
     return nullptr;
 }
 
@@ -486,7 +486,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
             }
         );
 
-        Write(ast->ident);
+        Write("uniform " + ast->ident);
 
         /* Write uniform buffer members */
         WriteScopeOpen(false, true);
@@ -1219,7 +1219,8 @@ void GLSLGenerator::WriteLayout(const std::initializer_list<LayoutEntryFunctor>&
             {
                 /* Call function for the first layout entry */
                 entryFunc();
-                firstWritten = true;
+                if (TopWritePrefix())
+                    firstWritten = true;
             }
         }
 
@@ -2709,8 +2710,16 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
         /* Write uniform declaration */
         WriteLayout(
             {
-                [&]() { WriteLayoutImageFormat(bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter, bufferDecl); },
-                [&]() { WriteLayoutBinding(bufferDecl->slotRegisters); },
+                [&]()
+                {
+                    if (IsRWTextureBufferType(bufferDecl->GetBufferType()))
+                        WriteLayoutImageFormat(bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter, bufferDecl);
+                },
+
+                [&]()
+                {
+                    WriteLayoutBinding(bufferDecl->slotRegisters);
+                },
             }
         );
 
