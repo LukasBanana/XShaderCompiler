@@ -762,17 +762,22 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
 
     if (auto structDecl = ast->structDeclRef)
     {
-        /* Rename function */
+        /* Rename function to "{TempPrefix}{StructName}_{FuncName}" */
         ast->ident = nameMangling_.temporaryPrefix + structDecl->ident + "_" + ast->ident;
 
-        /* Insert parameter of 'self' object */
-        auto selfParamTypeDen   = std::make_shared<StructTypeDenoter>(structDecl);
-        auto selfParamType      = ASTFactory::MakeTypeSpecifier(selfParamTypeDen);
-        auto selfParam          = ASTFactory::MakeVarDeclStmnt(selfParamType, nameMangling_.temporaryPrefix + "self");
+        if (!ast->IsStatic())
+        {
+            /* Insert parameter of 'self' object */
+            auto selfParamTypeDen   = std::make_shared<StructTypeDenoter>(structDecl);
+            auto selfParamType      = ASTFactory::MakeTypeSpecifier(selfParamTypeDen);
+            auto selfParam          = ASTFactory::MakeVarDeclStmnt(selfParamType, nameMangling_.temporaryPrefix + "self");
 
-        ast->parameters.insert(ast->parameters.begin(), selfParam);
+            selfParam->flags << VarDeclStmnt::isSelfParameter;
 
-        selfParamVar = selfParam->varDecls.front().get();
+            ast->parameters.insert(ast->parameters.begin(), selfParam);
+
+            selfParamVar = selfParam->varDecls.front().get();
+        }
     }
 
     if (selfParamVar)
@@ -951,20 +956,28 @@ void GLSLConverter::ConvertFunctionCall(FunctionCall* ast)
     {
         if (funcDecl->IsMemberFunction())
         {
-            if (ast->exprRef->prefixExpr)
+            if (funcDecl->IsStatic())
             {
-                /* Move prefix expression as argument into the function call */
-                ast->PushArgumentFront(std::move(ast->exprRef->prefixExpr));
+                /* Drop prefix expression, since GLSL only allows global functions */
+                ast->exprRef->prefixExpr.reset();
             }
             else
             {
-                if (auto selfParam = ActiveSelfParameter())
+                if (ast->exprRef->prefixExpr)
                 {
-                    /* Insert current 'self'-parameter as argument into the function call */
-                    ast->PushArgumentFront(ASTFactory::MakeObjectExpr(selfParam));
+                    /* Move prefix expression as argument into the function call */
+                    ast->PushArgumentFront(std::move(ast->exprRef->prefixExpr));
                 }
                 else
-                    RuntimeErr(R_MissingSelfParamForMemberFunc(funcDecl->ToString()), ast);
+                {
+                    if (auto selfParam = ActiveSelfParameter())
+                    {
+                        /* Insert current 'self'-parameter as argument into the function call */
+                        ast->PushArgumentFront(ASTFactory::MakeObjectExpr(selfParam));
+                    }
+                    else
+                        RuntimeErr(R_MissingSelfParamForMemberFunc(funcDecl->ToString()), ast);
+                }
             }
         }
     }

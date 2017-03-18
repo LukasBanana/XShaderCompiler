@@ -276,7 +276,7 @@ DECL_REPORT( FailedToInitializeSamplerValue,    "{0} to initialize sampler value
 /* ----- GLSLConverter ----- */
 
 DECL_REPORT( SelfParamLevelUnderflow,           "'self'-parameter level underflow"                                                                              );
-DECL_REPORT( MissingSelfParamForMemberFunc,     "missing 'self'-parameter for member function: {0}"                                                             );
+DECL_REPORT( MissingSelfParamForMemberFunc,     "missing 'self'-parameter for member function[ '{0}']"                                                          );
 
 /* ----- GLSLExtensionAgent ----- */
 

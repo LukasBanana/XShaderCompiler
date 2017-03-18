@@ -1043,9 +1043,12 @@ std::string FunctionDecl::ToString(bool useParamNames) const
     /* Append parameter types */
     for (std::size_t i = 0; i < parameters.size(); ++i)
     {
-        s += parameters[i]->ToString(useParamNames, true);
-        if (i + 1 < parameters.size())
-            s += ", ";
+        if (!parameters[i]->flags(VarDeclStmnt::isSelfParameter))
+        {
+            s += parameters[i]->ToString(useParamNames, true);
+            if (i + 1 < parameters.size())
+                s += ", ";
+        }
     }
 
     s += ')';

@@ -879,7 +879,8 @@ struct VarDeclStmnt : public Stmnt
         FLAG( isShaderInput,    0 ), // This variable is used as shader input.
         FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
         FLAG( isParameter,      2 ), // This variable is a function parameter (flag should be set during parsing).
-        FLAG( isImplicitConst,  3 ), // This variable is implicitly declared as constant.
+        FLAG( isSelfParameter,  3 ), // This variable is the 'self' parameter of a member function.
+        FLAG( isImplicitConst,  4 ), // This variable is implicitly declared as constant.
     };
 
     // Implements Stmnt::CollectDeclIdents
