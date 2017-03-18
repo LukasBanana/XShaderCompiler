@@ -1904,6 +1904,69 @@ void GLSLGenerator::WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIn
     }
 }
 
+/* ----- Object expression ----- */
+
+void GLSLGenerator::WriteObjectExpr(const ObjectExpr& objectExpr)
+{
+    if (objectExpr.flags(ObjectExpr::isImmutable))
+        WriteObjectExprIdent(objectExpr);
+    else if (auto symbol = objectExpr.symbolRef)
+        WriteObjectExprIdentOrSystemValue(objectExpr, symbol);
+    else
+        WriteObjectExprIdent(objectExpr);
+}
+
+void GLSLGenerator::WriteObjectExprIdent(const ObjectExpr& objectExpr)
+{
+    /* Write prefix expression */
+    if (objectExpr.prefixExpr && !objectExpr.isStatic)
+    {
+        Visit(objectExpr.prefixExpr);
+        Write(".");
+    }
+
+    /* Write object identifier either from object expression or from symbol reference */
+    if (auto symbol = objectExpr.symbolRef)
+        Write(symbol->ident);
+    else
+        Write(objectExpr.ident);
+}
+
+/*
+Writes either the object identifier as it is (e.g. "vertexOutput.position.xyz"),
+or a system value if the identifier has a system value semantic (e.g. "gl_Position.xyz").
+*/
+void GLSLGenerator::WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectExpr, Decl* symbol)
+{
+    /* Find system value semantic in object identifier */
+    std::unique_ptr<std::string> semanticKeyword;
+    Flags varFlags;
+    
+    if (auto varDecl = symbol->As<VarDecl>())
+    {
+        /* Copy flags from variable */
+        varFlags = varDecl->flags;
+
+        /* Is this variable an entry-point output semantic, or an r-value? */
+        if (GetProgram()->entryPointRef->outputSemantics.Contains(varDecl) || !varDecl->flags(Decl::isWrittenTo))
+        {
+            /* Get GLSL keyword for system value semantic (or null if semantic is no system value) */
+            semanticKeyword = SystemValueToKeyword(varDecl->semantic);
+        }
+    }
+
+    if (semanticKeyword)
+    {
+        /* Ignore prefix expression if the object refers to a system value semantic */
+        Write(*semanticKeyword);
+    }
+    else
+    {
+        /* Write object expression with standard identifier */
+        WriteObjectExprIdent(objectExpr);
+    }
+}
+
 /* ----- Type denoter ----- */
 
 void GLSLGenerator::WriteStorageClasses(const std::set<StorageClass>& storageClasses, const AST* ast)
@@ -2833,67 +2896,6 @@ void GLSLGenerator::WriteLiteral(const std::string& value, const BaseTypeDenoter
     }
     else
         Error(R_FailedToWriteLiteralType(value), ast);
-}
-
-void GLSLGenerator::WriteObjectExpr(const ObjectExpr& objectExpr)
-{
-    if (objectExpr.flags(ObjectExpr::isImmutable))
-        WriteObjectExprIdent(objectExpr);
-    else if (auto symbol = objectExpr.symbolRef)
-        WriteObjectExprIdentOrSystemValue(objectExpr, symbol);
-    else
-        WriteObjectExprIdent(objectExpr);
-}
-
-void GLSLGenerator::WriteObjectExprIdent(const ObjectExpr& objectExpr)
-{
-    /* Write prefix expression */
-    if (objectExpr.prefixExpr && !objectExpr.isStatic)
-    {
-        Visit(objectExpr.prefixExpr);
-        Write(".");
-    }
-
-    /* Write object identifier either from object expression or from symbol reference */
-    if (auto symbol = objectExpr.symbolRef)
-        Write(symbol->ident);
-    else
-        Write(objectExpr.ident);
-}
-
-/*
-Writes either the object identifier as it is (e.g. "vertexOutput.position.xyz"),
-or a system value if the identifier has a system value semantic (e.g. "gl_Position.xyz").
-*/
-void GLSLGenerator::WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectExpr, Decl* symbol)
-{
-    /* Find system value semantic in object identifier */
-    std::unique_ptr<std::string> semanticKeyword;
-    Flags varFlags;
-    
-    if (auto varDecl = symbol->As<VarDecl>())
-    {
-        /* Copy flags from variable */
-        varFlags = varDecl->flags;
-
-        /* Is this variable an entry-point output semantic, or an r-value? */
-        if (GetProgram()->entryPointRef->outputSemantics.Contains(varDecl) || !varDecl->flags(Decl::isWrittenTo))
-        {
-            /* Get GLSL keyword for system value semantic (or null if semantic is no system value) */
-            semanticKeyword = SystemValueToKeyword(varDecl->semantic);
-        }
-    }
-
-    if (semanticKeyword)
-    {
-        /* Ignore prefix expression if the object refers to a system value semantic */
-        Write(*semanticKeyword);
-    }
-    else
-    {
-        /* Write object expression with standard identifier */
-        WriteObjectExprIdent(objectExpr);
-    }
 }
 
 

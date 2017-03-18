@@ -214,6 +214,12 @@ class GLSLGenerator : public Generator
         // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
         void WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIndex = -1);
 
+        /* ----- Object expression ----- */
+
+        void WriteObjectExpr(const ObjectExpr& objectExpr);
+        void WriteObjectExprIdent(const ObjectExpr& objectExpr);
+        void WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectExpr, Decl* symbol);
+
         /* ----- Type denoter ----- */
 
         void WriteStorageClasses(const std::set<StorageClass>& storageClasses, const AST* ast = nullptr);
@@ -277,10 +283,6 @@ class GLSLGenerator : public Generator
         void WriteArrayIndices(const std::vector<ExprPtr>& arrayDims);
 
         void WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast = nullptr);
-
-        void WriteObjectExpr(const ObjectExpr& objectExpr);
-        void WriteObjectExprIdent(const ObjectExpr& objectExpr);
-        void WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectExpr, Decl* symbol);
 
         /* === Members === */
 
