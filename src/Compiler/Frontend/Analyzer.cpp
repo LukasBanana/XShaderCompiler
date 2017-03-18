@@ -18,7 +18,7 @@ namespace Xsc
 
 
 Analyzer::Analyzer(Log* log) :
-    reportHandler_{ R_Context(), log }
+    reportHandler_{ R_Context, log }
 {
 }
 
@@ -344,12 +344,11 @@ StructDecl* Analyzer::FetchStructDeclFromIdent(const std::string& ident, const A
 
 StructDecl* Analyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter)
 {
-    if (typeDenoter.IsStruct())
-        return static_cast<const StructTypeDenoter&>(typeDenoter).structDeclRef;
-    else if (typeDenoter.IsAlias())
+    if (auto structTypeDen = typeDenoter.As<StructTypeDenoter>())
+        return structTypeDen->structDeclRef;
+    else if (auto aliasTypeDen = typeDenoter.As<AliasTypeDenoter>())
     {
-        auto aliasDecl = static_cast<const AliasTypeDenoter&>(typeDenoter).aliasDeclRef;
-        if (aliasDecl)
+        if (auto aliasDecl = aliasTypeDen->aliasDeclRef)
             return FetchStructDeclFromTypeDenoter(*(aliasDecl->typeDenoter));
     }
     return nullptr;
@@ -392,23 +391,29 @@ void Analyzer::AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, const 
         structTypeDen.structDeclRef = FetchStructDeclFromIdent(structTypeDen.ident, ast);
 }
 
+/*
+This function makes a conversion for alias declaration that actually refer to a structure type.
+This is to circumvent the restriction of parsing cast expressions in a non-context-free grammar.
+*/
 void Analyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast)
 {
-    auto& aliasTypeDen = static_cast<AliasTypeDenoter&>(*typeDenoter);
-    if (!aliasTypeDen.aliasDeclRef)
+    if (auto aliasTypeDen = typeDenoter->As<AliasTypeDenoter>())
     {
-        /* Fetch type declaration from type name */
-        if (auto symbol = FetchType(aliasTypeDen.ident, ast))
+        if (!aliasTypeDen->aliasDeclRef)
         {
-            if (auto structDecl = symbol->As<StructDecl>())
+            /* Fetch type declaration from type name */
+            if (auto symbol = FetchType(aliasTypeDen->ident, ast))
             {
-                /* Replace type denoter by a struct type denoter */
-                typeDenoter = std::make_shared<StructTypeDenoter>(structDecl);
-            }
-            else if (auto aliasDecl = symbol->As<AliasDecl>())
-            {
-                /* Decorate alias type denoter with reference to alias declaration */
-                aliasTypeDen.aliasDeclRef = aliasDecl;
+                if (auto structDecl = symbol->As<StructDecl>())
+                {
+                    /* Replace type denoter by a struct type denoter */
+                    typeDenoter = std::make_shared<StructTypeDenoter>(structDecl);
+                }
+                else if (auto aliasDecl = symbol->As<AliasDecl>())
+                {
+                    /* Decorate alias type denoter with reference to alias declaration */
+                    aliasTypeDen->aliasDeclRef = aliasDecl;
+                }
             }
         }
     }
