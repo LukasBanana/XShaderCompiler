@@ -410,6 +410,8 @@ struct FunctionCall : public TypedAST
     FunctionDecl*           funcDeclRef         = nullptr;              // Reference to the function declaration; may be null
     Intrinsic               intrinsic           = Intrinsic::Undefined; // Intrinsic ID (if this is an intrinsic).
     std::vector<Expr*>      defaultArgumentRefs;                        // Reference to default argument expressions of all remaining parameters
+
+    FunctionCallExpr*       exprRef             = nullptr;              // Reference to the function call expression (parent node).
 };
 
 // Attribute (e.g. "[unroll]" or "[numthreads(x,y,z)]").

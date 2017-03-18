@@ -1688,6 +1688,9 @@ FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr(const ObjectExprPtr& objec
         ast->call = ParseFunctionCall();
     }
 
+    /* Link expression to function call sub node */
+    ast->call->exprRef = ast.get();
+
     /* Update source area */
     return UpdateSourceArea(ast, ast->call.get());
 }

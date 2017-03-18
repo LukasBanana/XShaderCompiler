@@ -122,6 +122,41 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     VISIT_DEFAULT(CodeBlock);
 }
 
+IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+{
+    Visit(ast->prefixExpr);
+
+    auto funcCall = ast->call.get();
+    if (funcCall->intrinsic != Intrinsic::Undefined)
+    {
+        /* Insert prefix expression as first argument into function call, if this is a texture intrinsic call */
+        if (IsTextureIntrinsic(funcCall->intrinsic) && ast->prefixExpr)
+        {
+            if (isVKSL_)
+            {
+                /* Replace sampler state argument by sampler/texture binding call */
+                if (!funcCall->arguments.empty())
+                {
+                    auto arg0Expr = funcCall->arguments.front().get();
+                    if (IsSamplerStateTypeDenoter(arg0Expr->GetTypeDenoter()))
+                    {
+                        funcCall->arguments[0] = ASTFactory::MakeTextureSamplerBindingCallExpr(
+                            ast->prefixExpr, funcCall->arguments[0]
+                        );
+                    }
+                }
+            }
+            else
+            {
+                /* Insert texture object as parameter into intrinsic arguments */
+                funcCall->arguments.insert(funcCall->arguments.begin(), ast->prefixExpr);
+            }
+        }
+    }
+
+    Visit(ast->call);
+}
+
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
     if (!isVKSL_)
@@ -138,32 +173,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     }
 
     if (ast->intrinsic != Intrinsic::Undefined)
-    {
-        if (IsTextureIntrinsic(ast->intrinsic) && ast->varIdent)
-        {
-            auto texObjectExpr = ASTFactory::MakeVarAccessExpr(ASTFactory::MakeVarIdentFirst(*ast->varIdent));
-            if (isVKSL_)
-            {
-                /* Replace sampler state argument by sampler/texture binding call */
-                if (!ast->arguments.empty())
-                {
-                    auto arg0 = ast->arguments.front().get();
-                    if (IsSamplerStateTypeDenoter(arg0->GetTypeDenoter()))
-                    {
-                        auto bindCallExpr = ASTFactory::MakeTextureSamplerBindingCallExpr(texObjectExpr, ast->arguments[0]);
-                        ast->arguments[0] = bindCallExpr;
-                    }
-                }
-            }
-            else
-            {
-                /* Insert texture object as parameter into intrinsic arguments */
-                ast->arguments.insert(ast->arguments.begin(), texObjectExpr);
-            }
-        }
-
         ConvertIntrinsicCall(ast);
-    }
     else
         ConvertFunctionCall(ast);
 
@@ -448,6 +458,8 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 #endif
 
+#if 0//TODO: remove
+
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     /* Is this variable a member of the active owner structure (like 'this->memberVar')? */
@@ -474,6 +486,37 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
 
     VISIT_DEFAULT(VarAccessExpr);
 }
+
+#else
+
+IMPLEMENT_VISIT_PROC(ObjectExpr)
+{
+    /* Is this object a member of the active owner structure (like 'this->memberVar')? */
+    if (!ast->prefixExpr)
+    {
+        if (auto selfParam = ActiveSelfParameter())
+        {
+            if (auto activeStructDecl = ActiveStructDecl())
+            {
+                if (auto varDecl = ast->FetchVarDecl())
+                {
+                    if (auto structDecl = varDecl->structDeclRef)
+                    {
+                        if (structDecl == activeStructDecl || structDecl->IsBaseOf(*activeStructDecl))
+                        {
+                            /* Push 'self'-parameter identifier at the front of the current variable identifier */
+                            ast->prefixExpr = ASTFactory::MakeObjectExpr(selfParam);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    VISIT_DEFAULT(ObjectExpr);
+}
+
+#endif
 
 #undef IMPLEMENT_VISIT_PROC
 
@@ -922,9 +965,10 @@ void GLSLConverter::ConvertFunctionCall(FunctionCall* ast)
 {
     if (auto funcDecl = ast->funcDeclRef)
     {
-        if (funcDecl->IsMemberFunction() && ast->varIdent)
+        if (funcDecl->IsMemberFunction())
         {
-            if (ast->varIdent->next)
+            #if 0//TODO: remove
+            if (ast->varIdent && ast->varIdent->next)
             {
                 /* Move first variable identifier as argument into the function call */
                 auto objectVarIdent = ASTFactory::MakeVarIdentWithoutLast(*ast->varIdent);
@@ -940,13 +984,37 @@ void GLSLConverter::ConvertFunctionCall(FunctionCall* ast)
                 /* Insert current 'self'-parameter as argument into the function call */
                 if (auto selfParam = ActiveSelfParameter())
                 {
+                    #if 0
                     auto objectVarIdent = ASTFactory::MakeVarIdent(selfParam->ident, selfParam);
                     auto objectArg = ASTFactory::MakeVarAccessExpr(objectVarIdent);
                     ast->arguments.insert(ast->arguments.begin(), objectArg);
+                    #else
+                    auto selfParamArgExpr = ASTFactory::MakeObjectExpr(selfParam);
+                    ast->arguments.insert(ast->arguments.begin(), selfParamArgExpr);
+                    #endif
                 }
                 else
                     RuntimeErr(R_MissingSelfParamForMemberFunc(funcDecl->ToString()), ast);
             }
+            #else
+            if (ast->exprRef->prefixExpr)
+            {
+                /* Move first variable identifier as argument into the function call */
+                ast->arguments.insert(ast->arguments.begin(), ast->exprRef->prefixExpr);
+                ast->exprRef->prefixExpr = nullptr;
+            }
+            else
+            {
+                if (auto selfParam = ActiveSelfParameter())
+                {
+                    /* Insert current 'self'-parameter as argument into the function call */
+                    auto selfParamArgExpr = ASTFactory::MakeObjectExpr(selfParam);
+                    ast->arguments.insert(ast->arguments.begin(), selfParamArgExpr);
+                }
+                else
+                    RuntimeErr(R_MissingSelfParamForMemberFunc(funcDecl->ToString()), ast);
+            }
+            #endif
         }
     }
 }

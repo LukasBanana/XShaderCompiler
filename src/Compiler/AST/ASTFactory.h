@@ -34,9 +34,11 @@ FunctionCallExprPtr             MakeTextureSamplerBindingCallExpr(const ExprPtr&
 CastExprPtr                     MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr);
 CastExprPtr                     MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue);
 
+#if 0//TODO: remove
 SuffixExprPtr                   MakeSuffixExpr(const ExprPtr& expr, const VarIdentPtr& varIdent);
 
 ExprPtr                         MakeCastOrSuffixCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr, const VarIdentPtr& suffixVarIdent = nullptr);
+#endif
 
 BinaryExprPtr                   MakeBinaryExpr(const ExprPtr& lhsExpr, const BinaryOp op, const ExprPtr& rhsExpr);
 
@@ -52,7 +54,7 @@ TypeSpecifierPtr                MakeTypeSpecifier(const DataType dataType);
 VarDeclStmntPtr                 MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident);
 VarDeclStmntPtr                 MakeVarDeclStmnt(const DataType dataType, const std::string& ident);
 
-#if 1//TODO: remove
+#if 0//TODO: remove
 
 VarIdentPtr                     MakeVarIdent(const std::string& ident, AST* symbolRef = nullptr);
 
@@ -73,6 +75,9 @@ VarAccessExprPtr                MakeVarAccessExpr(const std::string& ident, AST*
 #if 1//TODO: make this standard
 
 ObjectExprPtr                   MakeObjectExpr(const std::string& ident, Decl* symbolRef = nullptr);
+ObjectExprPtr                   MakeObjectExpr(Decl* symbolRef);
+
+ArrayAccessExprPtr              MakeArrayAccessExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices);
 
 #endif
 
@@ -82,7 +87,7 @@ BracketExprPtr                  MakeBracketExpr(const ExprPtr& expr);
 // Return a list expression (or only the input expression) for the specified literal expression, so it can be used as constructor for a struct.
 ExprPtr                         MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::vector<TypeDenoterPtr>& listTypeDens);
 
-// Makes an statement with an array element assignment for the specified variable identifier, array indices, and value expression.
+// Makes a statement with an array element assignment for the specified variable, array indices, and assignment expression.
 ExprStmntPtr                    MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr);
 
 ArrayDimensionPtr               MakeArrayDimension(int arraySize);
