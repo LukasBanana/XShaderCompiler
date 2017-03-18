@@ -185,9 +185,9 @@ void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::Samp
         else if (name == "MaxLOD")
             samplerState.maxLOD = FromString<float>(value);
     }
-    else if (auto varAccessExpr = ast->value->As<VarAccessExpr>())
+    else if (auto objectExpr = ast->value->As<ObjectExpr>())
     {
-        const auto& value = varAccessExpr->varIdent->ident;
+        const auto& value = objectExpr->ident;
 
         if (name == "Filter")
             ReflectSamplerValueFilter(value, samplerState.filter, ast);
