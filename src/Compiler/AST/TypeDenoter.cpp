@@ -357,9 +357,9 @@ TypeDenoterPtr BaseTypeDenoter::Get(const VarIdent* varIdent)
             auto subscriptTypeDenoter = std::make_shared<BaseTypeDenoter>(subscriptDataType);
             return subscriptTypeDenoter->Get(varIdent->next.get());
         }
-        catch (const ASTRuntimeError& e)
+        catch (const ASTRuntimeError&)
         {
-            throw e;
+            throw;
         }
         catch (const std::exception& e)
         {
@@ -726,6 +726,14 @@ TypeDenoterPtr AliasTypeDenoter::GetFromArray(std::size_t numArrayIndices, const
 
 //TODO: use this
 #if 1
+
+TypeDenoterPtr AliasTypeDenoter::GetSub(const Expr* expr)
+{
+    if (aliasDeclRef)
+        return aliasDeclRef->GetTypeDenoter()->GetSub(expr);
+    else
+        RuntimeErr(R_MissingRefToAliasDecl(ident), expr);
+}
 
 TypeDenoterPtr AliasTypeDenoter::GetSubObject(const std::string& ident, const AST* ast)
 {

@@ -104,7 +104,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     #if 1
     
     // Returns a sub type denoter for the specified expression.
-    TypeDenoterPtr GetSub(const Expr* expr = nullptr);
+    virtual TypeDenoterPtr GetSub(const Expr* expr = nullptr);
 
     // Returns a sub type denoter for the identifier of the specified object expression.
     virtual TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr);
@@ -311,6 +311,7 @@ struct AliasTypeDenoter : public TypeDenoter
     #endif
 
     #if 1//TODO: use this
+    TypeDenoterPtr GetSub(const Expr* expr = nullptr) override;
     TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
     TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
     #endif

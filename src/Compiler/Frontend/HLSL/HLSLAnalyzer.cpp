@@ -1453,19 +1453,17 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
     /* Mark this function declaration with the entry point flag */
     if (funcDecl->flags.SetOnce(FunctionDecl::isEntryPoint))
     {
-        /* Store reference to entry point in root AST node */
+        /* Decorate AST root node with reference to entry point */
         program_->entryPointRef = funcDecl;
 
         /* Add all parameter structures to entry point */
         for (auto& param : funcDecl->parameters)
         {
-            if (auto typeSpecifier = param->typeSpecifier->GetTypeDenoter()->Get())
+            const auto& typeDenoter = param->typeSpecifier->GetTypeDenoter()->GetAliased();
+            if (auto structTypeDen = typeDenoter.As<StructTypeDenoter>())
             {
-                if (auto structTypeDen = typeSpecifier->As<StructTypeDenoter>())
-                {
-                    if (auto structDecl = structTypeDen->structDeclRef)
-                        funcDecl->paramStructs.push_back({ nullptr, nullptr, param->varDecls.front().get(), structDecl });
-                }
+                if (auto structDecl = structTypeDen->structDeclRef)
+                    funcDecl->paramStructs.push_back({ nullptr, nullptr, param->varDecls.front().get(), structDecl });
             }
         }
 
@@ -1489,13 +1487,11 @@ void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
     }
 
     /* Analyze function return type */
-    if (auto returnTypeDen = funcDecl->returnType->GetTypeDenoter()->Get())
+    const auto& returnTypeDen = funcDecl->returnType->GetTypeDenoter()->GetAliased();
+    if (auto structTypeDen = returnTypeDen.As<StructTypeDenoter>())
     {
-        if (auto structTypeDen = returnTypeDen->As<StructTypeDenoter>())
-        {
-            /* Analyze entry point output structure */
-            AnalyzeEntryPointParameterInOutStruct(funcDecl, structTypeDen->structDeclRef, "", false);
-        }
+        /* Analyze entry point output structure */
+        AnalyzeEntryPointParameterInOutStruct(funcDecl, structTypeDen->structDeclRef, "", false);
     }
 
     /*
@@ -1582,7 +1578,7 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
 {
     /* Get type denoter from variable (if not already set) */
     if (!varTypeDen)
-        varTypeDen = varDecl->GetTypeDenoter()->Get();
+        varTypeDen = varDecl->GetTypeDenoter()->GetSub();
 
     if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
     {

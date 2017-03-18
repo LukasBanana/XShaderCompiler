@@ -369,13 +369,11 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
     if (ast->initializer)
     {
-        if (auto typeDen = ast->initializer->GetTypeDenoter()->Get())
+        const auto& typeDen = ast->initializer->GetTypeDenoter()->GetAliased();
+        if (!typeDen.IsNull())
         {
-            if (!typeDen->IsNull())
-            {
-                Write(" = ");
-                Visit(ast->initializer);
-            }
+            Write(" = ");
+            Visit(ast->initializer);
         }
     }
 }
@@ -1258,11 +1256,9 @@ void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
 
     for (auto& param : entryPoint->parameters)
     {
-        if (auto typeSpecifier = param->typeSpecifier->GetTypeDenoter()->Get())
-        {
-            if (auto structTypeDen = typeSpecifier->As<StructTypeDenoter>())
-                WriteLocalInputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
-        }
+        const auto& typeDen = param->typeSpecifier->GetTypeDenoter()->GetAliased();
+        if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
+            WriteLocalInputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
     }
 }
 
@@ -1287,7 +1283,7 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
         Write(" " + varDecl->ident + " = ");
 
         /* Is a type conversion required? */
-        if (!IsTypeCompatibleWithSemantic(varDecl->semantic, *typeSpecifier->typeDenoter->Get()))
+        if (!IsTypeCompatibleWithSemantic(varDecl->semantic, typeSpecifier->typeDenoter->GetAliased()))
         {
             /* Write type cast with semantic keyword */
             Visit(typeSpecifier);
@@ -1448,11 +1444,9 @@ void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 
     for (auto& param : entryPoint->parameters)
     {
-        if (auto typeSpecifier = param->typeSpecifier->GetTypeDenoter()->Get())
-        {
-            if (auto structTypeDen = typeSpecifier->As<StructTypeDenoter>())
-                WriteLocalOutputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
-        }
+        const auto& typeDen = param->typeSpecifier->GetTypeDenoter()->GetAliased();
+        if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
+            WriteLocalOutputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
     }
 }
 
@@ -1661,7 +1655,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(
     const FunctionDecl::ParameterStructure& paramStruct, bool writeAsListedExpr, const std::string& tempVarIdent)
 {
     auto paramIdent = paramStruct.varIdent;
-    auto paramVar = paramStruct.varDecl;
+    auto paramVar   = paramStruct.varDecl;
     auto structDecl = paramStruct.structDecl;
 
     if (structDecl && structDecl->flags(StructDecl::isNonEntryPointParam) && structDecl->flags(StructDecl::isShaderOutput))
@@ -1911,7 +1905,7 @@ void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifie
 
 void GLSLGenerator::WriteTypeModifiersFrom(const TypeSpecifierPtr& typeSpecifier)
 {
-    WriteTypeModifiers(typeSpecifier->typeModifiers, typeSpecifier->GetTypeDenoter()->Get());
+    WriteTypeModifiers(typeSpecifier->typeModifiers, typeSpecifier->GetTypeDenoter()->GetSub());
 }
 
 void GLSLGenerator::WriteDataType(DataType dataType, bool writePrecisionSpecifier, const AST* ast)
@@ -2246,9 +2240,9 @@ void GLSLGenerator::WriteFunctionCallIntrinsicRcp(FunctionCall* funcCall)
 
     /* Get type denoter of argument expression */
     auto& expr = funcCall->arguments.front();
-    auto typeDenoter = expr->GetTypeDenoter()->Get();
+    const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
 
-    if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
+    if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
     {
         /* Convert this function call into a division */
         Write("(");
@@ -2271,9 +2265,9 @@ void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* funcCall)
 
     /* Get type denoter of argument expression */
     auto& expr = funcCall->arguments.front();
-    auto typeDenoter = expr->GetTypeDenoter()->Get();
+    const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
 
-    if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
+    if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
     {
         /* Convert this function call into a condition */
         Write("if (");
