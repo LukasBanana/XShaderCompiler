@@ -219,8 +219,8 @@ void ExprConverter::ConvertExprImageAccess(ExprPtr& expr)
         if (auto varAccessExpr = expr->As<VarAccessExpr>())
             ConvertExprImageAccessVarAccess(expr, varAccessExpr);
         #else
-        if (auto objectExpr = expr->As<ObjectExpr>())
-            ConvertExprImageAccessObject(expr, objectExpr);
+        if (auto assignExpr = expr->As<AssignExpr>())
+            ConvertExprImageAccessAssign(expr, assignExpr);
         #endif
         else if (auto arrayAccessExpr = expr->As<ArrayAccessExpr>())
             ConvertExprImageAccessArrayAccess(expr, arrayAccessExpr);
@@ -303,43 +303,80 @@ void ExprConverter::ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr
 
 #else
 
-void ExprConverter::ConvertExprImageAccessObject(ExprPtr& expr, ObjectExpr* objectExpr)
+void ExprConverter::ConvertExprImageAccessAssign(ExprPtr& expr, AssignExpr* assignExpr)
 {
-    //TODO...
+    if (auto arrayAccessExpr = assignExpr->lvalueExpr->As<ArrayAccessExpr>())
+        ConvertExprImageAccessArrayAccess(expr, arrayAccessExpr, assignExpr);
 }
 
 #endif
 
-void ExprConverter::ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr)
+/*
+~~~~~~~~~~ TODO: ~~~~~~~~~~
+conversion is wrong when the index expression contains a function call and the assignemnt is a compound!
+e.g. "rwTex[getIndex()] += 2;" --> "imageStore(rwTex, getIndex(), imageLoad(rwTex, getIndex()) + 2)"
+results in two function calls! Thus the index expression must be moved into a separated statement.
+*/
+void ExprConverter::ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr, AssignExpr* assignExpr)
 {
-    /* Fetch variable identifier from inner sub expression */
-    if (auto varIdent = arrayAccessExpr->prefixExpr->FetchVarIdent())
+    /* Fetch buffer type denoter from l-value prefix expression */
+    const auto& prefixTypeDen = arrayAccessExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+    if (auto bufferTypeDen = prefixTypeDen.As<BufferTypeDenoter>())
     {
-        /* Is this the variable a buffer declaration? */
-        if (auto bufferDecl = varIdent->FetchSymbol<BufferDecl>())
+        if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
         {
             /* Is the buffer declaration a read/write texture? */
             const auto bufferType = bufferDecl->GetBufferType();
             if (IsRWTextureBufferType(bufferType))
             {
                 /* Get buffer type denoter from array indices of array access plus identifier */
-                auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetFromArray(
-                    arrayAccessExpr->arrayIndices.size() + varIdent->arrayIndices.size()
-                );
+                auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetSub(arrayAccessExpr);
 
                 if (!arrayAccessExpr->arrayIndices.empty())
                 {
                     /* Make first argument expression */
-                    auto arg0Expr = ASTFactory::MakeVarAccessExpr(varIdent->ident, bufferDecl);
+                    auto arg0Expr = arrayAccessExpr->prefixExpr;
                     arg0Expr->flags << Expr::wasConverted;
 
                     /* Get second argument expression (last array index) */
                     auto arg1Expr = arrayAccessExpr->arrayIndices.back();
 
-                    /* Convert expression to intrinsic call */
-                    expr = ASTFactory::MakeIntrinsicCallExpr(
-                        Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
-                    );
+                    if (assignExpr)
+                    {
+                        /* Get third argument expression (store value) */
+                        ExprPtr arg2Expr;
+
+                        if (assignExpr->op == AssignOp::Set)
+                        {
+                            /* Take r-value expression for standard assignemnt */
+                            arg2Expr = assignExpr->rvalueExpr;
+                        }
+                        else 
+                        {
+                            /* Make compound assignment with an image-load instruction first */
+                            auto lhsExpr = ASTFactory::MakeIntrinsicCallExpr(
+                                Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
+                            );
+
+                            auto rhsExpr = assignExpr->rvalueExpr;
+
+                            const auto binaryOp = AssignOpToBinaryOp(assignExpr->op);
+
+                            arg2Expr = ASTFactory::MakeBinaryExpr(lhsExpr, binaryOp, rhsExpr);
+                        }
+
+                        /* Convert expression to intrinsic call */
+                        expr = ASTFactory::MakeIntrinsicCallExpr(
+                            Intrinsic::Image_Store, "imageStore", nullptr, { arg0Expr, arg1Expr, arg2Expr }
+                        );
+                    }
+                    else
+                    {
+                        /* Convert expression to intrinsic call */
+                        expr = ASTFactory::MakeIntrinsicCallExpr(
+                            Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
+                        );
+                    }
                 }
                 else
                     RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), arrayAccessExpr);

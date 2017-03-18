@@ -148,6 +148,7 @@ DECL_REPORT( InvalidIntrinsicArgs,              "invalid arguments for intrinsic
 /* ----- TypeDenoter ------ */
 
 DECL_REPORT( VarIdentCantBeResolved,            "variable identifier can not be resolved"                                                                       );
+DECL_REPORT( TypeHasNoSuchObject,               "type '{0}' has no object named '{1}'"                                                                          );
 DECL_REPORT( IllegalArrayAccess,                "array access not allowed[ for '{0}']"                                                                          );
 DECL_REPORT( TooManyArrayDimensions,            "too many array dimensions[ for '{0}']"                                                                         );
 DECL_REPORT( MissingRefToStructDecl,            "missing reference to structure declaration[ '{0}']"                                                            );

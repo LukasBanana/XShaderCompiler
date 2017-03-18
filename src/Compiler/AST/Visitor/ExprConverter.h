@@ -89,9 +89,9 @@ class ExprConverter : public Visitor
         #if 0//TODO: remove
         void ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr* varAccessExpr);
         #else
-        void ConvertExprImageAccessObject(ExprPtr& expr, ObjectExpr* objectExpr);
+        void ConvertExprImageAccessAssign(ExprPtr& expr, AssignExpr* assignExpr);
         #endif
-        void ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr);
+        void ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr, AssignExpr* assignExpr = nullptr);
         
         // Moves the expression as sub expression into a bracket (e.g. "- -x" -> "-(-x)").
         void ConvertExprIntoBracket(ExprPtr& expr);

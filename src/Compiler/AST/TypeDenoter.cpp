@@ -135,7 +135,7 @@ TypeDenoterPtr TypeDenoter::GetSub(const Expr* expr)
 
 TypeDenoterPtr TypeDenoter::GetSubObject(const std::string& ident, const AST* ast)
 {
-    RuntimeErr(R_VarIdentCantBeResolved, ast);
+    RuntimeErr(R_TypeHasNoSuchObject(ToString(), ident), ast);
 }
 
 TypeDenoterPtr TypeDenoter::GetSubArray(const std::size_t numArrayIndices, const AST* ast)

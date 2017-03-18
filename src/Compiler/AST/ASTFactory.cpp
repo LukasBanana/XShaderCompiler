@@ -220,6 +220,8 @@ VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ide
     return MakeVarDeclStmnt(MakeTypeSpecifier(dataType), ident);
 }
 
+#if 1//TODO: remove
+
 VarIdentPtr MakeVarIdent(const std::string& ident, AST* symbolRef)
 {
     auto ast = MakeAST<VarIdent>();
@@ -282,6 +284,22 @@ VarAccessExprPtr MakeVarAccessExpr(const std::string& ident, AST* symbolRef)
 {
     return MakeVarAccessExpr(MakeVarIdent(ident, symbolRef));
 }
+
+#endif
+
+#if 1//TODO: make this standard
+
+ObjectExprPtr MakeObjectExpr(const std::string& ident, Decl* symbolRef)
+{
+    auto ast = MakeAST<ObjectExpr>();
+    {
+        ast->ident      = ident;
+        ast->symbolRef  = symbolRef;
+    }
+    return ast;
+}
+
+#endif
 
 BracketExprPtr MakeBracketExpr(const ExprPtr& expr)
 {

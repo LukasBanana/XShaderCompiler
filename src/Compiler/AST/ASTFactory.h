@@ -52,6 +52,8 @@ TypeSpecifierPtr                MakeTypeSpecifier(const DataType dataType);
 VarDeclStmntPtr                 MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident);
 VarDeclStmntPtr                 MakeVarDeclStmnt(const DataType dataType, const std::string& ident);
 
+#if 1//TODO: remove
+
 VarIdentPtr                     MakeVarIdent(const std::string& ident, AST* symbolRef = nullptr);
 
 // Makes a new VarIdent instance with only the first node of the specified identifier.
@@ -65,6 +67,14 @@ VarIdentPtr                     MakeVarIdentPushFront(const std::string& firstId
 
 VarAccessExprPtr                MakeVarAccessExpr(const VarIdentPtr& varIdent);
 VarAccessExprPtr                MakeVarAccessExpr(const std::string& ident, AST* symbolRef = nullptr);
+
+#endif
+
+#if 1//TODO: make this standard
+
+ObjectExprPtr                   MakeObjectExpr(const std::string& ident, Decl* symbolRef = nullptr);
+
+#endif
 
 // Makes a new bracket expression with the specified sub expression (source area is copied).
 BracketExprPtr                  MakeBracketExpr(const ExprPtr& expr);

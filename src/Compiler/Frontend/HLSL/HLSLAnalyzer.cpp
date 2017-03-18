@@ -634,7 +634,6 @@ IMPLEMENT_VISIT_PROC(FunctionCallExpr)
     AnalyzeFunctionCallExpr(ast);
 }
 
-
 #if 0//TODO: remove
 
 IMPLEMENT_VISIT_PROC(SuffixExpr)
