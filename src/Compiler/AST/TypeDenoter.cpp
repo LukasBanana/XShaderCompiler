@@ -626,6 +626,16 @@ ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter, const 
 {
 }
 
+ArrayTypeDenoter::ArrayTypeDenoter(
+    const TypeDenoterPtr& baseTypeDenoter,
+    const std::vector<ArrayDimensionPtr>& baseArrayDims,
+    const std::vector<ArrayDimensionPtr>& subArrayDims) :
+        baseTypeDenoter { baseTypeDenoter },
+        arrayDims       { baseArrayDims   }
+{
+    arrayDims.insert(arrayDims.end(), subArrayDims.begin(), subArrayDims.end());
+}
+
 TypeDenoter::Types ArrayTypeDenoter::Type() const
 {
     return Types::Array;
@@ -713,6 +723,14 @@ AST* ArrayTypeDenoter::SymbolRef() const
     return (baseTypeDenoter ? baseTypeDenoter->SymbolRef() : nullptr);
 }
 
+TypeDenoterPtr ArrayTypeDenoter::AsArray(const std::vector<ArrayDimensionPtr>& subArrayDims)
+{
+    if (subArrayDims.empty())
+        return shared_from_this();
+    else
+        return std::make_shared<ArrayTypeDenoter>(baseTypeDenoter, arrayDims, subArrayDims);
+}
+
 void ArrayTypeDenoter::InsertSubArray(const ArrayTypeDenoter& subArrayTypeDenoter)
 {
     /* Move array dimensions into final array type */
@@ -731,7 +749,7 @@ std::vector<int> ArrayTypeDenoter::GetDimensionSizes() const
     std::vector<int> sizes;
 
     for (const auto& dim : arrayDims)
-        sizes.push_back(dim->size);
+        sizes.push_back(dim != nullptr ? dim->size : -1);
 
     return sizes;
 }

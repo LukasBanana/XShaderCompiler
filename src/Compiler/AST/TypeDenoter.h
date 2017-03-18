@@ -113,7 +113,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     virtual AST* SymbolRef() const;
 
     // Returns either this type denoter (if 'arrayDims' is empty), or this type denoter as array with the specified dimension expressions.
-    TypeDenoterPtr AsArray(const std::vector<ArrayDimensionPtr>& arrayDims);
+    virtual TypeDenoterPtr AsArray(const std::vector<ArrayDimensionPtr>& arrayDims);
 
     // Returns this type denoter as the specified sub class if this type denoter has the correct type. Otherwise, null is returned.
     template <typename T>
@@ -294,8 +294,15 @@ struct ArrayTypeDenoter : public TypeDenoter
     static const Types classType = Types::Array;
 
     ArrayTypeDenoter() = default;
+    
     ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter);
     ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter, const std::vector<ArrayDimensionPtr>& arrayDims);
+
+    ArrayTypeDenoter(
+        const TypeDenoterPtr& baseTypeDenoter,
+        const std::vector<ArrayDimensionPtr>& baseArrayDims,
+        const std::vector<ArrayDimensionPtr>& subArrayDims
+    );
 
     Types Type() const override;
 
@@ -312,6 +319,9 @@ struct ArrayTypeDenoter : public TypeDenoter
     unsigned int NumDimensions() const override;
 
     AST* SymbolRef() const override;
+
+    // Returns a copy of this type denoter with the accumulated array dimensions.
+    TypeDenoterPtr AsArray(const std::vector<ArrayDimensionPtr>& subArrayDims) override;
 
     // Inserts the specified sub array type denoter to this type denoter, with all its array dimension, and replaces the base type denoter.
     void InsertSubArray(const ArrayTypeDenoter& subArrayTypeDenoter);
