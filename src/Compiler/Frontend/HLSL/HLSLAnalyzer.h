@@ -78,14 +78,9 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( FunctionCallExpr  );
-        #if 0//TODO: remove
-        DECL_VISIT_PROC( VarAccessExpr     );
-        #endif
-        #if 1//TODO: make this standard
         DECL_VISIT_PROC( AssignExpr        );
         DECL_VISIT_PROC( ObjectExpr        );
         DECL_VISIT_PROC( ArrayAccessExpr   );
-        #endif
 
         /* ----- Function call ----- */
 

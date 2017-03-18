@@ -278,38 +278,6 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
     VISIT_DEFAULT(PostUnaryExpr);
 }
 
-#if 0//TODO: remove
-
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
-{
-    if (auto varIdent = ast->FetchVarIdent())
-    {
-        /* Check if this symbol is the fragment coordinate (SV_Position/ gl_FragCoord) */
-        while (varIdent)
-        {
-            if (auto varDecl = varIdent->FetchVarDecl())
-            {
-                if (varDecl->semantic == Semantic::FragCoord && shaderTarget_ == ShaderTarget::FragmentShader)
-                {
-                    /* Mark frag-coord usage in fragment program layout */
-                    program_->layoutFragment.fragCoordUsed = true;
-                    break;
-                }
-            }
-            varIdent = varIdent->next.get();
-        }
-
-        if (ast->assignExpr)
-            MarkLValueVarIdent(ast->varIdent.get());
-    }
-
-    VISIT_DEFAULT(VarAccessExpr);
-}
-
-#endif
-
-#if 1//TODO: make this standard
-
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
     /* Check if this symbol is the fragment coordinate (SV_Position/ gl_FragCoord) */
@@ -335,8 +303,6 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
 
     VISIT_DEFAULT(AssignExpr);
 }
-
-#endif
 
 #undef IMPLEMENT_VISIT_PROC
 

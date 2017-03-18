@@ -890,26 +890,6 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Write(")");
 }
 
-#if 0//TODO: remove
-
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
-{
-    if (ast->varIdent->flags(VarIdent::isImmutable))
-        Visit(ast->varIdent);
-    else
-        WriteVarIdentOrSystemValue(ast->varIdent.get());
-    
-    if (ast->assignExpr)
-    {
-        Write(" " + AssignOpToString(ast->assignOp) + " ");
-        Visit(ast->assignExpr);
-    }
-}
-
-#endif
-
-#if 1//TODO: make this standard
-
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
     /* Write prefix expression */
@@ -920,7 +900,9 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
     }
 
     /* Write final identifier from symbol reference, or original identififer from expression */
-    if (auto symbol = ast->symbolRef)
+    if (ast->flags(ObjectExpr::isImmutable))
+        Write(ast->ident);
+    else if (auto symbol = ast->symbolRef)
         Write(symbol->ident);
     else
         Write(ast->ident);
@@ -932,8 +914,6 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     Write(" " + AssignOpToString(ast->op) + " ");
     Visit(ast->rvalueExpr);
 }
-
-#endif
 
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
 {

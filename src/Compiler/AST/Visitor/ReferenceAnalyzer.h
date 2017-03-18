@@ -67,13 +67,8 @@ class ReferenceAnalyzer : private Visitor
 
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
-        #if 0//TODO: remove
-        DECL_VISIT_PROC( VarAccessExpr     );
-        #endif
-        #if 1//TODO: make this standard
         DECL_VISIT_PROC( ObjectExpr        );
         DECL_VISIT_PROC( AssignExpr        );
-        #endif
 
         /* === Members === */
 

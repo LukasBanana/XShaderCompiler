@@ -130,13 +130,8 @@ struct AST
         PostUnaryExpr,
         FunctionCallExpr,
         BracketExpr,
-        #if 1//TODO: remove
-        VarAccessExpr,
-        #endif
-        #if 1//TODO: make this standard
         ObjectExpr,
         AssignExpr,
-        #endif
         ArrayAccessExpr,
         CastExpr,
         InitializerExpr,
@@ -1185,25 +1180,6 @@ struct BracketExpr : public Expr
     ExprPtr expr; // Inner expression
 };
 
-//TODO: replace by "ObjectExpr" and "AssignExpr"
-#if 1
-
-// Variable access expression.
-struct VarAccessExpr : public Expr
-{
-    AST_INTERFACE(VarAccessExpr);
-
-    TypeDenoterPtr DeriveTypeDenoter() override;
-
-    VarIdent* FetchVarIdent() const override;
-
-    VarIdentPtr varIdent;
-    AssignOp    assignOp    = AssignOp::Undefined;  // May be undefined
-    ExprPtr     assignExpr;                         // May be null
-};
-
-#endif
-
 //TODO: make this standard
 #if 1
 
@@ -1226,6 +1202,11 @@ struct AssignExpr : public Expr
 struct ObjectExpr : public Expr
 {
     AST_INTERFACE(ObjectExpr);
+
+    FLAG_ENUM
+    {
+        FLAG( isImmutable, 0 ), // This object identifier must be written out as it is.
+    };
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 

@@ -634,24 +634,6 @@ IMPLEMENT_VISIT_PROC(FunctionCallExpr)
     AnalyzeFunctionCallExpr(ast);
 }
 
-#if 0//TODO: remove
-
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
-{
-    AnalyzeVarIdent(ast->varIdent.get());
-
-    if (ast->assignExpr)
-    {
-        Visit(ast->assignExpr);
-        ValidateTypeCastFrom(ast->assignExpr.get(), ast->varIdent.get(), R_VarAssignment);
-        AnalyzeLValueVarIdent(ast->varIdent.get(), ast);
-    }
-}
-
-#endif
-
-#if 1//TODO: make this standard
-
 IMPLEMENT_VISIT_PROC(AssignExpr)
 {
     Visit(ast->lvalueExpr);
@@ -670,8 +652,6 @@ IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
 {
     AnalyzeArrayAccessExpr(ast);
 }
-
-#endif
 
 #undef IMPLEMENT_VISIT_PROC
 

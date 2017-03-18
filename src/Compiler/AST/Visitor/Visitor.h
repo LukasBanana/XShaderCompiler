@@ -78,9 +78,6 @@ DECL_PTR( UnaryExpr         );
 DECL_PTR( PostUnaryExpr     );
 DECL_PTR( FunctionCallExpr  );
 DECL_PTR( BracketExpr       );
-#if 1//TODO: remove
-DECL_PTR( VarAccessExpr     );
-#endif
 DECL_PTR( ObjectExpr        );
 DECL_PTR( AssignExpr        );
 DECL_PTR( ArrayAccessExpr   );
@@ -157,13 +154,8 @@ class Visitor
         VISITOR_VISIT_PROC( PostUnaryExpr     );
         VISITOR_VISIT_PROC( FunctionCallExpr  );
         VISITOR_VISIT_PROC( BracketExpr       );
-        #if 1//TODO: remove
-        VISITOR_VISIT_PROC( VarAccessExpr     );
-        #endif
-        #if 1//TODO: make this standard
         VISITOR_VISIT_PROC( AssignExpr        );
         VISITOR_VISIT_PROC( ObjectExpr        );
-        #endif
         VISITOR_VISIT_PROC( ArrayAccessExpr   );
         VISITOR_VISIT_PROC( CastExpr          );
         VISITOR_VISIT_PROC( InitializerExpr   );

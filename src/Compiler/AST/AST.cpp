@@ -1633,22 +1633,6 @@ VarIdent* BracketExpr::FetchVarIdent() const
 #endif
 
 
-//TODO: replace by "ObjectExpr" and "AssignExpr"
-#if 1
-/* ----- VarAccessExpr ----- */
-
-TypeDenoterPtr VarAccessExpr::DeriveTypeDenoter()
-{
-    return varIdent->GetTypeDenoter();
-}
-
-VarIdent* VarAccessExpr::FetchVarIdent() const
-{
-    return varIdent.get();
-}
-#endif
-
-
 /* ----- AssignExpr ----- */
 
 TypeDenoterPtr AssignExpr::DeriveTypeDenoter()

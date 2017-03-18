@@ -301,20 +301,6 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Visit(ast->expr);
 }
 
-#if 1//TODO: remove
-
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
-{
-    #if 0
-    Visit(ast->varIdent);
-    Visit(ast->assignExpr);
-    #endif
-}
-
-#endif
-
-#if 1//TODO: make this standard
-
 IMPLEMENT_VISIT_PROC(AssignExpr)
 {
     Visit(ast->lvalueExpr);
@@ -325,8 +311,6 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
     Visit(ast->prefixExpr);
 }
-
-#endif
 
 IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
 {

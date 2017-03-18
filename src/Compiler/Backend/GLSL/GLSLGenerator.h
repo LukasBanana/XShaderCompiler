@@ -126,13 +126,8 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( FunctionCallExpr  );
         DECL_VISIT_PROC( BracketExpr       );
-        #if 0//TODO: remove
-        DECL_VISIT_PROC( VarAccessExpr     );
-        #endif
-        #if 1//TODO: make this standard
         DECL_VISIT_PROC( ObjectExpr        );
         DECL_VISIT_PROC( AssignExpr        );
-        #endif
         DECL_VISIT_PROC( ArrayAccessExpr   );
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( InitializerExpr   );
