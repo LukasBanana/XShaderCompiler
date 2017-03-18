@@ -110,19 +110,22 @@ std::unique_ptr<DataType> ExprConverter::MustCastExprToDataType(const TypeDenote
 
 void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
 {
-    auto enabled = Flags(flags & conversionFlags_);
+    if (expr)
+    {
+        auto enabled = Flags(flags & conversionFlags_);
 
-    if (enabled(ConvertVectorCompare))
-        ConvertExprVectorCompare(expr);
+        if (enabled(ConvertVectorCompare))
+            ConvertExprVectorCompare(expr);
 
-    if (enabled(ConvertImageAccess))
-        ConvertExprImageAccess(expr);
+        if (enabled(ConvertImageAccess))
+            ConvertExprImageAccess(expr);
 
-    if (enabled(ConvertVectorSubscripts))
-        ConvertExprVectorSubscript(expr);
+        if (enabled(ConvertVectorSubscripts))
+            ConvertExprVectorSubscript(expr);
 
-    if (enabled(WrapUnaryExpr))
-        ConvertExprIntoBracket(expr);
+        if (enabled(WrapUnaryExpr))
+            ConvertExprIntoBracket(expr);
+    }
 }
 
 void ExprConverter::ConvertExprList(std::vector<ExprPtr>& exprList, const Flags& flags)
@@ -133,14 +136,17 @@ void ExprConverter::ConvertExprList(std::vector<ExprPtr>& exprList, const Flags&
 
 void ExprConverter::ConvertExprVectorSubscript(ExprPtr& expr)
 {
-    if (expr)
-    {
-        if (auto suffixExpr = expr->As<SuffixExpr>())
-            ConvertExprVectorSubscriptSuffix(expr, suffixExpr);
-        else
-            ConvertExprVectorSubscriptVarIdent(expr, expr->FetchVarIdent());
-    }
+    if (auto objectExpr = expr->As<ObjectExpr>())
+        ConvertExprVectorSubscriptObject(expr, objectExpr);
+    #if 0
+    if (auto suffixExpr = expr->As<SuffixExpr>())
+        ConvertExprVectorSubscriptSuffix(expr, suffixExpr);
+    else
+        ConvertExprVectorSubscriptVarIdent(expr, expr->FetchVarIdent());
+    #endif
 }
+
+#if 0//TODO: remove
 
 void ExprConverter::ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* suffixExpr)
 {
@@ -225,6 +231,30 @@ void ExprConverter::ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* 
     }
 }
 
+#endif
+
+#if 1//TODO: make this standard
+
+void ExprConverter::ConvertExprVectorSubscriptObject(ExprPtr& expr, ObjectExpr* objectExpr)
+{
+    if (!objectExpr->symbolRef && objectExpr->prefixExpr)
+    {
+        /* Get type denoter of prefix expression */
+        const auto& prefixTypeDen = objectExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+        if (prefixTypeDen.IsScalar())
+        {
+            /* Convert vector subscript to cast expression */
+            auto vectorTypeDen = objectExpr->GetTypeDenoterFromSubscript();
+
+            /* Convert to cast expression */
+            expr = ASTFactory::MakeCastExpr(vectorTypeDen, objectExpr->prefixExpr);
+        }
+    }
+}
+
+#endif
+
+//TODO: make this a public function -> move to "ASTEnums.h/.cpp" files
 static Intrinsic CompareOpToIntrinsic(const BinaryOp op)
 {
     switch (op)
@@ -241,13 +271,10 @@ static Intrinsic CompareOpToIntrinsic(const BinaryOp op)
 
 void ExprConverter::ConvertExprVectorCompare(ExprPtr& expr)
 {
-    if (expr)
-    {
-        if (auto binaryExpr = expr->As<BinaryExpr>())
-            ConvertExprVectorCompareBinary(expr, binaryExpr);
-        else if (auto ternaryExpr = expr->As<TernaryExpr>())
-            ConvertExprVectorCompareTernary(expr, ternaryExpr);
-    }
+    if (auto binaryExpr = expr->As<BinaryExpr>())
+        ConvertExprVectorCompareBinary(expr, binaryExpr);
+    else if (auto ternaryExpr = expr->As<TernaryExpr>())
+        ConvertExprVectorCompareTernary(expr, ternaryExpr);
 }
 
 void ExprConverter::ConvertExprVectorCompareBinary(ExprPtr& expr, BinaryExpr* binaryExpr)
@@ -282,7 +309,7 @@ void ExprConverter::ConvertExprVectorCompareTernary(ExprPtr& expr, TernaryExpr* 
 
 void ExprConverter::ConvertExprImageAccess(ExprPtr& expr)
 {
-    if (expr && !expr->flags(Expr::wasConverted))
+    if (!expr->flags(Expr::wasConverted))
     {
         /* Is this an array access to an image buffer or texture? */
         if (auto varAccessExpr = expr->As<VarAccessExpr>())
@@ -593,6 +620,8 @@ IMPLEMENT_VISIT_PROC(CastExpr)
     ConvertExpr(ast->expr, AllPostVisit);
 }
 
+#if 0//TODO: remove
+
 IMPLEMENT_VISIT_PROC(VarAccessExpr)
 {
     if (ast->assignExpr)
@@ -607,6 +636,28 @@ IMPLEMENT_VISIT_PROC(VarAccessExpr)
     }
     else
         VISIT_DEFAULT(VarAccessExpr);
+}
+
+#endif
+
+IMPLEMENT_VISIT_PROC(ObjectExpr)
+{
+    ConvertExpr(ast->prefixExpr, AllPreVisit);
+    {
+        VISIT_DEFAULT(ObjectExpr);
+    }
+    ConvertExpr(ast->prefixExpr, AllPostVisit);
+}
+
+IMPLEMENT_VISIT_PROC(AssignExpr)
+{
+    ConvertExpr(ast->lvalueExpr, AllPreVisit);
+    ConvertExpr(ast->rvalueExpr, AllPreVisit);
+    {
+        VISIT_DEFAULT(AssignExpr);
+    }
+    ConvertExpr(ast->lvalueExpr, AllPostVisit);
+    ConvertExpr(ast->rvalueExpr, AllPostVisit);
 }
 
 #undef IMPLEMENT_VISIT_PROC

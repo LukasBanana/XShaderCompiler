@@ -77,8 +77,13 @@ class ExprConverter : public Visitor
 
         // Converts the expression if a vector subscript is used on a scalar type expression.
         void ConvertExprVectorSubscript(ExprPtr& expr);
+        #if 0//TODO: remove
         void ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* suffixExpr);
         void ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* varIdent);
+        #endif
+        #if 1//TODO: make this standard
+        void ConvertExprVectorSubscriptObject(ExprPtr& expr, ObjectExpr* objectExpr);
+        #endif
         
         // Converts the expression from a vector comparison to the respective intrinsic call (e.g. "a < b" -> "lessThan(a, b)").
         void ConvertExprVectorCompare(ExprPtr& expr);
@@ -115,7 +120,13 @@ class ExprConverter : public Visitor
         DECL_VISIT_PROC( UnaryExpr        );
         DECL_VISIT_PROC( BracketExpr      );
         DECL_VISIT_PROC( CastExpr         );
+        #if 0//TODO: remove
         DECL_VISIT_PROC( VarAccessExpr    );
+        #endif
+        #if 1//TODO: make this standard
+        DECL_VISIT_PROC( ObjectExpr       );
+        DECL_VISIT_PROC( AssignExpr       );
+        #endif
 
         /* === Members === */
 

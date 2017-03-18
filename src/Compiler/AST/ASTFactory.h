@@ -36,7 +36,7 @@ CastExprPtr                     MakeLiteralCastExpr(const TypeDenoterPtr& typeDe
 
 SuffixExprPtr                   MakeSuffixExpr(const ExprPtr& expr, const VarIdentPtr& varIdent);
 
-ExprPtr                         MakeCastOrSuffixCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr, const VarIdentPtr& suffixVarIdent);
+ExprPtr                         MakeCastOrSuffixCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr, const VarIdentPtr& suffixVarIdent = nullptr);
 
 BinaryExprPtr                   MakeBinaryExpr(const ExprPtr& lhsExpr, const BinaryOp op, const ExprPtr& rhsExpr);
 

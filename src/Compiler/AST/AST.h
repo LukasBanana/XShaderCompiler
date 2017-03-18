@@ -1253,8 +1253,8 @@ struct ObjectExpr : public Expr
     // Returns the type denoter for this AST node or the last sub node.
     TypeDenoterPtr GetExplicitTypeDenoter();
 
-    // Returns a type denoter for the vector subscript of this identifier or throws a runtime error on failure.
-    BaseTypeDenoterPtr GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const;
+    // Returns a type denoter for the vector subscript of this object expression or throws a runtime error on failure.
+    BaseTypeDenoterPtr GetTypeDenoterFromSubscript() const;
 
     // Returns the specified type of AST node from the symbol (if the symbol refers to one).
     template <typename T>

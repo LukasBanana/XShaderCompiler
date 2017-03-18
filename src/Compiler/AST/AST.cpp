@@ -1755,19 +1755,23 @@ TypeDenoterPtr ObjectExpr::GetExplicitTypeDenoter()
     RuntimeErr(R_MissingVarIdentSymbolRef(ident), this);
 }
 
-BaseTypeDenoterPtr ObjectExpr::GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const
+BaseTypeDenoterPtr ObjectExpr::GetTypeDenoterFromSubscript() const
 {
-    if (auto baseTypeDen = baseTypeDenoter.As<BaseTypeDenoter>())
+    if (prefixExpr)
     {
-        try
+        const auto& prefixTypeDen = prefixExpr->GetTypeDenoter()->GetAliased();
+        if (auto baseTypeDen = prefixTypeDen.As<BaseTypeDenoter>())
         {
-            /* Get vector type from subscript */
-            auto vectorType = SubscriptDataType(baseTypeDen->dataType, ident);
-            return std::make_shared<BaseTypeDenoter>(vectorType);
-        }
-        catch (const std::exception& e)
-        {
-            RuntimeErr(e.what(), this);
+            try
+            {
+                /* Get vector type from subscript */
+                auto vectorType = SubscriptDataType(baseTypeDen->dataType, ident);
+                return std::make_shared<BaseTypeDenoter>(vectorType);
+            }
+            catch (const std::exception& e)
+            {
+                RuntimeErr(e.what(), this);
+            }
         }
     }
     RuntimeErr(R_InvalidSubscriptBaseType, this);
