@@ -97,15 +97,6 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
     }
 }
 
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    if (NotVisited(ast))
-    {
-        Visit(ast->symbolRef);
-        VISIT_DEFAULT(VarIdent);
-    }
-}
-
 /* --- Declarations --- */
 
 IMPLEMENT_VISIT_PROC(VarDecl)
@@ -135,6 +126,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
         Visit(ast->declStmntRef);
         Visit(ast->bufferDeclRef);
+
         VISIT_DEFAULT(VarDecl);
     }
 }
@@ -200,6 +192,17 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
         }
 
         VISIT_DEFAULT(BufferDeclStmnt);
+    }
+}
+
+/* --- Expressions --- */
+
+IMPLEMENT_VISIT_PROC(ObjectExpr)
+{
+    if (NotVisited(ast))
+    {
+        Visit(ast->symbolRef);
+        VISIT_DEFAULT(ObjectExpr);
     }
 }
 

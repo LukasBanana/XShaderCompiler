@@ -49,7 +49,6 @@ class StructParameterAnalyzer : private Visitor
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( TypeSpecifier     );
-        DECL_VISIT_PROC( VarIdent          );
 
         DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( StructDecl        );
@@ -58,6 +57,8 @@ class StructParameterAnalyzer : private Visitor
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( BufferDeclStmnt   );
+
+        DECL_VISIT_PROC( ObjectExpr        );
 
         /* === Members === */
 
