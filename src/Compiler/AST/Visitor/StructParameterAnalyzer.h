@@ -20,7 +20,7 @@ namespace Xsc
 
 /*
 Structure parameter analyzer.
-This helper class for the context analyzer to determine which
+This is a helper class for the context analyzer to determine which
 structures are used for another reason than entry-point parameters.
 */
 class StructParameterAnalyzer : private Visitor
@@ -47,6 +47,7 @@ class StructParameterAnalyzer : private Visitor
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( CodeBlock         );
+        DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( TypeSpecifier     );
 

@@ -82,6 +82,12 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     VisitStmntList(ast->stmnts);
 }
 
+IMPLEMENT_VISIT_PROC(FunctionCall)
+{
+    Visit(ast->funcDeclRef);
+    VISIT_DEFAULT(FunctionCall);
+}
+
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     Visit(ast->expr);
@@ -90,11 +96,8 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(TypeSpecifier)
 {
-    if (NotVisited(ast))
-    {
-        Visit(ast->typeDenoter->SymbolRef());
-        VISIT_DEFAULT(TypeSpecifier);
-    }
+    Visit(ast->typeDenoter->SymbolRef());
+    VISIT_DEFAULT(TypeSpecifier);
 }
 
 /* --- Declarations --- */
