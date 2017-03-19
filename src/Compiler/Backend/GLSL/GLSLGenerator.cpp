@@ -2866,12 +2866,12 @@ void GLSLGenerator::WriteScopedStmnt(Stmnt* ast)
     }
 }
 
-void GLSLGenerator::WriteArrayIndices(const std::vector<ExprPtr>& arrayDims)
+void GLSLGenerator::WriteArrayIndices(const std::vector<ExprPtr>& arrayIndices)
 {
-    for (auto& dim : arrayDims)
+    for (auto& arrayIndex : arrayIndices)
     {
         Write("[");
-        Visit(dim);
+        Visit(arrayIndex);
         Write("]");
     }
 }

@@ -43,7 +43,7 @@ void FuncNameConverter::ConvertEqualFunctionSignatures(FuncList& funcList)
     if (onFuncSignatureCompare_)
     {
         /* Compare all functions with all other functions (number of comparisons: (n-1) + (n-2) + ... + 1) */
-        unsigned int idx = 0;
+        unsigned int nameIndex = 0;
 
         for (std::size_t i = 0, n = funcList.size(); i + 1 < n; ++i)
         {
@@ -56,11 +56,11 @@ void FuncNameConverter::ConvertEqualFunctionSignatures(FuncList& funcList)
                         if (onFuncSignatureCompare_(*funcLhs, *funcRhs))
                         {
                             /* Rename first function (if not already done) */
-                            if (idx == 0)
-                                ConvertFunctionName(*funcLhs, idx);
+                            if (nameIndex == 0)
+                                ConvertFunctionName(*funcLhs, nameIndex);
 
                             /* Rename second function */
-                            ConvertFunctionName(*funcRhs, idx);
+                            ConvertFunctionName(*funcRhs, nameIndex);
 
                             /* Remove second function from the list, to avoid another renaming */
                             funcList[j] = nullptr;
@@ -72,11 +72,14 @@ void FuncNameConverter::ConvertEqualFunctionSignatures(FuncList& funcList)
     }
 }
 
-void FuncNameConverter::ConvertFunctionName(FunctionDecl& funcDecl, unsigned int& idx)
+void FuncNameConverter::ConvertFunctionName(FunctionDecl& funcDecl, unsigned int& nameIndex)
 {
     /* Rename function to "{Prefix}{FunctionName}_{Index}" */
     funcDecl.ident.AppendPrefix(nameMangling_.temporaryPrefix);
-    funcDecl.ident = (funcDecl.ident + "_" + std::to_string(idx++));
+    funcDecl.ident = (funcDecl.ident + "_" + std::to_string(nameIndex));
+
+    /* Increase index for next function name mangling */
+    ++nameIndex;
 }
 
 /* ------- Visit functions ------- */

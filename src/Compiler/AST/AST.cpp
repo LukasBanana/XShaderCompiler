@@ -749,6 +749,36 @@ bool StructDecl::IsAnonymous() const
     return ident.Empty();
 }
 
+bool StructDecl::EqualsMembers(const StructDecl& rhs, const Flags& compareFlags) const
+{
+    /* Collect member type denoters from this structure */
+    std::vector<TypeDenoterPtr> lhsMemberTypeDens;
+    CollectMemberTypeDenoters(lhsMemberTypeDens);
+
+    /* Collect member type denoters from structure to compare with */
+    std::vector<TypeDenoterPtr> rhsMemberTypeDens;
+    rhs.CollectMemberTypeDenoters(rhsMemberTypeDens);
+
+    /* Compare number of members */
+    if (lhsMemberTypeDens.size() != rhsMemberTypeDens.size())
+        return false;
+
+    /* Compare member type denoters */
+    for (std::size_t i = 0, n = lhsMemberTypeDens.size(); i < n; ++i)
+    {
+        if (!lhsMemberTypeDens[i]->Equals(*rhsMemberTypeDens[i], compareFlags))
+            return false;
+    }
+
+    return true;
+}
+
+bool StructDecl::IsCastableTo(const BaseTypeDenoter& rhs) const
+{
+    //TODO ...
+    return true;
+}
+
 VarDecl* StructDecl::Fetch(const std::string& ident, const StructDecl** owner) const
 {
     /* Fetch symbol from base struct first */

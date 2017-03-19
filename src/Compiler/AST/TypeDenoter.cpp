@@ -525,6 +525,50 @@ void StructTypeDenoter::SetIdentIfAnonymous(const std::string& ident)
         this->ident = ident;
 }
 
+bool StructTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags) const
+{
+    if (auto rhsStructTypeDen = rhs.GetAliased().As<StructTypeDenoter>())
+    {
+        /* Get structure declarations from type denoters */
+        if (auto lhsStructDecl = structDeclRef)
+        {
+            /* Compare this structure type with another structure type */
+            if (auto rhsStructDecl = rhsStructTypeDen->structDeclRef)
+                return lhsStructDecl->EqualsMembers(*rhsStructDecl, compareFlags);
+            else
+                RuntimeErr(R_MissingRefToStructDecl(rhsStructTypeDen->ident));
+        }
+        else
+            RuntimeErr(R_MissingRefToStructDecl(ident));
+    }
+    return false;
+}
+
+bool StructTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
+{
+    /* Get structure declarations from type denoters */
+    if (auto structDecl = structDeclRef)
+    {
+        const auto& targetAliasedType = targetType.GetAliased();
+        if (auto targetStructTypeDen = targetAliasedType.As<StructTypeDenoter>())
+        {
+            /* Compare this structure type with another structure type */
+            if (auto targetStructDecl = targetStructTypeDen->structDeclRef)
+                return structDecl->EqualsMembers(*targetStructDecl);
+            else
+                RuntimeErr(R_MissingRefToStructDecl(targetStructDecl->ident));
+        }
+        else if (auto targetBaseTypeDen = targetAliasedType.As<BaseTypeDenoter>())
+        {
+            /* Compare this structure type with target base type */
+            return structDecl->IsCastableTo(*targetBaseTypeDen);
+        }
+    }
+    else
+        RuntimeErr(R_MissingRefToStructDecl(ident));
+    return false;
+}
+
 TypeDenoterPtr StructTypeDenoter::GetSubObject(const std::string& ident, const AST* ast)
 {
     if (structDeclRef)
@@ -585,45 +629,52 @@ void AliasTypeDenoter::SetIdentIfAnonymous(const std::string& ident)
         this->ident = ident;
 }
 
+bool AliasTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags) const
+{
+    return GetAliasedTypeOrThrow()->Equals(rhs, compareFlags);
+}
+
+bool AliasTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
+{
+    return GetAliasedTypeOrThrow()->IsCastableTo(targetType);
+}
+
 TypeDenoterPtr AliasTypeDenoter::GetSub(const Expr* expr)
 {
-    if (aliasDeclRef)
-        return aliasDeclRef->GetTypeDenoter()->GetSub(expr);
-    else
-        RuntimeErr(R_MissingRefToAliasDecl(ident), expr);
+    return GetAliasedTypeOrThrow(expr)->GetSub(expr);
 }
 
 TypeDenoterPtr AliasTypeDenoter::GetSubObject(const std::string& ident, const AST* ast)
 {
-    if (aliasDeclRef)
-        return aliasDeclRef->GetTypeDenoter()->GetSubObject(ident, ast);
-    else
-        RuntimeErr(R_MissingRefToAliasDecl(ident), ast);
+    return GetAliasedTypeOrThrow(ast)->GetSubObject(ident, ast);
 }
 
 TypeDenoterPtr AliasTypeDenoter::GetSubArray(const std::size_t numArrayIndices, const AST* ast)
 {
-    if (aliasDeclRef)
-        return aliasDeclRef->GetTypeDenoter()->GetSubArray(numArrayIndices, ast);
-    else
-        RuntimeErr(R_MissingRefToAliasDecl(ident), ast);
+    return GetAliasedTypeOrThrow(ast)->GetSubArray(numArrayIndices, ast);
 }
 
 const TypeDenoter& AliasTypeDenoter::GetAliased() const
 {
+    return GetAliasedTypeOrThrow()->GetAliased();
+}
+
+const TypeDenoterPtr& AliasTypeDenoter::GetAliasedTypeOrThrow(const AST* ast) const
+{
     if (aliasDeclRef)
-        return aliasDeclRef->GetTypeDenoter()->GetAliased();
-    RuntimeErr(R_MissingRefToAliasDecl(ident));
+        return aliasDeclRef->GetTypeDenoter();
+    else
+        RuntimeErr(R_MissingRefToAliasDecl(ident), ast);
 }
 
 const TypeDenoter& AliasTypeDenoter::GetBase() const
 {
-    return GetAliased().GetBase();
+    return GetAliasedTypeOrThrow()->GetBase();
 }
 
 unsigned int AliasTypeDenoter::NumDimensions() const
 {
-    return GetAliased().NumDimensions();
+    return GetAliasedTypeOrThrow()->NumDimensions();
 }
 
 AST* AliasTypeDenoter::SymbolRef() const

@@ -670,6 +670,12 @@ struct StructDecl : public Decl
     // Returns true if this is an anonymous structure.
     bool IsAnonymous() const;
 
+    // Returns true if the specified structure declaration has the same member types as this structure (see 'TypeDenoter' for valid compare flags).
+    bool EqualsMembers(const StructDecl& rhs, const Flags& compareFlags = 0) const;
+
+    // Returns true if this structure type is castable to the specified base type denoter.
+    bool IsCastableTo(const BaseTypeDenoter& rhs) const;
+
     //TODO: rename to "FetchVarDecl"
     // Returns the VarDecl AST node inside this struct decl for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident, const StructDecl** owner = nullptr) const;
@@ -695,7 +701,7 @@ struct StructDecl : public Decl
     // Returns a list with the type denoters of all members (including all base structures).
     void CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens) const;
 
-    // Iterates over each VarDecl AST node (included nested structures, and members in referenced structures).
+    // Iterates over each VarDecl AST node (included nested structures, and members in base structures).
     void ForEachVarDecl(const VarDeclIteratorFunctor& iterator);
 
     // Returns true if this structure is used more than once as entry point output (either through variable arrays or multiple variable declarations).

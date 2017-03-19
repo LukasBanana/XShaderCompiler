@@ -280,7 +280,7 @@ class GLSLGenerator : public Generator
         void WriteParameter(VarDeclStmnt* ast);
         void WriteScopedStmnt(Stmnt* ast);
 
-        void WriteArrayIndices(const std::vector<ExprPtr>& arrayDims);
+        void WriteArrayIndices(const std::vector<ExprPtr>& arrayIndices);
 
         void WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast = nullptr);
 

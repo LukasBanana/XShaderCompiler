@@ -254,9 +254,12 @@ struct StructTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
-
     std::string Ident() const override;
+
     void SetIdentIfAnonymous(const std::string& ident) override;
+
+    bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
+    bool IsCastableTo(const TypeDenoter& targetType) const override;
 
     AST* SymbolRef() const override;
 
@@ -278,9 +281,12 @@ struct AliasTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
-
     std::string Ident() const override;
+
     void SetIdentIfAnonymous(const std::string& ident) override;
+
+    bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
+    bool IsCastableTo(const TypeDenoter& targetType) const override;
 
     TypeDenoterPtr GetSub(const Expr* expr = nullptr) override;
     TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
@@ -288,6 +294,8 @@ struct AliasTypeDenoter : public TypeDenoter
 
     const TypeDenoter& GetAliased() const override;
     const TypeDenoter& GetBase() const override;
+
+    const TypeDenoterPtr& GetAliasedTypeOrThrow(const AST* ast = nullptr) const;
 
     unsigned int NumDimensions() const override;
 

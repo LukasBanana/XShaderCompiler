@@ -378,6 +378,7 @@ DECL_REPORT( BufferCanOnlyHaveOneSlot,          "buffers can only be bound to on
 DECL_REPORT( UserCBuffersCantBeTargetSpecific,  "user-defined constant buffer slots can not be target specific"                                                 );
 DECL_REPORT( DeclShadowsPreviousLocal,          "declaration of '{0}' shadows a previous local at ({1})"                                                        );
 DECL_REPORT( ReturnOutsideFuncDecl,             "return statement outside function declaration"                                                                 );
+DECL_REPORT( ReturnExpression,                  "return expression"                                                                                             );
 DECL_REPORT( VarAssignment,                     "variable assignment"                                                                                           );
 DECL_REPORT( VarInitialization,                 "variable initialization"                                                                                       );
 DECL_REPORT( IntrinsicNotDeclaredInObject,      "intrinsic '{0}' not declared in object '{1}'"                                                                  );

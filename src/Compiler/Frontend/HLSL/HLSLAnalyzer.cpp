@@ -578,9 +578,11 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
 IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     /* Check if return expression matches the function return type */
+    TypeDenoterPtr returnTypeDen;
+
     if (auto funcDecl = ActiveFunctionDecl())
     {
-        if (auto returnTypeDen = funcDecl->returnType->GetTypeDenoter())
+        if (returnTypeDen = funcDecl->returnType->GetTypeDenoter())
         {
             if (returnTypeDen->IsVoid())
             {
@@ -603,7 +605,11 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         Visit(ast->expr);
 
         /* Validate expression type by just calling the getter */
-        GetTypeDenoterFrom(ast->expr.get());
+        if (auto exprTypeDen = GetTypeDenoterFrom(ast->expr.get()))
+        {
+            if (returnTypeDen)
+                ValidateTypeCast(*exprTypeDen, *returnTypeDen, R_ReturnExpression, ast->expr.get());
+        }
 
         /* Analyze entry point return statement (if a structure is returned from the entry point) */
         if (InsideEntryPoint())
