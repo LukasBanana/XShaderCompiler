@@ -1908,7 +1908,12 @@ void GLSLGenerator::WriteObjectExprIdent(const ObjectExpr& objectExpr)
 
     /* Write object identifier either from object expression or from symbol reference */
     if (auto symbol = objectExpr.symbolRef)
-        Write(symbol->ident);
+    {
+        if (objectExpr.flags(ObjectExpr::isImmutable))
+            Write(symbol->ident.Original());
+        else
+            Write(symbol->ident);
+    }
     else
         Write(objectExpr.ident);
 }
@@ -2257,7 +2262,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* funcCall)
         else
             Error(R_MissingFuncName, funcCall);
     }
-    else if (auto funcDecl = funcCall->funcDeclRef)
+    else if (auto funcDecl = funcCall->GetFunctionImpl())
     {
         /* Write final identifier of function declaration */
         Write(funcDecl->ident);

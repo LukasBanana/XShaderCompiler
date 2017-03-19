@@ -117,7 +117,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     }
 
     /* Add function declaration to map for later renamging of equal function signatures (if flag enabled) */
-    if (conversionFlags_(RenameFunctionSignatures))
+    if (conversionFlags_(RenameFunctionSignatures) && !ast->IsForwardDecl())
         funcDeclMap_[ast->ident].push_back(ast);
 }
 
