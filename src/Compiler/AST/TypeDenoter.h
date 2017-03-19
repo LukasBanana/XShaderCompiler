@@ -313,18 +313,18 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     ArrayTypeDenoter() = default;
     
-    ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter);
-    ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter, const std::vector<ArrayDimensionPtr>& arrayDims);
+    ArrayTypeDenoter(const TypeDenoterPtr& subTypeDenoter);
+    ArrayTypeDenoter(const TypeDenoterPtr& subTypeDenoter, const std::vector<ArrayDimensionPtr>& arrayDims);
 
     ArrayTypeDenoter(
-        const TypeDenoterPtr& baseTypeDenoter,
+        const TypeDenoterPtr& subTypeDenoter,
         const std::vector<ArrayDimensionPtr>& baseArrayDims,
         const std::vector<ArrayDimensionPtr>& subArrayDims
     );
 
     Types Type() const override;
 
-    // Throws std::runtime_error if 'baseTypeDenoter' is null.
+    // Throws std::runtime_error if 'subTypeDenoter' is null.
     std::string ToString() const override;
 
     TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
@@ -332,6 +332,7 @@ struct ArrayTypeDenoter : public TypeDenoter
     bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 
+    //TODO: repalce this by "GetSubArray" or rename this function!!!
     const TypeDenoter& GetBase() const override;
 
     unsigned int NumDimensions() const override;
@@ -347,9 +348,8 @@ struct ArrayTypeDenoter : public TypeDenoter
     // Returns the array dimension sizes.
     std::vector<int> GetDimensionSizes() const;
 
-    //TODO: rename to "subTypeDenoter"
-    TypeDenoterPtr                  baseTypeDenoter;    // Base type denoter
-    std::vector<ArrayDimensionPtr>  arrayDims;          // Entries may be null
+    TypeDenoterPtr                  subTypeDenoter; // Sub type denoter
+    std::vector<ArrayDimensionPtr>  arrayDims;      // Entries may be null
 };
 
 

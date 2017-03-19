@@ -837,12 +837,12 @@ void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
                 /* Mark this member and all structure members as dynamic array */
                 varDecl->flags << VarDecl::isDynamicArray;
 
-                const auto& baseTypeDen = arrayTypeDen->baseTypeDenoter->GetAliased();
-                if (auto structBaseTypeDen = baseTypeDen.As<StructTypeDenoter>())
+                const auto& subTypeDen = arrayTypeDen->subTypeDenoter->GetAliased();
+                if (auto structSubTypeDen = subTypeDen.As<StructTypeDenoter>())
                 {
-                    if (structBaseTypeDen->structDeclRef)
+                    if (structSubTypeDen->structDeclRef)
                     {
-                        structBaseTypeDen->structDeclRef->ForEachVarDecl(
+                        structSubTypeDen->structDeclRef->ForEachVarDecl(
                             [](VarDeclPtr& member)
                             {
                                 member->flags << VarDecl::isDynamicArray;

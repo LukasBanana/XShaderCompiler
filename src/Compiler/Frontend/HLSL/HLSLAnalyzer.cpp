@@ -1560,8 +1560,8 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
     }
     else if (auto arrayTypeDen = varTypeDen->As<ArrayTypeDenoter>())
     {
-        /* Analyze base type of array type denoter */
-        AnalyzeEntryPointParameterInOut(funcDecl, varDecl, input, arrayTypeDen->baseTypeDenoter);
+        /* Analyze sub type of array type denoter */
+        AnalyzeEntryPointParameterInOut(funcDecl, varDecl, input, arrayTypeDen->subTypeDenoter);
     }
     else
     {

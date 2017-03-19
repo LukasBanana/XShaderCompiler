@@ -685,23 +685,23 @@ AST* AliasTypeDenoter::SymbolRef() const
 
 /* ----- ArrayTypeDenoter ----- */
 
-ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter) :
-    baseTypeDenoter{ baseTypeDenoter }
+ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& subTypeDenoter) :
+    subTypeDenoter { subTypeDenoter }
 {
 }
 
-ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter, const std::vector<ArrayDimensionPtr>& arrayDims) :
-    baseTypeDenoter { baseTypeDenoter },
-    arrayDims       { arrayDims       }
+ArrayTypeDenoter::ArrayTypeDenoter(const TypeDenoterPtr& subTypeDenoter, const std::vector<ArrayDimensionPtr>& arrayDims) :
+    subTypeDenoter { subTypeDenoter },
+    arrayDims      { arrayDims      }
 {
 }
 
 ArrayTypeDenoter::ArrayTypeDenoter(
-    const TypeDenoterPtr& baseTypeDenoter,
+    const TypeDenoterPtr& subTypeDenoter,
     const std::vector<ArrayDimensionPtr>& baseArrayDims,
     const std::vector<ArrayDimensionPtr>& subArrayDims) :
-        baseTypeDenoter { baseTypeDenoter },
-        arrayDims       { baseArrayDims   }
+        subTypeDenoter { subTypeDenoter },
+        arrayDims      { baseArrayDims  }
 {
     arrayDims.insert(arrayDims.end(), subArrayDims.begin(), subArrayDims.end());
 }
@@ -713,10 +713,10 @@ TypeDenoter::Types ArrayTypeDenoter::Type() const
 
 std::string ArrayTypeDenoter::ToString() const
 {
-    if (!baseTypeDenoter)
+    if (!subTypeDenoter)
         throw std::runtime_error(R_MissingBaseTypeInArray);
 
-    auto typeName = baseTypeDenoter->ToString();
+    auto typeName = subTypeDenoter->ToString();
 
     for (const auto& dim : arrayDims)
         typeName += dim->ToString();
@@ -739,11 +739,11 @@ TypeDenoterPtr ArrayTypeDenoter::GetSubArray(const std::size_t numArrayIndices, 
         /* Make new array type denoter with less dimensions */
         auto subArrayDims = arrayDims;
         subArrayDims.resize(numDims - numArrayIndices);
-        return std::make_shared<ArrayTypeDenoter>(baseTypeDenoter, subArrayDims);
+        return std::make_shared<ArrayTypeDenoter>(subTypeDenoter, subArrayDims);
     }
 
-    /* Get base type denoter with next identifier */
-    return baseTypeDenoter->GetSubArray(numArrayIndices - numDims, ast);
+    /* Get sub type denoter with next array index */
+    return subTypeDenoter->GetSubArray(numArrayIndices - numDims, ast);
 }
 
 bool ArrayTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags) const
@@ -751,8 +751,8 @@ bool ArrayTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags)
     if (auto rhsArrayTypeDen = rhs.GetAliased().As<ArrayTypeDenoter>())
     {
         /* Compare sub type denoters */
-        if (baseTypeDenoter && rhsArrayTypeDen->baseTypeDenoter)
-            return baseTypeDenoter->Equals(*rhsArrayTypeDen->baseTypeDenoter, compareFlags);
+        if (subTypeDenoter && rhsArrayTypeDen->subTypeDenoter)
+            return subTypeDenoter->Equals(*rhsArrayTypeDen->subTypeDenoter, compareFlags);
     }
     return false;
 }
@@ -762,14 +762,14 @@ bool ArrayTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     /* Is target also an array? */
     if (auto targetArrayTypeDen = targetType.GetAliased().As<ArrayTypeDenoter>())
     {
-        if (baseTypeDenoter && targetArrayTypeDen->baseTypeDenoter)
-            return baseTypeDenoter->IsCastableTo(*targetArrayTypeDen->baseTypeDenoter);
+        if (subTypeDenoter && targetArrayTypeDen->subTypeDenoter)
+            return subTypeDenoter->IsCastableTo(*targetArrayTypeDen->subTypeDenoter);
     }
     
-    /* Check if base type denoter of this array is castable to the target type */
-    if (baseTypeDenoter)
+    /* Check if sub type denoter of this array is castable to the target type */
+    if (subTypeDenoter)
     {
-        const auto& baseAliased = baseTypeDenoter->GetAliased();
+        const auto& baseAliased = subTypeDenoter->GetAliased();
         return (!baseAliased.IsArray() && baseAliased.IsCastableTo(targetType));
     }
 
@@ -778,17 +778,17 @@ bool ArrayTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 
 const TypeDenoter& ArrayTypeDenoter::GetBase() const
 {
-    return baseTypeDenoter->GetBase();
+    return subTypeDenoter->GetBase();
 }
 
 unsigned int ArrayTypeDenoter::NumDimensions() const
 {
-    return (static_cast<unsigned int>(arrayDims.size()) + baseTypeDenoter->NumDimensions());
+    return (static_cast<unsigned int>(arrayDims.size()) + subTypeDenoter->NumDimensions());
 }
 
 AST* ArrayTypeDenoter::SymbolRef() const
 {
-    return (baseTypeDenoter ? baseTypeDenoter->SymbolRef() : nullptr);
+    return (subTypeDenoter ? subTypeDenoter->SymbolRef() : nullptr);
 }
 
 TypeDenoterPtr ArrayTypeDenoter::AsArray(const std::vector<ArrayDimensionPtr>& subArrayDims)
@@ -796,7 +796,7 @@ TypeDenoterPtr ArrayTypeDenoter::AsArray(const std::vector<ArrayDimensionPtr>& s
     if (subArrayDims.empty())
         return shared_from_this();
     else
-        return std::make_shared<ArrayTypeDenoter>(baseTypeDenoter, arrayDims, subArrayDims);
+        return std::make_shared<ArrayTypeDenoter>(subTypeDenoter, arrayDims, subArrayDims);
 }
 
 void ArrayTypeDenoter::InsertSubArray(const ArrayTypeDenoter& subArrayTypeDenoter)
@@ -808,8 +808,8 @@ void ArrayTypeDenoter::InsertSubArray(const ArrayTypeDenoter& subArrayTypeDenote
         subArrayTypeDenoter.arrayDims.end()
     );
 
-    /* Replace base type denoter */
-    baseTypeDenoter = subArrayTypeDenoter.baseTypeDenoter;
+    /* Replace sub type denoter */
+    subTypeDenoter = subArrayTypeDenoter.subTypeDenoter;
 }
 
 std::vector<int> ArrayTypeDenoter::GetDimensionSizes() const

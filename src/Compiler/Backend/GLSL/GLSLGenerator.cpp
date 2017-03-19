@@ -552,19 +552,23 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     #if 1
     for (auto it = varDecls.begin(); it != varDecls.end();)
     {
-        auto var = it->get();
-        const auto& baseVarType = var->GetTypeDenoter()->GetBase();
+        auto varDecl = it->get();
+        #if 1
+        const auto& baseVarType = varDecl->GetTypeDenoter()->GetBase();
 
         StructDecl* structDecl = nullptr;
-        if (auto structTypeDen = baseVarType.As<const StructTypeDenoter>())
+        if (auto structTypeDen = baseVarType.As<StructTypeDenoter>())
             structDecl = structTypeDen->structDeclRef;
+        #else
+        auto structDecl = ast->typeSpecifier->GetStructDeclRef();
+        #endif
 
         /*
         First check if code generation is disabled for variable declaration,
         then check if this is a system value semantic inside an interface block.
         */
-        if ( ( var->flags(VarDecl::isEntryPointLocal) && ( !structDecl || !structDecl->flags(StructDecl::isNonEntryPointParam) ) ) ||
-             ( isInsideInterfaceBlock_ && var->semantic.IsSystemValue() ) )
+        if ( ( varDecl->flags(VarDecl::isEntryPointLocal) && ( !structDecl || !structDecl->flags(StructDecl::isNonEntryPointParam) ) ) ||
+             ( isInsideInterfaceBlock_ && varDecl->semantic.IsSystemValue() ) )
         {
             /*
             Code generation is disabled for this variable declaration
@@ -2100,8 +2104,8 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
         }
         else if (auto arrayTypeDen = typeDenoter.As<ArrayTypeDenoter>())
         {
-            /* Write array type denoter */
-            WriteTypeDenoter(*arrayTypeDen->baseTypeDenoter, writePrecisionSpecifier, ast);
+            /* Write sub type of array type denoter and array dimensions */
+            WriteTypeDenoter(*arrayTypeDen->subTypeDenoter, writePrecisionSpecifier, ast);
             Visit(arrayTypeDen->arrayDims);
         }
         else

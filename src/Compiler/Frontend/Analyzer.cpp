@@ -374,7 +374,7 @@ void Analyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast)
         else if (auto arrayTypeDen = typeDenoter->As<ArrayTypeDenoter>())
         {
             Visit(arrayTypeDen->arrayDims);
-            AnalyzeTypeDenoter(arrayTypeDen->baseTypeDenoter, ast);
+            AnalyzeTypeDenoter(arrayTypeDen->subTypeDenoter, ast);
         }
     }
 }

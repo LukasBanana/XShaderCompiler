@@ -1923,7 +1923,7 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
             if (auto arraySubTypeDen = subTypeDen->As<const ArrayTypeDenoter>())
                 finalTypeDen->InsertSubArray(*arraySubTypeDen);
             else
-                finalTypeDen->baseTypeDenoter = subTypeDen;
+                finalTypeDen->subTypeDenoter = subTypeDen;
 
             /* Set first output type denoter */
             elementsTypeDen = subTypeDen;

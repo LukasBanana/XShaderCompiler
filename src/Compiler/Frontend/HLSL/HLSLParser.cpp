@@ -767,13 +767,8 @@ AliasDeclPtr HLSLParser::ParseAliasDecl(TypeDenoterPtr typeDenoter)
     /* Parse optional array dimensions */
     if (Is(Tokens::LParen))
     {
-        /* Make array type denoter and use input as base type denoter */
-        auto arrayTypeDenoter = std::make_shared<ArrayTypeDenoter>();
-        {
-            arrayTypeDenoter->arrayDims         = ParseArrayDimensionList();
-            arrayTypeDenoter->baseTypeDenoter   = typeDenoter;
-        }
-        typeDenoter = arrayTypeDenoter;
+        /* Make array type denoter and use input as sub type denoter */
+        typeDenoter = std::make_shared<ArrayTypeDenoter>(typeDenoter, ParseArrayDimensionList());
     }
 
     /* Store final type denoter in alias declaration */
@@ -1978,12 +1973,7 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool allowVoidType, StructDeclPtr* s
         if (Is(Tokens::LParen))
         {
             /* Make array type denoter */
-            auto arrayTypeDenoter = std::make_shared<ArrayTypeDenoter>();
-            {
-                arrayTypeDenoter->arrayDims         = ParseArrayDimensionList();
-                arrayTypeDenoter->baseTypeDenoter   = typeDenoter;
-            }
-            typeDenoter = arrayTypeDenoter;
+            typeDenoter = std::make_shared<ArrayTypeDenoter>(typeDenoter, ParseArrayDimensionList());
         }
 
         return typeDenoter;
