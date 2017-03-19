@@ -505,6 +505,8 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     }
     ConvertExpr(ast->lvalueExpr, AllPostVisit);
     ConvertExpr(ast->rvalueExpr, AllPostVisit);
+
+    IfFlaggedConvertExprIfCastRequired(ast->rvalueExpr, ast->lvalueExpr->GetTypeDenoter()->GetAliased());
 }
 
 #undef IMPLEMENT_VISIT_PROC
