@@ -88,6 +88,20 @@ FunctionCallExprPtr MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObje
     return ast;
 }
 
+FunctionCallExprPtr MakeTypeCtorCallExpr(const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments)
+{
+    auto ast = MakeAST<FunctionCallExpr>();
+    {
+        auto funcCall = MakeAST<FunctionCall>();
+        {
+            funcCall->typeDenoter   = typeDenoter;
+            funcCall->arguments     = arguments;
+        }
+        ast->call = funcCall;
+    }
+    return ast;
+}
+
 CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr)
 {
     auto ast = MakeAST<CastExpr>();

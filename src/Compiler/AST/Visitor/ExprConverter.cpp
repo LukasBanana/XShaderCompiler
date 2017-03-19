@@ -287,10 +287,26 @@ void ExprConverter::ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccess
     }
 }
 
-void ExprConverter::IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize)
+void ExprConverter::ConvertExprTargetType(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize)
 {
-    if (conversionFlags_(ConvertImplicitCasts))
-        ConvertExprIfCastRequired(expr, targetTypeDen, matchTypeSize);
+    if (expr)
+    {
+        if (conversionFlags_(ConvertImplicitCasts))
+            ConvertExprIfCastRequired(expr, targetTypeDen, matchTypeSize);
+
+        if (conversionFlags_(ConvertImplicitCasts))
+        {
+            if (auto initExpr = expr->As<InitializerExpr>())
+                ConvertExprTargetTypeInitializer(expr, initExpr, targetTypeDen);
+        }
+    }
+}
+
+void ExprConverter::ConvertExprTargetTypeInitializer(ExprPtr& expr, InitializerExpr* initExpr, const TypeDenoter& targetTypeDen)
+{
+    //expr = ASTFactory::MakeTypeCtorCallExpr();
+
+    //TODO...
 }
 
 /* ------- Visit functions ------- */
@@ -309,7 +325,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     ast->ForEachArgumentWithParameterType(
         [this](ExprPtr& funcArg, const TypeDenoter& paramTypeDen)
         {
-            IfFlaggedConvertExprIfCastRequired(funcArg, paramTypeDen);
+            ConvertExprTargetType(funcArg, paramTypeDen);
         }
     );
 }
@@ -326,7 +342,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         }
         ConvertExpr(ast->initializer, AllPostVisit);
 
-        IfFlaggedConvertExprIfCastRequired(ast->initializer, ast->GetTypeDenoter()->GetAliased());
+        ConvertExprTargetType(ast->initializer, ast->GetTypeDenoter()->GetAliased());
     }
     else
         VISIT_DEFAULT(VarDecl);
@@ -403,7 +419,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         ConvertExpr(ast->expr, AllPostVisit);
 
         if (auto funcDecl = ActiveFunctionDecl())
-            IfFlaggedConvertExprIfCastRequired(ast->expr, funcDecl->returnType->GetTypeDenoter()->GetAliased());
+            ConvertExprTargetType(ast->expr, funcDecl->returnType->GetTypeDenoter()->GetAliased());
     }
 }
 
@@ -441,8 +457,8 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
         ast->rhsExpr->GetTypeDenoter()->GetSub()
     );
 
-    IfFlaggedConvertExprIfCastRequired(ast->lhsExpr, *commonTypeDen, matchTypeSize);
-    IfFlaggedConvertExprIfCastRequired(ast->rhsExpr, *commonTypeDen, matchTypeSize);
+    ConvertExprTargetType(ast->lhsExpr, *commonTypeDen, matchTypeSize);
+    ConvertExprTargetType(ast->rhsExpr, *commonTypeDen, matchTypeSize);
 
     ast->ResetTypeDenoter();
 }
@@ -506,7 +522,7 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     ConvertExpr(ast->lvalueExpr, AllPostVisit);
     ConvertExpr(ast->rvalueExpr, AllPostVisit);
 
-    IfFlaggedConvertExprIfCastRequired(ast->rvalueExpr, ast->lvalueExpr->GetTypeDenoter()->GetAliased());
+    ConvertExprTargetType(ast->rvalueExpr, ast->lvalueExpr->GetTypeDenoter()->GetAliased());
 }
 
 #undef IMPLEMENT_VISIT_PROC

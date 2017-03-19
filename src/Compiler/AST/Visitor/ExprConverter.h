@@ -39,9 +39,10 @@ class ExprConverter : public Visitor
         {
             ConvertVectorSubscripts = (1 << 0),
             ConvertVectorCompare    = (1 << 1),
-            ConvertImplicitCasts    = (1 << 2),
-            ConvertImageAccess      = (1 << 3),
-            WrapUnaryExpr           = (1 << 4),
+            ConvertImageAccess      = (1 << 2),
+            ConvertImplicitCasts    = (1 << 3),
+            ConvertInitializer      = (1 << 4),
+            WrapUnaryExpr           = (1 << 5),
 
             // All conversion flags commonly used before visiting the sub nodes.
             AllPreVisit             = (ConvertVectorCompare | ConvertImageAccess),
@@ -50,7 +51,7 @@ class ExprConverter : public Visitor
             AllPostVisit            = (ConvertVectorSubscripts),
 
             // All conversion flags.
-            All                     = (ConvertVectorSubscripts | ConvertImplicitCasts | ConvertVectorCompare | WrapUnaryExpr | ConvertImageAccess),
+            All                     = (~0u),
         };
 
         // Converts the expressions in the specified AST.
@@ -92,7 +93,11 @@ class ExprConverter : public Visitor
         // Moves the expression as sub expression into a bracket (e.g. "- -x" -> "-(-x)").
         void ConvertExprIntoBracket(ExprPtr& expr);
 
-        void IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
+        // Converts the expression to the specified target type and according to the specified flags (if enabled in the current conversion).
+        void ConvertExprTargetType(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
+
+        // Converts the expression from an initializer list to a type constructor.
+        void ConvertExprTargetTypeInitializer(ExprPtr& expr, InitializerExpr* initExpr, const TypeDenoter& targetTypeDen);
 
         /* ----- Visitor implementation ----- */
 
