@@ -78,7 +78,7 @@ bool TypeDenoter::IsArray() const
     return (Type() == Types::Array);
 }
 
-bool TypeDenoter::Equals(const TypeDenoter& rhs) const
+bool TypeDenoter::Equals(const TypeDenoter& rhs, const Flags& /*compareFlags*/) const
 {
     return (GetAliased().Type() == rhs.GetAliased().Type());
 }
@@ -285,9 +285,13 @@ bool BaseTypeDenoter::IsMatrix() const
     return IsMatrixType(dataType);
 }
 
-bool BaseTypeDenoter::Equals(const TypeDenoter& rhs) const
+bool BaseTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& /*compareFlags*/) const
 {
-    return (rhs.Type() == Types::Base && dataType == static_cast<const BaseTypeDenoter&>(rhs).dataType);
+    /* Compare data types of both type denoters */
+    if (auto rhsBaseTypeDen = rhs.As<BaseTypeDenoter>())
+        return (dataType == rhsBaseTypeDen->dataType);
+    else
+        return false;
 }
 
 // see https://msdn.microsoft.com/en-us/library/windows/desktop/bb172396(v=vs.85).aspx
@@ -406,17 +410,21 @@ std::string BufferTypeDenoter::ToString() const
     return s;
 }
 
-bool BufferTypeDenoter::Equals(const TypeDenoter& rhs) const
+bool BufferTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags) const
 {
-    /* Are both types buffer type denoters? */
-    if (auto rhsBufferType = rhs.As<BufferTypeDenoter>())
+    if (auto rhsBufferTypeDen = rhs.GetAliased().As<BufferTypeDenoter>())
     {
-        if (bufferType == rhsBufferType->bufferType)
+        if (bufferType == rhsBufferTypeDen->bufferType)
         {
-            /* Are the generic sub type denoters equal? */
-            if (genericTypeDenoter && rhsBufferType->genericTypeDenoter)
-                return genericTypeDenoter->Equals(*rhsBufferType->genericTypeDenoter);
-            else if (!genericTypeDenoter && !rhsBufferType->genericTypeDenoter)
+            if (!compareFlags(IgnoreGenericSubType))
+            {
+                /* Compare generic sub type denoters */
+                if (genericTypeDenoter && rhsBufferTypeDen->genericTypeDenoter)
+                    return genericTypeDenoter->Equals(*rhsBufferTypeDen->genericTypeDenoter, compareFlags);
+                if (!genericTypeDenoter && !rhsBufferTypeDen->genericTypeDenoter)
+                    return true;
+            }
+            else
                 return true;
         }
     }
@@ -687,14 +695,13 @@ TypeDenoterPtr ArrayTypeDenoter::GetSubArray(const std::size_t numArrayIndices, 
     return baseTypeDenoter->GetSubArray(numArrayIndices - numDims, ast);
 }
 
-bool ArrayTypeDenoter::Equals(const TypeDenoter& rhs) const
+bool ArrayTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags) const
 {
-    const auto& rhsAliased = rhs.GetAliased();
-    if (rhsAliased.Type() == Types::Array)
+    if (auto rhsArrayTypeDen = rhs.GetAliased().As<ArrayTypeDenoter>())
     {
-        const auto& rhsArray = static_cast<const ArrayTypeDenoter&>(rhsAliased);
-        if (baseTypeDenoter && rhsArray.baseTypeDenoter)
-            return baseTypeDenoter->Equals(*rhsArray.baseTypeDenoter);
+        /* Compare sub type denoters */
+        if (baseTypeDenoter && rhsArrayTypeDen->baseTypeDenoter)
+            return baseTypeDenoter->Equals(*rhsArrayTypeDen->baseTypeDenoter, compareFlags);
     }
     return false;
 }
@@ -702,11 +709,10 @@ bool ArrayTypeDenoter::Equals(const TypeDenoter& rhs) const
 bool ArrayTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
     /* Is target also an array? */
-    const auto& targetAliased = targetType.GetAliased();
-    if (auto targetArray = targetAliased.As<ArrayTypeDenoter>())
+    if (auto targetArrayTypeDen = targetType.GetAliased().As<ArrayTypeDenoter>())
     {
-        if (baseTypeDenoter && targetArray->baseTypeDenoter)
-            return baseTypeDenoter->IsCastableTo(*targetArray->baseTypeDenoter);
+        if (baseTypeDenoter && targetArrayTypeDen->baseTypeDenoter)
+            return baseTypeDenoter->IsCastableTo(*targetArrayTypeDen->baseTypeDenoter);
     }
     
     /* Check if base type denoter of this array is castable to the target type */

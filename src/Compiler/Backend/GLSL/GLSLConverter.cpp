@@ -7,6 +7,7 @@
 
 #include "GLSLConverter.h"
 #include "GLSLKeywords.h"
+#include "FuncNameConverter.h"
 #include "AST.h"
 #include "ASTFactory.h"
 #include "Exception.h"
@@ -42,8 +43,17 @@ void GLSLConverter::Convert(
     options_            = options;
     isVKSL_             = isVKSL;
 
-    /* First convert expressions */
+    /* Convert expressions */
     exprConverter_.Convert(program, ExprConverter::All);
+
+    /* Convert function names */
+    FuncNameConverter funcNameConverter;
+    funcNameConverter.Convert(
+        program,
+        nameMangling_,
+        GLSLConverter::CompareFuncSignatures,
+        FuncNameConverter::All
+    );
 
     /* Visit program AST */
     Visit(program_);
@@ -760,6 +770,12 @@ VarDecl* GLSLConverter::ActiveSelfParameter() const
     return (selfParamStack_.empty() ? nullptr : selfParamStack_.back());
 }
 
+bool GLSLConverter::CompareFuncSignatures(const FunctionDecl& lhs, const FunctionDecl& rhs)
+{
+    /* Compare function signatures and ignore generic sub types (GLSL has no distinction for these types) */
+    return lhs.EqualsSignature(rhs, TypeDenoter::IgnoreGenericSubType);
+}
+
 /* ----- Conversion ----- */
 
 void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
@@ -769,9 +785,6 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
 
     if (auto structDecl = ast->structDeclRef)
     {
-        /* Rename function to "{TempPrefix}{StructName}_{FuncName}" */
-        ast->ident = nameMangling_.temporaryPrefix + structDecl->ident + "_" + ast->ident;
-
         if (!ast->IsStatic())
         {
             /* Insert parameter of 'self' object */

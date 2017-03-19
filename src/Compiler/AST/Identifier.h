@@ -32,7 +32,7 @@ class Identifier
         // Renames this identifier by the specified string.
         Identifier& operator = (const std::string& s);
 
-        // Renames this identifier by appending the specified prefix to the front.
+        // Renames this identifier by appending the specified prefix to the front (if the identifier does not already have this prefix).
         Identifier& AppendPrefix(const std::string& prefix);
 
         // Returns the final identifier (i.e. renamed identifier if set, otherwise original).

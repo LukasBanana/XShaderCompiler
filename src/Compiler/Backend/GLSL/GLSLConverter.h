@@ -149,6 +149,9 @@ class GLSLConverter : public Visitor
 
         VarDecl* ActiveSelfParameter() const;
 
+        // Function signature compare callback for the function name converter.
+        static bool CompareFuncSignatures(const FunctionDecl& lhs, const FunctionDecl& rhs);
+
         /* ----- Conversion ----- */
 
         void ConvertFunctionDecl(FunctionDecl* ast);

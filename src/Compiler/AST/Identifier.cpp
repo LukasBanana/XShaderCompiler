@@ -34,7 +34,8 @@ Identifier& Identifier::operator = (const std::string& s)
 
 Identifier& Identifier::AppendPrefix(const std::string& prefix)
 {
-    renamed_ = prefix + Final();
+    if (Final().compare(0, prefix.size(), prefix) != 0)
+        renamed_ = prefix + Final();
     return *this;
 }
 

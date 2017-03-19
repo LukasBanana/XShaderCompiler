@@ -784,8 +784,8 @@ struct FunctionDecl : public Stmnt
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
     std::string ToString(bool useParamNames = true) const;
 
-    // Returns true if the specified function declaration has the same signature as this function.
-    bool EqualsSignature(const FunctionDecl& rhs) const;
+    // Returns true if the specified function declaration has the same signature as this function (see 'TypeDenoter' for valid compare flags).
+    bool EqualsSignature(const FunctionDecl& rhs, const Flags& compareFlags = 0) const;
 
     // Returns the minimal number of arguments for a call to this function.
     std::size_t NumMinArgs() const;

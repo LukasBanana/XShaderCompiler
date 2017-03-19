@@ -1056,7 +1056,7 @@ std::string FunctionDecl::ToString(bool useParamNames) const
     return s;
 }
 
-bool FunctionDecl::EqualsSignature(const FunctionDecl& rhs) const
+bool FunctionDecl::EqualsSignature(const FunctionDecl& rhs, const Flags& compareFlags) const
 {
     /* Compare parameter count */
     if (parameters.size() != rhs.parameters.size())
@@ -1068,7 +1068,7 @@ bool FunctionDecl::EqualsSignature(const FunctionDecl& rhs) const
         auto lhsTypeDen = parameters[i]->typeSpecifier->typeDenoter.get();
         auto rhsTypeDen = rhs.parameters[i]->typeSpecifier->typeDenoter.get();
 
-        if (!lhsTypeDen->Equals(*rhsTypeDen))
+        if (!lhsTypeDen->Equals(*rhsTypeDen, compareFlags))
             return false;
     }
 
