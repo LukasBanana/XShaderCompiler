@@ -137,7 +137,13 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
     if (NotVisited(ast))
+    {
+        /* If the structure has any member functions, it can not be resolved as entry-point structure */
+        if (ast->NumMemberFunctions() > 0)
+            ast->flags << StructDecl::isNonEntryPointParam;
+
         VISIT_DEFAULT(StructDecl);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(BufferDecl)

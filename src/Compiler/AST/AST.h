@@ -593,6 +593,8 @@ struct StructDecl : public Decl
         FLAG( isShaderInput,        1 ), // This structure is used as shader input.
         FLAG( isShaderOutput,       2 ), // This structure is used as shader output.
         FLAG( isNestedStruct,       3 ), // This is a nested structure within another structure.
+
+        //TODO: rename this flag, since it's meaning is confusing
         FLAG( isNonEntryPointParam, 4 ), // This structure is eventually used as variable or parameter type of function other than the entry point.
     };
 
@@ -627,8 +629,11 @@ struct StructDecl : public Decl
     // Returns true if this structure has at least one member that is not a system value.
     bool HasNonSystemValueMembers() const;
 
-    // Returns the total number of members (include all base structures).
-    std::size_t NumVarMembers() const;
+    // Returns the total number of member variables (including all base structures).
+    std::size_t NumMemberVariables() const;
+
+    // Returns the total number of member functions (including all base structures).
+    std::size_t NumMemberFunctions() const;
 
     // Returns a list with the type denoters of all members (including all base structures).
     void CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens) const;

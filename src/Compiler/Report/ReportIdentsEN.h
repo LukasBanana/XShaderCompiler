@@ -373,7 +373,7 @@ DECL_REPORT( ConflictingPrimitiveTypes,         "conflicting primitive types"   
 DECL_REPORT( SecondEntryPointNotFound,          "secondary entry point \"{0}\" not found"                                                                       );
 DECL_REPORT( VariableOverridesMemberOfBase,     "member variable '{0}' overrides member of base '{1}'"                                                          );
 DECL_REPORT( NestedStructsMustBeAnonymous,      "nested structures must be anonymous"                                                                           );
-DECL_REPORT( IsCompletelyEmpty,                 "'{0}' is completely empty"                                                                                     );
+DECL_REPORT( TypeHasNoMemberVariables,          "'{0}' has no member variables"                                                                                 );
 DECL_REPORT( BufferCanOnlyHaveOneSlot,          "buffers can only be bound to one slot"                                                                         );
 DECL_REPORT( UserCBuffersCantBeTargetSpecific,  "user-defined constant buffer slots can not be target specific"                                                 );
 DECL_REPORT( DeclShadowsPreviousLocal,          "declaration of '{0}' shadows a previous local at ({1})"                                                        );

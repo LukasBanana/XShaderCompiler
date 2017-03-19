@@ -687,15 +687,27 @@ bool StructDecl::HasNonSystemValueMembers() const
     return false;
 }
 
-std::size_t StructDecl::NumVarMembers() const
+std::size_t StructDecl::NumMemberVariables() const
 {
     std::size_t n = 0;
 
     if (baseStructRef)
-        n += baseStructRef->NumVarMembers();
+        n += baseStructRef->NumMemberVariables();
 
     for (const auto& member : varMembers)
         n += member->varDecls.size();
+
+    return n;
+}
+
+std::size_t StructDecl::NumMemberFunctions() const
+{
+    std::size_t n = 0;
+
+    if (baseStructRef)
+        n += baseStructRef->NumMemberFunctions();
+
+    n += funcMembers.size();
 
     return n;
 }
