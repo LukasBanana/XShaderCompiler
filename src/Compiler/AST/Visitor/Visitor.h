@@ -38,9 +38,6 @@ DECL_PTR( Register          );
 DECL_PTR( PackOffset        );
 DECL_PTR( ArrayDimension    );
 DECL_PTR( TypeSpecifier     );
-#if 1
-DECL_PTR( VarIdent          );
-#endif
 
 DECL_PTR( VarDecl           );
 DECL_PTR( BufferDecl        );
@@ -114,9 +111,6 @@ class Visitor
         VISITOR_VISIT_PROC( PackOffset        );
         VISITOR_VISIT_PROC( ArrayDimension    );
         VISITOR_VISIT_PROC( TypeSpecifier     );
-        #if 1//TODO: remove
-        VISITOR_VISIT_PROC( VarIdent          );
-        #endif
 
         VISITOR_VISIT_PROC( VarDecl           );
         VISITOR_VISIT_PROC( BufferDecl        );

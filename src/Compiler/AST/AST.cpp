@@ -145,209 +145,6 @@ const IntrinsicUsage* Program::FetchIntrinsicUsage(const Intrinsic intrinsic) co
 }
 
 
-#if 1//TODO: remove
-
-/* ----- VarIdent ----- */
-
-std::string VarIdent::ToString() const
-{
-    #if 0//TODO: remove
-    std::string s;
-
-    auto ast = this;
-    while (true)
-    {
-        s += ast->ident;
-        if (ast->next)
-        {
-            ast = ast->next.get();
-            if (ast->nextIsStatic)
-                s += "::";
-            else
-                s += ".";
-        }
-        else
-            break;
-    }
-
-    return s;
-    #else
-    return "ILLEGAL VarIdent INSTANCE";
-    #endif
-}
-
-VarIdent* VarIdent::Last()
-{
-    return (next ? next->Last() : this);
-}
-
-TypeDenoterPtr VarIdent::DeriveTypeDenoter()
-{
-    return GetExplicitTypeDenoter(true);
-}
-
-TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
-{
-    #if 0//TODO: remove
-    if (symbolRef)
-    {
-        /* Derive type denoter from symbol reference */
-        switch (symbolRef->Type())
-        {
-            case AST::Types::FunctionDecl:
-            {
-                RuntimeErr(R_IllegalTypeOfFuncObj(ident), this);
-            }
-            break;
-
-            case AST::Types::VarDecl:
-            {
-                auto varDecl = static_cast<VarDecl*>(symbolRef);
-                try
-                {
-                    return varDecl->GetTypeDenoter()->GetFromArray(arrayIndices.size(), (recursive ? next.get() : nullptr));
-                }
-                catch (const std::exception& e)
-                {
-                    RuntimeErr(e.what(), this);
-                }
-            }
-            break;
-
-            case AST::Types::BufferDecl:
-            {
-                auto bufferDecl = static_cast<BufferDecl*>(symbolRef);
-                try
-                {
-                    return bufferDecl->GetTypeDenoter()->GetFromArray(arrayIndices.size(), (recursive ? next.get() : nullptr));
-                }
-                catch (const std::exception& e)
-                {
-                    RuntimeErr(e.what(), this);
-                }
-            }
-            break;
-
-            case AST::Types::SamplerDecl:
-            {
-                auto samplerDecl = static_cast<SamplerDecl*>(symbolRef);
-                try
-                {
-                    return samplerDecl->GetTypeDenoter()->GetFromArray(arrayIndices.size(), (recursive ? next.get() : nullptr));
-                }
-                catch (const std::exception& e)
-                {
-                    RuntimeErr(e.what(), this);
-                }
-            }
-            break;
-
-            case AST::Types::StructDecl:
-            {
-                auto structDecl = static_cast<StructDecl*>(symbolRef);
-                if (next)
-                    RuntimeErr(R_CantDirectlyAccessMembersOf(structDecl->ToString()), next.get());
-                if (!arrayIndices.empty())
-                    RuntimeErr(R_CantDirectlyAccessArrayOf(structDecl->ToString()), this);
-                return structDecl->GetTypeDenoter()->Get();
-            }
-            break;
-
-            case AST::Types::AliasDecl:
-            {
-                auto aliasDecl = static_cast<AliasDecl*>(symbolRef);
-                if (next)
-                    RuntimeErr(R_CantDirectlyAccessMembersOf(aliasDecl->ToString()), next.get());
-                if (!arrayIndices.empty())
-                    RuntimeErr(R_CantDirectlyAccessArrayOf(aliasDecl->ToString()), this);
-                return aliasDecl->GetTypeDenoter()->Get();
-            }
-            break;
-            
-            default:
-            {
-                RuntimeErr(R_UnknownTypeOfVarIdentSymbolRef(ident), this);
-            }
-            break;
-        }
-    }
-    #endif
-    RuntimeErr(R_MissingVarIdentSymbolRef(ident), this);
-}
-
-BaseTypeDenoterPtr VarIdent::GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const
-{
-    #if 0//TODO: remove
-    if (auto baseTypeDen = baseTypeDenoter.As<BaseTypeDenoter>())
-    {
-        try
-        {
-            /* Get vector type from subscript */
-            auto vectorType = SubscriptDataType(baseTypeDen->dataType, ident);
-            return std::make_shared<BaseTypeDenoter>(vectorType);
-        }
-        catch (const std::exception& e)
-        {
-            RuntimeErr(e.what(), this);
-        }
-    }
-    #endif
-    RuntimeErr(R_InvalidSubscriptBaseType, this);
-}
-
-void VarIdent::PopFront(bool accumulateArrayIndices)
-{
-    #if 0//TODO: remove
-    if (next)
-    {
-        auto nextVarIdent = next;
-        
-        ident       = nextVarIdent->ident;
-        next        = nextVarIdent->next;
-        symbolRef   = nextVarIdent->symbolRef;
-
-        if (accumulateArrayIndices)
-            arrayIndices.insert(arrayIndices.end(), nextVarIdent->arrayIndices.begin(), nextVarIdent->arrayIndices.end());
-        else
-            arrayIndices = nextVarIdent->arrayIndices;
-    }
-    #else
-    RuntimeErr("C++ FUNCTION '" + std::string(__FUNCTION__) + "' MUST BE REMOVED!", this);
-    #endif
-}
-
-IndexedSemantic VarIdent::FetchSemantic() const
-{
-    if (auto varDecl = FetchVarDecl())
-        return varDecl->semantic;
-    else
-        return Semantic::Undefined;
-}
-
-Decl* VarIdent::FetchDecl() const
-{
-    if (symbolRef)
-    {
-        const auto t = symbolRef->Type();
-        if (t == AST::Types::VarDecl || t == AST::Types::StructDecl || t == AST::Types::BufferDecl || t == AST::Types::SamplerDecl)
-            return static_cast<Decl*>(symbolRef);
-    }
-    return nullptr;
-}
-
-VarDecl* VarIdent::FetchVarDecl() const
-{
-    return FetchSymbol<VarDecl>();
-}
-
-FunctionDecl* VarIdent::FetchFunctionDecl() const
-{
-    return FetchSymbol<FunctionDecl>();
-}
-
-#endif
-
-
 /* ----- FunctionCall ----- */
 
 TypeDenoterPtr FunctionCall::DeriveTypeDenoter()
@@ -1761,7 +1558,7 @@ TypeDenoterPtr ObjectExpr::GetExplicitTypeDenoter()
         if (auto aliasDecl = symbolRef->As<AliasDecl>())
             return aliasDecl->GetTypeDenoter();
 
-        RuntimeErr(R_UnknownTypeOfVarIdentSymbolRef(ident), this);
+        RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
     }
     else if (prefixExpr)
     {
@@ -1769,7 +1566,7 @@ TypeDenoterPtr ObjectExpr::GetExplicitTypeDenoter()
         return prefixExpr->GetTypeDenoter()->GetSub(this);
     }
     
-    RuntimeErr(R_MissingVarIdentSymbolRef(ident), this);
+    RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
 }
 
 BaseTypeDenoterPtr ObjectExpr::GetTypeDenoterFromSubscript() const

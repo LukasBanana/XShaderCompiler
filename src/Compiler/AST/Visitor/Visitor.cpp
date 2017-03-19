@@ -35,9 +35,6 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    #if 0//TODO: remove
-    Visit(ast->varIdent);
-    #endif
     Visit(ast->arguments);
 }
 
@@ -76,16 +73,6 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
 {
     Visit(ast->structDecl);
 }
-
-#if 1//TODO: remove
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    #if 0
-    Visit(ast->arrayIndices);
-    Visit(ast->next);
-    #endif
-}
-#endif
 
 /* --- Declarations --- */
 

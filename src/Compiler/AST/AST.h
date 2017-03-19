@@ -90,9 +90,6 @@ struct AST
         PackOffset,
         ArrayDimension,
         TypeSpecifier,
-        #if 1//TODO: remove
-        VarIdent,
-        #endif
 
         VarDecl,
         BufferDecl,
@@ -511,71 +508,6 @@ struct TypeSpecifier : public TypedAST
 
     TypeDenoterPtr              typeDenoter;
 };
-
-//TODO: remove this AST class
-#if 1
-
-// Variable (linked-list) identifier.
-struct VarIdent : public TypedAST
-{
-    AST_INTERFACE(VarIdent);
-
-    FLAG_ENUM
-    {
-        FLAG( isImmutable, 0 ), // This variable identifier must be written out as it is.
-    };
-
-    // Returns the full var-ident string (with '.' separation).
-    std::string ToString() const;
-
-    // Returns the last identifier AST node.
-    VarIdent* Last();
-
-    // Returns a type denoter for the symbol reference of the last variable identifier.
-    TypeDenoterPtr DeriveTypeDenoter() override;
-
-    // Returns the type denoter for this AST node or the last sub node.
-    TypeDenoterPtr GetExplicitTypeDenoter(bool recursive);
-
-    // Returns a type denoter for the vector subscript of this identifier or throws a runtime error on failure.
-    BaseTypeDenoterPtr GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const;
-
-    // Moves the next identifier into this one (i.e. removes the first identifier), and propagates the array indices.
-    void PopFront(bool accumulateArrayIndices = true);
-
-    // Returns a semantic if this is an identifier to a variable which has a semantic.
-    IndexedSemantic FetchSemantic() const;
-
-    // Returns the specified type of AST node from the symbol (if the symbol refers to one).
-    template <typename T>
-    T* FetchSymbol() const
-    {
-        if (symbolRef)
-        {
-            if (auto ast = symbolRef->As<T>())
-                return ast;
-        }
-        return nullptr;
-    }
-
-    // Returns the declaration AST node (if the symbol refers to one).
-    Decl* FetchDecl() const;
-
-    // Returns the variable AST node (if the symbol refers to one).
-    VarDecl* FetchVarDecl() const;
-
-    // Returns the function declaration AST node (if the symbol refers to one).
-    FunctionDecl* FetchFunctionDecl() const;
-
-    std::string             ident;                      // Atomic identifier.
-    std::vector<ExprPtr>    arrayIndices;               // Optional array indices
-    bool                    nextIsStatic    = false;    // Specifies whether the next node is concatenated with the static double-colon token '::'.
-    VarIdentPtr             next;                       // Next identifier; may be null.
-
-    AST*                    symbolRef       = nullptr;  // Symbol reference for DAST to the variable object; may be null (e.g. for vector subscripts)
-};
-
-#endif
 
 /* --- Declarations --- */
 

@@ -50,9 +50,6 @@ class GLSLConverter : public Visitor
         DECL_VISIT_PROC( CodeBlock        );
         DECL_VISIT_PROC( FunctionCall     );
         DECL_VISIT_PROC( SwitchCase       );
-        #if 0//TODO: remove
-        DECL_VISIT_PROC( VarIdent         );
-        #endif
 
         DECL_VISIT_PROC( VarDecl          );
         DECL_VISIT_PROC( BufferDecl       );

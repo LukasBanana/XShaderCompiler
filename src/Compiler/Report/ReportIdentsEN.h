@@ -101,7 +101,7 @@ DECL_REPORT( EndOfStream,                       "end-of-stream"                 
 DECL_REPORT( IllegalTypeOfFuncObj,              "illegal type denoter of function object '{0}'"                                                                 );
 DECL_REPORT( CantDirectlyAccessMembersOf,       "can not directly access members of '{0}'"                                                                      );
 DECL_REPORT( CantDirectlyAccessArrayOf,         "can not directly access array of '{0}'"                                                                        );
-DECL_REPORT( UnknownTypeOfVarIdentSymbolRef,    "unknown type of symbol reference to derive type denoter of variable identifier '{0}'"                          );
+DECL_REPORT( UnknownTypeOfObjectIdentSymbolRef, "unknown type of symbol reference to derive type denoter of object identifier '{0}'"                            );
 DECL_REPORT( InvalidSubscriptBaseType,          "invalid base type denoter for vector subscript"                                                                );
 DECL_REPORT( MissingVarIdentSymbolRef,          "missing symbol reference to derive type denoter of variable identifier '{0}'"                                  );
 DECL_REPORT( MissingFuncRefToDeriveExprType,    "missing function reference to derive expression type"                                                          );
