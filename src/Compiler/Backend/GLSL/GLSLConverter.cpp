@@ -34,17 +34,29 @@ struct CodeBlockStmntArgs
  */
 
 void GLSLConverter::Convert(
-    Program& program, const ShaderTarget shaderTarget, const NameMangling& nameMangling, const Options& options, bool isVKSL)
+    Program& program, const ShaderTarget shaderTarget, const NameMangling& nameMangling, const Options& options, const OutputShaderVersion versionOut)
 {
     /* Store settings */
     shaderTarget_       = shaderTarget;
     program_            = (&program);
     nameMangling_       = nameMangling;
     options_            = options;
-    isVKSL_             = isVKSL;
+    isVKSL_             = IsLanguageVKSL(versionOut);
 
     /* Convert expressions */
-    exprConverter_.Convert(program, ExprConverter::All);
+    Flags exprConverterFlags = ExprConverter::All;
+
+    if ( isVKSL_ || ( versionOut >= OutputShaderVersion::GLSL420 && versionOut <= OutputShaderVersion::GLSL450 ))
+    {
+        /*
+        Remove specific conversions when the GLSL output version is explicitly set to 4.20 or higher,
+        i.e. "GL_ARB_shading_language_420pack" extension is available.
+        */
+        exprConverterFlags.Remove(ExprConverter::ConvertVectorSubscripts);
+        exprConverterFlags.Remove(ExprConverter::ConvertInitializer);
+    }
+
+    exprConverter_.Convert(program, exprConverterFlags);
 
     /* Visit program AST */
     Visit(program_);

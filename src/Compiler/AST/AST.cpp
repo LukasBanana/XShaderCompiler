@@ -14,6 +14,7 @@
 #include "ReportHandler.h"
 #include "ReportIdents.h"
 #include <algorithm>
+#include <cctype>
 
 #ifdef XSC_ENABLE_MEMORY_POOL
 #include "MemoryPool.h"
@@ -1300,6 +1301,12 @@ std::string LiteralExpr::GetStringValue() const
 bool LiteralExpr::IsNull() const
 {
     return (dataType == DataType::Undefined && value == "NULL");
+}
+
+bool LiteralExpr::IsSpaceRequiredForSubscript() const
+{
+    /* Check if a space between this literal and a '.' swizzle operator is required (e.g. "1.xx" --> "1 .xx") */
+    return (!value.empty() && value.find('.') == std::string::npos && std::isdigit(static_cast<int>(value.back())));
 }
 
 

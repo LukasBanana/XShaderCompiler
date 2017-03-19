@@ -1010,6 +1010,9 @@ struct LiteralExpr : public Expr
     // Returns true if this is a NULL literal.
     bool IsNull() const;
 
+    // Returns true if this literal needs a space after the literal, when a vector subscript is used as postfix.
+    bool IsSpaceRequiredForSubscript() const;
+
     DataType        dataType    = DataType::Undefined;  // Valid data types: String, Bool, Int, UInt, Half, Float, Double; (Undefined for 'NULL')
     std::string     value;
 };

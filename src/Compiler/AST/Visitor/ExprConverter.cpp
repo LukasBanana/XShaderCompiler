@@ -294,7 +294,7 @@ void ExprConverter::ConvertExprTargetType(ExprPtr& expr, const TypeDenoter& targ
         if (conversionFlags_(ConvertImplicitCasts))
             ConvertExprIfCastRequired(expr, targetTypeDen, matchTypeSize);
 
-        if (conversionFlags_(ConvertImplicitCasts))
+        if (conversionFlags_(ConvertInitializer))
         {
             if (auto initExpr = expr->As<InitializerExpr>())
                 ConvertExprTargetTypeInitializer(expr, initExpr, targetTypeDen);
@@ -304,6 +304,14 @@ void ExprConverter::ConvertExprTargetType(ExprPtr& expr, const TypeDenoter& targ
 
 void ExprConverter::ConvertExprTargetTypeInitializer(ExprPtr& expr, InitializerExpr* initExpr, const TypeDenoter& targetTypeDen)
 {
+    /* Convert sub expressions for array type denoters */
+    if (auto arrayTargetTypeDen = targetTypeDen.As<ArrayTypeDenoter>())
+    {
+        const auto& subTypeDen = arrayTargetTypeDen->subTypeDenoter->GetAliased();
+        for (auto& expr : initExpr->exprs)
+            ConvertExprTargetType(expr, subTypeDen);
+    }
+
     /* Convert initializer expression into type constructor */
     expr = ASTFactory::MakeTypeCtorCallExpr(targetTypeDen.Copy(), initExpr->exprs);
 }

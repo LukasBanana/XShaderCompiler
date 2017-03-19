@@ -39,7 +39,7 @@ class GLSLConverter : public Visitor
             const ShaderTarget shaderTarget,
             const NameMangling& nameMangling,
             const Options& options,
-            bool isVKSL
+            const OutputShaderVersion versionOut
         );
 
     private:

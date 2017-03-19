@@ -82,7 +82,7 @@ void GLSLGenerator::GenerateCodePrimary(
             /* Convert AST for GLSL code generation */
             {
                 GLSLConverter converter;
-                converter.Convert(program, inputDesc.shaderTarget, nameMangling_, outputDesc.options, IsVKSL());
+                converter.Convert(program, inputDesc.shaderTarget, nameMangling_, outputDesc.options, versionOut_);
             }
 
             /* Mark all reachable AST nodes */
@@ -1903,6 +1903,14 @@ void GLSLGenerator::WriteObjectExprIdent(const ObjectExpr& objectExpr)
     if (objectExpr.prefixExpr && !objectExpr.isStatic)
     {
         Visit(objectExpr.prefixExpr);
+
+        if (auto literalExpr = objectExpr.prefixExpr->As<LiteralExpr>())
+        {
+            /* Append space between integer literal and '.' swizzle operator */
+            if (literalExpr->IsSpaceRequiredForSubscript())
+                Write(" ");
+        }
+
         Write(".");
     }
 
