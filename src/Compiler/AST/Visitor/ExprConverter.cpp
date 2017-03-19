@@ -304,9 +304,8 @@ void ExprConverter::ConvertExprTargetType(ExprPtr& expr, const TypeDenoter& targ
 
 void ExprConverter::ConvertExprTargetTypeInitializer(ExprPtr& expr, InitializerExpr* initExpr, const TypeDenoter& targetTypeDen)
 {
-    //expr = ASTFactory::MakeTypeCtorCallExpr();
-
-    //TODO...
+    /* Convert initializer expression into type constructor */
+    expr = ASTFactory::MakeTypeCtorCallExpr(targetTypeDen.Copy(), initExpr->exprs);
 }
 
 /* ------- Visit functions ------- */

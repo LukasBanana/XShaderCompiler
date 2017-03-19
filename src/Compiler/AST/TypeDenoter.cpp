@@ -221,6 +221,11 @@ std::string VoidTypeDenoter::ToString() const
     return "void";
 }
 
+TypeDenoterPtr VoidTypeDenoter::Copy() const
+{
+    return std::make_shared<VoidTypeDenoter>();
+}
+
 bool VoidTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
     /* Void can not be casted to anything */
@@ -238,6 +243,11 @@ TypeDenoter::Types NullTypeDenoter::Type() const
 std::string NullTypeDenoter::ToString() const
 {
     return "NULL";
+}
+
+TypeDenoterPtr NullTypeDenoter::Copy() const
+{
+    return std::make_shared<NullTypeDenoter>();
 }
 
 bool NullTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
@@ -263,6 +273,11 @@ BaseTypeDenoter::BaseTypeDenoter(DataType dataType) :
 std::string BaseTypeDenoter::ToString() const
 {
     return DataTypeToString(dataType);
+}
+
+TypeDenoterPtr BaseTypeDenoter::Copy() const
+{
+    return std::make_shared<BaseTypeDenoter>(dataType);
 }
 
 bool BaseTypeDenoter::IsScalar() const
@@ -405,6 +420,18 @@ std::string BufferTypeDenoter::ToString() const
     return s;
 }
 
+TypeDenoterPtr BufferTypeDenoter::Copy() const
+{
+    auto copy = std::make_shared<BufferTypeDenoter>();
+    {
+        copy->bufferType            = bufferType;
+        copy->genericTypeDenoter    = genericTypeDenoter;
+        copy->genericSize           = genericSize;
+        copy->bufferDeclRef         = bufferDeclRef;
+    }
+    return copy;
+}
+
 bool BufferTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags) const
 {
     if (auto rhsBufferTypeDen = rhs.GetAliased().As<BufferTypeDenoter>())
@@ -459,12 +486,12 @@ AST* BufferTypeDenoter::SymbolRef() const
 /* ----- SamplerTypeDenoter ----- */
 
 SamplerTypeDenoter::SamplerTypeDenoter(const SamplerType samplerType) :
-    samplerType{ samplerType }
+    samplerType { samplerType }
 {
 }
 
 SamplerTypeDenoter::SamplerTypeDenoter(SamplerDecl* samplerDeclRef) :
-    samplerDeclRef  { samplerDeclRef }
+    samplerDeclRef { samplerDeclRef }
 {
     if (samplerDeclRef)
         samplerType = samplerDeclRef->GetSamplerType();
@@ -478,6 +505,16 @@ TypeDenoter::Types SamplerTypeDenoter::Type() const
 std::string SamplerTypeDenoter::ToString() const
 {
     return (IsSamplerStateType(samplerType) ? "SamplerState" : "Sampler");
+}
+
+TypeDenoterPtr SamplerTypeDenoter::Copy() const
+{
+    auto copy = std::make_shared<SamplerTypeDenoter>();
+    {
+        copy->samplerType       = samplerType;
+        copy->samplerDeclRef    = samplerDeclRef;
+    }
+    return copy;
 }
 
 AST* SamplerTypeDenoter::SymbolRef() const
@@ -509,9 +546,14 @@ std::string StructTypeDenoter::ToString() const
     return (structDeclRef ? structDeclRef->ToString() : "struct <unknown>");
 }
 
-std::string StructTypeDenoter::Ident() const
+TypeDenoterPtr StructTypeDenoter::Copy() const
 {
-    return ident;
+    auto copy = std::make_shared<StructTypeDenoter>();
+    {
+        copy->ident         = ident;
+        copy->structDeclRef = structDeclRef;
+    }
+    return copy;
 }
 
 void StructTypeDenoter::SetIdentIfAnonymous(const std::string& ident)
@@ -564,6 +606,16 @@ bool StructTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     return false;
 }
 
+std::string StructTypeDenoter::Ident() const
+{
+    return ident;
+}
+
+AST* StructTypeDenoter::SymbolRef() const
+{
+    return structDeclRef;
+}
+
 TypeDenoterPtr StructTypeDenoter::GetSubObject(const std::string& ident, const AST* ast)
 {
     if (structDeclRef)
@@ -582,11 +634,6 @@ TypeDenoterPtr StructTypeDenoter::GetSubObject(const std::string& ident, const A
         }
     }
     RuntimeErr(R_MissingRefToStructDecl(ident), ast);
-}
-
-AST* StructTypeDenoter::SymbolRef() const
-{
-    return structDeclRef;
 }
 
 
@@ -613,9 +660,14 @@ std::string AliasTypeDenoter::ToString() const
     return ident;
 }
 
-std::string AliasTypeDenoter::Ident() const
+TypeDenoterPtr AliasTypeDenoter::Copy() const
 {
-    return ident;
+    auto copy = std::make_shared<AliasTypeDenoter>();
+    {
+        copy->ident         = ident;
+        copy->aliasDeclRef  = aliasDeclRef;
+    }
+    return copy;
 }
 
 void AliasTypeDenoter::SetIdentIfAnonymous(const std::string& ident)
@@ -632,6 +684,11 @@ bool AliasTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags)
 bool AliasTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
     return GetAliasedTypeOrThrow()->IsCastableTo(targetType);
+}
+
+std::string AliasTypeDenoter::Ident() const
+{
+    return ident;
 }
 
 TypeDenoterPtr AliasTypeDenoter::GetSub(const Expr* expr)
@@ -712,6 +769,16 @@ std::string ArrayTypeDenoter::ToString() const
         typeName += dim->ToString();
 
     return typeName;
+}
+
+TypeDenoterPtr ArrayTypeDenoter::Copy() const
+{
+    auto copy = std::make_shared<ArrayTypeDenoter>();
+    {
+        copy->subTypeDenoter    = subTypeDenoter;
+        copy->arrayDims         = arrayDims;
+    }
+    return copy;
 }
 
 TypeDenoterPtr ArrayTypeDenoter::GetSubArray(const std::size_t numArrayIndices, const AST* ast)

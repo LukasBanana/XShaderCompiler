@@ -73,7 +73,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     virtual std::string ToString() const = 0;
 
     // Returns a copy of this type denoter.
-    //virtual TypeDenoterPtr Copy() const = 0;
+    virtual TypeDenoterPtr Copy() const = 0;
 
     virtual bool IsScalar() const;
     virtual bool IsVector() const;
@@ -146,6 +146,7 @@ struct VoidTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+    TypeDenoterPtr Copy() const override;
 
     // Returns always false, since void type can not be casted to anything.
     bool IsCastableTo(const TypeDenoter& targetType) const override;
@@ -158,6 +159,7 @@ struct NullTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+    TypeDenoterPtr Copy() const override;
 
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 };
@@ -172,6 +174,7 @@ struct BaseTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+    TypeDenoterPtr Copy() const override;
 
     bool IsScalar() const override;
     bool IsVector() const override;
@@ -204,6 +207,7 @@ struct BufferTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+    TypeDenoterPtr Copy() const override;
 
     bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
 
@@ -233,6 +237,7 @@ struct SamplerTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+    TypeDenoterPtr Copy() const override;
 
     AST* SymbolRef() const override;
 
@@ -251,12 +256,14 @@ struct StructTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
-    std::string Ident() const override;
+    TypeDenoterPtr Copy() const override;
 
     void SetIdentIfAnonymous(const std::string& ident) override;
 
     bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
+
+    std::string Ident() const override;
 
     AST* SymbolRef() const override;
 
@@ -278,12 +285,14 @@ struct AliasTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
-    std::string Ident() const override;
+    TypeDenoterPtr Copy() const override;
 
     void SetIdentIfAnonymous(const std::string& ident) override;
 
     bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
+    
+    std::string Ident() const override;
 
     TypeDenoterPtr GetSub(const Expr* expr = nullptr) override;
     TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
@@ -322,6 +331,8 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     // Throws std::runtime_error if 'subTypeDenoter' is null.
     std::string ToString() const override;
+
+    TypeDenoterPtr Copy() const override;
 
     TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
 
