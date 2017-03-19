@@ -38,7 +38,6 @@ struct IfStmntArgs
 struct StructDeclArgs
 {
     bool inEndWithSemicolon;
-    bool outStructWritten;
 };
 
 
@@ -382,15 +381,12 @@ IMPLEMENT_VISIT_PROC(StructDecl)
             {
                 /* Write nested structres in child-to-parent order */
                 for (auto nestedStruct = ast->nestedStructDeclRefs.rbegin(); nestedStruct != ast->nestedStructDeclRefs.rend(); ++nestedStruct)
-                {
-                    if (WriteStructDecl(*nestedStruct, true, true))
-                        Blank();
-                }
+                    WriteStructDecl(*nestedStruct, true, true);
             }
 
             /* Write declaration of this structure (without nested structures) */
             if (auto structDeclArgs = reinterpret_cast<StructDeclArgs*>(args))
-                structDeclArgs->outStructWritten = WriteStructDecl(ast, structDeclArgs->inEndWithSemicolon);
+                WriteStructDecl(ast, structDeclArgs->inEndWithSemicolon);
             else
                 WriteStructDecl(ast, false);
         }
@@ -535,12 +531,6 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
         structDeclArgs.inEndWithSemicolon = true;
 
         Visit(ast->structDecl, &structDeclArgs);
-
-        if (structDeclArgs.outStructWritten)
-            Blank();
-
-        /* Visit all member functions */
-        WriteStmntList(ast->structDecl->funcMembers);
     }
 }
 
@@ -640,14 +630,7 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
     if (ast->structDecl && !ast->structDecl->IsAnonymous())
     {
         WriteLineMark(ast);
-
-        StructDeclArgs structDeclArgs;
-        structDeclArgs.inEndWithSemicolon = true;
-
-        Visit(ast->structDecl, &structDeclArgs);
-
-        if (structDeclArgs.outStructWritten)
-            Blank();
+        Visit(ast->structDecl);
     }
 }
 
@@ -2638,6 +2621,11 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* structDecl, bool endWith
     }
     EndSep();
     WriteScopeClose();
+    
+    Blank();
+
+    /* Write member functions */
+    WriteStmntList(structDecl->funcMembers);
 
     return true;
 }

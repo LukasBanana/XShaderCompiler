@@ -46,7 +46,10 @@ void GLSLConverter::Convert(
     /* Convert expressions */
     exprConverter_.Convert(program, ExprConverter::All);
 
-    /* Convert function names */
+    /* Visit program AST */
+    Visit(program_);
+
+    /* Convert function names after main conversion, since functon owner structs may have been renamed as well */
     FuncNameConverter funcNameConverter;
     funcNameConverter.Convert(
         program,
@@ -54,9 +57,6 @@ void GLSLConverter::Convert(
         GLSLConverter::CompareFuncSignatures,
         FuncNameConverter::All
     );
-
-    /* Visit program AST */
-    Visit(program_);
 }
 
 

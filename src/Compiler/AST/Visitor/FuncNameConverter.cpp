@@ -57,10 +57,10 @@ void FuncNameConverter::ConvertEqualFunctionSignatures(FuncList& funcList)
                         {
                             /* Rename first function (if not already done) */
                             if (nameIndex == 0)
-                                ConvertFunctionName(*funcLhs, nameIndex);
+                                ConvertMemberFunctionName(*funcLhs, nameIndex);
 
                             /* Rename second function */
-                            ConvertFunctionName(*funcRhs, nameIndex);
+                            ConvertMemberFunctionName(*funcRhs, nameIndex);
 
                             /* Remove second function from the list, to avoid another renaming */
                             funcList[j] = nullptr;
@@ -72,7 +72,7 @@ void FuncNameConverter::ConvertEqualFunctionSignatures(FuncList& funcList)
     }
 }
 
-void FuncNameConverter::ConvertFunctionName(FunctionDecl& funcDecl, unsigned int& nameIndex)
+void FuncNameConverter::ConvertMemberFunctionName(FunctionDecl& funcDecl, unsigned int& nameIndex)
 {
     /* Rename function to "{Prefix}{FunctionName}_{Index}" */
     funcDecl.ident.AppendPrefix(nameMangling_.temporaryPrefix);
@@ -110,7 +110,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         if (auto structDecl = ast->structDeclRef)
         {
             /* Rename function to "{TempPrefix}{StructName}_{FuncName}" */
-            ast->ident = (nameMangling_.temporaryPrefix + structDecl->ident + "_" + ast->ident);
+            ast->ident.RemovePrefix(nameMangling_.temporaryPrefix);
+            ast->ident = structDecl->ident + "_" + ast->ident;
+            ast->ident.AppendPrefix(nameMangling_.temporaryPrefix);
         }
     }
 

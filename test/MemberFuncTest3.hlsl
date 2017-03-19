@@ -10,7 +10,7 @@ struct VOut
 	float4 color : COLOR;
 };
 
-struct Light
+typedef struct Light
 {
 	struct
 	{
@@ -41,12 +41,13 @@ struct Light
 
 	float3 position;
 	float3 color;
-};
+} Light_t;
 
 float4 PS(VOut i) : SV_Target
 {
-	Light l;
+	Light_t l;
 	l.foo.ambient = 1;
+    //Light_t::GetLight();
 	return i.color + l.foo.GetAmbient();
 }
 

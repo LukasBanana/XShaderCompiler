@@ -39,6 +39,13 @@ Identifier& Identifier::AppendPrefix(const std::string& prefix)
     return *this;
 }
 
+Identifier& Identifier::RemovePrefix(const std::string& prefix)
+{
+    if (Final().compare(0, prefix.size(), prefix) == 0)
+        renamed_ = Final().substr(prefix.size());
+    return *this;
+}
+
 const std::string& Identifier::Final() const
 {
     return (renamed_.empty() ? original_ : renamed_);

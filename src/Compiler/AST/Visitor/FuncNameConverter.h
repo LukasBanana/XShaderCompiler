@@ -56,7 +56,7 @@ class FuncNameConverter : public Visitor
         using FuncList = std::vector<FunctionDecl*>;
 
         void ConvertEqualFunctionSignatures(FuncList& funcList);
-        void ConvertFunctionName(FunctionDecl& funcDecl, unsigned int& nameIndex);
+        void ConvertMemberFunctionName(FunctionDecl& funcDecl, unsigned int& nameIndex);
 
         /* ----- Visitor implementation ----- */
 
