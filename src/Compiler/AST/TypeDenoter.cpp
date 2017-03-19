@@ -129,11 +129,6 @@ const TypeDenoter& TypeDenoter::GetAliased() const
     return *this;
 }
 
-const TypeDenoter& TypeDenoter::GetBase() const
-{
-    return *this;
-}
-
 unsigned int TypeDenoter::NumDimensions() const
 {
     return 0;
@@ -667,11 +662,6 @@ const TypeDenoterPtr& AliasTypeDenoter::GetAliasedTypeOrThrow(const AST* ast) co
         RuntimeErr(R_MissingRefToAliasDecl(ident), ast);
 }
 
-const TypeDenoter& AliasTypeDenoter::GetBase() const
-{
-    return GetAliasedTypeOrThrow()->GetBase();
-}
-
 unsigned int AliasTypeDenoter::NumDimensions() const
 {
     return GetAliasedTypeOrThrow()->NumDimensions();
@@ -774,11 +764,6 @@ bool ArrayTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     }
 
     return false;
-}
-
-const TypeDenoter& ArrayTypeDenoter::GetBase() const
-{
-    return subTypeDenoter->GetBase();
 }
 
 unsigned int ArrayTypeDenoter::NumDimensions() const

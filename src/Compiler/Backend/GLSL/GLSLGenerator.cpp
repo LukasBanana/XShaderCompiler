@@ -550,24 +550,17 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     //TODO: refactor this!
     #if 1
+    auto varTypeStructDecl = ast->typeSpecifier->GetStructDeclRef();
+
     for (auto it = varDecls.begin(); it != varDecls.end();)
     {
         auto varDecl = it->get();
-        #if 1
-        const auto& baseVarType = varDecl->GetTypeDenoter()->GetBase();
-
-        StructDecl* structDecl = nullptr;
-        if (auto structTypeDen = baseVarType.As<StructTypeDenoter>())
-            structDecl = structTypeDen->structDeclRef;
-        #else
-        auto structDecl = ast->typeSpecifier->GetStructDeclRef();
-        #endif
 
         /*
         First check if code generation is disabled for variable declaration,
         then check if this is a system value semantic inside an interface block.
         */
-        if ( ( varDecl->flags(VarDecl::isEntryPointLocal) && ( !structDecl || !structDecl->flags(StructDecl::isNonEntryPointParam) ) ) ||
+        if ( ( varDecl->flags(VarDecl::isEntryPointLocal) && ( !varTypeStructDecl || !varTypeStructDecl->flags(StructDecl::isNonEntryPointParam) ) ) ||
              ( isInsideInterfaceBlock_ && varDecl->semantic.IsSystemValue() ) )
         {
             /*

@@ -112,9 +112,6 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Returns either this type denoter or an aliased type.
     virtual const TypeDenoter& GetAliased() const;
 
-    // Returns either this type denoter or the base type denoter (for arrays and aliases).
-    virtual const TypeDenoter& GetBase() const;
-
     // Returns the number of array dimensions. By default 0.
     virtual unsigned int NumDimensions() const;
 
@@ -293,7 +290,6 @@ struct AliasTypeDenoter : public TypeDenoter
     TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
 
     const TypeDenoter& GetAliased() const override;
-    const TypeDenoter& GetBase() const override;
 
     const TypeDenoterPtr& GetAliasedTypeOrThrow(const AST* ast = nullptr) const;
 
@@ -331,9 +327,6 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
-
-    //TODO: repalce this by "GetSubArray" or rename this function!!!
-    const TypeDenoter& GetBase() const override;
 
     unsigned int NumDimensions() const override;
 
