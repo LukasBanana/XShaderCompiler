@@ -130,7 +130,7 @@ class GLSLConverter : public Visitor
         Converts the specified statement to a code block and inserts itself into this code block (if it is a return statement within the entry point).
         This is used to ensure a new scope within a control flow statement (e.g. if-statement).
         */
-        void MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt);
+        void MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& stmnt);
 
         // Removes all statements that are marked as dead code.
         void RemoveDeadCode(std::vector<StmntPtr>& stmnts);

@@ -680,19 +680,15 @@ void GLSLConverter::PopFrontOfGlobalInOutVarIdent(VarIdent* ast)
 
 #endif
 
-void GLSLConverter::MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt)
+void GLSLConverter::MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& stmnt)
 {
     /* Is this statement within the entry point? */
     if (InsideEntryPoint())
     {
-        if (bodyStmnt->Type() == AST::Types::ReturnStmnt)
+        if (stmnt->Type() == AST::Types::ReturnStmnt)
         {
-            auto codeBlockStmnt = MakeShared<CodeBlockStmnt>(bodyStmnt->area);
-
-            codeBlockStmnt->codeBlock = MakeShared<CodeBlock>(bodyStmnt->area);
-            codeBlockStmnt->codeBlock->stmnts.push_back(bodyStmnt);
-
-            bodyStmnt = codeBlockStmnt;
+            /* Convert statement into a code block statement */
+            stmnt = ASTFactory::MakeCodeBlockStmnt(stmnt);
         }
     }
 }

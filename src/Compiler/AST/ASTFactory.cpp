@@ -25,7 +25,7 @@ std::shared_ptr<T> MakeAST(Args&&... args)
 }
 
 template <typename T, typename Origin, typename... Args>
-std::shared_ptr<T> MakeASTWithOrigin(Origin origin, Args&&... args)
+std::shared_ptr<T> MakeASTWithOrigin(const Origin& origin, Args&&... args)
 {
     return MakeShared<T>(origin->area, std::forward<Args>(args)...);
 }
@@ -326,6 +326,16 @@ ArrayDimensionPtr MakeArrayDimension(int arraySize)
             ast->expr = MakeAST<NullExpr>();
             ast->size = 0;
         }
+    }
+    return ast;
+}
+
+CodeBlockStmntPtr MakeCodeBlockStmnt(const StmntPtr& stmnt)
+{
+    auto ast = MakeASTWithOrigin<CodeBlockStmnt>(stmnt);
+    {
+        ast->codeBlock = MakeASTWithOrigin<CodeBlock>(stmnt);
+        ast->codeBlock->stmnts.push_back(stmnt);
     }
     return ast;
 }

@@ -119,6 +119,13 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
             Visit(funcDecl);
         }
         funcCallStack_.pop_back();
+
+        /* Mark owner struct as referenced */
+        if (funcDecl)
+        {
+            if (auto structDecl = funcDecl->structDeclRef)
+                Visit(structDecl);
+        }
     }
 
     /* Collect all used intrinsics (if they can not be inlined) */
