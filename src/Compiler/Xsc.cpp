@@ -70,7 +70,18 @@ static bool CompileShaderPrimary(
          nameMngl.temporaryPrefix    == nameMngl.inputPrefix     ||
          nameMngl.temporaryPrefix    == nameMngl.outputPrefix )
     {
-        throw std::invalid_argument(R_NameManglingPrefixOverlap);
+        throw std::invalid_argument(R_OverlappingNameManglingPrefixes);
+    }
+
+    if (!nameMngl.namespacePrefix.empty())
+    {
+        if ( nameMngl.namespacePrefix == nameMngl.inputPrefix        ||
+             nameMngl.namespacePrefix == nameMngl.outputPrefix       ||
+             nameMngl.namespacePrefix == nameMngl.reservedWordPrefix ||
+             nameMngl.namespacePrefix == nameMngl.temporaryPrefix )
+        {
+            throw std::invalid_argument(R_OverlappingNameManglingPrefixes);
+        }
     }
 
     /* ----- Pre-processing ----- */

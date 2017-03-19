@@ -434,7 +434,7 @@ DECL_REPORT( InputStreamCantBeNull,             "input stream must not be null" 
 DECL_REPORT( OutputStreamCantBeNull,            "output stream must not be null"                                                                                );
 DECL_REPORT( NameManglingPrefixResCantBeEmpty,  "name mangling prefix for reserved words must not be empty"                                                     );
 DECL_REPORT( NameManglingPrefixTmpCantBeEmpty,  "name mangling prefix for temporary variables must not be empty"                                                );
-DECL_REPORT( NameManglingPrefixOverlap,         "name mangling prefix for reserved words and temporary variables must not be equal to any other prefix"         );
+DECL_REPORT( OverlappingNameManglingPrefixes,   "overlapping name mangling prefixes"                                                                            );
 DECL_REPORT( PreProcessingSourceFailed,         "preprocessing input code failed"                                                                               );
 DECL_REPORT( ParsingSourceFailed,               "parsing input code failed"                                                                                     );
 DECL_REPORT( AnalyzingSourceFailed,             "analyzing input code failed"                                                                                   );

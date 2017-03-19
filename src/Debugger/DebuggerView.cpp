@@ -234,6 +234,7 @@ void DebuggerView::CreateLayoutPropertyGridNameMangling(wxPropertyGrid& pg)
     pg.Append(new wxStringProperty("Output Prefix", "prefixOutput", "xsv_"));
     pg.Append(new wxStringProperty("Reserved Word Prefix", "prefixReserved", "xsr_"));
     pg.Append(new wxStringProperty("Temporary Prefix", "prefixTemp", "xst_"));
+    pg.Append(new wxStringProperty("Namespace Prefix", "prefixNamespace", "xsn_"));
     pg.Append(new wxBoolProperty("Use Always Semantics", "useAlwaysSemantics", false));
 }
 
@@ -447,6 +448,8 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderOutput_.nameMangling.reservedWordPrefix = ValueStr();
     else if (name == "prefixTemp")
         shaderOutput_.nameMangling.temporaryPrefix = ValueStr();
+    else if (name == "prefixNamespace")
+        shaderOutput_.nameMangling.namespacePrefix = ValueStr();
     else if (name == "useAlwaysSemantics")
         shaderOutput_.nameMangling.useAlwaysSemantics = ValueBool();
 

@@ -75,7 +75,7 @@ void FuncNameConverter::ConvertEqualFunctionSignatures(FuncList& funcList)
 void FuncNameConverter::ConvertMemberFunctionName(FunctionDecl& funcDecl, unsigned int& nameIndex)
 {
     /* Rename function to "{Prefix}{FunctionName}_{Index}" */
-    funcDecl.ident.AppendPrefix(nameMangling_.temporaryPrefix);
+    funcDecl.ident.AppendPrefix(nameMangling_.namespacePrefix);
     funcDecl.ident = (funcDecl.ident + "_" + std::to_string(nameIndex));
 
     /* Increase index for next function name mangling */
@@ -110,9 +110,9 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         if (auto structDecl = ast->structDeclRef)
         {
             /* Rename function to "{TempPrefix}{StructName}_{FuncName}" */
-            ast->ident.RemovePrefix(nameMangling_.temporaryPrefix);
+            ast->ident.RemovePrefix(nameMangling_.namespacePrefix);
             ast->ident = structDecl->ident + "_" + ast->ident;
-            ast->ident.AppendPrefix(nameMangling_.temporaryPrefix);
+            ast->ident.AppendPrefix(nameMangling_.namespacePrefix);
         }
     }
 

@@ -111,6 +111,7 @@ DECL_SHELL_COMMAND( PrefixInputCommand           );
 DECL_SHELL_COMMAND( PrefixOutputCommand          );
 DECL_SHELL_COMMAND( PrefixReservedWordCommand    );
 DECL_SHELL_COMMAND( PrefixTemporaryCommand       );
+DECL_SHELL_COMMAND( PrefixNamespaceCommand       );
 DECL_SHELL_COMMAND( AlwaysUseSemanticsCommand    );
 
 #undef DECL_SHELL_COMMAND

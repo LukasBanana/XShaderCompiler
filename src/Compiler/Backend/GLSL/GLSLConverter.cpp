@@ -786,7 +786,7 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
             /* Insert parameter of 'self' object */
             auto selfParamTypeDen   = std::make_shared<StructTypeDenoter>(structDecl);
             auto selfParamType      = ASTFactory::MakeTypeSpecifier(selfParamTypeDen);
-            auto selfParam          = ASTFactory::MakeVarDeclStmnt(selfParamType, nameMangling_.temporaryPrefix + "self");
+            auto selfParam          = ASTFactory::MakeVarDeclStmnt(selfParamType, nameMangling_.namespacePrefix + "self");
 
             selfParam->flags << VarDeclStmnt::isSelfParameter;
 
