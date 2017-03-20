@@ -839,12 +839,14 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         WriteCallExprIntrinsicRcp(ast);
     else if (ast->intrinsic == Intrinsic::Clip && ast->flags(CallExpr::canInlineIntrinsicWrapper))
         WriteCallExprIntrinsicClip(ast);
-    else if (ast->intrinsic == Intrinsic::InterlockedCompareExchange || ast->intrinsic == Intrinsic::Image_AtomicCompSwap)
+    else if (ast->intrinsic == Intrinsic::InterlockedCompareExchange)
         WriteCallExprIntrinsicAtomicCompSwap(ast);
     else if (ast->intrinsic >= Intrinsic::InterlockedAdd && ast->intrinsic <= Intrinsic::InterlockedXor)
         WriteCallExprIntrinsicAtomic(ast);
+    else if (ast->intrinsic == Intrinsic::Image_AtomicCompSwap)
+        WriteCallExprIntrinsicImageAtomicCompSwap(ast);
     else if (ast->intrinsic >= Intrinsic::Image_AtomicAdd && ast->intrinsic <= Intrinsic::Image_AtomicExchange)
-        WriteCallExprIntrinsicAtomic(ast);
+        WriteCallExprIntrinsicImageAtomic(ast);
     else if (ast->intrinsic == Intrinsic::StreamOutput_Append)
         WriteCallExprIntrinsicStreamOutputAppend(ast);
     else if (ast->intrinsic == Intrinsic::Texture_QueryLod)
@@ -2370,6 +2372,44 @@ void GLSLGenerator::WriteCallExprIntrinsicAtomicCompSwap(CallExpr* callExpr)
         ErrorIntrinsic(callExpr->ident, callExpr);
 }
 
+void GLSLGenerator::WriteCallExprIntrinsicImageAtomic(CallExpr* callExpr)
+{
+    AssertIntrinsicNumArgs(callExpr, 3, 4);
+
+    /* Find atomic intrinsic mapping */
+    if (auto keyword = IntrinsicToGLSLKeyword(callExpr->intrinsic))
+    {
+        /* Write function call */
+        if (callExpr->arguments.size() >= 4)
+        {
+            Visit(callExpr->arguments[3]);
+            Write(" = ");
+        }
+        Write(*keyword + "(");
+        WriteCallExprArguments(callExpr, 0, 3);
+        Write(")");
+    }
+    else
+        ErrorIntrinsic(callExpr->ident, callExpr);
+}
+
+void GLSLGenerator::WriteCallExprIntrinsicImageAtomicCompSwap(CallExpr* callExpr)
+{
+    AssertIntrinsicNumArgs(callExpr, 5, 5);
+
+    /* Find atomic intrinsic mapping */
+    if (auto keyword = IntrinsicToGLSLKeyword(callExpr->intrinsic))
+    {
+        /* Write function call */
+        Visit(callExpr->arguments[4]);
+        Write(" = " + *keyword + "(");
+        WriteCallExprArguments(callExpr, 0, 4);
+        Write(")");
+    }
+    else
+        ErrorIntrinsic(callExpr->ident, callExpr);
+}
+
 void GLSLGenerator::WriteCallExprIntrinsicStreamOutputAppend(CallExpr* funcCall)
 {
     AssertIntrinsicNumArgs(funcCall, 1, 1);
@@ -2405,7 +2445,7 @@ void GLSLGenerator::WriteCallExprIntrinsicTextureQueryLod(CallExpr* funcCall, bo
 
 void GLSLGenerator::WriteCallExprArguments(CallExpr* callExpr, std::size_t firstArgIndex, std::size_t numWriteArgs)
 {
-    if (numWriteArgs < numWriteArgs + firstArgIndex)
+    if (numWriteArgs <= numWriteArgs + firstArgIndex)
         numWriteArgs = numWriteArgs + firstArgIndex;
     else
         numWriteArgs = ~0u;
