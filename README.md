@@ -95,14 +95,14 @@ int main()
     Xsc::Reflection::ReflectionData reflectData;
 
     // Translate HLSL code into GLSL
-	try
-	{
-		bool result = Xsc::CompileShader(inputDesc, outputDesc, &log, &reflectData);
-	}
-	catch (const std::exception& e)
-	{
-		std::cerr << e.what() << std::endl;
-	}
+    try
+    {
+        bool result = Xsc::CompileShader(inputDesc, outputDesc, &log, &reflectData);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
 
     return 0;
 }
