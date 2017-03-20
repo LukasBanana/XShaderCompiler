@@ -697,7 +697,6 @@ void HLSLAnalyzer::AnalyzeCallExprFunction(
         }
     }
 
-    /* Analyze static function */
     if (auto funcDecl = callExpr->funcDeclRef)
     {
         /* Check if static/non-static access is allowed */
@@ -713,6 +712,20 @@ void HLSLAnalyzer::AnalyzeCallExprFunction(
             {
                 if (funcDecl->IsStatic())
                     Error(R_IllegalNonStaticFuncCall(funcDecl->ToString()), callExpr);
+            }
+        }
+
+        /* Fetch default argument expressions of all remaining parmeters */
+        for (std::size_t i = callExpr->arguments.size(), n = funcDecl->parameters.size(); i < n; ++i)
+        {
+            auto param = funcDecl->parameters[i].get();
+            if (!param->varDecls.empty())
+            {
+                auto paramVar = param->varDecls.front().get();
+                if (auto initExpr = paramVar->initializer.get())
+                    callExpr->defaultArgumentRefs.push_back(initExpr);
+                else
+                    Error(R_MissingInitializerForDefaultParam(paramVar->ident), paramVar);
             }
         }
     }

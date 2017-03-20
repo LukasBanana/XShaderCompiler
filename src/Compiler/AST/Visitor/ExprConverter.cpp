@@ -469,8 +469,13 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
+    /* Interlock (atomic) intristics require actual buffer, and not their contents */
+    Flags preVisitFlags = AllPreVisit;
+    if (IsInterlockedIntristic(ast->intrinsic))
+        preVisitFlags.Remove(ConvertImageAccess);
+
     ConvertExpr(ast->prefixExpr, AllPreVisit);
-    ConvertExprList(ast->arguments, AllPreVisit);
+    ConvertExprList(ast->arguments, preVisitFlags);
     {
         VISIT_DEFAULT(CallExpr);
     }

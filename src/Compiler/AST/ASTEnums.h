@@ -755,6 +755,14 @@ enum class Intrinsic
 
     Image_Load,                 // GLSL only
     Image_Store,                // GLSL only
+    Image_AtomicAdd,            // GLSL only
+    Image_AtomicAnd,            // GLSL only
+    Image_AtomicOr,             // GLSL only
+    Image_AtomicXor,            // GLSL only
+    Image_AtomicMin,            // GLSL only
+    Image_AtomicMax,            // GLSL only
+    Image_AtomicCompSwap,       // GLSL only
+    Image_AtomicExchange        // GLSL only
 };
 
 // Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>
@@ -786,8 +794,17 @@ bool IsStreamOutputIntrinsic(const Intrinsic t);
 // Returns true if the specified intrinsic is an image load/store intrinsic.
 bool IsImageIntrinsic(const Intrinsic t);
 
+// Returns true if the specified intrinsic in an interlocked intrinsic (e.g. Intrinsic::InterlockedAdd).
+bool IsInterlockedIntristic(const Intrinsic t);
+
 // Returns the respective intrinsic for the specified binary compare operator, or Intrinsic::Undefined if the operator is not a compare operator.
 Intrinsic CompareOpToIntrinsic(const BinaryOp op);
+
+/*
+Returns the respecitve image atomic intrinsic for the specified interlocked intrinsic,
+or the input intrinsic, if is is not an interlocked intrinsic (e.g. Intrinsic::InterlockedAdd to Intrinsic::Image_AtomicAdd).
+*/
+Intrinsic InterlockedToImageAtomicIntrinsic(const Intrinsic t);
 
 
 /* ----- Semantic Enum ----- */

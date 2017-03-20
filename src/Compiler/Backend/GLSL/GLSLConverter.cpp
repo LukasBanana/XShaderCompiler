@@ -805,6 +805,16 @@ void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
         case Intrinsic::Texture_SampleLevel_5:
             ConvertIntrinsicCallTextureSampleLevel(ast);
             break;
+        case Intrinsic::InterlockedAdd:
+        case Intrinsic::InterlockedAnd:
+        case Intrinsic::InterlockedOr:
+        case Intrinsic::InterlockedXor:
+        case Intrinsic::InterlockedMin:
+        case Intrinsic::InterlockedMax:
+        case Intrinsic::InterlockedCompareExchange:
+        case Intrinsic::InterlockedExchange:
+            ConvertIntrinsicCallImageAtomic(ast);
+            break;
         default:
             break;
     }
@@ -896,6 +906,49 @@ void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast)
         /* Ensure argument: int[1,2,3] Offset */
         if (args.size() >= 4)
             exprConverter_.ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, vectorSize), true);
+    }
+}
+
+void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
+{
+    /* Convert "atomic*" to "imageAtomic*" for buffer types */
+    if (ast->arguments.size() >= 2)
+    {
+        const auto& arg0Expr = ast->arguments.front();
+        if (auto arg0ArrayExpr = arg0Expr->As<ArrayExpr>())
+        {
+            const auto& typeDen = arg0ArrayExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
+            {
+                /* Is the buffer declaration a read/write texture? */
+                if (IsRWTextureBufferType(bufferTypeDen->bufferType))
+                {
+                    /* Map interlocked intrinsic to image atomic intrinsic */
+                    ast->intrinsic = InterlockedToImageAtomicIntrinsic(ast->intrinsic);
+
+                    /* Insert array indices from object identifier after first argument */
+                    ast->arguments.insert(ast->arguments.begin() + 1, arg0ArrayExpr->arrayIndices.back());
+
+                    /* Check if array expression must be replaced by its sub expression */
+                    arg0ArrayExpr->arrayIndices.pop_back();
+                    if (arg0ArrayExpr->arrayIndices.empty())
+                        ast->arguments.front() = arg0ArrayExpr->prefixExpr;
+                }
+            }
+        }
+        else
+        {
+            const auto& typeDen = arg0Expr->GetTypeDenoter()->GetAliased();
+            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
+            {
+                /* Is the buffer declaration a read/write texture? */
+                if (IsRWTextureBufferType(bufferTypeDen->bufferType))
+                {
+                    /* Map interlocked intrinsic to image atomic intrinsic */
+                    ast->intrinsic = InterlockedToImageAtomicIntrinsic(ast->intrinsic);
+                }
+            }
+        }
     }
 }
 

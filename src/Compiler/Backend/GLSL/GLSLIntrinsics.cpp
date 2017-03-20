@@ -194,8 +194,16 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { T::StreamOutput_Append,              "EmitVertex"            },
         { T::StreamOutput_RestartStrip,        "EndPrimitive"          },
 
-        { T::Image_Load,                       "imageLoad"             },
-        { T::Image_Store,                      "imageStore"            },
+        { T::Image_Load,                       "imageLoad"             }, // GLSL only
+        { T::Image_Store,                      "imageStore"            }, // GLSL only
+        { T::Image_AtomicAdd,                  "imageAtomicAdd"        }, // GLSL only
+        { T::Image_AtomicAnd,                  "imageAtomicAnd"        }, // GLSL only
+        { T::Image_AtomicCompSwap,             "imageAtomicCompSwap"   }, // GLSL only
+        { T::Image_AtomicExchange,             "imageAtomicExchange"   }, // GLSL only
+        { T::Image_AtomicMax,                  "imageAtomicMax"        }, // GLSL only
+        { T::Image_AtomicMin,                  "imageAtomicMin"        }, // GLSL only
+        { T::Image_AtomicOr,                   "imageAtomicOr"         }, // GLSL only
+        { T::Image_AtomicXor,                  "imageAtomicXor"        }, // GLSL only
     };
 }
 

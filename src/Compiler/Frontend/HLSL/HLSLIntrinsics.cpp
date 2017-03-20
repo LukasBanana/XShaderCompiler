@@ -517,6 +517,14 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
 
         { T::Image_Load,                       { Ret::Float4,      2    } },
         { T::Image_Store,                      {                   3    } },
+        { T::Image_AtomicAdd,                  {                   2, 3 } },
+        { T::Image_AtomicAnd,                  {                   2, 3 } },
+        { T::Image_AtomicCompSwap,             {                   4    } },
+        { T::Image_AtomicExchange,             {                   3    } },
+        { T::Image_AtomicMax,                  {                   2, 3 } },
+        { T::Image_AtomicMin,                  {                   2, 3 } },
+        { T::Image_AtomicOr,                   {                   2, 3 } },
+        { T::Image_AtomicXor,                  {                   2, 3 } },
     };
 }
 
@@ -592,6 +600,10 @@ std::vector<std::size_t> HLSLIntrinsicAdept::GetIntrinsicOutputParameterIndices(
         case Intrinsic::InterlockedOr:
         case Intrinsic::InterlockedXor:
             return { 2 };
+
+        // InterlockedCompareExchange(R dest, T compare_value, T value, out T original_value)
+        case Intrinsic::InterlockedCompareExchange:
+            return { 3 };
 
         // sincos(x, out s, out c)
         case Intrinsic::SinCos:

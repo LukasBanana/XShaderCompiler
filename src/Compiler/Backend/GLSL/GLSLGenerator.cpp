@@ -839,8 +839,14 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         WriteCallExprIntrinsicRcp(ast);
     else if (ast->intrinsic == Intrinsic::Clip && ast->flags(CallExpr::canInlineIntrinsicWrapper))
         WriteCallExprIntrinsicClip(ast);
+    else if (ast->intrinsic == Intrinsic::InterlockedCompareExchange)
+        WriteCallExprIntrinsicAtomicCompSwap(ast);
     else if (ast->intrinsic >= Intrinsic::InterlockedAdd && ast->intrinsic <= Intrinsic::InterlockedXor)
         WriteCallExprIntrinsicAtomic(ast);
+    else if (ast->intrinsic == Intrinsic::Image_AtomicCompSwap)
+        WriteCallExprIntrinsicImageAtomicCompSwap(ast);
+    else if (ast->intrinsic >= Intrinsic::Image_AtomicAdd && ast->intrinsic <= Intrinsic::Image_AtomicExchange)
+        WriteCallExprIntrinsicImageAtomic(ast);
     else if (ast->intrinsic == Intrinsic::StreamOutput_Append)
         WriteCallExprIntrinsicStreamOutputAppend(ast);
     else if (ast->intrinsic == Intrinsic::Texture_QueryLod)
@@ -2199,18 +2205,7 @@ void GLSLGenerator::WriteCallExprStandard(CallExpr* funcCall)
 
     /* Write arguments */
     Write("(");
-
-    for (std::size_t i = 0, n = funcCall->arguments.size(), m = n + funcCall->defaultArgumentRefs.size(); i < m; ++i)
-    {
-        if (i < n)
-            Visit(funcCall->arguments[i]);
-        else
-            Visit(funcCall->defaultArgumentRefs[i - n]);
-
-        if (i + 1 < m)
-            Write(", ");
-    }
-
+    WriteCallExprArguments(funcCall);
     Write(")");
 }
 
@@ -2343,27 +2338,80 @@ void GLSLGenerator::WriteCallExprIntrinsicClip(CallExpr* funcCall)
     DecIndent();
 }
 
-void GLSLGenerator::WriteCallExprIntrinsicAtomic(CallExpr* funcCall)
+void GLSLGenerator::WriteCallExprIntrinsicAtomic(CallExpr* callExpr)
 {
-    AssertIntrinsicNumArgs(funcCall, 2, 3);
+    AssertIntrinsicNumArgs(callExpr, 2, 3);
 
     /* Find atomic intrinsic mapping */
-    if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
+    if (auto keyword = IntrinsicToGLSLKeyword(callExpr->intrinsic))
     {
         /* Write function call */
-        if (funcCall->arguments.size() >= 3)
+        if (callExpr->arguments.size() >= 3)
         {
-            Visit(funcCall->arguments[2]);
+            Visit(callExpr->arguments[2]);
             Write(" = ");
         }
         Write(*keyword + "(");
-        Visit(funcCall->arguments[0]);
-        Write(", ");
-        Visit(funcCall->arguments[1]);
+        WriteCallExprArguments(callExpr, 0, 2);
         Write(")");
     }
     else
-        ErrorIntrinsic(funcCall->ident, funcCall);
+        ErrorIntrinsic(callExpr->ident, callExpr);
+}
+
+void GLSLGenerator::WriteCallExprIntrinsicAtomicCompSwap(CallExpr* callExpr)
+{
+    AssertIntrinsicNumArgs(callExpr, 4, 4);
+
+    /* Find atomic intrinsic mapping */
+    if (auto keyword = IntrinsicToGLSLKeyword(callExpr->intrinsic))
+    {
+        /* Write function call */
+        Visit(callExpr->arguments[3]);
+        Write(" = " + *keyword + "(");
+        WriteCallExprArguments(callExpr, 0, 3);
+        Write(")");
+    }
+    else
+        ErrorIntrinsic(callExpr->ident, callExpr);
+}
+
+void GLSLGenerator::WriteCallExprIntrinsicImageAtomic(CallExpr* callExpr)
+{
+    AssertIntrinsicNumArgs(callExpr, 3, 4);
+
+    /* Find atomic intrinsic mapping */
+    if (auto keyword = IntrinsicToGLSLKeyword(callExpr->intrinsic))
+    {
+        /* Write function call */
+        if (callExpr->arguments.size() >= 4)
+        {
+            Visit(callExpr->arguments[3]);
+            Write(" = ");
+        }
+        Write(*keyword + "(");
+        WriteCallExprArguments(callExpr, 0, 3);
+        Write(")");
+    }
+    else
+        ErrorIntrinsic(callExpr->ident, callExpr);
+}
+
+void GLSLGenerator::WriteCallExprIntrinsicImageAtomicCompSwap(CallExpr* callExpr)
+{
+    AssertIntrinsicNumArgs(callExpr, 5, 5);
+
+    /* Find atomic intrinsic mapping */
+    if (auto keyword = IntrinsicToGLSLKeyword(callExpr->intrinsic))
+    {
+        /* Write function call */
+        Visit(callExpr->arguments[4]);
+        Write(" = " + *keyword + "(");
+        WriteCallExprArguments(callExpr, 0, 4);
+        Write(")");
+    }
+    else
+        ErrorIntrinsic(callExpr->ident, callExpr);
 }
 
 void GLSLGenerator::WriteCallExprIntrinsicStreamOutputAppend(CallExpr* funcCall)
@@ -2397,6 +2445,28 @@ void GLSLGenerator::WriteCallExprIntrinsicTextureQueryLod(CallExpr* funcCall, bo
     }
     else
         ErrorIntrinsic(funcCall->ident, funcCall);
+}
+
+void GLSLGenerator::WriteCallExprArguments(CallExpr* callExpr, std::size_t firstArgIndex, std::size_t numWriteArgs)
+{
+    if (numWriteArgs <= numWriteArgs + firstArgIndex)
+        numWriteArgs = numWriteArgs + firstArgIndex;
+    else
+        numWriteArgs = ~0u;
+
+    const auto n = callExpr->arguments.size();
+    const auto m = std::min(numWriteArgs, n + callExpr->defaultArgumentRefs.size());
+
+    for (std::size_t i = firstArgIndex; i < m; ++i)
+    {
+        if (i < n)
+            Visit(callExpr->arguments[i]);
+        else
+            Visit(callExpr->defaultArgumentRefs[i - n]);
+
+        if (i + 1 < m)
+            Write(", ");
+    }
 }
 
 /* ----- Intrinsics wrapper ----- */
