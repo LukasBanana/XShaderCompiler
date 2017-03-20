@@ -909,60 +909,24 @@ void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast)
     }
 }
 
-#if 0
-
-void GLSLConverter::ConvertIntrinsicCallImageAtomic(FunctionCall* ast)
+void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
 {
     /* Convert "atomic*" to "imageAtomic*" for buffer types */
-    auto argTypeDen = ast->arguments.front()->GetTypeDenoter()->Get();
-    if (argTypeDen->IsBuffer())
+    if (!ast->arguments.empty())
     {
-        if (auto varIdent = ast->arguments.front()->FetchVarIdent())
+        const auto& arg0Expr = ast->arguments.front();
+        const auto& typeDen = arg0Expr->GetTypeDenoter()->GetAliased();
+        if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
         {
-            if (auto bufferDecl = varIdent->FetchSymbol<BufferDecl>())
+            /* Is the buffer declaration a read/write texture? */
+            if (IsRWTextureBufferType(bufferTypeDen->bufferType))
             {
-                /* Is the buffer declaration a read/write texture? */
-                const auto bufferType = bufferDecl->GetBufferType();
-                if (IsRWTextureBufferType(bufferType))
-                {
-                    switch (ast->intrinsic)
-                    {
-                    case Intrinsic::InterlockedAdd:
-                        ast->intrinsic = Intrinsic::Image_AtomicAdd;
-                        break;
-                    case Intrinsic::InterlockedAnd:
-                        ast->intrinsic = Intrinsic::Image_AtomicAnd;
-                        break;
-                    case Intrinsic::InterlockedOr:
-                        ast->intrinsic = Intrinsic::Image_AtomicOr;
-                        break;
-                    case Intrinsic::InterlockedXor:
-                        ast->intrinsic = Intrinsic::Image_AtomicXor;
-                        break;
-                    case Intrinsic::InterlockedMin:
-                        ast->intrinsic = Intrinsic::Image_AtomicMin;
-                        break;
-                    case Intrinsic::InterlockedMax:
-                        ast->intrinsic = Intrinsic::Image_AtomicMax;
-                        break;
-                    case Intrinsic::InterlockedCompareExchange:
-                        ast->intrinsic = Intrinsic::Image_AtomicCompSwap;
-                        break;
-                    case Intrinsic::InterlockedExchange:
-                        ast->intrinsic = Intrinsic::Image_AtomicExchange;
-                        break;
-                    default:
-                        break;
-                    }
-                }
+                /* Map interlocked intrinsic to image atomic intrinsic */
+                ast->intrinsic = InterlockedToImageAtomicIntrinsic(ast->intrinsic);
             }
         }
-        else
-            RuntimeErr(R_InvalidIntrinsicArgType("atomic*"), ast);
     }
 }
-
-#endif
 
 void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
 {

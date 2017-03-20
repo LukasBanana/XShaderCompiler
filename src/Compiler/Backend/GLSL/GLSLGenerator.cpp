@@ -842,7 +842,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
     else if (ast->intrinsic >= Intrinsic::InterlockedAdd && ast->intrinsic <= Intrinsic::InterlockedXor)
         WriteCallExprIntrinsicAtomic(ast);
     else if (ast->intrinsic >= Intrinsic::Image_AtomicAdd && ast->intrinsic <= Intrinsic::Image_AtomicExchange)
-        WriteFunctionCallIntrinsicAtomic(ast);
+        WriteCallExprIntrinsicAtomic(ast);
     else if (ast->intrinsic == Intrinsic::StreamOutput_Append)
         WriteCallExprIntrinsicStreamOutputAppend(ast);
     else if (ast->intrinsic == Intrinsic::Texture_QueryLod)

@@ -924,6 +924,11 @@ bool IsImageIntrinsic(const Intrinsic t)
     return (t >= Intrinsic::Image_Load && t <= Intrinsic::Image_Store);
 }
 
+bool IsInterlockedIntristic(const Intrinsic t)
+{
+    return (t >= Intrinsic::InterlockedAdd && t <= Intrinsic::InterlockedXor);
+}
+
 Intrinsic CompareOpToIntrinsic(const BinaryOp op)
 {
     switch (op)
@@ -935,6 +940,22 @@ Intrinsic CompareOpToIntrinsic(const BinaryOp op)
         case BinaryOp::LessEqual:       return Intrinsic::LessThanEqual;
         case BinaryOp::GreaterEqual:    return Intrinsic::GreaterThanEqual;
         default:                        return Intrinsic::Undefined;
+    }
+}
+
+Intrinsic InterlockedToImageAtomicIntrinsic(const Intrinsic t)
+{
+    switch (t)
+    {
+        case Intrinsic::InterlockedAdd:             return Intrinsic::Image_AtomicAdd;
+        case Intrinsic::InterlockedAnd:             return Intrinsic::Image_AtomicAnd;
+        case Intrinsic::InterlockedOr:              return Intrinsic::Image_AtomicOr;
+        case Intrinsic::InterlockedXor:             return Intrinsic::Image_AtomicXor;
+        case Intrinsic::InterlockedMin:             return Intrinsic::Image_AtomicMin;
+        case Intrinsic::InterlockedMax:             return Intrinsic::Image_AtomicMax;
+        case Intrinsic::InterlockedCompareExchange: return Intrinsic::Image_AtomicCompSwap;
+        case Intrinsic::InterlockedExchange:        return Intrinsic::Image_AtomicExchange;
+        default:                                    return t;
     }
 }
 

@@ -196,7 +196,6 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
 
         { T::Image_Load,                       "imageLoad"             }, // GLSL only
         { T::Image_Store,                      "imageStore"            }, // GLSL only
-
         { T::Image_AtomicAdd,                  "imageAtomicAdd"        }, // GLSL only
         { T::Image_AtomicAnd,                  "imageAtomicAnd"        }, // GLSL only
         { T::Image_AtomicCompSwap,             "imageAtomicCompSwap"   }, // GLSL only

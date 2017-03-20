@@ -517,7 +517,6 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
 
         { T::Image_Load,                       { Ret::Float4,      2    } },
         { T::Image_Store,                      {                   3    } },
-
         { T::Image_AtomicAdd,                  {                   2, 3 } },
         { T::Image_AtomicAnd,                  {                   2, 3 } },
         { T::Image_AtomicCompSwap,             {                   4    } },

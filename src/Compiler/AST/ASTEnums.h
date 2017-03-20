@@ -794,8 +794,17 @@ bool IsStreamOutputIntrinsic(const Intrinsic t);
 // Returns true if the specified intrinsic is an image load/store intrinsic.
 bool IsImageIntrinsic(const Intrinsic t);
 
+// Returns true if the specified intrinsic in an interlocked intrinsic (e.g. Intrinsic::InterlockedAdd).
+bool IsInterlockedIntristic(const Intrinsic t);
+
 // Returns the respective intrinsic for the specified binary compare operator, or Intrinsic::Undefined if the operator is not a compare operator.
 Intrinsic CompareOpToIntrinsic(const BinaryOp op);
+
+/*
+Returns the respecitve image atomic intrinsic for the specified interlocked intrinsic,
+or the input intrinsic, if is is not an interlocked intrinsic (e.g. Intrinsic::InterlockedAdd to Intrinsic::Image_AtomicAdd).
+*/
+Intrinsic InterlockedToImageAtomicIntrinsic(const Intrinsic t);
 
 
 /* ----- Semantic Enum ----- */
