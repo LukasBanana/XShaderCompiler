@@ -48,7 +48,6 @@ class GLSLConverter : public Visitor
 
         DECL_VISIT_PROC( Program          );
         DECL_VISIT_PROC( CodeBlock        );
-        DECL_VISIT_PROC( FunctionCall     );
         DECL_VISIT_PROC( SwitchCase       );
 
         DECL_VISIT_PROC( VarDecl          );
@@ -155,12 +154,12 @@ class GLSLConverter : public Visitor
         void ConvertFunctionDeclDefault(FunctionDecl* ast);
         void ConvertFunctionDeclEntryPoint(FunctionDecl* ast);
 
-        void ConvertIntrinsicCall(FunctionCall* ast);
-        void ConvertIntrinsicCallSaturate(FunctionCall* ast);
-        void ConvertIntrinsicCallTextureSample(FunctionCall* ast);
-        void ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast);
+        void ConvertIntrinsicCall(CallExpr* ast);
+        void ConvertIntrinsicCallSaturate(CallExpr* ast);
+        void ConvertIntrinsicCallTextureSample(CallExpr* ast);
+        void ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast);
 
-        void ConvertFunctionCall(FunctionCall* ast);
+        void ConvertFunctionCall(CallExpr* ast);
 
         void ConvertEntryPointStructPrefix(ExprPtr& expr, ObjectExpr* objectExpr);
 

@@ -148,22 +148,21 @@ IMPLEMENT_VISIT_PROC(CallExpr)
 {
     Visit(ast->prefixExpr);
 
-    auto funcCall = ast->call.get();
-    if (funcCall->intrinsic != Intrinsic::Undefined)
+    if (ast->intrinsic != Intrinsic::Undefined)
     {
         /* Insert prefix expression as first argument into function call, if this is a texture intrinsic call */
-        if (IsTextureIntrinsic(funcCall->intrinsic) && ast->prefixExpr)
+        if (IsTextureIntrinsic(ast->intrinsic) && ast->prefixExpr)
         {
             if (isVKSL_)
             {
                 /* Replace sampler state argument by sampler/texture binding call */
-                if (!funcCall->arguments.empty())
+                if (!ast->arguments.empty())
                 {
-                    auto arg0Expr = funcCall->arguments.front().get();
+                    auto arg0Expr = ast->arguments.front().get();
                     if (IsSamplerStateTypeDenoter(arg0Expr->GetTypeDenoter()))
                     {
-                        funcCall->arguments[0] = ASTFactory::MakeTextureSamplerBindingCallExpr(
-                            ast->prefixExpr, funcCall->arguments[0]
+                        ast->arguments[0] = ASTFactory::MakeTextureSamplerBindingCallExpr(
+                            ast->prefixExpr, ast->arguments[0]
                         );
                     }
                 }
@@ -171,16 +170,11 @@ IMPLEMENT_VISIT_PROC(CallExpr)
             else
             {
                 /* Insert texture object as parameter into intrinsic arguments */
-                funcCall->arguments.insert(funcCall->arguments.begin(), ast->prefixExpr);
+                ast->arguments.insert(ast->arguments.begin(), ast->prefixExpr);
             }
         }
     }
 
-    Visit(ast->call);
-}
-
-IMPLEMENT_VISIT_PROC(FunctionCall)
-{
     if (!isVKSL_)
     {
         /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
@@ -199,7 +193,7 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     else
         ConvertFunctionCall(ast);
 
-    VISIT_DEFAULT(FunctionCall);
+    VISIT_DEFAULT(CallExpr);
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
@@ -866,7 +860,7 @@ void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
     Visitor::VisitFunctionDecl(ast, nullptr);
 }
 
-void GLSLConverter::ConvertIntrinsicCall(FunctionCall* ast)
+void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
 {
     switch (ast->intrinsic)
     {
@@ -889,7 +883,7 @@ void GLSLConverter::ConvertIntrinsicCall(FunctionCall* ast)
     }
 }
 
-void GLSLConverter::ConvertIntrinsicCallSaturate(FunctionCall* ast)
+void GLSLConverter::ConvertIntrinsicCallSaturate(CallExpr* ast)
 {
     /* Convert "saturate(x)" to "clamp(x, genType(0), genType(1))" */
     if (ast->arguments.size() == 1)
@@ -908,12 +902,12 @@ void GLSLConverter::ConvertIntrinsicCallSaturate(FunctionCall* ast)
         RuntimeErr(R_InvalidIntrinsicArgCount("saturate"), ast);
 }
 
-static int GetTextureVectorSizeFromIntrinsicCall(FunctionCall* ast)
+static int GetTextureVectorSizeFromIntrinsicCall(CallExpr* ast)
 {
     /* Get buffer object from sample intrinsic call */
-    if (const auto& prefixExpr = ast->exprRef->prefixExpr)
+    if (const auto& prefixExpr = ast->prefixExpr)
     {
-        if (auto lvalueExpr = ast->exprRef->prefixExpr->FetchLValueExpr())
+        if (auto lvalueExpr = ast->prefixExpr->FetchLValueExpr())
         {
             if (auto bufferDecl = lvalueExpr->FetchSymbol<BufferDecl>())
             {
@@ -942,7 +936,7 @@ static int GetTextureVectorSizeFromIntrinsicCall(FunctionCall* ast)
     return 0;
 }
 
-void GLSLConverter::ConvertIntrinsicCallTextureSample(FunctionCall* ast)
+void GLSLConverter::ConvertIntrinsicCallTextureSample(CallExpr* ast)
 {
     /* Determine vector size for texture intrinsic */
     if (auto vectorSize = GetTextureVectorSizeFromIntrinsicCall(ast))
@@ -960,7 +954,7 @@ void GLSLConverter::ConvertIntrinsicCallTextureSample(FunctionCall* ast)
     }
 }
 
-void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast)
+void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast)
 {
     /* Determine vector size for texture intrinsic */
     if (auto vectorSize = GetTextureVectorSizeFromIntrinsicCall(ast))
@@ -978,7 +972,7 @@ void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast)
     }
 }
 
-void GLSLConverter::ConvertFunctionCall(FunctionCall* ast)
+void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
 {
     if (auto funcDecl = ast->funcDeclRef)
     {
@@ -987,14 +981,14 @@ void GLSLConverter::ConvertFunctionCall(FunctionCall* ast)
             if (funcDecl->IsStatic())
             {
                 /* Drop prefix expression, since GLSL only allows global functions */
-                ast->exprRef->prefixExpr.reset();
+                ast->prefixExpr.reset();
             }
             else
             {
-                if (ast->exprRef->prefixExpr)
+                if (ast->prefixExpr)
                 {
                     /* Move prefix expression as argument into the function call */
-                    ast->PushArgumentFront(std::move(ast->exprRef->prefixExpr));
+                    ast->PushArgumentFront(std::move(ast->prefixExpr));
                 }
                 else
                 {

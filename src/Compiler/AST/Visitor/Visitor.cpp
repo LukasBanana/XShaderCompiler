@@ -280,7 +280,10 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
     Visit(ast->prefixExpr);
+    Visit(ast->arguments);
+    #if 0//TODO: remove
     Visit(ast->call);
+    #endif
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
@@ -376,24 +379,24 @@ StructDecl* Visitor::ActiveFunctionStructDecl() const
         return nullptr;
 }
 
-/* ----- Function call tracker ----- */
+/* ----- Call expression tracker ----- */
 
-void Visitor::PushFunctionCall(FunctionCall* ast)
+void Visitor::PushCallExpr(CallExpr* ast)
 {
-    funcCallStack_.push(ast);
+    callExprStack_.push(ast);
 }
 
-void Visitor::PopFunctionCall()
+void Visitor::PopCallExpr()
 {
-    if (!funcCallStack_.empty())
-        funcCallStack_.pop();
+    if (!callExprStack_.empty())
+        callExprStack_.pop();
     else
-        throw std::underflow_error(R_FuncCallStackUnderflow);
+        throw std::underflow_error(R_CallExprStackUnderflow);
 }
 
-FunctionCall* Visitor::ActiveFunctionCall() const
+CallExpr* Visitor::ActiveCallExpr() const
 {
-    return (funcCallStack_.empty() ? nullptr : funcCallStack_.top());
+    return (callExprStack_.empty() ? nullptr : callExprStack_.top());
 }
 
 /* ----- Structure declaration tracker ----- */

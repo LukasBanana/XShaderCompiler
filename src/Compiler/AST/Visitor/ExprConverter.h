@@ -101,8 +101,6 @@ class ExprConverter : public Visitor
 
         /* ----- Visitor implementation ----- */
 
-        DECL_VISIT_PROC( FunctionCall     );
-
         DECL_VISIT_PROC( VarDecl          );
 
         DECL_VISIT_PROC( FunctionDecl     );

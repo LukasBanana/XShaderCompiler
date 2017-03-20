@@ -321,22 +321,6 @@ void ExprConverter::ConvertExprTargetTypeInitializer(ExprPtr& expr, InitializerE
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
     void ExprConverter::Visit##AST_NAME(AST_NAME* ast, void* args)
 
-IMPLEMENT_VISIT_PROC(FunctionCall)
-{
-    ConvertExprList(ast->arguments, AllPreVisit);
-    {
-        VISIT_DEFAULT(FunctionCall);
-    }
-    ConvertExprList(ast->arguments, AllPostVisit);
-
-    ast->ForEachArgumentWithParameterType(
-        [this](ExprPtr& funcArg, const TypeDenoter& paramTypeDen)
-        {
-            ConvertExprTargetType(funcArg, paramTypeDen);
-        }
-    );
-}
-
 /* --- Declarations --- */
 
 IMPLEMENT_VISIT_PROC(VarDecl)
@@ -486,10 +470,19 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
     ConvertExpr(ast->prefixExpr, AllPreVisit);
+    ConvertExprList(ast->arguments, AllPreVisit);
     {
         VISIT_DEFAULT(CallExpr);
     }
+    ConvertExprList(ast->arguments, AllPostVisit);
     ConvertExpr(ast->prefixExpr, AllPostVisit);
+
+    ast->ForEachArgumentWithParameterType(
+        [this](ExprPtr& funcArg, const TypeDenoter& paramTypeDen)
+        {
+            ConvertExprTargetType(funcArg, paramTypeDen);
+        }
+    );
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)

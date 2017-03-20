@@ -571,7 +571,7 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
     if (!preferWrappers_)
     {
         if (auto callExpr = ast->expr->As<CallExpr>())
-            AnalyzeIntrinsicWrapperInlining(callExpr->call.get());
+            AnalyzeIntrinsicWrapperInlining(callExpr);
     }
 }
 
@@ -675,12 +675,12 @@ void HLSLAnalyzer::AnalyzeCallExpr(CallExpr* expr)
 
             /* Analyze functin call with type denoter from prefix expression */
             const auto& prefixTypeDen = expr->prefixExpr->GetTypeDenoter()->GetAliased();
-            AnalyzeFunctionCall(expr->call.get(), expr->isStatic, expr->prefixExpr.get(), &prefixTypeDen);
+            AnalyzeFunctionCall(expr, expr->isStatic, expr->prefixExpr.get(), &prefixTypeDen);
         }
         else
         {
             /* Analyze function call */
-            AnalyzeFunctionCall(expr->call.get());
+            AnalyzeFunctionCall(expr);
         }
     }
     catch (const ASTRuntimeError& e)
@@ -694,9 +694,9 @@ void HLSLAnalyzer::AnalyzeCallExpr(CallExpr* expr)
 }
 
 void HLSLAnalyzer::AnalyzeFunctionCall(
-    FunctionCall* funcCall, bool isStatic, const Expr* prefixExpr, const TypeDenoter* prefixTypeDenoter)
+    CallExpr* funcCall, bool isStatic, const Expr* prefixExpr, const TypeDenoter* prefixTypeDenoter)
 {
-    PushFunctionCall(funcCall);
+    PushCallExpr(funcCall);
     {
         /* Analyze function arguments first */
         Visit(funcCall->arguments);
@@ -726,11 +726,11 @@ void HLSLAnalyzer::AnalyzeFunctionCall(
             }
         );
     }
-    PopFunctionCall();
+    PopCallExpr();
 }
 
 void HLSLAnalyzer::AnalyzeFunctionCallStandard(
-    FunctionCall* funcCall, bool isStatic, const Expr* prefixExpr, const TypeDenoter* prefixTypeDenoter)
+    CallExpr* funcCall, bool isStatic, const Expr* prefixExpr, const TypeDenoter* prefixTypeDenoter)
 {
     if (prefixTypeDenoter)
     {
@@ -780,7 +780,7 @@ void HLSLAnalyzer::AnalyzeFunctionCallStandard(
     }
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* funcCall, const HLSLIntrinsicEntry& intr, bool isStatic, const TypeDenoter* prefixTypeDenoter)
+void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(CallExpr* funcCall, const HLSLIntrinsicEntry& intr, bool isStatic, const TypeDenoter* prefixTypeDenoter)
 {
     const auto intrinsic = intr.intrinsic;
 
@@ -828,7 +828,7 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(FunctionCall* funcCall, const HL
     }
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicPrimary(FunctionCall* funcCall, const HLSLIntrinsicEntry& intr)
+void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicPrimary(CallExpr* funcCall, const HLSLIntrinsicEntry& intr)
 {
     /* Check shader input version */
     if (shaderModel_ < intr.minShaderModel)
@@ -892,7 +892,7 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicPrimary(FunctionCall* funcCall, c
     }
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicFromBufferType(const FunctionCall* funcCall, const BufferType bufferType)
+void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicFromBufferType(const CallExpr* funcCall, const BufferType bufferType)
 {
     const auto intrinsic = funcCall->intrinsic;
     const auto& ident = funcCall->ident;
@@ -926,7 +926,7 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicFromBufferType(const FunctionCall
     }
 }
 
-void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(FunctionCall* funcCall)
+void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(CallExpr* funcCall)
 {
     /* Is this a 'clip'-intrinsic call? */
     if (funcCall->intrinsic == Intrinsic::Clip)

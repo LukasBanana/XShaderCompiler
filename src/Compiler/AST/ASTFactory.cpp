@@ -37,14 +37,10 @@ CallExprPtr MakeIntrinsicCallExpr(
 {
     auto ast = MakeAST<CallExpr>();
     {
-        auto funcCall = MakeAST<FunctionCall>();
-        {
-            funcCall->ident         = ident;
-            funcCall->typeDenoter   = typeDenoter;
-            funcCall->arguments     = arguments;
-            funcCall->intrinsic     = intrinsic;
-        }
-        ast->call = funcCall;
+        ast->ident          = ident;
+        ast->typeDenoter    = typeDenoter;
+        ast->arguments      = arguments;
+        ast->intrinsic      = intrinsic;
     }
     return ast;
 }
@@ -73,17 +69,13 @@ CallExprPtr MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, 
 {
     auto ast = MakeAST<CallExpr>();
     {
-        auto funcCall = MakeAST<FunctionCall>();
+        const auto& typeDen = textureObjectExpr->GetTypeDenoter()->GetAliased();
+        if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
         {
-            const auto& typeDen = textureObjectExpr->GetTypeDenoter()->GetAliased();
-            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
-            {
-                funcCall->typeDenoter = std::make_shared<SamplerTypeDenoter>(TextureTypeToSamplerType(bufferTypeDen->bufferType));
-                funcCall->arguments.push_back(textureObjectExpr);
-                funcCall->arguments.push_back(samplerObjectExpr);
-            }
+            ast->typeDenoter = std::make_shared<SamplerTypeDenoter>(TextureTypeToSamplerType(bufferTypeDen->bufferType));
+            ast->arguments.push_back(textureObjectExpr);
+            ast->arguments.push_back(samplerObjectExpr);
         }
-        ast->call = funcCall;
     }
     return ast;
 }
@@ -92,12 +84,8 @@ CallExprPtr MakeTypeCtorCallExpr(const TypeDenoterPtr& typeDenoter, const std::v
 {
     auto ast = MakeAST<CallExpr>();
     {
-        auto funcCall = MakeAST<FunctionCall>();
-        {
-            funcCall->typeDenoter   = typeDenoter;
-            funcCall->arguments     = arguments;
-        }
-        ast->call = funcCall;
+        ast->typeDenoter    = typeDenoter;
+        ast->arguments      = arguments;
     }
     return ast;
 }

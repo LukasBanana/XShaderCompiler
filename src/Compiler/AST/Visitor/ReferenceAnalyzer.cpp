@@ -84,65 +84,6 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     VisitStmntList(ast->stmnts);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCall)
-{
-    /* Visit all forward declarations first */
-    if (auto funcDecl = ast->funcDeclRef)
-    {
-        /* Don't use forward declaration for call stack */
-        if (funcDecl->funcImplRef)
-            funcDecl = funcDecl->funcImplRef;
-
-        /* Check for recursive calls (if function is already on the call stack) */
-        auto funcCallIt = std::find_if(
-            funcCallStack_.begin(), funcCallStack_.end(),
-            [funcDecl](FunctionCall* funcCall)
-            {
-                return (funcCall->GetFunctionImpl() == funcDecl);
-            }
-        );
-
-        if (funcCallIt != funcCallStack_.end())
-        {
-            /* Pass call stack to report handler */
-            ReportHandler::HintForNextReport(R_CallStack + ":");
-            for (auto funcCall : funcCallStack_)
-                ReportHandler::HintForNextReport("  '" + funcCall->funcDeclRef->ToString(false) + "' (" + funcCall->area.Pos().ToString() + ")");
-
-            /* Throw error message of recursive call */
-            RuntimeErr(R_IllegalRecursiveCall(funcDecl->ToString()), ast);
-        }
-
-        /* Mark function declaration as referenced */
-        funcCallStack_.push_back(ast);
-        {
-            Visit(funcDecl);
-        }
-        funcCallStack_.pop_back();
-
-        /* Mark owner struct as referenced */
-        if (funcDecl)
-        {
-            if (auto structDecl = funcDecl->structDeclRef)
-                Visit(structDecl);
-        }
-    }
-
-    /* Collect all used intrinsics (if they can not be inlined) */
-    if (ast->intrinsic != Intrinsic::Undefined && !ast->flags(FunctionCall::canInlineIntrinsicWrapper))
-        program_->RegisterIntrinsicUsage(ast->intrinsic, ast->arguments);
-
-    /* Mark all arguments, that are assigned to output parameters, as l-values */
-    ast->ForEachOutputArgument(
-        [this](ExprPtr& argExpr)
-        {
-            MarkLValueExpr(argExpr.get());
-        }
-    );
-
-    VISIT_DEFAULT(FunctionCall);
-}
-
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     Visit(ast->expr);
@@ -262,6 +203,65 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
     if (IsLValueOp(ast->op))
         MarkLValueExpr(ast->expr.get());
     VISIT_DEFAULT(PostUnaryExpr);
+}
+
+IMPLEMENT_VISIT_PROC(CallExpr)
+{
+    /* Visit all forward declarations first */
+    if (auto funcDecl = ast->funcDeclRef)
+    {
+        /* Don't use forward declaration for call stack */
+        if (funcDecl->funcImplRef)
+            funcDecl = funcDecl->funcImplRef;
+
+        /* Check for recursive calls (if function is already on the call stack) */
+        auto funcCallIt = std::find_if(
+            callExprStack_.begin(), callExprStack_.end(),
+            [funcDecl](CallExpr* callExpr)
+            {
+                return (callExpr->GetFunctionImpl() == funcDecl);
+            }
+        );
+
+        if (funcCallIt != callExprStack_.end())
+        {
+            /* Pass call stack to report handler */
+            ReportHandler::HintForNextReport(R_CallStack + ":");
+            for (auto funcCall : callExprStack_)
+                ReportHandler::HintForNextReport("  '" + funcCall->funcDeclRef->ToString(false) + "' (" + funcCall->area.Pos().ToString() + ")");
+
+            /* Throw error message of recursive call */
+            RuntimeErr(R_IllegalRecursiveCall(funcDecl->ToString()), ast);
+        }
+
+        /* Mark function declaration as referenced */
+        callExprStack_.push_back(ast);
+        {
+            Visit(funcDecl);
+        }
+        callExprStack_.pop_back();
+
+        /* Mark owner struct as referenced */
+        if (funcDecl)
+        {
+            if (auto structDecl = funcDecl->structDeclRef)
+                Visit(structDecl);
+        }
+    }
+
+    /* Collect all used intrinsics (if they can not be inlined) */
+    if (ast->intrinsic != Intrinsic::Undefined && !ast->flags(CallExpr::canInlineIntrinsicWrapper))
+        program_->RegisterIntrinsicUsage(ast->intrinsic, ast->arguments);
+
+    /* Mark all arguments, that are assigned to output parameters, as l-values */
+    ast->ForEachOutputArgument(
+        [this](ExprPtr& argExpr)
+        {
+            MarkLValueExpr(argExpr.get());
+        }
+    );
+
+    VISIT_DEFAULT(CallExpr);
 }
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)

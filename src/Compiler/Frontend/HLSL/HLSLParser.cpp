@@ -319,44 +319,6 @@ CodeBlockPtr HLSLParser::ParseCodeBlock()
     return ast;
 }
 
-FunctionCallPtr HLSLParser::ParseFunctionCall(const TokenPtr& identTkn)
-{
-    auto ast = Make<FunctionCall>();
-
-    /* Parse function name */
-    if (identTkn)
-    {
-        /* Take identifier token */
-        ast->ident = identTkn->Spell();
-        ast->area = identTkn->Area();
-    }
-    else
-    {
-        /* Parse identifier token */
-        ast->ident = ParseIdent();
-        UpdateSourceArea(ast);
-    }
-
-    /* Parse argument list */
-    ast->arguments = ParseArgumentList();
-
-    return ast;
-}
-
-// Parse function call as a type constructor (e.g. "float4(...)")
-FunctionCallPtr HLSLParser::ParseFunctionCallAsTypeCtor(const TypeDenoterPtr& typeDenoter)
-{
-    auto ast = Make<FunctionCall>();
-
-    /* Take type denoter */
-    ast->typeDenoter = typeDenoter;
-
-    /* Parse argument list */
-    ast->arguments = ParseArgumentList();
-
-    return UpdateSourceArea(ast);
-}
-
 VarDeclStmntPtr HLSLParser::ParseParameter()
 {
     auto ast = Make<VarDeclStmnt>();
@@ -1659,35 +1621,66 @@ ArrayExprPtr HLSLParser::ParseArrayExpr(const ExprPtr& expr)
 
 CallExprPtr HLSLParser::ParseCallExpr(const ObjectExprPtr& objectExpr, const TypeDenoterPtr& typeDenoter)
 {
-    /* Parse function call expression */
-    auto ast = Make<CallExpr>();
-
     if (objectExpr)
     {
         /* Make new identifier token with source position form input */
         auto identTkn = std::make_shared<Token>(objectExpr->area.Pos(), Tokens::Ident, objectExpr->ident);
 
-        /* Parse function call and take prefix expression from input */
-        ast->prefixExpr = objectExpr->prefixExpr;
-        ast->isStatic   = objectExpr->isStatic;
-        ast->call       = ParseFunctionCall(identTkn);
+        /* Parse call expression and take prefix expression from input */
+        return ParseCallExprWithPrefixOpt(objectExpr->prefixExpr, objectExpr->isStatic, identTkn);
     }
     else if (typeDenoter)
     {
-        /* Parse function call with type denoter */
-        ast->call = ParseFunctionCallAsTypeCtor(typeDenoter);
+        /* Parse call expression with type denoter */
+        return ParseCallExprAsTypeCtor(typeDenoter);
     }
     else
     {
-        /* Parse completely new function call */
-        ast->call = ParseFunctionCall();
+        /* Parse completely new call expression */
+        return ParseCallExprWithPrefixOpt();
+    }
+}
+
+CallExprPtr HLSLParser::ParseCallExprWithPrefixOpt(const ExprPtr& prefixExpr, bool isStatic, const TokenPtr& identTkn)
+{
+    auto ast = Make<CallExpr>();
+
+    /* Take prefix expression */
+    ast->prefixExpr = prefixExpr;
+    ast->isStatic   = isStatic;
+
+    /* Parse function name */
+    if (identTkn)
+    {
+        /* Take identifier token */
+        ast->ident  = identTkn->Spell();
+        ast->area   = identTkn->Area();
+    }
+    else
+    {
+        /* Parse identifier token */
+        ast->ident = ParseIdent();
+        UpdateSourceArea(ast);
     }
 
-    /* Link expression to function call sub node */
-    ast->call->exprRef = ast.get();
+    /* Parse argument list */
+    ast->arguments = ParseArgumentList();
 
-    /* Update source area */
-    return UpdateSourceArea(ast, ast->call.get());
+    return ast;
+}
+
+// Parse function call as a type constructor (e.g. "float4(...)")
+CallExprPtr HLSLParser::ParseCallExprAsTypeCtor(const TypeDenoterPtr& typeDenoter)
+{
+    auto ast = Make<CallExpr>();
+
+    /* Take type denoter */
+    ast->typeDenoter = typeDenoter;
+
+    /* Parse argument list */
+    ast->arguments = ParseArgumentList();
+
+    return UpdateSourceArea(ast);
 }
 
 InitializerExprPtr HLSLParser::ParseInitializerExpr()

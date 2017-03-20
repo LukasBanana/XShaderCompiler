@@ -46,7 +46,6 @@ class ReferenceAnalyzer : private Visitor
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( CodeBlock         );
-        DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( TypeSpecifier     );
 
@@ -62,15 +61,16 @@ class ReferenceAnalyzer : private Visitor
 
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
+        DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( ObjectExpr        );
         DECL_VISIT_PROC( AssignExpr        );
 
         /* === Members === */
 
-        Program*                    program_        = nullptr;
-        ShaderTarget                shaderTarget_   = ShaderTarget::VertexShader;
+        Program*                program_        = nullptr;
+        ShaderTarget            shaderTarget_   = ShaderTarget::VertexShader;
         
-        std::vector<FunctionCall*>  funcCallStack_;
+        std::vector<CallExpr*>  callExprStack_;
 
 };
 

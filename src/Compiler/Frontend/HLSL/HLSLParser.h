@@ -104,8 +104,6 @@ class HLSLParser : public Parser
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);
 
         CodeBlockPtr                    ParseCodeBlock();
-        FunctionCallPtr                 ParseFunctionCall(const TokenPtr& identTkn = nullptr);
-        FunctionCallPtr                 ParseFunctionCallAsTypeCtor(const TypeDenoterPtr& typeDenoter);
         VarDeclStmntPtr                 ParseParameter();
         SwitchCasePtr                   ParseSwitchCase();
         SamplerValuePtr                 ParseSamplerValue();
@@ -164,6 +162,8 @@ class HLSLParser : public Parser
         ExprPtr                         ParseObjectOrCallExpr(const ExprPtr& expr = nullptr);
         ArrayExprPtr                    ParseArrayExpr(const ExprPtr& expr);
         CallExprPtr                     ParseCallExpr(const ObjectExprPtr& objectExpr = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
+        CallExprPtr                     ParseCallExprWithPrefixOpt(const ExprPtr& prefixExpr = nullptr, bool isStatic = false, const TokenPtr& identTkn = nullptr);
+        CallExprPtr                     ParseCallExprAsTypeCtor(const TypeDenoterPtr& typeDenoter);
         InitializerExprPtr              ParseInitializerExpr();
 
         std::vector<StmntPtr>           ParseLocalStmntList();

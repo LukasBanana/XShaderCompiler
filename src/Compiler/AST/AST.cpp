@@ -146,6 +146,8 @@ const IntrinsicUsage* Program::FetchIntrinsicUsage(const Intrinsic intrinsic) co
 }
 
 
+#if 1//TODO: remove
+
 /* ----- FunctionCall ----- */
 
 TypeDenoterPtr FunctionCall::DeriveTypeDenoter()
@@ -265,6 +267,8 @@ void FunctionCall::PushArgumentFront(ExprPtr&& expr)
 {
     arguments.insert(arguments.begin(), std::move(expr));
 }
+
+#endif
 
 
 /* ----- SwitchCase ----- */
@@ -1442,18 +1446,138 @@ TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter()
 
 /* ----- CallExpr ----- */
 
+#if 0//TODO: remove this
 TypeDenoterPtr CallExpr::DeriveTypeDenoter()
 {
     return call->GetTypeDenoter();
 }
+#else
+TypeDenoterPtr CallExpr::DeriveTypeDenoter()
+{
+    if (funcDeclRef)
+    {
+        /* Return type denoter of associated function declaration */
+        return funcDeclRef->returnType->typeDenoter;
+    }
+    else if (typeDenoter)
+    {
+        /* Return type denoter fo type constructor */
+        return typeDenoter;
+    }
+    else if (intrinsic != Intrinsic::Undefined)
+    {
+        /* Return type denoter of associated intrinsic */
+        try
+        {
+            return IntrinsicAdept::Get().GetIntrinsicReturnType(intrinsic, arguments);
+        }
+        catch (const std::exception& e)
+        {
+            RuntimeErr(e.what(), this);
+        }
+    }
+    else
+        RuntimeErr(R_MissingFuncRefToDeriveExprType, this);
+}
+#endif
 
 IndexedSemantic CallExpr::FetchSemantic() const
 {
     /* Return semantic of function declaration */
-    if (call->funcDeclRef)
-        return call->funcDeclRef->semantic;
+    if (funcDeclRef)
+        return funcDeclRef->semantic;
     else
         return Semantic::Undefined;
+}
+
+std::vector<Expr*> CallExpr::GetArguments() const
+{
+    std::vector<Expr*> args;
+    args.reserve(arguments.size() + defaultArgumentRefs.size());
+
+    /* Add explicit arguments */
+    for (const auto& arg : arguments)
+        args.push_back(arg.get());
+
+    /* Add remaining default arguments */
+    for (auto arg : defaultArgumentRefs)
+        args.push_back(arg);
+
+    return args;
+}
+
+FunctionDecl* CallExpr::GetFunctionImpl() const
+{
+    if (auto funcDecl = funcDeclRef)
+    {
+        if (funcDecl->funcImplRef)
+            return funcDecl->funcImplRef;
+        else
+            return funcDecl;
+    }
+    return nullptr;
+}
+
+void CallExpr::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
+{
+    if (iterator)
+    {
+        if (funcDeclRef)
+        {
+            /* Get output parameters from associated function declaration */
+            const auto& parameters = funcDeclRef->parameters;
+            for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+            {
+                if (parameters[i]->IsOutput())
+                    iterator(arguments[i]);
+            }
+        }
+        else if (intrinsic != Intrinsic::Undefined)
+        {
+            /* Get output parameters from associated intrinsic */
+            const auto outputParamIndices = IntrinsicAdept::Get().GetIntrinsicOutputParameterIndices(intrinsic);
+            for (auto paramIndex : outputParamIndices)
+            {
+                if (paramIndex < arguments.size())
+                    iterator(arguments[paramIndex]);
+            }
+        }
+    }
+}
+
+void CallExpr::ForEachArgumentWithParameterType(const ArgumentParameterTypeFunctor& iterator)
+{
+    if (iterator)
+    {
+        if (funcDeclRef)
+        {
+            /* Get parameter type denoters from associated function declaration */
+            const auto& parameters = funcDeclRef->parameters;
+            for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+            {
+                auto param = parameters[i]->varDecls.front();
+                const auto& paramTypeDen = param->GetTypeDenoter()->GetAliased();
+                iterator(arguments[i], paramTypeDen);
+            }
+        }
+        else if (intrinsic != Intrinsic::Undefined)
+        {
+            /* Get parameter type denoters from associated intrinsic */
+            const auto paramTypeDenoters = IntrinsicAdept::Get().GetIntrinsicParameterTypes(intrinsic, arguments);
+            for (std::size_t i = 0, n = std::min(arguments.size(), paramTypeDenoters.size()); i < n; ++i)
+                iterator(arguments[i], *paramTypeDenoters[i]);
+        }
+    }
+}
+
+void CallExpr::PushArgumentFront(const ExprPtr& expr)
+{
+    arguments.insert(arguments.begin(), expr);
+}
+
+void CallExpr::PushArgumentFront(ExprPtr&& expr)
+{
+    arguments.insert(arguments.begin(), std::move(expr));
 }
 
 

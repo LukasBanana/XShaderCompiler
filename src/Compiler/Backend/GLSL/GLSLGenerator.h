@@ -85,7 +85,6 @@ class GLSLGenerator : public Generator
 
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
-        DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( ArrayDimension    );
         DECL_VISIT_PROC( TypeSpecifier     );
@@ -238,17 +237,17 @@ class GLSLGenerator : public Generator
         void WriteFunctionEntryPointBody(FunctionDecl* ast);
         void WriteFunctionSecondaryEntryPoint(FunctionDecl* ast);
 
-        /* ----- Function call ----- */
+        /* ----- Call expressions ----- */
 
-        void AssertIntrinsicNumArgs(FunctionCall* funcCall, std::size_t numArgsMin, std::size_t numArgsMax = ~0);
+        void AssertIntrinsicNumArgs(CallExpr* callExpr, std::size_t numArgsMin, std::size_t numArgsMax = ~0);
 
-        void WriteFunctionCallStandard(FunctionCall* funcCall);
-        void WriteFunctionCallIntrinsicMul(FunctionCall* funcCall);
-        void WriteFunctionCallIntrinsicRcp(FunctionCall* funcCall);
-        void WriteFunctionCallIntrinsicClip(FunctionCall* funcCall);
-        void WriteFunctionCallIntrinsicAtomic(FunctionCall* funcCall);
-        void WriteFunctionCallIntrinsicStreamOutputAppend(FunctionCall* funcCall);
-        void WriteFunctionCallIntrinsicTextureQueryLod(FunctionCall* funcCall, bool clamped);
+        void WriteFunctionCallStandard(CallExpr* callExpr);
+        void WriteFunctionCallIntrinsicMul(CallExpr* callExpr);
+        void WriteFunctionCallIntrinsicRcp(CallExpr* callExpr);
+        void WriteFunctionCallIntrinsicClip(CallExpr* callExpr);
+        void WriteFunctionCallIntrinsicAtomic(CallExpr* callExpr);
+        void WriteFunctionCallIntrinsicStreamOutputAppend(CallExpr* callExpr);
+        void WriteFunctionCallIntrinsicTextureQueryLod(CallExpr* callExpr, bool clamped);
 
         /* ----- Intrinsics wrapper ----- */
 

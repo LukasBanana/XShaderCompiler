@@ -190,13 +190,13 @@ class Visitor
         // Returns the structure the active (inner most) member function declaration belongs to or null if no such structure exists.
         StructDecl* ActiveFunctionStructDecl() const;
 
-        /* ----- Function call tracker ----- */
+        /* ----- Call expression tracker ----- */
 
-        void PushFunctionCall(FunctionCall* ast);
-        void PopFunctionCall();
+        void PushCallExpr(CallExpr* ast);
+        void PopCallExpr();
 
-        // Returns the active (inner most) function call or null if the visitor is currently not inside a function call.
-        FunctionCall* ActiveFunctionCall() const;
+        // Returns the active (inner most) call expression or null if the visitor is currently not inside a function call.
+        CallExpr* ActiveCallExpr() const;
 
         /* ----- Structure declaration tracker ----- */
 
@@ -234,8 +234,8 @@ class Visitor
         // Function declaration stack.
         std::stack<FunctionDecl*>       funcDeclStack_;
 
-        // Function call stack to join arguments with its function call.
-        std::stack<FunctionCall*>       funcCallStack_;
+        // Call expression stack to join arguments with its function call.
+        std::stack<CallExpr*>           callExprStack_;
 
         // Structure stack to collect all members with system value semantic (SV_...), and detect all nested structures.
         std::vector<StructDecl*>        structDeclStack_;

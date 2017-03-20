@@ -63,11 +63,6 @@ IMPLEMENT_VISIT_PROC_DEFAULT(Program)
 
 IMPLEMENT_VISIT_PROC_DEFAULT(CodeBlock)
 
-IMPLEMENT_VISIT_PROC(FunctionCall)
-{
-    PRINT_AST_EXT(FunctionCall, ast->ident);
-}
-
 IMPLEMENT_VISIT_PROC_DEFAULT(Attribute)
 
 IMPLEMENT_VISIT_PROC_DEFAULT(SwitchCase)
@@ -217,7 +212,7 @@ static std::string IdentWithPrefixOpt(bool hasPrefix, bool isStatic, const std::
 
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
-    PRINT_AST_EXT(CallExpr, IdentWithPrefixOpt(ast->prefixExpr != nullptr, ast->isStatic, ast->call->ident));
+    PRINT_AST_EXT(CallExpr, IdentWithPrefixOpt(ast->prefixExpr != nullptr, ast->isStatic, ast->ident));
 }
 
 IMPLEMENT_VISIT_PROC_DEFAULT(BracketExpr)

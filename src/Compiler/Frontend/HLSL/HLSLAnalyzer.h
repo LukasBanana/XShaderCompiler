@@ -84,15 +84,15 @@ class HLSLAnalyzer : public Analyzer
 
         /* ----- Call expressions ----- */
 
-        void AnalyzeCallExpr(CallExpr* expr);
+        void AnalyzeCallExpr(CallExpr* callExpr);
 
-        void AnalyzeFunctionCall(FunctionCall* funcCall, bool isStatic = false, const Expr* prefixExpr = nullptr, const TypeDenoter* prefixTypeDenoter = nullptr);
-        void AnalyzeFunctionCallStandard(FunctionCall* funcCall, bool isStatic = false, const Expr* prefixExpr = nullptr, const TypeDenoter* prefixTypeDenoter = nullptr);
-        void AnalyzeFunctionCallIntrinsic(FunctionCall* funcCall, const HLSLIntrinsicEntry& intr, bool isStatic = false, const TypeDenoter* prefixTypeDenoter = nullptr);
-        void AnalyzeFunctionCallIntrinsicPrimary(FunctionCall* funcCall, const HLSLIntrinsicEntry& intr);
-        void AnalyzeFunctionCallIntrinsicFromBufferType(const FunctionCall* funcCall, const BufferType bufferType);
+        void AnalyzeFunctionCall(CallExpr* callExpr, bool isStatic = false, const Expr* prefixExpr = nullptr, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeFunctionCallStandard(CallExpr* callExpr, bool isStatic = false, const Expr* prefixExpr = nullptr, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeFunctionCallIntrinsic(CallExpr* callExpr, const HLSLIntrinsicEntry& intr, bool isStatic = false, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeFunctionCallIntrinsicPrimary(CallExpr* callExpr, const HLSLIntrinsicEntry& intr);
+        void AnalyzeFunctionCallIntrinsicFromBufferType(const CallExpr* callExpr, const BufferType bufferType);
 
-        void AnalyzeIntrinsicWrapperInlining(FunctionCall* funcCall);
+        void AnalyzeIntrinsicWrapperInlining(CallExpr* callExpr);
 
         #if 0//TODO: remove
 
