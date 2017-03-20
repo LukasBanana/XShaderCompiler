@@ -42,7 +42,7 @@ class Command
             std::string name;
 
             // Specifies whether the command identifier name includes a value (e.g. "-D<IDENT>").
-            bool        includesValue;
+            bool        includesValue   = false;
         };
 
         virtual ~Command();

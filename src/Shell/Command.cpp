@@ -1148,7 +1148,7 @@ void FormatNewLineScopeCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> PrefixInputCommand::Idents() const
 {
-    return { { "-Pin", "--prefix-input" } };
+    return { { "-Pin" }, { "--prefix-input" } };
 }
 
 HelpDescriptor PrefixInputCommand::Help() const
@@ -1173,7 +1173,7 @@ void PrefixInputCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> PrefixOutputCommand::Idents() const
 {
-    return { { "-Pout", "--prefix-output" } };
+    return { { "-Pout }, { --prefix-output" } };
 }
 
 HelpDescriptor PrefixOutputCommand::Help() const
@@ -1198,7 +1198,7 @@ void PrefixOutputCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> PrefixReservedWordCommand::Idents() const
 {
-    return { { "-Prw", "--prefix-reserved-word" } };
+    return { { "-Prw }, { --prefix-reserved-word" } };
 }
 
 HelpDescriptor PrefixReservedWordCommand::Help() const
@@ -1223,7 +1223,7 @@ void PrefixReservedWordCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> PrefixTemporaryCommand::Idents() const
 {
-    return { { "-Ptmp", "--prefix-temporary" } };
+    return { { "-Ptmp }, { --prefix-temporary" } };
 }
 
 HelpDescriptor PrefixTemporaryCommand::Help() const
@@ -1248,7 +1248,7 @@ void PrefixTemporaryCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> PrefixNamespaceCommand::Idents() const
 {
-    return { { "-Pns", "--prefix-namespace" } };
+    return { { "-Pns" }, { "--prefix-namespace" } };
 }
 
 HelpDescriptor PrefixNamespaceCommand::Help() const
@@ -1273,7 +1273,7 @@ void PrefixNamespaceCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> AlwaysUseSemanticsCommand::Idents() const
 {
-    return { { "-Pas", "--prefix-always-semantics" } };
+    return { { "-Pas }, { --prefix-always-semantics" } };
 }
 
 HelpDescriptor AlwaysUseSemanticsCommand::Help() const
