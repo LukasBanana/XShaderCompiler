@@ -945,12 +945,14 @@ BufferDeclStmntPtr HLSLParser::ParseBufferDeclStmnt(const BufferTypeDenoterPtr& 
     auto ast = Make<BufferDeclStmnt>();
 
     ast->typeDenoter = (typeDenoter ? typeDenoter : ParseBufferTypeDenoter());
-
-    UpdateSourceArea(ast);
-
     ast->bufferDecls = ParseBufferDeclList(ast.get(), identTkn);
 
     Semi();
+
+    if (identTkn)
+        ast->area = identTkn->Area();
+    else
+        UpdateSourceArea(ast);
 
     return ast;
 }
@@ -959,10 +961,15 @@ SamplerDeclStmntPtr HLSLParser::ParseSamplerDeclStmnt(const SamplerTypeDenoterPt
 {
     auto ast = Make<SamplerDeclStmnt>();
 
-    ast->typeDenoter    = (typeDenoter ? typeDenoter : ParseSamplerTypeDenoter());
-    ast->samplerDecls   = ParseSamplerDeclList(ast.get(), identTkn);
+    ast->typeDenoter = (typeDenoter ? typeDenoter : ParseSamplerTypeDenoter());
+    ast->samplerDecls = ParseSamplerDeclList(ast.get(), identTkn);
 
     Semi();
+
+    if (identTkn)
+        ast->area = identTkn->Area();
+    else
+        UpdateSourceArea(ast);
 
     return ast;
 }
