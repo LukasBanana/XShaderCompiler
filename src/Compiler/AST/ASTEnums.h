@@ -755,6 +755,15 @@ enum class Intrinsic
 
     Image_Store,                // GLSL only
     Image_Load,                 // GLSL only
+
+    Image_AtomicAdd,            // GLSL only
+    Image_AtomicAnd,            // GLSL only
+    Image_AtomicOr,             // GLSL only
+    Image_AtomicXor,            // GLSL only
+    Image_AtomicMin,            // GLSL only
+    Image_AtomicMax,            // GLSL only
+    Image_AtomicCompSwap,       // GLSL only
+    Image_AtomicExchange        // GLSL only
 };
 
 // Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>

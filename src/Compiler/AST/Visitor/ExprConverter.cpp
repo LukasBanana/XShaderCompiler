@@ -412,9 +412,33 @@ void ExprConverter::IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const Type
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
     void ExprConverter::Visit##AST_NAME(AST_NAME* ast, void* args)
 
+bool IsInterlockedIntristic(Intrinsic intrisic)
+{
+    switch(intrisic)
+    {
+    case Intrinsic::InterlockedAdd:
+    case Intrinsic::InterlockedAnd:
+    case Intrinsic::InterlockedOr:
+    case Intrinsic::InterlockedXor:
+    case Intrinsic::InterlockedMin:
+    case Intrinsic::InterlockedMax:
+    case Intrinsic::InterlockedCompareExchange:
+    case Intrinsic::InterlockedExchange:
+        return true;
+    default:
+        return false;
+    }
+}
+
 IMPLEMENT_VISIT_PROC(FunctionCall)
 {
-    ConvertExprList(ast->arguments, AllPreVisit);
+    Flags preVisitFlags = AllPreVisit;
+
+    /** Interlock (atomic) intristics require actual buffer, and not their contents. */
+    if (IsInterlockedIntristic(ast->intrinsic))
+        preVisitFlags = preVisitFlags & ~ConvertImageAccess;
+
+    ConvertExprList(ast->arguments, preVisitFlags);
     {
         VISIT_DEFAULT(FunctionCall);
     }
