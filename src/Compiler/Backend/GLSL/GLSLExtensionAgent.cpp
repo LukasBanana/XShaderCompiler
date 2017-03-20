@@ -77,7 +77,7 @@ std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
             break;
             
         case ShaderTarget::FragmentShader:
-            /* Check for explicit binding point (fragment shader has always binding slots) */
+            /* Check for explicit binding point (fragment shaders have always binding slots) */
             if (explicitBinding_)
                 AcquireExtension(E_GL_ARB_shading_language_420pack);
             break;
@@ -113,7 +113,7 @@ std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
  * ======= Private: =======
  */
 
-void GLSLExtensionAgent::AcquireExtension(const std::string& extension)
+void GLSLExtensionAgent::AcquireExtension(const std::string& extension, const std::string& reason, const AST* ast)
 {
     /* Find extension in version map */
     auto it = GetGLSLExtensionVersionMap().find(extension);
@@ -136,12 +136,12 @@ void GLSLExtensionAgent::AcquireExtension(const std::string& extension)
             else
             {
                 /* Extensions not allowed -> runtime error */
-                RuntimeErr(R_GLSLExtensionOrVersionRequired(extension, ToString(requiredVersion)));
+                RuntimeErr(R_GLSLExtensionOrVersionRequired(extension, ToString(requiredVersion), reason), ast);
             }
         }
     }
     else
-        RuntimeErr(R_NoGLSLExtensionVersionRegisterd(extension));
+        RuntimeErr(R_NoGLSLExtensionVersionRegisterd(extension), ast);
 }
 
 
@@ -153,7 +153,7 @@ void GLSLExtensionAgent::AcquireExtension(const std::string& extension)
 IMPLEMENT_VISIT_PROC(Program)
 {
     if (ast->layoutFragment.fragCoordUsed)
-        AcquireExtension(E_GL_ARB_fragment_coord_conventions);
+        AcquireExtension(E_GL_ARB_fragment_coord_conventions, R_FragmentCoordinate);
 
     VISIT_DEFAULT(Program);
 }
@@ -162,18 +162,18 @@ IMPLEMENT_VISIT_PROC(Attribute)
 {
     /* Check for special attributes */
     if (ast->attributeType == AttributeType::EarlyDepthStencil)
-        AcquireExtension(E_GL_ARB_shader_image_load_store);
+        AcquireExtension(E_GL_ARB_shader_image_load_store, R_EarlyDepthStencil, ast);
 }
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
     /* Check for arrays of arrays */
     if (ast->GetTypeDenoter()->NumDimensions() >= 2)
-        AcquireExtension(E_GL_ARB_arrays_of_arrays);
+        AcquireExtension(E_GL_ARB_arrays_of_arrays, R_MultiDimArray, ast);
 
     /* Check for packoffsets */
     if (ast->packOffset)
-        AcquireExtension(E_GL_ARB_enhanced_layouts);
+        AcquireExtension(E_GL_ARB_enhanced_layouts, R_PackOffsetLayout, ast);
 
     VISIT_DEFAULT(VarDecl);
 }
@@ -194,13 +194,13 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     {
         if (targetGLSLVersion_ == OutputShaderVersion::GLSL || targetGLSLVersion_ >= OutputShaderVersion::GLSL140)
         {
-            AcquireExtension(E_GL_ARB_uniform_buffer_object);
+            AcquireExtension(E_GL_ARB_uniform_buffer_object, R_ConstantBuffer, ast);
 
             /* Check for explicit binding point */
             if (explicitBinding_)
             {
-                if (Register::GetForTarget(ast->slotRegisters, shaderTarget_) != nullptr)
-                    AcquireExtension(E_GL_ARB_shading_language_420pack);
+                if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, shaderTarget_))
+                    AcquireExtension(E_GL_ARB_shading_language_420pack, R_ExplicitBindingSlot, slotRegister);
             }
 
             VISIT_DEFAULT(UniformBufferDecl);
@@ -215,14 +215,14 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     {
         for (auto& bufferDecl : ast->bufferDecls)
         {
-            if (Register::GetForTarget(bufferDecl->slotRegisters, shaderTarget_) != nullptr)
-                AcquireExtension(E_GL_ARB_shading_language_420pack);
+            if (auto slotRegister = Register::GetForTarget(bufferDecl->slotRegisters, shaderTarget_))
+                AcquireExtension(E_GL_ARB_shading_language_420pack, R_ExplicitBindingSlot, slotRegister);
         }
     }
 
     /* Check for multi-sampled textures */
     if (IsTextureMSBufferType(ast->typeDenoter->bufferType))
-        AcquireExtension(E_GL_ARB_texture_multisample);
+        AcquireExtension(E_GL_ARB_texture_multisample, R_MultiSampledTexture, ast);
 
     VISIT_DEFAULT(BufferDeclStmnt);
 }
@@ -231,7 +231,7 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
     /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
     if (IsBitwiseOp(ast->op) || ast->op == BinaryOp::Mod)
-        AcquireExtension(E_GL_EXT_gpu_shader4);
+        AcquireExtension(E_GL_EXT_gpu_shader4, R_BitwiseOperator, ast);
 
     VISIT_DEFAULT(BinaryExpr);
 }
@@ -240,7 +240,7 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
     /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
     if (IsBitwiseOp(ast->op))
-        AcquireExtension(E_GL_EXT_gpu_shader4);
+        AcquireExtension(E_GL_EXT_gpu_shader4, R_BitwiseOperator, ast);
 
     VISIT_DEFAULT(UnaryExpr);
 }
@@ -252,7 +252,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
     {
         auto it = intrinsicExtMap_.find(ast->intrinsic);
         if (it != intrinsicExtMap_.end())
-            AcquireExtension(it->second);
+            AcquireExtension(it->second, R_Intrinsic(ast->ident), ast);
     }
 
     VISIT_DEFAULT(CallExpr);
@@ -262,14 +262,14 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
 {
     /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
     if (IsBitwiseOp(ast->op) || ast->op == AssignOp::Mod)
-        AcquireExtension(E_GL_EXT_gpu_shader4);
+        AcquireExtension(E_GL_EXT_gpu_shader4, R_BitwiseOperator, ast);
 
     VISIT_DEFAULT(AssignExpr);
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
-    AcquireExtension(E_GL_ARB_shading_language_420pack);
+    AcquireExtension(E_GL_ARB_shading_language_420pack, R_InitializerList, ast);
 
     VISIT_DEFAULT(InitializerExpr);
 }

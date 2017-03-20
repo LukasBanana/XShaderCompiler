@@ -280,8 +280,16 @@ DECL_REPORT( MissingSelfParamForMemberFunc,     "missing 'self'-parameter for me
 
 /* ----- GLSLExtensionAgent ----- */
 
-DECL_REPORT( GLSLExtensionOrVersionRequired,    "GLSL extension '{0}' or shader output version '{1}' required"                                                  );
+DECL_REPORT( GLSLExtensionOrVersionRequired,    "GLSL extension '{0}' or shader output version '{1}' required[ (for {2})]"                                      );
 DECL_REPORT( NoGLSLExtensionVersionRegisterd,   "no GLSL version is registered for the extension '{0}'"                                                         );
+DECL_REPORT( FragmentCoordinate,                "fragment coordinate"                                                                                           );
+DECL_REPORT( EarlyDepthStencil,                 "early depth stencil test"                                                                                      );
+DECL_REPORT( MultiDimArray,                     "multi-dimensional array"                                                                                       );
+DECL_REPORT( PackOffsetLayout,                  "pack offset layout"                                                                                            );
+DECL_REPORT( ConstantBuffer,                    "constant buffer"                                                                                               );
+DECL_REPORT( ExplicitBindingSlot,               "explicit binding slot"                                                                                         );
+DECL_REPORT( MultiSampledTexture,               "multi-sampled texture"                                                                                         );
+DECL_REPORT( BitwiseOperator,                   "bitwise operator"                                                                                              );
 
 /* ----- GLSLGenerator ----- */
 

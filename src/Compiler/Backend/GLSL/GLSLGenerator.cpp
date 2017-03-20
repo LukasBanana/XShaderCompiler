@@ -972,6 +972,10 @@ void GLSLGenerator::WriteProgramHeader()
             Blank();
         }
     }
+    catch (const ASTRuntimeError& e)
+    {
+        Error(e.what(), e.GetAST());
+    }
     catch (const std::exception& e)
     {
         Error(e.what());
