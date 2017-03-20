@@ -242,6 +242,9 @@ in both `FunctionCallExpr` and `ObjectExpr` since both types can be a static mem
 Also the assignment of `ObjectExpr` (or rather `VarAccessExpr`) should be moved into a separated AST class `AssignExpr`,
 to allow expressions like `( x = 1 ) = 2`.
 
+Moreover, `FunctionCall` and `FunctionCallExpr` will be merged into a single AST class `CallExpr`,
+and the `ArrayAccessExpr` is renamed to `ArrayExpr`.
+
 Specification:
 ```
 ObjectExpr : Expr {
@@ -258,7 +261,7 @@ AssignExpr : Expr {
     Expr              rvalueExpression
 }
 
-ArrayAccessExpr : Expr {
+ArrayExpr : Expr {
     Expr              prefixExpression
     List<Expr>        arrayIndices
 }
@@ -279,7 +282,7 @@ Example: `( Scene::getMain().getLights() )[1].material.getShininess()`
 ```cs
 expression (CallExpr)
  |-prefixExpression (ObjectExpr)
- |  |-prefixExpression (ArrayAccessExpr)
+ |  |-prefixExpression (ArrayExpr)
  |  |  |-prefixExpression (BracketExpr)
  |  |  |  `-subExpression (CallExpr)
  |  |  |     |-prefixExpression (CallExpr)
