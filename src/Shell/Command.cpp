@@ -1248,7 +1248,7 @@ void PrefixTemporaryCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> PrefixNamespaceCommand::Idents() const
 {
-    return { { "-Ptmp", "--prefix-namespace" } };
+    return { { "-Pns", "--prefix-namespace" } };
 }
 
 HelpDescriptor PrefixNamespaceCommand::Help() const
