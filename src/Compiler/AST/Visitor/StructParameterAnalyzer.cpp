@@ -90,20 +90,8 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(TypeSpecifier)
 {
-    if (NotVisited(ast))
-    {
-        Visit(ast->typeDenoter->SymbolRef());
-        VISIT_DEFAULT(TypeSpecifier);
-    }
-}
-
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    if (NotVisited(ast))
-    {
-        Visit(ast->symbolRef);
-        VISIT_DEFAULT(VarIdent);
-    }
+    Visit(ast->typeDenoter->SymbolRef());
+    VISIT_DEFAULT(TypeSpecifier);
 }
 
 /* --- Declarations --- */
@@ -135,6 +123,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
         Visit(ast->declStmntRef);
         Visit(ast->bufferDeclRef);
+
         VISIT_DEFAULT(VarDecl);
     }
 }
@@ -142,7 +131,13 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
     if (NotVisited(ast))
+    {
+        /* If the structure has any member functions, it can not be resolved as entry-point structure */
+        if (ast->NumMemberFunctions() > 0)
+            ast->flags << StructDecl::isNonEntryPointParam;
+
         VISIT_DEFAULT(StructDecl);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
@@ -200,6 +195,23 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
         }
 
         VISIT_DEFAULT(BufferDeclStmnt);
+    }
+}
+
+/* --- Expressions --- */
+
+IMPLEMENT_VISIT_PROC(CallExpr)
+{
+    Visit(ast->funcDeclRef);
+    VISIT_DEFAULT(CallExpr);
+}
+
+IMPLEMENT_VISIT_PROC(ObjectExpr)
+{
+    if (NotVisited(ast))
+    {
+        Visit(ast->symbolRef);
+        VISIT_DEFAULT(ObjectExpr);
     }
 }
 

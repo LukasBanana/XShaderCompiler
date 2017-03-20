@@ -63,11 +63,6 @@ IMPLEMENT_VISIT_PROC_DEFAULT(Program)
 
 IMPLEMENT_VISIT_PROC_DEFAULT(CodeBlock)
 
-IMPLEMENT_VISIT_PROC(FunctionCall)
-{
-    PRINT_AST_EXT(FunctionCall, (ast->varIdent ? ast->varIdent->Last()->ident : ""));
-}
-
 IMPLEMENT_VISIT_PROC_DEFAULT(Attribute)
 
 IMPLEMENT_VISIT_PROC_DEFAULT(SwitchCase)
@@ -95,11 +90,6 @@ IMPLEMENT_VISIT_PROC(ArrayDimension)
 IMPLEMENT_VISIT_PROC(TypeSpecifier)
 {
     PRINT_AST_EXT(TypeSpecifier, ast->ToString());
-}
-
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    PRINT_AST_EXT(VarIdent, ast->ident);
 }
 
 /* --- Declaration --- */
@@ -215,17 +205,28 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
     PRINT_AST_EXT(PostUnaryExpr, UnaryOpToString(ast->op));
 }
 
-IMPLEMENT_VISIT_PROC_DEFAULT(FunctionCallExpr)
+static std::string IdentWithPrefixOpt(bool hasPrefix, bool isStatic, const std::string& ident)
+{
+    return ((hasPrefix ? (isStatic ? "::" : ".") : "") + ident);
+}
+
+IMPLEMENT_VISIT_PROC(CallExpr)
+{
+    PRINT_AST_EXT(CallExpr, IdentWithPrefixOpt(ast->prefixExpr != nullptr, ast->isStatic, ast->ident));
+}
 
 IMPLEMENT_VISIT_PROC_DEFAULT(BracketExpr)
 
-IMPLEMENT_VISIT_PROC_DEFAULT(SuffixExpr)
+IMPLEMENT_VISIT_PROC(ObjectExpr)
+{
+    PRINT_AST_EXT(ObjectExpr, IdentWithPrefixOpt(ast->prefixExpr != nullptr, ast->isStatic, ast->ident));
+}
 
-IMPLEMENT_VISIT_PROC_DEFAULT(ArrayAccessExpr)
+IMPLEMENT_VISIT_PROC_DEFAULT(AssignExpr)
+
+IMPLEMENT_VISIT_PROC_DEFAULT(ArrayExpr)
 
 IMPLEMENT_VISIT_PROC_DEFAULT(CastExpr)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(VarAccessExpr)
 
 IMPLEMENT_VISIT_PROC_DEFAULT(InitializerExpr)
 

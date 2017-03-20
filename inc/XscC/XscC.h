@@ -94,10 +94,16 @@ struct XscOptions
 //! Name mangling descriptor structure for shader input/output variables (also referred to as "varyings"), temporary variables, and reserved keywords.
 struct XscNameMangling
 {
-    //! Name mangling prefix for shader input variables. By default "xsv_".
+    /**
+    \brief Name mangling prefix for shader input variables. By default "xsv_".
+    \remarks This can also be empty or equal to "outputPrefix".
+    */
     const char* inputPrefix;
 
-    //! Name mangling prefix for shader output variables. By default "xsv_".
+    /**
+    \brief Name mangling prefix for shader output variables. By default "xsv_".
+    \remarks This can also be empty or equal to "inputPrefix".
+    */
     const char* outputPrefix;
 
     /**
@@ -111,6 +117,12 @@ struct XscNameMangling
     \remarks This must not be equal to any of the other prefixes and it must not be empty.
     */
     const char* temporaryPrefix;
+
+    /**
+    \brief Name mangling prefix for namespaces like structures or classes. By default "xsn_".
+    \remarks This can also be empty, but if it's not empty it must not be equal to any of the other prefixes.
+    */
+    const char* namespacePrefix;
 
     /**
     If true, shader input/output variables are always renamed to their semantics,

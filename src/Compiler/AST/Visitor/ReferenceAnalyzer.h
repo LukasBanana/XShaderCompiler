@@ -40,16 +40,14 @@ class ReferenceAnalyzer : private Visitor
 
         void VisitStmntList(const std::vector<StmntPtr>& stmnts);
 
-        void MarkLValueVarIdent(VarIdent* varIdent);
-        void MarkLValueExpr(Expr* expr);
+        void MarkLValueExpr(const Expr* expr);
+        void MarkLValueExprObject(const ObjectExpr* objectExpr);
 
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( CodeBlock         );
-        DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( SwitchCase        );
         DECL_VISIT_PROC( TypeSpecifier     );
-        DECL_VISIT_PROC( VarIdent          );
 
         DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( StructDecl        );
@@ -63,14 +61,16 @@ class ReferenceAnalyzer : private Visitor
 
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
-        DECL_VISIT_PROC( VarAccessExpr     );
+        DECL_VISIT_PROC( CallExpr          );
+        DECL_VISIT_PROC( ObjectExpr        );
+        DECL_VISIT_PROC( AssignExpr        );
 
         /* === Members === */
 
-        Program*                    program_        = nullptr;
-        ShaderTarget                shaderTarget_   = ShaderTarget::VertexShader;
+        Program*                program_        = nullptr;
+        ShaderTarget            shaderTarget_   = ShaderTarget::VertexShader;
         
-        std::vector<FunctionCall*>  funcCallStack_;
+        std::vector<CallExpr*>  callExprStack_;
 
 };
 

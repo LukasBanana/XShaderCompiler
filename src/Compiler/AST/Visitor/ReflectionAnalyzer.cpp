@@ -54,13 +54,13 @@ Variant ReflectionAnalyzer::EvaluateConstExpr(Expr& expr)
     {
         /* Evaluate expression and throw error on var-access */
         ConstExprEvaluator exprEvaluator;
-        return exprEvaluator.EvaluateExpr(expr, [](VarAccessExpr* ast) -> Variant { throw ast; });
+        return exprEvaluator.EvaluateExpr(expr, [](ObjectExpr* expr) -> Variant { throw expr; });
     }
     catch (const std::exception&)
     {
         return Variant();
     }
-    catch (const VarAccessExpr*)
+    catch (const ObjectExpr*)
     {
         return Variant();
     }
@@ -185,9 +185,9 @@ void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::Samp
         else if (name == "MaxLOD")
             samplerState.maxLOD = FromString<float>(value);
     }
-    else if (auto varAccessExpr = ast->value->As<VarAccessExpr>())
+    else if (auto objectExpr = ast->value->As<ObjectExpr>())
     {
-        const auto& value = varAccessExpr->varIdent->ident;
+        const auto& value = objectExpr->ident;
 
         if (name == "Filter")
             ReflectSamplerValueFilter(value, samplerState.filter, ast);
@@ -204,13 +204,13 @@ void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::Samp
     {
         try
         {
-            if (auto funcCallExpr = ast->value->As<FunctionCallExpr>())
+            if (auto callExpr = ast->value->As<CallExpr>())
             {
-                if (funcCallExpr->call->typeDenoter && funcCallExpr->call->typeDenoter->IsVector() && funcCallExpr->call->arguments.size() == 4)
+                if (callExpr->typeDenoter && callExpr->typeDenoter->IsVector() && callExpr->arguments.size() == 4)
                 {
                     /* Evaluate sub expressions to constant floats */
                     for (std::size_t i = 0; i < 4; ++i)
-                        samplerState.borderColor[i] = EvaluateConstExprFloat(*funcCallExpr->call->arguments[i]);
+                        samplerState.borderColor[i] = EvaluateConstExprFloat(*callExpr->arguments[i]);
                 }
                 else
                     throw std::string(R_InvalidTypeOrArgCount);

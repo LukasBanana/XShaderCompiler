@@ -86,6 +86,9 @@ class Analyzer : protected Visitor
         // Tries to fetch an AST node with the specified identifier from the current scope of the symbol table and returns null on failure.
         AST* FetchFromCurrentScopeOrNull(const std::string& ident) const;
 
+        // Tries to fetch a declaration node with the specified identifier from the symbol table and reports an error on failure.
+        Decl* FetchDecl(const std::string& ident, const AST* ast = nullptr);
+
         // Tries to fetch a 'StructDecl' or 'AliasDecl' with the specified identifier from the symbol table and reports an error on failure.
         AST* FetchType(const std::string& ident, const AST* ast = nullptr);
 
@@ -137,8 +140,8 @@ class Analyzer : protected Visitor
         // Evaluates the specified constant expression.
         Variant EvaluateConstExpr(Expr& expr);
 
-        // Evaluates the specified constant variable access expression or throws the expression if it's not constant.
-        Variant EvaluateConstVarAccessdExpr(VarAccessExpr& expr);
+        // Evaluates the specified constant object expression or throws the expression if it's not constant.
+        Variant EvaluateConstExprObject(const ObjectExpr& expr);
 
         // Evaluates the specified constant integer expression.
         int EvaluateConstExprInt(Expr& expr);

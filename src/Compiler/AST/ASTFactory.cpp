@@ -25,27 +25,22 @@ std::shared_ptr<T> MakeAST(Args&&... args)
 }
 
 template <typename T, typename Origin, typename... Args>
-std::shared_ptr<T> MakeASTWithOrigin(Origin origin, Args&&... args)
+std::shared_ptr<T> MakeASTWithOrigin(const Origin& origin, Args&&... args)
 {
     return MakeShared<T>(origin->area, std::forward<Args>(args)...);
 }
 
 /* ----- Make functions ----- */
 
-FunctionCallExprPtr MakeIntrinsicCallExpr(
+CallExprPtr MakeIntrinsicCallExpr(
     const Intrinsic intrinsic, const std::string& ident, const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments)
 {
-    auto ast = MakeAST<FunctionCallExpr>();
+    auto ast = MakeAST<CallExpr>();
     {
-        auto funcCall = MakeAST<FunctionCall>();
-        {
-            funcCall->varIdent          = MakeAST<VarIdent>();
-            funcCall->varIdent->ident   = ident;
-            funcCall->typeDenoter       = typeDenoter;
-            funcCall->arguments         = arguments;
-            funcCall->intrinsic         = intrinsic;
-        }
-        ast->call = funcCall;
+        ast->ident          = ident;
+        ast->typeDenoter    = typeDenoter;
+        ast->arguments      = arguments;
+        ast->intrinsic      = intrinsic;
     }
     return ast;
 }
@@ -70,21 +65,27 @@ static SamplerType TextureTypeToSamplerType(const BufferType t)
     }
 }
 
-FunctionCallExprPtr MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, const ExprPtr& samplerObjectExpr)
+CallExprPtr MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, const ExprPtr& samplerObjectExpr)
 {
-    auto ast = MakeAST<FunctionCallExpr>();
+    auto ast = MakeAST<CallExpr>();
     {
-        auto funcCall = MakeAST<FunctionCall>();
+        const auto& typeDen = textureObjectExpr->GetTypeDenoter()->GetAliased();
+        if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
         {
-            auto typeDen = textureObjectExpr->GetTypeDenoter()->Get();
-            if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
-            {
-                funcCall->typeDenoter = std::make_shared<SamplerTypeDenoter>(TextureTypeToSamplerType(bufferTypeDen->bufferType));
-                funcCall->arguments.push_back(textureObjectExpr);
-                funcCall->arguments.push_back(samplerObjectExpr);
-            }
+            ast->typeDenoter = std::make_shared<SamplerTypeDenoter>(TextureTypeToSamplerType(bufferTypeDen->bufferType));
+            ast->arguments.push_back(textureObjectExpr);
+            ast->arguments.push_back(samplerObjectExpr);
         }
-        ast->call = funcCall;
+    }
+    return ast;
+}
+
+CallExprPtr MakeTypeCtorCallExpr(const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments)
+{
+    auto ast = MakeAST<CallExpr>();
+    {
+        ast->typeDenoter    = typeDenoter;
+        ast->arguments      = arguments;
     }
     return ast;
 }
@@ -103,25 +104,6 @@ CastExprPtr MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& value
 CastExprPtr MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue)
 {
     return MakeCastExpr(typeDenoter, MakeLiteralExpr(literalType, literalValue));
-}
-
-SuffixExprPtr MakeSuffixExpr(const ExprPtr& expr, const VarIdentPtr& varIdent)
-{
-    auto ast = MakeASTWithOrigin<SuffixExpr>(expr);
-    {
-        ast->expr       = expr;
-        ast->varIdent   = varIdent;
-    }
-    return ast;
-}
-
-ExprPtr MakeCastOrSuffixCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr, const VarIdentPtr& suffixVarIdent)
-{
-    auto castExpr = ASTFactory::MakeCastExpr(typeDenoter, valueExpr);
-    if (suffixVarIdent)
-        return MakeSuffixExpr(castExpr, suffixVarIdent);
-    else
-        return castExpr;
 }
 
 BinaryExprPtr MakeBinaryExpr(const ExprPtr& lhsExpr, const BinaryOp op, const ExprPtr& rhsExpr)
@@ -220,9 +202,9 @@ VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ide
     return MakeVarDeclStmnt(MakeTypeSpecifier(dataType), ident);
 }
 
-VarIdentPtr MakeVarIdent(const std::string& ident, AST* symbolRef)
+ObjectExprPtr MakeObjectExpr(const std::string& ident, Decl* symbolRef)
 {
-    auto ast = MakeAST<VarIdent>();
+    auto ast = MakeAST<ObjectExpr>();
     {
         ast->ident      = ident;
         ast->symbolRef  = symbolRef;
@@ -230,57 +212,19 @@ VarIdentPtr MakeVarIdent(const std::string& ident, AST* symbolRef)
     return ast;
 }
 
-VarIdentPtr MakeVarIdentFirst(const VarIdent& varIdent)
+ObjectExprPtr MakeObjectExpr(Decl* symbolRef)
 {
-    auto ast = MakeAST<VarIdent>();
+    return MakeObjectExpr(symbolRef->ident.Original(), symbolRef);
+}
+
+ArrayExprPtr MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices)
+{
+    auto ast = MakeAST<ArrayExpr>();
     {
-        ast->ident          = varIdent.ident;
-        ast->arrayIndices   = varIdent.arrayIndices;
-        ast->symbolRef      = varIdent.symbolRef;
+        ast->prefixExpr     = prefixExpr;
+        ast->arrayIndices   = MakeArrayIndices(arrayIndices);
     }
     return ast;
-}
-
-VarIdentPtr MakeVarIdentWithoutLast(const VarIdent& varIdent)
-{
-    if (varIdent.next)
-    {
-        auto ast = MakeAST<VarIdent>();
-        {
-            ast->ident          = varIdent.ident;
-            ast->arrayIndices   = varIdent.arrayIndices;
-            ast->symbolRef      = varIdent.symbolRef;
-            ast->next           = MakeVarIdentWithoutLast(*varIdent.next);
-        }
-        return ast;
-    }
-    else
-        return nullptr;
-}
-
-VarIdentPtr MakeVarIdentPushFront(const std::string& firstIdent, AST* symbolRef, const VarIdentPtr& next)
-{
-    auto ast = MakeAST<VarIdent>();
-    {
-        ast->ident          = firstIdent;
-        ast->next           = next;
-        ast->symbolRef      = symbolRef;
-    }
-    return ast;
-}
-
-VarAccessExprPtr MakeVarAccessExpr(const VarIdentPtr& varIdent)
-{
-    auto ast = MakeAST<VarAccessExpr>();
-    {
-        ast->varIdent = varIdent;
-    }
-    return ast;
-}
-
-VarAccessExprPtr MakeVarAccessExpr(const std::string& ident, AST* symbolRef)
-{
-    return MakeVarAccessExpr(MakeVarIdent(ident, symbolRef));
 }
 
 BracketExprPtr MakeBracketExpr(const ExprPtr& expr)
@@ -336,13 +280,13 @@ static ExprPtr MakeConstructorListExprPrimary(
     {
         auto ast = MakeAST<ListExpr>();
         {
-            ast->firstExpr  = MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->Get());
+            ast->firstExpr  = MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->GetSub());
             ast->nextExpr   = MakeConstructorListExprPrimary(literalExpr, typeDensBegin + 1, typeDensEnd);
         }
         return ast;
     }
     else
-        return MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->Get());
+        return MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->GetSub());
 }
 
 ExprPtr MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::vector<TypeDenoterPtr>& listTypeDens)
@@ -359,14 +303,13 @@ ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arra
 {
     auto ast = MakeAST<ExprStmnt>();
     {
-        auto expr = MakeAST<VarAccessExpr>();
+        auto assignExpr = MakeAST<AssignExpr>();
         {
-            expr->varIdent                  = MakeVarIdent(varDecl->ident, varDecl);
-            expr->varIdent->arrayIndices    = MakeArrayIndices(arrayIndices);
-            expr->assignOp                  = AssignOp::Set;
-            expr->assignExpr                = assignExpr;
+            assignExpr->lvalueExpr  = MakeArrayExpr(MakeObjectExpr(varDecl), arrayIndices);
+            assignExpr->op          = AssignOp::Set;
+            assignExpr->rvalueExpr  = assignExpr;
         }
-        ast->expr = expr;
+        ast->expr = assignExpr;
     }
     return ast;
 }
@@ -385,6 +328,16 @@ ArrayDimensionPtr MakeArrayDimension(int arraySize)
             ast->expr = MakeAST<NullExpr>();
             ast->size = 0;
         }
+    }
+    return ast;
+}
+
+CodeBlockStmntPtr MakeCodeBlockStmnt(const StmntPtr& stmnt)
+{
+    auto ast = MakeASTWithOrigin<CodeBlockStmnt>(stmnt);
+    {
+        ast->codeBlock = MakeASTWithOrigin<CodeBlock>(stmnt);
+        ast->codeBlock->stmnts.push_back(stmnt);
     }
     return ast;
 }

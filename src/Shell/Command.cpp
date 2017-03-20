@@ -1231,7 +1231,7 @@ HelpDescriptor PrefixTemporaryCommand::Help() const
     return
     {
         "-Ptmp, --prefix-temporary PREFIX",
-        "Prefix for name-mangling of temporary ariables; default='xst_'",
+        "Prefix for name-mangling of temporary variables; default='xst_'",
         HelpCategory::NameMangling
     };
 }
@@ -1239,6 +1239,31 @@ HelpDescriptor PrefixTemporaryCommand::Help() const
 void PrefixTemporaryCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.nameMangling.temporaryPrefix = cmdLine.Accept();
+}
+
+
+/*
+ * PrefixNamespaceCommand class
+ */
+
+std::vector<Command::Identifier> PrefixNamespaceCommand::Idents() const
+{
+    return { { "-Ptmp", "--prefix-namespace" } };
+}
+
+HelpDescriptor PrefixNamespaceCommand::Help() const
+{
+    return
+    {
+        "-Pns, --prefix-namespace PREFIX",
+        "Prefix for name-mangling of namespace objects; default='xsn_'",
+        HelpCategory::NameMangling
+    };
+}
+
+void PrefixNamespaceCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.nameMangling.namespacePrefix = cmdLine.Accept();
 }
 
 

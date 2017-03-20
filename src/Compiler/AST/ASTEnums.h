@@ -753,8 +753,8 @@ enum class Intrinsic
     StreamOutput_Append,        // Append(StreamDataType)
     StreamOutput_RestartStrip,  // RestartStrip()
 
-    Image_Store,                // GLSL only
     Image_Load,                 // GLSL only
+    Image_Store,                // GLSL only
 };
 
 // Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>
@@ -782,6 +782,12 @@ bool IsTextureIntrinsic(const Intrinsic t);
 
 // Returns true if the speciifed intrinsic belongs to a stream-output object.
 bool IsStreamOutputIntrinsic(const Intrinsic t);
+
+// Returns true if the specified intrinsic is an image load/store intrinsic.
+bool IsImageIntrinsic(const Intrinsic t);
+
+// Returns the respective intrinsic for the specified binary compare operator, or Intrinsic::Undefined if the operator is not a compare operator.
+Intrinsic CompareOpToIntrinsic(const BinaryOp op);
 
 
 /* ----- Semantic Enum ----- */

@@ -398,13 +398,20 @@ public ref class XscCompiler
                     OutputPrefix        = gcnew String("xsv_");
                     ReservedWordPrefix  = gcnew String("xsr_");
                     TemporaryPrefix     = gcnew String("xst_");
+                    NamespacePrefix     = gcnew String("xsn_");
                     UseAlwaysSemantics  = false;
                 }
 
-                //! Name mangling prefix for shader input variables. By default "xsv_".
+                /**
+                \brief Name mangling prefix for shader input variables. By default "xsv_".
+                \remarks This can also be empty or equal to "outputPrefix".
+                */
                 property String^    InputPrefix;
 
-                //! Name mangling prefix for shader output variables. By default "xsv_".
+                /**
+                \brief Name mangling prefix for shader output variables. By default "xsv_".
+                \remarks This can also be empty or equal to "inputPrefix".
+                */
                 property String^    OutputPrefix;
 
                 /**
@@ -418,6 +425,12 @@ public ref class XscCompiler
                 \remarks This must not be equal to any of the other prefixes and it must not be empty.
                 */
                 property String^    TemporaryPrefix;
+
+                /**
+                \brief Name mangling prefix for namespaces like structures or classes. By default "xsn_".
+                \remarks This can also be empty, but if it's not empty it must not be equal to any of the other prefixes.
+                */
+                property String^    NamespacePrefix;
 
                 /**
                 If true, shader input/output variables are always renamed to their semantics,
@@ -977,6 +990,7 @@ bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc
     out.nameMangling.outputPrefix       = ToStdString(outputDesc->NameMangling->OutputPrefix);
     out.nameMangling.reservedWordPrefix = ToStdString(outputDesc->NameMangling->ReservedWordPrefix);
     out.nameMangling.temporaryPrefix    = ToStdString(outputDesc->NameMangling->TemporaryPrefix);
+    out.nameMangling.namespacePrefix    = ToStdString(outputDesc->NameMangling->NamespacePrefix);
     out.nameMangling.useAlwaysSemantics = outputDesc->NameMangling->UseAlwaysSemantics;
 
     /* Compile shader */

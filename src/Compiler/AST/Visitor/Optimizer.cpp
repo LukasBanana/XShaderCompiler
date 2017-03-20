@@ -37,6 +37,7 @@ void Optimizer::OptimizeStmntList(std::vector<StmntPtr>& stmnts)
     }
 }
 
+//TODO: exceptional path should not be used to cancel evaluation here!
 void Optimizer::OptimizeExpr(ExprPtr& expr)
 {
     if (expr)
@@ -45,14 +46,14 @@ void Optimizer::OptimizeExpr(ExprPtr& expr)
         {
             /* Try to evaluate expression */
             ConstExprEvaluator exprEval;
-            auto exprValue = exprEval.EvaluateExpr(*expr, [](VarAccessExpr* ast) -> Variant { throw ast; });
+            auto exprValue = exprEval.EvaluateExpr(*expr, [](ObjectExpr* expr) -> Variant { throw expr; });
             expr = ASTFactory::MakeLiteralExpr(exprValue);
         }
         catch (const std::exception&)
         {
             /* ignore this exception */
         }
-        catch (VarAccessExpr*)
+        catch (const ObjectExpr*)
         {
             /* ignore this exception */
         }
@@ -197,15 +198,22 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     OptimizeExpr(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(SuffixExpr)
+IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
-    VISIT_DEFAULT(SuffixExpr);
-    OptimizeExpr(ast->expr);
+    VISIT_DEFAULT(ObjectExpr);
+    OptimizeExpr(ast->prefixExpr);
 }
 
-IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+IMPLEMENT_VISIT_PROC(AssignExpr)
 {
-    VISIT_DEFAULT(ArrayAccessExpr);
+    VISIT_DEFAULT(AssignExpr);
+    OptimizeExpr(ast->lvalueExpr);
+    OptimizeExpr(ast->rvalueExpr);
+}
+
+IMPLEMENT_VISIT_PROC(ArrayExpr)
+{
+    VISIT_DEFAULT(ArrayExpr);
     for (auto& subExpr : ast->arrayIndices)
         OptimizeExpr(subExpr);
 }

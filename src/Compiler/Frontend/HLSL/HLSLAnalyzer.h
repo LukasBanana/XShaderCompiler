@@ -48,7 +48,6 @@ class HLSLAnalyzer : public Analyzer
 
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
-        DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( ArrayDimension    );
         DECL_VISIT_PROC( TypeSpecifier     );
         
@@ -75,33 +74,36 @@ class HLSLAnalyzer : public Analyzer
 
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
-        DECL_VISIT_PROC( SuffixExpr        );
-        DECL_VISIT_PROC( VarAccessExpr     );
+        DECL_VISIT_PROC( CallExpr          );
+        DECL_VISIT_PROC( AssignExpr        );
+        DECL_VISIT_PROC( ObjectExpr        );
+        DECL_VISIT_PROC( ArrayExpr         );
 
-        /* --- Helper functions for context analysis --- */
+        /* ----- Call expressions ----- */
 
-        void AnalyzeFunctionCallStandard(FunctionCall* ast);
-        void AnalyzeFunctionCallIntrinsic(FunctionCall* ast, const HLSLIntrinsicEntry& intr);
+        void AnalyzeCallExpr(CallExpr* callExpr);
+        void AnalyzeCallExprPrimary(CallExpr* callExpr, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeCallExprFunction(CallExpr* callExpr, bool isStatic = false, const Expr* prefixExpr = nullptr, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeCallExprIntrinsic(CallExpr* callExpr, const HLSLIntrinsicEntry& intr, bool isStatic = false, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeCallExprIntrinsicPrimary(CallExpr* callExpr, const HLSLIntrinsicEntry& intr);
+        void AnalyzeCallExprIntrinsicFromBufferType(const CallExpr* callExpr, const BufferType bufferType);
 
-        void AnalyzeIntrinsicWrapperInlining(FunctionCall* ast);
+        void AnalyzeIntrinsicWrapperInlining(CallExpr* callExpr);
 
-        bool AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* funcCall);
-        bool AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const FunctionCall* funcCall, const BufferType bufferType);
+        /* ----- Object expressions ----- */
 
-        /* ----- Variable identifier ----- */
+        void AnalyzeObjectExpr(ObjectExpr* expr);
+        void AnalyzeObjectExprWithStruct(ObjectExpr* expr, const StructTypeDenoter& structTypeDen);
 
-        void AnalyzeVarIdent(VarIdent* varIdent);
-        void AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol);
-        void AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl* varDecl);
+        bool AnalyzeStaticAccessExpr(const Expr* prefixExpr, bool isStatic, const AST* ast = nullptr);
+        bool AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier, const std::string& ident, const Expr* expr, bool isStatic);
 
-        void AnalyzeFunctionVarIdent(VarIdent* varIdent, const std::vector<ExprPtr>& args);
-        void AnalyzeFunctionVarIdentWithSymbol(VarIdent* varIdent, const std::vector<ExprPtr>& args, AST* symbol);
-        void AnalyzeFunctionVarIdentWithSymbolVarDecl(VarIdent* varIdent, const std::vector<ExprPtr>& args, VarDecl* varDecl);
+        void AnalyzeLValueExpr(const Expr* expr, const AST* ast = nullptr);
+        void AnalyzeLValueExprObject(const ObjectExpr* objectExpr, const AST* ast = nullptr);
 
-        void AnalyzeVarIdentArrayIndices(VarIdent* varIdent);
+        /* ----- Array expressions ----- */
 
-        void AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast = nullptr);
-        void AnalyzeLValueExpr(Expr* expr, const AST* ast = nullptr);
+        void AnalyzeArrayExpr(ArrayExpr* expr);
 
         /* ----- Entry point ----- */
 
@@ -124,7 +126,7 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std::vector<Semantic>& inSemantics, const std::vector<Semantic>& outSemantics);
 
-        void AnalyzeEntryPointOutput(VarIdent* varIdent);
+        void AnalyzeEntryPointOutput(Expr* expr);
 
         /* ----- Secondary entry point ----- */
 
