@@ -21,3 +21,11 @@ Known Issues
 | Sampler types for DX9 shaders | Samplers (e.g. `sampler2D`) are ignored, even for HLSL3. |
 | Braced initializers | For lower GLSL versions, braced initializers must be translated to the respective type constructor. |
 | Assignment to variable in brackets | Parsing assignments to variables that are inside a bracket fail, e.g. `(x) = 1;` |
+
+
+Requested Features
+------------------
+| Feature | Remarks |
+|---------|---------|
+| Warnings for required GLSL extensions | This could be added with different warning levels (like `-W1`, `-W2`, `-Wall` in GCC). |
+
