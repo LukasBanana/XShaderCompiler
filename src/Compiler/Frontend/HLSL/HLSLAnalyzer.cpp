@@ -675,12 +675,12 @@ void HLSLAnalyzer::AnalyzeCallExpr(CallExpr* expr)
 
             /* Analyze functin call with type denoter from prefix expression */
             const auto& prefixTypeDen = expr->prefixExpr->GetTypeDenoter()->GetAliased();
-            AnalyzeFunctionCall(expr, expr->isStatic, expr->prefixExpr.get(), &prefixTypeDen);
+            AnalyzeCallExprPrimary(expr, &prefixTypeDen);
         }
         else
         {
             /* Analyze function call */
-            AnalyzeFunctionCall(expr);
+            AnalyzeCallExprPrimary(expr);
         }
     }
     catch (const ASTRuntimeError& e)
@@ -693,8 +693,7 @@ void HLSLAnalyzer::AnalyzeCallExpr(CallExpr* expr)
     }
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCall(
-    CallExpr* callExpr, bool isStatic, const Expr* prefixExpr, const TypeDenoter* prefixTypeDenoter)
+void HLSLAnalyzer::AnalyzeCallExprPrimary(CallExpr* callExpr, const TypeDenoter* prefixTypeDenoter)
 {
     PushCallExpr(callExpr);
     {
@@ -709,12 +708,12 @@ void HLSLAnalyzer::AnalyzeFunctionCall(
             if (intrIt != HLSLIntrinsicAdept::GetIntrinsicMap().end())
             {
                 /* Analyze function call of intrinsic */
-                AnalyzeFunctionCallIntrinsic(callExpr, intrIt->second, isStatic, prefixTypeDenoter);
+                AnalyzeCallExprIntrinsic(callExpr, intrIt->second, callExpr->isStatic, prefixTypeDenoter);
             }
             else
             {
                 /* Analyze function call of standard function declaration */
-                AnalyzeFunctionCallStandard(callExpr, isStatic, prefixExpr, prefixTypeDenoter);
+                AnalyzeCallExprFunction(callExpr, callExpr->isStatic, callExpr->prefixExpr.get(), prefixTypeDenoter);
             }
         }
 
@@ -729,7 +728,7 @@ void HLSLAnalyzer::AnalyzeFunctionCall(
     PopCallExpr();
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCallStandard(
+void HLSLAnalyzer::AnalyzeCallExprFunction(
     CallExpr* callExpr, bool isStatic, const Expr* prefixExpr, const TypeDenoter* prefixTypeDenoter)
 {
     if (prefixTypeDenoter)
@@ -780,12 +779,12 @@ void HLSLAnalyzer::AnalyzeFunctionCallStandard(
     }
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(CallExpr* callExpr, const HLSLIntrinsicEntry& intr, bool isStatic, const TypeDenoter* prefixTypeDenoter)
+void HLSLAnalyzer::AnalyzeCallExprIntrinsic(CallExpr* callExpr, const HLSLIntrinsicEntry& intr, bool isStatic, const TypeDenoter* prefixTypeDenoter)
 {
     const auto intrinsic = intr.intrinsic;
 
     /* Decoarte function call with intrinsic ID */
-    AnalyzeFunctionCallIntrinsicPrimary(callExpr, intr);
+    AnalyzeCallExprIntrinsicPrimary(callExpr, intr);
 
     /* No intrinsics can be called static */
     if (isStatic)
@@ -809,7 +808,7 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(CallExpr* callExpr, const HLSLIn
             if (auto bufferTypeDen = prefixTypeDenoter->As<BufferTypeDenoter>())
             {
                 /* Analyze member function call with buffer prefix type */
-                AnalyzeFunctionCallIntrinsicFromBufferType(callExpr, bufferTypeDen->bufferType);
+                AnalyzeCallExprIntrinsicFromBufferType(callExpr, bufferTypeDen->bufferType);
             }
             else
             {
@@ -828,7 +827,7 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(CallExpr* callExpr, const HLSLIn
     }
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicPrimary(CallExpr* callExpr, const HLSLIntrinsicEntry& intr)
+void HLSLAnalyzer::AnalyzeCallExprIntrinsicPrimary(CallExpr* callExpr, const HLSLIntrinsicEntry& intr)
 {
     /* Check shader input version */
     if (shaderModel_ < intr.minShaderModel)
@@ -892,7 +891,7 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicPrimary(CallExpr* callExpr, const
     }
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicFromBufferType(const CallExpr* callExpr, const BufferType bufferType)
+void HLSLAnalyzer::AnalyzeCallExprIntrinsicFromBufferType(const CallExpr* callExpr, const BufferType bufferType)
 {
     const auto intrinsic = callExpr->intrinsic;
     const auto& ident = callExpr->ident;
@@ -935,309 +934,6 @@ void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(CallExpr* callExpr)
         callExpr->flags << CallExpr::canInlineIntrinsicWrapper;
     }
 }
-
-#if 0//TODO: remove
-
-void HLSLAnalyzer::AnalyzeFunctionCallStandard_OBSOLETE(FunctionCall* ast)
-{
-    /* Analyze function identifier (if it's a member function) */
-    AnalyzeFunctionVarIdent(ast->varIdent.get(), ast->arguments);
-
-    /* Fetch function declaration by arguments */
-    if (auto symbol = ast->varIdent->Last()->symbolRef)
-    {
-        if (auto funcDecl = symbol->As<FunctionDecl>())
-            ast->funcDeclRef = funcDecl;
-    }
-
-    /* Also connect function declaration with the identifier of the function call */
-    if (auto funcDecl = ast->funcDeclRef)
-    {
-        /* Fetch argument expressions of all remaining parmeters */
-        for (std::size_t i = ast->arguments.size(), n = funcDecl->parameters.size(); i < n; ++i)
-        {
-            auto param = funcDecl->parameters[i].get();
-            if (!param->varDecls.empty())
-            {
-                auto paramVar = param->varDecls.front().get();
-                if (auto initExpr = paramVar->initializer.get())
-                    ast->defaultArgumentRefs.push_back(initExpr);
-                else
-                    Error(R_MissingInitializerForDefaultParam(paramVar->ident), paramVar);
-            }
-        }
-    }
-}
-
-bool HLSLAnalyzer::AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* funcCall)
-{
-    if (auto symbolRef = funcCall->varIdent->symbolRef)
-    {
-        if (auto varDecl = symbolRef->As<VarDecl>())
-        {
-            /* Analyze member intrinsic for buffer type */
-            auto typeDen = varDecl->GetTypeDenoter()->Get();
-            if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
-            {
-                if (AnalyzeMemberIntrinsicBuffer(intrinsic, funcCall, bufferTypeDen->bufferType))
-                    return true;
-            }
-        }
-        else if (auto bufferDecl = symbolRef->As<BufferDecl>())
-        {
-            /* Analyze member intrinsic for buffer type */
-            if (AnalyzeMemberIntrinsicBuffer(intrinsic, funcCall, bufferDecl->GetBufferType()))
-                return true;
-        }
-    }
-
-    /* Intrinsic not found in an object class */
-    Error(R_IntrinsicNotDeclaredInObject(funcCall->varIdent->next->ident, funcCall->varIdent->ident), funcCall);
-    return false;
-}
-
-bool HLSLAnalyzer::AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const FunctionCall* funcCall, const BufferType bufferType)
-{
-    const auto& ident = funcCall->varIdent->next->ident;
-
-    if (IsTextureBufferType(bufferType))
-    {
-        if (IsTextureIntrinsic(intrinsic))
-            return true;
-        else
-            Error(R_InvalidIntrinsicForTexture(ident), funcCall);
-    }
-    else if (IsStorageBufferType(bufferType))
-    {
-        //TODO
-        /*if (IsStorageBufferIntrinsic(intrinsic))
-            return true;
-        else
-            Error(R_InvalidIntrinsicForStorageBuffer(ident), funcCall);*/
-    }
-    else if (IsStreamBufferType(bufferType))
-    {
-        if (IsStreamOutputIntrinsic(intrinsic))
-        {
-            /* Check for entry point output parameters with "StreamOutput::Append" intrinsic */
-            if (InsideEntryPoint() && intrinsic == Intrinsic::StreamOutput_Append)
-            {
-                for (const auto& arg : funcCall->arguments)
-                    AnalyzeEntryPointOutput(arg->FetchVarIdent());
-            }
-            return true;
-        }
-        else
-            Error(R_InvalidIntrinsicForStreamOutput(ident), funcCall);
-    }
-
-    return false;
-}
-
-/* ----- Variable identifier ----- */
-
-void HLSLAnalyzer::AnalyzeVarIdent(VarIdent* varIdent)
-{
-    /* Analyze variable identifier itself */
-    if (varIdent)
-    {
-        try
-        {
-            if (auto symbol = Fetch(varIdent->ident, varIdent))
-                AnalyzeVarIdentWithSymbol(varIdent, symbol);
-        }
-        catch (const ASTRuntimeError& e)
-        {
-            Error(e.what(), e.GetAST());
-        }
-        catch (const std::exception& e)
-        {
-            Error(e.what(), varIdent);
-        }
-    }
-
-    /* Analyze array indices */
-    AnalyzeVarIdentArrayIndices(varIdent);
-}
-
-void HLSLAnalyzer::AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol)
-{
-    /* Decorate variable identifier with this symbol */
-    varIdent->symbolRef = symbol;
-
-    switch (symbol->Type())
-    {
-        case AST::Types::VarDecl:
-            AnalyzeVarIdentWithSymbolVarDecl(varIdent, static_cast<VarDecl*>(symbol));
-            break;
-        case AST::Types::BufferDecl:
-        case AST::Types::SamplerDecl:
-        case AST::Types::StructDecl:
-        case AST::Types::AliasDecl:
-        case AST::Types::FunctionDecl:
-            break;
-        default:
-            Error(R_InvalidSymbolRefToVarIdent(varIdent->ToString()), varIdent);
-            break;
-    }
-}
-
-void HLSLAnalyzer::AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl* varDecl)
-{
-    /* Decorate next identifier */
-    if (varIdent->next)
-    {
-        /* Has variable a struct type denoter? */
-        try
-        {
-            auto varTypeDen = varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size());
-            if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
-            {
-                /* Fetch struct member variable declaration from next identifier */
-                if (auto structMember = FetchFromStruct(*structTypeDen, varIdent->next->ident, varIdent))
-                {
-                    /* Analyzer next identifier with fetched symbol */
-                    AnalyzeVarIdentWithSymbol(varIdent->next.get(), structMember);
-                }
-            }
-        }
-        catch (const std::exception& e)
-        {
-            Error(e.what(), varIdent);
-        }
-    }
-}
-
-void HLSLAnalyzer::AnalyzeFunctionVarIdent(VarIdent* varIdent, const std::vector<ExprPtr>& args)
-{
-    /* Analyze variable identifier itself */
-    if (varIdent)
-    {
-        try
-        {
-            if (varIdent->next)
-            {
-                if (auto symbol = Fetch(varIdent->ident, varIdent))
-                    AnalyzeFunctionVarIdentWithSymbol(varIdent, args, symbol);
-            }
-            else
-            {
-                if (auto symbol = FetchFunctionDecl(varIdent->ident, args, varIdent))
-                    AnalyzeFunctionVarIdentWithSymbol(varIdent, args, symbol);
-            }
-        }
-        catch (const ASTRuntimeError& e)
-        {
-            Error(e.what(), e.GetAST());
-        }
-        catch (const std::exception& e)
-        {
-            Error(e.what(), varIdent);
-        }
-    }
-
-    /* Analyze array indices */
-    AnalyzeVarIdentArrayIndices(varIdent);
-}
-
-void HLSLAnalyzer::AnalyzeFunctionVarIdentWithSymbol(VarIdent* varIdent, const std::vector<ExprPtr>& args, AST* symbol)
-{
-    /* Decorate variable identifier with this symbol */
-    varIdent->symbolRef = symbol;
-
-    switch (symbol->Type())
-    {
-        case AST::Types::VarDecl:
-            AnalyzeFunctionVarIdentWithSymbolVarDecl(varIdent, args, static_cast<VarDecl*>(symbol));
-            break;
-        case AST::Types::BufferDecl:
-        case AST::Types::SamplerDecl:
-        case AST::Types::StructDecl:
-        case AST::Types::AliasDecl:
-        case AST::Types::FunctionDecl:
-            break;
-        default:
-            Error(R_InvalidSymbolRefToVarIdent(varIdent->ToString()), varIdent);
-            break;
-    }
-}
-
-void HLSLAnalyzer::AnalyzeFunctionVarIdentWithSymbolVarDecl(VarIdent* varIdent, const std::vector<ExprPtr>& args, VarDecl* varDecl)
-{
-    /* Decorate next identifier */
-    if (varIdent->next)
-    {
-        /* Has variable a struct type denoter? */
-        try
-        {
-            auto varTypeDen = varDecl->GetTypeDenoter()->GetFromArray(varIdent->arrayIndices.size());
-            if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
-            {
-                /* Fetch struct member from next identifier */
-                AST* symbol = nullptr;
-
-                if (varIdent->next->next)
-                    symbol = FetchFromStruct(*structTypeDen, varIdent->next->ident, varIdent);
-                else
-                    symbol = FetchFunctionDeclFromStruct(*structTypeDen, varIdent->next->ident, args, varIdent);
-
-                if (symbol)
-                {
-                    /* Analyzer next identifier with fetched symbol */
-                    AnalyzeFunctionVarIdentWithSymbol(varIdent->next.get(), args, symbol);
-                }
-            }
-        }
-        catch (const std::exception& e)
-        {
-            Error(e.what(), varIdent);
-        }
-    }
-}
-
-void HLSLAnalyzer::AnalyzeVarIdentArrayIndices(VarIdent* varIdent)
-{
-    while (varIdent)
-    {
-        Visit(varIdent->arrayIndices);
-        varIdent = varIdent->next.get();
-    }
-}
-
-void HLSLAnalyzer::AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast)
-{
-    while (varIdent)
-    {
-        if (auto varDecl = varIdent->FetchVarDecl())
-        {
-            /* Is the variable declared as constant? */
-            if (varDecl->declStmntRef->IsConstOrUniform())
-            {
-                /* Construct error message depending if the variable is implicitly or explicitly declared as constant */
-                Error(
-                    R_IllegalLValueAssignmentToConst(
-                        varIdent->ident,
-                        (varDecl->declStmntRef->flags(VarDeclStmnt::isImplicitConst) ? R_Implicitly : "")
-                    ),
-                    (ast != nullptr ? ast : varIdent)
-                );
-            }
-        }
-        varIdent = varIdent->next.get();
-    }
-}
-
-/*void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast)
-{
-    if (!ast)
-        ast = expr;
-    if (auto varIdent = expr->FetchVarIdent())
-        AnalyzeLValueVarIdent(varIdent, ast);
-    else
-        Error(R_IllegalRValueAssignment, ast);
-}*/
-
-#endif
 
 /* ----- Object expressions ----- */
 

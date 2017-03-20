@@ -85,38 +85,13 @@ class HLSLAnalyzer : public Analyzer
         /* ----- Call expressions ----- */
 
         void AnalyzeCallExpr(CallExpr* callExpr);
-
-        void AnalyzeFunctionCall(CallExpr* callExpr, bool isStatic = false, const Expr* prefixExpr = nullptr, const TypeDenoter* prefixTypeDenoter = nullptr);
-        void AnalyzeFunctionCallStandard(CallExpr* callExpr, bool isStatic = false, const Expr* prefixExpr = nullptr, const TypeDenoter* prefixTypeDenoter = nullptr);
-        void AnalyzeFunctionCallIntrinsic(CallExpr* callExpr, const HLSLIntrinsicEntry& intr, bool isStatic = false, const TypeDenoter* prefixTypeDenoter = nullptr);
-        void AnalyzeFunctionCallIntrinsicPrimary(CallExpr* callExpr, const HLSLIntrinsicEntry& intr);
-        void AnalyzeFunctionCallIntrinsicFromBufferType(const CallExpr* callExpr, const BufferType bufferType);
+        void AnalyzeCallExprPrimary(CallExpr* callExpr, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeCallExprFunction(CallExpr* callExpr, bool isStatic = false, const Expr* prefixExpr = nullptr, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeCallExprIntrinsic(CallExpr* callExpr, const HLSLIntrinsicEntry& intr, bool isStatic = false, const TypeDenoter* prefixTypeDenoter = nullptr);
+        void AnalyzeCallExprIntrinsicPrimary(CallExpr* callExpr, const HLSLIntrinsicEntry& intr);
+        void AnalyzeCallExprIntrinsicFromBufferType(const CallExpr* callExpr, const BufferType bufferType);
 
         void AnalyzeIntrinsicWrapperInlining(CallExpr* callExpr);
-
-        #if 0//TODO: remove
-
-        void AnalyzeFunctionCallStandard_OBSOLETE(FunctionCall* ast);
-
-        bool AnalyzeMemberIntrinsic(const Intrinsic intrinsic, const FunctionCall* funcCall);
-        bool AnalyzeMemberIntrinsicBuffer(const Intrinsic intrinsic, const FunctionCall* funcCall, const BufferType bufferType);
-
-        /* ----- Variable identifier ----- */
-
-        void AnalyzeVarIdent(VarIdent* varIdent);
-        void AnalyzeVarIdentWithSymbol(VarIdent* varIdent, AST* symbol);
-        void AnalyzeVarIdentWithSymbolVarDecl(VarIdent* varIdent, VarDecl* varDecl);
-
-        void AnalyzeFunctionVarIdent(VarIdent* varIdent, const std::vector<ExprPtr>& args);
-        void AnalyzeFunctionVarIdentWithSymbol(VarIdent* varIdent, const std::vector<ExprPtr>& args, AST* symbol);
-        void AnalyzeFunctionVarIdentWithSymbolVarDecl(VarIdent* varIdent, const std::vector<ExprPtr>& args, VarDecl* varDecl);
-
-        void AnalyzeVarIdentArrayIndices(VarIdent* varIdent);
-
-        void AnalyzeLValueVarIdent(VarIdent* varIdent, const AST* ast = nullptr);
-        //void AnalyzeLValueExpr(Expr* expr, const AST* ast = nullptr);
-
-        #endif
 
         /* ----- Object expressions ----- */
 
