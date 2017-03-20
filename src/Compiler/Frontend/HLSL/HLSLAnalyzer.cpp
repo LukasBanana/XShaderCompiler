@@ -118,67 +118,6 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     Visit(ast->stmnts);
 }
 
-#if 0//TODO: remove
-
-IMPLEMENT_VISIT_PROC(FunctionCall)
-{
-    PushFunctionCall(ast);
-    {
-        /* Analyze function arguments first */
-        Visit(ast->arguments);
-
-        /* Then analyze function name */
-        if (ast->varIdent)
-        {
-            if (ast->varIdent->next)
-            {
-                /* Check if the function call refers to an intrinsic */
-                auto intrIt = HLSLIntrinsicAdept::GetIntrinsicMap().find(ast->varIdent->next->ident);
-                if (intrIt != HLSLIntrinsicAdept::GetIntrinsicMap().end())
-                {
-                    auto intrinsic = intrIt->second.intrinsic;
-
-                    /* Analyze variable identifier (symbolRef is needed next) */
-                    AnalyzeVarIdent(ast->varIdent.get());
-
-                    /* Verify intrinsic for respective object class */
-                    if (AnalyzeMemberIntrinsic(intrinsic, ast))
-                        AnalyzeFunctionCallIntrinsicPrimary(ast, intrIt->second);
-                }
-                else
-                    AnalyzeFunctionCallStandard_OBSOLETE(ast);
-            }
-            else
-            {
-                /* Does the function call refer to an intrinsic? */
-                auto intrIt = HLSLIntrinsicAdept::GetIntrinsicMap().find(ast->varIdent->ident);
-                if (intrIt != HLSLIntrinsicAdept::GetIntrinsicMap().end())
-                {
-                    /* Is this a global intrinsic? */
-                    if (IsGlobalIntrinsic(intrIt->second.intrinsic))
-                        AnalyzeFunctionCallIntrinsicPrimary(ast, intrIt->second);
-                    else
-                        AnalyzeFunctionCallStandard_OBSOLETE(ast);
-                }
-                else
-                    AnalyzeFunctionCallStandard_OBSOLETE(ast);
-            }
-        }
-
-        /* Analyze all l-value arguments that are assigned to output parameters */
-        ast->ForEachOutputArgument(
-            [this](ExprPtr& argExpr)
-            {
-                auto expr = argExpr.get();
-                AnalyzeLValueExpr(expr);
-            }
-        );
-    }
-    PopFunctionCall();
-}
-
-#endif
-
 IMPLEMENT_VISIT_PROC(ArrayDimension)
 {
     if (ast->expr && ast->expr->Type() != AST::Types::NullExpr)
@@ -1579,41 +1518,9 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
     #undef COMMON_SEMANTICS_EX
 }
 
-#if 0//TODO: replace by "AnalyzeEntryPointOutput(ObjectExpr*)" function
-
-void HLSLAnalyzer::AnalyzeEntryPointOutput(VarIdent* varIdent)
-{
-    if (varIdent)
-    {
-        if (auto varDecl = varIdent->FetchVarDecl())
-        {
-            /* Mark variable as entry-point output */
-            varDecl->flags << VarDecl::isEntryPointOutput;
-
-            if (auto structSymbolRef = varDecl->GetTypeDenoter()->Get()->SymbolRef())
-            {
-                if (auto structDecl = structSymbolRef->As<StructDecl>())
-                {
-                    /* Add variable as instance to this structure as entry point output */
-                    structDecl->shaderOutputVarDeclRefs.insert(varDecl);
-
-                    /* Add variable as parameter-structure to entry point */
-                    if (program_->entryPointRef)
-                        program_->entryPointRef->paramStructs.push_back({ varIdent, nullptr, varDecl, structDecl });
-                        
-                    /* Mark variable as local variable of the entry-point */
-                    varDecl->flags << VarDecl::isEntryPointLocal;
-                }
-            }
-        }
-    }
-}
-
-#endif
-
-#if 1//TODO: make this standard
-
-// ~~~~~~~~~ TODO: refactore 'program_->entryPointRef->paramStructs' !!! ~~~~~~~~~~
+/*
+~~~~~~~~~ TODO: refactore 'program_->entryPointRef->paramStructs' !!! ~~~~~~~~~~
+*/
 
 void HLSLAnalyzer::AnalyzeEntryPointOutput(const ObjectExpr* objectExpr)
 {
@@ -1642,8 +1549,6 @@ void HLSLAnalyzer::AnalyzeEntryPointOutput(const ObjectExpr* objectExpr)
         }
     }
 }
-
-#endif
 
 /* ----- Inactive entry point ----- */
 

@@ -276,9 +276,6 @@ IMPLEMENT_VISIT_PROC(CallExpr)
 {
     Visit(ast->prefixExpr);
     Visit(ast->arguments);
-    #if 0//TODO: remove
-    Visit(ast->call);
-    #endif
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)

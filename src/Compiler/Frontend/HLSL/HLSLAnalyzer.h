@@ -48,9 +48,6 @@ class HLSLAnalyzer : public Analyzer
 
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
-        #if 0//TODO: remove
-        DECL_VISIT_PROC( FunctionCall      );
-        #endif
         DECL_VISIT_PROC( ArrayDimension    );
         DECL_VISIT_PROC( TypeSpecifier     );
         
@@ -129,13 +126,7 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std::vector<Semantic>& inSemantics, const std::vector<Semantic>& outSemantics);
 
-        #if 0//TODO: replace by "AnalyzeEntryPointOutput(ObjectExpr*)" function
-        void AnalyzeEntryPointOutput(VarIdent* varIdent);
-        #endif
-
-        #if 1//TODO: make this standard
         void AnalyzeEntryPointOutput(const ObjectExpr* objectExpr);
-        #endif
 
         /* ----- Secondary entry point ----- */
 

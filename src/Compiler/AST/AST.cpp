@@ -1321,12 +1321,6 @@ TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter()
 
 /* ----- CallExpr ----- */
 
-#if 0//TODO: remove this
-TypeDenoterPtr CallExpr::DeriveTypeDenoter()
-{
-    return call->GetTypeDenoter();
-}
-#else
 TypeDenoterPtr CallExpr::DeriveTypeDenoter()
 {
     if (funcDeclRef)
@@ -1354,7 +1348,6 @@ TypeDenoterPtr CallExpr::DeriveTypeDenoter()
     else
         RuntimeErr(R_MissingFuncRefToDeriveExprType, this);
 }
-#endif
 
 IndexedSemantic CallExpr::FetchSemantic() const
 {
@@ -1627,11 +1620,7 @@ TypeDenoterPtr ArrayExpr::DeriveTypeDenoter()
 {
     try
     {
-        #if 0//TODO: remove
-        return prefixExpr->GetTypeDenoter()->GetFromArray(arrayIndices.size());
-        #else
         return prefixExpr->GetTypeDenoter()->GetSub(this);
-        #endif
     }
     catch (const std::exception& e)
     {

@@ -112,19 +112,6 @@ class GLSLConverter : public Visitor
         // Returns true if the variable is a global input/output variable declaration.
         bool IsGlobalInOutVarDecl(VarDecl* varDecl) const;
 
-        #if 0//TODO: remove
-        
-        // Returns true if the variable identifier refers to a global input or output variable declaration.
-        bool HasGlobalInOutVarDecl(VarIdent* varIdent) const;
-
-        /*
-        Changes the specified variable identifier to a local variable identifier
-        (without a leading structure instance name), if it refers to a global input/output variable.
-        */
-        void PopFrontOfGlobalInOutVarIdent(VarIdent* ast);
-
-        #endif
-
         /*
         Converts the specified statement to a code block and inserts itself into this code block (if it is a return statement within the entry point).
         This is used to ensure a new scope within a control flow statement (e.g. if-statement).

@@ -203,41 +203,6 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     VISIT_DEFAULT(SwitchCase);
 }
 
-#if 0//TODO: remove
-
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    /* Has the variable identifier a next identifier? */
-    if (ast->next)
-    {
-        /* Does this identifier refer to a variable declaration? */
-        if (auto varDecl = ast->FetchVarDecl())
-        {
-            /* Is its type denoter a structure? */
-            auto varTypeDen = varDecl->declStmntRef->typeSpecifier->typeDenoter.get();
-            if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
-            {
-                /* Can the structure be resolved */
-                auto structDecl = structTypeDen->structDeclRef;
-                if (structDecl->flags(StructDecl::isNonEntryPointParam))
-                {
-                    /* Mark variable identifier to be immutable */
-                    ast->flags << VarIdent::isImmutable;
-                }
-                else
-                {
-                    /* Pop front identifier node for global input/output variables */
-                    PopFrontOfGlobalInOutVarIdent(ast);
-                }
-            }
-        }
-    }
-    
-    VISIT_DEFAULT(VarIdent);
-}
-
-#endif
-
 /* --- Declarations --- */
 
 IMPLEMENT_VISIT_PROC(VarDecl)
@@ -647,44 +612,6 @@ bool GLSLConverter::IsGlobalInOutVarDecl(VarDecl* varDecl) const
     }
     return false;
 }
-
-#if 0//TODO: remove
-
-bool GLSLConverter::HasGlobalInOutVarDecl(VarIdent* varIdent) const
-{
-    /* Has variable identifier a reference to a variable declaration? */
-    return IsGlobalInOutVarDecl(varIdent->FetchVarDecl());
-}
-
-void GLSLConverter::PopFrontOfGlobalInOutVarIdent(VarIdent* ast)
-{
-    auto root = ast;
-
-    while (ast)
-    {
-        /* Refers the current identifier to a global input/output variable? */
-        if (HasGlobalInOutVarDecl(ast))
-        {
-            /*
-            Remove all leading AST nodes until this one, to convert this
-            variable identifer to an identifier for a local variable
-            */
-            while (root && !HasGlobalInOutVarDecl(root))
-            {
-                root->PopFront();
-                root = root->next.get();
-            }
-
-            /* Stop conversion process */
-            break;
-        }
-
-        /* Continue search in next node */
-        ast = ast->next.get();
-    }
-}
-
-#endif
 
 void GLSLConverter::MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& stmnt)
 {
