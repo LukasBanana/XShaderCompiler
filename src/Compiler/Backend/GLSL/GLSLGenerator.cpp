@@ -1749,113 +1749,6 @@ void GLSLGenerator::WriteGlobalUniformsParameter(VarDeclStmnt* param)
     EndLn();
 }
 
-#if 0//TODO: remove
-
-/* ----- VarIdent ----- */
-
-/*
-Find the first VarIdent with a system value semantic,
-and keep the remaining AST nodes (i.e. ast->next) which might be vector subscriptions (e.g. "gl_Position.xyz").
-*/
-VarIdent* GLSLGenerator::FindSystemValueVarIdent(VarIdent* varIdent)
-{
-    while (varIdent)
-    {
-        /* Check if current var-ident AST node has a system semantic */
-        if (SystemValueToKeyword(varIdent->FetchSemantic()) != nullptr)
-            return varIdent;
-
-        /* Search in next var-ident AST node */
-        varIdent = varIdent->next.get();
-    }
-    return nullptr;
-}
-
-const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* varIdent)
-{
-    /* Check if a function declaration has changed it's name during conversion */
-    if (auto funcDecl = varIdent->FetchFunctionDecl())
-        return funcDecl->ident;
-
-    /* Check if a declaration object (variable, structure, sampler, buffer) has changed it's name during conversion */
-    if (auto obj = varIdent->FetchDecl())
-        return obj->ident;
-
-    /* Return default identifier */
-    return varIdent->ident;
-}
-
-void GLSLGenerator::WriteVarIdent(VarIdent* varIdent, bool recursive, bool originalIdent)
-{
-    /* Write identifier */
-    Write(originalIdent ? varIdent->ident : FinalIdentFromVarIdent(varIdent));
-
-    /* Write array index expressions */
-    WriteArrayIndices(varIdent->arrayIndices);
-
-    if (recursive && varIdent->next)
-    {
-        Write(".");
-        WriteVarIdent(varIdent->next.get(), true, true);
-    }
-}
-
-/*
-Writes either the variable identifier as it is (e.g. "vertexOutput.position.xyz"),
-or a system value if the identifier has a system value semantix (e.g. "gl_Position.xyz").
-*/
-void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* varIdent)
-{
-    /* Find system value semantic in variable identifier */
-    auto semanticVarIdent = FindSystemValueVarIdent(varIdent);
-
-    std::unique_ptr<std::string> semanticKeyword;
-    Flags varFlags;
-
-    if (semanticVarIdent)
-    {
-        if (auto varDecl = semanticVarIdent->FetchVarDecl())
-        {
-            /* Copy flags from variable */
-            varFlags = varDecl->flags;
-
-            /* Is this variable an entry-point output semantic, or an r-value? */
-            if (GetProgram()->entryPointRef->outputSemantics.Contains(varDecl) || !varDecl->flags(Decl::isWrittenTo))
-                semanticKeyword = SystemValueToKeyword(varDecl->semantic);
-        }
-    }
-
-    if (semanticVarIdent && semanticKeyword)
-    {
-        /* Write "gl_in[]" or "gl_out[]" in front of identifier */
-        if (!varIdent->arrayIndices.empty())
-        {
-            if (varFlags(VarDecl::isShaderInput))
-                Write("gl_in");
-            else
-                Write("gl_out");
-            WriteArrayIndices(varIdent->arrayIndices);
-            Write(".");
-        }
-
-        /* Write shader target respective system semantic */
-        Write(*semanticKeyword);
-
-        if (semanticVarIdent->next)
-        {
-            Write(".");
-            Visit(semanticVarIdent->next);
-        }
-    }
-    else
-    {
-        /* Write default variable identifier */
-        Visit(varIdent);
-    }
-}
-
-#endif
-
 void GLSLGenerator::WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIndex)
 {
     /* Find system value semantic in variable identifier */
@@ -2269,25 +2162,6 @@ void GLSLGenerator::AssertIntrinsicNumArgs(CallExpr* funcCall, std::size_t numAr
 void GLSLGenerator::WriteCallExprStandard(CallExpr* funcCall)
 {
     /* Write function name */
-    //TODO: replace this by "funcCall->ident"
-    #if 0
-    if (funcCall->varIdent)
-    {
-        if (funcCall->intrinsic != Intrinsic::Undefined && !IsWrappedIntrinsic(funcCall->intrinsic))
-        {
-            /* Write GLSL intrinsic keyword */
-            if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
-                Write(*keyword);
-            else
-                ErrorIntrinsic(funcCall->varIdent->Last()->ToString(), funcCall);
-        }
-        else
-        {
-            /* Write function identifier */
-            Visit(funcCall->varIdent);
-        }
-    }
-    #endif
     if (funcCall->intrinsic != Intrinsic::Undefined)
     {
         if (!IsWrappedIntrinsic(funcCall->intrinsic))

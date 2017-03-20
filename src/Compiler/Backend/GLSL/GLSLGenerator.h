@@ -193,24 +193,7 @@ class GLSLGenerator : public Generator
         void WriteGlobalUniforms();
         void WriteGlobalUniformsParameter(VarDeclStmnt* param);
 
-        #if 0//TODO: remove
-
-        /* ----- VarIdent ----- */
-
-        // Returns the first VarIdent AST node which has a system value semantic, or null if no such AST node was found.
-        VarIdent* FindSystemValueVarIdent(VarIdent* varIdent);
-
-        // Returns the final identifier string from the specified variable identifier.
-        const std::string& FinalIdentFromVarIdent(VarIdent* varIdent);
-
-        void WriteVarIdent(VarIdent* ast, bool recursive = true, bool originalIdent = false);
-
-        // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
-        void WriteVarIdentOrSystemValue(VarIdent* varIdent);
-
-        #endif
-
-        // Writes the specified variable identifier or a system value if the VarIdent has a system value semantic.
+        // Writes the specified variable identifier or a system value if the identifier has a system value semantic.
         void WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIndex = -1);
 
         /* ----- Object expression ----- */
