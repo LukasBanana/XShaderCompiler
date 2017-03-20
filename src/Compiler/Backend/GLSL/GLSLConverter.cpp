@@ -144,7 +144,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     VISIT_DEFAULT(CodeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+IMPLEMENT_VISIT_PROC(CallExpr)
 {
     Visit(ast->prefixExpr);
 

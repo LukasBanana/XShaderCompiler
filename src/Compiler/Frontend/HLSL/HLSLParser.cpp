@@ -1418,7 +1418,7 @@ ExprPtr HLSLParser::ParsePrimaryExprPrefix()
         {
             auto objectExpr = std::static_pointer_cast<ObjectExpr>(preParsedAST);
             if (Is(Tokens::LBracket))
-                return ParseFunctionCallExpr(objectExpr);
+                return ParseCallExpr(objectExpr);
             else
                 return objectExpr;
         }
@@ -1432,7 +1432,7 @@ ExprPtr HLSLParser::ParsePrimaryExprPrefix()
     if (IsModifier())
         return ParseTypeSpecifierExpr();
     if (IsDataType() || Is(Tokens::Struct))
-        return ParseTypeSpecifierOrFunctionCallExpr();
+        return ParseTypeSpecifierOrCallExpr();
     if (Is(Tokens::UnaryOp) || IsArithmeticUnaryExpr())
         return ParseUnaryExpr();
     if (Is(Tokens::LBracket))
@@ -1440,7 +1440,7 @@ ExprPtr HLSLParser::ParsePrimaryExprPrefix()
     if (Is(Tokens::LCurly))
         return ParseInitializerExpr();
     if (Is(Tokens::Ident))
-        return ParseObjectOrFunctionCallExpr();
+        return ParseObjectOrCallExpr();
 
     ErrorUnexpected(R_ExpectedPrimaryExpr, nullptr, true);
 
@@ -1455,7 +1455,7 @@ ExprPtr HLSLParser::ParseExprWithSuffixOpt(ExprPtr expr)
         if (Is(Tokens::LParen))
             expr = ParseArrayExpr(expr);
         else if (Is(Tokens::Dot) || Is(Tokens::DColon))
-            expr = ParseObjectOrFunctionCallExpr(expr);
+            expr = ParseObjectOrCallExpr(expr);
         else if (Is(Tokens::AssignOp))
             expr = ParseAssignExpr(expr);
         else
@@ -1481,7 +1481,7 @@ LiteralExprPtr HLSLParser::ParseLiteralExpr()
     return UpdateSourceArea(ast);
 }
 
-ExprPtr HLSLParser::ParseTypeSpecifierOrFunctionCallExpr()
+ExprPtr HLSLParser::ParseTypeSpecifierOrCallExpr()
 {
     /* Parse type denoter with optional structure delcaration */
     if (!IsDataType() && !Is(Tokens::Struct))
@@ -1494,7 +1494,7 @@ ExprPtr HLSLParser::ParseTypeSpecifierOrFunctionCallExpr()
     if (Is(Tokens::LBracket) && !structDecl)
     {
         /* Return function call expression */
-        return ParseFunctionCallExpr(nullptr, typeDenoter);
+        return ParseCallExpr(nullptr, typeDenoter);
     }
 
     /* Return type name expression */
@@ -1635,13 +1635,13 @@ AssignExprPtr HLSLParser::ParseAssignExpr(const ExprPtr& expr)
     return UpdateSourceArea(ast);
 }
 
-ExprPtr HLSLParser::ParseObjectOrFunctionCallExpr(const ExprPtr& expr)
+ExprPtr HLSLParser::ParseObjectOrCallExpr(const ExprPtr& expr)
 {
     /* Parse variable identifier first (for variables and functions) */
     auto objectExpr = ParseObjectExpr(expr);
     
     if (Is(Tokens::LBracket))
-        return ParseFunctionCallExpr(objectExpr);
+        return ParseCallExpr(objectExpr);
 
     return objectExpr;
 }
@@ -1657,10 +1657,10 @@ ArrayExprPtr HLSLParser::ParseArrayExpr(const ExprPtr& expr)
     return UpdateSourceArea(ast, expr.get());
 }
 
-FunctionCallExprPtr HLSLParser::ParseFunctionCallExpr(const ObjectExprPtr& objectExpr, const TypeDenoterPtr& typeDenoter)
+CallExprPtr HLSLParser::ParseCallExpr(const ObjectExprPtr& objectExpr, const TypeDenoterPtr& typeDenoter)
 {
     /* Parse function call expression */
-    auto ast = Make<FunctionCallExpr>();
+    auto ast = Make<CallExpr>();
 
     if (objectExpr)
     {

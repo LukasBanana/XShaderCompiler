@@ -1440,14 +1440,14 @@ TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter()
 }
 
 
-/* ----- FunctionCallExpr ----- */
+/* ----- CallExpr ----- */
 
-TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
+TypeDenoterPtr CallExpr::DeriveTypeDenoter()
 {
     return call->GetTypeDenoter();
 }
 
-IndexedSemantic FunctionCallExpr::FetchSemantic() const
+IndexedSemantic CallExpr::FetchSemantic() const
 {
     /* Return semantic of function declaration */
     if (call->funcDeclRef)

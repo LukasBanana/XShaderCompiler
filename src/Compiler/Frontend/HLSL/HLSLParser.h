@@ -155,15 +155,15 @@ class HLSLParser : public Parser
         ExprPtr                         ParsePrimaryExprPrefix();
         ExprPtr                         ParseExprWithSuffixOpt(ExprPtr expr);
         LiteralExprPtr                  ParseLiteralExpr();
-        ExprPtr                         ParseTypeSpecifierOrFunctionCallExpr();
+        ExprPtr                         ParseTypeSpecifierOrCallExpr();
         TypeSpecifierExprPtr            ParseTypeSpecifierExpr();
         UnaryExprPtr                    ParseUnaryExpr();
         ExprPtr                         ParseBracketOrCastExpr();
         ObjectExprPtr                   ParseObjectExpr(const ExprPtr& expr = nullptr);
         AssignExprPtr                   ParseAssignExpr(const ExprPtr& expr);
-        ExprPtr                         ParseObjectOrFunctionCallExpr(const ExprPtr& expr = nullptr);
+        ExprPtr                         ParseObjectOrCallExpr(const ExprPtr& expr = nullptr);
         ArrayExprPtr                    ParseArrayExpr(const ExprPtr& expr);
-        FunctionCallExprPtr             ParseFunctionCallExpr(const ObjectExprPtr& objectExpr = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
+        CallExprPtr                     ParseCallExpr(const ObjectExprPtr& objectExpr = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
         InitializerExprPtr              ParseInitializerExpr();
 
         std::vector<StmntPtr>           ParseLocalStmntList();

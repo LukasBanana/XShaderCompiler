@@ -70,7 +70,7 @@ class GLSLConverter : public Visitor
 
         DECL_VISIT_PROC( LiteralExpr      );
         DECL_VISIT_PROC( CastExpr         );
-        DECL_VISIT_PROC( FunctionCallExpr );
+        DECL_VISIT_PROC( CallExpr         );
         DECL_VISIT_PROC( ObjectExpr       );
 
         /* ----- Scope functions ----- */

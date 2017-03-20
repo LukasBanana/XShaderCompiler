@@ -253,7 +253,7 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
     }
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+IMPLEMENT_VISIT_PROC(CallExpr)
 {
     IllegalExpr(R_FunctionCall, ast);
 }

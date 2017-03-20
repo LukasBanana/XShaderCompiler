@@ -851,7 +851,7 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
     Write(UnaryOpToString(ast->op));
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+IMPLEMENT_VISIT_PROC(CallExpr)
 {
     Visit(ast->call);
 }

@@ -215,9 +215,9 @@ static std::string IdentWithPrefixOpt(bool hasPrefix, bool isStatic, const std::
     return ((hasPrefix ? (isStatic ? "::" : ".") : "") + ident);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+IMPLEMENT_VISIT_PROC(CallExpr)
 {
-    PRINT_AST_EXT(FunctionCallExpr, IdentWithPrefixOpt(ast->prefixExpr != nullptr, ast->isStatic, ast->call->ident));
+    PRINT_AST_EXT(CallExpr, IdentWithPrefixOpt(ast->prefixExpr != nullptr, ast->isStatic, ast->call->ident));
 }
 
 IMPLEMENT_VISIT_PROC_DEFAULT(BracketExpr)

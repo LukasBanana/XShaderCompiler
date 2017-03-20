@@ -24,15 +24,15 @@ namespace ASTFactory
 
 /* ----- Make functions ----- */
 
-FunctionCallExprPtr             MakeIntrinsicCallExpr(
+CallExprPtr                     MakeIntrinsicCallExpr(
     const Intrinsic intrinsic, const std::string& ident,
     const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments
 );
 
-FunctionCallExprPtr             MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, const ExprPtr& samplerObjectExpr);
+CallExprPtr                     MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, const ExprPtr& samplerObjectExpr);
 
 // Makes a type constructor function call.
-FunctionCallExprPtr             MakeTypeCtorCallExpr(const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments);
+CallExprPtr                     MakeTypeCtorCallExpr(const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments);
 
 CastExprPtr                     MakeCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr);
 CastExprPtr                     MakeLiteralCastExpr(const TypeDenoterPtr& typeDenoter, const DataType literalType, const std::string& literalValue);

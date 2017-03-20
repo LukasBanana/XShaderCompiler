@@ -204,13 +204,13 @@ void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::Samp
     {
         try
         {
-            if (auto funcCallExpr = ast->value->As<FunctionCallExpr>())
+            if (auto callExpr = ast->value->As<CallExpr>())
             {
-                if (funcCallExpr->call->typeDenoter && funcCallExpr->call->typeDenoter->IsVector() && funcCallExpr->call->arguments.size() == 4)
+                if (callExpr->call->typeDenoter && callExpr->call->typeDenoter->IsVector() && callExpr->call->arguments.size() == 4)
                 {
                     /* Evaluate sub expressions to constant floats */
                     for (std::size_t i = 0; i < 4; ++i)
-                        samplerState.borderColor[i] = EvaluateConstExprFloat(*funcCallExpr->call->arguments[i]);
+                        samplerState.borderColor[i] = EvaluateConstExprFloat(*callExpr->call->arguments[i]);
                 }
                 else
                     throw std::string(R_InvalidTypeOrArgCount);

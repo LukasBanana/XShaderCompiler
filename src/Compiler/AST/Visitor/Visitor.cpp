@@ -277,7 +277,7 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
     Visit(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+IMPLEMENT_VISIT_PROC(CallExpr)
 {
     Visit(ast->prefixExpr);
     Visit(ast->call);

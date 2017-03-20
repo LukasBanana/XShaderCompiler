@@ -125,7 +125,7 @@ struct AST
         BinaryExpr,
         UnaryExpr,
         PostUnaryExpr,
-        FunctionCallExpr,
+        CallExpr,
         BracketExpr,
         ObjectExpr,
         AssignExpr,
@@ -349,7 +349,7 @@ struct SamplerValue : public AST
     ExprPtr     value;  // Sampler state value expression
 };
 
-//TODO: merge this AST class into "FunctionCallExpr".
+//TODO: merge this AST class into "CallExpr".
 // Function call.
 struct FunctionCall : public TypedAST
 {
@@ -390,7 +390,7 @@ struct FunctionCall : public TypedAST
     Intrinsic               intrinsic           = Intrinsic::Undefined; // Intrinsic ID (if this is an intrinsic).
     std::vector<Expr*>      defaultArgumentRefs;                        // Reference to default argument expressions of all remaining parameters
 
-    FunctionCallExpr*       exprRef             = nullptr;              // Reference to the function call expression (parent node).
+    CallExpr*       exprRef             = nullptr;              // Reference to the function call expression (parent node).
 };
 
 // Attribute (e.g. "[unroll]" or "[numthreads(x,y,z)]").
@@ -1076,11 +1076,10 @@ struct PostUnaryExpr : public Expr
     UnaryOp op      = UnaryOp::Undefined;
 };
 
-//TODO: rename to "CallExpr"
 // Function call expression (e.g. "foo()" or "foo().bar()" or "foo()[0].bar()").
-struct FunctionCallExpr : public Expr
+struct CallExpr : public Expr
 {
-    AST_INTERFACE(FunctionCallExpr);
+    AST_INTERFACE(CallExpr);
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 

@@ -483,11 +483,11 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
         ConvertExpr(ast->expr, WrapUnaryExpr);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+IMPLEMENT_VISIT_PROC(CallExpr)
 {
     ConvertExpr(ast->prefixExpr, AllPreVisit);
     {
-        VISIT_DEFAULT(FunctionCallExpr);
+        VISIT_DEFAULT(CallExpr);
     }
     ConvertExpr(ast->prefixExpr, AllPostVisit);
 }

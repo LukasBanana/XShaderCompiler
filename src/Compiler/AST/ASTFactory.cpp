@@ -32,10 +32,10 @@ std::shared_ptr<T> MakeASTWithOrigin(const Origin& origin, Args&&... args)
 
 /* ----- Make functions ----- */
 
-FunctionCallExprPtr MakeIntrinsicCallExpr(
+CallExprPtr MakeIntrinsicCallExpr(
     const Intrinsic intrinsic, const std::string& ident, const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments)
 {
-    auto ast = MakeAST<FunctionCallExpr>();
+    auto ast = MakeAST<CallExpr>();
     {
         auto funcCall = MakeAST<FunctionCall>();
         {
@@ -69,9 +69,9 @@ static SamplerType TextureTypeToSamplerType(const BufferType t)
     }
 }
 
-FunctionCallExprPtr MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, const ExprPtr& samplerObjectExpr)
+CallExprPtr MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, const ExprPtr& samplerObjectExpr)
 {
-    auto ast = MakeAST<FunctionCallExpr>();
+    auto ast = MakeAST<CallExpr>();
     {
         auto funcCall = MakeAST<FunctionCall>();
         {
@@ -88,9 +88,9 @@ FunctionCallExprPtr MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObje
     return ast;
 }
 
-FunctionCallExprPtr MakeTypeCtorCallExpr(const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments)
+CallExprPtr MakeTypeCtorCallExpr(const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments)
 {
-    auto ast = MakeAST<FunctionCallExpr>();
+    auto ast = MakeAST<CallExpr>();
     {
         auto funcCall = MakeAST<FunctionCall>();
         {

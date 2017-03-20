@@ -50,7 +50,7 @@ class ConstExprEvaluator : private Visitor
         DECL_VISIT_PROC( BinaryExpr        );
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
-        DECL_VISIT_PROC( FunctionCallExpr  );
+        DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( BracketExpr       );
         DECL_VISIT_PROC( AssignExpr        );
         DECL_VISIT_PROC( ObjectExpr        );
@@ -60,9 +60,9 @@ class ConstExprEvaluator : private Visitor
 
         /* === Members === */
 
-        std::stack<Variant> variantStack_;
+        std::stack<Variant>     variantStack_;
 
-        OnObjectExprCallback onObjectExprCallback_;
+        OnObjectExprCallback    onObjectExprCallback_;
 
 };
 

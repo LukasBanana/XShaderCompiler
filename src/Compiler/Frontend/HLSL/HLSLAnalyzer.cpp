@@ -570,8 +570,8 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
     /* Analyze wrapper inlining for intrinsic calls */
     if (!preferWrappers_)
     {
-        if (auto funcCallExpr = ast->expr->As<FunctionCallExpr>())
-            AnalyzeIntrinsicWrapperInlining(funcCallExpr->call.get());
+        if (auto callExpr = ast->expr->As<CallExpr>())
+            AnalyzeIntrinsicWrapperInlining(callExpr->call.get());
     }
 }
 
@@ -635,9 +635,9 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
         AnalyzeLValueExpr(ast->expr.get(), ast);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+IMPLEMENT_VISIT_PROC(CallExpr)
 {
-    AnalyzeFunctionCallExpr(ast);
+    AnalyzeCallExpr(ast);
 }
 
 IMPLEMENT_VISIT_PROC(AssignExpr)
@@ -661,11 +661,9 @@ IMPLEMENT_VISIT_PROC(ArrayExpr)
 
 #undef IMPLEMENT_VISIT_PROC
 
-/* --- Helper functions for context analysis --- */
+/* ----- Call expressions ----- */
 
-#if 1//TODO: make this standard
-
-void HLSLAnalyzer::AnalyzeFunctionCallExpr(FunctionCallExpr* expr)
+void HLSLAnalyzer::AnalyzeCallExpr(CallExpr* expr)
 {
     try
     {
@@ -937,8 +935,6 @@ void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(FunctionCall* funcCall)
         funcCall->flags << FunctionCall::canInlineIntrinsicWrapper;
     }
 }
-
-#endif
 
 #if 0//TODO: remove
 

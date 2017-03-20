@@ -77,14 +77,14 @@ class HLSLAnalyzer : public Analyzer
 
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
-        DECL_VISIT_PROC( FunctionCallExpr  );
+        DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( AssignExpr        );
         DECL_VISIT_PROC( ObjectExpr        );
         DECL_VISIT_PROC( ArrayExpr         );
 
-        /* ----- Function call ----- */
+        /* ----- Call expressions ----- */
 
-        void AnalyzeFunctionCallExpr(FunctionCallExpr* expr);
+        void AnalyzeCallExpr(CallExpr* expr);
 
         void AnalyzeFunctionCall(FunctionCall* funcCall, bool isStatic = false, const Expr* prefixExpr = nullptr, const TypeDenoter* prefixTypeDenoter = nullptr);
         void AnalyzeFunctionCallStandard(FunctionCall* funcCall, bool isStatic = false, const Expr* prefixExpr = nullptr, const TypeDenoter* prefixTypeDenoter = nullptr);
