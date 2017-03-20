@@ -235,9 +235,11 @@ class GLSLGenerator : public Generator
         void WriteCallExprIntrinsicRcp(CallExpr* callExpr);
         void WriteCallExprIntrinsicClip(CallExpr* callExpr);
         void WriteCallExprIntrinsicAtomic(CallExpr* callExpr);
-        void WriteCallExprIntrinsicImageAtomic(CallExpr* callExpr);
+        void WriteCallExprIntrinsicAtomicCompSwap(CallExpr* callExpr);
         void WriteCallExprIntrinsicStreamOutputAppend(CallExpr* callExpr);
         void WriteCallExprIntrinsicTextureQueryLod(CallExpr* callExpr, bool clamped);
+
+        void WriteCallExprArguments(CallExpr* callExpr, std::size_t firstArgIndex = 0, std::size_t numWriteArgs = ~0u);
 
         /* ----- Intrinsics wrapper ----- */
 

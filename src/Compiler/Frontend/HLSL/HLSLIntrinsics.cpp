@@ -601,6 +601,10 @@ std::vector<std::size_t> HLSLIntrinsicAdept::GetIntrinsicOutputParameterIndices(
         case Intrinsic::InterlockedXor:
             return { 2 };
 
+        // InterlockedCompareExchange(R dest, T compare_value, T value, out T original_value)
+        case Intrinsic::InterlockedCompareExchange:
+            return { 3 };
+
         // sincos(x, out s, out c)
         case Intrinsic::SinCos:
             return { 1, 2 };
