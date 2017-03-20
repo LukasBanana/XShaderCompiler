@@ -211,9 +211,9 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     OptimizeExpr(ast->rvalueExpr);
 }
 
-IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+IMPLEMENT_VISIT_PROC(ArrayExpr)
 {
-    VISIT_DEFAULT(ArrayAccessExpr);
+    VISIT_DEFAULT(ArrayExpr);
     for (auto& subExpr : ast->arrayIndices)
         OptimizeExpr(subExpr);
 }

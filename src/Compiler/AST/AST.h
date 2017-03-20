@@ -129,7 +129,7 @@ struct AST
         BracketExpr,
         ObjectExpr,
         AssignExpr,
-        ArrayAccessExpr,
+        ArrayExpr,
         CastExpr,
         InitializerExpr,
     };
@@ -1165,9 +1165,9 @@ struct ObjectExpr : public Expr
 };
 
 // Array-access expression (e.g. "foo()[arrayAccess]").
-struct ArrayAccessExpr : public Expr
+struct ArrayExpr : public Expr
 {
-    AST_INTERFACE(ArrayAccessExpr);
+    AST_INTERFACE(ArrayExpr);
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 

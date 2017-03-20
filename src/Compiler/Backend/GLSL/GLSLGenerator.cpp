@@ -875,7 +875,7 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     Visit(ast->rvalueExpr);
 }
 
-IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+IMPLEMENT_VISIT_PROC(ArrayExpr)
 {
     Visit(ast->prefixExpr);
     WriteArrayIndices(ast->arrayIndices);

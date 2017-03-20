@@ -654,9 +654,9 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
     AnalyzeObjectExpr(ast);
 }
 
-IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+IMPLEMENT_VISIT_PROC(ArrayExpr)
 {
-    AnalyzeArrayAccessExpr(ast);
+    AnalyzeArrayExpr(ast);
 }
 
 #undef IMPLEMENT_VISIT_PROC
@@ -1392,9 +1392,9 @@ void HLSLAnalyzer::AnalyzeLValueExprObject(const ObjectExpr* objectExpr, const A
     }
 }
 
-/* ----- Array access expression ----- */
+/* ----- Array expressions ----- */
 
-void HLSLAnalyzer::AnalyzeArrayAccessExpr(ArrayAccessExpr* expr)
+void HLSLAnalyzer::AnalyzeArrayExpr(ArrayExpr* expr)
 {
     try
     {

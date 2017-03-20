@@ -273,7 +273,7 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
     Push(onObjectExprCallback_(ast));
 }
 
-IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+IMPLEMENT_VISIT_PROC(ArrayExpr)
 {
     //TODO: incomplete!
     Visit(ast->prefixExpr);

@@ -299,7 +299,7 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
     Visit(ast->prefixExpr);
 }
 
-IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+IMPLEMENT_VISIT_PROC(ArrayExpr)
 {
     Visit(ast->prefixExpr);
     Visit(ast->arrayIndices);

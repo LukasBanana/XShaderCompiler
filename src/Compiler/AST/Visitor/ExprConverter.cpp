@@ -202,15 +202,15 @@ void ExprConverter::ConvertExprImageAccess(ExprPtr& expr)
         /* Is this an array access to an image buffer or texture? */
         if (auto assignExpr = expr->As<AssignExpr>())
             ConvertExprImageAccessAssign(expr, assignExpr);
-        else if (auto arrayAccessExpr = expr->As<ArrayAccessExpr>())
-            ConvertExprImageAccessArrayAccess(expr, arrayAccessExpr);
+        else if (auto arrayExpr = expr->As<ArrayExpr>())
+            ConvertExprImageAccessArray(expr, arrayExpr);
     }
 }
 
 void ExprConverter::ConvertExprImageAccessAssign(ExprPtr& expr, AssignExpr* assignExpr)
 {
-    if (auto arrayAccessExpr = assignExpr->lvalueExpr->As<ArrayAccessExpr>())
-        ConvertExprImageAccessArrayAccess(expr, arrayAccessExpr, assignExpr);
+    if (auto arrayExpr = assignExpr->lvalueExpr->As<ArrayExpr>())
+        ConvertExprImageAccessArray(expr, arrayExpr, assignExpr);
 }
 
 /*
@@ -219,10 +219,10 @@ conversion is wrong when the index expression contains a function call and the a
 e.g. "rwTex[getIndex()] += 2;" --> "imageStore(rwTex, getIndex(), imageLoad(rwTex, getIndex()) + 2)"
 results in two function calls! Thus the index expression must be moved into a separated statement.
 */
-void ExprConverter::ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr, AssignExpr* assignExpr)
+void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayExpr, AssignExpr* assignExpr)
 {
     /* Fetch buffer type denoter from l-value prefix expression */
-    const auto& prefixTypeDen = arrayAccessExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+    const auto& prefixTypeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetAliased();
     if (auto bufferTypeDen = prefixTypeDen.As<BufferTypeDenoter>())
     {
         if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
@@ -232,16 +232,16 @@ void ExprConverter::ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccess
             if (IsRWTextureBufferType(bufferType))
             {
                 /* Get buffer type denoter from array indices of array access plus identifier */
-                auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetSub(arrayAccessExpr);
+                auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetSub(arrayExpr);
 
-                if (!arrayAccessExpr->arrayIndices.empty())
+                if (!arrayExpr->arrayIndices.empty())
                 {
                     /* Make first argument expression */
-                    auto arg0Expr = arrayAccessExpr->prefixExpr;
+                    auto arg0Expr = arrayExpr->prefixExpr;
                     arg0Expr->flags << Expr::wasConverted;
 
                     /* Get second argument expression (last array index) */
-                    auto arg1Expr = arrayAccessExpr->arrayIndices.back();
+                    auto arg1Expr = arrayExpr->arrayIndices.back();
 
                     if (assignExpr)
                     {
@@ -281,7 +281,7 @@ void ExprConverter::ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccess
                     }
                 }
                 else
-                    RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), arrayAccessExpr);
+                    RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), arrayExpr);
             }
         }
     }

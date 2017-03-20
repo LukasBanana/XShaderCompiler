@@ -162,7 +162,7 @@ class HLSLParser : public Parser
         ObjectExprPtr                   ParseObjectExpr(const ExprPtr& expr = nullptr);
         AssignExprPtr                   ParseAssignExpr(const ExprPtr& expr);
         ExprPtr                         ParseObjectOrFunctionCallExpr(const ExprPtr& expr = nullptr);
-        ArrayAccessExprPtr              ParseArrayAccessExpr(const ExprPtr& expr);
+        ArrayExprPtr                    ParseArrayExpr(const ExprPtr& expr);
         FunctionCallExprPtr             ParseFunctionCallExpr(const ObjectExprPtr& objectExpr = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
         InitializerExprPtr              ParseInitializerExpr();
 

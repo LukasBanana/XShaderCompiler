@@ -1622,9 +1622,9 @@ bool ObjectExpr::IsLValue() const
 #endif
 
 
-/* ----- ArrayAccessExpr ----- */
+/* ----- ArrayExpr ----- */
 
-TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
+TypeDenoterPtr ArrayExpr::DeriveTypeDenoter()
 {
     try
     {
@@ -1640,7 +1640,7 @@ TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
     }
 }
 
-std::size_t ArrayAccessExpr::NumIndices() const
+std::size_t ArrayExpr::NumIndices() const
 {
     return arrayIndices.size();
 }

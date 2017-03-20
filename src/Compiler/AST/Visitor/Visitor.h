@@ -77,7 +77,7 @@ DECL_PTR( FunctionCallExpr  );
 DECL_PTR( BracketExpr       );
 DECL_PTR( ObjectExpr        );
 DECL_PTR( AssignExpr        );
-DECL_PTR( ArrayAccessExpr   );
+DECL_PTR( ArrayExpr         );
 DECL_PTR( CastExpr          );
 DECL_PTR( InitializerExpr   );
 
@@ -150,7 +150,7 @@ class Visitor
         VISITOR_VISIT_PROC( BracketExpr       );
         VISITOR_VISIT_PROC( AssignExpr        );
         VISITOR_VISIT_PROC( ObjectExpr        );
-        VISITOR_VISIT_PROC( ArrayAccessExpr   );
+        VISITOR_VISIT_PROC( ArrayExpr         );
         VISITOR_VISIT_PROC( CastExpr          );
         VISITOR_VISIT_PROC( InitializerExpr   );
 

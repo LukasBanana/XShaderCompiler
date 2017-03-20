@@ -1453,7 +1453,7 @@ ExprPtr HLSLParser::ParseExprWithSuffixOpt(ExprPtr expr)
     while (true)
     {
         if (Is(Tokens::LParen))
-            expr = ParseArrayAccessExpr(expr);
+            expr = ParseArrayExpr(expr);
         else if (Is(Tokens::Dot) || Is(Tokens::DColon))
             expr = ParseObjectOrFunctionCallExpr(expr);
         else if (Is(Tokens::AssignOp))
@@ -1646,12 +1646,12 @@ ExprPtr HLSLParser::ParseObjectOrFunctionCallExpr(const ExprPtr& expr)
     return objectExpr;
 }
 
-ArrayAccessExprPtr HLSLParser::ParseArrayAccessExpr(const ExprPtr& expr)
+ArrayExprPtr HLSLParser::ParseArrayExpr(const ExprPtr& expr)
 {
-    auto ast = Make<ArrayAccessExpr>();
+    auto ast = Make<ArrayExpr>();
 
     /* Take sub expression and parse array dimensions */
-    ast->prefixExpr           = expr;
+    ast->prefixExpr     = expr;
     ast->arrayIndices   = ParseArrayIndexList();
 
     return UpdateSourceArea(ast, expr.get());

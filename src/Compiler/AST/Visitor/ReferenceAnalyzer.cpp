@@ -54,8 +54,8 @@ void ReferenceAnalyzer::MarkLValueExpr(const Expr* expr)
             MarkLValueExprObject(objectExpr);
         else if (auto bracketExpr = expr->As<BracketExpr>())
             MarkLValueExpr(bracketExpr->expr.get());
-        else if (auto arrayAccessExpr = expr->As<ArrayAccessExpr>())
-            MarkLValueExpr(arrayAccessExpr->prefixExpr.get());
+        else if (auto arrayExpr = expr->As<ArrayExpr>())
+            MarkLValueExpr(arrayExpr->prefixExpr.get());
     }
 }
 

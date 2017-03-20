@@ -54,7 +54,7 @@ VarDeclStmntPtr                 MakeVarDeclStmnt(const DataType dataType, const 
 ObjectExprPtr                   MakeObjectExpr(const std::string& ident, Decl* symbolRef = nullptr);
 ObjectExprPtr                   MakeObjectExpr(Decl* symbolRef);
 
-ArrayAccessExprPtr              MakeArrayAccessExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices);
+ArrayExprPtr                    MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices);
 
 // Makes a new bracket expression with the specified sub expression (source area is copied).
 BracketExprPtr                  MakeBracketExpr(const ExprPtr& expr);

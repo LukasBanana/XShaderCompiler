@@ -80,7 +80,7 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( FunctionCallExpr  );
         DECL_VISIT_PROC( AssignExpr        );
         DECL_VISIT_PROC( ObjectExpr        );
-        DECL_VISIT_PROC( ArrayAccessExpr   );
+        DECL_VISIT_PROC( ArrayExpr         );
 
         /* ----- Function call ----- */
 
@@ -129,9 +129,9 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeLValueExpr(const Expr* expr, const AST* ast = nullptr);
         void AnalyzeLValueExprObject(const ObjectExpr* objectExpr, const AST* ast = nullptr);
 
-        /* ----- Array access expression ----- */
+        /* ----- Array expressions ----- */
 
-        void AnalyzeArrayAccessExpr(ArrayAccessExpr* expr);
+        void AnalyzeArrayExpr(ArrayExpr* expr);
 
         /* ----- Entry point ----- */
 

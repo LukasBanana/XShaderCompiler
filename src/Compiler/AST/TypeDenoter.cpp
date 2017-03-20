@@ -104,7 +104,7 @@ TypeDenoterPtr TypeDenoter::GetSub(const Expr* expr)
     {
         if (auto objExpr = expr->As<ObjectExpr>())
             return GetSubObject(objExpr->ident, expr);
-        if (auto arrayExpr = expr->As<ArrayAccessExpr>())
+        if (auto arrayExpr = expr->As<ArrayExpr>())
             return GetSubArray(arrayExpr->NumIndices(), expr);
         RuntimeErr(R_InvalidExprForSubTypeDen(ToString()), expr);
     }

@@ -229,9 +229,9 @@ ObjectExprPtr MakeObjectExpr(Decl* symbolRef)
     return MakeObjectExpr(symbolRef->ident.Original(), symbolRef);
 }
 
-ArrayAccessExprPtr MakeArrayAccessExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices)
+ArrayExprPtr MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices)
 {
-    auto ast = MakeAST<ArrayAccessExpr>();
+    auto ast = MakeAST<ArrayExpr>();
     {
         ast->prefixExpr     = prefixExpr;
         ast->arrayIndices   = MakeArrayIndices(arrayIndices);
@@ -317,7 +317,7 @@ ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arra
     {
         auto assignExpr = MakeAST<AssignExpr>();
         {
-            assignExpr->lvalueExpr  = MakeArrayAccessExpr(MakeObjectExpr(varDecl), arrayIndices);
+            assignExpr->lvalueExpr  = MakeArrayExpr(MakeObjectExpr(varDecl), arrayIndices);
             assignExpr->op          = AssignOp::Set;
             assignExpr->rvalueExpr  = assignExpr;
         }
