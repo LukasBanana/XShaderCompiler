@@ -218,7 +218,7 @@ struct Expr : public TypedAST
     // Returns the variable or null if this is not just a single variable expression.
     VarDecl* FetchVarDecl() const;
 
-    //TODO: all Expr classes must implement this
+    //TODO: maybe add this and let all Expr classes implement this
     #if 0
     // Returns a descriptive string of this expression. By default the name of the expression type is returned.
     virtual std::string ToString() const = 0;
