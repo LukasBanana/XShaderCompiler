@@ -140,15 +140,15 @@ static std::map<DataType, std::string> GenerateDataTypeImageFormatMap()
 
     return
     {
-        { T::Int,       "r32i" },
-        { T::Int2,      "rg32i" },
-        { T::Int4,      "rgba32i" },
-        { T::UInt,      "r32ui" },
-        { T::UInt2,     "rg32ui" },
-        { T::UInt4,     "rgba32ui" },
-        { T::Float,     "r32f" },
-        { T::Float2,    "rg32f" },
-        { T::Float4,    "rgba32f" },
+        { T::Int,       "r32i"      },
+        { T::Int2,      "rg32i"     },
+        { T::Int4,      "rgba32i"   },
+        { T::UInt,      "r32ui"     },
+        { T::UInt2,     "rg32ui"    },
+        { T::UInt4,     "rgba32ui"  },
+        { T::Float,     "r32f"      },
+        { T::Float2,    "rg32f"     },
+        { T::Float4,    "rgba32f"   },
     };
 }
 

@@ -97,15 +97,19 @@ class Scanner
 
         /* ----- Report Handling ----- */
 
+        // Throws an instance of the exception Report class.
         [[noreturn]]
         void Error(const std::string& msg);
 
+        // Throws an 'unexpected character' error.
         [[noreturn]]
         void ErrorUnexpected();
 
+        // Throws an 'unexpected character' error with suggestion which character was expected.
         [[noreturn]]
         void ErrorUnexpected(char expectedChar);
 
+        // Throws an 'unexpected end-of-stream' error.
         [[noreturn]]
         void ErrorUnexpectedEOS();
 

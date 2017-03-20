@@ -38,7 +38,7 @@ SuffixExprPtr                   MakeSuffixExpr(const ExprPtr& expr, const VarIde
 
 ExprPtr                         MakeCastOrSuffixCastExpr(const TypeDenoterPtr& typeDenoter, const ExprPtr& valueExpr, const VarIdentPtr& suffixVarIdent);
 
-BinaryExprPtr                   MakeBinaryExpr(const ExprPtr& lhsExpr, BinaryOp op, const ExprPtr& rhsExpr);
+BinaryExprPtr                   MakeBinaryExpr(const ExprPtr& lhsExpr, const BinaryOp op, const ExprPtr& rhsExpr);
 
 LiteralExprPtr                  MakeLiteralExpr(const DataType literalType, const std::string& literalValue);
 LiteralExprPtr                  MakeLiteralExpr(const Variant& literalValue);

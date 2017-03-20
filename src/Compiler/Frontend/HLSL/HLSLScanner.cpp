@@ -124,10 +124,17 @@ TokenPtr HLSLScanner::ScanToken()
         return Make(Tokens::BinaryOp, spell);
     }
 
+    if (Is(':'))
+    {
+        spell += TakeIt();
+        if (Is(':'))
+            return Make(Tokens::DColon, spell, true);
+        return Make(Tokens::Colon, spell);
+    }
+
     /* Scan punctuation, special characters and brackets */
     switch (Chr())
     {
-        case ':': return Make(Tokens::Colon,     true); break;
         case ';': return Make(Tokens::Semicolon, true); break;
         case ',': return Make(Tokens::Comma,     true); break;
         case '?': return Make(Tokens::TernaryOp, true); break;

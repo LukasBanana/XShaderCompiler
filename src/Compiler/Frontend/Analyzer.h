@@ -152,6 +152,9 @@ class Analyzer : protected Visitor
 
         bool CollectArgumentTypeDenoters(const std::vector<ExprPtr>& args, std::vector<TypeDenoterPtr>& argTypeDens);
 
+        //! Tries to find a similar identifier in the following order: symbol table, structure (if enabled).
+        std::string FetchSimilarIdent(const std::string& ident, StructDecl* structDecl = nullptr) const;
+
         /* === Members === */
 
         ReportHandler           reportHandler_;

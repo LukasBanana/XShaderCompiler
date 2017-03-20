@@ -79,6 +79,9 @@ enum class BinaryOp
 std::string BinaryOpToString(const BinaryOp o);
 BinaryOp StringToBinaryOp(const std::string& s);
 
+// Converts the specified assignment operator to an equivalent binary operator, or returns BinaryOp::Undefined if no conversion is possible.
+BinaryOp AssignOpToBinaryOp(const AssignOp op);
+
 // Returns true if the specified binary operator is a logical operator (&&, ||).
 bool IsLogicalOp(const BinaryOp o);
 

@@ -530,6 +530,7 @@ struct VarIdent : public TypedAST
 
     std::string             ident;                      // Atomic identifier.
     std::vector<ExprPtr>    arrayIndices;               // Optional array indices
+    bool                    nextIsStatic    = false;    // Specifies whether the next node is concatenated with the static double-colon token '::'.
     VarIdentPtr             next;                       // Next identifier; may be null.
 
     AST*                    symbolRef       = nullptr;  // Symbol reference for DAST to the variable object; may be null (e.g. for vector subscripts)
@@ -1079,13 +1080,15 @@ struct PostUnaryExpr : public Expr
     UnaryOp op      = UnaryOp::Undefined;
 };
 
-// Function call expression.
+// Function call expression (e.g. "foo()" or "foo().bar()" or "foo()[0].bar()").
 struct FunctionCallExpr : public Expr
 {
     AST_INTERFACE(FunctionCallExpr);
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    //TODO: add "prefixExpr"
+    //ExprPtr         prefixExpr;   // Optional (left hand side) sub expression; may be null
     FunctionCallPtr call;
 };
 
@@ -1101,6 +1104,7 @@ struct BracketExpr : public Expr
     ExprPtr expr; // Inner expression
 };
 
+//TODO: maybe replace this by "VarAccessExpr"
 // Suffix expression (e.g. "foo().suffix").
 struct SuffixExpr : public Expr
 {
@@ -1119,6 +1123,7 @@ struct ArrayAccessExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
+    //TODO: rename this "prefixExpr" to make the post-order traversal clear
     ExprPtr                 expr;           // Sub expression (left hand side)
     std::vector<ExprPtr>    arrayIndices;   // Array indices (right hand side)
 };
@@ -1143,6 +1148,8 @@ struct VarAccessExpr : public Expr
 
     VarIdent* FetchVarIdent() const override;
 
+    //TODO: add "prefixExpr" and make this a replacement to "SuffixExpr"
+    //ExprPtr   prefixExpr;                         // Optional sub expression (left hand side); may be null
     VarIdentPtr varIdent;
     AssignOp    assignOp    = AssignOp::Undefined;  // May be undefined
     ExprPtr     assignExpr;                         // May be null

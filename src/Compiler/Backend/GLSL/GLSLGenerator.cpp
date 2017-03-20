@@ -411,7 +411,10 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
     {
         BeginLn();
         {
-            WriteBindingSlot(ast->slotRegisters);
+            /* Write layout binding */
+            WriteLayout(
+                { [&]() { WriteLayoutBinding(ast->slotRegisters); } }
+            );
 
             /* Write uniform sampler declaration (sampler declarations must only appear in global scope) */
             Write("uniform sampler " + ast->ident);
@@ -482,11 +485,14 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 
         /* Write uniform buffer declaration */
         BeginLn();
-        Write("layout(std140");
 
-        WriteBindingSlot(ast->slotRegisters, false);
+        WriteLayout(
+            {
+                [&]() { Write("std140"); },
+                [&]() { WriteLayoutBinding(ast->slotRegisters); },
+            }
+        );
 
-        Write(") uniform ");
         Write(ast->ident);
 
         /* Write uniform buffer members */
@@ -1061,85 +1067,93 @@ void GLSLGenerator::WriteGlobalLayouts()
 
 bool GLSLGenerator::WriteGlobalLayoutsTessControl(const Program::LayoutTessControlShader& layout)
 {
-    WriteLn("layout(vertices = " + std::to_string(layout.outputControlPoints) + ") in;");
+    WriteLayoutGlobalIn(
+        {
+            [&]() { Write("vertices = " + std::to_string(layout.outputControlPoints)); },
+        }
+    );
     return true;
 }
 
 bool GLSLGenerator::WriteGlobalLayoutsTessEvaluation(const Program::LayoutTessEvaluationShader& layout)
 {
-    BeginLn();
-    {
-        Write("layout(");
-
-        /* Map GLSL domain type (abstract patch type) */
-        if (auto keyword = AttributeValueToGLSLKeyword(layout.domainType))
-            Write(*keyword);
-        else
-            Error(R_FailedToMapToGLSLKeyword(R_DomainType, R_TessAbstractPatchType));
-
-        if (IsAttributeValuePartitioning(layout.partitioning))
+    WriteLayoutGlobalIn(
         {
-            Write(", ");
+            [&]()
+            {
+                /* Map GLSL domain type (abstract patch type) */
+                if (auto keyword = AttributeValueToGLSLKeyword(layout.domainType))
+                    Write(*keyword);
+                else
+                    Error(R_FailedToMapToGLSLKeyword(R_DomainType, R_TessAbstractPatchType));
+            },
 
-            /* Map GLSL partitioning (spacing) */
-            if (auto keyword = AttributeValueToGLSLKeyword(layout.partitioning))
-                Write(*keyword);
-            else
-                Error(R_FailedToMapToGLSLKeyword(R_Partitioning, R_TessSpacing));
+            [&]()
+            {
+                if (IsAttributeValuePartitioning(layout.partitioning))
+                {
+                    /* Map GLSL partitioning (spacing) */
+                    if (auto keyword = AttributeValueToGLSLKeyword(layout.partitioning))
+                        Write(*keyword);
+                    else
+                        Error(R_FailedToMapToGLSLKeyword(R_Partitioning, R_TessSpacing));
+                }
+            },
+
+            [&]()
+            {
+                if (IsAttributeValueTrianglePartitioning(layout.outputTopology))
+                {
+                    /* Map GLSL output topology (primitive ordering) */
+                    if (auto keyword = AttributeValueToGLSLKeyword(layout.outputTopology))
+                        Write(*keyword);
+                    else
+                        Error(R_FailedToMapToGLSLKeyword(R_OutputToplogy, R_TessPrimitiveOrdering));
+                }
+            },
         }
-
-        if (IsAttributeValueTrianglePartitioning(layout.outputTopology))
-        {
-            Write(", ");
-
-            /* Map GLSL output topology (primitive ordering) */
-            if (auto keyword = AttributeValueToGLSLKeyword(layout.outputTopology))
-                Write(*keyword);
-            else
-                Error(R_FailedToMapToGLSLKeyword(R_OutputToplogy, R_TessPrimitiveOrdering));
-        }
-
-        Write(") in;");
-    }
-    EndLn();
+    );
     return true;
 }
 
 bool GLSLGenerator::WriteGlobalLayoutsGeometry(const Program::LayoutGeometryShader& layout)
 {
     /* Write input layout */
-    BeginLn();
-    {
-        Write("layout(");
-
-        /* Map GLSL input primitive */
-        if (layout.inputPrimitive == PrimitiveType::Undefined)
-            Error(R_MissingInputPrimitiveType(R_GeometryShader));
-        else if (auto keyword = PrimitiveTypeToGLSLKeyword(layout.inputPrimitive))
-            Write(*keyword);
-        else
-            Error(R_FailedToMapToGLSLKeyword(R_InputGeometryPrimitive));
-
-        Write(") in;");
-    }
-    EndLn();
+    WriteLayoutGlobalIn(
+        {
+            [&]()
+            {
+                /* Map GLSL input primitive */
+                if (layout.inputPrimitive == PrimitiveType::Undefined)
+                    Error(R_MissingInputPrimitiveType(R_GeometryShader));
+                else if (auto keyword = PrimitiveTypeToGLSLKeyword(layout.inputPrimitive))
+                    Write(*keyword);
+                else
+                    Error(R_FailedToMapToGLSLKeyword(R_InputGeometryPrimitive));
+            },
+        }
+    );
 
     /* Write output layout */
-    BeginLn();
-    {
-        Write("layout(");
+    WriteLayoutGlobalOut(
+        {
+            [&]()
+            {
+                /* Map GLSL output primitive */
+                if (layout.outputPrimitive == BufferType::Undefined)
+                    Error(R_MissingOutputPrimitiveType(R_GeometryShader));
+                else if (auto keyword = BufferTypeToGLSLKeyword(layout.outputPrimitive))
+                    Write(*keyword);
+                else
+                    Error(R_FailedToMapToGLSLKeyword(R_OutputGeometryPrimitive));
+            },
 
-        /* Map GLSL output primitive */
-        if (layout.outputPrimitive == BufferType::Undefined)
-            Error(R_MissingOutputPrimitiveType(R_GeometryShader));
-        else if (auto keyword = BufferTypeToGLSLKeyword(layout.outputPrimitive))
-            Write(*keyword);
-        else
-            Error(R_FailedToMapToGLSLKeyword(R_OutputGeometryPrimitive));
-
-        Write(", max_vertices = " + std::to_string(layout.maxVertices) + ") out;");
-    }
-    EndLn();
+            [&]()
+            {
+                Write("max_vertices = " + std::to_string(layout.maxVertices));
+            },
+        }
+    );
 
     return true;
 }
@@ -1151,20 +1165,34 @@ bool GLSLGenerator::WriteGlobalLayoutsFragment(const Program::LayoutFragmentShad
     /* Define 'gl_FragCoord' origin to upper-left (not required for Vulkan) */
     if (!IsVKSL() && GetProgram()->layoutFragment.fragCoordUsed)
     {
-        BeginLn();
-        {
-            Write("layout(origin_upper_left");
-            if (layout.pixelCenterInteger)
-                Write(", pixel_center_integer");
-            Write(") in vec4 gl_FragCoord;");
-        }
-        EndLn();
+        WriteLayoutGlobalIn(
+            {
+                [&]()
+                {
+                    Write("origin_upper_left");
+                },
+
+                [&]()
+                {
+                    if (layout.pixelCenterInteger)
+                        Write("pixel_center_integer");
+                },
+            },
+            [&]()
+            {
+                Write("vec4 gl_FragCoord");
+            }
+        );
         layoutsWritten = true;
     }
 
     if (layout.earlyDepthStencil)
     {
-        WriteLn("layout(early_fragment_tests) in;");
+        WriteLayoutGlobalIn(
+            {
+                [&]() { Write("early_fragment_tests"); }
+            }
+        );
         layoutsWritten = true;
     }
 
@@ -1173,15 +1201,13 @@ bool GLSLGenerator::WriteGlobalLayoutsFragment(const Program::LayoutFragmentShad
 
 bool GLSLGenerator::WriteGlobalLayoutsCompute(const Program::LayoutComputeShader& layout)
 {
-    BeginLn();
-    {
-        Write("layout(");
-        Write("local_size_x = " + std::to_string(layout.numThreads[0]) + ", ");
-        Write("local_size_y = " + std::to_string(layout.numThreads[1]) + ", ");
-        Write("local_size_z = " + std::to_string(layout.numThreads[2]));
-        Write(") in;");
-    }
-    EndLn();
+    WriteLayoutGlobalIn(
+        {
+            [&]() { Write("local_size_x = " + std::to_string(layout.numThreads[0])); },
+            [&]() { Write("local_size_y = " + std::to_string(layout.numThreads[1])); },
+            [&]() { Write("local_size_z = " + std::to_string(layout.numThreads[2])); },
+        }
+    );
     return true;
 }
 
@@ -1345,7 +1371,11 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
                 if (it != vertexSemanticsMap_.end())
                 {
                     /* Write layout location and increment use count for warning-feedback */
-                    Write("layout(location = " + std::to_string(it->second.location) + ") ");
+                    WriteLayout(
+                        {
+                            [&]() { Write("location = " + std::to_string(it->second.location)); }
+                        }
+                    );
                     it->second.found = true;
                 }
             }
@@ -1498,9 +1528,15 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
             Separator();
 
             if (semantic.IsSystemValue() && explicitBinding_)
-                Write("layout(location = " + std::to_string(semantic.Index()) + ") out ");
-            else
-                Write("out ");
+            {
+                WriteLayout(
+                    {
+                        [&]() { Write("location = " + std::to_string(semantic.Index())); }
+                    }
+                );
+            }
+
+            Write("out ");
             Separator();
         }
 
@@ -1828,7 +1864,7 @@ void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifie
     {
         /* Only write 'row_major' type modifier (column major is the default) */
         if (typeModifiers.find(TypeModifier::RowMajor) != typeModifiers.end())
-            Write("layout(row_major) ");
+            WriteLayout("row_major");
     }
 
     /* Write const type modifier */
@@ -2511,23 +2547,12 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
     BeginLn();
     {
         /* Write uniform declaration */
-
-        bool imageFormatWritten = false;
-        if (auto genericTypeDen = bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter)
-        {
-            if (auto baseTypeDen = genericTypeDen->As<BaseTypeDenoter>())
+        WriteLayout(
             {
-                auto imageFormatKeyword = DataTypeToImageFormatKeyword(baseTypeDen->dataType, bufferDecl);
-                Write("layout(" + *imageFormatKeyword);
-
-                imageFormatWritten = true;
+                [&]() { WriteLayoutImageFormat(bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter, bufferDecl); },
+                [&]() { WriteLayoutBinding(bufferDecl->slotRegisters); },
             }
-        }
-        
-        WriteBindingSlot(bufferDecl->slotRegisters, !imageFormatWritten);
-
-        if(imageFormatWritten)
-            Write(") ");
+        );
 
         Write("uniform ");
 
@@ -2562,15 +2587,13 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
     /* Write buffer declaration */
     BeginLn();
     {
-        Write("layout(std430");
-
-        if (explicitBinding_)
-        {
-            if (auto slotRegister = Register::GetForTarget(bufferDecl->slotRegisters, GetShaderTarget()))
-                Write(", binding = " + std::to_string(slotRegister->slot));
-        }
-
-        Write(") " + *bufferTypeKeyword + " " + nameMangling_.temporaryPrefix + bufferDecl->ident);
+        WriteLayout(
+            {
+                [&]() { Write("std430"); },
+                [&]() { WriteLayoutBinding(bufferDecl->slotRegisters); },
+            }
+        );
+        Write(*bufferTypeKeyword + " " + nameMangling_.temporaryPrefix + bufferDecl->ident);
     }
     EndLn();
 
@@ -2715,21 +2738,87 @@ void GLSLGenerator::WriteLiteral(const std::string& value, const BaseTypeDenoter
         Error(R_FailedToWriteLiteralType(value), ast);
 }
 
-void GLSLGenerator::WriteBindingSlot(const std::vector<RegisterPtr>& slotRegisters, bool writeCompleteLayout)
+void GLSLGenerator::WriteLayout(const std::initializer_list<LayoutEntryFunctor>& entryFunctors)
+{
+    PushWritePrefix("layout(");
+    {
+        bool firstWritten = false;
+
+        for (const auto& entryFunc : entryFunctors)
+        {
+            /* Write comma separator, if this is not the first entry */
+            if (firstWritten)
+            {
+                /* Push comman separator as prefix for the next layout entry */
+                PushWritePrefix(", ");
+                {
+                    entryFunc();
+                }
+                PopWritePrefix();
+            }
+            else
+            {
+                /* Call function for the first layout entry */
+                entryFunc();
+                firstWritten = true;
+            }
+        }
+
+        if (TopWritePrefix())
+            Write(") ");
+    }
+    PopWritePrefix();
+}
+
+void GLSLGenerator::WriteLayout(const std::string& value)
+{
+    WriteLayout({ [&]() { Write(value); } });
+}
+
+void GLSLGenerator::WriteLayoutGlobal(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor, const std::string& modifier)
+{
+    BeginLn();
+    {
+        WriteLayout(entryFunctors);
+        if (varFunctor)
+        {
+            Write(modifier + ' ');
+            varFunctor();
+            Write(";");
+        }
+        else
+            Write(modifier + ';');
+    }
+    EndLn();
+}
+
+void GLSLGenerator::WriteLayoutGlobalIn(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor)
+{
+    WriteLayoutGlobal(entryFunctors, varFunctor, "in");
+}
+
+void GLSLGenerator::WriteLayoutGlobalOut(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor)
+{
+    WriteLayoutGlobal(entryFunctors, varFunctor, "out");
+}
+
+void GLSLGenerator::WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters)
 {
     if (explicitBinding_)
     {
         if (auto slotRegister = Register::GetForTarget(slotRegisters, GetShaderTarget()))
-        {
-            if (writeCompleteLayout)
-                Write("layout(");
-            else
-                Write(", ");
-            
             Write("binding = " + std::to_string(slotRegister->slot));
+    }
+}
 
-            if (writeCompleteLayout)
-                Write(") ");
+void GLSLGenerator::WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast)
+{
+    if (typeDenoter)
+    {
+        if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
+        {
+            if (auto keyword = DataTypeToImageFormatKeyword(baseTypeDen->dataType, ast))
+                Write(*keyword);
         }
     }
 }
