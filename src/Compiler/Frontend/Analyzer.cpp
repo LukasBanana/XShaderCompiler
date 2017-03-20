@@ -18,7 +18,7 @@ namespace Xsc
 
 
 Analyzer::Analyzer(Log* log) :
-    reportHandler_{ R_Context(), log }
+    reportHandler_{ R_Context, log }
 {
 }
 
@@ -132,12 +132,14 @@ void Analyzer::Register(const std::string& ident, AST* ast)
     }
 }
 
+//TODO: first fetch from local scope, then structure, then global scope
 AST* Analyzer::Fetch(const std::string& ident, const AST* ast)
 {
     try
     {
         /* If we are inside the local scope of a member function -> try to fetch symbol from parent structure */
-        if (auto structDecl = ActiveFunctionStructDecl())
+        auto structDecl = ActiveFunctionStructDecl();
+        if (structDecl)
         {
             if (auto symbol = structDecl->Fetch(ident))
                 return symbol;
@@ -148,7 +150,7 @@ AST* Analyzer::Fetch(const std::string& ident, const AST* ast)
             return symbol->Fetch();
         
         /* Report undefined identifier error */
-        ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
+        ErrorUndeclaredIdent(ident, "", FetchSimilarIdent(ident, structDecl), ast);
     }
     catch (const std::exception& e)
     {
@@ -166,6 +168,26 @@ AST* Analyzer::FetchFromCurrentScopeOrNull(const std::string& ident) const
         return nullptr;
 }
 
+Decl* Analyzer::FetchDecl(const std::string& ident, const AST* ast)
+{
+    if (auto symbol = Fetch(ident, ast))
+    {
+        switch (symbol->Type())
+        {
+            case AST::Types::VarDecl:
+            case AST::Types::BufferDecl:
+            case AST::Types::SamplerDecl:
+            case AST::Types::StructDecl:
+            case AST::Types::AliasDecl:
+                return static_cast<Decl*>(symbol);
+            default:
+                Error(R_IdentIsNotDecl(ident), ast);
+                break;
+        }
+    }
+    return nullptr;
+}
+
 AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
 {
     try
@@ -173,7 +195,7 @@ AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchType();
         else
-            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
+            ErrorUndeclaredIdent(ident, "", FetchSimilarIdent(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -189,7 +211,7 @@ VarDecl* Analyzer::FetchVarDecl(const std::string& ident, const AST* ast)
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchVarDecl();
         else
-            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
+            ErrorUndeclaredIdent(ident, "", FetchSimilarIdent(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -207,9 +229,10 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
         if (!CollectArgumentTypeDenoters(args, argTypeDens))
             return nullptr;
 
+        /* First search member function (with implicit 'self'-pointer) */
         if (auto structDecl = ActiveFunctionStructDecl())
         {
-            /* Fetch function with argument type denoters form structure */
+            /* Fetch function with argument type denoters from structure */
             if (auto funcDecl = structDecl->FetchFunctionDecl(ident, argTypeDens))
                 return funcDecl;
         }
@@ -241,7 +264,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const AST* a
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchFunctionDecl();
         else
-            ErrorUndeclaredIdent(ident, "", symTable_.FetchSimilar(ident), ast);
+            ErrorUndeclaredIdent(ident, "", FetchSimilarIdent(ident), ast);
     }
     catch (const std::exception& e)
     {
@@ -268,27 +291,48 @@ FunctionDecl* Analyzer::FetchFunctionDeclFromStruct(
     const StructTypeDenoter& structTypeDenoter, const std::string& ident,
     const std::vector<ExprPtr>& args, const AST* ast)
 {
-    if (auto structDecl = structTypeDenoter.structDeclRef)
+    try
     {
-        /* Get type denoters from arguments */
-        std::vector<TypeDenoterPtr> argTypeDens;
-        if (CollectArgumentTypeDenoters(args, argTypeDens))
+        if (auto structDecl = structTypeDenoter.structDeclRef)
         {
-            if (auto symbol = structDecl->FetchFunctionDecl(ident, argTypeDens))
-                return symbol;
-            else
-                ErrorUndeclaredIdent(ident, structDecl->ToString(), structDecl->FetchSimilar(ident), ast);
+            /* Get type denoters from arguments */
+            std::vector<TypeDenoterPtr> argTypeDens;
+            if (CollectArgumentTypeDenoters(args, argTypeDens))
+            {
+                /* Fetch function from structure */
+                if (auto symbol = structDecl->FetchFunctionDecl(ident, argTypeDens, nullptr, true))
+                    return symbol;
+                else
+                {
+                    /* Check if member is declared in structure, but does not name a function */
+                    if (structDecl->Fetch(ident) != nullptr)
+                        Error(R_IdentIsNotFunc(ident), ast);
+                    else
+                    {
+                        /* Report error and fetch similar identifier from structure */
+                        ErrorUndeclaredIdent(ident, structDecl->ToString(), structDecl->FetchSimilar(ident), ast);
+                    }
+                }
+            }
         }
+        else
+            Error(R_MissingReferenceToStructInType(structTypeDenoter.ToString()), ast);
     }
-    else
-        Error(R_MissingReferenceToStructInType(structTypeDenoter.ToString()), ast);
+    catch (const ASTRuntimeError& e)
+    {
+        Error(e.what(), e.GetAST());
+        return nullptr;
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what(), ast);
+    }
     return nullptr;
 }
 
 StructDecl* Analyzer::FetchStructDeclFromIdent(const std::string& ident, const AST* ast)
 {
-    auto symbol = FetchType(ident, ast);
-    if (symbol)
+    if (auto symbol = FetchType(ident, ast))
     {
         if (symbol->Type() == AST::Types::StructDecl)
             return static_cast<StructDecl*>(symbol);
@@ -300,12 +344,11 @@ StructDecl* Analyzer::FetchStructDeclFromIdent(const std::string& ident, const A
 
 StructDecl* Analyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter)
 {
-    if (typeDenoter.IsStruct())
-        return static_cast<const StructTypeDenoter&>(typeDenoter).structDeclRef;
-    else if (typeDenoter.IsAlias())
+    if (auto structTypeDen = typeDenoter.As<StructTypeDenoter>())
+        return structTypeDen->structDeclRef;
+    else if (auto aliasTypeDen = typeDenoter.As<AliasTypeDenoter>())
     {
-        auto aliasDecl = static_cast<const AliasTypeDenoter&>(typeDenoter).aliasDeclRef;
-        if (aliasDecl)
+        if (auto aliasDecl = aliasTypeDen->aliasDeclRef)
             return FetchStructDeclFromTypeDenoter(*(aliasDecl->typeDenoter));
     }
     return nullptr;
@@ -331,7 +374,7 @@ void Analyzer::AnalyzeTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast)
         else if (auto arrayTypeDen = typeDenoter->As<ArrayTypeDenoter>())
         {
             Visit(arrayTypeDen->arrayDims);
-            AnalyzeTypeDenoter(arrayTypeDen->baseTypeDenoter, ast);
+            AnalyzeTypeDenoter(arrayTypeDen->subTypeDenoter, ast);
         }
     }
 }
@@ -348,23 +391,29 @@ void Analyzer::AnalyzeStructTypeDenoter(StructTypeDenoter& structTypeDen, const 
         structTypeDen.structDeclRef = FetchStructDeclFromIdent(structTypeDen.ident, ast);
 }
 
+/*
+This function makes a conversion for alias declaration that actually refer to a structure type.
+This is to circumvent the restriction of parsing cast expressions in a non-context-free grammar.
+*/
 void Analyzer::AnalyzeAliasTypeDenoter(TypeDenoterPtr& typeDenoter, const AST* ast)
 {
-    auto& aliasTypeDen = static_cast<AliasTypeDenoter&>(*typeDenoter);
-    if (!aliasTypeDen.aliasDeclRef)
+    if (auto aliasTypeDen = typeDenoter->As<AliasTypeDenoter>())
     {
-        /* Fetch type declaration from type name */
-        if (auto symbol = FetchType(aliasTypeDen.ident, ast))
+        if (!aliasTypeDen->aliasDeclRef)
         {
-            if (auto structDecl = symbol->As<StructDecl>())
+            /* Fetch type declaration from type name */
+            if (auto symbol = FetchType(aliasTypeDen->ident, ast))
             {
-                /* Replace type denoter by a struct type denoter */
-                typeDenoter = std::make_shared<StructTypeDenoter>(structDecl);
-            }
-            else if (auto aliasDecl = symbol->As<AliasDecl>())
-            {
-                /* Decorate alias type denoter with reference to alias declaration */
-                aliasTypeDen.aliasDeclRef = aliasDecl;
+                if (auto structDecl = symbol->As<StructDecl>())
+                {
+                    /* Replace type denoter by a struct type denoter */
+                    typeDenoter = std::make_shared<StructTypeDenoter>(structDecl);
+                }
+                else if (auto aliasDecl = symbol->As<AliasDecl>())
+                {
+                    /* Decorate alias type denoter with reference to alias declaration */
+                    aliasTypeDen->aliasDeclRef = aliasDecl;
+                }
             }
         }
     }
@@ -444,9 +493,9 @@ void Analyzer::AnalyzeConditionalExpression(Expr* expr)
     Visit(expr);
 
     /* Verify boolean type denoter in conditional expression */
-    auto condTypeDen = expr->GetTypeDenoter()->Get();
-    if (!condTypeDen->IsScalar())
-        Error(R_ConditionalExprNotScalar(condTypeDen->ToString()), expr);
+    const auto& condTypeDen = expr->GetTypeDenoter()->GetAliased();
+    if (!condTypeDen.IsScalar())
+        Error(R_ConditionalExprNotScalar(condTypeDen.ToString()), expr);
 }
 
 /* ----- Const-expression evaluation ----- */
@@ -459,9 +508,9 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
         ConstExprEvaluator exprEvaluator;
         return exprEvaluator.EvaluateExpr(
             expr,
-            [this](VarAccessExpr* ast) -> Variant
+            [this](ObjectExpr* expr) -> Variant
             {
-                return EvaluateConstVarAccessdExpr(*ast);
+                return EvaluateConstExprObject(*expr);
             }
         );
     }
@@ -473,27 +522,24 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
     {
         Error(e.what(), &expr);
     }
-    catch (const VarAccessExpr* varAccessExpr)
+    catch (const ObjectExpr* expr)
     {
-        Error(R_ExpectedConstExpr(), varAccessExpr);
+        Error(R_ExpectedConstExpr, expr);
     }
     return Variant();
 }
 
-Variant Analyzer::EvaluateConstVarAccessdExpr(VarAccessExpr& expr)
+Variant Analyzer::EvaluateConstExprObject(const ObjectExpr& expr)
 {
-    /* Find variable */
-    if (auto symbol = expr.varIdent->symbolRef)
+    /* Fetch variable from expression */
+    if (auto varDecl = expr.FetchVarDecl())
     {
-        if (auto varDecl = symbol->As<VarDecl>())
+        if (auto varDeclStmnt = varDecl->declStmntRef)
         {
-            if (auto varDeclStmnt = varDecl->declStmntRef)
+            if (varDeclStmnt->IsConstOrUniform() && varDecl->initializer)
             {
-                if (varDeclStmnt->IsConstOrUniform() && varDecl->initializer)
-                {
-                    /* Evaluate initializer of constant variable */
-                    return EvaluateConstExpr(*varDecl->initializer);
-                }
+                /* Evaluate initializer of constant variable */
+                return EvaluateConstExpr(*varDecl->initializer);
             }
         }
     }
@@ -543,6 +589,24 @@ bool Analyzer::CollectArgumentTypeDenoters(const std::vector<ExprPtr>& args, std
         }
     }
     return true;
+}
+
+std::string Analyzer::FetchSimilarIdent(const std::string& ident, StructDecl* structDecl) const
+{
+    /* Search in symbol table */
+    auto similarIdent = symTable_.FetchSimilar(ident);
+    if (!similarIdent.empty())
+        return similarIdent;
+
+    /* Search in active function structure */
+    if (structDecl)
+    {
+        similarIdent = structDecl->FetchSimilar(ident);
+        if (!similarIdent.empty())
+            return similarIdent;
+    }
+
+    return "";
 }
 
 

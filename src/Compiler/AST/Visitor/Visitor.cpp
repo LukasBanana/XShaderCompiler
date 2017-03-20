@@ -33,12 +33,6 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     Visit(ast->stmnts);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCall)
-{
-    Visit(ast->varIdent);
-    Visit(ast->arguments);
-}
-
 IMPLEMENT_VISIT_PROC(Attribute)
 {
     Visit(ast->arguments);
@@ -73,12 +67,6 @@ IMPLEMENT_VISIT_PROC(ArrayDimension)
 IMPLEMENT_VISIT_PROC(TypeSpecifier)
 {
     Visit(ast->structDecl);
-}
-
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    Visit(ast->arrayIndices);
-    Visit(ast->next);
 }
 
 /* --- Declarations --- */
@@ -284,9 +272,10 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
     Visit(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+IMPLEMENT_VISIT_PROC(CallExpr)
 {
-    Visit(ast->call);
+    Visit(ast->prefixExpr);
+    Visit(ast->arguments);
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
@@ -294,15 +283,20 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Visit(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(SuffixExpr)
+IMPLEMENT_VISIT_PROC(AssignExpr)
 {
-    Visit(ast->expr);
-    Visit(ast->varIdent);
+    Visit(ast->lvalueExpr);
+    Visit(ast->rvalueExpr);
 }
 
-IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
-    Visit(ast->expr);
+    Visit(ast->prefixExpr);
+}
+
+IMPLEMENT_VISIT_PROC(ArrayExpr)
+{
+    Visit(ast->prefixExpr);
     Visit(ast->arrayIndices);
 }
 
@@ -310,12 +304,6 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 {
     Visit(ast->typeSpecifier);
     Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
-{
-    Visit(ast->varIdent);
-    Visit(ast->assignExpr);
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
@@ -383,24 +371,24 @@ StructDecl* Visitor::ActiveFunctionStructDecl() const
         return nullptr;
 }
 
-/* ----- Function call tracker ----- */
+/* ----- Call expression tracker ----- */
 
-void Visitor::PushFunctionCall(FunctionCall* ast)
+void Visitor::PushCallExpr(CallExpr* ast)
 {
-    funcCallStack_.push(ast);
+    callExprStack_.push(ast);
 }
 
-void Visitor::PopFunctionCall()
+void Visitor::PopCallExpr()
 {
-    if (!funcCallStack_.empty())
-        funcCallStack_.pop();
+    if (!callExprStack_.empty())
+        callExprStack_.pop();
     else
-        throw std::underflow_error(R_FuncCallStackUnderflow);
+        throw std::underflow_error(R_CallExprStackUnderflow);
 }
 
-FunctionCall* Visitor::ActiveFunctionCall() const
+CallExpr* Visitor::ActiveCallExpr() const
 {
-    return (funcCallStack_.empty() ? nullptr : funcCallStack_.top());
+    return (callExprStack_.empty() ? nullptr : callExprStack_.top());
 }
 
 /* ----- Structure declaration tracker ----- */

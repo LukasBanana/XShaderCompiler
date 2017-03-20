@@ -7,6 +7,7 @@
 
 #include "GLSLConverter.h"
 #include "GLSLKeywords.h"
+#include "FuncNameConverter.h"
 #include "AST.h"
 #include "ASTFactory.h"
 #include "Exception.h"
@@ -33,20 +34,41 @@ struct CodeBlockStmntArgs
  */
 
 void GLSLConverter::Convert(
-    Program& program, const ShaderTarget shaderTarget, const NameMangling& nameMangling, const Options& options, bool isVKSL)
+    Program& program, const ShaderTarget shaderTarget, const NameMangling& nameMangling, const Options& options, const OutputShaderVersion versionOut)
 {
     /* Store settings */
     shaderTarget_       = shaderTarget;
     program_            = (&program);
     nameMangling_       = nameMangling;
     options_            = options;
-    isVKSL_             = isVKSL;
+    isVKSL_             = IsLanguageVKSL(versionOut);
 
-    /* First convert expressions */
-    exprConverter_.Convert(program, ExprConverter::All);
+    /* Convert expressions */
+    Flags exprConverterFlags = ExprConverter::All;
+
+    if ( isVKSL_ || ( versionOut >= OutputShaderVersion::GLSL420 && versionOut <= OutputShaderVersion::GLSL450 ))
+    {
+        /*
+        Remove specific conversions when the GLSL output version is explicitly set to 4.20 or higher,
+        i.e. "GL_ARB_shading_language_420pack" extension is available.
+        */
+        exprConverterFlags.Remove(ExprConverter::ConvertVectorSubscripts);
+        exprConverterFlags.Remove(ExprConverter::ConvertInitializer);
+    }
+
+    exprConverter_.Convert(program, exprConverterFlags);
 
     /* Visit program AST */
     Visit(program_);
+
+    /* Convert function names after main conversion, since functon owner structs may have been renamed as well */
+    FuncNameConverter funcNameConverter;
+    funcNameConverter.Convert(
+        program,
+        nameMangling_,
+        GLSLConverter::CompareFuncSignatures,
+        FuncNameConverter::All
+    );
 }
 
 
@@ -122,8 +144,37 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     VISIT_DEFAULT(CodeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCall)
+IMPLEMENT_VISIT_PROC(CallExpr)
 {
+    Visit(ast->prefixExpr);
+
+    if (ast->intrinsic != Intrinsic::Undefined)
+    {
+        /* Insert prefix expression as first argument into function call, if this is a texture intrinsic call */
+        if (IsTextureIntrinsic(ast->intrinsic) && ast->prefixExpr)
+        {
+            if (isVKSL_)
+            {
+                /* Replace sampler state argument by sampler/texture binding call */
+                if (!ast->arguments.empty())
+                {
+                    auto arg0Expr = ast->arguments.front().get();
+                    if (IsSamplerStateTypeDenoter(arg0Expr->GetTypeDenoter()))
+                    {
+                        ast->arguments[0] = ASTFactory::MakeTextureSamplerBindingCallExpr(
+                            ast->prefixExpr, ast->arguments[0]
+                        );
+                    }
+                }
+            }
+            else
+            {
+                /* Insert texture object as parameter into intrinsic arguments */
+                ast->arguments.insert(ast->arguments.begin(), ast->prefixExpr);
+            }
+        }
+    }
+
     if (!isVKSL_)
     {
         /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
@@ -138,36 +189,11 @@ IMPLEMENT_VISIT_PROC(FunctionCall)
     }
 
     if (ast->intrinsic != Intrinsic::Undefined)
-    {
-        if (IsTextureIntrinsic(ast->intrinsic))
-        {
-            auto texObjectExpr = ASTFactory::MakeVarAccessExpr(ASTFactory::MakeVarIdentFirst(*ast->varIdent));
-            if (isVKSL_)
-            {
-                /* Replace sampler state argument by sampler/texture binding call */
-                if (!ast->arguments.empty())
-                {
-                    auto arg0 = ast->arguments.front().get();
-                    if (IsSamplerStateTypeDenoter(arg0->GetTypeDenoter()))
-                    {
-                        auto bindCallExpr = ASTFactory::MakeTextureSamplerBindingCallExpr(texObjectExpr, ast->arguments[0]);
-                        ast->arguments[0] = bindCallExpr;
-                    }
-                }
-            }
-            else
-            {
-                /* Insert texture object as parameter into intrinsic arguments */
-                ast->arguments.insert(ast->arguments.begin(), texObjectExpr);
-            }
-        }
-
         ConvertIntrinsicCall(ast);
-    }
     else
         ConvertFunctionCall(ast);
 
-    VISIT_DEFAULT(FunctionCall);
+    VISIT_DEFAULT(CallExpr);
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
@@ -175,37 +201,6 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     RemoveDeadCode(ast->stmnts);
 
     VISIT_DEFAULT(SwitchCase);
-}
-
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    /* Has the variable identifier a next identifier? */
-    if (ast->next)
-    {
-        /* Does this identifier refer to a variable declaration? */
-        if (auto varDecl = ast->FetchVarDecl())
-        {
-            /* Is its type denoter a structure? */
-            auto varTypeDen = varDecl->declStmntRef->typeSpecifier->typeDenoter.get();
-            if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
-            {
-                /* Can the structure be resolved */
-                auto structDecl = structTypeDen->structDeclRef;
-                if (structDecl->flags(StructDecl::isNonEntryPointParam))
-                {
-                    /* Mark variable identifier to be immutable */
-                    ast->flags << VarIdent::isImmutable;
-                }
-                else
-                {
-                    /* Pop front identifier node for global input/output variables */
-                    PopFrontOfGlobalInOutVarIdent(ast);
-                }
-            }
-        }
-    }
-    
-    VISIT_DEFAULT(VarIdent);
 }
 
 /* --- Declarations --- */
@@ -245,7 +240,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         RemoveSamplerStateVarDeclStmnts(ast->varMembers);
 
     /* Is this an empty structure? */
-    if (ast->NumVarMembers() == 0)
+    if (ast->NumMemberVariables() == 0)
     {
         /* Add dummy member if the structure is empty (GLSL does not support empty structures) */
         auto dummyMember = ASTFactory::MakeVarDeclStmnt(DataType::Int, nameMangling_.temporaryPrefix + "dummy");
@@ -418,7 +413,8 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
     /* Check if the expression must be extended for a struct c'tor */
-    if (auto structTypeDen = ast->typeSpecifier->GetTypeDenoter()->Get()->As<StructTypeDenoter>())
+    const auto& typeDen = ast->typeSpecifier->GetTypeDenoter()->GetAliased();
+    if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
     {
         if (auto structDecl = structTypeDen->structDeclRef)
         {
@@ -447,31 +443,36 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 #endif
 
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
+IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
-    /* Is this variable a member of the active owner structure (like 'this->memberVar')? */
-    if (auto symbol = ast->varIdent->symbolRef)
+    if (ast->prefixExpr)
     {
-        if (auto varDecl = symbol->As<VarDecl>())
+        /* Convert prefix expression if it's the identifier of an entry-point struct instance */
+        ConvertEntryPointStructPrefix(ast->prefixExpr, ast);
+    }
+    else
+    {
+        /* Is this object a member of the active owner structure (like 'this->memberVar')? */
+        if (auto selfParam = ActiveSelfParameter())
         {
-            if (auto structDecl = varDecl->structDeclRef)
+            if (auto activeStructDecl = ActiveStructDecl())
             {
-                if (auto selfParam = ActiveSelfParameter())
+                if (auto varDecl = ast->FetchVarDecl())
                 {
-                    if (auto activeStructDecl = ActiveStructDecl())
+                    if (auto structDecl = varDecl->structDeclRef)
                     {
                         if (structDecl == activeStructDecl || structDecl->IsBaseOf(*activeStructDecl))
                         {
-                            /* Push 'self'-parameter identifier at the front of the current variable identifier */
-                            ast->varIdent = ASTFactory::MakeVarIdentPushFront(selfParam->ident, selfParam, ast->varIdent);
+                            /* Make the 'self'-parameter the new prefix expression */
+                            ast->prefixExpr = ASTFactory::MakeObjectExpr(selfParam);
                         }
                     }
                 }
             }
         }
     }
-
-    VISIT_DEFAULT(VarAccessExpr);
+    
+    VISIT_DEFAULT(ObjectExpr);
 }
 
 #undef IMPLEMENT_VISIT_PROC
@@ -526,7 +527,7 @@ bool GLSLConverter::IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter)
 {
     if (typeDenoter)
     {
-        if (auto samplerTypeDen = typeDenoter->Get()->As<SamplerTypeDenoter>())
+        if (auto samplerTypeDen = typeDenoter->GetAliased().As<SamplerTypeDenoter>())
         {
             /* Is the sampler type a sampler-state type? */
             return IsSamplerStateType(samplerTypeDen->samplerType);
@@ -601,60 +602,26 @@ void GLSLConverter::LabelAnonymousStructDecl(StructDecl* ast)
     }
 }
 
-bool GLSLConverter::HasGlobalInOutVarDecl(VarIdent* varIdent) const
+bool GLSLConverter::IsGlobalInOutVarDecl(VarDecl* varDecl) const
 {
-    /* Has variable identifier a reference to a variable declaration? */
-    if (auto varDecl = varIdent->FetchVarDecl())
+    if (varDecl)
     {
         /* Is this variable a global input/output variable? */
         auto entryPoint = program_->entryPointRef;
-        if (entryPoint->inputSemantics.Contains(varDecl) || entryPoint->outputSemantics.Contains(varDecl))
-            return true;
+        return (entryPoint->inputSemantics.Contains(varDecl) || entryPoint->outputSemantics.Contains(varDecl));
     }
     return false;
 }
 
-void GLSLConverter::PopFrontOfGlobalInOutVarIdent(VarIdent* ast)
-{
-    auto root = ast;
-
-    while (ast)
-    {
-        /* Refers the current identifier to a global input/output variable? */
-        if (HasGlobalInOutVarDecl(ast))
-        {
-            /*
-            Remove all leading AST nodes until this one, to convert this
-            variable identifer to an identifier for a local variable
-            */
-            while (root && !HasGlobalInOutVarDecl(root))
-            {
-                root->PopFront();
-                root = root->next.get();
-            }
-
-            /* Stop conversion process */
-            break;
-        }
-
-        /* Continue search in next node */
-        ast = ast->next.get();
-    }
-}
-
-void GLSLConverter::MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt)
+void GLSLConverter::MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& stmnt)
 {
     /* Is this statement within the entry point? */
     if (InsideEntryPoint())
     {
-        if (bodyStmnt->Type() == AST::Types::ReturnStmnt)
+        if (stmnt->Type() == AST::Types::ReturnStmnt)
         {
-            auto codeBlockStmnt = MakeShared<CodeBlockStmnt>(bodyStmnt->area);
-
-            codeBlockStmnt->codeBlock = MakeShared<CodeBlock>(bodyStmnt->area);
-            codeBlockStmnt->codeBlock->stmnts.push_back(bodyStmnt);
-
-            bodyStmnt = codeBlockStmnt;
+            /* Convert statement into a code block statement */
+            stmnt = ASTFactory::MakeCodeBlockStmnt(stmnt);
         }
     }
 }
@@ -703,6 +670,13 @@ bool GLSLConverter::RenameReservedKeyword(Identifier& ident)
             return true;
         }
 
+        /* Check if identifier begins with "gl_" */
+        if (ident.Final().compare(0, 3, "gl_") == 0)
+        {
+            ident.AppendPrefix(nameMangling_.reservedWordPrefix);
+            return true;
+        }
+
         return false;
     }
 }
@@ -725,6 +699,12 @@ VarDecl* GLSLConverter::ActiveSelfParameter() const
     return (selfParamStack_.empty() ? nullptr : selfParamStack_.back());
 }
 
+bool GLSLConverter::CompareFuncSignatures(const FunctionDecl& lhs, const FunctionDecl& rhs)
+{
+    /* Compare function signatures and ignore generic sub types (GLSL has no distinction for these types) */
+    return lhs.EqualsSignature(rhs, TypeDenoter::IgnoreGenericSubType);
+}
+
 /* ----- Conversion ----- */
 
 void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
@@ -734,17 +714,19 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
 
     if (auto structDecl = ast->structDeclRef)
     {
-        /* Rename function */
-        ast->ident = nameMangling_.temporaryPrefix + structDecl->ident + "_" + ast->ident;
+        if (!ast->IsStatic())
+        {
+            /* Insert parameter of 'self' object */
+            auto selfParamTypeDen   = std::make_shared<StructTypeDenoter>(structDecl);
+            auto selfParamType      = ASTFactory::MakeTypeSpecifier(selfParamTypeDen);
+            auto selfParam          = ASTFactory::MakeVarDeclStmnt(selfParamType, nameMangling_.namespacePrefix + "self");
 
-        /* Insert parameter of 'self' object */
-        auto selfParamTypeDen   = std::make_shared<StructTypeDenoter>(structDecl);
-        auto selfParamType      = ASTFactory::MakeTypeSpecifier(selfParamTypeDen);
-        auto selfParam          = ASTFactory::MakeVarDeclStmnt(selfParamType, nameMangling_.temporaryPrefix + "self");
+            selfParam->flags << VarDeclStmnt::isSelfParameter;
 
-        ast->parameters.insert(ast->parameters.begin(), selfParam);
+            ast->parameters.insert(ast->parameters.begin(), selfParam);
 
-        selfParamVar = selfParam->varDecls.front().get();
+            selfParamVar = selfParam->varDecls.front().get();
+        }
     }
 
     if (selfParamVar)
@@ -778,17 +760,18 @@ void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
         if (!param->varDecls.empty())
         {
             auto varDecl = param->varDecls.front();
-            auto typeDen = varDecl->GetTypeDenoter()->Get();
-            if (auto arrayTypeDen = typeDen->As<ArrayTypeDenoter>())
+            const auto& typeDen = varDecl->GetTypeDenoter()->GetAliased();
+            if (auto arrayTypeDen = typeDen.As<ArrayTypeDenoter>())
             {
                 /* Mark this member and all structure members as dynamic array */
                 varDecl->flags << VarDecl::isDynamicArray;
 
-                if (auto structBaseTypeDen = arrayTypeDen->baseTypeDenoter->Get()->As<StructTypeDenoter>())
+                const auto& subTypeDen = arrayTypeDen->subTypeDenoter->GetAliased();
+                if (auto structSubTypeDen = subTypeDen.As<StructTypeDenoter>())
                 {
-                    if (structBaseTypeDen->structDeclRef)
+                    if (structSubTypeDen->structDeclRef)
                     {
-                        structBaseTypeDen->structDeclRef->ForEachVarDecl(
+                        structSubTypeDen->structDeclRef->ForEachVarDecl(
                             [](VarDeclPtr& member)
                             {
                                 member->flags << VarDecl::isDynamicArray;
@@ -804,7 +787,7 @@ void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
     Visitor::VisitFunctionDecl(ast, nullptr);
 }
 
-void GLSLConverter::ConvertIntrinsicCall(FunctionCall* ast)
+void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
 {
     switch (ast->intrinsic)
     {
@@ -827,12 +810,12 @@ void GLSLConverter::ConvertIntrinsicCall(FunctionCall* ast)
     }
 }
 
-void GLSLConverter::ConvertIntrinsicCallSaturate(FunctionCall* ast)
+void GLSLConverter::ConvertIntrinsicCallSaturate(CallExpr* ast)
 {
     /* Convert "saturate(x)" to "clamp(x, genType(0), genType(1))" */
     if (ast->arguments.size() == 1)
     {
-        auto argTypeDen = ast->arguments.front()->GetTypeDenoter()->Get();
+        auto argTypeDen = ast->arguments.front()->GetTypeDenoter()->GetSub();
         if (argTypeDen->IsBase())
         {
             ast->intrinsic = Intrinsic::Clamp;
@@ -846,38 +829,41 @@ void GLSLConverter::ConvertIntrinsicCallSaturate(FunctionCall* ast)
         RuntimeErr(R_InvalidIntrinsicArgCount("saturate"), ast);
 }
 
-static int GetTextureVectorSizeFromIntrinsicCall(FunctionCall* ast)
+static int GetTextureVectorSizeFromIntrinsicCall(CallExpr* ast)
 {
     /* Get buffer object from sample intrinsic call */
-    if (auto symbolRef = ast->varIdent->symbolRef)
+    if (const auto& prefixExpr = ast->prefixExpr)
     {
-        if (auto bufferDecl = symbolRef->As<BufferDecl>())
+        if (auto lvalueExpr = ast->prefixExpr->FetchLValueExpr())
         {
-            /* Determine vector size for texture intrinsic parametes */
-            switch (bufferDecl->GetBufferType())
+            if (auto bufferDecl = lvalueExpr->FetchSymbol<BufferDecl>())
             {
-                case BufferType::Texture1D:
-                    return 1;
-                case BufferType::Texture1DArray:
-                case BufferType::Texture2D:
-                case BufferType::Texture2DMS:
-                    return 2;
-                case BufferType::Texture2DArray:
-                case BufferType::Texture2DMSArray:
-                case BufferType::Texture3D:
-                case BufferType::TextureCube:
-                    return 3;
-                case BufferType::TextureCubeArray:
-                    return 4;
-                default:
-                    break;
+                /* Determine vector size for texture intrinsic parametes */
+                switch (bufferDecl->GetBufferType())
+                {
+                    case BufferType::Texture1D:
+                        return 1;
+                    case BufferType::Texture1DArray:
+                    case BufferType::Texture2D:
+                    case BufferType::Texture2DMS:
+                        return 2;
+                    case BufferType::Texture2DArray:
+                    case BufferType::Texture2DMSArray:
+                    case BufferType::Texture3D:
+                    case BufferType::TextureCube:
+                        return 3;
+                    case BufferType::TextureCubeArray:
+                        return 4;
+                    default:
+                        break;
+                }
             }
         }
     }
     return 0;
 }
 
-void GLSLConverter::ConvertIntrinsicCallTextureSample(FunctionCall* ast)
+void GLSLConverter::ConvertIntrinsicCallTextureSample(CallExpr* ast)
 {
     /* Determine vector size for texture intrinsic */
     if (auto vectorSize = GetTextureVectorSizeFromIntrinsicCall(ast))
@@ -895,7 +881,7 @@ void GLSLConverter::ConvertIntrinsicCallTextureSample(FunctionCall* ast)
     }
 }
 
-void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast)
+void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast)
 {
     /* Determine vector size for texture intrinsic */
     if (auto vectorSize = GetTextureVectorSizeFromIntrinsicCall(ast))
@@ -913,34 +899,100 @@ void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast)
     }
 }
 
-void GLSLConverter::ConvertFunctionCall(FunctionCall* ast)
+void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
 {
     if (auto funcDecl = ast->funcDeclRef)
     {
         if (funcDecl->IsMemberFunction())
         {
-            if (ast->varIdent->next)
+            if (funcDecl->IsStatic())
             {
-                /* Move first variable identifier as argument into the function call */
-                auto objectVarIdent = ASTFactory::MakeVarIdentWithoutLast(*ast->varIdent);
-                auto objectArg = ASTFactory::MakeVarAccessExpr(objectVarIdent);
-                ast->arguments.insert(ast->arguments.begin(), objectArg);
-
-                /* Remove all identifiers except the last one */
-                while (ast->varIdent->next)
-                    ast->varIdent->PopFront(false);
+                /* Drop prefix expression, since GLSL only allows global functions */
+                ast->prefixExpr.reset();
             }
             else
             {
-                /* Insert current 'self'-parameter as argument into the function call */
-                if (auto selfParam = ActiveSelfParameter())
+                if (ast->prefixExpr)
                 {
-                    auto objectVarIdent = ASTFactory::MakeVarIdent(selfParam->ident, selfParam);
-                    auto objectArg = ASTFactory::MakeVarAccessExpr(objectVarIdent);
-                    ast->arguments.insert(ast->arguments.begin(), objectArg);
+                    /* Move prefix expression as argument into the function call */
+                    ast->PushArgumentFront(std::move(ast->prefixExpr));
                 }
                 else
-                    RuntimeErr(R_MissingSelfParamForMemberFunc(funcDecl->ToString()), ast);
+                {
+                    if (auto selfParam = ActiveSelfParameter())
+                    {
+                        /* Insert current 'self'-parameter as argument into the function call */
+                        ast->PushArgumentFront(ASTFactory::MakeObjectExpr(selfParam));
+                    }
+                    else
+                        RuntimeErr(R_MissingSelfParamForMemberFunc(funcDecl->ToString()), ast);
+                }
+            }
+        }
+    }
+}
+
+/*
+~~~~~~~~~~~~~~~ TODO: refactor this ~~~~~~~~~~~~~~~
+*/
+void GLSLConverter::ConvertEntryPointStructPrefix(ExprPtr& expr, ObjectExpr* objectExpr)
+{
+    auto nonBracketExpr = expr->FetchNonBracketExpr();
+    if (auto prefixExpr = nonBracketExpr->As<ObjectExpr>())
+        ConvertEntryPointStructPrefixObject(expr, prefixExpr, objectExpr);
+    else if (auto prefixExpr = nonBracketExpr->As<ArrayExpr>())
+        ConvertEntryPointStructPrefixArray(expr, prefixExpr, objectExpr);
+}
+
+// Marks the object expression as 'immutable', if the specified structure is a non-entry-point (NEP) parameter
+static bool MakeObjectExprImmutableForNEPStruct(ObjectExpr* objectExpr, const StructDecl* structDecl)
+{
+    if (structDecl)
+    {
+        if (structDecl->flags(StructDecl::isNonEntryPointParam))
+        {
+            /* Mark object expression as immutable */
+            objectExpr->flags << ObjectExpr::isImmutable;
+            return true;
+        }
+    }
+    return false;
+}
+
+void GLSLConverter::ConvertEntryPointStructPrefixObject(ExprPtr& expr, ObjectExpr* prefixExpr, ObjectExpr* objectExpr)
+{
+    /* Does this l-value refer to a variable declaration? */
+    if (auto varDecl = prefixExpr->FetchVarDecl())
+    {
+        /* Is its type denoter a structure? */
+        const auto& varTypeDen = varDecl->GetTypeDenoter()->GetAliased();
+        if (auto structTypeDen = varTypeDen.As<StructTypeDenoter>())
+        {
+            /* Can the structure be resolved? */
+            if (!MakeObjectExprImmutableForNEPStruct(objectExpr, structTypeDen->structDeclRef))
+            {
+                /* Drop prefix expression for global input/output variables */
+                if (IsGlobalInOutVarDecl(objectExpr->FetchVarDecl()))
+                    expr.reset();
+            }
+        }
+    }
+}
+
+void GLSLConverter::ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr* prefixExpr, ObjectExpr* objectExpr)
+{
+    /* Does this l-value refer to a variable declaration? */
+    if (auto varDecl = prefixExpr->prefixExpr->FetchVarDecl())
+    {
+        /* Is its type denoter an array of structures? */
+        const auto& varTypeDen = varDecl->GetTypeDenoter()->GetAliased();
+        if (auto arrayTypeDen = varTypeDen.As<ArrayTypeDenoter>())
+        {
+            const auto& varSubTypeDen = arrayTypeDen->subTypeDenoter->GetAliased();
+            if (auto structTypeDen = varSubTypeDen.As<StructTypeDenoter>())
+            {
+                /* Can the structure be resolved? */
+                MakeObjectExprImmutableForNEPStruct(objectExpr, structTypeDen->structDeclRef);
             }
         }
     }
@@ -983,9 +1035,8 @@ void GLSLConverter::UnrollStmntsVarDecl(std::vector<StmntPtr>& unrolledStmnts, V
 
 void GLSLConverter::UnrollStmntsVarDeclInitializer(std::vector<StmntPtr>& unrolledStmnts, VarDecl* varDecl)
 {
-    auto typeDen = varDecl->GetTypeDenoter()->Get();
-
-    if (auto arrayTypeDen = typeDen->As<ArrayTypeDenoter>())
+    const auto& typeDen = varDecl->GetTypeDenoter()->GetAliased();
+    if (auto arrayTypeDen = typeDen.As<ArrayTypeDenoter>())
     {
         /* Get initializer expression */
         if (auto initExpr = varDecl->initializer->As<InitializerExpr>())

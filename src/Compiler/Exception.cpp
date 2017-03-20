@@ -39,13 +39,19 @@ void RuntimeErr(const std::string& msg)
 [[noreturn]]
 void RuntimeErr(const char* msg, const AST* ast)
 {
-    throw ASTRuntimeError(msg, ast);
+    if (ast)
+        throw ASTRuntimeError(msg, ast);
+    else
+        throw std::runtime_error(msg);
 }
 
 [[noreturn]]
 void RuntimeErr(const std::string& msg, const AST* ast)
 {
-    throw ASTRuntimeError(msg, ast);
+    if (ast)
+        throw ASTRuntimeError(msg, ast);
+    else
+        throw std::runtime_error(msg);
 }
 
 [[noreturn]]

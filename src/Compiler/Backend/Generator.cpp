@@ -114,11 +114,13 @@ bool Generator::IsOpenLine() const
 
 void Generator::Write(const std::string& text)
 {
+    FlushWritePrefixes();
     writer_.Write(text);
 }
 
 void Generator::WriteLn(const std::string& text)
 {
+    FlushWritePrefixes();
     writer_.WriteLine(text);
 }
 
@@ -140,6 +142,38 @@ void Generator::PushOptions(const CodeWriter::Options& options)
 void Generator::PopOptions()
 {
     writer_.PopOptions();
+}
+
+void Generator::PushWritePrefix(const std::string& text)
+{
+    writePrefixStack_.push_back({ text, false });
+}
+
+void Generator::PopWritePrefix()
+{
+    if (writePrefixStack_.empty())
+        throw std::underflow_error(R_WritePrefixStackUnderflow);
+    else
+        writePrefixStack_.pop_back();
+}
+
+bool Generator::TopWritePrefix() const
+{
+    return (writePrefixStack_.empty() ? false : writePrefixStack_.back().written);
+}
+
+//private
+void Generator::FlushWritePrefixes()
+{
+    /* Write prefixes from first to last */
+    for (auto& prefix : writePrefixStack_)
+    {
+        if (!prefix.written)
+        {
+            writer_.Write(prefix.text);
+            prefix.written = true;
+        }
+    }
 }
 
 void Generator::Blank()

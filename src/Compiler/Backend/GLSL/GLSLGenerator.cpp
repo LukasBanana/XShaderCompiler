@@ -38,7 +38,6 @@ struct IfStmntArgs
 struct StructDeclArgs
 {
     bool inEndWithSemicolon;
-    bool outStructWritten;
 };
 
 
@@ -83,7 +82,7 @@ void GLSLGenerator::GenerateCodePrimary(
             /* Convert AST for GLSL code generation */
             {
                 GLSLConverter converter;
-                converter.Convert(program, inputDesc.shaderTarget, nameMangling_, outputDesc.options, IsVKSL());
+                converter.Convert(program, inputDesc.shaderTarget, nameMangling_, outputDesc.options, versionOut_);
             }
 
             /* Mark all reachable AST nodes */
@@ -182,7 +181,7 @@ const std::string* GLSLGenerator::DataTypeToImageFormatKeyword(const DataType da
     if (auto keyword = DataTypeToImageFormatGLSLKeyword(dataType))
         return keyword;
     else
-        Error(R_FailedToMapToGLSLKeyword(R_DataType), ast);
+        Error(R_FailedToMapGLSLImageDataType, ast);
     return nullptr;
 }
 
@@ -294,27 +293,6 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     WriteScopeClose();
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCall)
-{
-    /* Check for special cases of intrinsic function calls */
-    if (ast->intrinsic == Intrinsic::Mul)
-        WriteFunctionCallIntrinsicMul(ast);
-    else if (ast->intrinsic == Intrinsic::Rcp)
-        WriteFunctionCallIntrinsicRcp(ast);
-    else if (ast->intrinsic == Intrinsic::Clip && ast->flags(FunctionCall::canInlineIntrinsicWrapper))
-        WriteFunctionCallIntrinsicClip(ast);
-    else if (ast->intrinsic >= Intrinsic::InterlockedAdd && ast->intrinsic <= Intrinsic::InterlockedXor)
-        WriteFunctionCallIntrinsicAtomic(ast);
-    else if (ast->intrinsic == Intrinsic::StreamOutput_Append)
-        WriteFunctionCallIntrinsicStreamOutputAppend(ast);
-    else if (ast->intrinsic == Intrinsic::Texture_QueryLod)
-        WriteFunctionCallIntrinsicTextureQueryLod(ast, true);
-    else if (ast->intrinsic == Intrinsic::Texture_QueryLodUnclamped)
-        WriteFunctionCallIntrinsicTextureQueryLod(ast, false);
-    else
-        WriteFunctionCallStandard(ast);
-}
-
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     /* Write case header */
@@ -352,11 +330,6 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
         WriteTypeDenoter(*ast->typeDenoter, IsESSL(), ast);
 }
 
-IMPLEMENT_VISIT_PROC(VarIdent)
-{
-    WriteVarIdent(ast);
-}
-
 /* --- Declarations --- */
 
 IMPLEMENT_VISIT_PROC(VarDecl)
@@ -367,13 +340,11 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
     if (ast->initializer)
     {
-        if (auto typeDen = ast->initializer->GetTypeDenoter()->Get())
+        const auto& typeDen = ast->initializer->GetTypeDenoter()->GetAliased();
+        if (!typeDen.IsNull())
         {
-            if (!typeDen->IsNull())
-            {
-                Write(" = ");
-                Visit(ast->initializer);
-            }
+            Write(" = ");
+            Visit(ast->initializer);
         }
     }
 }
@@ -389,15 +360,12 @@ IMPLEMENT_VISIT_PROC(StructDecl)
             {
                 /* Write nested structres in child-to-parent order */
                 for (auto nestedStruct = ast->nestedStructDeclRefs.rbegin(); nestedStruct != ast->nestedStructDeclRefs.rend(); ++nestedStruct)
-                {
-                    if (WriteStructDecl(*nestedStruct, true, true))
-                        Blank();
-                }
+                    WriteStructDecl(*nestedStruct, true, true);
             }
 
             /* Write declaration of this structure (without nested structures) */
             if (auto structDeclArgs = reinterpret_cast<StructDeclArgs*>(args))
-                structDeclArgs->outStructWritten = WriteStructDecl(ast, structDeclArgs->inEndWithSemicolon);
+                WriteStructDecl(ast, structDeclArgs->inEndWithSemicolon);
             else
                 WriteStructDecl(ast, false);
         }
@@ -411,7 +379,10 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
     {
         BeginLn();
         {
-            WriteBindingSlot(ast->slotRegisters);
+            /* Write layout binding */
+            WriteLayout(
+                { [&]() { WriteLayoutBinding(ast->slotRegisters); } }
+            );
 
             /* Write uniform sampler declaration (sampler declarations must only appear in global scope) */
             Write("uniform sampler " + ast->ident);
@@ -482,12 +453,15 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 
         /* Write uniform buffer declaration */
         BeginLn();
-        Write("layout(std140");
 
-        WriteBindingSlot(ast->slotRegisters, false);
+        WriteLayout(
+            {
+                [&]() { Write("std140"); },
+                [&]() { WriteLayoutBinding(ast->slotRegisters); },
+            }
+        );
 
-        Write(") uniform ");
-        Write(ast->ident);
+        Write("uniform " + ast->ident);
 
         /* Write uniform buffer members */
         WriteScopeOpen(false, true);
@@ -536,12 +510,6 @@ IMPLEMENT_VISIT_PROC(StructDeclStmnt)
         structDeclArgs.inEndWithSemicolon = true;
 
         Visit(ast->structDecl, &structDeclArgs);
-
-        if (structDeclArgs.outStructWritten)
-            Blank();
-
-        /* Visit all member functions */
-        WriteStmntList(ast->structDecl->funcMembers);
     }
 }
 
@@ -551,21 +519,18 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     //TODO: refactor this!
     #if 1
+    auto varTypeStructDecl = ast->typeSpecifier->GetStructDeclRef();
+
     for (auto it = varDecls.begin(); it != varDecls.end();)
     {
-        auto var = it->get();
-        const auto& baseVarType = var->GetTypeDenoter()->GetBase();
-
-        StructDecl* structDecl = nullptr;
-        if (auto structTypeDen = baseVarType.As<const StructTypeDenoter>())
-            structDecl = structTypeDen->structDeclRef;
+        auto varDecl = it->get();
 
         /*
         First check if code generation is disabled for variable declaration,
         then check if this is a system value semantic inside an interface block.
         */
-        if ( ( var->flags(VarDecl::isEntryPointLocal) && ( !structDecl || !structDecl->flags(StructDecl::isNonEntryPointParam) ) ) ||
-             ( isInsideInterfaceBlock_ && var->semantic.IsSystemValue() ) )
+        if ( ( varDecl->flags(VarDecl::isEntryPointLocal) && ( !varTypeStructDecl || !varTypeStructDecl->flags(StructDecl::isNonEntryPointParam) ) ) ||
+             ( isInsideInterfaceBlock_ && varDecl->semantic.IsSystemValue() ) )
         {
             /*
             Code generation is disabled for this variable declaration
@@ -644,14 +609,7 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
     if (ast->structDecl && !ast->structDecl->IsAnonymous())
     {
         WriteLineMark(ast);
-
-        StructDeclArgs structDeclArgs;
-        structDeclArgs.inEndWithSemicolon = true;
-
-        Visit(ast->structDecl, &structDeclArgs);
-
-        if (structDeclArgs.outStructWritten)
-            Blank();
+        Visit(ast->structDecl);
     }
 }
 
@@ -872,9 +830,25 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
     Write(UnaryOpToString(ast->op));
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCallExpr)
+IMPLEMENT_VISIT_PROC(CallExpr)
 {
-    Visit(ast->call);
+    /* Check for special cases of intrinsic function calls */
+    if (ast->intrinsic == Intrinsic::Mul)
+        WriteCallExprIntrinsicMul(ast);
+    else if (ast->intrinsic == Intrinsic::Rcp)
+        WriteCallExprIntrinsicRcp(ast);
+    else if (ast->intrinsic == Intrinsic::Clip && ast->flags(CallExpr::canInlineIntrinsicWrapper))
+        WriteCallExprIntrinsicClip(ast);
+    else if (ast->intrinsic >= Intrinsic::InterlockedAdd && ast->intrinsic <= Intrinsic::InterlockedXor)
+        WriteCallExprIntrinsicAtomic(ast);
+    else if (ast->intrinsic == Intrinsic::StreamOutput_Append)
+        WriteCallExprIntrinsicStreamOutputAppend(ast);
+    else if (ast->intrinsic == Intrinsic::Texture_QueryLod)
+        WriteCallExprIntrinsicTextureQueryLod(ast, true);
+    else if (ast->intrinsic == Intrinsic::Texture_QueryLodUnclamped)
+        WriteCallExprIntrinsicTextureQueryLod(ast, false);
+    else
+        WriteCallExprStandard(ast);
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
@@ -884,17 +858,21 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Write(")");
 }
 
-IMPLEMENT_VISIT_PROC(SuffixExpr)
+IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
-    Visit(ast->expr);
-    Write(".");
-    Visit(ast->varIdent);
+    WriteObjectExpr(*ast);
 }
 
-IMPLEMENT_VISIT_PROC(ArrayAccessExpr)
+IMPLEMENT_VISIT_PROC(AssignExpr)
 {
-    Visit(ast->expr);
-    WriteArrayIndices(ast->arrayIndices);
+    Visit(ast->lvalueExpr);
+    Write(" " + AssignOpToString(ast->op) + " ");
+    Visit(ast->rvalueExpr);
+}
+
+IMPLEMENT_VISIT_PROC(ArrayExpr)
+{
+    WriteArrayExpr(*ast);
 }
 
 IMPLEMENT_VISIT_PROC(CastExpr)
@@ -903,20 +881,6 @@ IMPLEMENT_VISIT_PROC(CastExpr)
     Write("(");
     Visit(ast->expr);
     Write(")");
-}
-
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
-{
-    if (ast->varIdent->flags(VarIdent::isImmutable))
-        Visit(ast->varIdent);
-    else
-        WriteVarIdentOrSystemValue(ast->varIdent.get());
-    
-    if (ast->assignExpr)
-    {
-        Write(" " + AssignOpToString(ast->assignOp) + " ");
-        Visit(ast->assignExpr);
-    }
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
@@ -937,7 +901,7 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 
 /* --- Helper functions for code generation --- */
 
-/* --- Basics --- */
+/* ----- Basics ----- */
 
 void GLSLGenerator::WriteComment(const std::string& text)
 {
@@ -984,7 +948,7 @@ void GLSLGenerator::WriteLineMark(const AST* ast)
     WriteLineMark(ast->area.Pos().Row());
 }
 
-/* --- Program --- */
+/* ----- Program ----- */
 
 void GLSLGenerator::WriteProgramHeader()
 {
@@ -1026,7 +990,7 @@ void GLSLGenerator::WriteProgramHeaderExtension(const std::string& extensionName
     WriteLn("#extension " + extensionName + " : enable");// "require" or "enable"
 }
 
-/* --- Layouts --- */
+/* ----- Global layouts ----- */
 
 void GLSLGenerator::WriteGlobalLayouts()
 {
@@ -1061,85 +1025,93 @@ void GLSLGenerator::WriteGlobalLayouts()
 
 bool GLSLGenerator::WriteGlobalLayoutsTessControl(const Program::LayoutTessControlShader& layout)
 {
-    WriteLn("layout(vertices = " + std::to_string(layout.outputControlPoints) + ") in;");
+    WriteLayoutGlobalIn(
+        {
+            [&]() { Write("vertices = " + std::to_string(layout.outputControlPoints)); },
+        }
+    );
     return true;
 }
 
 bool GLSLGenerator::WriteGlobalLayoutsTessEvaluation(const Program::LayoutTessEvaluationShader& layout)
 {
-    BeginLn();
-    {
-        Write("layout(");
-
-        /* Map GLSL domain type (abstract patch type) */
-        if (auto keyword = AttributeValueToGLSLKeyword(layout.domainType))
-            Write(*keyword);
-        else
-            Error(R_FailedToMapToGLSLKeyword(R_DomainType, R_TessAbstractPatchType));
-
-        if (IsAttributeValuePartitioning(layout.partitioning))
+    WriteLayoutGlobalIn(
         {
-            Write(", ");
+            [&]()
+            {
+                /* Map GLSL domain type (abstract patch type) */
+                if (auto keyword = AttributeValueToGLSLKeyword(layout.domainType))
+                    Write(*keyword);
+                else
+                    Error(R_FailedToMapToGLSLKeyword(R_DomainType, R_TessAbstractPatchType));
+            },
 
-            /* Map GLSL partitioning (spacing) */
-            if (auto keyword = AttributeValueToGLSLKeyword(layout.partitioning))
-                Write(*keyword);
-            else
-                Error(R_FailedToMapToGLSLKeyword(R_Partitioning, R_TessSpacing));
+            [&]()
+            {
+                if (IsAttributeValuePartitioning(layout.partitioning))
+                {
+                    /* Map GLSL partitioning (spacing) */
+                    if (auto keyword = AttributeValueToGLSLKeyword(layout.partitioning))
+                        Write(*keyword);
+                    else
+                        Error(R_FailedToMapToGLSLKeyword(R_Partitioning, R_TessSpacing));
+                }
+            },
+
+            [&]()
+            {
+                if (IsAttributeValueTrianglePartitioning(layout.outputTopology))
+                {
+                    /* Map GLSL output topology (primitive ordering) */
+                    if (auto keyword = AttributeValueToGLSLKeyword(layout.outputTopology))
+                        Write(*keyword);
+                    else
+                        Error(R_FailedToMapToGLSLKeyword(R_OutputToplogy, R_TessPrimitiveOrdering));
+                }
+            },
         }
-
-        if (IsAttributeValueTrianglePartitioning(layout.outputTopology))
-        {
-            Write(", ");
-
-            /* Map GLSL output topology (primitive ordering) */
-            if (auto keyword = AttributeValueToGLSLKeyword(layout.outputTopology))
-                Write(*keyword);
-            else
-                Error(R_FailedToMapToGLSLKeyword(R_OutputToplogy, R_TessPrimitiveOrdering));
-        }
-
-        Write(") in;");
-    }
-    EndLn();
+    );
     return true;
 }
 
 bool GLSLGenerator::WriteGlobalLayoutsGeometry(const Program::LayoutGeometryShader& layout)
 {
     /* Write input layout */
-    BeginLn();
-    {
-        Write("layout(");
-
-        /* Map GLSL input primitive */
-        if (layout.inputPrimitive == PrimitiveType::Undefined)
-            Error(R_MissingInputPrimitiveType(R_GeometryShader));
-        else if (auto keyword = PrimitiveTypeToGLSLKeyword(layout.inputPrimitive))
-            Write(*keyword);
-        else
-            Error(R_FailedToMapToGLSLKeyword(R_InputGeometryPrimitive));
-
-        Write(") in;");
-    }
-    EndLn();
+    WriteLayoutGlobalIn(
+        {
+            [&]()
+            {
+                /* Map GLSL input primitive */
+                if (layout.inputPrimitive == PrimitiveType::Undefined)
+                    Error(R_MissingInputPrimitiveType(R_GeometryShader));
+                else if (auto keyword = PrimitiveTypeToGLSLKeyword(layout.inputPrimitive))
+                    Write(*keyword);
+                else
+                    Error(R_FailedToMapToGLSLKeyword(R_InputGeometryPrimitive));
+            },
+        }
+    );
 
     /* Write output layout */
-    BeginLn();
-    {
-        Write("layout(");
+    WriteLayoutGlobalOut(
+        {
+            [&]()
+            {
+                /* Map GLSL output primitive */
+                if (layout.outputPrimitive == BufferType::Undefined)
+                    Error(R_MissingOutputPrimitiveType(R_GeometryShader));
+                else if (auto keyword = BufferTypeToGLSLKeyword(layout.outputPrimitive))
+                    Write(*keyword);
+                else
+                    Error(R_FailedToMapToGLSLKeyword(R_OutputGeometryPrimitive));
+            },
 
-        /* Map GLSL output primitive */
-        if (layout.outputPrimitive == BufferType::Undefined)
-            Error(R_MissingOutputPrimitiveType(R_GeometryShader));
-        else if (auto keyword = BufferTypeToGLSLKeyword(layout.outputPrimitive))
-            Write(*keyword);
-        else
-            Error(R_FailedToMapToGLSLKeyword(R_OutputGeometryPrimitive));
-
-        Write(", max_vertices = " + std::to_string(layout.maxVertices) + ") out;");
-    }
-    EndLn();
+            [&]()
+            {
+                Write("max_vertices = " + std::to_string(layout.maxVertices));
+            },
+        }
+    );
 
     return true;
 }
@@ -1151,20 +1123,34 @@ bool GLSLGenerator::WriteGlobalLayoutsFragment(const Program::LayoutFragmentShad
     /* Define 'gl_FragCoord' origin to upper-left (not required for Vulkan) */
     if (!IsVKSL() && GetProgram()->layoutFragment.fragCoordUsed)
     {
-        BeginLn();
-        {
-            Write("layout(origin_upper_left");
-            if (layout.pixelCenterInteger)
-                Write(", pixel_center_integer");
-            Write(") in vec4 gl_FragCoord;");
-        }
-        EndLn();
+        WriteLayoutGlobalIn(
+            {
+                [&]()
+                {
+                    Write("origin_upper_left");
+                },
+
+                [&]()
+                {
+                    if (layout.pixelCenterInteger)
+                        Write("pixel_center_integer");
+                },
+            },
+            [&]()
+            {
+                Write("vec4 gl_FragCoord");
+            }
+        );
         layoutsWritten = true;
     }
 
     if (layout.earlyDepthStencil)
     {
-        WriteLn("layout(early_fragment_tests) in;");
+        WriteLayoutGlobalIn(
+            {
+                [&]() { Write("early_fragment_tests"); }
+            }
+        );
         layoutsWritten = true;
     }
 
@@ -1173,37 +1159,121 @@ bool GLSLGenerator::WriteGlobalLayoutsFragment(const Program::LayoutFragmentShad
 
 bool GLSLGenerator::WriteGlobalLayoutsCompute(const Program::LayoutComputeShader& layout)
 {
-    BeginLn();
-    {
-        Write("layout(");
-        Write("local_size_x = " + std::to_string(layout.numThreads[0]) + ", ");
-        Write("local_size_y = " + std::to_string(layout.numThreads[1]) + ", ");
-        Write("local_size_z = " + std::to_string(layout.numThreads[2]));
-        Write(") in;");
-    }
-    EndLn();
+    WriteLayoutGlobalIn(
+        {
+            [&]() { Write("local_size_x = " + std::to_string(layout.numThreads[0])); },
+            [&]() { Write("local_size_y = " + std::to_string(layout.numThreads[1])); },
+            [&]() { Write("local_size_z = " + std::to_string(layout.numThreads[2])); },
+        }
+    );
     return true;
 }
 
-/* --- Input semantics --- */
+/* ----- Layout ----- */
+
+void GLSLGenerator::WriteLayout(const std::initializer_list<LayoutEntryFunctor>& entryFunctors)
+{
+    PushWritePrefix("layout(");
+    {
+        bool firstWritten = false;
+
+        for (const auto& entryFunc : entryFunctors)
+        {
+            /* Write comma separator, if this is not the first entry */
+            if (firstWritten)
+            {
+                /* Push comman separator as prefix for the next layout entry */
+                PushWritePrefix(", ");
+                {
+                    entryFunc();
+                }
+                PopWritePrefix();
+            }
+            else
+            {
+                /* Call function for the first layout entry */
+                entryFunc();
+                if (TopWritePrefix())
+                    firstWritten = true;
+            }
+        }
+
+        if (TopWritePrefix())
+            Write(") ");
+    }
+    PopWritePrefix();
+}
+
+void GLSLGenerator::WriteLayout(const std::string& value)
+{
+    WriteLayout({ [&]() { Write(value); } });
+}
+
+void GLSLGenerator::WriteLayoutGlobal(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor, const std::string& modifier)
+{
+    BeginLn();
+    {
+        WriteLayout(entryFunctors);
+        if (varFunctor)
+        {
+            Write(modifier + ' ');
+            varFunctor();
+            Write(";");
+        }
+        else
+            Write(modifier + ';');
+    }
+    EndLn();
+}
+
+void GLSLGenerator::WriteLayoutGlobalIn(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor)
+{
+    WriteLayoutGlobal(entryFunctors, varFunctor, "in");
+}
+
+void GLSLGenerator::WriteLayoutGlobalOut(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor)
+{
+    WriteLayoutGlobal(entryFunctors, varFunctor, "out");
+}
+
+void GLSLGenerator::WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters)
+{
+    if (explicitBinding_)
+    {
+        if (auto slotRegister = Register::GetForTarget(slotRegisters, GetShaderTarget()))
+            Write("binding = " + std::to_string(slotRegister->slot));
+    }
+}
+
+void GLSLGenerator::WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast)
+{
+    if (typeDenoter)
+    {
+        if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
+        {
+            if (auto keyword = DataTypeToImageFormatKeyword(baseTypeDen->dataType, ast))
+                Write(*keyword);
+        }
+    }
+}
+
+/* ----- Input semantics ----- */
 
 void GLSLGenerator::WriteLocalInputSemantics(FunctionDecl* entryPoint)
 {
     entryPoint->inputSemantics.ForEach(
         [this](VarDecl* varDecl)
         {
-            if (varDecl->flags(VarDecl::isWrittenTo))
+            if (varDecl->flags(Decl::isWrittenTo))
                 WriteLocalInputSemanticsVarDecl(varDecl);
         }
     );
 
     for (auto& param : entryPoint->parameters)
     {
-        if (auto typeSpecifier = param->typeSpecifier->GetTypeDenoter()->Get())
-        {
-            if (auto structTypeDen = typeSpecifier->As<StructTypeDenoter>())
-                WriteLocalInputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
-        }
+        const auto& typeDen = param->typeSpecifier->GetTypeDenoter()->GetAliased();
+        if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
+            WriteLocalInputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
     }
 }
 
@@ -1228,7 +1298,7 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
         Write(" " + varDecl->ident + " = ");
 
         /* Is a type conversion required? */
-        if (!IsTypeCompatibleWithSemantic(varDecl->semantic, *typeSpecifier->typeDenoter->Get()))
+        if (!IsTypeCompatibleWithSemantic(varDecl->semantic, typeSpecifier->typeDenoter->GetAliased()))
         {
             /* Write type cast with semantic keyword */
             Visit(typeSpecifier);
@@ -1345,7 +1415,11 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
                 if (it != vertexSemanticsMap_.end())
                 {
                     /* Write layout location and increment use count for warning-feedback */
-                    Write("layout(location = " + std::to_string(it->second.location) + ") ");
+                    WriteLayout(
+                        {
+                            [&]() { Write("location = " + std::to_string(it->second.location)); }
+                        }
+                    );
                     it->second.found = true;
                 }
             }
@@ -1368,7 +1442,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
     EndLn();
 }
 
-/* --- Output semantics --- */
+/* ----- Output semantics ----- */
 
 void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 {
@@ -1377,7 +1451,7 @@ void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
     entryPoint->outputSemantics.ForEach(
         [this](VarDecl* varDecl)
         {
-            if (varDecl->flags(VarDecl::isWrittenTo))
+            if (varDecl->flags(Decl::isWrittenTo))
                 WriteLocalOutputSemanticsVarDecl(varDecl);
         }
     );
@@ -1385,11 +1459,9 @@ void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 
     for (auto& param : entryPoint->parameters)
     {
-        if (auto typeSpecifier = param->typeSpecifier->GetTypeDenoter()->Get())
-        {
-            if (auto structTypeDen = typeSpecifier->As<StructTypeDenoter>())
-                WriteLocalOutputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
-        }
+        const auto& typeDen = param->typeSpecifier->GetTypeDenoter()->GetAliased();
+        if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
+            WriteLocalOutputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
     }
 }
 
@@ -1498,9 +1570,15 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
             Separator();
 
             if (semantic.IsSystemValue() && explicitBinding_)
-                Write("layout(location = " + std::to_string(semantic.Index()) + ") out ");
-            else
-                Write("out ");
+            {
+                WriteLayout(
+                    {
+                        [&]() { Write("location = " + std::to_string(semantic.Index())); }
+                    }
+                );
+            }
+
+            Write("out ");
             Separator();
         }
 
@@ -1522,14 +1600,14 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
     auto entryPoint = GetProgram()->entryPointRef;
 
     /* Fetch variable identifier if expression is set */
-    VarIdent* exprVarIdent = nullptr;
+    const ObjectExpr* lvalueExpr = nullptr;
     if (expr)
-        exprVarIdent = expr->FetchVarIdent();
+        lvalueExpr = expr->FetchLValueExpr();
 
     /* Write wrapped structures */
     for (const auto& paramStruct : entryPoint->paramStructs)
     {
-        if (paramStruct.varIdent == nullptr || paramStruct.varIdent == exprVarIdent)
+        if (paramStruct.expr == nullptr || paramStruct.expr == expr)
             WriteOutputSemanticsAssignmentStructDeclParam(paramStruct, writeAsListedExpr);
     }
 
@@ -1571,28 +1649,28 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
         else if (entryPoint->paramStructs.empty())
         {
             /* Store result in temporary variable */
-            const auto tempVarIdent = nameMangling_.temporaryPrefix + "output";
+            const auto tempIdent = nameMangling_.temporaryPrefix + "output";
 
             BeginLn();
             {
                 Visit(entryPoint->returnType);
-                Write(" " + tempVarIdent + " = ");
+                Write(" " + tempIdent + " = ");
                 Visit(expr);
                 Write(";");
             }
             EndLn();
 
             if (auto structDecl = entryPoint->returnType->GetStructDeclRef())
-                WriteOutputSemanticsAssignmentStructDeclParam({ nullptr, nullptr, structDecl }, writeAsListedExpr, tempVarIdent);
+                WriteOutputSemanticsAssignmentStructDeclParam({ nullptr, nullptr, structDecl }, writeAsListedExpr, tempIdent);
         }
     }
 }
 
 void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(
-    const FunctionDecl::ParameterStructure& paramStruct, bool writeAsListedExpr, const std::string& tempVarIdent)
+    const FunctionDecl::ParameterStructure& paramStruct, bool writeAsListedExpr, const std::string& tempIdent)
 {
-    auto paramIdent = paramStruct.varIdent;
-    auto paramVar = paramStruct.varDecl;
+    auto paramExpr  = paramStruct.expr;
+    auto paramVar   = paramStruct.varDecl;
     auto structDecl = paramStruct.structDecl;
 
     if (structDecl && structDecl->flags(StructDecl::isNonEntryPointParam) && structDecl->flags(StructDecl::isShaderOutput))
@@ -1612,14 +1690,14 @@ void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(
 
                 Write(" = ");
 
-                if (paramIdent)
-                    Visit(paramIdent);
+                if (paramExpr)
+                    Visit(paramExpr);
                 else if (paramVar)
                     Write(paramVar->ident);
                 else
-                    Write(tempVarIdent);
+                    Write(tempIdent);
 
-                Write("." + varDecl->ident + (writeAsListedExpr ? ", " : ";"));
+                Write("." + varDecl->ident.Original() + (writeAsListedExpr ? ", " : ";"));
 
                 if (!writeAsListedExpr)
                 {
@@ -1632,7 +1710,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(
     }
 }
 
-/* --- Uniforms --- */
+/* ----- Uniforms ----- */
 
 void GLSLGenerator::WriteGlobalUniforms()
 {
@@ -1671,113 +1749,10 @@ void GLSLGenerator::WriteGlobalUniformsParameter(VarDeclStmnt* param)
     EndLn();
 }
 
-/* --- VarIdent --- */
-
-/*
-Find the first VarIdent with a system value semantic,
-and keep the remaining AST nodes (i.e. ast->next) which might be vector subscriptions (e.g. "gl_Position.xyz").
-*/
-VarIdent* GLSLGenerator::FindSystemValueVarIdent(VarIdent* varIdent)
-{
-    while (varIdent)
-    {
-        /* Check if current var-ident AST node has a system semantic */
-        if (SystemValueToKeyword(varIdent->FetchSemantic()) != nullptr)
-            return varIdent;
-
-        /* Search in next var-ident AST node */
-        varIdent = varIdent->next.get();
-    }
-    return nullptr;
-}
-
-const std::string& GLSLGenerator::FinalIdentFromVarIdent(VarIdent* varIdent)
-{
-    /* Check if a function declaration has changed it's name during conversion */
-    if (auto funcDecl = varIdent->FetchFunctionDecl())
-        return funcDecl->ident;
-
-    /* Check if a declaration object (variable, structure, sampler, buffer) has changed it's name during conversion */
-    if (auto obj = varIdent->FetchDecl())
-        return obj->ident;
-
-    /* Return default identifier */
-    return varIdent->ident;
-}
-
-void GLSLGenerator::WriteVarIdent(VarIdent* varIdent, bool recursive, bool originalIdent)
-{
-    /* Write identifier */
-    Write(originalIdent ? varIdent->ident : FinalIdentFromVarIdent(varIdent));
-
-    /* Write array index expressions */
-    WriteArrayIndices(varIdent->arrayIndices);
-
-    if (recursive && varIdent->next)
-    {
-        Write(".");
-        WriteVarIdent(varIdent->next.get(), true, true);
-    }
-}
-
-/*
-Writes either the variable identifier as it is (e.g. "vertexOutput.position.xyz"),
-or a system value if the identifier has a system value semantix (e.g. "gl_Position.xyz").
-*/
-void GLSLGenerator::WriteVarIdentOrSystemValue(VarIdent* varIdent)
-{
-    /* Find system value semantic in variable identifier */
-    auto semanticVarIdent = FindSystemValueVarIdent(varIdent);
-
-    std::unique_ptr<std::string> semanticKeyword;
-    Flags varFlags;
-
-    if (semanticVarIdent)
-    {
-        if (auto varDecl = semanticVarIdent->FetchVarDecl())
-        {
-            /* Copy flags from variable */
-            varFlags = varDecl->flags;
-
-            /* Is this variable an entry-point output semantic, or an r-value? */
-            if (GetProgram()->entryPointRef->outputSemantics.Contains(varDecl) || !varDecl->flags(VarDecl::isWrittenTo))
-                semanticKeyword = SystemValueToKeyword(varDecl->semantic);
-        }
-    }
-
-    if (semanticVarIdent && semanticKeyword)
-    {
-        /* Write "gl_in[]" or "gl_out[]" in front of identifier */
-        if (!varIdent->arrayIndices.empty())
-        {
-            if (varFlags(VarDecl::isShaderInput))
-                Write("gl_in");
-            else
-                Write("gl_out");
-            WriteArrayIndices(varIdent->arrayIndices);
-            Write(".");
-        }
-
-        /* Write shader target respective system semantic */
-        Write(*semanticKeyword);
-
-        if (semanticVarIdent->next)
-        {
-            Write(".");
-            Visit(semanticVarIdent->next);
-        }
-    }
-    else
-    {
-        /* Write default variable identifier */
-        Visit(varIdent);
-    }
-}
-
 void GLSLGenerator::WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIndex)
 {
     /* Find system value semantic in variable identifier */
-    if (auto semanticVarIdent = SystemValueToKeyword(varDecl->semantic))
+    if (auto semanticKeyword = SystemValueToKeyword(varDecl->semantic))
     {
         if (arrayIndex >= 0)
         {
@@ -1787,7 +1762,7 @@ void GLSLGenerator::WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIn
                 Write("gl_out");
             Write("[" + std::to_string(arrayIndex) + "].");
         }
-        Write(*semanticVarIdent);
+        Write(*semanticKeyword);
     }
     else
     {
@@ -1797,7 +1772,125 @@ void GLSLGenerator::WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIn
     }
 }
 
-/* --- Type denoter --- */
+/* ----- Object expression ----- */
+
+void GLSLGenerator::WriteObjectExpr(const ObjectExpr& objectExpr)
+{
+    if (objectExpr.flags(ObjectExpr::isImmutable))
+        WriteObjectExprIdent(objectExpr);
+    else if (auto symbol = objectExpr.symbolRef)
+        WriteObjectExprIdentOrSystemValue(objectExpr, symbol);
+    else
+        WriteObjectExprIdent(objectExpr);
+}
+
+void GLSLGenerator::WriteObjectExprIdent(const ObjectExpr& objectExpr, bool writePrefix)
+{
+    /* Write prefix expression */
+    if (objectExpr.prefixExpr && !objectExpr.isStatic && writePrefix)
+    {
+        Visit(objectExpr.prefixExpr);
+
+        if (auto literalExpr = objectExpr.prefixExpr->As<LiteralExpr>())
+        {
+            /* Append space between integer literal and '.' swizzle operator */
+            if (literalExpr->IsSpaceRequiredForSubscript())
+                Write(" ");
+        }
+
+        Write(".");
+    }
+
+    /* Write object identifier either from object expression or from symbol reference */
+    if (auto symbol = objectExpr.symbolRef)
+    {
+        /* Write original identifier, if the identifier was marked as immutable */
+        if (objectExpr.flags(ObjectExpr::isImmutable))
+            Write(symbol->ident.Original());
+        else
+            Write(symbol->ident);
+    }
+    else
+        Write(objectExpr.ident);
+}
+
+/*
+Writes either the object identifier as it is (e.g. "vertexOutput.position.xyz"),
+or a system value if the identifier has a system value semantic (e.g. "gl_Position.xyz").
+*/
+void GLSLGenerator::WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectExpr, Decl* symbol)
+{
+    /* Find system value semantic in object identifier */
+    std::unique_ptr<std::string> semanticKeyword;
+    Flags varFlags;
+    
+    if (auto varDecl = symbol->As<VarDecl>())
+    {
+        /* Copy flags from variable */
+        varFlags = varDecl->flags;
+
+        /* Is this variable an entry-point output semantic, or an r-value? */
+        if (GetProgram()->entryPointRef->outputSemantics.Contains(varDecl) || !varDecl->flags(Decl::isWrittenTo))
+        {
+            /* Get GLSL keyword for system value semantic (or null if semantic is no system value) */
+            semanticKeyword = SystemValueToKeyword(varDecl->semantic);
+        }
+    }
+
+    if (varFlags(VarDecl::isShaderInput | VarDecl::isShaderOutput) && objectExpr.prefixExpr)
+    {
+        /* Write special "gl_in/out" array prefix, or write array indices as postfix for input/output semantics */
+        if (auto arrayExpr = objectExpr.prefixExpr->FetchNonBracketExpr()->As<ArrayExpr>())
+        {
+            if (semanticKeyword)
+            {
+                if (varFlags(VarDecl::isShaderInput))
+                    Write("gl_in");
+                else
+                    Write("gl_out");
+                WriteArrayIndices(arrayExpr->arrayIndices);
+                Write("." + *semanticKeyword);
+            }
+            else
+            {
+                WriteObjectExprIdent(objectExpr, false);
+                WriteArrayIndices(arrayExpr->arrayIndices);
+            }
+        }
+        else
+            Error(R_MissingArrayPrefixForIOSemantic(objectExpr.ident), &objectExpr);
+    }
+    else if (semanticKeyword)
+    {
+        /* Ignore prefix expression if the object refers to a system value semantic */
+        Write(*semanticKeyword);
+    }
+    else
+    {
+        /* Write object expression with standard identifier */
+        WriteObjectExprIdent(objectExpr);
+    }
+}
+
+/* ----- Array expression ----- */
+
+void GLSLGenerator::WriteArrayExpr(const ArrayExpr& arrayExpr)
+{
+    Visit(arrayExpr.prefixExpr);
+    WriteArrayIndices(arrayExpr.arrayIndices);
+}
+
+void GLSLGenerator::WriteArrayIndices(const std::vector<ExprPtr>& arrayIndices)
+{
+    for (auto& arrayIndex : arrayIndices)
+    {
+        Write("[");
+        Visit(arrayIndex);
+        Write("]");
+    }
+}
+
+/* ----- Type denoter ----- */
 
 void GLSLGenerator::WriteStorageClasses(const std::set<StorageClass>& storageClasses, const AST* ast)
 {
@@ -1828,7 +1921,7 @@ void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifie
     {
         /* Only write 'row_major' type modifier (column major is the default) */
         if (typeModifiers.find(TypeModifier::RowMajor) != typeModifiers.end())
-            Write("layout(row_major) ");
+            WriteLayout("row_major");
     }
 
     /* Write const type modifier */
@@ -1838,7 +1931,7 @@ void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifie
 
 void GLSLGenerator::WriteTypeModifiersFrom(const TypeSpecifierPtr& typeSpecifier)
 {
-    WriteTypeModifiers(typeSpecifier->typeModifiers, typeSpecifier->GetTypeDenoter()->Get());
+    WriteTypeModifiers(typeSpecifier->typeModifiers, typeSpecifier->GetTypeDenoter()->GetSub());
 }
 
 void GLSLGenerator::WriteDataType(DataType dataType, bool writePrecisionSpecifier, const AST* ast)
@@ -1929,8 +2022,8 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
         }
         else if (auto arrayTypeDen = typeDenoter.As<ArrayTypeDenoter>())
         {
-            /* Write array type denoter */
-            WriteTypeDenoter(*arrayTypeDen->baseTypeDenoter, writePrecisionSpecifier, ast);
+            /* Write sub type of array type denoter and array dimensions */
+            WriteTypeDenoter(*arrayTypeDen->subTypeDenoter, writePrecisionSpecifier, ast);
             Visit(arrayTypeDen->arrayDims);
         }
         else
@@ -1946,7 +2039,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
     }
 }
 
-/* --- Function declaration --- */
+/* ----- Function declaration ----- */
 
 void GLSLGenerator::WriteFunction(FunctionDecl* ast)
 {
@@ -2057,33 +2150,40 @@ void GLSLGenerator::WriteFunctionSecondaryEntryPoint(FunctionDecl* ast)
     WriteScopeClose();
 }
 
-/* --- Function call --- */
+/* ----- Function call ----- */
 
-void GLSLGenerator::AssertIntrinsicNumArgs(FunctionCall* funcCall, std::size_t numArgsMin, std::size_t numArgsMax)
+void GLSLGenerator::AssertIntrinsicNumArgs(CallExpr* funcCall, std::size_t numArgsMin, std::size_t numArgsMax)
 {
     auto numArgs = funcCall->arguments.size();
     if (numArgs < numArgsMin || numArgs > numArgsMax)
-        Error(R_InvalidIntrinsicArgCount(funcCall->varIdent->Last()->ident), funcCall);
+        Error(R_InvalidIntrinsicArgCount(funcCall->ident), funcCall);
 }
 
-void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* funcCall)
+void GLSLGenerator::WriteCallExprStandard(CallExpr* funcCall)
 {
     /* Write function name */
-    if (funcCall->varIdent)
+    if (funcCall->intrinsic != Intrinsic::Undefined)
     {
-        if (funcCall->intrinsic != Intrinsic::Undefined && !IsWrappedIntrinsic(funcCall->intrinsic))
+        if (!IsWrappedIntrinsic(funcCall->intrinsic))
         {
             /* Write GLSL intrinsic keyword */
             if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
                 Write(*keyword);
             else
-                ErrorIntrinsic(funcCall->varIdent->Last()->ToString(), funcCall);
+                ErrorIntrinsic(funcCall->ident, funcCall);
+        }
+        else if (!funcCall->ident.empty())
+        {
+            /* Write wrapper function name */
+            Write(funcCall->ident);
         }
         else
-        {
-            /* Write function identifier */
-            Visit(funcCall->varIdent);
-        }
+            Error(R_MissingFuncName, funcCall);
+    }
+    else if (auto funcDecl = funcCall->GetFunctionImpl())
+    {
+        /* Write final identifier of function declaration */
+        Write(funcDecl->ident);
     }
     else if (funcCall->typeDenoter)
     {
@@ -2110,7 +2210,7 @@ void GLSLGenerator::WriteFunctionCallStandard(FunctionCall* funcCall)
     Write(")");
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicMul(FunctionCall* funcCall)
+void GLSLGenerator::WriteCallExprIntrinsicMul(CallExpr* funcCall)
 {
     AssertIntrinsicNumArgs(funcCall, 2, 2);
 
@@ -2141,15 +2241,15 @@ void GLSLGenerator::WriteFunctionCallIntrinsicMul(FunctionCall* funcCall)
     Write(")");
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicRcp(FunctionCall* funcCall)
+void GLSLGenerator::WriteCallExprIntrinsicRcp(CallExpr* funcCall)
 {
     AssertIntrinsicNumArgs(funcCall, 1, 1);
 
     /* Get type denoter of argument expression */
     auto& expr = funcCall->arguments.front();
-    auto typeDenoter = expr->GetTypeDenoter()->Get();
+    const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
 
-    if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
+    if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
     {
         /* Convert this function call into a division */
         Write("(");
@@ -2166,15 +2266,15 @@ void GLSLGenerator::WriteFunctionCallIntrinsicRcp(FunctionCall* funcCall)
         Error(R_InvalidIntrinsicArgType("rcp"), expr.get());
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* funcCall)
+void GLSLGenerator::WriteCallExprIntrinsicClip(CallExpr* funcCall)
 {
     AssertIntrinsicNumArgs(funcCall, 1, 1);
 
     /* Get type denoter of argument expression */
     auto& expr = funcCall->arguments.front();
-    auto typeDenoter = expr->GetTypeDenoter()->Get();
+    const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
 
-    if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
+    if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
     {
         /* Convert this function call into a condition */
         Write("if (");
@@ -2239,7 +2339,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicClip(FunctionCall* funcCall)
     DecIndent();
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* funcCall)
+void GLSLGenerator::WriteCallExprIntrinsicAtomic(CallExpr* funcCall)
 {
     AssertIntrinsicNumArgs(funcCall, 2, 3);
 
@@ -2259,10 +2359,10 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(FunctionCall* funcCall)
         Write(")");
     }
     else
-        ErrorIntrinsic(funcCall->varIdent->ToString(), funcCall);
+        ErrorIntrinsic(funcCall->ident, funcCall);
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicStreamOutputAppend(FunctionCall* funcCall)
+void GLSLGenerator::WriteCallExprIntrinsicStreamOutputAppend(CallExpr* funcCall)
 {
     AssertIntrinsicNumArgs(funcCall, 1, 1);
 
@@ -2276,7 +2376,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicStreamOutputAppend(FunctionCall* f
 
 // "CalculateLevelOfDetail"          -> "textureQueryLod(...).y"
 // "CalculateLevelOfDetailUnclamped" -> "textureQueryLod(...).x"
-void GLSLGenerator::WriteFunctionCallIntrinsicTextureQueryLod(FunctionCall* funcCall, bool clamped)
+void GLSLGenerator::WriteCallExprIntrinsicTextureQueryLod(CallExpr* funcCall, bool clamped)
 {
     AssertIntrinsicNumArgs(funcCall, 2, 2);
 
@@ -2292,10 +2392,10 @@ void GLSLGenerator::WriteFunctionCallIntrinsicTextureQueryLod(FunctionCall* func
         Write(clamped ? "y" : "x");
     }
     else
-        ErrorIntrinsic(funcCall->varIdent->ToString(), funcCall);
+        ErrorIntrinsic(funcCall->ident, funcCall);
 }
 
-/* --- Intrinsics wrapper functions --- */
+/* ----- Intrinsics wrapper ----- */
 
 void GLSLGenerator::WriteWrapperIntrinsics()
 {
@@ -2396,7 +2496,7 @@ void GLSLGenerator::WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage)
         Blank();
 }
 
-/* --- Structure --- */
+/* ----- Structure ----- */
 
 bool GLSLGenerator::WriteStructDecl(StructDecl* structDecl, bool writeSemicolon, bool allowNestedStruct)
 {
@@ -2444,6 +2544,11 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* structDecl, bool endWith
     }
     EndSep();
     WriteScopeClose();
+    
+    Blank();
+
+    /* Write member functions */
+    WriteStmntList(structDecl->funcMembers);
 
     return true;
 }
@@ -2487,7 +2592,7 @@ void GLSLGenerator::WriteStructDeclMembers(StructDecl* structDecl)
     Visit(structDecl->varMembers);
 }
 
-/* --- BufferDecl --- */
+/* ----- BufferDecl ----- */
 
 void GLSLGenerator::WriteBufferDecl(BufferDecl* bufferDecl)
 {
@@ -2511,22 +2616,20 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
     BeginLn();
     {
         /* Write uniform declaration */
-        bool imageFormatWritten = false;
-        if (auto genericTypeDen = bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter)
-        {
-            if (auto baseTypeDen = genericTypeDen->As<BaseTypeDenoter>())
+        WriteLayout(
             {
-                auto imageFormatKeyword = DataTypeToImageFormatKeyword(baseTypeDen->dataType, bufferDecl);
-                Write("layout(" + *imageFormatKeyword);
+                [&]()
+                {
+                    if (IsRWTextureBufferType(bufferDecl->GetBufferType()))
+                        WriteLayoutImageFormat(bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter, bufferDecl);
+                },
 
-                imageFormatWritten = true;
+                [&]()
+                {
+                    WriteLayoutBinding(bufferDecl->slotRegisters);
+                },
             }
-        }
-        
-        WriteBindingSlot(bufferDecl->slotRegisters, !imageFormatWritten);
-
-        if (imageFormatWritten)
-            Write(") ");
+        );
 
         Write("uniform ");
 
@@ -2561,15 +2664,13 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
     /* Write buffer declaration */
     BeginLn();
     {
-        Write("layout(std430");
-
-        if (explicitBinding_)
-        {
-            if (auto slotRegister = Register::GetForTarget(bufferDecl->slotRegisters, GetShaderTarget()))
-                Write(", binding = " + std::to_string(slotRegister->slot));
-        }
-
-        Write(") " + *bufferTypeKeyword + " " + nameMangling_.temporaryPrefix + bufferDecl->ident);
+        WriteLayout(
+            {
+                [&]() { Write("std430"); },
+                [&]() { WriteLayoutBinding(bufferDecl->slotRegisters); },
+            }
+        );
+        Write(*bufferTypeKeyword + " " + nameMangling_.temporaryPrefix + bufferDecl->ident);
     }
     EndLn();
 
@@ -2592,7 +2693,7 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
     WriteScopeClose();
 }
 
-/* --- Misc --- */
+/* ----- Misc ----- */
 
 void GLSLGenerator::WriteStmntComment(Stmnt* ast, bool insertBlank)
 {
@@ -2673,16 +2774,6 @@ void GLSLGenerator::WriteScopedStmnt(Stmnt* ast)
     }
 }
 
-void GLSLGenerator::WriteArrayIndices(const std::vector<ExprPtr>& arrayDims)
-{
-    for (auto& dim : arrayDims)
-    {
-        Write("[");
-        Visit(dim);
-        Write("]");
-    }
-}
-
 void GLSLGenerator::WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast)
 {
     if (baseTypeDen.IsScalar())
@@ -2712,25 +2803,6 @@ void GLSLGenerator::WriteLiteral(const std::string& value, const BaseTypeDenoter
     }
     else
         Error(R_FailedToWriteLiteralType(value), ast);
-}
-
-void GLSLGenerator::WriteBindingSlot(const std::vector<RegisterPtr>& slotRegisters, bool writeCompleteLayout)
-{
-    if (explicitBinding_)
-    {
-        if (auto slotRegister = Register::GetForTarget(slotRegisters, GetShaderTarget()))
-        {
-            if (writeCompleteLayout)
-                Write("layout(");
-            else
-                Write(", ");
-            
-            Write("binding = " + std::to_string(slotRegister->slot));
-
-            if (writeCompleteLayout)
-                Write(") ");
-        }
-    }
 }
 
 

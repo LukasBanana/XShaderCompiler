@@ -71,6 +71,7 @@ std::string Token::TypeToString(const Types type)
         case Types::TernaryOp:          return R_TernaryOp;
         case Types::Dot:                return "'.'";
         case Types::Colon:              return "':'";
+        case Types::DColon:             return "'::'";
         case Types::Semicolon:          return "';'";
         case Types::Comma:              return "','";
         case Types::LBracket:           return "'('";

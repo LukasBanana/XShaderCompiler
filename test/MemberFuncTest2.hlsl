@@ -2,14 +2,6 @@
 // Member Function Test 2
 // 15/03/2017
 
-struct VOut
-{
-	float4 position : SV_POSITION;
-	float3 worldPos : WORLDPOS;
-	float3 normal : NORMAL;
-	float4 color : COLOR;
-};
-
 struct Light
 {
 	float4 Shade(float3 worldPos, float3 normal)
@@ -19,7 +11,7 @@ struct Light
 		return float4(color * NdotL, 1);
 	}
 
-	static Light GetLight()
+	static Light Get()
 	{
 		Light l0 = { (float3)3, (float3)9 };
 		return l0;
@@ -29,9 +21,26 @@ struct Light
 	float3 color;
 };
 
-float4 PS(VOut i) : SV_Target
+struct VIn
 {
-	return i.color * Light::GetLight().Shade(i.worldPos, i.normal);
+	float3 worldPos : WORLDPOS;
+	float3 normal : NORMAL;
+};
+
+Light GetLight1() { Light l; return l; }
+Light[2] GetLight2() { return { GetLight1() }; }
+
+float4 VS(VIn i) : LIGHTCOLOR
+{
+    #if 0
+	
+    //return Light::Get().Shade(i.worldPos, i.normal);
+    return GetLight1().Shade(i.worldPos, i.normal);
+    //return GetLight2()[0].Shade(i.worldPos, i.normal);
+    
+    #else
+    return 1;
+    #endif
 }
 
 

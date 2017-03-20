@@ -102,7 +102,7 @@ static std::map<DataType, std::string> GenerateDataTypeMap()
         TODO: currently disabled
         -> "0.0" is read as double precision per default, which results in double precision matrices in most cases
         */
-#if 0
+        #if 0
         { T::Double2x2, "dmat2"   },
         { T::Double2x3, "dmat2x3" },
         { T::Double2x4, "dmat2x4" },
@@ -112,7 +112,7 @@ static std::map<DataType, std::string> GenerateDataTypeMap()
         { T::Double4x2, "dmat4x2" },
         { T::Double4x3, "dmat4x3" },
         { T::Double4x4, "dmat4"   },
-#else
+        #else
         { T::Double2x2, "mat2"    },
         { T::Double2x3, "mat2x3"  },
         { T::Double2x4, "mat2x4"  },
@@ -122,7 +122,7 @@ static std::map<DataType, std::string> GenerateDataTypeMap()
         { T::Double4x2, "mat4x2"  },
         { T::Double4x3, "mat4x3"  },
         { T::Double4x4, "mat4"    },
-#endif
+        #endif
     };
 }
 
