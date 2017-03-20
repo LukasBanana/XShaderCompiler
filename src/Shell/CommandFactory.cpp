@@ -93,6 +93,7 @@ CommandFactory::CommandFactory()
         PrefixOutputCommand,
         PrefixReservedWordCommand,
         PrefixTemporaryCommand,
+        PrefixNamespaceCommand,
         AlwaysUseSemanticsCommand
     >();
 }

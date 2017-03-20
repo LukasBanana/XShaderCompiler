@@ -25,7 +25,7 @@ class Flags
 
         // Initializes the object with the specified flags.
         inline Flags(unsigned int flags) :
-            bitMask_{ flags }
+            bitMask_ { flags }
         {
         }
 
@@ -41,9 +41,21 @@ class Flags
         }
 
         // Sets the specified flag.
-        inline Flags& operator << (unsigned int flag)
+        inline void Insert(unsigned int flag)
         {
             bitMask_ |= flag;
+        }
+
+        // Removes the specified flag.
+        inline void Remove(unsigned int flag)
+        {
+            bitMask_ &= (~flag);
+        }
+
+        // Sets the specified flag (see 'Insert' function).
+        inline Flags& operator << (unsigned int flag)
+        {
+            Insert(flag);
             return *this;
         }
 

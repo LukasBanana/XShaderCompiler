@@ -246,7 +246,7 @@ static TypeDenoterPtr DeriveCommonTypeDenoter(std::size_t majorArgIndex, const s
     if (majorArgIndex < args.size())
     {
         /* Find common type denoter for all arguments */
-        TypeDenoterPtr commonTypeDenoter = args[majorArgIndex]->GetTypeDenoter()->Get();
+        TypeDenoterPtr commonTypeDenoter = args[majorArgIndex]->GetTypeDenoter()->GetSub();
 
         for (std::size_t i = 0, n = args.size(); i < n; ++i)
         {
@@ -254,7 +254,7 @@ static TypeDenoterPtr DeriveCommonTypeDenoter(std::size_t majorArgIndex, const s
             {
                 commonTypeDenoter = TypeDenoter::FindCommonTypeDenoter(
                     commonTypeDenoter,
-                    args[i]->GetTypeDenoter()->Get()
+                    args[i]->GetTypeDenoter()->GetSub()
                 );
             }
         }
@@ -698,15 +698,15 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeTranspose(const std::vector<E
     if (args.size() != 1)
         RuntimeErr(R_InvalidIntrinsicArgCount("transpose"));
 
-    auto type0 = args[0]->GetTypeDenoter()->Get();
+    const auto& arg0TypeDen = args[0]->GetTypeDenoter()->GetAliased();
 
-    if (type0->IsMatrix())
+    if (arg0TypeDen.IsMatrix())
     {
         /* Convert MxN matrix type to NxM matrix type */
-        auto dataType0      = static_cast<BaseTypeDenoter&>(*type0).dataType;
-        auto baseDataType0  = BaseDataType(dataType0);
-        auto matrixTypeDim0 = MatrixTypeDim(dataType0);
-        return std::make_shared<BaseTypeDenoter>(MatrixDataType(baseDataType0, matrixTypeDim0.second, matrixTypeDim0.first));
+        auto arg0DataType       = static_cast<const BaseTypeDenoter&>(arg0TypeDen).dataType;
+        auto arg0BaseDataType   = BaseDataType(arg0DataType);
+        auto arg0MatrixTypeDim  = MatrixTypeDim(arg0DataType);
+        return std::make_shared<BaseTypeDenoter>(MatrixDataType(arg0BaseDataType, arg0MatrixTypeDim.second, arg0MatrixTypeDim.first));
     }
 
     RuntimeErr(R_InvalidIntrinsicArgs("transpose"));
@@ -718,15 +718,15 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeVectorCompare(const std::vect
     if (args.size() != 2)
         RuntimeErr(R_InvalidIntrinsicArgCount("vector-compare"));
 
-    auto type0 = args[0]->GetTypeDenoter()->Get();
+    auto arg0TypeDen = args[0]->GetTypeDenoter()->GetSub();
 
-    if (auto baseType0 = type0->As<BaseTypeDenoter>())
+    if (auto arg0BaseTypeDen = arg0TypeDen->As<BaseTypeDenoter>())
     {
-        const auto vecTypeSize = VectorTypeDim(baseType0->dataType);
+        const auto vecTypeSize = VectorTypeDim(arg0BaseTypeDen->dataType);
         return std::make_shared<BaseTypeDenoter>(VectorDataType(DataType::Bool, vecTypeSize));
     }
 
-    return type0;
+    return arg0TypeDen;
 }
 
 /*

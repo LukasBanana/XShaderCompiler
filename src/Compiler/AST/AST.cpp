@@ -14,6 +14,7 @@
 #include "ReportHandler.h"
 #include "ReportIdents.h"
 #include <algorithm>
+#include <cctype>
 
 #ifdef XSC_ENABLE_MEMORY_POOL
 #include "MemoryPool.h"
@@ -73,15 +74,35 @@ void TypedAST::ResetTypeDenoter()
 
 VarDecl* Expr::FetchVarDecl() const
 {
-    if (auto varIdent = FetchVarIdent())
-        return varIdent->FetchVarDecl();
+    if (auto lvalueExpr = FetchLValueExpr())
+        return lvalueExpr->FetchVarDecl();
     else
         return nullptr;
 }
 
-VarIdent* Expr::FetchVarIdent() const
+const ObjectExpr* Expr::FetchLValueExpr() const
 {
     return nullptr;
+}
+
+const ObjectExpr* Expr::FetchTypeObjectExpr() const
+{
+    return nullptr;
+}
+
+const Expr* Expr::FetchNonBracketExpr() const
+{
+    return this;
+}
+
+Expr* Expr::FetchNonBracketExpr()
+{
+    return this;
+}
+
+IndexedSemantic Expr::FetchSemantic() const
+{
+    return Semantic::Undefined;
 }
 
 
@@ -90,6 +111,11 @@ VarIdent* Expr::FetchVarIdent() const
 std::string Decl::ToString() const
 {
     return ident.Original();
+}
+
+TypeSpecifier* Decl::FetchTypeSpecifier() const
+{
+    return nullptr;
 }
 
 
@@ -115,8 +141,8 @@ void Program::RegisterIntrinsicUsage(const Intrinsic intrinsic, const std::vecto
         argList.argTypes.reserve(arguments.size());
         for (auto& arg : arguments)
         {
-            auto typeDen = arg->GetTypeDenoter()->Get();
-            if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
+            const auto& typeDen = arg->GetTypeDenoter()->GetAliased();
+            if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
                 argList.argTypes.push_back(baseTypeDen->dataType);
         }
     }
@@ -127,304 +153,6 @@ const IntrinsicUsage* Program::FetchIntrinsicUsage(const Intrinsic intrinsic) co
 {
     auto it = usedIntrinsics.find(intrinsic);
     return (it != usedIntrinsics.end() ? &(it->second) : nullptr);
-}
-
-
-/* ----- VarIdent ----- */
-
-std::string VarIdent::ToString() const
-{
-    std::string s;
-
-    auto ast = this;
-    while (true)
-    {
-        s += ast->ident;
-        if (ast->next)
-        {
-            ast = ast->next.get();
-            if (ast->nextIsStatic)
-                s += "::";
-            else
-                s += ".";
-        }
-        else
-            break;
-    }
-
-    return s;
-}
-
-VarIdent* VarIdent::Last()
-{
-    return (next ? next->Last() : this);
-}
-
-TypeDenoterPtr VarIdent::DeriveTypeDenoter()
-{
-    return GetExplicitTypeDenoter(true);
-}
-
-TypeDenoterPtr VarIdent::GetExplicitTypeDenoter(bool recursive)
-{
-    if (symbolRef)
-    {
-        /* Derive type denoter from symbol reference */
-        switch (symbolRef->Type())
-        {
-            case AST::Types::FunctionDecl:
-            {
-                RuntimeErr(R_IllegalTypeOfFuncObj(ident), this);
-            }
-            break;
-
-            case AST::Types::VarDecl:
-            {
-                auto varDecl = static_cast<VarDecl*>(symbolRef);
-                try
-                {
-                    return varDecl->GetTypeDenoter()->GetFromArray(arrayIndices.size(), (recursive ? next.get() : nullptr));
-                }
-                catch (const std::exception& e)
-                {
-                    RuntimeErr(e.what(), this);
-                }
-            }
-            break;
-
-            case AST::Types::BufferDecl:
-            {
-                auto bufferDecl = static_cast<BufferDecl*>(symbolRef);
-                try
-                {
-                    return bufferDecl->GetTypeDenoter()->GetFromArray(arrayIndices.size(), (recursive ? next.get() : nullptr));
-                }
-                catch (const std::exception& e)
-                {
-                    RuntimeErr(e.what(), this);
-                }
-            }
-            break;
-
-            case AST::Types::SamplerDecl:
-            {
-                auto samplerDecl = static_cast<SamplerDecl*>(symbolRef);
-                try
-                {
-                    return samplerDecl->GetTypeDenoter()->GetFromArray(arrayIndices.size(), (recursive ? next.get() : nullptr));
-                }
-                catch (const std::exception& e)
-                {
-                    RuntimeErr(e.what(), this);
-                }
-            }
-            break;
-
-            case AST::Types::StructDecl:
-            {
-                auto structDecl = static_cast<StructDecl*>(symbolRef);
-                if (next)
-                    RuntimeErr(R_CantDirectlyAccessMembersOf(structDecl->ToString()), next.get());
-                if (!arrayIndices.empty())
-                    RuntimeErr(R_CantDirectlyAccessArrayOf(structDecl->ToString()), this);
-                return structDecl->GetTypeDenoter()->Get();
-            }
-            break;
-
-            case AST::Types::AliasDecl:
-            {
-                auto aliasDecl = static_cast<AliasDecl*>(symbolRef);
-                if (next)
-                    RuntimeErr(R_CantDirectlyAccessMembersOf(aliasDecl->ToString()), next.get());
-                if (!arrayIndices.empty())
-                    RuntimeErr(R_CantDirectlyAccessArrayOf(aliasDecl->ToString()), this);
-                return aliasDecl->GetTypeDenoter()->Get();
-            }
-            break;
-            
-            default:
-            {
-                RuntimeErr(R_UnknownTypeOfVarIdentSymbolRef(ident), this);
-            }
-            break;
-        }
-    }
-    RuntimeErr(R_MissingVarIdentSymbolRef(ident), this);
-}
-
-BaseTypeDenoterPtr VarIdent::GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const
-{
-    if (auto baseTypeDen = baseTypeDenoter.As<BaseTypeDenoter>())
-    {
-        try
-        {
-            /* Get vector type from subscript */
-            auto vectorType = SubscriptDataType(baseTypeDen->dataType, ident);
-            return std::make_shared<BaseTypeDenoter>(vectorType);
-        }
-        catch (const std::exception& e)
-        {
-            RuntimeErr(e.what(), this);
-        }
-    }
-    RuntimeErr(R_InvalidSubscriptBaseType, this);
-}
-
-void VarIdent::PopFront(bool accumulateArrayIndices)
-{
-    if (next)
-    {
-        auto nextVarIdent = next;
-        
-        ident       = nextVarIdent->ident;
-        next        = nextVarIdent->next;
-        symbolRef   = nextVarIdent->symbolRef;
-
-        if (accumulateArrayIndices)
-            arrayIndices.insert(arrayIndices.end(), nextVarIdent->arrayIndices.begin(), nextVarIdent->arrayIndices.end());
-        else
-            arrayIndices = nextVarIdent->arrayIndices;
-    }
-}
-
-IndexedSemantic VarIdent::FetchSemantic() const
-{
-    if (auto varDecl = FetchVarDecl())
-        return varDecl->semantic;
-    else
-        return Semantic::Undefined;
-}
-
-Decl* VarIdent::FetchDecl() const
-{
-    if (symbolRef)
-    {
-        const auto t = symbolRef->Type();
-        if (t == AST::Types::VarDecl || t == AST::Types::StructDecl || t == AST::Types::BufferDecl || t == AST::Types::SamplerDecl)
-            return static_cast<Decl*>(symbolRef);
-    }
-    return nullptr;
-}
-
-VarDecl* VarIdent::FetchVarDecl() const
-{
-    return FetchSymbol<VarDecl>();
-}
-
-FunctionDecl* VarIdent::FetchFunctionDecl() const
-{
-    return FetchSymbol<FunctionDecl>();
-}
-
-
-/* ----- FunctionCall ----- */
-
-TypeDenoterPtr FunctionCall::DeriveTypeDenoter()
-{
-    if (funcDeclRef)
-    {
-        /* Return type denoter of associated function declaration */
-        return funcDeclRef->returnType->typeDenoter;
-    }
-    else if (typeDenoter)
-    {
-        /* Return type denoter fo type constructor */
-        return typeDenoter;
-    }
-    else if (intrinsic != Intrinsic::Undefined)
-    {
-        /* Return type denoter of associated intrinsic */
-        try
-        {
-            return IntrinsicAdept::Get().GetIntrinsicReturnType(intrinsic, arguments);
-        }
-        catch (const std::exception& e)
-        {
-            RuntimeErr(e.what(), this);
-        }
-    }
-    else
-        RuntimeErr(R_MissingFuncRefToDeriveExprType, this);
-}
-
-std::vector<Expr*> FunctionCall::GetArguments() const
-{
-    std::vector<Expr*> args;
-    args.reserve(arguments.size() + defaultArgumentRefs.size());
-
-    /* Add explicit arguments */
-    for (const auto& arg : arguments)
-        args.push_back(arg.get());
-
-    /* Add remaining default arguments */
-    for (auto arg : defaultArgumentRefs)
-        args.push_back(arg);
-
-    return args;
-}
-
-FunctionDecl* FunctionCall::GetFunctionImpl() const
-{
-    if (auto funcDecl = funcDeclRef)
-    {
-        if (funcDecl->funcImplRef)
-            return funcDecl->funcImplRef;
-        else
-            return funcDecl;
-    }
-    return nullptr;
-}
-
-void FunctionCall::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
-{
-    if (iterator)
-    {
-        if (funcDeclRef)
-        {
-            /* Get output parameters from associated function declaration */
-            const auto& parameters = funcDeclRef->parameters;
-            for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
-            {
-                if (parameters[i]->IsOutput())
-                    iterator(arguments[i]);
-            }
-        }
-        else if (intrinsic != Intrinsic::Undefined)
-        {
-            /* Get output parameters from associated intrinsic */
-            const auto outputParamIndices = IntrinsicAdept::Get().GetIntrinsicOutputParameterIndices(intrinsic);
-            for (auto paramIndex : outputParamIndices)
-            {
-                if (paramIndex < arguments.size())
-                    iterator(arguments[paramIndex]);
-            }
-        }
-    }
-}
-
-void FunctionCall::ForEachArgumentWithParameterType(const ArgumentParameterTypeFunctor& iterator)
-{
-    if (iterator)
-    {
-        if (funcDeclRef)
-        {
-            /* Get parameter type denoters from associated function declaration */
-            const auto& parameters = funcDeclRef->parameters;
-            for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
-            {
-                auto param = parameters[i]->varDecls.front();
-                auto paramTypeDen = param->GetTypeDenoter()->Get();
-                iterator(arguments[i], *paramTypeDen);
-            }
-        }
-        else if (intrinsic != Intrinsic::Undefined)
-        {
-            /* Get parameter type denoters from associated intrinsic */
-            const auto paramTypeDenoters = IntrinsicAdept::Get().GetIntrinsicParameterTypes(intrinsic, arguments);
-            for (std::size_t i = 0, n = std::min(arguments.size(), paramTypeDenoters.size()); i < n; ++i)
-                iterator(arguments[i], *paramTypeDenoters[i]);
-        }
-    }
 }
 
 
@@ -560,8 +288,8 @@ TypeDenoterPtr TypeSpecifier::DeriveTypeDenoter()
 
 StructDecl* TypeSpecifier::GetStructDeclRef()
 {
-    auto typeDen = typeDenoter->Get();
-    if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+    const auto& typeDen = typeDenoter->GetAliased();
+    if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
         return structTypeDen->structDeclRef;
     else
         return nullptr;
@@ -628,8 +356,14 @@ std::string VarDecl::ToString() const
 
     s += ident.Original();
 
-    for (std::size_t i = 0; i < arrayDims.size(); ++i)
-        s += "[]";
+    //for (std::size_t i = 0; i < arrayDims.size(); ++i)
+    for (const auto& dim : arrayDims)
+    {
+        s += '[';
+        if (dim->size > 0)
+            s += std::to_string(dim->size);
+        s += ']';
+    }
 
     if (semantic != Semantic::Undefined)
     {
@@ -637,13 +371,13 @@ std::string VarDecl::ToString() const
         s += semantic.ToString();
     }
 
-    if (initializer)
+    /*if (initializer)
     {
         s += " = ";
         //TODO: see above
         s += "???";
         //s += initializer->ToString();
-    }
+    }*/
 
     return s;
 }
@@ -656,6 +390,11 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter()
         return declStmntRef->typeSpecifier->typeDenoter->AsArray(arrayDims);
     }
     RuntimeErr(R_MissingDeclStmntRefToDeriveType(ident), this);
+}
+
+TypeSpecifier* VarDecl::FetchTypeSpecifier() const
+{
+    return (declStmntRef != nullptr ? declStmntRef->typeSpecifier.get() : nullptr);
 }
 
 
@@ -697,6 +436,36 @@ bool StructDecl::IsAnonymous() const
     return ident.Empty();
 }
 
+bool StructDecl::EqualsMembers(const StructDecl& rhs, const Flags& compareFlags) const
+{
+    /* Collect member type denoters from this structure */
+    std::vector<TypeDenoterPtr> lhsMemberTypeDens;
+    CollectMemberTypeDenoters(lhsMemberTypeDens);
+
+    /* Collect member type denoters from structure to compare with */
+    std::vector<TypeDenoterPtr> rhsMemberTypeDens;
+    rhs.CollectMemberTypeDenoters(rhsMemberTypeDens);
+
+    /* Compare number of members */
+    if (lhsMemberTypeDens.size() != rhsMemberTypeDens.size())
+        return false;
+
+    /* Compare member type denoters */
+    for (std::size_t i = 0, n = lhsMemberTypeDens.size(); i < n; ++i)
+    {
+        if (!lhsMemberTypeDens[i]->Equals(*rhsMemberTypeDens[i], compareFlags))
+            return false;
+    }
+
+    return true;
+}
+
+bool StructDecl::IsCastableTo(const BaseTypeDenoter& rhs) const
+{
+    //TODO ...
+    return true;
+}
+
 VarDecl* StructDecl::Fetch(const std::string& ident, const StructDecl** owner) const
 {
     /* Fetch symbol from base struct first */
@@ -720,7 +489,8 @@ VarDecl* StructDecl::Fetch(const std::string& ident, const StructDecl** owner) c
     return nullptr;
 }
 
-FunctionDecl* StructDecl::FetchFunctionDecl(const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters, const StructDecl** owner) const
+FunctionDecl* StructDecl::FetchFunctionDecl(
+    const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters, const StructDecl** owner, bool throwErrorIfNoMatch) const
 {
     /* Fetch symbol from base struct first */
     if (baseStructRef)
@@ -745,7 +515,7 @@ FunctionDecl* StructDecl::FetchFunctionDecl(const std::string& ident, const std:
     if (owner)
         *owner = this;
 
-    return FunctionDecl::FetchFunctionDeclFromList(funcDeclList, ident, argTypeDenoters, false);
+    return FunctionDecl::FetchFunctionDeclFromList(funcDeclList, ident, argTypeDenoters, throwErrorIfNoMatch);
 }
 
 std::string StructDecl::FetchSimilar(const std::string& ident)
@@ -807,15 +577,27 @@ bool StructDecl::HasNonSystemValueMembers() const
     return false;
 }
 
-std::size_t StructDecl::NumVarMembers() const
+std::size_t StructDecl::NumMemberVariables() const
 {
     std::size_t n = 0;
 
     if (baseStructRef)
-        n += baseStructRef->NumVarMembers();
+        n += baseStructRef->NumMemberVariables();
 
     for (const auto& member : varMembers)
         n += member->varDecls.size();
+
+    return n;
+}
+
+std::size_t StructDecl::NumMemberFunctions() const
+{
+    std::size_t n = 0;
+
+    if (baseStructRef)
+        n += baseStructRef->NumMemberFunctions();
+
+    n += funcMembers.size();
 
     return n;
 }
@@ -844,8 +626,8 @@ void StructDecl::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
     for (auto& member : varMembers)
     {
         /* Iterate over all sub-struct members */
-        auto typeDen = member->typeSpecifier->GetTypeDenoter()->Get();
-        if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+        const auto& typeDen = member->typeSpecifier->GetTypeDenoter()->GetAliased();
+        if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
         {
             if (structTypeDen->structDeclRef)
                 structTypeDen->structDeclRef->ForEachVarDecl(iterator);
@@ -963,6 +745,11 @@ bool FunctionDecl::IsMemberFunction() const
     return (structDeclRef != nullptr);
 }
 
+bool FunctionDecl::IsStatic() const
+{
+    return returnType->HasAnyStorageClassesOf({ StorageClass::Static });
+}
+
 std::string FunctionDecl::ToString(bool useParamNames) const
 {
     std::string s;
@@ -985,9 +772,12 @@ std::string FunctionDecl::ToString(bool useParamNames) const
     /* Append parameter types */
     for (std::size_t i = 0; i < parameters.size(); ++i)
     {
-        s += parameters[i]->ToString(useParamNames, true);
-        if (i + 1 < parameters.size())
-            s += ", ";
+        if (!parameters[i]->flags(VarDeclStmnt::isSelfParameter))
+        {
+            s += parameters[i]->ToString(useParamNames, true);
+            if (i + 1 < parameters.size())
+                s += ", ";
+        }
     }
 
     s += ')';
@@ -995,7 +785,7 @@ std::string FunctionDecl::ToString(bool useParamNames) const
     return s;
 }
 
-bool FunctionDecl::EqualsSignature(const FunctionDecl& rhs) const
+bool FunctionDecl::EqualsSignature(const FunctionDecl& rhs, const Flags& compareFlags) const
 {
     /* Compare parameter count */
     if (parameters.size() != rhs.parameters.size())
@@ -1007,7 +797,7 @@ bool FunctionDecl::EqualsSignature(const FunctionDecl& rhs) const
         auto lhsTypeDen = parameters[i]->typeSpecifier->typeDenoter.get();
         auto rhsTypeDen = rhs.parameters[i]->typeSpecifier->typeDenoter.get();
 
-        if (!lhsTypeDen->Equals(*rhsTypeDen))
+        if (!lhsTypeDen->Equals(*rhsTypeDen, compareFlags))
             return false;
     }
 
@@ -1402,6 +1192,12 @@ bool LiteralExpr::IsNull() const
     return (dataType == DataType::Undefined && value == "NULL");
 }
 
+bool LiteralExpr::IsSpaceRequiredForSubscript() const
+{
+    /* Check if a space between this literal and a '.' swizzle operator is required (e.g. "1.xx" --> "1 .xx") */
+    return (!value.empty() && value.find('.') == std::string::npos && std::isdigit(static_cast<int>(value.back())));
+}
+
 
 /* ----- TypeSpecifierExpr ----- */
 
@@ -1442,9 +1238,9 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
     auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(thenTypeDen, elseTypeDen);
 
     /* Get common boolean type denoter from condition expression */
-    auto condTypeDenAliased = condExpr->GetTypeDenoter()->Get();
+    const auto& condTypeDenAliased = condExpr->GetTypeDenoter()->GetAliased();
 
-    if (auto baseTypeDen = condTypeDenAliased->As<BaseTypeDenoter>())
+    if (auto baseTypeDen = condTypeDenAliased.As<BaseTypeDenoter>())
     {
         /* Is the condition a boolean vector type? */
         const auto condVecSize = VectorTypeDim(baseTypeDen->dataType);
@@ -1465,9 +1261,9 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
 
 bool TernaryExpr::IsVectorCondition() const
 {
-    auto condTypeDen = condExpr->GetTypeDenoter()->Get();
+    const auto& condTypeDen = condExpr->GetTypeDenoter()->GetAliased();
 
-    if (auto baseTypeDen = condTypeDen->As<BaseTypeDenoter>())
+    if (auto baseTypeDen = condTypeDen.As<BaseTypeDenoter>())
     {
         /* Is the condition a boolean vector type? */
         const auto condVecSize = VectorTypeDim(baseTypeDen->dataType);
@@ -1533,11 +1329,133 @@ TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter()
 }
 
 
-/* ----- FunctionCallExpr ----- */
+/* ----- CallExpr ----- */
 
-TypeDenoterPtr FunctionCallExpr::DeriveTypeDenoter()
+TypeDenoterPtr CallExpr::DeriveTypeDenoter()
 {
-    return call->GetTypeDenoter();
+    if (funcDeclRef)
+    {
+        /* Return type denoter of associated function declaration */
+        return funcDeclRef->returnType->typeDenoter;
+    }
+    else if (typeDenoter)
+    {
+        /* Return type denoter fo type constructor */
+        return typeDenoter;
+    }
+    else if (intrinsic != Intrinsic::Undefined)
+    {
+        /* Return type denoter of associated intrinsic */
+        try
+        {
+            return IntrinsicAdept::Get().GetIntrinsicReturnType(intrinsic, arguments);
+        }
+        catch (const std::exception& e)
+        {
+            RuntimeErr(e.what(), this);
+        }
+    }
+    else
+        RuntimeErr(R_MissingFuncRefToDeriveExprType, this);
+}
+
+IndexedSemantic CallExpr::FetchSemantic() const
+{
+    /* Return semantic of function declaration */
+    if (funcDeclRef)
+        return funcDeclRef->semantic;
+    else
+        return Semantic::Undefined;
+}
+
+std::vector<Expr*> CallExpr::GetArguments() const
+{
+    std::vector<Expr*> args;
+    args.reserve(arguments.size() + defaultArgumentRefs.size());
+
+    /* Add explicit arguments */
+    for (const auto& arg : arguments)
+        args.push_back(arg.get());
+
+    /* Add remaining default arguments */
+    for (auto arg : defaultArgumentRefs)
+        args.push_back(arg);
+
+    return args;
+}
+
+FunctionDecl* CallExpr::GetFunctionImpl() const
+{
+    if (auto funcDecl = funcDeclRef)
+    {
+        if (funcDecl->funcImplRef)
+            return funcDecl->funcImplRef;
+        else
+            return funcDecl;
+    }
+    return nullptr;
+}
+
+void CallExpr::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
+{
+    if (iterator)
+    {
+        if (funcDeclRef)
+        {
+            /* Get output parameters from associated function declaration */
+            const auto& parameters = funcDeclRef->parameters;
+            for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+            {
+                if (parameters[i]->IsOutput())
+                    iterator(arguments[i]);
+            }
+        }
+        else if (intrinsic != Intrinsic::Undefined)
+        {
+            /* Get output parameters from associated intrinsic */
+            const auto outputParamIndices = IntrinsicAdept::Get().GetIntrinsicOutputParameterIndices(intrinsic);
+            for (auto paramIndex : outputParamIndices)
+            {
+                if (paramIndex < arguments.size())
+                    iterator(arguments[paramIndex]);
+            }
+        }
+    }
+}
+
+void CallExpr::ForEachArgumentWithParameterType(const ArgumentParameterTypeFunctor& iterator)
+{
+    if (iterator)
+    {
+        if (funcDeclRef)
+        {
+            /* Get parameter type denoters from associated function declaration */
+            const auto& parameters = funcDeclRef->parameters;
+            for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
+            {
+                auto param = parameters[i]->varDecls.front();
+                const auto& paramTypeDen = param->GetTypeDenoter()->GetAliased();
+                iterator(arguments[i], paramTypeDen);
+            }
+        }
+        else if (intrinsic != Intrinsic::Undefined)
+        {
+            /* Get parameter type denoters from associated intrinsic */
+            const auto paramTypeDenoters = IntrinsicAdept::Get().GetIntrinsicParameterTypes(intrinsic, arguments);
+            for (std::size_t i = 0, n = std::min(arguments.size(), paramTypeDenoters.size()); i < n; ++i)
+                iterator(arguments[i], *paramTypeDenoters[i]);
+        }
+    }
+}
+
+void CallExpr::PushArgumentFront(const ExprPtr& expr)
+{
+    arguments.insert(arguments.begin(), expr);
+}
+
+void CallExpr::PushArgumentFront(ExprPtr&& expr)
+{
+    arguments.insert(arguments.begin(), std::move(expr));
 }
 
 
@@ -1548,32 +1466,190 @@ TypeDenoterPtr BracketExpr::DeriveTypeDenoter()
     return expr->GetTypeDenoter();
 }
 
-VarIdent* BracketExpr::FetchVarIdent() const
+const ObjectExpr* BracketExpr::FetchLValueExpr() const
 {
-    return expr->FetchVarIdent();
+    return expr->FetchLValueExpr();
+}
+
+const ObjectExpr* BracketExpr::FetchTypeObjectExpr() const
+{
+    return expr->FetchTypeObjectExpr();
+}
+
+const Expr* BracketExpr::FetchNonBracketExpr() const
+{
+    return expr->FetchNonBracketExpr();
+}
+
+Expr* BracketExpr::FetchNonBracketExpr()
+{
+    return expr->FetchNonBracketExpr();
+}
+
+IndexedSemantic BracketExpr::FetchSemantic() const
+{
+    return expr->FetchSemantic();
 }
 
 
-/* ----- SuffixExpr ----- */
+/* ----- AssignExpr ----- */
 
-TypeDenoterPtr SuffixExpr::DeriveTypeDenoter()
+TypeDenoterPtr AssignExpr::DeriveTypeDenoter()
 {
-    return expr->GetTypeDenoter()->Get(varIdent.get());
+    return lvalueExpr->GetTypeDenoter();
+}
+
+const ObjectExpr* AssignExpr::FetchLValueExpr() const
+{
+    return lvalueExpr->FetchLValueExpr();
+}
+
+const ObjectExpr* AssignExpr::FetchTypeObjectExpr() const
+{
+    return lvalueExpr->FetchTypeObjectExpr();
 }
 
 
-/* ----- ArrayAccessExpr ----- */
+/* ----- ObjectExpr ----- */
 
-TypeDenoterPtr ArrayAccessExpr::DeriveTypeDenoter()
+TypeDenoterPtr ObjectExpr::DeriveTypeDenoter()
+{
+    return GetExplicitTypeDenoter();
+}
+
+const ObjectExpr* ObjectExpr::FetchLValueExpr() const
+{
+    if (symbolRef)
+    {
+        /* Fetch l-value from symbol reference */
+        switch (symbolRef->Type())
+        {
+            case AST::Types::VarDecl:
+            case AST::Types::BufferDecl:
+            case AST::Types::SamplerDecl:
+                return this;
+            default:
+                return nullptr;
+        }
+    }
+    else if (prefixExpr)
+    {
+        /* Fetch l-value from prefix expression */
+        return prefixExpr->FetchLValueExpr();
+    }
+    return this;
+}
+
+const ObjectExpr* ObjectExpr::FetchTypeObjectExpr() const
+{
+    if (symbolRef)
+    {
+        /* Fetch type declaration from symbol reference */
+        switch (symbolRef->Type())
+        {
+            case AST::Types::StructDecl:
+            case AST::Types::AliasDecl:
+                return this;
+            default:
+                break;
+        }
+    }
+    return nullptr;
+}
+
+IndexedSemantic ObjectExpr::FetchSemantic() const
+{
+    if (symbolRef)
+    {
+        /* Fetch semantic from variable declaration */
+        if (auto varDecl = symbolRef->As<VarDecl>())
+            return varDecl->semantic;
+    }
+    else if (prefixExpr)
+    {
+        /* Fetch semantic from prefix expression */
+        return prefixExpr->FetchSemantic();
+    }
+    return Semantic::Undefined;
+}
+
+TypeDenoterPtr ObjectExpr::GetExplicitTypeDenoter()
+{
+    if (symbolRef)
+    {
+        /* Derive type denoter from symbol reference */
+        if (auto varDecl = symbolRef->As<VarDecl>())
+            return varDecl->GetTypeDenoter();
+        if (auto bufferDecl = symbolRef->As<BufferDecl>())
+            return bufferDecl->GetTypeDenoter();
+        if (auto samplerDecl = symbolRef->As<SamplerDecl>())
+            return samplerDecl->GetTypeDenoter();
+        if (auto structDecl = symbolRef->As<StructDecl>())
+            return structDecl->GetTypeDenoter();
+        if (auto aliasDecl = symbolRef->As<AliasDecl>())
+            return aliasDecl->GetTypeDenoter();
+
+        RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
+    }
+    else if (prefixExpr)
+    {
+        /* Get type denoter of prefix (if used) */
+        return prefixExpr->GetTypeDenoter()->GetSub(this);
+    }
+    
+    RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
+}
+
+BaseTypeDenoterPtr ObjectExpr::GetTypeDenoterFromSubscript() const
+{
+    if (prefixExpr)
+    {
+        const auto& prefixTypeDen = prefixExpr->GetTypeDenoter()->GetAliased();
+        if (auto baseTypeDen = prefixTypeDen.As<BaseTypeDenoter>())
+        {
+            try
+            {
+                /* Get vector type from subscript */
+                auto vectorType = SubscriptDataType(baseTypeDen->dataType, ident);
+                return std::make_shared<BaseTypeDenoter>(vectorType);
+            }
+            catch (const std::exception& e)
+            {
+                RuntimeErr(e.what(), this);
+            }
+        }
+    }
+    RuntimeErr(R_InvalidSubscriptBaseType, this);
+}
+
+VarDecl* ObjectExpr::FetchVarDecl() const
+{
+    return FetchSymbol<VarDecl>();
+}
+
+
+/* ----- ArrayExpr ----- */
+
+TypeDenoterPtr ArrayExpr::DeriveTypeDenoter()
 {
     try
     {
-        return expr->GetTypeDenoter()->GetFromArray(arrayIndices.size());
+        return prefixExpr->GetTypeDenoter()->GetSub(this);
     }
     catch (const std::exception& e)
     {
         RuntimeErr(e.what(), this);
     }
+}
+
+const ObjectExpr* ArrayExpr::FetchLValueExpr() const
+{
+    return prefixExpr->FetchLValueExpr();
+}
+
+std::size_t ArrayExpr::NumIndices() const
+{
+    return arrayIndices.size();
 }
 
 
@@ -1593,19 +1669,6 @@ TypeDenoterPtr CastExpr::DeriveTypeDenoter()
     }
 
     return castTypeDen;
-}
-
-
-/* ----- VarAccessExpr ----- */
-
-TypeDenoterPtr VarAccessExpr::DeriveTypeDenoter()
-{
-    return varIdent->GetTypeDenoter();
-}
-
-VarIdent* VarAccessExpr::FetchVarIdent() const
-{
-    return varIdent.get();
 }
 
 
@@ -1683,7 +1746,7 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
             if (auto arraySubTypeDen = subTypeDen->As<const ArrayTypeDenoter>())
                 finalTypeDen->InsertSubArray(*arraySubTypeDen);
             else
-                finalTypeDen->baseTypeDenoter = subTypeDen;
+                finalTypeDen->subTypeDenoter = subTypeDen;
 
             /* Set first output type denoter */
             elementsTypeDen = subTypeDen;

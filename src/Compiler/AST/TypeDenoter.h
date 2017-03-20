@@ -11,6 +11,7 @@
 
 #include "Visitor.h"
 #include "ASTEnums.h"
+#include "Flags.h"
 #include <memory>
 #include <string>
 
@@ -43,6 +44,7 @@ DECL_PTR( ArrayTypeDenoter   );
 // Type denoter base class.
 struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
 {
+    // Type denoter class types.
     enum class Types
     {
         Void,
@@ -55,6 +57,13 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
         Array,
     };
 
+    // Type denoter comparison flags.
+    enum : unsigned int
+    {
+        // Ignore generic sub types in a buffer type denoter (for 'Equals' function).
+        IgnoreGenericSubType = (1 << 0),
+    };
+
     virtual ~TypeDenoter();
 
     // Returns the type (kind) of this type denoter.
@@ -64,7 +73,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     virtual std::string ToString() const = 0;
 
     // Returns a copy of this type denoter.
-    //virtual TypeDenoterPtr Copy() const = 0;
+    virtual TypeDenoterPtr Copy() const = 0;
 
     virtual bool IsScalar() const;
     virtual bool IsVector() const;
@@ -80,7 +89,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     bool IsArray() const;
 
     // Returns true if this (aliased) type denoter is equal to the specified (aliased) type denoter (see GetAliased).
-    virtual bool Equals(const TypeDenoter& rhs) const;
+    virtual bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const;
 
     // Returns true if this type denoter can be casted to the specified target type denoter (special cases void and base types).
     virtual bool IsCastableTo(const TypeDenoter& targetType) const;
@@ -91,17 +100,17 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Sets the identifier of this type denoter if the aliased type is anonymous.
     virtual void SetIdentIfAnonymous(const std::string& ident);
 
-    // Returns a type denoter for the specified full variable identifier. Throws ASTRuntimeError on failure.
-    virtual TypeDenoterPtr Get(const VarIdent* varIdent = nullptr);
+    // Returns a sub type denoter for the specified expression.
+    virtual TypeDenoterPtr GetSub(const Expr* expr = nullptr);
 
-    // Returns a type denoter for the specified array access and full variable identifier. Throws ASTRuntimeError on failure.
-    virtual TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr);
+    // Returns a sub type denoter for the identifier of the specified object expression.
+    virtual TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr);
+
+    // Returns a sub type denoter for the array indices of the specified array access expression.
+    virtual TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr);
 
     // Returns either this type denoter or an aliased type.
     virtual const TypeDenoter& GetAliased() const;
-
-    // Returns either this type denoter or the base type denoter (for arrays and aliases).
-    virtual const TypeDenoter& GetBase() const;
 
     // Returns the number of array dimensions. By default 0.
     virtual unsigned int NumDimensions() const;
@@ -110,7 +119,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     virtual AST* SymbolRef() const;
 
     // Returns either this type denoter (if 'arrayDims' is empty), or this type denoter as array with the specified dimension expressions.
-    TypeDenoterPtr AsArray(const std::vector<ArrayDimensionPtr>& arrayDims);
+    virtual TypeDenoterPtr AsArray(const std::vector<ArrayDimensionPtr>& arrayDims);
 
     // Returns this type denoter as the specified sub class if this type denoter has the correct type. Otherwise, null is returned.
     template <typename T>
@@ -137,6 +146,7 @@ struct VoidTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+    TypeDenoterPtr Copy() const override;
 
     // Returns always false, since void type can not be casted to anything.
     bool IsCastableTo(const TypeDenoter& targetType) const override;
@@ -149,6 +159,7 @@ struct NullTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+    TypeDenoterPtr Copy() const override;
 
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 };
@@ -163,16 +174,17 @@ struct BaseTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+    TypeDenoterPtr Copy() const override;
 
     bool IsScalar() const override;
     bool IsVector() const override;
     bool IsMatrix() const override;
 
-    bool Equals(const TypeDenoter& rhs) const override;
+    bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 
-    TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
-    TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
+    TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
+    TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
 
     DataType dataType = DataType::Undefined;
 };
@@ -195,10 +207,12 @@ struct BufferTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+    TypeDenoterPtr Copy() const override;
 
-    bool Equals(const TypeDenoter& rhs) const override;
+    bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
 
-    TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
+    TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
+    TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
 
     AST* SymbolRef() const override;
 
@@ -223,6 +237,7 @@ struct SamplerTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+    TypeDenoterPtr Copy() const override;
 
     AST* SymbolRef() const override;
 
@@ -241,13 +256,18 @@ struct StructTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+    TypeDenoterPtr Copy() const override;
+
+    void SetIdentIfAnonymous(const std::string& ident) override;
+
+    bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
+    bool IsCastableTo(const TypeDenoter& targetType) const override;
 
     std::string Ident() const override;
-    void SetIdentIfAnonymous(const std::string& ident) override;
 
     AST* SymbolRef() const override;
 
-    TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
+    TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
 
     std::string     ident;                      // Type identifier
 
@@ -265,15 +285,22 @@ struct AliasTypeDenoter : public TypeDenoter
 
     Types Type() const override;
     std::string ToString() const override;
+    TypeDenoterPtr Copy() const override;
 
-    std::string Ident() const override;
     void SetIdentIfAnonymous(const std::string& ident) override;
 
-    TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
-    TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
+    bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
+    bool IsCastableTo(const TypeDenoter& targetType) const override;
+    
+    std::string Ident() const override;
+
+    TypeDenoterPtr GetSub(const Expr* expr = nullptr) override;
+    TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
+    TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
 
     const TypeDenoter& GetAliased() const override;
-    const TypeDenoter& GetBase() const override;
+
+    const TypeDenoterPtr& GetAliasedTypeOrThrow(const AST* ast = nullptr) const;
 
     unsigned int NumDimensions() const override;
 
@@ -290,28 +317,34 @@ struct ArrayTypeDenoter : public TypeDenoter
     static const Types classType = Types::Array;
 
     ArrayTypeDenoter() = default;
-    ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter);
-    ArrayTypeDenoter(const TypeDenoterPtr& baseTypeDenoter, const std::vector<ArrayDimensionPtr>& arrayDims);
+    
+    ArrayTypeDenoter(const TypeDenoterPtr& subTypeDenoter);
+    ArrayTypeDenoter(const TypeDenoterPtr& subTypeDenoter, const std::vector<ArrayDimensionPtr>& arrayDims);
+
+    ArrayTypeDenoter(
+        const TypeDenoterPtr& subTypeDenoter,
+        const std::vector<ArrayDimensionPtr>& baseArrayDims,
+        const std::vector<ArrayDimensionPtr>& subArrayDims
+    );
 
     Types Type() const override;
 
-    // Throws std::runtime_error if 'baseTypeDenoter' is null.
+    // Throws std::runtime_error if 'subTypeDenoter' is null.
     std::string ToString() const override;
 
-    TypeDenoterPtr Get(const VarIdent* varIdent = nullptr) override;
-    TypeDenoterPtr GetFromArray(std::size_t numArrayIndices, const VarIdent* varIdent = nullptr) override;
+    TypeDenoterPtr Copy() const override;
 
-    bool Equals(const TypeDenoter& rhs) const override;
+    TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
+
+    bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
-
-    // Returns the base type denoter or a new array type denoter with (|arrayDims| - |numArrayIndices|) dimensions.
-    TypeDenoterPtr GetWithIndices(std::size_t numArrayIndices, const VarIdent* varIdent);
-
-    const TypeDenoter& GetBase() const override;
 
     unsigned int NumDimensions() const override;
 
     AST* SymbolRef() const override;
+
+    // Returns a copy of this type denoter with the accumulated array dimensions.
+    TypeDenoterPtr AsArray(const std::vector<ArrayDimensionPtr>& subArrayDims) override;
 
     // Inserts the specified sub array type denoter to this type denoter, with all its array dimension, and replaces the base type denoter.
     void InsertSubArray(const ArrayTypeDenoter& subArrayTypeDenoter);
@@ -319,8 +352,8 @@ struct ArrayTypeDenoter : public TypeDenoter
     // Returns the array dimension sizes.
     std::vector<int> GetDimensionSizes() const;
 
-    TypeDenoterPtr                  baseTypeDenoter;    // Base type denoter
-    std::vector<ArrayDimensionPtr>  arrayDims;          // Entries may be null
+    TypeDenoterPtr                  subTypeDenoter; // Sub type denoter
+    std::vector<ArrayDimensionPtr>  arrayDims;      // Entries may be null
 };
 
 

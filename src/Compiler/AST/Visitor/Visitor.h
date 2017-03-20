@@ -30,7 +30,6 @@ DECL_PTR( Expr              );
 
 DECL_PTR( Program           );
 DECL_PTR( CodeBlock         );
-DECL_PTR( FunctionCall      );
 DECL_PTR( Attribute         );
 DECL_PTR( SwitchCase        );
 DECL_PTR( SamplerValue      );
@@ -38,7 +37,6 @@ DECL_PTR( Register          );
 DECL_PTR( PackOffset        );
 DECL_PTR( ArrayDimension    );
 DECL_PTR( TypeSpecifier     );
-DECL_PTR( VarIdent          );
 
 DECL_PTR( VarDecl           );
 DECL_PTR( BufferDecl        );
@@ -74,12 +72,12 @@ DECL_PTR( TernaryExpr       );
 DECL_PTR( BinaryExpr        );
 DECL_PTR( UnaryExpr         );
 DECL_PTR( PostUnaryExpr     );
-DECL_PTR( FunctionCallExpr  );
+DECL_PTR( CallExpr          );
 DECL_PTR( BracketExpr       );
-DECL_PTR( SuffixExpr        );
-DECL_PTR( ArrayAccessExpr   );
+DECL_PTR( ObjectExpr        );
+DECL_PTR( AssignExpr        );
+DECL_PTR( ArrayExpr         );
 DECL_PTR( CastExpr          );
-DECL_PTR( VarAccessExpr     );
 DECL_PTR( InitializerExpr   );
 
 #undef DECL_PTR
@@ -104,7 +102,6 @@ class Visitor
 
         VISITOR_VISIT_PROC( Program           );
         VISITOR_VISIT_PROC( CodeBlock         );
-        VISITOR_VISIT_PROC( FunctionCall      );
         VISITOR_VISIT_PROC( Attribute         );
         VISITOR_VISIT_PROC( SwitchCase        );
         VISITOR_VISIT_PROC( SamplerValue      );
@@ -112,7 +109,6 @@ class Visitor
         VISITOR_VISIT_PROC( PackOffset        );
         VISITOR_VISIT_PROC( ArrayDimension    );
         VISITOR_VISIT_PROC( TypeSpecifier     );
-        VISITOR_VISIT_PROC( VarIdent          );
 
         VISITOR_VISIT_PROC( VarDecl           );
         VISITOR_VISIT_PROC( BufferDecl        );
@@ -148,12 +144,12 @@ class Visitor
         VISITOR_VISIT_PROC( BinaryExpr        );
         VISITOR_VISIT_PROC( UnaryExpr         );
         VISITOR_VISIT_PROC( PostUnaryExpr     );
-        VISITOR_VISIT_PROC( FunctionCallExpr  );
+        VISITOR_VISIT_PROC( CallExpr          );
         VISITOR_VISIT_PROC( BracketExpr       );
-        VISITOR_VISIT_PROC( SuffixExpr        );
-        VISITOR_VISIT_PROC( ArrayAccessExpr   );
+        VISITOR_VISIT_PROC( AssignExpr        );
+        VISITOR_VISIT_PROC( ObjectExpr        );
+        VISITOR_VISIT_PROC( ArrayExpr         );
         VISITOR_VISIT_PROC( CastExpr          );
-        VISITOR_VISIT_PROC( VarAccessExpr     );
         VISITOR_VISIT_PROC( InitializerExpr   );
 
     protected:
@@ -192,13 +188,13 @@ class Visitor
         // Returns the structure the active (inner most) member function declaration belongs to or null if no such structure exists.
         StructDecl* ActiveFunctionStructDecl() const;
 
-        /* ----- Function call tracker ----- */
+        /* ----- Call expression tracker ----- */
 
-        void PushFunctionCall(FunctionCall* ast);
-        void PopFunctionCall();
+        void PushCallExpr(CallExpr* ast);
+        void PopCallExpr();
 
-        // Returns the active (inner most) function call or null if the visitor is currently not inside a function call.
-        FunctionCall* ActiveFunctionCall() const;
+        // Returns the active (inner most) call expression or null if the visitor is currently not inside a function call.
+        CallExpr* ActiveCallExpr() const;
 
         /* ----- Structure declaration tracker ----- */
 
@@ -236,8 +232,8 @@ class Visitor
         // Function declaration stack.
         std::stack<FunctionDecl*>       funcDeclStack_;
 
-        // Function call stack to join arguments with its function call.
-        std::stack<FunctionCall*>       funcCallStack_;
+        // Call expression stack to join arguments with its function call.
+        std::stack<CallExpr*>           callExprStack_;
 
         // Structure stack to collect all members with system value semantic (SV_...), and detect all nested structures.
         std::vector<StructDecl*>        structDeclStack_;

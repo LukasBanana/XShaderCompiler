@@ -39,7 +39,7 @@ class GLSLConverter : public Visitor
             const ShaderTarget shaderTarget,
             const NameMangling& nameMangling,
             const Options& options,
-            bool isVKSL
+            const OutputShaderVersion versionOut
         );
 
     private:
@@ -48,9 +48,7 @@ class GLSLConverter : public Visitor
 
         DECL_VISIT_PROC( Program          );
         DECL_VISIT_PROC( CodeBlock        );
-        DECL_VISIT_PROC( FunctionCall     );
         DECL_VISIT_PROC( SwitchCase       );
-        DECL_VISIT_PROC( VarIdent         );
 
         DECL_VISIT_PROC( VarDecl          );
         DECL_VISIT_PROC( BufferDecl       );
@@ -71,7 +69,8 @@ class GLSLConverter : public Visitor
 
         DECL_VISIT_PROC( LiteralExpr      );
         DECL_VISIT_PROC( CastExpr         );
-        DECL_VISIT_PROC( VarAccessExpr    );
+        DECL_VISIT_PROC( CallExpr         );
+        DECL_VISIT_PROC( ObjectExpr       );
 
         /* ----- Scope functions ----- */
 
@@ -110,20 +109,14 @@ class GLSLConverter : public Visitor
         // Labels the specified anonymous structure.
         void LabelAnonymousStructDecl(StructDecl* ast);
 
-        // Returns true if the variable identifier refers to a global input or output variable declaration.
-        bool HasGlobalInOutVarDecl(VarIdent* varIdent) const;
-
-        /*
-        Changes the specified variable identifier to a local variable identifier
-        (without a leading structure instance name), if it refers to a global input/output variable.
-        */
-        void PopFrontOfGlobalInOutVarIdent(VarIdent* ast);
+        // Returns true if the variable is a global input/output variable declaration.
+        bool IsGlobalInOutVarDecl(VarDecl* varDecl) const;
 
         /*
         Converts the specified statement to a code block and inserts itself into this code block (if it is a return statement within the entry point).
         This is used to ensure a new scope within a control flow statement (e.g. if-statement).
         */
-        void MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& bodyStmnt);
+        void MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& stmnt);
 
         // Removes all statements that are marked as dead code.
         void RemoveDeadCode(std::vector<StmntPtr>& stmnts);
@@ -139,19 +132,28 @@ class GLSLConverter : public Visitor
 
         VarDecl* ActiveSelfParameter() const;
 
+        // Function signature compare callback for the function name converter.
+        static bool CompareFuncSignatures(const FunctionDecl& lhs, const FunctionDecl& rhs);
+
         /* ----- Conversion ----- */
 
         void ConvertFunctionDecl(FunctionDecl* ast);
         void ConvertFunctionDeclDefault(FunctionDecl* ast);
         void ConvertFunctionDeclEntryPoint(FunctionDecl* ast);
 
-        void ConvertIntrinsicCall(FunctionCall* ast);
-        void ConvertIntrinsicCallSaturate(FunctionCall* ast);
-        void ConvertIntrinsicCallTextureSample(FunctionCall* ast);
-        void ConvertIntrinsicCallTextureSampleLevel(FunctionCall* ast);
+        void ConvertIntrinsicCall(CallExpr* ast);
+        void ConvertIntrinsicCallSaturate(CallExpr* ast);
+        void ConvertIntrinsicCallTextureSample(CallExpr* ast);
+        void ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast);
+        #if 0
         void ConvertIntrinsicCallImageAtomic(FunctionCall* ast);
+        #endif
 
-        void ConvertFunctionCall(FunctionCall* ast);
+        void ConvertFunctionCall(CallExpr* ast);
+
+        void ConvertEntryPointStructPrefix(ExprPtr& expr, ObjectExpr* objectExpr);
+        void ConvertEntryPointStructPrefixObject(ExprPtr& expr, ObjectExpr* prefixExpr, ObjectExpr* objectExpr);
+        void ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr* prefixExpr, ObjectExpr* objectExpr);
 
         /* ----- Unrolling ----- */
 

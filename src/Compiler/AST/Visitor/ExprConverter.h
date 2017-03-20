@@ -39,9 +39,10 @@ class ExprConverter : public Visitor
         {
             ConvertVectorSubscripts = (1 << 0),
             ConvertVectorCompare    = (1 << 1),
-            ConvertImplicitCasts    = (1 << 2),
-            ConvertImageAccess      = (1 << 3),
-            WrapUnaryExpr           = (1 << 4),
+            ConvertImageAccess      = (1 << 2),
+            ConvertImplicitCasts    = (1 << 3),
+            ConvertInitializer      = (1 << 4),
+            WrapUnaryExpr           = (1 << 5),
 
             // All conversion flags commonly used before visiting the sub nodes.
             AllPreVisit             = (ConvertVectorCompare | ConvertImageAccess),
@@ -50,7 +51,7 @@ class ExprConverter : public Visitor
             AllPostVisit            = (ConvertVectorSubscripts),
 
             // All conversion flags.
-            All                     = (ConvertVectorSubscripts | ConvertImplicitCasts | ConvertVectorCompare | WrapUnaryExpr | ConvertImageAccess),
+            All                     = (~0u),
         };
 
         // Converts the expressions in the specified AST.
@@ -77,8 +78,7 @@ class ExprConverter : public Visitor
 
         // Converts the expression if a vector subscript is used on a scalar type expression.
         void ConvertExprVectorSubscript(ExprPtr& expr);
-        void ConvertExprVectorSubscriptSuffix(ExprPtr& expr, SuffixExpr* suffixExpr);
-        void ConvertExprVectorSubscriptVarIdent(ExprPtr& expr, VarIdent* varIdent);
+        void ConvertExprVectorSubscriptObject(ExprPtr& expr, ObjectExpr* objectExpr);
         
         // Converts the expression from a vector comparison to the respective intrinsic call (e.g. "a < b" -> "lessThan(a, b)").
         void ConvertExprVectorCompare(ExprPtr& expr);
@@ -87,17 +87,19 @@ class ExprConverter : public Visitor
 
         // Converts the expression from an image access to the respective intrinsic call (e.g. "image[int2(1, 2)]" -> "imageLoad(image, ivec2(1, 2))").
         void ConvertExprImageAccess(ExprPtr& expr);
-        void ConvertExprImageAccessVarAccess(ExprPtr& expr, VarAccessExpr* varAccessExpr);
-        void ConvertExprImageAccessArrayAccess(ExprPtr& expr, ArrayAccessExpr* arrayAccessExpr);
+        void ConvertExprImageAccessAssign(ExprPtr& expr, AssignExpr* assignExpr);
+        void ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayExpr, AssignExpr* assignExpr = nullptr);
         
         // Moves the expression as sub expression into a bracket (e.g. "- -x" -> "-(-x)").
         void ConvertExprIntoBracket(ExprPtr& expr);
 
-        void IfFlaggedConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
+        // Converts the expression to the specified target type and according to the specified flags (if enabled in the current conversion).
+        void ConvertExprTargetType(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
+
+        // Converts the expression from an initializer list to a type constructor.
+        void ConvertExprTargetTypeInitializer(ExprPtr& expr, InitializerExpr* initExpr, const TypeDenoter& targetTypeDen);
 
         /* ----- Visitor implementation ----- */
-
-        DECL_VISIT_PROC( FunctionCall     );
 
         DECL_VISIT_PROC( VarDecl          );
 
@@ -113,9 +115,11 @@ class ExprConverter : public Visitor
         DECL_VISIT_PROC( TernaryExpr      );
         DECL_VISIT_PROC( BinaryExpr       );
         DECL_VISIT_PROC( UnaryExpr        );
+        DECL_VISIT_PROC( CallExpr         );
         DECL_VISIT_PROC( BracketExpr      );
         DECL_VISIT_PROC( CastExpr         );
-        DECL_VISIT_PROC( VarAccessExpr    );
+        DECL_VISIT_PROC( ObjectExpr       );
+        DECL_VISIT_PROC( AssignExpr       );
 
         /* === Members === */
 

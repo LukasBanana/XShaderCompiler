@@ -104,8 +104,6 @@ class HLSLParser : public Parser
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);
 
         CodeBlockPtr                    ParseCodeBlock();
-        FunctionCallPtr                 ParseFunctionCall(VarIdentPtr varIdent = nullptr);
-        FunctionCallPtr                 ParseFunctionCall(const TypeDenoterPtr& typeDenoter);
         VarDeclStmntPtr                 ParseParameter();
         SwitchCasePtr                   ParseSwitchCase();
         SamplerValuePtr                 ParseSamplerValue();
@@ -115,7 +113,6 @@ class HLSLParser : public Parser
         ArrayDimensionPtr               ParseArrayDimension(bool allowDynamicDimension = false);
         ExprPtr                         ParseArrayIndex();
         ExprPtr                         ParseInitializer();
-        VarIdentPtr                     ParseVarIdent();
         TypeSpecifierPtr                ParseTypeSpecifier(bool parseVoidType = false);
 
         VarDeclPtr                      ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
@@ -138,7 +135,7 @@ class HLSLParser : public Parser
         StmntPtr                        ParseStmnt(bool allowAttributes = true);
         StmntPtr                        ParseStmntPrimary();
         StmntPtr                        ParseStmntWithStructDecl();
-        StmntPtr                        ParseStmntWithVarIdent();
+        StmntPtr                        ParseStmntWithIdent();
         NullStmntPtr                    ParseNullStmnt();
         CodeBlockStmntPtr               ParseCodeBlockStmnt();
         ForLoopStmntPtr                 ParseForLoopStmnt();
@@ -149,21 +146,24 @@ class HLSLParser : public Parser
         SwitchStmntPtr                  ParseSwitchStmnt();
         CtrlTransferStmntPtr            ParseCtrlTransferStmnt();
         ReturnStmntPtr                  ParseReturnStmnt();
-        ExprStmntPtr                    ParseExprStmnt();
+        ExprStmntPtr                    ParseExprStmnt(const ExprPtr& expr = nullptr);
 
         ExprPtr                         ParseExpr(bool allowComma = false);
         ExprPtr                         ParsePrimaryExpr() override;
-        ExprPtr                         ParseLiteralOrSuffixExpr();
+        ExprPtr                         ParsePrimaryExprPrefix();
+        ExprPtr                         ParseExprWithSuffixOpt(ExprPtr expr);
         LiteralExprPtr                  ParseLiteralExpr();
-        ExprPtr                         ParseTypeSpecifierOrFunctionCallExpr();
+        ExprPtr                         ParseTypeSpecifierOrCallExpr();
         TypeSpecifierExprPtr            ParseTypeSpecifierExpr();
         UnaryExprPtr                    ParseUnaryExpr();
         ExprPtr                         ParseBracketOrCastExpr();
-        SuffixExprPtr                   ParseSuffixExpr(const ExprPtr& expr);
-        ArrayAccessExprPtr              ParseArrayAccessExpr(const ExprPtr& expr);
-        ExprPtr                         ParseVarAccessOrFunctionCallExpr(VarIdentPtr varIdent = nullptr);
-        VarAccessExprPtr                ParseVarAccessExpr(const VarIdentPtr& varIdent = nullptr);
-        ExprPtr                         ParseFunctionCallExpr(const VarIdentPtr& varIdent = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
+        ObjectExprPtr                   ParseObjectExpr(const ExprPtr& expr = nullptr);
+        AssignExprPtr                   ParseAssignExpr(const ExprPtr& expr);
+        ExprPtr                         ParseObjectOrCallExpr(const ExprPtr& expr = nullptr);
+        ArrayExprPtr                    ParseArrayExpr(const ExprPtr& expr);
+        CallExprPtr                     ParseCallExpr(const ObjectExprPtr& objectExpr = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
+        CallExprPtr                     ParseCallExprWithPrefixOpt(const ExprPtr& prefixExpr = nullptr, bool isStatic = false, const TokenPtr& identTkn = nullptr);
+        CallExprPtr                     ParseCallExprAsTypeCtor(const TypeDenoterPtr& typeDenoter);
         InitializerExprPtr              ParseInitializerExpr();
 
         std::vector<StmntPtr>           ParseLocalStmntList();
@@ -189,6 +189,7 @@ class HLSLParser : public Parser
         TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true, StructDeclPtr* structDecl = nullptr);
         TypeDenoterPtr                  ParseTypeDenoterPrimary(StructDeclPtr* structDecl = nullptr);
         TypeDenoterPtr                  ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl, bool allowVoidType = true);
+        TypeDenoterPtr                  ParseTypeDenoterWithArrayOpt(const TypeDenoterPtr& baseTypeDenoter);
         VoidTypeDenoterPtr              ParseVoidTypeDenoter();
         BaseTypeDenoterPtr              ParseBaseTypeDenoter();
         BaseTypeDenoterPtr              ParseBaseVectorTypeDenoter();

@@ -7,6 +7,7 @@
 
 #include "PreProcessor.h"
 #include "AST.h"
+#include "ASTFactory.h"
 #include "ConstExprEvaluator.h"
 #include "Helper.h"
 #include "ReportIdents.h"
@@ -946,22 +947,12 @@ ExprPtr PreProcessor::ParsePrimaryExpr()
             if (Tkn()->Spell() == "defined")
             {
                 /* Generate new token for boolean literal (which is the replacement of the 'defined IDENT' directive) */
-                auto ast = Make<LiteralExpr>();
-                {
-                    ast->dataType   = DataType::Int;
-                    ast->value      = ParseDefinedMacro();
-                }
-                return ast;
+                return ASTFactory::MakeLiteralExpr(DataType::Int, ParseDefinedMacro());
             }
             else
             {
                 /* Parse identifier without macro expansion (this already happend at this point) */
-                auto ast = Make<VarAccessExpr>();
-                {
-                    ast->varIdent = Make<VarIdent>();
-                    ast->varIdent->ident = AcceptIt()->Spell();
-                }
-                return ast;
+                return ASTFactory::MakeObjectExpr(AcceptIt()->Spell());
             }
         }
         break;
@@ -970,8 +961,10 @@ ExprPtr PreProcessor::ParsePrimaryExpr()
         {
             /* Parse unary expression */
             auto ast = Make<UnaryExpr>();
-            ast->op     = StringToUnaryOp(AcceptIt()->Spell());
-            ast->expr   = ParseValueExpr();
+            {
+                ast->op     = StringToUnaryOp(AcceptIt()->Spell());
+                ast->expr   = ParseValueExpr();
+            }
             return ast;
         }
         break;
@@ -982,8 +975,10 @@ ExprPtr PreProcessor::ParsePrimaryExpr()
         {
             /* Parse literal */
             auto ast = Make<LiteralExpr>();
-            ast->dataType   = TokenToDataType(*Tkn());
-            ast->value      = AcceptIt()->Spell();
+            {
+                ast->dataType   = TokenToDataType(*Tkn());
+                ast->value      = AcceptIt()->Spell();
+            }
             return ast;
         }
         break;

@@ -98,6 +98,7 @@ static void InitializeNameMangling(struct XscNameMangling* s)
     s->outputPrefix         = "xsv_";
     s->reservedWordPrefix   = "xsr_";
     s->temporaryPrefix      = "xst_";
+    s->namespacePrefix      = "xsn_";
     s->useAlwaysSemantics   = false;
 }
 
@@ -390,6 +391,7 @@ XSC_EXPORT bool XscCompileShader(
     out.nameMangling.outputPrefix       = ReadStringC(outputDesc->nameMangling.outputPrefix);
     out.nameMangling.reservedWordPrefix = ReadStringC(outputDesc->nameMangling.reservedWordPrefix);
     out.nameMangling.temporaryPrefix    = ReadStringC(outputDesc->nameMangling.temporaryPrefix);
+    out.nameMangling.namespacePrefix    = ReadStringC(outputDesc->nameMangling.namespacePrefix);
     out.nameMangling.useAlwaysSemantics = outputDesc->nameMangling.useAlwaysSemantics;
 
     /* Initialize log */

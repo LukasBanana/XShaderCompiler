@@ -158,19 +158,6 @@ IMPLEMENT_VISIT_PROC(Program)
     VISIT_DEFAULT(Program);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCall)
-{
-    /* Check for special intrinsics */
-    if (ast->intrinsic != Intrinsic::Undefined)
-    {
-        auto it = intrinsicExtMap_.find(ast->intrinsic);
-        if (it != intrinsicExtMap_.end())
-            AcquireExtension(it->second);
-    }
-
-    VISIT_DEFAULT(FunctionCall);
-}
-
 IMPLEMENT_VISIT_PROC(Attribute)
 {
     /* Check for special attributes */
@@ -258,13 +245,26 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
     VISIT_DEFAULT(UnaryExpr);
 }
 
-IMPLEMENT_VISIT_PROC(VarAccessExpr)
+IMPLEMENT_VISIT_PROC(CallExpr)
+{
+    /* Check for special intrinsics */
+    if (ast->intrinsic != Intrinsic::Undefined)
+    {
+        auto it = intrinsicExtMap_.find(ast->intrinsic);
+        if (it != intrinsicExtMap_.end())
+            AcquireExtension(it->second);
+    }
+
+    VISIT_DEFAULT(CallExpr);
+}
+
+IMPLEMENT_VISIT_PROC(AssignExpr)
 {
     /* Check if bitwise operators are used -> requires "GL_EXT_gpu_shader4" extensions */
-    if (IsBitwiseOp(ast->assignOp) || ast->assignOp == AssignOp::Mod)
+    if (IsBitwiseOp(ast->op) || ast->op == AssignOp::Mod)
         AcquireExtension(E_GL_EXT_gpu_shader4);
 
-    VISIT_DEFAULT(VarAccessExpr);
+    VISIT_DEFAULT(AssignExpr);
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)

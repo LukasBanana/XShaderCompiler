@@ -25,13 +25,13 @@ class ConstExprEvaluator : private Visitor
     
     public:
         
-        using OnVarAccessCallback = std::function<Variant(VarAccessExpr* ast)>;
+        using OnObjectExprCallback = std::function<Variant(ObjectExpr* expr)>;
 
         /*
         Evaluates the specified expression and returns the result as variante.
         Throws an std::runtime_error if the expression could not be evaluated.
         */
-        Variant EvaluateExpr(Expr& ast, const OnVarAccessCallback& onVarAccessCallback = nullptr);
+        Variant EvaluateExpr(Expr& ast, const OnObjectExprCallback& onObjectExprCallback = nullptr);
 
     private:
         
@@ -50,19 +50,19 @@ class ConstExprEvaluator : private Visitor
         DECL_VISIT_PROC( BinaryExpr        );
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
-        DECL_VISIT_PROC( FunctionCallExpr  );
+        DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( BracketExpr       );
-        DECL_VISIT_PROC( SuffixExpr        );
-        DECL_VISIT_PROC( ArrayAccessExpr   );
+        DECL_VISIT_PROC( AssignExpr        );
+        DECL_VISIT_PROC( ObjectExpr        );
+        DECL_VISIT_PROC( ArrayExpr         );
         DECL_VISIT_PROC( CastExpr          );
-        DECL_VISIT_PROC( VarAccessExpr     );
         DECL_VISIT_PROC( InitializerExpr   );
 
         /* === Members === */
 
-        std::stack<Variant> variantStack_;
+        std::stack<Variant>     variantStack_;
 
-        OnVarAccessCallback onVarAccessCallback_;
+        OnObjectExprCallback    onObjectExprCallback_;
 
 };
 

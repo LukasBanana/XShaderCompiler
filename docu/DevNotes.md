@@ -242,14 +242,17 @@ in both `FunctionCallExpr` and `ObjectExpr` since both types can be a static mem
 Also the assignment of `ObjectExpr` (or rather `VarAccessExpr`) should be moved into a separated AST class `AssignExpr`,
 to allow expressions like `( x = 1 ) = 2`.
 
+Moreover, `FunctionCall` and `FunctionCallExpr` will be merged into a single AST class `CallExpr`,
+and the `ArrayAccessExpr` is renamed to `ArrayExpr`.
+
 Specification:
 ```
 ObjectExpr : Expr {
-    Expr              prefixExpression     [Optional]
-    Boolean           isStatic             [Optional]
+    Expr              prefixExpression [Optional]
+    Boolean           isStatic         [Optional]
     String            identifier
     
-    Ref<Decl>         symbolRef            [Optional]  --> VarDecl, BufferDecl, SamplerDecl, StructDecl
+    Ref<Decl>         symbolRef        [Optional]  --> VarDecl, BufferDecl, SamplerDecl, StructDecl
 }
 
 AssignExpr : Expr {
@@ -258,47 +261,53 @@ AssignExpr : Expr {
     Expr              rvalueExpression
 }
 
-ArrayAccessExpr : Expr {
+ArrayExpr : Expr {
     Expr              prefixExpression
     List<Expr>        arrayIndices
 }
 
-FunctionCallExpr : Expr {
-    Expr              prefixExpression     [Optional]
-    Boolean           isStatic             [Optional]
-    FunctionCall      call
+CallExpr : Expr {
+    Expr              prefixExpression [Optional]
+    Boolean           isStatic         [Optional]
+    String            identifier
+    Ref<FunctionDecl> funcDeclRef      [Optional]
 }
 
 BracketExpr : Expr {
     Expr              subExpression
 }
-
-FunctionCall {
-    String            identifier
-    
-    Ref<FunctionDecl> funcDeclRef          [Optional]
-}
 ```
 
 Example: `( Scene::getMain().getLights() )[1].material.getShininess()`
 ```cs
-FunctionCallExpr
+expression (CallExpr)
  |-prefixExpression (ObjectExpr)
- |  |-prefixExpression (ArrayAccessExpr)
+ |  |-prefixExpression (ArrayExpr)
  |  |  |-prefixExpression (BracketExpr)
- |  |  |  `-subExpression (FunctionCallExpr)
- |  |  |     |-prefixExpression (FunctionCallExpr)
+ |  |  |  `-subExpression (CallExpr)
+ |  |  |     |-prefixExpression (CallExpr)
  |  |  |     |  |-prefixExpression (ObjectExpr)
  |  |  |     |  |  `-identifier = "Scene"
  |  |  |     |  |-isStatic = true
- |  |  |     |  `-call (FunctionCall)
- |  |  |     |     `-identifier = "getMain"
- |  |  |     `-call (FunctionCall)
- |  |  |        `-identifier = "getLights"
+ |  |  |     |  `-identifier = "getMain"
+ |  |  |     `-identifier = "getLights"
  |  |  `-arrayIndices[0] (LiteralExpr)
  |  |     `-literal = "1"
  |  `-identifier = "material"
- `-call (FunctionCall)
-    `-identifier = "getShininess"
+ `-identifier = "getShininess"
 ```
+
+Transforming System Value Semantics
+-----------------------------------
+
+Especially for geometry shaders a system value semantic must be transformed from an array expression like this:
+* `input[0].position` to `gl_in[0].gl_Position`
+* `output[0].position` to `gl_Position`
+* `output[0].normal` to `xsv_NORMAL0[0]`
+
+This transformation is currently implemented in the `GLSLGenerator` instead of the `GLSLConverter`.
+
+
+
+
 

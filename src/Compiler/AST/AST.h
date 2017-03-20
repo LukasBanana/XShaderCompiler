@@ -82,7 +82,6 @@ struct AST
     {
         Program,
         CodeBlock,
-        FunctionCall,
         Attribute,
         SwitchCase,
         SamplerValue,
@@ -90,7 +89,6 @@ struct AST
         PackOffset,
         ArrayDimension,
         TypeSpecifier,
-        VarIdent,
 
         VarDecl,
         BufferDecl,
@@ -126,12 +124,12 @@ struct AST
         BinaryExpr,
         UnaryExpr,
         PostUnaryExpr,
-        FunctionCallExpr,
+        CallExpr,
         BracketExpr,
-        SuffixExpr,
-        ArrayAccessExpr,
+        ObjectExpr,
+        AssignExpr,
+        ArrayExpr,
         CastExpr,
-        VarAccessExpr,
         InitializerExpr,
     };
 
@@ -220,15 +218,47 @@ struct Expr : public TypedAST
     // Returns the variable or null if this is not just a single variable expression.
     VarDecl* FetchVarDecl() const;
 
-    // Returns the variable identifier or null if this is not just a single variable expression
-    virtual VarIdent* FetchVarIdent() const;
+    //TODO: maybe add this and let all Expr classes implement this
+    #if 0
+    // Returns a descriptive string of this expression. By default the name of the expression type is returned.
+    virtual std::string ToString() const = 0;
+    #endif
+
+    /*
+    Returns the first node in the expression tree that is an l-value (may also be constant!), or null if there is no l-value.
+    If the return value is non-null, the object expression must refer to a declaration object. By default null.
+    */
+    virtual const ObjectExpr* FetchLValueExpr() const;
+
+    /*
+    Returns the first node in the expression tree that is an type object expression,
+    i.e. an ObjectExpr node with a reference to a StructDecl or AliasDecl. By default null.
+    */
+    virtual const ObjectExpr* FetchTypeObjectExpr() const;
+
+    // Returns either this expression or the sub expression for brackets.
+    virtual const Expr* FetchNonBracketExpr() const;
+
+    // Returns either this expression or the sub expression for brackets.
+    virtual Expr* FetchNonBracketExpr();
+
+    // Returns the semantic of this expression, or Semantic::Undefined if this expression has no semantic.
+    virtual IndexedSemantic FetchSemantic() const;
 };
 
 // Declaration AST base class.
 struct Decl : public TypedAST
 {
+    FLAG_ENUM
+    {
+        FLAG( isWrittenTo, 0 ), // This declaration object is eventually written to.
+    };
+
     // Returns a descriptive string of the type signature.
     virtual std::string ToString() const;
+
+    // Returns the type specifier of this declaration object, or null if there is no type specifier. By default null.
+    virtual TypeSpecifier* FetchTypeSpecifier() const;
 
     // Identifier of the declaration object (may be empty, e.g. for anonymous structures).
     Identifier ident;
@@ -324,42 +354,6 @@ struct SamplerValue : public AST
     ExprPtr     value;  // Sampler state value expression
 };
 
-//TODO: maybe merge this AST class into "FunctionCallExpr".
-// Function call.
-struct FunctionCall : public TypedAST
-{
-    AST_INTERFACE(FunctionCall);
-
-    FLAG_ENUM
-    {
-        // If this function call is an intrinsic, it's wrapper function can be inlined (i.e. no wrapper function must be generated)
-        // e.g. "clip(a), clip(b);" can not be inlined, due to the list expression.
-        FLAG( canInlineIntrinsicWrapper, 0 ),
-    };
-
-    TypeDenoterPtr DeriveTypeDenoter() override;
-
-    // Returns a list of all argument expressions (including the default parameters).
-    std::vector<Expr*> GetArguments() const;
-
-    // Returns the function implementation of this function call, or null if not set.
-    FunctionDecl* GetFunctionImpl() const;
-
-    // Iterates over each argument expression that is assigned to an output parameter.
-    void ForEachOutputArgument(const ExprIteratorFunctor& iterator);
-
-    // Iterates over each argument expression together with its associated parameter.
-    void ForEachArgumentWithParameterType(const ArgumentParameterTypeFunctor& iterator);
-
-    VarIdentPtr             varIdent;                                   // Null, if the function call is a type constructor (e.g. "float2(0, 0)").
-    TypeDenoterPtr          typeDenoter;                                // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
-    std::vector<ExprPtr>    arguments;
-
-    FunctionDecl*           funcDeclRef         = nullptr;              // Reference to the function declaration; may be null
-    Intrinsic               intrinsic           = Intrinsic::Undefined; // Intrinsic ID (if this is an intrinsic).
-    std::vector<Expr*>      defaultArgumentRefs;                        // Reference to default argument expressions of all remaining parameters
-};
-
 // Attribute (e.g. "[unroll]" or "[numthreads(x,y,z)]").
 struct Attribute : public AST
 {
@@ -434,7 +428,7 @@ struct TypeSpecifier : public TypedAST
 {
     AST_INTERFACE(TypeSpecifier);
     
-    // Returns the name of this type: typeDenoter->ToString().
+    // Returns the name of this type and all modifiers.
     std::string ToString() const;
 
     TypeDenoterPtr DeriveTypeDenoter() override;
@@ -476,66 +470,6 @@ struct TypeSpecifier : public TypedAST
     TypeDenoterPtr              typeDenoter;
 };
 
-// Variable (linked-list) identifier.
-struct VarIdent : public TypedAST
-{
-    AST_INTERFACE(VarIdent);
-
-    FLAG_ENUM
-    {
-        FLAG( isImmutable, 0 ), // This variable identifier must be written out as it is.
-    };
-
-    // Returns the full var-ident string (with '.' separation).
-    std::string ToString() const;
-
-    // Returns the last identifier AST node.
-    VarIdent* Last();
-
-    // Returns a type denoter for the symbol reference of the last variable identifier.
-    TypeDenoterPtr DeriveTypeDenoter() override;
-
-    // Returns the type denoter for this AST node or the last sub node.
-    TypeDenoterPtr GetExplicitTypeDenoter(bool recursive);
-
-    // Returns a type denoter for the vector subscript of this identifier or throws a runtime error on failure.
-    BaseTypeDenoterPtr GetTypeDenoterFromSubscript(TypeDenoter& baseTypeDenoter) const;
-
-    // Moves the next identifier into this one (i.e. removes the first identifier), and propagates the array indices.
-    void PopFront(bool accumulateArrayIndices = true);
-
-    // Returns a semantic if this is an identifier to a variable which has a semantic.
-    IndexedSemantic FetchSemantic() const;
-
-    // Returns the specified type of AST node from the symbol (if the symbol refers to one).
-    template <typename T>
-    T* FetchSymbol() const
-    {
-        if (symbolRef)
-        {
-            if (auto ast = symbolRef->As<T>())
-                return ast;
-        }
-        return nullptr;
-    }
-
-    // Returns the declaration AST node (if the symbol refers to one).
-    Decl* FetchDecl() const;
-
-    // Returns the variable AST node (if the symbol refers to one).
-    VarDecl* FetchVarDecl() const;
-
-    // Returns the function declaration AST node (if the symbol refers to one).
-    FunctionDecl* FetchFunctionDecl() const;
-
-    std::string             ident;                      // Atomic identifier.
-    std::vector<ExprPtr>    arrayIndices;               // Optional array indices
-    bool                    nextIsStatic    = false;    // Specifies whether the next node is concatenated with the static double-colon token '::'.
-    VarIdentPtr             next;                       // Next identifier; may be null.
-
-    AST*                    symbolRef       = nullptr;  // Symbol reference for DAST to the variable object; may be null (e.g. for vector subscripts)
-};
-
 /* --- Declarations --- */
 
 // Variable declaration.
@@ -545,11 +479,10 @@ struct VarDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,        0 ), // This variable is used as shader input.
-        FLAG( isShaderOutput,       1 ), // This variable is used as shader output.
-        FLAG( isSystemValue,        2 ), // This variable is a system value (e.g. SV_Position/ gl_Position).
-        FLAG( isDynamicArray,       3 ), // This variable is a dynamic array (for input/output semantics).
-        FLAG( isWrittenTo,          4 ), // This variable is eventually written to.
+        FLAG( isShaderInput,        1 ), // This variable is used as shader input.
+        FLAG( isShaderOutput,       2 ), // This variable is used as shader output.
+        FLAG( isSystemValue,        3 ), // This variable is a system value (e.g. SV_Position/ gl_Position).
+        FLAG( isDynamicArray,       4 ), // This variable is a dynamic array (for input/output semantics).
         FLAG( isEntryPointOutput,   5 ), // This variable is used as entry point output (return value, output parameter, stream output).
         FLAG( isEntryPointLocal,    6 ), // This variable is a local variable of the entry point.
 
@@ -562,6 +495,9 @@ struct VarDecl : public Decl
 
     // Returns a type denoter for this variable declaration or throws an std::runtime_error if the type can not be derived.
     TypeDenoterPtr DeriveTypeDenoter() override;
+
+    // Returns the type specifier of the declaration statemnt reference (if set).
+    TypeSpecifier* FetchTypeSpecifier() const override;
 
     std::vector<ArrayDimensionPtr>  arrayDims;
     IndexedSemantic                 semantic;
@@ -615,10 +551,12 @@ struct StructDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG( isShaderInput,        0 ), // This structure is used as shader input.
-        FLAG( isShaderOutput,       1 ), // This structure is used as shader output.
-        FLAG( isNestedStruct,       2 ), // This is a nested structure within another structure.
-        FLAG( isNonEntryPointParam, 3 ), // This structure is eventually used as variable or parameter type of function other than the entry point.
+        FLAG( isShaderInput,        1 ), // This structure is used as shader input.
+        FLAG( isShaderOutput,       2 ), // This structure is used as shader output.
+        FLAG( isNestedStruct,       3 ), // This is a nested structure within another structure.
+
+        //TODO: rename this flag, since it's meaning is confusing
+        FLAG( isNonEntryPointParam, 4 ), // This structure is eventually used as variable or parameter type of function other than the entry point.
     };
 
     // Returns a descriptive string of the structure signature (e.g. "struct s" or "struct <anonymous>").
@@ -627,12 +565,21 @@ struct StructDecl : public Decl
     // Returns true if this is an anonymous structure.
     bool IsAnonymous() const;
 
+    // Returns true if the specified structure declaration has the same member types as this structure (see 'TypeDenoter' for valid compare flags).
+    bool EqualsMembers(const StructDecl& rhs, const Flags& compareFlags = 0) const;
+
+    // Returns true if this structure type is castable to the specified base type denoter.
+    bool IsCastableTo(const BaseTypeDenoter& rhs) const;
+
     //TODO: rename to "FetchVarDecl"
     // Returns the VarDecl AST node inside this struct decl for the specified identifier, or null if there is no such VarDecl.
     VarDecl* Fetch(const std::string& ident, const StructDecl** owner = nullptr) const;
 
     // Returns the FunctionDecl AST node for the specified argument type denoter list (used to derive the overloaded function).
-    FunctionDecl* FetchFunctionDecl(const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters, const StructDecl** owner = nullptr) const;
+    FunctionDecl* FetchFunctionDecl(
+        const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters,
+        const StructDecl** owner = nullptr, bool throwErrorIfNoMatch = false
+    ) const;
 
     // Returns an identifier that is similar to the specified identifier (for suggestions of typos)
     std::string FetchSimilar(const std::string& ident);
@@ -643,13 +590,16 @@ struct StructDecl : public Decl
     // Returns true if this structure has at least one member that is not a system value.
     bool HasNonSystemValueMembers() const;
 
-    // Returns the total number of members (include all base structures).
-    std::size_t NumVarMembers() const;
+    // Returns the total number of member variables (including all base structures).
+    std::size_t NumMemberVariables() const;
+
+    // Returns the total number of member functions (including all base structures).
+    std::size_t NumMemberFunctions() const;
 
     // Returns a list with the type denoters of all members (including all base structures).
     void CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens) const;
 
-    // Iterates over each VarDecl AST node (included nested structures, and members in referenced structures).
+    // Iterates over each VarDecl AST node (included nested structures, and members in base structures).
     void ForEachVarDecl(const VarDeclIteratorFunctor& iterator);
 
     // Returns true if this structure is used more than once as entry point output (either through variable arrays or multiple variable declarations).
@@ -711,7 +661,7 @@ struct FunctionDecl : public Stmnt
 
     struct ParameterStructure
     {
-        VarIdent*   varIdent;   // Either this is used ...
+        Expr*       expr;       // Either this is used ...
         VarDecl*    varDecl;    // ... or this
         StructDecl* structDecl;
     };
@@ -731,12 +681,15 @@ struct FunctionDecl : public Stmnt
 
     // Returns true if this is a member function (member of a structure).
     bool IsMemberFunction() const;
+
+    // Returns true if this is a static function (see TypeSpecifier::HasAnyStorageClassesOf).
+    bool IsStatic() const;
     
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
     std::string ToString(bool useParamNames = true) const;
 
-    // Returns true if the specified function declaration has the same signature as this function.
-    bool EqualsSignature(const FunctionDecl& rhs) const;
+    // Returns true if the specified function declaration has the same signature as this function (see 'TypeDenoter' for valid compare flags).
+    bool EqualsSignature(const FunctionDecl& rhs, const Flags& compareFlags = 0) const;
 
     // Returns the minimal number of arguments for a call to this function.
     std::size_t NumMinArgs() const;
@@ -830,7 +783,8 @@ struct VarDeclStmnt : public Stmnt
         FLAG( isShaderInput,    0 ), // This variable is used as shader input.
         FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
         FLAG( isParameter,      2 ), // This variable is a function parameter (flag should be set during parsing).
-        FLAG( isImplicitConst,  3 ), // This variable is implicitly declared as constant.
+        FLAG( isSelfParameter,  3 ), // This variable is the 'self' parameter of a member function.
+        FLAG( isImplicitConst,  4 ), // This variable is implicitly declared as constant.
     };
 
     // Implements Stmnt::CollectDeclIdents
@@ -1017,6 +971,9 @@ struct LiteralExpr : public Expr
     // Returns true if this is a NULL literal.
     bool IsNull() const;
 
+    // Returns true if this literal needs a space after the literal, when a vector subscript is used as postfix.
+    bool IsSpaceRequiredForSubscript() const;
+
     DataType        dataType    = DataType::Undefined;  // Valid data types: String, Bool, Int, UInt, Half, Float, Double; (Undefined for 'NULL')
     std::string     value;
 };
@@ -1046,7 +1003,7 @@ struct TernaryExpr : public Expr
     ExprPtr elseExpr; // <else> case expression
 };
 
-// Binary expressions.
+// Binary expression.
 struct BinaryExpr : public Expr
 {
     AST_INTERFACE(BinaryExpr);
@@ -1058,7 +1015,7 @@ struct BinaryExpr : public Expr
     ExprPtr     rhsExpr;                        // Right-hand-side expression
 };
 
-// (Pre-) Unary expressions.
+// (Pre-) Unary expression.
 struct UnaryExpr : public Expr
 {
     AST_INTERFACE(UnaryExpr);
@@ -1069,7 +1026,7 @@ struct UnaryExpr : public Expr
     ExprPtr expr;
 };
 
-// Post unary expressions (e.g. x++, x--)
+// Post unary expression (e.g. x++, x--)
 struct PostUnaryExpr : public Expr
 {
     AST_INTERFACE(PostUnaryExpr);
@@ -1081,15 +1038,48 @@ struct PostUnaryExpr : public Expr
 };
 
 // Function call expression (e.g. "foo()" or "foo().bar()" or "foo()[0].bar()").
-struct FunctionCallExpr : public Expr
+struct CallExpr : public Expr
 {
-    AST_INTERFACE(FunctionCallExpr);
+    AST_INTERFACE(CallExpr);
+
+    FLAG_ENUM
+    {
+        // If this function call is an intrinsic, it's wrapper function can be inlined (i.e. no wrapper function must be generated)
+        // e.g. "clip(a), clip(b);" can not be inlined, due to the list expression.
+        FLAG( canInlineIntrinsicWrapper, 0 ),
+    };
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    //TODO: add "prefixExpr"
-    //ExprPtr         prefixExpr;   // Optional (left hand side) sub expression; may be null
-    FunctionCallPtr call;
+    IndexedSemantic FetchSemantic() const override;
+
+    // Returns a list of all argument expressions (including the default parameters).
+    std::vector<Expr*> GetArguments() const;
+
+    // Returns the function implementation of this function call, or null if not set.
+    FunctionDecl* GetFunctionImpl() const;
+
+    // Iterates over each argument expression that is assigned to an output parameter.
+    void ForEachOutputArgument(const ExprIteratorFunctor& iterator);
+
+    // Iterates over each argument expression together with its associated parameter.
+    void ForEachArgumentWithParameterType(const ArgumentParameterTypeFunctor& iterator);
+
+    // Inserts the specified argument expression at the front of the argument list.
+    void PushArgumentFront(const ExprPtr& expr);
+
+    // Inserts the specified argument expression at the front of the argument list.
+    void PushArgumentFront(ExprPtr&& expr);
+
+    ExprPtr                 prefixExpr;                                 // Optional prefix expression; may be null.
+    bool                    isStatic            = false;                // Specifies whether this function is a static member.
+    std::string             ident;                                      // Function name identifier (this is empty for type constructors)
+    TypeDenoterPtr          typeDenoter;                                // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
+    std::vector<ExprPtr>    arguments;
+
+    FunctionDecl*           funcDeclRef         = nullptr;              // Reference to the function declaration; may be null
+    Intrinsic               intrinsic           = Intrinsic::Undefined; // Intrinsic ID (if this is an intrinsic).
+    std::vector<Expr*>      defaultArgumentRefs;                        // Reference to default argument expressions of all remaining parameters
 };
 
 // Bracket expression.
@@ -1099,32 +1089,90 @@ struct BracketExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    VarIdent* FetchVarIdent() const override;
+    const ObjectExpr* FetchLValueExpr() const override;
+    const ObjectExpr* FetchTypeObjectExpr() const override;
+
+    const Expr* FetchNonBracketExpr() const override;
+    Expr* FetchNonBracketExpr() override;
+
+    IndexedSemantic FetchSemantic() const override;
 
     ExprPtr expr; // Inner expression
 };
 
-//TODO: maybe replace this by "VarAccessExpr"
-// Suffix expression (e.g. "foo().suffix").
-struct SuffixExpr : public Expr
+// Assignment expression.
+struct AssignExpr : public Expr
 {
-    AST_INTERFACE(SuffixExpr);
+    AST_INTERFACE(AssignExpr);
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    ExprPtr     expr;       // Sub expression (left hand side)
-    VarIdentPtr varIdent;   // Suffix var identifier (right hand side)
+    const ObjectExpr* FetchLValueExpr() const override;
+    const ObjectExpr* FetchTypeObjectExpr() const override;
+
+    ExprPtr     lvalueExpr;                     // L-value expression
+    AssignOp    op      = AssignOp::Undefined;  // Assignment operator
+    ExprPtr     rvalueExpr;                     // R-value expression
+};
+
+// Object access expression.
+struct ObjectExpr : public Expr
+{
+    AST_INTERFACE(ObjectExpr);
+
+    FLAG_ENUM
+    {
+        FLAG( isImmutable, 0 ), // This object identifier must be written out as it is.
+    };
+
+    TypeDenoterPtr DeriveTypeDenoter() override;
+
+    const ObjectExpr* FetchLValueExpr() const override;
+    const ObjectExpr* FetchTypeObjectExpr() const override;
+
+    IndexedSemantic FetchSemantic() const override;
+
+    // Returns the type denoter for this AST node or the last sub node.
+    TypeDenoterPtr GetExplicitTypeDenoter();
+
+    // Returns a type denoter for the vector subscript of this object expression or throws a runtime error on failure.
+    BaseTypeDenoterPtr GetTypeDenoterFromSubscript() const;
+
+    // Returns the specified type of AST node from the symbol (if the symbol refers to one).
+    template <typename T>
+    T* FetchSymbol() const
+    {
+        if (symbolRef)
+        {
+            if (auto ast = symbolRef->As<T>())
+                return ast;
+        }
+        return nullptr;
+    }
+
+    // Returns the variable AST node (if the symbol refers to one).
+    VarDecl* FetchVarDecl() const;
+
+    ExprPtr     prefixExpr;             // Optional prefix expression; may be null.
+    bool        isStatic    = false;    // Specifies whether this object is a static member.
+    std::string ident;                  // Object identifier.
+
+    Decl*       symbolRef   = nullptr;  // Optional symbol reference to the object declaration; may be null (e.g. for vector subscripts)
 };
 
 // Array-access expression (e.g. "foo()[arrayAccess]").
-struct ArrayAccessExpr : public Expr
+struct ArrayExpr : public Expr
 {
-    AST_INTERFACE(ArrayAccessExpr);
+    AST_INTERFACE(ArrayExpr);
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    //TODO: rename this "prefixExpr" to make the post-order traversal clear
-    ExprPtr                 expr;           // Sub expression (left hand side)
+    const ObjectExpr* FetchLValueExpr() const;
+
+    // Returns the number of array indices (shortcut for "arrayIndices.size()").
+    std::size_t NumIndices() const;
+
+    ExprPtr                 prefixExpr;     // Prefix expression
     std::vector<ExprPtr>    arrayIndices;   // Array indices (right hand side)
 };
 
@@ -1137,22 +1185,6 @@ struct CastExpr : public Expr
 
     TypeSpecifierPtr    typeSpecifier;  // Cast type name expression
     ExprPtr             expr;           // Value expression
-};
-
-// Variable access expression.
-struct VarAccessExpr : public Expr
-{
-    AST_INTERFACE(VarAccessExpr);
-
-    TypeDenoterPtr DeriveTypeDenoter() override;
-
-    VarIdent* FetchVarIdent() const override;
-
-    //TODO: add "prefixExpr" and make this a replacement to "SuffixExpr"
-    //ExprPtr   prefixExpr;                         // Optional sub expression (left hand side); may be null
-    VarIdentPtr varIdent;
-    AssignOp    assignOp    = AssignOp::Undefined;  // May be undefined
-    ExprPtr     assignExpr;                         // May be null
 };
 
 // Initializer list expression.
