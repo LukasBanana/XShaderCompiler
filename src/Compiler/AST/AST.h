@@ -82,9 +82,6 @@ struct AST
     {
         Program,
         CodeBlock,
-        #if 1//TODO: remove
-        FunctionCall,
-        #endif
         Attribute,
         SwitchCase,
         SamplerValue,
@@ -350,54 +347,6 @@ struct SamplerValue : public AST
     std::string name;   // Sampler state name
     ExprPtr     value;  // Sampler state value expression
 };
-
-#if 1//TODO: remove
-
-//TODO: merge this AST class into "CallExpr".
-// Function call.
-struct FunctionCall : public TypedAST
-{
-    AST_INTERFACE(FunctionCall);
-
-    FLAG_ENUM
-    {
-        // If this function call is an intrinsic, it's wrapper function can be inlined (i.e. no wrapper function must be generated)
-        // e.g. "clip(a), clip(b);" can not be inlined, due to the list expression.
-        FLAG( canInlineIntrinsicWrapper, 0 ),
-    };
-
-    TypeDenoterPtr DeriveTypeDenoter() override;
-
-    // Returns a list of all argument expressions (including the default parameters).
-    std::vector<Expr*> GetArguments() const;
-
-    // Returns the function implementation of this function call, or null if not set.
-    FunctionDecl* GetFunctionImpl() const;
-
-    // Iterates over each argument expression that is assigned to an output parameter.
-    void ForEachOutputArgument(const ExprIteratorFunctor& iterator);
-
-    // Iterates over each argument expression together with its associated parameter.
-    void ForEachArgumentWithParameterType(const ArgumentParameterTypeFunctor& iterator);
-
-    // Inserts the specified argument expression at the front of the argument list.
-    void PushArgumentFront(const ExprPtr& expr);
-
-    // Inserts the specified argument expression at the front of the argument list.
-    void PushArgumentFront(ExprPtr&& expr);
-
-    std::string             ident;                                      // Function name identifier (this is empty for type constructors)
-    TypeDenoterPtr          typeDenoter;                                // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
-    std::vector<ExprPtr>    arguments;
-
-    FunctionDecl*           funcDeclRef         = nullptr;              // Reference to the function declaration; may be null
-    Intrinsic               intrinsic           = Intrinsic::Undefined; // Intrinsic ID (if this is an intrinsic).
-    std::vector<Expr*>      defaultArgumentRefs;                        // Reference to default argument expressions of all remaining parameters
-
-    CallExpr*               exprRef             = nullptr;              // Reference to the function call expression (parent node).
-};
-
-#endif
 
 // Attribute (e.g. "[unroll]" or "[numthreads(x,y,z)]").
 struct Attribute : public AST
@@ -1125,10 +1074,6 @@ struct CallExpr : public Expr
     FunctionDecl*           funcDeclRef         = nullptr;              // Reference to the function declaration; may be null
     Intrinsic               intrinsic           = Intrinsic::Undefined; // Intrinsic ID (if this is an intrinsic).
     std::vector<Expr*>      defaultArgumentRefs;                        // Reference to default argument expressions of all remaining parameters
-
-    #if 0//TODO: remove
-    FunctionCallPtr         call;
-    #endif
 };
 
 // Bracket expression.

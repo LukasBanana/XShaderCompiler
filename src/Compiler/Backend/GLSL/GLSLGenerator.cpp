@@ -834,21 +834,21 @@ IMPLEMENT_VISIT_PROC(CallExpr)
 {
     /* Check for special cases of intrinsic function calls */
     if (ast->intrinsic == Intrinsic::Mul)
-        WriteFunctionCallIntrinsicMul(ast);
+        WriteCallExprIntrinsicMul(ast);
     else if (ast->intrinsic == Intrinsic::Rcp)
-        WriteFunctionCallIntrinsicRcp(ast);
-    else if (ast->intrinsic == Intrinsic::Clip && ast->flags(FunctionCall::canInlineIntrinsicWrapper))
-        WriteFunctionCallIntrinsicClip(ast);
+        WriteCallExprIntrinsicRcp(ast);
+    else if (ast->intrinsic == Intrinsic::Clip && ast->flags(CallExpr::canInlineIntrinsicWrapper))
+        WriteCallExprIntrinsicClip(ast);
     else if (ast->intrinsic >= Intrinsic::InterlockedAdd && ast->intrinsic <= Intrinsic::InterlockedXor)
-        WriteFunctionCallIntrinsicAtomic(ast);
+        WriteCallExprIntrinsicAtomic(ast);
     else if (ast->intrinsic == Intrinsic::StreamOutput_Append)
-        WriteFunctionCallIntrinsicStreamOutputAppend(ast);
+        WriteCallExprIntrinsicStreamOutputAppend(ast);
     else if (ast->intrinsic == Intrinsic::Texture_QueryLod)
-        WriteFunctionCallIntrinsicTextureQueryLod(ast, true);
+        WriteCallExprIntrinsicTextureQueryLod(ast, true);
     else if (ast->intrinsic == Intrinsic::Texture_QueryLodUnclamped)
-        WriteFunctionCallIntrinsicTextureQueryLod(ast, false);
+        WriteCallExprIntrinsicTextureQueryLod(ast, false);
     else
-        WriteFunctionCallStandard(ast);
+        WriteCallExprStandard(ast);
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
@@ -2225,7 +2225,7 @@ void GLSLGenerator::AssertIntrinsicNumArgs(CallExpr* funcCall, std::size_t numAr
         Error(R_InvalidIntrinsicArgCount(funcCall->ident), funcCall);
 }
 
-void GLSLGenerator::WriteFunctionCallStandard(CallExpr* funcCall)
+void GLSLGenerator::WriteCallExprStandard(CallExpr* funcCall)
 {
     /* Write function name */
     //TODO: replace this by "funcCall->ident"
@@ -2295,7 +2295,7 @@ void GLSLGenerator::WriteFunctionCallStandard(CallExpr* funcCall)
     Write(")");
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicMul(CallExpr* funcCall)
+void GLSLGenerator::WriteCallExprIntrinsicMul(CallExpr* funcCall)
 {
     AssertIntrinsicNumArgs(funcCall, 2, 2);
 
@@ -2326,7 +2326,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicMul(CallExpr* funcCall)
     Write(")");
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicRcp(CallExpr* funcCall)
+void GLSLGenerator::WriteCallExprIntrinsicRcp(CallExpr* funcCall)
 {
     AssertIntrinsicNumArgs(funcCall, 1, 1);
 
@@ -2351,7 +2351,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicRcp(CallExpr* funcCall)
         Error(R_InvalidIntrinsicArgType("rcp"), expr.get());
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicClip(CallExpr* funcCall)
+void GLSLGenerator::WriteCallExprIntrinsicClip(CallExpr* funcCall)
 {
     AssertIntrinsicNumArgs(funcCall, 1, 1);
 
@@ -2424,7 +2424,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicClip(CallExpr* funcCall)
     DecIndent();
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(CallExpr* funcCall)
+void GLSLGenerator::WriteCallExprIntrinsicAtomic(CallExpr* funcCall)
 {
     AssertIntrinsicNumArgs(funcCall, 2, 3);
 
@@ -2447,7 +2447,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicAtomic(CallExpr* funcCall)
         ErrorIntrinsic(funcCall->ident, funcCall);
 }
 
-void GLSLGenerator::WriteFunctionCallIntrinsicStreamOutputAppend(CallExpr* funcCall)
+void GLSLGenerator::WriteCallExprIntrinsicStreamOutputAppend(CallExpr* funcCall)
 {
     AssertIntrinsicNumArgs(funcCall, 1, 1);
 
@@ -2461,7 +2461,7 @@ void GLSLGenerator::WriteFunctionCallIntrinsicStreamOutputAppend(CallExpr* funcC
 
 // "CalculateLevelOfDetail"          -> "textureQueryLod(...).y"
 // "CalculateLevelOfDetailUnclamped" -> "textureQueryLod(...).x"
-void GLSLGenerator::WriteFunctionCallIntrinsicTextureQueryLod(CallExpr* funcCall, bool clamped)
+void GLSLGenerator::WriteCallExprIntrinsicTextureQueryLod(CallExpr* funcCall, bool clamped)
 {
     AssertIntrinsicNumArgs(funcCall, 2, 2);
 

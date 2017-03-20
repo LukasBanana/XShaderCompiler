@@ -82,12 +82,6 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     VisitStmntList(ast->stmnts);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCall)
-{
-    Visit(ast->funcDeclRef);
-    VISIT_DEFAULT(FunctionCall);
-}
-
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     Visit(ast->expr);
@@ -205,6 +199,12 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 }
 
 /* --- Expressions --- */
+
+IMPLEMENT_VISIT_PROC(CallExpr)
+{
+    Visit(ast->funcDeclRef);
+    VISIT_DEFAULT(CallExpr);
+}
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {

@@ -30,7 +30,6 @@ DECL_PTR( Expr              );
 
 DECL_PTR( Program           );
 DECL_PTR( CodeBlock         );
-DECL_PTR( FunctionCall      );
 DECL_PTR( Attribute         );
 DECL_PTR( SwitchCase        );
 DECL_PTR( SamplerValue      );
@@ -103,7 +102,6 @@ class Visitor
 
         VISITOR_VISIT_PROC( Program           );
         VISITOR_VISIT_PROC( CodeBlock         );
-        VISITOR_VISIT_PROC( FunctionCall      );
         VISITOR_VISIT_PROC( Attribute         );
         VISITOR_VISIT_PROC( SwitchCase        );
         VISITOR_VISIT_PROC( SamplerValue      );

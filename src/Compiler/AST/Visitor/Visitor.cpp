@@ -33,11 +33,6 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     Visit(ast->stmnts);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCall)
-{
-    Visit(ast->arguments);
-}
-
 IMPLEMENT_VISIT_PROC(Attribute)
 {
     Visit(ast->arguments);

@@ -241,13 +241,13 @@ class GLSLGenerator : public Generator
 
         void AssertIntrinsicNumArgs(CallExpr* callExpr, std::size_t numArgsMin, std::size_t numArgsMax = ~0);
 
-        void WriteFunctionCallStandard(CallExpr* callExpr);
-        void WriteFunctionCallIntrinsicMul(CallExpr* callExpr);
-        void WriteFunctionCallIntrinsicRcp(CallExpr* callExpr);
-        void WriteFunctionCallIntrinsicClip(CallExpr* callExpr);
-        void WriteFunctionCallIntrinsicAtomic(CallExpr* callExpr);
-        void WriteFunctionCallIntrinsicStreamOutputAppend(CallExpr* callExpr);
-        void WriteFunctionCallIntrinsicTextureQueryLod(CallExpr* callExpr, bool clamped);
+        void WriteCallExprStandard(CallExpr* callExpr);
+        void WriteCallExprIntrinsicMul(CallExpr* callExpr);
+        void WriteCallExprIntrinsicRcp(CallExpr* callExpr);
+        void WriteCallExprIntrinsicClip(CallExpr* callExpr);
+        void WriteCallExprIntrinsicAtomic(CallExpr* callExpr);
+        void WriteCallExprIntrinsicStreamOutputAppend(CallExpr* callExpr);
+        void WriteCallExprIntrinsicTextureQueryLod(CallExpr* callExpr, bool clamped);
 
         /* ----- Intrinsics wrapper ----- */
 

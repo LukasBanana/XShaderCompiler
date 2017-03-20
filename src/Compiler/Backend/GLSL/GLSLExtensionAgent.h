@@ -45,7 +45,6 @@ class GLSLExtensionAgent : private Visitor
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
-        DECL_VISIT_PROC( FunctionCall      );
         DECL_VISIT_PROC( Attribute         );
 
         DECL_VISIT_PROC( VarDecl           );
@@ -56,6 +55,7 @@ class GLSLExtensionAgent : private Visitor
 
         DECL_VISIT_PROC( BinaryExpr        );
         DECL_VISIT_PROC( UnaryExpr         );
+        DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( AssignExpr        );
         DECL_VISIT_PROC( InitializerExpr   );
 

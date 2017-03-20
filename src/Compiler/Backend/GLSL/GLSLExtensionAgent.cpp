@@ -158,19 +158,6 @@ IMPLEMENT_VISIT_PROC(Program)
     VISIT_DEFAULT(Program);
 }
 
-IMPLEMENT_VISIT_PROC(FunctionCall)
-{
-    /* Check for special intrinsics */
-    if (ast->intrinsic != Intrinsic::Undefined)
-    {
-        auto it = intrinsicExtMap_.find(ast->intrinsic);
-        if (it != intrinsicExtMap_.end())
-            AcquireExtension(it->second);
-    }
-
-    VISIT_DEFAULT(FunctionCall);
-}
-
 IMPLEMENT_VISIT_PROC(Attribute)
 {
     /* Check for special attributes */
@@ -256,6 +243,19 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
         AcquireExtension(E_GL_EXT_gpu_shader4);
 
     VISIT_DEFAULT(UnaryExpr);
+}
+
+IMPLEMENT_VISIT_PROC(CallExpr)
+{
+    /* Check for special intrinsics */
+    if (ast->intrinsic != Intrinsic::Undefined)
+    {
+        auto it = intrinsicExtMap_.find(ast->intrinsic);
+        if (it != intrinsicExtMap_.end())
+            AcquireExtension(it->second);
+    }
+
+    VISIT_DEFAULT(CallExpr);
 }
 
 IMPLEMENT_VISIT_PROC(AssignExpr)

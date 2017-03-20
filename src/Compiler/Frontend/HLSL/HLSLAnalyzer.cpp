@@ -694,32 +694,32 @@ void HLSLAnalyzer::AnalyzeCallExpr(CallExpr* expr)
 }
 
 void HLSLAnalyzer::AnalyzeFunctionCall(
-    CallExpr* funcCall, bool isStatic, const Expr* prefixExpr, const TypeDenoter* prefixTypeDenoter)
+    CallExpr* callExpr, bool isStatic, const Expr* prefixExpr, const TypeDenoter* prefixTypeDenoter)
 {
-    PushCallExpr(funcCall);
+    PushCallExpr(callExpr);
     {
         /* Analyze function arguments first */
-        Visit(funcCall->arguments);
+        Visit(callExpr->arguments);
 
         /* Then analyze function name */
-        if (!funcCall->ident.empty())
+        if (!callExpr->ident.empty())
         {
             /* Is this an intrinsic function call? */
-            auto intrIt = HLSLIntrinsicAdept::GetIntrinsicMap().find(funcCall->ident);
+            auto intrIt = HLSLIntrinsicAdept::GetIntrinsicMap().find(callExpr->ident);
             if (intrIt != HLSLIntrinsicAdept::GetIntrinsicMap().end())
             {
                 /* Analyze function call of intrinsic */
-                AnalyzeFunctionCallIntrinsic(funcCall, intrIt->second, isStatic, prefixTypeDenoter);
+                AnalyzeFunctionCallIntrinsic(callExpr, intrIt->second, isStatic, prefixTypeDenoter);
             }
             else
             {
                 /* Analyze function call of standard function declaration */
-                AnalyzeFunctionCallStandard(funcCall, isStatic, prefixExpr, prefixTypeDenoter);
+                AnalyzeFunctionCallStandard(callExpr, isStatic, prefixExpr, prefixTypeDenoter);
             }
         }
 
         /* Analyze all l-value arguments that are assigned to output parameters */
-        funcCall->ForEachOutputArgument(
+        callExpr->ForEachOutputArgument(
             [this](ExprPtr& argExpr)
             {
                 AnalyzeLValueExpr(argExpr.get());
@@ -730,7 +730,7 @@ void HLSLAnalyzer::AnalyzeFunctionCall(
 }
 
 void HLSLAnalyzer::AnalyzeFunctionCallStandard(
-    CallExpr* funcCall, bool isStatic, const Expr* prefixExpr, const TypeDenoter* prefixTypeDenoter)
+    CallExpr* callExpr, bool isStatic, const Expr* prefixExpr, const TypeDenoter* prefixTypeDenoter)
 {
     if (prefixTypeDenoter)
     {
@@ -738,58 +738,58 @@ void HLSLAnalyzer::AnalyzeFunctionCallStandard(
         if (auto structTypeDen = prefixTypeDenoter->As<StructTypeDenoter>())
         {
             /* Fetch function declaration from struct prefix type */
-            funcCall->funcDeclRef = FetchFunctionDeclFromStruct(*structTypeDen, funcCall->ident, funcCall->arguments, funcCall);
+            callExpr->funcDeclRef = FetchFunctionDeclFromStruct(*structTypeDen, callExpr->ident, callExpr->arguments, callExpr);
         }
         else
         {
             /* Report error on class intrinsic for wrong type */
             Error(
-                R_InvalidMemberFuncForType(funcCall->ident, prefixTypeDenoter->ToString()),
-                funcCall
+                R_InvalidMemberFuncForType(callExpr->ident, prefixTypeDenoter->ToString()),
+                callExpr
             );
         }
     }
     else
     {
         /* Fetch function declaration with identifier from function call */
-        if (auto symbol = FetchFunctionDecl(funcCall->ident, funcCall->arguments, funcCall))
+        if (auto symbol = FetchFunctionDecl(callExpr->ident, callExpr->arguments, callExpr))
         {
             /* Decorate function call with symbol reference */
-            funcCall->funcDeclRef = symbol;
+            callExpr->funcDeclRef = symbol;
         }
     }
 
     /* Analyze static function */
-    if (auto funcDecl = funcCall->funcDeclRef)
+    if (auto funcDecl = callExpr->funcDeclRef)
     {
         /* Check if static/non-static access is allowed */
-        if (AnalyzeStaticAccessExpr(prefixExpr, isStatic, funcCall))
+        if (AnalyzeStaticAccessExpr(prefixExpr, isStatic, callExpr))
         {
             /* Check if function call and function declaration are equally static/non-static */
             if (isStatic)
             {
                 if (!funcDecl->IsStatic())
-                    Error(R_IllegalStaticFuncCall(funcDecl->ToString()), funcCall);
+                    Error(R_IllegalStaticFuncCall(funcDecl->ToString()), callExpr);
             }
             else
             {
                 if (funcDecl->IsStatic())
-                    Error(R_IllegalNonStaticFuncCall(funcDecl->ToString()), funcCall);
+                    Error(R_IllegalNonStaticFuncCall(funcDecl->ToString()), callExpr);
             }
         }
     }
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(CallExpr* funcCall, const HLSLIntrinsicEntry& intr, bool isStatic, const TypeDenoter* prefixTypeDenoter)
+void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(CallExpr* callExpr, const HLSLIntrinsicEntry& intr, bool isStatic, const TypeDenoter* prefixTypeDenoter)
 {
     const auto intrinsic = intr.intrinsic;
 
     /* Decoarte function call with intrinsic ID */
-    AnalyzeFunctionCallIntrinsicPrimary(funcCall, intr);
+    AnalyzeFunctionCallIntrinsicPrimary(callExpr, intr);
 
     /* No intrinsics can be called static */
     if (isStatic)
-        Error(R_IllegalStaticIntrinsicCall(funcCall->ident), funcCall);
+        Error(R_IllegalStaticIntrinsicCall(callExpr->ident), callExpr);
 
     if (IsGlobalIntrinsic(intrinsic))
     {
@@ -797,8 +797,8 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(CallExpr* funcCall, const HLSLIn
         {
             /* Report error on global intrinsic with prefix expression */
             Error(
-                R_InvalidGlobalIntrinsicForType(funcCall->ident, prefixTypeDenoter->ToString()),
-                funcCall
+                R_InvalidGlobalIntrinsicForType(callExpr->ident, prefixTypeDenoter->ToString()),
+                callExpr
             );
         }
     }
@@ -809,40 +809,40 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsic(CallExpr* funcCall, const HLSLIn
             if (auto bufferTypeDen = prefixTypeDenoter->As<BufferTypeDenoter>())
             {
                 /* Analyze member function call with buffer prefix type */
-                AnalyzeFunctionCallIntrinsicFromBufferType(funcCall, bufferTypeDen->bufferType);
+                AnalyzeFunctionCallIntrinsicFromBufferType(callExpr, bufferTypeDen->bufferType);
             }
             else
             {
                 /* Report error on class intrinsic for wrong type */
                 Error(
-                    R_InvalidClassIntrinsicForType(funcCall->ident, prefixTypeDenoter->ToString()),
-                    funcCall
+                    R_InvalidClassIntrinsicForType(callExpr->ident, prefixTypeDenoter->ToString()),
+                    callExpr
                 );
             }
         }
         else
         {
             /* Report error on non-global intrinsic without prefix expression */
-            Error(R_InvalidClassIntrinsic(funcCall->ident), funcCall);
+            Error(R_InvalidClassIntrinsic(callExpr->ident), callExpr);
         }
     }
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicPrimary(CallExpr* funcCall, const HLSLIntrinsicEntry& intr)
+void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicPrimary(CallExpr* callExpr, const HLSLIntrinsicEntry& intr)
 {
     /* Check shader input version */
     if (shaderModel_ < intr.minShaderModel)
     {
         Warning(
             R_InvalidShaderModelForIntrinsic(
-                funcCall->ident, intr.minShaderModel.ToString(), shaderModel_.ToString()
+                callExpr->ident, intr.minShaderModel.ToString(), shaderModel_.ToString()
             ),
-            funcCall
+            callExpr
         );
     }
 
     /* Decorate AST with intrinsic ID */
-    funcCall->intrinsic = intr.intrinsic;
+    callExpr->intrinsic = intr.intrinsic;
 
     /* Analyze special intrinsic types */
     using T = Intrinsic;
@@ -883,31 +883,31 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicPrimary(CallExpr* funcCall, const
     for (const auto& conversion : intrinsicConversions)
     {
         /* Is another overloaded version of the intrinsic used? */
-        if (funcCall->intrinsic == conversion.standardIntrinsic && funcCall->arguments.size() == conversion.numArgs)
+        if (callExpr->intrinsic == conversion.standardIntrinsic && callExpr->arguments.size() == conversion.numArgs)
         {
             /* Convert intrinsic type */
-            funcCall->intrinsic = conversion.overloadedIntrinsic;
+            callExpr->intrinsic = conversion.overloadedIntrinsic;
             break;
         }
     }
 }
 
-void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicFromBufferType(const CallExpr* funcCall, const BufferType bufferType)
+void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicFromBufferType(const CallExpr* callExpr, const BufferType bufferType)
 {
-    const auto intrinsic = funcCall->intrinsic;
-    const auto& ident = funcCall->ident;
+    const auto intrinsic = callExpr->intrinsic;
+    const auto& ident = callExpr->ident;
 
     if (IsTextureBufferType(bufferType))
     {
         /* Check if texture intrinsic is used to texture buffer type */
         if (!IsTextureIntrinsic(intrinsic))
-            Error(R_InvalidIntrinsicForTexture(ident), funcCall);
+            Error(R_InvalidIntrinsicForTexture(ident), callExpr);
     }
     else if (IsRWTextureBufferType(bufferType))
     {
         /* Check if image load/store intrinsic is used to RW-texture buffer type */
         if (!IsImageIntrinsic(intrinsic))
-            Error(R_InvalidIntrinsicForRWTexture(ident), funcCall);
+            Error(R_InvalidIntrinsicForRWTexture(ident), callExpr);
     }
     else if (IsStreamBufferType(bufferType))
     {
@@ -917,22 +917,22 @@ void HLSLAnalyzer::AnalyzeFunctionCallIntrinsicFromBufferType(const CallExpr* fu
             /* Check for entry point output parameters with "StreamOutput::Append" intrinsic */
             if (InsideEntryPoint() && intrinsic == Intrinsic::StreamOutput_Append)
             {
-                for (const auto& arg : funcCall->arguments)
+                for (const auto& arg : callExpr->arguments)
                     AnalyzeEntryPointOutput(arg->FetchLValueExpr());
             }
         }
         else
-            Error(R_InvalidIntrinsicForStreamOutput(ident), funcCall);
+            Error(R_InvalidIntrinsicForStreamOutput(ident), callExpr);
     }
 }
 
-void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(CallExpr* funcCall)
+void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(CallExpr* callExpr)
 {
     /* Is this a 'clip'-intrinsic call? */
-    if (funcCall->intrinsic == Intrinsic::Clip)
+    if (callExpr->intrinsic == Intrinsic::Clip)
     {
         /* The wrapper function for this intrinsic can be inlined */
-        funcCall->flags << FunctionCall::canInlineIntrinsicWrapper;
+        callExpr->flags << CallExpr::canInlineIntrinsicWrapper;
     }
 }
 
