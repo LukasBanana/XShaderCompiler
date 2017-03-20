@@ -1607,7 +1607,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
     /* Write wrapped structures */
     for (const auto& paramStruct : entryPoint->paramStructs)
     {
-        if (paramStruct.objectExpr == nullptr || paramStruct.objectExpr == lvalueExpr)
+        if (paramStruct.expr == nullptr || paramStruct.expr == expr)
             WriteOutputSemanticsAssignmentStructDeclParam(paramStruct, writeAsListedExpr);
     }
 
@@ -1669,9 +1669,9 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
 void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(
     const FunctionDecl::ParameterStructure& paramStruct, bool writeAsListedExpr, const std::string& tempIdent)
 {
-    auto paramObject    = paramStruct.objectExpr;
-    auto paramVar       = paramStruct.varDecl;
-    auto structDecl     = paramStruct.structDecl;
+    auto paramExpr  = paramStruct.expr;
+    auto paramVar   = paramStruct.varDecl;
+    auto structDecl = paramStruct.structDecl;
 
     if (structDecl && structDecl->flags(StructDecl::isNonEntryPointParam) && structDecl->flags(StructDecl::isShaderOutput))
     {
@@ -1690,8 +1690,8 @@ void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(
 
                 Write(" = ");
 
-                if (paramObject)
-                    WriteObjectExpr(*paramObject);
+                if (paramExpr)
+                    Visit(paramExpr);
                 else if (paramVar)
                     Write(paramVar->ident);
                 else

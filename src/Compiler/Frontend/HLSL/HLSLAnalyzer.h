@@ -126,7 +126,7 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std::vector<Semantic>& inSemantics, const std::vector<Semantic>& outSemantics);
 
-        void AnalyzeEntryPointOutput(const ObjectExpr* objectExpr);
+        void AnalyzeEntryPointOutput(Expr* expr);
 
         /* ----- Secondary entry point ----- */
 

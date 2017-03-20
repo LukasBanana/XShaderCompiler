@@ -661,9 +661,9 @@ struct FunctionDecl : public Stmnt
 
     struct ParameterStructure
     {
-        const ObjectExpr*   objectExpr; // Either this is used ...
-        VarDecl*            varDecl;    // ... or this
-        StructDecl*         structDecl;
+        Expr*       expr;       // Either this is used ...
+        VarDecl*    varDecl;    // ... or this
+        StructDecl* structDecl;
     };
 
     FLAG_ENUM

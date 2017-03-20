@@ -552,7 +552,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
         /* Analyze entry point return statement (if a structure is returned from the entry point) */
         if (InsideEntryPoint())
-            AnalyzeEntryPointOutput(ast->expr->FetchLValueExpr());
+            AnalyzeEntryPointOutput(ast->expr.get());
     }
 }
 
@@ -856,7 +856,7 @@ void HLSLAnalyzer::AnalyzeCallExprIntrinsicFromBufferType(const CallExpr* callEx
             if (InsideEntryPoint() && intrinsic == Intrinsic::StreamOutput_Append)
             {
                 for (const auto& arg : callExpr->arguments)
-                    AnalyzeEntryPointOutput(arg->FetchLValueExpr());
+                    AnalyzeEntryPointOutput(arg.get());
             }
         }
         else
@@ -1522,9 +1522,9 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
 ~~~~~~~~~ TODO: refactore 'program_->entryPointRef->paramStructs' !!! ~~~~~~~~~~
 */
 
-void HLSLAnalyzer::AnalyzeEntryPointOutput(const ObjectExpr* objectExpr)
+void HLSLAnalyzer::AnalyzeEntryPointOutput(Expr* expr)
 {
-    if (objectExpr)
+    if (auto objectExpr = expr->FetchLValueExpr())
     {
         if (auto varDecl = objectExpr->FetchVarDecl())
         {
@@ -1540,7 +1540,7 @@ void HLSLAnalyzer::AnalyzeEntryPointOutput(const ObjectExpr* objectExpr)
 
                     /* Add variable as parameter-structure to entry point */
                     if (program_->entryPointRef)
-                        program_->entryPointRef->paramStructs.push_back({ objectExpr, varDecl, structDecl });
+                        program_->entryPointRef->paramStructs.push_back({ expr, varDecl, structDecl });
                         
                     /* Mark variable as local variable of the entry-point */
                     varDecl->flags << VarDecl::isEntryPointLocal;
