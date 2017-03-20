@@ -309,6 +309,7 @@ DECL_REPORT( InvalidParamVarCount,              "invalid number of variables in 
 DECL_REPORT( NotAllStorageClassesMappedToGLSL,  "not all storage classes can be mapped to GLSL keywords"                                                        );
 DECL_REPORT( NotAllInterpModMappedToGLSL,       "not all interpolation modifiers can be mapped to GLSL keywords"                                                );
 DECL_REPORT( CantTranslateSamplerToGLSL,        "can not translate sampler state object to GLSL sampler"                                                        );
+DECL_REPORT( MissingArrayPrefixForIOSemantic,   "missing array prefix expression for input/output semantic[ '{0}']"                                             );
 
 /* ----- GLSLPreProcessor ----- */
 
@@ -317,7 +318,7 @@ DECL_REPORT( MacrosWithTwoUnderscoresReserved,  "macros containing consecutive u
 DECL_REPORT( IllegalRedefOfStdMacro,            "illegal redefinition of standard macro[: {0}]"                                                                 );
 DECL_REPORT( IllegalUndefOfStdMacro,            "illegal undefinition of standard macro[: {0}]"                                                                 );
 DECL_REPORT( VersionMustBeFirstDirective,       "'#version'-directive must be the first directive"                                                              );
-DECL_REPORT( UnknwonGLSLVersion,                "unknown GLSL version: '{0}'"                                                                                    );
+DECL_REPORT( UnknwonGLSLVersion,                "unknown GLSL version: '{0}'"                                                                                   );
 DECL_REPORT( NoProfileForGLSLVersionBefore150,  "versions before 150 do not allow a profile token"                                                              );
 DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (must be 'core' or 'compatibility')"                                             );
 DECL_REPORT( ExtensionNotSupported,             "extension not supported[: {0}]"                                                                                );

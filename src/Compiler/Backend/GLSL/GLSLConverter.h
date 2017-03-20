@@ -149,6 +149,8 @@ class GLSLConverter : public Visitor
         void ConvertFunctionCall(CallExpr* ast);
 
         void ConvertEntryPointStructPrefix(ExprPtr& expr, ObjectExpr* objectExpr);
+        void ConvertEntryPointStructPrefixObject(ExprPtr& expr, ObjectExpr* prefixExpr, ObjectExpr* objectExpr);
+        void ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr* prefixExpr, ObjectExpr* objectExpr);
 
         /* ----- Unrolling ----- */
 

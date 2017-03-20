@@ -297,3 +297,17 @@ expression (CallExpr)
  `-identifier = "getShininess"
 ```
 
+Transforming System Value Semantics
+-----------------------------------
+
+Especially for geometry shaders a system value semantic must be transformed from an array expression like this:
+* `input[0].position` to `gl_in[0].gl_Position`
+* `output[0].position` to `gl_Position`
+* `output[0].normal` to `xsv_NORMAL0[0]`
+
+This transformation is currently implemented in the `GLSLGenerator` instead of the `GLSLConverter`.
+
+
+
+
+

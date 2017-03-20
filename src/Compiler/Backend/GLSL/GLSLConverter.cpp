@@ -937,30 +937,62 @@ void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
 */
 void GLSLConverter::ConvertEntryPointStructPrefix(ExprPtr& expr, ObjectExpr* objectExpr)
 {
-    if (auto lvalueExpr = expr->FetchLValueExpr())
+    auto nonBracketExpr = expr->FetchNonBracketExpr();
+    if (auto prefixExpr = nonBracketExpr->As<ObjectExpr>())
+        ConvertEntryPointStructPrefixObject(expr, prefixExpr, objectExpr);
+    else if (auto prefixExpr = nonBracketExpr->As<ArrayExpr>())
+        ConvertEntryPointStructPrefixArray(expr, prefixExpr, objectExpr);
+}
+
+// Marks the object expression as 'immutable', if the specified structure is a non-entry-point (NEP) parameter
+static bool MakeObjectExprImmutableForNEPStruct(ObjectExpr* objectExpr, const StructDecl* structDecl)
+{
+    if (structDecl)
     {
-        /* Does this l-value refer to a variable declaration? */
-        if (auto varDecl = lvalueExpr->FetchVarDecl())
+        if (structDecl->flags(StructDecl::isNonEntryPointParam))
         {
-            /* Is its type denoter a structure? */
-            const auto& varTypeDen = varDecl->GetTypeDenoter()->GetAliased();
-            if (auto structTypeDen = varTypeDen.As<StructTypeDenoter>())
+            /* Mark object expression as immutable */
+            objectExpr->flags << ObjectExpr::isImmutable;
+            return true;
+        }
+    }
+    return false;
+}
+
+void GLSLConverter::ConvertEntryPointStructPrefixObject(ExprPtr& expr, ObjectExpr* prefixExpr, ObjectExpr* objectExpr)
+{
+    /* Does this l-value refer to a variable declaration? */
+    if (auto varDecl = prefixExpr->FetchVarDecl())
+    {
+        /* Is its type denoter a structure? */
+        const auto& varTypeDen = varDecl->GetTypeDenoter()->GetAliased();
+        if (auto structTypeDen = varTypeDen.As<StructTypeDenoter>())
+        {
+            /* Can the structure be resolved? */
+            if (!MakeObjectExprImmutableForNEPStruct(objectExpr, structTypeDen->structDeclRef))
             {
-                /* Can the structure be resolved */
-                if (auto structDecl = structTypeDen->structDeclRef)
-                {
-                    if (structDecl->flags(StructDecl::isNonEntryPointParam))
-                    {
-                        /* Mark object expression as immutable */
-                        objectExpr->flags << ObjectExpr::isImmutable;
-                    }
-                    else
-                    {
-                        /* Drop prefix expression for global input/output variables */
-                        if (IsGlobalInOutVarDecl(objectExpr->FetchVarDecl()))
-                            expr.reset();
-                    }
-                }
+                /* Drop prefix expression for global input/output variables */
+                if (IsGlobalInOutVarDecl(objectExpr->FetchVarDecl()))
+                    expr.reset();
+            }
+        }
+    }
+}
+
+void GLSLConverter::ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr* prefixExpr, ObjectExpr* objectExpr)
+{
+    /* Does this l-value refer to a variable declaration? */
+    if (auto varDecl = prefixExpr->prefixExpr->FetchVarDecl())
+    {
+        /* Is its type denoter an array of structures? */
+        const auto& varTypeDen = varDecl->GetTypeDenoter()->GetAliased();
+        if (auto arrayTypeDen = varTypeDen.As<ArrayTypeDenoter>())
+        {
+            const auto& varSubTypeDen = arrayTypeDen->subTypeDenoter->GetAliased();
+            if (auto structTypeDen = varSubTypeDen.As<StructTypeDenoter>())
+            {
+                /* Can the structure be resolved? */
+                MakeObjectExprImmutableForNEPStruct(objectExpr, structTypeDen->structDeclRef);
             }
         }
     }

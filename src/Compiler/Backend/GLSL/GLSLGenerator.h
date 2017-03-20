@@ -216,8 +216,14 @@ class GLSLGenerator : public Generator
         /* ----- Object expression ----- */
 
         void WriteObjectExpr(const ObjectExpr& objectExpr);
-        void WriteObjectExprIdent(const ObjectExpr& objectExpr);
+        void WriteObjectExprIdent(const ObjectExpr& objectExpr, bool writePrefix = true);
         void WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectExpr, Decl* symbol);
+
+        /* ----- Array expression ----- */
+
+        void WriteArrayExpr(const ArrayExpr& arrayExpr);
+
+        void WriteArrayIndices(const std::vector<ExprPtr>& arrayIndices);
 
         /* ----- Type denoter ----- */
 
@@ -278,8 +284,6 @@ class GLSLGenerator : public Generator
 
         void WriteParameter(VarDeclStmnt* ast);
         void WriteScopedStmnt(Stmnt* ast);
-
-        void WriteArrayIndices(const std::vector<ExprPtr>& arrayIndices);
 
         void WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast = nullptr);
 

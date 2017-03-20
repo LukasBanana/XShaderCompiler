@@ -90,6 +90,16 @@ const ObjectExpr* Expr::FetchTypeObjectExpr() const
     return nullptr;
 }
 
+const Expr* Expr::FetchNonBracketExpr() const
+{
+    return this;
+}
+
+Expr* Expr::FetchNonBracketExpr()
+{
+    return this;
+}
+
 IndexedSemantic Expr::FetchSemantic() const
 {
     return Semantic::Undefined;
@@ -1466,6 +1476,16 @@ const ObjectExpr* BracketExpr::FetchTypeObjectExpr() const
     return expr->FetchTypeObjectExpr();
 }
 
+const Expr* BracketExpr::FetchNonBracketExpr() const
+{
+    return expr->FetchNonBracketExpr();
+}
+
+Expr* BracketExpr::FetchNonBracketExpr()
+{
+    return expr->FetchNonBracketExpr();
+}
+
 IndexedSemantic BracketExpr::FetchSemantic() const
 {
     return expr->FetchSemantic();
@@ -1607,12 +1627,6 @@ VarDecl* ObjectExpr::FetchVarDecl() const
     return FetchSymbol<VarDecl>();
 }
 
-#if 0
-bool ObjectExpr::IsLValue() const
-{
-}
-#endif
-
 
 /* ----- ArrayExpr ----- */
 
@@ -1626,6 +1640,11 @@ TypeDenoterPtr ArrayExpr::DeriveTypeDenoter()
     {
         RuntimeErr(e.what(), this);
     }
+}
+
+const ObjectExpr* ArrayExpr::FetchLValueExpr() const
+{
+    return prefixExpr->FetchLValueExpr();
 }
 
 std::size_t ArrayExpr::NumIndices() const

@@ -872,8 +872,7 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
 
 IMPLEMENT_VISIT_PROC(ArrayExpr)
 {
-    Visit(ast->prefixExpr);
-    WriteArrayIndices(ast->arrayIndices);
+    WriteArrayExpr(*ast);
 }
 
 IMPLEMENT_VISIT_PROC(CastExpr)
@@ -1698,7 +1697,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignmentStructDeclParam(
                 else
                     Write(tempIdent);
 
-                Write("." + varDecl->ident + (writeAsListedExpr ? ", " : ";"));
+                Write("." + varDecl->ident.Original() + (writeAsListedExpr ? ", " : ";"));
 
                 if (!writeAsListedExpr)
                 {
@@ -1892,10 +1891,10 @@ void GLSLGenerator::WriteObjectExpr(const ObjectExpr& objectExpr)
         WriteObjectExprIdent(objectExpr);
 }
 
-void GLSLGenerator::WriteObjectExprIdent(const ObjectExpr& objectExpr)
+void GLSLGenerator::WriteObjectExprIdent(const ObjectExpr& objectExpr, bool writePrefix)
 {
     /* Write prefix expression */
-    if (objectExpr.prefixExpr && !objectExpr.isStatic)
+    if (objectExpr.prefixExpr && !objectExpr.isStatic && writePrefix)
     {
         Visit(objectExpr.prefixExpr);
 
@@ -1912,6 +1911,7 @@ void GLSLGenerator::WriteObjectExprIdent(const ObjectExpr& objectExpr)
     /* Write object identifier either from object expression or from symbol reference */
     if (auto symbol = objectExpr.symbolRef)
     {
+        /* Write original identifier, if the identifier was marked as immutable */
         if (objectExpr.flags(ObjectExpr::isImmutable))
             Write(symbol->ident.Original());
         else
@@ -1944,7 +1944,30 @@ void GLSLGenerator::WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectEx
         }
     }
 
-    if (semanticKeyword)
+    if (varFlags(VarDecl::isShaderInput | VarDecl::isShaderOutput) && objectExpr.prefixExpr)
+    {
+        /* Write special "gl_in/out" array prefix, or write array indices as postfix for input/output semantics */
+        if (auto arrayExpr = objectExpr.prefixExpr->FetchNonBracketExpr()->As<ArrayExpr>())
+        {
+            if (semanticKeyword)
+            {
+                if (varFlags(VarDecl::isShaderInput))
+                    Write("gl_in");
+                else
+                    Write("gl_out");
+                WriteArrayIndices(arrayExpr->arrayIndices);
+                Write("." + *semanticKeyword);
+            }
+            else
+            {
+                WriteObjectExprIdent(objectExpr, false);
+                WriteArrayIndices(arrayExpr->arrayIndices);
+            }
+        }
+        else
+            Error(R_MissingArrayPrefixForIOSemantic(objectExpr.ident), &objectExpr);
+    }
+    else if (semanticKeyword)
     {
         /* Ignore prefix expression if the object refers to a system value semantic */
         Write(*semanticKeyword);
@@ -1953,6 +1976,24 @@ void GLSLGenerator::WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectEx
     {
         /* Write object expression with standard identifier */
         WriteObjectExprIdent(objectExpr);
+    }
+}
+
+/* ----- Array expression ----- */
+
+void GLSLGenerator::WriteArrayExpr(const ArrayExpr& arrayExpr)
+{
+    Visit(arrayExpr.prefixExpr);
+    WriteArrayIndices(arrayExpr.arrayIndices);
+}
+
+void GLSLGenerator::WriteArrayIndices(const std::vector<ExprPtr>& arrayIndices)
+{
+    for (auto& arrayIndex : arrayIndices)
+    {
+        Write("[");
+        Visit(arrayIndex);
+        Write("]");
     }
 }
 
@@ -2856,16 +2897,6 @@ void GLSLGenerator::WriteScopedStmnt(Stmnt* ast)
         }
         else
             Visit(ast);
-    }
-}
-
-void GLSLGenerator::WriteArrayIndices(const std::vector<ExprPtr>& arrayIndices)
-{
-    for (auto& arrayIndex : arrayIndices)
-    {
-        Write("[");
-        Visit(arrayIndex);
-        Write("]");
     }
 }
 

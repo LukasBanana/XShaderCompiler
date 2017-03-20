@@ -236,6 +236,12 @@ struct Expr : public TypedAST
     */
     virtual const ObjectExpr* FetchTypeObjectExpr() const;
 
+    // Returns either this expression or the sub expression for brackets.
+    virtual const Expr* FetchNonBracketExpr() const;
+
+    // Returns either this expression or the sub expression for brackets.
+    virtual Expr* FetchNonBracketExpr();
+
     // Returns the semantic of this expression, or Semantic::Undefined if this expression has no semantic.
     virtual IndexedSemantic FetchSemantic() const;
 };
@@ -1085,6 +1091,10 @@ struct BracketExpr : public Expr
 
     const ObjectExpr* FetchLValueExpr() const override;
     const ObjectExpr* FetchTypeObjectExpr() const override;
+
+    const Expr* FetchNonBracketExpr() const override;
+    Expr* FetchNonBracketExpr() override;
+
     IndexedSemantic FetchSemantic() const override;
 
     ExprPtr expr; // Inner expression
@@ -1119,6 +1129,7 @@ struct ObjectExpr : public Expr
 
     const ObjectExpr* FetchLValueExpr() const override;
     const ObjectExpr* FetchTypeObjectExpr() const override;
+
     IndexedSemantic FetchSemantic() const override;
 
     // Returns the type denoter for this AST node or the last sub node.
@@ -1155,6 +1166,8 @@ struct ArrayExpr : public Expr
     AST_INTERFACE(ArrayExpr);
 
     TypeDenoterPtr DeriveTypeDenoter() override;
+
+    const ObjectExpr* FetchLValueExpr() const;
 
     // Returns the number of array indices (shortcut for "arrayIndices.size()").
     std::size_t NumIndices() const;
