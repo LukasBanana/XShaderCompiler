@@ -7,6 +7,8 @@
 
 #include "CommandLine.h"
 #include <stdexcept>
+#include <algorithm>
+#include <cctype>
 
 
 namespace Xsc
@@ -87,6 +89,8 @@ bool CommandLine::AcceptBoolean()
 bool CommandLine::AcceptBoolean(bool defaultValue)
 {
     auto arg = Get();
+    std::transform(arg.begin(), arg.end(), arg.begin(), std::toupper);
+
     if (arg == CommandLine::GetBooleanTrue())
     {
         Accept();
@@ -97,6 +101,7 @@ bool CommandLine::AcceptBoolean(bool defaultValue)
         Accept();
         return false;
     }
+
     return defaultValue;
 }
 
