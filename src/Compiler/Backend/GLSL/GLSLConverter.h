@@ -145,6 +145,9 @@ class GLSLConverter : public Visitor
         void ConvertIntrinsicCallSaturate(CallExpr* ast);
         void ConvertIntrinsicCallTextureSample(CallExpr* ast);
         void ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast);
+        #if 0
+        void ConvertIntrinsicCallImageAtomic(FunctionCall* ast);
+        #endif
 
         void ConvertFunctionCall(CallExpr* ast);
 
