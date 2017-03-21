@@ -334,7 +334,10 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    Write(InsideStructDecl() ? ast->ident.Original() : ast->ident.Final());
+    if (auto staticMemberVar = ast->FetchStaticVarDeclRef())
+        Write(staticMemberVar->ident);
+    else
+        Write(InsideStructDecl() ? ast->ident.Original() : ast->ident.Final());
 
     Visit(ast->arrayDims);
 
@@ -551,6 +554,10 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         return;
     }
     #endif
+
+    /* Ignore declaration statement of static member variables */
+    if (ast->typeSpecifier->HasAnyStorageClassesOf({ StorageClass::Static }) && ast->FetchStructDeclRef() != nullptr)
+        return;
 
     BeginLn();
 

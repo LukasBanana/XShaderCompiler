@@ -79,6 +79,12 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( ObjectExpr        );
         DECL_VISIT_PROC( ArrayExpr         );
 
+        /* ----- Declarations ----- */
+
+        void AnalyzeVarDecl(VarDecl* varDecl);
+        void AnalyzeVarDeclLocal(VarDecl* varDecl);
+        void AnalyzeVarDeclStaticMember(VarDecl* varDecl);
+        
         /* ----- Call expressions ----- */
 
         void AnalyzeCallExpr(CallExpr* callExpr);

@@ -37,6 +37,8 @@ DECL_REPORT( InvalidOutputStream,               "invalid output stream"         
 DECL_REPORT( Implicitly,                        "implicitly"                                                                                                    );
 DECL_REPORT( ButGot,                            "[, but got {0}]"                                                                                               );
 DECL_REPORT( NotImplementedYet,                 "[{0} ]not implemented yet[ (in '{1}')]"                                                                        );
+DECL_REPORT( DeclaredAt,                        "declared at ({0})"                                                                                             );
+DECL_REPORT( PrevDefinitionAt,                  "previous definition at ({0})"                                                                                  );
 
 /* ----- Token ----- */
 
@@ -207,7 +209,6 @@ DECL_REPORT( UnknownPragma,                     "unknown pragma: \"{0}\""       
 DECL_REPORT( InvalidMacroIdentTokenArg,         "invalid argument for macro identifier token"                                                                   );
 DECL_REPORT( FailedToUndefMacro,                "failed to undefine macro \"{0}\""                                                                              );
 DECL_REPORT( MacroRedef,                        "redefinition of macro \"{0}\"[ {1}]"                                                                           );
-DECL_REPORT( PrevDefinitionAt,                  "previous definition at ({0})"                                                                                  );
 DECL_REPORT( WithMismatchInParamListAndBody,    "with mismatch in parameter list and body definition"                                                           );
 DECL_REPORT( WithMismatchInParamList,           "with mismatch in parameter list"                                                                               );
 DECL_REPORT( WithMismatchInBody,                "with mismatch in body definition"                                                                              );
@@ -422,6 +423,7 @@ DECL_REPORT( IllegalStaticAccessToNonType,      "illegal static access to non-ty
 DECL_REPORT( IllegalStaticIntrinsicCall,        "illegal static call to intrinsic[ '{0}']"                                                                      );
 DECL_REPORT( IllegalStaticFuncCall,             "illegal static call to function[ '{0}']"                                                                       );
 DECL_REPORT( IllegalNonStaticFuncCall,          "illegal call to static function[ '{0}']"                                                                       );
+DECL_REPORT( IllegalDefOfNonStaticMemberVar,    "illegal definition of non-static member variable[ '{0}']"                                                      );
 DECL_REPORT( DuplicateUseOfOutputSemantic,      "duplicate use of output semantic '{0}'"                                                                        );
 DECL_REPORT( UniformCantBeOutput,               "uniforms can not be defined as output"                                                                         );
 DECL_REPORT( TooManyArgsForAttribute,           "too many arguments for attribute[ '{0}'][ (expected {1}, but got {2})]"                                        );
@@ -437,6 +439,10 @@ DECL_REPORT( NumThreadsMustBeGreaterZero,       "number of threads must be great
 DECL_REPORT( SecondaryArrayDimMustBeExplicit,   "secondary array dimensions must be explicit"                                                                   );
 DECL_REPORT( StructsCantBeDefinedInParam,       "structures can not be defined in a parameter type[: '{0}']"                                                    );
 DECL_REPORT( StaticMembersCantBeDefinedInGlob,  "static members can only be defined in global scope[: '{0}']"                                                   );
+DECL_REPORT( StaticMemberVarRedef,              "redefinition of static member variable[ '{0}']"                                                                );
+DECL_REPORT( MemberVarsCantHaveDefaultValues,   "member variables can not have default values[: '{0}']"                                                         );
+DECL_REPORT( DeclTypeDiffersFromDefType,        "declaration type '{0}' differs from definition type '{1}'"                                                     );
+DECL_REPORT( ArrayTypeCanOnlyAppearInDef,       "array type can only appear in definition of static member variables[: '{0}']"                                  );
 
 /* ----- Xsc ----- */
 

@@ -398,6 +398,16 @@ TypeSpecifier* VarDecl::FetchTypeSpecifier() const
     return (declStmntRef != nullptr ? declStmntRef->typeSpecifier.get() : nullptr);
 }
 
+VarDecl* VarDecl::FetchStaticVarDeclRef() const
+{
+    return (namespaceExpr != nullptr ? staticMemberVarRef : nullptr);
+}
+
+VarDecl* VarDecl::FetchStaticVarDefRef() const
+{
+    return (namespaceExpr == nullptr ? staticMemberVarRef : nullptr);
+}
+
 bool VarDecl::IsStatic() const
 {
     if (auto typeSpecifier = FetchTypeSpecifier())
@@ -586,27 +596,39 @@ bool StructDecl::HasNonSystemValueMembers() const
     return false;
 }
 
-std::size_t StructDecl::NumMemberVariables() const
+std::size_t StructDecl::NumMemberVariables(bool onlyNonStaticMembers) const
 {
     std::size_t n = 0;
 
     if (baseStructRef)
-        n += baseStructRef->NumMemberVariables();
+        n += baseStructRef->NumMemberVariables(onlyNonStaticMembers);
 
     for (const auto& member : varMembers)
-        n += member->varDecls.size();
+    {
+        if (!onlyNonStaticMembers || !member->typeSpecifier->HasAnyStorageClassesOf({ StorageClass::Static }))
+            n += member->varDecls.size();
+    }
 
     return n;
 }
 
-std::size_t StructDecl::NumMemberFunctions() const
+std::size_t StructDecl::NumMemberFunctions(bool onlyNonStaticMembers) const
 {
     std::size_t n = 0;
 
     if (baseStructRef)
-        n += baseStructRef->NumMemberFunctions();
+        n += baseStructRef->NumMemberFunctions(onlyNonStaticMembers);
 
-    n += funcMembers.size();
+    if (onlyNonStaticMembers)
+    {
+        for (const auto& member : funcMembers)
+        {
+            if (!member->IsStatic())
+                ++n;
+        }
+    }
+    else
+        n += funcMembers.size();
 
     return n;
 }
@@ -1112,6 +1134,14 @@ void VarDeclStmnt::MakeImplicitConst()
         flags << VarDeclStmnt::isImplicitConst;
         typeSpecifier->isUniform = true;
     }
+}
+
+StructDecl* VarDeclStmnt::FetchStructDeclRef() const
+{
+    if (varDecls.empty())
+        return nullptr;
+    else
+        return varDecls.front()->structDeclRef;
 }
 
 

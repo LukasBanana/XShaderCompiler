@@ -140,36 +140,7 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    /* Analyze static namespace prefix */
-    if (ast->namespaceExpr)
-    {
-        if (InsideGlobalScope())
-            Visit(ast->namespaceExpr);
-        else
-            Error(R_StaticMembersCantBeDefinedInGlob(ast->ToString()), ast->namespaceExpr.get());
-    }
-
-    /* Register variable identifier in symbol table */
-    Register(ast->ident, ast);
-
-    /* Analyze array dimensions and semantic */
-    AnalyzeArrayDimensionList(ast->arrayDims);
-    AnalyzeSemantic(ast->semantic);
-
-    /* Store references to members with system value semantic (SV_...) in all parent structures */
-    if (ast->semantic.IsSystemValue())
-    {
-        for (auto structDecl : GetStructDeclStack())
-            structDecl->systemValuesRef[ast->ident] = ast;
-    }
-
-    if (ast->initializer)
-    {
-        Visit(ast->initializer);
-
-        /* Compare initializer type with var-decl type */
-        ValidateTypeCastFrom(ast->initializer.get(), ast, R_VarInitialization);
-    }
+    AnalyzeVarDecl(ast);
 }
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
@@ -610,6 +581,109 @@ IMPLEMENT_VISIT_PROC(ArrayExpr)
 }
 
 #undef IMPLEMENT_VISIT_PROC
+
+/* ----- Declarations ----- */
+
+void HLSLAnalyzer::AnalyzeVarDecl(VarDecl* varDecl)
+{
+    if (varDecl->namespaceExpr)
+        AnalyzeVarDeclStaticMember(varDecl);
+    else
+        AnalyzeVarDeclLocal(varDecl);
+}
+
+void HLSLAnalyzer::AnalyzeVarDeclLocal(VarDecl* varDecl)
+{
+    /* Register variable identifier in symbol table */
+    Register(varDecl->ident, varDecl);
+
+    /* Analyze array dimensions and semantic */
+    AnalyzeArrayDimensionList(varDecl->arrayDims);
+    AnalyzeSemantic(varDecl->semantic);
+
+    /* Store references to members with system value semantic (SV_...) in all parent structures */
+    if (varDecl->semantic.IsSystemValue())
+    {
+        for (auto structDecl : GetStructDeclStack())
+            structDecl->systemValuesRef[varDecl->ident] = varDecl;
+    }
+
+    if (varDecl->initializer)
+    {
+        Visit(varDecl->initializer);
+
+        /* Compare initializer type with var-decl type */
+        ValidateTypeCastFrom(varDecl->initializer.get(), varDecl, R_VarInitialization);
+
+        if (varDecl->structDeclRef)
+            Error(R_MemberVarsCantHaveDefaultValues(varDecl->ToString()), varDecl->initializer.get());
+    }
+}
+
+void HLSLAnalyzer::AnalyzeVarDeclStaticMember(VarDecl* varDecl)
+{
+    /* Analyze static namespace prefix */
+    if (InsideGlobalScope())
+        Visit(varDecl->namespaceExpr);
+    else
+        Error(R_StaticMembersCantBeDefinedInGlob(varDecl->ToString()), varDecl->namespaceExpr.get());
+
+    /* Analyze variable definition with static member declaration */
+    if (auto typeDen = GetTypeDenoterFrom(varDecl->namespaceExpr.get()))
+    {
+        if (auto structTypeDen = typeDen->GetAliased().As<StructTypeDenoter>())
+        {
+            /* Fetch variable declaration from structure type */
+            if (auto memberVarDecl = FetchFromStruct(*structTypeDen, varDecl->ident, varDecl))
+            {
+                /* Is this member variable already defined? */
+                if (auto prevVarDef = memberVarDecl->staticMemberVarRef)
+                {
+                    /* Report error of redefinition static member variable */
+                    ReportHandler::HintForNextReport(R_PrevDefinitionAt(prevVarDef->area.Pos().ToString()));
+                    Error(R_StaticMemberVarRedef(varDecl->ToString()), varDecl);
+                }
+                /* Is this member variable delcared as static? */
+                else if (!memberVarDecl->IsStatic())
+                {
+                    /* Report error of illegal defnition of a non-static member variable */
+                    ReportHandler::HintForNextReport(R_DeclaredAt(memberVarDecl->area.Pos().ToString()));
+                    Error(R_IllegalDefOfNonStaticMemberVar(varDecl->ToString()), varDecl);
+                }
+                else
+                {
+                    /* Validate declaration type match (without array types from the VarDecl array indices) */
+                    if (auto declVarType = GetTypeDenoterFrom(memberVarDecl->declStmntRef->typeSpecifier.get()))
+                    {
+                        if (auto defVarType = GetTypeDenoterFrom(varDecl->declStmntRef->typeSpecifier.get()))
+                        {
+                            if (!declVarType->Equals(*defVarType))
+                            {
+                                /* Report error of type mismatch */
+                                ReportHandler::HintForNextReport(R_DeclaredAt(memberVarDecl->area.Pos().ToString()));
+                                Error(R_DeclTypeDiffersFromDefType(declVarType->ToString(), defVarType->ToString()), varDecl);
+                            }
+                            else if (!memberVarDecl->arrayDims.empty())
+                            {
+                                /* Report error (HLSL does not allow array declaration for static member varaibles, but in there definition) */
+                                Error(R_ArrayTypeCanOnlyAppearInDef(memberVarDecl->ToString()), memberVarDecl);
+                            }
+                            else
+                            {
+                                /* Decorate variable declaration with its definition */
+                                memberVarDecl->staticMemberVarRef = varDecl;
+                                varDecl->staticMemberVarRef = memberVarDecl;
+
+                                /* Copy array type from definition to declaration */
+                                memberVarDecl->arrayDims = varDecl->arrayDims;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 /* ----- Call expressions ----- */
 

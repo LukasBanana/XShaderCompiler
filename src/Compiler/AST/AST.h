@@ -499,6 +499,12 @@ struct VarDecl : public Decl
     // Returns the type specifier of the declaration statemnt reference (if set).
     TypeSpecifier* FetchTypeSpecifier() const override;
 
+    // Returns the reference to the static member variable declaration, or null if there is no such declaration (see staticMemberVarRef).
+    VarDecl* FetchStaticVarDeclRef() const;
+
+    // Returns the reference to the static member variable definition, or null if there is no such definition (see staticMemberVarRef).
+    VarDecl* FetchStaticVarDefRef() const;
+
     // Returns true if the variable is declared as static.
     bool IsStatic() const;
 
@@ -509,9 +515,10 @@ struct VarDecl : public Decl
     std::vector<VarDeclStmntPtr>    annotations;                // Annotations can be ignored by analyzers and generators.
     ExprPtr                         initializer;
 
-    VarDeclStmnt*                   declStmntRef    = nullptr;  // Reference to its declaration statement (parent node); may be null
-    UniformBufferDecl*              bufferDeclRef   = nullptr;  // Uniform buffer declaration reference for DAST (optional parent-parent-node); may be null
-    StructDecl*                     structDeclRef   = nullptr;  // Structure declaration reference for DAST (optional parent-parent-node); may be null
+    VarDeclStmnt*                   declStmntRef        = nullptr;  // Reference to its declaration statement (parent node); may be null
+    UniformBufferDecl*              bufferDeclRef       = nullptr;  // Reference to its uniform buffer declaration (optional parent-parent-node); may be null
+    StructDecl*                     structDeclRef       = nullptr;  // Reference to its owner structure declaration (optional parent-parent-node); may be null
+    VarDecl*                        staticMemberVarRef  = nullptr;  // Bi-directional reference to its static variable declaration or definition; may be null
 };
 
 // Buffer declaration.
@@ -595,10 +602,10 @@ struct StructDecl : public Decl
     bool HasNonSystemValueMembers() const;
 
     // Returns the total number of member variables (including all base structures).
-    std::size_t NumMemberVariables() const;
+    std::size_t NumMemberVariables(bool onlyNonStaticMembers = false) const;
 
     // Returns the total number of member functions (including all base structures).
-    std::size_t NumMemberFunctions() const;
+    std::size_t NumMemberFunctions(bool onlyNonStaticMembers = false) const;
 
     // Returns a list with the type denoters of all members (including all base structures).
     void CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens) const;
@@ -823,6 +830,9 @@ struct VarDeclStmnt : public Stmnt
 
     // Makes this var-decl statement implicitly constant, iff not explicitly declared as constant (see 'isUniform' and 'isImplicitlyConst').
     void MakeImplicitConst();
+
+    // Returns the reference to the owner structure from the first variable entry, or null if there is no such owner structure.
+    StructDecl* FetchStructDeclRef() const;
 
     TypeSpecifierPtr        typeSpecifier;
     std::vector<VarDeclPtr> varDecls;
