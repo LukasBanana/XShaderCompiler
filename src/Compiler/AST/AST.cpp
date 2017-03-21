@@ -1330,20 +1330,26 @@ TypeDenoterPtr BinaryExpr::DeriveTypeDenoter()
     }
 
     /* Find common type denoter of left and right sub expressions */
-    auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(lhsTypeDen, rhsTypeDen);
-
-    if (IsBooleanOp(op))
+    if (auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(lhsTypeDen, rhsTypeDen))
     {
-        if (auto baseTypeDen = commonTypeDen->As<BaseTypeDenoter>())
+        if (!lhsTypeDen->IsBase() || !rhsTypeDen->IsBase())
+            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), commonTypeDen->ToString()), this);
+
+        if (IsBooleanOp(op))
         {
-            auto vecBoolType = VectorDataType(DataType::Bool, VectorTypeDim(baseTypeDen->dataType));
-            return std::make_shared<BaseTypeDenoter>(vecBoolType);
+            if (auto baseTypeDen = commonTypeDen->As<BaseTypeDenoter>())
+            {
+                auto vecBoolType = VectorDataType(DataType::Bool, VectorTypeDim(baseTypeDen->dataType));
+                return std::make_shared<BaseTypeDenoter>(vecBoolType);
+            }
+            else
+                return std::make_shared<BaseTypeDenoter>(DataType::Bool);
         }
         else
-            return std::make_shared<BaseTypeDenoter>(DataType::Bool);
+            return commonTypeDen;
     }
-    else
-        return commonTypeDen;
+
+    return nullptr;
 }
 
 

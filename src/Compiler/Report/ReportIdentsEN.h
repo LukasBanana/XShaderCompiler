@@ -113,6 +113,7 @@ DECL_REPORT( FuncDoesntTake1Param,              "function '{0}' does not take {1
 DECL_REPORT( FuncDoesntTakeNParams,             "function '{0}' does not take {1} parameters"                                                                   );
 DECL_REPORT( TernaryExpr,                       "ternary expression"                                                                                            );
 DECL_REPORT( BinaryExpr,                        "binary expression '{0}'"                                                                                       );
+DECL_REPORT( OnlyBaseTypeAllowed,               "only scalar, vector, and matrix type allowed[ in {0}][, but got '{1}']"                                        );
 DECL_REPORT( CastExpr,                          "cast expression"                                                                                               );
 DECL_REPORT( InitializerExpr,                   "initializer expression"                                                                                        );
 DECL_REPORT( ConditionOfTernaryExpr,            "condition of ternary expression"                                                                               );

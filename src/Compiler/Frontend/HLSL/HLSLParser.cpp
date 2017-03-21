@@ -1568,6 +1568,9 @@ ObjectExprPtr HLSLParser::ParseObjectExpr(const ExprPtr& expr)
 
     auto ast = Make<ObjectExpr>();
 
+    if (expr)
+        ast->area = expr->area;
+
     /* Take sub expression and parse identifier */
     ast->prefixExpr = expr;
     ast->isStatic   = isStatic;
