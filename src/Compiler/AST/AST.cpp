@@ -57,10 +57,10 @@ void Stmnt::CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) 
 
 /* ----- TypedAST ----- */
 
-const TypeDenoterPtr& TypedAST::GetTypeDenoter()
+const TypeDenoterPtr& TypedAST::GetTypeDenoter(const TypeDenoter* expectedTypeDenoter)
 {
-    if (!bufferedTypeDenoter_)
-        bufferedTypeDenoter_ = DeriveTypeDenoter();
+    if (!bufferedTypeDenoter_ || expectedTypeDenoter)
+        bufferedTypeDenoter_ = DeriveTypeDenoter(expectedTypeDenoter);
     return bufferedTypeDenoter_;
 }
 
@@ -228,7 +228,7 @@ std::string ArrayDimension::ToString() const
     return s;
 }
 
-TypeDenoterPtr ArrayDimension::DeriveTypeDenoter()
+TypeDenoterPtr ArrayDimension::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     return expr->GetTypeDenoter();
 }
@@ -281,7 +281,7 @@ std::string TypeSpecifier::ToString() const
     return s;
 }
 
-TypeDenoterPtr TypeSpecifier::DeriveTypeDenoter()
+TypeDenoterPtr TypeSpecifier::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     return typeDenoter;
 }
@@ -383,7 +383,7 @@ std::string VarDecl::ToString() const
     return s;
 }
 
-TypeDenoterPtr VarDecl::DeriveTypeDenoter()
+TypeDenoterPtr VarDecl::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     if (declStmntRef)
     {
@@ -419,7 +419,7 @@ bool VarDecl::IsStatic() const
 
 /* ----- BufferDecl ----- */
 
-TypeDenoterPtr BufferDecl::DeriveTypeDenoter()
+TypeDenoterPtr BufferDecl::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     return std::make_shared<BufferTypeDenoter>(this)->AsArray(arrayDims);
 }
@@ -432,7 +432,7 @@ BufferType BufferDecl::GetBufferType() const
 
 /* ----- SamplerDecl ----- */
 
-TypeDenoterPtr SamplerDecl::DeriveTypeDenoter()
+TypeDenoterPtr SamplerDecl::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     return std::make_shared<SamplerTypeDenoter>(this)->AsArray(arrayDims);
 }
@@ -571,7 +571,7 @@ std::string StructDecl::FetchSimilar(const std::string& ident)
     return "";
 }
 
-TypeDenoterPtr StructDecl::DeriveTypeDenoter()
+TypeDenoterPtr StructDecl::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     return std::make_shared<StructTypeDenoter>(this);
 }
@@ -695,7 +695,7 @@ bool StructDecl::IsBaseOf(const StructDecl& subStructDecl) const
 
 /* ----- AliasDecl ----- */
 
-TypeDenoterPtr AliasDecl::DeriveTypeDenoter()
+TypeDenoterPtr AliasDecl::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     return typeDenoter;
 }
@@ -1147,7 +1147,7 @@ StructDecl* VarDeclStmnt::FetchStructDeclRef() const
 
 /* ----- NullExpr ----- */
 
-TypeDenoterPtr NullExpr::DeriveTypeDenoter()
+TypeDenoterPtr NullExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     /*
     Return 'int' as type, because null expressions are only
@@ -1159,7 +1159,7 @@ TypeDenoterPtr NullExpr::DeriveTypeDenoter()
 
 /* ----- ListExpr ----- */
 
-TypeDenoterPtr ListExpr::DeriveTypeDenoter()
+TypeDenoterPtr ListExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     /* Only return type denoter of first sub expression */
     return firstExpr->GetTypeDenoter();
@@ -1168,7 +1168,7 @@ TypeDenoterPtr ListExpr::DeriveTypeDenoter()
 
 /* ----- LiteralExpr ----- */
 
-TypeDenoterPtr LiteralExpr::DeriveTypeDenoter()
+TypeDenoterPtr LiteralExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     if (IsNull())
         return std::make_shared<NullTypeDenoter>();
@@ -1240,7 +1240,7 @@ bool LiteralExpr::IsSpaceRequiredForSubscript() const
 
 /* ----- TypeSpecifierExpr ----- */
 
-TypeDenoterPtr TypeSpecifierExpr::DeriveTypeDenoter()
+TypeDenoterPtr TypeSpecifierExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     return typeSpecifier->GetTypeDenoter();
 }
@@ -1248,7 +1248,7 @@ TypeDenoterPtr TypeSpecifierExpr::DeriveTypeDenoter()
 
 /* ----- TernaryExpr ----- */
 
-TypeDenoterPtr TernaryExpr::DeriveTypeDenoter()
+TypeDenoterPtr TernaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     /* Check if conditional expression is compatible to a boolean */
     const auto& condTypeDen = condExpr->GetTypeDenoter();
@@ -1315,7 +1315,7 @@ bool TernaryExpr::IsVectorCondition() const
 
 /* ----- BinaryExpr ----- */
 
-TypeDenoterPtr BinaryExpr::DeriveTypeDenoter()
+TypeDenoterPtr BinaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     /* Return type of left-hand-side sub expresion if the types are compatible */
     const auto& lhsTypeDen = lhsExpr->GetTypeDenoter();
@@ -1355,7 +1355,7 @@ TypeDenoterPtr BinaryExpr::DeriveTypeDenoter()
 
 /* ----- UnaryExpr ----- */
 
-TypeDenoterPtr UnaryExpr::DeriveTypeDenoter()
+TypeDenoterPtr UnaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     const auto& typeDen = expr->GetTypeDenoter();
 
@@ -1368,7 +1368,7 @@ TypeDenoterPtr UnaryExpr::DeriveTypeDenoter()
 
 /* ----- PostUnaryExpr ----- */
 
-TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter()
+TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     return expr->GetTypeDenoter();
 }
@@ -1376,7 +1376,7 @@ TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter()
 
 /* ----- CallExpr ----- */
 
-TypeDenoterPtr CallExpr::DeriveTypeDenoter()
+TypeDenoterPtr CallExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     if (funcDeclRef)
     {
@@ -1506,7 +1506,7 @@ void CallExpr::PushArgumentFront(ExprPtr&& expr)
 
 /* ----- BracketExpr ----- */
 
-TypeDenoterPtr BracketExpr::DeriveTypeDenoter()
+TypeDenoterPtr BracketExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     return expr->GetTypeDenoter();
 }
@@ -1539,7 +1539,7 @@ IndexedSemantic BracketExpr::FetchSemantic() const
 
 /* ----- AssignExpr ----- */
 
-TypeDenoterPtr AssignExpr::DeriveTypeDenoter()
+TypeDenoterPtr AssignExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     return lvalueExpr->GetTypeDenoter();
 }
@@ -1557,7 +1557,7 @@ const ObjectExpr* AssignExpr::FetchTypeObjectExpr() const
 
 /* ----- ObjectExpr ----- */
 
-TypeDenoterPtr ObjectExpr::DeriveTypeDenoter()
+TypeDenoterPtr ObjectExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     return GetExplicitTypeDenoter();
 }
@@ -1693,7 +1693,7 @@ VarDecl* ObjectExpr::FetchVarDecl() const
 
 /* ----- ArrayExpr ----- */
 
-TypeDenoterPtr ArrayExpr::DeriveTypeDenoter()
+TypeDenoterPtr ArrayExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     try
     {
@@ -1718,7 +1718,7 @@ std::size_t ArrayExpr::NumIndices() const
 
 /* ----- CastExpr ----- */
 
-TypeDenoterPtr CastExpr::DeriveTypeDenoter()
+TypeDenoterPtr CastExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     const auto& castTypeDen = typeSpecifier->GetTypeDenoter();
     const auto& valueTypeDen = expr->GetTypeDenoter();
@@ -1742,7 +1742,15 @@ This function derives the type denoter of the initializer by getting the type de
 If a sub-expression is again an array type denoter, its array dimensions are inserted into the
 final return type denoter (see 'ArrayTypeDenoter::InsertSubArray' function)
 */
-TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
+TypeDenoterPtr InitializerExpr::DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter)
+{
+    if (expectedTypeDenoter)
+        return DeriveTypeDenoterAs(*expectedTypeDenoter);
+    else
+        return DeriveTypeDenoterAsArray();
+}
+
+TypeDenoterPtr InitializerExpr::DeriveTypeDenoterAsArray()
 {
     if (exprs.empty())
         RuntimeErr(R_CantDeriveTypeOfEmptyInitializer, this);
@@ -1817,6 +1825,24 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter()
     }
 
     return finalTypeDen;
+}
+
+TypeDenoterPtr InitializerExpr::DeriveTypeDenoterAs(const TypeDenoter& expectedTypeDenoter)
+{
+    #if 0
+
+    const auto& typeDen = expectedTypeDenoter.GetAliased();
+    if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
+    {
+        //TODO: derive type correctly
+    }
+    return DeriveTypeDenoterAsArray();
+
+    #else
+
+    return expectedTypeDenoter.Copy();
+
+    #endif
 }
 
 unsigned int InitializerExpr::NumElements() const

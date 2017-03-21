@@ -449,14 +449,14 @@ void Analyzer::AnalyzeFunctionControlPath(FunctionDecl& funcDecl)
     pathAnalyzer.MarkControlPathsFromFunction(funcDecl);
 }
 
-TypeDenoterPtr Analyzer::GetTypeDenoterFrom(TypedAST* ast)
+TypeDenoterPtr Analyzer::GetTypeDenoterFrom(TypedAST* ast, const TypeDenoter* expectedTypeDenoter)
 {
     if (ast)
     {
         try
         {
             /* Validate and return type denoter of typed AST */
-            return ast->GetTypeDenoter();
+            return ast->GetTypeDenoter(expectedTypeDenoter);
         }
         catch (const ASTRuntimeError& e)
         {
@@ -480,10 +480,15 @@ void Analyzer::ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDeno
 
 void Analyzer::ValidateTypeCastFrom(TypedAST* sourceAST, TypedAST* destAST, const std::string& contextDesc)
 {
-    if (auto sourceTypeDen = GetTypeDenoterFrom(sourceAST))
+    /* Get destination type */
+    if (auto destTypeDen = GetTypeDenoterFrom(destAST))
     {
-        if (auto destTypeDen = GetTypeDenoterFrom(destAST))
+        /* Get source type with the expected destination type */
+        if (auto sourceTypeDen = GetTypeDenoterFrom(sourceAST, destTypeDen.get()))
+        {
+            /* Validate type cast from source to destination type */
             ValidateTypeCast(*sourceTypeDen, *destTypeDen, contextDesc, sourceAST);
+        }
     }
 }
 

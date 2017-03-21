@@ -191,15 +191,15 @@ struct TypedAST : public AST
 
     public:
 
-        // Returns a type denoter for AST or throws an std::runtime_error if a type denoter can not be derived.
-        const TypeDenoterPtr& GetTypeDenoter();
+        // Returns a type denoter for this AST node or throws an std::runtime_error if a type denoter can not be derived.
+        const TypeDenoterPtr& GetTypeDenoter(const TypeDenoter* expectedTypeDenoter = nullptr);
 
         // Resets the buffered type denoter.
         void ResetTypeDenoter();
 
     protected:
 
-        virtual TypeDenoterPtr DeriveTypeDenoter() = 0;
+        virtual TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) = 0;
 
     private:
     
@@ -408,7 +408,7 @@ struct ArrayDimension : public TypedAST
 
     std::string ToString() const;
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     // Returns true if this array dimension has a dynamic size (i.e. size == 0).
     bool HasDynamicSize() const;
@@ -431,7 +431,7 @@ struct TypeSpecifier : public TypedAST
     // Returns the name of this type and all modifiers.
     std::string ToString() const;
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     // Returns the StructDecl reference of this type denoter or null if there is no such reference.
     StructDecl* GetStructDeclRef();
@@ -494,7 +494,7 @@ struct VarDecl : public Decl
     std::string ToString() const override;
 
     // Returns a type denoter for this variable declaration or throws an std::runtime_error if the type can not be derived.
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     // Returns the type specifier of the declaration statemnt reference (if set).
     TypeSpecifier* FetchTypeSpecifier() const override;
@@ -526,7 +526,7 @@ struct BufferDecl : public Decl
 {
     AST_INTERFACE(BufferDecl);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     // Returns the buffer type of the parent's node type denoter.
     BufferType GetBufferType() const;
@@ -542,7 +542,7 @@ struct SamplerDecl : public Decl
 {
     AST_INTERFACE(SamplerDecl);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     // Returns the sampler type of the parent's node type denoter.
     SamplerType GetSamplerType() const;
@@ -596,7 +596,7 @@ struct StructDecl : public Decl
     std::string FetchSimilar(const std::string& ident);
 
     // Returns a type denoter for this structure.
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     // Returns true if this structure has at least one member that is not a system value.
     bool HasNonSystemValueMembers() const;
@@ -638,7 +638,7 @@ struct AliasDecl : public Decl
 {
     AST_INTERFACE(AliasDecl);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     TypeDenoterPtr  typeDenoter;            // Type denoter of the aliased type
 
@@ -955,7 +955,7 @@ struct NullExpr : public Expr
 {
     AST_INTERFACE(NullExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 };
 
 // List expression ( expr ',' expr ).
@@ -963,7 +963,7 @@ struct ListExpr : public Expr
 {
     AST_INTERFACE(ListExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     ExprPtr firstExpr;
     ExprPtr nextExpr;
@@ -974,7 +974,7 @@ struct LiteralExpr : public Expr
 {
     AST_INTERFACE(LiteralExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     // Converts the data type of this literal expr, resets the buffered type denoter (see ResetTypeDenoter), and modifies the value string.
     void ConvertDataType(const DataType type);
@@ -997,7 +997,7 @@ struct TypeSpecifierExpr : public Expr
 {
     AST_INTERFACE(TypeSpecifierExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     TypeSpecifierPtr typeSpecifier;
 };
@@ -1007,7 +1007,7 @@ struct TernaryExpr : public Expr
 {
     AST_INTERFACE(TernaryExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     // Returns true if the conditional expression is a vector type.
     bool IsVectorCondition() const;
@@ -1022,7 +1022,7 @@ struct BinaryExpr : public Expr
 {
     AST_INTERFACE(BinaryExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     ExprPtr     lhsExpr;                        // Left-hand-side expression
     BinaryOp    op      = BinaryOp::Undefined;  // Binary operator
@@ -1034,7 +1034,7 @@ struct UnaryExpr : public Expr
 {
     AST_INTERFACE(UnaryExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     UnaryOp op      = UnaryOp::Undefined;
     ExprPtr expr;
@@ -1045,7 +1045,7 @@ struct PostUnaryExpr : public Expr
 {
     AST_INTERFACE(PostUnaryExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     ExprPtr expr;
     UnaryOp op      = UnaryOp::Undefined;
@@ -1063,7 +1063,7 @@ struct CallExpr : public Expr
         FLAG( canInlineIntrinsicWrapper, 0 ),
     };
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     IndexedSemantic FetchSemantic() const override;
 
@@ -1101,7 +1101,7 @@ struct BracketExpr : public Expr
 {
     AST_INTERFACE(BracketExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     const ObjectExpr* FetchLValueExpr() const override;
     const ObjectExpr* FetchTypeObjectExpr() const override;
@@ -1119,7 +1119,7 @@ struct AssignExpr : public Expr
 {
     AST_INTERFACE(AssignExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     const ObjectExpr* FetchLValueExpr() const override;
     const ObjectExpr* FetchTypeObjectExpr() const override;
@@ -1139,7 +1139,7 @@ struct ObjectExpr : public Expr
         FLAG( isImmutable, 0 ), // This object identifier must be written out as it is.
     };
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     const ObjectExpr* FetchLValueExpr() const override;
     const ObjectExpr* FetchTypeObjectExpr() const override;
@@ -1182,7 +1182,7 @@ struct ArrayExpr : public Expr
 {
     AST_INTERFACE(ArrayExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     const ObjectExpr* FetchLValueExpr() const override;
 
@@ -1198,7 +1198,7 @@ struct CastExpr : public Expr
 {
     AST_INTERFACE(CastExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     TypeSpecifierPtr    typeSpecifier;  // Cast type name expression
     ExprPtr             expr;           // Value expression
@@ -1209,7 +1209,10 @@ struct InitializerExpr : public Expr
 {
     AST_INTERFACE(InitializerExpr);
 
-    TypeDenoterPtr DeriveTypeDenoter() override;
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
+
+    TypeDenoterPtr DeriveTypeDenoterAsArray();
+    TypeDenoterPtr DeriveTypeDenoterAs(const TypeDenoter& expectedTypeDenoter);
 
     // Returns the number of scalar elements (with recursion).
     unsigned int NumElements() const;

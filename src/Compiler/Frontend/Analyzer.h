@@ -128,7 +128,7 @@ class Analyzer : protected Visitor
         void AnalyzeFunctionEndOfScopes(FunctionDecl& funcDecl);
         void AnalyzeFunctionControlPath(FunctionDecl& funcDecl);
 
-        TypeDenoterPtr GetTypeDenoterFrom(TypedAST* ast);
+        TypeDenoterPtr GetTypeDenoterFrom(TypedAST* ast, const TypeDenoter* expectedTypeDenoter = nullptr);
 
         void ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, const std::string& contextDesc, const AST* ast = nullptr);
         void ValidateTypeCastFrom(TypedAST* sourceAST, TypedAST* destAST, const std::string& contextDesc);
