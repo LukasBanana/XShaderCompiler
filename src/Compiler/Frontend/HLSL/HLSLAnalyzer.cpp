@@ -1042,8 +1042,9 @@ void HLSLAnalyzer::AnalyzeArrayExpr(ArrayExpr* expr)
 {
     try
     {
-        /* Visit prefix expression first */
+        /* Visit prefix and array index expressions */
         Visit(expr->prefixExpr.get());
+        Visit(expr->arrayIndices);
 
         /* Just query the type denoter for the array access expression */
         expr->GetTypeDenoter();
