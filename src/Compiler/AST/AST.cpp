@@ -1834,8 +1834,8 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoterAs(const TypeDenoter& expectedT
     {
         /* Compare number of elements with size of base type */
         const auto matrixDim        = MatrixTypeDim(baseTypeDen->dataType);
-        const auto numTypeElements  = (matrixDim.first * matrixDim.second);
-        const auto numListElements  = NumElements();
+        const auto numTypeElements  = static_cast<std::size_t>(matrixDim.first * matrixDim.second);
+        const auto numListElements  = static_cast<std::size_t>(NumElements());
 
         /* Unroll elements for base types */
         if (numListElements == numTypeElements)
