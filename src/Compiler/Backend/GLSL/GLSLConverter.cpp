@@ -207,6 +207,17 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
+    /* Rename static member variables */
+    if (ast->IsStatic())
+    {
+        if (auto structDecl = ast->structDeclRef)
+        {
+            /* Rename function to "{TempPrefix}{StructName}_{VarName}" */
+            ast->ident = structDecl->ident + "_" + ast->ident;
+            ast->ident.AppendPrefix(nameMangling_.namespacePrefix);
+        }
+    }
+
     RegisterDeclIdent(ast);
     VISIT_DEFAULT(VarDecl);
 }
@@ -259,15 +270,6 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     }
     CloseScope();
     PopFunctionDecl();
-}
-
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
-{
-    //TODO: move this to "TypeSpecifier" !!!
-    /* Remove 'static' storage class (reserved word in GLSL) */
-    ast->typeSpecifier->storageClasses.erase(StorageClass::Static);
-
-    VISIT_DEFAULT(VarDeclStmnt);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)

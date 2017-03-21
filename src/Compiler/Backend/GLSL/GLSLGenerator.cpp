@@ -1906,10 +1906,14 @@ void GLSLGenerator::WriteStorageClasses(const std::set<StorageClass>& storageCla
 {
     for (auto storage : storageClasses)
     {
-        if (auto keyword = StorageClassToGLSLKeyword(storage))
-            Write(*keyword + " ");
-        else
-            Warning(R_NotAllStorageClassesMappedToGLSL, ast);
+        /* Ignore static storage class (reserved word in GLSL) */
+        if (storage != StorageClass::Static)
+        {
+            if (auto keyword = StorageClassToGLSLKeyword(storage))
+                Write(*keyword + " ");
+            else
+                Warning(R_NotAllStorageClassesMappedToGLSL, ast);
+        }
     }
 }
 

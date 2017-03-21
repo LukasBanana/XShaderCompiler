@@ -398,6 +398,14 @@ TypeSpecifier* VarDecl::FetchTypeSpecifier() const
     return (declStmntRef != nullptr ? declStmntRef->typeSpecifier.get() : nullptr);
 }
 
+bool VarDecl::IsStatic() const
+{
+    if (auto typeSpecifier = FetchTypeSpecifier())
+        return typeSpecifier->HasAnyStorageClassesOf({ StorageClass::Static });
+    else
+        return false;
+}
+
 
 /* ----- BufferDecl ----- */
 

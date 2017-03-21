@@ -499,6 +499,9 @@ struct VarDecl : public Decl
     // Returns the type specifier of the declaration statemnt reference (if set).
     TypeSpecifier* FetchTypeSpecifier() const override;
 
+    // Returns true if the variable is declared as static.
+    bool IsStatic() const;
+
     ObjectExprPtr                   namespaceExpr;              // Optional namespace expression; may be null
     std::vector<ArrayDimensionPtr>  arrayDims;
     IndexedSemantic                 semantic;
