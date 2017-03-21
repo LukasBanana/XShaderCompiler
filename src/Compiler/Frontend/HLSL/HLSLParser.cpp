@@ -569,17 +569,9 @@ VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& 
     ast->declStmntRef = declStmntRef;
 
     /* Parse variable declaration */
-    if (identTkn)
-    {
-        ast->ident = identTkn->Spell();
-        ast->area = identTkn->Area();
-    }
-    else
-    {
-        ast->ident = ParseIdent();
-        ast->area.Update(ast->ident);
-    }
+    ast->ident = ParseIdentWithNamespaceOpt(ast->namespaceExpr, identTkn, &ast->area);
 
+    /* Parse optional array dimension, semantic, and annocations */
     ast->arrayDims = ParseArrayDimensionList(true);
 
     ParseVarDeclSemantic(*ast);
@@ -1939,7 +1931,7 @@ std::vector<AliasDeclPtr> HLSLParser::ParseAliasDeclList(TypeDenoterPtr typeDeno
 
 /* --- Others --- */
 
-std::string HLSLParser::ParseIdent(TokenPtr identTkn)
+std::string HLSLParser::ParseIdent(TokenPtr identTkn, SourceArea* area)
 {
     /* Parse identifier */
     if (!identTkn)
@@ -1947,9 +1939,43 @@ std::string HLSLParser::ParseIdent(TokenPtr identTkn)
 
     auto ident = identTkn->Spell();
 
+    /* Return source area of identifier */
+    if (area)
+        *area = identTkn->Area();
+
     /* Check overlapping of reserved prefixes for name mangling */
     if (auto prefix = FindNameManglingPrefix(ident))
         Error(R_IdentNameManglingConflict(ident, *prefix), identTkn.get(), false);
+
+    return ident;
+}
+
+std::string HLSLParser::ParseIdentWithNamespaceOpt(ObjectExprPtr& namespaceExpr, TokenPtr identTkn, SourceArea* area)
+{
+    /* Parse first identifier */
+    SourceArea identArea;
+    auto ident = ParseIdent(identTkn, &identArea);
+
+    /* Check if the current identifier is a static namespace */
+    if (Is(Tokens::DColon))
+    {
+        AcceptIt();
+        
+        /* Take first identifier as namespace prefix */
+        namespaceExpr           = Make<ObjectExpr>();
+        namespaceExpr->ident    = ident;
+        namespaceExpr->area     = identArea;
+
+        /* Parse next identifier */
+        ObjectExprPtr subObjectExpr;
+        ident = ParseIdentWithNamespaceOpt(subObjectExpr, nullptr, area);
+        namespaceExpr->prefixExpr = subObjectExpr;
+
+        return ident;
+    }
+
+    /* Return identifier and its source area */
+    *area = identArea;
 
     return ident;
 }

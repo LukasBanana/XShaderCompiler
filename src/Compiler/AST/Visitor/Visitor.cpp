@@ -73,6 +73,7 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
+    Visit(ast->namespaceExpr);
     Visit(ast->arrayDims);
     Visit(ast->packOffset);
     Visit(ast->annotations);

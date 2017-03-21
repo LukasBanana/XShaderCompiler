@@ -184,7 +184,8 @@ class HLSLParser : public Parser
         std::vector<SamplerValuePtr>    ParseSamplerValueList();
         std::vector<AliasDeclPtr>       ParseAliasDeclList(TypeDenoterPtr typeDenoter);
 
-        std::string                     ParseIdent(TokenPtr identTkn = nullptr);
+        std::string                     ParseIdent(TokenPtr identTkn = nullptr, SourceArea* area = nullptr);
+        std::string                     ParseIdentWithNamespaceOpt(ObjectExprPtr& namespaceExpr, TokenPtr identTkn = nullptr, SourceArea* area = nullptr);
 
         TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true, StructDeclPtr* structDecl = nullptr);
         TypeDenoterPtr                  ParseTypeDenoterPrimary(StructDeclPtr* structDecl = nullptr);

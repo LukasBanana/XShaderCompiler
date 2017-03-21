@@ -499,6 +499,7 @@ struct VarDecl : public Decl
     // Returns the type specifier of the declaration statemnt reference (if set).
     TypeSpecifier* FetchTypeSpecifier() const override;
 
+    ObjectExprPtr                   namespaceExpr;              // Optional namespace expression; may be null
     std::vector<ArrayDimensionPtr>  arrayDims;
     IndexedSemantic                 semantic;
     PackOffsetPtr                   packOffset;

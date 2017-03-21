@@ -140,6 +140,8 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
+    Visit(ast->namespaceExpr);
+
     Register(ast->ident, ast);
 
     AnalyzeArrayDimensionList(ast->arrayDims);
