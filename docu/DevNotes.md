@@ -301,9 +301,9 @@ Transforming System Value Semantics
 -----------------------------------
 
 Especially for geometry shaders a system value semantic must be transformed from an array expression like this:
-* `input[0].position` to `gl_in[0].gl_Position`
-* `output[0].position` to `gl_Position`
-* `output[0].normal` to `xsv_NORMAL0[0]`
+* `output[0].position` to `gl_Position` (for geometry shader output)
+* `input[0].position` to `gl_in[0].gl_Position` (for geometry shader input)
+* `input[0].normal` to `xsv_NORMAL[0]` (for geometry shader input)
 
 This transformation is currently implemented in the `GLSLGenerator` instead of the `GLSLConverter`.
 
