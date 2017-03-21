@@ -57,6 +57,9 @@ class GLSLGenerator : public Generator
         // Returns true if there is a wrapper function for the specified intrinsic (e.g. "clip" intrinsic).
         bool IsWrappedIntrinsic(const Intrinsic intrinsic) const;
 
+        // Returns true if the output shader language is GLSL (for OpenGL 2+).
+        bool IsGLSL() const;
+
         // Returns true if the output shader language is ESSL (for OpenGL ES 2+).
         bool IsESSL() const;
 

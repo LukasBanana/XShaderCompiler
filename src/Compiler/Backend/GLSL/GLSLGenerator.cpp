@@ -148,6 +148,11 @@ bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
     return (wrappedIntrinsics.find(intrinsic) != wrappedIntrinsics.end());
 }
 
+bool GLSLGenerator::IsGLSL() const
+{
+    return IsLanguageGLSL(versionOut_);
+}
+
 bool GLSLGenerator::IsESSL() const
 {
     return IsLanguageESSL(versionOut_);
@@ -1945,9 +1950,16 @@ void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifie
             WriteLayout("row_major");
     }
 
-    /* Write const type modifier */
     if (typeModifiers.find(TypeModifier::Const) != typeModifiers.end())
-        Write("const ");
+    {
+        /*
+        Write const type modifier, but only if GLSL version is at leat 420,
+        because GLSL does only support const expression initializers for constant objects.
+        see https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Constant_qualifier
+        */
+        if ( ( IsGLSL() && versionOut_ >= OutputShaderVersion::GLSL420 ) || IsVKSL() )
+            Write("const ");
+    }
 }
 
 void GLSLGenerator::WriteTypeModifiersFrom(const TypeSpecifierPtr& typeSpecifier)
