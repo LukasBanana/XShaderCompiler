@@ -354,9 +354,17 @@ std::string VarDecl::ToString() const
 {
     std::string s;
 
+    /* Append static namespace */
+    if (namespaceExpr)
+    {
+        s += namespaceExpr->ToStringAsNamespace();
+        s += "::";
+    }
+
+    /* Append variable identifier */
     s += ident.Original();
 
-    //for (std::size_t i = 0; i < arrayDims.size(); ++i)
+    /* Append array dimensions */
     for (const auto& dim : arrayDims)
     {
         s += '[';
@@ -365,19 +373,12 @@ std::string VarDecl::ToString() const
         s += ']';
     }
 
+    /* Append semantic */
     if (semantic != Semantic::Undefined)
     {
         s += " : ";
         s += semantic.ToString();
     }
-
-    /*if (initializer)
-    {
-        s += " = ";
-        //TODO: see above
-        s += "???";
-        //s += initializer->ToString();
-    }*/
 
     return s;
 }
@@ -1620,6 +1621,24 @@ BaseTypeDenoterPtr ObjectExpr::GetTypeDenoterFromSubscript() const
         }
     }
     RuntimeErr(R_InvalidSubscriptBaseType, this);
+}
+
+std::string ObjectExpr::ToStringAsNamespace() const
+{
+    std::string s;
+
+    if (prefixExpr)
+    {
+        if (auto subObjectExpr = prefixExpr->As<ObjectExpr>())
+        {
+            s += subObjectExpr->ToStringAsNamespace();
+            s += "::";
+        }
+    }
+
+    s += ident;
+
+    return s;
 }
 
 VarDecl* ObjectExpr::FetchVarDecl() const

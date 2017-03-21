@@ -140,10 +140,19 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    Visit(ast->namespaceExpr);
+    /* Analyze static namespace prefix */
+    if (ast->namespaceExpr)
+    {
+        if (InsideGlobalScope())
+            Visit(ast->namespaceExpr);
+        else
+            Error(R_StaticMembersCantBeDefinedInGlob(ast->ToString()), ast->namespaceExpr.get());
+    }
 
+    /* Register variable identifier in symbol table */
     Register(ast->ident, ast);
 
+    /* Analyze array dimensions and semantic */
     AnalyzeArrayDimensionList(ast->arrayDims);
     AnalyzeSemantic(ast->semantic);
 

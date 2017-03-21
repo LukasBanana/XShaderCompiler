@@ -1139,6 +1139,9 @@ struct ObjectExpr : public Expr
     // Returns a type denoter for the vector subscript of this object expression or throws a runtime error on failure.
     BaseTypeDenoterPtr GetTypeDenoterFromSubscript() const;
 
+    // Returns this object expression as a static namespace, i.e. only for prefix expression that are also from type ObjectExpr.
+    std::string ToStringAsNamespace() const;
+
     // Returns the specified type of AST node from the symbol (if the symbol refers to one).
     template <typename T>
     T* FetchSymbol() const
