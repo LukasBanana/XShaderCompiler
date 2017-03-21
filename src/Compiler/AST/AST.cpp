@@ -1829,20 +1829,27 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoterAsArray()
 
 TypeDenoterPtr InitializerExpr::DeriveTypeDenoterAs(const TypeDenoter& expectedTypeDenoter)
 {
-    #if 0
-
     const auto& typeDen = expectedTypeDenoter.GetAliased();
     if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
     {
-        //TODO: derive type correctly
+        /* Compare number of elements with size of base type */
+        const auto matrixDim        = MatrixTypeDim(baseTypeDen->dataType);
+        const auto numTypeElements  = (matrixDim.first * matrixDim.second);
+        const auto numListElements  = NumElements();
+
+        /* Unroll elements for base types */
+        if (numListElements == numTypeElements)
+            UnrollElements();
+        else
+            RuntimeErr(R_InvalidNumElementsInInitializer(expectedTypeDenoter.ToString(), numTypeElements, numListElements), this);
     }
-    return DeriveTypeDenoterAsArray();
+    else if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
+    {
+        //TODO...
+    }
 
-    #else
-
+    //TODO: replace this simple copy with a correct type derivation
     return expectedTypeDenoter.Copy();
-
-    #endif
 }
 
 unsigned int InitializerExpr::NumElements() const
@@ -1851,13 +1858,32 @@ unsigned int InitializerExpr::NumElements() const
     
     for (const auto& e : exprs)
     {
-        if (e->Type() == AST::Types::InitializerExpr)
-            n += static_cast<const InitializerExpr&>(*e).NumElements();
+        if (auto initSubExpr = e->FetchNonBracketExpr()->As<InitializerExpr>())
+            n += initSubExpr->NumElements();
         else
             ++n;
     }
 
     return n;
+}
+
+void InitializerExpr::CollectElements(std::vector<ExprPtr>& elements) const
+{
+    for (const auto& e : exprs)
+    {
+        if (auto initSubExpr = e->FetchNonBracketExpr()->As<InitializerExpr>())
+            initSubExpr->CollectElements(elements);
+        else
+            elements.push_back(e);
+    }
+}
+
+void InitializerExpr::UnrollElements()
+{
+    /* Collect all elements and then replace the sub expression by the new list */
+    std::vector<ExprPtr> elements;
+    CollectElements(elements);
+    exprs = elements;
 }
 
 static ExprPtr FetchSubExprFromInitializerExpr(const InitializerExpr* ast, const std::vector<int>& arrayIndices, std::size_t layer)

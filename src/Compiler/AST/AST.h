@@ -1217,6 +1217,12 @@ struct InitializerExpr : public Expr
     // Returns the number of scalar elements (with recursion).
     unsigned int NumElements() const;
 
+    // Collects all elements from the sub expressions without initializer lists (e.g. { 1, { 2, 3 } } --> { 1, 2, 3 }).
+    void CollectElements(std::vector<ExprPtr>& elements) const;
+
+    // Resolves all initializer lists in the sub expression.
+    void UnrollElements();
+
     // Fetches the sub expression with the specified array indices and throws an ASTRuntimeError on failure.
     ExprPtr FetchSubExpr(const std::vector<int>& arrayIndices) const;
 

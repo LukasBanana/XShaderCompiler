@@ -122,6 +122,7 @@ DECL_REPORT( ArrayDimMismatchInInitializer,     "array dimensions mismatch in in
 DECL_REPORT( ArrayDimSizeMismatchInInitializer, "array dimension size mismatch in initializer expression (expected {0} element(s), but got {1})"                );
 DECL_REPORT( TypeMismatchInInitializer,         "type mismatch in initializer expression (expected array '{0}', but got '{1}')"                                 );
 DECL_REPORT( ExpectedInitializerForArrayAccess, "initializer expression expected for array access"                                                              );
+DECL_REPORT( InvalidNumElementsInInitializer,   "invalid number of elements in initializer expression for type '{0}' (expected {1}, but got {2})"               );
 DECL_REPORT( NotEnoughElementsInInitializer,    "not enough elements in initializer expression"                                                                 );
 DECL_REPORT( NotEnoughIndicesForInitializer,    "not enough array indices specified for initializer expression"                                                 );
 
