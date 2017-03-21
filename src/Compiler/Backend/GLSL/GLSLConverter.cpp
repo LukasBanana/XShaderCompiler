@@ -844,7 +844,7 @@ static int GetTextureVectorSizeFromIntrinsicCall(CallExpr* ast)
     /* Get buffer object from sample intrinsic call */
     if (const auto& prefixExpr = ast->prefixExpr)
     {
-        if (auto lvalueExpr = ast->prefixExpr->FetchLValueExpr())
+        if (auto lvalueExpr = prefixExpr->FetchLValueExpr())
         {
             if (auto bufferDecl = lvalueExpr->FetchSymbol<BufferDecl>())
             {

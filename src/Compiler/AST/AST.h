@@ -1167,7 +1167,7 @@ struct ArrayExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter() override;
 
-    const ObjectExpr* FetchLValueExpr() const;
+    const ObjectExpr* FetchLValueExpr() const override;
 
     // Returns the number of array indices (shortcut for "arrayIndices.size()").
     std::size_t NumIndices() const;

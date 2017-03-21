@@ -521,7 +521,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
     if (auto funcDecl = ActiveFunctionDecl())
     {
-        if (returnTypeDen = funcDecl->returnType->GetTypeDenoter())
+        if ((returnTypeDen = funcDecl->returnType->GetTypeDenoter()) != nullptr)
         {
             if (returnTypeDen->IsVoid())
             {
