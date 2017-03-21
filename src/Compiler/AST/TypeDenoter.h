@@ -342,6 +342,9 @@ struct ArrayTypeDenoter : public TypeDenoter
     unsigned int NumDimensions() const override;
 
     AST* SymbolRef() const override;
+    
+    // Returns true if the dimensions of the specified array type denoter are equal to the dimension of this array type denoter.
+    bool EqualsDimensions(const ArrayTypeDenoter& rhs) const;
 
     // Returns a copy of this type denoter with the accumulated array dimensions.
     TypeDenoterPtr AsArray(const std::vector<ArrayDimensionPtr>& subArrayDims) override;

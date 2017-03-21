@@ -592,10 +592,13 @@ void HLSLAnalyzer::AnalyzeVarDecl(VarDecl* varDecl)
         AnalyzeVarDeclLocal(varDecl);
 }
 
-void HLSLAnalyzer::AnalyzeVarDeclLocal(VarDecl* varDecl)
+void HLSLAnalyzer::AnalyzeVarDeclLocal(VarDecl* varDecl, bool registerVarIdent)
 {
-    /* Register variable identifier in symbol table */
-    Register(varDecl->ident, varDecl);
+    if (registerVarIdent)
+    {
+        /* Register variable identifier in symbol table */
+        Register(varDecl->ident, varDecl);
+    }
 
     /* Analyze array dimensions and semantic */
     AnalyzeArrayDimensionList(varDecl->arrayDims);
@@ -627,6 +630,9 @@ void HLSLAnalyzer::AnalyzeVarDeclStaticMember(VarDecl* varDecl)
         Visit(varDecl->namespaceExpr);
     else
         Error(R_StaticMembersCantBeDefinedInGlob(varDecl->ToString()), varDecl->namespaceExpr.get());
+
+    /* Analyze variable declaration, but do not register identifier */
+    AnalyzeVarDeclLocal(varDecl, false);
 
     /* Analyze variable definition with static member declaration */
     if (auto typeDen = GetTypeDenoterFrom(varDecl->namespaceExpr.get()))
@@ -674,8 +680,9 @@ void HLSLAnalyzer::AnalyzeVarDeclStaticMember(VarDecl* varDecl)
                                 memberVarDecl->staticMemberVarRef = varDecl;
                                 varDecl->staticMemberVarRef = memberVarDecl;
 
-                                /* Copy array type from definition to declaration */
+                                /* Copy array type from definition to declaration, and reset type denoter */
                                 memberVarDecl->arrayDims = varDecl->arrayDims;
+                                memberVarDecl->ResetTypeDenoter();
                             }
                         }
                     }

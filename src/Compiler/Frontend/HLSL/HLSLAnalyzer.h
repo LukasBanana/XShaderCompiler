@@ -82,7 +82,7 @@ class HLSLAnalyzer : public Analyzer
         /* ----- Declarations ----- */
 
         void AnalyzeVarDecl(VarDecl* varDecl);
-        void AnalyzeVarDeclLocal(VarDecl* varDecl);
+        void AnalyzeVarDeclLocal(VarDecl* varDecl, bool registerVarIdent = true);
         void AnalyzeVarDeclStaticMember(VarDecl* varDecl);
         
         /* ----- Call expressions ----- */

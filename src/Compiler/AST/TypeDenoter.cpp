@@ -808,7 +808,7 @@ bool ArrayTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags)
     if (auto rhsArrayTypeDen = rhs.GetAliased().As<ArrayTypeDenoter>())
     {
         /* Compare sub type denoters */
-        if (subTypeDenoter && rhsArrayTypeDen->subTypeDenoter)
+        if (subTypeDenoter && rhsArrayTypeDen->subTypeDenoter && EqualsDimensions(*rhsArrayTypeDen))
             return subTypeDenoter->Equals(*rhsArrayTypeDen->subTypeDenoter, compareFlags);
     }
     return false;
@@ -816,20 +816,12 @@ bool ArrayTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags)
 
 bool ArrayTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
-    /* Is target also an array? */
     if (auto targetArrayTypeDen = targetType.GetAliased().As<ArrayTypeDenoter>())
     {
-        if (subTypeDenoter && targetArrayTypeDen->subTypeDenoter)
+        /* Compare sub type denoters */
+        if (subTypeDenoter && targetArrayTypeDen->subTypeDenoter && EqualsDimensions(*targetArrayTypeDen))
             return subTypeDenoter->IsCastableTo(*targetArrayTypeDen->subTypeDenoter);
     }
-    
-    /* Check if sub type denoter of this array is castable to the target type */
-    if (subTypeDenoter)
-    {
-        const auto& baseAliased = subTypeDenoter->GetAliased();
-        return (!baseAliased.IsArray() && baseAliased.IsCastableTo(targetType));
-    }
-
     return false;
 }
 
@@ -841,6 +833,21 @@ unsigned int ArrayTypeDenoter::NumDimensions() const
 AST* ArrayTypeDenoter::SymbolRef() const
 {
     return (subTypeDenoter ? subTypeDenoter->SymbolRef() : nullptr);
+}
+
+bool ArrayTypeDenoter::EqualsDimensions(const ArrayTypeDenoter& rhs) const
+{
+    /* Compare dimension sizes */
+    if (arrayDims.size() == rhs.arrayDims.size())
+    {
+        for (std::size_t i = 0, n = arrayDims.size(); i < n; ++i)
+        {
+            if (arrayDims[i]->size != rhs.arrayDims[i]->size)
+                return false;
+        }
+        return true;
+    }
+    return false;
 }
 
 TypeDenoterPtr ArrayTypeDenoter::AsArray(const std::vector<ArrayDimensionPtr>& subArrayDims)
