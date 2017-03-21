@@ -89,7 +89,7 @@ bool CommandLine::AcceptBoolean()
 bool CommandLine::AcceptBoolean(bool defaultValue)
 {
     auto arg = Get();
-    std::transform(arg.begin(), arg.end(), arg.begin(), std::toupper);
+    std::transform(arg.begin(), arg.end(), arg.begin(), ::toupper);
 
     if (arg == CommandLine::GetBooleanTrue())
     {
