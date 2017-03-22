@@ -506,8 +506,11 @@ struct VarDecl : public Decl
     // Returns the reference to the static member variable definition, or null if there is no such definition (see staticMemberVarRef).
     VarDecl* FetchStaticVarDefRef() const;
 
-    // Returns true if the variable is declared as static.
+    // Returns true if this variable is declared as static.
     bool IsStatic() const;
+
+    // Returns true if this variable is a function parameter.
+    bool IsParameter() const;
 
     ObjectExprPtr                   namespaceExpr;              // Optional namespace expression; may be null
     std::vector<ArrayDimensionPtr>  arrayDims;

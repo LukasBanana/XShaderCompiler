@@ -542,26 +542,34 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    PushLValueExpr(ast);
-    {
-        Visit(ast->expr);
-    }
-    PopLValueExpr();
-
     if (IsLValueOp(ast->op))
+    {
+        PushLValueExpr(ast);
+        {
+            Visit(ast->expr);
+        }
+        PopLValueExpr();
+
         AnalyzeLValueExpr(ast->expr.get(), ast);
+    }
+    else
+        Visit(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 {
-    PushLValueExpr(ast);
-    {
-        Visit(ast->expr);
-    }
-    PopLValueExpr();
-
     if (IsLValueOp(ast->op))
+    {
+        PushLValueExpr(ast);
+        {
+            Visit(ast->expr);
+        }
+        PopLValueExpr();
+
         AnalyzeLValueExpr(ast->expr.get(), ast);
+    }
+    else
+        Visit(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(CallExpr)
@@ -765,12 +773,7 @@ void HLSLAnalyzer::AnalyzeCallExprPrimary(CallExpr* callExpr, const TypeDenoter*
         callExpr->ForEachOutputArgument(
             [this](ExprPtr& argExpr)
             {
-                //TODO: also push information if this argument is read from or only written to!
-                //PushLValueExpr(argExpr.get(), true);
-                {
-                    AnalyzeLValueExpr(argExpr.get());
-                }
-                //PopLValueExpr();
+                AnalyzeLValueExpr(argExpr.get());
             }
         );
     }

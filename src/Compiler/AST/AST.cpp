@@ -416,6 +416,11 @@ bool VarDecl::IsStatic() const
         return false;
 }
 
+bool VarDecl::IsParameter() const
+{
+    return (declStmntRef != nullptr && declStmntRef->flags(VarDeclStmnt::isParameter));
+}
+
 
 /* ----- BufferDecl ----- */
 

@@ -622,6 +622,7 @@ void Analyzer::OnReleaseSymbol(const ASTSymbolOverloadPtr& symbol)
         {
             if ( !varDecl->flags(Decl::isReadFrom) &&
                  !varDecl->IsStatic() &&
+                 !varDecl->IsParameter() &&
                  varDecl->structDeclRef == nullptr &&
                  varDecl->bufferDeclRef == nullptr )
             {
