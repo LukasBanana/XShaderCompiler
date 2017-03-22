@@ -63,6 +63,7 @@ void TestCompile()
     in.filename     = "test.hlsl";
     in.entryPoint   = "VS";
     in.shaderTarget = XscETargetVertexShader;
+    in.warnings     = XscWarnBasic;
     in.sourceCode   =
     (
         "cbuffer Matrices {\n"

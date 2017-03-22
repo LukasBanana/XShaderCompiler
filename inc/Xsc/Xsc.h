@@ -81,18 +81,18 @@ struct Warnings
 {
     enum : unsigned int
     {
-        Basic                   = (1 << 0), // Warning for basic issues (control path, disabled code etc.).
-        Syntax                  = (1 << 1), // Warning for syntactic issues.
-        PreProcessor            = (1 << 2), // Warning for pre-processor issues.
-        UnusedVariables         = (1 << 3), // Warning for unused variables.
-        EmptyStatementBody      = (1 << 4), // Warning for statements with empty body.
-        ImplicitTypeConversions = (1 << 5), // Warning for specific implicit type conversions.
-        DeclarationShadowing    = (1 << 6), // Warning for declarations that shadow a previous local (e.g. for-loops or variables in class hierarchy).
-        UnlocatedObjects        = (1 << 7), // Warning for optional objects that where not found.
-        RequiredExtensions      = (1 << 8), // Warning for required extensions in the output code.
-        CodeReflection          = (1 << 9), // Warning for issues during code reflection.
+        Basic                   = (1 << 0), //!< Warning for basic issues (control path, disabled code etc.).
+        Syntax                  = (1 << 1), //!< Warning for syntactic issues.
+        PreProcessor            = (1 << 2), //!< Warning for pre-processor issues.
+        UnusedVariables         = (1 << 3), //!< Warning for unused variables.
+        EmptyStatementBody      = (1 << 4), //!< Warning for statements with empty body.
+        ImplicitTypeConversions = (1 << 5), //!< Warning for specific implicit type conversions.
+        DeclarationShadowing    = (1 << 6), //!< Warning for declarations that shadow a previous local (e.g. for-loops or variables in class hierarchy).
+        UnlocatedObjects        = (1 << 7), //!< Warning for optional objects that where not found.
+        RequiredExtensions      = (1 << 8), //!< Warning for required extensions in the output code.
+        CodeReflection          = (1 << 9), //!< Warning for issues during code reflection.
 
-        All                     = (~0u),    // All warnings.
+        All                     = (~0u),    //!< All warnings.
     };
 };
 
