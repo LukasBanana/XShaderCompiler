@@ -90,7 +90,7 @@ static void PrintMultiLineString(const std::string& s, const std::string& indent
 void StdLog::PrintReport(const IndentReport& r, bool verbose)
 {
     /* Print optional context description */
-    if (!r.report.Context().empty())
+    if (verbose && !r.report.Context().empty())
         PrintMultiLineString(r.report.Context(), r.indent);
 
     /* Print report message */

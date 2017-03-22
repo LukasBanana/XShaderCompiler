@@ -12,6 +12,7 @@
 #include <Xsc/Targets.h>
 #include "Visitor.h"
 #include "ASTEnums.h"
+#include "ReportHandler.h"
 #include <set>
 #include <string>
 #include <map>
@@ -35,7 +36,8 @@ class GLSLExtensionAgent : private Visitor
             OutputShaderVersion& targetGLSLVersion,
             const ShaderTarget shaderTarget,
             bool allowExtensions,
-            bool explicitBinding
+            bool explicitBinding,
+            const OnReportProc& onReportExtension = nullptr
         );
 
     private:
@@ -71,6 +73,8 @@ class GLSLExtensionAgent : private Visitor
 
         bool                                allowExtensions_    = false;
         bool                                explicitBinding_    = false;
+
+        OnReportProc                        onReportExtension_;
 
         // Resulting set of required GLSL extensions.
         std::set<std::string>               extensions_;

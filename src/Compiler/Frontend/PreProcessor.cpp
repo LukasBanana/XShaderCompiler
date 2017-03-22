@@ -25,10 +25,12 @@ PreProcessor::PreProcessor(IncludeHandler& includeHandler, Log* log) :
 }
 
 std::unique_ptr<std::iostream> PreProcessor::Process(
-    const SourceCodePtr& input, const std::string& filename, bool writeLineMarks)
+    const SourceCodePtr& input, const std::string& filename, bool writeLineMarks, bool enableWarnings)
 {
     output_         = MakeUnique<std::stringstream>();
     writeLineMarks_ = writeLineMarks;
+
+    EnableWarnings(enableWarnings);
 
     PushScannerSource(input, filename);
 

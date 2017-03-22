@@ -103,7 +103,9 @@ static bool CompileShaderPrimary(
 
     auto processedInput = preProcessor->Process(
         std::make_shared<SourceCode>(inputDesc.sourceCode),
-        inputDesc.filename
+        inputDesc.filename,
+        true,
+        ((inputDesc.warnings & Warnings::PreProcessor) != 0)
     );
 
     if (reflectionData)
@@ -136,7 +138,8 @@ static bool CompileShaderPrimary(
             std::make_shared<SourceCode>(std::move(processedInput)),
             outputDesc.nameMangling,
             (inputDesc.shaderVersion >= InputShaderVersion::HLSL4),
-            outputDesc.options.rowMajorAlignment
+            outputDesc.options.rowMajorAlignment,
+            ((inputDesc.warnings & Warnings::Syntax) != 0)
         );
     }
 
@@ -198,7 +201,10 @@ static bool CompileShaderPrimary(
     if (reflectionData)
     {
         ReflectionAnalyzer reflectAnalyzer(log);
-        reflectAnalyzer.Reflect(*program, inputDesc.shaderTarget, *reflectionData);
+        reflectAnalyzer.Reflect(
+            *program, inputDesc.shaderTarget, *reflectionData,
+            ((inputDesc.warnings & Warnings::CodeReflection) != 0)
+        );
     }
 
     return true;

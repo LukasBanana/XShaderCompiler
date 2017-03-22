@@ -30,6 +30,7 @@ bool Generator::GenerateCode(
     writer_.SetIndent(outputDesc.formatting.indent);
 
     shaderTarget_               = inputDesc.shaderTarget;
+    warnings_                   = inputDesc.warnings;
     allowBlanks_                = outputDesc.formatting.blanks;
     allowLineSeparation_        = outputDesc.formatting.lineSeparation;
     writer_.newLineOpenScope    = outputDesc.formatting.newLineOpenScope;
@@ -47,7 +48,7 @@ bool Generator::GenerateCode(
         return false;
     }
 
-    return true;
+    return (!reportHandler_.HasErros());
 }
 
 
@@ -55,9 +56,9 @@ bool Generator::GenerateCode(
  * ======= Private: =======
  */
 
-void Generator::Error(const std::string& msg, const AST* ast)
+void Generator::Error(const std::string& msg, const AST* ast, bool breakWithExpection)
 {
-    reportHandler_.Error(true, msg, program_->sourceCode.get(), (ast ? ast->area : SourceArea::ignore));
+    reportHandler_.Error(breakWithExpection, msg, program_->sourceCode.get(), (ast ? ast->area : SourceArea::ignore));
 }
 
 void Generator::Warning(const std::string& msg, const AST* ast)
@@ -191,6 +192,11 @@ std::string Generator::TimePoint() const
     s << std::put_time(std::localtime(&date), "%d/%m/%Y %H:%M:%S");
 
     return s.str();
+}
+
+bool Generator::WarnEnabled(unsigned int flags) const
+{
+    return warnings_(flags);
 }
 
 bool Generator::IsVertexShader() const

@@ -45,7 +45,8 @@ class PreProcessor : public Parser
         std::unique_ptr<std::iostream> Process(
             const SourceCodePtr& input,
             const std::string& filename = "",
-            bool writeLineMarks = true
+            bool writeLineMarks = true,
+            bool enableWarnings = false
         );
 
         // Returns a list of all defined macro identifiers after pre-processing.

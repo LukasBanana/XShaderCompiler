@@ -13,6 +13,7 @@
 #include "CodeWriter.h"
 #include "Visitor.h"
 #include "ReportHandler.h"
+#include "Flags.h"
 
 
 namespace Xsc
@@ -42,7 +43,7 @@ class Generator : protected Visitor
             const ShaderOutput& outputDesc
         ) = 0;
 
-        void Error(const std::string& msg, const AST* ast = nullptr);
+        void Error(const std::string& msg, const AST* ast = nullptr, bool breakWithExpection = true);
         void Warning(const std::string& msg, const AST* ast = nullptr);
 
         void BeginLn();
@@ -92,6 +93,9 @@ class Generator : protected Visitor
             return shaderTarget_;
         }
 
+        // Returns true if the specified warnings flags are enabled.
+        bool WarnEnabled(unsigned int flags) const;
+
         bool IsVertexShader() const;
         bool IsTessControlShader() const;
         bool IsTessEvaluationShader() const;
@@ -122,6 +126,7 @@ class Generator : protected Visitor
         Program*                    program_                = nullptr;
 
         ShaderTarget                shaderTarget_           = ShaderTarget::VertexShader;
+        Flags                       warnings_;
 
         bool                        allowBlanks_            = true;
         bool                        allowLineSeparation_    = true;

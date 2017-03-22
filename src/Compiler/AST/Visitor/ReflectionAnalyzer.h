@@ -33,7 +33,12 @@ class ReflectionAnalyzer : private Visitor
         ReflectionAnalyzer(Log* log);
 
         // Collect all reflection data from the program AST.
-        void Reflect(Program& program, const ShaderTarget shaderTarget, Reflection::ReflectionData& reflectionData);
+        void Reflect(
+            Program& program,
+            const ShaderTarget shaderTarget,
+            Reflection::ReflectionData& reflectionData,
+            bool enableWarnings
+        );
 
     private:
         
@@ -73,6 +78,8 @@ class ReflectionAnalyzer : private Visitor
         Program*                    program_        = nullptr;
 
         Reflection::ReflectionData* data_           = nullptr;
+
+        bool                        enableWarnings_ = false;
 
 };
 

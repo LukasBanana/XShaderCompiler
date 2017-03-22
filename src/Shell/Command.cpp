@@ -297,11 +297,14 @@ HelpDescriptor WarnCommand::Help() const
         "Enables/disables the specified warning type; default=" + CommandLine::GetBooleanFalse() + "; valid values:",
         (
             "all           => all kinds of warnings\n"               \
+            "basic         => warn for basic issues\n"               \
             "decl-shadow   => warn for declaration shadowing\n"      \
             "empty-body    => warn for empty statement body\n"       \
             "extension     => warn for required extensions\n"        \
             "implicit-cast => warn for implicit type casts\n"        \
+            "preprocessor  => warn for pre-processor issues\n"       \
             "reflect       => warn for issues in code reflection\n"  \
+            "syntax        => warn for syntactic issues\n"           \
             "unlocated-obj => warn for unlocated optional objects\n" \
             "unused-vars   => warn for unused variables"
         ),
@@ -314,11 +317,14 @@ void WarnCommand::Run(CommandLine& cmdLine, ShellState& state)
         cmdLine.Accept(),
         {
             { "all",           Warnings::All                     },
+            { "basic",         Warnings::Basic                   },
             { "decl-shadow",   Warnings::DeclarationShadowing    },
             { "empty-body",    Warnings::EmptyStatementBody      },
             { "extension",     Warnings::RequiredExtensions      },
             { "implicit-cast", Warnings::ImplicitTypeConversions },
+            { "preprocessor",  Warnings::PreProcessor            },
             { "reflect",       Warnings::CodeReflection          },
+            { "syntax",        Warnings::Syntax                  },
             { "unlocated-obj", Warnings::UnlocatedObjects        },
             { "unused-vars",   Warnings::UnusedVariables         },
         },

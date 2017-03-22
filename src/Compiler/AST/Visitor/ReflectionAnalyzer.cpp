@@ -21,12 +21,16 @@ ReflectionAnalyzer::ReflectionAnalyzer(Log* log) :
 {
 }
 
-void ReflectionAnalyzer::Reflect(Program& program, const ShaderTarget shaderTarget, Reflection::ReflectionData& reflectionData)
+void ReflectionAnalyzer::Reflect(
+    Program& program, const ShaderTarget shaderTarget, Reflection::ReflectionData& reflectionData, bool enableWarnings)
 {
+    /* Copy parameters */
     shaderTarget_   = shaderTarget;
     program_        = (&program);
     data_           = (&reflectionData);
+    enableWarnings_ = enableWarnings;
 
+    /* Visit program AST */
     Visit(program_);
 }
 
@@ -37,7 +41,8 @@ void ReflectionAnalyzer::Reflect(Program& program, const ShaderTarget shaderTarg
 
 void ReflectionAnalyzer::Warning(const std::string& msg, const AST* ast)
 {
-    reportHandler_.Warning(false, msg, program_->sourceCode.get(), (ast ? ast->area : SourceArea::ignore));
+    if (enableWarnings_)
+        reportHandler_.Warning(false, msg, program_->sourceCode.get(), (ast ? ast->area : SourceArea::ignore));
 }
 
 int ReflectionAnalyzer::GetBindingPoint(const std::vector<RegisterPtr>& slotRegisters) const

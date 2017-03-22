@@ -30,22 +30,22 @@
 #-T frag -E PS -Vout GLSL120 -o output/* SemanticTest2.hlsl
 
 #[SemanticTest4 VS (Vertex-Attrib-Layouts)]
-#-T vert -E VS -W -EB -Scoord=0 -Stexcoord0=1 -Stexcoord1=2 -Snormal=3 -o output/* SemanticTest4.hlsl
+#-T vert -E VS -Wall -EB -Scoord=0 -Stexcoord0=1 -Stexcoord1=2 -Snormal=3 -o output/* SemanticTest4.hlsl
 
 #['clip'-Intrinsic PS]
 #-T frag -E PS -o output/* IntrinsicClip.hlsl
 
 #[ExprTest5 VS]
-#-T vert -E VS -W -o output/* ExprTest5.hlsl
+#-T vert -E VS -Wall -o output/* ExprTest5.hlsl
 
 #[ArrayTest1 PS]
 #-T vert -E VS -o output/* ArrayTest1.hlsl
 
 #[TextureObjects PS]
-#-T frag -E PS -W --comments -o output/* TextureObjects.hlsl
+#-T frag -E PS -Wall --comments -o output/* TextureObjects.hlsl
 
 #[BufferObjects CS]
-#-T comp -E CS -W -EB -o output/* BufferObjects.hlsl
+#-T comp -E CS -Wall -EB -o output/* BufferObjects.hlsl
 
 #[RegisterTest1 PS]
 #-T frag -E PS -o output/* RegisterTest1.hlsl
@@ -57,28 +57,28 @@
 #-T vert -E VS -Vout GLSL150 -o output/* CastTest1.hlsl
 
 #[ConstExpr VS]
-#-T vert -E VS -W -o output/* ConstExpr.hlsl
+#-T vert -E VS -Wall -o output/* ConstExpr.hlsl
 
 #[TessellationTest1 VS]
-#-T vert -E VS -W -o output/* TessellationTest1.hlsl
+#-T vert -E VS -Wall -o output/* TessellationTest1.hlsl
 
 #[TessellationTest1 HS]
-#-T tesc -E HS -W -o output/* TessellationTest1.hlsl
+#-T tesc -E HS -Wall -o output/* TessellationTest1.hlsl
 
 #[TessellationTest1 DS]
-#-T tese -E DS -W -E2 PatchConstantFuncHS -o output/* TessellationTest1.hlsl
+#-T tese -E DS -Wall -E2 PatchConstantFuncHS -o output/* TessellationTest1.hlsl
 
 #[TessellationTest1 PS]
-#-T frag -E PS -W -o output/* TessellationTest1.hlsl
+#-T frag -E PS -Wall -o output/* TessellationTest1.hlsl
 
 #[GeometryTest1 VS]
-#-T vert -E VS -W -o output/* GeometryTest1.hlsl
+#-T vert -E VS -Wall -o output/* GeometryTest1.hlsl
 
 #[GeometryTest1 GS]
-#-T geom -E GS -W -o output/* GeometryTest1.hlsl
+#-T geom -E GS -Wall -o output/* GeometryTest1.hlsl
 
 #[GeometryTest1 PS]
-#-T frag -E PS -W -o output/* GeometryTest1.hlsl
+#-T frag -E PS -Wall -o output/* GeometryTest1.hlsl
 
 #[ExprTest4 VS]
 #-T vert -E VS -o output/* ExprTest4.hlsl
@@ -96,7 +96,7 @@
 #-T vert -E VS -o output/* TypeTest2.hlsl
 
 #[TypeTest3 VS]
-#-T vert -E VS -W -o output/* TypeTest3.hlsl
+#-T vert -E VS -Wall -o output/* TypeTest3.hlsl
 
 #[FloatTest1 VS]
 #-T vert -E VS -o output/* FloatTest1.hlsl

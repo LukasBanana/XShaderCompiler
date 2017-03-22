@@ -60,7 +60,7 @@ void Analyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast
 {
     auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
     reportHandler_.SubmitReport(
-        false, reportType, (isError ? R_ContextError() : R_Warning),
+        false, reportType, (isError ? R_ContextError : R_Warning),
         msg, sourceCode_, (ast ? ast->area : SourceArea::ignore)
     );
 }

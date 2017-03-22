@@ -15,6 +15,7 @@
 #include <string>
 #include <stack>
 #include <set>
+#include <functional>
 
 
 namespace Xsc
@@ -22,6 +23,9 @@ namespace Xsc
 
 
 class SourceCode;
+
+// Interface for a common report callback procedure (either for error or warning messages).
+using OnReportProc = std::function<void(const std::string& msg, const AST* ast)>;
 
 // Report handler class for simpler error and warning handling.
 class ReportHandler

@@ -56,8 +56,8 @@ static OutputShaderVersion GetMinGLSLVersionForTarget(const ShaderTarget shaderT
 }
 
 std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
-    Program& program, OutputShaderVersion& targetGLSLVersion,
-    const ShaderTarget shaderTarget, bool allowExtensions, bool explicitBinding)
+    Program& program, OutputShaderVersion& targetGLSLVersion, const ShaderTarget shaderTarget,
+    bool allowExtensions, bool explicitBinding, const OnReportProc& onReportExtension)
 {
     /* Store parameters */
     shaderTarget_       = shaderTarget;
@@ -65,6 +65,7 @@ std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
     minGLSLVersion_     = GetMinGLSLVersionForTarget(shaderTarget);
     allowExtensions_    = allowExtensions;
     explicitBinding_    = explicitBinding;
+    onReportExtension_  = onReportExtension;
 
     /* Global layout extensions */
     switch (shaderTarget)
@@ -132,11 +133,16 @@ void GLSLExtensionAgent::AcquireExtension(const std::string& extension, const st
             {
                 /* Add extension to the resulting set, if the target GLSL version is less than the required extension version */
                 extensions_.insert(extension);
+
+                /* Report warning */
+                if (onReportExtension_)
+                    onReportExtension_(R_GLSLExtensionAcquired(extension, ToString(requiredVersion), reason), ast);
             }
             else
             {
-                /* Extensions not allowed -> runtime error */
-                RuntimeErr(R_GLSLExtensionOrVersionRequired(extension, ToString(requiredVersion), reason), ast);
+                /* Report error if required extension is not allowed */
+                if (onReportExtension_)
+                    onReportExtension_(R_GLSLExtensionOrVersionRequired(extension, ToString(requiredVersion), reason), ast);
             }
         }
     }

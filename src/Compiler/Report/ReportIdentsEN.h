@@ -286,6 +286,7 @@ DECL_REPORT( MissingSelfParamForMemberFunc,     "missing 'self'-parameter for me
 /* ----- GLSLExtensionAgent ----- */
 
 DECL_REPORT( GLSLExtensionOrVersionRequired,    "GLSL extension '{0}' or shader output version '{1}' required[ (for {2})]"                                      );
+DECL_REPORT( GLSLExtensionAcquired,             "GLSL extension '{0}' acquired due to shader output version below '{1}'[ (for {2})]"                            );
 DECL_REPORT( NoGLSLExtensionVersionRegisterd,   "no GLSL version is registered for the extension '{0}'"                                                         );
 DECL_REPORT( FragmentCoordinate,                "fragment coordinate"                                                                                           );
 DECL_REPORT( EarlyDepthStencil,                 "early depth stencil test"                                                                                      );

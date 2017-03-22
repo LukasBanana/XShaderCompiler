@@ -41,17 +41,22 @@ HLSLParser::HLSLParser(Log* log) :
 }
 
 ProgramPtr HLSLParser::ParseSource(
-    const SourceCodePtr& source, const NameMangling& nameMangling, bool useD3D10Semantics, bool rowMajorAlignment)
+    const SourceCodePtr& source, const NameMangling& nameMangling, bool useD3D10Semantics, bool rowMajorAlignment, bool enableWarnings)
 {
+    /* Copy parameters */
     useD3D10Semantics_  = useD3D10Semantics;
     rowMajorAlignment_  = rowMajorAlignment;
 
+    EnableWarnings(enableWarnings);
+
     GetNameMangling() = nameMangling;
 
+    /* Start scanning source code */
     PushScannerSource(source);
 
     try
     {
+        /* Parse program AST */
         auto ast = ParseProgram(source);
         return (GetReportHandler().HasErros() ? nullptr : ast);
     }

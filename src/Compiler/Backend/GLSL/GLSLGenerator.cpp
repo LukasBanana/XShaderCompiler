@@ -225,7 +225,7 @@ bool GLSLGenerator::IsTypeCompatibleWithSemantic(const Semantic semantic, const 
 void GLSLGenerator::ReportOptionalFeedback()
 {
     /* Report warnings for unused and overwritten vertex semantic bindings */
-    if (explicitBinding_ && IsVertexShader())
+    if (WarnEnabled(Warnings::UnlocatedObjects) && explicitBinding_ && IsVertexShader())
     {
         /* Check for vertex semantics that have not been found */
         std::map<int, int> locationUseCount;
@@ -413,7 +413,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     if (!ast->flags(AST::isReachable))
     {
         /* Check for valid control paths */
-        if (ast->flags(FunctionDecl::hasNonReturnControlPath))
+        if (WarnEnabled(Warnings::Basic) && ast->flags(FunctionDecl::hasNonReturnControlPath))
             Warning(R_InvalidControlPathInUnrefFunc(ast->ToString()), ast);
         return;
     }
@@ -970,33 +970,30 @@ void GLSLGenerator::WriteLineMark(const AST* ast)
 
 void GLSLGenerator::WriteProgramHeader()
 {
-    try
-    {
-        /* Determine all required GLSL extensions with the GLSL extension agent */
-        GLSLExtensionAgent extensionAgent;
-        auto requiredExtensions = extensionAgent.DetermineRequiredExtensions(
-            *GetProgram(), versionOut_, GetShaderTarget(), allowExtensions_, explicitBinding_
-        );
-
-        /* Write GLSL version */
-        WriteProgramHeaderVersion();
-        Blank();
-
-        /* Write all required extensions */
-        if (!requiredExtensions.empty())
+    /* Determine all required GLSL extensions with the GLSL extension agent */
+    GLSLExtensionAgent extensionAgent;
+    auto requiredExtensions = extensionAgent.DetermineRequiredExtensions(
+        *GetProgram(), versionOut_, GetShaderTarget(), allowExtensions_, explicitBinding_,
+        [this](const std::string& msg, const AST* ast)
         {
-            for (const auto& ext : requiredExtensions)
-                WriteProgramHeaderExtension(ext);
-            Blank();
+            /* Report either error or warning whether extensions are allowed or not */
+            if (!allowExtensions_)
+                Error(msg, ast, false);
+            else if (WarnEnabled(Warnings::RequiredExtensions))
+                Warning(msg, ast);
         }
-    }
-    catch (const ASTRuntimeError& e)
+    );
+
+    /* Write GLSL version */
+    WriteProgramHeaderVersion();
+    Blank();
+
+    /* Write all required extensions */
+    if (!requiredExtensions.empty())
     {
-        Error(e.what(), e.GetAST());
-    }
-    catch (const std::exception& e)
-    {
-        Error(e.what());
+        for (const auto& ext : requiredExtensions)
+            WriteProgramHeaderExtension(ext);
+        Blank();
     }
 }
 
@@ -1417,7 +1414,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 
         if (versionOut_ <= OutputShaderVersion::GLSL120)
         {
-            if (!interpModifiers.empty())
+            if (WarnEnabled(Warnings::Basic) && !interpModifiers.empty())
                 Warning(R_InterpModNotSupportedForGLSL120, varDecl);
 
             if (IsVertexShader())
@@ -1579,7 +1576,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
 
         if (versionOut_ <= OutputShaderVersion::GLSL120)
         {
-            if (varDeclStmnt && !varDeclStmnt->typeSpecifier->interpModifiers.empty())
+            if (WarnEnabled(Warnings::Basic) && varDeclStmnt && !varDeclStmnt->typeSpecifier->interpModifiers.empty())
                 Warning(R_InterpModNotSupportedForGLSL120, varDecl);
 
             Write("varying ");
@@ -1923,7 +1920,7 @@ void GLSLGenerator::WriteStorageClasses(const std::set<StorageClass>& storageCla
         {
             if (auto keyword = StorageClassToGLSLKeyword(storage))
                 Write(*keyword + " ");
-            else
+            else if (WarnEnabled(Warnings::Basic))
                 Warning(R_NotAllStorageClassesMappedToGLSL, ast);
         }
     }
@@ -1935,7 +1932,7 @@ void GLSLGenerator::WriteInterpModifiers(const std::set<InterpModifier>& interpM
     {
         if (auto keyword = InterpModifierToGLSLKeyword(modifier))
             Write(*keyword + " ");
-        else
+        else if (WarnEnabled(Warnings::Basic))
             Warning(R_NotAllInterpModMappedToGLSL, ast);
     }
 }

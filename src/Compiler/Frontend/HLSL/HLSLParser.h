@@ -38,7 +38,8 @@ class HLSLParser : public Parser
             const SourceCodePtr& source,
             const NameMangling& nameMangling,
             bool useD3D10Semantics = true,
-            bool rowMajorAlignment = false
+            bool rowMajorAlignment = false,
+            bool enableWarnings = false
         );
 
     private:

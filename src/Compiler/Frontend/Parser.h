@@ -65,6 +65,8 @@ class Parser
         void Warning(const std::string& msg, const Token* tkn);
         void Warning(const std::string& msg, bool prevToken = true);
 
+        void EnableWarnings(bool enable);
+
         /* ----- Scanner ----- */
 
         virtual ScannerPtr MakeScanner() = 0;
@@ -248,6 +250,8 @@ class Parser
 
         unsigned int                    unexpectedTokenCounter_ = 0;
         const unsigned int              unexpectedTokenLimit_   = 3; //< this should never be less than 1
+
+        bool                            enableWarnings_         = false;
 
 };
 

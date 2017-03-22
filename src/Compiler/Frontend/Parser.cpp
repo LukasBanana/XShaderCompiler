@@ -91,7 +91,8 @@ void Parser::ErrorInternal(const std::string& msg, const std::string& procName)
 
 void Parser::Warning(const std::string& msg, const SourceArea& area)
 {
-    reportHandler_.Warning(false, msg, GetScanner().Source(), area);
+    if (enableWarnings_)
+        reportHandler_.Warning(false, msg, GetScanner().Source(), area);
 }
 
 void Parser::Warning(const std::string& msg, const Token* tkn)
@@ -102,6 +103,11 @@ void Parser::Warning(const std::string& msg, const Token* tkn)
 void Parser::Warning(const std::string& msg, bool prevToken)
 {
     Warning(msg, prevToken ? GetScanner().PreviousToken().get() : GetScanner().ActiveToken().get());
+}
+
+void Parser::EnableWarnings(bool enable)
+{
+    enableWarnings_ = enable;
 }
 
 /* ----- Scanner ----- */
