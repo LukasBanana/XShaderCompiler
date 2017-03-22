@@ -247,6 +247,7 @@ DECL_REPORT( ConditionalExprNotScalar,          "conditional expression must eva
 DECL_REPORT( ExpectedConstExpr,                 "expected constant expression"                                                                                  );
 DECL_REPORT( ExpectedConstIntExpr,              "expected constant integer expression"                                                                          );
 DECL_REPORT( ExpectedConstFloatExpr,            "expected constant floating-point expression"                                                                   );
+DECL_REPORT( VarDeclaredButNeverUsed,           "variable '{0}' is declared but never used"                                                                     );
 
 /* ----- ConstExprEvaluator ----- */
 

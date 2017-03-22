@@ -156,6 +156,23 @@ public ref class XscCompiler
             Always          = 8,
         };
 
+        //! Compiler warning flags.
+        [Flags]
+        enum class Warnings : System::UInt32
+        {
+            Disabled                = 0,        // No warnings.
+
+            UnusedVariables         = (1 << 0), // Warning for unused variables.
+            EmptyStatementBody      = (1 << 1), // Warning for statements with empty body.
+            ImplicitTypeConversions = (1 << 2), // Warning for specific implicit type conversions.
+            DeclarationShadowing    = (1 << 3), // Warning for declarations that shadow a previous local (e.g. for-loops or variables in class hierarchy).
+            UnlocatedObjects        = (1 << 4), // Warning for optional objects that where not found.
+            RequiredExtensions      = (1 << 5), // Warning for required extensions in the output code.
+            CodeReflection          = (1 << 6), // Warning for issues during code reflection.
+
+            All                     = (~0u),    // All warnings.
+        };
+
         /**
         \brief Static sampler state descriptor structure (D3D11_SAMPLER_DESC).
         \remarks All members and enumerations have the same values like the one in the "D3D11_SAMPLER_DESC" structure respectively.
@@ -330,7 +347,6 @@ public ref class XscCompiler
 
                 OutputOptions()
                 {
-                    Warnings                = false;
                     Optimize                = false;
                     PreprocessOnly          = false;
                     ValidateOnly            = false;
@@ -344,9 +360,6 @@ public ref class XscCompiler
                     ShowAST                 = false;
                     ShowTimes               = false;
                 }
-
-                //! True if warnings are allowed. By default false.
-                property bool Warnings;
 
                 //! If true, little code optimizations are performed. By default false.
                 property bool Optimize;
@@ -470,6 +483,7 @@ public ref class XscCompiler
                     Target              = ShaderTarget::Undefined;
                     EntryPoint          = gcnew String("main");
                     SecondaryEntryPoint = nullptr;
+                    WarningFlags        = Warnings::Disabled;
                     IncludeHandler      = nullptr;
                 }
 
@@ -496,6 +510,12 @@ public ref class XscCompiler
                 to the Tessellation-Evaluation output shader. If this is empty, the default values for these attributes are used.
                 */
                 property String^                        SecondaryEntryPoint;
+
+                /**
+                \brief Compiler warning flags. This can be a bitwise OR combination of the "Warnings" enumeration entries. By default 0.
+                \see Warnings
+                */
+                property Warnings                       WarningFlags;
 
                 /**
                 \brief Optional handler to handle '#include'-directives. By default null.
@@ -664,11 +684,11 @@ public ref class XscCompiler
                 //! Prints all submitted reports to the standard output.
                 void PrintAll()
                 {
-                    PrintAll(true, true);
+                    PrintAll(true);
                 }
 
                 //! Prints all submitted reports to the standard output.
-                virtual void PrintAll(bool verbose, bool warnings) = 0;
+                virtual void PrintAll(bool verbose) = 0;
 
         };
 
@@ -719,9 +739,9 @@ public ref class XscCompiler
                     }
                 }
 
-                void PrintAll(bool verbose, bool warnings) override
+                void PrintAll(bool verbose) override
                 {
-                    stdLog_->PrintAll(verbose, warnings);
+                    stdLog_->PrintAll(verbose);
                 }
 
             private:
@@ -940,6 +960,7 @@ bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc
     in.shaderTarget         = static_cast<Xsc::ShaderTarget>(inputDesc->Target);
     in.entryPoint           = ToStdString(inputDesc->EntryPoint);
     in.secondaryEntryPoint  = ToStdString(inputDesc->SecondaryEntryPoint);
+    in.warnings             = static_cast<unsigned int>(inputDesc->WarningFlags);
     in.includeHandler       = (&includeHandler);
 
     /* Copy output descriptor */
@@ -962,7 +983,6 @@ bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc
     }
 
     /* Copy output options descriptor */
-    out.options.warnings                = outputDesc->Options->Warnings;
     out.options.optimize                = outputDesc->Options->Optimize;
     out.options.preprocessOnly          = outputDesc->Options->PreprocessOnly;
     out.options.validateOnly            = outputDesc->Options->ValidateOnly;

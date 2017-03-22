@@ -27,6 +27,7 @@ bool Analyzer::DecorateAST(
 {
     /* Decorate program AST */
     sourceCode_ = program.sourceCode.get();
+    warnings_   = inputDesc.warnings;
 
     try
     {
@@ -59,7 +60,7 @@ void Analyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast
 {
     auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
     reportHandler_.SubmitReport(
-        false, reportType, (isError ? R_ContextError() : R_Warning()),
+        false, reportType, (isError ? R_ContextError() : R_Warning),
         msg, sourceCode_, (ast ? ast->area : SourceArea::ignore)
     );
 }
@@ -96,8 +97,13 @@ void Analyzer::Warning(const std::string& msg, const AST* ast)
 
 void Analyzer::WarningOnNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName)
 {
-    if (ast && ast->Type() == AST::Types::NullStmnt)
+    if (WarnEnabled(Warnings::EmptyStatementBody) && ast && ast->Type() == AST::Types::NullStmnt)
         Warning(R_StatementWithEmptyBody(stmntTypeName), ast.get());
+}
+
+bool Analyzer::WarnEnabled(unsigned int flags) const
+{
+    return warnings_(flags);
 }
 
 /* ----- Symbol table functions ----- */
@@ -556,16 +562,16 @@ Variant Analyzer::EvaluateConstExprObject(const ObjectExpr& expr)
 int Analyzer::EvaluateConstExprInt(Expr& expr)
 {
     auto variant = EvaluateConstExpr(expr);
-    if (variant.Type() != Variant::Types::Int)
-        Warning(R_ExpectedConstIntExpr(), &expr);
+    if (WarnEnabled(Warnings::ImplicitTypeConversions) && variant.Type() != Variant::Types::Int)
+        Warning(R_ExpectedConstIntExpr, &expr);
     return static_cast<int>(variant.ToInt());
 }
 
 float Analyzer::EvaluateConstExprFloat(Expr& expr)
 {
     auto variant = EvaluateConstExpr(expr);
-    if (variant.Type() != Variant::Types::Real)
-        Warning(R_ExpectedConstFloatExpr(), &expr);
+    if (WarnEnabled(Warnings::ImplicitTypeConversions) && variant.Type() != Variant::Types::Real)
+        Warning(R_ExpectedConstFloatExpr, &expr);
     return static_cast<float>(variant.ToReal());
 }
 
@@ -616,7 +622,8 @@ std::string Analyzer::FetchSimilarIdent(const std::string& ident, StructDecl* st
 
 void Analyzer::OnReleaseSymbol(const ASTSymbolOverloadPtr& symbol)
 {
-    if (!InsideGlobalScope() && symbol)
+    /* Check if symbol is a local variable, that is declared but never used */
+    if (WarnEnabled(Warnings::UnusedVariables) && !InsideGlobalScope() && symbol)
     {
         if (auto varDecl = symbol->FetchVarDecl(false))
         {
@@ -626,7 +633,8 @@ void Analyzer::OnReleaseSymbol(const ASTSymbolOverloadPtr& symbol)
                  varDecl->structDeclRef == nullptr &&
                  varDecl->bufferDeclRef == nullptr )
             {
-                Warning("variable '" + varDecl->ToString() + "' is declared but never used", varDecl);
+                /* Report warning of unused variable */
+                Warning(R_VarDeclaredButNeverUsed(varDecl->ToString()), varDecl);
             }
         }
     }

@@ -69,6 +69,9 @@ class Analyzer : protected Visitor
             return reportHandler_;
         }
 
+        // Returns true if the specified warnings flags are enabled.
+        bool WarnEnabled(unsigned int flags) const;
+
         /* ----- Symbol table functions ----- */
 
         // Opens a new scope in the smybol table.
@@ -167,6 +170,8 @@ class Analyzer : protected Visitor
         SourceCode*             sourceCode_     = nullptr;
 
         ASTSymbolOverloadTable  symTable_;
+
+        Flags                   warnings_;
 
 };
 

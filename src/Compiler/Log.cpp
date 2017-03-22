@@ -35,13 +35,10 @@ void StdLog::SumitReport(const Report& report)
     }
 }
 
-void StdLog::PrintAll(bool verbose, bool warnings)
+void StdLog::PrintAll(bool verbose)
 {
     PrintAndClearReports(infos_, verbose);
-
-    if (warnings)
-        PrintAndClearReports(warnings_, verbose, (warnings_.size() == 1 ? "WARNING" : "WARNINGS"));
-
+    PrintAndClearReports(warnings_, verbose, (warnings_.size() == 1 ? "WARNING" : "WARNINGS"));
     PrintAndClearReports(errors_, verbose, (errors_.size() == 1 ? "ERROR": "ERRORS"));
 }
 

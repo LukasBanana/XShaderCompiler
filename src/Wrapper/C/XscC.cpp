@@ -77,7 +77,6 @@ static void InitializeFormatting(struct XscFormatting* s)
 
 static void InitializeOptions(struct XscOptions* s)
 {
-    s->warnings                 = false;
     s->optimize                 = false;
     s->preprocessOnly           = false;
     s->validateOnly             = false;
@@ -116,6 +115,7 @@ static void InitializeShaderInput(struct XscShaderInput* s)
     s->shaderTarget         = XscETargetUndefined;
     s->entryPoint           = "main";
     s->secondaryEntryPoint  = NULL;
+    s->warnings             = 0;
 
     InitializeIncludeHandler(&(s->includeHandler));
 }
@@ -344,6 +344,7 @@ XSC_EXPORT bool XscCompileShader(
     in.shaderTarget         = static_cast<Xsc::ShaderTarget>(inputDesc->shaderTarget);
     in.entryPoint           = ReadStringC(inputDesc->entryPoint);
     in.secondaryEntryPoint  = ReadStringC(inputDesc->secondaryEntryPoint);
+    in.warnings             = inputDesc->warnings;
     in.includeHandler       = (&includeHandler);
 
     /* Copy output descriptor */
@@ -363,7 +364,6 @@ XSC_EXPORT bool XscCompileShader(
     }
 
     /* Copy output options descriptor */
-    out.options.warnings                = outputDesc->options.warnings;
     out.options.optimize                = outputDesc->options.optimize;
     out.options.preprocessOnly          = outputDesc->options.preprocessOnly;
     out.options.validateOnly            = outputDesc->options.validateOnly;

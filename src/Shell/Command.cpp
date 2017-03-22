@@ -286,21 +286,49 @@ void IncludePathCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> WarnCommand::Idents() const
 {
-    return { { "-W" }, { "--warnings" } };
+    return { { "-W", true } };
 }
 
 HelpDescriptor WarnCommand::Help() const
 {
     return
     {
-        "-W, --warnings [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables all warnings; default=" + CommandLine::GetBooleanFalse()
+        "-W<TYPE> [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables the specified warning type; default=" + CommandLine::GetBooleanFalse() + "; valid values:",
+        (
+            "all           => all kinds of warnings\n"               \
+            "decl-shadow   => warn for declaration shadowing\n"      \
+            "empty-body    => warn for empty statement body\n"       \
+            "extension     => warn for required extensions\n"        \
+            "implicit-cast => warn for implicit type casts\n"        \
+            "reflect       => warn for issues in code reflection\n"  \
+            "unlocated-obj => warn for unlocated optional objects\n" \
+            "unused-vars   => warn for unused variables"
+        ),
     };
 }
 
 void WarnCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.options.warnings = cmdLine.AcceptBoolean(true);
+    const auto flags = MapStringToType<unsigned int>(
+        cmdLine.Accept(),
+        {
+            { "all",           Warnings::All                     },
+            { "decl-shadow",   Warnings::DeclarationShadowing    },
+            { "empty-body",    Warnings::EmptyStatementBody      },
+            { "extension",     Warnings::RequiredExtensions      },
+            { "implicit-cast", Warnings::ImplicitTypeConversions },
+            { "reflect",       Warnings::CodeReflection          },
+            { "unlocated-obj", Warnings::UnlocatedObjects        },
+            { "unused-vars",   Warnings::UnusedVariables         },
+        },
+        "invalid warning type"
+    );
+
+    if (cmdLine.AcceptBoolean(true))
+        state.inputDesc.warnings |= flags;
+    else
+        state.inputDesc.warnings &= (~flags);
 }
 
 

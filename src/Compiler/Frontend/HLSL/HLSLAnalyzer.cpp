@@ -59,7 +59,7 @@ void HLSLAnalyzer::DecorateASTPrimary(
     Visit(&program);
 
     /* Check if secondary entry point has been found */
-    if (!secondaryEntryPoint_.empty() && !secondaryEntryPointFound_)
+    if (!secondaryEntryPoint_.empty() && !secondaryEntryPointFound_ && WarnEnabled(Warnings::UnlocatedObjects))
         Warning(R_SecondEntryPointNotFound(secondaryEntryPoint_));
 }
 
@@ -190,7 +190,11 @@ IMPLEMENT_VISIT_PROC(StructDecl)
                 const StructDecl* varDeclOwner = nullptr;
                 if (ast->baseStructRef->Fetch(varDecl->ident, &varDeclOwner))
                 {
-                    Warning(R_VariableOverridesMemberOfBase(varDecl->ident, varDeclOwner->ToString()), varDecl);
+                    /* Report a warning (if enabled) */
+                    if (WarnEnabled(Warnings::DeclarationShadowing))
+                        Warning(R_VariableOverridesMemberOfBase(varDecl->ident, varDeclOwner->ToString()), varDecl);
+
+                    /* Remove duplicate variable from structure */
                     itVar = varDeclStmnt->varDecls.erase(itVar);
                 }
                 else
@@ -222,7 +226,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     PopStructDecl();
     
     /* Report warning if structure is empty */
-    if (ast->NumMemberVariables() == 0)
+    if (WarnEnabled(Warnings::EmptyStatementBody) && ast->NumMemberVariables() == 0)
         Warning(R_TypeHasNoMemberVariables(ast->ToString()), ast);
 }
 
@@ -380,21 +384,24 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
     Visit(ast->attribs);
 
-    /*
-    Scope rules inside for-loop are different in HLSL compared to C++ or other languages!
-    Variable declarations inside a for-loop header, that conflict with previously defined variables, will result in a warning.
-    */
-    std::map<const AST*, std::string> astIdentPairs;
-    ast->initStmnt->CollectDeclIdents(astIdentPairs);
-
-    for (const auto& it : astIdentPairs)
+    if (WarnEnabled(Warnings::DeclarationShadowing))
     {
-        if (auto symbol = FetchFromCurrentScopeOrNull(it.second))
+        /*
+        Scope rules inside for-loop are different in HLSL compared to C++ or other languages!
+        Variable declarations inside a for-loop header, that conflict with previously defined variables, will result in a warning.
+        */
+        std::map<const AST*, std::string> astIdentPairs;
+        ast->initStmnt->CollectDeclIdents(astIdentPairs);
+
+        for (const auto& it : astIdentPairs)
         {
-            if (symbol->Type() == AST::Types::VarDecl || symbol->Type() == AST::Types::BufferDecl || symbol->Type() == AST::Types::SamplerDecl)
+            if (auto symbol = FetchFromCurrentScopeOrNull(it.second))
             {
-                /* Report warning of conflicting variable declaration */
-                Warning(R_DeclShadowsPreviousLocal(it.second, symbol->area.Pos().ToString()), it.first);
+                if (symbol->Type() == AST::Types::VarDecl || symbol->Type() == AST::Types::BufferDecl || symbol->Type() == AST::Types::SamplerDecl)
+                {
+                    /* Report warning of conflicting variable declaration */
+                    Warning(R_DeclShadowsPreviousLocal(it.second, symbol->area.Pos().ToString()), it.first);
+                }
             }
         }
     }
@@ -897,7 +904,7 @@ void HLSLAnalyzer::AnalyzeCallExprIntrinsicPrimary(CallExpr* callExpr, const HLS
     /* Check shader input version */
     if (shaderModel_ < intr.minShaderModel)
     {
-        Warning(
+        Error(
             R_InvalidShaderModelForIntrinsic(
                 callExpr->ident, intr.minShaderModel.ToString(), shaderModel_.ToString()
             ),

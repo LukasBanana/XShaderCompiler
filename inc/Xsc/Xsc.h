@@ -76,6 +76,23 @@ namespace Xsc
 {
 
 
+//! Compiler warning flags.
+struct Warnings
+{
+    enum : unsigned int
+    {
+        UnusedVariables         = (1 << 0), // Warning for unused variables.
+        EmptyStatementBody      = (1 << 1), // Warning for statements with empty body.
+        ImplicitTypeConversions = (1 << 2), // Warning for specific implicit type conversions.
+        DeclarationShadowing    = (1 << 3), // Warning for declarations that shadow a previous local (e.g. for-loops or variables in class hierarchy).
+        UnlocatedObjects        = (1 << 4), // Warning for optional objects that where not found.
+        RequiredExtensions      = (1 << 5), // Warning for required extensions in the output code.
+        CodeReflection          = (1 << 6), // Warning for issues during code reflection.
+
+        All                     = (~0u),    // All warnings.
+    };
+};
+
 //! Formatting descriptor structure for the output shader.
 struct Formatting
 {
@@ -104,9 +121,6 @@ struct Formatting
 //! Structure for additional translation options.
 struct Options
 {
-    //! True if warnings are allowed. By default false.
-    bool warnings                   = false;
-
     //! If true, little code optimizations are performed. By default false.
     bool optimize                   = false;
 
@@ -194,13 +208,13 @@ struct ShaderInput
     std::shared_ptr<std::istream>   sourceCode;
 
     //! Specifies the input shader version (e.g. InputShaderVersion::HLSL5 for "HLSL 5"). By default InputShaderVersion::HLSL5.
-    InputShaderVersion              shaderVersion   = InputShaderVersion::HLSL5;
+    InputShaderVersion              shaderVersion       = InputShaderVersion::HLSL5;
     
     //! Specifies the target shader (Vertex, Fragment etc.). By default ShaderTarget::Undefined.
-    ShaderTarget                    shaderTarget    = ShaderTarget::Undefined;
+    ShaderTarget                    shaderTarget        = ShaderTarget::Undefined;
 
     //! Specifies the HLSL shader entry point. By default "main".
-    std::string                     entryPoint      = "main";
+    std::string                     entryPoint          = "main";
 
     /**
     \brief Specifies the secondary HLSL shader entry point.
@@ -212,10 +226,16 @@ struct ShaderInput
     std::string                     secondaryEntryPoint;
 
     /**
+    \brief Compiler warning flags. This can be a bitwise OR combination of the "Warnings" enumeration entries. By default 0.
+    \see Warnings
+    */
+    unsigned int                    warnings            = 0;
+
+    /**
     \brief Optional pointer to the implementation of the "IncludeHandler" interface. By default null.
     \remarks If this is null, the default include handler will be used, which will include files with the STL input file streams.
     */
-    IncludeHandler*                 includeHandler  = nullptr;
+    IncludeHandler*                 includeHandler      = nullptr;
 };
 
 //! Vertex shader semantic (or rather attribute) layout structure.

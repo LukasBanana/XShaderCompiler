@@ -248,7 +248,7 @@ void Shell::Compile(const std::string& filename)
         );
 
         /* Print all reports to the log output */
-        log.PrintAll(state_.verbose, state_.outputDesc.options.warnings);
+        log.PrintAll(state_.verbose);
 
         if (result)
         {

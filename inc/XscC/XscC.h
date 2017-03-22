@@ -23,6 +23,23 @@ extern "C" {
 #endif
 
 
+//! Compiler warning flags.
+struct XscWarnings
+{
+    enum : unsigned int
+    {
+        UnusedVariables         = (1 << 0), // Warning for unused variables.
+        EmptyStatementBody      = (1 << 1), // Warning for statements with empty body.
+        ImplicitTypeConversions = (1 << 2), // Warning for specific implicit type conversions.
+        DeclarationShadowing    = (1 << 3), // Warning for declarations that shadow a previous local (e.g. for-loops or variables in class hierarchy).
+        UnlocatedObjects        = (1 << 4), // Warning for optional objects that where not found.
+        RequiredExtensions      = (1 << 5), // Warning for required extensions in the output code.
+        CodeReflection          = (1 << 6), // Warning for issues during code reflection.
+
+        All                     = (~0u),    // All warnings.
+    };
+};
+
 //! Formatting descriptor structure for the output shader.
 struct XscFormatting
 {
@@ -51,9 +68,6 @@ struct XscFormatting
 //! Structure for additional translation options.
 struct XscOptions
 {
-    //! True if warnings are allowed. By default false.
-    bool warnings;
-
     //! If true, little code optimizations are performed. By default false.
     bool optimize;
 
@@ -157,6 +171,12 @@ struct XscShaderInput
     to the Tessellation-Evaluation output shader. If this is empty, the default values for these attributes are used.
     */
     const char*                     secondaryEntryPoint;
+
+    /**
+    \brief Compiler warning flags. This can be a bitwise OR combination of the "XscWarnings" enumeration entries. By default 0.
+    \see Warnings
+    */
+    unsigned int                    warnings;
 
     //! Include handler member which contains a function pointer to handle '#include'-directives.
     struct XscIncludeHandler        includeHandler;

@@ -163,6 +163,7 @@ void DebuggerView::CreateLayoutPropertyGridShaderInput(wxPropertyGrid& pg)
 
     pg.Append(new wxStringProperty("Entry Point", "entry", ""));
     pg.Append(new wxStringProperty("Secondary Entry Point", "secondaryEntry", ""));
+    pg.Append(new wxBoolProperty("Enable Warnings", "warnings"));
 }
 
 void DebuggerView::CreateLayoutPropertyGridShaderOutput(wxPropertyGrid& pg)
@@ -396,6 +397,8 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderInput_.shaderVersion = GetInputVersion(ValueInt());
     else if (name == "secondaryEntry")
         shaderInput_.secondaryEntryPoint = ValueStr();
+    else if (name == "warnings")
+        shaderInput_.warnings = (ValueBool() ? Warnings::All : 0);
     else if (name == "target")
         shaderInput_.shaderTarget = static_cast<ShaderTarget>(static_cast<long>(ShaderTarget::VertexShader) + ValueInt());
     else if (name == "outputVersion")
@@ -524,8 +527,9 @@ void DebuggerView::TranslateInputToOutput()
     /* Initialize input source */
     auto inputSource = std::make_shared<std::stringstream>();
     *inputSource << inputSourceView_->GetText().ToStdString();
+
     shaderInput_.sourceCode = inputSource;
-    shaderInput_.filename = "<unnamed>";
+    shaderInput_.filename   = "<unnamed>";
 
     /* Initialize output source */
     std::stringstream outputSource;
