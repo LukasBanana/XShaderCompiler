@@ -192,13 +192,13 @@ AST* ASTSymbolOverload::Fetch(bool throwOnFailure) const
         return (refs_.size() == 1 ? refs_.front() : nullptr);
 }
 
-AST* ASTSymbolOverload::FetchVar(bool throwOnFailure) const
+Decl* ASTSymbolOverload::FetchDecl(bool throwOnFailure) const
 {
     if (auto ref = Fetch(throwOnFailure))
     {
         auto type = ref->Type();
         if (type == AST::Types::VarDecl || type == AST::Types::BufferDecl || type == AST::Types::SamplerDecl)
-            return ref;
+            return static_cast<Decl*>(ref);
         if (throwOnFailure)
             RuntimeErr(R_IdentIsNotVarOrBufferOrSampler(ident_));
     }

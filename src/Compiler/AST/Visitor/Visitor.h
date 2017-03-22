@@ -196,6 +196,14 @@ class Visitor
         // Returns the active (inner most) call expression or null if the visitor is currently not inside a function call.
         CallExpr* ActiveCallExpr() const;
 
+        /* ----- L-value expression tracker ----- */
+
+        void PushLValueExpr(Expr* expr);
+        void PopLValueExpr();
+
+        // Returns the active (inner most) l-value expression or null (can be AssignExpr, UnaryExpr, or PostUnaryExpr).
+        Expr* ActiveLValueExpr() const;
+
         /* ----- Structure declaration tracker ----- */
 
         void PushStructDecl(StructDecl* ast);
@@ -234,6 +242,9 @@ class Visitor
 
         // Call expression stack to join arguments with its function call.
         std::stack<CallExpr*>           callExprStack_;
+
+        // L-value expression stack
+        std::stack<Expr*>               lvalueExprStack_;
 
         // Structure stack to collect all members with system value semantic (SV_...), and detect all nested structures.
         std::vector<StructDecl*>        structDeclStack_;

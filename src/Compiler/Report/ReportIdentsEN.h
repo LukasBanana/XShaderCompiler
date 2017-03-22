@@ -228,7 +228,8 @@ DECL_REPORT( EmptyPragma,                       "empty '#pragma'-directive"     
 /* ----- Visitor ----- */
 
 DECL_REPORT( FuncDeclStackUnderflow,            "function declaration stack underflow"                                                                          ); // internal error
-DECL_REPORT( CallExprStackUnderflow,            "call expression stack underflow"                                                                                 ); // internal error
+DECL_REPORT( CallExprStackUnderflow,            "call expression stack underflow"                                                                               ); // internal error
+DECL_REPORT( LValueExprStackUnderflow,          "l-value expression stack underflow"                                                                            ); // internal error
 DECL_REPORT( StructDeclStackUnderflow,          "structure declaration stack underflow"                                                                         ); // internal error
 DECL_REPORT( UniformBufferDeclStackUnderflow,   "uniform buffer declaration stack underflow"                                                                    ); // internal error
 DECL_REPORT( WritePrefixStackUnderflow,         "write prefix stack underflow"                                                                                  ); // internal error

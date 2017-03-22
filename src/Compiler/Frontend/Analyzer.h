@@ -155,8 +155,11 @@ class Analyzer : protected Visitor
 
         bool CollectArgumentTypeDenoters(const std::vector<ExprPtr>& args, std::vector<TypeDenoterPtr>& argTypeDens);
 
-        //! Tries to find a similar identifier in the following order: symbol table, structure (if enabled).
+        // Tries to find a similar identifier in the following order: symbol table, structure (if enabled).
         std::string FetchSimilarIdent(const std::string& ident, StructDecl* structDecl = nullptr) const;
+
+        // Callback for the symbol table when a symbol is realsed from its scope.
+        void OnReleaseSymbol(const ASTSymbolOverloadPtr& symbol);
 
         /* === Members === */
 

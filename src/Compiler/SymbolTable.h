@@ -56,8 +56,11 @@ class SymbolTable
     
     public:
         
-        // Override symbol callback procedure. Must return true to allow a symbol override.
+        // Callback function when a symbol is about to be overriden. Must return true to allow a symbol override.
         using OnOverrideProc = std::function<bool(SymbolType& prevSymbol)>;
+
+        // Callback function when a symbol is about to be released from its scope.
+        using OnReleaseProc = std::function<void(const SymbolType& symbol)>;
 
         SymbolTable()
         {
@@ -71,7 +74,7 @@ class SymbolTable
         }
 
         // Closes the active scope.
-        void CloseScope()
+        void CloseScope(const OnReleaseProc& releaseProc = nullptr)
         {
             if (!scopeStack_.empty())
             {
@@ -81,6 +84,10 @@ class SymbolTable
                     auto it = symTable_.find(ident);
                     if (it != symTable_.end())
                     {
+                        /* Callback for released symbol */
+                        if (releaseProc)
+                            releaseProc(it->second.top().symbol);
+
                         /* Remove symbol from the top most scope level */
                         it->second.pop();
                         if (it->second.empty())
@@ -213,7 +220,7 @@ class SymbolTable
 // AST symbol table type.
 using ASTSymbolTable = SymbolTable<AST*>;
 
-
+// AST symbol class for the AST, that allows overloaded symbol (for functions).
 class ASTSymbolOverload
 {
 
@@ -231,7 +238,7 @@ class ASTSymbolOverload
         Fetches a variable declaration (VarDecl, BufferDecl, SamplerDecl).
         If there is more than one reference or the type does not fit, an std::runtime_error is thrown.
         */
-        AST* FetchVar(bool throwOnFailure = true) const;
+        Decl* FetchDecl(bool throwOnFailure = true) const;
 
         // Returns the VarDecl AST node.
         VarDecl* FetchVarDecl(bool throwOnFailure = true) const;

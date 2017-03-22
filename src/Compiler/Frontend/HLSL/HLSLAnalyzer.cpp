@@ -542,7 +542,11 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    Visit(ast->expr);
+    PushLValueExpr(ast);
+    {
+        Visit(ast->expr);
+    }
+    PopLValueExpr();
 
     if (IsLValueOp(ast->op))
         AnalyzeLValueExpr(ast->expr.get(), ast);
@@ -550,7 +554,11 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 
 IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 {
-    Visit(ast->expr);
+    PushLValueExpr(ast);
+    {
+        Visit(ast->expr);
+    }
+    PopLValueExpr();
 
     if (IsLValueOp(ast->op))
         AnalyzeLValueExpr(ast->expr.get(), ast);
@@ -563,7 +571,12 @@ IMPLEMENT_VISIT_PROC(CallExpr)
 
 IMPLEMENT_VISIT_PROC(AssignExpr)
 {
-    Visit(ast->lvalueExpr);
+    PushLValueExpr(ast);
+    {
+        Visit(ast->lvalueExpr);
+    }
+    PopLValueExpr();
+
     Visit(ast->rvalueExpr);
 
     ValidateTypeCastFrom(ast->rvalueExpr.get(), ast->lvalueExpr.get(), R_VarAssignment);
@@ -752,7 +765,12 @@ void HLSLAnalyzer::AnalyzeCallExprPrimary(CallExpr* callExpr, const TypeDenoter*
         callExpr->ForEachOutputArgument(
             [this](ExprPtr& argExpr)
             {
-                AnalyzeLValueExpr(argExpr.get());
+                //TODO: also push information if this argument is read from or only written to!
+                //PushLValueExpr(argExpr.get(), true);
+                {
+                    AnalyzeLValueExpr(argExpr.get());
+                }
+                //PopLValueExpr();
             }
         );
     }
@@ -1007,8 +1025,15 @@ void HLSLAnalyzer::AnalyzeObjectExpr(ObjectExpr* expr)
         }
         else
         {
-            /* Decorate object expression with symbol reference */
-            expr->symbolRef = FetchDecl(expr->ident, expr);
+            if (auto symbol = FetchDecl(expr->ident, expr))
+            {
+                /* Decorate object expression with symbol reference */
+                expr->symbolRef = symbol;
+
+                /* Mark is 'read from' if this object expression is not part of an l-value expression */
+                if (ActiveLValueExpr() == nullptr)
+                    symbol->flags << Decl::isReadFrom;
+            }
         }
     }
     catch (const ASTRuntimeError& e)

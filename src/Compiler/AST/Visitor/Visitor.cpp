@@ -392,6 +392,26 @@ CallExpr* Visitor::ActiveCallExpr() const
     return (callExprStack_.empty() ? nullptr : callExprStack_.top());
 }
 
+/* ----- L-value expression tracker ----- */
+
+void Visitor::PushLValueExpr(Expr* expr)
+{
+    lvalueExprStack_.push(expr);
+}
+
+void Visitor::PopLValueExpr()
+{
+    if (!lvalueExprStack_.empty())
+        lvalueExprStack_.pop();
+    else
+        throw std::runtime_error(R_LValueExprStackUnderflow);
+}
+
+Expr* Visitor::ActiveLValueExpr() const
+{
+    return (lvalueExprStack_.empty() ? nullptr : lvalueExprStack_.top());
+}
+
 /* ----- Structure declaration tracker ----- */
 
 void Visitor::PushStructDecl(StructDecl* ast)

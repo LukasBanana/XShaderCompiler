@@ -109,7 +109,7 @@ void Analyzer::OpenScope()
 
 void Analyzer::CloseScope()
 {
-    symTable_.CloseScope();
+    symTable_.CloseScope(std::bind(&Analyzer::OnReleaseSymbol, this, std::placeholders::_1));
 }
 
 void Analyzer::Register(const std::string& ident, AST* ast)
@@ -612,6 +612,23 @@ std::string Analyzer::FetchSimilarIdent(const std::string& ident, StructDecl* st
     }
 
     return "";
+}
+
+void Analyzer::OnReleaseSymbol(const ASTSymbolOverloadPtr& symbol)
+{
+    if (!InsideGlobalScope() && symbol)
+    {
+        if (auto varDecl = symbol->FetchVarDecl(false))
+        {
+            if ( !varDecl->flags(Decl::isReadFrom) &&
+                 !varDecl->IsStatic() &&
+                 varDecl->structDeclRef == nullptr &&
+                 varDecl->bufferDeclRef == nullptr )
+            {
+                Warning("variable '" + varDecl->ToString() + "' is declared but never used", varDecl);
+            }
+        }
+    }
 }
 
 
