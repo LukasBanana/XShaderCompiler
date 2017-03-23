@@ -1260,24 +1260,14 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeD
     const BaseTypeDenoter boolTypeDen(DataType::Bool);
 
     if (!condTypeDen->IsCastableTo(boolTypeDen))
-    {
-        RuntimeErr(
-            R_IllegalCast(condTypeDen->ToString(), boolTypeDen.ToString(), R_ConditionOfTernaryExpr),
-            condExpr.get()
-        );
-    }
+        RuntimeErr(R_IllegalCast(condTypeDen->ToString(), boolTypeDen.ToString(), R_ConditionOfTernaryExpr), condExpr.get());
 
     /* Find common type denoter for both sub expressions */
     const auto& thenTypeDen = thenExpr->GetTypeDenoter();
     const auto& elseTypeDen = elseExpr->GetTypeDenoter();
 
     if (!elseTypeDen->IsCastableTo(*thenTypeDen))
-    {
-        RuntimeErr(
-            R_IllegalCast(elseTypeDen->ToString(), thenTypeDen->ToString(), R_TernaryExpr),
-            this
-        );
-    }
+        RuntimeErr(R_IllegalCast(elseTypeDen->ToString(), thenTypeDen->ToString(), R_TernaryExpr), this);
 
     auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(thenTypeDen, elseTypeDen);
 
@@ -1327,12 +1317,7 @@ TypeDenoterPtr BinaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
     const auto& rhsTypeDen = rhsExpr->GetTypeDenoter();
 
     if (!rhsTypeDen->IsCastableTo(*lhsTypeDen) || !lhsTypeDen->IsCastableTo(*rhsTypeDen))
-    {
-        RuntimeErr(
-            R_IllegalCast(rhsTypeDen->ToString(), lhsTypeDen->ToString(), R_BinaryExpr(BinaryOpToString(op))),
-            this
-        );
-    }
+        RuntimeErr(R_IllegalCast(rhsTypeDen->ToString(), lhsTypeDen->ToString(), R_BinaryExpr(BinaryOpToString(op))), this);
 
     /* Find common type denoter of left and right sub expressions */
     if (auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(lhsTypeDen, rhsTypeDen))
@@ -1729,12 +1714,7 @@ TypeDenoterPtr CastExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDeno
     const auto& valueTypeDen = expr->GetTypeDenoter();
 
     if (!valueTypeDen->IsCastableTo(*castTypeDen))
-    {
-        RuntimeErr(
-            R_IllegalCast(valueTypeDen->ToString(), castTypeDen->ToString(), R_CastExpr),
-            this
-        );
-    }
+        RuntimeErr(R_IllegalCast(valueTypeDen->ToString(), castTypeDen->ToString(), R_CastExpr), this);
 
     return castTypeDen;
 }
@@ -1743,128 +1723,78 @@ TypeDenoterPtr CastExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDeno
 /* ----- InitializerExpr ----- */
 
 /*
-This function derives the type denoter of the initializer by getting the type denoter of each sub-expression.
-If a sub-expression is again an array type denoter, its array dimensions are inserted into the
-final return type denoter (see 'ArrayTypeDenoter::InsertSubArray' function)
+While this function derives the type of the initializer,
+it also modifies its sub expressions to match the expected type.
 */
 TypeDenoterPtr InitializerExpr::DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter)
 {
-    if (expectedTypeDenoter)
-        return DeriveTypeDenoterAs(*expectedTypeDenoter);
-    else
-        return DeriveTypeDenoterAsArray();
-}
-
-TypeDenoterPtr InitializerExpr::DeriveTypeDenoterAsArray()
-{
+    if (!expectedTypeDenoter)
+        RuntimeErr(R_CantDeriveTypeOfInitializer, this);
     if (exprs.empty())
         RuntimeErr(R_CantDeriveTypeOfEmptyInitializer, this);
 
-    /* Start with a 1-dimension array type */
-    auto finalTypeDen = std::make_shared<ArrayTypeDenoter>();
-    finalTypeDen->arrayDims.push_back(ASTFactory::MakeArrayDimension(static_cast<int>(exprs.size())));
+    /* Get number of 'unrolled' elements */
+    const auto numElementsUnrolled = NumElementsUnrolled();
 
-    TypeDenoterPtr elementsTypeDen;
-
-    for (const auto& expr : exprs)
-    {
-        TypeDenoterPtr subTypeDen;
-
-        /* Get elements type denoter from sub expression */
-        subTypeDen = expr->GetTypeDenoter();
-
-        if (elementsTypeDen)
-        {
-            /* Check compatability with current output type dentoer */
-            if (auto elementsArrayTypeDen = elementsTypeDen->As<ArrayTypeDenoter>())
-            {
-                /* Array types must have the same size */
-                if (auto arraySubTypeDen = subTypeDen->As<ArrayTypeDenoter>())
-                {
-                    const auto& lhsDims = elementsArrayTypeDen->arrayDims;
-                    const auto& rhsDims = arraySubTypeDen->arrayDims;
-
-                    const auto lhsNumElements = lhsDims.size();
-                    const auto rhsNumElements = rhsDims.size();
-
-                    if (lhsNumElements != rhsNumElements)
-                        RuntimeErr(R_ArrayDimMismatchInInitializer(lhsNumElements, rhsNumElements), expr.get());
-
-                    /* Array dimensions must have the same size */
-                    for (std::size_t i = 0; i < lhsNumElements; ++i)
-                    {
-                        const auto lhsSize = lhsDims[i]->size;
-                        const auto rhsSize = rhsDims[i]->size;
-
-                        if (lhsSize != rhsSize)
-                            RuntimeErr(R_ArrayDimSizeMismatchInInitializer(lhsSize, rhsSize), expr.get());
-                    }
-                }
-                else
-                {
-                    RuntimeErr(
-                        R_TypeMismatchInInitializer(elementsTypeDen->ToString(), subTypeDen->ToString()),
-                        expr.get()
-                    );
-                }
-            }
-            else if (!subTypeDen->IsCastableTo(*elementsTypeDen))
-            {
-                RuntimeErr(
-                    R_IllegalCast(subTypeDen->ToString(), elementsTypeDen->ToString(), R_InitializerExpr),
-                    expr.get()
-                );
-            }
-        }
-        else
-        {
-            /* Insert sub array type with array dimensions and base type */
-            if (auto arraySubTypeDen = subTypeDen->As<const ArrayTypeDenoter>())
-                finalTypeDen->InsertSubArray(*arraySubTypeDen);
-            else
-                finalTypeDen->subTypeDenoter = subTypeDen;
-
-            /* Set first output type denoter */
-            elementsTypeDen = subTypeDen;
-        }
-    }
-
-    return finalTypeDen;
-}
-
-TypeDenoterPtr InitializerExpr::DeriveTypeDenoterAs(const TypeDenoter& expectedTypeDenoter)
-{
-    const auto& typeDen = expectedTypeDenoter.GetAliased();
+    /* Derive type for either base or structure type */
+    const auto& typeDen = expectedTypeDenoter->GetAliased();
     if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
     {
-        /* Compare number of elements with size of base type */
-        const auto matrixDim        = MatrixTypeDim(baseTypeDen->dataType);
-        const auto numTypeElements  = static_cast<std::size_t>(matrixDim.first * matrixDim.second);
-        const auto numListElements  = static_cast<std::size_t>(NumElements());
+        const auto dataType = baseTypeDen->dataType;
+        if (IsScalarType(dataType))
+        {
+            if (numElementsUnrolled != 1)
+                RuntimeErr(R_InvalidNumElementsInInitializer(expectedTypeDenoter->ToString(), 1u, numElementsUnrolled), this);
 
-        /* Unroll elements for base types */
-        if (numListElements == numTypeElements)
+            /* Find common type denoter for both sub expressions */
+            const auto& expr0TypeDen = exprs[0]->GetTypeDenoter();
+            if (!expr0TypeDen->IsCastableTo(*expectedTypeDenoter))
+                RuntimeErr(R_IllegalCast(expr0TypeDen->ToString(), expectedTypeDenoter->ToString(), R_InitializerList), this);
+        }
+        else if (IsVectorType(dataType))
+        {
+            /* Compare number of elements with size of base type */
+            const auto matrixDim        = MatrixTypeDim(baseTypeDen->dataType);
+            const auto numTypeElements  = static_cast<std::size_t>(matrixDim.first * matrixDim.second);
+
+            //TODO: does not work for { 1, v3 } --> float4(1, v3)
+
+            #if 0
+            /* Unroll elements for base types */
+            if (numElementsUnrolled == numTypeElements)
+                UnrollElements();
+            else
+                RuntimeErr(R_InvalidNumElementsInInitializer(expectedTypeDenoter->ToString(), numTypeElements, numElementsUnrolled), this);
+            #else
             UnrollElements();
-        else
-            RuntimeErr(R_InvalidNumElementsInInitializer(expectedTypeDenoter.ToString(), numTypeElements, numListElements), this);
+            #endif
+        }
+        else if (IsMatrixType(dataType))
+        {
+            //TODO...
+        }
     }
     else if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
     {
         //TODO...
     }
+    else if (auto arrayTypeDen = typeDen.As<ArrayTypeDenoter>())
+    {
+        //TODO...
+    }
 
-    //TODO: replace this simple copy with a correct type derivation
-    return expectedTypeDenoter.Copy();
+    /* Copy expected type denoter */
+    return expectedTypeDenoter->Copy();
 }
 
-unsigned int InitializerExpr::NumElements() const
+std::size_t InitializerExpr::NumElementsUnrolled() const
 {
-    unsigned int n = 0;
+    std::size_t n = 0;
     
     for (const auto& e : exprs)
     {
         if (auto initSubExpr = e->FetchNonBracketExpr()->As<InitializerExpr>())
-            n += initSubExpr->NumElements();
+            n += initSubExpr->NumElementsUnrolled();
         else
             ++n;
     }
@@ -1885,10 +1815,18 @@ void InitializerExpr::CollectElements(std::vector<ExprPtr>& elements) const
 
 void InitializerExpr::UnrollElements()
 {
-    /* Collect all elements and then replace the sub expression by the new list */
-    std::vector<ExprPtr> elements;
-    CollectElements(elements);
-    exprs = elements;
+    /* Check if unrolling is necessary */
+    for (const auto& e : exprs)
+    {
+        if (e->Type() == AST::Types::InitializerExpr)
+        {
+            /* Collect all elements and then replace the sub expression by the new list */
+            std::vector<ExprPtr> elements;
+            CollectElements(elements);
+            exprs = elements;
+            break;
+        }
+    }
 }
 
 static ExprPtr FetchSubExprFromInitializerExpr(const InitializerExpr* ast, const std::vector<int>& arrayIndices, std::size_t layer)

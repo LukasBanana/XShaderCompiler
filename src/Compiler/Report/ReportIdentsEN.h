@@ -115,12 +115,9 @@ DECL_REPORT( TernaryExpr,                       "ternary expression"            
 DECL_REPORT( BinaryExpr,                        "binary expression '{0}'"                                                                                       );
 DECL_REPORT( OnlyBaseTypeAllowed,               "only scalar, vector, and matrix type allowed[ in {0}][, but got '{1}']"                                        );
 DECL_REPORT( CastExpr,                          "cast expression"                                                                                               );
-DECL_REPORT( InitializerExpr,                   "initializer expression"                                                                                        );
-DECL_REPORT( ConditionOfTernaryExpr,            "condition of ternary expression"                                                                               );
+DECL_REPORT( CantDeriveTypeOfInitializer,       "can not derive type of initializer list without type parameter"                                                );
 DECL_REPORT( CantDeriveTypeOfEmptyInitializer,  "can not derive type of initializer list with no elements"                                                      );
-DECL_REPORT( ArrayDimMismatchInInitializer,     "array dimensions mismatch in initializer expression (expected {0} dimension(s), but got {1})"                  );
-DECL_REPORT( ArrayDimSizeMismatchInInitializer, "array dimension size mismatch in initializer expression (expected {0} element(s), but got {1})"                );
-DECL_REPORT( TypeMismatchInInitializer,         "type mismatch in initializer expression (expected array '{0}', but got '{1}')"                                 );
+DECL_REPORT( ConditionOfTernaryExpr,            "condition of ternary expression"                                                                               );
 DECL_REPORT( ExpectedInitializerForArrayAccess, "initializer expression expected for array access"                                                              );
 DECL_REPORT( InvalidNumElementsInInitializer,   "invalid number of elements in initializer expression for type '{0}' (expected {1}, but got {2})"               );
 DECL_REPORT( NotEnoughElementsInInitializer,    "not enough elements in initializer expression"                                                                 );

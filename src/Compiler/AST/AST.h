@@ -1215,11 +1215,8 @@ struct InitializerExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
-    TypeDenoterPtr DeriveTypeDenoterAsArray();
-    TypeDenoterPtr DeriveTypeDenoterAs(const TypeDenoter& expectedTypeDenoter);
-
-    // Returns the number of scalar elements (with recursion).
-    unsigned int NumElements() const;
+    // Returns the number of elements with all sub initializers being unrollwed (e.g. { 1, { 2, 3 } } has 3 'unrolled' elements just like { 1, 2, 3 }).
+    std::size_t NumElementsUnrolled() const;
 
     // Collects all elements from the sub expressions without initializer lists (e.g. { 1, { 2, 3 } } --> { 1, 2, 3 }).
     void CollectElements(std::vector<ExprPtr>& elements) const;
