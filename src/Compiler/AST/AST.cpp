@@ -1748,7 +1748,7 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter(const TypeDenoter* expectedTyp
         {
             /* Check number of unrolled elements */
             if (numElementsUnrolled != 1)
-                RuntimeErr(R_InvalidNumElementsInInitializer(expectedTypeDenoter->ToString(), 1u, numElementsUnrolled), this);
+                RuntimeErr(R_InvalidNumElementsInInitializer(expectedTypeDenoter->ToString(), std::size_t(1u), numElementsUnrolled), this);
 
             /* Find common type denoter for both sub expressions */
             const auto& expr0TypeDen = exprs[0]->GetTypeDenoter();
