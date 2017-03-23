@@ -1194,12 +1194,10 @@ void GLSLGenerator::WriteLayout(const std::initializer_list<LayoutEntryFunctor>&
 {
     PushWritePrefix("layout(");
     {
-        bool firstWritten = false;
-
         for (const auto& entryFunc : entryFunctors)
         {
             /* Write comma separator, if this is not the first entry */
-            if (firstWritten)
+            if (TopWritePrefix())
             {
                 /* Push comman separator as prefix for the next layout entry */
                 PushWritePrefix(", ");
@@ -1212,15 +1210,10 @@ void GLSLGenerator::WriteLayout(const std::initializer_list<LayoutEntryFunctor>&
             {
                 /* Call function for the first layout entry */
                 entryFunc();
-                if (TopWritePrefix())
-                    firstWritten = true;
             }
         }
-
-        if (TopWritePrefix())
-            Write(") ");
     }
-    PopWritePrefix();
+    PopWritePrefix(") ");
 }
 
 void GLSLGenerator::WriteLayout(const std::string& value)

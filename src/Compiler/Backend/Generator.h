@@ -71,7 +71,7 @@ class Generator : protected Visitor
 
         // Push the specified text to the write-prefix which will be written in front of the text of the next "Write"/"WriteLn" call.
         void PushWritePrefix(const std::string& text);
-        void PopWritePrefix();
+        void PopWritePrefix(const std::string& text = "");
 
         // Returns true, if the current (top most) write prefix was written out.
         bool TopWritePrefix() const;

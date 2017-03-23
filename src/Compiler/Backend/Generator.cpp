@@ -150,12 +150,17 @@ void Generator::PushWritePrefix(const std::string& text)
     writePrefixStack_.push_back({ text, false });
 }
 
-void Generator::PopWritePrefix()
+void Generator::PopWritePrefix(const std::string& text)
 {
     if (writePrefixStack_.empty())
         throw std::underflow_error(R_WritePrefixStackUnderflow);
     else
+    {
+        /* Append postfix if the previous prefix has been written */
+        if (!text.empty() && TopWritePrefix())
+            Write(text);
         writePrefixStack_.pop_back();
+    }
 }
 
 bool Generator::TopWritePrefix() const
