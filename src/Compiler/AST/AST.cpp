@@ -1740,9 +1740,13 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter(const TypeDenoter* expectedTyp
     const auto& typeDen = expectedTypeDenoter->GetAliased();
     if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
     {
+        /* Always unroll elements for base types */
+        UnrollElements();
+
         const auto dataType = baseTypeDen->dataType;
         if (IsScalarType(dataType))
         {
+            /* Check number of unrolled elements */
             if (numElementsUnrolled != 1)
                 RuntimeErr(R_InvalidNumElementsInInitializer(expectedTypeDenoter->ToString(), 1u, numElementsUnrolled), this);
 
@@ -1765,8 +1769,6 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter(const TypeDenoter* expectedTyp
                 UnrollElements();
             else
                 RuntimeErr(R_InvalidNumElementsInInitializer(expectedTypeDenoter->ToString(), numTypeElements, numElementsUnrolled), this);
-            #else
-            UnrollElements();
             #endif
         }
         else if (IsMatrixType(dataType))
