@@ -25,7 +25,6 @@ Known Issues
 
 Requested Features
 ------------------
-| Feature | Remarks |
-|---------|---------|
-| Warnings for required GLSL extensions | This could be added with different warning levels (like `-W1`, `-W2`, `-Wall` in GCC). |
+
+- [x] Warnings for required GLSL extensions (implemented with `-Wextension`; also `-Wall` added like in GCC).
 
