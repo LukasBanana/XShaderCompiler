@@ -1307,7 +1307,7 @@ void PrefixNamespaceCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> AlwaysUseSemanticsCommand::Idents() const
 {
-    return { { "-Pas }, { --prefix-always-semantics" } };
+    return { { "-Pas" }, { "--prefix-always-semantics" } };
 }
 
 HelpDescriptor AlwaysUseSemanticsCommand::Help() const
