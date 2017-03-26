@@ -33,20 +33,21 @@ struct CodeBlockStmntArgs
  * GLSLConverter class
  */
 
-void GLSLConverter::Convert(
-    Program& program, const ShaderTarget shaderTarget, const NameMangling& nameMangling, const Options& options, const OutputShaderVersion versionOut)
+/*
+ * ======= Private: =======
+ */
+
+void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
 {
     /* Store settings */
-    shaderTarget_       = shaderTarget;
-    program_            = (&program);
-    nameMangling_       = nameMangling;
-    options_            = options;
-    isVKSL_             = IsLanguageVKSL(versionOut);
+    shaderTarget_       = inputDesc.shaderTarget;
+    options_            = outputDesc.options;
+    isVKSL_             = IsLanguageVKSL(outputDesc.shaderVersion);
 
     /* Convert expressions */
     Flags exprConverterFlags = ExprConverter::All;
 
-    if ( isVKSL_ || ( versionOut >= OutputShaderVersion::GLSL420 && versionOut <= OutputShaderVersion::GLSL450 ))
+    if ( isVKSL_ || ( outputDesc.shaderVersion >= OutputShaderVersion::GLSL420 && outputDesc.shaderVersion <= OutputShaderVersion::GLSL450 ))
     {
         /*
         Remove specific conversions when the GLSL output version is explicitly set to 4.20 or higher,
@@ -59,22 +60,17 @@ void GLSLConverter::Convert(
     exprConverter_.Convert(program, exprConverterFlags);
 
     /* Visit program AST */
-    Visit(program_);
+    Visit(GetProgram());
 
     /* Convert function names after main conversion, since functon owner structs may have been renamed as well */
     FuncNameConverter funcNameConverter;
     funcNameConverter.Convert(
         program,
-        nameMangling_,
+        GetNameMangling(),
         GLSLConverter::CompareFuncSignatures,
         FuncNameConverter::All
     );
 }
-
-
-/*
- * ======= Private: =======
- */
 
 /* ------- Visit functions ------- */
 
@@ -89,20 +85,20 @@ IMPLEMENT_VISIT_PROC(Program)
     switch (shaderTarget_)
     {
         case ShaderTarget::VertexShader:
-            if (nameMangling_.useAlwaysSemantics)
-                RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs, true, true);
-            RenameInOutVarIdents(entryPoint->outputSemantics.varDeclRefs, false);
+            if (GetNameMangling().useAlwaysSemantics)
+                RenameIdentOfInOutVarDecls(entryPoint->inputSemantics.varDeclRefs, true, true);
+            RenameIdentOfInOutVarDecls(entryPoint->outputSemantics.varDeclRefs, false);
             break;
 
         case ShaderTarget::FragmentShader:
-            RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs, true);
-            if (nameMangling_.useAlwaysSemantics)
-                RenameInOutVarIdents(entryPoint->outputSemantics.varDeclRefs, false, true);
+            RenameIdentOfInOutVarDecls(entryPoint->inputSemantics.varDeclRefs, true);
+            if (GetNameMangling().useAlwaysSemantics)
+                RenameIdentOfInOutVarDecls(entryPoint->outputSemantics.varDeclRefs, false, true);
             break;
 
         default:
-            RenameInOutVarIdents(entryPoint->inputSemantics.varDeclRefs, true);
-            RenameInOutVarIdents(entryPoint->outputSemantics.varDeclRefs, false);
+            RenameIdentOfInOutVarDecls(entryPoint->inputSemantics.varDeclRefs, true);
+            RenameIdentOfInOutVarDecls(entryPoint->outputSemantics.varDeclRefs, false);
             break;
     }
 
@@ -121,7 +117,7 @@ IMPLEMENT_VISIT_PROC(Program)
         /* Remove all variables which are sampler state objects, since GLSL does not support sampler states */
         MoveAllIf(
             ast->globalStmnts,
-            program_->disabledAST,
+            GetProgram()->disabledAST,
             [&](const StmntPtr& stmnt)
             {
                 if (stmnt->Type() == AST::Types::SamplerDeclStmnt)
@@ -180,7 +176,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
         MoveAllIf(
             ast->arguments,
-            program_->disabledAST,
+            GetProgram()->disabledAST,
             [&](const ExprPtr& expr)
             {
                 return IsSamplerStateTypeDenoter(expr->GetTypeDenoter());
@@ -214,7 +210,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         {
             /* Rename function to "{TempPrefix}{StructName}_{VarName}" */
             ast->ident = structDecl->ident + "_" + ast->ident;
-            ast->ident.AppendPrefix(nameMangling_.namespacePrefix);
+            ast->ident.AppendPrefix(GetNameMangling().namespacePrefix);
         }
     }
 
@@ -236,7 +232,7 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    LabelAnonymousStructDecl(ast);
+    LabelAnonymousDecl(ast);
     RenameReservedKeyword(ast->ident);
 
     PushStructDecl(ast);
@@ -254,7 +250,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     if (ast->NumMemberVariables(true) == 0)
     {
         /* Add dummy member if the structure is empty (GLSL does not support empty structures) */
-        auto dummyMember = ASTFactory::MakeVarDeclStmnt(DataType::Int, nameMangling_.temporaryPrefix + "dummy");
+        auto dummyMember = ASTFactory::MakeVarDeclStmnt(DataType::Int, GetNameMangling().temporaryPrefix + "dummy");
         ast->varMembers.push_back(dummyMember);
     }
 }
@@ -309,7 +305,7 @@ IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
+    ConvertEntryPointReturnStmnt(ast->bodyStmnt);
 
     Visit(ast->attribs);
     OpenScope();
@@ -334,7 +330,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
+    ConvertEntryPointReturnStmnt(ast->bodyStmnt);
 
     OpenScope();
     {
@@ -346,7 +342,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
+    ConvertEntryPointReturnStmnt(ast->bodyStmnt);
 
     OpenScope();
     {
@@ -358,7 +354,7 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 IMPLEMENT_VISIT_PROC(IfStmnt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
+    ConvertEntryPointReturnStmnt(ast->bodyStmnt);
 
     OpenScope();
     {
@@ -370,7 +366,7 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
 IMPLEMENT_VISIT_PROC(ElseStmnt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    MakeCodeBlockInEntryPointReturnStmnt(ast->bodyStmnt);
+    ConvertEntryPointReturnStmnt(ast->bodyStmnt);
 
     OpenScope();
     {
@@ -481,26 +477,11 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
 
 /* ----- Scope functions ----- */
 
-void GLSLConverter::OpenScope()
-{
-    symTable_.OpenScope();
-}
-
-void GLSLConverter::CloseScope()
-{
-    symTable_.CloseScope();
-}
-
-void GLSLConverter::Register(const std::string& ident)
-{
-    symTable_.Register(ident, true);
-}
-
 void GLSLConverter::RegisterDeclIdent(Decl* obj, bool global)
 {
     /* Rename declaration object if required */
     if (MustRenameDeclIdent(obj))
-        RenameDeclIdent(obj);
+        RenameIdentOf(obj);
 
     /* Rename declaration object if it has a reserved keyword */
     RenameReservedKeyword(obj->ident);
@@ -518,25 +499,7 @@ void GLSLConverter::RegisterGlobalDeclIdents(const std::vector<VarDecl*>& varDec
         RegisterDeclIdent(varDecl, true);
 }
 
-bool GLSLConverter::FetchFromCurrentScope(const std::string& ident) const
-{
-    return symTable_.FetchFromCurrentScope(ident);
-}
-
 /* --- Helper functions for conversion --- */
-
-bool GLSLConverter::IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter) const
-{
-    if (typeDenoter)
-    {
-        if (auto samplerTypeDen = typeDenoter->GetAliased().As<SamplerTypeDenoter>())
-        {
-            /* Is the sampler type a sampler-state type? */
-            return IsSamplerStateType(samplerTypeDen->samplerType);
-        }
-    }
-    return false;
-}
 
 bool GLSLConverter::MustRenameDeclIdent(const Decl* obj) const
 {
@@ -572,79 +535,12 @@ bool GLSLConverter::MustRenameDeclIdent(const Decl* obj) const
     return false;
 }
 
-void GLSLConverter::RenameIdent(Identifier& ident)
-{
-    ident.AppendPrefix(nameMangling_.temporaryPrefix);
-}
-
-void GLSLConverter::RenameDeclIdent(Decl* obj)
-{
-    RenameIdent(obj->ident);
-}
-
-void GLSLConverter::RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, bool input, bool useSemanticOnly)
-{
-    for (auto varDecl : varDecls)
-    {
-        if (useSemanticOnly)
-            varDecl->ident = varDecl->semantic.ToString();
-        else if (input)
-            varDecl->ident = nameMangling_.inputPrefix + varDecl->semantic.ToString();
-        else
-            varDecl->ident = nameMangling_.outputPrefix + varDecl->semantic.ToString();
-    }
-}
-
-void GLSLConverter::LabelAnonymousStructDecl(StructDecl* ast)
-{
-    if (ast->IsAnonymous())
-    {
-        ast->ident = nameMangling_.temporaryPrefix + "anonym" + std::to_string(anonymCounter_);
-        ++anonymCounter_;
-    }
-}
-
-bool GLSLConverter::IsGlobalInOutVarDecl(VarDecl* varDecl) const
-{
-    if (varDecl)
-    {
-        /* Is this variable a global input/output variable? */
-        auto entryPoint = program_->entryPointRef;
-        return (entryPoint->inputSemantics.Contains(varDecl) || entryPoint->outputSemantics.Contains(varDecl));
-    }
-    return false;
-}
-
-void GLSLConverter::MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& stmnt)
-{
-    /* Is this statement within the entry point? */
-    if (InsideEntryPoint())
-    {
-        if (stmnt->Type() == AST::Types::ReturnStmnt)
-        {
-            /* Convert statement into a code block statement */
-            stmnt = ASTFactory::MakeCodeBlockStmnt(stmnt);
-        }
-    }
-}
-
-void GLSLConverter::RemoveDeadCode(std::vector<StmntPtr>& stmnts)
-{
-    for (auto it = stmnts.begin(); it != stmnts.end();)
-    {
-        if ((*it)->flags(AST::isDeadCode))
-            it = stmnts.erase(it);
-        else
-            ++it;
-    }
-}
-
 void GLSLConverter::RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts)
 {
     /* Move all variables to disabled code which are sampler state objects, since GLSL does not support sampler states */
     MoveAllIf(
         stmnts,
-        program_->disabledAST,
+        GetProgram()->disabledAST,
         [&](const VarDeclStmntPtr& varDeclStmnt)
         {
             return IsSamplerStateTypeDenoter(varDeclStmnt->typeSpecifier->GetTypeDenoter());
@@ -657,7 +553,7 @@ bool GLSLConverter::RenameReservedKeyword(Identifier& ident)
     if (options_.obfuscate)
     {
         /* Set output identifier to an obfuscated number */
-        ident = "_" + std::to_string(obfuscationCounter_++);
+        RenameIdentObfuscated(ident);
         return true;
     }
     else
@@ -668,37 +564,19 @@ bool GLSLConverter::RenameReservedKeyword(Identifier& ident)
         auto it = reservedKeywords.find(ident);
         if (it != reservedKeywords.end())
         {
-            ident.AppendPrefix(nameMangling_.reservedWordPrefix);
+            ident.AppendPrefix(GetNameMangling().reservedWordPrefix);
             return true;
         }
 
         /* Check if identifier begins with "gl_" */
         if (ident.Final().compare(0, 3, "gl_") == 0)
         {
-            ident.AppendPrefix(nameMangling_.reservedWordPrefix);
+            ident.AppendPrefix(GetNameMangling().reservedWordPrefix);
             return true;
         }
 
         return false;
     }
-}
-
-void GLSLConverter::PushSelfParameter(VarDecl* parameter)
-{
-    selfParamStack_.push_back(parameter);
-}
-
-void GLSLConverter::PopSelfParameter()
-{
-    if (!selfParamStack_.empty())
-        return selfParamStack_.pop_back();
-    else
-        throw std::underflow_error(R_SelfParamLevelUnderflow);
-}
-
-VarDecl* GLSLConverter::ActiveSelfParameter() const
-{
-    return (selfParamStack_.empty() ? nullptr : selfParamStack_.back());
 }
 
 bool GLSLConverter::CompareFuncSignatures(const FunctionDecl& lhs, const FunctionDecl& rhs)
@@ -721,7 +599,7 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
             /* Insert parameter of 'self' object */
             auto selfParamTypeDen   = std::make_shared<StructTypeDenoter>(structDecl);
             auto selfParamType      = ASTFactory::MakeTypeSpecifier(selfParamTypeDen);
-            auto selfParam          = ASTFactory::MakeVarDeclStmnt(selfParamType, nameMangling_.namespacePrefix + "self");
+            auto selfParam          = ASTFactory::MakeVarDeclStmnt(selfParamType, GetNameMangling().namespacePrefix + "self");
 
             selfParam->flags << VarDeclStmnt::isSelfParameter;
 
@@ -1049,6 +927,19 @@ void GLSLConverter::ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr*
                 /* Can the structure be resolved? */
                 MakeObjectExprImmutableForNEPStruct(objectExpr, structTypeDen->structDeclRef);
             }
+        }
+    }
+}
+
+void GLSLConverter::ConvertEntryPointReturnStmnt(StmntPtr& stmnt)
+{
+    /* Is this statement within the entry point? */
+    if (InsideEntryPoint())
+    {
+        if (stmnt->Type() == AST::Types::ReturnStmnt)
+        {
+            /* Convert statement into a code block statement */
+            stmnt = ASTFactory::MakeCodeBlockStmnt(stmnt);
         }
     }
 }

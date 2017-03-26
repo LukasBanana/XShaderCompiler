@@ -82,7 +82,7 @@ void GLSLGenerator::GenerateCodePrimary(
             /* Convert AST for GLSL code generation */
             {
                 GLSLConverter converter;
-                converter.Convert(program, inputDesc.shaderTarget, nameMangling_, outputDesc.options, versionOut_);
+                converter.ConvertAST(program, inputDesc, outputDesc);
             }
 
             /* Mark all reachable AST nodes */

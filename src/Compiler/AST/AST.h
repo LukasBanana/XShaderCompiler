@@ -261,6 +261,9 @@ struct Decl : public TypedAST
     // Returns the type specifier of this declaration object, or null if there is no type specifier. By default null.
     virtual TypeSpecifier* FetchTypeSpecifier() const;
 
+    // Returns true if this is an anonymous structure.
+    bool IsAnonymous() const;
+
     // Identifier of the declaration object (may be empty, e.g. for anonymous structures).
     Identifier ident;
 };
@@ -576,9 +579,6 @@ struct StructDecl : public Decl
 
     // Returns a descriptive string of the structure signature (e.g. "struct s" or "struct <anonymous>").
     std::string ToString() const override;
-
-    // Returns true if this is an anonymous structure.
-    bool IsAnonymous() const;
 
     // Returns true if the specified structure declaration has the same member types as this structure (see 'TypeDenoter' for valid compare flags).
     bool EqualsMembers(const StructDecl& rhs, const Flags& compareFlags = 0) const;

@@ -9,12 +9,8 @@
 #define XSC_GLSL_CONVERTER_H
 
 
-#include "Visitor.h"
-#include "TypeDenoter.h"
+#include "Converter.h"
 #include "ExprConverter.h"
-#include "SymbolTable.h"
-#include "Identifier.h"
-#include <Xsc/Xsc.h>
 #include <functional>
 #include <set>
 
@@ -28,22 +24,17 @@ GLSL AST converter.
 This class modifies the AST after context analysis to be conform with GLSL,
 e.g. remove arguments from intrinsic calls, that are not allowed in GLSL, such as sampler state objects.
 */
-class GLSLConverter : public Visitor
+class GLSLConverter : public Converter
 {
     
-    public:
-        
-        // Converts the specified AST for GLSL.
-        void Convert(
-            Program& program,
-            const ShaderTarget shaderTarget,
-            const NameMangling& nameMangling,
-            const Options& options,
-            const OutputShaderVersion versionOut
-        );
-
     private:
         
+        void ConvertASTPrimary(
+            Program& program,
+            const ShaderInput& inputDesc,
+            const ShaderOutput& outputDesc
+        ) override;
+
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( Program          );
@@ -73,63 +64,22 @@ class GLSLConverter : public Visitor
 
         /* ----- Scope functions ----- */
 
-        // Opens a new scope in the smybol table.
-        void OpenScope();
-
-        // Closes the current scope in the symbol table.
-        void CloseScope();
-
-        // Registers the AST node in the current scope with the specified identifier.
-        void Register(const std::string& ident);
-
         // Renames the identifier of the specified declaration object (if required) and registers its identifier.
         void RegisterDeclIdent(Decl* obj, bool global = false);
 
         // Registers the identifiers of all specified variables (see RegisterDeclIdent).
         void RegisterGlobalDeclIdents(const std::vector<VarDecl*>& varDecls);
 
-        // Tries to fetch an AST node with the specified identifier from the symbol table and reports an error on failure.
-        bool FetchFromCurrentScope(const std::string& ident) const;
-
         /* ----- Helper functions for conversion ----- */
-
-        // Returns true if the specified type denoter is a sampler state type.
-        bool IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter) const;
 
         // Returns true if the specified variable declaration must be renamed.
         bool MustRenameDeclIdent(const Decl* obj) const;
-
-        // Renames the specified variable declaration with name mangling.
-        void RenameIdent(Identifier& ident);
-        void RenameDeclIdent(Decl* obj);
-
-        void RenameInOutVarIdents(const std::vector<VarDecl*>& varDecls, bool input, bool useSemanticOnly = false);
-
-        // Labels the specified anonymous structure.
-        void LabelAnonymousStructDecl(StructDecl* ast);
-
-        // Returns true if the variable is a global input/output variable declaration.
-        bool IsGlobalInOutVarDecl(VarDecl* varDecl) const;
-
-        /*
-        Converts the specified statement to a code block and inserts itself into this code block (if it is a return statement within the entry point).
-        This is used to ensure a new scope within a control flow statement (e.g. if-statement).
-        */
-        void MakeCodeBlockInEntryPointReturnStmnt(StmntPtr& stmnt);
-
-        // Removes all statements that are marked as dead code.
-        void RemoveDeadCode(std::vector<StmntPtr>& stmnts);
 
         // Removes all variable declarations which have a sampler state type.
         void RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts);
 
         // Renames the specified identifier if it equals a reserved GLSL intrinsic or function name.
         bool RenameReservedKeyword(Identifier& ident);
-
-        void PushSelfParameter(VarDecl* parameter);
-        void PopSelfParameter();
-
-        VarDecl* ActiveSelfParameter() const;
 
         // Function signature compare callback for the function name converter.
         static bool CompareFuncSignatures(const FunctionDecl& lhs, const FunctionDecl& rhs);
@@ -152,6 +102,8 @@ class GLSLConverter : public Visitor
         void ConvertEntryPointStructPrefixObject(ExprPtr& expr, ObjectExpr* prefixExpr, ObjectExpr* objectExpr);
         void ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr* prefixExpr, ObjectExpr* objectExpr);
 
+        void ConvertEntryPointReturnStmnt(StmntPtr& stmnt);
+
         /* ----- Unrolling ----- */
 
         void UnrollStmnts(std::vector<StmntPtr>& stmnts);
@@ -160,15 +112,10 @@ class GLSLConverter : public Visitor
 
         /* === Members === */
 
-        // Symbol table to determine which variables must be renamed (scope rules are different between HLSL and GLSL).
-        SymbolTable<bool>           symTable_;
-
         ExprConverter               exprConverter_;
 
         ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
-        Program*                    program_            = nullptr;
 
-        NameMangling                nameMangling_;
         Options                     options_;
         bool                        isVKSL_             = false;
 
@@ -177,12 +124,6 @@ class GLSLConverter : public Visitor
         If a local variable uses a name from this list, it name must be modified with name mangling.
         */
         std::vector<const Decl*>    globalReservedDecls_;
-
-        // Stack with information of the current 'self' parameter of a member function.
-        std::vector<VarDecl*>       selfParamStack_;
-
-        unsigned int                anonymCounter_      = 0;
-        unsigned int                obfuscationCounter_ = 0;
 
 };
 

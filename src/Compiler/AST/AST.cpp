@@ -118,6 +118,11 @@ TypeSpecifier* Decl::FetchTypeSpecifier() const
     return nullptr;
 }
 
+bool Decl::IsAnonymous() const
+{
+    return ident.Empty();
+}
+
 
 /* ----- Program ----- */
 
@@ -453,11 +458,6 @@ SamplerType SamplerDecl::GetSamplerType() const
 std::string StructDecl::ToString() const
 {
     return ("struct " + (IsAnonymous() ? ("<" + R_Anonymous + ">") : ident.Original()));
-}
-
-bool StructDecl::IsAnonymous() const
-{
-    return ident.Empty();
 }
 
 bool StructDecl::EqualsMembers(const StructDecl& rhs, const Flags& compareFlags) const
