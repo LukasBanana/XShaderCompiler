@@ -203,14 +203,20 @@ VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ide
     return MakeVarDeclStmnt(MakeTypeSpecifier(dataType), ident, initializer);
 }
 
-ObjectExprPtr MakeObjectExpr(const std::string& ident, Decl* symbolRef)
+ObjectExprPtr MakeObjectExpr(const ExprPtr& prefixExpr, const std::string& ident, Decl* symbolRef)
 {
     auto ast = MakeAST<ObjectExpr>();
     {
+        ast->prefixExpr = prefixExpr;
         ast->ident      = ident;
         ast->symbolRef  = symbolRef;
     }
     return ast;
+}
+
+ObjectExprPtr MakeObjectExpr(const std::string& ident, Decl* symbolRef)
+{
+    return MakeObjectExpr(nullptr, ident, symbolRef);
 }
 
 ObjectExprPtr MakeObjectExpr(Decl* symbolRef)

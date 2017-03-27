@@ -439,7 +439,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
                 auto tempVarIdent           = MakeTempVarIdent();
                 auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(subExpr->GetTypeDenoter());
                 auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, ast->expr);
-                auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarIdent, tempVarDeclStmnt->varDecls.front().get());
+                auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
 
                 ast->expr = ASTFactory::MakeConstructorListExpr(tempVarExpr, memberTypeDens);
 
@@ -688,8 +688,24 @@ void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
 {
     switch (ast->intrinsic)
     {
+        case Intrinsic::InterlockedAdd:
+        case Intrinsic::InterlockedAnd:
+        case Intrinsic::InterlockedOr:
+        case Intrinsic::InterlockedXor:
+        case Intrinsic::InterlockedMin:
+        case Intrinsic::InterlockedMax:
+        case Intrinsic::InterlockedCompareExchange:
+        case Intrinsic::InterlockedExchange:
+            ConvertIntrinsicCallImageAtomic(ast);
+            break;
         case Intrinsic::Saturate:
             ConvertIntrinsicCallSaturate(ast);
+            break;
+        case Intrinsic::Tex1DLod:
+        case Intrinsic::Tex2DLod:
+        case Intrinsic::Tex3DLod:
+        case Intrinsic::TexCubeLod:
+            ConvertIntrinsicCallTexLod(ast);
             break;
         case Intrinsic::Texture_Sample_2:
         case Intrinsic::Texture_Sample_3:
@@ -701,16 +717,6 @@ void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
         case Intrinsic::Texture_SampleLevel_4:
         case Intrinsic::Texture_SampleLevel_5:
             ConvertIntrinsicCallTextureSampleLevel(ast);
-            break;
-        case Intrinsic::InterlockedAdd:
-        case Intrinsic::InterlockedAnd:
-        case Intrinsic::InterlockedOr:
-        case Intrinsic::InterlockedXor:
-        case Intrinsic::InterlockedMin:
-        case Intrinsic::InterlockedMax:
-        case Intrinsic::InterlockedCompareExchange:
-        case Intrinsic::InterlockedExchange:
-            ConvertIntrinsicCallImageAtomic(ast);
             break;
         default:
             break;
@@ -730,79 +736,121 @@ void GLSLConverter::ConvertIntrinsicCallSaturate(CallExpr* ast)
             ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, DataType::Int, "1"));
         }
         else
-            RuntimeErr(R_InvalidIntrinsicArgType("saturate"), ast->arguments.front().get());
+            RuntimeErr(R_InvalidIntrinsicArgType(ast->ident), ast->arguments.front().get());
     }
     else
-        RuntimeErr(R_InvalidIntrinsicArgCount("saturate"), ast);
+        RuntimeErr(R_InvalidIntrinsicArgCount(ast->ident, 1, ast->arguments.size()), ast);
 }
 
-static int GetTextureVectorSizeFromIntrinsicCall(CallExpr* ast)
+static int GetTextureDimFromExpr(Expr* expr, const AST* ast = nullptr)
 {
-    /* Get buffer object from sample intrinsic call */
-    if (const auto& prefixExpr = ast->prefixExpr)
+    if (expr)
     {
-        if (auto lvalueExpr = prefixExpr->FetchLValueExpr())
+        const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
+        if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
         {
-            if (auto bufferDecl = lvalueExpr->FetchSymbol<BufferDecl>())
+            /* Determine vector size for texture intrinsic parametes */
+            switch (bufferTypeDen->bufferType)
             {
-                /* Determine vector size for texture intrinsic parametes */
-                switch (bufferDecl->GetBufferType())
-                {
-                    case BufferType::Texture1D:
-                        return 1;
-                    case BufferType::Texture1DArray:
-                    case BufferType::Texture2D:
-                    case BufferType::Texture2DMS:
-                        return 2;
-                    case BufferType::Texture2DArray:
-                    case BufferType::Texture2DMSArray:
-                    case BufferType::Texture3D:
-                    case BufferType::TextureCube:
-                        return 3;
-                    case BufferType::TextureCubeArray:
-                        return 4;
-                    default:
-                        break;
-                }
+                case BufferType::Texture1D:
+                    return 1;
+                case BufferType::Texture1DArray:
+                case BufferType::Texture2D:
+                case BufferType::Texture2DMS:
+                    return 2;
+                case BufferType::Texture2DArray:
+                case BufferType::Texture2DMSArray:
+                case BufferType::Texture3D:
+                case BufferType::TextureCube:
+                    return 3;
+                case BufferType::TextureCubeArray:
+                    return 4;
+                default:
+                    break;
             }
         }
+        RuntimeErr(R_FailedToGetTextureDim, ast);
     }
-    return 0;
+    RuntimeErr(R_FailedToGetTextureDim, ast);
+}
+
+static int GetTextureDimFromIntrinsicCall(CallExpr* ast)
+{
+    /* Get buffer object from sample intrinsic call */
+    if (ast->prefixExpr)
+        return GetTextureDimFromExpr(ast->prefixExpr.get(), ast);
+    else
+        RuntimeErr(R_FailedToGetTextureDim, ast);
+}
+
+void GLSLConverter::ConvertIntrinsicCallTexLod(CallExpr* ast)
+{
+    /* Convert "tex1Dlod(s, t)" to "textureLod(s, t.xyz, t.w)" (also for tex2Dlod, tex3Dlod, and texCUBElod) */
+    if (ast->arguments.size() == 2)
+    {
+        auto& args = ast->arguments;
+
+        /* Determine vector size for texture intrinsic */
+        if (auto textureDim = GetTextureDimFromExpr(args[0].get()))
+        {
+            /* Convert arguments */
+            exprConverter_.ConvertExprIfCastRequired(args[1], DataType::Float4, true);
+
+            /* Generate temporary variable with second argument, and insert its declaration statement before the intrinsic call */
+            auto tempVarIdent           = MakeTempVarIdent();
+            auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
+            auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
+            auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarIdent, tempVarDeclStmnt->varDecls.front().get());
+
+            InsertStmntBefore(tempVarDeclStmnt);
+
+            const std::string vectorSubscript = "xyzw";
+
+            auto subExpr    = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
+            auto arg1Expr   = ASTFactory::MakeObjectExpr(subExpr, vectorSubscript.substr(0, textureDim));
+            auto arg2Expr   = ASTFactory::MakeObjectExpr(subExpr, "w");
+
+            args[1] = arg1Expr;
+            args.push_back(arg2Expr);
+        }
+    }
+    else
+        RuntimeErr(R_InvalidIntrinsicArgCount(ast->ident, 2, ast->arguments.size()), ast);
 }
 
 void GLSLConverter::ConvertIntrinsicCallTextureSample(CallExpr* ast)
 {
     /* Determine vector size for texture intrinsic */
-    if (auto vectorSize = GetTextureVectorSizeFromIntrinsicCall(ast))
+    if (auto textureDim = GetTextureDimFromIntrinsicCall(ast))
     {
         /* Convert arguments */
         auto& args = ast->arguments;
 
         /* Ensure argument: float[1,2,3,4] Location */
         if (args.size() >= 2)
-            exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Float, vectorSize), true);
+            exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Float, textureDim), true);
 
         /* Ensure argument: int[1,2,3] Offset */
         if (args.size() >= 3)
-            exprConverter_.ConvertExprIfCastRequired(args[2], VectorDataType(DataType::Int, vectorSize), true);
+            exprConverter_.ConvertExprIfCastRequired(args[2], VectorDataType(DataType::Int, textureDim), true);
     }
 }
 
 void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast)
 {
     /* Determine vector size for texture intrinsic */
-    if (auto vectorSize = GetTextureVectorSizeFromIntrinsicCall(ast))
+    if (auto textureDim = GetTextureDimFromIntrinsicCall(ast))
     {
         /* Convert arguments */
         auto& args = ast->arguments;
 
         /* Ensure argument: float[1,2,3,4] Location */
         if (args.size() >= 2)
-            exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Float, vectorSize), true);
+            exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Float, textureDim), true);
 
         /* Ensure argument: int[1,2,3] Offset */
         if (args.size() >= 4)
-            exprConverter_.ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, vectorSize), true);
+            exprConverter_.ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, textureDim), true);
     }
 }
 

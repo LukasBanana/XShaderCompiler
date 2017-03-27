@@ -284,6 +284,7 @@ DECL_REPORT( MissingScopedStmntRef,             "missing reference to scoped sta
 /* ----- GLSLConverter ----- */
 
 DECL_REPORT( MissingSelfParamForMemberFunc,     "missing 'self'-parameter for member function[ '{0}']"                                                          );
+DECL_REPORT( FailedToGetTextureDim,             "failed to determine dimension of texture object[ '{0}']"                                                       );
 
 /* ----- GLSLExtensionAgent ----- */
 
