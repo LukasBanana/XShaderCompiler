@@ -275,9 +275,13 @@ DECL_REPORT( InvalidTypeOrArgCount,             "invalid type or invalid number 
 DECL_REPORT( InvalidArgCount,                   "invalid number of arguments[ for {0}]"                                                                         );
 DECL_REPORT( FailedToInitializeSamplerValue,    "{0} to initialize sampler value '{1}'"                                                                         );
 
+/* ----- Converter ----- */
+
+DECL_REPORT( SelfParamStackUnderflow,           "'self'-parameter stack underflow"                                                                              );
+DECL_REPORT( NoActiveStmntScopeHandler,         "no active statement scope handler"                                                                             );
+
 /* ----- GLSLConverter ----- */
 
-DECL_REPORT( SelfParamLevelUnderflow,           "'self'-parameter level underflow"                                                                              );
 DECL_REPORT( MissingSelfParamForMemberFunc,     "missing 'self'-parameter for member function[ '{0}']"                                                          );
 
 /* ----- GLSLExtensionAgent ----- */

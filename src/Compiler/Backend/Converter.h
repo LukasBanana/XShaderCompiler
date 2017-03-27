@@ -14,6 +14,7 @@
 #include "SymbolTable.h"
 #include "Identifier.h"
 #include <Xsc/Xsc.h>
+#include <stack>
 
 
 namespace Xsc
@@ -83,6 +84,20 @@ class Converter : public Visitor
         // Labels the specified anonymous structure.
         void LabelAnonymousDecl(Decl* declObj);
 
+        /* ----- Code injection ----- */
+
+        // Visits the specified statements, and allows insertion of further statements (i.e. replace the single statement by a code block statement).
+        void VisitScopedStmnt(StmntPtr& stmnt);
+
+        // Visits the specified list of statements, and allows insertion of further statements into the list.
+        void VisitScopedStmntList(std::vector<StmntPtr>& stmnts);
+
+        // Inserts the specified statement before the current statement.
+        void InsertStmntBefore(const StmntPtr& stmnt);
+
+        // Inserts the specified statement after the current statement.
+        void InsertStmntAfter(const StmntPtr& stmnt);
+
         /* ----- Misc ----- */
 
         // Returns true if the variable is a global input/output variable declaration.
@@ -108,19 +123,53 @@ class Converter : public Visitor
 
     private:
 
+        // Helper class to handle code injection during traversal.
+        class StmntScopeHandler
+        {
+
+            public:
+
+                StmntScopeHandler(const StmntScopeHandler&) = default;
+                StmntScopeHandler& operator = (const StmntScopeHandler&) = default;
+
+                StmntScopeHandler(StmntPtr& stmnt);
+                StmntScopeHandler(std::vector<StmntPtr>& stmnts);
+
+                // Returns the next statement to visit, or null if there is no more statement.
+                Stmnt* Next();
+
+                void InsertStmntBefore(const StmntPtr& stmnt);
+                void InsertStmntAfter(const StmntPtr& stmnt);
+
+            private:
+
+                void EnsureStmntList();
+
+                StmntPtr*               stmnt_      = nullptr;
+                std::vector<StmntPtr>*  stmntList_  = nullptr;
+                std::size_t             idx_        = 0;
+
+        };
+
+        void VisitScopedStmntsFromHandler(const StmntScopeHandler& handler);
+
+        StmntScopeHandler& ActiveStmntScopeHandler();
+
         /* === Members === */
 
         // Symbol table to determine which variables must be renamed (scope rules are different between HLSL and GLSL).
-        SymbolTable<bool>       symTable_;
+        SymbolTable<bool>               symTable_;
 
-        Program*                program_            = nullptr;
-        NameMangling            nameMangling_;
+        Program*                        program_                = nullptr;
+        NameMangling                    nameMangling_;
 
         // Stack with information of the current 'self' parameter of a member function.
-        std::vector<VarDecl*>   selfParamStack_;
+        std::vector<VarDecl*>           selfParamStack_;
 
-        unsigned int            anonymCounter_      = 0;
-        unsigned int            obfuscationCounter_ = 0;
+        std::stack<StmntScopeHandler>   stmntScopeHandlerStack_;
+
+        unsigned int                    anonymCounter_          = 0;
+        unsigned int                    obfuscationCounter_     = 0;
 
 };
 

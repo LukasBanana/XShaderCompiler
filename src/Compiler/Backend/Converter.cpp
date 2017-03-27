@@ -7,6 +7,7 @@
 
 #include "Converter.h"
 #include "AST.h"
+#include "ASTFactory.h"
 #include "ReportIdents.h"
 #include <algorithm>
 
@@ -27,7 +28,7 @@ bool Converter::ConvertAST(Program& program, const ShaderInput& inputDesc, const
 
 
 /*
- * ======= Private: =======
+ * ======= Protected: =======
  */
 
 /* ----- Scope functions ----- */
@@ -61,10 +62,10 @@ void Converter::PushSelfParameter(VarDecl* parameter)
 
 void Converter::PopSelfParameter()
 {
-    if (!selfParamStack_.empty())
-        return selfParamStack_.pop_back();
+    if (selfParamStack_.empty())
+        throw std::underflow_error(R_SelfParamStackUnderflow);
     else
-        throw std::underflow_error(R_SelfParamLevelUnderflow);
+        return selfParamStack_.pop_back();
 }
 
 VarDecl* Converter::ActiveSelfParameter() const
@@ -114,6 +115,28 @@ void Converter::LabelAnonymousDecl(Decl* declObj)
     }
 }
 
+/* ----- Code injection ----- */
+
+void Converter::VisitScopedStmnt(StmntPtr& stmnt)
+{
+    VisitScopedStmntsFromHandler({ stmnt });
+}
+
+void Converter::VisitScopedStmntList(std::vector<StmntPtr>& stmnts)
+{
+    VisitScopedStmntsFromHandler({ stmnts });
+}
+
+void Converter::InsertStmntBefore(const StmntPtr& stmnt)
+{
+    ActiveStmntScopeHandler().InsertStmntBefore(stmnt);
+}
+
+void Converter::InsertStmntAfter(const StmntPtr& stmnt)
+{
+    ActiveStmntScopeHandler().InsertStmntAfter(stmnt);
+}
+
 /* ----- Misc ----- */
 
 bool Converter::IsGlobalInOutVarDecl(VarDecl* varDecl) const
@@ -148,6 +171,100 @@ void Converter::RemoveDeadCode(std::vector<StmntPtr>& stmnts)
             it = stmnts.erase(it);
         else
             ++it;
+    }
+}
+
+
+/*
+ * ======= Private: =======
+ */
+
+void Converter::VisitScopedStmntsFromHandler(const StmntScopeHandler& handler)
+{
+    stmntScopeHandlerStack_.push(handler);
+    {
+        /* Use active scope handler */
+        auto& activeHandler = ActiveStmntScopeHandler();
+
+        /* Visit all statement from the scope handler */
+        while (auto stmnt = activeHandler.Next())
+            Visit(stmnt);
+    }
+    stmntScopeHandlerStack_.pop();
+}
+
+Converter::StmntScopeHandler& Converter::ActiveStmntScopeHandler()
+{
+    if (stmntScopeHandlerStack_.empty())
+        throw std::underflow_error(R_NoActiveStmntScopeHandler);
+    else
+        return stmntScopeHandlerStack_.top();
+}
+
+
+/*
+ * StmntScopeHandler class
+ */
+
+Converter::StmntScopeHandler::StmntScopeHandler(StmntPtr& stmnt) :
+    stmnt_ { &stmnt }
+{
+}
+
+Converter::StmntScopeHandler::StmntScopeHandler(std::vector<StmntPtr>& stmnts) :
+    stmntList_ { &stmnts }
+{
+}
+
+Stmnt* Converter::StmntScopeHandler::Next()
+{
+    if (stmntList_)
+    {
+        if (idx_ < stmntList_->size())
+        {
+            /* Return statement from the list, and increase index */
+            return stmntList_->at(idx_++).get();
+        }
+    }
+    else if (stmnt_)
+    {
+        if (idx_ == 0)
+        {
+            /* Only return the single statement once */
+            ++idx_;
+            return stmnt_->get();
+        }
+    }
+    return nullptr;
+}
+
+void Converter::StmntScopeHandler::InsertStmntBefore(const StmntPtr& stmnt)
+{
+    EnsureStmntList();
+
+    //TODO...
+}
+
+void Converter::StmntScopeHandler::InsertStmntAfter(const StmntPtr& stmnt)
+{
+    EnsureStmntList();
+
+    //TODO...
+}
+
+void Converter::StmntScopeHandler::EnsureStmntList()
+{
+    if (stmnt_ && !stmntList_)
+    {
+        /* Make new code block statement to replace the single statement with */
+        auto singleStmnt    = *stmnt_;
+        auto codeBlockStmnt = ASTFactory::MakeCodeBlockStmnt(singleStmnt);
+
+        /* Set reference to statement list of the code block */
+        stmntList_ = &(codeBlockStmnt->codeBlock->stmnts);
+
+        /* Replace original single statement with code block statement */
+        *stmnt_ = codeBlockStmnt;
     }
 }
 
