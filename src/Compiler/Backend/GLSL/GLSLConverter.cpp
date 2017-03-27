@@ -215,14 +215,6 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         }
     }
 
-    #if 1//TODO: remove this test
-    if (ast->ident == "x")
-    {
-        InsertStmntBefore(ASTFactory::MakeVarDeclStmnt(DataType::Float, ast->ident + "_before"));
-        InsertStmntAfter(ASTFactory::MakeVarDeclStmnt(DataType::Float, ast->ident + "_after"));
-    }
-    #endif
-
     RegisterDeclIdent(ast);
     VISIT_DEFAULT(VarDecl);
 }
