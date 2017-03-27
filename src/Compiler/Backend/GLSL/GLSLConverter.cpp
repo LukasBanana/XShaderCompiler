@@ -108,7 +108,7 @@ IMPLEMENT_VISIT_PROC(Program)
     RegisterGlobalDeclIdents(entryPoint->inputSemantics.varDeclRefsSV);
     RegisterGlobalDeclIdents(entryPoint->outputSemantics.varDeclRefsSV);
 
-    VISIT_DEFAULT(Program);
+    VisitScopedStmntList(ast->globalStmnts);
 
     //TODO: do not remove these statements, instead mark it as disabled code (otherwise symbol references to these statements are corrupted!)
     #if 1
@@ -137,7 +137,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
     UnrollStmnts(ast->stmnts);
 
-    VISIT_DEFAULT(CodeBlock);
+    VisitScopedStmntList(ast->stmnts);
 }
 
 IMPLEMENT_VISIT_PROC(CallExpr)
@@ -196,7 +196,8 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     RemoveDeadCode(ast->stmnts);
 
-    VISIT_DEFAULT(SwitchCase);
+    Visit(ast->expr);
+    VisitScopedStmntList(ast->stmnts);
 }
 
 /* --- Declarations --- */
@@ -213,6 +214,14 @@ IMPLEMENT_VISIT_PROC(VarDecl)
             ast->ident.AppendPrefix(GetNameMangling().namespacePrefix);
         }
     }
+
+    #if 1//TODO: remove this test
+    if (ast->ident == "x")
+    {
+        InsertStmntBefore(ASTFactory::MakeVarDeclStmnt(DataType::Float, ast->ident + "_before"));
+        InsertStmntAfter(ASTFactory::MakeVarDeclStmnt(DataType::Float, ast->ident + "_after"));
+    }
+    #endif
 
     RegisterDeclIdent(ast);
     VISIT_DEFAULT(VarDecl);
@@ -238,7 +247,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     PushStructDecl(ast);
     OpenScope();
     {
-        VISIT_DEFAULT(StructDecl);
+        VisitScopedStmntList(ast->localStmnts);
     }
     CloseScope();
     PopStructDecl();
@@ -268,6 +277,12 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     PopFunctionDecl();
 }
 
+IMPLEMENT_VISIT_PROC(UniformBufferDecl)
+{
+    Visit(ast->slotRegisters);
+    VisitScopedStmntList(ast->localStmnts);
+}
+
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
 {
     /* Add name to structure declaration, if the structure is anonymous */
@@ -294,12 +309,12 @@ IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
     {
         OpenScope();
         {
-            VISIT_DEFAULT(CodeBlockStmnt);
+            Visit(ast->codeBlock);
         }
         CloseScope();
     }
     else
-        VISIT_DEFAULT(CodeBlockStmnt);
+        Visit(ast->codeBlock);
 }
 
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
@@ -307,7 +322,6 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     ConvertEntryPointReturnStmnt(ast->bodyStmnt);
 
-    Visit(ast->attribs);
     OpenScope();
     {
         Visit(ast->initStmnt);
@@ -319,10 +333,10 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
             /* Do NOT open a new scope for the body code block in GLSL */
             CodeBlockStmntArgs bodyStmntArgs;
             bodyStmntArgs.disableNewScope = true;
-            Visit(ast->bodyStmnt, &bodyStmntArgs);
+            VisitScopedStmnt(ast->bodyStmnt, &bodyStmntArgs);
         }
         else
-            Visit(ast->bodyStmnt);
+            VisitScopedStmnt(ast->bodyStmnt);
     }
     CloseScope();
 }
@@ -334,7 +348,8 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 
     OpenScope();
     {
-        VISIT_DEFAULT(WhileLoopStmnt);
+        Visit(ast->condition);
+        VisitScopedStmnt(ast->bodyStmnt);
     }
     CloseScope();
 }
@@ -346,7 +361,8 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 
     OpenScope();
     {
-        VISIT_DEFAULT(DoWhileLoopStmnt);
+        VisitScopedStmnt(ast->bodyStmnt);
+        Visit(ast->condition);
     }
     CloseScope();
 }
@@ -358,7 +374,9 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
 
     OpenScope();
     {
-        VISIT_DEFAULT(IfStmnt);
+        Visit(ast->condition);
+        VisitScopedStmnt(ast->bodyStmnt);
+        Visit(ast->elseStmnt);
     }
     CloseScope();
 }
@@ -370,7 +388,7 @@ IMPLEMENT_VISIT_PROC(ElseStmnt)
 
     OpenScope();
     {
-        VISIT_DEFAULT(ElseStmnt);
+        VisitScopedStmnt(ast->bodyStmnt);
     }
     CloseScope();
 }

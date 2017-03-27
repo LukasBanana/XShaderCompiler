@@ -87,10 +87,10 @@ class Converter : public Visitor
         /* ----- Code injection ----- */
 
         // Visits the specified statements, and allows insertion of further statements (i.e. replace the single statement by a code block statement).
-        void VisitScopedStmnt(StmntPtr& stmnt);
+        void VisitScopedStmnt(StmntPtr& stmnt, void* args = nullptr);
 
-        // Visits the specified list of statements, and allows insertion of further statements into the list.
-        void VisitScopedStmntList(std::vector<StmntPtr>& stmnts);
+        // Visits the specified list of statements, and allows insertion of further statements.
+        void VisitScopedStmntList(std::vector<StmntPtr>& stmntList, void* args = nullptr);
 
         // Inserts the specified statement before the current statement.
         void InsertStmntBefore(const StmntPtr& stmnt);
@@ -145,13 +145,15 @@ class Converter : public Visitor
 
                 void EnsureStmntList();
 
+                void InsertStmntAt(const StmntPtr& stmnt, std::size_t pos);
+
                 StmntPtr*               stmnt_      = nullptr;
                 std::vector<StmntPtr>*  stmntList_  = nullptr;
                 std::size_t             idx_        = 0;
 
         };
 
-        void VisitScopedStmntsFromHandler(const StmntScopeHandler& handler);
+        void VisitScopedStmntsFromHandler(const StmntScopeHandler& handler, void* args);
 
         StmntScopeHandler& ActiveStmntScopeHandler();
 

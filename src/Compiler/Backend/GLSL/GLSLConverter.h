@@ -37,30 +37,31 @@ class GLSLConverter : public Converter
 
         /* ----- Visitor implementation ----- */
 
-        DECL_VISIT_PROC( Program          );
-        DECL_VISIT_PROC( CodeBlock        );
-        DECL_VISIT_PROC( SwitchCase       );
+        DECL_VISIT_PROC( Program           );
+        DECL_VISIT_PROC( CodeBlock         );
+        DECL_VISIT_PROC( SwitchCase        );
 
-        DECL_VISIT_PROC( VarDecl          );
-        DECL_VISIT_PROC( BufferDecl       );
-        DECL_VISIT_PROC( SamplerDecl      );
-        DECL_VISIT_PROC( StructDecl       );
+        DECL_VISIT_PROC( VarDecl           );
+        DECL_VISIT_PROC( BufferDecl        );
+        DECL_VISIT_PROC( SamplerDecl       );
+        DECL_VISIT_PROC( StructDecl        );
 
-        DECL_VISIT_PROC( FunctionDecl     );
-        DECL_VISIT_PROC( AliasDeclStmnt   );
+        DECL_VISIT_PROC( FunctionDecl      );
+        DECL_VISIT_PROC( UniformBufferDecl );
+        DECL_VISIT_PROC( AliasDeclStmnt    );
 
-        DECL_VISIT_PROC( CodeBlockStmnt   );
-        DECL_VISIT_PROC( ForLoopStmnt     );
-        DECL_VISIT_PROC( WhileLoopStmnt   );
-        DECL_VISIT_PROC( DoWhileLoopStmnt );
-        DECL_VISIT_PROC( IfStmnt          );
-        DECL_VISIT_PROC( ElseStmnt        );
-        DECL_VISIT_PROC( SwitchStmnt      );
+        DECL_VISIT_PROC( CodeBlockStmnt    );
+        DECL_VISIT_PROC( ForLoopStmnt      );
+        DECL_VISIT_PROC( WhileLoopStmnt    );
+        DECL_VISIT_PROC( DoWhileLoopStmnt  );
+        DECL_VISIT_PROC( IfStmnt           );
+        DECL_VISIT_PROC( ElseStmnt         );
+        DECL_VISIT_PROC( SwitchStmnt       );
 
-        DECL_VISIT_PROC( LiteralExpr      );
-        DECL_VISIT_PROC( CastExpr         );
-        DECL_VISIT_PROC( CallExpr         );
-        DECL_VISIT_PROC( ObjectExpr       );
+        DECL_VISIT_PROC( LiteralExpr       );
+        DECL_VISIT_PROC( CastExpr          );
+        DECL_VISIT_PROC( CallExpr          );
+        DECL_VISIT_PROC( ObjectExpr        );
 
         /* ----- Scope functions ----- */
 

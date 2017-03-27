@@ -117,14 +117,17 @@ void Converter::LabelAnonymousDecl(Decl* declObj)
 
 /* ----- Code injection ----- */
 
-void Converter::VisitScopedStmnt(StmntPtr& stmnt)
+void Converter::VisitScopedStmnt(StmntPtr& stmnt, void* args)
 {
-    VisitScopedStmntsFromHandler({ stmnt });
+    if (auto codeBlockStmnt = stmnt->As<CodeBlockStmnt>())
+        VisitScopedStmntsFromHandler({ codeBlockStmnt->codeBlock->stmnts }, args);
+    else
+        VisitScopedStmntsFromHandler({ stmnt }, args);
 }
 
-void Converter::VisitScopedStmntList(std::vector<StmntPtr>& stmnts)
+void Converter::VisitScopedStmntList(std::vector<StmntPtr>& stmntList, void* args)
 {
-    VisitScopedStmntsFromHandler({ stmnts });
+    VisitScopedStmntsFromHandler({ stmntList }, args);
 }
 
 void Converter::InsertStmntBefore(const StmntPtr& stmnt)
@@ -179,7 +182,7 @@ void Converter::RemoveDeadCode(std::vector<StmntPtr>& stmnts)
  * ======= Private: =======
  */
 
-void Converter::VisitScopedStmntsFromHandler(const StmntScopeHandler& handler)
+void Converter::VisitScopedStmntsFromHandler(const StmntScopeHandler& handler, void* args)
 {
     stmntScopeHandlerStack_.push(handler);
     {
@@ -188,7 +191,7 @@ void Converter::VisitScopedStmntsFromHandler(const StmntScopeHandler& handler)
 
         /* Visit all statement from the scope handler */
         while (auto stmnt = activeHandler.Next())
-            Visit(stmnt);
+            Visit(stmnt, args);
     }
     stmntScopeHandlerStack_.pop();
 }
@@ -241,21 +244,28 @@ Stmnt* Converter::StmntScopeHandler::Next()
 void Converter::StmntScopeHandler::InsertStmntBefore(const StmntPtr& stmnt)
 {
     EnsureStmntList();
+    
+    if (idx_ > 0)
+        InsertStmntAt(stmnt, idx_ - 1);
+    else
+        InsertStmntAt(stmnt, idx_);
 
-    //TODO...
+    ++idx_;
 }
 
 void Converter::StmntScopeHandler::InsertStmntAfter(const StmntPtr& stmnt)
 {
     EnsureStmntList();
-
-    //TODO...
+    InsertStmntAt(stmnt, idx_);
 }
 
 void Converter::StmntScopeHandler::EnsureStmntList()
 {
-    if (stmnt_ && !stmntList_)
+    if (!stmntList_)
     {
+        if (!stmnt_)
+            throw std::runtime_error(R_MissingScopedStmntRef);
+
         /* Make new code block statement to replace the single statement with */
         auto singleStmnt    = *stmnt_;
         auto codeBlockStmnt = ASTFactory::MakeCodeBlockStmnt(singleStmnt);
@@ -265,6 +275,17 @@ void Converter::StmntScopeHandler::EnsureStmntList()
 
         /* Replace original single statement with code block statement */
         *stmnt_ = codeBlockStmnt;
+    }
+}
+
+void Converter::StmntScopeHandler::InsertStmntAt(const StmntPtr& stmnt, std::size_t pos)
+{
+    if (stmntList_)
+    {
+        if (pos < stmntList_->size())
+            stmntList_->insert(stmntList_->begin() + pos, stmnt);
+        else
+            stmntList_->push_back(stmnt);
     }
 }
 

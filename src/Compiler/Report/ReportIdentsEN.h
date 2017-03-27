@@ -279,6 +279,7 @@ DECL_REPORT( FailedToInitializeSamplerValue,    "{0} to initialize sampler value
 
 DECL_REPORT( SelfParamStackUnderflow,           "'self'-parameter stack underflow"                                                                              );
 DECL_REPORT( NoActiveStmntScopeHandler,         "no active statement scope handler"                                                                             );
+DECL_REPORT( MissingScopedStmntRef,             "missing reference to scoped statement"                                                                         );
 
 /* ----- GLSLConverter ----- */
 
