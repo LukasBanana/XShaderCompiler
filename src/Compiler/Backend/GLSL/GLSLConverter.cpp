@@ -431,18 +431,25 @@ IMPLEMENT_VISIT_PROC(CastExpr)
             structDecl->CollectMemberTypeDenoters(memberTypeDens);
 
             /* Convert sub expression for structure c'tor */
-            if (ast->expr->Type() == AST::Types::LiteralExpr)
+            auto subExpr = ast->expr->FetchNonBracketExpr();
+
+            if (subExpr->Type() == AST::Types::CallExpr)
             {
-                /* Generate list expression with N copies literals (where N is the number of struct members) */
-                auto literalExpr = std::static_pointer_cast<LiteralExpr>(ast->expr);
-                ast->expr = ASTFactory::MakeConstructorListExpr(literalExpr, memberTypeDens);
+                /* Generate temporary variable with call expression, and insert its declaration statement before the cast expression */
+                auto tempVarIdent           = MakeTempVarIdent();
+                auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(subExpr->GetTypeDenoter());
+                auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, ast->expr);
+                auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarIdent, tempVarDeclStmnt->varDecls.front().get());
+
+                ast->expr = ASTFactory::MakeConstructorListExpr(tempVarExpr, memberTypeDens);
+
+                InsertStmntBefore(tempVarDeclStmnt);
             }
-            /*else if ()
+            else
             {
-                //TODO: temporary variable must be created and inserted before this expression,
-                //      especially whan the sub expression contains a function call!
-                //...
-            }*/
+                /* Generate list expression with N copies of the expression (where N is the number of struct members) */
+                ast->expr = ASTFactory::MakeConstructorListExpr(ast->expr, memberTypeDens);
+            }
         }
     }
     

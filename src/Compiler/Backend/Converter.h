@@ -109,6 +109,9 @@ class Converter : public Visitor
         // Removes all statements that are marked as dead code.
         void RemoveDeadCode(std::vector<StmntPtr>& stmnts);
 
+        // Returns an identifier for a new temporary variable.
+        std::string MakeTempVarIdent();
+
         // Returns the program AST root node.
         inline Program* GetProgram() const
         {
@@ -172,6 +175,7 @@ class Converter : public Visitor
 
         unsigned int                    anonymCounter_          = 0;
         unsigned int                    obfuscationCounter_     = 0;
+        unsigned int                    tempVarCounter_         = 0;
 
 };
 

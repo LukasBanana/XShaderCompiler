@@ -181,7 +181,7 @@ TypeSpecifierPtr MakeTypeSpecifier(const DataType dataType)
     return MakeTypeSpecifier(MakeShared<BaseTypeDenoter>(dataType));
 }
 
-VarDeclStmntPtr MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident)
+VarDeclStmntPtr MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident, const ExprPtr& initializer)
 {
     auto ast = MakeAST<VarDeclStmnt>();
     {
@@ -190,6 +190,7 @@ VarDeclStmntPtr MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const st
         auto varDecl = MakeAST<VarDecl>();
         {
             varDecl->ident          = ident;
+            varDecl->initializer    = initializer;
             varDecl->declStmntRef   = ast.get();
         }
         ast->varDecls.push_back(varDecl);
@@ -197,9 +198,9 @@ VarDeclStmntPtr MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const st
     return ast;
 }
 
-VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ident)
+VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ident, const ExprPtr& initializer)
 {
-    return MakeVarDeclStmnt(MakeTypeSpecifier(dataType), ident);
+    return MakeVarDeclStmnt(MakeTypeSpecifier(dataType), ident, initializer);
 }
 
 ObjectExprPtr MakeObjectExpr(const std::string& ident, Decl* symbolRef)
@@ -246,7 +247,7 @@ This should be changed, because a list-expression is not meant to be used as arg
 */
 #if 1
 
-static ExprPtr MakeConstructorListExprPrimarySingle(const LiteralExprPtr& literalExpr, const TypeDenoterPtr& typeDen)
+static ExprPtr MakeConstructorListExprPrimarySingle(const ExprPtr& expr, const TypeDenoterPtr& typeDen)
 {
     if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
     {
@@ -257,7 +258,7 @@ static ExprPtr MakeConstructorListExprPrimarySingle(const LiteralExprPtr& litera
             structDecl->CollectMemberTypeDenoters(memberTypeDens);
 
             /* Generate list expression with N copies of the literal (where N is the number of struct members) */
-            return MakeCastExpr(typeDen, MakeConstructorListExpr(literalExpr, memberTypeDens));
+            return MakeCastExpr(typeDen, MakeConstructorListExpr(expr, memberTypeDens));
         }
     }
     else if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
@@ -265,14 +266,14 @@ static ExprPtr MakeConstructorListExprPrimarySingle(const LiteralExprPtr& litera
         if (!baseTypeDen->IsScalar())
         {
             /* Make a cast expression for this vector or matrix type */
-            return MakeCastExpr(typeDen, literalExpr);
+            return MakeCastExpr(typeDen, expr);
         }
     }
-    return literalExpr;
+    return expr;
 }
 
 static ExprPtr MakeConstructorListExprPrimary(
-    const LiteralExprPtr& literalExpr,
+    const ExprPtr& expr,
     std::vector<TypeDenoterPtr>::const_iterator typeDensBegin,
     std::vector<TypeDenoterPtr>::const_iterator typeDensEnd)
 {
@@ -280,21 +281,21 @@ static ExprPtr MakeConstructorListExprPrimary(
     {
         auto ast = MakeAST<ListExpr>();
         {
-            ast->firstExpr  = MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->GetSub());
-            ast->nextExpr   = MakeConstructorListExprPrimary(literalExpr, typeDensBegin + 1, typeDensEnd);
+            ast->firstExpr  = MakeConstructorListExprPrimarySingle(expr, (*typeDensBegin)->GetSub());
+            ast->nextExpr   = MakeConstructorListExprPrimary(expr, typeDensBegin + 1, typeDensEnd);
         }
         return ast;
     }
     else
-        return MakeConstructorListExprPrimarySingle(literalExpr, (*typeDensBegin)->GetSub());
+        return MakeConstructorListExprPrimarySingle(expr, (*typeDensBegin)->GetSub());
 }
 
-ExprPtr MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::vector<TypeDenoterPtr>& listTypeDens)
+ExprPtr MakeConstructorListExpr(const ExprPtr& expr, const std::vector<TypeDenoterPtr>& listTypeDens)
 {
     if (listTypeDens.empty())
-        return nullptr;
+        return expr;
     else
-        return MakeConstructorListExprPrimary(literalExpr, listTypeDens.begin(), listTypeDens.end());
+        return MakeConstructorListExprPrimary(expr, listTypeDens.begin(), listTypeDens.end());
 }
 
 #endif

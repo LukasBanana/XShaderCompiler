@@ -177,6 +177,12 @@ void Converter::RemoveDeadCode(std::vector<StmntPtr>& stmnts)
     }
 }
 
+std::string Converter::MakeTempVarIdent()
+{
+    /* Return identifier for temporary variable, and increase counter of temporary variables */
+    return nameMangling_.temporaryPrefix + "temp" + std::to_string(tempVarCounter_++);
+}
+
 
 /*
  * ======= Private: =======

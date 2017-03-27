@@ -48,8 +48,8 @@ TypeSpecifierPtr                MakeTypeSpecifier(const StructDeclPtr& structDec
 TypeSpecifierPtr                MakeTypeSpecifier(const TypeDenoterPtr& typeDenoter);
 TypeSpecifierPtr                MakeTypeSpecifier(const DataType dataType);
 
-VarDeclStmntPtr                 MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident);
-VarDeclStmntPtr                 MakeVarDeclStmnt(const DataType dataType, const std::string& ident);
+VarDeclStmntPtr                 MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident, const ExprPtr& initializer = nullptr);
+VarDeclStmntPtr                 MakeVarDeclStmnt(const DataType dataType, const std::string& ident, const ExprPtr& initializer = nullptr);
 
 ObjectExprPtr                   MakeObjectExpr(const std::string& ident, Decl* symbolRef = nullptr);
 ObjectExprPtr                   MakeObjectExpr(Decl* symbolRef);
@@ -60,7 +60,7 @@ ArrayExprPtr                    MakeArrayExpr(const ExprPtr& prefixExpr, const s
 BracketExprPtr                  MakeBracketExpr(const ExprPtr& expr);
 
 // Return a list expression (or only the input expression) for the specified literal expression, so it can be used as constructor for a struct.
-ExprPtr                         MakeConstructorListExpr(const LiteralExprPtr& literalExpr, const std::vector<TypeDenoterPtr>& listTypeDens);
+ExprPtr                         MakeConstructorListExpr(const ExprPtr& expr, const std::vector<TypeDenoterPtr>& listTypeDens);
 
 // Makes a statement with an array element assignment for the specified variable, array indices, and assignment expression.
 ExprStmntPtr                    MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr);
