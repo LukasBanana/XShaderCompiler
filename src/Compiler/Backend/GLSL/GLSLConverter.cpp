@@ -431,13 +431,11 @@ IMPLEMENT_VISIT_PROC(CastExpr)
             structDecl->CollectMemberTypeDenoters(memberTypeDens);
 
             /* Convert sub expression for structure c'tor */
-            auto subExpr = ast->expr->FetchNonBracketExpr();
-
-            if (subExpr->Type() == AST::Types::CallExpr)
+            if (ast->expr->FindFirstOf(AST::Types::CallExpr))
             {
                 /* Generate temporary variable with call expression, and insert its declaration statement before the cast expression */
                 auto tempVarIdent           = MakeTempVarIdent();
-                auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(subExpr->GetTypeDenoter());
+                auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(ast->expr->GetTypeDenoter());
                 auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, ast->expr);
                 auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
 
