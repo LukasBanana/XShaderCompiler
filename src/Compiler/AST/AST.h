@@ -44,6 +44,10 @@ using ExprIteratorFunctor = std::function<void(ExprPtr& expr)>;
 // Iteration callback for argument/parameter-type associations.
 using ArgumentParameterTypeFunctor = std::function<void(ExprPtr& argument, const TypeDenoter& paramTypeDen)>;
 
+// Predicate callback to find an expression inside an expression tree.
+using ExprFindPredicate = std::function<bool(const Expr& expr)>;
+
+
 /* --- Some helper macros --- */
 
 #define AST_INTERFACE(CLASS_NAME)                               \
@@ -74,6 +78,7 @@ using ArgumentParameterTypeFunctor = std::function<void(ExprPtr& argument, const
 
 #define FLAG(IDENT, INDEX) \
     IDENT = (1u << (INDEX))
+
 
 // Base class for all AST node classes.
 struct AST
@@ -224,6 +229,8 @@ struct Expr : public TypedAST
     virtual std::string ToString() const = 0;
     #endif
 
+    //TODO: replace all these functions by the "Find" functions
+    #if 1
     /*
     Returns the first node in the expression tree that is an l-value (may also be constant!), or null if there is no l-value.
     If the return value is non-null, the object expression must refer to a declaration object. By default null.
@@ -241,9 +248,19 @@ struct Expr : public TypedAST
 
     // Returns either this expression or the sub expression for brackets.
     virtual Expr* FetchNonBracketExpr();
+    #endif
 
     // Returns the semantic of this expression, or Semantic::Undefined if this expression has no semantic.
     virtual IndexedSemantic FetchSemantic() const;
+
+    // Returns the first expression for which the specified predicate returns true.
+    virtual const Expr* Find(const ExprFindPredicate& predicate) const;
+
+    // Returns the first expression of the specified type in this expression tree.
+    const Expr* FindFirstOf(const Types exprType) const;
+
+    // Returns the first expression of a different type than the specified type in this expression tree.
+    const Expr* FindFirstNotOf(const Types exprType) const;
 };
 
 // Declaration AST base class.
@@ -969,8 +986,11 @@ struct ListExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
+    const Expr* Find(const ExprFindPredicate& predicate) const override;
+
+    //TODO: change this to a list of expression instead of a tree hierarchy
     ExprPtr firstExpr;
-    ExprPtr nextExpr;
+    ExprPtr nextExpr;   // Next expression node; may be null
 };
 
 // Literal expression.
@@ -1013,6 +1033,8 @@ struct TernaryExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
+    const Expr* Find(const ExprFindPredicate& predicate) const override;
+
     // Returns true if the conditional expression is a vector type.
     bool IsVectorCondition() const;
 
@@ -1028,6 +1050,8 @@ struct BinaryExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
+    const Expr* Find(const ExprFindPredicate& predicate) const override;
+
     ExprPtr     lhsExpr;                        // Left-hand-side expression
     BinaryOp    op      = BinaryOp::Undefined;  // Binary operator
     ExprPtr     rhsExpr;                        // Right-hand-side expression
@@ -1040,6 +1064,8 @@ struct UnaryExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
+    const Expr* Find(const ExprFindPredicate& predicate) const override;
+
     UnaryOp op      = UnaryOp::Undefined;
     ExprPtr expr;
 };
@@ -1050,6 +1076,8 @@ struct PostUnaryExpr : public Expr
     AST_INTERFACE(PostUnaryExpr);
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
+
+    const Expr* Find(const ExprFindPredicate& predicate) const override;
 
     ExprPtr expr;
     UnaryOp op      = UnaryOp::Undefined;
@@ -1068,6 +1096,8 @@ struct CallExpr : public Expr
     };
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
+
+    const Expr* Find(const ExprFindPredicate& predicate) const override;
 
     IndexedSemantic FetchSemantic() const override;
 
@@ -1107,6 +1137,8 @@ struct BracketExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
+    const Expr* Find(const ExprFindPredicate& predicate) const override;
+
     const ObjectExpr* FetchLValueExpr() const override;
     const ObjectExpr* FetchTypeObjectExpr() const override;
 
@@ -1124,6 +1156,8 @@ struct AssignExpr : public Expr
     AST_INTERFACE(AssignExpr);
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
+
+    const Expr* Find(const ExprFindPredicate& predicate) const override;
 
     const ObjectExpr* FetchLValueExpr() const override;
     const ObjectExpr* FetchTypeObjectExpr() const override;
@@ -1144,6 +1178,8 @@ struct ObjectExpr : public Expr
     };
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
+
+    const Expr* Find(const ExprFindPredicate& predicate) const override;
 
     const ObjectExpr* FetchLValueExpr() const override;
     const ObjectExpr* FetchTypeObjectExpr() const override;
@@ -1188,6 +1224,8 @@ struct ArrayExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
+    const Expr* Find(const ExprFindPredicate& predicate) const override;
+
     const ObjectExpr* FetchLValueExpr() const override;
 
     // Returns the number of array indices (shortcut for "arrayIndices.size()").
@@ -1204,6 +1242,8 @@ struct CastExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
+    const Expr* Find(const ExprFindPredicate& predicate) const override;
+
     TypeSpecifierPtr    typeSpecifier;  // Cast type name expression
     ExprPtr             expr;           // Value expression
 };
@@ -1214,6 +1254,8 @@ struct InitializerExpr : public Expr
     AST_INTERFACE(InitializerExpr);
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
+
+    const Expr* Find(const ExprFindPredicate& predicate) const override;
 
     // Returns the number of elements with all sub initializers being unrollwed (e.g. { 1, { 2, 3 } } has 3 'unrolled' elements just like { 1, 2, 3 }).
     std::size_t NumElementsUnrolled() const;
