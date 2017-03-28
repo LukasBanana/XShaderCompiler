@@ -749,7 +749,7 @@ static int GetTextureDimFromExpr(Expr* expr, const AST* ast = nullptr)
         const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
         if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
         {
-            /* Determine vector size for texture intrinsic parametes */
+            /* Determine vector size for texture intrinsic parameters by texture buffer type */
             switch (bufferTypeDen->bufferType)
             {
                 case BufferType::Texture1D:
@@ -765,6 +765,22 @@ static int GetTextureDimFromExpr(Expr* expr, const AST* ast = nullptr)
                     return 3;
                 case BufferType::TextureCubeArray:
                     return 4;
+                default:
+                    break;
+            }
+        }
+        else if (auto samplerTypeDen = typeDen.As<SamplerTypeDenoter>())
+        {
+            /* Determine vector size for texture intrinsic parameters by sampler type */
+            switch (samplerTypeDen->samplerType)
+            {
+                case SamplerType::Sampler1D:
+                    return 1;
+                case SamplerType::Sampler2D:
+                    return 2;
+                case SamplerType::Sampler3D:
+                case SamplerType::SamplerCube:
+                    return 3;
                 default:
                     break;
             }
