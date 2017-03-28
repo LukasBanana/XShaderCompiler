@@ -1,11 +1,11 @@
 /*
- * ReportIdents.cpp
+ * JoinString.cpp
  * 
  * This file is part of the XShaderCompiler project (Copyright (c) 2014-2017 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
-#include "ReportIdents.h"
+#include "JoinString.h"
 #include <cstdlib>
 #include <stdexcept>
 
@@ -37,7 +37,7 @@ void ToStringList(std::vector<std::string>& list)
 
 /* ----- Classes ----- */
 
-ReportIdent::ReportIdent(const char* s) :
+JoinableString::JoinableString(const char* s) :
     s_{ s }
 {
     /*
@@ -55,7 +55,7 @@ ReportIdent::ReportIdent(const char* s) :
     }
 }
 
-std::string ReportIdent::Join(const std::vector<std::string>& values) const
+std::string JoinableString::Join(const std::vector<std::string>& values) const
 {
     if (canJoin_)
         return JoinString(s_, values);
