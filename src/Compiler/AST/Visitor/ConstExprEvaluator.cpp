@@ -62,8 +62,7 @@ IMPLEMENT_VISIT_PROC(NullExpr)
 IMPLEMENT_VISIT_PROC(ListExpr)
 {
     /* Only visit first sub-expression (when used as condExpr) */
-    Visit(ast->firstExpr);
-    //Visit(ast->nextExpr);
+    Visit(ast->exprs.front());
 }
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)

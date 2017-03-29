@@ -1360,8 +1360,9 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma)
         AcceptIt();
 
         auto listExpr = Make<ListExpr>();
-        listExpr->firstExpr = ast;
-        listExpr->nextExpr = ParseExpr(true);
+
+        listExpr->Append(ast);
+        listExpr->Append(ParseExpr(true));
 
         return listExpr;
     }

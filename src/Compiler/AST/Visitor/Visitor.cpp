@@ -236,8 +236,7 @@ IMPLEMENT_VISIT_PROC(NullExpr)
 
 IMPLEMENT_VISIT_PROC(ListExpr)
 {
-    Visit(ast->firstExpr);
-    Visit(ast->nextExpr);
+    Visit(ast->exprs);
 }
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)

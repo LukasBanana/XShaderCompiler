@@ -287,8 +287,8 @@ static ExprPtr MakeConstructorListExprPrimary(
     {
         auto ast = MakeAST<ListExpr>();
         {
-            ast->firstExpr  = MakeConstructorListExprPrimarySingle(expr, (*typeDensBegin)->GetSub());
-            ast->nextExpr   = MakeConstructorListExprPrimary(expr, typeDensBegin + 1, typeDensEnd);
+            ast->Append(MakeConstructorListExprPrimarySingle(expr, (*typeDensBegin)->GetSub()));
+            ast->Append(MakeConstructorListExprPrimary(expr, typeDensBegin + 1, typeDensEnd));
         }
         return ast;
     }

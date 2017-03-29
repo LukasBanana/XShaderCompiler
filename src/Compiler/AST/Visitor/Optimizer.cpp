@@ -156,8 +156,8 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 IMPLEMENT_VISIT_PROC(ListExpr)
 {
     VISIT_DEFAULT(ListExpr);
-    OptimizeExpr(ast->firstExpr);
-    OptimizeExpr(ast->nextExpr);
+    for (auto& subExpr : ast->exprs)
+        OptimizeExpr(subExpr);
 }
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)

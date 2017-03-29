@@ -799,9 +799,12 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 
 IMPLEMENT_VISIT_PROC(ListExpr)
 {
-    Visit(ast->firstExpr);
-    Write(", ");
-    Visit(ast->nextExpr);
+    for (std::size_t i = 0, n = ast->exprs.size(); i < n; ++i)
+    {
+        Visit(ast->exprs[i]);
+        if (i + 1 < n)
+            Write(", ");
+    }
 }
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)

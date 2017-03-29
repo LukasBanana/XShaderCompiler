@@ -988,7 +988,7 @@ struct NullExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 };
 
-// List expression ( expr ',' expr ).
+// List expression ( expr (',' expr)+ ).
 struct ListExpr : public Expr
 {
     AST_INTERFACE(ListExpr);
@@ -997,9 +997,10 @@ struct ListExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    //TODO: change this to a list of expression instead of a tree hierarchy
-    ExprPtr firstExpr;
-    ExprPtr nextExpr;   // Next expression node; may be null
+    // Appens the specified expression to the sub expressions ('ListExpr' will be flattened).
+    void Append(const ExprPtr& expr);
+
+    std::vector<ExprPtr> exprs; // List of sub expressions; must have at least two elements
 };
 
 // Literal expression.
