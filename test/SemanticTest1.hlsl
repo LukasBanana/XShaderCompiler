@@ -21,6 +21,8 @@ struct VOut
 	float3 tNormal : NORMAL;
 };
 
+int getConstValue() { return 9; }
+
 // VS1
 
 float4 VS1(float4 vPos : POSITION, uint id : SV_VertexID) : SV_Position
@@ -69,6 +71,30 @@ float4 VS6(in VIn inp, in uniform float4 offset) : SV_Position
 {
 	float3 x = (float3)0;
 	return mul(wvpMatrix, inp.vPos + offset);
+}
+
+// VS7
+
+VOut VS7()
+{
+	return (VOut)1;
+}
+
+// VS8
+
+VOut VS8(uint id : SV_VertexID)
+{
+	if (id % 2 == 0)
+		return (VOut)1;
+	else
+		return (VOut)getConstValue();
+}
+
+// VS9
+
+VOut VS9(uint id : SV_VertexID)
+{
+	return (VOut)(id % 2 == 0 ? 1 : getConstValue());
 }
 
 // PS1
