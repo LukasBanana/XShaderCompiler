@@ -25,6 +25,13 @@ namespace Xsc
 {
 
 
+#define CALL_EXPR_FIND_PREDICATE(PREDICATE) \
+    const auto p = PREDICATE(*this);        \
+    if (p == FindPredicate::Found)          \
+        return this;                        \
+    if (p == FindPredicate::Cancel)         \
+        return nullptr
+
 /* ----- AST ----- */
 
 AST::~AST()
@@ -105,9 +112,9 @@ IndexedSemantic Expr::FetchSemantic() const
     return Semantic::Undefined;
 }
 
-const Expr* Expr::Find(const ExprFindPredicate& predicate) const
+const Expr* Expr::Find(const FindPredicateConstFunctor& predicate) const
 {
-    if (predicate && predicate(*this))
+    if (predicate && predicate(*this) == FindPredicate::Found)
         return this;
     else
         return nullptr;
@@ -118,7 +125,7 @@ const Expr* Expr::FindFirstOf(const Types exprType) const
     return Find(
         [exprType](const Expr& expr)
         {
-            return (expr.Type() == exprType);
+            return (expr.Type() == exprType ? FindPredicate::Found : FindPredicate::NotFound);
         }
     );
 }
@@ -128,7 +135,7 @@ const Expr* Expr::FindFirstNotOf(const Types exprType) const
     return Find(
         [exprType](const Expr& expr)
         {
-            return (expr.Type() != exprType);
+            return (expr.Type() != exprType ? FindPredicate::Found : FindPredicate::NotFound);
         }
     );
 }
@@ -1198,12 +1205,14 @@ TypeDenoterPtr ListExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDeno
     return firstExpr->GetTypeDenoter();
 }
 
-const Expr* ListExpr::Find(const ExprFindPredicate& predicate) const
+const Expr* ListExpr::Find(const FindPredicateConstFunctor& predicate) const
 {
     if (predicate)
     {
-        if (predicate(*this))
-            return this;
+        /* Call predicate for this expression */
+        CALL_EXPR_FIND_PREDICATE(predicate);
+
+        /* Search in sub expressions */
         if (auto e = firstExpr->Find(predicate))
             return e;
         if (nextExpr)
@@ -1338,12 +1347,14 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeD
     return commonTypeDen;
 }
 
-const Expr* TernaryExpr::Find(const ExprFindPredicate& predicate) const
+const Expr* TernaryExpr::Find(const FindPredicateConstFunctor& predicate) const
 {
     if (predicate)
     {
-        if (predicate(*this))
-            return this;
+        /* Call predicate for this expression */
+        CALL_EXPR_FIND_PREDICATE(predicate);
+
+        /* Search in sub expressions */
         if (auto e = condExpr->Find(predicate))
             return e;
         if (auto e = thenExpr->Find(predicate))
@@ -1403,12 +1414,14 @@ TypeDenoterPtr BinaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
     return nullptr;
 }
 
-const Expr* BinaryExpr::Find(const ExprFindPredicate& predicate) const
+const Expr* BinaryExpr::Find(const FindPredicateConstFunctor& predicate) const
 {
     if (predicate)
     {
-        if (predicate(*this))
-            return this;
+        /* Call predicate for this expression */
+        CALL_EXPR_FIND_PREDICATE(predicate);
+
+        /* Search in sub expressions */
         if (auto e = lhsExpr->Find(predicate))
             return e;
         if (auto e = rhsExpr->Find(predicate))
@@ -1430,12 +1443,14 @@ TypeDenoterPtr UnaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDen
         return typeDen;
 }
 
-const Expr* UnaryExpr::Find(const ExprFindPredicate& predicate) const
+const Expr* UnaryExpr::Find(const FindPredicateConstFunctor& predicate) const
 {
     if (predicate)
     {
-        if (predicate(*this))
-            return this;
+        /* Call predicate for this expression */
+        CALL_EXPR_FIND_PREDICATE(predicate);
+
+        /* Search in sub expression */
         if (auto e = expr->Find(predicate))
             return e;
     }
@@ -1450,12 +1465,14 @@ TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTyp
     return expr->GetTypeDenoter();
 }
 
-const Expr* PostUnaryExpr::Find(const ExprFindPredicate& predicate) const
+const Expr* PostUnaryExpr::Find(const FindPredicateConstFunctor& predicate) const
 {
     if (predicate)
     {
-        if (predicate(*this))
-            return this;
+        /* Call predicate for this expression */
+        CALL_EXPR_FIND_PREDICATE(predicate);
+
+        /* Search in sub expression */
         if (auto e = expr->Find(predicate))
             return e;
     }
@@ -1493,12 +1510,14 @@ TypeDenoterPtr CallExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDeno
         RuntimeErr(R_MissingFuncRefToDeriveExprType, this);
 }
 
-const Expr* CallExpr::Find(const ExprFindPredicate& predicate) const
+const Expr* CallExpr::Find(const FindPredicateConstFunctor& predicate) const
 {
     if (predicate)
     {
-        if (predicate(*this))
-            return this;
+        /* Call predicate for this expression */
+        CALL_EXPR_FIND_PREDICATE(predicate);
+
+        /* Search in sub expression */
         if (auto e = prefixExpr->Find(predicate))
             return e;
     }
@@ -1612,12 +1631,14 @@ TypeDenoterPtr BracketExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeD
     return expr->GetTypeDenoter();
 }
 
-const Expr* BracketExpr::Find(const ExprFindPredicate& predicate) const
+const Expr* BracketExpr::Find(const FindPredicateConstFunctor& predicate) const
 {
     if (predicate)
     {
-        if (predicate(*this))
-            return this;
+        /* Call predicate for this expression */
+        CALL_EXPR_FIND_PREDICATE(predicate);
+
+        /* Search in sub expression */
         if (auto e = expr->Find(predicate))
             return e;
     }
@@ -1657,12 +1678,14 @@ TypeDenoterPtr AssignExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
     return lvalueExpr->GetTypeDenoter();
 }
 
-const Expr* AssignExpr::Find(const ExprFindPredicate& predicate) const
+const Expr* AssignExpr::Find(const FindPredicateConstFunctor& predicate) const
 {
     if (predicate)
     {
-        if (predicate(*this))
-            return this;
+        /* Call predicate for this expression */
+        CALL_EXPR_FIND_PREDICATE(predicate);
+
+        /* Search in sub expressions */
         if (auto e = lvalueExpr->Find(predicate))
             return e;
         if (auto e = rvalueExpr->Find(predicate))
@@ -1689,12 +1712,14 @@ TypeDenoterPtr ObjectExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
     return GetExplicitTypeDenoter();
 }
 
-const Expr* ObjectExpr::Find(const ExprFindPredicate& predicate) const
+const Expr* ObjectExpr::Find(const FindPredicateConstFunctor& predicate) const
 {
     if (predicate)
     {
-        if (predicate(*this))
-            return this;
+        /* Call predicate for this expression */
+        CALL_EXPR_FIND_PREDICATE(predicate);
+
+        /* Search in sub expression */
         if (prefixExpr)
         {
             if (auto e = prefixExpr->Find(predicate))
@@ -1847,12 +1872,14 @@ TypeDenoterPtr ArrayExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDen
     }
 }
 
-const Expr* ArrayExpr::Find(const ExprFindPredicate& predicate) const
+const Expr* ArrayExpr::Find(const FindPredicateConstFunctor& predicate) const
 {
     if (predicate)
     {
-        if (predicate(*this))
-            return this;
+        /* Call predicate for this expression */
+        CALL_EXPR_FIND_PREDICATE(predicate);
+
+        /* Search in sub expression */
         if (auto e = prefixExpr->Find(predicate))
             return e;
     }
@@ -1883,12 +1910,14 @@ TypeDenoterPtr CastExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDeno
     return castTypeDen;
 }
 
-const Expr* CastExpr::Find(const ExprFindPredicate& predicate) const
+const Expr* CastExpr::Find(const FindPredicateConstFunctor& predicate) const
 {
     if (predicate)
     {
-        if (predicate(*this))
-            return this;
+        /* Call predicate for this expression */
+        CALL_EXPR_FIND_PREDICATE(predicate);
+
+        /* Search in sub expression */
         if (auto e = expr->Find(predicate))
             return e;
     }
@@ -1965,12 +1994,14 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter(const TypeDenoter* expectedTyp
     return expectedTypeDenoter->Copy();
 }
 
-const Expr* InitializerExpr::Find(const ExprFindPredicate& predicate) const
+const Expr* InitializerExpr::Find(const FindPredicateConstFunctor& predicate) const
 {
     if (predicate)
     {
-        if (predicate(*this))
-            return this;
+        /* Call predicate for this expression */
+        CALL_EXPR_FIND_PREDICATE(predicate);
+
+        /* Search in sub expressions */
         for (const auto& subExpr : exprs)
         {
             if (auto e = subExpr->Find(predicate))
