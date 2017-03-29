@@ -2597,20 +2597,8 @@ bool GLSLGenerator::WriteStructDecl(StructDecl* structDecl, bool writeSemicolon,
     /* Is this a non-nested structure or are nested structures allowed in the current context? */
     if (!structDecl->flags(StructDecl::isNestedStruct) || allowNestedStruct)
     {
-        //TODO: remove interface blocks
-        #if 0
-        /* Is this an interface block or a standard structure? */
-        if (structDecl->flags(StructDecl::isShaderInput) || structDecl->flags(StructDecl::isShaderOutput))
-        {
-            /* Write structure as shader input/output block */
-            return WriteStructDeclInputOutputBlock(structDecl);
-        }
-        else
-        #endif
-        {
-            /* Write standard structure declaration */
-            return WriteStructDeclStandard(structDecl, writeSemicolon);
-        }
+        /* Write standard structure declaration */
+        return WriteStructDeclStandard(structDecl, writeSemicolon);
     }
     else if (!writeSemicolon)
     {
@@ -2643,38 +2631,6 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* structDecl, bool endWith
 
     /* Write member functions */
     WriteStmntList(structDecl->funcMembers);
-
-    return true;
-}
-
-bool GLSLGenerator::WriteStructDeclInputOutputBlock(StructDecl* structDecl)
-{
-    /* Only write input/output block if there is a non-system-value member */
-    if (!structDecl->HasNonSystemValueMembers())
-        return false;
-    
-    /* Write this structure as interface block (if structure doesn't need to be resolved) */
-    BeginLn();
-    
-    if (structDecl->flags(StructDecl::isShaderInput))
-        Write("in ");
-    else
-        Write("out ");
-    Write(structDecl->ident);
-
-    WriteScopeOpen();
-    BeginSep();
-    {
-        isInsideInterfaceBlock_ = true;
-        {
-            WriteStructDeclMembers(structDecl);
-        }
-        isInsideInterfaceBlock_ = false;
-    }
-    EndSep();
-    WriteScopeClose();
-
-    WriteLn(structDecl->aliasName + ";");
 
     return true;
 }

@@ -345,25 +345,6 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         if (!baseTypeDen || !IsRealType(baseTypeDen->dataType))
             Error(R_IllegalUseOfNormModifiers, ast->typeSpecifier.get());
     }
-
-    //TODO: remove this, if it's no longer of intereset
-    #if 0
-    /* Decorate variable type */
-    if (InsideEntryPoint() && ast->varDecls.empty())
-    {
-        if (auto symbol = ast->typeSpecifier->symbolRef)
-        {
-            if (auto structDecl = symbol->As<StructDecl>())
-            {
-                if (structDecl->flags(StructDecl::isShaderOutput) && structDecl->aliasName.empty())
-                {
-                    /* Store alias name for shader output interface block */
-                    structDecl->aliasName = ast->varDecls.front()->ident;
-                }
-            }
-        }
-    }
-    #endif
 }
 
 /* --- Statements --- */
@@ -1247,7 +1228,7 @@ void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
     if (auto structTypeDen = returnTypeDen.As<StructTypeDenoter>())
     {
         /* Analyze entry point output structure */
-        AnalyzeEntryPointParameterInOutStruct(funcDecl, structTypeDen->structDeclRef, "", false);
+        AnalyzeEntryPointParameterInOutStruct(funcDecl, structTypeDen->structDeclRef, false);
     }
 
     /*
@@ -1339,7 +1320,7 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
     if (auto structTypeDen = varTypeDen->As<StructTypeDenoter>())
     {
         /* Analyze entry point structure */
-        AnalyzeEntryPointParameterInOutStruct(funcDecl, structTypeDen->structDeclRef, varDecl->ident, input);
+        AnalyzeEntryPointParameterInOutStruct(funcDecl, structTypeDen->structDeclRef, input);
     }
     else if (auto bufferTypeDen = varTypeDen->As<BufferTypeDenoter>())
     {
@@ -1403,13 +1384,10 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOutVariable(FunctionDecl* funcDec
     }
 }
 
-void HLSLAnalyzer::AnalyzeEntryPointParameterInOutStruct(FunctionDecl* funcDecl, StructDecl* structDecl, const std::string& structAliasName, bool input)
+void HLSLAnalyzer::AnalyzeEntryPointParameterInOutStruct(FunctionDecl* funcDecl, StructDecl* structDecl, bool input)
 {
     if (structDecl)
     {
-        /* Set structure alias name */
-        structDecl->aliasName = structAliasName;
-
         /* Analyze all structure members */
         for (auto& member : structDecl->varMembers)
         {

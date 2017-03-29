@@ -542,11 +542,11 @@ struct VarDecl : public Decl
     // Returns true if this variable is a function parameter.
     bool IsParameter() const;
 
-    ObjectExprPtr                   namespaceExpr;              // Optional namespace expression; may be null
+    ObjectExprPtr                   namespaceExpr;                  // Optional namespace expression; may be null
     std::vector<ArrayDimensionPtr>  arrayDims;
     IndexedSemantic                 semantic;
     PackOffsetPtr                   packOffset;
-    std::vector<VarDeclStmntPtr>    annotations;                // Annotations can be ignored by analyzers and generators.
+    std::vector<VarDeclStmntPtr>    annotations;                    // Annotations can be ignored by analyzers and generators.
     ExprPtr                         initializer;
 
     VarDeclStmnt*                   declStmntRef        = nullptr;  // Reference to its declaration statement (parent node); may be null
@@ -658,7 +658,6 @@ struct StructDecl : public Decl
 
     StructDeclStmnt*                declStmntRef            = nullptr;  // Reference to its declaration statement (parent node).
     StructDecl*                     baseStructRef           = nullptr;  // Optional reference to base struct
-    std::string                     aliasName;                          // Alias name for input and output interface blocks of the DAST.
     std::map<std::string, VarDecl*> systemValuesRef;                    // List of members with system value semantic (SV_...).
     std::vector<StructDecl*>        nestedStructDeclRefs;               // References to all nested structures within this structure.
     std::set<VarDecl*>              shaderOutputVarDeclRefs;            // References to all variables from this structure that are used as entry point outputs.
