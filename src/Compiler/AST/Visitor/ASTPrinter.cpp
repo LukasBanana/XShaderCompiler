@@ -180,7 +180,7 @@ IMPLEMENT_VISIT_PROC_DEFAULT(ListExpr)
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
-    PRINT_AST_EXT(LiteralExpr, ast->value);
+    PRINT_AST_EXT(LiteralExpr, (ast->dataType == DataType::String ? ast->GetStringValue() : ast->value));
 }
 
 IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
