@@ -88,6 +88,7 @@ DECL_SHELL_COMMAND( PresettingCommand            );
 DECL_SHELL_COMMAND( VersionCommand               );
 DECL_SHELL_COMMAND( HelpCommand                  );
 DECL_SHELL_COMMAND( VerboseCommand               );
+DECL_SHELL_COMMAND( ColorCommand                 );
 DECL_SHELL_COMMAND( OptimizeCommand              );
 DECL_SHELL_COMMAND( ExtensionCommand             );
 DECL_SHELL_COMMAND( EnumExtensionCommand         );

@@ -35,7 +35,8 @@ class Shell
 
         static Shell* Instance();
 
-        void ExecuteCommandLine(CommandLine& cmdLine);
+        // Executes the specified command line, and return true if any action has been performed.
+        bool ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp = true);
 
         void WaitForUser();
 

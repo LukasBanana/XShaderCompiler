@@ -759,6 +759,30 @@ void VerboseCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
+ * ColorCommand class
+ */
+
+std::vector<Command::Identifier> ColorCommand::Idents() const
+{
+    return { { "--color" } };
+}
+
+HelpDescriptor ColorCommand::Help() const
+{
+    return
+    {
+        "--color [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables color highlighting for shell output; default=" + CommandLine::GetBooleanTrue()
+    };
+}
+
+void ColorCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    ConsoleManip::Enable(cmdLine.AcceptBoolean(true));
+}
+
+
+/*
  * OptimizeCommand class
  */
 

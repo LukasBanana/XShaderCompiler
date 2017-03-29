@@ -70,6 +70,7 @@ CommandFactory::CommandFactory()
         VersionCommand,
         HelpCommand,
         VerboseCommand,
+        ColorCommand,
         OptimizeCommand,
         ExtensionCommand,
         EnumExtensionCommand,

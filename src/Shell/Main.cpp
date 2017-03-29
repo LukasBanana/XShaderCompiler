@@ -19,6 +19,8 @@ int main(int argc, char** argv)
 {
     Shell shell(std::cout);
 
+    bool actionPerformed = false;
+
     /* Get filename of init file */
     std::string filename(argv[0]);
     std::size_t pos = 0;
@@ -44,14 +46,20 @@ int main(int argc, char** argv)
                 std::getline(file, line);
 
                 CommandLine cmdLine(line);
-                shell.ExecuteCommandLine(cmdLine);
+                if (shell.ExecuteCommandLine(cmdLine, false))
+                    actionPerformed = true;
             }
         }
     }
 
     /* Execute command line from program arguments */
     CommandLine cmdLine(argc - 1, argv + 1);
-    shell.ExecuteCommandLine(cmdLine);
+    if (shell.ExecuteCommandLine(cmdLine, !actionPerformed))
+        actionPerformed = true;
+
+    /* Print hint if no action has been performed */
+    if (!actionPerformed)
+        std::cout << "no action performed" << std::endl;
 
     /* Wait for user (if enabled) */
     shell.WaitForUser();

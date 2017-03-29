@@ -60,13 +60,17 @@ Shell* Shell::Instance()
     return instance_;
 }
 
-void Shell::ExecuteCommandLine(CommandLine& cmdLine)
+bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp)
 {
     if (cmdLine.ReachedEnd())
     {
-        /* Print brief help */
-        CommandFactory::Instance().GetHelpPrinter().PrintHelpReference(output);
-        return;
+        /* Print brief help (if enabled) */
+        if (enableBriefHelp)
+        {
+            CommandFactory::Instance().GetHelpPrinter().PrintHelpReference(output);
+            return true;
+        }
+        return false;
     }
 
     try
@@ -116,8 +120,8 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
 
         if (!state_.actionPerformed)
         {
-            /* Print hint that no action has been performed */
-            output << "no action performed" << std::endl;
+            /* No action performed -> return false */
+            return false;
         }
     }
     catch (const std::exception& e)
@@ -125,6 +129,8 @@ void Shell::ExecuteCommandLine(CommandLine& cmdLine)
         /* Print error message */
         output << e.what() << std::endl;
     }
+
+    return true;
 }
 
 void Shell::WaitForUser()
