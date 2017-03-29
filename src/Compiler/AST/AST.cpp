@@ -720,6 +720,12 @@ void StructDecl::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
     }
 }
 
+void StructDecl::AddShaderOutputInstance(VarDecl* varDecl)
+{
+    if (varDecl)
+        shaderOutputVarDeclRefs.insert(varDecl);
+}
+
 bool StructDecl::HasMultipleShaderOutputInstances() const
 {
     auto numInstances = shaderOutputVarDeclRefs.size();

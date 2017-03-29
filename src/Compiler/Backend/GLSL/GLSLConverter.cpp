@@ -312,7 +312,7 @@ IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
 IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    ConvertEntryPointReturnStmnt(ast->bodyStmnt);
+    ConvertEntryPointReturnStmntToCodeBlock(ast->bodyStmnt);
 
     OpenScope();
     {
@@ -336,7 +336,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    ConvertEntryPointReturnStmnt(ast->bodyStmnt);
+    ConvertEntryPointReturnStmntToCodeBlock(ast->bodyStmnt);
 
     OpenScope();
     {
@@ -349,7 +349,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    ConvertEntryPointReturnStmnt(ast->bodyStmnt);
+    ConvertEntryPointReturnStmntToCodeBlock(ast->bodyStmnt);
 
     OpenScope();
     {
@@ -362,7 +362,7 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 IMPLEMENT_VISIT_PROC(IfStmnt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    ConvertEntryPointReturnStmnt(ast->bodyStmnt);
+    ConvertEntryPointReturnStmntToCodeBlock(ast->bodyStmnt);
 
     OpenScope();
     {
@@ -376,7 +376,7 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
 IMPLEMENT_VISIT_PROC(ElseStmnt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    ConvertEntryPointReturnStmnt(ast->bodyStmnt);
+    ConvertEntryPointReturnStmntToCodeBlock(ast->bodyStmnt);
 
     OpenScope();
     {
@@ -398,58 +398,24 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 {
     VISIT_DEFAULT(ReturnStmnt);
 
-    #if 0
     if (InsideEntryPoint())
     {
         if (auto castExpr = AST::GetAs<CastExpr>(ast->expr->FindFirstOf(AST::Types::CastExpr)))
         {
             if (auto listExpr = castExpr->expr->As<ListExpr>())
             {
-                /* Convert cast expression to assignment of structure members */
                 const auto& typeDen = castExpr->GetTypeDenoter();
                 if (auto structTypeDen = typeDen->GetAliased().As<StructTypeDenoter>())
                 {
                     if (auto structDecl = structTypeDen->structDeclRef)
                     {
-                        /* Make variable declaration of structure type */
-                        auto varIdent       = MakeTempVarIdent();
-                        auto varDeclStmnt   = ASTFactory::MakeVarDeclStmnt(ASTFactory::MakeTypeSpecifier(typeDen), varIdent);
-                        auto varDecl        = varDeclStmnt->varDecls.front().get();
-
-                        //varDecl->flags << VarDecl::isEntryPointLocal;
-
-                        InsertStmntBefore(varDeclStmnt);
-
-                        /* Make member assignments */
-                        auto prefixExpr = ASTFactory::MakeObjectExpr(varDecl);
-
-                        Expr* valueExpr = listExpr;
-
-                        structDecl->ForEachVarDecl(
-                            [&](VarDeclPtr& varDecl)
-                            {
-                                if (valueExpr)
-                                {
-                                    auto assignStmnt = ASTFactory::MakeAssignStmnt(
-                                        ASTFactory::MakeObjectExpr(prefixExpr, varDecl->ident.Original(), varDecl.get()),
-                                        listExpr->firstExpr
-                                    );
-
-                                    InsertStmntBefore(assignStmnt);
-
-                                    valueExpr = listExpr->nextExpr.get();
-                                }
-                            }
-                        );
-
-                        /* Finally convert return statement */
-                        //...
+                        /* Convert cast expression to assignment of structure members */
+                        ConvertEntryPointReturnStmnt(*ast, structDecl, typeDen, *listExpr);
                     }
                 }
             }
         }
     }
-    #endif
 }
 
 /* --- Expressions --- */
@@ -1068,7 +1034,56 @@ void GLSLConverter::ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr*
     }
 }
 
-void GLSLConverter::ConvertEntryPointReturnStmnt(StmntPtr& stmnt)
+void GLSLConverter::ConvertEntryPointReturnStmnt(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const ListExpr& typeConstructor)
+{
+    /* Make variable declaration of structure type */
+    auto varIdent       = MakeTempVarIdent();
+    auto varDeclStmnt   = ASTFactory::MakeVarDeclStmnt(ASTFactory::MakeTypeSpecifier(typeDen), varIdent);
+    auto varDecl        = varDeclStmnt->varDecls.front().get();
+
+    varDecl->flags << (VarDecl::isEntryPointLocal | VarDecl::isEntryPointOutput);
+
+    InsertStmntBefore(varDeclStmnt);
+
+    /* Convert new statement */
+    Visit(varDeclStmnt);
+
+    /* Make member assignments */
+    auto prefixExpr = ASTFactory::MakeObjectExpr(varDecl);
+
+    std::size_t idx = 0;
+
+    structDecl->ForEachVarDecl(
+        [&](VarDeclPtr& varDecl)
+        {
+            if (idx < typeConstructor.exprs.size())
+            {
+                /* Make assignment statement for structure member */
+                auto assignStmnt = ASTFactory::MakeAssignStmnt(
+                    ASTFactory::MakeObjectExpr(prefixExpr, varDecl->ident.Original(), varDecl.get()),
+                    typeConstructor.exprs[idx++]
+                );
+
+                InsertStmntBefore(assignStmnt);
+
+                /* Convert new statement */
+                Visit(assignStmnt);
+            }
+        }
+    );
+
+    /* Finally convert return statement */
+    ast.expr = prefixExpr;
+
+    /* Add variable as instance to this structure as entry point output */
+    structDecl->AddShaderOutputInstance(varDecl);
+
+    /* Add variable as parameter-structure to entry point */
+    if (auto entryPoint = GetProgram()->entryPointRef)
+        entryPoint->paramStructs.push_back({ ast.expr.get(), varDecl, structDecl });
+}
+
+void GLSLConverter::ConvertEntryPointReturnStmntToCodeBlock(StmntPtr& stmnt)
 {
     /* Is this statement within the entry point? */
     if (InsideEntryPoint())

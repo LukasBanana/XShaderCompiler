@@ -105,7 +105,8 @@ class GLSLConverter : public Converter
         void ConvertEntryPointStructPrefixObject(ExprPtr& expr, ObjectExpr* prefixExpr, ObjectExpr* objectExpr);
         void ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr* prefixExpr, ObjectExpr* objectExpr);
 
-        void ConvertEntryPointReturnStmnt(StmntPtr& stmnt);
+        void ConvertEntryPointReturnStmnt(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const ListExpr& typeConstructor);
+        void ConvertEntryPointReturnStmntToCodeBlock(StmntPtr& stmnt);
 
         /* ----- Unrolling ----- */
 

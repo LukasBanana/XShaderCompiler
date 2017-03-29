@@ -644,6 +644,9 @@ struct StructDecl : public Decl
     // Iterates over each VarDecl AST node (included nested structures, and members in base structures).
     void ForEachVarDecl(const VarDeclIteratorFunctor& iterator);
 
+    // Adds the specified variable as an instance of this structure, that is used as shader output (see HasMultipleShaderOutputInstances).
+    void AddShaderOutputInstance(VarDecl* varDecl);
+
     // Returns true if this structure is used more than once as entry point output (either through variable arrays or multiple variable declarations).
     bool HasMultipleShaderOutputInstances() const;
 

@@ -1661,6 +1661,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
                 EndLn();
             }
         }
+        #if 0
         else if (entryPoint->paramStructs.empty())
         {
             /* Store result in temporary variable */
@@ -1676,13 +1677,9 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
             EndLn();
 
             if (auto structDecl = entryPoint->returnType->GetStructDeclRef())
-            {
-                #if 1//TODO: move this into another visitor (e.g. StructParameterAnalyzer, HLSLAnalyzer, or GLSLConverter)
-                structDecl->flags << StructDecl::isNonEntryPointParam;
-                #endif
                 WriteOutputSemanticsAssignmentStructDeclParam({ nullptr, nullptr, structDecl }, writeAsListedExpr, tempIdent);
-            }
         }
+        #endif
     }
 }
 
