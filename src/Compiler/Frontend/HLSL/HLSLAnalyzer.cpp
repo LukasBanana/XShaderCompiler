@@ -1077,8 +1077,22 @@ bool HLSLAnalyzer::AnalyzeStaticAccessExpr(const Expr* prefixExpr, bool isStatic
 {
     if (prefixExpr)
     {
+        /* This function returns true, if the specified expression is an object expression with a typename (i.e. structure or alias name) */
+        auto IsObjectExprWithTypename = [](const Expr& expr) -> bool
+        {
+            if (auto objectExpr = expr.As<ObjectExpr>())
+            {
+                if (auto symbol = objectExpr->symbolRef)
+                {
+                    /* Fetch type declaration from symbol reference */
+                    return (symbol->Type() == AST::Types::StructDecl || symbol->Type() == AST::Types::AliasDecl);
+                }
+            }
+            return false;
+        };
+
         /* Fetch static type expression from prefix expression */
-        if (auto staticTypeExpr = prefixExpr->FetchTypeObjectExpr())
+        if (auto staticTypeExpr = AST::GetAs<ObjectExpr>(prefixExpr->Find(IsObjectExprWithTypename, SearchLValue)))
         {
             if (!isStatic)
             {

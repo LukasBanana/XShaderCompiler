@@ -89,11 +89,6 @@ const ObjectExpr* Expr::FetchLValueExpr() const
     return nullptr;
 }
 
-const ObjectExpr* Expr::FetchTypeObjectExpr() const
-{
-    return nullptr;
-}
-
 IndexedSemantic Expr::FetchSemantic() const
 {
     return Semantic::Undefined;
@@ -132,8 +127,8 @@ const Expr* Expr::FindFirstNotOf(const Types exprType, unsigned int flags) const
 Expr* Expr::Find(const FindPredicateConstFunctor& predicate, unsigned int flags)
 {
     /*
-    Use const function and make a cast the constness aways,
-    which allowd here, since this is a non-const member function
+    Use const function and cast the constness away,
+    which is allowed here, since this is a non-const member function
     */
     return const_cast<Expr*>(static_cast<const Expr*>(this)->Find(predicate, flags));
 }
@@ -141,8 +136,8 @@ Expr* Expr::Find(const FindPredicateConstFunctor& predicate, unsigned int flags)
 Expr* Expr::FindFirstOf(const Types exprType, unsigned int flags)
 {
     /*
-    Use const function and make a cast the constness aways,
-    which allowd here, since this is a non-const member function
+    Use const function and cast the constness away,
+    which is allowed here, since this is a non-const member function
     */
     return const_cast<Expr*>(static_cast<const Expr*>(this)->FindFirstOf(exprType, flags));
 }
@@ -150,8 +145,8 @@ Expr* Expr::FindFirstOf(const Types exprType, unsigned int flags)
 Expr* Expr::FindFirstNotOf(const Types exprType, unsigned int flags)
 {
     /*
-    Use const function and make a cast the constness aways,
-    which allowd here, since this is a non-const member function
+    Use const function and cast the constness away,
+    which is allowed here, since this is a non-const member function
     */
     return const_cast<Expr*>(static_cast<const Expr*>(this)->FindFirstNotOf(exprType, flags));
 }
@@ -1690,11 +1685,6 @@ const ObjectExpr* BracketExpr::FetchLValueExpr() const
     return expr->FetchLValueExpr();
 }
 
-const ObjectExpr* BracketExpr::FetchTypeObjectExpr() const
-{
-    return expr->FetchTypeObjectExpr();
-}
-
 IndexedSemantic BracketExpr::FetchSemantic() const
 {
     return expr->FetchSemantic();
@@ -1733,11 +1723,6 @@ const Expr* AssignExpr::Find(const FindPredicateConstFunctor& predicate, unsigne
 const ObjectExpr* AssignExpr::FetchLValueExpr() const
 {
     return lvalueExpr->FetchLValueExpr();
-}
-
-const ObjectExpr* AssignExpr::FetchTypeObjectExpr() const
-{
-    return lvalueExpr->FetchTypeObjectExpr();
 }
 
 
@@ -1786,23 +1771,6 @@ const ObjectExpr* ObjectExpr::FetchLValueExpr() const
         return prefixExpr->FetchLValueExpr();
     }
     return this;
-}
-
-const ObjectExpr* ObjectExpr::FetchTypeObjectExpr() const
-{
-    if (symbolRef)
-    {
-        /* Fetch type declaration from symbol reference */
-        switch (symbolRef->Type())
-        {
-            case AST::Types::StructDecl:
-            case AST::Types::AliasDecl:
-                return this;
-            default:
-                break;
-        }
-    }
-    return nullptr;
 }
 
 IndexedSemantic ObjectExpr::FetchSemantic() const

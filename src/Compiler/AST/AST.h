@@ -168,6 +168,20 @@ struct AST
         FLAG( isBuildIn,   28 ), // This AST node is a build-in node (not part of the actual program source).
     };
 
+    // Returns the AST node as the specified sub class if this AST node has the correct type. Otherwise, null is returned.
+    template <typename T>
+    static T* GetAs(AST* ast)
+    {
+        return (ast != nullptr && ast->Type() == T::classType ? static_cast<T*>(ast) : nullptr);
+    }
+
+    // Returns the AST node as the specified sub class if this AST node has the correct type. Otherwise, null is returned.
+    template <typename T>
+    static const T* GetAs(const AST* ast)
+    {
+        return (ast != nullptr && ast->Type() == T::classType ? static_cast<const T*>(ast) : nullptr);
+    }
+
     // Returns this AST node as the specified sub class if this AST node has the correct type. Otherwise, null is returned.
     template <typename T>
     T* As()
@@ -231,26 +245,11 @@ struct Expr : public TypedAST
     // Returns the variable or null if this is not just a single variable expression.
     VarDecl* FetchVarDecl() const;
 
-    //TODO: maybe add this and let all Expr classes implement this
-    #if 0
-    // Returns a descriptive string of this expression. By default the name of the expression type is returned.
-    virtual std::string ToString() const = 0;
-    #endif
-
-    //TODO: replace all these functions by the "Find" functions
-    #if 1
     /*
     Returns the first node in the expression tree that is an l-value (may also be constant!), or null if there is no l-value.
     If the return value is non-null, the object expression must refer to a declaration object. By default null.
     */
     virtual const ObjectExpr* FetchLValueExpr() const;
-
-    /*
-    Returns the first node in the expression tree that is an type object expression,
-    i.e. an ObjectExpr node with a reference to a StructDecl or AliasDecl. By default null.
-    */
-    virtual const ObjectExpr* FetchTypeObjectExpr() const;
-    #endif
 
     // Returns the semantic of this expression, or Semantic::Undefined if this expression has no semantic.
     virtual IndexedSemantic FetchSemantic() const;
@@ -1153,7 +1152,6 @@ struct BracketExpr : public Expr
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
     const ObjectExpr* FetchLValueExpr() const override;
-    const ObjectExpr* FetchTypeObjectExpr() const override;
 
     IndexedSemantic FetchSemantic() const override;
 
@@ -1170,7 +1168,6 @@ struct AssignExpr : public Expr
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
     const ObjectExpr* FetchLValueExpr() const override;
-    const ObjectExpr* FetchTypeObjectExpr() const override;
 
     ExprPtr     lvalueExpr;                     // L-value expression
     AssignOp    op      = AssignOp::Undefined;  // Assignment operator
@@ -1192,7 +1189,6 @@ struct ObjectExpr : public Expr
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
     const ObjectExpr* FetchLValueExpr() const override;
-    const ObjectExpr* FetchTypeObjectExpr() const override;
 
     IndexedSemantic FetchSemantic() const override;
 
