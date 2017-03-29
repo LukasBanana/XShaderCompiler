@@ -436,12 +436,20 @@ std::string VarDecl::ToString() const
 
 TypeDenoterPtr VarDecl::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
-    if (declStmntRef)
+    if (customTypeDenoter)
     {
-        /* Get base type denoter from declaration statement */
-        return declStmntRef->typeSpecifier->typeDenoter->AsArray(arrayDims);
+        /* Return custom type denoter */
+        return customTypeDenoter;
     }
-    RuntimeErr(R_MissingDeclStmntRefToDeriveType(ident), this);
+    else
+    {
+        if (declStmntRef)
+        {
+            /* Get base type denoter from declaration statement */
+            return declStmntRef->typeSpecifier->typeDenoter->AsArray(arrayDims);
+        }
+        RuntimeErr(R_MissingDeclStmntRefToDeriveType(ident), this);
+    }
 }
 
 TypeSpecifier* VarDecl::FetchTypeSpecifier() const
@@ -470,6 +478,12 @@ bool VarDecl::IsStatic() const
 bool VarDecl::IsParameter() const
 {
     return (declStmntRef != nullptr && declStmntRef->flags(VarDeclStmnt::isParameter));
+}
+
+void VarDecl::SetCustomTypeDenoter(const TypeDenoterPtr& typeDenoter)
+{
+    customTypeDenoter = typeDenoter;
+    ResetTypeDenoter();
 }
 
 

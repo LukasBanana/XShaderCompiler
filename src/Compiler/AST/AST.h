@@ -542,12 +542,17 @@ struct VarDecl : public Decl
     // Returns true if this variable is a function parameter.
     bool IsParameter() const;
 
+    // Sets a custom type denoter, or the default type denoter if the parameter is null.
+    void SetCustomTypeDenoter(const TypeDenoterPtr& typeDenoter);
+
     ObjectExprPtr                   namespaceExpr;                  // Optional namespace expression; may be null
     std::vector<ArrayDimensionPtr>  arrayDims;
     IndexedSemantic                 semantic;
     PackOffsetPtr                   packOffset;
     std::vector<VarDeclStmntPtr>    annotations;                    // Annotations can be ignored by analyzers and generators.
     ExprPtr                         initializer;
+
+    TypeDenoterPtr                  customTypeDenoter;              // Optional type denoter which can be different from the type of its declaration statement.
 
     VarDeclStmnt*                   declStmntRef        = nullptr;  // Reference to its declaration statement (parent node); may be null
     UniformBufferDecl*              bufferDeclRef       = nullptr;  // Reference to its uniform buffer declaration (optional parent-parent-node); may be null
