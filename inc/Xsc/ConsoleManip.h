@@ -11,6 +11,7 @@
 
 #include "Export.h"
 #include <ostream>
+#include <iostream>
 
 
 namespace Xsc
@@ -49,14 +50,30 @@ void XSC_EXPORT Enable(bool enable);
 //! Returns true if console manipulation is enabled.
 bool XSC_EXPORT IsEnabled();
 
-//! Push the specified front color onto the stack.
-void XSC_EXPORT PushColor(std::ostream& stream, long front);
+/**
+\brief Pushes the specified front color flags onto the stack.
+\param[in] front Specifies the flags for the front color.
+This can be a bitwise OR combination of the flags declared in 'ColorFlags'.
+\param[in,out] stream Specifies the output stream whose front color is to be changed.
+This output stream is only required for Linux and MacOS, since the colors are specified by the streams itself.
+\see ColorFlags
+*/
+void XSC_EXPORT PushColor(long front, std::ostream& stream = std::cout);
 
-//! Push the specified front and back color onto the stack.
-void XSC_EXPORT PushColor(std::ostream& stream, long front, long back);
+/**
+\brief Pushes the specified front and back color flags onto the stack.
+\param[in] front Specifies the flags for the front color.
+This can be a bitwise OR combination of the flags declared in 'ColorFlags'.
+\param[in] back Specifies the flags for the background color.
+This can be a bitwise OR combination of the flags declared in 'ColorFlags'.
+\param[in,out] stream Specifies the output stream whose front color is to be changed.
+This output stream is only required for Linux and MacOS, since the colors are specified by the streams itself.
+\see ColorFlags
+*/
+void XSC_EXPORT PushColor(long front, long back, std::ostream& stream = std::cout);
 
-//! Pops the previous front and back colors from the stack.
-void XSC_EXPORT PopColor(std::ostream& stream);
+//! Pops the previous front and back color flags from the stack.
+void XSC_EXPORT PopColor(std::ostream& stream = std::cout);
 
 
 //! Helper class for scoped color stack operations.
@@ -70,12 +87,12 @@ class ScopedColor
         \param[in,out] stream Specifies the output stream for which the scope is to be changed. This is only used for Unix systems.
         \param[in] front Specifies the front color flags. This can be a bitwise OR combination of the entries of the ColorFlags enumeration.
         \see ColorFlags
-        \see PushColor(std::ostream&, long)
+        \see PushColor(long, std::ostream&)
         */
-        inline ScopedColor(std::ostream& stream, long front) :
+        inline ScopedColor(long front, std::ostream& stream = std::cout) :
             stream_{ stream }
         {
-            PushColor(stream_, front);
+            PushColor(front, stream_);
         }
 
         /**
@@ -86,10 +103,10 @@ class ScopedColor
         \see ColorFlags
         \see PushColor(std::ostream&, long, long)
         */
-        inline ScopedColor(std::ostream& stream, long front, long back) :
+        inline ScopedColor(long front, long back, std::ostream& stream = std::cout) :
             stream_{ stream }
         {
-            PushColor(stream_, front, back);
+            PushColor(front, back, stream_);
         }
 
         /**

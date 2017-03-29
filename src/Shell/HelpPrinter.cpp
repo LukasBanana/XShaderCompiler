@@ -8,6 +8,7 @@
 #include "HelpPrinter.h"
 #include "CommandFactory.h"
 #include "Command.h"
+#include <Xsc/ConsoleManip.h>
 #include <algorithm>
 
 
@@ -128,12 +129,55 @@ std::size_t HelpPrinter::GetMaxUsageLen(long categories) const
     return len;
 }
 
+static void PrintColoredCmdUsage(std::ostream& output, const std::string& usage)
+{
+    for (std::size_t pos = 0; pos < usage.size();)
+    {
+        /* Find next command identifier */
+        auto end = usage.find('-', pos);
+        if (end != std::string::npos)
+        {
+            /* Write previous text without color */
+            output << usage.substr(pos, end - pos);
+            pos = end;
+
+            /* Write command identifier with color */
+            ConsoleManip::ScopedColor scopedColor { ConsoleManip::ColorFlags::Yellow, output };
+            
+            /* Find end of command identifier */
+            end = usage.find_first_of(",;<>= \t", pos);
+            if (end != std::string::npos)
+            {
+                /* Write sub text with color */
+                output << usage.substr(pos, end - pos);
+                pos = end;
+            }
+            else
+            {
+                /* Write remaining text with color */
+                output << usage.substr(pos);
+                break;
+            }
+        }
+        else
+        {
+            /* Write remaining text without color */
+            output << usage.substr(pos);
+            break;
+        }
+    }
+}
+
 void HelpPrinter::PrintEntry(std::ostream& output, const HelpDescriptor& helpDesc, std::size_t indentSize) const
 {
     std::string indent(indentSize, ' ');
     
-    /* Print usage and brief help */
-    output << indent << helpDesc.usage << std::endl;
+    /* Print colored usage */
+    output << indent;
+    PrintColoredCmdUsage(output, helpDesc.usage);
+    output << std::endl;
+
+    /* Print brief help */
     output << indent << indent << indent << helpDesc.brief << std::endl;
 
     /* Print optional details */

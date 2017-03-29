@@ -117,7 +117,7 @@ void ScreenBufferInfo::Pop()
  * Public functions
  */
 
-void PushColor(std::ostream&, long front)
+void PushColor(long front, std::ostream& /*stream*/)
 {
     if (!IsEnabled())
         return;
@@ -141,7 +141,7 @@ void PushColor(std::ostream&, long front)
     SetConsoleTextAttribute(StdOut(), attrib);
 }
 
-void PushColor(std::ostream&, long front, long back)
+void PushColor(long front, long back, std::ostream& /*stream*/)
 {
     if (!IsEnabled())
         return;
@@ -166,7 +166,7 @@ void PushColor(std::ostream&, long front, long back)
     SetConsoleTextAttribute(StdOut(), attrib);
 }
 
-void PopColor(std::ostream&)
+void PopColor(std::ostream& /*stream*/)
 {
     if (IsEnabled())
         g_screenBufferInfo.Pop();

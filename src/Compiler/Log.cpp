@@ -99,12 +99,12 @@ void StdLog::PrintReport(const IndentReport& r, bool verbose)
 
     if (type == Report::Types::Error)
     {
-        ConsoleManip::ScopedColor highlight(std::cout, Colors::Red | Colors::Intens);
+        ConsoleManip::ScopedColor highlight(Colors::Red | Colors::Intens);
         PrintMultiLineString(msg, r.indent);
     }
     else if (type == Report::Types::Warning)
     {
-        ConsoleManip::ScopedColor highlight(std::cout, Colors::Yellow);
+        ConsoleManip::ScopedColor highlight(Colors::Yellow);
         PrintMultiLineString(msg, r.indent);
     }
     else
@@ -121,7 +121,7 @@ void StdLog::PrintReport(const IndentReport& r, bool verbose)
 
         /* Print line with color highlight for the occurrence */
         {
-            ConsoleManip::ScopedColor highlight(std::cout, Colors::Green | Colors::Blue);
+            ConsoleManip::ScopedColor highlight(Colors::Green | Colors::Blue);
 
             std::cout << r.indent;
 
@@ -130,7 +130,7 @@ void StdLog::PrintReport(const IndentReport& r, bool verbose)
             {
                 std::cout << line.substr(0, pos);
                 {
-                    ConsoleManip::ScopedColor highlight(std::cout, Colors::Cyan);
+                    ConsoleManip::ScopedColor highlight(Colors::Cyan);
                     std::cout << line.substr(pos, marker.size() - pos);
                 }
                 if (marker.size() < line.size())
@@ -144,7 +144,7 @@ void StdLog::PrintReport(const IndentReport& r, bool verbose)
 
         /* Print line marker */
         {
-            ConsoleManip::ScopedColor highlight(std::cout, Colors::Cyan);
+            ConsoleManip::ScopedColor highlight(Colors::Cyan);
             std::cout << r.indent << marker << std::endl;
         }
     }

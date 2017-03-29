@@ -157,13 +157,13 @@ void IOModifierState::Pop()
  * Interface implementation
  */
 
-void PushColor(std::ostream& stream, long front)
+void PushColor(long front, std::ostream& stream)
 {
     if (IsEnabled())
         g_modifierState.Push(stream, IOModifier(GetModCode(front, true)));
 }
 
-void PushColor(std::ostream& stream, long front, long back)
+void PushColor(long front, long back, std::ostream& stream)
 {
     if (IsEnabled())
         g_modifierState.Push(stream, IOModifier(GetModCode(front, true), GetModCode(front, false)));
