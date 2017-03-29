@@ -94,16 +94,6 @@ const ObjectExpr* Expr::FetchTypeObjectExpr() const
     return nullptr;
 }
 
-const Expr* Expr::FetchNonBracketExpr() const
-{
-    return this;
-}
-
-Expr* Expr::FetchNonBracketExpr()
-{
-    return this;
-}
-
 IndexedSemantic Expr::FetchSemantic() const
 {
     return Semantic::Undefined;
@@ -1705,16 +1695,6 @@ const ObjectExpr* BracketExpr::FetchTypeObjectExpr() const
     return expr->FetchTypeObjectExpr();
 }
 
-const Expr* BracketExpr::FetchNonBracketExpr() const
-{
-    return expr->FetchNonBracketExpr();
-}
-
-Expr* BracketExpr::FetchNonBracketExpr()
-{
-    return expr->FetchNonBracketExpr();
-}
-
 IndexedSemantic BracketExpr::FetchSemantic() const
 {
     return expr->FetchSemantic();
@@ -2076,7 +2056,7 @@ std::size_t InitializerExpr::NumElementsUnrolled() const
     
     for (const auto& e : exprs)
     {
-        if (auto initSubExpr = e->FetchNonBracketExpr()->As<InitializerExpr>())
+        if (auto initSubExpr = e->FindFirstNotOf(AST::Types::BracketExpr)->As<InitializerExpr>())
             n += initSubExpr->NumElementsUnrolled();
         else
             ++n;
@@ -2089,7 +2069,7 @@ void InitializerExpr::CollectElements(std::vector<ExprPtr>& elements) const
 {
     for (const auto& e : exprs)
     {
-        if (auto initSubExpr = e->FetchNonBracketExpr()->As<InitializerExpr>())
+        if (auto initSubExpr = e->FindFirstNotOf(AST::Types::BracketExpr)->As<InitializerExpr>())
             initSubExpr->CollectElements(elements);
         else
             elements.push_back(e);

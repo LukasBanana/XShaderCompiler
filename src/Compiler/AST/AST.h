@@ -250,12 +250,6 @@ struct Expr : public TypedAST
     i.e. an ObjectExpr node with a reference to a StructDecl or AliasDecl. By default null.
     */
     virtual const ObjectExpr* FetchTypeObjectExpr() const;
-
-    // Returns either this expression or the sub expression for brackets.
-    virtual const Expr* FetchNonBracketExpr() const;
-
-    // Returns either this expression or the sub expression for brackets.
-    virtual Expr* FetchNonBracketExpr();
     #endif
 
     // Returns the semantic of this expression, or Semantic::Undefined if this expression has no semantic.
@@ -1160,9 +1154,6 @@ struct BracketExpr : public Expr
 
     const ObjectExpr* FetchLValueExpr() const override;
     const ObjectExpr* FetchTypeObjectExpr() const override;
-
-    const Expr* FetchNonBracketExpr() const override;
-    Expr* FetchNonBracketExpr() override;
 
     IndexedSemantic FetchSemantic() const override;
 
