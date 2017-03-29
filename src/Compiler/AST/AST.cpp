@@ -1568,7 +1568,7 @@ const Expr* CallExpr::Find(const FindPredicateConstFunctor& predicate, unsigned 
         CALL_EXPR_FIND_PREDICATE(predicate);
 
         /* Search in sub expression */
-        if ((flags & SearchRValue) != 0)
+        if ((flags & SearchRValue) != 0 && prefixExpr)
         {
             if (auto e = prefixExpr->Find(predicate, flags))
                 return e;
