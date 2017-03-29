@@ -1857,10 +1857,11 @@ void GLSLGenerator::WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectEx
     if (varFlags(VarDecl::isShaderInput | VarDecl::isShaderOutput) && objectExpr.prefixExpr)
     {
         /* Write special "gl_in/out" array prefix, or write array indices as postfix for input/output semantics */
-        if (auto arrayExpr = objectExpr.prefixExpr->FetchNonBracketExpr()->As<ArrayExpr>())
+        if (auto arrayExpr = objectExpr.prefixExpr->FindFirstNotOf(AST::Types::BracketExpr)->As<ArrayExpr>())
         {
             if (semanticKeyword)
             {
+                /* Example: gl_in[0].gl_Position */
                 if (varFlags(VarDecl::isShaderInput))
                     Write("gl_in");
                 else
@@ -1870,6 +1871,7 @@ void GLSLGenerator::WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectEx
             }
             else
             {
+                /* Example: xsv_NORMAL0[0] */
                 WriteObjectExprIdent(objectExpr, false);
                 WriteArrayIndices(arrayExpr->arrayIndices);
             }
