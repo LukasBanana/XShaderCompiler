@@ -275,7 +275,7 @@ class GLSLGenerator : public Generator
         void WriteParameter(VarDeclStmnt* ast);
         void WriteScopedStmnt(Stmnt* ast);
 
-        void WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast = nullptr);
+        void WriteLiteral(const std::string& value, const DataType& dataType, const AST* ast = nullptr);
 
         /* === Members === */
 

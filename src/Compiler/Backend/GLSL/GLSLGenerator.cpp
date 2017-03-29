@@ -2275,7 +2275,7 @@ void GLSLGenerator::WriteCallExprIntrinsicRcp(CallExpr* funcCall)
         {
             WriteTypeDenoter(*baseTypeDen, false, funcCall);
             Write("(");
-            WriteLiteral("1", *baseTypeDen, funcCall);
+            WriteLiteral("1", baseTypeDen->dataType, funcCall);
             Write(") / (");
             Visit(expr);
         }
@@ -2317,7 +2317,7 @@ void GLSLGenerator::WriteCallExprIntrinsicClip(CallExpr* funcCall)
                 /* Convert to: 'any(lessThan(EXPR, TYPE(0)))' */
                 Visit(expr);
                 Write(", ");
-                WriteLiteral("0", *baseTypeDen, expr.get());
+                WriteLiteral("0", baseTypeDen->dataType, expr.get());
             }
 
             Write("))");
@@ -2339,7 +2339,7 @@ void GLSLGenerator::WriteCallExprIntrinsicClip(CallExpr* funcCall)
                 /* Convert to: 'EXPR < TYPE(0)' */
                 Visit(expr);
                 Write(" < ");
-                WriteLiteral("0", *baseTypeDen, expr.get());
+                WriteLiteral("0", baseTypeDen->dataType, expr.get());
             }
         }
         else
@@ -2824,16 +2824,17 @@ void GLSLGenerator::WriteScopedStmnt(Stmnt* ast)
     }
 }
 
-void GLSLGenerator::WriteLiteral(const std::string& value, const BaseTypeDenoter& baseTypeDen, const AST* ast)
+void GLSLGenerator::WriteLiteral(const std::string& value, const DataType& dataType, const AST* ast)
 {
-    if (baseTypeDen.IsScalar())
+    if (IsScalarType(dataType))
     {
         Write(value);
 
-        switch (baseTypeDen.dataType)
+        switch (dataType)
         {
             case DataType::UInt:
-                Write("u");
+                if (!value.empty() && value.back() != 'u' && value.back() != 'U')
+                    Write("u");
                 break;
             case DataType::Float:
                 if (value.find_first_of(".eE") == std::string::npos)
@@ -2844,9 +2845,9 @@ void GLSLGenerator::WriteLiteral(const std::string& value, const BaseTypeDenoter
                 break;
         }
     }
-    else if (baseTypeDen.IsVector())
+    else if (IsVectorType(dataType))
     {
-        WriteDataType(baseTypeDen.dataType, false, ast);
+        WriteDataType(dataType, false, ast);
         Write("(");
         Write(value);
         Write(")");
