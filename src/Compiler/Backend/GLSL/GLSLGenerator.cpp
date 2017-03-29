@@ -1675,7 +1675,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
             if (auto structDecl = entryPoint->returnType->GetStructDeclRef())
             {
                 #if 1//TODO: move this into another visitor (e.g. StructParameterAnalyzer, HLSLAnalyzer, or GLSLConverter)
-                structDecl->flags << (StructDecl::isNonEntryPointParam | StructDecl::isShaderOutput);
+                structDecl->flags << StructDecl::isNonEntryPointParam;
                 #endif
                 WriteOutputSemanticsAssignmentStructDeclParam({ nullptr, nullptr, structDecl }, writeAsListedExpr, tempIdent);
             }

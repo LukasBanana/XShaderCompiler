@@ -394,6 +394,64 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
     CloseScope();
 }
 
+IMPLEMENT_VISIT_PROC(ReturnStmnt)
+{
+    VISIT_DEFAULT(ReturnStmnt);
+
+    #if 0
+    if (InsideEntryPoint())
+    {
+        if (auto castExpr = AST::GetAs<CastExpr>(ast->expr->FindFirstOf(AST::Types::CastExpr)))
+        {
+            if (auto listExpr = castExpr->expr->As<ListExpr>())
+            {
+                /* Convert cast expression to assignment of structure members */
+                const auto& typeDen = castExpr->GetTypeDenoter();
+                if (auto structTypeDen = typeDen->GetAliased().As<StructTypeDenoter>())
+                {
+                    if (auto structDecl = structTypeDen->structDeclRef)
+                    {
+                        /* Make variable declaration of structure type */
+                        auto varIdent       = MakeTempVarIdent();
+                        auto varDeclStmnt   = ASTFactory::MakeVarDeclStmnt(ASTFactory::MakeTypeSpecifier(typeDen), varIdent);
+                        auto varDecl        = varDeclStmnt->varDecls.front().get();
+
+                        //varDecl->flags << VarDecl::isEntryPointLocal;
+
+                        InsertStmntBefore(varDeclStmnt);
+
+                        /* Make member assignments */
+                        auto prefixExpr = ASTFactory::MakeObjectExpr(varDecl);
+
+                        Expr* valueExpr = listExpr;
+
+                        structDecl->ForEachVarDecl(
+                            [&](VarDeclPtr& varDecl)
+                            {
+                                if (valueExpr)
+                                {
+                                    auto assignStmnt = ASTFactory::MakeAssignStmnt(
+                                        ASTFactory::MakeObjectExpr(prefixExpr, varDecl->ident.Original(), varDecl.get()),
+                                        listExpr->firstExpr
+                                    );
+
+                                    InsertStmntBefore(assignStmnt);
+
+                                    valueExpr = listExpr->nextExpr.get();
+                                }
+                            }
+                        );
+
+                        /* Finally convert return statement */
+                        //...
+                    }
+                }
+            }
+        }
+    }
+    #endif
+}
+
 /* --- Expressions --- */
 
 //TODO:

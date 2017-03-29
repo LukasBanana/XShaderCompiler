@@ -306,19 +306,24 @@ ExprPtr MakeConstructorListExpr(const ExprPtr& expr, const std::vector<TypeDenot
 
 #endif
 
-ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr)
+ExprStmntPtr MakeAssignStmnt(const ExprPtr& lvalueExpr, const ExprPtr& rvalueExpr, const AssignOp op)
 {
     auto ast = MakeAST<ExprStmnt>();
     {
         auto assignExpr = MakeAST<AssignExpr>();
         {
-            assignExpr->lvalueExpr  = MakeArrayExpr(MakeObjectExpr(varDecl), arrayIndices);
-            assignExpr->op          = AssignOp::Set;
-            assignExpr->rvalueExpr  = assignExpr;
+            assignExpr->lvalueExpr  = lvalueExpr;
+            assignExpr->op          = op;
+            assignExpr->rvalueExpr  = rvalueExpr;
         }
         ast->expr = assignExpr;
     }
     return ast;
+}
+
+ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr)
+{
+    return MakeAssignStmnt(MakeArrayExpr(MakeObjectExpr(varDecl), arrayIndices), assignExpr);
 }
 
 ArrayDimensionPtr MakeArrayDimension(int arraySize)
