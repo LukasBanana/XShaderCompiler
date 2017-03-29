@@ -949,7 +949,7 @@ void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
 */
 void GLSLConverter::ConvertEntryPointStructPrefix(ExprPtr& expr, ObjectExpr* objectExpr)
 {
-    auto nonBracketExpr = expr->FetchNonBracketExpr();
+    auto nonBracketExpr = expr->FindFirstNotOf(AST::Types::BracketExpr);
     if (auto prefixExpr = nonBracketExpr->As<ObjectExpr>())
         ConvertEntryPointStructPrefixObject(expr, prefixExpr, objectExpr);
     else if (auto prefixExpr = nonBracketExpr->As<ArrayExpr>())

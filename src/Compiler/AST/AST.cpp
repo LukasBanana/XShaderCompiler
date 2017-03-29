@@ -139,6 +139,33 @@ const Expr* Expr::FindFirstNotOf(const Types exprType, unsigned int flags) const
     );
 }
 
+Expr* Expr::Find(const FindPredicateConstFunctor& predicate, unsigned int flags)
+{
+    /*
+    Use const function and make a cast the constness aways,
+    which allowd here, since this is a non-const member function
+    */
+    return const_cast<Expr*>(static_cast<const Expr*>(this)->Find(predicate, flags));
+}
+
+Expr* Expr::FindFirstOf(const Types exprType, unsigned int flags)
+{
+    /*
+    Use const function and make a cast the constness aways,
+    which allowd here, since this is a non-const member function
+    */
+    return const_cast<Expr*>(static_cast<const Expr*>(this)->FindFirstOf(exprType, flags));
+}
+
+Expr* Expr::FindFirstNotOf(const Types exprType, unsigned int flags)
+{
+    /*
+    Use const function and make a cast the constness aways,
+    which allowd here, since this is a non-const member function
+    */
+    return const_cast<Expr*>(static_cast<const Expr*>(this)->FindFirstNotOf(exprType, flags));
+}
+
 
 /* ----- Decl ----- */
 

@@ -269,6 +269,15 @@ struct Expr : public TypedAST
 
     // Returns the first expression of a different type than the specified type in this expression tree.
     const Expr* FindFirstNotOf(const Types exprType, unsigned int flags = SearchAll) const;
+
+    // Returns the first expression for which the specified predicate returns true.
+    Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll);
+
+    // Returns the first expression of the specified type in this expression tree.
+    Expr* FindFirstOf(const Types exprType, unsigned int flags = SearchAll);
+
+    // Returns the first expression of a different type than the specified type in this expression tree.
+    Expr* FindFirstNotOf(const Types exprType, unsigned int flags = SearchAll);
 };
 
 // Declaration AST base class.
