@@ -86,6 +86,9 @@ class GLSLConverter : public Converter
         // Function signature compare callback for the function name converter.
         static bool CompareFuncSignatures(const FunctionDecl& lhs, const FunctionDecl& rhs);
 
+        static bool ConvertVarDeclType(VarDecl& varDecl);
+        static bool ConvertVarDeclTypeDenoter(VarDecl& varDecl, const TypeDenoterPtr& typeDen);
+
         /* ----- Conversion ----- */
 
         void ConvertFunctionDecl(FunctionDecl* ast);

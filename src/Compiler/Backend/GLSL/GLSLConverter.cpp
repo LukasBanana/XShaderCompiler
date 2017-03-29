@@ -8,6 +8,7 @@
 #include "GLSLConverter.h"
 #include "GLSLKeywords.h"
 #include "FuncNameConverter.h"
+#include "TypeConverter.h"
 #include "AST.h"
 #include "ASTFactory.h"
 #include "Exception.h"
@@ -44,6 +45,10 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
     options_            = outputDesc.options;
     isVKSL_             = IsLanguageVKSL(outputDesc.shaderVersion);
 
+    /* Convert type of specific semantics */
+    TypeConverter typeConverter;
+    typeConverter.Convert(program, GLSLConverter::ConvertVarDeclType);
+
     /* Convert expressions */
     Flags exprConverterFlags = ExprConverter::All;
 
@@ -60,7 +65,7 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
     exprConverter_.Convert(program, exprConverterFlags);
 
     /* Visit program AST */
-    Visit(GetProgram());
+    Visit(&program);
 
     /* Convert function names after main conversion, since functon owner structs may have been renamed as well */
     FuncNameConverter funcNameConverter;
@@ -623,6 +628,51 @@ bool GLSLConverter::CompareFuncSignatures(const FunctionDecl& lhs, const Functio
 {
     /* Compare function signatures and ignore generic sub types (GLSL has no distinction for these types) */
     return lhs.EqualsSignature(rhs, TypeDenoter::IgnoreGenericSubType);
+}
+
+bool GLSLConverter::ConvertVarDeclType(VarDecl& varDecl)
+{
+    switch (varDecl.semantic)
+    {
+        case Semantic::VertexID:
+            return ConvertVarDeclTypeDenoter(varDecl, std::make_shared<BaseTypeDenoter>(DataType::Int));
+
+        default:
+            return false;
+    }
+}
+
+bool GLSLConverter::ConvertVarDeclTypeDenoter(VarDecl& varDecl, const TypeDenoterPtr& typeDen)
+{
+    if (auto varDeclStmnt = varDecl.declStmntRef)
+    {
+        if (varDeclStmnt->varDecls.size() == 1)
+        {
+            /* Convert type of declaration statement */
+            varDeclStmnt->typeSpecifier->typeDenoter = typeDen;
+        }
+        else
+        {
+            /* Set custom type denoter for this variable */
+            varDecl.SetCustomTypeDenoter(typeDen);
+
+            /*
+            ~~~~~~~~~~~~~~~ TODO: ~~~~~~~~~~~~~~~
+            split declaration statement into three parts:
+            1. All variables before this one
+            2. This variable
+            3. All variables after this one
+
+            Example of converting 'b' (Before):
+                "uint a, b = a, c = b;"
+
+            Example of converting 'b' (After):
+                "uint a; int b = (int)a; uint c = (uint)b;"
+            */
+        }
+        return true;
+    }
+    return false;
 }
 
 /* ----- Conversion ----- */

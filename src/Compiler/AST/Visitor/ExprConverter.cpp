@@ -390,6 +390,15 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     ConvertExpr(ast->condition, AllPostVisit);
 }
 
+IMPLEMENT_VISIT_PROC(SwitchStmnt)
+{
+    ConvertExpr(ast->selector, AllPreVisit);
+    {
+        VISIT_DEFAULT(SwitchStmnt);
+    }
+    ConvertExpr(ast->selector, AllPostVisit);
+}
+
 IMPLEMENT_VISIT_PROC(ExprStmnt)
 {
     ConvertExpr(ast->expr, AllPreVisit);
