@@ -1129,6 +1129,8 @@ void HLSLAnalyzer::AnalyzeLValueExpr(const Expr* expr, const AST* ast)
         /* Fetch l-value from expression */
         if (auto lvalueExpr = expr->FetchLValueExpr())
             AnalyzeLValueExprObject(lvalueExpr, ast);
+        else
+            Error(R_IllegalRValueAssignment, (ast != nullptr ? ast : expr));
     }
 }
 

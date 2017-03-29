@@ -1466,6 +1466,14 @@ const Expr* UnaryExpr::Find(const FindPredicateConstFunctor& predicate, unsigned
     return nullptr;
 }
 
+const ObjectExpr* UnaryExpr::FetchLValueExpr() const
+{
+    if (IsLValueOp(op))
+        return expr->FetchLValueExpr();
+    else
+        return nullptr;
+}
+
 
 /* ----- PostUnaryExpr ----- */
 

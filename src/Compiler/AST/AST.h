@@ -1074,6 +1074,8 @@ struct UnaryExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
+    const ObjectExpr* FetchLValueExpr() const override;
+
     UnaryOp op      = UnaryOp::Undefined;
     ExprPtr expr;
 };

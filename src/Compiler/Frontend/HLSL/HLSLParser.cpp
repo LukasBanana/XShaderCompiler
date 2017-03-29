@@ -1589,13 +1589,14 @@ AssignExprPtr HLSLParser::ParseAssignExpr(const ExprPtr& expr)
     auto ast = Make<AssignExpr>();
 
     /* Take sub expression and parse assignment */
+    ast->area       = expr->area;
     ast->lvalueExpr = expr;
 
     /* Parse assign expression */
     if (Is(Tokens::AssignOp))
     {
-        UpdateSourceAreaOffset(ast);
         ast->op         = StringToAssignOp(AcceptIt()->Spell());
+        UpdateSourceAreaOffset(ast);
         ast->rvalueExpr = ParseExpr();
     }
     else
