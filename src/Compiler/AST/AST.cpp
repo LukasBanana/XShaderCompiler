@@ -1748,7 +1748,29 @@ const ObjectExpr* AssignExpr::FetchLValueExpr() const
 
 TypeDenoterPtr ObjectExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
-    return GetExplicitTypeDenoter();
+    if (symbolRef)
+    {
+        /* Derive type denoter from symbol reference */
+        if (auto varDecl = symbolRef->As<VarDecl>())
+            return varDecl->GetTypeDenoter();
+        if (auto bufferDecl = symbolRef->As<BufferDecl>())
+            return bufferDecl->GetTypeDenoter();
+        if (auto samplerDecl = symbolRef->As<SamplerDecl>())
+            return samplerDecl->GetTypeDenoter();
+        if (auto structDecl = symbolRef->As<StructDecl>())
+            return structDecl->GetTypeDenoter();
+        if (auto aliasDecl = symbolRef->As<AliasDecl>())
+            return aliasDecl->GetTypeDenoter();
+
+        RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
+    }
+    else if (prefixExpr)
+    {
+        /* Get type denoter of prefix (if used) */
+        return prefixExpr->GetTypeDenoter()->GetSub(this);
+    }
+    
+    RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
 }
 
 const Expr* ObjectExpr::Find(const FindPredicateConstFunctor& predicate, unsigned int flags) const
@@ -1805,33 +1827,6 @@ IndexedSemantic ObjectExpr::FetchSemantic() const
         return prefixExpr->FetchSemantic();
     }
     return Semantic::Undefined;
-}
-
-TypeDenoterPtr ObjectExpr::GetExplicitTypeDenoter()
-{
-    if (symbolRef)
-    {
-        /* Derive type denoter from symbol reference */
-        if (auto varDecl = symbolRef->As<VarDecl>())
-            return varDecl->GetTypeDenoter();
-        if (auto bufferDecl = symbolRef->As<BufferDecl>())
-            return bufferDecl->GetTypeDenoter();
-        if (auto samplerDecl = symbolRef->As<SamplerDecl>())
-            return samplerDecl->GetTypeDenoter();
-        if (auto structDecl = symbolRef->As<StructDecl>())
-            return structDecl->GetTypeDenoter();
-        if (auto aliasDecl = symbolRef->As<AliasDecl>())
-            return aliasDecl->GetTypeDenoter();
-
-        RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
-    }
-    else if (prefixExpr)
-    {
-        /* Get type denoter of prefix (if used) */
-        return prefixExpr->GetTypeDenoter()->GetSub(this);
-    }
-    
-    RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
 }
 
 BaseTypeDenoterPtr ObjectExpr::GetTypeDenoterFromSubscript() const

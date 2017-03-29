@@ -1195,9 +1195,6 @@ struct ObjectExpr : public Expr
 
     IndexedSemantic FetchSemantic() const override;
 
-    // Returns the type denoter for this AST node or the last sub node.
-    TypeDenoterPtr GetExplicitTypeDenoter();
-
     // Returns a type denoter for the vector subscript of this object expression or throws a runtime error on failure.
     BaseTypeDenoterPtr GetTypeDenoterFromSubscript() const;
 
