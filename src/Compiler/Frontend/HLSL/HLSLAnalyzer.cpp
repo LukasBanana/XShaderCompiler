@@ -252,7 +252,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         secondaryEntryPointFound_ = true;
 
     /* Analyze function return semantic */
-    AnalyzeSemantic(ast->semantic);
+    AnalyzeSemantic(ast->semantic, false);
 
     /* Visit attributes */
     Visit(ast->attribs);
@@ -611,7 +611,7 @@ void HLSLAnalyzer::AnalyzeVarDeclLocal(VarDecl* varDecl, bool registerVarIdent)
 
     /* Analyze array dimensions and semantic */
     AnalyzeArrayDimensionList(varDecl->arrayDims);
-    AnalyzeSemantic(varDecl->semantic);
+    AnalyzeSemantic(varDecl->semantic, varDecl->declStmntRef->IsInput());
 
     /* Store references to members with system value semantic (SV_...) in all parent structures */
     if (varDecl->semantic.IsSystemValue())
@@ -1919,12 +1919,27 @@ bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(
 
 /* ----- Misc ----- */
 
-void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic)
+void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic, bool input)
 {
     if (semantic == Semantic::FragCoord && shaderTarget_ != ShaderTarget::FragmentShader)
     {
         /* Convert shader semantic to VertexPosition */
         semantic = IndexedSemantic(Semantic::VertexPosition, semantic.Index());
+    }
+
+    if (versionIn_ == InputShaderVersion::HLSL3)
+    {
+        /* Convert some system value semantics to a user defined semantic (e.g. vertex input POSITION[n]) */
+        if ( ( shaderTarget_ == ShaderTarget::VertexShader   && semantic == Semantic::VertexPosition && input ) ||
+             ( shaderTarget_ == ShaderTarget::VertexShader   && semantic == Semantic::Target                  ) ||
+             ( shaderTarget_ == ShaderTarget::FragmentShader && semantic == Semantic::Target         && input ) )
+        {
+            /* Make this a user defined semantic */
+            if (semantic == Semantic::VertexPosition)
+                semantic.MakeUserDefined("POSITION");
+            else if (semantic == Semantic::Target)
+                semantic.MakeUserDefined("COLOR");
+        }
     }
 }
 

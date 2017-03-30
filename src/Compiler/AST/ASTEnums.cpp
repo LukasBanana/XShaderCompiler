@@ -1042,6 +1042,15 @@ void IndexedSemantic::Reset()
     userDefined_.clear();
 }
 
+void IndexedSemantic::MakeUserDefined(const std::string& semanticName)
+{
+    if (IsSystemSemantic(semantic_))
+    {
+        userDefined_ = (semanticName.empty() ? SemanticToString(semantic_) : semanticName);
+        semantic_ = Semantic::UserDefined;
+    }
+}
+
 
 /* ----- Semantic Enum ----- */
 

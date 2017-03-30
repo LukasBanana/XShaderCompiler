@@ -172,7 +172,7 @@ class HLSLAnalyzer : public Analyzer
 
         /* ----- Misc ----- */
 
-        void AnalyzeSemantic(IndexedSemantic& semantic);
+        void AnalyzeSemantic(IndexedSemantic& semantic, bool input);
 
         void AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr>& arrayDims);
 
