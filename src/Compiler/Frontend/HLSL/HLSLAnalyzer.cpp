@@ -1663,8 +1663,13 @@ void HLSLAnalyzer::AnalyzeEntryPointOutput(Expr* expr)
     {
         if (auto varDecl = objectExpr->FetchVarDecl())
         {
+            //TODO: replace by "AddFlagsRecursive" if it's sure, that it can safely be used!
+            #if 0
+            varDecl->flags << VarDecl::isEntryPointOutput;
+            #else
             /* Mark variable (and all members of its struct type, if it has one) as entry-point output */
             varDecl->AddFlagsRecursive(VarDecl::isEntryPointOutput);
+            #endif
 
             if (auto structSymbolRef = varDecl->GetTypeDenoter()->GetAliased().SymbolRef())
             {
@@ -1919,6 +1924,11 @@ bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(
 
 /* ----- Misc ----- */
 
+/*
+~~~~~~~~~~ TODO: ~~~~~~~~~~
+if this semantic is used as input or output can not be determined,
+if the variable is inside a structure!
+*/
 void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic, bool input)
 {
     if (semantic == Semantic::FragCoord && shaderTarget_ != ShaderTarget::FragmentShader)
@@ -1927,7 +1937,8 @@ void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic, bool input)
         semantic = IndexedSemantic(Semantic::VertexPosition, semantic.Index());
     }
 
-    if (versionIn_ == InputShaderVersion::HLSL3)
+    if ( versionIn_ == InputShaderVersion::Cg ||
+         versionIn_ == InputShaderVersion::HLSL3 )
     {
         /* Convert some system value semantics to a user defined semantic (e.g. vertex input POSITION[n]) */
         if ( ( shaderTarget_ == ShaderTarget::VertexShader   && semantic == Semantic::VertexPosition && input ) ||
