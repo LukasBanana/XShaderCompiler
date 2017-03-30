@@ -55,6 +55,9 @@ std::unique_ptr<std::string> SemanticToGLSLKeyword(const IndexedSemantic& semant
 // Returns the set of all reserved GLSL keywords (functions, intrinsics, types etc.).
 const std::set<std::string>& ReservedGLSLKeywords();
 
+// Returns the GLSL data type for specified semantic.
+DataType SemanticToGLSLDataType(const Semantic t);
+
 
 } // /namespace Xsc
 

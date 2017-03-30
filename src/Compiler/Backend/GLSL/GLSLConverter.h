@@ -87,7 +87,7 @@ class GLSLConverter : public Converter
         static bool CompareFuncSignatures(const FunctionDecl& lhs, const FunctionDecl& rhs);
 
         static bool ConvertVarDeclType(VarDecl& varDecl);
-        static bool ConvertVarDeclTypeDenoter(VarDecl& varDecl, const TypeDenoterPtr& typeDen);
+        static bool ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataType dataType);
 
         /* ----- Conversion ----- */
 

@@ -775,6 +775,53 @@ const std::set<std::string>& ReservedGLSLKeywords()
 }
 
 
+/* ----- Semantic/DataType Mapping ----- */
+
+static std::map<Semantic, DataType> GenerateSemanticDataTypeMap()
+{
+    using T = Semantic;
+    using D = DataType;
+
+    return
+    {
+        { T::ClipDistance,           D::Float  },
+        { T::CullDistance,           D::Float  },
+        { T::Coverage,               D::Int    },
+        { T::Depth,                  D::Float  },
+        { T::DepthGreaterEqual,      D::Float  },
+        { T::DepthLessEqual,         D::Float  },
+        { T::DispatchThreadID,       D::UInt3  },
+        { T::DomainLocation,         D::Float3 },
+        { T::GroupID,                D::UInt3  },
+        { T::GroupIndex,             D::Int    },
+        { T::GroupThreadID,          D::UInt3  },
+        { T::GSInstanceID,           D::Int    },
+        { T::InnerCoverage,          D::Int    },
+        { T::InsideTessFactor,       D::Float  },
+        { T::InstanceID,             D::Int    },
+        { T::IsFrontFace,            D::Bool   },
+        { T::OutputControlPointID,   D::Int    },
+        { T::FragCoord,              D::Float4 },
+        { T::PrimitiveID,            D::Int    },
+        { T::RenderTargetArrayIndex, D::Int    },
+        { T::SampleIndex,            D::Int    },
+        { T::StencilRef,             D::Int    },
+        { T::Target,                 D::Int    },
+        { T::TessFactor,             D::Float  },
+        { T::VertexID,               D::Int    },
+        { T::VertexPosition,         D::Int    },
+        { T::ViewportArrayIndex,     D::Int    },
+    };
+}
+
+DataType SemanticToGLSLDataType(const Semantic t)
+{
+    static const auto typeMap = GenerateSemanticDataTypeMap();
+    auto it = typeMap.find(t);
+    return (it != typeMap.end() ? it->second : DataType::Undefined);
+}
+
+
 } // /namespace Xsc
 
 

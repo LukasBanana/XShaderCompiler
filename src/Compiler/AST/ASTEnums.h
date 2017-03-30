@@ -831,8 +831,9 @@ enum class Semantic
     GroupIndex,             // SV_GroupIndex, N/A
     GroupThreadID,          // SV_GroupThreadID, gl_LocalInvocationID
     GSInstanceID,           // SV_GSInstanceID, gl_InvocationID
+  //HelperInvocation,       // N/A, gl_HelperInvocation
     InnerCoverage,          // SV_InnerCoverage, gl_SampleMaskIn
-    InsideTessFactor,       // SV_InsideTessFactor, gl_TessLevelInner
+    InsideTessFactor,       // SV_InsideTessFactor[2], gl_TessLevelInner[2]
     InstanceID,             // SV_InstanceID, gl_InstanceID (GLSL), gl_InstanceIndex (Vulkan)
     IsFrontFace,            // VFACE (D3D9), SV_IsFrontFace (D3D10+), gl_FrontFacing
     OutputControlPointID,   // SV_OutputControlPointID, gl_InvocationID
@@ -842,7 +843,7 @@ enum class Semantic
     SampleIndex,            // SV_SampleIndex, gl_SampleID
     StencilRef,             // SV_StencilRef, gl_FragStencilRef (if ARB_shader_stencil_export is present)
     Target,                 // COLOR (D3D9), SV_Target (D3D10+), gl_FragData
-    TessFactor,             // SV_TessFactor, gl_TessLevelOuter
+    TessFactor,             // SV_TessFactor[4], gl_TessLevelOuter[4]
     VertexID,               // SV_VertexID, gl_VertexID (GLSL), gl_VertexIndex (Vulkan)
     VertexPosition,         // POSITION (D3D9), SV_Position (D3D10+), gl_Position
     ViewportArrayIndex,     // SV_ViewportArrayIndex, gl_ViewportIndex

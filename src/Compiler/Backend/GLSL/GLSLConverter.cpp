@@ -632,20 +632,25 @@ bool GLSLConverter::CompareFuncSignatures(const FunctionDecl& lhs, const Functio
 
 bool GLSLConverter::ConvertVarDeclType(VarDecl& varDecl)
 {
-    switch (varDecl.semantic)
-    {
-        case Semantic::VertexID:
-            return ConvertVarDeclTypeDenoter(varDecl, std::make_shared<BaseTypeDenoter>(DataType::Int));
+    using T = Semantic;
 
-        default:
-            return false;
+    if (varDecl.semantic.IsSystemValue())
+    {
+        /* Convert data type for system value semantics */
+        const auto dataType = SemanticToGLSLDataType(varDecl.semantic);
+        ConvertVarDeclBaseTypeDenoter(varDecl, dataType);
+        return true;
     }
+
+    return false;
 }
 
-bool GLSLConverter::ConvertVarDeclTypeDenoter(VarDecl& varDecl, const TypeDenoterPtr& typeDen)
+bool GLSLConverter::ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataType dataType)
 {
     if (auto varDeclStmnt = varDecl.declStmntRef)
     {
+        auto typeDen = std::make_shared<BaseTypeDenoter>(dataType);
+
         if (varDeclStmnt->varDecls.size() == 1)
         {
             /* Convert type of declaration statement */
