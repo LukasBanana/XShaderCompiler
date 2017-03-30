@@ -1444,15 +1444,7 @@ TypeDenoterPtr BinaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
             RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), commonTypeDen->ToString()), this);
 
         if (IsBooleanOp(op))
-        {
-            if (auto baseTypeDen = commonTypeDen->As<BaseTypeDenoter>())
-            {
-                auto vecBoolType = VectorDataType(DataType::Bool, VectorTypeDim(baseTypeDen->dataType));
-                return std::make_shared<BaseTypeDenoter>(vecBoolType);
-            }
-            else
-                return std::make_shared<BaseTypeDenoter>(DataType::Bool);
-        }
+            return TypeDenoter::MakeBoolTypeWithDimensionOf(*commonTypeDen);
         else
             return commonTypeDen;
     }
@@ -1487,7 +1479,7 @@ TypeDenoterPtr UnaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDen
     const auto& typeDen = expr->GetTypeDenoter();
 
     if (IsLogicalOp(op))
-        return std::make_shared<BaseTypeDenoter>(DataType::Bool);
+        return TypeDenoter::MakeBoolTypeWithDimensionOf(*typeDen);
     else
         return typeDen;
 }

@@ -137,6 +137,9 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
 
     // Find the best suitable common type denoter for both left and right hand side type denoters.
     static TypeDenoterPtr FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeDen, const TypeDenoterPtr& rhsTypeDen);
+
+    // Makes a boolean type denoter with the dimension of the specified type denoter.
+    static BaseTypeDenoterPtr MakeBoolTypeWithDimensionOf(const TypeDenoter& typeDen);
 };
 
 // Void type denoter.

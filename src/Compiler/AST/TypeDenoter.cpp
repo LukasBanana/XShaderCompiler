@@ -208,6 +208,21 @@ TypeDenoterPtr TypeDenoter::FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeD
     return FindCommonTypeDenoterAnyAndAny(lhsTypeDen.get(), rhsTypeDen.get());
 }
 
+BaseTypeDenoterPtr TypeDenoter::MakeBoolTypeWithDimensionOf(const TypeDenoter& typeDen)
+{
+    if (auto baseTypeDen = typeDen.GetAliased().As<BaseTypeDenoter>())
+    {
+        /* Make vector boolean type denoter with dimension of the specified type denoter */
+        auto vecBoolType = VectorDataType(DataType::Bool, VectorTypeDim(baseTypeDen->dataType));
+        return std::make_shared<BaseTypeDenoter>(vecBoolType);
+    }
+    else
+    {
+        /* Make single boolean type denoter */
+        return std::make_shared<BaseTypeDenoter>(DataType::Bool);
+    }
+}
+
 
 /* ----- VoidTypeDenoter ----- */
 

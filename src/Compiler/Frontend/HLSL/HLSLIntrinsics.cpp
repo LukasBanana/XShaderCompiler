@@ -113,6 +113,7 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
         { "mul",                              { T::Mul,                              1, 0 } },
         { "normalize",                        { T::Normalize,                        1, 1 } },
       //{ ""                                  { T::NotEqual,                         0, 0 } }, // GLSL only
+      //{ ""                                  { T::Not,                              0, 0 } }, // GLSL only
         { "pow",                              { T::Pow,                              1, 1 } },
         { "printf",                           { T::PrintF,                           4, 0 } },
         { "Process2DQuadTessFactorsAvg",      { T::Process2DQuadTessFactorsAvg,      5, 0 } },
@@ -430,6 +431,7 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
       //{ T::Mul,                              {                        } }, // special case
         { T::Normalize,                        { Ret::GenericArg0, 1    } },
         { T::NotEqual,                         { Ret::Bool,        2    } }, // GLSL only
+        { T::Not,                              { Ret::Bool,        1    } }, // GLSL only
         { T::Pow,                              { Ret::GenericArg0, 2    } },
         { T::PrintF,                           {                  -1    } },
         { T::Process2DQuadTessFactorsAvg,      {                   5    } },
@@ -551,6 +553,7 @@ TypeDenoterPtr HLSLIntrinsicAdept::GetIntrinsicReturnType(const Intrinsic intrin
             return DeriveReturnTypeMul(args);
         case Intrinsic::Transpose:
             return DeriveReturnTypeTranspose(args);
+        case Intrinsic::Not:
         case Intrinsic::Equal:
         case Intrinsic::NotEqual:
         case Intrinsic::LessThan:
@@ -718,7 +721,7 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeTranspose(const std::vector<E
 TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeVectorCompare(const std::vector<ExprPtr>& args) const
 {
     /* Validate number of arguments */
-    if (args.size() != 2)
+    if (args.size() < 1 || args.size() > 2)
         RuntimeErr(R_InvalidIntrinsicArgCount("vector-compare"));
 
     auto arg0TypeDen = args[0]->GetTypeDenoter()->GetSub();

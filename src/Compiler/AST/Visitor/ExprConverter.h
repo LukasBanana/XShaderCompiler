@@ -82,6 +82,7 @@ class ExprConverter : public Visitor
         
         // Converts the expression from a vector comparison to the respective intrinsic call (e.g. "a < b" -> "lessThan(a, b)").
         void ConvertExprVectorCompare(ExprPtr& expr);
+        void ConvertExprVectorCompareUnary(ExprPtr& expr, UnaryExpr* unaryExpr);
         void ConvertExprVectorCompareBinary(ExprPtr& expr, BinaryExpr* binaryExpr);
         void ConvertExprVectorCompareTernary(ExprPtr& expr, TernaryExpr* ternaryExpr);
 

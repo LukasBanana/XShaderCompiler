@@ -107,8 +107,9 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { T::ModF,                             "modf"                  },
       //{ T::MSAD4,                            ""                      },
       //{ T::Mul,                              ""                      },
-        { T::Normalize,                        "normalize"             }, // GLSL only
-        { T::NotEqual,                         "notEqual"              },
+        { T::Normalize,                        "normalize"             },
+        { T::NotEqual,                         "notEqual"              }, // GLSL only
+        { T::Not,                              "not"                   }, // GLSL only
         { T::Pow,                              "pow"                   },
       //{ T::PrintF,                           ""                      },
       //{ T::Process2DQuadTessFactorsAvg,      ""                      },

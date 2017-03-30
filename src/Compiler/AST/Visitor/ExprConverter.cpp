@@ -159,10 +159,36 @@ void ExprConverter::ConvertExprVectorSubscriptObject(ExprPtr& expr, ObjectExpr* 
 
 void ExprConverter::ConvertExprVectorCompare(ExprPtr& expr)
 {
-    if (auto binaryExpr = expr->As<BinaryExpr>())
+    if (auto unaryExpr = expr->As<UnaryExpr>())
+        ConvertExprVectorCompareUnary(expr, unaryExpr);
+    else if (auto binaryExpr = expr->As<BinaryExpr>())
         ConvertExprVectorCompareBinary(expr, binaryExpr);
     else if (auto ternaryExpr = expr->As<TernaryExpr>())
         ConvertExprVectorCompareTernary(expr, ternaryExpr);
+}
+
+void ExprConverter::ConvertExprVectorCompareUnary(ExprPtr& expr, UnaryExpr* unaryExpr)
+{
+    /* Convert vector condition */
+    if (IsLogicalOp(unaryExpr->op))
+    {
+        const auto& typeDen = unaryExpr->GetTypeDenoter();
+        if (typeDen->GetAliased().IsVector())
+        {
+            switch (unaryExpr->op)
+            {
+                case UnaryOp::LogicalNot:
+                {
+                    /* Convert unary-'NOT' expression into an intrinsic call */
+                    expr = ASTFactory::MakeIntrinsicCallExpr(Intrinsic::Not, "not", typeDen, { unaryExpr->expr });
+                }
+                break;
+
+                default:
+                break;
+            }
+        }
+    }
 }
 
 void ExprConverter::ConvertExprVectorCompareBinary(ExprPtr& expr, BinaryExpr* binaryExpr)

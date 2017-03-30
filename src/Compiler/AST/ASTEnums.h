@@ -669,6 +669,7 @@ enum class Intrinsic
     Mul,
     Normalize,
     NotEqual,                           // GLSL only
+    Not,                                // GLSL only
     Pow,
     PrintF,
     Process2DQuadTessFactorsAvg,
