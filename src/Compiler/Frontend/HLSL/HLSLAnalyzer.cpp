@@ -1663,8 +1663,8 @@ void HLSLAnalyzer::AnalyzeEntryPointOutput(Expr* expr)
     {
         if (auto varDecl = objectExpr->FetchVarDecl())
         {
-            /* Mark variable as entry-point output */
-            varDecl->flags << VarDecl::isEntryPointOutput;
+            /* Mark variable (and all members of its struct type, if it has one) as entry-point output */
+            varDecl->AddFlagsRecursive(VarDecl::isEntryPointOutput);
 
             if (auto structSymbolRef = varDecl->GetTypeDenoter()->GetAliased().SymbolRef())
             {

@@ -545,6 +545,9 @@ struct VarDecl : public Decl
     // Sets a custom type denoter, or the default type denoter if the parameter is null.
     void SetCustomTypeDenoter(const TypeDenoterPtr& typeDenoter);
 
+    // Adds the specified flag to this variable and all members and sub members of the structure, if the variable has a structure type.
+    void AddFlagsRecursive(unsigned int varFlags);
+
     ObjectExprPtr                   namespaceExpr;                  // Optional namespace expression; may be null
     std::vector<ArrayDimensionPtr>  arrayDims;
     IndexedSemantic                 semantic;

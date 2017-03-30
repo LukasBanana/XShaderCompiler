@@ -486,6 +486,31 @@ void VarDecl::SetCustomTypeDenoter(const TypeDenoterPtr& typeDenoter)
     ResetTypeDenoter();
 }
 
+void VarDecl::AddFlagsRecursive(unsigned int varFlags)
+{
+    if (!flags(varFlags))
+    {
+        /* Add flags to this variable */
+        flags << varFlags;
+
+        /* Has this variable a structure type? */
+        const auto& typeDen = GetTypeDenoter()->GetAliased();
+        if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
+        {
+            if (auto structType = structTypeDen->structDeclRef)
+            {
+                /* Add flags to all structure member variables */
+                structType->ForEachVarDecl(
+                    [varFlags](VarDeclPtr& varDecl)
+                    {
+                        varDecl->AddFlagsRecursive(varFlags);
+                    }
+                );
+            }
+        }
+    }
+}
+
 
 /* ----- BufferDecl ----- */
 
