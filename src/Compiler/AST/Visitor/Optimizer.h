@@ -51,7 +51,7 @@ class Optimizer : private Visitor
         DECL_VISIT_PROC( ExprStmnt         );
         DECL_VISIT_PROC( ReturnStmnt       );
 
-        DECL_VISIT_PROC( ListExpr          );
+        DECL_VISIT_PROC( SequenceExpr      );
         DECL_VISIT_PROC( TernaryExpr       );
         DECL_VISIT_PROC( BinaryExpr        );
         DECL_VISIT_PROC( UnaryExpr         );

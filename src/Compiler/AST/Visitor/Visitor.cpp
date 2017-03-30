@@ -234,7 +234,7 @@ IMPLEMENT_VISIT_PROC(NullExpr)
     // do nothing
 }
 
-IMPLEMENT_VISIT_PROC(ListExpr)
+IMPLEMENT_VISIT_PROC(SequenceExpr)
 {
     Visit(ast->exprs);
 }

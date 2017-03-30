@@ -285,7 +285,7 @@ static ExprPtr MakeConstructorListExprPrimary(
 {
     if (typeDensBegin + 1 != typeDensEnd)
     {
-        auto ast = MakeAST<ListExpr>();
+        auto ast = MakeAST<SequenceExpr>();
         {
             ast->Append(MakeConstructorListExprPrimarySingle(expr, (*typeDensBegin)->GetSub()));
             ast->Append(MakeConstructorListExprPrimary(expr, typeDensBegin + 1, typeDensEnd));

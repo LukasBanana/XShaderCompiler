@@ -130,7 +130,7 @@ struct AST
         CtrlTransferStmnt,
 
         NullExpr,
-        ListExpr,
+        SequenceExpr,
         LiteralExpr,
         TypeSpecifierExpr,
         TernaryExpr,
@@ -996,17 +996,16 @@ struct NullExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 };
 
-//TODO: rename to "SequenceExpr"
 // List expression ( expr (',' expr)+ ).
-struct ListExpr : public Expr
+struct SequenceExpr : public Expr
 {
-    AST_INTERFACE(ListExpr);
+    AST_INTERFACE(SequenceExpr);
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    // Appens the specified expression to the sub expressions ('ListExpr' will be flattened).
+    // Appens the specified expression to the sub expressions ('SequenceExpr' will be flattened).
     void Append(const ExprPtr& expr);
 
     std::vector<ExprPtr> exprs; // List of sub expressions; must have at least two elements

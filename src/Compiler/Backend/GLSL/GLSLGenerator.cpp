@@ -797,7 +797,7 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 
 /* --- Expressions --- */
 
-IMPLEMENT_VISIT_PROC(ListExpr)
+IMPLEMENT_VISIT_PROC(SequenceExpr)
 {
     for (std::size_t i = 0, n = ast->exprs.size(); i < n; ++i)
     {

@@ -149,7 +149,7 @@ class HLSLParser : public Parser
         ReturnStmntPtr                  ParseReturnStmnt();
         ExprStmntPtr                    ParseExprStmnt(const ExprPtr& expr = nullptr);
 
-        ExprPtr                         ParseExpr(bool allowComma = false);
+        ExprPtr                         ParseExpr(bool allowSequence = false);
         ExprPtr                         ParsePrimaryExpr() override;
         ExprPtr                         ParsePrimaryExprPrefix();
         ExprPtr                         ParseExprWithSuffixOpt(ExprPtr expr);
@@ -166,6 +166,7 @@ class HLSLParser : public Parser
         CallExprPtr                     ParseCallExprWithPrefixOpt(const ExprPtr& prefixExpr = nullptr, bool isStatic = false, const TokenPtr& identTkn = nullptr);
         CallExprPtr                     ParseCallExprAsTypeCtor(const TypeDenoterPtr& typeDenoter);
         InitializerExprPtr              ParseInitializerExpr();
+        SequenceExprPtr                 ParseSequenceExpr(const ExprPtr& firstExpr);
 
         std::vector<StmntPtr>           ParseLocalStmntList();
         std::vector<VarDeclPtr>         ParseVarDeclList(VarDeclStmnt* declStmntRef, TokenPtr firstIdentTkn = nullptr);

@@ -44,8 +44,8 @@ ProgramPtr HLSLParser::ParseSource(
     const SourceCodePtr& source, const NameMangling& nameMangling, bool useD3D10Semantics, bool rowMajorAlignment, bool enableWarnings)
 {
     /* Copy parameters */
-    useD3D10Semantics_  = useD3D10Semantics;
-    rowMajorAlignment_  = rowMajorAlignment;
+    useD3D10Semantics_ = useD3D10Semantics;
+    rowMajorAlignment_ = rowMajorAlignment;
 
     EnableWarnings(enableWarnings);
 
@@ -1130,6 +1130,11 @@ StmntPtr HLSLParser::ParseStmntWithIdent()
         /* Return immediatly with expression statement */
         return ParseExprStmnt(expr);
     }
+    else if (Is(Tokens::Comma))
+    {
+        /* Parse sequence expression */
+        return ParseExprStmnt(ParseSequenceExpr(expr));
+    }
     else if (expr == objectExpr)
     {
         /* Convert variable identifier to alias type denoter */
@@ -1336,7 +1341,7 @@ ExprStmntPtr HLSLParser::ParseExprStmnt(const ExprPtr& expr)
 
 /* --- Expressions --- */
 
-ExprPtr HLSLParser::ParseExpr(bool allowComma)
+ExprPtr HLSLParser::ParseExpr(bool allowSequence)
 {
     /* Parse generic expression, then post expression */
     auto ast = ParseGenericExpr();
@@ -1354,18 +1359,9 @@ ExprPtr HLSLParser::ParseExpr(bool allowComma)
         ast = unaryExpr;
     }
 
-    /* Parse optional list expression */
-    if (allowComma && Is(Tokens::Comma))
-    {
-        AcceptIt();
-
-        auto listExpr = Make<ListExpr>();
-
-        listExpr->Append(ast);
-        listExpr->Append(ParseExpr(true));
-
-        return listExpr;
-    }
+    /* Parse optional sequence expression */
+    if (allowSequence && Is(Tokens::Comma))
+        return ParseSequenceExpr(ast);
 
     return ast;
 }
@@ -1698,6 +1694,24 @@ InitializerExprPtr HLSLParser::ParseInitializerExpr()
     auto ast = Make<InitializerExpr>();
     ast->exprs = ParseInitializerList();
     return UpdateSourceArea(ast);
+}
+
+SequenceExprPtr HLSLParser::ParseSequenceExpr(const ExprPtr& firstExpr)
+{
+    auto ast = Make<SequenceExpr>();
+
+    /* Parse first expression */
+    if (firstExpr)
+        ast->Append(firstExpr);
+    else
+        ast->Append(ParseExpr());
+
+    Accept(Tokens::Comma);
+
+    /* Pares further sub expressions in sequence */
+    ast->Append(ParseExpr(true));
+
+    return ast;
 }
 
 /* --- Lists --- */

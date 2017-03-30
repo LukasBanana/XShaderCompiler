@@ -107,9 +107,9 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
 /* --- Expressions --- */
 
-IMPLEMENT_VISIT_PROC(ListExpr)
+IMPLEMENT_VISIT_PROC(SequenceExpr)
 {
-    VISIT_DEFAULT(ListExpr);
+    VISIT_DEFAULT(SequenceExpr);
     ConvertExprType(ast);
 }
 

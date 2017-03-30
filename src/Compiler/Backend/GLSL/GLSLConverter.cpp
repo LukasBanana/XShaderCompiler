@@ -408,7 +408,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     {
         if (auto castExpr = AST::GetAs<CastExpr>(ast->expr->FindFirstOf(AST::Types::CastExpr)))
         {
-            if (auto listExpr = castExpr->expr->As<ListExpr>())
+            if (auto listExpr = castExpr->expr->As<SequenceExpr>())
             {
                 const auto& typeDen = castExpr->GetTypeDenoter();
                 if (auto structTypeDen = typeDen->GetAliased().As<StructTypeDenoter>())
@@ -1096,7 +1096,7 @@ void GLSLConverter::ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr*
     }
 }
 
-void GLSLConverter::ConvertEntryPointReturnStmnt(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const ListExpr& typeConstructor)
+void GLSLConverter::ConvertEntryPointReturnStmnt(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const SequenceExpr& typeConstructor)
 {
     /* Make variable declaration of structure type */
     auto varIdent       = MakeTempVarIdent();

@@ -59,7 +59,7 @@ IMPLEMENT_VISIT_PROC(NullExpr)
     IllegalExpr(R_DynamicArrayDim, ast);
 }
 
-IMPLEMENT_VISIT_PROC(ListExpr)
+IMPLEMENT_VISIT_PROC(SequenceExpr)
 {
     /* Only visit first sub-expression (when used as condExpr) */
     Visit(ast->exprs.front());

@@ -1228,15 +1228,15 @@ TypeDenoterPtr NullExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDeno
 }
 
 
-/* ----- ListExpr ----- */
+/* ----- SequenceExpr ----- */
 
-TypeDenoterPtr ListExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
+TypeDenoterPtr SequenceExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     /* Only return type denoter of first sub expression */
     return exprs.front()->GetTypeDenoter();
 }
 
-const Expr* ListExpr::Find(const FindPredicateConstFunctor& predicate, unsigned int flags) const
+const Expr* SequenceExpr::Find(const FindPredicateConstFunctor& predicate, unsigned int flags) const
 {
     if (predicate)
     {
@@ -1253,9 +1253,9 @@ const Expr* ListExpr::Find(const FindPredicateConstFunctor& predicate, unsigned 
     return nullptr;
 }
 
-void ListExpr::Append(const ExprPtr& expr)
+void SequenceExpr::Append(const ExprPtr& expr)
 {
-    if (auto listExpr = expr->As<ListExpr>())
+    if (auto listExpr = expr->As<SequenceExpr>())
     {
         /* Copy all sub expressions of the 'listExpr' into this expression */
         exprs.insert(exprs.end(), listExpr->exprs.begin(), listExpr->exprs.end());
