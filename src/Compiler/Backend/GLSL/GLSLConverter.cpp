@@ -638,8 +638,11 @@ bool GLSLConverter::ConvertVarDeclType(VarDecl& varDecl)
     {
         /* Convert data type for system value semantics */
         const auto dataType = SemanticToGLSLDataType(varDecl.semantic);
-        ConvertVarDeclBaseTypeDenoter(varDecl, dataType);
-        return true;
+        if (dataType != DataType::Undefined)
+        {
+            ConvertVarDeclBaseTypeDenoter(varDecl, dataType);
+            return true;
+        }
     }
 
     return false;

@@ -809,7 +809,7 @@ static std::map<Semantic, DataType> GenerateSemanticDataTypeMap()
         { T::Target,                 D::Int    },
         { T::TessFactor,             D::Float  },
         { T::VertexID,               D::Int    },
-        { T::VertexPosition,         D::Int    },
+        { T::VertexPosition,         D::Float4 },
         { T::ViewportArrayIndex,     D::Int    },
     };
 }
