@@ -34,9 +34,12 @@ enum class ShaderTarget
 //! Input shader version enumeration.
 enum class InputShaderVersion
 {
+    Cg      = 2,            //!< Cg (C for graphics) is a slightly extended HLSL3.
+
     HLSL3   = 3,            //!< HLSL Shader Model 3.0 (DirectX 9).
     HLSL4   = 4,            //!< HLSL Shader Model 4.0 (DirectX 10).
     HLSL5   = 5,            //!< HLSL Shader Model 5.0 (DirectX 11).
+    HLSL6   = 6,            //!< HLSL Shader Model 6.0 (DirectX 12).
 
     GLSL    = 0x0000ffff,   //!< GLSL (OpenGL).
     ESSL    = 0x0001ffff,   //!< GLSL (OpenGL ES).

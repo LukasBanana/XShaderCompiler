@@ -298,9 +298,12 @@ XSC_EXPORT std::string ToString(const InputShaderVersion shaderVersion)
 {
     switch (shaderVersion)
     {
+        case InputShaderVersion::Cg:    return "Cg";
+
         case InputShaderVersion::HLSL3: return "HLSL 3.0";
         case InputShaderVersion::HLSL4: return "HLSL 4.0";
         case InputShaderVersion::HLSL5: return "HLSL 5.0";
+        case InputShaderVersion::HLSL6: return "HLSL 6.0";
 
         case InputShaderVersion::GLSL:  return "GLSL";
         case InputShaderVersion::ESSL:  return "ESSL";

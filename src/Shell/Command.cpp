@@ -151,7 +151,7 @@ HelpDescriptor VersionInCommand::Help() const
     {
         "-Vin, --version-in VERSION",
         "Input shader version; default=HLSL5; valid values:",
-        "HLSL3, HLSL4, HLSL5, GLSL, ESSL, VKSL",
+        "Cg, HLSL3, HLSL4, HLSL5, HLSL6, GLSL, ESSL, VKSL",
         HelpCategory::Main
     };
 }
@@ -161,9 +161,11 @@ void VersionInCommand::Run(CommandLine& cmdLine, ShellState& state)
     state.inputDesc.shaderVersion = MapStringToType<InputShaderVersion>(
         cmdLine.Accept(),
         {
+            { "Cg",    InputShaderVersion::Cg    },
             { "HLSL3", InputShaderVersion::HLSL3 },
             { "HLSL4", InputShaderVersion::HLSL4 },
             { "HLSL5", InputShaderVersion::HLSL5 },
+            { "HLSL6", InputShaderVersion::HLSL6 },
             { "GLSL",  InputShaderVersion::GLSL  },
             { "ESSL",  InputShaderVersion::ESSL  },
             { "VKSL",  InputShaderVersion::VKSL  },

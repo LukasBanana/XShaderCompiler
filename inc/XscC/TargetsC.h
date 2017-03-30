@@ -35,9 +35,12 @@ enum XscShaderTarget
 //! Output shader version enumeration.
 enum XscInputShaderVersion
 {
+    XscEInputCg     = 2,            //!< Cg (C for graphics) is a slightly extended HLSL3.
+
     XscEInputHLSL3  = 3,            //!< HLSL Shader Model 3.0 (DirectX 9).
     XscEInputHLSL4  = 4,            //!< HLSL Shader Model 4.0 (DirectX 10).
     XscEInputHLSL5  = 5,            //!< HLSL Shader Model 5.0 (DirectX 11).
+    XscEInputHLSL6  = 6,            //!< HLSL Shader Model 6.0 (DirectX 12).
 
     XscEInputGLSL   = 0x0000ffff,   //!< GLSL (OpenGL).
     XscEInputESSL   = 0x0001ffff,   //!< GLSL (OpenGL ES).
