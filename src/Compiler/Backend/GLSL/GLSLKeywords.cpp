@@ -806,7 +806,7 @@ static std::map<Semantic, DataType> GenerateSemanticDataTypeMap()
         { T::RenderTargetArrayIndex, D::Int    },
         { T::SampleIndex,            D::Int    },
         { T::StencilRef,             D::Int    },
-        { T::Target,                 D::Int    },
+      //{ T::Target,                 D::Float4 }, // Custom output in GLSL
         { T::TessFactor,             D::Float  },
         { T::VertexID,               D::Int    },
         { T::VertexPosition,         D::Float4 },
