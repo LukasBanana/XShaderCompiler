@@ -670,6 +670,9 @@ bool GLSLConverter::ConvertVarDeclTypeDenoter(VarDecl& varDecl, const TypeDenote
                 "uint a; int b = (int)a; uint c = (uint)b;"
             */
         }
+
+        varDecl.ResetTypeDenoter();
+
         return true;
     }
     return false;

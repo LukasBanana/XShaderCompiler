@@ -996,6 +996,7 @@ struct NullExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 };
 
+//TODO: rename to "SequenceExpr"
 // List expression ( expr (',' expr)+ ).
 struct ListExpr : public Expr
 {
