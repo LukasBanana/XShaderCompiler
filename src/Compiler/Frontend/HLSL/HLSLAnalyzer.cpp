@@ -808,7 +808,7 @@ void HLSLAnalyzer::AnalyzeCallExprFunction(
     if (auto funcDecl = callExpr->funcDeclRef)
     {
         /* Check if static/non-static access is allowed */
-        if (AnalyzeStaticAccessExpr(prefixExpr, isStatic, callExpr))
+        if (prefixExpr && AnalyzeStaticAccessExpr(prefixExpr, isStatic, callExpr))
         {
             /* Check if function call and function declaration are equally static/non-static */
             if (isStatic)
