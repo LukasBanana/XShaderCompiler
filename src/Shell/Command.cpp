@@ -574,11 +574,13 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
         CommandLine cmdLine;
     };
 
-    auto RunPresetting = [&](Presetting& preset)
+    auto RunPresetting = [&](Presetting& preset) -> bool
     {
         std::cout << "run presetting: \"" << preset.title << "\"" << std::endl;
         auto shell = Shell::Instance();
         
+        bool result = false;
+
         shell->PushState();
         {
             shell->ExecuteCommandLine(preset.cmdLine);
@@ -603,6 +605,8 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
 
                 /* Run command */
                 system(cmd.c_str());
+
+                result = true;
             }
 
             #endif
@@ -610,6 +614,8 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
         shell->PopState();
 
         state.actionPerformed = true;
+
+        return result;
     };
 
     std::vector<Presetting> presettings;
@@ -659,8 +665,25 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
         if (idx == 0)
         {
             /* Run all presettings */
+            std::size_t numFailed = 0;
+
             for (auto& preset : presettings)
-                RunPresetting(preset);
+            {
+                if (!RunPresetting(preset))
+                    ++numFailed;
+            }
+
+            /* Print information of success or failure */
+            if (numFailed == 0)
+            {
+                ConsoleManip::ScopedColor color(ConsoleManip::ColorFlags::Green | ConsoleManip::ColorFlags::Intens);
+                std::cout << "all presettings processed successfully" << std::endl;
+            }
+            else
+            {
+                ConsoleManip::ScopedColor color(ConsoleManip::ColorFlags::Red | ConsoleManip::ColorFlags::Intens);
+                std::cout << numFailed << " of " << presettings.size() << " presetting(s) failed" << std::endl;
+            }
         }
         else if (idx > 0)
         {
