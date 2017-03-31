@@ -37,7 +37,7 @@ class HLSLParser : public Parser
         ProgramPtr ParseSource(
             const SourceCodePtr& source,
             const NameMangling& nameMangling,
-            bool useD3D10Semantics = true,
+            const InputShaderVersion versionIn,
             bool rowMajorAlignment = false,
             bool enableWarnings = false
         );
@@ -241,6 +241,9 @@ class HLSLParser : public Parser
 
         // True, if semantics are parsed for D3D10+ shader.
         bool                useD3D10Semantics_      = true;
+
+        // True, if Cg keyword extensions are enabled.
+        bool                enableCgKeywords_       = false;
 
         // True, if matrix packing is globally set to row major.
         bool                rowMajorAlignment_      = false;

@@ -380,6 +380,41 @@ const KeywordMapType& HLSLKeywords()
 }
 
 
+/* ----- Keywords (Cg) ----- */
+
+static KeywordMapType GenerateCgKeywordMap()
+{
+    using T = Token::Types;
+
+    return
+    {
+        { "fixed",    T::ScalarType },
+        { "fixed1",   T::ScalarType },
+        { "fixed1x1", T::ScalarType },
+
+        { "fixed2",   T::VectorType },
+        { "fixed3",   T::VectorType },
+        { "fixed4",   T::VectorType },
+
+        { "fixed2x2", T::MatrixType },
+        { "fixed2x3", T::MatrixType },
+        { "fixed2x4", T::MatrixType },
+        { "fixed3x2", T::MatrixType },
+        { "fixed3x3", T::MatrixType },
+        { "fixed3x4", T::MatrixType },
+        { "fixed4x2", T::MatrixType },
+        { "fixed4x3", T::MatrixType },
+        { "fixed4x4", T::MatrixType },
+    };
+}
+
+const KeywordMapType& HLSLKeywordsExtCg()
+{
+    static const auto keywordMap = GenerateCgKeywordMap();
+    return keywordMap;
+}
+
+
 /* ----- DataType Mapping ----- */
 
 static std::map<std::string, DataType> GenerateDataTypeMap()
@@ -578,10 +613,59 @@ static std::map<std::string, DataType> GenerateDataTypeMap()
     };
 }
 
+static const auto g_typeMapHLSL = GenerateDataTypeMap();
+
 DataType HLSLKeywordToDataType(const std::string& keyword)
 {
-    static const auto typeMap = GenerateDataTypeMap();
-    return MapKeywordToType(typeMap, keyword, R_DataType);
+    return MapKeywordToType(g_typeMapHLSL, keyword, R_DataType);
+}
+
+
+/* ----- DataType Mapping (Cg) ----- */
+
+static std::map<std::string, DataType> GenerateCgDataTypeMap()
+{
+    using T = DataType;
+
+    return
+    {
+        { "fixed",    T::Half    },
+        { "fixed1",   T::Half    },
+        { "fixed1x1", T::Half    },
+
+        { "fixed2",   T::Half2   },
+        { "fixed3",   T::Half3   },
+        { "fixed4",   T::Half4   },
+
+        { "fixed2x2", T::Half2x2 },
+        { "fixed2x3", T::Half2x3 },
+        { "fixed2x4", T::Half2x4 },
+        { "fixed3x2", T::Half3x2 },
+        { "fixed3x3", T::Half3x3 },
+        { "fixed3x4", T::Half3x4 },
+        { "fixed4x2", T::Half4x2 },
+        { "fixed4x3", T::Half4x3 },
+        { "fixed4x4", T::Half4x4 },
+    };
+}
+
+static const auto g_typeMapCg = GenerateCgDataTypeMap();
+
+DataType HLSLKeywordExtCgToDataType(const std::string& keyword)
+{
+    /* Search data type in HLSL map */
+    auto it = g_typeMapHLSL.find(keyword);
+    if (it != g_typeMapHLSL.end())
+        return it->second;
+    else
+    {
+        /* Search data type in Cg map */
+        auto it = g_typeMapCg.find(keyword);
+        if (it != g_typeMapCg.end())
+            return it->second;
+        else
+            RuntimeErr(R_FailedToMapFromCgKeyword(keyword, R_DataType));
+    }
 }
 
 

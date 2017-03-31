@@ -15,8 +15,9 @@ namespace Xsc
 {
 
 
-HLSLScanner::HLSLScanner(Log* log) :
-    Scanner{ log }
+HLSLScanner::HLSLScanner(bool enableCgKeywords, Log* log) :
+    Scanner           { log              },
+    enableCgKeywords_ { enableCgKeywords }
 {
 }
 
@@ -189,6 +190,14 @@ TokenPtr HLSLScanner::ScanIdentifier()
         else if (it->second == Token::Types::Unsupported)
             Error(R_KeywordNotSupportedYet(spell));
         else
+            return Make(it->second, spell);
+    }
+
+    /* Scan reserved extended words (if Cg keywords are enabled) */
+    if (enableCgKeywords_)
+    {
+        auto it = HLSLKeywordsExtCg().find(spell);
+        if (it != HLSLKeywordsExtCg().end())
             return Make(it->second, spell);
     }
 

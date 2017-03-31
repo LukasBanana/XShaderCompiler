@@ -24,8 +24,14 @@ using KeywordMapType = std::map<std::string, Token::Types>;
 // Returns the keywords map (which is an exception for identifiers).
 const KeywordMapType& HLSLKeywords();
 
+// Returns the keywords map extension for Cg (i.e. only the additional keywords that are only part of Cg, e.g. "fixed4").
+const KeywordMapType& HLSLKeywordsExtCg();
+
 // Returns the data type for the specified HLSL keyword or throws an std::runtime_error on failure.
 DataType HLSLKeywordToDataType(const std::string& keyword);
+
+// Returns the data type for the specified Cg keyword or throws an std::runtime_error on failure.
+DataType HLSLKeywordExtCgToDataType(const std::string& keyword);
 
 // Returns the primitive type for the specified HLSL keyword or throws an std::runtime_error on failure.
 PrimitiveType HLSLKeywordToPrimitiveType(const std::string& keyword);

@@ -349,6 +349,7 @@ DECL_REPORT( FailedToDeriveIntrinsicParamType,  "failed to derive parameter type
 /* ----- HLSLKeywords ----- */
 
 DECL_REPORT( FailedToMapFromHLSLKeyword,        "failed to map HLSL keyword '{0}' to {1}"                                                                       );
+DECL_REPORT( FailedToMapFromCgKeyword,          "failed to map Cg keyword '{0}' to {1}"                                                                         );
 DECL_REPORT( InvalidSystemValueSemantic,        "invalid system value semantic \"{0}\""                                                                         );
 
 /* ----- HLSLScanner ----- */
@@ -463,6 +464,7 @@ DECL_REPORT( PreProcessingSourceFailed,         "preprocessing input code failed
 DECL_REPORT( ParsingSourceFailed,               "parsing input code failed"                                                                                     );
 DECL_REPORT( AnalyzingSourceFailed,             "analyzing input code failed"                                                                                   );
 DECL_REPORT( GeneratingOutputCodeFailed,        "generating output code failed"                                                                                 );
+DECL_REPORT( OnlyPreProcessingForNonHLSL,       "only pre-processing supported for shaders other than HLSL or Cg"                                               );
 
 
 #endif

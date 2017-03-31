@@ -22,7 +22,7 @@ class HLSLScanner : public Scanner
     
     public:
         
-        HLSLScanner(Log* log = nullptr);
+        HLSLScanner(bool enableCgKeywords, Log* log = nullptr);
 
         // Scanns the next token.
         TokenPtr Next() override;
@@ -38,6 +38,10 @@ class HLSLScanner : public Scanner
         TokenPtr ScanAssignShiftRelationOp(const char Chr);
         TokenPtr ScanPlusOp();
         TokenPtr ScanMinusOp();
+
+        /* === Members === */
+
+        bool enableCgKeywords_ = false;
 
 };
 

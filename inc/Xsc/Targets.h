@@ -83,7 +83,7 @@ XSC_EXPORT std::string ToString(const InputShaderVersion shaderVersion);
 //! Returns the specified shader output version as string.
 XSC_EXPORT std::string ToString(const OutputShaderVersion shaderVersion);
 
-//! Returns true if the shader input version specifies HLSL (for DirectX).
+//! Returns true if the shader input version specifies HLSL (for DirectX) or Cg (handled as dialect or HLSL).
 XSC_EXPORT bool IsLanguageHLSL(const InputShaderVersion shaderVersion);
 
 //! Returns true if the shader input version specifies GLSL (for OpenGL, OpenGL ES, and Vulkan).

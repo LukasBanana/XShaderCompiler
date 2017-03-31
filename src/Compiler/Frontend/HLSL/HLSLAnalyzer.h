@@ -43,6 +43,9 @@ class HLSLAnalyzer : public Analyzer
         ) override;
 
         void ErrorIfAttributeNotFound(bool found, const std::string& attribDesc);
+
+        // Returns true, if the input shader version if either HLSL3 or Cg.
+        bool IsD3D9ShaderModel() const;
         
         /* === Visitor implementation === */
 

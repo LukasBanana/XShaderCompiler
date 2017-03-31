@@ -41,11 +41,12 @@ HLSLParser::HLSLParser(Log* log) :
 }
 
 ProgramPtr HLSLParser::ParseSource(
-    const SourceCodePtr& source, const NameMangling& nameMangling, bool useD3D10Semantics, bool rowMajorAlignment, bool enableWarnings)
+    const SourceCodePtr& source, const NameMangling& nameMangling, const InputShaderVersion versionIn, bool rowMajorAlignment, bool enableWarnings)
 {
     /* Copy parameters */
-    useD3D10Semantics_ = useD3D10Semantics;
-    rowMajorAlignment_ = rowMajorAlignment;
+    useD3D10Semantics_  = (versionIn >= InputShaderVersion::HLSL4);
+    enableCgKeywords_   = (versionIn == InputShaderVersion::Cg);
+    rowMajorAlignment_  = rowMajorAlignment;
 
     EnableWarnings(enableWarnings);
 
@@ -76,7 +77,7 @@ ProgramPtr HLSLParser::ParseSource(
 
 ScannerPtr HLSLParser::MakeScanner()
 {
-    return std::make_shared<HLSLScanner>(GetLog());
+    return std::make_shared<HLSLScanner>(enableCgKeywords_, GetLog());
 }
 
 void HLSLParser::Semi()
@@ -2435,7 +2436,10 @@ DataType HLSLParser::ParseDataType(const std::string& keyword)
 {
     try
     {
-        return HLSLKeywordToDataType(keyword);
+        if (enableCgKeywords_)
+            return HLSLKeywordExtCgToDataType(keyword);
+        else
+            return HLSLKeywordToDataType(keyword);
     }
     catch (const std::exception& e)
     {

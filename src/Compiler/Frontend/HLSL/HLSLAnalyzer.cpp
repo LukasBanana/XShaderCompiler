@@ -25,10 +25,12 @@ static ShaderVersion GetShaderModel(const InputShaderVersion v)
 {
     switch (v)
     {
-        case InputShaderVersion::HLSL3: return { 3, 0 };
-        case InputShaderVersion::HLSL4: return { 4, 0 };
-        case InputShaderVersion::HLSL5: return { 5, 0 };
-        default:                        return { 1, 0 };
+        case InputShaderVersion::Cg:    return { 3, 1 };
+        case InputShaderVersion::HLSL3: return { 3, 1 };
+        case InputShaderVersion::HLSL4: return { 4, 1 };
+        case InputShaderVersion::HLSL5: return { 5, 1 };
+        case InputShaderVersion::HLSL6: return { 6, 0 };
+        default:                        return { 0, 0 };
     }
 }
 
@@ -74,6 +76,11 @@ void HLSLAnalyzer::ErrorIfAttributeNotFound(bool found, const std::string& attri
         Error(R_MissingAttributeForEntryPoint(attribDesc), nullptr);
 }
 
+bool HLSLAnalyzer::IsD3D9ShaderModel() const
+{
+    return (versionIn_ <= InputShaderVersion::HLSL3);
+}
+
 /* ------- Visit functions ------- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -109,7 +116,7 @@ IMPLEMENT_VISIT_PROC(Program)
     }
 
     /* Check if fragment shader uses a slightly different screen space (VPOS vs. SV_Position) */
-    if (shaderTarget_ == ShaderTarget::FragmentShader && versionIn_ <= InputShaderVersion::HLSL3)
+    if (shaderTarget_ == ShaderTarget::FragmentShader && IsD3D9ShaderModel())
         program_->layoutFragment.pixelCenterInteger = true;
 }
 
@@ -1948,8 +1955,7 @@ void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic, bool input)
         semantic = IndexedSemantic(Semantic::VertexPosition, semantic.Index());
     }
 
-    if ( versionIn_ == InputShaderVersion::Cg ||
-         versionIn_ == InputShaderVersion::HLSL3 )
+    if (IsD3D9ShaderModel())
     {
         /* Convert some system value semantics to a user defined semantic (e.g. vertex input POSITION[n]) */
         if ( ( shaderTarget_ == ShaderTarget::VertexShader   && semantic == Semantic::VertexPosition && input ) ||

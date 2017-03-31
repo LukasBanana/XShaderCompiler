@@ -137,7 +137,7 @@ static bool CompileShaderPrimary(
         program = parser.ParseSource(
             std::make_shared<SourceCode>(std::move(processedInput)),
             outputDesc.nameMangling,
-            (inputDesc.shaderVersion >= InputShaderVersion::HLSL4),
+            inputDesc.shaderVersion,
             outputDesc.options.rowMajorAlignment,
             ((inputDesc.warnings & Warnings::Syntax) != 0)
         );
@@ -225,7 +225,7 @@ XSC_EXPORT bool CompileShader(
     if (!IsLanguageHLSL(inputDesc.shaderVersion) && !outputDesc.options.preprocessOnly)
     {
         if (log)
-            log->SumitReport(Report(Report::Types::Error, "only pre-processing supported for shaders other than HLSL"));
+            log->SumitReport(Report(Report::Types::Error, R_OnlyPreProcessingForNonHLSL));
         return false;
     }
 
@@ -365,7 +365,7 @@ XSC_EXPORT void PrintReflection(std::ostream& stream, const Reflection::Reflecti
 
 XSC_EXPORT bool IsLanguageHLSL(const InputShaderVersion shaderVersion)
 {
-    return (shaderVersion >= InputShaderVersion::HLSL3 && shaderVersion <= InputShaderVersion::HLSL5);
+    return (shaderVersion >= InputShaderVersion::Cg && shaderVersion <= InputShaderVersion::HLSL6);
 }
 
 XSC_EXPORT bool IsLanguageGLSL(const InputShaderVersion shaderVersion)
