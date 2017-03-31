@@ -408,6 +408,7 @@ static std::map<Semantic, GLSLSemanticDescriptor> GenerateSemanticMap()
         { T::DepthLessEqual,         { "gl_FragDepth"                 } }, // layout(depth_less) out float gl_FragDepth;
         { T::DispatchThreadID,       { "gl_GlobalInvocationID"        } },
         { T::DomainLocation,         { "gl_TessCoord"                 } },
+        { T::FragCoord,              { "gl_FragCoord"                 } },
         { T::GroupID,                { "gl_WorkGroupID"               } },
         { T::GroupIndex,             { "gl_LocalInvocationIndex"      } },
         { T::GroupThreadID,          { "gl_LocalInvocationID"         } },
@@ -417,7 +418,7 @@ static std::map<Semantic, GLSLSemanticDescriptor> GenerateSemanticMap()
         { T::InstanceID,             { "gl_InstanceID"                } }, // gl_InstanceID (GLSL), gl_InstanceIndex (Vulkan)
         { T::IsFrontFace,            { "gl_FrontFacing"               } },
         { T::OutputControlPointID,   { "gl_InvocationID"              } },
-        { T::FragCoord,              { "gl_FragCoord"                 } },
+        { T::PointSize,              { "gl_PointSize"                 } },
         { T::PrimitiveID,            { "gl_PrimitiveID"               } },
         { T::RenderTargetArrayIndex, { "gl_Layer"                     } },
         { T::SampleIndex,            { "gl_SampleID"                  } },

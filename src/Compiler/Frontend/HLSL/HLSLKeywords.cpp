@@ -993,6 +993,7 @@ static IndexedSemantic HLSLKeywordToSemanticD3D9(const CiString& ident)
         { "COLOR",    { T::Target,         true } },
         { "DEPTH",    { T::Depth,          true } },
         { "POSITION", { T::VertexPosition, true } },
+        { "PSIZE",    { T::PointSize            } },
         { "VFACE",    { T::IsFrontFace          } },
         { "VPOS",     { T::FragCoord            } },
         //TODO: continue this list ...
@@ -1019,6 +1020,7 @@ static IndexedSemantic HLSLKeywordToSemanticD3D10(const CiString& ident)
         { "SV_DepthLessEqual",         { T::DepthLessEqual              } },
         { "SV_DispatchThreadID",       { T::DispatchThreadID            } },
         { "SV_DomainLocation",         { T::DomainLocation              } },
+        { "SV_Position",               { T::FragCoord                   } },
         { "SV_GroupID",                { T::GroupID                     } },
         { "SV_GroupIndex",             { T::GroupIndex                  } },
         { "SV_GroupThreadID",          { T::GroupThreadID               } },
@@ -1028,7 +1030,6 @@ static IndexedSemantic HLSLKeywordToSemanticD3D10(const CiString& ident)
         { "SV_InstanceID",             { T::InstanceID                  } },
         { "SV_IsFrontFace",            { T::IsFrontFace                 } },
         { "SV_OutputControlPointID",   { T::OutputControlPointID        } },
-        { "SV_Position",               { T::FragCoord                   } },
         { "SV_PrimitiveID",            { T::PrimitiveID                 } },
         { "SV_RenderTargetArrayIndex", { T::RenderTargetArrayIndex      } },
         { "SV_SampleIndex",            { T::SampleIndex                 } },

@@ -1631,22 +1631,22 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
     {
         case ShaderTarget::VertexShader:
             ValidateInSemantics({ COMMON_SEMANTICS });
-            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition });
+            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::PointSize });
             break;
 
         case ShaderTarget::TessellationControlShader:
-            ValidateInSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::OutputControlPointID });
-            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::InsideTessFactor, T::TessFactor });
+            ValidateInSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::PointSize, T::OutputControlPointID });
+            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::PointSize, T::InsideTessFactor, T::TessFactor });
             break;
 
         case ShaderTarget::TessellationEvaluationShader:
-            ValidateInSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::InsideTessFactor, T::TessFactor, T::DomainLocation });
-            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition });
+            ValidateInSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::PointSize, T::InsideTessFactor, T::TessFactor, T::DomainLocation });
+            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::PointSize });
             break;
 
         case ShaderTarget::GeometryShader:
-            ValidateInSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::GSInstanceID });
-            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::IsFrontFace, T::ViewportArrayIndex, T::RenderTargetArrayIndex });
+            ValidateInSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::PointSize, T::GSInstanceID });
+            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::PointSize, T::IsFrontFace, T::ViewportArrayIndex, T::RenderTargetArrayIndex });
             break;
 
         case ShaderTarget::FragmentShader:
@@ -1960,13 +1960,24 @@ void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic, bool input)
         /* Convert some system value semantics to a user defined semantic (e.g. vertex input POSITION[n]) */
         if ( ( shaderTarget_ == ShaderTarget::VertexShader   && semantic == Semantic::VertexPosition && input ) ||
              ( shaderTarget_ == ShaderTarget::VertexShader   && semantic == Semantic::Target                  ) ||
-             ( shaderTarget_ == ShaderTarget::FragmentShader && semantic == Semantic::Target         && input ) )
+             ( shaderTarget_ == ShaderTarget::FragmentShader && semantic == Semantic::Target         && input ) ||
+             (                                                  semantic == Semantic::PointSize      && input ) )
         {
             /* Make this a user defined semantic */
-            if (semantic == Semantic::VertexPosition)
-                semantic.MakeUserDefined("POSITION");
-            else if (semantic == Semantic::Target)
-                semantic.MakeUserDefined("COLOR");
+            switch (semantic)
+            {
+                case Semantic::PointSize:
+                    semantic.MakeUserDefined("POINTSIZE");
+                    break;
+                case Semantic::VertexPosition:
+                    semantic.MakeUserDefined("POSITION");
+                    break;
+                case Semantic::Target:
+                    semantic.MakeUserDefined("COLOR");
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

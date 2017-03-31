@@ -828,6 +828,7 @@ enum class Semantic
     DepthLessEqual,         // SV_DepthLessEqual, layout(depth_less) out float gl_FragDepth;
     DispatchThreadID,       // SV_DispatchThreadID, gl_GlobalInvocationID
     DomainLocation,         // SV_DomainLocation, gl_TessCoord
+    FragCoord,              // VPOS (D3D9), SV_Position (D3D10+), gl_FragCoord
     GroupID,                // SV_GroupID, gl_WorkGroupID
     GroupIndex,             // SV_GroupIndex, N/A
     GroupThreadID,          // SV_GroupThreadID, gl_LocalInvocationID
@@ -838,8 +839,8 @@ enum class Semantic
     InstanceID,             // SV_InstanceID, gl_InstanceID (GLSL), gl_InstanceIndex (Vulkan)
     IsFrontFace,            // VFACE (D3D9), SV_IsFrontFace (D3D10+), gl_FrontFacing
     OutputControlPointID,   // SV_OutputControlPointID, gl_InvocationID
-    FragCoord,              // VPOS (D3D9), SV_Position (D3D10+), gl_FragCoord
-    PrimitiveID,            // SV_PrimitiveID, gl_PrimitiveID
+    PointSize,              // D3D9: PSIZE, D3D10: N/A,            GL: gl_PointSize
+    PrimitiveID,            // D3D9: N/A,   D3D10: SV_PrimitiveID, GL: gl_PrimitiveID
     RenderTargetArrayIndex, // SV_RenderTargetArrayIndex, gl_Layer
     SampleIndex,            // SV_SampleIndex, gl_SampleID
     StencilRef,             // SV_StencilRef, gl_FragStencilRef (if ARB_shader_stencil_export is present)
