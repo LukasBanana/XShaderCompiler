@@ -650,7 +650,7 @@ struct StructDecl : public Decl
     void CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens) const;
 
     // Iterates over each VarDecl AST node (included nested structures, and members in base structures).
-    void ForEachVarDecl(const VarDeclIteratorFunctor& iterator);
+    void ForEachVarDecl(const VarDeclIteratorFunctor& iterator, bool includeBaseStructs = true);
 
     // Adds the specified variable as an instance of this structure, that is used as shader output (see HasMultipleShaderOutputInstances).
     void AddShaderOutputInstance(VarDecl* varDecl);

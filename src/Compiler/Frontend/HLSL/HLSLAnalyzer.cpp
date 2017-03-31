@@ -1389,11 +1389,22 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOutStruct(FunctionDecl* funcDecl,
     if (structDecl)
     {
         /* Analyze all structure members */
+        //TODO: refactor this!
+        #if 1
         for (auto& member : structDecl->varMembers)
         {
             for (auto& memberVar : member->varDecls)
                 AnalyzeEntryPointParameterInOut(funcDecl, memberVar.get(), input);
         }
+        #else
+        //TODO: this may produce duplicate input/output variables!
+        structDecl->ForEachVarDecl(
+            [&](VarDeclPtr& varDecl)
+            {
+                AnalyzeEntryPointParameterInOut(funcDecl, varDecl.get(), input);
+            }
+        );
+        #endif
 
         /* Mark structure as shader input/output */
         if (input)

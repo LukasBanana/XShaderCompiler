@@ -100,8 +100,18 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     if (NotVisited(ast))
     {
+        auto IsVarEntryPointIO = [](const VarDecl* varDecl)
+        {
+            //TODO: refactor this!
+            #if 1
+            return varDecl->flags(VarDecl::isEntryPointOutput);
+            #else
+            return (varDecl->flags(VarDecl::isShaderInput) || varDecl->flags(VarDecl::isShaderOutput));
+            #endif
+        };
+
         /* Is a variable declaration NOT used as entry point return value? */
-        if (!IsActiveFunctionDeclEntryPoint() || !ast->flags(VarDecl::isEntryPointOutput) || shaderTarget_ == ShaderTarget::GeometryShader)
+        if (!IsActiveFunctionDeclEntryPoint() || !IsVarEntryPointIO(ast) || shaderTarget_ == ShaderTarget::GeometryShader)
         {
             auto declStmnt = ast->declStmntRef;
 
@@ -109,7 +119,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
             if (auto structDecl = declStmnt->typeSpecifier->GetStructDeclRef())
             {
                 /* Is the structure used for more than one instance? */
-                if (!IsActiveFunctionDeclEntryPoint() || !ast->flags(VarDecl::isEntryPointOutput) || structDecl->HasMultipleShaderOutputInstances())
+                if (!IsActiveFunctionDeclEntryPoint() || !IsVarEntryPointIO(ast) || structDecl->HasMultipleShaderOutputInstances())
                 {
                     /* Is this variable NOT a parameter of the entry point? */
                     if (!IsVariableAnEntryPointParameter(declStmnt))

@@ -738,11 +738,11 @@ void StructDecl::CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTy
     }
 }
 
-void StructDecl::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
+void StructDecl::ForEachVarDecl(const VarDeclIteratorFunctor& iterator, bool includeBaseStructs)
 {
     /* Iterate over all base struct members */
-    if (baseStructRef)
-        baseStructRef->ForEachVarDecl(iterator);
+    if (baseStructRef && includeBaseStructs)
+        baseStructRef->ForEachVarDecl(iterator, includeBaseStructs);
 
     for (auto& member : varMembers)
     {
@@ -750,8 +750,8 @@ void StructDecl::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
         const auto& typeDen = member->typeSpecifier->GetTypeDenoter()->GetAliased();
         if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
         {
-            if (structTypeDen->structDeclRef)
-                structTypeDen->structDeclRef->ForEachVarDecl(iterator);
+            if (auto structDecl = structTypeDen->structDeclRef)
+                structDecl->ForEachVarDecl(iterator);
         }
 
         /* Iterate over all variables for current member */
@@ -1218,8 +1218,11 @@ bool VarDeclStmnt::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifie
 
 void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
 {
-    for (auto& varDecl : varDecls)
-        iterator(varDecl);
+    if (iterator)
+    {
+        for (auto& varDecl : varDecls)
+            iterator(varDecl);
+    }
 }
 
 void VarDeclStmnt::MakeImplicitConst()

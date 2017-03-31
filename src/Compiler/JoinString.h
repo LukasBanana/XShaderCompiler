@@ -20,7 +20,7 @@ namespace Xsc
 /* ----- Functions ----- */
 
 /*
-Joins the specified report string with its values.
+Joins the specified string with its values.
 Special characters for the string 's' are: '{', '}', '[', and ']'.
 
 "{0}" will be replaced by the first value from the array 'values',
