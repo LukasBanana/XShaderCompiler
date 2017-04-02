@@ -820,35 +820,37 @@ enum class Semantic
 
     UserDefined,            // User defined HLSL semantic
 
-    ClipDistance,           // SV_ClipDistance, gl_ClipDistance
-    CullDistance,           // SV_CullDistance, gl_CullDistance (if ARB_cull_distance is present)
-    Coverage,               // SV_Coverage, gl_SampleMask
-    Depth,                  // DEPTH (D3D9), SV_Depth (D3D10+), gl_FragDepth
-    DepthGreaterEqual,      // SV_DepthGreaterEqual, layout(depth_greater) out float gl_FragDepth;
-    DepthLessEqual,         // SV_DepthLessEqual, layout(depth_less) out float gl_FragDepth;
-    DispatchThreadID,       // SV_DispatchThreadID, gl_GlobalInvocationID
-    DomainLocation,         // SV_DomainLocation, gl_TessCoord
-    FragCoord,              // VPOS (D3D9), SV_Position (D3D10+), gl_FragCoord
-    GroupID,                // SV_GroupID, gl_WorkGroupID
-    GroupIndex,             // SV_GroupIndex, N/A
-    GroupThreadID,          // SV_GroupThreadID, gl_LocalInvocationID
-    GSInstanceID,           // SV_GSInstanceID, gl_InvocationID
-  //HelperInvocation,       // N/A, gl_HelperInvocation
-    InnerCoverage,          // SV_InnerCoverage, gl_SampleMaskIn
-    InsideTessFactor,       // SV_InsideTessFactor[2], gl_TessLevelInner[2]
-    InstanceID,             // SV_InstanceID, gl_InstanceID (GLSL), gl_InstanceIndex (Vulkan)
-    IsFrontFace,            // VFACE (D3D9), SV_IsFrontFace (D3D10+), gl_FrontFacing
-    OutputControlPointID,   // SV_OutputControlPointID, gl_InvocationID
-    PointSize,              // D3D9: PSIZE, D3D10: N/A,            GL: gl_PointSize
-    PrimitiveID,            // D3D9: N/A,   D3D10: SV_PrimitiveID, GL: gl_PrimitiveID
-    RenderTargetArrayIndex, // SV_RenderTargetArrayIndex, gl_Layer
-    SampleIndex,            // SV_SampleIndex, gl_SampleID
-    StencilRef,             // SV_StencilRef, gl_FragStencilRef (if ARB_shader_stencil_export is present)
-    Target,                 // COLOR (D3D9), SV_Target (D3D10+), gl_FragData
-    TessFactor,             // SV_TessFactor[4], gl_TessLevelOuter[4]
-    VertexID,               // SV_VertexID, gl_VertexID (GLSL), gl_VertexIndex (Vulkan)
-    VertexPosition,         // POSITION (D3D9), SV_Position (D3D10+), gl_Position
-    ViewportArrayIndex,     // SV_ViewportArrayIndex, gl_ViewportIndex
+                            // HLSL3     HLSL4+                     GLSL
+                            // --------  -------------------------  ---------------------
+    ClipDistance,           // n/a       SV_ClipDistance            gl_ClipDistance
+    CullDistance,           // n/a       SV_CullDistance            gl_CullDistance (if ARB_cull_distance is present)
+    Coverage,               // n/a       SV_Coverage                gl_SampleMask
+    Depth,                  // DEPTH     SV_Depth                   gl_FragDepth
+    DepthGreaterEqual,      // n/a       SV_DepthGreaterEqual       layout(depth_greater) out float gl_FragDepth
+    DepthLessEqual,         // n/a       SV_DepthLessEqual          layout(depth_less) out float gl_FragDepth
+    DispatchThreadID,       // n/a       SV_DispatchThreadID        gl_GlobalInvocationID
+    DomainLocation,         // n/a       SV_DomainLocation          gl_TessCoord
+    FragCoord,              // VPOS      SV_Position                gl_FragCoord
+    GroupID,                // n/a       SV_GroupID                 gl_WorkGroupID
+    GroupIndex,             // n/a       SV_GroupIndex              n/a
+    GroupThreadID,          // n/a       SV_GroupThreadID           gl_LocalInvocationID
+    GSInstanceID,           // n/a       SV_GSInstanceID            gl_InvocationID
+  //HelperInvocation,       // n/a       n/a                        gl_HelperInvocation
+    InnerCoverage,          // n/a       SV_InnerCoverage           gl_SampleMaskIn
+    InsideTessFactor,       // n/a       SV_InsideTessFactor[2]     gl_TessLevelInner[2]
+    InstanceID,             // n/a       SV_InstanceID              gl_InstanceID (OpenGL)/ gl_InstanceIndex (Vulkan)
+    IsFrontFace,            // VFACE     SV_IsFrontFace             gl_FrontFacing
+    OutputControlPointID,   // n/a       SV_OutputControlPointID    gl_InvocationID
+    PointSize,              // PSIZE     n/a                        gl_PointSize
+    PrimitiveID,            // n/a       SV_PrimitiveID             gl_PrimitiveID
+    RenderTargetArrayIndex, // n/a       SV_RenderTargetArrayIndex  gl_Layer
+    SampleIndex,            // n/a       SV_SampleIndex             gl_SampleID
+    StencilRef,             // n/a       SV_StencilRef              gl_FragStencilRef (if ARB_shader_stencil_export is present)
+    Target,                 // COLOR     SV_Target                  gl_FragData
+    TessFactor,             // n/a       SV_TessFactor[4]           gl_TessLevelOuter[4]
+    VertexID,               // n/a       SV_VertexID                gl_VertexID (OpenGL)/ gl_VertexIndex (Vulkan)
+    VertexPosition,         // POSITION  SV_Position                gl_Position
+    ViewportArrayIndex,     // n/a       SV_ViewportArrayIndex      gl_ViewportIndex
 };
 
 // Indexed semantic type with 'Semantic' enum, integral index, and implicit conversion from and to 'Semantic' enum.

@@ -1967,7 +1967,7 @@ void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic, bool input)
             switch (semantic)
             {
                 case Semantic::PointSize:
-                    semantic.MakeUserDefined("POINTSIZE");
+                    semantic.MakeUserDefined("PSIZE");
                     break;
                 case Semantic::VertexPosition:
                     semantic.MakeUserDefined("POSITION");
