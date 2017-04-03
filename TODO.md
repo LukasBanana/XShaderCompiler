@@ -18,7 +18,7 @@ Known Issues
 |-------|---------|
 | Implicit type conversion | **in progress** |
 | Intrinsic argument type matching | Type matching is incomplete for intrinsic function calls. **in progress** |
-| Sampler types for DX9 shaders | Samplers (e.g. `sampler2D`) are ignored, even for HLSL3. **in progress** |
+| Struct used as input *and* ouput | Structures can currently not be used for shader input and output semantics simultaneously. |
 
 
 Requested Features
