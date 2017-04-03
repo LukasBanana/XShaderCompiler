@@ -449,18 +449,42 @@ enum class SamplerType
     Undefined,
 
     /* --- Samplers --- */
-    Sampler1D,              // 'sampler1D' in D3D9
-    Sampler2D,              // 'sampler2D' in D3D9
-    Sampler3D,              // 'sampler3D' in D3D9
-    SamplerCube,            // 'samplerCUBE' in D3D9
+                            // HLSL3            GLSL
+                            // ---------------  ----------------------
+    Sampler1D,              // sampler1D        sampler1D
+    Sampler2D,              // sampler2D        sampler2D
+    Sampler3D,              // sampler3D        sampler3D
+    SamplerCube,            // samplerCUBE      samplerCube
+    Sampler2DRect,          // n/a              sampler2DRect
+    Sampler1DArray,         // n/a              sampler1DArray
+    Sampler2DArray,         // n/a              sampler2DArray
+    SamplerCubeArray,       // n/a              samplerCubeArray
+    SamplerBuffer,          // n/a              samplerBuffer
+    Sampler2DMS,            // n/a              sampler2DMS
+    Sampler2DMSArray,       // n/a              sampler2DMSArray
+    Sampler1DShadow,        // sampler1DShadow  sampler1DShadow
+    Sampler2DShadow,        // sampler2DShadow  sampler2DShadow
+    SamplerCubeShadow,      // n/a              samplerCubeShadow
+    Sampler2DRectShadow,    // n/a              sampler2DRectShadow
+    Sampler1DArrayShadow,   // n/a              sampler1DArrayShadow
+    Sampler2DArrayShadow,   // n/a              sampler2DArrayShadow
+    SamplerCubeArrayShadow, // n/a              samplerCubeArrayShadow
 
     /* --- Sampler states --- */
-    SamplerState,           // 'SamplerState' in D3D10+, or 'sampler_state' in D3D9
-    SamplerComparisonState, // 'SamplerComparisonState' in D3D10+
+                            // HLSL3            HLSL4+                  GLSL
+                            // ---------------  ----------------------  -------
+    SamplerState,           // sampler_state    SamplerState            sampler
+    SamplerComparisonState, // sampler_state    SamplerComparisonState  sampler
 };
 
 // Returns true if the specified sampler type is sampler state (i.e. SamplerState or SamplerComparisonState).
 bool IsSamplerStateType(const SamplerType t);
+
+// Returns true if the specified sampler type is a shadow sampler (e.g. Sampler1DShadow).
+bool IsSamplerTypeShadow(const SamplerType t);
+
+// Returns true if the specified sampler type is an array sampler (e.g. Sampler1DArray).
+bool IsSamplerTypeArray(const SamplerType t);
 
 
 /* ----- RegisterType Enum ----- */

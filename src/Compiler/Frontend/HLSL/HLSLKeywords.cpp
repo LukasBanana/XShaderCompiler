@@ -260,6 +260,8 @@ static KeywordMapType GenerateKeywordMap()
         { "sampler2D",               T::Sampler         },
         { "sampler3D",               T::Sampler         },
         { "samplerCUBE",             T::Sampler         },
+        { "sampler1DShadow",         T::Sampler         },
+        { "sampler2DShadow",         T::Sampler         },
 
         { "sampler_state",           T::SamplerState    },
         { "SamplerState",            T::SamplerState    }, // since D3D10+
@@ -847,6 +849,9 @@ static std::map<std::string, SamplerType> GenerateSamplerTypeMap()
         { "sampler2D",              T::Sampler2D              },
         { "sampler3D",              T::Sampler3D              },
         { "samplerCUBE",            T::SamplerCube            },
+        { "sampler1DShadow",        T::Sampler1DShadow        },
+        { "sampler2DShadow",        T::Sampler2DShadow        },
+
         { "sampler",                T::SamplerState           },
         { "sampler_state",          T::SamplerState           },
         { "SamplerState",           T::SamplerState           },

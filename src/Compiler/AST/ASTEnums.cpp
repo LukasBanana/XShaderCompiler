@@ -821,6 +821,16 @@ bool IsSamplerStateType(const SamplerType t)
     return (t >= SamplerType::SamplerState && t <= SamplerType::SamplerComparisonState);
 }
 
+bool IsSamplerTypeShadow(const SamplerType t)
+{
+    return (t >= SamplerType::Sampler1DShadow && t <= SamplerType::SamplerCubeArrayShadow);
+}
+
+bool IsSamplerTypeArray(const SamplerType t)
+{
+    return ((t >= SamplerType::Sampler1DArray && t <= SamplerType::SamplerCubeArray) || t == SamplerType::Sampler2DMSArray);
+}
+
 
 /* ----- RegisterType Enum ----- */
 

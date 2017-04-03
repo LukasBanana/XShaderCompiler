@@ -310,12 +310,26 @@ static std::map<SamplerType, std::string> GenerateSamplerTypeMap()
 
     return
     {
-        { T::Sampler1D,              "sampler1D"   },
-        { T::Sampler2D,              "sampler2D"   },
-        { T::Sampler3D,              "sampler3D"   },
-        { T::SamplerCube,            "samplerCube" },
-        { T::SamplerState,           "sampler"     }, // Only for Vulkan
-        { T::SamplerComparisonState, "sampler"     }, // Only for Vulkan
+        { T::Sampler1D,              "sampler1D"              },
+        { T::Sampler2D,              "sampler2D"              },
+        { T::Sampler3D,              "sampler3D"              },
+        { T::SamplerCube,            "samplerCube"            },
+        { T::Sampler2DRect,          "sampler2DRect"          },
+        { T::Sampler1DArray,         "sampler1DArray"         },
+        { T::Sampler2DArray,         "sampler2DArray"         },
+        { T::SamplerCubeArray,       "samplerCubeArray"       },
+        { T::SamplerBuffer,          "samplerBuffer"          },
+        { T::Sampler2DMS,            "sampler2DMS"            },
+        { T::Sampler2DMSArray,       "sampler2DMSArray"       },
+        { T::Sampler1DShadow,        "sampler1DShadow"        },
+        { T::Sampler2DShadow,        "sampler2DShadow"        },
+        { T::SamplerCubeShadow,      "samplerCubeShadow"      },
+        { T::Sampler2DRectShadow,    "sampler2DRectShadow"    },
+        { T::Sampler1DArrayShadow,   "sampler1DArrayShadow"   },
+        { T::Sampler2DArrayShadow,   "sampler2DArrayShadow"   },
+        { T::SamplerCubeArrayShadow, "samplerCubeArrayShadow" },
+        { T::SamplerState,           "sampler"                }, // Only for Vulkan
+        { T::SamplerComparisonState, "sampler"                }, // Only for Vulkan
     };
 }
 
