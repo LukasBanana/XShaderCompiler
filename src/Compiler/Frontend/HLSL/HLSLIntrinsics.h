@@ -59,9 +59,17 @@ class HLSLIntrinsicAdept : public IntrinsicAdept
         TypeDenoterPtr DeriveReturnTypeTranspose(const std::vector<ExprPtr>& args) const;
         TypeDenoterPtr DeriveReturnTypeVectorCompare(const std::vector<ExprPtr>& args) const;
 
-        void DeriveParameterTypes(std::vector<TypeDenoterPtr>& paramTypeDenoters, const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const;
+        void DeriveParameterTypes(
+            std::vector<TypeDenoterPtr>& paramTypeDenoters,
+            const Intrinsic intrinsic,
+            const std::vector<ExprPtr>& args,
+            bool useMinDimension = false
+        ) const;
+
+        #if 1//TODO: not implemented yet!
         void DeriveParameterTypesMul(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const;
         void DeriveParameterTypesTranspose(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const;
+        #endif
 
 };
 

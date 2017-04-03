@@ -242,7 +242,7 @@ static std::size_t IntrinsicReturnTypeToArgIndex(const IntrinsicReturnType t)
     }
 }
 
-static TypeDenoterPtr DeriveCommonTypeDenoter(std::size_t majorArgIndex, const std::vector<ExprPtr>& args)
+static TypeDenoterPtr DeriveCommonTypeDenoter(std::size_t majorArgIndex, const std::vector<ExprPtr>& args, bool useMinDimension = false)
 {
     if (majorArgIndex < args.size())
     {
@@ -255,7 +255,8 @@ static TypeDenoterPtr DeriveCommonTypeDenoter(std::size_t majorArgIndex, const s
             {
                 commonTypeDenoter = TypeDenoter::FindCommonTypeDenoter(
                     commonTypeDenoter,
-                    args[i]->GetTypeDenoter()->GetSub()
+                    args[i]->GetTypeDenoter()->GetSub(),
+                    useMinDimension
                 );
             }
         }
@@ -572,6 +573,9 @@ std::vector<TypeDenoterPtr> HLSLIntrinsicAdept::GetIntrinsicParameterTypes(const
 
     switch (intrinsic)
     {
+        case Intrinsic::Dot:
+            DeriveParameterTypes(paramTypeDenoters, intrinsic, args, true);
+            break;
         case Intrinsic::Mul:
             DeriveParameterTypesMul(paramTypeDenoters, args);
             break;
@@ -740,7 +744,8 @@ TODO:
 This is a temporary solution to derive parameter types of intrinsic.
 Currently all global intrinsics use a common type denoter for all parameters.
 */
-void HLSLIntrinsicAdept::DeriveParameterTypes(std::vector<TypeDenoterPtr>& paramTypeDenoters, const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const
+void HLSLIntrinsicAdept::DeriveParameterTypes(
+    std::vector<TypeDenoterPtr>& paramTypeDenoters, const Intrinsic intrinsic, const std::vector<ExprPtr>& args, bool useMinDimension) const
 {
     /* Get type denoter from intrinsic signature map */
     auto it = g_intrinsicSignatureMap.find(intrinsic);
@@ -749,7 +754,7 @@ void HLSLIntrinsicAdept::DeriveParameterTypes(std::vector<TypeDenoterPtr>& param
         if (!args.empty() && IsGlobalIntrinsic(intrinsic))
         {
             /* Find common type denoter for all arguments */
-            auto commonTypeDenoter = DeriveCommonTypeDenoter(0, args);
+            auto commonTypeDenoter = DeriveCommonTypeDenoter(0, args, useMinDimension);
 
             /* Add parameter type denoter */
             paramTypeDenoters.resize(args.size());
