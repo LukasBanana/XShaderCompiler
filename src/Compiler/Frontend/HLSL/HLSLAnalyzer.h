@@ -13,6 +13,7 @@
 #include "ShaderVersion.h"
 #include "Variant.h"
 #include <map>
+#include <set>
 
 
 namespace Xsc
@@ -173,9 +174,15 @@ class HLSLAnalyzer : public Analyzer
             std::string& literalValue
         );
 
-        /* ----- Misc ----- */
+        /* ----- Semantic ----- */
 
-        void AnalyzeSemantic(IndexedSemantic& semantic, bool input);
+        void AnalyzeSemantic(IndexedSemantic& semantic);
+        void AnalyzeSemanticSM3(IndexedSemantic& semantic, bool input);
+        void AnalyzeSemanticSM3Remaining();
+        void AnalyzeSemanticVarDecl(IndexedSemantic& semantic, VarDecl* varDecl);
+        void AnalyzeSemanticFunctionReturn(IndexedSemantic& semantic);
+
+        /* ----- Misc ----- */
 
         void AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr>& arrayDims);
 
@@ -193,6 +200,8 @@ class HLSLAnalyzer : public Analyzer
         InputShaderVersion  versionIn_                  = InputShaderVersion::HLSL5;
         ShaderVersion       shaderModel_                = { 5, 0 };
         bool                preferWrappers_             = false;
+
+        std::set<VarDecl*>  varDeclSM3Semantics_;
 
 };
 

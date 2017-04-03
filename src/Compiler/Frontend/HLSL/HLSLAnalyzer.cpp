@@ -63,6 +63,9 @@ void HLSLAnalyzer::DecorateASTPrimary(
     /* Check if secondary entry point has been found */
     if (!secondaryEntryPoint_.empty() && !secondaryEntryPointFound_ && WarnEnabled(Warnings::UnlocatedObjects))
         Warning(R_SecondEntryPointNotFound(secondaryEntryPoint_));
+
+    /* Analyze remaining shader model 3 semantic */
+    AnalyzeSemanticSM3Remaining();
 }
 
 
@@ -259,7 +262,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         secondaryEntryPointFound_ = true;
 
     /* Analyze function return semantic */
-    AnalyzeSemantic(ast->semantic, false);
+    AnalyzeSemanticFunctionReturn(ast->semantic);
 
     /* Visit attributes */
     Visit(ast->attribs);
@@ -627,15 +630,13 @@ void HLSLAnalyzer::AnalyzeVarDecl(VarDecl* varDecl)
 
 void HLSLAnalyzer::AnalyzeVarDeclLocal(VarDecl* varDecl, bool registerVarIdent)
 {
+    /* Register variable identifier in symbol table (if enabled) */
     if (registerVarIdent)
-    {
-        /* Register variable identifier in symbol table */
         Register(varDecl->ident, varDecl);
-    }
 
     /* Analyze array dimensions and semantic */
     AnalyzeArrayDimensionList(varDecl->arrayDims);
-    AnalyzeSemantic(varDecl->semantic, varDecl->declStmntRef->IsInput());
+    AnalyzeSemanticVarDecl(varDecl->semantic, varDecl);
 
     /* Store references to members with system value semantic (SV_...) in all parent structures */
     if (varDecl->semantic.IsSystemValue())
@@ -1647,8 +1648,16 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
     switch (shaderTarget_)
     {
         case ShaderTarget::VertexShader:
-            ValidateInSemantics({ COMMON_SEMANTICS });
-            ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::PointSize });
+            if (IsD3D9ShaderModel())
+            {
+                ValidateInSemantics({ COMMON_SEMANTICS, T::VertexPosition, T::PointSize, T::Target });
+                ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::PointSize, T::Target });
+            }
+            else
+            {
+                ValidateInSemantics({ COMMON_SEMANTICS });
+                ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::VertexPosition, T::PointSize });
+            }
             break;
 
         case ShaderTarget::TessellationControlShader:
@@ -1667,7 +1676,7 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
             break;
 
         case ShaderTarget::FragmentShader:
-            if (versionIn_ >= InputShaderVersion::HLSL4)
+            if (!IsD3D9ShaderModel())
             {
                 ValidateInSemantics({ COMMON_SEMANTICS_EX, T::Coverage, T::InnerCoverage, T::Depth, T::SampleIndex, T::RenderTargetArrayIndex, T::FragCoord, T::IsFrontFace });
                 ValidateOutSemantics({ COMMON_SEMANTICS_EX, T::Coverage, T::InnerCoverage, T::Depth, T::SampleIndex, T::RenderTargetArrayIndex, T::Target, T::StencilRef });
@@ -1957,47 +1966,89 @@ bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(
     return false;
 }
 
-/* ----- Misc ----- */
+/* ----- Semantic ----- */
 
 /*
 ~~~~~~~~~~ TODO: ~~~~~~~~~~
 if this semantic is used as input or output can not be determined,
 if the variable is inside a structure!
 */
-void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic, bool input)
+void HLSLAnalyzer::AnalyzeSemantic(IndexedSemantic& semantic)
 {
     if (semantic == Semantic::FragCoord && shaderTarget_ != ShaderTarget::FragmentShader)
     {
         /* Convert shader semantic to VertexPosition */
         semantic = IndexedSemantic(Semantic::VertexPosition, semantic.Index());
     }
+}
 
-    if (IsD3D9ShaderModel())
+void HLSLAnalyzer::AnalyzeSemanticSM3(IndexedSemantic& semantic, bool input)
+{
+    /* Convert some system value semantics to a user defined semantic (e.g. vertex input POSITION[n]) */
+    if ( ( shaderTarget_ == ShaderTarget::VertexShader   && semantic == Semantic::VertexPosition && input ) ||
+         ( shaderTarget_ == ShaderTarget::VertexShader   && semantic == Semantic::Target                  ) ||
+         ( shaderTarget_ == ShaderTarget::FragmentShader && semantic == Semantic::Target         && input ) ||
+         (                                                  semantic == Semantic::PointSize      && input ) )
     {
-        /* Convert some system value semantics to a user defined semantic (e.g. vertex input POSITION[n]) */
-        if ( ( shaderTarget_ == ShaderTarget::VertexShader   && semantic == Semantic::VertexPosition && input ) ||
-             ( shaderTarget_ == ShaderTarget::VertexShader   && semantic == Semantic::Target                  ) ||
-             ( shaderTarget_ == ShaderTarget::FragmentShader && semantic == Semantic::Target         && input ) ||
-             (                                                  semantic == Semantic::PointSize      && input ) )
+        /* Make this a user defined semantic */
+        switch (semantic)
         {
-            /* Make this a user defined semantic */
-            switch (semantic)
-            {
-                case Semantic::PointSize:
-                    semantic.MakeUserDefined("PSIZE");
-                    break;
-                case Semantic::VertexPosition:
-                    semantic.MakeUserDefined("POSITION");
-                    break;
-                case Semantic::Target:
-                    semantic.MakeUserDefined("COLOR");
-                    break;
-                default:
-                    break;
-            }
+            case Semantic::PointSize:
+                semantic.MakeUserDefined("PSIZE");
+                break;
+            case Semantic::VertexPosition:
+                semantic.MakeUserDefined("POSITION");
+                break;
+            case Semantic::Target:
+                semantic.MakeUserDefined("COLOR");
+                break;
+            default:
+                break;
         }
     }
 }
+
+void HLSLAnalyzer::AnalyzeSemanticSM3Remaining()
+{
+    if (!varDeclSM3Semantics_.empty())
+    {
+        /* Analyze remaining shader model 3 semantics */
+        for (auto varDecl : varDeclSM3Semantics_)
+            AnalyzeSemanticSM3(varDecl->semantic, varDecl->flags(VarDecl::isShaderInput));
+
+        /* Update distribution of semantics with and without system values */
+        if (auto entryPoint = program_->entryPointRef)
+        {
+            entryPoint->inputSemantics.UpdateDistribution();
+            entryPoint->outputSemantics.UpdateDistribution();
+        }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeSemanticVarDecl(IndexedSemantic& semantic, VarDecl* varDecl)
+{
+    AnalyzeSemantic(semantic);
+
+    if (IsD3D9ShaderModel())
+    {
+        if ( semantic == Semantic::VertexPosition ||
+             semantic == Semantic::Target         ||
+             semantic == Semantic::PointSize )
+        {
+            /* Add variable to shader model 3 semantics (will be analyzed after main analysis) */
+            varDeclSM3Semantics_.insert(varDecl);
+        }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeSemanticFunctionReturn(IndexedSemantic& semantic)
+{
+    AnalyzeSemantic(semantic);
+    if (IsD3D9ShaderModel())
+        AnalyzeSemanticSM3(semantic, false);
+}
+
+/* ----- Misc ----- */
 
 void HLSLAnalyzer::AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr>& arrayDims)
 {
