@@ -383,26 +383,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
-    if (IsVKSL())
-    {
-        BeginLn();
-        {
-            /* Write layout binding */
-            WriteLayout(
-                { [&]() { WriteLayoutBinding(ast->slotRegisters); } }
-            );
-
-            /* Write uniform sampler declaration (sampler declarations must only appear in global scope) */
-            Write("uniform sampler " + ast->ident);
-
-            /* Write array dimensions and statement terminator */
-            Visit(ast->arrayDims);
-            Write(";");
-        }
-        EndLn();
-
-        Blank();
-    }
+    WriteSamplerDecl(*ast);
 }
 
 /* --- Declaration statements --- */
@@ -500,7 +481,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
-    if (IsVKSL() && ast->flags(AST::isReachable))
+    if ( ast->flags(AST::isReachable) && ( IsVKSL() || !IsSamplerStateType(ast->typeDenoter->samplerType) ))
         Visit(ast->samplerDecls);
 }
 
@@ -2741,6 +2722,37 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
         EndLn();
     }
     WriteScopeClose();
+}
+
+/* ----- SamplerDecl ----- */
+
+void GLSLGenerator::WriteSamplerDecl(SamplerDecl& samplerDecl)
+{
+    if (IsVKSL() || !IsSamplerStateType(samplerDecl.declStmntRef->typeDenoter->samplerType))
+    {
+        /* Determine GLSL sampler type */
+        auto samplerTypeKeyword = SamplerTypeToKeyword(samplerDecl.GetSamplerType(), samplerDecl.declStmntRef);
+        if (!samplerTypeKeyword)
+            return;
+
+        BeginLn();
+        {
+            /* Write layout binding */
+            WriteLayout(
+                { [&]() { WriteLayoutBinding(samplerDecl.slotRegisters); } }
+            );
+
+            /* Write uniform sampler declaration (sampler declarations must only appear in global scope) */
+            Write("uniform " + *samplerTypeKeyword + " " + samplerDecl.ident);
+
+            /* Write array dimensions and statement terminator */
+            Visit(samplerDecl.arrayDims);
+            Write(";");
+        }
+        EndLn();
+
+        Blank();
+    }
 }
 
 /* ----- Misc ----- */

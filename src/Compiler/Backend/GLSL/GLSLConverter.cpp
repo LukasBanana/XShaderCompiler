@@ -114,26 +114,6 @@ IMPLEMENT_VISIT_PROC(Program)
     RegisterGlobalDeclIdents(entryPoint->outputSemantics.varDeclRefsSV);
 
     VisitScopedStmntList(ast->globalStmnts);
-
-    //TODO: do not remove these statements, instead mark it as disabled code (otherwise symbol references to these statements are corrupted!)
-    #if 1
-    if (!isVKSL_)
-    {
-        /* Remove all variables which are sampler state objects, since GLSL does not support sampler states */
-        MoveAllIf(
-            ast->globalStmnts,
-            GetProgram()->disabledAST,
-            [&](const StmntPtr& stmnt)
-            {
-                if (stmnt->Type() == AST::Types::SamplerDeclStmnt)
-                    return true;
-                if (auto varDeclStmnt = stmnt->As<VarDeclStmnt>())
-                    return IsSamplerStateTypeDenoter(varDeclStmnt->typeSpecifier->GetTypeDenoter());
-                return false;
-            }
-        );
-    }
-    #endif
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)

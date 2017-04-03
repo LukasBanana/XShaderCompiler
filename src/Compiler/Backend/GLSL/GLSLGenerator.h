@@ -265,6 +265,10 @@ class GLSLGenerator : public Generator
         void WriteBufferDeclTexture(BufferDecl* bufferDecl);
         void WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl);
 
+        /* ----- SamplerDecl ----- */
+
+        void WriteSamplerDecl(SamplerDecl& samplerDecl);
+
         /* ----- Misc ----- */
 
         void WriteStmntComment(Stmnt* ast, bool insertBlank = false);
