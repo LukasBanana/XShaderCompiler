@@ -26,13 +26,13 @@ ReportHandler::ReportHandler(const std::string& reportTypeName, Log* log) :
 void ReportHandler::Error(
     bool breakWithExpection, const std::string& msg, SourceCode* sourceCode, const SourceArea& area)
 {
-    SubmitReport(breakWithExpection, Report::Types::Error, (reportTypeName_ + " " + R_Error()), msg, sourceCode, area);
+    SubmitReport(breakWithExpection, Report::Types::Error, (reportTypeName_ + " " + R_Error), msg, sourceCode, area);
 }
 
 void ReportHandler::Warning(
     bool breakWithExpection, const std::string& msg, SourceCode* sourceCode, const SourceArea& area)
 {
-    SubmitReport(breakWithExpection, Report::Types::Warning, R_Warning(), msg, sourceCode, area);
+    SubmitReport(breakWithExpection, Report::Types::Warning, R_Warning, msg, sourceCode, area);
 }
 
 void ReportHandler::SubmitReport(
@@ -109,7 +109,7 @@ Report ReportHandler::MakeReport(
     std::string contextDesc;
     if (!contextDescStack_.empty())
     {
-        contextDesc += R_In() + " '";
+        contextDesc += R_In + " '";
         contextDesc += contextDescStack_.top();
         contextDesc += "':";
     }

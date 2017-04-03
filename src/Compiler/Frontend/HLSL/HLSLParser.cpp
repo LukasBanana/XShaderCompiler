@@ -1380,11 +1380,17 @@ ExprPtr HLSLParser::ParsePrimaryExprPrefix()
     {
         if (preParsedAST->Type() == AST::Types::ObjectExpr)
         {
+            /* Parse call expression or return pre-parsed object expression */
             auto objectExpr = std::static_pointer_cast<ObjectExpr>(preParsedAST);
             if (Is(Tokens::LBracket))
                 return ParseCallExpr(objectExpr);
             else
                 return objectExpr;
+        }
+        else if (preParsedAST->Type() == AST::Types::CallExpr)
+        {
+            /* Return pre-parsed call expression */
+            return std::static_pointer_cast<CallExpr>(preParsedAST);
         }
         else
             ErrorInternal(R_UnexpectedPreParsedAST, __FUNCTION__);

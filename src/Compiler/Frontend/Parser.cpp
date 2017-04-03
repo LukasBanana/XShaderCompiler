@@ -86,7 +86,7 @@ void Parser::ErrorUnexpected(const Tokens type, const Token* tkn, bool breakWith
 
 void Parser::ErrorInternal(const std::string& msg, const std::string& procName)
 {
-    reportHandler_.Error(true, msg + R_InFunction(procName));
+    reportHandler_.SubmitReport(true, Report::Types::Error, R_InternalError, msg + R_InFunction(procName), nullptr, SourceArea::ignore);
 }
 
 void Parser::Warning(const std::string& msg, const SourceArea& area)
