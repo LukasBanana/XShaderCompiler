@@ -512,8 +512,15 @@ TokenPtrString PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identTo
 
         arguments.push_back(arg);
 
+        /* Parse comma separator */
         if (Is(Tokens::Comma))
+        {
             AcceptIt();
+
+            /* Check if the last argument was empty (e.g. "Macro(,)") */
+            if (Is(Tokens::RBracket))
+                arguments.push_back({});
+        }
     }
 
     AcceptIt();
