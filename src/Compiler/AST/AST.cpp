@@ -788,6 +788,40 @@ bool StructDecl::IsBaseOf(const StructDecl& subStructDecl) const
     return false;
 }
 
+void StructDecl::AddFlagsRecursive(unsigned int structFlags)
+{
+    /* Add flags to this structure */
+    if (flags.SetOnce(structFlags))
+    {
+        /* Add flags to base structure */
+        if (baseStructRef)
+            baseStructRef->AddFlagsRecursive(structFlags);
+
+        /* Add flags to nested structures */
+        for (auto& member : varMembers)
+        {
+            /* Iterate over all sub-struct members */
+            const auto& typeDen = member->typeSpecifier->GetTypeDenoter()->GetAliased();
+            if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
+            {
+                if (auto structDecl = structTypeDen->structDeclRef)
+                    structDecl->AddFlagsRecursive(structFlags);
+            }
+        }
+    }
+}
+
+void StructDecl::AddFlagsRecursiveParents(unsigned int structFlags)
+{
+    /* Add flags to this structure */
+    if (flags.SetOnce(structFlags))
+    {
+        /* Add flags to parent structures, i.e. to all structures that have a member variable with this structure type */
+        for (const auto parent : parentStructDeclRefs)
+            parent->AddFlagsRecursiveParents(structFlags);
+    }
+}
+
 
 /* ----- AliasDecl ----- */
 

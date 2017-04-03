@@ -1103,6 +1103,7 @@ void GLSLConverter::ConvertEntryPointReturnStmnt(ReturnStmnt& ast, StructDecl* s
     auto varDeclStmnt   = ASTFactory::MakeVarDeclStmnt(ASTFactory::MakeTypeSpecifier(typeDen), varIdent);
     auto varDecl        = varDeclStmnt->varDecls.front().get();
 
+    /* Mark variable as an entry-point local (will be removed in code generation) and entry-point output */
     varDecl->flags << (VarDecl::isEntryPointLocal | VarDecl::isEntryPointOutput);
 
     InsertStmntBefore(varDeclStmnt);

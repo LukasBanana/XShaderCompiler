@@ -109,23 +109,36 @@ IMPLEMENT_VISIT_PROC(VarDecl)
             return (varDecl->flags(VarDecl::isShaderInput) || varDecl->flags(VarDecl::isShaderOutput));
             #endif
         };
-
-        /* Is a variable declaration NOT used as entry point return value? */
-        if (!IsActiveFunctionDeclEntryPoint() || !IsVarEntryPointIO(ast) || shaderTarget_ == ShaderTarget::GeometryShader)
+        
+        /* Returns true, if the current structure declaratin (if there is one) is marked as shader input/output */
+        auto InsideShaderIOStruct = [this]() -> bool
         {
-            auto declStmnt = ast->declStmntRef;
+            if (auto structDecl = ActiveStructDecl())
+                return structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput);
+            else
+                return false;
+        };
 
-            /* Has this variable statement a struct type? */
-            if (auto structDecl = declStmnt->typeSpecifier->GetStructDeclRef())
+        /* Is the variable declaration inside a shader input/output structure? */
+        if (!InsideShaderIOStruct())
+        {
+            /* Is a variable declaration NOT used as entry point return value? */
+            if (!IsActiveFunctionDeclEntryPoint() || !IsVarEntryPointIO(ast) || shaderTarget_ == ShaderTarget::GeometryShader)
             {
-                /* Is the structure used for more than one instance? */
-                if (!IsActiveFunctionDeclEntryPoint() || !IsVarEntryPointIO(ast) || structDecl->HasMultipleShaderOutputInstances())
+                auto declStmnt = ast->declStmntRef;
+
+                /* Has this variable declaration statement a struct type? */
+                if (auto structDecl = declStmnt->typeSpecifier->GetStructDeclRef())
                 {
-                    /* Is this variable NOT a parameter of the entry point? */
-                    if (!IsVariableAnEntryPointParameter(declStmnt))
+                    /* Is the structure used for more than one instance? */
+                    if (!IsActiveFunctionDeclEntryPoint() || !IsVarEntryPointIO(ast) || structDecl->HasMultipleShaderOutputInstances())
                     {
-                        /* Mark structure to be used as non-entry-point-parameter */
-                        structDecl->flags << StructDecl::isNonEntryPointParam;
+                        /* Is this variable NOT a parameter of the entry point? */
+                        if (!IsVariableAnEntryPointParameter(declStmnt))
+                        {
+                            /* Mark structure to be used as non-entry-point-parameter */
+                            structDecl->AddFlagsRecursiveParents(StructDecl::isNonEntryPointParam);
+                        }
                     }
                 }
             }
@@ -144,9 +157,13 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     {
         /* If the structure has any member functions, it can not be resolved as entry-point structure */
         if (ast->NumMemberFunctions() > 0)
-            ast->flags << StructDecl::isNonEntryPointParam;
+            ast->AddFlagsRecursiveParents(StructDecl::isNonEntryPointParam);
 
-        VISIT_DEFAULT(StructDecl);
+        PushStructDecl(ast);
+        {
+            VISIT_DEFAULT(StructDecl);
+        }
+        PopStructDecl();
     }
 }
 
@@ -172,7 +189,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
                 if (!ast->flags(FunctionDecl::isEntryPoint) || structDecl->HasMultipleShaderOutputInstances())
                 {
                     /* Mark structure to be used as non-entry-point-parameter */
-                    structDecl->flags << StructDecl::isNonEntryPointParam;
+                    structDecl->AddFlagsRecursiveParents(StructDecl::isNonEntryPointParam);
                 }
             }
         }

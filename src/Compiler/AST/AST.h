@@ -661,6 +661,12 @@ struct StructDecl : public Decl
     // Returns true if this structure is a base of the specified sub structure.
     bool IsBaseOf(const StructDecl& subStructDecl) const;
 
+    // Adds the specified flags to this structure, all base structures, all nested structures, and all structures of its member variables.
+    void AddFlagsRecursive(unsigned int structFlags);
+
+    // Adds the specified flags to this structure, and all parent structures (i.e. all structures that have a member variable with this structure type).
+    void AddFlagsRecursiveParents(unsigned int structFlags);
+
     std::string                     baseStructName;                     // May be empty (if no inheritance is used).
     std::vector<StmntPtr>           localStmnts;                        // Local declaration statements
 
@@ -671,6 +677,7 @@ struct StructDecl : public Decl
     StructDecl*                     baseStructRef           = nullptr;  // Optional reference to base struct
     std::map<std::string, VarDecl*> systemValuesRef;                    // List of members with system value semantic (SV_...).
     std::vector<StructDecl*>        nestedStructDeclRefs;               // References to all nested structures within this structure.
+    std::set<StructDecl*>           parentStructDeclRefs;               // References to all structures that have a member variable with this structure type.
     std::set<VarDecl*>              shaderOutputVarDeclRefs;            // References to all variables from this structure that are used as entry point outputs.
 };
 

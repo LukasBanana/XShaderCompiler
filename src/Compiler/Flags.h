@@ -32,7 +32,7 @@ class Flags
         // Sets the specified flag only once and returns true if the flag has not already been set.
         inline bool SetOnce(unsigned int flag)
         {
-            if (!(*this)(flag))
+            if (!All(flag))
             {
                 *this << flag;
                 return true;
@@ -59,10 +59,22 @@ class Flags
             return *this;
         }
 
+        // Returns true if this flags instance has any of the specified flags.
+        inline bool Any(unsigned int flags) const
+        {
+            return ((bitMask_ & flags) != 0);
+        }
+
+        // Returns true if this flags instance has all of the specified flags.
+        inline bool All(unsigned int flags) const
+        {
+            return ((bitMask_ & flags) == flags);
+        }
+
         // Returns true if the specified flag is set.
         inline bool operator () (unsigned int flag) const
         {
-            return ((bitMask_ & flag) != 0);
+            return Any(flag);
         }
 
         // Returns the flags bit mask.

@@ -352,6 +352,23 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         if (!baseTypeDen || !IsRealType(baseTypeDen->dataType))
             Error(R_IllegalUseOfNormModifiers, ast->typeSpecifier.get());
     }
+
+    /* Decorate structure types with their parents */
+    if (auto parentStructDecl = ActiveStructDecl())
+    {
+        const auto& typeDen = ast->typeSpecifier->GetTypeDenoter()->GetAliased();
+        if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
+        {
+            if (auto structDecl = structTypeDen->structDeclRef)
+            {
+                /*
+                Add parent structure (active structure declaration)
+                as reference to set of parents of the variable's structure type
+                */
+                structDecl->parentStructDeclRefs.insert(parentStructDecl);
+            }
+        }
+    }
 }
 
 /* --- Statements --- */
@@ -1415,9 +1432,9 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOutStruct(FunctionDecl* funcDecl,
 
         /* Mark structure as shader input/output */
         if (input)
-            structDecl->flags << StructDecl::isShaderInput;
+            structDecl->AddFlagsRecursive(StructDecl::isShaderInput);
         else
-            structDecl->flags << StructDecl::isShaderOutput;
+            structDecl->AddFlagsRecursive(StructDecl::isShaderOutput);
     }
 }
 
