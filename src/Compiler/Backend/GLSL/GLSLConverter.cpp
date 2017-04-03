@@ -450,37 +450,42 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
-    /* Check if the expression must be extended for a struct c'tor */
-    const auto& typeDen = ast->typeSpecifier->GetTypeDenoter()->GetAliased();
-    if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
+    //TODO: maybe replace this if-condition with the removal of the recursive traversal "VISIT_DEFAULT(CastExpr)"?!
+    /* Check if this expression has already been converted */
+    if (ast->expr->Type() != AST::Types::SequenceExpr)
     {
-        if (auto structDecl = structTypeDen->structDeclRef)
+        /* Check if the expression must be extended for a struct c'tor */
+        const auto& typeDen = ast->typeSpecifier->GetTypeDenoter()->GetAliased();
+        if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
         {
-            /* Get the type denoter of all structure members */
-            std::vector<TypeDenoterPtr> memberTypeDens;
-            structDecl->CollectMemberTypeDenoters(memberTypeDens);
-
-            /* Convert sub expression for structure c'tor */
-            if (ast->expr->FindFirstOf(AST::Types::CallExpr))
+            if (auto structDecl = structTypeDen->structDeclRef)
             {
-                /* Generate temporary variable with call expression, and insert its declaration statement before the cast expression */
-                auto tempVarIdent           = MakeTempVarIdent();
-                auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(ast->expr->GetTypeDenoter());
-                auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, ast->expr);
-                auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
+                /* Get the type denoter of all structure members */
+                std::vector<TypeDenoterPtr> memberTypeDens;
+                structDecl->CollectMemberTypeDenoters(memberTypeDens);
 
-                ast->expr = ASTFactory::MakeConstructorListExpr(tempVarExpr, memberTypeDens);
+                /* Convert sub expression for structure c'tor */
+                if (ast->expr->FindFirstOf(AST::Types::CallExpr))
+                {
+                    /* Generate temporary variable with call expression, and insert its declaration statement before the cast expression */
+                    auto tempVarIdent           = MakeTempVarIdent();
+                    auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(ast->expr->GetTypeDenoter());
+                    auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, ast->expr);
+                    auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
 
-                InsertStmntBefore(tempVarDeclStmnt);
-            }
-            else
-            {
-                /* Generate list expression with N copies of the expression (where N is the number of struct members) */
-                ast->expr = ASTFactory::MakeConstructorListExpr(ast->expr, memberTypeDens);
+                    ast->expr = ASTFactory::MakeConstructorListExpr(tempVarExpr, memberTypeDens);
+
+                    InsertStmntBefore(tempVarDeclStmnt);
+                }
+                else
+                {
+                    /* Generate list expression with N copies of the expression (where N is the number of struct members) */
+                    ast->expr = ASTFactory::MakeConstructorListExpr(ast->expr, memberTypeDens);
+                }
             }
         }
     }
-    
+
     VISIT_DEFAULT(CastExpr);
 }
 
