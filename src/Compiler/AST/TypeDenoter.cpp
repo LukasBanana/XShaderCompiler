@@ -545,6 +545,15 @@ TypeDenoterPtr SamplerTypeDenoter::Copy() const
     return copy;
 }
 
+bool SamplerTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags) const
+{
+    /* Compare sampler types */
+    if (auto rhsSamplerTypeDen = rhs.GetAliased().As<SamplerTypeDenoter>())
+        return (samplerType == rhsSamplerTypeDen->samplerType);
+    else
+        return false;
+}
+
 AST* SamplerTypeDenoter::SymbolRef() const
 {
     return samplerDeclRef;

@@ -242,6 +242,8 @@ struct SamplerTypeDenoter : public TypeDenoter
     std::string ToString() const override;
     TypeDenoterPtr Copy() const override;
 
+    bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
+
     AST* SymbolRef() const override;
 
     SamplerType     samplerType     = SamplerType::Undefined;
