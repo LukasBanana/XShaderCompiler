@@ -624,6 +624,9 @@ struct StructDecl : public Decl
     // Returns the VarDecl AST node inside this struct decl for the specified identifier, or null if there is no such VarDecl.
     VarDecl* FetchVarDecl(const std::string& ident, const StructDecl** owner = nullptr) const;
 
+    // Returns the VarDecl AST node of the 'base' member variable, or null if there is no such VarDecl.
+    VarDecl* FetchBaseMember() const;
+
     // Returns the FunctionDecl AST node for the specified argument type denoter list (used to derive the overloaded function).
     FunctionDecl* FetchFunctionDecl(
         const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters,
@@ -842,7 +845,8 @@ struct VarDeclStmnt : public Stmnt
         FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
         FLAG( isParameter,      2 ), // This variable is a function parameter (flag should be set during parsing).
         FLAG( isSelfParameter,  3 ), // This variable is the 'self' parameter of a member function.
-        FLAG( isImplicitConst,  4 ), // This variable is implicitly declared as constant.
+        FLAG( isBaseMember,     4 ), // This variable is the 'base' member of a structure with inheritance.
+        FLAG( isImplicitConst,  5 ), // This variable is implicitly declared as constant.
     };
 
     // Implements Stmnt::CollectDeclIdents

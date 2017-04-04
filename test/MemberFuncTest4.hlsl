@@ -12,9 +12,10 @@ struct Base {
 	int a, b;
 };
 
-// Should translate to something like this:
-// "struct Sub { Base xsn_base; int a; };"
 struct Sub : Base {
+	int getCB() {
+		return c + b;
+	}
 	int a, c;
 };
 
@@ -28,6 +29,7 @@ float4 main() : COLOR {
 	s.a = 3;
 	s.c = 4;
 	
-	return float4(s.getA(), s.b, s.a, s.c);
+	return float4(s.getA(), s.b, s.a, s.getCB());
 }
+
 

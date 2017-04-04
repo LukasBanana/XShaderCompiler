@@ -111,6 +111,10 @@ class GLSLConverter : public Converter
         void ConvertEntryPointReturnStmnt(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const SequenceExpr& typeConstructor);
         void ConvertEntryPointReturnStmntToCodeBlock(StmntPtr& stmnt);
 
+        void ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const StructDecl* ownerStructDecl, const StructDecl* activeStructDecl);
+        void ConvertObjectPrefixSelfStruct(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
+        void ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
+
         /* ----- Unrolling ----- */
 
         void UnrollStmnts(std::vector<StmntPtr>& stmnts);

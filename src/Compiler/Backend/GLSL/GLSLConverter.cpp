@@ -237,6 +237,8 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         auto baseMemberType     = ASTFactory::MakeTypeSpecifier(baseMemberTypeDen);
         auto baseMember         = ASTFactory::MakeVarDeclStmnt(baseMemberType, GetNameMangling().namespacePrefix + g_stdNameBaseMember);
 
+        baseMember->flags << VarDeclStmnt::isBaseMember;
+
         ast->localStmnts.insert(ast->localStmnts.begin(), baseMember);
         ast->varMembers.insert(ast->varMembers.begin(), baseMember);
     }
@@ -497,27 +499,14 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
     {
         /* Convert prefix expression if it's the identifier of an entry-point struct instance */
         ConvertEntryPointStructPrefix(ast->prefixExpr, ast);
+
+        /* Convert prefix expression if the object refers to a member variable of a base structure */
+        ConvertObjectPrefixBaseStruct(ast->prefixExpr, ast);
     }
     else
     {
-        /* Is this object a member of the active owner structure (like 'this->memberVar')? */
-        if (auto selfParam = ActiveSelfParameter())
-        {
-            if (auto activeStructDecl = ActiveStructDecl())
-            {
-                if (auto varDecl = ast->FetchVarDecl())
-                {
-                    if (auto structDecl = varDecl->structDeclRef)
-                    {
-                        if (structDecl == activeStructDecl || structDecl->IsBaseOf(*activeStructDecl))
-                        {
-                            /* Make the 'self'-parameter the new prefix expression */
-                            ast->prefixExpr = ASTFactory::MakeObjectExpr(selfParam);
-                        }
-                    }
-                }
-            }
-        }
+        /* Convert prefix expression if the object refers to a member variable of a self structure */
+        ConvertObjectPrefixSelfStruct(ast->prefixExpr, ast);
     }
     
     VISIT_DEFAULT(ObjectExpr);
@@ -1160,6 +1149,59 @@ void GLSLConverter::ConvertEntryPointReturnStmntToCodeBlock(StmntPtr& stmnt)
         {
             /* Convert statement into a code block statement */
             stmnt = ASTFactory::MakeCodeBlockStmnt(stmnt);
+        }
+    }
+}
+
+void GLSLConverter::ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const StructDecl* ownerStructDecl, const StructDecl* activeStructDecl)
+{
+    /* Does this variable belong to its structure type directly, or to a base structure? */
+    if (ownerStructDecl && activeStructDecl)
+    {
+        if (ownerStructDecl == activeStructDecl)
+        {
+            if (auto selfParam = ActiveSelfParameter())
+            {
+                /* Make the 'self'-parameter the new prefix expression */
+                prefixExpr = ASTFactory::MakeObjectExpr(selfParam);
+            }
+        }
+        else if (ownerStructDecl->IsBaseOf(*activeStructDecl))
+        {
+            if (auto baseMember = activeStructDecl->FetchBaseMember())
+            {
+                /* Insert 'base' member object expression(s) */
+                prefixExpr = ASTFactory::MakeObjectExpr(prefixExpr, baseMember->ident.Original(), baseMember);
+            }
+        }
+    }
+}
+
+void GLSLConverter::ConvertObjectPrefixSelfStruct(ExprPtr& prefixExpr, ObjectExpr* objectExpr)
+{
+    /* Is this object a member of the active owner structure (like 'this->memberVar')? */
+    if (auto activeStructDecl = ActiveStructDecl())
+    {
+        if (auto varDecl = objectExpr->FetchVarDecl())
+        {
+            /* Insert 'self' or 'base' prefix if necessary */
+            ConvertObjectPrefixStructMember(prefixExpr, varDecl->structDeclRef, activeStructDecl);
+        }
+    }
+}
+
+void GLSLConverter::ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, ObjectExpr* objectExpr)
+{
+    const auto& prefixTypeDen = prefixExpr->GetTypeDenoter()->GetAliased();
+    if (auto prefixStructTypeDen = prefixTypeDen.As<StructTypeDenoter>())
+    {
+        if (auto activeStructDecl = prefixStructTypeDen->structDeclRef)
+        {
+            if (auto varDecl = objectExpr->FetchVarDecl())
+            {
+                /* Insert 'self' or 'base' prefix if necessary */
+                ConvertObjectPrefixStructMember(prefixExpr, varDecl->structDeclRef, activeStructDecl);
+            }
         }
     }
 }

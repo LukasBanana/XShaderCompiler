@@ -577,14 +577,7 @@ bool StructDecl::IsCastableTo(const BaseTypeDenoter& rhs) const
 
 VarDecl* StructDecl::FetchVarDecl(const std::string& ident, const StructDecl** owner) const
 {
-    /* Fetch symbol from base struct first */
-    if (baseStructRef)
-    {
-        if (auto symbol = baseStructRef->FetchVarDecl(ident, owner))
-            return symbol;
-    }
-
-    /* Now fetch symbol from members */
+    /* Fetch symbol from members first */
     for (const auto& varDeclStmnt : varMembers)
     {
         if (auto symbol = varDeclStmnt->FetchVarDecl(ident))
@@ -595,7 +588,22 @@ VarDecl* StructDecl::FetchVarDecl(const std::string& ident, const StructDecl** o
         }
     }
 
+    /* Now fetch symbol from base struct */
+    if (baseStructRef)
+    {
+        if (auto symbol = baseStructRef->FetchVarDecl(ident, owner))
+            return symbol;
+    }
+
     return nullptr;
+}
+
+VarDecl* StructDecl::FetchBaseMember() const
+{
+    if (!varMembers.empty() && varMembers.front()->flags(VarDeclStmnt::isBaseMember))
+        return varMembers.front()->varDecls.front().get();
+    else
+        return nullptr;
 }
 
 FunctionDecl* StructDecl::FetchFunctionDecl(
