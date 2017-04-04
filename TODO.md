@@ -19,6 +19,7 @@ Known Issues
 | Implicit type conversion | **in progress** |
 | Intrinsic argument type matching | Type matching is incomplete for intrinsic function calls. **in progress** |
 | Struct used as input *and* ouput | Structures can currently not be used for shader input and output semantics simultaneously. |
+| Unicode | The compiler uses the C++ ASCII file streams, that are not aware of unicode characters, neither in the file contents, nor in their filenames. |
 
 
 Requested Features
