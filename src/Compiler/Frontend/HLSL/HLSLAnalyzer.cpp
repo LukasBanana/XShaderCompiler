@@ -183,6 +183,8 @@ IMPLEMENT_VISIT_PROC(StructDecl)
             parentStruct->nestedStructDeclRefs.push_back(ast);
     }
 
+    //TODO: member variables must not be removed because of shadowing a base member!
+    #if 0
     /*
     Remove member variables that override members from base structure;
     This must be done before variables are registerd in symbol table!
@@ -218,6 +220,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
                 ++it;
         }
     }
+    #endif
 
     /* Register struct identifier in symbol table */
     Register(ast->ident, ast);

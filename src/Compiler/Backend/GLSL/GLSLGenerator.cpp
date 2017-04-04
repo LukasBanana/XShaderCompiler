@@ -2618,8 +2618,11 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* structDecl, bool endWith
 
 void GLSLGenerator::WriteStructDeclMembers(StructDecl* structDecl)
 {
+    //TODO: must be replaced by member variable "base", created by the GLSLConverter!
+    #if 0
     if (structDecl->baseStructRef)
         WriteStructDeclMembers(structDecl->baseStructRef);
+    #endif
     Visit(structDecl->varMembers);
 }
 

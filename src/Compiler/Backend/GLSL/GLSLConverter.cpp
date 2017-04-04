@@ -21,6 +21,15 @@ namespace Xsc
 
 
 /*
+ * Internal members
+ */
+
+static const char* g_stdNameSelfParam   = "self";
+static const char* g_stdNameBaseMember  = "base";
+static const char* g_stdNameDummy       = "dummy";
+
+
+/*
  * Internal structures
  */
 
@@ -221,6 +230,17 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     LabelAnonymousDecl(ast);
     RenameReservedKeyword(ast->ident);
 
+    if (auto baseStruct = ast->baseStructRef)
+    {
+        /* Insert member of 'base' object */
+        auto baseMemberTypeDen  = std::make_shared<StructTypeDenoter>(baseStruct);
+        auto baseMemberType     = ASTFactory::MakeTypeSpecifier(baseMemberTypeDen);
+        auto baseMember         = ASTFactory::MakeVarDeclStmnt(baseMemberType, GetNameMangling().namespacePrefix + g_stdNameBaseMember);
+
+        ast->localStmnts.insert(ast->localStmnts.begin(), baseMember);
+        ast->varMembers.insert(ast->varMembers.begin(), baseMember);
+    }
+
     PushStructDecl(ast);
     OpenScope();
     {
@@ -236,7 +256,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     if (ast->NumMemberVariables(true) == 0)
     {
         /* Add dummy member if the structure is empty (GLSL does not support empty structures) */
-        auto dummyMember = ASTFactory::MakeVarDeclStmnt(DataType::Int, GetNameMangling().temporaryPrefix + "dummy");
+        auto dummyMember = ASTFactory::MakeVarDeclStmnt(DataType::Int, GetNameMangling().temporaryPrefix + g_stdNameDummy);
         ast->varMembers.push_back(dummyMember);
     }
 }
@@ -685,7 +705,7 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
             /* Insert parameter of 'self' object */
             auto selfParamTypeDen   = std::make_shared<StructTypeDenoter>(structDecl);
             auto selfParamType      = ASTFactory::MakeTypeSpecifier(selfParamTypeDen);
-            auto selfParam          = ASTFactory::MakeVarDeclStmnt(selfParamType, GetNameMangling().namespacePrefix + "self");
+            auto selfParam          = ASTFactory::MakeVarDeclStmnt(selfParamType, GetNameMangling().namespacePrefix + g_stdNameSelfParam);
 
             selfParam->flags << VarDeclStmnt::isSelfParameter;
 
