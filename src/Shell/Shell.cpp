@@ -162,10 +162,18 @@ void Shell::PopState()
  * ======= Private: =======
  */
 
-static std::string ExtractFilename(const std::string& filename)
+// Returns the filename without its file extension from the specified string.
+static std::string GetFilePart(const std::string& s)
 {
-    auto pos = filename.find_last_of('.');
-    return (pos == std::string::npos ? filename : filename.substr(0, pos));
+    const auto pos = s.find_last_of('.');
+    return (pos == std::string::npos ? s : s.substr(0, pos));
+}
+
+// Returns the path without its filename from the specified string.
+static std::string GetPathPart(const std::string& s)
+{
+    const auto pos = s.find_last_of("\\/");
+    return (pos == std::string::npos ? "" : s.substr(0, pos));
 }
 
 static std::string TargetToExtension(const ShaderTarget shaderTarget)
@@ -185,7 +193,7 @@ static std::string TargetToExtension(const ShaderTarget shaderTarget)
 
 std::string Shell::GetDefaultOutputFilename(const std::string& filename) const
 {
-    return (ExtractFilename(filename) + "." + state_.inputDesc.entryPoint + "." + TargetToExtension(state_.inputDesc.shaderTarget));
+    return (GetFilePart(filename) + "." + state_.inputDesc.entryPoint + "." + TargetToExtension(state_.inputDesc.shaderTarget));
 }
 
 void Shell::Compile(const std::string& filename)
@@ -235,6 +243,11 @@ void Shell::Compile(const std::string& filename)
         
         includeHandler.searchPaths = state_.searchPaths;
         state_.inputDesc.includeHandler = &includeHandler;
+
+        /* Add file path to include paths */
+        const auto inputPath = GetPathPart(filename);
+        if (!inputPath.empty())
+            includeHandler.searchPaths.push_back(inputPath);
 
         /* Show compilation/validation status */
         if (state_.verbose)

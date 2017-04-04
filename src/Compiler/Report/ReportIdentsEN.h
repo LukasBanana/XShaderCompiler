@@ -428,7 +428,7 @@ DECL_REPORT( IllegalRValueAssignment,           "illegal assignment to r-value e
 DECL_REPORT( IllegalNonStaticAccessToMember,    "illegal non-static access to static structure member[ '{0}']"                                                  );
 DECL_REPORT( IllegalStaticAccessToMember,       "illegal static access to non-static structure member[ '{0}']"                                                  );
 DECL_REPORT( IllegalNonStaticAccessToType,      "illegal non-static access to type[ '{0}']"                                                                     );
-DECL_REPORT( IllegalStaticAccessToNonType,      "illegal static access to non-type expression"                                                                  );
+DECL_REPORT( IllegalStaticAccessToNonType,      "illegal static access to non-typename expression"                                                              );
 DECL_REPORT( IllegalStaticIntrinsicCall,        "illegal static call to intrinsic[ '{0}']"                                                                      );
 DECL_REPORT( IllegalStaticFuncCall,             "illegal static call to function[ '{0}']"                                                                       );
 DECL_REPORT( IllegalNonStaticFuncCall,          "illegal call to static function[ '{0}']"                                                                       );
