@@ -780,10 +780,14 @@ bool StructDecl::IsBaseOf(const StructDecl& subStructDecl) const
 {
     if (subStructDecl.baseStructRef)
     {
+        /* Check if this structure is a direct base of the specified structure */
         if (subStructDecl.baseStructRef == this)
             return true;
         else
+        {
+            /* Otherwise, repeat the check for the base of the specified structure */
             return IsBaseOf(*subStructDecl.baseStructRef);
+        }
     }
     return false;
 }

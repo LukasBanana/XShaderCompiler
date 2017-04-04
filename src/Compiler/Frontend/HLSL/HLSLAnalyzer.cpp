@@ -202,7 +202,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
                 {
                     /* Report a warning (if enabled) */
                     if (WarnEnabled(Warnings::DeclarationShadowing))
-                        Warning(R_VariableOverridesMemberOfBase(varDecl->ident, varDeclOwner->ToString()), varDecl);
+                        Warning(R_DeclShadowsMemberOfBase(varDecl->ident, varDeclOwner->ToString()), varDecl);
 
                     /* Remove duplicate variable from structure */
                     itVar = varDeclStmnt->varDecls.erase(itVar);
