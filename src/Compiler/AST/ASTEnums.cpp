@@ -1093,6 +1093,7 @@ std::string SemanticToString(const Semantic t)
         CASE_TO_STRING( DepthLessEqual         );
         CASE_TO_STRING( DispatchThreadID       );
         CASE_TO_STRING( DomainLocation         );
+        CASE_TO_STRING( FragCoord              );
         CASE_TO_STRING( GroupID                );
         CASE_TO_STRING( GroupIndex             );
         CASE_TO_STRING( GroupThreadID          );
@@ -1102,7 +1103,7 @@ std::string SemanticToString(const Semantic t)
         CASE_TO_STRING( InstanceID             );
         CASE_TO_STRING( IsFrontFace            );
         CASE_TO_STRING( OutputControlPointID   );
-        CASE_TO_STRING( FragCoord              );
+        CASE_TO_STRING( PointSize              );
         CASE_TO_STRING( PrimitiveID            );
         CASE_TO_STRING( RenderTargetArrayIndex );
         CASE_TO_STRING( SampleIndex            );

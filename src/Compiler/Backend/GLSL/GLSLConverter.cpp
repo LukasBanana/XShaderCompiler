@@ -617,8 +617,6 @@ bool GLSLConverter::CompareFuncSignatures(const FunctionDecl& lhs, const Functio
 
 bool GLSLConverter::ConvertVarDeclType(VarDecl& varDecl)
 {
-    using T = Semantic;
-
     if (varDecl.semantic.IsSystemValue())
     {
         /* Convert data type for system value semantics */
@@ -629,7 +627,6 @@ bool GLSLConverter::ConvertVarDeclType(VarDecl& varDecl)
             return true;
         }
     }
-
     return false;
 }
 
