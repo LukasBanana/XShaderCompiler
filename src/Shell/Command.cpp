@@ -263,14 +263,14 @@ void OutputCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> IncludePathCommand::Idents() const
 {
-    return { { "-I" }, { "--include-path" } };
+    return { { "-I" }, { "--include" } };
 }
 
 HelpDescriptor IncludePathCommand::Help() const
 {
     return
     {
-        "-I, --include-path PATH",
+        "-I, --include PATH",
         "Adds PATH to the search include paths",
         HelpCategory::Main
     };
