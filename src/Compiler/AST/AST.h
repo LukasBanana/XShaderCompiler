@@ -621,9 +621,8 @@ struct StructDecl : public Decl
     // Returns true if this structure type is castable to the specified base type denoter.
     bool IsCastableTo(const BaseTypeDenoter& rhs) const;
 
-    //TODO: rename to "FetchVarDecl"
     // Returns the VarDecl AST node inside this struct decl for the specified identifier, or null if there is no such VarDecl.
-    VarDecl* Fetch(const std::string& ident, const StructDecl** owner = nullptr) const;
+    VarDecl* FetchVarDecl(const std::string& ident, const StructDecl** owner = nullptr) const;
 
     // Returns the FunctionDecl AST node for the specified argument type denoter list (used to derive the overloaded function).
     FunctionDecl* FetchFunctionDecl(

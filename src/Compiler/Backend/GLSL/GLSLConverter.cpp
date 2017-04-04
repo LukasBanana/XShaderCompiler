@@ -428,7 +428,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
 //TODO:
 //  move this to "ExprConverter" class,
-//  and make a correct conversion of "CastExpr" for a struct-constructor (don't use list expression here)
+//  and make a correct conversion of "CastExpr" for a struct-constructor (don't use SequenceExpr here)
 #if 1
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)

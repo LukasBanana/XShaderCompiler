@@ -575,12 +575,12 @@ bool StructDecl::IsCastableTo(const BaseTypeDenoter& rhs) const
     return true;
 }
 
-VarDecl* StructDecl::Fetch(const std::string& ident, const StructDecl** owner) const
+VarDecl* StructDecl::FetchVarDecl(const std::string& ident, const StructDecl** owner) const
 {
     /* Fetch symbol from base struct first */
     if (baseStructRef)
     {
-        if (auto symbol = baseStructRef->Fetch(ident, owner))
+        if (auto symbol = baseStructRef->FetchVarDecl(ident, owner))
             return symbol;
     }
 

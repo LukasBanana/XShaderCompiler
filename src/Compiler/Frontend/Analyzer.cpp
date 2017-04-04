@@ -147,7 +147,7 @@ AST* Analyzer::Fetch(const std::string& ident, const AST* ast)
         auto structDecl = ActiveFunctionStructDecl();
         if (structDecl)
         {
-            if (auto symbol = structDecl->Fetch(ident))
+            if (auto symbol = structDecl->FetchVarDecl(ident))
                 return symbol;
         }
 
@@ -283,7 +283,7 @@ VarDecl* Analyzer::FetchFromStruct(const StructTypeDenoter& structTypeDenoter, c
 {
     if (auto structDecl = structTypeDenoter.structDeclRef)
     {
-        if (auto symbol = structDecl->Fetch(ident))
+        if (auto symbol = structDecl->FetchVarDecl(ident))
             return symbol;
         else
             ErrorUndeclaredIdent(ident, structDecl->ToString(), structDecl->FetchSimilar(ident), ast);
@@ -311,7 +311,7 @@ FunctionDecl* Analyzer::FetchFunctionDeclFromStruct(
                 else
                 {
                     /* Check if member is declared in structure, but does not name a function */
-                    if (structDecl->Fetch(ident) != nullptr)
+                    if (structDecl->FetchVarDecl(ident) != nullptr)
                         Error(R_IdentIsNotFunc(ident), ast);
                     else
                     {
