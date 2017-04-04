@@ -852,7 +852,7 @@ struct VarDeclStmnt : public Stmnt
     std::string ToString(bool useVarNames = true, bool isParam = false) const;
     
     // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
-    VarDecl* Fetch(const std::string& ident) const;
+    VarDecl* FetchVarDecl(const std::string& ident) const;
 
     // Returns true if this is an input parameter.
     bool IsInput() const;

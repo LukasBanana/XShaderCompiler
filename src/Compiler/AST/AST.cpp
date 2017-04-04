@@ -587,7 +587,7 @@ VarDecl* StructDecl::FetchVarDecl(const std::string& ident, const StructDecl** o
     /* Now fetch symbol from members */
     for (const auto& varDeclStmnt : varMembers)
     {
-        if (auto symbol = varDeclStmnt->Fetch(ident))
+        if (auto symbol = varDeclStmnt->FetchVarDecl(ident))
         {
             if (owner)
                 *owner = this;
@@ -1214,7 +1214,7 @@ std::string VarDeclStmnt::ToString(bool useVarNames, bool isParam) const
     return s;
 }
 
-VarDecl* VarDeclStmnt::Fetch(const std::string& ident) const
+VarDecl* VarDeclStmnt::FetchVarDecl(const std::string& ident) const
 {
     for (const auto& var : varDecls)
     {
