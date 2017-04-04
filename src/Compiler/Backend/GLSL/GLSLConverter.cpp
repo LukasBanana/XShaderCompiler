@@ -1000,21 +1000,26 @@ void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
             }
             else
             {
+                /* Get structure from prefix expression or active structure declaration */
+                StructDecl* activeStructDecl = nullptr;
+
                 if (ast->prefixExpr)
                 {
-                    /* Move prefix expression as argument into the function call */
-                    ast->PushArgumentFront(std::move(ast->prefixExpr));
+                    const auto& typeDen = ast->prefixExpr->GetTypeDenoter()->GetAliased();
+                    if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
+                        activeStructDecl = structTypeDen->structDeclRef;
                 }
                 else
-                {
-                    if (auto selfParam = ActiveSelfParameter())
-                    {
-                        /* Insert current 'self'-parameter as argument into the function call */
-                        ast->PushArgumentFront(ASTFactory::MakeObjectExpr(selfParam));
-                    }
-                    else
-                        RuntimeErr(R_MissingSelfParamForMemberFunc(funcDecl->ToString()), ast);
-                }
+                    activeStructDecl = ActiveStructDecl();
+
+                /* Insert 'self' or 'base' prefix if necessary */
+                ConvertObjectPrefixStructMember(ast->prefixExpr, funcDecl->structDeclRef, activeStructDecl);
+
+                /* Move prefix expression as argument into the function call */
+                if (ast->prefixExpr)
+                    ast->PushArgumentFront(std::move(ast->prefixExpr));
+                else
+                    RuntimeErr(R_MissingSelfParamForMemberFunc(funcDecl->ToString()), ast);
             }
         }
     }
