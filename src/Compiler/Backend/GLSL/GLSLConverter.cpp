@@ -452,43 +452,39 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
-    //TODO: maybe replace this if-condition with the removal of the recursive traversal "VISIT_DEFAULT(CastExpr)"?!
-    /* Check if this expression has already been converted */
-    if (ast->expr->Type() != AST::Types::SequenceExpr)
+    /* Call default visitor first, then convert to avoid multiple conversions on its sub expressions */
+    VISIT_DEFAULT(CastExpr);
+
+    /* Check if the expression must be extended for a struct c'tor */
+    const auto& typeDen = ast->typeSpecifier->GetTypeDenoter()->GetAliased();
+    if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
     {
-        /* Check if the expression must be extended for a struct c'tor */
-        const auto& typeDen = ast->typeSpecifier->GetTypeDenoter()->GetAliased();
-        if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
+        if (auto structDecl = structTypeDen->structDeclRef)
         {
-            if (auto structDecl = structTypeDen->structDeclRef)
+            /* Get the type denoter of all structure members */
+            std::vector<TypeDenoterPtr> memberTypeDens;
+            structDecl->CollectMemberTypeDenoters(memberTypeDens, false);
+
+            /* Convert sub expression for structure c'tor */
+            if (ast->expr->FindFirstOf(AST::Types::CallExpr))
             {
-                /* Get the type denoter of all structure members */
-                std::vector<TypeDenoterPtr> memberTypeDens;
-                structDecl->CollectMemberTypeDenoters(memberTypeDens);
+                /* Generate temporary variable with call expression, and insert its declaration statement before the cast expression */
+                auto tempVarIdent           = MakeTempVarIdent();
+                auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(ast->expr->GetTypeDenoter());
+                auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, ast->expr);
+                auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
 
-                /* Convert sub expression for structure c'tor */
-                if (ast->expr->FindFirstOf(AST::Types::CallExpr))
-                {
-                    /* Generate temporary variable with call expression, and insert its declaration statement before the cast expression */
-                    auto tempVarIdent           = MakeTempVarIdent();
-                    auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(ast->expr->GetTypeDenoter());
-                    auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, ast->expr);
-                    auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
+                ast->expr = ASTFactory::MakeConstructorListExpr(tempVarExpr, memberTypeDens);
 
-                    ast->expr = ASTFactory::MakeConstructorListExpr(tempVarExpr, memberTypeDens);
-
-                    InsertStmntBefore(tempVarDeclStmnt);
-                }
-                else
-                {
-                    /* Generate list expression with N copies of the expression (where N is the number of struct members) */
-                    ast->expr = ASTFactory::MakeConstructorListExpr(ast->expr, memberTypeDens);
-                }
+                InsertStmntBefore(tempVarDeclStmnt);
+            }
+            else
+            {
+                /* Generate list expression with N copies of the expression (where N is the number of struct members) */
+                ast->expr = ASTFactory::MakeConstructorListExpr(ast->expr, memberTypeDens);
             }
         }
     }
-
-    VISIT_DEFAULT(CastExpr);
 }
 
 #endif
@@ -1168,10 +1164,16 @@ void GLSLConverter::ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const S
         }
         else if (ownerStructDecl->IsBaseOf(*activeStructDecl))
         {
-            if (auto baseMember = activeStructDecl->FetchBaseMember())
+            while (activeStructDecl && activeStructDecl != ownerStructDecl)
             {
-                /* Insert 'base' member object expression(s) */
-                prefixExpr = ASTFactory::MakeObjectExpr(prefixExpr, baseMember->ident.Original(), baseMember);
+                if (auto baseMember = activeStructDecl->FetchBaseMember())
+                {
+                    /* Insert 'base' member object expression(s) */
+                    prefixExpr = ASTFactory::MakeObjectExpr(prefixExpr, baseMember->ident.Original(), baseMember);
+                }
+
+                /* Check for next base structure */
+                activeStructDecl = activeStructDecl->baseStructRef;
             }
         }
     }

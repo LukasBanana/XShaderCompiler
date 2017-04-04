@@ -731,11 +731,11 @@ std::size_t StructDecl::NumMemberFunctions(bool onlyNonStaticMembers) const
     return n;
 }
 
-void StructDecl::CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens) const
+void StructDecl::CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens, bool includeBaseStructs) const
 {
     /* First collect type denoters from base structure */
-    if (baseStructRef)
-        baseStructRef->CollectMemberTypeDenoters(memberTypeDens);
+    if (baseStructRef && includeBaseStructs)
+        baseStructRef->CollectMemberTypeDenoters(memberTypeDens, includeBaseStructs);
 
     /* Collect type denoters from this structure */
     for (const auto& member : varMembers)

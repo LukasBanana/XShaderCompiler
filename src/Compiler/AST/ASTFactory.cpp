@@ -261,7 +261,7 @@ static ExprPtr MakeConstructorListExprPrimarySingle(const ExprPtr& expr, const T
         {
             /* Get the type denoter of all structure members */
             std::vector<TypeDenoterPtr> memberTypeDens;
-            structDecl->CollectMemberTypeDenoters(memberTypeDens);
+            structDecl->CollectMemberTypeDenoters(memberTypeDens, false);
 
             /* Generate list expression with N copies of the literal (where N is the number of struct members) */
             return MakeCastExpr(typeDen, MakeConstructorListExpr(expr, memberTypeDens));

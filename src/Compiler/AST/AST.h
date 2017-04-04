@@ -648,8 +648,8 @@ struct StructDecl : public Decl
     // Returns the total number of member functions (including all base structures).
     std::size_t NumMemberFunctions(bool onlyNonStaticMembers = false) const;
 
-    // Returns a list with the type denoters of all members (including all base structures).
-    void CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens) const;
+    // Returns a list with the type denoters of all members (including all base structures, if enabled).
+    void CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens, bool includeBaseStructs = true) const;
 
     // Iterates over each VarDecl AST node (included nested structures, and members in base structures).
     void ForEachVarDecl(const VarDeclIteratorFunctor& iterator, bool includeBaseStructs = true);
