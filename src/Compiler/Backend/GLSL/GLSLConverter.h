@@ -89,11 +89,13 @@ class GLSLConverter : public Converter
         static bool ConvertVarDeclType(VarDecl& varDecl);
         static bool ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataType dataType);
 
-        /* ----- Conversion ----- */
+        /* ----- Function declaration ----- */
 
         void ConvertFunctionDecl(FunctionDecl* ast);
         void ConvertFunctionDeclDefault(FunctionDecl* ast);
         void ConvertFunctionDeclEntryPoint(FunctionDecl* ast);
+
+        /* ----- Call expressions ----- */
 
         void ConvertIntrinsicCall(CallExpr* ast);
         void ConvertIntrinsicCallSaturate(CallExpr* ast);
@@ -104,6 +106,8 @@ class GLSLConverter : public Converter
 
         void ConvertFunctionCall(CallExpr* ast);
 
+        /* ----- Entry point ----- */
+
         void ConvertEntryPointStructPrefix(ExprPtr& expr, ObjectExpr* objectExpr);
         void ConvertEntryPointStructPrefixObject(ExprPtr& expr, ObjectExpr* prefixExpr, ObjectExpr* objectExpr);
         void ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr* prefixExpr, ObjectExpr* objectExpr);
@@ -111,8 +115,13 @@ class GLSLConverter : public Converter
         void ConvertEntryPointReturnStmnt(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const SequenceExpr& typeConstructor);
         void ConvertEntryPointReturnStmntToCodeBlock(StmntPtr& stmnt);
 
+        /* ----- Object expressions ----- */
+
+        void ConvertObjectExpr(ObjectExpr* objectExpr);
+        void ConvertObjectExprStaticVar(ObjectExpr* objectExpr);
+        void ConvertObjectExprDefault(ObjectExpr* objectExpr);
         void ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const StructDecl* ownerStructDecl, const StructDecl* activeStructDecl);
-        void ConvertObjectPrefixSelfStruct(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
+        void ConvertObjectPrefixSelfParam(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
         void ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
         void ConvertObjectPrefixNamespace(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
         void ConvertObjectPrefixNamespaceStruct(ObjectExpr* prefixObjectExpr, ObjectExpr* objectExpr, const StructDecl* baseStructDecl, const StructDecl* activeStructDecl);

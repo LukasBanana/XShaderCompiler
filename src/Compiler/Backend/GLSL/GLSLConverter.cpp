@@ -238,6 +238,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         auto baseMember         = ASTFactory::MakeVarDeclStmnt(baseMemberType, GetNameMangling().namespacePrefix + g_stdNameBaseMember);
 
         baseMember->flags << VarDeclStmnt::isBaseMember;
+        baseMember->varDecls.front()->structDeclRef = ast;
 
         ast->localStmnts.insert(ast->localStmnts.begin(), baseMember);
         ast->varMembers.insert(ast->varMembers.begin(), baseMember);
@@ -491,22 +492,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
-    /* Convert prefix expression if it's a base structure namespace expression (e.g. "obj.BaseStruct::member" -> "obj.xsn_base.member") */
-    if (ast->prefixExpr && ast->isStatic)
-        ConvertObjectPrefixNamespace(ast->prefixExpr, ast);
-
-    /* Convert prefix expression if it's the identifier of an entry-point struct instance */
-    if (ast->prefixExpr)
-        ConvertEntryPointStructPrefix(ast->prefixExpr, ast);
-
-    /* Convert prefix expression if the object refers to a member variable of a base structure */
-    if (ast->prefixExpr)
-        ConvertObjectPrefixBaseStruct(ast->prefixExpr, ast);
-
-    /* Convert prefix expression if the object refers to a member variable of a self structure */
-    if (!ast->prefixExpr)
-        ConvertObjectPrefixSelfStruct(ast->prefixExpr, ast);
-    
+    ConvertObjectExpr(ast);
     VISIT_DEFAULT(ObjectExpr);
 }
 
@@ -678,7 +664,7 @@ bool GLSLConverter::ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataTy
     return false;
 }
 
-/* ----- Conversion ----- */
+/* ----- Function declaration ----- */
 
 void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
 {
@@ -759,6 +745,8 @@ void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
     /* Default visitor */
     Visitor::VisitFunctionDecl(ast, nullptr);
 }
+
+/* ----- Call expressions ----- */
 
 void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
 {
@@ -1027,6 +1015,8 @@ void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
     }
 }
 
+/* ----- Entry point ----- */
+
 /*
 ~~~~~~~~~~~~~~~ TODO: refactor this ~~~~~~~~~~~~~~~
 */
@@ -1156,6 +1146,53 @@ void GLSLConverter::ConvertEntryPointReturnStmntToCodeBlock(StmntPtr& stmnt)
     }
 }
 
+/* ----- Object expressions ----- */
+
+void GLSLConverter::ConvertObjectExpr(ObjectExpr* objectExpr)
+{
+    /* Does this object expression refer to a static variable declaration? */
+    if (auto varDecl = objectExpr->FetchVarDecl())
+    {
+        if (varDecl->IsStatic())
+            ConvertObjectExprStaticVar(objectExpr);
+        else
+            ConvertObjectExprDefault(objectExpr);
+    }
+    else
+        ConvertObjectExprDefault(objectExpr);
+}
+
+void GLSLConverter::ConvertObjectExprStaticVar(ObjectExpr* objectExpr)
+{
+    /* Remove prefix from static variable access */
+    objectExpr->prefixExpr.reset();
+}
+
+void GLSLConverter::ConvertObjectExprDefault(ObjectExpr* objectExpr)
+{
+    /* Convert prefix expression if it's the identifier of an entry-point struct instance */
+    if (objectExpr->prefixExpr)
+        ConvertEntryPointStructPrefix(objectExpr->prefixExpr, objectExpr);
+
+    if (objectExpr->prefixExpr)
+    {
+        if (objectExpr->isStatic)
+        {
+            /* Convert prefix expression if it's a base structure namespace expression (e.g. "obj.BaseStruct::member" -> "obj.xsn_base.member") */
+            ConvertObjectPrefixNamespace(objectExpr->prefixExpr, objectExpr);
+        }
+        else
+        {
+            /* Convert prefix expression if the object refers to a member variable of a base structure */
+            ConvertObjectPrefixBaseStruct(objectExpr->prefixExpr, objectExpr);
+        }
+    }
+
+    /* Add "self"-parameter to front, if the variable refers to a member of the active structure */
+    if (!objectExpr->prefixExpr)
+        ConvertObjectPrefixSelfParam(objectExpr->prefixExpr, objectExpr);
+}
+
 void GLSLConverter::ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const StructDecl* ownerStructDecl, const StructDecl* activeStructDecl)
 {
     /* Does this variable belong to its structure type directly, or to a base structure? */
@@ -1186,7 +1223,7 @@ void GLSLConverter::ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const S
     }
 }
 
-void GLSLConverter::ConvertObjectPrefixSelfStruct(ExprPtr& prefixExpr, ObjectExpr* objectExpr)
+void GLSLConverter::ConvertObjectPrefixSelfParam(ExprPtr& prefixExpr, ObjectExpr* objectExpr)
 {
     /* Is this object a member of the active owner structure (like 'this->memberVar')? */
     if (auto activeStructDecl = ActiveStructDecl())
@@ -1194,7 +1231,14 @@ void GLSLConverter::ConvertObjectPrefixSelfStruct(ExprPtr& prefixExpr, ObjectExp
         if (auto varDecl = objectExpr->FetchVarDecl())
         {
             /* Insert 'self' or 'base' prefix if necessary */
-            ConvertObjectPrefixStructMember(prefixExpr, varDecl->structDeclRef, activeStructDecl);
+            if (varDecl->structDeclRef == activeStructDecl)
+            {
+                if (auto selfParam = ActiveSelfParameter())
+                {
+                    /* Make the 'self'-parameter the new prefix expression */
+                    prefixExpr = ASTFactory::MakeObjectExpr(selfParam);
+                }
+            }
         }
     }
 }
