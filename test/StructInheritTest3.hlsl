@@ -11,7 +11,7 @@ struct A {
 struct B : A {
 	int a;
 	int get2() { return a; }
-	int get3() { return A::a; }        // Access to local member of base "A"
+	int get3() { return A::a; }        // Access to non-static member of base "A"
 	int get4() { return A::static_a; } // Access to static member of base "A"
 };
 
