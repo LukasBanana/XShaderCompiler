@@ -916,12 +916,6 @@ void GLSLGenerator::WriteComment(const std::string& text)
 
         auto line = (end < text.size() ? text.substr(start, end - start) : text.substr(start));
 
-        #if 0
-        /* Get line boundaries */
-        bool firstLine  = (start == 0);
-        bool lastLine   = (end == std::string::npos);
-        #endif
-
         /* Write comment line */
         BeginLn();
         {
@@ -1642,6 +1636,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
                 EndLn();
             }
         }
+        //TODO: remove this
         #if 0
         else if (entryPoint->paramStructs.empty())
         {
@@ -2603,7 +2598,7 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* structDecl, bool endWith
     WriteScopeOpen(false, endWithSemicolon);
     BeginSep();
     {
-        WriteStructDeclMembers(structDecl);
+        Visit(structDecl->varMembers);
     }
     EndSep();
     WriteScopeClose();
@@ -2614,16 +2609,6 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* structDecl, bool endWith
     WriteStmntList(structDecl->funcMembers);
 
     return true;
-}
-
-void GLSLGenerator::WriteStructDeclMembers(StructDecl* structDecl)
-{
-    //TODO: must be replaced by member variable "base", created by the GLSLConverter!
-    #if 0
-    if (structDecl->baseStructRef)
-        WriteStructDeclMembers(structDecl->baseStructRef);
-    #endif
-    Visit(structDecl->varMembers);
 }
 
 /* ----- BufferDecl ----- */

@@ -257,7 +257,6 @@ class GLSLGenerator : public Generator
 
         bool WriteStructDecl(StructDecl* structDecl, bool writeSemicolon, bool allowNestedStruct = false);
         bool WriteStructDeclStandard(StructDecl* structDecl, bool endWithSemicolon);
-        void WriteStructDeclMembers(StructDecl* structDecl);
 
         /* ----- BufferDecl ----- */
 
