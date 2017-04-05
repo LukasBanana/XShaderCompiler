@@ -1017,12 +1017,12 @@ void HLSLAnalyzer::AnalyzeObjectExpr(ObjectExpr* expr, PrefixArgs* args)
             if (args != nullptr && args->inIsPostfixStatic && !expr->isStatic)
             {
                 /* Analyze object expression as base structure namespace */
-                AnalyzeObjectExprBaseStructDeclFromStruct(expr, args, *structTypeDen);
+                AnalyzeObjectExprBaseStructDeclFromStruct(expr, *args, *structTypeDen);
             }
             else
             {
                 /* Analyze object expression as structure member */
-                AnalyzeObjectExprVarDeclFromStruct(expr, &prefixArgs, *structTypeDen);
+                AnalyzeObjectExprVarDeclFromStruct(expr, prefixArgs.outPrefixBaseStruct, *structTypeDen);
             }
         }
         else if (prefixTypeDen.IsBase())
@@ -1052,32 +1052,53 @@ void HLSLAnalyzer::AnalyzeObjectExpr(ObjectExpr* expr, PrefixArgs* args)
     }
 }
 
-void HLSLAnalyzer::AnalyzeObjectExprVarDeclFromStruct(ObjectExpr* expr, const PrefixArgs* inputArgs, const StructTypeDenoter& structTypeDen)
+void HLSLAnalyzer::AnalyzeObjectExprVarDeclFromStruct(ObjectExpr* expr, StructDecl* baseStructDecl, const StructTypeDenoter& structTypeDen)
 {
-    if (inputArgs && inputArgs->outPrefixBaseStruct)
+    if (baseStructDecl)
     {
         /* Fetch struct member variable declaration from next identifier */
-        expr->symbolRef = FetchVarDeclFromStruct(inputArgs->outPrefixBaseStruct, expr->ident, expr);
+        expr->symbolRef = FetchVarDeclFromStruct(baseStructDecl, expr->ident, expr);
+
+        /* Now check, if the referenced symbol can be accessed from the current context */
+        if (expr->symbolRef)
+        {
+            if (auto varDecl = expr->symbolRef->As<VarDecl>())
+            {
+                if (!varDecl->IsStatic())
+                {
+                    /* Check if the referenced symbol is a non-static member variable of a structure, that is a base to the active structure */
+                    if (auto activeStructDecl = ActiveStructDecl())
+                    {
+                        if (baseStructDecl->IsBaseOf(activeStructDecl, true))
+                            return;
+                    }
+
+                    /* Check if the prefix is a base structure namespace expression */
+                    if (expr->prefixExpr && expr->prefixExpr->flags(ObjectExpr::isBaseStructNamespace))
+                        return;
+                }
+            }
+        }
     }
     else
     {
         /* Fetch struct member variable declaration from next identifier */
         expr->symbolRef = FetchVarDeclFromStruct(structTypeDen, expr->ident, expr);
+    }
 
-        /* Check if struct member and identifier are both static or non-static */
-        if (expr->symbolRef && expr->prefixExpr)
+    /* Check if struct member and identifier are both static or non-static */
+    if (expr->symbolRef && expr->prefixExpr)
+    {
+        /* Check if static/non-static access is allowed */
+        if (AnalyzeStaticAccessExpr(expr->prefixExpr.get(), expr->isStatic, expr))
         {
-            /* Check if static/non-static access is allowed */
-            if (AnalyzeStaticAccessExpr(expr->prefixExpr.get(), expr->isStatic, expr))
-            {
-                /* Check if member and declaration object are equally static/non-static */
-                AnalyzeStaticTypeSpecifier(expr->symbolRef->FetchTypeSpecifier(), expr->ident, expr, expr->isStatic);
-            }
+            /* Check if member and declaration object are equally static/non-static */
+            AnalyzeStaticTypeSpecifier(expr->symbolRef->FetchTypeSpecifier(), expr->ident, expr, expr->isStatic);
         }
     }
 }
 
-void HLSLAnalyzer::AnalyzeObjectExprBaseStructDeclFromStruct(ObjectExpr* expr, PrefixArgs* outputArgs, const StructTypeDenoter& structTypeDen)
+void HLSLAnalyzer::AnalyzeObjectExprBaseStructDeclFromStruct(ObjectExpr* expr, PrefixArgs& outputArgs, const StructTypeDenoter& structTypeDen)
 {
     if (auto structDecl = structTypeDen.structDeclRef)
     {
@@ -1086,8 +1107,8 @@ void HLSLAnalyzer::AnalyzeObjectExprBaseStructDeclFromStruct(ObjectExpr* expr, P
         {
             /* Store symbol reference in object expression and pass it as output argument */
             expr->symbolRef = symbol;
-            if (outputArgs)
-                outputArgs->outPrefixBaseStruct = symbol;
+            expr->flags << ObjectExpr::isBaseStructNamespace;
+            outputArgs.outPrefixBaseStruct = symbol;
         }
         else
             Error(R_IdentIsNotBaseOf(expr->ident, structDecl->ToString()), expr);

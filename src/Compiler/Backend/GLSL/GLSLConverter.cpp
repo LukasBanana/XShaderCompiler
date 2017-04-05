@@ -491,23 +491,21 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
-    if (ast->prefixExpr)
-    {
-        /* Convert prefix expression if it's a base structure namespace expression (e.g. "obj.BaseStruct::member" -> "obj.xsn_base.member") */
-        if (ast->isStatic)
-            ConvertObjectPrefixNamespace(ast->prefixExpr, ast);
+    /* Convert prefix expression if it's a base structure namespace expression (e.g. "obj.BaseStruct::member" -> "obj.xsn_base.member") */
+    if (ast->prefixExpr && ast->isStatic)
+        ConvertObjectPrefixNamespace(ast->prefixExpr, ast);
 
-        /* Convert prefix expression if it's the identifier of an entry-point struct instance */
+    /* Convert prefix expression if it's the identifier of an entry-point struct instance */
+    if (ast->prefixExpr)
         ConvertEntryPointStructPrefix(ast->prefixExpr, ast);
 
-        /* Convert prefix expression if the object refers to a member variable of a base structure */
+    /* Convert prefix expression if the object refers to a member variable of a base structure */
+    if (ast->prefixExpr)
         ConvertObjectPrefixBaseStruct(ast->prefixExpr, ast);
-    }
-    else
-    {
-        /* Convert prefix expression if the object refers to a member variable of a self structure */
+
+    /* Convert prefix expression if the object refers to a member variable of a self structure */
+    if (!ast->prefixExpr)
         ConvertObjectPrefixSelfStruct(ast->prefixExpr, ast);
-    }
     
     VISIT_DEFAULT(ObjectExpr);
 }

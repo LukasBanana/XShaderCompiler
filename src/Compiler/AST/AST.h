@@ -1193,9 +1193,9 @@ struct AssignExpr : public Expr
 
     const ObjectExpr* FetchLValueExpr() const override;
 
-    ExprPtr     lvalueExpr;                     // L-value expression
-    AssignOp    op      = AssignOp::Undefined;  // Assignment operator
-    ExprPtr     rvalueExpr;                     // R-value expression
+    ExprPtr     lvalueExpr;                         // L-value expression
+    AssignOp    op          = AssignOp::Undefined;  // Assignment operator
+    ExprPtr     rvalueExpr;                         // R-value expression
 };
 
 // Object access expression.
@@ -1205,7 +1205,8 @@ struct ObjectExpr : public Expr
 
     FLAG_ENUM
     {
-        FLAG( isImmutable, 0 ), // This object identifier must be written out as it is.
+        FLAG( isImmutable,           1 ), // This object identifier must be written out as it is.
+        FLAG( isBaseStructNamespace, 2 ), // This expression is an base structure namespace expression.
     };
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;

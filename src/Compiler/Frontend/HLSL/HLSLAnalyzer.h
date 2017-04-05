@@ -111,8 +111,8 @@ class HLSLAnalyzer : public Analyzer
         /* ----- Object expressions ----- */
 
         void AnalyzeObjectExpr(ObjectExpr* expr, PrefixArgs* args);
-        void AnalyzeObjectExprVarDeclFromStruct(ObjectExpr* expr, const PrefixArgs* inputArgs, const StructTypeDenoter& structTypeDen);
-        void AnalyzeObjectExprBaseStructDeclFromStruct(ObjectExpr* expr, PrefixArgs* outputArgs, const StructTypeDenoter& structTypeDen);
+        void AnalyzeObjectExprVarDeclFromStruct(ObjectExpr* expr, StructDecl* baseStructDecl, const StructTypeDenoter& structTypeDen);
+        void AnalyzeObjectExprBaseStructDeclFromStruct(ObjectExpr* expr, PrefixArgs& outputArgs, const StructTypeDenoter& structTypeDen);
 
         bool AnalyzeStaticAccessExpr(const Expr* prefixExpr, bool isStatic, const AST* ast = nullptr);
         bool AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier, const std::string& ident, const Expr* expr, bool isStatic);
