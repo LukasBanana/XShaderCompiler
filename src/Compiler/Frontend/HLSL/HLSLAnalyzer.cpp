@@ -183,44 +183,21 @@ IMPLEMENT_VISIT_PROC(StructDecl)
             parentStruct->nestedStructDeclRefs.push_back(ast);
     }
 
-    //TODO: member variables must not be removed because of shadowing a base member!
-    #if 0
-    /*
-    Remove member variables that override members from base structure;
-    This must be done before variables are registerd in symbol table!
-    */
-    if (ast->baseStructRef)
+    /* Report warnings for member variables, that shadow a base member */
+    if (WarnEnabled(Warnings::DeclarationShadowing) && ast->baseStructRef)
     {
-        for (auto it = ast->varMembers.begin(); it != ast->varMembers.end();)
+        for (const auto& varDeclStmnt : ast->varMembers)
         {
             /* Remove all duplicate variables in current declaration statement */
-            auto varDeclStmnt = it->get();
-            for (auto itVar = varDeclStmnt->varDecls.begin(); itVar != varDeclStmnt->varDecls.end();)
+            for (const auto& varDecl : varDeclStmnt->varDecls)
             {
                 /* Does the base structure has a variable with the same identifier? */
-                auto varDecl = itVar->get();
                 const StructDecl* varDeclOwner = nullptr;
-                if (ast->baseStructRef->Fetch(varDecl->ident, &varDeclOwner))
-                {
-                    /* Report a warning (if enabled) */
-                    if (WarnEnabled(Warnings::DeclarationShadowing))
-                        Warning(R_DeclShadowsMemberOfBase(varDecl->ident, varDeclOwner->ToString()), varDecl);
-
-                    /* Remove duplicate variable from structure */
-                    itVar = varDeclStmnt->varDecls.erase(itVar);
-                }
-                else
-                    ++itVar;
+                if (ast->baseStructRef->FetchVarDecl(varDecl->ident, &varDeclOwner))
+                    Warning(R_DeclShadowsMemberOfBase(varDecl->ident, varDeclOwner->ToString()), varDecl.get());
             }
-
-            /* Remove member if variable declaration statement has no more variables */
-            if (varDeclStmnt->varDecls.empty())
-                it = ast->varMembers.erase(it);
-            else
-                ++it;
         }
     }
-    #endif
 
     /* Register struct identifier in symbol table */
     Register(ast->ident, ast);
