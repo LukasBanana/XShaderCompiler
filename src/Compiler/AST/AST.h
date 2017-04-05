@@ -664,7 +664,7 @@ struct StructDecl : public Decl
     bool HasMultipleShaderOutputInstances() const;
 
     // Returns true if this structure is a base of the specified sub structure.
-    bool IsBaseOf(const StructDecl& subStructDecl) const;
+    bool IsBaseOf(const StructDecl* subStructDecl, bool includeSelf = false) const;
 
     // Adds the specified flags to this structure, all base structures, all nested structures, and all structures of its member variables.
     void AddFlagsRecursive(unsigned int structFlags);

@@ -1171,7 +1171,7 @@ void GLSLConverter::ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const S
                 prefixExpr = ASTFactory::MakeObjectExpr(selfParam);
             }
         }
-        else if (ownerStructDecl->IsBaseOf(*activeStructDecl))
+        else if (ownerStructDecl->IsBaseOf(activeStructDecl))
         {
             while (activeStructDecl && activeStructDecl != ownerStructDecl)
             {

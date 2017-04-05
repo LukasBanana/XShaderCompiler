@@ -794,20 +794,25 @@ bool StructDecl::HasMultipleShaderOutputInstances() const
     return (numInstances > 1);
 }
 
-bool StructDecl::IsBaseOf(const StructDecl& subStructDecl) const
+bool StructDecl::IsBaseOf(const StructDecl* subStructDecl, bool includeSelf) const
 {
-    if (subStructDecl.baseStructRef)
+    if (subStructDecl)
     {
-        /* Check if this structure is a direct base of the specified structure */
-        if (subStructDecl.baseStructRef == this)
+        if (includeSelf && subStructDecl == this)
             return true;
-        else
+
+        if (auto baseStructDecl = subStructDecl->baseStructRef)
         {
-            /* Otherwise, repeat the check for the base of the specified structure */
-            return IsBaseOf(*subStructDecl.baseStructRef);
+            /* Check if this structure is a direct base of the specified structure */
+            if (baseStructDecl == this)
+                return true;
+            else
+            {
+                /* Otherwise, repeat the check for the base of the specified structure */
+                return IsBaseOf(baseStructDecl);
+            }
         }
     }
-
     return false;
 }
 
@@ -1900,7 +1905,6 @@ const ObjectExpr* ObjectExpr::FetchLValueExpr() const
                 Fetch l-value from prefix if this is a base structure namespace expression,
                 e.g. "obj.BaseStruct::member" -> "BaseStruct" is a base structure namespace.
                 */
-                //return (prefixExpr && !isStatic ? prefixExpr->FetchLValueExpr() : nullptr);
                 return prefixExpr->FetchLValueExpr();
             default:
                 return nullptr;
