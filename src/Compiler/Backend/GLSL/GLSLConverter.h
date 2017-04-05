@@ -114,6 +114,8 @@ class GLSLConverter : public Converter
         void ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const StructDecl* ownerStructDecl, const StructDecl* activeStructDecl);
         void ConvertObjectPrefixSelfStruct(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
         void ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
+        void ConvertObjectPrefixNamespace(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
+        void ConvertObjectPrefixNamespaceStruct(ObjectExpr* prefixObjectExpr, ObjectExpr* objectExpr, const StructDecl* baseStructDecl, const StructDecl* activeStructDecl);
 
         /* ----- Unrolling ----- */
 

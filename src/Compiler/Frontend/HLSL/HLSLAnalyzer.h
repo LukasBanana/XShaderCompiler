@@ -35,6 +35,14 @@ class HLSLAnalyzer : public Analyzer
         using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
         using OnValidAttributeValueProc = std::function<bool(const AttributeValue)>;
 
+        /* === Structures === */
+
+        struct PrefixArgs
+        {
+            bool        inIsPostfixStatic;
+            StructDecl* outPrefixBaseStruct;
+        };
+
         /* === Functions === */
 
         void DecorateASTPrimary(
@@ -102,8 +110,9 @@ class HLSLAnalyzer : public Analyzer
 
         /* ----- Object expressions ----- */
 
-        void AnalyzeObjectExpr(ObjectExpr* expr);
-        void AnalyzeObjectExprWithStruct(ObjectExpr* expr, const StructTypeDenoter& structTypeDen);
+        void AnalyzeObjectExpr(ObjectExpr* expr, PrefixArgs* args);
+        void AnalyzeObjectExprVarDeclFromStruct(ObjectExpr* expr, const PrefixArgs* inputArgs, const StructTypeDenoter& structTypeDen);
+        void AnalyzeObjectExprBaseStructDeclFromStruct(ObjectExpr* expr, PrefixArgs* outputArgs, const StructTypeDenoter& structTypeDen);
 
         bool AnalyzeStaticAccessExpr(const Expr* prefixExpr, bool isStatic, const AST* ast = nullptr);
         bool AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier, const std::string& ident, const Expr* expr, bool isStatic);

@@ -627,6 +627,9 @@ struct StructDecl : public Decl
     // Returns the VarDecl AST node of the 'base' member variable, or null if there is no such VarDecl.
     VarDecl* FetchBaseMember() const;
 
+    // Returns the StructDecl AST node with the specified identifier, that is a base of this structure (or the structure itself), or null if there is no such StructDecl.
+    StructDecl* FetchBaseStructDecl(const std::string& ident);
+
     // Returns the FunctionDecl AST node for the specified argument type denoter list (used to derive the overloaded function).
     FunctionDecl* FetchFunctionDecl(
         const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters,

@@ -279,7 +279,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const AST* a
     return nullptr;
 }
 
-VarDecl* Analyzer::FetchFromStruct(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast)
+VarDecl* Analyzer::FetchVarDeclFromStruct(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast)
 {
     if (auto structDecl = structTypeDenoter.structDeclRef)
     {

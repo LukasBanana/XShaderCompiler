@@ -493,6 +493,10 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
     if (ast->prefixExpr)
     {
+        /* Convert prefix expression if it's a base structure namespace expression (e.g. "obj.BaseStruct::member" -> "obj.xsn_base.member") */
+        if (ast->isStatic)
+            ConvertObjectPrefixNamespace(ast->prefixExpr, ast);
+
         /* Convert prefix expression if it's the identifier of an entry-point struct instance */
         ConvertEntryPointStructPrefix(ast->prefixExpr, ast);
 
@@ -1209,6 +1213,71 @@ void GLSLConverter::ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, ObjectExp
                 /* Insert 'self' or 'base' prefix if necessary */
                 ConvertObjectPrefixStructMember(prefixExpr, varDecl->structDeclRef, activeStructDecl);
             }
+        }
+    }
+}
+
+void GLSLConverter::ConvertObjectPrefixNamespace(ExprPtr& prefixExpr, ObjectExpr* objectExpr)
+{
+    /* Is the prefix expression a base structure namespace expression? */
+    if (auto prefixObjectExpr = prefixExpr->As<ObjectExpr>())
+    {
+        /* Get base structure namespace */
+        if (auto baseStructDecl = prefixObjectExpr->FetchSymbol<StructDecl>())
+        {
+            if (prefixObjectExpr->prefixExpr)
+            {
+                /* Fetch "base"-member from prefix structure type */
+                const auto& prefixTypeDen = prefixObjectExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+                if (auto prefixStructTypeDen = prefixTypeDen.As<StructTypeDenoter>())
+                {
+                    if (auto activeStructDecl = prefixStructTypeDen->structDeclRef)
+                        ConvertObjectPrefixNamespaceStruct(prefixObjectExpr, objectExpr, baseStructDecl, activeStructDecl);
+                }
+            }
+            else
+            {
+                /* Fetch "base"-member from active structure declaration */
+                if (auto activeStructDecl = ActiveStructDecl())
+                    ConvertObjectPrefixNamespaceStruct(prefixObjectExpr, objectExpr, baseStructDecl, activeStructDecl);
+            }
+        }
+    }
+}
+
+void GLSLConverter::ConvertObjectPrefixNamespaceStruct(ObjectExpr* prefixObjectExpr, ObjectExpr* objectExpr, const StructDecl* baseStructDecl, const StructDecl* activeStructDecl)
+{
+    if (activeStructDecl == baseStructDecl)
+    {
+        /* Remove this redundant prefix */
+        objectExpr->isStatic    = false;
+        objectExpr->prefixExpr  = prefixObjectExpr->prefixExpr;
+    }
+    else
+    {
+        /* Convert prefix expression from base struct namespace to "base"-member */
+        if (auto baseMember = activeStructDecl->FetchBaseMember())
+        {
+            objectExpr->isStatic        = false;
+            prefixObjectExpr->symbolRef = baseMember;
+            prefixObjectExpr->ident     = baseMember->ident.Original();
+        }
+
+        /* Insert further "base" members until specified base structure namespace has reached */
+        while (true)
+        {
+            /* Get next base structure */
+            activeStructDecl = activeStructDecl->baseStructRef;
+            if (!activeStructDecl || activeStructDecl == baseStructDecl)
+                break;
+
+            if (auto baseMember = activeStructDecl->FetchBaseMember())
+            {
+                /* Insert next "base"-member object expression */
+                objectExpr->prefixExpr = ASTFactory::MakeObjectExpr(objectExpr->prefixExpr, baseMember->ident, baseMember);
+            }
+            else
+                break;
         }
     }
 }

@@ -588,7 +588,7 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
-    AnalyzeObjectExpr(ast);
+    AnalyzeObjectExpr(ast, reinterpret_cast<PrefixArgs*>(args));
 }
 
 IMPLEMENT_VISIT_PROC(ArrayExpr)
@@ -654,7 +654,7 @@ void HLSLAnalyzer::AnalyzeVarDeclStaticMember(VarDecl* varDecl)
         if (auto structTypeDen = typeDen->GetAliased().As<StructTypeDenoter>())
         {
             /* Fetch variable declaration from structure type */
-            if (auto memberVarDecl = FetchFromStruct(*structTypeDen, varDecl->ident, varDecl))
+            if (auto memberVarDecl = FetchVarDeclFromStruct(*structTypeDen, varDecl->ident, varDecl))
             {
                 /* Is this member variable already defined? */
                 if (auto prevVarDef = memberVarDecl->staticMemberVarRef)
@@ -995,67 +995,102 @@ void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(CallExpr* callExpr)
 
 /* ----- Object expressions ----- */
 
-void HLSLAnalyzer::AnalyzeObjectExpr(ObjectExpr* expr)
+void HLSLAnalyzer::AnalyzeObjectExpr(ObjectExpr* expr, PrefixArgs* args)
 {
-    try
+    /* Analyze prefix expression first */
+    if (expr->prefixExpr)
     {
-        /* Analyze prefix expression first */
-        if (expr->prefixExpr)
+        /* Visit prefix expression first (and pass static state as input argument) */
+        PrefixArgs prefixArgs;
         {
-            /* Visit prefix expression first */
-            Visit(expr->prefixExpr);
+            prefixArgs.inIsPostfixStatic    = expr->isStatic;
+            prefixArgs.outPrefixBaseStruct  = nullptr;
+        }
+        Visit(expr->prefixExpr, &prefixArgs);
 
-            /* Get type denoter from prefix expression */
-            const auto& prefixTypeDen = expr->prefixExpr->GetTypeDenoter()->GetAliased();
+        /* Get type denoter from prefix expression */
+        const auto& prefixTypeDen = expr->prefixExpr->GetTypeDenoter()->GetAliased();
 
-            if (auto structTypeDen = prefixTypeDen.As<StructTypeDenoter>())
+        if (auto structTypeDen = prefixTypeDen.As<StructTypeDenoter>())
+        {
+            /* Analyze object expression with struct prefix type */
+            if (args != nullptr && args->inIsPostfixStatic && !expr->isStatic)
             {
-                /* Analyze object expression with struct prefix type */
-                AnalyzeObjectExprWithStruct(expr, *structTypeDen);
+                /* Analyze object expression as base structure namespace */
+                AnalyzeObjectExprBaseStructDeclFromStruct(expr, args, *structTypeDen);
             }
-            else if (prefixTypeDen.IsBase())
+            else
             {
-                /* Just query the type denoter for the object expression */
-                expr->GetTypeDenoter();
+                /* Analyze object expression as structure member */
+                AnalyzeObjectExprVarDeclFromStruct(expr, &prefixArgs, *structTypeDen);
             }
         }
-        else
+        else if (prefixTypeDen.IsBase())
         {
-            if (auto symbol = FetchDecl(expr->ident, expr))
-            {
-                /* Decorate object expression with symbol reference */
-                expr->symbolRef = symbol;
-
-                /* Mark is 'read from' if this object expression is not part of an l-value expression */
-                if (ActiveLValueExpr() == nullptr)
-                    symbol->flags << Decl::isReadFrom;
-            }
+            /* Just query the type denoter for the object expression */
+            GetTypeDenoterFrom(expr);
         }
     }
-    catch (const ASTRuntimeError& e)
+    else
     {
-        Error(e.what(), e.GetAST());
-    }
-    catch (const std::exception& e)
-    {
-        Error(e.what(), expr);
+        if (auto symbol = FetchDecl(expr->ident, expr))
+        {
+            /* Decorate object expression with symbol reference */
+            expr->symbolRef = symbol;
+
+            /* Pass structure to output argument */
+            if (args)
+            {
+                if (auto structDecl = symbol->As<StructDecl>())
+                    args->outPrefixBaseStruct = structDecl;
+            }
+
+            /* Mark is 'read from' if this object expression is not part of an l-value expression */
+            if (ActiveLValueExpr() == nullptr)
+                symbol->flags << Decl::isReadFrom;
+        }
     }
 }
 
-void HLSLAnalyzer::AnalyzeObjectExprWithStruct(ObjectExpr* expr, const StructTypeDenoter& structTypeDen)
+void HLSLAnalyzer::AnalyzeObjectExprVarDeclFromStruct(ObjectExpr* expr, const PrefixArgs* inputArgs, const StructTypeDenoter& structTypeDen)
 {
-    /* Fetch struct member variable declaration from next identifier */
-    expr->symbolRef = FetchFromStruct(structTypeDen, expr->ident, expr);
-
-    /* Check if struct member and identifier are both static or non-static */
-    if (expr->symbolRef && expr->prefixExpr)
+    if (inputArgs && inputArgs->outPrefixBaseStruct)
     {
-        /* Check if static/non-static access is allowed */
-        if (AnalyzeStaticAccessExpr(expr->prefixExpr.get(), expr->isStatic, expr))
+        /* Fetch struct member variable declaration from next identifier */
+        expr->symbolRef = FetchVarDeclFromStruct(inputArgs->outPrefixBaseStruct, expr->ident, expr);
+    }
+    else
+    {
+        /* Fetch struct member variable declaration from next identifier */
+        expr->symbolRef = FetchVarDeclFromStruct(structTypeDen, expr->ident, expr);
+
+        /* Check if struct member and identifier are both static or non-static */
+        if (expr->symbolRef && expr->prefixExpr)
         {
-            /* Check if member and declaration object are equally static/non-static */
-            AnalyzeStaticTypeSpecifier(expr->symbolRef->FetchTypeSpecifier(), expr->ident, expr, expr->isStatic);
+            /* Check if static/non-static access is allowed */
+            if (AnalyzeStaticAccessExpr(expr->prefixExpr.get(), expr->isStatic, expr))
+            {
+                /* Check if member and declaration object are equally static/non-static */
+                AnalyzeStaticTypeSpecifier(expr->symbolRef->FetchTypeSpecifier(), expr->ident, expr, expr->isStatic);
+            }
         }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeObjectExprBaseStructDeclFromStruct(ObjectExpr* expr, PrefixArgs* outputArgs, const StructTypeDenoter& structTypeDen)
+{
+    if (auto structDecl = structTypeDen.structDeclRef)
+    {
+        /* Fetch base structure from next identifier */
+        if (auto symbol = structDecl->FetchBaseStructDecl(expr->ident))
+        {
+            /* Store symbol reference in object expression and pass it as output argument */
+            expr->symbolRef = symbol;
+            if (outputArgs)
+                outputArgs->outPrefixBaseStruct = symbol;
+        }
+        else
+            Error(R_IdentIsNotBaseOf(expr->ident, structDecl->ToString()), expr);
     }
 }
 
@@ -1169,23 +1204,12 @@ void HLSLAnalyzer::AnalyzeLValueExprObject(const ObjectExpr* objectExpr, const A
 
 void HLSLAnalyzer::AnalyzeArrayExpr(ArrayExpr* expr)
 {
-    try
-    {
-        /* Visit prefix and array index expressions */
-        Visit(expr->prefixExpr.get());
-        Visit(expr->arrayIndices);
+    /* Visit prefix and array index expressions */
+    Visit(expr->prefixExpr.get());
+    Visit(expr->arrayIndices);
 
-        /* Just query the type denoter for the array access expression */
-        expr->GetTypeDenoter();
-    }
-    catch (const ASTRuntimeError& e)
-    {
-        Error(e.what(), e.GetAST());
-    }
-    catch (const std::exception& e)
-    {
-        Error(e.what(), expr);
-    }
+    /* Just query the type denoter for the array access expression */
+    GetTypeDenoterFrom(expr);
 }
 
 /* ----- Entry point ----- */

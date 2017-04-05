@@ -606,6 +606,16 @@ VarDecl* StructDecl::FetchBaseMember() const
         return nullptr;
 }
 
+StructDecl* StructDecl::FetchBaseStructDecl(const std::string& ident)
+{
+    if (this->ident == ident)
+        return this;
+    else if (baseStructRef)
+        return baseStructRef->FetchBaseStructDecl(ident);
+    else
+        return nullptr;
+}
+
 FunctionDecl* StructDecl::FetchFunctionDecl(
     const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters, const StructDecl** owner, bool throwErrorIfNoMatch) const
 {
@@ -797,6 +807,7 @@ bool StructDecl::IsBaseOf(const StructDecl& subStructDecl) const
             return IsBaseOf(*subStructDecl.baseStructRef);
         }
     }
+
     return false;
 }
 
@@ -1846,8 +1857,11 @@ TypeDenoterPtr ObjectExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
     }
     else if (prefixExpr)
     {
-        /* Get type denoter of prefix (if used) */
-        return prefixExpr->GetTypeDenoter()->GetSub(this);
+        /* Get type denoter of vector subscript, or report error if static access is used */
+        if (isStatic)
+            RuntimeErr(R_IllegalStaticAccessForSubscript(ident), this);
+        else
+            return prefixExpr->GetTypeDenoter()->GetSub(this);
     }
     
     RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
@@ -1881,6 +1895,13 @@ const ObjectExpr* ObjectExpr::FetchLValueExpr() const
             case AST::Types::BufferDecl:
             case AST::Types::SamplerDecl:
                 return this;
+            case AST::Types::StructDecl:
+                /*
+                Fetch l-value from prefix if this is a base structure namespace expression,
+                e.g. "obj.BaseStruct::member" -> "BaseStruct" is a base structure namespace.
+                */
+                //return (prefixExpr && !isStatic ? prefixExpr->FetchLValueExpr() : nullptr);
+                return prefixExpr->FetchLValueExpr();
             default:
                 return nullptr;
         }

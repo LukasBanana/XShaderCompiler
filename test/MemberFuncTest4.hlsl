@@ -14,16 +14,16 @@ struct Base {
 
 struct Sub : Base {
 	int getCB() {
-		return c + b;
+		return c + b + getA();
 	}
 	int a, c;
 };
 
 float4 main() : COLOR {
-	Sub s;
+	Sub s = (Sub)0;
 	
-	//s.A::a = 1;
-	s.setA(1);
+	s.A::a = 1;
+	//s.setA(1);
 	s.b = 2;
 	
 	s.a = 3;
