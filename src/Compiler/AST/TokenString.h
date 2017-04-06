@@ -131,16 +131,6 @@ class BasicTokenString
             return ConstIterator(tokens_.end(), tokens_.end());
         }
 
-        typename Container::const_iterator BeginRaw() const
-        {
-            return tokens_.begin();
-        }
-
-        typename Container::const_iterator EndRaw() const
-        {
-            return tokens_.end();
-        }
-
         void PushBack(const TokenType& token)
         {
             tokens_.push_back(token);

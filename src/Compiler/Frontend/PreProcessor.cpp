@@ -653,9 +653,9 @@ void PreProcessor::ParseDirectiveDefine()
         macro.tokenString = ParseDirectiveTokenString(false, true);
 
         /* Append new-line characters from value (this is used to reproduce the correct line numbers) */
-        for (auto it = macro.tokenString.BeginRaw(); it != macro.tokenString.EndRaw(); ++it)
+        for (const auto& tkn : macro.tokenString.GetTokens())
         {
-            if ((*it)->Type() == Tokens::NewLine)
+            if (tkn->Type() == Tokens::NewLine)
                 Out() << std::endl;
         }
     }
