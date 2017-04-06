@@ -1,4 +1,7 @@
 
+// Structure Inheritance Test 1
+// 13/11/2016
+
 #if 1
 
 struct S1 {

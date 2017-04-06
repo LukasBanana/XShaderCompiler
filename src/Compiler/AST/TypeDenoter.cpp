@@ -657,7 +657,7 @@ TypeDenoterPtr StructTypeDenoter::GetSubObject(const std::string& ident, const A
 {
     if (structDeclRef)
     {
-        if (auto varDecl = structDeclRef->Fetch(ident))
+        if (auto varDecl = structDeclRef->FetchVarDecl(ident))
         {
             /* Return type of variable declaration in structure */
             return varDecl->GetTypeDenoter();

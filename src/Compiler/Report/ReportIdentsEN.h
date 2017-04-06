@@ -105,6 +105,7 @@ DECL_REPORT( CantDirectlyAccessMembersOf,       "can not directly access members
 DECL_REPORT( CantDirectlyAccessArrayOf,         "can not directly access array of '{0}'"                                                                        );
 DECL_REPORT( UnknownTypeOfObjectIdentSymbolRef, "unknown type of symbol reference to derive type denoter of object identifier '{0}'"                            );
 DECL_REPORT( InvalidSubscriptBaseType,          "invalid base type denoter for vector subscript"                                                                );
+DECL_REPORT( IllegalStaticAccessForSubscript,   "illegal static access for subscript '{0}'"                                                                     );
 DECL_REPORT( MissingVarIdentSymbolRef,          "missing symbol reference to derive type denoter of variable identifier '{0}'"                                  );
 DECL_REPORT( MissingFuncRefToDeriveExprType,    "missing function reference to derive expression type"                                                          );
 DECL_REPORT( MissingDeclStmntRefToDeriveType,   "missing reference to declaration statement to derive type denoter of variable identifier '{0}'"                );
@@ -170,6 +171,7 @@ DECL_REPORT( IdentIsNotVar,                     "identifier '{0}' does not name 
 DECL_REPORT( IdentIsNotType,                    "identifier '{0}' does not name a type"                                                                         );
 DECL_REPORT( IdentIsNotVarOrBufferOrSampler,    "identifier '{0}' does not name a variable, buffer, or sampler"                                                 );
 DECL_REPORT( IdentIsNotDecl,                    "identifier '{0}' does not name a variable, buffer, sampler, structure, or alias"                               );
+DECL_REPORT( IdentIsNotBaseOf,                  "identifier '{0}' does not name a base of '{1}'"                                                                );
 DECL_REPORT( IdentAlreadyDeclared,              "identifier '{0}' already declared in this scope"                                                               );
 DECL_REPORT( NoActiveScopeToRegisterSymbol,     "no active scope to register symbol"                                                                            );
 

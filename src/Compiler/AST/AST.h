@@ -621,9 +621,14 @@ struct StructDecl : public Decl
     // Returns true if this structure type is castable to the specified base type denoter.
     bool IsCastableTo(const BaseTypeDenoter& rhs) const;
 
-    //TODO: rename to "FetchVarDecl"
     // Returns the VarDecl AST node inside this struct decl for the specified identifier, or null if there is no such VarDecl.
-    VarDecl* Fetch(const std::string& ident, const StructDecl** owner = nullptr) const;
+    VarDecl* FetchVarDecl(const std::string& ident, const StructDecl** owner = nullptr) const;
+
+    // Returns the VarDecl AST node of the 'base' member variable, or null if there is no such VarDecl.
+    VarDecl* FetchBaseMember() const;
+
+    // Returns the StructDecl AST node with the specified identifier, that is a base of this structure (or the structure itself), or null if there is no such StructDecl.
+    StructDecl* FetchBaseStructDecl(const std::string& ident);
 
     // Returns the FunctionDecl AST node for the specified argument type denoter list (used to derive the overloaded function).
     FunctionDecl* FetchFunctionDecl(
@@ -646,8 +651,8 @@ struct StructDecl : public Decl
     // Returns the total number of member functions (including all base structures).
     std::size_t NumMemberFunctions(bool onlyNonStaticMembers = false) const;
 
-    // Returns a list with the type denoters of all members (including all base structures).
-    void CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens) const;
+    // Returns a list with the type denoters of all members (including all base structures, if enabled).
+    void CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens, bool includeBaseStructs = true) const;
 
     // Iterates over each VarDecl AST node (included nested structures, and members in base structures).
     void ForEachVarDecl(const VarDeclIteratorFunctor& iterator, bool includeBaseStructs = true);
@@ -659,7 +664,7 @@ struct StructDecl : public Decl
     bool HasMultipleShaderOutputInstances() const;
 
     // Returns true if this structure is a base of the specified sub structure.
-    bool IsBaseOf(const StructDecl& subStructDecl) const;
+    bool IsBaseOf(const StructDecl* subStructDecl, bool includeSelf = false) const;
 
     // Adds the specified flags to this structure, all base structures, all nested structures, and all structures of its member variables.
     void AddFlagsRecursive(unsigned int structFlags);
@@ -843,7 +848,8 @@ struct VarDeclStmnt : public Stmnt
         FLAG( isShaderOutput,   1 ), // This variable is used as shader output.
         FLAG( isParameter,      2 ), // This variable is a function parameter (flag should be set during parsing).
         FLAG( isSelfParameter,  3 ), // This variable is the 'self' parameter of a member function.
-        FLAG( isImplicitConst,  4 ), // This variable is implicitly declared as constant.
+        FLAG( isBaseMember,     4 ), // This variable is the 'base' member of a structure with inheritance.
+        FLAG( isImplicitConst,  5 ), // This variable is implicitly declared as constant.
     };
 
     // Implements Stmnt::CollectDeclIdents
@@ -853,7 +859,7 @@ struct VarDeclStmnt : public Stmnt
     std::string ToString(bool useVarNames = true, bool isParam = false) const;
     
     // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
-    VarDecl* Fetch(const std::string& ident) const;
+    VarDecl* FetchVarDecl(const std::string& ident) const;
 
     // Returns true if this is an input parameter.
     bool IsInput() const;
@@ -1187,9 +1193,9 @@ struct AssignExpr : public Expr
 
     const ObjectExpr* FetchLValueExpr() const override;
 
-    ExprPtr     lvalueExpr;                     // L-value expression
-    AssignOp    op      = AssignOp::Undefined;  // Assignment operator
-    ExprPtr     rvalueExpr;                     // R-value expression
+    ExprPtr     lvalueExpr;                         // L-value expression
+    AssignOp    op          = AssignOp::Undefined;  // Assignment operator
+    ExprPtr     rvalueExpr;                         // R-value expression
 };
 
 // Object access expression.
@@ -1199,7 +1205,8 @@ struct ObjectExpr : public Expr
 
     FLAG_ENUM
     {
-        FLAG( isImmutable, 0 ), // This object identifier must be written out as it is.
+        FLAG( isImmutable,           1 ), // This object identifier must be written out as it is.
+        FLAG( isBaseStructNamespace, 2 ), // This expression is an base structure namespace expression.
     };
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;

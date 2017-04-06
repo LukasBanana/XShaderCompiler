@@ -126,7 +126,7 @@ Here is a brief overview of the most important commands:
 	\item[] \textbf{\texttt{-E, ----entry \textit{ENTRY}}} \\
 	Sets the shader entry point (i.e. main function) specified by \texttt{\textit{ENTRY}}.
 	
-	\item[] \textbf{\texttt{-I, ----include-path \textit{PATH}}} \\
+	\item[] \textbf{\texttt{-I, ----include \textit{PATH}}} \\
 	Adds the file path, specified by \texttt{\textit{PATH}}, to the include search paths.
 	
 	\item[] \textbf{\texttt{-o, ----output \textit{FILE}}} \\
@@ -141,9 +141,11 @@ Here is a brief overview of the most important commands:
 	Sets the input shader version specified by \texttt{\textit{VERSION}}.
 	Valid values for \texttt{\textit{VERSION}} are:
 	\begin{itemize}
+		\item[] \textbf{\texttt{Cg}} (similar to HLSL3 with additional typenames)
 		\item[] \textbf{\texttt{HLSL3}} (Shader Model 3)
 		\item[] \textbf{\texttt{HLSL4}} (Shader Model 4)
 		\item[] \textbf{\texttt{HLSL5}} (Shader Model 5) \textit{default value}
+		\item[] \textbf{\texttt{HLSL6}} (Shader Model 6)
 		\item[] \textbf{\texttt{GLSL}} (GLSL for OpenGL) \textit{only pre-processing supported}
 		\item[] \textbf{\texttt{ESSL}} (GLSL for OpenGL ES) \textit{only pre-processing supported}
 		\item[] \textbf{\texttt{VKSL}} (GLSL for Vulkan) \textit{only pre-processing supported}

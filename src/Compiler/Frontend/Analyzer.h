@@ -105,7 +105,7 @@ class Analyzer : protected Visitor
         FunctionDecl* FetchFunctionDecl(const std::string& ident, const AST* ast = nullptr);
 
         // Tries to fetch a 'VarDecl' with the specified identifier from the structure type denoter and reports an error on failure.
-        VarDecl* FetchFromStruct(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast = nullptr);
+        VarDecl* FetchVarDeclFromStruct(const StructTypeDenoter& structTypeDenoter, const std::string& ident, const AST* ast = nullptr);
 
         FunctionDecl* FetchFunctionDeclFromStruct(
             const StructTypeDenoter& structTypeDenoter, const std::string& ident,

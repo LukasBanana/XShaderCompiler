@@ -115,7 +115,8 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 {
     if (Reachable(ast))
     {
-        VISIT_DEFAULT(StructDecl);
+        /* Only visit member variables (functions must only be visited by a call expression) */
+        Visit(ast->varMembers);
         Reachable(ast->declStmntRef);
     }
 }

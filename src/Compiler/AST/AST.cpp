@@ -575,19 +575,12 @@ bool StructDecl::IsCastableTo(const BaseTypeDenoter& rhs) const
     return true;
 }
 
-VarDecl* StructDecl::Fetch(const std::string& ident, const StructDecl** owner) const
+VarDecl* StructDecl::FetchVarDecl(const std::string& ident, const StructDecl** owner) const
 {
-    /* Fetch symbol from base struct first */
-    if (baseStructRef)
-    {
-        if (auto symbol = baseStructRef->Fetch(ident, owner))
-            return symbol;
-    }
-
-    /* Now fetch symbol from members */
+    /* Fetch symbol from members first */
     for (const auto& varDeclStmnt : varMembers)
     {
-        if (auto symbol = varDeclStmnt->Fetch(ident))
+        if (auto symbol = varDeclStmnt->FetchVarDecl(ident))
         {
             if (owner)
                 *owner = this;
@@ -595,7 +588,32 @@ VarDecl* StructDecl::Fetch(const std::string& ident, const StructDecl** owner) c
         }
     }
 
+    /* Now fetch symbol from base struct */
+    if (baseStructRef)
+    {
+        if (auto symbol = baseStructRef->FetchVarDecl(ident, owner))
+            return symbol;
+    }
+
     return nullptr;
+}
+
+VarDecl* StructDecl::FetchBaseMember() const
+{
+    if (!varMembers.empty() && varMembers.front()->flags(VarDeclStmnt::isBaseMember))
+        return varMembers.front()->varDecls.front().get();
+    else
+        return nullptr;
+}
+
+StructDecl* StructDecl::FetchBaseStructDecl(const std::string& ident)
+{
+    if (this->ident == ident)
+        return this;
+    else if (baseStructRef)
+        return baseStructRef->FetchBaseStructDecl(ident);
+    else
+        return nullptr;
 }
 
 FunctionDecl* StructDecl::FetchFunctionDecl(
@@ -723,11 +741,11 @@ std::size_t StructDecl::NumMemberFunctions(bool onlyNonStaticMembers) const
     return n;
 }
 
-void StructDecl::CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens) const
+void StructDecl::CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTypeDens, bool includeBaseStructs) const
 {
     /* First collect type denoters from base structure */
-    if (baseStructRef)
-        baseStructRef->CollectMemberTypeDenoters(memberTypeDens);
+    if (baseStructRef && includeBaseStructs)
+        baseStructRef->CollectMemberTypeDenoters(memberTypeDens, includeBaseStructs);
 
     /* Collect type denoters from this structure */
     for (const auto& member : varMembers)
@@ -776,17 +794,23 @@ bool StructDecl::HasMultipleShaderOutputInstances() const
     return (numInstances > 1);
 }
 
-bool StructDecl::IsBaseOf(const StructDecl& subStructDecl) const
+bool StructDecl::IsBaseOf(const StructDecl* subStructDecl, bool includeSelf) const
 {
-    if (subStructDecl.baseStructRef)
+    if (subStructDecl)
     {
-        /* Check if this structure is a direct base of the specified structure */
-        if (subStructDecl.baseStructRef == this)
+        if (includeSelf && subStructDecl == this)
             return true;
-        else
+
+        if (auto baseStructDecl = subStructDecl->baseStructRef)
         {
-            /* Otherwise, repeat the check for the base of the specified structure */
-            return IsBaseOf(*subStructDecl.baseStructRef);
+            /* Check if this structure is a direct base of the specified structure */
+            if (baseStructDecl == this)
+                return true;
+            else
+            {
+                /* Otherwise, repeat the check for the base of the specified structure */
+                return IsBaseOf(baseStructDecl);
+            }
         }
     }
     return false;
@@ -1214,7 +1238,7 @@ std::string VarDeclStmnt::ToString(bool useVarNames, bool isParam) const
     return s;
 }
 
-VarDecl* VarDeclStmnt::Fetch(const std::string& ident) const
+VarDecl* VarDeclStmnt::FetchVarDecl(const std::string& ident) const
 {
     for (const auto& var : varDecls)
     {
@@ -1838,8 +1862,11 @@ TypeDenoterPtr ObjectExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
     }
     else if (prefixExpr)
     {
-        /* Get type denoter of prefix (if used) */
-        return prefixExpr->GetTypeDenoter()->GetSub(this);
+        /* Get type denoter of vector subscript, or report error if static access is used */
+        if (isStatic)
+            RuntimeErr(R_IllegalStaticAccessForSubscript(ident), this);
+        else
+            return prefixExpr->GetTypeDenoter()->GetSub(this);
     }
     
     RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
@@ -1873,6 +1900,12 @@ const ObjectExpr* ObjectExpr::FetchLValueExpr() const
             case AST::Types::BufferDecl:
             case AST::Types::SamplerDecl:
                 return this;
+            case AST::Types::StructDecl:
+                /*
+                Fetch l-value from prefix if this is a base structure namespace expression,
+                e.g. "obj.BaseStruct::member" -> "BaseStruct" is a base structure namespace.
+                */
+                return prefixExpr->FetchLValueExpr();
             default:
                 return nullptr;
         }
