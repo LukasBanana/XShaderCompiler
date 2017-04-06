@@ -63,13 +63,24 @@ class PreProcessor : public Parser
 
             Macro(const TokenPtr& identTkn);
             Macro(const TokenPtr& identTkn, const TokenPtrString& value);
-            Macro(const TokenPtr& identTkn, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs = false, bool stdMacro = false);
+            
+            Macro(
+                const TokenPtr& identTkn,
+                const TokenPtrString& value,
+                const std::vector<std::string>& parameters,
+                bool varArgs = false,
+                bool stdMacro = false,
+                bool emptyParamList = false
+            );
 
-            TokenPtr                    identTkn;               // Macro identifier token
-            TokenPtrString              tokenString;            // Macro definition value as token string
-            std::vector<std::string>    parameters;             // Parameter identifiers
-            bool                        varArgs     = false;    // Specifies whether the macro supports variadic arguments
-            bool                        stdMacro    = false;    // Specifies whether the macro is a standard macro (i.e. part of the language) or not
+            bool HasParameterList() const;
+
+            TokenPtr                    identTkn;                   // Macro identifier token
+            TokenPtrString              tokenString;                // Macro definition value as token string
+            std::vector<std::string>    parameters;                 // Parameter identifiers
+            bool                        varArgs         = false;    // Specifies whether the macro supports variadic arguments
+            bool                        stdMacro        = false;    // Specifies whether the macro is a standard macro (i.e. part of the language) or not
+            bool                        emptyParamList  = false;    // Macro has an empty parameter list
         };
 
         // Parses the specified directive, that is not part of the standard pre-processor directive (e.g. "version" or "extension" for GLSL).

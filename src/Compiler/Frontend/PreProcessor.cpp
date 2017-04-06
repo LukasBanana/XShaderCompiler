@@ -130,7 +130,7 @@ void PreProcessor::DefineStandardMacro(const std::string& ident, int intValue)
     TokenPtrString valueTokenString;
     valueTokenString.PushBack(valueTkn);
 
-    DefineMacro({ identTkn, valueTokenString, {}, false, true });
+    DefineMacro({ identTkn, valueTokenString, {}, false, true, false });
 }
 
 void PreProcessor::UndefineMacro(const std::string& ident, const Token* tkn)
@@ -455,7 +455,7 @@ TokenPtrString PreProcessor::ParseIdentAsTokenString()
         {
             /* Perform macro expansion */
             auto& macro = *it->second;
-            if (!macro.parameters.empty())
+            if (macro.HasParameterList())
             {
                 /* Replace identifier to macro with arguments */
                 tokenString.PushBack(ParseIdentArgumentsForMacro(identTkn, macro));
@@ -642,6 +642,9 @@ void PreProcessor::ParseDirectiveDefine()
                 }
             }
         }
+
+        if (macro.parameters.empty())
+            macro.emptyParamList = true;
         
         Accept(Tokens::RBracket);
     }
@@ -1163,13 +1166,19 @@ PreProcessor::Macro::Macro(const TokenPtr& identTkn, const TokenPtrString& value
 }
 
 PreProcessor::Macro::Macro(
-    const TokenPtr& identTkn, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs, bool stdMacro) :
-        identTkn    { identTkn   },
-        tokenString { value      },
-        parameters  { parameters },
-        varArgs     { varArgs    },
-        stdMacro    { stdMacro   }
+    const TokenPtr& identTkn, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs, bool stdMacro, bool emptyParamList) :
+        identTkn       { identTkn       },
+        tokenString    { value          },
+        parameters     { parameters     },
+        varArgs        { varArgs        },
+        stdMacro       { stdMacro       },
+        emptyParamList { emptyParamList }
 {
+}
+
+bool PreProcessor::Macro::HasParameterList() const
+{
+    return (!parameters.empty() || emptyParamList);
 }
 
 
