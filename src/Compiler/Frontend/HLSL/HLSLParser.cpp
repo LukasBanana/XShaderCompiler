@@ -1406,7 +1406,7 @@ ExprPtr HLSLParser::ParsePrimaryExprPrefix()
     if (Is(Tokens::UnaryOp) || IsArithmeticUnaryExpr())
         return ParseUnaryExpr();
     if (Is(Tokens::LBracket))
-        return ParseBracketOrCastExpr();
+        return ParseExprWithBracketPrefix();
     if (Is(Tokens::LCurly))
         return ParseInitializerExpr();
     if (Is(Tokens::Ident))
@@ -1504,12 +1504,12 @@ UnaryExprPtr HLSLParser::ParseUnaryExpr()
 
 /* ----- Parsing ----- */
 
-ExprPtr HLSLParser::ParseBracketOrCastExpr()
+ExprPtr HLSLParser::ParseExprWithBracketPrefix()
 {
     ExprPtr expr;
     SourceArea area(GetScanner().Pos(), 1);
 
-    /* Parse expression inside the bracket */
+    /* First parse bracket prefix (bracket: "(EXPR)", cast: "(TYPE)VALUE", call: "(EXPR)(ARGS)") */
     Accept(Tokens::LBracket);
     {
         if (ActiveParsingState().activeTemplate)
@@ -1545,6 +1545,29 @@ ExprPtr HLSLParser::ParseBracketOrCastExpr()
         ast->expr           = ParsePrimaryExpr();
 
         return UpdateSourceArea(ast);
+    }
+
+    /* Parse call expression with a new bracket is following */
+    if (Is(Tokens::LBracket))
+    {
+        if (auto nonBracketExpr = expr->FindFirstNotOf(AST::Types::BracketExpr))
+        {
+            if (auto objectExpr = nonBracketExpr->As<ObjectExpr>())
+            {
+                /* Return call expression */
+                auto ast = Make<CallExpr>();
+
+                /* Take parameters from previously parsed expression */
+                ast->prefixExpr = objectExpr->prefixExpr;
+                ast->isStatic   = objectExpr->isStatic;
+                ast->ident      = objectExpr->ident;
+
+                /* Parse argument list */
+                ast->arguments = ParseArgumentList();
+
+                return UpdateSourceArea(ast);
+            }
+        }
     }
 
     /* Return bracket expression */
