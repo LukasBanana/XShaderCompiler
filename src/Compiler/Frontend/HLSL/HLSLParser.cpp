@@ -1347,19 +1347,6 @@ ExprPtr HLSLParser::ParseExpr(bool allowSequence)
     /* Parse generic expression, then post expression */
     auto ast = ParseGenericExpr();
 
-    /* Parse optional post-unary expression (e.g. 'x++', 'x--') */
-    if (Is(Tokens::UnaryOp))
-    {
-        auto unaryExpr = Make<PostUnaryExpr>();
-        unaryExpr->expr = ast;
-        unaryExpr->op = StringToUnaryOp(AcceptIt()->Spell());
-        
-        UpdateSourceArea(unaryExpr, ast.get());
-        UpdateSourceAreaOffset(unaryExpr);
-
-        ast = unaryExpr;
-    }
-
     /* Parse optional sequence expression */
     if (allowSequence && Is(Tokens::Comma))
         return ParseSequenceExpr(ast);
@@ -1428,6 +1415,8 @@ ExprPtr HLSLParser::ParseExprWithSuffixOpt(ExprPtr expr)
             expr = ParseObjectOrCallExpr(expr);
         else if (Is(Tokens::AssignOp))
             expr = ParseAssignExpr(expr);
+        else if (Is(Tokens::UnaryOp))
+            expr = ParsePostUnaryExpr(expr);
         else
             break;
     }
@@ -1491,15 +1480,32 @@ TypeSpecifierExprPtr HLSLParser::ParseTypeSpecifierExpr()
 UnaryExprPtr HLSLParser::ParseUnaryExpr()
 {
     if (!Is(Tokens::UnaryOp) && !IsArithmeticUnaryExpr())
-        ErrorUnexpected(R_ExpectedUnaryExprOp);
+        ErrorUnexpected(R_ExpectedUnaryOp);
 
-    /* Parse unary expression */
+    /* Parse unary expression (e.g. "++x", "!x", "+x", "-x") */
     auto ast = Make<UnaryExpr>();
 
     ast->op     = StringToUnaryOp(AcceptIt()->Spell());
     ast->expr   = ParsePrimaryExpr();
 
     return UpdateSourceArea(ast);
+}
+
+PostUnaryExprPtr HLSLParser::ParsePostUnaryExpr(const ExprPtr& expr)
+{
+    if (!Is(Tokens::UnaryOp))
+        ErrorUnexpected(R_ExpectedUnaryOp);
+
+    /* Parse post-unary expression (e.g. "x++", "x--") */
+    auto ast = Make<PostUnaryExpr>();
+
+    ast->expr   = expr;
+    ast->op     = StringToUnaryOp(AcceptIt()->Spell());
+
+    UpdateSourceArea(ast, expr.get());
+    UpdateSourceAreaOffset(ast);
+
+    return ast;
 }
 
 /* ----- Parsing ----- */
