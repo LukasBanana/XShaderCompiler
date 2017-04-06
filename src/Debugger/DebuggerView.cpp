@@ -529,9 +529,13 @@ void DebuggerView::TranslateInputToOutput()
 {
     SetStatusReady(false);
 
+    /* Get input source string */
+    auto inputSourceStr = inputSourceView_->GetText().ToStdString();
+    RemoveCharFromString(inputSourceStr, '\r');
+
     /* Initialize input source */
     auto inputSource = std::make_shared<std::stringstream>();
-    *inputSource << inputSourceView_->GetText().ToStdString();
+    *inputSource << inputSourceStr;
 
     shaderInput_.sourceCode = inputSource;
     shaderInput_.filename   = "<unnamed>";
