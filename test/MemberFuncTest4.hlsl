@@ -22,7 +22,7 @@ struct Sub : Base {
 float4 main() : COLOR {
 	Sub s = (Sub)0;
 	
-	s.A::a = 1;
+	s.Base::a = 1;
 	//s.setA(1);
 	s.b = 2;
 	
