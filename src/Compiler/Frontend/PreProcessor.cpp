@@ -463,7 +463,7 @@ TokenPtrString PreProcessor::ParseIdentAsTokenString()
             else if (macro.tokenString.Empty())
             {
                 /* Replace identifier with single blank to avoid parsing problems in next pass */
-                tokenString.PushBack(Make<Token>(Tokens::WhiteSpaces, " "));
+                tokenString.PushBack(Make<Token>(Tokens::WhiteSpace, " "));
             }
             else
             {
@@ -492,7 +492,7 @@ TokenPtrString PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identTo
         */
         TokenPtrString tokenStr;
         tokenStr.PushBack(identToken);
-        tokenStr.PushBack(Make<Token>(Tokens::WhiteSpaces, " "));
+        tokenStr.PushBack(Make<Token>(Tokens::WhiteSpace, " "));
         return tokenStr;
     }
 
@@ -529,14 +529,23 @@ TokenPtrString PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identTo
     if ( ( !macro.varArgs && arguments.size() != macro.parameters.size() ) ||
          ( macro.varArgs && arguments.size() < macro.parameters.size() ) )
     {
-        std::string errorMsg;
+        if (macro.parameters.size() == 1 && arguments.size() == 0)
+        {
+            /* Append empty argument for a single parameter */
+            arguments.push_back({});
+        }
+        else
+        {
+            /* Report error of mismatch is number of parameters and arguments */
+            std::string errorMsg;
 
-        if (arguments.size() > macro.parameters.size())
-            errorMsg = R_TooManyArgsForMacro(identToken->Spell(), macro.parameters.size(), arguments.size());
-        if (arguments.size() < macro.parameters.size())
-            errorMsg = R_TooFewArgsForMacro(identToken->Spell(), macro.parameters.size(), arguments.size());
+            if (arguments.size() > macro.parameters.size())
+                errorMsg = R_TooManyArgsForMacro(identToken->Spell(), macro.parameters.size(), arguments.size());
+            if (arguments.size() < macro.parameters.size())
+                errorMsg = R_TooFewArgsForMacro(identToken->Spell(), macro.parameters.size(), arguments.size());
 
-        Error(errorMsg, identToken.get());
+            Error(errorMsg, identToken.get());
+        }
     }
 
     /* Perform macro expansion */
@@ -595,9 +604,21 @@ void PreProcessor::ParseDirectiveDefine()
         {
             while (true)
             {
-                /* Parse next parameter identifier or variadic argument specifier (i.e. IDENT or '...') */
-                IgnoreWhiteSpaces();
+                /* Ignore white spaces, comments, and line breaks for macro parameters */
+                IgnoreWhiteSpaces(false, true);
                 
+                if (Is(Tokens::LineBreak))
+                {
+                    AcceptIt();
+                    IgnoreWhiteSpaces(false, true);
+                    if (Is(Tokens::NewLine))
+                    {
+                        AcceptIt();
+                        IgnoreWhiteSpaces(false, true);
+                    }
+                }
+
+                /* Parse next parameter identifier or variadic argument specifier (i.e. IDENT or '...') */
                 if (Is(Tokens::VarArg))
                 {
                     AcceptIt();
@@ -627,8 +648,17 @@ void PreProcessor::ParseDirectiveDefine()
 
     /* Parse optional value */
     IgnoreWhiteSpaces();
-    if (!Is(Tokens::NewLines))
+    if (!Is(Tokens::NewLine))
+    {
         macro.tokenString = ParseDirectiveTokenString(false, true);
+
+        /* Append new-line characters from value (this is used to reproduce the correct line numbers) */
+        for (auto it = macro.tokenString.BeginRaw(); it != macro.tokenString.EndRaw(); ++it)
+        {
+            if ((*it)->Type() == Tokens::NewLine)
+                Out() << std::endl;
+        }
+    }
 
     /* Register symbol as new macro */
     DefineMacro(macro);
@@ -1017,7 +1047,7 @@ TokenPtrString PreProcessor::ParseDirectiveTokenString(bool expandDefinedDirecti
 
     IgnoreWhiteSpaces();
 
-    while (!Is(Tokens::NewLines))
+    while (!Is(Tokens::NewLine))
     {
         switch (TknType())
         {
@@ -1025,7 +1055,7 @@ TokenPtrString PreProcessor::ParseDirectiveTokenString(bool expandDefinedDirecti
             {
                 AcceptIt();
                 IgnoreWhiteSpaces();
-                while (Is(Tokens::NewLines))
+                if (Is(Tokens::NewLine))
                     tokenString.PushBack(AcceptIt());
             }
             break;

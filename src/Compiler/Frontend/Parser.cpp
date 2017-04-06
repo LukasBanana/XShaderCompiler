@@ -210,13 +210,13 @@ void Parser::PopTokenString()
 
 void Parser::IgnoreWhiteSpaces(bool includeNewLines, bool includeComments)
 {
-    while ( Is(Tokens::WhiteSpaces) || ( includeNewLines && Is(Tokens::NewLines) ) || ( includeComments && Is(Tokens::Comment) ) )
+    while ( Is(Tokens::WhiteSpace) || ( includeNewLines && Is(Tokens::NewLine) ) || ( includeComments && Is(Tokens::Comment) ) )
         AcceptIt();
 }
 
 void Parser::IgnoreNewLines()
 {
-    while (Is(Tokens::NewLines))
+    while (Is(Tokens::NewLine))
         AcceptIt();
 }
 

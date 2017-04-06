@@ -40,7 +40,7 @@ void AssertCurrentTokenType(const Token::Types type, const Token::Types expected
 bool DefaultTokenOfInterestFunctor::IsOfInterest(const TokenPtr& token)
 {
     auto type = token->Type();
-    return (type != Token::Types::Comment && type != Token::Types::WhiteSpaces && type != Token::Types::NewLines);
+    return (type != Token::Types::Comment && type != Token::Types::WhiteSpace && type != Token::Types::NewLine);
 }
 
 

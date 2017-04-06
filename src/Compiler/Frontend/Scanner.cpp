@@ -267,23 +267,17 @@ void Scanner::IgnoreWhiteSpaces(bool includeNewLines)
 
 TokenPtr Scanner::ScanWhiteSpaces(bool includeNewLines)
 {
-    std::string spell;
-    
-    if (!includeNewLines)
-    {
-        /* Scan new-line characters */
-        while (IsNewLine())
-            spell += TakeIt();
-
-        if (!spell.empty())
-            return Make(Tokens::NewLines, spell);
-    }
+    /* Scan new-line character (if separated from other white spaces) */
+    if (!includeNewLines && IsNewLine())
+        return Make(Tokens::NewLine, true);
 
     /* Scan other white spaces */
+    std::string spell;
+    
     while ( std::isspace(UChr()) && ( includeNewLines || !IsNewLine() ) )
         spell += TakeIt();
 
-    return Make(Tokens::WhiteSpaces, spell);
+    return Make(Tokens::WhiteSpace, spell);
 }
 
 TokenPtr Scanner::ScanCommentLine(bool scanComments)
@@ -292,7 +286,7 @@ TokenPtr Scanner::ScanCommentLine(bool scanComments)
 
     TakeIt(); // Ignore second '/' from commentary line beginning
 
-    while (!Is('\n'))
+    while (!IsNewLine())
         spell += TakeIt();
 
     /* Store commentary string */

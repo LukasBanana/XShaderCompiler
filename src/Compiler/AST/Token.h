@@ -127,8 +127,8 @@ class Token
             Directive,          // Preprocessor directive ('#' IDENT).
             DirectiveConcat,    // Preprocessor directive concatenation ('##').
             Comment,            // Commentary (only a single text line)
-            WhiteSpaces,        // White spaces (' ', '\t', '\r')
-            NewLines,           // New-line characters ('\n', "\r\n")
+            WhiteSpace,         // White spaces (' ', '\t')
+            NewLine,            // New-line characters ('\n', '\r')
             LineBreak,          // Line break for pre-processor directives '\'
             VarArg,             // Variadic argument specifier ('...').
             Misc,               // Miscellaneous

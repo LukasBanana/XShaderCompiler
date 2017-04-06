@@ -118,8 +118,8 @@ std::string Token::TypeToString(const Types type)
         case Types::Directive:          return R_PPDirective;
         case Types::DirectiveConcat:    return R_PPDirectiveConcat;
         case Types::Comment:            return R_Comment;
-        case Types::WhiteSpaces:        return R_WhiteSpaces;
-        case Types::NewLines:           return R_NewLineChars;
+        case Types::WhiteSpace:         return R_WhiteSpaces;
+        case Types::NewLine:            return R_NewLineChars;
         case Types::LineBreak:          return R_PPLineBreak;
         case Types::VarArg:             return R_VarArgSpecifier;
         case Types::Misc:               return R_Misc;
