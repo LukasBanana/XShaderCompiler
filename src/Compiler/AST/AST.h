@@ -857,7 +857,7 @@ struct VarDeclStmnt : public Stmnt
     void CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const override;
 
     // Returns the var-decl statement as string.
-    std::string ToString(bool useVarNames = true, bool isParam = false) const;
+    std::string ToString(bool useVarNames = true) const;
     
     // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
     VarDecl* FetchVarDecl(const std::string& ident) const;

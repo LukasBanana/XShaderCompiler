@@ -963,7 +963,7 @@ std::string FunctionDecl::ToString(bool useParamNames) const
     {
         if (!parameters[i]->flags(VarDeclStmnt::isSelfParameter))
         {
-            s += parameters[i]->ToString(useParamNames, true);
+            s += parameters[i]->ToString(useParamNames);
             if (i + 1 < parameters.size())
                 s += ", ";
         }
@@ -1023,11 +1023,18 @@ void FunctionDecl::SetFuncImplRef(FunctionDecl* funcDecl)
 
 bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const TypeDenoter& argType, bool implicitConversion) const
 {
+    /* Get parameter by index */
     if (paramIndex >= parameters.size())
         return false;
 
+    const auto& param = parameters[paramIndex];
+    if (param->varDecls.size() != 1)
+        return false;
+
+    const auto& paramVar = param->varDecls.front();
+
     /* Get type denoters to compare */
-    auto paramTypeDen = parameters[paramIndex]->typeSpecifier->typeDenoter.get();
+    const auto& paramTypeDen = paramVar->GetTypeDenoter();
 
     /* Check for explicit compatability: are they equal? */
     if (!argType.Equals(*paramTypeDen))
@@ -1217,12 +1224,13 @@ void VarDeclStmnt::CollectDeclIdents(std::map<const AST*, std::string>& declASTI
         declASTIdents[ast.get()] = ast->ident;
 }
 
-std::string VarDeclStmnt::ToString(bool useVarNames, bool isParam) const
+std::string VarDeclStmnt::ToString(bool useVarNames) const
 {
     auto s = typeSpecifier->ToString();
-    
+
     if (useVarNames)
     {
+        /* Append variable names with their array dimensions */
         for (std::size_t i = 0; i < varDecls.size(); ++i)
         {
             s += ' ';
@@ -1231,8 +1239,20 @@ std::string VarDeclStmnt::ToString(bool useVarNames, bool isParam) const
                 s += ',';
         }
     }
+    else if (varDecls.size() == 1)
+    {
+        /* Append only array dimension of single variable */
+        for (const auto& dim : varDecls.front()->arrayDims)
+        {
+            s += '[';
+            if (dim->size > 0)
+                s += std::to_string(dim->size);
+            s += ']';
+        }
+    }
 
-    if (isParam && !varDecls.empty() && varDecls.front()->initializer)
+    /* Append indicator for optional parameters */
+    if (flags(VarDeclStmnt::isParameter) && !varDecls.empty() && varDecls.front()->initializer)
         return '[' + s + ']';
 
     return s;
