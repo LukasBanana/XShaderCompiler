@@ -575,6 +575,7 @@ struct BufferDecl : public Decl
 
     std::vector<ArrayDimensionPtr>  arrayDims;
     std::vector<RegisterPtr>        slotRegisters;
+    std::vector<VarDeclStmntPtr>    annotations;                // Annotations can be ignored by analyzers and generators.
 
     BufferDeclStmnt*                declStmntRef    = nullptr;  // Reference to its declaration statement (parent node).
 };

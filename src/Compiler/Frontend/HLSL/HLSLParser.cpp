@@ -602,6 +602,7 @@ BufferDeclPtr HLSLParser::ParseBufferDecl(BufferDeclStmnt* declStmntRef, const T
     ast->ident          = ParseIdent(identTkn);
     ast->arrayDims      = ParseArrayDimensionList();
     ast->slotRegisters  = ParseRegisterList();
+    ast->annotations    = ParseAnnotationList();
 
     return ast;
 }
@@ -2596,7 +2597,13 @@ std::string HLSLParser::ParseSamplerStateTextureIdent()
 {
     std::string ident;
 
-    Accept(Tokens::Buffer, "texture");
+    /* Parse "texture" or "Texture" attribute name */
+    if (Is(Tokens::Ident))
+        Accept(Tokens::Ident, "Texture");
+    else
+        Accept(Tokens::Buffer, "texture");
+
+    /* Parse initialization either with standard or angle brackets */
     Accept(Tokens::AssignOp, "=");
 
     if (Is(Tokens::LBracket))

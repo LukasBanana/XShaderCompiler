@@ -84,6 +84,7 @@ IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     Visit(ast->arrayDims);
     Visit(ast->slotRegisters);
+    Visit(ast->annotations);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
