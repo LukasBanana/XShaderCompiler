@@ -480,7 +480,18 @@ TypeDenoterPtr Analyzer::GetTypeDenoterFrom(TypedAST* ast, const TypeDenoter* ex
 
 void Analyzer::ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, const std::string& contextDesc, const AST* ast)
 {
-    if (!sourceTypeDen.IsCastableTo(destTypeDen))
+    /* Check if source type can be casted to destination type */
+    if (sourceTypeDen.IsCastableTo(destTypeDen))
+    {
+        if (WarnEnabled(Warnings::ImplicitTypeConversions))
+        {
+            /* Check if there is an implicit vector truncation */
+            int sourceVecSize = 0, destVecSize = 0;
+            if (TypeDenoter::HasVectorTruncation(sourceTypeDen, destTypeDen, sourceVecSize, destVecSize))
+                Warning(R_ImplicitVectorTruncation(sourceVecSize, destVecSize), ast);
+        }
+    }
+    else
         Error(R_IllegalCast(sourceTypeDen.ToString(), destTypeDen.ToString(), contextDesc), ast);
 }
 

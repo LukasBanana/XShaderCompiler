@@ -140,6 +140,12 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
 
     // Makes a boolean type denoter with the dimension of the specified type denoter.
     static BaseTypeDenoterPtr MakeBoolTypeWithDimensionOf(const TypeDenoter& typeDen);
+
+    // Returns true if the specified types have an implicit vector truncation (i.e. .
+    static bool HasVectorTruncation(
+        const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen,
+        int& sourceVecSize, int& destVecSize
+    );
 };
 
 // Void type denoter.

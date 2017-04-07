@@ -236,6 +236,23 @@ BaseTypeDenoterPtr TypeDenoter::MakeBoolTypeWithDimensionOf(const TypeDenoter& t
     }
 }
 
+bool TypeDenoter::HasVectorTruncation(
+    const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, int& sourceVecSize, int& destVecSize)
+{
+    /* Are both types base type denoters? */
+    if (auto sourceBaseTypeDen = sourceTypeDen.As<BaseTypeDenoter>())
+    {
+        if (auto destBaseTypeDen = destTypeDen.As<BaseTypeDenoter>())
+        {
+            /* Get data types from type denoters */
+            sourceVecSize = VectorTypeDim(sourceBaseTypeDen->dataType);
+            destVecSize = VectorTypeDim(destBaseTypeDen->dataType);
+            return (destVecSize < sourceVecSize);
+        }
+    }
+    return false;
+}
+
 
 /* ----- VoidTypeDenoter ----- */
 
