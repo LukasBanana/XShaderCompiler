@@ -947,15 +947,18 @@ void PreProcessor::ParseDirectiveLine()
     IgnoreWhiteSpaces();
     auto lineNumber = Accept(Tokens::IntLiteral)->Spell();
 
+    Out() << "#line " << lineNumber;
+
     /* Parse optional filename */
     IgnoreWhiteSpaces();
 
     if (Is(Tokens::StringLiteral))
     {
         auto filename = AcceptIt()->SpellContent();
-
-        //TODO...
+        Out() << " \"" << filename << '\"';
     }
+
+    Out() << std::endl;
 }
 
 // '#' 'error' TOKEN-STRING
