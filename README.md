@@ -136,7 +136,7 @@ namespace Example
             var outputDesc = new XscCompiler.ShaderOutput();
 
             // Optional output log (can also be a custom class)
-            var log = XscCompiler.StandardLog;
+            var log = compiler.StandardLog;
 
             // Optional shader reflection data (for shader code feedback)
             var reflectData = new XscCompiler.ReflectionData();
@@ -144,12 +144,12 @@ namespace Example
             // Translate HLSL code into GLSL
             try
             {
-                bool result = compiler.CompileShader(inputDesc, outputDesc, &log, &reflectData);
+                bool result = compiler.CompileShader(inputDesc, outputDesc, log, reflectData);
 
                 if (result)
                 {
                     // Write output shader code
-                    File.WriteAllText("Example.VS.vert", shaderOutput.SourceCode);
+                    File.WriteAllText("Example.VS.vert", outputDesc.SourceCode);
                 }
             }
             catch (Exception e)
