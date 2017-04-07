@@ -143,6 +143,7 @@ bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
     static const std::set<Intrinsic> wrappedIntrinsics
     {
         Intrinsic::Clip,
+        Intrinsic::Lit,
         Intrinsic::SinCos,
     };
     return (wrappedIntrinsics.find(intrinsic) != wrappedIntrinsics.end());
@@ -2473,6 +2474,8 @@ void GLSLGenerator::WriteWrapperIntrinsics()
 
     if (auto usage = program->FetchIntrinsicUsage(Intrinsic::Clip))
         WriteWrapperIntrinsicsClip(*usage);
+    if (auto usage = program->FetchIntrinsicUsage(Intrinsic::Lit))
+        WriteWrapperIntrinsicsLit(*usage);
     if (auto usage = program->FetchIntrinsicUsage(Intrinsic::SinCos))
         WriteWrapperIntrinsicsSinCos(*usage);
 }
@@ -2528,6 +2531,29 @@ void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
 
     if (wrappersWritten)
         Blank();
+}
+
+void GLSLGenerator::WriteWrapperIntrinsicsLit(const IntrinsicUsage& usage)
+{
+    BeginLn();
+    {
+        /* Write function signature */
+        Write("vec4 lit(");
+        WriteDataType(DataType::Float, IsESSL());
+        Write(" n_dot_l, ");
+        WriteDataType(DataType::Float, IsESSL());
+        Write(" n_dot_h, ");
+        WriteDataType(DataType::Float, IsESSL());
+        Write(" m)");
+
+        /* Write function body */
+        WriteScopeOpen(compactWrappers_);
+        {
+            Write("return vec4(1.0f, max(0.0f, n_dot_l), max(0.0f, n_dot_h * m), 1.0f);");
+        }
+        WriteScopeClose();
+    }
+    EndLn();
 }
 
 void GLSLGenerator::WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage)
