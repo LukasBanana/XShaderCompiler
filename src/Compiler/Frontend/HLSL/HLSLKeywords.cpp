@@ -995,13 +995,14 @@ static IndexedSemantic HLSLKeywordToSemanticD3D9(const CiString& ident)
 
     static const HLSLSemanticMap semanticMap
     {
-        { "COLOR",    { T::Target,         true } },
-        { "DEPTH",    { T::Depth,          true } },
-        { "POSITION", { T::VertexPosition, true } },
-        { "PSIZE",    { T::PointSize            } },
-        { "VFACE",    { T::IsFrontFace          } },
-        { "VPOS",     { T::FragCoord            } },
-        //TODO: continue this list ...
+        { "COLOR",       { T::Target,         true } },
+        { "DEPTH",       { T::Depth,          true } },
+        { "POSITION",    { T::VertexPosition, true } },
+        { "PSIZE",       { T::PointSize            } },
+        { "VFACE",       { T::IsFrontFace          } },
+        { "VPOS",        { T::FragCoord            } },
+        { "SV_Target",   { T::Target,         true } }, // SV_TARGET also allowed in HLSL3
+        { "SV_Position", { T::VertexPosition       } }, // SV_POSITION also allowed in HLSL3
     };
 
     /* Has identifier at the the length of the shortest semantic? */
