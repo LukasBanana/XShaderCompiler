@@ -176,6 +176,8 @@ void HLSLParser::ProcessDirectiveLine()
 
     if (Is(Tokens::StringLiteral))
         filename = Parser::AcceptIt()->SpellContent();
+    else
+        filename = GetScanner().Source()->Filename();
 
     /* Set new line number and filename */
     auto currentLine = static_cast<int>(GetScanner().PreviousToken()->Pos().Row());

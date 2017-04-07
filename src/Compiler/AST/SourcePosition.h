@@ -79,6 +79,12 @@ class SourcePosition
             origin_ = origin;
         }
 
+        // Returns the current origin.
+        inline const SourceOrigin* GetOrigin() const
+        {
+            return origin_.get();
+        }
+
         // Equivalent to a call to 'IsValid()'.
         inline operator bool () const
         {

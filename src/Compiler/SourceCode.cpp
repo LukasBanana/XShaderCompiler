@@ -115,6 +115,14 @@ void SourceCode::NextSourceOrigin(const std::string& filename, int lineOffset)
     pos_.SetOrigin(origin);
 }
 
+std::string SourceCode::Filename() const
+{
+    if (auto origin = pos_.GetOrigin())
+        return origin->filename;
+    else
+        return "";
+}
+
 
 /*
  * ======= Private: =======

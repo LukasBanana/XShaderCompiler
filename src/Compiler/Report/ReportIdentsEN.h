@@ -383,8 +383,8 @@ DECL_REPORT( PatchCtrlPointLimitIs64,           "number of control points in pat
 DECL_REPORT( VectorAndMatrixDimOutOfRange,      "vector and matrix dimensions must be in the range [1, 4], but got {0}"                                         );
 DECL_REPORT( TechniquesAreIgnored,              "techniques are ignored"                                                                                        );
 DECL_REPORT( MissingClosingBrace,               "missing closing brace '}' for open code block"                                                                 );
-DECL_REPORT( RegisterIgnoredForVarDecls,        "register is ignore for variable declarations"                                                                  );
-DECL_REPORT( RegisterIgnoredForFuncDecls,       "register is ignore for function declarations"                                                                  );
+DECL_REPORT( RegisterIgnoredForVarDecls,        "register is ignored for variable declarations"                                                                 );
+DECL_REPORT( RegisterIgnoredForFuncDecls,       "register is ignored for function declarations"                                                                 );
 DECL_REPORT( ExpectedSamplerOrSamplerState,     "expected sampler type denoter or sampler state"                                                                );
 DECL_REPORT( ExpectedOpenBracketOrAngleBracket, "expected '<' or '('"                                                                                           );
 DECL_REPORT( DuplicatedPrimitiveType,           "duplicate primitive type specified"                                                                            );

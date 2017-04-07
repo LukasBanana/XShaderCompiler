@@ -59,6 +59,9 @@ class SourceCode
             return currentLine_;
         }
 
+        // Returns the filename of the current source position (see SourcePosition::GetOrigin).
+        std::string Filename() const;
+
     protected:
         
         SourceCode() = default;
