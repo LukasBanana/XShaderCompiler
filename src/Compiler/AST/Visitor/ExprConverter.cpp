@@ -112,7 +112,10 @@ void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
 {
     if (expr)
     {
-        auto enabled = Flags(flags & conversionFlags_);
+        const auto enabled = Flags(flags & conversionFlags_);
+
+        if (enabled(ConvertLog10))
+            ConvertExprIntrinsicCallLog10(expr);
 
         if (enabled(ConvertVectorCompare))
             ConvertExprVectorCompare(expr);
@@ -123,7 +126,7 @@ void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
         if (enabled(ConvertVectorSubscripts))
             ConvertExprVectorSubscript(expr);
 
-        if (enabled(WrapUnaryExpr))
+        if (enabled(ConvertUnaryExpr))
             ConvertExprIntoBracket(expr);
     }
 }
@@ -308,6 +311,36 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
                 }
                 else
                     RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), arrayExpr);
+            }
+        }
+    }
+}
+
+void ExprConverter::ConvertExprIntrinsicCallLog10(ExprPtr& expr)
+{
+    /* Is this a call expression to the "log10" intrinisc? */
+    if (auto callExpr = expr->As<CallExpr>())
+    {
+        if (callExpr->intrinsic == Intrinsic::Log10 && callExpr->arguments.size() == 1)
+        {
+            /* Get argument type denoter */
+            const auto& arg0 = callExpr->arguments.front();
+            const auto& typeDen = arg0->GetTypeDenoter()->GetAliased();
+            if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
+            {
+                /* Convert intrinsic type from 'log10' to 'log' */
+                callExpr->intrinsic = Intrinsic::Log;
+
+                /* Create "log(10)" expression */
+                auto literalExpr = ASTFactory::MakeLiteralExpr(DataType::Int, "10");
+                literalExpr->ConvertDataType(BaseDataType(baseTypeDen->dataType));
+
+                auto rhsExpr = ASTFactory::MakeIntrinsicCallExpr(Intrinsic::Log, "log", nullptr, { literalExpr });
+
+                /* Create binary expression for "log(x) / log(10)" */
+                auto binaryExpr = ASTFactory::MakeBinaryExpr(expr, BinaryOp::Div, rhsExpr);
+
+                expr = ASTFactory::MakeBracketExpr(binaryExpr);
             }
         }
     }
@@ -499,7 +532,7 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
     ConvertExpr(ast->expr, AllPostVisit);
 
     if (ast->expr->Type() == AST::Types::UnaryExpr)
-        ConvertExpr(ast->expr, WrapUnaryExpr);
+        ConvertExpr(ast->expr, ConvertUnaryExpr);
 }
 
 IMPLEMENT_VISIT_PROC(CallExpr)

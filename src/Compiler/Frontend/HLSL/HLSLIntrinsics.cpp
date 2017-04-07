@@ -420,7 +420,7 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::Lerp,                             { Ret::GenericArg0, 3    } },
         { T::LessThan,                         { Ret::Bool,        2    } }, // GLSL only
         { T::LessThanEqual,                    { Ret::Bool,        2    } }, // GLSL only
-        { T::Lit,                              { Ret::GenericArg0, 3    } },
+        { T::Lit,                              { Ret::Float4,      3    } },
         { T::Log,                              { Ret::GenericArg0, 1    } },
         { T::Log10,                            { Ret::GenericArg0, 1    } },
         { T::Log2,                             { Ret::GenericArg0, 1    } },

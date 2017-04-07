@@ -42,10 +42,11 @@ class ExprConverter : public Visitor
             ConvertImageAccess      = (1 << 2),
             ConvertImplicitCasts    = (1 << 3),
             ConvertInitializer      = (1 << 4),
-            WrapUnaryExpr           = (1 << 5),
+            ConvertLog10            = (1 << 5), // Converts "log10(x)" to "(log(x) / log(10))"
+            ConvertUnaryExpr        = (1 << 6), // Wraps an unary expression if it's parent expression is also an unary expression (e.g. "-+x" to "-(+x)")
 
             // All conversion flags commonly used before visiting the sub nodes.
-            AllPreVisit             = (ConvertVectorCompare | ConvertImageAccess),
+            AllPreVisit             = (ConvertVectorCompare | ConvertImageAccess | ConvertLog10),
 
             // All conversion flags commonly used after visiting the sub nodes.
             AllPostVisit            = (ConvertVectorSubscripts),
@@ -91,8 +92,11 @@ class ExprConverter : public Visitor
         void ConvertExprImageAccessAssign(ExprPtr& expr, AssignExpr* assignExpr);
         void ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayExpr, AssignExpr* assignExpr = nullptr);
         
-        // Moves the expression as sub expression into a bracket (e.g. "- -x" -> "-(-x)").
+        // Converts the expression by moving its sub expression into a bracket (e.g. "-+x" -> "-(+x)").
         void ConvertExprIntoBracket(ExprPtr& expr);
+
+        // Converts the expression if this is an intrinsic call to "log10" (e.g. "log10(x)" to "(log(x) / log(10))").
+        void ConvertExprIntrinsicCallLog10(ExprPtr& expr);
 
         // Converts the expression to the specified target type and according to the specified flags (if enabled in the current conversion).
         void ConvertExprTargetType(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
