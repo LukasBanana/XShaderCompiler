@@ -126,6 +126,7 @@ class ExprConverter : public Visitor
         DECL_VISIT_PROC( CastExpr         );
         DECL_VISIT_PROC( ObjectExpr       );
         DECL_VISIT_PROC( AssignExpr       );
+        DECL_VISIT_PROC( ArrayExpr        );
 
         /* === Members === */
 

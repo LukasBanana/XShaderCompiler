@@ -486,7 +486,7 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::TexCubeGrad,                      { Ret::Float4,      4    } },
         { T::TexCubeLod,                       { Ret::Float4,      2    } },
         { T::TexCubeProj,                      { Ret::Float4,      2    } },
-      //{ T::Transpose,                        {                   } }, // special case
+      //{ T::Transpose,                        {                        } }, // special case
         { T::Trunc,                            { Ret::GenericArg0, 1    } },
 
         { T::Texture_GetDimensions,            {                   3    } },

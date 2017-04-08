@@ -598,6 +598,27 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     ConvertExprTargetType(ast->rvalueExpr, ast->lvalueExpr->GetTypeDenoter()->GetAliased());
 }
 
+IMPLEMENT_VISIT_PROC(ArrayExpr)
+{
+    for (auto& expr : ast->arrayIndices)
+        ConvertExpr(expr, AllPreVisit);
+    
+    VISIT_DEFAULT(ArrayExpr);
+    
+    for (auto& expr : ast->arrayIndices)
+    {
+        ConvertExpr(expr, AllPostVisit);
+        
+        /* Convert array index to integral type of same vector dimension */
+        const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
+        if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
+        {
+            const auto intVecType = VectorDataType(DataType::Int, VectorTypeDim(baseTypeDen->dataType));
+            ConvertExprTargetType(expr, BaseTypeDenoter(intVecType));
+        }
+    }
+}
+
 #undef IMPLEMENT_VISIT_PROC
 
 
