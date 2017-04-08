@@ -2554,6 +2554,8 @@ void GLSLGenerator::WriteWrapperIntrinsicsLit(const IntrinsicUsage& usage)
         WriteScopeClose();
     }
     EndLn();
+
+    Blank();
 }
 
 void GLSLGenerator::WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage)
