@@ -1231,6 +1231,25 @@ void HLSLAnalyzer::AnalyzeArrayExpr(ArrayExpr* expr)
 
     /* Just query the type denoter for the array access expression */
     GetTypeDenoterFrom(expr);
+
+    /* Validate types of array indices */
+    for (auto& arrayIndex : expr->arrayIndices)
+    {
+        if (auto typeDen = GetTypeDenoterFrom(arrayIndex.get()))
+        {
+            /* Get vector dimension from type denoter */
+            const auto& typeDenAliased = typeDen->GetAliased();
+            if (auto baseTypeDen = typeDenAliased.As<BaseTypeDenoter>())
+            {
+                /* Validate type cast from array index to integral vector */
+                const auto vectorDim = VectorTypeDim(baseTypeDen->dataType);
+                const auto intVecType = VectorDataType(DataType::Int, vectorDim);
+                ValidateTypeCast(*typeDen, BaseTypeDenoter(intVecType), R_ArrayIndex, arrayIndex.get());
+            }
+            else
+                Error(R_ArrayIndexMustHaveBaseType(typeDenAliased.ToString()), arrayIndex.get());
+        }
+    }
 }
 
 /* ----- Entry point ----- */

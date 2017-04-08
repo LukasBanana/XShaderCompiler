@@ -401,6 +401,8 @@ DECL_REPORT( DeclShadowsPreviousLocal,          "declaration of '{0}' shadows a 
 DECL_REPORT( DeclShadowsMemberOfBase,           "declaration of '{0}' shadows member of base '{1}'"                                                             );
 DECL_REPORT( ReturnOutsideFuncDecl,             "return statement outside function declaration"                                                                 );
 DECL_REPORT( ReturnExpression,                  "return expression"                                                                                             );
+DECL_REPORT( ArrayIndex,                        "array index"                                                                                                   );
+DECL_REPORT( ArrayIndexMustHaveBaseType,        "array index must have scalar or vector type with correct number of dimensions[ (but got '{0}')]"               );
 DECL_REPORT( VarAssignment,                     "variable assignment"                                                                                           );
 DECL_REPORT( VarInitialization,                 "variable initialization"                                                                                       );
 DECL_REPORT( IntrinsicNotDeclaredInObject,      "intrinsic '{0}' not declared in object '{1}'"                                                                  );

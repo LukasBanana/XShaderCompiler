@@ -185,6 +185,7 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
 
 /* ----- IntrinsicSignature class ----- */
 
+//TODO: add "FloatGenericSize0", "Float2GenericSize0" etc. to get specific return type but with variadic vector dimension
 enum class IntrinsicReturnType
 {
     Void,
