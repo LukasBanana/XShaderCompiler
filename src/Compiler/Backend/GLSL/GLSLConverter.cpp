@@ -411,16 +411,13 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     {
         if (auto castExpr = AST::GetAs<CastExpr>(ast->expr->FindFirstOf(AST::Types::CastExpr)))
         {
-            if (auto listExpr = castExpr->expr->As<SequenceExpr>())
+            const auto& typeDen = castExpr->GetTypeDenoter();
+            if (auto structTypeDen = typeDen->GetAliased().As<StructTypeDenoter>())
             {
-                const auto& typeDen = castExpr->GetTypeDenoter();
-                if (auto structTypeDen = typeDen->GetAliased().As<StructTypeDenoter>())
+                if (auto structDecl = structTypeDen->structDeclRef)
                 {
-                    if (auto structDecl = structTypeDen->structDeclRef)
-                    {
-                        /* Convert cast expression to assignment of structure members */
-                        ConvertEntryPointReturnStmnt(*ast, structDecl, typeDen, *listExpr);
-                    }
+                    /* Convert cast expression to assignment of structure members */
+                    ConvertEntryPointReturnStmnt(*ast, structDecl, typeDen, castExpr->expr);
                 }
             }
         }
@@ -1080,7 +1077,18 @@ void GLSLConverter::ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr*
     }
 }
 
-void GLSLConverter::ConvertEntryPointReturnStmnt(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const SequenceExpr& typeConstructor)
+void GLSLConverter::ConvertEntryPointReturnStmnt(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const ExprPtr& typeConstructor)
+{
+    if (typeConstructor)
+    {
+        if (auto sequenceExpr = typeConstructor->As<SequenceExpr>())
+            ConvertEntryPointReturnStmntSequenceExpr(ast, structDecl, typeDen, *sequenceExpr);
+        else
+            ConvertEntryPointReturnStmntCommonExpr(ast, structDecl, typeDen, typeConstructor);
+    }
+}
+
+void GLSLConverter::ConvertEntryPointReturnStmntSequenceExpr(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const SequenceExpr& typeConstructor)
 {
     /* Make variable declaration of structure type */
     auto varIdent       = MakeTempVarIdent();
@@ -1128,6 +1136,16 @@ void GLSLConverter::ConvertEntryPointReturnStmnt(ReturnStmnt& ast, StructDecl* s
     /* Add variable as parameter-structure to entry point */
     if (auto entryPoint = GetProgram()->entryPointRef)
         entryPoint->paramStructs.push_back({ ast.expr.get(), varDecl, structDecl });
+}
+
+void GLSLConverter::ConvertEntryPointReturnStmntCommonExpr(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const ExprPtr& typeConstructor)
+{
+    /* Convert common expression into sequence expression to make use of the primary conversion function */
+    SequenceExpr sequenceExpr(SourcePosition::ignore);
+    {
+        sequenceExpr.exprs.push_back(typeConstructor);
+    }
+    ConvertEntryPointReturnStmntSequenceExpr(ast, structDecl, typeDen, sequenceExpr);
 }
 
 void GLSLConverter::ConvertEntryPointReturnStmntToCodeBlock(StmntPtr& stmnt)
