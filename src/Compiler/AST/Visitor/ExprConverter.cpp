@@ -613,7 +613,12 @@ IMPLEMENT_VISIT_PROC(ArrayExpr)
         const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
         if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
         {
-            const auto intVecType = VectorDataType(DataType::Int, VectorTypeDim(baseTypeDen->dataType));
+            /* Convert either to 'uint' on default, or 'int' if the vector base type is 'int' */
+            auto baseDataType = BaseDataType(baseTypeDen->dataType);
+            if (baseDataType != DataType::Int)
+                baseDataType = DataType::UInt;
+
+            const auto intVecType = VectorDataType(baseDataType, VectorTypeDim(baseTypeDen->dataType));
             ConvertExprTargetType(expr, BaseTypeDenoter(intVecType));
         }
     }
