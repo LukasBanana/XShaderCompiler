@@ -15,7 +15,7 @@ float4 VS() : SV_Position
 	S a;
 	S_2 b;
 	S_2_3 c;
-	S_2_3[4] d;
+	S_2_3 d[4];
 	
 	return (float4)1;
 }
