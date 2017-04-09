@@ -283,6 +283,39 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     VisitScopedStmntList(ast->localStmnts);
 }
 
+IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+{
+    /* Push optional array dimensions at the front of all variable declarations */
+    auto subTypeDen = ast->typeSpecifier->typeDenoter;
+
+    while (subTypeDen)
+    {
+        const auto& typeDen = subTypeDen->GetAliased();
+        if (auto arrayTypeDen = typeDen.As<ArrayTypeDenoter>())
+        {
+            /* Copy array dimensions and insert them into front of all variable declarations */
+            for (auto& varDecl : ast->varDecls)
+            {
+                varDecl->arrayDims.insert(
+                    varDecl->arrayDims.begin(),
+                    arrayTypeDen->arrayDims.begin(),
+                    arrayTypeDen->arrayDims.end()
+                );
+            }
+
+            /* Get last sub type denoter */
+            subTypeDen = arrayTypeDen->subTypeDenoter;
+        }
+        else
+            break;
+    }
+
+    /* Take latest sub type denoter */
+    ast->typeSpecifier->typeDenoter = subTypeDen;
+
+    VISIT_DEFAULT(VarDeclStmnt);
+}
+
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
 {
     /* Add name to structure declaration, if the structure is anonymous */

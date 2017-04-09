@@ -20,7 +20,6 @@ Known Issues
 | Intrinsic argument type matching | Type matching is incomplete for intrinsic function calls. **in progress** |
 | Struct used as input *and* ouput | Structures can currently not be used for shader input and output semantics simultaneously. |
 | Unicode | The compiler uses the C++ ASCII file streams, that are not aware of unicode characters, neither in the file contents, nor in their filenames. |
-| VarDecl with alias type of array | Variable declaration with array alias type (e.g. "typedef int alias[3]") translates incorrect. Array dimension must be moved from the type into the variable declaration. |
 
 
 Requested Features
