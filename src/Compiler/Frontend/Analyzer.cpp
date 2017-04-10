@@ -511,13 +511,16 @@ void Analyzer::ValidateTypeCastFrom(TypedAST* sourceAST, TypedAST* destAST, cons
 
 void Analyzer::AnalyzeConditionalExpression(Expr* expr)
 {
-    /* Visit expression tree */
-    Visit(expr);
+    if (expr)
+    {
+        /* Visit expression tree */
+        Visit(expr);
 
-    /* Verify boolean type denoter in conditional expression */
-    const auto& condTypeDen = expr->GetTypeDenoter()->GetAliased();
-    if (!condTypeDen.IsScalar())
-        Error(R_ConditionalExprNotScalar(condTypeDen.ToString()), expr);
+        /* Verify boolean type denoter in conditional expression */
+        const auto& condTypeDen = expr->GetTypeDenoter()->GetAliased();
+        if (!condTypeDen.IsScalar())
+            Error(R_ConditionalExprNotScalar(condTypeDen.ToString()), expr);
+    }
 }
 
 /* ----- Const-expression evaluation ----- */

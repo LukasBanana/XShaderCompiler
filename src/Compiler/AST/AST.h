@@ -923,9 +923,9 @@ struct ForLoopStmnt : public Stmnt
 {
     AST_INTERFACE(ForLoopStmnt);
 
-    StmntPtr    initStmnt;
-    ExprPtr     condition;
-    ExprPtr     iteration;
+    StmntPtr    initStmnt; // May be a NullStmnt
+    ExprPtr     condition; // Condition expresion; may be empty
+    ExprPtr     iteration; // Loop iteration expression; may be empty
     StmntPtr    bodyStmnt;
 };
 
