@@ -1155,9 +1155,11 @@ StmntPtr HLSLParser::ParseStmntWithIdent()
     else
         return ParseExprStmnt(expr);
 
+    #if 0//DEAD CODE
     ErrorUnexpected(R_ExpectedVarOrAssignOrFuncCall, nullptr, true);
 
     return nullptr;
+    #endif
 }
 
 #endif
