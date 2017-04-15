@@ -123,6 +123,9 @@ void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
         if (enabled(ConvertImageAccess))
             ConvertExprImageAccess(expr);
 
+        if (enabled(ConvertSamplerBufferAccess))
+            ConvertExprSamplerBufferAccess(expr);
+
         if (enabled(ConvertVectorSubscripts))
             ConvertExprVectorSubscript(expr);
 
@@ -308,6 +311,52 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
                             Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
                         );
                     }
+                }
+                else
+                    RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), arrayExpr);
+            }
+        }
+    }
+}
+
+void ExprConverter::ConvertExprSamplerBufferAccess(ExprPtr& expr)
+{
+    if (!expr->flags(Expr::wasConverted))
+    {
+        /* Is this an array access to a sampler buffer? */
+        if (auto arrayExpr = expr->As<ArrayExpr>())
+            ConvertExprSamplerBufferAccessArray(expr, arrayExpr);
+    }
+}
+
+void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr* arrayExpr)
+{
+    /* Fetch buffer type denoter from l-value prefix expression */
+    const auto& prefixTypeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+    if (auto bufferTypeDen = prefixTypeDen.As<BufferTypeDenoter>())
+    {
+        if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
+        {
+            /* Is the buffer declaration a sampler buffer? */
+            const auto bufferType = bufferDecl->GetBufferType();
+            if (bufferType == BufferType::Buffer)
+            {
+                /* Get buffer type denoter from array indices of array access plus identifier */
+                auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetSub(arrayExpr);
+
+                if (!arrayExpr->arrayIndices.empty())
+                {
+                    /* Make first argument expression */
+                    auto arg0Expr = arrayExpr->prefixExpr;
+                    arg0Expr->flags << Expr::wasConverted;
+
+                    /* Get second argument expression (last array index) */
+                    auto arg1Expr = arrayExpr->arrayIndices.back();
+
+                    /* Convert expression to intrinsic call */
+                    expr = ASTFactory::MakeIntrinsicCallExpr(
+                        Intrinsic::Texture_Load_1, "texelFetch", bufferTypeDen, { arg0Expr, arg1Expr }
+                    );
                 }
                 else
                     RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), arrayExpr);

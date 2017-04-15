@@ -2645,7 +2645,7 @@ void GLSLGenerator::WriteBufferDecl(BufferDecl* bufferDecl)
 {
     if (bufferDecl->flags(AST::isReachable))
     {
-        if (IsTextureBufferType(bufferDecl->GetBufferType()))
+        if (!IsStorageBufferType(bufferDecl->GetBufferType()))
             WriteBufferDeclTexture(bufferDecl);
         else
             WriteBufferDeclStorageBuffer(bufferDecl);
