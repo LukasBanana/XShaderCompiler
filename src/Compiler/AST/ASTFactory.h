@@ -57,6 +57,8 @@ ObjectExprPtr                   MakeObjectExpr(Decl* symbolRef);
 
 ArrayExprPtr                    MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices);
 
+TypeDenoterPtr                  MakeBufferAccessCallTypeDenoter(const BaseTypeDenoter& bufferTypeDenoter);
+
 // Makes a new bracket expression with the specified sub expression (source area is copied).
 BracketExprPtr                  MakeBracketExpr(const ExprPtr& expr);
 

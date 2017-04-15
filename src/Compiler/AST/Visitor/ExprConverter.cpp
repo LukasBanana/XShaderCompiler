@@ -255,6 +255,7 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
 {
     /* Fetch buffer type denoter from l-value prefix expression */
     const auto& prefixTypeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+
     if (auto bufferTypeDen = prefixTypeDen.As<BufferTypeDenoter>())
     {
         if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
@@ -265,55 +266,60 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
             {
                 /* Get buffer type denoter from array indices of array access plus identifier */
                 auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetSub(arrayExpr);
-
-                if (!arrayExpr->arrayIndices.empty())
+                if (auto baseBufferTypeDen = bufferTypeDen->As<BaseTypeDenoter>())
                 {
-                    /* Make first argument expression */
-                    auto arg0Expr = arrayExpr->prefixExpr;
-                    arg0Expr->flags << Expr::wasConverted;
+                    /* Create a call denoter for the return value */
+                    auto callTypeDen = ASTFactory::MakeBufferAccessCallTypeDenoter(*baseBufferTypeDen);
 
-                    /* Get second argument expression (last array index) */
-                    auto arg1Expr = arrayExpr->arrayIndices.back();
-
-                    if (assignExpr)
+                    if (!arrayExpr->arrayIndices.empty())
                     {
-                        /* Get third argument expression (store value) */
-                        ExprPtr arg2Expr;
+                        /* Make first argument expression */
+                        auto arg0Expr = arrayExpr->prefixExpr;
+                        arg0Expr->flags << Expr::wasConverted;
 
-                        if (assignExpr->op == AssignOp::Set)
+                        /* Get second argument expression (last array index) */
+                        auto arg1Expr = arrayExpr->arrayIndices.back();
+
+                        if (assignExpr)
                         {
-                            /* Take r-value expression for standard assignemnt */
-                            arg2Expr = assignExpr->rvalueExpr;
-                        }
-                        else 
-                        {
-                            /* Make compound assignment with an image-load instruction first */
-                            auto lhsExpr = ASTFactory::MakeIntrinsicCallExpr(
-                                Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
+                            /* Get third argument expression (store value) */
+                            ExprPtr arg2Expr;
+
+                            if (assignExpr->op == AssignOp::Set)
+                            {
+                                /* Take r-value expression for standard assignemnt */
+                                arg2Expr = assignExpr->rvalueExpr;
+                            }
+                            else
+                            {
+                                /* Make compound assignment with an image-load instruction first */
+                                auto lhsExpr = ASTFactory::MakeIntrinsicCallExpr(
+                                    Intrinsic::Image_Load, "imageLoad", callTypeDen, { arg0Expr, arg1Expr }
+                                );
+
+                                auto rhsExpr = assignExpr->rvalueExpr;
+
+                                const auto binaryOp = AssignOpToBinaryOp(assignExpr->op);
+
+                                arg2Expr = ASTFactory::MakeBinaryExpr(lhsExpr, binaryOp, rhsExpr);
+                            }
+
+                            /* Convert expression to intrinsic call */
+                            expr = ASTFactory::MakeIntrinsicCallExpr(
+                                Intrinsic::Image_Store, "imageStore", nullptr, { arg0Expr, arg1Expr, arg2Expr }
                             );
-
-                            auto rhsExpr = assignExpr->rvalueExpr;
-
-                            const auto binaryOp = AssignOpToBinaryOp(assignExpr->op);
-
-                            arg2Expr = ASTFactory::MakeBinaryExpr(lhsExpr, binaryOp, rhsExpr);
                         }
-
-                        /* Convert expression to intrinsic call */
-                        expr = ASTFactory::MakeIntrinsicCallExpr(
-                            Intrinsic::Image_Store, "imageStore", nullptr, { arg0Expr, arg1Expr, arg2Expr }
-                        );
+                        else
+                        {
+                            /* Convert expression to intrinsic call */
+                            expr = ASTFactory::MakeIntrinsicCallExpr(
+                                Intrinsic::Image_Load, "imageLoad", callTypeDen, { arg0Expr, arg1Expr }
+                            );
+                        }
                     }
                     else
-                    {
-                        /* Convert expression to intrinsic call */
-                        expr = ASTFactory::MakeIntrinsicCallExpr(
-                            Intrinsic::Image_Load, "imageLoad", bufferTypeDen, { arg0Expr, arg1Expr }
-                        );
-                    }
+                        RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), arrayExpr);
                 }
-                else
-                    RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), arrayExpr);
             }
         }
     }
