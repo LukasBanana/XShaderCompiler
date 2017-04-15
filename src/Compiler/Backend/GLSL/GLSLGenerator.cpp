@@ -62,6 +62,7 @@ void GLSLGenerator::GenerateCodePrimary(
     allowLineMarks_     = outputDesc.formatting.lineMarks;
     compactWrappers_    = outputDesc.formatting.compactWrappers;
     alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
+    autoBinding_        = outputDesc.options.autoBinding;
 
     for (const auto& s : outputDesc.vertexSemantics)
     {
@@ -1229,7 +1230,7 @@ void GLSLGenerator::WriteLayoutGlobalOut(const std::initializer_list<LayoutEntry
 
 void GLSLGenerator::WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters)
 {
-    if (explicitBinding_)
+    if (explicitBinding_ || autoBinding_)
     {
         if (auto slotRegister = Register::GetForTarget(slotRegisters, GetShaderTarget()))
             Write("binding = " + std::to_string(slotRegister->slot));

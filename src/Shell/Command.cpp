@@ -928,6 +928,51 @@ void BindingCommand::Run(CommandLine& cmdLine, ShellState& state)
     state.outputDesc.options.explicitBinding = cmdLine.AcceptBoolean(true);
 }
 
+/*
+ * AutoBindingCommand class
+ */
+
+std::vector<Command::Identifier> AutoBindingCommand::Idents() const
+{
+    return { { "-AB" }, { "--auto-bind" } };
+}
+
+HelpDescriptor AutoBindingCommand::Help() const
+{
+    return
+    {
+        "-AB, --auto-bind [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables automatic binding slot generation; default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void AutoBindingCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.autoBinding = cmdLine.AcceptBoolean(true);
+}
+
+/*
+ * AutoBindingSlotOffsetCommand class
+ */
+
+std::vector<Command::Identifier> AutoBindingSlotOffsetCommand::Idents() const
+{
+    return { { "--auto-bind-offset" } };
+}
+
+HelpDescriptor AutoBindingSlotOffsetCommand::Help() const
+{
+    return
+    {
+        "--auto-bind-offset OFFSET",
+        "Offset to apply to slots when automatic binding slot generation is enabled; default=0"
+    };
+}
+
+void AutoBindingSlotOffsetCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.autoBindingSlotOffset = std::stoi(cmdLine.Accept());
+}
 
 /*
  * CommentCommand class

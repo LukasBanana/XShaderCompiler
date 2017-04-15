@@ -159,6 +159,12 @@ struct Options
 
     //! If true, the timings of the different compilation processes are written to the log output. By default false.
     bool showTimes                  = false;
+
+    //! If true, binding slots for all buffer types will be generated sequentially, starting with index at autoBindingOffset. By default false.
+    bool autoBinding                = false;
+
+    //! Index to start generating binding slots from. Only relevant if autoBinding is enabled. By default 0.
+    int autoBindingSlotOffset       = 0;
 };
 
 //! Name mangling descriptor structure for shader input/output variables (also referred to as "varyings"), temporary variables, and reserved keywords.

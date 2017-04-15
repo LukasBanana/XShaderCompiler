@@ -299,6 +299,7 @@ class GLSLGenerator : public Generator
         bool                                    allowLineMarks_         = false;
         bool                                    compactWrappers_        = true;
         bool                                    alwaysBracedScopes_     = false;
+        bool                                    autoBinding_            = false;
 
         bool                                    isInsideInterfaceBlock_ = false;
 };
