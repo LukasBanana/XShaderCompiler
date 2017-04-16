@@ -349,23 +349,28 @@ void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr
             {
                 /* Get buffer type denoter from array indices of array access plus identifier */
                 auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetSub(arrayExpr);
+				if (auto baseBufferTypeDen = bufferTypeDen->As<BaseTypeDenoter>())
+				{
+					/* Create a call denoter for the return value */
+					auto callTypeDen = ASTFactory::MakeBufferAccessCallTypeDenoter(*baseBufferTypeDen);
 
-                if (!arrayExpr->arrayIndices.empty())
-                {
-                    /* Make first argument expression */
-                    auto arg0Expr = arrayExpr->prefixExpr;
-                    arg0Expr->flags << Expr::wasConverted;
+					if (!arrayExpr->arrayIndices.empty())
+					{
+						/* Make first argument expression */
+						auto arg0Expr = arrayExpr->prefixExpr;
+						arg0Expr->flags << Expr::wasConverted;
 
-                    /* Get second argument expression (last array index) */
-                    auto arg1Expr = arrayExpr->arrayIndices.back();
+						/* Get second argument expression (last array index) */
+						auto arg1Expr = arrayExpr->arrayIndices.back();
 
-                    /* Convert expression to intrinsic call */
-                    expr = ASTFactory::MakeIntrinsicCallExpr(
-                        Intrinsic::Texture_Load_1, "texelFetch", bufferTypeDen, { arg0Expr, arg1Expr }
-                    );
-                }
-                else
-                    RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), arrayExpr);
+						/* Convert expression to intrinsic call */
+						expr = ASTFactory::MakeIntrinsicCallExpr(
+							Intrinsic::Texture_Load_1, "texelFetch", callTypeDen, { arg0Expr, arg1Expr }
+						);
+					}
+					else
+						RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), arrayExpr);
+				}
             }
         }
     }
