@@ -136,6 +136,10 @@ class GLSLConverter : public Converter
         void UnrollStmntsVarDecl(std::vector<StmntPtr>& unrolledStmnts, VarDeclStmnt* ast);
         void UnrollStmntsVarDeclInitializer(std::vector<StmntPtr>& unrolledStmnts, VarDecl* varDecl);
 
+        /* ----- Misc ----- */
+
+        void ConvertSlotRegisters(std::vector<RegisterPtr>& slotRegisters);
+
         /* === Members === */
 
         ExprConverter               exprConverter_;
@@ -144,7 +148,7 @@ class GLSLConverter : public Converter
 
         Options                     options_;
         bool                        isVKSL_             = false;
-        bool                        autoBindings_       = false;
+        bool                        autoBinding_        = false;
         int                         autoBindingSlot_    = 0;
 
         /*

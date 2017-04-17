@@ -297,9 +297,8 @@ class GLSLGenerator : public Generator
         bool                                    explicitBinding_        = false;
         bool                                    preserveComments_       = false;
         bool                                    allowLineMarks_         = false;
-        bool                                    compactWrappers_        = true;
+        bool                                    compactWrappers_        = false;
         bool                                    alwaysBracedScopes_     = false;
-        bool                                    autoBinding_            = false;
 
         bool                                    isInsideInterfaceBlock_ = false;
 };

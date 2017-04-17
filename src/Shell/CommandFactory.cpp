@@ -81,6 +81,8 @@ CommandFactory::CommandFactory()
         UnrollInitializerCommand,
         ObfuscateCommand,
         RowMajorAlignmentCommand,
+        AutoBindingCommand,
+        AutoBindingStartSlotCommand,
 
         FormatBlanksCommand,
         FormatLineMarksCommand,

@@ -358,6 +358,8 @@ public ref class XscCompiler
                     ValidateOnly            = false;
                     AllowExtensions         = false;
                     ExplicitBinding         = false;
+                    AutoBinding             = false;
+                    AutoBindingStartSlot    = 0;
                     PreserveComments        = false;
                     PreferWrappers          = false;
                     UnrollArrayInitializers = false;
@@ -368,40 +370,49 @@ public ref class XscCompiler
                 }
 
                 //! If true, little code optimizations are performed. By default false.
-                property bool Optimize;
+                property bool   Optimize;
 
                 //! If true, only the preprocessed source code will be written out. By default false.
-                property bool PreprocessOnly;
+                property bool   PreprocessOnly;
 
                 //! If true, the source code is only validated, but no output code will be generated. By default false.
-                property bool ValidateOnly;
+                property bool   ValidateOnly;
 
                 //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
-                property bool AllowExtensions;
+                property bool   AllowExtensions;
 
                 //! If true, explicit binding slots are enabled. By default false.
-                property bool ExplicitBinding;
+                property bool   ExplicitBinding;
+
+                /**
+                \brief If true, binding slots for all buffer types will be generated sequentially, starting with index at 'AutoBindingStartSlot'. By default false.
+                \remarks This will also enable 'ExplicitBinding'.
+                */
+                property bool   AutoBinding;
+
+                //! Index to start generating binding slots from. Only relevant if 'AutoBinding' is enabled. By default 0.
+                property int    AutoBindingStartSlot;
 
                 //! If true, commentaries are preserved for each statement. By default false.
-                property bool PreserveComments;
+                property bool   PreserveComments;
 
                 //! If true, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.
-                property bool PreferWrappers;
+                property bool   PreferWrappers;
 
                 //! If true, array initializations will be unrolled. By default false.
-                property bool UnrollArrayInitializers;
+                property bool   UnrollArrayInitializers;
 
                 //! If true, matrices have row-major alignment. Otherwise the matrices have column-major alignment. By default false.
-                property bool RowMajorAlignment;
+                property bool   RowMajorAlignment;
 
                 //! If true, code obfuscation is performed. By default false.
-                property bool Obfuscate;
+                property bool   Obfuscate;
 
                 //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
-                property bool ShowAST;
+                property bool   ShowAST;
 
                 //! If true, the timings of the different compilation processes are written to the log output. By default false.
-                property bool ShowTimes;
+                property bool   ShowTimes;
 
         };
 
@@ -577,7 +588,7 @@ public ref class XscCompiler
                 //! Specifies the output shader version. By default OutputShaderVersion::GLSL (to auto-detect minimum required version).
                 property OutputShaderVersion                            ShaderVersion;
                 
-                //! Optional list of vertex semantic layouts, to bind a vertex attribute (semantic name) to a location index (only used when 'explicitBinding' is true).
+                //! Optional list of vertex semantic layouts, to bind a vertex attribute (semantic name) to a location index (only used when 'ExplicitBinding' is true).
                 property Collections::Generic::List<VertexSemantic^>^   VertexSemantics;
 
                 //! Additional options to configure the code generation.
@@ -994,6 +1005,8 @@ bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc
     out.options.validateOnly            = outputDesc->Options->ValidateOnly;
     out.options.allowExtensions         = outputDesc->Options->AllowExtensions;
     out.options.explicitBinding         = outputDesc->Options->ExplicitBinding;
+    out.options.autoBinding             = outputDesc->Options->AutoBinding;
+    out.options.autoBindingStartSlot    = outputDesc->Options->AutoBindingStartSlot;
     out.options.preserveComments        = outputDesc->Options->PreserveComments;
     out.options.preferWrappers          = outputDesc->Options->PreferWrappers;
     out.options.unrollArrayInitializers = outputDesc->Options->UnrollArrayInitializers;

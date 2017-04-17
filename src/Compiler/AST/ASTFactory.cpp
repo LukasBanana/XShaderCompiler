@@ -234,13 +234,13 @@ ArrayExprPtr MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& ar
     return ast;
 }
 
-RegisterPtr MakeRegister(int slot)
+RegisterPtr MakeRegister(int slot, const RegisterType registerType)
 {
     auto ast = MakeAST<Register>();
-    ast->registerType = RegisterType::Undefined;
-    ast->shaderTarget = ShaderTarget::Undefined;
-    ast->slot = slot;
-
+    {
+        ast->registerType   = registerType;
+        ast->slot           = slot;
+    }
     return ast;
 }
 

@@ -214,8 +214,8 @@ void DebuggerView::CreateLayoutPropertyGridOptions(wxPropertyGrid& pg)
     pg.Append(new wxBoolProperty("Row-Major Alignment", "rowMajor"));
     pg.Append(new wxBoolProperty("Obfuscate", "obfuscate"));
     pg.Append(new wxBoolProperty("Show AST", "showAST"));
-    pg.Append(new wxBoolProperty("Automatic binding", "autoBinding"));
-    pg.Append(new wxIntProperty("Automatic binding slot offset", "autoBindingSlotOffset"));
+    pg.Append(new wxBoolProperty("Auto. Binding", "autoBinding"));
+    pg.Append(new wxIntProperty("Auto. Binding Start Slot", "autoBindingStartSlot"));
 }
 
 void DebuggerView::CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg)
@@ -436,8 +436,8 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderOutput_.options.showAST = ValueBool();
     else if (name == "autoBinding")
         shaderOutput_.options.autoBinding = ValueBool();
-    else if (name == "autoBindingSlotOffset")
-        shaderOutput_.options.autoBindingSlotOffset = ValueInt();
+    else if (name == "autoBindingStartSlot")
+        shaderOutput_.options.autoBindingStartSlot = ValueInt();
 
     /* --- Formatting --- */
     else if (name == "blanks")
