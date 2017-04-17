@@ -419,7 +419,7 @@ enum class BufferType
 
 std::string BufferTypeToString(const BufferType t);
 
-// Returns true if the specified buffer type is a storage buffer type (e.g. BufferType::Buffer, or BufferType::RWStructuredBuffer).
+// Returns true if the specified buffer type is a storage buffer type (i.e. gets converted to a 'buffer' block in GLSL).
 bool IsStorageBufferType(const BufferType t);
 
 // Returns true if the specified buffer type is a RW (read/write) buffer type.

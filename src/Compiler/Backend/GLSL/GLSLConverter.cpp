@@ -813,6 +813,9 @@ void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
         case Intrinsic::Texture_SampleLevel_5:
             ConvertIntrinsicCallTextureSampleLevel(ast);
             break;
+        case Intrinsic::Image_Store:
+            ConvertIntrinsicCallImageStore(ast);
+            break;
         default:
             break;
     }
@@ -847,6 +850,7 @@ static int GetTextureDimFromExpr(Expr* expr, const AST* ast = nullptr)
             /* Determine vector size for texture intrinsic parameters by texture buffer type */
             switch (bufferTypeDen->bufferType)
             {
+                case BufferType::Buffer:
                 case BufferType::Texture1D:
                     return 1;
                 case BufferType::Texture1DArray:
@@ -1005,6 +1009,50 @@ void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
                 }
             }
         }
+    }
+}
+
+void GLSLConverter::ConvertIntrinsicCallImageStore(CallExpr* ast)
+{
+    /* Cast input value argument to 4 component vector */
+    auto& args = ast->arguments;
+
+    if (args.size() >= 3)
+    {
+        DataType dataType = DataType::Float;
+
+        const auto& arg0Expr = args.front();
+        if (auto arg0ArrayExpr = arg0Expr->As<ArrayExpr>())
+        {
+            const auto& typeDen = arg0ArrayExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
+            {
+                if (bufferTypeDen->genericTypeDenoter != nullptr)
+                {
+                    if (auto baseBufferTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
+                        dataType = baseBufferTypeDen->dataType;
+                }
+            }
+        }
+        else
+        {
+            const auto& typeDen = arg0Expr->GetTypeDenoter()->GetAliased();
+            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
+            {
+                if (bufferTypeDen->genericTypeDenoter != nullptr)
+                {
+                    if (auto baseBufferTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
+                        dataType = baseBufferTypeDen->dataType;
+                }
+            }
+        }
+
+        if(IsIntType(dataType))
+            exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Int4, true);
+        else if(IsUIntType(dataType))
+            exprConverter_.ConvertExprIfCastRequired(args[2], DataType::UInt4, true);
+        else
+            exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Float4, true);
     }
 }
 

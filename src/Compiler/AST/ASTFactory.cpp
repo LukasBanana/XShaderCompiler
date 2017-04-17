@@ -234,6 +234,19 @@ ArrayExprPtr MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& ar
     return ast;
 }
 
+TypeDenoterPtr MakeBufferAccessCallTypeDenoter(const BaseTypeDenoter& bufferTypeDenoter)
+{
+    auto typeDenoter = std::make_shared<BaseTypeDenoter>();
+    if (IsIntType(bufferTypeDenoter.dataType))
+        typeDenoter->dataType = DataType::Int4;
+    else if (IsUIntType(bufferTypeDenoter.dataType))
+        typeDenoter->dataType = DataType::UInt4;
+    else
+        typeDenoter->dataType = DataType::Float4;
+    
+    return typeDenoter;
+}
+
 RegisterPtr MakeRegister(int slot, const RegisterType registerType)
 {
     auto ast = MakeAST<Register>();
