@@ -144,6 +144,8 @@ class GLSLConverter : public Converter
 
         Options                     options_;
         bool                        isVKSL_             = false;
+        bool                        autoBindings_       = false;
+        int                         autoBindingSlot_    = 0;
 
         /*
         List of all variables with reserved identifiers that come from a structure that must be resolved.

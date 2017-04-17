@@ -234,6 +234,16 @@ ArrayExprPtr MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& ar
     return ast;
 }
 
+RegisterPtr MakeRegister(int slot)
+{
+    auto ast = MakeAST<Register>();
+    ast->registerType = RegisterType::Undefined;
+    ast->shaderTarget = ShaderTarget::Undefined;
+    ast->slot = slot;
+
+    return ast;
+}
+
 BracketExprPtr MakeBracketExpr(const ExprPtr& expr)
 {
     auto ast = MakeASTWithOrigin<BracketExpr>(expr);
