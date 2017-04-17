@@ -779,8 +779,11 @@ std::string BufferTypeToString(const BufferType t)
 
 bool IsStorageBufferType(const BufferType t)
 {
-    return (t >= BufferType::StructuredBuffer && t <= BufferType::ByteAddressBuffer) ||
-           (t >= BufferType::RWStructuredBuffer && t <= BufferType::ConsumeStructuredBuffer);
+    return
+    (
+        ( t >= BufferType::StructuredBuffer   && t <= BufferType::ByteAddressBuffer       ) ||
+        ( t >= BufferType::RWStructuredBuffer && t <= BufferType::ConsumeStructuredBuffer )
+    );
 }
 
 bool IsRWBufferType(const BufferType t)
@@ -790,12 +793,12 @@ bool IsRWBufferType(const BufferType t)
 
 bool IsRWTextureBufferType(const BufferType t)
 {
-    return (t >= BufferType::RWTexture1D && t <= BufferType::RWTexture3D) || t == BufferType::RWBuffer;
+    return ( ( t >= BufferType::RWTexture1D && t <= BufferType::RWTexture3D ) || t == BufferType::RWBuffer );
 }
 
 bool IsTextureBufferType(const BufferType t)
 {
-    return (t >= BufferType::RWTexture1D && t <= BufferType::GenericTexture) || t == BufferType::Buffer;
+    return ( ( t >= BufferType::RWTexture1D && t <= BufferType::GenericTexture ) || t == BufferType::Buffer );
 }
 
 bool IsTextureMSBufferType(const BufferType t)
