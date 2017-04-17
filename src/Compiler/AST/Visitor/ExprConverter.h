@@ -70,6 +70,8 @@ class ExprConverter : public Visitor
         std::unique_ptr<DataType> MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize);
         std::unique_ptr<DataType> MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize);
 
+        TypeDenoterPtr MakeBufferAccessCallTypeDenoter(const DataType genericDataType);
+
         /* ----- Conversion ----- */
 
         // Converts the expression according to the specified flags (if enabled in the current conversion).

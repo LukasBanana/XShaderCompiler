@@ -106,6 +106,20 @@ std::unique_ptr<DataType> ExprConverter::MustCastExprToDataType(const TypeDenote
     return nullptr;
 }
 
+TypeDenoterPtr ExprConverter::MakeBufferAccessCallTypeDenoter(const DataType genericDataType)
+{
+    auto typeDenoter = std::make_shared<BaseTypeDenoter>();
+    
+    if (IsIntType(genericDataType))
+        typeDenoter->dataType = DataType::Int4;
+    else if (IsUIntType(genericDataType))
+        typeDenoter->dataType = DataType::UInt4;
+    else
+        typeDenoter->dataType = DataType::Float4;
+    
+    return typeDenoter;
+}
+
 /* ----- Conversion ----- */
 
 void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
@@ -265,11 +279,14 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
             if (IsRWTextureBufferType(bufferType))
             {
                 /* Get buffer type denoter from array indices of array access plus identifier */
+                //TODO: not sure if the buffer type must be derived with 'GetSub(arrayExpr)' again here???
+                #if 0
                 auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetSub(arrayExpr);
-                if (auto baseBufferTypeDen = bufferTypeDen->As<BaseTypeDenoter>())
+                #endif
+                if (auto genericBaseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
                 {
-                    /* Create a call denoter for the return value */
-                    auto callTypeDen = ASTFactory::MakeBufferAccessCallTypeDenoter(*baseBufferTypeDen);
+                    /* Create a type denoter for the return value */
+                    auto callTypeDen = MakeBufferAccessCallTypeDenoter(genericBaseTypeDen->dataType);
 
                     if (!arrayExpr->arrayIndices.empty())
                     {
@@ -348,11 +365,14 @@ void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr
             if (bufferType == BufferType::Buffer)
             {
                 /* Get buffer type denoter from array indices of array access plus identifier */
+                //TODO: not sure if the buffer type must be derived with 'GetSub(arrayExpr)' again here???
+                #if 0
                 auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetSub(arrayExpr);
-                if (auto baseBufferTypeDen = bufferTypeDen->As<BaseTypeDenoter>())
+                #endif
+                if (auto genericBaseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
                 {
-                    /* Create a call denoter for the return value */
-                    auto callTypeDen = ASTFactory::MakeBufferAccessCallTypeDenoter(*baseBufferTypeDen);
+                    /* Create a type denoter for the return value */
+                    auto callTypeDen = MakeBufferAccessCallTypeDenoter(genericBaseTypeDen->dataType);
 
                     if (!arrayExpr->arrayIndices.empty())
                     {
