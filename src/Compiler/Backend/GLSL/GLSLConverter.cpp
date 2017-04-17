@@ -1019,37 +1019,39 @@ void GLSLConverter::ConvertIntrinsicCallImageStore(CallExpr* ast)
 
     if (args.size() >= 3)
     {
+        /* Determine base data type form generic buffer type denoter */
         DataType dataType = DataType::Float;
 
-        const auto& arg0Expr = args.front();
-        if (auto arg0ArrayExpr = arg0Expr->As<ArrayExpr>())
+        auto nonBracketExpr = args.front()->FindFirstNotOf(AST::Types::BracketExpr);
+
+        if (auto arg0ArrayExpr = nonBracketExpr->As<ArrayExpr>())
         {
             const auto& typeDen = arg0ArrayExpr->prefixExpr->GetTypeDenoter()->GetAliased();
             if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
             {
                 if (bufferTypeDen->genericTypeDenoter != nullptr)
                 {
-                    if (auto baseBufferTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
-                        dataType = baseBufferTypeDen->dataType;
+                    if (auto genericBaseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
+                        dataType = genericBaseTypeDen->dataType;
                 }
             }
         }
         else
         {
-            const auto& typeDen = arg0Expr->GetTypeDenoter()->GetAliased();
+            const auto& typeDen = nonBracketExpr->GetTypeDenoter()->GetAliased();
             if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
             {
                 if (bufferTypeDen->genericTypeDenoter != nullptr)
                 {
-                    if (auto baseBufferTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
-                        dataType = baseBufferTypeDen->dataType;
+                    if (auto genericBaseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
+                        dataType = genericBaseTypeDen->dataType;
                 }
             }
         }
 
-        if(IsIntType(dataType))
+        if (IsIntType(dataType))
             exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Int4, true);
-        else if(IsUIntType(dataType))
+        else if (IsUIntType(dataType))
             exprConverter_.ConvertExprIfCastRequired(args[2], DataType::UInt4, true);
         else
             exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Float4, true);
