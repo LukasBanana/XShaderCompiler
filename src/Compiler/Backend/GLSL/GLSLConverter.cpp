@@ -1023,11 +1023,11 @@ void GLSLConverter::ConvertIntrinsicCallImageStore(CallExpr* ast)
             const auto& typeDen = arg0ArrayExpr->prefixExpr->GetTypeDenoter()->GetAliased();
             if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
             {
-				if (bufferTypeDen->genericTypeDenoter != nullptr)
-				{
-					if (auto baseBufferTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
-						dataType = baseBufferTypeDen->dataType;
-				}
+                if (bufferTypeDen->genericTypeDenoter != nullptr)
+                {
+                    if (auto baseBufferTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
+                        dataType = baseBufferTypeDen->dataType;
+                }
             }
         }
         else
@@ -1035,11 +1035,11 @@ void GLSLConverter::ConvertIntrinsicCallImageStore(CallExpr* ast)
             const auto& typeDen = arg0Expr->GetTypeDenoter()->GetAliased();
             if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
             {
-				if (bufferTypeDen->genericTypeDenoter != nullptr)
-				{
-					if (auto baseBufferTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
-						dataType = baseBufferTypeDen->dataType;
-				}
+                if (bufferTypeDen->genericTypeDenoter != nullptr)
+                {
+                    if (auto baseBufferTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
+                        dataType = baseBufferTypeDen->dataType;
+                }
             }
         }
 
