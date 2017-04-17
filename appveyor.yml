@@ -1,4 +1,4 @@
-version: 0.08 Alpha (Build {build})
+version: 0.09 Alpha (Build {build})
 before_build:
 - cmake -G "Visual Studio 14 2015"
 build:
