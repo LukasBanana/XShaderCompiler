@@ -501,7 +501,7 @@ void SemanticCommand::Run(CommandLine& cmdLine, ShellState& state)
         /* Get semantic name and location index */
         auto ident = arg.substr(0, pos);
         auto value = arg.substr(pos + 1);
-        auto locIndex = std::atoi(value.c_str());
+        auto locIndex = std::stoi(value);
         state.outputDesc.vertexSemantics.push_back({ ident, locIndex });
     }
     else
@@ -928,6 +928,51 @@ void BindingCommand::Run(CommandLine& cmdLine, ShellState& state)
     state.outputDesc.options.explicitBinding = cmdLine.AcceptBoolean(true);
 }
 
+/*
+ * AutoBindingCommand class
+ */
+
+std::vector<Command::Identifier> AutoBindingCommand::Idents() const
+{
+    return { { "-AB" }, { "--auto-bind" } };
+}
+
+HelpDescriptor AutoBindingCommand::Help() const
+{
+    return
+    {
+        "-AB, --auto-bind [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables automatic binding slot generation (implies -EB); default=" + CommandLine::GetBooleanFalse()
+    };
+}
+
+void AutoBindingCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.autoBinding = cmdLine.AcceptBoolean(true);
+}
+
+/*
+ * AutoBindingStartSlotCommand class
+ */
+
+std::vector<Command::Identifier> AutoBindingStartSlotCommand::Idents() const
+{
+    return { { "-AB-slot" }, { "--auto-bind-slot" } };
+}
+
+HelpDescriptor AutoBindingStartSlotCommand::Help() const
+{
+    return
+    {
+        "-AB-slot, --auto-bind-slot OFFSET",
+        "Sets the start slot index for automatic binding slot generation; default=0"
+    };
+}
+
+void AutoBindingStartSlotCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.autoBindingStartSlot = std::stoi(cmdLine.Accept());
+}
 
 /*
  * CommentCommand class

@@ -99,6 +99,8 @@ DECL_SHELL_COMMAND( WrapperCommand               );
 DECL_SHELL_COMMAND( UnrollInitializerCommand     );
 DECL_SHELL_COMMAND( ObfuscateCommand             );
 DECL_SHELL_COMMAND( RowMajorAlignmentCommand     );
+DECL_SHELL_COMMAND( AutoBindingCommand           );
+DECL_SHELL_COMMAND( AutoBindingStartSlotCommand  );
 
 DECL_SHELL_COMMAND( FormatBlanksCommand          );
 DECL_SHELL_COMMAND( FormatLineMarksCommand       );

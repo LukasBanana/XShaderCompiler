@@ -69,40 +69,48 @@ struct XscFormatting
 struct XscOptions
 {
     //! If true, little code optimizations are performed. By default false.
-    bool optimize;
+    bool    optimize;
 
     //! If true, only the preprocessed source code will be written out. By default false.
-    bool preprocessOnly;
+    bool    preprocessOnly;
 
     //! If true, the source code is only validated, but no output code will be generated. By default false.
-    bool validateOnly;
+    bool    validateOnly;
 
     //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
-    bool allowExtensions;
+    bool    allowExtensions;
 
     //! If true, explicit binding slots are enabled. By default false.
-    bool explicitBinding;
+    bool    explicitBinding;
+    /**
+    \brief If true, binding slots for all buffer types will be generated sequentially, starting with index at 'autoBindingStartSlot'. By default false.
+    \remarks This will also enable 'explicitBinding'.
+    */
+    bool    autoBinding;
+
+    //! Index to start generating binding slots from. Only relevant if 'autoBinding' is enabled. By default 0.
+    int     autoBindingStartSlot;
 
     //! If true, commentaries are preserved for each statement. By default false.
-    bool preserveComments;
+    bool    preserveComments;
 
     //! If true, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.
-    bool preferWrappers;
+    bool    preferWrappers;
 
     //! If true, array initializations will be unrolled. By default false.
-    bool unrollArrayInitializers;
+    bool    unrollArrayInitializers;
 
     //! If true, matrices have row-major alignment. Otherwise the matrices have column-major alignment. By default false.
-    bool rowMajorAlignment;
+    bool    rowMajorAlignment;
 
     //! If true, code obfuscation is performed. By default false.
-    bool obfuscate;
+    bool    obfuscate;
 
     //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
-    bool showAST;
+    bool    showAST;
 
     //! If true, the timings of the different compilation processes are written to the log output. By default false.
-    bool showTimes;
+    bool    showTimes;
 };
 
 //! Name mangling descriptor structure for shader input/output variables (also referred to as "varyings"), temporary variables, and reserved keywords.

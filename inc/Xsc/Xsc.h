@@ -125,40 +125,49 @@ struct Formatting
 struct Options
 {
     //! If true, little code optimizations are performed. By default false.
-    bool optimize                   = false;
+    bool    optimize                = false;
 
     //! If true, only the preprocessed source code will be written out. By default false.
-    bool preprocessOnly             = false;
+    bool    preprocessOnly          = false;
 
     //! If true, the source code is only validated, but no output code will be generated. By default false.
-    bool validateOnly               = false;
+    bool    validateOnly            = false;
 
     //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
-    bool allowExtensions            = false;
+    bool    allowExtensions         = false;
 
     //! If true, explicit binding slots are enabled. By default false.
-    bool explicitBinding            = false;
+    bool    explicitBinding         = false;
+
+    /**
+    \brief If true, binding slots for all buffer types will be generated sequentially, starting with index at 'autoBindingStartSlot'. By default false.
+    \remarks This will also enable 'explicitBinding'.
+    */
+    bool    autoBinding             = false;
+
+    //! Index to start generating binding slots from. Only relevant if 'autoBinding' is enabled. By default 0.
+    int     autoBindingStartSlot    = 0;
 
     //! If true, commentaries are preserved for each statement. By default false.
-    bool preserveComments           = false;
+    bool    preserveComments        = false;
 
     //! If true, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.
-    bool preferWrappers             = false;
+    bool    preferWrappers          = false;
 
     //! If true, array initializations will be unrolled. By default false.
-    bool unrollArrayInitializers    = false;
+    bool    unrollArrayInitializers = false;
 
     //! If true, matrices have row-major alignment. Otherwise the matrices have column-major alignment. By default false.
-    bool rowMajorAlignment          = false;
+    bool    rowMajorAlignment       = false;
 
     //! If true, code obfuscation is performed. By default false.
-    bool obfuscate                  = false;
+    bool    obfuscate               = false;
 
     //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
-    bool showAST                    = false;
+    bool    showAST                 = false;
 
     //! If true, the timings of the different compilation processes are written to the log output. By default false.
-    bool showTimes                  = false;
+    bool    showTimes               = false;
 };
 
 //! Name mangling descriptor structure for shader input/output variables (also referred to as "varyings"), temporary variables, and reserved keywords.

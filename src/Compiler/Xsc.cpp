@@ -237,6 +237,10 @@ XSC_EXPORT bool CompileShader(
     if (outputDescCopy.options.validateOnly)
         outputDescCopy.sourceCode = &dummyOutputStream;
 
+    /* Implicitly enable 'explicitBinding' option of 'autoBinding' is enabled */
+    if (outputDescCopy.options.autoBinding)
+        outputDescCopy.options.explicitBinding = true;
+
     /* Compile shader with primary function */
     auto result = CompileShaderPrimary(inputDesc, outputDescCopy, log, reflectionData, timePoints);
 

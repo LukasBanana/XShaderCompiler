@@ -82,6 +82,8 @@ static void InitializeOptions(struct XscOptions* s)
     s->validateOnly             = false;
     s->allowExtensions          = false;
     s->explicitBinding          = false;
+    s->autoBinding              = false;
+    s->autoBindingStartSlot     = 0;
     s->preserveComments         = false;
     s->preferWrappers           = false;
     s->unrollArrayInitializers  = false;
@@ -369,6 +371,8 @@ XSC_EXPORT bool XscCompileShader(
     out.options.validateOnly            = outputDesc->options.validateOnly;
     out.options.allowExtensions         = outputDesc->options.allowExtensions;
     out.options.explicitBinding         = outputDesc->options.explicitBinding;
+    out.options.autoBinding             = outputDesc->options.autoBinding;
+    out.options.autoBindingStartSlot    = outputDesc->options.autoBindingStartSlot;
     out.options.preserveComments        = outputDesc->options.preserveComments;
     out.options.preferWrappers          = outputDesc->options.preferWrappers;
     out.options.unrollArrayInitializers = outputDesc->options.unrollArrayInitializers;

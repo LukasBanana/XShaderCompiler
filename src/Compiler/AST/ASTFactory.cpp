@@ -247,6 +247,16 @@ TypeDenoterPtr MakeBufferAccessCallTypeDenoter(const BaseTypeDenoter& bufferType
     return typeDenoter;
 }
 
+RegisterPtr MakeRegister(int slot, const RegisterType registerType)
+{
+    auto ast = MakeAST<Register>();
+    {
+        ast->registerType   = registerType;
+        ast->slot           = slot;
+    }
+    return ast;
+}
+
 BracketExprPtr MakeBracketExpr(const ExprPtr& expr)
 {
     auto ast = MakeASTWithOrigin<BracketExpr>(expr);

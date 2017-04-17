@@ -53,6 +53,8 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
     shaderTarget_       = inputDesc.shaderTarget;
     options_            = outputDesc.options;
     isVKSL_             = IsLanguageVKSL(outputDesc.shaderVersion);
+    autoBinding_        = outputDesc.options.autoBinding;
+    autoBindingSlot_    = outputDesc.options.autoBindingStartSlot;
 
     /* Convert type of specific semantics */
     TypeConverter typeConverter;
@@ -216,12 +218,14 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     RegisterDeclIdent(ast);
+    ConvertSlotRegisters(ast->slotRegisters);
     VISIT_DEFAULT(BufferDecl);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
     RegisterDeclIdent(ast);
+    ConvertSlotRegisters(ast->slotRegisters);
     VISIT_DEFAULT(SamplerDecl);
 }
 
@@ -279,7 +283,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
-    Visit(ast->slotRegisters);
+    ConvertSlotRegisters(ast->slotRegisters);
     VisitScopedStmntList(ast->localStmnts);
 }
 
@@ -1484,6 +1488,17 @@ void GLSLConverter::UnrollStmntsVarDeclInitializer(std::vector<StmntPtr>& unroll
             /* Remove initializer after unrolling */
             varDecl->initializer.reset();
         }
+    }
+}
+
+/* ----- Misc ----- */
+
+void GLSLConverter::ConvertSlotRegisters(std::vector<RegisterPtr>& slotRegisters)
+{
+    if (autoBinding_)
+    {
+        slotRegisters.clear();
+        slotRegisters.push_back(ASTFactory::MakeRegister(autoBindingSlot_++));
     }
 }
 

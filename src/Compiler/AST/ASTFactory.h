@@ -59,6 +59,8 @@ ArrayExprPtr                    MakeArrayExpr(const ExprPtr& prefixExpr, const s
 
 TypeDenoterPtr                  MakeBufferAccessCallTypeDenoter(const BaseTypeDenoter& bufferTypeDenoter);
 
+RegisterPtr                     MakeRegister(int slot, const RegisterType registerType = RegisterType::Undefined);
+
 // Makes a new bracket expression with the specified sub expression (source area is copied).
 BracketExprPtr                  MakeBracketExpr(const ExprPtr& expr);
 
