@@ -28,9 +28,28 @@ The main function in ``TypeDenoter`` to derive a type by an input expression is 
 
  shared_ptr<TypeDenoter> GetSub(const Expr* expr = nullptr);
 
-If the input expression is ``null``, the type denoter itself is returned with ``std::enable_shared_from_this<TypeDenoter>::shared_from_this()``
+If the input expression is ``null``, the type denoter itself is returned with ``shared_from_this()``.
+Otherwise, the type denoter is derived by the expression,
+e.g. with an ``ArrayExpr`` this type denoter is expected to be an ``ArrayTypeDenoter`` and its base type is returned.
+Here are a few examples (Pseudocode)::
 
-
+ BaseTypeDenoter( Float4 ).GetSub( ObjectExpr( idenitifer("xy") ) )
+  -> BaseTypeDenoter( Float2 )
+ 
+ BaseTypeDenoter( Float4 ).GetSub( ArrayExpr( indices(I) ) )
+  -> BaseTypeDenoter( Float )
+ 
+ ArrayTypeDenoter( dimension(N), BaseTypeDenoter( Float4 ) ).GetSub( ArrayExpr( indices(I) ) )
+  -> BaseTypeDenoter( Float4 )
+ 
+ ArrayTypeDenoter( dimension(N), BaseTypeDenoter( Float4 ) ).GetSub( ArrayExpr( indices(I, J) ) )
+  -> BaseTypeDenoter( Float )
+ 
+ ArrayTypeDenoter( dimension(N), BaseTypeDenoter( Float4 ) ).GetSub( ArrayExpr( indices(I), ObjectExpr( idenitifer("xy") ) ) )
+  -> BaseTypeDenoter( Float2 )
+ 
+ ArrayTypeDenoter( dimension(N, M), BaseTypeDenoter( Float ) ).GetSub( ArrayExpr( indices(I) ) )
+  -> ArrayTypeDenoter( dimension(N), BaseTypeDenoter( Float ) )
 
 
 
