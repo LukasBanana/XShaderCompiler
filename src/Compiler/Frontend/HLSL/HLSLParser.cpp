@@ -742,6 +742,23 @@ AliasDeclPtr HLSLParser::ParseAliasDecl(TypeDenoterPtr typeDenoter)
 
 StmntPtr HLSLParser::ParseGlobalStmnt()
 {
+    if (Is(Tokens::LParen))
+    {
+        /* Parse attributes and statement */
+        auto attribs = ParseAttributeList();
+        auto ast = ParseGlobalStmntPrimary();
+        ast->attribs = std::move(attribs);
+        return ast;
+    }
+    else
+    {
+        /* Parse statement only */
+        return ParseGlobalStmntPrimary();
+    }
+}
+
+StmntPtr HLSLParser::ParseGlobalStmntPrimary()
+{
     switch (TknType())
     {
         case Tokens::Sampler:
@@ -753,7 +770,6 @@ StmntPtr HLSLParser::ParseGlobalStmnt()
             return ParseUniformBufferDecl();
         case Tokens::Typedef:
             return ParseAliasDeclStmnt();
-        case Tokens::LParen:
         case Tokens::Void:
         case Tokens::Inline:
             return ParseFunctionDecl();
