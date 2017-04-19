@@ -333,14 +333,18 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
 
-    /* Analyze "space" attribute (if this language extension is enabled) */
     if (spaceAttrExt_)
     {
+        /* Analyze "space" attribute (if this language extension is enabled) */
         for (const auto& attrib : ast->attribs)
         {
             if (attrib->attributeType == AttributeType::Space)
                 AnalyzeAttributeSpace(attrib.get(), *ast);
         }
+
+        /* Analyze vector space initializers */
+        for (auto& varDecl : ast->varDecls)
+            AnalyzeVectorSpaceVarAssign(varDecl.get(), varDecl->initializer.get());
     }
 
     #endif
@@ -2034,50 +2038,6 @@ bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(
     return false;
 }
 
-#ifdef XSC_ENABLE_LANGUAGE_EXT
-
-void HLSLAnalyzer::AnalyzeAttributeSpace(Attribute* attrib, VarDeclStmnt& varDeclStmnt)
-{
-    if (auto typeDen = varDeclStmnt.typeSpecifier->typeDenoter.get())
-    {
-        if (AnalyzeNumArgsAttribute(attrib, 1, 2, true))
-        {
-            if (attrib->arguments.size() == 2)
-            {
-                /* Set source and destination vector spaces by attribute arguments */
-                std::string srcSpace, dstSpace;
-                if (AnalyzeAttributeSpaceIdent(attrib, 0, srcSpace) && AnalyzeAttributeSpaceIdent(attrib, 1, dstSpace))
-                    typeDen->vectorSpace.Set(ToCiString(srcSpace), ToCiString(dstSpace));
-            }
-            else
-            {
-                /* Set vector space by attribute argument */
-                std::string space;
-                if (AnalyzeAttributeSpaceIdent(attrib, 0, space))
-                    typeDen->vectorSpace.Set(ToCiString(space));
-            }
-        }
-    }
-}
-
-bool HLSLAnalyzer::AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t argIndex, std::string& ident)
-{
-    if (argIndex < attrib->arguments.size())
-    {
-        auto expr = attrib->arguments[argIndex].get();
-        if (auto objectExpr = expr->As<ObjectExpr>())
-        {
-            ident = objectExpr->ident;
-            return true;
-        }
-        else
-            Error(R_ExpectedIdentArgInAttribute("space"), expr);
-    }
-    return false;
-}
-
-#endif
-
 /* ----- Semantic ----- */
 
 /*
@@ -2159,6 +2119,74 @@ void HLSLAnalyzer::AnalyzeSemanticFunctionReturn(IndexedSemantic& semantic)
     if (IsD3D9ShaderModel())
         AnalyzeSemanticSM3(semantic, false);
 }
+
+/* ----- Language extensions ----- */
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+void HLSLAnalyzer::AnalyzeAttributeSpace(Attribute* attrib, VarDeclStmnt& varDeclStmnt)
+{
+    if (auto typeDen = varDeclStmnt.typeSpecifier->typeDenoter.get())
+    {
+        if (AnalyzeNumArgsAttribute(attrib, 1, 2, true))
+        {
+            if (attrib->arguments.size() == 2)
+            {
+                /* Set source and destination vector spaces by attribute arguments */
+                std::string srcSpace, dstSpace;
+                if (AnalyzeAttributeSpaceIdent(attrib, 0, srcSpace) && AnalyzeAttributeSpaceIdent(attrib, 1, dstSpace))
+                    typeDen->vectorSpace.Set(ToCiString(srcSpace), ToCiString(dstSpace));
+            }
+            else
+            {
+                /* Set vector space by attribute argument */
+                std::string space;
+                if (AnalyzeAttributeSpaceIdent(attrib, 0, space))
+                    typeDen->vectorSpace.Set(ToCiString(space));
+            }
+        }
+    }
+}
+
+bool HLSLAnalyzer::AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t argIndex, std::string& ident)
+{
+    if (argIndex < attrib->arguments.size())
+    {
+        auto expr = attrib->arguments[argIndex].get();
+        if (auto objectExpr = expr->As<ObjectExpr>())
+        {
+            ident = objectExpr->ident;
+            return true;
+        }
+        else
+            Error(R_ExpectedIdentArgInAttribute("space"), expr);
+    }
+    return false;
+}
+
+void HLSLAnalyzer::AnalyzeVectorSpaceVarAssign(VarDecl* varDecl, Expr* assignExpr)
+{
+    if (varDecl && assignExpr)
+    {
+        /* Validate vector-space assignment */
+        const auto& varVectorSpace = varDecl->GetTypeDenoter()->GetAliased().vectorSpace;
+        const auto& exprVectorSpace = assignExpr->GetTypeDenoter()->GetAliased().vectorSpace;
+
+        if (varVectorSpace.IsSpecified() || exprVectorSpace.IsSpecified())
+        {
+            if (!exprVectorSpace.IsAssignableTo(varVectorSpace))
+            {
+                /* Report error of illegal vector-space assignment */
+                Error(
+                    R_IllegalVectorSpaceAssignment(exprVectorSpace.ToString(), varVectorSpace.ToString()),
+                    assignExpr
+                );
+            }
+        }
+    }
+}
+
+#endif
 
 /* ----- Misc ----- */
 

@@ -19,6 +19,31 @@ namespace Xsc
 
 #ifdef XSC_ENABLE_LANGUAGE_EXT
 
+std::string VectorSpace::ToString() const
+{
+    if (!IsSpecified())
+        return ("<" + R_Unspecified + ">");
+    if (IsChangeOfBasis())
+        return (Xsc::ToString(src) + "-to-" + Xsc::ToString(dst));
+    else
+        return Xsc::ToString(src);
+}
+
+bool VectorSpace::IsSpecified() const
+{
+    return !src.empty();
+}
+
+bool VectorSpace::IsChangeOfBasis() const
+{
+    return (src != dst);
+}
+
+bool VectorSpace::IsAssignableTo(const VectorSpace& rhs) const
+{
+    return (dst == rhs.src);
+}
+
 void VectorSpace::Set(const StringType& space)
 {
     src = space;

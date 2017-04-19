@@ -184,13 +184,6 @@ class HLSLAnalyzer : public Analyzer
             std::string& literalValue
         );
 
-        #ifdef XSC_ENABLE_LANGUAGE_EXT
-
-        void AnalyzeAttributeSpace(Attribute* attrib, VarDeclStmnt& varDeclStmnt);
-        bool AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t argIndex, std::string& ident);
-
-        #endif
-
         /* ----- Semantic ----- */
 
         void AnalyzeSemantic(IndexedSemantic& semantic);
@@ -198,6 +191,17 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeSemanticSM3Remaining();
         void AnalyzeSemanticVarDecl(IndexedSemantic& semantic, VarDecl* varDecl);
         void AnalyzeSemanticFunctionReturn(IndexedSemantic& semantic);
+
+        /* ----- Language extensions ----- */
+
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        void AnalyzeAttributeSpace(Attribute* attrib, VarDeclStmnt& varDeclStmnt);
+        bool AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t argIndex, std::string& ident);
+
+        void AnalyzeVectorSpaceVarAssign(VarDecl* varDecl, Expr* assignExpr);
+
+        #endif
 
         /* ----- Misc ----- */
 

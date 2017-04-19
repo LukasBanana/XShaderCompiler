@@ -48,7 +48,22 @@ struct VectorSpace
 {
     using StringType = CiString;
 
+    // Returns a descriptive string of this vector space.
+    std::string ToString() const;
+
+    // Returns true if this vector-space is specified, i.e. source and destination or non-empty.
+    bool IsSpecified() const;
+
+    // Returns true if this vector space is a change of basis, i.e. source and destination spaces are different
+    bool IsChangeOfBasis() const;
+
+    // Returns true if this vector space can be assigned to the specified vector space, i.e. its destination space equals the specified source space.
+    bool IsAssignableTo(const VectorSpace& rhs) const;
+
+    // Sets the source and destination spaces to the specified identifier.
     void Set(const StringType& space);
+
+    // Sets the source and destination spaces to the specified identifiers.
     void Set(const StringType& srcSpace, const StringType& dstSpace);
 
     StringType src; // Source vector space name.
