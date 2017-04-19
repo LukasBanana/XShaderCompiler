@@ -35,17 +35,6 @@ std::shared_ptr<T> MakeShared(Args&&... args)
     return std::make_shared<T>(std::forward<Args>(args)...);
 }
 
-// Converts the specified string into a value from type T.
-template <typename T>
-T FromString(const std::string& s)
-{
-    T value = T(0);
-    std::stringstream stream;
-    stream << s;
-    stream >> value;
-    return value;
-}
-
 // Removes all entries from the specified container which are equal to the specified type.
 template <typename Cont, typename Value>
 void EraseAll(Cont& container, Value value)

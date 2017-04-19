@@ -977,7 +977,7 @@ static IndexedSemantic HLSLKeywordToSemanticWithMap(const CiString& ident, const
                 if (ident.size() > s.first.size())
                 {
                     /* Return semantic with index */
-                    auto index = FromString<int>(ident.substr(s.first.size()).c_str());
+                    auto index = std::stoi(ident.substr(s.first.size()).c_str());
                     return { s.second.semantic, index };
                 }
                 return s.second.semantic;

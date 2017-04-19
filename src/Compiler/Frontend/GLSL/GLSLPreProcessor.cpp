@@ -105,7 +105,7 @@ void GLSLPreProcessor::ParseDirectiveVersion()
     version = Accept(Tokens::IntLiteral)->Spell();
 
     /* Verify GLSL version number */
-    versionNo_ = FromString<int>(version);
+    versionNo_ = std::stoi(version);
 
     static const int versionListGLSL[] =
     {

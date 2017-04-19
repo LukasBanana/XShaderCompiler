@@ -170,7 +170,7 @@ void HLSLParser::ProcessDirectiveLine()
 
     /* Parse '#line'-directive with base class "AcceptIt" functions to avoid recursive calls of this function */
     if (Is(Tokens::IntLiteral))
-        lineNo = FromString<int>(Parser::AcceptIt()->Spell());
+        lineNo = std::stoi(Parser::AcceptIt()->Spell());
     else
         ErrorUnexpected(Tokens::IntLiteral);
 
@@ -469,7 +469,7 @@ RegisterPtr HLSLParser::ParseRegister(bool parseColon)
 
     /* Get register type and slot index from type identifier */
     ast->registerType   = CharToRegisterType(typeIdent.front());
-    ast->slot           = FromString<int>(typeIdent.substr(1));
+    ast->slot           = std::stoi(typeIdent.substr(1));
 
     /* Validate register type and slot index */
     if (ast->registerType == RegisterType::Undefined)
@@ -480,7 +480,7 @@ RegisterPtr HLSLParser::ParseRegister(bool parseColon)
     {
         AcceptIt();
         auto subComponent = Accept(Tokens::IntLiteral)->Spell();
-        ast->slot += FromString<int>(subComponent);
+        ast->slot += std::stoi(subComponent);
         Accept(Tokens::RParen);
     }
 
