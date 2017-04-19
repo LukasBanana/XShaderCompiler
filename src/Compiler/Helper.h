@@ -32,11 +32,7 @@ std::unique_ptr<T> MakeUnique(Args&&... args)
 template <typename T, typename... Args>
 std::shared_ptr<T> MakeShared(Args&&... args)
 {
-    #ifdef XSC_ENABLE_MEMORY_POOL
-    return std::shared_ptr<T>(new T(std::forward<Args>(args)...));
-    #else
     return std::make_shared<T>(std::forward<Args>(args)...);
-    #endif
 }
 
 // Converts the specified string into a value from type T.

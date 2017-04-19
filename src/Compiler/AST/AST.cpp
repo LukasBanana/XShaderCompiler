@@ -16,10 +16,6 @@
 #include <algorithm>
 #include <cctype>
 
-#ifdef XSC_ENABLE_MEMORY_POOL
-#include "MemoryPool.h"
-#endif
-
 
 namespace Xsc
 {
@@ -35,20 +31,6 @@ AST::~AST()
 {
     // dummy
 }
-
-#ifdef XSC_ENABLE_MEMORY_POOL
-
-void* AST::operator new (std::size_t count)
-{
-    return MemoryPool::Instance().Alloc(count);
-}
-
-void AST::operator delete (void* ptr)
-{
-    MemoryPool::Instance().Free(ptr);
-}
-
-#endif
 
 
 /* ----- Stmnt ----- */

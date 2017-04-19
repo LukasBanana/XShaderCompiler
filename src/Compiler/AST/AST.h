@@ -154,13 +154,6 @@ struct AST
     // Calls the respective visit-function of the specified visitor.
     virtual void Visit(Visitor* visitor, void* args = nullptr) = 0;
 
-    #ifdef XSC_ENABLE_MEMORY_POOL
-
-    void* operator new (std::size_t count);
-    void operator delete (void* ptr);
-
-    #endif
-
     FLAG_ENUM
     {
         FLAG( isReachable, 30 ), // This AST node is reachable from the main entry point.

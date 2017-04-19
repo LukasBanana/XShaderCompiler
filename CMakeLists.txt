@@ -26,7 +26,6 @@ option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
 option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings with 'glslangValidator'" OFF)
 
 option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
-option(XSC_MEMORY_POOL "Enables the memory pool for optimized memory allocation (Experimental)" OFF)
 
 #set(XSC_REPORT_LANGUAGE "EN" CACHE STRING "Language of the report output (supported values: 'EN')")
 
@@ -41,10 +40,6 @@ endif()
 
 if(XSC_ENABLE_EASTER_EGGS)
 	add_definitions(-DXSC_ENABLE_EASTER_EGGS)
-endif()
-
-if(XSC_MEMORY_POOL)
-	add_definitions(-DXSC_ENABLE_MEMORY_POOL)
 endif()
 
 if(XSC_ENABLE_POST_VALIDATION)
