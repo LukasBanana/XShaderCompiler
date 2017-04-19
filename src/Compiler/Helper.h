@@ -22,7 +22,7 @@ namespace Xsc
 {
 
 
-//! Alternative to std::make_unique for strict C++11 support.
+// Alternative to std::make_unique for strict C++11 support.
 template <typename T, typename... Args>
 std::unique_ptr<T> MakeUnique(Args&&... args)
 {
