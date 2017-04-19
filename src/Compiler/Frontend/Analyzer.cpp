@@ -432,13 +432,13 @@ void Analyzer::AnalyzeTypeSpecifier(TypeSpecifier* typeSpecifier)
     if (typeSpecifier->typeDenoter)
         AnalyzeTypeDenoter(typeSpecifier->typeDenoter, typeSpecifier);
     else
-        Error(R_MissingVariableType(), typeSpecifier);
+        Error(R_MissingVariableType, typeSpecifier);
 }
 
 void Analyzer::AnalyzeTypeSpecifierForParameter(TypeSpecifier* typeSpecifier)
 {
     if (typeSpecifier->isOutput && typeSpecifier->isUniform)
-        Error(R_ParameterCantBeUniformAndOut(), typeSpecifier);
+        Error(R_ParameterCantBeUniformAndOut, typeSpecifier);
 }
 
 void Analyzer::AnalyzeFunctionEndOfScopes(FunctionDecl& funcDecl)

@@ -905,6 +905,10 @@ static std::map<std::string, AttributeType> GenerateAttributeTypeMap()
         { "partitioning",              T::Partitioning              },
         { "patchsize",                 T::PatchSize                 },
         { "patchconstantfunc",         T::PatchConstantFunc         },
+
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+        { "space",                     T::Space                     },
+        #endif
     };
 }
 

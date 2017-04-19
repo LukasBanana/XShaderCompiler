@@ -55,6 +55,10 @@ void HLSLAnalyzer::DecorateASTPrimary(
     shaderModel_            = GetShaderModel(inputDesc.shaderVersion);
     preferWrappers_         = outputDesc.options.preferWrappers;
 
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    spaceAttrExt_           = true;//TODO: add compiler option.
+    #endif
+
     /* Decorate program AST */
     program_ = &program;
 
@@ -326,6 +330,20 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     /* Analyze type specifier and variable declarations */
     Visit(ast->typeSpecifier);
     Visit(ast->varDecls);
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+    /* Analyze "space" attribute (if this language extension is enabled) */
+    if (spaceAttrExt_)
+    {
+        for (const auto& attrib : ast->attribs)
+        {
+            if (attrib->attributeType == AttributeType::Space)
+                AnalyzeAttributeSpace(attrib.get(), *ast);
+        }
+    }
+
+    #endif
 
     /* Is the 'snorm' or 'unorm' type modifier specified? */
     if (ast->HasAnyTypeModifierOf({ TypeModifier::SNorm, TypeModifier::UNorm }))
@@ -1835,30 +1853,31 @@ void HLSLAnalyzer::AnalyzeSecondaryEntryPointAttributesTessEvaluationShader(cons
 
 /* ----- Attributes ----- */
 
-bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedNumArgs, bool required)
+//TODO: add "AttributeTypeToString" function
+bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* attrib, std::size_t minNumArgs, std::size_t maxNumArgs, bool required)
 {
     /* Validate number of arguments */
-    auto numArgs = ast->arguments.size();
+    auto numArgs = attrib->arguments.size();
 
-    //TODO: add "AttributeTypeToString" function
+    const std::string maxNumArgsStr = (minNumArgs == maxNumArgs ? "" : std::to_string(maxNumArgs));
 
-    if (numArgs < expectedNumArgs)
+    if (numArgs < minNumArgs)
     {
         if (required)
         {
             Error(
-                R_TooFewArgsForAttribute(""/*AttributeTypeToString(ast->attributeType)*/, expectedNumArgs, numArgs),
-                ast
+                R_TooFewArgsForAttribute(""/*AttributeTypeToString(ast->attributeType)*/, numArgs, minNumArgs, maxNumArgsStr),
+                attrib
             );
         }
     }
-    else if (numArgs > expectedNumArgs)
+    else if (numArgs > maxNumArgs)
     {
         if (required)
         {
             Error(
-                R_TooManyArgsForAttribute(""/*AttributeTypeToString(ast->attributeType)*/, expectedNumArgs, numArgs),
-                ast
+                R_TooManyArgsForAttribute(""/*AttributeTypeToString(ast->attributeType)*/, numArgs, minNumArgs, maxNumArgsStr),
+                attrib
             );
         }
     }
@@ -1868,12 +1887,17 @@ bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedN
     return false;
 }
 
-void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast, bool required)
+bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* attrib, std::size_t expectedNumArgs, bool required)
 {
-    if (AnalyzeNumArgsAttribute(ast, 1, required))
+    return AnalyzeNumArgsAttribute(attrib, expectedNumArgs, expectedNumArgs, required);
+}
+
+void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* attrib, bool required)
+{
+    if (AnalyzeNumArgsAttribute(attrib, 1, required))
     {
         AnalyzeAttributeValue(
-            ast->arguments[0].get(),
+            attrib->arguments[0].get(),
             program_->layoutTessEvaluation.domainType,
             IsAttributeValueDomain,
             R_ExpectedDomainTypeParamToBe,
@@ -1882,12 +1906,12 @@ void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast, bool required)
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributeOutputTopology(Attribute* ast, bool required)
+void HLSLAnalyzer::AnalyzeAttributeOutputTopology(Attribute* attrib, bool required)
 {
-    if (AnalyzeNumArgsAttribute(ast, 1, required))
+    if (AnalyzeNumArgsAttribute(attrib, 1, required))
     {
         AnalyzeAttributeValue(
-            ast->arguments[0].get(),
+            attrib->arguments[0].get(),
             program_->layoutTessEvaluation.outputTopology,
             IsAttributeValueOutputTopology,
             R_ExpectedOutputTopologyParamToBe,
@@ -1896,12 +1920,12 @@ void HLSLAnalyzer::AnalyzeAttributeOutputTopology(Attribute* ast, bool required)
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributePartitioning(Attribute* ast, bool required)
+void HLSLAnalyzer::AnalyzeAttributePartitioning(Attribute* attrib, bool required)
 {
-    if (AnalyzeNumArgsAttribute(ast, 1, required))
+    if (AnalyzeNumArgsAttribute(attrib, 1, required))
     {
         AnalyzeAttributeValue(
-            ast->arguments[0].get(),
+            attrib->arguments[0].get(),
             program_->layoutTessEvaluation.partitioning,
             IsAttributeValuePartitioning,
             R_ExpectedPartitioningModeParamToBe,
@@ -1910,12 +1934,12 @@ void HLSLAnalyzer::AnalyzeAttributePartitioning(Attribute* ast, bool required)
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributeOutputControlPoints(Attribute* ast)
+void HLSLAnalyzer::AnalyzeAttributeOutputControlPoints(Attribute* attrib)
 {
-    if (AnalyzeNumArgsAttribute(ast, 1))
+    if (AnalyzeNumArgsAttribute(attrib, 1))
     {
         /* Get integer literal value and convert to integer */
-        auto countParamVariant = EvaluateConstExpr(*ast->arguments[0]);
+        auto countParamVariant = EvaluateConstExpr(*attrib->arguments[0]);
 
         int countParam = -1;
         if (countParamVariant.Type() == Variant::Types::Int)
@@ -1924,15 +1948,15 @@ void HLSLAnalyzer::AnalyzeAttributeOutputControlPoints(Attribute* ast)
         if (countParam >= 0)
             program_->layoutTessControl.outputControlPoints = static_cast<unsigned int>(countParam);
         else
-            Error(R_ExpectedOutputCtrlPointParamToBe, ast->arguments[0].get());
+            Error(R_ExpectedOutputCtrlPointParamToBe, attrib->arguments[0].get());
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
+void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* attrib)
 {
-    if (AnalyzeNumArgsAttribute(ast, 1))
+    if (AnalyzeNumArgsAttribute(attrib, 1))
     {
-        auto literalExpr = ast->arguments[0]->As<LiteralExpr>();
+        auto literalExpr = attrib->arguments[0]->As<LiteralExpr>();
         if (literalExpr && literalExpr->dataType == DataType::String)
         {
             /* Get string literal value, and fetch function name */
@@ -1945,47 +1969,47 @@ void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
                 AnalyzeSecondaryEntryPoint(patchConstFunc, true);
             }
             else
-                Error(R_EntryPointForPatchFuncNotFound(literalValue), ast->arguments[0].get());
+                Error(R_EntryPointForPatchFuncNotFound(literalValue), attrib->arguments[0].get());
         }
         else
-            Error(R_ExpectedPatchFuncParamToBe, ast->arguments[0].get());
+            Error(R_ExpectedPatchFuncParamToBe, attrib->arguments[0].get());
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributeMaxVertexCount(Attribute* ast)
+void HLSLAnalyzer::AnalyzeAttributeMaxVertexCount(Attribute* attrib)
 {
-    if (AnalyzeNumArgsAttribute(ast, 1))
+    if (AnalyzeNumArgsAttribute(attrib, 1))
     {
-        int exprValue = EvaluateConstExprInt(*ast->arguments[0]);
+        int exprValue = EvaluateConstExprInt(*attrib->arguments[0]);
         if (exprValue > 0)
             program_->layoutGeometry.maxVertices = static_cast<unsigned int>(exprValue);
         else
-            Error(R_MaxVertexCountMustBeGreaterZero, ast);
+            Error(R_MaxVertexCountMustBeGreaterZero, attrib);
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributeNumThreads(Attribute* ast)
+void HLSLAnalyzer::AnalyzeAttributeNumThreads(Attribute* attrib)
 {
-    if (AnalyzeNumArgsAttribute(ast, 3))
+    if (AnalyzeNumArgsAttribute(attrib, 3))
     {
         /* Evaluate and store all three thread counts in global layout */
         for (int i = 0; i < 3; ++i)
         {
             AnalyzeAttributeNumThreadsArgument(
-                ast->arguments[i].get(),
+                attrib->arguments[i].get(),
                 program_->layoutCompute.numThreads[i]
             );
         }
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& value)
+void HLSLAnalyzer::AnalyzeAttributeNumThreadsArgument(Expr* expr, unsigned int& value)
 {
-    int exprValue = EvaluateConstExprInt(*ast);
+    int exprValue = EvaluateConstExprInt(*expr);
     if (exprValue > 0)
         value = static_cast<unsigned int>(exprValue);
     else
-        Error(R_NumThreadsMustBeGreaterZero, ast);
+        Error(R_NumThreadsMustBeGreaterZero, expr);
 }
 
 void HLSLAnalyzer::AnalyzeAttributeValue(
@@ -2009,6 +2033,50 @@ bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(
     }
     return false;
 }
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+void HLSLAnalyzer::AnalyzeAttributeSpace(Attribute* attrib, VarDeclStmnt& varDeclStmnt)
+{
+    if (auto typeDen = varDeclStmnt.typeSpecifier->typeDenoter.get())
+    {
+        if (AnalyzeNumArgsAttribute(attrib, 1, 2, true))
+        {
+            if (attrib->arguments.size() == 2)
+            {
+                /* Set source and destination vector spaces by attribute arguments */
+                std::string srcSpace, dstSpace;
+                if (AnalyzeAttributeSpaceIdent(attrib, 0, srcSpace) && AnalyzeAttributeSpaceIdent(attrib, 1, dstSpace))
+                    typeDen->vectorSpace.Set(ToCiString(srcSpace), ToCiString(dstSpace));
+            }
+            else
+            {
+                /* Set vector space by attribute argument */
+                std::string space;
+                if (AnalyzeAttributeSpaceIdent(attrib, 0, space))
+                    typeDen->vectorSpace.Set(ToCiString(space));
+            }
+        }
+    }
+}
+
+bool HLSLAnalyzer::AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t argIndex, std::string& ident)
+{
+    if (argIndex < attrib->arguments.size())
+    {
+        auto expr = attrib->arguments[argIndex].get();
+        if (auto objectExpr = expr->As<ObjectExpr>())
+        {
+            ident = objectExpr->ident;
+            return true;
+        }
+        else
+            Error(R_ExpectedIdentArgInAttribute("space"), expr);
+    }
+    return false;
+}
+
+#endif
 
 /* ----- Semantic ----- */
 

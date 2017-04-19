@@ -518,6 +518,7 @@ enum class AttributeType
 {
     Undefined,
 
+    /* --- Common attributes --- */
     Branch,
     Call,
     Flatten,
@@ -538,6 +539,7 @@ enum class AttributeType
     Unused,
     Xps,
 
+    /* --- Tessellation attributes --- */
     Domain,
     EarlyDepthStencil,
     Instance,
@@ -549,6 +551,11 @@ enum class AttributeType
     Partitioning,
     PatchSize,
     PatchConstantFunc,
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    /* --- Language extensions --- */
+    Space,
+    #endif
 };
 
 // Returns true if the specified attribute is supported since shader model 3.

@@ -29,4 +29,8 @@ struct VOut {
 void main(VIn i, out VOut o) {
 	o.position = mul(wvpMatrix, float4(i.position, 1));
 	o.normal = mul(wMatrix, float4(i.normal, 0)).xyz;
+	
+	//ERROR TEST
+	[space(WORLD)]
+	float3 worldPos = mul(wvpMatrix, float4(i.position, 1)).xyz;
 }

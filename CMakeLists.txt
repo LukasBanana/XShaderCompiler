@@ -24,6 +24,7 @@ option(XSC_BUILD_WRAPPER_CSHARP "Build C# wrapper" OFF)
 
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
 option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings with 'glslangValidator'" OFF)
+option(XSC_ENABLE_LANGUAGE_EXT "Enables a few language extensions (e.g. 'space' attribute for stronger type system)" OFF)
 
 option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
 
@@ -44,6 +45,10 @@ endif()
 
 if(XSC_ENABLE_POST_VALIDATION)
 	add_definitions(-DXSC_ENABLE_POST_VALIDATION)
+endif()
+
+if(XSC_ENABLE_LANGUAGE_EXT)
+	add_definitions(-DXSC_ENABLE_LANGUAGE_EXT)
 endif()
 
 

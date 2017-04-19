@@ -16,6 +16,23 @@ namespace Xsc
 {
 
 
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+void VectorSpace::Set(const StringType& space)
+{
+    src = space;
+    dst = space;
+}
+
+void VectorSpace::Set(const StringType& srcSpace, const StringType& dstSpace)
+{
+    src = srcSpace;
+    dst = dstSpace;
+}
+
+#endif
+
 /* ----- TypeDenoter ----- */
 
 TypeDenoter::~TypeDenoter()
