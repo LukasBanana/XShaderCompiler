@@ -80,7 +80,62 @@ void MoveAllIf(Source& source, Destination& destination, Pred pred)
 }
 
 // Replaces all occurances of 'from' in the string 's' by 'to'.
-void Replace(std::string& s, const std::string& from, const std::string& to);
+template <
+    class CharT,
+    class Traits = std::char_traits<CharT>,
+    class Allocator = std::allocator<CharT>
+>
+void Replace(
+    std::basic_string<CharT, Traits, Allocator>& s,
+    const std::basic_string<CharT, Traits, Allocator>& from,
+    const std::basic_string<CharT, Traits, Allocator>& to)
+{
+    using T = std::basic_string<CharT, Traits, Allocator>;
+    for (typename T::size_type pos = 0; ( pos = s.find(from, pos) ) != T::npos; pos += to.size())
+        s.replace(pos, from.size(), to);
+}
+
+// Replaces all occurances of 'from' in the string 's' by 'to'.
+template <
+    class CharT,
+    class Traits = std::char_traits<CharT>,
+    class Allocator = std::allocator<CharT>
+>
+void Replace(
+    std::basic_string<CharT, Traits, Allocator>& s,
+    const char* from,
+    const char* to)
+{
+    Replace(s, std::basic_string<CharT, Traits, Allocator>(from), std::basic_string<CharT, Traits, Allocator>(to));
+}
+
+// Replaces all occurances of 'from' in the string 's' by 'to'.
+template <
+    class CharT,
+    class Traits = std::char_traits<CharT>,
+    class Allocator = std::allocator<CharT>
+>
+void Replace(
+    std::basic_string<CharT, Traits, Allocator>& s,
+    const std::basic_string<CharT, Traits, Allocator>& from,
+    const char* to)
+{
+    Replace(s, from, std::basic_string<CharT, Traits, Allocator>(to));
+}
+
+// Replaces all occurances of 'from' in the string 's' by 'to'.
+template <
+    class CharT,
+    class Traits = std::char_traits<CharT>,
+    class Allocator = std::allocator<CharT>
+>
+void Replace(
+    std::basic_string<CharT, Traits, Allocator>& s,
+    const char* from,
+    const std::basic_string<CharT, Traits, Allocator>& to)
+{
+    Replace(s, std::basic_string<CharT, Traits, Allocator>(from), to);
+}
 
 
 } // /namespace Xsc
