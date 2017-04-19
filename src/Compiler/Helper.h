@@ -30,43 +30,43 @@ std::unique_ptr<T> MakeUnique(Args&&... args)
 }
 
 // Removes all entries from the specified container which are equal to the specified type.
-template <typename Cont, typename Value>
-void EraseAll(Cont& container, Value value)
+template <typename TCollection, typename TValue>
+void EraseAll(TCollection& collection, const TValue& value)
 {
-    container.erase(
-        std::remove(std::begin(container), std::end(container), value),
-        std::end(container)
+    collection.erase(
+        std::remove(std::begin(collection), std::end(collection), value),
+        std::end(collection)
     );
 }
 
 // Removes all entries from the specified container for which the specified predicate is true.
-template <typename Cont, typename Pred>
-void EraseAllIf(Cont& container, Pred pred)
+template <typename TCollection, typename TPredicate>
+void EraseAllIf(TCollection& collection, TPredicate pred)
 {
-    container.erase(
-        std::remove_if(std::begin(container), std::end(container), pred),
-        std::end(container)
+    collection.erase(
+        std::remove_if(std::begin(collection), std::end(collection), pred),
+        std::end(collection)
     );
 }
 
 // Moves all entries from the source into the destination.
-template <typename Source, typename Destination>
-void MoveAll(Source& source, Destination& destination)
+template <typename TCollectionSrc, typename TCollectionDest>
+void MoveAll(TCollectionSrc& src, TCollectionDest& dst)
 {
-    std::move(std::begin(source), std::end(source), std::back_inserter(destination));
-    source.clear();
+    std::move(std::begin(src), std::end(src), std::back_inserter(dst));
+    src.clear();
 }
 
 // Moves all entries from the source into the destination for which the specified predicate is true.
-template <typename Source, typename Destination, typename Pred>
-void MoveAllIf(Source& source, Destination& destination, Pred pred)
+template <typename TCollectionSrc, typename TCollectionDest, typename TPredicate>
+void MoveAllIf(TCollectionSrc& src, TCollectionDest& dst, TPredicate pred)
 {
-    for (auto it = source.begin(); it != source.end();)
+    for (auto it = src.begin(); it != src.end();)
     {
         if (pred(*it))
         {
-            destination.push_back(*it);
-            it = source.erase(it);
+            dst.push_back(*it);
+            it = src.erase(it);
         }
         else
             ++it;
