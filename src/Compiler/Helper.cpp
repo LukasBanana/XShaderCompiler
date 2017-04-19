@@ -13,22 +13,6 @@ namespace Xsc
 {
 
 
-std::string ToLower(const std::string& s)
-{
-    std::string t;
-    t.resize(s.size());
-    std::transform(s.begin(), s.end(), t.begin(), ::tolower);
-    return t;
-}
-
-std::string ToUpper(const std::string& s)
-{
-    std::string t;
-    t.resize(s.size());
-    std::transform(s.begin(), s.end(), t.begin(), ::toupper);
-    return t;
-}
-
 void Replace(std::string& s, const std::string& from, const std::string& to)
 {
     for (std::size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos; pos += to.size())
