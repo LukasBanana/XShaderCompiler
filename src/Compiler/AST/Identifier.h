@@ -16,7 +16,10 @@ namespace Xsc
 {
 
 
-// Class to manage identifiers that can be renamed (maybe several times).
+/*
+Class to manage identifiers that can be renamed (maybe several times),
+to keep track of the original identifier (e.g. for error reports).
+*/
 class Identifier
 {
 

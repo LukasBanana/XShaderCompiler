@@ -75,8 +75,13 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Returns a copy of this type denoter.
     virtual TypeDenoterPtr Copy() const = 0;
 
+    // Shortcut to check if this is a BaseTypeDenoter of a scalar data type (see global function IsScalarType).
     virtual bool IsScalar() const;
+
+    // Shortcut to check if this is a BaseTypeDenoter of a vector data type (see global function IsVectorType).
     virtual bool IsVector() const;
+
+    // Shortcut to check if this is a BaseTypeDenoter of a matrix data type (see global function IsMatrixType).
     virtual bool IsMatrix() const;
 
     bool IsVoid() const;
@@ -100,7 +105,12 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Sets the identifier of this type denoter if the aliased type is anonymous.
     virtual void SetIdentIfAnonymous(const std::string& ident);
 
-    // Returns a sub type denoter for the specified expression.
+    /*
+    Returns a sub type denoter for the specified expression.
+    If the input expression is null, the return value is a 'shared_from_this' object.
+    Otherwise, the type denoter is derived by the expression,
+    e.g. with an 'ArrayExpr' this type denoter is expected to be an 'ArrayTypeDenoter' and its base type is returned.
+    */
     virtual TypeDenoterPtr GetSub(const Expr* expr = nullptr);
 
     // Returns a sub type denoter for the identifier of the specified object expression.

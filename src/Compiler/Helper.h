@@ -22,86 +22,114 @@ namespace Xsc
 {
 
 
-//! Alternative to std::make_unique for strict C++11 support.
+// Alternative to std::make_unique for strict C++11 support.
 template <typename T, typename... Args>
 std::unique_ptr<T> MakeUnique(Args&&... args)
 {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-template <typename T, typename... Args>
-std::shared_ptr<T> MakeShared(Args&&... args)
-{
-    #ifdef XSC_ENABLE_MEMORY_POOL
-    return std::shared_ptr<T>(new T(std::forward<Args>(args)...));
-    #else
-    return std::make_shared<T>(std::forward<Args>(args)...);
-    #endif
-}
-
-// Converts the specified string into a value from type T.
-template <typename T>
-T FromString(const std::string& s)
-{
-    T value = T(0);
-    std::stringstream stream;
-    stream << s;
-    stream >> value;
-    return value;
-}
-
 // Removes all entries from the specified container which are equal to the specified type.
-template <typename Cont, typename Value>
-void EraseAll(Cont& container, Value value)
+template <typename TCollection, typename TValue>
+void EraseAll(TCollection& collection, const TValue& value)
 {
-    container.erase(
-        std::remove(std::begin(container), std::end(container), value),
-        std::end(container)
+    collection.erase(
+        std::remove(std::begin(collection), std::end(collection), value),
+        std::end(collection)
     );
 }
 
 // Removes all entries from the specified container for which the specified predicate is true.
-template <typename Cont, typename Pred>
-void EraseAllIf(Cont& container, Pred pred)
+template <typename TCollection, typename TPredicate>
+void EraseAllIf(TCollection& collection, TPredicate pred)
 {
-    container.erase(
-        std::remove_if(std::begin(container), std::end(container), pred),
-        std::end(container)
+    collection.erase(
+        std::remove_if(std::begin(collection), std::end(collection), pred),
+        std::end(collection)
     );
 }
 
 // Moves all entries from the source into the destination.
-template <typename Source, typename Destination>
-void MoveAll(Source& source, Destination& destination)
+template <typename TCollectionSrc, typename TCollectionDest>
+void MoveAll(TCollectionSrc& src, TCollectionDest& dst)
 {
-    std::move(std::begin(source), std::end(source), std::back_inserter(destination));
-    source.clear();
+    std::move(std::begin(src), std::end(src), std::back_inserter(dst));
+    src.clear();
 }
 
 // Moves all entries from the source into the destination for which the specified predicate is true.
-template <typename Source, typename Destination, typename Pred>
-void MoveAllIf(Source& source, Destination& destination, Pred pred)
+template <typename TCollectionSrc, typename TCollectionDest, typename TPredicate>
+void MoveAllIf(TCollectionSrc& src, TCollectionDest& dst, TPredicate pred)
 {
-    for (auto it = source.begin(); it != source.end();)
+    for (auto it = src.begin(); it != src.end();)
     {
         if (pred(*it))
         {
-            destination.push_back(*it);
-            it = source.erase(it);
+            dst.push_back(*it);
+            it = src.erase(it);
         }
         else
             ++it;
     }
 }
 
-// Converts the specified strin to lower case.
-std::string ToLower(const std::string& s);
-
-// Converts the specified strin to upper case.
-std::string ToUpper(const std::string& s);
+// Replaces all occurances of 'from' in the string 's' by 'to'.
+template <
+    class CharT,
+    class Traits = std::char_traits<CharT>,
+    class Allocator = std::allocator<CharT>
+>
+void Replace(
+    std::basic_string<CharT, Traits, Allocator>& s,
+    const std::basic_string<CharT, Traits, Allocator>& from,
+    const std::basic_string<CharT, Traits, Allocator>& to)
+{
+    using T = std::basic_string<CharT, Traits, Allocator>;
+    for (typename T::size_type pos = 0; ( pos = s.find(from, pos) ) != T::npos; pos += to.size())
+        s.replace(pos, from.size(), to);
+}
 
 // Replaces all occurances of 'from' in the string 's' by 'to'.
-void Replace(std::string& s, const std::string& from, const std::string& to);
+template <
+    class CharT,
+    class Traits = std::char_traits<CharT>,
+    class Allocator = std::allocator<CharT>
+>
+void Replace(
+    std::basic_string<CharT, Traits, Allocator>& s,
+    const char* from,
+    const char* to)
+{
+    Replace(s, std::basic_string<CharT, Traits, Allocator>(from), std::basic_string<CharT, Traits, Allocator>(to));
+}
+
+// Replaces all occurances of 'from' in the string 's' by 'to'.
+template <
+    class CharT,
+    class Traits = std::char_traits<CharT>,
+    class Allocator = std::allocator<CharT>
+>
+void Replace(
+    std::basic_string<CharT, Traits, Allocator>& s,
+    const std::basic_string<CharT, Traits, Allocator>& from,
+    const char* to)
+{
+    Replace(s, from, std::basic_string<CharT, Traits, Allocator>(to));
+}
+
+// Replaces all occurances of 'from' in the string 's' by 'to'.
+template <
+    class CharT,
+    class Traits = std::char_traits<CharT>,
+    class Allocator = std::allocator<CharT>
+>
+void Replace(
+    std::basic_string<CharT, Traits, Allocator>& s,
+    const char* from,
+    const std::basic_string<CharT, Traits, Allocator>& to)
+{
+    Replace(s, std::basic_string<CharT, Traits, Allocator>(from), to);
+}
 
 
 } // /namespace Xsc

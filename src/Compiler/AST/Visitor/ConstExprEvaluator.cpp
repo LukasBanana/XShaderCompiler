@@ -11,6 +11,7 @@
 #include "Exception.h"
 #include "ReportIdents.h"
 #include <sstream>
+#include <string>
 
 
 namespace Xsc
@@ -82,13 +83,13 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
         case DataType::Int:
         {
-            Push(FromString<Variant::IntType>(ast->value));
+            Push(std::stoll(ast->value));
         }
         break;
 
         case DataType::UInt:
         {
-            Push(Variant::IntType(FromString<unsigned int>(ast->value)));
+            Push(static_cast<Variant::IntType>(std::stoul(ast->value)));
         }
         break;
 
@@ -96,7 +97,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
         case DataType::Float:
         case DataType::Double:
         {
-            Push(FromString<Variant::RealType>(ast->value));
+            Push(std::stod(ast->value));
         }
         break;
 

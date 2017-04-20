@@ -18,16 +18,18 @@ namespace ASTFactory
 {
 
 
+// Makes a new AST node with 'SourcePosition::ignore' as source position.
 template <typename T, typename... Args>
 std::shared_ptr<T> MakeAST(Args&&... args)
 {
-    return MakeShared<T>(SourcePosition::ignore, std::forward<Args>(args)...);
+    return std::make_shared<T>(SourcePosition::ignore, std::forward<Args>(args)...);
 }
 
+// Makes a new AST node and takes the source origin from the first parameter.
 template <typename T, typename Origin, typename... Args>
 std::shared_ptr<T> MakeASTWithOrigin(const Origin& origin, Args&&... args)
 {
-    return MakeShared<T>(origin->area, std::forward<Args>(args)...);
+    return std::make_shared<T>(origin->area, std::forward<Args>(args)...);
 }
 
 /* ----- Make functions ----- */
@@ -148,7 +150,7 @@ AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& 
         auto aliasDecl = MakeAST<AliasDecl>();
         {
             aliasDecl->ident        = ident;
-            aliasDecl->typeDenoter  = MakeShared<BaseTypeDenoter>(dataType);
+            aliasDecl->typeDenoter  = std::make_shared<BaseTypeDenoter>(dataType);
             aliasDecl->declStmntRef = ast.get();
         }
         ast->aliasDecls.push_back(aliasDecl);
@@ -178,7 +180,7 @@ TypeSpecifierPtr MakeTypeSpecifier(const TypeDenoterPtr& typeDenoter)
 
 TypeSpecifierPtr MakeTypeSpecifier(const DataType dataType)
 {
-    return MakeTypeSpecifier(MakeShared<BaseTypeDenoter>(dataType));
+    return MakeTypeSpecifier(std::make_shared<BaseTypeDenoter>(dataType));
 }
 
 VarDeclStmntPtr MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident, const ExprPtr& initializer)
@@ -402,9 +404,9 @@ ExprPtr ConvertExprBaseType(const DataType dataType, const ExprPtr& subExpr)
     else
     {
         /* Make new cast expression */
-        auto ast = MakeShared<CastExpr>(subExpr->area);
+        auto ast = MakeASTWithOrigin<CastExpr>(subExpr);
         {
-            ast->typeSpecifier          = MakeTypeSpecifier(MakeShared<BaseTypeDenoter>(dataType));
+            ast->typeSpecifier          = MakeTypeSpecifier(std::make_shared<BaseTypeDenoter>(dataType));
             ast->typeSpecifier->area    = subExpr->area;
             ast->expr                   = subExpr;
         }

@@ -184,7 +184,7 @@ class Parser
         template <typename T, typename... Args>
         std::shared_ptr<T> Make(Args&&... args)
         {
-            return MakeShared<T>(GetScanner().Pos(), std::forward<Args>(args)...);
+            return std::make_shared<T>(GetScanner().Pos(), std::forward<Args>(args)...);
         }
 
         // Returns the current token.

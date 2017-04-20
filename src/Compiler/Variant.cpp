@@ -311,9 +311,9 @@ Variant Variant::ParseFrom(const std::string& s)
     else if (s == "false")
         return Variant(false);
     else if (s.find_first_of(".eE") != std::string::npos)
-        return Variant(FromString<Variant::RealType>(s));
+        return Variant(std::stod(s));
     else
-        return Variant(FromString<Variant::IntType>(s));
+        return Variant(std::stoll(s));
 }
 
 static void CropStringRight(std::string& s, std::size_t pos)
