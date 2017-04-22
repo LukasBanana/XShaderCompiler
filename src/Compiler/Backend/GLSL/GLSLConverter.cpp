@@ -180,10 +180,6 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         );
     }
 
-
-    if (IsGatherIntrisic(ast->intrinsic))
-        ConvertIntrinsicCallGather(ast);
-
     if (ast->intrinsic != Intrinsic::Undefined)
         ConvertIntrinsicCall(ast);
     else
@@ -785,6 +781,9 @@ void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
 
 void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
 {
+    if (IsGatherIntrisic(ast->intrinsic))
+        ConvertIntrinsicCallGather(ast);
+
     switch (ast->intrinsic)
     {
         case Intrinsic::InterlockedAdd:
