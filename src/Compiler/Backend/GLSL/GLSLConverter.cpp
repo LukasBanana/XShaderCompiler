@@ -1066,13 +1066,14 @@ void GLSLConverter::ConvertIntrinsicCallGather(CallExpr* ast)
     bool isCompare = IsTextureCompareIntrinsic(ast->intrinsic);
 
     /* If using separate offsets for each sample, convert four arguments into a single 4-element array argument */
-    int offsetCount = GetGatherIntrinsicOffsetParamCount(ast->intrinsic);
+    auto offsetCount = GetGatherIntrinsicOffsetParamCount(ast->intrinsic);
     if (offsetCount == 4)
     {
         /* Check if we have the valid number of arguments */
-        int offsetArgStart = isCompare ? 3 : 2;
-        int offsetArgEnd = offsetArgStart + 4;
-        if (ast->arguments.size() < offsetArgEnd)
+        int offsetArgStart  = (isCompare ? 3 : 2);
+        int offsetArgEnd    = offsetArgStart + 4;
+
+        if (ast->arguments.size() < static_cast<std::size_t>(offsetArgEnd))
         {
             RuntimeErr(R_InvalidIntrinsicArgCount(ast->ident, offsetArgEnd, ast->arguments.size()), ast);
             return;
@@ -1089,7 +1090,7 @@ void GLSLConverter::ConvertIntrinsicCallGather(CallExpr* ast)
 
         /* Place the arguments into the array */
         std::vector<ExprPtr> arrayCtorArguments;
-        for(int i = offsetArgStart; i < offsetArgEnd; i++)
+        for (int i = offsetArgStart; i < offsetArgEnd; ++i)
         {
             auto& argument = ast->arguments[i];
             exprConverter_.ConvertExprIfCastRequired(argument, DataType::Int2, true);
@@ -1105,7 +1106,7 @@ void GLSLConverter::ConvertIntrinsicCallGather(CallExpr* ast)
     }
 
     /* Add a component index argument based on the intrinsic type */
-    if(!isCompare)
+    if (!isCompare)
     {
         int componentIdx = GetGatherIntrinsicComponentIndex(ast->intrinsic);
         auto componentArgExpr = ASTFactory::MakeLiteralExpr(DataType::Int, std::to_string(componentIdx));
