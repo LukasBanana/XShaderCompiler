@@ -115,7 +115,7 @@ void DebuggerView::CreateLayout()
     CreateLayoutPropertyGrid();
     CreateLayoutSubSplitter();
 
-    mainSplitter_->SplitVertically(propGrid_, subSplitter_, 300);
+    mainSplitter_->SplitVertically(propGrid_, subSplitter_, 320);
 
     CreateLayoutStatusBar();
     CreateLayoutMenuBar();
@@ -241,6 +241,7 @@ void DebuggerView::CreateLayoutPropertyGridNameMangling(wxPropertyGrid& pg)
     pg.Append(new wxStringProperty("Temporary Prefix", "prefixTemp", "xst_"));
     pg.Append(new wxStringProperty("Namespace Prefix", "prefixNamespace", "xsn_"));
     pg.Append(new wxBoolProperty("Use Always Semantics", "useAlwaysSemantics", false));
+    pg.Append(new wxBoolProperty("Rename Buffer Wrappers", "renameBufferWrappers", false));
 }
 
 void DebuggerView::CreateLayoutSubSplitter()
@@ -466,6 +467,8 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderOutput_.nameMangling.namespacePrefix = ValueStr();
     else if (name == "useAlwaysSemantics")
         shaderOutput_.nameMangling.useAlwaysSemantics = ValueBool();
+    else if (name == "renameBufferWrappers")
+        shaderOutput_.nameMangling.renameBufferWrappers = ValueBool();
 
     TranslateInputToOutput();
 }

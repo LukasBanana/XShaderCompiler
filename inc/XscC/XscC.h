@@ -151,6 +151,12 @@ struct XscNameMangling
     even for vertex input and fragment output. Otherwise, their original identifiers are used. By default false.
     */
     bool        useAlwaysSemantics;
+
+    /**
+    \brief If true, the outer identifier of 'buffer'-objects is renamed rather than the inner data fields. By default false.
+    \remarks This can be useful for external diagnostic tools, to access the original identifier.
+    */
+    bool        renameBufferWrappers;
 };
 
 //! Shader input descriptor structure.

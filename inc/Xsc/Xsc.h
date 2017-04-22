@@ -177,37 +177,43 @@ struct NameMangling
     \brief Name mangling prefix for shader input variables. By default "xsv_".
     \remarks This can also be empty or equal to "outputPrefix".
     */
-    std::string     inputPrefix         = "xsv_";
+    std::string     inputPrefix             = "xsv_";
 
     /**
     \brief Name mangling prefix for shader output variables. By default "xsv_".
     \remarks This can also be empty or equal to "inputPrefix".
     */
-    std::string     outputPrefix        = "xsv_";
+    std::string     outputPrefix            = "xsv_";
 
     /**
     \brief Name mangling prefix for reserved words (such as "texture", "main", "sin" etc.). By default "xsr_".
     \remarks This must not be equal to any of the other prefixes and it must not be empty.
     */
-    std::string     reservedWordPrefix  = "xsr_";
+    std::string     reservedWordPrefix      = "xsr_";
 
     /**
     \brief Name mangling prefix for temporary variables. By default "xst_".
     \remarks This must not be equal to any of the other prefixes and it must not be empty.
     */
-    std::string     temporaryPrefix     = "xst_";
+    std::string     temporaryPrefix         = "xst_";
 
     /**
     \brief Name mangling prefix for namespaces like structures or classes. By default "xsn_".
     \remarks This can also be empty, but if it's not empty it must not be equal to any of the other prefixes.
     */
-    std::string     namespacePrefix     = "xsn_";
+    std::string     namespacePrefix         = "xsn_";
 
     /**
     If true, shader input/output variables are always renamed to their semantics,
     even for vertex input and fragment output. Otherwise, their original identifiers are used. By default false.
     */
-    bool            useAlwaysSemantics  = false;
+    bool            useAlwaysSemantics      = false;
+
+    /**
+    \brief If true, the outer identifier of 'buffer'-objects is renamed rather than the inner data fields. By default false.
+    \remarks This can be useful for external diagnostic tools, to access the original identifier.
+    */
+    bool            renameBufferWrappers    = false;
 };
 
 //! Shader input descriptor structure.

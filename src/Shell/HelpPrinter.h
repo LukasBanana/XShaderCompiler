@@ -28,11 +28,9 @@ struct HelpCategory
 {
     enum
     {
-        Main         = (1 << 0),
-        Common       = (1 << 1),
-        Formatting   = (1 << 2),
-        NameMangling = (1 << 3),
-        All          = ~0,
+        Main    = (1 << 0),
+        Common  = (1 << 1),
+        All     = ~0,
     };
 };
 
@@ -44,18 +42,18 @@ struct HelpDescriptor
     inline HelpDescriptor(
         const std::string& usage, const std::string& brief,
         const std::string& details = "", long category = HelpCategory::Common) :
-            usage   { usage    },
-            brief   { brief    },
-            details { details  },
-            category{ category }
+            usage    { usage    },
+            brief    { brief    },
+            details  { details  },
+            category { category }
     {
     }
 
     inline HelpDescriptor(
         const std::string& usage, const std::string& brief, long category) :
-            usage   { usage    },
-            brief   { brief    },
-            category{ category }
+            usage    { usage    },
+            brief    { brief    },
+            category { category }
     {
     }
 
