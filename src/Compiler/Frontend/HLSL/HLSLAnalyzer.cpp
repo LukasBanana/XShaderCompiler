@@ -1032,7 +1032,7 @@ void HLSLAnalyzer::AnalyzeCallExprIntrinsicFromBufferType(const CallExpr* callEx
         case BufferType::TextureCube:
         case BufferType::TextureCubeArray:
             /* Only overloads with no offset supported */
-            if(GetGatherIntrinsiOffsetParamCount(intrinsic) != 0)
+            if(GetGatherIntrinsicOffsetParamCount(intrinsic) != 0)
                 Error(R_InvalidClassIntrinsicForType(ident, BufferTypeToString(bufferType)), callExpr);
             break;
         default:

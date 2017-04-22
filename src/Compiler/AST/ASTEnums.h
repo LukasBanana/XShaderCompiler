@@ -880,7 +880,7 @@ bool IsInterlockedIntristic(const Intrinsic t);
 bool IsGatherIntrisic(const Intrinsic t);
 
 // Returns the number of offset parameters accepted by the specified gather intrinsic.
-int GetGatherIntrinsiOffsetParamCount(const Intrinsic t);
+int GetGatherIntrinsicOffsetParamCount(const Intrinsic t);
 
 // Maps a texture gather intrinsic to a component index (e.g. red -> 0, green -> 1, etc.)
 int GetGatherIntrinsicComponentIndex(const Intrinsic t);

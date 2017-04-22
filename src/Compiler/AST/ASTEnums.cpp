@@ -1062,7 +1062,7 @@ static std::map<Intrinsic, GatherIntrinsicInfo> GenerateGatherIntrinsicInfoMap()
 
 static const auto g_gatherIntrinsicInfoMap = GenerateGatherIntrinsicInfoMap();
 
-int GetGatherIntrinsiOffsetParamCount(const Intrinsic t)
+int GetGatherIntrinsicOffsetParamCount(const Intrinsic t)
 {
     auto it = g_gatherIntrinsicInfoMap.find(t);
     if (it != g_gatherIntrinsicInfoMap.end())
