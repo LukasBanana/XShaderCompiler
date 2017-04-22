@@ -2717,9 +2717,11 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
                 [&]() { WriteLayoutBinding(bufferDecl->slotRegisters); },
             }
         );
-        Write(*bufferTypeKeyword + " " + nameMangling_.temporaryPrefix + bufferDecl->ident);
+        Write(*bufferTypeKeyword + " " + bufferDecl->ident);
     }
     EndLn();
+
+    bufferDecl->ident.AppendPrefix(nameMangling_.temporaryPrefix);
 
     /* Write buffer array (of variable size) */
     WriteScopeOpen(false, true);
