@@ -161,4 +161,8 @@
 [ImageBufferTest1 CS]
 -T comp -E main -o output/* ImageBufferTest1.hlsl
 
+[GatherTest1 VS]
+-T vert -E main -o output/* GatherTest1.hlsl
 
+[GatherTest2 VS]
+-T vert -E main -o output/* GatherTest2.hlsl

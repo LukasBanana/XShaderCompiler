@@ -180,6 +180,10 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         );
     }
 
+
+    if (IsGatherIntrisic(ast->intrinsic))
+        ConvertIntrinsicCallGather(ast);
+
     if (ast->intrinsic != Intrinsic::Undefined)
         ConvertIntrinsicCall(ast);
     else
@@ -1055,6 +1059,60 @@ void GLSLConverter::ConvertIntrinsicCallImageStore(CallExpr* ast)
             exprConverter_.ConvertExprIfCastRequired(args[2], DataType::UInt4, true);
         else
             exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Float4, true);
+    }
+}
+
+void GLSLConverter::ConvertIntrinsicCallGather(CallExpr* ast)
+{
+    bool isCompare = IsTextureCompareIntrinsic(ast->intrinsic);
+
+    /* If using separate offsets for each sample, convert four arguments into a single 4-element array argument */
+    int offsetCount = GetGatherIntrinsiOffsetParamCount(ast->intrinsic);
+    if (offsetCount == 4)
+    {
+        /* Check if we have the valid number of arguments */
+        int offsetArgStart = isCompare ? 3 : 2;
+        int offsetArgEnd = offsetArgStart + 4;
+        if (ast->arguments.size() < offsetArgEnd)
+        {
+            RuntimeErr(R_InvalidIntrinsicArgCount(ast->ident, offsetArgEnd, ast->arguments.size()), ast);
+            return;
+        }
+
+        /* Determine the type of the array */
+        auto baseTypeDenoter = std::make_shared<BaseTypeDenoter>();
+        baseTypeDenoter->dataType = DataType::Int2;
+
+        std::vector<ArrayDimensionPtr> arrayDims;
+        arrayDims.push_back(ASTFactory::MakeArrayDimension(4));
+
+        auto arrayTypeDenoter = std::make_shared<ArrayTypeDenoter>(baseTypeDenoter, arrayDims);
+
+        /* Place the arguments into the array */
+        std::vector<ExprPtr> arrayCtorArguments;
+
+        for(int i = offsetArgStart; i < offsetArgEnd; i++)
+        {
+            auto& argument = ast->arguments[i];
+            exprConverter_.ConvertExprIfCastRequired(argument, DataType::Int2, true);
+
+            arrayCtorArguments.push_back(argument);
+        }
+
+        auto arrayCtorExpr = ASTFactory::MakeTypeCtorCallExpr(arrayTypeDenoter, arrayCtorArguments);
+
+        /* Remove offset arguments and add the array argument in their place. */
+        ast->arguments.erase(ast->arguments.begin() + offsetArgStart, ast->arguments.begin() + offsetArgEnd);
+        ast->arguments.insert(ast->arguments.begin() + offsetArgStart, arrayCtorExpr);
+    }
+
+    /* Add a component index argument based on the intrinsic type. */
+    if(!isCompare)
+    {
+        int componentIdx = GetGatherIntrinsicComponentIndex(ast->intrinsic);
+        auto componentArgExpr = ASTFactory::MakeLiteralExpr(DataType::Int, std::to_string(componentIdx));
+
+        ast->arguments.push_back(componentArgExpr);
     }
 }
 

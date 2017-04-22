@@ -942,6 +942,17 @@ bool IsInterlockedIntristic(const Intrinsic t)
     return (t >= Intrinsic::InterlockedAdd && t <= Intrinsic::InterlockedXor);
 }
 
+bool IsGatherIntrisic(const Intrinsic t)
+{
+    return (t >= Intrinsic::Texture_Gather_2 && t <= Intrinsic::Texture_GatherCmpAlpha_8);
+}
+
+bool IsTextureCompareIntrinsic(const Intrinsic t)
+{
+    return (t >= Intrinsic::Texture_GatherCmp_3 && t <= Intrinsic::Texture_GatherCmpAlpha_8) ||
+           (t >= Intrinsic::Texture_SampleCmp_3 && t <= Intrinsic::Texture_SampleCmp_6);
+}
+
 Intrinsic CompareOpToIntrinsic(const BinaryOp op)
 {
     switch (op)
@@ -972,6 +983,102 @@ Intrinsic InterlockedToImageAtomicIntrinsic(const Intrinsic t)
     }
 }
 
+/* ----- Gather intrinsics ----- */
+struct GatherIntrinsicInfo
+{
+    GatherIntrinsicInfo(int componentIdx, int offsetCount, bool isCompare = false);
+
+    int                 componentIdx    = 0;
+    int                 offsetCount     = 0;
+    bool                isCompare       = false;
+};
+
+GatherIntrinsicInfo::GatherIntrinsicInfo(int componentIdx, int offsetCount, bool isCompare) :
+    componentIdx{ componentIdx },
+    offsetCount { offsetCount },
+    isCompare   { isCompare }
+{
+}
+
+static std::map<Intrinsic, GatherIntrinsicInfo> GenerateGatherIntrinsicInfoMap()
+{
+    using T = Intrinsic;
+
+    return
+    {
+        { T::Texture_Gather_2,          { 0, 0       } },
+        { T::Texture_GatherRed_2,       { 0, 0       } },
+        { T::Texture_GatherGreen_2,     { 1, 0       } },
+        { T::Texture_GatherBlue_2,      { 2, 0       } },
+        { T::Texture_GatherAlpha_2,     { 3, 0       } },
+
+        { T::Texture_Gather_3,          { 0, 1       } },
+        { T::Texture_Gather_4,          { 0, 1       } },
+        { T::Texture_GatherRed_3,       { 0, 1       } },
+        { T::Texture_GatherRed_4,       { 0, 1       } },
+        { T::Texture_GatherGreen_3,     { 1, 1       } },
+        { T::Texture_GatherGreen_4,     { 1, 1       } },
+        { T::Texture_GatherBlue_3,      { 2, 1       } },
+        { T::Texture_GatherBlue_4,      { 2, 1       } },
+        { T::Texture_GatherAlpha_3,     { 3, 1       } },
+        { T::Texture_GatherAlpha_4,     { 3, 1       } },
+
+        { T::Texture_GatherRed_6,       { 0, 4       } },
+        { T::Texture_GatherRed_7,       { 0, 4       } },
+        { T::Texture_GatherGreen_6,     { 1, 4       } },
+        { T::Texture_GatherGreen_7,     { 1, 4       } },
+        { T::Texture_GatherBlue_6,      { 2, 4       } },
+        { T::Texture_GatherBlue_7,      { 2, 4       } },
+        { T::Texture_GatherAlpha_6,     { 3, 4       } },
+        { T::Texture_GatherAlpha_7,     { 3, 4       } },
+
+        { T::Texture_GatherCmp_3,       { 0, 0, true } },
+        { T::Texture_GatherCmpRed_3,    { 0, 0, true } },
+        { T::Texture_GatherCmpGreen_3,  { 1, 0, true } },
+        { T::Texture_GatherCmpBlue_3,   { 2, 0, true } },
+        { T::Texture_GatherCmpAlpha_3,  { 3, 0, true } },
+
+        { T::Texture_GatherCmp_4,       { 0, 1, true } },
+        { T::Texture_GatherCmp_5,       { 0, 1, true } },
+        { T::Texture_GatherCmpRed_4,    { 0, 1, true } },
+        { T::Texture_GatherCmpRed_5,    { 0, 1, true } },
+        { T::Texture_GatherCmpGreen_4,  { 1, 1, true } },
+        { T::Texture_GatherCmpGreen_5,  { 1, 1, true } },
+        { T::Texture_GatherCmpBlue_4,   { 2, 1, true } },
+        { T::Texture_GatherCmpBlue_5,   { 2, 1, true } },
+        { T::Texture_GatherCmpAlpha_4,  { 3, 1, true } },
+        { T::Texture_GatherCmpAlpha_5,  { 3, 1, true } },
+
+        { T::Texture_GatherCmpRed_7,    { 0, 4, true } },
+        { T::Texture_GatherCmpRed_8,    { 0, 4, true } },
+        { T::Texture_GatherCmpGreen_7,  { 1, 4, true } },
+        { T::Texture_GatherCmpGreen_8,  { 1, 4, true } },
+        { T::Texture_GatherCmpBlue_7,   { 2, 4, true } },
+        { T::Texture_GatherCmpBlue_8,   { 2, 4, true } },
+        { T::Texture_GatherCmpAlpha_7,  { 3, 4, true } },
+        { T::Texture_GatherCmpAlpha_8,  { 3, 4, true } }
+    };
+}
+
+static const auto g_gatherIntrinsicInfoMap = GenerateGatherIntrinsicInfoMap();
+
+int GetGatherIntrinsiOffsetParamCount(const Intrinsic t)
+{
+    auto it = g_gatherIntrinsicInfoMap.find(t);
+    if (it != g_gatherIntrinsicInfoMap.end())
+        return it->second.offsetCount;
+    else
+        return 0;
+}
+
+int GetGatherIntrinsicComponentIndex(const Intrinsic t)
+{
+    auto it = g_gatherIntrinsicInfoMap.find(t);
+    if (it != g_gatherIntrinsicInfoMap.end())
+        return it->second.componentIdx;
+    else
+        return 0;
+}
 
 /* ----- IndexedSemantic Class ----- */
 
