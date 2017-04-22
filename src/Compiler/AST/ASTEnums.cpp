@@ -984,19 +984,20 @@ Intrinsic InterlockedToImageAtomicIntrinsic(const Intrinsic t)
 }
 
 /* ----- Gather intrinsics ----- */
+
 struct GatherIntrinsicInfo
 {
     GatherIntrinsicInfo(int componentIdx, int offsetCount, bool isCompare = false);
 
-    int                 componentIdx    = 0;
-    int                 offsetCount     = 0;
-    bool                isCompare       = false;
+    int     componentIdx    = 0;
+    int     offsetCount     = 0;
+    bool    isCompare       = false;
 };
 
 GatherIntrinsicInfo::GatherIntrinsicInfo(int componentIdx, int offsetCount, bool isCompare) :
-    componentIdx{ componentIdx },
-    offsetCount { offsetCount },
-    isCompare   { isCompare }
+    componentIdx { componentIdx },
+    offsetCount  { offsetCount  },
+    isCompare    { isCompare    }
 {
 }
 
@@ -1056,7 +1057,7 @@ static std::map<Intrinsic, GatherIntrinsicInfo> GenerateGatherIntrinsicInfoMap()
         { T::Texture_GatherCmpBlue_7,   { 2, 4, true } },
         { T::Texture_GatherCmpBlue_8,   { 2, 4, true } },
         { T::Texture_GatherCmpAlpha_7,  { 3, 4, true } },
-        { T::Texture_GatherCmpAlpha_8,  { 3, 4, true } }
+        { T::Texture_GatherCmpAlpha_8,  { 3, 4, true } },
     };
 }
 
@@ -1083,13 +1084,13 @@ int GetGatherIntrinsicComponentIndex(const Intrinsic t)
 /* ----- IndexedSemantic Class ----- */
 
 IndexedSemantic::IndexedSemantic(Semantic semantic, int index) :
-    semantic_   { semantic },
-    index_      { index    }
+    semantic_ { semantic },
+    index_    { index    }
 {
 }
 
 IndexedSemantic::IndexedSemantic(const std::string& userDefined) :
-    semantic_{ Semantic::UserDefined }
+    semantic_ { Semantic::UserDefined }
 {
     /* Extract index from user defined semantic (all right-most numeric characters) */
     auto pos = userDefined.find_last_not_of("0123456789");
@@ -1098,16 +1099,16 @@ IndexedSemantic::IndexedSemantic(const std::string& userDefined) :
         ++pos;
         userDefined_ = userDefined.substr(0, pos);
         auto indexStr = userDefined.substr(pos);
-        index_ = std::atoi(indexStr.c_str());
+        index_ = std::stoi(indexStr);
     }
     else
         userDefined_ = userDefined;
 }
 
 IndexedSemantic::IndexedSemantic(const IndexedSemantic& rhs, int index) :
-    semantic_   { rhs.semantic_    },
-    index_      { index            },
-    userDefined_{ rhs.userDefined_ }
+    semantic_    { rhs.semantic_    },
+    index_       { index            },
+    userDefined_ { rhs.userDefined_ }
 {
 }
 
