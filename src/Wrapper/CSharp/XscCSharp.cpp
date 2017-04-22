@@ -424,13 +424,13 @@ public ref class XscCompiler
 
                 OutputNameMangling()
                 {
-                    InputPrefix             = gcnew String("xsv_");
-                    OutputPrefix            = gcnew String("xsv_");
-                    ReservedWordPrefix      = gcnew String("xsr_");
-                    TemporaryPrefix         = gcnew String("xst_");
-                    NamespacePrefix         = gcnew String("xsn_");
-                    UseAlwaysSemantics      = false;
-                    RenameBufferWrappers    = false;
+                    InputPrefix         = gcnew String("xsv_");
+                    OutputPrefix        = gcnew String("xsv_");
+                    ReservedWordPrefix  = gcnew String("xsr_");
+                    TemporaryPrefix     = gcnew String("xst_");
+                    NamespacePrefix     = gcnew String("xsn_");
+                    UseAlwaysSemantics  = false;
+                    RenameBufferFields  = false;
                 }
 
                 /**
@@ -470,10 +470,10 @@ public ref class XscCompiler
                 property bool       UseAlwaysSemantics;
 
                 /**
-                \brief If true, the outer identifier of 'buffer'-objects is renamed rather than the inner data fields. By default false.
+                \brief If true, the data fields of a 'buffer'-objects is renamed rather than the outer identifier. By default false.
                 \remarks This can be useful for external diagnostic tools, to access the original identifier.
                 */
-                property bool       RenameBufferWrappers;
+                property bool       RenameBufferFields;
 
         };
 
@@ -1007,38 +1007,38 @@ bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc
     }
 
     /* Copy output options descriptor */
-    out.options.optimize                    = outputDesc->Options->Optimize;
-    out.options.preprocessOnly              = outputDesc->Options->PreprocessOnly;
-    out.options.validateOnly                = outputDesc->Options->ValidateOnly;
-    out.options.allowExtensions             = outputDesc->Options->AllowExtensions;
-    out.options.explicitBinding             = outputDesc->Options->ExplicitBinding;
-    out.options.autoBinding                 = outputDesc->Options->AutoBinding;
-    out.options.autoBindingStartSlot        = outputDesc->Options->AutoBindingStartSlot;
-    out.options.preserveComments            = outputDesc->Options->PreserveComments;
-    out.options.preferWrappers              = outputDesc->Options->PreferWrappers;
-    out.options.unrollArrayInitializers     = outputDesc->Options->UnrollArrayInitializers;
-    out.options.rowMajorAlignment           = outputDesc->Options->RowMajorAlignment;
-    out.options.obfuscate                   = outputDesc->Options->Obfuscate;
-    out.options.showAST                     = outputDesc->Options->ShowAST;
-    out.options.showTimes                   = outputDesc->Options->ShowTimes;
+    out.options.optimize                = outputDesc->Options->Optimize;
+    out.options.preprocessOnly          = outputDesc->Options->PreprocessOnly;
+    out.options.validateOnly            = outputDesc->Options->ValidateOnly;
+    out.options.allowExtensions         = outputDesc->Options->AllowExtensions;
+    out.options.explicitBinding         = outputDesc->Options->ExplicitBinding;
+    out.options.autoBinding             = outputDesc->Options->AutoBinding;
+    out.options.autoBindingStartSlot    = outputDesc->Options->AutoBindingStartSlot;
+    out.options.preserveComments        = outputDesc->Options->PreserveComments;
+    out.options.preferWrappers          = outputDesc->Options->PreferWrappers;
+    out.options.unrollArrayInitializers = outputDesc->Options->UnrollArrayInitializers;
+    out.options.rowMajorAlignment       = outputDesc->Options->RowMajorAlignment;
+    out.options.obfuscate               = outputDesc->Options->Obfuscate;
+    out.options.showAST                 = outputDesc->Options->ShowAST;
+    out.options.showTimes               = outputDesc->Options->ShowTimes;
 
     /* Copy output formatting descriptor */
-    out.formatting.indent                   = ToStdString(outputDesc->Formatting->Indent);
-    out.formatting.blanks                   = outputDesc->Formatting->Blanks;
-    out.formatting.lineMarks                = outputDesc->Formatting->LineMarks;
-    out.formatting.compactWrappers          = outputDesc->Formatting->CompactWrappers;
-    out.formatting.alwaysBracedScopes       = outputDesc->Formatting->AlwaysBracedScopes;
-    out.formatting.newLineOpenScope         = outputDesc->Formatting->NewLineOpenScope;
-    out.formatting.lineSeparation           = outputDesc->Formatting->LineSeparation;
+    out.formatting.indent               = ToStdString(outputDesc->Formatting->Indent);
+    out.formatting.blanks               = outputDesc->Formatting->Blanks;
+    out.formatting.lineMarks            = outputDesc->Formatting->LineMarks;
+    out.formatting.compactWrappers      = outputDesc->Formatting->CompactWrappers;
+    out.formatting.alwaysBracedScopes   = outputDesc->Formatting->AlwaysBracedScopes;
+    out.formatting.newLineOpenScope     = outputDesc->Formatting->NewLineOpenScope;
+    out.formatting.lineSeparation       = outputDesc->Formatting->LineSeparation;
 
     /* Copy output name mangling descriptor */
-    out.nameMangling.inputPrefix            = ToStdString(outputDesc->NameMangling->InputPrefix);
-    out.nameMangling.outputPrefix           = ToStdString(outputDesc->NameMangling->OutputPrefix);
-    out.nameMangling.reservedWordPrefix     = ToStdString(outputDesc->NameMangling->ReservedWordPrefix);
-    out.nameMangling.temporaryPrefix        = ToStdString(outputDesc->NameMangling->TemporaryPrefix);
-    out.nameMangling.namespacePrefix        = ToStdString(outputDesc->NameMangling->NamespacePrefix);
-    out.nameMangling.useAlwaysSemantics     = outputDesc->NameMangling->UseAlwaysSemantics;
-    out.nameMangling.renameBufferWrappers   = outputDesc->NameMangling->RenameBufferWrappers;
+    out.nameMangling.inputPrefix        = ToStdString(outputDesc->NameMangling->InputPrefix);
+    out.nameMangling.outputPrefix       = ToStdString(outputDesc->NameMangling->OutputPrefix);
+    out.nameMangling.reservedWordPrefix = ToStdString(outputDesc->NameMangling->ReservedWordPrefix);
+    out.nameMangling.temporaryPrefix    = ToStdString(outputDesc->NameMangling->TemporaryPrefix);
+    out.nameMangling.namespacePrefix    = ToStdString(outputDesc->NameMangling->NamespacePrefix);
+    out.nameMangling.useAlwaysSemantics = outputDesc->NameMangling->UseAlwaysSemantics;
+    out.nameMangling.renameBufferFields = outputDesc->NameMangling->RenameBufferFields;
 
     /* Compile shader */
     bool result = false;

@@ -1228,7 +1228,7 @@ HelpDescriptor NameManglingCommand::Help() const
         "-N<TYPE> [" + CommandLine::GetBooleanOption() + "]",
         "Enables/disables the specified name-mangling option; value types:",
         (
-            "buffer-wrapper  => rename outer 'buffer' object, not data field; default=" + CommandLine::GetBooleanFalse() + "\n" \
+            "buffer-fields   => rename 'buffer' fields, not its identifier; default=" + CommandLine::GetBooleanFalse() + "\n" \
             "force-semantics => force semantics for input/output variables; default=" + CommandLine::GetBooleanFalse()
         )
     };
@@ -1238,8 +1238,8 @@ void NameManglingCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     auto type = cmdLine.Accept();
 
-    if (type == "buffer-wrapper")
-        state.outputDesc.nameMangling.renameBufferWrappers = cmdLine.AcceptBoolean(true);
+    if (type == "buffer-fields")
+        state.outputDesc.nameMangling.renameBufferFields = cmdLine.AcceptBoolean(true);
     else if (type == "force-semantics")
         state.outputDesc.nameMangling.useAlwaysSemantics = cmdLine.AcceptBoolean(true);
     else

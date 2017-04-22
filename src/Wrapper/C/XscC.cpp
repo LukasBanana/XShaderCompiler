@@ -101,7 +101,7 @@ static void InitializeNameMangling(struct XscNameMangling* s)
     s->temporaryPrefix      = "xst_";
     s->namespacePrefix      = "xsn_";
     s->useAlwaysSemantics   = false;
-    s->renameBufferWrappers = false;
+    s->renameBufferFields   = false;
 }
 
 static void InitializeIncludeHandler(struct XscIncludeHandler* s)
@@ -367,38 +367,38 @@ XSC_EXPORT bool XscCompileShader(
     }
 
     /* Copy output options descriptor */
-    out.options.optimize                    = outputDesc->options.optimize;
-    out.options.preprocessOnly              = outputDesc->options.preprocessOnly;
-    out.options.validateOnly                = outputDesc->options.validateOnly;
-    out.options.allowExtensions             = outputDesc->options.allowExtensions;
-    out.options.explicitBinding             = outputDesc->options.explicitBinding;
-    out.options.autoBinding                 = outputDesc->options.autoBinding;
-    out.options.autoBindingStartSlot        = outputDesc->options.autoBindingStartSlot;
-    out.options.preserveComments            = outputDesc->options.preserveComments;
-    out.options.preferWrappers              = outputDesc->options.preferWrappers;
-    out.options.unrollArrayInitializers     = outputDesc->options.unrollArrayInitializers;
-    out.options.rowMajorAlignment           = outputDesc->options.rowMajorAlignment;
-    out.options.obfuscate                   = outputDesc->options.obfuscate;
-    out.options.showAST                     = outputDesc->options.showAST;
-    out.options.showTimes                   = outputDesc->options.showTimes;
+    out.options.optimize                = outputDesc->options.optimize;
+    out.options.preprocessOnly          = outputDesc->options.preprocessOnly;
+    out.options.validateOnly            = outputDesc->options.validateOnly;
+    out.options.allowExtensions         = outputDesc->options.allowExtensions;
+    out.options.explicitBinding         = outputDesc->options.explicitBinding;
+    out.options.autoBinding             = outputDesc->options.autoBinding;
+    out.options.autoBindingStartSlot    = outputDesc->options.autoBindingStartSlot;
+    out.options.preserveComments        = outputDesc->options.preserveComments;
+    out.options.preferWrappers          = outputDesc->options.preferWrappers;
+    out.options.unrollArrayInitializers = outputDesc->options.unrollArrayInitializers;
+    out.options.rowMajorAlignment       = outputDesc->options.rowMajorAlignment;
+    out.options.obfuscate               = outputDesc->options.obfuscate;
+    out.options.showAST                 = outputDesc->options.showAST;
+    out.options.showTimes               = outputDesc->options.showTimes;
 
     /* Copy output formatting descriptor */
-    out.formatting.indent                   = ReadStringC(outputDesc->formatting.indent);
-    out.formatting.blanks                   = outputDesc->formatting.blanks;
-    out.formatting.lineMarks                = outputDesc->formatting.lineMarks;
-    out.formatting.compactWrappers          = outputDesc->formatting.compactWrappers;
-    out.formatting.alwaysBracedScopes       = outputDesc->formatting.alwaysBracedScopes;
-    out.formatting.newLineOpenScope         = outputDesc->formatting.newLineOpenScope;
-    out.formatting.lineSeparation           = outputDesc->formatting.lineSeparation;
+    out.formatting.indent               = ReadStringC(outputDesc->formatting.indent);
+    out.formatting.blanks               = outputDesc->formatting.blanks;
+    out.formatting.lineMarks            = outputDesc->formatting.lineMarks;
+    out.formatting.compactWrappers      = outputDesc->formatting.compactWrappers;
+    out.formatting.alwaysBracedScopes   = outputDesc->formatting.alwaysBracedScopes;
+    out.formatting.newLineOpenScope     = outputDesc->formatting.newLineOpenScope;
+    out.formatting.lineSeparation       = outputDesc->formatting.lineSeparation;
 
     /* Copy output name mangling descriptor */
-    out.nameMangling.inputPrefix            = ReadStringC(outputDesc->nameMangling.inputPrefix);
-    out.nameMangling.outputPrefix           = ReadStringC(outputDesc->nameMangling.outputPrefix);
-    out.nameMangling.reservedWordPrefix     = ReadStringC(outputDesc->nameMangling.reservedWordPrefix);
-    out.nameMangling.temporaryPrefix        = ReadStringC(outputDesc->nameMangling.temporaryPrefix);
-    out.nameMangling.namespacePrefix        = ReadStringC(outputDesc->nameMangling.namespacePrefix);
-    out.nameMangling.useAlwaysSemantics     = outputDesc->nameMangling.useAlwaysSemantics;
-    out.nameMangling.renameBufferWrappers   = outputDesc->nameMangling.renameBufferWrappers;
+    out.nameMangling.inputPrefix        = ReadStringC(outputDesc->nameMangling.inputPrefix);
+    out.nameMangling.outputPrefix       = ReadStringC(outputDesc->nameMangling.outputPrefix);
+    out.nameMangling.reservedWordPrefix = ReadStringC(outputDesc->nameMangling.reservedWordPrefix);
+    out.nameMangling.temporaryPrefix    = ReadStringC(outputDesc->nameMangling.temporaryPrefix);
+    out.nameMangling.namespacePrefix    = ReadStringC(outputDesc->nameMangling.namespacePrefix);
+    out.nameMangling.useAlwaysSemantics = outputDesc->nameMangling.useAlwaysSemantics;
+    out.nameMangling.renameBufferFields = outputDesc->nameMangling.renameBufferFields;
 
     /* Initialize log */
     Xsc::StdLog logPrimaryStd;

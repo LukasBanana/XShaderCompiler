@@ -153,10 +153,10 @@ struct XscNameMangling
     bool        useAlwaysSemantics;
 
     /**
-    \brief If true, the outer identifier of 'buffer'-objects is renamed rather than the inner data fields. By default false.
+    \brief If true, the data fields of a 'buffer'-objects is renamed rather than the outer identifier. By default false.
     \remarks This can be useful for external diagnostic tools, to access the original identifier.
     */
-    bool        renameBufferWrappers;
+    bool        renameBufferFields;
 };
 
 //! Shader input descriptor structure.
