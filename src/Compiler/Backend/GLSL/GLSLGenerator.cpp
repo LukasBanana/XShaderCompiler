@@ -2655,8 +2655,9 @@ void GLSLGenerator::WriteBufferDecl(BufferDecl* bufferDecl)
 
 void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
 {
-    const std::string* bufferTypeKeyword;
-    if(bufferDecl->flags(BufferDecl::isUsedForCompare) && !IsVKSL())
+    const std::string* bufferTypeKeyword = nullptr;
+
+    if (bufferDecl->flags(BufferDecl::isUsedForCompare) && !IsVKSL())
     {
         /* Convert type to a shadow sampler type */
         SamplerType samplerType = TextureTypeToSamplerType(bufferDecl->GetBufferType());

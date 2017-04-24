@@ -474,7 +474,7 @@ enum class SamplerType
                             // HLSL3            HLSL4+                  GLSL
                             // ---------------  ----------------------  -------
     SamplerState,           // sampler_state    SamplerState            sampler
-    SamplerComparisonState, // sampler_state    SamplerComparisonState  sampler
+    SamplerComparisonState, // sampler_state    SamplerComparisonState  samplerShadow
 };
 
 // Returns true if the specified sampler type is sampler state (i.e. SamplerState or SamplerComparisonState).
@@ -486,7 +486,7 @@ bool IsSamplerTypeShadow(const SamplerType t);
 // Returns true if the specified sampler type is an array sampler (e.g. Sampler1DArray).
 bool IsSamplerTypeArray(const SamplerType t);
 
-// Maps a texture type to an appropriate sampler type
+// Maps a texture type to an appropriate sampler type.
 SamplerType TextureTypeToSamplerType(const BufferType t);
 
 // Converts a non-shadow sampler variant into a shadow one, if possible.

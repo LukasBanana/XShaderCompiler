@@ -563,7 +563,7 @@ struct BufferDecl : public Decl
 
     FLAG_ENUM
     {
-        FLAG(isUsedForCompare,     2), // This variable is used in a texture compare operation
+        FLAG( isUsedForCompare, 2 ), // This buffer is used in a texture compare operation.
     };
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;

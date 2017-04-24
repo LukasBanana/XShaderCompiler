@@ -307,7 +307,7 @@ bool IsHalfRealType(const DataType t)
 {
     return
     (
-        t == DataType::Half ||
+        (t == DataType::Half) ||
         (t >= DataType::Half2 && t <= DataType::Half4) ||
         (t >= DataType::Half2x2 && t <= DataType::Half4x4)
     );
@@ -317,7 +317,7 @@ bool IsDoubleRealType(const DataType t)
 {
     return
     (
-        t == DataType::Double ||
+        (t == DataType::Double) ||
         (t >= DataType::Double2 && t <= DataType::Double4) ||
         (t >= DataType::Double2x2 && t <= DataType::Double4x4)
     );
@@ -838,22 +838,14 @@ SamplerType TextureTypeToSamplerType(const BufferType t)
 {
     switch (t)
     {
-    case BufferType::Texture1D:
-        return SamplerType::Sampler1D;
-    case BufferType::Texture1DArray:
-        return SamplerType::Sampler1DArray;
-    case BufferType::Texture2D:
-        return SamplerType::Sampler2D;
-    case BufferType::Texture2DArray:
-        return SamplerType::Sampler2DArray;
-    case BufferType::Texture3D:
-        return SamplerType::Sampler3D;
-    case BufferType::TextureCube:
-        return SamplerType::SamplerCube;
-    case BufferType::TextureCubeArray:
-        return SamplerType::SamplerCubeArray;
-    default:
-        return SamplerType::Undefined;
+        case BufferType::Texture1D:         return SamplerType::Sampler1D;
+        case BufferType::Texture1DArray:    return SamplerType::Sampler1DArray;
+        case BufferType::Texture2D:         return SamplerType::Sampler2D;
+        case BufferType::Texture2DArray:    return SamplerType::Sampler2DArray;
+        case BufferType::Texture3D:         return SamplerType::Sampler3D;
+        case BufferType::TextureCube:       return SamplerType::SamplerCube;
+        case BufferType::TextureCubeArray:  return SamplerType::SamplerCubeArray;
+        default:                            return SamplerType::Undefined;
     }
 }
 
@@ -861,22 +853,14 @@ SamplerType SamplerTypeToShadowSamplerType(const SamplerType t)
 {
     switch (t)
     {
-    case SamplerType::Sampler1D:
-        return SamplerType::Sampler1DShadow;
-    case SamplerType::Sampler1DArray:
-        return SamplerType::Sampler1DArrayShadow;
-    case SamplerType::Sampler2D:
-        return SamplerType::Sampler2DShadow;
-    case SamplerType::Sampler2DArray:
-        return SamplerType::Sampler2DArrayShadow;
-    case SamplerType::Sampler2DRect:
-        return SamplerType::Sampler2DRectShadow;
-    case SamplerType::SamplerCube:
-        return SamplerType::SamplerCubeShadow;
-    case SamplerType::SamplerCubeArray:
-        return SamplerType::SamplerCubeArrayShadow;
-    default:
-        return SamplerType::Undefined;
+        case SamplerType::Sampler1D:        return SamplerType::Sampler1DShadow;
+        case SamplerType::Sampler1DArray:   return SamplerType::Sampler1DArrayShadow;
+        case SamplerType::Sampler2D:        return SamplerType::Sampler2DShadow;
+        case SamplerType::Sampler2DArray:   return SamplerType::Sampler2DArrayShadow;
+        case SamplerType::Sampler2DRect:    return SamplerType::Sampler2DRectShadow;
+        case SamplerType::SamplerCube:      return SamplerType::SamplerCubeShadow;
+        case SamplerType::SamplerCubeArray: return SamplerType::SamplerCubeArrayShadow;
+        default:                            return SamplerType::Undefined;
     }
 }
 
