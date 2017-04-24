@@ -90,7 +90,7 @@ class ScopedColor
         \see PushColor(long, std::ostream&)
         */
         inline ScopedColor(long front, std::ostream& stream = std::cout) :
-            stream_{ stream }
+            stream_ { stream }
         {
             PushColor(front, stream_);
         }
@@ -104,7 +104,7 @@ class ScopedColor
         \see PushColor(std::ostream&, long, long)
         */
         inline ScopedColor(long front, long back, std::ostream& stream = std::cout) :
-            stream_{ stream }
+            stream_ { stream }
         {
             PushColor(front, back, stream_);
         }

@@ -25,8 +25,8 @@ Parser::~Parser()
  */
 
 Parser::Parser(Log* log) :
-    reportHandler_  { R_Syntax, log },
-    log_            { log           }
+    reportHandler_ { R_Syntax, log },
+    log_           { log           }
 {
 }
 

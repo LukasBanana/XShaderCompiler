@@ -36,7 +36,7 @@ types, which are valid in the respective scope.
 */
 
 HLSLParser::HLSLParser(Log* log) :
-    Parser{ log }
+    Parser { log }
 {
 }
 
