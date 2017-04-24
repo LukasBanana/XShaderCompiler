@@ -2655,8 +2655,21 @@ void GLSLGenerator::WriteBufferDecl(BufferDecl* bufferDecl)
 
 void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
 {
-    /* Determine GLSL sampler type (or VKSL texture type) */
-    auto bufferTypeKeyword = BufferTypeToKeyword(bufferDecl->GetBufferType(), bufferDecl->declStmntRef);
+    const std::string* bufferTypeKeyword;
+    if(bufferDecl->flags(BufferDecl::isUsedForCompare) && !IsVKSL())
+    {
+        /* Convert type to a shadow sampler type */
+        SamplerType samplerType = TextureTypeToSamplerType(bufferDecl->GetBufferType());
+        SamplerType shadowSamplerType = SamplerTypeToShadowSamplerType(samplerType);
+
+        bufferTypeKeyword = SamplerTypeToKeyword(shadowSamplerType, bufferDecl->declStmntRef);
+    }
+    else
+    {
+        /* Determine GLSL sampler type (or VKSL texture type) */
+        bufferTypeKeyword = BufferTypeToKeyword(bufferDecl->GetBufferType(), bufferDecl->declStmntRef);
+    }
+
     if (!bufferTypeKeyword)
         return;
 

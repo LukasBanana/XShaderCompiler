@@ -867,6 +867,13 @@ void HLSLAnalyzer::AnalyzeCallExprIntrinsic(CallExpr* callExpr, const HLSLIntrin
             {
                 /* Analyze member function call with buffer prefix type */
                 AnalyzeCallExprIntrinsicFromBufferType(callExpr, bufferTypeDen->bufferType);
+
+                /* Mark buffers used in compare intrinsics */
+                if (IsTextureCompareIntrinsic(intrinsic))
+                {
+                    if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
+                        bufferDecl->flags << BufferDecl::isUsedForCompare;
+                }
             }
             else
             {

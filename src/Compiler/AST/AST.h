@@ -561,6 +561,11 @@ struct BufferDecl : public Decl
 {
     AST_INTERFACE(BufferDecl);
 
+    FLAG_ENUM
+    {
+        FLAG(isUsedForCompare,     2), // This variable is used in a texture compare operation
+    };
+
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     // Returns the buffer type of the parent's node type denoter.
