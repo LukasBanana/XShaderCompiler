@@ -136,7 +136,7 @@ void Replace(
 template <typename T>
 inline T FromStringOrDefault(const std::string& s)
 {
-    static_assert(false, "default template of FromStringOrDefault<T> not implemented");
+    throw std::runtime_error("default template of FromStringOrDefault<T> not implemented");
 }
 
 template <>
