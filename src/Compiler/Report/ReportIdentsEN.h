@@ -192,6 +192,7 @@ DECL_REPORT( ExpectedPrimaryExpr,               "expected primary expression"   
 DECL_REPORT( ExpectedLiteralExpr,               "expected literal expression"                                                                                   );
 DECL_REPORT( ExpectedTypeDen,                   "expected type denoter"                                                                                         );
 DECL_REPORT( ExpectedBaseTypeDen,               "expected base type denoter"                                                                                    );
+DECL_REPORT( ExpectedIntLiteral,                "expected integer literal[, but got '{0}']"                                                                     );
 DECL_REPORT( InFunction,                        " (in function: {0})"                                                                                           );
 DECL_REPORT( FailedToCreateScanner,             "failed to create token scanner"                                                                                );
 DECL_REPORT( FailedToScanSource,                "failed to scan source code"                                                                                    );
@@ -201,6 +202,7 @@ DECL_REPORT( SubExprAndOpsUncorrelated,         "sub-expressions and operators h
 DECL_REPORT( TooManySyntaxErrors,               "too many syntax errors"                                                                                        );
 DECL_REPORT( IdentNameManglingConflict,         "identifier '{0}' conflicts with reserved name mangling prefix '{1}'"                                           );
 DECL_REPORT( NotAllowedInThisContext,           "{0} not allowed in this context"                                                                               );
+DECL_REPORT( IntLiteralOutOfRange,              "integer literal[ '{0}'] is out of range"                                                                       );
 
 /* ----- PreProcessor ----- */
 

@@ -16,6 +16,7 @@
 #include <memory>
 #include <algorithm>
 #include <iterator>
+#include <functional>
 
 
 namespace Xsc
@@ -129,6 +130,43 @@ void Replace(
     const std::basic_string<CharT, Traits, Allocator>& to)
 {
     Replace(s, std::basic_string<CharT, Traits, Allocator>(from), to);
+}
+
+// Parses a number from the specified string with std::stoi, std::stoll, std::stof, or std::stod
+template <typename T>
+inline T FromStringOrDefault(const std::string& s)
+{
+    static_assert(false, "default template of FromStringOrDefault<T> not implemented");
+}
+
+template <>
+inline int FromStringOrDefault<int>(const std::string& s)
+{
+    try { return std::stoi(s); } catch (const std::exception&) { return 0; }
+}
+
+template <>
+inline long long FromStringOrDefault<long long>(const std::string& s)
+{
+    try { return std::stoll(s); } catch (const std::exception&) { return 0ll; }
+}
+
+template <>
+inline unsigned long FromStringOrDefault<unsigned long>(const std::string& s)
+{
+    try { return std::stoul(s); } catch (const std::exception&) { return 0ul; }
+}
+
+template <>
+inline float FromStringOrDefault<float>(const std::string& s)
+{
+    try { return std::stof(s); } catch (const std::exception&) { return 0.0f; }
+}
+
+template <>
+inline double FromStringOrDefault<double>(const std::string& s)
+{
+    try { return std::stod(s); } catch (const std::exception&) { return 0.0; }
 }
 
 

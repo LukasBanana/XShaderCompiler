@@ -182,13 +182,13 @@ void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::Samp
         const auto& value = literalExpr->value;
 
         if (name == "MipLODBias")
-            samplerState.mipLODBias = std::stof(value);
+            samplerState.mipLODBias = FromStringOrDefault<float>(value);
         else if (name == "MaxAnisotropy")
-            samplerState.maxAnisotropy = static_cast<unsigned int>(std::stoul(value));
+            samplerState.maxAnisotropy = static_cast<unsigned int>(FromStringOrDefault<unsigned long>(value));
         else if (name == "MinLOD")
-            samplerState.minLOD = std::stof(value);
+            samplerState.minLOD = FromStringOrDefault<float>(value);
         else if (name == "MaxLOD")
-            samplerState.maxLOD = std::stof(value);
+            samplerState.maxLOD = FromStringOrDefault<float>(value);
     }
     else if (auto objectExpr = ast->value->As<ObjectExpr>())
     {

@@ -19,20 +19,20 @@ namespace Xsc
  */
 
 Variant::Variant(BoolType value) :
-    type_{ Types::Bool },
-    bool_{ value       }
+    type_ { Types::Bool },
+    bool_ { value       }
 {
 }
 
 Variant::Variant(IntType value) :
-    type_   { Types::Int },
-    int_    { value      }
+    type_ { Types::Int },
+    int_  { value      }
 {
 }
 
 Variant::Variant(RealType value) :
-    type_{ Types::Real },
-    real_{ value       }
+    type_ { Types::Real },
+    real_ { value       }
 {
 }
 
@@ -311,9 +311,9 @@ Variant Variant::ParseFrom(const std::string& s)
     else if (s == "false")
         return Variant(false);
     else if (s.find_first_of(".eE") != std::string::npos)
-        return Variant(std::stod(s));
+        return Variant(FromStringOrDefault<double>(s));
     else
-        return Variant(std::stoll(s));
+        return Variant(FromStringOrDefault<long long>(s));
 }
 
 static void CropStringRight(std::string& s, std::size_t pos)
