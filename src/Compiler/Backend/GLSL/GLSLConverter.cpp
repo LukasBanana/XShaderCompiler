@@ -444,7 +444,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     VISIT_DEFAULT(ReturnStmnt);
 
     /* Check for cast expressions in entry-point return statements */
-    if (InsideEntryPoint())
+    if (InsideEntryPoint() && ast->expr != nullptr)
     {
         if (auto castExpr = AST::GetAs<CastExpr>(ast->expr->FindFirstOf(AST::Types::CastExpr)))
         {
