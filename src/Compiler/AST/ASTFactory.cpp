@@ -47,26 +47,6 @@ CallExprPtr MakeIntrinsicCallExpr(
     return ast;
 }
 
-static SamplerType TextureTypeToSamplerType(const BufferType t)
-{
-    switch (t)
-    {
-        case BufferType::Texture1D:
-        case BufferType::Texture1DArray:
-            return SamplerType::Sampler1D;
-        case BufferType::Texture2D:
-        case BufferType::Texture2DArray:
-            return SamplerType::Sampler2D;
-        case BufferType::Texture3D:
-            return SamplerType::Sampler3D;
-        case BufferType::TextureCube:
-        case BufferType::TextureCubeArray:
-            return SamplerType::SamplerCube;
-        default:
-            return SamplerType::Undefined;
-    }
-}
-
 CallExprPtr MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, const ExprPtr& samplerObjectExpr)
 {
     auto ast = MakeAST<CallExpr>();

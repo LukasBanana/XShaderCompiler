@@ -834,6 +834,52 @@ bool IsSamplerTypeArray(const SamplerType t)
     return ((t >= SamplerType::Sampler1DArray && t <= SamplerType::SamplerCubeArray) || t == SamplerType::Sampler2DMSArray);
 }
 
+SamplerType TextureTypeToSamplerType(const BufferType t)
+{
+    switch (t)
+    {
+    case BufferType::Texture1D:
+        return SamplerType::Sampler1D;
+    case BufferType::Texture1DArray:
+        return SamplerType::Sampler1DArray;
+    case BufferType::Texture2D:
+        return SamplerType::Sampler2D;
+    case BufferType::Texture2DArray:
+        return SamplerType::Sampler2DArray;
+    case BufferType::Texture3D:
+        return SamplerType::Sampler3D;
+    case BufferType::TextureCube:
+        return SamplerType::SamplerCube;
+    case BufferType::TextureCubeArray:
+        return SamplerType::SamplerCubeArray;
+    default:
+        return SamplerType::Undefined;
+    }
+}
+
+SamplerType SamplerTypeToShadowSamplerType(const SamplerType t)
+{
+    switch (t)
+    {
+    case SamplerType::Sampler1D:
+        return SamplerType::Sampler1DShadow;
+    case SamplerType::Sampler1DArray:
+        return SamplerType::Sampler1DArrayShadow;
+    case SamplerType::Sampler2D:
+        return SamplerType::Sampler2DShadow;
+    case SamplerType::Sampler2DArray:
+        return SamplerType::Sampler2DArrayShadow;
+    case SamplerType::Sampler2DRect:
+        return SamplerType::Sampler2DRectShadow;
+    case SamplerType::SamplerCube:
+        return SamplerType::SamplerCubeShadow;
+    case SamplerType::SamplerCubeArray:
+        return SamplerType::SamplerCubeArrayShadow;
+    default:
+        return SamplerType::Undefined;
+    }
+}
+
 
 /* ----- RegisterType Enum ----- */
 

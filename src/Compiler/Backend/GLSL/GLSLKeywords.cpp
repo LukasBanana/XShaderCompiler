@@ -329,7 +329,7 @@ static std::map<SamplerType, std::string> GenerateSamplerTypeMap()
         { T::Sampler2DArrayShadow,   "sampler2DArrayShadow"   },
         { T::SamplerCubeArrayShadow, "samplerCubeArrayShadow" },
         { T::SamplerState,           "sampler"                }, // Only for Vulkan
-        { T::SamplerComparisonState, "sampler"                }, // Only for Vulkan
+        { T::SamplerComparisonState, "samplerShadow"          }, // Only for Vulkan
     };
 }
 
