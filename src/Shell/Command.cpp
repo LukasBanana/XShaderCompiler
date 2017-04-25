@@ -1246,6 +1246,30 @@ void NameManglingCommand::Run(CommandLine& cmdLine, ShellState& state)
         throw std::invalid_argument("invalid name-mangling type '" + type + "'");
 }
 
+/*
+ * SeparateShadersCommand class
+ */
+
+std::vector<Command::Identifier> SeparateShadersCommand::Idents() const
+{
+    return{ { "--separate-shaders" } };
+}
+
+HelpDescriptor SeparateShadersCommand::Help() const
+{
+    return
+    {
+        "--separate-shaders [" + CommandLine::GetBooleanOption() + "]",
+        "Ensures generated shaders are compatible with ARB_separate_shader_objects extension; default = " + CommandLine::GetBooleanFalse()
+    };
+}
+
+void SeparateShadersCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.supportSeparateShaders = cmdLine.AcceptBoolean(true);
+}
+
+
 
 } // /namespace Util
 

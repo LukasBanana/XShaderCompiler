@@ -216,6 +216,7 @@ void DebuggerView::CreateLayoutPropertyGridOptions(wxPropertyGrid& pg)
     pg.Append(new wxBoolProperty("Show AST", "showAST"));
     pg.Append(new wxBoolProperty("Auto. Binding", "autoBinding"));
     pg.Append(new wxIntProperty("Auto. Binding Start Slot", "autoBindingStartSlot"));
+    pg.Append(new wxBoolProperty("Separate Shaders Support", "separateShaders"));
 }
 
 void DebuggerView::CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg)
@@ -439,6 +440,8 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderOutput_.options.autoBinding = ValueBool();
     else if (name == "autoBindingStartSlot")
         shaderOutput_.options.autoBindingStartSlot = ValueInt();
+    else if (name == "separateShaders")
+        shaderOutput_.options.supportSeparateShaders = ValueBool();
 
     /* --- Formatting --- */
     else if (name == "blanks")
