@@ -37,6 +37,7 @@ class GLSLExtensionAgent : private Visitor
             const ShaderTarget shaderTarget,
             bool allowExtensions,
             bool explicitBinding,
+            bool supportSeparateShaders,
             const OnReportProc& onReportExtension = nullptr
         );
 

@@ -157,6 +157,11 @@ class GLSLGenerator : public Generator
         bool WriteGlobalLayoutsFragment(const Program::LayoutFragmentShader& layout);
         bool WriteGlobalLayoutsCompute(const Program::LayoutComputeShader& layout);
 
+        /* ----- Built-in block redeclarations ----- */
+
+        void WriteBuiltinBlockRedeclarations();
+        void WritePerVertexBlockRedeclaration(bool input, const std::string& name = "");
+
         /* ----- Layout ----- */
 
         void WriteLayout(const std::initializer_list<LayoutEntryFunctor>& entryFunctors);
@@ -166,6 +171,7 @@ class GLSLGenerator : public Generator
         void WriteLayoutGlobalOut(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor = nullptr);
         void WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters);
         void WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast = nullptr);
+
 
         /* ----- Input semantics ----- */
 
@@ -299,6 +305,7 @@ class GLSLGenerator : public Generator
         bool                                    allowLineMarks_         = false;
         bool                                    compactWrappers_        = false;
         bool                                    alwaysBracedScopes_     = false;
+        bool                                    supportSeparateShaders_ = false;
 
         bool                                    isInsideInterfaceBlock_ = false;
 };

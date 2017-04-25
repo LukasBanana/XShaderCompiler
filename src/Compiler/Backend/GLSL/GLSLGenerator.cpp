@@ -54,14 +54,16 @@ void GLSLGenerator::GenerateCodePrimary(
     Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
 {
     /* Store parameters */
-    versionOut_         = outputDesc.shaderVersion;
-    nameMangling_       = outputDesc.nameMangling;
-    allowExtensions_    = outputDesc.options.allowExtensions;
-    explicitBinding_    = outputDesc.options.explicitBinding;
-    preserveComments_   = outputDesc.options.preserveComments;
-    allowLineMarks_     = outputDesc.formatting.lineMarks;
-    compactWrappers_    = outputDesc.formatting.compactWrappers;
-    alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
+    versionOut_             = outputDesc.shaderVersion;
+    nameMangling_           = outputDesc.nameMangling;
+    allowExtensions_        = outputDesc.options.allowExtensions;
+    explicitBinding_        = outputDesc.options.explicitBinding;
+    preserveComments_       = outputDesc.options.preserveComments;
+    supportSeparateShaders_ = outputDesc.options.supportSeparateShaders;
+    allowLineMarks_         = outputDesc.formatting.lineMarks;
+    compactWrappers_        = outputDesc.formatting.compactWrappers;
+    alwaysBracedScopes_     = outputDesc.formatting.alwaysBracedScopes;
+    
 
     for (const auto& s : outputDesc.vertexSemantics)
     {
@@ -266,6 +268,10 @@ IMPLEMENT_VISIT_PROC(Program)
 
     /* Write global input/output layouts */
     WriteGlobalLayouts();
+
+    /* Write redeclarations for built-in input/output blocks */
+    if(supportSeparateShaders_ && versionOut_ > OutputShaderVersion::GLSL140)
+        WriteBuiltinBlockRedeclarations();
 
     /* Write wrapper functions for special intrinsics */
     WriteWrapperIntrinsics();
@@ -952,7 +958,7 @@ void GLSLGenerator::WriteProgramHeader()
     /* Determine all required GLSL extensions with the GLSL extension agent */
     GLSLExtensionAgent extensionAgent;
     auto requiredExtensions = extensionAgent.DetermineRequiredExtensions(
-        *GetProgram(), versionOut_, GetShaderTarget(), allowExtensions_, explicitBinding_,
+        *GetProgram(), versionOut_, GetShaderTarget(), allowExtensions_, explicitBinding_, supportSeparateShaders_,
         [this](const std::string& msg, const AST* ast)
         {
             /* Report either error or warning whether extensions are allowed or not */
@@ -1165,6 +1171,105 @@ bool GLSLGenerator::WriteGlobalLayoutsCompute(const Program::LayoutComputeShader
         }
     );
     return true;
+}
+
+/* ----- Built-in block redeclarations ----- */
+
+void GLSLGenerator::WriteBuiltinBlockRedeclarations()
+{
+    switch (GetShaderTarget())
+    {
+    case ShaderTarget::TessellationControlShader:
+        WritePerVertexBlockRedeclaration(true, "gl_in[gl_MaxPatchVertices]");
+        WritePerVertexBlockRedeclaration(false, "gl_out[]");
+        break;
+    case ShaderTarget::TessellationEvaluationShader:
+        WritePerVertexBlockRedeclaration(true, "gl_in[gl_MaxPatchVertices]");
+        WritePerVertexBlockRedeclaration(false);
+        break;
+    case ShaderTarget::GeometryShader:
+        WritePerVertexBlockRedeclaration(true, "gl_in[]");
+        WritePerVertexBlockRedeclaration(false);
+        break;
+    case ShaderTarget::VertexShader:
+        WritePerVertexBlockRedeclaration(false);
+        break;
+    default:
+        break;
+    }
+}
+
+void GLSLGenerator::WritePerVertexBlockRedeclaration(bool input, const std::string& name)
+{
+    auto program = GetProgram();
+
+    std::vector<Semantic> inSemantics, outSemantics;
+
+    for (const auto& param : program->entryPointRef->inputSemantics.varDeclRefsSV)
+        inSemantics.push_back(param->semantic);
+
+    for (const auto& param : program->entryPointRef->outputSemantics.varDeclRefsSV)
+        outSemantics.push_back(param->semantic);
+
+    if (IsSystemSemantic(program->entryPointRef->semantic))
+        outSemantics.push_back(program->entryPointRef->semantic);
+
+    auto& semantics = input ? inSemantics : outSemantics;
+
+    if (semantics.empty())
+        return;
+
+    BeginLn();
+    {
+        if (input)
+            Write("in");
+        else
+            Write("out");
+
+        Write(" gl_PerVertex");
+    }
+    EndLn();
+
+    BeginLn();
+    {
+        Write("{");
+        WriteScopeOpen(false, false, false);
+        {
+            for (auto& semantic : semantics)
+            {
+                switch (semantic)
+                {
+                case Semantic::VertexPosition:
+                    WriteLn("vec4 gl_Position;");
+                    break;
+                case Semantic::PointSize:
+                    WriteLn("float gl_PointSize;");
+                    break;
+                case Semantic::CullDistance:
+                    if(IsLanguageVKSL(versionOut_) || versionOut_ >= OutputShaderVersion::GLSL450)
+                        WriteLn("float gl_CullDistance[];");
+                    break;
+                case Semantic::ClipDistance:
+                    WriteLn("float gl_ClipDistance[];");
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+        WriteScopeClose();
+    }
+
+    BeginLn();
+    {
+        Write("}");
+
+        if (!name.empty())
+            Write(" " + name);
+
+        Write(";");
+    }
+    EndLn();
 }
 
 /* ----- Layout ----- */

@@ -86,7 +86,8 @@ CommandFactory::CommandFactory()
         FormattingCommand,
         IndentCommand,
         PrefixCommand,
-        NameManglingCommand
+        NameManglingCommand,
+        SeparateShadersCommand
     >();
 }
 
