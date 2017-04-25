@@ -160,6 +160,9 @@ struct Options
     //! If true, matrices have row-major alignment. Otherwise the matrices have column-major alignment. By default false.
     bool    rowMajorAlignment       = false;
 
+    //! If true, generated GLSL code will support the 'ARB_separate_shader_objects' extension. By default false.
+    bool    separateShaders         = false;
+
     //! If true, code obfuscation is performed. By default false.
     bool    obfuscate               = false;
 
@@ -168,9 +171,6 @@ struct Options
 
     //! If true, the timings of the different compilation processes are written to the log output. By default false.
     bool    showTimes               = false;
-
-    //! If true, generates code will support the ARB_separate_shader_objects extension. By default false.
-    bool    supportSeparateShaders  = false;
 };
 
 //! Name mangling descriptor structure for shader input/output variables (also referred to as "varyings"), temporary variables, and reserved keywords.

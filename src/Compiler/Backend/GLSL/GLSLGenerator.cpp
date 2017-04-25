@@ -54,15 +54,15 @@ void GLSLGenerator::GenerateCodePrimary(
     Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
 {
     /* Store parameters */
-    versionOut_             = outputDesc.shaderVersion;
-    nameMangling_           = outputDesc.nameMangling;
-    allowExtensions_        = outputDesc.options.allowExtensions;
-    explicitBinding_        = outputDesc.options.explicitBinding;
-    preserveComments_       = outputDesc.options.preserveComments;
-    supportSeparateShaders_ = outputDesc.options.supportSeparateShaders;
-    allowLineMarks_         = outputDesc.formatting.lineMarks;
-    compactWrappers_        = outputDesc.formatting.compactWrappers;
-    alwaysBracedScopes_     = outputDesc.formatting.alwaysBracedScopes;
+    versionOut_         = outputDesc.shaderVersion;
+    nameMangling_       = outputDesc.nameMangling;
+    allowExtensions_    = outputDesc.options.allowExtensions;
+    explicitBinding_    = outputDesc.options.explicitBinding;
+    preserveComments_   = outputDesc.options.preserveComments;
+    separateShaders_    = outputDesc.options.separateShaders;
+    allowLineMarks_     = outputDesc.formatting.lineMarks;
+    compactWrappers_    = outputDesc.formatting.compactWrappers;
+    alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
     
 
     for (const auto& s : outputDesc.vertexSemantics)
@@ -270,7 +270,7 @@ IMPLEMENT_VISIT_PROC(Program)
     WriteGlobalLayouts();
 
     /* Write redeclarations for built-in input/output blocks */
-    if(supportSeparateShaders_ && versionOut_ > OutputShaderVersion::GLSL140)
+    if(separateShaders_ && versionOut_ > OutputShaderVersion::GLSL140)
         WriteBuiltinBlockRedeclarations();
 
     /* Write wrapper functions for special intrinsics */
@@ -958,7 +958,7 @@ void GLSLGenerator::WriteProgramHeader()
     /* Determine all required GLSL extensions with the GLSL extension agent */
     GLSLExtensionAgent extensionAgent;
     auto requiredExtensions = extensionAgent.DetermineRequiredExtensions(
-        *GetProgram(), versionOut_, GetShaderTarget(), allowExtensions_, explicitBinding_, supportSeparateShaders_,
+        *GetProgram(), versionOut_, GetShaderTarget(), allowExtensions_, explicitBinding_, separateShaders_,
         [this](const std::string& msg, const AST* ast)
         {
             /* Report either error or warning whether extensions are allowed or not */
@@ -1179,97 +1179,88 @@ void GLSLGenerator::WriteBuiltinBlockRedeclarations()
 {
     switch (GetShaderTarget())
     {
-    case ShaderTarget::TessellationControlShader:
-        WritePerVertexBlockRedeclaration(true, "gl_in[gl_MaxPatchVertices]");
-        WritePerVertexBlockRedeclaration(false, "gl_out[]");
-        break;
-    case ShaderTarget::TessellationEvaluationShader:
-        WritePerVertexBlockRedeclaration(true, "gl_in[gl_MaxPatchVertices]");
-        WritePerVertexBlockRedeclaration(false);
-        break;
-    case ShaderTarget::GeometryShader:
-        WritePerVertexBlockRedeclaration(true, "gl_in[]");
-        WritePerVertexBlockRedeclaration(false);
-        break;
-    case ShaderTarget::VertexShader:
-        WritePerVertexBlockRedeclaration(false);
-        break;
-    default:
-        break;
+        case ShaderTarget::TessellationControlShader:
+            WriteBuiltinBlockRedeclarationsPerVertex(true, "gl_in[gl_MaxPatchVertices]");
+            WriteBuiltinBlockRedeclarationsPerVertex(false, "gl_out[]");
+            break;
+        case ShaderTarget::TessellationEvaluationShader:
+            WriteBuiltinBlockRedeclarationsPerVertex(true, "gl_in[gl_MaxPatchVertices]");
+            WriteBuiltinBlockRedeclarationsPerVertex(false);
+            break;
+        case ShaderTarget::GeometryShader:
+            WriteBuiltinBlockRedeclarationsPerVertex(true, "gl_in[]");
+            WriteBuiltinBlockRedeclarationsPerVertex(false);
+            break;
+        case ShaderTarget::VertexShader:
+            WriteBuiltinBlockRedeclarationsPerVertex(false);
+            break;
+        default:
+            break;
     }
 }
 
-void GLSLGenerator::WritePerVertexBlockRedeclaration(bool input, const std::string& name)
+void GLSLGenerator::WriteBuiltinBlockRedeclarationsPerVertex(bool input, const std::string& name)
 {
-    auto program = GetProgram();
+    auto entryPoint = GetProgram()->entryPointRef;
 
-    std::vector<Semantic> inSemantics, outSemantics;
+    /* Gather all semantics that are contained in the redeclared vertex block */
+    std::vector<Semantic> semantics;
 
-    for (const auto& param : program->entryPointRef->inputSemantics.varDeclRefsSV)
-        inSemantics.push_back(param->semantic);
+    if (input)
+    {
+        for (const auto& param : entryPoint->inputSemantics.varDeclRefsSV)
+            semantics.push_back(param->semantic);
+    }
+    else
+    {
+        for (const auto& param : entryPoint->outputSemantics.varDeclRefsSV)
+            semantics.push_back(param->semantic);
 
-    for (const auto& param : program->entryPointRef->outputSemantics.varDeclRefsSV)
-        outSemantics.push_back(param->semantic);
-
-    if (IsSystemSemantic(program->entryPointRef->semantic))
-        outSemantics.push_back(program->entryPointRef->semantic);
-
-    auto& semantics = input ? inSemantics : outSemantics;
+        if (IsSystemSemantic(entryPoint->semantic))
+            semantics.push_back(entryPoint->semantic);
+    }
 
     if (semantics.empty())
         return;
 
+    /* Write input/output per-vertex block */
     BeginLn();
     {
-        if (input)
-            Write("in");
-        else
-            Write("out");
-
+        Write(input ? "in" : "out");
         Write(" gl_PerVertex");
-    }
-    EndLn();
 
-    BeginLn();
-    {
-        Write("{");
-        WriteScopeOpen(false, false, false);
+        WriteScopeOpen(false, name.empty());
         {
-            for (auto& semantic : semantics)
+            for (const auto& semantic : semantics)
             {
                 switch (semantic)
                 {
-                case Semantic::VertexPosition:
-                    WriteLn("vec4 gl_Position;");
-                    break;
-                case Semantic::PointSize:
-                    WriteLn("float gl_PointSize;");
-                    break;
-                case Semantic::CullDistance:
-                    if(IsLanguageVKSL(versionOut_) || versionOut_ >= OutputShaderVersion::GLSL450)
-                        WriteLn("float gl_CullDistance[];");
-                    break;
-                case Semantic::ClipDistance:
-                    WriteLn("float gl_ClipDistance[];");
-                    break;
-                default:
-                    break;
+                    case Semantic::VertexPosition:
+                        WriteLn("vec4 gl_Position;");
+                        break;
+                    case Semantic::PointSize:
+                        WriteLn("float gl_PointSize;");
+                        break;
+                    case Semantic::CullDistance:
+                        if (IsVKSL() || versionOut_ >= OutputShaderVersion::GLSL450)
+                            WriteLn("float gl_CullDistance[];");
+                        break;
+                    case Semantic::ClipDistance:
+                        WriteLn("float gl_ClipDistance[];");
+                        break;
+                    default:
+                        break;
                 }
             }
         }
         WriteScopeClose();
-    }
-
-    BeginLn();
-    {
-        Write("}");
 
         if (!name.empty())
-            Write(" " + name);
-
-        Write(";");
+            WriteLn(name + ";");
     }
     EndLn();
+
+    Blank();
 }
 
 /* ----- Layout ----- */

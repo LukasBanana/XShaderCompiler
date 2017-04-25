@@ -160,7 +160,7 @@ class GLSLGenerator : public Generator
         /* ----- Built-in block redeclarations ----- */
 
         void WriteBuiltinBlockRedeclarations();
-        void WritePerVertexBlockRedeclaration(bool input, const std::string& name = "");
+        void WriteBuiltinBlockRedeclarationsPerVertex(bool input, const std::string& name = "");
 
         /* ----- Layout ----- */
 
@@ -305,7 +305,7 @@ class GLSLGenerator : public Generator
         bool                                    allowLineMarks_         = false;
         bool                                    compactWrappers_        = false;
         bool                                    alwaysBracedScopes_     = false;
-        bool                                    supportSeparateShaders_ = false;
+        bool                                    separateShaders_        = false;
 
         bool                                    isInsideInterfaceBlock_ = false;
 };

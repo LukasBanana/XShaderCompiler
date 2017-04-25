@@ -1252,7 +1252,7 @@ void NameManglingCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> SeparateShadersCommand::Idents() const
 {
-    return{ { "--separate-shaders" } };
+    return { { "--separate-shaders" } };
 }
 
 HelpDescriptor SeparateShadersCommand::Help() const
@@ -1260,13 +1260,13 @@ HelpDescriptor SeparateShadersCommand::Help() const
     return
     {
         "--separate-shaders [" + CommandLine::GetBooleanOption() + "]",
-        "Ensures generated shaders are compatible with ARB_separate_shader_objects extension; default = " + CommandLine::GetBooleanFalse()
+        "Ensures compatibility to 'ARB_separate_shader_objects' extension; default=" + CommandLine::GetBooleanFalse()
     };
 }
 
 void SeparateShadersCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.options.supportSeparateShaders = cmdLine.AcceptBoolean(true);
+    state.outputDesc.options.separateShaders = cmdLine.AcceptBoolean(true);
 }
 
 

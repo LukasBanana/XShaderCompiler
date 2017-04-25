@@ -206,17 +206,17 @@ void DebuggerView::CreateLayoutPropertyGridOptions(wxPropertyGrid& pg)
 
     pg.Append(new wxBoolProperty("Allow Extensions", "extensions"));
     pg.Append(new wxBoolProperty("Explicit Binding", "binding"));
+    pg.Append(new wxBoolProperty("Auto. Binding", "autoBinding"));
+    pg.Append(new wxIntProperty("Auto. Binding Start Slot", "autoBindingStartSlot"));
     pg.Append(new wxBoolProperty("Optimize", "optimize"));
     pg.Append(new wxBoolProperty("Prefer Wrappers", "wrappers"));
     pg.Append(new wxBoolProperty("Preprocess Only", "preprocess"));
     pg.Append(new wxBoolProperty("Preserve Comments", "comments"));
     pg.Append(new wxBoolProperty("Unroll Array Initializers", "unrollInitializers"));
     pg.Append(new wxBoolProperty("Row-Major Alignment", "rowMajor"));
+    pg.Append(new wxBoolProperty("Separate Shaders", "separateShaders"));
     pg.Append(new wxBoolProperty("Obfuscate", "obfuscate"));
     pg.Append(new wxBoolProperty("Show AST", "showAST"));
-    pg.Append(new wxBoolProperty("Auto. Binding", "autoBinding"));
-    pg.Append(new wxIntProperty("Auto. Binding Start Slot", "autoBindingStartSlot"));
-    pg.Append(new wxBoolProperty("Separate Shaders Support", "separateShaders"));
 }
 
 void DebuggerView::CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg)
@@ -441,7 +441,7 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
     else if (name == "autoBindingStartSlot")
         shaderOutput_.options.autoBindingStartSlot = ValueInt();
     else if (name == "separateShaders")
-        shaderOutput_.options.supportSeparateShaders = ValueBool();
+        shaderOutput_.options.separateShaders = ValueBool();
 
     /* --- Formatting --- */
     else if (name == "blanks")
