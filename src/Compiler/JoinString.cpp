@@ -129,7 +129,7 @@ static bool JoinStringSub(
                     /* If this value replacement was not optional -> error */
                     throw std::out_of_range(
                         "index (" + std::to_string(idx) + ") out of range [0, " +
-                        std::to_string(values.size() + 1) + ") in joinable string: " + in
+                        std::to_string(values.size()) + ") in joinable string: " + in
                     );
                 }
             }
