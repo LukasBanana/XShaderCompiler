@@ -370,7 +370,7 @@ void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr
         {
             /* Is the buffer declaration a sampler buffer? */
             const auto bufferType = bufferDecl->GetBufferType();
-            if (bufferType == BufferType::Buffer && numDims < arrayExpr->arrayIndices.size())
+            if (bufferType == BufferType::Buffer && numDims < arrayExpr->NumIndices())
             {
                 /* Get buffer type denoter from array indices of array access plus identifier */
                 //TODO: not sure if the buffer type must be derived with 'GetSub(arrayExpr)' again here???
@@ -398,7 +398,7 @@ void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr
                         for (std::size_t i = 0; i < numDims; i++)
                             arrayIndices.push_back(arrayExpr->arrayIndices[i]);
 
-                        callExpr->prefixExpr = ASTFactory::MakeArrayExpr(ASTFactory::MakeObjectExpr(bufferDecl), arrayIndices);
+                        callExpr->prefixExpr = ASTFactory::MakeArrayExpr(ASTFactory::MakeObjectExpr(bufferDecl), std::move(arrayIndices));
                     }
                     else
                         callExpr->prefixExpr = ASTFactory::MakeObjectExpr(bufferDecl);

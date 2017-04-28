@@ -360,6 +360,7 @@ struct ArrayTypeDenoter : public TypeDenoter
     bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 
+    // Returns the number if dimensions for this array plus its sub type (if it's also an array).
     unsigned int NumDimensions() const override;
 
     AST* SymbolRef() const override;
