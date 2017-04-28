@@ -816,6 +816,11 @@ void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
         case Intrinsic::Texture_SampleLevel_5:
             ConvertIntrinsicCallTextureSampleLevel(ast);
             break;
+        case Intrinsic::Texture_Load_1:
+        case Intrinsic::Texture_Load_2:
+        case Intrinsic::Texture_Load_3:
+            ConvertIntrinsicCallTextureLoad(ast);
+            break;
         case Intrinsic::Image_Store:
             ConvertIntrinsicCallImageStore(ast);
             break;
@@ -969,6 +974,20 @@ void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast)
         /* Ensure argument: int[1,2,3] Offset */
         if (args.size() >= 4)
             exprConverter_.ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, textureDim), true);
+    }
+}
+
+void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
+{
+    /* Determine vector size for texture intrinsic */
+    if (auto textureDim = GetTextureDimFromIntrinsicCall(ast))
+    {
+        /* Convert arguments */
+        auto& args = ast->arguments;
+
+        /* Ensure argument: int[1,2,3] Offset */
+        if (args.size() >= 2)
+            exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Int, textureDim), true);
     }
 }
 
