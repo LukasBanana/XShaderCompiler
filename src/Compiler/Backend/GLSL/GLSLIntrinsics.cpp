@@ -24,7 +24,7 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { T::ACos,                             "acos"                  },
         { T::All,                              "all"                   },
         { T::AllMemoryBarrier,                 "memoryBarrier"         },
-        { T::AllMemoryBarrierWithGroupSync,    "barrier"               }, //???
+      //{ T::AllMemoryBarrierWithGroupSync,    ""                      }, //???
         { T::Any,                              "any"                   },
         { T::AsDouble,                         "uint64BitsToDouble"    },
         { T::AsFloat,                          "uintBitsToFloat"       },
@@ -51,8 +51,8 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { T::DDYFine,                          "dFdyFine"              },
         { T::Degrees,                          "degrees"               },
         { T::Determinant,                      "determinant"           },
-        { T::DeviceMemoryBarrier,              "barrier"               }, // ??? memoryBarrier, memoryBarrierImage, memoryBarrierImage, and barrier
-        { T::DeviceMemoryBarrierWithGroupSync, "barrier"               }, // ??? memoryBarrier, memoryBarrierImage, memoryBarrierImage
+      //{ T::DeviceMemoryBarrier,              ""                      }, // ??? memoryBarrier, memoryBarrierImage, memoryBarrierImage, and barrier
+      //{ T::DeviceMemoryBarrierWithGroupSync, ""                      }, // ??? memoryBarrier, memoryBarrierImage, memoryBarrierImage
         { T::Distance,                         "distance"              },
         { T::Dot,                              "dot"                   },
       //{ T::Dst,                              ""                      },
@@ -79,7 +79,7 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { T::GreaterThan,                      "greaterThan"           }, // GLSL only
         { T::GreaterThanEqual,                 "greaterThanEqual"      }, // GLSL only
         { T::GroupMemoryBarrier,               "groupMemoryBarrier"    },
-        { T::GroupMemoryBarrierWithGroupSync,  "barrier"               }, // ??? groupMemoryBarrier and barrier
+      //{ T::GroupMemoryBarrierWithGroupSync,  ""                      }, // ??? groupMemoryBarrier and barrier
         { T::InterlockedAdd,                   "atomicAdd"             },
         { T::InterlockedAnd,                   "atomicAnd"             },
         { T::InterlockedCompareExchange,       "atomicCompSwap"        },
