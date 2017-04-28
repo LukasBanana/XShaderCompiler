@@ -355,14 +355,22 @@ void ExprConverter::ConvertExprSamplerBufferAccess(ExprPtr& expr)
 void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr* arrayExpr)
 {
     /* Fetch buffer type denoter from l-value prefix expression */
-    const auto& prefixTypeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetAliased();
-    if (auto bufferTypeDen = prefixTypeDen.As<BufferTypeDenoter>())
+    auto prefixTypeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSub();
+
+    size_t numDims = 0;
+    if (auto arrayTypeDenoter = prefixTypeDen->As<ArrayTypeDenoter>())
+    {
+        numDims = arrayTypeDenoter->arrayDims.size();
+        prefixTypeDen = arrayTypeDenoter->subTypeDenoter;
+    }
+
+    if (auto bufferTypeDen = prefixTypeDen->As<BufferTypeDenoter>())
     {
         if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
         {
             /* Is the buffer declaration a sampler buffer? */
             const auto bufferType = bufferDecl->GetBufferType();
-            if (bufferType == BufferType::Buffer)
+            if (bufferType == BufferType::Buffer && numDims < arrayExpr->arrayIndices.size())
             {
                 /* Get buffer type denoter from array indices of array access plus identifier */
                 //TODO: not sure if the buffer type must be derived with 'GetSub(arrayExpr)' again here???
@@ -374,22 +382,28 @@ void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr
                     /* Create a type denoter for the return value */
                     auto callTypeDen = MakeBufferAccessCallTypeDenoter(genericBaseTypeDen->dataType);
 
-                    if (!arrayExpr->arrayIndices.empty())
+                    arrayExpr->prefixExpr->flags << Expr::wasConverted;
+
+                    /* Get argument expression (last array index) */
+                    auto argExpr = arrayExpr->arrayIndices.back();
+
+                    /* Convert expression to intrinsic call */
+                    auto callExpr = ASTFactory::MakeIntrinsicCallExpr(
+                        Intrinsic::Texture_Load_1, "Load", callTypeDen, { argExpr }
+                    );
+
+                    if (numDims > 0)
                     {
-                        /* Make first argument expression */
-                        auto arg0Expr = arrayExpr->prefixExpr;
-                        arg0Expr->flags << Expr::wasConverted;
+                        std::vector<ExprPtr> arrayIndices;
+                        for (int i = 0; i < numDims; i++)
+                            arrayIndices.push_back(arrayExpr->arrayIndices[i]);
 
-                        /* Get second argument expression (last array index) */
-                        auto arg1Expr = arrayExpr->arrayIndices.back();
-
-                        /* Convert expression to intrinsic call */
-                        expr = ASTFactory::MakeIntrinsicCallExpr(
-                            Intrinsic::Texture_Load_1, "texelFetch", callTypeDen, { arg0Expr, arg1Expr }
-                        );
+                        callExpr->prefixExpr = ASTFactory::MakeArrayExpr(ASTFactory::MakeObjectExpr(bufferDecl), arrayIndices);
                     }
                     else
-                        RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), arrayExpr);
+                        callExpr->prefixExpr = ASTFactory::MakeObjectExpr(bufferDecl);
+
+                    expr = callExpr;
                 }
             }
         }

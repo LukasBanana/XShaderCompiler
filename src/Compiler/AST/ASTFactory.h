@@ -56,6 +56,7 @@ ObjectExprPtr                   MakeObjectExpr(const std::string& ident, Decl* s
 ObjectExprPtr                   MakeObjectExpr(Decl* symbolRef);
 
 ArrayExprPtr                    MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices);
+ArrayExprPtr                    MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<ExprPtr>& arrayIndices);
 
 RegisterPtr                     MakeRegister(int slot, const RegisterType registerType = RegisterType::Undefined);
 

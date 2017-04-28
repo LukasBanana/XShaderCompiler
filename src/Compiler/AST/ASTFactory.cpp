@@ -216,6 +216,16 @@ ArrayExprPtr MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& ar
     return ast;
 }
 
+ArrayExprPtr MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<ExprPtr>& arrayIndices)
+{
+    auto ast = MakeAST<ArrayExpr>();
+    {
+        ast->prefixExpr = prefixExpr;
+        ast->arrayIndices = arrayIndices;
+    }
+    return ast;
+}
+
 RegisterPtr MakeRegister(int slot, const RegisterType registerType)
 {
     auto ast = MakeAST<Register>();

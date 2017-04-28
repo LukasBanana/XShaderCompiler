@@ -166,3 +166,6 @@
 
 [GatherTest2 VS]
 -T vert -E main -o output/* GatherTest2.hlsl
+
+[SamplerBuffer1 VS]
+-T vert -E main -o output/* SamplerBuffer1.hlsl
