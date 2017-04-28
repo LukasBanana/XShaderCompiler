@@ -357,7 +357,7 @@ void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr
     /* Fetch buffer type denoter from l-value prefix expression */
     auto prefixTypeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSub();
 
-    size_t numDims = 0;
+    std::size_t numDims = 0;
     if (auto arrayTypeDenoter = prefixTypeDen->As<ArrayTypeDenoter>())
     {
         numDims = arrayTypeDenoter->arrayDims.size();
@@ -395,7 +395,7 @@ void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr
                     if (numDims > 0)
                     {
                         std::vector<ExprPtr> arrayIndices;
-                        for (int i = 0; i < numDims; i++)
+                        for (std::size_t i = 0; i < numDims; i++)
                             arrayIndices.push_back(arrayExpr->arrayIndices[i]);
 
                         callExpr->prefixExpr = ASTFactory::MakeArrayExpr(ASTFactory::MakeObjectExpr(bufferDecl), arrayIndices);
