@@ -2573,20 +2573,23 @@ void GLSLGenerator::WriteWrapperIntrinsics()
 {
     auto program = GetProgram();
 
+    /* Write wrappers with parameters (usage cases are required) */
     if (auto usage = program->FetchIntrinsicUsage(Intrinsic::Clip))
         WriteWrapperIntrinsicsClip(*usage);
     if (auto usage = program->FetchIntrinsicUsage(Intrinsic::Lit))
         WriteWrapperIntrinsicsLit(*usage);
     if (auto usage = program->FetchIntrinsicUsage(Intrinsic::SinCos))
         WriteWrapperIntrinsicsSinCos(*usage);
-    if (auto usage = program->FetchIntrinsicUsage(Intrinsic::GroupMemoryBarrierWithGroupSync))
-        WriteWrapperIntrinsicMemoryBarrier(Intrinsic::GroupMemoryBarrier, true, *usage);
-    if (auto usage = program->FetchIntrinsicUsage(Intrinsic::DeviceMemoryBarrier))
-        WriteWrapperIntrinsicMemoryBarrier(Intrinsic::DeviceMemoryBarrier, false, *usage);
-    if (auto usage = program->FetchIntrinsicUsage(Intrinsic::DeviceMemoryBarrierWithGroupSync))
-        WriteWrapperIntrinsicMemoryBarrier(Intrinsic::DeviceMemoryBarrier, true, *usage);
-    if (auto usage = program->FetchIntrinsicUsage(Intrinsic::AllMemoryBarrierWithGroupSync))
-        WriteWrapperIntrinsicMemoryBarrier(Intrinsic::AllMemoryBarrier, true, *usage);
+
+    /* Write wrappers with no parameters (usage cases are not required) */
+    if (program->FetchIntrinsicUsage(Intrinsic::GroupMemoryBarrierWithGroupSync) != nullptr)
+        WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::GroupMemoryBarrier, true);
+    if (program->FetchIntrinsicUsage(Intrinsic::DeviceMemoryBarrier) != nullptr)
+        WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::DeviceMemoryBarrier, false);
+    if (program->FetchIntrinsicUsage(Intrinsic::DeviceMemoryBarrierWithGroupSync) != nullptr)
+        WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::DeviceMemoryBarrier, true);
+    if (program->FetchIntrinsicUsage(Intrinsic::AllMemoryBarrierWithGroupSync) != nullptr)
+        WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::AllMemoryBarrier, true);
 }
 
 void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
@@ -2703,70 +2706,70 @@ void GLSLGenerator::WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage)
         Blank();
 }
 
-std::string getWrapperNameForMemoryBarrier(Intrinsic barrierIntrinsic, bool groupSync)
+static std::string GetWrapperNameForMemoryBarrier(const Intrinsic intrinsic, bool groupSync)
 {
-    std::stringstream output;
+    std::string s;
 
-    if (barrierIntrinsic == Intrinsic::GroupMemoryBarrier)
-        output << "Group";
-    else if (barrierIntrinsic == Intrinsic::DeviceMemoryBarrier)
-        output << "Device";
-    else if (barrierIntrinsic == Intrinsic::AllMemoryBarrier)
-        output << "All";
-
-    output << "MemoryBarrier";
-
-    if (groupSync)
-        output << "WithGroupSync";
-
-    return output.str();
-}
-
-void GLSLGenerator::WriteWrapperIntrinsicMemoryBarrier(Intrinsic barrierIntrinsic, bool groupSync, const IntrinsicUsage& usage)
-{
-    bool wrappersWritten = false;
-
-    for (const auto& argList : usage.argLists)
+    switch (intrinsic)
     {
-        if (argList.argTypes.size() == 0)
-        {
-            BeginLn();
-            {
-                /* Write function signature */
-                std::string name = getWrapperNameForMemoryBarrier(barrierIntrinsic, groupSync);
-
-                Write("void ");
-                Write(name);
-                Write("()");
-
-                /* Write function body */
-                WriteScopeOpen(compactWrappers_);
-                {
-                    if (barrierIntrinsic == Intrinsic::GroupMemoryBarrier)
-                        WriteLn("groupMemoryBarrier();");
-                    else if (barrierIntrinsic == Intrinsic::DeviceMemoryBarrier)
-                    {
-                        WriteLn("memoryBarrierAtomicCounter();");
-                        WriteLn("memoryBarrierImage();");
-                        WriteLn("memoryBarrierBuffer();");
-                    }
-                    else if (barrierIntrinsic == Intrinsic::AllMemoryBarrier)
-                        WriteLn("memoryBarrier();");
-
-                    if(groupSync)
-                        WriteLn("barrier();");
-                }
-                WriteScopeClose();
-            }
-            EndLn();
-
-            wrappersWritten = true;
+        case Intrinsic::GroupMemoryBarrier:
+            s += "Group";
             break;
-        }
+        case Intrinsic::DeviceMemoryBarrier:
+            s += "Device";
+            break;
+        case Intrinsic::AllMemoryBarrier:
+            s += "All";
+            break;
+        default:
+            return "";
     }
 
-    if (wrappersWritten)
-        Blank();
+    s += "MemoryBarrier";
+
+    if (groupSync)
+        s += "WithGroupSync";
+
+    return s;
+}
+
+void GLSLGenerator::WriteWrapperIntrinsicsMemoryBarrier(const Intrinsic intrinsic, bool groupSync)
+{
+    BeginLn();
+    {
+        /* Write function signature */
+        Write("void ");
+        Write(GetWrapperNameForMemoryBarrier(intrinsic, groupSync));
+        Write("()");
+
+        /* Write function body */
+        WriteScopeOpen(compactWrappers_);
+        {
+            switch (intrinsic)
+            {
+                case Intrinsic::GroupMemoryBarrier:
+                    WriteLn("groupMemoryBarrier();");
+                    break;
+                case Intrinsic::DeviceMemoryBarrier:
+                    WriteLn("memoryBarrierAtomicCounter();");
+                    WriteLn("memoryBarrierImage();");
+                    WriteLn("memoryBarrierBuffer();");
+                    break;
+                case Intrinsic::AllMemoryBarrier:
+                    WriteLn("memoryBarrier();");
+                    break;
+                default:
+                    break;
+            }
+
+            if (groupSync)
+                WriteLn("barrier();");
+        }
+        WriteScopeClose();
+    }
+    EndLn();
+
+    Blank();
 }
 
 /* ----- Structure ----- */
