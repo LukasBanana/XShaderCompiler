@@ -1000,7 +1000,7 @@ void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
         {
             auto prefixTypeDen = arg0ArrayExpr->prefixExpr->GetTypeDenoter()->GetSub();
 
-            size_t numDims = 0;
+            std::size_t numDims = 0;
             if (auto arrayTypeDenoter = prefixTypeDen->As<ArrayTypeDenoter>())
             {
                 numDims = arrayTypeDenoter->arrayDims.size();
@@ -1030,7 +1030,7 @@ void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
                     if (numDims > 0)
                     {
                         std::vector<ExprPtr> arrayIndices;
-                        for (size_t i = 0; i < numDims; i++)
+                        for (std::size_t i = 0; i < numDims; ++i)
                             arrayIndices.push_back(arg0ArrayExpr->arrayIndices[i]);
 
                         args.front() = ASTFactory::MakeArrayExpr(arg0ArrayExpr->prefixExpr, std::move(arrayIndices));
@@ -1042,26 +1042,26 @@ void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
         }
 
         /* Cast arguments if required, for both image and non-image atomics */
-        int dataArgOffset = 1;
-        if(IsRWTextureBufferType(bufferType))
+        std::size_t dataArgOffset = 1;
+        if (IsRWTextureBufferType(bufferType))
         {
             /* Cast location argument */
             int numDims = 1;
             switch (bufferType)
             {
-            case BufferType::RWBuffer:
-            case BufferType::RWTexture1D:
-                numDims = 1;
-                break;
-            case BufferType::RWTexture1DArray:
-            case BufferType::RWTexture2D:
-                numDims = 2;
-                break;
-            case BufferType::RWTexture2DArray:
-            case BufferType::RWTexture3D:
-                numDims = 3;
-            default:
-                break;
+                case BufferType::RWBuffer:
+                case BufferType::RWTexture1D:
+                    numDims = 1;
+                    break;
+                case BufferType::RWTexture1DArray:
+                case BufferType::RWTexture2D:
+                    numDims = 2;
+                    break;
+                case BufferType::RWTexture2DArray:
+                case BufferType::RWTexture3D:
+                    numDims = 3;
+                default:
+                    break;
             }
 
             exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Int, numDims), true);
