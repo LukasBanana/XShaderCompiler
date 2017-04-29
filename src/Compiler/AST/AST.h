@@ -481,6 +481,9 @@ struct TypeSpecifier : public TypedAST
     // Returns true if any of the specified storage classes is contained.
     bool HasAnyStorageClassesOf(const std::vector<StorageClass>& modifiers) const;
 
+    // Swaps the 'row_major' with 'column_major' storage layout, and inserts the specified default layout if none of these are set.
+    void SwapMatrixStorageLayout(const TypeModifier defaultStorgeLayout);
+
     bool                        isInput         = false;                    // Input modifier 'in'
     bool                        isOutput        = false;                    // Input modifier 'out'
     bool                        isUniform       = false;                    // Input modifier 'uniform'

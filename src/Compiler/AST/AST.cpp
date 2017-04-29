@@ -380,6 +380,37 @@ bool TypeSpecifier::HasAnyStorageClassesOf(const std::vector<StorageClass>& modi
     return false;
 }
 
+void TypeSpecifier::SwapMatrixStorageLayout(const TypeModifier defaultStorgeLayout)
+{
+    bool found = false;
+
+    /* Construct new type modifier set */
+    std::set<TypeModifier> modifiers;
+
+    for (auto mod : typeModifiers)
+    {
+        if (mod == TypeModifier::RowMajor)
+        {
+            modifiers.insert(TypeModifier::ColumnMajor);
+            found = true;
+        }
+        else if (mod == TypeModifier::ColumnMajor)
+        {
+            modifiers.insert(TypeModifier::RowMajor);
+            found = true;
+        }
+        else
+            modifiers.insert(mod);
+    }
+
+    /* If no matrix storage layout has been found, insert the default layout */
+    if (!found)
+        modifiers.insert(defaultStorgeLayout);
+
+    /* Take new type modifier set */
+    typeModifiers = std::move(modifiers);
+}
+
 
 /* ----- VarDecl ----- */
 

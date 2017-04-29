@@ -752,6 +752,13 @@ IMPLEMENT_VISIT_PROC(CallExpr)
     if (IsInterlockedIntristic(ast->intrinsic))
         preVisitFlags.Remove(ConvertImageAccess);
 
+    if (conversionFlags_(ConvertMatrixStorageLayout))
+    {
+        /* Re-arrange order of arguments for "mul" intrinsic */
+        if (ast->intrinsic == Intrinsic::Mul && ast->arguments.size() == 2)
+            std::swap(ast->arguments[0], ast->arguments[1]);
+    }
+
     ConvertExpr(ast->prefixExpr, AllPreVisit);
     ConvertExprList(ast->arguments, preVisitFlags);
     {
