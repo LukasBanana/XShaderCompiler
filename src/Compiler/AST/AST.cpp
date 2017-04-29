@@ -1563,8 +1563,11 @@ TypeDenoterPtr BinaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
     /* Find common type denoter of left and right sub expressions */
     if (auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(lhsTypeDen, rhsTypeDen))
     {
-        if (!lhsTypeDen->IsBase() || !rhsTypeDen->IsBase())
-            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), commonTypeDen->ToString()), this);
+        /* Throw error if any expression has not a base type */
+        if (!lhsTypeDen->IsBase())
+            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), lhsTypeDen->ToString()), this);
+        if (!rhsTypeDen->IsBase())
+            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), rhsTypeDen->ToString()), this);
 
         if (IsBooleanOp(op))
             return TypeDenoter::MakeBoolTypeWithDimensionOf(*commonTypeDen);
