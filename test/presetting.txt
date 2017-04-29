@@ -169,3 +169,6 @@
 
 [SamplerBuffer1 VS]
 -T vert -E main -o output/* SamplerBuffer1.hlsl
+
+[TexelFetchTest1 VS]
+-T vert -E main -o output/* TexelFetchTest1.hlsl

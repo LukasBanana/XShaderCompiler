@@ -982,12 +982,58 @@ void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
     /* Determine vector size for texture intrinsic */
     if (auto textureDim = GetTextureDimFromIntrinsicCall(ast))
     {
-        /* Convert arguments */
         auto& args = ast->arguments;
+        if (args.size() < 2)
+        {
+            RuntimeErr(R_InvalidIntrinsicArgCount(ast->ident, 2, ast->arguments.size()), ast);
+            return;
+        }
 
-        /* Ensure argument: int[1,2,3] Offset */
-        if (args.size() >= 2)
+        const auto& typeDen = ast->prefixExpr->GetTypeDenoter()->GetAliased();
+        if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
+        {
+            if (bufferTypeDen->bufferType == BufferType::Texture2DMS || bufferTypeDen->bufferType == BufferType::Texture2DMSArray)
+            {
+                /* GLSL doesn't support offset for MS textures */
+                if (ast->intrinsic == Intrinsic::Texture_Load_3)
+                    RuntimeErr(R_FailedToMapClassIntrinsicOverload(ast->ident, BufferTypeToString(bufferTypeDen->bufferType)), ast);
+
+                /* Ensure argument: int Sample */
+                if (args.size() >= 3)
+                    exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Int, true);
+            }
+            else if (bufferTypeDen->bufferType == BufferType::Buffer)
+            {
+                /* No conversion for buffer loads */
+            }
+            else
+            {
+                /* Break up the location argument into separate coordinate and LOD arguments */
+                auto tempVarIdent = MakeTempVarIdent();
+                auto tempVarTypeSpecifier = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
+                auto tempVarDeclStmnt = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
+
+                InsertStmntBefore(tempVarDeclStmnt);
+
+                const std::string vectorSubscript = "xyzw";
+
+                auto subExpr = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
+                auto arg1Expr = ASTFactory::MakeObjectExpr(subExpr, vectorSubscript.substr(0, textureDim));
+                auto arg2Expr = ASTFactory::MakeObjectExpr(subExpr, vectorSubscript.substr(textureDim, 1));
+
+                args[1] = arg1Expr;
+                args.insert(args.begin() + 2, arg2Expr);
+
+                exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Int, true);
+
+                /* Ensure argument: int[1,2,3] Offset */
+                if (args.size() >= 4)
+                    exprConverter_.ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, textureDim), true);
+            }
+
+            /* Ensure argument: int[1,2,3] Location */
             exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Int, textureDim), true);
+        }
     }
 }
 

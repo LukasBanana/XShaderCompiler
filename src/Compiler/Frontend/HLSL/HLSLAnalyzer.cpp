@@ -1047,6 +1047,26 @@ void HLSLAnalyzer::AnalyzeCallExprIntrinsicFromBufferType(const CallExpr* callEx
             break;
         }
     }
+
+    /* Ensure load intrinsics are only used on supported types */
+    if(intrinsic == Intrinsic::Texture_Load_1)
+    {
+        /* Sample index is required for MS textures */
+        if (bufferType == BufferType::Texture2DMS || bufferType == BufferType::Texture2DMSArray)
+            Error(R_InvalidClassIntrinsicForType(ident, BufferTypeToString(bufferType)), callExpr);
+    }
+    else if(intrinsic == Intrinsic::Texture_Load_2)
+    {
+        /* Buffer loads only support the one parameter version */
+        if (bufferType == BufferType::Buffer)
+            Error(R_InvalidClassIntrinsicForType(ident, BufferTypeToString(bufferType)), callExpr);
+    }
+    else if(intrinsic == Intrinsic::Texture_Load_3)
+    {
+        /* Sample index + offset overload is only supported for MS textures */
+        if(bufferType != BufferType::Texture2DMS && bufferType != BufferType::Texture2DMSArray)
+            Error(R_InvalidClassIntrinsicForType(ident, BufferTypeToString(bufferType)), callExpr);
+    }
 }
 
 void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(CallExpr* callExpr)
