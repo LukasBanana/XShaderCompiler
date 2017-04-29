@@ -26,6 +26,40 @@ void ExprConverter::Convert(Program& program, const Flags& conversionFlags)
         Visit(&program);
 }
 
+static void ConvertCastExpr(ExprPtr& expr, const DataType sourceType, const DataType targetType)
+{
+    /* If casting a vector to a higher dimension, zero expand because direct casts aren't supported */
+    if (IsVectorType(sourceType) && IsVectorType(targetType))
+    {
+        auto targetDim = VectorTypeDim(targetType);
+        auto sourceDim = VectorTypeDim(sourceType);
+
+        if (sourceDim < targetDim)
+        {
+            auto typeDenoter = std::make_shared<BaseTypeDenoter>(targetType);
+
+            std::vector<ExprPtr> args;
+            args.push_back(expr);
+
+            auto baseDataType = BaseDataType(targetType);
+            for (int i = sourceDim; i < targetDim; i++)
+                args.push_back(ASTFactory::MakeLiteralExpr(baseDataType, "0"));
+
+            expr = ASTFactory::MakeTypeCtorCallExpr(typeDenoter, args);
+        }
+        else
+        {
+            /* Convert to cast expression with target data type*/
+            expr = ASTFactory::ConvertExprBaseType(targetType, expr);
+        }
+    }
+    else
+    {
+        /* Convert to cast expression with target data type */
+        expr = ASTFactory::ConvertExprBaseType(targetType, expr);
+    }
+}
+
 // Converts the expression to a cast expression if it is required for the specified target type.
 void ExprConverter::ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize)
 {
@@ -33,19 +67,22 @@ void ExprConverter::ConvertExprIfCastRequired(ExprPtr& expr, const DataType targ
     if (auto baseSourceTypeDen = sourceTypeDen.As<BaseTypeDenoter>())
     {
         if (auto dataType = MustCastExprToDataType(targetType, baseSourceTypeDen->dataType, matchTypeSize))
-        {
-            /* Convert to cast expression with target data type if required */
-            expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
-        }
+            ConvertCastExpr(expr, baseSourceTypeDen->dataType, *dataType);
     }
 }
 
 void ExprConverter::ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize)
 {
-    if (auto dataType = MustCastExprToDataType(targetTypeDen, expr->GetTypeDenoter()->GetAliased(), matchTypeSize))
+    const auto& sourceTypeDen = expr->GetTypeDenoter()->GetAliased();
+    if (auto dataType = MustCastExprToDataType(targetTypeDen, sourceTypeDen, matchTypeSize))
     {
-        /* Convert to cast expression with target data type if required */
-        expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
+        if (auto baseSourceTypeDen = sourceTypeDen.As<BaseTypeDenoter>())
+            ConvertCastExpr(expr, baseSourceTypeDen->dataType, *dataType);
+        else
+        {
+            /* Convert to cast expression with target data type if required */
+            expr = ASTFactory::ConvertExprBaseType(*dataType, expr);
+        }
     }
 }
 
