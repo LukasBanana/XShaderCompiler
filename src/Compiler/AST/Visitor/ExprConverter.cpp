@@ -102,28 +102,28 @@ int ExprConverter::GetTextureDimFromExpr(Expr* expr, const AST* ast)
             /* Determine vector size for texture intrinsic parameters by texture buffer type */
             switch (bufferTypeDen->bufferType)
             {
-            case BufferType::Buffer:
-            case BufferType::RWBuffer:
-            case BufferType::Texture1D:
-            case BufferType::RWTexture1D:
-                return 1;
-            case BufferType::Texture1DArray:
-            case BufferType::RWTexture1DArray:
-            case BufferType::Texture2D:
-            case BufferType::RWTexture2D:
-            case BufferType::Texture2DMS:
-                return 2;
-            case BufferType::Texture2DArray:
-            case BufferType::RWTexture2DArray:
-            case BufferType::Texture2DMSArray:
-            case BufferType::Texture3D:
-            case BufferType::RWTexture3D:
-            case BufferType::TextureCube:
-                return 3;
-            case BufferType::TextureCubeArray:
-                return 4;
-            default:
-                break;
+                case BufferType::Buffer:
+                case BufferType::RWBuffer:
+                case BufferType::Texture1D:
+                case BufferType::RWTexture1D:
+                    return 1;
+                case BufferType::Texture1DArray:
+                case BufferType::RWTexture1DArray:
+                case BufferType::Texture2D:
+                case BufferType::RWTexture2D:
+                case BufferType::Texture2DMS:
+                    return 2;
+                case BufferType::Texture2DArray:
+                case BufferType::RWTexture2DArray:
+                case BufferType::Texture2DMSArray:
+                case BufferType::Texture3D:
+                case BufferType::RWTexture3D:
+                case BufferType::TextureCube:
+                    return 3;
+                case BufferType::TextureCubeArray:
+                    return 4;
+                default:
+                    break;
             }
         }
         else if (auto samplerTypeDen = typeDen.As<SamplerTypeDenoter>())
@@ -131,15 +131,15 @@ int ExprConverter::GetTextureDimFromExpr(Expr* expr, const AST* ast)
             /* Determine vector size for texture intrinsic parameters by sampler type */
             switch (samplerTypeDen->samplerType)
             {
-            case SamplerType::Sampler1D:
-                return 1;
-            case SamplerType::Sampler2D:
-                return 2;
-            case SamplerType::Sampler3D:
-            case SamplerType::SamplerCube:
-                return 3;
-            default:
-                break;
+                case SamplerType::Sampler1D:
+                    return 1;
+                case SamplerType::Sampler2D:
+                    return 2;
+                case SamplerType::Sampler3D:
+                case SamplerType::SamplerCube:
+                    return 3;
+                default:
+                    break;
             }
         }
         RuntimeErr(R_FailedToGetTextureDim, ast);
@@ -361,7 +361,7 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
     /* Fetch buffer type denoter from l-value prefix expression */
     auto prefixTypeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSub();
 
-    size_t numDims = 0;
+    std::size_t numDims = 0;
     if (auto arrayTypeDenoter = prefixTypeDen->As<ArrayTypeDenoter>())
     {
         numDims = arrayTypeDenoter->arrayDims.size();

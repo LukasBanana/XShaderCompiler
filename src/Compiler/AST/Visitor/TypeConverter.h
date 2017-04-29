@@ -24,7 +24,7 @@ Similar to "ExprConverter", all AST nodes that have sub expressions must be trav
 to ensure the type denoters are reset all up the tree hierarchy, if required (i.e. as soon as a type has changed).
 */
 
-// Function name mangling AST converter.
+// Helper class to update the type denoters of all 'TypedAST' nodes, whose type denoters have been reset.
 class TypeConverter : public Visitor
 {
     
