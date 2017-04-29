@@ -574,11 +574,24 @@ void GLSLConverter::RegisterDeclIdent(Decl* obj, bool global)
     /* Rename declaration object if it has a reserved keyword */
     RenameReservedKeyword(obj->ident);
 
-    /* Register identifier in symbol table */
     if (global)
+    {
+        /* Append object to global reserved declaration objects */
         globalReservedDecls_.push_back(obj);
+    }
     else
-        Register(obj->ident);
+    {
+        /* Register identifier in symbol table */
+        try
+        {
+            Register(obj->ident);
+        }
+        catch (const std::exception& e)
+        {
+            //TODO: throw an "internal error"
+            RuntimeErr(e.what(), obj);
+        }
+    }
 }
 
 void GLSLConverter::RegisterGlobalDeclIdents(const std::vector<VarDecl*>& varDecls)
