@@ -119,10 +119,7 @@ void Converter::LabelAnonymousDecl(Decl* declObj)
 
 void Converter::VisitScopedStmnt(StmntPtr& stmnt, void* args)
 {
-    if (auto codeBlockStmnt = stmnt->As<CodeBlockStmnt>())
-        VisitScopedStmntsFromHandler({ codeBlockStmnt->codeBlock->stmnts }, args);
-    else
-        VisitScopedStmntsFromHandler({ stmnt }, args);
+    VisitScopedStmntsFromHandler({ stmnt }, args);
 }
 
 void Converter::VisitScopedStmntList(std::vector<StmntPtr>& stmntList, void* args)
@@ -195,7 +192,7 @@ void Converter::VisitScopedStmntsFromHandler(const StmntScopeHandler& handler, v
         /* Use active scope handler */
         auto& activeHandler = ActiveStmntScopeHandler();
 
-        /* Visit all statement from the scope handler */
+        /* Visit all statements from the scope handler */
         while (auto stmnt = activeHandler.Next())
             Visit(stmnt, args);
     }

@@ -1001,9 +1001,9 @@ void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
             else
             {
                 /* Break up the location argument into separate coordinate and LOD arguments */
-                auto tempVarIdent = MakeTempVarIdent();
-                auto tempVarTypeSpecifier = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
-                auto tempVarDeclStmnt = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
+                auto tempVarIdent           = MakeTempVarIdent();
+                auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
+                auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
 
                 InsertStmntBefore(tempVarDeclStmnt);
 
