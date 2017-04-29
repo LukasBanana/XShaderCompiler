@@ -987,44 +987,92 @@ void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
 
 void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
 {
-    /* Convert "atomic*" to "imageAtomic*" for buffer types */
-    if (ast->arguments.size() >= 2)
+    auto& args = ast->arguments;
+
+    if (args.size() >= 2)
     {
-        const auto& arg0Expr = ast->arguments.front();
+        DataType baseDataType = DataType::Int;
+        BufferType bufferType = BufferType::Buffer;
+
+        /* Convert "atomic*" to "imageAtomic*" for buffer types */
+        const auto& arg0Expr = args.front();
         if (auto arg0ArrayExpr = arg0Expr->As<ArrayExpr>())
         {
-            const auto& typeDen = arg0ArrayExpr->prefixExpr->GetTypeDenoter()->GetAliased();
-            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
+            auto prefixTypeDen = arg0ArrayExpr->prefixExpr->GetTypeDenoter()->GetSub();
+
+            size_t numDims = 0;
+            if (auto arrayTypeDenoter = prefixTypeDen->As<ArrayTypeDenoter>())
             {
+                numDims = arrayTypeDenoter->arrayDims.size();
+                prefixTypeDen = arrayTypeDenoter->subTypeDenoter;
+            }
+
+            if (auto bufferTypeDen = prefixTypeDen->As<BufferTypeDenoter>())
+            {
+                bufferType = bufferTypeDen->bufferType;
+
+                if (bufferTypeDen->genericTypeDenoter != nullptr)
+                {
+                    if (auto genericBaseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
+                        baseDataType = BaseDataType(genericBaseTypeDen->dataType);
+                }
+
                 /* Is the buffer declaration a read/write texture? */
-                if (IsRWTextureBufferType(bufferTypeDen->bufferType))
+                if (IsRWTextureBufferType(bufferType) && numDims < arg0ArrayExpr->NumIndices())
                 {
                     /* Map interlocked intrinsic to image atomic intrinsic */
                     ast->intrinsic = InterlockedToImageAtomicIntrinsic(ast->intrinsic);
 
                     /* Insert array indices from object identifier after first argument */
-                    ast->arguments.insert(ast->arguments.begin() + 1, arg0ArrayExpr->arrayIndices.back());
+                    args.insert(args.begin() + 1, arg0ArrayExpr->arrayIndices.back());
 
-                    /* Check if array expression must be replaced by its sub expression */
-                    arg0ArrayExpr->arrayIndices.pop_back();
-                    if (arg0ArrayExpr->arrayIndices.empty())
-                        ast->arguments.front() = arg0ArrayExpr->prefixExpr;
+                    /* Replace by array sub-expression without the last index */
+                    if (numDims > 0)
+                    {
+                        std::vector<ExprPtr> arrayIndices;
+                        for (size_t i = 0; i < numDims; i++)
+                            arrayIndices.push_back(arg0ArrayExpr->arrayIndices[i]);
+
+                        args.front() = ASTFactory::MakeArrayExpr(arg0ArrayExpr->prefixExpr, std::move(arrayIndices));
+                    }
+                    else
+                        args.front() = arg0ArrayExpr->prefixExpr;
                 }
             }
         }
-        else
+
+        /* Cast arguments if required, for both image and non-image atomics */
+        int dataArgOffset = 1;
+        if(IsRWTextureBufferType(bufferType))
         {
-            const auto& typeDen = arg0Expr->GetTypeDenoter()->GetAliased();
-            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
+            /* Cast location argument */
+            int numDims = 1;
+            switch (bufferType)
             {
-                /* Is the buffer declaration a read/write texture? */
-                if (IsRWTextureBufferType(bufferTypeDen->bufferType))
-                {
-                    /* Map interlocked intrinsic to image atomic intrinsic */
-                    ast->intrinsic = InterlockedToImageAtomicIntrinsic(ast->intrinsic);
-                }
+            case BufferType::RWBuffer:
+            case BufferType::RWTexture1D:
+                numDims = 1;
+                break;
+            case BufferType::RWTexture1DArray:
+            case BufferType::RWTexture2D:
+                numDims = 2;
+                break;
+            case BufferType::RWTexture2DArray:
+            case BufferType::RWTexture3D:
+                numDims = 3;
+            default:
+                break;
             }
+
+            exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Int, numDims), true);
+            dataArgOffset = 2;
         }
+
+        if (args.size() >= (dataArgOffset + 1))
+            exprConverter_.ConvertExprIfCastRequired(args[dataArgOffset], baseDataType, true);
+
+        if(ast->intrinsic == Intrinsic::Image_AtomicCompSwap && args.size() >= (dataArgOffset + 2))
+            exprConverter_.ConvertExprIfCastRequired(args[dataArgOffset + 1], baseDataType, true);
     }
 }
 

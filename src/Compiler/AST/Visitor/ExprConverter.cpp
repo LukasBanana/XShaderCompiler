@@ -760,12 +760,15 @@ IMPLEMENT_VISIT_PROC(CallExpr)
     ConvertExprList(ast->arguments, AllPostVisit);
     ConvertExpr(ast->prefixExpr, AllPostVisit);
 
-    ast->ForEachArgumentWithParameterType(
-        [this](ExprPtr& funcArg, const TypeDenoter& paramTypeDen)
-        {
-            ConvertExprTargetType(funcArg, paramTypeDen);
-        }
-    );
+    if (!IsInterlockedIntristic(ast->intrinsic))
+    {
+        ast->ForEachArgumentWithParameterType(
+            [this](ExprPtr& funcArg, const TypeDenoter& paramTypeDen)
+            {
+                ConvertExprTargetType(funcArg, paramTypeDen);
+            }
+        );
+    }
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
