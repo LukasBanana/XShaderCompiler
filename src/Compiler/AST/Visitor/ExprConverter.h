@@ -62,6 +62,7 @@ class ExprConverter : public Visitor
         void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = true);
         void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
 
+        static int GetTextureDimFromExpr(Expr* expr, const AST* ast = nullptr);
     private:
         
         /* === Functions === */

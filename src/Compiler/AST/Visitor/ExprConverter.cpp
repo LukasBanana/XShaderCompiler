@@ -92,6 +92,60 @@ void ExprConverter::ConvertExprIntoBracket(ExprPtr& expr)
     expr = ASTFactory::MakeBracketExpr(expr);
 }
 
+int ExprConverter::GetTextureDimFromExpr(Expr* expr, const AST* ast)
+{
+    if (expr)
+    {
+        const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
+        if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
+        {
+            /* Determine vector size for texture intrinsic parameters by texture buffer type */
+            switch (bufferTypeDen->bufferType)
+            {
+            case BufferType::Buffer:
+            case BufferType::RWBuffer:
+            case BufferType::Texture1D:
+            case BufferType::RWTexture1D:
+                return 1;
+            case BufferType::Texture1DArray:
+            case BufferType::RWTexture1DArray:
+            case BufferType::Texture2D:
+            case BufferType::RWTexture2D:
+            case BufferType::Texture2DMS:
+                return 2;
+            case BufferType::Texture2DArray:
+            case BufferType::RWTexture2DArray:
+            case BufferType::Texture2DMSArray:
+            case BufferType::Texture3D:
+            case BufferType::RWTexture3D:
+            case BufferType::TextureCube:
+                return 3;
+            case BufferType::TextureCubeArray:
+                return 4;
+            default:
+                break;
+            }
+        }
+        else if (auto samplerTypeDen = typeDen.As<SamplerTypeDenoter>())
+        {
+            /* Determine vector size for texture intrinsic parameters by sampler type */
+            switch (samplerTypeDen->samplerType)
+            {
+            case SamplerType::Sampler1D:
+                return 1;
+            case SamplerType::Sampler2D:
+                return 2;
+            case SamplerType::Sampler3D:
+            case SamplerType::SamplerCube:
+                return 3;
+            default:
+                break;
+            }
+        }
+        RuntimeErr(R_FailedToGetTextureDim, ast);
+    }
+    RuntimeErr(R_FailedToGetTextureDim, ast);
+}
 
 /*
  * ======= Private: =======
@@ -305,15 +359,22 @@ results in two function calls! Thus the index expression must be moved into a se
 void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayExpr, AssignExpr* assignExpr)
 {
     /* Fetch buffer type denoter from l-value prefix expression */
-    const auto& prefixTypeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+    auto prefixTypeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSub();
 
-    if (auto bufferTypeDen = prefixTypeDen.As<BufferTypeDenoter>())
+    size_t numDims = 0;
+    if (auto arrayTypeDenoter = prefixTypeDen->As<ArrayTypeDenoter>())
+    {
+        numDims = arrayTypeDenoter->arrayDims.size();
+        prefixTypeDen = arrayTypeDenoter->subTypeDenoter;
+    }
+
+    if (auto bufferTypeDen = prefixTypeDen->As<BufferTypeDenoter>())
     {
         if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
         {
             /* Is the buffer declaration a read/write texture? */
             const auto bufferType = bufferDecl->GetBufferType();
-            if (IsRWTextureBufferType(bufferType))
+            if (IsRWTextureBufferType(bufferType) && numDims < arrayExpr->NumIndices())
             {
                 /* Get buffer type denoter from array indices of array access plus identifier */
                 //TODO: not sure if the buffer type must be derived with 'GetSub(arrayExpr)' again here???
@@ -322,57 +383,75 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
                 #endif
                 if (auto genericBaseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
                 {
+                    arrayExpr->prefixExpr->flags << Expr::wasConverted;
+
                     /* Create a type denoter for the return value */
                     auto callTypeDen = MakeBufferAccessCallTypeDenoter(genericBaseTypeDen->dataType);
 
-                    if (!arrayExpr->arrayIndices.empty())
+                    /* Make first argument expression */
+                    ExprPtr arg0Expr;
+                    if (numDims > 0)
                     {
-                        /* Make first argument expression */
-                        auto arg0Expr = arrayExpr->prefixExpr;
-                        arg0Expr->flags << Expr::wasConverted;
+                        std::vector<ExprPtr> arrayIndices;
+                        for (size_t i = 0; i < numDims; i++)
+                            arrayIndices.push_back(arrayExpr->arrayIndices[i]);
 
-                        /* Get second argument expression (last array index) */
-                        auto arg1Expr = arrayExpr->arrayIndices.back();
+                        arg0Expr = ASTFactory::MakeArrayExpr(arrayExpr->prefixExpr, std::move(arrayIndices));
+                    }
+                    else
+                        arg0Expr = arrayExpr->prefixExpr;
 
-                        if (assignExpr)
+                    /* Get second argument expression (last array index) */
+                    auto arg1Expr = arrayExpr->arrayIndices.back();
+
+                    /* Cast to valid dimension */
+                    auto textureDim = GetTextureDimFromExpr(arg0Expr.get(), expr.get());
+                    ConvertExprIfCastRequired(arg1Expr, VectorDataType(DataType::Int, textureDim), true);
+
+                    if (assignExpr)
+                    {
+                        /* Get third argument expression (store value) */
+                        ExprPtr arg2Expr;
+
+                        if (assignExpr->op == AssignOp::Set)
                         {
-                            /* Get third argument expression (store value) */
-                            ExprPtr arg2Expr;
-
-                            if (assignExpr->op == AssignOp::Set)
-                            {
-                                /* Take r-value expression for standard assignemnt */
-                                arg2Expr = assignExpr->rvalueExpr;
-                            }
-                            else
-                            {
-                                /* Make compound assignment with an image-load instruction first */
-                                auto lhsExpr = ASTFactory::MakeIntrinsicCallExpr(
-                                    Intrinsic::Image_Load, "imageLoad", callTypeDen, { arg0Expr, arg1Expr }
-                                );
-
-                                auto rhsExpr = assignExpr->rvalueExpr;
-
-                                const auto binaryOp = AssignOpToBinaryOp(assignExpr->op);
-
-                                arg2Expr = ASTFactory::MakeBinaryExpr(lhsExpr, binaryOp, rhsExpr);
-                            }
-
-                            /* Convert expression to intrinsic call */
-                            expr = ASTFactory::MakeIntrinsicCallExpr(
-                                Intrinsic::Image_Store, "imageStore", nullptr, { arg0Expr, arg1Expr, arg2Expr }
-                            );
+                            /* Take r-value expression for standard assignemnt */
+                            arg2Expr = assignExpr->rvalueExpr;
                         }
                         else
                         {
-                            /* Convert expression to intrinsic call */
-                            expr = ASTFactory::MakeIntrinsicCallExpr(
+                            /* Make compound assignment with an image-load instruction first */
+                            auto lhsExpr = ASTFactory::MakeIntrinsicCallExpr(
                                 Intrinsic::Image_Load, "imageLoad", callTypeDen, { arg0Expr, arg1Expr }
                             );
+
+                            auto rhsExpr = assignExpr->rvalueExpr;
+
+                            const auto binaryOp = AssignOpToBinaryOp(assignExpr->op);
+
+                            arg2Expr = ASTFactory::MakeBinaryExpr(lhsExpr, binaryOp, rhsExpr);
                         }
+
+                        /* Cast to valid 4D vector type */
+                        if (IsIntType(genericBaseTypeDen->dataType))
+                            ConvertExprIfCastRequired(arg2Expr, DataType::Int4, true);
+                        else if (IsUIntType(genericBaseTypeDen->dataType))
+                            ConvertExprIfCastRequired(arg2Expr, DataType::UInt4, true);
+                        else
+                            ConvertExprIfCastRequired(arg2Expr, DataType::Float4, true);
+
+                        /* Convert expression to intrinsic call */
+                        expr = ASTFactory::MakeIntrinsicCallExpr(
+                            Intrinsic::Image_Store, "imageStore", nullptr, { arg0Expr, arg1Expr, arg2Expr }
+                        );
                     }
                     else
-                        RuntimeErr(R_MissingArrayIndexInOp(bufferTypeDen->ToString()), arrayExpr);
+                    {
+                        /* Convert expression to intrinsic call */
+                        expr = ASTFactory::MakeIntrinsicCallExpr(
+                            Intrinsic::Image_Load, "imageLoad", callTypeDen, { arg0Expr, arg1Expr }
+                        );
+                    }
                 }
             }
         }
@@ -435,10 +514,10 @@ void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr
                         for (std::size_t i = 0; i < numDims; i++)
                             arrayIndices.push_back(arrayExpr->arrayIndices[i]);
 
-                        callExpr->prefixExpr = ASTFactory::MakeArrayExpr(ASTFactory::MakeObjectExpr(bufferDecl), std::move(arrayIndices));
+                        callExpr->prefixExpr = ASTFactory::MakeArrayExpr(arrayExpr->prefixExpr, std::move(arrayIndices));
                     }
                     else
-                        callExpr->prefixExpr = ASTFactory::MakeObjectExpr(bufferDecl);
+                        callExpr->prefixExpr = arrayExpr->prefixExpr;
 
                     expr = callExpr;
                 }
