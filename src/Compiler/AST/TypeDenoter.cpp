@@ -213,9 +213,9 @@ TypeDenoterPtr TypeDenoter::FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeD
     if (lhsTypeDen->IsVector() && rhsTypeDen->IsScalar())
         return FindCommonTypeDenoterScalarAndVector(rhsTypeDen->As<BaseTypeDenoter>(), lhsTypeDen->As<BaseTypeDenoter>(), useMinDimension);
 
-    /* Vector and Vector */
+    /* Vector and Vector (Note: always use minimal dimension here!) */
     if (lhsTypeDen->IsVector() && rhsTypeDen->IsVector())
-        return FindCommonTypeDenoterVectorAndVector(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>(), useMinDimension);
+        return FindCommonTypeDenoterVectorAndVector(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>(), true);
 
     /* Default type */
     return FindCommonTypeDenoterAnyAndAny(lhsTypeDen.get(), rhsTypeDen.get());

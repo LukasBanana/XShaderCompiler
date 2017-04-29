@@ -821,9 +821,6 @@ void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
         case Intrinsic::Texture_Load_3:
             ConvertIntrinsicCallTextureLoad(ast);
             break;
-        case Intrinsic::Image_Store:
-            ConvertIntrinsicCallImageStore(ast);
-            break;
         default:
             break;
     }
@@ -848,60 +845,11 @@ void GLSLConverter::ConvertIntrinsicCallSaturate(CallExpr* ast)
         RuntimeErr(R_InvalidIntrinsicArgCount(ast->ident, 1, ast->arguments.size()), ast);
 }
 
-static int GetTextureDimFromExpr(Expr* expr, const AST* ast = nullptr)
-{
-    if (expr)
-    {
-        const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
-        if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
-        {
-            /* Determine vector size for texture intrinsic parameters by texture buffer type */
-            switch (bufferTypeDen->bufferType)
-            {
-                case BufferType::Buffer:
-                case BufferType::Texture1D:
-                    return 1;
-                case BufferType::Texture1DArray:
-                case BufferType::Texture2D:
-                case BufferType::Texture2DMS:
-                    return 2;
-                case BufferType::Texture2DArray:
-                case BufferType::Texture2DMSArray:
-                case BufferType::Texture3D:
-                case BufferType::TextureCube:
-                    return 3;
-                case BufferType::TextureCubeArray:
-                    return 4;
-                default:
-                    break;
-            }
-        }
-        else if (auto samplerTypeDen = typeDen.As<SamplerTypeDenoter>())
-        {
-            /* Determine vector size for texture intrinsic parameters by sampler type */
-            switch (samplerTypeDen->samplerType)
-            {
-                case SamplerType::Sampler1D:
-                    return 1;
-                case SamplerType::Sampler2D:
-                    return 2;
-                case SamplerType::Sampler3D:
-                case SamplerType::SamplerCube:
-                    return 3;
-                default:
-                    break;
-            }
-        }
-        RuntimeErr(R_FailedToGetTextureDim, ast);
-    }
-    RuntimeErr(R_FailedToGetTextureDim, ast);
-}
-
 static int GetTextureDimFromIntrinsicCall(CallExpr* ast)
 {
     /* Get buffer object from sample intrinsic call */
     if (ast->prefixExpr)
-        return GetTextureDimFromExpr(ast->prefixExpr.get(), ast);
+        return ExprConverter::GetTextureDimFromExpr(ast->prefixExpr.get(), ast);
     else
         RuntimeErr(R_FailedToGetTextureDim, ast);
 }
@@ -914,7 +862,7 @@ void GLSLConverter::ConvertIntrinsicCallTexLod(CallExpr* ast)
         auto& args = ast->arguments;
 
         /* Determine vector size for texture intrinsic */
-        if (auto textureDim = GetTextureDimFromExpr(args[0].get()))
+        if (auto textureDim = ExprConverter::GetTextureDimFromExpr(args[0].get()))
         {
             /* Convert arguments */
             exprConverter_.ConvertExprIfCastRequired(args[1], DataType::Float4, true);
@@ -1077,52 +1025,6 @@ void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
                 }
             }
         }
-    }
-}
-
-void GLSLConverter::ConvertIntrinsicCallImageStore(CallExpr* ast)
-{
-    /* Cast input value argument to 4 component vector */
-    auto& args = ast->arguments;
-
-    if (args.size() >= 3)
-    {
-        /* Determine base data type form generic buffer type denoter */
-        DataType dataType = DataType::Float;
-
-        auto nonBracketExpr = args.front()->FindFirstNotOf(AST::Types::BracketExpr);
-
-        if (auto arg0ArrayExpr = nonBracketExpr->As<ArrayExpr>())
-        {
-            const auto& typeDen = arg0ArrayExpr->prefixExpr->GetTypeDenoter()->GetAliased();
-            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
-            {
-                if (bufferTypeDen->genericTypeDenoter != nullptr)
-                {
-                    if (auto genericBaseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
-                        dataType = genericBaseTypeDen->dataType;
-                }
-            }
-        }
-        else
-        {
-            const auto& typeDen = nonBracketExpr->GetTypeDenoter()->GetAliased();
-            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
-            {
-                if (bufferTypeDen->genericTypeDenoter != nullptr)
-                {
-                    if (auto genericBaseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
-                        dataType = genericBaseTypeDen->dataType;
-                }
-            }
-        }
-
-        if (IsIntType(dataType))
-            exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Int4, true);
-        else if (IsUIntType(dataType))
-            exprConverter_.ConvertExprIfCastRequired(args[2], DataType::UInt4, true);
-        else
-            exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Float4, true);
     }
 }
 

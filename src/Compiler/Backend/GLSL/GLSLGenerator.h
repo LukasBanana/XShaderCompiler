@@ -259,6 +259,7 @@ class GLSLGenerator : public Generator
         void WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage);
         void WriteWrapperIntrinsicsLit(const IntrinsicUsage& usage);
         void WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage);
+        void WriteWrapperIntrinsicsMemoryBarrier(const Intrinsic intrinsic, bool groupSync);
 
         /* ----- Structure ----- */
 
