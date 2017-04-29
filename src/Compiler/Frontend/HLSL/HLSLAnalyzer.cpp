@@ -1029,42 +1029,42 @@ void HLSLAnalyzer::AnalyzeCallExprIntrinsicFromBufferType(const CallExpr* callEx
     }
 
     /* Ensure gather intrinsics are used only on supported types */
-    if(IsGatherIntrisic(intrinsic))
+    if (IsGatherIntrisic(intrinsic))
     {
-        switch(bufferType)
+        switch (bufferType)
         {
-        case BufferType::Texture2D:
-        case BufferType::Texture2DArray:
-            break;
-        case BufferType::TextureCube:
-        case BufferType::TextureCubeArray:
-            /* Only overloads with no offset supported */
-            if(GetGatherIntrinsicOffsetParamCount(intrinsic) != 0)
+            case BufferType::Texture2D:
+            case BufferType::Texture2DArray:
+                break;
+            case BufferType::TextureCube:
+            case BufferType::TextureCubeArray:
+                /* Only overloads with no offset supported */
+                if (GetGatherIntrinsicOffsetParamCount(intrinsic) != 0)
+                    Error(R_InvalidClassIntrinsicForType(ident, BufferTypeToString(bufferType)), callExpr);
+                break;
+            default:
                 Error(R_InvalidClassIntrinsicForType(ident, BufferTypeToString(bufferType)), callExpr);
-            break;
-        default:
-            Error(R_InvalidClassIntrinsicForType(ident, BufferTypeToString(bufferType)), callExpr);
-            break;
+                break;
         }
     }
 
     /* Ensure load intrinsics are only used on supported types */
-    if(intrinsic == Intrinsic::Texture_Load_1)
+    if (intrinsic == Intrinsic::Texture_Load_1)
     {
         /* Sample index is required for MS textures */
         if (bufferType == BufferType::Texture2DMS || bufferType == BufferType::Texture2DMSArray)
             Error(R_InvalidClassIntrinsicForType(ident, BufferTypeToString(bufferType)), callExpr);
     }
-    else if(intrinsic == Intrinsic::Texture_Load_2)
+    else if (intrinsic == Intrinsic::Texture_Load_2)
     {
         /* Buffer loads only support the one parameter version */
         if (bufferType == BufferType::Buffer)
             Error(R_InvalidClassIntrinsicForType(ident, BufferTypeToString(bufferType)), callExpr);
     }
-    else if(intrinsic == Intrinsic::Texture_Load_3)
+    else if (intrinsic == Intrinsic::Texture_Load_3)
     {
         /* Sample index + offset overload is only supported for MS textures */
-        if(bufferType != BufferType::Texture2DMS && bufferType != BufferType::Texture2DMSArray)
+        if (bufferType != BufferType::Texture2DMS && bufferType != BufferType::Texture2DMSArray)
             Error(R_InvalidClassIntrinsicForType(ident, BufferTypeToString(bufferType)), callExpr);
     }
 }
