@@ -290,6 +290,7 @@ DECL_REPORT( MissingScopedStmntRef,             "missing reference to scoped sta
 
 DECL_REPORT( MissingSelfParamForMemberFunc,     "missing 'self'-parameter for member function[ '{0}']"                                                          );
 DECL_REPORT( FailedToGetTextureDim,             "failed to determine dimension of texture object[ '{0}']"                                                       );
+DECL_REPORT( FailedToMapClassIntrinsicOverload, "failed to map overload of class intrinsic '{0}' for type '{1}'"                                                );
 
 /* ----- GLSLExtensionAgent ----- */
 
