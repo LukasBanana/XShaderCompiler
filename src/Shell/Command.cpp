@@ -652,12 +652,31 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
 
         while (idx > presettings.size())
         {
+            /* Returns the number of digits in the specified integral number */
+            auto NumDigits = [](std::size_t n)
+            {
+                std::size_t d = 0;
+                do
+                {
+                    n /= 10;
+                    ++d;
+                }
+                while (n != 0);
+                return d;
+            };
+
+            /* Returns the indentation for the specified number with the current number of presettings */
+            auto Indent = [&](std::size_t n)
+            {
+                return std::string(NumDigits(presettings.size()) - NumDigits(n), ' ');
+            };
+
             /* Let user choose between one of the presettings */
             std::cout << "choose presetting:" << std::endl;
-            std::cout << "  0.) ALL" << std::endl;
+            std::cout << "  " << Indent(0) << "0.) ALL" << std::endl;
 
             for (std::size_t i = 0; i < presettings.size(); ++i)
-                std::cout << "  " << (i+1) << ".) " << presettings[i].title << std::endl;
+                std::cout << "  " << Indent(i+1) << (i+1) << ".) " << presettings[i].title << std::endl;
 
             std::cin >> idx;
         }
