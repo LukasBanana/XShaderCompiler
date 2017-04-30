@@ -187,3 +187,6 @@
 
 [MemoryBarrierTest1 VS]
 -T comp -E main -o output/* MemoryBarrierTest1.hlsl
+
+[MatrixLayoutTest1 vert]
+-T vert -E main -o output/* MatrixLayoutTest1.hlsl
