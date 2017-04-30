@@ -752,6 +752,23 @@ IMPLEMENT_VISIT_PROC(CallExpr)
     if (IsInterlockedIntristic(ast->intrinsic))
         preVisitFlags.Remove(ConvertImageAccess);
 
+    /* Convert mul intrinsic calls */
+    if (ast->intrinsic == Intrinsic::Mul && ast->arguments.size() == 2)
+    {
+        if (conversionFlags_(ConvertMatrixLayout))
+        {
+            /* Re-arrange order of arguments */
+            std::swap(ast->arguments[0], ast->arguments[1]);
+        }
+
+        /* Convert "mul" intrinsic to "dot" intrinsic for vector-vector multiplication */
+        const auto& typeDenArg0 = ast->arguments[0]->GetTypeDenoter()->GetAliased();
+        const auto& typeDenArg1 = ast->arguments[1]->GetTypeDenoter()->GetAliased();
+
+        if (typeDenArg0.IsVector() && typeDenArg1.IsVector())
+            ast->intrinsic = Intrinsic::Dot;
+    }
+
     ConvertExpr(ast->prefixExpr, AllPreVisit);
     ConvertExprList(ast->arguments, preVisitFlags);
     {

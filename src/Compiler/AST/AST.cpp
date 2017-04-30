@@ -380,6 +380,37 @@ bool TypeSpecifier::HasAnyStorageClassesOf(const std::vector<StorageClass>& modi
     return false;
 }
 
+void TypeSpecifier::SwapMatrixStorageLayout(const TypeModifier defaultStorgeLayout)
+{
+    bool found = false;
+
+    /* Construct new type modifier set */
+    std::set<TypeModifier> modifiers;
+
+    for (auto mod : typeModifiers)
+    {
+        if (mod == TypeModifier::RowMajor)
+        {
+            modifiers.insert(TypeModifier::ColumnMajor);
+            found = true;
+        }
+        else if (mod == TypeModifier::ColumnMajor)
+        {
+            modifiers.insert(TypeModifier::RowMajor);
+            found = true;
+        }
+        else
+            modifiers.insert(mod);
+    }
+
+    /* If no matrix storage layout has been found, insert the default layout */
+    if (!found)
+        modifiers.insert(defaultStorgeLayout);
+
+    /* Take new type modifier set */
+    typeModifiers = std::move(modifiers);
+}
+
 
 /* ----- VarDecl ----- */
 
@@ -1532,8 +1563,11 @@ TypeDenoterPtr BinaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
     /* Find common type denoter of left and right sub expressions */
     if (auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(lhsTypeDen, rhsTypeDen))
     {
-        if (!lhsTypeDen->IsBase() || !rhsTypeDen->IsBase())
-            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), commonTypeDen->ToString()), this);
+        /* Throw error if any expression has not a base type */
+        if (!lhsTypeDen->IsBase())
+            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), lhsTypeDen->ToString()), this);
+        if (!rhsTypeDen->IsBase())
+            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), rhsTypeDen->ToString()), this);
 
         if (IsBooleanOp(op))
             return TypeDenoter::MakeBoolTypeWithDimensionOf(*commonTypeDen);

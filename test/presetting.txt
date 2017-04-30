@@ -152,8 +152,8 @@
 #[ScopeTest1 VKSL/VS]
 #-T vert -E VS -Vout VKSL -o output/* ScopeTest1.hlsl
 
-[MemberFuncTest1 PS]
--T frag -E PS -o output/* MemberFuncTest1.hlsl
+[MemberFuncTest1 VS]
+-T vert -E VS -o output/* MemberFuncTest1.hlsl
 
 [MemberFuncTest2 PS]
 -T frag -E PS -o output/* MemberFuncTest2.hlsl

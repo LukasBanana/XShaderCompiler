@@ -51,8 +51,8 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
 {
     /* Store settings */
     shaderTarget_       = inputDesc.shaderTarget;
+    versionOut_         = outputDesc.shaderVersion;
     options_            = outputDesc.options;
-    isVKSL_             = IsLanguageVKSL(outputDesc.shaderVersion);
     autoBinding_        = outputDesc.options.autoBinding;
     autoBindingSlot_    = outputDesc.options.autoBindingStartSlot;
 
@@ -63,7 +63,7 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
     /* Convert expressions */
     Flags exprConverterFlags = ExprConverter::All;
 
-    if ( isVKSL_ || ( outputDesc.shaderVersion >= OutputShaderVersion::GLSL420 && outputDesc.shaderVersion <= OutputShaderVersion::GLSL450 ))
+    if (HasShadingLanguage420Pack())
     {
         /*
         Remove specific conversions when the GLSL output version is explicitly set to 4.20 or higher,
@@ -86,6 +86,16 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
         GLSLConverter::CompareFuncSignatures,
         FuncNameConverter::All
     );
+}
+
+bool GLSLConverter::IsVKSL() const
+{
+    return IsLanguageVKSL(versionOut_);
+}
+
+bool GLSLConverter::HasShadingLanguage420Pack() const
+{
+    return ( IsVKSL() || ( versionOut_ >= OutputShaderVersion::GLSL420 && versionOut_ <= OutputShaderVersion::GLSL450 ) );
 }
 
 /* ------- Visit functions ------- */
@@ -145,7 +155,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         /* Insert prefix expression as first argument into function call, if this is a texture intrinsic call */
         if (IsTextureIntrinsic(ast->intrinsic) && ast->prefixExpr)
         {
-            if (isVKSL_)
+            if (IsVKSL())
             {
                 /* Replace sampler state argument by sampler/texture binding call */
                 if (!ast->arguments.empty())
@@ -167,7 +177,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         }
     }
 
-    if (!isVKSL_)
+    if (!IsVKSL())
     {
         /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
         MoveAllIf(
@@ -256,7 +266,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     CloseScope();
     PopStructDecl();
 
-    if (!isVKSL_)
+    if (!IsVKSL())
         RemoveSamplerStateVarDeclStmnts(ast->varMembers);
 
     /* Is this an empty structure? */
@@ -283,8 +293,12 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
-    ConvertSlotRegisters(ast->slotRegisters);
-    VisitScopedStmntList(ast->localStmnts);
+    PushUniformBufferDecl(ast);
+    {
+        ConvertSlotRegisters(ast->slotRegisters);
+        VisitScopedStmntList(ast->localStmnts);
+    }
+    PopUniformBufferDecl();
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
@@ -316,6 +330,14 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     /* Take latest sub type denoter */
     ast->typeSpecifier->typeDenoter = subTypeDen;
+
+    if (InsideUniformBufferDecl())
+    {
+        /* Swap 'row_major' with 'column_major' storage layout for matrix types */
+        const auto& typeDen = ast->typeSpecifier->typeDenoter->GetAliased();
+        if (typeDen.IsMatrix())
+            ast->typeSpecifier->SwapMatrixStorageLayout(TypeModifier::RowMajor);
+    }
 
     VISIT_DEFAULT(VarDeclStmnt);
 }
@@ -543,11 +565,24 @@ void GLSLConverter::RegisterDeclIdent(Decl* obj, bool global)
     /* Rename declaration object if it has a reserved keyword */
     RenameReservedKeyword(obj->ident);
 
-    /* Register identifier in symbol table */
     if (global)
+    {
+        /* Append object to global reserved declaration objects */
         globalReservedDecls_.push_back(obj);
+    }
     else
-        Register(obj->ident);
+    {
+        /* Register identifier in symbol table */
+        try
+        {
+            Register(obj->ident);
+        }
+        catch (const std::exception& e)
+        {
+            //TODO: throw an "internal error"
+            RuntimeErr(e.what(), obj);
+        }
+    }
 }
 
 void GLSLConverter::RegisterGlobalDeclIdents(const std::vector<VarDecl*>& varDecls)
@@ -729,7 +764,7 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
     else
         ConvertFunctionDeclDefault(ast);
 
-    if (!isVKSL_)
+    if (!IsVKSL())
         RemoveSamplerStateVarDeclStmnts(ast->parameters);
 
     if (selfParamVar)
@@ -957,9 +992,9 @@ void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
             else
             {
                 /* Break up the location argument into separate coordinate and LOD arguments */
-                auto tempVarIdent = MakeTempVarIdent();
-                auto tempVarTypeSpecifier = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
-                auto tempVarDeclStmnt = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
+                auto tempVarIdent           = MakeTempVarIdent();
+                auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
+                auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
 
                 InsertStmntBefore(tempVarDeclStmnt);
 
