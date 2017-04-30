@@ -43,9 +43,6 @@ class GLSLConverter : public Converter
         // Returns true if the 'GL_ARB_shading_language_420pack' is explicitly available.
         bool HasShadingLanguage420Pack() const;
 
-        // Returns true if the matrix storage layout conversion is enabled.
-        bool IsMatrixLayoutConversionEnabled() const;
-
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( Program           );

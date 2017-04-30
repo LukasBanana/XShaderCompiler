@@ -73,12 +73,6 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
         exprConverterFlags.Remove(ExprConverter::ConvertInitializer);
     }
 
-    if (!IsMatrixLayoutConversionEnabled())
-    {
-        /* Remove specific conversion when matrix layout conversion is disabled */
-        exprConverterFlags.Remove(ExprConverter::ConvertMatrixStorageLayout);
-    }
-
     exprConverter_.Convert(program, exprConverterFlags);
 
     /* Visit program AST */
@@ -102,11 +96,6 @@ bool GLSLConverter::IsVKSL() const
 bool GLSLConverter::HasShadingLanguage420Pack() const
 {
     return ( IsVKSL() || ( versionOut_ >= OutputShaderVersion::GLSL420 && versionOut_ <= OutputShaderVersion::GLSL450 ) );
-}
-
-bool GLSLConverter::IsMatrixLayoutConversionEnabled() const
-{
-    return ( IsVKSL() || versionOut_ >= OutputShaderVersion::GLSL140 );
 }
 
 /* ------- Visit functions ------- */
@@ -342,10 +331,12 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     /* Take latest sub type denoter */
     ast->typeSpecifier->typeDenoter = subTypeDen;
 
-    if (IsMatrixLayoutConversionEnabled())
+    if (InsideUniformBufferDecl())
     {
-        /* Swap 'row_major' with 'column_major' storage layout (only if matrix storage layout conversion is enabled) */
-        ast->typeSpecifier->SwapMatrixStorageLayout(TypeModifier::RowMajor);
+        /* Swap 'row_major' with 'column_major' storage layout for matrix types */
+        const auto& typeDen = ast->typeSpecifier->typeDenoter->GetAliased();
+        if (typeDen.IsMatrix())
+            ast->typeSpecifier->SwapMatrixStorageLayout(TypeModifier::RowMajor);
     }
 
     VISIT_DEFAULT(VarDeclStmnt);
