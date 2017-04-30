@@ -161,32 +161,32 @@
 [MemberFuncTest3 PS]
 -T frag -E PS -o output/* MemberFuncTest3.hlsl
 
-[RWTextureTest1 VS]
+[RWTextureTest1: vert]
 -T vert -E main -o output/* RWTextureTest1.hlsl
 
-[RWTextureTest2 VS]
+[RWTextureTest2: vert]
 -T vert -E main -o output/* RWTextureTest2.hlsl
 
-[RWTextureTest3 VS]
+[RWTextureTest3: vert]
 -T vert -E main -o output/* RWTextureTest3.hlsl
 
-[ImageBufferTest1 CS]
+[ImageBufferTest1: comp]
 -T comp -E main -o output/* ImageBufferTest1.hlsl
 
-[GatherTest1 VS]
+[GatherTest1: vert]
 -T vert -E main -o output/* GatherTest1.hlsl
 
-[GatherTest2 VS]
+[GatherTest2: vert]
 -T vert -E main -o output/* GatherTest2.hlsl
 
-[SamplerBuffer1 VS]
+[SamplerBuffer1: vert]
 -T vert -E main -o output/* SamplerBuffer1.hlsl
 
-[TexelFetchTest1 VS]
+[TexelFetchTest1: vert]
 -T vert -E main -o output/* TexelFetchTest1.hlsl
 
-[MemoryBarrierTest1 VS]
+[MemoryBarrierTest1: vert]
 -T comp -E main -o output/* MemoryBarrierTest1.hlsl
 
-[MatrixLayoutTest1 vert]
+[MatrixLayoutTest1: vert]
 -T vert -E main -o output/* MatrixLayoutTest1.hlsl
