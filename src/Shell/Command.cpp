@@ -1288,6 +1288,29 @@ void SeparateShadersCommand::Run(CommandLine& cmdLine, ShellState& state)
     state.outputDesc.options.separateShaders = cmdLine.AcceptBoolean(true);
 }
 
+/*
+ * SeparateSamplersCommand class
+ */
+
+std::vector<Command::Identifier> SeparateSamplersCommand::Idents() const
+{
+    return { { "--separate-samplers" } };
+}
+
+HelpDescriptor SeparateSamplersCommand::Help() const
+{
+    return
+    {
+        "--separate-samplers [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables generation of separate sampler state objects, when supported; default=" + CommandLine::GetBooleanTrue()
+    };
+}
+
+void SeparateSamplersCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.options.separateSamplers = cmdLine.AcceptBoolean(true);
+}
+
 
 
 } // /namespace Util

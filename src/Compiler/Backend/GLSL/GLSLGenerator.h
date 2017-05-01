@@ -66,6 +66,9 @@ class GLSLGenerator : public Generator
         // Returns true if the output shader language is VKSL (for Vulkan/SPIR-V).
         bool IsVKSL() const;
 
+        // Returns true if separate objects for samplers & textures should be used.
+        bool UseSeparateSamplers() const;
+
         // Returns the GLSL keyword for the specified buffer type or reports and error.
         const std::string* BufferTypeToKeyword(const BufferType bufferType, const AST* ast = nullptr);
 
@@ -307,6 +310,7 @@ class GLSLGenerator : public Generator
         bool                                    compactWrappers_        = false;
         bool                                    alwaysBracedScopes_     = false;
         bool                                    separateShaders_        = false;
+        bool                                    separateSamplers_       = true;
 
         bool                                    isInsideInterfaceBlock_ = false;
 };

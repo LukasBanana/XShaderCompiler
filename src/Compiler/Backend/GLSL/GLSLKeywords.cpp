@@ -294,10 +294,18 @@ static std::map<BufferType, std::string> GenerateBufferTypeMapVKSL()
     };
 }
 
-const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLSL)
+const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLSL, bool separateSamplers)
 {
     static const auto typeMapGLSL = GenerateBufferTypeMap();
     static const auto typeMapVKSL = GenerateBufferTypeMapVKSL();
+
+    if (useVulkanGLSL && !separateSamplers)
+    {
+        auto samplerType = TextureTypeToSamplerType(t);
+        if(samplerType != SamplerType::Undefined)
+            useVulkanGLSL = false;
+    }
+
     return MapTypeToKeyword((useVulkanGLSL ? typeMapVKSL : typeMapGLSL), t);
 }
 

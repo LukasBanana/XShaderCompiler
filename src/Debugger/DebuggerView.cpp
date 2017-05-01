@@ -215,6 +215,7 @@ void DebuggerView::CreateLayoutPropertyGridOptions(wxPropertyGrid& pg)
     pg.Append(new wxBoolProperty("Unroll Array Initializers", "unrollInitializers"));
     pg.Append(new wxBoolProperty("Row-Major Alignment", "rowMajor"));
     pg.Append(new wxBoolProperty("Separate Shaders", "separateShaders"));
+    pg.Append(new wxBoolProperty("Separate Samplers", "separateSamplers", true));
     pg.Append(new wxBoolProperty("Obfuscate", "obfuscate"));
     pg.Append(new wxBoolProperty("Show AST", "showAST"));
 }
@@ -442,6 +443,8 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderOutput_.options.autoBindingStartSlot = ValueInt();
     else if (name == "separateShaders")
         shaderOutput_.options.separateShaders = ValueBool();
+    else if (name == "separateSamplers")
+        shaderOutput_.options.separateSamplers = ValueBool();
 
     /* --- Formatting --- */
     else if (name == "blanks")

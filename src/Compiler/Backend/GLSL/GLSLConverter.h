@@ -43,6 +43,9 @@ class GLSLConverter : public Converter
         // Returns true if the 'GL_ARB_shading_language_420pack' is explicitly available.
         bool HasShadingLanguage420Pack() const;
 
+        // Returns true if separate objects for samplers & textures should be used.
+        bool UseSeparateSamplers() const;
+
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( Program           );
@@ -160,6 +163,7 @@ class GLSLConverter : public Converter
         Options                     options_;
         bool                        autoBinding_        = false;
         int                         autoBindingSlot_    = 0;
+        bool                        separateSamplers_   = true;
 
         /*
         List of all variables with reserved identifiers that come from a structure that must be resolved.
