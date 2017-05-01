@@ -313,35 +313,35 @@ public ref class XscCompiler
 
                 OutputFormatting()
                 {
-                    Indent              = gcnew String("    ");
-                    Blanks              = true;
-                    LineMarks           = false;
-                    CompactWrappers     = false;
                     AlwaysBracedScopes  = false;
-                    NewLineOpenScope    = true;
+                    Blanks              = true;
+                    CompactWrappers     = false;
+                    Indent              = gcnew String("    ");
+                    LineMarks           = false;
                     LineSeparation      = true;
+                    NewLineOpenScope    = true;
                 }
-
-                //! Indentation string for code generation. By default 4 spaces.
-                property String^    Indent;
-
-                //! If true, blank lines are allowed. By default true.
-                property bool       Blanks;
-
-                //! If true, line marks are allowed. By default false.
-                property bool       LineMarks;
-
-                //! If true, wrapper functions for special intrinsics are written in a compact formatting (i.e. all in one line). By default false.
-                property bool       CompactWrappers;
 
                 //! If true, scopes are always written in braces. By default false.
                 property bool       AlwaysBracedScopes;
 
-                //! If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default true.
-                property bool       NewLineOpenScope;
+                //! If true, blank lines are allowed. By default true.
+                property bool       Blanks;
+
+                //! If true, wrapper functions for special intrinsics are written in a compact formatting (i.e. all in one line). By default false.
+                property bool       CompactWrappers;
+
+                //! Indentation string for code generation. By default 4 spaces.
+                property String^    Indent;
+
+                //! If true, line marks are allowed. By default false.
+                property bool       LineMarks;
 
                 //! If true, auto-formatting of line separation is allowed. By default true.
                 property bool       LineSeparation;
+
+                //! If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default true.
+                property bool       NewLineOpenScope;
 
         };
 
@@ -353,38 +353,26 @@ public ref class XscCompiler
 
                 OutputOptions()
                 {
-                    Optimize                = false;
-                    PreprocessOnly          = false;
-                    ValidateOnly            = false;
                     AllowExtensions         = false;
-                    ExplicitBinding         = false;
                     AutoBinding             = false;
                     AutoBindingStartSlot    = 0;
-                    PreserveComments        = false;
-                    PreferWrappers          = false;
-                    UnrollArrayInitializers = false;
-                    RowMajorAlignment       = false;
-                    SeparateShaders         = false;
-                    SeparateSamplers        = true;
+                    ExplicitBinding         = false;
                     Obfuscate               = false;
+                    Optimize                = false;
+                    PreferWrappers          = false;
+                    PreprocessOnly          = false;
+                    PreserveComments        = false;
+                    RowMajorAlignment       = false;
+                    SeparateSamplers        = true;
+                    SeparateShaders         = false;
                     ShowAST                 = false;
                     ShowTimes               = false;
+                    UnrollArrayInitializers = false;
+                    ValidateOnly            = false;
                 }
-
-                //! If true, little code optimizations are performed. By default false.
-                property bool   Optimize;
-
-                //! If true, only the preprocessed source code will be written out. By default false.
-                property bool   PreprocessOnly;
-
-                //! If true, the source code is only validated, but no output code will be generated. By default false.
-                property bool   ValidateOnly;
 
                 //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
                 property bool   AllowExtensions;
-
-                //! If true, explicit binding slots are enabled. By default false.
-                property bool   ExplicitBinding;
 
                 /**
                 \brief If true, binding slots for all buffer types will be generated sequentially, starting with index at 'AutoBindingStartSlot'. By default false.
@@ -395,32 +383,44 @@ public ref class XscCompiler
                 //! Index to start generating binding slots from. Only relevant if 'AutoBinding' is enabled. By default 0.
                 property int    AutoBindingStartSlot;
 
-                //! If true, commentaries are preserved for each statement. By default false.
-                property bool   PreserveComments;
+                //! If true, explicit binding slots are enabled. By default false.
+                property bool   ExplicitBinding;
+
+                //! If true, code obfuscation is performed. By default false.
+                property bool   Obfuscate;
+
+                //! If true, little code optimizations are performed. By default false.
+                property bool   Optimize;
 
                 //! If true, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.
                 property bool   PreferWrappers;
 
-                //! If true, array initializations will be unrolled. By default false.
-                property bool   UnrollArrayInitializers;
+                //! If true, only the preprocessed source code will be written out. By default false.
+                property bool   PreprocessOnly;
+
+                //! If true, commentaries are preserved for each statement. By default false.
+                property bool   PreserveComments;
 
                 //! If true, matrices have row-major alignment. Otherwise the matrices have column-major alignment. By default false.
                 property bool   RowMajorAlignment;
 
-                //! If true, generated GLSL code will support the 'ARB_separate_shader_objects' extension. By default false.
-                property bool   SeparateShaders;
-
                 //! If true, generated GLSL code will contain separate sampler and texture objects when supported. By default true.
                 property bool   SeparateSamplers;
 
-                //! If true, code obfuscation is performed. By default false.
-                property bool   Obfuscate;
+                //! If true, generated GLSL code will support the 'ARB_separate_shader_objects' extension. By default false.
+                property bool   SeparateShaders;
 
                 //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
                 property bool   ShowAST;
 
                 //! If true, the timings of the different compilation processes are written to the log output. By default false.
                 property bool   ShowTimes;
+
+                //! If true, array initializations will be unrolled. By default false.
+                property bool   UnrollArrayInitializers;
+
+                //! If true, the source code is only validated, but no output code will be generated. By default false.
+                property bool   ValidateOnly;
 
         };
 
@@ -1015,31 +1015,31 @@ bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc
     }
 
     /* Copy output options descriptor */
-    out.options.optimize                = outputDesc->Options->Optimize;
-    out.options.preprocessOnly          = outputDesc->Options->PreprocessOnly;
-    out.options.validateOnly            = outputDesc->Options->ValidateOnly;
     out.options.allowExtensions         = outputDesc->Options->AllowExtensions;
-    out.options.explicitBinding         = outputDesc->Options->ExplicitBinding;
     out.options.autoBinding             = outputDesc->Options->AutoBinding;
     out.options.autoBindingStartSlot    = outputDesc->Options->AutoBindingStartSlot;
-    out.options.preserveComments        = outputDesc->Options->PreserveComments;
-    out.options.preferWrappers          = outputDesc->Options->PreferWrappers;
-    out.options.unrollArrayInitializers = outputDesc->Options->UnrollArrayInitializers;
-    out.options.rowMajorAlignment       = outputDesc->Options->RowMajorAlignment;
-    out.options.separateShaders         = outputDesc->Options->SeparateShaders;
-    out.options.separateSamplers        = outputDesc->Options->SeparateSamplers;
+    out.options.explicitBinding         = outputDesc->Options->ExplicitBinding;
     out.options.obfuscate               = outputDesc->Options->Obfuscate;
+    out.options.optimize                = outputDesc->Options->Optimize;
+    out.options.preferWrappers          = outputDesc->Options->PreferWrappers;
+    out.options.preprocessOnly          = outputDesc->Options->PreprocessOnly;
+    out.options.preserveComments        = outputDesc->Options->PreserveComments;
+    out.options.rowMajorAlignment       = outputDesc->Options->RowMajorAlignment;
+    out.options.separateSamplers        = outputDesc->Options->SeparateSamplers;
+    out.options.separateShaders         = outputDesc->Options->SeparateShaders;
     out.options.showAST                 = outputDesc->Options->ShowAST;
     out.options.showTimes               = outputDesc->Options->ShowTimes;
+    out.options.unrollArrayInitializers = outputDesc->Options->UnrollArrayInitializers;
+    out.options.validateOnly            = outputDesc->Options->ValidateOnly;
 
     /* Copy output formatting descriptor */
-    out.formatting.indent               = ToStdString(outputDesc->Formatting->Indent);
-    out.formatting.blanks               = outputDesc->Formatting->Blanks;
-    out.formatting.lineMarks            = outputDesc->Formatting->LineMarks;
-    out.formatting.compactWrappers      = outputDesc->Formatting->CompactWrappers;
     out.formatting.alwaysBracedScopes   = outputDesc->Formatting->AlwaysBracedScopes;
-    out.formatting.newLineOpenScope     = outputDesc->Formatting->NewLineOpenScope;
+    out.formatting.blanks               = outputDesc->Formatting->Blanks;
+    out.formatting.compactWrappers      = outputDesc->Formatting->CompactWrappers;
+    out.formatting.indent               = ToStdString(outputDesc->Formatting->Indent);
+    out.formatting.lineMarks            = outputDesc->Formatting->LineMarks;
     out.formatting.lineSeparation       = outputDesc->Formatting->LineSeparation;
+    out.formatting.newLineOpenScope     = outputDesc->Formatting->NewLineOpenScope;
 
     /* Copy output name mangling descriptor */
     out.nameMangling.inputPrefix        = ToStdString(outputDesc->NameMangling->InputPrefix);

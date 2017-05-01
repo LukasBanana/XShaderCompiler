@@ -99,45 +99,33 @@ struct Warnings
 //! Formatting descriptor structure for the output shader.
 struct Formatting
 {
-    //! Indentation string for code generation. By default std::string(4, ' ').
-    std::string indent              = "    ";
+    //! If true, scopes are always written in braces. By default false.
+    bool        alwaysBracedScopes  = false;
 
     //! If true, blank lines are allowed. By default true.
     bool        blanks              = true;
 
-    //! If true, line marks are allowed. By default false.
-    bool        lineMarks           = false;
-
     //! If true, wrapper functions for special intrinsics are written in a compact formatting (i.e. all in one line). By default false.
     bool        compactWrappers     = false;
 
-    //! If true, scopes are always written in braces. By default false.
-    bool        alwaysBracedScopes  = false;
+    //! Indentation string for code generation. By default std::string(4, ' ').
+    std::string indent              = "    ";
 
-    //! If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default true.
-    bool        newLineOpenScope    = true;
+    //! If true, line marks are allowed. By default false.
+    bool        lineMarks           = false;
 
     //! If true, auto-formatting of line separation is allowed. By default true.
     bool        lineSeparation      = true;
+
+    //! If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default true.
+    bool        newLineOpenScope    = true;
 };
 
 //! Structure for additional translation options.
 struct Options
 {
-    //! If true, little code optimizations are performed. By default false.
-    bool    optimize                = false;
-
-    //! If true, only the preprocessed source code will be written out. By default false.
-    bool    preprocessOnly          = false;
-
-    //! If true, the source code is only validated, but no output code will be generated. By default false.
-    bool    validateOnly            = false;
-
     //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
     bool    allowExtensions         = false;
-
-    //! If true, explicit binding slots are enabled. By default false.
-    bool    explicitBinding         = false;
 
     /**
     \brief If true, binding slots for all buffer types will be generated sequentially, starting with index at 'autoBindingStartSlot'. By default false.
@@ -148,32 +136,44 @@ struct Options
     //! Index to start generating binding slots from. Only relevant if 'autoBinding' is enabled. By default 0.
     int     autoBindingStartSlot    = 0;
 
-    //! If true, commentaries are preserved for each statement. By default false.
-    bool    preserveComments        = false;
+    //! If true, explicit binding slots are enabled. By default false.
+    bool    explicitBinding         = false;
+
+    //! If true, code obfuscation is performed. By default false.
+    bool    obfuscate               = false;
+
+    //! If true, little code optimizations are performed. By default false.
+    bool    optimize                = false;
 
     //! If true, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.
     bool    preferWrappers          = false;
 
-    //! If true, array initializations will be unrolled. By default false.
-    bool    unrollArrayInitializers = false;
+    //! If true, only the preprocessed source code will be written out. By default false.
+    bool    preprocessOnly          = false;
+
+    //! If true, commentaries are preserved for each statement. By default false.
+    bool    preserveComments        = false;
 
     //! If true, matrices have row-major alignment. Otherwise the matrices have column-major alignment. By default false.
     bool    rowMajorAlignment       = false;
 
-    //! If true, generated GLSL code will support the 'ARB_separate_shader_objects' extension. By default false.
-    bool    separateShaders         = false;
-
     //! If true, generated GLSL code will contain separate sampler and texture objects when supported. By default true.
     bool    separateSamplers        = true;
 
-    //! If true, code obfuscation is performed. By default false.
-    bool    obfuscate               = false;
+    //! If true, generated GLSL code will support the 'ARB_separate_shader_objects' extension. By default false.
+    bool    separateShaders         = false;
 
     //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
     bool    showAST                 = false;
 
     //! If true, the timings of the different compilation processes are written to the log output. By default false.
     bool    showTimes               = false;
+
+    //! If true, array initializations will be unrolled. By default false.
+    bool    unrollArrayInitializers = false;
+
+    //! If true, the source code is only validated, but no output code will be generated. By default false.
+    bool    validateOnly            = false;
 };
 
 //! Name mangling descriptor structure for shader input/output variables (also referred to as "varyings"), temporary variables, and reserved keywords.

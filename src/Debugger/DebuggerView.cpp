@@ -205,19 +205,19 @@ void DebuggerView::CreateLayoutPropertyGridOptions(wxPropertyGrid& pg)
     pg.Append(new wxPropertyCategory("Options"));
 
     pg.Append(new wxBoolProperty("Allow Extensions", "extensions"));
-    pg.Append(new wxBoolProperty("Explicit Binding", "binding"));
     pg.Append(new wxBoolProperty("Auto. Binding", "autoBinding"));
     pg.Append(new wxIntProperty("Auto. Binding Start Slot", "autoBindingStartSlot"));
+    pg.Append(new wxBoolProperty("Explicit Binding", "binding"));
+    pg.Append(new wxBoolProperty("Obfuscate", "obfuscate"));
     pg.Append(new wxBoolProperty("Optimize", "optimize"));
     pg.Append(new wxBoolProperty("Prefer Wrappers", "wrappers"));
     pg.Append(new wxBoolProperty("Preprocess Only", "preprocess"));
     pg.Append(new wxBoolProperty("Preserve Comments", "comments"));
-    pg.Append(new wxBoolProperty("Unroll Array Initializers", "unrollInitializers"));
     pg.Append(new wxBoolProperty("Row-Major Alignment", "rowMajor"));
-    pg.Append(new wxBoolProperty("Separate Shaders", "separateShaders"));
     pg.Append(new wxBoolProperty("Separate Samplers", "separateSamplers", true));
-    pg.Append(new wxBoolProperty("Obfuscate", "obfuscate"));
+    pg.Append(new wxBoolProperty("Separate Shaders", "separateShaders"));
     pg.Append(new wxBoolProperty("Show AST", "showAST"));
+    pg.Append(new wxBoolProperty("Unroll Array Initializers", "unrollInitializers"));
 }
 
 void DebuggerView::CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg)
@@ -225,12 +225,12 @@ void DebuggerView::CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg)
     pg.Append(new wxPropertyCategory("Formatting"));
 
     pg.Append(new wxStringProperty("Indentation", "indent", "    "));
-    pg.Append(new wxBoolProperty("Blanks", "blanks", true));
-    pg.Append(new wxBoolProperty("Line Marks", "lineMarks"));
-    pg.Append(new wxBoolProperty("Compact Wrappers", "compactWrappers", true));
     pg.Append(new wxBoolProperty("Always Braced Scopes", "alwaysBracedScopes"));
-    pg.Append(new wxBoolProperty("New-Line Open Scope", "newLineOpenScope", true));
+    pg.Append(new wxBoolProperty("Blanks", "blanks", true));
+    pg.Append(new wxBoolProperty("Compact Wrappers", "compactWrappers", true));
+    pg.Append(new wxBoolProperty("Line Marks", "lineMarks"));
     pg.Append(new wxBoolProperty("Line Separation", "lineSeparation", true));
+    pg.Append(new wxBoolProperty("New-Line Open Scope", "newLineOpenScope", true));
 }
 
 void DebuggerView::CreateLayoutPropertyGridNameMangling(wxPropertyGrid& pg)
