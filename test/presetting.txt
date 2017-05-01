@@ -170,6 +170,9 @@
 [RWTextureTest3: vert]
 -T vert -E main -o output/* RWTextureTest3.hlsl
 
+[RWTextureTest4: vert]
+-T vert -E main -o output/* RWTextureTest4.hlsl
+
 [ImageBufferTest1: comp]
 -T comp -E main -o output/* ImageBufferTest1.hlsl
 
