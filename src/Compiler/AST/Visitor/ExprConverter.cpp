@@ -719,12 +719,23 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
     ConvertExpr(ast->rhsExpr, AllPostVisit);
 
     /* Convert sub expressions if cast required, then reset type denoter */
-    bool matchTypeSize = (ast->op != BinaryOp::Mul && ast->op != BinaryOp::Div);
+    auto lhsTypeDen = ast->lhsExpr->GetTypeDenoter()->GetSub();
+    auto rhsTypeDen = ast->rhsExpr->GetTypeDenoter()->GetSub();
 
-    auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(
-        ast->lhsExpr->GetTypeDenoter()->GetSub(),
-        ast->rhsExpr->GetTypeDenoter()->GetSub()
-    );
+    auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(lhsTypeDen, rhsTypeDen);
+
+    /* Ensure type sizes are cast only if necessary */
+    bool matchTypeSize = true;
+    if (ast->op == BinaryOp::Div)
+    {
+        if (rhsTypeDen->IsScalar())
+            matchTypeSize = false;
+    }
+    else if (ast->op == BinaryOp::Mul)
+    {
+        if (lhsTypeDen->IsScalar() || rhsTypeDen->IsScalar())
+            matchTypeSize = false;
+    }
 
     ConvertExprTargetType(ast->lhsExpr, *commonTypeDen, matchTypeSize);
     ConvertExprTargetType(ast->rhsExpr, *commonTypeDen, matchTypeSize);
