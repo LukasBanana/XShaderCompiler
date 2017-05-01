@@ -55,6 +55,7 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
     options_            = outputDesc.options;
     autoBinding_        = outputDesc.options.autoBinding;
     autoBindingSlot_    = outputDesc.options.autoBindingStartSlot;
+    separateSamplers_   = outputDesc.options.separateSamplers;
 
     /* Convert type of specific semantics */
     TypeConverter typeConverter;
@@ -96,6 +97,11 @@ bool GLSLConverter::IsVKSL() const
 bool GLSLConverter::HasShadingLanguage420Pack() const
 {
     return ( IsVKSL() || ( versionOut_ >= OutputShaderVersion::GLSL420 && versionOut_ <= OutputShaderVersion::GLSL450 ) );
+}
+
+bool GLSLConverter::UseSeparateSamplers() const
+{
+    return ( IsVKSL() && separateSamplers_ );
 }
 
 /* ------- Visit functions ------- */
@@ -155,7 +161,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         /* Insert prefix expression as first argument into function call, if this is a texture intrinsic call */
         if (IsTextureIntrinsic(ast->intrinsic) && ast->prefixExpr)
         {
-            if (IsVKSL())
+            if (UseSeparateSamplers())
             {
                 /* Replace sampler state argument by sampler/texture binding call */
                 if (!ast->arguments.empty())
@@ -177,7 +183,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         }
     }
 
-    if (!IsVKSL())
+    if (!UseSeparateSamplers())
     {
         /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
         MoveAllIf(
@@ -266,7 +272,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     CloseScope();
     PopStructDecl();
 
-    if (!IsVKSL())
+    if (!UseSeparateSamplers())
         RemoveSamplerStateVarDeclStmnts(ast->varMembers);
 
     /* Is this an empty structure? */
@@ -764,7 +770,7 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
     else
         ConvertFunctionDeclDefault(ast);
 
-    if (!IsVKSL())
+    if (!UseSeparateSamplers())
         RemoveSamplerStateVarDeclStmnts(ast->parameters);
 
     if (selfParamVar)

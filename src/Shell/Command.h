@@ -105,6 +105,7 @@ DECL_SHELL_COMMAND( IndentCommand                );
 DECL_SHELL_COMMAND( PrefixCommand                );
 DECL_SHELL_COMMAND( NameManglingCommand          );
 DECL_SHELL_COMMAND( SeparateShadersCommand       );
+DECL_SHELL_COMMAND( SeparateSamplersCommand       );
 
 #undef DECL_SHELL_COMMAND
 

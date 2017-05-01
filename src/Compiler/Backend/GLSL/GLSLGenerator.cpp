@@ -61,6 +61,7 @@ void GLSLGenerator::GenerateCodePrimary(
     explicitBinding_    = outputDesc.options.explicitBinding;
     preserveComments_   = outputDesc.options.preserveComments;
     separateShaders_    = outputDesc.options.separateShaders;
+    separateSamplers_   = outputDesc.options.separateSamplers;
     allowLineMarks_     = outputDesc.formatting.lineMarks;
     compactWrappers_    = outputDesc.formatting.compactWrappers;
     alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
@@ -171,9 +172,14 @@ bool GLSLGenerator::IsVKSL() const
     return IsLanguageVKSL(versionOut_);
 }
 
+bool GLSLGenerator::UseSeparateSamplers() const
+{
+    return ( IsVKSL() && separateSamplers_ );
+}
+
 const std::string* GLSLGenerator::BufferTypeToKeyword(const BufferType bufferType, const AST* ast)
 {
-    if (auto keyword = BufferTypeToGLSLKeyword(bufferType, IsVKSL()))
+    if (auto keyword = BufferTypeToGLSLKeyword(bufferType, IsVKSL(), UseSeparateSamplers()))
         return keyword;
     else
         Error(R_FailedToMapToGLSLKeyword(R_BufferType), ast);
@@ -493,7 +499,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
-    if ( ast->flags(AST::isReachable) && ( IsVKSL() || !IsSamplerStateType(ast->typeDenoter->samplerType) ))
+    if ( ast->flags(AST::isReachable) && ( UseSeparateSamplers() || !IsSamplerStateType(ast->typeDenoter->samplerType) ))
         Visit(ast->samplerDecls);
 }
 
@@ -639,7 +645,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
     PushOptions({ false, false });
     {
-        if (ast->initStmnt->Type() == AST::Types::SamplerDeclStmnt && !IsVKSL())
+        if (ast->initStmnt->Type() == AST::Types::SamplerDeclStmnt && !UseSeparateSamplers())
             Write(";");
         else
             Visit(ast->initStmnt);
@@ -1247,7 +1253,7 @@ void GLSLGenerator::WriteBuiltinBlockRedeclarationsPerVertex(bool input, const s
                         WriteLn("float gl_PointSize;");
                         break;
                     case Semantic::CullDistance:
-                        if (IsVKSL() || versionOut_ >= OutputShaderVersion::GLSL450)
+                        if (IsVKSL() || ( IsGLSL() && versionOut_ >= OutputShaderVersion::GLSL450))
                             WriteLn("float gl_CullDistance[];");
                         break;
                     case Semantic::ClipDistance:
@@ -2106,7 +2112,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
                     Error(R_MissingRefInTypeDen(R_SamplerTypeDen), ast);
             }
 
-            if (!IsSamplerStateType(samplerType) || IsVKSL())
+            if (!IsSamplerStateType(samplerType) || UseSeparateSamplers())
             {
                 /* Convert sampler type to GLSL sampler type */
                 if (auto keyword = SamplerTypeToKeyword(samplerType, ast))
@@ -2835,7 +2841,7 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
 {
     const std::string* bufferTypeKeyword = nullptr;
 
-    if (bufferDecl->flags(BufferDecl::isUsedForCompare) && !IsVKSL())
+    if (bufferDecl->flags(BufferDecl::isUsedForCompare) && !UseSeparateSamplers())
     {
         /* Convert type to a shadow sampler type */
         SamplerType samplerType = TextureTypeToSamplerType(bufferDecl->GetBufferType());
@@ -2944,7 +2950,7 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
 
 void GLSLGenerator::WriteSamplerDecl(SamplerDecl& samplerDecl)
 {
-    if (IsVKSL() || !IsSamplerStateType(samplerDecl.declStmntRef->typeDenoter->samplerType))
+    if (UseSeparateSamplers() || !IsSamplerStateType(samplerDecl.declStmntRef->typeDenoter->samplerType))
     {
         /* Determine GLSL sampler type */
         auto samplerTypeKeyword = SamplerTypeToKeyword(samplerDecl.GetSamplerType(), samplerDecl.declStmntRef);

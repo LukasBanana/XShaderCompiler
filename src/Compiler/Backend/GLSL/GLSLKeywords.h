@@ -36,7 +36,7 @@ const std::string* StorageClassToGLSLKeyword(const StorageClass t);
 const std::string* InterpModifierToGLSLKeyword(const InterpModifier t);
 
 // Returns the GLSL keyword for the specified buffer type or null on failure.
-const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLSL = false);
+const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLSL = false, bool separateSamplers = true);
 
 // Returns the GLSL keyword for the specified sampler type or null on failure.
 const std::string* SamplerTypeToGLSLKeyword(const SamplerType t);

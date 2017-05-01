@@ -87,7 +87,8 @@ CommandFactory::CommandFactory()
         IndentCommand,
         PrefixCommand,
         NameManglingCommand,
-        SeparateShadersCommand
+        SeparateShadersCommand,
+        SeparateSamplersCommand
     >();
 }
 
