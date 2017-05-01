@@ -361,6 +361,7 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
     /* Fetch buffer type denoter from l-value prefix expression */
     auto prefixTypeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSub();
 
+    /* Get dimension of array type denoter (not of array expression) */
     std::size_t numDims = 0;
     if (auto arrayTypeDenoter = prefixTypeDen->As<ArrayTypeDenoter>())
     {
@@ -401,12 +402,14 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
                     else
                         arg0Expr = arrayExpr->prefixExpr;
 
-                    /* Get second argument expression (last array index) */
-                    auto arg1Expr = arrayExpr->arrayIndices.back();
+                    /* Get second argument expression */
+                    auto arg1Expr = arrayExpr->arrayIndices[numDims];
 
                     /* Cast to valid dimension */
                     auto textureDim = GetTextureDimFromExpr(arg0Expr.get(), expr.get());
                     ConvertExprIfCastRequired(arg1Expr, VectorDataType(DataType::Int, textureDim), true);
+
+                    ExprPtr exprOut;
 
                     if (assignExpr)
                     {
@@ -441,16 +444,28 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
                             ConvertExprIfCastRequired(arg2Expr, DataType::Float4, true);
 
                         /* Convert expression to intrinsic call */
-                        expr = ASTFactory::MakeIntrinsicCallExpr(
+                        exprOut = ASTFactory::MakeIntrinsicCallExpr(
                             Intrinsic::Image_Store, "imageStore", nullptr, { arg0Expr, arg1Expr, arg2Expr }
                         );
                     }
                     else
                     {
                         /* Convert expression to intrinsic call */
-                        expr = ASTFactory::MakeIntrinsicCallExpr(
+                        exprOut = ASTFactory::MakeIntrinsicCallExpr(
                             Intrinsic::Image_Load, "imageLoad", callTypeDen, { arg0Expr, arg1Expr }
                         );
+                    }
+
+                    if (arrayExpr->NumIndices() > numDims + 1)
+                    {
+                        /* Keep additional array indices (e.g. when "tex[idx][0]" is equivalent to "tex[idx].x") */
+                        arrayExpr->prefixExpr = exprOut;
+                        arrayExpr->arrayIndices.erase(arrayExpr->arrayIndices.begin(), arrayExpr->arrayIndices.begin() + numDims + 1);
+                    }
+                    else
+                    {
+                        /* Replace output expression with new expression (only at the end, otherwise 'arrayExpr' is a dangling pointer) */
+                        expr = exprOut;
                     }
                 }
             }
