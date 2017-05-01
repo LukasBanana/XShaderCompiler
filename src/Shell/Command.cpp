@@ -1265,6 +1265,7 @@ void NameManglingCommand::Run(CommandLine& cmdLine, ShellState& state)
         throw std::invalid_argument("invalid name-mangling type '" + type + "'");
 }
 
+
 /*
  * SeparateShadersCommand class
  */
@@ -1287,6 +1288,7 @@ void SeparateShadersCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.options.separateShaders = cmdLine.AcceptBoolean(true);
 }
+
 
 /*
  * SeparateSamplersCommand class
