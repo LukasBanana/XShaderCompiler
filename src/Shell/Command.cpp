@@ -1302,7 +1302,7 @@ HelpDescriptor SeparateSamplersCommand::Help() const
     return
     {
         "--separate-samplers [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables generation of separate sampler state objects, when supported; default=" + CommandLine::GetBooleanTrue()
+        "Enables/disables generation of separate sampler state objects; default=" + CommandLine::GetBooleanTrue()
     };
 }
 
@@ -1310,7 +1310,6 @@ void SeparateSamplersCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.options.separateSamplers = cmdLine.AcceptBoolean(true);
 }
-
 
 
 } // /namespace Util

@@ -302,7 +302,7 @@ const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLS
     if (useVulkanGLSL && !separateSamplers)
     {
         auto samplerType = TextureTypeToSamplerType(t);
-        if(samplerType != SamplerType::Undefined)
+        if (samplerType != SamplerType::Undefined)
             useVulkanGLSL = false;
     }
 

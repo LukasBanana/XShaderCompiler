@@ -365,6 +365,7 @@ public ref class XscCompiler
                     UnrollArrayInitializers = false;
                     RowMajorAlignment       = false;
                     SeparateShaders         = false;
+                    SeparateSamplers        = true;
                     Obfuscate               = false;
                     ShowAST                 = false;
                     ShowTimes               = false;
@@ -408,6 +409,9 @@ public ref class XscCompiler
 
                 //! If true, generated GLSL code will support the 'ARB_separate_shader_objects' extension. By default false.
                 property bool   SeparateShaders;
+
+                //! If true, generated GLSL code will contain separate sampler and texture objects when supported. By default true.
+                property bool   SeparateSamplers;
 
                 //! If true, code obfuscation is performed. By default false.
                 property bool   Obfuscate;
@@ -1023,6 +1027,7 @@ bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc
     out.options.unrollArrayInitializers = outputDesc->Options->UnrollArrayInitializers;
     out.options.rowMajorAlignment       = outputDesc->Options->RowMajorAlignment;
     out.options.separateShaders         = outputDesc->Options->SeparateShaders;
+    out.options.separateSamplers        = outputDesc->Options->SeparateSamplers;
     out.options.obfuscate               = outputDesc->Options->Obfuscate;
     out.options.showAST                 = outputDesc->Options->ShowAST;
     out.options.showTimes               = outputDesc->Options->ShowTimes;

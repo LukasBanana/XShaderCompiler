@@ -106,6 +106,9 @@ struct XscOptions
     //! If true, generated GLSL code will support the 'ARB_separate_shader_objects' extension. By default false.
     bool    separateShaders;
 
+    //! If true, generated GLSL code will contain separate sampler and texture objects when supported. By default true.
+    bool    separateSamplers;
+
     //! If true, code obfuscation is performed. By default false.
     bool    obfuscate;
 
