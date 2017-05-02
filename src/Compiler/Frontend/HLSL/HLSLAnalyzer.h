@@ -198,10 +198,12 @@ class HLSLAnalyzer : public Analyzer
         /* ----- Language extensions ----- */
 
         #ifdef XSC_ENABLE_LANGUAGE_EXT
+        
+        void AnalyzeExtAttributes(std::vector<AttributePtr>& attribs, const TypeDenoterPtr& typeDen);
 
-        void AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bufferDeclStmnt);
+        void AnalyzeAttributeLayout(Attribute* attrib, const TypeDenoterPtr& typeDen);
 
-        void AnalyzeAttributeSpace(Attribute* attrib, VarDeclStmnt& varDeclStmnt);
+        void AnalyzeAttributeSpace(Attribute* attrib, const TypeDenoterPtr& typeDen);
         bool AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t argIndex, std::string& ident);
 
         void AnalyzeVectorSpaceAssign(TypedAST* lhs, const TypeDenoter& rhsTypeDen, const OnAssignTypeDenoterProc& assignTypeDenProc = nullptr);

@@ -281,6 +281,10 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     /* Visit attributes */
     Visit(ast->attribs);
 
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    AnalyzeExtAttributes(ast->attribs, ast->returnType->typeDenoter->GetSub());
+    #endif
+
     /* Visit function return type */
     Visit(ast->returnType);
 
@@ -332,29 +336,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     Visit(ast->bufferDecls);
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
-
-    for (const auto& attrib : ast->attribs)
-    {
-        switch (attrib->attributeType)
-        {
-            case AttributeType::Layout:
-            {
-                /* Analyze "layout" attribute (if this language extension is enabled) */
-                if (extensions_(Extensions::LayoutAttribute))
-                    AnalyzeAttributeLayout(attrib.get(), *ast);
-                else if (WarnEnabled(Warnings::RequiredExtensions))
-                    Warning(R_AttributeRequiresExtension("layout", "attr-layout"), attrib.get());
-            }
-            break;
-
-            default:
-            {
-                /* Ignore all other attributes */
-            }
-            break;
-        }
-    }
-
+    AnalyzeExtAttributes(ast->attribs, ast->typeDenoter);
     #endif
 }
 
@@ -389,17 +371,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
 
-    /* Analyze "space" attribute (if this language extension is enabled) */
-    for (const auto& attrib : ast->attribs)
-    {
-        if (attrib->attributeType == AttributeType::Space)
-        {
-            if (extensions_(Extensions::SpaceAttribute))
-                AnalyzeAttributeSpace(attrib.get(), *ast);
-            else if (WarnEnabled(Warnings::RequiredExtensions))
-                Warning(R_AttributeRequiresExtension("space", "attr-space"), attrib.get());
-        }
-    }
+    AnalyzeExtAttributes(ast->attribs, ast->typeSpecifier->typeDenoter->GetSub());
 
     if (extensions_(Extensions::SpaceAttribute))
     {
@@ -2297,9 +2269,44 @@ void HLSLAnalyzer::AnalyzeSemanticFunctionReturn(IndexedSemantic& semantic)
 
 #ifdef XSC_ENABLE_LANGUAGE_EXT
 
-void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bufferDeclStmnt)
+void HLSLAnalyzer::AnalyzeExtAttributes(std::vector<AttributePtr>& attribs, const TypeDenoterPtr& typeDen)
 {
-    if (auto typeDen = bufferDeclStmnt.typeDenoter.get())
+    for (const auto& attrib : attribs)
+    {
+        switch (attrib->attributeType)
+        {
+            case AttributeType::Layout:
+            {
+                /* Analyze "layout" attribute (if this language extension is enabled) */
+                if (extensions_(Extensions::LayoutAttribute))
+                    AnalyzeAttributeLayout(attrib.get(), typeDen);
+                else if (WarnEnabled(Warnings::RequiredExtensions))
+                    Warning(R_AttributeRequiresExtension("layout", "attr-layout"), attrib.get());
+            }
+            break;
+
+            case AttributeType::Space:
+            {
+                /* Analyze "space" attribute (if this language extension is enabled) */
+                if (extensions_(Extensions::SpaceAttribute))
+                    AnalyzeAttributeSpace(attrib.get(), typeDen);
+                else if (WarnEnabled(Warnings::RequiredExtensions))
+                    Warning(R_AttributeRequiresExtension("space", "attr-space"), attrib.get());
+            }
+            break;
+
+            default:
+            {
+                /* Ignore other attributes here */
+            }
+            break;
+        }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, const TypeDenoterPtr& typeDen)
+{
+    if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
     {
         if (AnalyzeNumArgsAttribute(attrib, 1, true))
         {
@@ -2311,9 +2318,9 @@ void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bu
                 if (imageLayoutFormat != ImageLayoutFormat::Undefined)
                 {
                     auto baseType = DataType::Undefined;
-                    if (typeDen->genericTypeDenoter)
+                    if (bufferTypeDen->genericTypeDenoter)
                     {
-                        if (auto baseTypeDen = typeDen->genericTypeDenoter->As<BaseTypeDenoter>())
+                        if (auto baseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
                             baseType = BaseDataType(baseTypeDen->dataType);
                     }
                     
@@ -2324,10 +2331,10 @@ void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bu
                         if (baseType != formatBaseType)
                             Error(R_InvalidImageFormatForType(layoutFormat, DataTypeToString(baseType)));
                         else
-                            typeDen->layoutFormat = imageLayoutFormat;
+                            bufferTypeDen->layoutFormat = imageLayoutFormat;
                     }
                     else
-                        typeDen->layoutFormat = imageLayoutFormat;
+                        bufferTypeDen->layoutFormat = imageLayoutFormat;
                 }
                 else
                     Error(R_InvalidIdentArgInAttribute(layoutFormat, "layout"));
@@ -2338,9 +2345,8 @@ void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bu
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributeSpace(Attribute* attrib, VarDeclStmnt& varDeclStmnt)
+void HLSLAnalyzer::AnalyzeAttributeSpace(Attribute* attrib, const TypeDenoterPtr& typeDen)
 {
-    auto typeDen = varDeclStmnt.typeSpecifier->typeDenoter->GetSub();
     if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
     {
         if (AnalyzeNumArgsAttribute(attrib, 1, 2, true))
