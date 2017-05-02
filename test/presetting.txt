@@ -195,4 +195,4 @@
 -T vert -E main -o output/* MatrixLayoutTest1.hlsl
 
 [ExtLayoutAttrTest1: vert]
--T vert -E main -o output/* ExtLayoutAttrTest1.hlsl
+-T vert -E main -Xall -o output/* ExtLayoutAttrTest1.hlsl

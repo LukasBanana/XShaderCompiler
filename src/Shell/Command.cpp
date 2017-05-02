@@ -191,8 +191,8 @@ HelpDescriptor VersionOutCommand::Help() const
         "-Vout, --version-out VERSION",
         "Shader output version; default=GLSL; valid versions:",
         (
-            "GLSL[110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450],\n" \
-            "ESSL[100, 300, 310, 320],\n" \
+            "GLSL[110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450],\n"   \
+            "ESSL[100, 300, 310, 320],\n"                                           \
             "VKSL[450]"
         ),
         HelpCategory::Main
@@ -1322,18 +1322,18 @@ void SeparateSamplersCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> LanguageExtensionCommand::Idents() const
 {
-    return { { "-E", true } };
+    return { { "-X", true } };
 }
 
 HelpDescriptor LanguageExtensionCommand::Help() const
 {
     return
     {
-        "-E<TYPE> [" + CommandLine::GetBooleanOption() + "]",
+        "-X<TYPE> [" + CommandLine::GetBooleanOption() + "]",
         "Enables/disables the specified language extension; default=" + CommandLine::GetBooleanFalse() + "; value types:",
         (
-            "all           => enables all extensions\n"                                                         \
-            "attr-layout   => allows the use of 'layout' attribute in order to specify image layout formats"
+            "all         => enables all extensions\n"                                           \
+            "attr-layout => extension for 'layout' attribute to specify image layout format"
         )
     };
 }
