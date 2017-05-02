@@ -312,7 +312,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
                 /* Analyze "layout" attribute (if this language extension is enabled) */
                 if (extensions_(Extensions::LayoutAttribute))
                     AnalyzeAttributeLayout(attrib.get(), *ast);
-                else
+                else if (WarnEnabled(Warnings::RequiredExtensions))
                     Warning(R_AttributeRequiresExtension("layout", "attr-layout"), attrib.get());
             }
             break;
@@ -359,15 +359,20 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
 
+    /* Analyze "space" attribute (if this language extension is enabled) */
+    for (const auto& attrib : ast->attribs)
+    {
+        if (attrib->attributeType == AttributeType::Space)
+        {
+            if (extensions_(Extensions::SpaceAttribute))
+                AnalyzeAttributeSpace(attrib.get(), *ast);
+            else if (WarnEnabled(Warnings::RequiredExtensions))
+                Warning(R_AttributeRequiresExtension("space", "attr-space"), attrib.get());
+        }
+    }
+
     if (extensions_(Extensions::SpaceAttribute))
     {
-        /* Analyze "space" attribute (if this language extension is enabled) */
-        for (const auto& attrib : ast->attribs)
-        {
-            if (attrib->attributeType == AttributeType::Space)
-                AnalyzeAttributeSpace(attrib.get(), *ast);
-        }
-
         /* Analyze vector space initializers */
         for (auto& varDecl : ast->varDecls)
             AnalyzeVectorSpaceVarAssign(varDecl.get(), varDecl->initializer.get());
@@ -2150,51 +2155,6 @@ bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(
     return false;
 }
 
-#ifdef XSC_ENABLE_LANGUAGE_EXT
-
-void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bufferDeclStmnt)
-{
-    if (auto typeDen = bufferDeclStmnt.typeDenoter.get())
-    {
-        if (AnalyzeNumArgsAttribute(attrib, 1, true))
-        {
-            auto expr = attrib->arguments[0].get();
-            if (auto objectExpr = expr->As<ObjectExpr>())
-            {
-                const auto& layoutFormat = objectExpr->ident;
-                auto imageLayoutFormat = ExtHLSLKeywordToImageLayoutFormat(layoutFormat);
-                if (imageLayoutFormat != ImageLayoutFormat::Undefined)
-                {
-                    auto baseType = DataType::Undefined;
-                    if (typeDen->genericTypeDenoter)
-                    {
-                        if (auto baseTypeDen = typeDen->genericTypeDenoter->As<BaseTypeDenoter>())
-                            baseType = BaseDataType(baseTypeDen->dataType);
-                    }
-                    
-                    /* Ensure format is used on a valid buffer type */
-                    if (baseType != DataType::Undefined)
-                    {
-                        auto formatBaseType = GetImageLayoutFormatBaseType(imageLayoutFormat);
-                        if (baseType != formatBaseType)
-                            Error(R_InvalidImageFormatForType(layoutFormat, DataTypeToString(baseType)));
-                        else
-                            typeDen->layoutFormat = imageLayoutFormat;
-                    }
-                    else
-                        typeDen->layoutFormat = imageLayoutFormat;
-                }
-                else
-                    Error(R_InvalidIdentArgInAttribute(layoutFormat, "layout"));
-            }
-            else
-                Error(R_ExpectedIdentArgInAttribute("layout"), expr);
-        }
-    }
-}
-
-#endif
-
 /* ----- Semantic ----- */
 
 /*
@@ -2281,9 +2241,51 @@ void HLSLAnalyzer::AnalyzeSemanticFunctionReturn(IndexedSemantic& semantic)
 
 #ifdef XSC_ENABLE_LANGUAGE_EXT
 
+void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bufferDeclStmnt)
+{
+    if (auto typeDen = bufferDeclStmnt.typeDenoter.get())
+    {
+        if (AnalyzeNumArgsAttribute(attrib, 1, true))
+        {
+            auto expr = attrib->arguments[0].get();
+            if (auto objectExpr = expr->As<ObjectExpr>())
+            {
+                const auto& layoutFormat = objectExpr->ident;
+                auto imageLayoutFormat = ExtHLSLKeywordToImageLayoutFormat(layoutFormat);
+                if (imageLayoutFormat != ImageLayoutFormat::Undefined)
+                {
+                    auto baseType = DataType::Undefined;
+                    if (typeDen->genericTypeDenoter)
+                    {
+                        if (auto baseTypeDen = typeDen->genericTypeDenoter->As<BaseTypeDenoter>())
+                            baseType = BaseDataType(baseTypeDen->dataType);
+                    }
+                    
+                    /* Ensure format is used on a valid buffer type */
+                    if (baseType != DataType::Undefined)
+                    {
+                        auto formatBaseType = GetImageLayoutFormatBaseType(imageLayoutFormat);
+                        if (baseType != formatBaseType)
+                            Error(R_InvalidImageFormatForType(layoutFormat, DataTypeToString(baseType)));
+                        else
+                            typeDen->layoutFormat = imageLayoutFormat;
+                    }
+                    else
+                        typeDen->layoutFormat = imageLayoutFormat;
+                }
+                else
+                    Error(R_InvalidIdentArgInAttribute(layoutFormat, "layout"));
+            }
+            else
+                Error(R_ExpectedIdentArgInAttribute("layout"), expr);
+        }
+    }
+}
+
 void HLSLAnalyzer::AnalyzeAttributeSpace(Attribute* attrib, VarDeclStmnt& varDeclStmnt)
 {
-    if (auto typeDen = varDeclStmnt.typeSpecifier->typeDenoter.get())
+    auto typeDen = varDeclStmnt.typeSpecifier->typeDenoter->GetSub();
+    if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
     {
         if (AnalyzeNumArgsAttribute(attrib, 1, 2, true))
         {
@@ -2292,14 +2294,14 @@ void HLSLAnalyzer::AnalyzeAttributeSpace(Attribute* attrib, VarDeclStmnt& varDec
                 /* Set source and destination vector spaces by attribute arguments */
                 std::string srcSpace, dstSpace;
                 if (AnalyzeAttributeSpaceIdent(attrib, 0, srcSpace) && AnalyzeAttributeSpaceIdent(attrib, 1, dstSpace))
-                    typeDen->vectorSpace.Set(ToCiString(srcSpace), ToCiString(dstSpace));
+                    baseTypeDen->vectorSpace.Set(ToCiString(srcSpace), ToCiString(dstSpace));
             }
             else
             {
                 /* Set vector space by attribute argument */
                 std::string space;
                 if (AnalyzeAttributeSpaceIdent(attrib, 0, space))
-                    typeDen->vectorSpace.Set(ToCiString(space));
+                    baseTypeDen->vectorSpace.Set(ToCiString(space));
             }
         }
     }
@@ -2326,18 +2328,27 @@ void HLSLAnalyzer::AnalyzeVectorSpaceVarAssign(VarDecl* varDecl, Expr* assignExp
     if (varDecl && assignExpr)
     {
         /* Validate vector-space assignment */
-        const auto& varVectorSpace = varDecl->GetTypeDenoter()->GetAliased().vectorSpace;
-        const auto& exprVectorSpace = assignExpr->GetTypeDenoter()->GetAliased().vectorSpace;
+        const auto& varTypeDen = varDecl->GetTypeDenoter()->GetAliased();
+        const auto& exprTypeDen = assignExpr->GetTypeDenoter()->GetAliased();
 
-        if (varVectorSpace.IsSpecified() || exprVectorSpace.IsSpecified())
+        if (auto varBaseTypeDen = varTypeDen.As<BaseTypeDenoter>())
         {
-            if (!exprVectorSpace.IsAssignableTo(varVectorSpace))
+            if (auto exprBaseTypeDen = exprTypeDen.As<BaseTypeDenoter>())
             {
-                /* Report error of illegal vector-space assignment */
-                Error(
-                    R_IllegalVectorSpaceAssignment(exprVectorSpace.ToString(), varVectorSpace.ToString()),
-                    assignExpr
-                );
+                const auto& varVectorSpace = varBaseTypeDen->vectorSpace;
+                const auto& exprVectorSpace = exprBaseTypeDen->vectorSpace;
+
+                if (varVectorSpace.IsSpecified() || exprVectorSpace.IsSpecified())
+                {
+                    if (!exprVectorSpace.IsAssignableTo(varVectorSpace))
+                    {
+                        /* Report error of illegal vector-space assignment */
+                        Error(
+                            R_IllegalVectorSpaceAssignment(exprVectorSpace.ToString(), varVectorSpace.ToString()),
+                            assignExpr
+                        );
+                    }
+                }
             }
         }
     }

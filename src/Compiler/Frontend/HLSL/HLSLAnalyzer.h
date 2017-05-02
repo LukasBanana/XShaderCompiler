@@ -185,12 +185,6 @@ class HLSLAnalyzer : public Analyzer
             std::string& literalValue
         );
 
-        #ifdef XSC_ENABLE_LANGUAGE_EXT
-
-        void AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bufferDeclStmnt);
-
-        #endif
-
         /* ----- Semantic ----- */
 
         void AnalyzeSemantic(IndexedSemantic& semantic);
@@ -202,6 +196,8 @@ class HLSLAnalyzer : public Analyzer
         /* ----- Language extensions ----- */
 
         #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        void AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bufferDeclStmnt);
 
         void AnalyzeAttributeSpace(Attribute* attrib, VarDeclStmnt& varDeclStmnt);
         bool AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t argIndex, std::string& ident);

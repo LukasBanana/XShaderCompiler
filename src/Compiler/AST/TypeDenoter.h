@@ -190,10 +190,6 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
         const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen,
         int& sourceVecSize, int& destVecSize
     );
-
-    #ifdef XSC_ENABLE_LANGUAGE_EXT
-    VectorSpace vectorSpace; // Vector space of this type denoter.
-    #endif
 };
 
 // Void type denoter.
@@ -243,7 +239,11 @@ struct BaseTypeDenoter : public TypeDenoter
     TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
     TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
 
-    DataType dataType = DataType::Undefined;    // Data type of this base type denoter. By default DataType::Undefined.
+    DataType    dataType    = DataType::Undefined;  // Data type of this base type denoter. By default DataType::Undefined.
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    VectorSpace vectorSpace;                        // Vector space of this type denoter.
+    #endif
 };
 
 /*
