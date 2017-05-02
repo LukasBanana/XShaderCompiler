@@ -750,10 +750,38 @@ HelpDescriptor VersionCommand::Help() const
 
 void VersionCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
+    /* Print version info in highlighted color */
     ConsoleManip::ScopedColor highlight(ConsoleManip::ColorFlags::Green | ConsoleManip::ColorFlags::Blue);
-    std::cout << "XShaderCompiler ( Version " << XSC_VERSION_STRING << " )" << std::endl;
+
+    /* Print version */
+    std::cout << "XShaderCompiler ( ";
+    {
+        ConsoleManip::ScopedColor highlight(ConsoleManip::ColorFlags::Green | ConsoleManip::ColorFlags::Blue | ConsoleManip::ColorFlags::Intens);
+        std::cout << "Version " << XSC_VERSION_STRING;
+    }
+    
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    std::cout << "; ";
+    {
+        ConsoleManip::ScopedColor highlight(ConsoleManip::ColorFlags::Green | ConsoleManip::ColorFlags::Blue | ConsoleManip::ColorFlags::Intens);
+        std::cout << "Ext";
+    }
+    #endif
+    
+    #ifdef _DEBUG
+    std::cout << "; ";
+    {
+        ConsoleManip::ScopedColor highlight(ConsoleManip::ColorFlags::Green | ConsoleManip::ColorFlags::Blue | ConsoleManip::ColorFlags::Intens);
+        std::cout << "DEBUG";
+    }
+    #endif
+
+    std::cout << " )" << std::endl;
+    
+    /* Print copyright and license notice */
     std::cout << "Copyright (c) 2014-2017 by Lukas Hermanns" << std::endl;
     std::cout << "3-Clause BSD License" << std::endl;
+
     state.actionPerformed = true;
 }
 
