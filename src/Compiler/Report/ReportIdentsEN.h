@@ -40,6 +40,7 @@ DECL_REPORT( ButGot,                            "[, but got {0}]"               
 DECL_REPORT( NotImplementedYet,                 "[{0} ]not implemented yet[ (in '{1}')]"                                                                        );
 DECL_REPORT( DeclaredAt,                        "declared at ({0})"                                                                                             );
 DECL_REPORT( PrevDefinitionAt,                  "previous definition at ({0})"                                                                                  );
+DECL_REPORT( ExceptionThrown,                   "exception thrown: "                                                                                            );
 
 /* ----- Token ----- */
 
@@ -479,13 +480,30 @@ DECL_REPORT( AnalyzingSourceFailed,             "analyzing input code failed"   
 DECL_REPORT( GeneratingOutputCodeFailed,        "generating output code failed"                                                                                 );
 DECL_REPORT( OnlyPreProcessingForNonHLSL,       "only pre-processing supported for shaders other than HLSL or Cg"                                               );
 
-#ifdef XSC_ENABLE_LANGUAGE_EXT
+/* ----- Shell ----- */
+
+DECL_REPORT( UnexpectedEndOfCmdLine,            "unexpected end of command line arguments"                                                                      );
+DECL_REPORT( ExpectedCmdLineBoolean,            "expected '{0}' or '{1}', but got '{2}'"                                                                        );
+DECL_REPORT( MissingValueInShellCmd,            "missing value in command '{0}'"                                                                                );
+DECL_REPORT( PressAnyKeyToContinue,             "press any key to continue ..."                                                                                 );
+DECL_REPORT( FailedToReadFile,                  "failed to read file: \"{0}\""                                                                                  );
+DECL_REPORT( FailedToWriteFile,                 "failed to write file: \"{0}\""                                                                                 );
+DECL_REPORT( ValidateShader,                    "validate \"{0}\""                                                                                              );
+DECL_REPORT( ValidationSuccessful,              "validation successful"                                                                                         );
+DECL_REPORT( ValidationFailed,                  "validation failed"                                                                                             );
+DECL_REPORT( CompileShader,                     "compile \"{0}\" to \"{1}\""                                                                                    );
+DECL_REPORT( CompilationSuccessful,             "compilation successful"                                                                                        );
+DECL_REPORT( CompilationFailed,                 "compilation failed"                                                                                            );
 
 /* ----- Extensions ----- */
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
 DECL_REPORT( InvalidImageFormatForType,         "invalid image format '{0}' used for buffer of type '{1}'"                                                      );
 DECL_REPORT( AttributeRequiresExtension,        "attribute '{0}' requires language extension '{1}'"                                                             );
 
 #endif
+
 
 #endif
 

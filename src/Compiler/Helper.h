@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <iterator>
 #include <functional>
+#include <cctype>
 
 
 namespace Xsc
@@ -167,6 +168,13 @@ template <>
 inline double FromStringOrDefault<double>(const std::string& s)
 {
     try { return std::stod(s); } catch (const std::exception&) { return 0.0; }
+}
+
+// Transforms the specified string to upper case.
+template <typename T>
+void ToUpper(T& s)
+{
+    std::transform(std::begin(s), std::end(s), std::begin(s), ::toupper);
 }
 
 

@@ -352,10 +352,20 @@ TypeDenoter::Types BaseTypeDenoter::Type() const
     return Types::Base;
 }
 
-BaseTypeDenoter::BaseTypeDenoter(DataType dataType) :
-    dataType{ dataType }
+BaseTypeDenoter::BaseTypeDenoter(const DataType dataType) :
+    dataType { dataType }
 {
 }
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+BaseTypeDenoter::BaseTypeDenoter(const DataType dataType, const VectorSpace& vectorSpace) :
+    dataType    { dataType    },
+    vectorSpace { vectorSpace }
+{
+}
+
+#endif
 
 std::string BaseTypeDenoter::ToString() const
 {

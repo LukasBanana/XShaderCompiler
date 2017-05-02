@@ -52,10 +52,10 @@ struct VectorSpace
     // Returns a descriptive string of this vector space.
     std::string ToString() const;
 
-    // Returns true if this vector-space is specified, i.e. source and destination or non-empty.
+    // Returns true if this vector-space is specified, i.e. source and destination are non-empty.
     bool IsSpecified() const;
 
-    // Returns true if this vector space is a change of basis, i.e. source and destination spaces are different
+    // Returns true if this vector space is a change of basis, i.e. source and destination spaces are different.
     bool IsChangeOfBasis() const;
 
     // Returns true if this vector space can be assigned to the specified vector space, i.e. its destination space equals the specified source space.
@@ -224,7 +224,11 @@ struct BaseTypeDenoter : public TypeDenoter
     static const Types classType = Types::Base;
 
     BaseTypeDenoter() = default;
-    BaseTypeDenoter(DataType dataType);
+    BaseTypeDenoter(const DataType dataType);
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    BaseTypeDenoter(const DataType dataType, const VectorSpace& vectorSpace);
+    #endif
 
     Types Type() const override;
     std::string ToString() const override;

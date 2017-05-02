@@ -7,6 +7,7 @@
 
 #include "Shell.h"
 #include "Helper.h"
+#include "ReportIdents.h"
 #include "CommandFactory.h"
 #include <Xsc/ConsoleManip.h>
 #include <iostream>
@@ -46,7 +47,7 @@ static void PrintBackdoorEasterEgg(std::ostream& output)
 Shell* Shell::instance_ = nullptr;
 
 Shell::Shell(std::ostream& output) :
-    output{ output }
+    output { output }
 {
     Shell::instance_ = this;
 }
@@ -101,7 +102,7 @@ bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp)
                     if (cmdName.size() > cmdIdent.name.size())
                         cmdLine.Insert(cmdName.substr(cmdIdent.name.size()));
                     else
-                        throw std::invalid_argument("missing value in command '" + cmdIdent.name + "'");
+                        throw std::invalid_argument(R_MissingValueInShellCmd(cmdIdent.name));
                 }
 
                 /* Run command */
@@ -130,7 +131,7 @@ bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp)
         /* Print highlighted exception info */
         {
             ConsoleManip::ScopedColor color { ConsoleManip::ColorFlags::Red | ConsoleManip::ColorFlags::Intens };
-            output << "exception thrown: ";
+            output << R_ExceptionThrown();
         }
 
         /* Print error message */
@@ -146,7 +147,7 @@ void Shell::WaitForUser()
     #ifdef _WIN32
     if (state_.pauseApp)
     {
-        output << "press any key to continue ...";
+        output << R_PressAnyKeyToContinue();
         int i = _getch();
         output << std::endl;
     }
@@ -233,7 +234,7 @@ void Shell::Compile(const std::string& filename)
 
         std::ifstream inputFile(filename);
         if (!inputFile.good())
-            throw std::runtime_error("failed to read file: \"" + filename + "\"");
+            throw std::runtime_error(R_FailedToReadFile(filename));
 
         *inputStream << inputFile.rdbuf();
 
@@ -260,9 +261,9 @@ void Shell::Compile(const std::string& filename)
         if (state_.verbose)
         {
             if (state_.outputDesc.options.validateOnly)
-                output << "validate \"" << filename << '\"' << std::endl;
+                output << R_ValidateShader(filename) << std::endl;
             else
-                output << "compile \"" << filename << "\" to \"" << outputFilename << '\"' << std::endl;
+                output << R_CompileShader(filename, outputFilename) << std::endl;
         }
 
         /* Compile shader file */
@@ -281,28 +282,28 @@ void Shell::Compile(const std::string& filename)
             if (!state_.outputDesc.options.validateOnly)
             {
                 if (state_.verbose)
-                    output << "compilation successful" << std::endl;
+                    output << R_CompilationSuccessful() << std::endl;
 
                 /* Write result to output stream only on success */
                 std::ofstream outputFile(outputFilename);
                 if (outputFile.good())
                     outputFile << outputStream.rdbuf();
                 else
-                    throw std::runtime_error("failed to write file: \"" + outputFilename + "\"");
+                    throw std::runtime_error(R_FailedToWriteFile(outputFilename));
 
                 /* Store output filename after successful compilation */
                 lastOutputFilename_ = outputFilename;
             }
             else if (state_.verbose)
-                output << "validation successful" << std::endl;
+                output << R_ValidationSuccessful() << std::endl;
         }
         else
         {
             /* Always print message on failure */
             if (state_.outputDesc.options.validateOnly)
-                output << "validation failed" << std::endl;
+                output << R_ValidationFailed() << std::endl;
             else
-                output << "compilation failed" << std::endl;
+                output << R_CompilationFailed() << std::endl;
         }
 
         /* Show output statistics (if enabled) */
