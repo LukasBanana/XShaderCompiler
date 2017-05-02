@@ -1673,7 +1673,25 @@ TypeDenoterPtr CallExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDeno
     }
     else if (typeDenoter)
     {
-        /* Return type denoter fo type constructor */
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        /* Derive type denoter with optional vector-space */
+        if (auto baseTypeDen = typeDenoter->GetAliased().As<BaseTypeDenoter>())
+        {
+            /* Verify that all arguments have the same vector space */
+            auto vectorSpace = VectorSpace::FindCommonVectorSpace(arguments, true, this);
+            if (vectorSpace.IsSpecified())
+            {
+                /* Return copy of type denoter with derived vector-space */
+                auto typeDen = baseTypeDen->Copy();
+                typeDen->As<BaseTypeDenoter>()->vectorSpace = vectorSpace;
+                return typeDen;
+            }
+        }
+
+        #endif
+
+        /* Return type denoter of type constructor */
         return typeDenoter;
     }
     else if (intrinsic != Intrinsic::Undefined)

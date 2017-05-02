@@ -1725,7 +1725,7 @@ CallExprPtr HLSLParser::ParseCallExprWithPrefixOpt(const ExprPtr& prefixExpr, bo
     /* Parse argument list */
     ast->arguments = ParseArgumentList();
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 // Parse function call as a type constructor (e.g. "float4(...)")

@@ -374,7 +374,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     if (extensions_(Extensions::SpaceAttribute))
     {
         /* Analyze vector space initializers */
-        for (auto& varDecl : ast->varDecls)
+        for (const auto& varDecl : ast->varDecls)
             AnalyzeVectorSpaceVarAssign(varDecl.get(), varDecl->initializer.get());
     }
 

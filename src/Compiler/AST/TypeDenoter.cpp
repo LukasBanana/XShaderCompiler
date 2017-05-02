@@ -41,7 +41,7 @@ bool VectorSpace::IsChangeOfBasis() const
 
 bool VectorSpace::IsAssignableTo(const VectorSpace& rhs) const
 {
-    return (dst == rhs.src);
+    return (dst == rhs.src || !rhs.IsSpecified());
 }
 
 void VectorSpace::Set(const StringType& space)
@@ -54,6 +54,75 @@ void VectorSpace::Set(const StringType& srcSpace, const StringType& dstSpace)
 {
     src = srcSpace;
     dst = dstSpace;
+}
+
+VectorSpace VectorSpace::FindCommonVectorSpace(const std::vector<ExprPtr>& exprList, bool ignoreUnspecified, const AST* ast)
+{
+    if (!exprList.empty())
+    {
+        /* Gather base type denoters of all expressions */
+        std::vector<const BaseTypeDenoter*> typeDens;
+        typeDens.reserve(exprList.size());
+
+        VectorSpace commonVectorSpace;
+        bool commonVectorSpaceSet = false;
+
+        for (const auto& expr : exprList)
+        {
+            /* Always append type denoter to list (also null pointers!) */
+            const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
+            if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
+            {
+                typeDens.push_back(baseTypeDen);
+                if (baseTypeDen->vectorSpace.IsSpecified())
+                {
+                    if (!commonVectorSpaceSet)
+                    {
+                        /* Store first specified vector space as common vector space */
+                        commonVectorSpace = baseTypeDen->vectorSpace;
+                        commonVectorSpaceSet = true;
+                    }
+                }
+            }
+            else
+                typeDens.push_back(nullptr);
+        }
+
+        if (commonVectorSpaceSet)
+        {
+            /* Validate vector space compatibility */
+            for (std::size_t i = 0, n = typeDens.size(); i < n; ++i)
+            {
+                if (auto typeDen = typeDens[i])
+                {
+                    const auto& vectorSpace = typeDen->vectorSpace;
+                    if ( ( vectorSpace.IsSpecified() && vectorSpace != commonVectorSpace ) ||
+                         ( !vectorSpace.IsSpecified() && !ignoreUnspecified ) )
+                    {
+                        RuntimeErr(
+                            R_InconsistVectorSpacesInCtor(vectorSpace.ToString(), commonVectorSpace.ToString()),
+                            exprList[i].get()
+                        );
+                    }
+                }
+                else if (!ignoreUnspecified)
+                    RuntimeErr(R_InconsistVectorSpacesInCtor, ast);
+            }
+
+            return commonVectorSpace;
+        }
+    }
+    return {};
+}
+
+bool operator == (const VectorSpace& lhs, const VectorSpace& rhs)
+{
+    return (lhs.src == rhs.src && lhs.dst == rhs.dst);
+}
+
+bool operator != (const VectorSpace& lhs, const VectorSpace& rhs)
+{
+    return !(lhs == rhs);
 }
 
 #endif
@@ -356,16 +425,6 @@ BaseTypeDenoter::BaseTypeDenoter(const DataType dataType) :
     dataType { dataType }
 {
 }
-
-#ifdef XSC_ENABLE_LANGUAGE_EXT
-
-BaseTypeDenoter::BaseTypeDenoter(const DataType dataType, const VectorSpace& vectorSpace) :
-    dataType    { dataType    },
-    vectorSpace { vectorSpace }
-{
-}
-
-#endif
 
 std::string BaseTypeDenoter::ToString() const
 {

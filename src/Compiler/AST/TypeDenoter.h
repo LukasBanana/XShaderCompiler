@@ -52,7 +52,7 @@ struct VectorSpace
     // Returns a descriptive string of this vector space.
     std::string ToString() const;
 
-    // Returns true if this vector-space is specified, i.e. source and destination are non-empty.
+    // Returns true if this vector space is specified, i.e. source and destination are non-empty.
     bool IsSpecified() const;
 
     // Returns true if this vector space is a change of basis, i.e. source and destination spaces are different.
@@ -67,9 +67,15 @@ struct VectorSpace
     // Sets the source and destination spaces to the specified identifiers.
     void Set(const StringType& srcSpace, const StringType& dstSpace);
 
+    // Returns the common vector-space from the specified expressions, or throws ASTRuntimeError on failure.
+    static VectorSpace FindCommonVectorSpace(const std::vector<ExprPtr>& exprList, bool ignoreUnspecified = false, const AST* ast = nullptr);
+
     StringType src; // Source vector space name.
     StringType dst; // Destination vector space name.
 };
+
+bool operator == (const VectorSpace& lhs, const VectorSpace& rhs);
+bool operator != (const VectorSpace& lhs, const VectorSpace& rhs);
 
 #endif
 
@@ -225,10 +231,6 @@ struct BaseTypeDenoter : public TypeDenoter
 
     BaseTypeDenoter() = default;
     BaseTypeDenoter(const DataType dataType);
-
-    #ifdef XSC_ENABLE_LANGUAGE_EXT
-    BaseTypeDenoter(const DataType dataType, const VectorSpace& vectorSpace);
-    #endif
 
     Types Type() const override;
     std::string ToString() const override;

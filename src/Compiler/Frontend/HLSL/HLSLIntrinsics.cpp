@@ -707,8 +707,55 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMul(const std::vector<ExprPtr
     if (args.size() != 2)
         RuntimeErr(R_InvalidIntrinsicArgCount("mul"));
 
-    auto type0 = args[0]->GetTypeDenoter();
-    auto type1 = args[1]->GetTypeDenoter();
+    /* Get type denoter of arguments (without aliasing) */
+    auto type0 = args[0]->GetTypeDenoter()->GetSub();
+    auto type1 = args[1]->GetTypeDenoter()->GetSub();
+
+    /* Derive type denoter by input arguments for "mul" intrinsic */
+    auto typeDen = DeriveReturnTypeMulPrimary(args, type0, type1);
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+    /* Derive vector-space of return type */
+    if (auto baseType0 = type0->As<BaseTypeDenoter>())
+    {
+        if (auto baseType1 = type1->As<BaseTypeDenoter>())
+        {
+            if (auto baseReturnType = typeDen->As<BaseTypeDenoter>())
+            {
+                const auto& vectorSpace0 = baseType0->vectorSpace;
+                const auto& vectorSpace1 = baseType1->vectorSpace;
+
+                if (vectorSpace0.IsSpecified() || vectorSpace1.IsSpecified())
+                {
+                    if (!vectorSpace1.IsAssignableTo(vectorSpace0))
+                    {
+                        /* Report error of illegal vector-space assignment */
+                        RuntimeErr(
+                            R_IllegalVectorSpaceAssignment(vectorSpace1.ToString(), vectorSpace0.ToString())
+                        );
+                    }
+
+                    /* Set vector space of return type */
+                    if (baseReturnType->IsMatrix())
+                        baseReturnType->vectorSpace.Set(vectorSpace0.src, vectorSpace1.dst);
+                    else
+                        baseReturnType->vectorSpace.Set(vectorSpace0.dst);
+                }
+            }
+        }
+    }
+
+    #endif
+
+    return typeDen;
+}
+
+TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMulPrimary(const std::vector<ExprPtr>& args, const TypeDenoterPtr& type0, const TypeDenoterPtr& type1) const
+{
+    /* Validate number of arguments */
+    if (args.size() != 2)
+        RuntimeErr(R_InvalidIntrinsicArgCount("mul"));
 
     /* Scalar x TYPE = TYPE */
     if (type0->IsScalar())
