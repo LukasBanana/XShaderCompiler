@@ -56,7 +56,7 @@ void HLSLAnalyzer::DecorateASTPrimary(
     preferWrappers_         = outputDesc.options.preferWrappers;
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
-    layoutAttrExt_          = true; //TODO: add compiler option.
+    extensions_             = inputDesc.extensions;
     #endif
 
     /* Decorate program AST */
@@ -304,12 +304,14 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     #ifdef XSC_ENABLE_LANGUAGE_EXT
 
     /* Analyze "layout" attribute (if this language extension is enabled) */
-    if (layoutAttrExt_)
+    for (const auto& attrib : ast->attribs)
     {
-        for (const auto& attrib : ast->attribs)
+        if (attrib->attributeType == AttributeType::Layout)
         {
-            if (attrib->attributeType == AttributeType::Layout)
+            if ((extensions_ & Extensions::LayoutAttribute) != 0)
                 AnalyzeAttributeLayout(attrib.get(), *ast);
+            else
+                Warning(R_AttributeRequiresExtension("layout", "attr-layout"));
         }
     }
 

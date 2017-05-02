@@ -219,9 +219,7 @@ class HLSLAnalyzer : public Analyzer
         std::set<VarDecl*>  varDeclSM3Semantics_;
 
         #ifdef XSC_ENABLE_LANGUAGE_EXT
-
-        bool                layoutAttrExt_              = false;                        // Enables the language extension of the "layout" attribute.
-
+        int                 extensions_                 = 0;
         #endif
 
 };

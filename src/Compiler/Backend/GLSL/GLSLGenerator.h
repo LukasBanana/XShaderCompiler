@@ -311,9 +311,7 @@ class GLSLGenerator : public Generator
         bool                                    isInsideInterfaceBlock_ = false;
 
 #ifdef XSC_ENABLE_LANGUAGE_EXT
-
-        bool                                    layoutAttrExt_          = false;        // Enables the language extension of the "layout" attribute.
-
+        int                                    extensions_              = 0;
 #endif
 };
 

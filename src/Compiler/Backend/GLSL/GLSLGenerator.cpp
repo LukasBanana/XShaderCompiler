@@ -67,7 +67,7 @@ void GLSLGenerator::GenerateCodePrimary(
     alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
 
 #ifdef XSC_ENABLE_LANGUAGE_EXT
-    layoutAttrExt_      = true; //TODO: add compiler option.
+    extensions_         = inputDesc.extensions;
 #endif
 
     for (const auto& s : outputDesc.vertexSemantics)
@@ -2847,7 +2847,7 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
     {
         #ifdef XSC_ENABLE_LANGUAGE_EXT
 
-        if(layoutAttrExt_)
+        if((extensions_ & Extensions::LayoutAttribute) != 0)
             imageLayoutFormat = bufferDecl->declStmntRef->typeDenoter->layoutFormat;
 
         #endif

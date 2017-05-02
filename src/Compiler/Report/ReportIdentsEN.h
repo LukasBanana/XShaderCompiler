@@ -479,7 +479,8 @@ DECL_REPORT( OnlyPreProcessingForNonHLSL,       "only pre-processing supported f
 #ifdef XSC_ENABLE_LANGUAGE_EXT
 
 /* ----- Extensions ----- */
-DECL_REPORT( InvalidImageFormatForType,        "invalid image format '{0}' used for buffer of type '{1}'"                                                      );
+DECL_REPORT( InvalidImageFormatForType,         "invalid image format '{0}' used for buffer of type '{1}'"                                                      );
+DECL_REPORT( AttributeRequiresExtension,        "attribute[ '{0}'] requires extension '{1}'"                                                                    );
 
 #endif
 

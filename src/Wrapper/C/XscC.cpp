@@ -122,6 +122,10 @@ static void InitializeShaderInput(struct XscShaderInput* s)
     s->secondaryEntryPoint  = NULL;
     s->warnings             = 0;
 
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+    s->extensions           = 0;
+#endif
+
     InitializeIncludeHandler(&(s->includeHandler));
 }
 
@@ -351,6 +355,10 @@ XSC_EXPORT bool XscCompileShader(
     in.secondaryEntryPoint  = ReadStringC(inputDesc->secondaryEntryPoint);
     in.warnings             = inputDesc->warnings;
     in.includeHandler       = (&includeHandler);
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+    in.extensions           = inputDesc->extensions;
+#endif
 
     /* Copy output descriptor */
     Xsc::ShaderOutput out;

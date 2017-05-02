@@ -179,6 +179,21 @@ public ref class XscCompiler
             All                     = (~0u),    // All warnings.
         };
 
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        //! Language extensions.
+        [Flags]
+        enum class Extensions : System::UInt32
+        {
+            Disabled                = 0,        // No extensions.
+
+            LayoutAttribute         = (1 << 0), //!< Enables the 'layout' attribute.
+
+            All                     = (~0u)     //!< All extensions.
+        };
+
+#endif
+
         /**
         \brief Static sampler state descriptor structure (D3D11_SAMPLER_DESC).
         \remarks All members and enumerations have the same values like the one in the "D3D11_SAMPLER_DESC" structure respectively.
@@ -517,6 +532,10 @@ public ref class XscCompiler
                     SecondaryEntryPoint = nullptr;
                     WarningFlags        = Warnings::Disabled;
                     IncludeHandler      = nullptr;
+
+                    #ifdef XSC_ENABLE_LANGUAGE_EXT
+                    ExtensionFlags      = Extensions::Disabled;
+                    #endif
                 }
 
                 //! Specifies the filename of the input shader code. This is an optional attribute, and only a hint to the compiler.
@@ -554,6 +573,16 @@ public ref class XscCompiler
                 \remarks If this is null, the default include handler will be used, which will include files with the STL input file streams.
                 */
                 property SourceIncludeHandler^          IncludeHandler;
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+                /**
+                \brief Enabled language extensions. This can be a bitwise OR combination of the "Extensions" enumeration entries. By default 0.
+                \see Extensions
+                */
+                property Extensions                    ExtensionFlags;
+
+#endif
 
         };
 
@@ -994,6 +1023,10 @@ bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc
     in.secondaryEntryPoint  = ToStdString(inputDesc->SecondaryEntryPoint);
     in.warnings             = static_cast<unsigned int>(inputDesc->WarningFlags);
     in.includeHandler       = (&includeHandler);
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    in.extensions           = static_cast<unsigned int>(inputDesc->ExtensionFlags);
+    #endif
 
     /* Copy output descriptor */
     Xsc::ShaderOutput out;

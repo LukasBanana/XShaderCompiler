@@ -105,7 +105,13 @@ DECL_SHELL_COMMAND( IndentCommand                );
 DECL_SHELL_COMMAND( PrefixCommand                );
 DECL_SHELL_COMMAND( NameManglingCommand          );
 DECL_SHELL_COMMAND( SeparateShadersCommand       );
-DECL_SHELL_COMMAND( SeparateSamplersCommand       );
+DECL_SHELL_COMMAND( SeparateSamplersCommand      );
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+DECL_SHELL_COMMAND( LanguageExtensionCommand     );
+
+#endif
 
 #undef DECL_SHELL_COMMAND
 
