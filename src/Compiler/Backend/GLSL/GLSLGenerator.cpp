@@ -2319,9 +2319,10 @@ void GLSLGenerator::WriteCallExprIntrinsicMul(CallExpr* funcCall)
     /* Convert this function call into a multiplication */
     Write("(");
     {
-        WriteMulArgument(funcCall->arguments[0]);
-        Write(" * ");
+        /* Swap order of arguments */
         WriteMulArgument(funcCall->arguments[1]);
+        Write(" * ");
+        WriteMulArgument(funcCall->arguments[0]);
     }
     Write(")");
 }
