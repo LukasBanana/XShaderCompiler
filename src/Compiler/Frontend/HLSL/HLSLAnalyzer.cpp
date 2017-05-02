@@ -1951,10 +1951,10 @@ void HLSLAnalyzer::AnalyzeSecondaryEntryPointAttributesTessEvaluationShader(cons
 
 /* ----- Attributes ----- */
 
-bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedNumArgs, bool required)
+bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* attrib, std::size_t expectedNumArgs, bool required)
 {
     /* Validate number of arguments */
-    auto numArgs = ast->arguments.size();
+    auto numArgs = attrib->arguments.size();
 
     //TODO: add "AttributeTypeToString" function
 
@@ -1964,7 +1964,7 @@ bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedN
         {
             Error(
                 R_TooFewArgsForAttribute(""/*AttributeTypeToString(ast->attributeType)*/, expectedNumArgs, numArgs),
-                ast
+                attrib
             );
         }
     }
@@ -1974,7 +1974,7 @@ bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedN
         {
             Error(
                 R_TooManyArgsForAttribute(""/*AttributeTypeToString(ast->attributeType)*/, expectedNumArgs, numArgs),
-                ast
+                attrib
             );
         }
     }
@@ -1984,12 +1984,12 @@ bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedN
     return false;
 }
 
-void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast, bool required)
+void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* attrib, bool required)
 {
-    if (AnalyzeNumArgsAttribute(ast, 1, required))
+    if (AnalyzeNumArgsAttribute(attrib, 1, required))
     {
         AnalyzeAttributeValue(
-            ast->arguments[0].get(),
+            attrib->arguments[0].get(),
             program_->layoutTessEvaluation.domainType,
             IsAttributeValueDomain,
             R_ExpectedDomainTypeParamToBe,
@@ -1998,12 +1998,12 @@ void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* ast, bool required)
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributeOutputTopology(Attribute* ast, bool required)
+void HLSLAnalyzer::AnalyzeAttributeOutputTopology(Attribute* attrib, bool required)
 {
-    if (AnalyzeNumArgsAttribute(ast, 1, required))
+    if (AnalyzeNumArgsAttribute(attrib, 1, required))
     {
         AnalyzeAttributeValue(
-            ast->arguments[0].get(),
+            attrib->arguments[0].get(),
             program_->layoutTessEvaluation.outputTopology,
             IsAttributeValueOutputTopology,
             R_ExpectedOutputTopologyParamToBe,
@@ -2012,12 +2012,12 @@ void HLSLAnalyzer::AnalyzeAttributeOutputTopology(Attribute* ast, bool required)
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributePartitioning(Attribute* ast, bool required)
+void HLSLAnalyzer::AnalyzeAttributePartitioning(Attribute* attrib, bool required)
 {
-    if (AnalyzeNumArgsAttribute(ast, 1, required))
+    if (AnalyzeNumArgsAttribute(attrib, 1, required))
     {
         AnalyzeAttributeValue(
-            ast->arguments[0].get(),
+            attrib->arguments[0].get(),
             program_->layoutTessEvaluation.partitioning,
             IsAttributeValuePartitioning,
             R_ExpectedPartitioningModeParamToBe,
@@ -2026,12 +2026,12 @@ void HLSLAnalyzer::AnalyzeAttributePartitioning(Attribute* ast, bool required)
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributeOutputControlPoints(Attribute* ast)
+void HLSLAnalyzer::AnalyzeAttributeOutputControlPoints(Attribute* attrib)
 {
-    if (AnalyzeNumArgsAttribute(ast, 1))
+    if (AnalyzeNumArgsAttribute(attrib, 1))
     {
         /* Get integer literal value and convert to integer */
-        auto countParamVariant = EvaluateConstExpr(*ast->arguments[0]);
+        auto countParamVariant = EvaluateConstExpr(*attrib->arguments[0]);
 
         int countParam = -1;
         if (countParamVariant.Type() == Variant::Types::Int)
@@ -2040,15 +2040,15 @@ void HLSLAnalyzer::AnalyzeAttributeOutputControlPoints(Attribute* ast)
         if (countParam >= 0)
             program_->layoutTessControl.outputControlPoints = static_cast<unsigned int>(countParam);
         else
-            Error(R_ExpectedOutputCtrlPointParamToBe, ast->arguments[0].get());
+            Error(R_ExpectedOutputCtrlPointParamToBe, attrib->arguments[0].get());
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
+void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* attrib)
 {
-    if (AnalyzeNumArgsAttribute(ast, 1))
+    if (AnalyzeNumArgsAttribute(attrib, 1))
     {
-        auto literalExpr = ast->arguments[0]->As<LiteralExpr>();
+        auto literalExpr = attrib->arguments[0]->As<LiteralExpr>();
         if (literalExpr && literalExpr->dataType == DataType::String)
         {
             /* Get string literal value, and fetch function name */
@@ -2061,34 +2061,34 @@ void HLSLAnalyzer::AnalyzeAttributePatchConstantFunc(Attribute* ast)
                 AnalyzeSecondaryEntryPoint(patchConstFunc, true);
             }
             else
-                Error(R_EntryPointForPatchFuncNotFound(literalValue), ast->arguments[0].get());
+                Error(R_EntryPointForPatchFuncNotFound(literalValue), attrib->arguments[0].get());
         }
         else
-            Error(R_ExpectedPatchFuncParamToBe, ast->arguments[0].get());
+            Error(R_ExpectedPatchFuncParamToBe, attrib->arguments[0].get());
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributeMaxVertexCount(Attribute* ast)
+void HLSLAnalyzer::AnalyzeAttributeMaxVertexCount(Attribute* attrib)
 {
-    if (AnalyzeNumArgsAttribute(ast, 1))
+    if (AnalyzeNumArgsAttribute(attrib, 1))
     {
-        int exprValue = EvaluateConstExprInt(*ast->arguments[0]);
+        int exprValue = EvaluateConstExprInt(*attrib->arguments[0]);
         if (exprValue > 0)
             program_->layoutGeometry.maxVertices = static_cast<unsigned int>(exprValue);
         else
-            Error(R_MaxVertexCountMustBeGreaterZero, ast);
+            Error(R_MaxVertexCountMustBeGreaterZero, attrib);
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributeNumThreads(Attribute* ast)
+void HLSLAnalyzer::AnalyzeAttributeNumThreads(Attribute* attrib)
 {
-    if (AnalyzeNumArgsAttribute(ast, 3))
+    if (AnalyzeNumArgsAttribute(attrib, 3))
     {
         /* Evaluate and store all three thread counts in global layout */
         for (int i = 0; i < 3; ++i)
         {
             AnalyzeAttributeNumThreadsArgument(
-                ast->arguments[i].get(),
+                attrib->arguments[i].get(),
                 program_->layoutCompute.numThreads[i]
             );
         }

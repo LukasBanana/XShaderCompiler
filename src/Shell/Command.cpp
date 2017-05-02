@@ -39,6 +39,14 @@ T MapStringToType(const std::string& search, const std::map<std::string, T>& map
     return it->second;
 }
 
+static void SetFlagsByBoolean(CommandLine& cmdLine, unsigned int& flagsOut, unsigned int flags)
+{
+    if (cmdLine.AcceptBoolean(true))
+        flagsOut |= flags;
+    else
+        flagsOut &= (~flags);
+}
+
 
 /*
  * Command class
@@ -333,10 +341,7 @@ void WarnCommand::Run(CommandLine& cmdLine, ShellState& state)
         "invalid warning type"
     );
 
-    if (cmdLine.AcceptBoolean(true))
-        state.inputDesc.warnings |= flags;
-    else
-        state.inputDesc.warnings &= (~flags);
+    SetFlagsByBoolean(cmdLine, state.inputDesc.warnings, flags);
 }
 
 
@@ -1349,10 +1354,7 @@ void LanguageExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
         "invalid extension type"
     );
 
-    if (cmdLine.AcceptBoolean(true))
-        state.inputDesc.extensions |= flags;
-    else
-        state.inputDesc.extensions &= (~flags);
+    SetFlagsByBoolean(cmdLine, state.inputDesc.extensions, flags);
 }
 
 #endif

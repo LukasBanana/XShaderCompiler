@@ -156,17 +156,17 @@ class HLSLAnalyzer : public Analyzer
 
         /* ----- Attributes ----- */
 
-        bool AnalyzeNumArgsAttribute(Attribute* ast, std::size_t expectedNumArgs, bool required = true);
+        bool AnalyzeNumArgsAttribute(Attribute* attrib, std::size_t expectedNumArgs, bool required = true);
         
-        void AnalyzeAttributeDomain(Attribute* ast, bool required = true);
-        void AnalyzeAttributeOutputTopology(Attribute* ast, bool required = true);
-        void AnalyzeAttributePartitioning(Attribute* ast, bool required = true);
-        void AnalyzeAttributeOutputControlPoints(Attribute* ast);
-        void AnalyzeAttributePatchConstantFunc(Attribute* ast);
+        void AnalyzeAttributeDomain(Attribute* attrib, bool required = true);
+        void AnalyzeAttributeOutputTopology(Attribute* attrib, bool required = true);
+        void AnalyzeAttributePartitioning(Attribute* attrib, bool required = true);
+        void AnalyzeAttributeOutputControlPoints(Attribute* attrib);
+        void AnalyzeAttributePatchConstantFunc(Attribute* attrib);
 
-        void AnalyzeAttributeMaxVertexCount(Attribute* ast);
+        void AnalyzeAttributeMaxVertexCount(Attribute* attrib);
 
-        void AnalyzeAttributeNumThreads(Attribute* ast);
+        void AnalyzeAttributeNumThreads(Attribute* attrib);
         void AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& value);
 
         void AnalyzeAttributeValue(
