@@ -1337,8 +1337,8 @@ HelpDescriptor LanguageExtensionCommand::Help() const
         "-X<TYPE> [" + CommandLine::GetBooleanOption() + "]",
         "Enables/disables the specified language extension; default=" + CommandLine::GetBooleanFalse() + "; value types:",
         (
-            "all         => enables all extensions\n"                                           \
-            "attr-layout => extension for 'layout' attribute to specify image layout format"
+            "all         => all kinds of extensions\n"                                  \
+            "attr-layout => enable 'layout' attribute to specify image layout format"
         )
     };
 }

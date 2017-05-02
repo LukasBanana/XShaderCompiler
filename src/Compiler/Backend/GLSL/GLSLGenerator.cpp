@@ -47,7 +47,7 @@ struct StructDeclArgs
  */
 
 GLSLGenerator::GLSLGenerator(Log* log) :
-    Generator{ log }
+    Generator { log }
 {
 }
 
