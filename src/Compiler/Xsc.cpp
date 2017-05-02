@@ -84,6 +84,14 @@ static bool CompileShaderPrimary(
         }
     }
 
+    #ifndef XSC_ENABLE_LANGUAGE_EXT
+    
+    /* Report warning, if language extensions acquired but compiler was not build with them */
+    if (inputDesc.extensions != 0 && log != nullptr)
+        log->SumitReport(Report(Report::Types::Warning, R_LangExtensionsNotSupported));
+    
+    #endif
+
     /* ----- Pre-processing ----- */
 
     timePoints[0] = Time::now();

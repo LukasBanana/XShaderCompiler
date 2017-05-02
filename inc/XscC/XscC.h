@@ -40,17 +40,16 @@ enum XscWarnings
     XscWarnAll                      = (~0u),    //!< All warnings.
 };
 
-#ifdef XSC_ENABLE_LANGUAGE_EXT
-
-//! Language extensions.
+/**
+\brief Language extension flags.
+\remakrs This is only supported, if the compiler was build with the 'XSC_ENABLE_LANGUAGE_EXT' macro.
+*/
 enum XscExtensions
 {
-    XscExtLayoutAttribute           = (1 << 0), //!< Enables the 'layout' attribute.
+    XscExtLayoutAttribute   = (1 << 0), //!< Enables the 'layout' attribute.
 
-    XscExtAll                       = (~0u)     //!< All extensions.
+    XscExtAll               = (~0u)     //!< All extensions.
 };
-
-#endif
 
 //! Formatting descriptor structure for the output shader.
 struct XscFormatting
@@ -211,18 +210,15 @@ struct XscShaderInput
     */
     unsigned int                    warnings;
 
-    //! Include handler member which contains a function pointer to handle '#include'-directives.
-    struct XscIncludeHandler        includeHandler;
-
-    #ifdef XSC_ENABLE_LANGUAGE_EXT
-
     /**
-    \brief Enabled language extensions. This can be a bitwise OR combination of the "XscExtensions" enumeration entries. By default 0.
-    \see XscExtensions
+    \brief Language extension flags. This can be a bitwise OR combination of the "Extensions" enumeration entries. By default 0.
+    \remarks This is ignored, if the compiler was not build with the 'XSC_ENABLE_LANGUAGE_EXT' macro.
+    \see Extensions
     */
     unsigned int                    extensions;
 
-    #endif
+    //! Include handler member which contains a function pointer to handle '#include'-directives.
+    struct XscIncludeHandler        includeHandler;
 };
 
 //! Vertex shader semantic (or rather attribute) layout structure.

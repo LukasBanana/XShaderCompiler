@@ -96,20 +96,19 @@ struct Warnings
     };
 };
 
-#ifdef XSC_ENABLE_LANGUAGE_EXT
-
-//! Language extensions.
+/**
+\brief Language extension flags.
+\remakrs This is only supported, if the compiler was build with the 'XSC_ENABLE_LANGUAGE_EXT' macro.
+*/
 struct Extensions
 {
     enum : unsigned int
     {
-        LayoutAttribute         = (1 << 0), //!< Enables the 'layout' attribute extension (e.g. "[layout(rgba8)]").
+        LayoutAttribute = (1 << 0), //!< Enables the 'layout' attribute extension (e.g. "[layout(rgba8)]").
 
-        All                     = (~0u)     //!< All extensions.
+        All             = (~0u)     //!< All extensions.
     };
 };
-
-#endif
 
 //! Formatting descriptor structure for the output shader.
 struct Formatting
@@ -271,20 +270,17 @@ struct ShaderInput
     unsigned int                    warnings            = 0;
 
     /**
-    \brief Optional pointer to the implementation of the "IncludeHandler" interface. By default null.
-    \remarks If this is null, the default include handler will be used, which will include files with the STL input file streams.
-    */
-    IncludeHandler*                 includeHandler      = nullptr;
-
-    #ifdef XSC_ENABLE_LANGUAGE_EXT
-
-    /**
-    \brief Enabled language extensions. This can be a bitwise OR combination of the "Extensions" enumeration entries. By default 0.
+    \brief Language extension flags. This can be a bitwise OR combination of the "Extensions" enumeration entries. By default 0.
+    \remarks This is ignored, if the compiler was not build with the 'XSC_ENABLE_LANGUAGE_EXT' macro.
     \see Extensions
     */
     unsigned int                    extensions          = 0;
 
-    #endif
+    /**
+    \brief Optional pointer to the implementation of the "IncludeHandler" interface. By default null.
+    \remarks If this is null, the default include handler will be used, which will include files with the STL input file streams.
+    */
+    IncludeHandler*                 includeHandler      = nullptr;
 };
 
 //! Vertex shader semantic (or rather attribute) layout structure.

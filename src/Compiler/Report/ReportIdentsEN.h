@@ -470,6 +470,7 @@ DECL_REPORT( OutputStreamCantBeNull,            "output stream must not be null"
 DECL_REPORT( NameManglingPrefixResCantBeEmpty,  "name mangling prefix for reserved words must not be empty"                                                     );
 DECL_REPORT( NameManglingPrefixTmpCantBeEmpty,  "name mangling prefix for temporary variables must not be empty"                                                );
 DECL_REPORT( OverlappingNameManglingPrefixes,   "overlapping name mangling prefixes"                                                                            );
+DECL_REPORT( LangExtensionsNotSupported,        "compiler was not build with language extensions"                                                               );
 DECL_REPORT( PreProcessingSourceFailed,         "preprocessing input code failed"                                                                               );
 DECL_REPORT( ParsingSourceFailed,               "parsing input code failed"                                                                                     );
 DECL_REPORT( AnalyzingSourceFailed,             "analyzing input code failed"                                                                                   );
@@ -480,7 +481,7 @@ DECL_REPORT( OnlyPreProcessingForNonHLSL,       "only pre-processing supported f
 
 /* ----- Extensions ----- */
 DECL_REPORT( InvalidImageFormatForType,         "invalid image format '{0}' used for buffer of type '{1}'"                                                      );
-DECL_REPORT( AttributeRequiresExtension,        "attribute[ '{0}'] requires extension '{1}'"                                                                    );
+DECL_REPORT( AttributeRequiresExtension,        "attribute '{0}' requires language extension '{1}'"                                                             );
 
 #endif
 
