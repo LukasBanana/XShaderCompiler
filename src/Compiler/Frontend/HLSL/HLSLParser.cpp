@@ -330,7 +330,9 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     auto ast = Make<VarDeclStmnt>();
 
     /* Parse parameter as single variable declaration */
-    ast->typeSpecifier = ParseTypeSpecifier();
+    ast->attribs        = ParseAttributeList();
+    ast->typeSpecifier  = ParseTypeSpecifier();
+
     ast->varDecls.push_back(ParseVarDecl(ast.get()));
 
     /* Mark with 'parameter' flag */

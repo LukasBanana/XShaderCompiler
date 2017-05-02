@@ -35,6 +35,7 @@ class HLSLAnalyzer : public Analyzer
         
         using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
         using OnValidAttributeValueProc = std::function<bool(const AttributeValue)>;
+        using OnAssignTypeDenoterProc = std::function<void(const TypeDenoterPtr&)>;
 
         /* === Structures === */
 
@@ -61,6 +62,7 @@ class HLSLAnalyzer : public Analyzer
 
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
+        DECL_VISIT_PROC( Attribute         );
         DECL_VISIT_PROC( ArrayDimension    );
         DECL_VISIT_PROC( TypeSpecifier     );
         
@@ -202,7 +204,7 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeAttributeSpace(Attribute* attrib, VarDeclStmnt& varDeclStmnt);
         bool AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t argIndex, std::string& ident);
 
-        void AnalyzeVectorSpaceVarAssign(VarDecl* varDecl, Expr* assignExpr);
+        void AnalyzeVectorSpaceAssign(TypedAST* lhs, const TypeDenoter& rhsTypeDen, const OnAssignTypeDenoterProc& assignTypeDenProc = nullptr);
 
         #endif
 

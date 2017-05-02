@@ -132,6 +132,36 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     Visit(ast->stmnts);
 }
 
+IMPLEMENT_VISIT_PROC(Attribute)
+{
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+    switch (ast->attributeType)
+    {
+        case AttributeType::Space:
+        {
+            for (const auto& arg : ast->arguments)
+            {
+                if (arg->Type() != AST::Types::ObjectExpr)
+                    Error(R_ExpectedIdentInSpaceAttr, arg.get());
+            }
+        }
+        break;
+
+        default:
+        {
+            Visit(ast->arguments);
+        }
+        break;
+    }
+
+    #else
+
+    Visit(ast->arguments);
+
+    #endif
+}
+
 IMPLEMENT_VISIT_PROC(ArrayDimension)
 {
     if (ast->expr && ast->expr->Type() != AST::Types::NullExpr)
@@ -375,7 +405,19 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     {
         /* Analyze vector space initializers */
         for (const auto& varDecl : ast->varDecls)
-            AnalyzeVectorSpaceVarAssign(varDecl.get(), varDecl->initializer.get());
+        {
+            if (varDecl->initializer)
+            {
+                AnalyzeVectorSpaceAssign(
+                    varDecl.get(),
+                    varDecl->initializer->GetTypeDenoter()->GetAliased(),
+                    [&varDecl](const TypeDenoterPtr& typeDen)
+                    {
+                        varDecl->SetCustomTypeDenoter(typeDen);
+                    }
+                );
+            }
+        }
     }
 
     #endif
@@ -822,6 +864,20 @@ void HLSLAnalyzer::AnalyzeCallExprPrimary(CallExpr* callExpr, const TypeDenoter*
                 AnalyzeLValueExpr(argExpr.get());
             }
         );
+
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        if (extensions_(Extensions::SpaceAttribute))
+        {
+            callExpr->ForEachArgumentWithParameterType(
+                [this](ExprPtr& argExpr, const TypeDenoter& paramTypeDen)
+                {
+                    AnalyzeVectorSpaceAssign(argExpr.get(), paramTypeDen);
+                }
+            );
+        }
+
+        #endif
     }
     PopCallExpr();
 }
@@ -2323,38 +2379,37 @@ bool HLSLAnalyzer::AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t arg
     return false;
 }
 
-void HLSLAnalyzer::AnalyzeVectorSpaceVarAssign(VarDecl* varDecl, Expr* assignExpr)
+void HLSLAnalyzer::AnalyzeVectorSpaceAssign(TypedAST* lhs, const TypeDenoter& rhsTypeDen, const OnAssignTypeDenoterProc& assignTypeDenProc)
 {
-    if (varDecl && assignExpr)
+    if (lhs)
     {
         /* Validate vector-space assignment */
-        const auto& varTypeDen = varDecl->GetTypeDenoter()->GetAliased();
-        const auto& exprTypeDen = assignExpr->GetTypeDenoter()->GetAliased();
+        const auto& lhsTypeDen = lhs->GetTypeDenoter()->GetAliased();
 
-        if (auto varBaseTypeDen = varTypeDen.As<BaseTypeDenoter>())
+        if (auto lhsBaseTypeDen = lhsTypeDen.As<BaseTypeDenoter>())
         {
-            if (auto exprBaseTypeDen = exprTypeDen.As<BaseTypeDenoter>())
+            if (auto rhsBaseTypeDen = rhsTypeDen.As<BaseTypeDenoter>())
             {
-                const auto& varVectorSpace = varBaseTypeDen->vectorSpace;
-                const auto& exprVectorSpace = exprBaseTypeDen->vectorSpace;
+                const auto& lhsVectorSpace = lhsBaseTypeDen->vectorSpace;
+                const auto& rhsVectorSpace = rhsBaseTypeDen->vectorSpace;
 
-                if (exprVectorSpace.IsSpecified())
+                if (rhsVectorSpace.IsSpecified())
                 {
-                    if (!exprVectorSpace.IsAssignableTo(varVectorSpace))
+                    if (!rhsVectorSpace.IsAssignableTo(lhsVectorSpace))
                     {
                         /* Report error of illegal vector-space assignment */
                         Error(
-                            R_IllegalVectorSpaceAssignment(exprVectorSpace.ToString(), varVectorSpace.ToString()),
-                            varDecl
+                            R_IllegalVectorSpaceAssignment(rhsVectorSpace.ToString(), lhsVectorSpace.ToString()),
+                            lhs
                         );
                     }
-                    else if (!varVectorSpace.IsSpecified())
+                    else if (!lhsVectorSpace.IsSpecified() && assignTypeDenProc)
                     {
                         /* Initialize variable type with individual type denoter and respective vector space */
-                        auto customTypeDen = varTypeDen.Copy();
+                        auto customTypeDen = lhsTypeDen.Copy();
                         if (auto customBaseTypeDen = customTypeDen->As<BaseTypeDenoter>())
-                            customBaseTypeDen->vectorSpace = exprVectorSpace;
-                        varDecl->SetCustomTypeDenoter(customTypeDen);
+                            customBaseTypeDen->vectorSpace = rhsVectorSpace;
+                        assignTypeDenProc(customTypeDen);
                     }
                 }
             }
