@@ -66,9 +66,9 @@ void GLSLGenerator::GenerateCodePrimary(
     compactWrappers_    = outputDesc.formatting.compactWrappers;
     alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
 
-#ifdef XSC_ENABLE_LANGUAGE_EXT
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
     extensions_         = inputDesc.extensions;
-#endif
+    #endif
 
     for (const auto& s : outputDesc.vertexSemantics)
     {
@@ -2840,17 +2840,21 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
     if (!bufferTypeKeyword)
         return;
 
-    bool isWriteOnly = !bufferDecl->flags(BufferDecl::isUsedForImageRead);
+    bool isWriteOnly = (!bufferDecl->flags(BufferDecl::isUsedForImageRead));
 
     /* Determine image layout format */
-    ImageLayoutFormat imageLayoutFormat = ImageLayoutFormat::Undefined;
-    bool isRWBuffer = IsRWTextureBufferType(bufferDecl->GetBufferType());
+    auto imageLayoutFormat  = ImageLayoutFormat::Undefined;
+    auto isRWBuffer         = IsRWTextureBufferType(bufferDecl->GetBufferType());
+
     if (!isWriteOnly && isRWBuffer)
     {
         #ifdef XSC_ENABLE_LANGUAGE_EXT
 
-        if((extensions_ & Extensions::LayoutAttribute) != 0)
+        if (extensions_(Extensions::LayoutAttribute))
+        {
+            /* Take image layout format from type denoter */
             imageLayoutFormat = bufferDecl->declStmntRef->typeDenoter->layoutFormat;
+        }
 
         #endif
 

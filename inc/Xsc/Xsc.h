@@ -103,7 +103,7 @@ struct Extensions
 {
     enum : unsigned int
     {
-        LayoutAttribute         = (1 << 0), //!< Enables the 'layout' attribute.
+        LayoutAttribute         = (1 << 0), //!< Enables the 'layout' attribute extension (e.g. "[layout(rgba8)]").
 
         All                     = (~0u)     //!< All extensions.
     };

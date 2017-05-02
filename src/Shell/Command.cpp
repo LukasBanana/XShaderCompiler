@@ -1343,11 +1343,11 @@ void LanguageExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
     const auto flags = MapStringToType<unsigned int>(
         cmdLine.Accept(),
         {
-            { "all",           Extensions::All },
-            { "attr-layout",   Extensions::LayoutAttribute },
+            { "all",         Extensions::All             },
+            { "attr-layout", Extensions::LayoutAttribute },
         },
         "invalid extension type"
-        );
+    );
 
     if (cmdLine.AcceptBoolean(true))
         state.inputDesc.extensions |= flags;
@@ -1355,8 +1355,9 @@ void LanguageExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
         state.inputDesc.extensions &= (~flags);
 }
 
-
 #endif
+
+
 } // /namespace Util
 
 } // /namespace Xsc

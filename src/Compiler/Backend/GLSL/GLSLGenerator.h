@@ -16,6 +16,7 @@
 #include "Token.h"
 #include "ASTEnums.h"
 #include "CiString.h"
+#include "Flags.h"
 #include <map>
 #include <set>
 #include <vector>
@@ -310,9 +311,11 @@ class GLSLGenerator : public Generator
 
         bool                                    isInsideInterfaceBlock_ = false;
 
-#ifdef XSC_ENABLE_LANGUAGE_EXT
-        int                                    extensions_              = 0;
-#endif
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        Flags                                   extensions_;                        // Flags of all enabled language extensions.
+
+        #endif
 };
 
 

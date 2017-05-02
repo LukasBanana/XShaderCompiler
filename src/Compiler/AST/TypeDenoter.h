@@ -245,9 +245,7 @@ struct BufferTypeDenoter : public TypeDenoter
     BufferDecl*         bufferDeclRef       = nullptr;
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
-
     ImageLayoutFormat   layoutFormat        = ImageLayoutFormat::Undefined;
-
     #endif
 };
 

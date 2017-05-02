@@ -167,9 +167,9 @@ void DebuggerView::CreateLayoutPropertyGridShaderInput(wxPropertyGrid& pg)
     pg.Append(new wxStringProperty("Secondary Entry Point", "secondaryEntry", ""));
     pg.Append(new wxBoolProperty("Enable Warnings", "warnings"));
 
-#ifdef XSC_ENABLE_LANGUAGE_EXT
-    pg.Append(new wxBoolProperty("Allow Language Extensions", "langExtensions"));
-#endif
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    pg.Append(new wxBoolProperty("Language Extensions", "langExtensions"));
+    #endif
 }
 
 void DebuggerView::CreateLayoutPropertyGridShaderOutput(wxPropertyGrid& pg)
@@ -418,10 +418,10 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
     else if (name == "outputVersion")
         shaderOutput_.shaderVersion = GetOutputVersion(ValueInt());
 
-#ifdef XSC_ENABLE_LANGUAGE_EXT
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
     else if (name == "langExtensions")
         shaderInput_.extensions = (ValueBool() ? Extensions::All : 0);
-#endif
+    #endif
 
     /* --- Common options --- */
     else if (name == "indent")

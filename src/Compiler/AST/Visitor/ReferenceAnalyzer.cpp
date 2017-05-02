@@ -253,13 +253,14 @@ IMPLEMENT_VISIT_PROC(CallExpr)
     if (ast->intrinsic != Intrinsic::Undefined)
     {
         /* Mark RW buffers used in read operations */
-        if ((ast->intrinsic >= Intrinsic::Image_AtomicAdd && ast->intrinsic <= Intrinsic::Image_AtomicExchange) || ast->intrinsic == Intrinsic::Image_Load)
+        if ( ( ast->intrinsic >= Intrinsic::Image_AtomicAdd && ast->intrinsic <= Intrinsic::Image_AtomicExchange ) || ast->intrinsic == Intrinsic::Image_Load )
         {
-            if(ast->arguments.size() > 0)
+            if (!ast->arguments.empty())
             {
-                if (auto bufferTypeDen = ast->arguments[0]->GetTypeDenoter()->GetSub()->As<BufferTypeDenoter>())
+                const auto& typeDen = ast->arguments[0]->GetTypeDenoter()->GetAliased();
+                if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
                 {
-                    if(IsRWTextureBufferType(bufferTypeDen->bufferType))
+                    if (IsRWTextureBufferType(bufferTypeDen->bufferType))
                     {
                         if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
                             bufferDecl->flags << BufferDecl::isUsedForImageRead;

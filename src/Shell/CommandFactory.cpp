@@ -57,6 +57,10 @@ CommandFactory::CommandFactory()
         VersionOutCommand,
         IncludePathCommand,
 
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+        LanguageExtensionCommand,
+        #endif
+
         OutputCommand,
         WarnCommand,
         ShowASTCommand,
@@ -89,10 +93,6 @@ CommandFactory::CommandFactory()
         NameManglingCommand,
         SeparateShadersCommand,
         SeparateSamplersCommand
-
-#ifdef XSC_ENABLE_LANGUAGE_EXT
-       ,LanguageExtensionCommand
-#endif
     >();
 }
 

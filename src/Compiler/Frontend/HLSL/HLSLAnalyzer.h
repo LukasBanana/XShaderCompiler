@@ -12,6 +12,7 @@
 #include "Analyzer.h"
 #include "ShaderVersion.h"
 #include "Variant.h"
+#include "Flags.h"
 #include <map>
 #include <set>
 
@@ -219,7 +220,9 @@ class HLSLAnalyzer : public Analyzer
         std::set<VarDecl*>  varDeclSM3Semantics_;
 
         #ifdef XSC_ENABLE_LANGUAGE_EXT
-        int                 extensions_                 = 0;
+        
+        Flags               extensions_;
+
         #endif
 
 };

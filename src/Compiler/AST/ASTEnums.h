@@ -495,7 +495,7 @@ SamplerType SamplerTypeToShadowSamplerType(const SamplerType t);
 
 /* ----- ImageLayoutFormat Enum ----- */
 
-// Image layout format enumeration
+// Image layout format enumeration.
 enum class ImageLayoutFormat
 {
     Undefined,

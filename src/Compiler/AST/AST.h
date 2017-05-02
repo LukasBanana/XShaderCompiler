@@ -567,7 +567,7 @@ struct BufferDecl : public Decl
     FLAG_ENUM
     {
         FLAG( isUsedForCompare,     2 ), // This buffer is used in a texture compare operation.
-        FLAG( isUsedForImageRead,   3 )  // This is a buffer used in an image load or image atomic operation.
+        FLAG( isUsedForImageRead,   3 ), // This is a buffer used in an image load or image atomic operation.
     };
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;

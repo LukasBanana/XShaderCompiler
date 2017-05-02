@@ -303,15 +303,25 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
 
-    /* Analyze "layout" attribute (if this language extension is enabled) */
     for (const auto& attrib : ast->attribs)
     {
-        if (attrib->attributeType == AttributeType::Layout)
+        switch (attrib->attributeType)
         {
-            if ((extensions_ & Extensions::LayoutAttribute) != 0)
-                AnalyzeAttributeLayout(attrib.get(), *ast);
-            else
-                Warning(R_AttributeRequiresExtension("layout", "attr-layout"));
+            case AttributeType::Layout:
+            {
+                /* Analyze "layout" attribute (if this language extension is enabled) */
+                if (extensions_(Extensions::LayoutAttribute))
+                    AnalyzeAttributeLayout(attrib.get(), *ast);
+                else
+                    Warning(R_AttributeRequiresExtension("layout", "attr-layout"), attrib.get());
+            }
+            break;
+
+            default:
+            {
+                /* Ignore all other attributes */
+            }
+            break;
         }
     }
 
@@ -2127,7 +2137,7 @@ void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bu
             auto expr = attrib->arguments[0].get();
             if (auto objectExpr = expr->As<ObjectExpr>())
             {
-                auto layoutFormat = objectExpr->ident;
+                const auto& layoutFormat = objectExpr->ident;
                 auto imageLayoutFormat = ExtHLSLKeywordToImageLayoutFormat(layoutFormat);
                 if (imageLayoutFormat != ImageLayoutFormat::Undefined)
                 {
@@ -2139,10 +2149,10 @@ void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bu
                     }
                     
                     /* Ensure format is used on a valid buffer type */
-                    if(baseType != DataType::Undefined)
+                    if (baseType != DataType::Undefined)
                     {
                         auto formatBaseType = GetImageLayoutFormatBaseType(imageLayoutFormat);
-                        if(baseType != formatBaseType)
+                        if (baseType != formatBaseType)
                             Error(R_InvalidImageFormatForType(layoutFormat, DataTypeToString(baseType)));
                         else
                             typeDen->layoutFormat = imageLayoutFormat;
