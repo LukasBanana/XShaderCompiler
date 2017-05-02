@@ -1338,7 +1338,8 @@ HelpDescriptor LanguageExtensionCommand::Help() const
         "Enables/disables the specified language extension; default=" + CommandLine::GetBooleanFalse() + "; value types:",
         (
             "all         => all kinds of extensions\n"                                  \
-            "attr-layout => enable 'layout' attribute to specify image layout format"
+            "attr-layout => enable 'layout' attribute to specify image layout format\n" \
+            "attr-space  => enable 'space' attribute for a stronger type system"
         )
     };
 }
@@ -1350,6 +1351,7 @@ void LanguageExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
         {
             { "all",         Extensions::All             },
             { "attr-layout", Extensions::LayoutAttribute },
+            { "attr-space",  Extensions::SpaceAttribute  },
         },
         "invalid extension type"
     );

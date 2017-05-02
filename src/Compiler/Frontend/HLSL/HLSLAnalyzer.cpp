@@ -359,7 +359,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
 
-    if (spaceAttrExt_)
+    if (extensions_(Extensions::SpaceAttribute))
     {
         /* Analyze "space" attribute (if this language extension is enabled) */
         for (const auto& attrib : ast->attribs)
