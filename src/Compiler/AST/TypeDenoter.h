@@ -44,6 +44,7 @@ DECL_PTR( ArrayTypeDenoter   );
 
 #ifdef XSC_ENABLE_LANGUAGE_EXT
 
+// Vector space structure for BaseTypeDenoter, used as language extension for a stronger type system.
 struct VectorSpace
 {
     using StringType = CiString;
