@@ -276,11 +276,15 @@ struct BufferTypeDenoter : public TypeDenoter
     // Always returns a valid generic type denoter. By default BaseTypeDenoter(Float4).
     TypeDenoterPtr GetGenericTypeDenoter() const;
 
-    BufferType      bufferType          = BufferType::Undefined;
-    TypeDenoterPtr  genericTypeDenoter;                             // May be null
-    int             genericSize         = 1;                        // Either number of samples in [1, 128) (for multi-sampled textures), or patch size. By default 1.
+    BufferType          bufferType          = BufferType::Undefined;
+    TypeDenoterPtr      genericTypeDenoter;                             // May be null
+    int                 genericSize         = 1;                        // Either number of samples in [1, 128) (for multi-sampled textures), or patch size. By default 1.
 
-    BufferDecl*     bufferDeclRef       = nullptr;
+    BufferDecl*         bufferDeclRef       = nullptr;
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    ImageLayoutFormat   layoutFormat        = ImageLayoutFormat::Undefined;
+    #endif
 };
 
 // Sampler type denoter.
@@ -398,6 +402,7 @@ struct ArrayTypeDenoter : public TypeDenoter
     bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 
+    // Returns the number if dimensions for this array plus its sub type (if it's also an array).
     unsigned int NumDimensions() const override;
 
     AST* SymbolRef() const override;

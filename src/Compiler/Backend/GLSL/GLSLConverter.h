@@ -35,6 +35,17 @@ class GLSLConverter : public Converter
             const ShaderOutput& outputDesc
         ) override;
 
+        /* ----- Functions ----- */
+
+        // Returns true if the output shader version is VKSL (GLSL for Vulkan).
+        bool IsVKSL() const;
+
+        // Returns true if the 'GL_ARB_shading_language_420pack' is explicitly available.
+        bool HasShadingLanguage420Pack() const;
+
+        // Returns true if separate objects for samplers & textures should be used.
+        bool UseSeparateSamplers() const;
+
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( Program           );
@@ -103,8 +114,9 @@ class GLSLConverter : public Converter
         void ConvertIntrinsicCallTexLod(CallExpr* ast);
         void ConvertIntrinsicCallTextureSample(CallExpr* ast);
         void ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast);
+        void ConvertIntrinsicCallTextureLoad(CallExpr* ast);
         void ConvertIntrinsicCallImageAtomic(CallExpr* ast);
-        void ConvertIntrinsicCallImageStore(CallExpr* ast);
+        void ConvertIntrinsicCallGather(CallExpr* ast);
 
         void ConvertFunctionCall(CallExpr* ast);
 
@@ -146,11 +158,12 @@ class GLSLConverter : public Converter
         ExprConverter               exprConverter_;
 
         ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
+        OutputShaderVersion         versionOut_         = OutputShaderVersion::GLSL;
 
         Options                     options_;
-        bool                        isVKSL_             = false;
         bool                        autoBinding_        = false;
         int                         autoBindingSlot_    = 0;
+        bool                        separateSamplers_   = true;
 
         /*
         List of all variables with reserved identifiers that come from a structure that must be resolved.

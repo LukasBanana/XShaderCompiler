@@ -26,8 +26,8 @@ bool IsGLSLKeyword(const std::string& ident);
 // Returns the GLSL keyword for the specified data type or null on failure.
 const std::string* DataTypeToGLSLKeyword(const DataType t);
 
-// Returns the GLSL image format keyword for the specified data type or null on failure.
-const std::string* DataTypeToImageFormatGLSLKeyword(const DataType t);
+// Returns the GLSL image format enum value for the specified data type or ImageLayoutFormat::Undefined.
+ImageLayoutFormat DataTypeToImageLayoutFormat(const DataType t);
 
 // Returns the GLSL keyword for the specified storage class or null on failure.
 const std::string* StorageClassToGLSLKeyword(const StorageClass t);
@@ -36,7 +36,7 @@ const std::string* StorageClassToGLSLKeyword(const StorageClass t);
 const std::string* InterpModifierToGLSLKeyword(const InterpModifier t);
 
 // Returns the GLSL keyword for the specified buffer type or null on failure.
-const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLSL = false);
+const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLSL = false, bool separateSamplers = true);
 
 // Returns the GLSL keyword for the specified sampler type or null on failure.
 const std::string* SamplerTypeToGLSLKeyword(const SamplerType t);
@@ -46,6 +46,9 @@ const std::string* AttributeValueToGLSLKeyword(const AttributeValue t);
 
 // Returns the GLSL keyword for the specified geometry primtive type or null on failure.
 const std::string* PrimitiveTypeToGLSLKeyword(const PrimitiveType t);
+
+// Returns the GLSL keyword for the specified image layout format or null on failure.
+const std::string* ImageLayoutFormatToGLSLKeyword(const ImageLayoutFormat t);
 
 // Returns the GLSL keyword for the specified semantic.
 // Special cases if 'useVulkanGLSL' is true.

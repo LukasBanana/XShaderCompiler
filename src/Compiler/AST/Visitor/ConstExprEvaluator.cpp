@@ -83,13 +83,13 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
         case DataType::Int:
         {
-            Push(std::stoll(ast->value));
+            Push(FromStringOrDefault<long long>(ast->value));
         }
         break;
 
         case DataType::UInt:
         {
-            Push(static_cast<Variant::IntType>(std::stoul(ast->value)));
+            Push(static_cast<Variant::IntType>(FromStringOrDefault<unsigned long>(ast->value)));
         }
         break;
 
@@ -97,7 +97,7 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
         case DataType::Float:
         case DataType::Double:
         {
-            Push(std::stod(ast->value));
+            Push(FromStringOrDefault<double>(ast->value));
         }
         break;
 

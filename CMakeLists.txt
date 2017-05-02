@@ -48,9 +48,8 @@ if(XSC_ENABLE_POST_VALIDATION)
 endif()
 
 if(XSC_ENABLE_LANGUAGE_EXT)
-	add_definitions(-DXSC_ENABLE_LANGUAGE_EXT)
+    add_definitions(-DXSC_ENABLE_LANGUAGE_EXT)
 endif()
-
 
 # === Global files ===
 

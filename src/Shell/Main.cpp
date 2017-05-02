@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 
     bool actionPerformed = false;
 
-    /* Get filename of init file */
+    /* Get filename of init file (from program path) */
     std::string filename(argv[0]);
     std::size_t pos = 0;
 

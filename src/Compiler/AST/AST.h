@@ -481,6 +481,9 @@ struct TypeSpecifier : public TypedAST
     // Returns true if any of the specified storage classes is contained.
     bool HasAnyStorageClassesOf(const std::vector<StorageClass>& modifiers) const;
 
+    // Swaps the 'row_major' with 'column_major' storage layout, and inserts the specified default layout if none of these are set.
+    void SwapMatrixStorageLayout(const TypeModifier defaultStorgeLayout);
+
     bool                        isInput         = false;                    // Input modifier 'in'
     bool                        isOutput        = false;                    // Input modifier 'out'
     bool                        isUniform       = false;                    // Input modifier 'uniform'
@@ -560,6 +563,12 @@ struct VarDecl : public Decl
 struct BufferDecl : public Decl
 {
     AST_INTERFACE(BufferDecl);
+
+    FLAG_ENUM
+    {
+        FLAG( isUsedForCompare,     2 ), // This buffer is used in a texture compare operation.
+        FLAG( isUsedForImageRead,   3 ), // This is a buffer used in an image load or image atomic operation.
+    };
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 

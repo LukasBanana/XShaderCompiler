@@ -39,6 +39,14 @@ T MapStringToType(const std::string& search, const std::map<std::string, T>& map
     return it->second;
 }
 
+static void SetFlagsByBoolean(CommandLine& cmdLine, unsigned int& flagsOut, unsigned int flags)
+{
+    if (cmdLine.AcceptBoolean(true))
+        flagsOut |= flags;
+    else
+        flagsOut &= (~flags);
+}
+
 
 /*
  * Command class
@@ -113,7 +121,7 @@ HelpDescriptor TargetCommand::Help() const
 {
     return
     {
-        "-T, --target TARGET", "Shader target; valid values:",
+        "-T, --target TARGET", "Input shader target; valid targets:",
         "vert, tesc, tese, geom, frag, comp",
         HelpCategory::Main
     };
@@ -150,7 +158,7 @@ HelpDescriptor VersionInCommand::Help() const
     return
     {
         "-Vin, --version-in VERSION",
-        "Input shader version; default=HLSL5; valid values:",
+        "Input shader version; default=HLSL5; valid versions:",
         "Cg, HLSL3, HLSL4, HLSL5, HLSL6, GLSL, ESSL, VKSL",
         HelpCategory::Main
     };
@@ -189,10 +197,10 @@ HelpDescriptor VersionOutCommand::Help() const
     return
     {
         "-Vout, --version-out VERSION",
-        "Shader output version; default=GLSL; valid values:",
+        "Shader output version; default=GLSL; valid versions:",
         (
-            "GLSL[110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450],\n" \
-            "ESSL[100, 300, 310, 320],\n" \
+            "GLSL[110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450],\n"   \
+            "ESSL[100, 300, 310, 320],\n"                                           \
             "VKSL[450]"
         ),
         HelpCategory::Main
@@ -296,7 +304,7 @@ HelpDescriptor WarnCommand::Help() const
     return
     {
         "-W<TYPE> [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables the specified warning type; default=" + CommandLine::GetBooleanFalse() + "; valid values:",
+        "Enables/disables the specified warning type; default=" + CommandLine::GetBooleanFalse() + "; valid types:",
         (
             "all           => all kinds of warnings\n"               \
             "basic         => warn for basic issues\n"               \
@@ -333,10 +341,7 @@ void WarnCommand::Run(CommandLine& cmdLine, ShellState& state)
         "invalid warning type"
     );
 
-    if (cmdLine.AcceptBoolean(true))
-        state.inputDesc.warnings |= flags;
-    else
-        state.inputDesc.warnings &= (~flags);
+    SetFlagsByBoolean(cmdLine, state.inputDesc.warnings, flags);
 }
 
 
@@ -652,12 +657,31 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
 
         while (idx > presettings.size())
         {
+            /* Returns the number of digits in the specified integral number */
+            auto NumDigits = [](std::size_t n)
+            {
+                std::size_t d = 0;
+                do
+                {
+                    n /= 10;
+                    ++d;
+                }
+                while (n != 0);
+                return d;
+            };
+
+            /* Returns the indentation for the specified number with the current number of presettings */
+            auto Indent = [&](std::size_t n)
+            {
+                return std::string(NumDigits(presettings.size()) - NumDigits(n), ' ');
+            };
+
             /* Let user choose between one of the presettings */
             std::cout << "choose presetting:" << std::endl;
-            std::cout << "  0.) ALL" << std::endl;
+            std::cout << "  " << Indent(0) << "0.) ALL" << std::endl;
 
             for (std::size_t i = 0; i < presettings.size(); ++i)
-                std::cout << "  " << (i+1) << ".) " << presettings[i].title << std::endl;
+                std::cout << "  " << Indent(i+1) << (i+1) << ".) " << presettings[i].title << std::endl;
 
             std::cin >> idx;
         }
@@ -1095,75 +1119,73 @@ void RowMajorAlignmentCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
- * FormatBlanksCommand class
+ * FormattingCommand class
  */
 
-std::vector<Command::Identifier> FormatBlanksCommand::Idents() const
+std::vector<Command::Identifier> FormattingCommand::Idents() const
 {
-    return { { "-Fb" }, { "--format-blanks" } };
+    return { { "-F", true } };
 }
 
-HelpDescriptor FormatBlanksCommand::Help() const
+HelpDescriptor FormattingCommand::Help() const
 {
     return
     {
-        "-Fb, --format-blanks [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables generation of blank lines between declarations; default=" + CommandLine::GetBooleanTrue(),
-        HelpCategory::Formatting
+        "-F<TYPE> [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables the specified formatting option; valid types:",
+        (
+            "blanks        => blank lines between declarations; default=" + CommandLine::GetBooleanTrue() + "\n"    \
+            "force-braces  => force braces for scopes; default=" + CommandLine::GetBooleanFalse() + "\n"            \
+            "compact       => write compact wrapper functions; default=" + CommandLine::GetBooleanFalse() + "\n"    \
+            "line-marks    => line marks (e.g. '#line 30'); default=" + CommandLine::GetBooleanFalse() + "\n"       \
+            "line-sep      => separate lines in columns; default=" + CommandLine::GetBooleanTrue() + "\n"           \
+            "newline-scope => write open braces at new lines; default=" + CommandLine::GetBooleanTrue()
+        )
     };
 }
 
-void FormatBlanksCommand::Run(CommandLine& cmdLine, ShellState& state)
+void FormattingCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.formatting.blanks = cmdLine.AcceptBoolean(true);
+
+    auto type = cmdLine.Accept();
+
+    if (type == "blanks")
+        state.outputDesc.formatting.blanks = cmdLine.AcceptBoolean(true);
+    else if (type == "force-braces")
+        state.outputDesc.formatting.alwaysBracedScopes = cmdLine.AcceptBoolean(true);
+    else if (type == "compact")
+        state.outputDesc.formatting.compactWrappers = cmdLine.AcceptBoolean(true);
+    else if (type == "line-marks")
+        state.outputDesc.formatting.lineMarks = cmdLine.AcceptBoolean(true);
+    else if (type == "line-sep")
+        state.outputDesc.formatting.lineSeparation = cmdLine.AcceptBoolean(true);
+    else if (type == "newline-scope")
+        state.outputDesc.formatting.newLineOpenScope = cmdLine.AcceptBoolean(true);
+    else
+        throw std::invalid_argument("invalid formatting type '" + type + "'");
 }
 
 
 /*
- * FormatLineMarksCommand class
+ * IndentCommand class
  */
 
-std::vector<Command::Identifier> FormatLineMarksCommand::Idents() const
+std::vector<Command::Identifier> IndentCommand::Idents() const
 {
-    return { { "-Flm" }, { "--format-line-marks" } };
+    return { { "--indent" } };
 }
 
-HelpDescriptor FormatLineMarksCommand::Help() const
+HelpDescriptor IndentCommand::Help() const
 {
     return
     {
-        "-Flm, --format-line-marks [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables generation of line marks (e.g. '#line 30'); default=" + CommandLine::GetBooleanFalse(),
-        HelpCategory::Formatting
+        "--indent INDENT",
+        "Code indentation string (use '\\t' for tabs); default='    '"
     };
 }
 
-void FormatLineMarksCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.formatting.lineMarks = cmdLine.AcceptBoolean(true);
-}
-
-
-/*
- * FormatIndentCommand class
- */
-
-std::vector<Command::Identifier> FormatIndentCommand::Idents() const
-{
-    return { { "-Fi" }, { "--format-indent" } };
-}
-
-HelpDescriptor FormatIndentCommand::Help() const
-{
-    return
-    {
-        "-Fi, --format-indent INDENT",
-        "Code indentation string (use '\\t' for tabs); default='    '",
-        HelpCategory::Formatting
-    };
-}
-
-void FormatIndentCommand::Run(CommandLine& cmdLine, ShellState& state)
+void IndentCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputDesc.formatting.indent = cmdLine.Accept();
     Replace(state.outputDesc.formatting.indent, "\\t", "\t");
@@ -1171,253 +1193,171 @@ void FormatIndentCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
- * FormatLineSeparationCommand class
+ * PrefixCommand class
  */
 
-std::vector<Command::Identifier> FormatLineSeparationCommand::Idents() const
+std::vector<Command::Identifier> PrefixCommand::Idents() const
 {
-    return { { "-Fls" }, { "--format-line-separation" } };
+    return { { "-P", true } };
 }
 
-HelpDescriptor FormatLineSeparationCommand::Help() const
+HelpDescriptor PrefixCommand::Help() const
 {
     return
     {
-        "-Fls, --format-line-separation [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables formatting of line separation; default=" + CommandLine::GetBooleanTrue(),
-        HelpCategory::Formatting
+        "-P<TYPE> VALUE",
+        "Prefix for the specified name-mangling type; valid types:",
+        (
+            "in        => input variables; default='xsv_'\n"   \
+            "namespace => namespace objects; default='xsn_'\n" \
+            "out       => output variables; default='xsv_'\n"  \
+            "reserved  => reserved words; default='xsr_'\n"    \
+            "temp      => temporary variables; default='xst_'"
+        )
     };
 }
 
-void FormatLineSeparationCommand::Run(CommandLine& cmdLine, ShellState& state)
+void PrefixCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.formatting.lineSeparation = cmdLine.AcceptBoolean(true);
+    auto type = cmdLine.Accept();
+
+    if (type == "in")
+        state.outputDesc.nameMangling.inputPrefix = cmdLine.Accept();
+    else if (type == "out")
+        state.outputDesc.nameMangling.outputPrefix = cmdLine.Accept();
+    else if (type == "reserved")
+        state.outputDesc.nameMangling.reservedWordPrefix = cmdLine.Accept();
+    else if (type == "temp")
+        state.outputDesc.nameMangling.temporaryPrefix = cmdLine.Accept();
+    else if (type == "namespace")
+        state.outputDesc.nameMangling.namespacePrefix = cmdLine.Accept();
+    else
+        throw std::invalid_argument("invalid prefix type '" + type + "'");
 }
 
 
 /*
- * FormatCompactWrappersCommand class
+ * NameManglingCommand class
  */
 
-std::vector<Command::Identifier> FormatCompactWrappersCommand::Idents() const
+std::vector<Command::Identifier> NameManglingCommand::Idents() const
 {
-    return { { "-Fcw" }, { "--format-compact-wrappers" } };
+    return { { "-N", true } };
 }
 
-HelpDescriptor FormatCompactWrappersCommand::Help() const
+HelpDescriptor NameManglingCommand::Help() const
 {
     return
     {
-        "-Fcw, --format-compact-wrappers [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables formatting of compact wrapper functions; default=" + CommandLine::GetBooleanTrue(),
-        HelpCategory::Formatting
+        "-N<TYPE> [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables the specified name-mangling option; value types:",
+        (
+            "buffer-fields   => rename 'buffer' fields, not its identifier; default=" + CommandLine::GetBooleanFalse() + "\n" \
+            "force-semantics => force semantics for input/output variables; default=" + CommandLine::GetBooleanFalse()
+        )
     };
 }
 
-void FormatCompactWrappersCommand::Run(CommandLine& cmdLine, ShellState& state)
+void NameManglingCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.formatting.compactWrappers = cmdLine.AcceptBoolean(true);
+    auto type = cmdLine.Accept();
+
+    if (type == "buffer-fields")
+        state.outputDesc.nameMangling.renameBufferFields = cmdLine.AcceptBoolean(true);
+    else if (type == "force-semantics")
+        state.outputDesc.nameMangling.useAlwaysSemantics = cmdLine.AcceptBoolean(true);
+    else
+        throw std::invalid_argument("invalid name-mangling type '" + type + "'");
 }
 
 
 /*
- * FormatBracedScopeCommand class
+ * SeparateShadersCommand class
  */
 
-std::vector<Command::Identifier> FormatBracedScopeCommand::Idents() const
+std::vector<Command::Identifier> SeparateShadersCommand::Idents() const
 {
-    return { { "-Fbs" }, { "--format-braced-scope" } };
+    return { { "--separate-shaders" } };
 }
 
-HelpDescriptor FormatBracedScopeCommand::Help() const
+HelpDescriptor SeparateShadersCommand::Help() const
 {
     return
     {
-        "-Fbs, --format-braced-scope [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables to always write braces for scopes; default=" + CommandLine::GetBooleanFalse(),
-        HelpCategory::Formatting
+        "--separate-shaders [" + CommandLine::GetBooleanOption() + "]",
+        "Ensures compatibility to 'ARB_separate_shader_objects' extension; default=" + CommandLine::GetBooleanFalse()
     };
 }
 
-void FormatBracedScopeCommand::Run(CommandLine& cmdLine, ShellState& state)
+void SeparateShadersCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.formatting.alwaysBracedScopes = cmdLine.AcceptBoolean(true);
+    state.outputDesc.options.separateShaders = cmdLine.AcceptBoolean(true);
 }
 
 
 /*
- * FormatNewLineScopeCommand class
+ * SeparateSamplersCommand class
  */
 
-std::vector<Command::Identifier> FormatNewLineScopeCommand::Idents() const
+std::vector<Command::Identifier> SeparateSamplersCommand::Idents() const
 {
-    return { { "-Fnls" }, { "--format-newline-scope" } };
+    return { { "--separate-samplers" } };
 }
 
-HelpDescriptor FormatNewLineScopeCommand::Help() const
+HelpDescriptor SeparateSamplersCommand::Help() const
 {
     return
     {
-        "-Fnls, --format-newline-scope [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables to write open braces at a new line; default=" + CommandLine::GetBooleanTrue(),
-        HelpCategory::Formatting
+        "--separate-samplers [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables generation of separate sampler state objects; default=" + CommandLine::GetBooleanTrue()
     };
 }
 
-void FormatNewLineScopeCommand::Run(CommandLine& cmdLine, ShellState& state)
+void SeparateSamplersCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.formatting.newLineOpenScope = cmdLine.AcceptBoolean(true);
+    state.outputDesc.options.separateSamplers = cmdLine.AcceptBoolean(true);
 }
 
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
 
 /*
- * PrefixInputCommand class
+ * LanguageExtensionCommand class
  */
 
-std::vector<Command::Identifier> PrefixInputCommand::Idents() const
+std::vector<Command::Identifier> LanguageExtensionCommand::Idents() const
 {
-    return { { "-Pin" }, { "--prefix-input" } };
+    return { { "-X", true } };
 }
 
-HelpDescriptor PrefixInputCommand::Help() const
+HelpDescriptor LanguageExtensionCommand::Help() const
 {
     return
     {
-        "-Pin, --prefix-input PREFIX",
-        "Prefix for name-mangling of input variables; default='xsv_'",
-        HelpCategory::NameMangling
+        "-X<TYPE> [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables the specified language extension; default=" + CommandLine::GetBooleanFalse() + "; value types:",
+        (
+            "all         => all kinds of extensions\n"                                  \
+            "attr-layout => enable 'layout' attribute to specify image layout format"
+        )
     };
 }
 
-void PrefixInputCommand::Run(CommandLine& cmdLine, ShellState& state)
+void LanguageExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    state.outputDesc.nameMangling.inputPrefix = cmdLine.Accept();
+    const auto flags = MapStringToType<unsigned int>(
+        cmdLine.Accept(),
+        {
+            { "all",         Extensions::All             },
+            { "attr-layout", Extensions::LayoutAttribute },
+        },
+        "invalid extension type"
+    );
+
+    SetFlagsByBoolean(cmdLine, state.inputDesc.extensions, flags);
 }
 
-
-/*
- * PrefixOutputCommand class
- */
-
-std::vector<Command::Identifier> PrefixOutputCommand::Idents() const
-{
-    return { { "-Pout }, { --prefix-output" } };
-}
-
-HelpDescriptor PrefixOutputCommand::Help() const
-{
-    return
-    {
-        "-Pout, --prefix-output PREFIX",
-        "Prefix for name-mangling of output variables; default='xsv_'",
-        HelpCategory::NameMangling
-    };
-}
-
-void PrefixOutputCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.nameMangling.outputPrefix = cmdLine.Accept();
-}
-
-
-/*
- * PrefixReservedWordCommand class
- */
-
-std::vector<Command::Identifier> PrefixReservedWordCommand::Idents() const
-{
-    return { { "-Prw }, { --prefix-reserved-word" } };
-}
-
-HelpDescriptor PrefixReservedWordCommand::Help() const
-{
-    return
-    {
-        "-Prw, --prefix-reserved-word PREFIX",
-        "Prefix for name-mangling of reserved words; default='xsr_'",
-        HelpCategory::NameMangling
-    };
-}
-
-void PrefixReservedWordCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.nameMangling.reservedWordPrefix = cmdLine.Accept();
-}
-
-
-/*
- * PrefixTemporaryCommand class
- */
-
-std::vector<Command::Identifier> PrefixTemporaryCommand::Idents() const
-{
-    return { { "-Ptmp }, { --prefix-temporary" } };
-}
-
-HelpDescriptor PrefixTemporaryCommand::Help() const
-{
-    return
-    {
-        "-Ptmp, --prefix-temporary PREFIX",
-        "Prefix for name-mangling of temporary variables; default='xst_'",
-        HelpCategory::NameMangling
-    };
-}
-
-void PrefixTemporaryCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.nameMangling.temporaryPrefix = cmdLine.Accept();
-}
-
-
-/*
- * PrefixNamespaceCommand class
- */
-
-std::vector<Command::Identifier> PrefixNamespaceCommand::Idents() const
-{
-    return { { "-Pns" }, { "--prefix-namespace" } };
-}
-
-HelpDescriptor PrefixNamespaceCommand::Help() const
-{
-    return
-    {
-        "-Pns, --prefix-namespace PREFIX",
-        "Prefix for name-mangling of namespace objects; default='xsn_'",
-        HelpCategory::NameMangling
-    };
-}
-
-void PrefixNamespaceCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.nameMangling.namespacePrefix = cmdLine.Accept();
-}
-
-
-/*
- * AlwaysUseSemanticsCommand class
- */
-
-std::vector<Command::Identifier> AlwaysUseSemanticsCommand::Idents() const
-{
-    return { { "-Pas" }, { "--prefix-always-semantics" } };
-}
-
-HelpDescriptor AlwaysUseSemanticsCommand::Help() const
-{
-    return
-    {
-        "-Pas, --prefix-always-semantics [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables to always use semantics for input/output variables; default=" + CommandLine::GetBooleanFalse(),
-        HelpCategory::NameMangling
-    };
-}
-
-void AlwaysUseSemanticsCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.nameMangling.useAlwaysSemantics = cmdLine.AcceptBoolean(true);
-}
+#endif
 
 
 } // /namespace Util

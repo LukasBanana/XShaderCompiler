@@ -307,7 +307,7 @@ bool IsHalfRealType(const DataType t)
 {
     return
     (
-        t == DataType::Half ||
+        (t == DataType::Half) ||
         (t >= DataType::Half2 && t <= DataType::Half4) ||
         (t >= DataType::Half2x2 && t <= DataType::Half4x4)
     );
@@ -317,7 +317,7 @@ bool IsDoubleRealType(const DataType t)
 {
     return
     (
-        t == DataType::Double ||
+        (t == DataType::Double) ||
         (t >= DataType::Double2 && t <= DataType::Double4) ||
         (t >= DataType::Double2x2 && t <= DataType::Double4x4)
     );
@@ -834,6 +834,50 @@ bool IsSamplerTypeArray(const SamplerType t)
     return ((t >= SamplerType::Sampler1DArray && t <= SamplerType::SamplerCubeArray) || t == SamplerType::Sampler2DMSArray);
 }
 
+SamplerType TextureTypeToSamplerType(const BufferType t)
+{
+    switch (t)
+    {
+        case BufferType::Texture1D:         return SamplerType::Sampler1D;
+        case BufferType::Texture1DArray:    return SamplerType::Sampler1DArray;
+        case BufferType::Texture2D:         return SamplerType::Sampler2D;
+        case BufferType::Texture2DArray:    return SamplerType::Sampler2DArray;
+        case BufferType::Texture3D:         return SamplerType::Sampler3D;
+        case BufferType::TextureCube:       return SamplerType::SamplerCube;
+        case BufferType::TextureCubeArray:  return SamplerType::SamplerCubeArray;
+        default:                            return SamplerType::Undefined;
+    }
+}
+
+SamplerType SamplerTypeToShadowSamplerType(const SamplerType t)
+{
+    switch (t)
+    {
+        case SamplerType::Sampler1D:        return SamplerType::Sampler1DShadow;
+        case SamplerType::Sampler1DArray:   return SamplerType::Sampler1DArrayShadow;
+        case SamplerType::Sampler2D:        return SamplerType::Sampler2DShadow;
+        case SamplerType::Sampler2DArray:   return SamplerType::Sampler2DArrayShadow;
+        case SamplerType::Sampler2DRect:    return SamplerType::Sampler2DRectShadow;
+        case SamplerType::SamplerCube:      return SamplerType::SamplerCubeShadow;
+        case SamplerType::SamplerCubeArray: return SamplerType::SamplerCubeArrayShadow;
+        default:                            return SamplerType::Undefined;
+    }
+}
+
+
+/* ----- ImageLayoutFormat Enum ----- */
+
+DataType GetImageLayoutFormatBaseType(const ImageLayoutFormat format)
+{
+    if (format >= ImageLayoutFormat::F32X4 && format <= ImageLayoutFormat::SN8X1)
+        return DataType::Float;
+    if (format >= ImageLayoutFormat::I32X4 && format <= ImageLayoutFormat::I8X1)
+        return DataType::Int;
+    if (format >= ImageLayoutFormat::UI32X4 && format <= ImageLayoutFormat::UI8X1)
+        return DataType::UInt;
+    return DataType::Undefined;
+}
+
 
 /* ----- RegisterType Enum ----- */
 
@@ -942,6 +986,17 @@ bool IsInterlockedIntristic(const Intrinsic t)
     return (t >= Intrinsic::InterlockedAdd && t <= Intrinsic::InterlockedXor);
 }
 
+bool IsGatherIntrisic(const Intrinsic t)
+{
+    return (t >= Intrinsic::Texture_Gather_2 && t <= Intrinsic::Texture_GatherCmpAlpha_8);
+}
+
+bool IsTextureCompareIntrinsic(const Intrinsic t)
+{
+    return (t >= Intrinsic::Texture_GatherCmp_3 && t <= Intrinsic::Texture_GatherCmpAlpha_8) ||
+           (t >= Intrinsic::Texture_SampleCmp_3 && t <= Intrinsic::Texture_SampleCmp_6);
+}
+
 Intrinsic CompareOpToIntrinsic(const BinaryOp op)
 {
     switch (op)
@@ -972,17 +1027,114 @@ Intrinsic InterlockedToImageAtomicIntrinsic(const Intrinsic t)
     }
 }
 
+/* ----- Gather intrinsics ----- */
+
+struct GatherIntrinsicInfo
+{
+    GatherIntrinsicInfo(int componentIdx, int offsetCount, bool isCompare = false);
+
+    int     componentIdx    = 0;
+    int     offsetCount     = 0;
+    bool    isCompare       = false;
+};
+
+GatherIntrinsicInfo::GatherIntrinsicInfo(int componentIdx, int offsetCount, bool isCompare) :
+    componentIdx { componentIdx },
+    offsetCount  { offsetCount  },
+    isCompare    { isCompare    }
+{
+}
+
+static std::map<Intrinsic, GatherIntrinsicInfo> GenerateGatherIntrinsicInfoMap()
+{
+    using T = Intrinsic;
+
+    return
+    {
+        { T::Texture_Gather_2,          { 0, 0       } },
+        { T::Texture_GatherRed_2,       { 0, 0       } },
+        { T::Texture_GatherGreen_2,     { 1, 0       } },
+        { T::Texture_GatherBlue_2,      { 2, 0       } },
+        { T::Texture_GatherAlpha_2,     { 3, 0       } },
+
+        { T::Texture_Gather_3,          { 0, 1       } },
+        { T::Texture_Gather_4,          { 0, 1       } },
+        { T::Texture_GatherRed_3,       { 0, 1       } },
+        { T::Texture_GatherRed_4,       { 0, 1       } },
+        { T::Texture_GatherGreen_3,     { 1, 1       } },
+        { T::Texture_GatherGreen_4,     { 1, 1       } },
+        { T::Texture_GatherBlue_3,      { 2, 1       } },
+        { T::Texture_GatherBlue_4,      { 2, 1       } },
+        { T::Texture_GatherAlpha_3,     { 3, 1       } },
+        { T::Texture_GatherAlpha_4,     { 3, 1       } },
+
+        { T::Texture_GatherRed_6,       { 0, 4       } },
+        { T::Texture_GatherRed_7,       { 0, 4       } },
+        { T::Texture_GatherGreen_6,     { 1, 4       } },
+        { T::Texture_GatherGreen_7,     { 1, 4       } },
+        { T::Texture_GatherBlue_6,      { 2, 4       } },
+        { T::Texture_GatherBlue_7,      { 2, 4       } },
+        { T::Texture_GatherAlpha_6,     { 3, 4       } },
+        { T::Texture_GatherAlpha_7,     { 3, 4       } },
+
+        { T::Texture_GatherCmp_3,       { 0, 0, true } },
+        { T::Texture_GatherCmpRed_3,    { 0, 0, true } },
+        { T::Texture_GatherCmpGreen_3,  { 1, 0, true } },
+        { T::Texture_GatherCmpBlue_3,   { 2, 0, true } },
+        { T::Texture_GatherCmpAlpha_3,  { 3, 0, true } },
+
+        { T::Texture_GatherCmp_4,       { 0, 1, true } },
+        { T::Texture_GatherCmp_5,       { 0, 1, true } },
+        { T::Texture_GatherCmpRed_4,    { 0, 1, true } },
+        { T::Texture_GatherCmpRed_5,    { 0, 1, true } },
+        { T::Texture_GatherCmpGreen_4,  { 1, 1, true } },
+        { T::Texture_GatherCmpGreen_5,  { 1, 1, true } },
+        { T::Texture_GatherCmpBlue_4,   { 2, 1, true } },
+        { T::Texture_GatherCmpBlue_5,   { 2, 1, true } },
+        { T::Texture_GatherCmpAlpha_4,  { 3, 1, true } },
+        { T::Texture_GatherCmpAlpha_5,  { 3, 1, true } },
+
+        { T::Texture_GatherCmpRed_7,    { 0, 4, true } },
+        { T::Texture_GatherCmpRed_8,    { 0, 4, true } },
+        { T::Texture_GatherCmpGreen_7,  { 1, 4, true } },
+        { T::Texture_GatherCmpGreen_8,  { 1, 4, true } },
+        { T::Texture_GatherCmpBlue_7,   { 2, 4, true } },
+        { T::Texture_GatherCmpBlue_8,   { 2, 4, true } },
+        { T::Texture_GatherCmpAlpha_7,  { 3, 4, true } },
+        { T::Texture_GatherCmpAlpha_8,  { 3, 4, true } },
+    };
+}
+
+static const auto g_gatherIntrinsicInfoMap = GenerateGatherIntrinsicInfoMap();
+
+int GetGatherIntrinsicOffsetParamCount(const Intrinsic t)
+{
+    auto it = g_gatherIntrinsicInfoMap.find(t);
+    if (it != g_gatherIntrinsicInfoMap.end())
+        return it->second.offsetCount;
+    else
+        return 0;
+}
+
+int GetGatherIntrinsicComponentIndex(const Intrinsic t)
+{
+    auto it = g_gatherIntrinsicInfoMap.find(t);
+    if (it != g_gatherIntrinsicInfoMap.end())
+        return it->second.componentIdx;
+    else
+        return 0;
+}
 
 /* ----- IndexedSemantic Class ----- */
 
 IndexedSemantic::IndexedSemantic(Semantic semantic, int index) :
-    semantic_   { semantic },
-    index_      { index    }
+    semantic_ { semantic },
+    index_    { index    }
 {
 }
 
 IndexedSemantic::IndexedSemantic(const std::string& userDefined) :
-    semantic_{ Semantic::UserDefined }
+    semantic_ { Semantic::UserDefined }
 {
     /* Extract index from user defined semantic (all right-most numeric characters) */
     auto pos = userDefined.find_last_not_of("0123456789");
@@ -991,16 +1143,16 @@ IndexedSemantic::IndexedSemantic(const std::string& userDefined) :
         ++pos;
         userDefined_ = userDefined.substr(0, pos);
         auto indexStr = userDefined.substr(pos);
-        index_ = std::atoi(indexStr.c_str());
+        index_ = std::stoi(indexStr);
     }
     else
         userDefined_ = userDefined;
 }
 
 IndexedSemantic::IndexedSemantic(const IndexedSemantic& rhs, int index) :
-    semantic_   { rhs.semantic_    },
-    index_      { index            },
-    userDefined_{ rhs.userDefined_ }
+    semantic_    { rhs.semantic_    },
+    index_       { index            },
+    userDefined_ { rhs.userDefined_ }
 {
 }
 

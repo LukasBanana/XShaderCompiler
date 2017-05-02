@@ -56,12 +56,6 @@ void HelpPrinter::PrintHelpReference(std::ostream& output, std::size_t indentSiz
     {
         PrintHeader("Common Options");
         PrintAll(output, indentSize, printCompact, HelpCategory::Common);
-
-        PrintHeader("Formatting Options");
-        PrintAll(output, indentSize, printCompact, HelpCategory::Formatting);
-
-        PrintHeader("Name Mangling Options");
-        PrintAll(output, indentSize, printCompact, HelpCategory::NameMangling);
     }
 
     /* Print usage example */

@@ -1,3 +1,12 @@
+#
+# Presettings for XShaderCompiler test shaders
+# 
+# Syntax:
+#   First line specifies the title of the presetting,
+#   and the second line contains the command line arguments (without the "xsc" shell).
+#   Lines can be commented out with a leading hash (#) symbol.
+#   Empty lines are ignored.
+#
 
 #[SemanticTest1 VS1]
 #-T vert -E VS1 -o output/* SemanticTest1.hlsl
@@ -143,8 +152,8 @@
 #[ScopeTest1 VKSL/VS]
 #-T vert -E VS -Vout VKSL -o output/* ScopeTest1.hlsl
 
-[MemberFuncTest1 PS]
--T frag -E PS -o output/* MemberFuncTest1.hlsl
+[MemberFuncTest1 VS]
+-T vert -E VS -o output/* MemberFuncTest1.hlsl
 
 [MemberFuncTest2 PS]
 -T frag -E PS -o output/* MemberFuncTest2.hlsl
@@ -152,13 +161,38 @@
 [MemberFuncTest3 PS]
 -T frag -E PS -o output/* MemberFuncTest3.hlsl
 
-[RWTextureTest1 VS]
+[RWTextureTest1: vert]
 -T vert -E main -o output/* RWTextureTest1.hlsl
 
-[RWTextureTest2 VS]
+[RWTextureTest2: vert]
 -T vert -E main -o output/* RWTextureTest2.hlsl
 
-[ImageBufferTest1 CS]
+[RWTextureTest3: vert]
+-T vert -E main -o output/* RWTextureTest3.hlsl
+
+[RWTextureTest4: vert]
+-T vert -E main -o output/* RWTextureTest4.hlsl
+
+[ImageBufferTest1: comp]
 -T comp -E main -o output/* ImageBufferTest1.hlsl
 
+[GatherTest1: vert]
+-T vert -E main -o output/* GatherTest1.hlsl
 
+[GatherTest2: vert]
+-T vert -E main -o output/* GatherTest2.hlsl
+
+[SamplerBuffer1: vert]
+-T vert -E main -o output/* SamplerBuffer1.hlsl
+
+[TexelFetchTest1: vert]
+-T vert -E main -o output/* TexelFetchTest1.hlsl
+
+[MemoryBarrierTest1: vert]
+-T comp -E main -o output/* MemoryBarrierTest1.hlsl
+
+[MatrixLayoutTest1: vert]
+-T vert -E main -o output/* MatrixLayoutTest1.hlsl
+
+[ExtLayoutAttrTest1: vert]
+-T vert -E main -Xall -o output/* ExtLayoutAttrTest1.hlsl

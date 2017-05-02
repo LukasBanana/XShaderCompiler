@@ -157,6 +157,9 @@ class Parser
 
         virtual ExprPtr ParsePrimaryExpr() = 0;
 
+        int             ParseIntLiteral(TokenPtr tkn = nullptr);
+        int             ParseIntLiteral(const std::string& valueStr, const Token* tkn = nullptr);
+
         /* ----- Common ----- */
 
         // Returns the log pointer or null if no log was defined.

@@ -57,6 +57,10 @@ CommandFactory::CommandFactory()
         VersionOutCommand,
         IncludePathCommand,
 
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+        LanguageExtensionCommand,
+        #endif
+
         OutputCommand,
         WarnCommand,
         ShowASTCommand,
@@ -83,21 +87,12 @@ CommandFactory::CommandFactory()
         RowMajorAlignmentCommand,
         AutoBindingCommand,
         AutoBindingStartSlotCommand,
-
-        FormatBlanksCommand,
-        FormatLineMarksCommand,
-        FormatIndentCommand,
-        FormatLineSeparationCommand,
-        FormatCompactWrappersCommand,
-        FormatBracedScopeCommand,
-        FormatNewLineScopeCommand,
-
-        PrefixInputCommand,
-        PrefixOutputCommand,
-        PrefixReservedWordCommand,
-        PrefixTemporaryCommand,
-        PrefixNamespaceCommand,
-        AlwaysUseSemanticsCommand
+        FormattingCommand,
+        IndentCommand,
+        PrefixCommand,
+        NameManglingCommand,
+        SeparateShadersCommand,
+        SeparateSamplersCommand
     >();
 }
 

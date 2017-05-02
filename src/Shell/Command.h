@@ -75,7 +75,6 @@ DECL_SHELL_COMMAND( VersionInCommand             );
 DECL_SHELL_COMMAND( VersionOutCommand            );
 DECL_SHELL_COMMAND( OutputCommand                );
 DECL_SHELL_COMMAND( IncludePathCommand           );
-
 DECL_SHELL_COMMAND( WarnCommand                  );
 DECL_SHELL_COMMAND( ShowASTCommand               );
 DECL_SHELL_COMMAND( ShowTimesCommand             );
@@ -101,21 +100,18 @@ DECL_SHELL_COMMAND( ObfuscateCommand             );
 DECL_SHELL_COMMAND( RowMajorAlignmentCommand     );
 DECL_SHELL_COMMAND( AutoBindingCommand           );
 DECL_SHELL_COMMAND( AutoBindingStartSlotCommand  );
+DECL_SHELL_COMMAND( FormattingCommand            );
+DECL_SHELL_COMMAND( IndentCommand                );
+DECL_SHELL_COMMAND( PrefixCommand                );
+DECL_SHELL_COMMAND( NameManglingCommand          );
+DECL_SHELL_COMMAND( SeparateShadersCommand       );
+DECL_SHELL_COMMAND( SeparateSamplersCommand      );
 
-DECL_SHELL_COMMAND( FormatBlanksCommand          );
-DECL_SHELL_COMMAND( FormatLineMarksCommand       );
-DECL_SHELL_COMMAND( FormatIndentCommand          );
-DECL_SHELL_COMMAND( FormatLineSeparationCommand  );
-DECL_SHELL_COMMAND( FormatCompactWrappersCommand );
-DECL_SHELL_COMMAND( FormatBracedScopeCommand     );
-DECL_SHELL_COMMAND( FormatNewLineScopeCommand    );
+#ifdef XSC_ENABLE_LANGUAGE_EXT
 
-DECL_SHELL_COMMAND( PrefixInputCommand           );
-DECL_SHELL_COMMAND( PrefixOutputCommand          );
-DECL_SHELL_COMMAND( PrefixReservedWordCommand    );
-DECL_SHELL_COMMAND( PrefixTemporaryCommand       );
-DECL_SHELL_COMMAND( PrefixNamespaceCommand       );
-DECL_SHELL_COMMAND( AlwaysUseSemanticsCommand    );
+DECL_SHELL_COMMAND( LanguageExtensionCommand     );
+
+#endif
 
 #undef DECL_SHELL_COMMAND
 

@@ -132,30 +132,32 @@ const std::string* DataTypeToGLSLKeyword(const DataType t)
     return MapTypeToKeyword(typeMap, t);
 }
 
-/* ----- DataType (image format) Mapping ----- */
+/* ----- DataType to ImageLayoutFormat Mapping ----- */
 
-static std::map<DataType, std::string> GenerateDataTypeImageFormatMap()
+static std::map<DataType, ImageLayoutFormat> GenerateDataTypeImageLayoutFormatMap()
 {
     using T = DataType;
+    using U = ImageLayoutFormat;
 
     return
     {
-        { T::Int,       "r32i"      },
-        { T::Int2,      "rg32i"     },
-        { T::Int4,      "rgba32i"   },
-        { T::UInt,      "r32ui"     },
-        { T::UInt2,     "rg32ui"    },
-        { T::UInt4,     "rgba32ui"  },
-        { T::Float,     "r32f"      },
-        { T::Float2,    "rg32f"     },
-        { T::Float4,    "rgba32f"   },
+        { T::Int,    U::I32X1  },
+        { T::Int2,   U::I32X2  },
+        { T::Int4,   U::I32X4  },
+        { T::UInt,   U::UI32X1 },
+        { T::UInt2,  U::UI32X2 },
+        { T::UInt4,  U::UI32X4 },
+        { T::Float,  U::F32X1  },
+        { T::Float2, U::F32X2  },
+        { T::Float4, U::F32X4  },
     };
 }
 
-const std::string* DataTypeToImageFormatGLSLKeyword(const DataType t)
+ImageLayoutFormat DataTypeToImageLayoutFormat(const DataType t)
 {
-    static const auto typeMap = GenerateDataTypeImageFormatMap();
-    return MapTypeToKeyword(typeMap, t);
+    static const auto typeMap = GenerateDataTypeImageLayoutFormatMap();
+    auto it = typeMap.find(t);
+    return (it != typeMap.end() ? it->second : ImageLayoutFormat::Undefined);
 }
 
 
@@ -294,10 +296,18 @@ static std::map<BufferType, std::string> GenerateBufferTypeMapVKSL()
     };
 }
 
-const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLSL)
+const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLSL, bool separateSamplers)
 {
     static const auto typeMapGLSL = GenerateBufferTypeMap();
     static const auto typeMapVKSL = GenerateBufferTypeMapVKSL();
+
+    if (useVulkanGLSL && !separateSamplers)
+    {
+        auto samplerType = TextureTypeToSamplerType(t);
+        if (samplerType != SamplerType::Undefined)
+            useVulkanGLSL = false;
+    }
+
     return MapTypeToKeyword((useVulkanGLSL ? typeMapVKSL : typeMapGLSL), t);
 }
 
@@ -329,7 +339,7 @@ static std::map<SamplerType, std::string> GenerateSamplerTypeMap()
         { T::Sampler2DArrayShadow,   "sampler2DArrayShadow"   },
         { T::SamplerCubeArrayShadow, "samplerCubeArrayShadow" },
         { T::SamplerState,           "sampler"                }, // Only for Vulkan
-        { T::SamplerComparisonState, "sampler"                }, // Only for Vulkan
+        { T::SamplerComparisonState, "samplerShadow"          }, // Only for Vulkan
     };
 }
 
@@ -393,6 +403,61 @@ const std::string* PrimitiveTypeToGLSLKeyword(const PrimitiveType t)
     return MapTypeToKeyword(typeMap, t);
 }
 
+/* ----- ImageLayoutFormat Mapping ----- */
+
+static std::map<ImageLayoutFormat, std::string> GenerateImageLayoutFormatMap()
+{
+    using T = ImageLayoutFormat;
+
+    return
+    {
+        { T::F32X4,         "rgba32f"           },
+        { T::F32X2,         "rg32f"             },
+        { T::F32X1,         "r32f"              },
+        { T::F16X4,         "rgba16f"           },
+        { T::F16X2,         "rg16f"             },
+        { T::F16X1,         "r16f"              },
+        { T::F11R11G10B,    "r11f_g11f_b10f"    },
+        { T::UN32X4,        "rgba16"            },
+        { T::UN16X2,        "rg16"              },
+        { T::UN16X1,        "r16"               },
+        { T::UN10R10G10B2A, "rgb10_a2"          },
+        { T::UN8X4,         "rgba8"             },
+        { T::UN8X2,         "rg8"               },
+        { T::UN8X1,         "r8"                },
+        { T::SN16X4,        "rgba16_snorm"      },
+        { T::SN16X2,        "rg16_snorm"        },
+        { T::SN16X1,        "r16_snorm"         },
+        { T::SN8X4,         "rgba8_snorm"       },
+        { T::SN8X2,         "rg8_snorm"         },
+        { T::SN8X1,         "r8_snorm"          },
+        { T::I32X4,         "rgba32i"           },
+        { T::I32X2,         "rg32i"             },
+        { T::I32X1,         "r32i"              },
+        { T::I16X4,         "rgba16i"           },
+        { T::I16X2,         "rg16i"             },
+        { T::I16X1,         "r16i"              },
+        { T::I8X4,          "rgba8i"            },
+        { T::I8X2,          "rg8i"              },
+        { T::I8X1,          "r8i"               },
+        { T::UI32X4,        "rgba32ui"          },
+        { T::UI32X2,        "rg32ui"            },
+        { T::UI32X1,        "r32ui"             },
+        { T::UI16X4,        "rgba16ui"          },
+        { T::UI16X2,        "rg16ui"            },
+        { T::UI16X1,        "r16ui"             },
+        { T::UI10R10G10B2A, "rgb10_a2ui"        },
+        { T::UI8X4,         "rgba8ui"           },
+        { T::UI8X2,         "rg8ui"             },
+        { T::UI8X1,         "r8ui"              },
+    };
+}
+
+const std::string* ImageLayoutFormatToGLSLKeyword(const ImageLayoutFormat t)
+{
+    static const auto typeMap = GenerateImageLayoutFormatMap();
+    return MapTypeToKeyword(typeMap, t);
+}
 
 /* ----- Semantic Mapping ----- */
 

@@ -45,6 +45,7 @@ class ExprConverter : public Visitor
             ConvertLog10                = (1 << 5), // Converts "log10(x)" to "(log(x) / log(10))"
             ConvertUnaryExpr            = (1 << 6), // Wraps an unary expression if it's parent expression is also an unary expression (e.g. "-+x" to "-(+x)")
             ConvertSamplerBufferAccess  = (1 << 7),
+            ConvertMatrixLayout         = (1 << 8), // Converts expressions that depend on the matrix layout (e.g. the argument order of "mul" intrinsic calls).
 
             // All conversion flags commonly used before visiting the sub nodes.
             AllPreVisit                 = (ConvertVectorCompare | ConvertImageAccess | ConvertLog10 | ConvertSamplerBufferAccess),
@@ -61,6 +62,9 @@ class ExprConverter : public Visitor
 
         void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = true);
         void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
+
+        // Returns the texture dimension of the specified expression.
+        static int GetTextureDimFromExpr(Expr* expr, const AST* ast = nullptr);
 
     private:
         

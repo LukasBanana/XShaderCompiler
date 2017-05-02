@@ -16,6 +16,7 @@
 #include "Token.h"
 #include "ASTEnums.h"
 #include "CiString.h"
+#include "Flags.h"
 #include <map>
 #include <set>
 #include <vector>
@@ -66,14 +67,14 @@ class GLSLGenerator : public Generator
         // Returns true if the output shader language is VKSL (for Vulkan/SPIR-V).
         bool IsVKSL() const;
 
+        // Returns true if separate objects for samplers & textures should be used.
+        bool UseSeparateSamplers() const;
+
         // Returns the GLSL keyword for the specified buffer type or reports and error.
         const std::string* BufferTypeToKeyword(const BufferType bufferType, const AST* ast = nullptr);
 
         // Returns the GLSL keyword for the specified sampler type or reports and error.
         const std::string* SamplerTypeToKeyword(const SamplerType samplerType, const AST* ast = nullptr);
-
-        // Returns the GLSL image format keyword for the specified data type or reports and error.
-        const std::string* DataTypeToImageFormatKeyword(const DataType dataType, const AST* ast = nullptr);
 
         // Returns true if the specified type denoter is compatible with the semantic (e.g. 'SV_VertexID' is incompatible with 'UInt').
         bool IsTypeCompatibleWithSemantic(const Semantic semantic, const TypeDenoter& typeDenoter);
@@ -157,6 +158,11 @@ class GLSLGenerator : public Generator
         bool WriteGlobalLayoutsFragment(const Program::LayoutFragmentShader& layout);
         bool WriteGlobalLayoutsCompute(const Program::LayoutComputeShader& layout);
 
+        /* ----- Built-in block redeclarations ----- */
+
+        void WriteBuiltinBlockRedeclarations();
+        void WriteBuiltinBlockRedeclarationsPerVertex(bool input, const std::string& name = "");
+
         /* ----- Layout ----- */
 
         void WriteLayout(const std::initializer_list<LayoutEntryFunctor>& entryFunctors);
@@ -165,7 +171,7 @@ class GLSLGenerator : public Generator
         void WriteLayoutGlobalIn(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor = nullptr);
         void WriteLayoutGlobalOut(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor = nullptr);
         void WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters);
-        void WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast = nullptr);
+
 
         /* ----- Input semantics ----- */
 
@@ -253,6 +259,7 @@ class GLSLGenerator : public Generator
         void WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage);
         void WriteWrapperIntrinsicsLit(const IntrinsicUsage& usage);
         void WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage);
+        void WriteWrapperIntrinsicsMemoryBarrier(const Intrinsic intrinsic, bool groupSync);
 
         /* ----- Structure ----- */
 
@@ -299,8 +306,16 @@ class GLSLGenerator : public Generator
         bool                                    allowLineMarks_         = false;
         bool                                    compactWrappers_        = false;
         bool                                    alwaysBracedScopes_     = false;
+        bool                                    separateShaders_        = false;
+        bool                                    separateSamplers_       = true;
 
         bool                                    isInsideInterfaceBlock_ = false;
+
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        Flags                                   extensions_;                        // Flags of all enabled language extensions.
+
+        #endif
 };
 
 

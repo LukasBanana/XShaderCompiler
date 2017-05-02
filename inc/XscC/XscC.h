@@ -40,48 +40,48 @@ enum XscWarnings
     XscWarnAll                      = (~0u),    //!< All warnings.
 };
 
+/**
+\brief Language extension flags.
+\remakrs This is only supported, if the compiler was build with the 'XSC_ENABLE_LANGUAGE_EXT' macro.
+*/
+enum XscExtensions
+{
+    XscExtLayoutAttribute   = (1 << 0), //!< Enables the 'layout' attribute.
+
+    XscExtAll               = (~0u)     //!< All extensions.
+};
+
 //! Formatting descriptor structure for the output shader.
 struct XscFormatting
 {
-    //! Indentation string for code generation. By default 4 spaces.
-    const char* indent;
+    //! If true, scopes are always written in braces. By default false.
+    bool        alwaysBracedScopes;
 
     //! If true, blank lines are allowed. By default true.
     bool        blanks;
 
-    //! If true, line marks are allowed. By default false.
-    bool        lineMarks;
-
     //! If true, wrapper functions for special intrinsics are written in a compact formatting (i.e. all in one line). By default false.
     bool        compactWrappers;
 
-    //! If true, scopes are always written in braces. By default false.
-    bool        alwaysBracedScopes;
+    //! Indentation string for code generation. By default 4 spaces.
+    const char* indent;
 
-    //! If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default true.
-    bool        newLineOpenScope;
+    //! If true, line marks are allowed. By default false.
+    bool        lineMarks;
 
     //! If true, auto-formatting of line separation is allowed. By default true.
     bool        lineSeparation;
+
+    //! If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default true.
+    bool        newLineOpenScope;
 };
 
 //! Structure for additional translation options.
 struct XscOptions
 {
-    //! If true, little code optimizations are performed. By default false.
-    bool    optimize;
-
-    //! If true, only the preprocessed source code will be written out. By default false.
-    bool    preprocessOnly;
-
-    //! If true, the source code is only validated, but no output code will be generated. By default false.
-    bool    validateOnly;
-
     //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
     bool    allowExtensions;
 
-    //! If true, explicit binding slots are enabled. By default false.
-    bool    explicitBinding;
     /**
     \brief If true, binding slots for all buffer types will be generated sequentially, starting with index at 'autoBindingStartSlot'. By default false.
     \remarks This will also enable 'explicitBinding'.
@@ -91,26 +91,44 @@ struct XscOptions
     //! Index to start generating binding slots from. Only relevant if 'autoBinding' is enabled. By default 0.
     int     autoBindingStartSlot;
 
-    //! If true, commentaries are preserved for each statement. By default false.
-    bool    preserveComments;
+    //! If true, explicit binding slots are enabled. By default false.
+    bool    explicitBinding;
+
+    //! If true, code obfuscation is performed. By default false.
+    bool    obfuscate;
+
+    //! If true, little code optimizations are performed. By default false.
+    bool    optimize;
 
     //! If true, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.
     bool    preferWrappers;
 
-    //! If true, array initializations will be unrolled. By default false.
-    bool    unrollArrayInitializers;
+    //! If true, only the preprocessed source code will be written out. By default false.
+    bool    preprocessOnly;
+
+    //! If true, commentaries are preserved for each statement. By default false.
+    bool    preserveComments;
 
     //! If true, matrices have row-major alignment. Otherwise the matrices have column-major alignment. By default false.
     bool    rowMajorAlignment;
 
-    //! If true, code obfuscation is performed. By default false.
-    bool    obfuscate;
+    //! If true, generated GLSL code will contain separate sampler and texture objects when supported. By default true.
+    bool    separateSamplers;
+
+    //! If true, generated GLSL code will support the 'ARB_separate_shader_objects' extension. By default false.
+    bool    separateShaders;
 
     //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
     bool    showAST;
 
     //! If true, the timings of the different compilation processes are written to the log output. By default false.
     bool    showTimes;
+
+    //! If true, array initializations will be unrolled. By default false.
+    bool    unrollArrayInitializers;
+
+    //! If true, the source code is only validated, but no output code will be generated. By default false.
+    bool    validateOnly;
 };
 
 //! Name mangling descriptor structure for shader input/output variables (also referred to as "varyings"), temporary variables, and reserved keywords.
@@ -151,6 +169,12 @@ struct XscNameMangling
     even for vertex input and fragment output. Otherwise, their original identifiers are used. By default false.
     */
     bool        useAlwaysSemantics;
+
+    /**
+    \brief If true, the data fields of a 'buffer'-objects is renamed rather than the outer identifier. By default false.
+    \remarks This can be useful for external diagnostic tools, to access the original identifier.
+    */
+    bool        renameBufferFields;
 };
 
 //! Shader input descriptor structure.
@@ -182,9 +206,16 @@ struct XscShaderInput
 
     /**
     \brief Compiler warning flags. This can be a bitwise OR combination of the "XscWarnings" enumeration entries. By default 0.
-    \see Warnings
+    \see XscWarnings
     */
     unsigned int                    warnings;
+
+    /**
+    \brief Language extension flags. This can be a bitwise OR combination of the "Extensions" enumeration entries. By default 0.
+    \remarks This is ignored, if the compiler was not build with the 'XSC_ENABLE_LANGUAGE_EXT' macro.
+    \see Extensions
+    */
+    unsigned int                    extensions;
 
     //! Include handler member which contains a function pointer to handle '#include'-directives.
     struct XscIncludeHandler        includeHandler;

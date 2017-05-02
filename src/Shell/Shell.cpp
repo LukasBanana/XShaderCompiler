@@ -6,8 +6,9 @@
  */
 
 #include "Shell.h"
-#include "CommandFactory.h"
 #include "Helper.h"
+#include "CommandFactory.h"
+#include <Xsc/ConsoleManip.h>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -126,6 +127,12 @@ bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp)
     }
     catch (const std::exception& e)
     {
+        /* Print highlighted exception info */
+        {
+            ConsoleManip::ScopedColor color { ConsoleManip::ColorFlags::Red | ConsoleManip::ColorFlags::Intens };
+            output << "exception thrown: ";
+        }
+
         /* Print error message */
         output << e.what() << std::endl;
     }

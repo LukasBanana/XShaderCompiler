@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cctype>
 #include <set>
+#include <sstream>
 
 
 namespace Xsc
@@ -46,7 +47,7 @@ struct StructDeclArgs
  */
 
 GLSLGenerator::GLSLGenerator(Log* log) :
-    Generator{ log }
+    Generator { log }
 {
 }
 
@@ -59,9 +60,15 @@ void GLSLGenerator::GenerateCodePrimary(
     allowExtensions_    = outputDesc.options.allowExtensions;
     explicitBinding_    = outputDesc.options.explicitBinding;
     preserveComments_   = outputDesc.options.preserveComments;
+    separateShaders_    = outputDesc.options.separateShaders;
+    separateSamplers_   = outputDesc.options.separateSamplers;
     allowLineMarks_     = outputDesc.formatting.lineMarks;
     compactWrappers_    = outputDesc.formatting.compactWrappers;
     alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    extensions_         = inputDesc.extensions;
+    #endif
 
     for (const auto& s : outputDesc.vertexSemantics)
     {
@@ -145,6 +152,10 @@ bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
         Intrinsic::Clip,
         Intrinsic::Lit,
         Intrinsic::SinCos,
+        Intrinsic::GroupMemoryBarrierWithGroupSync,
+        Intrinsic::DeviceMemoryBarrier,
+        Intrinsic::DeviceMemoryBarrierWithGroupSync,
+        Intrinsic::AllMemoryBarrierWithGroupSync
     };
     return (wrappedIntrinsics.find(intrinsic) != wrappedIntrinsics.end());
 }
@@ -164,9 +175,14 @@ bool GLSLGenerator::IsVKSL() const
     return IsLanguageVKSL(versionOut_);
 }
 
+bool GLSLGenerator::UseSeparateSamplers() const
+{
+    return ( IsVKSL() && separateSamplers_ );
+}
+
 const std::string* GLSLGenerator::BufferTypeToKeyword(const BufferType bufferType, const AST* ast)
 {
-    if (auto keyword = BufferTypeToGLSLKeyword(bufferType, IsVKSL()))
+    if (auto keyword = BufferTypeToGLSLKeyword(bufferType, IsVKSL(), UseSeparateSamplers()))
         return keyword;
     else
         Error(R_FailedToMapToGLSLKeyword(R_BufferType), ast);
@@ -179,15 +195,6 @@ const std::string* GLSLGenerator::SamplerTypeToKeyword(const SamplerType sampler
         return keyword;
     else
         Error(R_FailedToMapToGLSLKeyword(R_SamplerType), ast);
-    return nullptr;
-}
-
-const std::string* GLSLGenerator::DataTypeToImageFormatKeyword(const DataType dataType, const AST* ast)
-{
-    if (auto keyword = DataTypeToImageFormatGLSLKeyword(dataType))
-        return keyword;
-    else
-        Error(R_FailedToMapGLSLImageDataType, ast);
     return nullptr;
 }
 
@@ -266,6 +273,10 @@ IMPLEMENT_VISIT_PROC(Program)
 
     /* Write global input/output layouts */
     WriteGlobalLayouts();
+
+    /* Write redeclarations for built-in input/output blocks */
+    if(separateShaders_ && versionOut_ > OutputShaderVersion::GLSL140)
+        WriteBuiltinBlockRedeclarations();
 
     /* Write wrapper functions for special intrinsics */
     WriteWrapperIntrinsics();
@@ -482,7 +493,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
-    if ( ast->flags(AST::isReachable) && ( IsVKSL() || !IsSamplerStateType(ast->typeDenoter->samplerType) ))
+    if ( ast->flags(AST::isReachable) && ( UseSeparateSamplers() || !IsSamplerStateType(ast->typeDenoter->samplerType) ))
         Visit(ast->samplerDecls);
 }
 
@@ -628,7 +639,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
     PushOptions({ false, false });
     {
-        if (ast->initStmnt->Type() == AST::Types::SamplerDeclStmnt && !IsVKSL())
+        if (ast->initStmnt->Type() == AST::Types::SamplerDeclStmnt && !UseSeparateSamplers())
             Write(";");
         else
             Visit(ast->initStmnt);
@@ -952,7 +963,7 @@ void GLSLGenerator::WriteProgramHeader()
     /* Determine all required GLSL extensions with the GLSL extension agent */
     GLSLExtensionAgent extensionAgent;
     auto requiredExtensions = extensionAgent.DetermineRequiredExtensions(
-        *GetProgram(), versionOut_, GetShaderTarget(), allowExtensions_, explicitBinding_,
+        *GetProgram(), versionOut_, GetShaderTarget(), allowExtensions_, explicitBinding_, separateShaders_,
         [this](const std::string& msg, const AST* ast)
         {
             /* Report either error or warning whether extensions are allowed or not */
@@ -1167,6 +1178,96 @@ bool GLSLGenerator::WriteGlobalLayoutsCompute(const Program::LayoutComputeShader
     return true;
 }
 
+/* ----- Built-in block redeclarations ----- */
+
+void GLSLGenerator::WriteBuiltinBlockRedeclarations()
+{
+    switch (GetShaderTarget())
+    {
+        case ShaderTarget::TessellationControlShader:
+            WriteBuiltinBlockRedeclarationsPerVertex(true, "gl_in[gl_MaxPatchVertices]");
+            WriteBuiltinBlockRedeclarationsPerVertex(false, "gl_out[]");
+            break;
+        case ShaderTarget::TessellationEvaluationShader:
+            WriteBuiltinBlockRedeclarationsPerVertex(true, "gl_in[gl_MaxPatchVertices]");
+            WriteBuiltinBlockRedeclarationsPerVertex(false);
+            break;
+        case ShaderTarget::GeometryShader:
+            WriteBuiltinBlockRedeclarationsPerVertex(true, "gl_in[]");
+            WriteBuiltinBlockRedeclarationsPerVertex(false);
+            break;
+        case ShaderTarget::VertexShader:
+            WriteBuiltinBlockRedeclarationsPerVertex(false);
+            break;
+        default:
+            break;
+    }
+}
+
+void GLSLGenerator::WriteBuiltinBlockRedeclarationsPerVertex(bool input, const std::string& name)
+{
+    auto entryPoint = GetProgram()->entryPointRef;
+
+    /* Gather all semantics that are contained in the redeclared vertex block */
+    std::vector<Semantic> semantics;
+
+    if (input)
+    {
+        for (const auto& param : entryPoint->inputSemantics.varDeclRefsSV)
+            semantics.push_back(param->semantic);
+    }
+    else
+    {
+        for (const auto& param : entryPoint->outputSemantics.varDeclRefsSV)
+            semantics.push_back(param->semantic);
+
+        if (IsSystemSemantic(entryPoint->semantic))
+            semantics.push_back(entryPoint->semantic);
+    }
+
+    if (semantics.empty())
+        return;
+
+    /* Write input/output per-vertex block */
+    BeginLn();
+    {
+        Write(input ? "in" : "out");
+        Write(" gl_PerVertex");
+
+        WriteScopeOpen(false, name.empty());
+        {
+            for (const auto& semantic : semantics)
+            {
+                switch (semantic)
+                {
+                    case Semantic::VertexPosition:
+                        WriteLn("vec4 gl_Position;");
+                        break;
+                    case Semantic::PointSize:
+                        WriteLn("float gl_PointSize;");
+                        break;
+                    case Semantic::CullDistance:
+                        if (IsVKSL() || ( IsGLSL() && versionOut_ >= OutputShaderVersion::GLSL450))
+                            WriteLn("float gl_CullDistance[];");
+                        break;
+                    case Semantic::ClipDistance:
+                        WriteLn("float gl_ClipDistance[];");
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        WriteScopeClose();
+
+        if (!name.empty())
+            WriteLn(name + ";");
+    }
+    EndLn();
+
+    Blank();
+}
+
 /* ----- Layout ----- */
 
 void GLSLGenerator::WriteLayout(const std::initializer_list<LayoutEntryFunctor>& entryFunctors)
@@ -1233,18 +1334,6 @@ void GLSLGenerator::WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegis
     {
         if (auto slotRegister = Register::GetForTarget(slotRegisters, GetShaderTarget()))
             Write("binding = " + std::to_string(slotRegister->slot));
-    }
-}
-
-void GLSLGenerator::WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast)
-{
-    if (typeDenoter)
-    {
-        if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
-        {
-            if (auto keyword = DataTypeToImageFormatKeyword(baseTypeDen->dataType, ast))
-                Write(*keyword);
-        }
     }
 }
 
@@ -2005,7 +2094,7 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
                     Error(R_MissingRefInTypeDen(R_SamplerTypeDen), ast);
             }
 
-            if (!IsSamplerStateType(samplerType) || IsVKSL())
+            if (!IsSamplerStateType(samplerType) || UseSeparateSamplers())
             {
                 /* Convert sampler type to GLSL sampler type */
                 if (auto keyword = SamplerTypeToKeyword(samplerType, ast))
@@ -2472,12 +2561,23 @@ void GLSLGenerator::WriteWrapperIntrinsics()
 {
     auto program = GetProgram();
 
+    /* Write wrappers with parameters (usage cases are required) */
     if (auto usage = program->FetchIntrinsicUsage(Intrinsic::Clip))
         WriteWrapperIntrinsicsClip(*usage);
     if (auto usage = program->FetchIntrinsicUsage(Intrinsic::Lit))
         WriteWrapperIntrinsicsLit(*usage);
     if (auto usage = program->FetchIntrinsicUsage(Intrinsic::SinCos))
         WriteWrapperIntrinsicsSinCos(*usage);
+
+    /* Write wrappers with no parameters (usage cases are not required) */
+    if (program->FetchIntrinsicUsage(Intrinsic::GroupMemoryBarrierWithGroupSync) != nullptr)
+        WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::GroupMemoryBarrier, true);
+    if (program->FetchIntrinsicUsage(Intrinsic::DeviceMemoryBarrier) != nullptr)
+        WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::DeviceMemoryBarrier, false);
+    if (program->FetchIntrinsicUsage(Intrinsic::DeviceMemoryBarrierWithGroupSync) != nullptr)
+        WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::DeviceMemoryBarrier, true);
+    if (program->FetchIntrinsicUsage(Intrinsic::AllMemoryBarrierWithGroupSync) != nullptr)
+        WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::AllMemoryBarrier, true);
 }
 
 void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
@@ -2594,6 +2694,72 @@ void GLSLGenerator::WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage)
         Blank();
 }
 
+static std::string GetWrapperNameForMemoryBarrier(const Intrinsic intrinsic, bool groupSync)
+{
+    std::string s;
+
+    switch (intrinsic)
+    {
+        case Intrinsic::GroupMemoryBarrier:
+            s += "Group";
+            break;
+        case Intrinsic::DeviceMemoryBarrier:
+            s += "Device";
+            break;
+        case Intrinsic::AllMemoryBarrier:
+            s += "All";
+            break;
+        default:
+            return "";
+    }
+
+    s += "MemoryBarrier";
+
+    if (groupSync)
+        s += "WithGroupSync";
+
+    return s;
+}
+
+void GLSLGenerator::WriteWrapperIntrinsicsMemoryBarrier(const Intrinsic intrinsic, bool groupSync)
+{
+    BeginLn();
+    {
+        /* Write function signature */
+        Write("void ");
+        Write(GetWrapperNameForMemoryBarrier(intrinsic, groupSync));
+        Write("()");
+
+        /* Write function body */
+        WriteScopeOpen(compactWrappers_);
+        {
+            switch (intrinsic)
+            {
+                case Intrinsic::GroupMemoryBarrier:
+                    WriteLn("groupMemoryBarrier();");
+                    break;
+                case Intrinsic::DeviceMemoryBarrier:
+                    WriteLn("memoryBarrierAtomicCounter();");
+                    WriteLn("memoryBarrierImage();");
+                    WriteLn("memoryBarrierBuffer();");
+                    break;
+                case Intrinsic::AllMemoryBarrier:
+                    WriteLn("memoryBarrier();");
+                    break;
+                default:
+                    break;
+            }
+
+            if (groupSync)
+                WriteLn("barrier();");
+        }
+        WriteScopeClose();
+    }
+    EndLn();
+
+    Blank();
+}
+
 /* ----- Structure ----- */
 
 bool GLSLGenerator::WriteStructDecl(StructDecl* structDecl, bool writeSemicolon, bool allowNestedStruct)
@@ -2655,10 +2821,53 @@ void GLSLGenerator::WriteBufferDecl(BufferDecl* bufferDecl)
 
 void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
 {
-    /* Determine GLSL sampler type (or VKSL texture type) */
-    auto bufferTypeKeyword = BufferTypeToKeyword(bufferDecl->GetBufferType(), bufferDecl->declStmntRef);
+    const std::string* bufferTypeKeyword = nullptr;
+
+    if (bufferDecl->flags(BufferDecl::isUsedForCompare) && !UseSeparateSamplers())
+    {
+        /* Convert type to a shadow sampler type */
+        SamplerType samplerType = TextureTypeToSamplerType(bufferDecl->GetBufferType());
+        SamplerType shadowSamplerType = SamplerTypeToShadowSamplerType(samplerType);
+
+        bufferTypeKeyword = SamplerTypeToKeyword(shadowSamplerType, bufferDecl->declStmntRef);
+    }
+    else
+    {
+        /* Determine GLSL sampler type (or VKSL texture type) */
+        bufferTypeKeyword = BufferTypeToKeyword(bufferDecl->GetBufferType(), bufferDecl->declStmntRef);
+    }
+
     if (!bufferTypeKeyword)
         return;
+
+    bool isWriteOnly = (!bufferDecl->flags(BufferDecl::isUsedForImageRead));
+
+    /* Determine image layout format */
+    auto imageLayoutFormat  = ImageLayoutFormat::Undefined;
+    auto isRWBuffer         = IsRWTextureBufferType(bufferDecl->GetBufferType());
+
+    if (!isWriteOnly && isRWBuffer)
+    {
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        if (extensions_(Extensions::LayoutAttribute))
+        {
+            /* Take image layout format from type denoter */
+            imageLayoutFormat = bufferDecl->declStmntRef->typeDenoter->layoutFormat;
+        }
+
+        #endif
+
+        /* Attempt to derive a default format */
+        if (imageLayoutFormat == ImageLayoutFormat::Undefined)
+        {
+            if (bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter)
+            {
+                if (auto baseTypeDen = bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter->As<BaseTypeDenoter>())
+                    imageLayoutFormat = DataTypeToImageLayoutFormat(baseTypeDen->dataType);
+            }
+        }
+    }
 
     BeginLn();
     {
@@ -2667,8 +2876,11 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
             {
                 [&]()
                 {
-                    if (IsRWTextureBufferType(bufferDecl->GetBufferType()))
-                        WriteLayoutImageFormat(bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter, bufferDecl);
+                    if (!isWriteOnly)
+                    {
+                        if (auto keyword = ImageLayoutFormatToGLSLKeyword(imageLayoutFormat))
+                            Write(*keyword);
+                    }
                 },
 
                 [&]()
@@ -2677,6 +2889,10 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
                 },
             }
         );
+
+        /* If no format qualifier, reads are not allowed */
+        if (isRWBuffer && (isWriteOnly || imageLayoutFormat == ImageLayoutFormat::Undefined))
+            Write("writeonly ");
 
         Write("uniform ");
 
@@ -2717,7 +2933,15 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
                 [&]() { WriteLayoutBinding(bufferDecl->slotRegisters); },
             }
         );
-        Write(*bufferTypeKeyword + " " + nameMangling_.temporaryPrefix + bufferDecl->ident);
+        Write(*bufferTypeKeyword + " ");
+        
+        if (nameMangling_.renameBufferFields)
+        {
+            Write(bufferDecl->ident);
+            bufferDecl->ident.AppendPrefix(nameMangling_.temporaryPrefix);
+        }
+        else
+            Write(nameMangling_.temporaryPrefix + bufferDecl->ident);
     }
     EndLn();
 
@@ -2744,7 +2968,7 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
 
 void GLSLGenerator::WriteSamplerDecl(SamplerDecl& samplerDecl)
 {
-    if (IsVKSL() || !IsSamplerStateType(samplerDecl.declStmntRef->typeDenoter->samplerType))
+    if (UseSeparateSamplers() || !IsSamplerStateType(samplerDecl.declStmntRef->typeDenoter->samplerType))
     {
         /* Determine GLSL sampler type */
         auto samplerTypeKeyword = SamplerTypeToKeyword(samplerDecl.GetSamplerType(), samplerDecl.declStmntRef);

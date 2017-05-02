@@ -474,7 +474,7 @@ enum class SamplerType
                             // HLSL3            HLSL4+                  GLSL
                             // ---------------  ----------------------  -------
     SamplerState,           // sampler_state    SamplerState            sampler
-    SamplerComparisonState, // sampler_state    SamplerComparisonState  sampler
+    SamplerComparisonState, // sampler_state    SamplerComparisonState  samplerShadow
 };
 
 // Returns true if the specified sampler type is sampler state (i.e. SamplerState or SamplerComparisonState).
@@ -485,6 +485,73 @@ bool IsSamplerTypeShadow(const SamplerType t);
 
 // Returns true if the specified sampler type is an array sampler (e.g. Sampler1DArray).
 bool IsSamplerTypeArray(const SamplerType t);
+
+// Maps a texture type to an appropriate sampler type.
+SamplerType TextureTypeToSamplerType(const BufferType t);
+
+// Converts a non-shadow sampler variant into a shadow one, if possible.
+SamplerType SamplerTypeToShadowSamplerType(const SamplerType t);
+
+
+/* ----- ImageLayoutFormat Enum ----- */
+
+// Image layout format enumeration.
+enum class ImageLayoutFormat
+{
+    Undefined,
+
+    /* --- Float formats --- */
+    F32X4,          // rgba32f
+    F32X2,          // rg32f
+    F32X1,          // r32f
+    F16X4,          // rgba16f
+    F16X2,          // rg16f
+    F16X1,          // r16f
+    F11R11G10B,     // r11f_g11f_b10f
+
+    /* --- Unsigned normalized formats --- */
+    UN32X4,         // rgba16
+    UN16X2,         // rg16
+    UN16X1,         // r16
+    UN10R10G10B2A,  // rgb10_a2
+    UN8X4,          // rgba8
+    UN8X2,          // rg8
+    UN8X1,          // r8
+
+    /* --- Signed normalized formats --- */
+    SN16X4,         // rgba16_snorm
+    SN16X2,         // rg16_snorm
+    SN16X1,         // r16_snorm
+    SN8X4,          // rgba8_snorm
+    SN8X2,          // rg8_snorm
+    SN8X1,          // r8_snorm
+    
+    /* --- Signed integer formats --- */
+    I32X4,          // rgba32i
+    I32X2,          // rg32i
+    I32X1,          // r32i
+    I16X4,          // rgba16i
+    I16X2,          // rg16i
+    I16X1,          // r16i
+    I8X4,           // rgba8i
+    I8X2,           // rg8i
+    I8X1,           // r8i
+    
+    /* --- Unsigned integer formats --- */
+    UI32X4,         // rgba32ui
+    UI32X2,         // rg32ui
+    UI32X1,         // r32ui
+    UI16X4,         // rgba16ui
+    UI16X2,         // rg16ui
+    UI16X1,         // r16ui
+    UI10R10G10B2A,  // rgb10_a2ui
+    UI8X4,          // rgba8ui
+    UI8X2,          // rg8ui
+    UI8X1,          // r8ui
+};
+
+// Returns the base type of a single component in the specified image layout format.
+DataType GetImageLayoutFormatBaseType(const ImageLayoutFormat format);
 
 
 /* ----- RegisterType Enum ----- */
@@ -553,8 +620,11 @@ enum class AttributeType
     PatchConstantFunc,
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
+
     /* --- Language extensions --- */
     Space,
+    Layout,
+
     #endif
 };
 
@@ -761,8 +831,59 @@ enum class Intrinsic
     Texture_Load_1,             // Load(int[1,2,3,4] Location)
     Texture_Load_2,             // Load(int[1,2,3,4] Location, int SampleIndex)
     Texture_Load_3,             // Load(int[1,2,3,4] Location, int SampleIndex, int Offset)
-  //Texture_Gather_3,           // Gather(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset)
-  //Texture_Gather_4,           // Gather(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, out uint Status)
+
+    Texture_Gather_2,           // Gather(SamplerState S, float[2,3,4] Location)
+    Texture_GatherRed_2,        // GatherRed(SamplerState S, float[2,3,4] Location)
+    Texture_GatherGreen_2,      // GatherGreen(SamplerState S, float[2,3,4] Location)
+    Texture_GatherBlue_2,       // GatherBlue(SamplerState S, float[2,3,4] Location)
+    Texture_GatherAlpha_2,      // GatherAlpha(SamplerState S, float[2,3,4] Location)
+
+    Texture_Gather_3,           // Gather(SamplerState S, float[2,3] Location, int2 Offset)
+    Texture_Gather_4,           // Gather(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
+    Texture_GatherRed_3,        // GatherRed(SamplerState S, float[2,3] Location, int2 Offset)
+    Texture_GatherRed_4,        // GatherRed(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
+    Texture_GatherGreen_3,      // GatherGreen(SamplerState S, float[2,3] Location, int2 Offset)
+    Texture_GatherGreen_4,      // GatherGreen(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
+    Texture_GatherBlue_3,       // GatherBlue(SamplerState S, float[2,3] Location, int2 Offset)
+    Texture_GatherBlue_4,       // GatherBlue(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
+    Texture_GatherAlpha_3,      // GatherAlpha(SamplerState S, float[2,3] Location, int2 Offset)
+    Texture_GatherAlpha_4,      // GatherAlpha(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
+
+    Texture_GatherRed_6,        // GatherRed(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherRed_7,        // GatherRed(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherGreen_6,      // GatherGreen(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherGreen_7,      // GatherGreen(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherBlue_6,       // GatherBlue(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherBlue_7,       // GatherBlue(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherAlpha_6,      // GatherAlpha(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherAlpha_7,      // GatherAlpha(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+
+    Texture_GatherCmp_3,        // GatherCmp(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
+    Texture_GatherCmpRed_3,     // GatherCmpRed(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
+    Texture_GatherCmpGreen_3,   // GatherCmpGreen(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
+    Texture_GatherCmpBlue_3,    // GatherCmpBlue(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
+    Texture_GatherCmpAlpha_3,   // GatherCmpAlpha(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
+
+    Texture_GatherCmp_4,        // GatherCmp(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
+    Texture_GatherCmp_5,        // GatherCmp(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
+    Texture_GatherCmpRed_4,     // GatherCmpRed(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
+    Texture_GatherCmpRed_5,     // GatherCmpRed(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
+    Texture_GatherCmpGreen_4,   // GatherCmpGreen(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
+    Texture_GatherCmpGreen_5,   // GatherCmpGreen(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
+    Texture_GatherCmpBlue_4,    // GatherCmpBlue(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
+    Texture_GatherCmpBlue_5,    // GatherCmpBlue(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
+    Texture_GatherCmpAlpha_4,   // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
+    Texture_GatherCmpAlpha_5,   // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
+
+    Texture_GatherCmpRed_7,     // GatherCmpRed(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherCmpRed_8,     // GatherCmpRed(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherCmpGreen_7,   // GatherCmpGreen(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherCmpGreen_8,   // GatherCmpGreen(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherCmpBlue_7,    // GatherCmpBlue(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherCmpBlue_8,    // GatherCmpBlue(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherCmpAlpha_7,   // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherCmpAlpha_8,   // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+
     Texture_Sample_2,           // Sample(SamplerState S, float[1,2,3,4] Location)
     Texture_Sample_3,           // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset)
     Texture_Sample_4,           // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, float Clamp)
@@ -831,6 +952,18 @@ bool IsImageIntrinsic(const Intrinsic t);
 
 // Returns true if the specified intrinsic in an interlocked intrinsic (e.g. Intrinsic::InterlockedAdd).
 bool IsInterlockedIntristic(const Intrinsic t);
+
+// Returns true if the specified intrinsic is a texture gather intrinsic.
+bool IsGatherIntrisic(const Intrinsic t);
+
+// Returns the number of offset parameters accepted by the specified gather intrinsic.
+int GetGatherIntrinsicOffsetParamCount(const Intrinsic t);
+
+// Maps a texture gather intrinsic to a component index (e.g. red -> 0, green -> 1, etc.)
+int GetGatherIntrinsicComponentIndex(const Intrinsic t);
+
+// Returns true if the specified intrinsic is a texture sample or gather intrisic, with a compare operation.
+bool IsTextureCompareIntrinsic(const Intrinsic t);
 
 // Returns the respective intrinsic for the specified binary compare operator, or Intrinsic::Undefined if the operator is not a compare operator.
 Intrinsic CompareOpToIntrinsic(const BinaryOp op);

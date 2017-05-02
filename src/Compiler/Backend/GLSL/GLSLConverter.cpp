@@ -51,10 +51,11 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
 {
     /* Store settings */
     shaderTarget_       = inputDesc.shaderTarget;
+    versionOut_         = outputDesc.shaderVersion;
     options_            = outputDesc.options;
-    isVKSL_             = IsLanguageVKSL(outputDesc.shaderVersion);
     autoBinding_        = outputDesc.options.autoBinding;
     autoBindingSlot_    = outputDesc.options.autoBindingStartSlot;
+    separateSamplers_   = outputDesc.options.separateSamplers;
 
     /* Convert type of specific semantics */
     TypeConverter typeConverter;
@@ -63,7 +64,7 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
     /* Convert expressions */
     Flags exprConverterFlags = ExprConverter::All;
 
-    if ( isVKSL_ || ( outputDesc.shaderVersion >= OutputShaderVersion::GLSL420 && outputDesc.shaderVersion <= OutputShaderVersion::GLSL450 ))
+    if (HasShadingLanguage420Pack())
     {
         /*
         Remove specific conversions when the GLSL output version is explicitly set to 4.20 or higher,
@@ -86,6 +87,21 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
         GLSLConverter::CompareFuncSignatures,
         FuncNameConverter::All
     );
+}
+
+bool GLSLConverter::IsVKSL() const
+{
+    return IsLanguageVKSL(versionOut_);
+}
+
+bool GLSLConverter::HasShadingLanguage420Pack() const
+{
+    return ( IsVKSL() || ( versionOut_ >= OutputShaderVersion::GLSL420 && versionOut_ <= OutputShaderVersion::GLSL450 ) );
+}
+
+bool GLSLConverter::UseSeparateSamplers() const
+{
+    return ( IsVKSL() && separateSamplers_ );
 }
 
 /* ------- Visit functions ------- */
@@ -145,7 +161,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         /* Insert prefix expression as first argument into function call, if this is a texture intrinsic call */
         if (IsTextureIntrinsic(ast->intrinsic) && ast->prefixExpr)
         {
-            if (isVKSL_)
+            if (UseSeparateSamplers())
             {
                 /* Replace sampler state argument by sampler/texture binding call */
                 if (!ast->arguments.empty())
@@ -167,7 +183,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         }
     }
 
-    if (!isVKSL_)
+    if (!UseSeparateSamplers())
     {
         /* Remove arguments which contain a sampler state object, since GLSL does not support sampler states */
         MoveAllIf(
@@ -256,7 +272,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     CloseScope();
     PopStructDecl();
 
-    if (!isVKSL_)
+    if (!UseSeparateSamplers())
         RemoveSamplerStateVarDeclStmnts(ast->varMembers);
 
     /* Is this an empty structure? */
@@ -283,8 +299,12 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
-    ConvertSlotRegisters(ast->slotRegisters);
-    VisitScopedStmntList(ast->localStmnts);
+    PushUniformBufferDecl(ast);
+    {
+        ConvertSlotRegisters(ast->slotRegisters);
+        VisitScopedStmntList(ast->localStmnts);
+    }
+    PopUniformBufferDecl();
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
@@ -316,6 +336,14 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
     /* Take latest sub type denoter */
     ast->typeSpecifier->typeDenoter = subTypeDen;
+
+    if (InsideUniformBufferDecl())
+    {
+        /* Swap 'row_major' with 'column_major' storage layout for matrix types */
+        const auto& typeDen = ast->typeSpecifier->typeDenoter->GetAliased();
+        if (typeDen.IsMatrix())
+            ast->typeSpecifier->SwapMatrixStorageLayout(TypeModifier::RowMajor);
+    }
 
     VISIT_DEFAULT(VarDeclStmnt);
 }
@@ -444,7 +472,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     VISIT_DEFAULT(ReturnStmnt);
 
     /* Check for cast expressions in entry-point return statements */
-    if (InsideEntryPoint())
+    if (InsideEntryPoint() && ast->expr != nullptr)
     {
         if (auto castExpr = AST::GetAs<CastExpr>(ast->expr->FindFirstOf(AST::Types::CastExpr)))
         {
@@ -543,11 +571,24 @@ void GLSLConverter::RegisterDeclIdent(Decl* obj, bool global)
     /* Rename declaration object if it has a reserved keyword */
     RenameReservedKeyword(obj->ident);
 
-    /* Register identifier in symbol table */
     if (global)
+    {
+        /* Append object to global reserved declaration objects */
         globalReservedDecls_.push_back(obj);
+    }
     else
-        Register(obj->ident);
+    {
+        /* Register identifier in symbol table */
+        try
+        {
+            Register(obj->ident);
+        }
+        catch (const std::exception& e)
+        {
+            //TODO: throw an "internal error"
+            RuntimeErr(e.what(), obj);
+        }
+    }
 }
 
 void GLSLConverter::RegisterGlobalDeclIdents(const std::vector<VarDecl*>& varDecls)
@@ -729,7 +770,7 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
     else
         ConvertFunctionDeclDefault(ast);
 
-    if (!isVKSL_)
+    if (!UseSeparateSamplers())
         RemoveSamplerStateVarDeclStmnts(ast->parameters);
 
     if (selfParamVar)
@@ -781,6 +822,9 @@ void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
 
 void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
 {
+    if (IsGatherIntrisic(ast->intrinsic))
+        ConvertIntrinsicCallGather(ast);
+
     switch (ast->intrinsic)
     {
         case Intrinsic::InterlockedAdd:
@@ -813,8 +857,10 @@ void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
         case Intrinsic::Texture_SampleLevel_5:
             ConvertIntrinsicCallTextureSampleLevel(ast);
             break;
-        case Intrinsic::Image_Store:
-            ConvertIntrinsicCallImageStore(ast);
+        case Intrinsic::Texture_Load_1:
+        case Intrinsic::Texture_Load_2:
+        case Intrinsic::Texture_Load_3:
+            ConvertIntrinsicCallTextureLoad(ast);
             break;
         default:
             break;
@@ -840,60 +886,11 @@ void GLSLConverter::ConvertIntrinsicCallSaturate(CallExpr* ast)
         RuntimeErr(R_InvalidIntrinsicArgCount(ast->ident, 1, ast->arguments.size()), ast);
 }
 
-static int GetTextureDimFromExpr(Expr* expr, const AST* ast = nullptr)
-{
-    if (expr)
-    {
-        const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
-        if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
-        {
-            /* Determine vector size for texture intrinsic parameters by texture buffer type */
-            switch (bufferTypeDen->bufferType)
-            {
-                case BufferType::Buffer:
-                case BufferType::Texture1D:
-                    return 1;
-                case BufferType::Texture1DArray:
-                case BufferType::Texture2D:
-                case BufferType::Texture2DMS:
-                    return 2;
-                case BufferType::Texture2DArray:
-                case BufferType::Texture2DMSArray:
-                case BufferType::Texture3D:
-                case BufferType::TextureCube:
-                    return 3;
-                case BufferType::TextureCubeArray:
-                    return 4;
-                default:
-                    break;
-            }
-        }
-        else if (auto samplerTypeDen = typeDen.As<SamplerTypeDenoter>())
-        {
-            /* Determine vector size for texture intrinsic parameters by sampler type */
-            switch (samplerTypeDen->samplerType)
-            {
-                case SamplerType::Sampler1D:
-                    return 1;
-                case SamplerType::Sampler2D:
-                    return 2;
-                case SamplerType::Sampler3D:
-                case SamplerType::SamplerCube:
-                    return 3;
-                default:
-                    break;
-            }
-        }
-        RuntimeErr(R_FailedToGetTextureDim, ast);
-    }
-    RuntimeErr(R_FailedToGetTextureDim, ast);
-}
-
 static int GetTextureDimFromIntrinsicCall(CallExpr* ast)
 {
     /* Get buffer object from sample intrinsic call */
     if (ast->prefixExpr)
-        return GetTextureDimFromExpr(ast->prefixExpr.get(), ast);
+        return ExprConverter::GetTextureDimFromExpr(ast->prefixExpr.get(), ast);
     else
         RuntimeErr(R_FailedToGetTextureDim, ast);
 }
@@ -906,7 +903,7 @@ void GLSLConverter::ConvertIntrinsicCallTexLod(CallExpr* ast)
         auto& args = ast->arguments;
 
         /* Determine vector size for texture intrinsic */
-        if (auto textureDim = GetTextureDimFromExpr(args[0].get()))
+        if (auto textureDim = ExprConverter::GetTextureDimFromExpr(args[0].get()))
         {
             /* Convert arguments */
             exprConverter_.ConvertExprIfCastRequired(args[1], DataType::Float4, true);
@@ -969,92 +966,208 @@ void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast)
     }
 }
 
+void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
+{
+    /* Determine vector size for texture intrinsic */
+    if (auto textureDim = GetTextureDimFromIntrinsicCall(ast))
+    {
+        auto& args = ast->arguments;
+        if (args.size() < 2)
+        {
+            RuntimeErr(R_InvalidIntrinsicArgCount(ast->ident, 2, ast->arguments.size()), ast);
+            return;
+        }
+
+        const auto& typeDen = ast->prefixExpr->GetTypeDenoter()->GetAliased();
+        if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
+        {
+            if (bufferTypeDen->bufferType == BufferType::Texture2DMS || bufferTypeDen->bufferType == BufferType::Texture2DMSArray)
+            {
+                /* GLSL doesn't support offset for MS textures */
+                if (ast->intrinsic == Intrinsic::Texture_Load_3)
+                    RuntimeErr(R_FailedToMapClassIntrinsicOverload(ast->ident, BufferTypeToString(bufferTypeDen->bufferType)), ast);
+
+                /* Ensure argument: int Sample */
+                if (args.size() >= 3)
+                    exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Int, true);
+            }
+            else if (bufferTypeDen->bufferType == BufferType::Buffer)
+            {
+                /* No conversion for buffer loads */
+            }
+            else
+            {
+                /* Break up the location argument into separate coordinate and LOD arguments */
+                auto tempVarIdent           = MakeTempVarIdent();
+                auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
+                auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
+
+                InsertStmntBefore(tempVarDeclStmnt);
+
+                const std::string vectorSubscript = "xyzw";
+
+                auto subExpr = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
+                auto arg1Expr = ASTFactory::MakeObjectExpr(subExpr, vectorSubscript.substr(0, textureDim));
+                auto arg2Expr = ASTFactory::MakeObjectExpr(subExpr, vectorSubscript.substr(textureDim, 1));
+
+                args[1] = arg1Expr;
+                args.insert(args.begin() + 2, arg2Expr);
+
+                exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Int, true);
+
+                /* Ensure argument: int[1,2,3] Offset */
+                if (args.size() >= 4)
+                    exprConverter_.ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, textureDim), true);
+            }
+
+            /* Ensure argument: int[1,2,3] Location */
+            exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Int, textureDim), true);
+        }
+    }
+}
+
 void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
 {
-    /* Convert "atomic*" to "imageAtomic*" for buffer types */
-    if (ast->arguments.size() >= 2)
+    auto& args = ast->arguments;
+
+    if (args.size() >= 2)
     {
-        const auto& arg0Expr = ast->arguments.front();
+        DataType baseDataType = DataType::Int;
+        BufferType bufferType = BufferType::Buffer;
+
+        /* Convert "atomic*" to "imageAtomic*" for buffer types */
+        const auto& arg0Expr = args.front();
         if (auto arg0ArrayExpr = arg0Expr->As<ArrayExpr>())
         {
-            const auto& typeDen = arg0ArrayExpr->prefixExpr->GetTypeDenoter()->GetAliased();
-            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
+            auto prefixTypeDen = arg0ArrayExpr->prefixExpr->GetTypeDenoter()->GetSub();
+
+            std::size_t numDims = 0;
+            if (auto arrayTypeDenoter = prefixTypeDen->As<ArrayTypeDenoter>())
             {
+                numDims = arrayTypeDenoter->arrayDims.size();
+                prefixTypeDen = arrayTypeDenoter->subTypeDenoter;
+            }
+
+            if (auto bufferTypeDen = prefixTypeDen->As<BufferTypeDenoter>())
+            {
+                bufferType = bufferTypeDen->bufferType;
+
+                if (bufferTypeDen->genericTypeDenoter != nullptr)
+                {
+                    if (auto genericBaseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
+                        baseDataType = BaseDataType(genericBaseTypeDen->dataType);
+                }
+
                 /* Is the buffer declaration a read/write texture? */
-                if (IsRWTextureBufferType(bufferTypeDen->bufferType))
+                if (IsRWTextureBufferType(bufferType) && numDims < arg0ArrayExpr->NumIndices())
                 {
                     /* Map interlocked intrinsic to image atomic intrinsic */
                     ast->intrinsic = InterlockedToImageAtomicIntrinsic(ast->intrinsic);
 
                     /* Insert array indices from object identifier after first argument */
-                    ast->arguments.insert(ast->arguments.begin() + 1, arg0ArrayExpr->arrayIndices.back());
+                    args.insert(args.begin() + 1, arg0ArrayExpr->arrayIndices.back());
 
-                    /* Check if array expression must be replaced by its sub expression */
-                    arg0ArrayExpr->arrayIndices.pop_back();
-                    if (arg0ArrayExpr->arrayIndices.empty())
-                        ast->arguments.front() = arg0ArrayExpr->prefixExpr;
+                    /* Replace by array sub-expression without the last index */
+                    if (numDims > 0)
+                    {
+                        std::vector<ExprPtr> arrayIndices;
+                        for (std::size_t i = 0; i < numDims; ++i)
+                            arrayIndices.push_back(arg0ArrayExpr->arrayIndices[i]);
+
+                        args.front() = ASTFactory::MakeArrayExpr(arg0ArrayExpr->prefixExpr, std::move(arrayIndices));
+                    }
+                    else
+                        args.front() = arg0ArrayExpr->prefixExpr;
                 }
             }
         }
-        else
+
+        /* Cast arguments if required, for both image and non-image atomics */
+        std::size_t dataArgOffset = 1;
+        if (IsRWTextureBufferType(bufferType))
         {
-            const auto& typeDen = arg0Expr->GetTypeDenoter()->GetAliased();
-            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
+            /* Cast location argument */
+            int numDims = 1;
+            switch (bufferType)
             {
-                /* Is the buffer declaration a read/write texture? */
-                if (IsRWTextureBufferType(bufferTypeDen->bufferType))
-                {
-                    /* Map interlocked intrinsic to image atomic intrinsic */
-                    ast->intrinsic = InterlockedToImageAtomicIntrinsic(ast->intrinsic);
-                }
+                case BufferType::RWBuffer:
+                case BufferType::RWTexture1D:
+                    numDims = 1;
+                    break;
+                case BufferType::RWTexture1DArray:
+                case BufferType::RWTexture2D:
+                    numDims = 2;
+                    break;
+                case BufferType::RWTexture2DArray:
+                case BufferType::RWTexture3D:
+                    numDims = 3;
+                default:
+                    break;
             }
+
+            exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Int, numDims), true);
+            dataArgOffset = 2;
         }
+
+        if (args.size() >= (dataArgOffset + 1))
+            exprConverter_.ConvertExprIfCastRequired(args[dataArgOffset], baseDataType, true);
+
+        if(ast->intrinsic == Intrinsic::Image_AtomicCompSwap && args.size() >= (dataArgOffset + 2))
+            exprConverter_.ConvertExprIfCastRequired(args[dataArgOffset + 1], baseDataType, true);
     }
 }
 
-void GLSLConverter::ConvertIntrinsicCallImageStore(CallExpr* ast)
+void GLSLConverter::ConvertIntrinsicCallGather(CallExpr* ast)
 {
-    /* Cast input value argument to 4 component vector */
-    auto& args = ast->arguments;
+    bool isCompare = IsTextureCompareIntrinsic(ast->intrinsic);
 
-    if (args.size() >= 3)
+    /* If using separate offsets for each sample, convert four arguments into a single 4-element array argument */
+    auto offsetCount = GetGatherIntrinsicOffsetParamCount(ast->intrinsic);
+    if (offsetCount == 4)
     {
-        /* Determine base data type form generic buffer type denoter */
-        DataType dataType = DataType::Float;
+        /* Check if we have the valid number of arguments */
+        int offsetArgStart  = (isCompare ? 3 : 2);
+        int offsetArgEnd    = offsetArgStart + 4;
 
-        auto nonBracketExpr = args.front()->FindFirstNotOf(AST::Types::BracketExpr);
-
-        if (auto arg0ArrayExpr = nonBracketExpr->As<ArrayExpr>())
+        if (ast->arguments.size() < static_cast<std::size_t>(offsetArgEnd))
         {
-            const auto& typeDen = arg0ArrayExpr->prefixExpr->GetTypeDenoter()->GetAliased();
-            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
-            {
-                if (bufferTypeDen->genericTypeDenoter != nullptr)
-                {
-                    if (auto genericBaseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
-                        dataType = genericBaseTypeDen->dataType;
-                }
-            }
-        }
-        else
-        {
-            const auto& typeDen = nonBracketExpr->GetTypeDenoter()->GetAliased();
-            if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
-            {
-                if (bufferTypeDen->genericTypeDenoter != nullptr)
-                {
-                    if (auto genericBaseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
-                        dataType = genericBaseTypeDen->dataType;
-                }
-            }
+            RuntimeErr(R_InvalidIntrinsicArgCount(ast->ident, offsetArgEnd, ast->arguments.size()), ast);
+            return;
         }
 
-        if (IsIntType(dataType))
-            exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Int4, true);
-        else if (IsUIntType(dataType))
-            exprConverter_.ConvertExprIfCastRequired(args[2], DataType::UInt4, true);
-        else
-            exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Float4, true);
+        /* Determine the type of the array */
+        auto baseTypeDenoter = std::make_shared<BaseTypeDenoter>();
+        baseTypeDenoter->dataType = DataType::Int2;
+
+        std::vector<ArrayDimensionPtr> arrayDims;
+        arrayDims.push_back(ASTFactory::MakeArrayDimension(4));
+
+        auto arrayTypeDenoter = std::make_shared<ArrayTypeDenoter>(baseTypeDenoter, arrayDims);
+
+        /* Place the arguments into the array */
+        std::vector<ExprPtr> arrayCtorArguments;
+        for (int i = offsetArgStart; i < offsetArgEnd; ++i)
+        {
+            auto& argument = ast->arguments[i];
+            exprConverter_.ConvertExprIfCastRequired(argument, DataType::Int2, true);
+
+            arrayCtorArguments.push_back(argument);
+        }
+
+        auto arrayCtorExpr = ASTFactory::MakeTypeCtorCallExpr(arrayTypeDenoter, arrayCtorArguments);
+
+        /* Remove offset arguments and add the array argument in their place */
+        ast->arguments.erase(ast->arguments.begin() + offsetArgStart, ast->arguments.begin() + offsetArgEnd);
+        ast->arguments.insert(ast->arguments.begin() + offsetArgStart, arrayCtorExpr);
+    }
+
+    /* Add a component index argument based on the intrinsic type */
+    if (!isCompare)
+    {
+        int componentIdx = GetGatherIntrinsicComponentIndex(ast->intrinsic);
+        auto componentArgExpr = ASTFactory::MakeLiteralExpr(DataType::Int, std::to_string(componentIdx));
+
+        ast->arguments.push_back(componentArgExpr);
     }
 }
 

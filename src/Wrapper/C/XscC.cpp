@@ -66,31 +66,33 @@ static struct CompilerContext g_compilerContext;
 
 static void InitializeFormatting(struct XscFormatting* s)
 {
-    s->indent               = "    ";
-    s->blanks               = true;
-    s->lineMarks            = false;
-    s->compactWrappers      = false;
     s->alwaysBracedScopes   = false;
-    s->newLineOpenScope     = true;
+    s->blanks               = true;
+    s->compactWrappers      = false;
+    s->indent               = "    ";
+    s->lineMarks            = false;
     s->lineSeparation       = true;
+    s->newLineOpenScope     = true;
 }
 
 static void InitializeOptions(struct XscOptions* s)
 {
-    s->optimize                 = false;
-    s->preprocessOnly           = false;
-    s->validateOnly             = false;
     s->allowExtensions          = false;
-    s->explicitBinding          = false;
     s->autoBinding              = false;
     s->autoBindingStartSlot     = 0;
+    s->explicitBinding          = false;
+    s->obfuscate                = false;
+    s->optimize                 = false;
+    s->preprocessOnly           = false;
     s->preserveComments         = false;
     s->preferWrappers           = false;
-    s->unrollArrayInitializers  = false;
     s->rowMajorAlignment        = false;
-    s->obfuscate                = false;
+    s->separateSamplers         = true;
+    s->separateShaders          = false;
     s->showAST                  = false;
     s->showTimes                = false;
+    s->unrollArrayInitializers  = false;
+    s->validateOnly             = false;
 }
 
 static void InitializeNameMangling(struct XscNameMangling* s)
@@ -101,6 +103,7 @@ static void InitializeNameMangling(struct XscNameMangling* s)
     s->temporaryPrefix      = "xst_";
     s->namespacePrefix      = "xsn_";
     s->useAlwaysSemantics   = false;
+    s->renameBufferFields   = false;
 }
 
 static void InitializeIncludeHandler(struct XscIncludeHandler* s)
@@ -118,6 +121,7 @@ static void InitializeShaderInput(struct XscShaderInput* s)
     s->entryPoint           = "main";
     s->secondaryEntryPoint  = NULL;
     s->warnings             = 0;
+    s->extensions           = 0;
 
     InitializeIncludeHandler(&(s->includeHandler));
 }
@@ -348,6 +352,7 @@ XSC_EXPORT bool XscCompileShader(
     in.secondaryEntryPoint  = ReadStringC(inputDesc->secondaryEntryPoint);
     in.warnings             = inputDesc->warnings;
     in.includeHandler       = (&includeHandler);
+    in.extensions           = inputDesc->extensions;
 
     /* Copy output descriptor */
     Xsc::ShaderOutput out;
@@ -377,6 +382,8 @@ XSC_EXPORT bool XscCompileShader(
     out.options.preferWrappers          = outputDesc->options.preferWrappers;
     out.options.unrollArrayInitializers = outputDesc->options.unrollArrayInitializers;
     out.options.rowMajorAlignment       = outputDesc->options.rowMajorAlignment;
+    out.options.separateShaders         = outputDesc->options.separateShaders;
+    out.options.separateSamplers        = outputDesc->options.separateSamplers;
     out.options.obfuscate               = outputDesc->options.obfuscate;
     out.options.showAST                 = outputDesc->options.showAST;
     out.options.showTimes               = outputDesc->options.showTimes;
@@ -397,6 +404,7 @@ XSC_EXPORT bool XscCompileShader(
     out.nameMangling.temporaryPrefix    = ReadStringC(outputDesc->nameMangling.temporaryPrefix);
     out.nameMangling.namespacePrefix    = ReadStringC(outputDesc->nameMangling.namespacePrefix);
     out.nameMangling.useAlwaysSemantics = outputDesc->nameMangling.useAlwaysSemantics;
+    out.nameMangling.renameBufferFields = outputDesc->nameMangling.renameBufferFields;
 
     /* Initialize log */
     Xsc::StdLog logPrimaryStd;

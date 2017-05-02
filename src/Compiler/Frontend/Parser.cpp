@@ -25,8 +25,8 @@ Parser::~Parser()
  */
 
 Parser::Parser(Log* log) :
-    reportHandler_  { R_Syntax, log },
-    log_            { log           }
+    reportHandler_ { R_Syntax, log },
+    log_           { log           }
 {
 }
 
@@ -388,6 +388,34 @@ ExprPtr Parser::ParseDivExpr()
 ExprPtr Parser::ParseValueExpr()
 {
     return ParsePrimaryExpr();
+}
+
+int Parser::ParseIntLiteral(TokenPtr tkn)
+{
+    /* Parse value string of integer literal token */
+    if (!tkn)
+        tkn = Accept(Tokens::IntLiteral);
+
+    /* Parse value string of token */
+    return ParseIntLiteral(tkn->Spell(), tkn.get());
+}
+
+int Parser::ParseIntLiteral(const std::string& valueStr, const Token* tkn)
+{
+    /* Convert literal string into integer */
+    try
+    {
+        return std::stoi(valueStr);
+    }
+    catch (const std::invalid_argument&)
+    {
+        Error(R_ExpectedIntLiteral(valueStr), tkn, false);
+    }
+    catch (const std::out_of_range&)
+    {
+        Error(R_IntLiteralOutOfRange(valueStr), tkn, false);
+    }
+    return 0;
 }
 
 /* ----- Common ----- */

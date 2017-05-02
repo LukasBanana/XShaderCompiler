@@ -12,6 +12,7 @@
 #include "Analyzer.h"
 #include "ShaderVersion.h"
 #include "Variant.h"
+#include "Flags.h"
 #include <map>
 #include <set>
 
@@ -184,6 +185,12 @@ class HLSLAnalyzer : public Analyzer
             std::string& literalValue
         );
 
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        void AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bufferDeclStmnt);
+
+        #endif
+
         /* ----- Semantic ----- */
 
         void AnalyzeSemantic(IndexedSemantic& semantic);
@@ -225,7 +232,9 @@ class HLSLAnalyzer : public Analyzer
         std::set<VarDecl*>  varDeclSM3Semantics_;
 
         #ifdef XSC_ENABLE_LANGUAGE_EXT
-        bool                spaceAttrExt_               = false;                        // Enables the language extension of the "space" attribute.
+        
+        Flags               extensions_;
+
         #endif
 
 };

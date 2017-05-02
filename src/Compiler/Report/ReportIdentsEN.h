@@ -193,6 +193,7 @@ DECL_REPORT( ExpectedPrimaryExpr,               "expected primary expression"   
 DECL_REPORT( ExpectedLiteralExpr,               "expected literal expression"                                                                                   );
 DECL_REPORT( ExpectedTypeDen,                   "expected type denoter"                                                                                         );
 DECL_REPORT( ExpectedBaseTypeDen,               "expected base type denoter"                                                                                    );
+DECL_REPORT( ExpectedIntLiteral,                "expected integer literal[, but got '{0}']"                                                                     );
 DECL_REPORT( InFunction,                        " (in function: {0})"                                                                                           );
 DECL_REPORT( FailedToCreateScanner,             "failed to create token scanner"                                                                                );
 DECL_REPORT( FailedToScanSource,                "failed to scan source code"                                                                                    );
@@ -202,6 +203,7 @@ DECL_REPORT( SubExprAndOpsUncorrelated,         "sub-expressions and operators h
 DECL_REPORT( TooManySyntaxErrors,               "too many syntax errors"                                                                                        );
 DECL_REPORT( IdentNameManglingConflict,         "identifier '{0}' conflicts with reserved name mangling prefix '{1}'"                                           );
 DECL_REPORT( NotAllowedInThisContext,           "{0} not allowed in this context"                                                                               );
+DECL_REPORT( IntLiteralOutOfRange,              "integer literal[ '{0}'] is out of range"                                                                       );
 
 /* ----- PreProcessor ----- */
 
@@ -289,6 +291,7 @@ DECL_REPORT( MissingScopedStmntRef,             "missing reference to scoped sta
 
 DECL_REPORT( MissingSelfParamForMemberFunc,     "missing 'self'-parameter for member function[ '{0}']"                                                          );
 DECL_REPORT( FailedToGetTextureDim,             "failed to determine dimension of texture object[ '{0}']"                                                       );
+DECL_REPORT( FailedToMapClassIntrinsicOverload, "failed to map overload of class intrinsic '{0}' for type '{1}'"                                                );
 
 /* ----- GLSLExtensionAgent ----- */
 
@@ -441,9 +444,10 @@ DECL_REPORT( IllegalNonStaticFuncCall,          "illegal call to static function
 DECL_REPORT( IllegalDefOfNonStaticMemberVar,    "illegal definition of non-static member variable[ '{0}']"                                                      );
 DECL_REPORT( DuplicateUseOfOutputSemantic,      "duplicate use of output semantic '{0}'"                                                                        );
 DECL_REPORT( UniformCantBeOutput,               "uniforms can not be defined as output"                                                                         );
-DECL_REPORT( TooManyArgsForAttribute,           "too many arguments for attribute[ '{0}'][ (expected {2}[-{3}], but got {1})]"                                  );
-DECL_REPORT( TooFewArgsForAttribute,            "too few arguments for attribute[ '{0}'][ (expected {2}[-{3}], but got {1})]"                                   );
-DECL_REPORT( ExpectedIdentArgInAttribute,       "expected identifier for argument in ['{0}' ]attribute"                                                         );
+DECL_REPORT( TooManyArgsForAttribute,           "too many arguments for attribute[ '{0}'][ (expected {1}, but got {2})]"                                        );
+DECL_REPORT( TooFewArgsForAttribute,            "too few arguments for attribute[ '{0}'][ (expected {1}, but got {2})]"                                         );
+DECL_REPORT( ExpectedIdentArgInAttribute,       "expected identifier as argument for attribute [ '{0}']"                                                        );
+DECL_REPORT( InvalidIdentArgInAttribute,        "invalid identifier '{0}' used as argument for attribute[ '{1}']"                                               );
 DECL_REPORT( ExpectedDomainTypeParamToBe,       "expected domain type parameter to be \"tri\", \"quad\", or \"isoline\""                                        );
 DECL_REPORT( ExpectedOutputTopologyParamToBe,   "expected output topology parameter to be \"point\", \"line\", \"triangle_cw\", or \"triangle_ccw\""            );
 DECL_REPORT( ExpectedPartitioningModeParamToBe, "expected partitioning mode parameter to be \"integer\", \"pow2\", \"fractional_even\", or \"fractional_odd\""  );
@@ -468,12 +472,20 @@ DECL_REPORT( OutputStreamCantBeNull,            "output stream must not be null"
 DECL_REPORT( NameManglingPrefixResCantBeEmpty,  "name mangling prefix for reserved words must not be empty"                                                     );
 DECL_REPORT( NameManglingPrefixTmpCantBeEmpty,  "name mangling prefix for temporary variables must not be empty"                                                );
 DECL_REPORT( OverlappingNameManglingPrefixes,   "overlapping name mangling prefixes"                                                                            );
+DECL_REPORT( LangExtensionsNotSupported,        "compiler was not build with language extensions"                                                               );
 DECL_REPORT( PreProcessingSourceFailed,         "preprocessing input code failed"                                                                               );
 DECL_REPORT( ParsingSourceFailed,               "parsing input code failed"                                                                                     );
 DECL_REPORT( AnalyzingSourceFailed,             "analyzing input code failed"                                                                                   );
 DECL_REPORT( GeneratingOutputCodeFailed,        "generating output code failed"                                                                                 );
 DECL_REPORT( OnlyPreProcessingForNonHLSL,       "only pre-processing supported for shaders other than HLSL or Cg"                                               );
 
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+/* ----- Extensions ----- */
+DECL_REPORT( InvalidImageFormatForType,         "invalid image format '{0}' used for buffer of type '{1}'"                                                      );
+DECL_REPORT( AttributeRequiresExtension,        "attribute '{0}' requires language extension '{1}'"                                                             );
+
+#endif
 
 #endif
 
