@@ -250,9 +250,28 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         }
     }
 
-    /* Collect all used intrinsics (if they can not be inlined) */
-    if (ast->intrinsic != Intrinsic::Undefined && !ast->flags(CallExpr::canInlineIntrinsicWrapper))
-        program_->RegisterIntrinsicUsage(ast->intrinsic, ast->arguments);
+    if (ast->intrinsic != Intrinsic::Undefined)
+    {
+        /* Mark RW buffers used in read operations */
+        if ((ast->intrinsic >= Intrinsic::Image_AtomicAdd && ast->intrinsic <= Intrinsic::Image_AtomicExchange) || ast->intrinsic == Intrinsic::Image_Load)
+        {
+            if(ast->arguments.size() > 0)
+            {
+                if (auto bufferTypeDen = ast->arguments[0]->GetTypeDenoter()->GetSub()->As<BufferTypeDenoter>())
+                {
+                    if(IsRWTextureBufferType(bufferTypeDen->bufferType))
+                    {
+                        if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
+                            bufferDecl->flags << BufferDecl::isUsedForImageRead;
+                    }
+                }
+            }
+        }
+
+        /* Collect all used intrinsics (if they can not be inlined) */
+        if (!ast->flags(CallExpr::canInlineIntrinsicWrapper))
+            program_->RegisterIntrinsicUsage(ast->intrinsic, ast->arguments);
+    }
 
     /* Mark all arguments, that are assigned to output parameters, as l-values */
     ast->ForEachOutputArgument(

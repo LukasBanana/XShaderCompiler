@@ -2840,10 +2840,12 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
     if (!bufferTypeKeyword)
         return;
 
+    bool isWriteOnly = !bufferDecl->flags(BufferDecl::isUsedForImageRead);
+
     /* Determine image layout format */
     ImageLayoutFormat imageLayoutFormat = ImageLayoutFormat::Undefined;
     bool isRWBuffer = IsRWTextureBufferType(bufferDecl->GetBufferType());
-    if (isRWBuffer)
+    if (!isWriteOnly && isRWBuffer)
     {
         #ifdef XSC_ENABLE_LANGUAGE_EXT
 
@@ -2870,8 +2872,11 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
             {
                 [&]()
                 {
-                    if (auto keyword = ImageLayoutFormatToGLSLKeyword(imageLayoutFormat))
-                        Write(*keyword);
+                    if (!isWriteOnly)
+                    {
+                        if (auto keyword = ImageLayoutFormatToGLSLKeyword(imageLayoutFormat))
+                            Write(*keyword);
+                    }
                 },
 
                 [&]()
@@ -2882,7 +2887,7 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
         );
 
         /* If no format qualifier, reads are not allowed */
-        if (isRWBuffer && imageLayoutFormat == ImageLayoutFormat::Undefined)
+        if (isRWBuffer && (isWriteOnly || imageLayoutFormat == ImageLayoutFormat::Undefined))
             Write("writeonly ");
 
         Write("uniform ");
