@@ -193,3 +193,6 @@
 
 [MatrixLayoutTest1: vert]
 -T vert -E main -o output/* MatrixLayoutTest1.hlsl
+
+[ExtLayoutAttrTest1: vert]
+-T vert -E main -o output/* ExtLayoutAttrTest1.hlsl

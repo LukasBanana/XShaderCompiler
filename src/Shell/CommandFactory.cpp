@@ -89,6 +89,10 @@ CommandFactory::CommandFactory()
         NameManglingCommand,
         SeparateShadersCommand,
         SeparateSamplersCommand
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+       ,LanguageExtensionCommand
+#endif
     >();
 }
 

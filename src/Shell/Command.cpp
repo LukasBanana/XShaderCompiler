@@ -1314,6 +1314,49 @@ void SeparateSamplersCommand::Run(CommandLine& cmdLine, ShellState& state)
 }
 
 
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+/*
+ * LanguageExtensionCommand class
+ */
+
+std::vector<Command::Identifier> LanguageExtensionCommand::Idents() const
+{
+    return { { "-E", true } };
+}
+
+HelpDescriptor LanguageExtensionCommand::Help() const
+{
+    return
+    {
+        "-E<TYPE> [" + CommandLine::GetBooleanOption() + "]",
+        "Enables/disables the specified language extension; default=" + CommandLine::GetBooleanFalse() + "; value types:",
+        (
+            "all           => enables all extensions\n"                                                         \
+            "attr-layout   => allows the use of 'layout' attribute in order to specify image layout formats"
+        )
+    };
+}
+
+void LanguageExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    const auto flags = MapStringToType<unsigned int>(
+        cmdLine.Accept(),
+        {
+            { "all",           Extensions::All },
+            { "attr-layout",   Extensions::LayoutAttribute },
+        },
+        "invalid extension type"
+        );
+
+    if (cmdLine.AcceptBoolean(true))
+        state.inputDesc.extensions |= flags;
+    else
+        state.inputDesc.extensions &= (~flags);
+}
+
+
+#endif
 } // /namespace Util
 
 } // /namespace Xsc

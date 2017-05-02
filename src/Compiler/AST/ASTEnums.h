@@ -493,6 +493,67 @@ SamplerType TextureTypeToSamplerType(const BufferType t);
 SamplerType SamplerTypeToShadowSamplerType(const SamplerType t);
 
 
+/* ----- ImageLayoutFormat Enum ----- */
+
+// Image layout format enumeration
+enum class ImageLayoutFormat
+{
+    Undefined,
+
+    /* --- Float formats --- */
+    F32X4,          // rgba32f
+    F32X2,          // rg32f
+    F32X1,          // r32f
+    F16X4,          // rgba16f
+    F16X2,          // rg16f
+    F16X1,          // r16f
+    F11R11G10B,     // r11f_g11f_b10f
+
+    /* --- Unsigned normalized formats --- */
+    UN32X4,         // rgba16
+    UN16X2,         // rg16
+    UN16X1,         // r16
+    UN10R10G10B2A,  // rgb10_a2
+    UN8X4,          // rgba8
+    UN8X2,          // rg8
+    UN8X1,          // r8
+
+    /* --- Signed normalized formats --- */
+    SN16X4,         // rgba16_snorm
+    SN16X2,         // rg16_snorm
+    SN16X1,         // r16_snorm
+    SN8X4,          // rgba8_snorm
+    SN8X2,          // rg8_snorm
+    SN8X1,          // r8_snorm
+    
+    /* --- Signed integer formats --- */
+    I32X4,          // rgba32i
+    I32X2,          // rg32i
+    I32X1,          // r32i
+    I16X4,          // rgba16i
+    I16X2,          // rg16i
+    I16X1,          // r16i
+    I8X4,           // rgba8i
+    I8X2,           // rg8i
+    I8X1,           // r8i
+    
+    /* --- Unsigned integer formats --- */
+    UI32X4,         // rgba32ui
+    UI32X2,         // rg32ui
+    UI32X1,         // r32ui
+    UI16X4,         // rgba16ui
+    UI16X2,         // rg16ui
+    UI16X1,         // r16ui
+    UI10R10G10B2A,  // rgb10_a2ui
+    UI8X4,          // rgba8ui
+    UI8X2,          // rg8ui
+    UI8X1,          // r8ui
+};
+
+// Returns the base type of a single component in the specified image layout format.
+DataType GetImageLayoutFormatBaseType(const ImageLayoutFormat format);
+
+
 /* ----- RegisterType Enum ----- */
 
 // Register type enumeration.
@@ -555,6 +616,13 @@ enum class AttributeType
     Partitioning,
     PatchSize,
     PatchConstantFunc,
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+    /* --- Language extensions --- */
+    Layout,
+
+    #endif
 };
 
 // Returns true if the specified attribute is supported since shader model 3.

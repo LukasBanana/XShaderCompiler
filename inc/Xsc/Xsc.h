@@ -96,6 +96,21 @@ struct Warnings
     };
 };
 
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+//! Language extensions.
+struct Extensions
+{
+    enum : unsigned int
+    {
+        LayoutAttribute         = (1 << 0), //!< Enables the 'layout' attribute.
+
+        All                     = (~0u)     //!< All extensions.
+    };
+};
+
+#endif
+
 //! Formatting descriptor structure for the output shader.
 struct Formatting
 {
@@ -260,6 +275,16 @@ struct ShaderInput
     \remarks If this is null, the default include handler will be used, which will include files with the STL input file streams.
     */
     IncludeHandler*                 includeHandler      = nullptr;
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+    /**
+    \brief Enabled language extensions. This can be a bitwise OR combination of the "Extensions" enumeration entries. By default 0.
+    \see Extensions
+    */
+    unsigned int                    extensions          = 0;
+
+    #endif
 };
 
 //! Vertex shader semantic (or rather attribute) layout structure.
