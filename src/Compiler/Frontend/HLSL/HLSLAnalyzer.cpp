@@ -2338,15 +2338,23 @@ void HLSLAnalyzer::AnalyzeVectorSpaceVarAssign(VarDecl* varDecl, Expr* assignExp
                 const auto& varVectorSpace = varBaseTypeDen->vectorSpace;
                 const auto& exprVectorSpace = exprBaseTypeDen->vectorSpace;
 
-                if (varVectorSpace.IsSpecified() || exprVectorSpace.IsSpecified())
+                if (exprVectorSpace.IsSpecified())
                 {
                     if (!exprVectorSpace.IsAssignableTo(varVectorSpace))
                     {
                         /* Report error of illegal vector-space assignment */
                         Error(
                             R_IllegalVectorSpaceAssignment(exprVectorSpace.ToString(), varVectorSpace.ToString()),
-                            assignExpr
+                            varDecl
                         );
+                    }
+                    else if (!varVectorSpace.IsSpecified())
+                    {
+                        /* Initialize variable type with individual type denoter and respective vector space */
+                        auto customTypeDen = varTypeDen.Copy();
+                        if (auto customBaseTypeDen = customTypeDen->As<BaseTypeDenoter>())
+                            customBaseTypeDen->vectorSpace = exprVectorSpace;
+                        varDecl->SetCustomTypeDenoter(customTypeDen);
                     }
                 }
             }

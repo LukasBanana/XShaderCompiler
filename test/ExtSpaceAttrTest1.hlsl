@@ -26,11 +26,20 @@ struct VOut {
 	float3 normal : NORMAL;
 };
 
+[space(WORLD)]
+float4 GetWorldPos([space(MODEL)] float3 v)
+{
+	return mul(wMatrix, float4(v, 1));
+}
+
 void main(VIn i, out VOut o) {
 	o.position = mul(wvpMatrix, float4(i.position, 1));
 	o.normal = mul(wMatrix, float4(i.normal, 0)).xyz;
 	
-	//ERROR TEST
-	[space(WORLD)]
+	// "WORLD" space
 	float3 worldPos = mul(wvpMatrix, float4(i.position, 1)).xyz;
+	
+	// "WORLD" space
+	[space(WORLD)]
+	float4 worldPos2 = GetWorldPos(i.position);
 }

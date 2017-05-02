@@ -496,7 +496,13 @@ TypeDenoterPtr BaseTypeDenoter::GetSubObject(const std::string& ident, const AST
     try
     {
         auto subscriptDataType = SubscriptDataType(dataType, ident);
-        return std::make_shared<BaseTypeDenoter>(subscriptDataType);
+        auto subTypeDen = std::make_shared<BaseTypeDenoter>(subscriptDataType);
+
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+        subTypeDen->vectorSpace = vectorSpace;
+        #endif
+
+        return subTypeDen;
     }
     catch (const std::exception& e)
     {
