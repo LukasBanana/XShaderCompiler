@@ -447,7 +447,7 @@ DECL_REPORT( DuplicateUseOfOutputSemantic,      "duplicate use of output semanti
 DECL_REPORT( UniformCantBeOutput,               "uniforms can not be defined as output"                                                                         );
 DECL_REPORT( TooManyArgsForAttribute,           "too many arguments for attribute[ '{0}'][ (expected {1}, but got {2})]"                                        );
 DECL_REPORT( TooFewArgsForAttribute,            "too few arguments for attribute[ '{0}'][ (expected {1}, but got {2})]"                                         );
-DECL_REPORT( ExpectedIdentArgInAttribute,       "expected identifier as argument for attribute [ '{0}']"                                                        );
+DECL_REPORT( ExpectedIdentArgInAttribute,       "expected identifier as argument for attribute[ '{0}']"                                                         );
 DECL_REPORT( InvalidIdentArgInAttribute,        "invalid identifier '{0}' used as argument for attribute[ '{1}']"                                               );
 DECL_REPORT( ExpectedDomainTypeParamToBe,       "expected domain type parameter to be \"tri\", \"quad\", or \"isoline\""                                        );
 DECL_REPORT( ExpectedOutputTopologyParamToBe,   "expected output topology parameter to be \"point\", \"line\", \"triangle_cw\", or \"triangle_ccw\""            );

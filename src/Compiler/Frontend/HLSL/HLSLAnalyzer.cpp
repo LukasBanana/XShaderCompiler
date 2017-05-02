@@ -281,12 +281,12 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     /* Visit attributes */
     Visit(ast->attribs);
 
+    /* Visit function return type */
+    Visit(ast->returnType);
+
     #ifdef XSC_ENABLE_LANGUAGE_EXT
     AnalyzeExtAttributes(ast->attribs, ast->returnType->typeDenoter->GetSub());
     #endif
-
-    /* Visit function return type */
-    Visit(ast->returnType);
 
     /* Analyze parameter type denoters (required before function can be registered in symbol table) */
     for (auto& param : ast->parameters)
@@ -565,7 +565,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
     if (auto funcDecl = ActiveFunctionDecl())
     {
-        if ((returnTypeDen = funcDecl->returnType->GetTypeDenoter()) != nullptr)
+        if ( ( returnTypeDen = funcDecl->returnType->GetTypeDenoter() ) != nullptr )
         {
             if (returnTypeDen->IsVoid())
             {
@@ -597,6 +597,14 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         /* Analyze entry point return statement (if a structure is returned from the entry point) */
         if (InsideEntryPoint())
             AnalyzeEntryPointOutput(ast->expr.get());
+
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        /* Analyze vector space of function return type and expression */
+        if (extensions_(Extensions::SpaceAttribute) && ast->expr && returnTypeDen)
+            AnalyzeVectorSpaceAssign(ast->expr.get(), returnTypeDen->GetAliased());
+
+        #endif
     }
 }
 
