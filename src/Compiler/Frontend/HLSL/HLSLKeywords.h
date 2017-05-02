@@ -63,6 +63,13 @@ AttributeValue HLSLKeywordToAttributeValue(const std::string& keyword);
 // Returns the semantic for the specified identifier or Semantic::UserDefined if the identifier is not reserved.
 IndexedSemantic HLSLKeywordToSemantic(const std::string& ident, bool useD3D10Semantics = true);
 
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+// Maps a keyword from "layout" attribute extension into an image layout format or returns ImageLayoutFormat::Undefined.
+ImageLayoutFormat ExtHLSLKeywordToImageLayoutFormat(const std::string& keyword);
+
+#endif
+
 
 } // /namespace Xsc
 

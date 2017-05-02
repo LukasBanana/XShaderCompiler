@@ -55,6 +55,10 @@ void HLSLAnalyzer::DecorateASTPrimary(
     shaderModel_            = GetShaderModel(inputDesc.shaderVersion);
     preferWrappers_         = outputDesc.options.preferWrappers;
 
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    layoutAttrExt_          = true; //TODO: add compiler option.
+    #endif
+
     /* Decorate program AST */
     program_ = &program;
 
@@ -296,6 +300,20 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
     /* Analyze buffer declarations */
     Visit(ast->bufferDecls);
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+    /* Analyze "layout" attribute (if this language extension is enabled) */
+    if (layoutAttrExt_)
+    {
+        for (const auto& attrib : ast->attribs)
+        {
+            if (attrib->attributeType == AttributeType::Layout)
+                AnalyzeAttributeLayout(attrib.get(), *ast);
+        }
+    }
+
+    #endif
 }
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
@@ -2095,6 +2113,51 @@ bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(
     }
     return false;
 }
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bufferDeclStmnt)
+{
+    if (auto typeDen = bufferDeclStmnt.typeDenoter.get())
+    {
+        if (AnalyzeNumArgsAttribute(attrib, 1, true))
+        {
+            auto expr = attrib->arguments[0].get();
+            if (auto objectExpr = expr->As<ObjectExpr>())
+            {
+                auto layoutFormat = objectExpr->ident;
+                auto imageLayoutFormat = ExtHLSLKeywordToImageLayoutFormat(layoutFormat);
+                if (imageLayoutFormat != ImageLayoutFormat::Undefined)
+                {
+                    auto baseType = DataType::Undefined;
+                    if (typeDen->genericTypeDenoter)
+                    {
+                        if (auto baseTypeDen = typeDen->genericTypeDenoter->As<BaseTypeDenoter>())
+                            baseType = BaseDataType(baseTypeDen->dataType);
+                    }
+                    
+                    /* Ensure format is used on a valid buffer type */
+                    if(baseType != DataType::Undefined)
+                    {
+                        auto formatBaseType = GetImageLayoutFormatBaseType(imageLayoutFormat);
+                        if(baseType != formatBaseType)
+                            Error(R_InvalidImageFormatForType(layoutFormat, DataTypeToString(baseType)));
+                        else
+                            typeDen->layoutFormat = imageLayoutFormat;
+                    }
+                    else
+                        typeDen->layoutFormat = imageLayoutFormat;
+                }
+                else
+                    Error(R_InvalidIdentArgInAttribute(layoutFormat, "layout"));
+            }
+            else
+                Error(R_ExpectedIdentArgInAttribute("layout"), expr);
+        }
+    }
+}
+
+#endif
 
 /* ----- Semantic ----- */
 

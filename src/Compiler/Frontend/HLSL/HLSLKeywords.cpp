@@ -905,6 +905,10 @@ static std::map<std::string, AttributeType> GenerateAttributeTypeMap()
         { "partitioning",              T::Partitioning              },
         { "patchsize",                 T::PatchSize                 },
         { "patchconstantfunc",         T::PatchConstantFunc         },
+
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+        { "layout",                    T::Layout                    },
+        #endif
     };
 }
 
@@ -1066,6 +1070,73 @@ IndexedSemantic HLSLKeywordToSemantic(const std::string& ident, bool useD3D10Sem
     else
         return HLSLKeywordToSemanticD3D9(ToCiString(ident));
 }
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+/* ----- ImageLayoutFormat Mapping ----- */
+
+static std::map<std::string, ImageLayoutFormat> GenerateImageLayoutFormatMap()
+{
+    using T = ImageLayoutFormat;
+
+    return
+    {
+        { "rgba32f",        T::F32X4            },
+        { "rg32f",          T::F32X2            },
+        { "r32f",           T::F32X1            },
+        { "rgba16f",        T::F16X4            },
+        { "rg16f",          T::F16X2            },
+        { "r16f",           T::F16X1            },
+        { "r11f_g11f_b10f", T::F11R11G10B       },
+
+        { "rgba16",         T::UN32X4           },
+        { "rg16",           T::UN16X2           },
+        { "r16",            T::UN16X1           },
+        { "rgb10_a2",       T::UN10R10G10B2A    },
+        { "rgba8",          T::UN8X4            },
+        { "rg8",            T::UN8X2            },
+        { "r8",             T::UN8X1            },
+
+
+        { "rgba16_snorm",   T::SN16X4           },
+        { "rg16_snorm",     T::SN16X2           },
+        { "r16_snorm",      T::SN16X1           },
+        { "rgba8_snorm",    T::SN8X4            },
+        { "rg8_snorm",      T::SN8X2            },
+        { "r8_snorm",       T::SN8X1            },
+
+        { "rgba32i",        T::I32X4            },
+        { "rg32i",          T::I32X2            },
+        { "r32i",           T::I32X1            },
+        { "rgba16i",        T::I16X4            },
+        { "rg16i",          T::I16X2            },
+        { "r16i",           T::I16X1            },
+        { "rgba8i",         T::I8X4             },
+        { "rg8i",           T::I8X2             },
+        { "r8i",            T::I8X1             },
+
+
+        { "rgba32ui",       T::UI32X4           },
+        { "rg32ui",         T::UI32X2           },
+        { "r32ui",          T::UI32X1           },
+        { "rgba16ui",       T::UI16X4           },
+        { "rg16ui",         T::UI16X2           },
+        { "r16ui",          T::UI16X1           },
+        { "rgb10_a2ui",     T::UI10R10G10B2A    },
+        { "rgba8ui",        T::UI8X4            },
+        { "rg8ui",          T::UI8X2            },
+        { "r8ui",           T::UI8X1            },
+    };
+}
+
+ImageLayoutFormat ExtHLSLKeywordToImageLayoutFormat(const std::string& keyword)
+{
+    static const auto typeMap = GenerateImageLayoutFormatMap();
+    auto it = typeMap.find(keyword);
+    return (it != typeMap.end() ? it->second : ImageLayoutFormat::Undefined);
+}
+
+#endif
 
 
 } // /namespace Xsc

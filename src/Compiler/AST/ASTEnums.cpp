@@ -865,6 +865,21 @@ SamplerType SamplerTypeToShadowSamplerType(const SamplerType t)
 }
 
 
+/* ----- ImageLayoutFormat Enum ----- */
+
+DataType GetImageLayoutFormatBaseType(const ImageLayoutFormat format)
+{
+    if (format >= ImageLayoutFormat::F32X4 && format <= ImageLayoutFormat::SN8X1)
+        return DataType::Float;
+    else if (format >= ImageLayoutFormat::I32X4 && format <= ImageLayoutFormat::I8X1)
+        return DataType::Int;
+    else if (format >= ImageLayoutFormat::UI32X4 && format <= ImageLayoutFormat::UI8X1)
+        return DataType::UInt;
+
+    return DataType::Undefined;
+}
+
+
 /* ----- RegisterType Enum ----- */
 
 RegisterType CharToRegisterType(char c)

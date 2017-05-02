@@ -183,6 +183,12 @@ class HLSLAnalyzer : public Analyzer
             std::string& literalValue
         );
 
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        void AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bufferDeclStmnt);
+
+        #endif
+
         /* ----- Semantic ----- */
 
         void AnalyzeSemantic(IndexedSemantic& semantic);
@@ -211,6 +217,12 @@ class HLSLAnalyzer : public Analyzer
         bool                preferWrappers_             = false;
 
         std::set<VarDecl*>  varDeclSM3Semantics_;
+
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        bool                layoutAttrExt_              = false;                        // Enables the language extension of the "layout" attribute.
+
+        #endif
 
 };
 

@@ -75,9 +75,6 @@ class GLSLGenerator : public Generator
         // Returns the GLSL keyword for the specified sampler type or reports and error.
         const std::string* SamplerTypeToKeyword(const SamplerType samplerType, const AST* ast = nullptr);
 
-        // Returns the GLSL image format keyword for the specified data type or reports and error.
-        const std::string* DataTypeToImageFormatKeyword(const DataType dataType, const AST* ast = nullptr);
-
         // Returns true if the specified type denoter is compatible with the semantic (e.g. 'SV_VertexID' is incompatible with 'UInt').
         bool IsTypeCompatibleWithSemantic(const Semantic semantic, const TypeDenoter& typeDenoter);
 
@@ -173,7 +170,6 @@ class GLSLGenerator : public Generator
         void WriteLayoutGlobalIn(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor = nullptr);
         void WriteLayoutGlobalOut(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor = nullptr);
         void WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters);
-        void WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast = nullptr);
 
 
         /* ----- Input semantics ----- */
@@ -313,6 +309,12 @@ class GLSLGenerator : public Generator
         bool                                    separateSamplers_       = true;
 
         bool                                    isInsideInterfaceBlock_ = false;
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        bool                                    layoutAttrExt_          = false;        // Enables the language extension of the "layout" attribute.
+
+#endif
 };
 
 

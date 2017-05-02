@@ -65,7 +65,10 @@ void GLSLGenerator::GenerateCodePrimary(
     allowLineMarks_     = outputDesc.formatting.lineMarks;
     compactWrappers_    = outputDesc.formatting.compactWrappers;
     alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
-    
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+    layoutAttrExt_      = true; //TODO: add compiler option.
+#endif
 
     for (const auto& s : outputDesc.vertexSemantics)
     {
@@ -192,15 +195,6 @@ const std::string* GLSLGenerator::SamplerTypeToKeyword(const SamplerType sampler
         return keyword;
     else
         Error(R_FailedToMapToGLSLKeyword(R_SamplerType), ast);
-    return nullptr;
-}
-
-const std::string* GLSLGenerator::DataTypeToImageFormatKeyword(const DataType dataType, const AST* ast)
-{
-    if (auto keyword = DataTypeToImageFormatGLSLKeyword(dataType))
-        return keyword;
-    else
-        Error(R_FailedToMapGLSLImageDataType, ast);
     return nullptr;
 }
 
@@ -1340,18 +1334,6 @@ void GLSLGenerator::WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegis
     {
         if (auto slotRegister = Register::GetForTarget(slotRegisters, GetShaderTarget()))
             Write("binding = " + std::to_string(slotRegister->slot));
-    }
-}
-
-void GLSLGenerator::WriteLayoutImageFormat(const TypeDenoterPtr& typeDenoter, const AST* ast)
-{
-    if (typeDenoter)
-    {
-        if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
-        {
-            if (auto keyword = DataTypeToImageFormatKeyword(baseTypeDen->dataType, ast))
-                Write(*keyword);
-        }
     }
 }
 
@@ -2858,6 +2840,29 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
     if (!bufferTypeKeyword)
         return;
 
+    /* Determine image layout format */
+    ImageLayoutFormat imageLayoutFormat = ImageLayoutFormat::Undefined;
+    bool isRWBuffer = IsRWTextureBufferType(bufferDecl->GetBufferType());
+    if (isRWBuffer)
+    {
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        if(layoutAttrExt_)
+            imageLayoutFormat = bufferDecl->declStmntRef->typeDenoter->layoutFormat;
+
+        #endif
+
+        /* Attempt to derive a default format */
+        if (imageLayoutFormat == ImageLayoutFormat::Undefined)
+        {
+            if (bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter)
+            {
+                if (auto baseTypeDen = bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter->As<BaseTypeDenoter>())
+                    imageLayoutFormat = DataTypeToImageLayoutFormat(baseTypeDen->dataType);
+            }
+        }
+    }
+
     BeginLn();
     {
         /* Write uniform declaration */
@@ -2865,8 +2870,8 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
             {
                 [&]()
                 {
-                    if (IsRWTextureBufferType(bufferDecl->GetBufferType()))
-                        WriteLayoutImageFormat(bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter, bufferDecl);
+                    if (auto keyword = ImageLayoutFormatToGLSLKeyword(imageLayoutFormat))
+                        Write(*keyword);
                 },
 
                 [&]()
@@ -2875,6 +2880,10 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
                 },
             }
         );
+
+        /* If no format qualifier, reads are not allowed */
+        if (isRWBuffer && imageLayoutFormat == ImageLayoutFormat::Undefined)
+            Write("writeonly ");
 
         Write("uniform ");
 
