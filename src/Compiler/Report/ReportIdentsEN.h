@@ -501,7 +501,7 @@ DECL_REPORT( CompilationFailed,                 "compilation failed"            
 DECL_REPORT( InvalidImageFormatForType,         "invalid image format '{0}' used for buffer of type '{1}'"                                                      );
 DECL_REPORT( AttributeRequiresExtension,        "attribute '{0}' requires language extension '{1}'"                                                             );
 DECL_REPORT( IllegalVectorSpaceAssignment,      "illegal assignment of '{0}' vector-space to '{1}' vector-space"                                                );
-DECL_REPORT( InconsistVectorSpacesInCtor,       "inconsistent vector-spaces in type constructor[ (found '{0}' and '{1}')]"                                      );
+DECL_REPORT( InconsistVectorSpacesInTypes,      "inconsistent vector-spaces between type denoters[ (found '{0}' and '{1}')]"                                    );
 DECL_REPORT( ExpectedIdentInSpaceAttr,          "expected identifier as argument in 'space' attribute"                                                          );
 
 #endif

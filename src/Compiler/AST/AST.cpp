@@ -1489,7 +1489,7 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeD
     if (!elseTypeDen->IsCastableTo(*thenTypeDen))
         RuntimeErr(R_IllegalCast(elseTypeDen->ToString(), thenTypeDen->ToString(), R_TernaryExpr), this);
 
-    auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(thenTypeDen, elseTypeDen);
+    auto commonTypeDen = TypeDenoter::FindCommonTypeDenoterFrom(thenExpr, elseExpr, false, this);
 
     /* Get common boolean type denoter from condition expression */
     const auto& condTypeDenAliased = condExpr->GetTypeDenoter()->GetAliased();
@@ -1561,7 +1561,7 @@ TypeDenoterPtr BinaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
         RuntimeErr(R_IllegalCast(rhsTypeDen->ToString(), lhsTypeDen->ToString(), R_BinaryExpr(BinaryOpToString(op))), this);
 
     /* Find common type denoter of left and right sub expressions */
-    if (auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(lhsTypeDen, rhsTypeDen))
+    if (auto commonTypeDen = TypeDenoter::FindCommonTypeDenoterFrom(lhsExpr, rhsExpr, false, this))
     {
         /* Throw error if any expression has not a base type */
         if (!lhsTypeDen->IsBase())

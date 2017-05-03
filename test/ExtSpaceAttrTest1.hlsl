@@ -36,13 +36,16 @@ void main(VIn i, out VOut o) {
 	o.position = mul(wvpMatrix, float4(i.position, 1));
 	o.normal = mul(wMatrix, float4(i.normal, 0)).xyz;
 	
-	// "WORLD" space
-	float3 worldPos = mul(wvpMatrix, float4(i.position, 1)).xyz;
+	// "PROJECTION" space
+	float3 projPos = mul(wvpMatrix, float4(i.position, 1)).xyz;
 	
 	// "WORLD" space
-	float4 worldPos2 = GetWorldPos(i.position),
-	       modelPos = i.position;
+	float4 worldPos = GetWorldPos(i.position),
+	       modelPos = normalize(i.position) * projPos;
 	
 	//ERROR
 	//worldPos2 = modelPos;
+	
+	[space(MODEL)]
+	float x = modelPos.x;
 }

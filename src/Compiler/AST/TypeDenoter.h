@@ -70,6 +70,9 @@ struct VectorSpace
     // Returns the common vector-space from the specified expressions, or throws ASTRuntimeError on failure.
     static VectorSpace FindCommonVectorSpace(const std::vector<ExprPtr>& exprList, bool ignoreUnspecified = false, const AST* ast = nullptr);
 
+    // Returns the common vector-space from the specified type denoters, or throws ASTRuntimeError on failure.
+    static VectorSpace FindCommonVectorSpace(const std::vector<const BaseTypeDenoter*>& typeDenoters, bool ignoreUnspecified = false, const AST* ast = nullptr);
+
     StringType src; // Source vector space name.
     StringType dst; // Destination vector space name.
 };
@@ -188,6 +191,9 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
 
     // Find the best suitable common type denoter for both left and right hand side type denoters.
     static TypeDenoterPtr FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeDen, const TypeDenoterPtr& rhsTypeDen, bool useMinDimension = false);
+
+    // Find the best suitable common type denoter from the left and right hand side expressions, and throws an ASTRuntimeError on failure.
+    static TypeDenoterPtr FindCommonTypeDenoterFrom(const ExprPtr& lhsExpr, const ExprPtr& rhsExpr, bool useMinDimension = false, const AST* ast = nullptr);
 
     // Makes a boolean type denoter with the dimension of the specified type denoter.
     static BaseTypeDenoterPtr MakeBoolTypeWithDimensionOf(const TypeDenoter& typeDen);
@@ -370,6 +376,7 @@ struct AliasTypeDenoter : public TypeDenoter
 
     const TypeDenoter& GetAliased() const override;
 
+    // Returns the type denoter of the aliased type, or throws an ASTRuntimeError on failure.
     const TypeDenoterPtr& GetAliasedTypeOrThrow(const AST* ast = nullptr) const;
 
     unsigned int NumDimensions() const override;
