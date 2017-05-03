@@ -380,14 +380,17 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         {
             if (varDecl->initializer)
             {
-                AnalyzeVectorSpaceAssign(
-                    varDecl.get(),
-                    varDecl->initializer->GetTypeDenoter()->GetAliased(),
-                    [&varDecl](const TypeDenoterPtr& typeDen)
-                    {
-                        varDecl->SetCustomTypeDenoter(typeDen);
-                    }
-                );
+                if (auto typeDen = GetTypeDenoterFrom(varDecl->initializer.get()))
+                {
+                    AnalyzeVectorSpaceAssign(
+                        varDecl.get(),
+                        typeDen->GetAliased(),
+                        [&varDecl](const TypeDenoterPtr& typeDen)
+                        {
+                            varDecl->SetCustomTypeDenoter(typeDen);
+                        }
+                    );
+                }
             }
         }
     }
@@ -565,7 +568,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
     if (auto funcDecl = ActiveFunctionDecl())
     {
-        if ( ( returnTypeDen = funcDecl->returnType->GetTypeDenoter() ) != nullptr )
+        if ( ( returnTypeDen = GetTypeDenoterFrom(funcDecl->returnType.get()) ) != nullptr )
         {
             if (returnTypeDen->IsVoid())
             {
@@ -601,7 +604,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         #ifdef XSC_ENABLE_LANGUAGE_EXT
 
         /* Analyze vector space of function return type and expression */
-        if (extensions_(Extensions::SpaceAttribute) && ast->expr && returnTypeDen)
+        if (extensions_(Extensions::SpaceAttribute) && returnTypeDen)
             AnalyzeVectorSpaceAssign(ast->expr.get(), returnTypeDen->GetAliased());
 
         #endif
@@ -664,7 +667,10 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
 
     /* Analyze vector space of l-value and r-value expressions */
     if (extensions_(Extensions::SpaceAttribute))
-        AnalyzeVectorSpaceAssign(ast->lvalueExpr.get(), ast->rvalueExpr->GetTypeDenoter()->GetAliased());
+    {
+        if (auto rhsTypeDen = GetTypeDenoterFrom(ast->rvalueExpr.get()))
+            AnalyzeVectorSpaceAssign(ast->lvalueExpr.get(), rhsTypeDen->GetAliased());
+    }
 
     #endif
 }
@@ -860,7 +866,7 @@ void HLSLAnalyzer::AnalyzeCallExprPrimary(CallExpr* callExpr, const TypeDenoter*
             callExpr->ForEachArgumentWithParameterType(
                 [this](ExprPtr& argExpr, const TypeDenoter& paramTypeDen)
                 {
-                    AnalyzeVectorSpaceAssign(argExpr.get(), paramTypeDen);
+                    AnalyzeVectorSpaceAssign(argExpr.get(), paramTypeDen, nullptr, true);
                 }
             );
         }
@@ -2401,40 +2407,52 @@ bool HLSLAnalyzer::AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t arg
     return false;
 }
 
-void HLSLAnalyzer::AnalyzeVectorSpaceAssign(TypedAST* lhs, const TypeDenoter& rhsTypeDen, const OnAssignTypeDenoterProc& assignTypeDenProc)
+void HLSLAnalyzer::AnalyzeVectorSpaceAssign(
+    TypedAST* lhs, const TypeDenoter& rhsTypeDen, const OnAssignTypeDenoterProc& assignTypeDenProc, bool swapAssignOrder)
 {
     if (lhs)
     {
-        /* Validate vector-space assignment */
-        const auto& lhsTypeDen = lhs->GetTypeDenoter()->GetAliased();
-
-        if (auto lhsBaseTypeDen = lhsTypeDen.As<BaseTypeDenoter>())
+        try
         {
-            if (auto rhsBaseTypeDen = rhsTypeDen.As<BaseTypeDenoter>())
-            {
-                const auto& lhsVectorSpace = lhsBaseTypeDen->vectorSpace;
-                const auto& rhsVectorSpace = rhsBaseTypeDen->vectorSpace;
+            /* Validate vector-space assignment */
+            const auto& lhsTypeDen = lhs->GetTypeDenoter()->GetAliased();
 
-                if (rhsVectorSpace.IsSpecified())
+            if (auto lhsBaseTypeDen = lhsTypeDen.As<BaseTypeDenoter>())
+            {
+                if (auto rhsBaseTypeDen = rhsTypeDen.As<BaseTypeDenoter>())
                 {
-                    if (!rhsVectorSpace.IsAssignableTo(lhsVectorSpace))
+                    /* Get pointers of vector spaces to allow an optional swap of the order */
+                    auto lhsVectorSpace = &(lhsBaseTypeDen->vectorSpace);
+                    auto rhsVectorSpace = &(rhsBaseTypeDen->vectorSpace);
+
+                    if (swapAssignOrder)
+                        std::swap(lhsVectorSpace, rhsVectorSpace);
+
+                    if (rhsVectorSpace->IsSpecified())
                     {
-                        /* Report error of illegal vector-space assignment */
-                        Error(
-                            R_IllegalVectorSpaceAssignment(rhsVectorSpace.ToString(), lhsVectorSpace.ToString()),
-                            lhs
-                        );
-                    }
-                    else if (!lhsVectorSpace.IsSpecified() && assignTypeDenProc)
-                    {
-                        /* Initialize variable type with individual type denoter and respective vector space */
-                        auto customTypeDen = lhsTypeDen.Copy();
-                        if (auto customBaseTypeDen = customTypeDen->As<BaseTypeDenoter>())
-                            customBaseTypeDen->vectorSpace = rhsVectorSpace;
-                        assignTypeDenProc(customTypeDen);
+                        if (!rhsVectorSpace->IsAssignableTo(*lhsVectorSpace))
+                        {
+                            /* Report error of illegal vector-space assignment */
+                            Error(
+                                R_IllegalVectorSpaceAssignment(rhsVectorSpace->ToString(), lhsVectorSpace->ToString()),
+                                lhs
+                            );
+                        }
+                        else if (!lhsVectorSpace->IsSpecified() && assignTypeDenProc)
+                        {
+                            /* Initialize variable type with individual type denoter and respective vector space */
+                            auto customTypeDen = lhsTypeDen.Copy();
+                            if (auto customBaseTypeDen = customTypeDen->As<BaseTypeDenoter>())
+                                customBaseTypeDen->vectorSpace = *rhsVectorSpace;
+                            assignTypeDenProc(customTypeDen);
+                        }
                     }
                 }
             }
+        }
+        catch (const ASTRuntimeError& e)
+        {
+            Error(e.what(), e.GetAST());
         }
     }
 }

@@ -23,7 +23,7 @@ std::string VectorSpace::ToString() const
 {
     if (!IsSpecified())
         return ("<" + R_Unspecified + ">");
-    if (IsChangeOfBasis())
+    else if (IsChangeOfBasis())
         return (Xsc::ToString(src) + "-to-" + Xsc::ToString(dst));
     else
         return Xsc::ToString(src);
@@ -100,7 +100,7 @@ VectorSpace VectorSpace::FindCommonVectorSpace(const std::vector<ExprPtr>& exprL
                          ( !vectorSpace.IsSpecified() && !ignoreUnspecified ) )
                     {
                         RuntimeErr(
-                            R_InconsistVectorSpacesInTypes(vectorSpace.ToString(), commonVectorSpace.ToString()),
+                            R_InconsistVectorSpacesInTypes(commonVectorSpace.ToString(), vectorSpace.ToString()),
                             exprList[i].get()
                         );
                     }

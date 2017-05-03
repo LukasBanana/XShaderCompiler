@@ -206,7 +206,12 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeAttributeSpace(Attribute* attrib, const TypeDenoterPtr& typeDen);
         bool AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t argIndex, std::string& ident);
 
-        void AnalyzeVectorSpaceAssign(TypedAST* lhs, const TypeDenoter& rhsTypeDen, const OnAssignTypeDenoterProc& assignTypeDenProc = nullptr);
+        void AnalyzeVectorSpaceAssign(
+            TypedAST* lhs,
+            const TypeDenoter& rhsTypeDen,
+            const OnAssignTypeDenoterProc& assignTypeDenProc = nullptr,
+            bool swapAssignOrder = false
+        );
 
         #endif
 
