@@ -12,6 +12,7 @@
 #include "Visitor.h"
 #include "ASTEnums.h"
 #include "Flags.h"
+#include "CiString.h"
 #include <memory>
 #include <string>
 
@@ -37,6 +38,46 @@ DECL_PTR( AliasTypeDenoter   );
 DECL_PTR( ArrayTypeDenoter   );
 
 #undef DECL_PTR
+
+
+/* ----- Helper classes ----- */
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+// Vector space structure for BaseTypeDenoter, used as language extension for a stronger type system.
+struct VectorSpace
+{
+    using StringType = CiString;
+
+    // Returns a descriptive string of this vector space.
+    std::string ToString() const;
+
+    // Returns true if this vector space is specified, i.e. source and destination are non-empty.
+    bool IsSpecified() const;
+
+    // Returns true if this vector space is a change of basis, i.e. source and destination spaces are different.
+    bool IsChangeOfBasis() const;
+
+    // Returns true if this vector space can be assigned to the specified vector space, i.e. its destination space equals the specified source space.
+    bool IsAssignableTo(const VectorSpace& rhs) const;
+
+    // Sets the source and destination spaces to the specified identifier.
+    void Set(const StringType& space);
+
+    // Sets the source and destination spaces to the specified identifiers.
+    void Set(const StringType& srcSpace, const StringType& dstSpace);
+
+    // Returns the common vector-space from the specified expressions, or throws ASTRuntimeError on failure.
+    static VectorSpace FindCommonVectorSpace(const std::vector<ExprPtr>& exprList, bool ignoreUnspecified = false, const AST* ast = nullptr);
+
+    StringType src; // Source vector space name.
+    StringType dst; // Destination vector space name.
+};
+
+bool operator == (const VectorSpace& lhs, const VectorSpace& rhs);
+bool operator != (const VectorSpace& lhs, const VectorSpace& rhs);
+
+#endif
 
 
 /* ----- Type denoter declarations ----- */
@@ -148,6 +189,9 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Find the best suitable common type denoter for both left and right hand side type denoters.
     static TypeDenoterPtr FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeDen, const TypeDenoterPtr& rhsTypeDen, bool useMinDimension = false);
 
+    // Find the best suitable common type denoter from the left and right hand side expressions, and throws an ASTRuntimeError on failure.
+    static TypeDenoterPtr FindCommonTypeDenoterFrom(const ExprPtr& lhsExpr, const ExprPtr& rhsExpr, bool useMinDimension = false, const AST* ast = nullptr);
+
     // Makes a boolean type denoter with the dimension of the specified type denoter.
     static BaseTypeDenoterPtr MakeBoolTypeWithDimensionOf(const TypeDenoter& typeDen);
 
@@ -189,7 +233,7 @@ struct BaseTypeDenoter : public TypeDenoter
     static const Types classType = Types::Base;
 
     BaseTypeDenoter() = default;
-    BaseTypeDenoter(DataType dataType);
+    BaseTypeDenoter(const DataType dataType);
 
     Types Type() const override;
     std::string ToString() const override;
@@ -205,7 +249,11 @@ struct BaseTypeDenoter : public TypeDenoter
     TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
     TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
 
-    DataType dataType = DataType::Undefined;
+    DataType    dataType    = DataType::Undefined;  // Data type of this base type denoter. By default DataType::Undefined.
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    VectorSpace vectorSpace;                        // Vector space of this type denoter.
+    #endif
 };
 
 /*
@@ -325,6 +373,7 @@ struct AliasTypeDenoter : public TypeDenoter
 
     const TypeDenoter& GetAliased() const override;
 
+    // Returns the type denoter of the aliased type, or throws an ASTRuntimeError on failure.
     const TypeDenoterPtr& GetAliasedTypeOrThrow(const AST* ast = nullptr) const;
 
     unsigned int NumDimensions() const override;

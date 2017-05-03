@@ -6,9 +6,10 @@
  */
 
 #include "CommandLine.h"
+#include "ReportIdents.h"
+#include "Helper.h"
 #include <stdexcept>
 #include <algorithm>
-#include <cctype>
 
 
 namespace Xsc
@@ -35,12 +36,14 @@ CommandLine::CommandLine(const std::string& line)
     std::size_t start = 0, end = 0;
     while (start < line.size())
     {
+        /* Find begin of next argument */
         start = line.find_first_not_of(' ', end);
         if (start >= line.size())
             break;
 
         if (line[start] == '\"')
         {
+            /* Append argument inside quotation marks */
             end = line.find('\"', start + 1);
             if (end != std::string::npos)
             {
@@ -50,6 +53,7 @@ CommandLine::CommandLine(const std::string& line)
         }
         else
         {
+            /* Append argument at the end of the next space */
             end = line.find(' ', start + 1);
             if (end != std::string::npos)
                 args_.push_back(line.substr(start, end - start));
@@ -67,29 +71,33 @@ std::string CommandLine::Get() const
 std::string CommandLine::Accept()
 {
     if (args_.empty())
-        throw std::invalid_argument("unexpected end of command line arguments");
+        throw std::invalid_argument(R_UnexpectedEndOfCmdLine);
+
     auto arg = Get();
     args_.pop_front();
+
     return arg;
 }
 
 bool CommandLine::AcceptBoolean()
 {
+    /* Accept booleans with case insensitive check */
     auto arg = Accept();
+    ToUpper(arg);
+    
     if (arg == CommandLine::GetBooleanTrue())
         return true;
     if (arg == CommandLine::GetBooleanFalse())
         return false;
-    throw std::invalid_argument(
-        "expected '" + CommandLine::GetBooleanTrue() + "' or '" +
-        CommandLine::GetBooleanFalse() + "', but got '" + arg + "'"
-    );
+
+    throw std::invalid_argument(R_ExpectedCmdLineBoolean(CommandLine::GetBooleanTrue(), CommandLine::GetBooleanFalse(), arg));
 }
 
 bool CommandLine::AcceptBoolean(bool defaultValue)
 {
+    /* Accept booleans with case insensitive check */
     auto arg = Get();
-    std::transform(arg.begin(), arg.end(), arg.begin(), ::toupper);
+    ToUpper(arg);
 
     if (arg == CommandLine::GetBooleanTrue())
     {

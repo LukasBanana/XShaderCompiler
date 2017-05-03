@@ -132,6 +132,36 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     Visit(ast->stmnts);
 }
 
+IMPLEMENT_VISIT_PROC(Attribute)
+{
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+    switch (ast->attributeType)
+    {
+        case AttributeType::Space:
+        {
+            for (const auto& arg : ast->arguments)
+            {
+                if (arg->Type() != AST::Types::ObjectExpr)
+                    Error(R_ExpectedIdentInSpaceAttr, arg.get());
+            }
+        }
+        break;
+
+        default:
+        {
+            Visit(ast->arguments);
+        }
+        break;
+    }
+
+    #else
+
+    Visit(ast->arguments);
+
+    #endif
+}
+
 IMPLEMENT_VISIT_PROC(ArrayDimension)
 {
     if (ast->expr && ast->expr->Type() != AST::Types::NullExpr)
@@ -254,6 +284,10 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     /* Visit function return type */
     Visit(ast->returnType);
 
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    AnalyzeExtAttributes(ast->attribs, ast->returnType->typeDenoter->GetSub());
+    #endif
+
     /* Analyze parameter type denoters (required before function can be registered in symbol table) */
     for (auto& param : ast->parameters)
         AnalyzeTypeDenoter(param->typeSpecifier->typeDenoter, param->typeSpecifier.get());
@@ -302,29 +336,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     Visit(ast->bufferDecls);
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
-
-    for (const auto& attrib : ast->attribs)
-    {
-        switch (attrib->attributeType)
-        {
-            case AttributeType::Layout:
-            {
-                /* Analyze "layout" attribute (if this language extension is enabled) */
-                if (extensions_(Extensions::LayoutAttribute))
-                    AnalyzeAttributeLayout(attrib.get(), *ast);
-                else
-                    Warning(R_AttributeRequiresExtension("layout", "attr-layout"), attrib.get());
-            }
-            break;
-
-            default:
-            {
-                /* Ignore all other attributes */
-            }
-            break;
-        }
-    }
-
+    AnalyzeExtAttributes(ast->attribs, ast->typeDenoter);
     #endif
 }
 
@@ -356,6 +368,34 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     /* Analyze type specifier and variable declarations */
     Visit(ast->typeSpecifier);
     Visit(ast->varDecls);
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+    AnalyzeExtAttributes(ast->attribs, ast->typeSpecifier->typeDenoter->GetSub());
+
+    if (extensions_(Extensions::SpaceAttribute))
+    {
+        /* Analyze vector space initializers */
+        for (const auto& varDecl : ast->varDecls)
+        {
+            if (varDecl->initializer)
+            {
+                if (auto typeDen = GetTypeDenoterFrom(varDecl->initializer.get()))
+                {
+                    AnalyzeVectorSpaceAssign(
+                        varDecl.get(),
+                        typeDen->GetAliased(),
+                        [&varDecl](const TypeDenoterPtr& typeDen)
+                        {
+                            varDecl->SetCustomTypeDenoter(typeDen);
+                        }
+                    );
+                }
+            }
+        }
+    }
+
+    #endif
 
     /* Is the 'snorm' or 'unorm' type modifier specified? */
     if (ast->HasAnyTypeModifierOf({ TypeModifier::SNorm, TypeModifier::UNorm }))
@@ -528,7 +568,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
     if (auto funcDecl = ActiveFunctionDecl())
     {
-        if ((returnTypeDen = funcDecl->returnType->GetTypeDenoter()) != nullptr)
+        if ( ( returnTypeDen = GetTypeDenoterFrom(funcDecl->returnType.get()) ) != nullptr )
         {
             if (returnTypeDen->IsVoid())
             {
@@ -560,6 +600,14 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         /* Analyze entry point return statement (if a structure is returned from the entry point) */
         if (InsideEntryPoint())
             AnalyzeEntryPointOutput(ast->expr.get());
+
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        /* Analyze vector space of function return type and expression */
+        if (extensions_(Extensions::SpaceAttribute) && returnTypeDen)
+            AnalyzeVectorSpaceAssign(ast->expr.get(), returnTypeDen->GetAliased());
+
+        #endif
     }
 }
 
@@ -614,6 +662,17 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
 
     ValidateTypeCastFrom(ast->rvalueExpr.get(), ast->lvalueExpr.get(), R_VarAssignment);
     AnalyzeLValueExpr(ast->lvalueExpr.get(), ast);
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+    /* Analyze vector space of l-value and r-value expressions */
+    if (extensions_(Extensions::SpaceAttribute))
+    {
+        if (auto rhsTypeDen = GetTypeDenoterFrom(ast->rvalueExpr.get()))
+            AnalyzeVectorSpaceAssign(ast->lvalueExpr.get(), rhsTypeDen->GetAliased());
+    }
+
+    #endif
 }
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
@@ -799,6 +858,20 @@ void HLSLAnalyzer::AnalyzeCallExprPrimary(CallExpr* callExpr, const TypeDenoter*
                 AnalyzeLValueExpr(argExpr.get());
             }
         );
+
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+        if (extensions_(Extensions::SpaceAttribute))
+        {
+            callExpr->ForEachArgumentWithParameterType(
+                [this](ExprPtr& argExpr, const TypeDenoter& paramTypeDen)
+                {
+                    AnalyzeVectorSpaceAssign(argExpr.get(), paramTypeDen, nullptr, true);
+                }
+            );
+        }
+
+        #endif
     }
     PopCallExpr();
 }
@@ -1951,29 +2024,30 @@ void HLSLAnalyzer::AnalyzeSecondaryEntryPointAttributesTessEvaluationShader(cons
 
 /* ----- Attributes ----- */
 
-bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* attrib, std::size_t expectedNumArgs, bool required)
+//TODO: add "AttributeTypeToString" function
+bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* attrib, std::size_t minNumArgs, std::size_t maxNumArgs, bool required)
 {
     /* Validate number of arguments */
     auto numArgs = attrib->arguments.size();
 
-    //TODO: add "AttributeTypeToString" function
+    const std::string maxNumArgsStr = (minNumArgs == maxNumArgs ? "" : std::to_string(maxNumArgs));
 
-    if (numArgs < expectedNumArgs)
+    if (numArgs < minNumArgs)
     {
         if (required)
         {
             Error(
-                R_TooFewArgsForAttribute(""/*AttributeTypeToString(ast->attributeType)*/, expectedNumArgs, numArgs),
+                R_TooFewArgsForAttribute(""/*AttributeTypeToString(ast->attributeType)*/, numArgs, minNumArgs, maxNumArgsStr),
                 attrib
             );
         }
     }
-    else if (numArgs > expectedNumArgs)
+    else if (numArgs > maxNumArgs)
     {
         if (required)
         {
             Error(
-                R_TooManyArgsForAttribute(""/*AttributeTypeToString(ast->attributeType)*/, expectedNumArgs, numArgs),
+                R_TooManyArgsForAttribute(""/*AttributeTypeToString(ast->attributeType)*/, numArgs, minNumArgs, maxNumArgsStr),
                 attrib
             );
         }
@@ -1982,6 +2056,11 @@ bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* attrib, std::size_t expect
         return true;
 
     return false;
+}
+
+bool HLSLAnalyzer::AnalyzeNumArgsAttribute(Attribute* attrib, std::size_t expectedNumArgs, bool required)
+{
+    return AnalyzeNumArgsAttribute(attrib, expectedNumArgs, expectedNumArgs, required);
 }
 
 void HLSLAnalyzer::AnalyzeAttributeDomain(Attribute* attrib, bool required)
@@ -2095,13 +2174,13 @@ void HLSLAnalyzer::AnalyzeAttributeNumThreads(Attribute* attrib)
     }
 }
 
-void HLSLAnalyzer::AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& value)
+void HLSLAnalyzer::AnalyzeAttributeNumThreadsArgument(Expr* expr, unsigned int& value)
 {
-    int exprValue = EvaluateConstExprInt(*ast);
+    int exprValue = EvaluateConstExprInt(*expr);
     if (exprValue > 0)
         value = static_cast<unsigned int>(exprValue);
     else
-        Error(R_NumThreadsMustBeGreaterZero, ast);
+        Error(R_NumThreadsMustBeGreaterZero, expr);
 }
 
 void HLSLAnalyzer::AnalyzeAttributeValue(
@@ -2125,51 +2204,6 @@ bool HLSLAnalyzer::AnalyzeAttributeValuePrimary(
     }
     return false;
 }
-
-#ifdef XSC_ENABLE_LANGUAGE_EXT
-
-void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bufferDeclStmnt)
-{
-    if (auto typeDen = bufferDeclStmnt.typeDenoter.get())
-    {
-        if (AnalyzeNumArgsAttribute(attrib, 1, true))
-        {
-            auto expr = attrib->arguments[0].get();
-            if (auto objectExpr = expr->As<ObjectExpr>())
-            {
-                const auto& layoutFormat = objectExpr->ident;
-                auto imageLayoutFormat = ExtHLSLKeywordToImageLayoutFormat(layoutFormat);
-                if (imageLayoutFormat != ImageLayoutFormat::Undefined)
-                {
-                    auto baseType = DataType::Undefined;
-                    if (typeDen->genericTypeDenoter)
-                    {
-                        if (auto baseTypeDen = typeDen->genericTypeDenoter->As<BaseTypeDenoter>())
-                            baseType = BaseDataType(baseTypeDen->dataType);
-                    }
-                    
-                    /* Ensure format is used on a valid buffer type */
-                    if (baseType != DataType::Undefined)
-                    {
-                        auto formatBaseType = GetImageLayoutFormatBaseType(imageLayoutFormat);
-                        if (baseType != formatBaseType)
-                            Error(R_InvalidImageFormatForType(layoutFormat, DataTypeToString(baseType)));
-                        else
-                            typeDen->layoutFormat = imageLayoutFormat;
-                    }
-                    else
-                        typeDen->layoutFormat = imageLayoutFormat;
-                }
-                else
-                    Error(R_InvalidIdentArgInAttribute(layoutFormat, "layout"));
-            }
-            else
-                Error(R_ExpectedIdentArgInAttribute("layout"), expr);
-        }
-    }
-}
-
-#endif
 
 /* ----- Semantic ----- */
 
@@ -2252,6 +2286,178 @@ void HLSLAnalyzer::AnalyzeSemanticFunctionReturn(IndexedSemantic& semantic)
     if (IsD3D9ShaderModel())
         AnalyzeSemanticSM3(semantic, false);
 }
+
+/* ----- Language extensions ----- */
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+void HLSLAnalyzer::AnalyzeExtAttributes(std::vector<AttributePtr>& attribs, const TypeDenoterPtr& typeDen)
+{
+    for (const auto& attrib : attribs)
+    {
+        switch (attrib->attributeType)
+        {
+            case AttributeType::Layout:
+            {
+                /* Analyze "layout" attribute (if this language extension is enabled) */
+                if (extensions_(Extensions::LayoutAttribute))
+                    AnalyzeAttributeLayout(attrib.get(), typeDen);
+                else if (WarnEnabled(Warnings::RequiredExtensions))
+                    Warning(R_AttributeRequiresExtension("layout", "attr-layout"), attrib.get());
+            }
+            break;
+
+            case AttributeType::Space:
+            {
+                /* Analyze "space" attribute (if this language extension is enabled) */
+                if (extensions_(Extensions::SpaceAttribute))
+                    AnalyzeAttributeSpace(attrib.get(), typeDen);
+                else if (WarnEnabled(Warnings::RequiredExtensions))
+                    Warning(R_AttributeRequiresExtension("space", "attr-space"), attrib.get());
+            }
+            break;
+
+            default:
+            {
+                /* Ignore other attributes here */
+            }
+            break;
+        }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, const TypeDenoterPtr& typeDen)
+{
+    if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
+    {
+        if (AnalyzeNumArgsAttribute(attrib, 1, true))
+        {
+            auto expr = attrib->arguments[0].get();
+            if (auto objectExpr = expr->As<ObjectExpr>())
+            {
+                const auto& layoutFormat = objectExpr->ident;
+                auto imageLayoutFormat = ExtHLSLKeywordToImageLayoutFormat(layoutFormat);
+                if (imageLayoutFormat != ImageLayoutFormat::Undefined)
+                {
+                    auto baseType = DataType::Undefined;
+                    if (bufferTypeDen->genericTypeDenoter)
+                    {
+                        if (auto baseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
+                            baseType = BaseDataType(baseTypeDen->dataType);
+                    }
+                    
+                    /* Ensure format is used on a valid buffer type */
+                    if (baseType != DataType::Undefined)
+                    {
+                        auto formatBaseType = GetImageLayoutFormatBaseType(imageLayoutFormat);
+                        if (baseType != formatBaseType)
+                            Error(R_InvalidImageFormatForType(layoutFormat, DataTypeToString(baseType)));
+                        else
+                            bufferTypeDen->layoutFormat = imageLayoutFormat;
+                    }
+                    else
+                        bufferTypeDen->layoutFormat = imageLayoutFormat;
+                }
+                else
+                    Error(R_InvalidIdentArgInAttribute(layoutFormat, "layout"));
+            }
+            else
+                Error(R_ExpectedIdentArgInAttribute("layout"), expr);
+        }
+    }
+}
+
+void HLSLAnalyzer::AnalyzeAttributeSpace(Attribute* attrib, const TypeDenoterPtr& typeDen)
+{
+    if (auto baseTypeDen = typeDen->As<BaseTypeDenoter>())
+    {
+        if (AnalyzeNumArgsAttribute(attrib, 1, 2, true))
+        {
+            if (attrib->arguments.size() == 2)
+            {
+                /* Set source and destination vector spaces by attribute arguments */
+                std::string srcSpace, dstSpace;
+                if (AnalyzeAttributeSpaceIdent(attrib, 0, srcSpace) && AnalyzeAttributeSpaceIdent(attrib, 1, dstSpace))
+                    baseTypeDen->vectorSpace.Set(ToCiString(srcSpace), ToCiString(dstSpace));
+            }
+            else
+            {
+                /* Set vector space by attribute argument */
+                std::string space;
+                if (AnalyzeAttributeSpaceIdent(attrib, 0, space))
+                    baseTypeDen->vectorSpace.Set(ToCiString(space));
+            }
+        }
+    }
+}
+
+bool HLSLAnalyzer::AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t argIndex, std::string& ident)
+{
+    if (argIndex < attrib->arguments.size())
+    {
+        auto expr = attrib->arguments[argIndex].get();
+        if (auto objectExpr = expr->As<ObjectExpr>())
+        {
+            ident = objectExpr->ident;
+            return true;
+        }
+        else
+            Error(R_ExpectedIdentArgInAttribute("space"), expr);
+    }
+    return false;
+}
+
+void HLSLAnalyzer::AnalyzeVectorSpaceAssign(
+    TypedAST* lhs, const TypeDenoter& rhsTypeDen, const OnAssignTypeDenoterProc& assignTypeDenProc, bool swapAssignOrder)
+{
+    if (lhs)
+    {
+        try
+        {
+            /* Validate vector-space assignment */
+            const auto& lhsTypeDen = lhs->GetTypeDenoter()->GetAliased();
+
+            if (auto lhsBaseTypeDen = lhsTypeDen.As<BaseTypeDenoter>())
+            {
+                if (auto rhsBaseTypeDen = rhsTypeDen.As<BaseTypeDenoter>())
+                {
+                    /* Get pointers of vector spaces to allow an optional swap of the order */
+                    auto lhsVectorSpace = &(lhsBaseTypeDen->vectorSpace);
+                    auto rhsVectorSpace = &(rhsBaseTypeDen->vectorSpace);
+
+                    if (swapAssignOrder)
+                        std::swap(lhsVectorSpace, rhsVectorSpace);
+
+                    if (rhsVectorSpace->IsSpecified())
+                    {
+                        if (!rhsVectorSpace->IsAssignableTo(*lhsVectorSpace))
+                        {
+                            /* Report error of illegal vector-space assignment */
+                            Error(
+                                R_IllegalVectorSpaceAssignment(rhsVectorSpace->ToString(), lhsVectorSpace->ToString()),
+                                lhs
+                            );
+                        }
+                        else if (!lhsVectorSpace->IsSpecified() && assignTypeDenProc)
+                        {
+                            /* Initialize variable type with individual type denoter and respective vector space */
+                            auto customTypeDen = lhsTypeDen.Copy();
+                            if (auto customBaseTypeDen = customTypeDen->As<BaseTypeDenoter>())
+                                customBaseTypeDen->vectorSpace = *rhsVectorSpace;
+                            assignTypeDenProc(customTypeDen);
+                        }
+                    }
+                }
+            }
+        }
+        catch (const ASTRuntimeError& e)
+        {
+            Error(e.what(), e.GetAST());
+        }
+    }
+}
+
+#endif
 
 /* ----- Misc ----- */
 

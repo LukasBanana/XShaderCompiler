@@ -907,6 +907,7 @@ static std::map<std::string, AttributeType> GenerateAttributeTypeMap()
         { "patchconstantfunc",         T::PatchConstantFunc         },
 
         #ifdef XSC_ENABLE_LANGUAGE_EXT
+        { "space",                     T::Space                     },
         { "layout",                    T::Layout                    },
         #endif
     };

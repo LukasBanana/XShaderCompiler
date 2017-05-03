@@ -16,6 +16,117 @@ namespace Xsc
 {
 
 
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+std::string VectorSpace::ToString() const
+{
+    if (!IsSpecified())
+        return ("<" + R_Unspecified + ">");
+    else if (IsChangeOfBasis())
+        return (Xsc::ToString(src) + "-to-" + Xsc::ToString(dst));
+    else
+        return Xsc::ToString(src);
+}
+
+bool VectorSpace::IsSpecified() const
+{
+    return !src.empty();
+}
+
+bool VectorSpace::IsChangeOfBasis() const
+{
+    return (src != dst);
+}
+
+bool VectorSpace::IsAssignableTo(const VectorSpace& rhs) const
+{
+    return (dst == rhs.src || !rhs.IsSpecified());
+}
+
+void VectorSpace::Set(const StringType& space)
+{
+    src = space;
+    dst = space;
+}
+
+void VectorSpace::Set(const StringType& srcSpace, const StringType& dstSpace)
+{
+    src = srcSpace;
+    dst = dstSpace;
+}
+
+VectorSpace VectorSpace::FindCommonVectorSpace(const std::vector<ExprPtr>& exprList, bool ignoreUnspecified, const AST* ast)
+{
+    if (!exprList.empty())
+    {
+        /* Gather base type denoters of all expressions */
+        std::vector<const BaseTypeDenoter*> typeDens;
+        typeDens.reserve(exprList.size());
+
+        VectorSpace commonVectorSpace;
+        bool commonVectorSpaceSet = false;
+
+        for (const auto& expr : exprList)
+        {
+            /* Always append type denoter to list (also null pointers!) */
+            const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
+            if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
+            {
+                typeDens.push_back(baseTypeDen);
+                if (baseTypeDen->vectorSpace.IsSpecified())
+                {
+                    if (!commonVectorSpaceSet)
+                    {
+                        /* Store first specified vector space as common vector space */
+                        commonVectorSpace = baseTypeDen->vectorSpace;
+                        commonVectorSpaceSet = true;
+                    }
+                }
+            }
+            else
+                typeDens.push_back(nullptr);
+        }
+
+        if (commonVectorSpaceSet)
+        {
+            /* Validate vector space compatibility */
+            for (std::size_t i = 0, n = typeDens.size(); i < n; ++i)
+            {
+                if (auto typeDen = typeDens[i])
+                {
+                    const auto& vectorSpace = typeDen->vectorSpace;
+                    if ( ( vectorSpace.IsSpecified() && vectorSpace != commonVectorSpace ) ||
+                         ( !vectorSpace.IsSpecified() && !ignoreUnspecified ) )
+                    {
+                        RuntimeErr(
+                            R_InconsistVectorSpacesInTypes(commonVectorSpace.ToString(), vectorSpace.ToString()),
+                            exprList[i].get()
+                        );
+                    }
+                }
+                else if (!ignoreUnspecified)
+                    RuntimeErr(R_InconsistVectorSpacesInTypes, ast);
+            }
+
+            return commonVectorSpace;
+        }
+    }
+    return {};
+}
+
+bool operator == (const VectorSpace& lhs, const VectorSpace& rhs)
+{
+    return (lhs.src == rhs.src && lhs.dst == rhs.dst);
+}
+
+bool operator != (const VectorSpace& lhs, const VectorSpace& rhs)
+{
+    return !(lhs == rhs);
+}
+
+#endif
+
 /* ----- TypeDenoter ----- */
 
 TypeDenoter::~TypeDenoter()
@@ -221,6 +332,29 @@ TypeDenoterPtr TypeDenoter::FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeD
     return FindCommonTypeDenoterAnyAndAny(lhsTypeDen.get(), rhsTypeDen.get());
 }
 
+TypeDenoterPtr TypeDenoter::FindCommonTypeDenoterFrom(const ExprPtr& lhsExpr, const ExprPtr& rhsExpr, bool useMinDimension, const AST* ast)
+{
+    auto lhsTypeDen = lhsExpr->GetTypeDenoter();
+    auto rhsTypeDen = rhsExpr->GetTypeDenoter();
+
+    auto commonTypeDenoter = TypeDenoter::FindCommonTypeDenoter(lhsTypeDen, rhsTypeDen, useMinDimension);
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+    if (auto baseTypeDen = commonTypeDenoter->As<BaseTypeDenoter>())
+    {
+        baseTypeDen->vectorSpace = VectorSpace::FindCommonVectorSpace(
+            std::vector<ExprPtr>{ lhsExpr, rhsExpr },
+            true,
+            ast
+        );
+    }
+
+    #endif
+
+    return commonTypeDenoter;
+}
+
 BaseTypeDenoterPtr TypeDenoter::MakeBoolTypeWithDimensionOf(const TypeDenoter& typeDen)
 {
     if (auto baseTypeDen = typeDen.GetAliased().As<BaseTypeDenoter>())
@@ -310,8 +444,8 @@ TypeDenoter::Types BaseTypeDenoter::Type() const
     return Types::Base;
 }
 
-BaseTypeDenoter::BaseTypeDenoter(DataType dataType) :
-    dataType{ dataType }
+BaseTypeDenoter::BaseTypeDenoter(const DataType dataType) :
+    dataType { dataType }
 {
 }
 
@@ -385,7 +519,13 @@ TypeDenoterPtr BaseTypeDenoter::GetSubObject(const std::string& ident, const AST
     try
     {
         auto subscriptDataType = SubscriptDataType(dataType, ident);
-        return std::make_shared<BaseTypeDenoter>(subscriptDataType);
+        auto subTypeDen = std::make_shared<BaseTypeDenoter>(subscriptDataType);
+
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+        subTypeDen->vectorSpace = vectorSpace;
+        #endif
+
+        return subTypeDen;
     }
     catch (const std::exception& e)
     {

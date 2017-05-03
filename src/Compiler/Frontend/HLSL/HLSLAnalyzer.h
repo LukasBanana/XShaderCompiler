@@ -35,6 +35,7 @@ class HLSLAnalyzer : public Analyzer
         
         using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
         using OnValidAttributeValueProc = std::function<bool(const AttributeValue)>;
+        using OnAssignTypeDenoterProc = std::function<void(const TypeDenoterPtr&)>;
 
         /* === Structures === */
 
@@ -61,6 +62,7 @@ class HLSLAnalyzer : public Analyzer
 
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
+        DECL_VISIT_PROC( Attribute         );
         DECL_VISIT_PROC( ArrayDimension    );
         DECL_VISIT_PROC( TypeSpecifier     );
         
@@ -156,6 +158,7 @@ class HLSLAnalyzer : public Analyzer
 
         /* ----- Attributes ----- */
 
+        bool AnalyzeNumArgsAttribute(Attribute* attrib, std::size_t minNumArgs, std::size_t maxNumArgs, bool required);
         bool AnalyzeNumArgsAttribute(Attribute* attrib, std::size_t expectedNumArgs, bool required = true);
         
         void AnalyzeAttributeDomain(Attribute* attrib, bool required = true);
@@ -167,7 +170,7 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeAttributeMaxVertexCount(Attribute* attrib);
 
         void AnalyzeAttributeNumThreads(Attribute* attrib);
-        void AnalyzeAttributeNumThreadsArgument(Expr* ast, unsigned int& value);
+        void AnalyzeAttributeNumThreadsArgument(Expr* expr, unsigned int& value);
 
         void AnalyzeAttributeValue(
             Expr* argExpr,
@@ -184,12 +187,6 @@ class HLSLAnalyzer : public Analyzer
             std::string& literalValue
         );
 
-        #ifdef XSC_ENABLE_LANGUAGE_EXT
-
-        void AnalyzeAttributeLayout(Attribute* attrib, BufferDeclStmnt& bufferDeclStmnt);
-
-        #endif
-
         /* ----- Semantic ----- */
 
         void AnalyzeSemantic(IndexedSemantic& semantic);
@@ -197,6 +194,26 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeSemanticSM3Remaining();
         void AnalyzeSemanticVarDecl(IndexedSemantic& semantic, VarDecl* varDecl);
         void AnalyzeSemanticFunctionReturn(IndexedSemantic& semantic);
+
+        /* ----- Language extensions ----- */
+
+        #ifdef XSC_ENABLE_LANGUAGE_EXT
+        
+        void AnalyzeExtAttributes(std::vector<AttributePtr>& attribs, const TypeDenoterPtr& typeDen);
+
+        void AnalyzeAttributeLayout(Attribute* attrib, const TypeDenoterPtr& typeDen);
+
+        void AnalyzeAttributeSpace(Attribute* attrib, const TypeDenoterPtr& typeDen);
+        bool AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t argIndex, std::string& ident);
+
+        void AnalyzeVectorSpaceAssign(
+            TypedAST* lhs,
+            const TypeDenoter& rhsTypeDen,
+            const OnAssignTypeDenoterProc& assignTypeDenProc = nullptr,
+            bool swapAssignOrder = false
+        );
+
+        #endif
 
         /* ----- Misc ----- */
 

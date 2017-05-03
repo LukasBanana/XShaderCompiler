@@ -25,6 +25,7 @@ DECL_REPORT( In,                                "in"                            
 DECL_REPORT( Input,                             "input"                                                                                                         ); // e.g. "entry point input"
 DECL_REPORT( Output,                            "output"                                                                                                        ); // e.g. "entry point output"
 DECL_REPORT( Anonymous,                         "anonymous"                                                                                                     );
+DECL_REPORT( Unspecified,                       "unspecified"                                                                                                   );
 DECL_REPORT( CandidatesAre,                     "candidates are"                                                                                                );
 DECL_REPORT( StackUnderflow,                    "stack underflow[ in {0}]"                                                                                      );
 DECL_REPORT( VertexShader,                      "vertex shader"                                                                                                 );
@@ -39,6 +40,7 @@ DECL_REPORT( ButGot,                            "[, but got {0}]"               
 DECL_REPORT( NotImplementedYet,                 "[{0} ]not implemented yet[ (in '{1}')]"                                                                        );
 DECL_REPORT( DeclaredAt,                        "declared at ({0})"                                                                                             );
 DECL_REPORT( PrevDefinitionAt,                  "previous definition at ({0})"                                                                                  );
+DECL_REPORT( ExceptionThrown,                   "exception thrown: "                                                                                            );
 
 /* ----- Token ----- */
 
@@ -445,7 +447,7 @@ DECL_REPORT( DuplicateUseOfOutputSemantic,      "duplicate use of output semanti
 DECL_REPORT( UniformCantBeOutput,               "uniforms can not be defined as output"                                                                         );
 DECL_REPORT( TooManyArgsForAttribute,           "too many arguments for attribute[ '{0}'][ (expected {1}, but got {2})]"                                        );
 DECL_REPORT( TooFewArgsForAttribute,            "too few arguments for attribute[ '{0}'][ (expected {1}, but got {2})]"                                         );
-DECL_REPORT( ExpectedIdentArgInAttribute,       "expected identifier as argument for attribute [ '{0}']"                                                        );
+DECL_REPORT( ExpectedIdentArgInAttribute,       "expected identifier as argument for attribute[ '{0}']"                                                         );
 DECL_REPORT( InvalidIdentArgInAttribute,        "invalid identifier '{0}' used as argument for attribute[ '{1}']"                                               );
 DECL_REPORT( ExpectedDomainTypeParamToBe,       "expected domain type parameter to be \"tri\", \"quad\", or \"isoline\""                                        );
 DECL_REPORT( ExpectedOutputTopologyParamToBe,   "expected output topology parameter to be \"point\", \"line\", \"triangle_cw\", or \"triangle_ccw\""            );
@@ -477,13 +479,33 @@ DECL_REPORT( AnalyzingSourceFailed,             "analyzing input code failed"   
 DECL_REPORT( GeneratingOutputCodeFailed,        "generating output code failed"                                                                                 );
 DECL_REPORT( OnlyPreProcessingForNonHLSL,       "only pre-processing supported for shaders other than HLSL or Cg"                                               );
 
-#ifdef XSC_ENABLE_LANGUAGE_EXT
+/* ----- Shell ----- */
+
+DECL_REPORT( UnexpectedEndOfCmdLine,            "unexpected end of command line arguments"                                                                      );
+DECL_REPORT( ExpectedCmdLineBoolean,            "expected '{0}' or '{1}', but got '{2}'"                                                                        );
+DECL_REPORT( MissingValueInShellCmd,            "missing value in command '{0}'"                                                                                );
+DECL_REPORT( PressAnyKeyToContinue,             "press any key to continue ..."                                                                                 );
+DECL_REPORT( FailedToReadFile,                  "failed to read file: \"{0}\""                                                                                  );
+DECL_REPORT( FailedToWriteFile,                 "failed to write file: \"{0}\""                                                                                 );
+DECL_REPORT( ValidateShader,                    "validate \"{0}\""                                                                                              );
+DECL_REPORT( ValidationSuccessful,              "validation successful"                                                                                         );
+DECL_REPORT( ValidationFailed,                  "validation failed"                                                                                             );
+DECL_REPORT( CompileShader,                     "compile \"{0}\" to \"{1}\""                                                                                    );
+DECL_REPORT( CompilationSuccessful,             "compilation successful"                                                                                        );
+DECL_REPORT( CompilationFailed,                 "compilation failed"                                                                                            );
 
 /* ----- Extensions ----- */
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
 DECL_REPORT( InvalidImageFormatForType,         "invalid image format '{0}' used for buffer of type '{1}'"                                                      );
 DECL_REPORT( AttributeRequiresExtension,        "attribute '{0}' requires language extension '{1}'"                                                             );
+DECL_REPORT( IllegalVectorSpaceAssignment,      "illegal assignment of '{0}' vector-space to '{1}' vector-space"                                                );
+DECL_REPORT( InconsistVectorSpacesInTypes,      "inconsistent vector-spaces between type denoters[ (found '{0}' and '{1}')]"                                    );
+DECL_REPORT( ExpectedIdentInSpaceAttr,          "expected identifier as argument in 'space' attribute"                                                          );
 
 #endif
+
 
 #endif
 

@@ -23,8 +23,8 @@ namespace Xsc
 struct HLSLIntrinsicEntry
 {
     inline HLSLIntrinsicEntry(Intrinsic intrinsic, int major, int minor) :
-        intrinsic       { intrinsic    },
-        minShaderModel  { major, minor }
+        intrinsic      { intrinsic    },
+        minShaderModel { major, minor }
     {
     }
 
@@ -56,6 +56,7 @@ class HLSLIntrinsicAdept : public IntrinsicAdept
 
         TypeDenoterPtr DeriveReturnType(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const;
         TypeDenoterPtr DeriveReturnTypeMul(const std::vector<ExprPtr>& args) const;
+        TypeDenoterPtr DeriveReturnTypeMulPrimary(const std::vector<ExprPtr>& args, const TypeDenoterPtr& type0, const TypeDenoterPtr& type1) const;
         TypeDenoterPtr DeriveReturnTypeTranspose(const std::vector<ExprPtr>& args) const;
         TypeDenoterPtr DeriveReturnTypeVectorCompare(const std::vector<ExprPtr>& args) const;
 

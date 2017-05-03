@@ -330,7 +330,9 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     auto ast = Make<VarDeclStmnt>();
 
     /* Parse parameter as single variable declaration */
-    ast->typeSpecifier = ParseTypeSpecifier();
+    ast->attribs        = ParseAttributeList();
+    ast->typeSpecifier  = ParseTypeSpecifier();
+
     ast->varDecls.push_back(ParseVarDecl(ast.get()));
 
     /* Mark with 'parameter' flag */
@@ -1725,7 +1727,7 @@ CallExprPtr HLSLParser::ParseCallExprWithPrefixOpt(const ExprPtr& prefixExpr, bo
     /* Parse argument list */
     ast->arguments = ParseArgumentList();
 
-    return ast;
+    return UpdateSourceArea(ast);
 }
 
 // Parse function call as a type constructor (e.g. "float4(...)")

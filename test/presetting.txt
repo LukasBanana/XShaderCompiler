@@ -196,3 +196,6 @@
 
 [ExtLayoutAttrTest1: vert]
 -T vert -E main -Xall -o output/* ExtLayoutAttrTest1.hlsl
+
+[ExtSpaceAttrTest1: vert]
+-T vert -E main -Xall -o output/* ExtSpaceAttrTest1.hlsl

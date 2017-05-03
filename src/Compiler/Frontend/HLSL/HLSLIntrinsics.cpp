@@ -707,23 +707,74 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMul(const std::vector<ExprPtr
     if (args.size() != 2)
         RuntimeErr(R_InvalidIntrinsicArgCount("mul"));
 
-    auto type0 = args[0]->GetTypeDenoter();
-    auto type1 = args[1]->GetTypeDenoter();
+    /* Get type denoter of arguments (without aliasing) */
+    auto type0 = args[0]->GetTypeDenoter()->GetSub();
+    auto type1 = args[1]->GetTypeDenoter()->GetSub();
 
+    /* Derive type denoter by input arguments for "mul" intrinsic */
+    auto typeDen = DeriveReturnTypeMulPrimary(args, type0, type1);
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+    /* Derive vector-space of return type */
+    if (auto baseType0 = type0->As<BaseTypeDenoter>())
+    {
+        if (auto baseType1 = type1->As<BaseTypeDenoter>())
+        {
+            if (auto baseReturnType = typeDen->As<BaseTypeDenoter>())
+            {
+                const auto& vectorSpace0 = baseType0->vectorSpace;
+                const auto& vectorSpace1 = baseType1->vectorSpace;
+
+                if (vectorSpace0.IsSpecified() || vectorSpace1.IsSpecified())
+                {
+                    if (!vectorSpace1.IsAssignableTo(vectorSpace0))
+                    {
+                        /* Report error of illegal vector-space assignment */
+                        RuntimeErr(
+                            R_IllegalVectorSpaceAssignment(vectorSpace1.ToString(), vectorSpace0.ToString())
+                        );
+                    }
+
+                    /* Set vector space of return type */
+                    if (baseReturnType->IsMatrix())
+                        baseReturnType->vectorSpace.Set(vectorSpace0.src, vectorSpace1.dst);
+                    else
+                        baseReturnType->vectorSpace.Set(vectorSpace0.dst);
+                }
+            }
+        }
+    }
+
+    #endif
+
+    return typeDen;
+}
+
+TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMulPrimary(const std::vector<ExprPtr>& args, const TypeDenoterPtr& type0, const TypeDenoterPtr& type1) const
+{
+    /* Validate number of arguments */
+    if (args.size() != 2)
+        RuntimeErr(R_InvalidIntrinsicArgCount("mul"));
+
+    /* Scalar x TYPE = TYPE */
     if (type0->IsScalar())
         return type1;
         
     if (type0->IsVector())
     {
+        /* TYPE x Scalar = TYPE */
         if (type1->IsScalar())
             return type0;
 
+        /* Vector x Vector = Scalar (scalar/dot-product) */
         if (type1->IsVector())
         {
             auto baseDataType0 = BaseDataType(static_cast<BaseTypeDenoter&>(*type0).dataType);
-            return std::make_shared<BaseTypeDenoter>(baseDataType0); // scalar
+            return std::make_shared<BaseTypeDenoter>(baseDataType0);
         }
 
+        /* Vector x Matrix = Vector */
         if (type1->IsMatrix())
         {
             auto dataType1      = static_cast<BaseTypeDenoter&>(*type1).dataType;
@@ -735,9 +786,11 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMul(const std::vector<ExprPtr
 
     if (type0->IsMatrix())
     {
+        /* TYPE x Scalar = TYPE */
         if (type1->IsScalar())
             return type0;
 
+        /* Matrix x Vector = Vector */
         if (type1->IsVector())
         {
             auto dataType0      = static_cast<BaseTypeDenoter&>(*type0).dataType;
@@ -746,13 +799,19 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMul(const std::vector<ExprPtr
             return std::make_shared<BaseTypeDenoter>(VectorDataType(baseDataType0, matrixTypeDim0.first));
         }
 
+        /* Matrix x Matrix = Matrix */
         if (type1->IsMatrix())
         {
+            /* Get matrix rows (N) of first matrix type */
             auto dataType0      = static_cast<BaseTypeDenoter&>(*type0).dataType;
             auto baseDataType0  = BaseDataType(dataType0);
             auto matrixTypeDim0 = MatrixTypeDim(dataType0);
+
+            /* Get matrix columns (M) of second matrix type */
             auto dataType1      = static_cast<BaseTypeDenoter&>(*type1).dataType;
             auto matrixTypeDim1 = MatrixTypeDim(dataType1);
+
+            /* Return matrix type with dimension NxM */
             return std::make_shared<BaseTypeDenoter>(MatrixDataType(baseDataType0, matrixTypeDim0.first, matrixTypeDim1.second));
         }
     }
