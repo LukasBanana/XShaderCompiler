@@ -40,6 +40,9 @@ void main(VIn i, out VOut o) {
 	float3 worldPos = mul(wvpMatrix, float4(i.position, 1)).xyz;
 	
 	// "WORLD" space
-	[space(WORLD)]
-	float4 worldPos2 = GetWorldPos(i.position);
+	float4 worldPos2 = GetWorldPos(i.position),
+	       modelPos = i.position;
+	
+	//ERROR
+	//worldPos2 = modelPos;
 }

@@ -659,6 +659,14 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
 
     ValidateTypeCastFrom(ast->rvalueExpr.get(), ast->lvalueExpr.get(), R_VarAssignment);
     AnalyzeLValueExpr(ast->lvalueExpr.get(), ast);
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+
+    /* Analyze vector space of l-value and r-value expressions */
+    if (extensions_(Extensions::SpaceAttribute))
+        AnalyzeVectorSpaceAssign(ast->lvalueExpr.get(), ast->rvalueExpr->GetTypeDenoter()->GetAliased());
+
+    #endif
 }
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
