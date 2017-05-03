@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <iterator>
 #include <functional>
+#include <cctype>
 
 
 namespace Xsc
@@ -139,34 +140,75 @@ inline T FromStringOrDefault(const std::string& s)
     throw std::runtime_error("default template of FromStringOrDefault<T> not implemented");
 }
 
+// Returns true if the specified string contains a hexadecimal number.
+inline bool IsHexLiteral(const std::string& s)
+{
+    return (s.size() >= 3 && s[0] == '0' && ::toupper(s[1]) == 'X');
+}
+
 template <>
 inline int FromStringOrDefault<int>(const std::string& s)
 {
-    try { return std::stoi(s); } catch (const std::exception&) { return 0; }
+    try
+    {
+        return std::stoi(s, nullptr, (IsHexLiteral(s) ? 16 : 10));
+    }
+    catch (const std::exception&)
+    {
+        return 0;
+    }
 }
 
 template <>
 inline long long FromStringOrDefault<long long>(const std::string& s)
 {
-    try { return std::stoll(s); } catch (const std::exception&) { return 0ll; }
+    try
+    {
+        return std::stoll(s, nullptr, (IsHexLiteral(s) ? 16 : 10));
+    }
+    catch (const std::exception&)
+    {
+        return 0ll;
+    }
 }
 
 template <>
 inline unsigned long FromStringOrDefault<unsigned long>(const std::string& s)
 {
-    try { return std::stoul(s); } catch (const std::exception&) { return 0ul; }
+    try
+    {
+        return std::stoul(s, nullptr, (IsHexLiteral(s) ? 16 : 10));
+    }
+    catch (const std::exception&)
+    {
+        return 0ul;
+    }
 }
 
 template <>
 inline float FromStringOrDefault<float>(const std::string& s)
 {
-    try { return std::stof(s); } catch (const std::exception&) { return 0.0f; }
+    try
+    {
+        return std::stof(s);
+    }
+    catch (const std::exception&)
+    {
+        return 0.0f;
+    }
 }
 
 template <>
 inline double FromStringOrDefault<double>(const std::string& s)
 {
-    try { return std::stod(s); } catch (const std::exception&) { return 0.0; }
+    try
+    {
+        return std::stod(s);
+    }
+    catch (const std::exception&)
+    {
+        return 0.0;
+    }
 }
 
 
