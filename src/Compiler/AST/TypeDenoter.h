@@ -70,9 +70,6 @@ struct VectorSpace
     // Returns the common vector-space from the specified expressions, or throws ASTRuntimeError on failure.
     static VectorSpace FindCommonVectorSpace(const std::vector<ExprPtr>& exprList, bool ignoreUnspecified = false, const AST* ast = nullptr);
 
-    // Returns the common vector-space from the specified type denoters, or throws ASTRuntimeError on failure.
-    static VectorSpace FindCommonVectorSpace(const std::vector<const BaseTypeDenoter*>& typeDenoters, bool ignoreUnspecified = false, const AST* ast = nullptr);
-
     StringType src; // Source vector space name.
     StringType dst; // Destination vector space name.
 };
