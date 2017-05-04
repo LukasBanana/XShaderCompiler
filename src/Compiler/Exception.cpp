@@ -13,14 +13,14 @@ namespace Xsc
 
 
 ASTRuntimeError::ASTRuntimeError(const char* msg, const AST* ast) :
-    std::runtime_error  { msg },
-    ast_                { ast }
+    std::runtime_error { msg },
+    ast_               { ast }
 {
 }
 
 ASTRuntimeError::ASTRuntimeError(const std::string& msg, const AST* ast) :
-    std::runtime_error  { msg },
-    ast_                { ast }
+    std::runtime_error { msg },
+    ast_               { ast }
 {
 }
 

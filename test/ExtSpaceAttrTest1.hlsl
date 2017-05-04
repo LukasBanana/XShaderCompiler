@@ -27,8 +27,7 @@ struct VOut {
 };
 
 [space(WORLD)]
-float4 GetWorldPos([space(MODEL)] float3 v)
-{
+float4 GetWorldPos([space(MODEL)] float3 v) {
 	return mul(wMatrix, float4(v, 1));
 }
 
