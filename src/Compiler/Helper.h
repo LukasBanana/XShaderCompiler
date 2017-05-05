@@ -218,6 +218,36 @@ void ToUpper(T& s)
     std::transform(std::begin(s), std::end(s), std::begin(s), ::toupper);
 }
 
+/*
+Merges the source string 'src' into the destination string 'dst',
+keeps the destination characters specified by 'keepDst',
+and ignores the source characters specified by 'ignoreChar'.
+*/
+template <typename T>
+void MergeString(std::basic_string<T>& dst, const std::basic_string<T>& src, const T& keepDst, const T& ignoreSrc)
+{
+    const auto nDst = dst.size();
+    const auto nSrc = src.size();
+
+    /* Replace characters in the destination string */
+    typename std::basic_string<T>::size_type i = 0;
+
+    for (; i < nDst; ++i)
+    {
+        if (i < nSrc)
+        {
+            if (dst[i] != keepDst && src[i] != ignoreSrc)
+                dst[i] = src[i];
+        }
+        else
+            return;
+    }
+
+    /* Append remaining characters to destination string */
+    if (i < nSrc)
+        dst.append(src, i);
+}
+
 
 } // /namespace Xsc
 

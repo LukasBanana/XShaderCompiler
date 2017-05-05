@@ -8,6 +8,7 @@
 #include "ReportHandler.h"
 #include "ReportIdents.h"
 #include "SourceCode.h"
+#include "Helper.h"
 #include <vector>
 
 
@@ -29,8 +30,8 @@ void ReportHandler::Warning(
 }
 
 void ReportHandler::SubmitReport(
-    bool breakWithExpection, const ReportTypes type, const std::string& typeName,
-    const std::string& msg, SourceCode* sourceCode, const SourceArea& area)
+    bool breakWithExpection, const ReportTypes type, const std::string& typeName, const std::string& msg,
+    SourceCode* sourceCode, const SourceArea& area, const std::vector<SourceArea>& secondaryAreas)
 {
     /* Check if error location has already been reported */
     if (!breakWithExpection && area.Pos().IsValid())
@@ -63,7 +64,7 @@ void ReportHandler::SubmitReport(
     outputMsg += msg;
 
     /* Make report object */
-    auto report = MakeReport(type, outputMsg, sourceCode, area);
+    auto report = MakeReport(type, outputMsg, sourceCode, area, secondaryAreas);
 
     /* Move hint queue into report */
     report.TakeHints(std::move(g_hintQueue));
@@ -96,7 +97,8 @@ void ReportHandler::HintForNextReport(const std::string& hint)
  */
 
 Report ReportHandler::MakeReport(
-    const ReportTypes type, const std::string& msg, SourceCode* sourceCode, const SourceArea& area)
+    const ReportTypes type, const std::string& msg, SourceCode* sourceCode,
+    const SourceArea& area, const std::vector<SourceArea>& secondaryAreas)
 {
     /* Get current context description */
     std::string contextDesc;
@@ -110,8 +112,26 @@ Report ReportHandler::MakeReport(
     /* Make report with parameters */
     if (sourceCode != nullptr && area.Length() > 0)
     {
+        /* Construct line with marker */
         std::string line, marker;
-        if (sourceCode->FetchLineMarker(area, line, marker))
+        sourceCode->FetchLineMarker(area, line, marker);
+
+        for (const auto& nextArea : secondaryAreas)
+        {
+            if (nextArea.Pos().GetOrigin() == area.Pos().GetOrigin() && nextArea.Pos().Row() == area.Pos().Row())
+            {
+                /* Fetch new line marker */
+                std::string nextLine, nextMarker;
+                if (sourceCode->FetchLineMarker(nextArea, nextLine, nextMarker))
+                {
+                    /* Merge into current line marker */
+                    MergeString(marker, nextMarker, '^', ' ');
+                }
+            }
+        }
+
+        /* Return report */
+        if (!line.empty())
             return Report(type, msg, line, marker, contextDesc);
         else
             return Report(type, msg, contextDesc);

@@ -143,6 +143,7 @@ void StdLog::PrintReport(const IndentReport& r, bool verbose)
         }
 
         /* Print line marker */
+        if (!marker.empty())
         {
             ConsoleManip::ScopedColor highlight(Colors::Cyan);
             std::cout << r.indent << marker << std::endl;

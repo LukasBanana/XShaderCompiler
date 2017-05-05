@@ -35,7 +35,7 @@ bool Analyzer::DecorateAST(
     }
     catch (const ASTRuntimeError& e)
     {
-        Error(e.what(), e.GetAST());
+        Error(e.what(), e.GetAST(), e.GetASTAppendices());
     }
     catch (const std::underflow_error& e)
     {
@@ -56,18 +56,32 @@ bool Analyzer::DecorateAST(
 
 /* ----- Report and error handling ----- */
 
-void Analyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast)
+void Analyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast, const std::vector<const AST*>& astAppendices)
 {
+    /* Gather secondary source areas */
+    std::vector<SourceArea> secondaryAreas;
+    for (auto nextAST : astAppendices)
+    {
+        if (nextAST)
+            secondaryAreas.push_back(nextAST->area);
+    }
+
+    /* Submit report to report handler */
     auto reportType = (isError ? ReportTypes::Error : ReportTypes::Warning);
     reportHandler_.SubmitReport(
-        false, reportType, (isError ? R_ContextError : R_Warning),
-        msg, sourceCode_, (ast ? ast->area : SourceArea::ignore)
+        false,
+        reportType,
+        (isError ? R_ContextError : R_Warning),
+        msg,
+        sourceCode_,
+        (ast ? ast->area : SourceArea::ignore),
+        secondaryAreas
     );
 }
 
-void Analyzer::Error(const std::string& msg, const AST* ast)
+void Analyzer::Error(const std::string& msg, const AST* ast, const std::vector<const AST*>& astAppendices)
 {
-    SubmitReport(true, msg, ast);
+    SubmitReport(true, msg, ast, astAppendices);
 }
 
 void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const AST* ast)
@@ -253,7 +267,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
     }
     catch (const ASTRuntimeError& e)
     {
-        Error(e.what(), e.GetAST());
+        Error(e.what(), e.GetAST(), e.GetASTAppendices());
         return nullptr;
     }
     catch (const std::exception& e)
@@ -326,7 +340,7 @@ FunctionDecl* Analyzer::FetchFunctionDeclFromStruct(
     }
     catch (const ASTRuntimeError& e)
     {
-        Error(e.what(), e.GetAST());
+        Error(e.what(), e.GetAST(), e.GetASTAppendices());
         return nullptr;
     }
     catch (const std::exception& e)
@@ -466,7 +480,7 @@ TypeDenoterPtr Analyzer::GetTypeDenoterFrom(TypedAST* ast, const TypeDenoter* ex
         }
         catch (const ASTRuntimeError& e)
         {
-            Error(e.what(), e.GetAST());
+            Error(e.what(), e.GetAST(), e.GetASTAppendices());
         }
         catch (const std::exception& e)
         {
@@ -541,7 +555,7 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
     }
     catch (const ASTRuntimeError& e)
     {
-        Error(e.what(), (e.GetAST() ? e.GetAST() : &expr));
+        Error(e.what(), (e.GetAST() ? e.GetAST() : &expr), e.GetASTAppendices());
     }
     catch (const std::exception& e)
     {
@@ -604,7 +618,7 @@ bool Analyzer::CollectArgumentTypeDenoters(const std::vector<ExprPtr>& args, std
         }
         catch (const ASTRuntimeError& e)
         {
-            Error(e.what(), e.GetAST());
+            Error(e.what(), e.GetAST(), e.GetASTAppendices());
             return false;
         }
         catch (const std::exception& e)

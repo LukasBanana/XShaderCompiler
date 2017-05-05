@@ -24,6 +24,13 @@ ASTRuntimeError::ASTRuntimeError(const std::string& msg, const AST* ast) :
 {
 }
 
+ASTRuntimeError::ASTRuntimeError(const std::string& msg, const AST* ast, const std::vector<const AST*>& astAppendices) :
+    std::runtime_error { msg           },
+    ast_               { ast           },
+    astAppendices_     { astAppendices }
+{
+}
+
 [[noreturn]]
 void RuntimeErr(const char* msg)
 {
@@ -50,6 +57,15 @@ void RuntimeErr(const std::string& msg, const AST* ast)
 {
     if (ast)
         throw ASTRuntimeError(msg, ast);
+    else
+        throw std::runtime_error(msg);
+}
+
+[[noreturn]]
+void RuntimeErr(const std::string& msg, const AST* ast, const std::vector<const AST*>& astAppendices)
+{
+    if (ast)
+        throw ASTRuntimeError(msg, ast, astAppendices);
     else
         throw std::runtime_error(msg);
 }

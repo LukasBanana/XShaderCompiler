@@ -65,7 +65,7 @@ VectorSpace VectorSpace::FindCommonVectorSpace(const std::vector<ExprPtr>& exprL
         typeDens.reserve(exprList.size());
 
         VectorSpace commonVectorSpace;
-        bool commonVectorSpaceSet = false;
+        const AST*  commonVectorSpaceAST    = nullptr;
 
         for (const auto& expr : exprList)
         {
@@ -76,11 +76,11 @@ VectorSpace VectorSpace::FindCommonVectorSpace(const std::vector<ExprPtr>& exprL
                 typeDens.push_back(baseTypeDen);
                 if (baseTypeDen->vectorSpace.IsSpecified())
                 {
-                    if (!commonVectorSpaceSet)
+                    if (!commonVectorSpaceAST)
                     {
                         /* Store first specified vector space as common vector space */
-                        commonVectorSpace = baseTypeDen->vectorSpace;
-                        commonVectorSpaceSet = true;
+                        commonVectorSpace       = baseTypeDen->vectorSpace;
+                        commonVectorSpaceAST    = expr.get();
                     }
                 }
             }
@@ -88,7 +88,7 @@ VectorSpace VectorSpace::FindCommonVectorSpace(const std::vector<ExprPtr>& exprL
                 typeDens.push_back(nullptr);
         }
 
-        if (commonVectorSpaceSet)
+        if (commonVectorSpaceAST)
         {
             /* Validate vector space compatibility */
             for (std::size_t i = 0, n = typeDens.size(); i < n; ++i)
@@ -101,7 +101,8 @@ VectorSpace VectorSpace::FindCommonVectorSpace(const std::vector<ExprPtr>& exprL
                     {
                         RuntimeErr(
                             R_InconsistVectorSpacesInTypes(commonVectorSpace.ToString(), vectorSpace.ToString()),
-                            exprList[i].get()
+                            exprList[i].get(),
+                            { commonVectorSpaceAST }
                         );
                     }
                 }

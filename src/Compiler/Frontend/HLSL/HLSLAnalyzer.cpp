@@ -40,7 +40,7 @@ static ShaderVersion GetShaderModel(const InputShaderVersion v)
  */
 
 HLSLAnalyzer::HLSLAnalyzer(Log* log) :
-    Analyzer{ log }
+    Analyzer { log }
 {
 }
 
@@ -819,7 +819,7 @@ void HLSLAnalyzer::AnalyzeCallExpr(CallExpr* expr)
     }
     catch (const ASTRuntimeError& e)
     {
-        Error(e.what(), e.GetAST());
+        Error(e.what(), e.GetAST(), e.GetASTAppendices());
     }
     catch (const std::exception& e)
     {
@@ -2452,7 +2452,7 @@ void HLSLAnalyzer::AnalyzeVectorSpaceAssign(
         }
         catch (const ASTRuntimeError& e)
         {
-            Error(e.what(), e.GetAST());
+            Error(e.what(), e.GetAST(), e.GetASTAppendices());
         }
     }
 }
