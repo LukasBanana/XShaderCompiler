@@ -31,6 +31,8 @@ CallExprPtr                     MakeIntrinsicCallExpr(
 
 CallExprPtr                     MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, const ExprPtr& samplerObjectExpr);
 
+InitializerExprPtr              MakeInitializerExpr(const std::vector<ExprPtr>& exprs);
+
 // Makes a type constructor function call.
 CallExprPtr                     MakeTypeCtorCallExpr(const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments);
 

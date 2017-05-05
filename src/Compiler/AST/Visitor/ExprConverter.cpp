@@ -578,10 +578,13 @@ void ExprConverter::ConvertExprTargetType(ExprPtr& expr, const TypeDenoter& targ
         if (conversionFlags_(ConvertImplicitCasts))
             ConvertExprIfCastRequired(expr, targetTypeDen, matchTypeSize);
 
-        if (conversionFlags_(ConvertInitializer))
+        if (auto initExpr = expr->As<InitializerExpr>())
         {
-            if (auto initExpr = expr->As<InitializerExpr>())
+            /* If enabled, convert initializer to a type constructor */
+            if (conversionFlags_(ConvertInitializer))
                 ConvertExprTargetTypeInitializer(expr, initExpr, targetTypeDen);
+            else
+                ConvertExprFormatInitializer(expr, initExpr, targetTypeDen);
         }
     }
 }
@@ -598,6 +601,53 @@ void ExprConverter::ConvertExprTargetTypeInitializer(ExprPtr& expr, InitializerE
 
     /* Convert initializer expression into type constructor */
     expr = ASTFactory::MakeTypeCtorCallExpr(targetTypeDen.Copy(), initExpr->exprs);
+}
+
+void ExprConverter::ConvertExprFormatInitializer(ExprPtr& expr, InitializerExpr* initExpr, const TypeDenoter& targetTypeDen)
+{
+    /* Convert sub expressions for array type denoters */
+    if (auto arrayTargetTypeDen = targetTypeDen.As<ArrayTypeDenoter>())
+    {
+        const auto& subTypeDen = arrayTargetTypeDen->subTypeDenoter->GetAliased();
+        for (auto& expr : initExpr->exprs)
+            ConvertExprTargetType(expr, subTypeDen);
+    }
+
+    /* Re-format initializer expression */
+    if (auto baseTargetTypeDen = targetTypeDen.As<BaseTypeDenoter>())
+    {
+        if(IsMatrixType(baseTargetTypeDen->dataType))
+        {
+            auto dims = MatrixTypeDim(baseTargetTypeDen->dataType);
+
+            size_t numEntries = dims.first * dims.second;
+            if(numEntries == initExpr->exprs.size())
+            {
+                auto rowTypeDenoter = std::make_shared<BaseTypeDenoter>();
+                rowTypeDenoter->dataType = VectorDataType(BaseDataType(baseTargetTypeDen->dataType), dims.second);
+
+                std::vector<ExprPtr> inits;
+
+                int idx = 0;
+                for(int row = 0; row < dims.first; row++)
+                {
+                    std::vector<ExprPtr> rowInitExprs;
+                    for (int i = 0; i < dims.second; i++)
+                    {
+                        rowInitExprs.push_back(initExpr->exprs[i]);
+                        idx++;
+                    }
+
+                    InitializerExprPtr rowInit = ASTFactory::MakeInitializerExpr(rowInitExprs);
+                    rowInit->DeriveTypeDenoter(rowTypeDenoter.get());
+
+                    inits.push_back(rowInit);
+                }
+
+                initExpr->exprs = inits;
+            }
+        }
+    }
 }
 
 /* ------- Visit functions ------- */
