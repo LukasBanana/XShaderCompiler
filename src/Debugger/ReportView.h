@@ -41,7 +41,8 @@ class ReportView : public wxRichTextCtrl
 
     private:
 
-        void WriteLine(const std::string& indent, const std::string& s, const wxColour& color = *wxWHITE);
+        void Write(const std::string& s, const wxColour& color = *wxWHITE);
+        void WriteLn(const std::string& indent, const std::string& s, const wxColour& color = *wxWHITE);
 
         void AddReportedError(const std::string& message);
 

@@ -40,56 +40,58 @@ void ReportView::ClearAll()
 void ReportView::AddReport(const Report& r, const std::string& indent)
 {
     /* Append context information */
-    WriteLine(indent, r.Context());
+    WriteLn(indent, r.Context());
 
     /* Append actual message */
     if (r.Type() == ReportTypes::Error)
     {
-        WriteLine(indent, r.Message(), wxColour(255, 30, 30));
+        WriteLn(indent, r.Message(), wxColour(255, 30, 30));
         if (r.HasLine())
             AddReportedError(r.Message());
     }
     else if (r.Type() == ReportTypes::Warning)
-        WriteLine(indent, r.Message(), wxColour(255, 255, 0));
+        WriteLn(indent, r.Message(), wxColour(255, 255, 0));
     else
-        WriteLine(indent, r.Message());
+        WriteLn(indent, r.Message());
 
     /* Append line marker with multi-color */
     if (r.HasLine())
     {
         auto line = ReplaceTabs(r.Line());
         auto mark = ReplaceTabs(r.Marker());
-        auto start = mark.find_first_not_of(' ');
-        auto end = mark.size();
-        
-        if (start != std::string::npos && !mark.empty())
+
+        std::size_t start = 0, end = 0;
+
+        Write(indent, wxColour(0, 180, 180));
+
+        while ( end < mark.size() && ( start = mark.find_first_not_of(' ', end) ) != std::string::npos )
         {
-            BeginTextColour(wxColour(0, 180, 180));
-            WriteText(indent + line.substr(0, start));
-            EndTextColour();
+            /* Write unhighlighted text */
+            Write(line.substr(end, start - end), wxColour(0, 180, 180));
 
-            if (end <= line.size())
-            {
-                BeginTextColour(wxColour(50, 255, 255));
-                WriteText(line.substr(start, end - start));
-                EndTextColour();
+            /* Write highlighted text */
+            end = mark.find(' ', start);
 
-                BeginTextColour(wxColour(0, 180, 180));
-                WriteText(line.substr(end) + '\n');
-                EndTextColour();
-            }
-            else
-                WriteText('\n');
+            if (end == std::string::npos)
+                end = std::min(line.size(), mark.size());
+
+            Write(line.substr(start, end - start), wxColour(50, 255, 255));
         }
-        else
-            WriteLine(indent, line, wxColour(50, 255, 255));
 
-        WriteLine(indent, mark, wxColour(50, 255, 255));
+        BeginTextColour(wxColour(0, 180, 180));
+        {
+            if (end < line.size())
+                WriteText(line.substr(end));
+            WriteText('\n');
+        }
+        EndTextColour();
+
+        WriteLn(indent, mark, wxColour(50, 255, 255));
     }
 
     /* Append all hints */
     for (const auto& s : r.GetHints())
-        WriteLine(indent, s);
+        WriteLn(indent, s);
 }
 
 
@@ -97,14 +99,20 @@ void ReportView::AddReport(const Report& r, const std::string& indent)
  * ======= Private: =======
  */
 
-void ReportView::WriteLine(const std::string& indent, const std::string& s, const wxColour& color)
+void ReportView::Write(const std::string& s, const wxColour& color)
 {
     if (!s.empty())
     {
         BeginTextColour(color);
-        WriteText(indent + s + '\n');
+        WriteText(s);
         EndTextColour();
     }
+}
+
+void ReportView::WriteLn(const std::string& indent, const std::string& s, const wxColour& color)
+{
+    if (!s.empty())
+        Write(indent + s + '\n', color);
 }
 
 void ReportView::AddReportedError(const std::string& message)
