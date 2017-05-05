@@ -17,16 +17,9 @@ namespace Xsc
 
 static std::vector<std::string> g_hintQueue;
 
-ReportHandler::ReportHandler(const std::string& reportTypeName, Log* log) :
-    reportTypeName_ { reportTypeName },
-    log_            { log            }
+ReportHandler::ReportHandler(Log* log) :
+    log_ { log }
 {
-}
-
-void ReportHandler::Error(
-    bool breakWithExpection, const std::string& msg, SourceCode* sourceCode, const SourceArea& area)
-{
-    SubmitReport(breakWithExpection, Report::Types::Error, (reportTypeName_ + " " + R_Error), msg, sourceCode, area);
 }
 
 void ReportHandler::Warning(

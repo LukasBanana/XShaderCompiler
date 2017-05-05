@@ -33,14 +33,7 @@ class ReportHandler
 
     public:
 
-        ReportHandler(const std::string& reportTypeName, Log* log);
-
-        void Error(
-            bool breakWithExpection,
-            const std::string& msg,
-            SourceCode* sourceCode = nullptr,
-            const SourceArea& area = SourceArea::ignore
-        );
+        ReportHandler(Log* log);
 
         void Warning(
             bool breakWithExpection,
@@ -82,8 +75,6 @@ class ReportHandler
             SourceCode* sourceCode,
             const SourceArea& area
         );
-
-        std::string                 reportTypeName_;
 
         Log*                        log_                = nullptr;
         bool                        hasErrors_          = false;

@@ -408,8 +408,10 @@ void PreProcessor::ParseProgram()
     while (!ifBlockStack_.empty())
     {
         const auto& ifBlock = ifBlockStack_.top();
-        GetReportHandler().Error(
+        GetReportHandler().SubmitReport(
             false,
+            Report::Types::Error,
+            R_SyntaxError,
             R_MissingEndIfDirective,
             ifBlock.directiveSource.get(),
             ifBlock.directiveToken->Area()
@@ -890,7 +892,12 @@ void PreProcessor::ParseDirectivePragma()
                 if (!(++tokenIt).ReachedEnd())
                 {
                     if ((*tokenIt)->Type() == Tokens::StringLiteral)
-                        GetReportHandler().SubmitReport(false, Report::Types::Info, R_Message, (*tokenIt)->SpellContent(), nullptr, (*tokenIt)->Area());
+                    {
+                        GetReportHandler().SubmitReport(
+                            false, Report::Types::Info, R_Message,
+                            (*tokenIt)->SpellContent(), nullptr, (*tokenIt)->Area()
+                        );
+                    }
                     else
                         ErrorUnexpected(Tokens::StringLiteral, tokenIt->get());
                 }

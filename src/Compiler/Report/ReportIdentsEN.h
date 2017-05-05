@@ -14,11 +14,9 @@
 DECL_REPORT( Message,                           "message"                                                                                                       );
 DECL_REPORT( Warning,                           "warning"                                                                                                       );
 DECL_REPORT( Error,                             "error"                                                                                                         );
-DECL_REPORT( Syntax,                            "syntax"                                                                                                        );
-DECL_REPORT( Context,                           "context"                                                                                                       );
-DECL_REPORT( Reflection,                        "reflection"                                                                                                    );
-DECL_REPORT( CodeGeneration,                    "code generation"                                                                                               );
-DECL_REPORT( CodeReflection,                    "core reflection"                                                                                               );
+DECL_REPORT( CodeGenerationError,               "code generation error"                                                                                         );
+DECL_REPORT( CodeReflection,                    "code reflection"                                                                                               );
+DECL_REPORT( SyntaxError,                       "syntax error"                                                                                                  );
 DECL_REPORT( ContextError,                      "context error"                                                                                                 );
 DECL_REPORT( InternalError,                     "internal error"                                                                                                );
 DECL_REPORT( In,                                "in"                                                                                                            ); // e.g. "error in 'context'"

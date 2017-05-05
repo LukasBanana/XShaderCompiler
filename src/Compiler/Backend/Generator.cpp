@@ -19,7 +19,7 @@ namespace Xsc
 
 
 Generator::Generator(Log* log) :
-    reportHandler_ { R_CodeGeneration, log }
+    reportHandler_ { log }
 {
 }
 
@@ -58,7 +58,10 @@ bool Generator::GenerateCode(
 
 void Generator::Error(const std::string& msg, const AST* ast, bool breakWithExpection)
 {
-    reportHandler_.Error(breakWithExpection, msg, program_->sourceCode.get(), (ast ? ast->area : SourceArea::ignore));
+    reportHandler_.SubmitReport(
+        breakWithExpection, Report::Types::Error, R_CodeGenerationError,
+        msg, program_->sourceCode.get(), (ast ? ast->area : SourceArea::ignore)
+    );
 }
 
 void Generator::Warning(const std::string& msg, const AST* ast)

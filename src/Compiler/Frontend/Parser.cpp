@@ -26,8 +26,8 @@ Parser::~Parser()
  */
 
 Parser::Parser(Log* log) :
-    reportHandler_ { R_Syntax, log },
-    log_           { log           }
+    reportHandler_ { log },
+    log_           { log }
 {
 }
 
@@ -41,7 +41,9 @@ static SourceArea GetTokenArea(const Token* tkn)
 void Parser::Error(const std::string& msg, const SourceArea& area, bool breakWithExpection)
 {
     /* Report error with the report handler */
-    reportHandler_.Error(breakWithExpection, msg, GetScanner().Source(), area);
+    reportHandler_.SubmitReport(
+        breakWithExpection, Report::Types::Error, R_SyntaxError, msg, GetScanner().Source(), area
+    );
 }
 
 void Parser::Error(const std::string& msg, const Token* tkn, bool breakWithExpection)

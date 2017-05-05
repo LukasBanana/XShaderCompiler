@@ -17,7 +17,7 @@ namespace Xsc
 
 
 ReflectionAnalyzer::ReflectionAnalyzer(Log* log) :
-    reportHandler_ { R_Reflection, log }
+    reportHandler_ { log }
 {
 }
 

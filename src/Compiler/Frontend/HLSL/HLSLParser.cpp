@@ -2365,7 +2365,10 @@ Variant HLSLParser::ParseAndEvaluateConstExpr()
     }
     catch (const ObjectExpr* expr)
     {
-        GetReportHandler().Error(true, R_ExpectedConstExpr, GetScanner().Source(), expr->area);
+        GetReportHandler().SubmitReport(
+            true, Report::Types::Error, R_SyntaxError,
+            R_ExpectedConstExpr, GetScanner().Source(), expr->area
+        );
     }
 
     return Variant();
