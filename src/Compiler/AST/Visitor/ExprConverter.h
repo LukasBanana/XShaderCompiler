@@ -41,7 +41,7 @@ class ExprConverter : public Visitor
             ConvertVectorCompare        = (1 << 1),
             ConvertImageAccess          = (1 << 2),
             ConvertImplicitCasts        = (1 << 3),
-            ConvertInitializer          = (1 << 4),
+            ConvertInitializerToCtor    = (1 << 4), // Converts initializer expressions to type constructors (e.g. "{ 1, 2, 3 }" to "float3(1, 2, 3)")
             ConvertLog10                = (1 << 5), // Converts "log10(x)" to "(log(x) / log(10))"
             ConvertUnaryExpr            = (1 << 6), // Wraps an unary expression if it's parent expression is also an unary expression (e.g. "-+x" to "-(+x)")
             ConvertSamplerBufferAccess  = (1 << 7),
@@ -115,7 +115,7 @@ class ExprConverter : public Visitor
         // Converts the expression from an initializer list to a type constructor.
         void ConvertExprTargetTypeInitializer(ExprPtr& expr, InitializerExpr* initExpr, const TypeDenoter& targetTypeDen);
 
-        // Convert a the initializer into GLSL-ready form.
+        // Converts the initializer into GLSL-ready form.
         void ConvertExprFormatInitializer(ExprPtr& expr, InitializerExpr* initExpr, const TypeDenoter& targetTypeDen);
 
         /* ----- Visitor implementation ----- */

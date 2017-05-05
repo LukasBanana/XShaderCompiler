@@ -71,7 +71,7 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
         i.e. "GL_ARB_shading_language_420pack" extension is available.
         */
         exprConverterFlags.Remove(ExprConverter::ConvertVectorSubscripts);
-        exprConverterFlags.Remove(ExprConverter::ConvertInitializer);
+        exprConverterFlags.Remove(ExprConverter::ConvertInitializerToCtor);
     }
 
     exprConverter_.Convert(program, exprConverterFlags);

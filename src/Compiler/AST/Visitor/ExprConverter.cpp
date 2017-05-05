@@ -580,71 +580,67 @@ void ExprConverter::ConvertExprTargetType(ExprPtr& expr, const TypeDenoter& targ
 
         if (auto initExpr = expr->As<InitializerExpr>())
         {
-            /* If enabled, convert initializer to a type constructor */
-            if (conversionFlags_(ConvertInitializer))
-                ConvertExprTargetTypeInitializer(expr, initExpr, targetTypeDen);
+            /* Convert sub expressions for array type denoters */
+            if (auto arrayTargetTypeDen = targetTypeDen.As<ArrayTypeDenoter>())
+            {
+                const auto& subTypeDen = arrayTargetTypeDen->subTypeDenoter->GetAliased();
+                for (auto& expr : initExpr->exprs)
+                    ConvertExprTargetType(expr, subTypeDen);
+            }
             else
-                ConvertExprFormatInitializer(expr, initExpr, targetTypeDen);
+            {
+                /* If enabled, convert initializer to a type constructor */
+                if (conversionFlags_(ConvertInitializerToCtor))
+                    ConvertExprTargetTypeInitializer(expr, initExpr, targetTypeDen);
+                else
+                    ConvertExprFormatInitializer(expr, initExpr, targetTypeDen);
+            }
         }
     }
 }
 
 void ExprConverter::ConvertExprTargetTypeInitializer(ExprPtr& expr, InitializerExpr* initExpr, const TypeDenoter& targetTypeDen)
 {
-    /* Convert sub expressions for array type denoters */
-    if (auto arrayTargetTypeDen = targetTypeDen.As<ArrayTypeDenoter>())
-    {
-        const auto& subTypeDen = arrayTargetTypeDen->subTypeDenoter->GetAliased();
-        for (auto& expr : initExpr->exprs)
-            ConvertExprTargetType(expr, subTypeDen);
-    }
-
     /* Convert initializer expression into type constructor */
     expr = ASTFactory::MakeTypeCtorCallExpr(targetTypeDen.Copy(), initExpr->exprs);
 }
 
 void ExprConverter::ConvertExprFormatInitializer(ExprPtr& expr, InitializerExpr* initExpr, const TypeDenoter& targetTypeDen)
 {
-    /* Convert sub expressions for array type denoters */
-    if (auto arrayTargetTypeDen = targetTypeDen.As<ArrayTypeDenoter>())
-    {
-        const auto& subTypeDen = arrayTargetTypeDen->subTypeDenoter->GetAliased();
-        for (auto& expr : initExpr->exprs)
-            ConvertExprTargetType(expr, subTypeDen);
-    }
-
     /* Re-format initializer expression */
     if (auto baseTargetTypeDen = targetTypeDen.As<BaseTypeDenoter>())
     {
-        if(IsMatrixType(baseTargetTypeDen->dataType))
+        if (IsMatrixType(baseTargetTypeDen->dataType))
         {
-            auto dims = MatrixTypeDim(baseTargetTypeDen->dataType);
+            /* Get dimensions and number of entries from matrix type */
+            const auto dims = MatrixTypeDim(baseTargetTypeDen->dataType);
+            const auto numEntries = static_cast<std::size_t>(dims.first * dims.second);
 
-            size_t numEntries = dims.first * dims.second;
-            if(numEntries == initExpr->exprs.size())
+            if (numEntries == initExpr->exprs.size())
             {
+                /* Make vector type for matrix rows */
                 auto rowTypeDenoter = std::make_shared<BaseTypeDenoter>();
                 rowTypeDenoter->dataType = VectorDataType(BaseDataType(baseTargetTypeDen->dataType), dims.second);
 
-                std::vector<ExprPtr> inits;
+                std::vector<ExprPtr> subInitExprs;
 
-                int idx = 0;
-                for(int row = 0; row < dims.first; row++)
+                std::size_t idx = 0;
+                for (int row = 0; row < dims.first; ++row)
                 {
+                    /* Gather sub expressions from current matrix row */
                     std::vector<ExprPtr> rowInitExprs;
-                    for (int i = 0; i < dims.second; i++)
+                    for (int col = 0; col < dims.second; ++col)
+                        rowInitExprs.push_back(initExpr->exprs[idx++]);
+
+                    /* Make new sub initializer expression with expected type denoter from matrix row */
+                    auto rowInit = ASTFactory::MakeInitializerExpr(rowInitExprs);
                     {
-                        rowInitExprs.push_back(initExpr->exprs[i]);
-                        idx++;
+                        rowInit->GetTypeDenoter(rowTypeDenoter.get());
                     }
-
-                    InitializerExprPtr rowInit = ASTFactory::MakeInitializerExpr(rowInitExprs);
-                    rowInit->DeriveTypeDenoter(rowTypeDenoter.get());
-
-                    inits.push_back(rowInit);
+                    subInitExprs.push_back(rowInit);
                 }
 
-                initExpr->exprs = inits;
+                initExpr->exprs = std::move(subInitExprs);
             }
         }
     }
