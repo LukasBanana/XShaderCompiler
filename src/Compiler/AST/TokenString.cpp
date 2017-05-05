@@ -26,7 +26,7 @@ void AssertCurrentTokenType(const Token::Types type, const Token::Types expected
         throw std::runtime_error(
             R_UnexpectedToken(
                 Token::TypeToString(type),
-                (R_Expected + " " + Token::TypeToString(expectedType))
+                (R_Expected(Token::TypeToString(expectedType)))
             )
         );
     }

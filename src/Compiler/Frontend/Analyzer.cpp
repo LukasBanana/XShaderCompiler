@@ -18,7 +18,7 @@ namespace Xsc
 
 
 Analyzer::Analyzer(Log* log) :
-    reportHandler_{ R_Context, log }
+    reportHandler_ { R_Context, log }
 {
 }
 

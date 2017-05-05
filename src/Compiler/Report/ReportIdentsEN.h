@@ -189,7 +189,7 @@ DECL_REPORT( MissingDecimalPartInFloat,         "missing decimal part in floatin
 DECL_REPORT( UnexpectedToken,                   "unexpected token[: {0}[ ({1})]]"                                                                               );
 DECL_REPORT( UnexpectedEndOfStream,             "unexpected end-of-stream"                                                                                      );
 DECL_REPORT( UnexpectedTokenSpell,              "unexpected token spelling '{0}'[ (expected '{1}')]"                                                            );
-DECL_REPORT( Expected,                          "expected"                                                                                                      );
+DECL_REPORT( Expected,                          "expected {0}"                                                                                                  );
 DECL_REPORT( ExpectedPrimaryExpr,               "expected primary expression"                                                                                   );
 DECL_REPORT( ExpectedLiteralExpr,               "expected literal expression"                                                                                   );
 DECL_REPORT( ExpectedTypeDen,                   "expected type denoter"                                                                                         );

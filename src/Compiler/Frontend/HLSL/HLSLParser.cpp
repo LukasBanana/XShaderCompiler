@@ -12,6 +12,7 @@
 #include "AST.h"
 #include "ASTFactory.h"
 #include "ReportIdents.h"
+#include "Exception.h"
 
 
 namespace Xsc
@@ -194,7 +195,7 @@ void HLSLParser::ProcessDirectivePragma()
         auto AcceptToken = [&](const Tokens type)
         {
             if (!Is(type))
-                throw std::runtime_error(R_UnexpectedTokenInPackMatrixPragma);
+                RuntimeErr(R_UnexpectedTokenInPackMatrixPragma);
             return Parser::AcceptIt();
         };
 

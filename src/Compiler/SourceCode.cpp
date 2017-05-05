@@ -48,7 +48,8 @@ char SourceCode::Next()
     return chr;
 }
 
-static bool FinalizeMarker(
+// Builds the line marker for reports (e.g. "^~~~~~~")
+static bool BuildLineMarker(
     const SourceArea& area, const std::string& lineIn, std::string& lineOut, std::string& markerOut)
 {
     if (area.Pos().Column() >= lineIn.size() || area.Pos().Column() == 0 || area.Length() == 0)
@@ -98,9 +99,9 @@ bool SourceCode::FetchLineMarker(const SourceArea& area, std::string& line, std:
     {
         auto row = area.Pos().Row();
         if (row == pos_.Row())
-            return FinalizeMarker(area, Line(), line, marker);
+            return BuildLineMarker(area, Line(), line, marker);
         else if (row > 0)
-            return FinalizeMarker(area, GetLine(static_cast<std::size_t>(row - 1)), line, marker);
+            return BuildLineMarker(area, GetLine(static_cast<std::size_t>(row - 1)), line, marker);
     }
     return false;
 }

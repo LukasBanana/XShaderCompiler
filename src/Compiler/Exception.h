@@ -27,6 +27,7 @@ class ASTRuntimeError : public std::runtime_error
         explicit ASTRuntimeError(const char* msg, const AST* ast);
         explicit ASTRuntimeError(const std::string& msg, const AST* ast);
 
+        // Returns the AST node which caused the error.
         inline const AST* GetAST() const
         {
             return ast_;
@@ -34,7 +35,7 @@ class ASTRuntimeError : public std::runtime_error
 
     private:
 
-        const AST* ast_;
+        const AST* ast_ = nullptr;
 
 };
 
@@ -47,11 +48,11 @@ void RuntimeErr(const char* msg);
 [[noreturn]]
 void RuntimeErr(const std::string& msg);
 
-// Throws an ASTRuntimeError exception.
+// Throws an ASTRuntimeError exception if 'ast' is non-null, otherwise it std::runtime_error is thrown.
 [[noreturn]]
 void RuntimeErr(const char* msg, const AST* ast);
 
-// Throws an ASTRuntimeError exception.
+// Throws an ASTRuntimeError exception if 'ast' is non-null, otherwise it std::runtime_error is thrown.
 [[noreturn]]
 void RuntimeErr(const std::string& msg, const AST* ast);
 

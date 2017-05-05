@@ -15,9 +15,9 @@ namespace Xsc
 const SourcePosition SourcePosition::ignore {};
 
 SourcePosition::SourcePosition(unsigned int row, unsigned int column, const SourceOriginPtr& origin) :
-    row_   { row    },
-    column_{ column },
-    origin_{ origin }
+    row_    { row    },
+    column_ { column },
+    origin_ { origin }
 {
 }
 

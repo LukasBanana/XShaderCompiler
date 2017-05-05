@@ -19,7 +19,7 @@ namespace Xsc
 
 
 Generator::Generator(Log* log) :
-    reportHandler_{ R_CodeGeneration, log }
+    reportHandler_ { R_CodeGeneration, log }
 {
 }
 

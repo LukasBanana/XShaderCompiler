@@ -19,7 +19,7 @@ namespace Xsc
 {
 
 
-//! Report exception class.
+//! Report exception class which contains a completely constructed message with optional line marker, hints, and context description.
 class XSC_EXPORT Report : public std::exception
 {
     
