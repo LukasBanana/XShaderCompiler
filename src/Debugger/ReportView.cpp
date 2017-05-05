@@ -13,7 +13,7 @@ namespace Xsc
 
 
 ReportView::ReportView(wxWindow* parent, const wxPoint& pos, const wxSize& size) :
-    wxRichTextCtrl{ parent, wxID_ANY, wxEmptyString, pos, size, wxRE_MULTILINE | wxRE_READONLY }
+    wxRichTextCtrl { parent, wxID_ANY, wxEmptyString, pos, size, wxRE_MULTILINE | wxRE_READONLY }
 {
     wxFont font(wxFontInfo(8).Family(wxFONTFAMILY_MODERN).FaceName("Lucida Console"));
     SetFont(font);

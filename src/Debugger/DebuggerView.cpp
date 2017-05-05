@@ -27,7 +27,7 @@ static long DebuggerViewStyle()
 }
 
 DebuggerView::DebuggerView(const wxPoint& pos, const wxSize& size) :
-    wxFrame{ nullptr, wxID_ANY, "Xsc Debugger", pos, size, DebuggerViewStyle() }
+    wxFrame { nullptr, wxID_ANY, "Xsc Debugger", pos, size, DebuggerViewStyle() }
 {
     #ifdef _WIN32
     SetIcon(wxICON(APP_ICON));

@@ -23,7 +23,7 @@ namespace Xsc
 static const int g_AnnotationStyle = (wxSTC_STYLE_LASTPREDEFINED + 1);
 
 SourceView::SourceView(wxWindow* parent, const wxPoint& pos, const wxSize& size) :
-    wxStyledTextCtrl{ parent, wxID_ANY, pos, size }
+    wxStyledTextCtrl { parent, wxID_ANY, pos, size }
 {
     /* Initialize source view style */
     wxFont font(wxFontInfo(10).Family(wxFONTFAMILY_MODERN));
