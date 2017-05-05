@@ -58,7 +58,7 @@ bool Analyzer::DecorateAST(
 
 void Analyzer::SubmitReport(bool isError, const std::string& msg, const AST* ast)
 {
-    auto reportType = (isError ? Report::Types::Error : Report::Types::Warning);
+    auto reportType = (isError ? ReportTypes::Error : ReportTypes::Warning);
     reportHandler_.SubmitReport(
         false, reportType, (isError ? R_ContextError : R_Warning),
         msg, sourceCode_, (ast ? ast->area : SourceArea::ignore)
@@ -87,7 +87,7 @@ void Analyzer::ErrorUndeclaredIdent(const std::string& ident, const std::string&
 
 void Analyzer::ErrorInternal(const std::string& msg, const AST* ast)
 {
-    reportHandler_.SubmitReport(false, Report::Types::Error, R_InternalError(), msg, sourceCode_, (ast ? ast->area : SourceArea::ignore));
+    reportHandler_.SubmitReport(false, ReportTypes::Error, R_InternalError(), msg, sourceCode_, (ast ? ast->area : SourceArea::ignore));
 }
 
 void Analyzer::Warning(const std::string& msg, const AST* ast)

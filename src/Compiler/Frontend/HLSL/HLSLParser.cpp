@@ -2366,7 +2366,7 @@ Variant HLSLParser::ParseAndEvaluateConstExpr()
     catch (const ObjectExpr* expr)
     {
         GetReportHandler().SubmitReport(
-            true, Report::Types::Error, R_SyntaxError,
+            true, ReportTypes::Error, R_SyntaxError,
             R_ExpectedConstExpr, GetScanner().Source(), expr->area
         );
     }

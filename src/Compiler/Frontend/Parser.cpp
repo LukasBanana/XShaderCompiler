@@ -42,7 +42,7 @@ void Parser::Error(const std::string& msg, const SourceArea& area, bool breakWit
 {
     /* Report error with the report handler */
     reportHandler_.SubmitReport(
-        breakWithExpection, Report::Types::Error, R_SyntaxError, msg, GetScanner().Source(), area
+        breakWithExpection, ReportTypes::Error, R_SyntaxError, msg, GetScanner().Source(), area
     );
 }
 
@@ -91,7 +91,7 @@ void Parser::ErrorInternal(const std::string& msg, const std::string& procName)
 {
     reportHandler_.SubmitReport(
         true,
-        Report::Types::Error,
+        ReportTypes::Error,
         R_InternalError,
         msg + R_InFunction(procName),
         nullptr,
@@ -504,7 +504,7 @@ void Parser::IncUnexpectedTokenCounter()
 
     /* Track how many errors of this kind happend without a single accepted token */
     if (unexpectedTokenCounter_ > unexpectedTokenLimit_)
-        reportHandler_.SubmitReport(true, Report::Types::Error, R_Error, R_TooManySyntaxErrors);
+        reportHandler_.SubmitReport(true, ReportTypes::Error, R_Error, R_TooManySyntaxErrors);
 }
 
 void Parser::AssertTokenType(const Tokens type)

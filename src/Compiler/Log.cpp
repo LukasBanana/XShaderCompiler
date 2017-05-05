@@ -23,13 +23,13 @@ void StdLog::SumitReport(const Report& report)
 {
     switch (report.Type())
     {
-        case Report::Types::Info:
+        case ReportTypes::Info:
             infos_.push_back({ FullIndent(), report });
             break;
-        case Report::Types::Warning:
+        case ReportTypes::Warning:
             warnings_.push_back({ FullIndent(), report });
             break;
-        case Report::Types::Error:
+        case ReportTypes::Error:
             errors_.push_back({ FullIndent(), report });
             break;
     }
@@ -97,12 +97,12 @@ void StdLog::PrintReport(const IndentReport& r, bool verbose)
     auto type = r.report.Type();
     const auto& msg = r.report.Message();
 
-    if (type == Report::Types::Error)
+    if (type == ReportTypes::Error)
     {
         ConsoleManip::ScopedColor highlight(Colors::Red | Colors::Intens);
         PrintMultiLineString(msg, r.indent);
     }
-    else if (type == Report::Types::Warning)
+    else if (type == ReportTypes::Warning)
     {
         ConsoleManip::ScopedColor highlight(Colors::Yellow);
         PrintMultiLineString(msg, r.indent);

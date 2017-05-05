@@ -45,7 +45,7 @@ static bool CompileShaderPrimary(
     auto SubmitError = [log](const std::string& msg)
     {
         if (log)
-            log->SumitReport(Report(Report::Types::Error, msg));
+            log->SumitReport(Report(ReportTypes::Error, msg));
         return false;
     };
 
@@ -88,7 +88,7 @@ static bool CompileShaderPrimary(
     
     /* Report warning, if language extensions acquired but compiler was not build with them */
     if (inputDesc.extensions != 0 && log != nullptr)
-        log->SumitReport(Report(Report::Types::Warning, R_LangExtensionsNotSupported));
+        log->SumitReport(Report(ReportTypes::Warning, R_LangExtensionsNotSupported));
     
     #endif
 
@@ -233,7 +233,7 @@ XSC_EXPORT bool CompileShader(
     if (!IsLanguageHLSL(inputDesc.shaderVersion) && !outputDesc.options.preprocessOnly)
     {
         if (log)
-            log->SumitReport(Report(Report::Types::Error, R_OnlyPreProcessingForNonHLSL));
+            log->SumitReport(Report(ReportTypes::Error, R_OnlyPreProcessingForNonHLSL));
         return false;
     }
 
@@ -278,7 +278,7 @@ XSC_EXPORT bool CompileShader(
         auto PrintTimePoint = [log](const std::string& processName, const TimePoint startTime, const TimePoint endTime)
         {
             auto duration = (endTime > startTime ? std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<float>(endTime - startTime)).count() : 0ll);
-            log->SumitReport(Report(Report::Types::Info, "timing " + processName + std::to_string(duration) + " ms"));
+            log->SumitReport(Report(ReportTypes::Info, "timing " + processName + std::to_string(duration) + " ms"));
         };
 
         PrintTimePoint("pre-processing:   ", timePoints[0], timePoints[1]);

@@ -228,7 +228,7 @@ TokenPtr Scanner::Make(const Token::Types& type, std::string& spell, const Sourc
 [[noreturn]]
 void Scanner::Error(const std::string& msg)
 {
-    throw Report(Report::Types::Error, R_LexicalError + " (" + Pos().ToString() + ") : " + msg);
+    throw Report(ReportTypes::Error, R_LexicalError + " (" + Pos().ToString() + ") : " + msg);
 }
 
 [[noreturn]]

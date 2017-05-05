@@ -19,25 +19,25 @@ namespace Xsc
 {
 
 
+//! Report types enumeration.
+enum class ReportTypes
+{
+    Info,       //!< Standard information.
+    Warning,    //!< Warning message.
+    Error       //!< Error message.
+};
+
 //! Report exception class which contains a completely constructed message with optional line marker, hints, and context description.
 class XSC_EXPORT Report : public std::exception
 {
     
     public:
         
-        //! Report types enumeration.
-        enum class Types
-        {
-            Info,       //!< Standard information.
-            Warning,    //!< Warning message.
-            Error       //!< Error message.
-        };
-
         Report(const Report&) = default;
         Report& operator = (const Report&) = default;
 
-        Report(const Types type, const std::string& message, const std::string& context = "");
-        Report(const Types type, const std::string& message, const std::string& line, const std::string& marker, const std::string& context = "");
+        Report(const ReportTypes type, const std::string& message, const std::string& context = "");
+        Report(const ReportTypes type, const std::string& message, const std::string& line, const std::string& marker, const std::string& context = "");
 
         //! Overrides the 'std::exception::what' function.
         const char* what() const throw() override;
@@ -46,7 +46,7 @@ class XSC_EXPORT Report : public std::exception
         void TakeHints(std::vector<std::string>&& hints);
 
         //! Returns the type of this report.
-        inline Types Type() const
+        inline ReportTypes Type() const
         {
             return type_;
         }
@@ -93,7 +93,7 @@ class XSC_EXPORT Report : public std::exception
 
     private:
 
-        Types                       type_       = Types::Info;
+        ReportTypes                 type_       = ReportTypes::Info;
         std::string                 context_;
         std::string                 message_;
         std::string                 line_;

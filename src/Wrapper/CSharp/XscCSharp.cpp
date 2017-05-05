@@ -640,34 +640,34 @@ public ref class XscCompiler
 
         };
 
+        //! Report types enumeration.
+        enum class ReportTypes
+        {
+            Info,       //!< Standard information.
+            Warning,    //!< Warning message.
+            Error       //!< Error message.
+        };
+
         //! Compiler report class.
         ref class Report
         {
 
             public:
 
-                //! Report types enumeration.
-                enum class Types
-                {
-                    Info,       //!< Standard information.
-                    Warning,    //!< Warning message.
-                    Error       //!< Error message.
-                };
-                
-                Report(Types type, String^ message)
+                Report(ReportTypes type, String^ message)
                 {
                     Type    = type;
                     Message = message;
                 }
 
-                Report(Types type, String^ message, String^ context)
+                Report(ReportTypes type, String^ message, String^ context)
                 {
                     Type    = type;
                     Context = context;
                     Message = message;
                 }
 
-                Report(Types type, String^ message, String^ line, String^ marker)
+                Report(ReportTypes type, String^ message, String^ line, String^ marker)
                 {
                     Type    = type;
                     Message = message;
@@ -675,7 +675,7 @@ public ref class XscCompiler
                     Marker  = marker;
                 }
 
-                Report(Types type, String^ message, String^ line, String^ marker, String^ context)
+                Report(ReportTypes type, String^ message, String^ line, String^ marker, String^ context)
                 {
                     Type    = type;
                     Context = context;
@@ -684,7 +684,7 @@ public ref class XscCompiler
                     Marker  = marker;
                 }
 
-                Report(Types type, String^ message, String^ line, String^ marker, String^ context, Collections::Generic::List<String^>^ hints)
+                Report(ReportTypes type, String^ message, String^ line, String^ marker, String^ context, Collections::Generic::List<String^>^ hints)
                 {
                     Type    = type;
                     Context = context;
@@ -695,7 +695,7 @@ public ref class XscCompiler
                 }
 
                 //! Specifies the type of this report.
-                property Types                                  Type;
+                property ReportTypes                            Type;
 
                 //! Returns the context description string (e.g. a function name where the report occured). This may also be empty.
                 property String^                                Context;
@@ -771,7 +771,7 @@ public ref class XscCompiler
                     {
                         /* Copy managed report into native report */
                         Xsc::Report r(
-                            static_cast<Xsc::Report::Types>(report->Type),
+                            static_cast<Xsc::ReportTypes>(report->Type),
                             ToStdString(report->Message),
                             ToStdString(report->Line),
                             ToStdString(report->Marker),
@@ -954,7 +954,7 @@ class LogCSharp : public Xsc::Log
 
                 /* Copy report into managed report */
                 auto managedReport = gcnew XscCompiler::Report(
-                    static_cast<XscCompiler::Report::Types>(report.Type()),
+                    static_cast<XscCompiler::ReportTypes>(report.Type()),
                     gcnew String(report.Message().c_str()),
                     gcnew String(report.Line().c_str()),
                     gcnew String(report.Marker().c_str()),

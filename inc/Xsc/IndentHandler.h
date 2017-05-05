@@ -56,7 +56,7 @@ class ScopedIndent
     public:
 
         inline ScopedIndent(IndentHandler& handler) :
-            handler_{ handler }
+            handler_ { handler }
         {
             handler_.IncIndent();
         }

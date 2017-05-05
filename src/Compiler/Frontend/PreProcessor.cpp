@@ -410,7 +410,7 @@ void PreProcessor::ParseProgram()
         const auto& ifBlock = ifBlockStack_.top();
         GetReportHandler().SubmitReport(
             false,
-            Report::Types::Error,
+            ReportTypes::Error,
             R_SyntaxError,
             R_MissingEndIfDirective,
             ifBlock.directiveSource.get(),
@@ -894,7 +894,7 @@ void PreProcessor::ParseDirectivePragma()
                     if ((*tokenIt)->Type() == Tokens::StringLiteral)
                     {
                         GetReportHandler().SubmitReport(
-                            false, Report::Types::Info, R_Message,
+                            false, ReportTypes::Info, R_Message,
                             (*tokenIt)->SpellContent(), nullptr, (*tokenIt)->Area()
                         );
                     }
@@ -982,7 +982,7 @@ void PreProcessor::ParseDirectiveError()
     for (const auto& tkn : tokenString.GetTokens())
         errorMsg += tkn->Spell();
 
-    GetReportHandler().SubmitReport(true, Report::Types::Error, R_Error, errorMsg, GetScanner().Source(), tkn->Area());
+    GetReportHandler().SubmitReport(true, ReportTypes::Error, R_Error, errorMsg, GetScanner().Source(), tkn->Area());
 }
 
 ExprPtr PreProcessor::ParseExpr()

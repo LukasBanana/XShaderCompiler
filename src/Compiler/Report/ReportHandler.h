@@ -44,7 +44,7 @@ class ReportHandler
 
         void SubmitReport(
             bool breakWithExpection,
-            const Report::Types type,
+            const ReportTypes type,
             const std::string& typeName,
             const std::string& msg,
             SourceCode* sourceCode = nullptr,
@@ -70,7 +70,7 @@ class ReportHandler
     private:
 
         Report MakeReport(
-            const Report::Types type,
+            const ReportTypes type,
             const std::string& msg,
             SourceCode* sourceCode,
             const SourceArea& area

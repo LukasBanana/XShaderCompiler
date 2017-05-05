@@ -25,11 +25,11 @@ ReportHandler::ReportHandler(Log* log) :
 void ReportHandler::Warning(
     bool breakWithExpection, const std::string& msg, SourceCode* sourceCode, const SourceArea& area)
 {
-    SubmitReport(breakWithExpection, Report::Types::Warning, R_Warning, msg, sourceCode, area);
+    SubmitReport(breakWithExpection, ReportTypes::Warning, R_Warning, msg, sourceCode, area);
 }
 
 void ReportHandler::SubmitReport(
-    bool breakWithExpection, const Report::Types type, const std::string& typeName,
+    bool breakWithExpection, const ReportTypes type, const std::string& typeName,
     const std::string& msg, SourceCode* sourceCode, const SourceArea& area)
 {
     /* Check if error location has already been reported */
@@ -44,7 +44,7 @@ void ReportHandler::SubmitReport(
     /* Initialize output message */
     auto outputMsg = typeName;
     
-    if (type == Report::Types::Error)
+    if (type == ReportTypes::Error)
         hasErrors_ = true;
 
     /* Add source position */
@@ -96,7 +96,7 @@ void ReportHandler::HintForNextReport(const std::string& hint)
  */
 
 Report ReportHandler::MakeReport(
-    const Report::Types type, const std::string& msg, SourceCode* sourceCode, const SourceArea& area)
+    const ReportTypes type, const std::string& msg, SourceCode* sourceCode, const SourceArea& area)
 {
     /* Get current context description */
     std::string contextDesc;

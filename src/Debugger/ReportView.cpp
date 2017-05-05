@@ -43,13 +43,13 @@ void ReportView::AddReport(const Report& r, const std::string& indent)
     WriteLine(indent, r.Context());
 
     /* Append actual message */
-    if (r.Type() == Report::Types::Error)
+    if (r.Type() == ReportTypes::Error)
     {
         WriteLine(indent, r.Message(), wxColour(255, 30, 30));
         if (r.HasLine())
             AddReportedError(r.Message());
     }
-    else if (r.Type() == Report::Types::Warning)
+    else if (r.Type() == ReportTypes::Warning)
         WriteLine(indent, r.Message(), wxColour(255, 255, 0));
     else
         WriteLine(indent, r.Message());

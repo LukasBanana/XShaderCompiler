@@ -31,8 +31,8 @@ class CodeWriter : public IndentHandler
             Options() = default;
 
             inline Options(bool enableNewLine, bool enableIndent) :
-                enableNewLine   { enableNewLine },
-                enableIndent    { enableIndent  }
+                enableNewLine { enableNewLine },
+                enableIndent  { enableIndent  }
             {
             }
 

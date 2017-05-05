@@ -12,19 +12,19 @@ namespace Xsc
 {
 
 
-Report::Report(const Types type, const std::string& message, const std::string& context) :
-    type_   { type    },
-    context_{ context },
-    message_{ message }
+Report::Report(const ReportTypes type, const std::string& message, const std::string& context) :
+    type_    { type    },
+    context_ { context },
+    message_ { message }
 {
 }
 
-Report::Report(const Types type, const std::string& message, const std::string& line, const std::string& marker, const std::string& context) :
-    type_   { type    },
-    context_{ context },
-    message_{ message },
-    line_   { line    },
-    marker_ { marker  }
+Report::Report(const ReportTypes type, const std::string& message, const std::string& line, const std::string& marker, const std::string& context) :
+    type_    { type    },
+    context_ { context },
+    message_ { message },
+    line_    { line    },
+    marker_  { marker  }
 {
     /* Remove new-line characters from end of source line */
     while ( !line_.empty() && ( line_.back() == '\n' || line_.back() == '\r' ) )

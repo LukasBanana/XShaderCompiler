@@ -279,7 +279,7 @@ void ASTPrinter::Print(Log& log, const PrintableTree& tree)
     s += tree.label;
 
     /* Submit print as report */
-    log.SumitReport(Report(Report::Types::Info, s));
+    log.SumitReport(Report(ReportTypes::Info, s));
 
     /* Print children */
     if (!tree.children.empty())
