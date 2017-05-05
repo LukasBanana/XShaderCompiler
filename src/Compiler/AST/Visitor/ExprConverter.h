@@ -115,6 +115,9 @@ class ExprConverter : public Visitor
         // Converts the expression from an initializer list to a type constructor.
         void ConvertExprTargetTypeInitializer(ExprPtr& expr, InitializerExpr* initExpr, const TypeDenoter& targetTypeDen);
 
+        // Convert a the initializer into GLSL-ready form.
+        void ConvertExprFormatInitializer(ExprPtr& expr, InitializerExpr* initExpr, const TypeDenoter& targetTypeDen);
+
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( VarDecl          );
