@@ -60,9 +60,9 @@ void ReportView::AddReport(const Report& r, const std::string& indent)
         auto line = ReplaceTabs(r.Line());
         auto mark = ReplaceTabs(r.Marker());
 
-        std::size_t start = 0, end = 0;
-
         Write(indent, wxColour(0, 180, 180));
+
+        std::size_t start = 0, end = 0;
 
         while ( end < mark.size() && ( start = mark.find_first_not_of(' ', end) ) != std::string::npos )
         {

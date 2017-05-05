@@ -116,8 +116,8 @@ void StdLog::PrintReport(const IndentReport& r, bool verbose)
     /* Print optional line and line-marker */
     if (r.report.HasLine())
     {
-        const auto& line    = r.report.Line();
-        const auto& marker  = r.report.Marker();
+        const auto& line = r.report.Line();
+        const auto& mark = r.report.Marker();
 
         /* Print line with color highlight for the occurrence */
         {
@@ -125,28 +125,37 @@ void StdLog::PrintReport(const IndentReport& r, bool verbose)
 
             std::cout << r.indent;
 
-            auto pos = std::min(marker.find('^'), marker.find('~'));
-            if (pos != std::string::npos && pos < marker.size())
+            std::size_t start = 0, end = 0;
+
+            while ( end < mark.size() && ( start = mark.find_first_not_of(' ', end) ) != std::string::npos )
             {
-                std::cout << line.substr(0, pos);
+                /* Write unhighlighted text */
+                std::cout << line.substr(end, start - end);
+
+                /* Write highlighted text */
                 {
                     ConsoleManip::ScopedColor highlight(Colors::Cyan);
-                    std::cout << line.substr(pos, marker.size() - pos);
+
+                    end = mark.find(' ', start);
+
+                    if (end == std::string::npos)
+                        end = std::min(line.size(), mark.size());
+
+                    std::cout << line.substr(start, end - start);
                 }
-                if (marker.size() < line.size())
-                    std::cout << line.substr(marker.size());
             }
-            else
-                std::cout << line;
+
+            if (end < line.size())
+                std::cout << line.substr(end);
 
             std::cout << std::endl;
         }
 
         /* Print line marker */
-        if (!marker.empty())
+        if (!mark.empty())
         {
             ConsoleManip::ScopedColor highlight(Colors::Cyan);
-            std::cout << r.indent << marker << std::endl;
+            std::cout << r.indent << mark << std::endl;
         }
     }
 
