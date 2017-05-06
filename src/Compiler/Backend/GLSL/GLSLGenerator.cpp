@@ -62,6 +62,7 @@ void GLSLGenerator::GenerateCodePrimary(
     preserveComments_   = outputDesc.options.preserveComments;
     separateShaders_    = outputDesc.options.separateShaders;
     separateSamplers_   = outputDesc.options.separateSamplers;
+    autoBinding_        = outputDesc.options.autoBinding;
     allowLineMarks_     = outputDesc.formatting.lineMarks;
     compactWrappers_    = outputDesc.formatting.compactWrappers;
     alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
@@ -74,6 +75,9 @@ void GLSLGenerator::GenerateCodePrimary(
     {
         const auto semanticCi = ToCiString(s.semantic);
         vertexSemanticsMap_[semanticCi] = { s.location, 0 };
+
+        if(s.location >= 0)
+            usedLocationsSet_.insert(s.location);
     }
 
     if (program.entryPointRef)
@@ -259,6 +263,85 @@ void GLSLGenerator::ReportOptionalFeedback()
 void GLSLGenerator::ErrorIntrinsic(const std::string& intrinsicName, const AST* ast)
 {
     Error(R_FailedToMapToGLSLKeyword(R_Intrinsic(intrinsicName)), ast);
+}
+
+int GLSLGenerator::GetNumBindingLocations(const TypeDenoterPtr& typeDenoter)
+{
+    auto denoter = typeDenoter;
+    int numArrElements = 1;
+    if(auto arrTypeDenoter = denoter->As<ArrayTypeDenoter>())
+    {
+        for (auto& dim : arrTypeDenoter->arrayDims)
+            numArrElements *= dim->size;
+
+        denoter = arrTypeDenoter->subTypeDenoter;
+    }
+
+    if (numArrElements == 0)
+        return -1;
+
+    if(auto baseTypeDenoter = denoter->As<BaseTypeDenoter>())
+    {
+        /* Determine number of locations required by type */
+        int elementSize = 0;
+        if (IsScalarType(baseTypeDenoter->dataType))
+            elementSize = 1;
+        else if(IsVectorType(baseTypeDenoter->dataType))
+        {
+            int dims = VectorTypeDim(baseTypeDenoter->dataType);
+
+            /* 3- and 4-component double vectors require two locations */
+            if (IsDoubleRealType(baseTypeDenoter->dataType) && dims > 2)
+                elementSize = 2;
+            else
+                elementSize = 1;
+        }
+        else if(IsMatrixType(baseTypeDenoter->dataType))
+        {
+            auto dims = MatrixTypeDim(baseTypeDenoter->dataType);
+
+            int rowDim = dims.second;
+            int rowSize;
+            /* 3- and 4-component double vectors require two locations */
+            if (IsDoubleRealType(baseTypeDenoter->dataType) && rowDim > 2)
+                rowSize = 2;
+            else
+                rowSize = 1;
+
+            elementSize = dims.first * rowSize;
+        }
+
+        if (elementSize != 0)
+            return elementSize * numArrElements;
+    }
+
+    return -1;
+}
+
+int GLSLGenerator::GetBindingLocation(const TypeDenoterPtr& typeDenoter)
+{
+    int numLocations = GetNumBindingLocations(typeDenoter);
+    if (numLocations == -1)
+        return -1;
+
+    /* Find enough consecutive empty locations to hold the type */
+    int startLocation = 0;
+    int endLocation = startLocation + numLocations - 1;
+    for(auto& entry : usedLocationsSet_)
+    {
+        if(entry >= startLocation && entry <= endLocation)
+        {
+            startLocation = entry + 1;
+            endLocation = startLocation + numLocations - 1;
+        }
+        else if(entry > endLocation)
+            break;
+    }
+
+    for (int i = startLocation; i <= endLocation; ++i)
+        usedLocationsSet_.insert(i);
+
+    return startLocation;
 }
 
 /* ------- Visit functions ------- */
@@ -1491,16 +1574,26 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 
             if (explicitBinding_ && IsVertexShader() && varDecl->semantic.IsValid())
             {
+                int location = -1;
+
                 auto it = vertexSemanticsMap_.find(ToCiString(varDecl->semantic.ToString()));
                 if (it != vertexSemanticsMap_.end())
                 {
+                    location = it->second.location;
+                    it->second.found = true;
+                }
+
+                if(location == -1 && autoBinding_)
+                    location = GetBindingLocation(varDecl->declStmntRef->typeSpecifier->typeDenoter);
+
+                if(location != -1)
+                {
                     /* Write layout location and increment use count for warning-feedback */
                     WriteLayout(
-                        {
-                            [&]() { Write("location = " + std::to_string(it->second.location)); }
-                        }
+                    {
+                        [&]() { Write("location = " + std::to_string(location)); }
+                    }
                     );
-                    it->second.found = true;
                 }
             }
 

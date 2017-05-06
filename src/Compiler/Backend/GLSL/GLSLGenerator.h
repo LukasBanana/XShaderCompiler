@@ -85,6 +85,12 @@ class GLSLGenerator : public Generator
         // Error for intrinsics, that can not be mapped to GLSL keywords.
         void ErrorIntrinsic(const std::string& intrinsicName, const AST* ast = nullptr);
 
+        // Returns the number of binding locations required by the specified type, or -1 if type is invalid.
+        int GetNumBindingLocations(const TypeDenoterPtr& typeDenoter);
+
+        // Attempts to find an empty binding location for the specified type, or returns -1 if it cannot find one. 
+        int GetBindingLocation(const TypeDenoterPtr& typeDenoter);
+
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
@@ -308,8 +314,10 @@ class GLSLGenerator : public Generator
         bool                                    alwaysBracedScopes_     = false;
         bool                                    separateShaders_        = false;
         bool                                    separateSamplers_       = true;
+        bool                                    autoBinding_            = false;
 
         bool                                    isInsideInterfaceBlock_ = false;
+        std::set<int>                           usedLocationsSet_;
 
         #ifdef XSC_ENABLE_LANGUAGE_EXT
 
