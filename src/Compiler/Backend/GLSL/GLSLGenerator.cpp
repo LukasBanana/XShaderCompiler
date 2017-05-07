@@ -649,7 +649,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     #endif
 
     /* Ignore declaration statement of static member variables */
-    if (ast->typeSpecifier->HasAnyStorageClassesOf({ StorageClass::Static }) && ast->FetchStructDeclRef() != nullptr)
+    if (ast->typeSpecifier->HasAnyStorageClassOf({ StorageClass::Static }) && ast->FetchStructDeclRef() != nullptr)
         return;
 
     BeginLn();

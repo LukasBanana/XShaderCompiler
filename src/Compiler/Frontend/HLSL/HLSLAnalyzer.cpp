@@ -1347,7 +1347,7 @@ bool HLSLAnalyzer::AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier
 {
     if (typeSpecifier)
     {
-        if (typeSpecifier->HasAnyStorageClassesOf({ StorageClass::Static }))
+        if (typeSpecifier->HasAnyStorageClassOf({ StorageClass::Static }))
         {
             if (!isStatic)
             {

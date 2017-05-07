@@ -480,7 +480,7 @@ struct TypeSpecifier : public TypedAST
     bool HasAnyTypeModifierOf(const std::initializer_list<TypeModifier>& modifiers) const;
 
     // Returns true if any of the specified storage classes is contained.
-    bool HasAnyStorageClassesOf(const std::initializer_list<StorageClass>& modifiers) const;
+    bool HasAnyStorageClassOf(const std::initializer_list<StorageClass>& modifiers) const;
 
     // Swaps the 'row_major' with 'column_major' storage layout, and inserts the specified default layout if none of these are set.
     void SwapMatrixStorageLayout(const TypeModifier defaultStorgeLayout);
@@ -750,7 +750,7 @@ struct FunctionDecl : public Stmnt
     // Returns true if this is a member function (member of a structure).
     bool IsMemberFunction() const;
 
-    // Returns true if this is a static function (see TypeSpecifier::HasAnyStorageClassesOf).
+    // Returns true if this is a static function (see TypeSpecifier::HasAnyStorageClassOf).
     bool IsStatic() const;
     
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").

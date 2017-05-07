@@ -370,7 +370,7 @@ bool TypeSpecifier::HasAnyTypeModifierOf(const std::initializer_list<TypeModifie
     return false;
 }
 
-bool TypeSpecifier::HasAnyStorageClassesOf(const std::initializer_list<StorageClass>& modifiers) const
+bool TypeSpecifier::HasAnyStorageClassOf(const std::initializer_list<StorageClass>& modifiers) const
 {
     for (auto mod : modifiers)
     {
@@ -483,7 +483,7 @@ VarDecl* VarDecl::FetchStaticVarDefRef() const
 bool VarDecl::IsStatic() const
 {
     if (auto typeSpecifier = FetchTypeSpecifier())
-        return typeSpecifier->HasAnyStorageClassesOf({ StorageClass::Static });
+        return typeSpecifier->HasAnyStorageClassOf({ StorageClass::Static });
     else
         return false;
 }
@@ -726,7 +726,7 @@ std::size_t StructDecl::NumMemberVariables(bool onlyNonStaticMembers) const
 
     for (const auto& member : varMembers)
     {
-        if (!onlyNonStaticMembers || !member->typeSpecifier->HasAnyStorageClassesOf({ StorageClass::Static }))
+        if (!onlyNonStaticMembers || !member->typeSpecifier->HasAnyStorageClassOf({ StorageClass::Static }))
             n += member->varDecls.size();
     }
 
@@ -949,7 +949,7 @@ bool FunctionDecl::IsMemberFunction() const
 
 bool FunctionDecl::IsStatic() const
 {
-    return returnType->HasAnyStorageClassesOf({ StorageClass::Static });
+    return returnType->HasAnyStorageClassOf({ StorageClass::Static });
 }
 
 std::string FunctionDecl::ToString(bool useParamNames) const
@@ -1350,7 +1350,7 @@ void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
 void VarDeclStmnt::MakeImplicitConst()
 {
     if ( !IsConstOrUniform() &&
-         !typeSpecifier->HasAnyStorageClassesOf({ StorageClass::Static, StorageClass::GroupShared }) )
+         !typeSpecifier->HasAnyStorageClassOf({ StorageClass::Static, StorageClass::GroupShared }) )
     {
         flags << VarDeclStmnt::isImplicitConst;
         typeSpecifier->isUniform = true;
