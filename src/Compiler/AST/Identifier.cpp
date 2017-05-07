@@ -13,7 +13,7 @@ namespace Xsc
 
 
 Identifier::Identifier(const std::string& original) :
-    original_{ original }
+    original_ { original }
 {
 }
 

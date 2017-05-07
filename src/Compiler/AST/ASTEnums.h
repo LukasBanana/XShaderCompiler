@@ -1056,6 +1056,9 @@ class IndexedSemantic
         // Resest this semantic to undefined.
         void Reset();
 
+        // Restes the index of this semantic.
+        void ResetIndex(int index);
+
         // Converts this system value semantic to a user defined semantic.
         void MakeUserDefined(const std::string& semanticName = "");
 

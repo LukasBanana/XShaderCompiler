@@ -1214,6 +1214,11 @@ void IndexedSemantic::Reset()
     userDefined_.clear();
 }
 
+void IndexedSemantic::ResetIndex(int index)
+{
+    index_ = index;
+}
+
 void IndexedSemantic::MakeUserDefined(const std::string& semanticName)
 {
     if (IsSystemSemantic(semantic_))

@@ -1600,6 +1600,9 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
                         }
                     );
                 }
+
+                /* Reset the semantic index for code reflection output */
+                varDecl->semantic.ResetIndex(location);
             }
 
             Separator();
