@@ -18,6 +18,7 @@
 #include "TypeDenoter.h"
 #include "Identifier.h"
 #include <vector>
+#include <initializer_list>
 #include <string>
 #include <set>
 #include <map>
@@ -476,10 +477,10 @@ struct TypeSpecifier : public TypedAST
     void SetTypeModifier(const TypeModifier modifier);
 
     // Returns true if any of the specified type modifiers is contained.
-    bool HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const;
+    bool HasAnyTypeModifierOf(const std::initializer_list<TypeModifier>& modifiers) const;
 
     // Returns true if any of the specified storage classes is contained.
-    bool HasAnyStorageClassesOf(const std::vector<StorageClass>& modifiers) const;
+    bool HasAnyStorageClassesOf(const std::initializer_list<StorageClass>& modifiers) const;
 
     // Swaps the 'row_major' with 'column_major' storage layout, and inserts the specified default layout if none of these are set.
     void SwapMatrixStorageLayout(const TypeModifier defaultStorgeLayout);
@@ -884,7 +885,7 @@ struct VarDeclStmnt : public Stmnt
     void SetTypeModifier(const TypeModifier modifier);
 
     // Returns true if any of the specified type modifiers is contained.
-    bool HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const;
+    bool HasAnyTypeModifierOf(const std::initializer_list<TypeModifier>& modifiers) const;
 
     // Iterates over each VarDecl AST node.
     void ForEachVarDecl(const VarDeclIteratorFunctor& iterator);

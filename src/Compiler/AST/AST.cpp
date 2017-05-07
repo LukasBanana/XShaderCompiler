@@ -360,7 +360,7 @@ void TypeSpecifier::SetTypeModifier(const TypeModifier modifier)
     typeModifiers.insert(modifier);
 }
 
-bool TypeSpecifier::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const
+bool TypeSpecifier::HasAnyTypeModifierOf(const std::initializer_list<TypeModifier>& modifiers) const
 {
     for (auto mod : modifiers)
     {
@@ -370,7 +370,7 @@ bool TypeSpecifier::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifi
     return false;
 }
 
-bool TypeSpecifier::HasAnyStorageClassesOf(const std::vector<StorageClass>& modifiers) const
+bool TypeSpecifier::HasAnyStorageClassesOf(const std::initializer_list<StorageClass>& modifiers) const
 {
     for (auto mod : modifiers)
     {
@@ -1333,7 +1333,7 @@ void VarDeclStmnt::SetTypeModifier(const TypeModifier modifier)
     typeSpecifier->SetTypeModifier(modifier);
 }
 
-bool VarDeclStmnt::HasAnyTypeModifierOf(const std::vector<TypeModifier>& modifiers) const
+bool VarDeclStmnt::HasAnyTypeModifierOf(const std::initializer_list<TypeModifier>& modifiers) const
 {
     return typeSpecifier->HasAnyTypeModifierOf(modifiers);
 }
