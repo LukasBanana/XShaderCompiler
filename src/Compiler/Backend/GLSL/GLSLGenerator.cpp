@@ -76,7 +76,7 @@ void GLSLGenerator::GenerateCodePrimary(
         const auto semanticCi = ToCiString(s.semantic);
         vertexSemanticsMap_[semanticCi] = { s.location, 0 };
 
-        if(s.location >= 0)
+        if (s.location >= 0)
             usedLocationsSet_.insert(s.location);
     }
 
@@ -265,45 +265,49 @@ void GLSLGenerator::ErrorIntrinsic(const std::string& intrinsicName, const AST* 
     Error(R_FailedToMapToGLSLKeyword(R_Intrinsic(intrinsicName)), ast);
 }
 
-int GLSLGenerator::GetNumBindingLocations(const TypeDenoterPtr& typeDenoter)
+int GLSLGenerator::GetNumBindingLocations(TypeDenoterPtr typeDenoter)
 {
-    auto denoter = typeDenoter;
-    int numArrElements = 1;
-    if(auto arrTypeDenoter = denoter->As<ArrayTypeDenoter>())
-    {
-        for (auto& dim : arrTypeDenoter->arrayDims)
-            numArrElements *= dim->size;
+    int numArrayElements = 1;
 
-        denoter = arrTypeDenoter->subTypeDenoter;
+    while (auto arrayTypeDen = typeDenoter->As<ArrayTypeDenoter>())
+    {
+        for (const auto& dim : arrayTypeDen->arrayDims)
+            numArrayElements *= dim->size;
+
+        typeDenoter = arrayTypeDen->subTypeDenoter;
     }
 
-    if (numArrElements == 0)
+    if (numArrayElements == 0)
         return -1;
 
-    if(auto baseTypeDenoter = denoter->As<BaseTypeDenoter>())
+    if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
     {
+        const auto dataType = baseTypeDen->dataType;
+
         /* Determine number of locations required by type */
         int elementSize = 0;
-        if (IsScalarType(baseTypeDenoter->dataType))
+
+        if (IsScalarType(dataType))
             elementSize = 1;
-        else if(IsVectorType(baseTypeDenoter->dataType))
+        else if (IsVectorType(dataType))
         {
-            int dims = VectorTypeDim(baseTypeDenoter->dataType);
+            int dims = VectorTypeDim(dataType);
 
             /* 3- and 4-component double vectors require two locations */
-            if (IsDoubleRealType(baseTypeDenoter->dataType) && dims > 2)
+            if (IsDoubleRealType(dataType) && dims > 2)
                 elementSize = 2;
             else
                 elementSize = 1;
         }
-        else if(IsMatrixType(baseTypeDenoter->dataType))
+        else if (IsMatrixType(dataType))
         {
-            auto dims = MatrixTypeDim(baseTypeDenoter->dataType);
+            auto dims = MatrixTypeDim(dataType);
 
             int rowDim = dims.second;
-            int rowSize;
+            int rowSize = 0;
+
             /* 3- and 4-component double vectors require two locations */
-            if (IsDoubleRealType(baseTypeDenoter->dataType) && rowDim > 2)
+            if (IsDoubleRealType(dataType) && rowDim > 2)
                 rowSize = 2;
             else
                 rowSize = 1;
@@ -312,7 +316,7 @@ int GLSLGenerator::GetNumBindingLocations(const TypeDenoterPtr& typeDenoter)
         }
 
         if (elementSize != 0)
-            return elementSize * numArrElements;
+            return elementSize * numArrayElements;
     }
 
     return -1;
@@ -325,20 +329,21 @@ int GLSLGenerator::GetBindingLocation(const TypeDenoterPtr& typeDenoter)
         return -1;
 
     /* Find enough consecutive empty locations to hold the type */
-    int startLocation = 0;
-    int endLocation = startLocation + numLocations - 1;
-    for(auto& entry : usedLocationsSet_)
+    int startLocation   = 0;
+    int endLocation     = startLocation + numLocations - 1;
+
+    for (auto entry : usedLocationsSet_)
     {
-        if(entry >= startLocation && entry <= endLocation)
+        if (entry >= startLocation && entry <= endLocation)
         {
-            startLocation = entry + 1;
-            endLocation = startLocation + numLocations - 1;
+            startLocation   = entry + 1;
+            endLocation     = startLocation + numLocations - 1;
         }
-        else if(entry > endLocation)
+        else if (entry > endLocation)
             break;
     }
 
-    for (int i = startLocation; i <= endLocation; ++i)
+    for (auto i = startLocation; i <= endLocation; ++i)
         usedLocationsSet_.insert(i);
 
     return startLocation;
@@ -1583,16 +1588,16 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
                     it->second.found = true;
                 }
 
-                if(location == -1 && autoBinding_)
+                if (location == -1 && autoBinding_)
                     location = GetBindingLocation(varDecl->declStmntRef->typeSpecifier->typeDenoter);
 
-                if(location != -1)
+                if (location != -1)
                 {
                     /* Write layout location and increment use count for warning-feedback */
                     WriteLayout(
-                    {
-                        [&]() { Write("location = " + std::to_string(location)); }
-                    }
+                        {
+                            [&]() { Write("location = " + std::to_string(location)); }
+                        }
                     );
                 }
             }

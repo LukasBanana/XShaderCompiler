@@ -86,7 +86,7 @@ class GLSLGenerator : public Generator
         void ErrorIntrinsic(const std::string& intrinsicName, const AST* ast = nullptr);
 
         // Returns the number of binding locations required by the specified type, or -1 if type is invalid.
-        int GetNumBindingLocations(const TypeDenoterPtr& typeDenoter);
+        int GetNumBindingLocations(TypeDenoterPtr typeDenoter);
 
         // Attempts to find an empty binding location for the specified type, or returns -1 if it cannot find one. 
         int GetBindingLocation(const TypeDenoterPtr& typeDenoter);
