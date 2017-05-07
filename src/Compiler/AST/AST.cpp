@@ -1195,19 +1195,46 @@ std::string UniformBufferDecl::ToString() const
     switch (bufferType)
     {
         case UniformBufferType::Undefined:
-            s = "<undefined buffer> ";
+            s = R_Undefined;
             break;
         case UniformBufferType::ConstantBuffer:
-            s = "cbuffer ";
+            s = "cbuffer";
             break;
         case UniformBufferType::TextureBuffer:
-            s = "tbuffer ";
+            s = "tbuffer";
             break;
     }
 
+    s += ' ';
     s += ident;
 
     return s;
+}
+
+TypeModifier UniformBufferDecl::DeriveCommonStorageLayout(const TypeModifier defaultStorgeLayout)
+{
+    /* Count number of row- and column major storage layouts */
+    std::size_t numRowMajors = 0,
+                numColMajors = 0;
+
+    for (const auto& varDeclStmnt : varMembers)
+    {
+        const auto& typeModifers = varDeclStmnt->typeSpecifier->typeModifiers;
+        if (typeModifers.find(TypeModifier::RowMajor) != typeModifers.end())
+            ++numRowMajors;
+        else if (typeModifers.find(TypeModifier::ColumnMajor) != typeModifers.end())
+            ++numColMajors;
+    }
+
+    /* Set storage layout that is used the most */
+    if (numRowMajors > 0 && numRowMajors >= numColMajors)
+        commonStorageLayout = TypeModifier::RowMajor;
+    else if (numColMajors > 0)
+        commonStorageLayout = TypeModifier::ColumnMajor;
+    else if (defaultStorgeLayout != TypeModifier::Undefined)
+        commonStorageLayout = defaultStorgeLayout;
+
+    return commonStorageLayout;
 }
 
 

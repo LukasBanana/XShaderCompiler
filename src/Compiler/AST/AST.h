@@ -801,12 +801,16 @@ struct UniformBufferDecl : public Stmnt
 
     std::string ToString() const;
 
-    UniformBufferType               bufferType      = UniformBufferType::Undefined;
+    // Derives the common storage layout type modifier of all variable members (see 'commonStorageLayout' member).
+    TypeModifier DeriveCommonStorageLayout(const TypeModifier defaultStorgeLayout = TypeModifier::Undefined);
+
+    UniformBufferType               bufferType          = UniformBufferType::Undefined;
     std::string                     ident;
     std::vector<RegisterPtr>        slotRegisters;
-    std::vector<StmntPtr>           localStmnts;                                    // Local declaration statements
+    std::vector<StmntPtr>           localStmnts;                                        // Local declaration statements
 
-    std::vector<VarDeclStmntPtr>    varMembers;                                     // List of all member variable declaration statements.
+    std::vector<VarDeclStmntPtr>    varMembers;                                         // List of all member variable declaration statements.
+    TypeModifier                    commonStorageLayout = TypeModifier::ColumnMajor;    // 
 };
 
 // Buffer (and texture) declaration.

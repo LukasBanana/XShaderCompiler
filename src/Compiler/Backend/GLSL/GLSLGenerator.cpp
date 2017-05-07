@@ -541,11 +541,18 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         WriteLineMark(ast);
 
         /* Write uniform buffer declaration */
+        ast->DeriveCommonStorageLayout();
+
         BeginLn();
 
         WriteLayout(
             {
                 [&]() { Write("std140"); },
+                [&]()
+                {
+                    if (ast->commonStorageLayout == TypeModifier::RowMajor)
+                        Write("row_major");
+                },
                 [&]() { WriteLayoutBinding(ast->slotRegisters); },
             }
         );
@@ -2109,9 +2116,20 @@ void GLSLGenerator::WriteTypeModifiers(const std::set<TypeModifier>& typeModifie
     /* Matrix packing alignment can only be written for uniform buffers */
     if (InsideUniformBufferDecl() && typeDenoter && typeDenoter->IsMatrix())
     {
-        /* Only write 'row_major' type modifier (column major is the default) */
-        if (typeModifiers.find(TypeModifier::RowMajor) != typeModifiers.end())
-            WriteLayout("row_major");
+        const auto commonStorageLayout = GetUniformBufferDeclStack().back()->commonStorageLayout;
+
+        if (commonStorageLayout == TypeModifier::ColumnMajor)
+        {
+            /* Only write 'row_major' type modifier, because 'column_major' is the default in the current uniform buffer */
+            if (typeModifiers.find(TypeModifier::RowMajor) != typeModifiers.end())
+                WriteLayout("row_major");
+        }
+        else
+        {
+            /* Only write 'column_major' type modifier, because 'row_major' is the default in the current uniform buffer */
+            if (typeModifiers.find(TypeModifier::ColumnMajor) != typeModifiers.end())
+                WriteLayout("column_major");
+        }
     }
 
     if (typeModifiers.find(TypeModifier::Const) != typeModifiers.end())
