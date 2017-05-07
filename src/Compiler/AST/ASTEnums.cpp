@@ -997,6 +997,11 @@ bool IsTextureCompareIntrinsic(const Intrinsic t)
            (t >= Intrinsic::Texture_SampleCmp_3 && t <= Intrinsic::Texture_SampleCmp_6);
 }
 
+bool IsTextureLoadIntrinsic(const Intrinsic t)
+{
+    return (t >= Intrinsic::Texture_Load_1 && t <= Intrinsic::Texture_Load_3);
+}
+
 Intrinsic CompareOpToIntrinsic(const BinaryOp op)
 {
     switch (op)
@@ -1026,6 +1031,7 @@ Intrinsic InterlockedToImageAtomicIntrinsic(const Intrinsic t)
         default:                                    return t;
     }
 }
+
 
 /* ----- Gather intrinsics ----- */
 
@@ -1124,6 +1130,7 @@ int GetGatherIntrinsicComponentIndex(const Intrinsic t)
     else
         return 0;
 }
+
 
 /* ----- IndexedSemantic Class ----- */
 
