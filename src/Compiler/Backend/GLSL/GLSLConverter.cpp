@@ -152,6 +152,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     VisitScopedStmntList(ast->stmnts);
 }
 
+//TODO: reset 'prefixExpr' for texture intrinsic calls
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
     Visit(ast->prefixExpr);
@@ -1007,7 +1008,9 @@ void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
                 auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
                 auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
 
+                /* Insert temporary varibale declaration before the current statement, and visit this AST node for conversion */
                 InsertStmntBefore(tempVarDeclStmnt);
+                Visit(tempVarDeclStmnt);
 
                 /* Make new argument expressions */
                 const std::string vectorSubscript = "xyzw";
