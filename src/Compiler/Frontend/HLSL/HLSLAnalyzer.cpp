@@ -57,7 +57,7 @@ void HLSLAnalyzer::DecorateASTPrimary(
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
     extensions_             = inputDesc.extensions;
-    #endif
+    #endif // XSC_ENABLE_LANGUAGE_EXT
 
     /* Decorate program AST */
     program_ = &program;
@@ -155,11 +155,11 @@ IMPLEMENT_VISIT_PROC(Attribute)
         break;
     }
 
-    #else
+    #else // XSC_ENABLE_LANGUAGE_EXT
 
     Visit(ast->arguments);
 
-    #endif
+    #endif // XSC_ENABLE_LANGUAGE_EXT
 }
 
 IMPLEMENT_VISIT_PROC(ArrayDimension)
@@ -286,7 +286,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
     AnalyzeExtAttributes(ast->attribs, ast->returnType->typeDenoter->GetSub());
-    #endif
+    #endif // XSC_ENABLE_LANGUAGE_EXT
 
     /* Analyze parameter type denoters (required before function can be registered in symbol table) */
     for (auto& param : ast->parameters)
@@ -337,7 +337,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
     AnalyzeExtAttributes(ast->attribs, ast->typeDenoter);
-    #endif
+    #endif // XSC_ENABLE_LANGUAGE_EXT
 }
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
@@ -395,7 +395,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         }
     }
 
-    #endif
+    #endif // XSC_ENABLE_LANGUAGE_EXT
 
     /* Is the 'snorm' or 'unorm' type modifier specified? */
     if (ast->HasAnyTypeModifierOf({ TypeModifier::SNorm, TypeModifier::UNorm }))
@@ -607,7 +607,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         if (extensions_(Extensions::SpaceAttribute) && returnTypeDen)
             AnalyzeVectorSpaceAssign(ast->expr.get(), returnTypeDen->GetAliased());
 
-        #endif
+        #endif // XSC_ENABLE_LANGUAGE_EXT
     }
 }
 
@@ -672,7 +672,7 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
             AnalyzeVectorSpaceAssign(ast->lvalueExpr.get(), rhsTypeDen->GetAliased());
     }
 
-    #endif
+    #endif // XSC_ENABLE_LANGUAGE_EXT
 }
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
@@ -871,7 +871,7 @@ void HLSLAnalyzer::AnalyzeCallExprPrimary(CallExpr* callExpr, const TypeDenoter*
             );
         }
 
-        #endif
+        #endif // XSC_ENABLE_LANGUAGE_EXT
     }
     PopCallExpr();
 }
@@ -2457,7 +2457,7 @@ void HLSLAnalyzer::AnalyzeVectorSpaceAssign(
     }
 }
 
-#endif
+#endif // XSC_ENABLE_LANGUAGE_EXT
 
 /* ----- Misc ----- */
 
