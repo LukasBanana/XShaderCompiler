@@ -259,6 +259,9 @@ void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
 
         if (enabled(ConvertUnaryExpr))
             ConvertExprIntoBracket(expr);
+        
+        if (enabled(ConvertTextureBracketOp))
+            ConvertExprTextureBracketOp(expr);
     }
 }
 
@@ -664,6 +667,44 @@ void ExprConverter::ConvertExprFormatInitializer(ExprPtr& expr, InitializerExpr*
                 }
 
                 initExpr->exprs = std::move(subInitExprs);
+            }
+        }
+    }
+}
+
+void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
+{
+    if (!expr->flags(Expr::wasConverted))
+    {
+        if (auto arrayExpr = expr->As<ArrayExpr>())
+        {
+            /* Has the prefix expression a Texture type denoter? */
+            auto typeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSubArray(arrayExpr->NumIndices() - 1);
+            if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
+            {
+                expr->flags << Expr::wasConverted;
+
+                /* Make "Load" intrinsic call */
+                auto callExpr = ASTFactory::MakeIntrinsicCallExpr(
+                    Intrinsic::Texture_Load_1, "Load", nullptr,
+                    { arrayExpr->arrayIndices.back() }
+                );
+
+                /* Use former expression as prefix for intrinsic call */
+                ExprPtr prefixExpr;
+
+                arrayExpr->arrayIndices.pop_back();
+
+                if (arrayExpr->arrayIndices.empty())
+                    callExpr->prefixExpr = arrayExpr->prefixExpr;
+                else
+                    callExpr->prefixExpr = expr;
+
+                /* Reset type denoter of prefix expression (array index list has changed) */
+                callExpr->prefixExpr->ResetTypeDenoter();
+
+                /* Replace former expression with new intrinsic call */
+                expr = callExpr;
             }
         }
     }

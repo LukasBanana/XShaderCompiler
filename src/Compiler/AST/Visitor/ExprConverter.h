@@ -46,9 +46,10 @@ class ExprConverter : public Visitor
             ConvertUnaryExpr            = (1 << 6), // Wraps an unary expression if it's parent expression is also an unary expression (e.g. "-+x" to "-(+x)")
             ConvertSamplerBufferAccess  = (1 << 7),
             ConvertMatrixLayout         = (1 << 8), // Converts expressions that depend on the matrix layout (e.g. the argument order of "mul" intrinsic calls).
+            ConvertTextureBracketOp     = (1 << 9), // Converts Texture Operator[] accesses into "Load" intrinsic calls.
 
             // All conversion flags commonly used before visiting the sub nodes.
-            AllPreVisit                 = (ConvertVectorCompare | ConvertImageAccess | ConvertLog10 | ConvertSamplerBufferAccess),
+            AllPreVisit                 = (ConvertVectorCompare | ConvertImageAccess | ConvertLog10 | ConvertSamplerBufferAccess | ConvertTextureBracketOp),
 
             // All conversion flags commonly used after visiting the sub nodes.
             AllPostVisit                = (ConvertVectorSubscripts),
@@ -117,6 +118,9 @@ class ExprConverter : public Visitor
 
         // Converts the initializer into GLSL-ready form.
         void ConvertExprFormatInitializer(ExprPtr& expr, InitializerExpr* initExpr, const TypeDenoter& targetTypeDen);
+
+        // Converts the expression from array access to texture object into a "Load" intrinsic call.
+        void ConvertExprTextureBracketOp(ExprPtr& expr);
 
         /* ----- Visitor implementation ----- */
 
