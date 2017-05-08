@@ -20,6 +20,7 @@ Known Issues
 | Intrinsic argument type matching | Type matching is incomplete for intrinsic function calls. **in progress** |
 | Struct used as input *and* ouput | Structures can currently not be used for shader input and output semantics simultaneously. |
 | Unicode | The compiler uses the C++ ASCII file streams, that are not aware of unicode characters, neither in the file contents, nor in their filenames. |
+| Texture `Operator[]` | The bracket operator is currently not translated for Texture objects, neither [`Operator[]`](https://msdn.microsoft.com/en-us/library/windows/desktop/ff471561(v=vs.85).aspx) nor [`mips.Operator[][]`](https://msdn.microsoft.com/en-us/library/windows/desktop/ff471560(v=vs.85).aspx). |
 
 
 Requested Features
