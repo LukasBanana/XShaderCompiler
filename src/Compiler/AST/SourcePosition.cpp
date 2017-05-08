@@ -28,9 +28,9 @@ std::string SourcePosition::ToString(bool printFilename) const
     auto r = row_;
     auto c = column_;
 
-    if (printFilename && origin_)
+    if (origin_)
     {
-        if (!origin_->filename.empty())
+        if (printFilename && !origin_->filename.empty())
         {
             s += origin_->filename;
             s += ':';

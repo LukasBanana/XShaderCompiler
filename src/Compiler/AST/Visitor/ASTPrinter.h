@@ -34,8 +34,10 @@ class ASTPrinter : private Visitor
         
         struct PrintableTree
         {
-            std::string                 label;
-            std::vector<PrintableTree>  children;
+            std::string                 row;        // Source position row as string.
+            std::string                 col;        // Source position column as string.
+            std::string                 label;      // AST description label.
+            std::vector<PrintableTree>  children;   // Child nodes.
         };
 
         /* --- Visitor implementation --- */
@@ -97,7 +99,7 @@ class ASTPrinter : private Visitor
         std::string WriteLabel(AST* ast, const std::string& astName, const std::string& info = "");
         void Print(Log& log, const PrintableTree& tree);
 
-        bool PushPrintable(const std::string& label);
+        bool PushPrintable(const SourcePosition& pos, const std::string& label);
         void PopPrintable();
 
         PrintableTree* TopPrintable();
@@ -108,6 +110,9 @@ class ASTPrinter : private Visitor
         std::stack<PrintableTree*>  parentNodeStack_;
 
         std::vector<bool>           lastSubNodeStack_;
+
+        std::size_t                 maxRowStrLen_       = 0,
+                                    maxColStrLen_       = 0;
 
 };
 

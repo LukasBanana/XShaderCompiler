@@ -7,6 +7,7 @@
 
 #include "ASTPrinter.h"
 #include "AST.h"
+#include <algorithm>
 
 
 namespace Xsc
@@ -34,20 +35,20 @@ void ASTPrinter::PrintAST(Program* program, Log& log)
 
 /* ------- Visit functions ------- */
 
-#define PRINT_AST(AST_NAME)                         \
-    if (!ast->flags(AST::isBuildIn))                \
-    {                                               \
-        PushPrintable(WriteLabel(ast, #AST_NAME));  \
-        VISIT_DEFAULT(AST_NAME);                    \
-        PopPrintable();                             \
+#define PRINT_AST(AST_NAME)                                         \
+    if (!ast->flags(AST::isBuildIn))                                \
+    {                                                               \
+        PushPrintable(ast->area.Pos(), WriteLabel(ast, #AST_NAME)); \
+        VISIT_DEFAULT(AST_NAME);                                    \
+        PopPrintable();                                             \
     }
 
-#define PRINT_AST_EXT(AST_NAME, INFO)                       \
-    if (!ast->flags(AST::isBuildIn))                        \
-    {                                                       \
-        PushPrintable(WriteLabel(ast, #AST_NAME, INFO));    \
-        VISIT_DEFAULT(AST_NAME);                            \
-        PopPrintable();                                     \
+#define PRINT_AST_EXT(AST_NAME, INFO)                                       \
+    if (!ast->flags(AST::isBuildIn))                                        \
+    {                                                                       \
+        PushPrintable(ast->area.Pos(), WriteLabel(ast, #AST_NAME, INFO));   \
+        VISIT_DEFAULT(AST_NAME);                                            \
+        PopPrintable();                                                     \
     }
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
@@ -244,9 +245,6 @@ std::string ASTPrinter::WriteLabel(AST* ast, const std::string& astName, const s
     /* Append AST name */
     s = astName;
 
-    /* Append source position */
-    s += " (" + ast->area.Pos().ToString(false) + ")";
-
     /* Append brief information */
     if (!info.empty())
         s += " \"" + info + "\"";
@@ -257,6 +255,16 @@ std::string ASTPrinter::WriteLabel(AST* ast, const std::string& astName, const s
 void ASTPrinter::Print(Log& log, const PrintableTree& tree)
 {
     std::string s;
+
+    /* Write row of source position */
+    s += std::string(maxRowStrLen_ - tree.row.size(), ' ');
+    s += tree.row;
+    s += ':';
+
+    /* Write column of source position */
+    s += std::string(maxColStrLen_ - tree.col.size(), ' ');
+    s += tree.col;
+    s += "  ";
 
     /* Write node hierarchy level */
     if (!lastSubNodeStack_.empty())
@@ -298,13 +306,22 @@ void ASTPrinter::Print(Log& log, const PrintableTree& tree)
     }
 }
 
-bool ASTPrinter::PushPrintable(const std::string& label)
+bool ASTPrinter::PushPrintable(const SourcePosition& pos, const std::string& label)
 {
     if (!label.empty())
     {
+        /* Store longest source position string */
+        const auto rowStr = std::to_string(pos.GetOrigin() ? pos.Row() + pos.GetOrigin()->lineOffset : pos.Row());
+        const auto colStr = std::to_string(pos.Column());
+
+        maxRowStrLen_ = std::max(maxRowStrLen_, rowStr.size());
+        maxColStrLen_ = std::max(maxColStrLen_, colStr.size());
+
+        /* Add new child node to printable tree */
         auto& children = TopPrintable()->children;
-        children.push_back({ label, {} });
+        children.push_back({ rowStr, colStr, label, {} });
         parentNodeStack_.push(&(children.back()));
+
         return true;
     }
     return false;
