@@ -42,7 +42,7 @@ static void ConvertCastExpr(ExprPtr& expr, const DataType sourceType, const Data
             args.push_back(expr);
 
             auto baseDataType = BaseDataType(targetType);
-            for (int i = sourceDim; i < targetDim; i++)
+            for (int i = sourceDim; i < targetDim; ++i)
                 args.push_back(ASTFactory::MakeLiteralExpr(baseDataType, "0"));
 
             expr = ASTFactory::MakeTypeCtorCallExpr(typeDenoter, args);
@@ -259,6 +259,9 @@ void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
 
         if (enabled(ConvertUnaryExpr))
             ConvertExprIntoBracket(expr);
+        
+        if (enabled(ConvertTextureBracketOp))
+            ConvertExprTextureBracketOp(expr);
     }
 }
 
@@ -417,7 +420,7 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
                     if (numDims > 0)
                     {
                         std::vector<ExprPtr> arrayIndices;
-                        for (size_t i = 0; i < numDims; i++)
+                        for (std::size_t i = 0; i < numDims; ++i)
                             arrayIndices.push_back(arrayExpr->arrayIndices[i]);
 
                         arg0Expr = ASTFactory::MakeArrayExpr(arrayExpr->prefixExpr, std::move(arrayIndices));
@@ -549,7 +552,7 @@ void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr
                     if (numDims > 0)
                     {
                         std::vector<ExprPtr> arrayIndices;
-                        for (std::size_t i = 0; i < numDims; i++)
+                        for (std::size_t i = 0; i < numDims; ++i)
                             arrayIndices.push_back(arrayExpr->arrayIndices[i]);
 
                         callExpr->prefixExpr = ASTFactory::MakeArrayExpr(arrayExpr->prefixExpr, std::move(arrayIndices));
@@ -664,6 +667,63 @@ void ExprConverter::ConvertExprFormatInitializer(ExprPtr& expr, InitializerExpr*
                 }
 
                 initExpr->exprs = std::move(subInitExprs);
+            }
+        }
+    }
+}
+
+void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
+{
+    if (!expr->flags(Expr::wasConverted) && expr->Type() == AST::Types::ArrayExpr)
+    {
+        if (auto arrayExpr = std::static_pointer_cast<ArrayExpr>(expr))
+        {
+            /*
+            Split array expression if needed, e.g. when 'tex[1][idx][0]' is equivalent to 'tex[1][idx].r',
+            i.e. the Texture Operator[] is not the last array index.
+            */
+            for (std::size_t i = 0; i + 1u < arrayExpr->NumIndices(); ++i)
+            {
+                auto typeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSubArray(arrayExpr->NumIndices() - i - 1);
+                if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
+                {
+                    if (i > 0)
+                    {
+                        arrayExpr = ASTFactory::SplitArrayExpr(arrayExpr, arrayExpr->NumIndices() - i);
+                        ConvertExprTextureBracketOp(arrayExpr->prefixExpr);
+                        expr = arrayExpr;
+                    }
+                    break;
+                }
+            }
+
+            /* Has the prefix expression a Texture type denoter? */
+            auto typeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSubArray(arrayExpr->NumIndices() - 1);
+            if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
+            {
+                expr->flags << Expr::wasConverted;
+
+                /* Make "Load" intrinsic call */
+                auto callExpr = ASTFactory::MakeIntrinsicCallExpr(
+                    Intrinsic::Texture_Load_1, "Load", nullptr,
+                    { arrayExpr->arrayIndices.back() }
+                );
+
+                /* Use former expression as prefix for intrinsic call */
+                ExprPtr prefixExpr;
+
+                arrayExpr->arrayIndices.pop_back();
+
+                if (arrayExpr->arrayIndices.empty())
+                    callExpr->prefixExpr = arrayExpr->prefixExpr;
+                else
+                    callExpr->prefixExpr = expr;
+
+                /* Reset type denoter of prefix expression (array index list has changed) */
+                callExpr->prefixExpr->ResetTypeDenoter();
+
+                /* Replace former expression with new intrinsic call */
+                expr = callExpr;
             }
         }
     }
@@ -845,7 +905,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
     /* Interlocked (atomic) intristics require actual buffer, and not their contents */
     Flags preVisitFlags = AllPreVisit;
     if (IsInterlockedIntristic(ast->intrinsic))
-        preVisitFlags.Remove(ConvertImageAccess);
+        preVisitFlags.Remove(ConvertImageAccess | ConvertTextureBracketOp);
 
     /* Convert mul intrinsic calls */
     if (ast->intrinsic == Intrinsic::Mul && ast->arguments.size() == 2)
