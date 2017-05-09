@@ -1510,22 +1510,30 @@ void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
         AnalyzeEntryPointSemantics(funcDecl, inSemantics, outSemantics);
     }
 
-    /* Override all output semantics if the function has a return type semantic */
+    /* Override all output semantics of the function return type semantics */
     if (funcDecl->semantic.IsValid() && !funcDecl->outputSemantics.Empty())
     {
-        int semanticIndex = 0;
+        /* Start with semantic index of function return semantic */
+        auto semanticIndex = funcDecl->semantic.Index();
 
         funcDecl->outputSemantics.ForEach(
             [&](VarDecl* varDecl)
             {
-                varDecl->semantic = IndexedSemantic(funcDecl->semantic, semanticIndex);
-                ++semanticIndex;
+                /* Ignore function parameters */
+                if (!varDecl->declStmntRef->flags(VarDeclStmnt::isParameter))
+                {
+                    /* Override semantic for non-parameters and increment semantic index */
+                    varDecl->semantic = IndexedSemantic(funcDecl->semantic, semanticIndex);
+                    ++semanticIndex;
+                }
             }
         );
 
         funcDecl->outputSemantics.UpdateDistribution();
 
-        funcDecl->semantic.Reset();
+        //TODO: currently only reset semantic when a non-system-value is used (WORKAROUND)
+        if (!funcDecl->semantic.IsSystemValue())
+            funcDecl->semantic.Reset();
     }
 
     /* Check if there are duplicate output semantics */
