@@ -59,6 +59,11 @@ ObjectExprPtr                   MakeObjectExpr(Decl* symbolRef);
 
 ArrayExprPtr                    MakeArrayExpr(const ExprPtr& prefixExpr, std::vector<ExprPtr>&& arrayIndices);
 ArrayExprPtr                    MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices);
+ArrayExprPtr                    MakeArrayExpr(
+                                    const ExprPtr& prefixExpr,
+                                    const std::vector<ExprPtr>::const_iterator& arrayIndicesBegin,
+                                    const std::vector<ExprPtr>::const_iterator& arrayIndicesEnd
+                                );
 
 RegisterPtr                     MakeRegister(int slot, const RegisterType registerType = RegisterType::Undefined);
 
@@ -92,6 +97,16 @@ ExprPtr                         ConvertExprBaseType(const DataType dataType, con
 ArrayDimensionPtr               ConvertExprToArrayDimension(const ExprPtr& expr);
 
 std::vector<ArrayDimensionPtr>  ConvertExprListToArrayDimensionList(const std::vector<ExprPtr>& exprs);
+
+/* ----- Misc ----- */
+
+/*
+Splits the specified array expression at the specified array index location.
+If 'lastPrefixArrayIndex' is zero, or greater than or equal to the number of array indices, the input expression 'arrayExpr' is returned.
+Otherwise, the left hand side is splitted as prefix expression into the return expression.
+Example (pseudocode): SplitArrayExpr('prefix[0][1][2]', 2) --> '(prefix[0][1])[2]'
+*/
+ArrayExprPtr                    SplitArrayExpr(const ArrayExprPtr& arrayExpr, std::size_t splitArrayIndex);
 
 
 } // /namespace ASTFactory

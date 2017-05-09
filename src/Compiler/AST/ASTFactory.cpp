@@ -230,6 +230,23 @@ ArrayExprPtr MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& ar
     return MakeArrayExpr(prefixExpr, MakeArrayIndices(arrayIndices));
 }
 
+ArrayExprPtr MakeArrayExpr(
+    const ExprPtr& prefixExpr,
+    const std::vector<ExprPtr>::const_iterator& arrayIndicesBegin,
+    const std::vector<ExprPtr>::const_iterator& arrayIndicesEnd)
+{
+    auto ast = MakeAST<ArrayExpr>();
+    {
+        ast->prefixExpr = prefixExpr;
+        ast->arrayIndices.insert(
+            ast->arrayIndices.end(),
+            arrayIndicesBegin,
+            arrayIndicesEnd
+        );
+    }
+    return ast;
+}
+
 RegisterPtr MakeRegister(int slot, const RegisterType registerType)
 {
     auto ast = MakeAST<Register>();
@@ -429,6 +446,30 @@ std::vector<ArrayDimensionPtr> ConvertExprListToArrayDimensionList(const std::ve
         arrayDims.push_back(ConvertExprToArrayDimension(expr));
 
     return arrayDims;
+}
+
+/* ----- Misc ----- */
+
+ArrayExprPtr SplitArrayExpr(const ArrayExprPtr& arrayExpr, std::size_t splitArrayIndex)
+{
+    if (arrayExpr != nullptr && splitArrayIndex > 0 && splitArrayIndex < arrayExpr->NumIndices())
+    {
+        /* Make main array expression */
+        auto ast = MakeArrayExpr(
+            MakeArrayExpr(
+                arrayExpr->prefixExpr,
+                arrayExpr->arrayIndices.begin(),
+                arrayExpr->arrayIndices.begin() + splitArrayIndex
+            ),
+            arrayExpr->arrayIndices.begin() + splitArrayIndex,
+            arrayExpr->arrayIndices.end()
+        );
+
+        ast->area = arrayExpr->area;;
+
+        return ast;
+    }
+    return arrayExpr;
 }
 
 
