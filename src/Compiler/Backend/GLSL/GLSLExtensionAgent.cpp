@@ -190,6 +190,15 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     VISIT_DEFAULT(VarDecl);
 }
 
+IMPLEMENT_VISIT_PROC(BufferDecl)
+{
+    /* Check for arrays of arrays */
+    if (ast->GetTypeDenoter()->NumDimensions() >= 2)
+        AcquireExtension(E_GL_ARB_arrays_of_arrays, R_MultiDimArray, ast);
+
+    VISIT_DEFAULT(BufferDecl);
+}
+
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (ast->flags(AST::isReachable))
