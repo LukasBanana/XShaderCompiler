@@ -674,10 +674,26 @@ void ExprConverter::ConvertExprFormatInitializer(ExprPtr& expr, InitializerExpr*
 
 void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
 {
-    if (!expr->flags(Expr::wasConverted))
+    if (!expr->flags(Expr::wasConverted) && expr->Type() == AST::Types::ArrayExpr)
     {
-        if (auto arrayExpr = expr->As<ArrayExpr>())
+        if (auto arrayExpr = std::static_pointer_cast<ArrayExpr>(expr))
         {
+            /* Split array expression if needed (e.g. when 'tex[1][idx][0]' is equivalent to 'tex[1][idx].r') */
+            for (std::size_t i = 0; i + 1u < arrayExpr->NumIndices(); ++i)
+            {
+                auto typeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSubArray(arrayExpr->NumIndices() - i - 1);
+                if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
+                {
+                    if (i > 0)
+                    {
+                        arrayExpr = ASTFactory::SplitArrayExpr(arrayExpr, arrayExpr->NumIndices() - i);
+                        ConvertExprTextureBracketOp(arrayExpr->prefixExpr);
+                        expr = arrayExpr;
+                    }
+                    break;
+                }
+            }
+
             /* Has the prefix expression a Texture type denoter? */
             auto typeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSubArray(arrayExpr->NumIndices() - 1);
             if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
