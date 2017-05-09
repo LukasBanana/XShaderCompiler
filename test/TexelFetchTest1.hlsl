@@ -25,8 +25,8 @@ float4 main() : COLOR {
 	c.r += (tex3[1] [2][j])[0]; // Single color component
 	c.r +=  tex3[1] [2][j] [0]; // Single color component
 
-	Texture2D tex4 = tex;
-	Texture2D tex5 = tex3[1][2];
+//	Texture2D tex4 = tex;
+//	Texture2D tex5 = tex3[1][2];
 
 	return c;
 }
