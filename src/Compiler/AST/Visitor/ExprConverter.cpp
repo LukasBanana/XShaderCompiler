@@ -689,7 +689,7 @@ void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
                 {
                     if (i > 0)
                     {
-                        arrayExpr = ASTFactory::SplitArrayExpr(arrayExpr, arrayExpr->NumIndices() - i);
+                        arrayExpr = ASTFactory::MakeArrayExprSplit(arrayExpr, arrayExpr->NumIndices() - i);
                         ConvertExprTextureBracketOp(arrayExpr->prefixExpr);
                         expr = arrayExpr;
                     }
