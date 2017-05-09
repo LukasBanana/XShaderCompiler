@@ -977,6 +977,7 @@ void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
     /* Determine vector size for texture intrinsic */
     if (auto textureDim = GetTextureDimFromIntrinsicCall(ast))
     {
+        /* Validate number of arguments are in [2, 3] */
         auto& args = ast->arguments;
         if (args.size() < 2)
         {
@@ -1003,30 +1004,43 @@ void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
             }
             else
             {
-                /* Break up the location argument into separate coordinate and LOD arguments */
-                auto tempVarIdent           = MakeTempVarIdent();
-                auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
-                auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
+                /* Is second argument a 2D-vector? */
+                const auto& arg1TypeDen = args[1]->GetTypeDenoter()->GetAliased();
+                auto arg1BaseTypeDen = arg1TypeDen.As<BaseTypeDenoter>();
 
-                /* Insert temporary varibale declaration before the current statement, and visit this AST node for conversion */
-                InsertStmntBefore(tempVarDeclStmnt);
-                Visit(tempVarDeclStmnt);
+                if (arg1BaseTypeDen != nullptr && VectorTypeDim(arg1BaseTypeDen->dataType) < 3)
+                {
+                    /* Insert "0" literal after index argument (e.g. "texelFetch(tex, index)" to "texelFetch(tex, index, 0)") */
+                    auto idxArgExpr = ASTFactory::MakeLiteralExpr(DataType::Int, "0");
+                    args.insert(args.begin() + 2, idxArgExpr);
+                }
+                else
+                {
+                    /* Break up the location argument into separate coordinate and LOD arguments */
+                    auto tempVarIdent           = MakeTempVarIdent();
+                    auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
+                    auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
 
-                /* Make new argument expressions */
-                const std::string vectorSubscript = "xyzw";
+                    /* Insert temporary varibale declaration before the current statement, and visit this AST node for conversion */
+                    InsertStmntBefore(tempVarDeclStmnt);
+                    Visit(tempVarDeclStmnt);
 
-                auto prefixExpr = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
-                auto arg1Expr   = ASTFactory::MakeObjectExpr(prefixExpr, vectorSubscript.substr(0, textureDim));
-                auto arg2Expr   = ASTFactory::MakeObjectExpr(prefixExpr, vectorSubscript.substr(textureDim, 1));
+                    /* Make new argument expressions */
+                    const std::string vectorSubscript = "xyzw";
 
-                args[1] = arg1Expr;
-                args.insert(args.begin() + 2, arg2Expr);
+                    auto prefixExpr = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
+                    auto arg1Expr   = ASTFactory::MakeObjectExpr(prefixExpr, vectorSubscript.substr(0, textureDim));
+                    auto arg2Expr   = ASTFactory::MakeObjectExpr(prefixExpr, vectorSubscript.substr(textureDim, 1));
 
-                exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Int, true);
+                    args[1] = arg1Expr;
+                    args.insert(args.begin() + 2, arg2Expr);
 
-                /* Ensure argument: int[1,2,3] Offset */
-                if (args.size() >= 4)
-                    exprConverter_.ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, textureDim), true);
+                    exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Int, true);
+
+                    /* Ensure argument: int[1,2,3] Offset */
+                    if (args.size() >= 4)
+                        exprConverter_.ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, textureDim), true);
+                }
             }
 
             /* Ensure argument: int[1,2,3] Location */
