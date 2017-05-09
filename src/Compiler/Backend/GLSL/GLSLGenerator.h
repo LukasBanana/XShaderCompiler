@@ -89,7 +89,7 @@ class GLSLGenerator : public Generator
         int GetNumBindingLocations(TypeDenoterPtr typeDenoter);
 
         // Attempts to find an empty binding location for the specified type, or returns -1 if it cannot find one. 
-        int GetBindingLocation(const TypeDenoterPtr& typeDenoter);
+        int GetBindingLocation(const TypeDenoterPtr& typeDenoter, bool input);
 
         /* --- Visitor implementation --- */
 
@@ -195,7 +195,7 @@ class GLSLGenerator : public Generator
         
         void WriteGlobalOutputSemantics(FunctionDecl* entryPoint);
         void WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName = false);
-        void WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier, const IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl = nullptr);
+        void WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier, IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl = nullptr);
 
         void WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListedExpr = false);
         void WriteOutputSemanticsAssignmentStructDeclParam(
@@ -316,7 +316,8 @@ class GLSLGenerator : public Generator
         bool                                    autoBinding_            = false;
 
         bool                                    isInsideInterfaceBlock_ = false;
-        std::set<int>                           usedLocationsSet_;
+        std::set<int>                           usedInLocationsSet_;
+        std::set<int>                           usedOutLocationsSet_;
 
         #ifdef XSC_ENABLE_LANGUAGE_EXT
 
