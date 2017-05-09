@@ -92,6 +92,7 @@ using FindPredicateConstFunctor = std::function<bool(const Expr& expr)>;
 // Base class for all AST node classes.
 struct AST
 {
+    // Types of AST classes.
     enum class Types
     {
         Program,
@@ -190,8 +191,8 @@ struct AST
         return (Type() == T::classType ? static_cast<const T*>(this) : nullptr);
     }
 
-    SourceArea  area;
-    Flags       flags;
+    SourceArea  area;   // Source code area.
+    Flags       flags;  // Flags bitmask (default 0).
 };
 
 /* --- Base AST nodes --- */
@@ -202,7 +203,7 @@ struct Stmnt : public AST
     // Collects all variable-, buffer-, and sampler AST nodes with their identifiers in the specified map.
     virtual void CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const;
 
-    std::string                 comment; // Optional commentary for this statement.
+    std::string                 comment; // Optional commentary for this statement. May be a multi-line string.
     std::vector<AttributePtr>   attribs; // Attribute list. May be empty.
 };
 
@@ -224,6 +225,7 @@ struct TypedAST : public AST
 
     private:
     
+        // Buffered type denoter which is stored in the "GetTypeDenoter" function and can be reset with the "ResetTypeDenoter" function.
         TypeDenoterPtr bufferedTypeDenoter_;
 
 };
@@ -346,11 +348,11 @@ struct Program : public AST
     // Returns a usage-container of the specified intrinsic or null if the specified intrinsic was not registered to be used.
     const IntrinsicUsage* FetchIntrinsicUsage(const Intrinsic intrinsic) const;
 
-    std::vector<StmntPtr>               globalStmnts;               // Global declaration statements
+    std::vector<StmntPtr>               globalStmnts;               // Global declaration statements.
 
     std::vector<ASTPtr>                 disabledAST;                // AST nodes that have been disabled for code generation (not part of the default visitor).
 
-    SourceCodePtr                       sourceCode;                 // Preprocessed source code
+    SourceCodePtr                       sourceCode;                 // Preprocessed source code.
     FunctionDecl*                       entryPointRef   = nullptr;  // Reference to the entry point function declaration.
     std::map<Intrinsic, IntrinsicUsage> usedIntrinsics;             // Set of all used intrinsic (filled by the reference analyzer).
 
@@ -375,8 +377,8 @@ struct SamplerValue : public AST
 {
     AST_INTERFACE(SamplerValue);
 
-    std::string name;   // Sampler state name
-    ExprPtr     value;  // Sampler state value expression
+    std::string name;   // Sampler state name.
+    ExprPtr     value;  // Sampler state value expression.
 };
 
 // Attribute (e.g. "[unroll]" or "[numthreads(x,y,z)]").
@@ -384,8 +386,8 @@ struct Attribute : public AST
 {
     AST_INTERFACE(Attribute);
 
-    AttributeType           attributeType   = AttributeType::Undefined;
-    std::vector<ExprPtr>    arguments;
+    AttributeType           attributeType   = AttributeType::Undefined; // Type of this attribute. Must not be undefined.
+    std::vector<ExprPtr>    arguments;                                  // Optional attribute arguments.
 };
 
 // Case block for a switch statement.
@@ -396,8 +398,8 @@ struct SwitchCase : public AST
     // Returns true, if this is a default case (if 'expr' is null).
     bool IsDefaultCase() const;
 
-    ExprPtr                 expr; // If null -> default case
-    std::vector<StmntPtr>   stmnts;
+    ExprPtr                 expr;   // Case expression; null for the default case.
+    std::vector<StmntPtr>   stmnts; // Statement list (switch-case does not require a braced code block).
 };
 
 // Register (e.g. ": register(t0)").
@@ -411,7 +413,7 @@ struct Register : public AST
     static Register* GetForTarget(const std::vector<RegisterPtr>& registers, const ShaderTarget shaderTarget);
 
     ShaderTarget    shaderTarget    = ShaderTarget::Undefined;  // Shader target (or profile). Undefined means all targets are affected.
-    RegisterType    registerType    = RegisterType::Undefined;
+    RegisterType    registerType    = RegisterType::Undefined;  // Type of the register. Must not be undefined.
     int             slot            = 0;                        // Zero-based register slot index. By default 0.
 };
 
@@ -422,8 +424,9 @@ struct PackOffset : public AST
 
     std::string ToString() const;
 
+    //TODO: change this to an enumeration (like 'RegisterType').
     std::string registerName;
-    std::string vectorComponent; // May be empty
+    std::string vectorComponent;    // Vector component. May be empty.
 };
 
 // Array dimension with bufferd expression evaluation.
@@ -485,17 +488,17 @@ struct TypeSpecifier : public TypedAST
     // Swaps the 'row_major' with 'column_major' storage layout, and inserts the specified default layout if none of these are set.
     void SwapMatrixStorageLayout(const TypeModifier defaultStorgeLayout);
 
-    bool                        isInput         = false;                    // Input modifier 'in'
-    bool                        isOutput        = false;                    // Input modifier 'out'
-    bool                        isUniform       = false;                    // Input modifier 'uniform'
+    bool                        isInput         = false;                    // Input modifier 'in'.
+    bool                        isOutput        = false;                    // Input modifier 'out'.
+    bool                        isUniform       = false;                    // Input modifier 'uniform'.
     
     std::set<StorageClass>      storageClasses;                             // Storage classes, e.g. extern, precise, etc.
     std::set<InterpModifier>    interpModifiers;                            // Interpolation modifiers, e.g. nointerpolation, linear, centroid etc.
-    std::set<TypeModifier>      typeModifiers;                              // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats)
-    PrimitiveType               primitiveType   = PrimitiveType::Undefined; // Primitive type for geometry entry pointer parameters
-    StructDeclPtr               structDecl;                                 // Optional structure declaration
+    std::set<TypeModifier>      typeModifiers;                              // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats).
+    PrimitiveType               primitiveType   = PrimitiveType::Undefined; // Primitive type for geometry entry pointer parameters.
+    StructDeclPtr               structDecl;                                 // Optional structure declaration.
 
-    TypeDenoterPtr              typeDenoter;
+    TypeDenoterPtr              typeDenoter;                                // Own type denoter.
 };
 
 /* --- Declarations --- */
@@ -545,19 +548,19 @@ struct VarDecl : public Decl
     // Adds the specified flag to this variable and all members and sub members of the structure, if the variable has a structure type.
     void AddFlagsRecursive(unsigned int varFlags);
 
-    ObjectExprPtr                   namespaceExpr;                  // Optional namespace expression; may be null
-    std::vector<ArrayDimensionPtr>  arrayDims;
-    IndexedSemantic                 semantic;
-    PackOffsetPtr                   packOffset;
+    ObjectExprPtr                   namespaceExpr;                  // Optional namespace expression. May be null.
+    std::vector<ArrayDimensionPtr>  arrayDims;                      // Array dimension list. May be empty.
+    IndexedSemantic                 semantic;                       // Variable semantic. May be invalid.
+    PackOffsetPtr                   packOffset;                     // Optional pack offset. May be null.
     std::vector<VarDeclStmntPtr>    annotations;                    // Annotations can be ignored by analyzers and generators.
-    ExprPtr                         initializer;
+    ExprPtr                         initializer;                    // Optional initializer expression. May be null.
 
     TypeDenoterPtr                  customTypeDenoter;              // Optional type denoter which can be different from the type of its declaration statement.
 
-    VarDeclStmnt*                   declStmntRef        = nullptr;  // Reference to its declaration statement (parent node); may be null
-    UniformBufferDecl*              bufferDeclRef       = nullptr;  // Reference to its uniform buffer declaration (optional parent-parent-node); may be null
-    StructDecl*                     structDeclRef       = nullptr;  // Reference to its owner structure declaration (optional parent-parent-node); may be null
-    VarDecl*                        staticMemberVarRef  = nullptr;  // Bi-directional reference to its static variable declaration or definition; may be null
+    VarDeclStmnt*                   declStmntRef        = nullptr;  // Reference to its declaration statement (parent node). May be null.
+    UniformBufferDecl*              bufferDeclRef       = nullptr;  // Reference to its uniform buffer declaration (optional parent-parent-node). May be null.
+    StructDecl*                     structDeclRef       = nullptr;  // Reference to its owner structure declaration (optional parent-parent-node). May be null.
+    VarDecl*                        staticMemberVarRef  = nullptr;  // Bi-directional reference to its static variable declaration or definition. May be null.
 };
 
 // Buffer declaration.
@@ -576,8 +579,8 @@ struct BufferDecl : public Decl
     // Returns the buffer type of the parent's node type denoter.
     BufferType GetBufferType() const;
 
-    std::vector<ArrayDimensionPtr>  arrayDims;
-    std::vector<RegisterPtr>        slotRegisters;
+    std::vector<ArrayDimensionPtr>  arrayDims;                  // Array dimension list. May be empty.
+    std::vector<RegisterPtr>        slotRegisters;              // Slot register list. May be empty.
     std::vector<VarDeclStmntPtr>    annotations;                // Annotations can be ignored by analyzers and generators.
 
     BufferDeclStmnt*                declStmntRef    = nullptr;  // Reference to its declaration statement (parent node).
@@ -593,9 +596,9 @@ struct SamplerDecl : public Decl
     // Returns the sampler type of the parent's node type denoter.
     SamplerType GetSamplerType() const;
 
-    std::vector<ArrayDimensionPtr>  arrayDims;
-    std::vector<RegisterPtr>        slotRegisters;
-    std::string                     textureIdent;               // Optional variable identifier of the texture object (for DX9 effect files)
+    std::vector<ArrayDimensionPtr>  arrayDims;                  // Array dimension list. May be empty.
+    std::vector<RegisterPtr>        slotRegisters;              // Slot register list. May be empty.
+    std::string                     textureIdent;               // Optional variable identifier of the texture object (for DX9 effect files).
     std::vector<SamplerValuePtr>    samplerValues;              // State values for a sampler decl-ident.
 
     SamplerDeclStmnt*               declStmntRef    = nullptr;  // Reference to its declaration statmenet (parent node).
@@ -677,13 +680,13 @@ struct StructDecl : public Decl
     void AddFlagsRecursiveParents(unsigned int structFlags);
 
     std::string                     baseStructName;                     // May be empty (if no inheritance is used).
-    std::vector<StmntPtr>           localStmnts;                        // Local declaration statements
+    std::vector<StmntPtr>           localStmnts;                        // Local declaration statements.
 
     std::vector<VarDeclStmntPtr>    varMembers;                         // List of all member variable declaration statements.
     std::vector<FunctionDeclPtr>    funcMembers;                        // List of all member function declarations.
 
     StructDeclStmnt*                declStmntRef            = nullptr;  // Reference to its declaration statement (parent node).
-    StructDecl*                     baseStructRef           = nullptr;  // Optional reference to base struct
+    StructDecl*                     baseStructRef           = nullptr;  // Optional reference to base struct.
     std::map<std::string, VarDecl*> systemValuesRef;                    // List of members with system value semantic (SV_...).
     std::vector<StructDecl*>        nestedStructDeclRefs;               // References to all nested structures within this structure.
     std::set<StructDecl*>           parentStructDeclRefs;               // References to all structures that have a member variable with this structure type.
@@ -697,7 +700,7 @@ struct AliasDecl : public Decl
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
-    TypeDenoterPtr  typeDenoter;            // Type denoter of the aliased type
+    TypeDenoterPtr  typeDenoter;            // Type denoter of the aliased type.
 
     AliasDeclStmnt* declStmntRef = nullptr; // Reference to its declaration statement (parent node).
 };
@@ -778,10 +781,10 @@ struct FunctionDecl : public Stmnt
         bool throwErrorIfNoMatch = true
     );
 
-    TypeSpecifierPtr                returnType;
-    Identifier                      ident;
-    std::vector<VarDeclStmntPtr>    parameters;
-    IndexedSemantic                 semantic            = Semantic::Undefined;  // May be undefined
+    TypeSpecifierPtr                returnType;                                 // Function return type (TypeSpecifier).
+    Identifier                      ident;                                      // Function identifier.
+    std::vector<VarDeclStmntPtr>    parameters;                                 // Function parameter list.
+    IndexedSemantic                 semantic            = Semantic::Undefined;  // Function return semantic; may be undefined.
     std::vector<VarDeclStmntPtr>    annotations;                                // Annotations can be ignored by analyzers and generators.
     CodeBlockPtr                    codeBlock;                                  // May be null (if this AST node is a forward declaration).
 
@@ -805,13 +808,13 @@ struct UniformBufferDecl : public Stmnt
     // Derives the common storage layout type modifier of all variable members (see 'commonStorageLayout' member).
     TypeModifier DeriveCommonStorageLayout(const TypeModifier defaultStorgeLayout = TypeModifier::Undefined);
 
-    UniformBufferType               bufferType          = UniformBufferType::Undefined;
-    std::string                     ident;
-    std::vector<RegisterPtr>        slotRegisters;
-    std::vector<StmntPtr>           localStmnts;                                        // Local declaration statements
+    UniformBufferType               bufferType          = UniformBufferType::Undefined; // Type of this uniform buffer. Must not be undefined.
+    std::string                     ident;                                              // Uniform buffer identifier.
+    std::vector<RegisterPtr>        slotRegisters;                                      // Slot register list. May be empty.
+    std::vector<StmntPtr>           localStmnts;                                        // Local declaration statements.
 
     std::vector<VarDeclStmntPtr>    varMembers;                                         // List of all member variable declaration statements.
-    TypeModifier                    commonStorageLayout = TypeModifier::ColumnMajor;    // 
+    TypeModifier                    commonStorageLayout = TypeModifier::ColumnMajor;    // Type modifier of the common matrix/vector storage.
 };
 
 // Buffer (and texture) declaration.
@@ -822,8 +825,8 @@ struct BufferDeclStmnt : public Stmnt
     // Implements Stmnt::CollectDeclIdents
     void CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const override;
 
-    BufferTypeDenoterPtr        typeDenoter;
-    std::vector<BufferDeclPtr>  bufferDecls;
+    BufferTypeDenoterPtr        typeDenoter;    // Own type denoter.
+    std::vector<BufferDeclPtr>  bufferDecls;    // Buffer declaration list.
 };
 
 // Sampler declaration.
@@ -834,15 +837,16 @@ struct SamplerDeclStmnt : public Stmnt
     // Implements Stmnt::CollectDeclIdents
     void CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const override;
 
-    SamplerTypeDenoterPtr       typeDenoter;
-    std::vector<SamplerDeclPtr> samplerDecls;
+    SamplerTypeDenoterPtr       typeDenoter;    // Own type denoter.
+    std::vector<SamplerDeclPtr> samplerDecls;   // Sampler declaration list.
 };
 
 // StructDecl declaration statement.
 struct StructDeclStmnt : public Stmnt
 {
     AST_INTERFACE(StructDeclStmnt);
-    StructDeclPtr structDecl;
+
+    StructDeclPtr structDecl;   // Structure declaration.
 };
 
 // Variable declaration statement.
@@ -896,8 +900,8 @@ struct VarDeclStmnt : public Stmnt
     // Returns the reference to the owner structure from the first variable entry, or null if there is no such owner structure.
     StructDecl* FetchStructDeclRef() const;
 
-    TypeSpecifierPtr        typeSpecifier;
-    std::vector<VarDeclPtr> varDecls;
+    TypeSpecifierPtr        typeSpecifier;  // Type basis for all variables (can be extended by array indices in each individual variable).
+    std::vector<VarDeclPtr> varDecls;       // Variable declaration list.
 };
 
 // Type alias declaration statement.
@@ -905,8 +909,8 @@ struct AliasDeclStmnt : public Stmnt
 {
     AST_INTERFACE(AliasDeclStmnt);
 
-    StructDeclPtr               structDecl; // Optional structure declaration
-    std::vector<AliasDeclPtr>   aliasDecls; // Type aliases
+    StructDeclPtr               structDecl; // Optional structure declaration. May be null.
+    std::vector<AliasDeclPtr>   aliasDecls; // Alias declaration list.
 };
 
 /* --- Statements --- */
@@ -922,7 +926,7 @@ struct CodeBlockStmnt : public Stmnt
 {
     AST_INTERFACE(CodeBlockStmnt);
 
-    CodeBlockPtr codeBlock;
+    CodeBlockPtr codeBlock; // Code block.
 };
 
 // 'for'-loop statemnet.
@@ -930,10 +934,10 @@ struct ForLoopStmnt : public Stmnt
 {
     AST_INTERFACE(ForLoopStmnt);
 
-    StmntPtr    initStmnt; // May be a NullStmnt
-    ExprPtr     condition; // Condition expresion; may be empty
-    ExprPtr     iteration; // Loop iteration expression; may be empty
-    StmntPtr    bodyStmnt;
+    StmntPtr    initStmnt;  // Initializer statement. Must not be null, but can be an instance of 'NullStmnt'.
+    ExprPtr     condition;  // Condition expresion. May be null.
+    ExprPtr     iteration;  // Loop iteration expression. May be null.
+    StmntPtr    bodyStmnt;  // Loop body statement.
 };
 
 // 'while'-loop statement.
@@ -941,8 +945,8 @@ struct WhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(WhileLoopStmnt);
 
-    ExprPtr     condition;
-    StmntPtr    bodyStmnt;
+    ExprPtr     condition;  // Condition expression.
+    StmntPtr    bodyStmnt;  // Loop body statement.
 };
 
 // 'do/while'-loop statement.
@@ -950,8 +954,8 @@ struct DoWhileLoopStmnt : public Stmnt
 {
     AST_INTERFACE(DoWhileLoopStmnt);
 
-    StmntPtr    bodyStmnt;
-    ExprPtr     condition;
+    StmntPtr    bodyStmnt;  // Loop body statement.
+    ExprPtr     condition;  // Condition expression.
 };
 
 // 'if' statement.
@@ -959,9 +963,9 @@ struct IfStmnt : public Stmnt
 {
     AST_INTERFACE(IfStmnt);
 
-    ExprPtr         condition;
-    StmntPtr        bodyStmnt;
-    ElseStmntPtr    elseStmnt;  // May be null
+    ExprPtr         condition;  // Condition expression.
+    StmntPtr        bodyStmnt;  // 'then'-branch body statement.
+    ElseStmntPtr    elseStmnt;  // 'else'-branch statement. May be null.
 };
 
 // 'else' statement.
@@ -969,7 +973,7 @@ struct ElseStmnt : public Stmnt
 {
     AST_INTERFACE(ElseStmnt);
 
-    StmntPtr bodyStmnt;
+    StmntPtr bodyStmnt; // 'else'-branch body statement.
 };
 
 // 'switch' statement.
@@ -977,8 +981,8 @@ struct SwitchStmnt : public Stmnt
 {
     AST_INTERFACE(SwitchStmnt);
 
-    ExprPtr                     selector;
-    std::vector<SwitchCasePtr>  cases;
+    ExprPtr                     selector;   // Switch selector expression.
+    std::vector<SwitchCasePtr>  cases;      // Switch case list.
 };
 
 // Arbitrary expression statement.
@@ -986,7 +990,7 @@ struct ExprStmnt : public Stmnt
 {
     AST_INTERFACE(ExprStmnt);
 
-    ExprPtr expr;
+    ExprPtr expr; // Common expression.
 };
 
 // Returns statement.
@@ -999,7 +1003,7 @@ struct ReturnStmnt : public Stmnt
         FLAG( isEndOfFunction, 0 ), // This return statement is at the end of its function body.
     };
 
-    ExprPtr expr; // May be null
+    ExprPtr expr; // Return statement expression. May be null.
 };
 
 // Control transfer statement.
@@ -1007,7 +1011,7 @@ struct CtrlTransferStmnt : public Stmnt
 {
     AST_INTERFACE(CtrlTransferStmnt);
 
-    CtrlTransfer transfer = CtrlTransfer::Undefined; // break, continue, discard
+    CtrlTransfer transfer = CtrlTransfer::Undefined; // Control transfer type (break, continue, discard). Must not be undefined.
 };
 
 /* --- Expressions --- */
@@ -1032,7 +1036,7 @@ struct SequenceExpr : public Expr
     // Appens the specified expression to the sub expressions ('SequenceExpr' will be flattened).
     void Append(const ExprPtr& expr);
 
-    std::vector<ExprPtr> exprs; // List of sub expressions; must have at least two elements
+    std::vector<ExprPtr> exprs; // Sub expression list. Must have at least two elements.
 };
 
 // Literal expression.
@@ -1054,8 +1058,9 @@ struct LiteralExpr : public Expr
     // Returns true if this literal needs a space after the literal, when a vector subscript is used as postfix.
     bool IsSpaceRequiredForSubscript() const;
 
-    DataType        dataType    = DataType::Undefined;  // Valid data types: String, Bool, Int, UInt, Half, Float, Double; (Undefined for 'NULL')
-    std::string     value;
+    std::string     value;                              // Literal expression value.
+
+    DataType        dataType    = DataType::Undefined;  // Valid data types: String, Bool, Int, UInt, Half, Float, Double. Undefined for 'NULL'.
 };
 
 // Type name expression (used for simpler cast-expression parsing).
@@ -1065,7 +1070,7 @@ struct TypeSpecifierExpr : public Expr
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
-    TypeSpecifierPtr typeSpecifier;
+    TypeSpecifierPtr typeSpecifier; // Type specifier.
 };
 
 // Ternary expression.
@@ -1080,9 +1085,9 @@ struct TernaryExpr : public Expr
     // Returns true if the conditional expression is a vector type.
     bool IsVectorCondition() const;
 
-    ExprPtr condExpr; // Condition expression
-    ExprPtr thenExpr; // <then> case expression
-    ExprPtr elseExpr; // <else> case expression
+    ExprPtr condExpr; // Ternary condition expression.
+    ExprPtr thenExpr; // 'then'-branch expression.
+    ExprPtr elseExpr; // 'else'-branch expression.
 };
 
 // Binary expression.
@@ -1094,9 +1099,9 @@ struct BinaryExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    ExprPtr     lhsExpr;                        // Left-hand-side expression
-    BinaryOp    op      = BinaryOp::Undefined;  // Binary operator
-    ExprPtr     rhsExpr;                        // Right-hand-side expression
+    ExprPtr     lhsExpr;                        // Left-hand-side expression.
+    BinaryOp    op      = BinaryOp::Undefined;  // Binary operator. Must not be undefined.
+    ExprPtr     rhsExpr;                        // Right-hand-side expression.
 };
 
 // (Pre-) Unary expression.
@@ -1110,8 +1115,8 @@ struct UnaryExpr : public Expr
 
     const ObjectExpr* FetchLValueExpr() const override;
 
-    UnaryOp op      = UnaryOp::Undefined;
-    ExprPtr expr;
+    UnaryOp op      = UnaryOp::Undefined;   // Unary operator. Must not be undefined.
+    ExprPtr expr;                           // Right-hand-side expression.
 };
 
 // Post unary expression (e.g. x++, x--)
@@ -1123,8 +1128,8 @@ struct PostUnaryExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    ExprPtr expr;
-    UnaryOp op      = UnaryOp::Undefined;
+    ExprPtr expr;                           // Left-hand-side expression.
+    UnaryOp op      = UnaryOp::Undefined;   // Unary operator. Must not be undefined.
 };
 
 // Function call expression (e.g. "foo()" or "foo().bar()" or "foo()[0].bar()").
@@ -1163,15 +1168,15 @@ struct CallExpr : public Expr
     // Inserts the specified argument expression at the front of the argument list.
     void PushArgumentFront(ExprPtr&& expr);
 
-    ExprPtr                 prefixExpr;                                 // Optional prefix expression; may be null.
+    ExprPtr                 prefixExpr;                                 // Optional prefix expression. May be null.
     bool                    isStatic            = false;                // Specifies whether this function is a static member.
-    std::string             ident;                                      // Function name identifier (this is empty for type constructors)
+    std::string             ident;                                      // Function name identifier. Empty for type constructors.
     TypeDenoterPtr          typeDenoter;                                // Null, if the function call is NOT a type constructor (e.g. "float2(0, 0)").
-    std::vector<ExprPtr>    arguments;
+    std::vector<ExprPtr>    arguments;                                  // Argument expression list.
 
-    FunctionDecl*           funcDeclRef         = nullptr;              // Reference to the function declaration; may be null
+    FunctionDecl*           funcDeclRef         = nullptr;              // Reference to the function declaration. May be null.
     Intrinsic               intrinsic           = Intrinsic::Undefined; // Intrinsic ID (if this is an intrinsic).
-    std::vector<Expr*>      defaultArgumentRefs;                        // Reference to default argument expressions of all remaining parameters
+    std::vector<Expr*>      defaultArgumentRefs;                        // Reference to default argument expressions of all remaining parameters.
 };
 
 // Bracket expression.
@@ -1187,7 +1192,7 @@ struct BracketExpr : public Expr
 
     IndexedSemantic FetchSemantic() const override;
 
-    ExprPtr expr; // Inner expression
+    ExprPtr expr; // Inner expression.
 };
 
 // Assignment expression.
@@ -1201,9 +1206,9 @@ struct AssignExpr : public Expr
 
     const ObjectExpr* FetchLValueExpr() const override;
 
-    ExprPtr     lvalueExpr;                         // L-value expression
-    AssignOp    op          = AssignOp::Undefined;  // Assignment operator
-    ExprPtr     rvalueExpr;                         // R-value expression
+    ExprPtr     lvalueExpr;                         // L-value expression.
+    AssignOp    op          = AssignOp::Undefined;  // Assignment operator. Must not be undefined.
+    ExprPtr     rvalueExpr;                         // R-value expression.
 };
 
 // Object access expression.
@@ -1246,11 +1251,11 @@ struct ObjectExpr : public Expr
     // Returns the variable AST node (if the symbol refers to one).
     VarDecl* FetchVarDecl() const;
 
-    ExprPtr     prefixExpr;             // Optional prefix expression; may be null.
+    ExprPtr     prefixExpr;             // Optional prefix expression. May be null.
     bool        isStatic    = false;    // Specifies whether this object is a static member.
     std::string ident;                  // Object identifier.
 
-    Decl*       symbolRef   = nullptr;  // Optional symbol reference to the object declaration; may be null (e.g. for vector subscripts)
+    Decl*       symbolRef   = nullptr;  // Optional symbol reference to the object declaration. May be null (e.g. for vector subscripts).
 };
 
 // Array-access expression (e.g. "foo()[arrayAccess]").
@@ -1267,8 +1272,8 @@ struct ArrayExpr : public Expr
     // Returns the number of array indices (shortcut for "arrayIndices.size()").
     std::size_t NumIndices() const;
 
-    ExprPtr                 prefixExpr;     // Prefix expression
-    std::vector<ExprPtr>    arrayIndices;   // Array indices (right hand side)
+    ExprPtr                 prefixExpr;     // Prefix expression.
+    std::vector<ExprPtr>    arrayIndices;   // Array index expression list (right hand side).
 };
 
 // Cast expression.
@@ -1280,8 +1285,8 @@ struct CastExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    TypeSpecifierPtr    typeSpecifier;  // Cast type name expression
-    ExprPtr             expr;           // Value expression
+    TypeSpecifierPtr    typeSpecifier;  // Destination type specifier.
+    ExprPtr             expr;           // Source value expression.
 };
 
 // Initializer list expression.
@@ -1308,8 +1313,9 @@ struct InitializerExpr : public Expr
     // Returns the next array indices for a sub expression.
     bool NextArrayIndices(std::vector<int>& arrayIndices) const;
 
-    std::vector<ExprPtr> exprs;
+    std::vector<ExprPtr> exprs; // Sub expression list.
 };
+
 
 #undef AST_INTERFACE
 #undef DECL_AST_ALIAS
