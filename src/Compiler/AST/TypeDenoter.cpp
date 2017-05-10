@@ -660,7 +660,11 @@ TypeDenoterPtr BufferTypeDenoter::GetSubArray(const std::size_t numArrayIndices,
 
 TypeDenoterPtr BufferTypeDenoter::GetGenericTypeDenoter() const
 {
-    return (genericTypeDenoter ? genericTypeDenoter : std::make_shared<BaseTypeDenoter>(DataType::Float4));
+    /* Return either specified generic type denoter, or implicit default type denoter (Float4) */
+    if (genericTypeDenoter)
+        return genericTypeDenoter;
+    else
+        return std::make_shared<BaseTypeDenoter>(DataType::Float4);
 }
 
 AST* BufferTypeDenoter::SymbolRef() const

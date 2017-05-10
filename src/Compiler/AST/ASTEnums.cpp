@@ -970,7 +970,7 @@ bool IsGlobalIntrinsic(const Intrinsic t)
 
 bool IsTextureIntrinsic(const Intrinsic t)
 {
-    return (t >= Intrinsic::Texture_GetDimensions && t <= Intrinsic::Texture_QueryLodUnclamped);
+    return (t >= Intrinsic::Texture_GetDimensions && t <= Intrinsic::Texture_GatherCmpAlpha_8);
 }
 
 bool IsStreamOutputIntrinsic(const Intrinsic t)
@@ -993,10 +993,18 @@ bool IsGatherIntrisic(const Intrinsic t)
     return (t >= Intrinsic::Texture_Gather_2 && t <= Intrinsic::Texture_GatherCmpAlpha_8);
 }
 
+bool IsTextureSampleIntrinsic(const Intrinsic t)
+{
+    return (t >= Intrinsic::Texture_Sample_2 && t <= Intrinsic::Texture_SampleLevel_5);
+}
+
 bool IsTextureCompareIntrinsic(const Intrinsic t)
 {
-    return (t >= Intrinsic::Texture_GatherCmp_3 && t <= Intrinsic::Texture_GatherCmpAlpha_8) ||
-           (t >= Intrinsic::Texture_SampleCmp_3 && t <= Intrinsic::Texture_SampleCmp_6);
+    return
+    (
+        ( t >= Intrinsic::Texture_SampleCmp_3 && t <= Intrinsic::Texture_SampleCmp_6      ) ||
+        ( t >= Intrinsic::Texture_GatherCmp_3 && t <= Intrinsic::Texture_GatherCmpAlpha_8 )
+    );
 }
 
 bool IsTextureLoadIntrinsic(const Intrinsic t)
@@ -1039,19 +1047,17 @@ Intrinsic InterlockedToImageAtomicIntrinsic(const Intrinsic t)
 
 struct GatherIntrinsicInfo
 {
-    GatherIntrinsicInfo(int componentIdx, int offsetCount, bool isCompare = false);
+    GatherIntrinsicInfo(int componentIdx, int offsetCount, bool isCompare = false) :
+        componentIdx { componentIdx },
+        offsetCount  { offsetCount  },
+        isCompare    { isCompare    }
+    {
+    }
 
     int     componentIdx    = 0;
     int     offsetCount     = 0;
     bool    isCompare       = false;
 };
-
-GatherIntrinsicInfo::GatherIntrinsicInfo(int componentIdx, int offsetCount, bool isCompare) :
-    componentIdx { componentIdx },
-    offsetCount  { offsetCount  },
-    isCompare    { isCompare    }
-{
-}
 
 static std::map<Intrinsic, GatherIntrinsicInfo> GenerateGatherIntrinsicInfoMap()
 {

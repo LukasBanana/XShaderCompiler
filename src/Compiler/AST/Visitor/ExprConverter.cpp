@@ -241,6 +241,9 @@ void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
     if (expr)
     {
         const auto enabled = Flags(flags & conversionFlags_);
+        
+        if (enabled(ConvertTextureIntrinsicVec4))
+            ConvertExprTextureIntrinsicVec4(expr);
 
         if (enabled(ConvertLog10))
             ConvertExprIntrinsicCallLog10(expr);
@@ -724,6 +727,40 @@ void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
 
                 /* Replace former expression with new intrinsic call */
                 expr = callExpr;
+            }
+        }
+    }
+}
+
+void ExprConverter::ConvertExprTextureIntrinsicVec4(ExprPtr& expr)
+{
+    /* Is this a call expression? */
+    if (auto callExpr = expr->As<CallExpr>())
+    {
+        /* Is this an intrinsic call? */
+        const auto intrinsic = callExpr->intrinsic;
+        if (intrinsic != Intrinsic::Undefined)
+        {
+            /* Is this a texture intrinsic? */
+            if (IsTextureLoadIntrinsic(intrinsic) || IsTextureSampleIntrinsic(intrinsic) || IsGatherIntrisic(intrinsic))
+            {
+                /* Is the return type a base type denoter? */
+                const auto& typeDen = callExpr->GetTypeDenoter()->GetAliased();
+                if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
+                {
+                    /* Has the return type less than 4-dimensions? */
+                    const auto vecTypeDim = VectorTypeDim(baseTypeDen->dataType);
+                    if (vecTypeDim >= 1 && vecTypeDim <= 3)
+                    {
+                        /* Append vector subscript to intrinsic call */
+                        const std::string vectorSubscript = "rgb";
+
+                        expr = ASTFactory::MakeObjectExpr(
+                            expr,
+                            vectorSubscript.substr(0, static_cast<std::size_t>(vecTypeDim))
+                        );
+                    }
+                }
             }
         }
     }

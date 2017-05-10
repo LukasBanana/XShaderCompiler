@@ -828,9 +828,32 @@ enum class Intrinsic
     Trunc,
 
     Texture_GetDimensions,
+    Texture_QueryLod,           // CalculateLevelOfDetail(SamplerState S, float[1,2,3] Location)
+    Texture_QueryLodUnclamped,  // CalculateLevelOfDetailUnclamped(SamplerState S, float[1,2,3] Location)
+
     Texture_Load_1,             // Load(int[1,2,3,4] Location)
     Texture_Load_2,             // Load(int[1,2,3,4] Location, int SampleIndex)
     Texture_Load_3,             // Load(int[1,2,3,4] Location, int SampleIndex, int Offset)
+
+    Texture_Sample_2,           // Sample(SamplerState S, float[1,2,3,4] Location)
+    Texture_Sample_3,           // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset)
+    Texture_Sample_4,           // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, float Clamp)
+    Texture_Sample_5,           // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, float Clamp, out uint Status)
+    Texture_SampleBias_3,
+    Texture_SampleBias_4,
+    Texture_SampleBias_5,
+    Texture_SampleBias_6,
+    Texture_SampleCmp_3,
+    Texture_SampleCmp_4,
+    Texture_SampleCmp_5,
+    Texture_SampleCmp_6,
+    Texture_SampleGrad_4,
+    Texture_SampleGrad_5,
+    Texture_SampleGrad_6,
+    Texture_SampleGrad_7,
+    Texture_SampleLevel_3,      // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD)
+    Texture_SampleLevel_4,      // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD, int[1,2,3] Offset)
+    Texture_SampleLevel_5,      // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD, int[1,2,3] Offset, out uint Status)
 
     Texture_Gather_2,           // Gather(SamplerState S, float[2,3,4] Location)
     Texture_GatherRed_2,        // GatherRed(SamplerState S, float[2,3,4] Location)
@@ -884,28 +907,6 @@ enum class Intrinsic
     Texture_GatherCmpAlpha_7,   // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
     Texture_GatherCmpAlpha_8,   // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
 
-    Texture_Sample_2,           // Sample(SamplerState S, float[1,2,3,4] Location)
-    Texture_Sample_3,           // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset)
-    Texture_Sample_4,           // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, float Clamp)
-    Texture_Sample_5,           // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, float Clamp, out uint Status)
-    Texture_SampleBias_3,
-    Texture_SampleBias_4,
-    Texture_SampleBias_5,
-    Texture_SampleBias_6,
-    Texture_SampleCmp_3,
-    Texture_SampleCmp_4,
-    Texture_SampleCmp_5,
-    Texture_SampleCmp_6,
-    Texture_SampleGrad_4,
-    Texture_SampleGrad_5,
-    Texture_SampleGrad_6,
-    Texture_SampleGrad_7,
-    Texture_SampleLevel_3,      // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD)
-    Texture_SampleLevel_4,      // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD, int[1,2,3] Offset)
-    Texture_SampleLevel_5,      // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD, int[1,2,3] Offset, out uint Status)
-    Texture_QueryLod,           // CalculateLevelOfDetail(SamplerState S, float[1,2,3] Location)
-    Texture_QueryLodUnclamped,  // CalculateLevelOfDetailUnclamped(SamplerState S, float[1,2,3] Location)
-
     StreamOutput_Append,        // Append(StreamDataType)
     StreamOutput_RestartStrip,  // RestartStrip()
 
@@ -953,8 +954,12 @@ bool IsImageIntrinsic(const Intrinsic t);
 // Returns true if the specified intrinsic in an interlocked intrinsic (e.g. Intrinsic::InterlockedAdd).
 bool IsInterlockedIntristic(const Intrinsic t);
 
+//TODO: rename to "IsTextureGatherIntrisic"
 // Returns true if the specified intrinsic is a texture gather intrinsic.
 bool IsGatherIntrisic(const Intrinsic t);
+
+// Returns true if the specified intrinsic is a texture sample intrinsic.
+bool IsTextureSampleIntrinsic(const Intrinsic t);
 
 // Returns the number of offset parameters accepted by the specified gather intrinsic.
 int GetGatherIntrinsicOffsetParamCount(const Intrinsic t);
