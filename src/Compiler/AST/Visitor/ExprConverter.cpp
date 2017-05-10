@@ -616,15 +616,13 @@ void ExprConverter::ConvertExprTargetType(ExprPtr& expr, const TypeDenoter& targ
                 const auto& subTypeDen = arrayTargetTypeDen->subTypeDenoter->GetAliased();
                 for (auto& expr : initExpr->exprs)
                     ConvertExprTargetType(expr, subTypeDen);
-            }
+            } 
+
+            /* If enabled, convert initializer to a type constructor */
+            if (conversionFlags_(ConvertInitializerToCtor))
+                ConvertExprTargetTypeInitializer(expr, initExpr, targetTypeDen);
             else
-            {
-                /* If enabled, convert initializer to a type constructor */
-                if (conversionFlags_(ConvertInitializerToCtor))
-                    ConvertExprTargetTypeInitializer(expr, initExpr, targetTypeDen);
-                else
-                    ConvertExprFormatInitializer(expr, initExpr, targetTypeDen);
-            }
+                ConvertExprFormatInitializer(expr, initExpr, targetTypeDen);
         }
     }
 }
