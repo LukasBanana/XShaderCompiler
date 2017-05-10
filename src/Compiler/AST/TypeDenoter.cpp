@@ -440,14 +440,14 @@ bool NullTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 
 /* ----- BaseTypeDenoter ----- */
 
-TypeDenoter::Types BaseTypeDenoter::Type() const
-{
-    return Types::Base;
-}
-
 BaseTypeDenoter::BaseTypeDenoter(const DataType dataType) :
     dataType { dataType }
 {
+}
+
+TypeDenoter::Types BaseTypeDenoter::Type() const
+{
+    return Types::Base;
 }
 
 std::string BaseTypeDenoter::ToString() const
@@ -571,12 +571,12 @@ TypeDenoterPtr BaseTypeDenoter::GetSubArray(const std::size_t numArrayIndices, c
 /* ----- BufferTypeDenoter ----- */
 
 BufferTypeDenoter::BufferTypeDenoter(const BufferType bufferType) :
-    bufferType{ bufferType }
+    bufferType { bufferType }
 {
 }
 
 BufferTypeDenoter::BufferTypeDenoter(BufferDecl* bufferDeclRef) :
-    bufferDeclRef{ bufferDeclRef }
+    bufferDeclRef { bufferDeclRef }
 {
     if (bufferDeclRef && bufferDeclRef->declStmntRef)
     {
@@ -721,13 +721,13 @@ AST* SamplerTypeDenoter::SymbolRef() const
 /* ----- StructTypeDenoter ----- */
 
 StructTypeDenoter::StructTypeDenoter(const std::string& ident) :
-    ident{ ident }
+    ident { ident }
 {
 }
 
 StructTypeDenoter::StructTypeDenoter(StructDecl* structDeclRef) :
-    ident           { structDeclRef ? structDeclRef->ident.Original() : "" },
-    structDeclRef   { structDeclRef                                        }
+    ident         { structDeclRef ? structDeclRef->ident.Original() : "" },
+    structDeclRef { structDeclRef                                        }
 {
 }
 
@@ -761,17 +761,11 @@ bool StructTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags
 {
     if (auto rhsStructTypeDen = rhs.GetAliased().As<StructTypeDenoter>())
     {
-        /* Get structure declarations from type denoters */
-        if (auto lhsStructDecl = structDeclRef)
-        {
-            /* Compare this structure type with another structure type */
-            if (auto rhsStructDecl = rhsStructTypeDen->structDeclRef)
-                return lhsStructDecl->EqualsMembers(*rhsStructDecl, compareFlags);
-            else
-                RuntimeErr(R_MissingRefToStructDecl(rhsStructTypeDen->ident));
-        }
-        else
-            RuntimeErr(R_MissingRefToStructDecl(ident));
+        /* Compare this structure type with another structure type */
+        return GetStructDeclOrThrow()->EqualsMembers(
+            *rhsStructTypeDen->GetStructDeclOrThrow(),
+            compareFlags
+        );
     }
     return false;
 }
@@ -779,25 +773,20 @@ bool StructTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags
 bool StructTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
     /* Get structure declarations from type denoters */
-    if (auto structDecl = structDeclRef)
+    auto structDecl = GetStructDeclOrThrow();
+    
+    const auto& targetAliasedType = targetType.GetAliased();
+    if (auto targetStructTypeDen = targetAliasedType.As<StructTypeDenoter>())
     {
-        const auto& targetAliasedType = targetType.GetAliased();
-        if (auto targetStructTypeDen = targetAliasedType.As<StructTypeDenoter>())
-        {
-            /* Compare this structure type with another structure type */
-            if (auto targetStructDecl = targetStructTypeDen->structDeclRef)
-                return structDecl->EqualsMembers(*targetStructDecl);
-            else
-                RuntimeErr(R_MissingRefToStructDecl(targetStructDecl->ident));
-        }
-        else if (auto targetBaseTypeDen = targetAliasedType.As<BaseTypeDenoter>())
-        {
-            /* Compare this structure type with target base type */
-            return structDecl->IsCastableTo(*targetBaseTypeDen);
-        }
+        /* Compare this structure type with another structure type */
+        return structDecl->EqualsMembers(*targetStructTypeDen->GetStructDeclOrThrow());
     }
-    else
-        RuntimeErr(R_MissingRefToStructDecl(ident));
+    else if (auto targetBaseTypeDen = targetAliasedType.As<BaseTypeDenoter>())
+    {
+        /* Compare this structure type with target base type */
+        return structDecl->IsCastableTo(*targetBaseTypeDen);
+    }
+
     return false;
 }
 
@@ -813,35 +802,39 @@ AST* StructTypeDenoter::SymbolRef() const
 
 TypeDenoterPtr StructTypeDenoter::GetSubObject(const std::string& ident, const AST* ast)
 {
-    if (structDeclRef)
+    auto structDecl = GetStructDeclOrThrow(ast);
+
+    if (auto varDecl = structDecl->FetchVarDecl(ident))
     {
-        if (auto varDecl = structDeclRef->FetchVarDecl(ident))
-        {
-            /* Return type of variable declaration in structure */
-            return varDecl->GetTypeDenoter();
-        }
-        else
-        {
-            RuntimeErr(
-                R_UndeclaredIdent(ident, structDeclRef->ToString(), structDeclRef->FetchSimilar(ident)),
-                ast
-            );
-        }
+        /* Return type of variable declaration in structure */
+        return varDecl->GetTypeDenoter();
     }
-    RuntimeErr(R_MissingRefToStructDecl(ident), ast);
+
+    RuntimeErr(
+        R_UndeclaredIdent(ident, structDecl->ToString(), structDecl->FetchSimilar(ident)),
+        ast
+    );
+}
+
+StructDecl* StructTypeDenoter::GetStructDeclOrThrow(const AST* ast) const
+{
+    if (structDeclRef)
+        return structDeclRef;
+    else
+        RuntimeErr(R_MissingRefToStructDecl(ident), ast);
 }
 
 
 /* ----- AliasTypeDenoter ----- */
 
 AliasTypeDenoter::AliasTypeDenoter(const std::string& ident) :
-    ident{ ident }
+    ident { ident }
 {
 }
 
 AliasTypeDenoter::AliasTypeDenoter(AliasDecl* aliasDeclRef) :
-    ident       { aliasDeclRef ? aliasDeclRef->ident.Original() : "" },
-    aliasDeclRef{ aliasDeclRef                                       }
+    ident        { aliasDeclRef ? aliasDeclRef->ident.Original() : "" },
+    aliasDeclRef { aliasDeclRef                                       }
 {
 }
 

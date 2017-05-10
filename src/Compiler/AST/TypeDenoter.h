@@ -342,6 +342,8 @@ struct StructTypeDenoter : public TypeDenoter
 
     TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
 
+    StructDecl* GetStructDeclOrThrow(const AST* ast = nullptr) const;
+
     std::string     ident;                      // Type identifier
 
     StructDecl*     structDeclRef = nullptr;    // Reference to the StructDecl AST node
