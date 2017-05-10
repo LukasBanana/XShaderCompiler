@@ -2187,10 +2187,21 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter(const TypeDenoter* expectedTyp
     else if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
     {
         //TODO...
+        #if 0
+        auto structDecl = structTypeDen->GetStructDeclOrThrow(this);
+
+        /*structDecl->ForEachVarDecl(
+            []()
+            {
+            }
+        );*/
+        #endif
     }
     else if (auto arrayTypeDen = typeDen.As<ArrayTypeDenoter>())
     {
-        //TODO...
+        /* Derive type denoters from sub expressions with the array sub type as expected type denoter */
+        for (auto& expr : exprs)
+            expr->GetTypeDenoter(arrayTypeDen->subTypeDenoter.get());
     }
 
     /* Copy expected type denoter */
