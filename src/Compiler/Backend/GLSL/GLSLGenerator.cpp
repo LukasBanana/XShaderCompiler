@@ -332,7 +332,7 @@ int GLSLGenerator::GetBindingLocation(const TypeDenoterPtr& typeDenoter, bool in
     int startLocation   = 0;
     int endLocation     = startLocation + numLocations - 1;
 
-    auto& usedLocationsSet = input ? usedInLocationsSet_ : usedOutLocationsSet_;
+    auto& usedLocationsSet = (input ? usedInLocationsSet_ : usedOutLocationsSet_);
     for (auto entry : usedLocationsSet)
     {
         if (entry >= startLocation && entry <= endLocation)
@@ -364,7 +364,7 @@ IMPLEMENT_VISIT_PROC(Program)
     WriteGlobalLayouts();
 
     /* Write redeclarations for built-in input/output blocks */
-    if(separateShaders_ && versionOut_ > OutputShaderVersion::GLSL140)
+    if (separateShaders_ && versionOut_ > OutputShaderVersion::GLSL140)
         WriteBuiltinBlockRedeclarations();
 
     /* Write wrapper functions for special intrinsics */
@@ -1597,16 +1597,16 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
                 }
             }
 
-            if(location == -1 && autoBinding_)
+            if (location == -1 && autoBinding_)
                 location = GetBindingLocation(varDecl->declStmntRef->typeSpecifier->typeDenoter, true);
 
             if (location != -1)
             {
                 /* Write layout location and increment use count for warning-feedback */
                 WriteLayout(
-                {
-                    [&]() { Write("location = " + std::to_string(location)); }
-                }
+                    {
+                        [&]() { Write("location = " + std::to_string(location)); }
+                    }
                 );
 
                 /* Reset the semantic index for code reflection output */

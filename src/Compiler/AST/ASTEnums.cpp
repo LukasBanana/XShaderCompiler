@@ -793,11 +793,13 @@ bool IsRWBufferType(const BufferType t)
 
 bool IsRWTextureBufferType(const BufferType t)
 {
+    // TODO: this function was intended to cover only texture types, not Buffer!
     return ( ( t >= BufferType::RWTexture1D && t <= BufferType::RWTexture3D ) || t == BufferType::RWBuffer );
 }
 
 bool IsTextureBufferType(const BufferType t)
 {
+    //TODO: this function was intended to cover only texture types, not Buffer!
     return ( ( t >= BufferType::RWTexture1D && t <= BufferType::GenericTexture ) || t == BufferType::Buffer );
 }
 

@@ -316,6 +316,7 @@ class GLSLGenerator : public Generator
         bool                                    autoBinding_            = false;
 
         bool                                    isInsideInterfaceBlock_ = false;
+
         std::set<int>                           usedInLocationsSet_;
         std::set<int>                           usedOutLocationsSet_;
 
