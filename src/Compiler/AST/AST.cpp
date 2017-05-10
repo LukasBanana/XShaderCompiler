@@ -2187,15 +2187,6 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter(const TypeDenoter* expectedTyp
     else if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
     {
         //TODO...
-        #if 0
-        auto structDecl = structTypeDen->GetStructDeclOrThrow(this);
-
-        /*structDecl->ForEachVarDecl(
-            []()
-            {
-            }
-        );*/
-        #endif
     }
     else if (auto arrayTypeDen = typeDen.As<ArrayTypeDenoter>())
     {

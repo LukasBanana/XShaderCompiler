@@ -34,7 +34,7 @@ const IntrinsicAdept& IntrinsicAdept::Get()
 
 const std::string& IntrinsicAdept::GetIntrinsicIdent(const Intrinsic intrinsic) const
 {
-    static const std::string unknwonIntrinsic = "<undefined>";
+    const std::string unknwonIntrinsic = R_Undefined();
     const auto idx = INTRINSIC_IDX(intrinsic);
     return (idx < intrinsicIdents_.size() ? intrinsicIdents_[idx] : unknwonIntrinsic);
 }
