@@ -988,7 +988,7 @@ bool IsInterlockedIntristic(const Intrinsic t)
     return (t >= Intrinsic::InterlockedAdd && t <= Intrinsic::InterlockedXor);
 }
 
-bool IsGatherIntrisic(const Intrinsic t)
+bool IsTextureGatherIntrisic(const Intrinsic t)
 {
     return (t >= Intrinsic::Texture_Gather_2 && t <= Intrinsic::Texture_GatherCmpAlpha_8);
 }

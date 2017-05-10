@@ -867,7 +867,7 @@ void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
             break;
 
         default:
-            if (IsGatherIntrisic(ast->intrinsic))
+            if (IsTextureGatherIntrisic(ast->intrinsic))
                 ConvertIntrinsicCallGather(ast);
             break;
     }

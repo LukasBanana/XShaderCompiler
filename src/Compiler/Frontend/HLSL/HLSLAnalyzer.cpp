@@ -1132,7 +1132,7 @@ void HLSLAnalyzer::AnalyzeCallExprIntrinsicFromBufferType(const CallExpr* callEx
     }
 
     /* Ensure gather intrinsics are used only on supported types */
-    if (IsGatherIntrisic(intrinsic))
+    if (IsTextureGatherIntrisic(intrinsic))
     {
         switch (bufferType)
         {

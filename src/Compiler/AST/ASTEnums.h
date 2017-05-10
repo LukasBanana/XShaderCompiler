@@ -954,18 +954,11 @@ bool IsImageIntrinsic(const Intrinsic t);
 // Returns true if the specified intrinsic in an interlocked intrinsic (e.g. Intrinsic::InterlockedAdd).
 bool IsInterlockedIntristic(const Intrinsic t);
 
-//TODO: rename to "IsTextureGatherIntrisic"
 // Returns true if the specified intrinsic is a texture gather intrinsic.
-bool IsGatherIntrisic(const Intrinsic t);
+bool IsTextureGatherIntrisic(const Intrinsic t);
 
 // Returns true if the specified intrinsic is a texture sample intrinsic.
 bool IsTextureSampleIntrinsic(const Intrinsic t);
-
-// Returns the number of offset parameters accepted by the specified gather intrinsic.
-int GetGatherIntrinsicOffsetParamCount(const Intrinsic t);
-
-// Maps a texture gather intrinsic to a component index (e.g. red -> 0, green -> 1, etc.)
-int GetGatherIntrinsicComponentIndex(const Intrinsic t);
 
 // Returns true if the specified intrinsic is a texture sample or gather intrisic, with a compare operation.
 bool IsTextureCompareIntrinsic(const Intrinsic t);
@@ -981,6 +974,12 @@ Returns the respecitve image atomic intrinsic for the specified interlocked intr
 or the input intrinsic, if is is not an interlocked intrinsic (e.g. Intrinsic::InterlockedAdd to Intrinsic::Image_AtomicAdd).
 */
 Intrinsic InterlockedToImageAtomicIntrinsic(const Intrinsic t);
+
+// Returns the number of offset parameters accepted by the specified gather intrinsic.
+int GetGatherIntrinsicOffsetParamCount(const Intrinsic t);
+
+// Maps a texture gather intrinsic to a component index (e.g. red -> 0, green -> 1, etc.)
+int GetGatherIntrinsicComponentIndex(const Intrinsic t);
 
 
 /* ----- Semantic Enum ----- */

@@ -742,7 +742,7 @@ void ExprConverter::ConvertExprTextureIntrinsicVec4(ExprPtr& expr)
         if (intrinsic != Intrinsic::Undefined)
         {
             /* Is this a texture intrinsic? */
-            if (IsTextureLoadIntrinsic(intrinsic) || IsTextureSampleIntrinsic(intrinsic) || IsGatherIntrisic(intrinsic))
+            if (IsTextureLoadIntrinsic(intrinsic) || IsTextureSampleIntrinsic(intrinsic) || IsTextureGatherIntrisic(intrinsic))
             {
                 /* Is the return type a base type denoter? */
                 const auto& typeDen = callExpr->GetTypeDenoter()->GetAliased();
