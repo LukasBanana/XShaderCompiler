@@ -626,8 +626,8 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         First check if code generation is disabled for variable declaration,
         then check if this is a system value semantic inside an interface block.
         */
-        if ( ( varDecl->flags(VarDecl::isEntryPointLocal) && ( !varTypeStructDecl || !varTypeStructDecl->flags(StructDecl::isNonEntryPointParam) ) ) ||
-             ( isInsideInterfaceBlock_ && varDecl->semantic.IsSystemValue() ) )
+        if ( varDecl->flags(VarDecl::isEntryPointLocal) &&
+             ( !varTypeStructDecl || !varTypeStructDecl->flags(StructDecl::isNonEntryPointParam) ) )
         {
             /*
             Code generation is disabled for this variable declaration

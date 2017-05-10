@@ -315,8 +315,6 @@ class GLSLGenerator : public Generator
         bool                                    separateSamplers_       = true;
         bool                                    autoBinding_            = false;
 
-        bool                                    isInsideInterfaceBlock_ = false;
-
         std::set<int>                           usedInLocationsSet_;
         std::set<int>                           usedOutLocationsSet_;
 
