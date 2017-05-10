@@ -43,7 +43,11 @@ class HLSLIntrinsicAdept : public IntrinsicAdept
 
         HLSLIntrinsicAdept();
 
-        TypeDenoterPtr GetIntrinsicReturnType(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const override;
+        TypeDenoterPtr GetIntrinsicReturnType(
+            const Intrinsic intrinsic,
+            const std::vector<ExprPtr>& args,
+            const TypeDenoterPtr& prefixTypeDenoter = nullptr
+        ) const override;
 
         std::vector<TypeDenoterPtr> GetIntrinsicParameterTypes(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const override;
 
@@ -59,6 +63,10 @@ class HLSLIntrinsicAdept : public IntrinsicAdept
         TypeDenoterPtr DeriveReturnTypeMulPrimary(const std::vector<ExprPtr>& args, const TypeDenoterPtr& type0, const TypeDenoterPtr& type1) const;
         TypeDenoterPtr DeriveReturnTypeTranspose(const std::vector<ExprPtr>& args) const;
         TypeDenoterPtr DeriveReturnTypeVectorCompare(const std::vector<ExprPtr>& args) const;
+        TypeDenoterPtr DeriveReturnTypeTextureSample(const BaseTypeDenoterPtr& genericTypeDenoter) const;
+        TypeDenoterPtr DeriveReturnTypeTextureSampleCmp(const BaseTypeDenoterPtr& genericTypeDenoter) const;
+        TypeDenoterPtr DeriveReturnTypeTextureGather(const BaseTypeDenoterPtr& genericTypeDenoter) const;
+        TypeDenoterPtr DeriveReturnTypeTextureGatherCmp(const BaseTypeDenoterPtr& genericTypeDenoter) const;
 
         void DeriveParameterTypes(
             std::vector<TypeDenoterPtr>& paramTypeDenoters,
@@ -71,6 +79,8 @@ class HLSLIntrinsicAdept : public IntrinsicAdept
         void DeriveParameterTypesMul(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const;
         void DeriveParameterTypesTranspose(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const;
         #endif
+
+        BaseTypeDenoterPtr GetGenericTextureTypeFromPrefix(const Intrinsic intrinsic, const TypeDenoterPtr& prefixTypeDenoter) const;
 
 };
 

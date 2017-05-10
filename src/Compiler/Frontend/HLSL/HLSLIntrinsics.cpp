@@ -604,14 +604,17 @@ HLSLIntrinsicAdept::HLSLIntrinsicAdept()
     FillOverloadedIntrinsicIdents();
 }
 
-TypeDenoterPtr HLSLIntrinsicAdept::GetIntrinsicReturnType(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const
+TypeDenoterPtr HLSLIntrinsicAdept::GetIntrinsicReturnType(
+    const Intrinsic intrinsic, const std::vector<ExprPtr>& args, const TypeDenoterPtr& prefixTypeDenoter) const
 {
     switch (intrinsic)
     {
         case Intrinsic::Mul:
             return DeriveReturnTypeMul(args);
+
         case Intrinsic::Transpose:
             return DeriveReturnTypeTranspose(args);
+
         case Intrinsic::Not:
         case Intrinsic::Equal:
         case Intrinsic::NotEqual:
@@ -620,6 +623,83 @@ TypeDenoterPtr HLSLIntrinsicAdept::GetIntrinsicReturnType(const Intrinsic intrin
         case Intrinsic::GreaterThan:
         case Intrinsic::GreaterThanEqual:
             return DeriveReturnTypeVectorCompare(args);
+
+        case Intrinsic::Texture_Load_1:
+        case Intrinsic::Texture_Load_2:
+        case Intrinsic::Texture_Load_3:
+        case Intrinsic::Texture_Sample_2:
+        case Intrinsic::Texture_Sample_3:
+        case Intrinsic::Texture_Sample_4:
+        case Intrinsic::Texture_Sample_5:
+        case Intrinsic::Texture_SampleBias_3:
+        case Intrinsic::Texture_SampleBias_4:
+        case Intrinsic::Texture_SampleBias_5:
+        case Intrinsic::Texture_SampleBias_6:
+        case Intrinsic::Texture_SampleGrad_4:
+        case Intrinsic::Texture_SampleGrad_5:
+        case Intrinsic::Texture_SampleGrad_6:
+        case Intrinsic::Texture_SampleGrad_7:
+        case Intrinsic::Texture_SampleLevel_3:
+        case Intrinsic::Texture_SampleLevel_4:
+        case Intrinsic::Texture_SampleLevel_5:
+            return DeriveReturnTypeTextureSample(GetGenericTextureTypeFromPrefix(intrinsic, prefixTypeDenoter));
+
+        case Intrinsic::Texture_SampleCmp_3:
+        case Intrinsic::Texture_SampleCmp_4:
+        case Intrinsic::Texture_SampleCmp_5:
+        case Intrinsic::Texture_SampleCmp_6:
+            return DeriveReturnTypeTextureSampleCmp(GetGenericTextureTypeFromPrefix(intrinsic, prefixTypeDenoter));
+
+        case Intrinsic::Texture_Gather_2:
+        case Intrinsic::Texture_GatherRed_2:
+        case Intrinsic::Texture_GatherGreen_2:
+        case Intrinsic::Texture_GatherBlue_2:
+        case Intrinsic::Texture_GatherAlpha_2:
+        case Intrinsic::Texture_Gather_3:
+        case Intrinsic::Texture_Gather_4:
+        case Intrinsic::Texture_GatherRed_3:
+        case Intrinsic::Texture_GatherRed_4:
+        case Intrinsic::Texture_GatherGreen_3:
+        case Intrinsic::Texture_GatherGreen_4:
+        case Intrinsic::Texture_GatherBlue_3:
+        case Intrinsic::Texture_GatherBlue_4:
+        case Intrinsic::Texture_GatherAlpha_3:
+        case Intrinsic::Texture_GatherAlpha_4:
+        case Intrinsic::Texture_GatherRed_6:
+        case Intrinsic::Texture_GatherRed_7:
+        case Intrinsic::Texture_GatherGreen_6:
+        case Intrinsic::Texture_GatherGreen_7:
+        case Intrinsic::Texture_GatherBlue_6:
+        case Intrinsic::Texture_GatherBlue_7:
+        case Intrinsic::Texture_GatherAlpha_6:
+        case Intrinsic::Texture_GatherAlpha_7:
+            return DeriveReturnTypeTextureGather(GetGenericTextureTypeFromPrefix(intrinsic, prefixTypeDenoter));
+
+        case Intrinsic::Texture_GatherCmp_3:
+        case Intrinsic::Texture_GatherCmpRed_3:
+        case Intrinsic::Texture_GatherCmpGreen_3:
+        case Intrinsic::Texture_GatherCmpBlue_3:
+        case Intrinsic::Texture_GatherCmpAlpha_3:
+        case Intrinsic::Texture_GatherCmp_4:
+        case Intrinsic::Texture_GatherCmp_5:
+        case Intrinsic::Texture_GatherCmpRed_4:
+        case Intrinsic::Texture_GatherCmpRed_5:
+        case Intrinsic::Texture_GatherCmpGreen_4:
+        case Intrinsic::Texture_GatherCmpGreen_5:
+        case Intrinsic::Texture_GatherCmpBlue_4:
+        case Intrinsic::Texture_GatherCmpBlue_5:
+        case Intrinsic::Texture_GatherCmpAlpha_4:
+        case Intrinsic::Texture_GatherCmpAlpha_5:
+        case Intrinsic::Texture_GatherCmpRed_7:
+        case Intrinsic::Texture_GatherCmpRed_8:
+        case Intrinsic::Texture_GatherCmpGreen_7:
+        case Intrinsic::Texture_GatherCmpGreen_8:
+        case Intrinsic::Texture_GatherCmpBlue_7:
+        case Intrinsic::Texture_GatherCmpBlue_8:
+        case Intrinsic::Texture_GatherCmpAlpha_7:
+        case Intrinsic::Texture_GatherCmpAlpha_8:
+            return DeriveReturnTypeTextureGatherCmp(GetGenericTextureTypeFromPrefix(intrinsic, prefixTypeDenoter));
+
         default:
             return DeriveReturnType(intrinsic, args);
     }
@@ -856,6 +936,34 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeVectorCompare(const std::vect
     return arg0TypeDen;
 }
 
+// see https://msdn.microsoft.com/en-us/library/windows/desktop/bb509694(v=vs.85).aspx
+TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeTextureSample(const BaseTypeDenoterPtr& genericTypeDenoter) const
+{
+    /* Simply return the generic type denoter */
+    return genericTypeDenoter;
+}
+
+// see https://msdn.microsoft.com/en-us/library/windows/desktop/bb509696(v=vs.85).aspx
+TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeTextureSampleCmp(const BaseTypeDenoterPtr& /*genericTypeDenoter*/) const
+{
+    /* Always return single float type */
+    return std::make_shared<BaseTypeDenoter>(DataType::Float);
+}
+
+// see https://msdn.microsoft.com/en-us/library/windows/desktop/bb944003(v=vs.85).aspx
+TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeTextureGather(const BaseTypeDenoterPtr& genericTypeDenoter) const
+{
+    /* Always return 4D-vector of generic data type */
+    return std::make_shared<BaseTypeDenoter>(VectorDataType(BaseDataType(genericTypeDenoter->dataType), 4));
+}
+
+// see https://msdn.microsoft.com/en-us/library/windows/desktop/ff471530(v=vs.85).aspx
+TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeTextureGatherCmp(const BaseTypeDenoterPtr& genericTypeDenoter) const
+{
+    /* Always return 4D-vector of float type */
+    return std::make_shared<BaseTypeDenoter>(DataType::Float4);
+}
+
 /*
 TODO:
 This is a temporary solution to derive parameter types of intrinsic.
@@ -891,6 +999,24 @@ void HLSLIntrinsicAdept::DeriveParameterTypesMul(std::vector<TypeDenoterPtr>& pa
 void HLSLIntrinsicAdept::DeriveParameterTypesTranspose(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const
 {
     //TODO...
+}
+
+BaseTypeDenoterPtr HLSLIntrinsicAdept::GetGenericTextureTypeFromPrefix(const Intrinsic intrinsic, const TypeDenoterPtr& prefixTypeDenoter) const
+{
+    /* Is the prefix type a buffer type denoter? */
+    const auto& typeDen = prefixTypeDenoter->GetAliased();
+    if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
+    {
+        /* Is it's generic type a base type denoter? */
+        auto genericTypeDen = bufferTypeDen->GetGenericTypeDenoter();
+        if (genericTypeDen->Type() == TypeDenoter::Types::Base)
+        {
+            /* Reutrn data type of generic type denoter */
+            return std::static_pointer_cast<BaseTypeDenoter>(genericTypeDen);
+        }
+        RuntimeErr(R_ExpectedBaseTypeDen(genericTypeDen->ToString()));
+    }
+    RuntimeErr(R_MissingTypeInTextureIntrinsic(GetIntrinsicIdent(intrinsic)));
 }
 
 

@@ -41,7 +41,11 @@ class IntrinsicAdept
         const std::string& GetIntrinsicIdent(const Intrinsic intrinsic) const;
 
         // Returns the return type denoter of the specified intrinsic with its arguments or throws an error if the call is ambiguous.
-        virtual TypeDenoterPtr GetIntrinsicReturnType(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const = 0;
+        virtual TypeDenoterPtr GetIntrinsicReturnType(
+            const Intrinsic intrinsic,
+            const std::vector<ExprPtr>& args,
+            const TypeDenoterPtr& prefixTypeDenoter = nullptr
+        ) const = 0;
 
         // Returns a list of all parameter types of the specified intrinsic with its arguments or throws an error if the call is ambiguous.
         virtual std::vector<TypeDenoterPtr> GetIntrinsicParameterTypes(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const = 0;

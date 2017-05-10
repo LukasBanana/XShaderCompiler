@@ -1726,7 +1726,11 @@ TypeDenoterPtr CallExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDeno
         /* Return type denoter of associated intrinsic */
         try
         {
-            return IntrinsicAdept::Get().GetIntrinsicReturnType(intrinsic, arguments);
+            return IntrinsicAdept::Get().GetIntrinsicReturnType(
+                intrinsic,
+                arguments,
+                (prefixExpr != nullptr ? prefixExpr->GetTypeDenoter() : nullptr)
+            );
         }
         catch (const std::exception& e)
         {

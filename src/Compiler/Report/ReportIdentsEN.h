@@ -191,7 +191,7 @@ DECL_REPORT( Expected,                          "expected {0}"                  
 DECL_REPORT( ExpectedPrimaryExpr,               "expected primary expression"                                                                                   );
 DECL_REPORT( ExpectedLiteralExpr,               "expected literal expression"                                                                                   );
 DECL_REPORT( ExpectedTypeDen,                   "expected type denoter"                                                                                         );
-DECL_REPORT( ExpectedBaseTypeDen,               "expected base type denoter"                                                                                    );
+DECL_REPORT( ExpectedBaseTypeDen,               "expected base type denoter[, but got '{0}']"                                                                   );
 DECL_REPORT( ExpectedIntLiteral,                "expected integer literal[, but got '{0}']"                                                                     );
 DECL_REPORT( InFunction,                        " (in function: {0})"                                                                                           );
 DECL_REPORT( FailedToCreateScanner,             "failed to create token scanner"                                                                                );
@@ -351,6 +351,7 @@ DECL_REPORT( InvalidGLSLExtensionBehavior,      "invalid extension behavior '{0}
 
 DECL_REPORT( FailedToDeriveIntrinsicType,       "failed to derive type denoter for intrinsic[ '{0}']"                                                           );
 DECL_REPORT( FailedToDeriveIntrinsicParamType,  "failed to derive parameter type denoter for intrinsic[ '{0}']"                                                 );
+DECL_REPORT( MissingTypeInTextureIntrinsic,     "missing buffer type in texture intrinsic[ '{0}']"                                                              );
 
 /* ----- HLSLKeywords ----- */
 
