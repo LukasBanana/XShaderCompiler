@@ -570,6 +570,7 @@ void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr
     }
 }
 
+// Converts "log10" intrinsics (which are not supported in GLSL) to "log(x) / log(10)"
 void ExprConverter::ConvertExprIntrinsicCallLog10(ExprPtr& expr)
 {
     /* Is this a call expression to the "log10" intrinisc? */
@@ -732,6 +733,10 @@ void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
     }
 }
 
+/*
+Converts texture intrinsic calls that have a generic type lower than 4D-vectors.
+E.g. "Texture2D<float2> tex; tex.Sample(...)" -> "tex.Sample(...).rg"
+*/
 void ExprConverter::ConvertExprTextureIntrinsicVec4(ExprPtr& expr)
 {
     /* Is this a call expression? */
@@ -752,7 +757,7 @@ void ExprConverter::ConvertExprTextureIntrinsicVec4(ExprPtr& expr)
                     const auto vecTypeDim = VectorTypeDim(baseTypeDen->dataType);
                     if (vecTypeDim >= 1 && vecTypeDim <= 3)
                     {
-                        /* Append vector subscript to intrinsic call */
+                        /* Append vector subscript to intrinsic call (use "rgba" instead of "xyzw" for color based purposes) */
                         const std::string vectorSubscript = "rgb";
 
                         expr = ASTFactory::MakeObjectExpr(
