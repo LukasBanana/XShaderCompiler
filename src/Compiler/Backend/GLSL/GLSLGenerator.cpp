@@ -77,7 +77,7 @@ void GLSLGenerator::GenerateCodePrimary(
         vertexSemanticsMap_[semanticCi] = { s.location, 0 };
 
         if (s.location >= 0)
-            usedLocationsSet_.insert(s.location);
+            usedInLocationsSet_.insert(s.location);
     }
 
     if (program.entryPointRef)
@@ -322,7 +322,7 @@ int GLSLGenerator::GetNumBindingLocations(TypeDenoterPtr typeDenoter)
     return -1;
 }
 
-int GLSLGenerator::GetBindingLocation(const TypeDenoterPtr& typeDenoter)
+int GLSLGenerator::GetBindingLocation(const TypeDenoterPtr& typeDenoter, bool input)
 {
     int numLocations = GetNumBindingLocations(typeDenoter);
     if (numLocations == -1)
@@ -332,7 +332,8 @@ int GLSLGenerator::GetBindingLocation(const TypeDenoterPtr& typeDenoter)
     int startLocation   = 0;
     int endLocation     = startLocation + numLocations - 1;
 
-    for (auto entry : usedLocationsSet_)
+    auto& usedLocationsSet = input ? usedInLocationsSet_ : usedOutLocationsSet_;
+    for (auto entry : usedLocationsSet)
     {
         if (entry >= startLocation && entry <= endLocation)
         {
@@ -344,7 +345,7 @@ int GLSLGenerator::GetBindingLocation(const TypeDenoterPtr& typeDenoter)
     }
 
     for (auto i = startLocation; i <= endLocation; ++i)
-        usedLocationsSet_.insert(i);
+        usedLocationsSet.insert(i);
 
     return startLocation;
 }
@@ -1584,29 +1585,29 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
             WriteInterpModifiers(interpModifiers, varDecl->declStmntRef);
             Separator();
 
+            int location = -1;
+
             if (explicitBinding_ && IsVertexShader() && varDecl->semantic.IsValid())
             {
-                int location = -1;
-
                 auto it = vertexSemanticsMap_.find(ToCiString(varDecl->semantic.ToString()));
                 if (it != vertexSemanticsMap_.end())
                 {
                     location = it->second.location;
                     it->second.found = true;
                 }
+            }
 
-                if (location == -1 && autoBinding_)
-                    location = GetBindingLocation(varDecl->declStmntRef->typeSpecifier->typeDenoter);
+            if(location == -1 && autoBinding_)
+                location = GetBindingLocation(varDecl->declStmntRef->typeSpecifier->typeDenoter, true);
 
-                if (location != -1)
+            if (location != -1)
+            {
+                /* Write layout location and increment use count for warning-feedback */
+                WriteLayout(
                 {
-                    /* Write layout location and increment use count for warning-feedback */
-                    WriteLayout(
-                        {
-                            [&]() { Write("location = " + std::to_string(location)); }
-                        }
-                    );
+                    [&]() { Write("location = " + std::to_string(location)); }
                 }
+                );
 
                 /* Reset the semantic index for code reflection output */
                 varDecl->semantic.ResetIndex(location);
@@ -1736,7 +1737,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool use
     );
 }
 
-void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier, const IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl)
+void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier, IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl)
 {
     /* Write global output semantic slot */
     BeginLn();
@@ -1757,14 +1758,22 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
                 WriteInterpModifiers(varDeclStmnt->typeSpecifier->interpModifiers, varDecl);
             Separator();
 
-            if (semantic.IsSystemValue() && explicitBinding_)
+            int location = -1;
+            if (autoBinding_ && !IsFragmentShader())
+                location = GetBindingLocation(typeSpecifier->typeDenoter, false);
+            else
+                location = semantic.Index();
+
+            if (explicitBinding_)
             {
                 WriteLayout(
                     {
-                        [&]() { Write("location = " + std::to_string(semantic.Index())); }
+                        [&]() { Write("location = " + std::to_string(location)); }
                     }
                 );
             }
+
+            semantic.ResetIndex(location);
 
             Write("out ");
             Separator();
