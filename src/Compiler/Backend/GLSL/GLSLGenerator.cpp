@@ -119,9 +119,9 @@ void GLSLGenerator::GenerateCodePrimary(
             /* Check for optional warning feedback */
             ReportOptionalFeedback();
         }
-        catch (const Report& e)
+        catch (const Report&)
         {
-            throw e;
+            throw;
         }
         catch (const ASTRuntimeError& e)
         {
@@ -2272,9 +2272,9 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
         else
             Error(R_FailedToDetermineGLSLDataType, ast);
     }
-    catch (const Report& e)
+    catch (const Report&)
     {
-        throw e;
+        throw;
     }
     catch (const std::exception& e)
     {
