@@ -199,26 +199,29 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
 //TODO: add "FloatGenericSize0", "Float2GenericSize0" etc. to get specific return type but with variadic vector dimension
 enum class IntrinsicReturnType
 {
-    Void,
+    Void,               // Fixed void type
     
-    Bool,
-    Int,
-    Int2,
-    Int3,
-    Int4,
-    UInt,
-    UInt2,
-    UInt3,
-    UInt4,
-    Float,
-    Float2,
-    Float3,
-    Float4,
-    Double,
+    Bool,               // Fixed bool type
+    Int,                // Fixed int type
+    Int2,               // Fixed int2 type
+    Int3,               // Fixed int3 type
+    Int4,               // Fixed int4 type
+    UInt,               // Fixed uint type
+    UInt2,              // Fixed uint2 type
+    UInt3,              // Fixed uint3 type
+    UInt4,              // Fixed uint4 type
+    Float,              // Fixed float type
+    Float2,             // Fixed float2 type
+    Float3,             // Fixed float3 type
+    Float4,             // Fixed float4 type
+    Double,             // Fixed doubel type
 
-    GenericArg0,    // Get return type from first argument (index 0)
-    GenericArg1,    // Get return type from second argument (index 1)
-    GenericArg2,    // Get return type from thrid argument (index 2)
+    GenericArg0,        // Get return type from first argument (index 0)
+    GenericArg1,        // Get return type from second argument (index 1)
+    GenericArg2,        // Get return type from thrid argument (index 2)
+
+    FloatGenericArg0,   // Get dimension of float type from first argument (index 0)
+    BoolGenericArg0,    // Get dimension of bool type from first argument (index 0)
 };
 
 static DataType IntrinsicReturnTypeToDataType(const IntrinsicReturnType t)
@@ -389,7 +392,7 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::DeviceMemoryBarrier,              {                        } },
         { T::DeviceMemoryBarrierWithGroupSync, {                        } },
         { T::Distance,                         { Ret::Float,       2    } },
-        { T::Dot,                              { Ret::Float,       2    } }, // float or int with size of input
+        { T::Dot,                              { Ret::Float,       2    } }, // float or int
         { T::Dst,                              { Ret::GenericArg0, 2    } },
         { T::ErrorF,                           {                  -1    } },
         { T::Equal,                            { Ret::Bool,        2    } }, // GLSL only
@@ -502,9 +505,33 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::Trunc,                            { Ret::GenericArg0, 1    } },
 
         { T::Texture_GetDimensions,            {                   3    } },
+        { T::Texture_QueryLod,                 { Ret::Float,       2    } },
+        { T::Texture_QueryLodUnclamped,        { Ret::Float,       2    } },
+
         { T::Texture_Load_1,                   { Ret::Float4,      1    } },
         { T::Texture_Load_2,                   { Ret::Float4,      2    } },
         { T::Texture_Load_3,                   { Ret::Float4,      3    } },
+
+        { T::Texture_Sample_2,                 { Ret::Float4,      2    } },
+        { T::Texture_Sample_3,                 { Ret::Float4,      3    } },
+        { T::Texture_Sample_4,                 { Ret::Float4,      4    } },
+        { T::Texture_Sample_5,                 { Ret::Float4,      5    } },
+        { T::Texture_SampleBias_3,             { Ret::Float4,      3    } },
+        { T::Texture_SampleBias_4,             { Ret::Float4,      4    } },
+        { T::Texture_SampleBias_5,             { Ret::Float4,      5    } },
+        { T::Texture_SampleBias_6,             { Ret::Float4,      6    } },
+        { T::Texture_SampleCmp_3,              { Ret::Float,       3    } },
+        { T::Texture_SampleCmp_4,              { Ret::Float,       4    } },
+        { T::Texture_SampleCmp_5,              { Ret::Float,       5    } },
+        { T::Texture_SampleCmp_6,              { Ret::Float,       6    } },
+        { T::Texture_SampleGrad_4,             { Ret::Float4,      4    } },
+        { T::Texture_SampleGrad_5,             { Ret::Float4,      5    } },
+        { T::Texture_SampleGrad_6,             { Ret::Float4,      6    } },
+        { T::Texture_SampleGrad_7,             { Ret::Float4,      7    } },
+        { T::Texture_SampleLevel_3,            { Ret::Float4,      3    } },
+        { T::Texture_SampleLevel_4,            { Ret::Float4,      4    } },
+        { T::Texture_SampleLevel_5,            { Ret::Float4,      5    } },
+
         { T::Texture_Gather_2,                 { Ret::Float4,      2    } },
         { T::Texture_Gather_3,                 { Ret::Float4,      3    } },
         { T::Texture_Gather_4,                 { Ret::Float4,      4    } },
@@ -551,27 +578,6 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::Texture_GatherCmpAlpha_5,         { Ret::Float4,      5    } },
         { T::Texture_GatherCmpAlpha_7,         { Ret::Float4,      7    } },
         { T::Texture_GatherCmpAlpha_8,         { Ret::Float4,      8    } },
-        { T::Texture_Sample_2,                 { Ret::Float4,      2    } },
-        { T::Texture_Sample_3,                 { Ret::Float4,      3    } },
-        { T::Texture_Sample_4,                 { Ret::Float4,      4    } },
-        { T::Texture_Sample_5,                 { Ret::Float4,      5    } },
-        { T::Texture_SampleBias_3,             { Ret::Float4,      3    } },
-        { T::Texture_SampleBias_4,             { Ret::Float4,      4    } },
-        { T::Texture_SampleBias_5,             { Ret::Float4,      5    } },
-        { T::Texture_SampleBias_6,             { Ret::Float4,      6    } },
-        { T::Texture_SampleCmp_3,              { Ret::Float,       3    } },
-        { T::Texture_SampleCmp_4,              { Ret::Float,       4    } },
-        { T::Texture_SampleCmp_5,              { Ret::Float,       5    } },
-        { T::Texture_SampleCmp_6,              { Ret::Float,       6    } },
-        { T::Texture_SampleGrad_4,             { Ret::Float4,      4    } },
-        { T::Texture_SampleGrad_5,             { Ret::Float4,      5    } },
-        { T::Texture_SampleGrad_6,             { Ret::Float4,      6    } },
-        { T::Texture_SampleGrad_7,             { Ret::Float4,      7    } },
-        { T::Texture_SampleLevel_3,            { Ret::Float4,      3    } },
-        { T::Texture_SampleLevel_4,            { Ret::Float4,      4    } },
-        { T::Texture_SampleLevel_5,            { Ret::Float4,      5    } },
-        { T::Texture_QueryLod,                 { Ret::Float,       2    } },
-        { T::Texture_QueryLodUnclamped,        { Ret::Float,       2    } },
 
         { T::StreamOutput_Append,              {                   1    } },
         { T::StreamOutput_RestartStrip,        {                        } },

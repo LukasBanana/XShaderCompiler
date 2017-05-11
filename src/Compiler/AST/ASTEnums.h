@@ -449,30 +449,30 @@ enum class SamplerType
     Undefined,
 
     /* --- Samplers --- */
-                            // HLSL3            GLSL
-                            // ---------------  ----------------------
-    Sampler1D,              // sampler1D        sampler1D
-    Sampler2D,              // sampler2D        sampler2D
-    Sampler3D,              // sampler3D        sampler3D
-    SamplerCube,            // samplerCUBE      samplerCube
-    Sampler2DRect,          // n/a              sampler2DRect
-    Sampler1DArray,         // n/a              sampler1DArray
-    Sampler2DArray,         // n/a              sampler2DArray
-    SamplerCubeArray,       // n/a              samplerCubeArray
-    SamplerBuffer,          // n/a              samplerBuffer
-    Sampler2DMS,            // n/a              sampler2DMS
-    Sampler2DMSArray,       // n/a              sampler2DMSArray
-    Sampler1DShadow,        // sampler1DShadow  sampler1DShadow
-    Sampler2DShadow,        // sampler2DShadow  sampler2DShadow
-    SamplerCubeShadow,      // n/a              samplerCubeShadow
-    Sampler2DRectShadow,    // n/a              sampler2DRectShadow
-    Sampler1DArrayShadow,   // n/a              sampler1DArrayShadow
-    Sampler2DArrayShadow,   // n/a              sampler2DArrayShadow
-    SamplerCubeArrayShadow, // n/a              samplerCubeArrayShadow
+                            // HLSL3            HLSL4+                  GLSL
+                            // ---------------  ----------------------  ----------------------
+    Sampler1D,              // sampler1D        n/a                     sampler1D
+    Sampler2D,              // sampler2D        n/a                     sampler2D
+    Sampler3D,              // sampler3D        n/a                     sampler3D
+    SamplerCube,            // samplerCUBE      n/a                     samplerCube
+    Sampler2DRect,          // n/a              n/a                     sampler2DRect
+    Sampler1DArray,         // n/a              n/a                     sampler1DArray
+    Sampler2DArray,         // n/a              n/a                     sampler2DArray
+    SamplerCubeArray,       // n/a              n/a                     samplerCubeArray
+    SamplerBuffer,          // n/a              n/a                     samplerBuffer
+    Sampler2DMS,            // n/a              n/a                     sampler2DMS
+    Sampler2DMSArray,       // n/a              n/a                     sampler2DMSArray
+    Sampler1DShadow,        // sampler1DShadow  n/a                     sampler1DShadow
+    Sampler2DShadow,        // sampler2DShadow  n/a                     sampler2DShadow
+    SamplerCubeShadow,      // n/a              n/a                     samplerCubeShadow
+    Sampler2DRectShadow,    // n/a              n/a                     sampler2DRectShadow
+    Sampler1DArrayShadow,   // n/a              n/a                     sampler1DArrayShadow
+    Sampler2DArrayShadow,   // n/a              n/a                     sampler2DArrayShadow
+    SamplerCubeArrayShadow, // n/a              n/a                     samplerCubeArrayShadow
 
     /* --- Sampler states --- */
                             // HLSL3            HLSL4+                  GLSL
-                            // ---------------  ----------------------  -------
+                            // ---------------  ----------------------  ----------------------
     SamplerState,           // sampler_state    SamplerState            sampler
     SamplerComparisonState, // sampler_state    SamplerComparisonState  samplerShadow
 };
