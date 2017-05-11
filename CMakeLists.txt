@@ -64,6 +64,7 @@ file(GLOB FilesSrcCompilerFrontendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Fronte
 file(GLOB FilesSrcCompilerBackend ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/*.*)
 file(GLOB FilesSrcCompilerBackendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL/*.*)
 file(GLOB FilesSrcCompilerReport ${PROJECT_SOURCE_DIR}/src/Compiler/Report/*.*)
+file(GLOB FilesSrcCompilerCFG ${PROJECT_SOURCE_DIR}/src/Compiler/CFG/*.*)
 file(GLOB FilesSrcShell ${PROJECT_SOURCE_DIR}/src/Shell/*.*)
 file(GLOB FilesSrcDebugger ${PROJECT_SOURCE_DIR}/src/Debugger/*.*)
 file(GLOB FilesSrcWrapperC ${PROJECT_SOURCE_DIR}/src/Wrapper/C/*.*)
@@ -90,6 +91,7 @@ set(
 	${FilesSrcCompilerBackend}
 	${FilesSrcCompilerBackendGLSL}
 	${FilesSrcCompilerReport}
+	${FilesSrcCompilerCFG}
 )
 
 
@@ -107,11 +109,13 @@ source_group("src\\Frontend\\GLSL" FILES ${FilesSrcCompilerFrontendGLSL})
 source_group("src\\Backend" FILES ${FilesSrcCompilerBackend})
 source_group("src\\Backend\\GLSL" FILES ${FilesSrcCompilerBackendGLSL})
 source_group("src\\Report" FILES ${FilesSrcCompilerReport})
+source_group("src\\CFG" FILES ${FilesSrcCompilerCFG})
 
 
 # === Include directories ===
 
 include_directories("${PROJECT_SOURCE_DIR}/inc")
+
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/AST")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/AST/Visitor")
@@ -121,6 +125,9 @@ include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/GLSL")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Report")
+include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/CFG")
+
+include_directories("${PROJECT_SOURCE_DIR}/external/SPIR-V/include")
 
 
 # === Executable ===
