@@ -100,70 +100,14 @@ int ExprConverter::GetTextureDimFromExpr(Expr* expr, const AST* ast)
         if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
         {
             /* Determine vector size for texture intrinsic parameters by texture buffer type */
-            switch (bufferTypeDen->bufferType)
-            {
-                case BufferType::Buffer:
-                case BufferType::RWBuffer:
-                case BufferType::Texture1D:
-                case BufferType::RWTexture1D:
-                    return 1;
-
-                case BufferType::Texture1DArray:
-                case BufferType::RWTexture1DArray:
-                case BufferType::Texture2D:
-                case BufferType::RWTexture2D:
-                case BufferType::Texture2DMS:
-                    return 2;
-
-                case BufferType::Texture2DArray:
-                case BufferType::RWTexture2DArray:
-                case BufferType::Texture2DMSArray:
-                case BufferType::Texture3D:
-                case BufferType::RWTexture3D:
-                case BufferType::TextureCube:
-                    return 3;
-
-                case BufferType::TextureCubeArray:
-                    return 4;
-
-                default:
-                    break;
-            }
+            if (auto textureDim = GetBufferTypeTextureDim(bufferTypeDen->bufferType))
+                return textureDim;
         }
         else if (auto samplerTypeDen = typeDen.As<SamplerTypeDenoter>())
         {
             /* Determine vector size for texture intrinsic parameters by sampler type */
-            switch (samplerTypeDen->samplerType)
-            {
-                case SamplerType::Sampler1D:
-                case SamplerType::SamplerBuffer:
-                case SamplerType::Sampler1DShadow:
-                    return 1;
-
-                case SamplerType::Sampler2D:
-                case SamplerType::Sampler2DRect:
-                case SamplerType::Sampler1DArray:
-                case SamplerType::Sampler2DMS:
-                case SamplerType::Sampler2DShadow:
-                case SamplerType::Sampler2DRectShadow:
-                case SamplerType::Sampler1DArrayShadow:
-                    return 2;
-
-                case SamplerType::Sampler3D:
-                case SamplerType::SamplerCube:
-                case SamplerType::Sampler2DArray:
-                case SamplerType::Sampler2DMSArray:
-                case SamplerType::SamplerCubeShadow:
-                case SamplerType::Sampler2DArrayShadow:
-                    return 3;
-
-                case SamplerType::SamplerCubeArray:
-                case SamplerType::SamplerCubeArrayShadow:
-                    return 4;
-
-                default:
-                    break;
-            }
+            if (auto textureDim = GetSamplerTypeTextureDim(samplerTypeDen->samplerType))
+                return textureDim;
         }
         RuntimeErr(R_FailedToGetTextureDim, ast);
     }

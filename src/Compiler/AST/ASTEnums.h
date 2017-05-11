@@ -440,6 +440,9 @@ bool IsPatchBufferType(const BufferType t);
 // Returns true if the specified buffer type is either a point-, line-, or triangle stream.
 bool IsStreamBufferType(const BufferType t);
 
+// Returns the texture dimension of the specified buffer type in the range [1, 4] or 0 if the type is not a texture type.
+int GetBufferTypeTextureDim(const BufferType t);
+
 
 /* ----- SamplerType Enum ----- */
 
@@ -485,6 +488,9 @@ bool IsSamplerTypeShadow(const SamplerType t);
 
 // Returns true if the specified sampler type is an array sampler (e.g. Sampler1DArray).
 bool IsSamplerTypeArray(const SamplerType t);
+
+// Returns the texture dimension of the specified sampler type in the range [1, 4] or 0 if the type is not a texture sampler (e.g. a sampler state).
+int GetSamplerTypeTextureDim(const SamplerType t);
 
 // Maps a texture type to an appropriate sampler type.
 SamplerType TextureTypeToSamplerType(const BufferType t);

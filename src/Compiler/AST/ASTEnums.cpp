@@ -818,6 +818,39 @@ bool IsStreamBufferType(const BufferType t)
     return (t >= BufferType::PointStream && t <= BufferType::TriangleStream);
 }
 
+int GetBufferTypeTextureDim(const BufferType t)
+{
+    switch (t)
+    {
+        case BufferType::Buffer:
+        case BufferType::RWBuffer:
+        case BufferType::Texture1D:
+        case BufferType::RWTexture1D:
+            return 1;
+
+        case BufferType::Texture1DArray:
+        case BufferType::RWTexture1DArray:
+        case BufferType::Texture2D:
+        case BufferType::RWTexture2D:
+        case BufferType::Texture2DMS:
+            return 2;
+
+        case BufferType::Texture2DArray:
+        case BufferType::RWTexture2DArray:
+        case BufferType::Texture2DMSArray:
+        case BufferType::Texture3D:
+        case BufferType::RWTexture3D:
+        case BufferType::TextureCube:
+            return 3;
+
+        case BufferType::TextureCubeArray:
+            return 4;
+
+        default:
+            return 0;
+    }
+}
+
 
 /* ----- SamplerType Enum ----- */
 
@@ -834,6 +867,41 @@ bool IsSamplerTypeShadow(const SamplerType t)
 bool IsSamplerTypeArray(const SamplerType t)
 {
     return ((t >= SamplerType::Sampler1DArray && t <= SamplerType::SamplerCubeArray) || t == SamplerType::Sampler2DMSArray);
+}
+
+int GetSamplerTypeTextureDim(const SamplerType t)
+{
+    switch (t)
+    {
+        case SamplerType::Sampler1D:
+        case SamplerType::SamplerBuffer:
+        case SamplerType::Sampler1DShadow:
+            return 1;
+
+        case SamplerType::Sampler2D:
+        case SamplerType::Sampler2DRect:
+        case SamplerType::Sampler1DArray:
+        case SamplerType::Sampler2DMS:
+        case SamplerType::Sampler2DShadow:
+        case SamplerType::Sampler2DRectShadow:
+        case SamplerType::Sampler1DArrayShadow:
+            return 2;
+
+        case SamplerType::Sampler3D:
+        case SamplerType::SamplerCube:
+        case SamplerType::Sampler2DArray:
+        case SamplerType::Sampler2DMSArray:
+        case SamplerType::SamplerCubeShadow:
+        case SamplerType::Sampler2DArrayShadow:
+            return 3;
+
+        case SamplerType::SamplerCubeArray:
+        case SamplerType::SamplerCubeArrayShadow:
+            return 4;
+
+        default:
+            return 0;
+    }
 }
 
 SamplerType TextureTypeToSamplerType(const BufferType t)
