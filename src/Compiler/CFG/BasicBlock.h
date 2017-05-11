@@ -9,7 +9,7 @@
 #define XSC_BASIC_BLOCK_H
 
 
-#include <spirv/1.1/spirv.hpp11>
+#include "Instruction.h"
 #include <vector>
 #include <memory>
 
@@ -26,35 +26,36 @@ class BasicBlock
 
         /* ----- Structures ----- */
 
+        // Edge to the next basic block (successor).
         struct Edge
         {
-            Edge() = default;
-            Edge(BasicBlock& succ, const std::string& label = "");
+            Edge(const Edge&) = default;
+            Edge(BasicBlock* succ, const std::string& label = "");
 
             bool operator == (const BasicBlock* rhs) const;
             bool operator != (const BasicBlock* rhs) const;
 
             inline BasicBlock* operator -> ()
             {
-                return &succ;
+                return succ;
             }
 
             inline const BasicBlock* operator -> () const
             {
-                return &succ;
+                return succ;
             }
 
             inline BasicBlock& operator * ()
             {
-                return succ;
+                return *succ;
             }
 
             inline const BasicBlock& operator * () const
             {
-                return succ;
+                return *succ;
             }
 
-            BasicBlock& succ;
+            BasicBlock* succ;
             std::string label;
         };
 
@@ -65,6 +66,18 @@ class BasicBlock
 
         // Adds the specified 
         void AddSucc(BasicBlock& bb, const std::string& label = "");
+
+        // Removes the specified successor from this basic block and concatenates the next successors to this basic block.
+        void RemoveSuccAndJoin(BasicBlock& bb);
+
+        // Removes the specified successor from this basic block.
+        void RemoveSucc(BasicBlock& bb);
+
+        // Returns true if this basic block is a direct successor of the specified basic block.
+        bool IsSuccOf(const BasicBlock& bb) const;
+
+        // Returns true if this basic block is a direct predecessor of the specified basic block.
+        bool IsPredOf(const BasicBlock& bb) const;
 
         // Returns the list of all predecessor nodes.
         inline const BlockList& Pred() const
@@ -81,12 +94,18 @@ class BasicBlock
         /* ----- Members ----- */
 
         // Basic block label (for debugging).
-        std::string             label;
+        std::string                 label;
 
         // SPIR-V instruction op-codes.
-        std::vector<spv::Op>    opCodes;
+        std::vector<Instruction>    instructions;
 
     private:
+
+        void ReplacePred(const BasicBlock& bb, BasicBlock* bbToReplace);
+
+        void RemovePred(const BasicBlock& bb);
+
+        void RemoveSucc(BasicBlock& bb, bool join);
 
         BlockList   pred_; // Predecessor nodes.
         EdgeList    succ_; // Successor nodes.
