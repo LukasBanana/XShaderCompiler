@@ -942,17 +942,8 @@ struct IntrinsicUsage
 // Returns true if the specified intrinsic is a global intrinsic.
 bool IsGlobalIntrinsic(const Intrinsic t);
 
-// Returns true if the speciifed intrinsic belongs to a texture object.
+// Returns true if the specified intrinsic belongs to a texture object.
 bool IsTextureIntrinsic(const Intrinsic t);
-
-// Returns true if the speciifed intrinsic belongs to a stream-output object.
-bool IsStreamOutputIntrinsic(const Intrinsic t);
-
-// Returns true if the specified intrinsic is an image load/store intrinsic.
-bool IsImageIntrinsic(const Intrinsic t);
-
-// Returns true if the specified intrinsic in an interlocked intrinsic (e.g. Intrinsic::InterlockedAdd).
-bool IsInterlockedIntristic(const Intrinsic t);
 
 // Returns true if the specified intrinsic is a texture gather intrinsic.
 bool IsTextureGatherIntrisic(const Intrinsic t);
@@ -965,6 +956,15 @@ bool IsTextureCompareIntrinsic(const Intrinsic t);
 
 // Returns true if the specified intrinsic is a texture load intrisic (e.g. Texture_Load1).
 bool IsTextureLoadIntrinsic(const Intrinsic t);
+
+// Returns true if the specified intrinsic belongs to a stream-output object.
+bool IsStreamOutputIntrinsic(const Intrinsic t);
+
+// Returns true if the specified intrinsic is an image load/store intrinsic.
+bool IsImageIntrinsic(const Intrinsic t);
+
+// Returns true if the specified intrinsic in an interlocked intrinsic (e.g. Intrinsic::InterlockedAdd).
+bool IsInterlockedIntristic(const Intrinsic t);
 
 // Returns the respective intrinsic for the specified binary compare operator, or Intrinsic::Undefined if the operator is not a compare operator.
 Intrinsic CompareOpToIntrinsic(const BinaryOp op);

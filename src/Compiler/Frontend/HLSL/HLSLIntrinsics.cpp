@@ -630,83 +630,25 @@ TypeDenoterPtr HLSLIntrinsicAdept::GetIntrinsicReturnType(
         case Intrinsic::GreaterThanEqual:
             return DeriveReturnTypeVectorCompare(args);
 
-        case Intrinsic::Texture_Load_1:
-        case Intrinsic::Texture_Load_2:
-        case Intrinsic::Texture_Load_3:
-        case Intrinsic::Texture_Sample_2:
-        case Intrinsic::Texture_Sample_3:
-        case Intrinsic::Texture_Sample_4:
-        case Intrinsic::Texture_Sample_5:
-        case Intrinsic::Texture_SampleBias_3:
-        case Intrinsic::Texture_SampleBias_4:
-        case Intrinsic::Texture_SampleBias_5:
-        case Intrinsic::Texture_SampleBias_6:
-        case Intrinsic::Texture_SampleGrad_4:
-        case Intrinsic::Texture_SampleGrad_5:
-        case Intrinsic::Texture_SampleGrad_6:
-        case Intrinsic::Texture_SampleGrad_7:
-        case Intrinsic::Texture_SampleLevel_3:
-        case Intrinsic::Texture_SampleLevel_4:
-        case Intrinsic::Texture_SampleLevel_5:
-            return DeriveReturnTypeTextureSample(GetGenericTextureTypeFromPrefix(intrinsic, prefixTypeDenoter));
-
-        case Intrinsic::Texture_SampleCmp_3:
-        case Intrinsic::Texture_SampleCmp_4:
-        case Intrinsic::Texture_SampleCmp_5:
-        case Intrinsic::Texture_SampleCmp_6:
-            return DeriveReturnTypeTextureSampleCmp(GetGenericTextureTypeFromPrefix(intrinsic, prefixTypeDenoter));
-
-        case Intrinsic::Texture_Gather_2:
-        case Intrinsic::Texture_GatherRed_2:
-        case Intrinsic::Texture_GatherGreen_2:
-        case Intrinsic::Texture_GatherBlue_2:
-        case Intrinsic::Texture_GatherAlpha_2:
-        case Intrinsic::Texture_Gather_3:
-        case Intrinsic::Texture_Gather_4:
-        case Intrinsic::Texture_GatherRed_3:
-        case Intrinsic::Texture_GatherRed_4:
-        case Intrinsic::Texture_GatherGreen_3:
-        case Intrinsic::Texture_GatherGreen_4:
-        case Intrinsic::Texture_GatherBlue_3:
-        case Intrinsic::Texture_GatherBlue_4:
-        case Intrinsic::Texture_GatherAlpha_3:
-        case Intrinsic::Texture_GatherAlpha_4:
-        case Intrinsic::Texture_GatherRed_6:
-        case Intrinsic::Texture_GatherRed_7:
-        case Intrinsic::Texture_GatherGreen_6:
-        case Intrinsic::Texture_GatherGreen_7:
-        case Intrinsic::Texture_GatherBlue_6:
-        case Intrinsic::Texture_GatherBlue_7:
-        case Intrinsic::Texture_GatherAlpha_6:
-        case Intrinsic::Texture_GatherAlpha_7:
-            return DeriveReturnTypeTextureGather(GetGenericTextureTypeFromPrefix(intrinsic, prefixTypeDenoter));
-
-        case Intrinsic::Texture_GatherCmp_3:
-        case Intrinsic::Texture_GatherCmpRed_3:
-        case Intrinsic::Texture_GatherCmpGreen_3:
-        case Intrinsic::Texture_GatherCmpBlue_3:
-        case Intrinsic::Texture_GatherCmpAlpha_3:
-        case Intrinsic::Texture_GatherCmp_4:
-        case Intrinsic::Texture_GatherCmp_5:
-        case Intrinsic::Texture_GatherCmpRed_4:
-        case Intrinsic::Texture_GatherCmpRed_5:
-        case Intrinsic::Texture_GatherCmpGreen_4:
-        case Intrinsic::Texture_GatherCmpGreen_5:
-        case Intrinsic::Texture_GatherCmpBlue_4:
-        case Intrinsic::Texture_GatherCmpBlue_5:
-        case Intrinsic::Texture_GatherCmpAlpha_4:
-        case Intrinsic::Texture_GatherCmpAlpha_5:
-        case Intrinsic::Texture_GatherCmpRed_7:
-        case Intrinsic::Texture_GatherCmpRed_8:
-        case Intrinsic::Texture_GatherCmpGreen_7:
-        case Intrinsic::Texture_GatherCmpGreen_8:
-        case Intrinsic::Texture_GatherCmpBlue_7:
-        case Intrinsic::Texture_GatherCmpBlue_8:
-        case Intrinsic::Texture_GatherCmpAlpha_7:
-        case Intrinsic::Texture_GatherCmpAlpha_8:
-            return DeriveReturnTypeTextureGatherCmp(GetGenericTextureTypeFromPrefix(intrinsic, prefixTypeDenoter));
-
         default:
+            if (IsTextureLoadIntrinsic(intrinsic) || IsTextureSampleIntrinsic(intrinsic))
+            {
+                /* Texture SampleCmp/Sample intrinsics */
+                if (IsTextureCompareIntrinsic(intrinsic))
+                    return DeriveReturnTypeTextureSampleCmp(GetGenericTextureTypeFromPrefix(intrinsic, prefixTypeDenoter));
+                else
+                    return DeriveReturnTypeTextureSample(GetGenericTextureTypeFromPrefix(intrinsic, prefixTypeDenoter));
+            }
+            else if (IsTextureGatherIntrisic(intrinsic))
+            {
+                /* Texture GatherCmp/Gather intrinsics */
+                if (IsTextureCompareIntrinsic(intrinsic))
+                    return DeriveReturnTypeTextureGatherCmp(GetGenericTextureTypeFromPrefix(intrinsic, prefixTypeDenoter));
+                else
+                    return DeriveReturnTypeTextureGather(GetGenericTextureTypeFromPrefix(intrinsic, prefixTypeDenoter));
+            }
+
+            /* Default return type derivation */
             return DeriveReturnType(intrinsic, args);
     }
 }
