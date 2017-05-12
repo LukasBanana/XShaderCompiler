@@ -2992,7 +2992,7 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
 
     /* Determine image layout format */
     auto imageLayoutFormat  = ImageLayoutFormat::Undefined;
-    auto isRWBuffer         = IsRWTextureBufferType(bufferDecl->GetBufferType());
+    auto isRWBuffer         = IsRWImageBufferType(bufferDecl->GetBufferType());
 
     if (!isWriteOnly && isRWBuffer)
     {

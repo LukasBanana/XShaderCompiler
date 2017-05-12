@@ -1076,7 +1076,7 @@ void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
                 }
 
                 /* Is the buffer declaration a read/write texture? */
-                if (IsRWTextureBufferType(bufferType) && numDims < arg0ArrayExpr->NumIndices())
+                if (IsRWImageBufferType(bufferType) && numDims < arg0ArrayExpr->NumIndices())
                 {
                     /* Map interlocked intrinsic to image atomic intrinsic */
                     ast->intrinsic = InterlockedToImageAtomicIntrinsic(ast->intrinsic);
@@ -1101,7 +1101,7 @@ void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
 
         /* Cast arguments if required, for both image and non-image atomics */
         std::size_t dataArgOffset = 1;
-        if (IsRWTextureBufferType(bufferType))
+        if (IsRWImageBufferType(bufferType))
         {
             /* Cast location argument */
             int numDims = 1;

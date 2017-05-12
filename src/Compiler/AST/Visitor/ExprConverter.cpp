@@ -349,7 +349,7 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
         {
             /* Is the buffer declaration a read/write texture? */
             const auto bufferType = bufferDecl->GetBufferType();
-            if (IsRWTextureBufferType(bufferType) && numDims < arrayExpr->NumIndices())
+            if (IsRWImageBufferType(bufferType) && numDims < arrayExpr->NumIndices())
             {
                 /* Get buffer type denoter from array indices of array access plus identifier */
                 //TODO: not sure if the buffer type must be derived with 'GetSub(arrayExpr)' again here???
@@ -634,7 +634,7 @@ void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
                 auto typeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSubArray(arrayExpr->NumIndices() - i - 1);
                 if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
                 {
-                    if (!IsTextureBufferType(bufferTypeDen->bufferType) && !IsRWTextureBufferType(bufferTypeDen->bufferType))
+                    if (!IsTextureBufferType(bufferTypeDen->bufferType))
                     {
                         /* Convert Texture Operator[] only for texture buffer types */
                         return;
@@ -654,7 +654,7 @@ void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
             auto typeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSubArray(arrayExpr->NumIndices() - 1);
             if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
             {
-                if (!IsTextureBufferType(bufferTypeDen->bufferType) && !IsRWTextureBufferType(bufferTypeDen->bufferType))
+                if (!IsTextureBufferType(bufferTypeDen->bufferType))
                 {
                     /* Convert Texture Operator[] only for texture buffer types */
                     return;

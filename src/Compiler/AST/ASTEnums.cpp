@@ -789,21 +789,24 @@ bool IsRWBufferType(const BufferType t)
     return (t >= BufferType::RWBuffer && t <= BufferType::RWTexture3D);
 }
 
-bool IsRWTextureBufferType(const BufferType t)
-{
-    // TODO: this function was intended to cover only texture types, not Buffer!
-    return ( ( t >= BufferType::RWTexture1D && t <= BufferType::RWTexture3D ) || t == BufferType::RWBuffer );
-}
-
 bool IsTextureBufferType(const BufferType t)
 {
-    //TODO: this function was intended to cover only texture types, not Buffer!
-    return ( ( t >= BufferType::RWTexture1D && t <= BufferType::GenericTexture ) || t == BufferType::Buffer );
+    return (t >= BufferType::RWTexture1D && t <= BufferType::GenericTexture);
 }
 
 bool IsTextureMSBufferType(const BufferType t)
 {
     return (t >= BufferType::Texture2DMS && t <= BufferType::Texture2DMSArray);
+}
+
+bool IsImageBufferType(const BufferType t)
+{
+    return ( ( t >= BufferType::RWTexture1D && t <= BufferType::GenericTexture ) || t == BufferType::Buffer );
+}
+
+bool IsRWImageBufferType(const BufferType t)
+{
+    return ( ( t >= BufferType::RWTexture1D && t <= BufferType::RWTexture3D ) || t == BufferType::RWBuffer );
 }
 
 bool IsPatchBufferType(const BufferType t)

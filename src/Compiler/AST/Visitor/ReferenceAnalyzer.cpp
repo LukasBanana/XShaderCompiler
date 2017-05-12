@@ -260,7 +260,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
                 const auto& typeDen = ast->arguments[0]->GetTypeDenoter()->GetAliased();
                 if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
                 {
-                    if (IsRWTextureBufferType(bufferTypeDen->bufferType))
+                    if (IsRWImageBufferType(bufferTypeDen->bufferType))
                     {
                         if (auto bufferDecl = bufferTypeDen->bufferDeclRef)
                             bufferDecl->flags << BufferDecl::isUsedForImageRead;

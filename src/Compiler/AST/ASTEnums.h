@@ -422,17 +422,20 @@ std::string BufferTypeToString(const BufferType t);
 // Returns true if the specified buffer type is a storage buffer type (i.e. gets converted to a 'buffer' block in GLSL).
 bool IsStorageBufferType(const BufferType t);
 
-// Returns true if the specified buffer type is a RW (read/write) buffer type.
+// Returns true if the specified buffer type is a RW (read/write) buffer type (for storage buffers and textures).
 bool IsRWBufferType(const BufferType t);
-
-// Returns true if the specified buffer type is a RW (read/write) texture buffer type (represented in GLSL with 'image...').
-bool IsRWTextureBufferType(const BufferType t);
 
 // Returns true if the specified buffer type is a texture buffer.
 bool IsTextureBufferType(const BufferType t);
 
 // Returns true if the specified buffer type is a multi-sampled texture buffer (i.e. Texture2DMS or Texture2DMSArray).
 bool IsTextureMSBufferType(const BufferType t);
+
+// Returns true if the specified buffer type is an image buffer (i.e. gets converted to an 'imageBuffer' in GLSL).
+bool IsImageBufferType(const BufferType t);
+
+// Returns true if the specified buffer type is a RW (read/write) texture buffer type (represented in GLSL with 'image...').
+bool IsRWImageBufferType(const BufferType t);
 
 // Returns true if the specified buffer type is an input or output patch.
 bool IsPatchBufferType(const BufferType t);
