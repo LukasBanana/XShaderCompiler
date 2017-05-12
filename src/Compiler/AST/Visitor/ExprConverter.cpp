@@ -634,6 +634,12 @@ void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
                 auto typeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSubArray(arrayExpr->NumIndices() - i - 1);
                 if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
                 {
+                    if (!IsTextureBufferType(bufferTypeDen->bufferType) && !IsRWTextureBufferType(bufferTypeDen->bufferType))
+                    {
+                        /* Convert Texture Operator[] only for texture buffer types */
+                        return;
+                    }
+
                     if (i > 0)
                     {
                         arrayExpr = ASTFactory::MakeArrayExprSplit(arrayExpr, arrayExpr->NumIndices() - i);
@@ -648,6 +654,12 @@ void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
             auto typeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSubArray(arrayExpr->NumIndices() - 1);
             if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
             {
+                if (!IsTextureBufferType(bufferTypeDen->bufferType) && !IsRWTextureBufferType(bufferTypeDen->bufferType))
+                {
+                    /* Convert Texture Operator[] only for texture buffer types */
+                    return;
+                }
+
                 expr->flags << Expr::wasConverted;
 
                 /* Make "Load" intrinsic call */
