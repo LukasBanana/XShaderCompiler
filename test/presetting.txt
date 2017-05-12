@@ -155,8 +155,8 @@
 [MemberFuncTest1 VS]
 -T vert -E VS -o output/* MemberFuncTest1.hlsl
 
-[MemberFuncTest2 PS]
--T frag -E PS -o output/* MemberFuncTest2.hlsl
+[MemberFuncTest2: vert]
+-T vert -E main -o output/* MemberFuncTest2.hlsl
 
 [MemberFuncTest3 PS]
 -T frag -E PS -o output/* MemberFuncTest3.hlsl
