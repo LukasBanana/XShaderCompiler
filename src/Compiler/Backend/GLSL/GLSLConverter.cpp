@@ -161,25 +161,19 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         /* Insert prefix expression as first argument into function call, if this is a texture intrinsic call */
         if (IsTextureIntrinsic(ast->intrinsic) && ast->prefixExpr)
         {
-            if (UseSeparateSamplers() && !IsTextureLoadIntrinsic(ast->intrinsic) && !ast->arguments.empty())
+            /* Move texture object prefix as first argument */
+            ast->PushPrefixToArguments();
+
+            if (UseSeparateSamplers() && !IsTextureLoadIntrinsic(ast->intrinsic) && ast->arguments.size() >= 2)
             {
-                /* Replace sampler state argument by sampler/texture binding call */
-                auto arg0Expr = ast->arguments.front().get();
-                if (IsSamplerStateTypeDenoter(arg0Expr->GetTypeDenoter()))
+                /* Is second argument a sampler state object? */
+                auto arg1Expr = ast->arguments[1].get();
+                if (IsSamplerStateTypeDenoter(arg1Expr->GetTypeDenoter()))
                 {
-                    ast->arguments[0] = ASTFactory::MakeTextureSamplerBindingCallExpr(
-                        ast->prefixExpr, ast->arguments[0]
-                    );
+                    /* Merge texture object and sampler state arguments into texture/sampler binding call */
+                    ast->MergeArguments(0, ASTFactory::MakeTextureSamplerBindingCallExpr);
                 }
             }
-            else
-            {
-                /* Insert texture object as parameter into intrinsic arguments */
-                ast->arguments.insert(ast->arguments.begin(), ast->prefixExpr);
-            }
-
-            /* Drop prefix expression after it has been moved into the argument list */
-            ast->prefixExpr.reset();
         }
     }
 
@@ -1222,9 +1216,7 @@ void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
                 ConvertObjectPrefixStructMember(ast->prefixExpr, funcDecl->structDeclRef, activeStructDecl);
 
                 /* Move prefix expression as argument into the function call */
-                if (ast->prefixExpr)
-                    ast->PushArgumentFront(std::move(ast->prefixExpr));
-                else
+                if (!ast->PushPrefixToArguments())
                     RuntimeErr(R_MissingSelfParamForMemberFunc(funcDecl->ToString()), ast);
             }
         }

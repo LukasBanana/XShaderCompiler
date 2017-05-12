@@ -54,9 +54,8 @@ CallExprPtr MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, 
         const auto& typeDen = textureObjectExpr->GetTypeDenoter()->GetAliased();
         if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
         {
-            ast->typeDenoter = std::make_shared<SamplerTypeDenoter>(TextureTypeToSamplerType(bufferTypeDen->bufferType));
-            ast->arguments.push_back(textureObjectExpr);
-            ast->arguments.push_back(samplerObjectExpr);
+            ast->typeDenoter    = std::make_shared<SamplerTypeDenoter>(TextureTypeToSamplerType(bufferTypeDen->bufferType));
+            ast->arguments      = { textureObjectExpr, samplerObjectExpr };
         }
     }
     return ast;

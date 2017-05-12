@@ -56,6 +56,9 @@ using ArgumentParameterTypeFunctor = std::function<void(ExprPtr& argument, const
 // Predicate callback to find an expression inside an expression tree.
 using FindPredicateConstFunctor = std::function<bool(const Expr& expr)>;
 
+// Function callback to merge two expressions into one.
+using MergeExprFunctor = std::function<ExprPtr(const ExprPtr& expr0, const ExprPtr& expr1)>;
+
 
 /* --- Some helper macros --- */
 
@@ -1165,8 +1168,14 @@ struct CallExpr : public Expr
     // Inserts the specified argument expression at the front of the argument list.
     void PushArgumentFront(const ExprPtr& expr);
 
-    // Inserts the specified argument expression at the front of the argument list.
-    void PushArgumentFront(ExprPtr&& expr);
+    // Moves the prefix expression as first argument.
+    bool PushPrefixToArguments();
+
+    // Moves the first argument as prefix expression.
+    bool PopPrefixFromArguments();
+
+    // Merges the argument with index 'firstArgIndex' and the next argument with the merge function callback.
+    bool MergeArguments(std::size_t firstArgIndex, const MergeExprFunctor& mergeFunctor);
 
     ExprPtr                 prefixExpr;                                 // Optional prefix expression. May be null.
     bool                    isStatic            = false;                // Specifies whether this function is a static member.
@@ -1230,7 +1239,7 @@ struct ObjectExpr : public Expr
 
     IndexedSemantic FetchSemantic() const override;
 
-    // Returns a type denoter for the vector subscript of this object expression or throws a runtime error on failure.
+    // Returns a type denoter for the vector subscript of this object expression or throws an runtime error on failure.
     BaseTypeDenoterPtr GetTypeDenoterFromSubscript() const;
 
     // Returns this object expression as a static namespace, i.e. only for prefix expression that are also from type ObjectExpr.

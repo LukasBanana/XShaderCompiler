@@ -1852,9 +1852,36 @@ void CallExpr::PushArgumentFront(const ExprPtr& expr)
     arguments.insert(arguments.begin(), expr);
 }
 
-void CallExpr::PushArgumentFront(ExprPtr&& expr)
+bool CallExpr::PushPrefixToArguments()
 {
-    arguments.insert(arguments.begin(), std::move(expr));
+    if (prefixExpr)
+    {
+        arguments.insert(arguments.begin(), std::move(prefixExpr));
+        return true;
+    }
+    return false;
+}
+
+bool CallExpr::PopPrefixFromArguments()
+{
+    if (!prefixExpr && !arguments.empty())
+    {
+        prefixExpr = std::move(arguments.front());
+        arguments.erase(arguments.begin());
+        return true;
+    }
+    return false;
+}
+
+bool CallExpr::MergeArguments(std::size_t firstArgIndex, const MergeExprFunctor& mergeFunctor)
+{
+    if (firstArgIndex + 1 < arguments.size())
+    {
+        arguments[firstArgIndex] = mergeFunctor(arguments[firstArgIndex], arguments[firstArgIndex + 1]);
+        arguments.erase(arguments.begin() + firstArgIndex + 1);
+        return true;
+    }
+    return false;
 }
 
 
