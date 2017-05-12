@@ -3090,13 +3090,9 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
         }
         else
             Write(nameMangling_.temporaryPrefix + bufferDecl->ident);
-    }
-    EndLn();
 
-    /* Write buffer array (of variable size) */
-    WriteScopeOpen(false, true);
-    {
-        BeginLn();
+        /* Write buffer array (of variable size) */
+        WriteScopeOpen(false, true);
         {
             /* Write optional memory type qualifier */
             if (!IsRWBufferType(bufferDecl->GetBufferType()))
@@ -3107,9 +3103,9 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
             WriteTypeDenoter(*genericTypeDen, IsESSL(), bufferDecl);
             Write(" " + bufferDecl->ident + "[];");
         }
-        EndLn();
+        WriteScopeClose();
     }
-    WriteScopeClose();
+    EndLn();
 }
 
 /* ----- SamplerDecl ----- */
