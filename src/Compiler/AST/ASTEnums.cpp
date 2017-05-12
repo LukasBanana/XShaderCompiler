@@ -390,9 +390,8 @@ int VectorTypeDim(const DataType t)
             return 4;
 
         default:
-            break;
+            return 0;
     }
-    return 0;
 }
 
 std::pair<int, int> MatrixTypeDim(const DataType t)
@@ -504,9 +503,8 @@ std::pair<int, int> MatrixTypeDim(const DataType t)
             return { 4, 4 };
 
         default:
-            break;
+            return { 0, 0 };
     }
-    return { 0, 0 };
 }
 
 DataType BaseDataType(const DataType t)

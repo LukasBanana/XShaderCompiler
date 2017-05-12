@@ -661,8 +661,8 @@ void Analyzer::OnReleaseSymbol(const ASTSymbolOverloadPtr& symbol)
                  varDecl->structDeclRef == nullptr &&
                  varDecl->bufferDeclRef == nullptr )
             {
-                /* Report warning of unused variable */
-                Warning(R_VarDeclaredButNeverUsed(varDecl->ToString()), varDecl);
+                /* Report warning of unused variable (with identifier only) */
+                Warning(R_VarDeclaredButNeverUsed(varDecl->ident), varDecl);
             }
         }
     }

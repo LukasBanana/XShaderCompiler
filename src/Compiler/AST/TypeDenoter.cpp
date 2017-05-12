@@ -382,7 +382,7 @@ bool TypeDenoter::HasVectorTruncation(
             /* Get data types from type denoters */
             sourceVecSize = VectorTypeDim(sourceBaseTypeDen->dataType);
             destVecSize = VectorTypeDim(destBaseTypeDen->dataType);
-            return (destVecSize < sourceVecSize);
+            return (sourceVecSize > 0 && destVecSize > 0 && destVecSize < sourceVecSize);
         }
     }
     return false;
