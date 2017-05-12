@@ -471,8 +471,10 @@ RegisterPtr HLSLParser::ParseRegister(bool parseColon)
     ast->area.Offset(GetScanner().PreviousToken()->Pos());
 
     /* Get register type and slot index from type identifier */
-    ast->registerType   = CharToRegisterType(typeIdent.front());
-    ast->slot           = ParseIntLiteral(typeIdent.substr(1), GetScanner().PreviousToken().get());
+    ast->registerType = CharToRegisterType(typeIdent.front());
+
+    if (typeIdent.size() > 1)
+        ast->slot = ParseIntLiteral(typeIdent.substr(1), GetScanner().PreviousToken().get());
 
     /* Validate register type and slot index */
     if (ast->registerType == RegisterType::Undefined)
