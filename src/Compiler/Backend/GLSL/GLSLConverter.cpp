@@ -1104,24 +1104,7 @@ void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
         if (IsRWImageBufferType(bufferType))
         {
             /* Cast location argument */
-            int numDims = 1;
-            switch (bufferType)
-            {
-                case BufferType::RWBuffer:
-                case BufferType::RWTexture1D:
-                    numDims = 1;
-                    break;
-                case BufferType::RWTexture1DArray:
-                case BufferType::RWTexture2D:
-                    numDims = 2;
-                    break;
-                case BufferType::RWTexture2DArray:
-                case BufferType::RWTexture3D:
-                    numDims = 3;
-                default:
-                    break;
-            }
-
+            const auto numDims = GetBufferTypeTextureDim(bufferType);
             exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Int, numDims), true);
             dataArgOffset = 2;
         }
