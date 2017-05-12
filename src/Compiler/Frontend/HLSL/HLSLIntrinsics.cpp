@@ -921,27 +921,56 @@ void HLSLIntrinsicAdept::DeriveParameterTypes(
     std::vector<TypeDenoterPtr>& paramTypeDenoters, const Intrinsic intrinsic, const std::vector<ExprPtr>& args, bool useMinDimension) const
 {
     /* Get type denoter from intrinsic signature map */
-    auto it = g_intrinsicSignatureMap.find(intrinsic);
-    if (it != g_intrinsicSignatureMap.end())
+    if (!args.empty() && IsGlobalIntrinsic(intrinsic))
     {
-        if (!args.empty() && IsGlobalIntrinsic(intrinsic))
-        {
-            /* Find common type denoter for all arguments */
-            auto commonTypeDenoter = DeriveCommonTypeDenoter(0, args, useMinDimension);
+        /* Find common type denoter for all arguments */
+        auto commonTypeDenoter = DeriveCommonTypeDenoter(0, args, useMinDimension);
 
-            /* Add parameter type denoter */
-            paramTypeDenoters.resize(args.size());
-            for (std::size_t i = 0, n = args.size(); i < n; ++i)
-                paramTypeDenoters[i] = commonTypeDenoter;
-        }
+        /* Add parameter type denoter */
+        paramTypeDenoters.resize(args.size());
+        for (std::size_t i = 0, n = args.size(); i < n; ++i)
+            paramTypeDenoters[i] = commonTypeDenoter;
     }
-    else
-        RuntimeErr(R_FailedToDeriveIntrinsicParamType(GetIntrinsicIdent(intrinsic)));
 }
 
 void HLSLIntrinsicAdept::DeriveParameterTypesMul(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const
 {
-    //TODO...
+    /* Validate number of arguments */
+    if (args.size() != 2)
+        RuntimeErr(R_InvalidIntrinsicArgCount("mul"));
+
+    /* Get type denoter of arguments (without aliasing) */
+    auto type0 = args[0]->GetTypeDenoter()->GetSub();
+    auto type1 = args[1]->GetTypeDenoter()->GetSub();
+
+    if (type0->IsVector())
+    {
+        if (type1->IsVector())
+        {
+            /* Derive common types for arguments */
+            DeriveParameterTypes(paramTypeDenoters, Intrinsic::Mul, args);
+        }
+        else if (type1->IsMatrix())
+        {
+            /* Derive common type for vector argument */
+            paramTypeDenoters.push_back(TypeDenoter::FindCommonTypeDenoter(type0, type1));
+            paramTypeDenoters.push_back(type1);
+        }
+    }
+    else if (type0->IsMatrix())
+    {
+        if (type1->IsVector())
+        {
+            /* Derive common type for vector argument */
+            paramTypeDenoters.push_back(type0);
+            paramTypeDenoters.push_back(TypeDenoter::FindCommonTypeDenoter(type0, type1));
+        }
+        else if (type1->IsMatrix())
+        {
+            /* Derive common types for arguments */
+            DeriveParameterTypes(paramTypeDenoters, Intrinsic::Mul, args);
+        }
+    }
 }
 
 void HLSLIntrinsicAdept::DeriveParameterTypesTranspose(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const

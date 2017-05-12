@@ -36,13 +36,14 @@ static void ConvertCastExpr(ExprPtr& expr, const DataType sourceType, const Data
 
         if (sourceDim < targetDim)
         {
+            /* Convert to cast expression and extend type constructor with sequential zero-literals (e.g. 'float3(v4)' => 'float4(v4, 0)') */
             auto typeDenoter = std::make_shared<BaseTypeDenoter>(targetType);
 
             std::vector<ExprPtr> args;
             args.push_back(expr);
 
             auto baseDataType = BaseDataType(targetType);
-            for (int i = sourceDim; i < targetDim; ++i)
+            for (auto i = sourceDim; i < targetDim; ++i)
                 args.push_back(ASTFactory::MakeLiteralExpr(baseDataType, "0"));
 
             expr = ASTFactory::MakeTypeCtorCallExpr(typeDenoter, args);
