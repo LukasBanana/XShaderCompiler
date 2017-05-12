@@ -1723,13 +1723,16 @@ TypeDenoterPtr CallExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDeno
     }
     else if (intrinsic != Intrinsic::Undefined)
     {
-        /* Return type denoter of associated intrinsic */
         try
         {
+            /* Get object expression if this is a member function */
+            auto memberFuncObjExpr = GetMemberFuncObjectExpr();
+
+            /* Return type denoter of associated intrinsic */
             return IntrinsicAdept::Get().GetIntrinsicReturnType(
                 intrinsic,
                 arguments,
-                (prefixExpr != nullptr ? prefixExpr->GetTypeDenoter() : nullptr)
+                (memberFuncObjExpr != nullptr ? memberFuncObjExpr->GetTypeDenoter() : nullptr)
             );
         }
         catch (const std::exception& e)
@@ -1882,6 +1885,15 @@ bool CallExpr::MergeArguments(std::size_t firstArgIndex, const MergeExprFunctor&
         return true;
     }
     return false;
+}
+
+Expr* CallExpr::GetMemberFuncObjectExpr() const
+{
+    if (prefixExpr)
+        return prefixExpr.get();
+    if (!arguments.empty())
+        return arguments.front().get();
+    return nullptr;
 }
 
 

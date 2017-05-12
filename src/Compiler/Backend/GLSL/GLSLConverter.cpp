@@ -978,7 +978,8 @@ void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
             return;
         }
 
-        const auto& typeDen = ast->prefixExpr->GetTypeDenoter()->GetAliased();
+        /* Get type denoter from texture object (first argument after it has been moved from the prefix) */
+        const auto& typeDen = args[0]->GetTypeDenoter()->GetAliased();
         if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
         {
             if (bufferTypeDen->bufferType == BufferType::Texture2DMS || bufferTypeDen->bufferType == BufferType::Texture2DMSArray)

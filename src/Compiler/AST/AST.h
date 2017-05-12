@@ -1177,6 +1177,9 @@ struct CallExpr : public Expr
     // Merges the argument with index 'firstArgIndex' and the next argument with the merge function callback.
     bool MergeArguments(std::size_t firstArgIndex, const MergeExprFunctor& mergeFunctor);
 
+    // Returns the expression which denotes the member function class instance (either the prefix expression or the first argument); see PushPrefixToArguments.
+    Expr* GetMemberFuncObjectExpr() const;
+
     ExprPtr                 prefixExpr;                                 // Optional prefix expression. May be null.
     bool                    isStatic            = false;                // Specifies whether this function is a static member.
     std::string             ident;                                      // Function name identifier. Empty for type constructors.
