@@ -837,7 +837,7 @@ void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
         case Intrinsic::Tex2DLod:
         case Intrinsic::Tex3DLod:
         case Intrinsic::TexCubeLod:
-            ConvertIntrinsicCallTexLod(ast);
+            ConvertIntrinsicCallTextureLOD(ast);
             break;
 
         case Intrinsic::Texture_Sample_2:
@@ -894,7 +894,7 @@ static int GetTextureDimFromIntrinsicCall(CallExpr* ast)
         RuntimeErr(R_FailedToGetTextureDim, ast);
 }
 
-void GLSLConverter::ConvertIntrinsicCallTexLod(CallExpr* ast)
+void GLSLConverter::ConvertIntrinsicCallTextureLOD(CallExpr* ast)
 {
     /* Convert "tex1Dlod(s, t)" to "textureLod(s, t.xyz, t.w)" (also for tex2Dlod, tex3Dlod, and texCUBElod) */
     if (ast->arguments.size() == 2)

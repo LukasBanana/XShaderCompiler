@@ -111,7 +111,7 @@ class GLSLConverter : public Converter
 
         void ConvertIntrinsicCall(CallExpr* ast);
         void ConvertIntrinsicCallSaturate(CallExpr* ast);
-        void ConvertIntrinsicCallTexLod(CallExpr* ast);
+        void ConvertIntrinsicCallTextureLOD(CallExpr* ast);
         void ConvertIntrinsicCallTextureSample(CallExpr* ast);
         void ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast);
         void ConvertIntrinsicCallTextureLoad(CallExpr* ast);
