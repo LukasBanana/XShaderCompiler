@@ -1510,11 +1510,11 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeD
         RuntimeErr(R_IllegalCast(condTypeDen->ToString(), boolTypeDen.ToString(), R_ConditionOfTernaryExpr), condExpr.get());
 
     /* Find common type denoter for both sub expressions */
-    const auto& thenTypeDen = thenExpr->GetTypeDenoter();
-    const auto& elseTypeDen = elseExpr->GetTypeDenoter();
+    const auto& thenTypeDen = thenExpr->GetTypeDenoter()->GetAliased();
+    const auto& elseTypeDen = elseExpr->GetTypeDenoter()->GetAliased();
 
-    if (!elseTypeDen->IsCastableTo(*thenTypeDen))
-        RuntimeErr(R_IllegalCast(elseTypeDen->ToString(), thenTypeDen->ToString(), R_TernaryExpr), this);
+    if (!elseTypeDen.IsCastableTo(thenTypeDen))
+        RuntimeErr(R_IllegalCast(elseTypeDen.ToString(), thenTypeDen.ToString(), R_TernaryExpr), this);
 
     auto commonTypeDen = TypeDenoter::FindCommonTypeDenoterFrom(thenExpr, elseExpr, false, this);
 
@@ -1581,20 +1581,20 @@ bool TernaryExpr::IsVectorCondition() const
 TypeDenoterPtr BinaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     /* Return type of left-hand-side sub expresion if the types are compatible */
-    const auto& lhsTypeDen = lhsExpr->GetTypeDenoter();
-    const auto& rhsTypeDen = rhsExpr->GetTypeDenoter();
+    const auto& lhsTypeDen = lhsExpr->GetTypeDenoter()->GetAliased();
+    const auto& rhsTypeDen = rhsExpr->GetTypeDenoter()->GetAliased();
 
-    if (!rhsTypeDen->IsCastableTo(*lhsTypeDen) || !lhsTypeDen->IsCastableTo(*rhsTypeDen))
-        RuntimeErr(R_IllegalCast(rhsTypeDen->ToString(), lhsTypeDen->ToString(), R_BinaryExpr(BinaryOpToString(op))), this);
+    if (!rhsTypeDen.IsCastableTo(lhsTypeDen) || !lhsTypeDen.IsCastableTo(rhsTypeDen))
+        RuntimeErr(R_IllegalCast(rhsTypeDen.ToString(), lhsTypeDen.ToString(), R_BinaryExpr(BinaryOpToString(op))), this);
 
     /* Find common type denoter of left and right sub expressions */
     if (auto commonTypeDen = TypeDenoter::FindCommonTypeDenoterFrom(lhsExpr, rhsExpr, false, this))
     {
         /* Throw error if any expression has not a base type */
-        if (!lhsTypeDen->IsBase())
-            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), lhsTypeDen->ToString()), this);
-        if (!rhsTypeDen->IsBase())
-            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), rhsTypeDen->ToString()), this);
+        if (!lhsTypeDen.IsBase())
+            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), lhsTypeDen.ToString()), this);
+        if (!rhsTypeDen.IsBase())
+            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), rhsTypeDen.ToString()), this);
 
         if (IsBooleanOp(op))
             return TypeDenoter::MakeBoolTypeWithDimensionOf(*commonTypeDen);
