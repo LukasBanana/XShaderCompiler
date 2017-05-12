@@ -15,7 +15,7 @@ namespace Xsc
 
 
 ReflectionPrinter::ReflectionPrinter(std::ostream& output) :
-    output_{ output }
+    output_ { output }
 {
 }
 

@@ -152,7 +152,6 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
     VisitScopedStmntList(ast->stmnts);
 }
 
-//TODO: reset 'prefixExpr' for texture intrinsic calls
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
     Visit(ast->prefixExpr);
@@ -162,18 +161,15 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         /* Insert prefix expression as first argument into function call, if this is a texture intrinsic call */
         if (IsTextureIntrinsic(ast->intrinsic) && ast->prefixExpr)
         {
-            if (UseSeparateSamplers() && !IsTextureLoadIntrinsic(ast->intrinsic))
+            if (UseSeparateSamplers() && !IsTextureLoadIntrinsic(ast->intrinsic) && !ast->arguments.empty())
             {
                 /* Replace sampler state argument by sampler/texture binding call */
-                if (!ast->arguments.empty())
+                auto arg0Expr = ast->arguments.front().get();
+                if (IsSamplerStateTypeDenoter(arg0Expr->GetTypeDenoter()))
                 {
-                    auto arg0Expr = ast->arguments.front().get();
-                    if (IsSamplerStateTypeDenoter(arg0Expr->GetTypeDenoter()))
-                    {
-                        ast->arguments[0] = ASTFactory::MakeTextureSamplerBindingCallExpr(
-                            ast->prefixExpr, ast->arguments[0]
-                        );
-                    }
+                    ast->arguments[0] = ASTFactory::MakeTextureSamplerBindingCallExpr(
+                        ast->prefixExpr, ast->arguments[0]
+                    );
                 }
             }
             else
@@ -181,6 +177,9 @@ IMPLEMENT_VISIT_PROC(CallExpr)
                 /* Insert texture object as parameter into intrinsic arguments */
                 ast->arguments.insert(ast->arguments.begin(), ast->prefixExpr);
             }
+
+            /* Drop prefix expression after it has been moved into the argument list */
+            ast->prefixExpr.reset();
         }
     }
 
@@ -895,8 +894,8 @@ void GLSLConverter::ConvertIntrinsicCallSaturate(CallExpr* ast)
 static int GetTextureDimFromIntrinsicCall(CallExpr* ast)
 {
     /* Get buffer object from sample intrinsic call */
-    if (ast->prefixExpr)
-        return ExprConverter::GetTextureDimFromExpr(ast->prefixExpr.get(), ast);
+    if (!ast->arguments.empty())
+        return ExprConverter::GetTextureDimFromExpr(ast->arguments.front().get(), ast);
     else
         RuntimeErr(R_FailedToGetTextureDim, ast);
 }
@@ -1202,7 +1201,7 @@ void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
         {
             if (funcDecl->IsStatic())
             {
-                /* Drop prefix expression, since GLSL only allows global functions */
+                /* Drop prefix expression, since GLSL does not only allow member functions */
                 ast->prefixExpr.reset();
             }
             else
