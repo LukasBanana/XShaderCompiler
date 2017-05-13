@@ -274,11 +274,11 @@ void ExprConverter::ConvertExprMatrixSubscriptObject(ExprPtr& expr, ObjectExpr* 
             /* Get matrix subscript usage */
             const MatrixSubscriptUsage subscriptUsage(prefixBaseTypeDen->dataType, objectExpr->ident);
 
-            if (IsScalarType(subscriptUsage.dataTypeOut))
+            if (IsScalarType(subscriptUsage.dataTypeOut) && !subscriptUsage.indices.empty())
             {
                 /* Convert matrix subscript into array access */
-                //TODO...
-
+                const auto subscriptIndex = subscriptUsage.indices.front();
+                expr = ASTFactory::MakeArrayExpr(objectExpr->prefixExpr, { subscriptIndex.first, subscriptIndex.second });
             }
             else
             {
