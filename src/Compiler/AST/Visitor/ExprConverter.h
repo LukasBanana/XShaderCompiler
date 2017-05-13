@@ -73,8 +73,8 @@ class ExprConverter : public Visitor
         // Converts the expressions in the specified AST.
         void Convert(Program& program, const Flags& conversionFlags, const NameMangling& nameMangling);
 
-        void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = true);
-        void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
+        static void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = true);
+        static void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
 
         // Returns the texture dimension of the specified expression.
         static int GetTextureDimFromExpr(Expr* expr, const AST* ast = nullptr);
@@ -85,10 +85,6 @@ class ExprConverter : public Visitor
     private:
         
         /* === Functions === */
-
-        // Returns the data type to which an expression must be casted, if the target data type and the source data type are incompatible.
-        std::unique_ptr<DataType> MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize);
-        std::unique_ptr<DataType> MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize);
 
         TypeDenoterPtr MakeBufferAccessCallTypeDenoter(const DataType genericDataType);
 

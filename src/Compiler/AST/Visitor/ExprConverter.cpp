@@ -29,6 +29,53 @@ void ExprConverter::Convert(Program& program, const Flags& conversionFlags, cons
         Visit(&program);
 }
 
+// Returns the data type to which an expression must be casted, if the target data type and the source data type are incompatible.
+static std::unique_ptr<DataType> MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize)
+{
+    /* Check for type mismatch */
+    const auto targetDim = VectorTypeDim(targetType);
+    const auto sourceDim = VectorTypeDim(sourceType);
+
+    if ( ( targetDim != sourceDim && matchTypeSize ) ||
+         (  IsUIntType      (targetType) &&  IsIntType       (sourceType) ) ||
+         (  IsIntType       (targetType) &&  IsUIntType      (sourceType) ) ||
+         (  IsRealType      (targetType) &&  IsIntegralType  (sourceType) ) ||
+         (  IsIntegralType  (targetType) &&  IsRealType      (sourceType) ) ||
+         ( !IsDoubleRealType(targetType) &&  IsDoubleRealType(sourceType) ) ||
+         (  IsDoubleRealType(targetType) && !IsDoubleRealType(sourceType) ) )
+    {
+        if (targetDim != sourceDim && !matchTypeSize)
+        {
+            /* Return target base type with source dimension as required cast type */
+            return MakeUnique<DataType>(VectorDataType(BaseDataType(targetType), VectorTypeDim(sourceType)));
+        }
+        else
+        {
+            /* Return target type as required cast type */
+            return MakeUnique<DataType>(targetType);
+        }
+    }
+
+    /* No type cast required */
+    return nullptr;
+}
+
+static std::unique_ptr<DataType> MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize)
+{
+    if (auto baseTargetTypeDen = targetTypeDen.As<BaseTypeDenoter>())
+    {
+        if (auto baseSourceTypeDen = sourceTypeDen.As<BaseTypeDenoter>())
+        {
+            return MustCastExprToDataType(
+                baseTargetTypeDen->dataType,
+                baseSourceTypeDen->dataType,
+                matchTypeSize
+            );
+        }
+    }
+    return nullptr;
+}
+
 static void ConvertCastExpr(ExprPtr& expr, const DataType sourceType, const DataType targetType)
 {
     /* If casting a vector to a higher dimension, zero expand because direct casts aren't supported */
@@ -127,52 +174,6 @@ std::string ExprConverter::GetMatrixSubscriptWrapperIdent(const NameMangling& na
 /*
  * ======= Private: =======
  */
-
-std::unique_ptr<DataType> ExprConverter::MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize)
-{
-    /* Check for type mismatch */
-    auto targetDim = VectorTypeDim(targetType);
-    auto sourceDim = VectorTypeDim(sourceType);
-
-    if ( ( targetDim != sourceDim && matchTypeSize ) ||
-         (  IsUIntType      (targetType) &&  IsIntType       (sourceType) ) ||
-         (  IsIntType       (targetType) &&  IsUIntType      (sourceType) ) ||
-         (  IsRealType      (targetType) &&  IsIntegralType  (sourceType) ) ||
-         (  IsIntegralType  (targetType) &&  IsRealType      (sourceType) ) ||
-         ( !IsDoubleRealType(targetType) &&  IsDoubleRealType(sourceType) ) ||
-         (  IsDoubleRealType(targetType) && !IsDoubleRealType(sourceType) ) )
-    {
-        if (targetDim != sourceDim && !matchTypeSize)
-        {
-            /* Return target base type with source dimension as required cast type */
-            return MakeUnique<DataType>(VectorDataType(BaseDataType(targetType), VectorTypeDim(sourceType)));
-        }
-        else
-        {
-            /* Return target type as required cast type */
-            return MakeUnique<DataType>(targetType);
-        }
-    }
-
-    /* No type cast required */
-    return nullptr;
-}
-
-std::unique_ptr<DataType> ExprConverter::MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize)
-{
-    if (auto baseTargetTypeDen = targetTypeDen.As<BaseTypeDenoter>())
-    {
-        if (auto baseSourceTypeDen = sourceTypeDen.As<BaseTypeDenoter>())
-        {
-            return MustCastExprToDataType(
-                baseTargetTypeDen->dataType,
-                baseSourceTypeDen->dataType,
-                matchTypeSize
-            );
-        }
-    }
-    return nullptr;
-}
 
 TypeDenoterPtr ExprConverter::MakeBufferAccessCallTypeDenoter(const DataType genericDataType)
 {
@@ -432,7 +433,7 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
 
                     /* Cast to valid dimension */
                     auto textureDim = GetTextureDimFromExpr(arg0Expr.get(), expr.get());
-                    ConvertExprIfCastRequired(arg1Expr, VectorDataType(DataType::Int, textureDim), true);
+                    ExprConverter::ConvertExprIfCastRequired(arg1Expr, VectorDataType(DataType::Int, textureDim), true);
 
                     ExprPtr exprOut;
 
@@ -462,11 +463,11 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
 
                         /* Cast to valid 4D vector type */
                         if (IsIntType(genericBaseTypeDen->dataType))
-                            ConvertExprIfCastRequired(arg2Expr, DataType::Int4, true);
+                            ExprConverter::ConvertExprIfCastRequired(arg2Expr, DataType::Int4, true);
                         else if (IsUIntType(genericBaseTypeDen->dataType))
-                            ConvertExprIfCastRequired(arg2Expr, DataType::UInt4, true);
+                            ExprConverter::ConvertExprIfCastRequired(arg2Expr, DataType::UInt4, true);
                         else
-                            ConvertExprIfCastRequired(arg2Expr, DataType::Float4, true);
+                            ExprConverter::ConvertExprIfCastRequired(arg2Expr, DataType::Float4, true);
 
                         /* Convert expression to intrinsic call */
                         exprOut = ASTFactory::MakeIntrinsicCallExpr(
@@ -602,7 +603,7 @@ void ExprConverter::ConvertExprTargetType(ExprPtr& expr, const TypeDenoter& targ
     if (expr)
     {
         if (conversionFlags_(ConvertImplicitCasts))
-            ConvertExprIfCastRequired(expr, targetTypeDen, matchTypeSize);
+            ExprConverter::ConvertExprIfCastRequired(expr, targetTypeDen, matchTypeSize);
 
         if (auto initExpr = expr->As<InitializerExpr>())
         {

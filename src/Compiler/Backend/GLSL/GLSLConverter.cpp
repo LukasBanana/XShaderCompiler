@@ -907,7 +907,7 @@ void GLSLConverter::ConvertIntrinsicCallTextureLOD(CallExpr* ast)
         if (auto textureDim = ExprConverter::GetTextureDimFromExpr(args[0].get()))
         {
             /* Convert arguments */
-            exprConverter_.ConvertExprIfCastRequired(args[1], DataType::Float4, true);
+            ExprConverter::ConvertExprIfCastRequired(args[1], DataType::Float4, true);
 
             /* Generate temporary variable with second argument, and insert its declaration statement before the intrinsic call */
             auto tempVarIdent           = MakeTempVarIdent();
@@ -941,11 +941,11 @@ void GLSLConverter::ConvertIntrinsicCallTextureSample(CallExpr* ast)
 
         /* Ensure argument: float[1,2,3,4] Location */
         if (args.size() >= 2)
-            exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Float, textureDim), true);
+            ExprConverter::ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Float, textureDim), true);
 
         /* Ensure argument: int[1,2,3] Offset */
         if (args.size() >= 3)
-            exprConverter_.ConvertExprIfCastRequired(args[2], VectorDataType(DataType::Int, textureDim), true);
+            ExprConverter::ConvertExprIfCastRequired(args[2], VectorDataType(DataType::Int, textureDim), true);
     }
 }
 
@@ -959,11 +959,11 @@ void GLSLConverter::ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast)
 
         /* Ensure argument: float[1,2,3,4] Location */
         if (args.size() >= 2)
-            exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Float, textureDim), true);
+            ExprConverter::ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Float, textureDim), true);
 
         /* Ensure argument: int[1,2,3] Offset */
         if (args.size() >= 4)
-            exprConverter_.ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, textureDim), true);
+            ExprConverter::ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, textureDim), true);
     }
 }
 
@@ -992,7 +992,7 @@ void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
 
                 /* Ensure argument: int Sample */
                 if (args.size() >= 3)
-                    exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Int, true);
+                    ExprConverter::ConvertExprIfCastRequired(args[2], DataType::Int, true);
             }
             else if (bufferTypeDen->bufferType == BufferType::Buffer)
             {
@@ -1031,16 +1031,16 @@ void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
                     args[1] = arg1Expr;
                     args.insert(args.begin() + 2, arg2Expr);
 
-                    exprConverter_.ConvertExprIfCastRequired(args[2], DataType::Int, true);
+                    ExprConverter::ConvertExprIfCastRequired(args[2], DataType::Int, true);
 
                     /* Ensure argument: int[1,2,3] Offset */
                     if (args.size() >= 4)
-                        exprConverter_.ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, textureDim), true);
+                        ExprConverter::ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, textureDim), true);
                 }
             }
 
             /* Ensure argument: int[1,2,3] Location */
-            exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Int, textureDim), true);
+            ExprConverter::ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Int, textureDim), true);
         }
     }
 }
@@ -1107,15 +1107,15 @@ void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
         {
             /* Cast location argument */
             const auto numDims = GetBufferTypeTextureDim(bufferType);
-            exprConverter_.ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Int, numDims), true);
+            ExprConverter::ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Int, numDims), true);
             dataArgOffset = 2;
         }
 
         if (args.size() >= (dataArgOffset + 1))
-            exprConverter_.ConvertExprIfCastRequired(args[dataArgOffset], baseDataType, true);
+            ExprConverter::ConvertExprIfCastRequired(args[dataArgOffset], baseDataType, true);
 
         if(ast->intrinsic == Intrinsic::Image_AtomicCompSwap && args.size() >= (dataArgOffset + 2))
-            exprConverter_.ConvertExprIfCastRequired(args[dataArgOffset + 1], baseDataType, true);
+            ExprConverter::ConvertExprIfCastRequired(args[dataArgOffset + 1], baseDataType, true);
     }
 }
 
@@ -1151,7 +1151,7 @@ void GLSLConverter::ConvertIntrinsicCallGather(CallExpr* ast)
         for (int i = offsetArgStart; i < offsetArgEnd; ++i)
         {
             auto& argument = ast->arguments[i];
-            exprConverter_.ConvertExprIfCastRequired(argument, DataType::Int2, true);
+            ExprConverter::ConvertExprIfCastRequired(argument, DataType::Int2, true);
 
             arrayCtorArguments.push_back(argument);
         }
