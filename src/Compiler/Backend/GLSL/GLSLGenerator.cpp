@@ -87,70 +87,8 @@ void GLSLGenerator::GenerateCodePrimary(
     {
         try
         {
-            /* Mark all structures that are used for another reason than entry-point parameter */
-            {
-                StructParameterAnalyzer structAnalyzer;
-                structAnalyzer.MarkStructsFromEntryPoint(program, inputDesc.shaderTarget);
-            }
-
-            {
-                /* Convert type of specific semantics */
-                TypeConverter typeConverter;
-                typeConverter.Convert(program, GLSLConverter::ConvertVarDeclType);
-            }
-
-            /* Convert expressions (Before reference analysis) */
-            {
-                ExprConverter converter;
-                Flags converterFlags = ExprConverter::All;
-
-                converterFlags.Remove(ExprConverter::ConvertMatrixSubscripts);
-
-                if (HasShadingLanguage420Pack())
-                {
-                    /*
-                    Remove specific conversions when the GLSL output version is explicitly set to 4.20 or higher,
-                    i.e. "GL_ARB_shading_language_420pack" extension is available.
-                    */
-                    converterFlags.Remove(ExprConverter::ConvertVectorSubscripts);
-                    converterFlags.Remove(ExprConverter::ConvertInitializerToCtor);
-                }
-
-                converter.Convert(program, converterFlags, nameMangling_);
-            }
-
-            /* Convert AST for GLSL code generation (Before reference analysis) */
-            {
-                GLSLConverter converter;
-                converter.ConvertAST(program, inputDesc, outputDesc);
-            }
-
-            /* Convert function names after main conversion, since functon owner structs may have been renamed as well */
-            {
-                FuncNameConverter funcNameConverter;
-                funcNameConverter.Convert(
-                    program,
-                    nameMangling_,
-                    [](const FunctionDecl& lhs, const FunctionDecl& rhs)
-                    {
-                        /* Compare function signatures and ignore generic sub types (GLSL has no distinction for these types) */
-                        return lhs.EqualsSignature(rhs, TypeDenoter::IgnoreGenericSubType);
-                    },
-                    FuncNameConverter::All
-                );
-            }
-
-            /* Mark all reachable AST nodes */
-            {
-                ReferenceAnalyzer refAnalyzer;
-                refAnalyzer.MarkReferencesFromEntryPoint(program, inputDesc.shaderTarget);
-            }
-
-            /* Convert AST for GLSL code generation (After reference analysis) */
-            {
-                ExprConverter converter;
-                converter.Convert(program, ExprConverter::ConvertMatrixSubscripts, nameMangling_);
-            }
+            /* Pre-process AST before generation begins */
+            PreProcessAST(inputDesc, outputDesc);
 
             /* Write header */
             if (inputDesc.entryPoint.empty())
@@ -1084,6 +1022,91 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 #undef IMPLEMENT_VISIT_PROC
 
 /* --- Helper functions for code generation --- */
+
+/* ----- Pre processing AST ----- */
+
+void GLSLGenerator::PreProcessAST(const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
+{
+    PreProcessStructParameterAnalyzer(inputDesc);
+    PreProcessTypeConverter();
+    PreProcessExprConverterPrimary();
+    PreProcessGLSLConverter(inputDesc, outputDesc);
+    PreProcessFuncNameConverter();
+    PreProcessReferenceAnalyzer(inputDesc);
+    PreProcessExprConverterSecondary();
+}
+
+void GLSLGenerator::PreProcessStructParameterAnalyzer(const ShaderInput& inputDesc)
+{
+    /* Mark all structures that are used for another reason than entry-point parameter */
+    StructParameterAnalyzer structAnalyzer;
+    structAnalyzer.MarkStructsFromEntryPoint(*GetProgram(), inputDesc.shaderTarget);
+}
+
+void GLSLGenerator::PreProcessTypeConverter()
+{
+    /* Convert type of specific semantics */
+    TypeConverter typeConverter;
+    typeConverter.Convert(*GetProgram(), GLSLConverter::ConvertVarDeclType);
+}
+
+void GLSLGenerator::PreProcessExprConverterPrimary()
+{
+    /* Convert expressions (Before reference analysis) */
+    ExprConverter converter;
+    Flags converterFlags = ExprConverter::All;
+
+    converterFlags.Remove(ExprConverter::ConvertMatrixSubscripts);
+
+    if (HasShadingLanguage420Pack())
+    {
+        /*
+        Remove specific conversions when the GLSL output version is explicitly set to 4.20 or higher,
+        i.e. "GL_ARB_shading_language_420pack" extension is available.
+        */
+        converterFlags.Remove(ExprConverter::ConvertVectorSubscripts);
+        converterFlags.Remove(ExprConverter::ConvertInitializerToCtor);
+    }
+
+    converter.Convert(*GetProgram(), converterFlags, nameMangling_);
+}
+
+void GLSLGenerator::PreProcessGLSLConverter(const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
+{
+    /* Convert AST for GLSL code generation (Before reference analysis) */
+    GLSLConverter converter;
+    converter.ConvertAST(*GetProgram(), inputDesc, outputDesc);
+}
+
+void GLSLGenerator::PreProcessFuncNameConverter()
+{
+    /* Convert function names after main conversion, since functon owner structs may have been renamed as well */
+    FuncNameConverter funcNameConverter;
+    funcNameConverter.Convert(
+        *GetProgram(),
+        nameMangling_,
+        [](const FunctionDecl& lhs, const FunctionDecl& rhs)
+        {
+            /* Compare function signatures and ignore generic sub types (GLSL has no distinction for these types) */
+            return lhs.EqualsSignature(rhs, TypeDenoter::IgnoreGenericSubType);
+        },
+        FuncNameConverter::All
+    );
+}
+
+void GLSLGenerator::PreProcessReferenceAnalyzer(const ShaderInput& inputDesc)
+{
+    /* Mark all reachable AST nodes */
+    ReferenceAnalyzer refAnalyzer;
+    refAnalyzer.MarkReferencesFromEntryPoint(*GetProgram(), inputDesc.shaderTarget);
+}
+
+void GLSLGenerator::PreProcessExprConverterSecondary()
+{
+    /* Convert AST for GLSL code generation (After reference analysis) */
+    ExprConverter converter;
+    converter.Convert(*GetProgram(), ExprConverter::ConvertMatrixSubscripts, nameMangling_);
+}
 
 /* ----- Basics ----- */
 

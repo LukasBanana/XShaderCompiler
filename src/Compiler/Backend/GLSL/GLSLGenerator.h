@@ -143,6 +143,17 @@ class GLSLGenerator : public Generator
 
         /* --- Helper functions for code generation --- */
 
+        /* ----- Pre processing AST ----- */
+
+        void PreProcessAST(const ShaderInput& inputDesc, const ShaderOutput& outputDesc);
+        void PreProcessStructParameterAnalyzer(const ShaderInput& inputDesc);
+        void PreProcessTypeConverter();
+        void PreProcessExprConverterPrimary();
+        void PreProcessGLSLConverter(const ShaderInput& inputDesc, const ShaderOutput& outputDesc);
+        void PreProcessFuncNameConverter();
+        void PreProcessReferenceAnalyzer(const ShaderInput& inputDesc);
+        void PreProcessExprConverterSecondary();
+
         /* ----- Basics ----- */
 
         // Writes a comment (single or multi-line comments).
