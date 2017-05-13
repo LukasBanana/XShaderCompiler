@@ -262,7 +262,7 @@ static TypeDenoterPtr DeriveCommonTypeDenoter(std::size_t majorArgIndex, const s
     if (majorArgIndex < args.size())
     {
         /* Find common type denoter for all arguments */
-        TypeDenoterPtr commonTypeDenoter = args[majorArgIndex]->GetTypeDenoter()->GetSub();
+        auto commonTypeDenoter = args[majorArgIndex]->GetTypeDenoter()->GetSub();
 
         for (std::size_t i = 0, n = args.size(); i < n; ++i)
         {
@@ -929,7 +929,14 @@ void HLSLIntrinsicAdept::DeriveParameterTypes(
         /* Add parameter type denoter */
         paramTypeDenoters.resize(args.size());
         for (std::size_t i = 0, n = args.size(); i < n; ++i)
+        {
             paramTypeDenoters[i] = commonTypeDenoter;
+
+            #ifdef XSC_ENABLE_LANGUAGE_EXT
+            /* Keep original vector spaces for parameter types */
+            VectorSpace::Copy(paramTypeDenoters[i].get(), args[i]->GetTypeDenoter().get());
+            #endif
+        }
     }
 }
 
@@ -971,6 +978,15 @@ void HLSLIntrinsicAdept::DeriveParameterTypesMul(std::vector<TypeDenoterPtr>& pa
             DeriveParameterTypes(paramTypeDenoters, Intrinsic::Mul, args);
         }
     }
+
+    #ifdef XSC_ENABLE_LANGUAGE_EXT
+    if (paramTypeDenoters.size() == 2)
+    {
+        /* Keep original vector spaces for parameter types */
+        VectorSpace::Copy(paramTypeDenoters[0].get(), type0.get());
+        VectorSpace::Copy(paramTypeDenoters[1].get(), type1.get());
+    }
+    #endif
 }
 
 void HLSLIntrinsicAdept::DeriveParameterTypesTranspose(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const
