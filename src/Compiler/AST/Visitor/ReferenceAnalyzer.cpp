@@ -304,12 +304,7 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
         if (prefixTypeDen.IsMatrix())
         {
             auto prefixBaseTypeDen = prefixTypeDen.As<BaseTypeDenoter>();
-            MatrixSubscriptUsage usage;
-            {
-                usage.dataType = prefixBaseTypeDen->dataType;
-                SubscriptDataType(usage.dataType, ast->ident, &(usage.indices));
-            }
-            program_->usedMatrixSubscripts.insert(usage);
+            program_->usedMatrixSubscripts.insert({ prefixBaseTypeDen->dataType, ast->ident });
         }
     }
 

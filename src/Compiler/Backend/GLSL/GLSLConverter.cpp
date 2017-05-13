@@ -64,6 +64,8 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
     /* Convert expressions */
     Flags exprConverterFlags = ExprConverter::All;
 
+    exprConverterFlags.Remove(ExprConverter::ConvertMatrixSubscripts);
+
     if (HasShadingLanguage420Pack())
     {
         /*
@@ -74,7 +76,7 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
         exprConverterFlags.Remove(ExprConverter::ConvertInitializerToCtor);
     }
 
-    exprConverter_.Convert(program, exprConverterFlags);
+    exprConverter_.Convert(program, exprConverterFlags, GetNameMangling());
 
     /* Visit program AST */
     Visit(&program);

@@ -90,7 +90,7 @@ void GLSLGenerator::GenerateCodePrimary(
                 structAnalyzer.MarkStructsFromEntryPoint(program, inputDesc.shaderTarget);
             }
 
-            /* Convert AST for GLSL code generation */
+            /* Convert AST for GLSL code generation (Before reference analysis) */
             {
                 GLSLConverter converter;
                 converter.ConvertAST(program, inputDesc, outputDesc);
@@ -100,6 +100,12 @@ void GLSLGenerator::GenerateCodePrimary(
             {
                 ReferenceAnalyzer refAnalyzer;
                 refAnalyzer.MarkReferencesFromEntryPoint(program, inputDesc.shaderTarget);
+            }
+
+            /* Convert AST for GLSL code generation (After reference analysis) */
+            {
+                ExprConverter converter;
+                converter.Convert(program, ExprConverter::ConvertMatrixSubscripts, nameMangling_);
             }
 
             /* Write header */
@@ -2428,6 +2434,11 @@ void GLSLGenerator::WriteCallExprStandard(CallExpr* funcCall)
         /* Write final identifier of function declaration */
         Write(funcDecl->ident);
     }
+    else if (funcCall->flags(CallExpr::isWrapperCall))
+    {
+        /* Write expression identifier */
+        Write(funcCall->ident);
+    }
     else if (funcCall->typeDenoter)
     {
         /* Write type denoter */
@@ -2726,6 +2737,10 @@ void GLSLGenerator::WriteWrapperIntrinsics()
         WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::DeviceMemoryBarrier, true);
     if (program->FetchIntrinsicUsage(Intrinsic::AllMemoryBarrierWithGroupSync) != nullptr)
         WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::AllMemoryBarrier, true);
+
+    /* Write matrix subscript wrappers */
+    for (const auto& usage : program->usedMatrixSubscripts)
+        WriteWrapperMatrixSubscript(usage);
 }
 
 void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
@@ -2900,6 +2915,54 @@ void GLSLGenerator::WriteWrapperIntrinsicsMemoryBarrier(const Intrinsic intrinsi
 
             if (groupSync)
                 WriteLn("barrier();");
+        }
+        WriteScopeClose();
+    }
+    EndLn();
+
+    Blank();
+}
+
+void GLSLGenerator::WriteWrapperMatrixSubscript(const MatrixSubscriptUsage& usage)
+{
+    /* Only generate wrappers for matrix subscripts with more than one index */
+    if (IsScalarType(usage.dataTypeOut))
+        return;
+
+    BeginLn();
+    {
+        /* Write function signature */
+        WriteDataType(usage.dataTypeOut, IsESSL());
+
+        Write(" ");
+        Write(ExprConverter::GetMatrixSubscriptWrapperIdent(nameMangling_, usage));
+        Write("(");
+        WriteDataType(usage.dataTypeIn, IsESSL());
+        Write(" m)");
+
+        /* Write function body */
+        WriteScopeOpen(compactWrappers_);
+        {
+            BeginLn();
+            {
+                Write("return ");
+
+                /* Write vector type constructor with dimension of the number of indices */
+                WriteDataType(usage.dataTypeOut, IsESSL());
+                Write("(");
+
+                /* Write matrix elements as arguments for vector type c'tor */
+                for (std::size_t i = 0, n = usage.indices.size(); i < n; ++i)
+                {
+                    const auto& idx = usage.indices[i];
+                    Write("m[" + std::to_string(idx.first) + "][" + std::to_string(idx.second) + "]");
+                    if (i + 1 < n)
+                        Write(", ");
+                }
+
+                Write(");");
+            }
+            EndLn();
         }
         WriteScopeClose();
     }

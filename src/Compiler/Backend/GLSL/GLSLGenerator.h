@@ -266,6 +266,8 @@ class GLSLGenerator : public Generator
         void WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage);
         void WriteWrapperIntrinsicsMemoryBarrier(const Intrinsic intrinsic, bool groupSync);
 
+        void WriteWrapperMatrixSubscript(const MatrixSubscriptUsage& usage);
+
         /* ----- Structure ----- */
 
         bool WriteStructDecl(StructDecl* structDecl, bool writeSemicolon, bool allowNestedStruct = false);

@@ -48,6 +48,7 @@ class ExprConverter : public Visitor
             ConvertMatrixLayout         = (1 <<  8), // Converts expressions that depend on the matrix layout (e.g. the argument order of "mul" intrinsic calls).
             ConvertTextureBracketOp     = (1 <<  9), // Converts Texture Operator[] accesses into "Load" intrinsic calls.
             ConvertTextureIntrinsicVec4 = (1 << 10), // Converts Texture intrinsic calls whose return type is a non-4D-vector.
+            ConvertMatrixSubscripts     = (1 << 11), // Converts matrix subscripts into function calls to the respective wrapper function.
 
             // All conversion flags commonly used before visiting the sub nodes.
             AllPreVisit                 = (
@@ -61,6 +62,7 @@ class ExprConverter : public Visitor
             // All conversion flags commonly used after visiting the sub nodes.
             AllPostVisit                = (
                 ConvertVectorSubscripts     |
+                ConvertMatrixSubscripts     |
                 ConvertTextureIntrinsicVec4
             ),
 
@@ -69,13 +71,16 @@ class ExprConverter : public Visitor
         };
 
         // Converts the expressions in the specified AST.
-        void Convert(Program& program, const Flags& conversionFlags);
+        void Convert(Program& program, const Flags& conversionFlags, const NameMangling& nameMangling);
 
         void ConvertExprIfCastRequired(ExprPtr& expr, const DataType targetType, bool matchTypeSize = true);
         void ConvertExprIfCastRequired(ExprPtr& expr, const TypeDenoter& targetTypeDen, bool matchTypeSize = true);
 
         // Returns the texture dimension of the specified expression.
         static int GetTextureDimFromExpr(Expr* expr, const AST* ast = nullptr);
+
+        // Returns the identifier used for matrix subscript wrapper functions.
+        static std::string GetMatrixSubscriptWrapperIdent(const NameMangling& nameMangling, const MatrixSubscriptUsage& subscriptUsage);
 
     private:
         
@@ -98,6 +103,10 @@ class ExprConverter : public Visitor
         // Converts the expression if a vector subscript is used on a scalar type expression.
         void ConvertExprVectorSubscript(ExprPtr& expr);
         void ConvertExprVectorSubscriptObject(ExprPtr& expr, ObjectExpr* objectExpr);
+
+        // Converts the expression if a matrix subscript is used.
+        void ConvertExprMatrixSubscript(ExprPtr& expr);
+        void ConvertExprMatrixSubscriptObject(ExprPtr& expr, ObjectExpr* objectExpr);
         
         // Converts the expression from a vector comparison to the respective intrinsic call (e.g. "a < b" -> "lessThan(a, b)").
         void ConvertExprVectorCompare(ExprPtr& expr);
@@ -161,7 +170,8 @@ class ExprConverter : public Visitor
 
         /* === Members === */
 
-        Flags conversionFlags_;
+        Flags           conversionFlags_;
+        NameMangling    nameMangling_;
 
 };
 

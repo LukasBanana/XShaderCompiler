@@ -18,10 +18,13 @@ namespace Xsc
 {
 
 
-void ExprConverter::Convert(Program& program, const Flags& conversionFlags)
+void ExprConverter::Convert(Program& program, const Flags& conversionFlags, const NameMangling& nameMangling)
 {
+    /* Copy parameters */
+    conversionFlags_    = conversionFlags;
+    nameMangling_       = nameMangling;
+
     /* Visit program AST */
-    conversionFlags_ = conversionFlags;
     if (conversionFlags_ != 0)
         Visit(&program);
 }
@@ -115,6 +118,12 @@ int ExprConverter::GetTextureDimFromExpr(Expr* expr, const AST* ast)
     RuntimeErr(R_FailedToGetTextureDim, ast);
 }
 
+std::string ExprConverter::GetMatrixSubscriptWrapperIdent(const NameMangling& nameMangling, const MatrixSubscriptUsage& subscriptUsage)
+{
+    return (nameMangling.temporaryPrefix + "subscript" + subscriptUsage.IndicesToString());
+}
+
+
 /*
  * ======= Private: =======
  */
@@ -205,6 +214,9 @@ void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
         if (enabled(ConvertVectorSubscripts))
             ConvertExprVectorSubscript(expr);
 
+        if (enabled(ConvertMatrixSubscripts))
+            ConvertExprMatrixSubscript(expr);
+
         if (enabled(ConvertUnaryExpr))
             ConvertExprIntoBracket(expr);
         
@@ -238,6 +250,45 @@ void ExprConverter::ConvertExprVectorSubscriptObject(ExprPtr& expr, ObjectExpr* 
 
             /* Convert to cast expression */
             expr = ASTFactory::MakeCastExpr(vectorTypeDen, objectExpr->prefixExpr);
+        }
+    }
+}
+
+void ExprConverter::ConvertExprMatrixSubscript(ExprPtr& expr)
+{
+    if (auto objectExpr = expr->As<ObjectExpr>())
+        ConvertExprMatrixSubscriptObject(expr, objectExpr);
+}
+
+void ExprConverter::ConvertExprMatrixSubscriptObject(ExprPtr& expr, ObjectExpr* objectExpr)
+{
+    if (!objectExpr->symbolRef && objectExpr->prefixExpr)
+    {
+        /* Get type denoter of prefix expression */
+        const auto& prefixTypeDen = objectExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+        if (prefixTypeDen.IsMatrix())
+        {
+            auto prefixBaseTypeDen = prefixTypeDen.As<BaseTypeDenoter>();
+
+            /* Get matrix subscript usage */
+            const MatrixSubscriptUsage subscriptUsage(prefixBaseTypeDen->dataType, objectExpr->ident);
+
+            if (IsScalarType(subscriptUsage.dataTypeOut))
+            {
+                /* Convert matrix subscript into array access */
+                //TODO...
+
+            }
+            else
+            {
+                /* Convert matrix subscript into function call to wrapper function */
+                const auto wrapperIdent = ExprConverter::GetMatrixSubscriptWrapperIdent(nameMangling_, subscriptUsage); 
+                expr = ASTFactory::MakeWrapperCallExpr(
+                    wrapperIdent,
+                    std::make_shared<BaseTypeDenoter>(subscriptUsage.dataTypeOut),
+                    { objectExpr->prefixExpr }
+                );
+            }
         }
     }
 }
