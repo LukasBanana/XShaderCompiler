@@ -620,7 +620,7 @@ static DataType SubscriptDataTypeMatrix(const DataType dataType, const std::stri
         InvalidArg(R_InvalidMatrixDimension(rows, cols));
 
     /* Parse all matrix row-column subscriptions (e.g. zero-based "_m00", or one-based "_11") */
-    auto ParseNextSubscript = [](const std::string& s, std::size_t& i)
+    auto ParseNextSubscript = [](const std::string& s, std::size_t& i, char& zeroBase)
     {
         if (i + 3 > s.size())
             InvalidArg(R_IncompleteMatrixSubscript(s));
@@ -628,15 +628,29 @@ static DataType SubscriptDataTypeMatrix(const DataType dataType, const std::stri
             InvalidArg(R_InvalidCharInMatrixSubscript(std::string(1, s[i]), s));
         ++i;
 
-        char zeroBase = 1;
         if (s[i] == 'm')
         {
+            /* Check mixture of zero-based and one-based matrix subscripts */
+            if (zeroBase == 1)
+                InvalidArg(R_InvalidMatrixSubscriptMixture(s));
+            else
+                zeroBase = 0;
+
+            /* Take characterr */
             ++i;
-            zeroBase = 0;
             if (i + 2 > s.size())
                 InvalidArg(R_IncompleteMatrixSubscript(s));
         }
+        else
+        {
+            /* Check mixture of zero-based and one-based matrix subscripts */
+            if (zeroBase == 0)
+                InvalidArg(R_InvalidMatrixSubscriptMixture(s));
+            else
+                zeroBase = 1;
+        }
         
+        /* Parse matrix indices */
         for (int j = 0; j < 2; ++j)
         {
             if (s[i] < '0' + zeroBase || s[i] > '3' + zeroBase)
@@ -652,9 +666,10 @@ static DataType SubscriptDataTypeMatrix(const DataType dataType, const std::stri
     };
 
     int vectorSize = 0;
+    char zeroBase = -1;
 
     for (std::size_t i = 0; i < subscript.size(); ++vectorSize)
-        ParseNextSubscript(subscript, i);
+        ParseNextSubscript(subscript, i, zeroBase);
 
     return VectorDataType(BaseDataType(dataType), vectorSize);
 }
