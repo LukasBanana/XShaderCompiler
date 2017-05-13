@@ -236,15 +236,18 @@ enum class DataType
 // Container structure for all kinds of matrix subscript usages.
 struct MatrixSubscriptUsage
 {
-    inline bool operator < (const MatrixSubscriptUsage& rhs) const
-    {
-        if (dataType < rhs.dataType) { return true;  }
-        if (dataType > rhs.dataType) { return false; }
-        return indices < rhs.indices;
-    }
+    MatrixSubscriptUsage() = default;
+    MatrixSubscriptUsage(const DataType dataTypeIn, const std::string& subscript);
 
-    DataType                            dataType = DataType::Undefined;
+    // Strict-weak-order (SWP) comparison.
+    bool operator < (const MatrixSubscriptUsage& rhs) const;
+
+    // Returns the indices to a unique string.
+    std::string IndicesToString() const;
+
     std::vector<std::pair<int, int>>    indices;
+    DataType                            dataTypeIn  = DataType::Undefined;
+    DataType                            dataTypeOut = DataType::Undefined;
 };
 
 // Returns a descriptive string of the specified data type.

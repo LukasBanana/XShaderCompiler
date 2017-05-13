@@ -232,6 +232,34 @@ CtrlTransfer StringToCtrlTransfer(const std::string& s)
 
 /* ----- DataType Enum ----- */
 
+MatrixSubscriptUsage::MatrixSubscriptUsage(const DataType dataTypeIn, const std::string& subscript) :
+    dataTypeIn  { dataTypeIn                                         },
+    dataTypeOut { SubscriptDataType(dataTypeIn, subscript, &indices) }
+{
+}
+
+bool MatrixSubscriptUsage::operator < (const MatrixSubscriptUsage& rhs) const
+{
+    /* Only sort by input data type and indices */
+    if (dataTypeIn < rhs.dataTypeIn) { return true;  }
+    if (dataTypeIn > rhs.dataTypeIn) { return false; }
+    return indices < rhs.indices;
+}
+
+std::string MatrixSubscriptUsage::IndicesToString() const
+{
+    std::string s;
+
+    for (const auto& i : indices)
+    {
+        s += '_';
+        s += std::to_string(i.first);
+        s += std::to_string(i.second);
+    }
+
+    return s;
+}
+
 std::string DataTypeToString(const DataType t, bool useTemplateSyntax)
 {
     if (t == DataType::String)

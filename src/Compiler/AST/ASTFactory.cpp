@@ -61,21 +61,33 @@ CallExprPtr MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, 
     return ast;
 }
 
-InitializerExprPtr MakeInitializerExpr(const std::vector<ExprPtr>& exprs)
-{
-    auto ast = MakeAST<InitializerExpr>();
-    {
-        ast->exprs = exprs;
-    }
-    return ast;
-}
-
 CallExprPtr MakeTypeCtorCallExpr(const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments)
 {
     auto ast = MakeAST<CallExpr>();
     {
         ast->typeDenoter    = typeDenoter;
         ast->arguments      = arguments;
+    }
+    return ast;
+}
+
+CallExprPtr MakeWrapperCallExpr(const std::string& funcIdent, const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments)
+{
+    auto ast = MakeAST<CallExpr>();
+    {
+        ast->ident          = funcIdent;
+        ast->typeDenoter    = typeDenoter;
+        ast->arguments      = arguments;
+        ast->flags << CallExpr::isWrapperCall;
+    }
+    return ast;
+}
+
+InitializerExprPtr MakeInitializerExpr(const std::vector<ExprPtr>& exprs)
+{
+    auto ast = MakeAST<InitializerExpr>();
+    {
+        ast->exprs = exprs;
     }
     return ast;
 }
