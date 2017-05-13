@@ -703,7 +703,12 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
     if (ast->structDecl && !ast->structDecl->IsAnonymous())
     {
         WriteLineMark(ast);
-        Visit(ast->structDecl);
+
+        /* Write structure declaration and end it with a semicolon */
+        StructDeclArgs structDeclArgs;
+        structDeclArgs.inEndWithSemicolon = true;
+
+        Visit(ast->structDecl, &structDeclArgs);
     }
 }
 
