@@ -116,6 +116,22 @@ VectorSpace VectorSpace::FindCommonVectorSpace(const std::vector<ExprPtr>& exprL
     return {};
 }
 
+void VectorSpace::Copy(TypeDenoter* dstTypeDen, const TypeDenoter* srcTypeDen)
+{
+    if (dstTypeDen && srcTypeDen)
+    {
+        /* Get as instances of BaseTypeDenoter */
+        if (auto dstBaseTypeDen = dstTypeDen->As<BaseTypeDenoter>())
+        {
+            if (auto srcBaseTypeDen = srcTypeDen->As<BaseTypeDenoter>())
+            {
+                /* Copy vector space */
+                dstBaseTypeDen->vectorSpace = srcBaseTypeDen->vectorSpace;
+            }
+        }
+    }
+}
+
 bool operator == (const VectorSpace& lhs, const VectorSpace& rhs)
 {
     return (lhs.src == rhs.src && lhs.dst == rhs.dst);
