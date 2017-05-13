@@ -605,7 +605,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
         /* Analyze vector space of function return type and expression */
         if (extensions_(Extensions::SpaceAttribute) && returnTypeDen)
-            AnalyzeVectorSpaceAssign(ast->expr.get(), returnTypeDen->GetAliased());
+            AnalyzeVectorSpaceAssign(ast->expr.get(), returnTypeDen->GetAliased(), nullptr, true);
 
         #endif // XSC_ENABLE_LANGUAGE_EXT
     }
