@@ -572,17 +572,27 @@ DataType MatrixDataType(const DataType baseDataType, int rows, int columns)
     return DataType::Undefined;
 }
 
-static DataType SubscriptDataTypeVector(const DataType dataType, const std::string& subscript, int vectorSize)
+static DataType SubscriptDataTypeVector(
+    const DataType dataType, const std::string& subscript, int vectorSize, std::vector<std::pair<int, int>>* indices)
 {
-    auto IsValidSubscript = [&subscript](std::string compareSubscript, int vectorSize) -> bool
+    auto IsValidSubscript = [&](std::string compareSubscript, int vectorSize) -> bool
     {
         compareSubscript.resize(vectorSize);
 
+        std::vector<std::pair<int, int>> subscriptIndices;
+        subscriptIndices.reserve(vectorSize);
+
         for (auto chr : subscript)
         {
-            if (compareSubscript.find(chr) == std::string::npos)
+            auto pos = compareSubscript.find(chr);
+            if (pos != std::string::npos)
+                subscriptIndices.push_back({ static_cast<int>(pos), 0 });
+            else
                 return false;
         }
+
+        if (indices)
+            *indices = std::move(subscriptIndices);
 
         return true;
     };
@@ -609,78 +619,94 @@ static DataType SubscriptDataTypeVector(const DataType dataType, const std::stri
     return VectorDataType(BaseDataType(dataType), static_cast<int>(subscriptSize));
 }
 
+static void ParseNextMatrixSubscript(
+    const std::string& s, std::size_t& i, char& zeroBase, int rows, int cols, std::vector<std::pair<int, int>>* indices)
+{
+    if (i + 3 > s.size())
+        InvalidArg(R_IncompleteMatrixSubscript(s));
+    if (s[i] != '_')
+        InvalidArg(R_InvalidCharInMatrixSubscript(std::string(1, s[i]), s));
+    ++i;
+
+    if (s[i] == 'm')
+    {
+        /* Check mixture of zero-based and one-based matrix subscripts */
+        if (zeroBase == 1)
+            InvalidArg(R_InvalidMatrixSubscriptMixture(s));
+        else
+            zeroBase = 0;
+
+        /* Take characterr */
+        ++i;
+        if (i + 2 > s.size())
+            InvalidArg(R_IncompleteMatrixSubscript(s));
+    }
+    else
+    {
+        /* Check mixture of zero-based and one-based matrix subscripts */
+        if (zeroBase == 0)
+            InvalidArg(R_InvalidMatrixSubscriptMixture(s));
+        else
+            zeroBase = 1;
+    }
+
+    /* Parse matrix indices */
+    int subscriptIndices[2] = { 0 };
+
+    const int maxIdx[2] = { rows, cols };
+    const JoinableString matrixDimStr(" {0}x{1}");
+
+    for (int j = 0; j < 2; ++j)
+    {
+        if (s[i] >= '0' + zeroBase && s[i] < '0' + maxIdx[j] + zeroBase)
+        {
+            /* Store subscript index */
+            subscriptIndices[j] = s[i] - ('0' + zeroBase);
+        }
+        else
+        {
+            InvalidArg(
+                R_InvalidCharInMatrixSubscript(
+                    std::string(1, s[i]), s,
+                    (zeroBase == 0 ? R_ZeroBased : R_OneBased) + matrixDimStr(rows, cols)
+                )
+            );
+        }
+        ++i;
+    }
+
+    if (indices)
+        indices->push_back({ subscriptIndices[0], subscriptIndices[1] });
+}
+
 /*
 Matrix subscription rules for HLSL:
 see https://msdn.microsoft.com/en-us/library/windows/desktop/bb509634(v=vs.85).aspx#Matrix
 */
-static DataType SubscriptDataTypeMatrix(const DataType dataType, const std::string& subscript, int rows, int cols)
+static DataType SubscriptDataTypeMatrix(
+    const DataType dataType, const std::string& subscript, int rows, int cols, std::vector<std::pair<int, int>>* indices)
 {
     /* Validate matrix subscript */
     if (rows < 1 || rows > 4 || cols < 1 || cols > 4)
         InvalidArg(R_InvalidMatrixDimension(rows, cols));
 
     /* Parse all matrix row-column subscriptions (e.g. zero-based "_m00", or one-based "_11") */
-    auto ParseNextSubscript = [](const std::string& s, std::size_t& i, char& zeroBase)
-    {
-        if (i + 3 > s.size())
-            InvalidArg(R_IncompleteMatrixSubscript(s));
-        if (s[i] != '_')
-            InvalidArg(R_InvalidCharInMatrixSubscript(std::string(1, s[i]), s));
-        ++i;
-
-        if (s[i] == 'm')
-        {
-            /* Check mixture of zero-based and one-based matrix subscripts */
-            if (zeroBase == 1)
-                InvalidArg(R_InvalidMatrixSubscriptMixture(s));
-            else
-                zeroBase = 0;
-
-            /* Take characterr */
-            ++i;
-            if (i + 2 > s.size())
-                InvalidArg(R_IncompleteMatrixSubscript(s));
-        }
-        else
-        {
-            /* Check mixture of zero-based and one-based matrix subscripts */
-            if (zeroBase == 0)
-                InvalidArg(R_InvalidMatrixSubscriptMixture(s));
-            else
-                zeroBase = 1;
-        }
-        
-        /* Parse matrix indices */
-        for (int j = 0; j < 2; ++j)
-        {
-            if (s[i] < '0' + zeroBase || s[i] > '3' + zeroBase)
-            {
-                InvalidArg(
-                    R_InvalidCharInMatrixSubscript(
-                        std::string(1, s[i]), s, (zeroBase == 0 ? "zero" : "one")
-                    )
-                );
-            }
-            ++i;
-        }
-    };
-
     int vectorSize = 0;
     char zeroBase = -1;
 
     for (std::size_t i = 0; i < subscript.size(); ++vectorSize)
-        ParseNextSubscript(subscript, i, zeroBase);
+        ParseNextMatrixSubscript(subscript, i, zeroBase, rows, cols, indices);
 
     return VectorDataType(BaseDataType(dataType), vectorSize);
 }
 
-DataType SubscriptDataType(const DataType dataType, const std::string& subscript)
+DataType SubscriptDataType(const DataType dataType, const std::string& subscript, std::vector<std::pair<int, int>>* indices)
 {
     auto matrixDim = MatrixTypeDim(dataType);
     if (matrixDim.second == 1)
-        return SubscriptDataTypeVector(dataType, subscript, matrixDim.first);
+        return SubscriptDataTypeVector(dataType, subscript, matrixDim.first, indices);
     else
-        return SubscriptDataTypeMatrix(dataType, subscript, matrixDim.first, matrixDim.second);
+        return SubscriptDataTypeMatrix(dataType, subscript, matrixDim.first, matrixDim.second, indices);
 }
 
 static DataType IntLiteralTokenToDataType(const Token& tkn)

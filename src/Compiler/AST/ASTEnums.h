@@ -288,7 +288,7 @@ DataType VectorDataType(const DataType baseDataType, int vectorSize);
 DataType MatrixDataType(const DataType baseDataType, int rows, int columns);
 
 // Returns the data type for the specified swizzle operator or throws and std::invalid_argument on failure.
-DataType SubscriptDataType(const DataType dataType, const std::string& subscript);
+DataType SubscriptDataType(const DataType dataType, const std::string& subscript, std::vector<std::pair<int, int>>* indices = nullptr);
 
 // Returns the data type for the specified literal token (BoolLiteral, IntLiteral, FloatLiteral, and StringLiteral).
 DataType TokenToDataType(const Token& tkn);

@@ -39,6 +39,8 @@ DECL_REPORT( NotImplementedYet,                 "[{0} ]not implemented yet[ (in 
 DECL_REPORT( DeclaredAt,                        "declared at ({0})"                                                                                             );
 DECL_REPORT( PrevDefinitionAt,                  "previous definition at ({0})"                                                                                  );
 DECL_REPORT( ExceptionThrown,                   "exception thrown: "                                                                                            );
+DECL_REPORT( ZeroBased,                         "zero-based"                                                                                                    );
+DECL_REPORT( OneBased,                          "one-based"                                                                                                     );
 
 /* ----- Token ----- */
 
@@ -144,7 +146,7 @@ DECL_REPORT( InvalidVectorDimension,            "invalid vector dimension (must 
 DECL_REPORT( InvalidVectorSubscript,            "invalid vector subscript '{0}' for {1}"                                                                        );
 DECL_REPORT( InvalidMatrixDimension,            "invalid matrix dimension (must be in the range \\[1, 4\\] x \\[1, 4\\], but got {0} x {1})"                    );
 DECL_REPORT( InvalidMatrixSubscriptMixture,     "invalid mixture of zero-based and one-based matrix subscripts[: '{0}']"                                        );
-DECL_REPORT( InvalidCharInMatrixSubscript,      "invalid character '{0}' in [{2}-based ]matrix subscript: '{1}'"                                                );
+DECL_REPORT( InvalidCharInMatrixSubscript,      "invalid character '{0}' in [{2} ]matrix subscript: '{1}'"                                                      );
 DECL_REPORT( InvalidIntrinsicArgType,           "invalid argument type denoter for intrinsic[ '{0}']"                                                           );
 DECL_REPORT( InvalidIntrinsicArgCount,          "invalid number of arguments for intrinsic[ '{0}'][ (expected {1}, but got {2})]"                               );
 DECL_REPORT( InvalidIntrinsicArgs,              "invalid arguments for intrinsic[ '{0}']"                                                                       );
