@@ -175,7 +175,7 @@ std::string ExprConverter::GetMatrixSubscriptWrapperIdent(const NameMangling& na
  * ======= Private: =======
  */
 
-TypeDenoterPtr ExprConverter::MakeBufferAccessCallTypeDenoter(const DataType genericDataType)
+static TypeDenoterPtr MakeBufferAccessCallTypeDenoter(const DataType genericDataType)
 {
     auto typeDenoter = std::make_shared<BaseTypeDenoter>();
     

@@ -10,7 +10,6 @@
 
 
 #include "Converter.h"
-#include "ExprConverter.h"
 #include <functional>
 #include <set>
 
@@ -26,6 +25,11 @@ e.g. remove arguments from intrinsic calls, that are not allowed in GLSL, such a
 */
 class GLSLConverter : public Converter
 {
+
+    public:
+
+        static bool ConvertVarDeclType(VarDecl& varDecl);
+        static bool ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataType dataType);
     
     private:
         
@@ -39,9 +43,6 @@ class GLSLConverter : public Converter
 
         // Returns true if the output shader version is VKSL (GLSL for Vulkan).
         bool IsVKSL() const;
-
-        // Returns true if the 'GL_ARB_shading_language_420pack' is explicitly available.
-        bool HasShadingLanguage420Pack() const;
 
         // Returns true if separate objects for samplers & textures should be used.
         bool UseSeparateSamplers() const;
@@ -94,12 +95,6 @@ class GLSLConverter : public Converter
 
         // Renames the specified identifier if it equals a reserved GLSL intrinsic or function name.
         bool RenameReservedKeyword(Identifier& ident);
-
-        // Function signature compare callback for the function name converter.
-        static bool CompareFuncSignatures(const FunctionDecl& lhs, const FunctionDecl& rhs);
-
-        static bool ConvertVarDeclType(VarDecl& varDecl);
-        static bool ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataType dataType);
 
         /* ----- Function declaration ----- */
 
@@ -154,8 +149,6 @@ class GLSLConverter : public Converter
         void ConvertSlotRegisters(std::vector<RegisterPtr>& slotRegisters);
 
         /* === Members === */
-
-        ExprConverter               exprConverter_;
 
         ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
         OutputShaderVersion         versionOut_         = OutputShaderVersion::GLSL;

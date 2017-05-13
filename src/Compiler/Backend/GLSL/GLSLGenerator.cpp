@@ -14,6 +14,9 @@
 #include "StructParameterAnalyzer.h"
 #include "TypeDenoter.h"
 #include "Exception.h"
+#include "TypeConverter.h"
+#include "ExprConverter.h"
+#include "FuncNameConverter.h"
 #include "Helper.h"
 #include "ReportIdents.h"
 #include <initializer_list>
@@ -90,10 +93,51 @@ void GLSLGenerator::GenerateCodePrimary(
                 structAnalyzer.MarkStructsFromEntryPoint(program, inputDesc.shaderTarget);
             }
 
+            {
+                /* Convert type of specific semantics */
+                TypeConverter typeConverter;
+                typeConverter.Convert(program, GLSLConverter::ConvertVarDeclType);
+            }
+
+            /* Convert expressions (Before reference analysis) */
+            {
+                ExprConverter converter;
+                Flags converterFlags = ExprConverter::All;
+
+                converterFlags.Remove(ExprConverter::ConvertMatrixSubscripts);
+
+                if (HasShadingLanguage420Pack())
+                {
+                    /*
+                    Remove specific conversions when the GLSL output version is explicitly set to 4.20 or higher,
+                    i.e. "GL_ARB_shading_language_420pack" extension is available.
+                    */
+                    converterFlags.Remove(ExprConverter::ConvertVectorSubscripts);
+                    converterFlags.Remove(ExprConverter::ConvertInitializerToCtor);
+                }
+
+                converter.Convert(program, converterFlags, nameMangling_);
+            }
+
             /* Convert AST for GLSL code generation (Before reference analysis) */
             {
                 GLSLConverter converter;
                 converter.ConvertAST(program, inputDesc, outputDesc);
+            }
+
+            /* Convert function names after main conversion, since functon owner structs may have been renamed as well */
+            {
+                FuncNameConverter funcNameConverter;
+                funcNameConverter.Convert(
+                    program,
+                    nameMangling_,
+                    [](const FunctionDecl& lhs, const FunctionDecl& rhs)
+                    {
+                        /* Compare function signatures and ignore generic sub types (GLSL has no distinction for these types) */
+                        return lhs.EqualsSignature(rhs, TypeDenoter::IgnoreGenericSubType);
+                    },
+                    FuncNameConverter::All
+                );
             }
 
             /* Mark all reachable AST nodes */
@@ -183,6 +227,11 @@ bool GLSLGenerator::IsESSL() const
 bool GLSLGenerator::IsVKSL() const
 {
     return IsLanguageVKSL(versionOut_);
+}
+
+bool GLSLGenerator::HasShadingLanguage420Pack() const
+{
+    return ( IsVKSL() || ( versionOut_ >= OutputShaderVersion::GLSL420 && versionOut_ <= OutputShaderVersion::GLSL450 ) );
 }
 
 bool GLSLGenerator::UseSeparateSamplers() const

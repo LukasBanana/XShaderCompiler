@@ -7,8 +7,7 @@
 
 #include "GLSLConverter.h"
 #include "GLSLKeywords.h"
-#include "FuncNameConverter.h"
-#include "TypeConverter.h"
+#include "ExprConverter.h"
 #include "AST.h"
 #include "ASTFactory.h"
 #include "Exception.h"
@@ -43,6 +42,60 @@ struct CodeBlockStmntArgs
  * GLSLConverter class
  */
 
+bool GLSLConverter::ConvertVarDeclType(VarDecl& varDecl)
+{
+    if (varDecl.semantic.IsSystemValue())
+    {
+        /* Convert data type for system value semantics */
+        const auto dataType = SemanticToGLSLDataType(varDecl.semantic);
+        if (dataType != DataType::Undefined)
+        {
+            ConvertVarDeclBaseTypeDenoter(varDecl, dataType);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool GLSLConverter::ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataType dataType)
+{
+    if (auto varDeclStmnt = varDecl.declStmntRef)
+    {
+        auto typeDen = std::make_shared<BaseTypeDenoter>(dataType);
+
+        if (varDeclStmnt->varDecls.size() == 1)
+        {
+            /* Convert type of declaration statement */
+            varDeclStmnt->typeSpecifier->typeDenoter = typeDen;
+        }
+        else
+        {
+            /* Set custom type denoter for this variable */
+            varDecl.SetCustomTypeDenoter(typeDen);
+
+            /*
+            ~~~~~~~~~~~~~~~ TODO: ~~~~~~~~~~~~~~~
+            split declaration statement into three parts:
+            1. All variables before this one
+            2. This variable
+            3. All variables after this one
+
+            Example of converting 'b' (Before):
+                "uint a, b = a, c = b;"
+
+            Example of converting 'b' (After):
+                "uint a; int b = (int)a; uint c = (uint)b;"
+            */
+        }
+
+        varDecl.ResetTypeDenoter();
+
+        return true;
+    }
+    return false;
+}
+
+
 /*
  * ======= Private: =======
  */
@@ -57,48 +110,13 @@ void GLSLConverter::ConvertASTPrimary(Program& program, const ShaderInput& input
     autoBindingSlot_    = outputDesc.options.autoBindingStartSlot;
     separateSamplers_   = outputDesc.options.separateSamplers;
 
-    /* Convert type of specific semantics */
-    TypeConverter typeConverter;
-    typeConverter.Convert(program, GLSLConverter::ConvertVarDeclType);
-
-    /* Convert expressions */
-    Flags exprConverterFlags = ExprConverter::All;
-
-    exprConverterFlags.Remove(ExprConverter::ConvertMatrixSubscripts);
-
-    if (HasShadingLanguage420Pack())
-    {
-        /*
-        Remove specific conversions when the GLSL output version is explicitly set to 4.20 or higher,
-        i.e. "GL_ARB_shading_language_420pack" extension is available.
-        */
-        exprConverterFlags.Remove(ExprConverter::ConvertVectorSubscripts);
-        exprConverterFlags.Remove(ExprConverter::ConvertInitializerToCtor);
-    }
-
-    exprConverter_.Convert(program, exprConverterFlags, GetNameMangling());
-
     /* Visit program AST */
     Visit(&program);
-
-    /* Convert function names after main conversion, since functon owner structs may have been renamed as well */
-    FuncNameConverter funcNameConverter;
-    funcNameConverter.Convert(
-        program,
-        GetNameMangling(),
-        GLSLConverter::CompareFuncSignatures,
-        FuncNameConverter::All
-    );
 }
 
 bool GLSLConverter::IsVKSL() const
 {
     return IsLanguageVKSL(versionOut_);
-}
-
-bool GLSLConverter::HasShadingLanguage420Pack() const
-{
-    return ( IsVKSL() || ( versionOut_ >= OutputShaderVersion::GLSL420 && versionOut_ <= OutputShaderVersion::GLSL450 ) );
 }
 
 bool GLSLConverter::UseSeparateSamplers() const
@@ -671,65 +689,6 @@ bool GLSLConverter::RenameReservedKeyword(Identifier& ident)
 
         return false;
     }
-}
-
-bool GLSLConverter::CompareFuncSignatures(const FunctionDecl& lhs, const FunctionDecl& rhs)
-{
-    /* Compare function signatures and ignore generic sub types (GLSL has no distinction for these types) */
-    return lhs.EqualsSignature(rhs, TypeDenoter::IgnoreGenericSubType);
-}
-
-bool GLSLConverter::ConvertVarDeclType(VarDecl& varDecl)
-{
-    if (varDecl.semantic.IsSystemValue())
-    {
-        /* Convert data type for system value semantics */
-        const auto dataType = SemanticToGLSLDataType(varDecl.semantic);
-        if (dataType != DataType::Undefined)
-        {
-            ConvertVarDeclBaseTypeDenoter(varDecl, dataType);
-            return true;
-        }
-    }
-    return false;
-}
-
-bool GLSLConverter::ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataType dataType)
-{
-    if (auto varDeclStmnt = varDecl.declStmntRef)
-    {
-        auto typeDen = std::make_shared<BaseTypeDenoter>(dataType);
-
-        if (varDeclStmnt->varDecls.size() == 1)
-        {
-            /* Convert type of declaration statement */
-            varDeclStmnt->typeSpecifier->typeDenoter = typeDen;
-        }
-        else
-        {
-            /* Set custom type denoter for this variable */
-            varDecl.SetCustomTypeDenoter(typeDen);
-
-            /*
-            ~~~~~~~~~~~~~~~ TODO: ~~~~~~~~~~~~~~~
-            split declaration statement into three parts:
-            1. All variables before this one
-            2. This variable
-            3. All variables after this one
-
-            Example of converting 'b' (Before):
-                "uint a, b = a, c = b;"
-
-            Example of converting 'b' (After):
-                "uint a; int b = (int)a; uint c = (uint)b;"
-            */
-        }
-
-        varDecl.ResetTypeDenoter();
-
-        return true;
-    }
-    return false;
 }
 
 /* ----- Function declaration ----- */

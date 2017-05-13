@@ -86,8 +86,6 @@ class ExprConverter : public Visitor
         
         /* === Functions === */
 
-        TypeDenoterPtr MakeBufferAccessCallTypeDenoter(const DataType genericDataType);
-
         /* ----- Conversion ----- */
 
         // Converts the expression according to the specified flags (if enabled in the current conversion).
