@@ -197,6 +197,9 @@
 [MatrixMulTest1: vert]
 -T vert -E main -o output/* MatrixMulTest1.hlsl
 
+[MatrixSubscriptsTest1: vert]
+-T vert -E main -o output/* MatrixSubscriptsTest1.hlsl
+
 [ExtLayoutAttrTest1: vert]
 -T vert -E main -Xall -o output/* ExtLayoutAttrTest1.hlsl
 
