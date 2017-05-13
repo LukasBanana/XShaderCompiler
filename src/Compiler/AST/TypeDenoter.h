@@ -49,6 +49,10 @@ struct VectorSpace
 {
     using StringType = CiString;
 
+    VectorSpace() = default;
+    VectorSpace(const StringType& src, const StringType& dst);
+    VectorSpace(const StringType& space);
+
     // Returns a descriptive string of this vector space.
     std::string ToString() const;
 

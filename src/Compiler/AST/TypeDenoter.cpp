@@ -19,6 +19,17 @@ namespace Xsc
 
 #ifdef XSC_ENABLE_LANGUAGE_EXT
 
+VectorSpace::VectorSpace(const StringType& src, const StringType& dst) :
+    src { src },
+    dst { dst }
+{
+}
+
+VectorSpace::VectorSpace(const StringType& space) :
+    VectorSpace { space, space }
+{
+}
+
 std::string VectorSpace::ToString() const
 {
     if (!IsSpecified())
@@ -41,7 +52,16 @@ bool VectorSpace::IsChangeOfBasis() const
 
 bool VectorSpace::IsAssignableTo(const VectorSpace& rhs) const
 {
-    return (dst == rhs.src || !rhs.IsSpecified());
+    if (IsChangeOfBasis() && rhs.IsChangeOfBasis())
+    {
+        /* If both vector space are a change-of-basis, compare equality */
+        return (*this == rhs);
+    }
+    else
+    {
+        /* Otherwise, compare destination of this vector space to the source of the specified vector space */
+        return (dst == rhs.src || !rhs.IsSpecified());
+    }
 }
 
 void VectorSpace::Set(const StringType& space)
