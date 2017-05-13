@@ -297,6 +297,22 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
         }
     }
 
+    /* Fetch used matrix subscripts */
+    if (ast->prefixExpr)
+    {
+        const auto& prefixTypeDen = ast->prefixExpr->GetTypeDenoter()->GetAliased();
+        if (prefixTypeDen.IsMatrix())
+        {
+            auto prefixBaseTypeDen = prefixTypeDen.As<BaseTypeDenoter>();
+            MatrixSubscriptUsage usage;
+            {
+                usage.dataType = prefixBaseTypeDen->dataType;
+                SubscriptDataType(usage.dataType, ast->ident, &(usage.indices));
+            }
+            program_->usedMatrixSubscripts.insert(usage);
+        }
+    }
+
     /* Visit symbol reference and sub nodes */
     Visit(ast->symbolRef);
 

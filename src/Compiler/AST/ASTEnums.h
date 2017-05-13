@@ -233,6 +233,20 @@ enum class DataType
     Double4x4,
 };
 
+// Container structure for all kinds of matrix subscript usages.
+struct MatrixSubscriptUsage
+{
+    inline bool operator < (const MatrixSubscriptUsage& rhs) const
+    {
+        if (dataType < rhs.dataType) { return true;  }
+        if (dataType > rhs.dataType) { return false; }
+        return indices < rhs.indices;
+    }
+
+    DataType                            dataType = DataType::Undefined;
+    std::vector<std::pair<int, int>>    indices;
+};
+
 // Returns a descriptive string of the specified data type.
 std::string DataTypeToString(const DataType t, bool useTemplateSyntax = false);
 
@@ -931,7 +945,7 @@ enum class Intrinsic
     Image_AtomicExchange        // GLSL only
 };
 
-// Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>
+// Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>).
 struct IntrinsicUsage
 {
     struct ArgumentList

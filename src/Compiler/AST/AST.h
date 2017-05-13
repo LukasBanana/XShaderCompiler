@@ -358,6 +358,7 @@ struct Program : public AST
     SourceCodePtr                       sourceCode;                 // Preprocessed source code.
     FunctionDecl*                       entryPointRef   = nullptr;  // Reference to the entry point function declaration.
     std::map<Intrinsic, IntrinsicUsage> usedIntrinsics;             // Set of all used intrinsic (filled by the reference analyzer).
+    std::set<MatrixSubscriptUsage>      usedMatrixSubscripts;       // Set of all used matrix subscripts (filled by the reference analyzer).
 
     LayoutTessControlShader             layoutTessControl;          // Global program layout attributes for a tessellation-control shader.
     LayoutTessEvaluationShader          layoutTessEvaluation;       // Global program layout attributes for a tessellation-evaluation shader.
