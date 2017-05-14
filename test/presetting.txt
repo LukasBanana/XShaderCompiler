@@ -116,8 +116,11 @@
 [FunctionDeclTest1 VS]
 -T vert -E VS -o output/* FunctionDeclTest1.hlsl
 
-[StructTest1 PS]
--T vert -E VS -o output/* StructTest1.hlsl
+[StructTest1: vert]
+-T vert -E main -o output/* StructTest1.hlsl
+
+[StructTest2: vert]
+-T vert -E main -o output/* StructTest2.hlsl
 
 [StructInheritTest1 PS]
 -T frag -E PS -o output/* StructInheritTest1.hlsl
