@@ -196,6 +196,10 @@ IMPLEMENT_VISIT_PROC(BufferDecl)
     if (ast->GetTypeDenoter()->NumDimensions() >= 2)
         AcquireExtension(E_GL_ARB_arrays_of_arrays, R_MultiDimArray, ast);
 
+    /* Check for buffer types */
+    if (ast->GetBufferType() == BufferType::TextureCubeArray)
+        AcquireExtension(E_GL_ARB_texture_cube_map_array, R_TextureCubeArray, ast);
+
     VISIT_DEFAULT(BufferDecl);
 }
 

@@ -53,7 +53,7 @@ const std::map<std::string, int>& GetGLSLExtensionVersionMap()
         { E_GL_ARB_sparse_texture2,                         110 },
         { E_GL_ARB_sparse_texture_clamp,                    110 },
         { E_GL_ARB_tessellation_shader,                     110 },
-        { E_GL_ARB_texture_cube_map_array,                  110 },
+        { E_GL_ARB_texture_cube_map_array,                  400 },
         { E_GL_ARB_texture_gather,                          110 },
         { E_GL_ARB_texture_multisample,                     150 },
         { E_GL_ARB_texture_query_lod,                       400 },

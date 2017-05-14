@@ -303,6 +303,7 @@ DECL_REPORT( NoGLSLExtensionVersionRegisterd,   "no GLSL version is registered f
 DECL_REPORT( FragmentCoordinate,                "fragment coordinate"                                                                                           );
 DECL_REPORT( EarlyDepthStencil,                 "early depth stencil test"                                                                                      );
 DECL_REPORT( MultiDimArray,                     "multi-dimensional array"                                                                                       );
+DECL_REPORT( TextureCubeArray,                  "texture cube array"                                                                                            );
 DECL_REPORT( PackOffsetLayout,                  "pack offset layout"                                                                                            );
 DECL_REPORT( ConstantBuffer,                    "constant buffer"                                                                                               );
 DECL_REPORT( ExplicitBindingSlot,               "explicit binding slot"                                                                                         );
