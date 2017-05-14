@@ -14,7 +14,7 @@ namespace Xsc
 
 
 PreProcessorScanner::PreProcessorScanner(Log* log) :
-    Scanner{ log }
+    Scanner { log }
 {
 }
 

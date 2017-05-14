@@ -14,7 +14,7 @@ namespace Xsc
 
 
 SourceCode::SourceCode(const std::shared_ptr<std::istream>& stream) :
-    stream_{ stream }
+    stream_ { stream }
 {
 }
 

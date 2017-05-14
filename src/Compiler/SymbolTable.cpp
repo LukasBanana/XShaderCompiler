@@ -107,7 +107,7 @@ void RuntimeErrIdentAlreadyDeclared(const std::string& ident)
  */
 
 ASTSymbolOverload::ASTSymbolOverload(const std::string& ident, AST* ast) :
-    ident_{ ident }
+    ident_ { ident }
 {
     /* Add initial reference */
     refs_.push_back(ast);

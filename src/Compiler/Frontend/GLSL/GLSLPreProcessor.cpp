@@ -16,7 +16,7 @@ namespace Xsc
 
 
 GLSLPreProcessor::GLSLPreProcessor(IncludeHandler& includeHandler, Log* log) :
-    PreProcessor{ includeHandler, log }
+    PreProcessor { includeHandler, log }
 {
 }
 
