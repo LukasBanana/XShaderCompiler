@@ -49,6 +49,7 @@ class ExprConverter : public Visitor
             ConvertTextureBracketOp     = (1 <<  9), // Converts Texture Operator[] accesses into "Load" intrinsic calls.
             ConvertTextureIntrinsicVec4 = (1 << 10), // Converts Texture intrinsic calls whose return type is a non-4D-vector.
             ConvertMatrixSubscripts     = (1 << 11), // Converts matrix subscripts into function calls to the respective wrapper function.
+            ConvertCompatibleStructs    = (1 << 12), // Converts type denoters and struct members when the underlying struct type has a compatible struct.
 
             // All conversion flags commonly used before visiting the sub nodes.
             AllPreVisit                 = (
@@ -56,7 +57,8 @@ class ExprConverter : public Visitor
                 ConvertImageAccess          |
                 ConvertLog10                |
                 ConvertSamplerBufferAccess  |
-                ConvertTextureBracketOp
+                ConvertTextureBracketOp     |
+                ConvertCompatibleStructs
             ),
 
             // All conversion flags commonly used after visiting the sub nodes.
@@ -137,6 +139,9 @@ class ExprConverter : public Visitor
 
         // Appends vector subscripts to a texture intrinsic call if the intrinsic return type is not a 4D-vector.
         void ConvertExprTextureIntrinsicVec4(ExprPtr& expr);
+
+        // Converts the specified expression when it refers to a member variable of a struct that has a compatible struct.
+        void ConvertExprCompatibleStruct(ExprPtr& expr);
 
         /* ----- Visitor implementation ----- */
 

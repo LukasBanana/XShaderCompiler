@@ -223,6 +223,9 @@ void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
         
         if (enabled(ConvertTextureBracketOp))
             ConvertExprTextureBracketOp(expr);
+
+        if (enabled(ConvertCompatibleStructs))
+            ConvertExprCompatibleStruct(expr);
     }
 }
 
@@ -771,6 +774,40 @@ void ExprConverter::ConvertExprTextureIntrinsicVec4(ExprPtr& expr)
                             expr,
                             vectorSubscript.substr(0, static_cast<std::size_t>(vecTypeDim))
                         );
+                    }
+                }
+            }
+        }
+    }
+}
+
+void ExprConverter::ConvertExprCompatibleStruct(ExprPtr& expr)
+{
+    /* Is this an object expression? */
+    if (auto objectExpr = expr->As<ObjectExpr>())
+    {
+        if (objectExpr->prefixExpr && objectExpr->symbolRef)
+        {
+            /* Does the object expression refer to a variable? */
+            if (auto varDecl = objectExpr->symbolRef->As<VarDecl>())
+            {
+                /* Has the prefix expression a struct type denoter? */
+                const auto& prefixTypeDen = objectExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+                if (auto prefixStructTypeDen = prefixTypeDen.As<StructTypeDenoter>())
+                {
+                    if (auto structDecl = prefixStructTypeDen->structDeclRef)
+                    {
+                        /* Has the struct a compatible struct? */
+                        if (auto compatStruct = structDecl->compatibleStructRef)
+                        {
+                            /* Map original variable to compatible variable by index */
+                            auto idx = structDecl->MemberVarToIndex(varDecl);
+                            if (auto compatVarDecl = compatStruct->IndexToMemberVar(idx))
+                            {
+                                /* Replace identifier by respective member of the type-compatible struct */
+                                objectExpr->ReplaceSymbol(compatVarDecl);
+                            }
+                        }
                     }
                 }
             }

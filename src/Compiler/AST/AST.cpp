@@ -863,6 +863,60 @@ void StructDecl::AddFlagsRecursiveParents(unsigned int structFlags)
     }
 }
 
+std::size_t StructDecl::MemberVarToIndex(const VarDecl* varDecl, bool includeBaseStructs) const
+{
+    static const std::size_t invalidIdx = ~0;
+
+    std::size_t idx = 0;
+
+    /* Search member variable in base struct */
+    if (baseStructRef && includeBaseStructs)
+    {
+        auto baseIdx = baseStructRef->MemberVarToIndex(varDecl, includeBaseStructs);
+        if (baseIdx != invalidIdx)
+            idx = baseIdx;
+    }
+
+    /* Search member variable in this struct */
+    for (const auto& member : varMembers)
+    {
+        for (const auto& var : member->varDecls)
+        {
+            if (varDecl == var.get())
+                return idx;
+            ++idx;
+        }
+    }
+
+    return invalidIdx;
+}
+
+static VarDecl* FindIndexOfStructMemberVar(const StructDecl& structDecl, std::size_t& idx, bool includeBaseStructs)
+{
+    /* Search member variable in base struct */
+    if (structDecl.baseStructRef && includeBaseStructs)
+    {
+        if (auto varDecl = FindIndexOfStructMemberVar(*structDecl.baseStructRef, idx, includeBaseStructs))
+            return varDecl;
+    }
+
+    /* Search member variable in this struct */
+    for (const auto& member : structDecl.varMembers)
+    {
+        if (idx < member->varDecls.size())
+            return member->varDecls[idx].get();
+        else
+            idx -= member->varDecls.size();
+    }
+
+    return nullptr;
+}
+
+VarDecl* StructDecl::IndexToMemberVar(std::size_t idx, bool includeBaseStructs) const
+{
+    return FindIndexOfStructMemberVar(*this, idx, includeBaseStructs);
+}
+
 
 /* ----- AliasDecl ----- */
 
@@ -2096,6 +2150,15 @@ std::string ObjectExpr::ToStringAsNamespace() const
     s += ident;
 
     return s;
+}
+
+void ObjectExpr::ReplaceSymbol(Decl* symbol)
+{
+    if (symbol)
+    {
+        symbolRef   = symbol;
+        ident       = symbol->ident;
+    }
 }
 
 VarDecl* ObjectExpr::FetchVarDecl() const

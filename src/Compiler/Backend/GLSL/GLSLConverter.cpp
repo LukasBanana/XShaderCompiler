@@ -226,6 +226,28 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     VisitScopedStmntList(ast->stmnts);
 }
 
+IMPLEMENT_VISIT_PROC(TypeSpecifier)
+{
+    /* Replace compatible struct types */
+    auto typeDen = ast->typeDenoter->GetSub();
+    if (auto structTypeDen = typeDen->As<StructTypeDenoter>())
+    {
+        if (auto structDecl = structTypeDen->structDeclRef)
+        {
+            if (structDecl->compatibleStructRef)
+            {
+                /* Replace original struct reference by its compatible struct type */
+                structTypeDen->structDeclRef = structDecl->compatibleStructRef;
+
+                /* Drop original structure declaration */
+                GetProgram()->disabledAST.emplace_back(std::move(ast->structDecl));
+            }
+        }
+    }
+
+    VISIT_DEFAULT(TypeSpecifier);
+}
+
 /* --- Declarations --- */
 
 IMPLEMENT_VISIT_PROC(VarDecl)

@@ -683,6 +683,12 @@ struct StructDecl : public Decl
     // Adds the specified flags to this structure, and all parent structures (i.e. all structures that have a member variable with this structure type).
     void AddFlagsRecursiveParents(unsigned int structFlags);
 
+    // Returns the zero-based index of the specified member variable, or ~0 on failure.
+    std::size_t MemberVarToIndex(const VarDecl* varDecl, bool includeBaseStructs = true) const;
+
+    // Returns the member variable of the specified zero-based index, null on failure.
+    VarDecl* IndexToMemberVar(std::size_t idx, bool includeBaseStructs = true) const;
+
     std::string                     baseStructName;                     // May be empty (if no inheritance is used).
     std::vector<StmntPtr>           localStmnts;                        // Local declaration statements.
 
@@ -1252,6 +1258,9 @@ struct ObjectExpr : public Expr
 
     // Returns this object expression as a static namespace, i.e. only for prefix expression that are also from type ObjectExpr.
     std::string ToStringAsNamespace() const;
+
+    // Replaces the old symbol and identifier by the new symbol.
+    void ReplaceSymbol(Decl* symbol);
 
     // Returns the specified type of AST node from the symbol (if the symbol refers to one).
     template <typename T>

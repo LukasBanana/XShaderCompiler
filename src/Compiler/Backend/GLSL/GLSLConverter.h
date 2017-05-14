@@ -52,6 +52,7 @@ class GLSLConverter : public Converter
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( SwitchCase        );
+        DECL_VISIT_PROC( TypeSpecifier     );
 
         DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( BufferDecl        );
@@ -132,6 +133,7 @@ class GLSLConverter : public Converter
         void ConvertObjectExpr(ObjectExpr* objectExpr);
         void ConvertObjectExprStaticVar(ObjectExpr* objectExpr);
         void ConvertObjectExprDefault(ObjectExpr* objectExpr);
+
         void ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const StructDecl* ownerStructDecl, const StructDecl* activeStructDecl);
         void ConvertObjectPrefixSelfParam(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
         void ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
