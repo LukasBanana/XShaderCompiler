@@ -233,6 +233,10 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         }
     }
 
+    /* Connect anonymous structs to compatible struct type */
+    if (ast->IsAnonymous())
+        ast->compatibleStructRef = FindCompatibleStructDecl(*ast);
+
     /* Register struct identifier in symbol table */
     Register(ast->ident, ast);
 

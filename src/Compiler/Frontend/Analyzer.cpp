@@ -374,6 +374,35 @@ StructDecl* Analyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDeno
     return nullptr;
 }
 
+StructDecl* Analyzer::FindCompatibleStructDecl(const StructDecl& rhs)
+{
+    /* Search compatible structure in symbol table */
+    auto symbol = symTable_.Find(
+        [&rhs](const ASTSymbolOverloadPtr& symbol)
+        {
+            if (auto ref = symbol->Fetch(false))
+            {
+                if (auto structDecl = ref->As<StructDecl>())
+                {
+                    /* Is this structure compatible with the specified structure? */
+                    if (structDecl->EqualsMemberTypes(rhs))
+                        return true;
+                }
+            }
+            return false;
+        }
+    );
+
+    /* Return found structure declaration */
+    if (symbol)
+    {
+        if (auto ref = symbol->Fetch(false))
+            return ref->As<StructDecl>();
+    }
+    
+    return nullptr;
+}
+
 bool Analyzer::InsideGlobalScope() const
 {
     return symTable_.InsideGlobalScope();

@@ -115,6 +115,9 @@ class Analyzer : protected Visitor
         StructDecl* FetchStructDeclFromIdent(const std::string& ident, const AST* ast = nullptr);
         StructDecl* FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter);
 
+        // Tries to find a type compatible structure declaration within the current scope.
+        StructDecl* FindCompatibleStructDecl(const StructDecl& rhs);
+
         // Returns true if the visitor is currently inside the global scope (i.e. out of any function declaration).
         bool InsideGlobalScope() const;
 
