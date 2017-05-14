@@ -62,6 +62,9 @@ class SymbolTable
         // Callback function when a symbol is about to be released from its scope.
         using OnReleaseProc = std::function<void(const SymbolType& symbol)>;
 
+        // Search predicate function signature.
+        using SearchPredicateProc = std::function<bool(const SymbolType& symbol)>;
+
         SymbolTable()
         {
             OpenScope();
@@ -71,6 +74,7 @@ class SymbolTable
         void OpenScope()
         {
             scopeStack_.push({});
+            symTableAnonymous_.push_back({});
         }
 
         // Closes the active scope.
@@ -97,7 +101,17 @@ class SymbolTable
                         }
                     }
                 }
+
+                if (releaseProc)
+                {
+                    /* Release all symbols from the anonymous symbol table */
+                    for (const auto& sym : symTableAnonymous_.back())
+                        releaseProc(sym.symbol);
+                }
+
+                /* Decrease scope level */
                 scopeStack_.pop();
+                symTableAnonymous_.pop_back();
             }
         }
 
@@ -110,29 +124,35 @@ class SymbolTable
             /* Validate input parameters */
             if (scopeStack_.empty())
                 RuntimeErrNoActiveScope();
+
             if (ident.empty())
-                return false;
-
-            /* Check if identifier was already registered in the current scope */
-            auto it = symTable_.find(ident);
-            if (it != symTable_.end() && !it->second.empty())
             {
-                auto& entry = it->second.top();
-                if (entry.symbol && entry.scopeLevel == ScopeLevel())
-                {
-                    /* Call override procedure and pass previous symbol entry as reference */
-                    if (overrideProc && overrideProc(entry.symbol))
-                        return true;
-                    else if (throwOnFailure)
-                        RuntimeErrIdentAlreadyDeclared(ident);
-                    else
-                        return false;
-                }
+                /* Register symbol in anonymous symbol table */
+                symTableAnonymous_.back().push_back({ symbol, ScopeLevel() });
             }
+            else
+            {
+                /* Check if identifier was already registered in the current scope */
+                auto it = symTable_.find(ident);
+                if (it != symTable_.end() && !it->second.empty())
+                {
+                    auto& entry = it->second.top();
+                    if (entry.symbol && entry.scopeLevel == ScopeLevel())
+                    {
+                        /* Call override procedure and pass previous symbol entry as reference */
+                        if (overrideProc && overrideProc(entry.symbol))
+                            return true;
+                        else if (throwOnFailure)
+                            RuntimeErrIdentAlreadyDeclared(ident);
+                        else
+                            return false;
+                    }
+                }
 
-            /* Register new identifier */
-            symTable_[ident].push({ symbol, ScopeLevel() });
-            scopeStack_.top().push_back(ident);
+                /* Register new identifier */
+                symTable_[ident].push({ symbol, ScopeLevel() });
+                scopeStack_.top().push_back(ident);
+            }
 
             return true;
         }
@@ -156,6 +176,38 @@ class SymbolTable
                 const auto& sym = it->second.top();
                 if (sym.scopeLevel == ScopeLevel())
                     return sym.symbol;
+            }
+            return GenericDefaultValue<SymbolType>::Get();
+        }
+
+        // Returns the first symbol in the scope hierarchy for which the search predicate returns true.
+        SymbolType Find(const SearchPredicateProc& searchPredicate) const
+        {
+            if (searchPredicate)
+            {
+                /* Search symbol in identifiable symbol ist */
+                for (const auto& sym : symTable_)
+                {
+                    if (!sym.second.empty())
+                    {
+                        const auto& symRef = sym.second.top().symbol;
+                        if (searchPredicate(symRef))
+                            return symRef;
+                    }
+                }
+
+                /* Search symbol in anonymous symbol list */
+                if (!symTableAnonymous_.empty())
+                {
+                    for (auto scope = symTableAnonymous_.rbegin(); scope != symTableAnonymous_.rend(); ++scope)
+                    {
+                        for (const auto& sym : *scope)
+                        {
+                            if (searchPredicate(sym.symbol))
+                                return sym.symbol;
+                        }
+                    }
+                }
             }
             return GenericDefaultValue<SymbolType>::Get();
         }
@@ -205,8 +257,11 @@ class SymbolTable
             std::size_t scopeLevel;
         };
 
-        // Stores the scope stack for all identifiers.
+        // Stores the scope stack for all identifiable symbols.
         std::map<std::string, std::stack<Symbol>>   symTable_;
+
+        // Stores the scope stack for all anonymous symbols.
+        std::vector<std::vector<Symbol>>            symTableAnonymous_;
 
         /*
         Stores all identifiers for the current stack.
