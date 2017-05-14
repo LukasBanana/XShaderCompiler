@@ -2372,8 +2372,12 @@ void GLSLGenerator::WriteFunction(FunctionDecl* ast)
     /* Write function header */
     if (auto structDecl = ast->returnType->structDecl.get())
     {
-        Visit(ast->returnType);
-        Blank();
+        /* Write structure declaration of function return type as a separated declaration */
+        StructDeclArgs structDeclArgs;
+        structDeclArgs.inEndWithSemicolon = true;
+
+        Visit(structDecl, &structDeclArgs);
+
         BeginLn();
         Write(structDecl->ident + " " + ast->ident + "(");
     }
