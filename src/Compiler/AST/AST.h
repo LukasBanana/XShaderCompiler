@@ -627,7 +627,7 @@ struct StructDecl : public Decl
     std::string ToString() const override;
 
     // Returns true if the specified structure declaration has the same member types as this structure (see 'TypeDenoter' for valid compare flags).
-    bool EqualsMembers(const StructDecl& rhs, const Flags& compareFlags = 0) const;
+    bool EqualsMemberTypes(const StructDecl& rhs, const Flags& compareFlags = 0) const;
 
     // Returns true if this structure type is castable to the specified base type denoter.
     bool IsCastableTo(const BaseTypeDenoter& rhs) const;

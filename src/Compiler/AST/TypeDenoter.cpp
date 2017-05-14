@@ -857,7 +857,7 @@ bool StructTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags
     if (auto rhsStructTypeDen = rhs.GetAliased().As<StructTypeDenoter>())
     {
         /* Compare this structure type with another structure type */
-        return GetStructDeclOrThrow()->EqualsMembers(
+        return GetStructDeclOrThrow()->EqualsMemberTypes(
             *rhsStructTypeDen->GetStructDeclOrThrow(),
             compareFlags
         );
@@ -874,7 +874,7 @@ bool StructTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     if (auto targetStructTypeDen = targetAliasedType.As<StructTypeDenoter>())
     {
         /* Compare this structure type with another structure type */
-        return structDecl->EqualsMembers(*targetStructTypeDen->GetStructDeclOrThrow());
+        return structDecl->EqualsMemberTypes(*targetStructTypeDen->GetStructDeclOrThrow());
     }
     else if (auto targetBaseTypeDen = targetAliasedType.As<BaseTypeDenoter>())
     {

@@ -558,7 +558,7 @@ std::string StructDecl::ToString() const
     return ("struct " + (IsAnonymous() ? ("<" + R_Anonymous + ">") : ident.Original()));
 }
 
-bool StructDecl::EqualsMembers(const StructDecl& rhs, const Flags& compareFlags) const
+bool StructDecl::EqualsMemberTypes(const StructDecl& rhs, const Flags& compareFlags) const
 {
     /* Collect member type denoters from this structure */
     std::vector<TypeDenoterPtr> lhsMemberTypeDens;
