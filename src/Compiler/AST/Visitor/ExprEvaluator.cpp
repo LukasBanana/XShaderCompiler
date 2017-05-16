@@ -18,11 +18,40 @@ namespace Xsc
 {
 
 
-Variant ExprEvaluator::Evaluate(Expr& ast, const OnObjectExprCallback& onObjectExprCallback)
+Variant ExprEvaluator::Evaluate(Expr& expr, const OnObjectExprCallback& onObjectExprCallback)
 {
-    onObjectExprCallback_ = (onObjectExprCallback ? onObjectExprCallback : [](ObjectExpr*) { return Variant(Variant::IntType(0)); });
-    Visit(&ast);
+    /* Reset internal state (with exceptions) */
+    throwOnFailure_ = true;
+    abort_          = false;
+
+    SetObjectExprCallback(onObjectExprCallback);
+
+    /* Visit expression AST */
+    Visit(&expr);
+
     return Pop();
+}
+
+Variant ExprEvaluator::EvaluateOrDefault(Expr& expr, const Variant& defaultValue, const OnObjectExprCallback& onObjectExprCallback)
+{
+    /* Reset internal state (without exceptions) */
+    throwOnFailure_ = false;
+    abort_          = false;
+
+    SetObjectExprCallback(onObjectExprCallback);
+
+    /* Visit expression AST */
+    Visit(&expr);
+
+    if (auto value = Pop())
+        return value;
+    else
+        return defaultValue;
+}
+
+void ExprEvaluator::Abort()
+{
+    abort_ = true;
 }
 
 
@@ -38,16 +67,36 @@ static void IllegalExpr(const std::string& exprName, const AST* ast = nullptr)
 
 void ExprEvaluator::Push(const Variant& v)
 {
-    variantStack_.push(v);
+    if (!abort_)
+        variantStack_.push(v);
 }
 
 Variant ExprEvaluator::Pop()
 {
-    if (variantStack_.empty())
-        throw std::runtime_error(R_StackUnderflow(R_ExprEvaluator));
-    auto v = variantStack_.top();
-    variantStack_.pop();
-    return v;
+    /* Return dummy variant if process has been canceld */
+    if (!abort_)
+    {
+        if (!variantStack_.empty())
+        {
+            /* Pop variant from stack */
+            auto v = variantStack_.top();
+            variantStack_.pop();
+            return v;
+        }
+        else if (throwOnFailure_)
+            RuntimeErr(R_StackUnderflow(R_ExprEvaluator));
+        else
+            Abort();
+    }
+    return {};
+}
+
+void ExprEvaluator::SetObjectExprCallback(const OnObjectExprCallback& callback)
+{
+    if (callback)
+        onObjectExprCallback_ = callback;
+    else
+        onObjectExprCallback_ = [](ObjectExpr*) -> Variant { return {}; };
 }
 
 /* --- Expressions --- */
@@ -57,7 +106,10 @@ Variant ExprEvaluator::Pop()
 
 IMPLEMENT_VISIT_PROC(NullExpr)
 {
-    IllegalExpr(R_DynamicArrayDim, ast);
+    if (throwOnFailure_)
+        IllegalExpr(R_DynamicArrayDim, ast);
+    else
+        Abort();
 }
 
 IMPLEMENT_VISIT_PROC(SequenceExpr)
@@ -76,8 +128,10 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
                 Push(true);
             else if (ast->value == "false")
                 Push(false);
-            else
+            else if (throwOnFailure_)
                 IllegalExpr(R_BoolLiteralValue(ast->value), ast);
+            else
+                Abort();
         }
         break;
 
@@ -103,7 +157,10 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
         default:
         {
-            IllegalExpr(R_LiteralType(DataTypeToString(ast->dataType)), ast);
+            if (throwOnFailure_)
+                IllegalExpr(R_LiteralType(DataTypeToString(ast->dataType)), ast);
+            else
+                Abort();
         }
         break;
     }
@@ -111,92 +168,113 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
 {
-    IllegalExpr(R_TypeSpecifier, ast);
+    if (throwOnFailure_)
+        IllegalExpr(R_TypeSpecifier, ast);
+    else
+        Abort();
 }
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
     Visit(ast->condExpr);
-    auto cond = Pop();
-
-    if (cond.ToBool())
-        Visit(ast->thenExpr);
-    else
-        Visit(ast->elseExpr);
+    if (auto cond = Pop())
+    {
+        if (cond.ToBool())
+            Visit(ast->thenExpr);
+        else
+            Visit(ast->elseExpr);
+    }
 }
 
 // EXPR OP EXPR
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
     Visit(ast->lhsExpr);
-    Visit(ast->rhsExpr);
-
-    auto rhs = Pop();
-    auto lhs = Pop();
-
-    switch (ast->op)
+    if (auto lhs = Pop())
     {
-        case BinaryOp::Undefined:
-            IllegalExpr(R_BinaryOp, ast);
-            break;
-        case BinaryOp::LogicalAnd:
-            Push(lhs.ToBool() && rhs.ToBool());
-            break;
-        case BinaryOp::LogicalOr:
-            Push(lhs.ToBool() || rhs.ToBool());
-            break;
-        case BinaryOp::Or:
-            Push(lhs | rhs);
-            break;
-        case BinaryOp::Xor:
-            Push(lhs ^ rhs);
-            break;
-        case BinaryOp::And:
-            Push(lhs & rhs);
-            break;
-        case BinaryOp::LShift:
-            Push(lhs << rhs);
-            break;
-        case BinaryOp::RShift:
-            Push(lhs >> rhs);
-            break;
-        case BinaryOp::Add:
-            Push(lhs + rhs);
-            break;
-        case BinaryOp::Sub:
-            Push(lhs - rhs);
-            break;
-        case BinaryOp::Mul:
-            Push(lhs * rhs);
-            break;
-        case BinaryOp::Div:
-            if (lhs.Type() == Variant::Types::Int && rhs.Int() == 0)
-                IllegalExpr(R_DivisionByZero, ast);
-            Push(lhs / rhs);
-            break;
-        case BinaryOp::Mod:
-            if (lhs.Type() == Variant::Types::Int && rhs.Int() == 0)
-                IllegalExpr(R_DivisionByZero, ast);
-            Push(lhs % rhs);
-            break;
-        case BinaryOp::Equal:
-            Push(lhs == rhs);
-            break;
-        case BinaryOp::NotEqual:
-            Push(lhs != rhs);
-            break;
-        case BinaryOp::Less:
-            Push(lhs < rhs);
-            break;
-        case BinaryOp::Greater:
-            Push(lhs > rhs);
-            break;
-        case BinaryOp::LessEqual:
-            Push(lhs <= rhs);
-            break;
-        case BinaryOp::GreaterEqual:
-            Push(lhs >= rhs);
-            break;
+        Visit(ast->rhsExpr);
+        if (auto rhs = Pop())
+        {
+            switch (ast->op)
+            {
+                case BinaryOp::Undefined:
+                    if (throwOnFailure_)
+                        IllegalExpr(R_BinaryOp, ast);
+                    else
+                        Abort();
+                    break;
+                case BinaryOp::LogicalAnd:
+                    Push(lhs.ToBool() && rhs.ToBool());
+                    break;
+                case BinaryOp::LogicalOr:
+                    Push(lhs.ToBool() || rhs.ToBool());
+                    break;
+                case BinaryOp::Or:
+                    Push(lhs | rhs);
+                    break;
+                case BinaryOp::Xor:
+                    Push(lhs ^ rhs);
+                    break;
+                case BinaryOp::And:
+                    Push(lhs & rhs);
+                    break;
+                case BinaryOp::LShift:
+                    Push(lhs << rhs);
+                    break;
+                case BinaryOp::RShift:
+                    Push(lhs >> rhs);
+                    break;
+                case BinaryOp::Add:
+                    Push(lhs + rhs);
+                    break;
+                case BinaryOp::Sub:
+                    Push(lhs - rhs);
+                    break;
+                case BinaryOp::Mul:
+                    Push(lhs * rhs);
+                    break;
+                case BinaryOp::Div:
+                    if (lhs.Type() == Variant::Types::Int && rhs.Int() == 0)
+                    {
+                        if (throwOnFailure_)
+                            IllegalExpr(R_DivisionByZero, ast);
+                        else
+                            Abort();
+                    }
+                    else
+                        Push(lhs / rhs);
+                    break;
+                case BinaryOp::Mod:
+                    if (lhs.Type() == Variant::Types::Int && rhs.Int() == 0)
+                    {
+                        if (throwOnFailure_)
+                            IllegalExpr(R_DivisionByZero, ast);
+                        else
+                            Abort();
+                    }
+                    else
+                        Push(lhs % rhs);
+                    break;
+                case BinaryOp::Equal:
+                    Push(lhs == rhs);
+                    break;
+                case BinaryOp::NotEqual:
+                    Push(lhs != rhs);
+                    break;
+                case BinaryOp::Less:
+                    Push(lhs < rhs);
+                    break;
+                case BinaryOp::Greater:
+                    Push(lhs > rhs);
+                    break;
+                case BinaryOp::LessEqual:
+                    Push(lhs <= rhs);
+                    break;
+                case BinaryOp::GreaterEqual:
+                    Push(lhs >= rhs);
+                    break;
+            }
+        }
     }
 }
 
@@ -205,31 +283,35 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
     Visit(ast->expr);
 
-    auto rhs = Pop();
-
-    switch (ast->op)
+    if (auto rhs = Pop())
     {
-        case UnaryOp::Undefined:
-            IllegalExpr(R_UnaryOp, ast);
-            break;
-        case UnaryOp::LogicalNot:
-            Push(!rhs.ToBool());
-            break;
-        case UnaryOp::Not:
-            Push(~rhs);
-            break;
-        case UnaryOp::Nop:
-            Push(rhs);
-            break;
-        case UnaryOp::Negate:
-            Push(-rhs);
-            break;
-        case UnaryOp::Inc:
-            Push(++rhs);
-            break;
-        case UnaryOp::Dec:
-            Push(--rhs);
-            break;
+        switch (ast->op)
+        {
+            case UnaryOp::Undefined:
+                if (throwOnFailure_)
+                    IllegalExpr(R_UnaryOp, ast);
+                else
+                    Abort();
+                break;
+            case UnaryOp::LogicalNot:
+                Push(!rhs.ToBool());
+                break;
+            case UnaryOp::Not:
+                Push(~rhs);
+                break;
+            case UnaryOp::Nop:
+                Push(rhs);
+                break;
+            case UnaryOp::Negate:
+                Push(-rhs);
+                break;
+            case UnaryOp::Inc:
+                Push(++rhs);
+                break;
+            case UnaryOp::Dec:
+                Push(--rhs);
+                break;
+        }
     }
 }
 
@@ -238,24 +320,31 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 {
     Visit(ast->expr);
 
-    auto lhs = Pop();
-
-    switch (ast->op)
+    if (auto lhs = Pop())
     {
-        case UnaryOp::Inc:
-        case UnaryOp::Dec:
-            /* Only return original value (post inc/dec will return the value BEFORE the operation) */
-            Push(lhs);
-            break;
-        default:
-            IllegalExpr(R_UnaryOp(UnaryOpToString(ast->op)), ast);
-            break;
+        switch (ast->op)
+        {
+            case UnaryOp::Inc:
+            case UnaryOp::Dec:
+                /* Only return original value (post inc/dec will return the value BEFORE the operation) */
+                Push(lhs);
+                break;
+            default:
+                if (throwOnFailure_)
+                    IllegalExpr(R_UnaryOp(UnaryOpToString(ast->op)), ast);
+                else
+                    Abort();
+                break;
+        }
     }
 }
 
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
-    IllegalExpr(R_FunctionCall, ast);
+    if (throwOnFailure_)
+        IllegalExpr(R_FunctionCall, ast);
+    else
+        Abort();
 }
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
@@ -265,7 +354,10 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
 
 IMPLEMENT_VISIT_PROC(AssignExpr)
 {
-    IllegalExpr(R_VarAssignment, ast);
+    if (throwOnFailure_)
+        IllegalExpr(R_VarAssignment, ast);
+    else
+        Abort();
 }
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
@@ -283,47 +375,56 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 {
     Visit(ast->expr);
 
-    auto value = Pop();
-
-    if (auto baseTypeDen = ast->typeSpecifier->GetTypeDenoter()->As<BaseTypeDenoter>())
+    if (auto value = Pop())
     {
-        switch (baseTypeDen->dataType)
+        if (auto baseTypeDen = ast->typeSpecifier->GetTypeDenoter()->As<BaseTypeDenoter>())
         {
-            case DataType::Bool:
+            switch (baseTypeDen->dataType)
             {
-                Push(value.ToBool());
-            }
-            break;
+                case DataType::Bool:
+                {
+                    Push(value.ToBool());
+                }
+                break;
 
-            case DataType::Int:
-            case DataType::UInt:
-            {
-                Push(value.ToInt());
-            }
-            break;
+                case DataType::Int:
+                case DataType::UInt:
+                {
+                    Push(value.ToInt());
+                }
+                break;
 
-            case DataType::Half:
-            case DataType::Float:
-            case DataType::Double:
-            {
-                Push(value.ToReal());
-            }
-            break;
+                case DataType::Half:
+                case DataType::Float:
+                case DataType::Double:
+                {
+                    Push(value.ToReal());
+                }
+                break;
 
-            default:
-            {
-                IllegalExpr(R_TypeCast(DataTypeToString(baseTypeDen->dataType)), ast);
+                default:
+                {
+                    if (throwOnFailure_)
+                        IllegalExpr(R_TypeCast(DataTypeToString(baseTypeDen->dataType)), ast);
+                    else
+                        Abort();
+                }
+                break;
             }
-            break;
         }
+        else if (throwOnFailure_)
+            IllegalExpr(R_TypeCast, ast);
+        else
+            Abort();
     }
-    else
-        IllegalExpr(R_TypeCast, ast);
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
-    IllegalExpr(R_InitializerList, ast);
+    if (throwOnFailure_)
+        IllegalExpr(R_InitializerList, ast);
+    else
+        Abort();
 }
 
 #undef IMPLEMENT_VISIT_PROC

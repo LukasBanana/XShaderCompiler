@@ -27,11 +27,14 @@ class ExprEvaluator : private Visitor
         
         using OnObjectExprCallback = std::function<Variant(ObjectExpr* expr)>;
 
-        /*
-        Evaluates the specified expression and returns the result as variante.
-        Throws an std::runtime_error if the expression could not be evaluated.
-        */
-        Variant Evaluate(Expr& ast, const OnObjectExprCallback& onObjectExprCallback = nullptr);
+        // Evaluates the specified expression and returns the result as variant, or throws a runtime error on failure.
+        Variant Evaluate(Expr& expr, const OnObjectExprCallback& onObjectExprCallback = nullptr);
+
+        // Evaluates the specified expression and returns the result as variant, or returns the default value on failure.
+        Variant EvaluateOrDefault(Expr& expr, const Variant& defaultValue = {}, const OnObjectExprCallback& onObjectExprCallback = nullptr);
+
+        // Abort expression evaluation process.
+        void Abort();
 
     private:
         
@@ -39,6 +42,8 @@ class ExprEvaluator : private Visitor
 
         void Push(const Variant& v);
         Variant Pop();
+
+        void SetObjectExprCallback(const OnObjectExprCallback& callback);
 
         /* --- Visitor implementation --- */
 
@@ -63,6 +68,9 @@ class ExprEvaluator : private Visitor
         std::stack<Variant>     variantStack_;
 
         OnObjectExprCallback    onObjectExprCallback_;
+
+        bool                    throwOnFailure_         = true;
+        bool                    abort_                  = false;
 
 };
 
