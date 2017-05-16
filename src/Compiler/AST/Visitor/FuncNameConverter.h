@@ -9,7 +9,7 @@
 #define XSC_FUNC_NAME_CONVERTER_H
 
 
-#include "Visitor.h"
+#include "VisitorTracker.h"
 #include "Flags.h"
 #include <Xsc/Xsc.h>
 #include <functional>
@@ -21,7 +21,7 @@ namespace Xsc
 
 
 // Function name mangling AST converter.
-class FuncNameConverter : public Visitor
+class FuncNameConverter : public VisitorTracker
 {
     
     public:

@@ -11,7 +11,7 @@
 
 #include <Xsc/Xsc.h>
 #include "ReportHandler.h"
-#include "Visitor.h"
+#include "VisitorTracker.h"
 #include "Variant.h"
 #include "Token.h"
 #include "SymbolTable.h"
@@ -27,7 +27,7 @@ namespace Xsc
 struct StructTypeDenoter;
 
 // Context analyzer base class.
-class Analyzer : protected Visitor
+class Analyzer : protected VisitorTracker
 {
     
     public:

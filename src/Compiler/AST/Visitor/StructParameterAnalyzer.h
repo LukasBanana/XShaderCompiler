@@ -9,7 +9,7 @@
 #define XSC_STRUCT_PARAMETER_ANALYZER_H
 
 
-#include "Visitor.h"
+#include "VisitorTracker.h"
 #include <Xsc/Targets.h>
 #include <set>
 
@@ -23,7 +23,7 @@ Structure parameter analyzer.
 This is a helper class for the context analyzer to determine which
 structures are used for another reason than entry-point parameters.
 */
-class StructParameterAnalyzer : private Visitor
+class StructParameterAnalyzer : private VisitorTracker
 {
     
     public:
