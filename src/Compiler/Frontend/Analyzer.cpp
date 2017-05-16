@@ -604,7 +604,7 @@ Variant Analyzer::EvaluateConstExprObject(const ObjectExpr& expr)
     {
         if (auto varDeclStmnt = varDecl->declStmntRef)
         {
-            if (varDeclStmnt->IsConstOrUniform() && varDecl->initializer)
+            if (!varDeclStmnt->flags(VarDeclStmnt::isParameter) && varDeclStmnt->IsConstOrUniform() && varDecl->initializer)
             {
                 /* Evaluate initializer of constant variable */
                 return EvaluateConstExpr(*varDecl->initializer);
