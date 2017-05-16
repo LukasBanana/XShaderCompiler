@@ -125,6 +125,7 @@ DECL_REPORT( ExpectedInitializerForArrayAccess, "initializer expression expected
 DECL_REPORT( InvalidNumElementsInInitializer,   "invalid number of elements in initializer expression for type '{0}' (expected {1}, but got {2})"               );
 DECL_REPORT( NotEnoughElementsInInitializer,    "not enough elements in initializer expression"                                                                 );
 DECL_REPORT( NotEnoughIndicesForInitializer,    "not enough array indices specified for initializer expression"                                                 );
+DECL_REPORT( ArrayIndexOutOfBounds,             "array index out of bounds[: {0} is not in range \\[0, {1})]"                                                   );
 
 /* ----- ASTEnums ----- */
 

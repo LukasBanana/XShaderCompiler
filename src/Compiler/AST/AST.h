@@ -445,6 +445,9 @@ struct ArrayDimension : public TypedAST
     // Returns true if this array dimension has a dynamic size (i.e. size == 0).
     bool HasDynamicSize() const;
 
+    // Validates the boundary of the specified index, if this array dimension has a fixed size. Throws a runtime error on failure.
+    void ValidateIndexBoundary(int idx) const;
+
     #if 0 //UNUSED
     // Returns the array dimension sizes as integral vector.
     static std::vector<int> GetArrayDimensionSizes(const std::vector<ArrayDimensionPtr>& arrayDims);

@@ -1448,6 +1448,38 @@ void HLSLAnalyzer::AnalyzeArrayExpr(ArrayExpr* expr)
                 Error(R_ArrayIndexMustHaveBaseType(typeDenAliased.ToString()), arrayIndex.get());
         }
     }
+
+    /* Validate boundary of array indices */
+    if (WarnEnabled(Warnings::IndexBoundary))
+    {
+        if (auto prefixTypeDen = GetTypeDenoterFrom(expr->prefixExpr.get()))
+        {
+            if (auto prefixArrayTypeDen = prefixTypeDen->GetAliased().As<ArrayTypeDenoter>())
+            {
+                for (std::size_t i = 0, n = std::min(expr->arrayIndices.size(), prefixArrayTypeDen->arrayDims.size()); i < n; ++i)
+                {
+                    try
+                    {
+                        /* Validate array index */
+                        auto arrayIdx = EvaluateConstExprInt(*(expr->arrayIndices[i]));
+
+                        try
+                        {
+                            prefixArrayTypeDen->arrayDims[i]->ValidateIndexBoundary(arrayIdx);
+                        }
+                        catch (const std::exception& e)
+                        {
+                            Warning(e.what(), expr->arrayIndices[i].get());
+                        }
+                    }
+                    catch (...)
+                    {
+                        // ignore exception here
+                    }
+                }
+            }
+        }
+    }
 }
 
 /* ----- Entry point ----- */

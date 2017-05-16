@@ -271,6 +271,15 @@ bool ArrayDimension::HasDynamicSize() const
     return (size == 0);
 }
 
+void ArrayDimension::ValidateIndexBoundary(int idx) const
+{
+    if (size > 0)
+    {
+        if (idx < 0 || idx >= size)
+            RuntimeErr(R_ArrayIndexOutOfBounds(idx, size));
+    }
+}
+
 #if 0 //UNUSED
 std::vector<int> ArrayDimension::GetArrayDimensionSizes(const std::vector<ArrayDimensionPtr>& arrayDims)
 {
