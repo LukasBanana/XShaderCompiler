@@ -382,8 +382,46 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
 
 IMPLEMENT_VISIT_PROC(ArrayExpr)
 {
-    //TODO: incomplete!
+    /* Evaluate prefix expression */
     Visit(ast->prefixExpr);
+
+    if (auto value = Pop())
+    {
+        if (value.IsArray())
+        {
+            /* Find sub variant by array index */
+            for (std::size_t i = 0, n = ast->arrayIndices.size(); i < n; ++i)
+            {
+                /* Evaluate array index expression */
+                Visit(ast->arrayIndices[i]);
+
+                if (auto arrayIdx = Pop())
+                {
+                    if (value.IsArray())
+                    {
+                        auto arrayIdxInt = static_cast<std::size_t>(arrayIdx.ToInt());
+                        if (auto subValue = value.ArraySub(arrayIdxInt))
+                        {
+                            /* Continue evaluation with sub value */
+                            value = std::move(subValue);
+                        }
+                    }
+                    else
+                        break;
+                }
+                else
+                {
+                    Abort();
+                    return;
+                }
+            }
+
+            Push(value);
+            return;
+        }
+    }
+
+    Abort();
 }
 
 IMPLEMENT_VISIT_PROC(CastExpr)
@@ -436,10 +474,38 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
+    #if 0
+    
     if (throwOnFailure_)
         IllegalExpr(R_InitializerList, ast);
     else
         Abort();
+    
+    #else
+
+    std::vector<Variant> subValues;
+
+    for (const auto& expr : ast->exprs)
+    {
+        Visit(expr);
+
+        if (auto value = Pop())
+        {
+            /* Append variant of sub expression to array sub values */
+            subValues.push_back(value);
+        }
+        else
+        {
+            /* Cancel evaluation */
+            Abort();
+            return;
+        }
+    }
+
+    /* Push array variant with sub values */
+    Push(Variant(std::move(subValues)));
+
+    #endif
 }
 
 #undef IMPLEMENT_VISIT_PROC

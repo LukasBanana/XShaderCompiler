@@ -11,6 +11,7 @@
 
 #include "Visitor.h"
 #include <string>
+#include <vector>
 
 
 namespace Xsc
@@ -33,15 +34,21 @@ class Variant
             Bool,
             Int,
             Real,
+            Array,
         };
 
         Variant() = default;
         Variant(const Variant&) = default;
+        Variant(Variant&&) = default;
         Variant(BoolType value);
         Variant(IntType value);
         Variant(RealType value);
+        Variant(const std::vector<Variant>& subValues);
+        Variant(std::vector<Variant>&& subValues);
 
-        Variant& operator = (const Variant& rhs) = default;
+        Variant& operator = (const Variant&) = default;
+        Variant& operator = (Variant&&) = default;
+
         Variant& operator += (const Variant& rhs);
         Variant& operator -= (const Variant& rhs);
         Variant& operator *= (const Variant& rhs);
@@ -71,6 +78,33 @@ class Variant
         // Returns -1 if this variant is less than 'rhs', 0 if they are equal, and 1 if this variant is greater than 'rhs'.
         int CompareWith(const Variant& rhs) const;
 
+        // Returns the sub variant of the array value, or the default variant if this is not an array or the index is out of bounds.
+        Variant ArraySub(std::size_t idx) const;
+
+        // Returns true if this variant is a boolean type.
+        inline bool IsBool() const
+        {
+            return (Type() == Types::Bool);
+        }
+
+        // Returns true if this variant is an integral type.
+        inline bool IsInt() const
+        {
+            return (Type() == Types::Int);
+        }
+
+        // Returns true if this variant is a real type.
+        inline bool IsReal() const
+        {
+            return (Type() == Types::Real);
+        }
+
+        // Returns true if this variant is an array type.
+        inline bool IsArray() const
+        {
+            return (Type() == Types::Array);
+        }
+
         // Returns the boolean value.
         inline BoolType Bool() const
         {
@@ -89,6 +123,12 @@ class Variant
             return real_;
         }
 
+        // Returns the array value.
+        inline const std::vector<Variant>& Array() const
+        {
+            return array_;
+        }
+
         // Returns the current internal type of this variant.
         inline Types Type() const
         {
@@ -104,14 +144,16 @@ class Variant
         // Returns a variant, parsed from the specified string (e.g. "true" for a boolean type, or "1.5" for a real type).
         static Variant ParseFrom(const std::string& s);
 
+        // Returns this variant as string.
         std::string ToString() const;
 
     private:
 
-        Types       type_   = Types::Undefined;
-        BoolType    bool_   = false;
-        IntType     int_    = 0;
-        RealType    real_   = 0.0;
+        Types                   type_   = Types::Undefined;
+        BoolType                bool_   = false;
+        IntType                 int_    = 0;
+        RealType                real_   = 0.0;
+        std::vector<Variant>    array_;
     
 };
 

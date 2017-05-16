@@ -36,6 +36,20 @@ Variant::Variant(RealType value) :
 {
 }
 
+Variant::Variant(const std::vector<Variant>& subValues) :
+    type_  { Types::Array }//,
+    //array_ { subValues    }
+{
+    array_ = subValues;
+}
+
+Variant::Variant(std::vector<Variant>&& subValues) :
+    type_  { Types::Array         }//,
+    //array_ { std::move(subValues) }
+{
+    array_ = std::move(subValues);
+}
+
 #define IMPLEMENT_VARIANT_OP(OP)    \
     switch (type_)                  \
     {                               \
@@ -307,6 +321,16 @@ int Variant::CompareWith(const Variant& rhs) const
     }
 
     return 0;
+}
+
+Variant Variant::ArraySub(std::size_t idx) const
+{
+    if (Type() == Types::Array)
+    {
+        if (idx < array_.size())
+            return array_[idx];
+    }
+    return {};
 }
 
 Variant Variant::ParseFrom(const std::string& s)
