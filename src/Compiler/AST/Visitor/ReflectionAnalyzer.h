@@ -46,7 +46,6 @@ class ReflectionAnalyzer : private Visitor
 
         int GetBindingPoint(const std::vector<RegisterPtr>& slotRegisters) const;
 
-        Variant EvaluateConstExpr(Expr& expr);
         int EvaluateConstExprInt(Expr& expr);
         float EvaluateConstExprFloat(Expr& expr);
 
