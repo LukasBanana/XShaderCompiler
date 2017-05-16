@@ -815,7 +815,7 @@ void PreProcessor::ParseDirectiveIfOrElifCondition(bool isElseBranch, bool skipE
             try
             {
                 ExprEvaluator exprEvaluator;
-                condition = exprEvaluator.EvaluateExpr(*conditionExpr);
+                condition = exprEvaluator.Evaluate(*conditionExpr);
             }
             catch (const std::exception& e)
             {

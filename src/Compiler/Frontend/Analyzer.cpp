@@ -574,7 +574,7 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
     {
         /* Evaluate expression and throw error on var-access */
         ExprEvaluator exprEvaluator;
-        return exprEvaluator.EvaluateExpr(
+        return exprEvaluator.Evaluate(
             expr,
             [this](ObjectExpr* expr) -> Variant
             {

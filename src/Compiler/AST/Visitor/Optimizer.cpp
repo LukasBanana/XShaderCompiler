@@ -46,7 +46,7 @@ void Optimizer::OptimizeExpr(ExprPtr& expr)
         {
             /* Try to evaluate expression */
             ExprEvaluator exprEvaluator;
-            auto exprValue = exprEvaluator.EvaluateExpr(*expr, [](ObjectExpr* expr) -> Variant { throw expr; });
+            auto exprValue = exprEvaluator.Evaluate(*expr, [](ObjectExpr* expr) -> Variant { throw expr; });
             expr = ASTFactory::MakeLiteralExpr(exprValue);
         }
         catch (const std::exception&)

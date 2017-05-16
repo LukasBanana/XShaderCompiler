@@ -31,7 +31,7 @@ class ExprEvaluator : private Visitor
         Evaluates the specified expression and returns the result as variante.
         Throws an std::runtime_error if the expression could not be evaluated.
         */
-        Variant EvaluateExpr(Expr& ast, const OnObjectExprCallback& onObjectExprCallback = nullptr);
+        Variant Evaluate(Expr& ast, const OnObjectExprCallback& onObjectExprCallback = nullptr);
 
     private:
         

@@ -18,7 +18,7 @@ namespace Xsc
 {
 
 
-Variant ExprEvaluator::EvaluateExpr(Expr& ast, const OnObjectExprCallback& onObjectExprCallback)
+Variant ExprEvaluator::Evaluate(Expr& ast, const OnObjectExprCallback& onObjectExprCallback)
 {
     onObjectExprCallback_ = (onObjectExprCallback ? onObjectExprCallback : [](ObjectExpr*) { return Variant(Variant::IntType(0)); });
     Visit(&ast);
