@@ -604,6 +604,7 @@ Variant Analyzer::EvaluateConstExprObject(const ObjectExpr& expr)
     {
         if (auto varDeclStmnt = varDecl->declStmntRef)
         {
+            /* Is this a non-parameter local variable with an initializer? (don't use 'HasStaticConstInitializer' here!) */
             if (!varDeclStmnt->flags(VarDeclStmnt::isParameter) && varDeclStmnt->IsConstOrUniform() && varDecl->initializer)
             {
                 /* Evaluate initializer of constant variable */
