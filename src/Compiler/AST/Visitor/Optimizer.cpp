@@ -37,25 +37,16 @@ void Optimizer::OptimizeStmntList(std::vector<StmntPtr>& stmnts)
     }
 }
 
-//TODO: exceptional path should not be used to cancel evaluation here!
 void Optimizer::OptimizeExpr(ExprPtr& expr)
 {
     if (expr)
     {
-        try
+        /* Try to evaluate expression */
+        ExprEvaluator exprEvaluator;
+        if (auto value = exprEvaluator.EvaluateOrDefault(*expr))
         {
-            /* Try to evaluate expression */
-            ExprEvaluator exprEvaluator;
-            auto exprValue = exprEvaluator.Evaluate(*expr, [](ObjectExpr* expr) -> Variant { throw expr; });
-            expr = ASTFactory::MakeLiteralExpr(exprValue);
-        }
-        catch (const std::exception&)
-        {
-            /* ignore this exception */
-        }
-        catch (const ObjectExpr*)
-        {
-            /* ignore this exception */
+            /* Convert to literal expression */
+            expr = ASTFactory::MakeLiteralExpr(value);
         }
     }
 }

@@ -139,8 +139,9 @@ LiteralExprPtr MakeLiteralExpr(const Variant& literalValue)
             return MakeLiteralExpr(DataType::Int, std::to_string(literalValue.Int()));
         case Variant::Types::Real:
             return MakeLiteralExpr(DataType::Float, std::to_string(literalValue.Real()));
+        default:
+            return MakeLiteralExpr(DataType::Int, "0");
     }
-    return MakeLiteralExpr(DataType::Int, "0");
 }
 
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident)
