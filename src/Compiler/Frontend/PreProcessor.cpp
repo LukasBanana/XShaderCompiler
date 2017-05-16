@@ -8,7 +8,7 @@
 #include "PreProcessor.h"
 #include "AST.h"
 #include "ASTFactory.h"
-#include "ConstExprEvaluator.h"
+#include "ExprEvaluator.h"
 #include "Helper.h"
 #include "ReportIdents.h"
 #include <sstream>
@@ -814,8 +814,8 @@ void PreProcessor::ParseDirectiveIfOrElifCondition(bool isElseBranch, bool skipE
 
             try
             {
-                ConstExprEvaluator exprEval;
-                condition = exprEval.EvaluateExpr(*conditionExpr);
+                ExprEvaluator exprEvaluator;
+                condition = exprEvaluator.EvaluateExpr(*conditionExpr);
             }
             catch (const std::exception& e)
             {

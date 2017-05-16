@@ -1,11 +1,11 @@
 /*
- * ConstExprEvaluator.cpp
+ * ExprEvaluator.cpp
  * 
  * This file is part of the XShaderCompiler project (Copyright (c) 2014-2017 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
-#include "ConstExprEvaluator.h"
+#include "ExprEvaluator.h"
 #include "AST.h"
 #include "Helper.h"
 #include "Exception.h"
@@ -18,7 +18,7 @@ namespace Xsc
 {
 
 
-Variant ConstExprEvaluator::EvaluateExpr(Expr& ast, const OnObjectExprCallback& onObjectExprCallback)
+Variant ExprEvaluator::EvaluateExpr(Expr& ast, const OnObjectExprCallback& onObjectExprCallback)
 {
     onObjectExprCallback_ = (onObjectExprCallback ? onObjectExprCallback : [](ObjectExpr*) { return Variant(Variant::IntType(0)); });
     Visit(&ast);
@@ -36,12 +36,12 @@ static void IllegalExpr(const std::string& exprName, const AST* ast = nullptr)
     RuntimeErr(R_IllegalExprInConstExpr(exprName), ast);
 }
 
-void ConstExprEvaluator::Push(const Variant& v)
+void ExprEvaluator::Push(const Variant& v)
 {
     variantStack_.push(v);
 }
 
-Variant ConstExprEvaluator::Pop()
+Variant ExprEvaluator::Pop()
 {
     if (variantStack_.empty())
         throw std::runtime_error(R_StackUnderflow(R_ExprEvaluator));
@@ -53,7 +53,7 @@ Variant ConstExprEvaluator::Pop()
 /* --- Expressions --- */
 
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
-    void ConstExprEvaluator::Visit##AST_NAME(AST_NAME* ast, void* args)
+    void ExprEvaluator::Visit##AST_NAME(AST_NAME* ast, void* args)
 
 IMPLEMENT_VISIT_PROC(NullExpr)
 {

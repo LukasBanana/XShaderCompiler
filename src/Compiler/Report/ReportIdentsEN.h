@@ -255,7 +255,7 @@ DECL_REPORT( ExpectedConstFloatExpr,            "expected constant floating-poin
 DECL_REPORT( VarDeclaredButNeverUsed,           "variable '{0}' is declared but never used"                                                                     );
 DECL_REPORT( ImplicitVectorTruncation,          "implicit truncation of vector type[ (from {0} to {1} dimensions)]"                                             );
 
-/* ----- ConstExprEvaluator ----- */
+/* ----- ExprEvaluator ----- */
 
 DECL_REPORT( ExprEvaluator,                     "expression evaluator"                                                                                          );
 DECL_REPORT( IllegalExprInConstExpr,            "illegal {0} in constant expression"                                                                            );

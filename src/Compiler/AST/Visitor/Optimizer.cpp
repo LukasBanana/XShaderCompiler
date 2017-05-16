@@ -6,7 +6,7 @@
  */
 
 #include "Optimizer.h"
-#include "ConstExprEvaluator.h"
+#include "ExprEvaluator.h"
 #include "ASTFactory.h"
 #include "AST.h"
 
@@ -45,8 +45,8 @@ void Optimizer::OptimizeExpr(ExprPtr& expr)
         try
         {
             /* Try to evaluate expression */
-            ConstExprEvaluator exprEval;
-            auto exprValue = exprEval.EvaluateExpr(*expr, [](ObjectExpr* expr) -> Variant { throw expr; });
+            ExprEvaluator exprEvaluator;
+            auto exprValue = exprEvaluator.EvaluateExpr(*expr, [](ObjectExpr* expr) -> Variant { throw expr; });
             expr = ASTFactory::MakeLiteralExpr(exprValue);
         }
         catch (const std::exception&)

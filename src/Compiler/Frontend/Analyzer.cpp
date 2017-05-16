@@ -7,7 +7,7 @@
 
 #include "Analyzer.h"
 #include "Exception.h"
-#include "ConstExprEvaluator.h"
+#include "ExprEvaluator.h"
 #include "EndOfScopeAnalyzer.h"
 #include "ControlPathAnalyzer.h"
 #include "ReportIdents.h"
@@ -573,7 +573,7 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
     try
     {
         /* Evaluate expression and throw error on var-access */
-        ConstExprEvaluator exprEvaluator;
+        ExprEvaluator exprEvaluator;
         return exprEvaluator.EvaluateExpr(
             expr,
             [this](ObjectExpr* expr) -> Variant

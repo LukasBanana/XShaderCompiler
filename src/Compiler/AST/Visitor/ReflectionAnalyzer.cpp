@@ -6,7 +6,7 @@
  */
 
 #include "ReflectionAnalyzer.h"
-#include "ConstExprEvaluator.h"
+#include "ExprEvaluator.h"
 #include "AST.h"
 #include "Helper.h"
 #include "ReportIdents.h"
@@ -58,7 +58,7 @@ Variant ReflectionAnalyzer::EvaluateConstExpr(Expr& expr)
     try
     {
         /* Evaluate expression and throw error on var-access */
-        ConstExprEvaluator exprEvaluator;
+        ExprEvaluator exprEvaluator;
         return exprEvaluator.EvaluateExpr(expr, [](ObjectExpr* expr) -> Variant { throw expr; });
     }
     catch (const std::exception&)
