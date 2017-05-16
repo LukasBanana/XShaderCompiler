@@ -474,15 +474,6 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
-    #if 0
-    
-    if (throwOnFailure_)
-        IllegalExpr(R_InitializerList, ast);
-    else
-        Abort();
-    
-    #else
-
     std::vector<Variant> subValues;
 
     for (const auto& expr : ast->exprs)
@@ -504,8 +495,6 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 
     /* Push array variant with sub values */
     Push(Variant(std::move(subValues)));
-
-    #endif
 }
 
 #undef IMPLEMENT_VISIT_PROC
