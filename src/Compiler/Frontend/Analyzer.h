@@ -11,7 +11,7 @@
 
 #include <Xsc/Xsc.h>
 #include "ReportHandler.h"
-#include "Visitor.h"
+#include "VisitorTracker.h"
 #include "Variant.h"
 #include "Token.h"
 #include "SymbolTable.h"
@@ -27,7 +27,7 @@ namespace Xsc
 struct StructTypeDenoter;
 
 // Context analyzer base class.
-class Analyzer : protected Visitor
+class Analyzer : protected VisitorTracker
 {
     
     public:
@@ -149,6 +149,9 @@ class Analyzer : protected Visitor
 
         // Evaluates the specified constant object expression or throws the expression if it's not constant.
         Variant EvaluateConstExprObject(const ObjectExpr& expr);
+
+        // Tries to evaluate the specified constant expression, or returns the default value on failure.
+        Variant EvaluateOrDefault(Expr& expr, const Variant& defaultValue = {});
 
         // Evaluates the specified constant integer expression.
         int EvaluateConstExprInt(Expr& expr);

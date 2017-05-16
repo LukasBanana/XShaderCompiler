@@ -7,7 +7,7 @@
 
 #include "HLSLParser.h"
 #include "HLSLKeywords.h"
-#include "ConstExprEvaluator.h"
+#include "ExprEvaluator.h"
 #include "Helper.h"
 #include "AST.h"
 #include "ASTFactory.h"
@@ -2358,8 +2358,8 @@ Variant HLSLParser::ParseAndEvaluateConstExpr()
     try
     {
         /* Evaluate expression and throw error on object access */
-        ConstExprEvaluator exprEvaluator;
-        return exprEvaluator.EvaluateExpr(*expr, [](ObjectExpr* expr) -> Variant { throw expr; });
+        ExprEvaluator exprEvaluator;
+        return exprEvaluator.Evaluate(*expr, [](ObjectExpr* expr) -> Variant { throw expr; });
     }
     catch (const std::exception& e)
     {

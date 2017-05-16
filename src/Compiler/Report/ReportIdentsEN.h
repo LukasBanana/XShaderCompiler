@@ -230,7 +230,7 @@ DECL_REPORT( UnexpectedEndOfTokenString,        "unexpected end of token string"
 DECL_REPORT( RemainingTokensInPragma,           "remaining unhandled tokens in '#pragma'-directive"                                                             );
 DECL_REPORT( EmptyPragma,                       "empty '#pragma'-directive"                                                                                     );
 
-/* ----- Visitor ----- */
+/* ----- VisitorTracker ----- */
 
 DECL_REPORT( FuncDeclStackUnderflow,            "function declaration stack underflow"                                                                          ); // internal error
 DECL_REPORT( CallExprStackUnderflow,            "call expression stack underflow"                                                                               ); // internal error
@@ -255,7 +255,7 @@ DECL_REPORT( ExpectedConstFloatExpr,            "expected constant floating-poin
 DECL_REPORT( VarDeclaredButNeverUsed,           "variable '{0}' is declared but never used"                                                                     );
 DECL_REPORT( ImplicitVectorTruncation,          "implicit truncation of vector type[ (from {0} to {1} dimensions)]"                                             );
 
-/* ----- ConstExprEvaluator ----- */
+/* ----- ExprEvaluator ----- */
 
 DECL_REPORT( ExprEvaluator,                     "expression evaluator"                                                                                          );
 DECL_REPORT( IllegalExprInConstExpr,            "illegal {0} in constant expression"                                                                            );

@@ -10,6 +10,7 @@
 
 
 #include "Visitor.h"
+#include <string>
 
 
 namespace Xsc
@@ -28,6 +29,7 @@ class Variant
 
         enum class Types
         {
+            Undefined,
             Bool,
             Int,
             Real,
@@ -57,23 +59,31 @@ class Variant
         Variant operator ~ ();
         Variant operator ! ();
 
+        // Converts this variant to a boolean type and returns its value.
         BoolType ToBool();
+
+        // Converts this variant to an integral type and returns its value.
         IntType ToInt();
+
+        // Converts this variant to a real type and returns its value.
         RealType ToReal();
 
         // Returns -1 if this variant is less than 'rhs', 0 if they are equal, and 1 if this variant is greater than 'rhs'.
         int CompareWith(const Variant& rhs) const;
 
+        // Returns the boolean value.
         inline BoolType Bool() const
         {
             return bool_;
         }
 
+        // Returns the integral value.
         inline IntType Int() const
         {
             return int_;
         }
 
+        // Returns the real value.
         inline RealType Real() const
         {
             return real_;
@@ -85,13 +95,20 @@ class Variant
             return type_;
         }
 
+        // Returns true if this variant is not undefined.
+        inline operator bool () const
+        {
+            return (Type() != Types::Undefined);
+        }
+
+        // Returns a variant, parsed from the specified string (e.g. "true" for a boolean type, or "1.5" for a real type).
         static Variant ParseFrom(const std::string& s);
 
         std::string ToString() const;
 
     private:
 
-        Types       type_   = Types::Int;
+        Types       type_   = Types::Undefined;
         BoolType    bool_   = false;
         IntType     int_    = 0;
         RealType    real_   = 0.0;

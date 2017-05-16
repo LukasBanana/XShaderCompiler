@@ -9,7 +9,7 @@
 #define XSC_EXPR_CONVERTER_H
 
 
-#include "Visitor.h"
+#include "VisitorTracker.h"
 #include "TypeDenoter.h"
 #include "Flags.h"
 #include <Xsc/Xsc.h>
@@ -29,7 +29,7 @@ This helper class modifies the AST after context analysis and supports the follo
 3. Wrap nested unary expression into brackets (e.g. "- - a" -> "-(-a)")
 4. Convert access to 'image' types through array indexers to imageStore/imageLoad calls (e.g. myImage[index] = 5 -> imageStore(myImage, index, 5))
 */
-class ExprConverter : public Visitor
+class ExprConverter : public VisitorTracker
 {
     
     public:

@@ -7,7 +7,7 @@
 
 #include "Analyzer.h"
 #include "Exception.h"
-#include "ConstExprEvaluator.h"
+#include "ExprEvaluator.h"
 #include "EndOfScopeAnalyzer.h"
 #include "ControlPathAnalyzer.h"
 #include "ReportIdents.h"
@@ -573,8 +573,8 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
     try
     {
         /* Evaluate expression and throw error on var-access */
-        ConstExprEvaluator exprEvaluator;
-        return exprEvaluator.EvaluateExpr(
+        ExprEvaluator exprEvaluator;
+        return exprEvaluator.Evaluate(
             expr,
             [this](ObjectExpr* expr) -> Variant
             {
@@ -604,7 +604,8 @@ Variant Analyzer::EvaluateConstExprObject(const ObjectExpr& expr)
     {
         if (auto varDeclStmnt = varDecl->declStmntRef)
         {
-            if (varDeclStmnt->IsConstOrUniform() && varDecl->initializer)
+            /* Is this a non-parameter local variable with an initializer? (don't use 'HasStaticConstInitializer' here!) */
+            if (!varDeclStmnt->flags(VarDeclStmnt::isParameter) && varDeclStmnt->IsConstOrUniform() && varDecl->initializer)
             {
                 /* Evaluate initializer of constant variable */
                 return EvaluateConstExpr(*varDecl->initializer);
@@ -614,6 +615,12 @@ Variant Analyzer::EvaluateConstExprObject(const ObjectExpr& expr)
 
     /* Throw expression due to non-constness */
     throw (&expr);
+}
+
+Variant Analyzer::EvaluateOrDefault(Expr& expr, const Variant& defaultValue)
+{
+    ExprEvaluator exprEvaluator;
+    return exprEvaluator.EvaluateOrDefault(expr, defaultValue);
 }
 
 int Analyzer::EvaluateConstExprInt(Expr& expr)

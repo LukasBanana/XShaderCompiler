@@ -727,6 +727,9 @@ void HLSLAnalyzer::AnalyzeVarDeclLocal(VarDecl* varDecl, bool registerVarIdent)
 
         if (varDecl->structDeclRef)
             Error(R_MemberVarsCantHaveDefaultValues(varDecl->ToString()), varDecl->initializer.get());
+
+        /* Try to evaluate initializer expression */
+        varDecl->initializerValue = EvaluateOrDefault(*(varDecl->initializer));
     }
 }
 
@@ -1458,23 +1461,18 @@ void HLSLAnalyzer::AnalyzeArrayExpr(ArrayExpr* expr)
             {
                 for (std::size_t i = 0, n = std::min(expr->arrayIndices.size(), prefixArrayTypeDen->arrayDims.size()); i < n; ++i)
                 {
-                    try
+                    if (auto value = EvaluateOrDefault(*(expr->arrayIndices[i])))
                     {
                         /* Validate array index */
-                        auto arrayIdx = EvaluateConstExprInt(*(expr->arrayIndices[i]));
-
                         try
                         {
+                            auto arrayIdx = static_cast<int>(value.ToInt());
                             prefixArrayTypeDen->arrayDims[i]->ValidateIndexBoundary(arrayIdx);
                         }
                         catch (const std::exception& e)
                         {
                             Warning(e.what(), expr->arrayIndices[i].get());
                         }
-                    }
-                    catch (...)
-                    {
-                        // ignore exception here
                     }
                 }
             }

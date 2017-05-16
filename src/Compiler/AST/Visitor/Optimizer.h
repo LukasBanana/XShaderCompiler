@@ -17,6 +17,8 @@ namespace Xsc
 {
 
 
+//TODO: replace this class by "ExprConverter".
+
 // This AST optimizer supports only little optimizations such as null-statement removal.
 class Optimizer : private Visitor
 {

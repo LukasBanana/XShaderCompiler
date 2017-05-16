@@ -9,7 +9,7 @@
 #define XSC_REFERENCE_ANALYZER_H
 
 
-#include "Visitor.h"
+#include "VisitorTracker.h"
 #include "Token.h"
 #include "SymbolTable.h"
 #include <Xsc/Targets.h>
@@ -25,7 +25,7 @@ This helper class for the context analyzer marks all functions
 which are used (or rather referenced) from the beginning of the shader entry point.
 All other functions will be ignored by the code generator.
 */
-class ReferenceAnalyzer : private Visitor
+class ReferenceAnalyzer : private VisitorTracker
 {
     
     public:
