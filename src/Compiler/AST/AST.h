@@ -17,6 +17,7 @@
 #include "SourceCode.h"
 #include "TypeDenoter.h"
 #include "Identifier.h"
+#include "Variant.h"
 #include <vector>
 #include <initializer_list>
 #include <string>
@@ -549,6 +550,9 @@ struct VarDecl : public Decl
     // Returns true if this variable is a function parameter.
     bool IsParameter() const;
 
+    // Returns true if this is a non-parameter local variable with a constant initializer.
+    bool HasStaticConstInitializer() const;
+
     // Sets a custom type denoter, or the default type denoter if the parameter is null.
     void SetCustomTypeDenoter(const TypeDenoterPtr& typeDenoter);
 
@@ -563,6 +567,7 @@ struct VarDecl : public Decl
     ExprPtr                         initializer;                    // Optional initializer expression. May be null.
 
     TypeDenoterPtr                  customTypeDenoter;              // Optional type denoter which can be different from the type of its declaration statement.
+    Variant                         initializerValue;               // Optional variant of the initializer value (if the initializer is a constant expression).
 
     VarDeclStmnt*                   declStmntRef        = nullptr;  // Reference to its declaration statement (parent node). May be null.
     UniformBufferDecl*              bufferDeclRef       = nullptr;  // Reference to its uniform buffer declaration (optional parent-parent-node). May be null.

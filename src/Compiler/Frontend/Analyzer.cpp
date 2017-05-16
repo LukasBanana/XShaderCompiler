@@ -616,6 +616,12 @@ Variant Analyzer::EvaluateConstExprObject(const ObjectExpr& expr)
     throw (&expr);
 }
 
+Variant Analyzer::EvaluateOrDefault(Expr& expr, const Variant& defaultValue)
+{
+    ExprEvaluator exprEvaluator;
+    return exprEvaluator.EvaluateOrDefault(expr, defaultValue);
+}
+
 int Analyzer::EvaluateConstExprInt(Expr& expr)
 {
     auto variant = EvaluateConstExpr(expr);

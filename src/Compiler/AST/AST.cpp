@@ -502,6 +502,17 @@ bool VarDecl::IsParameter() const
     return (declStmntRef != nullptr && declStmntRef->flags(VarDeclStmnt::isParameter));
 }
 
+bool VarDecl::HasStaticConstInitializer() const
+{
+    return
+    (
+        declStmntRef != nullptr &&
+        declStmntRef->IsConstOrUniform() &&
+        !declStmntRef->flags(VarDeclStmnt::isParameter) &&
+        initializerValue
+    );
+}
+
 void VarDecl::SetCustomTypeDenoter(const TypeDenoterPtr& typeDenoter)
 {
     customTypeDenoter = typeDenoter;

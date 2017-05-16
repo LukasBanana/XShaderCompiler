@@ -94,9 +94,24 @@ Variant ExprEvaluator::Pop()
 void ExprEvaluator::SetObjectExprCallback(const OnObjectExprCallback& callback)
 {
     if (callback)
+    {
+        /* Set custom object expression callback */
         onObjectExprCallback_ = callback;
+    }
     else
-        onObjectExprCallback_ = [](ObjectExpr*) -> Variant { return {}; };
+    {
+        /* Default callback returns the initializer value of a variable */
+        onObjectExprCallback_ = [](ObjectExpr* expr) -> Variant
+        {
+            /* Fetch variable from expression and return its initializer value */
+            if (auto varDecl = expr->FetchVarDecl())
+            {
+                if (varDecl->HasStaticConstInitializer())
+                    return varDecl->initializerValue;
+            }
+            return {};
+        };
+    }
 }
 
 /* --- Expressions --- */

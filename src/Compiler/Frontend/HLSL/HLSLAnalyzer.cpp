@@ -727,6 +727,9 @@ void HLSLAnalyzer::AnalyzeVarDeclLocal(VarDecl* varDecl, bool registerVarIdent)
 
         if (varDecl->structDeclRef)
             Error(R_MemberVarsCantHaveDefaultValues(varDecl->ToString()), varDecl->initializer.get());
+
+        /* Try to evaluate initializer expression */
+        varDecl->initializerValue = EvaluateOrDefault(*(varDecl->initializer));
     }
 }
 

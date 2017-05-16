@@ -230,7 +230,7 @@ DECL_REPORT( UnexpectedEndOfTokenString,        "unexpected end of token string"
 DECL_REPORT( RemainingTokensInPragma,           "remaining unhandled tokens in '#pragma'-directive"                                                             );
 DECL_REPORT( EmptyPragma,                       "empty '#pragma'-directive"                                                                                     );
 
-/* ----- Visitor ----- */
+/* ----- VisitorTracker ----- */
 
 DECL_REPORT( FuncDeclStackUnderflow,            "function declaration stack underflow"                                                                          ); // internal error
 DECL_REPORT( CallExprStackUnderflow,            "call expression stack underflow"                                                                               ); // internal error
