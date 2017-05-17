@@ -25,6 +25,30 @@ namespace Xsc
     if (PREDICATE(*this))                   \
         return this
 
+
+/* ----- Global functions ----- */
+
+bool IsDeclAST(const AST::Types t)
+{
+    return (t >= AST::Types::VarDecl && t <= AST::Types::UniformBufferDecl);
+}
+
+bool IsExprAST(const AST::Types t)
+{
+    return (t >= AST::Types::NullExpr && t <= AST::Types::InitializerExpr);
+}
+
+bool IsStmntAST(const AST::Types t)
+{
+    return (t >= AST::Types::VarDeclStmnt && t <= AST::Types::CtrlTransferStmnt);
+}
+
+bool IsDeclStmntAST(const AST::Types t)
+{
+    return (t >= AST::Types::VarDeclStmnt && t <= AST::Types::BasicDeclStmnt);
+}
+
+
 /* ----- AST ----- */
 
 AST::~AST()
@@ -1008,8 +1032,7 @@ void FunctionDecl::ParameterSemantics::UpdateDistribution()
 
 TypeDenoterPtr FunctionDecl::DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter)
 {
-    //TODO: add "FunctionTypeDenoter"
-    return nullptr;
+    RuntimeErr(R_CantDeriveTypeOfFunction, this);
 }
 
 bool FunctionDecl::IsForwardDecl() const
@@ -1270,7 +1293,7 @@ FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
 
 TypeDenoterPtr UniformBufferDecl::DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter)
 {
-    return nullptr;
+    RuntimeErr(R_CantDeriveTypeOfConstBuffer, this);
 }
 
 std::string UniformBufferDecl::ToString() const
@@ -2056,18 +2079,7 @@ TypeDenoterPtr ObjectExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
     if (symbolRef)
     {
         /* Derive type denoter from symbol reference */
-        if (auto varDecl = symbolRef->As<VarDecl>())
-            return varDecl->GetTypeDenoter();
-        if (auto bufferDecl = symbolRef->As<BufferDecl>())
-            return bufferDecl->GetTypeDenoter();
-        if (auto samplerDecl = symbolRef->As<SamplerDecl>())
-            return samplerDecl->GetTypeDenoter();
-        if (auto structDecl = symbolRef->As<StructDecl>())
-            return structDecl->GetTypeDenoter();
-        if (auto aliasDecl = symbolRef->As<AliasDecl>())
-            return aliasDecl->GetTypeDenoter();
-
-        RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
+        return symbolRef->GetTypeDenoter();
     }
     else if (prefixExpr)
     {

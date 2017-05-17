@@ -296,7 +296,7 @@ class ASTSymbolOverload
         Fetches a type declaration (StructDecl, AliasDecl).
         If there is more than one reference or the type does not fit, an std::runtime_error is thrown.
         */
-        AST* FetchType(bool throwOnFailure = true) const;
+        Decl* FetchType(bool throwOnFailure = true) const;
 
         // Returns the FunctionDecl AST node (if the function is not overloaded).
         FunctionDecl* FetchFunctionDecl(bool throwOnFailure = true) const;

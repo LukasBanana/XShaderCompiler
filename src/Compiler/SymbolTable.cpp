@@ -204,13 +204,13 @@ VarDecl* ASTSymbolOverload::FetchVarDecl(bool throwOnFailure) const
     return nullptr;
 }
 
-AST* ASTSymbolOverload::FetchType(bool throwOnFailure) const
+Decl* ASTSymbolOverload::FetchType(bool throwOnFailure) const
 {
     if (auto ref = Fetch(throwOnFailure))
     {
         auto type = ref->Type();
         if (type == AST::Types::StructDecl || type == AST::Types::AliasDecl)
-            return ref;
+            return static_cast<Decl*>(ref);
         if (throwOnFailure)
             RuntimeErr(R_IdentIsNotType(ident_));
     }

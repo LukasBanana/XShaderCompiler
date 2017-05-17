@@ -61,7 +61,7 @@ using FindPredicateConstFunctor = std::function<bool(const Expr& expr)>;
 using MergeExprFunctor = std::function<ExprPtr(const ExprPtr& expr0, const ExprPtr& expr1)>;
 
 
-/* --- Some helper macros --- */
+/* ----- Some helper macros ----- */
 
 #define AST_INTERFACE(CLASS_NAME)                               \
     static const Types classType = Types::CLASS_NAME;           \
@@ -209,7 +209,21 @@ struct AST
     Flags       flags;  // Flags bitmask (default 0).
 };
 
-/* --- Base AST nodes --- */
+/* ----- Global functions ----- */
+
+// Returns true if the specified AST type denotes a "Decl" AST.
+bool IsDeclAST(const AST::Types t);
+
+// Returns true if the specified AST type denotes an "Expr" AST.
+bool IsExprAST(const AST::Types t);
+
+// Returns true if the specified AST type denotes a "Stmnt" AST.
+bool IsStmntAST(const AST::Types t);
+
+// Returns true if the specified AST type denotes a "...DeclStmnt" AST.
+bool IsDeclStmntAST(const AST::Types t);
+
+/* ----- Common AST classes ----- */
 
 // Statement AST base class.
 struct Stmnt : public AST
@@ -519,7 +533,7 @@ struct TypeSpecifier : public TypedAST
     TypeDenoterPtr              typeDenoter;                                // Own type denoter.
 };
 
-/* --- Declarations --- */
+/* ----- Declaration objects ----- */
 
 // Variable declaration.
 struct VarDecl : public Decl
@@ -850,7 +864,7 @@ struct UniformBufferDecl : public Decl
     BasicDeclStmnt*                 declStmntRef        = nullptr;                      // Reference to its declaration statement (parent node). Must not be null.
 };
 
-/* --- Declaration statements --- */
+/* ----- Declaration statements ----- */
 
 // Buffer (and texture) declaration.
 struct BufferDeclStmnt : public Stmnt
@@ -948,7 +962,7 @@ struct AliasDeclStmnt : public Stmnt
     std::vector<AliasDeclPtr>   aliasDecls; // Alias declaration list.
 };
 
-/* --- Statements --- */
+/* ----- Statements ----- */
 
 // Null statement.
 struct NullStmnt : public Stmnt
@@ -1049,7 +1063,7 @@ struct CtrlTransferStmnt : public Stmnt
     CtrlTransfer transfer = CtrlTransfer::Undefined; // Control transfer type (break, continue, discard). Must not be undefined.
 };
 
-/* --- Expressions --- */
+/* ----- Expressions ----- */
 
 // Null expression (used for dynamic array dimensions).
 struct NullExpr : public Expr
