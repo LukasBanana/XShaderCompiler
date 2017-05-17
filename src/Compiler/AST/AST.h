@@ -106,10 +106,10 @@ struct AST
         Attribute,
         SwitchCase,
         SamplerValue,
-        Register,
-        PackOffset,
-        ArrayDimension,
-        TypeSpecifier,
+        Register,           // Register qualifier (e.g. "register(b0)")
+        PackOffset,         // Pack-offset qualifier (e.g. "packoffset(c0.x)")
+        ArrayDimension,     // Array dimension (e.g. "[10]")
+        TypeSpecifier,      // Type specifier with type denoter/modifiers/classes and optional structure (StructDecl)
 
         /* ----- Declaration objects that can be referenced by an 'ObjectExpr' ----- */
 
@@ -119,14 +119,14 @@ struct AST
         StructDecl,         // Structure declaration
         AliasDecl,          // Type alias declaration
         FunctionDecl,       // Function declaration
-        UniformBufferDecl,  // TODO: rename to "ConstBufferStmnt"
+        UniformBufferDecl,  // Uniform/constant buffer declaration
 
         /* ----- Declaration statements ----- */
 
-        VarDeclStmnt,
-        BufferDeclStmnt,
-        SamplerDeclStmnt,
-        AliasDeclStmnt,
+        VarDeclStmnt,       // Variable declaration statement with several variables (VarDecl)
+        BufferDeclStmnt,    // Buffer declaration statement with several buffers (BufferDecl)
+        SamplerDeclStmnt,   // Sampler declaration statement with several samplers (SamplerDecl)
+        AliasDeclStmnt,     // Type alias declaration statement with several types (AliasDecl)
         BasicDeclStmnt,     // Statement with a single declaration object (StructDecl, FunctionDecl, or UniformBufferDecl)
 
         /* ----- Common statements ----- */
@@ -141,7 +141,7 @@ struct AST
         SwitchStmnt,
         ExprStmnt,
         ReturnStmnt,
-        CtrlTransferStmnt,
+        CtrlTransferStmnt,  // Control transfer statement (Break, Continue, Discard)
 
         /* ----- Expressions ----- */
 
@@ -812,7 +812,6 @@ struct FunctionDecl : public Decl
     );
 
     TypeSpecifierPtr                returnType;                                 // Function return type (TypeSpecifier).
-    //Identifier                      ident;                                      // Function identifier.
     std::vector<VarDeclStmntPtr>    parameters;                                 // Function parameter list.
     IndexedSemantic                 semantic            = Semantic::Undefined;  // Function return semantic; may be undefined.
     std::vector<VarDeclStmntPtr>    annotations;                                // Annotations can be ignored by analyzers and generators.

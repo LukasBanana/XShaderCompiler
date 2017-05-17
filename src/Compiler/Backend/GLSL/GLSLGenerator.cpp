@@ -582,8 +582,12 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
-    if ( ast->flags(AST::isReachable) && ( UseSeparateSamplers() || !IsSamplerStateType(ast->typeDenoter->samplerType) ))
-        Visit(ast->samplerDecls);
+    if (ast->flags(AST::isReachable))
+    {
+        /* Write sampler declarations */
+        if (UseSeparateSamplers() || !IsSamplerStateType(ast->typeDenoter->samplerType))
+            Visit(ast->samplerDecls);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
@@ -697,9 +701,9 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
 {
-    if (auto structDecl = ast->declObject->As<StructDecl>())
+    if (ast->flags(AST::isReachable))
     {
-        if (structDecl->flags(AST::isReachable))
+        if (auto structDecl = ast->declObject->As<StructDecl>())
         {
             if ( structDecl->flags(StructDecl::isNonEntryPointParam) ||
                  !structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput) )
@@ -713,11 +717,11 @@ IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
                 Visit(structDecl, &structDeclArgs);
             }
         }
-    }
-    else
-    {
-        /* Visit declaration object only */
-        Visit(ast->declObject);
+        else
+        {
+            /* Visit declaration object only */
+            Visit(ast->declObject);
+        }
     }
 }
 

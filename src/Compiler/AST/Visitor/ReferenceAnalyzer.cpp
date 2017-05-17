@@ -133,8 +133,6 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
         Visit(ast->declStmntRef);
 }
 
-/* --- Declaration statements --- */
-
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (Reachable(ast))
@@ -159,14 +157,22 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
             VISIT_DEFAULT(FunctionDecl);
         }
         PopFunctionDecl();
+
+        /* Mark parent node as reachable */
+        Reachable(ast->declStmntRef);
     }
 }
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     if (Reachable(ast))
+    {
         VISIT_DEFAULT(UniformBufferDecl);
+        //Reachable(ast->declStmntRef);
+    }
 }
+
+/* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
