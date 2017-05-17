@@ -1801,10 +1801,10 @@ const Expr* PostUnaryExpr::Find(const FindPredicateConstFunctor& predicate, unsi
 
 TypeDenoterPtr CallExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
-    if (funcDeclRef)
+    if (auto funcDecl = GetFunctionDecl())
     {
         /* Return type denoter of associated function declaration */
-        return funcDeclRef->returnType->typeDenoter;
+        return funcDecl->returnType->typeDenoter;
     }
     else if (typeDenoter)
     {
@@ -1872,8 +1872,8 @@ const Expr* CallExpr::Find(const FindPredicateConstFunctor& predicate, unsigned 
 IndexedSemantic CallExpr::FetchSemantic() const
 {
     /* Return semantic of function declaration */
-    if (funcDeclRef)
-        return funcDeclRef->semantic;
+    if (auto funcDecl = GetFunctionDecl())
+        return funcDecl->semantic;
     else
         return Semantic::Undefined;
 }
@@ -1894,9 +1894,14 @@ std::vector<Expr*> CallExpr::GetArguments() const
     return args;
 }
 
+FunctionDecl* CallExpr::GetFunctionDecl() const
+{
+    return funcDeclRef;
+}
+
 FunctionDecl* CallExpr::GetFunctionImpl() const
 {
-    if (auto funcDecl = funcDeclRef)
+    if (auto funcDecl = GetFunctionDecl())
     {
         if (funcDecl->funcImplRef)
             return funcDecl->funcImplRef;
@@ -1910,10 +1915,10 @@ void CallExpr::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
 {
     if (iterator)
     {
-        if (funcDeclRef)
+        if (auto funcDecl = GetFunctionDecl())
         {
             /* Get output parameters from associated function declaration */
-            const auto& parameters = funcDeclRef->parameters;
+            const auto& parameters = funcDecl->parameters;
             for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
             {
                 if (parameters[i]->IsOutput())
@@ -1937,10 +1942,10 @@ void CallExpr::ForEachArgumentWithParameterType(const ArgumentParameterTypeFunct
 {
     if (iterator)
     {
-        if (funcDeclRef)
+        if (auto funcDecl = GetFunctionDecl())
         {
             /* Get parameter type denoters from associated function declaration */
-            const auto& parameters = funcDeclRef->parameters;
+            const auto& parameters = funcDecl->parameters;
             for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
             {
                 auto param = parameters[i]->varDecls.front();

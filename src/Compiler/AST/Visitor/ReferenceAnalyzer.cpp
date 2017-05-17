@@ -214,13 +214,9 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
-    /* Visit all forward declarations first */
-    if (auto funcDecl = ast->funcDeclRef)
+    /* Don't use forward declaration for call stack */
+    if (auto funcDecl = ast->GetFunctionImpl())
     {
-        /* Don't use forward declaration for call stack */
-        if (funcDecl->funcImplRef)
-            funcDecl = funcDecl->funcImplRef;
-
         /* Check for recursive calls (if function is already on the call stack) */
         auto funcCallIt = std::find_if(
             callExprStack_.begin(), callExprStack_.end(),
@@ -235,7 +231,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
             /* Pass call stack to report handler */
             ReportHandler::HintForNextReport(R_CallStack + ":");
             for (auto funcCall : callExprStack_)
-                ReportHandler::HintForNextReport("  '" + funcCall->funcDeclRef->ToString(false) + "' (" + funcCall->area.Pos().ToString() + ")");
+                ReportHandler::HintForNextReport("  '" + funcCall->GetFunctionDecl()->ToString(false) + "' (" + funcCall->area.Pos().ToString() + ")");
 
             /* Throw error message of recursive call */
             RuntimeErr(R_IllegalRecursiveCall(funcDecl->ToString()), ast);

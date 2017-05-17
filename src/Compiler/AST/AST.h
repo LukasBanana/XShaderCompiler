@@ -1205,7 +1205,10 @@ struct CallExpr : public Expr
     // Returns a list of all argument expressions (including the default parameters).
     std::vector<Expr*> GetArguments() const;
 
-    // Returns the function implementation of this function call, or null if not set.
+    // Returns the reference to the function declaration of this call expression, or null if not set.
+    FunctionDecl* GetFunctionDecl() const;
+
+    // Returns the reference to the function implementation of this call expression, or null if not set.
     FunctionDecl* GetFunctionImpl() const;
 
     // Iterates over each argument expression that is assigned to an output parameter.
