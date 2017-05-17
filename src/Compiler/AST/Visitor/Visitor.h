@@ -26,6 +26,7 @@ namespace Xsc
 DECL_PTR( AST               );
 DECL_PTR( Stmnt             );
 DECL_PTR( Expr              );
+DECL_PTR( Decl              );
 
 DECL_PTR( Program           );
 DECL_PTR( CodeBlock         );
@@ -42,14 +43,15 @@ DECL_PTR( BufferDecl        );
 DECL_PTR( SamplerDecl       );
 DECL_PTR( StructDecl        );
 DECL_PTR( AliasDecl         );
-
 DECL_PTR( FunctionDecl      );
 DECL_PTR( UniformBufferDecl );
+
 DECL_PTR( BufferDeclStmnt   );
 DECL_PTR( SamplerDeclStmnt  );
 DECL_PTR( StructDeclStmnt   );
 DECL_PTR( VarDeclStmnt      );
 DECL_PTR( AliasDeclStmnt    );
+DECL_PTR( BasicDeclStmnt    );
 
 DECL_PTR( NullStmnt         );
 DECL_PTR( CodeBlockStmnt    );
@@ -122,6 +124,7 @@ class Visitor
         VISITOR_VISIT_PROC( StructDeclStmnt   );
         VISITOR_VISIT_PROC( VarDeclStmnt      );
         VISITOR_VISIT_PROC( AliasDeclStmnt    );
+        VISITOR_VISIT_PROC( BasicDeclStmnt    );
 
         VISITOR_VISIT_PROC( NullStmnt         );
         VISITOR_VISIT_PROC( CodeBlockStmnt    );

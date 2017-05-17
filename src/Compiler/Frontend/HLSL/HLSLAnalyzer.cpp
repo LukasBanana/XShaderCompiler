@@ -283,13 +283,13 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     AnalyzeSemanticFunctionReturn(ast->semantic);
 
     /* Visit attributes */
-    Visit(ast->attribs);
+    Visit(ast->declStmntRef->attribs);
 
     /* Visit function return type */
     Visit(ast->returnType);
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
-    AnalyzeExtAttributes(ast->attribs, ast->returnType->typeDenoter->GetSub());
+    AnalyzeExtAttributes(ast->declStmntRef->attribs, ast->returnType->typeDenoter->GetSub());
     #endif // XSC_ENABLE_LANGUAGE_EXT
 
     /* Analyze parameter type denoters (required before function can be registered in symbol table) */
@@ -426,6 +426,12 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
             }
         }
     }
+}
+
+IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+{
+    /* Only visit declaration object (not attributes here) */
+    Visit(ast->declObject);
 }
 
 /* --- Statements --- */
@@ -1505,7 +1511,7 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
         AnalyzeEntryPointInputOutput(funcDecl);
 
         /* Analyze entry point attributes (also possibly missing attributes such as "numthreads" for compute shaders) */
-        AnalyzeEntryPointAttributes(funcDecl->attribs);
+        AnalyzeEntryPointAttributes(funcDecl->declStmntRef->attribs);
     }
 }
 
@@ -2029,7 +2035,7 @@ void HLSLAnalyzer::AnalyzeSecondaryEntryPoint(FunctionDecl* funcDecl, bool isPat
         AnalyzeEntryPointInputOutput(funcDecl);
 
         /* Analyze secondary entry point attributes */
-        AnalyzeSecondaryEntryPointAttributes(funcDecl->attribs);
+        AnalyzeSecondaryEntryPointAttributes(funcDecl->declStmntRef->attribs);
     }
 }
 

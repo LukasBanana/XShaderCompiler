@@ -99,7 +99,9 @@ struct AST
     // Types of AST classes.
     enum class Types
     {
-        Program,
+        /* ----- Common AST classes ----- */
+
+        Program,            // AST root node
         CodeBlock,
         Attribute,
         SwitchCase,
@@ -109,19 +111,26 @@ struct AST
         ArrayDimension,
         TypeSpecifier,
 
-        VarDecl,
-        BufferDecl,
-        SamplerDecl,
-        StructDecl,
-        AliasDecl,
+        /* ----- Declaration objects that can be referenced by an 'ObjectExpr' ----- */
 
-        FunctionDecl,       // Do not use "Stmnt" postfix here (There are no declaration sub-nodes)
-        UniformBufferDecl,  // Do not use "Stmnt" postfix here (There are no declaration sub-nodes)
+        VarDecl,            // Variable declaration
+        BufferDecl,         // Buffer declaration (Texture- and Storage Buffers)
+        SamplerDecl,        // Sampler state declaration
+        StructDecl,         // Structure declaration
+        AliasDecl,          // Type alias declaration
+        FunctionDecl,       // Function declaration
+        UniformBufferDecl,  // TODO: rename to "ConstBufferStmnt"
+
+        /* ----- Declaration statements ----- */
+
         VarDeclStmnt,
         BufferDeclStmnt,
         SamplerDeclStmnt,
-        StructDeclStmnt,
-        AliasDeclStmnt,     // Type alias (typedef)
+        StructDeclStmnt,    // TODO: replace by "BasicDeclStmnt"
+        AliasDeclStmnt,
+        BasicDeclStmnt,     // Statement with a single declaration object (StructDecl, FunctionDecl, or UniformBufferDecl)
+
+        /* ----- Common statements ----- */
 
         NullStmnt,
         CodeBlockStmnt,
@@ -134,6 +143,8 @@ struct AST
         ExprStmnt,
         ReturnStmnt,
         CtrlTransferStmnt,
+
+        /* ----- Expressions ----- */
 
         NullExpr,
         SequenceExpr,
@@ -700,6 +711,7 @@ struct StructDecl : public Decl
     std::string                     baseStructName;                     // May be empty (if no inheritance is used).
     std::vector<StmntPtr>           localStmnts;                        // Local declaration statements.
 
+    //TODO: replace "VarDeclStmntPtr" by "VarDeclPtr" here.
     std::vector<VarDeclStmntPtr>    varMembers;                         // List of all member variable declaration statements.
     std::vector<FunctionDeclPtr>    funcMembers;                        // List of all member function declarations.
 
@@ -724,10 +736,8 @@ struct AliasDecl : public Decl
     AliasDeclStmnt* declStmntRef = nullptr; // Reference to its declaration statement (parent node).
 };
 
-/* --- Declaration statements --- */
-
 // Function declaration.
-struct FunctionDecl : public Stmnt
+struct FunctionDecl : public Decl
 {
     AST_INTERFACE(FunctionDecl);
 
@@ -762,6 +772,8 @@ struct FunctionDecl : public Stmnt
         FLAG( isSecondaryEntryPoint,   1 ), // This function is a secondary entry point (e.g. patch constant function).
         FLAG( hasNonReturnControlPath, 2 ), // At least one control path does not return a value.
     };
+
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     // Returns true if this function declaration is just a forward declaration (without function body).
     bool IsForwardDecl() const;
@@ -801,7 +813,7 @@ struct FunctionDecl : public Stmnt
     );
 
     TypeSpecifierPtr                returnType;                                 // Function return type (TypeSpecifier).
-    Identifier                      ident;                                      // Function identifier.
+    //Identifier                      ident;                                      // Function identifier.
     std::vector<VarDeclStmntPtr>    parameters;                                 // Function parameter list.
     IndexedSemantic                 semantic            = Semantic::Undefined;  // Function return semantic; may be undefined.
     std::vector<VarDeclStmntPtr>    annotations;                                // Annotations can be ignored by analyzers and generators.
@@ -810,6 +822,7 @@ struct FunctionDecl : public Stmnt
     ParameterSemantics              inputSemantics;                             // Entry point input semantics.
     ParameterSemantics              outputSemantics;                            // Entry point output semantics.
 
+    BasicDeclStmnt*                 declStmntRef        = nullptr;              // Reference to its declaration statement (parent node). Must not be null.
     FunctionDecl*                   funcImplRef         = nullptr;              // Reference to the function implementation (only for forward declarations).
     std::vector<FunctionDecl*>      funcForwardDeclRefs;                        // Reference to all forward declarations (only for implementations).
     StructDecl*                     structDeclRef       = nullptr;              // Structure declaration reference if this is a member function; may be null
@@ -817,6 +830,7 @@ struct FunctionDecl : public Stmnt
     std::vector<ParameterStructure> paramStructs;                               // Parameter with structure type (only for entry point).
 };
 
+//TODO: replace "Stmnt" parent class by "Decl"
 // Uniform buffer (cbuffer, tbuffer) declaration.
 struct UniformBufferDecl : public Stmnt
 {
@@ -835,6 +849,8 @@ struct UniformBufferDecl : public Stmnt
     std::vector<VarDeclStmntPtr>    varMembers;                                         // List of all member variable declaration statements.
     TypeModifier                    commonStorageLayout = TypeModifier::ColumnMajor;    // Type modifier of the common matrix/vector storage.
 };
+
+/* --- Declaration statements --- */
 
 // Buffer (and texture) declaration.
 struct BufferDeclStmnt : public Stmnt
@@ -860,12 +876,24 @@ struct SamplerDeclStmnt : public Stmnt
     std::vector<SamplerDeclPtr> samplerDecls;   // Sampler declaration list.
 };
 
+#if 1//TODO: replace by "BasicDeclStmnt"
+
 // StructDecl declaration statement.
 struct StructDeclStmnt : public Stmnt
 {
     AST_INTERFACE(StructDeclStmnt);
 
     StructDeclPtr structDecl;   // Structure declaration.
+};
+
+#endif
+
+// Basic declaration statement.
+struct BasicDeclStmnt : public Stmnt
+{
+    AST_INTERFACE(BasicDeclStmnt);
+
+    DeclPtr declObject;   // Declaration object.
 };
 
 // Variable declaration statement.

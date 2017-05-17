@@ -1006,6 +1006,12 @@ void FunctionDecl::ParameterSemantics::UpdateDistribution()
     }
 }
 
+TypeDenoterPtr FunctionDecl::DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter)
+{
+    //TODO: add "FunctionTypeDenoter"
+    return nullptr;
+}
+
 bool FunctionDecl::IsForwardDecl() const
 {
     return (codeBlock == nullptr);

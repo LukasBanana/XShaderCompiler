@@ -108,7 +108,6 @@ IMPLEMENT_VISIT_PROC(AliasDecl)
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    Visit(ast->attribs);
     Visit(ast->returnType);
     Visit(ast->parameters);
     Visit(ast->annotations);
@@ -134,11 +133,15 @@ IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
     Visit(ast->samplerDecls);
 }
 
+#if 1//TODO: replace by "BasicDeclStmnt"
+
 IMPLEMENT_VISIT_PROC(StructDeclStmnt)
 {
     Visit(ast->attribs);
     Visit(ast->structDecl);
 }
+
+#endif
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
@@ -152,6 +155,12 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
     Visit(ast->attribs);
     Visit(ast->structDecl);
     Visit(ast->aliasDecls);
+}
+
+IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+{
+    Visit(ast->attribs);
+    Visit(ast->declObject);
 }
 
 /* --- Statements --- */

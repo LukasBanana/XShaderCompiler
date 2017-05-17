@@ -207,7 +207,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (ast->flags(AST::isReachable))
     {
-        Visit(ast->attribs);
+        Visit(ast->declStmntRef->attribs);
 
         VISIT_DEFAULT(FunctionDecl);
     }
@@ -250,6 +250,12 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
         AcquireExtension(E_GL_ARB_texture_multisample, R_MultiSampledTexture, ast);
 
     VISIT_DEFAULT(BufferDeclStmnt);
+}
+
+IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+{
+    /* Only visit declaration object (not attributes here) */
+    Visit(ast->declObject);
 }
 
 IMPLEMENT_VISIT_PROC(BinaryExpr)
