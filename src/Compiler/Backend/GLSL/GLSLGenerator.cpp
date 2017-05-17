@@ -586,23 +586,6 @@ IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
         Visit(ast->samplerDecls);
 }
 
-IMPLEMENT_VISIT_PROC(StructDeclStmnt)
-{
-    if (!ast->structDecl->flags(AST::isReachable))
-        return;
-
-    if (ast->structDecl->flags(StructDecl::isNonEntryPointParam) || !ast->structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
-    {
-        WriteLineMark(ast);
-
-        /* Visit structure declaration */
-        StructDeclArgs structDeclArgs;
-        structDeclArgs.inEndWithSemicolon = true;
-
-        Visit(ast->structDecl, &structDeclArgs);
-    }
-}
-
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     auto varDecls = ast->varDecls;
@@ -709,6 +692,32 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
         structDeclArgs.inEndWithSemicolon = true;
 
         Visit(ast->structDecl, &structDeclArgs);
+    }
+}
+
+IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+{
+    if (auto structDecl = ast->declObject->As<StructDecl>())
+    {
+        if (structDecl->flags(AST::isReachable))
+        {
+            if ( structDecl->flags(StructDecl::isNonEntryPointParam) ||
+                 !structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput) )
+            {
+                WriteLineMark(ast);
+
+                /* Visit structure declaration */
+                StructDeclArgs structDeclArgs;
+                structDeclArgs.inEndWithSemicolon = true;
+
+                Visit(structDecl, &structDeclArgs);
+            }
+        }
+    }
+    else
+    {
+        /* Visit declaration object only */
+        Visit(ast->declObject);
     }
 }
 

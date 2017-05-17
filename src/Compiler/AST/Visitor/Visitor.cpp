@@ -133,16 +133,6 @@ IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
     Visit(ast->samplerDecls);
 }
 
-#if 1//TODO: replace by "BasicDeclStmnt"
-
-IMPLEMENT_VISIT_PROC(StructDeclStmnt)
-{
-    Visit(ast->attribs);
-    Visit(ast->structDecl);
-}
-
-#endif
-
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     Visit(ast->attribs);

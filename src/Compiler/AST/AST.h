@@ -126,7 +126,6 @@ struct AST
         VarDeclStmnt,
         BufferDeclStmnt,
         SamplerDeclStmnt,
-        StructDeclStmnt,    // TODO: replace by "BasicDeclStmnt"
         AliasDeclStmnt,
         BasicDeclStmnt,     // Statement with a single declaration object (StructDecl, FunctionDecl, or UniformBufferDecl)
 
@@ -711,11 +710,11 @@ struct StructDecl : public Decl
     std::string                     baseStructName;                     // May be empty (if no inheritance is used).
     std::vector<StmntPtr>           localStmnts;                        // Local declaration statements.
 
-    //TODO: replace "VarDeclStmntPtr" by "VarDeclPtr" here.
+    //TODO: maybe replace "VarDeclStmntPtr" by "VarDeclPtr" here.
     std::vector<VarDeclStmntPtr>    varMembers;                         // List of all member variable declaration statements.
     std::vector<FunctionDeclPtr>    funcMembers;                        // List of all member function declarations.
 
-    StructDeclStmnt*                declStmntRef            = nullptr;  // Reference to its declaration statement (parent node).
+    BasicDeclStmnt*                 declStmntRef            = nullptr;  // Reference to its declaration statement (parent node).
     StructDecl*                     baseStructRef           = nullptr;  // Optional reference to base struct.
     StructDecl*                     compatibleStructRef     = nullptr;  // Optional reference to a type compatible struct (only for anonymous structs).
     std::map<std::string, VarDecl*> systemValuesRef;                    // List of members with system value semantic (SV_...).
@@ -875,18 +874,6 @@ struct SamplerDeclStmnt : public Stmnt
     SamplerTypeDenoterPtr       typeDenoter;    // Own type denoter.
     std::vector<SamplerDeclPtr> samplerDecls;   // Sampler declaration list.
 };
-
-#if 1//TODO: replace by "BasicDeclStmnt"
-
-// StructDecl declaration statement.
-struct StructDeclStmnt : public Stmnt
-{
-    AST_INTERFACE(StructDeclStmnt);
-
-    StructDeclPtr structDecl;   // Structure declaration.
-};
-
-#endif
 
 // Basic declaration statement.
 struct BasicDeclStmnt : public Stmnt

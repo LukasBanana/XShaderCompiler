@@ -48,7 +48,6 @@ DECL_PTR( UniformBufferDecl );
 
 DECL_PTR( BufferDeclStmnt   );
 DECL_PTR( SamplerDeclStmnt  );
-DECL_PTR( StructDeclStmnt   );
 DECL_PTR( VarDeclStmnt      );
 DECL_PTR( AliasDeclStmnt    );
 DECL_PTR( BasicDeclStmnt    );
@@ -121,7 +120,6 @@ class Visitor
         VISITOR_VISIT_PROC( UniformBufferDecl );
         VISITOR_VISIT_PROC( BufferDeclStmnt   );
         VISITOR_VISIT_PROC( SamplerDeclStmnt  );
-        VISITOR_VISIT_PROC( StructDeclStmnt   );
         VISITOR_VISIT_PROC( VarDeclStmnt      );
         VISITOR_VISIT_PROC( AliasDeclStmnt    );
         VISITOR_VISIT_PROC( BasicDeclStmnt    );

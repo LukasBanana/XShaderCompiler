@@ -796,10 +796,12 @@ StmntPtr HLSLParser::ParseGlobalStmntWithTypeSpecifier()
     if (typeSpecifier->structDecl && Is(Tokens::Semicolon))
     {
         /* Convert type specifier into struct declaration statement */
-        auto ast = Make<StructDeclStmnt>();
+        auto ast = Make<BasicDeclStmnt>();
 
-        ast->structDecl = typeSpecifier->structDecl;
-        ast->structDecl->declStmntRef = ast.get();
+        auto structDecl = typeSpecifier->structDecl;
+        structDecl->declStmntRef = ast.get();
+
+        ast->declObject = structDecl;
 
         Semi();
 
@@ -1127,17 +1129,19 @@ StmntPtr HLSLParser::ParseStmntPrimary()
 StmntPtr HLSLParser::ParseStmntWithStructDecl()
 {
     /* Parse structure declaration statement */
-    auto ast = Make<StructDeclStmnt>();
+    auto ast = Make<BasicDeclStmnt>();
     
-    ast->structDecl = ParseStructDecl();
-    ast->structDecl->declStmntRef = ast.get();
+    auto structDecl = ParseStructDecl();
+    structDecl->declStmntRef = ast.get();
+
+    ast->declObject = structDecl;
 
     if (!Is(Tokens::Semicolon))
     {
         /* Parse variable declaration with previous structure type */
         auto varDeclStmnt = Make<VarDeclStmnt>();
 
-        varDeclStmnt->typeSpecifier = ASTFactory::MakeTypeSpecifier(ast->structDecl);
+        varDeclStmnt->typeSpecifier = ASTFactory::MakeTypeSpecifier(structDecl);
         
         /* Parse variable declarations */
         varDeclStmnt->varDecls = ParseVarDeclList(varDeclStmnt.get());
