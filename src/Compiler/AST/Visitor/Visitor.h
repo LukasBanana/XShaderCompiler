@@ -115,9 +115,9 @@ class Visitor
         VISITOR_VISIT_PROC( SamplerDecl       );
         VISITOR_VISIT_PROC( StructDecl        );
         VISITOR_VISIT_PROC( AliasDecl         );
-
         VISITOR_VISIT_PROC( FunctionDecl      );
         VISITOR_VISIT_PROC( UniformBufferDecl );
+
         VISITOR_VISIT_PROC( BufferDeclStmnt   );
         VISITOR_VISIT_PROC( SamplerDeclStmnt  );
         VISITOR_VISIT_PROC( VarDeclStmnt      );

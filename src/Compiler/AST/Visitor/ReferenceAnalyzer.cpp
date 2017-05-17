@@ -168,7 +168,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     if (Reachable(ast))
     {
         VISIT_DEFAULT(UniformBufferDecl);
-        //Reachable(ast->declStmntRef);
+        Reachable(ast->declStmntRef);
     }
 }
 

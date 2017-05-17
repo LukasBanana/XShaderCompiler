@@ -1268,6 +1268,11 @@ FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
 
 /* ----- UniformBufferDecl ----- */
 
+TypeDenoterPtr UniformBufferDecl::DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter)
+{
+    return nullptr;
+}
+
 std::string UniformBufferDecl::ToString() const
 {
     std::string s;

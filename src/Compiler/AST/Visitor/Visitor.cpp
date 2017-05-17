@@ -104,8 +104,6 @@ IMPLEMENT_VISIT_PROC(AliasDecl)
     // do nothing
 }
 
-/* --- Declaration statements --- */
-
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     Visit(ast->returnType);
@@ -116,10 +114,11 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
-    Visit(ast->attribs);
     Visit(ast->slotRegisters);
     Visit(ast->localStmnts);
 }
+
+/* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {

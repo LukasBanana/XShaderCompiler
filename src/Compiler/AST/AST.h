@@ -828,11 +828,12 @@ struct FunctionDecl : public Decl
     std::vector<ParameterStructure> paramStructs;                               // Parameter with structure type (only for entry point).
 };
 
-//TODO: replace "Stmnt" parent class by "Decl"
 // Uniform buffer (cbuffer, tbuffer) declaration.
-struct UniformBufferDecl : public Stmnt
+struct UniformBufferDecl : public Decl
 {
     AST_INTERFACE(UniformBufferDecl);
+
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     std::string ToString() const;
 
@@ -840,12 +841,13 @@ struct UniformBufferDecl : public Stmnt
     TypeModifier DeriveCommonStorageLayout(const TypeModifier defaultStorgeLayout = TypeModifier::Undefined);
 
     UniformBufferType               bufferType          = UniformBufferType::Undefined; // Type of this uniform buffer. Must not be undefined.
-    std::string                     ident;                                              // Uniform buffer identifier.
     std::vector<RegisterPtr>        slotRegisters;                                      // Slot register list. May be empty.
     std::vector<StmntPtr>           localStmnts;                                        // Local declaration statements.
 
     std::vector<VarDeclStmntPtr>    varMembers;                                         // List of all member variable declaration statements.
     TypeModifier                    commonStorageLayout = TypeModifier::ColumnMajor;    // Type modifier of the common matrix/vector storage.
+
+    BasicDeclStmnt*                 declStmntRef        = nullptr;                      // Reference to its declaration statement (parent node). Must not be null.
 };
 
 /* --- Declaration statements --- */

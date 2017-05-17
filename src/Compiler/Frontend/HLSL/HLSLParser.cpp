@@ -747,6 +747,105 @@ AliasDeclPtr HLSLParser::ParseAliasDecl(TypeDenoterPtr typeDenoter)
     return UpdateSourceArea(ast);
 }
 
+FunctionDeclPtr HLSLParser::ParseFunctionDecl(BasicDeclStmnt* declStmntRef, const TypeSpecifierPtr& returnType, const TokenPtr& identTkn)
+{
+    auto ast = Make<FunctionDecl>();
+
+    /* Store reference to declaration statement parent node */
+    ast->declStmntRef = declStmntRef;
+
+    if (returnType)
+    {
+        /* Take previously parsed return type */
+        ast->returnType = returnType;
+    }
+    else
+    {
+        /* Parse (and ignore) optional 'inline' keyword */
+        if (Is(Tokens::Inline))
+            AcceptIt();
+
+        /* Parse return type */
+        ast->returnType = ParseTypeSpecifier(true);
+    }
+
+    /* Parse function identifier */
+    if (identTkn)
+    {
+        ast->area   = identTkn->Area();
+        ast->ident  = identTkn->Spell();
+    }
+    else
+    {
+        ast->area   = GetScanner().ActiveToken()->Area();
+        ast->ident  = ParseIdent();
+    }
+
+    /* Parse parameters */
+    ast->parameters = ParseParameterList();
+    
+    ParseFunctionDeclSemantic(*ast);
+
+    ast->annotations = ParseAnnotationList();
+
+    /* Parse optional function body */
+    if (Is(Tokens::Semicolon))
+        AcceptIt();
+    else
+    {
+        GetReportHandler().PushContextDesc(ast->ToString(false));
+        {
+            localScope_ = true;
+            ast->codeBlock = ParseCodeBlock();
+            localScope_ = false;
+        }
+        GetReportHandler().PopContextDesc();
+    }
+
+    return ast;
+}
+
+UniformBufferDeclPtr HLSLParser::ParseUniformBufferDecl()
+{
+    auto ast = Make<UniformBufferDecl>();
+
+    /* Parse buffer header */
+    ast->bufferType = ParseUniformBufferType();
+    ast->ident      = ParseIdent();
+
+    UpdateSourceArea(ast);
+
+    /* Parse optional registers */
+    ast->slotRegisters = ParseRegisterList();
+
+    GetReportHandler().PushContextDesc(ast->ToString());
+    {
+        /* Parse buffer body */
+        ast->localStmnts = ParseLocalStmntList();
+
+        /* Copy variable declarations into separated list */
+        for (auto& stmnt : ast->localStmnts)
+        {
+            if (stmnt->Type() == AST::Types::VarDeclStmnt)
+                ast->varMembers.push_back(std::static_pointer_cast<VarDeclStmnt>(stmnt));
+        }
+
+        /* Decorate all member variables with a reference to this buffer declaration */
+        for (auto& varDeclStmnt : ast->varMembers)
+        {
+            for (auto& varDecl : varDeclStmnt->varDecls)
+                varDecl->bufferDeclRef = ast.get();
+        }
+
+        /* Parse optional semicolon (this seems to be optional for cbuffer, and tbuffer) */
+        if (Is(Tokens::Semicolon))
+            Semi();
+    }
+    GetReportHandler().PopContextDesc();
+
+    return ast;
+}
+
 /* --- Declaration statements --- */
 
 StmntPtr HLSLParser::ParseGlobalStmnt()
@@ -776,7 +875,7 @@ StmntPtr HLSLParser::ParseGlobalStmntPrimary()
         case Tokens::Buffer:
             return ParseGlobalStmntWithBufferTypeDenoter();
         case Tokens::UniformBuffer:
-            return ParseUniformBufferDecl();
+            return ParseUniformBufferDeclStmnt();
         case Tokens::Typedef:
             return ParseAliasDeclStmnt();
         case Tokens::Void:
@@ -867,64 +966,6 @@ StmntPtr HLSLParser::ParseGlobalStmntWithBufferTypeDenoter()
     }
 }
 
-FunctionDeclPtr HLSLParser::ParseFunctionDecl(BasicDeclStmnt* declStmntRef, const TypeSpecifierPtr& returnType, const TokenPtr& identTkn)
-{
-    auto ast = Make<FunctionDecl>();
-
-    /* Store reference to declaration statement parent node */
-    ast->declStmntRef = declStmntRef;
-
-    if (returnType)
-    {
-        /* Take previously parsed return type */
-        ast->returnType = returnType;
-    }
-    else
-    {
-        /* Parse (and ignore) optional 'inline' keyword */
-        if (Is(Tokens::Inline))
-            AcceptIt();
-
-        /* Parse return type */
-        ast->returnType = ParseTypeSpecifier(true);
-    }
-
-    /* Parse function identifier */
-    if (identTkn)
-    {
-        ast->area   = identTkn->Area();
-        ast->ident  = identTkn->Spell();
-    }
-    else
-    {
-        ast->area   = GetScanner().ActiveToken()->Area();
-        ast->ident  = ParseIdent();
-    }
-
-    /* Parse parameters */
-    ast->parameters = ParseParameterList();
-    
-    ParseFunctionDeclSemantic(*ast);
-
-    ast->annotations = ParseAnnotationList();
-
-    /* Parse optional function body */
-    if (Is(Tokens::Semicolon))
-        AcceptIt();
-    else
-    {
-        GetReportHandler().PushContextDesc(ast->ToString(false));
-        {
-            localScope_ = true;
-            ast->codeBlock = ParseCodeBlock();
-            localScope_ = false;
-        }
-        GetReportHandler().PopContextDesc();
-    }
-
-    return ast;
-}
-
 BasicDeclStmntPtr HLSLParser::ParseFunctionDeclStmnt(const TypeSpecifierPtr& returnType, const TokenPtr& identTkn)
 {
     auto ast = Make<BasicDeclStmnt>();
@@ -941,43 +982,18 @@ BasicDeclStmntPtr HLSLParser::ParseFunctionDeclStmnt(const TypeSpecifierPtr& ret
     return ast;
 }
 
-UniformBufferDeclPtr HLSLParser::ParseUniformBufferDecl()
+BasicDeclStmntPtr HLSLParser::ParseUniformBufferDeclStmnt()
 {
-    auto ast = Make<UniformBufferDecl>();
+    auto ast = Make<BasicDeclStmnt>();
 
-    /* Parse buffer header */
-    ast->bufferType = ParseUniformBufferType();
-    ast->ident      = ParseIdent();
+    /* Parse attribute list */
+    ast->attribs    = ParseAttributeList();
 
-    UpdateSourceArea(ast);
+    /* Parse uniform buffer declaration object */
+    auto uniformBufferDecl = ParseUniformBufferDecl();
+    ast->declObject = uniformBufferDecl;
 
-    /* Parse optional registers */
-    ast->slotRegisters = ParseRegisterList();
-
-    GetReportHandler().PushContextDesc(ast->ToString());
-    {
-        /* Parse buffer body */
-        ast->localStmnts = ParseLocalStmntList();
-
-        /* Copy variable declarations into separated list */
-        for (auto& stmnt : ast->localStmnts)
-        {
-            if (stmnt->Type() == AST::Types::VarDeclStmnt)
-                ast->varMembers.push_back(std::static_pointer_cast<VarDeclStmnt>(stmnt));
-        }
-
-        /* Decorate all member variables with a reference to this buffer declaration */
-        for (auto& varDeclStmnt : ast->varMembers)
-        {
-            for (auto& varDecl : varDeclStmnt->varDecls)
-                varDecl->bufferDeclRef = ast.get();
-        }
-
-        /* Parse optional semicolon (this seems to be optional for cbuffer, and tbuffer) */
-        if (Is(Tokens::Semicolon))
-            Semi();
-    }
-    GetReportHandler().PopContextDesc();
+    uniformBufferDecl->declStmntRef = ast.get();
 
     return ast;
 }
