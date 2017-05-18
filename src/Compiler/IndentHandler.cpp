@@ -13,7 +13,7 @@ namespace Xsc
 
 
 IndentHandler::IndentHandler(const std::string& initialIndent) :
-    indent_{ initialIndent }
+    indent_ { initialIndent }
 {
 }
 

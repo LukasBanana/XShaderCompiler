@@ -245,7 +245,7 @@ void MergeString(std::basic_string<T>& dst, const std::basic_string<T>& src, con
 
     /* Append remaining characters to destination string */
     if (i < nSrc)
-        dst.append(src, i);
+        dst.append(src.substr(i));
 }
 
 

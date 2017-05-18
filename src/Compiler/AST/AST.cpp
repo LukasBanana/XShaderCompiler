@@ -25,6 +25,30 @@ namespace Xsc
     if (PREDICATE(*this))                   \
         return this
 
+
+/* ----- Global functions ----- */
+
+bool IsDeclAST(const AST::Types t)
+{
+    return (t >= AST::Types::VarDecl && t <= AST::Types::UniformBufferDecl);
+}
+
+bool IsExprAST(const AST::Types t)
+{
+    return (t >= AST::Types::NullExpr && t <= AST::Types::InitializerExpr);
+}
+
+bool IsStmntAST(const AST::Types t)
+{
+    return (t >= AST::Types::VarDeclStmnt && t <= AST::Types::CtrlTransferStmnt);
+}
+
+bool IsDeclStmntAST(const AST::Types t)
+{
+    return (t >= AST::Types::VarDeclStmnt && t <= AST::Types::BasicDeclStmnt);
+}
+
+
 /* ----- AST ----- */
 
 AST::~AST()
@@ -271,6 +295,15 @@ bool ArrayDimension::HasDynamicSize() const
     return (size == 0);
 }
 
+void ArrayDimension::ValidateIndexBoundary(int idx) const
+{
+    if (size > 0)
+    {
+        if (idx < 0 || idx >= size)
+            RuntimeErr(R_ArrayIndexOutOfBounds(idx, size));
+    }
+}
+
 #if 0 //UNUSED
 std::vector<int> ArrayDimension::GetArrayDimensionSizes(const std::vector<ArrayDimensionPtr>& arrayDims)
 {
@@ -493,6 +526,17 @@ bool VarDecl::IsParameter() const
     return (declStmntRef != nullptr && declStmntRef->flags(VarDeclStmnt::isParameter));
 }
 
+bool VarDecl::HasStaticConstInitializer() const
+{
+    return
+    (
+        declStmntRef != nullptr &&
+        declStmntRef->IsConstOrUniform() &&
+        !declStmntRef->flags(VarDeclStmnt::isParameter) &&
+        initializerValue
+    );
+}
+
 void VarDecl::SetCustomTypeDenoter(const TypeDenoterPtr& typeDenoter)
 {
     customTypeDenoter = typeDenoter;
@@ -558,7 +602,7 @@ std::string StructDecl::ToString() const
     return ("struct " + (IsAnonymous() ? ("<" + R_Anonymous + ">") : ident.Original()));
 }
 
-bool StructDecl::EqualsMembers(const StructDecl& rhs, const Flags& compareFlags) const
+bool StructDecl::EqualsMemberTypes(const StructDecl& rhs, const Flags& compareFlags) const
 {
     /* Collect member type denoters from this structure */
     std::vector<TypeDenoterPtr> lhsMemberTypeDens;
@@ -863,6 +907,60 @@ void StructDecl::AddFlagsRecursiveParents(unsigned int structFlags)
     }
 }
 
+std::size_t StructDecl::MemberVarToIndex(const VarDecl* varDecl, bool includeBaseStructs) const
+{
+    static const std::size_t invalidIdx = ~0;
+
+    std::size_t idx = 0;
+
+    /* Search member variable in base struct */
+    if (baseStructRef && includeBaseStructs)
+    {
+        auto baseIdx = baseStructRef->MemberVarToIndex(varDecl, includeBaseStructs);
+        if (baseIdx != invalidIdx)
+            idx = baseIdx;
+    }
+
+    /* Search member variable in this struct */
+    for (const auto& member : varMembers)
+    {
+        for (const auto& var : member->varDecls)
+        {
+            if (varDecl == var.get())
+                return idx;
+            ++idx;
+        }
+    }
+
+    return invalidIdx;
+}
+
+static VarDecl* FindIndexOfStructMemberVar(const StructDecl& structDecl, std::size_t& idx, bool includeBaseStructs)
+{
+    /* Search member variable in base struct */
+    if (structDecl.baseStructRef && includeBaseStructs)
+    {
+        if (auto varDecl = FindIndexOfStructMemberVar(*structDecl.baseStructRef, idx, includeBaseStructs))
+            return varDecl;
+    }
+
+    /* Search member variable in this struct */
+    for (const auto& member : structDecl.varMembers)
+    {
+        if (idx < member->varDecls.size())
+            return member->varDecls[idx].get();
+        else
+            idx -= member->varDecls.size();
+    }
+
+    return nullptr;
+}
+
+VarDecl* StructDecl::IndexToMemberVar(std::size_t idx, bool includeBaseStructs) const
+{
+    return FindIndexOfStructMemberVar(*this, idx, includeBaseStructs);
+}
+
 
 /* ----- AliasDecl ----- */
 
@@ -932,6 +1030,12 @@ void FunctionDecl::ParameterSemantics::UpdateDistribution()
     }
 }
 
+TypeDenoterPtr FunctionDecl::DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter)
+{
+    //RuntimeErr(R_CantDeriveTypeOfFunction, this);
+    return std::make_shared<FunctionTypeDenoter>(this);
+}
+
 bool FunctionDecl::IsForwardDecl() const
 {
     return (codeBlock == nullptr);
@@ -977,6 +1081,31 @@ std::string FunctionDecl::ToString(bool useParamNames) const
         if (!parameters[i]->flags(VarDeclStmnt::isSelfParameter))
         {
             s += parameters[i]->ToString(useParamNames);
+            if (i + 1 < parameters.size())
+                s += ", ";
+        }
+    }
+
+    s += ')';
+
+    return s;
+}
+
+std::string FunctionDecl::ToTypeDenoterString() const
+{
+    std::string s;
+
+    /* Append function return type */
+    s += returnType->ToString();
+
+    /* Append parameter types */
+    s += '(';
+
+    for (std::size_t i = 0; i < parameters.size(); ++i)
+    {
+        if (!parameters[i]->flags(VarDeclStmnt::isSelfParameter))
+        {
+            s += parameters[i]->ToString(false);
             if (i + 1 < parameters.size())
                 s += ", ";
         }
@@ -1187,6 +1316,11 @@ FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
 
 
 /* ----- UniformBufferDecl ----- */
+
+TypeDenoterPtr UniformBufferDecl::DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter)
+{
+    RuntimeErr(R_CantDeriveTypeOfConstBuffer, this);
+}
 
 std::string UniformBufferDecl::ToString() const
 {
@@ -1510,11 +1644,11 @@ TypeDenoterPtr TernaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeD
         RuntimeErr(R_IllegalCast(condTypeDen->ToString(), boolTypeDen.ToString(), R_ConditionOfTernaryExpr), condExpr.get());
 
     /* Find common type denoter for both sub expressions */
-    const auto& thenTypeDen = thenExpr->GetTypeDenoter();
-    const auto& elseTypeDen = elseExpr->GetTypeDenoter();
+    const auto& thenTypeDen = thenExpr->GetTypeDenoter()->GetAliased();
+    const auto& elseTypeDen = elseExpr->GetTypeDenoter()->GetAliased();
 
-    if (!elseTypeDen->IsCastableTo(*thenTypeDen))
-        RuntimeErr(R_IllegalCast(elseTypeDen->ToString(), thenTypeDen->ToString(), R_TernaryExpr), this);
+    if (!elseTypeDen.IsCastableTo(thenTypeDen))
+        RuntimeErr(R_IllegalCast(elseTypeDen.ToString(), thenTypeDen.ToString(), R_TernaryExpr), this);
 
     auto commonTypeDen = TypeDenoter::FindCommonTypeDenoterFrom(thenExpr, elseExpr, false, this);
 
@@ -1581,20 +1715,20 @@ bool TernaryExpr::IsVectorCondition() const
 TypeDenoterPtr BinaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     /* Return type of left-hand-side sub expresion if the types are compatible */
-    const auto& lhsTypeDen = lhsExpr->GetTypeDenoter();
-    const auto& rhsTypeDen = rhsExpr->GetTypeDenoter();
+    const auto& lhsTypeDen = lhsExpr->GetTypeDenoter()->GetAliased();
+    const auto& rhsTypeDen = rhsExpr->GetTypeDenoter()->GetAliased();
 
-    if (!rhsTypeDen->IsCastableTo(*lhsTypeDen) || !lhsTypeDen->IsCastableTo(*rhsTypeDen))
-        RuntimeErr(R_IllegalCast(rhsTypeDen->ToString(), lhsTypeDen->ToString(), R_BinaryExpr(BinaryOpToString(op))), this);
+    if (!rhsTypeDen.IsCastableTo(lhsTypeDen) || !lhsTypeDen.IsCastableTo(rhsTypeDen))
+        RuntimeErr(R_IllegalCast(rhsTypeDen.ToString(), lhsTypeDen.ToString(), R_BinaryExpr(BinaryOpToString(op))), this);
 
     /* Find common type denoter of left and right sub expressions */
     if (auto commonTypeDen = TypeDenoter::FindCommonTypeDenoterFrom(lhsExpr, rhsExpr, false, this))
     {
         /* Throw error if any expression has not a base type */
-        if (!lhsTypeDen->IsBase())
-            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), lhsTypeDen->ToString()), this);
-        if (!rhsTypeDen->IsBase())
-            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), rhsTypeDen->ToString()), this);
+        if (!lhsTypeDen.IsBase())
+            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), lhsTypeDen.ToString()), this);
+        if (!rhsTypeDen.IsBase())
+            RuntimeErr(R_OnlyBaseTypeAllowed(R_BinaryExpr(BinaryOpToString(op)), rhsTypeDen.ToString()), this);
 
         if (IsBooleanOp(op))
             return TypeDenoter::MakeBoolTypeWithDimensionOf(*commonTypeDen);
@@ -1693,10 +1827,10 @@ const Expr* PostUnaryExpr::Find(const FindPredicateConstFunctor& predicate, unsi
 
 TypeDenoterPtr CallExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
-    if (funcDeclRef)
+    if (auto funcDecl = GetFunctionDecl())
     {
         /* Return type denoter of associated function declaration */
-        return funcDeclRef->returnType->typeDenoter;
+        return funcDecl->returnType->typeDenoter;
     }
     else if (typeDenoter)
     {
@@ -1723,13 +1857,16 @@ TypeDenoterPtr CallExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDeno
     }
     else if (intrinsic != Intrinsic::Undefined)
     {
-        /* Return type denoter of associated intrinsic */
         try
         {
+            /* Get object expression if this is a member function */
+            auto memberFuncObjExpr = GetMemberFuncObjectExpr();
+
+            /* Return type denoter of associated intrinsic */
             return IntrinsicAdept::Get().GetIntrinsicReturnType(
                 intrinsic,
                 arguments,
-                (prefixExpr != nullptr ? prefixExpr->GetTypeDenoter() : nullptr)
+                (memberFuncObjExpr != nullptr ? memberFuncObjExpr->GetTypeDenoter() : nullptr)
             );
         }
         catch (const std::exception& e)
@@ -1761,8 +1898,8 @@ const Expr* CallExpr::Find(const FindPredicateConstFunctor& predicate, unsigned 
 IndexedSemantic CallExpr::FetchSemantic() const
 {
     /* Return semantic of function declaration */
-    if (funcDeclRef)
-        return funcDeclRef->semantic;
+    if (auto funcDecl = GetFunctionDecl())
+        return funcDecl->semantic;
     else
         return Semantic::Undefined;
 }
@@ -1783,9 +1920,14 @@ std::vector<Expr*> CallExpr::GetArguments() const
     return args;
 }
 
+FunctionDecl* CallExpr::GetFunctionDecl() const
+{
+    return funcDeclRef;
+}
+
 FunctionDecl* CallExpr::GetFunctionImpl() const
 {
-    if (auto funcDecl = funcDeclRef)
+    if (auto funcDecl = GetFunctionDecl())
     {
         if (funcDecl->funcImplRef)
             return funcDecl->funcImplRef;
@@ -1799,10 +1941,10 @@ void CallExpr::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
 {
     if (iterator)
     {
-        if (funcDeclRef)
+        if (auto funcDecl = GetFunctionDecl())
         {
             /* Get output parameters from associated function declaration */
-            const auto& parameters = funcDeclRef->parameters;
+            const auto& parameters = funcDecl->parameters;
             for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
             {
                 if (parameters[i]->IsOutput())
@@ -1826,10 +1968,10 @@ void CallExpr::ForEachArgumentWithParameterType(const ArgumentParameterTypeFunct
 {
     if (iterator)
     {
-        if (funcDeclRef)
+        if (auto funcDecl = GetFunctionDecl())
         {
             /* Get parameter type denoters from associated function declaration */
-            const auto& parameters = funcDeclRef->parameters;
+            const auto& parameters = funcDecl->parameters;
             for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
             {
                 auto param = parameters[i]->varDecls.front();
@@ -1852,9 +1994,45 @@ void CallExpr::PushArgumentFront(const ExprPtr& expr)
     arguments.insert(arguments.begin(), expr);
 }
 
-void CallExpr::PushArgumentFront(ExprPtr&& expr)
+bool CallExpr::PushPrefixToArguments()
 {
-    arguments.insert(arguments.begin(), std::move(expr));
+    if (prefixExpr)
+    {
+        arguments.insert(arguments.begin(), std::move(prefixExpr));
+        return true;
+    }
+    return false;
+}
+
+bool CallExpr::PopPrefixFromArguments()
+{
+    if (!prefixExpr && !arguments.empty())
+    {
+        prefixExpr = std::move(arguments.front());
+        arguments.erase(arguments.begin());
+        return true;
+    }
+    return false;
+}
+
+bool CallExpr::MergeArguments(std::size_t firstArgIndex, const MergeExprFunctor& mergeFunctor)
+{
+    if (firstArgIndex + 1 < arguments.size())
+    {
+        arguments[firstArgIndex] = mergeFunctor(arguments[firstArgIndex], arguments[firstArgIndex + 1]);
+        arguments.erase(arguments.begin() + firstArgIndex + 1);
+        return true;
+    }
+    return false;
+}
+
+Expr* CallExpr::GetMemberFuncObjectExpr() const
+{
+    if (prefixExpr)
+        return prefixExpr.get();
+    if (!arguments.empty())
+        return arguments.front().get();
+    return nullptr;
 }
 
 
@@ -1932,18 +2110,7 @@ TypeDenoterPtr ObjectExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
     if (symbolRef)
     {
         /* Derive type denoter from symbol reference */
-        if (auto varDecl = symbolRef->As<VarDecl>())
-            return varDecl->GetTypeDenoter();
-        if (auto bufferDecl = symbolRef->As<BufferDecl>())
-            return bufferDecl->GetTypeDenoter();
-        if (auto samplerDecl = symbolRef->As<SamplerDecl>())
-            return samplerDecl->GetTypeDenoter();
-        if (auto structDecl = symbolRef->As<StructDecl>())
-            return structDecl->GetTypeDenoter();
-        if (auto aliasDecl = symbolRef->As<AliasDecl>())
-            return aliasDecl->GetTypeDenoter();
-
-        RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
+        return symbolRef->GetTypeDenoter();
     }
     else if (prefixExpr)
     {
@@ -2057,6 +2224,15 @@ std::string ObjectExpr::ToStringAsNamespace() const
     s += ident;
 
     return s;
+}
+
+void ObjectExpr::ReplaceSymbol(Decl* symbol)
+{
+    if (symbol)
+    {
+        symbolRef   = symbol;
+        ident       = symbol->ident;
+    }
 }
 
 VarDecl* ObjectExpr::FetchVarDecl() const

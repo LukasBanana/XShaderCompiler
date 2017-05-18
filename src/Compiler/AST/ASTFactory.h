@@ -31,6 +31,9 @@ CallExprPtr                     MakeIntrinsicCallExpr(
 
 CallExprPtr                     MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, const ExprPtr& samplerObjectExpr);
 
+// Makes a call expression to a wrapper function.
+CallExprPtr                     MakeWrapperCallExpr(const std::string& funcIdent, const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments);
+
 InitializerExprPtr              MakeInitializerExpr(const std::vector<ExprPtr>& exprs);
 
 // Makes a type constructor function call.

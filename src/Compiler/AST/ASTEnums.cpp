@@ -232,6 +232,34 @@ CtrlTransfer StringToCtrlTransfer(const std::string& s)
 
 /* ----- DataType Enum ----- */
 
+MatrixSubscriptUsage::MatrixSubscriptUsage(const DataType dataTypeIn, const std::string& subscript) :
+    dataTypeIn  { dataTypeIn                                         },
+    dataTypeOut { SubscriptDataType(dataTypeIn, subscript, &indices) }
+{
+}
+
+bool MatrixSubscriptUsage::operator < (const MatrixSubscriptUsage& rhs) const
+{
+    /* Only sort by input data type and indices */
+    if (dataTypeIn < rhs.dataTypeIn) { return true;  }
+    if (dataTypeIn > rhs.dataTypeIn) { return false; }
+    return indices < rhs.indices;
+}
+
+std::string MatrixSubscriptUsage::IndicesToString() const
+{
+    std::string s;
+
+    for (const auto& i : indices)
+    {
+        s += '_';
+        s += std::to_string(i.first);
+        s += std::to_string(i.second);
+    }
+
+    return s;
+}
+
 std::string DataTypeToString(const DataType t, bool useTemplateSyntax)
 {
     if (t == DataType::String)
@@ -390,9 +418,8 @@ int VectorTypeDim(const DataType t)
             return 4;
 
         default:
-            break;
+            return 0;
     }
-    return 0;
 }
 
 std::pair<int, int> MatrixTypeDim(const DataType t)
@@ -504,9 +531,8 @@ std::pair<int, int> MatrixTypeDim(const DataType t)
             return { 4, 4 };
 
         default:
-            break;
+            return { 0, 0 };
     }
-    return { 0, 0 };
 }
 
 DataType BaseDataType(const DataType t)
@@ -574,17 +600,27 @@ DataType MatrixDataType(const DataType baseDataType, int rows, int columns)
     return DataType::Undefined;
 }
 
-static DataType SubscriptDataTypeVector(const DataType dataType, const std::string& subscript, int vectorSize)
+static DataType SubscriptDataTypeVector(
+    const DataType dataType, const std::string& subscript, int vectorSize, std::vector<std::pair<int, int>>* indices)
 {
-    auto IsValidSubscript = [&subscript](std::string compareSubscript, int vectorSize) -> bool
+    auto IsValidSubscript = [&](std::string compareSubscript, int vectorSize) -> bool
     {
         compareSubscript.resize(vectorSize);
 
+        std::vector<std::pair<int, int>> subscriptIndices;
+        subscriptIndices.reserve(vectorSize);
+
         for (auto chr : subscript)
         {
-            if (compareSubscript.find(chr) == std::string::npos)
+            auto pos = compareSubscript.find(chr);
+            if (pos != std::string::npos)
+                subscriptIndices.push_back({ static_cast<int>(pos), 0 });
+            else
                 return false;
         }
+
+        if (indices)
+            *indices = std::move(subscriptIndices);
 
         return true;
     };
@@ -611,63 +647,94 @@ static DataType SubscriptDataTypeVector(const DataType dataType, const std::stri
     return VectorDataType(BaseDataType(dataType), static_cast<int>(subscriptSize));
 }
 
+static void ParseNextMatrixSubscript(
+    const std::string& s, std::size_t& i, char& zeroBase, int rows, int cols, std::vector<std::pair<int, int>>* indices)
+{
+    if (i + 3 > s.size())
+        InvalidArg(R_IncompleteMatrixSubscript(s));
+    if (s[i] != '_')
+        InvalidArg(R_InvalidCharInMatrixSubscript(std::string(1, s[i]), s));
+    ++i;
+
+    if (s[i] == 'm')
+    {
+        /* Check mixture of zero-based and one-based matrix subscripts */
+        if (zeroBase == 1)
+            InvalidArg(R_InvalidMatrixSubscriptMixture(s));
+        else
+            zeroBase = 0;
+
+        /* Take characterr */
+        ++i;
+        if (i + 2 > s.size())
+            InvalidArg(R_IncompleteMatrixSubscript(s));
+    }
+    else
+    {
+        /* Check mixture of zero-based and one-based matrix subscripts */
+        if (zeroBase == 0)
+            InvalidArg(R_InvalidMatrixSubscriptMixture(s));
+        else
+            zeroBase = 1;
+    }
+
+    /* Parse matrix indices */
+    int subscriptIndices[2] = { 0 };
+
+    const int maxIdx[2] = { rows, cols };
+    const JoinableString matrixDimStr(" {0}x{1}");
+
+    for (int j = 0; j < 2; ++j)
+    {
+        if (s[i] >= '0' + zeroBase && s[i] < '0' + maxIdx[j] + zeroBase)
+        {
+            /* Store subscript index */
+            subscriptIndices[j] = s[i] - ('0' + zeroBase);
+        }
+        else
+        {
+            InvalidArg(
+                R_InvalidCharInMatrixSubscript(
+                    std::string(1, s[i]), s,
+                    (zeroBase == 0 ? R_ZeroBased : R_OneBased) + matrixDimStr(rows, cols)
+                )
+            );
+        }
+        ++i;
+    }
+
+    if (indices)
+        indices->push_back({ subscriptIndices[0], subscriptIndices[1] });
+}
+
 /*
 Matrix subscription rules for HLSL:
 see https://msdn.microsoft.com/en-us/library/windows/desktop/bb509634(v=vs.85).aspx#Matrix
 */
-static DataType SubscriptDataTypeMatrix(const DataType dataType, const std::string& subscript, int rows, int cols)
+static DataType SubscriptDataTypeMatrix(
+    const DataType dataType, const std::string& subscript, int rows, int cols, std::vector<std::pair<int, int>>* indices)
 {
     /* Validate matrix subscript */
     if (rows < 1 || rows > 4 || cols < 1 || cols > 4)
         InvalidArg(R_InvalidMatrixDimension(rows, cols));
 
     /* Parse all matrix row-column subscriptions (e.g. zero-based "_m00", or one-based "_11") */
-    auto ParseNextSubscript = [](const std::string& s, std::size_t& i)
-    {
-        if (i + 3 > s.size())
-            InvalidArg(R_IncompleteMatrixSubscript(s));
-        if (s[i] != '_')
-            InvalidArg(R_InvalidCharInMatrixSubscript(std::string(1, s[i]), s));
-        ++i;
-
-        char zeroBase = 1;
-        if (s[i] == 'm')
-        {
-            ++i;
-            zeroBase = 0;
-            if (i + 2 > s.size())
-                InvalidArg(R_IncompleteMatrixSubscript(s));
-        }
-        
-        for (int j = 0; j < 2; ++j)
-        {
-            if (s[i] < '0' + zeroBase || s[i] > '3' + zeroBase)
-            {
-                InvalidArg(
-                    R_InvalidCharInMatrixSubscript(
-                        std::string(1, s[i]), s, (zeroBase == 0 ? "zero" : "one")
-                    )
-                );
-            }
-            ++i;
-        }
-    };
-
     int vectorSize = 0;
+    char zeroBase = -1;
 
     for (std::size_t i = 0; i < subscript.size(); ++vectorSize)
-        ParseNextSubscript(subscript, i);
+        ParseNextMatrixSubscript(subscript, i, zeroBase, rows, cols, indices);
 
     return VectorDataType(BaseDataType(dataType), vectorSize);
 }
 
-DataType SubscriptDataType(const DataType dataType, const std::string& subscript)
+DataType SubscriptDataType(const DataType dataType, const std::string& subscript, std::vector<std::pair<int, int>>* indices)
 {
     auto matrixDim = MatrixTypeDim(dataType);
     if (matrixDim.second == 1)
-        return SubscriptDataTypeVector(dataType, subscript, matrixDim.first);
+        return SubscriptDataTypeVector(dataType, subscript, matrixDim.first, indices);
     else
-        return SubscriptDataTypeMatrix(dataType, subscript, matrixDim.first, matrixDim.second);
+        return SubscriptDataTypeMatrix(dataType, subscript, matrixDim.first, matrixDim.second, indices);
 }
 
 static DataType IntLiteralTokenToDataType(const Token& tkn)
@@ -791,21 +858,24 @@ bool IsRWBufferType(const BufferType t)
     return (t >= BufferType::RWBuffer && t <= BufferType::RWTexture3D);
 }
 
-bool IsRWTextureBufferType(const BufferType t)
-{
-    // TODO: this function was intended to cover only texture types, not Buffer!
-    return ( ( t >= BufferType::RWTexture1D && t <= BufferType::RWTexture3D ) || t == BufferType::RWBuffer );
-}
-
 bool IsTextureBufferType(const BufferType t)
 {
-    //TODO: this function was intended to cover only texture types, not Buffer!
-    return ( ( t >= BufferType::RWTexture1D && t <= BufferType::GenericTexture ) || t == BufferType::Buffer );
+    return (t >= BufferType::RWTexture1D && t <= BufferType::GenericTexture);
 }
 
 bool IsTextureMSBufferType(const BufferType t)
 {
     return (t >= BufferType::Texture2DMS && t <= BufferType::Texture2DMSArray);
+}
+
+bool IsImageBufferType(const BufferType t)
+{
+    return ( ( t >= BufferType::RWTexture1D && t <= BufferType::GenericTexture ) || t == BufferType::Buffer );
+}
+
+bool IsRWImageBufferType(const BufferType t)
+{
+    return ( ( t >= BufferType::RWTexture1D && t <= BufferType::RWTexture3D ) || t == BufferType::RWBuffer );
 }
 
 bool IsPatchBufferType(const BufferType t)
@@ -816,6 +886,39 @@ bool IsPatchBufferType(const BufferType t)
 bool IsStreamBufferType(const BufferType t)
 {
     return (t >= BufferType::PointStream && t <= BufferType::TriangleStream);
+}
+
+int GetBufferTypeTextureDim(const BufferType t)
+{
+    switch (t)
+    {
+        case BufferType::Buffer:
+        case BufferType::RWBuffer:
+        case BufferType::Texture1D:
+        case BufferType::RWTexture1D:
+            return 1;
+
+        case BufferType::Texture1DArray:
+        case BufferType::RWTexture1DArray:
+        case BufferType::Texture2D:
+        case BufferType::RWTexture2D:
+        case BufferType::Texture2DMS:
+            return 2;
+
+        case BufferType::Texture2DArray:
+        case BufferType::RWTexture2DArray:
+        case BufferType::Texture2DMSArray:
+        case BufferType::Texture3D:
+        case BufferType::RWTexture3D:
+        case BufferType::TextureCube:
+            return 3;
+
+        case BufferType::TextureCubeArray:
+            return 4;
+
+        default:
+            return 0;
+    }
 }
 
 
@@ -834,6 +937,41 @@ bool IsSamplerTypeShadow(const SamplerType t)
 bool IsSamplerTypeArray(const SamplerType t)
 {
     return ((t >= SamplerType::Sampler1DArray && t <= SamplerType::SamplerCubeArray) || t == SamplerType::Sampler2DMSArray);
+}
+
+int GetSamplerTypeTextureDim(const SamplerType t)
+{
+    switch (t)
+    {
+        case SamplerType::Sampler1D:
+        case SamplerType::SamplerBuffer:
+        case SamplerType::Sampler1DShadow:
+            return 1;
+
+        case SamplerType::Sampler2D:
+        case SamplerType::Sampler2DRect:
+        case SamplerType::Sampler1DArray:
+        case SamplerType::Sampler2DMS:
+        case SamplerType::Sampler2DShadow:
+        case SamplerType::Sampler2DRectShadow:
+        case SamplerType::Sampler1DArrayShadow:
+            return 2;
+
+        case SamplerType::Sampler3D:
+        case SamplerType::SamplerCube:
+        case SamplerType::Sampler2DArray:
+        case SamplerType::Sampler2DMSArray:
+        case SamplerType::SamplerCubeShadow:
+        case SamplerType::Sampler2DArrayShadow:
+            return 3;
+
+        case SamplerType::SamplerCubeArray:
+        case SamplerType::SamplerCubeArrayShadow:
+            return 4;
+
+        default:
+            return 0;
+    }
 }
 
 SamplerType TextureTypeToSamplerType(const BufferType t)

@@ -14,6 +14,9 @@
 #include "StructParameterAnalyzer.h"
 #include "TypeDenoter.h"
 #include "Exception.h"
+#include "TypeConverter.h"
+#include "ExprConverter.h"
+#include "FuncNameConverter.h"
 #include "Helper.h"
 #include "ReportIdents.h"
 #include <initializer_list>
@@ -84,23 +87,8 @@ void GLSLGenerator::GenerateCodePrimary(
     {
         try
         {
-            /* Mark all structures that are used for another reason than entry-point parameter */
-            {
-                StructParameterAnalyzer structAnalyzer;
-                structAnalyzer.MarkStructsFromEntryPoint(program, inputDesc.shaderTarget);
-            }
-
-            /* Convert AST for GLSL code generation */
-            {
-                GLSLConverter converter;
-                converter.ConvertAST(program, inputDesc, outputDesc);
-            }
-
-            /* Mark all reachable AST nodes */
-            {
-                ReferenceAnalyzer refAnalyzer;
-                refAnalyzer.MarkReferencesFromEntryPoint(program, inputDesc.shaderTarget);
-            }
+            /* Pre-process AST before generation begins */
+            PreProcessAST(inputDesc, outputDesc);
 
             /* Write header */
             if (inputDesc.entryPoint.empty())
@@ -119,9 +107,9 @@ void GLSLGenerator::GenerateCodePrimary(
             /* Check for optional warning feedback */
             ReportOptionalFeedback();
         }
-        catch (const Report& e)
+        catch (const Report&)
         {
-            throw e;
+            throw;
         }
         catch (const ASTRuntimeError& e)
         {
@@ -177,6 +165,11 @@ bool GLSLGenerator::IsESSL() const
 bool GLSLGenerator::IsVKSL() const
 {
     return IsLanguageVKSL(versionOut_);
+}
+
+bool GLSLGenerator::HasShadingLanguage420Pack() const
+{
+    return ( IsVKSL() || ( versionOut_ >= OutputShaderVersion::GLSL420 && versionOut_ <= OutputShaderVersion::GLSL450 ) );
 }
 
 bool GLSLGenerator::UseSeparateSamplers() const
@@ -589,24 +582,11 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
-    if ( ast->flags(AST::isReachable) && ( UseSeparateSamplers() || !IsSamplerStateType(ast->typeDenoter->samplerType) ))
-        Visit(ast->samplerDecls);
-}
-
-IMPLEMENT_VISIT_PROC(StructDeclStmnt)
-{
-    if (!ast->structDecl->flags(AST::isReachable))
-        return;
-
-    if (ast->structDecl->flags(StructDecl::isNonEntryPointParam) || !ast->structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
+    if (ast->flags(AST::isReachable))
     {
-        WriteLineMark(ast);
-
-        /* Visit structure declaration */
-        StructDeclArgs structDeclArgs;
-        structDeclArgs.inEndWithSemicolon = true;
-
-        Visit(ast->structDecl, &structDeclArgs);
+        /* Write sampler declarations */
+        if (UseSeparateSamplers() || !IsSamplerStateType(ast->typeDenoter->samplerType))
+            Visit(ast->samplerDecls);
     }
 }
 
@@ -710,7 +690,38 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
     if (ast->structDecl && !ast->structDecl->IsAnonymous())
     {
         WriteLineMark(ast);
-        Visit(ast->structDecl);
+
+        /* Write structure declaration and end it with a semicolon */
+        StructDeclArgs structDeclArgs;
+        structDeclArgs.inEndWithSemicolon = true;
+
+        Visit(ast->structDecl, &structDeclArgs);
+    }
+}
+
+IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+{
+    if (ast->flags(AST::isReachable))
+    {
+        if (auto structDecl = ast->declObject->As<StructDecl>())
+        {
+            if ( structDecl->flags(StructDecl::isNonEntryPointParam) ||
+                 !structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput) )
+            {
+                WriteLineMark(ast);
+
+                /* Visit structure declaration */
+                StructDeclArgs structDeclArgs;
+                structDeclArgs.inEndWithSemicolon = true;
+
+                Visit(structDecl, &structDeclArgs);
+            }
+        }
+        else
+        {
+            /* Visit declaration object only */
+            Visit(ast->declObject);
+        }
     }
 }
 
@@ -1029,6 +1040,91 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 #undef IMPLEMENT_VISIT_PROC
 
 /* --- Helper functions for code generation --- */
+
+/* ----- Pre processing AST ----- */
+
+void GLSLGenerator::PreProcessAST(const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
+{
+    PreProcessStructParameterAnalyzer(inputDesc);
+    PreProcessTypeConverter();
+    PreProcessExprConverterPrimary();
+    PreProcessGLSLConverter(inputDesc, outputDesc);
+    PreProcessFuncNameConverter();
+    PreProcessReferenceAnalyzer(inputDesc);
+    PreProcessExprConverterSecondary();
+}
+
+void GLSLGenerator::PreProcessStructParameterAnalyzer(const ShaderInput& inputDesc)
+{
+    /* Mark all structures that are used for another reason than entry-point parameter */
+    StructParameterAnalyzer structAnalyzer;
+    structAnalyzer.MarkStructsFromEntryPoint(*GetProgram(), inputDesc.shaderTarget);
+}
+
+void GLSLGenerator::PreProcessTypeConverter()
+{
+    /* Convert type of specific semantics */
+    TypeConverter typeConverter;
+    typeConverter.Convert(*GetProgram(), GLSLConverter::ConvertVarDeclType);
+}
+
+void GLSLGenerator::PreProcessExprConverterPrimary()
+{
+    /* Convert expressions (Before reference analysis) */
+    ExprConverter converter;
+    Flags converterFlags = ExprConverter::All;
+
+    converterFlags.Remove(ExprConverter::ConvertMatrixSubscripts);
+
+    if (HasShadingLanguage420Pack())
+    {
+        /*
+        Remove specific conversions when the GLSL output version is explicitly set to 4.20 or higher,
+        i.e. "GL_ARB_shading_language_420pack" extension is available.
+        */
+        converterFlags.Remove(ExprConverter::ConvertVectorSubscripts);
+        converterFlags.Remove(ExprConverter::ConvertInitializerToCtor);
+    }
+
+    converter.Convert(*GetProgram(), converterFlags, nameMangling_);
+}
+
+void GLSLGenerator::PreProcessGLSLConverter(const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
+{
+    /* Convert AST for GLSL code generation (Before reference analysis) */
+    GLSLConverter converter;
+    converter.ConvertAST(*GetProgram(), inputDesc, outputDesc);
+}
+
+void GLSLGenerator::PreProcessFuncNameConverter()
+{
+    /* Convert function names after main conversion, since functon owner structs may have been renamed as well */
+    FuncNameConverter funcNameConverter;
+    funcNameConverter.Convert(
+        *GetProgram(),
+        nameMangling_,
+        [](const FunctionDecl& lhs, const FunctionDecl& rhs)
+        {
+            /* Compare function signatures and ignore generic sub types (GLSL has no distinction for these types) */
+            return lhs.EqualsSignature(rhs, TypeDenoter::IgnoreGenericSubType);
+        },
+        FuncNameConverter::All
+    );
+}
+
+void GLSLGenerator::PreProcessReferenceAnalyzer(const ShaderInput& inputDesc)
+{
+    /* Mark all reachable AST nodes */
+    ReferenceAnalyzer refAnalyzer;
+    refAnalyzer.MarkReferencesFromEntryPoint(*GetProgram(), inputDesc.shaderTarget);
+}
+
+void GLSLGenerator::PreProcessExprConverterSecondary()
+{
+    /* Convert AST for GLSL code generation (After reference analysis) */
+    ExprConverter converter;
+    converter.Convert(*GetProgram(), ExprConverter::ConvertMatrixSubscripts, nameMangling_);
+}
 
 /* ----- Basics ----- */
 
@@ -2272,9 +2368,9 @@ void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writeP
         else
             Error(R_FailedToDetermineGLSLDataType, ast);
     }
-    catch (const Report& e)
+    catch (const Report&)
     {
-        throw e;
+        throw;
     }
     catch (const std::exception& e)
     {
@@ -2289,8 +2385,12 @@ void GLSLGenerator::WriteFunction(FunctionDecl* ast)
     /* Write function header */
     if (auto structDecl = ast->returnType->structDecl.get())
     {
-        Visit(ast->returnType);
-        Blank();
+        /* Write structure declaration of function return type as a separated declaration */
+        StructDeclArgs structDeclArgs;
+        structDeclArgs.inEndWithSemicolon = true;
+
+        Visit(structDecl, &structDeclArgs);
+
         BeginLn();
         Write(structDecl->ident + " " + ast->ident + "(");
     }
@@ -2427,6 +2527,11 @@ void GLSLGenerator::WriteCallExprStandard(CallExpr* funcCall)
     {
         /* Write final identifier of function declaration */
         Write(funcDecl->ident);
+    }
+    else if (funcCall->flags(CallExpr::isWrapperCall))
+    {
+        /* Write expression identifier */
+        Write(funcCall->ident);
     }
     else if (funcCall->typeDenoter)
     {
@@ -2726,6 +2831,10 @@ void GLSLGenerator::WriteWrapperIntrinsics()
         WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::DeviceMemoryBarrier, true);
     if (program->FetchIntrinsicUsage(Intrinsic::AllMemoryBarrierWithGroupSync) != nullptr)
         WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::AllMemoryBarrier, true);
+
+    /* Write matrix subscript wrappers */
+    for (const auto& usage : program->usedMatrixSubscripts)
+        WriteWrapperMatrixSubscript(usage);
 }
 
 void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
@@ -2908,6 +3017,54 @@ void GLSLGenerator::WriteWrapperIntrinsicsMemoryBarrier(const Intrinsic intrinsi
     Blank();
 }
 
+void GLSLGenerator::WriteWrapperMatrixSubscript(const MatrixSubscriptUsage& usage)
+{
+    /* Only generate wrappers for matrix subscripts with more than one index */
+    if (IsScalarType(usage.dataTypeOut))
+        return;
+
+    BeginLn();
+    {
+        /* Write function signature */
+        WriteDataType(usage.dataTypeOut, IsESSL());
+
+        Write(" ");
+        Write(ExprConverter::GetMatrixSubscriptWrapperIdent(nameMangling_, usage));
+        Write("(");
+        WriteDataType(usage.dataTypeIn, IsESSL());
+        Write(" m)");
+
+        /* Write function body */
+        WriteScopeOpen(compactWrappers_);
+        {
+            BeginLn();
+            {
+                Write("return ");
+
+                /* Write vector type constructor with dimension of the number of indices */
+                WriteDataType(usage.dataTypeOut, IsESSL());
+                Write("(");
+
+                /* Write matrix elements as arguments for vector type c'tor */
+                for (std::size_t i = 0, n = usage.indices.size(); i < n; ++i)
+                {
+                    const auto& idx = usage.indices[i];
+                    Write("m[" + std::to_string(idx.first) + "][" + std::to_string(idx.second) + "]");
+                    if (i + 1 < n)
+                        Write(", ");
+                }
+
+                Write(");");
+            }
+            EndLn();
+        }
+        WriteScopeClose();
+    }
+    EndLn();
+
+    Blank();
+}
+
 /* ----- Structure ----- */
 
 bool GLSLGenerator::WriteStructDecl(StructDecl* structDecl, bool writeSemicolon, bool allowNestedStruct)
@@ -2948,7 +3105,13 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* structDecl, bool endWith
     Blank();
 
     /* Write member functions */
-    WriteStmntList(structDecl->funcMembers);
+    std::vector<BasicDeclStmnt*> funcMemberStmnts;
+    funcMemberStmnts.reserve(structDecl->funcMembers.size());
+
+    for (auto& funcDecl : structDecl->funcMembers)
+        funcMemberStmnts.push_back(funcDecl->declStmntRef);
+
+    WriteStmntList(funcMemberStmnts);
 
     return true;
 }
@@ -2992,7 +3155,7 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
 
     /* Determine image layout format */
     auto imageLayoutFormat  = ImageLayoutFormat::Undefined;
-    auto isRWBuffer         = IsRWTextureBufferType(bufferDecl->GetBufferType());
+    auto isRWBuffer         = IsRWImageBufferType(bufferDecl->GetBufferType());
 
     if (!isWriteOnly && isRWBuffer)
     {
@@ -3090,13 +3253,9 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
         }
         else
             Write(nameMangling_.temporaryPrefix + bufferDecl->ident);
-    }
-    EndLn();
 
-    /* Write buffer array (of variable size) */
-    WriteScopeOpen(false, true);
-    {
-        BeginLn();
+        /* Write buffer array (of variable size) */
+        WriteScopeOpen(false, true);
         {
             /* Write optional memory type qualifier */
             if (!IsRWBufferType(bufferDecl->GetBufferType()))
@@ -3107,9 +3266,9 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
             WriteTypeDenoter(*genericTypeDen, IsESSL(), bufferDecl);
             Write(" " + bufferDecl->ident + "[];");
         }
-        EndLn();
+        WriteScopeClose();
     }
-    WriteScopeClose();
+    EndLn();
 }
 
 /* ----- SamplerDecl ----- */
@@ -3156,6 +3315,18 @@ void GLSLGenerator::WriteStmntComment(Stmnt* ast, bool insertBlank)
 }
 
 template <typename T>
+T* GetRawPtr(T* ptr)
+{
+    return ptr;
+}
+
+template <typename T>
+T* GetRawPtr(const std::shared_ptr<T>& ptr)
+{
+    return ptr.get();
+}
+
+template <typename T>
 void GLSLGenerator::WriteStmntList(const std::vector<T>& stmnts, bool isGlobalScope)
 {
     if (preserveComments_)
@@ -3163,7 +3334,7 @@ void GLSLGenerator::WriteStmntList(const std::vector<T>& stmnts, bool isGlobalSc
         /* Write statements with optional commentaries */
         for (std::size_t i = 0; i < stmnts.size(); ++i)
         {
-            auto ast = stmnts[i].get();
+            auto ast = GetRawPtr(stmnts[i]);
 
             if (!isGlobalScope || ast->flags(AST::isReachable))
                 WriteStmntComment(ast, (!isGlobalScope && (i > 0)));

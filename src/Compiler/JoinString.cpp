@@ -38,7 +38,7 @@ void ToStringList(std::vector<std::string>& list)
 /* ----- Classes ----- */
 
 JoinableString::JoinableString(const char* s) :
-    s_{ s }
+    s_ { s }
 {
     /*
     Check if there is any special character inside the string,

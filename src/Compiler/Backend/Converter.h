@@ -9,7 +9,7 @@
 #define XSC_CONVERTER_H
 
 
-#include "Visitor.h"
+#include "VisitorTracker.h"
 #include "TypeDenoter.h"
 #include "SymbolTable.h"
 #include "Identifier.h"
@@ -26,7 +26,7 @@ GLSL AST converter.
 This class modifies the AST after context analysis to be conform with GLSL,
 e.g. remove arguments from intrinsic calls, that are not allowed in GLSL, such as sampler state objects.
 */
-class Converter : public Visitor
+class Converter : public VisitorTracker
 {
     
     public:

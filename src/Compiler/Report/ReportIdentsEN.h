@@ -39,6 +39,8 @@ DECL_REPORT( NotImplementedYet,                 "[{0} ]not implemented yet[ (in 
 DECL_REPORT( DeclaredAt,                        "declared at ({0})"                                                                                             );
 DECL_REPORT( PrevDefinitionAt,                  "previous definition at ({0})"                                                                                  );
 DECL_REPORT( ExceptionThrown,                   "exception thrown: "                                                                                            );
+DECL_REPORT( ZeroBased,                         "zero-based"                                                                                                    );
+DECL_REPORT( OneBased,                          "one-based"                                                                                                     );
 
 /* ----- Token ----- */
 
@@ -118,11 +120,14 @@ DECL_REPORT( OnlyBaseTypeAllowed,               "only scalar, vector, and matrix
 DECL_REPORT( CastExpr,                          "cast expression"                                                                                               );
 DECL_REPORT( CantDeriveTypeOfInitializer,       "can not derive type of initializer list without type parameter"                                                );
 DECL_REPORT( CantDeriveTypeOfEmptyInitializer,  "can not derive type of initializer list with no elements"                                                      );
+DECL_REPORT( CantDeriveTypeOfFunction,          "can not derive type of function object"                                                                        );
+DECL_REPORT( CantDeriveTypeOfConstBuffer,       "can not derive type of constant buffer object"                                                                 );
 DECL_REPORT( ConditionOfTernaryExpr,            "condition of ternary expression"                                                                               );
 DECL_REPORT( ExpectedInitializerForArrayAccess, "initializer expression expected for array access"                                                              );
 DECL_REPORT( InvalidNumElementsInInitializer,   "invalid number of elements in initializer expression for type '{0}' (expected {1}, but got {2})"               );
 DECL_REPORT( NotEnoughElementsInInitializer,    "not enough elements in initializer expression"                                                                 );
 DECL_REPORT( NotEnoughIndicesForInitializer,    "not enough array indices specified for initializer expression"                                                 );
+DECL_REPORT( ArrayIndexOutOfBounds,             "array index out of bounds[: {0} is not in range \\[0, {1})]"                                                   );
 
 /* ----- ASTEnums ----- */
 
@@ -143,7 +148,8 @@ DECL_REPORT( IncompleteMatrixSubscript,         "incomplete matrix subscript: '{
 DECL_REPORT( InvalidVectorDimension,            "invalid vector dimension (must be in the range \\[1, 4\\], but got {0})"                                       );
 DECL_REPORT( InvalidVectorSubscript,            "invalid vector subscript '{0}' for {1}"                                                                        );
 DECL_REPORT( InvalidMatrixDimension,            "invalid matrix dimension (must be in the range \\[1, 4\\] x \\[1, 4\\], but got {0} x {1})"                    );
-DECL_REPORT( InvalidCharInMatrixSubscript,      "invalid character '{0}' in [{2}-based ]matrix subscript: '{1}'"                                                );
+DECL_REPORT( InvalidMatrixSubscriptMixture,     "invalid mixture of zero-based and one-based matrix subscripts[: '{0}']"                                        );
+DECL_REPORT( InvalidCharInMatrixSubscript,      "invalid character '{0}' in [{2} ]matrix subscript: '{1}'"                                                      );
 DECL_REPORT( InvalidIntrinsicArgType,           "invalid argument type denoter for intrinsic[ '{0}']"                                                           );
 DECL_REPORT( InvalidIntrinsicArgCount,          "invalid number of arguments for intrinsic[ '{0}'][ (expected {1}, but got {2})]"                               );
 DECL_REPORT( InvalidIntrinsicArgs,              "invalid arguments for intrinsic[ '{0}']"                                                                       );
@@ -159,6 +165,7 @@ DECL_REPORT( MissingRefToAliasDecl,             "missing reference to alias decl
 DECL_REPORT( MissingBaseTypeInArray,            "missing base type in array type denoter"                                                                       );
 DECL_REPORT( MissingRefInTypeDen,               "missing reference to declaration[ in {0}]"                                                                     );
 DECL_REPORT( InvalidExprForSubTypeDen,          "invalid expression to derive sub type denoter[ for '{0}']"                                                     );
+DECL_REPORT( OverloadedFunction,                "<overloaded function>"                                                                                         );
 
 /* ----- SymbolTable ----- */
 
@@ -169,8 +176,7 @@ DECL_REPORT( AmbiguousIntrinsicCall,            "ambiguous intrinsic call[ '{0}'
 DECL_REPORT( IdentIsNotFunc,                    "identifier '{0}' does not name a function"                                                                     );
 DECL_REPORT( IdentIsNotVar,                     "identifier '{0}' does not name a variable"                                                                     );
 DECL_REPORT( IdentIsNotType,                    "identifier '{0}' does not name a type"                                                                         );
-DECL_REPORT( IdentIsNotVarOrBufferOrSampler,    "identifier '{0}' does not name a variable, buffer, or sampler"                                                 );
-DECL_REPORT( IdentIsNotDecl,                    "identifier '{0}' does not name a variable, buffer, sampler, structure, or alias"                               );
+DECL_REPORT( IdentIsNotDecl,                    "identifier '{0}' does not name a declaration object"                                                           );
 DECL_REPORT( IdentIsNotBaseOf,                  "identifier '{0}' does not name a base of '{1}'"                                                                );
 DECL_REPORT( IdentAlreadyDeclared,              "identifier '{0}' already declared in this scope"                                                               );
 DECL_REPORT( NoActiveScopeToRegisterSymbol,     "no active scope to register symbol"                                                                            );
@@ -226,7 +232,7 @@ DECL_REPORT( UnexpectedEndOfTokenString,        "unexpected end of token string"
 DECL_REPORT( RemainingTokensInPragma,           "remaining unhandled tokens in '#pragma'-directive"                                                             );
 DECL_REPORT( EmptyPragma,                       "empty '#pragma'-directive"                                                                                     );
 
-/* ----- Visitor ----- */
+/* ----- VisitorTracker ----- */
 
 DECL_REPORT( FuncDeclStackUnderflow,            "function declaration stack underflow"                                                                          ); // internal error
 DECL_REPORT( CallExprStackUnderflow,            "call expression stack underflow"                                                                               ); // internal error
@@ -251,7 +257,7 @@ DECL_REPORT( ExpectedConstFloatExpr,            "expected constant floating-poin
 DECL_REPORT( VarDeclaredButNeverUsed,           "variable '{0}' is declared but never used"                                                                     );
 DECL_REPORT( ImplicitVectorTruncation,          "implicit truncation of vector type[ (from {0} to {1} dimensions)]"                                             );
 
-/* ----- ConstExprEvaluator ----- */
+/* ----- ExprEvaluator ----- */
 
 DECL_REPORT( ExprEvaluator,                     "expression evaluator"                                                                                          );
 DECL_REPORT( IllegalExprInConstExpr,            "illegal {0} in constant expression"                                                                            );
@@ -300,6 +306,7 @@ DECL_REPORT( NoGLSLExtensionVersionRegisterd,   "no GLSL version is registered f
 DECL_REPORT( FragmentCoordinate,                "fragment coordinate"                                                                                           );
 DECL_REPORT( EarlyDepthStencil,                 "early depth stencil test"                                                                                      );
 DECL_REPORT( MultiDimArray,                     "multi-dimensional array"                                                                                       );
+DECL_REPORT( TextureCubeArray,                  "texture cube array"                                                                                            );
 DECL_REPORT( PackOffsetLayout,                  "pack offset layout"                                                                                            );
 DECL_REPORT( ConstantBuffer,                    "constant buffer"                                                                                               );
 DECL_REPORT( ExplicitBindingSlot,               "explicit binding slot"                                                                                         );
@@ -341,7 +348,7 @@ DECL_REPORT( MacrosWithTwoUnderscoresReserved,  "macros containing consecutive u
 DECL_REPORT( IllegalRedefOfStdMacro,            "illegal redefinition of standard macro[: {0}]"                                                                 );
 DECL_REPORT( IllegalUndefOfStdMacro,            "illegal undefinition of standard macro[: {0}]"                                                                 );
 DECL_REPORT( VersionMustBeFirstDirective,       "'#version'-directive must be the first directive"                                                              );
-DECL_REPORT( UnknwonGLSLVersion,                "unknown GLSL version: '{0}'"                                                                                   );
+DECL_REPORT( UnknownGLSLVersion,                "unknown GLSL version: '{0}'"                                                                                   );
 DECL_REPORT( NoProfileForGLSLVersionBefore150,  "versions before 150 do not allow a profile token"                                                              );
 DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (must be 'core' or 'compatibility')"                                             );
 DECL_REPORT( ExtensionNotSupported,             "extension not supported[: {0}]"                                                                                );

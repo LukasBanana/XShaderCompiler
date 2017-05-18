@@ -233,6 +233,23 @@ enum class DataType
     Double4x4,
 };
 
+// Container structure for all kinds of matrix subscript usages.
+struct MatrixSubscriptUsage
+{
+    MatrixSubscriptUsage() = default;
+    MatrixSubscriptUsage(const DataType dataTypeIn, const std::string& subscript);
+
+    // Strict-weak-order (SWP) comparison.
+    bool operator < (const MatrixSubscriptUsage& rhs) const;
+
+    // Returns the indices to a unique string.
+    std::string IndicesToString() const;
+
+    std::vector<std::pair<int, int>>    indices;
+    DataType                            dataTypeIn  = DataType::Undefined;
+    DataType                            dataTypeOut = DataType::Undefined;
+};
+
 // Returns a descriptive string of the specified data type.
 std::string DataTypeToString(const DataType t, bool useTemplateSyntax = false);
 
@@ -288,7 +305,7 @@ DataType VectorDataType(const DataType baseDataType, int vectorSize);
 DataType MatrixDataType(const DataType baseDataType, int rows, int columns);
 
 // Returns the data type for the specified swizzle operator or throws and std::invalid_argument on failure.
-DataType SubscriptDataType(const DataType dataType, const std::string& subscript);
+DataType SubscriptDataType(const DataType dataType, const std::string& subscript, std::vector<std::pair<int, int>>* indices = nullptr);
 
 // Returns the data type for the specified literal token (BoolLiteral, IntLiteral, FloatLiteral, and StringLiteral).
 DataType TokenToDataType(const Token& tkn);
@@ -422,11 +439,8 @@ std::string BufferTypeToString(const BufferType t);
 // Returns true if the specified buffer type is a storage buffer type (i.e. gets converted to a 'buffer' block in GLSL).
 bool IsStorageBufferType(const BufferType t);
 
-// Returns true if the specified buffer type is a RW (read/write) buffer type.
+// Returns true if the specified buffer type is a RW (read/write) buffer type (for storage buffers and textures).
 bool IsRWBufferType(const BufferType t);
-
-// Returns true if the specified buffer type is a RW (read/write) texture buffer type (represented in GLSL with 'image...').
-bool IsRWTextureBufferType(const BufferType t);
 
 // Returns true if the specified buffer type is a texture buffer.
 bool IsTextureBufferType(const BufferType t);
@@ -434,11 +448,20 @@ bool IsTextureBufferType(const BufferType t);
 // Returns true if the specified buffer type is a multi-sampled texture buffer (i.e. Texture2DMS or Texture2DMSArray).
 bool IsTextureMSBufferType(const BufferType t);
 
+// Returns true if the specified buffer type is an image buffer (i.e. gets converted to an 'imageBuffer' in GLSL).
+bool IsImageBufferType(const BufferType t);
+
+// Returns true if the specified buffer type is a RW (read/write) texture buffer type (represented in GLSL with 'image...').
+bool IsRWImageBufferType(const BufferType t);
+
 // Returns true if the specified buffer type is an input or output patch.
 bool IsPatchBufferType(const BufferType t);
 
 // Returns true if the specified buffer type is either a point-, line-, or triangle stream.
 bool IsStreamBufferType(const BufferType t);
+
+// Returns the texture dimension of the specified buffer type in the range [1, 4] or 0 if the type is not a texture type.
+int GetBufferTypeTextureDim(const BufferType t);
 
 
 /* ----- SamplerType Enum ----- */
@@ -449,30 +472,30 @@ enum class SamplerType
     Undefined,
 
     /* --- Samplers --- */
-                            // HLSL3            GLSL
-                            // ---------------  ----------------------
-    Sampler1D,              // sampler1D        sampler1D
-    Sampler2D,              // sampler2D        sampler2D
-    Sampler3D,              // sampler3D        sampler3D
-    SamplerCube,            // samplerCUBE      samplerCube
-    Sampler2DRect,          // n/a              sampler2DRect
-    Sampler1DArray,         // n/a              sampler1DArray
-    Sampler2DArray,         // n/a              sampler2DArray
-    SamplerCubeArray,       // n/a              samplerCubeArray
-    SamplerBuffer,          // n/a              samplerBuffer
-    Sampler2DMS,            // n/a              sampler2DMS
-    Sampler2DMSArray,       // n/a              sampler2DMSArray
-    Sampler1DShadow,        // sampler1DShadow  sampler1DShadow
-    Sampler2DShadow,        // sampler2DShadow  sampler2DShadow
-    SamplerCubeShadow,      // n/a              samplerCubeShadow
-    Sampler2DRectShadow,    // n/a              sampler2DRectShadow
-    Sampler1DArrayShadow,   // n/a              sampler1DArrayShadow
-    Sampler2DArrayShadow,   // n/a              sampler2DArrayShadow
-    SamplerCubeArrayShadow, // n/a              samplerCubeArrayShadow
+                            // HLSL3            HLSL4+                  GLSL
+                            // ---------------  ----------------------  ----------------------
+    Sampler1D,              // sampler1D        n/a                     sampler1D
+    Sampler2D,              // sampler2D        n/a                     sampler2D
+    Sampler3D,              // sampler3D        n/a                     sampler3D
+    SamplerCube,            // samplerCUBE      n/a                     samplerCube
+    Sampler2DRect,          // n/a              n/a                     sampler2DRect
+    Sampler1DArray,         // n/a              n/a                     sampler1DArray
+    Sampler2DArray,         // n/a              n/a                     sampler2DArray
+    SamplerCubeArray,       // n/a              n/a                     samplerCubeArray
+    SamplerBuffer,          // n/a              n/a                     samplerBuffer
+    Sampler2DMS,            // n/a              n/a                     sampler2DMS
+    Sampler2DMSArray,       // n/a              n/a                     sampler2DMSArray
+    Sampler1DShadow,        // sampler1DShadow  n/a                     sampler1DShadow
+    Sampler2DShadow,        // sampler2DShadow  n/a                     sampler2DShadow
+    SamplerCubeShadow,      // n/a              n/a                     samplerCubeShadow
+    Sampler2DRectShadow,    // n/a              n/a                     sampler2DRectShadow
+    Sampler1DArrayShadow,   // n/a              n/a                     sampler1DArrayShadow
+    Sampler2DArrayShadow,   // n/a              n/a                     sampler2DArrayShadow
+    SamplerCubeArrayShadow, // n/a              n/a                     samplerCubeArrayShadow
 
     /* --- Sampler states --- */
                             // HLSL3            HLSL4+                  GLSL
-                            // ---------------  ----------------------  -------
+                            // ---------------  ----------------------  ----------------------
     SamplerState,           // sampler_state    SamplerState            sampler
     SamplerComparisonState, // sampler_state    SamplerComparisonState  samplerShadow
 };
@@ -485,6 +508,9 @@ bool IsSamplerTypeShadow(const SamplerType t);
 
 // Returns true if the specified sampler type is an array sampler (e.g. Sampler1DArray).
 bool IsSamplerTypeArray(const SamplerType t);
+
+// Returns the texture dimension of the specified sampler type in the range [1, 4] or 0 if the type is not a texture sampler (e.g. a sampler state).
+int GetSamplerTypeTextureDim(const SamplerType t);
 
 // Maps a texture type to an appropriate sampler type.
 SamplerType TextureTypeToSamplerType(const BufferType t);
@@ -922,7 +948,7 @@ enum class Intrinsic
     Image_AtomicExchange        // GLSL only
 };
 
-// Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>
+// Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>).
 struct IntrinsicUsage
 {
     struct ArgumentList
@@ -942,17 +968,8 @@ struct IntrinsicUsage
 // Returns true if the specified intrinsic is a global intrinsic.
 bool IsGlobalIntrinsic(const Intrinsic t);
 
-// Returns true if the speciifed intrinsic belongs to a texture object.
+// Returns true if the specified intrinsic belongs to a texture object.
 bool IsTextureIntrinsic(const Intrinsic t);
-
-// Returns true if the speciifed intrinsic belongs to a stream-output object.
-bool IsStreamOutputIntrinsic(const Intrinsic t);
-
-// Returns true if the specified intrinsic is an image load/store intrinsic.
-bool IsImageIntrinsic(const Intrinsic t);
-
-// Returns true if the specified intrinsic in an interlocked intrinsic (e.g. Intrinsic::InterlockedAdd).
-bool IsInterlockedIntristic(const Intrinsic t);
 
 // Returns true if the specified intrinsic is a texture gather intrinsic.
 bool IsTextureGatherIntrisic(const Intrinsic t);
@@ -965,6 +982,15 @@ bool IsTextureCompareIntrinsic(const Intrinsic t);
 
 // Returns true if the specified intrinsic is a texture load intrisic (e.g. Texture_Load1).
 bool IsTextureLoadIntrinsic(const Intrinsic t);
+
+// Returns true if the specified intrinsic belongs to a stream-output object.
+bool IsStreamOutputIntrinsic(const Intrinsic t);
+
+// Returns true if the specified intrinsic is an image load/store intrinsic.
+bool IsImageIntrinsic(const Intrinsic t);
+
+// Returns true if the specified intrinsic in an interlocked intrinsic (e.g. Intrinsic::InterlockedAdd).
+bool IsInterlockedIntristic(const Intrinsic t);
 
 // Returns the respective intrinsic for the specified binary compare operator, or Intrinsic::Undefined if the operator is not a compare operator.
 Intrinsic CompareOpToIntrinsic(const BinaryOp op);

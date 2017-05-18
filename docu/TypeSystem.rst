@@ -29,12 +29,12 @@ The main function in ``TypeDenoter`` to derive a type by an input expression is 
  shared_ptr<TypeDenoter> GetSub(const Expr* expr = nullptr);
 
 If the input expression is ``nullptr``, the type denoter itself is returned with ``shared_from_this()``,
-expect for ``AliasTypeDenoter``, where its aliased sub type is returned!
+except for ``AliasTypeDenoter``, where its aliased sub type is returned!
 Otherwise, the type denoter is derived by the expression,
 e.g. with an ``ArrayExpr`` this type denoter is expected to be an ``ArrayTypeDenoter`` and its base type is returned.
 Here are a few examples (Pseudocode)::
 
- BaseTypeDenoter( Float4 ).GetSub( ObjectExpr( idenitifer("xy") ) )
+ BaseTypeDenoter( Float4 ).GetSub( ObjectExpr( identifier("xy") ) )
   -> BaseTypeDenoter( Float2 )
  
  BaseTypeDenoter( Float4 ).GetSub( ArrayExpr( indices(I) ) )
@@ -46,7 +46,7 @@ Here are a few examples (Pseudocode)::
  ArrayTypeDenoter( dimension(N), BaseTypeDenoter( Float4 ) ).GetSub( ArrayExpr( indices(I, J) ) )
   -> BaseTypeDenoter( Float )
  
- ArrayTypeDenoter( dimension(N), BaseTypeDenoter( Float4 ) ).GetSub( ArrayExpr( indices(I), ObjectExpr( idenitifer("xy") ) ) )
+ ArrayTypeDenoter( dimension(N), BaseTypeDenoter( Float4 ) ).GetSub( ArrayExpr( indices(I), ObjectExpr( identifier("xy") ) ) )
   -> BaseTypeDenoter( Float2 )
  
  ArrayTypeDenoter( dimension(N, M), BaseTypeDenoter( Float ) ).GetSub( ArrayExpr( indices(I) ) )
@@ -57,10 +57,17 @@ The main function to remove the ``AliasTypeDenoter`` wrapper, and only get the s
  const TypeDenoter& GetAliased() const;
 
 It should be preferred over ``GetSub`` if only a non-alias type is required which can be constant,
-because this function avoids creating new ``shared_ptr`` instances.
+because this function avoids creating new ``shared_ptr`` instances of its own (i.e. avoids calls to ``shared_from_this``).
 
 Why is there an ``AliasTypeDenoter`` anyway, you might ask? Because with ``typedef`` a new type is created,
 but for contextual analysis, commonly only its sub type is of interest.
+So what you frequently find in the code is something like this::
+
+ const auto& typeDen = astObject->GetTypeDenoter()->GetAliased();
+ if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
+ {
+     /* ... */
+ }
 
 Vector Space Extension
 ----------------------

@@ -16,7 +16,7 @@ namespace Xsc
 
 
 Scanner::Scanner(Log* log) :
-    log_{ log }
+    log_ { log }
 {
 }
 

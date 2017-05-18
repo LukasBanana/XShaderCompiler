@@ -6,7 +6,7 @@
  */
 
 #include "ReflectionAnalyzer.h"
-#include "ConstExprEvaluator.h"
+#include "ExprEvaluator.h"
 #include "AST.h"
 #include "Helper.h"
 #include "ReportIdents.h"
@@ -53,33 +53,18 @@ int ReflectionAnalyzer::GetBindingPoint(const std::vector<RegisterPtr>& slotRegi
         return -1;
 }
 
-Variant ReflectionAnalyzer::EvaluateConstExpr(Expr& expr)
-{
-    try
-    {
-        /* Evaluate expression and throw error on var-access */
-        ConstExprEvaluator exprEvaluator;
-        return exprEvaluator.EvaluateExpr(expr, [](ObjectExpr* expr) -> Variant { throw expr; });
-    }
-    catch (const std::exception&)
-    {
-        return Variant();
-    }
-    catch (const ObjectExpr*)
-    {
-        return Variant();
-    }
-    return Variant();
-}
-
 int ReflectionAnalyzer::EvaluateConstExprInt(Expr& expr)
 {
-    return static_cast<int>(EvaluateConstExpr(expr).ToInt());
+    /* Evaluate expression and return as integer */
+    ExprEvaluator exprEvaluator;
+    return static_cast<int>(exprEvaluator.EvaluateOrDefault(expr, Variant::IntType(0)).ToInt());
 }
 
 float ReflectionAnalyzer::EvaluateConstExprFloat(Expr& expr)
 {
-    return static_cast<float>(EvaluateConstExpr(expr).ToReal());
+    /* Evaluate expression and return as integer */
+    ExprEvaluator exprEvaluator;
+    return static_cast<float>(exprEvaluator.EvaluateOrDefault(expr, Variant::RealType(0.0)).ToReal());
 }
 
 /* ------- Visit functions ------- */
@@ -130,7 +115,7 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (ast->flags(FunctionDecl::isEntryPoint))
-        ReflectAttributes(ast->attribs);
+        ReflectAttributes(ast->declStmntRef->attribs);
 
     Visitor::VisitFunctionDecl(ast, args);
 }

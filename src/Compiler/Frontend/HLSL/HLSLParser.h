@@ -121,14 +121,16 @@ class HLSLParser : public Parser
         SamplerDeclPtr                  ParseSamplerDecl(SamplerDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         StructDeclPtr                   ParseStructDecl(bool parseStructTkn = true, const TokenPtr& identTkn = nullptr);
         AliasDeclPtr                    ParseAliasDecl(TypeDenoterPtr typeDenoter);
+        FunctionDeclPtr                 ParseFunctionDecl(BasicDeclStmnt* declStmntRef, const TypeSpecifierPtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
+        UniformBufferDeclPtr            ParseUniformBufferDecl();
 
         StmntPtr                        ParseGlobalStmnt();
         StmntPtr                        ParseGlobalStmntPrimary();
         StmntPtr                        ParseGlobalStmntWithTypeSpecifier();
         StmntPtr                        ParseGlobalStmntWithSamplerTypeDenoter();
         StmntPtr                        ParseGlobalStmntWithBufferTypeDenoter();
-        FunctionDeclPtr                 ParseFunctionDecl(const TypeSpecifierPtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
-        UniformBufferDeclPtr            ParseUniformBufferDecl();
+        BasicDeclStmntPtr               ParseFunctionDeclStmnt(const TypeSpecifierPtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
+        BasicDeclStmntPtr               ParseUniformBufferDeclStmnt();
         BufferDeclStmntPtr              ParseBufferDeclStmnt(const BufferTypeDenoterPtr& typeDenoter = nullptr, const TokenPtr& identTkn = nullptr);
         SamplerDeclStmntPtr             ParseSamplerDeclStmnt(const SamplerTypeDenoterPtr& typeDenoter = nullptr, const TokenPtr& identTkn = nullptr);
         VarDeclStmntPtr                 ParseVarDeclStmnt();

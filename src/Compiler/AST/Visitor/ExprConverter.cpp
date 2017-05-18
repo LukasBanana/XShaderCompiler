@@ -18,12 +18,62 @@ namespace Xsc
 {
 
 
-void ExprConverter::Convert(Program& program, const Flags& conversionFlags)
+void ExprConverter::Convert(Program& program, const Flags& conversionFlags, const NameMangling& nameMangling)
 {
+    /* Copy parameters */
+    conversionFlags_    = conversionFlags;
+    nameMangling_       = nameMangling;
+
     /* Visit program AST */
-    conversionFlags_ = conversionFlags;
     if (conversionFlags_ != 0)
         Visit(&program);
+}
+
+// Returns the data type to which an expression must be casted, if the target data type and the source data type are incompatible.
+static std::unique_ptr<DataType> MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize)
+{
+    /* Check for type mismatch */
+    const auto targetDim = VectorTypeDim(targetType);
+    const auto sourceDim = VectorTypeDim(sourceType);
+
+    if ( ( targetDim != sourceDim && matchTypeSize ) ||
+         (  IsUIntType      (targetType) &&  IsIntType       (sourceType) ) ||
+         (  IsIntType       (targetType) &&  IsUIntType      (sourceType) ) ||
+         (  IsRealType      (targetType) &&  IsIntegralType  (sourceType) ) ||
+         (  IsIntegralType  (targetType) &&  IsRealType      (sourceType) ) ||
+         ( !IsDoubleRealType(targetType) &&  IsDoubleRealType(sourceType) ) ||
+         (  IsDoubleRealType(targetType) && !IsDoubleRealType(sourceType) ) )
+    {
+        if (targetDim != sourceDim && !matchTypeSize)
+        {
+            /* Return target base type with source dimension as required cast type */
+            return MakeUnique<DataType>(VectorDataType(BaseDataType(targetType), VectorTypeDim(sourceType)));
+        }
+        else
+        {
+            /* Return target type as required cast type */
+            return MakeUnique<DataType>(targetType);
+        }
+    }
+
+    /* No type cast required */
+    return nullptr;
+}
+
+static std::unique_ptr<DataType> MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize)
+{
+    if (auto baseTargetTypeDen = targetTypeDen.As<BaseTypeDenoter>())
+    {
+        if (auto baseSourceTypeDen = sourceTypeDen.As<BaseTypeDenoter>())
+        {
+            return MustCastExprToDataType(
+                baseTargetTypeDen->dataType,
+                baseSourceTypeDen->dataType,
+                matchTypeSize
+            );
+        }
+    }
+    return nullptr;
 }
 
 static void ConvertCastExpr(ExprPtr& expr, const DataType sourceType, const DataType targetType)
@@ -36,13 +86,14 @@ static void ConvertCastExpr(ExprPtr& expr, const DataType sourceType, const Data
 
         if (sourceDim < targetDim)
         {
+            /* Convert to cast expression and extend type constructor with sequential zero-literals (e.g. 'float3(v4)' => 'float4(v4, 0)') */
             auto typeDenoter = std::make_shared<BaseTypeDenoter>(targetType);
 
             std::vector<ExprPtr> args;
             args.push_back(expr);
 
             auto baseDataType = BaseDataType(targetType);
-            for (int i = sourceDim; i < targetDim; ++i)
+            for (auto i = sourceDim; i < targetDim; ++i)
                 args.push_back(ASTFactory::MakeLiteralExpr(baseDataType, "0"));
 
             expr = ASTFactory::MakeTypeCtorCallExpr(typeDenoter, args);
@@ -100,127 +151,31 @@ int ExprConverter::GetTextureDimFromExpr(Expr* expr, const AST* ast)
         if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
         {
             /* Determine vector size for texture intrinsic parameters by texture buffer type */
-            switch (bufferTypeDen->bufferType)
-            {
-                case BufferType::Buffer:
-                case BufferType::RWBuffer:
-                case BufferType::Texture1D:
-                case BufferType::RWTexture1D:
-                    return 1;
-
-                case BufferType::Texture1DArray:
-                case BufferType::RWTexture1DArray:
-                case BufferType::Texture2D:
-                case BufferType::RWTexture2D:
-                case BufferType::Texture2DMS:
-                    return 2;
-
-                case BufferType::Texture2DArray:
-                case BufferType::RWTexture2DArray:
-                case BufferType::Texture2DMSArray:
-                case BufferType::Texture3D:
-                case BufferType::RWTexture3D:
-                case BufferType::TextureCube:
-                    return 3;
-
-                case BufferType::TextureCubeArray:
-                    return 4;
-
-                default:
-                    break;
-            }
+            if (auto textureDim = GetBufferTypeTextureDim(bufferTypeDen->bufferType))
+                return textureDim;
         }
         else if (auto samplerTypeDen = typeDen.As<SamplerTypeDenoter>())
         {
             /* Determine vector size for texture intrinsic parameters by sampler type */
-            switch (samplerTypeDen->samplerType)
-            {
-                case SamplerType::Sampler1D:
-                case SamplerType::SamplerBuffer:
-                case SamplerType::Sampler1DShadow:
-                    return 1;
-
-                case SamplerType::Sampler2D:
-                case SamplerType::Sampler2DRect:
-                case SamplerType::Sampler1DArray:
-                case SamplerType::Sampler2DMS:
-                case SamplerType::Sampler2DShadow:
-                case SamplerType::Sampler2DRectShadow:
-                case SamplerType::Sampler1DArrayShadow:
-                    return 2;
-
-                case SamplerType::Sampler3D:
-                case SamplerType::SamplerCube:
-                case SamplerType::Sampler2DArray:
-                case SamplerType::Sampler2DMSArray:
-                case SamplerType::SamplerCubeShadow:
-                case SamplerType::Sampler2DArrayShadow:
-                    return 3;
-
-                case SamplerType::SamplerCubeArray:
-                case SamplerType::SamplerCubeArrayShadow:
-                    return 4;
-
-                default:
-                    break;
-            }
+            if (auto textureDim = GetSamplerTypeTextureDim(samplerTypeDen->samplerType))
+                return textureDim;
         }
         RuntimeErr(R_FailedToGetTextureDim, ast);
     }
     RuntimeErr(R_FailedToGetTextureDim, ast);
 }
 
+std::string ExprConverter::GetMatrixSubscriptWrapperIdent(const NameMangling& nameMangling, const MatrixSubscriptUsage& subscriptUsage)
+{
+    return (nameMangling.temporaryPrefix + "subscript" + subscriptUsage.IndicesToString());
+}
+
+
 /*
  * ======= Private: =======
  */
 
-std::unique_ptr<DataType> ExprConverter::MustCastExprToDataType(const DataType targetType, const DataType sourceType, bool matchTypeSize)
-{
-    /* Check for type mismatch */
-    auto targetDim = VectorTypeDim(targetType);
-    auto sourceDim = VectorTypeDim(sourceType);
-
-    if ( ( targetDim != sourceDim && matchTypeSize ) ||
-         (  IsUIntType      (targetType) &&  IsIntType       (sourceType) ) ||
-         (  IsIntType       (targetType) &&  IsUIntType      (sourceType) ) ||
-         (  IsRealType      (targetType) &&  IsIntegralType  (sourceType) ) ||
-         (  IsIntegralType  (targetType) &&  IsRealType      (sourceType) ) ||
-         ( !IsDoubleRealType(targetType) &&  IsDoubleRealType(sourceType) ) ||
-         (  IsDoubleRealType(targetType) && !IsDoubleRealType(sourceType) ) )
-    {
-        if (targetDim != sourceDim && !matchTypeSize)
-        {
-            /* Return target base type with source dimension as required cast type */
-            return MakeUnique<DataType>(VectorDataType(BaseDataType(targetType), VectorTypeDim(sourceType)));
-        }
-        else
-        {
-            /* Return target type as required cast type */
-            return MakeUnique<DataType>(targetType);
-        }
-    }
-
-    /* No type cast required */
-    return nullptr;
-}
-
-std::unique_ptr<DataType> ExprConverter::MustCastExprToDataType(const TypeDenoter& targetTypeDen, const TypeDenoter& sourceTypeDen, bool matchTypeSize)
-{
-    if (auto baseTargetTypeDen = targetTypeDen.As<BaseTypeDenoter>())
-    {
-        if (auto baseSourceTypeDen = sourceTypeDen.As<BaseTypeDenoter>())
-        {
-            return MustCastExprToDataType(
-                baseTargetTypeDen->dataType,
-                baseSourceTypeDen->dataType,
-                matchTypeSize
-            );
-        }
-    }
-    return nullptr;
-}
-
-TypeDenoterPtr ExprConverter::MakeBufferAccessCallTypeDenoter(const DataType genericDataType)
+static TypeDenoterPtr MakeBufferAccessCallTypeDenoter(const DataType genericDataType)
 {
     auto typeDenoter = std::make_shared<BaseTypeDenoter>();
     
@@ -260,11 +215,17 @@ void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
         if (enabled(ConvertVectorSubscripts))
             ConvertExprVectorSubscript(expr);
 
+        if (enabled(ConvertMatrixSubscripts))
+            ConvertExprMatrixSubscript(expr);
+
         if (enabled(ConvertUnaryExpr))
             ConvertExprIntoBracket(expr);
         
         if (enabled(ConvertTextureBracketOp))
             ConvertExprTextureBracketOp(expr);
+
+        if (enabled(ConvertCompatibleStructs))
+            ConvertExprCompatibleStruct(expr);
     }
 }
 
@@ -293,6 +254,45 @@ void ExprConverter::ConvertExprVectorSubscriptObject(ExprPtr& expr, ObjectExpr* 
 
             /* Convert to cast expression */
             expr = ASTFactory::MakeCastExpr(vectorTypeDen, objectExpr->prefixExpr);
+        }
+    }
+}
+
+void ExprConverter::ConvertExprMatrixSubscript(ExprPtr& expr)
+{
+    if (auto objectExpr = expr->As<ObjectExpr>())
+        ConvertExprMatrixSubscriptObject(expr, objectExpr);
+}
+
+void ExprConverter::ConvertExprMatrixSubscriptObject(ExprPtr& expr, ObjectExpr* objectExpr)
+{
+    if (!objectExpr->symbolRef && objectExpr->prefixExpr)
+    {
+        /* Get type denoter of prefix expression */
+        const auto& prefixTypeDen = objectExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+        if (prefixTypeDen.IsMatrix())
+        {
+            auto prefixBaseTypeDen = prefixTypeDen.As<BaseTypeDenoter>();
+
+            /* Get matrix subscript usage */
+            const MatrixSubscriptUsage subscriptUsage(prefixBaseTypeDen->dataType, objectExpr->ident);
+
+            if (IsScalarType(subscriptUsage.dataTypeOut) && !subscriptUsage.indices.empty())
+            {
+                /* Convert matrix subscript into array access */
+                const auto subscriptIndex = subscriptUsage.indices.front();
+                expr = ASTFactory::MakeArrayExpr(objectExpr->prefixExpr, { subscriptIndex.first, subscriptIndex.second });
+            }
+            else
+            {
+                /* Convert matrix subscript into function call to wrapper function */
+                const auto wrapperIdent = ExprConverter::GetMatrixSubscriptWrapperIdent(nameMangling_, subscriptUsage); 
+                expr = ASTFactory::MakeWrapperCallExpr(
+                    wrapperIdent,
+                    std::make_shared<BaseTypeDenoter>(subscriptUsage.dataTypeOut),
+                    { objectExpr->prefixExpr }
+                );
+            }
         }
     }
 }
@@ -404,7 +404,7 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
         {
             /* Is the buffer declaration a read/write texture? */
             const auto bufferType = bufferDecl->GetBufferType();
-            if (IsRWTextureBufferType(bufferType) && numDims < arrayExpr->NumIndices())
+            if (IsRWImageBufferType(bufferType) && numDims < arrayExpr->NumIndices())
             {
                 /* Get buffer type denoter from array indices of array access plus identifier */
                 //TODO: not sure if the buffer type must be derived with 'GetSub(arrayExpr)' again here???
@@ -436,7 +436,7 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
 
                     /* Cast to valid dimension */
                     auto textureDim = GetTextureDimFromExpr(arg0Expr.get(), expr.get());
-                    ConvertExprIfCastRequired(arg1Expr, VectorDataType(DataType::Int, textureDim), true);
+                    ExprConverter::ConvertExprIfCastRequired(arg1Expr, VectorDataType(DataType::Int, textureDim), true);
 
                     ExprPtr exprOut;
 
@@ -466,11 +466,11 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
 
                         /* Cast to valid 4D vector type */
                         if (IsIntType(genericBaseTypeDen->dataType))
-                            ConvertExprIfCastRequired(arg2Expr, DataType::Int4, true);
+                            ExprConverter::ConvertExprIfCastRequired(arg2Expr, DataType::Int4, true);
                         else if (IsUIntType(genericBaseTypeDen->dataType))
-                            ConvertExprIfCastRequired(arg2Expr, DataType::UInt4, true);
+                            ExprConverter::ConvertExprIfCastRequired(arg2Expr, DataType::UInt4, true);
                         else
-                            ConvertExprIfCastRequired(arg2Expr, DataType::Float4, true);
+                            ExprConverter::ConvertExprIfCastRequired(arg2Expr, DataType::Float4, true);
 
                         /* Convert expression to intrinsic call */
                         exprOut = ASTFactory::MakeIntrinsicCallExpr(
@@ -606,7 +606,7 @@ void ExprConverter::ConvertExprTargetType(ExprPtr& expr, const TypeDenoter& targ
     if (expr)
     {
         if (conversionFlags_(ConvertImplicitCasts))
-            ConvertExprIfCastRequired(expr, targetTypeDen, matchTypeSize);
+            ExprConverter::ConvertExprIfCastRequired(expr, targetTypeDen, matchTypeSize);
 
         if (auto initExpr = expr->As<InitializerExpr>())
         {
@@ -689,6 +689,12 @@ void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
                 auto typeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSubArray(arrayExpr->NumIndices() - i - 1);
                 if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
                 {
+                    if (!IsTextureBufferType(bufferTypeDen->bufferType))
+                    {
+                        /* Convert Texture Operator[] only for texture buffer types */
+                        return;
+                    }
+
                     if (i > 0)
                     {
                         arrayExpr = ASTFactory::MakeArrayExprSplit(arrayExpr, arrayExpr->NumIndices() - i);
@@ -703,6 +709,12 @@ void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
             auto typeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSubArray(arrayExpr->NumIndices() - 1);
             if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
             {
+                if (!IsTextureBufferType(bufferTypeDen->bufferType))
+                {
+                    /* Convert Texture Operator[] only for texture buffer types */
+                    return;
+                }
+
                 expr->flags << Expr::wasConverted;
 
                 /* Make "Load" intrinsic call */
@@ -762,6 +774,40 @@ void ExprConverter::ConvertExprTextureIntrinsicVec4(ExprPtr& expr)
                             expr,
                             vectorSubscript.substr(0, static_cast<std::size_t>(vecTypeDim))
                         );
+                    }
+                }
+            }
+        }
+    }
+}
+
+void ExprConverter::ConvertExprCompatibleStruct(ExprPtr& expr)
+{
+    /* Is this an object expression? */
+    if (auto objectExpr = expr->As<ObjectExpr>())
+    {
+        if (objectExpr->prefixExpr && objectExpr->symbolRef)
+        {
+            /* Does the object expression refer to a variable? */
+            if (auto varDecl = objectExpr->symbolRef->As<VarDecl>())
+            {
+                /* Has the prefix expression a struct type denoter? */
+                const auto& prefixTypeDen = objectExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+                if (auto prefixStructTypeDen = prefixTypeDen.As<StructTypeDenoter>())
+                {
+                    if (auto structDecl = prefixStructTypeDen->structDeclRef)
+                    {
+                        /* Has the struct a compatible struct? */
+                        if (auto compatStruct = structDecl->compatibleStructRef)
+                        {
+                            /* Map original variable to compatible variable by index */
+                            auto idx = structDecl->MemberVarToIndex(varDecl);
+                            if (auto compatVarDecl = compatStruct->IndexToMemberVar(idx))
+                            {
+                                /* Replace identifier by respective member of the type-compatible struct */
+                                objectExpr->ReplaceSymbol(compatVarDecl);
+                            }
+                        }
                     }
                 }
             }

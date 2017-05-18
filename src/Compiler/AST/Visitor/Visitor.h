@@ -11,7 +11,6 @@
 
 #include <memory>
 #include <vector>
-#include <stack>
 
 
 namespace Xsc
@@ -25,8 +24,10 @@ namespace Xsc
     using CLASS_NAME##Ptr = std::shared_ptr<CLASS_NAME>
 
 DECL_PTR( AST               );
+DECL_PTR( TypedAST          );
 DECL_PTR( Stmnt             );
 DECL_PTR( Expr              );
+DECL_PTR( Decl              );
 
 DECL_PTR( Program           );
 DECL_PTR( CodeBlock         );
@@ -43,14 +44,14 @@ DECL_PTR( BufferDecl        );
 DECL_PTR( SamplerDecl       );
 DECL_PTR( StructDecl        );
 DECL_PTR( AliasDecl         );
-
 DECL_PTR( FunctionDecl      );
 DECL_PTR( UniformBufferDecl );
+
 DECL_PTR( BufferDeclStmnt   );
 DECL_PTR( SamplerDeclStmnt  );
-DECL_PTR( StructDeclStmnt   );
 DECL_PTR( VarDeclStmnt      );
 DECL_PTR( AliasDeclStmnt    );
+DECL_PTR( BasicDeclStmnt    );
 
 DECL_PTR( NullStmnt         );
 DECL_PTR( CodeBlockStmnt    );
@@ -115,14 +116,14 @@ class Visitor
         VISITOR_VISIT_PROC( SamplerDecl       );
         VISITOR_VISIT_PROC( StructDecl        );
         VISITOR_VISIT_PROC( AliasDecl         );
-
         VISITOR_VISIT_PROC( FunctionDecl      );
         VISITOR_VISIT_PROC( UniformBufferDecl );
+
         VISITOR_VISIT_PROC( BufferDeclStmnt   );
         VISITOR_VISIT_PROC( SamplerDeclStmnt  );
-        VISITOR_VISIT_PROC( StructDeclStmnt   );
         VISITOR_VISIT_PROC( VarDeclStmnt      );
         VISITOR_VISIT_PROC( AliasDeclStmnt    );
+        VISITOR_VISIT_PROC( BasicDeclStmnt    );
 
         VISITOR_VISIT_PROC( NullStmnt         );
         VISITOR_VISIT_PROC( CodeBlockStmnt    );
@@ -167,96 +168,6 @@ class Visitor
             for (const auto& ast : astList)
                 Visit(ast, args);
         }
-
-        /* ----- Function declaration tracker ----- */
-
-        void PushFunctionDecl(FunctionDecl* ast);
-        void PopFunctionDecl();
-
-        // Returns true if the visitor is currently inside a function declaration.
-        bool InsideFunctionDecl() const;
-
-        // Returns true if the visitor is currently inside the main entry point.
-        bool InsideEntryPoint() const;
-
-        // Returns true if the visitor is currently inside the secondary entry point.
-        bool InsideSecondaryEntryPoint() const;
-
-        // Returns the active (inner most) function declaration or null if the analyzer is currently not inside a function declaration.
-        FunctionDecl* ActiveFunctionDecl() const;
-
-        // Returns the structure the active (inner most) member function declaration belongs to or null if no such structure exists.
-        StructDecl* ActiveFunctionStructDecl() const;
-
-        /* ----- Call expression tracker ----- */
-
-        void PushCallExpr(CallExpr* ast);
-        void PopCallExpr();
-
-        // Returns the active (inner most) call expression or null if the visitor is currently not inside a function call.
-        CallExpr* ActiveCallExpr() const;
-
-        /* ----- L-value expression tracker ----- */
-
-        void PushLValueExpr(Expr* expr);
-        void PopLValueExpr();
-
-        // Returns the active (inner most) l-value expression or null (can be AssignExpr, UnaryExpr, or PostUnaryExpr).
-        Expr* ActiveLValueExpr() const;
-
-        /* ----- Structure declaration tracker ----- */
-
-        void PushStructDecl(StructDecl* ast);
-        void PopStructDecl();
-
-        // Returns true if the analyzer is currently inside a structure declaration.
-        bool InsideStructDecl() const;
-
-        // Returns the active (inner most) structure declaration or null if the visitor is currently not inside a structure declaration.
-        StructDecl* ActiveStructDecl() const;
-
-        // Returns the stack (or rather the list) of all current, nested structure declarations.
-        inline const std::vector<StructDecl*>& GetStructDeclStack() const
-        {
-            return structDeclStack_;
-        }
-
-        /* ----- Structure declaration tracker ----- */
-
-        void PushUniformBufferDecl(UniformBufferDecl* ast);
-        void PopUniformBufferDecl();
-
-        // Returns true if the analyzer is currently inside a uniform buffer declaration.
-        bool InsideUniformBufferDecl() const;
-
-        // Returns the stack (or rather the list) of all current, nested structure declarations.
-        inline const std::vector<UniformBufferDecl*>& GetUniformBufferDeclStack() const
-        {
-            return uniformBufferDeclStack_;
-        }
-
-    private:
-
-        // Function declaration stack.
-        std::stack<FunctionDecl*>       funcDeclStack_;
-
-        // Call expression stack to join arguments with its function call.
-        std::stack<CallExpr*>           callExprStack_;
-
-        // L-value expression stack
-        std::stack<Expr*>               lvalueExprStack_;
-
-        // Structure stack to collect all members with system value semantic (SV_...), and detect all nested structures.
-        std::vector<StructDecl*>        structDeclStack_;
-
-        // Uniform buffer declaration stack.
-        std::vector<UniformBufferDecl*> uniformBufferDeclStack_;
-
-        // Function declaration level of the main entry point.
-        std::size_t                     stackLevelOfEntryPoint_     = ~0;
-
-        // Function declaration level of the secondary entry point.
-        std::size_t                     stackLevelOf2ndEntryPoint_  = ~0;
 
 };
 

@@ -54,19 +54,9 @@ CallExprPtr MakeTextureSamplerBindingCallExpr(const ExprPtr& textureObjectExpr, 
         const auto& typeDen = textureObjectExpr->GetTypeDenoter()->GetAliased();
         if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
         {
-            ast->typeDenoter = std::make_shared<SamplerTypeDenoter>(TextureTypeToSamplerType(bufferTypeDen->bufferType));
-            ast->arguments.push_back(textureObjectExpr);
-            ast->arguments.push_back(samplerObjectExpr);
+            ast->typeDenoter    = std::make_shared<SamplerTypeDenoter>(TextureTypeToSamplerType(bufferTypeDen->bufferType));
+            ast->arguments      = { textureObjectExpr, samplerObjectExpr };
         }
-    }
-    return ast;
-}
-
-InitializerExprPtr MakeInitializerExpr(const std::vector<ExprPtr>& exprs)
-{
-    auto ast = MakeAST<InitializerExpr>();
-    {
-        ast->exprs = exprs;
     }
     return ast;
 }
@@ -77,6 +67,27 @@ CallExprPtr MakeTypeCtorCallExpr(const TypeDenoterPtr& typeDenoter, const std::v
     {
         ast->typeDenoter    = typeDenoter;
         ast->arguments      = arguments;
+    }
+    return ast;
+}
+
+CallExprPtr MakeWrapperCallExpr(const std::string& funcIdent, const TypeDenoterPtr& typeDenoter, const std::vector<ExprPtr>& arguments)
+{
+    auto ast = MakeAST<CallExpr>();
+    {
+        ast->ident          = funcIdent;
+        ast->typeDenoter    = typeDenoter;
+        ast->arguments      = arguments;
+        ast->flags << CallExpr::isWrapperCall;
+    }
+    return ast;
+}
+
+InitializerExprPtr MakeInitializerExpr(const std::vector<ExprPtr>& exprs)
+{
+    auto ast = MakeAST<InitializerExpr>();
+    {
+        ast->exprs = exprs;
     }
     return ast;
 }
@@ -128,8 +139,9 @@ LiteralExprPtr MakeLiteralExpr(const Variant& literalValue)
             return MakeLiteralExpr(DataType::Int, std::to_string(literalValue.Int()));
         case Variant::Types::Real:
             return MakeLiteralExpr(DataType::Float, std::to_string(literalValue.Real()));
+        default:
+            return MakeLiteralExpr(DataType::Int, "0");
     }
-    return MakeLiteralExpr(DataType::Int, "0");
 }
 
 AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident)

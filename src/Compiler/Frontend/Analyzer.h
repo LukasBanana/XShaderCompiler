@@ -11,7 +11,7 @@
 
 #include <Xsc/Xsc.h>
 #include "ReportHandler.h"
-#include "Visitor.h"
+#include "VisitorTracker.h"
 #include "Variant.h"
 #include "Token.h"
 #include "SymbolTable.h"
@@ -27,7 +27,7 @@ namespace Xsc
 struct StructTypeDenoter;
 
 // Context analyzer base class.
-class Analyzer : protected Visitor
+class Analyzer : protected VisitorTracker
 {
     
     public:
@@ -115,6 +115,9 @@ class Analyzer : protected Visitor
         StructDecl* FetchStructDeclFromIdent(const std::string& ident, const AST* ast = nullptr);
         StructDecl* FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDenoter);
 
+        // Tries to find a type compatible structure declaration within the current scope.
+        StructDecl* FindCompatibleStructDecl(const StructDecl& rhs);
+
         // Returns true if the visitor is currently inside the global scope (i.e. out of any function declaration).
         bool InsideGlobalScope() const;
 
@@ -146,6 +149,9 @@ class Analyzer : protected Visitor
 
         // Evaluates the specified constant object expression or throws the expression if it's not constant.
         Variant EvaluateConstExprObject(const ObjectExpr& expr);
+
+        // Tries to evaluate the specified constant expression, or returns the default value on failure.
+        Variant EvaluateOrDefault(Expr& expr, const Variant& defaultValue = {});
 
         // Evaluates the specified constant integer expression.
         int EvaluateConstExprInt(Expr& expr);

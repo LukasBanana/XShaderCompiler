@@ -24,7 +24,7 @@ Joins the specified string with its values.
 Special characters for the string 's' are: '{', '}', '[', and ']'.
 
 "{0}" will be replaced by the first value from the array 'values',
-"{1}" will be replaced by the second value and so froth.
+"{1}" will be replaced by the second value and so forth.
 Everything inside squared brackets (e.g. "[optional {0}]") will only be joined to the output string,
 if all values inside these brackets are specified and non-empty.
 

@@ -105,17 +105,17 @@ IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
     PushReturnPath(false);
 }
 
-IMPLEMENT_VISIT_PROC(StructDeclStmnt)
-{
-    PushReturnPath(false);
-}
-
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
     PushReturnPath(false);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
+{
+    PushReturnPath(false);
+}
+
+IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
 {
     PushReturnPath(false);
 }

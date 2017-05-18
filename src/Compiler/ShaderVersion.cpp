@@ -13,8 +13,8 @@ namespace Xsc
 
 
 ShaderVersion::ShaderVersion(int major, int minor) :
-    major_{ major },
-    minor_{ minor }
+    major_ { major },
+    minor_ { minor }
 {
 }
 

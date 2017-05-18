@@ -10,7 +10,6 @@
 
 
 #include "Converter.h"
-#include "ExprConverter.h"
 #include <functional>
 #include <set>
 
@@ -26,6 +25,11 @@ e.g. remove arguments from intrinsic calls, that are not allowed in GLSL, such a
 */
 class GLSLConverter : public Converter
 {
+
+    public:
+
+        static bool ConvertVarDeclType(VarDecl& varDecl);
+        static bool ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataType dataType);
     
     private:
         
@@ -40,9 +44,6 @@ class GLSLConverter : public Converter
         // Returns true if the output shader version is VKSL (GLSL for Vulkan).
         bool IsVKSL() const;
 
-        // Returns true if the 'GL_ARB_shading_language_420pack' is explicitly available.
-        bool HasShadingLanguage420Pack() const;
-
         // Returns true if separate objects for samplers & textures should be used.
         bool UseSeparateSamplers() const;
 
@@ -51,6 +52,7 @@ class GLSLConverter : public Converter
         DECL_VISIT_PROC( Program           );
         DECL_VISIT_PROC( CodeBlock         );
         DECL_VISIT_PROC( SwitchCase        );
+        DECL_VISIT_PROC( TypeSpecifier     );
 
         DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( BufferDecl        );
@@ -95,12 +97,6 @@ class GLSLConverter : public Converter
         // Renames the specified identifier if it equals a reserved GLSL intrinsic or function name.
         bool RenameReservedKeyword(Identifier& ident);
 
-        // Function signature compare callback for the function name converter.
-        static bool CompareFuncSignatures(const FunctionDecl& lhs, const FunctionDecl& rhs);
-
-        static bool ConvertVarDeclType(VarDecl& varDecl);
-        static bool ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataType dataType);
-
         /* ----- Function declaration ----- */
 
         void ConvertFunctionDecl(FunctionDecl* ast);
@@ -111,7 +107,7 @@ class GLSLConverter : public Converter
 
         void ConvertIntrinsicCall(CallExpr* ast);
         void ConvertIntrinsicCallSaturate(CallExpr* ast);
-        void ConvertIntrinsicCallTexLod(CallExpr* ast);
+        void ConvertIntrinsicCallTextureLOD(CallExpr* ast);
         void ConvertIntrinsicCallTextureSample(CallExpr* ast);
         void ConvertIntrinsicCallTextureSampleLevel(CallExpr* ast);
         void ConvertIntrinsicCallTextureLoad(CallExpr* ast);
@@ -137,6 +133,7 @@ class GLSLConverter : public Converter
         void ConvertObjectExpr(ObjectExpr* objectExpr);
         void ConvertObjectExprStaticVar(ObjectExpr* objectExpr);
         void ConvertObjectExprDefault(ObjectExpr* objectExpr);
+
         void ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const StructDecl* ownerStructDecl, const StructDecl* activeStructDecl);
         void ConvertObjectPrefixSelfParam(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
         void ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
@@ -154,8 +151,6 @@ class GLSLConverter : public Converter
         void ConvertSlotRegisters(std::vector<RegisterPtr>& slotRegisters);
 
         /* === Members === */
-
-        ExprConverter               exprConverter_;
 
         ShaderTarget                shaderTarget_       = ShaderTarget::VertexShader;
         OutputShaderVersion         versionOut_         = OutputShaderVersion::GLSL;

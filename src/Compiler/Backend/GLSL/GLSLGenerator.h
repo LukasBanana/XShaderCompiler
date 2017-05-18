@@ -67,6 +67,9 @@ class GLSLGenerator : public Generator
         // Returns true if the output shader language is VKSL (for Vulkan/SPIR-V).
         bool IsVKSL() const;
 
+        // Returns true if the 'GL_ARB_shading_language_420pack' is explicitly available.
+        bool HasShadingLanguage420Pack() const;
+
         // Returns true if separate objects for samplers & textures should be used.
         bool UseSeparateSamplers() const;
 
@@ -107,9 +110,9 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( BufferDeclStmnt   );
         DECL_VISIT_PROC( SamplerDeclStmnt  );
-        DECL_VISIT_PROC( StructDeclStmnt   );
         DECL_VISIT_PROC( VarDeclStmnt      );
         DECL_VISIT_PROC( AliasDeclStmnt    );
+        DECL_VISIT_PROC( BasicDeclStmnt    );
 
         DECL_VISIT_PROC( NullStmnt         );
         DECL_VISIT_PROC( CodeBlockStmnt    );
@@ -139,6 +142,17 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( InitializerExpr   );
 
         /* --- Helper functions for code generation --- */
+
+        /* ----- Pre processing AST ----- */
+
+        void PreProcessAST(const ShaderInput& inputDesc, const ShaderOutput& outputDesc);
+        void PreProcessStructParameterAnalyzer(const ShaderInput& inputDesc);
+        void PreProcessTypeConverter();
+        void PreProcessExprConverterPrimary();
+        void PreProcessGLSLConverter(const ShaderInput& inputDesc, const ShaderOutput& outputDesc);
+        void PreProcessFuncNameConverter();
+        void PreProcessReferenceAnalyzer(const ShaderInput& inputDesc);
+        void PreProcessExprConverterSecondary();
 
         /* ----- Basics ----- */
 
@@ -265,6 +279,8 @@ class GLSLGenerator : public Generator
         void WriteWrapperIntrinsicsLit(const IntrinsicUsage& usage);
         void WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage);
         void WriteWrapperIntrinsicsMemoryBarrier(const Intrinsic intrinsic, bool groupSync);
+
+        void WriteWrapperMatrixSubscript(const MatrixSubscriptUsage& usage);
 
         /* ----- Structure ----- */
 

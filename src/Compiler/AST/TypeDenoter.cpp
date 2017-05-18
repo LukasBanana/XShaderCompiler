@@ -19,6 +19,17 @@ namespace Xsc
 
 #ifdef XSC_ENABLE_LANGUAGE_EXT
 
+VectorSpace::VectorSpace(const StringType& src, const StringType& dst) :
+    src { src },
+    dst { dst }
+{
+}
+
+VectorSpace::VectorSpace(const StringType& space) :
+    VectorSpace { space, space }
+{
+}
+
 std::string VectorSpace::ToString() const
 {
     if (!IsSpecified())
@@ -41,7 +52,16 @@ bool VectorSpace::IsChangeOfBasis() const
 
 bool VectorSpace::IsAssignableTo(const VectorSpace& rhs) const
 {
-    return (dst == rhs.src || !rhs.IsSpecified());
+    if (IsChangeOfBasis() && rhs.IsChangeOfBasis())
+    {
+        /* If both vector space are a change-of-basis, compare equality */
+        return (*this == rhs);
+    }
+    else
+    {
+        /* Otherwise, compare destination of this vector space to the source of the specified vector space */
+        return (dst == rhs.src || !rhs.IsSpecified());
+    }
 }
 
 void VectorSpace::Set(const StringType& space)
@@ -116,6 +136,22 @@ VectorSpace VectorSpace::FindCommonVectorSpace(const std::vector<ExprPtr>& exprL
     return {};
 }
 
+void VectorSpace::Copy(TypeDenoter* dstTypeDen, const TypeDenoter* srcTypeDen)
+{
+    if (dstTypeDen && srcTypeDen)
+    {
+        /* Get as instances of BaseTypeDenoter */
+        if (auto dstBaseTypeDen = dstTypeDen->As<BaseTypeDenoter>())
+        {
+            if (auto srcBaseTypeDen = srcTypeDen->As<BaseTypeDenoter>())
+            {
+                /* Copy vector space */
+                dstBaseTypeDen->vectorSpace = srcBaseTypeDen->vectorSpace;
+            }
+        }
+    }
+}
+
 bool operator == (const VectorSpace& lhs, const VectorSpace& rhs)
 {
     return (lhs.src == rhs.src && lhs.dst == rhs.dst);
@@ -188,6 +224,11 @@ bool TypeDenoter::IsAlias() const
 bool TypeDenoter::IsArray() const
 {
     return (Type() == Types::Array);
+}
+
+bool TypeDenoter::IsFunction() const
+{
+    return (Type() == Types::Function);
 }
 
 bool TypeDenoter::Equals(const TypeDenoter& rhs, const Flags& /*compareFlags*/) const
@@ -293,14 +334,41 @@ static TypeDenoterPtr FindCommonTypeDenoterScalarAndVector(BaseTypeDenoter* lhsT
     }
 }
 
-static TypeDenoterPtr FindCommonTypeDenoterVectorAndVector(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen, bool useMinDimension)
+static TypeDenoterPtr FindCommonTypeDenoterScalarAndMatrix(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen, bool useMinDimension)
+{
+    auto commonType = HighestOrderDataType(lhsTypeDen->dataType, BaseDataType(rhsTypeDen->dataType));
+    if (useMinDimension)
+    {
+        /* Return scalar type (minimal dimension) */
+        return std::make_shared<BaseTypeDenoter>(commonType);
+    }
+    else
+    {
+        /* Return matrix type */
+        auto rhsDim = MatrixTypeDim(rhsTypeDen->dataType);
+        return std::make_shared<BaseTypeDenoter>(MatrixDataType(commonType, rhsDim.first, rhsDim.second));
+    }
+}
+
+static TypeDenoterPtr FindCommonTypeDenoterVectorAndVector(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen)
 {
     auto commonType = HighestOrderDataType(BaseDataType(lhsTypeDen->dataType), BaseDataType(rhsTypeDen->dataType));
     
-    /* Return either highest or lowest dimension */
+    /* Return always lowest dimension (e.g. 'v3 * v4' => 'v3 * float3(v4)') */
     auto lhsDim = VectorTypeDim(lhsTypeDen->dataType);
     auto rhsDim = VectorTypeDim(rhsTypeDen->dataType);
-    auto commonDim = (useMinDimension ? std::min(lhsDim, rhsDim) : std::max(lhsDim, rhsDim));
+    auto commonDim = std::min(lhsDim, rhsDim);
+
+    return std::make_shared<BaseTypeDenoter>(VectorDataType(commonType, commonDim));
+}
+
+static TypeDenoterPtr FindCommonTypeDenoterVectorAndMatrix(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen, bool rowVector)
+{
+    auto commonType = HighestOrderDataType(BaseDataType(lhsTypeDen->dataType), BaseDataType(rhsTypeDen->dataType));
+
+    /* Return always row/column dimension of matrix type (e.g. 'mul(m4x4, v3)' => 'mul(m4x4, float4(v3, 0))') */
+    auto matrixDim = MatrixTypeDim(rhsTypeDen->dataType);
+    auto commonDim = (rowVector ? matrixDim.second : matrixDim.first);
 
     return std::make_shared<BaseTypeDenoter>(VectorDataType(commonType, commonDim));
 }
@@ -313,21 +381,49 @@ static TypeDenoterPtr FindCommonTypeDenoterAnyAndAny(TypeDenoter* lhsTypeDen, Ty
 
 TypeDenoterPtr TypeDenoter::FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeDen, const TypeDenoterPtr& rhsTypeDen, bool useMinDimension)
 {
-    /* Scalar and Scalar */
-    if (lhsTypeDen->IsScalar() && rhsTypeDen->IsScalar())
-        return FindCommonTypeDenoterScalarAndScalar(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>());
+    if (lhsTypeDen->IsScalar())
+    {
+        /* Scalar and Scalar */
+        if (rhsTypeDen->IsScalar())
+            return FindCommonTypeDenoterScalarAndScalar(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>());
 
-    /* Scalar and Vector */
-    if (lhsTypeDen->IsScalar() && rhsTypeDen->IsVector())
-        return FindCommonTypeDenoterScalarAndVector(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>(), useMinDimension);
+        /* Scalar and Vector */
+        if (rhsTypeDen->IsVector())
+            return FindCommonTypeDenoterScalarAndVector(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>(), useMinDimension);
 
-    /* Vector and Scalar */
-    if (lhsTypeDen->IsVector() && rhsTypeDen->IsScalar())
-        return FindCommonTypeDenoterScalarAndVector(rhsTypeDen->As<BaseTypeDenoter>(), lhsTypeDen->As<BaseTypeDenoter>(), useMinDimension);
+        /* Scalar and Matrix */
+        if (rhsTypeDen->IsMatrix())
+            return FindCommonTypeDenoterScalarAndMatrix(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>(), useMinDimension);
+    }
+    else if (lhsTypeDen->IsVector())
+    {
+        /* Vector and Scalar */
+        if (rhsTypeDen->IsScalar())
+            return FindCommonTypeDenoterScalarAndVector(rhsTypeDen->As<BaseTypeDenoter>(), lhsTypeDen->As<BaseTypeDenoter>(), useMinDimension);
 
-    /* Vector and Vector (Note: always use minimal dimension here!) */
-    if (lhsTypeDen->IsVector() && rhsTypeDen->IsVector())
-        return FindCommonTypeDenoterVectorAndVector(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>(), true);
+        /* Vector and Vector */
+        if (rhsTypeDen->IsVector())
+            return FindCommonTypeDenoterVectorAndVector(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>());
+
+        /* (Row-) Vector and Matrix */
+        if (rhsTypeDen->IsMatrix())
+            return FindCommonTypeDenoterVectorAndMatrix(lhsTypeDen->As<BaseTypeDenoter>(), rhsTypeDen->As<BaseTypeDenoter>(), true);
+    }
+    else if (lhsTypeDen->IsMatrix())
+    {
+        /* Matrix and Scalar */
+        if (rhsTypeDen->IsScalar())
+            return FindCommonTypeDenoterScalarAndMatrix(rhsTypeDen->As<BaseTypeDenoter>(), lhsTypeDen->As<BaseTypeDenoter>(), useMinDimension);
+
+        /* Matrix and (Column-) Vector */
+        if (rhsTypeDen->IsVector())
+            return FindCommonTypeDenoterVectorAndMatrix(rhsTypeDen->As<BaseTypeDenoter>(), lhsTypeDen->As<BaseTypeDenoter>(), false);
+
+        /* Matrix and Matrix */
+        //TODO...
+        /*if (rhsTypeDen->IsMatrix())
+            return FindCommonTypeDenoterMatrixAndMatrix(rhsTypeDen->As<BaseTypeDenoter>(), lhsTypeDen->As<BaseTypeDenoter>(), false);*/
+    }
 
     /* Default type */
     return FindCommonTypeDenoterAnyAndAny(lhsTypeDen.get(), rhsTypeDen.get());
@@ -335,8 +431,8 @@ TypeDenoterPtr TypeDenoter::FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeD
 
 TypeDenoterPtr TypeDenoter::FindCommonTypeDenoterFrom(const ExprPtr& lhsExpr, const ExprPtr& rhsExpr, bool useMinDimension, const AST* ast)
 {
-    auto lhsTypeDen = lhsExpr->GetTypeDenoter();
-    auto rhsTypeDen = rhsExpr->GetTypeDenoter();
+    auto lhsTypeDen = lhsExpr->GetTypeDenoter()->GetSub();
+    auto rhsTypeDen = rhsExpr->GetTypeDenoter()->GetSub();
 
     auto commonTypeDenoter = TypeDenoter::FindCommonTypeDenoter(lhsTypeDen, rhsTypeDen, useMinDimension);
 
@@ -382,7 +478,7 @@ bool TypeDenoter::HasVectorTruncation(
             /* Get data types from type denoters */
             sourceVecSize = VectorTypeDim(sourceBaseTypeDen->dataType);
             destVecSize = VectorTypeDim(destBaseTypeDen->dataType);
-            return (destVecSize < sourceVecSize);
+            return (sourceVecSize > 0 && destVecSize > 0 && destVecSize < sourceVecSize);
         }
     }
     return false;
@@ -742,7 +838,7 @@ TypeDenoter::Types StructTypeDenoter::Type() const
 
 std::string StructTypeDenoter::ToString() const
 {
-    return (structDeclRef ? structDeclRef->ToString() : "struct <unknown>");
+    return (structDeclRef ? structDeclRef->ToString() : "struct " + R_Undefined);
 }
 
 TypeDenoterPtr StructTypeDenoter::Copy() const
@@ -766,7 +862,7 @@ bool StructTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags
     if (auto rhsStructTypeDen = rhs.GetAliased().As<StructTypeDenoter>())
     {
         /* Compare this structure type with another structure type */
-        return GetStructDeclOrThrow()->EqualsMembers(
+        return GetStructDeclOrThrow()->EqualsMemberTypes(
             *rhsStructTypeDen->GetStructDeclOrThrow(),
             compareFlags
         );
@@ -783,7 +879,7 @@ bool StructTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     if (auto targetStructTypeDen = targetAliasedType.As<StructTypeDenoter>())
     {
         /* Compare this structure type with another structure type */
-        return structDecl->EqualsMembers(*targetStructTypeDen->GetStructDeclOrThrow());
+        return structDecl->EqualsMemberTypes(*targetStructTypeDen->GetStructDeclOrThrow());
     }
     else if (auto targetBaseTypeDen = targetAliasedType.As<BaseTypeDenoter>())
     {
@@ -965,12 +1061,7 @@ std::string ArrayTypeDenoter::ToString() const
 
 TypeDenoterPtr ArrayTypeDenoter::Copy() const
 {
-    auto copy = std::make_shared<ArrayTypeDenoter>();
-    {
-        copy->subTypeDenoter    = subTypeDenoter;
-        copy->arrayDims         = arrayDims;
-    }
-    return copy;
+    return std::make_shared<ArrayTypeDenoter>(subTypeDenoter, arrayDims);
 }
 
 TypeDenoterPtr ArrayTypeDenoter::GetSubArray(const std::size_t numArrayIndices, const AST* ast)
@@ -1071,6 +1162,60 @@ std::vector<int> ArrayTypeDenoter::GetDimensionSizes() const
         sizes.push_back(dim != nullptr ? dim->size : -1);
 
     return sizes;
+}
+
+
+/* ----- FunctionTypeDenoter ----- */
+
+FunctionTypeDenoter::FunctionTypeDenoter(FunctionDecl* funcDeclRef) :
+    ident        { funcDeclRef ? funcDeclRef->ident.Original() : "" },
+    funcDeclRefs { { funcDeclRef }                                  }
+{
+}
+
+FunctionTypeDenoter::FunctionTypeDenoter(const std::string& ident, const std::vector<FunctionDecl*>& funcDeclRefs) :
+    ident        { ident        },
+    funcDeclRefs { funcDeclRefs }
+{
+}
+
+TypeDenoter::Types FunctionTypeDenoter::Type() const
+{
+    return Types::Struct;
+}
+
+std::string FunctionTypeDenoter::ToString() const
+{
+    if (funcDeclRefs.size() == 1)
+        return funcDeclRefs.front()->ToTypeDenoterString();
+    else
+        return R_OverloadedFunction;
+}
+
+TypeDenoterPtr FunctionTypeDenoter::Copy() const
+{
+    return std::make_shared<FunctionTypeDenoter>(ident, funcDeclRefs);
+}
+
+bool FunctionTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags) const
+{
+    if (auto rhsFuncTypeDen = rhs.GetAliased().As<FunctionTypeDenoter>())
+    {
+        /* Compare function reference lists */
+        return (funcDeclRefs == rhsFuncTypeDen->funcDeclRefs);
+    }
+    return false;
+}
+
+bool FunctionTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
+{
+    /* Function objects can not be casted */
+    return false;
+}
+
+std::string FunctionTypeDenoter::Ident() const
+{
+    return ident;
 }
 
 

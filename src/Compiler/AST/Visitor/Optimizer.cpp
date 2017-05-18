@@ -6,7 +6,7 @@
  */
 
 #include "Optimizer.h"
-#include "ConstExprEvaluator.h"
+#include "ExprEvaluator.h"
 #include "ASTFactory.h"
 #include "AST.h"
 
@@ -37,25 +37,16 @@ void Optimizer::OptimizeStmntList(std::vector<StmntPtr>& stmnts)
     }
 }
 
-//TODO: exceptional path should not be used to cancel evaluation here!
 void Optimizer::OptimizeExpr(ExprPtr& expr)
 {
     if (expr)
     {
-        try
+        /* Try to evaluate expression */
+        ExprEvaluator exprEvaluator;
+        if (auto value = exprEvaluator.EvaluateOrDefault(*expr))
         {
-            /* Try to evaluate expression */
-            ConstExprEvaluator exprEval;
-            auto exprValue = exprEval.EvaluateExpr(*expr, [](ObjectExpr* expr) -> Variant { throw expr; });
-            expr = ASTFactory::MakeLiteralExpr(exprValue);
-        }
-        catch (const std::exception&)
-        {
-            /* ignore this exception */
-        }
-        catch (const ObjectExpr*)
-        {
-            /* ignore this exception */
+            /* Convert to literal expression */
+            expr = ASTFactory::MakeLiteralExpr(value);
         }
     }
 }

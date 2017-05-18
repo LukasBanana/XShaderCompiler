@@ -26,18 +26,19 @@ extern "C" {
 //! Compiler warning flags.
 enum XscWarnings
 {
-    XscWarnBasic                    = (1 << 0), //!< Warning for basic issues (control path, disabled code etc.).
-    XscWarnSyntax                   = (1 << 1), //!< Warning for syntactic issues.
-    XscWarnPreProcessor             = (1 << 2), //!< Warning for pre-processor issues.
-    XscWarnUnusedVariables          = (1 << 3), //!< Warning for unused variables.
-    XscWarnEmptyStatementBody       = (1 << 4), //!< Warning for statements with empty body.
-    XscWarnImplicitTypeConversions  = (1 << 5), //!< Warning for specific implicit type conversions.
-    XscWarnDeclarationShadowing     = (1 << 6), //!< Warning for declarations that shadow a previous local (e.g. for-loops or variables in class hierarchy).
-    XscWarnUnlocatedObjects         = (1 << 7), //!< Warning for optional objects that where not found.
-    XscWarnRequiredExtensions       = (1 << 8), //!< Warning for required extensions in the output code.
-    XscWarnCodeReflection           = (1 << 9), //!< Warning for issues during code reflection.
+    XscWarnBasic                    = (1 <<  0), //!< Warning for basic issues (control path, disabled code etc.).
+    XscWarnSyntax                   = (1 <<  1), //!< Warning for syntactic issues.
+    XscWarnPreProcessor             = (1 <<  2), //!< Warning for pre-processor issues.
+    XscWarnUnusedVariables          = (1 <<  3), //!< Warning for unused variables.
+    XscWarnEmptyStatementBody       = (1 <<  4), //!< Warning for statements with empty body.
+    XscWarnImplicitTypeConversions  = (1 <<  5), //!< Warning for specific implicit type conversions.
+    XscWarnDeclarationShadowing     = (1 <<  6), //!< Warning for declarations that shadow a previous local (e.g. for-loops or variables in class hierarchy).
+    XscWarnUnlocatedObjects         = (1 <<  7), //!< Warning for optional objects that where not found.
+    XscWarnRequiredExtensions       = (1 <<  8), //!< Warning for required extensions in the output code.
+    XscWarnCodeReflection           = (1 <<  9), //!< Warning for issues during code reflection.
+    XscWarnIndexBoundary            = (1 << 10), //!< Warning for index boundary violations.
 
-    XscWarnAll                      = (~0u),    //!< All warnings.
+    XscWarnAll                      = (~0u),     //!< All warnings.
 };
 
 /**

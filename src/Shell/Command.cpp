@@ -312,6 +312,7 @@ HelpDescriptor WarnCommand::Help() const
             "empty-body    => warn for empty statement body\n"       \
             "extension     => warn for required extensions\n"        \
             "implicit-cast => warn for implicit type casts\n"        \
+            "index-bound   => warn for index boundary violation\n"   \
             "preprocessor  => warn for pre-processor issues\n"       \
             "reflect       => warn for issues in code reflection\n"  \
             "syntax        => warn for syntactic issues\n"           \
@@ -332,6 +333,7 @@ void WarnCommand::Run(CommandLine& cmdLine, ShellState& state)
             { "empty-body",    Warnings::EmptyStatementBody      },
             { "extension",     Warnings::RequiredExtensions      },
             { "implicit-cast", Warnings::ImplicitTypeConversions },
+            { "index-bound",   Warnings::IndexBoundary           },
             { "preprocessor",  Warnings::PreProcessor            },
             { "reflect",       Warnings::CodeReflection          },
             { "syntax",        Warnings::Syntax                  },

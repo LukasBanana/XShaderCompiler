@@ -7,7 +7,7 @@
 
 #include "Analyzer.h"
 #include "Exception.h"
-#include "ConstExprEvaluator.h"
+#include "ExprEvaluator.h"
 #include "EndOfScopeAnalyzer.h"
 #include "ControlPathAnalyzer.h"
 #include "ReportIdents.h"
@@ -192,18 +192,10 @@ Decl* Analyzer::FetchDecl(const std::string& ident, const AST* ast)
 {
     if (auto symbol = Fetch(ident, ast))
     {
-        switch (symbol->Type())
-        {
-            case AST::Types::VarDecl:
-            case AST::Types::BufferDecl:
-            case AST::Types::SamplerDecl:
-            case AST::Types::StructDecl:
-            case AST::Types::AliasDecl:
-                return static_cast<Decl*>(symbol);
-            default:
-                Error(R_IdentIsNotDecl(ident), ast);
-                break;
-        }
+        if (IsDeclAST(symbol->Type()))
+            return static_cast<Decl*>(symbol);
+        else
+            Error(R_IdentIsNotDecl(ident), ast);
     }
     return nullptr;
 }
@@ -371,6 +363,35 @@ StructDecl* Analyzer::FetchStructDeclFromTypeDenoter(const TypeDenoter& typeDeno
         if (auto aliasDecl = aliasTypeDen->aliasDeclRef)
             return FetchStructDeclFromTypeDenoter(*(aliasDecl->typeDenoter));
     }
+    return nullptr;
+}
+
+StructDecl* Analyzer::FindCompatibleStructDecl(const StructDecl& rhs)
+{
+    /* Search compatible structure in symbol table */
+    auto symbol = symTable_.Find(
+        [&rhs](const ASTSymbolOverloadPtr& symbol)
+        {
+            if (auto ref = symbol->Fetch(false))
+            {
+                if (auto structDecl = ref->As<StructDecl>())
+                {
+                    /* Is this structure compatible with the specified structure? */
+                    if (structDecl->EqualsMemberTypes(rhs))
+                        return true;
+                }
+            }
+            return false;
+        }
+    );
+
+    /* Return found structure declaration */
+    if (symbol)
+    {
+        if (auto ref = symbol->Fetch(false))
+            return ref->As<StructDecl>();
+    }
+    
     return nullptr;
 }
 
@@ -544,8 +565,8 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
     try
     {
         /* Evaluate expression and throw error on var-access */
-        ConstExprEvaluator exprEvaluator;
-        return exprEvaluator.EvaluateExpr(
+        ExprEvaluator exprEvaluator;
+        return exprEvaluator.Evaluate(
             expr,
             [this](ObjectExpr* expr) -> Variant
             {
@@ -575,7 +596,8 @@ Variant Analyzer::EvaluateConstExprObject(const ObjectExpr& expr)
     {
         if (auto varDeclStmnt = varDecl->declStmntRef)
         {
-            if (varDeclStmnt->IsConstOrUniform() && varDecl->initializer)
+            /* Is this a non-parameter local variable with an initializer? (don't use 'HasStaticConstInitializer' here!) */
+            if (!varDeclStmnt->flags(VarDeclStmnt::isParameter) && varDeclStmnt->IsConstOrUniform() && varDecl->initializer)
             {
                 /* Evaluate initializer of constant variable */
                 return EvaluateConstExpr(*varDecl->initializer);
@@ -585,6 +607,12 @@ Variant Analyzer::EvaluateConstExprObject(const ObjectExpr& expr)
 
     /* Throw expression due to non-constness */
     throw (&expr);
+}
+
+Variant Analyzer::EvaluateOrDefault(Expr& expr, const Variant& defaultValue)
+{
+    ExprEvaluator exprEvaluator;
+    return exprEvaluator.EvaluateOrDefault(expr, defaultValue);
 }
 
 int Analyzer::EvaluateConstExprInt(Expr& expr)
@@ -661,8 +689,8 @@ void Analyzer::OnReleaseSymbol(const ASTSymbolOverloadPtr& symbol)
                  varDecl->structDeclRef == nullptr &&
                  varDecl->bufferDeclRef == nullptr )
             {
-                /* Report warning of unused variable */
-                Warning(R_VarDeclaredButNeverUsed(varDecl->ToString()), varDecl);
+                /* Report warning of unused variable (with identifier only) */
+                Warning(R_VarDeclaredButNeverUsed(varDecl->ident), varDecl);
             }
         }
     }

@@ -39,7 +39,7 @@ struct { float value; } f1()
 	return (struct { float value; })0;
 }
 
-float4 VS() : SV_Position
+float4 main() : SV_Position
 {
 	S1 s1;
 	

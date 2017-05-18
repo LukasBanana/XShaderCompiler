@@ -27,15 +27,16 @@ namespace Xsc
     struct CLASS_NAME;                                  \
     using CLASS_NAME##Ptr = std::shared_ptr<CLASS_NAME>
 
-DECL_PTR( TypeDenoter        );
-DECL_PTR( VoidTypeDenoter    );
-DECL_PTR( NullTypeDenoter    );
-DECL_PTR( BaseTypeDenoter    );
-DECL_PTR( BufferTypeDenoter  );
-DECL_PTR( SamplerTypeDenoter );
-DECL_PTR( StructTypeDenoter  );
-DECL_PTR( AliasTypeDenoter   );
-DECL_PTR( ArrayTypeDenoter   );
+DECL_PTR( TypeDenoter         );
+DECL_PTR( VoidTypeDenoter     );
+DECL_PTR( NullTypeDenoter     );
+DECL_PTR( BaseTypeDenoter     );
+DECL_PTR( BufferTypeDenoter   );
+DECL_PTR( SamplerTypeDenoter  );
+DECL_PTR( StructTypeDenoter   );
+DECL_PTR( AliasTypeDenoter    );
+DECL_PTR( ArrayTypeDenoter    );
+DECL_PTR( FunctionTypeDenoter );
 
 #undef DECL_PTR
 
@@ -48,6 +49,10 @@ DECL_PTR( ArrayTypeDenoter   );
 struct VectorSpace
 {
     using StringType = CiString;
+
+    VectorSpace() = default;
+    VectorSpace(const StringType& src, const StringType& dst);
+    VectorSpace(const StringType& space);
 
     // Returns a descriptive string of this vector space.
     std::string ToString() const;
@@ -69,6 +74,9 @@ struct VectorSpace
 
     // Returns the common vector-space from the specified expressions, or throws ASTRuntimeError on failure.
     static VectorSpace FindCommonVectorSpace(const std::vector<ExprPtr>& exprList, bool ignoreUnspecified = false, const AST* ast = nullptr);
+
+    // Copies the vector space of 'srcTypeDen' into 'dstTypeDen' if both types are non-empty and instances of BaseTypeDenoter.
+    static void Copy(TypeDenoter* dstTypeDen, const TypeDenoter* srcTypeDen);
 
     StringType src; // Source vector space name.
     StringType dst; // Destination vector space name.
@@ -96,6 +104,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
         Struct,
         Alias,
         Array,
+        Function,
     };
 
     // Type denoter comparison flags.
@@ -133,6 +142,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     bool IsStruct() const;
     bool IsAlias() const;
     bool IsArray() const;
+    bool IsFunction() const;
 
     // Returns true if this (aliased) type denoter is equal to the specified (aliased) type denoter (see GetAliased).
     virtual bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const;
@@ -434,6 +444,29 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     TypeDenoterPtr                  subTypeDenoter; // Sub type denoter
     std::vector<ArrayDimensionPtr>  arrayDims;      // Entries may be null
+};
+
+// Function type denoter (currently only used for enhanced error reports).
+struct FunctionTypeDenoter : public TypeDenoter
+{
+    static const Types classType = Types::Function;
+
+    FunctionTypeDenoter() = default;
+    FunctionTypeDenoter(FunctionDecl* funcDeclRef);
+    FunctionTypeDenoter(const std::string& ident, const std::vector<FunctionDecl*>& funcDeclRefs);
+
+    Types Type() const override;
+    std::string ToString() const override;
+    TypeDenoterPtr Copy() const override;
+
+    bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
+    bool IsCastableTo(const TypeDenoter& targetType) const override;
+
+    std::string Ident() const override;
+
+    std::string                 ident;          // Type identifier
+
+    std::vector<FunctionDecl*>  funcDeclRefs;   // Reference to all function candidates.
 };
 
 

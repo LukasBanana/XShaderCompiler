@@ -229,7 +229,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
-    Visit(ast->funcDeclRef);
+    Visit(ast->GetFunctionDecl());
     VISIT_DEFAULT(CallExpr);
 }
 
