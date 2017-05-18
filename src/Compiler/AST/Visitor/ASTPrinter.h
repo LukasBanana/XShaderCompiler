@@ -122,7 +122,6 @@ class ASTPrinter : private Visitor
         void PopPrintable();
 
         void Printable(const AST* ast, const std::string& label);
-        void PrintableType(TypedAST* ast);
 
         PrintableTree* TopPrintable();
 

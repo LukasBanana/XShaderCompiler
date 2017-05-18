@@ -605,9 +605,7 @@ std::string ASTPrinter::WriteLabel(const std::string& astName, TypedAST* ast)
         }
         catch (const std::exception&)
         {
-            s += '*';
             s += R_Unspecified;
-            s += '*';
         }
 
         s += '>';
@@ -702,18 +700,6 @@ void ASTPrinter::Printable(const AST* ast, const std::string& label)
 {
     PushPrintable(ast, label);
     PopPrintable();
-}
-
-void ASTPrinter::PrintableType(TypedAST* ast)
-{
-    try
-    {
-        Printable(ast, "GetTypeDenoter() : " + ast->GetTypeDenoter()->ToString());
-    }
-    catch (const std::exception&)
-    {
-        Printable(ast, "GetTypeDenoter() : <" + R_Unspecified + ">");
-    }
 }
 
 ASTPrinter::PrintableTree* ASTPrinter::TopPrintable()
