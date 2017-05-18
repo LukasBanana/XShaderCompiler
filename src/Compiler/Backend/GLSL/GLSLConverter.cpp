@@ -1156,7 +1156,7 @@ void GLSLConverter::ConvertIntrinsicCallGather(CallExpr* ast)
 
 void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
 {
-    if (auto funcDecl = ast->funcDeclRef)
+    if (auto funcDecl = ast->GetFunctionDecl())
     {
         if (funcDecl->IsMemberFunction())
         {

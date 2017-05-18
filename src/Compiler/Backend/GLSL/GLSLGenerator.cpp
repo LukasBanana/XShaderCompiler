@@ -582,24 +582,11 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
-    if ( ast->flags(AST::isReachable) && ( UseSeparateSamplers() || !IsSamplerStateType(ast->typeDenoter->samplerType) ))
-        Visit(ast->samplerDecls);
-}
-
-IMPLEMENT_VISIT_PROC(StructDeclStmnt)
-{
-    if (!ast->structDecl->flags(AST::isReachable))
-        return;
-
-    if (ast->structDecl->flags(StructDecl::isNonEntryPointParam) || !ast->structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
+    if (ast->flags(AST::isReachable))
     {
-        WriteLineMark(ast);
-
-        /* Visit structure declaration */
-        StructDeclArgs structDeclArgs;
-        structDeclArgs.inEndWithSemicolon = true;
-
-        Visit(ast->structDecl, &structDeclArgs);
+        /* Write sampler declarations */
+        if (UseSeparateSamplers() || !IsSamplerStateType(ast->typeDenoter->samplerType))
+            Visit(ast->samplerDecls);
     }
 }
 
@@ -709,6 +696,32 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
         structDeclArgs.inEndWithSemicolon = true;
 
         Visit(ast->structDecl, &structDeclArgs);
+    }
+}
+
+IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+{
+    if (ast->flags(AST::isReachable))
+    {
+        if (auto structDecl = ast->declObject->As<StructDecl>())
+        {
+            if ( structDecl->flags(StructDecl::isNonEntryPointParam) ||
+                 !structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput) )
+            {
+                WriteLineMark(ast);
+
+                /* Visit structure declaration */
+                StructDeclArgs structDeclArgs;
+                structDeclArgs.inEndWithSemicolon = true;
+
+                Visit(structDecl, &structDeclArgs);
+            }
+        }
+        else
+        {
+            /* Visit declaration object only */
+            Visit(ast->declObject);
+        }
     }
 }
 
@@ -3092,7 +3105,13 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* structDecl, bool endWith
     Blank();
 
     /* Write member functions */
-    WriteStmntList(structDecl->funcMembers);
+    std::vector<BasicDeclStmnt*> funcMemberStmnts;
+    funcMemberStmnts.reserve(structDecl->funcMembers.size());
+
+    for (auto& funcDecl : structDecl->funcMembers)
+        funcMemberStmnts.push_back(funcDecl->declStmntRef);
+
+    WriteStmntList(funcMemberStmnts);
 
     return true;
 }
@@ -3296,6 +3315,18 @@ void GLSLGenerator::WriteStmntComment(Stmnt* ast, bool insertBlank)
 }
 
 template <typename T>
+T* GetRawPtr(T* ptr)
+{
+    return ptr;
+}
+
+template <typename T>
+T* GetRawPtr(const std::shared_ptr<T>& ptr)
+{
+    return ptr.get();
+}
+
+template <typename T>
 void GLSLGenerator::WriteStmntList(const std::vector<T>& stmnts, bool isGlobalScope)
 {
     if (preserveComments_)
@@ -3303,7 +3334,7 @@ void GLSLGenerator::WriteStmntList(const std::vector<T>& stmnts, bool isGlobalSc
         /* Write statements with optional commentaries */
         for (std::size_t i = 0; i < stmnts.size(); ++i)
         {
-            auto ast = stmnts[i].get();
+            auto ast = GetRawPtr(stmnts[i]);
 
             if (!isGlobalScope || ast->flags(AST::isReachable))
                 WriteStmntComment(ast, (!isGlobalScope && (i > 0)));

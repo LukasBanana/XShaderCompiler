@@ -120,6 +120,8 @@ DECL_REPORT( OnlyBaseTypeAllowed,               "only scalar, vector, and matrix
 DECL_REPORT( CastExpr,                          "cast expression"                                                                                               );
 DECL_REPORT( CantDeriveTypeOfInitializer,       "can not derive type of initializer list without type parameter"                                                );
 DECL_REPORT( CantDeriveTypeOfEmptyInitializer,  "can not derive type of initializer list with no elements"                                                      );
+DECL_REPORT( CantDeriveTypeOfFunction,          "can not derive type of function object"                                                                        );
+DECL_REPORT( CantDeriveTypeOfConstBuffer,       "can not derive type of constant buffer object"                                                                 );
 DECL_REPORT( ConditionOfTernaryExpr,            "condition of ternary expression"                                                                               );
 DECL_REPORT( ExpectedInitializerForArrayAccess, "initializer expression expected for array access"                                                              );
 DECL_REPORT( InvalidNumElementsInInitializer,   "invalid number of elements in initializer expression for type '{0}' (expected {1}, but got {2})"               );
@@ -163,6 +165,7 @@ DECL_REPORT( MissingRefToAliasDecl,             "missing reference to alias decl
 DECL_REPORT( MissingBaseTypeInArray,            "missing base type in array type denoter"                                                                       );
 DECL_REPORT( MissingRefInTypeDen,               "missing reference to declaration[ in {0}]"                                                                     );
 DECL_REPORT( InvalidExprForSubTypeDen,          "invalid expression to derive sub type denoter[ for '{0}']"                                                     );
+DECL_REPORT( OverloadedFunction,                "<overloaded function>"                                                                                         );
 
 /* ----- SymbolTable ----- */
 
@@ -173,8 +176,7 @@ DECL_REPORT( AmbiguousIntrinsicCall,            "ambiguous intrinsic call[ '{0}'
 DECL_REPORT( IdentIsNotFunc,                    "identifier '{0}' does not name a function"                                                                     );
 DECL_REPORT( IdentIsNotVar,                     "identifier '{0}' does not name a variable"                                                                     );
 DECL_REPORT( IdentIsNotType,                    "identifier '{0}' does not name a type"                                                                         );
-DECL_REPORT( IdentIsNotVarOrBufferOrSampler,    "identifier '{0}' does not name a variable, buffer, or sampler"                                                 );
-DECL_REPORT( IdentIsNotDecl,                    "identifier '{0}' does not name a variable, buffer, sampler, structure, or alias"                               );
+DECL_REPORT( IdentIsNotDecl,                    "identifier '{0}' does not name a declaration object"                                                           );
 DECL_REPORT( IdentIsNotBaseOf,                  "identifier '{0}' does not name a base of '{1}'"                                                                );
 DECL_REPORT( IdentAlreadyDeclared,              "identifier '{0}' already declared in this scope"                                                               );
 DECL_REPORT( NoActiveScopeToRegisterSymbol,     "no active scope to register symbol"                                                                            );
@@ -346,7 +348,7 @@ DECL_REPORT( MacrosWithTwoUnderscoresReserved,  "macros containing consecutive u
 DECL_REPORT( IllegalRedefOfStdMacro,            "illegal redefinition of standard macro[: {0}]"                                                                 );
 DECL_REPORT( IllegalUndefOfStdMacro,            "illegal undefinition of standard macro[: {0}]"                                                                 );
 DECL_REPORT( VersionMustBeFirstDirective,       "'#version'-directive must be the first directive"                                                              );
-DECL_REPORT( UnknwonGLSLVersion,                "unknown GLSL version: '{0}'"                                                                                   );
+DECL_REPORT( UnknownGLSLVersion,                "unknown GLSL version: '{0}'"                                                                                   );
 DECL_REPORT( NoProfileForGLSLVersionBefore150,  "versions before 150 do not allow a profile token"                                                              );
 DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (must be 'core' or 'compatibility')"                                             );
 DECL_REPORT( ExtensionNotSupported,             "extension not supported[: {0}]"                                                                                );

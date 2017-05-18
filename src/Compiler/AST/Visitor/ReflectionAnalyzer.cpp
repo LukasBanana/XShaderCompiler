@@ -115,7 +115,7 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (ast->flags(FunctionDecl::isEntryPoint))
-        ReflectAttributes(ast->attribs);
+        ReflectAttributes(ast->declStmntRef->attribs);
 
     Visitor::VisitFunctionDecl(ast, args);
 }

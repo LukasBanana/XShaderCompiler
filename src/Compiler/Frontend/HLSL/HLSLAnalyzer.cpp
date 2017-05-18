@@ -283,13 +283,13 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     AnalyzeSemanticFunctionReturn(ast->semantic);
 
     /* Visit attributes */
-    Visit(ast->attribs);
+    Visit(ast->declStmntRef->attribs);
 
     /* Visit function return type */
     Visit(ast->returnType);
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
-    AnalyzeExtAttributes(ast->attribs, ast->returnType->typeDenoter->GetSub());
+    AnalyzeExtAttributes(ast->declStmntRef->attribs, ast->returnType->typeDenoter->GetSub());
     #endif // XSC_ENABLE_LANGUAGE_EXT
 
     /* Analyze parameter type denoters (required before function can be registered in symbol table) */
@@ -426,6 +426,12 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
             }
         }
     }
+}
+
+IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+{
+    /* Only visit declaration object (not attributes here) */
+    Visit(ast->declObject);
 }
 
 /* --- Statements --- */
@@ -913,7 +919,7 @@ void HLSLAnalyzer::AnalyzeCallExprFunction(
         }
     }
 
-    if (auto funcDecl = callExpr->funcDeclRef)
+    if (auto funcDecl = callExpr->GetFunctionDecl())
     {
         /* Check if static/non-static access is allowed */
         if (prefixExpr && AnalyzeStaticAccessExpr(prefixExpr, isStatic, callExpr))
@@ -1031,66 +1037,66 @@ void HLSLAnalyzer::AnalyzeCallExprIntrinsicPrimary(CallExpr* callExpr, const HLS
     //TODO: move this into a different file (maybe HLSLIntrinsics.cpp)
     static const std::vector<IntrinsicConversion> intrinsicConversions
     {
-        { T::AsUInt_1,                      3, T::AsUInt_3                      },
-        { T::Tex1D_2,                       4, T::Tex1D_4                       },
-        { T::Tex2D_2,                       4, T::Tex2D_4                       },
-        { T::Tex3D_2,                       4, T::Tex3D_4                       },
-        { T::TexCube_2,                     4, T::TexCube_4                     },
-        { T::Texture_Load_1,                2, T::Texture_Load_2                },
-        { T::Texture_Load_1,                3, T::Texture_Load_3                },
+        { T::AsUInt_1,                 3, T::AsUInt_3                 },
+        { T::Tex1D_2,                  4, T::Tex1D_4                  },
+        { T::Tex2D_2,                  4, T::Tex2D_4                  },
+        { T::Tex3D_2,                  4, T::Tex3D_4                  },
+        { T::TexCube_2,                4, T::TexCube_4                },
+        { T::Texture_Load_1,           2, T::Texture_Load_2           },
+        { T::Texture_Load_1,           3, T::Texture_Load_3           },
 
-        { T::Texture_Gather_2,              3, T::Texture_Gather_3              },
-        { T::Texture_Gather_2,              4, T::Texture_Gather_4              },
-        { T::Texture_GatherRed_2,           3, T::Texture_GatherRed_3           },
-        { T::Texture_GatherRed_2,           4, T::Texture_GatherRed_4 },
-        { T::Texture_GatherRed_2,           6, T::Texture_GatherRed_6           },
-        { T::Texture_GatherRed_2,           7, T::Texture_GatherRed_7           },
-        { T::Texture_GatherGreen_2,         3, T::Texture_GatherGreen_3         },
-        { T::Texture_GatherGreen_2,         4, T::Texture_GatherGreen_4         },
-        { T::Texture_GatherGreen_2,         6, T::Texture_GatherGreen_6         },
-        { T::Texture_GatherGreen_2,         7, T::Texture_GatherGreen_7         },
-        { T::Texture_GatherBlue_2,          3, T::Texture_GatherBlue_3          },
-        { T::Texture_GatherBlue_2,          4, T::Texture_GatherBlue_4          },
-        { T::Texture_GatherBlue_2,          6, T::Texture_GatherBlue_6          },
-        { T::Texture_GatherBlue_2,          7, T::Texture_GatherBlue_7          },
-        { T::Texture_GatherAlpha_2,         3, T::Texture_GatherAlpha_3         },
-        { T::Texture_GatherAlpha_2,         4, T::Texture_GatherAlpha_4         },
-        { T::Texture_GatherAlpha_2,         6, T::Texture_GatherAlpha_6         },
-        { T::Texture_GatherAlpha_2,         7, T::Texture_GatherAlpha_7         },
+        { T::Texture_Gather_2,         3, T::Texture_Gather_3         },
+        { T::Texture_Gather_2,         4, T::Texture_Gather_4         },
+        { T::Texture_GatherRed_2,      3, T::Texture_GatherRed_3      },
+        { T::Texture_GatherRed_2,      4, T::Texture_GatherRed_4      },
+        { T::Texture_GatherRed_2,      6, T::Texture_GatherRed_6      },
+        { T::Texture_GatherRed_2,      7, T::Texture_GatherRed_7      },
+        { T::Texture_GatherGreen_2,    3, T::Texture_GatherGreen_3    },
+        { T::Texture_GatherGreen_2,    4, T::Texture_GatherGreen_4    },
+        { T::Texture_GatherGreen_2,    6, T::Texture_GatherGreen_6    },
+        { T::Texture_GatherGreen_2,    7, T::Texture_GatherGreen_7    },
+        { T::Texture_GatherBlue_2,     3, T::Texture_GatherBlue_3     },
+        { T::Texture_GatherBlue_2,     4, T::Texture_GatherBlue_4     },
+        { T::Texture_GatherBlue_2,     6, T::Texture_GatherBlue_6     },
+        { T::Texture_GatherBlue_2,     7, T::Texture_GatherBlue_7     },
+        { T::Texture_GatherAlpha_2,    3, T::Texture_GatherAlpha_3    },
+        { T::Texture_GatherAlpha_2,    4, T::Texture_GatherAlpha_4    },
+        { T::Texture_GatherAlpha_2,    6, T::Texture_GatherAlpha_6    },
+        { T::Texture_GatherAlpha_2,    7, T::Texture_GatherAlpha_7    },
 
-        { T::Texture_GatherCmp_3,           4, T::Texture_GatherCmp_4           },
-        { T::Texture_GatherCmp_3,           5, T::Texture_GatherCmp_5           },
-        { T::Texture_GatherCmpRed_3,        4, T::Texture_GatherCmpRed_4        },
-        { T::Texture_GatherCmpRed_3,        5, T::Texture_GatherCmpRed_5        },
-        { T::Texture_GatherCmpRed_3,        7, T::Texture_GatherCmpRed_7        },
-        { T::Texture_GatherCmpRed_3,        8, T::Texture_GatherCmpRed_8        },
-        { T::Texture_GatherCmpGreen_3,      4, T::Texture_GatherCmpGreen_4      },
-        { T::Texture_GatherCmpGreen_3,      5, T::Texture_GatherCmpGreen_5      },
-        { T::Texture_GatherCmpGreen_3,      7, T::Texture_GatherCmpGreen_7      },
-        { T::Texture_GatherCmpGreen_3,      8, T::Texture_GatherCmpGreen_8      },
-        { T::Texture_GatherCmpBlue_3,       4, T::Texture_GatherCmpBlue_4       },
-        { T::Texture_GatherCmpBlue_3,       5, T::Texture_GatherCmpBlue_5       },
-        { T::Texture_GatherCmpBlue_3,       7, T::Texture_GatherCmpBlue_7       },
-        { T::Texture_GatherCmpBlue_3,       8, T::Texture_GatherCmpBlue_8       },
-        { T::Texture_GatherCmpAlpha_3,      4, T::Texture_GatherCmpAlpha_4      },
-        { T::Texture_GatherCmpAlpha_3,      5, T::Texture_GatherCmpAlpha_5      },
-        { T::Texture_GatherCmpAlpha_3,      7, T::Texture_GatherCmpAlpha_7      },
-        { T::Texture_GatherCmpAlpha_3,      8, T::Texture_GatherCmpAlpha_8      },
+        { T::Texture_GatherCmp_3,      4, T::Texture_GatherCmp_4      },
+        { T::Texture_GatherCmp_3,      5, T::Texture_GatherCmp_5      },
+        { T::Texture_GatherCmpRed_3,   4, T::Texture_GatherCmpRed_4   },
+        { T::Texture_GatherCmpRed_3,   5, T::Texture_GatherCmpRed_5   },
+        { T::Texture_GatherCmpRed_3,   7, T::Texture_GatherCmpRed_7   },
+        { T::Texture_GatherCmpRed_3,   8, T::Texture_GatherCmpRed_8   },
+        { T::Texture_GatherCmpGreen_3, 4, T::Texture_GatherCmpGreen_4 },
+        { T::Texture_GatherCmpGreen_3, 5, T::Texture_GatherCmpGreen_5 },
+        { T::Texture_GatherCmpGreen_3, 7, T::Texture_GatherCmpGreen_7 },
+        { T::Texture_GatherCmpGreen_3, 8, T::Texture_GatherCmpGreen_8 },
+        { T::Texture_GatherCmpBlue_3,  4, T::Texture_GatherCmpBlue_4  },
+        { T::Texture_GatherCmpBlue_3,  5, T::Texture_GatherCmpBlue_5  },
+        { T::Texture_GatherCmpBlue_3,  7, T::Texture_GatherCmpBlue_7  },
+        { T::Texture_GatherCmpBlue_3,  8, T::Texture_GatherCmpBlue_8  },
+        { T::Texture_GatherCmpAlpha_3, 4, T::Texture_GatherCmpAlpha_4 },
+        { T::Texture_GatherCmpAlpha_3, 5, T::Texture_GatherCmpAlpha_5 },
+        { T::Texture_GatherCmpAlpha_3, 7, T::Texture_GatherCmpAlpha_7 },
+        { T::Texture_GatherCmpAlpha_3, 8, T::Texture_GatherCmpAlpha_8 },
 
-        { T::Texture_Sample_2,              3, T::Texture_Sample_3              },
-        { T::Texture_Sample_2,              4, T::Texture_Sample_4              },
-        { T::Texture_Sample_2,              5, T::Texture_Sample_5              },
-        { T::Texture_SampleBias_3,          4, T::Texture_SampleBias_4          },
-        { T::Texture_SampleBias_3,          5, T::Texture_SampleBias_5          },
-        { T::Texture_SampleBias_3,          6, T::Texture_SampleBias_6          },
-        { T::Texture_SampleCmp_3,           4, T::Texture_SampleCmp_4           },
-        { T::Texture_SampleCmp_3,           5, T::Texture_SampleCmp_5           },
-        { T::Texture_SampleCmp_3,           6, T::Texture_SampleCmp_6           },
-        { T::Texture_SampleGrad_4,          5, T::Texture_SampleGrad_5          },
-        { T::Texture_SampleGrad_4,          6, T::Texture_SampleGrad_6          },
-        { T::Texture_SampleGrad_4,          7, T::Texture_SampleGrad_7          },
-        { T::Texture_SampleLevel_3,         4, T::Texture_SampleLevel_4         },
-        { T::Texture_SampleLevel_3,         5, T::Texture_SampleLevel_5         },
+        { T::Texture_Sample_2,         3, T::Texture_Sample_3         },
+        { T::Texture_Sample_2,         4, T::Texture_Sample_4         },
+        { T::Texture_Sample_2,         5, T::Texture_Sample_5         },
+        { T::Texture_SampleBias_3,     4, T::Texture_SampleBias_4     },
+        { T::Texture_SampleBias_3,     5, T::Texture_SampleBias_5     },
+        { T::Texture_SampleBias_3,     6, T::Texture_SampleBias_6     },
+        { T::Texture_SampleCmp_3,      4, T::Texture_SampleCmp_4      },
+        { T::Texture_SampleCmp_3,      5, T::Texture_SampleCmp_5      },
+        { T::Texture_SampleCmp_3,      6, T::Texture_SampleCmp_6      },
+        { T::Texture_SampleGrad_4,     5, T::Texture_SampleGrad_5     },
+        { T::Texture_SampleGrad_4,     6, T::Texture_SampleGrad_6     },
+        { T::Texture_SampleGrad_4,     7, T::Texture_SampleGrad_7     },
+        { T::Texture_SampleLevel_3,    4, T::Texture_SampleLevel_4    },
+        { T::Texture_SampleLevel_3,    5, T::Texture_SampleLevel_5    },
     };
 
     for (const auto& conversion : intrinsicConversions)
@@ -1505,7 +1511,7 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
         AnalyzeEntryPointInputOutput(funcDecl);
 
         /* Analyze entry point attributes (also possibly missing attributes such as "numthreads" for compute shaders) */
-        AnalyzeEntryPointAttributes(funcDecl->attribs);
+        AnalyzeEntryPointAttributes(funcDecl->declStmntRef->attribs);
     }
 }
 
@@ -2029,7 +2035,7 @@ void HLSLAnalyzer::AnalyzeSecondaryEntryPoint(FunctionDecl* funcDecl, bool isPat
         AnalyzeEntryPointInputOutput(funcDecl);
 
         /* Analyze secondary entry point attributes */
-        AnalyzeSecondaryEntryPointAttributes(funcDecl->attribs);
+        AnalyzeSecondaryEntryPointAttributes(funcDecl->declStmntRef->attribs);
     }
 }
 

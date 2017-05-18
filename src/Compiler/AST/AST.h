@@ -61,7 +61,7 @@ using FindPredicateConstFunctor = std::function<bool(const Expr& expr)>;
 using MergeExprFunctor = std::function<ExprPtr(const ExprPtr& expr0, const ExprPtr& expr1)>;
 
 
-/* --- Some helper macros --- */
+/* ----- Some helper macros ----- */
 
 #define AST_INTERFACE(CLASS_NAME)                               \
     static const Types classType = Types::CLASS_NAME;           \
@@ -99,29 +99,37 @@ struct AST
     // Types of AST classes.
     enum class Types
     {
-        Program,
+        /* ----- Common AST classes ----- */
+
+        Program,            // AST root node
         CodeBlock,
         Attribute,
         SwitchCase,
         SamplerValue,
-        Register,
-        PackOffset,
-        ArrayDimension,
-        TypeSpecifier,
+        Register,           // Register qualifier (e.g. "register(b0)")
+        PackOffset,         // Pack-offset qualifier (e.g. "packoffset(c0.x)")
+        ArrayDimension,     // Array dimension (e.g. "[10]")
+        TypeSpecifier,      // Type specifier with type denoter/modifiers/classes and optional structure (StructDecl)
 
-        VarDecl,
-        BufferDecl,
-        SamplerDecl,
-        StructDecl,
-        AliasDecl,
+        /* ----- Declaration objects that can be referenced by an 'ObjectExpr' ----- */
 
-        FunctionDecl,       // Do not use "Stmnt" postfix here (There are no declaration sub-nodes)
-        UniformBufferDecl,  // Do not use "Stmnt" postfix here (There are no declaration sub-nodes)
-        VarDeclStmnt,
-        BufferDeclStmnt,
-        SamplerDeclStmnt,
-        StructDeclStmnt,
-        AliasDeclStmnt,     // Type alias (typedef)
+        VarDecl,            // Variable declaration
+        BufferDecl,         // Buffer declaration (Texture- and Storage Buffers)
+        SamplerDecl,        // Sampler state declaration
+        StructDecl,         // Structure declaration
+        AliasDecl,          // Type alias declaration
+        FunctionDecl,       // Function declaration
+        UniformBufferDecl,  // Uniform/constant buffer declaration
+
+        /* ----- Declaration statements ----- */
+
+        VarDeclStmnt,       // Variable declaration statement with several variables (VarDecl)
+        BufferDeclStmnt,    // Buffer declaration statement with several buffers (BufferDecl)
+        SamplerDeclStmnt,   // Sampler declaration statement with several samplers (SamplerDecl)
+        AliasDeclStmnt,     // Type alias declaration statement with several types (AliasDecl)
+        BasicDeclStmnt,     // Statement with a single declaration object (StructDecl, FunctionDecl, or UniformBufferDecl)
+
+        /* ----- Common statements ----- */
 
         NullStmnt,
         CodeBlockStmnt,
@@ -133,7 +141,9 @@ struct AST
         SwitchStmnt,
         ExprStmnt,
         ReturnStmnt,
-        CtrlTransferStmnt,
+        CtrlTransferStmnt,  // Control transfer statement (Break, Continue, Discard)
+
+        /* ----- Expressions ----- */
 
         NullExpr,
         SequenceExpr,
@@ -199,7 +209,21 @@ struct AST
     Flags       flags;  // Flags bitmask (default 0).
 };
 
-/* --- Base AST nodes --- */
+/* ----- Global functions ----- */
+
+// Returns true if the specified AST type denotes a "Decl" AST.
+bool IsDeclAST(const AST::Types t);
+
+// Returns true if the specified AST type denotes an "Expr" AST.
+bool IsExprAST(const AST::Types t);
+
+// Returns true if the specified AST type denotes a "Stmnt" AST.
+bool IsStmntAST(const AST::Types t);
+
+// Returns true if the specified AST type denotes a "...DeclStmnt" AST.
+bool IsDeclStmntAST(const AST::Types t);
+
+/* ----- Common AST classes ----- */
 
 // Statement AST base class.
 struct Stmnt : public AST
@@ -509,7 +533,7 @@ struct TypeSpecifier : public TypedAST
     TypeDenoterPtr              typeDenoter;                                // Own type denoter.
 };
 
-/* --- Declarations --- */
+/* ----- Declaration objects ----- */
 
 // Variable declaration.
 struct VarDecl : public Decl
@@ -700,10 +724,11 @@ struct StructDecl : public Decl
     std::string                     baseStructName;                     // May be empty (if no inheritance is used).
     std::vector<StmntPtr>           localStmnts;                        // Local declaration statements.
 
+    //TODO: maybe replace "VarDeclStmntPtr" by "VarDeclPtr" here.
     std::vector<VarDeclStmntPtr>    varMembers;                         // List of all member variable declaration statements.
     std::vector<FunctionDeclPtr>    funcMembers;                        // List of all member function declarations.
 
-    StructDeclStmnt*                declStmntRef            = nullptr;  // Reference to its declaration statement (parent node).
+    BasicDeclStmnt*                 declStmntRef            = nullptr;  // Reference to its declaration statement (parent node).
     StructDecl*                     baseStructRef           = nullptr;  // Optional reference to base struct.
     StructDecl*                     compatibleStructRef     = nullptr;  // Optional reference to a type compatible struct (only for anonymous structs).
     std::map<std::string, VarDecl*> systemValuesRef;                    // List of members with system value semantic (SV_...).
@@ -724,10 +749,8 @@ struct AliasDecl : public Decl
     AliasDeclStmnt* declStmntRef = nullptr; // Reference to its declaration statement (parent node).
 };
 
-/* --- Declaration statements --- */
-
 // Function declaration.
-struct FunctionDecl : public Stmnt
+struct FunctionDecl : public Decl
 {
     AST_INTERFACE(FunctionDecl);
 
@@ -763,6 +786,8 @@ struct FunctionDecl : public Stmnt
         FLAG( hasNonReturnControlPath, 2 ), // At least one control path does not return a value.
     };
 
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
+
     // Returns true if this function declaration is just a forward declaration (without function body).
     bool IsForwardDecl() const;
 
@@ -777,6 +802,9 @@ struct FunctionDecl : public Stmnt
     
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
     std::string ToString(bool useParamNames = true) const;
+
+    // Returns a descriptive strinf of the type of this function object (e.g. "void(int)").
+    std::string ToTypeDenoterString() const;
 
     // Returns true if the specified function declaration has the same signature as this function (see 'TypeDenoter' for valid compare flags).
     bool EqualsSignature(const FunctionDecl& rhs, const Flags& compareFlags = 0) const;
@@ -801,7 +829,6 @@ struct FunctionDecl : public Stmnt
     );
 
     TypeSpecifierPtr                returnType;                                 // Function return type (TypeSpecifier).
-    Identifier                      ident;                                      // Function identifier.
     std::vector<VarDeclStmntPtr>    parameters;                                 // Function parameter list.
     IndexedSemantic                 semantic            = Semantic::Undefined;  // Function return semantic; may be undefined.
     std::vector<VarDeclStmntPtr>    annotations;                                // Annotations can be ignored by analyzers and generators.
@@ -810,6 +837,7 @@ struct FunctionDecl : public Stmnt
     ParameterSemantics              inputSemantics;                             // Entry point input semantics.
     ParameterSemantics              outputSemantics;                            // Entry point output semantics.
 
+    BasicDeclStmnt*                 declStmntRef        = nullptr;              // Reference to its declaration statement (parent node). Must not be null.
     FunctionDecl*                   funcImplRef         = nullptr;              // Reference to the function implementation (only for forward declarations).
     std::vector<FunctionDecl*>      funcForwardDeclRefs;                        // Reference to all forward declarations (only for implementations).
     StructDecl*                     structDeclRef       = nullptr;              // Structure declaration reference if this is a member function; may be null
@@ -818,9 +846,11 @@ struct FunctionDecl : public Stmnt
 };
 
 // Uniform buffer (cbuffer, tbuffer) declaration.
-struct UniformBufferDecl : public Stmnt
+struct UniformBufferDecl : public Decl
 {
     AST_INTERFACE(UniformBufferDecl);
+
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     std::string ToString() const;
 
@@ -828,13 +858,16 @@ struct UniformBufferDecl : public Stmnt
     TypeModifier DeriveCommonStorageLayout(const TypeModifier defaultStorgeLayout = TypeModifier::Undefined);
 
     UniformBufferType               bufferType          = UniformBufferType::Undefined; // Type of this uniform buffer. Must not be undefined.
-    std::string                     ident;                                              // Uniform buffer identifier.
     std::vector<RegisterPtr>        slotRegisters;                                      // Slot register list. May be empty.
     std::vector<StmntPtr>           localStmnts;                                        // Local declaration statements.
 
     std::vector<VarDeclStmntPtr>    varMembers;                                         // List of all member variable declaration statements.
     TypeModifier                    commonStorageLayout = TypeModifier::ColumnMajor;    // Type modifier of the common matrix/vector storage.
+
+    BasicDeclStmnt*                 declStmntRef        = nullptr;                      // Reference to its declaration statement (parent node). Must not be null.
 };
+
+/* ----- Declaration statements ----- */
 
 // Buffer (and texture) declaration.
 struct BufferDeclStmnt : public Stmnt
@@ -860,12 +893,12 @@ struct SamplerDeclStmnt : public Stmnt
     std::vector<SamplerDeclPtr> samplerDecls;   // Sampler declaration list.
 };
 
-// StructDecl declaration statement.
-struct StructDeclStmnt : public Stmnt
+// Basic declaration statement.
+struct BasicDeclStmnt : public Stmnt
 {
-    AST_INTERFACE(StructDeclStmnt);
+    AST_INTERFACE(BasicDeclStmnt);
 
-    StructDeclPtr structDecl;   // Structure declaration.
+    DeclPtr declObject;   // Declaration object.
 };
 
 // Variable declaration statement.
@@ -932,7 +965,7 @@ struct AliasDeclStmnt : public Stmnt
     std::vector<AliasDeclPtr>   aliasDecls; // Alias declaration list.
 };
 
-/* --- Statements --- */
+/* ----- Statements ----- */
 
 // Null statement.
 struct NullStmnt : public Stmnt
@@ -1033,7 +1066,7 @@ struct CtrlTransferStmnt : public Stmnt
     CtrlTransfer transfer = CtrlTransfer::Undefined; // Control transfer type (break, continue, discard). Must not be undefined.
 };
 
-/* --- Expressions --- */
+/* ----- Expressions ----- */
 
 // Null expression (used for dynamic array dimensions).
 struct NullExpr : public Expr
@@ -1175,7 +1208,10 @@ struct CallExpr : public Expr
     // Returns a list of all argument expressions (including the default parameters).
     std::vector<Expr*> GetArguments() const;
 
-    // Returns the function implementation of this function call, or null if not set.
+    // Returns the reference to the function declaration of this call expression, or null if not set.
+    FunctionDecl* GetFunctionDecl() const;
+
+    // Returns the reference to the function implementation of this call expression, or null if not set.
     FunctionDecl* GetFunctionImpl() const;
 
     // Iterates over each argument expression that is assigned to an output parameter.

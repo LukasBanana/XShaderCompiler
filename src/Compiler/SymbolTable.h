@@ -289,12 +289,6 @@ class ASTSymbolOverload
         // Fetches any AST. If there is more than one reference, an std::runtime_error is thrown.
         AST* Fetch(bool throwOnFailure = true) const;
 
-        /*
-        Fetches a variable declaration (VarDecl, BufferDecl, SamplerDecl).
-        If there is more than one reference or the type does not fit, an std::runtime_error is thrown.
-        */
-        Decl* FetchDecl(bool throwOnFailure = true) const;
-
         // Returns the VarDecl AST node.
         VarDecl* FetchVarDecl(bool throwOnFailure = true) const;
 
@@ -302,7 +296,7 @@ class ASTSymbolOverload
         Fetches a type declaration (StructDecl, AliasDecl).
         If there is more than one reference or the type does not fit, an std::runtime_error is thrown.
         */
-        AST* FetchType(bool throwOnFailure = true) const;
+        Decl* FetchType(bool throwOnFailure = true) const;
 
         // Returns the FunctionDecl AST node (if the function is not overloaded).
         FunctionDecl* FetchFunctionDecl(bool throwOnFailure = true) const;

@@ -25,6 +25,30 @@ namespace Xsc
     if (PREDICATE(*this))                   \
         return this
 
+
+/* ----- Global functions ----- */
+
+bool IsDeclAST(const AST::Types t)
+{
+    return (t >= AST::Types::VarDecl && t <= AST::Types::UniformBufferDecl);
+}
+
+bool IsExprAST(const AST::Types t)
+{
+    return (t >= AST::Types::NullExpr && t <= AST::Types::InitializerExpr);
+}
+
+bool IsStmntAST(const AST::Types t)
+{
+    return (t >= AST::Types::VarDeclStmnt && t <= AST::Types::CtrlTransferStmnt);
+}
+
+bool IsDeclStmntAST(const AST::Types t)
+{
+    return (t >= AST::Types::VarDeclStmnt && t <= AST::Types::BasicDeclStmnt);
+}
+
+
 /* ----- AST ----- */
 
 AST::~AST()
@@ -1006,6 +1030,12 @@ void FunctionDecl::ParameterSemantics::UpdateDistribution()
     }
 }
 
+TypeDenoterPtr FunctionDecl::DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter)
+{
+    //RuntimeErr(R_CantDeriveTypeOfFunction, this);
+    return std::make_shared<FunctionTypeDenoter>(this);
+}
+
 bool FunctionDecl::IsForwardDecl() const
 {
     return (codeBlock == nullptr);
@@ -1051,6 +1081,31 @@ std::string FunctionDecl::ToString(bool useParamNames) const
         if (!parameters[i]->flags(VarDeclStmnt::isSelfParameter))
         {
             s += parameters[i]->ToString(useParamNames);
+            if (i + 1 < parameters.size())
+                s += ", ";
+        }
+    }
+
+    s += ')';
+
+    return s;
+}
+
+std::string FunctionDecl::ToTypeDenoterString() const
+{
+    std::string s;
+
+    /* Append function return type */
+    s += returnType->ToString();
+
+    /* Append parameter types */
+    s += '(';
+
+    for (std::size_t i = 0; i < parameters.size(); ++i)
+    {
+        if (!parameters[i]->flags(VarDeclStmnt::isSelfParameter))
+        {
+            s += parameters[i]->ToString(false);
             if (i + 1 < parameters.size())
                 s += ", ";
         }
@@ -1261,6 +1316,11 @@ FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
 
 
 /* ----- UniformBufferDecl ----- */
+
+TypeDenoterPtr UniformBufferDecl::DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter)
+{
+    RuntimeErr(R_CantDeriveTypeOfConstBuffer, this);
+}
 
 std::string UniformBufferDecl::ToString() const
 {
@@ -1767,10 +1827,10 @@ const Expr* PostUnaryExpr::Find(const FindPredicateConstFunctor& predicate, unsi
 
 TypeDenoterPtr CallExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
-    if (funcDeclRef)
+    if (auto funcDecl = GetFunctionDecl())
     {
         /* Return type denoter of associated function declaration */
-        return funcDeclRef->returnType->typeDenoter;
+        return funcDecl->returnType->typeDenoter;
     }
     else if (typeDenoter)
     {
@@ -1838,8 +1898,8 @@ const Expr* CallExpr::Find(const FindPredicateConstFunctor& predicate, unsigned 
 IndexedSemantic CallExpr::FetchSemantic() const
 {
     /* Return semantic of function declaration */
-    if (funcDeclRef)
-        return funcDeclRef->semantic;
+    if (auto funcDecl = GetFunctionDecl())
+        return funcDecl->semantic;
     else
         return Semantic::Undefined;
 }
@@ -1860,9 +1920,14 @@ std::vector<Expr*> CallExpr::GetArguments() const
     return args;
 }
 
+FunctionDecl* CallExpr::GetFunctionDecl() const
+{
+    return funcDeclRef;
+}
+
 FunctionDecl* CallExpr::GetFunctionImpl() const
 {
-    if (auto funcDecl = funcDeclRef)
+    if (auto funcDecl = GetFunctionDecl())
     {
         if (funcDecl->funcImplRef)
             return funcDecl->funcImplRef;
@@ -1876,10 +1941,10 @@ void CallExpr::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
 {
     if (iterator)
     {
-        if (funcDeclRef)
+        if (auto funcDecl = GetFunctionDecl())
         {
             /* Get output parameters from associated function declaration */
-            const auto& parameters = funcDeclRef->parameters;
+            const auto& parameters = funcDecl->parameters;
             for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
             {
                 if (parameters[i]->IsOutput())
@@ -1903,10 +1968,10 @@ void CallExpr::ForEachArgumentWithParameterType(const ArgumentParameterTypeFunct
 {
     if (iterator)
     {
-        if (funcDeclRef)
+        if (auto funcDecl = GetFunctionDecl())
         {
             /* Get parameter type denoters from associated function declaration */
-            const auto& parameters = funcDeclRef->parameters;
+            const auto& parameters = funcDecl->parameters;
             for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
             {
                 auto param = parameters[i]->varDecls.front();
@@ -2045,18 +2110,7 @@ TypeDenoterPtr ObjectExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
     if (symbolRef)
     {
         /* Derive type denoter from symbol reference */
-        if (auto varDecl = symbolRef->As<VarDecl>())
-            return varDecl->GetTypeDenoter();
-        if (auto bufferDecl = symbolRef->As<BufferDecl>())
-            return bufferDecl->GetTypeDenoter();
-        if (auto samplerDecl = symbolRef->As<SamplerDecl>())
-            return samplerDecl->GetTypeDenoter();
-        if (auto structDecl = symbolRef->As<StructDecl>())
-            return structDecl->GetTypeDenoter();
-        if (auto aliasDecl = symbolRef->As<AliasDecl>())
-            return aliasDecl->GetTypeDenoter();
-
-        RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
+        return symbolRef->GetTypeDenoter();
     }
     else if (prefixExpr)
     {
