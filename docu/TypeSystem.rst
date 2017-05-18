@@ -29,7 +29,7 @@ The main function in ``TypeDenoter`` to derive a type by an input expression is 
  shared_ptr<TypeDenoter> GetSub(const Expr* expr = nullptr);
 
 If the input expression is ``nullptr``, the type denoter itself is returned with ``shared_from_this()``,
-expect for ``AliasTypeDenoter``, where its aliased sub type is returned!
+except for ``AliasTypeDenoter``, where its aliased sub type is returned!
 Otherwise, the type denoter is derived by the expression,
 e.g. with an ``ArrayExpr`` this type denoter is expected to be an ``ArrayTypeDenoter`` and its base type is returned.
 Here are a few examples (Pseudocode)::
