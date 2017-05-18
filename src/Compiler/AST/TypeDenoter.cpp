@@ -226,6 +226,11 @@ bool TypeDenoter::IsArray() const
     return (Type() == Types::Array);
 }
 
+bool TypeDenoter::IsFunction() const
+{
+    return (Type() == Types::Function);
+}
+
 bool TypeDenoter::Equals(const TypeDenoter& rhs, const Flags& /*compareFlags*/) const
 {
     return (GetAliased().Type() == rhs.GetAliased().Type());
@@ -833,7 +838,7 @@ TypeDenoter::Types StructTypeDenoter::Type() const
 
 std::string StructTypeDenoter::ToString() const
 {
-    return (structDeclRef ? structDeclRef->ToString() : "struct <unknown>");
+    return (structDeclRef ? structDeclRef->ToString() : "struct " + R_Undefined);
 }
 
 TypeDenoterPtr StructTypeDenoter::Copy() const
@@ -1056,12 +1061,7 @@ std::string ArrayTypeDenoter::ToString() const
 
 TypeDenoterPtr ArrayTypeDenoter::Copy() const
 {
-    auto copy = std::make_shared<ArrayTypeDenoter>();
-    {
-        copy->subTypeDenoter    = subTypeDenoter;
-        copy->arrayDims         = arrayDims;
-    }
-    return copy;
+    return std::make_shared<ArrayTypeDenoter>(subTypeDenoter, arrayDims);
 }
 
 TypeDenoterPtr ArrayTypeDenoter::GetSubArray(const std::size_t numArrayIndices, const AST* ast)
@@ -1162,6 +1162,60 @@ std::vector<int> ArrayTypeDenoter::GetDimensionSizes() const
         sizes.push_back(dim != nullptr ? dim->size : -1);
 
     return sizes;
+}
+
+
+/* ----- FunctionTypeDenoter ----- */
+
+FunctionTypeDenoter::FunctionTypeDenoter(FunctionDecl* funcDeclRef) :
+    ident        { funcDeclRef ? funcDeclRef->ident.Original() : "" },
+    funcDeclRefs { { funcDeclRef }                                  }
+{
+}
+
+FunctionTypeDenoter::FunctionTypeDenoter(const std::string& ident, const std::vector<FunctionDecl*>& funcDeclRefs) :
+    ident        { ident        },
+    funcDeclRefs { funcDeclRefs }
+{
+}
+
+TypeDenoter::Types FunctionTypeDenoter::Type() const
+{
+    return Types::Struct;
+}
+
+std::string FunctionTypeDenoter::ToString() const
+{
+    if (funcDeclRefs.size() == 1)
+        return funcDeclRefs.front()->ToTypeDenoterString();
+    else
+        return R_OverloadedFunction;
+}
+
+TypeDenoterPtr FunctionTypeDenoter::Copy() const
+{
+    return std::make_shared<FunctionTypeDenoter>(ident, funcDeclRefs);
+}
+
+bool FunctionTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags) const
+{
+    if (auto rhsFuncTypeDen = rhs.GetAliased().As<FunctionTypeDenoter>())
+    {
+        /* Compare function reference lists */
+        return (funcDeclRefs == rhsFuncTypeDen->funcDeclRefs);
+    }
+    return false;
+}
+
+bool FunctionTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
+{
+    /* Function objects can not be casted */
+    return false;
+}
+
+std::string FunctionTypeDenoter::Ident() const
+{
+    return ident;
 }
 
 

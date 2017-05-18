@@ -165,6 +165,7 @@ DECL_REPORT( MissingRefToAliasDecl,             "missing reference to alias decl
 DECL_REPORT( MissingBaseTypeInArray,            "missing base type in array type denoter"                                                                       );
 DECL_REPORT( MissingRefInTypeDen,               "missing reference to declaration[ in {0}]"                                                                     );
 DECL_REPORT( InvalidExprForSubTypeDen,          "invalid expression to derive sub type denoter[ for '{0}']"                                                     );
+DECL_REPORT( OverloadedFunction,                "<overloaded function>"                                                                                         );
 
 /* ----- SymbolTable ----- */
 
@@ -347,7 +348,7 @@ DECL_REPORT( MacrosWithTwoUnderscoresReserved,  "macros containing consecutive u
 DECL_REPORT( IllegalRedefOfStdMacro,            "illegal redefinition of standard macro[: {0}]"                                                                 );
 DECL_REPORT( IllegalUndefOfStdMacro,            "illegal undefinition of standard macro[: {0}]"                                                                 );
 DECL_REPORT( VersionMustBeFirstDirective,       "'#version'-directive must be the first directive"                                                              );
-DECL_REPORT( UnknwonGLSLVersion,                "unknown GLSL version: '{0}'"                                                                                   );
+DECL_REPORT( UnknownGLSLVersion,                "unknown GLSL version: '{0}'"                                                                                   );
 DECL_REPORT( NoProfileForGLSLVersionBefore150,  "versions before 150 do not allow a profile token"                                                              );
 DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (must be 'core' or 'compatibility')"                                             );
 DECL_REPORT( ExtensionNotSupported,             "extension not supported[: {0}]"                                                                                );

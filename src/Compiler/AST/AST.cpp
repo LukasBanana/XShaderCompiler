@@ -1032,7 +1032,8 @@ void FunctionDecl::ParameterSemantics::UpdateDistribution()
 
 TypeDenoterPtr FunctionDecl::DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter)
 {
-    RuntimeErr(R_CantDeriveTypeOfFunction, this);
+    //RuntimeErr(R_CantDeriveTypeOfFunction, this);
+    return std::make_shared<FunctionTypeDenoter>(this);
 }
 
 bool FunctionDecl::IsForwardDecl() const
@@ -1080,6 +1081,31 @@ std::string FunctionDecl::ToString(bool useParamNames) const
         if (!parameters[i]->flags(VarDeclStmnt::isSelfParameter))
         {
             s += parameters[i]->ToString(useParamNames);
+            if (i + 1 < parameters.size())
+                s += ", ";
+        }
+    }
+
+    s += ')';
+
+    return s;
+}
+
+std::string FunctionDecl::ToTypeDenoterString() const
+{
+    std::string s;
+
+    /* Append function return type */
+    s += returnType->ToString();
+
+    /* Append parameter types */
+    s += '(';
+
+    for (std::size_t i = 0; i < parameters.size(); ++i)
+    {
+        if (!parameters[i]->flags(VarDeclStmnt::isSelfParameter))
+        {
+            s += parameters[i]->ToString(false);
             if (i + 1 < parameters.size())
                 s += ", ";
         }

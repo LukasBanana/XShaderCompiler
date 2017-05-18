@@ -113,7 +113,7 @@ void GLSLPreProcessor::ParseDirectiveVersion()
     };
 
     if (std::find(std::begin(versionListGLSL), std::end(versionListGLSL), versionNo_) == std::end(versionListGLSL))
-        Error(R_UnknwonGLSLVersion(version), true, false);
+        Error(R_UnknownGLSLVersion(version), true, false);
 
     /* Parse profile */
     bool isCompatibilityProfile = false;
