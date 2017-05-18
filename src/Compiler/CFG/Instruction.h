@@ -28,10 +28,15 @@ struct Instruction
     Instruction(const spv::Op opCode);
     Instruction(const spv::Op opCode, const std::initializer_list<spv::Id>& operands);
 
+    // Writes this instruction into the specified SPIR-V binary format buffer.
+    void WriteTo(std::vector<unsigned int>& buffer);
+
     // Returns the instruction as human-readable string.
     std::string ToString() const;
 
     spv::Op                 opCode      = spv::Op::OpNop;   // Instruction op-code. By default OpNop.
+    spv::Id                 type        = 0;                // Type ID number. By default 0.
+    spv::Id                 result      = 0;                // Result ID number. By default 0.
     std::vector<spv::Id>    operands;                       // Operand ID numbers.
 };
 
