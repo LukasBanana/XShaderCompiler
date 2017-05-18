@@ -68,30 +68,8 @@ inline std::string MemberToString<IndexedSemantic>(const IndexedSemantic& member
     return member.ToString();
 }
 
-#define PRINT_AST(AST_NAME)                         \
-    if (!ast->flags(AST::isBuiltin))                \
-    {                                               \
-        PushPrintable(ast, WriteLabel(#AST_NAME));  \
-        VISIT_DEFAULT(AST_NAME);                    \
-        PopPrintable();                             \
-    }
-
-#define PRINT_AST_EXT(AST_NAME, INFO)                       \
-    if (!ast->flags(AST::isBuiltin))                        \
-    {                                                       \
-        PushPrintable(ast, WriteLabel(#AST_NAME, INFO));    \
-        VISIT_DEFAULT(AST_NAME);                            \
-        PopPrintable();                                     \
-    }
-
 #define IMPLEMENT_VISIT_PROC(AST_NAME) \
     void ASTPrinter::Visit##AST_NAME(AST_NAME* ast, void* args)
-
-#define IMPLEMENT_VISIT_PROC_DEFAULT(AST_NAME)  \
-    IMPLEMENT_VISIT_PROC(AST_NAME)              \
-    {                                           \
-        PRINT_AST(AST_NAME);                    \
-    }
 
 #define VISIT_MEMBER(MEMBER) \
     VisitMember(ast->MEMBER, #MEMBER)
@@ -176,7 +154,7 @@ IMPLEMENT_VISIT_PROC(ArrayDimension)
 
 IMPLEMENT_VISIT_PROC(TypeSpecifier)
 {
-    PushPrintable(ast, WriteLabel("TypeSpecifier"));
+    PushPrintable(ast, WriteLabel("TypeSpecifier", ast));
     {
         VISIT_MEMBER(structDecl);
         Printable(ast, "typeDenoter : " + ast->ToString());
@@ -188,7 +166,7 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    PushPrintable(ast, WriteLabel("VarDecl"));
+    PushPrintable(ast, WriteLabel("VarDecl", ast));
     {
         ADD_PRINTABLE_MEMBER(ident);
         VISIT_MEMBER(namespaceExpr);
@@ -202,7 +180,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
-    PushPrintable(ast, WriteLabel("BufferDecl"));
+    PushPrintable(ast, WriteLabel("BufferDecl", ast));
     {
         ADD_PRINTABLE_MEMBER(ident);
         VISIT_MEMBER(arrayDims);
@@ -214,7 +192,7 @@ IMPLEMENT_VISIT_PROC(BufferDecl)
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
-    PushPrintable(ast, WriteLabel("SamplerDecl"));
+    PushPrintable(ast, WriteLabel("SamplerDecl", ast));
     {
         ADD_PRINTABLE_MEMBER(ident);
         VISIT_MEMBER(arrayDims);
@@ -226,9 +204,10 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    PushPrintable(ast, WriteLabel("StructDecl"));
+    PushPrintable(ast, WriteLabel("StructDecl", ast));
     {
         ADD_PRINTABLE_MEMBER(ident);
+        ADD_PRINTABLE_MEMBER(baseStructName);
         VISIT_MEMBER(localStmnts);
     }
     PopPrintable();
@@ -239,13 +218,13 @@ IMPLEMENT_VISIT_PROC(AliasDecl)
     if (!ast->flags(AST::isBuiltin))
     {
         ADD_PRINTABLE_MEMBER(ident);
-        Printable(ast, WriteLabel("AliasDecl"));
+        Printable(ast, WriteLabel("AliasDecl", ast));
     }
 }
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
-    PushPrintable(ast, WriteLabel("FunctionDecl"));
+    PushPrintable(ast, WriteLabel("FunctionDecl", ast));
     {
         ADD_PRINTABLE_MEMBER(ident);
         VISIT_MEMBER(returnType);
@@ -260,7 +239,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
-    PushPrintable(ast, WriteLabel("UniformBufferDecl"));
+    PushPrintable(ast, WriteLabel("UniformBufferDecl", ast));
     {
         ADD_PRINTABLE_MEMBER(ident);
         Printable(ast, "bufferType : " + std::string(ast->bufferType == UniformBufferType::ConstantBuffer ? "cbuffer" : "tbuffer"));
@@ -450,12 +429,12 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
 
 IMPLEMENT_VISIT_PROC(NullExpr)
 {
-    Printable(ast, WriteLabel("NullExpr"));
+    Printable(ast, WriteLabel("NullExpr", ast));
 }
 
 IMPLEMENT_VISIT_PROC(SequenceExpr)
 {
-    PushPrintable(ast, WriteLabel("SequenceExpr"));
+    PushPrintable(ast, WriteLabel("SequenceExpr", ast));
     {
         VISIT_MEMBER(exprs);
     }
@@ -464,9 +443,8 @@ IMPLEMENT_VISIT_PROC(SequenceExpr)
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
-    PushPrintable(ast, WriteLabel("LiteralExpr"));
+    PushPrintable(ast, WriteLabel("LiteralExpr", ast));
     {
-        PrintableType(ast);
         ADD_PRINTABLE_MEMBER(value);
     }
     PopPrintable();
@@ -474,9 +452,8 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 
 IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
 {
-    PushPrintable(ast, WriteLabel("TypeSpecifierExpr"));
+    PushPrintable(ast, WriteLabel("TypeSpecifierExpr", ast));
     {
-        PrintableType(ast);
         VISIT_MEMBER(typeSpecifier);
     }
     PopPrintable();
@@ -484,9 +461,8 @@ IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
-    PushPrintable(ast, WriteLabel("TernaryExpr"));
+    PushPrintable(ast, WriteLabel("TernaryExpr", ast));
     {
-        PrintableType(ast);
         VISIT_MEMBER(condExpr);
         VISIT_MEMBER(thenExpr);
         VISIT_MEMBER(elseExpr);
@@ -496,9 +472,8 @@ IMPLEMENT_VISIT_PROC(TernaryExpr)
 
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
-    PushPrintable(ast, WriteLabel("BinaryExpr"));
+    PushPrintable(ast, WriteLabel("BinaryExpr", ast));
     {
-        PrintableType(ast);
         VISIT_MEMBER(lhsExpr);
         Printable(ast, "op : " + BinaryOpToString(ast->op));
         VISIT_MEMBER(rhsExpr);
@@ -508,9 +483,8 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    PushPrintable(ast, WriteLabel("UnaryExpr"));
+    PushPrintable(ast, WriteLabel("UnaryExpr", ast));
     {
-        PrintableType(ast);
         Printable(ast, "op : " + UnaryOpToString(ast->op));
         VISIT_MEMBER(expr);
     }
@@ -519,9 +493,8 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 
 IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 {
-    PushPrintable(ast, WriteLabel("PostUnaryExpr"));
+    PushPrintable(ast, WriteLabel("PostUnaryExpr", ast));
     {
-        PrintableType(ast);
         VISIT_MEMBER(expr);
         Printable(ast, "op : " + UnaryOpToString(ast->op));
     }
@@ -530,9 +503,8 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
-    PushPrintable(ast, WriteLabel("CallExpr"));
+    PushPrintable(ast, WriteLabel("CallExpr", ast));
     {
-        PrintableType(ast);
         VISIT_MEMBER(prefixExpr);
         ADD_PRINTABLE_MEMBER(isStatic);
         ADD_PRINTABLE_MEMBER(ident);
@@ -543,9 +515,8 @@ IMPLEMENT_VISIT_PROC(CallExpr)
 
 IMPLEMENT_VISIT_PROC(BracketExpr)
 {
-    PushPrintable(ast, WriteLabel("BracketExpr"));
+    PushPrintable(ast, WriteLabel("BracketExpr", ast));
     {
-        PrintableType(ast);
         VISIT_MEMBER(expr);
     }
     PopPrintable();
@@ -553,9 +524,8 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
 
 IMPLEMENT_VISIT_PROC(AssignExpr)
 {
-    PushPrintable(ast, WriteLabel("AssignExpr"));
+    PushPrintable(ast, WriteLabel("AssignExpr", ast));
     {
-        PrintableType(ast);
         VISIT_MEMBER(lvalueExpr);
         Printable(ast, "op : " + AssignOpToString(ast->op));
         VISIT_MEMBER(rvalueExpr);
@@ -565,9 +535,8 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
 
 IMPLEMENT_VISIT_PROC(ObjectExpr)
 {
-    PushPrintable(ast, WriteLabel("ObjectExpr"));
+    PushPrintable(ast, WriteLabel("ObjectExpr", ast));
     {
-        PrintableType(ast);
         VISIT_MEMBER(prefixExpr);
         ADD_PRINTABLE_MEMBER(isStatic);
         ADD_PRINTABLE_MEMBER(ident);
@@ -577,9 +546,8 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
 
 IMPLEMENT_VISIT_PROC(ArrayExpr)
 {
-    PushPrintable(ast, WriteLabel("ArrayExpr"));
+    PushPrintable(ast, WriteLabel("ArrayExpr", ast));
     {
-        PrintableType(ast);
         VISIT_MEMBER(prefixExpr);
         VISIT_MEMBER(arrayIndices);
     }
@@ -588,9 +556,8 @@ IMPLEMENT_VISIT_PROC(ArrayExpr)
 
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
-    PushPrintable(ast, WriteLabel("CastExpr"));
+    PushPrintable(ast, WriteLabel("CastExpr", ast));
     {
-        PrintableType(ast);
         VISIT_MEMBER(typeSpecifier);
         VISIT_MEMBER(expr);
     }
@@ -599,214 +566,52 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
-    PushPrintable(ast, WriteLabel("InitializerExpr"));
+    PushPrintable(ast, WriteLabel("InitializerExpr", ast));
     {
-        PrintableType(ast);
         VISIT_MEMBER(exprs);
     }
     PopPrintable();
 }
 
-#if 0
-
-IMPLEMENT_VISIT_PROC_DEFAULT(CodeBlock)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(Attribute)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(SwitchCase)
-
-IMPLEMENT_VISIT_PROC(SamplerValue)
-{
-    PRINT_AST_EXT(SamplerValue, ast->name);
-}
-
-IMPLEMENT_VISIT_PROC(Register)
-{
-    PRINT_AST_EXT(Register, ast->ToString());
-}
-
-IMPLEMENT_VISIT_PROC(PackOffset)
-{ 
-    PRINT_AST_EXT(PackOffset, ast->ToString());
-}
-
-IMPLEMENT_VISIT_PROC(ArrayDimension)
-{
-    PRINT_AST_EXT(ArrayDimension, ast->ToString());
-}
-
-IMPLEMENT_VISIT_PROC(TypeSpecifier)
-{
-    PRINT_AST_EXT(TypeSpecifier, ast->ToString());
-}
-
-/* --- Declaration --- */
-
-IMPLEMENT_VISIT_PROC(VarDecl)
-{
-    PRINT_AST_EXT(VarDecl, ast->ident.Original());
-}
-
-IMPLEMENT_VISIT_PROC(BufferDecl)
-{
-    PRINT_AST_EXT(BufferDecl, ast->ident.Original());
-}
-
-IMPLEMENT_VISIT_PROC(SamplerDecl)
-{
-    PRINT_AST_EXT(SamplerDecl, ast->ident.Original());
-}
-
-IMPLEMENT_VISIT_PROC(StructDecl)
-{
-    auto info = ast->ident.Original();
-    if (!ast->baseStructName.empty())
-        info += " : " + ast->baseStructName;
-
-    PRINT_AST_EXT(StructDecl, info);
-}
-
-IMPLEMENT_VISIT_PROC(AliasDecl)
-{
-    PRINT_AST_EXT(AliasDecl, ast->ident.Original());
-}
-
-/* --- Declaration statements --- */
-
-IMPLEMENT_VISIT_PROC(FunctionDecl)
-{
-    PRINT_AST_EXT(FunctionDecl, ast->ToString());
-}
-
-IMPLEMENT_VISIT_PROC(UniformBufferDecl)
-{
-    PRINT_AST_EXT(UniformBufferDecl, ast->ToString());
-}
-
-IMPLEMENT_VISIT_PROC_DEFAULT(BufferDeclStmnt)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(SamplerDeclStmnt)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(VarDeclStmnt)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(AliasDeclStmnt)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(BasicDeclStmnt)
-
-/* --- Statements --- */
-
-IMPLEMENT_VISIT_PROC_DEFAULT(NullStmnt)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(CodeBlockStmnt)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(ForLoopStmnt)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(WhileLoopStmnt)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(DoWhileLoopStmnt)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(IfStmnt)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(ElseStmnt)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(SwitchStmnt)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(ExprStmnt)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(ReturnStmnt)
-
-IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
-{
-    PRINT_AST_EXT(CtrlTransferStmnt, CtrlTransformToString(ast->transfer));
-}
-
-/* --- Expressions --- */
-
-IMPLEMENT_VISIT_PROC_DEFAULT(NullExpr)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(SequenceExpr)
-
-IMPLEMENT_VISIT_PROC(LiteralExpr)
-{
-    PRINT_AST_EXT(LiteralExpr, (ast->dataType == DataType::String ? ast->GetStringValue() : ast->value));
-}
-
-IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
-{
-    PRINT_AST_EXT(TypeSpecifierExpr, ast->GetTypeDenoter()->ToString());
-}
-
-IMPLEMENT_VISIT_PROC_DEFAULT(TernaryExpr)
-
-IMPLEMENT_VISIT_PROC(BinaryExpr)
-{
-    PRINT_AST_EXT(BinaryExpr, BinaryOpToString(ast->op));
-}
-
-IMPLEMENT_VISIT_PROC(UnaryExpr)
-{
-    PRINT_AST_EXT(UnaryExpr, UnaryOpToString(ast->op));
-}
-
-IMPLEMENT_VISIT_PROC(PostUnaryExpr)
-{
-    PRINT_AST_EXT(PostUnaryExpr, UnaryOpToString(ast->op));
-}
-
-static std::string IdentWithPrefixOpt(bool hasPrefix, bool isStatic, const std::string& ident)
-{
-    return ((hasPrefix ? (isStatic ? "::" : ".") : "") + ident);
-}
-
-IMPLEMENT_VISIT_PROC(CallExpr)
-{
-    PRINT_AST_EXT(CallExpr, IdentWithPrefixOpt(ast->prefixExpr != nullptr, ast->isStatic, ast->ident));
-}
-
-IMPLEMENT_VISIT_PROC_DEFAULT(BracketExpr)
-
-IMPLEMENT_VISIT_PROC(ObjectExpr)
-{
-    PRINT_AST_EXT(ObjectExpr, IdentWithPrefixOpt(ast->prefixExpr != nullptr, ast->isStatic, ast->ident));
-}
-
-IMPLEMENT_VISIT_PROC_DEFAULT(AssignExpr)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(ArrayExpr)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(CastExpr)
-
-IMPLEMENT_VISIT_PROC_DEFAULT(InitializerExpr)
-
-#endif
-
-#undef PRINT_AST
-#undef PRINT_AST_EXT
 #undef IMPLEMENT_VISIT_PROC
-#undef IMPLEMENT_VISIT_PROC_DEFAULT
 #undef VISIT_MEMBER
 #undef ADD_PRINTABLE_MEMBER
 
 /* --- Helper functions --- */
 
-std::string ASTPrinter::WriteLabel(const std::string& astName, const std::string& info)
+std::string ASTPrinter::WriteLabel(const std::string& astName, TypedAST* ast)
 {
     std::string s;
 
-    /* Append AST name */
+    /* Append member name */
     const auto& memberName = TopMemberName();
     if (!memberName.empty())
     {
         s += memberName;
         s += " : ";
-        s += astName;
     }
-    else
-        s = astName;
 
-    /* Append brief information */
-    if (!info.empty())
-        s += " \"" + info + "\"";
+    /* Append AST name */
+    s += astName;
+
+    /* Append type denoter of typed AST */
+    if (ast)
+    {
+        s += " <";
+        
+        try
+        {
+            s += ast->GetTypeDenoter()->ToString();
+        }
+        catch (const std::exception&)
+        {
+            s += '*';
+            s += R_Unspecified;
+            s += '*';
+        }
+
+        s += '>';
+    }
 
     return s;
 }

@@ -114,7 +114,7 @@ class ASTPrinter : private Visitor
                 VisitMember(astList[i], name + "[" + std::to_string(i) + "]");
         }
 
-        std::string WriteLabel(const std::string& astName, const std::string& info = "");
+        std::string WriteLabel(const std::string& astName, TypedAST* ast = nullptr);
 
         void Print(Log& log, const PrintableTree& tree);
 
