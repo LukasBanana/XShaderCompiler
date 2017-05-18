@@ -27,9 +27,31 @@ class CFGBuilder : public VisitorTracker
 
     private:
         
+        struct CFG
+        {
+            BasicBlock* in;
+            BasicBlock* out;
+        };
+
         /* === Functions === */
 
+        // Makes a CFG with an input and output basic block.
+        CFG MakeCFG(const std::string& name);
 
+        // Pushes the specified input/output basic blocks to the CFG stack.
+        void PushCFG(const CFG& cfg);
+        
+        // Pops and returns the top most input/output basic blocks from the CFG stack.
+        CFG PopCFG();
+
+        // Pushes the specified basic block to the break block stack (e.g. "endif", "endfor" etc.).
+        void PushBreak(BasicBlock* bb);
+
+        // Pops the basic block from the break block stack.
+        void PopBreak();
+
+        // Returns the basic block from the break block stack.
+        BasicBlock* TopBreak() const;
 
         /* --- Visitor implementation --- */
 
@@ -78,13 +100,17 @@ class CFGBuilder : public VisitorTracker
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( InitializerExpr   );
 
-        /* --- Helper functions for code generation --- */
+        /* --- Helper functions for CFG builder --- */
 
 
 
         /* === Members === */
 
-        Module module_;
+        Module                  module_;
+        ModuleFunction*         moduleFunc_         = nullptr;  // Active module function.
+
+        std::stack<CFG>         cfgStack_;
+        std::stack<BasicBlock*> breakBlockStack_;
 
 };
 
