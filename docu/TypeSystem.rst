@@ -61,6 +61,13 @@ because this function avoids creating new ``shared_ptr`` instances of its own (i
 
 Why is there an ``AliasTypeDenoter`` anyway, you might ask? Because with ``typedef`` a new type is created,
 but for contextual analysis, commonly only its sub type is of interest.
+So what you frequently find in the code is something like this::
+
+ const auto& typeDen = astObject->GetTypeDenoter()->GetAliased();
+ if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
+ {
+     /* ... */
+ }
 
 Vector Space Extension
 ----------------------
