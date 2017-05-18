@@ -64,7 +64,7 @@ class BasicBlock
 
         /* ----- Functions ----- */
 
-        // Adds the specified 
+        // Adds the specified basic block as successor with the specified edge label.
         void AddSucc(BasicBlock& bb, const std::string& label = "");
 
         // Removes the specified successor from this basic block and concatenates the next successors to this basic block.

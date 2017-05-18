@@ -18,7 +18,7 @@ namespace Xsc
 {
 
 
-// CFG instruction class.
+// CFG instruction class (SPIR-V encoded).
 struct Instruction
 {
     Instruction() = default;
