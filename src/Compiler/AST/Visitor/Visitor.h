@@ -24,6 +24,7 @@ namespace Xsc
     using CLASS_NAME##Ptr = std::shared_ptr<CLASS_NAME>
 
 DECL_PTR( AST               );
+DECL_PTR( TypedAST          );
 DECL_PTR( Stmnt             );
 DECL_PTR( Expr              );
 DECL_PTR( Decl              );

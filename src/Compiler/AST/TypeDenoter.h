@@ -446,7 +446,7 @@ struct ArrayTypeDenoter : public TypeDenoter
     std::vector<ArrayDimensionPtr>  arrayDims;      // Entries may be null
 };
 
-// Function type denoter.
+// Function type denoter (currently only used for enhanced error reports).
 struct FunctionTypeDenoter : public TypeDenoter
 {
     static const Types classType = Types::Function;

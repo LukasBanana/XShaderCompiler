@@ -242,7 +242,7 @@ AliasDeclStmntPtr HLSLParser::MakeAndRegisterBuildinAlias(const DataType dataTyp
 {
     auto ast = ASTFactory::MakeBaseTypeAlias(dataType, ident);
     RegisterTypeName(ident);
-    ast->flags << AST::isBuildIn;
+    ast->flags << AST::isBuiltin;
     return ast;
 }
 

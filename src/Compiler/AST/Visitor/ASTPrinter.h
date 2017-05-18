@@ -95,21 +95,48 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( InitializerExpr   );
 
         /* --- Helper functions --- */
+        
+        template <typename T>
+        void VisitMember(T ast, const std::string& name)
+        {
+            if (ast)
+            {
+                PushMemberName(name);
+                ast->Visit(this, nullptr);
+                PopMemberName();
+            }
+        }
 
-        std::string WriteLabel(AST* ast, const std::string& astName, const std::string& info = "");
+        template <typename T>
+        void VisitMember(const std::vector<T>& astList, const std::string& name)
+        {
+            for (std::size_t i = 0; i < astList.size(); ++i)
+                VisitMember(astList[i], name + "[" + std::to_string(i) + "]");
+        }
+
+        std::string WriteLabel(const std::string& astName, const std::string& info = "");
+
         void Print(Log& log, const PrintableTree& tree);
 
-        bool PushPrintable(const SourcePosition& pos, const std::string& label);
+        bool PushPrintable(const AST* ast, const std::string& label);
         void PopPrintable();
 
+        void Printable(const AST* ast, const std::string& label);
+        void PrintableType(TypedAST* ast);
+
         PrintableTree* TopPrintable();
+
+        void PushMemberName(const std::string& name);
+        void PopMemberName();
+
+        const std::string& TopMemberName() const;
 
         /* === Members === */
 
         PrintableTree               treeRoot_;
         std::stack<PrintableTree*>  parentNodeStack_;
-
         std::vector<bool>           lastSubNodeStack_;
+        std::stack<std::string>     memberNameStack_;
 
         std::size_t                 maxRowStrLen_       = 0,
                                     maxColStrLen_       = 0;
