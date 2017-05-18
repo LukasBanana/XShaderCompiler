@@ -801,7 +801,10 @@ struct FunctionDecl : public Decl
     bool IsStatic() const;
     
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
-    std::string ToString(bool useParamNames = true) const;
+    std::string ToString() const override;
+    
+    // Returns a descriptive string of the function signature (e.g. "void f(int x)").
+    std::string ToString(bool useParamNames) const;
 
     // Returns a descriptive strinf of the type of this function object (e.g. "void(int)").
     std::string ToTypeDenoterString() const;
@@ -852,7 +855,7 @@ struct UniformBufferDecl : public Decl
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
-    std::string ToString() const;
+    std::string ToString() const override;
 
     // Derives the common storage layout type modifier of all variable members (see 'commonStorageLayout' member).
     TypeModifier DeriveCommonStorageLayout(const TypeModifier defaultStorgeLayout = TypeModifier::Undefined);

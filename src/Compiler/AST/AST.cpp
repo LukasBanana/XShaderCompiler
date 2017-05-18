@@ -1056,6 +1056,11 @@ bool FunctionDecl::IsStatic() const
     return returnType->HasAnyStorageClassOf({ StorageClass::Static });
 }
 
+std::string FunctionDecl::ToString() const
+{
+    return ToString(true);
+}
+
 std::string FunctionDecl::ToString(bool useParamNames) const
 {
     std::string s;
@@ -2345,10 +2350,12 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter(const TypeDenoter* expectedTyp
         }
         else if (IsVectorType(dataType))
         {
+            #if 0
             /* Compare number of elements with size of base type */
             const auto matrixDim        = MatrixTypeDim(baseTypeDen->dataType);
             const auto numTypeElements  = static_cast<std::size_t>(matrixDim.first * matrixDim.second);
-
+            #endif
+            
             //TODO: does not work for { 1, v3 } --> float4(1, v3)
 
             #if 0
