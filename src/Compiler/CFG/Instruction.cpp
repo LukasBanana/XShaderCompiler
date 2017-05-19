@@ -6,6 +6,8 @@
  */
 
 #include "Instruction.h"
+#include "ReportIdents.h"
+#include <stdexcept>
 
 
 namespace Xsc
@@ -51,10 +53,53 @@ void Instruction::WriteTo(std::vector<unsigned int>& buffer)
         buffer.push_back(id);
 }
 
-std::string Instruction::ToString() const
+Instruction& Instruction::AddOperandASCII(const std::string& s)
 {
-    //TODO...
-    return "";
+    /* Allocate enough operands for string */
+    const auto numChars         = s.size();
+    const auto numCharsWithNUL  = numChars + 1;
+    const auto numWords         = (numCharsWithNUL + 3) / 4;
+
+    const auto prevNumOperands  = operands.size();
+    operands.resize(operands.size() + numWords);
+
+    /* Fill operands with ASCII characters */
+    auto src = s.c_str();
+    auto dst = reinterpret_cast<char*>(&(operands[prevNumOperands]));
+
+    for (std::size_t i = 0; i < numCharsWithNUL; ++i, ++src, ++dst)
+        *dst = *src;
+
+    /* Fill remaining bytese with zeros */
+    if (numCharsWithNUL % 4 != 0)
+    {
+        for (std::size_t i = 0; i < (4 - numCharsWithNUL % 4); ++i, ++dst)
+            *dst = 0;
+    }
+
+    return *this;
+}
+
+Instruction& Instruction::AddOperandUInt32(spv::Id i)
+{
+    operands.push_back(i);
+    return *this;
+}
+
+spv::Id Instruction::GetOperandUInt32(std::size_t idx) const
+{
+    if (idx < operands.size())
+        return operands[idx];
+    else
+        throw std::out_of_range(R_NotEnoughOperandsInInst());
+}
+
+const char* Instruction::GetOperandASCII(std::size_t offset) const
+{
+    if (offset < operands.size())
+        return reinterpret_cast<const char*>(&(operands[offset]));
+    else
+        throw std::out_of_range(R_NotEnoughOperandsInInst());
 }
 
 

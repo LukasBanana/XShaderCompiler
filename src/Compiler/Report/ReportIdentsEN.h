@@ -471,6 +471,15 @@ DECL_REPORT( MemberVarsCantHaveDefaultValues,   "member variables can not have d
 DECL_REPORT( DeclTypeDiffersFromDefType,        "declaration type '{0}' differs from definition type '{1}'"                                                     );
 DECL_REPORT( ArrayTypeCanOnlyAppearInDef,       "array type can only appear in definition of static member variables[: '{0}']"                                  );
 
+/* ----- Instruction ----- */
+
+DECL_REPORT( NotEnoughOperandsInInst,           "not enough operands in SPIR-V instruction"                                                                     );
+
+/* ----- InstructionFactory ----- */
+
+DECL_REPORT( InstructionFactory,                "SPIR-V instruction factory"                                                                                    );
+DECL_REPORT( NoActiveBasicBlock,                "no active basic block to put instructions into"                                                                );
+
 /* ----- Xsc ----- */
 
 DECL_REPORT( InputStreamCantBeNull,             "input stream must not be null"                                                                                 );

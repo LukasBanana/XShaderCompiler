@@ -31,8 +31,17 @@ struct Instruction
     // Writes this instruction into the specified SPIR-V binary format buffer.
     void WriteTo(std::vector<unsigned int>& buffer);
 
-    // Returns the instruction as human-readable string.
-    std::string ToString() const;
+    // Adds the specified string as ASCII operand (operands of variable size).
+    Instruction& AddOperandASCII(const std::string& s);
+
+    // Adds the specified integral value to the operands.
+    Instruction& AddOperandUInt32(spv::Id i);
+
+    // Returns the specified operand as integral value, or throws an out-of-bounds exception on failure.
+    spv::Id GetOperandUInt32(std::size_t idx) const;
+
+    // Returns the operands as ASCII string with the specified offset, or throws an out-of-bounds exception on failure..
+    const char* GetOperandASCII(std::size_t offset = 0) const;
 
     spv::Op                 opCode      = spv::Op::OpNop;   // Instruction op-code. By default OpNop.
     spv::Id                 type        = 0;                // Type ID number. By default 0.
