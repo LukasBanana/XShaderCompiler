@@ -11,7 +11,6 @@
 
 #include <spirv/1.1/spirv.hpp11>
 #include <vector>
-#include <initializer_list>
 
 
 namespace Xsc
@@ -26,7 +25,6 @@ struct Instruction
     Instruction(Instruction&&) = default;
 
     Instruction(const spv::Op opCode);
-    Instruction(const spv::Op opCode, const std::initializer_list<spv::Id>& operands);
 
     // Writes this instruction into the specified SPIR-V binary format buffer.
     void WriteTo(std::vector<unsigned int>& buffer);
@@ -42,6 +40,12 @@ struct Instruction
 
     // Returns the operands as ASCII string with the specified offset, or throws an out-of-bounds exception on failure..
     const char* GetOperandASCII(std::size_t offset = 0) const;
+
+    // Returns the number of operands.
+    inline std::size_t NumOperands() const
+    {
+        return operands.size();
+    }
 
     spv::Op                 opCode      = spv::Op::OpNop;   // Instruction op-code. By default OpNop.
     spv::Id                 type        = 0;                // Type ID number. By default 0.

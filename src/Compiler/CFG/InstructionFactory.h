@@ -11,6 +11,8 @@
 
 #include "Instruction.h"
 #include <stack>
+#include <set>
+#include <cstdint>
 
 
 namespace Xsc
@@ -41,6 +43,20 @@ class InstructionFactory
         void    MakeNop();
         Id      MakeUndefined(Id type);
         void    MakeName(Id id, const std::string& name);
+        void    MakeMemberName(Id id, Id memberId, const std::string& name);
+
+        Id      MakeTypeInt(std::uint32_t width, bool sign);
+        Id      MakeTypeFloat(std::uint32_t width);
+
+        Id      MakeConstantInt16(std::int16_t value, bool uniqueInst = false);
+        Id      MakeConstantUInt16(std::uint16_t value, bool uniqueInst = false);
+        Id      MakeConstantInt32(std::int32_t value, bool uniqueInst = false);
+        Id      MakeConstantUInt32(std::uint32_t value, bool uniqueInst = false);
+        Id      MakeConstantInt64(std::int64_t value, bool uniqueInst = false);
+        Id      MakeConstantUInt64(std::uint64_t value, bool uniqueInst = false);
+        Id      MakeConstantFloat16(float value, bool uniqueInst = false);
+        Id      MakeConstantFloat32(float value, bool uniqueInst = false);
+        Id      MakeConstantFloat64(double value, bool uniqueInst = false);
 
     private:
 
@@ -51,13 +67,27 @@ class InstructionFactory
 
         // Makes a new instruction and puts it into the active basic block (see 'BB()').
         Instruction& Put(const spv::Op opCode, const Id type = 0, const Id result = 0);
-        Instruction& Put(const spv::Op opCode, const std::initializer_list<Id>& operands, const Id type = 0, const Id result = 0);
 
-        std::stack<BasicBlock*> basicBlockStack_; // Stack of active basic blocks to put instructions into.
+        // Makes a new instruction, pits it into the active basic block (see 'BB()'), and buffers it into the specified container.
+        Instruction& PutAndBuffer(std::vector<Instruction*>& buffer, const spv::Op opCode, const Id type = 0, const Id result = 0);
+
+        // Tries to find the instruction with the specified 32-bit constant.
+        Instruction* FetchConstant(const spv::Op opCode, const Id type, std::uint32_t value0) const;
+
+        // Tries to find the instruction with the specified 64-bit constant.
+        Instruction* FetchConstant(const spv::Op opCode, const Id type, std::uint32_t value0, std::uint32_t value1) const;
 
         /* === Members === */
 
-        Id uniqueId_ = 0;
+        // Stack of active basic blocks to put instructions into.
+        std::stack<BasicBlock*>     basicBlockStack_;
+
+        Id                          uniqueId_               = 0;
+
+        std::vector<Instruction*>   bufferedTypeInstrs_,
+                                    bufferedConstantInstrs_;
+
+        std::set<spv::Capability>   capabilites_;
 
 };
 

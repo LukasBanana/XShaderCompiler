@@ -56,6 +56,170 @@ void InstructionFactory::MakeName(Id id, const std::string& name)
     ;
 }
 
+void InstructionFactory::MakeMemberName(Id id, Id memberId, const std::string& name)
+{
+    Put(Op::OpName)
+        .AddOperandUInt32(id)
+        .AddOperandUInt32(memberId)
+        .AddOperandASCII(name)
+    ;
+}
+
+Id InstructionFactory::MakeTypeInt(std::uint32_t width, bool sign)
+{
+    /* If type was already created, return its result ID */
+    const std::uint32_t signWord = (sign ? 1 : 0);
+
+    for (auto inst : bufferedTypeInstrs_)
+    {
+        if (inst->opCode == Op::OpTypeInt && inst->GetOperandUInt32(0) == width && inst->GetOperandUInt32(1) == signWord)
+            return inst->result;
+    }
+
+    /* Otherwise, create and buffer new type instruction */
+    auto& inst = PutAndBuffer(bufferedTypeInstrs_, Op::OpTypeInt, 0, UniqueId())
+        .AddOperandUInt32(width)
+        .AddOperandUInt32(signWord)
+    ;
+
+    /* Store required capabilites */
+    switch (width)
+    {
+        case 16:
+            capabilites_.insert(spv::Capability::Int16);
+            break;
+        case 64:
+            capabilites_.insert(spv::Capability::Int64);
+            break;
+    }
+
+    return inst.result;
+}
+
+Id InstructionFactory::MakeTypeFloat(std::uint32_t width)
+{
+    /* If type was already created, return its result ID */
+    for (auto inst : bufferedTypeInstrs_)
+    {
+        if (inst->opCode == Op::OpTypeFloat && inst->GetOperandUInt32(0) == width)
+            return inst->result;
+    }
+
+    /* Otherwise, create and buffer new type instruction */
+    auto& inst = PutAndBuffer(bufferedTypeInstrs_, Op::OpTypeFloat, 0, UniqueId())
+        .AddOperandUInt32(width)
+    ;
+
+    /* Store required capabilites */
+    switch (width)
+    {
+        case 16:
+            capabilites_.insert(spv::Capability::Float16);
+            break;
+        case 64:
+            capabilites_.insert(spv::Capability::Float64);
+            break;
+    }
+
+    return inst.result;
+}
+
+Id InstructionFactory::MakeConstantInt16(std::int16_t value, bool uniqueInst)
+{
+    return 0; //TODO
+}
+
+Id InstructionFactory::MakeConstantUInt16(std::uint16_t value, bool uniqueInst)
+{
+    return 0; //TODO
+}
+
+Id InstructionFactory::MakeConstantInt32(std::int32_t value, bool uniqueInst)
+{
+    return 0; //TODO
+}
+
+Id InstructionFactory::MakeConstantUInt32(std::uint32_t value, bool uniqueInst)
+{
+    return 0; //TODO
+}
+
+Id InstructionFactory::MakeConstantInt64(std::int64_t value, bool uniqueInst)
+{
+    return 0; //TODO
+}
+
+Id InstructionFactory::MakeConstantUInt64(std::uint64_t value, bool uniqueInst)
+{
+    return 0; //TODO
+}
+
+Id InstructionFactory::MakeConstantFloat16(float value, bool uniqueInst)
+{
+    return 0; //TODO
+}
+
+Id InstructionFactory::MakeConstantFloat32(float value, bool uniqueInst)
+{
+    /* Generate opcode and type */
+    auto opCode = (uniqueInst ? Op::OpSpecConstant : Op::OpConstant);
+    auto type   = MakeTypeFloat(32);
+
+    /* Convert float to bitmask */
+    union
+    {
+        std::uint32_t   ui32;
+        float           f32;
+    }
+    data;
+
+    data.f32 = value;
+
+    /* Check if this constant is already defined */
+    if (!uniqueInst)
+    {
+        if (auto inst = FetchConstant(opCode, type, data.ui32))
+            return inst->result;
+    }
+
+    /* Create new constant instruction */
+    return PutAndBuffer(bufferedConstantInstrs_, opCode, type, UniqueId())
+        .AddOperandUInt32(data.ui32)
+        .result
+    ;
+}
+
+Id InstructionFactory::MakeConstantFloat64(double value, bool uniqueInst)
+{
+    /* Generate opcode and type */
+    auto opCode = (uniqueInst ? Op::OpSpecConstant : Op::OpConstant);
+    auto type   = MakeTypeFloat(64);
+
+    /* Convert float to bitmask */
+    union
+    {
+        std::uint32_t   ui32[2];
+        double          f64;
+    }
+    data;
+
+    data.f64 = value;
+
+    /* Check if this constant is already defined */
+    if (!uniqueInst)
+    {
+        if (auto inst = FetchConstant(opCode, type, data.ui32[0], data.ui32[1]))
+            return inst->result;
+    }
+
+    /* Create new constant instruction */
+    return PutAndBuffer(bufferedConstantInstrs_, opCode, type, UniqueId())
+        .AddOperandUInt32(data.ui32[0])
+        .AddOperandUInt32(data.ui32[1])
+        .result
+    ;
+}
+
 
 /*
  * ======= Private: =======
@@ -68,23 +232,56 @@ BasicBlock& InstructionFactory::BB()
     return *(basicBlockStack_.top());
 }
 
-Instruction& InstructionFactory::Put(const Op opCode, const Id typeId, const Id resultId)
-{
-    return Put(opCode, {}, typeId, resultId);
-}
-
-Instruction& InstructionFactory::Put(const Op opCode, const std::initializer_list<Id>& operands, const Id typeId, const Id resultId)
+Instruction& InstructionFactory::Put(const Op opCode, const Id type, const Id result)
 {
     auto& bb = BB();
 
-    Instruction inst(opCode, operands);
+    Instruction inst(opCode);
     {
-        inst.type   = typeId;
-        inst.result = resultId;
+        inst.type   = type;
+        inst.result = result;
     }
     bb.instructions.push_back(inst);
 
     return bb.instructions.back();
+}
+
+Instruction& InstructionFactory::PutAndBuffer(std::vector<Instruction*>& buffer, const spv::Op opCode, const Id type, const Id result)
+{
+    auto& inst = Put(opCode, type, result);
+    buffer.push_back(&inst);
+    return inst;
+}
+
+Instruction* InstructionFactory::FetchConstant(const spv::Op opCode, const Id type, std::uint32_t value0) const
+{
+    for (auto inst : bufferedConstantInstrs_)
+    {
+        if ( inst->opCode               == opCode   &&
+             inst->type                 == type     &&
+             inst->NumOperands()        == 1        &&
+             inst->GetOperandUInt32(0)  == value0 )
+        {
+            return inst;
+        }
+    }
+    return nullptr;
+}
+
+Instruction* InstructionFactory::FetchConstant(const spv::Op opCode, const Id type, std::uint32_t value0, std::uint32_t value1) const
+{
+    for (auto inst : bufferedConstantInstrs_)
+    {
+        if ( inst->opCode               == opCode   &&
+             inst->type                 == type     &&
+             inst->NumOperands()        == 2        &&
+             inst->GetOperandUInt32(0)  == value0   &&
+             inst->GetOperandUInt32(1)  == value1 )
+        {
+            return inst;
+        }
+    }
+    return nullptr;
 }
 
 

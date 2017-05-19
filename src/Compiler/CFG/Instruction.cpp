@@ -19,12 +19,6 @@ Instruction::Instruction(const spv::Op opCode) :
 {
 }
 
-Instruction::Instruction(const spv::Op opCode, const std::initializer_list<spv::Id>& operands) :
-    opCode   { opCode   },
-    operands { operands }
-{
-}
-
 void Instruction::WriteTo(std::vector<unsigned int>& buffer)
 {
     /* Determine total words */
