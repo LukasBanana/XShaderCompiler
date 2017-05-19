@@ -10,6 +10,7 @@
 #include "ReportIdents.h"
 #include "Exception.h"
 #include "Helper.h"
+#include "Float16Compressor.h"
 
 
 using namespace spv;
@@ -65,35 +66,14 @@ void InstructionFactory::MakeMemberName(Id id, Id memberId, const std::string& n
     ;
 }
 
-Id InstructionFactory::MakeTypeInt(std::uint32_t width, bool sign)
+Id InstructionFactory::MakeTypeInt(std::uint32_t width)
 {
-    /* If type was already created, return its result ID */
-    const std::uint32_t signWord = (sign ? 1 : 0);
+    return MakeTypeIntPrimary(width, true);
+}
 
-    for (auto inst : bufferedTypeInstrs_)
-    {
-        if (inst->opCode == Op::OpTypeInt && inst->GetOperandUInt32(0) == width && inst->GetOperandUInt32(1) == signWord)
-            return inst->result;
-    }
-
-    /* Otherwise, create and buffer new type instruction */
-    auto& inst = PutAndBuffer(bufferedTypeInstrs_, Op::OpTypeInt, 0, UniqueId())
-        .AddOperandUInt32(width)
-        .AddOperandUInt32(signWord)
-    ;
-
-    /* Store required capabilites */
-    switch (width)
-    {
-        case 16:
-            capabilites_.insert(spv::Capability::Int16);
-            break;
-        case 64:
-            capabilites_.insert(spv::Capability::Int64);
-            break;
-    }
-
-    return inst.result;
+Id InstructionFactory::MakeTypeUInt(std::uint32_t width)
+{
+    return MakeTypeIntPrimary(width, false);
 }
 
 Id InstructionFactory::MakeTypeFloat(std::uint32_t width)
@@ -126,37 +106,55 @@ Id InstructionFactory::MakeTypeFloat(std::uint32_t width)
 
 Id InstructionFactory::MakeConstantInt16(std::int16_t value, bool uniqueInst)
 {
-    return 0; //TODO
+    return MakeConstantUInt32Primary(MakeTypeInt(16), static_cast<std::uint32_t>(static_cast<std::int32_t>(value)), uniqueInst);
 }
 
 Id InstructionFactory::MakeConstantUInt16(std::uint16_t value, bool uniqueInst)
 {
-    return 0; //TODO
+    return MakeConstantUInt32Primary(MakeTypeUInt(16), static_cast<std::uint32_t>(value), uniqueInst);
 }
 
 Id InstructionFactory::MakeConstantInt32(std::int32_t value, bool uniqueInst)
 {
-    return 0; //TODO
+    return MakeConstantUInt32Primary(MakeTypeInt(32), static_cast<std::uint32_t>(value), uniqueInst);
 }
 
 Id InstructionFactory::MakeConstantUInt32(std::uint32_t value, bool uniqueInst)
 {
-    return 0; //TODO
+    return MakeConstantUInt32Primary(MakeTypeUInt(32), value, uniqueInst);
 }
 
 Id InstructionFactory::MakeConstantInt64(std::int64_t value, bool uniqueInst)
 {
-    return 0; //TODO
+    return MakeConstantUInt64Primary(MakeTypeInt(65), static_cast<std::uint64_t>(value), uniqueInst);
 }
 
 Id InstructionFactory::MakeConstantUInt64(std::uint64_t value, bool uniqueInst)
 {
-    return 0; //TODO
+    return MakeConstantUInt64Primary(MakeTypeUInt(65), value, uniqueInst);
 }
 
 Id InstructionFactory::MakeConstantFloat16(float value, bool uniqueInst)
 {
-    return 0; //TODO
+    /* Generate opcode and type */
+    auto opCode = (uniqueInst ? Op::OpSpecConstant : Op::OpConstant);
+    auto type   = MakeTypeFloat(16);
+
+    /* Convert float to bitmask */
+    auto f16 = CompressFloat16(value);
+
+    /* Check if this constant is already defined */
+    if (!uniqueInst)
+    {
+        if (auto inst = FetchConstant(opCode, type, f16))
+            return inst->result;
+    }
+
+    /* Create new constant instruction */
+    return PutAndBuffer(bufferedConstantInstrs_, opCode, type, UniqueId())
+        .AddOperandUInt32(f16)
+        .result
+    ;
 }
 
 Id InstructionFactory::MakeConstantFloat32(float value, bool uniqueInst)
@@ -282,6 +280,88 @@ Instruction* InstructionFactory::FetchConstant(const spv::Op opCode, const Id ty
         }
     }
     return nullptr;
+}
+
+/* ----- Instruction creation functions ----- */
+
+Id InstructionFactory::MakeTypeIntPrimary(std::uint32_t width, bool sign)
+{
+    /* If type was already created, return its result ID */
+    const std::uint32_t signWord = (sign ? 1 : 0);
+
+    for (auto inst : bufferedTypeInstrs_)
+    {
+        if (inst->opCode == Op::OpTypeInt && inst->GetOperandUInt32(0) == width && inst->GetOperandUInt32(1) == signWord)
+            return inst->result;
+    }
+
+    /* Otherwise, create and buffer new type instruction */
+    auto& inst = PutAndBuffer(bufferedTypeInstrs_, Op::OpTypeInt, 0, UniqueId())
+        .AddOperandUInt32(width)
+        .AddOperandUInt32(signWord)
+    ;
+
+    /* Store required capabilites */
+    switch (width)
+    {
+        case 16:
+            capabilites_.insert(spv::Capability::Int16);
+            break;
+        case 64:
+            capabilites_.insert(spv::Capability::Int64);
+            break;
+    }
+
+    return inst.result;
+}
+
+Id InstructionFactory::MakeConstantUInt32Primary(Id type, std::uint32_t value, bool uniqueInst)
+{
+    /* Generate opcode */
+    auto opCode = (uniqueInst ? Op::OpSpecConstant : Op::OpConstant);
+
+    /* Check if this constant is already defined */
+    if (!uniqueInst)
+    {
+        if (auto inst = FetchConstant(opCode, type, value))
+            return inst->result;
+    }
+
+    /* Create new constant instruction */
+    return PutAndBuffer(bufferedConstantInstrs_, opCode, type, UniqueId())
+        .AddOperandUInt32(value)
+        .result
+    ;
+}
+
+Id InstructionFactory::MakeConstantUInt64Primary(Id type, std::uint64_t value, bool uniqueInst)
+{
+    /* Generate opcode */
+    auto opCode = (uniqueInst ? Op::OpSpecConstant : Op::OpConstant);
+
+    /* Convert float to bitmask */
+    union
+    {
+        std::uint32_t ui32[2];
+        std::uint64_t ui64;
+    }
+    data;
+
+    data.ui64 = value;
+
+    /* Check if this constant is already defined */
+    if (!uniqueInst)
+    {
+        if (auto inst = FetchConstant(opCode, type, data.ui32[0], data.ui32[1]))
+            return inst->result;
+    }
+
+    /* Create new constant instruction */
+    return PutAndBuffer(bufferedConstantInstrs_, opCode, type, UniqueId())
+        .AddOperandUInt32(data.ui32[0])
+        .AddOperandUInt32(data.ui32[1])
+        .result
+    ;
 }
 
 

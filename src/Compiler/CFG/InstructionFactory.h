@@ -45,7 +45,8 @@ class InstructionFactory
         void    MakeName(Id id, const std::string& name);
         void    MakeMemberName(Id id, Id memberId, const std::string& name);
 
-        Id      MakeTypeInt(std::uint32_t width, bool sign);
+        Id      MakeTypeInt(std::uint32_t width);
+        Id      MakeTypeUInt(std::uint32_t width);
         Id      MakeTypeFloat(std::uint32_t width);
 
         Id      MakeConstantInt16(std::int16_t value, bool uniqueInst = false);
@@ -76,6 +77,13 @@ class InstructionFactory
 
         // Tries to find the instruction with the specified 64-bit constant.
         Instruction* FetchConstant(const spv::Op opCode, const Id type, std::uint32_t value0, std::uint32_t value1) const;
+
+        /* ----- Instruction creation functions ----- */
+
+        Id MakeTypeIntPrimary(std::uint32_t width, bool sign);
+
+        Id MakeConstantUInt32Primary(Id type, std::uint32_t value, bool uniqueInst);
+        Id MakeConstantUInt64Primary(Id type, std::uint64_t value, bool uniqueInst);
 
         /* === Members === */
 
