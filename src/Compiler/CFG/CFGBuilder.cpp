@@ -7,6 +7,7 @@
 
 #include "CFGBuilder.h"
 #include "AST.h"
+#include "Helper.h"
 
 
 namespace Xsc
@@ -76,7 +77,19 @@ IMPLEMENT_VISIT_PROC(Program)
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    //TODO
+    #if 1//TEST
+
+    auto cfg = MakeCFG("code-block");
+
+    factory_.Push(cfg.in);
+    {
+        Visit(ast->stmnts);
+    }
+    factory_.Pop();
+
+    PushCFG(cfg);
+
+    #endif
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
@@ -117,7 +130,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     moduleFunc_ = module_.MakeFunction(ast->ident);
 
-
+    //TODO
 
     Visit(ast->codeBlock);
 }
@@ -258,6 +271,35 @@ IMPLEMENT_VISIT_PROC(SequenceExpr)
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
     //TODO
+
+    #if 1//TEST
+
+    switch (ast->dataType)
+    {
+        case DataType::Bool:
+            //TODO
+            break;
+        case DataType::Int:
+            factory_.MakeConstantInt32(FromStringOrDefault<std::int32_t>(ast->value));
+            break;
+        case DataType::UInt:
+            factory_.MakeConstantUInt32(FromStringOrDefault<std::uint32_t>(ast->value));
+            break;
+        case DataType::Half:
+            factory_.MakeConstantFloat16(FromStringOrDefault<float>(ast->value));
+            break;
+        case DataType::Float:
+            factory_.MakeConstantFloat32(FromStringOrDefault<float>(ast->value));
+            break;
+        case DataType::Double:
+            factory_.MakeConstantFloat64(FromStringOrDefault<double>(ast->value));
+            break;
+        default:
+            //TODO: error
+            break;
+    }
+
+    #endif
 }
 
 IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)

@@ -10,6 +10,7 @@
 
 
 #include "VisitorTracker.h"
+#include "InstructionFactory.h"
 #include "Module.h"
 
 
@@ -111,6 +112,8 @@ class CFGBuilder : public VisitorTracker
 
         std::stack<CFG>         cfgStack_;
         std::stack<BasicBlock*> breakBlockStack_;
+
+        InstructionFactory      factory_;
 
 };
 
