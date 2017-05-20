@@ -9,7 +9,7 @@
 #define XSC_INSTRUCTION_H
 
 
-#include <spirv/1.1/spirv.hpp11>
+#include <spirv/1.2/spirv.hpp11>
 #include <vector>
 
 
@@ -40,6 +40,9 @@ struct Instruction
 
     // Returns the operands as ASCII string with the specified offset, or throws an out-of-bounds exception on failure..
     const char* GetOperandASCII(std::size_t offset = 0) const;
+
+    // Returns true if the specified operands are equal to the operands of this instruction.
+    bool EqualsOperands(const std::vector<spv::Id>& rhsOperands, std::size_t offset = 0) const;
 
     // Returns the number of operands.
     inline std::size_t NumOperands() const

@@ -45,9 +45,19 @@ class InstructionFactory
         void    MakeName(Id id, const std::string& name);
         void    MakeMemberName(Id id, Id memberId, const std::string& name);
 
+        Id      MakeTypeVoid();
+        Id      MakeTypeBool();
+        Id      MakeTypeSampler();
         Id      MakeTypeInt(std::uint32_t width);
         Id      MakeTypeUInt(std::uint32_t width);
         Id      MakeTypeFloat(std::uint32_t width);
+        Id      MakeTypeStruct(const std::vector<Id>& memberTypes, const std::string& name);
+        Id      MakeTypeVector(Id componentScalarType, std::uint32_t size);
+        Id      MakeTypeMatrix(Id componentScalarType, std::uint32_t rows, std::uint32_t cols);
+        Id      MakeTypeArray(Id elementType, std::uint32_t length);
+        Id      MakeTypeRuntimeArray(Id elementType);
+        Id      MakeTypeFunction(Id returnType, const std::vector<Id>& paramTypes);
+        Id      MakeTypePointer(spv::StorageClass storageClass, Id subType);
 
         Id      MakeConstantInt16(std::int16_t value, bool uniqueInst = false);
         Id      MakeConstantUInt16(std::uint16_t value, bool uniqueInst = false);
@@ -78,6 +88,9 @@ class InstructionFactory
         // Tries to find the instruction with the specified 64-bit constant.
         Instruction* FetchConstant(const spv::Op opCode, const Id type, std::uint32_t value0, std::uint32_t value1) const;
 
+        // Adds the specified capability to the capability set.
+        void AddCapability(const spv::Capability cap);
+
         /* ----- Instruction creation functions ----- */
 
         Id MakeTypeIntPrimary(std::uint32_t width, bool sign);
@@ -90,7 +103,11 @@ class InstructionFactory
         // Stack of active basic blocks to put instructions into.
         std::stack<BasicBlock*>     basicBlockStack_;
 
-        Id                          uniqueId_               = 0;
+        Id                          uniqueId_                   = 0;
+
+        Instruction*                bufferedTypeVoidInstr_      = nullptr;
+        Instruction*                bufferedTypeBoolInstr_      = nullptr;
+        Instruction*                bufferedTypeSamplerInstr_   = nullptr;
 
         std::vector<Instruction*>   bufferedTypeInstrs_,
                                     bufferedConstantInstrs_;

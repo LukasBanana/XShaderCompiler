@@ -96,6 +96,20 @@ const char* Instruction::GetOperandASCII(std::size_t offset) const
         throw std::out_of_range(R_NotEnoughOperandsInInst());
 }
 
+bool Instruction::EqualsOperands(const std::vector<spv::Id>& rhsOperands, std::size_t offset) const
+{
+    if (NumOperands() >= (offset + rhsOperands.size()))
+    {
+        for (std::size_t i = 0, n = rhsOperands.size(); i < n; ++i)
+        {
+            if (operands[offset + i] != rhsOperands[i])
+                return false;
+        }
+        return true;
+    }
+    return false;
+}
+
 
 } // /namespace Xsc
 

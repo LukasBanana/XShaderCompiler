@@ -19,6 +19,16 @@ namespace Xsc
 {
 
 
+static Instruction* FindInstruction(const std::vector<Instruction*>& instrList, const Op opCode, const std::vector<std::uint32_t>& operands)
+{
+    for (auto inst : instrList)
+    {
+        if (inst->opCode == opCode && inst->EqualsOperands(operands))
+            return inst;
+    }
+    return nullptr;
+}
+
 void InstructionFactory::Push(BasicBlock* basicBlock)
 {
     basicBlockStack_.push(basicBlock);
@@ -66,6 +76,27 @@ void InstructionFactory::MakeMemberName(Id id, Id memberId, const std::string& n
     ;
 }
 
+Id InstructionFactory::MakeTypeVoid()
+{
+    if (!bufferedTypeVoidInstr_)
+        bufferedTypeVoidInstr_ = &(Put(Op::OpTypeVoid, 0, UniqueId()));
+    return bufferedTypeVoidInstr_->result;
+}
+
+Id InstructionFactory::MakeTypeBool()
+{
+    if (!bufferedTypeBoolInstr_)
+        bufferedTypeBoolInstr_ = &(Put(Op::OpTypeBool, 0, UniqueId()));
+    return bufferedTypeBoolInstr_->result;
+}
+
+Id InstructionFactory::MakeTypeSampler()
+{
+    if (!bufferedTypeSamplerInstr_)
+        bufferedTypeSamplerInstr_ = &(Put(Op::OpTypeSampler, 0, UniqueId()));
+    return bufferedTypeSamplerInstr_->result;
+}
+
 Id InstructionFactory::MakeTypeInt(std::uint32_t width)
 {
     return MakeTypeIntPrimary(width, true);
@@ -79,11 +110,8 @@ Id InstructionFactory::MakeTypeUInt(std::uint32_t width)
 Id InstructionFactory::MakeTypeFloat(std::uint32_t width)
 {
     /* If type was already created, return its result ID */
-    for (auto inst : bufferedTypeInstrs_)
-    {
-        if (inst->opCode == Op::OpTypeFloat && inst->GetOperandUInt32(0) == width)
-            return inst->result;
-    }
+    if (auto inst = FindInstruction(bufferedTypeInstrs_, Op::OpTypeFloat, { width }))
+        return inst->result;
 
     /* Otherwise, create and buffer new type instruction */
     auto& inst = PutAndBuffer(bufferedTypeInstrs_, Op::OpTypeFloat, 0, UniqueId())
@@ -91,17 +119,123 @@ Id InstructionFactory::MakeTypeFloat(std::uint32_t width)
     ;
 
     /* Store required capabilites */
-    switch (width)
-    {
-        case 16:
-            capabilites_.insert(spv::Capability::Float16);
-            break;
-        case 64:
-            capabilites_.insert(spv::Capability::Float64);
-            break;
-    }
+    if (width == 16)
+        AddCapability(Capability::Float16);
+    else if (width == 64)
+        AddCapability(Capability::Float64);
 
     return inst.result;
+}
+
+Id InstructionFactory::MakeTypeStruct(const std::vector<Id>& memberTypes, const std::string& name)
+{
+    /* Always create new struct type with all members */
+    auto& inst = Put(Op::OpTypeStruct, 0, UniqueId());
+
+    for (auto id : memberTypes)
+        inst.AddOperandUInt32(id);
+
+    /* Add name to type */
+    MakeName(inst.result, name);
+
+    return inst.result;
+}
+
+Id InstructionFactory::MakeTypeVector(Id componentScalarType, std::uint32_t size)
+{
+    /* If type was already created, return its result ID */
+    if (auto inst = FindInstruction(bufferedTypeInstrs_, Op::OpTypeVector, { componentScalarType, size }))
+        return inst->result;
+
+    /* Otherwise, create and buffer new type instruction */
+    return PutAndBuffer(bufferedTypeInstrs_, Op::OpTypeVector, 0, UniqueId())
+        .AddOperandUInt32(componentScalarType)
+        .AddOperandUInt32(size)
+        .result
+    ;
+}
+
+Id InstructionFactory::MakeTypeMatrix(Id componentScalarType, std::uint32_t rows, std::uint32_t cols)
+{
+    /* Make column vector type */
+    auto columnType = MakeTypeVector(componentScalarType, rows);
+
+    /* If type was already created, return its result ID */
+    if (auto inst = FindInstruction(bufferedTypeInstrs_, Op::OpTypeMatrix, { columnType, cols }))
+        return inst->result;
+
+    /* Otherwise, create and buffer new type instruction */
+    return PutAndBuffer(bufferedTypeInstrs_, Op::OpTypeMatrix, 0, UniqueId())
+        .AddOperandUInt32(columnType)
+        .AddOperandUInt32(cols)
+        .result
+    ;
+}
+
+Id InstructionFactory::MakeTypeArray(Id elementType, std::uint32_t length)
+{
+    /* If type was already created, return its result ID */
+    if (auto inst = FindInstruction(bufferedTypeInstrs_, Op::OpTypeArray, { elementType, length }))
+        return inst->result;
+
+    /* Otherwise, create and buffer new type instruction */
+    return PutAndBuffer(bufferedTypeInstrs_, Op::OpTypeArray, 0, UniqueId())
+        .AddOperandUInt32(elementType)
+        .AddOperandUInt32(length)
+        .result
+    ;
+}
+
+Id InstructionFactory::MakeTypeRuntimeArray(Id elementType)
+{
+    /* If type was already created, return its result ID */
+    if (auto inst = FindInstruction(bufferedTypeInstrs_, Op::OpTypeRuntimeArray, { elementType }))
+        return inst->result;
+
+    /* Otherwise, create and buffer new type instruction */
+    return PutAndBuffer(bufferedTypeInstrs_, Op::OpTypeRuntimeArray, 0, UniqueId())
+        .AddOperandUInt32(elementType)
+        .result
+    ;
+}
+
+Id InstructionFactory::MakeTypeFunction(Id returnType, const std::vector<Id>& paramTypes)
+{
+    /* If type was already created, return its result ID */
+    for (auto inst : bufferedTypeInstrs_)
+    {
+        if ( inst->opCode              == Op::OpTypeFunction &&
+             inst->GetOperandUInt32(0) == returnType         &&
+             inst->EqualsOperands(paramTypes, 1) )
+        {
+            return inst->result;
+        }
+    }
+
+    /* Always create new struct type with all members */
+    auto& inst = Put(Op::OpTypeFunction, 0, UniqueId());
+
+    inst.AddOperandUInt32(returnType);
+    for (auto id : paramTypes)
+        inst.AddOperandUInt32(id);
+
+    return inst.result;
+}
+
+Id InstructionFactory::MakeTypePointer(spv::StorageClass storageClass, Id subType)
+{
+    const auto storageClassWord = static_cast<std::uint32_t>(storageClass);
+
+    /* If type was already created, return its result ID */
+    if (auto inst = FindInstruction(bufferedTypeInstrs_, Op::OpTypePointer, { storageClassWord, subType }))
+        return inst->result;
+
+    /* Otherwise, create and buffer new type instruction */
+    return PutAndBuffer(bufferedTypeInstrs_, Op::OpTypePointer, 0, UniqueId())
+        .AddOperandUInt32(storageClassWord)
+        .AddOperandUInt32(subType)
+        .result
+    ;
 }
 
 Id InstructionFactory::MakeConstantInt16(std::int16_t value, bool uniqueInst)
@@ -244,21 +378,21 @@ Instruction& InstructionFactory::Put(const Op opCode, const Id type, const Id re
     return bb.instructions.back();
 }
 
-Instruction& InstructionFactory::PutAndBuffer(std::vector<Instruction*>& buffer, const spv::Op opCode, const Id type, const Id result)
+Instruction& InstructionFactory::PutAndBuffer(std::vector<Instruction*>& buffer, const Op opCode, const Id type, const Id result)
 {
     auto& inst = Put(opCode, type, result);
     buffer.push_back(&inst);
     return inst;
 }
 
-Instruction* InstructionFactory::FetchConstant(const spv::Op opCode, const Id type, std::uint32_t value0) const
+Instruction* InstructionFactory::FetchConstant(const Op opCode, const Id type, std::uint32_t value0) const
 {
     for (auto inst : bufferedConstantInstrs_)
     {
-        if ( inst->opCode               == opCode   &&
-             inst->type                 == type     &&
-             inst->NumOperands()        == 1        &&
-             inst->GetOperandUInt32(0)  == value0 )
+        if ( inst->opCode              == opCode &&
+             inst->type                == type   &&
+             inst->NumOperands()       == 1      &&
+             inst->GetOperandUInt32(0) == value0 )
         {
             return inst;
         }
@@ -266,20 +400,25 @@ Instruction* InstructionFactory::FetchConstant(const spv::Op opCode, const Id ty
     return nullptr;
 }
 
-Instruction* InstructionFactory::FetchConstant(const spv::Op opCode, const Id type, std::uint32_t value0, std::uint32_t value1) const
+Instruction* InstructionFactory::FetchConstant(const Op opCode, const Id type, std::uint32_t value0, std::uint32_t value1) const
 {
     for (auto inst : bufferedConstantInstrs_)
     {
-        if ( inst->opCode               == opCode   &&
-             inst->type                 == type     &&
-             inst->NumOperands()        == 2        &&
-             inst->GetOperandUInt32(0)  == value0   &&
-             inst->GetOperandUInt32(1)  == value1 )
+        if ( inst->opCode              == opCode &&
+             inst->type                == type   &&
+             inst->NumOperands()       == 2      &&
+             inst->GetOperandUInt32(0) == value0 &&
+             inst->GetOperandUInt32(1) == value1 )
         {
             return inst;
         }
     }
     return nullptr;
+}
+
+void InstructionFactory::AddCapability(const Capability cap)
+{
+    capabilites_.insert(cap);
 }
 
 /* ----- Instruction creation functions ----- */
@@ -289,11 +428,8 @@ Id InstructionFactory::MakeTypeIntPrimary(std::uint32_t width, bool sign)
     /* If type was already created, return its result ID */
     const std::uint32_t signWord = (sign ? 1 : 0);
 
-    for (auto inst : bufferedTypeInstrs_)
-    {
-        if (inst->opCode == Op::OpTypeInt && inst->GetOperandUInt32(0) == width && inst->GetOperandUInt32(1) == signWord)
-            return inst->result;
-    }
+    if (auto inst = FindInstruction(bufferedTypeInstrs_, Op::OpTypeInt, { width, signWord }))
+        return inst->result;
 
     /* Otherwise, create and buffer new type instruction */
     auto& inst = PutAndBuffer(bufferedTypeInstrs_, Op::OpTypeInt, 0, UniqueId())
@@ -302,15 +438,10 @@ Id InstructionFactory::MakeTypeIntPrimary(std::uint32_t width, bool sign)
     ;
 
     /* Store required capabilites */
-    switch (width)
-    {
-        case 16:
-            capabilites_.insert(spv::Capability::Int16);
-            break;
-        case 64:
-            capabilites_.insert(spv::Capability::Int64);
-            break;
-    }
+    if (width == 16)
+        AddCapability(Capability::Int16);
+    else if (width == 64)
+        AddCapability(Capability::Int64);
 
     return inst.result;
 }
