@@ -44,15 +44,20 @@ void SPIRVDisassembler::Parse(std::istream& stream)
     if (!stream.good())
         InvalidArg(R_InvalidInputStream);
 
-    /* Read words from byte stream */
-    std::vector<std::uint32_t> wordStream;
+    /* Read entire byte stream */
+    std::vector<char> buffer(
+        (std::istreambuf_iterator<char>(stream)),
+        (std::istreambuf_iterator<char>())
+    );
 
-    while (!stream.eof())
-    {
-        std::uint32_t word = 0;
-        stream.read(reinterpret_cast<char*>(&word), sizeof(word));
-        wordStream.push_back(word);
-    }
+    if (buffer.size() % 4 != 0)
+        RuntimeErr(R_SPIRVByteStreamNotWordAligned);
+
+    /* Copy byte stream into word stream */
+    std::vector<std::uint32_t> wordStream;
+    wordStream.resize(buffer.size() / 4);
+
+    memcpy(wordStream.data(), buffer.data(), wordStream.size() * sizeof(std::uint32_t));
 
     /* Parse magic number */
     auto wordStreamIt = wordStream.begin();
@@ -122,13 +127,15 @@ void SPIRVDisassembler::Print(std::ostream& stream, char idPrefixChar)
 void SPIRVDisassembler::PrintInst(std::ostream& stream, char idPrefixChar, const Instruction& inst)
 {
     /* Print result */
+    const std::size_t idPadding = 6;
+
     if (inst.result)
     {
         const auto resultStr = std::to_string(inst.result);
-        stream << std::string(4 - resultStr.size(), ' ') << idPrefixChar << resultStr << " = ";
+        stream << std::string(idPadding - resultStr.size(), ' ') << idPrefixChar << resultStr << " = ";
     }
     else
-        stream << std::string(8, ' ');
+        stream << std::string(idPadding + 4, ' ');
 
     /* Print op-code */
     {
@@ -138,7 +145,7 @@ void SPIRVDisassembler::PrintInst(std::ostream& stream, char idPrefixChar, const
 
     /* Print type */
     if (inst.type)
-        stream << idPrefixChar << inst.type;
+        stream << ' ' << idPrefixChar << inst.type;
 
     /* Print operands */
     //TODO: print correct operands, and distinguish between Uint32 and ASCII operands!

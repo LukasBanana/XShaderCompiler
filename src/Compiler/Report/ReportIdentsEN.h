@@ -487,6 +487,7 @@ DECL_REPORT( SPIRVMissingMagicNumber,           "missing magic number in SPIR-V 
 DECL_REPORT( SPIRVInvalidMagicNumber,           "invalid magic number in SPIR-V module header[ (expected {0}, but got {1})]"                                    );
 DECL_REPORT( SPIRVMissingVersionNumber,         "missing version number in SPIR-V module header"                                                                );
 DECL_REPORT( SPIRVUnknownVersionNumber,         "unknown version number in SPIR-V module header[: {0}]"                                                         );
+DECL_REPORT( SPIRVByteStreamNotWordAligned,     "byte stream of SPIR-V module is not 32-bit word aligned"                                                       );
 
 /* ----- Xsc ----- */
 

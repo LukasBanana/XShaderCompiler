@@ -1371,7 +1371,7 @@ void DisassembleCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     const auto filename = cmdLine.Accept();
     
-    std::ifstream file(filename);
+    std::ifstream file(filename, std::ios::binary);
     DisassembleSPIRV(file, std::cout);
 
     state.actionPerformed = true;
