@@ -92,7 +92,8 @@ CommandFactory::CommandFactory()
         PrefixCommand,
         NameManglingCommand,
         SeparateShadersCommand,
-        SeparateSamplersCommand
+        SeparateSamplersCommand,
+        DisassembleCommand
     >();
 }
 
