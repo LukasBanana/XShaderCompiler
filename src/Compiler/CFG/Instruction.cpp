@@ -20,7 +20,7 @@ Instruction::Instruction(const spv::Op opCode) :
 {
 }
 
-void Instruction::WriteTo(std::ostream& stream)
+void Instruction::WriteTo(std::vector<std::uint32_t>& buffer)
 {
     /* Determine total words */
     std::uint32_t wordCount = 1;
@@ -32,35 +32,30 @@ void Instruction::WriteTo(std::ostream& stream)
 
     wordCount += static_cast<std::uint32_t>(operands.size());
 
-    /* Write word count and op-code */
-    auto WriteUInt32 = [&stream](std::uint32_t i)
-    {
-        stream.write(reinterpret_cast<const char*>(&i), sizeof(i));
-    };
+    buffer.reserve(buffer.size() + wordCount);
 
-    WriteUInt32((wordCount << spv::WordCountShift) | (static_cast<std::uint32_t>(opCode) & spv::OpCodeMask));
+    /* Write word count and op-code */
+    buffer.push_back((wordCount << spv::WordCountShift) | (static_cast<std::uint32_t>(opCode) & spv::OpCodeMask));
 
     /* Write type and result (if used) */
     if (type)
-        WriteUInt32(type);
+        buffer.push_back(type);
     if (result)
-        WriteUInt32(result);
+        buffer.push_back(result);
 
     /* Write operand words */
     for (auto id : operands)
-        WriteUInt32(id);
+        buffer.push_back(id);
 }
 
-void Instruction::ReadFrom(std::istream& stream)
+void Instruction::ReadFrom(std::vector<std::uint32_t>::const_iterator& bufferIter)
 {
     using Op = spv::Op;
 
     /* Read word count and op-code */
-    auto ReadUInt32 = [&stream]() -> std::uint32_t
+    auto ReadUInt32 = [&bufferIter]() -> std::uint32_t
     {
-        std::uint32_t i = 0;
-        stream.read(reinterpret_cast<char*>(&i), sizeof(i));
-        return i;
+        return *(bufferIter++);
     };
 
     auto firstWord = ReadUInt32();

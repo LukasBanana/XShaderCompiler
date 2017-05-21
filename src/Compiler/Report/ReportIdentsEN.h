@@ -32,6 +32,7 @@ DECL_REPORT( TessEvaluationShader,              "tessellation-evaluation shader"
 DECL_REPORT( GeometryShader,                    "geometry shader"                                                                                               );
 DECL_REPORT( FragmentShader,                    "fragment shader"                                                                                               );
 DECL_REPORT( ComputeShader,                     "compute shader"                                                                                                );
+DECL_REPORT( InvalidInputStream,                "invalid input stream"                                                                                          );
 DECL_REPORT( InvalidOutputStream,               "invalid output stream"                                                                                         );
 DECL_REPORT( Implicitly,                        "implicitly"                                                                                                    );
 DECL_REPORT( ButGot,                            "[, but got {0}]"                                                                                               );
@@ -479,6 +480,13 @@ DECL_REPORT( NotEnoughOperandsInInst,           "not enough operands in SPIR-V i
 
 DECL_REPORT( InstructionFactory,                "SPIR-V instruction factory"                                                                                    );
 DECL_REPORT( NoActiveBasicBlock,                "no active basic block to put instructions into"                                                                );
+
+/* ----- SPIRVDisassembler ----- */
+
+DECL_REPORT( SPIRVMissingMagicNumber,           "missing magic number in SPIR-V module header"                                                                  );
+DECL_REPORT( SPIRVInvalidMagicNumber,           "invalid magic number in SPIR-V module header[ (expected {0}, but got {1})]"                                    );
+DECL_REPORT( SPIRVMissingVersionNumber,         "missing version number in SPIR-V module header"                                                                );
+DECL_REPORT( SPIRVUnknownVersionNumber,         "unknown version number in SPIR-V module header[: {0}]"                                                         );
 
 /* ----- Xsc ----- */
 

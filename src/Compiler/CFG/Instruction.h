@@ -11,7 +11,6 @@
 
 #include <spirv/1.2/spirv.hpp11>
 #include <vector>
-#include <iostream>
 
 
 namespace Xsc
@@ -28,10 +27,10 @@ struct Instruction
     Instruction(const spv::Op opCode);
 
     // Writes this instruction into the specified SPIR-V binary format buffer.
-    void WriteTo(std::ostream& stream);
+    void WriteTo(std::vector<std::uint32_t>& buffer);
 
     // Reads an instruction from the specified SPIR-V binary format buffer.
-    void ReadFrom(std::istream& stream);
+    void ReadFrom(std::vector<std::uint32_t>::const_iterator& bufferIter);
 
     // Adds the specified string as ASCII operand (operands of variable size).
     Instruction& AddOperandASCII(const std::string& s);
