@@ -9,6 +9,7 @@
 #define XSC_SPIRV_DISASSEMBLER_H
 
 
+#include "Instruction.h"
 #include <iostream>
 #include <vector>
 
@@ -25,19 +26,15 @@ class SPIRVDisassembler
 
     public:
 
-        /*
-        Disassembles the SPIR-V binary code from the input stream 'streamIn'
-        to human readable code into the output stream 'streamOut',
-        or throws an exceptio on failure.
-        */
-        void Disassemble(std::istream& streamIn, std::ostream& streamOut);
+        // Reads the SPIR-V binary code.
+        void Parse(std::istream& stream);
+
+        // Prints the human readable code.
+        void Print(std::ostream& stream, char idPrefixChar = '%');
 
     private:
 
-        void Parse(std::istream& stream);
-
-        void Print(std::ostream& stream);
-        void PrintInst(std::ostream& stream, const Instruction& inst);
+        void PrintInst(std::ostream& stream, char idPrefixChar, const Instruction& inst);
 
         std::uint32_t               versionNo_      = 0;
 

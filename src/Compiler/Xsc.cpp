@@ -19,6 +19,7 @@
 #include "ASTPrinter.h"
 #include "ASTEnums.h"
 #include "ReportIdents.h"
+#include "SPIRVDisassembler.h"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -289,6 +290,14 @@ XSC_EXPORT bool CompileShader(
     }
 
     return result;
+}
+
+XSC_EXPORT void DisassembleSPIRV(
+    std::istream& streamIn, std::ostream& streamOut, const AssemblyFormatting& formatting)
+{
+    SPIRVDisassembler disassembler;
+    disassembler.Parse(streamIn);
+    disassembler.Print(streamOut, formatting.idPrefixChar);
 }
 
 XSC_EXPORT std::string ToString(const ShaderTarget target)

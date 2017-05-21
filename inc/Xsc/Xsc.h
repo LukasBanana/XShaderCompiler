@@ -320,6 +320,13 @@ struct ShaderOutput
     NameMangling                nameMangling;
 };
 
+//! Formatting descriptor structure for the SPIRV disassembler.
+struct AssemblyFormatting
+{
+    //! Specifies the prefix character to be used for ID numbers in the SPIR-V instructions.
+    char idPrefixChar = '%';
+};
+
 /**
 \brief Cross compiles the shader code from the specified input stream into the specified output shader code.
 \param[in] inputDesc Input shader code descriptor.
@@ -338,6 +345,19 @@ XSC_EXPORT bool CompileShader(
     const ShaderOutput&         outputDesc,
     Log*                        log             = nullptr,
     Reflection::ReflectionData* reflectionData  = nullptr
+);
+
+/**
+\brief Disassembles the SPIR-V binary code into a human readable code.
+\param[in,out] streamIn Specifies the input stream of the SPIR-V binary code.
+\param[in,out] streamOut Specifies the output stream of the human readable code.
+\param[in] formatting Specifies the output formatting.
+\throws std::runtime_error If the disassembling failed.
+*/
+XSC_EXPORT void DisassembleSPIRV(
+    std::istream&               streamIn,
+    std::ostream&               streamOut,
+    const AssemblyFormatting&   formatting = {}
 );
 
 

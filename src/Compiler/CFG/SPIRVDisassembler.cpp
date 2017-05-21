@@ -6,7 +6,6 @@
  */
 
 #include "SPIRVDisassembler.h"
-#include "Instruction.h"
 #include "Exception.h"
 #include "ReportIdents.h"
 #include "Helper.h"
@@ -26,24 +25,6 @@ namespace Xsc
 
 using namespace ConsoleManip;
 
-void SPIRVDisassembler::Disassemble(std::istream& streamIn, std::ostream& streamOut)
-{
-    if (!streamIn.good())
-        InvalidArg(R_InvalidInputStream);
-    if (!streamOut.good())
-        InvalidArg(R_InvalidOutputStream);
-
-    Parse(streamIn);
-    Print(streamOut);
-
-    instructions_.clear();
-}
-
-
-/*
- * ======= Private: =======
- */
-
 static std::uint32_t SwapEndian(std::uint32_t i)
 {
     return
@@ -57,6 +38,12 @@ static std::uint32_t SwapEndian(std::uint32_t i)
 
 void SPIRVDisassembler::Parse(std::istream& stream)
 {
+    /* Clear previous instruction cache */
+    instructions_.clear();
+
+    if (!stream.good())
+        InvalidArg(R_InvalidInputStream);
+
     /* Read words from byte stream */
     std::vector<std::uint32_t> wordStream;
 
@@ -118,19 +105,27 @@ void SPIRVDisassembler::Parse(std::istream& stream)
     }
 }
 
-void SPIRVDisassembler::Print(std::ostream& stream)
+void SPIRVDisassembler::Print(std::ostream& stream, char idPrefixChar)
 {
+    if (!stream.good())
+        InvalidArg(R_InvalidOutputStream);
+
     for (const auto& inst : instructions_)
-        PrintInst(stream, inst);
+        PrintInst(stream, idPrefixChar, inst);
 }
 
-void SPIRVDisassembler::PrintInst(std::ostream& stream, const Instruction& inst)
+
+/*
+ * ======= Private: =======
+ */
+
+void SPIRVDisassembler::PrintInst(std::ostream& stream, char idPrefixChar, const Instruction& inst)
 {
     /* Print result */
     if (inst.result)
     {
         const auto resultStr = std::to_string(inst.result);
-        stream << std::string(4 - resultStr.size(), ' ') << '%' << resultStr << " = ";
+        stream << std::string(4 - resultStr.size(), ' ') << idPrefixChar << resultStr << " = ";
     }
     else
         stream << std::string(8, ' ');
@@ -143,7 +138,7 @@ void SPIRVDisassembler::PrintInst(std::ostream& stream, const Instruction& inst)
 
     /* Print type */
     if (inst.type)
-        stream << '%' << inst.type;
+        stream << idPrefixChar << inst.type;
 
     /* Print operands */
     //TODO: print correct operands, and distinguish between Uint32 and ASCII operands!
