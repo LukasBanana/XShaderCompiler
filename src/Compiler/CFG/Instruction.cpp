@@ -7,6 +7,7 @@
 
 #include "Instruction.h"
 #include "ReportIdents.h"
+#include "SPIRVHelper.h"
 #include <stdexcept>
 
 
@@ -19,32 +20,73 @@ Instruction::Instruction(const spv::Op opCode) :
 {
 }
 
-void Instruction::WriteTo(std::vector<unsigned int>& buffer)
+void Instruction::WriteTo(std::ostream& stream)
 {
     /* Determine total words */
-    unsigned int wordCount = 1;
+    std::uint32_t wordCount = 1;
 
     if (type)
         ++wordCount;
     if (result)
         ++wordCount;
 
-    wordCount += static_cast<unsigned int>(operands.size());
+    wordCount += static_cast<std::uint32_t>(operands.size());
 
     /* Write word count and op-code */
-    buffer.reserve(static_cast<std::size_t>(wordCount));
+    auto WriteUInt32 = [&stream](std::uint32_t i)
+    {
+        stream.write(reinterpret_cast<const char*>(&i), sizeof(i));
+    };
 
-    buffer.push_back((wordCount << spv::WordCountShift) | (static_cast<unsigned int>(opCode) & spv::OpCodeMask));
+    WriteUInt32((wordCount << spv::WordCountShift) | (static_cast<std::uint32_t>(opCode) & spv::OpCodeMask));
 
-    /* Write type and result (if set) */
+    /* Write type and result (if used) */
     if (type)
-        buffer.push_back(type);
+        WriteUInt32(type);
     if (result)
-        buffer.push_back(result);
+        WriteUInt32(result);
 
     /* Write operand words */
     for (auto id : operands)
-        buffer.push_back(id);
+        WriteUInt32(id);
+}
+
+void Instruction::ReadFrom(std::istream& stream)
+{
+    using Op = spv::Op;
+
+    /* Read word count and op-code */
+    auto ReadUInt32 = [&stream]() -> std::uint32_t
+    {
+        std::uint32_t i = 0;
+        stream.read(reinterpret_cast<char*>(&i), sizeof(i));
+        return i;
+    };
+
+    auto firstWord = ReadUInt32();
+
+    auto wordCount  = (firstWord >> spv::WordCountShift);
+    this->opCode    = static_cast<spv::Op>(firstWord & spv::OpCodeMask);
+    
+    --wordCount;
+
+    /* Read type (if used) */
+    if (wordCount > 0 && SPIRVHelper::HasTypeId(this->opCode))
+    {
+        this->type = ReadUInt32();
+        --wordCount;
+    }
+
+    /* Read result (if used) */
+    if (wordCount > 0 && SPIRVHelper::HasResultId(this->opCode))
+    {
+        this->result = ReadUInt32();
+        --wordCount;
+    }
+
+    /* Read operand words */
+    while (wordCount-- > 0)
+        operands.push_back(ReadUInt32());
 }
 
 Instruction& Instruction::AddOperandASCII(const std::string& s)
