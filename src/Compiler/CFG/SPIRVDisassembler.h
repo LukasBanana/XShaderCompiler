@@ -12,6 +12,7 @@
 #include "Instruction.h"
 #include <iostream>
 #include <vector>
+#include <string>
 
 
 namespace Xsc
@@ -34,11 +35,25 @@ class SPIRVDisassembler
 
     private:
 
-        void PrintInst(std::ostream& stream, char idPrefixChar, const Instruction& inst);
+        struct Printable
+        {
+            std::string                 result;
+            std::string                 opCode;
+            std::vector<std::string>    operands;
+        };
 
-        std::uint32_t               versionNo_      = 0;
+        void AddPrintable(char idPrefixChar, const Instruction& inst);
+
+        void PrintAll(std::ostream& stream, char idPrefixChar);
+        void PrintOperand(std::ostream& stream, char idPrefixChar, const std::string& s);
+
+        std::string                 versionStr_;
+        std::string                 generatorStr_;
+        std::string                 boundStr_;
+        std::string                 schemaStr_;
 
         std::vector<Instruction>    instructions_;
+        std::vector<Printable>      printables_;
 
 };
 

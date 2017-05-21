@@ -483,9 +483,8 @@ DECL_REPORT( NoActiveBasicBlock,                "no active basic block to put in
 
 /* ----- SPIRVDisassembler ----- */
 
-DECL_REPORT( SPIRVMissingMagicNumber,           "missing magic number in SPIR-V module header"                                                                  );
+DECL_REPORT( SPIRVFileTooSmall,                 "SPIR-V module file is too small"                                                                               );
 DECL_REPORT( SPIRVInvalidMagicNumber,           "invalid magic number in SPIR-V module header[ (expected {0}, but got {1})]"                                    );
-DECL_REPORT( SPIRVMissingVersionNumber,         "missing version number in SPIR-V module header"                                                                );
 DECL_REPORT( SPIRVUnknownVersionNumber,         "unknown version number in SPIR-V module header[: {0}]"                                                         );
 DECL_REPORT( SPIRVByteStreamNotWordAligned,     "byte stream of SPIR-V module is not 32-bit word aligned"                                                       );
 

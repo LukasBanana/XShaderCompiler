@@ -59,17 +59,18 @@ void SPIRVDisassembler::Parse(std::istream& stream)
 
     memcpy(wordStream.data(), buffer.data(), wordStream.size() * sizeof(std::uint32_t));
 
+    if (wordStream.size() < 5)
+        RuntimeErr(R_SPIRVFileTooSmall);
+
     /* Parse magic number */
     auto wordStreamIt = wordStream.begin();
 
-    auto ReadWordOrError = [&](const JoinableString& err) -> std::uint32_t
+    auto ReadWord = [&]() -> std::uint32_t
     {
-        if (wordStreamIt == wordStream.end())
-            RuntimeErr(err);
         return *(wordStreamIt++);
     };
 
-    const auto magicNumber = ReadWordOrError(R_SPIRVMissingMagicNumber);
+    const auto magicNumber = ReadWord();
 
     if (magicNumber == SwapEndian(spv::MagicNumber))
     {
@@ -83,23 +84,80 @@ void SPIRVDisassembler::Parse(std::istream& stream)
     }
 
     /* Parse SPIR-V version */
-    versionNo_ = ReadWordOrError(R_SPIRVMissingVersionNumber);
+    const auto versionNo = ReadWord();
 
-    switch (versionNo_)
+    switch (versionNo)
     {
         case 0x00010000:
+            versionStr_ = "1.0";
+            break;
         case 0x00010100:
+            versionStr_ = "1.1";
+            break;
         case 0x00010200:
+            versionStr_ = "1.2";
             break;
         default:
-            RuntimeErr(R_SPIRVUnknownVersionNumber(ToHexString(versionNo_)));
+            RuntimeErr(R_SPIRVUnknownVersionNumber(ToHexString(versionNo)));
             break;
     }
 
-    #if 1
-    //TODO: currently remaining header is ignored
-    wordStreamIt += 3;
-    #endif
+    /* Parse generator magic number (see https://www.khronos.org/registry/spir-v/api/spir-v.xml) */
+    const auto generatorMagic = ReadWord();
+
+    const auto generatorVendorId    = (generatorMagic >> 16);
+    const auto generatorVersionNo   = (generatorMagic & 0xffff);
+
+    switch (generatorVendorId)
+    {
+        case 0:
+            generatorStr_ = "Khronos"; // "Reserved by Khronos"
+            break;
+        case 1:
+            generatorStr_ = "LunarG"; // "Contact TBD"
+            break;
+        case 2:
+            generatorStr_ = "Valve"; // "Contact TBD"
+            break;
+        case 3:
+            generatorStr_ = "Codeplay"; // "Contact Neil Henning, neil@codeplay.com"
+            break;
+        case 4:
+            generatorStr_ = "NVIDIA"; // "Contact Kerch Holt, kholt@nvidia.com"
+            break;
+        case 5:
+            generatorStr_ = "ARM"; // "Contact Alexander Galazin, alexander.galazin@arm.com"
+            break;
+        case 6:
+            generatorStr_ = "Khronos LLVM/SPIR-V Translator"; // "Contact Yaxun (Sam) Liu, yaxun.liu@amd.com"
+            break;
+        case 7:
+            generatorStr_ = "Khronos SPIR-V Tools Assembler"; // "Contact David Neto, dneto@google.com"
+            break;
+        case 8:
+            generatorStr_ = "Khronos Glslang Reference Front End"; // "Contact John Kessenich, johnkessenich@google.com"
+            break;
+        case 9:
+            generatorStr_ = "Qualcomm"; // "Contact weifengz@qti.qualcomm.com"
+            break;
+        case 10:
+            generatorStr_ = "AMD"; // "Contact Daniel Rakos, daniel.rakos@amd.com"
+            break;
+        case 11:
+            generatorStr_ = "Intel"; // "Contact Alexey, alexey.bader@intel.com"/>
+            break;
+        default:
+            generatorStr_ = "Unknown";
+            break;
+    }
+
+    generatorStr_ += " (Version " + std::to_string(generatorVersionNo) + ")";
+
+    /* Parse ID bound */
+    boundStr_ = std::to_string(ReadWord());
+
+    /* Parse instruction schema (always 0) */
+    schemaStr_ = std::to_string(ReadWord());
 
     /* Parse instructions */
     while (wordStreamIt != wordStream.end())
@@ -116,7 +174,11 @@ void SPIRVDisassembler::Print(std::ostream& stream, char idPrefixChar)
         InvalidArg(R_InvalidOutputStream);
 
     for (const auto& inst : instructions_)
-        PrintInst(stream, idPrefixChar, inst);
+        AddPrintable(idPrefixChar, inst);
+
+    PrintAll(stream, idPrefixChar);
+
+    printables_.clear();
 }
 
 
@@ -124,37 +186,122 @@ void SPIRVDisassembler::Print(std::ostream& stream, char idPrefixChar)
  * ======= Private: =======
  */
 
-void SPIRVDisassembler::PrintInst(std::ostream& stream, char idPrefixChar, const Instruction& inst)
+void SPIRVDisassembler::AddPrintable(char idPrefixChar, const Instruction& inst)
 {
-    /* Print result */
-    const std::size_t idPadding = 6;
+    Printable prt;
 
+    /* Print result */
     if (inst.result)
-    {
-        const auto resultStr = std::to_string(inst.result);
-        stream << std::string(idPadding - resultStr.size(), ' ') << idPrefixChar << resultStr << " = ";
-    }
-    else
-        stream << std::string(idPadding + 4, ' ');
+        prt.result = (idPrefixChar + std::to_string(inst.result));
 
     /* Print op-code */
-    {
-        ScopedColor scopedColor(ColorFlags::Yellow | ColorFlags::Intens, stream);
-        stream << spv::OpToString(inst.opCode);
-    }
+    prt.opCode = spv::OpToString(inst.opCode);
 
     /* Print type */
     if (inst.type)
-        stream << ' ' << idPrefixChar << inst.type;
+        prt.operands.push_back(idPrefixChar + std::to_string(inst.type));
 
     /* Print operands */
-    //TODO: print correct operands, and distinguish between Uint32 and ASCII operands!
-    #if 0
-    for (auto id : inst.operands)
-        ;
-    #endif
+    using Op = spv::Op;
 
-    stream << std::endl;
+    auto AddOperandASCII = [&prt,&inst](std::size_t offset)
+    {
+        prt.operands.push_back('\"' + std::string(inst.GetOperandASCII(offset)) + '\"');
+    };
+
+    //TODO: print correct operands, and distinguish between Uint32 and ASCII operands!
+    switch (inst.opCode)
+    {
+        case Op::OpCapability:
+            prt.operands.push_back(spv::CapabilityToString(static_cast<spv::Capability>(inst.GetOperandUInt32(0))));
+            break;
+        case Op::OpExtInstImport:
+            AddOperandASCII(0);
+            break;
+        case Op::OpMemoryModel:
+            prt.operands.push_back(spv::AddressingModelToString(static_cast<spv::AddressingModel>(inst.GetOperandUInt32(0))));
+            prt.operands.push_back(spv::MemoryModelToString(static_cast<spv::MemoryModel>(inst.GetOperandUInt32(1))));
+            break;
+        case Op::OpEntryPoint:
+            prt.operands.push_back(spv::ExecutionModelToString(static_cast<spv::ExecutionModel>(inst.GetOperandUInt32(0))));
+            prt.operands.push_back(std::to_string(inst.GetOperandUInt32(1)));
+            AddOperandASCII(2);
+            break;
+        case Op::OpName:
+            AddOperandASCII(1);
+            break;
+        case Op::OpMemberName:
+            prt.operands.push_back(std::to_string(inst.GetOperandUInt32(0)));
+            AddOperandASCII(1);
+            break;
+        default:
+            break;
+    }
+
+    printables_.emplace_back(std::move(prt));
+}
+
+void SPIRVDisassembler::PrintAll(std::ostream& stream, char idPrefixChar)
+{
+    static const std::size_t idResultPadding = 6;
+
+    /* Print header information */
+    {
+        //ScopedColor scopedColor(ColorFlags::Gray, stream);
+        stream << "; SPIR-V " << versionStr_ << std::endl;
+        stream << "; Generator: " << generatorStr_ << std::endl;
+        stream << "; Bound:     " << boundStr_ << std::endl;
+        stream << "; Schema:    " << schemaStr_ << std::endl;
+    }
+
+    for (const auto& prt : printables_)
+    {
+        /* Print result */
+        if (!prt.result.empty())
+        {
+            ScopedColor scopedColor(ColorFlags::Red | ColorFlags::Intens, stream);
+            stream << std::string(idResultPadding - prt.result.size(), ' ') << prt.result << " = ";
+        }
+        else
+            stream << std::string(idResultPadding + 3, ' ');
+
+        /* Print op-code */
+        {
+            ScopedColor scopedColor(ColorFlags::Yellow | ColorFlags::Intens, stream);
+            stream << prt.opCode;
+        }
+
+        /* Print operands */
+        for (const auto& op : prt.operands)
+            PrintOperand(stream, idPrefixChar, op);
+
+        stream << std::endl;
+    }
+}
+
+void SPIRVDisassembler::PrintOperand(std::ostream& stream, char idPrefixChar, const std::string& s)
+{
+    if (!s.empty())
+    {
+        stream << ' ';
+
+        if (s[0] == '\"')
+        {
+            stream << '\"';
+            {
+                ScopedColor scopedColor(ColorFlags::Cyan, stream);
+                stream << s.substr(1, s.size() - 2);
+            }
+            stream << '\"';
+        }
+        else if (s[0] == idPrefixChar)
+        {
+            ScopedColor scopedColor(ColorFlags::Red | ColorFlags::Intens, stream);
+            stream << s;
+        }
+        else
+            stream << s;
+    }
 }
 
 
