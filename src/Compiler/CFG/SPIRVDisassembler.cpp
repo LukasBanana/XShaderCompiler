@@ -39,7 +39,7 @@ static std::uint32_t SwapEndian(std::uint32_t i)
 void SPIRVDisassembler::Parse(std::istream& stream)
 {
     /* Clear previous instruction cache */
-    instructions_.clear();
+    Clear();
 
     if (!stream.good())
         InvalidArg(R_InvalidInputStream);
@@ -164,7 +164,7 @@ void SPIRVDisassembler::Parse(std::istream& stream)
     {
         Instruction inst;
         inst.ReadFrom(wordStreamIt);
-        instructions_.emplace_back(std::move(inst));
+        Add(std::move(inst));
     }
 }
 
@@ -181,6 +181,21 @@ void SPIRVDisassembler::Print(std::ostream& stream, char idPrefixChar)
     PrintAll(stream, idPrefixChar);
 
     printables_.clear();
+}
+
+void SPIRVDisassembler::Add(const Instruction& inst)
+{
+    instructions_.push_back(inst);
+}
+
+void SPIRVDisassembler::Add(Instruction&& inst)
+{
+    instructions_.emplace_back(std::move(inst));
+}
+
+void SPIRVDisassembler::Clear()
+{
+    instructions_.clear();
 }
 
 

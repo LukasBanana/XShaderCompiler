@@ -27,14 +27,24 @@ class SPIRVDisassembler
 
     public:
 
-        // Reads the SPIR-V binary code.
+        // Reads the SPIR-V binary code from the specified input stream, and clears all previously added instructions.
         void Parse(std::istream& stream);
 
-        // Prints the human readable code.
+        // Prints the human readable code of all instructions.
         void Print(std::ostream& stream, char idPrefixChar = '%');
+
+        // Adds the specified instruction manually to the print output.
+        void Add(const Instruction& inst);
+
+        // Adds the specified instruction manually to the print output with move semantics.
+        void Add(Instruction&& inst);
+
+        // Clears all internal instructions.
+        void Clear();
 
     private:
 
+        // Human readable SPIR-V instruction.
         struct Printable
         {
             std::string                 offset;
