@@ -1363,7 +1363,7 @@ HelpDescriptor DisassembleCommand::Help() const
     return
     {
         "-dasm, --disassemble FILE",
-        "Disassembles the SPIR-V file"
+        "Disassembles the SPIR-V module"
     };
 }
 
