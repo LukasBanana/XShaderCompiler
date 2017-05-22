@@ -1169,7 +1169,7 @@ std::vector<int> ArrayTypeDenoter::GetDimensionSizes() const
 
 FunctionTypeDenoter::FunctionTypeDenoter(FunctionDecl* funcDeclRef) :
     ident        { funcDeclRef ? funcDeclRef->ident.Original() : "" },
-    funcDeclRefs { { funcDeclRef }                                  }
+    funcDeclRefs { std::vector<FunctionDecl*>{ funcDeclRef }        }
 {
 }
 
