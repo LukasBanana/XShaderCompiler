@@ -16,7 +16,6 @@
 #include <iomanip>
 
 // Include and define SPIRV "ToString" functions
-#define SPIRV_DEF static
 #define SPIRV_STRINGS_IMPLEMENT
 #include <spirv/1.2/spirv_strings.hpp11>
 
@@ -65,7 +64,7 @@ void SPIRVDisassembler::Parse(std::istream& stream)
         RuntimeErr(R_SPIRVFileTooSmall);
 
     /* Parse magic number */
-    auto wordStreamIt = wordStream.begin();
+    std::vector<std::uint32_t>::const_iterator wordStreamIt = wordStream.begin();
 
     auto ReadWord = [&]() -> std::uint32_t
     {

@@ -12,6 +12,7 @@
 #include "Instruction.h"
 #include <vector>
 #include <memory>
+#include <string>
 
 
 namespace Xsc

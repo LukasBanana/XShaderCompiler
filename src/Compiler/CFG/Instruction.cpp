@@ -50,8 +50,6 @@ void Instruction::WriteTo(std::vector<std::uint32_t>& buffer)
 
 void Instruction::ReadFrom(std::vector<std::uint32_t>::const_iterator& bufferIter)
 {
-    using Op = spv::Op;
-
     /* Read word count and op-code */
     auto ReadUInt32 = [&bufferIter]() -> std::uint32_t
     {
