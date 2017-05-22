@@ -37,12 +37,13 @@ class SPIRVDisassembler
 
         struct Printable
         {
+            std::string                 offset;
             std::string                 result;
             std::string                 opCode;
             std::vector<std::string>    operands;
         };
 
-        void AddPrintable(char idPrefixChar, const Instruction& inst);
+        void AddPrintable(char idPrefixChar, const Instruction& inst, std::uint32_t& byteOffset);
 
         void PrintAll(std::ostream& stream, char idPrefixChar);
         void PrintOperand(std::ostream& stream, char idPrefixChar, const std::string& s);

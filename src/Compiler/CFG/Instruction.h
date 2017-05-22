@@ -47,6 +47,9 @@ struct Instruction
     // Returns true if the specified operands are equal to the operands of this instruction.
     bool EqualsOperands(const std::vector<spv::Id>& rhsOperands, std::size_t offset = 0) const;
 
+    // Returns the count of words required for the whole instruction.
+    std::uint32_t WordCount() const;
+
     // Returns the number of operands.
     inline std::size_t NumOperands() const
     {

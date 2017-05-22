@@ -147,6 +147,20 @@ bool Instruction::EqualsOperands(const std::vector<spv::Id>& rhsOperands, std::s
     return false;
 }
 
+std::uint32_t Instruction::WordCount() const
+{
+    std::uint32_t wordCount = 1;
+
+    if (type)
+        ++wordCount;
+    if (result)
+        ++wordCount;
+
+    wordCount += static_cast<std::uint32_t>(operands.size());
+
+    return wordCount;
+}
+
 
 } // /namespace Xsc
 

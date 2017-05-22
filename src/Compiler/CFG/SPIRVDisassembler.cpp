@@ -173,8 +173,10 @@ void SPIRVDisassembler::Print(std::ostream& stream, char idPrefixChar)
     if (!stream.good())
         InvalidArg(R_InvalidOutputStream);
 
+    std::uint32_t byteOffset = sizeof(std::uint32_t) * 5;
+
     for (const auto& inst : instructions_)
-        AddPrintable(idPrefixChar, inst);
+        AddPrintable(idPrefixChar, inst, byteOffset);
 
     PrintAll(stream, idPrefixChar);
 
@@ -186,9 +188,13 @@ void SPIRVDisassembler::Print(std::ostream& stream, char idPrefixChar)
  * ======= Private: =======
  */
 
-void SPIRVDisassembler::AddPrintable(char idPrefixChar, const Instruction& inst)
+void SPIRVDisassembler::AddPrintable(char idPrefixChar, const Instruction& inst, std::uint32_t& byteOffset)
 {
     Printable prt;
+
+    /* Print offset */
+    prt.offset = ToHexString(byteOffset);
+    byteOffset += inst.WordCount() * 4;
 
     /* Print result */
     if (inst.result)
@@ -247,20 +253,34 @@ void SPIRVDisassembler::PrintAll(std::ostream& stream, char idPrefixChar)
 
     /* Print header information */
     {
-        //ScopedColor scopedColor(ColorFlags::Gray, stream);
+        ScopedColor scopedColor(ColorFlags::Gray, stream);
         stream << "; SPIR-V " << versionStr_ << std::endl;
         stream << "; Generator: " << generatorStr_ << std::endl;
         stream << "; Bound:     " << boundStr_ << std::endl;
         stream << "; Schema:    " << schemaStr_ << std::endl;
+        stream << std::endl;
+        stream << "; Offset   Result    OpCode" << std::endl;
+        stream << "; " << std::string(50, '-') << std::endl;
     }
 
     for (const auto& prt : printables_)
     {
+        /* Print byte offset */
+        {
+            ScopedColor scopedColor(ColorFlags::Green, ColorFlags::Black, stream);
+            stream << prt.offset;
+        }
+
+        stream << "  ";
+
         /* Print result */
         if (!prt.result.empty())
         {
-            ScopedColor scopedColor(ColorFlags::Red | ColorFlags::Intens, stream);
-            stream << std::string(idResultPadding - prt.result.size(), ' ') << prt.result << " = ";
+            {
+                ScopedColor scopedColor(ColorFlags::Red | ColorFlags::Intens, stream);
+                stream << std::string(idResultPadding - prt.result.size(), ' ') << prt.result;
+            }
+            stream << " = ";
         }
         else
             stream << std::string(idResultPadding + 3, ' ');
