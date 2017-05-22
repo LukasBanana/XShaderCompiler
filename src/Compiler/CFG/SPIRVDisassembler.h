@@ -14,6 +14,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <functional>
 
 
 namespace Xsc
@@ -45,6 +46,8 @@ class SPIRVDisassembler
 
     private:
 
+        /* === Structures === */
+
         // Human readable SPIR-V instruction.
         struct Printable
         {
@@ -54,10 +57,32 @@ class SPIRVDisassembler
             std::vector<std::string>    operands;
         };
 
-        void AddPrintable(char idPrefixChar, const Instruction& inst, std::uint32_t& byteOffset);
+        /* === Functions === */
 
-        void PrintAll(std::ostream& stream, char idPrefixChar);
-        void PrintOperand(std::ostream& stream, char idPrefixChar, const std::string& s);
+        // Returns true if the current instruction has remaining operands (determined by next offset).
+        bool HasRemainingOperands() const;
+
+        void AddOperandUInt32(std::uint32_t offset = ~0);
+        void AddOperandId(std::uint32_t offset = ~0);
+        void AddOperandASCII(std::uint32_t offset = ~0);
+
+        template <typename T>
+        void AddOperandEnum(const std::function<const char*(T e)>& enumToString, std::uint32_t offset = ~0);
+
+        void AddOperandLiteralDecoration(const spv::Decoration decoration);
+
+        void NextOffset(std::uint32_t& offset);
+
+        Printable& MakePrintable();
+
+        void AddPrintable(const Instruction& inst, std::uint32_t& byteOffset);
+
+        void PrintAll(std::ostream& stream);
+        void PrintOperand(std::ostream& stream, const std::string& s);
+
+        /* === Members === */
+
+        char                        idPrefixChar_   = '%';
 
         std::string                 versionStr_;
         std::string                 generatorStr_;
@@ -66,6 +91,10 @@ class SPIRVDisassembler
 
         std::vector<Instruction>    instructions_;
         std::vector<Printable>      printables_;
+
+        const Instruction*          currentInst_    = nullptr;
+        Printable*                  currentPrt_     = nullptr;
+        std::uint32_t               nextOffset_     = 0;
 
 };
 

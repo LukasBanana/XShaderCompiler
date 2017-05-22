@@ -39,22 +39,22 @@ struct Instruction
     Instruction& AddOperandUInt32(spv::Id i);
 
     // Returns the specified operand as integral value, or throws an out-of-bounds exception on failure.
-    spv::Id GetOperandUInt32(std::size_t idx) const;
+    spv::Id GetOperandUInt32(std::uint32_t offset) const;
 
     // Returns the operands as ASCII string with the specified offset, or throws an out-of-bounds exception on failure..
-    const char* GetOperandASCII(std::size_t offset = 0) const;
+    const char* GetOperandASCII(std::uint32_t offset) const;
+
+    // Returns the operand offset after the end of the ASCII string operands beginning at the specified offset.
+    std::uint32_t FindOperandASCIIEndOffset(std::uint32_t offset) const;
 
     // Returns true if the specified operands are equal to the operands of this instruction.
-    bool EqualsOperands(const std::vector<spv::Id>& rhsOperands, std::size_t offset = 0) const;
+    bool EqualsOperands(const std::vector<spv::Id>& rhsOperands, std::uint32_t offset = 0) const;
 
     // Returns the count of words required for the whole instruction.
     std::uint32_t WordCount() const;
 
     // Returns the number of operands.
-    inline std::size_t NumOperands() const
-    {
-        return operands.size();
-    }
+    std::uint32_t NumOperands() const;
 
     spv::Op                 opCode      = spv::Op::OpNop;   // Instruction op-code. By default OpNop.
     spv::Id                 type        = 0;                // Type ID number. By default 0.

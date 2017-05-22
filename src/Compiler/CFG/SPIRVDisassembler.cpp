@@ -118,16 +118,22 @@ void SPIRVDisassembler::Parse(std::istream& stream)
 
 void SPIRVDisassembler::Print(std::ostream& stream, char idPrefixChar)
 {
+    /* Validate arguments */
     if (!stream.good())
         InvalidArg(R_InvalidOutputStream);
 
+    /* Store new prefix character */
+    idPrefixChar_ = idPrefixChar;
+
+    /* Print all instructions */
     std::uint32_t byteOffset = sizeof(std::uint32_t) * 5;
 
     for (const auto& inst : instructions_)
-        AddPrintable(idPrefixChar, inst, byteOffset);
+        AddPrintable(inst, byteOffset);
 
-    PrintAll(stream, idPrefixChar);
+    PrintAll(stream);
 
+    /* Clear cache */
     printables_.clear();
 }
 
@@ -143,6 +149,8 @@ void SPIRVDisassembler::Add(Instruction&& inst)
 
 void SPIRVDisassembler::Clear()
 {
+    currentInst_ = nullptr;
+    currentPrt_ = nullptr;
     instructions_.clear();
 }
 
@@ -151,9 +159,122 @@ void SPIRVDisassembler::Clear()
  * ======= Private: =======
  */
 
-void SPIRVDisassembler::AddPrintable(char idPrefixChar, const Instruction& inst, std::uint32_t& byteOffset)
+#define ADD_OPERAND_ENUM(ENUM_NAME) \
+    AddOperandEnum<ENUM_NAME>(ENUM_NAME##ToString)
+
+bool SPIRVDisassembler::HasRemainingOperands() const
 {
-    Printable prt;
+    return (nextOffset_ < currentInst_->NumOperands());
+}
+
+void SPIRVDisassembler::AddOperandUInt32(std::uint32_t offset)
+{
+    /* Get next operand offset */
+    NextOffset(offset);
+
+    /* Add operand as value */
+    currentPrt_->operands.push_back(
+        std::to_string(currentInst_->GetOperandUInt32(offset))
+    );
+
+    /* Set next operand offset */
+    nextOffset_ = offset + 1;
+}
+
+void SPIRVDisassembler::AddOperandId(std::uint32_t offset)
+{
+    /* Get next operand offset */
+    NextOffset(offset);
+
+    /* Add operand as ID number (e.g. "%1") */
+    currentPrt_->operands.push_back(
+        idPrefixChar_ + std::to_string(currentInst_->GetOperandUInt32(offset))
+    );
+
+    /* Set next operand offset */
+    nextOffset_ = offset + 1;
+}
+
+void SPIRVDisassembler::AddOperandASCII(std::uint32_t offset)
+{
+    /* Get next operand offset */
+    NextOffset(offset);
+
+    /* Add operand as ASCII string */
+    currentPrt_->operands.push_back(
+        '\"' + std::string(currentInst_->GetOperandASCII(offset)) + '\"'
+    );
+
+    /* Set next operand offset */
+    nextOffset_ = currentInst_->FindOperandASCIIEndOffset(offset);
+}
+
+template <typename T>
+void SPIRVDisassembler::AddOperandEnum(const std::function<const char*(T e)>& enumToString, std::uint32_t offset)
+{
+    /* Get next operand offset */
+    NextOffset(offset);
+
+    /* Add operand as enumeration entry name */
+    currentPrt_->operands.push_back(
+        enumToString(
+            static_cast<T>(currentInst_->GetOperandUInt32(offset))
+        )
+    );
+
+    /* Set next operand offset */
+    nextOffset_ = offset + 1;
+}
+
+void SPIRVDisassembler::AddOperandLiteralDecoration(const spv::Decoration decoration)
+{
+    switch (decoration)
+    {
+        case spv::Decoration::BuiltIn:
+            ADD_OPERAND_ENUM(spv::BuiltIn);
+            break;
+        case spv::Decoration::FuncParamAttr:
+            ADD_OPERAND_ENUM(spv::FunctionParameterAttribute);
+            break;
+        case spv::Decoration::FPRoundingMode:
+            ADD_OPERAND_ENUM(spv::FPRoundingMode);
+            break;
+        case spv::Decoration::FPFastMathMode:
+            ADD_OPERAND_ENUM(spv::FPFastMathModeMask);
+            break;
+        case spv::Decoration::LinkageAttributes:
+            AddOperandASCII();
+            ADD_OPERAND_ENUM(spv::LinkageType);
+            break;
+        default:
+            AddOperandUInt32();
+            break;
+    }
+}
+
+void SPIRVDisassembler::NextOffset(std::uint32_t& offset)
+{
+    if (offset == ~0)
+        offset = nextOffset_;
+}
+
+SPIRVDisassembler::Printable& SPIRVDisassembler::MakePrintable()
+{
+    /* Make new printable instance */
+    printables_.emplace_back();
+
+    /* Store reference to current printabel and reset offset for subsequent operands */
+    currentPrt_ = &(printables_.back());
+    nextOffset_ = 0;
+
+    return *currentPrt_;
+}
+
+void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byteOffset)
+{
+    /* Store references */
+    currentInst_ = (&inst);
+    auto& prt = MakePrintable();
 
     /* Print offset */
     prt.offset = ToHexString(byteOffset);
@@ -161,56 +282,83 @@ void SPIRVDisassembler::AddPrintable(char idPrefixChar, const Instruction& inst,
 
     /* Print result */
     if (inst.result)
-        prt.result = (idPrefixChar + std::to_string(inst.result));
+        prt.result = (idPrefixChar_ + std::to_string(inst.result));
 
     /* Print op-code */
     prt.opCode = spv::OpToString(inst.opCode);
 
     /* Print type */
     if (inst.type)
-        prt.operands.push_back(idPrefixChar + std::to_string(inst.type));
+        prt.operands.push_back(idPrefixChar_ + std::to_string(inst.type));
 
     /* Print operands */
     using Op = spv::Op;
 
-    auto AddOperandASCII = [&prt,&inst](std::size_t offset)
-    {
-        prt.operands.push_back('\"' + std::string(inst.GetOperandASCII(offset)) + '\"');
-    };
-
-    //TODO: print correct operands, and distinguish between Uint32 and ASCII operands!
     switch (inst.opCode)
     {
         case Op::OpCapability:
-            prt.operands.push_back(spv::CapabilityToString(static_cast<spv::Capability>(inst.GetOperandUInt32(0))));
+            ADD_OPERAND_ENUM(spv::Capability);
             break;
+
         case Op::OpExtInstImport:
-            AddOperandASCII(0);
+            AddOperandASCII();
             break;
+
         case Op::OpMemoryModel:
-            prt.operands.push_back(spv::AddressingModelToString(static_cast<spv::AddressingModel>(inst.GetOperandUInt32(0))));
-            prt.operands.push_back(spv::MemoryModelToString(static_cast<spv::MemoryModel>(inst.GetOperandUInt32(1))));
+            ADD_OPERAND_ENUM(spv::AddressingModel);
+            ADD_OPERAND_ENUM(spv::MemoryModel);
             break;
+
         case Op::OpEntryPoint:
-            prt.operands.push_back(spv::ExecutionModelToString(static_cast<spv::ExecutionModel>(inst.GetOperandUInt32(0))));
-            prt.operands.push_back(std::to_string(inst.GetOperandUInt32(1)));
-            AddOperandASCII(2);
+            ADD_OPERAND_ENUM(spv::ExecutionModel);
+            AddOperandId();
+            AddOperandASCII();
+            while (HasRemainingOperands())
+                AddOperandId(); // Interface
             break;
+
+        case Op::OpDecorate:
+            AddOperandId(); // Target
+            ADD_OPERAND_ENUM(spv::Decoration);
+            while (HasRemainingOperands())
+                AddOperandLiteralDecoration(static_cast<spv::Decoration>(inst.GetOperandUInt32(1)));
+            break;
+
+        case Op::OpMemberDecorate:
+            AddOperandId(); // Structure Type
+            AddOperandUInt32(); // Literal number
+            ADD_OPERAND_ENUM(spv::Decoration);
+            while (HasRemainingOperands())
+                AddOperandLiteralDecoration(static_cast<spv::Decoration>(inst.GetOperandUInt32(2)));
+            break;
+
+        case Op::OpDecorateId:
+            AddOperandId(); // Target
+            ADD_OPERAND_ENUM(spv::Decoration);
+            while (HasRemainingOperands())
+                AddOperandLiteralDecoration(static_cast<spv::Decoration>(inst.GetOperandUInt32(2)));
+            break;
+
         case Op::OpName:
-            AddOperandASCII(1);
+            AddOperandId(); // Target
+            AddOperandASCII();
             break;
+
         case Op::OpMemberName:
-            prt.operands.push_back(std::to_string(inst.GetOperandUInt32(0)));
-            AddOperandASCII(1);
+            AddOperandUInt32();
+            AddOperandASCII();
             break;
+
         default:
             break;
     }
 
-    printables_.emplace_back(std::move(prt));
+    /* Append all remaining operands */
+    while (HasRemainingOperands())
+        AddOperandUInt32();
 }
 
-void SPIRVDisassembler::PrintAll(std::ostream& stream, char idPrefixChar)
+void SPIRVDisassembler::PrintAll(std::ostream& stream)
 {
     static const std::size_t idResultPadding = 6;
 
@@ -256,13 +404,13 @@ void SPIRVDisassembler::PrintAll(std::ostream& stream, char idPrefixChar)
 
         /* Print operands */
         for (const auto& op : prt.operands)
-            PrintOperand(stream, idPrefixChar, op);
+            PrintOperand(stream, op);
 
         stream << std::endl;
     }
 }
 
-void SPIRVDisassembler::PrintOperand(std::ostream& stream, char idPrefixChar, const std::string& s)
+void SPIRVDisassembler::PrintOperand(std::ostream& stream, const std::string& s)
 {
     if (!s.empty())
     {
@@ -272,12 +420,12 @@ void SPIRVDisassembler::PrintOperand(std::ostream& stream, char idPrefixChar, co
         {
             stream << '\"';
             {
-                ScopedColor scopedColor(ColorFlags::Cyan, stream);
+                ScopedColor scopedColor(ColorFlags::Pink, stream);
                 stream << s.substr(1, s.size() - 2);
             }
             stream << '\"';
         }
-        else if (s[0] == idPrefixChar)
+        else if (s[0] == idPrefixChar_)
         {
             ScopedColor scopedColor(ColorFlags::Red | ColorFlags::Intens, stream);
             stream << s;
@@ -286,6 +434,8 @@ void SPIRVDisassembler::PrintOperand(std::ostream& stream, char idPrefixChar, co
             stream << s;
     }
 }
+
+#undef ADD_OPERAND_ENUM
 
 
 } // /namespace Xsc

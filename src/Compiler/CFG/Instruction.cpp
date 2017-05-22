@@ -117,23 +117,42 @@ Instruction& Instruction::AddOperandUInt32(spv::Id i)
     return *this;
 }
 
-spv::Id Instruction::GetOperandUInt32(std::size_t idx) const
+spv::Id Instruction::GetOperandUInt32(std::uint32_t offset) const
 {
-    if (idx < operands.size())
-        return operands[idx];
+    if (offset < NumOperands())
+        return operands[offset];
     else
         throw std::out_of_range(R_NotEnoughOperandsInInst());
 }
 
-const char* Instruction::GetOperandASCII(std::size_t offset) const
+const char* Instruction::GetOperandASCII(std::uint32_t offset) const
 {
-    if (offset < operands.size())
+    if (offset < NumOperands())
         return reinterpret_cast<const char*>(&(operands[offset]));
     else
         throw std::out_of_range(R_NotEnoughOperandsInInst());
 }
 
-bool Instruction::EqualsOperands(const std::vector<spv::Id>& rhsOperands, std::size_t offset) const
+std::uint32_t Instruction::FindOperandASCIIEndOffset(std::uint32_t offset) const
+{
+    for (; offset < NumOperands(); ++offset)
+    {
+        /* Check for null terminator in current word */
+        auto word = operands[offset];
+        for (int i = 0; i < 4; ++i)
+        {
+            /* Check if current byte is zero */
+            if ((word & 0xff) == 0)
+                return offset + 1;
+
+            /* Shift word to check next byte */
+            word >>= 8;
+        }
+    }
+    return offset;
+}
+
+bool Instruction::EqualsOperands(const std::vector<spv::Id>& rhsOperands, std::uint32_t offset) const
 {
     if (NumOperands() >= (offset + rhsOperands.size()))
     {
@@ -159,6 +178,11 @@ std::uint32_t Instruction::WordCount() const
     wordCount += static_cast<std::uint32_t>(operands.size());
 
     return wordCount;
+}
+
+std::uint32_t Instruction::NumOperands() const
+{
+    return static_cast<std::uint32_t>(operands.size());
 }
 
 
