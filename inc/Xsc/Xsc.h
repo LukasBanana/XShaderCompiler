@@ -354,7 +354,7 @@ XSC_EXPORT bool CompileShader(
 \param[in] formatting Specifies the output formatting.
 \throws std::runtime_error If the disassembling failed.
 */
-XSC_EXPORT void DisassembleSPIRV(
+XSC_EXPORT void DisassembleShader(
     std::istream&               streamIn,
     std::ostream&               streamOut,
     const AssemblyFormatting&   formatting = {}

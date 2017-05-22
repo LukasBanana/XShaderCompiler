@@ -8,14 +8,12 @@
 #include <Xsc/Xsc.h>
 #include "PreProcessor.h"
 #include "GLSLPreProcessor.h"
-#include "GLSLExtensions.h"
 #include "GLSLGenerator.h"
 #include "HLSLParser.h"
 #include "HLSLAnalyzer.h"
 #include "HLSLIntrinsics.h"
 #include "Optimizer.h"
 #include "ReflectionAnalyzer.h"
-#include "ReflectionPrinter.h"
 #include "ASTPrinter.h"
 #include "ASTEnums.h"
 #include "ReportIdents.h"
@@ -292,126 +290,12 @@ XSC_EXPORT bool CompileShader(
     return result;
 }
 
-XSC_EXPORT void DisassembleSPIRV(
+XSC_EXPORT void DisassembleShader(
     std::istream& streamIn, std::ostream& streamOut, const AssemblyFormatting& formatting)
 {
     SPIRVDisassembler disassembler;
     disassembler.Parse(streamIn);
     disassembler.Print(streamOut, formatting.idPrefixChar);
-}
-
-XSC_EXPORT std::string ToString(const ShaderTarget target)
-{
-    switch (target)
-    {
-        case ShaderTarget::Undefined:                       return "Undefined";
-        case ShaderTarget::VertexShader:                    return "Vertex Shader";
-        case ShaderTarget::FragmentShader:                  return "Fragment Shader";
-        case ShaderTarget::GeometryShader:                  return "Geometry Shader";
-        case ShaderTarget::TessellationControlShader:       return "Tessellation-Control Shader";
-        case ShaderTarget::TessellationEvaluationShader:    return "Tessellation-Evaluation Shader";
-        case ShaderTarget::ComputeShader:                   return "Compute Shader";
-    }
-    return "";
-}
-
-XSC_EXPORT std::string ToString(const InputShaderVersion shaderVersion)
-{
-    switch (shaderVersion)
-    {
-        case InputShaderVersion::Cg:    return "Cg";
-
-        case InputShaderVersion::HLSL3: return "HLSL 3.0";
-        case InputShaderVersion::HLSL4: return "HLSL 4.0";
-        case InputShaderVersion::HLSL5: return "HLSL 5.0";
-        case InputShaderVersion::HLSL6: return "HLSL 6.0";
-
-        case InputShaderVersion::GLSL:  return "GLSL";
-        case InputShaderVersion::ESSL:  return "ESSL";
-        case InputShaderVersion::VKSL:  return "VKSL";
-    }
-    return "";
-}
-
-XSC_EXPORT std::string ToString(const OutputShaderVersion shaderVersion)
-{
-    switch (shaderVersion)
-    {
-        case OutputShaderVersion::GLSL110:  return "GLSL 1.10";
-        case OutputShaderVersion::GLSL120:  return "GLSL 1.20";
-        case OutputShaderVersion::GLSL130:  return "GLSL 1.30";
-        case OutputShaderVersion::GLSL140:  return "GLSL 1.40";
-        case OutputShaderVersion::GLSL150:  return "GLSL 1.50";
-        case OutputShaderVersion::GLSL330:  return "GLSL 3.30";
-        case OutputShaderVersion::GLSL400:  return "GLSL 4.00";
-        case OutputShaderVersion::GLSL410:  return "GLSL 4.10";
-        case OutputShaderVersion::GLSL420:  return "GLSL 4.20";
-        case OutputShaderVersion::GLSL430:  return "GLSL 4.30";
-        case OutputShaderVersion::GLSL440:  return "GLSL 4.40";
-        case OutputShaderVersion::GLSL450:  return "GLSL 4.50";
-        case OutputShaderVersion::GLSL:     return "GLSL";
-        
-        case OutputShaderVersion::ESSL100:  return "ESSL 1.00";
-        case OutputShaderVersion::ESSL300:  return "ESSL 3.00";
-        case OutputShaderVersion::ESSL310:  return "ESSL 3.10";
-        case OutputShaderVersion::ESSL320:  return "ESSL 3.20";
-        case OutputShaderVersion::ESSL:     return "ESSL";
-        
-        case OutputShaderVersion::VKSL450:  return "VKSL 4.50";
-        case OutputShaderVersion::VKSL:     return "VKSL";
-    }
-    return "";
-}
-
-XSC_EXPORT std::string ToString(const Reflection::Filter t)
-{
-    return FilterToString(t);
-}
-
-XSC_EXPORT std::string ToString(const Reflection::TextureAddressMode t)
-{
-    return TexAddressModeToString(t);
-}
-
-XSC_EXPORT std::string ToString(const Reflection::ComparisonFunc t)
-{
-    return CompareFuncToString(t);
-}
-
-XSC_EXPORT void PrintReflection(std::ostream& stream, const Reflection::ReflectionData& reflectionData)
-{
-    ReflectionPrinter printer(stream);
-    printer.PrintReflection(reflectionData);
-}
-
-XSC_EXPORT bool IsLanguageHLSL(const InputShaderVersion shaderVersion)
-{
-    return (shaderVersion >= InputShaderVersion::Cg && shaderVersion <= InputShaderVersion::HLSL6);
-}
-
-XSC_EXPORT bool IsLanguageGLSL(const InputShaderVersion shaderVersion)
-{
-    return (shaderVersion >= InputShaderVersion::GLSL && shaderVersion <= InputShaderVersion::VKSL);
-}
-
-XSC_EXPORT bool IsLanguageGLSL(const OutputShaderVersion shaderVersion)
-{
-    return ((shaderVersion >= OutputShaderVersion::GLSL110 && shaderVersion <= OutputShaderVersion::GLSL450) || shaderVersion == OutputShaderVersion::GLSL);
-}
-
-XSC_EXPORT bool IsLanguageESSL(const OutputShaderVersion shaderVersion)
-{
-    return ((shaderVersion >= OutputShaderVersion::ESSL100 && shaderVersion <= OutputShaderVersion::ESSL320) || shaderVersion == OutputShaderVersion::ESSL);
-}
-
-XSC_EXPORT bool IsLanguageVKSL(const OutputShaderVersion shaderVersion)
-{
-    return (shaderVersion == OutputShaderVersion::VKSL450 || shaderVersion == OutputShaderVersion::VKSL);
-}
-
-XSC_EXPORT const std::map<std::string, int>& GetGLSLExtensionEnumeration()
-{
-    return GetGLSLExtensionVersionMap();
 }
 
 
