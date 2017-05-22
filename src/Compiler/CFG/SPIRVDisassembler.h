@@ -57,6 +57,17 @@ class SPIRVDisassembler
             std::vector<std::string>    operands;
         };
 
+        struct TypeInt
+        {
+            std::uint32_t width;
+            std::uint32_t sign;
+        };
+
+        struct TypeFloat
+        {
+            std::uint32_t width;
+        };
+
         /* === Functions === */
 
         // Returns true if the current instruction has remaining operands (determined by next offset).
@@ -69,9 +80,15 @@ class SPIRVDisassembler
         template <typename T>
         void AddOperandEnum(const std::function<const char*(T e)>& enumToString, std::uint32_t offset = ~0);
 
+        template <typename T>
+        void AddOperandConstant(std::uint32_t offset = ~0);
+
         void AddOperandLiteralDecoration(const spv::Decoration decoration);
 
         void NextOffset(std::uint32_t& offset);
+
+        // Sets the current offset to the end to skip all remaining operands as standard output.
+        void SkipOperands();
 
         Printable& MakePrintable();
 
@@ -82,19 +99,22 @@ class SPIRVDisassembler
 
         /* === Members === */
 
-        char                        idPrefixChar_   = '%';
+        char                            idPrefixChar_   = '%';
 
-        std::string                 versionStr_;
-        std::string                 generatorStr_;
-        std::string                 boundStr_;
-        std::string                 schemaStr_;
+        std::string                     versionStr_;
+        std::string                     generatorStr_;
+        std::string                     boundStr_;
+        std::string                     schemaStr_;
 
-        std::vector<Instruction>    instructions_;
-        std::vector<Printable>      printables_;
+        std::vector<Instruction>        instructions_;
+        std::vector<Printable>          printables_;
 
-        const Instruction*          currentInst_    = nullptr;
-        Printable*                  currentPrt_     = nullptr;
-        std::uint32_t               nextOffset_     = 0;
+        const Instruction*              currentInst_    = nullptr;
+        Printable*                      currentPrt_     = nullptr;
+        std::uint32_t                   nextOffset_     = 0;
+
+        std::map<spv::Id, TypeInt>      typesInt_;
+        std::map<spv::Id, TypeFloat>    typesFloat_;
 
 };
 

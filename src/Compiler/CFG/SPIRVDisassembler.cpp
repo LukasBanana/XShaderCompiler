@@ -10,6 +10,7 @@
 #include "Exception.h"
 #include "ReportIdents.h"
 #include "Helper.h"
+#include "Float16Compressor.h"
 #include <Xsc/ConsoleManip.h>
 #include <algorithm>
 #include <iomanip>
@@ -217,9 +218,22 @@ void SPIRVDisassembler::AddOperandEnum(const std::function<const char*(T e)>& en
 
     /* Add operand as enumeration entry name */
     currentPrt_->operands.push_back(
-        enumToString(
-            static_cast<T>(currentInst_->GetOperandUInt32(offset))
-        )
+        enumToString( static_cast<T>(currentInst_->GetOperandUInt32(offset)) )
+    );
+
+    /* Set next operand offset */
+    nextOffset_ = offset + 1;
+}
+
+template <typename T>
+void SPIRVDisassembler::AddOperandConstant(std::uint32_t offset)
+{
+    /* Get next operand offset */
+    NextOffset(offset);
+
+    /* Add operand as enumeration entry name */
+    currentPrt_->operands.push_back(
+        std::to_string( static_cast<T>(currentInst_->GetOperandUInt32(offset)) )
     );
 
     /* Set next operand offset */
@@ -256,6 +270,11 @@ void SPIRVDisassembler::NextOffset(std::uint32_t& offset)
 {
     if (offset == ~0)
         offset = nextOffset_;
+}
+
+void SPIRVDisassembler::SkipOperands()
+{
+    nextOffset_ = currentInst_->NumOperands();
 }
 
 SPIRVDisassembler::Printable& SPIRVDisassembler::MakePrintable()
@@ -297,60 +316,206 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
     switch (inst.opCode)
     {
         case Op::OpCapability:
+        {
             ADD_OPERAND_ENUM(spv::Capability);
-            break;
+        }
+        break;
 
         case Op::OpExtInstImport:
+        {
             AddOperandASCII();
-            break;
+        }
+        break;
 
         case Op::OpMemoryModel:
+        {
             ADD_OPERAND_ENUM(spv::AddressingModel);
             ADD_OPERAND_ENUM(spv::MemoryModel);
-            break;
+        }
+        break;
 
         case Op::OpEntryPoint:
+        {
             ADD_OPERAND_ENUM(spv::ExecutionModel);
             AddOperandId();
             AddOperandASCII();
             while (HasRemainingOperands())
                 AddOperandId(); // Interface
-            break;
+        }
+        break;
 
         case Op::OpDecorate:
+        {
             AddOperandId(); // Target
             ADD_OPERAND_ENUM(spv::Decoration);
             while (HasRemainingOperands())
                 AddOperandLiteralDecoration(static_cast<spv::Decoration>(inst.GetOperandUInt32(1)));
-            break;
+        }
+        break;
 
         case Op::OpMemberDecorate:
-            AddOperandId(); // Structure Type
+        {
+            AddOperandId(); // Structure type
             AddOperandUInt32(); // Literal number
             ADD_OPERAND_ENUM(spv::Decoration);
             while (HasRemainingOperands())
                 AddOperandLiteralDecoration(static_cast<spv::Decoration>(inst.GetOperandUInt32(2)));
-            break;
+        }
+        break;
 
         case Op::OpDecorateId:
+        {
             AddOperandId(); // Target
             ADD_OPERAND_ENUM(spv::Decoration);
             while (HasRemainingOperands())
                 AddOperandLiteralDecoration(static_cast<spv::Decoration>(inst.GetOperandUInt32(2)));
-            break;
+        }
+        break;
 
         case Op::OpName:
+        {
             AddOperandId(); // Target
             AddOperandASCII();
-            break;
+        }
+        break;
 
         case Op::OpMemberName:
+        {
             AddOperandUInt32();
             AddOperandASCII();
-            break;
+        }
+        break;
+
+        case Op::OpTypeInt:
+        {
+            /* Store type */
+            typesInt_[inst.result] = { inst.GetOperandUInt32(0), inst.GetOperandUInt32(1) };
+        }
+        break;
+
+        case Op::OpTypeFloat:
+        {
+            /* Store type */
+            typesFloat_[inst.result] = { inst.GetOperandUInt32(0) };
+        }
+        break;
+
+        case Op::OpConstant:
+        {
+            /* Search int type */
+            auto it = typesInt_.find(inst.type);
+            if (it != typesInt_.end())
+            {
+                /* Add integral constant to output */
+                const auto& type = it->second;
+
+                switch (type.width)
+                {
+                    case 16:
+                    {
+                        if (type.sign)
+                            AddOperandConstant<std::int16_t>(0);
+                        else
+                            AddOperandConstant<std::uint16_t>(0);
+                    }
+                    break;
+
+                    case 32:
+                    {
+                        if (type.sign)
+                            AddOperandConstant<std::int32_t>(0);
+                        else
+                            AddOperandConstant<std::uint32_t>(0);
+                    }
+                    break;
+
+                    case 64:
+                    {
+                        /* Extract 64-bit integral */
+                        std::uint64_t ui = 0;
+                        ui = inst.GetOperandUInt32(0);
+                        ui <<= 32;
+                        ui |= inst.GetOperandUInt32(1);
+
+                        if (type.sign)
+                            prt.operands.push_back(std::to_string(static_cast<std::int64_t>(ui)));
+                        else
+                            prt.operands.push_back(std::to_string(ui));
+                    }
+                    break;
+                }
+
+                SkipOperands();
+            }
+            else
+            {
+                /* Search float type */
+                auto it = typesFloat_.find(inst.type);
+                if (it != typesFloat_.end())
+                {
+                    /* Add integral constant to output */
+                    const auto& type = it->second;
+
+                    switch (type.width)
+                    {
+                        case 16:
+                        {
+                            /* Extract 16-bit floating-point */
+                            const auto f16 = DecompressFloat16(static_cast<std::uint16_t>(inst.GetOperandUInt32(0)));
+                            prt.operands.push_back(std::to_string(f16));
+                        }
+                        break;
+
+                        case 32:
+                        {
+                            /* Extract 32-bit floating-point */
+                            union
+                            {
+                                std::uint32_t   ui;
+                                float           f;
+                            }
+                            data;
+
+                            data.ui = inst.GetOperandUInt32(0);
+
+                            prt.operands.push_back(std::to_string(data.f));
+                        }
+                        break;
+
+                        case 64:
+                        {
+                            /* Extract 64-bit floating-point */
+                            union
+                            {
+                                std::uint64_t   ui;
+                                double          f;
+                            }
+                            data;
+
+                            data.ui = inst.GetOperandUInt32(0);
+                            data.ui <<= 32;
+                            data.ui |= inst.GetOperandUInt32(1);
+
+                            prt.operands.push_back(std::to_string(data.f));
+                        }
+                        break;
+                    }
+
+                    SkipOperands();
+                }
+            }
+        }
+        break;
+
+        case Op::OpFunction:
+        {
+            ADD_OPERAND_ENUM(spv::FunctionControlMask);
+            AddOperandId(); // Function type
+        }
+        break;
 
         default:
-            break;
+        break;
     }
 
     /* Append all remaining operands */
