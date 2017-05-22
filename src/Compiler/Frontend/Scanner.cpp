@@ -169,7 +169,7 @@ TokenPtr Scanner::NextTokenScan(bool scanComments, bool scanWhiteSpaces)
         {
             /* Add to error and scan next token */
             if (log_)
-                log_->SumitReport(err);
+                log_->SubmitReport(err);
         }
     }
 

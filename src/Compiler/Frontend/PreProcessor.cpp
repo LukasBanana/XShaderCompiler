@@ -42,7 +42,7 @@ std::unique_ptr<std::iostream> PreProcessor::Process(
     catch (const Report& err)
     {
         if (GetLog())
-            GetLog()->SumitReport(err);
+            GetLog()->SubmitReport(err);
     }
 
     return nullptr;

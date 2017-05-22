@@ -76,14 +76,14 @@ bool Compiler::CompileShader(
 bool Compiler::ReturnWithError(const std::string& msg)
 {
     if (log_)
-        log_->SumitReport(Report(ReportTypes::Error, msg));
+        log_->SubmitReport(Report(ReportTypes::Error, msg));
     return false;
 }
 
 void Compiler::Warning(const std::string& msg)
 {
     if (log_)
-        log_->SumitReport(Report(ReportTypes::Warning, msg));
+        log_->SubmitReport(Report(ReportTypes::Warning, msg));
 }
 
 void Compiler::ValidateArguments(const ShaderInput& inputDesc, const ShaderOutput& outputDesc)

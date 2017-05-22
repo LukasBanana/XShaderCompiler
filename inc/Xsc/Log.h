@@ -28,7 +28,7 @@ class XSC_EXPORT Log
     public:
         
         //! Submits the specified report.
-        virtual void SumitReport(const Report& report) = 0;
+        virtual void SubmitReport(const Report& report) = 0;
 
         //! Sets the next indentation string. By default two spaces.
         inline void SetIndent(const std::string& indent)
@@ -71,7 +71,7 @@ class XSC_EXPORT StdLog : public Log
     public:
 
         //! Implements the base class interface.
-        void SumitReport(const Report& report) override;
+        void SubmitReport(const Report& report) override;
 
         //! Prints all submitted reports to the standard output.
         void PrintAll(bool verbose = true);

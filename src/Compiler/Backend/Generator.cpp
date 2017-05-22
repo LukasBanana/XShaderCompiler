@@ -44,7 +44,7 @@ bool Generator::GenerateCode(
     catch (const Report& err)
     {
         if (log)
-            log->SumitReport(err);
+            log->SubmitReport(err);
         return false;
     }
 

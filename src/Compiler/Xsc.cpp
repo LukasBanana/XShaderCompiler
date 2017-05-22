@@ -70,7 +70,7 @@ XSC_EXPORT bool CompileShader(
                 );
             }
 
-            log->SumitReport(
+            log->SubmitReport(
                 Report(
                     ReportTypes::Info,
                     "timing " + processName + std::to_string(duration) + " ms"
