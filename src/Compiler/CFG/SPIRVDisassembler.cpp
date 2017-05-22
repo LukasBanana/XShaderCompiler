@@ -6,6 +6,7 @@
  */
 
 #include "SPIRVDisassembler.h"
+#include "SPIRVHelper.h"
 #include "Exception.h"
 #include "ReportIdents.h"
 #include "Helper.h"
@@ -86,21 +87,10 @@ void SPIRVDisassembler::Parse(std::istream& stream)
     /* Parse SPIR-V version */
     const auto versionNo = ReadWord();
 
-    switch (versionNo)
-    {
-        case 0x00010000:
-            versionStr_ = "1.0";
-            break;
-        case 0x00010100:
-            versionStr_ = "1.1";
-            break;
-        case 0x00010200:
-            versionStr_ = "1.2";
-            break;
-        default:
-            RuntimeErr(R_SPIRVUnknownVersionNumber(ToHexString(versionNo)));
-            break;
-    }
+    if (auto s = SPIRVHelper::GetSPIRVVersionStringOrNull(versionNo))
+        versionStr_ = s;
+    else
+        RuntimeErr(R_SPIRVUnknownVersionNumber(ToHexString(versionNo)));
 
     /* Parse generator magic number (see https://www.khronos.org/registry/spir-v/api/spir-v.xml) */
     const auto generatorMagic = ReadWord();
@@ -108,49 +98,7 @@ void SPIRVDisassembler::Parse(std::istream& stream)
     const auto generatorVendorId    = (generatorMagic >> 16);
     const auto generatorVersionNo   = (generatorMagic & 0xffff);
 
-    switch (generatorVendorId)
-    {
-        case 0:
-            generatorStr_ = "Khronos"; // "Reserved by Khronos"
-            break;
-        case 1:
-            generatorStr_ = "LunarG"; // "Contact TBD"
-            break;
-        case 2:
-            generatorStr_ = "Valve"; // "Contact TBD"
-            break;
-        case 3:
-            generatorStr_ = "Codeplay"; // "Contact Neil Henning, neil@codeplay.com"
-            break;
-        case 4:
-            generatorStr_ = "NVIDIA"; // "Contact Kerch Holt, kholt@nvidia.com"
-            break;
-        case 5:
-            generatorStr_ = "ARM"; // "Contact Alexander Galazin, alexander.galazin@arm.com"
-            break;
-        case 6:
-            generatorStr_ = "Khronos LLVM/SPIR-V Translator"; // "Contact Yaxun (Sam) Liu, yaxun.liu@amd.com"
-            break;
-        case 7:
-            generatorStr_ = "Khronos SPIR-V Tools Assembler"; // "Contact David Neto, dneto@google.com"
-            break;
-        case 8:
-            generatorStr_ = "Khronos Glslang Reference Front End"; // "Contact John Kessenich, johnkessenich@google.com"
-            break;
-        case 9:
-            generatorStr_ = "Qualcomm"; // "Contact weifengz@qti.qualcomm.com"
-            break;
-        case 10:
-            generatorStr_ = "AMD"; // "Contact Daniel Rakos, daniel.rakos@amd.com"
-            break;
-        case 11:
-            generatorStr_ = "Intel"; // "Contact Alexey, alexey.bader@intel.com"/>
-            break;
-        default:
-            generatorStr_ = "Unknown";
-            break;
-    }
-
+    generatorStr_ = SPIRVHelper::GetSPIRVGeneratorNameById(generatorVendorId);
     generatorStr_ += " (Version " + std::to_string(generatorVersionNo) + ")";
 
     /* Parse ID bound */

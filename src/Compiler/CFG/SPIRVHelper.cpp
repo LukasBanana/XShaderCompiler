@@ -519,6 +519,39 @@ bool HasResultId(const Op opCode)
     }
 }
 
+// SPIR-V generator magic numbers
+// see https://www.khronos.org/registry/spir-v/api/spir-v.xml
+const char* GetSPIRVGeneratorNameById(unsigned int id)
+{
+    switch (id)
+    {
+        case  0: return "Khronos";                              // Reserved by Khronos
+        case  1: return "LunarG";                               // Contact TBD
+        case  2: return "Valve";                                // Contact TBD
+        case  3: return "Codeplay";                             // Contact Neil Henning, neil@codeplay.com
+        case  4: return "NVIDIA";                               // Contact Kerch Holt, kholt@nvidia.com
+        case  5: return "ARM";                                  // Contact Alexander Galazin, alexander.galazin@arm.com
+        case  6: return "Khronos LLVM/SPIR-V Translator";       // Contact Yaxun (Sam) Liu, yaxun.liu@amd.com
+        case  7: return "Khronos SPIR-V Tools Assembler";       // Contact David Neto, dneto@google.com
+        case  8: return "Khronos Glslang Reference Front End";  // Contact John Kessenich, johnkessenich@google.com
+        case  9: return "Qualcomm";                             // Contact weifengz@qti.qualcomm.com
+        case 10: return "AMD";                                  // Contact Daniel Rakos, daniel.rakos@amd.com
+        case 11: return "Intel";                                // Contact Alexey, alexey.bader@intel.com
+        default: return "Unknown";
+    }
+}
+
+const char* GetSPIRVVersionStringOrNull(unsigned int version)
+{
+    switch (version)
+    {
+        case 0x00010000: return "1.0";
+        case 0x00010100: return "1.1";
+        case 0x00010200: return "1.2";
+        default:         return nullptr;
+    }
+}
+
 
 } // /namespace SPIRVHelper
 

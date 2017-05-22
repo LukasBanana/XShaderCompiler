@@ -25,6 +25,12 @@ bool HasTypeId(const spv::Op opCode);
 // Returns true if the specified SPIR-V instruction op-code has a result-ID.
 bool HasResultId(const spv::Op opCode);
 
+// Returns the SPIR-V generator name by the specified ID number.
+const char* GetSPIRVGeneratorNameById(unsigned int id);
+
+// Returns the specified SPIR-V version as string, or returns null if the version number is unknown.
+const char* GetSPIRVVersionStringOrNull(unsigned int version);
+
 
 } // /namespace SPIRVHelper
 
