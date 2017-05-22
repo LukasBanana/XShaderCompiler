@@ -9,6 +9,8 @@
 #define XSC_VERSION_H
 
 
+/* ===== Public macros ===== */
+
 //! Xsc major version number.
 #define XSC_VERSION_MAJOR   0
 

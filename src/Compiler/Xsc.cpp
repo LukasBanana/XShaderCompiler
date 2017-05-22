@@ -291,11 +291,25 @@ XSC_EXPORT bool CompileShader(
 }
 
 XSC_EXPORT void DisassembleShader(
-    std::istream& streamIn, std::ostream& streamOut, const AssemblyFormatting& formatting)
+    std::istream& streamIn, std::ostream& streamOut, const AssemblyDescriptor& desc)
 {
-    SPIRVDisassembler disassembler;
-    disassembler.Parse(streamIn);
-    disassembler.Print(streamOut, formatting.idPrefixChar);
+    switch (desc.intermediateLanguage)
+    {
+        case IntermediateLanguage::SPIRV:
+        {
+            /* Disassemble SPIR-V module */
+            SPIRVDisassembler disassembler;
+            disassembler.Parse(streamIn);
+            disassembler.Print(streamOut, desc.idPrefixChar);
+            break;
+        }
+
+        default:
+        {
+            throw std::invalid_argument(R_InvalidILForDisassembling);
+        }
+        break;
+    }
 }
 
 

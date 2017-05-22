@@ -18,6 +18,8 @@ namespace Xsc
 {
 
 
+/* ===== Public classes ===== */
+
 //! Indentation handler base class.
 class XSC_EXPORT IndentHandler
 {

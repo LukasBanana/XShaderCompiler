@@ -76,6 +76,8 @@ namespace Xsc
 {
 
 
+/* ===== Public structures ===== */
+
 //! Compiler warning flags.
 struct Warnings
 {
@@ -320,12 +322,18 @@ struct ShaderOutput
     NameMangling                nameMangling;
 };
 
-//! Formatting descriptor structure for the SPIRV disassembler.
-struct AssemblyFormatting
+//! Descriptor structure for the shader disassembler.
+struct AssemblyDescriptor
 {
+    //! Specifies the intermediate language of the assembly input code. Currently only SPIR-V is supported. By default IntermediateLanguage::SPIRV.
+    IntermediateLanguage    intermediateLanguage    = IntermediateLanguage::SPIRV;
+
     //! Specifies the prefix character to be used for ID numbers in the SPIR-V instructions.
-    char idPrefixChar = '%';
+    char                    idPrefixChar            = '%';
 };
+
+
+/* ===== Public functions ===== */
 
 /**
 \brief Cross compiles the shader code from the specified input stream into the specified output shader code.
@@ -353,11 +361,12 @@ XSC_EXPORT bool CompileShader(
 \param[in,out] streamOut Specifies the output stream of the human readable code.
 \param[in] formatting Specifies the output formatting.
 \throws std::runtime_error If the disassembling failed.
+\throws std::invalid_argument If 'desc.intermediateLanguage' has an invalid value.
 */
 XSC_EXPORT void DisassembleShader(
     std::istream&               streamIn,
     std::ostream&               streamOut,
-    const AssemblyFormatting&   formatting = {}
+    const AssemblyDescriptor&   desc = {}
 );
 
 

@@ -501,6 +501,7 @@ DECL_REPORT( ParsingSourceFailed,               "parsing input code failed"     
 DECL_REPORT( AnalyzingSourceFailed,             "analyzing input code failed"                                                                                   );
 DECL_REPORT( GeneratingOutputCodeFailed,        "generating output code failed"                                                                                 );
 DECL_REPORT( OnlyPreProcessingForNonHLSL,       "only pre-processing supported for shaders other than HLSL or Cg"                                               );
+DECL_REPORT( InvalidILForDisassembling,         "invalid intermediate language for disassembling"                                                               );
 
 /* ----- Shell ----- */
 

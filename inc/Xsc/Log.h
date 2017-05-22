@@ -19,6 +19,8 @@ namespace Xsc
 {
 
 
+/* ===== Public classes ===== */
+
 //! Log base class.
 class XSC_EXPORT Log
 {

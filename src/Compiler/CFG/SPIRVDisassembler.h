@@ -10,6 +10,7 @@
 
 
 #include "Instruction.h"
+#include <Xsc/Xsc.h>
 #include <iostream>
 #include <vector>
 #include <string>

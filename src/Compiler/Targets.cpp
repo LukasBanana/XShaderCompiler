@@ -76,6 +76,15 @@ XSC_EXPORT std::string ToString(const OutputShaderVersion shaderVersion)
     return "";
 }
 
+XSC_EXPORT std::string ToString(const IntermediateLanguage language)
+{
+    switch (language)
+    {
+        case IntermediateLanguage::SPIRV: return "SPIR-V";
+    }
+    return "";
+}
+
 XSC_EXPORT bool IsLanguageHLSL(const InputShaderVersion shaderVersion)
 {
     return (shaderVersion >= InputShaderVersion::Cg && shaderVersion <= InputShaderVersion::HLSL6);
