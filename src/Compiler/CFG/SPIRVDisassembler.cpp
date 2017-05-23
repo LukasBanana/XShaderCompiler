@@ -1028,8 +1028,28 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
 
 void SPIRVDisassembler::PrintAll(std::ostream& stream)
 {
-    static const std::size_t idResultPadding = 8;
-    
+    static const std::size_t idResultPadding    = 8;
+    static const std::size_t minOpCodeLen       = 5;
+    static const std::size_t minOperandListLen  = 8;
+
+    /* Determine longest opcode name and operand list */
+    std::size_t maxOpCodeLen        = minOpCodeLen;
+    std::size_t maxOperandListLen   = minOperandListLen;
+
+    for (const auto& prt : printables_)
+    {
+        /* Get maximal opcode length */
+        maxOpCodeLen = std::max(maxOpCodeLen, prt.opCode.size());
+
+        /* Get maximal operand list length */
+        std::size_t len = 0;
+
+        for (const auto& op : prt.operands)
+            len += (op.size() + 1);
+
+        maxOperandListLen = std::max(maxOperandListLen, len);
+    }
+
     /* Print header information */
     if (desc_.showHeader)
     {
@@ -1039,35 +1059,27 @@ void SPIRVDisassembler::PrintAll(std::ostream& stream)
         stream << "; Bound:     " << boundStr_ << std::endl;
         stream << "; Schema:    " << schemaStr_ << std::endl;
         stream << std::endl;
-        
+
         if (desc_.showOffsets)
         {
-            stream << "; Offset     Result     OpCode" << std::endl;
-            stream << "; --------   --------   ------------------------------" << std::endl;
+            stream << "; Result     ";
+            stream << "OpCode" << std::string(maxOpCodeLen - minOpCodeLen, ' ');
+            stream << "Operands" << std::string(maxOperandListLen - minOperandListLen, ' ');
+            stream << "Offsets" << std::endl;
+
+            stream << "; " << std::string(idResultPadding + 2, '-');
+            stream << ' ' << std::string(maxOpCodeLen, '-');
+            stream << ' ' << std::string(maxOperandListLen - 1, '-');
+            stream << ' ' << std::string(12, '-') << std::endl;
         }
         else
         {
-            stream << "; Result     OpCode" << std::endl;
-            stream << "; --------   ------------------------------" << std::endl;
         }
     }
-
-    /* Determine longest opcode name */
-    std::size_t maxOpCodeLen = 0;
-
-    for (const auto& prt : printables_)
-        maxOpCodeLen = std::max(maxOpCodeLen, prt.opCode.size());
 
     /* Write all printables out to stream */
     for (const auto& prt : printables_)
     {
-        /* Print byte offset */
-        if (desc_.showOffsets)
-        {
-            ScopedColor scopedColor(ColorFlags::Green, ColorFlags::Black, stream);
-            stream << prt.offset << ' ';
-        }
-
         stream << "  ";
 
         /* Print result */
@@ -1091,8 +1103,21 @@ void SPIRVDisassembler::PrintAll(std::ostream& stream)
         }
 
         /* Print operands */
+        std::size_t len = 0;
+
         for (const auto& op : prt.operands)
+        {
             PrintOperand(stream, op);
+            len += (op.size() + 1);
+        }
+
+        /* Print byte offset */
+        if (desc_.showOffsets)
+        {
+            stream << std::string(maxOperandListLen - len, ' ');
+            ScopedColor scopedColor(ColorFlags::Gray, stream);
+            stream << " ; " << prt.offset << ' ';
+        }
 
         stream << std::endl;
     }
