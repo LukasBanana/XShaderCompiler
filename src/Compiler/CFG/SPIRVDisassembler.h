@@ -33,7 +33,7 @@ class SPIRVDisassembler
         void Parse(std::istream& stream);
 
         // Prints the human readable code of all instructions.
-        void Print(std::ostream& stream, char idPrefixChar = '%');
+        void Print(std::ostream& stream, const AssemblyDescriptor& desc);
 
         // Adds the specified instruction manually to the print output.
         void Add(const Instruction& inst);
@@ -84,6 +84,7 @@ class SPIRVDisassembler
         void AddOperandConstant(std::uint32_t offset = ~0);
 
         void AddOperandLiteralDecoration(const spv::Decoration decoration);
+        void AddOperandLiteralExecutionMode(const spv::ExecutionMode mode);
 
         void NextOffset(std::uint32_t& offset);
 
@@ -99,7 +100,7 @@ class SPIRVDisassembler
 
         /* === Members === */
 
-        char                            idPrefixChar_   = '%';
+        AssemblyDescriptor              desc_;
 
         std::string                     versionStr_;
         std::string                     generatorStr_;

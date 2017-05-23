@@ -98,7 +98,7 @@ XSC_EXPORT void DisassembleShader(
             /* Disassemble SPIR-V module */
             SPIRVDisassembler disassembler;
             disassembler.Parse(streamIn);
-            disassembler.Print(streamOut, desc.idPrefixChar);
+            disassembler.Print(streamOut, desc);
             break;
         }
 

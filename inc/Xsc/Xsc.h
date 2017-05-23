@@ -330,6 +330,12 @@ struct AssemblyDescriptor
 
     //! Specifies the prefix character to be used for ID numbers in the SPIR-V instructions.
     char                    idPrefixChar            = '%';
+
+    //! Specifies whether to show the instruction byte offsets in the disassembly or not. By default true.
+    bool                    showOffsets             = true;
+
+    //! Specifies whether to indent the instruction operands or not. By default true.
+    bool                    indentOperands          = true;
 };
 
 

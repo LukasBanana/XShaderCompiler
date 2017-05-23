@@ -116,14 +116,14 @@ void SPIRVDisassembler::Parse(std::istream& stream)
     }
 }
 
-void SPIRVDisassembler::Print(std::ostream& stream, char idPrefixChar)
+void SPIRVDisassembler::Print(std::ostream& stream, const AssemblyDescriptor& desc)
 {
     /* Validate arguments */
     if (!stream.good())
         InvalidArg(R_InvalidOutputStream);
 
-    /* Store new prefix character */
-    idPrefixChar_ = idPrefixChar;
+    /* Store descriptor parameter */
+    desc_ = desc;
 
     /* Print all instructions */
     std::uint32_t byteOffset = sizeof(std::uint32_t) * 5;
@@ -188,7 +188,7 @@ void SPIRVDisassembler::AddOperandId(std::uint32_t offset)
 
     /* Add operand as ID number (e.g. "%1") */
     currentPrt_->operands.push_back(
-        idPrefixChar_ + std::to_string(currentInst_->GetOperandUInt32(offset))
+        desc_.idPrefixChar + std::to_string(currentInst_->GetOperandUInt32(offset))
     );
 
     /* Set next operand offset */
@@ -265,6 +265,27 @@ void SPIRVDisassembler::AddOperandLiteralDecoration(const spv::Decoration decora
     }
 }
 
+void SPIRVDisassembler::AddOperandLiteralExecutionMode(const spv::ExecutionMode mode)
+{
+    switch (mode)
+    {
+        case spv::ExecutionMode::SubgroupsPerWorkgroupId:
+            AddOperandId(); // Subgroups Per Workgroup
+            break;
+        case spv::ExecutionMode::LocalSizeId:
+            AddOperandId(); // X Size
+            AddOperandId(); // Y Size
+            AddOperandId(); // Z Size
+            break;
+        case spv::ExecutionMode::LocalSizeHintId:
+            AddOperandId(); // Local Size Hint
+            break;
+        default:
+            AddOperandUInt32();
+            break;
+    }
+}
+
 void SPIRVDisassembler::NextOffset(std::uint32_t& offset)
 {
     if (offset == ~0)
@@ -300,14 +321,14 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
 
     /* Print result */
     if (inst.result)
-        prt.result = (idPrefixChar_ + std::to_string(inst.result));
+        prt.result = (desc_.idPrefixChar + std::to_string(inst.result));
 
     /* Print op-code */
     prt.opCode = spv::OpToString(inst.opCode);
 
     /* Print type */
     if (inst.type)
-        prt.operands.push_back(idPrefixChar_ + std::to_string(inst.type));
+        prt.operands.push_back(desc_.idPrefixChar + std::to_string(inst.type));
 
     /* Print operands */
     using Op = spv::Op;
@@ -340,6 +361,15 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
             AddOperandASCII();
             while (HasRemainingOperands())
                 AddOperandId(); // Interface
+        }
+        break;
+
+        case Op::OpExecutionMode:
+        {
+            AddOperandId();
+            ADD_OPERAND_ENUM(spv::ExecutionMode);
+            while (HasRemainingOperands())
+                AddOperandLiteralExecutionMode(static_cast<spv::ExecutionMode>(inst.GetOperandUInt32(1)));
         }
         break;
 
@@ -524,8 +554,8 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
 
 void SPIRVDisassembler::PrintAll(std::ostream& stream)
 {
-    static const std::size_t idResultPadding = 6;
-
+    static const std::size_t idResultPadding = 8;
+    
     /* Print header information */
     {
         ScopedColor scopedColor(ColorFlags::Gray, stream);
@@ -534,16 +564,33 @@ void SPIRVDisassembler::PrintAll(std::ostream& stream)
         stream << "; Bound:     " << boundStr_ << std::endl;
         stream << "; Schema:    " << schemaStr_ << std::endl;
         stream << std::endl;
-        stream << "; Offset   Result    OpCode" << std::endl;
-        stream << "; " << std::string(50, '-') << std::endl;
+        
+        if (desc_.showOffsets)
+        {
+            stream << "; Offset     Result     OpCode" << std::endl;
+            stream << "; --------   --------   ------------------------------" << std::endl;
+        }
+        else
+        {
+            stream << "; Result     OpCode" << std::endl;
+            stream << "; --------   ------------------------------" << std::endl;
+        }
     }
 
+    /* Determine longest opcode name */
+    std::size_t maxOpCodeLen = 0;
+
+    for (const auto& prt : printables_)
+        maxOpCodeLen = std::max(maxOpCodeLen, prt.opCode.size());
+
+    /* Write all printables out to stream */
     for (const auto& prt : printables_)
     {
         /* Print byte offset */
+        if (desc_.showOffsets)
         {
             ScopedColor scopedColor(ColorFlags::Green, ColorFlags::Black, stream);
-            stream << prt.offset;
+            stream << prt.offset << ' ';
         }
 
         stream << "  ";
@@ -564,6 +611,8 @@ void SPIRVDisassembler::PrintAll(std::ostream& stream)
         {
             ScopedColor scopedColor(ColorFlags::Yellow | ColorFlags::Intens, stream);
             stream << prt.opCode;
+            if (desc_.indentOperands)
+                stream << std::string(maxOpCodeLen - prt.opCode.size(), ' ');
         }
 
         /* Print operands */
@@ -589,7 +638,7 @@ void SPIRVDisassembler::PrintOperand(std::ostream& stream, const std::string& s)
             }
             stream << '\"';
         }
-        else if (s[0] == idPrefixChar_)
+        else if (s[0] == desc_.idPrefixChar)
         {
             ScopedColor scopedColor(ColorFlags::Red | ColorFlags::Intens, stream);
             stream << s;
