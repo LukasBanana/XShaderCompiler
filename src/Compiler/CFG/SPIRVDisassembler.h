@@ -86,6 +86,10 @@ class SPIRVDisassembler
         void AddOperandLiteralDecoration(const spv::Decoration decoration);
         void AddOperandLiteralExecutionMode(const spv::ExecutionMode mode);
 
+        // Adds each remaining operand as Id.
+        void AddRemainingOperandsId();
+
+        // Adjusts the specified offset.
         void NextOffset(std::uint32_t& offset);
 
         // Sets the current offset to the end to skip all remaining operands as standard output.

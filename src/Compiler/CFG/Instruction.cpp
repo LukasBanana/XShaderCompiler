@@ -8,6 +8,7 @@
 #include "Instruction.h"
 #include "ReportIdents.h"
 #include "SPIRVHelper.h"
+#include "Float16Compressor.h"
 #include <stdexcept>
 
 
@@ -109,16 +110,80 @@ Instruction& Instruction::AddOperandASCII(const std::string& s)
     return *this;
 }
 
-Instruction& Instruction::AddOperandUInt32(spv::Id i)
+Instruction& Instruction::AddOperandUInt32(std::uint32_t i)
 {
     operands.push_back(i);
     return *this;
 }
 
-spv::Id Instruction::GetOperandUInt32(std::uint32_t offset) const
+std::uint32_t Instruction::GetOperandUInt32(std::uint32_t offset) const
 {
     if (offset < NumOperands())
         return operands[offset];
+    else
+        throw std::out_of_range(R_NotEnoughOperandsInInst());
+}
+
+std::uint64_t Instruction::GetOperandUInt64(std::uint32_t offset) const
+{
+    if (offset + 1 < NumOperands())
+    {
+        /* Extract 64-bit integral */
+        std::uint64_t ui = 0;
+
+        ui = operands[offset];
+        ui <<= 32;
+        ui |= operands[offset + 1];
+
+        return ui;
+    }
+    else
+        throw std::out_of_range(R_NotEnoughOperandsInInst());
+}
+
+float Instruction::GetOperandFloat16(std::uint32_t offset) const
+{
+    return DecompressFloat16(static_cast<std::uint16_t>(GetOperandUInt32(offset)));
+}
+
+float Instruction::GetOperandFloat32(std::uint32_t offset) const
+{
+    if (offset < NumOperands())
+    {
+        /* Extract 32-bit floating-point */
+        union
+        {
+            std::uint32_t   ui;
+            float           f;
+        }
+        data;
+
+        data.ui = operands[offset];
+
+        return data.f;
+    }
+    else
+        throw std::out_of_range(R_NotEnoughOperandsInInst());
+}
+
+double Instruction::GetOperandFloat64(std::uint32_t offset) const
+{
+    if (offset + 1 < NumOperands())
+    {
+        /* Extract 32-bit floating-point */
+        union
+        {
+            std::uint64_t   ui;
+            double          f;
+        }
+        data;
+
+        data.ui = operands[offset];
+        data.ui <<= 32;
+        data.ui |= operands[offset + 1];
+
+        return data.f;
+    }
     else
         throw std::out_of_range(R_NotEnoughOperandsInInst());
 }

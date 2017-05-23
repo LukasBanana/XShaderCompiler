@@ -286,6 +286,12 @@ void SPIRVDisassembler::AddOperandLiteralExecutionMode(const spv::ExecutionMode 
     }
 }
 
+void SPIRVDisassembler::AddRemainingOperandsId()
+{
+    while (HasRemainingOperands())
+        AddOperandId();
+}
+
 void SPIRVDisassembler::NextOffset(std::uint32_t& offset)
 {
     if (offset == ~0)
@@ -359,8 +365,7 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
             ADD_OPERAND_ENUM(spv::ExecutionModel);
             AddOperandId();
             AddOperandASCII();
-            while (HasRemainingOperands())
-                AddOperandId(); // Interface
+            AddRemainingOperandsId(); // Interface
         }
         break;
 
@@ -370,6 +375,23 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
             ADD_OPERAND_ENUM(spv::ExecutionMode);
             while (HasRemainingOperands())
                 AddOperandLiteralExecutionMode(static_cast<spv::ExecutionMode>(inst.GetOperandUInt32(1)));
+        }
+        break;
+
+        case Op::OpSource:
+        {
+            ADD_OPERAND_ENUM(spv::SourceLanguage);
+            AddOperandUInt32(); // Version
+            if (HasRemainingOperands())
+                AddOperandId(); // File
+            if (HasRemainingOperands())
+                AddOperandASCII(); // Source
+        }
+        break;
+
+        case Op::OpSourceExtension:
+        {
+            AddOperandASCII(); // Extension
         }
         break;
 
@@ -438,40 +460,35 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
                 /* Add integral constant to output */
                 const auto& type = it->second;
 
-                switch (type.width)
+                if (type.sign)
                 {
-                    case 16:
+                    switch (type.width)
                     {
-                        if (type.sign)
+                        case 16:
                             AddOperandConstant<std::int16_t>(0);
-                        else
-                            AddOperandConstant<std::uint16_t>(0);
-                    }
-                    break;
-
-                    case 32:
-                    {
-                        if (type.sign)
+                            break;
+                        case 32:
                             AddOperandConstant<std::int32_t>(0);
-                        else
-                            AddOperandConstant<std::uint32_t>(0);
+                            break;
+                        case 64:
+                            prt.operands.push_back(std::to_string(static_cast<std::int64_t>(inst.GetOperandUInt64(0))));
+                            break;
                     }
-                    break;
-
-                    case 64:
+                }
+                else
+                {
+                    switch (type.width)
                     {
-                        /* Extract 64-bit integral */
-                        std::uint64_t ui = 0;
-                        ui = inst.GetOperandUInt32(0);
-                        ui <<= 32;
-                        ui |= inst.GetOperandUInt32(1);
-
-                        if (type.sign)
-                            prt.operands.push_back(std::to_string(static_cast<std::int64_t>(ui)));
-                        else
-                            prt.operands.push_back(std::to_string(ui));
+                        case 16:
+                            AddOperandConstant<std::uint16_t>(0);
+                            break;
+                        case 32:
+                            AddOperandConstant<std::uint32_t>(0);
+                            break;
+                        case 64:
+                            prt.operands.push_back(std::to_string(inst.GetOperandUInt64(0)));
+                            break;
                     }
-                    break;
                 }
 
                 SkipOperands();
@@ -488,51 +505,25 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
                     switch (type.width)
                     {
                         case 16:
-                        {
-                            /* Extract 16-bit floating-point */
-                            const auto f16 = DecompressFloat16(static_cast<std::uint16_t>(inst.GetOperandUInt32(0)));
-                            prt.operands.push_back(std::to_string(f16));
-                        }
-                        break;
-
+                            prt.operands.push_back(std::to_string(inst.GetOperandFloat16(0)));
+                            break;
                         case 32:
-                        {
-                            /* Extract 32-bit floating-point */
-                            union
-                            {
-                                std::uint32_t   ui;
-                                float           f;
-                            }
-                            data;
-
-                            data.ui = inst.GetOperandUInt32(0);
-
-                            prt.operands.push_back(std::to_string(data.f));
-                        }
-                        break;
-
+                            prt.operands.push_back(std::to_string(inst.GetOperandFloat32(0)));
+                            break;
                         case 64:
-                        {
-                            /* Extract 64-bit floating-point */
-                            union
-                            {
-                                std::uint64_t   ui;
-                                double          f;
-                            }
-                            data;
-
-                            data.ui = inst.GetOperandUInt32(0);
-                            data.ui <<= 32;
-                            data.ui |= inst.GetOperandUInt32(1);
-
-                            prt.operands.push_back(std::to_string(data.f));
-                        }
-                        break;
+                            prt.operands.push_back(std::to_string(inst.GetOperandFloat64(0)));
+                            break;
                     }
 
                     SkipOperands();
                 }
             }
+        }
+        break;
+
+        case Op::OpConstantComposite:
+        {
+            AddRemainingOperandsId(); // Constituents
         }
         break;
 
@@ -557,6 +548,7 @@ void SPIRVDisassembler::PrintAll(std::ostream& stream)
     static const std::size_t idResultPadding = 8;
     
     /* Print header information */
+    if (desc_.showHeader)
     {
         ScopedColor scopedColor(ColorFlags::Gray, stream);
         stream << "; SPIR-V " << versionStr_ << std::endl;
