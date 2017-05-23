@@ -42,13 +42,13 @@ class IOModifier
         IOModifier() = default;
 
         inline IOModifier(int code) :
-            codeFg_{ code }
+            codeFg_ { code }
         {
         }
 
         inline IOModifier(int codeFg, int codeBg) :
-            codeFg_{ codeFg },
-            codeBg_{ codeBg }
+            codeFg_ { codeFg },
+            codeBg_ { codeBg }
         {
         }
         
@@ -166,7 +166,7 @@ void PushColor(long front, std::ostream& stream)
 void PushColor(long front, long back, std::ostream& stream)
 {
     if (IsEnabled())
-        g_modifierState.Push(stream, IOModifier(GetModCode(front, true), GetModCode(front, false)));
+        g_modifierState.Push(stream, IOModifier(GetModCode(front, true), GetModCode(back, false)));
 }
 
 void PopColor(std::ostream& stream)
