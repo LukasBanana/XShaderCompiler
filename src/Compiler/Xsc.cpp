@@ -9,6 +9,7 @@
 #include "Compiler.h"
 #include "SPIRVDisassembler.h"
 #include "ReportIdents.h"
+#include <algorithm>
 
 
 namespace Xsc

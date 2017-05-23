@@ -12,6 +12,7 @@
 #include <spirv/1.2/spirv.hpp11>
 #include <vector>
 #include <cstdint>
+#include <string>
 
 
 namespace Xsc

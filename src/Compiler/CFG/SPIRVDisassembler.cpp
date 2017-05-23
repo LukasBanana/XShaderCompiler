@@ -14,6 +14,7 @@
 #include <Xsc/ConsoleManip.h>
 #include <algorithm>
 #include <iomanip>
+#include <cstring>
 
 // Include and define SPIRV "ToString" functions
 #define SPIRV_STRINGS_IMPLEMENT
@@ -58,7 +59,7 @@ void SPIRVDisassembler::Parse(std::istream& stream)
     std::vector<std::uint32_t> wordStream;
     wordStream.resize(buffer.size() / 4);
 
-    memcpy(wordStream.data(), buffer.data(), wordStream.size() * sizeof(std::uint32_t));
+    std::memcpy(wordStream.data(), buffer.data(), wordStream.size() * sizeof(std::uint32_t));
 
     if (wordStream.size() < 5)
         RuntimeErr(R_SPIRVFileTooSmall);

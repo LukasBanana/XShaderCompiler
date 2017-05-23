@@ -6,6 +6,7 @@
  */
 
 #include "BasicBlock.h"
+#include <algorithm>
 
 
 namespace Xsc
