@@ -171,20 +171,6 @@ bool SPIRVDisassembler::HasRemainingOperands() const
     return (nextOffset_ < currentInst_->NumOperands());
 }
 
-void SPIRVDisassembler::AddOperandUInt32(std::uint32_t offset)
-{
-    /* Get next operand offset */
-    NextOffset(offset);
-
-    /* Add operand as value */
-    currentPrt_->operands.push_back(
-        std::to_string(currentInst_->GetOperandUInt32(offset))
-    );
-
-    /* Set next operand offset */
-    nextOffset_ = offset + 1;
-}
-
 void SPIRVDisassembler::AddOperandId(std::uint32_t offset)
 {
     /* Get next operand offset */
@@ -193,6 +179,20 @@ void SPIRVDisassembler::AddOperandId(std::uint32_t offset)
     /* Add operand as ID number (e.g. "%1") */
     currentPrt_->operands.push_back(
         desc_.idPrefixChar + std::to_string(currentInst_->GetOperandUInt32(offset))
+    );
+
+    /* Set next operand offset */
+    nextOffset_ = offset + 1;
+}
+
+void SPIRVDisassembler::AddOperandLiteral(std::uint32_t offset)
+{
+    /* Get next operand offset */
+    NextOffset(offset);
+
+    /* Add operand as value */
+    currentPrt_->operands.push_back(
+        std::to_string(currentInst_->GetOperandUInt32(offset))
     );
 
     /* Set next operand offset */
@@ -297,7 +297,7 @@ void SPIRVDisassembler::AddOperandLiteralDecoration(const spv::Decoration decora
             ADD_OPERAND_ENUM(spv::LinkageType);
             break;
         default:
-            AddOperandUInt32();
+            AddOperandLiteral();
             break;
     }
 }
@@ -318,7 +318,7 @@ void SPIRVDisassembler::AddOperandLiteralExecutionMode(const spv::ExecutionMode 
             AddOperandId(); // Local Size Hint
             break;
         default:
-            AddOperandUInt32();
+            AddOperandLiteral();
             break;
     }
 }
@@ -327,6 +327,12 @@ void SPIRVDisassembler::AddRemainingOperandsId()
 {
     while (HasRemainingOperands())
         AddOperandId();
+}
+
+void SPIRVDisassembler::AddRemainingOperandsLiteral()
+{
+    while (HasRemainingOperands())
+        AddOperandLiteral();
 }
 
 void SPIRVDisassembler::NextOffset(std::uint32_t& offset)
@@ -393,11 +399,13 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
         case Op::OpSource:
         {
             ADD_OPERAND_ENUM(spv::SourceLanguage);  // Source Language
-            AddOperandUInt32();                     // Version
+            AddOperandLiteral();                    // Version
             if (HasRemainingOperands())
+            {
                 AddOperandId();                     // File
-            if (HasRemainingOperands())
-                AddOperandASCII();                  // Source
+                if (HasRemainingOperands())
+                    AddOperandASCII();              // Source
+            }
         }
         break;
 
@@ -416,8 +424,8 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
 
         case Op::OpMemberName:
         {
-            AddOperandUInt32(); // Member
-            AddOperandASCII();  // Name
+            AddOperandLiteral();    // Member
+            AddOperandASCII();      // Name
         }
         break;
 
@@ -429,9 +437,9 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
 
         case Op::OpLine:
         {
-            AddOperandId();     // File
-            AddOperandUInt32(); // Line
-            AddOperandUInt32(); // Column
+            AddOperandId();         // File
+            AddOperandLiteral();    // Line
+            AddOperandLiteral();    // Column
         }
         break;
 
@@ -453,7 +461,7 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
         case Op::OpMemberDecorate:
         {
             AddOperandId(); // Structure type
-            AddOperandUInt32(); // Literal number
+            AddOperandLiteral(); // Literal number
             ADD_OPERAND_ENUM(spv::Decoration);
             while (HasRemainingOperands())
                 AddOperandLiteralDecoration(static_cast<spv::Decoration>(inst.GetOperandUInt32(2)));
@@ -473,7 +481,7 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
             while (HasRemainingOperands())
             {
                 AddOperandId();             // Target Id
-                AddOperandUInt32();         // Target Literal
+                AddOperandLiteral();        // Target Literal
             }
         }
         break;
@@ -502,7 +510,7 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
         case Op::OpExtInst:
         {
             AddOperandId();             // Set
-            AddOperandUInt32();         // Instruction
+            AddOperandLiteral();        // Instruction
             AddRemainingOperandsId();   // Operands
         }
         break;
@@ -549,6 +557,9 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
 
         case Op::OpTypeInt:
         {
+            AddOperandLiteral();    // Width
+            AddOperandLiteral();    // Signedness
+
             /* Store type */
             typesInt_[inst.result] = { inst.GetOperandUInt32(0), inst.GetOperandUInt32(1) };
         }
@@ -556,6 +567,8 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
 
         case Op::OpTypeFloat:
         {
+            AddOperandLiteral();    // Width
+
             /* Store type */
             typesFloat_[inst.result] = { inst.GetOperandUInt32(0) };
         }
@@ -563,15 +576,15 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
 
         case Op::OpTypeVector:
         {
-            AddOperandId();     // Component Type
-            AddOperandUInt32(); // Component Count
+            AddOperandId();         // Component Type
+            AddOperandLiteral();    // Component Count
         }
         break;
 
         case Op::OpTypeMatrix:
         {
-            AddOperandId();     // Component Type
-            AddOperandUInt32(); // Column Count
+            AddOperandId();         // Component Type
+            AddOperandLiteral();    // Column Count
         }
         break;
 
@@ -579,10 +592,10 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
         {
             AddOperandId();                             // Sampled Type
             ADD_OPERAND_ENUM(spv::Dim);                 // Dimension
-            AddOperandUInt32();                         // Depth
-            AddOperandUInt32();                         // Arrayed
-            AddOperandUInt32();                         // Multi-sampled
-            AddOperandUInt32();                         // Sampled
+            AddOperandLiteral();                        // Depth
+            AddOperandLiteral();                        // Arrayed
+            AddOperandLiteral();                        // Multi-sampled
+            AddOperandLiteral();                        // Sampled
             ADD_OPERAND_ENUM(spv::ImageFormat);         // Image Format
             if (HasRemainingOperands())
                 ADD_OPERAND_ENUM(spv::AccessQualifier); // Access Qualifier
@@ -605,12 +618,6 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
         case Op::OpTypeRuntimeArray:
         {
             AddOperandId(); // Element Type
-        }
-        break;
-
-        case Op::OpTypeStruct:
-        {
-            AddRemainingOperandsId(); // Member Types
         }
         break;
 
@@ -717,24 +724,17 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
         }
         break;
 
-        case Op::OpConstantComposite:
-        case Op::OpSpecConstantComposite:
-        {
-            AddRemainingOperandsId(); // Constituents
-        }
-        break;
-
         case Op::OpConstantSampler:
         {
             ADD_OPERAND_ENUM(spv::SamplerAddressingMode);   // Sampling Addressing Mode
-            AddOperandUInt32();                             // Param
+            AddOperandLiteral();                            // Param
             ADD_OPERAND_ENUM(spv::SamplerFilterMode);       // Sampler Filter Mode
         }
         break;
 
         case Op::OpSpecConstantOp:
         {
-            AddOperandUInt32();         // Opcode
+            AddOperandLiteral();        // Opcode
             AddRemainingOperandsId();   // Operands
         }
         break;
@@ -744,12 +744,6 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
             ADD_OPERAND_ENUM(spv::StorageClass);    // Storage Class
             if (HasRemainingOperands())
                 AddOperandId();                     // Initializer
-        }
-        break;
-
-        case Op::OpImageTexelPointer:
-        {
-            AddRemainingOperandsId(); // Image, Coordinate, Sample
         }
         break;
 
@@ -770,8 +764,37 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
         }
         break;
 
+        case Op::OpCopyMemory:
+        {
+            AddOperandId();                                     // Target
+            AddOperandId();                                     // Source
+            if (HasRemainingOperands())
+                ADD_OPERAND_ENUM_FLAGS(spv::MemoryAccessMask);  // Memory Access
+        }
+        break;
 
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        case Op::OpCopyMemorySized:
+        {
+            AddOperandId();                                     // Target
+            AddOperandId();                                     // Source
+            AddOperandId();                                     // Size
+            if (HasRemainingOperands())
+                ADD_OPERAND_ENUM_FLAGS(spv::MemoryAccessMask);  // Memory Access
+        }
+        break;
+
+        case Op::OpArrayLength:
+        {
+            AddOperandId();         // Structure
+            AddOperandLiteral();    // Array Member
+        }
+        break;
+
+        case Op::OpGenericPtrMemSemantics:
+        {
+            AddOperandId(); // Pointer
+        }
+        break;
 
         case Op::OpFunction:
         {
@@ -780,13 +803,227 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
         }
         break;
 
+        case Op::OpImageSampleImplicitLod:
+        case Op::OpImageSampleProjImplicitLod:
+        case Op::OpImageFetch:
+        case Op::OpImageRead:
+        case Op::OpImageSparseSampleImplicitLod:
+        case Op::OpImageSparseSampleProjImplicitLod:
+        case Op::OpImageSparseFetch:
+        case Op::OpImageSparseRead:
+        {
+            AddOperandId();                                     // Image
+            AddOperandId();                                     // Coordinate
+            if (HasRemainingOperands())
+            {
+                ADD_OPERAND_ENUM_FLAGS(spv::ImageOperandsMask); // Image Operands
+                AddRemainingOperandsId();
+            }
+        }
+        break;
+
+        case Op::OpImageSampleExplicitLod:
+        case Op::OpImageSampleProjExplicitLod:
+        case Op::OpImageSparseSampleExplicitLod:
+        case Op::OpImageSparseSampleProjExplicitLod:
+        {
+            AddOperandId();                                 // Image
+            AddOperandId();                                 // Coordinate
+            ADD_OPERAND_ENUM_FLAGS(spv::ImageOperandsMask); // Image Operands
+            AddOperandId();
+            AddRemainingOperandsId();
+        }
+        break;
+
+        case Op::OpImageSampleDrefImplicitLod:
+        case Op::OpImageSampleProjDrefImplicitLod:
+        case Op::OpImageGather:
+        case Op::OpImageDrefGather:
+        case Op::OpImageWrite:
+        case Op::OpImageSparseSampleDrefImplicitLod:
+        case Op::OpImageSparseSampleProjDrefImplicitLod:
+        case Op::OpImageSparseGather:
+        case Op::OpImageSparseDrefGather:
+        {
+            AddOperandId();                                     // Image
+            AddOperandId();                                     // Coordinate
+            AddOperandId();                                     // D_ref/ Component/ Texel
+            if (HasRemainingOperands())
+            {
+                ADD_OPERAND_ENUM_FLAGS(spv::ImageOperandsMask); // Image Operands
+                AddRemainingOperandsId();
+            }
+        }
+        break;
+
+        case Op::OpImageSampleDrefExplicitLod:
+        case Op::OpImageSampleProjDrefExplicitLod:
+        case Op::OpImageSparseSampleDrefExplicitLod:
+        case Op::OpImageSparseSampleProjDrefExplicitLod:
+        {
+            AddOperandId();                                 // Image
+            AddOperandId();                                 // Coordinate
+            AddOperandId();                                 // D_ref
+            ADD_OPERAND_ENUM_FLAGS(spv::ImageOperandsMask); // Image Operands
+            AddOperandId();
+            AddRemainingOperandsId();
+        }
+        break;
+
+        case Op::OpGenericCastToPtrExplicit:
+        {
+            AddOperandId();                         // Pointer
+            ADD_OPERAND_ENUM(spv::StorageClass);    // Storage Class
+        }
+        break;
+
+        case Op::OpVectorShuffle:
+        {
+            AddOperandId();                 // Vector 1
+            AddOperandId();                 // Vector 2
+            AddRemainingOperandsLiteral();  // Components
+        }
+        break;
+
+        case Op::OpCompositeExtract:
+        {
+            AddOperandId();                 // Composite
+            AddRemainingOperandsLiteral();  // Indexes
+        }
+        break;
+
+        case Op::OpCompositeInsert:
+        {
+            AddOperandId();                 // Object
+            AddOperandId();                 // Composite
+            AddRemainingOperandsLiteral();  // Indexes
+        }
+        break;
+
+        case Op::OpLoopMerge:
+        {
+            AddOperandId();                                 // Merge Block
+            AddOperandId();                                 // Continue Target
+            ADD_OPERAND_ENUM_FLAGS(spv::LoopControlMask);   // Loop Control
+            AddRemainingOperandsLiteral();                  // Loop Control Parameters
+        }
+        break;
+
+        case Op::OpSelectionMerge:
+        {
+            AddOperandId();                                     // Merge Block
+            ADD_OPERAND_ENUM_FLAGS(spv::SelectionControlMask);  // Selection Control
+        }
+        break;
+
+        case Op::OpBranchConditional:
+        {
+            AddOperandId();                 // Condition
+            AddOperandId();                 // True Label
+            AddOperandId();                 // False Label
+            AddRemainingOperandsLiteral();  // Branch Weights
+        }
+        break;
+
+        case Op::OpSwitch:
+        {
+            AddOperandId();                 // Selector
+            AddOperandId();                 // Default
+            while (HasRemainingOperands())
+            {
+                AddOperandLiteral();        // Target Case
+                AddOperandId();             // Target Label
+            }
+        }
+        break;
+
+        case Op::OpLifetimeStart:
+        case Op::OpLifetimeStop:
+        {
+            AddOperandId();         // Pointer
+            AddOperandLiteral();    // Size
+        }
+        break;
+
+        case Op::OpAtomicLoad:
+        case Op::OpAtomicIIncrement:
+        case Op::OpAtomicIDecrement:
+        case Op::OpAtomicFlagTestAndSet:
+        case Op::OpAtomicFlagClear:
+        case Op::OpControlBarrier:
+        case Op::OpMemoryNamedBarrier:
+        {
+            AddOperandId();                                     // Pointer/ Execution
+            AddOperandId();                                     // Scope/ Memory
+            ADD_OPERAND_ENUM_FLAGS(spv::MemorySemanticsMask);   // Semantics
+        }
+        break;
+
+        case Op::OpAtomicStore:
+        case Op::OpAtomicExchange:
+        case Op::OpAtomicIAdd:
+        case Op::OpAtomicISub:
+        case Op::OpAtomicSMin:
+        case Op::OpAtomicUMin:
+        case Op::OpAtomicSMax:
+        case Op::OpAtomicUMax:
+        case Op::OpAtomicAnd:
+        case Op::OpAtomicOr:
+        case Op::OpAtomicXor:
+        {
+            AddOperandId();                                     // Pointer
+            AddOperandId();                                     // Scope
+            ADD_OPERAND_ENUM_FLAGS(spv::MemorySemanticsMask);   // Memory Semantics
+            AddOperandId();                                     // Value
+        }
+        break;
+
+        case Op::OpAtomicCompareExchange:
+        case Op::OpAtomicCompareExchangeWeak:
+        {
+            AddOperandId();                                     // Pointer
+            AddOperandId();                                     // Scope
+            ADD_OPERAND_ENUM_FLAGS(spv::MemorySemanticsMask);   // Equal
+            ADD_OPERAND_ENUM_FLAGS(spv::MemorySemanticsMask);   // Unequal
+            AddOperandId();                                     // Value
+            AddOperandId();                                     // Comparator
+        }
+        break;
+
+        case Op::OpMemoryBarrier:
+        {
+            AddOperandId();                                     // Memory
+            ADD_OPERAND_ENUM_FLAGS(spv::MemorySemanticsMask);   // Semantics
+        }
+        break;
+
+        case Op::OpGroupIAdd:
+        case Op::OpGroupFAdd:
+        case Op::OpGroupFMin:
+        case Op::OpGroupUMin:
+        case Op::OpGroupSMin:
+        case Op::OpGroupFMax:
+        case Op::OpGroupUMax:
+        case Op::OpGroupSMax:
+        {
+            AddOperandId();                         // Execution
+            ADD_OPERAND_ENUM(spv::GroupOperation);  // Operation
+            AddOperandId();                         // X
+        }
+        break;
+
+        case Op::OpConstantPipeStorage:
+        {
+            AddRemainingOperandsLiteral(); // Packet Size, Packet Alignment, Capacity
+        }
+        break;
+
         default:
         break;
     }
 
-    /* Append all remaining operands */
-    while (HasRemainingOperands())
-        AddOperandUInt32();
+    /* Append all remaining operands as ID numbers */
+    AddRemainingOperandsId();
 }
 
 void SPIRVDisassembler::PrintAll(std::ostream& stream)

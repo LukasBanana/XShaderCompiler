@@ -73,8 +73,8 @@ class SPIRVDisassembler
         // Returns true if the current instruction has remaining operands (determined by next offset).
         bool HasRemainingOperands() const;
 
-        void AddOperandUInt32(std::uint32_t offset = ~0);
         void AddOperandId(std::uint32_t offset = ~0);
+        void AddOperandLiteral(std::uint32_t offset = ~0);
         void AddOperandASCII(std::uint32_t offset = ~0);
 
         template <typename T>
@@ -91,6 +91,9 @@ class SPIRVDisassembler
 
         // Adds each remaining operand as Id.
         void AddRemainingOperandsId();
+
+        // Adds each remaining operand as litearl.
+        void AddRemainingOperandsLiteral();
 
         // Adjusts the specified offset.
         void NextOffset(std::uint32_t& offset);
