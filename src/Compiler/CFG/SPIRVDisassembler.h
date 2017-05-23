@@ -81,6 +81,9 @@ class SPIRVDisassembler
         void AddOperandEnum(const std::function<const char*(T e)>& enumToString, std::uint32_t offset = ~0);
 
         template <typename T>
+        void AddOperandEnumFlags(const std::function<const char*(T e)>& enumToString, std::uint32_t offset = ~0);
+
+        template <typename T>
         void AddOperandConstant(std::uint32_t offset = ~0);
 
         void AddOperandLiteralDecoration(const spv::Decoration decoration);
