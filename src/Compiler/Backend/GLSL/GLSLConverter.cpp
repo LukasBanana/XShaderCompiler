@@ -760,6 +760,39 @@ void GLSLConverter::ConvertFunctionDeclDefault(FunctionDecl* ast)
     Visitor::VisitFunctionDecl(ast, nullptr);
 }
 
+static void AddFlagsToStructMembers(const TypeDenoter& typeDen, const Flags& flags)
+{
+    if (auto structTypeDen = typeDen.GetAliased().As<StructTypeDenoter>())
+    {
+        if (auto structDecl = structTypeDen->structDeclRef)
+        {
+            structDecl->ForEachVarDecl(
+                [&flags](VarDeclPtr& member)
+                {
+                    member->flags << flags;
+                }
+            );
+        }
+    }
+}
+
+static BufferType GetBufferTypeOrDefault(const TypeDenoter& typeDen)
+{
+    if (auto bufferTypeDen = typeDen.GetAliased().As<BufferTypeDenoter>())
+        return bufferTypeDen->bufferType;
+    else
+        return BufferType::Undefined;
+}
+
+/*
+Returns true if the specified type results in a dynamic array in GLSL,
+e.g. "InputPatch<float4> positions" becomes "vec4 positions[]"
+*/
+static bool IsTypeDynamicArrayInGLSL(const TypeDenoter& typeDen)
+{
+    return (typeDen.IsArray() || IsPatchBufferType(GetBufferTypeOrDefault(typeDen)));
+}
+
 void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
 {
     /* Propagate array parameter declaration to input/output semantics */
@@ -768,25 +801,15 @@ void GLSLConverter::ConvertFunctionDeclEntryPoint(FunctionDecl* ast)
         if (!param->varDecls.empty())
         {
             auto varDecl = param->varDecls.front();
+
             const auto& typeDen = varDecl->GetTypeDenoter()->GetAliased();
-            if (auto arrayTypeDen = typeDen.As<ArrayTypeDenoter>())
+            if (IsTypeDynamicArrayInGLSL(typeDen))
             {
                 /* Mark this member and all structure members as dynamic array */
                 varDecl->flags << VarDecl::isDynamicArray;
 
-                const auto& subTypeDen = arrayTypeDen->subTypeDenoter->GetAliased();
-                if (auto structSubTypeDen = subTypeDen.As<StructTypeDenoter>())
-                {
-                    if (structSubTypeDen->structDeclRef)
-                    {
-                        structSubTypeDen->structDeclRef->ForEachVarDecl(
-                            [](VarDeclPtr& member)
-                            {
-                                member->flags << VarDecl::isDynamicArray;
-                            }
-                        );
-                    }
-                }
+                if (auto subTypeDen = typeDen.FetchSubTypeDenoter())
+                    AddFlagsToStructMembers(*subTypeDen, VarDecl::isDynamicArray);
             }
         }
     }

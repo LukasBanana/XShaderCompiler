@@ -554,10 +554,10 @@ void VarDecl::AddFlagsRecursive(unsigned int varFlags)
         const auto& typeDen = GetTypeDenoter()->GetAliased();
         if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
         {
-            if (auto structType = structTypeDen->structDeclRef)
+            if (auto structDecl = structTypeDen->structDeclRef)
             {
                 /* Add flags to all structure member variables */
-                structType->ForEachVarDecl(
+                structDecl->ForEachVarDecl(
                     [varFlags](VarDeclPtr& varDecl)
                     {
                         varDecl->AddFlagsRecursive(varFlags);
