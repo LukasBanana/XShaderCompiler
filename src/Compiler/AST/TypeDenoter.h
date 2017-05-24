@@ -114,6 +114,8 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
         IgnoreGenericSubType = (1 << 0),
     };
 
+    /* ----- Common ----- */
+
     virtual ~TypeDenoter();
 
     // Returns the type (kind) of this type denoter.
@@ -125,36 +127,65 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Returns a copy of this type denoter.
     virtual TypeDenoterPtr Copy() const = 0;
 
-    // Shortcut to check if this is a BaseTypeDenoter of a scalar data type (see global function IsScalarType).
-    virtual bool IsScalar() const;
-
-    // Shortcut to check if this is a BaseTypeDenoter of a vector data type (see global function IsVectorType).
-    virtual bool IsVector() const;
-
-    // Shortcut to check if this is a BaseTypeDenoter of a matrix data type (see global function IsMatrixType).
-    virtual bool IsMatrix() const;
-
-    bool IsVoid() const;
-    bool IsNull() const;
-    bool IsBase() const;
-    bool IsSampler() const;
-    bool IsBuffer() const;
-    bool IsStruct() const;
-    bool IsAlias() const;
-    bool IsArray() const;
-    bool IsFunction() const;
-
     // Returns true if this (aliased) type denoter is equal to the specified (aliased) type denoter (see GetAliased).
     virtual bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const;
 
     // Returns true if this type denoter can be casted to the specified target type denoter (special cases void and base types).
     virtual bool IsCastableTo(const TypeDenoter& targetType) const;
 
-    // Returns the type identifier (if it has one), e.g. for structs and type aliases.
-    virtual std::string Ident() const;
+    /* ----- Shortcuts ----- */
 
-    // Sets the identifier of this type denoter if the aliased type is anonymous.
-    virtual void SetIdentIfAnonymous(const std::string& ident);
+    // Shortcut to check if this is a VoidTypeDenoter.
+    bool IsVoid() const;
+
+    // Shortcut to check if this is a NullTypeDenoter.
+    bool IsNull() const;
+
+    // Shortcut to check if this is a BaseTypeDenoter.
+    bool IsBase() const;
+
+    // Shortcut to check if this is a BaseTypeDenoter of a scalar data type (see global function IsScalarType).
+    bool IsScalar() const;
+
+    // Shortcut to check if this is a BaseTypeDenoter of a vector data type (see global function IsVectorType).
+    bool IsVector() const;
+
+    // Shortcut to check if this is a BaseTypeDenoter of a matrix data type (see global function IsMatrixType).
+    bool IsMatrix() const;
+
+    // Shortcut to check if this is a SamplerTypeDenoter.
+    bool IsSampler() const;
+
+    // Shortcut to check if this is a BufferTypeDenoter.
+    bool IsBuffer() const;
+
+    // Shortcut to check if this is a StructTypeDenoter.
+    bool IsStruct() const;
+
+    // Shortcut to check if this is an AliasTypeDenoter.
+    bool IsAlias() const;
+
+    // Shortcut to check if this is an ArrayTypeDenoter.
+    bool IsArray() const;
+
+    // Shortcut to check if this is a FunctionTypeDenoter.
+    bool IsFunction() const;
+
+    // Returns this type denoter as the specified sub class if this type denoter has the correct type. Otherwise, null is returned.
+    template <typename T>
+    T* As()
+    {
+        return (Type() == T::classType ? static_cast<T*>(this) : nullptr);
+    }
+
+    // Returns this constant type denoter as the specified sub class if this type denoter has the correct type. Otherwise, null is returned.
+    template <typename T>
+    const T* As() const
+    {
+        return (Type() == T::classType ? static_cast<const T*>(this) : nullptr);
+    }
+
+    /* ----- Type derivation ----- */
 
     /*
     Returns a sub type denoter for the specified expression.
@@ -173,6 +204,14 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Returns either this type denoter or an aliased type.
     virtual const TypeDenoter& GetAliased() const;
 
+    /* ----- Type specific functions ----- */
+
+    // Returns the type identifier (if it has one), e.g. for structs and type aliases.
+    virtual std::string Ident() const;
+
+    // Sets the identifier of this type denoter if the aliased type is anonymous.
+    virtual void SetIdentIfAnonymous(const std::string& ident);
+
     // Returns the number of array dimensions. By default 0.
     virtual unsigned int NumDimensions() const;
 
@@ -182,19 +221,10 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Returns either this type denoter (if 'arrayDims' is empty), or this type denoter as array with the specified dimension expressions.
     virtual TypeDenoterPtr AsArray(const std::vector<ArrayDimensionPtr>& arrayDims);
 
-    // Returns this type denoter as the specified sub class if this type denoter has the correct type. Otherwise, null is returned.
-    template <typename T>
-    T* As()
-    {
-        return (Type() == T::classType ? static_cast<T*>(this) : nullptr);
-    }
+    // Returns the sub type denoter, or null if there is no sub type denoter.
+    virtual TypeDenoter* FetchSubTypeDenoter() const;
 
-    // Returns this constant type denoter as the specified sub class if this type denoter has the correct type. Otherwise, null is returned.
-    template <typename T>
-    const T* As() const
-    {
-        return (Type() == T::classType ? static_cast<const T*>(this) : nullptr);
-    }
+    /* ----- Static functions ----- */
 
     // Find the best suitable common type denoter for both left and right hand side type denoters.
     static TypeDenoterPtr FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeDen, const TypeDenoterPtr& rhsTypeDen, bool useMinDimension = false);
@@ -249,10 +279,6 @@ struct BaseTypeDenoter : public TypeDenoter
     std::string ToString() const override;
     TypeDenoterPtr Copy() const override;
 
-    bool IsScalar() const override;
-    bool IsVector() const override;
-    bool IsMatrix() const override;
-
     bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
 
@@ -292,6 +318,9 @@ struct BufferTypeDenoter : public TypeDenoter
     TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
 
     AST* SymbolRef() const override;
+
+    // Returns the generic type denoter of this buffer type.
+    TypeDenoter* FetchSubTypeDenoter() const override;
 
     // Always returns a valid generic type denoter. By default BaseTypeDenoter(Float4).
     TypeDenoterPtr GetGenericTypeDenoter() const;
@@ -435,6 +464,9 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     // Returns a copy of this type denoter with the accumulated array dimensions.
     TypeDenoterPtr AsArray(const std::vector<ArrayDimensionPtr>& subArrayDims) override;
+
+    // Returns the sub type denoter of this struct type.
+    TypeDenoter* FetchSubTypeDenoter() const override;
 
     // Inserts the specified sub array type denoter to this type denoter, with all its array dimension, and replaces the base type denoter.
     void InsertSubArray(const ArrayTypeDenoter& subArrayTypeDenoter);

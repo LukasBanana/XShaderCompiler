@@ -171,20 +171,17 @@ TypeDenoter::~TypeDenoter()
     // dummy
 }
 
-bool TypeDenoter::IsScalar() const
+bool TypeDenoter::Equals(const TypeDenoter& rhs, const Flags& /*compareFlags*/) const
 {
-    return false;
+    return (GetAliased().Type() == rhs.GetAliased().Type());
 }
 
-bool TypeDenoter::IsVector() const
+bool TypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
-    return false;
+    return (GetAliased().Type() == targetType.GetAliased().Type());
 }
 
-bool TypeDenoter::IsMatrix() const
-{
-    return false;
-}
+/* ----- Shortcuts ----- */
 
 bool TypeDenoter::IsVoid() const
 {
@@ -199,6 +196,30 @@ bool TypeDenoter::IsNull() const
 bool TypeDenoter::IsBase() const
 {
     return (Type() == Types::Base);
+}
+
+bool TypeDenoter::IsScalar() const
+{
+    if (auto baseTypeDen = As<BaseTypeDenoter>())
+        return IsScalarType(baseTypeDen->dataType);
+    else
+        return false;
+}
+
+bool TypeDenoter::IsVector() const
+{
+    if (auto baseTypeDen = As<BaseTypeDenoter>())
+        return IsVectorType(baseTypeDen->dataType);
+    else
+        return false;
+}
+
+bool TypeDenoter::IsMatrix() const
+{
+    if (auto baseTypeDen = As<BaseTypeDenoter>())
+        return IsMatrixType(baseTypeDen->dataType);
+    else
+        return false;
 }
 
 bool TypeDenoter::IsSampler() const
@@ -231,25 +252,7 @@ bool TypeDenoter::IsFunction() const
     return (Type() == Types::Function);
 }
 
-bool TypeDenoter::Equals(const TypeDenoter& rhs, const Flags& /*compareFlags*/) const
-{
-    return (GetAliased().Type() == rhs.GetAliased().Type());
-}
-
-bool TypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
-{
-    return (GetAliased().Type() == targetType.GetAliased().Type());
-}
-
-std::string TypeDenoter::Ident() const
-{
-    return ""; // dummy
-}
-
-void TypeDenoter::SetIdentIfAnonymous(const std::string& ident)
-{
-    // dummy
-}
+/* ----- Type derivation ----- */
 
 TypeDenoterPtr TypeDenoter::GetSub(const Expr* expr)
 {
@@ -282,6 +285,18 @@ const TypeDenoter& TypeDenoter::GetAliased() const
     return *this;
 }
 
+/* ----- Type specific functions ----- */
+
+std::string TypeDenoter::Ident() const
+{
+    return ""; // dummy
+}
+
+void TypeDenoter::SetIdentIfAnonymous(const std::string& ident)
+{
+    // dummy
+}
+
 unsigned int TypeDenoter::NumDimensions() const
 {
     return 0;
@@ -298,6 +313,11 @@ TypeDenoterPtr TypeDenoter::AsArray(const std::vector<ArrayDimensionPtr>& arrayD
         return shared_from_this();
     else
         return std::make_shared<ArrayTypeDenoter>(shared_from_this(), arrayDims);
+}
+
+TypeDenoter* TypeDenoter::FetchSubTypeDenoter() const
+{
+    return nullptr;
 }
 
 static DataType HighestOrderDataType(DataType lhs, DataType rhs, DataType highestType = DataType::Float) //Double//Float
@@ -378,6 +398,8 @@ static TypeDenoterPtr FindCommonTypeDenoterAnyAndAny(TypeDenoter* lhsTypeDen, Ty
     /* Always use type of left hand side */
     return lhsTypeDen->GetSub();
 }
+
+/* ----- Static functions ----- */
 
 TypeDenoterPtr TypeDenoter::FindCommonTypeDenoter(const TypeDenoterPtr& lhsTypeDen, const TypeDenoterPtr& rhsTypeDen, bool useMinDimension)
 {
@@ -554,21 +576,6 @@ std::string BaseTypeDenoter::ToString() const
 TypeDenoterPtr BaseTypeDenoter::Copy() const
 {
     return std::make_shared<BaseTypeDenoter>(dataType);
-}
-
-bool BaseTypeDenoter::IsScalar() const
-{
-    return IsScalarType(dataType);
-}
-
-bool BaseTypeDenoter::IsVector() const
-{
-    return IsVectorType(dataType);
-}
-
-bool BaseTypeDenoter::IsMatrix() const
-{
-    return IsMatrixType(dataType);
 }
 
 bool BaseTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& /*compareFlags*/) const
@@ -752,6 +759,11 @@ TypeDenoterPtr BufferTypeDenoter::GetSubArray(const std::size_t numArrayIndices,
         return GetGenericTypeDenoter()->GetSubArray(numArrayIndices - 1, ast);
     else
         return shared_from_this();
+}
+
+TypeDenoter* BufferTypeDenoter::FetchSubTypeDenoter() const
+{
+    return genericTypeDenoter.get();
 }
 
 TypeDenoterPtr BufferTypeDenoter::GetGenericTypeDenoter() const
@@ -1139,6 +1151,11 @@ TypeDenoterPtr ArrayTypeDenoter::AsArray(const std::vector<ArrayDimensionPtr>& s
         return shared_from_this();
     else
         return std::make_shared<ArrayTypeDenoter>(subTypeDenoter, arrayDims, subArrayDims);
+}
+
+TypeDenoter* ArrayTypeDenoter::FetchSubTypeDenoter() const
+{
+    return subTypeDenoter.get();
 }
 
 void ArrayTypeDenoter::InsertSubArray(const ArrayTypeDenoter& subArrayTypeDenoter)
