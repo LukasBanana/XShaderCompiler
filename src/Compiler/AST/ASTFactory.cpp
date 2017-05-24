@@ -129,7 +129,7 @@ LiteralExprPtr MakeLiteralExpr(const DataType literalType, const std::string& li
     return ast;
 }
 
-LiteralExprPtr MakeLiteralExpr(const Variant& literalValue)
+LiteralExprPtr MakeLiteralExprOrNull(const Variant& literalValue)
 {
     switch (literalValue.Type())
     {
@@ -140,7 +140,7 @@ LiteralExprPtr MakeLiteralExpr(const Variant& literalValue)
         case Variant::Types::Real:
             return MakeLiteralExpr(DataType::Float, std::to_string(literalValue.Real()));
         default:
-            return MakeLiteralExpr(DataType::Int, "0");
+            return nullptr;
     }
 }
 

@@ -44,8 +44,11 @@ CastExprPtr                     MakeLiteralCastExpr(const TypeDenoterPtr& typeDe
 
 BinaryExprPtr                   MakeBinaryExpr(const ExprPtr& lhsExpr, const BinaryOp op, const ExprPtr& rhsExpr);
 
+// Makes a new LiteralExpr of the specified data type and literal value.
 LiteralExprPtr                  MakeLiteralExpr(const DataType literalType, const std::string& literalValue);
-LiteralExprPtr                  MakeLiteralExpr(const Variant& literalValue);
+
+// Makes a new LiteralExpr if the specified variant is either a boolean, integral, or real type. Otherwise, null is returned.
+LiteralExprPtr                  MakeLiteralExprOrNull(const Variant& literalValue);
 
 AliasDeclStmntPtr               MakeBaseTypeAlias(const DataType dataType, const std::string& ident);
 

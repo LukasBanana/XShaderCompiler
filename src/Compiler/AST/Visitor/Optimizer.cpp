@@ -46,7 +46,8 @@ void Optimizer::OptimizeExpr(ExprPtr& expr)
         if (auto value = exprEvaluator.EvaluateOrDefault(*expr))
         {
             /* Convert to literal expression */
-            expr = ASTFactory::MakeLiteralExpr(value);
+            if (auto literalExpr = ASTFactory::MakeLiteralExprOrNull(value))
+                expr = literalExpr;
         }
     }
 }
