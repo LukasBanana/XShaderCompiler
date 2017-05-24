@@ -474,6 +474,9 @@ struct ArrayTypeDenoter : public TypeDenoter
     // Returns the array dimension sizes.
     std::vector<int> GetDimensionSizes() const;
 
+    // Returns the number of array elements, or 0 if a dynamic array dimension is contained.
+    int NumArrayElements() const;
+
     TypeDenoterPtr                  subTypeDenoter; // Sub type denoter
     std::vector<ArrayDimensionPtr>  arrayDims;      // Entries may be null
 };

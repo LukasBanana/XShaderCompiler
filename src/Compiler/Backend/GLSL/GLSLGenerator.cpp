@@ -258,22 +258,25 @@ void GLSLGenerator::ErrorIntrinsic(const std::string& intrinsicName, const AST* 
     Error(R_FailedToMapToGLSLKeyword(R_Intrinsic(intrinsicName)), ast);
 }
 
-int GLSLGenerator::GetNumBindingLocations(TypeDenoterPtr typeDenoter)
+int GLSLGenerator::GetNumBindingLocations(const TypeDenoter* typeDenoter)
 {
+    if (!typeDenoter)
+        return -1;
+
+    /* Accumulate array elements */
     int numArrayElements = 1;
 
     while (auto arrayTypeDen = typeDenoter->As<ArrayTypeDenoter>())
     {
-        for (const auto& dim : arrayTypeDen->arrayDims)
-            numArrayElements *= dim->size;
-
-        typeDenoter = arrayTypeDen->subTypeDenoter;
+        /* Accumulate array elements of current array type, and move on to next sub type */
+        numArrayElements *= arrayTypeDen->NumArrayElements();
+        typeDenoter = arrayTypeDen->subTypeDenoter.get();
     }
 
     if (numArrayElements == 0)
         return -1;
 
-    if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
+    if (auto baseTypeDen = typeDenoter->GetAliased().As<BaseTypeDenoter>())
     {
         const auto dataType = baseTypeDen->dataType;
 
@@ -281,7 +284,10 @@ int GLSLGenerator::GetNumBindingLocations(TypeDenoterPtr typeDenoter)
         int elementSize = 0;
 
         if (IsScalarType(dataType))
+        {
+            /* Single scalar type */
             elementSize = 1;
+        }
         else if (IsVectorType(dataType))
         {
             int dims = VectorTypeDim(dataType);
@@ -315,7 +321,7 @@ int GLSLGenerator::GetNumBindingLocations(TypeDenoterPtr typeDenoter)
     return -1;
 }
 
-int GLSLGenerator::GetBindingLocation(const TypeDenoterPtr& typeDenoter, bool input)
+int GLSLGenerator::GetBindingLocation(const TypeDenoter* typeDenoter, bool input)
 {
     int numLocations = GetNumBindingLocations(typeDenoter);
     if (numLocations == -1)
@@ -1700,32 +1706,37 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
             WriteInterpModifiers(interpModifiers, varDecl->declStmntRef);
             Separator();
 
-            int location = -1;
-
-            if (explicitBinding_ && IsVertexShader() && varDecl->semantic.IsValid())
+            if (explicitBinding_)
             {
-                auto it = vertexSemanticsMap_.find(ToCiString(varDecl->semantic.ToString()));
-                if (it != vertexSemanticsMap_.end())
+                /* Get slot index */
+                int location = -1;
+
+                if (IsVertexShader() && varDecl->semantic.IsValid())
                 {
-                    location = it->second.location;
-                    it->second.found = true;
-                }
-            }
-
-            if (location == -1 && autoBinding_)
-                location = GetBindingLocation(varDecl->declStmntRef->typeSpecifier->typeDenoter, true);
-
-            if (location != -1)
-            {
-                /* Write layout location and increment use count for warning-feedback */
-                WriteLayout(
+                    /* Fetch location from globally specified vertex semantic map (e.g. '-S<IDENT>=VALUE' shell command) */
+                    auto it = vertexSemanticsMap_.find(ToCiString(varDecl->semantic.ToString()));
+                    if (it != vertexSemanticsMap_.end())
                     {
-                        [&]() { Write("location = " + std::to_string(location)); }
+                        location = it->second.location;
+                        it->second.found = true;
                     }
-                );
+                }
 
-                /* Reset the semantic index for code reflection output */
-                varDecl->semantic.ResetIndex(location);
+                if (location == -1 && autoBinding_)
+                    location = GetBindingLocation(varDecl->GetTypeDenoter().get(), true);
+
+                if (location != -1)
+                {
+                    /* Write layout location */
+                    WriteLayout(
+                        {
+                            [&]() { Write("location = " + std::to_string(location)); }
+                        }
+                    );
+
+                    /* Reset the semantic index for code reflection output */
+                    varDecl->semantic.ResetIndex(location);
+                }
             }
 
             Separator();
@@ -1873,22 +1884,29 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
                 WriteInterpModifiers(varDeclStmnt->typeSpecifier->interpModifiers, varDecl);
             Separator();
 
-            int location = -1;
-            if (autoBinding_ && !IsFragmentShader())
-                location = GetBindingLocation(typeSpecifier->typeDenoter, false);
-            else
-                location = semantic.Index();
-
             if (explicitBinding_)
             {
-                WriteLayout(
-                    {
-                        [&]() { Write("location = " + std::to_string(location)); }
-                    }
-                );
-            }
+                /* Get slot index: directly for fragment output, and automatically otherwise */
+                int location = -1;
 
-            semantic.ResetIndex(location);
+                if (IsFragmentShader())
+                    location = semantic.Index();
+                else if (autoBinding_)
+                    location = GetBindingLocation(typeSpecifier->typeDenoter.get(), false);
+
+                if (location != -1)
+                {
+                    /* Write layout location */
+                    WriteLayout(
+                        {
+                            [&]() { Write("location = " + std::to_string(location)); }
+                        }
+                    );
+
+                    /* Reset the semantic index for code reflection output */
+                    semantic.ResetIndex(location);
+                }
+            }
 
             Write("out ");
             Separator();

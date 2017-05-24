@@ -1181,6 +1181,16 @@ std::vector<int> ArrayTypeDenoter::GetDimensionSizes() const
     return sizes;
 }
 
+int ArrayTypeDenoter::NumArrayElements() const
+{
+    int n = 1;
+
+    for (const auto& dim : arrayDims)
+        n *= dim->size;
+
+    return n;
+}
+
 
 /* ----- FunctionTypeDenoter ----- */
 
