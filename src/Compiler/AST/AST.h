@@ -1289,7 +1289,7 @@ struct ObjectExpr : public Expr
     FLAG_ENUM
     {
         FLAG( isImmutable,           1 ), // This object identifier must be written out as it is.
-        FLAG( isBaseStructNamespace, 2 ), // This expression is an base structure namespace expression.
+        FLAG( isBaseStructNamespace, 2 ), // This expression is a base structure namespace expression.
     };
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
