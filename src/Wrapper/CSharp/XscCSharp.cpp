@@ -791,7 +791,7 @@ public ref class XscCompiler
                         }
 
                         /* Submit report to native standard log and print immediately */
-                        stdLog_->SumitReport(r);
+                        stdLog_->SubmitReport(r);
                     }
                 }
 
@@ -943,7 +943,7 @@ class LogCSharp : public Xsc::Log
             }
         }
 
-        void SumitReport(const Xsc::Report& report) override
+        void SubmitReport(const Xsc::Report& report) override
         {
             if (handler_)
             {

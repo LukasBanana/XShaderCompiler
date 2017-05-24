@@ -15,18 +15,21 @@ set(INSTALL_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "Instal
 
 # === Options ===
 
+# Main
 option(XSC_BUILD_SHELL "Build XShaderCompiler shell 'xsc'" ON)
 option(XSC_BUILD_DEBUGGER "Build XShaderCompiler debugger 'xsc_debugger' (requires wxWidgets library)" OFF)
 option(XSC_BUILD_TESTS "Build all test applications" OFF)
+option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
 
+# Wrappers
 option(XSC_BUILD_WRAPPER_C "Build C wrapper (ISO C99)" OFF)
 option(XSC_BUILD_WRAPPER_CSHARP "Build C# wrapper" OFF)
 
+# Specials
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
 option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings with 'glslangValidator'" OFF)
 option(XSC_ENABLE_LANGUAGE_EXT "Enables a few language extensions (e.g. 'space' attribute for stronger type system)" OFF)
-
-option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
+option(XSC_ENABLE_SPIRV "Enables all SPIR-V related features (experimental; requires submodule in 'external/SPIR-V')" OFF)
 
 #set(XSC_REPORT_LANGUAGE "EN" CACHE STRING "Language of the report output (supported values: 'EN')")
 
@@ -51,6 +54,11 @@ if(XSC_ENABLE_LANGUAGE_EXT)
     add_definitions(-DXSC_ENABLE_LANGUAGE_EXT)
 endif()
 
+if(XSC_ENABLE_SPIRV)
+	add_definitions(-DXSC_ENABLE_SPIRV)
+endif()
+
+
 # === Global files ===
 
 file(GLOB FilesInc ${PROJECT_SOURCE_DIR}/inc/Xsc/*.*)
@@ -64,6 +72,7 @@ file(GLOB FilesSrcCompilerFrontendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Fronte
 file(GLOB FilesSrcCompilerBackend ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/*.*)
 file(GLOB FilesSrcCompilerBackendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL/*.*)
 file(GLOB FilesSrcCompilerReport ${PROJECT_SOURCE_DIR}/src/Compiler/Report/*.*)
+file(GLOB FilesSrcCompilerCFG ${PROJECT_SOURCE_DIR}/src/Compiler/CFG/*.*)
 file(GLOB FilesSrcShell ${PROJECT_SOURCE_DIR}/src/Shell/*.*)
 file(GLOB FilesSrcDebugger ${PROJECT_SOURCE_DIR}/src/Debugger/*.*)
 file(GLOB FilesSrcWrapperC ${PROJECT_SOURCE_DIR}/src/Wrapper/C/*.*)
@@ -92,6 +101,10 @@ set(
 	${FilesSrcCompilerReport}
 )
 
+if(XSC_ENABLE_SPIRV)
+	set(FilesCompilerAll ${FilesCompilerAll} ${FilesSrcCompilerCFG})
+endif()
+
 
 # === Source group folders ===
 
@@ -108,10 +121,15 @@ source_group("src\\Backend" FILES ${FilesSrcCompilerBackend})
 source_group("src\\Backend\\GLSL" FILES ${FilesSrcCompilerBackendGLSL})
 source_group("src\\Report" FILES ${FilesSrcCompilerReport})
 
+if(XSC_ENABLE_SPIRV)
+	source_group("src\\CFG" FILES ${FilesSrcCompilerCFG})
+endif()
+
 
 # === Include directories ===
 
 include_directories("${PROJECT_SOURCE_DIR}/inc")
+
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/AST")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/AST/Visitor")
@@ -121,6 +139,11 @@ include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/GLSL")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Report")
+
+if(XSC_ENABLE_SPIRV)
+	include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/CFG")
+	include_directories("${PROJECT_SOURCE_DIR}/external/SPIR-V/include")
+endif()
 
 
 # === Executable ===
@@ -225,6 +248,10 @@ endif()
 
 if(XSC_BUILD_WRAPPER_CSHARP)
 	message("Build C# Wrapper: xsc_core_csharp")
+endif()
+
+if(XSC_ENABLE_SPIRV)
+	message("Include SPIR-V (Experimental)")
 endif()
 
 

@@ -20,6 +20,8 @@ namespace Xsc
 {
 
 
+/* ===== Public classes ===== */
+
 /**
 \brief Interface for handling new include streams.
 \remarks The default implementation will read the files from an std::ifstream.

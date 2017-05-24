@@ -106,6 +106,7 @@ DECL_SHELL_COMMAND( PrefixCommand                );
 DECL_SHELL_COMMAND( NameManglingCommand          );
 DECL_SHELL_COMMAND( SeparateShadersCommand       );
 DECL_SHELL_COMMAND( SeparateSamplersCommand      );
+DECL_SHELL_COMMAND( DisassembleCommand           );
 
 #ifdef XSC_ENABLE_LANGUAGE_EXT
 

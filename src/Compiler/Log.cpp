@@ -19,7 +19,7 @@ namespace Xsc
  * StdLog class
  */
 
-void StdLog::SumitReport(const Report& report)
+void StdLog::SubmitReport(const Report& report)
 {
     switch (report.Type())
     {

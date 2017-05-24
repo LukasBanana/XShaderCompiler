@@ -73,7 +73,7 @@ void ReportHandler::SubmitReport(
     if (breakWithExpection)
         throw report;
     else if (log_)
-        log_->SumitReport(report);
+        log_->SubmitReport(report);
 }
 
 void ReportHandler::PushContextDesc(const std::string& contextDesc)

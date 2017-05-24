@@ -32,6 +32,7 @@ DECL_REPORT( TessEvaluationShader,              "tessellation-evaluation shader"
 DECL_REPORT( GeometryShader,                    "geometry shader"                                                                                               );
 DECL_REPORT( FragmentShader,                    "fragment shader"                                                                                               );
 DECL_REPORT( ComputeShader,                     "compute shader"                                                                                                );
+DECL_REPORT( InvalidInputStream,                "invalid input stream"                                                                                          );
 DECL_REPORT( InvalidOutputStream,               "invalid output stream"                                                                                         );
 DECL_REPORT( Implicitly,                        "implicitly"                                                                                                    );
 DECL_REPORT( ButGot,                            "[, but got {0}]"                                                                                               );
@@ -471,6 +472,22 @@ DECL_REPORT( MemberVarsCantHaveDefaultValues,   "member variables can not have d
 DECL_REPORT( DeclTypeDiffersFromDefType,        "declaration type '{0}' differs from definition type '{1}'"                                                     );
 DECL_REPORT( ArrayTypeCanOnlyAppearInDef,       "array type can only appear in definition of static member variables[: '{0}']"                                  );
 
+/* ----- Instruction ----- */
+
+DECL_REPORT( NotEnoughOperandsInInst,           "not enough operands in SPIR-V instruction"                                                                     );
+
+/* ----- InstructionFactory ----- */
+
+DECL_REPORT( InstructionFactory,                "SPIR-V instruction factory"                                                                                    );
+DECL_REPORT( NoActiveBasicBlock,                "no active basic block to put instructions into"                                                                );
+
+/* ----- SPIRVDisassembler ----- */
+
+DECL_REPORT( SPIRVFileTooSmall,                 "SPIR-V module file is too small"                                                                               );
+DECL_REPORT( SPIRVInvalidMagicNumber,           "invalid magic number in SPIR-V module header[ (expected {0}, but got {1})]"                                    );
+DECL_REPORT( SPIRVUnknownVersionNumber,         "unknown version number in SPIR-V module header[: {0}]"                                                         );
+DECL_REPORT( SPIRVByteStreamNotWordAligned,     "byte stream of SPIR-V module is not 32-bit word aligned"                                                       );
+
 /* ----- Xsc ----- */
 
 DECL_REPORT( InputStreamCantBeNull,             "input stream must not be null"                                                                                 );
@@ -484,6 +501,8 @@ DECL_REPORT( ParsingSourceFailed,               "parsing input code failed"     
 DECL_REPORT( AnalyzingSourceFailed,             "analyzing input code failed"                                                                                   );
 DECL_REPORT( GeneratingOutputCodeFailed,        "generating output code failed"                                                                                 );
 DECL_REPORT( OnlyPreProcessingForNonHLSL,       "only pre-processing supported for shaders other than HLSL or Cg"                                               );
+DECL_REPORT( InvalidILForDisassembling,         "invalid intermediate language for disassembling"                                                               );
+DECL_REPORT( NotBuildWithSPIRV,                 "compiler was not build with SPIR-V"                                                                            );
 
 /* ----- Shell ----- */
 

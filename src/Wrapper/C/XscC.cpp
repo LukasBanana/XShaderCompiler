@@ -282,7 +282,7 @@ class LogC : public Xsc::Log
 
         LogC(const XscLog* handler);
 
-        void SumitReport(const Xsc::Report& report) override;
+        void SubmitReport(const Xsc::Report& report) override;
         
     private:
 
@@ -298,7 +298,7 @@ LogC::LogC(const XscLog* handler)
         handler_.handleReportPfn = NULL;
 }
 
-void LogC::SumitReport(const Xsc::Report& report)
+void LogC::SubmitReport(const Xsc::Report& report)
 {
     if (handler_.handleReportPfn)
     {

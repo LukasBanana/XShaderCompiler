@@ -76,6 +76,8 @@ namespace Xsc
 {
 
 
+/* ===== Public structures ===== */
+
 //! Compiler warning flags.
 struct Warnings
 {
@@ -320,6 +322,28 @@ struct ShaderOutput
     NameMangling                nameMangling;
 };
 
+//! Descriptor structure for the shader disassembler.
+struct AssemblyDescriptor
+{
+    //! Specifies the intermediate language of the assembly input code. Currently only SPIR-V is supported. By default IntermediateLanguage::SPIRV.
+    IntermediateLanguage    intermediateLanguage    = IntermediateLanguage::SPIRV;
+
+    //! Specifies the prefix character to be used for ID numbers in the SPIR-V instructions.
+    char                    idPrefixChar            = '%';
+
+    //! Specifies whether to show the module header or not. By default true.
+    bool                    showHeader              = true;
+
+    //! Specifies whether to show the instruction byte offsets in the disassembly or not. By default true.
+    bool                    showOffsets             = true;
+
+    //! Specifies whether to indent the instruction operands or not. By default true.
+    bool                    indentOperands          = true;
+};
+
+
+/* ===== Public functions ===== */
+
 /**
 \brief Cross compiles the shader code from the specified input stream into the specified output shader code.
 \param[in] inputDesc Input shader code descriptor.
@@ -338,6 +362,20 @@ XSC_EXPORT bool CompileShader(
     const ShaderOutput&         outputDesc,
     Log*                        log             = nullptr,
     Reflection::ReflectionData* reflectionData  = nullptr
+);
+
+/**
+\brief Disassembles the SPIR-V binary code into a human readable code.
+\param[in,out] streamIn Specifies the input stream of the SPIR-V binary code.
+\param[in,out] streamOut Specifies the output stream of the human readable code.
+\param[in] formatting Specifies the output formatting.
+\throws std::runtime_error If the disassembling failed.
+\throws std::invalid_argument If 'desc.intermediateLanguage' has an invalid value.
+*/
+XSC_EXPORT void DisassembleShader(
+    std::istream&               streamIn,
+    std::ostream&               streamOut,
+    const AssemblyDescriptor&   desc = {}
 );
 
 

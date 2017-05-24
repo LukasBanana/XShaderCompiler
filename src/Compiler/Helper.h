@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <iterator>
 #include <functional>
+#include <iomanip>
 #include <cctype>
 
 
@@ -246,6 +247,15 @@ void MergeString(std::basic_string<T>& dst, const std::basic_string<T>& src, con
     /* Append remaining characters to destination string */
     if (i < nSrc)
         dst.append(src.substr(i));
+}
+
+// Returns a hexa-decimal string of the specified integral value.
+template <typename T>
+std::string ToHexString(const T& i, const std::string& prefix = "0x")
+{
+    std::stringstream s;
+    s << prefix << std::setfill('0') << std::setw(sizeof(T)*2) << std::hex << i;
+    return s.str();
 }
 
 

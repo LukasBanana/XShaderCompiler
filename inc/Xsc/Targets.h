@@ -18,6 +18,8 @@ namespace Xsc
 {
 
 
+/* ===== Public enumerations ===== */
+
 //! Shader target enumeration.
 enum class ShaderTarget
 {
@@ -73,6 +75,14 @@ enum class OutputShaderVersion
     VKSL    = 0x0002ffff,           //!< Auto-detect minimum required VKSL version (for Vulkan/SPIR-V).
 };
 
+//! Intermediate language enumeration.
+enum class IntermediateLanguage
+{
+    SPIRV, //!< SPIR-V.
+};
+
+
+/* ===== Public functions ===== */
 
 //! Returns the specified shader target as string.
 XSC_EXPORT std::string ToString(const ShaderTarget target);
@@ -82,6 +92,9 @@ XSC_EXPORT std::string ToString(const InputShaderVersion shaderVersion);
 
 //! Returns the specified shader output version as string.
 XSC_EXPORT std::string ToString(const OutputShaderVersion shaderVersion);
+
+//! Returns the specified intermediate language as string.
+XSC_EXPORT std::string ToString(const IntermediateLanguage language);
 
 //! Returns true if the shader input version specifies HLSL (for DirectX) or Cg (handled as dialect or HLSL).
 XSC_EXPORT bool IsLanguageHLSL(const InputShaderVersion shaderVersion);

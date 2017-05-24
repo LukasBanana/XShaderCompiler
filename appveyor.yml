@@ -1,5 +1,6 @@
 version: 0.10 Alpha (Build {build})
 before_build:
-- cmake -G "Visual Studio 14 2015"
+- git submodule update --init --recursive
+- cmake -G "Visual Studio 14 2015" -DXSC_ENABLE_SPIRV=ON -DXSC_ENABLE_LANGUAGE_EXT=ON
 build:
   project: XShaderCompiler.sln

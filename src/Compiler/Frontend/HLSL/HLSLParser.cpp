@@ -65,7 +65,7 @@ ProgramPtr HLSLParser::ParseSource(
     catch (const Report& err)
     {
         if (GetLog())
-            GetLog()->SumitReport(err);
+            GetLog()->SubmitReport(err);
     }
 
     return nullptr;

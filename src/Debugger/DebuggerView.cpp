@@ -537,7 +537,7 @@ class DebuggerLog : public Log
         {
         }
 
-        void SumitReport(const Report& report) override
+        void SubmitReport(const Report& report) override
         {
             reportView_->AddReport(report, FullIndent());
         }

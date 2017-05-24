@@ -22,6 +22,8 @@ namespace ConsoleManip
 {
 
 
+/* ===== Public flags ===== */
+
 //! Output stream color flags enumeration.
 struct ColorFlags
 {
@@ -43,6 +45,8 @@ struct ColorFlags
     };
 };
 
+
+/* ===== Public functions ===== */
 
 //! Enables or disables console manipulation. By default enabled.
 void XSC_EXPORT Enable(bool enable);
@@ -75,6 +79,8 @@ void XSC_EXPORT PushColor(long front, long back, std::ostream& stream = std::cou
 //! Pops the previous front and back color flags from the stack.
 void XSC_EXPORT PopColor(std::ostream& stream = std::cout);
 
+
+/* ===== Public classes ===== */
 
 //! Helper class for scoped color stack operations.
 class ScopedColor

@@ -1349,6 +1349,35 @@ void SeparateSamplersCommand::Run(CommandLine& cmdLine, ShellState& state)
 }
 
 
+/*
+ * DisassembleCommand class
+ */
+
+std::vector<Command::Identifier> DisassembleCommand::Idents() const
+{
+    return { { "-dasm" }, { "--disassemble" } };
+}
+
+HelpDescriptor DisassembleCommand::Help() const
+{
+    return
+    {
+        "-dasm, --disassemble FILE",
+        "Disassembles the SPIR-V module"
+    };
+}
+
+void DisassembleCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    const auto filename = cmdLine.Accept();
+    
+    std::ifstream file(filename, std::ios::binary);
+    DisassembleShader(file, std::cout);
+
+    state.actionPerformed = true;
+}
+
+
 #ifdef XSC_ENABLE_LANGUAGE_EXT
 
 /*
