@@ -7,9 +7,12 @@
 
 #include <Xsc/Xsc.h>
 #include "Compiler.h"
-#include "SPIRVDisassembler.h"
 #include "ReportIdents.h"
 #include <algorithm>
+
+#ifdef XSC_ENABLE_SPIRV
+#   include "SPIRVDisassembler.h"
+#endif
 
 
 namespace Xsc
@@ -96,12 +99,20 @@ XSC_EXPORT void DisassembleShader(
     {
         case IntermediateLanguage::SPIRV:
         {
+            #ifdef XSC_ENABLE_SPIRV
+
             /* Disassemble SPIR-V module */
             SPIRVDisassembler disassembler;
             disassembler.Parse(streamIn);
             disassembler.Print(streamOut, desc);
-            break;
+
+            #else
+            
+            throw std::invalid_argument(R_NotBuildWithSPIRV);
+
+            #endif
         }
+        break;
 
         default:
         {

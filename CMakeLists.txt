@@ -25,6 +25,7 @@ option(XSC_BUILD_WRAPPER_CSHARP "Build C# wrapper" OFF)
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
 option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings with 'glslangValidator'" OFF)
 option(XSC_ENABLE_LANGUAGE_EXT "Enables a few language extensions (e.g. 'space' attribute for stronger type system)" OFF)
+option(XSC_ENABLE_SPIRV "Enables all SPIR-V related features (experimental; requires submodule in 'external/SPIR-V')" OFF)
 
 option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
 
@@ -50,6 +51,11 @@ endif()
 if(XSC_ENABLE_LANGUAGE_EXT)
     add_definitions(-DXSC_ENABLE_LANGUAGE_EXT)
 endif()
+
+if(XSC_ENABLE_SPIRV)
+	add_definitions(-DXSC_ENABLE_SPIRV)
+endif()
+
 
 # === Global files ===
 
@@ -91,8 +97,11 @@ set(
 	${FilesSrcCompilerBackend}
 	${FilesSrcCompilerBackendGLSL}
 	${FilesSrcCompilerReport}
-	${FilesSrcCompilerCFG}
 )
+
+if(XSC_ENABLE_SPIRV)
+	set(FilesCompilerAll ${FilesCompilerAll} ${FilesSrcCompilerCFG})
+endif()
 
 
 # === Source group folders ===
@@ -109,7 +118,10 @@ source_group("src\\Frontend\\GLSL" FILES ${FilesSrcCompilerFrontendGLSL})
 source_group("src\\Backend" FILES ${FilesSrcCompilerBackend})
 source_group("src\\Backend\\GLSL" FILES ${FilesSrcCompilerBackendGLSL})
 source_group("src\\Report" FILES ${FilesSrcCompilerReport})
-source_group("src\\CFG" FILES ${FilesSrcCompilerCFG})
+
+if(XSC_ENABLE_SPIRV)
+	source_group("src\\CFG" FILES ${FilesSrcCompilerCFG})
+endif()
 
 
 # === Include directories ===
@@ -125,9 +137,11 @@ include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/GLSL")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Report")
-include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/CFG")
 
-include_directories("${PROJECT_SOURCE_DIR}/external/SPIR-V/include")
+if(XSC_ENABLE_SPIRV)
+	include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/CFG")
+	include_directories("${PROJECT_SOURCE_DIR}/external/SPIR-V/include")
+endif()
 
 
 # === Executable ===
@@ -232,6 +246,10 @@ endif()
 
 if(XSC_BUILD_WRAPPER_CSHARP)
 	message("Build C# Wrapper: xsc_core_csharp")
+endif()
+
+if(XSC_ENABLE_SPIRV)
+	message("Include SPIR-V (Experimental)")
 endif()
 
 

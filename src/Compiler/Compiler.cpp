@@ -21,8 +21,6 @@
 #include "HLSLAnalyzer.h"
 #include "HLSLIntrinsics.h"
 
-#include "SPIRVDisassembler.h"
-
 #include <sstream>
 #include <stdexcept>
 
