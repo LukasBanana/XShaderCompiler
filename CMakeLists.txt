@@ -15,19 +15,21 @@ set(INSTALL_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "Instal
 
 # === Options ===
 
+# Main
 option(XSC_BUILD_SHELL "Build XShaderCompiler shell 'xsc'" ON)
 option(XSC_BUILD_DEBUGGER "Build XShaderCompiler debugger 'xsc_debugger' (requires wxWidgets library)" OFF)
 option(XSC_BUILD_TESTS "Build all test applications" OFF)
+option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
 
+# Wrappers
 option(XSC_BUILD_WRAPPER_C "Build C wrapper (ISO C99)" OFF)
 option(XSC_BUILD_WRAPPER_CSHARP "Build C# wrapper" OFF)
 
+# Specials
 option(XSC_ENABLE_EASTER_EGGS "Enables little easter eggs" OFF)
 option(XSC_ENABLE_POST_VALIDATION "Enables the post validation in presettings with 'glslangValidator'" OFF)
 option(XSC_ENABLE_LANGUAGE_EXT "Enables a few language extensions (e.g. 'space' attribute for stronger type system)" OFF)
 option(XSC_ENABLE_SPIRV "Enables all SPIR-V related features (experimental; requires submodule in 'external/SPIR-V')" OFF)
-
-option(XSC_SHARED_LIB "Build XShaderCompiler as a shared library instead of a static library" OFF)
 
 #set(XSC_REPORT_LANGUAGE "EN" CACHE STRING "Language of the report output (supported values: 'EN')")
 
