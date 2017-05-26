@@ -163,6 +163,7 @@ struct Options
     //! If true, little code optimizations are performed. By default false.
     bool    optimize                = false;
 
+    //TODO: maybe merge this option with "optimize" (preferWrappers == !optimize)
     //! If true, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.
     bool    preferWrappers          = false;
 
@@ -187,6 +188,7 @@ struct Options
     //! If true, the timings of the different compilation processes are written to the log output. By default false.
     bool    showTimes               = false;
 
+    //TODO: remove this option, and determine automatically when unrolling initializers are required!
     //! If true, array initializations will be unrolled. By default false.
     bool    unrollArrayInitializers = false;
 
