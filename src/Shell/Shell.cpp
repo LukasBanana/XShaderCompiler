@@ -28,6 +28,8 @@ namespace Util
 {
 
 
+using namespace ConsoleManip;
+
 #ifdef XSC_ENABLE_EASTER_EGGS
 
 static void PrintBackdoorEasterEgg(std::ostream& output)
@@ -130,7 +132,7 @@ bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp)
     {
         /* Print highlighted exception info */
         {
-            ConsoleManip::ScopedColor color { ConsoleManip::ColorFlags::Red | ConsoleManip::ColorFlags::Intens };
+            ScopedColor color { ColorFlags::Red | ColorFlags::Intens };
             output << R_ExceptionThrown();
         }
 
@@ -279,6 +281,8 @@ void Shell::Compile(const std::string& filename)
 
         if (result)
         {
+            ScopedColor color { ColorFlags::Green | ColorFlags::Intens };
+
             if (!state_.outputDesc.options.validateOnly)
             {
                 if (state_.verbose)
@@ -299,6 +303,8 @@ void Shell::Compile(const std::string& filename)
         }
         else
         {
+            ScopedColor color { ColorFlags::Red | ColorFlags::Intens };
+
             /* Always print message on failure */
             if (state_.outputDesc.options.validateOnly)
                 output << R_ValidationFailed() << std::endl;
