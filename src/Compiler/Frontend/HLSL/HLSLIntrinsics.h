@@ -75,10 +75,9 @@ class HLSLIntrinsicAdept : public IntrinsicAdept
             bool useMinDimension = false
         ) const;
 
-        #if 1//TODO: not implemented yet!
         void DeriveParameterTypesMul(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const;
         void DeriveParameterTypesTranspose(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const;
-        #endif
+        void DeriveParameterTypesFirstBit(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args, const Intrinsic intrinsic) const;
 
         BaseTypeDenoterPtr GetGenericTextureTypeFromPrefix(const Intrinsic intrinsic, const TypeDenoterPtr& prefixTypeDenoter) const;
 

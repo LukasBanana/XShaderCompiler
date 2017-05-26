@@ -1048,6 +1048,8 @@ enum class Semantic
     VertexID,               // n/a       SV_VertexID                gl_VertexID (OpenGL)/ gl_VertexIndex (Vulkan)
     VertexPosition,         // POSITION  SV_Position                gl_Position
     ViewportArrayIndex,     // n/a       SV_ViewportArrayIndex      gl_ViewportIndex
+  //NumWorkGroups,          // n/a       n/a                        gl_NumWorkGroups
+  //WorkGroupSize,          // n/a       n/a                        gl_WorkGroupSize
 };
 
 // Indexed semantic type with 'Semantic' enum, integral index, and implicit conversion from and to 'Semantic' enum.

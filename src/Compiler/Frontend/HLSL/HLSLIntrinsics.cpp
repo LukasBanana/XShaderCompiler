@@ -668,6 +668,10 @@ std::vector<TypeDenoterPtr> HLSLIntrinsicAdept::GetIntrinsicParameterTypes(const
         case Intrinsic::Transpose:
             DeriveParameterTypesTranspose(paramTypeDenoters, args);
             break;
+        case Intrinsic::FirstBitHigh:
+        case Intrinsic::FirstBitLow:
+            DeriveParameterTypesFirstBit(paramTypeDenoters, args, intrinsic);
+            break;
         default:
             DeriveParameterTypes(paramTypeDenoters, intrinsic, args);
             break;
@@ -992,6 +996,32 @@ void HLSLIntrinsicAdept::DeriveParameterTypesMul(std::vector<TypeDenoterPtr>& pa
 void HLSLIntrinsicAdept::DeriveParameterTypesTranspose(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args) const
 {
     //TODO...
+}
+
+void HLSLIntrinsicAdept::DeriveParameterTypesFirstBit(std::vector<TypeDenoterPtr>& paramTypeDenoters, const std::vector<ExprPtr>& args, const Intrinsic intrinsic) const
+{
+    /* Validate number of arguments */
+    if (args.size() != 1)
+        RuntimeErr(R_InvalidIntrinsicArgCount(intrinsic == Intrinsic::FirstBitLow ? "firstbitlow" : "firstbithigh"));
+
+    /* Get type denoter of arguments (without aliasing) */
+    auto type0 = args[0]->GetTypeDenoter()->GetSub();
+
+    if (auto baseType0 = type0->As<BaseTypeDenoter>())
+    {
+        const auto baseDataType = BaseDataType(baseType0->dataType);
+        
+        if (IsScalarType(baseDataType) || IsVectorType(baseDataType))
+        {
+            if (baseDataType != DataType::Int && baseDataType != DataType::UInt)
+            {
+                /* Convert vector component type to int */
+                const auto intVectorType = VectorDataType(DataType::Int, VectorTypeDim(baseDataType));
+                type0 = std::make_shared<BaseTypeDenoter>(intVectorType);
+            }
+            paramTypeDenoters.push_back(type0);
+        }
+    }
 }
 
 BaseTypeDenoterPtr HLSLIntrinsicAdept::GetGenericTextureTypeFromPrefix(const Intrinsic intrinsic, const TypeDenoterPtr& prefixTypeDenoter) const
