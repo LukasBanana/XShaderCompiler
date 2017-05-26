@@ -9,6 +9,7 @@
 #include "CommandFactory.h"
 #include "Shell.h"
 #include "Helper.h"
+#include "ReportIdents.h"
 #include <Xsc/Targets.h>
 #include <Xsc/ConsoleManip.h>
 #include <map>
@@ -72,7 +73,7 @@ HelpDescriptor EntryCommand::Help() const
     return
     {
         "-E, --entry ENTRY",
-        "Shader entry point; default=main",
+        R_CmdHelpEntry,
         HelpCategory::Main
     };
 }
@@ -97,7 +98,7 @@ HelpDescriptor SecndEntryCommand::Help() const
     return
     {
         "-E2, --entry2 ENTRY",
-        "Secondary shader entry point",
+        R_CmdHelpSecndEntry,
         HelpCategory::Main
     };
 }
@@ -121,7 +122,7 @@ HelpDescriptor TargetCommand::Help() const
 {
     return
     {
-        "-T, --target TARGET", "Input shader target; valid targets:",
+        "-T, --target TARGET", R_CmdHelpTarget,
         "vert, tesc, tese, geom, frag, comp",
         HelpCategory::Main
     };
@@ -129,8 +130,10 @@ HelpDescriptor TargetCommand::Help() const
 
 void TargetCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
+    const auto target = cmdLine.Accept();
+
     state.inputDesc.shaderTarget = MapStringToType<ShaderTarget>(
-        cmdLine.Accept(),
+        target,
         {
             { "vert", ShaderTarget::VertexShader                 },
             { "tesc", ShaderTarget::TessellationControlShader    },
@@ -139,7 +142,7 @@ void TargetCommand::Run(CommandLine& cmdLine, ShellState& state)
             { "frag", ShaderTarget::FragmentShader               },
             { "comp", ShaderTarget::ComputeShader                },
         },
-        "invalid shader target"
+        R_InvalidShaderTarget(target)
     );
 }
 
@@ -158,7 +161,7 @@ HelpDescriptor VersionInCommand::Help() const
     return
     {
         "-Vin, --version-in VERSION",
-        "Input shader version; default=HLSL5; valid versions:",
+        R_CmdHelpVersionIn,
         "Cg, HLSL3, HLSL4, HLSL5, HLSL6, GLSL, ESSL, VKSL",
         HelpCategory::Main
     };
@@ -166,8 +169,10 @@ HelpDescriptor VersionInCommand::Help() const
 
 void VersionInCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
+    const auto version = cmdLine.Accept();
+
     state.inputDesc.shaderVersion = MapStringToType<InputShaderVersion>(
-        cmdLine.Accept(),
+        version,
         {
             { "Cg",    InputShaderVersion::Cg    },
             { "HLSL3", InputShaderVersion::HLSL3 },
@@ -178,7 +183,7 @@ void VersionInCommand::Run(CommandLine& cmdLine, ShellState& state)
             { "ESSL",  InputShaderVersion::ESSL  },
             { "VKSL",  InputShaderVersion::VKSL  },
         },
-        "invalid input shader version"
+        R_InvalidShaderVersionIn(version)
     );
 }
 
@@ -197,7 +202,7 @@ HelpDescriptor VersionOutCommand::Help() const
     return
     {
         "-Vout, --version-out VERSION",
-        "Shader output version; default=GLSL; valid versions:",
+        R_CmdHelpVersionOut,
         (
             "GLSL[110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450],\n"   \
             "ESSL[100, 300, 310, 320],\n"                                           \
@@ -209,8 +214,10 @@ HelpDescriptor VersionOutCommand::Help() const
 
 void VersionOutCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
+    const auto version = cmdLine.Accept();
+
     state.outputDesc.shaderVersion = MapStringToType<OutputShaderVersion>(
-        cmdLine.Accept(),
+        version,
         {
             { "GLSL110", OutputShaderVersion::GLSL110 },
             { "GLSL120", OutputShaderVersion::GLSL120 },
@@ -235,7 +242,7 @@ void VersionOutCommand::Run(CommandLine& cmdLine, ShellState& state)
             { "VKSL450", OutputShaderVersion::VKSL450 },
             { "VKSL",    OutputShaderVersion::VKSL    },
         },
-        "invalid output shader version"
+        R_InvalidShaderVersionOut(version)
     );
 }
 
@@ -254,7 +261,7 @@ HelpDescriptor OutputCommand::Help() const
     return
     {
         "-o, --output FILE",
-        "Shader output file (use '*' for default); default='<FILE>.<ENTRY>.<TARGET>'",
+        R_CmdHelpOutput,
         HelpCategory::Main
     };
 }
@@ -279,7 +286,7 @@ HelpDescriptor IncludePathCommand::Help() const
     return
     {
         "-I, --include PATH",
-        "Adds PATH to the search include paths",
+        R_CmdHelpIncludePath,
         HelpCategory::Main
     };
 }
@@ -304,28 +311,17 @@ HelpDescriptor WarnCommand::Help() const
     return
     {
         "-W<TYPE> [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables the specified warning type; default=" + CommandLine::GetBooleanFalse() + "; valid types:",
-        (
-            "all           => all kinds of warnings\n"               \
-            "basic         => warn for basic issues\n"               \
-            "decl-shadow   => warn for declaration shadowing\n"      \
-            "empty-body    => warn for empty statement body\n"       \
-            "extension     => warn for required extensions\n"        \
-            "implicit-cast => warn for implicit type casts\n"        \
-            "index-bound   => warn for index boundary violation\n"   \
-            "preprocessor  => warn for pre-processor issues\n"       \
-            "reflect       => warn for issues in code reflection\n"  \
-            "syntax        => warn for syntactic issues\n"           \
-            "unlocated-obj => warn for unlocated optional objects\n" \
-            "unused-vars   => warn for unused variables"
-        ),
+        R_CmdHelpWarn(CommandLine::GetBooleanFalse()),
+        R_CmdHelpDetailsWarn
     };
 }
 
 void WarnCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
+    const auto type = cmdLine.Accept();
+
     const auto flags = MapStringToType<unsigned int>(
-        cmdLine.Accept(),
+        type,
         {
             { "all",           Warnings::All                     },
             { "basic",         Warnings::Basic                   },
@@ -340,7 +336,7 @@ void WarnCommand::Run(CommandLine& cmdLine, ShellState& state)
             { "unlocated-obj", Warnings::UnlocatedObjects        },
             { "unused-vars",   Warnings::UnusedVariables         },
         },
-        "invalid warning type"
+        R_InvalidWarningType(type)
     );
 
     SetFlagsByBoolean(cmdLine, state.inputDesc.warnings, flags);
@@ -361,7 +357,7 @@ HelpDescriptor ShowASTCommand::Help() const
     return
     {
         "--show-ast [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables debug output for the AST (Abstract Syntax Tree); default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpShowAST(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -385,7 +381,7 @@ HelpDescriptor ShowTimesCommand::Help() const
     return
     {
         "--show-times [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables debug output for timings of each compilation step; default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpShowTimes(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -409,7 +405,7 @@ HelpDescriptor ReflectCommand::Help() const
     return
     {
         "--reflect [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables code reflection output; default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpReflect(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -433,7 +429,7 @@ HelpDescriptor PPOnlyCommand::Help() const
     return
     {
         "-PP, --preprocess-only [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables to only preprocess source code; default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpPPOnly(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -457,7 +453,7 @@ HelpDescriptor MacroCommand::Help() const
     return
     {
         "-D<IDENT>, -D<IDENT>=VALUE",
-        "Adds the identifier <IDENT> to the pre-defined macros with an optional VALUE"
+        R_CmdHelpMacro
     };
 }
 
@@ -494,7 +490,7 @@ HelpDescriptor SemanticCommand::Help() const
     return
     {
         "-S<IDENT>=VALUE",
-        "Adds the vertex semantic <IDENT> binding to VALUE (Requires -EB)"
+        R_CmdHelpSemantic
     };
 }
 
@@ -512,7 +508,7 @@ void SemanticCommand::Run(CommandLine& cmdLine, ShellState& state)
         state.outputDesc.vertexSemantics.push_back({ ident, locIndex });
     }
     else
-        throw std::runtime_error("vertex attribute value expected for \"" + arg + "\"");
+        throw std::runtime_error(R_VertexAttribValueExpectedFor(arg));
 }
 
 
@@ -530,7 +526,7 @@ HelpDescriptor PauseCommand::Help() const
     return
     {
         "--pause",
-        "Waits for user input after the translation process"
+        R_CmdHelpPause
     };
 }
 
@@ -554,7 +550,7 @@ HelpDescriptor PresettingCommand::Help() const
     return
     {
         "-PS, --presetting FILE",
-        "Parse further arguments from the presetting file"
+        R_CmdHelpPresetting
     };
 }
 
@@ -566,14 +562,14 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
 
     /* Check if this presetting file has already been processed */
     if (pressetingFilenames.find(filename) != pressetingFilenames.end())
-        throw std::runtime_error("loop in presetting files detected");
+        throw std::runtime_error(R_LoopInPresettingFiles);
 
     pressetingFilenames.insert(filename);
 
     /* Read arguments from file */
     std::ifstream file(filename);
     if (!file.good())
-        throw std::runtime_error("failed to read file: \"" + filename + "\"");
+        throw std::runtime_error(R_FailedToReadFile(filename));
 
     struct Presetting
     {
@@ -583,7 +579,7 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
 
     auto RunPresetting = [&](Presetting& preset) -> bool
     {
-        std::cout << "run presetting: \"" << preset.title << "\"" << std::endl;
+        std::cout << R_RunPresetting(preset.title) << std::endl;
         auto shell = Shell::Instance();
         
         bool result = false;
@@ -679,8 +675,8 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
             };
 
             /* Let user choose between one of the presettings */
-            std::cout << "choose presetting:" << std::endl;
-            std::cout << "  " << Indent(0) << "0.) ALL" << std::endl;
+            std::cout << R_ChoosePresetting() << ':' << std::endl;
+            std::cout << "  " << Indent(0) << "0.) " << R_ChooseAllPresettings() << std::endl;
 
             for (std::size_t i = 0; i < presettings.size(); ++i)
                 std::cout << "  " << Indent(i+1) << (i+1) << ".) " << presettings[i].title << std::endl;
@@ -703,12 +699,12 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
             if (numFailed == 0)
             {
                 ConsoleManip::ScopedColor color(ConsoleManip::ColorFlags::Green | ConsoleManip::ColorFlags::Intens);
-                std::cout << "all presettings processed successfully" << std::endl;
+                std::cout << R_PresettingsSucceeded() << std::endl;
             }
             else
             {
                 ConsoleManip::ScopedColor color(ConsoleManip::ColorFlags::Red | ConsoleManip::ColorFlags::Intens);
-                std::cout << numFailed << " of " << presettings.size() << " presetting(s) failed" << std::endl;
+                std::cout << R_PresettingsFailed(numFailed, presettings.size()) << std::endl;
             }
         }
         else if (idx > 0)
@@ -725,7 +721,7 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
     else
     {
         /* Tell user that no presettings are defined */
-        std::cout << "no presettings defined" << std::endl;
+        std::cout << R_NoPresettingsDefined() << std::endl;
     }
 
     state.actionPerformed = true;
@@ -746,7 +742,7 @@ HelpDescriptor VersionCommand::Help() const
     return
     {
         "--version",
-        "Prints the version information"
+        R_CmdHelpVersion
     };
 }
 
@@ -802,7 +798,7 @@ HelpDescriptor HelpCommand::Help() const
     return
     {
         "--help",
-        "Prints the help reference"
+        R_CmdHelpHelp
     };
 }
 
@@ -827,7 +823,7 @@ HelpDescriptor VerboseCommand::Help() const
     return
     {
         "-V, --verbose [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables more output for compiler reports; default=" + CommandLine::GetBooleanTrue()
+        R_CmdHelpVerbose(CommandLine::GetBooleanTrue())
     };
 }
 
@@ -851,7 +847,7 @@ HelpDescriptor ColorCommand::Help() const
     return
     {
         "--color [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables color highlighting for shell output; default=" + CommandLine::GetBooleanTrue()
+        R_CmdHelpColor(CommandLine::GetBooleanTrue())
     };
 }
 
@@ -875,7 +871,7 @@ HelpDescriptor OptimizeCommand::Help() const
     return
     {
         "-O, --optimize [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables optimization; default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpOptimize(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -899,7 +895,7 @@ HelpDescriptor ExtensionCommand::Help() const
     return
     {
         "--extension [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables shader extension output; default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpExtension(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -923,7 +919,7 @@ HelpDescriptor EnumExtensionCommand::Help() const
     return
     {
         "--enum-extensions",
-        "Enumerates all supported GLSL extensions"
+        R_CmdHelpEnumExtension
     };
 }
 
@@ -949,7 +945,7 @@ HelpDescriptor ValidateCommand::Help() const
     return
     {
         "-Valid, --validate-only [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables to only validate source code; default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpValidate(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -973,7 +969,7 @@ HelpDescriptor BindingCommand::Help() const
     return
     {
         "-EB, --explicit-bind [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables explicit binding slots; default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpBinding(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -996,7 +992,7 @@ HelpDescriptor AutoBindingCommand::Help() const
     return
     {
         "-AB, --auto-bind [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables automatic binding slot generation (implies -EB); default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpAutoBinding(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -1019,7 +1015,7 @@ HelpDescriptor AutoBindingStartSlotCommand::Help() const
     return
     {
         "-AB-slot, --auto-bind-slot OFFSET",
-        "Sets the start slot index for automatic binding slot generation; default=0"
+        R_CmdHelpAutoBindingStartSlot
     };
 }
 
@@ -1042,7 +1038,7 @@ HelpDescriptor CommentCommand::Help() const
     return
     {
         "--comments [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables commentary preservation; default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpComment(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -1066,7 +1062,7 @@ HelpDescriptor WrapperCommand::Help() const
     return
     {
         "--wrapper [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables the preference for intrinsic wrappers; default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpWrapper(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -1090,7 +1086,7 @@ HelpDescriptor UnrollInitializerCommand::Help() const
     return
     {
         "-Uinit, --unroll-initializer [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables unrolling of array initializers; default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpUnrollInitializer(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -1114,7 +1110,7 @@ HelpDescriptor ObfuscateCommand::Help() const
     return
     {
         "--obfuscate [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables code obfuscation; default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpObfuscate(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -1138,7 +1134,7 @@ HelpDescriptor RowMajorAlignmentCommand::Help() const
     return
     {
         "--row-major [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables row major packing alignment for matrices; default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpRowMajorAlignment(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -1162,15 +1158,8 @@ HelpDescriptor FormattingCommand::Help() const
     return
     {
         "-F<TYPE> [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables the specified formatting option; valid types:",
-        (
-            "blanks        => blank lines between declarations; default=" + CommandLine::GetBooleanTrue() + "\n"    \
-            "force-braces  => force braces for scopes; default=" + CommandLine::GetBooleanFalse() + "\n"            \
-            "compact       => write compact wrapper functions; default=" + CommandLine::GetBooleanFalse() + "\n"    \
-            "line-marks    => line marks (e.g. '#line 30'); default=" + CommandLine::GetBooleanFalse() + "\n"       \
-            "line-sep      => separate lines in columns; default=" + CommandLine::GetBooleanTrue() + "\n"           \
-            "newline-scope => write open braces at new lines; default=" + CommandLine::GetBooleanTrue()
-        )
+        R_CmdHelpFormatting,
+        R_CmdHelpDetailsFormatting(CommandLine::GetBooleanFalse(), CommandLine::GetBooleanTrue())
     };
 }
 
@@ -1193,7 +1182,7 @@ void FormattingCommand::Run(CommandLine& cmdLine, ShellState& state)
     else if (type == "newline-scope")
         state.outputDesc.formatting.newLineOpenScope = cmdLine.AcceptBoolean(true);
     else
-        throw std::invalid_argument("invalid formatting type '" + type + "'");
+        throw std::invalid_argument(R_InvalidFormattingType(type));
 }
 
 
@@ -1211,7 +1200,7 @@ HelpDescriptor IndentCommand::Help() const
     return
     {
         "--indent INDENT",
-        "Code indentation string (use '\\t' for tabs); default='    '"
+        R_CmdHelpIndent
     };
 }
 
@@ -1236,14 +1225,8 @@ HelpDescriptor PrefixCommand::Help() const
     return
     {
         "-P<TYPE> VALUE",
-        "Prefix for the specified name-mangling type; valid types:",
-        (
-            "in        => input variables; default='xsv_'\n"   \
-            "namespace => namespace objects; default='xsn_'\n" \
-            "out       => output variables; default='xsv_'\n"  \
-            "reserved  => reserved words; default='xsr_'\n"    \
-            "temp      => temporary variables; default='xst_'"
-        )
+        R_CmdHelpPrefix,
+        R_CmdHelpDetailsPrefix
     };
 }
 
@@ -1262,7 +1245,7 @@ void PrefixCommand::Run(CommandLine& cmdLine, ShellState& state)
     else if (type == "namespace")
         state.outputDesc.nameMangling.namespacePrefix = cmdLine.Accept();
     else
-        throw std::invalid_argument("invalid prefix type '" + type + "'");
+        throw std::invalid_argument(R_InvalidPrefixType(type));
 }
 
 
@@ -1280,11 +1263,8 @@ HelpDescriptor NameManglingCommand::Help() const
     return
     {
         "-N<TYPE> [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables the specified name-mangling option; value types:",
-        (
-            "buffer-fields   => rename 'buffer' fields, not its identifier; default=" + CommandLine::GetBooleanFalse() + "\n" \
-            "force-semantics => force semantics for input/output variables; default=" + CommandLine::GetBooleanFalse()
-        )
+        R_CmdHelpNameMangling,
+        R_CmdHelpDetailsNameMangling(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -1297,7 +1277,7 @@ void NameManglingCommand::Run(CommandLine& cmdLine, ShellState& state)
     else if (type == "force-semantics")
         state.outputDesc.nameMangling.useAlwaysSemantics = cmdLine.AcceptBoolean(true);
     else
-        throw std::invalid_argument("invalid name-mangling type '" + type + "'");
+        throw std::invalid_argument(R_InvalidNameManglingType(type));
 }
 
 
@@ -1315,7 +1295,7 @@ HelpDescriptor SeparateShadersCommand::Help() const
     return
     {
         "--separate-shaders [" + CommandLine::GetBooleanOption() + "]",
-        "Ensures compatibility to 'ARB_separate_shader_objects' extension; default=" + CommandLine::GetBooleanFalse()
+        R_CmdHelpSeparateShaders(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -1339,7 +1319,7 @@ HelpDescriptor SeparateSamplersCommand::Help() const
     return
     {
         "--separate-samplers [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables generation of separate sampler state objects; default=" + CommandLine::GetBooleanTrue()
+        R_CmdHelpSeparateSamplers(CommandLine::GetBooleanTrue())
     };
 }
 
@@ -1363,7 +1343,7 @@ HelpDescriptor DisassembleCommand::Help() const
     return
     {
         "-dasm, --disassemble FILE",
-        "Disassembles the SPIR-V module"
+        R_CmdHelpDisassemble
     };
 }
 
@@ -1394,25 +1374,23 @@ HelpDescriptor LanguageExtensionCommand::Help() const
     return
     {
         "-X<TYPE> [" + CommandLine::GetBooleanOption() + "]",
-        "Enables/disables the specified language extension; default=" + CommandLine::GetBooleanFalse() + "; value types:",
-        (
-            "all         => all kinds of extensions\n"                                  \
-            "attr-layout => enable 'layout' attribute to specify image layout format\n" \
-            "attr-space  => enable 'space' attribute for a stronger type system"
-        )
+        R_CmdHelpLanguageExtension(CommandLine::GetBooleanFalse()),
+        R_CmdHelpDetailsLanguageExtension
     };
 }
 
 void LanguageExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
+    const auto type = cmdLine.Accept();
+
     const auto flags = MapStringToType<unsigned int>(
-        cmdLine.Accept(),
+        type,
         {
             { "all",         Extensions::All             },
             { "attr-layout", Extensions::LayoutAttribute },
             { "attr-space",  Extensions::SpaceAttribute  },
         },
-        "invalid extension type"
+        R_InvalidExtensionType(type)
     );
 
     SetFlagsByBoolean(cmdLine, state.inputDesc.extensions, flags);

@@ -519,6 +519,88 @@ DECL_REPORT( CompileShader,                     "compile \"{0}\" to \"{1}\""    
 DECL_REPORT( CompilationSuccessful,             "compilation successful"                                                                                        );
 DECL_REPORT( CompilationFailed,                 "compilation failed"                                                                                            );
 
+/* ----- Commands ----- */
+
+DECL_REPORT( CmdHelpEntry,                      "Shader entry point; default=main"                                                                              );
+DECL_REPORT( CmdHelpSecndEntry,                 "Secondary shader entry point"                                                                                  );
+DECL_REPORT( CmdHelpTarget,                     "Input shader target; valid targets:"                                                                           );
+DECL_REPORT( CmdHelpVersionIn,                  "Input shader version; default=HLSL5; valid versions:"                                                          );
+DECL_REPORT( CmdHelpVersionOut,                 "Shader output version; default=GLSL; valid versions:"                                                          );
+DECL_REPORT( CmdHelpOutput,                     "Shader output file (use '*' for default); default='<FILE>.<ENTRY>.<TARGET>'"                                   );
+DECL_REPORT( CmdHelpIncludePath,                "Adds PATH to the search include paths"                                                                         );
+DECL_REPORT( CmdHelpWarn,                       "Enables/disables the specified warning type; default={0}; valid types:"                                        );
+DECL_REPORT( CmdHelpDetailsWarn,                "all           => all kinds of warnings\n"               \
+                                                "basic         => warn for basic issues\n"               \
+                                                "decl-shadow   => warn for declaration shadowing\n"      \
+                                                "empty-body    => warn for empty statement body\n"       \
+                                                "extension     => warn for required extensions\n"        \
+                                                "implicit-cast => warn for implicit type casts\n"        \
+                                                "index-bound   => warn for index boundary violation\n"   \
+                                                "preprocessor  => warn for pre-processor issues\n"       \
+                                                "reflect       => warn for issues in code reflection\n"  \
+                                                "syntax        => warn for syntactic issues\n"           \
+                                                "unlocated-obj => warn for unlocated optional objects\n" \
+                                                "unused-vars   => warn for unused variables"                                                                    );
+DECL_REPORT( CmdHelpShowAST,                    "Enables/disables debug output for the AST (Abstract Syntax Tree); default={0}"                                 );
+DECL_REPORT( CmdHelpShowTimes,                  "Enables/disables debug output for timings of each compilation step; default={0}"                               );
+DECL_REPORT( CmdHelpReflect,                    "Enables/disables code reflection output; default={0}"                                                          );
+DECL_REPORT( CmdHelpPPOnly,                     "Enables/disables to only preprocess source code; default={0}"                                                  );
+DECL_REPORT( CmdHelpMacro,                      "Adds the identifier <IDENT> to the pre-defined macros with an optional VALUE"                                  );
+DECL_REPORT( CmdHelpSemantic,                   "Adds the vertex semantic <IDENT> binding to VALUE (Requires -EB)"                                              );
+DECL_REPORT( CmdHelpPause,                      "Waits for user input after the translation process"                                                            );
+DECL_REPORT( CmdHelpPresetting,                 "Parse further arguments from the presetting file"                                                              );
+DECL_REPORT( CmdHelpVersion,                    "Prints the version information"                                                                                );
+DECL_REPORT( CmdHelpHelp,                       "Prints the help reference"                                                                                     );
+DECL_REPORT( CmdHelpVerbose,                    "Enables/disables more output for compiler reports; default={0}"                                                );
+DECL_REPORT( CmdHelpColor,                      "Enables/disables color highlighting for shell output; default={0}"                                             );
+DECL_REPORT( CmdHelpOptimize,                   "Enables/disables optimization; default={0}"                                                                    );
+DECL_REPORT( CmdHelpExtension,                  "Enables/disables shader extension output; default={0}"                                                         );
+DECL_REPORT( CmdHelpEnumExtension,              "Enumerates all supported GLSL extensions"                                                                      );
+DECL_REPORT( CmdHelpValidate,                   "Enables/disables to only validate source code; default={0}"                                                    );
+DECL_REPORT( CmdHelpBinding,                    "Enables/disables explicit binding slots; default={0}"                                                          );
+DECL_REPORT( CmdHelpAutoBinding,                "Enables/disables automatic binding slot generation (implies -EB); default={0}"                                 );
+DECL_REPORT( CmdHelpAutoBindingStartSlot,       "Sets the start slot index for automatic binding slot generation; default=0"                                    );
+DECL_REPORT( CmdHelpComment,                    "Enables/disables commentary preservation; default={0}"                                                         );
+DECL_REPORT( CmdHelpWrapper,                    "Enables/disables the preference for intrinsic wrappers; default={0}"                                           );
+DECL_REPORT( CmdHelpUnrollInitializer,          "Enables/disables unrolling of array initializers; default={0}"                                                 );
+DECL_REPORT( CmdHelpObfuscate,                  "Enables/disables code obfuscation; default={0}"                                                                );
+DECL_REPORT( CmdHelpRowMajorAlignment,          "Enables/disables row major packing alignment for matrices; default={0}"                                        );
+DECL_REPORT( CmdHelpFormatting,                 "Enables/disables the specified formatting option; valid types:"                                                );
+DECL_REPORT( CmdHelpDetailsFormatting,          "blanks        => blank lines between declarations; default={1}\n"  \
+                                                "force-braces  => force braces for scopes; default={0}\n"           \
+                                                "compact       => write compact wrapper functions; default={0}\n"   \
+                                                "line-marks    => line marks (e.g. '#line 30'); default={0}\n"      \
+                                                "line-sep      => separate lines in columns; default={1}\n"         \
+                                                "newline-scope => write open braces at new lines; default={1}"                                                  );
+DECL_REPORT( CmdHelpIndent,                     "Code indentation string (use '\\t' for tabs); default='    '"                                                  );
+DECL_REPORT( CmdHelpPrefix,                     "Prefix for the specified name-mangling type; valid types:"                                                     );
+DECL_REPORT( CmdHelpDetailsPrefix,              "in        => input variables; default='xsv_'\n"    \
+                                                "namespace => namespace objects; default='xsn_'\n"  \
+                                                "out       => output variables; default='xsv_'\n"   \
+                                                "reserved  => reserved words; default='xsr_'\n"     \
+                                                "temp      => temporary variables; default='xst_'"                                                              );
+DECL_REPORT( CmdHelpNameMangling,               "Enables/disables the specified name-mangling option; value types:"                                             );
+DECL_REPORT( CmdHelpDetailsNameMangling,        "buffer-fields   => rename 'buffer' fields, not its identifier; default={0}\n" \
+                                                "force-semantics => force semantics for input/output variables; default={0}"                                    );
+DECL_REPORT( CmdHelpSeparateShaders,            "Ensures compatibility to 'ARB_separate_shader_objects' extension; default={0}"                                 );
+DECL_REPORT( CmdHelpSeparateSamplers,           "Enables/disables generation of separate sampler state objects; default={0}"                                    );
+DECL_REPORT( CmdHelpDisassemble,                "Disassembles the SPIR-V module"                                                                                );
+DECL_REPORT( InvalidShaderTarget,               "invalid shader target[: '{0}']"                                                                                );
+DECL_REPORT( InvalidShaderVersionIn,            "invalid input shader version[: '{0}']"                                                                         );
+DECL_REPORT( InvalidShaderVersionOut,           "invalid output shader version[: '{0}']"                                                                        );
+DECL_REPORT( InvalidWarningType,                "invalid warning type[: '{0}']"                                                                                 );
+DECL_REPORT( InvalidFormattingType,             "invalid formatting type[: '{0}']"                                                                              );
+DECL_REPORT( InvalidPrefixType,                 "invalid prefix type[: '{0}']"                                                                                  );
+DECL_REPORT( InvalidNameManglingType,           "invalid name-mangling type[: '{0}']"                                                                           );
+DECL_REPORT( VertexAttribValueExpectedFor,      "vertex attribute value expected for \"{0}\""                                                                   );
+DECL_REPORT( LoopInPresettingFiles,             "loop in presetting files detected"                                                                             );
+DECL_REPORT( RunPresetting,                     "run presetting[: \"{0}\"]"                                                                                     );
+DECL_REPORT( ChoosePresetting,                  "choose presetting"                                                                                             );
+DECL_REPORT( ChooseAllPresettings,              "ALL"                                                                                                           );
+DECL_REPORT( PresettingsSucceeded,              "all presettings processed successfully"                                                                        );
+DECL_REPORT( PresettingsFailed,                 "{0} of {1} presetting(s) failed"                                                                               );
+DECL_REPORT( NoPresettingsDefined,              "no presettings defined"                                                                                        );
+
 /* ----- Extensions ----- */
 
 #ifdef XSC_ENABLE_LANGUAGE_EXT
@@ -528,6 +610,11 @@ DECL_REPORT( AttributeRequiresExtension,        "attribute '{0}' requires langua
 DECL_REPORT( IllegalVectorSpaceAssignment,      "illegal assignment of '{0}' vector-space to '{1}' vector-space"                                                );
 DECL_REPORT( InconsistVectorSpacesInTypes,      "inconsistent vector-spaces between type denoters[ (found '{0}' and '{1}')]"                                    );
 DECL_REPORT( ExpectedIdentInSpaceAttr,          "expected identifier as argument in 'space' attribute"                                                          );
+DECL_REPORT( CmdHelpLanguageExtension,          "Enables/disables the specified language extension; default={0}; value types:"                                  );
+DECL_REPORT( CmdHelpDetailsLanguageExtension,   "all         => all kinds of extensions\n"                                  \
+                                                "attr-layout => enable 'layout' attribute to specify image layout format\n" \
+                                                "attr-space  => enable 'space' attribute for a stronger type system"                                            );
+DECL_REPORT( InvalidExtensionType,              "invalid extension type[: '{0}']"                                                                               );
 
 #endif
 
