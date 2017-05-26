@@ -27,6 +27,8 @@ namespace Util
 {
 
 
+using namespace ConsoleManip;
+
 /*
  * Internal functions
  */
@@ -698,12 +700,12 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
             /* Print information of success or failure */
             if (numFailed == 0)
             {
-                ConsoleManip::ScopedColor color(ConsoleManip::ColorFlags::Green | ConsoleManip::ColorFlags::Intens);
+                ScopedColor scopedColor(ColorFlags::Green | ColorFlags::Intens);
                 std::cout << R_PresettingsSucceeded() << std::endl;
             }
             else
             {
-                ConsoleManip::ScopedColor color(ConsoleManip::ColorFlags::Red | ConsoleManip::ColorFlags::Intens);
+                ScopedColor scopedColor(ColorFlags::Red | ColorFlags::Intens);
                 std::cout << R_PresettingsFailed(numFailed, presettings.size()) << std::endl;
             }
         }
@@ -749,19 +751,19 @@ HelpDescriptor VersionCommand::Help() const
 void VersionCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     /* Print version info in highlighted color */
-    ConsoleManip::ScopedColor highlight(ConsoleManip::ColorFlags::Green | ConsoleManip::ColorFlags::Blue);
+    ScopedColor scopedColor(ColorFlags::Green | ColorFlags::Blue);
 
     /* Print version */
     std::cout << "XShaderCompiler ( ";
     {
-        ConsoleManip::ScopedColor highlight(ConsoleManip::ColorFlags::Green | ConsoleManip::ColorFlags::Blue | ConsoleManip::ColorFlags::Intens);
+        ScopedColor scopedColor(ColorFlags::Green | ColorFlags::Blue | ColorFlags::Intens);
         std::cout << "Version " << XSC_VERSION_STRING;
     }
     
     #ifdef XSC_ENABLE_LANGUAGE_EXT
     std::cout << "; ";
     {
-        ConsoleManip::ScopedColor highlight(ConsoleManip::ColorFlags::Green | ConsoleManip::ColorFlags::Blue | ConsoleManip::ColorFlags::Intens);
+        ScopedColor scopedColor(ColorFlags::Green | ColorFlags::Blue | ColorFlags::Intens);
         std::cout << "Ext";
     }
     #endif
@@ -769,7 +771,7 @@ void VersionCommand::Run(CommandLine& cmdLine, ShellState& state)
     #ifdef _DEBUG
     std::cout << "; ";
     {
-        ConsoleManip::ScopedColor highlight(ConsoleManip::ColorFlags::Green | ConsoleManip::ColorFlags::Blue | ConsoleManip::ColorFlags::Intens);
+        ScopedColor scopedColor(ColorFlags::Green | ColorFlags::Blue | ColorFlags::Intens);
         std::cout << "DEBUG";
     }
     #endif
