@@ -192,15 +192,33 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
-    /* Check for arrays of arrays */
-    if (ast->GetTypeDenoter()->NumDimensions() >= 2)
-        AcquireExtension(E_GL_ARB_arrays_of_arrays, R_MultiDimArray, ast);
+    if (ast->flags(AST::isReachable))
+    {
+        /* Check for arrays of arrays */
+        if (ast->GetTypeDenoter()->NumDimensions() >= 2)
+            AcquireExtension(E_GL_ARB_arrays_of_arrays, R_MultiDimArray, ast);
 
-    /* Check for buffer types */
-    if (ast->GetBufferType() == BufferType::TextureCubeArray)
-        AcquireExtension(E_GL_ARB_texture_cube_map_array, R_TextureCubeArray, ast);
+        /* Check for buffer types */
+        const auto bufferType = ast->GetBufferType();
 
-    VISIT_DEFAULT(BufferDecl);
+        if (bufferType == BufferType::TextureCubeArray)
+            AcquireExtension(E_GL_ARB_texture_cube_map_array, R_TextureCubeArray, ast);
+
+        if (IsRWBufferType(bufferType))
+        {
+            if ( bufferType == BufferType::RWStructuredBuffer       ||
+                 bufferType == BufferType::RWByteAddressBuffer      ||
+                 bufferType == BufferType::AppendStructuredBuffer   ||
+                 bufferType == BufferType::ConsumeStructuredBuffer )
+            {
+                AcquireExtension(E_GL_ARB_shader_storage_buffer_object, R_RWStructuredBufferObject, ast);
+            }
+            else
+                AcquireExtension(E_GL_ARB_shader_image_load_store, R_RWTextureObject, ast);
+        }
+
+        VISIT_DEFAULT(BufferDecl);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)

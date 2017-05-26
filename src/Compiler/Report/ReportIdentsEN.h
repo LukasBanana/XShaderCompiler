@@ -309,6 +309,8 @@ DECL_REPORT( FragmentCoordinate,                "fragment coordinate"           
 DECL_REPORT( EarlyDepthStencil,                 "early depth stencil test"                                                                                      );
 DECL_REPORT( MultiDimArray,                     "multi-dimensional array"                                                                                       );
 DECL_REPORT( TextureCubeArray,                  "texture cube array"                                                                                            );
+DECL_REPORT( RWStructuredBufferObject,          "RW structured buffer object"                                                                                   );
+DECL_REPORT( RWTextureObject,                   "RW texture object"                                                                                             );
 DECL_REPORT( PackOffsetLayout,                  "pack offset layout"                                                                                            );
 DECL_REPORT( ConstantBuffer,                    "constant buffer"                                                                                               );
 DECL_REPORT( ExplicitBindingSlot,               "explicit binding slot"                                                                                         );
@@ -421,7 +423,7 @@ DECL_REPORT( VarInitialization,                 "variable initialization"       
 DECL_REPORT( IntrinsicNotDeclaredInObject,      "intrinsic '{0}' not declared in object '{1}'"                                                                  );
 DECL_REPORT( InvalidShaderModelForIntrinsic,    "intrinsic '{0}' requires shader model {1}, but only {2} is specified"                                          );
 DECL_REPORT( InvalidIntrinsicForTexture,        "invalid intrinsic '{0}' for texture object"                                                                    );
-DECL_REPORT( InvalidIntrinsicForRWTexture,      "invalid intrinsic '{0}' for RW-texture object"                                                                 );
+DECL_REPORT( InvalidIntrinsicForRWTexture,      "invalid intrinsic '{0}' for RW texture object"                                                                 );
 DECL_REPORT( InvalidIntrinsicForStreamOutput,   "invalid intrinsic '{0}' for stream-output object"                                                              );
 DECL_REPORT( InvalidGlobalIntrinsicForType,     "invalid global intrinsic '{0}' for type '{1}'"                                                                 );
 DECL_REPORT( InvalidClassIntrinsicForType,      "invalid class intrinsic '{0}' for type '{1}'"                                                                  );

@@ -47,6 +47,7 @@ const std::map<std::string, int>& GetGLSLExtensionVersionMap()
         { E_GL_ARB_shader_draw_parameters,                  110 },
         { E_GL_ARB_shader_group_vote,                       110 },
         { E_GL_ARB_shader_image_load_store,                 420 },
+        { E_GL_ARB_shader_storage_buffer_object,            430 },
         { E_GL_ARB_shader_texture_image_samples,            110 },
         { E_GL_ARB_shader_texture_lod,                      110 },
         { E_GL_ARB_shader_viewport_layer_array,             110 },
