@@ -518,13 +518,18 @@ void Analyzer::ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDeno
     /* Check if source type can be casted to destination type */
     if (sourceTypeDen.IsCastableTo(destTypeDen))
     {
-        if (WarnEnabled(Warnings::ImplicitTypeConversions))
+        /* Check if there is an implicit vector truncation */
+        int sourceVecSize = 0, destVecSize = 0;
+
+        const auto diff = TypeDenoter::FindVectorTruncation(sourceTypeDen, destTypeDen, sourceVecSize, destVecSize);
+
+        if (diff < 0)
         {
-            /* Check if there is an implicit vector truncation */
-            int sourceVecSize = 0, destVecSize = 0;
-            if (TypeDenoter::HasVectorTruncation(sourceTypeDen, destTypeDen, sourceVecSize, destVecSize))
+            if (WarnEnabled(Warnings::ImplicitTypeConversions))
                 Warning(R_ImplicitVectorTruncation(sourceVecSize, destVecSize), ast);
         }
+        else if (diff > 0)
+            Error(R_CantImplicitlyConvertVectorType(sourceVecSize, destVecSize), ast);
     }
     else
         Error(R_IllegalCast(sourceTypeDen.ToString(), destTypeDen.ToString(), contextDesc), ast);

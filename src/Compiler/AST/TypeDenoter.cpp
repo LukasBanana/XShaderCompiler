@@ -489,7 +489,7 @@ BaseTypeDenoterPtr TypeDenoter::MakeBoolTypeWithDimensionOf(const TypeDenoter& t
     }
 }
 
-bool TypeDenoter::HasVectorTruncation(
+int TypeDenoter::FindVectorTruncation(
     const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen, int& sourceVecSize, int& destVecSize)
 {
     /* Are both types base type denoters? */
@@ -500,10 +500,20 @@ bool TypeDenoter::HasVectorTruncation(
             /* Get data types from type denoters */
             sourceVecSize = VectorTypeDim(sourceBaseTypeDen->dataType);
             destVecSize = VectorTypeDim(destBaseTypeDen->dataType);
-            return (sourceVecSize > 0 && destVecSize > 0 && destVecSize < sourceVecSize);
+
+            if (sourceVecSize > 0 && destVecSize > 0)
+            {
+                /* Find negative vector truncation (e.g. float4 to float3 -> warning) */
+                if (destVecSize < sourceVecSize)
+                    return (destVecSize - sourceVecSize);
+
+                /* Find positive vector truncation for non-scalar sources (e.g. float3 to float4 -> error) */
+                if (sourceVecSize > 1 && destVecSize > sourceVecSize)
+                    return (destVecSize - sourceVecSize);
+            }
         }
     }
-    return false;
+    return 0;
 }
 
 

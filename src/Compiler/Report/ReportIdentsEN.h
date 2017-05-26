@@ -257,6 +257,7 @@ DECL_REPORT( ExpectedConstIntExpr,              "expected constant integer expre
 DECL_REPORT( ExpectedConstFloatExpr,            "expected constant floating-point expression"                                                                   );
 DECL_REPORT( VarDeclaredButNeverUsed,           "variable '{0}' is declared but never used"                                                                     );
 DECL_REPORT( ImplicitVectorTruncation,          "implicit truncation of vector type[ (from {0} to {1} dimensions)]"                                             );
+DECL_REPORT( CantImplicitlyConvertVectorType,   "can not implicitly convert vector type[ (from {0} to {1} dimensions)]"                                         );
 
 /* ----- ExprEvaluator ----- */
 
