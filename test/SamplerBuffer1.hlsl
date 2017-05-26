@@ -11,5 +11,5 @@ float3x4 getBoneMatrix(uint idx)
 
 float4 main() : SV_Position
 {
-	return mul(getBoneMatrix(0), float4(1, 2, 3, 4));
+	return float4(mul(getBoneMatrix(0), float4(1, 2, 3, 4)), 1);
 }

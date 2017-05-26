@@ -526,10 +526,10 @@ void Analyzer::ValidateTypeCast(const TypeDenoter& sourceTypeDen, const TypeDeno
         if (diff < 0)
         {
             if (WarnEnabled(Warnings::ImplicitTypeConversions))
-                Warning(R_ImplicitVectorTruncation(sourceVecSize, destVecSize), ast);
+                Warning(R_ImplicitVectorTruncation(sourceVecSize, destVecSize, contextDesc), ast);
         }
         else if (diff > 0)
-            Error(R_CantImplicitlyConvertVectorType(sourceVecSize, destVecSize), ast);
+            Error(R_CantImplicitlyConvertVectorType(sourceVecSize, destVecSize, contextDesc), ast);
     }
     else
         Error(R_IllegalCast(sourceTypeDen.ToString(), destTypeDen.ToString(), contextDesc), ast);

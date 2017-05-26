@@ -388,7 +388,7 @@ static TypeDenoterPtr FindCommonTypeDenoterVectorAndMatrix(BaseTypeDenoter* lhsT
 
     /* Return always row/column dimension of matrix type (e.g. 'mul(m4x4, v3)' => 'mul(m4x4, float4(v3, 0))') */
     auto matrixDim = MatrixTypeDim(rhsTypeDen->dataType);
-    auto commonDim = (rowVector ? matrixDim.second : matrixDim.first);
+    auto commonDim = (rowVector ? matrixDim.first : matrixDim.second);
 
     return std::make_shared<BaseTypeDenoter>(VectorDataType(commonType, commonDim));
 }
