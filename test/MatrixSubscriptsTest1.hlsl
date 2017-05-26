@@ -9,8 +9,8 @@ void main() {
 	
 	float a = M4._m00;
 	float3 b = M4._11_33_12;
-	float3 c = M4._m00_m11;
-	float3 d = M4._11_22;
+	float2 c = M4._m00_m11;
+	float2 d = M4._11_22;
 	float e = M2x3._23;
 	
 }

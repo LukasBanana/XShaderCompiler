@@ -23,7 +23,7 @@ struct { float2 value; } g() {
 }
 
 float4 main() : COLOR {
-	return g().value * f().x * f().y;
+	return float4(g().value * f().x * f().y, 0, 1);
 }
 
 
