@@ -903,7 +903,7 @@ static std::map<Semantic, DataType> GenerateSemanticDataTypeMap()
         { T::DispatchThreadID,       D::UInt3  },
         { T::DomainLocation,         D::Float3 },
         { T::GroupID,                D::UInt3  },
-        { T::GroupIndex,             D::Int    },
+        { T::GroupIndex,             D::UInt   },
         { T::GroupThreadID,          D::UInt3  },
         { T::GSInstanceID,           D::Int    },
         { T::InnerCoverage,          D::Int    },

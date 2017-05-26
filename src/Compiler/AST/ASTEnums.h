@@ -1029,7 +1029,7 @@ enum class Semantic
     DomainLocation,         // n/a       SV_DomainLocation          gl_TessCoord
     FragCoord,              // VPOS      SV_Position                gl_FragCoord
     GroupID,                // n/a       SV_GroupID                 gl_WorkGroupID
-    GroupIndex,             // n/a       SV_GroupIndex              n/a
+    GroupIndex,             // n/a       SV_GroupIndex              gl_LocalInvocationIndex
     GroupThreadID,          // n/a       SV_GroupThreadID           gl_LocalInvocationID
     GSInstanceID,           // n/a       SV_GSInstanceID            gl_InvocationID
   //HelperInvocation,       // n/a       n/a                        gl_HelperInvocation
