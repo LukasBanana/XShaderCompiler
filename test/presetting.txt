@@ -72,10 +72,10 @@
 -T vert -E VS -Wall -o output/* TessellationTest1.hlsl
 
 [TessellationTest1 HS]
--T tesc -E HS -Wall -o output/* TessellationTest1.hlsl
+-T tesc -E HS -Wall -Pout "ctrl_" -o output/* TessellationTest1.hlsl
 
 [TessellationTest1 DS]
--T tese -E DS -Wall -E2 PatchConstantFuncHS -o output/* TessellationTest1.hlsl
+-T tese -E DS -Wall -Pin "ctrl_" -E2 PatchConstantFuncHS -o output/* TessellationTest1.hlsl
 
 [TessellationTest1 PS]
 -T frag -E PS -Wall -o output/* TessellationTest1.hlsl
@@ -149,8 +149,8 @@
 [FuncOverloadTest1 PS]
 -T frag -E PS -o output/* FuncOverloadTest1.hlsl
 
-[IntrinsicTest1 VS]
--T vert -E VS -o output/* IntrinsicTest1.hlsl
+[IntrinsicTest1: comp]
+-T comp -E main -o output/* IntrinsicTest1.hlsl
 
 [ScopeTest1 VKSL/VS]
 -T vert -E VS -Vout VKSL -o output/* ScopeTest1.hlsl

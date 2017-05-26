@@ -2,18 +2,23 @@
 // Intrinsic Test 1
 // 01/03/2017
 
-float4 VS(
-    float3 dir : DIRECTION,
-    float s : SIN,
-    float c : COS) : SV_Position
+cbuffer Buf
+{
+    float3 dir;
+};
+
+groupshared int g_Value;
+
+[numthreads(1, 1, 1)]
+void main()
 {
     float a = max(1, dir).z;
     int b = firstbithigh(3.5);
     
+	float s = dir.x;
+	float c = dir.y;
     sincos(a, s, c);
     
-    InterlockedAdd(a, s, c);
-    
-    return a;
+    InterlockedAdd(g_Value, s);
 }
 
