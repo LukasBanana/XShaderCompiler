@@ -807,9 +807,9 @@ void StructDecl::CollectMemberTypeDenoters(std::vector<TypeDenoterPtr>& memberTy
     /* Collect type denoters from this structure */
     for (const auto& member : varMembers)
     {
-        /* Add type denoter N times (where N is the number variable declaration within the member statement) */
-        for (std::size_t i = 0; i < member->varDecls.size(); ++i)
-            memberTypeDens.push_back(member->typeSpecifier->typeDenoter);
+        /* Add type denoter of each member variable */
+        for (const auto& varDecl : member->varDecls)
+            memberTypeDens.push_back(varDecl->GetTypeDenoter());
     }
 }
 
