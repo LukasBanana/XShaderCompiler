@@ -13,11 +13,6 @@ namespace Xsc
 {
 
 
-Identifier::Identifier(const std::string& original) :
-    original_ { original }
-{
-}
-
 Identifier& Identifier::operator = (const Identifier& rhs)
 {
     *this = rhs.Final();
@@ -26,10 +21,18 @@ Identifier& Identifier::operator = (const Identifier& rhs)
 
 Identifier& Identifier::operator = (const std::string& s)
 {
-    if (original_.empty())
+    if (!originalSet_)
+    {
+        /* Set original identifier for the first time */
+        originalSet_ = true;
         original_ = s;
+    }
     else
+    {
+        /* Set renamed identifier */
+        renamedSet_ = true;
         renamed_ = s;
+    }
     return *this;
 }
 
@@ -42,15 +45,14 @@ Identifier& Identifier::AppendPrefix(const std::string& prefix)
 
         /* Increase prefix counter */
         ++counter_;
-        renamed_ = prefix + std::to_string(counter_) + Final();
+        return (*this = prefix + std::to_string(counter_) + Final());
     }
     else
     {
         /* Append prefix and reset counter */
-        renamed_ = prefix + Final();
         counter_ = 0;
+        return (*this = prefix + Final());
     }
-    return *this;
 }
 
 Identifier& Identifier::RemovePrefix(const std::string& prefix)
@@ -60,14 +62,14 @@ Identifier& Identifier::RemovePrefix(const std::string& prefix)
         auto prefixLen = prefix.size();
         if (counter_ > 0)
             prefixLen += NumDigits(counter_);
-        renamed_ = Final().substr(prefixLen);
+        *this = Final().substr(prefixLen);
     }
     return *this;
 }
 
 const std::string& Identifier::Final() const
 {
-    return (renamed_.empty() ? original_ : renamed_);
+    return (renamedSet_ ? renamed_ : original_);
 }
 
 

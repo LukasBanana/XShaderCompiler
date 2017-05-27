@@ -26,7 +26,6 @@ class Identifier
     public:
 
         Identifier() = default;
-        Identifier(const std::string& original);
         Identifier(const Identifier&) = default;
 
         // Renames this identifier by the final of the specified identifier.
@@ -70,9 +69,13 @@ class Identifier
 
     private:
 
+        bool        originalSet_    = false;
         std::string original_;
+        
+        bool        renamedSet_     = false;
         std::string renamed_;
-        int         counter_    = 0;
+
+        int         counter_        = 0;
     
 };
 
