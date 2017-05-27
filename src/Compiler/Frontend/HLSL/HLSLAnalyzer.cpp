@@ -237,8 +237,9 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     if (ast->IsAnonymous())
         ast->compatibleStructRef = FindCompatibleStructDecl(*ast);
 
-    /* Register struct identifier in symbol table */
-    Register(ast->ident, ast);
+    /* Register struct identifier in symbol table (don't override compatible structs) */
+    if (!ast->compatibleStructRef)
+        Register(ast->ident, ast);
 
     PushStructDecl(ast);
     {
