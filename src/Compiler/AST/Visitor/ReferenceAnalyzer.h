@@ -58,6 +58,7 @@ class ReferenceAnalyzer : private VisitorTracker
         DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( BufferDeclStmnt   );
         DECL_VISIT_PROC( SamplerDeclStmnt  );
+        DECL_VISIT_PROC( VarDeclStmnt      );
 
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );

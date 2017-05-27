@@ -598,6 +598,9 @@ IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
+    if (!ast->flags(AST::isReachable) && !InsideFunctionDecl() && !InsideStructDecl())
+        return;
+
     auto varDecls = ast->varDecls;
 
     //TODO: refactor this!
@@ -639,56 +642,60 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     if (ast->typeSpecifier->HasAnyStorageClassOf({ StorageClass::Static }) && ast->FetchStructDeclRef() != nullptr)
         return;
 
-    BeginLn();
-
-    /* Write storage classes and interpolation modifiers (must be before in/out keywords) */
-    if (!InsideStructDecl())
+    PushVarDeclStmnt(ast);
     {
-        WriteInterpModifiers(ast->typeSpecifier->interpModifiers, ast);
-        WriteStorageClasses(ast->typeSpecifier->storageClasses, ast);
-    }
-
-    Separator();
-
-    /* Write input modifiers */
-    if (ast->flags(VarDeclStmnt::isShaderInput))
-        Write("in ");
-    else if (ast->flags(VarDeclStmnt::isShaderOutput))
-        Write("out ");
-    else if (ast->IsUniform())
-        Write("uniform ");
-
-    Separator();
-
-    /* Write type modifiers */
-    WriteTypeModifiersFrom(ast->typeSpecifier);
-    Separator();
-
-    /* Write variable type */
-    if (ast->typeSpecifier->structDecl)
-    {
-        /* Do not end line here with "EndLn" */
-        Visit(ast->typeSpecifier);
         BeginLn();
-    }
-    else
-    {
-        Visit(ast->typeSpecifier);
-        Write(" ");
-    }
 
-    Separator();
+        /* Write storage classes and interpolation modifiers (must be before in/out keywords) */
+        if (!InsideStructDecl())
+        {
+            WriteInterpModifiers(ast->typeSpecifier->interpModifiers, ast);
+            WriteStorageClasses(ast->typeSpecifier->storageClasses, ast);
+        }
 
-    /* Write variable declarations */
-    for (std::size_t i = 0; i < varDecls.size(); ++i)
-    {
-        Visit(varDecls[i]);
-        if (i + 1 < varDecls.size())
-            Write(", ");
+        Separator();
+
+        /* Write input modifiers */
+        if (ast->flags(VarDeclStmnt::isShaderInput))
+            Write("in ");
+        else if (ast->flags(VarDeclStmnt::isShaderOutput))
+            Write("out ");
+        else if (ast->IsUniform())
+            Write("uniform ");
+
+        Separator();
+
+        /* Write type modifiers */
+        WriteTypeModifiersFrom(ast->typeSpecifier);
+        Separator();
+
+        /* Write variable type */
+        if (ast->typeSpecifier->structDecl)
+        {
+            /* Do not end line here with "EndLn" */
+            Visit(ast->typeSpecifier);
+            BeginLn();
+        }
+        else
+        {
+            Visit(ast->typeSpecifier);
+            Write(" ");
+        }
+
+        Separator();
+
+        /* Write variable declarations */
+        for (std::size_t i = 0; i < varDecls.size(); ++i)
+        {
+            Visit(varDecls[i]);
+            if (i + 1 < varDecls.size())
+                Write(", ");
+        }
+
+        Write(";");
+        EndLn();
     }
-
-    Write(";");
-    EndLn();
+    PopVarDeclStmnt();
 }
 
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
@@ -3120,7 +3127,9 @@ bool GLSLGenerator::WriteStructDeclStandard(StructDecl* structDecl, bool endWith
     EndSep();
     WriteScopeClose();
     
-    Blank();
+    /* Only append blank line if struct is not part of a variable declaration */
+    if (!InsideVarDeclStmnt())
+        Blank();
 
     /* Write member functions */
     std::vector<BasicDeclStmnt*> funcMemberStmnts;

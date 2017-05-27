@@ -172,6 +172,12 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     }
 }
 
+IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+{
+    if (Reachable(ast))
+        VISIT_DEFAULT(VarDeclStmnt);
+}
+
 /* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)

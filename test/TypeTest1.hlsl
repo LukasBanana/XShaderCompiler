@@ -73,7 +73,7 @@ S1_t1_a f3()
 static const int g_2 = 5;
 float g_1 = 0.0;
 
-const struct { struct { float inner2; } inner1; } g_anomym_s1;
+const struct { struct { int inner2; } inner1; } g_anomym_s1;
 
 struct { float x; } f4()
 {

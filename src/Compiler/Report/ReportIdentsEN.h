@@ -240,6 +240,7 @@ DECL_REPORT( CallExprStackUnderflow,            "call expression stack underflow
 DECL_REPORT( LValueExprStackUnderflow,          "l-value expression stack underflow"                                                                            ); // internal error
 DECL_REPORT( StructDeclStackUnderflow,          "structure declaration stack underflow"                                                                         ); // internal error
 DECL_REPORT( UniformBufferDeclStackUnderflow,   "uniform buffer declaration stack underflow"                                                                    ); // internal error
+DECL_REPORT( VarDeclStmntStackUnderflow,        "variable declaration statement stack underflow"                                                                ); // internal error
 DECL_REPORT( WritePrefixStackUnderflow,         "write prefix stack underflow"                                                                                  ); // internal error
 
 /* ----- Analyzer ----- */
