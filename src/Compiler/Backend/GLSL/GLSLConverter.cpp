@@ -461,6 +461,9 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
             VisitScopedStmnt(ast->bodyStmnt);
     }
     CloseScope();
+
+    /* Ensure boolean scalar type for condition */
+    ExprConverter::ConvertExprIfCastRequired(ast->condition, DataType::Bool);
 }
 
 IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
@@ -474,6 +477,9 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
         VisitScopedStmnt(ast->bodyStmnt);
     }
     CloseScope();
+
+    /* Ensure boolean scalar type for condition */
+    ExprConverter::ConvertExprIfCastRequired(ast->condition, DataType::Bool);
 }
 
 IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
@@ -487,6 +493,9 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
         Visit(ast->condition);
     }
     CloseScope();
+
+    /* Ensure boolean scalar type for condition */
+    ExprConverter::ConvertExprIfCastRequired(ast->condition, DataType::Bool);
 }
 
 IMPLEMENT_VISIT_PROC(IfStmnt)
@@ -501,6 +510,9 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
         Visit(ast->elseStmnt);
     }
     CloseScope();
+
+    /* Ensure boolean scalar type for condition */
+    ExprConverter::ConvertExprIfCastRequired(ast->condition, DataType::Bool);
 }
 
 IMPLEMENT_VISIT_PROC(ElseStmnt)
