@@ -254,6 +254,14 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     }
     PopStructDecl();
     
+    /* Analyze type modifiers of member variables */
+    for (const auto& member : ast->varMembers)
+    {
+        auto typeSpecifier = member->typeSpecifier.get();
+        if (typeSpecifier->IsConstOrUniform() || typeSpecifier->isInput || typeSpecifier->isOutput)
+            Error(R_InvalidTypeModifierForMemberField, typeSpecifier);
+    }
+
     /* Report warning if structure is empty */
     if (WarnEnabled(Warnings::EmptyStatementBody) && ast->NumMemberVariables() == 0)
         Warning(R_TypeHasNoMemberVariables(ast->ToString()), ast);

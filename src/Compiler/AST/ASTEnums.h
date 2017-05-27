@@ -360,7 +360,7 @@ enum class InterpModifier
 };
 
 
-/* ----- StorageClass Enum ----- */
+/* ----- TypeModifier Enum ----- */
 
 // Variable type modifier enumeration.
 enum class TypeModifier
@@ -434,6 +434,7 @@ enum class BufferType
     TriangleStream,
 };
 
+// Converts the specified BufferType enumeration entry into a string.
 std::string BufferTypeToString(const BufferType t);
 
 // Returns true if the specified buffer type is a storage buffer type (i.e. gets converted to a 'buffer' block in GLSL).

@@ -69,7 +69,7 @@ float4 main() : SV_Position
 	
 	s3.world[0] = 2;
 	
-	return (float4)(f1().x + f2().value + f3().value5);
+	return (float4)(f1().x + f2().value + f3().value4);
 }
 
 

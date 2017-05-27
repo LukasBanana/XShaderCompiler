@@ -429,6 +429,7 @@ DECL_REPORT( InvalidGlobalIntrinsicForType,     "invalid global intrinsic '{0}' 
 DECL_REPORT( InvalidClassIntrinsicForType,      "invalid class intrinsic '{0}' for type '{1}'"                                                                  );
 DECL_REPORT( InvalidClassIntrinsic,             "invalid class intrinsic '{0}' for global function call"                                                        );
 DECL_REPORT( InvalidMemberFuncForType,          "invalid member function '{0}' for type '{1}'"                                                                  );
+DECL_REPORT( InvalidTypeModifierForMemberField, "invalid type modifier for structure member field"                                                              );
 DECL_REPORT( InvalidSymbolRefToVarIdent,        "invalid symbol reference to variable identifier '{0}'"                                                         );
 DECL_REPORT( InvalidVarDeclCountInParam,        "invalid number of variable declarations in function parameter"                                                 ); // internal error
 DECL_REPORT( InvalidInputSemanticInEntryPoint,  "invalid input semantic '{0}' in entry point '{1}'"                                                             );
