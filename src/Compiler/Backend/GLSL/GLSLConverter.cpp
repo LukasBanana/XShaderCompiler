@@ -605,6 +605,10 @@ IMPLEMENT_VISIT_PROC(CastExpr)
             }
         }
     }
+    else if (auto arrayTypeDen = typeDen.As<ArrayTypeDenoter>())
+    {
+        //TODO...
+    }
 }
 
 #endif

@@ -602,6 +602,7 @@ bool BaseTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
     //TODO: this must be extended for a lot of casting variants!!!
     #if 0
+    
     if (IsScalar())
         return (targetType.Type() == Types::Base || targetType.Type() == Types::Struct);
     else if (IsVector())
@@ -621,9 +622,13 @@ bool BaseTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
         }
     }
     return false;
+    
     #else
+    
     const auto& targetTypeAliased = targetType.GetAliased();
-    return (targetTypeAliased.Type() == Types::Base || targetTypeAliased.Type() == Types::Struct);
+    const auto targetTypeClass = targetTypeAliased.Type();
+    return (targetTypeClass == Types::Base || targetTypeClass == Types::Struct || targetTypeClass == Types::Array);
+
     #endif
 }
 
