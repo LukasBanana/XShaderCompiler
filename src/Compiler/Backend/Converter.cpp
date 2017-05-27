@@ -127,14 +127,20 @@ void Converter::VisitScopedStmntList(std::vector<StmntPtr>& stmntList, void* arg
     VisitScopedStmntsFromHandler({ stmntList }, args);
 }
 
-void Converter::InsertStmntBefore(const StmntPtr& stmnt)
+void Converter::InsertStmntBefore(const StmntPtr& stmnt, bool globalScope)
 {
-    ActiveStmntScopeHandler().InsertStmntBefore(stmnt);
+    if (globalScope)
+        stmntScopeHandlerGlobalRef_->InsertStmntBefore(stmnt);
+    else
+        ActiveStmntScopeHandler().InsertStmntBefore(stmnt);
 }
 
-void Converter::InsertStmntAfter(const StmntPtr& stmnt)
+void Converter::InsertStmntAfter(const StmntPtr& stmnt, bool globalScope)
 {
-    ActiveStmntScopeHandler().InsertStmntAfter(stmnt);
+    if (globalScope)
+        stmntScopeHandlerGlobalRef_->InsertStmntAfter(stmnt);
+    else
+        ActiveStmntScopeHandler().InsertStmntAfter(stmnt);
 }
 
 /* ----- Misc ----- */
@@ -187,16 +193,24 @@ std::string Converter::MakeTempVarIdent()
 
 void Converter::VisitScopedStmntsFromHandler(const StmntScopeHandler& handler, void* args)
 {
+    /* Push scope handler onto stack */
     stmntScopeHandlerStack_.push(handler);
-    {
-        /* Use active scope handler */
-        auto& activeHandler = ActiveStmntScopeHandler();
+    
+    if (!stmntScopeHandlerGlobalRef_)
+        stmntScopeHandlerGlobalRef_ = &(stmntScopeHandlerStack_.top());
 
-        /* Visit all statements from the scope handler */
-        while (auto stmnt = activeHandler.Next())
-            Visit(stmnt, args);
-    }
+    /* Use active scope handler */
+    auto& activeHandler = ActiveStmntScopeHandler();
+
+    /* Visit all statements from the scope handler */
+    while (auto stmnt = activeHandler.Next())
+        Visit(stmnt, args);
+    
+    /* Pop scope handler from stack */
     stmntScopeHandlerStack_.pop();
+
+    if (stmntScopeHandlerStack_.empty())
+        stmntScopeHandlerGlobalRef_ = nullptr;
 }
 
 Converter::StmntScopeHandler& Converter::ActiveStmntScopeHandler()

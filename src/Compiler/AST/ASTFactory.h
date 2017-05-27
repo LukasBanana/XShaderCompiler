@@ -98,6 +98,8 @@ ArrayDimensionPtr               MakeArrayDimension(int arraySize);
 // Makes a code block statement with initial code block and the specified statement inserted.
 CodeBlockStmntPtr               MakeCodeBlockStmnt(const StmntPtr& stmnt);
 
+BasicDeclStmntPtr               MakeStructDeclStmnt(const StructDeclPtr& structDecl);
+
 /* ----- Make list functions ----- */
 
 std::vector<ExprPtr>            MakeArrayIndices(const std::vector<int>& arrayIndices);

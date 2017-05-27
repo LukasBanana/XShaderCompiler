@@ -6,13 +6,13 @@ cbuffer Settings : register(b0)
 {
 	float4x4 wvpMatrix;
 	const float4 foo, bar;
-	const struct { float y; } s1;
+	const struct { float y; struct { int yy; } y2; } s1;
 };
 
 struct S0
 {
 	float x;
-	const struct { float y; } s1;
+    struct { float y; } s1;
 };
 
 int f1(int x)

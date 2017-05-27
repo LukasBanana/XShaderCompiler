@@ -13,6 +13,7 @@
 #include "Exception.h"
 #include "Helper.h"
 #include "ReportIdents.h"
+#include <utility>
 
 
 namespace Xsc
@@ -339,6 +340,23 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     {
         ConvertSlotRegisters(ast->slotRegisters);
         VisitScopedStmntList(ast->localStmnts);
+
+        /* Moved nested struct declarations out of the uniform buffer declaration */
+        for (const auto& stmnt : ast->localStmnts)
+        {
+            if (auto varDeclStmnt = stmnt->As<VarDeclStmnt>())
+            {
+                /* Does the variable declaration has a nested structure declaration? */
+                if (auto structDecl = varDeclStmnt->typeSpecifier->structDecl.get())
+                {
+                    /* Make global structure declaration statement */
+                    auto structDeclStmnt = ASTFactory::MakeStructDeclStmnt(
+                        std::exchange(varDeclStmnt->typeSpecifier->structDecl, nullptr)
+                    );
+                    InsertStmntBefore(structDeclStmnt, true);
+                }
+            }
+        }
     }
     PopUniformBufferDecl();
 }

@@ -411,6 +411,16 @@ CodeBlockStmntPtr MakeCodeBlockStmnt(const StmntPtr& stmnt)
     return ast;
 }
 
+BasicDeclStmntPtr MakeStructDeclStmnt(const StructDeclPtr& structDecl)
+{
+    auto ast = MakeAST<BasicDeclStmnt>();
+    {
+        ast->declObject = structDecl;
+        structDecl->declStmntRef = ast.get();
+    }
+    return ast;
+}
+
 /* ----- Make list functions ----- */
 
 std::vector<ExprPtr> MakeArrayIndices(const std::vector<int>& arrayIndices)

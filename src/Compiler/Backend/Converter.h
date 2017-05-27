@@ -93,10 +93,10 @@ class Converter : public VisitorTracker
         void VisitScopedStmntList(std::vector<StmntPtr>& stmntList, void* args = nullptr);
 
         // Inserts the specified statement before the current statement.
-        void InsertStmntBefore(const StmntPtr& stmnt);
+        void InsertStmntBefore(const StmntPtr& stmnt, bool globalScope = false);
 
         // Inserts the specified statement after the current statement.
-        void InsertStmntAfter(const StmntPtr& stmnt);
+        void InsertStmntAfter(const StmntPtr& stmnt, bool globalScope = false);
 
         /* ----- Misc ----- */
 
@@ -165,17 +165,18 @@ class Converter : public VisitorTracker
         // Symbol table to determine which variables must be renamed (scope rules are different between HLSL and GLSL).
         SymbolTable<bool>               symTable_;
 
-        Program*                        program_                = nullptr;
+        Program*                        program_                    = nullptr;
         NameMangling                    nameMangling_;
 
         // Stack with information of the current 'self' parameter of a member function.
         std::vector<VarDecl*>           selfParamStack_;
 
         std::stack<StmntScopeHandler>   stmntScopeHandlerStack_;
+        StmntScopeHandler*              stmntScopeHandlerGlobalRef_ = nullptr;
 
-        unsigned int                    anonymCounter_          = 0;
-        unsigned int                    obfuscationCounter_     = 0;
-        unsigned int                    tempVarCounter_         = 0;
+        unsigned int                    anonymCounter_              = 0;
+        unsigned int                    obfuscationCounter_         = 0;
+        unsigned int                    tempVarCounter_             = 0;
 
 };
 
