@@ -26,7 +26,7 @@ class VisitorTracker : public Visitor
         
         /* ----- Function declaration tracker ----- */
 
-        void PushFunctionDecl(FunctionDecl* ast);
+        void PushFunctionDecl(FunctionDecl* funcDecl);
         void PopFunctionDecl();
 
         // Returns true if the visitor is currently inside a function declaration.
@@ -46,7 +46,7 @@ class VisitorTracker : public Visitor
 
         /* ----- Call expression tracker ----- */
 
-        void PushCallExpr(CallExpr* ast);
+        void PushCallExpr(CallExpr* callExpr);
         void PopCallExpr();
 
         // Returns the active (inner most) call expression or null if the visitor is currently not inside a function call.
@@ -62,7 +62,7 @@ class VisitorTracker : public Visitor
 
         /* ----- Structure declaration tracker ----- */
 
-        void PushStructDecl(StructDecl* ast);
+        void PushStructDecl(StructDecl* structDecl);
         void PopStructDecl();
 
         // Returns true if the analyzer is currently inside a structure declaration.
@@ -77,9 +77,9 @@ class VisitorTracker : public Visitor
             return structDeclStack_;
         }
 
-        /* ----- Structure declaration tracker ----- */
+        /* ----- Uniform buffer declaration tracker ----- */
 
-        void PushUniformBufferDecl(UniformBufferDecl* ast);
+        void PushUniformBufferDecl(UniformBufferDecl* uniformBufferDecl);
         void PopUniformBufferDecl();
 
         // Returns true if the analyzer is currently inside a uniform buffer declaration.
@@ -90,6 +90,17 @@ class VisitorTracker : public Visitor
         {
             return uniformBufferDeclStack_;
         }
+
+        /* ----- Variable declaration statement tracker ----- */
+
+        void PushVarDeclStmnt(VarDeclStmnt* varDeclStmnt);
+        void PopVarDeclStmnt();
+
+        // Returns true if the visitor is currently inside a variable declaration statement.
+        bool InsideVarDeclStmnt() const;
+
+        // Returns the active (inner most) variable declaration statement.
+        VarDeclStmnt* ActiveVarDeclStmnt() const;
 
     private:
 
@@ -107,6 +118,9 @@ class VisitorTracker : public Visitor
 
         // Uniform buffer declaration stack.
         std::vector<UniformBufferDecl*> uniformBufferDeclStack_;
+
+        // Variable declaration stack.
+        std::stack<VarDeclStmnt*>       varDeclStmntStack_;
 
         // Function declaration level of the main entry point.
         std::size_t                     stackLevelOfEntryPoint_     = ~0;

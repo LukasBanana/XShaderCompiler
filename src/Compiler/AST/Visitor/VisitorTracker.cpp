@@ -20,12 +20,12 @@ namespace Xsc
 
 /* ----- Function declaration tracker ----- */
 
-void VisitorTracker::PushFunctionDecl(FunctionDecl* ast)
+void VisitorTracker::PushFunctionDecl(FunctionDecl* funcDecl)
 {
-    funcDeclStack_.push(ast);
-    if (ast->flags(FunctionDecl::isEntryPoint))
+    funcDeclStack_.push(funcDecl);
+    if (funcDecl->flags(FunctionDecl::isEntryPoint))
         stackLevelOfEntryPoint_ = funcDeclStack_.size();
-    else if (ast->flags(FunctionDecl::isSecondaryEntryPoint))
+    else if (funcDecl->flags(FunctionDecl::isSecondaryEntryPoint))
         stackLevelOf2ndEntryPoint_ = funcDeclStack_.size();
 }
 
@@ -73,9 +73,9 @@ StructDecl* VisitorTracker::ActiveFunctionStructDecl() const
 
 /* ----- Call expression tracker ----- */
 
-void VisitorTracker::PushCallExpr(CallExpr* ast)
+void VisitorTracker::PushCallExpr(CallExpr* callExpr)
 {
-    callExprStack_.push(ast);
+    callExprStack_.push(callExpr);
 }
 
 void VisitorTracker::PopCallExpr()
@@ -113,9 +113,9 @@ Expr* VisitorTracker::ActiveLValueExpr() const
 
 /* ----- Structure declaration tracker ----- */
 
-void VisitorTracker::PushStructDecl(StructDecl* ast)
+void VisitorTracker::PushStructDecl(StructDecl* structDecl)
 {
-    structDeclStack_.push_back(ast);
+    structDeclStack_.push_back(structDecl);
 }
 
 void VisitorTracker::PopStructDecl()
@@ -138,9 +138,9 @@ StructDecl* VisitorTracker::ActiveStructDecl() const
 
 /* ----- Structure declaration tracker ----- */
 
-void VisitorTracker::PushUniformBufferDecl(UniformBufferDecl* ast)
+void VisitorTracker::PushUniformBufferDecl(UniformBufferDecl* uniformBufferDecl)
 {
-    uniformBufferDeclStack_.push_back(ast);
+    uniformBufferDeclStack_.push_back(uniformBufferDecl);
 }
 
 void VisitorTracker::PopUniformBufferDecl()
@@ -154,6 +154,31 @@ void VisitorTracker::PopUniformBufferDecl()
 bool VisitorTracker::InsideUniformBufferDecl() const
 {
     return (!uniformBufferDeclStack_.empty());
+}
+
+/* ----- Variable declaration statement tracker ----- */
+
+void VisitorTracker::PushVarDeclStmnt(VarDeclStmnt* varDeclStmnt)
+{
+    varDeclStmntStack_.push(varDeclStmnt);
+}
+
+void VisitorTracker::PopVarDeclStmnt()
+{
+    if (!varDeclStmntStack_.empty())
+        varDeclStmntStack_.pop();
+    else
+        throw std::underflow_error(R_VarDeclStmntStackUnderflow);
+}
+
+bool VisitorTracker::InsideVarDeclStmnt() const
+{
+    return (!varDeclStmntStack_.empty());
+}
+
+VarDeclStmnt* VisitorTracker::ActiveVarDeclStmnt() const
+{
+    return (varDeclStmntStack_.empty() ? nullptr : varDeclStmntStack_.top());
 }
 
 
