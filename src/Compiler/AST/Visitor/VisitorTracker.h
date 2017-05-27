@@ -24,6 +24,10 @@ class VisitorTracker : public Visitor
     
     protected:
         
+        /* ----- Global scope tracker ----- */
+
+        bool InsideGlobalScope() const;
+
         /* ----- Function declaration tracker ----- */
 
         void PushFunctionDecl(FunctionDecl* funcDecl);

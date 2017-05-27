@@ -740,6 +740,14 @@ void HLSLAnalyzer::AnalyzeVarDeclLocal(VarDecl* varDecl, bool registerVarIdent)
         /* Try to evaluate initializer expression */
         varDecl->initializerValue = EvaluateOrDefault(*(varDecl->initializer));
     }
+    else if (auto varDeclStmnt = varDecl->declStmntRef)
+    {
+        if (registerVarIdent && !InsideGlobalScope() && varDeclStmnt->typeSpecifier->IsConst() && !varDeclStmnt->flags(VarDeclStmnt::isParameter))
+        {
+            /* Local variables declared as constant must be initialized */
+            Error(R_MissingInitializerForConstant(varDecl->ident), varDecl);
+        }
+    }
 }
 
 void HLSLAnalyzer::AnalyzeVarDeclStaticMember(VarDecl* varDecl)

@@ -687,6 +687,9 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         EndLn();
     }
     PopVarDeclStmnt();
+
+    if (InsideGlobalScope())
+        Blank();
 }
 
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)

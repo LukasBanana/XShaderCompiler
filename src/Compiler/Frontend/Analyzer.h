@@ -118,6 +118,7 @@ class Analyzer : protected VisitorTracker
         // Tries to find a type compatible structure declaration within the current scope.
         StructDecl* FindCompatibleStructDecl(const StructDecl& rhs);
 
+        //TODO: maybe replace this by "VisitorTracker::InsideGlobalScope"
         // Returns true if the visitor is currently inside the global scope (i.e. out of any function declaration).
         bool InsideGlobalScope() const;
 

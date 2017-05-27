@@ -396,6 +396,12 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
             ast->typeSpecifier->SwapMatrixStorageLayout(TypeModifier::RowMajor);
     }
 
+    if (!InsideFunctionDecl())
+    {
+        /* Remove const type modifier from variables that are out of local function scope */
+        ast->typeSpecifier->typeModifiers.erase(TypeModifier::Const);
+    }
+
     VISIT_DEFAULT(VarDeclStmnt);
 }
 

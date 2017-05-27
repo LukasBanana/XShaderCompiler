@@ -18,6 +18,13 @@ namespace Xsc
  * ======= Protected: =======
  */
 
+/* ----- Global scope tracker ----- */
+
+bool VisitorTracker::InsideGlobalScope() const
+{
+    return (!InsideFunctionDecl() && !InsideStructDecl() && !InsideUniformBufferDecl() && !InsideVarDeclStmnt());
+}
+
 /* ----- Function declaration tracker ----- */
 
 void VisitorTracker::PushFunctionDecl(FunctionDecl* funcDecl)
