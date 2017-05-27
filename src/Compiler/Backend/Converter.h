@@ -57,7 +57,10 @@ class Converter : public VisitorTracker
         // Registers the AST node in the current scope with the specified identifier.
         void Register(const std::string& ident);
 
-        // Tries to fetch an AST node with the specified identifier from the symbol table and reports an error on failure.
+        // Returns the symbol with the specified identifer which is in the deepest scope, or null if there is no such symbol.
+        bool Fetch(const std::string& ident) const;
+
+        // Returns the symbol with the specified identifer which is in the current scope, or null if there is no such symbol.
         bool FetchFromCurrentScope(const std::string& ident) const;
 
         /* ----- Self parameter ----- */

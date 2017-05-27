@@ -258,6 +258,23 @@ std::string ToHexString(const T& i, const std::string& prefix = "0x")
     return s.str();
 }
 
+// Returns the number of digits of the specified integral type.
+template <typename T>
+int NumDigits(T n)
+{
+    static_assert(std::is_integral<T>::value, "NumDigits template only allows integral types");
+    
+    int digits = (n < 0 ? 1 : 0);
+
+    while (n != 0)
+    {
+        n /= 10;
+        ++digits;
+    }
+
+    return digits;
+}
+
 
 } // /namespace Xsc
 

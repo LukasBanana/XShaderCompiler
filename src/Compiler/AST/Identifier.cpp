@@ -6,6 +6,7 @@
  */
 
 #include "Identifier.h"
+#include "Helper.h"
 
 
 namespace Xsc
@@ -34,15 +35,33 @@ Identifier& Identifier::operator = (const std::string& s)
 
 Identifier& Identifier::AppendPrefix(const std::string& prefix)
 {
-    if (Final().compare(0, prefix.size(), prefix) != 0)
+    if (Final().compare(0, prefix.size(), prefix) == 0)
+    {
+        /* Remove previous prefix */
+        RemovePrefix(prefix);
+
+        /* Increase prefix counter */
+        ++counter_;
+        renamed_ = prefix + std::to_string(counter_) + Final();
+    }
+    else
+    {
+        /* Append prefix and reset counter */
         renamed_ = prefix + Final();
+        counter_ = 0;
+    }
     return *this;
 }
 
 Identifier& Identifier::RemovePrefix(const std::string& prefix)
 {
     if (Final().compare(0, prefix.size(), prefix) == 0)
-        renamed_ = Final().substr(prefix.size());
+    {
+        auto prefixLen = prefix.size();
+        if (counter_ > 0)
+            prefixLen += NumDigits(counter_);
+        renamed_ = Final().substr(prefixLen);
+    }
     return *this;
 }
 

@@ -77,7 +77,7 @@ const struct { struct { float inner2; } inner1; } g_anomym_s1;
 
 struct { float x; } f4()
 {
-	//return (struct { float x; })0;
+	return (struct { float x; })0;
 }
 
 S1_t1_a f5(int x);

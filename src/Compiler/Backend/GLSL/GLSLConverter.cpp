@@ -284,6 +284,14 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
+    if (!ast->IsAnonymous())
+    {
+        while (Fetch(ast->ident))
+            RenameIdentOf(ast);
+        
+        RegisterDeclIdent(ast);
+    }
+
     LabelAnonymousDecl(ast);
     RenameReservedKeyword(ast->ident);
 

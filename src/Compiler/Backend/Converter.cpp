@@ -48,6 +48,11 @@ void Converter::Register(const std::string& ident)
     symTable_.Register(ident, true);
 }
 
+bool Converter::Fetch(const std::string& ident) const
+{
+    return symTable_.Fetch(ident);
+}
+
 bool Converter::FetchFromCurrentScope(const std::string& ident) const
 {
     return symTable_.FetchFromCurrentScope(ident);

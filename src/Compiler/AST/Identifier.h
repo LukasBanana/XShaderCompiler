@@ -72,6 +72,7 @@ class Identifier
 
         std::string original_;
         std::string renamed_;
+        int         counter_    = 0;
     
 };
 
