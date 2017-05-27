@@ -207,15 +207,9 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     if (!ast->baseStructName.empty())
         ast->baseStructRef = FetchStructDeclFromIdent(ast->baseStructName);
 
-    if (!GetStructDeclStack().empty())
-    {
-        /* Mark structure as nested structure */
+    /* Mark nested structures */
+    if (InsideStructDecl())
         ast->flags << StructDecl::isNestedStruct;
-
-        /* Add reference of this structure to all parent structures */
-        for (auto parentStruct : GetStructDeclStack())
-            parentStruct->nestedStructDeclRefs.push_back(ast);
-    }
 
     /* Report warnings for member variables, that shadow a base member */
     if (WarnEnabled(Warnings::DeclarationShadowing) && ast->baseStructRef)

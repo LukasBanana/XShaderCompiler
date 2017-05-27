@@ -732,7 +732,6 @@ struct StructDecl : public Decl
     StructDecl*                     baseStructRef           = nullptr;  // Optional reference to base struct.
     StructDecl*                     compatibleStructRef     = nullptr;  // Optional reference to a type compatible struct (only for anonymous structs).
     std::map<std::string, VarDecl*> systemValuesRef;                    // List of members with system value semantic (SV_...).
-    std::vector<StructDecl*>        nestedStructDeclRefs;               // References to all nested structures within this structure.
     std::set<StructDecl*>           parentStructDeclRefs;               // References to all structures that have a member variable with this structure type.
     std::set<VarDecl*>              shaderOutputVarDeclRefs;            // References to all variables from this structure that are used as entry point outputs.
 };

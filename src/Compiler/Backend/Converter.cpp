@@ -10,6 +10,7 @@
 #include "ASTFactory.h"
 #include "ReportIdents.h"
 #include <algorithm>
+#include <utility>
 
 
 namespace Xsc
@@ -146,6 +147,43 @@ void Converter::InsertStmntAfter(const StmntPtr& stmnt, bool globalScope)
         stmntScopeHandlerGlobalRef_->InsertStmntAfter(stmnt);
     else
         ActiveStmntScopeHandler().InsertStmntAfter(stmnt);
+}
+
+void Converter::MoveNestedStructDecls(std::vector<StmntPtr>& localStmnts, bool globalScope)
+{
+    for (auto it = localStmnts.begin(); it != localStmnts.end();)
+    {
+        if (auto varDeclStmnt = (*it)->As<VarDeclStmnt>())
+        {
+            /* Does the variable declaration has a nested structure declaration? */
+            if (varDeclStmnt->typeSpecifier->structDecl != nullptr)
+            {
+                /* Make global structure declaration statement */
+                auto structDeclStmnt = ASTFactory::MakeStructDeclStmnt(
+                    std::exchange(varDeclStmnt->typeSpecifier->structDecl, nullptr)
+                );
+
+                /* Insert the new statement */
+                InsertStmntBefore(structDeclStmnt, globalScope);
+            }
+        }
+        else if (auto basicDeclStmnt = (*it)->As<BasicDeclStmnt>())
+        {
+            if (basicDeclStmnt->declObject->Type() == AST::Types::StructDecl)
+            {
+                /* Move entire statement to the upper scope */
+                InsertStmntBefore(*it, globalScope);
+
+                /* Remove statement from the list */
+                it = localStmnts.erase(it);
+
+                continue;
+            }
+        }
+
+        /* Next statement */
+        ++it;
+    }
 }
 
 /* ----- Misc ----- */

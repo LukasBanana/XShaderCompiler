@@ -101,6 +101,9 @@ class Converter : public VisitorTracker
         // Inserts the specified statement after the current statement.
         void InsertStmntAfter(const StmntPtr& stmnt, bool globalScope = false);
 
+        // Moves all structure declaration within the specified statement list into the respective upper scope.
+        void MoveNestedStructDecls(std::vector<StmntPtr>& localStmnts, bool globalScope = false);
+
         /* ----- Misc ----- */
 
         // Returns true if the variable is a global input/output variable declaration.

@@ -463,15 +463,6 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     {
         PushStructDecl(ast);
         {
-            /* Write all nested structures (if this is the root structure) */
-            if (!ast->flags(StructDecl::isNestedStruct))
-            {
-                /* Write nested structres in child-to-parent order */
-                for (auto nestedStruct = ast->nestedStructDeclRefs.rbegin(); nestedStruct != ast->nestedStructDeclRefs.rend(); ++nestedStruct)
-                    WriteStructDecl(*nestedStruct, true, true);
-            }
-
-            /* Write declaration of this structure (without nested structures) */
             if (auto structDeclArgs = reinterpret_cast<StructDeclArgs*>(args))
                 WriteStructDecl(ast, structDeclArgs->inEndWithSemicolon);
             else
@@ -3092,24 +3083,7 @@ void GLSLGenerator::WriteWrapperMatrixSubscript(const MatrixSubscriptUsage& usag
 
 /* ----- Structure ----- */
 
-bool GLSLGenerator::WriteStructDecl(StructDecl* structDecl, bool writeSemicolon, bool allowNestedStruct)
-{
-    /* Is this a non-nested structure or are nested structures allowed in the current context? */
-    if (!structDecl->flags(StructDecl::isNestedStruct) || allowNestedStruct)
-    {
-        /* Write standard structure declaration */
-        return WriteStructDeclStandard(structDecl, writeSemicolon);
-    }
-    else if (!writeSemicolon)
-    {
-        /* Do not end line here with "EndLn" */
-        BeginLn();
-        Write(structDecl->ident + " ");
-    }
-    return false;
-}
-
-bool GLSLGenerator::WriteStructDeclStandard(StructDecl* structDecl, bool endWithSemicolon)
+bool GLSLGenerator::WriteStructDecl(StructDecl* structDecl, bool endWithSemicolon)
 {
     /* Write structure signature */
     BeginLn();

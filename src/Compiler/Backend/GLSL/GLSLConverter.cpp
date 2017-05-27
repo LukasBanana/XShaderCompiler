@@ -320,6 +320,9 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     if (!UseSeparateSamplers())
         RemoveSamplerStateVarDeclStmnts(ast->varMembers);
 
+    /* Moved nested struct declarations out of the uniform buffer declaration */
+    MoveNestedStructDecls(ast->localStmnts, false);
+
     /* Is this an empty structure? */
     if (ast->NumMemberVariables(true) == 0)
     {
@@ -350,21 +353,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         VisitScopedStmntList(ast->localStmnts);
 
         /* Moved nested struct declarations out of the uniform buffer declaration */
-        for (const auto& stmnt : ast->localStmnts)
-        {
-            if (auto varDeclStmnt = stmnt->As<VarDeclStmnt>())
-            {
-                /* Does the variable declaration has a nested structure declaration? */
-                if (auto structDecl = varDeclStmnt->typeSpecifier->structDecl.get())
-                {
-                    /* Make global structure declaration statement */
-                    auto structDeclStmnt = ASTFactory::MakeStructDeclStmnt(
-                        std::exchange(varDeclStmnt->typeSpecifier->structDecl, nullptr)
-                    );
-                    InsertStmntBefore(structDeclStmnt, true);
-                }
-            }
-        }
+        MoveNestedStructDecls(ast->localStmnts, true);
     }
     PopUniformBufferDecl();
 }

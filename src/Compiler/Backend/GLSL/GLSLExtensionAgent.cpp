@@ -73,16 +73,10 @@ std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
     switch (shaderTarget)
     {
         case ShaderTarget::VertexShader:
-            //TODO:
-            /* Check for explicit binding point or vertex semantics */
-            //if (explicitBinding_)
-            //    AcquireExtension(E_GL_ARB_shading_language_420pack);
-            break;
-            
         case ShaderTarget::FragmentShader:
-            /* Check for explicit binding point (fragment shaders have always binding slots) */
+            /* Check for explicit binding for vertex input attributes or fragment shader outputs */
             if (explicitBinding_)
-                AcquireExtension(E_GL_ARB_shading_language_420pack);
+                AcquireExtension(E_GL_ARB_explicit_attrib_location);
             break;
 
         default:
