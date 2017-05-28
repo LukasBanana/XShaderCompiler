@@ -585,7 +585,7 @@ DECL_REPORT( CmdHelpDetailsPrefix,              "in        => input variables; d
                                                 "out       => output variables; default='xsv_'\n"   \
                                                 "reserved  => reserved words; default='xsr_'\n"     \
                                                 "temp      => temporary variables; default='xst_'"                                                              );
-DECL_REPORT( CmdHelpNameMangling,               "Enables/disables the specified name-mangling option; value types:"                                             );
+DECL_REPORT( CmdHelpNameMangling,               "Enables/disables the specified name-mangling option; valid types:"                                             );
 DECL_REPORT( CmdHelpDetailsNameMangling,        "buffer-fields   => rename 'buffer' fields, not its identifier; default={0}\n" \
                                                 "force-semantics => force semantics for input/output variables; default={0}"                                    );
 DECL_REPORT( CmdHelpSeparateShaders,            "Ensures compatibility to 'ARB_separate_shader_objects' extension; default={0}"                                 );
@@ -616,7 +616,7 @@ DECL_REPORT( AttributeRequiresExtension,        "attribute '{0}' requires langua
 DECL_REPORT( IllegalVectorSpaceAssignment,      "illegal assignment of '{0}' vector-space to '{1}' vector-space"                                                );
 DECL_REPORT( InconsistVectorSpacesInTypes,      "inconsistent vector-spaces between type denoters[ (found '{0}' and '{1}')]"                                    );
 DECL_REPORT( ExpectedIdentInSpaceAttr,          "expected identifier as argument in 'space' attribute"                                                          );
-DECL_REPORT( CmdHelpLanguageExtension,          "Enables/disables the specified language extension; default={0}; value types:"                                  );
+DECL_REPORT( CmdHelpLanguageExtension,          "Enables/disables the specified language extension; default={0}; valid types:"                                  );
 DECL_REPORT( CmdHelpDetailsLanguageExtension,   "all         => all kinds of extensions\n"                                  \
                                                 "attr-layout => enable 'layout' attribute to specify image layout format\n" \
                                                 "attr-space  => enable 'space' attribute for a stronger type system"                                            );
