@@ -275,6 +275,15 @@ int NumDigits(T n)
     return digits;
 }
 
+// Equivalent to C++14's 'std::exchange(ptr, nullptr)'.
+template <typename T>
+std::shared_ptr<T> ExchangeWithNull(std::shared_ptr<T>& ptr)
+{
+    auto result = ptr;
+    ptr.reset();
+    return result;
+}
+
 
 } // /namespace Xsc
 

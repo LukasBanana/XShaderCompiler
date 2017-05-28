@@ -8,9 +8,9 @@
 #include "Converter.h"
 #include "AST.h"
 #include "ASTFactory.h"
+#include "Helper.h"
 #include "ReportIdents.h"
 #include <algorithm>
-#include <utility>
 
 
 namespace Xsc
@@ -160,7 +160,7 @@ void Converter::MoveNestedStructDecls(std::vector<StmntPtr>& localStmnts, bool g
             {
                 /* Make global structure declaration statement */
                 auto structDeclStmnt = ASTFactory::MakeStructDeclStmnt(
-                    std::exchange(varDeclStmnt->typeSpecifier->structDecl, nullptr)
+                    ExchangeWithNull(varDeclStmnt->typeSpecifier->structDecl)
                 );
 
                 /* Insert the new statement */
