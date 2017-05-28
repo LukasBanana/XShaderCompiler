@@ -1762,34 +1762,12 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 
 void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
 {
-    //TODO: maybe remove this??? (currently unused)
-    #if 0
-    entryPoint->outputSemantics.ForEach(
-        [this](VarDecl* varDecl)
-        {
-            if (varDecl->flags(Decl::isWrittenTo))
-                WriteLocalOutputSemanticsVarDecl(varDecl);
-        }
-    );
-    #endif
-
-    for (auto& param : entryPoint->parameters)
+    for (const auto& param : entryPoint->parameters)
     {
         const auto& typeDen = param->typeSpecifier->GetTypeDenoter()->GetAliased();
         if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
             WriteLocalOutputSemanticsStructDeclParam(param.get(), structTypeDen->structDeclRef);
     }
-}
-
-void GLSLGenerator::WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl)
-{
-    /* Write local variable definition statement (without initialization) */
-    BeginLn();
-    {
-        Visit(varDecl->declStmntRef->typeSpecifier);
-        Write(" " + varDecl->ident + ";");
-    }
-    EndLn();
 }
 
 void GLSLGenerator::WriteLocalOutputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl)
@@ -1977,26 +1955,6 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
                 EndLn();
             }
         }
-        //TODO: remove this
-        #if 0
-        else if (entryPoint->paramStructs.empty())
-        {
-            /* Store result in temporary variable */
-            const auto tempIdent = nameMangling_.temporaryPrefix + "output";
-
-            BeginLn();
-            {
-                Visit(entryPoint->returnType);
-                Write(" " + tempIdent + " = ");
-                Visit(expr);
-                Write(";");
-            }
-            EndLn();
-
-            if (auto structDecl = entryPoint->returnType->GetStructDeclRef())
-                WriteOutputSemanticsAssignmentStructDeclParam({ nullptr, nullptr, structDecl }, writeAsListedExpr, tempIdent);
-        }
-        #endif
     }
 }
 

@@ -204,7 +204,6 @@ class GLSLGenerator : public Generator
         /* ----- Output semantics ----- */
 
         void WriteLocalOutputSemantics(FunctionDecl* entryPoint);
-        void WriteLocalOutputSemanticsVarDecl(VarDecl* varDecl);
         void WriteLocalOutputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl);
         
         void WriteGlobalOutputSemantics(FunctionDecl* entryPoint);
