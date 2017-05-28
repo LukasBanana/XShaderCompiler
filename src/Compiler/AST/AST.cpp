@@ -1592,13 +1592,19 @@ void LiteralExpr::ConvertDataType(const DataType type)
                 break;
 
             case DataType::Half:
-                variant.ToReal();
-                value = variant.ToString();
+                if (dataType != DataType::Double)
+                {
+                    variant.ToReal();
+                    value = variant.ToString();
+                }
                 break;
                 
             case DataType::Float:
-                variant.ToReal();
-                value = variant.ToString();
+                if (dataType != DataType::Double)
+                {
+                    variant.ToReal();
+                    value = variant.ToString();
+                }
                 value.push_back('f');
                 break;
                 

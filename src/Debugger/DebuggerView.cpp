@@ -533,7 +533,7 @@ class DebuggerLog : public Log
     public:
 
         DebuggerLog(ReportView* reportView) :
-            reportView_{ reportView }
+            reportView_ { reportView }
         {
         }
 
