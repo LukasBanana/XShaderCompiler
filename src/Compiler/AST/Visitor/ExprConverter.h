@@ -88,6 +88,30 @@ class ExprConverter : public VisitorTracker
         
         /* === Functions === */
 
+        /* ----- Visitor implementation ----- */
+
+        DECL_VISIT_PROC( VarDecl          );
+
+        DECL_VISIT_PROC( FunctionDecl     );
+
+        DECL_VISIT_PROC( ForLoopStmnt     );
+        DECL_VISIT_PROC( WhileLoopStmnt   );
+        DECL_VISIT_PROC( DoWhileLoopStmnt );
+        DECL_VISIT_PROC( IfStmnt          );
+        DECL_VISIT_PROC( SwitchStmnt      );
+        DECL_VISIT_PROC( ExprStmnt        );
+        DECL_VISIT_PROC( ReturnStmnt      );
+
+        DECL_VISIT_PROC( TernaryExpr      );
+        DECL_VISIT_PROC( BinaryExpr       );
+        DECL_VISIT_PROC( UnaryExpr        );
+        DECL_VISIT_PROC( CallExpr         );
+        DECL_VISIT_PROC( BracketExpr      );
+        DECL_VISIT_PROC( CastExpr         );
+        DECL_VISIT_PROC( ObjectExpr       );
+        DECL_VISIT_PROC( AssignExpr       );
+        DECL_VISIT_PROC( ArrayExpr        );
+
         /* ----- Conversion ----- */
 
         // Converts the expression according to the specified flags (if enabled in the current conversion).
@@ -142,30 +166,6 @@ class ExprConverter : public VisitorTracker
 
         // Converts the specified expression when it refers to a member variable of a struct that has a compatible struct.
         void ConvertExprCompatibleStruct(ExprPtr& expr);
-
-        /* ----- Visitor implementation ----- */
-
-        DECL_VISIT_PROC( VarDecl          );
-
-        DECL_VISIT_PROC( FunctionDecl     );
-
-        DECL_VISIT_PROC( ForLoopStmnt     );
-        DECL_VISIT_PROC( WhileLoopStmnt   );
-        DECL_VISIT_PROC( DoWhileLoopStmnt );
-        DECL_VISIT_PROC( IfStmnt          );
-        DECL_VISIT_PROC( SwitchStmnt      );
-        DECL_VISIT_PROC( ExprStmnt        );
-        DECL_VISIT_PROC( ReturnStmnt      );
-
-        DECL_VISIT_PROC( TernaryExpr      );
-        DECL_VISIT_PROC( BinaryExpr       );
-        DECL_VISIT_PROC( UnaryExpr        );
-        DECL_VISIT_PROC( CallExpr         );
-        DECL_VISIT_PROC( BracketExpr      );
-        DECL_VISIT_PROC( CastExpr         );
-        DECL_VISIT_PROC( ObjectExpr       );
-        DECL_VISIT_PROC( AssignExpr       );
-        DECL_VISIT_PROC( ArrayExpr        );
 
         /* === Members === */
 

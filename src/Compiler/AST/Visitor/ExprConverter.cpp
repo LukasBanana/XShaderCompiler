@@ -181,6 +181,287 @@ std::string ExprConverter::GetMatrixSubscriptWrapperIdent(const NameMangling& na
  * ======= Private: =======
  */
 
+/* ------- Visit functions ------- */
+
+#define IMPLEMENT_VISIT_PROC(AST_NAME) \
+    void ExprConverter::Visit##AST_NAME(AST_NAME* ast, void* args)
+
+/* --- Declarations --- */
+
+IMPLEMENT_VISIT_PROC(VarDecl)
+{
+    if (ast->initializer)
+    {
+        ConvertExpr(ast->initializer, AllPreVisit);
+        {
+            VISIT_DEFAULT(VarDecl);
+        }
+        ConvertExpr(ast->initializer, AllPostVisit);
+
+        ConvertExprTargetType(ast->initializer, ast->GetTypeDenoter()->GetAliased());
+    }
+    else
+        VISIT_DEFAULT(VarDecl);
+}
+
+/* --- Declaration statements --- */
+
+IMPLEMENT_VISIT_PROC(FunctionDecl)
+{
+    PushFunctionDecl(ast);
+    {
+        VISIT_DEFAULT(FunctionDecl);
+    }
+    PopFunctionDecl();
+}
+
+/* --- Statements --- */
+
+IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+{
+    ConvertExpr(ast->condition, AllPreVisit);
+    ConvertExpr(ast->iteration, AllPreVisit);
+    {
+        VISIT_DEFAULT(ForLoopStmnt);
+    }
+    ConvertExpr(ast->condition, AllPostVisit);
+    ConvertExpr(ast->iteration, AllPostVisit);
+}
+
+IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+{
+    ConvertExpr(ast->condition, AllPreVisit);
+    {
+        VISIT_DEFAULT(WhileLoopStmnt);
+    }
+    ConvertExpr(ast->condition, AllPostVisit);
+}
+
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+{
+    ConvertExpr(ast->condition, AllPreVisit);
+    {
+        VISIT_DEFAULT(DoWhileLoopStmnt);
+    }
+    ConvertExpr(ast->condition, AllPostVisit);
+}
+
+IMPLEMENT_VISIT_PROC(IfStmnt)
+{
+    ConvertExpr(ast->condition, AllPreVisit);
+    {
+        VISIT_DEFAULT(IfStmnt);
+    }
+    ConvertExpr(ast->condition, AllPostVisit);
+}
+
+IMPLEMENT_VISIT_PROC(SwitchStmnt)
+{
+    ConvertExpr(ast->selector, AllPreVisit);
+    {
+        VISIT_DEFAULT(SwitchStmnt);
+    }
+    ConvertExpr(ast->selector, AllPostVisit);
+}
+
+IMPLEMENT_VISIT_PROC(ExprStmnt)
+{
+    ConvertExpr(ast->expr, AllPreVisit);
+    {
+        VISIT_DEFAULT(ExprStmnt);
+    }
+    ConvertExpr(ast->expr, AllPostVisit);
+}
+
+IMPLEMENT_VISIT_PROC(ReturnStmnt)
+{
+    if (ast->expr)
+    {
+        ConvertExpr(ast->expr, AllPreVisit);
+        {
+            VISIT_DEFAULT(ReturnStmnt);
+        }
+        ConvertExpr(ast->expr, AllPostVisit);
+
+        if (auto funcDecl = ActiveFunctionDecl())
+            ConvertExprTargetType(ast->expr, funcDecl->returnType->GetTypeDenoter()->GetAliased());
+    }
+}
+
+/* --- Expressions --- */
+
+IMPLEMENT_VISIT_PROC(TernaryExpr)
+{
+    ConvertExpr(ast->condExpr, AllPreVisit);
+    ConvertExpr(ast->thenExpr, AllPreVisit);
+    ConvertExpr(ast->elseExpr, AllPreVisit);
+    {
+        VISIT_DEFAULT(TernaryExpr);
+    }
+    ConvertExpr(ast->condExpr, AllPostVisit);
+    ConvertExpr(ast->thenExpr, AllPostVisit);
+    ConvertExpr(ast->elseExpr, AllPostVisit);
+
+    /* Convert condition expression if cast required */
+    ExprConverter::ConvertExprIfCastRequired(ast->condExpr, DataType::Bool, false);
+}
+
+// Convert right-hand-side expression (if cast required)
+IMPLEMENT_VISIT_PROC(BinaryExpr)
+{
+    ConvertExpr(ast->lhsExpr, AllPreVisit);
+    ConvertExpr(ast->rhsExpr, AllPreVisit);
+    {
+        VISIT_DEFAULT(BinaryExpr);
+    }
+    ConvertExpr(ast->lhsExpr, AllPostVisit);
+    ConvertExpr(ast->rhsExpr, AllPostVisit);
+
+    /* Convert sub expressions if cast required, then reset type denoter */
+    auto lhsTypeDen = ast->lhsExpr->GetTypeDenoter()->GetSub();
+    auto rhsTypeDen = ast->rhsExpr->GetTypeDenoter()->GetSub();
+
+    auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(lhsTypeDen, rhsTypeDen);
+
+    /* Ensure type sizes are cast only if necessary */
+    bool matchTypeSize = true;
+    if (ast->op == BinaryOp::Div)
+    {
+        if (rhsTypeDen->IsScalar())
+            matchTypeSize = false;
+    }
+    else if (ast->op == BinaryOp::Mul)
+    {
+        if (lhsTypeDen->IsScalar() || rhsTypeDen->IsScalar())
+            matchTypeSize = false;
+    }
+
+    ConvertExprTargetType(ast->lhsExpr, *commonTypeDen, matchTypeSize);
+    ConvertExprTargetType(ast->rhsExpr, *commonTypeDen, matchTypeSize);
+
+    ast->ResetTypeDenoter();
+}
+
+// Wrap unary expression if the next sub expression is again an unary expression
+IMPLEMENT_VISIT_PROC(UnaryExpr)
+{
+    ConvertExpr(ast->expr, AllPreVisit);
+    {
+        VISIT_DEFAULT(UnaryExpr);
+    }
+    ConvertExpr(ast->expr, AllPostVisit);
+
+    if (ast->expr->Type() == AST::Types::UnaryExpr)
+        ConvertExpr(ast->expr, ConvertUnaryExpr);
+}
+
+IMPLEMENT_VISIT_PROC(CallExpr)
+{
+    /* Interlocked (atomic) intristics require actual buffer, and not their contents */
+    Flags preVisitFlags = AllPreVisit;
+    if (IsInterlockedIntristic(ast->intrinsic))
+        preVisitFlags.Remove(ConvertImageAccess | ConvertTextureBracketOp);
+
+    /* Convert mul intrinsic calls */
+    if (ast->intrinsic == Intrinsic::Mul && ast->arguments.size() == 2)
+    {
+        /* Convert "mul" intrinsic to "dot" intrinsic for vector-vector multiplication */
+        const auto& typeDenArg0 = ast->arguments[0]->GetTypeDenoter()->GetAliased();
+        const auto& typeDenArg1 = ast->arguments[1]->GetTypeDenoter()->GetAliased();
+
+        if (typeDenArg0.IsVector() && typeDenArg1.IsVector())
+            ast->intrinsic = Intrinsic::Dot;
+    }
+
+    ConvertExpr(ast->prefixExpr, AllPreVisit);
+    ConvertExprList(ast->arguments, preVisitFlags);
+    {
+        VISIT_DEFAULT(CallExpr);
+    }
+    ConvertExprList(ast->arguments, AllPostVisit);
+    ConvertExpr(ast->prefixExpr, AllPostVisit);
+
+    if (!IsInterlockedIntristic(ast->intrinsic))
+    {
+        ast->ForEachArgumentWithParameterType(
+            [this](ExprPtr& funcArg, const TypeDenoter& paramTypeDen)
+            {
+                ConvertExprTargetType(funcArg, paramTypeDen);
+            }
+        );
+    }
+}
+
+IMPLEMENT_VISIT_PROC(BracketExpr)
+{
+    ConvertExpr(ast->expr, AllPreVisit);
+    {
+        VISIT_DEFAULT(BracketExpr);
+    }
+    ConvertExpr(ast->expr, AllPostVisit);
+}
+
+IMPLEMENT_VISIT_PROC(CastExpr)
+{
+    ConvertExpr(ast->expr, AllPreVisit);
+    {
+        VISIT_DEFAULT(CastExpr);
+    }
+    ConvertExpr(ast->expr, AllPostVisit);
+}
+
+IMPLEMENT_VISIT_PROC(ObjectExpr)
+{
+    ConvertExpr(ast->prefixExpr, AllPreVisit);
+    {
+        VISIT_DEFAULT(ObjectExpr);
+    }
+    ConvertExpr(ast->prefixExpr, AllPostVisit);
+}
+
+IMPLEMENT_VISIT_PROC(AssignExpr)
+{
+    ConvertExpr(ast->lvalueExpr, AllPreVisit);
+    ConvertExpr(ast->rvalueExpr, AllPreVisit);
+    {
+        VISIT_DEFAULT(AssignExpr);
+    }
+    ConvertExpr(ast->lvalueExpr, AllPostVisit);
+    ConvertExpr(ast->rvalueExpr, AllPostVisit);
+
+    ConvertExprTargetType(ast->rvalueExpr, ast->lvalueExpr->GetTypeDenoter()->GetAliased());
+}
+
+IMPLEMENT_VISIT_PROC(ArrayExpr)
+{
+    for (auto& expr : ast->arrayIndices)
+        ConvertExpr(expr, AllPreVisit);
+    
+    VISIT_DEFAULT(ArrayExpr);
+    
+    for (auto& expr : ast->arrayIndices)
+    {
+        ConvertExpr(expr, AllPostVisit);
+        
+        /* Convert array index to integral type of same vector dimension */
+        const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
+        if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
+        {
+            /* Convert either to 'uint' on default, or 'int' if the vector base type is 'int' */
+            auto baseDataType = BaseDataType(baseTypeDen->dataType);
+            if (baseDataType != DataType::Int)
+                baseDataType = DataType::UInt;
+
+            const auto intVecType = VectorDataType(baseDataType, VectorTypeDim(baseTypeDen->dataType));
+            ConvertExprTargetType(expr, BaseTypeDenoter(intVecType));
+        }
+    }
+}
+
+#undef IMPLEMENT_VISIT_PROC
+
+/* ----- Conversion ----- */
+
 static TypeDenoterPtr MakeBufferAccessCallTypeDenoter(const DataType genericDataType)
 {
     auto typeDenoter = std::make_shared<BaseTypeDenoter>();
@@ -194,8 +475,6 @@ static TypeDenoterPtr MakeBufferAccessCallTypeDenoter(const DataType genericData
     
     return typeDenoter;
 }
-
-/* ----- Conversion ----- */
 
 void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
 {
@@ -820,285 +1099,6 @@ void ExprConverter::ConvertExprCompatibleStruct(ExprPtr& expr)
         }
     }
 }
-
-/* ------- Visit functions ------- */
-
-#define IMPLEMENT_VISIT_PROC(AST_NAME) \
-    void ExprConverter::Visit##AST_NAME(AST_NAME* ast, void* args)
-
-/* --- Declarations --- */
-
-IMPLEMENT_VISIT_PROC(VarDecl)
-{
-    if (ast->initializer)
-    {
-        ConvertExpr(ast->initializer, AllPreVisit);
-        {
-            VISIT_DEFAULT(VarDecl);
-        }
-        ConvertExpr(ast->initializer, AllPostVisit);
-
-        ConvertExprTargetType(ast->initializer, ast->GetTypeDenoter()->GetAliased());
-    }
-    else
-        VISIT_DEFAULT(VarDecl);
-}
-
-/* --- Declaration statements --- */
-
-IMPLEMENT_VISIT_PROC(FunctionDecl)
-{
-    PushFunctionDecl(ast);
-    {
-        VISIT_DEFAULT(FunctionDecl);
-    }
-    PopFunctionDecl();
-}
-
-/* --- Statements --- */
-
-IMPLEMENT_VISIT_PROC(ForLoopStmnt)
-{
-    ConvertExpr(ast->condition, AllPreVisit);
-    ConvertExpr(ast->iteration, AllPreVisit);
-    {
-        VISIT_DEFAULT(ForLoopStmnt);
-    }
-    ConvertExpr(ast->condition, AllPostVisit);
-    ConvertExpr(ast->iteration, AllPostVisit);
-}
-
-IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
-{
-    ConvertExpr(ast->condition, AllPreVisit);
-    {
-        VISIT_DEFAULT(WhileLoopStmnt);
-    }
-    ConvertExpr(ast->condition, AllPostVisit);
-}
-
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
-{
-    ConvertExpr(ast->condition, AllPreVisit);
-    {
-        VISIT_DEFAULT(DoWhileLoopStmnt);
-    }
-    ConvertExpr(ast->condition, AllPostVisit);
-}
-
-IMPLEMENT_VISIT_PROC(IfStmnt)
-{
-    ConvertExpr(ast->condition, AllPreVisit);
-    {
-        VISIT_DEFAULT(IfStmnt);
-    }
-    ConvertExpr(ast->condition, AllPostVisit);
-}
-
-IMPLEMENT_VISIT_PROC(SwitchStmnt)
-{
-    ConvertExpr(ast->selector, AllPreVisit);
-    {
-        VISIT_DEFAULT(SwitchStmnt);
-    }
-    ConvertExpr(ast->selector, AllPostVisit);
-}
-
-IMPLEMENT_VISIT_PROC(ExprStmnt)
-{
-    ConvertExpr(ast->expr, AllPreVisit);
-    {
-        VISIT_DEFAULT(ExprStmnt);
-    }
-    ConvertExpr(ast->expr, AllPostVisit);
-}
-
-IMPLEMENT_VISIT_PROC(ReturnStmnt)
-{
-    if (ast->expr)
-    {
-        ConvertExpr(ast->expr, AllPreVisit);
-        {
-            VISIT_DEFAULT(ReturnStmnt);
-        }
-        ConvertExpr(ast->expr, AllPostVisit);
-
-        if (auto funcDecl = ActiveFunctionDecl())
-            ConvertExprTargetType(ast->expr, funcDecl->returnType->GetTypeDenoter()->GetAliased());
-    }
-}
-
-/* --- Expressions --- */
-
-IMPLEMENT_VISIT_PROC(TernaryExpr)
-{
-    ConvertExpr(ast->condExpr, AllPreVisit);
-    ConvertExpr(ast->thenExpr, AllPreVisit);
-    ConvertExpr(ast->elseExpr, AllPreVisit);
-    {
-        VISIT_DEFAULT(TernaryExpr);
-    }
-    ConvertExpr(ast->condExpr, AllPostVisit);
-    ConvertExpr(ast->thenExpr, AllPostVisit);
-    ConvertExpr(ast->elseExpr, AllPostVisit);
-
-    /* Convert condition expression if cast required */
-    ExprConverter::ConvertExprIfCastRequired(ast->condExpr, DataType::Bool, false);
-}
-
-// Convert right-hand-side expression (if cast required)
-IMPLEMENT_VISIT_PROC(BinaryExpr)
-{
-    ConvertExpr(ast->lhsExpr, AllPreVisit);
-    ConvertExpr(ast->rhsExpr, AllPreVisit);
-    {
-        VISIT_DEFAULT(BinaryExpr);
-    }
-    ConvertExpr(ast->lhsExpr, AllPostVisit);
-    ConvertExpr(ast->rhsExpr, AllPostVisit);
-
-    /* Convert sub expressions if cast required, then reset type denoter */
-    auto lhsTypeDen = ast->lhsExpr->GetTypeDenoter()->GetSub();
-    auto rhsTypeDen = ast->rhsExpr->GetTypeDenoter()->GetSub();
-
-    auto commonTypeDen = TypeDenoter::FindCommonTypeDenoter(lhsTypeDen, rhsTypeDen);
-
-    /* Ensure type sizes are cast only if necessary */
-    bool matchTypeSize = true;
-    if (ast->op == BinaryOp::Div)
-    {
-        if (rhsTypeDen->IsScalar())
-            matchTypeSize = false;
-    }
-    else if (ast->op == BinaryOp::Mul)
-    {
-        if (lhsTypeDen->IsScalar() || rhsTypeDen->IsScalar())
-            matchTypeSize = false;
-    }
-
-    ConvertExprTargetType(ast->lhsExpr, *commonTypeDen, matchTypeSize);
-    ConvertExprTargetType(ast->rhsExpr, *commonTypeDen, matchTypeSize);
-
-    ast->ResetTypeDenoter();
-}
-
-// Wrap unary expression if the next sub expression is again an unary expression
-IMPLEMENT_VISIT_PROC(UnaryExpr)
-{
-    ConvertExpr(ast->expr, AllPreVisit);
-    {
-        VISIT_DEFAULT(UnaryExpr);
-    }
-    ConvertExpr(ast->expr, AllPostVisit);
-
-    if (ast->expr->Type() == AST::Types::UnaryExpr)
-        ConvertExpr(ast->expr, ConvertUnaryExpr);
-}
-
-IMPLEMENT_VISIT_PROC(CallExpr)
-{
-    /* Interlocked (atomic) intristics require actual buffer, and not their contents */
-    Flags preVisitFlags = AllPreVisit;
-    if (IsInterlockedIntristic(ast->intrinsic))
-        preVisitFlags.Remove(ConvertImageAccess | ConvertTextureBracketOp);
-
-    /* Convert mul intrinsic calls */
-    if (ast->intrinsic == Intrinsic::Mul && ast->arguments.size() == 2)
-    {
-        /* Convert "mul" intrinsic to "dot" intrinsic for vector-vector multiplication */
-        const auto& typeDenArg0 = ast->arguments[0]->GetTypeDenoter()->GetAliased();
-        const auto& typeDenArg1 = ast->arguments[1]->GetTypeDenoter()->GetAliased();
-
-        if (typeDenArg0.IsVector() && typeDenArg1.IsVector())
-            ast->intrinsic = Intrinsic::Dot;
-    }
-
-    ConvertExpr(ast->prefixExpr, AllPreVisit);
-    ConvertExprList(ast->arguments, preVisitFlags);
-    {
-        VISIT_DEFAULT(CallExpr);
-    }
-    ConvertExprList(ast->arguments, AllPostVisit);
-    ConvertExpr(ast->prefixExpr, AllPostVisit);
-
-    if (!IsInterlockedIntristic(ast->intrinsic))
-    {
-        ast->ForEachArgumentWithParameterType(
-            [this](ExprPtr& funcArg, const TypeDenoter& paramTypeDen)
-            {
-                ConvertExprTargetType(funcArg, paramTypeDen);
-            }
-        );
-    }
-}
-
-IMPLEMENT_VISIT_PROC(BracketExpr)
-{
-    ConvertExpr(ast->expr, AllPreVisit);
-    {
-        VISIT_DEFAULT(BracketExpr);
-    }
-    ConvertExpr(ast->expr, AllPostVisit);
-}
-
-IMPLEMENT_VISIT_PROC(CastExpr)
-{
-    ConvertExpr(ast->expr, AllPreVisit);
-    {
-        VISIT_DEFAULT(CastExpr);
-    }
-    ConvertExpr(ast->expr, AllPostVisit);
-}
-
-IMPLEMENT_VISIT_PROC(ObjectExpr)
-{
-    ConvertExpr(ast->prefixExpr, AllPreVisit);
-    {
-        VISIT_DEFAULT(ObjectExpr);
-    }
-    ConvertExpr(ast->prefixExpr, AllPostVisit);
-}
-
-IMPLEMENT_VISIT_PROC(AssignExpr)
-{
-    ConvertExpr(ast->lvalueExpr, AllPreVisit);
-    ConvertExpr(ast->rvalueExpr, AllPreVisit);
-    {
-        VISIT_DEFAULT(AssignExpr);
-    }
-    ConvertExpr(ast->lvalueExpr, AllPostVisit);
-    ConvertExpr(ast->rvalueExpr, AllPostVisit);
-
-    ConvertExprTargetType(ast->rvalueExpr, ast->lvalueExpr->GetTypeDenoter()->GetAliased());
-}
-
-IMPLEMENT_VISIT_PROC(ArrayExpr)
-{
-    for (auto& expr : ast->arrayIndices)
-        ConvertExpr(expr, AllPreVisit);
-    
-    VISIT_DEFAULT(ArrayExpr);
-    
-    for (auto& expr : ast->arrayIndices)
-    {
-        ConvertExpr(expr, AllPostVisit);
-        
-        /* Convert array index to integral type of same vector dimension */
-        const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
-        if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
-        {
-            /* Convert either to 'uint' on default, or 'int' if the vector base type is 'int' */
-            auto baseDataType = BaseDataType(baseTypeDen->dataType);
-            if (baseDataType != DataType::Int)
-                baseDataType = DataType::UInt;
-
-            const auto intVecType = VectorDataType(baseDataType, VectorTypeDim(baseTypeDen->dataType));
-            ConvertExprTargetType(expr, BaseTypeDenoter(intVecType));
-        }
-    }
-}
-
-#undef IMPLEMENT_VISIT_PROC
 
 
 } // /namespace Xsc

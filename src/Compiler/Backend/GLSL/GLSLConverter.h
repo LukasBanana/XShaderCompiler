@@ -126,6 +126,7 @@ class GLSLConverter : public Converter
         void ConvertEntryPointReturnStmntSequenceExpr(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const SequenceExpr& typeConstructor);
         void ConvertEntryPointReturnStmntCommonExpr(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const ExprPtr& typeConstructor);
 
+        //TODO: this should be replaced by the code-injection functionality.
         void ConvertEntryPointReturnStmntToCodeBlock(StmntPtr& stmnt);
 
         /* ----- Object expressions ----- */
