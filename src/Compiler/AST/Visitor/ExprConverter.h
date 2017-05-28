@@ -50,6 +50,7 @@ class ExprConverter : public VisitorTracker
             ConvertTextureIntrinsicVec4 = (1 << 10), // Converts Texture intrinsic calls whose return type is a non-4D-vector.
             ConvertMatrixSubscripts     = (1 << 11), // Converts matrix subscripts into function calls to the respective wrapper function.
             ConvertCompatibleStructs    = (1 << 12), // Converts type denoters and struct members when the underlying struct type has a compatible struct.
+            ConvertLiteralHalfToFloat   = (1 << 13), // Converts all half literals to float literals (e.g. "1.5h to 1.5f").
 
             // All conversion flags commonly used before visiting the sub nodes.
             AllPreVisit                 = (
@@ -102,6 +103,7 @@ class ExprConverter : public VisitorTracker
         DECL_VISIT_PROC( ExprStmnt        );
         DECL_VISIT_PROC( ReturnStmnt      );
 
+        DECL_VISIT_PROC( LiteralExpr      );
         DECL_VISIT_PROC( TernaryExpr      );
         DECL_VISIT_PROC( BinaryExpr       );
         DECL_VISIT_PROC( UnaryExpr        );

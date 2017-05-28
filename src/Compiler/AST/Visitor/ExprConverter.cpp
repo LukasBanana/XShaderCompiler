@@ -290,6 +290,16 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 
 /* --- Expressions --- */
 
+IMPLEMENT_VISIT_PROC(LiteralExpr)
+{
+    if (conversionFlags_(ConvertLiteralHalfToFloat))
+    {
+        /* Convert half to float literal (e.g. "0.0h" to "0.0f") */
+        if (ast->dataType == DataType::Half)
+            ast->ConvertDataType(DataType::Float);
+    }
+}
+
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
     ConvertExpr(ast->condExpr, AllPreVisit);

@@ -565,23 +565,6 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
 //  and make a correct conversion of "CastExpr" for a struct-constructor (don't use SequenceExpr here)
 #if 1
 
-IMPLEMENT_VISIT_PROC(LiteralExpr)
-{
-    /* Replace 'h' and 'H' suffix with 'f' suffix */
-    auto& s = ast->value;
-
-    if (!s.empty())
-    {
-        if (s.back() == 'h' || s.back() == 'H')
-        {
-            s.back() = 'f';
-            ast->dataType = DataType::Float;
-        }
-    }
-
-    VISIT_DEFAULT(LiteralExpr);
-}
-
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
     /* Call default visitor first, then convert to avoid multiple conversions on its sub expressions */

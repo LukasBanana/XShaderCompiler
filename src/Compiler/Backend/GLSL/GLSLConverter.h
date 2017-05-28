@@ -73,7 +73,6 @@ class GLSLConverter : public Converter
         DECL_VISIT_PROC( SwitchStmnt       );
         DECL_VISIT_PROC( ReturnStmnt       );
 
-        DECL_VISIT_PROC( LiteralExpr       );
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( ObjectExpr        );
