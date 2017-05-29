@@ -9,17 +9,10 @@
 #define XSC_HLSL_PARSER_H
 
 
-#include <Xsc/Log.h>
+#include "SLParser.h"
 #include "HLSLScanner.h"
-#include "ReferenceAnalyzer.h"
-#include "Parser.h"
-#include "Visitor.h"
-#include "Token.h"
-#include "Variant.h"
 #include "SymbolTable.h"
-#include <vector>
 #include <map>
-#include <string>
 
 
 namespace Xsc
@@ -27,7 +20,7 @@ namespace Xsc
 
 
 // Syntax parser class for the shading language HLSL.
-class HLSLParser : public Parser
+class HLSLParser : public SLParser
 {
     
     public:
@@ -47,9 +40,6 @@ class HLSLParser : public Parser
         /* === Functions === */
 
         ScannerPtr MakeScanner() override;
-
-        // Accepts the semicolon token (Accept(Tokens::Semicolon)).
-        void Semi();
 
         // Returns true if the current token is a data type.
         bool IsDataType() const;
@@ -104,19 +94,19 @@ class HLSLParser : public Parser
 
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);
 
-        CodeBlockPtr                    ParseCodeBlock();
-        VarDeclStmntPtr                 ParseParameter();
-        SwitchCasePtr                   ParseSwitchCase();
+        CodeBlockPtr                    ParseCodeBlock() override;
+        VarDeclStmntPtr                 ParseParameter() override;
+        StmntPtr                        ParseLocalStmnt() override;
+        StmntPtr                        ParseForLoopInitializer() override;
+        SwitchCasePtr                   ParseSwitchCase() override;
+        VarDeclPtr                      ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr) override;
+
         SamplerValuePtr                 ParseSamplerValue();
         AttributePtr                    ParseAttribute();
         RegisterPtr                     ParseRegister(bool parseColon = true);
         PackOffsetPtr                   ParsePackOffset(bool parseColon = true);
-        ArrayDimensionPtr               ParseArrayDimension(bool allowDynamicDimension = false);
-        ExprPtr                         ParseArrayIndex();
-        ExprPtr                         ParseInitializer();
         TypeSpecifierPtr                ParseTypeSpecifier(bool parseVoidType = false);
 
-        VarDeclPtr                      ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         BufferDeclPtr                   ParseBufferDecl(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         SamplerDeclPtr                  ParseSamplerDecl(SamplerDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         StructDeclPtr                   ParseStructDecl(bool parseStructTkn = true, const TokenPtr& identTkn = nullptr);
@@ -140,20 +130,7 @@ class HLSLParser : public Parser
         StmntPtr                        ParseStmntPrimary();
         StmntPtr                        ParseStmntWithStructDecl();
         StmntPtr                        ParseStmntWithIdent();
-        NullStmntPtr                    ParseNullStmnt();
-        CodeBlockStmntPtr               ParseCodeBlockStmnt();
-        ForLoopStmntPtr                 ParseForLoopStmnt();
-        WhileLoopStmntPtr               ParseWhileLoopStmnt();
-        DoWhileLoopStmntPtr             ParseDoWhileLoopStmnt();
-        IfStmntPtr                      ParseIfStmnt();
-        ElseStmntPtr                    ParseElseStmnt();
-        SwitchStmntPtr                  ParseSwitchStmnt();
-        CtrlTransferStmntPtr            ParseCtrlTransferStmnt();
-        ReturnStmntPtr                  ParseReturnStmnt();
-        ExprStmntPtr                    ParseExprStmnt(const ExprPtr& expr = nullptr);
 
-        ExprPtr                         ParseExpr();
-        ExprPtr                         ParseExprWithSequenceOpt();
         ExprPtr                         ParsePrimaryExpr() override;
         ExprPtr                         ParsePrimaryExprPrefix();
         ExprPtr                         ParseExprWithSuffixOpt(ExprPtr expr);
@@ -166,38 +143,24 @@ class HLSLParser : public Parser
         ObjectExprPtr                   ParseObjectExpr(const ExprPtr& expr = nullptr);
         AssignExprPtr                   ParseAssignExpr(const ExprPtr& expr);
         ExprPtr                         ParseObjectOrCallExpr(const ExprPtr& expr = nullptr);
-        ArrayExprPtr                    ParseArrayExpr(const ExprPtr& expr);
         CallExprPtr                     ParseCallExpr(const ObjectExprPtr& objectExpr = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
         CallExprPtr                     ParseCallExprWithPrefixOpt(const ExprPtr& prefixExpr = nullptr, bool isStatic = false, const TokenPtr& identTkn = nullptr);
         CallExprPtr                     ParseCallExprAsTypeCtor(const TypeDenoterPtr& typeDenoter);
-        InitializerExprPtr              ParseInitializerExpr();
-        SequenceExprPtr                 ParseSequenceExpr(const ExprPtr& firstExpr);
 
         std::vector<StmntPtr>           ParseLocalStmntList();
-        std::vector<VarDeclPtr>         ParseVarDeclList(VarDeclStmnt* declStmntRef, TokenPtr firstIdentTkn = nullptr);
-        std::vector<VarDeclStmntPtr>    ParseParameterList();
         std::vector<VarDeclStmntPtr>    ParseAnnotationList();
-        std::vector<StmntPtr>           ParseStmntList();
-        std::vector<ExprPtr>            ParseExprList(const Tokens listTerminatorToken, bool allowLastComma = false);
-        std::vector<ArrayDimensionPtr>  ParseArrayDimensionList(bool allowDynamicDimension = false);
-        std::vector<ExprPtr>            ParseArrayIndexList();
-        std::vector<ExprPtr>            ParseArgumentList();
-        std::vector<ExprPtr>            ParseInitializerList();
         std::vector<RegisterPtr>        ParseRegisterList(bool parseFirstColon = true);
         std::vector<AttributePtr>       ParseAttributeList();
-        std::vector<SwitchCasePtr>      ParseSwitchCaseList();
         std::vector<BufferDeclPtr>      ParseBufferDeclList(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         std::vector<SamplerDeclPtr>     ParseSamplerDeclList(SamplerDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         std::vector<SamplerValuePtr>    ParseSamplerValueList();
         std::vector<AliasDeclPtr>       ParseAliasDeclList(TypeDenoterPtr typeDenoter);
 
-        std::string                     ParseIdent(TokenPtr identTkn = nullptr, SourceArea* area = nullptr);
         std::string                     ParseIdentWithNamespaceOpt(ObjectExprPtr& namespaceExpr, TokenPtr identTkn = nullptr, SourceArea* area = nullptr);
 
         TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true, StructDeclPtr* structDecl = nullptr);
         TypeDenoterPtr                  ParseTypeDenoterPrimary(StructDeclPtr* structDecl = nullptr);
         TypeDenoterPtr                  ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl, bool allowVoidType = true);
-        TypeDenoterPtr                  ParseTypeDenoterWithArrayOpt(const TypeDenoterPtr& baseTypeDenoter);
         VoidTypeDenoterPtr              ParseVoidTypeDenoter();
         BaseTypeDenoterPtr              ParseBaseTypeDenoter();
         BaseTypeDenoterPtr              ParseBaseVectorTypeDenoter();
@@ -207,10 +170,6 @@ class HLSLParser : public Parser
         StructTypeDenoterPtr            ParseStructTypeDenoter();
         StructTypeDenoterPtr            ParseStructTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl);
         AliasTypeDenoterPtr             ParseAliasTypeDenoter(std::string ident = "");
-
-        Variant                         ParseAndEvaluateConstExpr();
-        int                             ParseAndEvaluateConstExprInt();
-        int                             ParseAndEvaluateVectorDimension();
 
         void                            ParseAndIgnoreTechniquesAndNullStmnts();
         void                            ParseAndIgnoreTechnique();
@@ -229,8 +188,6 @@ class HLSLParser : public Parser
         IndexedSemantic                 ParseSemantic(bool parseColon = true);
 
         std::string                     ParseSamplerStateTextureIdent();
-
-        void                            ParseStmntWithCommentOpt(std::vector<StmntPtr>& stmnts, const std::function<StmntPtr()>& parseFunction);
 
         bool                            ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiveType = false);
 
