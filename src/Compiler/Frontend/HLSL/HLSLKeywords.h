@@ -11,7 +11,6 @@
 
 #include "Token.h"
 #include "ASTEnums.h"
-#include <map>
 #include <string>
 
 
@@ -19,9 +18,7 @@ namespace Xsc
 {
 
 
-using KeywordMapType = std::map<std::string, Token::Types>;
-
-// Returns the keywords map (which is an exception for identifiers).
+// Returns the Keyword-to-Token map for HLSL.
 const KeywordMapType& HLSLKeywords();
 
 // Returns the keywords map extension for Cg (i.e. only the additional keywords that are only part of Cg, e.g. "fixed4").

@@ -20,6 +20,9 @@ namespace Xsc
 {
 
 
+// Returns the Keyword-to-Token map for GLSL.
+const KeywordMapType& GLSLKeywords();
+
 // Returns the GLSL keyword for the specified data type or null on failure.
 const std::string* DataTypeToGLSLKeyword(const DataType t);
 

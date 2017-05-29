@@ -18,6 +18,10 @@ namespace Xsc
 {
 
 
+/* 
+ * Internal functions
+ */
+
 template <typename T>
 T MapKeywordToType(const std::map<std::string, T>& typeMap, const std::string& keyword, const std::string& typeName)
 {
@@ -36,6 +40,7 @@ T MapKeywordToType(const Dictionary<T>& typeDict, const std::string& keyword, co
     else
         RuntimeErr(R_FailedToMapFromHLSLKeyword(keyword, typeName));
 }
+
 
 /* ----- HLSL Keywords ----- */
 

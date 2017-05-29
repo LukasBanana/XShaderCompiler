@@ -16,6 +16,10 @@ namespace Xsc
 {
 
 
+/* 
+ * Internal functions
+ */
+
 /*
 Here are a few references for HLSL-to-GLSL mappings:
 https://anteru.net/blog/2016/mapping-between-hlsl-and-glsl/
@@ -27,6 +31,244 @@ const Value* MapTypeToKeyword(const std::map<Key, Value>& typeMap, const Key& ty
 {
     auto it = typeMap.find(type);
     return (it != typeMap.end() ? &(it->second) : nullptr);
+}
+
+
+/* ----- GLSL Keywords ----- */
+
+// see https://www.khronos.org/registry/OpenGL/specs/gl/GLSLangSpec.4.50.pdf
+
+static KeywordMapType GenerateKeywordMap()
+{
+    using T = Token::Types;
+
+    return
+    {
+        { "true",                    T::BoolLiteral        },
+        { "false",                   T::BoolLiteral        },
+
+        { "bool",                    T::ScalarType         },
+        { "int",                     T::ScalarType         },
+        { "uint",                    T::ScalarType         },
+        { "float",                   T::ScalarType         },
+        { "double",                  T::ScalarType         },
+
+        { "bvec2",                   T::VectorType         },
+        { "bvec3",                   T::VectorType         },
+        { "bvec4",                   T::VectorType         },
+        { "ivec2",                   T::VectorType         },
+        { "ivec3",                   T::VectorType         },
+        { "ivec4",                   T::VectorType         },
+        { "uint2",                   T::VectorType         },
+        { "uint3",                   T::VectorType         },
+        { "uint4",                   T::VectorType         },
+        { "vec2",                    T::VectorType         },
+        { "vec3",                    T::VectorType         },
+        { "vec4",                    T::VectorType         },
+        { "dvec2",                   T::VectorType         },
+        { "dvec3",                   T::VectorType         },
+        { "dvec4",                   T::VectorType         },
+
+        { "mat2",                    T::MatrixType         },
+        { "mat2x3",                  T::MatrixType         },
+        { "mat2x4",                  T::MatrixType         },
+        { "mat3x2",                  T::MatrixType         },
+        { "mat3",                    T::MatrixType         },
+        { "mat3x4",                  T::MatrixType         },
+        { "mat4x2",                  T::MatrixType         },
+        { "mat4x3",                  T::MatrixType         },
+        { "mat4",                    T::MatrixType         },
+        { "dmat2",                   T::MatrixType         },
+        { "dmat2x3",                 T::MatrixType         },
+        { "dmat2x4",                 T::MatrixType         },
+        { "dmat3x2",                 T::MatrixType         },
+        { "dmat3",                   T::MatrixType         },
+        { "dmat3x4",                 T::MatrixType         },
+        { "dmat4x2",                 T::MatrixType         },
+        { "dmat4x3",                 T::MatrixType         },
+        { "dmat4",                   T::MatrixType         },
+
+        { "void",                    T::Void               },
+
+        { "atomic_uint",             T::AtomicCounter      },
+
+        { "do",                      T::Do                 },
+        { "while",                   T::While              },
+        { "for",                     T::For                },
+
+        { "if",                      T::If                 },
+        { "else",                    T::Else               },
+
+        { "switch",                  T::Switch             },
+        { "case",                    T::Case               },
+        { "default",                 T::Default            },
+
+        { "struct",                  T::Struct             },
+        { "layout",                  T::LayoutQualifier    },
+        { "attribute",               T::Attribute          },
+        { "varying",                 T::Varying            },
+        { "precision",               T::Precision          },
+
+        { "lowp",                    T::PrecisionQualifier },
+        { "mediump",                 T::PrecisionQualifier },
+        { "highp",                   T::PrecisionQualifier },
+
+        { "sampler1D",               T::Sampler            },
+        { "sampler2D",               T::Sampler            },
+        { "sampler3D",               T::Sampler            },
+        { "samplerCube",             T::Sampler            },
+        { "sampler1DShadow",         T::Sampler            },
+        { "sampler2DShadow",         T::Sampler            },
+        { "samplerCubeShadow",       T::Sampler            },
+        { "sampler1DArray",          T::Sampler            },
+        { "sampler2DArray",          T::Sampler            },
+        { "sampler1DArrayShadow",    T::Sampler            },
+        { "sampler2DArrayShadow",    T::Sampler            },
+        { "isampler1D",              T::Sampler            },
+        { "isampler2D",              T::Sampler            },
+        { "isampler3D",              T::Sampler            },
+        { "isamplerCube",            T::Sampler            },
+        { "isampler1DArray",         T::Sampler            },
+        { "isampler2DArray",         T::Sampler            },
+        { "usampler1D",              T::Sampler            },
+        { "usampler2D",              T::Sampler            },
+        { "usampler3D",              T::Sampler            },
+        { "usamplerCube",            T::Sampler            },
+        { "usampler1DArray",         T::Sampler            },
+        { "usampler2DArray",         T::Sampler            },
+        { "sampler2DRect",           T::Sampler            },
+        { "sampler2DRectShadow",     T::Sampler            },
+        { "isampler2DRect",          T::Sampler            },
+        { "usampler2DRect",          T::Sampler            },
+        { "samplerBuffer",           T::Sampler            },
+        { "isamplerBuffer",          T::Sampler            },
+        { "usamplerBuffer",          T::Sampler            },
+        { "sampler2DMS",             T::Sampler            },
+        { "isampler2DMS",            T::Sampler            },
+        { "usampler2DMS",            T::Sampler            },
+        { "sampler2DMSArray",        T::Sampler            },
+        { "isampler2DMSArray",       T::Sampler            },
+        { "usampler2DMSArray",       T::Sampler            },
+        { "samplerCubeArray",        T::Sampler            },
+        { "samplerCubeArrayShadow",  T::Sampler            },
+        { "isamplerCubeArray",       T::Sampler            },
+        { "usamplerCubeArray",       T::Sampler            },
+
+        { "image1D",                 T::Image              },
+        { "iimage1D",                T::Image              },
+        { "uimage1D",                T::Image              },
+        { "image2D",                 T::Image              },
+        { "iimage2D",                T::Image              },
+        { "uimage2D",                T::Image              },
+        { "image3D",                 T::Image              },
+        { "iimage3D",                T::Image              },
+        { "uimage3D",                T::Image              },
+        { "image2DRect",             T::Image              },
+        { "iimage2DRect",            T::Image              },
+        { "uimage2DRect",            T::Image              },
+        { "imageCube",               T::Image              },
+        { "iimageCube",              T::Image              },
+        { "uimageCube",              T::Image              },
+        { "imageBuffer",             T::Image              },
+        { "iimageBuffer",            T::Image              },
+        { "uimageBuffer",            T::Image              },
+        { "image1DArray",            T::Image              },
+        { "iimage1DArray",           T::Image              },
+        { "uimage1DArray",           T::Image              },
+        { "image2DArray",            T::Image              },
+        { "iimage2DArray",           T::Image              },
+        { "uimage2DArray",           T::Image              },
+        { "imageCubeArray",          T::Image              },
+        { "iimageCubeArray",         T::Image              },
+        { "uimageCubeArray",         T::Image              },
+        { "image2DMS",               T::Image              },
+        { "iimage2DMS",              T::Image              },
+        { "uimage2DMS",              T::Image              },
+        { "image2DMSArray",          T::Image              },
+        { "iimage2DMSArray",         T::Image              },
+        { "uimage2DMSArray",         T::Image              },
+
+        { "uniform",                 T::UniformBuffer      },
+        { "buffer",                  T::StorageBuffer      },
+
+        { "break",                   T::CtrlTransfer       },
+        { "continue",                T::CtrlTransfer       },
+        { "discard",                 T::CtrlTransfer       },
+
+        { "return",                  T::Return             },
+
+        { "in",                      T::InputModifier      },
+        { "out",                     T::InputModifier      },
+        { "inout",                   T::InputModifier      },
+
+        { "smooth",                  T::InterpModifier     },
+        { "centroid",                T::InterpModifier     },
+        { "flat",                    T::InterpModifier     },
+        { "noperspective",           T::InterpModifier     },
+        { "sample",                  T::InterpModifier     },
+
+        { "const",                   T::TypeModifier       },
+
+        { "precise",                 T::StorageClass       },
+        { "shared",                  T::StorageClass       },
+        { "patch",                   T::StorageClass       },
+
+        { "coherent",                T::MemoryQualifier    },
+        { "volatile",                T::MemoryQualifier    },
+        { "restrict",                T::MemoryQualifier    },
+        { "readonly",                T::MemoryQualifier    },
+        { "writeonly",               T::MemoryQualifier    },
+
+        { "invariant",               T::InvariantQualifier },
+
+        { "common",                  T::Reserved           },
+        { "partition",               T::Reserved           },
+        { "active",                  T::Reserved           },
+        { "asm",                     T::Reserved           },
+        { "class",                   T::Reserved           },
+        { "union",                   T::Reserved           },
+        { "enum",                    T::Reserved           },
+        { "typedef",                 T::Reserved           },
+        { "template",                T::Reserved           },
+        { "this",                    T::Reserved           },
+        { "resource",                T::Reserved           },
+        { "goto",                    T::Reserved           },
+        { "inline",                  T::Reserved           },
+        { "noinline",                T::Reserved           },
+        { "public",                  T::Reserved           },
+        { "static",                  T::Reserved           },
+        { "extern",                  T::Reserved           },
+        { "external",                T::Reserved           },
+        { "interface",               T::Reserved           },
+        { "long",                    T::Reserved           },
+        { "short",                   T::Reserved           },
+        { "half",                    T::Reserved           },
+        { "fixed",                   T::Reserved           },
+        { "unsigned",                T::Reserved           },
+        { "superp",                  T::Reserved           },
+        { "input",                   T::Reserved           },
+        { "output",                  T::Reserved           },
+        { "hvec2",                   T::Reserved           },
+        { "hvec3",                   T::Reserved           },
+        { "hvec4",                   T::Reserved           },
+        { "fvec2",                   T::Reserved           },
+        { "fvec3",                   T::Reserved           },
+        { "fvec4",                   T::Reserved           },
+        { "sampler3DRect",           T::Reserved           },
+        { "filter",                  T::Reserved           },
+        { "sizeof",                  T::Reserved           },
+        { "cast",                    T::Reserved           },
+        { "namespace",               T::Reserved           },
+        { "using",                   T::Reserved           },
+
+        { "subroutine",              T::Unsupported        },
+    };
+}
+
+const KeywordMapType& GLSLKeywords()
+{
+    static const auto keywordMap = GenerateKeywordMap();
+    return keywordMap;
 }
 
 

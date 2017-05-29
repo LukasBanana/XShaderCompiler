@@ -108,6 +108,16 @@ std::string Token::TypeToString(const Types type)
         case Types::TypeModifier:       return R_TypeModifier;
         case Types::StorageClass:       return R_StorageClass;
         case Types::Inline:             return R_KeywordInline;
+        case Types::LayoutQualifier:    return R_LayoutQualifier;
+        case Types::Attribute:          return R_KeywordAttribute;
+        case Types::Varying:            return R_KeywordVarying;
+        case Types::Precision:          return R_KeywordPrecision;
+        case Types::MemoryQualifier:    return R_MemoryQualifier;
+        case Types::InvariantQualifier: return R_InvariantQualifier;
+        case Types::PrecisionQualifier: return R_PrecisionQualifier;
+        case Types::Image:              return R_ImageType;
+        case Types::StorageBuffer:      return R_StorageBufferType;
+        case Types::AtomicCounter:      return R_AtomicCounterType;
         case Types::Technique:          return R_KeywordTechnique;
         case Types::Pass:               return R_KeywordPass;
         case Types::Compile:            return R_KeywordCompile;
@@ -120,9 +130,8 @@ std::string Token::TypeToString(const Types type)
         case Types::VarArg:             return R_VarArgSpecifier;
         case Types::Misc:               return R_Misc;
         case Types::EndOfStream:        return R_EndOfStream;
-        default:                        break;
+        default:                        return "";
     }
-    return "";
 }
 
 std::string Token::SpellContent() const

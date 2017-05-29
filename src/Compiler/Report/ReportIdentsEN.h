@@ -86,6 +86,16 @@ DECL_REPORT( KeywordInline,                     "'inline' keyword"              
 DECL_REPORT( KeywordTechnique,                  "'technique' keyword"                                                                                           );
 DECL_REPORT( KeywordPass,                       "'pass' keyword"                                                                                                );
 DECL_REPORT( KeywordCompile,                    "'compile' keyword"                                                                                             );
+DECL_REPORT( KeywordAttribute,                  "'attribute' keyword"                                                                                           );
+DECL_REPORT( KeywordVarying,                    "'varying' keyword"                                                                                             );
+DECL_REPORT( KeywordPrecision,                  "'precision' keyword"                                                                                           );
+DECL_REPORT( LayoutQualifier,                   "layout qualifier"                                                                                              );
+DECL_REPORT( MemoryQualifier,                   "memory qualifier"                                                                                              );
+DECL_REPORT( InvariantQualifier,                "invariant qualifier"                                                                                           );
+DECL_REPORT( PrecisionQualifier,                "precision qualifier"                                                                                           );
+DECL_REPORT( ImageType,                         "image type"                                                                                                    );
+DECL_REPORT( StorageBufferType,                 "storage buffer type"                                                                                           );
+DECL_REPORT( AtomicCounterType,                 "atomic counter type"                                                                                           );
 DECL_REPORT( CtrlTransfer,                      "control transfer"                                                                                              );
 DECL_REPORT( InputModifier,                     "input modifier"                                                                                                );
 DECL_REPORT( InterpModifier,                    "interpolation modifier"                                                                                        );

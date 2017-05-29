@@ -12,13 +12,14 @@
 #include "SourceArea.h"
 #include <string>
 #include <memory>
+#include <map>
 
 
 namespace Xsc
 {
 
 
-// Token classes used by the scanner and parser.
+// Token class used by the scanners and parsers.
 class Token
 {
     
@@ -67,30 +68,14 @@ class Token
             VectorType,         // ScalarType ('1'-'4')
             MatrixType,         // ScalarType ('1'-'4') 'x' ('1'-'4')
 
-            Sampler,            // sampler, sampler1D, sampler2D, sampler3D, samplerCUBE
-            SamplerState,       // sampler_state, SamplerState, SamplerComparisonState
-
-            /*
-            texture,
-            Texture1D, Texture1DArray, Texture2D, Texture2DArray, Texture3D, TextureCube, TextureCubeArray,
-            Texture2DMS, Texture2DMSArray, RWTexture1D, RWTexture1DArray, RWTexture2D, RWTexture2DArray, RWTexture3D
-            AppendStructuredBuffer, Buffer, ByteAddressBuffer, ConsumeStructuredBuffer,
-            StructuredBuffer, RWBuffer, RWByteAddressBuffer, RWStructuredBuffer
-            */
-            Buffer,
-
-            UniformBuffer,      // cbuffer, tbuffer
-
-            Vector,             // vector (e.g. "vector<float, 3>")
-            Matrix,             // matrix (e.g. "matrix<int, 4, 4>")
+            UniformBuffer,      // cbuffer, tbuffer (HLSL); uniform (GLSL)
+            Sampler,            // sampler, sampler1D, sampler2D, sampler3D, samplerCUBE (HLSL); sampler2D, isampler1DArray etc. (GLSL)
 
             Void,               // void
 
-            PrimitiveType,      // point, line, lineadj, triangle, triangleadj
-
             /* --- Keywords --- */
             Reserved,           // reserved keyword (not allowed, but reserved for future use)
-            Unsupported,        // unsupported keyword (interface, class)
+            Unsupported,        // unsupported keyword: interface, class (HLSL); subroutine (GLSL)
 
             Do,                 // do
             While,              // while
@@ -103,10 +88,7 @@ class Token
             Case,               // case
             Default,            // default
 
-            Typedef,            // typedef
             Struct,             // struct
-            Register,           // register
-            PackOffset,         // packoffset
 
             CtrlTransfer,       // break, continue, discard
             Return,             // return
@@ -117,6 +99,31 @@ class Token
             StorageClass,       // extern, precise, shared, groupshared, static, uniform, volatile
 
             Inline,             // inline
+
+            /* --- HLSL only Tokens --- */
+            SamplerState,       // sampler_state, SamplerState, SamplerComparisonState
+
+            Typedef,            // typedef
+            Register,           // register
+            PackOffset,         // packoffset
+
+            Buffer,             // texture, Texture2D, RWStructuredBuffer etc.
+            PrimitiveType,      // point, line, lineadj, triangle, triangleadj
+            Vector,             // vector (e.g. "vector<float, 3>")
+            Matrix,             // matrix (e.g. "matrix<int, 4, 4>")
+
+            /* --- GLSL only Tokens --- */
+            Attribute,          // attribute
+            Varying,            // varying
+            Precision,          // precision
+            LayoutQualifier,    // layout
+            MemoryQualifier,    // coherent, volatile, restrict, readonly, writeonly
+            InvariantQualifier, // invariant
+            PrecisionQualifier, // lowp, mediump, highp
+
+            Image,              // image1D, uimageCube etc. (GLSL)
+            StorageBuffer,      // buffer (GLSL)
+            AtomicCounter,      // atomic_uint (GLSL)
 
             /* --- Technique keywords --- */
             Technique,          // technique
@@ -178,7 +185,11 @@ class Token
 
 };
 
+// Token shared pointer type.
 using TokenPtr = std::shared_ptr<Token>;
+
+// Keyword-to-Token map type.
+using KeywordMapType = std::map<std::string, Token::Types>;
 
 
 } // /namespace Xsc
