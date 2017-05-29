@@ -23,9 +23,6 @@ namespace Xsc
 // Returns the GLSL keyword for the specified data type or null on failure.
 const std::string* DataTypeToGLSLKeyword(const DataType t);
 
-// Returns the GLSL image format enum value for the specified data type or ImageLayoutFormat::Undefined.
-ImageLayoutFormat DataTypeToImageLayoutFormat(const DataType t);
-
 // Returns the GLSL keyword for the specified storage class or null on failure.
 const std::string* StorageClassToGLSLKeyword(const StorageClass t);
 

@@ -1018,6 +1018,23 @@ DataType GetImageLayoutFormatBaseType(const ImageLayoutFormat format)
     return DataType::Undefined;
 }
 
+ImageLayoutFormat DataTypeToImageLayoutFormat(const DataType t)
+{
+    switch (t)
+    {
+        case DataType::Int:    return ImageLayoutFormat::I32X1;
+        case DataType::Int2:   return ImageLayoutFormat::I32X2;
+        case DataType::Int4:   return ImageLayoutFormat::I32X4;
+        case DataType::UInt:   return ImageLayoutFormat::UI32X1;
+        case DataType::UInt2:  return ImageLayoutFormat::UI32X2;
+        case DataType::UInt4:  return ImageLayoutFormat::UI32X4;
+        case DataType::Float:  return ImageLayoutFormat::F32X1;
+        case DataType::Float2: return ImageLayoutFormat::F32X2;
+        case DataType::Float4: return ImageLayoutFormat::F32X4;
+        default:               return ImageLayoutFormat::Undefined;
+    }
+}
+
 
 /* ----- RegisterType Enum ----- */
 

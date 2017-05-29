@@ -580,6 +580,9 @@ enum class ImageLayoutFormat
 // Returns the base type of a single component in the specified image layout format.
 DataType GetImageLayoutFormatBaseType(const ImageLayoutFormat format);
 
+// Returns the image layout format for the specified data type or ImageLayoutFormat::Undefined.
+ImageLayoutFormat DataTypeToImageLayoutFormat(const DataType t);
+
 
 /* ----- RegisterType Enum ----- */
 

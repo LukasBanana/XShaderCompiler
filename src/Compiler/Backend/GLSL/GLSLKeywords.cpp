@@ -115,34 +115,6 @@ const std::string* DataTypeToGLSLKeyword(const DataType t)
     return MapTypeToKeyword(typeMap, t);
 }
 
-/* ----- DataType to ImageLayoutFormat Mapping ----- */
-
-static std::map<DataType, ImageLayoutFormat> GenerateDataTypeImageLayoutFormatMap()
-{
-    using T = DataType;
-    using U = ImageLayoutFormat;
-
-    return
-    {
-        { T::Int,    U::I32X1  },
-        { T::Int2,   U::I32X2  },
-        { T::Int4,   U::I32X4  },
-        { T::UInt,   U::UI32X1 },
-        { T::UInt2,  U::UI32X2 },
-        { T::UInt4,  U::UI32X4 },
-        { T::Float,  U::F32X1  },
-        { T::Float2, U::F32X2  },
-        { T::Float4, U::F32X4  },
-    };
-}
-
-ImageLayoutFormat DataTypeToImageLayoutFormat(const DataType t)
-{
-    static const auto typeMap = GenerateDataTypeImageLayoutFormatMap();
-    auto it = typeMap.find(t);
-    return (it != typeMap.end() ? it->second : ImageLayoutFormat::Undefined);
-}
-
 
 /* ----- StorageClass Mapping ----- */
 
