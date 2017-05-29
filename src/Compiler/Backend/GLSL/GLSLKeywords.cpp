@@ -365,10 +365,16 @@ static Dictionary<DataType> GenerateDataTypeDict()
     };
 }
 
+static const auto g_dataTypeDictGLSL = GenerateDataTypeDict();
+
 const std::string* DataTypeToGLSLKeyword(const DataType t)
 {
-    static const auto typeDict = GenerateDataTypeDict();
-    return typeDict.EnumToString(t);
+    return g_dataTypeDictGLSL.EnumToString(t);
+}
+
+DataType GLSLKeywordToDataType(const std::string& keyword)
+{
+    return MapKeywordToType(g_dataTypeDictGLSL, keyword, R_DataType);
 }
 
 
@@ -381,18 +387,24 @@ static Dictionary<StorageClass> GenerateStorageClassDict()
     return
     {
         { "extern",   T::Extern      },
-      //{ "",         T::Precise,    },
+        { "precise",  T::Precise,    },
         { "shared",   T::Shared      },
         { "shared",   T::GroupShared },
-        { "static",   T::Static      },
+      //{ "static",   T::Static      }, // reserved GLSL keyword
         { "volatile", T::Volatile    },
     };
 }
 
+static const auto g_storageClassDictGLSL = GenerateStorageClassDict();
+
 const std::string* StorageClassToGLSLKeyword(const StorageClass t)
 {
-    static const auto typeDict = GenerateStorageClassDict();
-    return typeDict.EnumToString(t);
+    return g_storageClassDictGLSL.EnumToString(t);
+}
+
+StorageClass GLSLKeywordToStorageClass(const std::string& keyword)
+{
+    return MapKeywordToType(g_storageClassDictGLSL, keyword, R_StorageClass);
 }
 
 
@@ -412,10 +424,16 @@ static Dictionary<InterpModifier> GenerateInterpModifierDict()
     };
 }
 
+static const auto g_inperpModifierDictGLSL = GenerateInterpModifierDict();
+
 const std::string* InterpModifierToGLSLKeyword(const InterpModifier t)
 {
-    static const auto typeDict = GenerateInterpModifierDict();
-    return typeDict.EnumToString(t);
+    return g_inperpModifierDictGLSL.EnumToString(t);
+}
+
+InterpModifier GLSLKeywordToInterpModifier(const std::string& keyword)
+{
+    return MapKeywordToType(g_inperpModifierDictGLSL, keyword, R_InterpModifier);
 }
 
 
@@ -610,16 +628,22 @@ static Dictionary<AttributeValue> GenerateAttributeValueDict()
         { "ccw",                     T::OutputTopologyTriangleCCW  },
 
         { "equal_spacing",           T::PartitioningInteger        },
-        { "equal_spacing",           T::PartitioningPow2           }, // ???
+      //{ "",                        T::PartitioningPow2           }, // ???
         { "fractional_even_spacing", T::PartitioningFractionalEven },
         { "fractional_odd_spacing",  T::PartitioningFractionalOdd  },
     };
 }
 
+static const auto g_attributeValueDictGLSL = GenerateAttributeValueDict();
+
 const std::string* AttributeValueToGLSLKeyword(const AttributeValue t)
 {
-    static const auto typeDict = GenerateAttributeValueDict();
-    return typeDict.EnumToString(t);
+    return g_attributeValueDictGLSL.EnumToString(t);
+}
+
+AttributeValue GLSLKeywordToAttributeValue(const std::string& keyword)
+{
+    return g_attributeValueDictGLSL.StringToEnumOrDefault(keyword, AttributeValue::Undefined);
 }
 
 
@@ -639,10 +663,16 @@ static Dictionary<PrimitiveType> GeneratePrimitiveTypeDict()
     };
 }
 
+static const auto g_primitiveTypeDictGLSL = GeneratePrimitiveTypeDict();
+
 const std::string* PrimitiveTypeToGLSLKeyword(const PrimitiveType t)
 {
-    static const auto typeDict = GeneratePrimitiveTypeDict();
-    return typeDict.EnumToString(t);
+    return g_primitiveTypeDictGLSL.EnumToString(t);
+}
+
+PrimitiveType GLSLKeywordToPrimitiveType(const std::string& keyword)
+{
+    return MapKeywordToType(g_primitiveTypeDictGLSL, keyword, R_PrimitiveType);
 }
 
 
@@ -782,6 +812,51 @@ std::unique_ptr<std::string> SemanticToGLSLKeyword(const IndexedSemantic& semant
         }
     }
     return SemanticToGLSLKeywordPrimary(semantic);
+}
+
+static std::map<Semantic, DataType> GenerateSemanticDataTypeMap()
+{
+    using T = Semantic;
+    using D = DataType;
+
+    return
+    {
+        { T::ClipDistance,           D::Float  },
+        { T::CullDistance,           D::Float  },
+        { T::Coverage,               D::Int    },
+        { T::Depth,                  D::Float  },
+        { T::DepthGreaterEqual,      D::Float  },
+        { T::DepthLessEqual,         D::Float  },
+        { T::DispatchThreadID,       D::UInt3  },
+        { T::DomainLocation,         D::Float3 },
+        { T::GroupID,                D::UInt3  },
+        { T::GroupIndex,             D::UInt   },
+        { T::GroupThreadID,          D::UInt3  },
+        { T::GSInstanceID,           D::Int    },
+        { T::InnerCoverage,          D::Int    },
+        { T::InsideTessFactor,       D::Float  },
+        { T::InstanceID,             D::Int    },
+        { T::IsFrontFace,            D::Bool   },
+        { T::OutputControlPointID,   D::Int    },
+        { T::FragCoord,              D::Float4 },
+        { T::PointSize,              D::Float  },
+        { T::PrimitiveID,            D::Int    },
+        { T::RenderTargetArrayIndex, D::Int    },
+        { T::SampleIndex,            D::Int    },
+        { T::StencilRef,             D::Int    },
+      //{ T::Target,                 D::Float4 }, // Custom output in GLSL
+        { T::TessFactor,             D::Float  },
+        { T::VertexID,               D::Int    },
+        { T::VertexPosition,         D::Float4 },
+        { T::ViewportArrayIndex,     D::Int    },
+    };
+}
+
+DataType SemanticToGLSLDataType(const Semantic t)
+{
+    static const auto typeMap = GenerateSemanticDataTypeMap();
+    auto it = typeMap.find(t);
+    return (it != typeMap.end() ? it->second : DataType::Undefined);
 }
 
 
@@ -1126,54 +1201,6 @@ const std::set<std::string>& ReservedGLSLKeywords()
     };
 
     return reservedNames;
-}
-
-
-/* ----- Semantic/DataType Mapping ----- */
-
-static std::map<Semantic, DataType> GenerateSemanticDataTypeMap()
-{
-    using T = Semantic;
-    using D = DataType;
-
-    return
-    {
-        { T::ClipDistance,           D::Float  },
-        { T::CullDistance,           D::Float  },
-        { T::Coverage,               D::Int    },
-        { T::Depth,                  D::Float  },
-        { T::DepthGreaterEqual,      D::Float  },
-        { T::DepthLessEqual,         D::Float  },
-        { T::DispatchThreadID,       D::UInt3  },
-        { T::DomainLocation,         D::Float3 },
-        { T::GroupID,                D::UInt3  },
-        { T::GroupIndex,             D::UInt   },
-        { T::GroupThreadID,          D::UInt3  },
-        { T::GSInstanceID,           D::Int    },
-        { T::InnerCoverage,          D::Int    },
-        { T::InsideTessFactor,       D::Float  },
-        { T::InstanceID,             D::Int    },
-        { T::IsFrontFace,            D::Bool   },
-        { T::OutputControlPointID,   D::Int    },
-        { T::FragCoord,              D::Float4 },
-        { T::PointSize,              D::Float  },
-        { T::PrimitiveID,            D::Int    },
-        { T::RenderTargetArrayIndex, D::Int    },
-        { T::SampleIndex,            D::Int    },
-        { T::StencilRef,             D::Int    },
-      //{ T::Target,                 D::Float4 }, // Custom output in GLSL
-        { T::TessFactor,             D::Float  },
-        { T::VertexID,               D::Int    },
-        { T::VertexPosition,         D::Float4 },
-        { T::ViewportArrayIndex,     D::Int    },
-    };
-}
-
-DataType SemanticToGLSLDataType(const Semantic t)
-{
-    static const auto typeMap = GenerateSemanticDataTypeMap();
-    auto it = typeMap.find(t);
-    return (it != typeMap.end() ? it->second : DataType::Undefined);
 }
 
 
