@@ -38,6 +38,9 @@ const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLS
 // Returns the GLSL keyword for the specified sampler type or null on failure.
 const std::string* SamplerTypeToGLSLKeyword(const SamplerType t);
 
+// Returns the sampler type for the specified GLSL keyword or throws an std::runtime_error on failure.
+SamplerType GLSLKeywordToSamplerType(const std::string& keyword);
+
 // Returns the GLSL keyword for the specified attribut value or null on failure.
 const std::string* AttributeValueToGLSLKeyword(const AttributeValue t);
 

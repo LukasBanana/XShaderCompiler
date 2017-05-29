@@ -7,11 +7,10 @@
 
 #include "HLSLKeywords.h"
 #include "Dictionary.h"
-#include "CiString.h"
 #include "Helper.h"
 #include "ReportIdents.h"
 #include "Exception.h"
-#include <vector>
+#include "CiString.h"
 
 
 namespace Xsc
@@ -630,11 +629,11 @@ static Dictionary<DataType> GenerateDataTypeDict()
     };
 }
 
-static const auto g_typeDictHLSL = GenerateDataTypeDict();
+static const auto g_dataTypeDictHLSL = GenerateDataTypeDict();
 
 DataType HLSLKeywordToDataType(const std::string& keyword)
 {
-    return MapKeywordToType(g_typeDictHLSL, keyword, R_DataType);
+    return MapKeywordToType(g_dataTypeDictHLSL, keyword, R_DataType);
 }
 
 
@@ -666,17 +665,17 @@ static Dictionary<DataType> GenerateCgDataTypeDict()
     };
 }
 
-static const auto g_typeDictCg = GenerateCgDataTypeDict();
+static const auto g_dataTypeDictCg = GenerateCgDataTypeDict();
 
 DataType HLSLKeywordExtCgToDataType(const std::string& keyword)
 {
     /* Search data type in HLSL map */
-    if (auto type = g_typeDictHLSL.StringToEnum(keyword))
+    if (auto type = g_dataTypeDictHLSL.StringToEnum(keyword))
         return *type;
     else
     {
         /* Search data type in Cg map */
-        if (auto type = g_typeDictCg.StringToEnum(keyword))
+        if (auto type = g_dataTypeDictCg.StringToEnum(keyword))
             return *type;
         else
             RuntimeErr(R_FailedToMapFromCgKeyword(keyword, R_DataType));

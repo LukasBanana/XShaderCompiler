@@ -369,6 +369,10 @@ DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (
 DECL_REPORT( ExtensionNotSupported,             "extension not supported[: {0}]"                                                                                );
 DECL_REPORT( InvalidGLSLExtensionBehavior,      "invalid extension behavior '{0}' (must be 'enable', 'require', 'warn', or 'disable')"                          );
 
+/* ----- GLSLKeywords ----- */
+
+DECL_REPORT( FailedToMapFromGLSLKeyword,        "failed to map GLSL keyword '{0}' to {1}"                                                                       );
+
 /* ----- HLSLIntrinsics ----- */
 
 DECL_REPORT( FailedToDeriveIntrinsicType,       "failed to derive type denoter for intrinsic[ '{0}']"                                                           );

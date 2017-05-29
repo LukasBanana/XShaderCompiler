@@ -8,8 +8,8 @@
 #include "GLSLKeywords.h"
 #include "Dictionary.h"
 #include "Helper.h"
-#include <set>
-#include <map>
+#include "ReportIdents.h"
+#include "Exception.h"
 
 
 namespace Xsc
@@ -31,6 +31,15 @@ const Value* MapTypeToKeyword(const std::map<Key, Value>& typeMap, const Key& ty
 {
     auto it = typeMap.find(type);
     return (it != typeMap.end() ? &(it->second) : nullptr);
+}
+
+template <typename T>
+T MapKeywordToType(const Dictionary<T>& typeDict, const std::string& keyword, const std::string& typeName)
+{
+    if (auto type = typeDict.StringToEnum(keyword))
+        return *type;
+    else
+        RuntimeErr(R_FailedToMapFromGLSLKeyword(keyword, typeName));
 }
 
 
@@ -124,68 +133,72 @@ static KeywordMapType GenerateKeywordMap()
         { "sampler2DArray",          T::Sampler            },
         { "sampler1DArrayShadow",    T::Sampler            },
         { "sampler2DArrayShadow",    T::Sampler            },
+        { "sampler2DRect",           T::Sampler            },
+        { "sampler2DRectShadow",     T::Sampler            },
+        { "samplerBuffer",           T::Sampler            },
+        { "sampler2DMS",             T::Sampler            },
+        { "sampler2DMSArray",        T::Sampler            },
+        { "samplerCubeArray",        T::Sampler            },
+        { "samplerCubeArrayShadow",  T::Sampler            },
+
         { "isampler1D",              T::Sampler            },
         { "isampler2D",              T::Sampler            },
         { "isampler3D",              T::Sampler            },
         { "isamplerCube",            T::Sampler            },
         { "isampler1DArray",         T::Sampler            },
         { "isampler2DArray",         T::Sampler            },
+        { "isampler2DRect",          T::Sampler            },
+        { "isamplerBuffer",          T::Sampler            },
+        { "isampler2DMS",            T::Sampler            },
+        { "isampler2DMSArray",       T::Sampler            },
+        { "isamplerCubeArray",       T::Sampler            },
+
         { "usampler1D",              T::Sampler            },
         { "usampler2D",              T::Sampler            },
         { "usampler3D",              T::Sampler            },
         { "usamplerCube",            T::Sampler            },
         { "usampler1DArray",         T::Sampler            },
         { "usampler2DArray",         T::Sampler            },
-        { "sampler2DRect",           T::Sampler            },
-        { "sampler2DRectShadow",     T::Sampler            },
-        { "isampler2DRect",          T::Sampler            },
         { "usampler2DRect",          T::Sampler            },
-        { "samplerBuffer",           T::Sampler            },
-        { "isamplerBuffer",          T::Sampler            },
         { "usamplerBuffer",          T::Sampler            },
-        { "sampler2DMS",             T::Sampler            },
-        { "isampler2DMS",            T::Sampler            },
         { "usampler2DMS",            T::Sampler            },
-        { "sampler2DMSArray",        T::Sampler            },
-        { "isampler2DMSArray",       T::Sampler            },
         { "usampler2DMSArray",       T::Sampler            },
-        { "samplerCubeArray",        T::Sampler            },
-        { "samplerCubeArrayShadow",  T::Sampler            },
-        { "isamplerCubeArray",       T::Sampler            },
         { "usamplerCubeArray",       T::Sampler            },
 
         { "image1D",                 T::Image              },
-        { "iimage1D",                T::Image              },
-        { "uimage1D",                T::Image              },
         { "image2D",                 T::Image              },
-        { "iimage2D",                T::Image              },
-        { "uimage2D",                T::Image              },
         { "image3D",                 T::Image              },
-        { "iimage3D",                T::Image              },
-        { "uimage3D",                T::Image              },
         { "image2DRect",             T::Image              },
-        { "iimage2DRect",            T::Image              },
-        { "uimage2DRect",            T::Image              },
         { "imageCube",               T::Image              },
-        { "iimageCube",              T::Image              },
-        { "uimageCube",              T::Image              },
         { "imageBuffer",             T::Image              },
-        { "iimageBuffer",            T::Image              },
-        { "uimageBuffer",            T::Image              },
         { "image1DArray",            T::Image              },
-        { "iimage1DArray",           T::Image              },
-        { "uimage1DArray",           T::Image              },
         { "image2DArray",            T::Image              },
-        { "iimage2DArray",           T::Image              },
-        { "uimage2DArray",           T::Image              },
         { "imageCubeArray",          T::Image              },
-        { "iimageCubeArray",         T::Image              },
-        { "uimageCubeArray",         T::Image              },
         { "image2DMS",               T::Image              },
-        { "iimage2DMS",              T::Image              },
-        { "uimage2DMS",              T::Image              },
         { "image2DMSArray",          T::Image              },
+
+        { "iimage1D",                T::Image              },
+        { "iimage2D",                T::Image              },
+        { "iimage3D",                T::Image              },
+        { "iimage2DRect",            T::Image              },
+        { "iimageCube",              T::Image              },
+        { "iimageBuffer",            T::Image              },
+        { "iimage1DArray",           T::Image              },
+        { "iimage2DArray",           T::Image              },
+        { "iimageCubeArray",         T::Image              },
+        { "iimage2DMS",              T::Image              },
         { "iimage2DMSArray",         T::Image              },
+
+        { "uimage1D",                T::Image              },
+        { "uimage2D",                T::Image              },
+        { "uimage3D",                T::Image              },
+        { "uimage2DRect",            T::Image              },
+        { "uimageCube",              T::Image              },
+        { "uimageBuffer",            T::Image              },
+        { "uimage1DArray",           T::Image              },
+        { "uimage2DArray",           T::Image              },
+        { "uimageCubeArray",         T::Image              },
+        { "uimage2DMS",              T::Image              },
         { "uimage2DMSArray",         T::Image              },
 
         { "uniform",                 T::UniformBuffer      },
@@ -510,7 +523,7 @@ const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLS
 }
 
 
-/* ----- BufferType Mapping ----- */
+/* ----- SamplerType Mapping ----- */
 
 static Dictionary<SamplerType> GenerateSamplerTypeDict()
 {
@@ -536,15 +549,46 @@ static Dictionary<SamplerType> GenerateSamplerTypeDict()
         { "sampler1DArrayShadow",   T::Sampler1DArrayShadow   },
         { "sampler2DArrayShadow",   T::Sampler2DArrayShadow   },
         { "samplerCubeArrayShadow", T::SamplerCubeArrayShadow },
+
+        { "isampler1D",             T::Sampler1D              },
+        { "isampler2D",             T::Sampler2D              },
+        { "isampler3D",             T::Sampler3D              },
+        { "isamplerCube",           T::SamplerCube            },
+        { "isampler2DRect",         T::Sampler2DRect          },
+        { "isampler1DArray",        T::Sampler1DArray         },
+        { "isampler2DArray",        T::Sampler2DArray         },
+        { "isamplerCubeArray",      T::SamplerCubeArray       },
+        { "isamplerBuffer",         T::SamplerBuffer          },
+        { "isampler2DMS",           T::Sampler2DMS            },
+        { "isampler2DMSArray",      T::Sampler2DMSArray       },
+
+        { "usampler1D",             T::Sampler1D              },
+        { "usampler2D",             T::Sampler2D              },
+        { "usampler3D",             T::Sampler3D              },
+        { "usamplerCube",           T::SamplerCube            },
+        { "usampler2DRect",         T::Sampler2DRect          },
+        { "usampler1DArray",        T::Sampler1DArray         },
+        { "usampler2DArray",        T::Sampler2DArray         },
+        { "usamplerCubeArray",      T::SamplerCubeArray       },
+        { "usamplerBuffer",         T::SamplerBuffer          },
+        { "usampler2DMS",           T::Sampler2DMS            },
+        { "usampler2DMSArray",      T::Sampler2DMSArray       },
+
         { "sampler",                T::SamplerState           }, // Only for Vulkan
         { "samplerShadow",          T::SamplerComparisonState }, // Only for Vulkan
     };
 }
 
+static const auto g_samplerTypeDictGLSL = GenerateSamplerTypeDict();
+
 const std::string* SamplerTypeToGLSLKeyword(const SamplerType t)
 {
-    static const auto typeDict = GenerateSamplerTypeDict();
-    return typeDict.EnumToString(t);
+    return g_samplerTypeDictGLSL.EnumToString(t);
+}
+
+SamplerType GLSLKeywordToSamplerType(const std::string& keyword)
+{
+    return MapKeywordToType(g_samplerTypeDictGLSL, keyword, R_SamplerType);
 }
 
 
