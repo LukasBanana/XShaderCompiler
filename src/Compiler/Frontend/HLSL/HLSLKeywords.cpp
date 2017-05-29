@@ -6,11 +6,11 @@
  */
 
 #include "HLSLKeywords.h"
+#include "Dictionary.h"
 #include "CiString.h"
 #include "Helper.h"
 #include "ReportIdents.h"
 #include "Exception.h"
-#include "Dictionary.h"
 #include <vector>
 
 

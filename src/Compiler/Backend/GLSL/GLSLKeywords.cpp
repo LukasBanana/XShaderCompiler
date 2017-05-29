@@ -6,6 +6,7 @@
  */
 
 #include "GLSLKeywords.h"
+#include "Dictionary.h"
 #include "Helper.h"
 #include <set>
 #include <map>
@@ -22,7 +23,7 @@ https://msdn.microsoft.com/en-us/windows/uwp/gaming/glsl-to-hlsl-reference
 */
 
 template <typename Key, typename Value>
-const Value* MapTypeToKeyword(const std::map<Key, Value>& typeMap, const Key type)
+const Value* MapTypeToKeyword(const std::map<Key, Value>& typeMap, const Key& type)
 {
     auto it = typeMap.find(type);
     return (it != typeMap.end() ? &(it->second) : nullptr);
@@ -31,135 +32,135 @@ const Value* MapTypeToKeyword(const std::map<Key, Value>& typeMap, const Key typ
 
 /* ----- DataType Mapping ----- */
 
-static std::map<DataType, std::string> GenerateDataTypeMap()
+static Dictionary<DataType> GenerateDataTypeDict()
 {
     using T = DataType;
 
     return
     {
-        { T::Bool,      "bool"    },
-        { T::Int,       "int"     },
-        { T::UInt,      "uint"    },
-        { T::Half,      "float"   },
-        { T::Float,     "float"   },
-        { T::Double,    "double"  },
+        { "bool",    T::Bool      },
+        { "int",     T::Int       },
+        { "uint",    T::UInt      },
+        { "float",   T::Half      },
+        { "float",   T::Float     },
+        { "double",  T::Double    },
 
-        { T::Bool2,     "bvec2"   },
-        { T::Bool3,     "bvec3"   },
-        { T::Bool4,     "bvec4"   },
-        { T::Int2,      "ivec2"   },
-        { T::Int3,      "ivec3"   },
-        { T::Int4,      "ivec4"   },
-        { T::UInt2,     "uvec2"   },
-        { T::UInt3,     "uvec3"   },
-        { T::UInt4,     "uvec4"   },
-        { T::Half2,     "vec2"    },
-        { T::Half3,     "vec3"    },
-        { T::Half4,     "vec4"    },
-        { T::Float2,    "vec2"    },
-        { T::Float3,    "vec3"    },
-        { T::Float4,    "vec4"    },
-        { T::Double2,   "dvec2"   },
-        { T::Double3,   "dvec3"   },
-        { T::Double4,   "dvec4"   },
+        { "bvec2",   T::Bool2     },
+        { "bvec3",   T::Bool3     },
+        { "bvec4",   T::Bool4     },
+        { "ivec2",   T::Int2      },
+        { "ivec3",   T::Int3      },
+        { "ivec4",   T::Int4      },
+        { "uvec2",   T::UInt2     },
+        { "uvec3",   T::UInt3     },
+        { "uvec4",   T::UInt4     },
+        { "vec2",    T::Half2     },
+        { "vec3",    T::Half3     },
+        { "vec4",    T::Half4     },
+        { "vec2",    T::Float2    },
+        { "vec3",    T::Float3    },
+        { "vec4",    T::Float4    },
+        { "dvec2",   T::Double2   },
+        { "dvec3",   T::Double3   },
+        { "dvec4",   T::Double4   },
 
-        { T::Half2x2,   "mat2"    },
-        { T::Half2x3,   "mat2x3"  },
-        { T::Half2x4,   "mat2x4"  },
-        { T::Half3x2,   "mat3x2"  },
-        { T::Half3x3,   "mat3"    },
-        { T::Half3x4,   "mat3x4"  },
-        { T::Half4x2,   "mat4x2"  },
-        { T::Half4x3,   "mat4x3"  },
-        { T::Half4x4,   "mat4"    },
-        { T::Float2x2,  "mat2"    },
-        { T::Float2x3,  "mat2x3"  },
-        { T::Float2x4,  "mat2x4"  },
-        { T::Float3x2,  "mat3x2"  },
-        { T::Float3x3,  "mat3"    },
-        { T::Float3x4,  "mat3x4"  },
-        { T::Float4x2,  "mat4x2"  },
-        { T::Float4x3,  "mat4x3"  },
-        { T::Float4x4,  "mat4"    },
+        { "mat2",    T::Half2x2   },
+        { "mat2x3",  T::Half2x3   },
+        { "mat2x4",  T::Half2x4   },
+        { "mat3x2",  T::Half3x2   },
+        { "mat3",    T::Half3x3   },
+        { "mat3x4",  T::Half3x4   },
+        { "mat4x2",  T::Half4x2   },
+        { "mat4x3",  T::Half4x3   },
+        { "mat4",    T::Half4x4   },
+        { "mat2",    T::Float2x2  },
+        { "mat2x3",  T::Float2x3  },
+        { "mat2x4",  T::Float2x4  },
+        { "mat3x2",  T::Float3x2  },
+        { "mat3",    T::Float3x3  },
+        { "mat3x4",  T::Float3x4  },
+        { "mat4x2",  T::Float4x2  },
+        { "mat4x3",  T::Float4x3  },
+        { "mat4",    T::Float4x4  },
         /*
         TODO: currently disabled
         -> "0.0" is read as double precision per default, which results in double precision matrices in most cases
         */
         #if 0
-        { T::Double2x2, "dmat2"   },
-        { T::Double2x3, "dmat2x3" },
-        { T::Double2x4, "dmat2x4" },
-        { T::Double3x2, "dmat3x2" },
-        { T::Double3x3, "dmat3"   },
-        { T::Double3x4, "dmat3x4" },
-        { T::Double4x2, "dmat4x2" },
-        { T::Double4x3, "dmat4x3" },
-        { T::Double4x4, "dmat4"   },
+        { "dmat2",   T::Double2x2 },
+        { "dmat2x3", T::Double2x3 },
+        { "dmat2x4", T::Double2x4 },
+        { "dmat3x2", T::Double3x2 },
+        { "dmat3",   T::Double3x3 },
+        { "dmat3x4", T::Double3x4 },
+        { "dmat4x2", T::Double4x2 },
+        { "dmat4x3", T::Double4x3 },
+        { "dmat4",   T::Double4x4 },
         #else
-        { T::Double2x2, "mat2"    },
-        { T::Double2x3, "mat2x3"  },
-        { T::Double2x4, "mat2x4"  },
-        { T::Double3x2, "mat3x2"  },
-        { T::Double3x3, "mat3"    },
-        { T::Double3x4, "mat3x4"  },
-        { T::Double4x2, "mat4x2"  },
-        { T::Double4x3, "mat4x3"  },
-        { T::Double4x4, "mat4"    },
+        { "mat2",    T::Double2x2 },
+        { "mat2x3",  T::Double2x3 },
+        { "mat2x4",  T::Double2x4 },
+        { "mat3x2",  T::Double3x2 },
+        { "mat3",    T::Double3x3 },
+        { "mat3x4",  T::Double3x4 },
+        { "mat4x2",  T::Double4x2 },
+        { "mat4x3",  T::Double4x3 },
+        { "mat4",    T::Double4x4 },
         #endif
     };
 }
 
 const std::string* DataTypeToGLSLKeyword(const DataType t)
 {
-    static const auto typeMap = GenerateDataTypeMap();
-    return MapTypeToKeyword(typeMap, t);
+    static const auto typeDict = GenerateDataTypeDict();
+    return typeDict.EnumToString(t);
 }
 
 
 /* ----- StorageClass Mapping ----- */
 
-static std::map<StorageClass, std::string> GenerateStorageClassMap()
+static Dictionary<StorageClass> GenerateStorageClassDict()
 {
     using T = StorageClass;
 
     return
     {
-        { T::Extern,          "extern"        },
-      //{ T::Precise,         ""              },
-        { T::Shared,          "shared"        },
-        { T::GroupShared,     "shared"        },
-        { T::Static,          "static"        },
-        { T::Volatile,        "volatile"      },
+        { "extern",   T::Extern      },
+      //{ "",         T::Precise,    },
+        { "shared",   T::Shared      },
+        { "shared",   T::GroupShared },
+        { "static",   T::Static      },
+        { "volatile", T::Volatile    },
     };
 }
 
 const std::string* StorageClassToGLSLKeyword(const StorageClass t)
 {
-    static const auto typeMap = GenerateStorageClassMap();
-    return MapTypeToKeyword(typeMap, t);
+    static const auto typeDict = GenerateStorageClassDict();
+    return typeDict.EnumToString(t);
 }
 
 
 /* ----- InterpModifier Mapping ----- */
 
-static std::map<InterpModifier, std::string> GenerateInterpModifierMap()
+static Dictionary<InterpModifier> GenerateInterpModifierDict()
 {
     using T = InterpModifier;
 
     return
     {
-        { T::Linear,          "smooth"        },
-        { T::Centroid,        "centroid"      },
-        { T::NoInterpolation, "flat"          },
-        { T::NoPerspective,   "noperspective" },
-        { T::Sample,          "sample"        },
+        { "smooth",        T::Linear          },
+        { "centroid",      T::Centroid        },
+        { "flat",          T::NoInterpolation },
+        { "noperspective", T::NoPerspective   },
+        { "sample",        T::Sample          },
     };
 }
 
 const std::string* InterpModifierToGLSLKeyword(const InterpModifier t)
 {
-    static const auto typeMap = GenerateInterpModifierMap();
-    return MapTypeToKeyword(typeMap, t);
+    static const auto typeDict = GenerateInterpModifierDict();
+    return typeDict.EnumToString(t);
 }
 
 
@@ -269,158 +270,160 @@ const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLS
 
 /* ----- BufferType Mapping ----- */
 
-static std::map<SamplerType, std::string> GenerateSamplerTypeMap()
+static Dictionary<SamplerType> GenerateSamplerTypeDict()
 {
     using T = SamplerType;
 
     return
     {
-        { T::Sampler1D,              "sampler1D"              },
-        { T::Sampler2D,              "sampler2D"              },
-        { T::Sampler3D,              "sampler3D"              },
-        { T::SamplerCube,            "samplerCube"            },
-        { T::Sampler2DRect,          "sampler2DRect"          },
-        { T::Sampler1DArray,         "sampler1DArray"         },
-        { T::Sampler2DArray,         "sampler2DArray"         },
-        { T::SamplerCubeArray,       "samplerCubeArray"       },
-        { T::SamplerBuffer,          "samplerBuffer"          },
-        { T::Sampler2DMS,            "sampler2DMS"            },
-        { T::Sampler2DMSArray,       "sampler2DMSArray"       },
-        { T::Sampler1DShadow,        "sampler1DShadow"        },
-        { T::Sampler2DShadow,        "sampler2DShadow"        },
-        { T::SamplerCubeShadow,      "samplerCubeShadow"      },
-        { T::Sampler2DRectShadow,    "sampler2DRectShadow"    },
-        { T::Sampler1DArrayShadow,   "sampler1DArrayShadow"   },
-        { T::Sampler2DArrayShadow,   "sampler2DArrayShadow"   },
-        { T::SamplerCubeArrayShadow, "samplerCubeArrayShadow" },
-        { T::SamplerState,           "sampler"                }, // Only for Vulkan
-        { T::SamplerComparisonState, "samplerShadow"          }, // Only for Vulkan
+        { "sampler1D",              T::Sampler1D              },
+        { "sampler2D",              T::Sampler2D              },
+        { "sampler3D",              T::Sampler3D              },
+        { "samplerCube",            T::SamplerCube            },
+        { "sampler2DRect",          T::Sampler2DRect          },
+        { "sampler1DArray",         T::Sampler1DArray         },
+        { "sampler2DArray",         T::Sampler2DArray         },
+        { "samplerCubeArray",       T::SamplerCubeArray       },
+        { "samplerBuffer",          T::SamplerBuffer          },
+        { "sampler2DMS",            T::Sampler2DMS            },
+        { "sampler2DMSArray",       T::Sampler2DMSArray       },
+        { "sampler1DShadow",        T::Sampler1DShadow        },
+        { "sampler2DShadow",        T::Sampler2DShadow        },
+        { "samplerCubeShadow",      T::SamplerCubeShadow      },
+        { "sampler2DRectShadow",    T::Sampler2DRectShadow    },
+        { "sampler1DArrayShadow",   T::Sampler1DArrayShadow   },
+        { "sampler2DArrayShadow",   T::Sampler2DArrayShadow   },
+        { "samplerCubeArrayShadow", T::SamplerCubeArrayShadow },
+        { "sampler",                T::SamplerState           }, // Only for Vulkan
+        { "samplerShadow",          T::SamplerComparisonState }, // Only for Vulkan
     };
 }
 
 const std::string* SamplerTypeToGLSLKeyword(const SamplerType t)
 {
-    static const auto typeMap = GenerateSamplerTypeMap();
-    return MapTypeToKeyword(typeMap, t);
+    static const auto typeDict = GenerateSamplerTypeDict();
+    return typeDict.EnumToString(t);
 }
 
 
 /* ----- BufferType Mapping ----- */
 
-static std::map<AttributeValue, std::string> GenerateAttributeValueMap()
+static Dictionary<AttributeValue> GenerateAttributeValueDict()
 {
     using T = AttributeValue;
 
     return
     {
-        { T::DomainTri,                  "triangles"               },
-        { T::DomainQuad,                 "quads"                   },
-        { T::DomainIsoline,              "isolines"                },
+        { "triangles",               T::DomainTri                  },
+        { "quads",                   T::DomainQuad                 },
+        { "isolines",                T::DomainIsoline              },
 
-      //{ T::OutputTopologyPoint,        ""                        }, // ignored in GLSL
-      //{ T::OutputTopologyLine,         ""                        }, // ignored in GLSL
-        { T::OutputTopologyTriangleCW,   "cw"                      },
-        { T::OutputTopologyTriangleCCW,  "ccw"                     },
+      //{ "",                        T::OutputTopologyPoint        }, // ignored in GLSL
+      //{ "",                        T::OutputTopologyLine         }, // ignored in GLSL
+        { "cw",                      T::OutputTopologyTriangleCW   },
+        { "ccw",                     T::OutputTopologyTriangleCCW  },
 
-        { T::PartitioningInteger,        "equal_spacing"           },
-        { T::PartitioningPow2,           "equal_spacing"           }, // ???
-        { T::PartitioningFractionalEven, "fractional_even_spacing" },
-        { T::PartitioningFractionalOdd,  "fractional_odd_spacing"  },
+        { "equal_spacing",           T::PartitioningInteger        },
+        { "equal_spacing",           T::PartitioningPow2           }, // ???
+        { "fractional_even_spacing", T::PartitioningFractionalEven },
+        { "fractional_odd_spacing",  T::PartitioningFractionalOdd  },
     };
 }
 
 const std::string* AttributeValueToGLSLKeyword(const AttributeValue t)
 {
-    static const auto typeMap = GenerateAttributeValueMap();
-    return MapTypeToKeyword(typeMap, t);
+    static const auto typeDict = GenerateAttributeValueDict();
+    return typeDict.EnumToString(t);
 }
 
 
 /* ----- PrimitiveType Mapping ----- */
 
-static std::map<PrimitiveType, std::string> GeneratePrimitiveTypeMap()
+static Dictionary<PrimitiveType> GeneratePrimitiveTypeDict()
 {
     using T = PrimitiveType;
 
     return
     {
-        { T::Point,       "points"              },
-        { T::Line,        "lines"               },
-        { T::LineAdj,     "lines_adjacency"     },
-        { T::Triangle,    "triangles"           },
-        { T::TriangleAdj, "triangles_adjacency" },
+        { "points",              T::Point       },
+        { "lines",               T::Line        },
+        { "lines_adjacency",     T::LineAdj     },
+        { "triangles",           T::Triangle    },
+        { "triangles_adjacency", T::TriangleAdj },
     };
 }
 
 const std::string* PrimitiveTypeToGLSLKeyword(const PrimitiveType t)
 {
-    static const auto typeMap = GeneratePrimitiveTypeMap();
-    return MapTypeToKeyword(typeMap, t);
+    static const auto typeDict = GeneratePrimitiveTypeDict();
+    return typeDict.EnumToString(t);
 }
+
 
 /* ----- ImageLayoutFormat Mapping ----- */
 
-static std::map<ImageLayoutFormat, std::string> GenerateImageLayoutFormatMap()
+static Dictionary<ImageLayoutFormat> GenerateImageLayoutFormatDict()
 {
     using T = ImageLayoutFormat;
 
     return
     {
-        { T::F32X4,         "rgba32f"           },
-        { T::F32X2,         "rg32f"             },
-        { T::F32X1,         "r32f"              },
-        { T::F16X4,         "rgba16f"           },
-        { T::F16X2,         "rg16f"             },
-        { T::F16X1,         "r16f"              },
-        { T::F11R11G10B,    "r11f_g11f_b10f"    },
-        { T::UN32X4,        "rgba16"            },
-        { T::UN16X2,        "rg16"              },
-        { T::UN16X1,        "r16"               },
-        { T::UN10R10G10B2A, "rgb10_a2"          },
-        { T::UN8X4,         "rgba8"             },
-        { T::UN8X2,         "rg8"               },
-        { T::UN8X1,         "r8"                },
-        { T::SN16X4,        "rgba16_snorm"      },
-        { T::SN16X2,        "rg16_snorm"        },
-        { T::SN16X1,        "r16_snorm"         },
-        { T::SN8X4,         "rgba8_snorm"       },
-        { T::SN8X2,         "rg8_snorm"         },
-        { T::SN8X1,         "r8_snorm"          },
-        { T::I32X4,         "rgba32i"           },
-        { T::I32X2,         "rg32i"             },
-        { T::I32X1,         "r32i"              },
-        { T::I16X4,         "rgba16i"           },
-        { T::I16X2,         "rg16i"             },
-        { T::I16X1,         "r16i"              },
-        { T::I8X4,          "rgba8i"            },
-        { T::I8X2,          "rg8i"              },
-        { T::I8X1,          "r8i"               },
-        { T::UI32X4,        "rgba32ui"          },
-        { T::UI32X2,        "rg32ui"            },
-        { T::UI32X1,        "r32ui"             },
-        { T::UI16X4,        "rgba16ui"          },
-        { T::UI16X2,        "rg16ui"            },
-        { T::UI16X1,        "r16ui"             },
-        { T::UI10R10G10B2A, "rgb10_a2ui"        },
-        { T::UI8X4,         "rgba8ui"           },
-        { T::UI8X2,         "rg8ui"             },
-        { T::UI8X1,         "r8ui"              },
+        { "rgba32f",        T::F32X4         },
+        { "rg32f",          T::F32X2         },
+        { "r32f",           T::F32X1         },
+        { "rgba16f",        T::F16X4         },
+        { "rg16f",          T::F16X2         },
+        { "r16f",           T::F16X1         },
+        { "r11f_g11f_b10f", T::F11R11G10B    },
+        { "rgba16",         T::UN32X4        },
+        { "rg16",           T::UN16X2        },
+        { "r16",            T::UN16X1        },
+        { "rgb10_a2",       T::UN10R10G10B2A },
+        { "rgba8",          T::UN8X4         },
+        { "rg8",            T::UN8X2         },
+        { "r8",             T::UN8X1         },
+        { "rgba16_snorm",   T::SN16X4        },
+        { "rg16_snorm",     T::SN16X2        },
+        { "r16_snorm",      T::SN16X1        },
+        { "rgba8_snorm",    T::SN8X4         },
+        { "rg8_snorm",      T::SN8X2         },
+        { "r8_snorm",       T::SN8X1         },
+        { "rgba32i",        T::I32X4         },
+        { "rg32i",          T::I32X2         },
+        { "r32i",           T::I32X1         },
+        { "rgba16i",        T::I16X4         },
+        { "rg16i",          T::I16X2         },
+        { "r16i",           T::I16X1         },
+        { "rgba8i",         T::I8X4          },
+        { "rg8i",           T::I8X2          },
+        { "r8i",            T::I8X1          },
+        { "rgba32ui",       T::UI32X4        },
+        { "rg32ui",         T::UI32X2        },
+        { "r32ui",          T::UI32X1        },
+        { "rgba16ui",       T::UI16X4        },
+        { "rg16ui",         T::UI16X2        },
+        { "r16ui",          T::UI16X1        },
+        { "rgb10_a2ui",     T::UI10R10G10B2A },
+        { "rgba8ui",        T::UI8X4         },
+        { "rg8ui",          T::UI8X2         },
+        { "r8ui",           T::UI8X1         },
     };
 }
 
 const std::string* ImageLayoutFormatToGLSLKeyword(const ImageLayoutFormat t)
 {
-    static const auto typeMap = GenerateImageLayoutFormatMap();
-    return MapTypeToKeyword(typeMap, t);
+    static const auto typeDict = GenerateImageLayoutFormatDict();
+    return typeDict.EnumToString(t);
 }
+
 
 /* ----- Semantic Mapping ----- */
 
 struct GLSLSemanticDescriptor
 {
     inline GLSLSemanticDescriptor(const std::string& keyword, bool hasIndex = false) :
-        keyword { keyword  },
-        hasIndex{ hasIndex }
+        keyword  { keyword  },
+        hasIndex { hasIndex }
     {
     }
 
