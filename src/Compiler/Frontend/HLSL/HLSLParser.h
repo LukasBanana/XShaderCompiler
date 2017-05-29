@@ -152,7 +152,8 @@ class HLSLParser : public Parser
         ReturnStmntPtr                  ParseReturnStmnt();
         ExprStmntPtr                    ParseExprStmnt(const ExprPtr& expr = nullptr);
 
-        ExprPtr                         ParseExpr(bool allowSequence = false);
+        ExprPtr                         ParseExpr();
+        ExprPtr                         ParseExprWithSequenceOpt();
         ExprPtr                         ParsePrimaryExpr() override;
         ExprPtr                         ParsePrimaryExprPrefix();
         ExprPtr                         ParseExprWithSuffixOpt(ExprPtr expr);
@@ -229,16 +230,13 @@ class HLSLParser : public Parser
 
         std::string                     ParseSamplerStateTextureIdent();
 
-        void                            ParseStmntWithOptionalComment(std::vector<StmntPtr>& stmnts, const std::function<StmntPtr()>& parseFunction);
+        void                            ParseStmntWithCommentOpt(std::vector<StmntPtr>& stmnts, const std::function<StmntPtr()>& parseFunction);
 
         bool                            ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiveType = false);
 
         /* === Members === */
 
         using TypeNameSymbolTable = SymbolTable<bool>;
-
-        // True, if the parser is currently inside a local scope of a function (to detect illegal semantics inside local scopes).
-        bool                localScope_             = false;
 
         // Symbol table for type name (i.e. structure and typedef identifiers) to detect cast expression, which are not context free.
         TypeNameSymbolTable typeNameSymbolTable_;

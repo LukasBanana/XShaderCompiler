@@ -302,7 +302,7 @@ ProgramPtr HLSLParser::ParseProgram(const SourceCodePtr& source)
             break;
 
         /* Parse next global declaration */
-        ParseStmntWithOptionalComment(ast->globalStmnts, std::bind(&HLSLParser::ParseGlobalStmnt, this));
+        ParseStmntWithCommentOpt(ast->globalStmnts, std::bind(&HLSLParser::ParseGlobalStmnt, this));
     }
 
     CloseScope();
@@ -358,7 +358,7 @@ SwitchCasePtr HLSLParser::ParseSwitchCase()
 
     /* Parse switch case statement list */
     while (!Is(Tokens::Case) && !Is(Tokens::Default) && !Is(Tokens::RCurly))
-        ParseStmntWithOptionalComment(ast->stmnts, std::bind(&HLSLParser::ParseStmnt, this, true));
+        ParseStmntWithCommentOpt(ast->stmnts, std::bind(&HLSLParser::ParseStmnt, this, true));
 
     return ast;
 }
@@ -424,18 +424,12 @@ static ShaderTarget HLSLShaderProfileToTarget(const std::string& s)
     if (s.size() >= 2)
     {
         auto p = s.substr(0, 2);
-        if (p == "vs")
-            return ShaderTarget::VertexShader;
-        if (p == "hs")
-            return ShaderTarget::TessellationControlShader;
-        if (p == "ds")
-            return ShaderTarget::TessellationEvaluationShader;
-        if (p == "gs")
-            return ShaderTarget::GeometryShader;
-        if (p == "ps")
-            return ShaderTarget::FragmentShader;
-        if (p == "cs")
-            return ShaderTarget::ComputeShader;
+        if (p == "vs") return ShaderTarget::VertexShader;
+        if (p == "hs") return ShaderTarget::TessellationControlShader;
+        if (p == "ds") return ShaderTarget::TessellationEvaluationShader;
+        if (p == "gs") return ShaderTarget::GeometryShader;
+        if (p == "ps") return ShaderTarget::FragmentShader;
+        if (p == "cs") return ShaderTarget::ComputeShader;
     }
     return ShaderTarget::Undefined;
 }
@@ -454,7 +448,7 @@ RegisterPtr HLSLParser::ParseRegister(bool parseColon)
 
     auto typeIdent = ParseIdent();
 
-    /* Pares optional shader profile */
+    /* Parse optional shader profile */
     if (Is(Tokens::Comma))
     {
         ast->shaderTarget = HLSLShaderProfileToTarget(typeIdent);
@@ -795,9 +789,7 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl(BasicDeclStmnt* declStmntRef, cons
     {
         GetReportHandler().PushContextDesc(ast->ToString(false));
         {
-            localScope_ = true;
             ast->codeBlock = ParseCodeBlock();
-            localScope_ = false;
         }
         GetReportHandler().PopContextDesc();
     }
@@ -1253,12 +1245,12 @@ ForLoopStmntPtr HLSLParser::ParseForLoopStmnt()
 
     /* Parse loop condExpr */
     if (!Is(Tokens::Semicolon))
-        ast->condition = ParseExpr(true);
+        ast->condition = ParseExprWithSequenceOpt();
     Semi();
 
     /* Parse loop iteration */
     if (!Is(Tokens::RBracket))
-        ast->iteration = ParseExpr(true);
+        ast->iteration = ParseExprWithSequenceOpt();
     Accept(Tokens::RBracket);
 
     /* Parse loop body */
@@ -1275,7 +1267,7 @@ WhileLoopStmntPtr HLSLParser::ParseWhileLoopStmnt()
     Accept(Tokens::While);
 
     Accept(Tokens::LBracket);
-    ast->condition = ParseExpr(true);
+    ast->condition = ParseExprWithSequenceOpt();
     Accept(Tokens::RBracket);
 
     /* Parse loop body */
@@ -1296,7 +1288,7 @@ DoWhileLoopStmntPtr HLSLParser::ParseDoWhileLoopStmnt()
     Accept(Tokens::While);
 
     Accept(Tokens::LBracket);
-    ast->condition = ParseExpr(true);
+    ast->condition = ParseExprWithSequenceOpt();
     Accept(Tokens::RBracket);
 
     Semi();
@@ -1312,7 +1304,7 @@ IfStmntPtr HLSLParser::ParseIfStmnt()
     Accept(Tokens::If);
 
     Accept(Tokens::LBracket);
-    ast->condition = ParseExpr(true);
+    ast->condition = ParseExprWithSequenceOpt();
     Accept(Tokens::RBracket);
 
     /* Parse if body */
@@ -1344,7 +1336,7 @@ SwitchStmntPtr HLSLParser::ParseSwitchStmnt()
     Accept(Tokens::Switch);
 
     Accept(Tokens::LBracket);
-    ast->selector = ParseExpr(true);
+    ast->selector = ParseExprWithSequenceOpt();
     Accept(Tokens::RBracket);
 
     /* Parse switch cases */
@@ -1377,7 +1369,7 @@ ReturnStmntPtr HLSLParser::ParseReturnStmnt()
     Accept(Tokens::Return);
 
     if (!Is(Tokens::Semicolon))
-        ast->expr = ParseExpr(true);
+        ast->expr = ParseExprWithSequenceOpt();
 
     UpdateSourceArea(ast);
 
@@ -1397,7 +1389,7 @@ ExprStmntPtr HLSLParser::ParseExprStmnt(const ExprPtr& expr)
         ast->area = expr->area;
     }
     else
-        ast->expr = ParseExpr(true);
+        ast->expr = ParseExprWithSequenceOpt();
 
     Semi();
 
@@ -1406,13 +1398,19 @@ ExprStmntPtr HLSLParser::ParseExprStmnt(const ExprPtr& expr)
 
 /* --- Expressions --- */
 
-ExprPtr HLSLParser::ParseExpr(bool allowSequence)
+ExprPtr HLSLParser::ParseExpr()
 {
     /* Parse generic expression, then post expression */
-    auto ast = ParseGenericExpr();
+    return ParseGenericExpr();
+}
+
+ExprPtr HLSLParser::ParseExprWithSequenceOpt()
+{
+    /* Parse generic expression, then post expression */
+    auto ast = ParseExpr();
 
     /* Parse optional sequence expression */
-    if (allowSequence && Is(Tokens::Comma))
+    if (Is(Tokens::Comma))
         return ParseSequenceExpr(ast);
 
     return ast;
@@ -1572,8 +1570,6 @@ PostUnaryExprPtr HLSLParser::ParsePostUnaryExpr(const ExprPtr& expr)
     return ast;
 }
 
-/* ----- Parsing ----- */
-
 ExprPtr HLSLParser::ParseExprWithBracketPrefix()
 {
     ExprPtr expr;
@@ -1589,12 +1585,12 @@ ExprPtr HLSLParser::ParseExprWithBracketPrefix()
             parsingState.activeTemplate = false;
             PushParsingState(parsingState);
             {
-                expr = ParseExpr(true);
+                expr = ParseExprWithSequenceOpt();
             }
             PopParsingState();
         }
         else
-            expr = ParseExpr(true);
+            expr = ParseExprWithSequenceOpt();
     }
     Accept(Tokens::RBracket);
 
@@ -1808,8 +1804,8 @@ SequenceExprPtr HLSLParser::ParseSequenceExpr(const ExprPtr& firstExpr)
 
     Accept(Tokens::Comma);
 
-    /* Pares further sub expressions in sequence */
-    ast->Append(ParseExpr(true));
+    /* Parse further sub expressions in sequence */
+    ast->Append(ParseExprWithSequenceOpt());
 
     return ast;
 }
@@ -1827,7 +1823,7 @@ std::vector<StmntPtr> HLSLParser::ParseLocalStmntList()
     {
         /* Parse next global declaration (ignore techniques and null statements) */
         ParseAndIgnoreTechniquesAndNullStmnts();
-        ParseStmntWithOptionalComment(stmnts, std::bind(&HLSLParser::ParseGlobalStmnt, this));
+        ParseStmntWithCommentOpt(stmnts, std::bind(&HLSLParser::ParseGlobalStmnt, this));
     }
 
     AcceptIt();
@@ -1899,7 +1895,7 @@ std::vector<StmntPtr> HLSLParser::ParseStmntList()
     std::vector<StmntPtr> stmnts;
 
     while (!Is(Tokens::RCurly))
-        ParseStmntWithOptionalComment(stmnts, std::bind(&HLSLParser::ParseStmnt, this, true));
+        ParseStmntWithCommentOpt(stmnts, std::bind(&HLSLParser::ParseStmnt, this, true));
 
     return stmnts;
 }
@@ -2692,7 +2688,7 @@ std::string HLSLParser::ParseSamplerStateTextureIdent()
     return ident;
 }
 
-void HLSLParser::ParseStmntWithOptionalComment(std::vector<StmntPtr>& stmnts, const std::function<StmntPtr()>& parseFunction)
+void HLSLParser::ParseStmntWithCommentOpt(std::vector<StmntPtr>& stmnts, const std::function<StmntPtr()>& parseFunction)
 {
     /* Parse next statement with optional commentary */
     auto comment = GetScanner().GetComment();
