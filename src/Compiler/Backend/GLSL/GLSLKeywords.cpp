@@ -28,23 +28,6 @@ const Value* MapTypeToKeyword(const std::map<Key, Value>& typeMap, const Key typ
     return (it != typeMap.end() ? &(it->second) : nullptr);
 }
 
-/* ------ GLSL Keywords ----- */
-
-static std::set<std::string> GenerateKeywordSet()
-{
-    return
-    {
-        "main",
-        //TODO: add all GLSL keywords ...
-    };
-}
-
-bool IsGLSLKeyword(const std::string& ident)
-{
-    static const auto keywordSet = GenerateKeywordSet();
-    return (keywordSet.find(ident) != keywordSet.end());
-}
-
 
 /* ----- DataType Mapping ----- */
 
@@ -541,7 +524,7 @@ std::unique_ptr<std::string> SemanticToGLSLKeyword(const IndexedSemantic& semant
 }
 
 
-/* ----- Reserved GLSL Keywrods ----- */
+/* ----- Reserved GLSL Keywords ----- */
 
 const std::set<std::string>& ReservedGLSLKeywords()
 {

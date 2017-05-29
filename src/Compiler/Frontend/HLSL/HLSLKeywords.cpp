@@ -964,8 +964,8 @@ AttributeValue HLSLKeywordToAttributeValue(const std::string& keyword)
 struct HLSLSemanticDescriptor
 {
     inline HLSLSemanticDescriptor(const Semantic semantic, bool hasIndex = false) :
-        semantic{ semantic },
-        hasIndex{ hasIndex }
+        semantic { semantic },
+        hasIndex { hasIndex }
     {
     }
 
