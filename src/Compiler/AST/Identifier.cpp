@@ -38,7 +38,7 @@ Identifier& Identifier::operator = (const std::string& s)
 
 Identifier& Identifier::AppendPrefix(const std::string& prefix)
 {
-    if (Final().compare(0, prefix.size(), prefix) == 0)
+    if (!prefix.empty() && Final().compare(0, prefix.size(), prefix) == 0)
     {
         /* Remove previous prefix */
         RemovePrefix(prefix);
@@ -57,7 +57,7 @@ Identifier& Identifier::AppendPrefix(const std::string& prefix)
 
 Identifier& Identifier::RemovePrefix(const std::string& prefix)
 {
-    if (Final().compare(0, prefix.size(), prefix) == 0)
+    if (!prefix.empty() && Final().compare(0, prefix.size(), prefix) == 0)
     {
         auto prefixLen = prefix.size();
         if (counter_ > 0)
