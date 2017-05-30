@@ -147,7 +147,7 @@ class HLSLParser : public SLParser
         CallExprPtr                     ParseCallExprWithPrefixOpt(const ExprPtr& prefixExpr = nullptr, bool isStatic = false, const TokenPtr& identTkn = nullptr);
         CallExprPtr                     ParseCallExprAsTypeCtor(const TypeDenoterPtr& typeDenoter);
 
-        std::vector<StmntPtr>           ParseLocalStmntList();
+        std::vector<StmntPtr>           ParseGlobalStmntList();
         std::vector<VarDeclStmntPtr>    ParseAnnotationList();
         std::vector<RegisterPtr>        ParseRegisterList(bool parseFirstColon = true);
         std::vector<AttributePtr>       ParseAttributeList();

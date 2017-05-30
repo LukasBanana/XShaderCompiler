@@ -641,7 +641,7 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
     GetReportHandler().PushContextDesc(ast->ToString());
     {
         /* Parse member variable declarations */
-        ast->localStmnts = ParseLocalStmntList();
+        ast->localStmnts = ParseGlobalStmntList();
         
         for (auto& stmnt : ast->localStmnts)
         {
@@ -775,7 +775,7 @@ UniformBufferDeclPtr HLSLParser::ParseUniformBufferDecl()
     GetReportHandler().PushContextDesc(ast->ToString());
     {
         /* Parse buffer body */
-        ast->localStmnts = ParseLocalStmntList();
+        ast->localStmnts = ParseGlobalStmntList();
 
         /* Copy variable declarations into separated list */
         for (auto& stmnt : ast->localStmnts)
@@ -1540,7 +1540,7 @@ CallExprPtr HLSLParser::ParseCallExprAsTypeCtor(const TypeDenoterPtr& typeDenote
 
 /* --- Lists --- */
 
-std::vector<StmntPtr> HLSLParser::ParseLocalStmntList()
+std::vector<StmntPtr> HLSLParser::ParseGlobalStmntList()
 {
     std::vector<StmntPtr> stmnts;
 
