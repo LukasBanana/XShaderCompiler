@@ -182,7 +182,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         /* Insert prefix expression as first argument into function call, if this is a texture intrinsic call */
         if (IsTextureIntrinsic(ast->intrinsic) && ast->prefixExpr)
         {
-            /* Move texture object prefix as first argument */
+            /* Move object prefix into argument list as first argument */
             ast->PushPrefixToArguments();
 
             if (UseSeparateSamplers() && !IsTextureLoadIntrinsic(ast->intrinsic) && ast->arguments.size() >= 2)
@@ -1211,19 +1211,19 @@ void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
             else
             {
                 /* Get structure from prefix expression or active structure declaration */
-                StructDecl* activeStructDecl = nullptr;
+                StructDecl* callerStructDecl = nullptr;
 
                 if (ast->prefixExpr)
                 {
                     const auto& typeDen = ast->prefixExpr->GetTypeDenoter()->GetAliased();
                     if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
-                        activeStructDecl = structTypeDen->structDeclRef;
+                        callerStructDecl = structTypeDen->structDeclRef;
                 }
                 else
-                    activeStructDecl = ActiveStructDecl();
+                    callerStructDecl = ActiveStructDecl();
 
                 /* Insert 'self' or 'base' prefix if necessary */
-                ConvertObjectPrefixStructMember(ast->prefixExpr, funcDecl->structDeclRef, activeStructDecl);
+                ConvertObjectPrefixStructMember(ast->prefixExpr, funcDecl->structDeclRef, callerStructDecl, (ast->prefixExpr == nullptr));
 
                 /* Move prefix expression as argument into the function call */
                 if (!ast->PushPrefixToArguments())
@@ -1392,10 +1392,15 @@ void GLSLConverter::ConvertObjectExpr(ObjectExpr* objectExpr)
     /* Does this object expression refer to a static variable declaration? */
     if (auto varDecl = objectExpr->FetchVarDecl())
     {
-        if (varDecl->IsStatic())
-            ConvertObjectExprStaticVar(objectExpr);
-        else
-            ConvertObjectExprDefault(objectExpr);
+        /* Don't convert special variables again */
+        const auto varFlags = varDecl->declStmntRef->flags;
+        if (!varFlags(VarDeclStmnt::isSelfParameter) && !varFlags(VarDeclStmnt::isBaseMember))
+        {
+            if (varDecl->IsStatic())
+                ConvertObjectExprStaticVar(objectExpr);
+            else
+                ConvertObjectExprDefault(objectExpr);
+        }
     }
     else
         ConvertObjectExprDefault(objectExpr);
@@ -1427,38 +1432,30 @@ void GLSLConverter::ConvertObjectExprDefault(ObjectExpr* objectExpr)
         }
     }
 
-    /* Add "self"-parameter to front, if the variable refers to a member of the active structure */
+    /* Add 'self'-parameter to front, if the variable refers to a member of the active structure */
     if (!objectExpr->prefixExpr)
         ConvertObjectPrefixSelfParam(objectExpr->prefixExpr, objectExpr);
 }
 
-void GLSLConverter::ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const StructDecl* ownerStructDecl, const StructDecl* activeStructDecl)
+void GLSLConverter::ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const StructDecl* ownerStructDecl, const StructDecl* callerStructDecl, bool useSelfParam)
 {
     /* Does this variable belong to its structure type directly, or to a base structure? */
-    if (ownerStructDecl && activeStructDecl)
+    if (ownerStructDecl && callerStructDecl)
     {
-        if (ownerStructDecl == activeStructDecl)
+        if (ownerStructDecl->IsBaseOf(callerStructDecl, true))
         {
-            if (auto selfParam = ActiveSelfParameter())
+            if (useSelfParam)
             {
-                /* Make the 'self'-parameter the new prefix expression */
-                prefixExpr = ASTFactory::MakeObjectExpr(selfParam);
-            }
-        }
-        else if (ownerStructDecl->IsBaseOf(activeStructDecl))
-        {
-            while (activeStructDecl && activeStructDecl != ownerStructDecl)
-            {
-                if (auto baseMember = activeStructDecl->FetchBaseMember())
+                if (auto selfParam = ActiveSelfParameter())
                 {
-                    /* Insert 'base' member object expression(s) */
-                    prefixExpr = ASTFactory::MakeObjectExpr(prefixExpr, baseMember->ident.Original(), baseMember);
+                    /* Make the 'self'-parameter the new prefix expression */
+                    prefixExpr = ASTFactory::MakeObjectExpr(selfParam);
                 }
-
-                /* Check for next base structure */
-                activeStructDecl = activeStructDecl->baseStructRef;
             }
         }
+
+        /* Insert 'base' member prefixes */
+        InsertBaseMemberPrefixes(prefixExpr, ownerStructDecl, callerStructDecl);
     }
 }
 
@@ -1467,15 +1464,17 @@ void GLSLConverter::ConvertObjectPrefixSelfParam(ExprPtr& prefixExpr, ObjectExpr
     /* Is this object a member of the active owner structure (like 'this->memberVar')? */
     if (auto activeStructDecl = ActiveStructDecl())
     {
-        if (auto varDecl = objectExpr->FetchVarDecl())
+        if (auto selfParam = ActiveSelfParameter())
         {
-            /* Insert 'self' or 'base' prefix if necessary */
-            if (varDecl->structDeclRef == activeStructDecl)
+            if (auto varDecl = objectExpr->FetchVarDecl())
             {
-                if (auto selfParam = ActiveSelfParameter())
+                if (auto ownerStructDecl = varDecl->structDeclRef)
                 {
                     /* Make the 'self'-parameter the new prefix expression */
                     prefixExpr = ASTFactory::MakeObjectExpr(selfParam);
+
+                    /* Insert 'base' member prefixes */
+                    InsertBaseMemberPrefixes(prefixExpr, ownerStructDecl, activeStructDecl);
                 }
             }
         }
@@ -1492,7 +1491,7 @@ void GLSLConverter::ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, ObjectExp
             if (auto varDecl = objectExpr->FetchVarDecl())
             {
                 /* Insert 'self' or 'base' prefix if necessary */
-                ConvertObjectPrefixStructMember(prefixExpr, varDecl->structDeclRef, activeStructDecl);
+                ConvertObjectPrefixStructMember(prefixExpr, varDecl->structDeclRef, activeStructDecl, true);
             }
         }
     }
@@ -1508,7 +1507,7 @@ void GLSLConverter::ConvertObjectPrefixNamespace(ExprPtr& prefixExpr, ObjectExpr
         {
             if (prefixObjectExpr->prefixExpr)
             {
-                /* Fetch "base"-member from prefix structure type */
+                /* Fetch 'base'-member from prefix structure type */
                 const auto& prefixTypeDen = prefixObjectExpr->prefixExpr->GetTypeDenoter()->GetAliased();
                 if (auto prefixStructTypeDen = prefixTypeDen.As<StructTypeDenoter>())
                 {
@@ -1518,7 +1517,7 @@ void GLSLConverter::ConvertObjectPrefixNamespace(ExprPtr& prefixExpr, ObjectExpr
             }
             else
             {
-                /* Fetch "base"-member from active structure declaration */
+                /* Fetch 'base'-member from active structure declaration */
                 if (auto activeStructDecl = ActiveStructDecl())
                     ConvertObjectPrefixNamespaceStruct(prefixObjectExpr, objectExpr, baseStructDecl, activeStructDecl);
             }
@@ -1536,7 +1535,7 @@ void GLSLConverter::ConvertObjectPrefixNamespaceStruct(ObjectExpr* prefixObjectE
     }
     else
     {
-        /* Convert prefix expression from base struct namespace to "base"-member */
+        /* Convert prefix expression from base struct namespace to 'base'-member */
         if (auto baseMember = activeStructDecl->FetchBaseMember())
         {
             objectExpr->isStatic        = false;
@@ -1544,7 +1543,7 @@ void GLSLConverter::ConvertObjectPrefixNamespaceStruct(ObjectExpr* prefixObjectE
             prefixObjectExpr->ident     = baseMember->ident.Original();
         }
 
-        /* Insert further "base" members until specified base structure namespace has reached */
+        /* Insert further 'base' members until specified base structure namespace has reached */
         while (true)
         {
             /* Get next base structure */
@@ -1554,11 +1553,27 @@ void GLSLConverter::ConvertObjectPrefixNamespaceStruct(ObjectExpr* prefixObjectE
 
             if (auto baseMember = activeStructDecl->FetchBaseMember())
             {
-                /* Insert next "base"-member object expression */
+                /* Insert next 'base'-member object expression */
                 objectExpr->prefixExpr = ASTFactory::MakeObjectExpr(objectExpr->prefixExpr, baseMember->ident, baseMember);
             }
             else
                 break;
+        }
+    }
+}
+
+void GLSLConverter::InsertBaseMemberPrefixes(ExprPtr& prefixExpr, const StructDecl* ownerStructDecl, const StructDecl* callerStructDecl)
+{
+    if (ownerStructDecl->IsBaseOf(callerStructDecl))
+    {
+        while (callerStructDecl && callerStructDecl != ownerStructDecl)
+        {
+            /* Insert 'base' member object expression */
+            if (auto baseMember = callerStructDecl->FetchBaseMember())
+                prefixExpr = ASTFactory::MakeObjectExpr(prefixExpr, baseMember->ident.Original(), baseMember);
+
+            /* Check for next base structure */
+            callerStructDecl = callerStructDecl->baseStructRef;
         }
     }
 }

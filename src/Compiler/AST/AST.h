@@ -1225,10 +1225,10 @@ struct CallExpr : public Expr
     // Inserts the specified argument expression at the front of the argument list.
     void PushArgumentFront(const ExprPtr& expr);
 
-    // Moves the prefix expression as first argument.
+    // Moves the prefix expression into the argument list as first argument.
     bool PushPrefixToArguments();
 
-    // Moves the first argument as prefix expression.
+    // Moves the first argument out of the argument list as prefix expression.
     bool PopPrefixFromArguments();
 
     // Merges the argument with index 'firstArgIndex' and the next argument with the merge function callback.
