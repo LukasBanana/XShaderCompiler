@@ -1392,9 +1392,12 @@ void GLSLConverter::ConvertObjectExpr(ObjectExpr* objectExpr)
     /* Does this object expression refer to a static variable declaration? */
     if (auto varDecl = objectExpr->FetchVarDecl())
     {
-        /* Don't convert special variables again */
+        /*
+        Don't convert 'self'-parameter again!
+        But 'base'-member can be converted again, for base member access like 'object.Base::member'.
+        */
         const auto varFlags = varDecl->declStmntRef->flags;
-        if (!varFlags(VarDeclStmnt::isSelfParameter) && !varFlags(VarDeclStmnt::isBaseMember))
+        if (!varFlags(VarDeclStmnt::isSelfParameter))
         {
             if (varDecl->IsStatic())
                 ConvertObjectExprStaticVar(objectExpr);

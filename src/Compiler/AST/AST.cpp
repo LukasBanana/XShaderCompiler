@@ -1488,9 +1488,18 @@ void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
 
 void VarDeclStmnt::MakeImplicitConst()
 {
+    /* Is this variable type currenlty not constant, uniform, static, or shared? */
     if ( !IsConstOrUniform() &&
          !typeSpecifier->HasAnyStorageClassOf({ StorageClass::Static, StorageClass::GroupShared }) )
     {
+        /* Is variable declaration a static structure member? */
+        for (const auto& varDecl : varDecls)
+        {
+            if (varDecl->namespaceExpr != nullptr)
+                return;
+        }
+
+        /* Mark as implicitly constant */
         flags << VarDeclStmnt::isImplicitConst;
         typeSpecifier->isUniform = true;
     }
