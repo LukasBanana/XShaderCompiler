@@ -1491,7 +1491,7 @@ void GLSLConverter::ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, ObjectExp
             if (auto varDecl = objectExpr->FetchVarDecl())
             {
                 /* Insert 'self' or 'base' prefix if necessary */
-                ConvertObjectPrefixStructMember(prefixExpr, varDecl->structDeclRef, activeStructDecl, true);
+                ConvertObjectPrefixStructMember(prefixExpr, varDecl->structDeclRef, activeStructDecl, false);
             }
         }
     }
