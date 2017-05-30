@@ -50,10 +50,7 @@ bool GLSLConverter::ConvertVarDeclType(VarDecl& varDecl)
         /* Convert data type for system value semantics */
         const auto dataType = SemanticToGLSLDataType(varDecl.semantic);
         if (dataType != DataType::Undefined)
-        {
-            ConvertVarDeclBaseTypeDenoter(varDecl, dataType);
-            return true;
-        }
+            return ConvertVarDeclBaseTypeDenoter(varDecl, dataType);
     }
     return false;
 }
@@ -62,36 +59,35 @@ bool GLSLConverter::ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataTy
 {
     if (auto varDeclStmnt = varDecl.declStmntRef)
     {
-        auto typeDen = std::make_shared<BaseTypeDenoter>(dataType);
-
-        if (varDeclStmnt->varDecls.size() == 1)
+        if (auto varTypeDen = varDecl.GetTypeDenoter()->GetAliased().As<BaseTypeDenoter>())
         {
-            /* Convert type of declaration statement */
-            varDeclStmnt->typeSpecifier->typeDenoter = typeDen;
+            if (varTypeDen->dataType != dataType)
+            {
+                auto newVarTypeDen = std::make_shared<BaseTypeDenoter>(dataType);
+
+                varDeclStmnt->typeSpecifier->typeDenoter = newVarTypeDen;
+                varDeclStmnt->typeSpecifier->ResetTypeDenoter();
+
+                /* Set custom type denoter for this variable */
+                varDecl.SetCustomTypeDenoter(newVarTypeDen);
+
+                /*
+                ~~~~~~~~~~~~~~~ TODO: ~~~~~~~~~~~~~~~
+                split declaration statement into three parts:
+                1. All variables before this one
+                2. This variable
+                3. All variables after this one
+
+                Example of converting 'b' (Before):
+                    "uint a, b = a, c = b;"
+
+                Example of converting 'b' (After):
+                    "uint a; int b = (int)a; uint c = (uint)b;"
+                */
+
+                return true;
+            }
         }
-        else
-        {
-            /* Set custom type denoter for this variable */
-            varDecl.SetCustomTypeDenoter(typeDen);
-
-            /*
-            ~~~~~~~~~~~~~~~ TODO: ~~~~~~~~~~~~~~~
-            split declaration statement into three parts:
-            1. All variables before this one
-            2. This variable
-            3. All variables after this one
-
-            Example of converting 'b' (Before):
-                "uint a, b = a, c = b;"
-
-            Example of converting 'b' (After):
-                "uint a; int b = (int)a; uint c = (uint)b;"
-            */
-        }
-
-        varDecl.ResetTypeDenoter();
-
-        return true;
     }
     return false;
 }
