@@ -35,13 +35,18 @@ void TypeConverter::ConvertExprType(Expr* expr)
 
 void TypeConverter::ConvertExpr(const ExprPtr& expr)
 {
-    /* Visit expression */
-    Visit(expr);
+    if (expr)
+    {
+        /* Visit expression */
+        Visit(expr);
 
-    /* Check if type must be reset */
-    if (resetExprTypes_)
-        expr->ResetTypeDenoter();
-    resetExprTypes_ = false;
+        /* Check if type must be reset */
+        if (resetExprTypes_)
+        {
+            expr->ResetTypeDenoter();
+            resetExprTypes_ = false;
+        }
+    }
 }
 
 /* ------- Visit functions ------- */
@@ -53,6 +58,7 @@ void TypeConverter::ConvertExpr(const ExprPtr& expr)
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
+    VISIT_DEFAULT(VarDecl);
     if (onVisitVarDecl_(*ast))
         convertedSymbols_.insert(ast);
 }
