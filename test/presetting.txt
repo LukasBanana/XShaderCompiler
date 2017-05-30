@@ -164,6 +164,12 @@
 [MemberFuncTest3 PS]
 -T frag -E PS -o output/* MemberFuncTest3.hlsl
 
+[MemberFuncTest4: vert]
+-T vert -E main -o output/* MemberFuncTest4.hlsl
+
+[MemberFuncTest5: vert]
+-T vert -E main -o output/* MemberFuncTest5.hlsl
+
 [RWTextureTest1: vert]
 -T vert -E main -o output/* RWTextureTest1.hlsl
 
