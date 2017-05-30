@@ -59,6 +59,9 @@ TypeSpecifierPtr                MakeTypeSpecifier(const DataType dataType);
 VarDeclStmntPtr                 MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident, const ExprPtr& initializer = nullptr);
 VarDeclStmntPtr                 MakeVarDeclStmnt(const DataType dataType, const std::string& ident, const ExprPtr& initializer = nullptr);
 
+// Returns a new VarDeclStmnt with the specified VarDecl index and removes the specified VarDecl from the input statement, except there is only one VarDecl.
+VarDeclStmntPtr                 MakeVarDeclStmntSplit(const VarDeclStmntPtr& varDeclStmnt, std::size_t idx);
+
 ObjectExprPtr                   MakeObjectExpr(const ExprPtr& prefixExpr, const std::string& ident, Decl* symbolRef = nullptr);
 ObjectExprPtr                   MakeObjectExpr(const std::string& ident, Decl* symbolRef = nullptr);
 ObjectExprPtr                   MakeObjectExpr(Decl* symbolRef);

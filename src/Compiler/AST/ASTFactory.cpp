@@ -206,6 +206,26 @@ VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ide
     return MakeVarDeclStmnt(MakeTypeSpecifier(dataType), ident, initializer);
 }
 
+VarDeclStmntPtr MakeVarDeclStmntSplit(const VarDeclStmntPtr& varDeclStmnt, std::size_t idx)
+{
+    if (varDeclStmnt->varDecls.size() >= 2 && idx < varDeclStmnt->varDecls.size())
+    {
+        /* Move VarDecl out of statement */
+        auto varDecl = varDeclStmnt->varDecls[idx];
+        varDeclStmnt->varDecls.erase(varDeclStmnt->varDecls.begin() + idx);
+
+        /* Create new statement */
+        auto ast = MakeAST<VarDeclStmnt>();
+        {
+            ast->flags          = varDeclStmnt->flags;
+            ast->typeSpecifier  = varDeclStmnt->typeSpecifier;
+            ast->varDecls.push_back(varDecl);
+        }
+        return ast;
+    }
+    return varDeclStmnt;
+}
+
 ObjectExprPtr MakeObjectExpr(const ExprPtr& prefixExpr, const std::string& ident, Decl* symbolRef)
 {
     auto ast = MakeAST<ObjectExpr>();
