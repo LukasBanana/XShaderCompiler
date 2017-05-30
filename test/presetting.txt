@@ -122,8 +122,14 @@
 [StructTest2: vert]
 -T vert -E main -o output/* StructTest2.hlsl
 
-[StructInheritTest1 PS]
--T frag -E PS -o output/* StructInheritTest1.hlsl
+[StructInheritTest1: vert]
+-T vert -E main -o output/* StructInheritTest1.hlsl
+
+[StructInheritTest2: vert]
+-T vert -E main -o output/* StructInheritTest2.hlsl
+
+[StructInheritTest3: vert]
+-T vert -E main -o output/* StructInheritTest3.hlsl
 
 [FormattingTest1 VS]
 -T vert -E VS -O -o output/* FormattingTest1.hlsl
