@@ -41,6 +41,9 @@
 [SemanticTest4 VS (Vertex-Attrib-Layouts)]
 -T vert -E VS -EB -Scoord=0 -Stexcoord0=1 -Stexcoord1=2 -Snormal=3 -o output/* SemanticTest4.hlsl
 
+[SemanticTypes: vert]
+-T vert -E main -Vout GLSL140 -o output/* SemanticTypes.hlsl
+
 ['clip'-Intrinsic PS]
 -T frag -E PS -o output/* IntrinsicClip.hlsl
 
