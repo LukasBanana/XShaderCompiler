@@ -89,6 +89,8 @@ class Token
             Default,            // default
 
             Struct,             // struct
+            Class,              // class
+          //Interface,          // interface
 
             CtrlTransfer,       // break, continue, discard
             Return,             // return

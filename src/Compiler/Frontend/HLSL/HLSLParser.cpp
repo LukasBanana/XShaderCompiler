@@ -610,7 +610,13 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
     /* Parse structure declaration */
     if (parseStructTkn)
     {
-        Accept(Tokens::Struct);
+        if (Is(Tokens::Class))
+        {
+            AcceptIt();
+            ast->isClass = true;
+        }
+        else
+            Accept(Tokens::Struct);
         UpdateSourceArea(ast);
     }
 
@@ -1075,6 +1081,7 @@ StmntPtr HLSLParser::ParseStmntPrimary()
         case Tokens::CtrlTransfer:
             return ParseCtrlTransferStmnt();
         case Tokens::Struct:
+        case Tokens::Class:
             return ParseStmntWithStructDecl();
         case Tokens::Typedef:
             return ParseAliasDeclStmnt();
@@ -1741,7 +1748,7 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoterPrimary(StructDeclPtr* structDecl)
 
 TypeDenoterPtr HLSLParser::ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl, bool allowVoidType)
 {
-    if (Is(Tokens::Struct))
+    if (Is(Tokens::Struct) || Is(Tokens::Class))
         return ParseStructTypeDenoterWithStructDeclOpt(structDecl);
     else
         return ParseTypeDenoter(allowVoidType);
@@ -1918,12 +1925,22 @@ StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoter()
 
 StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl)
 {
-    Accept(Tokens::Struct);
+    /* Parse 'struct' or 'class' keyword */
+    bool isClass = false;
+
+    if (Is(Tokens::Class))
+    {
+        AcceptIt();
+        isClass = true;
+    }
+    else
+        Accept(Tokens::Struct);
 
     if (Is(Tokens::LCurly))
     {
         /* Parse struct-decl */
         structDecl = ParseStructDecl(false);
+        structDecl->isClass = isClass;
 
         /* Make struct type denoter with reference to the structure of this alias decl */
         return std::make_shared<StructTypeDenoter>(structDecl.get());
@@ -1937,6 +1954,7 @@ StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoterWithStructDeclOpt(StructD
         {
             /* Parse struct-decl */
             structDecl = ParseStructDecl(false, structIdentTkn);
+            structDecl->isClass = isClass;
 
             /* Make struct type denoter with reference to the structure of this alias decl */
             return std::make_shared<StructTypeDenoter>(structDecl.get());

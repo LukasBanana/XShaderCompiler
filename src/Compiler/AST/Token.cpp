@@ -99,6 +99,7 @@ std::string Token::TypeToString(const Types type)
         case Types::Default:            return R_KeywordDefault;
         case Types::Typedef:            return R_KeywordTypedef;
         case Types::Struct:             return R_KeywordStruct;
+        case Types::Class:              return R_KeywordClass;
         case Types::Register:           return R_KeywordRegister;
         case Types::PackOffset:         return R_KeywordPackOffset;
         case Types::CtrlTransfer:       return R_CtrlTransfer;

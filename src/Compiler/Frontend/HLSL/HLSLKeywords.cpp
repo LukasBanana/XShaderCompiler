@@ -266,6 +266,8 @@ static KeywordMapType GenerateKeywordMap()
 
         { "typedef",                 T::Typedef         },
         { "struct",                  T::Struct          },
+        { "class",                   T::Class           },
+      //{ "interface",               T::Interface       },
         { "register",                T::Register        },
         { "packoffset",              T::PackOffset      },
 
@@ -385,7 +387,6 @@ static KeywordMapType GenerateKeywordMap()
         { "virtual",                 T::Reserved        },
 
         { "interface",               T::Unsupported     },
-        { "class",                   T::Unsupported     },
     };
 }
 

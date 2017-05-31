@@ -599,7 +599,21 @@ SamplerType SamplerDecl::GetSamplerType() const
 
 std::string StructDecl::ToString() const
 {
-    return ("struct " + (IsAnonymous() ? ("<" + R_Anonymous + ">") : ident.Original()));
+    std::string s;
+
+    if (isClass)
+        s += "class";
+    else
+        s += "struct";
+
+    s += ' ';
+
+    if (IsAnonymous())
+        s += ('<' + R_Anonymous() + '>');
+    else
+        s += ident.Original();
+
+    return s;
 }
 
 bool StructDecl::EqualsMemberTypes(const StructDecl& rhs, const Flags& compareFlags) const

@@ -721,6 +721,7 @@ struct StructDecl : public Decl
     // Returns the member variable of the specified zero-based index, null on failure.
     VarDecl* IndexToMemberVar(std::size_t idx, bool includeBaseStructs = true) const;
 
+    bool                            isClass                 = false;    // This struct was declared as 'class'.
     std::string                     baseStructName;                     // May be empty (if no inheritance is used).
     std::vector<StmntPtr>           localStmnts;                        // Local declaration statements.
 

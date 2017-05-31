@@ -79,6 +79,7 @@ DECL_REPORT( KeywordCase,                       "'case' keyword"                
 DECL_REPORT( KeywordDefault,                    "'default' keyword"                                                                                             );
 DECL_REPORT( KeywordTypedef,                    "'typedef' keyword"                                                                                             );
 DECL_REPORT( KeywordStruct,                     "'struct' keyword"                                                                                              );
+DECL_REPORT( KeywordClass,                      "'class' keyword"                                                                                               );
 DECL_REPORT( KeywordRegister,                   "'register' keyword"                                                                                            );
 DECL_REPORT( KeywordPackOffset,                 "'packoffset' keyword"                                                                                          );
 DECL_REPORT( KeywordReturn,                     "'return' keyword"                                                                                              );
