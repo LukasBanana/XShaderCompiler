@@ -1212,13 +1212,13 @@ void GLSLConverter::ConvertIntrinsicCallSampleCmp(CallExpr* ast)
             ExprConverter::ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, textureDim), true);
 
         /* Cast and move the compare argument as the last component of the Location argument */
-        if(args.size() >= 3)
+        if (args.size() >= 3)
         {
             /* Ensure argument: float CompareValue */
             ExprConverter::ConvertExprIfCastRequired(args[2], DataType::Float, true);
 
             /* Not enough room if texture dimension is 4 (cube array), in which case the argument remains as is */
-            if(textureDim < 4)
+            if (textureDim < 4)
             {
                 DataType targetType = VectorDataType(DataType::Float, textureDim + 1);
                 auto typeDenoter = std::make_shared<BaseTypeDenoter>(targetType);
@@ -1229,11 +1229,9 @@ void GLSLConverter::ConvertIntrinsicCallSampleCmp(CallExpr* ast)
         }
     }
 
-    /* Insert '0' as the mip level parameter. */
-    if(IsTextureCompareLevelZeroIntrinsic(ast->intrinsic))
-    {
+    /* Insert '0' as the mip level parameter */
+    if (IsTextureCompareLevelZeroIntrinsic(ast->intrinsic))
         args.insert(args.begin() + 2, ASTFactory::MakeLiteralExpr(DataType::Float, "0"));
-    }
 }
 
 void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
