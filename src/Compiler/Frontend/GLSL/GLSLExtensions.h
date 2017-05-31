@@ -25,7 +25,7 @@ see https://github.com/KhronosGroup/glslang/blob/master/glslang/MachineIndepende
 
 // Declares an extension string as 'static const char* E_<NAME> = "<NAME>"' where <NAME> is the specified identifier
 #define DECL_EXTENSION(NAME) \
-    static const char* E_##NAME = #NAME
+    static const char* const E_##NAME = #NAME
 
 // 3DL
 DECL_EXTENSION( GL_3DL_array_objects                            );
