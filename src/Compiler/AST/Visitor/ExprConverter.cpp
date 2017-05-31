@@ -1052,23 +1052,28 @@ void ExprConverter::ConvertExprTextureIntrinsicVec4(ExprPtr& expr)
         if (intrinsic != Intrinsic::Undefined)
         {
             /* Is this a texture intrinsic? */
-            if (IsTextureLoadIntrinsic(intrinsic) || IsTextureSampleIntrinsic(intrinsic) || IsTextureGatherIntrisic(intrinsic))
+            bool isSampleIntrinsic = IsTextureSampleIntrinsic(intrinsic);
+            if (IsTextureLoadIntrinsic(intrinsic) || isSampleIntrinsic || IsTextureGatherIntrisic(intrinsic))
             {
-                /* Is the return type a base type denoter? */
-                const auto& typeDen = callExpr->GetTypeDenoter()->GetAliased();
-                if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
+                /* Skip sample compare intrinsics as they return a scalar */
+                if (!isSampleIntrinsic || !IsTextureCompareIntrinsic(intrinsic))
                 {
-                    /* Has the return type less than 4-dimensions? */
-                    const auto vecTypeDim = VectorTypeDim(baseTypeDen->dataType);
-                    if (vecTypeDim >= 1 && vecTypeDim <= 3)
+                    /* Is the return type a base type denoter? */
+                    const auto& typeDen = callExpr->GetTypeDenoter()->GetAliased();
+                    if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
                     {
-                        /* Append vector subscript to intrinsic call (use "rgba" instead of "xyzw" for color based purposes) */
-                        const std::string vectorSubscript = "rgb";
+                        /* Has the return type less than 4-dimensions? */
+                        const auto vecTypeDim = VectorTypeDim(baseTypeDen->dataType);
+                        if (vecTypeDim >= 1 && vecTypeDim <= 3)
+                        {
+                            /* Append vector subscript to intrinsic call (use "rgba" instead of "xyzw" for color based purposes) */
+                            const std::string vectorSubscript = "rgb";
 
-                        expr = ASTFactory::MakeObjectExpr(
-                            expr,
-                            vectorSubscript.substr(0, static_cast<std::size_t>(vecTypeDim))
-                        );
+                            expr = ASTFactory::MakeObjectExpr(
+                                expr,
+                                vectorSubscript.substr(0, static_cast<std::size_t>(vecTypeDim))
+                            );
+                        }
                     }
                 }
             }

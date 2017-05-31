@@ -884,6 +884,8 @@ void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
         default:
             if (IsTextureGatherIntrisic(ast->intrinsic))
                 ConvertIntrinsicCallGather(ast);
+            else if (IsTextureCompareIntrinsic(ast->intrinsic))
+                ConvertIntrinsicCallSampleCmp(ast);
             break;
     }
 }
@@ -1190,6 +1192,47 @@ void GLSLConverter::ConvertIntrinsicCallGather(CallExpr* ast)
         auto componentArgExpr = ASTFactory::MakeLiteralExpr(DataType::Int, std::to_string(componentIdx));
 
         ast->arguments.push_back(componentArgExpr);
+    }
+}
+
+void GLSLConverter::ConvertIntrinsicCallSampleCmp(CallExpr* ast)
+{
+    /* Convert arguments */
+    auto& args = ast->arguments;
+
+    /* Determine vector size for texture intrinsic */
+    if (auto textureDim = GetTextureDimFromIntrinsicCall(ast))
+    {
+        /* Ensure argument: float[1,2,3,4] Location */
+        if (args.size() >= 2)
+            ExprConverter::ConvertExprIfCastRequired(args[1], VectorDataType(DataType::Float, textureDim), true);
+
+        /* Ensure argument: int[1,2,3] Offset */
+        if (args.size() >= 4)
+            ExprConverter::ConvertExprIfCastRequired(args[3], VectorDataType(DataType::Int, textureDim), true);
+
+        /* Cast and move the compare argument as the last component of the Location argument */
+        if(args.size() >= 3)
+        {
+            /* Ensure argument: float CompareValue */
+            ExprConverter::ConvertExprIfCastRequired(args[2], DataType::Float, true);
+
+            /* Not enough room if texture dimension is 4 (cube array), in which case the argument remains as is */
+            if(textureDim < 4)
+            {
+                DataType targetType = VectorDataType(DataType::Float, textureDim + 1);
+                auto typeDenoter = std::make_shared<BaseTypeDenoter>(targetType);
+
+                args[1] = ASTFactory::MakeTypeCtorCallExpr(typeDenoter, { args[1], args[2] });
+                args.erase(args.begin() + 2);
+            }
+        }
+    }
+
+    /* Insert '0' as the mip level parameter. */
+    if(IsTextureCompareLevelZeroIntrinsic(ast->intrinsic))
+    {
+        args.insert(args.begin() + 2, ASTFactory::MakeLiteralExpr(DataType::Float, "0"));
     }
 }
 

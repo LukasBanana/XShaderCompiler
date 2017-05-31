@@ -223,3 +223,6 @@
 
 [ExtSpaceAttrTest1: vert]
 -T vert -E main -Xall -o output/* ExtSpaceAttrTest1.hlsl
+
+[SampleCmpTest1: vert]
+-T vert -E main -Xall -o output/* SampleCmpTest1.hlsl
