@@ -171,7 +171,7 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
         { "Sample",                           { T::Texture_Sample_2,                 4, 0 } },
         { "SampleBias",                       { T::Texture_SampleBias_3,             4, 0 } },
         { "SampleCmp",                        { T::Texture_SampleCmp_3,              4, 0 } },
-        { "SampleCmpLevelZero",               { T::Texture_SampleCmp_3,              4, 0 } }, // Identical to SampleCmp (but only for Level 0)
+        { "SampleCmpLevelZero",               { T::Texture_SampleCmpLevelZero_3,     4, 0 } }, // Identical to SampleCmp (but only for Level 0)
         { "SampleGrad",                       { T::Texture_SampleGrad_4,             4, 0 } },
         { "SampleLevel",                      { T::Texture_SampleLevel_3,            4, 0 } },
         { "CalculateLevelOfDetail",           { T::Texture_QueryLod,                 4, 1 } }, // Fragment shader only
@@ -524,6 +524,9 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::Texture_SampleCmp_4,              { Ret::Float,       4    } },
         { T::Texture_SampleCmp_5,              { Ret::Float,       5    } },
         { T::Texture_SampleCmp_6,              { Ret::Float,       6    } },
+        { T::Texture_SampleCmpLevelZero_3,     { Ret::Float,       3    } },
+        { T::Texture_SampleCmpLevelZero_4,     { Ret::Float,       4    } },
+        { T::Texture_SampleCmpLevelZero_5,     { Ret::Float,       5    } },
         { T::Texture_SampleGrad_4,             { Ret::Float4,      4    } },
         { T::Texture_SampleGrad_5,             { Ret::Float4,      5    } },
         { T::Texture_SampleGrad_6,             { Ret::Float4,      6    } },

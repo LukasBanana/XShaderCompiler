@@ -1157,9 +1157,14 @@ bool IsTextureCompareIntrinsic(const Intrinsic t)
 {
     return
     (
-        ( t >= Intrinsic::Texture_SampleCmp_3 && t <= Intrinsic::Texture_SampleCmp_6      ) ||
-        ( t >= Intrinsic::Texture_GatherCmp_3 && t <= Intrinsic::Texture_GatherCmpAlpha_8 )
+        ( t >= Intrinsic::Texture_SampleCmp_3 && t <= Intrinsic::Texture_SampleCmpLevelZero_5       ) ||
+        ( t >= Intrinsic::Texture_GatherCmp_3 && t <= Intrinsic::Texture_GatherCmpAlpha_8           )
     );
+}
+
+bool IsTextureCompareLevelZeroIntrinsic(const Intrinsic t)
+{
+    return t >= Intrinsic::Texture_SampleCmpLevelZero_3 && t <= Intrinsic::Texture_SampleCmpLevelZero_5;
 }
 
 bool IsTextureLoadIntrinsic(const Intrinsic t)

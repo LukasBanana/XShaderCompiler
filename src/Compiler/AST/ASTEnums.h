@@ -877,6 +877,9 @@ enum class Intrinsic
     Texture_SampleCmp_4,
     Texture_SampleCmp_5,
     Texture_SampleCmp_6,
+    Texture_SampleCmpLevelZero_3,
+    Texture_SampleCmpLevelZero_4,
+    Texture_SampleCmpLevelZero_5,
     Texture_SampleGrad_4,
     Texture_SampleGrad_5,
     Texture_SampleGrad_6,
@@ -983,6 +986,9 @@ bool IsTextureSampleIntrinsic(const Intrinsic t);
 
 // Returns true if the specified intrinsic is a texture sample or gather intrisic, with a compare operation.
 bool IsTextureCompareIntrinsic(const Intrinsic t);
+
+// Returns true if the specified intrinsic is a texture sample compare intrinsic that only samples the first mip level.
+bool IsTextureCompareLevelZeroIntrinsic(const Intrinsic t);
 
 // Returns true if the specified intrinsic is a texture load intrisic (e.g. Texture_Load1).
 bool IsTextureLoadIntrinsic(const Intrinsic t);
