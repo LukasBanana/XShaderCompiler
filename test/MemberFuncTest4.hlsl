@@ -1,5 +1,5 @@
 
-// Member Function Test 3
+// Member Function Test 4
 // 15/03/2017
 
 struct Base {

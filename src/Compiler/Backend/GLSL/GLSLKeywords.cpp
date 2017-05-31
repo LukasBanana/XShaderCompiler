@@ -8,13 +8,17 @@
 #include "GLSLKeywords.h"
 #include "Dictionary.h"
 #include "Helper.h"
-#include <set>
-#include <map>
+#include "ReportIdents.h"
+#include "Exception.h"
 
 
 namespace Xsc
 {
 
+
+/* 
+ * Internal functions
+ */
 
 /*
 Here are a few references for HLSL-to-GLSL mappings:
@@ -27,6 +31,257 @@ const Value* MapTypeToKeyword(const std::map<Key, Value>& typeMap, const Key& ty
 {
     auto it = typeMap.find(type);
     return (it != typeMap.end() ? &(it->second) : nullptr);
+}
+
+template <typename T>
+T MapKeywordToType(const Dictionary<T>& typeDict, const std::string& keyword, const std::string& typeName)
+{
+    if (auto type = typeDict.StringToEnum(keyword))
+        return *type;
+    else
+        RuntimeErr(R_FailedToMapFromGLSLKeyword(keyword, typeName));
+}
+
+
+/* ----- GLSL Keywords ----- */
+
+// see https://www.khronos.org/registry/OpenGL/specs/gl/GLSLangSpec.4.50.pdf
+
+static KeywordMapType GenerateKeywordMap()
+{
+    using T = Token::Types;
+
+    return
+    {
+        { "true",                    T::BoolLiteral        },
+        { "false",                   T::BoolLiteral        },
+
+        { "bool",                    T::ScalarType         },
+        { "int",                     T::ScalarType         },
+        { "uint",                    T::ScalarType         },
+        { "float",                   T::ScalarType         },
+        { "double",                  T::ScalarType         },
+
+        { "bvec2",                   T::VectorType         },
+        { "bvec3",                   T::VectorType         },
+        { "bvec4",                   T::VectorType         },
+        { "ivec2",                   T::VectorType         },
+        { "ivec3",                   T::VectorType         },
+        { "ivec4",                   T::VectorType         },
+        { "uint2",                   T::VectorType         },
+        { "uint3",                   T::VectorType         },
+        { "uint4",                   T::VectorType         },
+        { "vec2",                    T::VectorType         },
+        { "vec3",                    T::VectorType         },
+        { "vec4",                    T::VectorType         },
+        { "dvec2",                   T::VectorType         },
+        { "dvec3",                   T::VectorType         },
+        { "dvec4",                   T::VectorType         },
+
+        { "mat2",                    T::MatrixType         },
+        { "mat2x3",                  T::MatrixType         },
+        { "mat2x4",                  T::MatrixType         },
+        { "mat3x2",                  T::MatrixType         },
+        { "mat3",                    T::MatrixType         },
+        { "mat3x4",                  T::MatrixType         },
+        { "mat4x2",                  T::MatrixType         },
+        { "mat4x3",                  T::MatrixType         },
+        { "mat4",                    T::MatrixType         },
+        { "dmat2",                   T::MatrixType         },
+        { "dmat2x3",                 T::MatrixType         },
+        { "dmat2x4",                 T::MatrixType         },
+        { "dmat3x2",                 T::MatrixType         },
+        { "dmat3",                   T::MatrixType         },
+        { "dmat3x4",                 T::MatrixType         },
+        { "dmat4x2",                 T::MatrixType         },
+        { "dmat4x3",                 T::MatrixType         },
+        { "dmat4",                   T::MatrixType         },
+
+        { "void",                    T::Void               },
+
+        { "atomic_uint",             T::AtomicCounter      },
+
+        { "do",                      T::Do                 },
+        { "while",                   T::While              },
+        { "for",                     T::For                },
+
+        { "if",                      T::If                 },
+        { "else",                    T::Else               },
+
+        { "switch",                  T::Switch             },
+        { "case",                    T::Case               },
+        { "default",                 T::Default            },
+
+        { "struct",                  T::Struct             },
+        { "layout",                  T::LayoutQualifier    },
+        { "attribute",               T::Attribute          },
+        { "varying",                 T::Varying            },
+        { "precision",               T::Precision          },
+
+        { "lowp",                    T::PrecisionQualifier },
+        { "mediump",                 T::PrecisionQualifier },
+        { "highp",                   T::PrecisionQualifier },
+
+        { "sampler1D",               T::Sampler            },
+        { "sampler2D",               T::Sampler            },
+        { "sampler3D",               T::Sampler            },
+        { "samplerCube",             T::Sampler            },
+        { "sampler1DShadow",         T::Sampler            },
+        { "sampler2DShadow",         T::Sampler            },
+        { "samplerCubeShadow",       T::Sampler            },
+        { "sampler1DArray",          T::Sampler            },
+        { "sampler2DArray",          T::Sampler            },
+        { "sampler1DArrayShadow",    T::Sampler            },
+        { "sampler2DArrayShadow",    T::Sampler            },
+        { "sampler2DRect",           T::Sampler            },
+        { "sampler2DRectShadow",     T::Sampler            },
+        { "samplerBuffer",           T::Sampler            },
+        { "sampler2DMS",             T::Sampler            },
+        { "sampler2DMSArray",        T::Sampler            },
+        { "samplerCubeArray",        T::Sampler            },
+        { "samplerCubeArrayShadow",  T::Sampler            },
+
+        { "isampler1D",              T::Sampler            },
+        { "isampler2D",              T::Sampler            },
+        { "isampler3D",              T::Sampler            },
+        { "isamplerCube",            T::Sampler            },
+        { "isampler1DArray",         T::Sampler            },
+        { "isampler2DArray",         T::Sampler            },
+        { "isampler2DRect",          T::Sampler            },
+        { "isamplerBuffer",          T::Sampler            },
+        { "isampler2DMS",            T::Sampler            },
+        { "isampler2DMSArray",       T::Sampler            },
+        { "isamplerCubeArray",       T::Sampler            },
+
+        { "usampler1D",              T::Sampler            },
+        { "usampler2D",              T::Sampler            },
+        { "usampler3D",              T::Sampler            },
+        { "usamplerCube",            T::Sampler            },
+        { "usampler1DArray",         T::Sampler            },
+        { "usampler2DArray",         T::Sampler            },
+        { "usampler2DRect",          T::Sampler            },
+        { "usamplerBuffer",          T::Sampler            },
+        { "usampler2DMS",            T::Sampler            },
+        { "usampler2DMSArray",       T::Sampler            },
+        { "usamplerCubeArray",       T::Sampler            },
+
+        { "image1D",                 T::Image              },
+        { "image2D",                 T::Image              },
+        { "image3D",                 T::Image              },
+        { "image2DRect",             T::Image              },
+        { "imageCube",               T::Image              },
+        { "imageBuffer",             T::Image              },
+        { "image1DArray",            T::Image              },
+        { "image2DArray",            T::Image              },
+        { "imageCubeArray",          T::Image              },
+        { "image2DMS",               T::Image              },
+        { "image2DMSArray",          T::Image              },
+
+        { "iimage1D",                T::Image              },
+        { "iimage2D",                T::Image              },
+        { "iimage3D",                T::Image              },
+        { "iimage2DRect",            T::Image              },
+        { "iimageCube",              T::Image              },
+        { "iimageBuffer",            T::Image              },
+        { "iimage1DArray",           T::Image              },
+        { "iimage2DArray",           T::Image              },
+        { "iimageCubeArray",         T::Image              },
+        { "iimage2DMS",              T::Image              },
+        { "iimage2DMSArray",         T::Image              },
+
+        { "uimage1D",                T::Image              },
+        { "uimage2D",                T::Image              },
+        { "uimage3D",                T::Image              },
+        { "uimage2DRect",            T::Image              },
+        { "uimageCube",              T::Image              },
+        { "uimageBuffer",            T::Image              },
+        { "uimage1DArray",           T::Image              },
+        { "uimage2DArray",           T::Image              },
+        { "uimageCubeArray",         T::Image              },
+        { "uimage2DMS",              T::Image              },
+        { "uimage2DMSArray",         T::Image              },
+
+        { "uniform",                 T::UniformBuffer      },
+        { "buffer",                  T::StorageBuffer      },
+
+        { "break",                   T::CtrlTransfer       },
+        { "continue",                T::CtrlTransfer       },
+        { "discard",                 T::CtrlTransfer       },
+
+        { "return",                  T::Return             },
+
+        { "in",                      T::InputModifier      },
+        { "out",                     T::InputModifier      },
+        { "inout",                   T::InputModifier      },
+
+        { "smooth",                  T::InterpModifier     },
+        { "centroid",                T::InterpModifier     },
+        { "flat",                    T::InterpModifier     },
+        { "noperspective",           T::InterpModifier     },
+        { "sample",                  T::InterpModifier     },
+
+        { "const",                   T::TypeModifier       },
+
+        { "precise",                 T::StorageClass       },
+        { "shared",                  T::StorageClass       },
+        { "patch",                   T::StorageClass       },
+
+        { "coherent",                T::MemoryQualifier    },
+        { "volatile",                T::MemoryQualifier    },
+        { "restrict",                T::MemoryQualifier    },
+        { "readonly",                T::MemoryQualifier    },
+        { "writeonly",               T::MemoryQualifier    },
+
+        { "invariant",               T::InvariantQualifier },
+
+        { "common",                  T::Reserved           },
+        { "partition",               T::Reserved           },
+        { "active",                  T::Reserved           },
+        { "asm",                     T::Reserved           },
+        { "class",                   T::Reserved           },
+        { "union",                   T::Reserved           },
+        { "enum",                    T::Reserved           },
+        { "typedef",                 T::Reserved           },
+        { "template",                T::Reserved           },
+        { "this",                    T::Reserved           },
+        { "resource",                T::Reserved           },
+        { "goto",                    T::Reserved           },
+        { "inline",                  T::Reserved           },
+        { "noinline",                T::Reserved           },
+        { "public",                  T::Reserved           },
+        { "static",                  T::Reserved           },
+        { "extern",                  T::Reserved           },
+        { "external",                T::Reserved           },
+        { "interface",               T::Reserved           },
+        { "long",                    T::Reserved           },
+        { "short",                   T::Reserved           },
+        { "half",                    T::Reserved           },
+        { "fixed",                   T::Reserved           },
+        { "unsigned",                T::Reserved           },
+        { "superp",                  T::Reserved           },
+        { "input",                   T::Reserved           },
+        { "output",                  T::Reserved           },
+        { "hvec2",                   T::Reserved           },
+        { "hvec3",                   T::Reserved           },
+        { "hvec4",                   T::Reserved           },
+        { "fvec2",                   T::Reserved           },
+        { "fvec3",                   T::Reserved           },
+        { "fvec4",                   T::Reserved           },
+        { "sampler3DRect",           T::Reserved           },
+        { "filter",                  T::Reserved           },
+        { "sizeof",                  T::Reserved           },
+        { "cast",                    T::Reserved           },
+        { "namespace",               T::Reserved           },
+        { "using",                   T::Reserved           },
+
+        { "subroutine",              T::Unsupported        },
+    };
+}
+
+const KeywordMapType& GLSLKeywords()
+{
+    static const auto keywordMap = GenerateKeywordMap();
+    return keywordMap;
 }
 
 
@@ -110,10 +365,16 @@ static Dictionary<DataType> GenerateDataTypeDict()
     };
 }
 
+static const auto g_dataTypeDictGLSL = GenerateDataTypeDict();
+
 const std::string* DataTypeToGLSLKeyword(const DataType t)
 {
-    static const auto typeDict = GenerateDataTypeDict();
-    return typeDict.EnumToString(t);
+    return g_dataTypeDictGLSL.EnumToString(t);
+}
+
+DataType GLSLKeywordToDataType(const std::string& keyword)
+{
+    return MapKeywordToType(g_dataTypeDictGLSL, keyword, R_DataType);
 }
 
 
@@ -126,18 +387,24 @@ static Dictionary<StorageClass> GenerateStorageClassDict()
     return
     {
         { "extern",   T::Extern      },
-      //{ "",         T::Precise,    },
+        { "precise",  T::Precise,    },
         { "shared",   T::Shared      },
         { "shared",   T::GroupShared },
-        { "static",   T::Static      },
+      //{ "static",   T::Static      }, // reserved GLSL keyword
         { "volatile", T::Volatile    },
     };
 }
 
+static const auto g_storageClassDictGLSL = GenerateStorageClassDict();
+
 const std::string* StorageClassToGLSLKeyword(const StorageClass t)
 {
-    static const auto typeDict = GenerateStorageClassDict();
-    return typeDict.EnumToString(t);
+    return g_storageClassDictGLSL.EnumToString(t);
+}
+
+StorageClass GLSLKeywordToStorageClass(const std::string& keyword)
+{
+    return MapKeywordToType(g_storageClassDictGLSL, keyword, R_StorageClass);
 }
 
 
@@ -157,10 +424,16 @@ static Dictionary<InterpModifier> GenerateInterpModifierDict()
     };
 }
 
+static const auto g_inperpModifierDictGLSL = GenerateInterpModifierDict();
+
 const std::string* InterpModifierToGLSLKeyword(const InterpModifier t)
 {
-    static const auto typeDict = GenerateInterpModifierDict();
-    return typeDict.EnumToString(t);
+    return g_inperpModifierDictGLSL.EnumToString(t);
+}
+
+InterpModifier GLSLKeywordToInterpModifier(const std::string& keyword)
+{
+    return MapKeywordToType(g_inperpModifierDictGLSL, keyword, R_InterpModifier);
 }
 
 
@@ -268,7 +541,7 @@ const std::string* BufferTypeToGLSLKeyword(const BufferType t, bool useVulkanGLS
 }
 
 
-/* ----- BufferType Mapping ----- */
+/* ----- SamplerType Mapping ----- */
 
 static Dictionary<SamplerType> GenerateSamplerTypeDict()
 {
@@ -294,15 +567,46 @@ static Dictionary<SamplerType> GenerateSamplerTypeDict()
         { "sampler1DArrayShadow",   T::Sampler1DArrayShadow   },
         { "sampler2DArrayShadow",   T::Sampler2DArrayShadow   },
         { "samplerCubeArrayShadow", T::SamplerCubeArrayShadow },
+
+        { "isampler1D",             T::Sampler1D              },
+        { "isampler2D",             T::Sampler2D              },
+        { "isampler3D",             T::Sampler3D              },
+        { "isamplerCube",           T::SamplerCube            },
+        { "isampler2DRect",         T::Sampler2DRect          },
+        { "isampler1DArray",        T::Sampler1DArray         },
+        { "isampler2DArray",        T::Sampler2DArray         },
+        { "isamplerCubeArray",      T::SamplerCubeArray       },
+        { "isamplerBuffer",         T::SamplerBuffer          },
+        { "isampler2DMS",           T::Sampler2DMS            },
+        { "isampler2DMSArray",      T::Sampler2DMSArray       },
+
+        { "usampler1D",             T::Sampler1D              },
+        { "usampler2D",             T::Sampler2D              },
+        { "usampler3D",             T::Sampler3D              },
+        { "usamplerCube",           T::SamplerCube            },
+        { "usampler2DRect",         T::Sampler2DRect          },
+        { "usampler1DArray",        T::Sampler1DArray         },
+        { "usampler2DArray",        T::Sampler2DArray         },
+        { "usamplerCubeArray",      T::SamplerCubeArray       },
+        { "usamplerBuffer",         T::SamplerBuffer          },
+        { "usampler2DMS",           T::Sampler2DMS            },
+        { "usampler2DMSArray",      T::Sampler2DMSArray       },
+
         { "sampler",                T::SamplerState           }, // Only for Vulkan
         { "samplerShadow",          T::SamplerComparisonState }, // Only for Vulkan
     };
 }
 
+static const auto g_samplerTypeDictGLSL = GenerateSamplerTypeDict();
+
 const std::string* SamplerTypeToGLSLKeyword(const SamplerType t)
 {
-    static const auto typeDict = GenerateSamplerTypeDict();
-    return typeDict.EnumToString(t);
+    return g_samplerTypeDictGLSL.EnumToString(t);
+}
+
+SamplerType GLSLKeywordToSamplerType(const std::string& keyword)
+{
+    return MapKeywordToType(g_samplerTypeDictGLSL, keyword, R_SamplerType);
 }
 
 
@@ -324,16 +628,22 @@ static Dictionary<AttributeValue> GenerateAttributeValueDict()
         { "ccw",                     T::OutputTopologyTriangleCCW  },
 
         { "equal_spacing",           T::PartitioningInteger        },
-        { "equal_spacing",           T::PartitioningPow2           }, // ???
+      //{ "",                        T::PartitioningPow2           }, // ???
         { "fractional_even_spacing", T::PartitioningFractionalEven },
         { "fractional_odd_spacing",  T::PartitioningFractionalOdd  },
     };
 }
 
+static const auto g_attributeValueDictGLSL = GenerateAttributeValueDict();
+
 const std::string* AttributeValueToGLSLKeyword(const AttributeValue t)
 {
-    static const auto typeDict = GenerateAttributeValueDict();
-    return typeDict.EnumToString(t);
+    return g_attributeValueDictGLSL.EnumToString(t);
+}
+
+AttributeValue GLSLKeywordToAttributeValue(const std::string& keyword)
+{
+    return g_attributeValueDictGLSL.StringToEnumOrDefault(keyword, AttributeValue::Undefined);
 }
 
 
@@ -353,10 +663,16 @@ static Dictionary<PrimitiveType> GeneratePrimitiveTypeDict()
     };
 }
 
+static const auto g_primitiveTypeDictGLSL = GeneratePrimitiveTypeDict();
+
 const std::string* PrimitiveTypeToGLSLKeyword(const PrimitiveType t)
 {
-    static const auto typeDict = GeneratePrimitiveTypeDict();
-    return typeDict.EnumToString(t);
+    return g_primitiveTypeDictGLSL.EnumToString(t);
+}
+
+PrimitiveType GLSLKeywordToPrimitiveType(const std::string& keyword)
+{
+    return MapKeywordToType(g_primitiveTypeDictGLSL, keyword, R_PrimitiveType);
 }
 
 
@@ -496,6 +812,51 @@ std::unique_ptr<std::string> SemanticToGLSLKeyword(const IndexedSemantic& semant
         }
     }
     return SemanticToGLSLKeywordPrimary(semantic);
+}
+
+static std::map<Semantic, DataType> GenerateSemanticDataTypeMap()
+{
+    using T = Semantic;
+    using D = DataType;
+
+    return
+    {
+        { T::ClipDistance,           D::Float  },
+        { T::CullDistance,           D::Float  },
+        { T::Coverage,               D::Int    },
+        { T::Depth,                  D::Float  },
+        { T::DepthGreaterEqual,      D::Float  },
+        { T::DepthLessEqual,         D::Float  },
+        { T::DispatchThreadID,       D::UInt3  },
+        { T::DomainLocation,         D::Float3 },
+        { T::GroupID,                D::UInt3  },
+        { T::GroupIndex,             D::UInt   },
+        { T::GroupThreadID,          D::UInt3  },
+        { T::GSInstanceID,           D::Int    },
+        { T::InnerCoverage,          D::Int    },
+        { T::InsideTessFactor,       D::Float  },
+        { T::InstanceID,             D::Int    },
+        { T::IsFrontFace,            D::Bool   },
+        { T::OutputControlPointID,   D::Int    },
+        { T::FragCoord,              D::Float4 },
+        { T::PointSize,              D::Float  },
+        { T::PrimitiveID,            D::Int    },
+        { T::RenderTargetArrayIndex, D::Int    },
+        { T::SampleIndex,            D::Int    },
+        { T::StencilRef,             D::Int    },
+      //{ T::Target,                 D::Float4 }, // Custom output in GLSL
+        { T::TessFactor,             D::Float  },
+        { T::VertexID,               D::Int    },
+        { T::VertexPosition,         D::Float4 },
+        { T::ViewportArrayIndex,     D::Int    },
+    };
+}
+
+DataType SemanticToGLSLDataType(const Semantic t)
+{
+    static const auto typeMap = GenerateSemanticDataTypeMap();
+    auto it = typeMap.find(t);
+    return (it != typeMap.end() ? it->second : DataType::Undefined);
 }
 
 
@@ -840,54 +1201,6 @@ const std::set<std::string>& ReservedGLSLKeywords()
     };
 
     return reservedNames;
-}
-
-
-/* ----- Semantic/DataType Mapping ----- */
-
-static std::map<Semantic, DataType> GenerateSemanticDataTypeMap()
-{
-    using T = Semantic;
-    using D = DataType;
-
-    return
-    {
-        { T::ClipDistance,           D::Float  },
-        { T::CullDistance,           D::Float  },
-        { T::Coverage,               D::Int    },
-        { T::Depth,                  D::Float  },
-        { T::DepthGreaterEqual,      D::Float  },
-        { T::DepthLessEqual,         D::Float  },
-        { T::DispatchThreadID,       D::UInt3  },
-        { T::DomainLocation,         D::Float3 },
-        { T::GroupID,                D::UInt3  },
-        { T::GroupIndex,             D::UInt   },
-        { T::GroupThreadID,          D::UInt3  },
-        { T::GSInstanceID,           D::Int    },
-        { T::InnerCoverage,          D::Int    },
-        { T::InsideTessFactor,       D::Float  },
-        { T::InstanceID,             D::Int    },
-        { T::IsFrontFace,            D::Bool   },
-        { T::OutputControlPointID,   D::Int    },
-        { T::FragCoord,              D::Float4 },
-        { T::PointSize,              D::Float  },
-        { T::PrimitiveID,            D::Int    },
-        { T::RenderTargetArrayIndex, D::Int    },
-        { T::SampleIndex,            D::Int    },
-        { T::StencilRef,             D::Int    },
-      //{ T::Target,                 D::Float4 }, // Custom output in GLSL
-        { T::TessFactor,             D::Float  },
-        { T::VertexID,               D::Int    },
-        { T::VertexPosition,         D::Float4 },
-        { T::ViewportArrayIndex,     D::Int    },
-    };
-}
-
-DataType SemanticToGLSLDataType(const Semantic t)
-{
-    static const auto typeMap = GenerateSemanticDataTypeMap();
-    auto it = typeMap.find(t);
-    return (it != typeMap.end() ? it->second : DataType::Undefined);
 }
 
 

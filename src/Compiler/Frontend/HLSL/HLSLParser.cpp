@@ -7,7 +7,6 @@
 
 #include "HLSLParser.h"
 #include "HLSLKeywords.h"
-#include "ExprEvaluator.h"
 #include "Helper.h"
 #include "AST.h"
 #include "ASTFactory.h"
@@ -37,7 +36,7 @@ types, which are valid in the respective scope.
 */
 
 HLSLParser::HLSLParser(Log* log) :
-    Parser { log }
+    SLParser { log }
 {
 }
 
@@ -79,11 +78,6 @@ ProgramPtr HLSLParser::ParseSource(
 ScannerPtr HLSLParser::MakeScanner()
 {
     return std::make_shared<HLSLScanner>(enableCgKeywords_, GetLog());
-}
-
-void HLSLParser::Semi()
-{
-    Accept(Tokens::Semicolon);
 }
 
 bool HLSLParser::IsDataType() const
@@ -302,7 +296,7 @@ ProgramPtr HLSLParser::ParseProgram(const SourceCodePtr& source)
             break;
 
         /* Parse next global declaration */
-        ParseStmntWithOptionalComment(ast->globalStmnts, std::bind(&HLSLParser::ParseGlobalStmnt, this));
+        ParseStmntWithCommentOpt(ast->globalStmnts, std::bind(&HLSLParser::ParseGlobalStmnt, this));
     }
 
     CloseScope();
@@ -318,7 +312,7 @@ CodeBlockPtr HLSLParser::ParseCodeBlock()
     Accept(Tokens::LCurly);
     OpenScope();
     {
-        ast->stmnts = ParseStmntList();
+        ast->stmnts = ParseLocalStmntList();
     }
     CloseScope();
     Accept(Tokens::RCurly);
@@ -342,6 +336,16 @@ VarDeclStmntPtr HLSLParser::ParseParameter()
     return UpdateSourceArea(ast);
 }
 
+StmntPtr HLSLParser::ParseLocalStmnt()
+{
+    return ParseStmnt(true);
+}
+
+StmntPtr HLSLParser::ParseForLoopInitializer()
+{
+    return ParseStmnt(false);
+}
+
 SwitchCasePtr HLSLParser::ParseSwitchCase()
 {
     auto ast = Make<SwitchCase>();
@@ -358,7 +362,31 @@ SwitchCasePtr HLSLParser::ParseSwitchCase()
 
     /* Parse switch case statement list */
     while (!Is(Tokens::Case) && !Is(Tokens::Default) && !Is(Tokens::RCurly))
-        ParseStmntWithOptionalComment(ast->stmnts, std::bind(&HLSLParser::ParseStmnt, this, true));
+        ParseStmntWithCommentOpt(ast->stmnts, std::bind(&HLSLParser::ParseStmnt, this, true));
+
+    return ast;
+}
+
+VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn)
+{
+    auto ast = Make<VarDecl>();
+
+    /* Store reference to parent node */
+    ast->declStmntRef = declStmntRef;
+
+    /* Parse variable declaration */
+    ast->ident = ParseIdentWithNamespaceOpt(ast->namespaceExpr, identTkn, &ast->area);
+
+    /* Parse optional array dimension, semantic, and annocations */
+    ast->arrayDims = ParseArrayDimensionList(true);
+
+    ParseVarDeclSemantic(*ast);
+
+    ast->annotations = ParseAnnotationList();
+
+    /* Parse optional initializer expression */
+    if (Is(Tokens::AssignOp, "="))
+        ast->initializer = ParseInitializer();
 
     return ast;
 }
@@ -377,8 +405,6 @@ SamplerValuePtr HLSLParser::ParseSamplerValue()
 
     return ast;
 }
-
-/* --- Variables --- */
 
 AttributePtr HLSLParser::ParseAttribute()
 {
@@ -424,18 +450,12 @@ static ShaderTarget HLSLShaderProfileToTarget(const std::string& s)
     if (s.size() >= 2)
     {
         auto p = s.substr(0, 2);
-        if (p == "vs")
-            return ShaderTarget::VertexShader;
-        if (p == "hs")
-            return ShaderTarget::TessellationControlShader;
-        if (p == "ds")
-            return ShaderTarget::TessellationEvaluationShader;
-        if (p == "gs")
-            return ShaderTarget::GeometryShader;
-        if (p == "ps")
-            return ShaderTarget::FragmentShader;
-        if (p == "cs")
-            return ShaderTarget::ComputeShader;
+        if (p == "vs") return ShaderTarget::VertexShader;
+        if (p == "hs") return ShaderTarget::TessellationControlShader;
+        if (p == "ds") return ShaderTarget::TessellationEvaluationShader;
+        if (p == "gs") return ShaderTarget::GeometryShader;
+        if (p == "ps") return ShaderTarget::FragmentShader;
+        if (p == "cs") return ShaderTarget::ComputeShader;
     }
     return ShaderTarget::Undefined;
 }
@@ -454,7 +474,7 @@ RegisterPtr HLSLParser::ParseRegister(bool parseColon)
 
     auto typeIdent = ParseIdent();
 
-    /* Pares optional shader profile */
+    /* Parse optional shader profile */
     if (Is(Tokens::Comma))
     {
         ast->shaderTarget = HLSLShaderProfileToTarget(typeIdent);
@@ -517,46 +537,6 @@ PackOffsetPtr HLSLParser::ParsePackOffset(bool parseColon)
     return UpdateSourceArea(ast);
 }
 
-ArrayDimensionPtr HLSLParser::ParseArrayDimension(bool allowDynamicDimension)
-{
-    auto ast = Make<ArrayDimension>();
-
-    Accept(Tokens::LParen);
-    
-    if (Is(Tokens::RParen))
-    {
-        if (!allowDynamicDimension)
-            Error(R_ExpectedExplicitArrayDim, false);
-        ast->expr = Make<NullExpr>();
-    }
-    else
-        ast->expr = ParseExpr();
-
-    Accept(Tokens::RParen);
-
-    return UpdateSourceArea(ast);
-}
-
-ExprPtr HLSLParser::ParseArrayIndex()
-{
-    auto area = Tkn()->Area();
-
-    Accept(Tokens::LParen);
-    
-    auto ast = ParseExpr();
-    ast->area = area;
-    
-    Accept(Tokens::RParen);
-
-    return UpdateSourceArea(ast);
-}
-
-ExprPtr HLSLParser::ParseInitializer()
-{
-    Accept(Tokens::AssignOp, "=");
-    return ParseExpr();
-}
-
 TypeSpecifierPtr HLSLParser::ParseTypeSpecifier(bool parseVoidType)
 {
     auto ast = MakeTypeSpecifierWithPackAlignment();
@@ -569,30 +549,6 @@ TypeSpecifierPtr HLSLParser::ParseTypeSpecifier(bool parseVoidType)
     ast->typeDenoter = ParseTypeDenoterWithStructDeclOpt(ast->structDecl);
 
     return UpdateSourceArea(ast);
-}
-
-VarDeclPtr HLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn)
-{
-    auto ast = Make<VarDecl>();
-
-    /* Store reference to parent node */
-    ast->declStmntRef = declStmntRef;
-
-    /* Parse variable declaration */
-    ast->ident = ParseIdentWithNamespaceOpt(ast->namespaceExpr, identTkn, &ast->area);
-
-    /* Parse optional array dimension, semantic, and annocations */
-    ast->arrayDims = ParseArrayDimensionList(true);
-
-    ParseVarDeclSemantic(*ast);
-
-    ast->annotations = ParseAnnotationList();
-
-    /* Parse optional initializer expression */
-    if (Is(Tokens::AssignOp, "="))
-        ast->initializer = ParseInitializer();
-
-    return ast;
 }
 
 BufferDeclPtr HLSLParser::ParseBufferDecl(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn)
@@ -654,7 +610,13 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
     /* Parse structure declaration */
     if (parseStructTkn)
     {
-        Accept(Tokens::Struct);
+        if (Is(Tokens::Class))
+        {
+            AcceptIt();
+            ast->isClass = true;
+        }
+        else
+            Accept(Tokens::Struct);
         UpdateSourceArea(ast);
     }
 
@@ -685,7 +647,7 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
     GetReportHandler().PushContextDesc(ast->ToString());
     {
         /* Parse member variable declarations */
-        ast->localStmnts = ParseLocalStmntList();
+        ast->localStmnts = ParseGlobalStmntList();
         
         for (auto& stmnt : ast->localStmnts)
         {
@@ -795,9 +757,7 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl(BasicDeclStmnt* declStmntRef, cons
     {
         GetReportHandler().PushContextDesc(ast->ToString(false));
         {
-            localScope_ = true;
             ast->codeBlock = ParseCodeBlock();
-            localScope_ = false;
         }
         GetReportHandler().PopContextDesc();
     }
@@ -821,7 +781,7 @@ UniformBufferDeclPtr HLSLParser::ParseUniformBufferDecl()
     GetReportHandler().PushContextDesc(ast->ToString());
     {
         /* Parse buffer body */
-        ast->localStmnts = ParseLocalStmntList();
+        ast->localStmnts = ParseGlobalStmntList();
 
         /* Copy variable declarations into separated list */
         for (auto& stmnt : ast->localStmnts)
@@ -1121,6 +1081,7 @@ StmntPtr HLSLParser::ParseStmntPrimary()
         case Tokens::CtrlTransfer:
             return ParseCtrlTransferStmnt();
         case Tokens::Struct:
+        case Tokens::Class:
             return ParseStmntWithStructDecl();
         case Tokens::Typedef:
             return ParseAliasDeclStmnt();
@@ -1225,198 +1186,7 @@ StmntPtr HLSLParser::ParseStmntWithIdent()
 
 #endif
 
-NullStmntPtr HLSLParser::ParseNullStmnt()
-{
-    /* Parse null statement */
-    auto ast = Make<NullStmnt>();
-    Semi();
-    return ast;
-}
-
-CodeBlockStmntPtr HLSLParser::ParseCodeBlockStmnt()
-{
-    /* Parse code block statement */
-    auto ast = Make<CodeBlockStmnt>();
-    ast->codeBlock = ParseCodeBlock();
-    return ast;
-}
-
-ForLoopStmntPtr HLSLParser::ParseForLoopStmnt()
-{
-    auto ast = Make<ForLoopStmnt>();
-
-    /* Parse loop initializer statement (attributes not allowed here) */
-    Accept(Tokens::For);
-    Accept(Tokens::LBracket);
-
-    ast->initStmnt = ParseStmnt(false);
-
-    /* Parse loop condExpr */
-    if (!Is(Tokens::Semicolon))
-        ast->condition = ParseExpr(true);
-    Semi();
-
-    /* Parse loop iteration */
-    if (!Is(Tokens::RBracket))
-        ast->iteration = ParseExpr(true);
-    Accept(Tokens::RBracket);
-
-    /* Parse loop body */
-    ast->bodyStmnt = ParseStmnt();
-
-    return ast;
-}
-
-WhileLoopStmntPtr HLSLParser::ParseWhileLoopStmnt()
-{
-    auto ast = Make<WhileLoopStmnt>();
-
-    /* Parse loop condExpr */
-    Accept(Tokens::While);
-
-    Accept(Tokens::LBracket);
-    ast->condition = ParseExpr(true);
-    Accept(Tokens::RBracket);
-
-    /* Parse loop body */
-    ast->bodyStmnt = ParseStmnt();
-
-    return ast;
-}
-
-DoWhileLoopStmntPtr HLSLParser::ParseDoWhileLoopStmnt()
-{
-    auto ast = Make<DoWhileLoopStmnt>();
-
-    /* Parse loop body */
-    Accept(Tokens::Do);
-    ast->bodyStmnt = ParseStmnt();
-
-    /* Parse loop condExpr */
-    Accept(Tokens::While);
-
-    Accept(Tokens::LBracket);
-    ast->condition = ParseExpr(true);
-    Accept(Tokens::RBracket);
-
-    Semi();
-
-    return ast;
-}
-
-IfStmntPtr HLSLParser::ParseIfStmnt()
-{
-    auto ast = Make<IfStmnt>();
-
-    /* Parse if condExpr */
-    Accept(Tokens::If);
-
-    Accept(Tokens::LBracket);
-    ast->condition = ParseExpr(true);
-    Accept(Tokens::RBracket);
-
-    /* Parse if body */
-    ast->bodyStmnt = ParseStmnt();
-
-    /* Parse optional else statement */
-    if (Is(Tokens::Else))
-        ast->elseStmnt = ParseElseStmnt();
-
-    return ast;
-}
-
-ElseStmntPtr HLSLParser::ParseElseStmnt()
-{
-    /* Parse else statment */
-    auto ast = Make<ElseStmnt>();
-
-    Accept(Tokens::Else);
-    ast->bodyStmnt = ParseStmnt();
-
-    return ast;
-}
-
-SwitchStmntPtr HLSLParser::ParseSwitchStmnt()
-{
-    auto ast = Make<SwitchStmnt>();
-
-    /* Parse switch selector */
-    Accept(Tokens::Switch);
-
-    Accept(Tokens::LBracket);
-    ast->selector = ParseExpr(true);
-    Accept(Tokens::RBracket);
-
-    /* Parse switch cases */
-    Accept(Tokens::LCurly);
-    ast->cases = ParseSwitchCaseList();
-    Accept(Tokens::RCurly);
-
-    return ast;
-}
-
-CtrlTransferStmntPtr HLSLParser::ParseCtrlTransferStmnt()
-{
-    /* Parse control transfer statement */
-    auto ast = Make<CtrlTransferStmnt>();
-    
-    auto ctrlTransfer = Accept(Tokens::CtrlTransfer)->Spell();
-    ast->transfer = StringToCtrlTransfer(ctrlTransfer);
-
-    UpdateSourceArea(ast);
-
-    Semi();
-
-    return ast;
-}
-
-ReturnStmntPtr HLSLParser::ParseReturnStmnt()
-{
-    auto ast = Make<ReturnStmnt>();
-
-    Accept(Tokens::Return);
-
-    if (!Is(Tokens::Semicolon))
-        ast->expr = ParseExpr(true);
-
-    UpdateSourceArea(ast);
-
-    Semi();
-
-    return ast;
-}
-
-ExprStmntPtr HLSLParser::ParseExprStmnt(const ExprPtr& expr)
-{
-    /* Parse expression statement */
-    auto ast = Make<ExprStmnt>();
-
-    if (expr)
-    {
-        ast->expr = expr;
-        ast->area = expr->area;
-    }
-    else
-        ast->expr = ParseExpr(true);
-
-    Semi();
-
-    return UpdateSourceArea(ast);
-}
-
 /* --- Expressions --- */
-
-ExprPtr HLSLParser::ParseExpr(bool allowSequence)
-{
-    /* Parse generic expression, then post expression */
-    auto ast = ParseGenericExpr();
-
-    /* Parse optional sequence expression */
-    if (allowSequence && Is(Tokens::Comma))
-        return ParseSequenceExpr(ast);
-
-    return ast;
-}
 
 ExprPtr HLSLParser::ParsePrimaryExpr()
 {
@@ -1572,8 +1342,6 @@ PostUnaryExprPtr HLSLParser::ParsePostUnaryExpr(const ExprPtr& expr)
     return ast;
 }
 
-/* ----- Parsing ----- */
-
 ExprPtr HLSLParser::ParseExprWithBracketPrefix()
 {
     ExprPtr expr;
@@ -1589,12 +1357,12 @@ ExprPtr HLSLParser::ParseExprWithBracketPrefix()
             parsingState.activeTemplate = false;
             PushParsingState(parsingState);
             {
-                expr = ParseExpr(true);
+                expr = ParseExprWithSequenceOpt();
             }
             PopParsingState();
         }
         else
-            expr = ParseExpr(true);
+            expr = ParseExprWithSequenceOpt();
     }
     Accept(Tokens::RBracket);
 
@@ -1713,17 +1481,6 @@ ExprPtr HLSLParser::ParseObjectOrCallExpr(const ExprPtr& expr)
     return objectExpr;
 }
 
-ArrayExprPtr HLSLParser::ParseArrayExpr(const ExprPtr& expr)
-{
-    auto ast = Make<ArrayExpr>();
-
-    /* Take sub expression and parse array dimensions */
-    ast->prefixExpr     = expr;
-    ast->arrayIndices   = ParseArrayIndexList();
-
-    return UpdateSourceArea(ast, expr.get());
-}
-
 CallExprPtr HLSLParser::ParseCallExpr(const ObjectExprPtr& objectExpr, const TypeDenoterPtr& typeDenoter)
 {
     if (objectExpr)
@@ -1788,35 +1545,9 @@ CallExprPtr HLSLParser::ParseCallExprAsTypeCtor(const TypeDenoterPtr& typeDenote
     return UpdateSourceArea(ast);
 }
 
-InitializerExprPtr HLSLParser::ParseInitializerExpr()
-{
-    /* Parse initializer list expression */
-    auto ast = Make<InitializerExpr>();
-    ast->exprs = ParseInitializerList();
-    return UpdateSourceArea(ast);
-}
-
-SequenceExprPtr HLSLParser::ParseSequenceExpr(const ExprPtr& firstExpr)
-{
-    auto ast = Make<SequenceExpr>();
-
-    /* Parse first expression */
-    if (firstExpr)
-        ast->Append(firstExpr);
-    else
-        ast->Append(ParseExpr());
-
-    Accept(Tokens::Comma);
-
-    /* Pares further sub expressions in sequence */
-    ast->Append(ParseExpr(true));
-
-    return ast;
-}
-
 /* --- Lists --- */
 
-std::vector<StmntPtr> HLSLParser::ParseLocalStmntList()
+std::vector<StmntPtr> HLSLParser::ParseGlobalStmntList()
 {
     std::vector<StmntPtr> stmnts;
 
@@ -1827,54 +1558,12 @@ std::vector<StmntPtr> HLSLParser::ParseLocalStmntList()
     {
         /* Parse next global declaration (ignore techniques and null statements) */
         ParseAndIgnoreTechniquesAndNullStmnts();
-        ParseStmntWithOptionalComment(stmnts, std::bind(&HLSLParser::ParseGlobalStmnt, this));
+        ParseStmntWithCommentOpt(stmnts, std::bind(&HLSLParser::ParseGlobalStmnt, this));
     }
 
     AcceptIt();
 
     return stmnts;
-}
-
-std::vector<VarDeclPtr> HLSLParser::ParseVarDeclList(VarDeclStmnt* declStmntRef, TokenPtr firstIdentTkn)
-{
-    std::vector<VarDeclPtr> varDecls;
-
-    /* Parse variable declaration list */
-    while (true)
-    {
-        varDecls.push_back(ParseVarDecl(declStmntRef, firstIdentTkn));
-        firstIdentTkn = nullptr;
-        if (Is(Tokens::Comma))
-            AcceptIt();
-        else
-            break;
-    }
-
-    return varDecls;
-}
-
-std::vector<VarDeclStmntPtr> HLSLParser::ParseParameterList()
-{
-    std::vector<VarDeclStmntPtr> parameters;
-
-    Accept(Tokens::LBracket);
-
-    /* Parse all variable declaration statements */
-    if (!Is(Tokens::RBracket))
-    {
-        while (true)
-        {
-            parameters.push_back(ParseParameter());
-            if (Is(Tokens::Comma))
-                AcceptIt();
-            else
-                break;
-        }
-    }
-
-    Accept(Tokens::RBracket);
-
-    return parameters;
 }
 
 std::vector<VarDeclStmntPtr> HLSLParser::ParseAnnotationList()
@@ -1892,76 +1581,6 @@ std::vector<VarDeclStmntPtr> HLSLParser::ParseAnnotationList()
     }
 
     return annotations;
-}
-
-std::vector<StmntPtr> HLSLParser::ParseStmntList()
-{
-    std::vector<StmntPtr> stmnts;
-
-    while (!Is(Tokens::RCurly))
-        ParseStmntWithOptionalComment(stmnts, std::bind(&HLSLParser::ParseStmnt, this, true));
-
-    return stmnts;
-}
-
-std::vector<ExprPtr> HLSLParser::ParseExprList(const Tokens listTerminatorToken, bool allowLastComma)
-{
-    std::vector<ExprPtr> exprs;
-
-    /* Parse all argument expressions */
-    if (!Is(listTerminatorToken))
-    {
-        while (true)
-        {
-            exprs.push_back(ParseExpr());
-            if (Is(Tokens::Comma))
-            {
-                AcceptIt();
-                if (allowLastComma && Is(listTerminatorToken))
-                    break;
-            }
-            else
-                break;
-        }
-    }
-
-    return exprs;
-}
-
-std::vector<ArrayDimensionPtr> HLSLParser::ParseArrayDimensionList(bool allowDynamicDimension)
-{
-    std::vector<ArrayDimensionPtr> arrayDims;
-
-    while (Is(Tokens::LParen))
-        arrayDims.push_back(ParseArrayDimension(allowDynamicDimension));
-
-    return arrayDims;
-}
-
-std::vector<ExprPtr> HLSLParser::ParseArrayIndexList()
-{
-    std::vector<ExprPtr> exprs;
-
-    while (Is(Tokens::LParen))
-        exprs.push_back(ParseArrayIndex());
-
-    return exprs;
-}
-
-std::vector<ExprPtr> HLSLParser::ParseArgumentList()
-{
-    Accept(Tokens::LBracket);
-    auto exprs = ParseExprList(Tokens::RBracket);
-    Accept(Tokens::RBracket);
-    return exprs;
-}
-
-std::vector<ExprPtr> HLSLParser::ParseInitializerList()
-{
-    Accept(Tokens::LCurly);
-    auto exprs = ParseExprList(Tokens::RCurly, true);
-    Accept(Tokens::RCurly);
-    return exprs;
 }
 
 std::vector<RegisterPtr> HLSLParser::ParseRegisterList(bool parseFirstColon)
@@ -1986,16 +1605,6 @@ std::vector<AttributePtr> HLSLParser::ParseAttributeList()
         attribs.push_back(ParseAttribute());
 
     return attribs;
-}
-
-std::vector<SwitchCasePtr> HLSLParser::ParseSwitchCaseList()
-{
-    std::vector<SwitchCasePtr> cases;
-
-    while (Is(Tokens::Case) || Is(Tokens::Default))
-        cases.push_back(ParseSwitchCase());
-
-    return cases;
 }
 
 std::vector<BufferDeclPtr> HLSLParser::ParseBufferDeclList(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn)
@@ -2054,25 +1663,6 @@ std::vector<AliasDeclPtr> HLSLParser::ParseAliasDeclList(TypeDenoterPtr typeDeno
 }
 
 /* --- Others --- */
-
-std::string HLSLParser::ParseIdent(TokenPtr identTkn, SourceArea* area)
-{
-    /* Parse identifier */
-    if (!identTkn)
-        identTkn = Accept(Tokens::Ident);
-
-    auto ident = identTkn->Spell();
-
-    /* Return source area of identifier */
-    if (area)
-        *area = identTkn->Area();
-
-    /* Check overlapping of reserved prefixes for name mangling */
-    if (auto prefix = FindNameManglingPrefix(ident))
-        Error(R_IdentNameManglingConflict(ident, *prefix), identTkn.get(), false);
-
-    return ident;
-}
 
 std::string HLSLParser::ParseIdentWithNamespaceOpt(ObjectExprPtr& namespaceExpr, TokenPtr identTkn, SourceArea* area)
 {
@@ -2158,24 +1748,10 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoterPrimary(StructDeclPtr* structDecl)
 
 TypeDenoterPtr HLSLParser::ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl, bool allowVoidType)
 {
-    if (Is(Tokens::Struct))
+    if (Is(Tokens::Struct) || Is(Tokens::Class))
         return ParseStructTypeDenoterWithStructDeclOpt(structDecl);
     else
         return ParseTypeDenoter(allowVoidType);
-}
-
-TypeDenoterPtr HLSLParser::ParseTypeDenoterWithArrayOpt(const TypeDenoterPtr& baseTypeDenoter)
-{
-    if (Is(Tokens::LParen))
-    {
-        auto arrayTypeDenoter = std::make_shared<ArrayTypeDenoter>(baseTypeDenoter);
-
-        /* Parse array dimension list */
-        arrayTypeDenoter->arrayDims = ParseArrayDimensionList();
-
-        return arrayTypeDenoter;
-    }
-    return baseTypeDenoter;
 }
 
 VoidTypeDenoterPtr HLSLParser::ParseVoidTypeDenoter()
@@ -2349,12 +1925,22 @@ StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoter()
 
 StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl)
 {
-    Accept(Tokens::Struct);
+    /* Parse 'struct' or 'class' keyword */
+    bool isClass = false;
+
+    if (Is(Tokens::Class))
+    {
+        AcceptIt();
+        isClass = true;
+    }
+    else
+        Accept(Tokens::Struct);
 
     if (Is(Tokens::LCurly))
     {
         /* Parse struct-decl */
         structDecl = ParseStructDecl(false);
+        structDecl->isClass = isClass;
 
         /* Make struct type denoter with reference to the structure of this alias decl */
         return std::make_shared<StructTypeDenoter>(structDecl.get());
@@ -2368,6 +1954,7 @@ StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoterWithStructDeclOpt(StructD
         {
             /* Parse struct-decl */
             structDecl = ParseStructDecl(false, structIdentTkn);
+            structDecl->isClass = isClass;
 
             /* Make struct type denoter with reference to the structure of this alias decl */
             return std::make_shared<StructTypeDenoter>(structDecl.get());
@@ -2388,55 +1975,6 @@ AliasTypeDenoterPtr HLSLParser::ParseAliasTypeDenoter(std::string ident)
 
     /* Make alias type denoter per default (change this to a struct type later) */
     return std::make_shared<AliasTypeDenoter>(ident);
-}
-
-Variant HLSLParser::ParseAndEvaluateConstExpr()
-{
-    /* Parse expression */
-    auto tkn = Tkn();
-    auto expr = ParseExpr();
-
-    try
-    {
-        /* Evaluate expression and throw error on object access */
-        ExprEvaluator exprEvaluator;
-        return exprEvaluator.Evaluate(*expr, [](ObjectExpr* expr) -> Variant { throw expr; });
-    }
-    catch (const std::exception& e)
-    {
-        Error(e.what(), tkn.get());
-    }
-    catch (const ObjectExpr* expr)
-    {
-        GetReportHandler().SubmitReport(
-            true, ReportTypes::Error, R_SyntaxError,
-            R_ExpectedConstExpr, GetScanner().Source(), expr->area
-        );
-    }
-
-    return Variant();
-}
-
-int HLSLParser::ParseAndEvaluateConstExprInt()
-{
-    auto tkn = Tkn();
-    auto value = ParseAndEvaluateConstExpr();
-
-    if (value.Type() != Variant::Types::Int)
-        Error(R_ExpectedConstIntExpr, tkn.get());
-
-    return static_cast<int>(value.Int());
-}
-
-int HLSLParser::ParseAndEvaluateVectorDimension()
-{
-    auto tkn = Tkn();
-    auto value = ParseAndEvaluateConstExprInt();
-
-    if (value < 1 || value > 4)
-        Error(R_VectorAndMatrixDimOutOfRange(value), tkn.get());
-
-    return value;
 }
 
 void HLSLParser::ParseAndIgnoreTechniquesAndNullStmnts()
@@ -2690,17 +2228,6 @@ std::string HLSLParser::ParseSamplerStateTextureIdent()
     Semi();
 
     return ident;
-}
-
-void HLSLParser::ParseStmntWithOptionalComment(std::vector<StmntPtr>& stmnts, const std::function<StmntPtr()>& parseFunction)
-{
-    /* Parse next statement with optional commentary */
-    auto comment = GetScanner().GetComment();
-
-    auto ast = parseFunction();
-    stmnts.push_back(ast);
-
-    ast->comment = std::move(comment);
 }
 
 bool HLSLParser::ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiveType)

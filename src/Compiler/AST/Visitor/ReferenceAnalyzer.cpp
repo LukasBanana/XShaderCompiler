@@ -107,6 +107,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     {
         Visit(ast->declStmntRef);
         Visit(ast->bufferDeclRef);
+        Visit(ast->staticMemberVarRef);
         VISIT_DEFAULT(VarDecl);
     }
 }

@@ -41,6 +41,9 @@
 [SemanticTest4 VS (Vertex-Attrib-Layouts)]
 -T vert -E VS -EB -Scoord=0 -Stexcoord0=1 -Stexcoord1=2 -Snormal=3 -o output/* SemanticTest4.hlsl
 
+[SemanticTypes: vert]
+-T vert -E main -Vout GLSL140 -o output/* SemanticTypes.hlsl
+
 ['clip'-Intrinsic PS]
 -T frag -E PS -o output/* IntrinsicClip.hlsl
 
@@ -122,8 +125,14 @@
 [StructTest2: vert]
 -T vert -E main -o output/* StructTest2.hlsl
 
-[StructInheritTest1 PS]
--T frag -E PS -o output/* StructInheritTest1.hlsl
+[StructInheritTest1: vert]
+-T vert -E main -o output/* StructInheritTest1.hlsl
+
+[StructInheritTest2: vert]
+-T vert -E main -o output/* StructInheritTest2.hlsl
+
+[StructInheritTest3: vert]
+-T vert -E main -o output/* StructInheritTest3.hlsl
 
 [FormattingTest1 VS]
 -T vert -E VS -O -o output/* FormattingTest1.hlsl
@@ -163,6 +172,12 @@
 
 [MemberFuncTest3 PS]
 -T frag -E PS -o output/* MemberFuncTest3.hlsl
+
+[MemberFuncTest4: vert]
+-T vert -E main -o output/* MemberFuncTest4.hlsl
+
+[MemberFuncTest5: vert]
+-T vert -E main -o output/* MemberFuncTest5.hlsl
 
 [RWTextureTest1: vert]
 -T vert -E main -o output/* RWTextureTest1.hlsl

@@ -37,13 +37,13 @@ class ExprConverter : public VisitorTracker
         // Conversion flags enumeration.
         enum : unsigned int
         {
-            ConvertVectorSubscripts     = (1 <<  0),
+            ConvertVectorSubscripts     = (1 <<  0), // Converts certain vector subscripts to type constructors.
             ConvertVectorCompare        = (1 <<  1),
             ConvertImageAccess          = (1 <<  2),
-            ConvertImplicitCasts        = (1 <<  3),
-            ConvertInitializerToCtor    = (1 <<  4), // Converts initializer expressions to type constructors (e.g. "{ 1, 2, 3 }" to "float3(1, 2, 3)")
-            ConvertLog10                = (1 <<  5), // Converts "log10(x)" to "(log(x) / log(10))"
-            ConvertUnaryExpr            = (1 <<  6), // Wraps an unary expression if it's parent expression is also an unary expression (e.g. "-+x" to "-(+x)")
+            ConvertImplicitCasts        = (1 <<  3), // Converts implicit type casts to explicit type casts.
+            ConvertInitializerToCtor    = (1 <<  4), // Converts initializer expressions to type constructors (e.g. "{ 1, 2, 3 }" to "float3(1, 2, 3)").
+            ConvertLog10                = (1 <<  5), // Converts "log10(x)" to "(log(x) / log(10))".
+            ConvertUnaryExpr            = (1 <<  6), // Wraps an unary expression if it's parent expression is also an unary expression (e.g. "-+x" to "-(+x)").
             ConvertSamplerBufferAccess  = (1 <<  7),
             ConvertMatrixLayout         = (1 <<  8), // Converts expressions that depend on the matrix layout (e.g. the argument order of "mul" intrinsic calls).
             ConvertTextureBracketOp     = (1 <<  9), // Converts Texture Operator[] accesses into "Load" intrinsic calls.

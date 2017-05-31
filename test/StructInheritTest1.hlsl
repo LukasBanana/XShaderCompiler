@@ -20,7 +20,7 @@ struct S2 : S11 {
 	float w;
 };
 
-float4 PS() : SV_Target
+float4 main() : COLOR
 {
 	struct Foo : S11
 	{

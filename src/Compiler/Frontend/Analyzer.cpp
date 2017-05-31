@@ -200,7 +200,7 @@ Decl* Analyzer::FetchDecl(const std::string& ident, const AST* ast)
     return nullptr;
 }
 
-AST* Analyzer::FetchType(const std::string& ident, const AST* ast)
+Decl* Analyzer::FetchType(const std::string& ident, const AST* ast)
 {
     try
     {

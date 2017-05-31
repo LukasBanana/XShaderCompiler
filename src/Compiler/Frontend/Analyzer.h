@@ -93,7 +93,7 @@ class Analyzer : protected VisitorTracker
         Decl* FetchDecl(const std::string& ident, const AST* ast = nullptr);
 
         // Tries to fetch a 'StructDecl' or 'AliasDecl' with the specified identifier from the symbol table and reports an error on failure.
-        AST* FetchType(const std::string& ident, const AST* ast = nullptr);
+        Decl* FetchType(const std::string& ident, const AST* ast = nullptr);
 
         // Tries to fetch a 'VarDecl' with the specified identifier from the symbol table and reports an error on failure.
         VarDecl* FetchVarDecl(const std::string& ident, const AST* ast = nullptr);

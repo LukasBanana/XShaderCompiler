@@ -69,23 +69,14 @@ DECL_REPORT( SamplerTypeDen,                    "sampler type denoter"          
 DECL_REPORT( SamplerState,                      "sampler state"                                                                                                 );
 DECL_REPORT( BufferTypeDen,                     "buffer type denoter"                                                                                           );
 DECL_REPORT( UniformBufferTypeDen,              "uniform buffer type denoter"                                                                                   );
-DECL_REPORT( KeywordDo,                         "'do' keyword"                                                                                                  );
-DECL_REPORT( KeywordWhile,                      "'while' keyword"                                                                                               );
-DECL_REPORT( KeywordFor,                        "'for' keyword"                                                                                                 );
-DECL_REPORT( KeywordIf,                         "'if' keyword"                                                                                                  );
-DECL_REPORT( KeywordElse,                       "'else' keyword"                                                                                                );
-DECL_REPORT( KeywordSwitch,                     "'switch' keyword"                                                                                              );
-DECL_REPORT( KeywordCase,                       "'case' keyword"                                                                                                );
-DECL_REPORT( KeywordDefault,                    "'default' keyword"                                                                                             );
-DECL_REPORT( KeywordTypedef,                    "'typedef' keyword"                                                                                             );
-DECL_REPORT( KeywordStruct,                     "'struct' keyword"                                                                                              );
-DECL_REPORT( KeywordRegister,                   "'register' keyword"                                                                                            );
-DECL_REPORT( KeywordPackOffset,                 "'packoffset' keyword"                                                                                          );
-DECL_REPORT( KeywordReturn,                     "'return' keyword"                                                                                              );
-DECL_REPORT( KeywordInline,                     "'inline' keyword"                                                                                              );
-DECL_REPORT( KeywordTechnique,                  "'technique' keyword"                                                                                           );
-DECL_REPORT( KeywordPass,                       "'pass' keyword"                                                                                                );
-DECL_REPORT( KeywordCompile,                    "'compile' keyword"                                                                                             );
+DECL_REPORT( Keyword,                           "'{0}' keyword"                                                                                                 );
+DECL_REPORT( LayoutQualifier,                   "layout qualifier"                                                                                              );
+DECL_REPORT( MemoryQualifier,                   "memory qualifier"                                                                                              );
+DECL_REPORT( InvariantQualifier,                "invariant qualifier"                                                                                           );
+DECL_REPORT( PrecisionQualifier,                "precision qualifier"                                                                                           );
+DECL_REPORT( ImageType,                         "image type"                                                                                                    );
+DECL_REPORT( StorageBufferType,                 "storage buffer type"                                                                                           );
+DECL_REPORT( AtomicCounterType,                 "atomic counter type"                                                                                           );
 DECL_REPORT( CtrlTransfer,                      "control transfer"                                                                                              );
 DECL_REPORT( InputModifier,                     "input modifier"                                                                                                );
 DECL_REPORT( InterpModifier,                    "interpolation modifier"                                                                                        );
@@ -358,6 +349,10 @@ DECL_REPORT( NoProfileForGLSLVersionBefore150,  "versions before 150 do not allo
 DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (must be 'core' or 'compatibility')"                                             );
 DECL_REPORT( ExtensionNotSupported,             "extension not supported[: {0}]"                                                                                );
 DECL_REPORT( InvalidGLSLExtensionBehavior,      "invalid extension behavior '{0}' (must be 'enable', 'require', 'warn', or 'disable')"                          );
+
+/* ----- GLSLKeywords ----- */
+
+DECL_REPORT( FailedToMapFromGLSLKeyword,        "failed to map GLSL keyword '{0}' to {1}"                                                                       );
 
 /* ----- HLSLIntrinsics ----- */
 

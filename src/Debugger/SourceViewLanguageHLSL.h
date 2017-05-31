@@ -16,7 +16,7 @@ namespace Xsc
 static const char* keywordsHLSL0 =
 (
     "break continue if else switch case default return for while do typedef namespace true false compile " \
-    "const void struct static extern register packoffset volatile inline target nointerpolation noperspective shared uniform " \
+    "const void struct class static extern register packoffset volatile inline target nointerpolation noperspective shared uniform " \
     "row_major column_major unroll loop flatten branch earlydepthstencil domain instance maxtessfactor " \
     "outputcontrolpoints outputtopology partitioning patchconstantfunc numthreads maxvertexcount precise" \
     "abs acos all AllMemoryBarrier AllMemoryBarrierWithGroupSync any asdouble asfloat asin asint asuint atan atan2 " \
@@ -51,7 +51,7 @@ static const char* keywordsHLSL1 =
     "double2x4 double3x1 double3x2 double3x3 double3x4 double4x1 double4x2 double4x3 double4x4 dword1x1 dword1x2 " \
     "dword1x3 dword1x4 dword2x1 dword2x2 dword2x3 dword2x4 dword3x1 dword3x2 dword3x3 dword3x4 dword4x1 dword4x2 " \
     "dword4x3 dword4x4 cbuffer tbuffer groupshared SamplerState SamplerComparisonState in out inout vector matrix interface " \
-    "class point triangle line lineadj triangleadj Texture Texture1D Texture1DArray Texture2D Texture2DArray " \
+    "point triangle line lineadj triangleadj Texture Texture1D Texture1DArray Texture2D Texture2DArray " \
     "Texture2DMS Texture2DMSArray Texture3D TextureCube TextureCubeArray RWTexture1D RWTexture1DArray RWTexture2D " \
     "RWTexture2DArray RWTexture3D Buffer StructuredBuffer AppendStructuredBuffer ConsumeStructuredBuffer RWBuffer " \
     "RWStructuredBuffer ByteAddressBuffer RWByteAddressBuffer PointStream TriangleStream LineStream InputPatch " \

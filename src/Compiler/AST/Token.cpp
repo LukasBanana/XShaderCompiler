@@ -89,28 +89,39 @@ std::string Token::TypeToString(const Types type)
         case Types::SamplerState:       return R_SamplerState;
         case Types::Buffer:             return R_BufferTypeDen;
         case Types::UniformBuffer:      return R_UniformBufferTypeDen;
-        case Types::Do:                 return R_KeywordDo;
-        case Types::While:              return R_KeywordWhile;
-        case Types::For:                return R_KeywordFor;
-        case Types::If:                 return R_KeywordIf;
-        case Types::Else:               return R_KeywordElse;
-        case Types::Switch:             return R_KeywordSwitch;
-        case Types::Case:               return R_KeywordCase;
-        case Types::Default:            return R_KeywordDefault;
-        case Types::Typedef:            return R_KeywordTypedef;
-        case Types::Struct:             return R_KeywordStruct;
-        case Types::Register:           return R_KeywordRegister;
-        case Types::PackOffset:         return R_KeywordPackOffset;
+        case Types::Do:                 return R_Keyword("do");
+        case Types::While:              return R_Keyword("while");
+        case Types::For:                return R_Keyword("for");
+        case Types::If:                 return R_Keyword("if");
+        case Types::Else:               return R_Keyword("else");
+        case Types::Switch:             return R_Keyword("switch");
+        case Types::Case:               return R_Keyword("case");
+        case Types::Default:            return R_Keyword("default");
+        case Types::Typedef:            return R_Keyword("typedef");
+        case Types::Struct:             return R_Keyword("struct");
+        case Types::Class:              return R_Keyword("class");
+        case Types::Register:           return R_Keyword("register");
+        case Types::PackOffset:         return R_Keyword("packoffset");
         case Types::CtrlTransfer:       return R_CtrlTransfer;
-        case Types::Return:             return R_KeywordReturn;
+        case Types::Return:             return R_Keyword("return");
         case Types::InputModifier:      return R_InputModifier;
         case Types::InterpModifier:     return R_InterpModifier;
         case Types::TypeModifier:       return R_TypeModifier;
         case Types::StorageClass:       return R_StorageClass;
-        case Types::Inline:             return R_KeywordInline;
-        case Types::Technique:          return R_KeywordTechnique;
-        case Types::Pass:               return R_KeywordPass;
-        case Types::Compile:            return R_KeywordCompile;
+        case Types::Inline:             return R_Keyword("inline");
+        case Types::LayoutQualifier:    return R_LayoutQualifier;
+        case Types::Attribute:          return R_Keyword("attribute");
+        case Types::Varying:            return R_Keyword("varying");
+        case Types::Precision:          return R_Keyword("precision");
+        case Types::MemoryQualifier:    return R_MemoryQualifier;
+        case Types::InvariantQualifier: return R_InvariantQualifier;
+        case Types::PrecisionQualifier: return R_PrecisionQualifier;
+        case Types::Image:              return R_ImageType;
+        case Types::StorageBuffer:      return R_StorageBufferType;
+        case Types::AtomicCounter:      return R_AtomicCounterType;
+        case Types::Technique:          return R_Keyword("technique");
+        case Types::Pass:               return R_Keyword("pass");
+        case Types::Compile:            return R_Keyword("compile");
         case Types::Directive:          return R_PPDirective;
         case Types::DirectiveConcat:    return R_PPDirectiveConcat;
         case Types::Comment:            return R_Comment;
@@ -120,9 +131,8 @@ std::string Token::TypeToString(const Types type)
         case Types::VarArg:             return R_VarArgSpecifier;
         case Types::Misc:               return R_Misc;
         case Types::EndOfStream:        return R_EndOfStream;
-        default:                        break;
+        default:                        return "";
     }
-    return "";
 }
 
 std::string Token::SpellContent() const
