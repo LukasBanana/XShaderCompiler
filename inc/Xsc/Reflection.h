@@ -158,6 +158,9 @@ struct ReflectionData
     //! Shader output attributes.
     std::vector<BindingSlot>            outputAttributes;
 
+    //! Shader uniforms.
+    std::vector<BindingSlot>            uniforms;
+
     //! Static sampler states (identifier, states).
     std::map<std::string, SamplerState> samplerStates;
 

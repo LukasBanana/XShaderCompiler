@@ -153,6 +153,26 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     }
 }
 
+IMPLEMENT_VISIT_PROC(VarDecl)
+{
+    if (ast->flags(AST::isReachable))
+    {
+        TypeSpecifier* typeSpecifier = ast->FetchTypeSpecifier();
+        if (typeSpecifier != nullptr && typeSpecifier->isUniform)
+        {
+            // Create the binding slot. The location for now is ignored as even with explicit binding
+            // the uniforms never get a set binding point
+            Reflection::BindingSlot bindingSlot;
+            {
+                bindingSlot.ident       = ast->ident;
+                bindingSlot.location    = -1;
+            }
+
+            data_->uniforms.push_back(bindingSlot);
+        }
+    }
+}
+
 #undef IMPLEMENT_VISIT_PROC
 
 /* --- Helper functions for code reflection --- */
