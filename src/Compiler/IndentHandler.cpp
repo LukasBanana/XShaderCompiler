@@ -24,7 +24,7 @@ void IndentHandler::SetIndent(const std::string& indent)
 
 void IndentHandler::IncIndent()
 {
-    /* Appemnd indentation string and store current size */
+    /* Append indentation string and store current size */
     indentFull_ += indent_;
     indentStack_.push(indent_.size());
 }

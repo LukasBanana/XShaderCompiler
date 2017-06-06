@@ -6,8 +6,9 @@
  */
 
 #include <Xsc/IncludeHandler.h>
-#include <fstream>
+#include "ReportIdents.h"
 #include "Exception.h"
+#include <fstream>
 
 
 namespace Xsc
@@ -29,8 +30,7 @@ std::unique_ptr<std::istream> IncludeHandler::Include(const std::string& filenam
     if (!useSearchPathsFirst)
     {
         /* Read file from relative path */
-        auto file = ReadFile(filename);
-        if (file)
+        if (auto file = ReadFile(filename))
             return file;
     }
     
@@ -46,8 +46,7 @@ std::unique_ptr<std::istream> IncludeHandler::Include(const std::string& filenam
             s += filename;
 
             /* Read file from current path */
-            auto file = ReadFile(s);
-            if (file)
+            if (auto file = ReadFile(s))
                 return file;
         }
     }
@@ -55,12 +54,11 @@ std::unique_ptr<std::istream> IncludeHandler::Include(const std::string& filenam
     if (useSearchPathsFirst)
     {
         /* Read file from relative path */
-        auto file = ReadFile(filename);
-        if (file)
+        if (auto file = ReadFile(filename))
             return file;
     }
 
-    RuntimeErr("failed to include file: \"" + filename + "\"");
+    RuntimeErr(R_FailedToIncludeFile(filename));
 }
 
 

@@ -513,6 +513,7 @@ DECL_REPORT( MissingValueInShellCmd,            "missing value in command '{0}'"
 DECL_REPORT( PressAnyKeyToContinue,             "press any key to continue ..."                                                                                 );
 DECL_REPORT( FailedToReadFile,                  "failed to read file: \"{0}\""                                                                                  );
 DECL_REPORT( FailedToWriteFile,                 "failed to write file: \"{0}\""                                                                                 );
+DECL_REPORT( FailedToIncludeFile,               "failed to include file: \"{0}\""                                                                               );
 DECL_REPORT( ValidateShader,                    "validate \"{0}\""                                                                                              );
 DECL_REPORT( ValidationSuccessful,              "validation successful"                                                                                         );
 DECL_REPORT( ValidationFailed,                  "validation failed"                                                                                             );

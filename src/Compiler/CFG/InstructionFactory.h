@@ -21,7 +21,7 @@ namespace Xsc
 
 class BasicBlock;
 
-// CFG instruction class (SPIR-V encoded).
+// CFG instruction factory class (SPIR-V encoded).
 class InstructionFactory
 {
 

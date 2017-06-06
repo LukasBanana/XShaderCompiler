@@ -13,7 +13,7 @@ namespace Xsc
 
 
 /*
-This class has been adopted from a public-dopmain code sample.
+This class has been adopted from a public-domain code sample.
 see http://stackoverflow.com/questions/1659440/32-bit-to-16-bit-floating-point-conversion
 */
 class Float16Compressor
