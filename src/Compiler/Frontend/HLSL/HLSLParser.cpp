@@ -1864,9 +1864,19 @@ BufferTypeDenoterPtr HLSLParser::ParseBufferTypeDenoter()
     /* Parse optional template arguments */
     if (Is(Tokens::BinaryOp, "<"))
     {
-        PushParsingState({ true });
+        PushParsingState({ /*activeTemplate:*/ true });
         {
             AcceptIt();
+
+            /* Parse optional type modifier (only 'snorm' and 'unorm') */
+            if (Is(Tokens::TypeModifier))
+            {
+                //TODO: store this information inside the 'genericTypeDenoter'
+                auto modifierStr = Tkn()->Spell();
+                auto modifier = ParseTypeModifier();
+                if (modifier != TypeModifier::SNorm && modifier != TypeModifier::UNorm)
+                    Error(R_InvalidModifierForGenericTypeDen(modifierStr), true, false);
+            }
 
             /* Parse generic type denoter ('<' TYPE '>') */
             typeDenoter->genericTypeDenoter = ParseTypeDenoter(false);

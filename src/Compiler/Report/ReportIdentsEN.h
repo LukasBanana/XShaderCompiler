@@ -384,6 +384,7 @@ DECL_REPORT( UnexpectedTokenInPackMatrixPragma, "unexpected token in '#pragma pa
 DECL_REPORT( UnexpectedPreParsedAST,            "unexpected pre-parsed AST node"                                                                                );
 DECL_REPORT( InvalidHLSLDirectiveAfterPP,       "only '#line' and '#pragma' directives are allowed after pre-processing"                                        );
 DECL_REPORT( InvalidHLSLPragmaAfterPP,          "only 'pack_matrix' pragma directive is allowed after pre-processing"                                           );
+DECL_REPORT( InvalidModifierForGenericTypeDen,  "invalid modifier for generic type denoter[: '{0}']"                                                            );
 DECL_REPORT( IllegalRecursiveInheritance,       "recursive inheritance is not allowed"                                                                          );
 DECL_REPORT( IllegalMultipleInheritance,        "multiple inheritance is not allowed"                                                                           );
 DECL_REPORT( IllegalDeclStmntInsideDeclOf,      "illegal declaration statement inside declaration of '{0}'"                                                     );
