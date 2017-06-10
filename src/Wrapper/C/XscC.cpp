@@ -49,6 +49,7 @@ struct CompilerContext
     Xsc::Reflection::ReflectionData reflection;
 
     std::vector<const char*>        macros;
+    std::vector<const char*>        uniforms;
     std::vector<XscBindingSlot>     textures;
     std::vector<XscBindingSlot>     storageBuffers;
     std::vector<XscBindingSlot>     constantBuffers;
@@ -163,6 +164,9 @@ static void CopyReflection(const Xsc::Reflection::ReflectionData& src, struct Xs
     for (const auto& s : src.macros)
         g_compilerContext.macros.push_back(s.c_str());
 
+    for (const auto& s : src.uniforms)
+        g_compilerContext.uniforms.push_back(s.c_str());
+
     for (const auto& s : src.textures)
         g_compilerContext.textures.push_back({ s.ident.c_str(), s.location });
 
@@ -205,6 +209,9 @@ static void CopyReflection(const Xsc::Reflection::ReflectionData& src, struct Xs
     /* Set references to output buffers */
     dst->macros                 = g_compilerContext.macros.data();
     dst->macrosCount            = g_compilerContext.macros.size();
+
+    dst->uniforms               = g_compilerContext.uniforms.data();
+    dst->uniformsCount          = g_compilerContext.uniforms.size();
 
     dst->textures               = g_compilerContext.textures.data();
     dst->texturesCount          = g_compilerContext.textures.size();

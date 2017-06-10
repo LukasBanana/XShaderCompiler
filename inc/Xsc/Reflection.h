@@ -143,6 +143,9 @@ struct ReflectionData
     //! All defined macros after pre-processing.
     std::vector<std::string>            macros;
 
+    //! Single shader uniforms.
+    std::vector<std::string>            uniforms;
+
     //! Texture bindings.
     std::vector<BindingSlot>            textures;
 
@@ -158,13 +161,10 @@ struct ReflectionData
     //! Shader output attributes.
     std::vector<BindingSlot>            outputAttributes;
 
-    //! Shader uniforms.
-    std::vector<BindingSlot>            uniforms;
-
     //! Static sampler states (identifier, states).
     std::map<std::string, SamplerState> samplerStates;
 
-    //! 'numthreads' attribute of a compute shader.
+    //! Number of local threads in a compute shader.
     NumThreads                          numThreads;
 };
 

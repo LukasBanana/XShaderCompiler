@@ -157,18 +157,13 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     if (ast->flags(AST::isReachable))
     {
-        TypeSpecifier* typeSpecifier = ast->FetchTypeSpecifier();
-        if (typeSpecifier != nullptr && typeSpecifier->isUniform)
+        if (auto typeSpecifier = ast->FetchTypeSpecifier())
         {
-            // Create the binding slot. The location for now is ignored as even with explicit binding
-            // the uniforms never get a set binding point
-            Reflection::BindingSlot bindingSlot;
+            if (typeSpecifier->isUniform)
             {
-                bindingSlot.ident       = ast->ident;
-                bindingSlot.location    = -1;
+                /* Add variable as uniform */
+                data_->uniforms.push_back(ast->ident);
             }
-
-            data_->uniforms.push_back(bindingSlot);
         }
     }
 }

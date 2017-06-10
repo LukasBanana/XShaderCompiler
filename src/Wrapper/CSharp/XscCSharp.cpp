@@ -298,6 +298,9 @@ public ref class XscCompiler
                 //! All defined macros after pre-processing.
                 property Collections::Generic::List<String^>^                       Macros;
 
+                //! Single shader uniforms.
+                property Collections::Generic::List<String^>^                       Uniforms;
+
                 //! Texture bindings.
                 property Collections::Generic::List<BindingSlot^>^                  Textures;
 
@@ -975,13 +978,22 @@ class LogCSharp : public Xsc::Log
  * XscCompiler class implementation
  */
 
+static Collections::Generic::List<String^>^ ToManagedList(const std::vector<std::string>& src)
+{
+    auto dst = gcnew Collections::Generic::List<String^>();
+
+    for (const auto& s : src)
+        dst->Add(gcnew String(s.c_str()));
+
+    return dst;
+}
+
 static Collections::Generic::List<XscCompiler::BindingSlot^>^ ToManagedList(const std::vector<Xsc::Reflection::BindingSlot>& src)
 {
     auto dst = gcnew Collections::Generic::List<XscCompiler::BindingSlot^>();
 
     for (const auto& s : src)
         dst->Add(gcnew XscCompiler::BindingSlot(gcnew String(s.ident.c_str()), s.location));
-
 
     return dst;
 }
@@ -1107,12 +1119,9 @@ bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc
             const auto& src = reflect;
             auto dst = reflectionData;
 
-            /* Copy macro reflection */
-            dst->Macros = gcnew Collections::Generic::List<String^>();
-            for (const auto& s : src.macros)
-                dst->Macros->Add(gcnew String(s.c_str()));
-
-            /* Copy binding slots reflection */
+            /* Copy lists in reflection */
+            dst->Macros             = ToManagedList(src.macros);
+            dst->Uniforms           = ToManagedList(src.uniforms);
             dst->Textures           = ToManagedList(src.textures);
             dst->StorageBuffers     = ToManagedList(src.storageBuffers);
             dst->ConstantBuffers    = ToManagedList(src.constantBuffers);

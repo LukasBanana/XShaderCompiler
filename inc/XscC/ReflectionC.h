@@ -130,6 +130,12 @@ struct XscReflectionData
     //! Number of elements in 'macros'.
     size_t                          macrosCount;
 
+    //! Single shader uniforms.
+    const char**                    uniforms;
+
+    //! Number of elements in 'uniforms'.
+    size_t                          uniformsCount;
+
     //! Texture bindings.
     const struct XscBindingSlot*    textures;
 
