@@ -61,9 +61,9 @@ static unsigned int StringDistancePrimary(const std::string& lhs, const std::str
 
 unsigned int StringDistance(const std::string& a, const std::string& b)
 {
-    static const unsigned int maxDist = ~0;
+    static const unsigned int maxDist    = ~0;
     static const unsigned int maxLenDiff = 3;
-    static const unsigned int maxShift = 2;
+    static const unsigned int maxShift   = 2;
 
     if (a == b)
         return 0;

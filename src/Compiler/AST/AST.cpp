@@ -1092,9 +1092,10 @@ std::string FunctionDecl::ToString(bool useParamNames) const
 
     /* Append identifier */
     s += ident.Original();
-    s += '(';
 
     /* Append parameter types */
+    s += '(';
+
     for (std::size_t i = 0; i < parameters.size(); ++i)
     {
         if (!parameters[i]->flags(VarDeclStmnt::isSelfParameter))
