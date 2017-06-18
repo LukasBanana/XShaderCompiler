@@ -2201,7 +2201,10 @@ const ObjectExpr* ObjectExpr::FetchLValueExpr() const
                 Fetch l-value from prefix if this is a base structure namespace expression,
                 e.g. "obj.BaseStruct::member" -> "BaseStruct" is a base structure namespace.
                 */
-                return prefixExpr->FetchLValueExpr();
+                if (prefixExpr)
+                    return prefixExpr->FetchLValueExpr();
+                else
+                    return nullptr;
             default:
                 return nullptr;
         }
