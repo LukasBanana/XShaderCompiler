@@ -129,8 +129,8 @@ struct Formatting
     //! Indentation string for code generation. By default std::string(4, ' ').
     std::string indent              = "    ";
 
-    //! If true, line marks are allowed. By default true.
-    bool        lineMarks           = true;
+    //! If true, line marks are allowed. By default false.
+    bool        lineMarks           = false;
 
     //! If true, auto-formatting of line separation is allowed. By default true.
     bool        lineSeparation      = true;

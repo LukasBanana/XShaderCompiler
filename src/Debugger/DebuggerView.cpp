@@ -234,7 +234,7 @@ void DebuggerView::CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg)
     pg.Append(new wxBoolProperty("Always Braced Scopes", "alwaysBracedScopes"));
     pg.Append(new wxBoolProperty("Blanks", "blanks", true));
     pg.Append(new wxBoolProperty("Compact Wrappers", "compactWrappers", true));
-    pg.Append(new wxBoolProperty("Line Marks", "lineMarks", true));
+    pg.Append(new wxBoolProperty("Line Marks", "lineMarks"));
     pg.Append(new wxBoolProperty("Line Separation", "lineSeparation", true));
     pg.Append(new wxBoolProperty("New-Line Open Scope", "newLineOpenScope", true));
 }

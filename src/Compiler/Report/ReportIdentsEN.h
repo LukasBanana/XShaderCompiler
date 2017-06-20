@@ -574,7 +574,7 @@ DECL_REPORT( CmdHelpFormatting,                 "Enables/disables the specified 
 DECL_REPORT( CmdHelpDetailsFormatting,          "blanks        => blank lines between declarations; default={1}\n"  \
                                                 "force-braces  => force braces for scopes; default={0}\n"           \
                                                 "compact       => write compact wrapper functions; default={0}\n"   \
-                                                "line-marks    => line marks (e.g. '#line 30'); default={1}\n"      \
+                                                "line-marks    => line marks (e.g. '#line 30'); default={0}\n"      \
                                                 "line-sep      => separate lines in columns; default={1}\n"         \
                                                 "newline-scope => write open braces at new lines; default={1}"                                                  );
 DECL_REPORT( CmdHelpIndent,                     "Code indentation string (use '\\t' for tabs); default='    '"                                                  );

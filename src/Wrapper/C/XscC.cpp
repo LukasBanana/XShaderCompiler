@@ -71,7 +71,7 @@ static void InitializeFormatting(struct XscFormatting* s)
     s->blanks               = true;
     s->compactWrappers      = false;
     s->indent               = "    ";
-    s->lineMarks            = true;
+    s->lineMarks            = false;
     s->lineSeparation       = true;
     s->newLineOpenScope     = true;
 }
