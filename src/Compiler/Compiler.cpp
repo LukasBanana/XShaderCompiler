@@ -157,7 +157,7 @@ bool Compiler::CompileShaderPrimary(
     auto processedInput = preProcessor->Process(
         std::make_shared<SourceCode>(inputDesc.sourceCode),
         inputDesc.filename,
-        true,
+        outputDesc.formatting.lineMarks,
         ((inputDesc.warnings & Warnings::PreProcessor) != 0)
     );
 

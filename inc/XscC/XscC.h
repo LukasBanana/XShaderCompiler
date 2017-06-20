@@ -68,7 +68,7 @@ struct XscFormatting
     //! Indentation string for code generation. By default 4 spaces.
     const char* indent;
 
-    //! If true, line marks are allowed. By default false.
+    //! If true, line marks are allowed. By default true.
     bool        lineMarks;
 
     //! If true, auto-formatting of line separation is allowed. By default true.

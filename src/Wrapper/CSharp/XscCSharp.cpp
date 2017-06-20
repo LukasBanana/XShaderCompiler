@@ -336,7 +336,7 @@ public ref class XscCompiler
                     Blanks              = true;
                     CompactWrappers     = false;
                     Indent              = gcnew String("    ");
-                    LineMarks           = false;
+                    LineMarks           = true;
                     LineSeparation      = true;
                     NewLineOpenScope    = true;
                 }
@@ -353,7 +353,7 @@ public ref class XscCompiler
                 //! Indentation string for code generation. By default 4 spaces.
                 property String^    Indent;
 
-                //! If true, line marks are allowed. By default false.
+                //! If true, line marks are allowed. By default true.
                 property bool       LineMarks;
 
                 //! If true, auto-formatting of line separation is allowed. By default true.
