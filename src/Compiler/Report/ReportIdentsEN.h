@@ -223,6 +223,7 @@ DECL_REPORT( UnexpectedTokenInPragma,           "unexpected token in '#pragam'-d
 DECL_REPORT( UnexpectedEndOfTokenString,        "unexpected end of token string"                                                                                );
 DECL_REPORT( RemainingTokensInPragma,           "remaining unhandled tokens in '#pragma'-directive"                                                             );
 DECL_REPORT( EmptyPragma,                       "empty '#pragma'-directive"                                                                                     );
+DECL_REPORT( TooManyRecursiveIncludesOfFile,    "too many recursive includes of file[: \"{0}\"]"                                                                          );
 
 /* ----- VisitorTracker ----- */
 
@@ -344,6 +345,7 @@ DECL_REPORT( MacrosWithTwoUnderscoresReserved,  "macros containing consecutive u
 DECL_REPORT( IllegalRedefOfStdMacro,            "illegal redefinition of standard macro[: {0}]"                                                                 );
 DECL_REPORT( IllegalUndefOfStdMacro,            "illegal undefinition of standard macro[: {0}]"                                                                 );
 DECL_REPORT( VersionMustBeFirstDirective,       "'#version'-directive must be the first directive"                                                              );
+DECL_REPORT( GLSLVersionAlreadyDefined,         "GLSL version is already defined[ (with number {0})]"                                                           );
 DECL_REPORT( UnknownGLSLVersion,                "unknown GLSL version: '{0}'"                                                                                   );
 DECL_REPORT( NoProfileForGLSLVersionBefore150,  "versions before 150 do not allow a profile token"                                                              );
 DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (must be 'core' or 'compatibility')"                                             );

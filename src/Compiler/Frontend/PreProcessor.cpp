@@ -96,8 +96,13 @@ void PreProcessor::ParseDirective(const std::string& directive, bool ignoreUnkno
             Warning(R_UnknownPPDirective(directive));
         else
             Error(R_UnknownPPDirective(directive), true, false);
-        ParseDirectiveTokenString();
+        IgnoreDirective();
     }
+}
+
+void PreProcessor::IgnoreDirective()
+{
+    ParseDirectiveTokenString();
 }
 
 void PreProcessor::DefineMacro(const Macro& macro)
@@ -200,18 +205,41 @@ ScannerPtr PreProcessor::MakeScanner()
 
 void PreProcessor::PushScannerSource(const SourceCodePtr& source, const std::string& filename)
 {
+    static const std::size_t includeCounterLimit = 500;
+
+    /* Check if file has been included too often */
+    auto& counter = includeCounter_[filename];
+    if (counter >= includeCounterLimit)
+        Error(R_TooManyRecursiveIncludesOfFile(filename));
+    else
+        ++counter;
+
+    /* Push scanner for new source file */
     Parser::PushScannerSource(source, filename);
     GetScanner().Source()->NextSourceOrigin(filename, 0);
+
+    /* Write new line directive for current position */
     WritePosToLineDirective();
 }
 
 bool PreProcessor::PopScannerSource()
 {
+    /* Reduce include counter for current file */
+    const auto filename = GetCurrentFilename();
+    if (!filename.empty())
+    {
+        auto& counter = includeCounter_[filename];
+        if (counter > 0)
+            --counter;
+    }
+
+    /* Pop scanner from stack */
     if (Parser::PopScannerSource())
     {
         WritePosToLineDirective();
         return true;
     }
+
     return false;
 }
 

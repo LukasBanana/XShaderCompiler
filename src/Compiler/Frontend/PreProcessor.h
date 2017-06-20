@@ -86,6 +86,9 @@ class PreProcessor : public Parser
         // Parses the specified directive, that is not part of the standard pre-processor directive (e.g. "version" or "extension" for GLSL).
         virtual void ParseDirective(const std::string& directive, bool ignoreUnknown);
 
+        // Ignores the remaining tokens of the current directive.
+        void IgnoreDirective();
+
         // Defines a macro with the specified identifier, value token string, and parameters.
         void DefineMacro(const Macro& macro);
 
@@ -196,6 +199,7 @@ class PreProcessor : public Parser
 
         std::map<std::string, MacroPtr>     macros_;
         std::set<std::string>               onceIncluded_;
+        std::map<std::string, std::size_t>  includeCounter_; // Counter for each included file
 
         /*
         Stack to store the info which if-block in the hierarchy is active.

@@ -43,7 +43,8 @@ class GLSLPreProcessor : public PreProcessor
 
         /* === Members === */
 
-        int versionNo_ = 0;
+        bool    versionDefined_ = false;
+        int     versionNo_      = 0;
 
 };
 

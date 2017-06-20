@@ -100,6 +100,16 @@ void GLSLPreProcessor::ParseDirectiveVersion()
 {
     std::string version, profile;
 
+    /* Check if version was already defined */
+    if (versionDefined_)
+    {
+        Error(R_GLSLVersionAlreadyDefined(versionNo_), true, false);
+        IgnoreDirective();
+        return;
+    }
+    
+    versionDefined_ = true;
+
     /* Parse version number */
     IgnoreWhiteSpaces();
     version = Accept(Tokens::IntLiteral)->Spell();
