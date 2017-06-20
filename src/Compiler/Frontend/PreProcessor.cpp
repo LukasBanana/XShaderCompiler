@@ -193,6 +193,48 @@ bool PreProcessor::OnUndefineMacro(const Macro& macro)
     return true;
 }
 
+Variant PreProcessor::ParseAndEvaluateExpr(const Token* tkn)
+{
+    /*
+    Parse condExpr token string, and wrap it inside a bracket expression
+    to easier find the legal end of the expression during parsing.
+    TODO: this is a work around to detect an illegal end of a constant expression.
+    */
+    TokenPtrString tokenString;
+    tokenString.PushBack(Make<Token>(Tokens::LBracket, "("));
+    tokenString.PushBack(ParseDirectiveTokenString(true));
+    tokenString.PushBack(Make<Token>(Tokens::RBracket, ")"));
+
+    /* Evalutate condExpr */
+    Variant value;
+
+    PushTokenString(tokenString);
+    {
+        /* Build binary expression tree from token string */
+        auto conditionExpr = ParseExpr();
+
+        try
+        {
+            ExprEvaluator exprEvaluator;
+            value = exprEvaluator.Evaluate(*conditionExpr);
+        }
+        catch (const std::exception& e)
+        {
+            Error(e.what(), tkn);
+        }
+
+        #if 0
+        /* Check if token string has reached the end */
+        auto tokenStringIt = GetScanner().TopTokenStringIterator();
+        if (!tokenStringIt.ReachedEnd())
+            Error("illegal end of constant expression", tokenStringIt->get());
+        #endif
+    }
+    PopTokenString();
+
+    return value;
+}
+
 
 /*
  * ======= Private: =======
@@ -476,6 +518,12 @@ TokenPtrString PreProcessor::ParseIdentAsTokenString()
     {
         /* Replace '__LINE__' identifier with current line number */
         tokenString.PushBack(Make<Token>(Tokens::IntLiteral, std::to_string(GetScanner().Pos().Row())));
+    }
+    else if (ident == "__EVAL__")
+    {
+        /* Parse and evaluate argument */
+        auto argument = ParseAndEvaluateExpr(identTkn.get());
+        tokenString.PushBack(Make<Token>(Tokens::IntLiteral, std::to_string(argument.ToInt())));
     }
     else
     {
@@ -822,42 +870,8 @@ void PreProcessor::ParseDirectiveIfOrElifCondition(bool isElseBranch, bool skipE
     }
     else
     {
-        /*
-        Parse condExpr token string, and wrap it inside a bracket expression
-        to easier find the legal end of the expression during parsing.
-        TODO: this is a work around to detect an illegal end of a constant expression.
-        */
-        TokenPtrString tokenString;
-        tokenString.PushBack(Make<Token>(Tokens::LBracket, "("));
-        tokenString.PushBack(ParseDirectiveTokenString(true));
-        tokenString.PushBack(Make<Token>(Tokens::RBracket, ")"));
-
-        /* Evalutate condExpr */
-        Variant condition;
-
-        PushTokenString(tokenString);
-        {
-            /* Build binary expression tree from token string */
-            auto conditionExpr = ParseExpr();
-
-            try
-            {
-                ExprEvaluator exprEvaluator;
-                condition = exprEvaluator.Evaluate(*conditionExpr);
-            }
-            catch (const std::exception& e)
-            {
-                Error(e.what(), tkn.get());
-            }
-
-            #if 0
-            /* Check if token string has reached the end */
-            auto tokenStringIt = GetScanner().TopTokenStringIterator();
-            if (!tokenStringIt.ReachedEnd())
-                Error("illegal end of constant expression", tokenStringIt->get());
-            #endif
-        }
-        PopTokenString();
+        /* Parse and evaluate conditional expression */
+        auto condition = ParseAndEvaluateExpr(tkn.get());
 
         /* Push new if-block */
         if (isElseBranch)

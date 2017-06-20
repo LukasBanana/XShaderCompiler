@@ -13,5 +13,7 @@
 DECL_VECTOR4(N)
 DECL_VECTOR4(__EVAL__(N))
 
-//#include "PPTest3Header.vert"
+#if N < 10
+#	include "PPTest3Header.vert"
+#endif
 
