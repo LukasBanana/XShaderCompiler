@@ -152,8 +152,11 @@
 [PPTest1 VS]
 -T vert -E VS -O -o output/* PPTest1.hlsl
 
-[PPTest1 -PP]
+[PPTest1: preprocessor]
 -PP -O -o output/PPTest1.post.hlsl PPTest1.hlsl
+
+[PPTest3: preprocessor]
+-PP -Vin GLSL -o output/PPTest3.post.vert PPTest3.vert
 
 [FuncOverloadTest1 PS]
 -T frag -E PS -o output/* FuncOverloadTest1.hlsl
