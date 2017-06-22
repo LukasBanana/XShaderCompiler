@@ -577,7 +577,7 @@ DECL_REPORT( CmdHelpDetailsFormatting,          "blanks        => blank lines be
                                                 "line-marks    => line marks (e.g. '#line 30'); default={0}\n"      \
                                                 "line-sep      => separate lines in columns; default={1}\n"         \
                                                 "newline-scope => write open braces at new lines; default={1}"                                                  );
-DECL_REPORT( CmdHelpIndent,                     "Code indentation string (use '\\t' for tabs); default='    '"                                                  );
+DECL_REPORT( CmdHelpIndent,                     "Code indentation string (use '\\\\t' for tabs); default='    '"                                                );
 DECL_REPORT( CmdHelpPrefix,                     "Prefix for the specified name-mangling type; valid types:"                                                     );
 DECL_REPORT( CmdHelpDetailsPrefix,              "in        => input variables; default='xsv_'\n"    \
                                                 "namespace => namespace objects; default='xsn_'\n"  \

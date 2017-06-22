@@ -100,7 +100,7 @@ Instruction& Instruction::AddOperandASCII(const std::string& s)
     for (std::size_t i = 0; i < numCharsWithNUL; ++i, ++src, ++dst)
         *dst = *src;
 
-    /* Fill remaining bytese with zeros */
+    /* Fill remaining bytes with zeros */
     if (numCharsWithNUL % 4 != 0)
     {
         for (std::size_t i = 0; i < (4 - numCharsWithNUL % 4); ++i, ++dst)
