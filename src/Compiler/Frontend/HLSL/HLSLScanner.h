@@ -9,7 +9,7 @@
 #define XSC_HLSL_SCANNER_H
 
 
-#include "Scanner.h"
+#include "SLScanner.h"
 
 
 namespace Xsc
@@ -17,27 +17,16 @@ namespace Xsc
 
 
 // HLSL token scanner.
-class HLSLScanner : public Scanner
+class HLSLScanner : public SLScanner
 {
     
     public:
         
         HLSLScanner(bool enableCgKeywords, Log* log = nullptr);
 
-        // Scanns the next token.
-        TokenPtr Next() override;
-
     private:
-        
-        /* === Functions === */
 
-        TokenPtr ScanToken() override;
-
-        TokenPtr ScanDirective();
-        TokenPtr ScanIdentifier();
-        TokenPtr ScanAssignShiftRelationOp(const char Chr);
-        TokenPtr ScanPlusOp();
-        TokenPtr ScanMinusOp();
+        TokenPtr ScanIdentifierOrKeyword(std::string&& spell) override;
 
         /* === Members === */
 
