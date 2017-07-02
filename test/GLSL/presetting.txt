@@ -1,0 +1,15 @@
+#
+# Presettings for XShaderCompiler test shaders
+# 
+# Syntax:
+#   First line specifies the title of the presetting,
+#   and the second line contains the command line arguments (without the "xsc" shell).
+#   Lines can be commented out with a leading hash (#) symbol.
+#   Empty lines are ignored.
+#
+
+[ExprTest1: vert]
+-Vin GLSL --show-ast -o output/* ExprTest1.vert
+
+[PPTest3: preprocessor]
+-PP -Vin GLSL -o output/PPTest3.post.vert PPTest3.vert

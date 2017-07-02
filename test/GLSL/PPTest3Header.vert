@@ -10,8 +10,8 @@
 
 #define N N+1
 
-DECL_VECTOR4(N)
-DECL_VECTOR4(__EVAL__(N))
+DECL_VECTOR4(N);
+DECL_VECTOR4(__EVAL__(N)); // <-- BUG with semicolon when "__EVAL__" is used!!!
 
 #if N < 10
 #	include "PPTest3Header.vert"
