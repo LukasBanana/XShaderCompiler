@@ -78,7 +78,7 @@
 -T tesc -E HS -Pout "ctrl_" -o output/* TessellationTest1.hlsl
 
 [TessellationTest1 DS]
--T tese -E DS -Pin "ctrl_" -E2 PatchConstantFuncHS -o output/* TessellationTest1.hlsl
+-T tese -E DS -Pin "ctrl_" -E2 HS -o output/* TessellationTest1.hlsl
 
 [TessellationTest1 PS]
 -T frag -E PS -o output/* TessellationTest1.hlsl
