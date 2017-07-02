@@ -110,8 +110,14 @@ class PreProcessor : public Parser
         // Callback function when a macro is about to be undefined, return true if the undefinition is allowed.
         virtual bool OnUndefineMacro(const Macro& macro);
 
+        // Evaluate the expression of the specified token string.
+        Variant EvaluateExpr(const TokenPtrString& tokenString, const Token* tkn = nullptr);
+
         // Parse a token string and evaluate it as expression.
         Variant ParseAndEvaluateExpr(const Token* tkn = nullptr);
+
+        // Parse a token string as argument and evaluate it as expression.
+        Variant ParseAndEvaluateArgumentExpr(const Token* tkn = nullptr);
 
         // Returns the output stream as reference.
         inline std::stringstream& Out()

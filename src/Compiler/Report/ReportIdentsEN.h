@@ -352,6 +352,11 @@ DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (
 DECL_REPORT( ExtensionNotSupported,             "extension not supported[: {0}]"                                                                                );
 DECL_REPORT( InvalidGLSLExtensionBehavior,      "invalid extension behavior '{0}' (must be 'enable', 'require', 'warn', or 'disable')"                          );
 
+/* ----- GLSLParser ----- */
+
+DECL_REPORT( InvalidGLSLDirectiveAfterPP,       "only '#line', '#version', and '#extension' directives are allowed after pre-processing"                        );
+DECL_REPORT( IllegalInheritance,                "illegal inheritance"                                                                                           );
+
 /* ----- GLSLKeywords ----- */
 
 DECL_REPORT( FailedToMapFromGLSLKeyword,        "failed to map GLSL keyword '{0}' to {1}"                                                                       );
@@ -387,8 +392,8 @@ DECL_REPORT( UnexpectedPreParsedAST,            "unexpected pre-parsed AST node"
 DECL_REPORT( InvalidHLSLDirectiveAfterPP,       "only '#line' and '#pragma' directives are allowed after pre-processing"                                        );
 DECL_REPORT( InvalidHLSLPragmaAfterPP,          "only 'pack_matrix' pragma directive is allowed after pre-processing"                                           );
 DECL_REPORT( InvalidModifierForGenericTypeDen,  "invalid modifier for generic type denoter[: '{0}']"                                                            );
-DECL_REPORT( IllegalRecursiveInheritance,       "recursive inheritance is not allowed"                                                                          );
-DECL_REPORT( IllegalMultipleInheritance,        "multiple inheritance is not allowed"                                                                           );
+DECL_REPORT( IllegalRecursiveInheritance,       "illegal recursive inheritance"                                                                                 );
+DECL_REPORT( IllegalMultipleInheritance,        "illegal multiple inheritance"                                                                                  );
 DECL_REPORT( IllegalDeclStmntInsideDeclOf,      "illegal declaration statement inside declaration of '{0}'"                                                     );
 DECL_REPORT( IllegalBufferTypeGenericSize,      "illegal usage of generic size in texture, buffer, or stream object"                                            );
 DECL_REPORT( IllegalPackOffset,                 "packoffset is only allowed in a constant buffer"                                                               );
@@ -504,7 +509,7 @@ DECL_REPORT( PreProcessingSourceFailed,         "preprocessing input code failed
 DECL_REPORT( ParsingSourceFailed,               "parsing input code failed"                                                                                     );
 DECL_REPORT( AnalyzingSourceFailed,             "analyzing input code failed"                                                                                   );
 DECL_REPORT( GeneratingOutputCodeFailed,        "generating output code failed"                                                                                 );
-DECL_REPORT( OnlyPreProcessingForNonHLSL,       "only pre-processing supported for shaders other than HLSL or Cg"                                               );
+DECL_REPORT( GLSLFrontendIsIncomplete,          "GLSL frontend is incomplete"                                                                                   );
 DECL_REPORT( InvalidILForDisassembling,         "invalid intermediate language for disassembling"                                                               );
 DECL_REPORT( NotBuildWithSPIRV,                 "compiler was not build with SPIR-V"                                                                            );
 

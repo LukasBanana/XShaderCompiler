@@ -837,6 +837,8 @@ static const std::map<BufferType, std::string> g_mapBufferType
     { BufferType::PointStream,             "PointStream"             },
     { BufferType::LineStream,              "LineStream"              },
     { BufferType::TriangleStream,          "TriangleStream"          },
+
+    { BufferType::GenericBuffer,           "buffer"                  },
 };
 
 std::string BufferTypeToString(const BufferType t)
@@ -849,7 +851,8 @@ bool IsStorageBufferType(const BufferType t)
     return
     (
         ( t >= BufferType::StructuredBuffer   && t <= BufferType::ByteAddressBuffer       ) ||
-        ( t >= BufferType::RWStructuredBuffer && t <= BufferType::ConsumeStructuredBuffer )
+        ( t >= BufferType::RWStructuredBuffer && t <= BufferType::ConsumeStructuredBuffer ) ||
+        ( t == BufferType::GenericBuffer                                                  )
     );
 }
 

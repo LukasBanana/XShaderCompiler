@@ -176,7 +176,7 @@ class Scanner
         TokenPtr                                    activeToken_;
         TokenPtr                                    prevToken_;
 
-        std::stack<TokenPtrString::ConstIterator>   tokenStringItStack_;
+        std::vector<TokenPtrString::ConstIterator>  tokenStringItStack_;
 
         // Active commentary string (in front of the next token).
         std::string                                 comment_;

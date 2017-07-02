@@ -422,7 +422,7 @@ enum class BufferType
     Texture2DMS,
     Texture2DMSArray,
 
-    GenericTexture,             // Texture of unspecified dimension (used in DX9 effect files: "texture" keyword).
+    GenericTexture,                 // Texture of unspecified dimension (used in DX9 effect files: "texture" keyword).
 
     /* --- Patches --- */
     InputPatch,
@@ -432,6 +432,9 @@ enum class BufferType
     PointStream,
     LineStream,
     TriangleStream,
+
+    /* --- Generic Buffers --- */
+    GenericBuffer,                  // GLSL "buffer"
 };
 
 // Converts the specified BufferType enumeration entry into a string.

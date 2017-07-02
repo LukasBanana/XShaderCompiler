@@ -38,7 +38,7 @@ T MapStringToType(const std::string& search, const std::map<std::string, T>& map
 {
     auto it = mappingList.find(search);
     if (it == mappingList.end())
-        throw std::invalid_argument(errorMsg + " '" + search + "'");
+        throw std::invalid_argument(errorMsg);
     return it->second;
 }
 

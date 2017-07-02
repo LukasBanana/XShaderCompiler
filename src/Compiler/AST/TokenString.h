@@ -49,8 +49,8 @@ class BasicTokenString
                 ConstIterator& operator = (const ConstIterator&) = default;
 
                 ConstIterator(const typename Container::const_iterator& it, const typename Container::const_iterator& itEnd) :
-                    it_     { it    },
-                    itEnd_  { itEnd }
+                    it_    { it    },
+                    itEnd_ { itEnd }
                 {
                     NextTokenOfInterest();
                 }
