@@ -15,6 +15,7 @@
 #include "ASTPrinter.h"
 
 #include "GLSLPreProcessor.h"
+#include "GLSLParser.h"
 #include "GLSLGenerator.h"
 
 #include "HLSLParser.h"
@@ -40,14 +41,17 @@ bool Compiler::CompileShader(
     Reflection::ReflectionData* reflectionData,
     StageTimePoints*            stageTimePoints)
 {
-    /* Check for supported feature */
-    if (!IsLanguageHLSL(inputDesc.shaderVersion) && !outputDesc.options.preprocessOnly)
-        return ReturnWithError(R_OnlyPreProcessingForNonHLSL);
-
     /* Make copy of output descriptor to support validation without output stream */
     std::stringstream dummyOutputStream;
 
     auto outputDescCopy = outputDesc;
+
+    if (!IsLanguageHLSL(inputDesc.shaderVersion) && !outputDesc.options.preprocessOnly)
+    {
+        if (log_)
+            log_->SubmitReport(Report(ReportTypes::Warning, R_GLSLFrontendIsIncomplete));
+        outputDescCopy.options.validateOnly = true;
+    }
 
     if (outputDescCopy.options.validateOnly)
         outputDescCopy.sourceCode = &dummyOutputStream;
@@ -194,6 +198,24 @@ bool Compiler::CompileShaderPrimary(
             outputDesc.nameMangling,
             inputDesc.shaderVersion,
             outputDesc.options.rowMajorAlignment,
+            ((inputDesc.warnings & Warnings::Syntax) != 0)
+        );
+    }
+    else if (IsLanguageGLSL(inputDesc.shaderVersion))
+    {
+        /* Establish intrinsic adept */
+        #if 0
+        intrinsicAdpet = MakeUnique<GLSLIntrinsicAdept>();
+        #else //!!!
+        intrinsicAdpet = MakeUnique<HLSLIntrinsicAdept>();
+        #endif
+
+        /* Parse GLSL input code */
+        GLSLParser parser(log_);
+        program = parser.ParseSource(
+            std::make_shared<SourceCode>(std::move(processedInput)),
+            outputDesc.nameMangling,
+            inputDesc.shaderVersion,
             ((inputDesc.warnings & Warnings::Syntax) != 0)
         );
     }

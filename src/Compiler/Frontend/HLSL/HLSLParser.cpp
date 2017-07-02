@@ -150,7 +150,7 @@ void HLSLParser::ProcessDirective(const std::string& ident)
         else if (ident == "pragma")
             ProcessDirectivePragma();
         else
-            Error(R_InvalidHLSLDirectiveAfterPP);
+            RuntimeErr(R_InvalidHLSLDirectiveAfterPP);
     }
     catch (const std::exception& e)
     {
@@ -1485,7 +1485,7 @@ CallExprPtr HLSLParser::ParseCallExpr(const ObjectExprPtr& objectExpr, const Typ
 {
     if (objectExpr)
     {
-        /* Make new identifier token with source position form input */
+        /* Make new identifier token with source position from input */
         auto identTkn = std::make_shared<Token>(objectExpr->area.Pos(), Tokens::Ident, objectExpr->ident);
 
         /* Parse call expression and take prefix expression from input */
@@ -1775,7 +1775,7 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseTypeDenoter()
     return nullptr;
 }
 
-// matrix < ScalarType, '1'-'4', '1'-'4' >;
+// vector < ScalarType, '1'-'4' >;
 BaseTypeDenoterPtr HLSLParser::ParseBaseVectorTypeDenoter()
 {
     std::string vectorType;
