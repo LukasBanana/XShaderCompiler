@@ -284,6 +284,8 @@ TypeSpecifierPtr GLSLParser::ParseTypeSpecifier(bool parseVoidType)
     return UpdateSourceArea(ast);
 }
 
+#if 0
+
 BufferDeclPtr GLSLParser::ParseBufferDecl(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn)
 {
     auto ast = Make<BufferDecl>();
@@ -311,6 +313,8 @@ SamplerDeclPtr GLSLParser::ParseSamplerDecl(SamplerDeclStmnt* declStmntRef, cons
 
     return ast;
 }
+
+#endif
 
 StructDeclPtr GLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& identTkn)
 {
@@ -367,6 +371,8 @@ StructDeclPtr GLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
     return ast;
 }
 
+#if 0
+
 FunctionDeclPtr GLSLParser::ParseFunctionDecl(BasicDeclStmnt* declStmntRef, const TypeSpecifierPtr& returnType, const TokenPtr& identTkn)
 {
     auto ast = Make<FunctionDecl>();
@@ -419,13 +425,15 @@ FunctionDeclPtr GLSLParser::ParseFunctionDecl(BasicDeclStmnt* declStmntRef, cons
     return ast;
 }
 
-UniformBufferDeclPtr GLSLParser::ParseUniformBufferDecl()
+#endif
+
+UniformBufferDeclPtr GLSLParser::ParseUniformBufferDecl(const TokenPtr& identTkn)
 {
     auto ast = Make<UniformBufferDecl>();
 
     /* Parse buffer header */
     ast->bufferType = UniformBufferType::ConstantBuffer;
-    ast->ident      = ParseIdent();
+    ast->ident      = ParseIdent(identTkn);
 
     UpdateSourceArea(ast);
 
@@ -448,9 +456,7 @@ UniformBufferDeclPtr GLSLParser::ParseUniformBufferDecl()
                 varDecl->bufferDeclRef = ast.get();
         }
 
-        /* Parse optional semicolon (this seems to be optional for cbuffer, and tbuffer) */
-        if (Is(Tokens::Semicolon))
-            Semi();
+        Semi();
     }
     GetReportHandler().PopContextDesc();
 
@@ -463,22 +469,29 @@ StmntPtr GLSLParser::ParseGlobalStmnt()
 {
     switch (TknType())
     {
-        case Tokens::Sampler:
         #if 0
+        case Tokens::Sampler:
         case Tokens::SamplerState:
             return ParseGlobalStmntWithSamplerTypeDenoter();
         case Tokens::Buffer:
             return ParseGlobalStmntWithBufferTypeDenoter();
         #endif
         case Tokens::UniformBuffer:
-            return ParseUniformBufferDeclStmnt();
+            return ParseUniformDeclStmnt();
+        #if 0
         case Tokens::Void:
         case Tokens::Inline:
             return ParseFunctionDeclStmnt();
         default:
             return ParseGlobalStmntWithTypeSpecifier();
+        #else
+        default:
+            return nullptr;//!!!
+        #endif
     }
 }
+
+#if 0
 
 StmntPtr GLSLParser::ParseGlobalStmntWithTypeSpecifier()
 {
@@ -524,8 +537,6 @@ StmntPtr GLSLParser::ParseGlobalStmntWithTypeSpecifier()
     }
 }
 
-#if 0
-
 StmntPtr GLSLParser::ParseGlobalStmntWithSamplerTypeDenoter()
 {
     /* Parse sampler type denoter and identifier */
@@ -562,8 +573,6 @@ StmntPtr GLSLParser::ParseGlobalStmntWithBufferTypeDenoter()
     }
 }
 
-#endif
-
 BasicDeclStmntPtr GLSLParser::ParseFunctionDeclStmnt(const TypeSpecifierPtr& returnType, const TokenPtr& identTkn)
 {
     auto ast = Make<BasicDeclStmnt>();
@@ -574,18 +583,47 @@ BasicDeclStmntPtr GLSLParser::ParseFunctionDeclStmnt(const TypeSpecifierPtr& ret
     return ast;
 }
 
-BasicDeclStmntPtr GLSLParser::ParseUniformBufferDeclStmnt()
+#endif
+
+StmntPtr GLSLParser::ParseUniformDeclStmnt()
+{
+    Accept(Tokens::UniformBuffer);
+
+    if (Is(Tokens::Ident))
+    {
+        /* Parse identifer and check if it's a registerd type name */
+        auto identTkn = AcceptIt();
+
+        if (IsRegisteredTypeName(identTkn->Spell()))
+        {
+            return ParseVarDeclStmnt(true, identTkn);
+        }
+        else
+        {
+            /* Parse uniform buffer declaration */
+            return ParseUniformBufferDeclStmnt(identTkn);
+        }
+    }
+    else
+    {
+        /* Parse variable declaration */
+        return ParseVarDeclStmnt(true);
+    }
+}
+
+BasicDeclStmntPtr GLSLParser::ParseUniformBufferDeclStmnt(const TokenPtr& identTkn)
 {
     auto ast = Make<BasicDeclStmnt>();
 
-    /* Parse uniform buffer declaration object */
-    auto uniformBufferDecl = ParseUniformBufferDecl();
+    auto uniformBufferDecl = ParseUniformBufferDecl(identTkn);
     ast->declObject = uniformBufferDecl;
 
     uniformBufferDecl->declStmntRef = ast.get();
 
     return ast;
 }
+
+#if 0
 
 BufferDeclStmntPtr GLSLParser::ParseBufferDeclStmnt(const BufferTypeDenoterPtr& typeDenoter, const TokenPtr& identTkn)
 {
@@ -621,12 +659,16 @@ SamplerDeclStmntPtr GLSLParser::ParseSamplerDeclStmnt(const SamplerTypeDenoterPt
     return ast;
 }
 
-VarDeclStmntPtr GLSLParser::ParseVarDeclStmnt()
+#endif
+
+VarDeclStmntPtr GLSLParser::ParseVarDeclStmnt(bool isUniform, const TokenPtr& identTkn)
 {
     auto ast = Make<VarDeclStmnt>();
 
     /* Parse type specifier and all variable declarations */
+    #if 0//!!!
     ast->typeSpecifier  = ParseTypeSpecifier();
+    #endif
     ast->varDecls       = ParseVarDeclList(ast.get());
 
     Semi();
@@ -647,8 +689,10 @@ StmntPtr GLSLParser::ParseStmnt()
             return ParseCodeBlockStmnt();
         case Tokens::Return:
             return ParseReturnStmnt();
+        #if 0
         case Tokens::Ident:
             return ParseStmntWithIdent();
+        #endif
         case Tokens::For:
             return ParseForLoopStmnt();
         case Tokens::While:
@@ -661,8 +705,8 @@ StmntPtr GLSLParser::ParseStmnt()
             return ParseSwitchStmnt();
         case Tokens::CtrlTransfer:
             return ParseCtrlTransferStmnt();
+        #if 0
         case Tokens::Struct:
-        case Tokens::Class:
             return ParseStmntWithStructDecl();
         case Tokens::Sampler:
         case Tokens::SamplerState:
@@ -671,16 +715,21 @@ StmntPtr GLSLParser::ParseStmnt()
         case Tokens::InterpModifier:
         case Tokens::TypeModifier:
             return ParseVarDeclStmnt();
+        #endif
         default:
             break;
     }
 
+    #if 0
     if (IsDataType())
         return ParseVarDeclStmnt();
+    #endif
 
     /* Parse statement of arbitrary expression */
     return ParseExprStmnt();
 }
+
+#if 0
 
 StmntPtr GLSLParser::ParseStmntWithStructDecl()
 {
@@ -762,6 +811,8 @@ StmntPtr GLSLParser::ParseStmntWithIdent()
     return nullptr;
     #endif
 }
+
+#endif
 
 #endif
 
@@ -1072,6 +1123,8 @@ std::vector<StmntPtr> GLSLParser::ParseGlobalStmntList()
     return stmnts;
 }
 
+#if 0
+
 std::vector<BufferDeclPtr> GLSLParser::ParseBufferDeclList(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn)
 {
     std::vector<BufferDeclPtr> bufferDecls;
@@ -1101,6 +1154,8 @@ std::vector<SamplerDeclPtr> GLSLParser::ParseSamplerDeclList(SamplerDeclStmnt* d
 
     return samplerDecls;
 }
+
+#endif
 
 /* --- Others --- */
 
@@ -1152,7 +1207,7 @@ TypeDenoterPtr GLSLParser::ParseTypeDenoterPrimary(StructDeclPtr* structDecl)
 
 TypeDenoterPtr GLSLParser::ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl, bool allowVoidType)
 {
-    if (Is(Tokens::Struct) || Is(Tokens::Class))
+    if (Is(Tokens::Struct))
         return ParseStructTypeDenoterWithStructDeclOpt(structDecl);
     else
         return ParseTypeDenoter(allowVoidType);
@@ -1332,8 +1387,10 @@ bool GLSLParser::ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiv
             typeSpecifier->isInput = true;
             typeSpecifier->isOutput = true;
         }
+        #if 0
         else if (modifier == "uniform")
             typeSpecifier->isUniform = true;
+        #endif
     }
     else if (Is(Tokens::InterpModifier))
     {

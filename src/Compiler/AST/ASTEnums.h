@@ -382,7 +382,7 @@ enum class UniformBufferType
 {
     Undefined,
 
-    ConstantBuffer, // Constant buffer ("cbuffer" in HLSL).
+    ConstantBuffer, // Constant buffer ("cbuffer" in HLSL; "uniform" in GLSL).
     TextureBuffer,  // Texture buffer ("tbuffer" in HLSL).
 };
 
