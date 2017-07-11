@@ -270,6 +270,30 @@ VarDeclPtr GLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& 
     return ast;
 }
 
+// QUALIFIER ( '=' EXPR )?
+AttributePtr GLSLParser::ParseAttribute()
+{
+    auto ast = Make<Attribute>();
+
+    /* Parse layout qualifier */
+    auto attribIdent = ParseIdent();
+    ast->attributeType = GLSLKeywordToAttributeType(attribIdent);
+
+    UpdateSourceArea(ast);
+
+    if (ast->attributeType == AttributeType::Undefined)
+        Error(R_UnknownLayoutQualifier(attribIdent));
+
+    /* Parse optional layout qualifier value */
+    if (Is(Tokens::BinaryOp, "="))
+    {
+        AcceptIt();
+        ast->arguments.push_back(ParseExpr());
+    }
+
+    return ast;
+}
+
 TypeSpecifierPtr GLSLParser::ParseTypeSpecifier(bool parseVoidType)
 {
     auto ast = Make<TypeSpecifier>();
@@ -1121,6 +1145,30 @@ std::vector<StmntPtr> GLSLParser::ParseGlobalStmntList()
     AcceptIt();
 
     return stmnts;
+}
+
+// 'layout' '(' QUALIFIER ( ',' QUALIFIER )* ')'
+std::vector<AttributePtr> GLSLParser::ParseAttributeList()
+{
+    std::vector<AttributePtr> attribs;
+
+    /* Parse layout qualifier */
+    Accept(Tokens::LayoutQualifier);
+    Accept(Tokens::LBracket);
+
+    while (true)
+    {
+        attribs.push_back(ParseAttribute());
+
+        if (Is(Tokens::Comma))
+            AcceptIt();
+        else
+            break;
+    }
+
+    Accept(Tokens::LBracket);
+
+    return attribs;
 }
 
 #if 0

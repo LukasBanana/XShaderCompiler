@@ -87,6 +87,7 @@ class GLSLParser : public SLParser
         SwitchCasePtr                   ParseSwitchCase() override;
         VarDeclPtr                      ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr) override;
 
+        AttributePtr                    ParseAttribute();
         TypeSpecifierPtr                ParseTypeSpecifier(bool parseVoidType = false);
 
         #if 0
@@ -137,6 +138,7 @@ class GLSLParser : public SLParser
         CallExprPtr                     ParseCallExprAsTypeCtor(const TypeDenoterPtr& typeDenoter);
 
         std::vector<StmntPtr>           ParseGlobalStmntList();
+        std::vector<AttributePtr>       ParseAttributeList();
         #if 0
         std::vector<BufferDeclPtr>      ParseBufferDeclList(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         std::vector<SamplerDeclPtr>     ParseSamplerDeclList(SamplerDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);

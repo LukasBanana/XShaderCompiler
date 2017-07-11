@@ -610,7 +610,75 @@ SamplerType GLSLKeywordToSamplerType(const std::string& keyword)
 }
 
 
-/* ----- BufferType Mapping ----- */
+/* ----- AttributeType Mapping ----- */
+
+static Dictionary<AttributeType> GenerateAttributeTypeDict()
+{
+    using T = AttributeType;
+
+    return
+    {
+        { "algin",                   T::Align                 },
+        { "binding",                 T::Binding               },
+        { "cw",                      T::CW                    },
+        { "ccw",                     T::CCW                   },
+        { "column_major",            T::ColumnMajor           },
+        { "component",               T::Component             },
+        { "depth_any",               T::DepthAny              },
+        { "depth_greater",           T::DepthGreater          },
+        { "depth_less",              T::DepthLess             },
+        { "depth_unchanged",         T::DepthUnchanged        },
+        { "early_fragment_tests",    T::EarlyFragmentTests    },
+        { "equal_spacing",           T::EqualSpacing          },
+        { "fractional_even_spacing", T::FractionalEvenSpacing },
+        { "fractional_odd_spacing",  T::FractionalOddSpacing  },
+        { "index",                   T::Index                 },
+        { "invocations",             T::Invocations           },
+        { "isolines",                T::Isolines              },
+        { "lines",                   T::Lines                 },
+        { "lines_adjacency",         T::LinesAdjacency        },
+        { "line_strip",              T::LineStrip             },
+        { "local_size_x",            T::LocalSizeX            },
+        { "local_size_y",            T::LocalSizeY            },
+        { "local_size_z",            T::LocalSizeZ            },
+        { "location",                T::Location              },
+        { "max_vertices",            T::MaxVertices           },
+        { "origin_upper_left",       T::OriginUpperLeft       },
+        { "offset",                  T::Offset                },
+        { "packed",                  T::Packed                },
+        { "pixel_center_integer",    T::PixelCenterInteger    },
+        { "points",                  T::Points                },
+        { "point_mode",              T::PointMode             },
+        { "quads",                   T::Quads                 },
+        { "row_major",               T::RowMajor              },
+        { "shared",                  T::Shared                },
+        { "std140",                  T::Std140                },
+        { "std430",                  T::Std430                },
+        { "stream",                  T::Stream                },
+        { "triangles",               T::Triangles             },
+        { "triangles_adjacency",     T::TrianglesAdjacency    },
+        { "triangles_strip",         T::TriangleStrip         },
+        { "vertices",                T::Vertices              },
+        { "xfb_buffer",              T::XfbBuffer             },
+        { "xfb_offset",              T::XfbOffset             },
+        { "xfb_stride",              T::XfbStride             },
+    };
+}
+
+static const auto g_attributeTypeDictGLSL = GenerateAttributeTypeDict();
+
+const std::string* AttributeTypeToGLSLKeyword(const AttributeType t)
+{
+    return g_attributeTypeDictGLSL.EnumToString(t);
+}
+
+AttributeType GLSLKeywordToAttributeType(const std::string& keyword)
+{
+    return g_attributeTypeDictGLSL.StringToEnumOrDefault(keyword, AttributeType::Undefined);
+}
+
+
+/* ----- AttributeValue Mapping ----- */
 
 static Dictionary<AttributeValue> GenerateAttributeValueDict()
 {

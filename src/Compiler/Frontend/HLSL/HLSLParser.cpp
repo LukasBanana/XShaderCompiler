@@ -412,6 +412,7 @@ AttributePtr HLSLParser::ParseAttribute()
 
     auto ast = Make<Attribute>();
 
+    /* Parse attribute type  */
     auto attribIdent = ParseIdent();
     ast->attributeType = HLSLKeywordToAttributeType(attribIdent);
 
@@ -420,6 +421,7 @@ AttributePtr HLSLParser::ParseAttribute()
     if (ast->attributeType == AttributeType::Undefined)
         Warning(R_UnknownAttribute(attribIdent));
 
+    /* Parse optional attribute parameters */
     if (Is(Tokens::LBracket))
     {
         AcceptIt();
