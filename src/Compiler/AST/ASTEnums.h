@@ -618,45 +618,91 @@ enum class AttributeType
 {
     Undefined,
 
-    /* --- Common attributes --- */
-    Branch,
-    Call,
-    Flatten,
-    IfAll,
-    IfAny,
-    Isolate,
-    Loop,
-    MaxExports,
-    MaxInstructionCount,
-    MaxTempReg,
-    NoExpressionOptimizations,
-    Predicate,
-    PredicateBlock,
-    ReduceTempRegUsage,
-    RemoveUnusedInputs,
-    SampReg,
-    Unroll,
-    Unused,
-    Xps,
+    /* --- HLSL 3 attributes --- */
+    Branch,                     // [branch]
+    Call,                       // [call]
+    Flatten,                    // [flatten]
+    IfAll,                      // [ifAll]
+    IfAny,                      // [ifAny]
+    Isolate,                    // [isolate]
+    Loop,                       // [loop]
+    MaxExports,                 // [maxexports(N)]
+    MaxInstructionCount,        // [maxInstructionCount(N)]
+    MaxTempReg,                 // [maxtempreg(N)]
+    NoExpressionOptimizations,  // [noExpressionOptimizations]
+    Predicate,                  // [predicate]
+    PredicateBlock,             // [predicateBlock]
+    ReduceTempRegUsage,         // [reduceTempRegUsage(N)]
+    RemoveUnusedInputs,         // [removeUnusedInputs]
+    SampReg,                    // [sampreg(N, M)]
+    Unroll,                     // [unroll(MaxIterationCount)]
+    Unused,                     // [unused]
+    Xps,                        // [xps]
 
-    /* --- Tessellation attributes --- */
-    Domain,
-    EarlyDepthStencil,
-    Instance,
-    MaxTessFactor,
-    MaxVertexCount,
-    NumThreads,
-    OutputControlPoints,
-    OutputTopology,
-    Partitioning,
-    PatchSize,
-    PatchConstantFunc,
+    /* --- HLSL 4+ attributes --- */
+    Domain,                     // [domain(STRING)]
+    EarlyDepthStencil,          // [earlydepthstencil]
+    Instance,                   // [instance(N)]
+    MaxTessFactor,              // [maxtessfactor(X)]
+    MaxVertexCount,             // [maxvertexcount(N)]
+    NumThreads,                 // [numthreads(X, Y, Z)]
+    OutputControlPoints,        // [outputcontrolpoints(N)]
+    OutputTopology,             // [outputtopology(STRING)]
+    Partitioning,               // [partitioning(STRING)]
+    PatchSize,                  // [patchsize(N)]
+    PatchConstantFunc,          // [patchconstantfunc(STRING)]
+
+    /* --- GLSL Layout Attributes --- */
+    Align,                      // layout(align = <EXPR>)
+    Binding,                    // layout(binding = <EXPR>)
+    CW,                         // layout(cw)
+    CCW,                        // layout(ccw)
+    ColumnMajor,                // layout(column_major)
+    Component,                  // layout(component = <EXPR>)
+    DepthAny,                   // layout(depth_any)
+    DepthGreater,               // layout(depth_greater)
+    DepthLess,                  // layout(depth_less)
+    DepthUnchanged,             // layout(depth_unchanged)
+    EarlyFragmentTests,         // layout(early_fragment_tests)
+    EqualSpacing,               // layout(equal_spacing)
+    FractionalEvenSpacing,      // layout(fractional_even_spacing)
+    FractionalOddSpacing,       // layout(fractional_odd_spacing)
+    Index,                      // layout(index = <EXPR>)
+    Invocations,                // layout(invocations = <EXPR>)
+    Isolines,                   // layout(isolines)
+    Lines,                      // layout(lines)
+    LinesAdjacency,             // layout(lines_adjacency)
+    LineStrip,                  // layout(line_strip)
+    LocalSizeX,                 // layout(local_size_x = <EXPR>)
+    LocalSizeY,                 // layout(local_size_y = <EXPR>)
+    LocalSizeZ,                 // layout(local_size_z = <EXPR>)
+    Location,                   // layout(location = <EXPR>)
+    MaxVertices,                // layout(max_vertices = <EXPR>)
+    OriginUpperLeft,            // layout(origin_upper_left)
+    Offset,                     // layout(offset = <EXPR>)
+    Packed,                     // layout(packed)
+    PixelCenterInteger,         // layout(pixel_center_integer)
+    Points,                     // layout(points)
+    PointMode,                  // layout(point_mode)
+    Quads,                      // layout(quads)
+    RowMajor,                   // layout(row_major)
+    Shared,                     // layout(shared)
+    Std140,                     // layout(std140)
+    Std430,                     // layout(std430)
+    Stream,                     // layout(stream = <EXPR>)
+    Triangles,                  // layout(triangles)
+    TrianglesAdjacency,         // layout(triangles_adjacency)
+    TriangleStrip,              // layout(triangle_strip)
+    Vertices,                   // layout(vertices = <EXPR>)
+    XfbBuffer,                  // layout(xfb_buffer = <EXPR>)
+    XfbOffset,                  // layout(xfb_offset = <EXPR>)
+    XfbStride,                  // layout(xfb_stride = <EXPR>)
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
 
-    /* --- Language extensions --- */
-    Space,
-    Layout,
+    /* --- Extended Attributes --- */
+    Space,                      // Extended attribute to specify a vector space.
+    Layout,                     // Extended attribute to specify a layout format.
 
     #endif
 };
@@ -666,6 +712,19 @@ bool IsShaderModel3AttributeType(const AttributeType t);
 
 // Returns true if the specified attribute is supported since shader model 5.
 bool IsShaderModel5AttributeType(const AttributeType t);
+
+// Returns true if the specified attribute is supported only in HLSL, e.g. [ATTRIBUTE].
+bool IsHLSLAttributeType(const AttributeType t);
+
+// Returns true if the specified attribute is supported only in GLSL, e.g. layout(ATTRIBUTE).
+bool IsGLSLAttributeType(const AttributeType t);
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+// Returns true if the specified attribute is an extended attribute, i.e. AttributeType::Space, AttributeType::Layout.
+bool IsExtAttributeType(const AttributeType t);
+
+#endif
 
 
 /* ----- AttributeValue Enum ----- */

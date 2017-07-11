@@ -1095,6 +1095,25 @@ bool IsShaderModel5AttributeType(const AttributeType t)
     return (t >= AttributeType::Domain && t <= AttributeType::PatchConstantFunc);
 }
 
+bool IsHLSLAttributeType(const AttributeType t)
+{
+    return (t >= AttributeType::Branch && t <= AttributeType::PatchConstantFunc);
+}
+
+bool IsGLSLAttributeType(const AttributeType t)
+{
+    return (t >= AttributeType::Align && t <= AttributeType::XfbStride);
+}
+
+#ifdef XSC_ENABLE_LANGUAGE_EXT
+
+bool IsExtAttributeType(const AttributeType t)
+{
+    return (t >= AttributeType::Space && t <= AttributeType::Layout);
+}
+
+#endif
+
 
 /* ----- AttributeValue Enum ----- */
 
