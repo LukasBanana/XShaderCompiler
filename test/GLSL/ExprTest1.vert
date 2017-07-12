@@ -1,5 +1,5 @@
 
-#version 330
+//#version 330
 
 //layout(binding = 1)
 uniform vec4 diffuse;

@@ -395,8 +395,6 @@ StructDeclPtr GLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
     return ast;
 }
 
-#if 0
-
 FunctionDeclPtr GLSLParser::ParseFunctionDecl(BasicDeclStmnt* declStmntRef, const TypeSpecifierPtr& returnType, const TokenPtr& identTkn)
 {
     auto ast = Make<FunctionDecl>();
@@ -448,8 +446,6 @@ FunctionDeclPtr GLSLParser::ParseFunctionDecl(BasicDeclStmnt* declStmntRef, cons
 
     return ast;
 }
-
-#endif
 
 UniformBufferDeclPtr GLSLParser::ParseUniformBufferDecl(const TokenPtr& identTkn)
 {
@@ -519,21 +515,17 @@ StmntPtr GLSLParser::ParseGlobalStmntPrimary()
         #endif
         case Tokens::UniformBuffer:
             return ParseUniformDeclStmnt();
+        case Tokens::Struct:
+            return ParseStmntWithStructDecl();
         #if 0
         case Tokens::Void:
         case Tokens::Inline:
             return ParseFunctionDeclStmnt();
+        #endif
         default:
             return ParseGlobalStmntWithTypeSpecifier();
-        #else
-        default:
-            AcceptIt();
-            return Make<NullStmnt>();//!!!
-        #endif
     }
 }
-
-#if 0
 
 StmntPtr GLSLParser::ParseGlobalStmntWithTypeSpecifier()
 {
@@ -579,6 +571,8 @@ StmntPtr GLSLParser::ParseGlobalStmntWithTypeSpecifier()
     }
 }
 
+#if 0
+
 StmntPtr GLSLParser::ParseGlobalStmntWithSamplerTypeDenoter()
 {
     /* Parse sampler type denoter and identifier */
@@ -615,6 +609,8 @@ StmntPtr GLSLParser::ParseGlobalStmntWithBufferTypeDenoter()
     }
 }
 
+#endif
+
 BasicDeclStmntPtr GLSLParser::ParseFunctionDeclStmnt(const TypeSpecifierPtr& returnType, const TokenPtr& identTkn)
 {
     auto ast = Make<BasicDeclStmnt>();
@@ -624,8 +620,6 @@ BasicDeclStmntPtr GLSLParser::ParseFunctionDeclStmnt(const TypeSpecifierPtr& ret
 
     return ast;
 }
-
-#endif
 
 StmntPtr GLSLParser::ParseUniformDeclStmnt()
 {
@@ -770,8 +764,6 @@ StmntPtr GLSLParser::ParseStmnt()
     return ParseExprStmnt();
 }
 
-#if 0
-
 StmntPtr GLSLParser::ParseStmntWithStructDecl()
 {
     /* Parse structure declaration statement */
@@ -800,6 +792,8 @@ StmntPtr GLSLParser::ParseStmntWithStructDecl()
 
     return ast;
 }
+
+#if 0
 
 #if 1//TODO: clean this up!!!
 

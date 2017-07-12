@@ -95,19 +95,17 @@ class GLSLParser : public SLParser
         SamplerDeclPtr                  ParseSamplerDecl(SamplerDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
         #endif
         StructDeclPtr                   ParseStructDecl(bool parseStructTkn = true, const TokenPtr& identTkn = nullptr);
-        #if 0
         FunctionDeclPtr                 ParseFunctionDecl(BasicDeclStmnt* declStmntRef, const TypeSpecifierPtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
-        #endif
         UniformBufferDeclPtr            ParseUniformBufferDecl(const TokenPtr& identTkn = nullptr);
 
         StmntPtr                        ParseGlobalStmnt();
         StmntPtr                        ParseGlobalStmntPrimary();
-        #if 0
         StmntPtr                        ParseGlobalStmntWithTypeSpecifier();
+        #if 0
         StmntPtr                        ParseGlobalStmntWithSamplerTypeDenoter();
         StmntPtr                        ParseGlobalStmntWithBufferTypeDenoter();
-        BasicDeclStmntPtr               ParseFunctionDeclStmnt(const TypeSpecifierPtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
         #endif
+        BasicDeclStmntPtr               ParseFunctionDeclStmnt(const TypeSpecifierPtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
         StmntPtr                        ParseUniformDeclStmnt();
         BasicDeclStmntPtr               ParseUniformBufferDeclStmnt(const TokenPtr& identTkn = nullptr);
         #if 0
@@ -117,8 +115,8 @@ class GLSLParser : public SLParser
         VarDeclStmntPtr                 ParseVarDeclStmnt(bool isUniform = false, const TokenPtr& identTkn = nullptr);
 
         StmntPtr                        ParseStmnt();
-        #if 0
         StmntPtr                        ParseStmntWithStructDecl();
+        #if 0
         StmntPtr                        ParseStmntWithIdent();
         #endif
 
