@@ -13,6 +13,8 @@
 #include "SymbolTable.h"
 #include "ReportHandler.h"
 #include "ReportIdents.h"
+#include "HLSLKeywords.h"
+#include "GLSLKeywords.h"
 #include <algorithm>
 #include <cctype>
 
@@ -210,6 +212,26 @@ const IntrinsicUsage* Program::FetchIntrinsicUsage(const Intrinsic intrinsic) co
 {
     auto it = usedIntrinsics.find(intrinsic);
     return (it != usedIntrinsics.end() ? &(it->second) : nullptr);
+}
+
+
+/* ----- Attribute ----- */
+
+static const std::string* AttributeTypeToString(const AttributeType t)
+{
+    if (IsHLSLAttributeType(t))
+        return AttributeTypeToHLSLKeyword(t);
+    if (IsGLSLAttributeType(t))
+        return AttributeTypeToGLSLKeyword(t);
+    return nullptr;
+}
+
+std::string Attribute::ToString() const
+{
+    if (auto s = AttributeTypeToString(attributeType))
+        return *s;
+    else
+        return R_Undefined;
 }
 
 

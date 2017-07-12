@@ -101,6 +101,7 @@ class GLSLParser : public SLParser
         UniformBufferDeclPtr            ParseUniformBufferDecl(const TokenPtr& identTkn = nullptr);
 
         StmntPtr                        ParseGlobalStmnt();
+        StmntPtr                        ParseGlobalStmntPrimary();
         #if 0
         StmntPtr                        ParseGlobalStmntWithTypeSpecifier();
         StmntPtr                        ParseGlobalStmntWithSamplerTypeDenoter();

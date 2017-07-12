@@ -285,7 +285,7 @@ AttributePtr GLSLParser::ParseAttribute()
         Error(R_UnknownLayoutQualifier(attribIdent));
 
     /* Parse optional layout qualifier value */
-    if (Is(Tokens::BinaryOp, "="))
+    if (Is(Tokens::AssignOp, "="))
     {
         AcceptIt();
         ast->arguments.push_back(ParseExpr());
@@ -491,6 +491,23 @@ UniformBufferDeclPtr GLSLParser::ParseUniformBufferDecl(const TokenPtr& identTkn
 
 StmntPtr GLSLParser::ParseGlobalStmnt()
 {
+    if (Is(Tokens::LayoutQualifier))
+    {
+        /* Parse attributes and statement */
+        auto attribs = ParseAttributeList();
+        auto ast = ParseGlobalStmntPrimary();
+        ast->attribs = std::move(attribs);
+        return ast;
+    }
+    else
+    {
+        /* Parse statement only */
+        return ParseGlobalStmntPrimary();
+    }
+}
+
+StmntPtr GLSLParser::ParseGlobalStmntPrimary()
+{
     switch (TknType())
     {
         #if 0
@@ -510,7 +527,8 @@ StmntPtr GLSLParser::ParseGlobalStmnt()
             return ParseGlobalStmntWithTypeSpecifier();
         #else
         default:
-            return nullptr;//!!!
+            AcceptIt();
+            return Make<NullStmnt>();//!!!
         #endif
     }
 }
@@ -620,6 +638,7 @@ StmntPtr GLSLParser::ParseUniformDeclStmnt()
 
         if (IsRegisteredTypeName(identTkn->Spell()))
         {
+            /* Parse variable declaration */
             return ParseVarDeclStmnt(true, identTkn);
         }
         else
@@ -690,9 +709,7 @@ VarDeclStmntPtr GLSLParser::ParseVarDeclStmnt(bool isUniform, const TokenPtr& id
     auto ast = Make<VarDeclStmnt>();
 
     /* Parse type specifier and all variable declarations */
-    #if 0//!!!
     ast->typeSpecifier  = ParseTypeSpecifier();
-    #endif
     ast->varDecls       = ParseVarDeclList(ast.get());
 
     Semi();
@@ -1166,7 +1183,7 @@ std::vector<AttributePtr> GLSLParser::ParseAttributeList()
             break;
     }
 
-    Accept(Tokens::LBracket);
+    Accept(Tokens::RBracket);
 
     return attribs;
 }

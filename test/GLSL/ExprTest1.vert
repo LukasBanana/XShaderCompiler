@@ -2,11 +2,13 @@
 #version 330
 
 //layout(binding = 1)
-uniform sampler2D tex0, tex1;
+uniform vec4 diffuse;
+//uniform sampler2D tex0, tex1;
 
 struct Buffer { int x; };
 
-uniform Buffer {
+layout(std140)
+uniform Cbuffer {
 	vec4 a, b, c;
 };
 

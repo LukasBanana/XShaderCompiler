@@ -415,6 +415,8 @@ struct Attribute : public AST
 {
     AST_INTERFACE(Attribute);
 
+    std::string ToString() const;
+
     AttributeType           attributeType   = AttributeType::Undefined; // Type of this attribute. Must not be undefined.
     std::vector<ExprPtr>    arguments;                                  // Optional attribute arguments.
 };

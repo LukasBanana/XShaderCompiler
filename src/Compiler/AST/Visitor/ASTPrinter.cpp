@@ -101,6 +101,7 @@ IMPLEMENT_VISIT_PROC(Attribute)
 {
     PushPrintable(ast, WriteLabel("Attribute"));
     {
+        Printable(ast, "attributeType : " + ast->ToString());
         VISIT_MEMBER(arguments);
     }
     PopPrintable();
