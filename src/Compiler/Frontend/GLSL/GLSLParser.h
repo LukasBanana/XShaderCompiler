@@ -35,7 +35,7 @@ class GLSLParser : public SLParser
         );
 
     private:
-        
+    
         /* === Functions === */
 
         ScannerPtr MakeScanner() override;
@@ -61,6 +61,8 @@ class GLSLParser : public SLParser
         // Processes the specified directive (only '#line'-directive are allowed after pre-processing).
         void ProcessDirective(const std::string& ident);
         void ProcessDirectiveLine();
+        void ProcessDirectiveVersion();
+        void ProcessDirectiveExtension();
 
         /* ----- Symbol table ----- */
 
@@ -168,6 +170,9 @@ class GLSLParser : public SLParser
 
         // Symbol table for type name (i.e. structure and typedef identifiers) to detect cast expression, which are not context free.
         TypeNameSymbolTable typeNameSymbolTable_;
+
+        int                 version_                = 0;
+        bool                isCompatibilityProfile_ = false;
 
 };
 

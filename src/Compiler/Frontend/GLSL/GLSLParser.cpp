@@ -104,12 +104,10 @@ void GLSLParser::ProcessDirective(const std::string& ident)
     {
         if (ident == "line")
             ProcessDirectiveLine();
-        #if 0
         else if (ident == "version")
             ProcessDirectiveVersion();
         else if (ident == "extension")
             ProcessDirectiveExtension();
-        #endif
         else
             RuntimeErr(R_InvalidGLSLDirectiveAfterPP);
     }
@@ -138,6 +136,47 @@ void GLSLParser::ProcessDirectiveLine()
     /* Set new line number and filename */
     auto currentLine = static_cast<int>(GetScanner().PreviousToken()->Pos().Row());
     GetScanner().Source()->NextSourceOrigin(filename, (lineNo - currentLine - 1));
+}
+
+void GLSLParser::ProcessDirectiveVersion()
+{
+    /* Parse version number */
+    if (Is(Tokens::IntLiteral))
+        version_ = ParseIntLiteral(Parser::AcceptIt());
+    else
+        ErrorUnexpected(Tokens::IntLiteral);
+
+    /* Parse optional profile */
+    if (Is(Tokens::Ident))
+    {
+        const auto profile = Parser::AcceptIt()->Spell();
+        isCompatibilityProfile_ = (profile == "compatibility");
+    }
+}
+
+void GLSLParser::ProcessDirectiveExtension()
+{
+    std::string extension, behavior;
+
+    /* Parse extension name */
+    if (Is(Tokens::Ident))
+        extension = Parser::AcceptIt()->Spell();
+    else
+        ErrorUnexpected(Tokens::Ident);
+
+    /* Parse behavior */
+    if (Is(Tokens::Colon))
+        Parser::AcceptIt();
+    else
+        ErrorUnexpected(Tokens::Colon);
+
+    if (Is(Tokens::Ident))
+        behavior = Parser::AcceptIt()->Spell();
+    else
+        ErrorUnexpected(Tokens::Ident);
+
+    /* Store extension state */
+    //TODO...
 }
 
 /* ------- Symbol table ------- */
@@ -467,6 +506,8 @@ UniformBufferDeclPtr GLSLParser::ParseUniformBufferDecl(const TokenPtr& identTkn
         {
             if (stmnt->Type() == AST::Types::VarDeclStmnt)
                 ast->varMembers.push_back(std::static_pointer_cast<VarDeclStmnt>(stmnt));
+            else
+                Error(R_OnlyFieldsAllowedInUniformBlock, stmnt->area, false);
         }
 
         /* Decorate all member variables with a reference to this buffer declaration */

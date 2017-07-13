@@ -357,6 +357,7 @@ DECL_REPORT( InvalidGLSLExtensionBehavior,      "invalid extension behavior '{0}
 DECL_REPORT( InvalidGLSLDirectiveAfterPP,       "only '#line', '#version', and '#extension' directives are allowed after pre-processing"                        );
 DECL_REPORT( IllegalInheritance,                "illegal inheritance"                                                                                           );
 DECL_REPORT( UnknownLayoutQualifier,            "unknown layout qualifier: '{0}'"                                                                               );
+DECL_REPORT( OnlyFieldsAllowedInUniformBlock,   "only field declarations are allowed in a uniform block"                                                        );
 
 /* ----- GLSLKeywords ----- */
 
