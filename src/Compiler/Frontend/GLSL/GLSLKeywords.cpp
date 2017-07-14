@@ -618,7 +618,7 @@ static Dictionary<AttributeType> GenerateAttributeTypeDict()
 
     return
     {
-        { "algin",                   T::Align                 },
+        { "align",                   T::Align                 },
         { "binding",                 T::Binding               },
         { "cw",                      T::CW                    },
         { "ccw",                     T::CCW                   },
