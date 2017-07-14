@@ -781,25 +781,23 @@ StmntPtr GLSLParser::ParseStmnt()
             return ParseSwitchStmnt();
         case Tokens::CtrlTransfer:
             return ParseCtrlTransferStmnt();
-        #if 0
         case Tokens::Struct:
             return ParseStmntWithStructDecl();
+        #if 0
         case Tokens::Sampler:
         case Tokens::SamplerState:
             return ParseSamplerDeclStmnt();
+        #endif
         case Tokens::StorageClass:
         case Tokens::InterpModifier:
         case Tokens::TypeModifier:
             return ParseVarDeclStmnt();
-        #endif
         default:
             break;
     }
 
-    #if 0
     if (IsDataType())
         return ParseVarDeclStmnt();
-    #endif
 
     /* Parse statement of arbitrary expression */
     return ParseExprStmnt();
