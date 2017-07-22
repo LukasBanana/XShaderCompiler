@@ -22,6 +22,7 @@ Known Issues
 | Unicode | The compiler uses the C++ ASCII file streams, that are not aware of unicode characters, neither in the file contents, nor in their filenames. |
 | Texture `Operator[]` | The bracket operator is currently not translated for Texture objects, neither [`Operator[]`](https://msdn.microsoft.com/en-us/library/windows/desktop/ff471561(v=vs.85).aspx) nor [`mips.Operator[][]`](https://msdn.microsoft.com/en-us/library/windows/desktop/ff471560(v=vs.85).aspx). |
 | `atan2(x, y)` | Must be translated to `atan(y, x)`. |
+| Boolean in `lerp`/`mix` | Third argument in `lerp`/`mix` intrinsic must not be casted to floating-points. |
 
 
 Requested Features
