@@ -21,10 +21,10 @@ The main class in the type system is the ``TypeDenoter`` and its sub classes::
   |-AliasTypeDenoter
   `-ArrayTypeDenoter
 
-Type Derivation
----------------
+Type Deduction
+--------------
 
-The main function in ``TypeDenoter`` to derive a type by an input expression is the ``GetSub`` function::
+The main function for type deduction in the ``TypeDenoter`` class is ``GetSub``::
 
  shared_ptr<TypeDenoter> GetSub(const Expr* expr = nullptr);
 
