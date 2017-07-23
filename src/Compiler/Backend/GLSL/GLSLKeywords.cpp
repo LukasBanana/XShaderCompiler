@@ -1061,6 +1061,7 @@ const std::set<std::string>& ReservedGLSLKeywords()
         "any",
         "asin",
         "barrier",
+        "bitCount",
         "uint64BitsToDouble",
         "uintBitsToFloat",
         "floatBitsToInt",

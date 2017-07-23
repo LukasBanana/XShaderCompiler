@@ -40,7 +40,7 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
       //{ T::Clip,                             ""                      },
         { T::Cos,                              "cos"                   },
         { T::CosH,                             "cosh"                  },
-        { T::CountBits,                        ""                      },
+        { T::CountBits,                        "bitCount"              },
         { T::Cross,                            "cross"                 },
       //{ T::D3DCOLORtoUBYTE4,                 ""                      },
         { T::DDX,                              "dFdx"                  },
