@@ -739,8 +739,8 @@ static Dictionary<InterpModifier> GenerateInterpModifierDict()
 
     return
     {
-        { "linear",          T::Linear          },
         { "centroid",        T::Centroid        },
+        { "linear",          T::Linear          },
         { "nointerpolation", T::NoInterpolation },
         { "noperspective",   T::NoPerspective   },
         { "sample",          T::Sample          },

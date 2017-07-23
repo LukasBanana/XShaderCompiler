@@ -145,92 +145,100 @@ enum class DataType
 {
     Undefined,
 
-    // String types,
-    String,
+    /* --- String types --- */
+                // HLSL         GLSL
+                // -----------  ---------------
+    String,     // string       n/a
 
-    // Scalar types
-    Bool,
-    Int,
-    UInt,
-    Half,
-    Float,
-    Double,
+    /* --- Scalar types --- */
+                // HLSL         GLSL
+                // -----------  -----------
+    Bool,       // bool         bool
+    Int,        // int          int
+    UInt,       // uint         uint
+    Half,       // half         float
+    Float,      // float        float
+    Double,     // double       double
     
-    // Vector types
-    Bool2,
-    Bool3,
-    Bool4,
-    Int2,
-    Int3,
-    Int4,
-    UInt2,
-    UInt3,
-    UInt4,
-    Half2,
-    Half3,
-    Half4,
-    Float2,
-    Float3,
-    Float4,
-    Double2,
-    Double3,
-    Double4,
+    /* --- Vector types --- */
+                // HLSL         GLSL
+                // -----------  -----------
+    Bool2,      // bool2        bvec2
+    Bool3,      // bool3        bvec3
+    Bool4,      // bool4        bvec4
+    Int2,       // int2         ivec2
+    Int3,       // int3         ivec3
+    Int4,       // int4         ivec4
+    UInt2,      // uint2        uvec2
+    UInt3,      // uint3        uvec3
+    UInt4,      // uint4        uvec4
+    Half2,      // half2        vec2
+    Half3,      // half3        vec3
+    Half4,      // half4        vec4
+    Float2,     // float2       vec2
+    Float3,     // float3       vec3
+    Float4,     // float4       vec4
+    Double2,    // double2      dvec2
+    Double3,    // double3      dvec3
+    Double4,    // double4      dvec4
 
-    // Matrix types
-    Bool2x2,
-    Bool2x3,
-    Bool2x4,
-    Bool3x2,
-    Bool3x3,
-    Bool3x4,
-    Bool4x2,
-    Bool4x3,
-    Bool4x4,
-    Int2x2,
-    Int2x3,
-    Int2x4,
-    Int3x2,
-    Int3x3,
-    Int3x4,
-    Int4x2,
-    Int4x3,
-    Int4x4,
-    UInt2x2,
-    UInt2x3,
-    UInt2x4,
-    UInt3x2,
-    UInt3x3,
-    UInt3x4,
-    UInt4x2,
-    UInt4x3,
-    UInt4x4,
-    Half2x2,
-    Half2x3,
-    Half2x4,
-    Half3x2,
-    Half3x3,
-    Half3x4,
-    Half4x2,
-    Half4x3,
-    Half4x4,
-    Float2x2,
-    Float2x3,
-    Float2x4,
-    Float3x2,
-    Float3x3,
-    Float3x4,
-    Float4x2,
-    Float4x3,
-    Float4x4,
-    Double2x2,
-    Double2x3,
-    Double2x4,
-    Double3x2,
-    Double3x3,
-    Double3x4,
-    Double4x2,
-    Double4x3,
-    Double4x4,
+    /* --- Matrix types --- */
+                // HLSL         GLSL
+                // -----------  -----------
+    Bool2x2,    // bool2x2      n/a
+    Bool2x3,    // bool2x3      n/a
+    Bool2x4,    // bool2x4      n/a
+    Bool3x2,    // bool3x2      n/a
+    Bool3x3,    // bool3x3      n/a
+    Bool3x4,    // bool3x4      n/a
+    Bool4x2,    // bool4x2      n/a
+    Bool4x3,    // bool4x3      n/a
+    Bool4x4,    // bool4x4      n/a
+    Int2x2,     // int2x2       n/a
+    Int2x3,     // int2x3       n/a
+    Int2x4,     // int2x4       n/a
+    Int3x2,     // int3x2       n/a
+    Int3x3,     // int3x3       n/a
+    Int3x4,     // int3x4       n/a
+    Int4x2,     // int4x2       n/a
+    Int4x3,     // int4x3       n/a
+    Int4x4,     // int4x4       n/a
+    UInt2x2,    // uint2x2      n/a
+    UInt2x3,    // uint2x3      n/a
+    UInt2x4,    // uint2x4      n/a
+    UInt3x2,    // uint3x2      n/a
+    UInt3x3,    // uint3x3      n/a
+    UInt3x4,    // uint3x4      n/a
+    UInt4x2,    // uint4x2      n/a
+    UInt4x3,    // uint4x3      n/a
+    UInt4x4,    // uint4x4      n/a
+    Half2x2,    // half2x2      mat2
+    Half2x3,    // half2x3      mat2x3
+    Half2x4,    // half2x4      mat2x4
+    Half3x2,    // half3x2      mat3x2
+    Half3x3,    // half3x3      mat3
+    Half3x4,    // half3x4      mat3x4
+    Half4x2,    // half4x2      mat4x2
+    Half4x3,    // half4x3      mat4x3
+    Half4x4,    // half4x4      mat4
+    Float2x2,   // float2x2     mat2
+    Float2x3,   // float2x3     mat2x3
+    Float2x4,   // float2x4     mat2x4
+    Float3x2,   // float3x2     mat3x2
+    Float3x3,   // float3x3     mat3
+    Float3x4,   // float3x4     mat3x4
+    Float4x2,   // float4x2     mat4x2
+    Float4x3,   // float4x3     mat4x3
+    Float4x4,   // float4x4     mat4
+    Double2x2,  // double2x2    dmat2
+    Double2x3,  // double2x3    dmat2x3
+    Double2x4,  // double2x4    dmat2x4
+    Double3x2,  // double3x2    dmat3x2
+    Double3x3,  // double3x3    dmat3
+    Double3x4,  // double3x4    dmat3x4
+    Double4x2,  // double4x2    dmat4x2
+    Double4x3,  // double4x3    dmat4x3
+    Double4x4,  // double4x4    dmat4
 };
 
 // Container structure for all kinds of matrix subscript usages.
@@ -352,11 +360,13 @@ enum class InterpModifier
 {
     Undefined,
 
-    NoInterpolation,
-    Linear,
-    Centroid,
-    NoPerspective,
-    Sample,
+                        // HLSL             GLSL
+                        // ---------------  ---------------
+    Centroid,           // centroid         centroid
+    Linear,             // linear           smooth
+    NoInterpolation,    // nointerpolation  flat
+    NoPerspective,      // noperspective    noperspective
+    Sample,             // sample           sample
 };
 
 
