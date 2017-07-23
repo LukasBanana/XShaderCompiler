@@ -772,126 +772,133 @@ enum class Intrinsic
 {
     Undefined,
 
-    Abort,
-    Abs,
-    ACos,
-    All,
-    AllMemoryBarrier,
-    AllMemoryBarrierWithGroupSync,
-    Any,
-    AsDouble,
-    AsFloat,
-    ASin,
-    AsInt,
-    AsUInt_1,
-    AsUInt_3,
-    ATan,
-    ATan2,
-    Ceil,
-    CheckAccessFullyMapped,
-    Clamp,
-    Clip,
-    Cos,
-    CosH,
-    CountBits,
-    Cross,
-    D3DCOLORtoUBYTE4,
-    DDX,
-    DDXCoarse,
-    DDXFine,
-    DDY,
-    DDYCoarse,
-    DDYFine,
-    Degrees,
-    Determinant,
-    DeviceMemoryBarrier,
-    DeviceMemoryBarrierWithGroupSync,
-    Distance,
-    Dot,
-    Dst,
-    Equal,                              // GLSL only
-    ErrorF,
-    EvaluateAttributeAtCentroid,
-    EvaluateAttributeAtSample,
-    EvaluateAttributeSnapped,
-    Exp,
-    Exp2,
-    F16toF32,
-    F32toF16,
-    FaceForward,
-    FirstBitHigh,
-    FirstBitLow,
-    Floor,
-    FMA,
-    FMod,
-    Frac,
-    FrExp,
-    FWidth,
-    GetRenderTargetSampleCount,
-    GetRenderTargetSamplePosition,
-    GreaterThan,                        // GLSL only
-    GreaterThanEqual,                   // GLSL only
-    GroupMemoryBarrier,
-    GroupMemoryBarrierWithGroupSync,
-    InterlockedAdd,
-    InterlockedAnd,
-    InterlockedCompareExchange,
-    InterlockedCompareStore,
-    InterlockedExchange,
-    InterlockedMax,
-    InterlockedMin,
-    InterlockedOr,
-    InterlockedXor,
-    IsFinite,
-    IsInf,
-    IsNaN,
-    LdExp,
-    Length,
-    Lerp,
-    LessThan,                           // GLSL only
-    LessThanEqual,                      // GLSL only
-    Lit,
-    Log,
-    Log10,
-    Log2,
-    MAD,
-    Max,
-    Min,
-    ModF,
-    MSAD4,
-    Mul,
-    Normalize,
-    NotEqual,                           // GLSL only
-    Not,                                // GLSL only
-    Pow,
-    PrintF,
-    Process2DQuadTessFactorsAvg,
-    Process2DQuadTessFactorsMax,
-    Process2DQuadTessFactorsMin,
-    ProcessIsolineTessFactors,
-    ProcessQuadTessFactorsAvg,
-    ProcessQuadTessFactorsMax,
-    ProcessQuadTessFactorsMin,
-    ProcessTriTessFactorsAvg,
-    ProcessTriTessFactorsMax,
-    ProcessTriTessFactorsMin,
-    Radians,
-    Rcp,
-    Reflect,
-    Refract,
-    ReverseBits,
-    Round,
-    RSqrt,
-    Saturate,
-    Sign,
-    Sin,
-    SinCos,
-    SinH,
-    SmoothStep,
-    Sqrt,
-    Step,
-    Tan,
-    TanH,
+    /* --- Common global intrinsics --- */
+                                        // HLSL                                 GLSL
+                                        // -----------------------------------  ------------------------
+    Abort,                              // abort                                n/a
+    Abs,                                // abs                                  abs
+    ACos,                               // acos                                 acos
+    All,                                // all                                  all
+    AllMemoryBarrier,                   // AllMemoryBarrier                     memoryBarrier
+    AllMemoryBarrierWithGroupSync,      // AllMemoryBarrierWithGroupSync        n/a
+    Any,                                // any                                  any
+    AsDouble,                           // asdouble                             uint64BitsToDouble
+    AsFloat,                            // asfloat                              uintBitsToFloat
+    ASin,                               // asin                                 asin
+    AsInt,                              // asint                                floatBitsToInt
+    AsUInt_1,                           // asuint                               floatBitsToUint
+    AsUInt_3,                           // asuint                               n/a
+    ATan,                               // atan                                 atan
+    ATan2,                              // atan2                                atan
+    Ceil,                               // ceil                                 cail
+    CheckAccessFullyMapped,             // CheckAccessFullyMapped               n/a
+    Clamp,                              // clamp                                clamp
+    Clip,                               // clip                                 n/a
+    Cos,                                // cos                                  cos
+    CosH,                               // cosh                                 cosh
+    CountBits,                          // countbits                            bitCount
+    Cross,                              // cross                                cross
+    D3DCOLORtoUBYTE4,                   // D3DCOLORtoUBYTE4                     n/a
+    DDX,                                // ddx                                  dFdx
+    DDXCoarse,                          // ddx_coarse                           dFdxCoarse
+    DDXFine,                            // ddx_fine                             dFdxFine
+    DDY,                                // ddy                                  dFdy
+    DDYCoarse,                          // ddy_coarse                           dFdyCoarse
+    DDYFine,                            // ddy_fine                             dFdyFine
+    Degrees,                            // degrees                              degrees
+    Determinant,                        // determinant                          determinant
+    DeviceMemoryBarrier,                // DeviceMemoryBarrier                  n/a
+    DeviceMemoryBarrierWithGroupSync,   // DeviceMemoryBarrierWithGroupSync     n/a
+    Distance,                           // distance                             distance
+    Dot,                                // dot                                  dot
+    Dst,                                // dst                                  n/a
+    Equal,                              // n/a                                  equal
+    ErrorF,                             // errorf                               n/a
+    EvaluateAttributeAtCentroid,        // EvaluateAttributeAtCentroid          interpolateAtCentroid
+    EvaluateAttributeAtSample,          // EvaluateAttributeAtSample            interpolateAtSample
+    EvaluateAttributeSnapped,           // EvaluateAttributeSnapped             interpolateAtOffset
+    Exp,                                // exp                                  exp
+    Exp2,                               // exp2                                 exp2
+    F16toF32,                           // f16tof32                             n/a
+    F32toF16,                           // f32tof16                             n/a
+    FaceForward,                        // faceforward                          faceforward
+    FirstBitHigh,                       // firstbithigh                         findMSB
+    FirstBitLow,                        // firstbitlow                          findLSB
+    Floor,                              // floor                                floor
+    FMA,                                // fma                                  fma
+    FMod,                               // fmod                                 mod
+    Frac,                               // frac                                 fract
+    FrExp,                              // frexp                                frexp
+    FWidth,                             // fwidth                               fwidth
+    GetRenderTargetSampleCount,         // GetRenderTargetSampleCount           n/a
+    GetRenderTargetSamplePosition,      // GetRenderTargetSamplePosition        n/a
+    GreaterThan,                        // n/a                                  greaterThan
+    GreaterThanEqual,                   // n/a                                  greaterThanEqual
+    GroupMemoryBarrier,                 // GroupMemoryBarrier                   groupMemoryBarrier
+    GroupMemoryBarrierWithGroupSync,    // GroupMemoryBarrierWithGroupSync      n/a
+    InterlockedAdd,                     // InterlockedAdd                       atomicAdd
+    InterlockedAnd,                     // InterlockedAnd                       atomicAnd
+    InterlockedCompareExchange,         // InterlockedCompareExchange           atomicCompSwap
+    InterlockedCompareStore,            // InterlockedCompareStore              n/a
+    InterlockedExchange,                // InterlockedExchange                  atomicExchange
+    InterlockedMax,                     // InterlockedMax                       atomicMax
+    InterlockedMin,                     // InterlockedMin                       atomicMin
+    InterlockedOr,                      // InterlockedOr                        atomicOr
+    InterlockedXor,                     // InterlockedXor                       atomicXor
+    IsFinite,                           // isfinite                             n/a
+    IsInf,                              // isinf                                isinf
+    IsNaN,                              // isnan                                isnan
+    LdExp,                              // ldexp                                ldexp
+    Length,                             // length                               length
+    Lerp,                               // lerp                                 mix
+    LessThan,                           // n/a                                  lessThan
+    LessThanEqual,                      // n/a                                  lessThanEqual
+    Lit,                                // lit                                  n/a
+    Log,                                // log                                  log
+    Log10,                              // log10                                n/a
+    Log2,                               // log2                                 log2
+    MAD,                                // mad                                  fma
+    Max,                                // max                                  max
+    Min,                                // min                                  min
+    ModF,                               // modf                                 modf
+    MSAD4,                              // msad4                                n/a
+    Mul,                                // mul                                  n/a
+    Normalize,                          // normalize                            normalize
+    NotEqual,                           // n/a                                  notEqual
+    Not,                                // n/a                                  not
+    Pow,                                // pow                                  pow
+    PrintF,                             // printf                               n/a
+    Process2DQuadTessFactorsAvg,        // Process2DQuadTessFactorsAvg          n/a
+    Process2DQuadTessFactorsMax,        // Process2DQuadTessFactorsMax          n/a
+    Process2DQuadTessFactorsMin,        // Process2DQuadTessFactorsMin          n/a
+    ProcessIsolineTessFactors,          // ProcessIsolineTessFactors            n/a
+    ProcessQuadTessFactorsAvg,          // ProcessQuadTessFactorsAvg            n/a
+    ProcessQuadTessFactorsMax,          // ProcessQuadTessFactorsMax            n/a
+    ProcessQuadTessFactorsMin,          // ProcessQuadTessFactorsMin            n/a
+    ProcessTriTessFactorsAvg,           // ProcessTriTessFactorsAvg             n/a
+    ProcessTriTessFactorsMax,           // ProcessTriTessFactorsMax             n/a
+    ProcessTriTessFactorsMin,           // ProcessTriTessFactorsMin             n/a
+    Radians,                            // radians                              radians
+    Rcp,                                // rcp                                  n/a
+    Reflect,                            // reflect                              reflect
+    Refract,                            // refract                              refract
+    ReverseBits,                        // reversebits                          n/a
+    Round,                              // round                                round
+    RSqrt,                              // rsqrt                                inversesqrt
+    Saturate,                           // saturate                             n/a
+    Sign,                               // sign                                 sign
+    Sin,                                // sin                                  sin
+    SinCos,                             // sincos                               n/a
+    SinH,                               // sinh                                 sinh
+    SmoothStep,                         // smoothstep                           smoothstep
+    Sqrt,                               // sqrt                                 sqrt
+    Step,                               // step                                 step
+    Tan,                                // tan                                  tan
+    TanH,                               // tanh                                 tanh
+    Transpose,                          // transpose                            transpose
+    Trunc,                              // trunc                                trunc
+
+    /* --- HLSL 3 texture intrinsics --- */
     Tex1D_2,
     Tex1D_4,
     Tex1DBias,
@@ -916,9 +923,8 @@ enum class Intrinsic
     TexCubeGrad,
     TexCubeLod,
     TexCubeProj,
-    Transpose,
-    Trunc,
 
+    /* --- HLSL 4+ class intrinsics --- */
     Texture_GetDimensions,
     Texture_QueryLod,           // CalculateLevelOfDetail(SamplerState S, float[1,2,3] Location)
     Texture_QueryLodUnclamped,  // CalculateLevelOfDetailUnclamped(SamplerState S, float[1,2,3] Location)
@@ -1005,6 +1011,7 @@ enum class Intrinsic
     StreamOutput_Append,        // Append(StreamDataType)
     StreamOutput_RestartStrip,  // RestartStrip()
 
+    /* --- GLSL image intrinsics --- */
     Image_Load,                 // GLSL only
     Image_Store,                // GLSL only
     Image_AtomicAdd,            // GLSL only
