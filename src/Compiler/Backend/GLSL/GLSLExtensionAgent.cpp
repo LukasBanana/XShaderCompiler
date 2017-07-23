@@ -30,15 +30,17 @@ GLSLExtensionAgent::GLSLExtensionAgent()
         { Intrinsic::AsFloat,                   E_GL_ARB_gpu_shader5        },
         { Intrinsic::AsInt,                     E_GL_ARB_gpu_shader5        },
         { Intrinsic::AsUInt_1,                  E_GL_ARB_gpu_shader5        },
-        { Intrinsic::FirstBitHigh,              E_GL_ARB_gpu_shader_fp64    },
-        { Intrinsic::FirstBitLow,               E_GL_ARB_gpu_shader_fp64    },
+        { Intrinsic::CountBits,                 E_GL_ARB_gpu_shader5        },
         { Intrinsic::DDXCoarse,                 E_GL_ARB_derivative_control },
         { Intrinsic::DDXFine,                   E_GL_ARB_derivative_control },
         { Intrinsic::DDYCoarse,                 E_GL_ARB_derivative_control },
         { Intrinsic::DDYFine,                   E_GL_ARB_derivative_control },
+        { Intrinsic::FirstBitHigh,              E_GL_ARB_gpu_shader5        },
+        { Intrinsic::FirstBitLow,               E_GL_ARB_gpu_shader5        },
+        { Intrinsic::FrExp,                     E_GL_ARB_gpu_shader_fp64    },
+        { Intrinsic::LdExp,                     E_GL_ARB_gpu_shader_fp64    },
         { Intrinsic::Texture_QueryLod,          E_GL_ARB_texture_query_lod  },
         { Intrinsic::Texture_QueryLodUnclamped, E_GL_ARB_texture_query_lod  },
-        { Intrinsic::LdExp,                     E_GL_ARB_gpu_shader_fp64    },
     };
 }
 
