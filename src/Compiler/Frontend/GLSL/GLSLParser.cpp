@@ -333,9 +333,13 @@ AttributePtr GLSLParser::ParseAttribute()
     return ast;
 }
 
-TypeSpecifierPtr GLSLParser::ParseTypeSpecifier(bool parseVoidType)
+TypeSpecifierPtr GLSLParser::ParseTypeSpecifier(bool parseVoidType, const TokenPtr& inputTkn)
 {
     auto ast = Make<TypeSpecifier>();
+
+    /* Parse optional first input token */
+    if (inputTkn)
+        ParseModifiers(ast.get(), true, inputTkn);
 
     /* Parse modifiers and primitive types */
     while (IsModifier() || Is(Tokens::PrimitiveType))
@@ -532,7 +536,7 @@ StmntPtr GLSLParser::ParseGlobalStmnt()
     {
         /* Parse attributes and statement */
         auto attribs = ParseAttributeList();
-        auto ast = ParseGlobalStmntPrimary();
+        auto ast = ParseGlobalStmntPrimary(!attribs.empty());
         ast->attribs = std::move(attribs);
         return ast;
     }
@@ -543,7 +547,7 @@ StmntPtr GLSLParser::ParseGlobalStmnt()
     }
 }
 
-StmntPtr GLSLParser::ParseGlobalStmntPrimary()
+StmntPtr GLSLParser::ParseGlobalStmntPrimary(bool hasAttribs)
 {
     switch (TknType())
     {
@@ -564,14 +568,17 @@ StmntPtr GLSLParser::ParseGlobalStmntPrimary()
             return ParseFunctionDeclStmnt();
         #endif
         default:
-            return ParseGlobalStmntWithTypeSpecifier();
+            if ( hasAttribs && ( Is(Tokens::InputModifier, "in") || Is(Tokens::InputModifier, "out") ))
+                return ParseGlobalStmntWithLayoutQualifier();
+            else
+                return ParseGlobalStmntWithTypeSpecifier();
     }
 }
 
-StmntPtr GLSLParser::ParseGlobalStmntWithTypeSpecifier()
+StmntPtr GLSLParser::ParseGlobalStmntWithTypeSpecifier(const TokenPtr& inputTkn)
 {
     /* Parse type specifier */
-    auto typeSpecifier = ParseTypeSpecifier();
+    auto typeSpecifier = ParseTypeSpecifier(false, inputTkn);
 
     /* Is this only a struct declaration? */
     if (typeSpecifier->structDecl && Is(Tokens::Semicolon))
@@ -610,6 +617,28 @@ StmntPtr GLSLParser::ParseGlobalStmntWithTypeSpecifier()
 
         return UpdateSourceArea(ast, ast->typeSpecifier.get());
     }
+}
+
+StmntPtr GLSLParser::ParseGlobalStmntWithLayoutQualifier()
+{
+    auto inputTkn = Accept(Tokens::InputModifier);
+
+    if (Is(Tokens::Semicolon))
+    {
+        AcceptIt();
+
+        /* Parse in/out token */
+        auto ast = Make<LayoutStmnt>();
+
+        if (inputTkn->Spell() == "in")
+            ast->isInput = true;
+        else if (inputTkn->Spell() == "out")
+            ast->isOutput = true;
+
+        return ast;
+    }
+
+    return ParseGlobalStmntWithTypeSpecifier(inputTkn);
 }
 
 #if 0
@@ -1469,12 +1498,17 @@ SamplerType GLSLParser::ParseSamplerType()
     return SamplerType::Undefined;
 }
 
-bool GLSLParser::ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiveType)
+bool GLSLParser::ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiveType, const TokenPtr& inputTkn)
 {
-    if (Is(Tokens::InputModifier))
+    if (Is(Tokens::InputModifier) || inputTkn)
     {
         /* Parse input modifier */
-        auto modifier = AcceptIt()->Spell();
+        std::string modifier;
+        
+        if (inputTkn)
+            modifier = inputTkn->Spell();
+        else
+            modifier = AcceptIt()->Spell();
 
         if (modifier == "in")
             typeSpecifier->isInput = true;

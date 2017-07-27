@@ -426,6 +426,17 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
     PopPrintable();
 }
 
+IMPLEMENT_VISIT_PROC(LayoutStmnt)
+{
+    PushPrintable(ast, WriteLabel("LayoutStmnt"));
+    {
+        VISIT_MEMBER(attribs);
+        Printable(ast, (ast->isInput ? "isInput : true" : "isInput : false"));
+        Printable(ast, (ast->isOutput ? "isOutput : true" : "isOutput : false"));
+    }
+    PopPrintable();
+}
+
 /* --- Expressions --- */
 
 IMPLEMENT_VISIT_PROC(NullExpr)

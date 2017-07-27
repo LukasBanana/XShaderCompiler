@@ -142,6 +142,7 @@ struct AST
         ExprStmnt,
         ReturnStmnt,
         CtrlTransferStmnt,  // Control transfer statement (Break, Continue, Discard)
+        LayoutStmnt,        // GLSL only
 
         /* ----- Expressions ----- */
 
@@ -1069,6 +1070,14 @@ struct CtrlTransferStmnt : public Stmnt
     AST_INTERFACE(CtrlTransferStmnt);
 
     CtrlTransfer transfer = CtrlTransfer::Undefined; // Control transfer type (break, continue, discard). Must not be undefined.
+};
+
+struct LayoutStmnt : public Stmnt
+{
+    AST_INTERFACE(LayoutStmnt);
+
+    bool isInput    = false; // Input modifier 'in'.
+    bool isOutput   = false; // Input modifier 'out'.
 };
 
 /* ----- Expressions ----- */

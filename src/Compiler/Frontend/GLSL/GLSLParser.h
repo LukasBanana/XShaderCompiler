@@ -90,7 +90,7 @@ class GLSLParser : public SLParser
         VarDeclPtr                      ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr) override;
 
         AttributePtr                    ParseAttribute();
-        TypeSpecifierPtr                ParseTypeSpecifier(bool parseVoidType = false);
+        TypeSpecifierPtr                ParseTypeSpecifier(bool parseVoidType = false, const TokenPtr& inputTkn = nullptr);
 
         #if 0
         BufferDeclPtr                   ParseBufferDecl(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
@@ -101,8 +101,9 @@ class GLSLParser : public SLParser
         UniformBufferDeclPtr            ParseUniformBufferDecl(const TokenPtr& identTkn = nullptr);
 
         StmntPtr                        ParseGlobalStmnt();
-        StmntPtr                        ParseGlobalStmntPrimary();
-        StmntPtr                        ParseGlobalStmntWithTypeSpecifier();
+        StmntPtr                        ParseGlobalStmntPrimary(bool hasAttribs = false);
+        StmntPtr                        ParseGlobalStmntWithTypeSpecifier(const TokenPtr& inputTkn = nullptr);
+        StmntPtr                        ParseGlobalStmntWithLayoutQualifier();
         #if 0
         StmntPtr                        ParseGlobalStmntWithSamplerTypeDenoter();
         StmntPtr                        ParseGlobalStmntWithBufferTypeDenoter();
@@ -162,7 +163,7 @@ class GLSLParser : public SLParser
         StorageClass                    ParseStorageClass();
         SamplerType                     ParseSamplerType();
 
-        bool                            ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiveType = false);
+        bool                            ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiveType = false, const TokenPtr& inputTkn = nullptr);
 
         /* === Members === */
 
