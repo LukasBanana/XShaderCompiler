@@ -190,7 +190,7 @@ void HLSLParser::ProcessDirectivePragma()
         {
             if (!Is(type))
                 RuntimeErr(R_UnexpectedTokenInPackMatrixPragma);
-            return Parser::AcceptIt();
+            return this->Parser::AcceptIt();
         };
 
         AcceptToken(Tokens::LBracket);
