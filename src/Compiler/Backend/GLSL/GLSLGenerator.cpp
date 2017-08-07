@@ -1209,7 +1209,15 @@ void GLSLGenerator::WriteProgramHeaderVersion()
 {
     /* Convert output shader version into GLSL version number (with bitwise AND operator) */
     int versionNumber = (static_cast<int>(versionOut_)) & static_cast<int>(OutputShaderVersion::GLSL);
-    WriteLn("#version " + std::to_string(versionNumber));
+
+    BeginLn();
+    {
+        Write("#version " + std::to_string(versionNumber));
+
+        if (IsLanguageESSL(versionOut_))
+            Write(" es");
+    }
+    EndLn();
 }
 
 void GLSLGenerator::WriteProgramHeaderExtension(const std::string& extensionName)
