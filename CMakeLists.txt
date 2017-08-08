@@ -8,9 +8,16 @@ project(XShaderCompiler)
 # === Build path ===
 
 set(BUILD_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/build")
-set(EXECUTABLE_OUTPUT_PATH ${BUILD_OUTPUT_PATH} CACHE PATH "Build directory" FORCE)
-set(LIBRARY_OUTPUT_PATH ${BUILD_OUTPUT_PATH} CACHE PATH "Build directory" FORCE)
 set(INSTALL_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "Installation directory" FORCE)
+
+macro(setOutputPaths target)
+	set_target_properties(${target}
+		PROPERTIES
+		ARCHIVE_OUTPUT_DIRECTORY "${BUILD_OUTPUT_PATH}"
+		LIBRARY_OUTPUT_DIRECTORY "${BUILD_OUTPUT_PATH}"
+		RUNTIME_OUTPUT_DIRECTORY "${BUILD_OUTPUT_PATH}"
+	)
+endmacro(setOutputPaths target)
 
 
 # === Options ===
@@ -155,6 +162,7 @@ else()
 	add_library(xsc_core STATIC ${FilesCompilerAll})
 endif()
 
+setOutputPaths(xsc_core)
 set_target_properties(xsc_core PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_features(xsc_core PRIVATE cxx_range_for)
 
@@ -163,6 +171,7 @@ set(XSC_INSTALL_TARGETS "xsc_core")
 # Shell application
 if(XSC_BUILD_SHELL)
 	add_executable(xsc ${FilesSrcShell})
+	setOutputPaths(xsc)
 	set_target_properties(xsc PROPERTIES LINKER_LANGUAGE CXX)
 	target_link_libraries(xsc xsc_core)
 	target_compile_features(xsc PRIVATE cxx_range_for)
@@ -177,6 +186,7 @@ if(XSC_BUILD_DEBUGGER)
 		add_executable(xsc_debugger ${FilesSrcDebugger})
 	endif()
 	
+	setOutputPaths(xsc_debugger)
 	set_target_properties(xsc_debugger PROPERTIES LINKER_LANGUAGE CXX)
 	target_link_libraries(xsc_debugger xsc_core)
 	target_compile_features(xsc_debugger PRIVATE cxx_range_for)
@@ -202,6 +212,7 @@ if(XSC_BUILD_WRAPPER_C)
 		add_library(xsc_core_c STATIC ${FilesSrcWrapperC})
 	endif()
 	
+	setOutputPaths(xsc_core_c)
 	set_target_properties(xsc_core_c PROPERTIES LINKER_LANGUAGE CXX)
 	target_link_libraries(xsc_core_c xsc_core)
 	target_compile_features(xsc_core_c PRIVATE cxx_range_for)
@@ -218,6 +229,7 @@ if(XSC_BUILD_TESTS)
 	# Test C wrapper
 	if(XSC_BUILD_WRAPPER_C)
 		add_executable(XscTest_CWrapper "${FilesTest}/XscTest_CWrapper.c")
+		setOutputPaths(XscTest_CWrapper)
 		set_target_properties(XscTest_CWrapper PROPERTIES LINKER_LANGUAGE C)
 		target_link_libraries(XscTest_CWrapper xsc_core_c)
 	endif()
