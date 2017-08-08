@@ -1356,7 +1356,7 @@ bool GLSLGenerator::WriteGlobalLayoutsFragment(const Program::LayoutFragmentShad
     bool layoutsWritten = false;
 
     /* Define 'gl_FragCoord' origin to upper-left (not required for Vulkan) */
-    if (!IsVKSL() && GetProgram()->layoutFragment.fragCoordUsed)
+    if (!IsVKSL() && !IsESSL() && GetProgram()->layoutFragment.fragCoordUsed)
     {
         WriteLayoutGlobalIn(
             {
