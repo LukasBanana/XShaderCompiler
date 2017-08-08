@@ -25,6 +25,9 @@ namespace Xsc
 {
 
 
+//#define FOR_EACH_INDEX(I, C) \
+//    for (std::size_t I = 0, _N = C.size(); I < _N; ++I)
+
 // Alternative to std::make_unique for strict C++11 support.
 template <typename T, typename... Args>
 std::unique_ptr<T> MakeUnique(Args&&... args)
