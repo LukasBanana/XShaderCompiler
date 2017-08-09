@@ -167,6 +167,7 @@ class GLSLGenerator : public Generator
 
         void WriteProgramHeader();
         void WriteProgramHeaderVersion();
+        void WriteProgramHeaderComment();
         void WriteProgramHeaderExtension(const std::string& extensionName);
 
         /* ----- Global layouts ----- */
@@ -318,6 +319,7 @@ class GLSLGenerator : public Generator
         OutputShaderVersion                     versionOut_             = OutputShaderVersion::GLSL;
         NameMangling                            nameMangling_;
         std::map<CiString, VertexSemanticLoc>   vertexSemanticsMap_;
+        std::string                             entryPointName_;
 
         bool                                    allowExtensions_        = false;
         bool                                    explicitBinding_        = false;
