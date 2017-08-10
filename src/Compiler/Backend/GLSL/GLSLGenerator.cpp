@@ -1571,7 +1571,8 @@ void GLSLGenerator::WriteLayoutGlobalOut(const std::initializer_list<LayoutEntry
 
 void GLSLGenerator::WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters)
 {
-    if (explicitBinding_)
+    /* For ESSL: "binding" qualifier is only available since ESSL 310 */
+    if ( explicitBinding_ && ( !IsESSL() || versionOut_ >= OutputShaderVersion::ESSL310 ) )
     {
         if (auto slotRegister = Register::GetForTarget(slotRegisters, GetShaderTarget()))
             Write("binding = " + std::to_string(slotRegister->slot));
@@ -1730,7 +1731,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
             WriteInterpModifiers(interpModifiers, varDecl->declStmntRef);
             Separator();
 
-            if ( explicitBinding_ && ( !IsESSL() || IsVertexShader() ) )
+            if ( ( !IsESSL() && explicitBinding_ ) || ( IsESSL() && IsVertexShader() ) )
             {
                 /* Get slot index */
                 int location = -1;
@@ -1886,7 +1887,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
                 WriteInterpModifiers(varDeclStmnt->typeSpecifier->interpModifiers, varDecl);
             Separator();
 
-            if ( explicitBinding_ && ( !IsESSL() || IsFragmentShader() ) )
+            if ( ( !IsESSL() && explicitBinding_ ) || ( IsESSL() && IsFragmentShader() ) )
             {
                 /* Get slot index: directly for fragment output, and automatically otherwise */
                 int location = -1;

@@ -2,6 +2,10 @@
 // ESSL I/O Semantics Test 1
 // 09/08/2017
 
+cbuffer Buf : register(b0) {
+	float4 color;
+};
+
 struct Input
 {
 	float3 worldPos : WORLDPOS;
@@ -17,6 +21,7 @@ struct Output
 Output main(Input i)
 {
 	Output o;
+	o.color0 = color;
     return o;
 }
 
