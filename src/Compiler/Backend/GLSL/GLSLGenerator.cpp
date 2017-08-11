@@ -546,7 +546,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         {
             PushUniformBufferDecl(ast);
             {
-                Visit(ast->varMembers);
+                WriteStmntList(ast->varMembers);
             }
             PopUniformBufferDecl();
         }
@@ -3081,7 +3081,7 @@ bool GLSLGenerator::WriteStructDecl(StructDecl* structDecl, bool endWithSemicolo
     WriteScopeOpen(false, endWithSemicolon);
     BeginSep();
     {
-        Visit(structDecl->varMembers);
+        WriteStmntList(structDecl->varMembers);
     }
     EndSep();
     WriteScopeClose();
