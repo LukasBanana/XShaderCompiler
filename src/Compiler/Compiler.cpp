@@ -155,11 +155,13 @@ bool Compiler::CompileShaderPrimary(
         preProcessor = MakeUnique<GLSLPreProcessor>(*includeHandler, log_);
 
     const bool writeLineMarksInPP = (!outputDesc.options.preprocessOnly || outputDesc.formatting.lineMarks);
+    const bool writeLineMarkFilenamesInPP = (!outputDesc.options.preprocessOnly || IsLanguageHLSL(inputDesc.shaderVersion));
 
     auto processedInput = preProcessor->Process(
         std::make_shared<SourceCode>(inputDesc.sourceCode),
         inputDesc.filename,
         writeLineMarksInPP,
+        writeLineMarkFilenamesInPP,
         ((inputDesc.warnings & Warnings::PreProcessor) != 0)
     );
 

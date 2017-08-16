@@ -46,6 +46,7 @@ class PreProcessor : public Parser
             const SourceCodePtr& input,
             const std::string& filename = "",
             bool writeLineMarks = true,
+            bool writeLineMarkFilenames = true,
             bool enableWarnings = false
         );
 
@@ -85,6 +86,9 @@ class PreProcessor : public Parser
 
         // Parses the specified directive, that is not part of the standard pre-processor directive (e.g. "version" or "extension" for GLSL).
         virtual void ParseDirective(const std::string& directive, bool ignoreUnknown);
+
+        // Callback function when an auto-generated '#line'-directive is to be written.
+        virtual void WriteLineDirective(unsigned int lineNo, const std::string& filename);
 
         // Ignores the remaining tokens of the current directive.
         void IgnoreDirective();
@@ -211,6 +215,7 @@ class PreProcessor : public Parser
         std::stack<IfBlock>                 ifBlockStack_;
 
         bool                                writeLineMarks_         = true;
+        bool                                writeLineMarkFilenames_ = true;
 
 };
 
