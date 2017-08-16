@@ -229,3 +229,6 @@
 
 [ReflectionTest1: comp]
 -T comp -E main --reflect -Valid -DFOO ReflectionTest1.hlsl
+
+[ESSL_IO_Semantics: comp]
+-T frag -E main -Vout ESSL -AB -o output/* ESSL_IO_Semantics.hlsl

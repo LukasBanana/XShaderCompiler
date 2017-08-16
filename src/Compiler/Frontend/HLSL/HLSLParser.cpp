@@ -190,7 +190,10 @@ void HLSLParser::ProcessDirectivePragma()
         {
             if (!Is(type))
                 RuntimeErr(R_UnexpectedTokenInPackMatrixPragma);
-            return Parser::AcceptIt();
+
+            // PATCH: 'this->' is required here, due to GCC bug:
+            // see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58972
+            return this->Parser::AcceptIt();
         };
 
         AcceptToken(Tokens::LBracket);

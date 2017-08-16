@@ -25,10 +25,11 @@ PreProcessor::PreProcessor(IncludeHandler& includeHandler, Log* log) :
 }
 
 std::unique_ptr<std::iostream> PreProcessor::Process(
-    const SourceCodePtr& input, const std::string& filename, bool writeLineMarks, bool enableWarnings)
+    const SourceCodePtr& input, const std::string& filename, bool writeLineMarks, bool writeLineMarkFilenames, bool enableWarnings)
 {
-    output_         = MakeUnique<std::stringstream>();
-    writeLineMarks_ = writeLineMarks;
+    output_                 = MakeUnique<std::stringstream>();
+    writeLineMarks_         = writeLineMarks;
+    writeLineMarkFilenames_ = writeLineMarkFilenames;
 
     EnableWarnings(enableWarnings);
 
@@ -98,6 +99,14 @@ void PreProcessor::ParseDirective(const std::string& directive, bool ignoreUnkno
             Error(R_UnknownPPDirective(directive), true, false);
         IgnoreDirective();
     }
+}
+
+void PreProcessor::WriteLineDirective(unsigned int lineNo, const std::string& filename)
+{
+    if (writeLineMarkFilenames_)
+        Out() << "#line " << lineNo << " \"" << filename << '\"' << std::endl;
+    else
+        Out() << "#line " << lineNo << std::endl;
 }
 
 void PreProcessor::IgnoreDirective()
@@ -441,7 +450,7 @@ void PreProcessor::WritePosToLineDirective()
     if (writeLineMarks_)
     {
         auto pos = GetScanner().ActiveToken()->Pos();
-        Out() << "#line " << pos.Row() << " \"" << GetCurrentFilename() << '\"' << std::endl;
+        WriteLineDirective(pos.Row(), GetCurrentFilename());
     }
 }
 
