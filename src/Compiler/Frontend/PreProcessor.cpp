@@ -202,6 +202,33 @@ bool PreProcessor::OnUndefineMacro(const Macro& macro)
     return true;
 }
 
+bool PreProcessor::OnSubstitueStdMacro(const Token& identTkn, TokenPtrString& tokenString)
+{
+    const auto& ident = identTkn.Spell();
+
+    if (ident == "__FILE__")
+    {
+        /* Replace '__FILE__' identifier with current filename */
+        tokenString.PushBack(Make<Token>(Tokens::StringLiteral, '\"' + GetCurrentFilename() + '\"'));
+        return true;
+    }
+    else if (ident == "__LINE__")
+    {
+        /* Replace '__LINE__' identifier with current line number */
+        tokenString.PushBack(Make<Token>(Tokens::IntLiteral, std::to_string(GetScanner().Pos().Row())));
+        return true;
+    }
+    else if (ident == "__EVAL__")
+    {
+        /* Parse and evaluate argument */
+        auto argument = ParseAndEvaluateExpr(&identTkn);
+        tokenString.PushBack(Make<Token>(Tokens::IntLiteral, std::to_string(argument.ToInt())));
+        return true;
+    }
+
+    return false;
+}
+
 Variant PreProcessor::ParseAndEvaluateExpr(const Token* tkn)
 {
     /*
@@ -515,29 +542,12 @@ TokenPtrString PreProcessor::ParseIdentAsTokenString()
 
     /* Parse identifier */
     auto identTkn = Accept(Tokens::Ident);
-    auto ident = identTkn->Spell();
 
     /* Check for pre-defined and dynamic macros */
-    if (ident == "__FILE__")
-    {
-        /* Replace '__FILE__' identifier with current filename */
-        tokenString.PushBack(Make<Token>(Tokens::Ident, GetCurrentFilename()));
-    }
-    else if (ident == "__LINE__")
-    {
-        /* Replace '__LINE__' identifier with current line number */
-        tokenString.PushBack(Make<Token>(Tokens::IntLiteral, std::to_string(GetScanner().Pos().Row())));
-    }
-    else if (ident == "__EVAL__")
-    {
-        /* Parse and evaluate argument */
-        auto argument = ParseAndEvaluateExpr(identTkn.get());
-        tokenString.PushBack(Make<Token>(Tokens::IntLiteral, std::to_string(argument.ToInt())));
-    }
-    else
+    if (!OnSubstitueStdMacro(*identTkn, tokenString))
     {
         /* Search for defined macro */
-        auto it = macros_.find(ident);
+        auto it = macros_.find(identTkn->Spell());
         if (it != macros_.end())
         {
             /* Perform macro expansion */

@@ -73,6 +73,17 @@ bool GLSLPreProcessor::OnUndefineMacro(const Macro& macro)
         return PreProcessor::OnUndefineMacro(macro);
 }
 
+bool GLSLPreProcessor::OnSubstitueStdMacro(const Token& identTkn, TokenPtrString& tokenString)
+{
+    if (identTkn.Spell() == "__FILE__")
+    {
+        /* Replace '__FILE__' identifier with index of current filename */
+        tokenString.PushBack(Make<Token>(Tokens::IntLiteral, "1"));
+        return true;
+    }
+    return PreProcessor::OnSubstitueStdMacro(identTkn, tokenString);
+}
+
 void GLSLPreProcessor::ParseDirective(const std::string& directive, bool ignoreUnknown)
 {
     if (directive == "version")
@@ -98,8 +109,6 @@ void GLSLPreProcessor::ParseDirective(const std::string& directive, bool ignoreU
 // '#' 'version' NUMBER PROFILE?
 void GLSLPreProcessor::ParseDirectiveVersion()
 {
-    std::string version, profile;
-
     /* Check if version was already defined */
     if (versionDefined_)
     {
@@ -112,55 +121,82 @@ void GLSLPreProcessor::ParseDirectiveVersion()
 
     /* Parse version number */
     IgnoreWhiteSpaces();
-    version = Accept(Tokens::IntLiteral)->Spell();
 
-    /* Verify GLSL version number */
-    versionNo_ = std::stoi(version);
-
-    static const int versionListGLSL[] =
-    {
-        110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450,
-    };
-
-    if (std::find(std::begin(versionListGLSL), std::end(versionListGLSL), versionNo_) == std::end(versionListGLSL))
-        Error(R_UnknownGLSLVersion(version), true, false);
+    auto versionTkn = Accept(Tokens::IntLiteral);
+    versionNo_ = std::stoi(versionTkn->Spell());
 
     /* Parse profile */
+    bool isESSL = false;
     bool isCompatibilityProfile = false;
+    std::string profile;
 
     IgnoreWhiteSpaces();
     if (Is(Tokens::Ident))
     {
         profile = Accept(Tokens::Ident)->Spell();
 
-        if (versionNo_ < 150)
-            Error(R_NoProfileForGLSLVersionBefore150, true, false);
-
-        if (profile == "core")
-            isCompatibilityProfile = false;
-        else if (profile == "compatibility")
-            isCompatibilityProfile = true;
+        if (profile == "es")
+        {
+            /* Parse version for ESSL (OpenGL ES) */
+            isESSL = true;
+        }
         else
-            Error(R_InvalidGLSLVersionProfile(profile), true, false);
+        {
+            /* Parse version for GLSL (OpenGL or Vulkan) */
+            if (profile == "core")
+                isCompatibilityProfile = false;
+            else if (profile == "compatibility")
+                isCompatibilityProfile = true;
+            else
+                Error(R_InvalidGLSLVersionProfile(profile), true, false);
+        }
+    }
+
+    if (isESSL)
+    {
+        /* Verify ESSL version number */
+        static const int versionsESSL[] =
+        {
+            100, 300, 310, 320, 0
+        };
+
+        if (!VerifyVersionNo(versionsESSL))
+            Error(R_UnknownESSLVersion(versionNo_), versionTkn.get(), false);
+    }
+    else
+    {
+        /* Verify GLSL version number */
+        static const int versionsGLSL[] =
+        {
+            110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450, 460, 0
+        };
+
+        if (!VerifyVersionNo(versionsGLSL))
+            Error(R_UnknownGLSLVersion(versionNo_), versionTkn.get(), false);
+
+        /* Only GLSL 150+ allows a profile */
+        if (!profile.empty() && versionNo_ < 150)
+            Error(R_NoProfileForGLSLVersionBefore150, true, false);
     }
 
     /* Write out version */
-    Out() << "#version " << version;
+    Out() << "#version " << versionNo_;
 
-    if (versionNo_ >= 150)
-    {
-        if (isCompatibilityProfile)
-            Out() << " compatibility";
-        else
-            Out() << " core";
-    }
+    if (!profile.empty())
+        Out() << ' ' << profile;
 
     /*
-    Define standard macros 'GL_core_profile' and 'GL_compatibility_profile'
+    Define standard macros: 'GL_core_profile', 'GL_es_profile', 'GL_compatibility_profile'
     see https://www.khronos.org/opengl/wiki/Core_Language_(GLSL)#Standard_macros
     */
     DefineStandardMacro("GL_core_profile");
-    if (isCompatibilityProfile)
+
+    if (isESSL)
+    {
+        DefineStandardMacro("GL_es_profile");
+        DefineStandardMacro("GL_ES");
+    }
+    else if (isCompatibilityProfile)
         DefineStandardMacro("GL_compatibility_profile");
 
     DefineStandardMacro("__VERSION__", versionNo_);
@@ -194,6 +230,20 @@ void GLSLPreProcessor::ParseDirectiveExtension()
 
     /* Write out extension */
     Out() << "#extension " << extension << " : " << behavior;
+}
+
+bool GLSLPreProcessor::VerifyVersionNo(const int* validVersions) const
+{
+    /* Find version number in array */
+    while (*validVersions)
+    {
+        if (*validVersions == versionNo_)
+            return true;
+        if (*validVersions > versionNo_)
+            return false;
+        ++validVersions;
+    }
+    return false;
 }
 
 

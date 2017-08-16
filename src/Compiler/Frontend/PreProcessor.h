@@ -114,6 +114,9 @@ class PreProcessor : public Parser
         // Callback function when a macro is about to be undefined, return true if the undefinition is allowed.
         virtual bool OnUndefineMacro(const Macro& macro);
 
+        // Callback function when the standard macro must be substituted (e.g. __FILE__ to string literal).
+        virtual bool OnSubstitueStdMacro(const Token& identTkn, TokenPtrString& tokenString);
+
         // Parse a token string and evaluate it as expression.
         Variant ParseAndEvaluateExpr(const Token* tkn = nullptr);
 
