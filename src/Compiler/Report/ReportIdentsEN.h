@@ -591,6 +591,7 @@ DECL_REPORT( CmdHelpDetailsNameMangling,        "buffer-fields   => rename 'buff
 DECL_REPORT( CmdHelpSeparateShaders,            "Ensures compatibility to 'ARB_separate_shader_objects' extension; default={0}"                                 );
 DECL_REPORT( CmdHelpSeparateSamplers,           "Enables/disables generation of separate sampler state objects; default={0}"                                    );
 DECL_REPORT( CmdHelpDisassemble,                "Disassembles the SPIR-V module"                                                                                );
+DECL_REPORT( CmdHelpDisassembleExt,             "Disassembles the SPIR-V module with extended ID numbers"                                                       );
 DECL_REPORT( InvalidShaderTarget,               "invalid shader target[: '{0}']"                                                                                );
 DECL_REPORT( InvalidShaderVersionIn,            "invalid input shader version[: '{0}']"                                                                         );
 DECL_REPORT( InvalidShaderVersionOut,           "invalid output shader version[: '{0}']"                                                                        );

@@ -1349,14 +1349,46 @@ HelpDescriptor DisassembleCommand::Help() const
     };
 }
 
-void DisassembleCommand::Run(CommandLine& cmdLine, ShellState& state)
+static void DisassembleCommandPrimary(CommandLine& cmdLine, ShellState& state, bool showNames)
 {
     const auto filename = cmdLine.Accept();
+
+    AssemblyDescriptor desc;
+    desc.showNames = showNames;
     
     std::ifstream file(filename, std::ios::binary);
-    DisassembleShader(file, std::cout);
+    DisassembleShader(file, std::cout, desc);
 
     state.actionPerformed = true;
+}
+
+void DisassembleCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    DisassembleCommandPrimary(cmdLine, state, false);
+}
+
+
+/*
+ * DisassembleExtCommand class
+ */
+
+std::vector<Command::Identifier> DisassembleExtCommand::Idents() const
+{
+    return { { "-dasmx" }, { "--disassemble-ext" } };
+}
+
+HelpDescriptor DisassembleExtCommand::Help() const
+{
+    return
+    {
+        "-dasmx, --disassemble-ext FILE",
+        R_CmdHelpDisassembleExt
+    };
+}
+
+void DisassembleExtCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    DisassembleCommandPrimary(cmdLine, state, true);
 }
 
 

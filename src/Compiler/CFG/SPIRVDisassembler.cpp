@@ -153,6 +153,10 @@ void SPIRVDisassembler::Clear()
     currentInst_ = nullptr;
     currentPrt_ = nullptr;
     instructions_.clear();
+    typesInt_.clear();
+    typesFloat_.clear();
+    idNames_.clear();
+    constants_.clear();
 }
 
 
@@ -171,43 +175,49 @@ bool SPIRVDisassembler::HasRemainingOperands() const
     return (nextOffset_ < currentInst_->NumOperands());
 }
 
-void SPIRVDisassembler::AddOperandId(std::uint32_t offset)
+void SPIRVDisassembler::AddOperandId(std::uint32_t offset, spv::Id* output)
 {
     /* Get next operand offset */
     NextOffset(offset);
 
     /* Add operand as ID number (e.g. "%1") */
-    currentPrt_->operands.push_back(
-        desc_.idPrefixChar + std::to_string(currentInst_->GetOperandUInt32(offset))
-    );
+    spv::Id value = currentInst_->GetOperandUInt32(offset);
+    currentPrt_->operands.push_back(desc_.idPrefixChar + GetName(value));
+
+    if (output)
+        *output = value;
 
     /* Set next operand offset */
     nextOffset_ = offset + 1;
 }
 
-void SPIRVDisassembler::AddOperandLiteral(std::uint32_t offset)
+void SPIRVDisassembler::AddOperandLiteral(std::uint32_t offset, std::uint32_t* output)
 {
     /* Get next operand offset */
     NextOffset(offset);
 
     /* Add operand as value */
-    currentPrt_->operands.push_back(
-        std::to_string(currentInst_->GetOperandUInt32(offset))
-    );
+    std::uint32_t value = currentInst_->GetOperandUInt32(offset);
+    currentPrt_->operands.push_back(std::to_string(value));
+
+    if (output)
+        *output = value;
 
     /* Set next operand offset */
     nextOffset_ = offset + 1;
 }
 
-void SPIRVDisassembler::AddOperandASCII(std::uint32_t offset)
+void SPIRVDisassembler::AddOperandASCII(std::uint32_t offset, std::string* output)
 {
     /* Get next operand offset */
     NextOffset(offset);
 
     /* Add operand as ASCII string */
-    currentPrt_->operands.push_back(
-        '\"' + std::string(currentInst_->GetOperandASCII(offset)) + '\"'
-    );
+    std::string value = currentInst_->GetOperandASCII(offset);
+    currentPrt_->operands.push_back('\"' + value + '\"');
+    
+    if (output)
+        *output = std::move(value);
 
     /* Set next operand offset */
     nextOffset_ = currentInst_->FindOperandASCIIEndOffset(offset);
@@ -262,15 +272,17 @@ void SPIRVDisassembler::AddOperandEnumFlags(const std::function<const char*(T e)
 }
 
 template <typename T>
-void SPIRVDisassembler::AddOperandConstant(std::uint32_t offset)
+void SPIRVDisassembler::AddOperandConstant(std::uint32_t offset, std::string* output)
 {
     /* Get next operand offset */
     NextOffset(offset);
 
     /* Add operand as enumeration entry name */
-    currentPrt_->operands.push_back(
-        std::to_string( static_cast<T>(currentInst_->GetOperandUInt32(offset)) )
-    );
+    std::string value = std::to_string(static_cast<T>(currentInst_->GetOperandUInt32(offset)));
+    currentPrt_->operands.push_back(value);
+
+    if (output)
+        *output = std::move(value);
 
     /* Set next operand offset */
     nextOffset_ = offset + 1;
@@ -360,6 +372,8 @@ SPIRVDisassembler::Printable& SPIRVDisassembler::MakePrintable()
 
 void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byteOffset)
 {
+    using Op = spv::Op;
+
     /* Store references */
     currentInst_ = (&inst);
     auto& prt = MakePrintable();
@@ -368,20 +382,138 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
     prt.offset = ToHexString(byteOffset);
     byteOffset += inst.WordCount() * 4;
 
+    /* Set result names */
+    if (desc_.showNames)
+    {
+        switch (inst.opCode)
+        {
+            case Op::OpTypeVoid:
+                SetName(inst.result, "void");
+                break;
+
+            case Op::OpTypeBool:
+                SetName(inst.result, "bool");
+                break;
+
+            case Op::OpTypeInt:
+                if (inst.GetOperandUInt32(1) == 0)
+                {
+                    switch (inst.GetOperandUInt32(0))
+                    {
+                        case 8:
+                            SetName(inst.result, "uchar");
+                            break;
+                        case 16:
+                            SetName(inst.result, "ushort");
+                            break;
+                        case 32:
+                            SetName(inst.result, "uint");
+                            break;
+                        case 64:
+                            SetName(inst.result, "ulong");
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (inst.GetOperandUInt32(0))
+                    {
+                        case 8:
+                            SetName(inst.result, "char");
+                            break;
+                        case 16:
+                            SetName(inst.result, "short");
+                            break;
+                        case 32:
+                            SetName(inst.result, "int");
+                            break;
+                        case 64:
+                            SetName(inst.result, "long");
+                            break;
+                    }
+                }
+                break;
+
+            case Op::OpTypeFloat:
+                switch (inst.GetOperandUInt32(0))
+                {
+                    case 16:
+                        SetName(inst.result, "half");
+                        break;
+                    case 32:
+                        SetName(inst.result, "float");
+                        break;
+                    case 64:
+                        SetName(inst.result, "double");
+                        break;
+                }
+                break;
+
+            case Op::OpTypeVector:
+                SetName(inst.result, GetName(inst.GetOperandUInt32(0)) + std::to_string(inst.GetOperandUInt32(1)));
+                break;
+
+            case Op::OpTypeMatrix:
+                SetName(inst.result, GetName(inst.GetOperandUInt32(0)) + 'x' + std::to_string(inst.GetOperandUInt32(1)));
+                break;
+
+            case Op::OpTypeImage:
+            case Op::OpTypeSampler:
+            case Op::OpTypeSampledImage:
+                break;
+
+            case Op::OpTypeArray:
+                SetName(inst.result, GetName(inst.GetOperandUInt32(0)) + '[' + GetConstant(inst.GetOperandUInt32(1)) + ']');
+                break;
+
+            case Op::OpTypeRuntimeArray:
+                SetName(inst.result, GetName(inst.GetOperandUInt32(0)) + "[]");
+                break;
+
+            case Op::OpTypeStruct:
+            case Op::OpTypeOpaque:
+                break;
+
+            case Op::OpTypePointer:
+                SetName(
+                    inst.result,
+                    (
+                        std::string(spv::StorageClassToString(static_cast<spv::StorageClass>(inst.GetOperandUInt32(0)))) +
+                        '<' + GetName(inst.GetOperandUInt32(1)) + '>'
+                    )
+                );
+                break;
+
+            case Op::OpTypeFunction:
+            case Op::OpTypeEvent:
+            case Op::OpTypeDeviceEvent:
+            case Op::OpTypeReserveId:
+            case Op::OpTypeQueue:
+            case Op::OpTypePipe:
+            case Op::OpTypeForwardPointer:
+                break;
+
+            case Op::OpName:
+                SetName(inst.GetOperandUInt32(0), inst.GetOperandASCII(1));
+                break;
+
+            default:
+                break;
+        }
+    }
+
     /* Print result */
     if (inst.result)
-        prt.result = (desc_.idPrefixChar + std::to_string(inst.result));
+        prt.result = (desc_.idPrefixChar + GetName(inst.result));
 
     /* Print op-code */
     prt.opCode = spv::OpToString(inst.opCode);
 
     /* Print type */
     if (inst.type)
-        prt.operands.push_back(desc_.idPrefixChar + std::to_string(inst.type));
+        prt.operands.push_back(desc_.idPrefixChar + GetName(inst.type));
 
     /* Print operands */
-    using Op = spv::Op;
-
     switch (inst.opCode)
     {
         case Op::OpSizeOf:
@@ -417,15 +549,25 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
 
         case Op::OpName:
         {
-            AddOperandId();     // Target
-            AddOperandASCII();  // Name
+            spv::Id target = 0;
+            std::string name;
+
+            AddOperandId(~0, &target);  // Target
+            AddOperandASCII(~0, &name); // Name
+
+            SetName(target, name);
         }
         break;
 
         case Op::OpMemberName:
         {
-            AddOperandLiteral();    // Member
-            AddOperandASCII();      // Name
+            std::uint32_t member = 0;
+            std::string name;
+
+            AddOperandLiteral(~0, &member); // Member
+            AddOperandASCII(~0, &name);     // Name
+
+            SetMemberName(inst.type, member, name);
         }
         break;
 
@@ -656,6 +798,8 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
         case Op::OpConstant:
         case Op::OpSpecConstant:
         {
+            std::string value;
+
             /* Search int type */
             auto it = typesInt_.find(inst.type);
             if (it != typesInt_.end())
@@ -668,13 +812,14 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
                     switch (type.width)
                     {
                         case 16:
-                            AddOperandConstant<std::int16_t>(0);
+                            AddOperandConstant<std::int16_t>(0, &value);
                             break;
                         case 32:
-                            AddOperandConstant<std::int32_t>(0);
+                            AddOperandConstant<std::int32_t>(0, &value);
                             break;
                         case 64:
-                            prt.operands.push_back(std::to_string(static_cast<std::int64_t>(inst.GetOperandUInt64(0))));
+                            value = std::to_string(static_cast<std::int64_t>(inst.GetOperandUInt64(0)));
+                            prt.operands.push_back(value);
                             break;
                     }
                 }
@@ -683,13 +828,14 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
                     switch (type.width)
                     {
                         case 16:
-                            AddOperandConstant<std::uint16_t>(0);
+                            AddOperandConstant<std::uint16_t>(0, &value);
                             break;
                         case 32:
-                            AddOperandConstant<std::uint32_t>(0);
+                            AddOperandConstant<std::uint32_t>(0, &value);
                             break;
                         case 64:
-                            prt.operands.push_back(std::to_string(inst.GetOperandUInt64(0)));
+                            value = std::to_string(inst.GetOperandUInt64(0));
+                            prt.operands.push_back(value);
                             break;
                     }
                 }
@@ -708,19 +854,24 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
                     switch (type.width)
                     {
                         case 16:
-                            prt.operands.push_back(std::to_string(inst.GetOperandFloat16(0)));
+                            value = std::to_string(inst.GetOperandFloat16(0));
                             break;
                         case 32:
-                            prt.operands.push_back(std::to_string(inst.GetOperandFloat32(0)));
+                            value = std::to_string(inst.GetOperandFloat32(0));
                             break;
                         case 64:
-                            prt.operands.push_back(std::to_string(inst.GetOperandFloat64(0)));
+                            value = std::to_string(inst.GetOperandFloat64(0));
                             break;
                     }
+
+                    prt.operands.push_back(value);
 
                     SkipOperands();
                 }
             }
+
+            /* Store constant value */
+            SetConstant(inst.result, value);
         }
         break;
 
@@ -1028,17 +1179,19 @@ void SPIRVDisassembler::AddPrintable(const Instruction& inst, std::uint32_t& byt
 
 void SPIRVDisassembler::PrintAll(std::ostream& stream)
 {
-    static const std::size_t idResultPadding    = 8;
+    static const std::size_t minResultLen       = 8;
     static const std::size_t minOpCodeLen       = 5;
     static const std::size_t minOperandListLen  = 8;
 
     /* Determine longest opcode name and operand list */
+    std::size_t maxResultLen        = minResultLen;
     std::size_t maxOpCodeLen        = minOpCodeLen;
     std::size_t maxOperandListLen   = minOperandListLen;
 
     for (const auto& prt : printables_)
     {
-        /* Get maximal opcode length */
+        /* Get maximal result and opcode length */
+        maxResultLen = std::max(maxResultLen, prt.result.size());
         maxOpCodeLen = std::max(maxOpCodeLen, prt.opCode.size());
 
         /* Get maximal operand list length */
@@ -1062,18 +1215,15 @@ void SPIRVDisassembler::PrintAll(std::ostream& stream)
 
         if (desc_.showOffsets)
         {
-            stream << "; Result     ";
+            stream << "; Result     " << std::string(maxResultLen - minResultLen, ' ');
             stream << "OpCode" << std::string(maxOpCodeLen - minOpCodeLen, ' ');
             stream << "Operands" << std::string(maxOperandListLen - minOperandListLen, ' ');
             stream << "Offsets" << std::endl;
 
-            stream << "; " << std::string(idResultPadding + 2, '-');
+            stream << "; " << std::string(maxResultLen + 2, '-');
             stream << ' ' << std::string(maxOpCodeLen, '-');
             stream << ' ' << std::string(maxOperandListLen - 1, '-');
             stream << ' ' << std::string(12, '-') << std::endl;
-        }
-        else
-        {
         }
     }
 
@@ -1087,12 +1237,12 @@ void SPIRVDisassembler::PrintAll(std::ostream& stream)
         {
             {
                 ScopedColor scopedColor(ColorFlags::Red | ColorFlags::Intens, stream);
-                stream << std::string(idResultPadding - prt.result.size(), ' ') << prt.result;
+                stream << std::string(maxResultLen - prt.result.size(), ' ') << prt.result;
             }
             stream << " = ";
         }
         else
-            stream << std::string(idResultPadding + 3, ' ');
+            stream << std::string(maxResultLen + 3, ' ');
 
         /* Print op-code */
         {
@@ -1146,6 +1296,58 @@ void SPIRVDisassembler::PrintOperand(std::ostream& stream, const std::string& s)
         else
             stream << s;
     }
+}
+
+void SPIRVDisassembler::SetName(spv::Id id, const std::string& name)
+{
+    if (desc_.showNames && !name.empty())
+        idNames_[id].name = name;
+}
+
+std::string SPIRVDisassembler::GetName(spv::Id id) const
+{
+    if (desc_.showNames)
+    {
+        auto it = idNames_.find(id);
+        if (it != idNames_.end())
+            return it->second.name;
+    }
+    return std::to_string(id);
+}
+
+void SPIRVDisassembler::SetMemberName(spv::Id id, std::uint32_t index, const std::string& name)
+{
+    if (desc_.showNames && !name.empty())
+        idNames_[id].memberNames[index] = name;
+}
+
+std::string SPIRVDisassembler::GetMemberName(spv::Id id, std::uint32_t index) const
+{
+    if (desc_.showNames)
+    {
+        auto it = idNames_.find(id);
+        if (it != idNames_.end())
+        {
+            auto itMember = it->second.memberNames.find(index);
+            if (itMember != it->second.memberNames.end())
+                return itMember->second;
+        }
+    }
+    return std::to_string(id);
+}
+
+void SPIRVDisassembler::SetConstant(spv::Id id, const std::string& value)
+{
+    constants_[id] = value;
+}
+
+std::string SPIRVDisassembler::GetConstant(spv::Id id) const
+{
+    auto it = constants_.find(id);
+    if (it != constants_.end())
+        return it->second;
+    else
+        return "";
 }
 
 #undef ADD_OPERAND_ENUM

@@ -33,8 +33,8 @@ class Command
             Identifier() = default;
 
             inline Identifier(const std::string& name, bool includesValue = false) :
-                name            { name          },
-                includesValue   { includesValue }
+                name          { name          },
+                includesValue { includesValue }
             {
             }
 
@@ -107,6 +107,7 @@ DECL_SHELL_COMMAND( NameManglingCommand          );
 DECL_SHELL_COMMAND( SeparateShadersCommand       );
 DECL_SHELL_COMMAND( SeparateSamplersCommand      );
 DECL_SHELL_COMMAND( DisassembleCommand           );
+DECL_SHELL_COMMAND( DisassembleExtCommand        );
 
 #ifdef XSC_ENABLE_LANGUAGE_EXT
 

@@ -93,7 +93,8 @@ CommandFactory::CommandFactory()
         NameManglingCommand,
         SeparateShadersCommand,
         SeparateSamplersCommand,
-        DisassembleCommand
+        DisassembleCommand,
+        DisassembleExtCommand
     >();
 }
 
