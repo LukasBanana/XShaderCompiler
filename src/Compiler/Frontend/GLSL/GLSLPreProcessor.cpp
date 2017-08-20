@@ -143,11 +143,9 @@ void GLSLPreProcessor::ParseDirectiveVersion()
         else
         {
             /* Parse version for GLSL (OpenGL or Vulkan) */
-            if (profile == "core")
-                isCompatibilityProfile = false;
-            else if (profile == "compatibility")
+            if (profile == "compatibility")
                 isCompatibilityProfile = true;
-            else
+            else if (profile != "core")
                 Error(R_InvalidGLSLVersionProfile(profile), true, false);
         }
     }

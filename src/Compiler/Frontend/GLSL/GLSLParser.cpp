@@ -150,7 +150,14 @@ void GLSLParser::ProcessDirectiveVersion()
     if (Is(Tokens::Ident))
     {
         const auto profile = Parser::AcceptIt()->Spell();
-        isCompatibilityProfile_ = (profile == "compatibility");
+        if (profile == "es")
+            isESSL_ = true;
+        else if (profile == "core")
+            isCoreProfile_ = true;
+        else if (profile == "compatibility")
+            isCoreProfile_ = false;
+        else
+            Error(R_InvalidGLSLVersionProfile(profile));
     }
 }
 

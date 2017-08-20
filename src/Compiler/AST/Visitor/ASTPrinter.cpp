@@ -8,6 +8,7 @@
 #include "ASTPrinter.h"
 #include "AST.h"
 #include "ReportIdents.h"
+#include <Xsc/ConsoleManip.h>
 #include <stdexcept>
 #include <algorithm>
 
@@ -16,14 +17,14 @@ namespace Xsc
 {
 
 
-void ASTPrinter::PrintAST(Program* program, Log& log)
+void ASTPrinter::PrintAST(Program* program, std::ostream& output)
 {
     /* Build new printable tree */
     Visit(program);
 
     /* Print all children of the tree root */
     for (const auto& child : treeRoot_.children)
-        Print(log, child);
+        Print(child, output);
 
     /* Clean up (if instance of ASTPrinter is used multiple times) */
     treeRoot_.label.clear();
@@ -75,7 +76,7 @@ inline std::string MemberToString<IndexedSemantic>(const IndexedSemantic& member
     VisitMember(ast->MEMBER, #MEMBER)
 
 #define ADD_PRINTABLE_MEMBER(MEMBER) \
-    Printable(ast, std::string(#MEMBER) + " : " + MemberToString(ast->MEMBER))
+    Printable(ast, std::string(#MEMBER), MemberToString(ast->MEMBER))
 
 /* ------- Visit functions ------- */
 
@@ -101,7 +102,7 @@ IMPLEMENT_VISIT_PROC(Attribute)
 {
     PushPrintable(ast, WriteLabel("Attribute"));
     {
-        Printable(ast, "attributeType : " + ast->ToString());
+        Printable(ast, "attributeType", ast->ToString());
         VISIT_MEMBER(arguments);
     }
     PopPrintable();
@@ -158,7 +159,7 @@ IMPLEMENT_VISIT_PROC(TypeSpecifier)
     PushPrintable(ast, WriteLabel("TypeSpecifier", ast));
     {
         VISIT_MEMBER(structDecl);
-        Printable(ast, "typeDenoter : " + ast->ToString());
+        Printable(ast, "typeDenoter", ast->ToString());
     }
     PopPrintable();
 }
@@ -243,7 +244,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     PushPrintable(ast, WriteLabel("UniformBufferDecl", ast));
     {
         ADD_PRINTABLE_MEMBER(ident);
-        Printable(ast, "bufferType : " + std::string(ast->bufferType == UniformBufferType::ConstantBuffer ? "cbuffer" : "tbuffer"));
+        Printable(ast, "bufferType", std::string(ast->bufferType == UniformBufferType::ConstantBuffer ? "cbuffer" : "tbuffer"));
         VISIT_MEMBER(slotRegisters);
         VISIT_MEMBER(localStmnts);
     }
@@ -421,7 +422,7 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
     PushPrintable(ast, WriteLabel("CtrlTransferStmnt"));
     {
         VISIT_MEMBER(attribs);
-        Printable(ast, "transfer : " + CtrlTransformToString(ast->transfer));
+        Printable(ast, "transfer", CtrlTransformToString(ast->transfer));
     }
     PopPrintable();
 }
@@ -431,8 +432,8 @@ IMPLEMENT_VISIT_PROC(LayoutStmnt)
     PushPrintable(ast, WriteLabel("LayoutStmnt"));
     {
         VISIT_MEMBER(attribs);
-        Printable(ast, (ast->isInput ? "isInput : true" : "isInput : false"));
-        Printable(ast, (ast->isOutput ? "isOutput : true" : "isOutput : false"));
+        Printable(ast, "isInput", (ast->isInput ? "true" : "false"));
+        Printable(ast, "isOutput", (ast->isOutput ? "true" : "false"));
     }
     PopPrintable();
 }
@@ -487,7 +488,7 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
     PushPrintable(ast, WriteLabel("BinaryExpr", ast));
     {
         VISIT_MEMBER(lhsExpr);
-        Printable(ast, "op : " + BinaryOpToString(ast->op));
+        Printable(ast, "op", BinaryOpToString(ast->op));
         VISIT_MEMBER(rhsExpr);
     }
     PopPrintable();
@@ -497,7 +498,7 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
     PushPrintable(ast, WriteLabel("UnaryExpr", ast));
     {
-        Printable(ast, "op : " + UnaryOpToString(ast->op));
+        Printable(ast, "op", UnaryOpToString(ast->op));
         VISIT_MEMBER(expr);
     }
     PopPrintable();
@@ -508,7 +509,7 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
     PushPrintable(ast, WriteLabel("PostUnaryExpr", ast));
     {
         VISIT_MEMBER(expr);
-        Printable(ast, "op : " + UnaryOpToString(ast->op));
+        Printable(ast, "op", UnaryOpToString(ast->op));
     }
     PopPrintable();
 }
@@ -539,7 +540,7 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     PushPrintable(ast, WriteLabel("AssignExpr", ast));
     {
         VISIT_MEMBER(lvalueExpr);
-        Printable(ast, "op : " + AssignOpToString(ast->op));
+        Printable(ast, "op", AssignOpToString(ast->op));
         VISIT_MEMBER(rvalueExpr);
     }
     PopPrintable();
@@ -626,19 +627,23 @@ std::string ASTPrinter::WriteLabel(const std::string& astName, TypedAST* ast)
     return s;
 }
 
-void ASTPrinter::Print(Log& log, const PrintableTree& tree)
+void ASTPrinter::Print(const PrintableTree& tree, std::ostream& output)
 {
-    std::string s;
+    using Colors = ConsoleManip::ColorFlags;
 
-    /* Write row of source position */
-    s += std::string(maxRowStrLen_ - tree.row.size(), ' ');
-    s += tree.row;
-    s += ':';
+    {
+        ConsoleManip::ScopedColor highlight(Colors::Green | Colors::Blue, output);
 
-    /* Write column of source position */
-    s += std::string(maxColStrLen_ - tree.col.size(), ' ');
-    s += tree.col;
-    s += "  ";
+        /* Write row of source position */
+        output << std::string(maxRowStrLen_ - tree.row.size(), ' ');
+        output << tree.row;
+        output << ':';
+
+        /* Write column of source position */
+        output << std::string(maxColStrLen_ - tree.col.size(), ' ');
+        output << tree.col;
+        output << "  ";
+    }
 
     /* Write node hierarchy level */
     if (!lastSubNodeStack_.empty())
@@ -646,22 +651,29 @@ void ASTPrinter::Print(Log& log, const PrintableTree& tree)
         for (std::size_t i = 0; i + 1 < lastSubNodeStack_.size(); ++i)
         {
             if (lastSubNodeStack_[i])
-                s += "  ";
+                output << "  ";
             else
-                s += "| ";
+                output << "| ";
         }
 
         if (lastSubNodeStack_.back())
-            s += "`-";
+            output << "`-";
         else
-            s += "|-";
+            output << "|-";
     }
 
     /* Write label */
-    s += tree.label;
+    output << tree.label;
 
-    /* Submit print as report */
-    log.SubmitReport(Report(ReportTypes::Info, s));
+    /* Write value */
+    if (!tree.value.empty())
+    {
+        output << " : ";
+        ConsoleManip::ScopedColor highlight(Colors::Yellow, output);
+        output << tree.value;
+    }
+
+    output << std::endl;
 
     /* Print children */
     if (!tree.children.empty())
@@ -670,17 +682,17 @@ void ASTPrinter::Print(Log& log, const PrintableTree& tree)
         {
             /* Print all children except the last one */
             for (std::size_t i = 0, n = tree.children.size(); i + 1 < n; ++i)
-                Print(log, tree.children[i]);
+                Print(tree.children[i], output);
 
             /* Print last children */
             lastSubNodeStack_.back() = true;
-            Print(log, tree.children.back());
+            Print(tree.children.back(), output);
         }
         lastSubNodeStack_.pop_back();
     }
 }
 
-bool ASTPrinter::PushPrintable(const AST* ast, const std::string& label)
+bool ASTPrinter::PushPrintable(const AST* ast, const std::string& label, const std::string& value)
 {
     if (!label.empty())
     {
@@ -695,7 +707,7 @@ bool ASTPrinter::PushPrintable(const AST* ast, const std::string& label)
 
         /* Add new child node to printable tree */
         auto& children = TopPrintable()->children;
-        children.push_back({ rowStr, colStr, label, {} });
+        children.push_back({ rowStr, colStr, label, value, {} });
         parentNodeStack_.push(&(children.back()));
 
         return true;
@@ -708,9 +720,9 @@ void ASTPrinter::PopPrintable()
     parentNodeStack_.pop();
 }
 
-void ASTPrinter::Printable(const AST* ast, const std::string& label)
+void ASTPrinter::Printable(const AST* ast, const std::string& label, const std::string& value)
 {
-    PushPrintable(ast, label);
+    PushPrintable(ast, label, value);
     PopPrintable();
 }
 

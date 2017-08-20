@@ -48,8 +48,7 @@ bool Compiler::CompileShader(
 
     if (!IsLanguageHLSL(inputDesc.shaderVersion) && !outputDesc.options.preprocessOnly)
     {
-        if (log_)
-            log_->SubmitReport(Report(ReportTypes::Warning, R_GLSLFrontendIsIncomplete));
+        Warning(R_GLSLFrontendIsIncomplete);
         outputDescCopy.options.validateOnly = true;
     }
 
@@ -239,10 +238,10 @@ bool Compiler::CompileShaderPrimary(
     }
 
     /* Print AST */
-    if (outputDesc.options.showAST && log_)
+    if (outputDesc.options.showAST)
     {
         ASTPrinter printer;
-        printer.PrintAST(program.get(), *log_);
+        printer.PrintAST(program.get());
     }
 
     if (!analyzerResult)

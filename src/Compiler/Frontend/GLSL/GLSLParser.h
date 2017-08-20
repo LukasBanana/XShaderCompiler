@@ -172,8 +172,9 @@ class GLSLParser : public SLParser
         // Symbol table for type name (i.e. structure and typedef identifiers) to detect cast expression, which are not context free.
         TypeNameSymbolTable typeNameSymbolTable_;
 
-        int                 version_                = 0;
-        bool                isCompatibilityProfile_ = false;
+        int                 version_        = 0;
+        bool                isESSL_         = false;
+        bool                isCoreProfile_  = false;
 
 };
 
