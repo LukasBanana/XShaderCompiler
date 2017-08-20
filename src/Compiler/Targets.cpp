@@ -62,6 +62,7 @@ XSC_EXPORT std::string ToString(const OutputShaderVersion shaderVersion)
         case OutputShaderVersion::GLSL430:  return "GLSL 4.30";
         case OutputShaderVersion::GLSL440:  return "GLSL 4.40";
         case OutputShaderVersion::GLSL450:  return "GLSL 4.50";
+        case OutputShaderVersion::GLSL460:  return "GLSL 4.60";
         case OutputShaderVersion::GLSL:     return "GLSL";
         
         case OutputShaderVersion::ESSL100:  return "ESSL 1.00";
@@ -97,7 +98,7 @@ XSC_EXPORT bool IsLanguageGLSL(const InputShaderVersion shaderVersion)
 
 XSC_EXPORT bool IsLanguageGLSL(const OutputShaderVersion shaderVersion)
 {
-    return ((shaderVersion >= OutputShaderVersion::GLSL110 && shaderVersion <= OutputShaderVersion::GLSL450) || shaderVersion == OutputShaderVersion::GLSL);
+    return ((shaderVersion >= OutputShaderVersion::GLSL110 && shaderVersion <= OutputShaderVersion::GLSL460) || shaderVersion == OutputShaderVersion::GLSL);
 }
 
 XSC_EXPORT bool IsLanguageESSL(const OutputShaderVersion shaderVersion)

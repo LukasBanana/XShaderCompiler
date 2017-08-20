@@ -206,8 +206,8 @@ HelpDescriptor VersionOutCommand::Help() const
         "-Vout, --version-out VERSION",
         R_CmdHelpVersionOut,
         (
-            "GLSL[110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450],\n"   \
-            "ESSL[100, 300, 310, 320],\n"                                           \
+            "GLSL[110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450, 460],\n"  \
+            "ESSL[100, 300, 310, 320],\n"                                               \
             "VKSL[450]"
         ),
         HelpCategory::Main
@@ -233,6 +233,7 @@ void VersionOutCommand::Run(CommandLine& cmdLine, ShellState& state)
             { "GLSL430", OutputShaderVersion::GLSL430 },
             { "GLSL440", OutputShaderVersion::GLSL440 },
             { "GLSL450", OutputShaderVersion::GLSL450 },
+            { "GLSL460", OutputShaderVersion::GLSL460 },
             { "GLSL",    OutputShaderVersion::GLSL    },
 
             { "ESSL100", OutputShaderVersion::ESSL100 },

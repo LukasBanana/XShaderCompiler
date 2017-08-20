@@ -63,6 +63,7 @@ enum class OutputShaderVersion
     GLSL430 = 430,                  //!< GLSL 4.30 (OpenGL 4.3).
     GLSL440 = 440,                  //!< GLSL 4.40 (OpenGL 4.4).
     GLSL450 = 450,                  //!< GLSL 4.50 (OpenGL 4.5).
+    GLSL460 = 460,                  //!< GLSL 4.60 (OpenGL 4.6).
     GLSL    = 0x0000ffff,           //!< Auto-detect minimal required GLSL version (for OpenGL 2+).
 
     ESSL100 = (0x00010000 + 100),   //!< ESSL 1.00 (OpenGL ES 2.0). \note Currently not supported!
