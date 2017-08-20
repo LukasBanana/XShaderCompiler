@@ -143,6 +143,9 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
         { "step",                             { T::Step,                             1, 1 } },
         { "tan",                              { T::Tan,                              1, 1 } },
         { "tanh",                             { T::TanH,                             1, 1 } },
+        { "transpose",                        { T::Transpose,                        1, 0 } },
+        { "trunc",                            { T::Trunc,                            1, 0 } },
+
         { "tex1D",                            { T::Tex1D_2,                          1, 0 } }, // Tex1D_4: 2.1
         { "tex1Dbias",                        { T::Tex1DBias,                        2, 1 } },
         { "tex1Dgrad",                        { T::Tex1DGrad,                        2, 1 } },
@@ -163,8 +166,6 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
         { "texCUBEgrad",                      { T::TexCubeGrad,                      2, 1 } },
         { "texCUBElod",                       { T::TexCubeLod,                       3, 1 } },
         { "texCUBEproj",                      { T::TexCubeProj,                      2, 1 } },
-        { "transpose",                        { T::Transpose,                        1, 0 } },
-        { "trunc",                            { T::Trunc,                            1, 0 } },
 
         { "GetDimensions",                    { T::Texture_GetDimensions,            5, 0 } },
         { "Load",                             { T::Texture_Load_1,                   4, 0 } },

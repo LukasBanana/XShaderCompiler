@@ -68,7 +68,16 @@ const std::string* SamplerTypeToGLSLKeyword(const SamplerType t);
 SamplerType GLSLKeywordToSamplerType(const std::string& keyword);
 
 
-/* ----- BufferType Mapping ----- */
+/* ----- AttributeType Mapping ----- */
+
+// Returns the GLSL keyword for the specified attribut type or null on failure.
+const std::string* AttributeTypeToGLSLKeyword(const AttributeType t);
+
+// Returns the attribute type for the specified GLSL keyword or returns AttributeValue::Undefined.
+AttributeType GLSLKeywordToAttributeType(const std::string& keyword);
+
+
+/* ----- AttributeValue Mapping ----- */
 
 // Returns the GLSL keyword for the specified attribut value or null on failure.
 const std::string* AttributeValueToGLSLKeyword(const AttributeValue t);

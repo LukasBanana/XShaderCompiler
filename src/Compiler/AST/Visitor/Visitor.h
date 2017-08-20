@@ -64,6 +64,7 @@ DECL_PTR( SwitchStmnt       );
 DECL_PTR( ExprStmnt         );
 DECL_PTR( ReturnStmnt       );
 DECL_PTR( CtrlTransferStmnt );
+DECL_PTR( LayoutStmnt       );
 
 DECL_PTR( NullExpr          );
 DECL_PTR( SequenceExpr      );
@@ -136,6 +137,7 @@ class Visitor
         VISITOR_VISIT_PROC( ExprStmnt         );
         VISITOR_VISIT_PROC( ReturnStmnt       );
         VISITOR_VISIT_PROC( CtrlTransferStmnt );
+        VISITOR_VISIT_PROC( LayoutStmnt       );
 
         VISITOR_VISIT_PROC( NullExpr          );
         VISITOR_VISIT_PROC( SequenceExpr      );

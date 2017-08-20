@@ -226,6 +226,11 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
     Visit(ast->attribs);
 }
 
+IMPLEMENT_VISIT_PROC(LayoutStmnt)
+{
+    Visit(ast->attribs);
+}
+
 /* --- Expressions --- */
 
 IMPLEMENT_VISIT_PROC(NullExpr)

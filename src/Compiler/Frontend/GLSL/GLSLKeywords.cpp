@@ -309,25 +309,16 @@ static Dictionary<DataType> GenerateDataTypeDict()
         { "uvec2",   T::UInt2     },
         { "uvec3",   T::UInt3     },
         { "uvec4",   T::UInt4     },
-        { "vec2",    T::Half2     },
-        { "vec3",    T::Half3     },
-        { "vec4",    T::Half4     },
         { "vec2",    T::Float2    },
         { "vec3",    T::Float3    },
         { "vec4",    T::Float4    },
+        { "vec2",    T::Half2     },
+        { "vec3",    T::Half3     },
+        { "vec4",    T::Half4     },
         { "dvec2",   T::Double2   },
         { "dvec3",   T::Double3   },
         { "dvec4",   T::Double4   },
 
-        { "mat2",    T::Half2x2   },
-        { "mat2x3",  T::Half2x3   },
-        { "mat2x4",  T::Half2x4   },
-        { "mat3x2",  T::Half3x2   },
-        { "mat3",    T::Half3x3   },
-        { "mat3x4",  T::Half3x4   },
-        { "mat4x2",  T::Half4x2   },
-        { "mat4x3",  T::Half4x3   },
-        { "mat4",    T::Half4x4   },
         { "mat2",    T::Float2x2  },
         { "mat2x3",  T::Float2x3  },
         { "mat2x4",  T::Float2x4  },
@@ -337,6 +328,15 @@ static Dictionary<DataType> GenerateDataTypeDict()
         { "mat4x2",  T::Float4x2  },
         { "mat4x3",  T::Float4x3  },
         { "mat4",    T::Float4x4  },
+        { "mat2",    T::Half2x2   },
+        { "mat2x3",  T::Half2x3   },
+        { "mat2x4",  T::Half2x4   },
+        { "mat3x2",  T::Half3x2   },
+        { "mat3",    T::Half3x3   },
+        { "mat3x4",  T::Half3x4   },
+        { "mat4x2",  T::Half4x2   },
+        { "mat4x3",  T::Half4x3   },
+        { "mat4",    T::Half4x4   },
         /*
         TODO: currently disabled
         -> "0.0" is read as double precision per default, which results in double precision matrices in most cases
@@ -416,8 +416,8 @@ static Dictionary<InterpModifier> GenerateInterpModifierDict()
 
     return
     {
-        { "smooth",        T::Linear          },
         { "centroid",      T::Centroid        },
+        { "smooth",        T::Linear          },
         { "flat",          T::NoInterpolation },
         { "noperspective", T::NoPerspective   },
         { "sample",        T::Sample          },
@@ -610,7 +610,75 @@ SamplerType GLSLKeywordToSamplerType(const std::string& keyword)
 }
 
 
-/* ----- BufferType Mapping ----- */
+/* ----- AttributeType Mapping ----- */
+
+static Dictionary<AttributeType> GenerateAttributeTypeDict()
+{
+    using T = AttributeType;
+
+    return
+    {
+        { "align",                   T::Align                 },
+        { "binding",                 T::Binding               },
+        { "cw",                      T::CW                    },
+        { "ccw",                     T::CCW                   },
+        { "column_major",            T::ColumnMajor           },
+        { "component",               T::Component             },
+        { "depth_any",               T::DepthAny              },
+        { "depth_greater",           T::DepthGreater          },
+        { "depth_less",              T::DepthLess             },
+        { "depth_unchanged",         T::DepthUnchanged        },
+        { "early_fragment_tests",    T::EarlyFragmentTests    },
+        { "equal_spacing",           T::EqualSpacing          },
+        { "fractional_even_spacing", T::FractionalEvenSpacing },
+        { "fractional_odd_spacing",  T::FractionalOddSpacing  },
+        { "index",                   T::Index                 },
+        { "invocations",             T::Invocations           },
+        { "isolines",                T::Isolines              },
+        { "lines",                   T::Lines                 },
+        { "lines_adjacency",         T::LinesAdjacency        },
+        { "line_strip",              T::LineStrip             },
+        { "local_size_x",            T::LocalSizeX            },
+        { "local_size_y",            T::LocalSizeY            },
+        { "local_size_z",            T::LocalSizeZ            },
+        { "location",                T::Location              },
+        { "max_vertices",            T::MaxVertices           },
+        { "origin_upper_left",       T::OriginUpperLeft       },
+        { "offset",                  T::Offset                },
+        { "packed",                  T::Packed                },
+        { "pixel_center_integer",    T::PixelCenterInteger    },
+        { "points",                  T::Points                },
+        { "point_mode",              T::PointMode             },
+        { "quads",                   T::Quads                 },
+        { "row_major",               T::RowMajor              },
+        { "shared",                  T::Shared                },
+        { "std140",                  T::Std140                },
+        { "std430",                  T::Std430                },
+        { "stream",                  T::Stream                },
+        { "triangles",               T::Triangles             },
+        { "triangles_adjacency",     T::TrianglesAdjacency    },
+        { "triangles_strip",         T::TriangleStrip         },
+        { "vertices",                T::Vertices              },
+        { "xfb_buffer",              T::XfbBuffer             },
+        { "xfb_offset",              T::XfbOffset             },
+        { "xfb_stride",              T::XfbStride             },
+    };
+}
+
+static const auto g_attributeTypeDictGLSL = GenerateAttributeTypeDict();
+
+const std::string* AttributeTypeToGLSLKeyword(const AttributeType t)
+{
+    return g_attributeTypeDictGLSL.EnumToString(t);
+}
+
+AttributeType GLSLKeywordToAttributeType(const std::string& keyword)
+{
+    return g_attributeTypeDictGLSL.StringToEnumOrDefault(keyword, AttributeType::Undefined);
+}
+
+
+/* ----- AttributeValue Mapping ----- */
 
 static Dictionary<AttributeValue> GenerateAttributeValueDict()
 {

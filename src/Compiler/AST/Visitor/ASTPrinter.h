@@ -16,6 +16,7 @@
 
 #include <map>
 #include <vector>
+#include <iostream>
 
 
 namespace Xsc
@@ -28,7 +29,7 @@ class ASTPrinter : private Visitor
     
     public:
         
-        void PrintAST(Program* program, Log& log);
+        void PrintAST(Program* program, std::ostream& output = std::cout);
 
     private:
         
@@ -37,6 +38,7 @@ class ASTPrinter : private Visitor
             std::string                 row;        // Source position row as string.
             std::string                 col;        // Source position column as string.
             std::string                 label;      // AST description label.
+            std::string                 value;      // AST description value.
             std::vector<PrintableTree>  children;   // Child nodes.
         };
 
@@ -77,6 +79,7 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( ExprStmnt         );
         DECL_VISIT_PROC( ReturnStmnt       );
         DECL_VISIT_PROC( CtrlTransferStmnt );
+        DECL_VISIT_PROC( LayoutStmnt       );
 
         DECL_VISIT_PROC( NullExpr          );
         DECL_VISIT_PROC( SequenceExpr      );
@@ -116,12 +119,12 @@ class ASTPrinter : private Visitor
 
         std::string WriteLabel(const std::string& astName, TypedAST* ast = nullptr);
 
-        void Print(Log& log, const PrintableTree& tree);
+        void Print(const PrintableTree& tree, std::ostream& output);
 
-        bool PushPrintable(const AST* ast, const std::string& label);
+        bool PushPrintable(const AST* ast, const std::string& label, const std::string& value = "");
         void PopPrintable();
 
-        void Printable(const AST* ast, const std::string& label);
+        void Printable(const AST* ast, const std::string& label, const std::string& value = "");
 
         PrintableTree* TopPrintable();
 

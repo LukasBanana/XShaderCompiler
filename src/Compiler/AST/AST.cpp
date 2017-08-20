@@ -13,6 +13,8 @@
 #include "SymbolTable.h"
 #include "ReportHandler.h"
 #include "ReportIdents.h"
+#include "HLSLKeywords.h"
+#include "GLSLKeywords.h"
 #include <algorithm>
 #include <cctype>
 
@@ -210,6 +212,26 @@ const IntrinsicUsage* Program::FetchIntrinsicUsage(const Intrinsic intrinsic) co
 {
     auto it = usedIntrinsics.find(intrinsic);
     return (it != usedIntrinsics.end() ? &(it->second) : nullptr);
+}
+
+
+/* ----- Attribute ----- */
+
+static const std::string* AttributeTypeToString(const AttributeType t)
+{
+    if (IsHLSLAttributeType(t))
+        return AttributeTypeToHLSLKeyword(t);
+    if (IsGLSLAttributeType(t))
+        return AttributeTypeToGLSLKeyword(t);
+    return nullptr;
+}
+
+std::string Attribute::ToString() const
+{
+    if (auto s = AttributeTypeToString(attributeType))
+        return *s;
+    else
+        return R_Undefined;
 }
 
 
@@ -1044,7 +1066,7 @@ void FunctionDecl::ParameterSemantics::UpdateDistribution()
     }
 }
 
-TypeDenoterPtr FunctionDecl::DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter)
+TypeDenoterPtr FunctionDecl::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     //RuntimeErr(R_CantDeriveTypeOfFunction, this);
     return std::make_shared<FunctionTypeDenoter>(this);
@@ -1214,7 +1236,7 @@ bool FunctionDecl::MatchParameterWithTypeDenoter(std::size_t paramIndex, const T
     return true;
 }
 
-static bool ValidateNumArgsForFunctionDecl(const std::vector<FunctionDecl*>& funcDeclList, std::size_t numArgs)
+static bool MatchNumArgsToFunctionDecls(const std::vector<FunctionDecl*>& funcDeclList, std::size_t numArgs)
 {
     for (auto funcDecl : funcDeclList)
     {
@@ -1261,10 +1283,10 @@ FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
             return nullptr;
     }
 
-    /* Validate number of arguments for function call */
+    /* Match number of arguments to function declarations */
     const auto numArgs = argTypeDenoters.size();
 
-    if (!ValidateNumArgsForFunctionDecl(funcDeclList, numArgs))
+    if (!MatchNumArgsToFunctionDecls(funcDeclList, numArgs))
     {
         if (throwErrorIfNoMatch)
         {
@@ -1337,7 +1359,7 @@ FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
 
 /* ----- UniformBufferDecl ----- */
 
-TypeDenoterPtr UniformBufferDecl::DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter)
+TypeDenoterPtr UniformBufferDecl::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     RuntimeErr(R_CantDeriveTypeOfConstBuffer, this);
 }

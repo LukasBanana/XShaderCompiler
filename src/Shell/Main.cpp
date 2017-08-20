@@ -17,6 +17,10 @@ using namespace Xsc::Util;
 
 int main(int argc, char** argv)
 {
+    /* Uncouple cout from printf */
+    std::cout.sync_with_stdio(false);
+
+    /* Instantiate shell */
     Shell shell(std::cout);
 
     bool actionPerformed = false;

@@ -229,18 +229,8 @@ bool PreProcessor::OnSubstitueStdMacro(const Token& identTkn, TokenPtrString& to
     return false;
 }
 
-Variant PreProcessor::ParseAndEvaluateExpr(const Token* tkn)
+Variant PreProcessor::EvaluateExpr(const TokenPtrString& tokenString, const Token* tkn)
 {
-    /*
-    Parse condExpr token string, and wrap it inside a bracket expression
-    to easier find the legal end of the expression during parsing.
-    TODO: this is a work around to detect an illegal end of a constant expression.
-    */
-    TokenPtrString tokenString;
-    tokenString.PushBack(Make<Token>(Tokens::LBracket, "("));
-    tokenString.PushBack(ParseDirectiveTokenString(true));
-    tokenString.PushBack(Make<Token>(Tokens::RBracket, ")"));
-
     /* Evalutate condExpr */
     Variant value;
 
@@ -269,6 +259,27 @@ Variant PreProcessor::ParseAndEvaluateExpr(const Token* tkn)
     PopTokenString();
 
     return value;
+}
+
+Variant PreProcessor::ParseAndEvaluateExpr(const Token* tkn)
+{
+    /*
+    Parse condExpr token string, and wrap it inside a bracket expression
+    to easier find the legal end of the expression during parsing.
+    TODO: this is a work around to detect an illegal end of a constant expression.
+    */
+    TokenPtrString tokenString;
+
+    tokenString.PushBack(Make<Token>(Tokens::LBracket, "("));
+    tokenString.PushBack(ParseDirectiveTokenString(true));
+    tokenString.PushBack(Make<Token>(Tokens::RBracket, ")"));
+
+    return EvaluateExpr(tokenString, tkn);
+}
+
+Variant PreProcessor::ParseAndEvaluateArgumentExpr(const Token* tkn)
+{
+    return EvaluateExpr(ParseArgumentTokenString(), tkn);
 }
 
 
@@ -1179,7 +1190,7 @@ TokenPtrString PreProcessor::ParseArgumentTokenString()
     int bracketLevel = 0;
 
     /* Parse tokens until the closing bracket ')' appears */
-    while ( bracketLevel > 0 || ( !Is(Tokens::RBracket) && !Is(Tokens::Comma) ) )
+    while ( bracketLevel > 0 || !( Is(Tokens::RBracket) || Is(Tokens::Comma) ) )
     {
         /* Do not exit loop if a closing bracket ')' appears, which belongs to an inner opening bracket '(' */
         if (Is(Tokens::LBracket))

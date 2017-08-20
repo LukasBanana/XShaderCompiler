@@ -739,8 +739,8 @@ static Dictionary<InterpModifier> GenerateInterpModifierDict()
 
     return
     {
-        { "linear",          T::Linear          },
         { "centroid",        T::Centroid        },
+        { "linear",          T::Linear          },
         { "nointerpolation", T::NoInterpolation },
         { "noperspective",   T::NoPerspective   },
         { "sample",          T::Sample          },
@@ -926,10 +926,16 @@ static Dictionary<AttributeType> GenerateAttributeTypeDict()
     };
 }
 
+static const auto g_attributeTypeDictHLSL = GenerateAttributeTypeDict();
+
+const std::string* AttributeTypeToHLSLKeyword(const AttributeType t)
+{
+    return g_attributeTypeDictHLSL.EnumToString(t);
+}
+
 AttributeType HLSLKeywordToAttributeType(const std::string& keyword)
 {
-    static const auto typeDict = GenerateAttributeTypeDict();
-    return typeDict.StringToEnumOrDefault(keyword, AttributeType::Undefined);
+    return g_attributeTypeDictHLSL.StringToEnumOrDefault(keyword, AttributeType::Undefined);
 }
 
 

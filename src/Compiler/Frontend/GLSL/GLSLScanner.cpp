@@ -1,12 +1,12 @@
 /*
- * HLSLScanner.cpp
+ * GLSLScanner.cpp
  * 
  * This file is part of the XShaderCompiler project (Copyright (c) 2014-2017 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
-#include "HLSLScanner.h"
-#include "HLSLKeywords.h"
+#include "GLSLScanner.h"
+#include "GLSLKeywords.h"
 #include "ReportIdents.h"
 
 
@@ -14,9 +14,8 @@ namespace Xsc
 {
 
 
-HLSLScanner::HLSLScanner(bool enableCgKeywords, Log* log) :
-    SLScanner         { log              },
-    enableCgKeywords_ { enableCgKeywords }
+GLSLScanner::GLSLScanner(Log* log) :
+    SLScanner { log }
 {
 }
 
@@ -25,25 +24,17 @@ HLSLScanner::HLSLScanner(bool enableCgKeywords, Log* log) :
  * ======= Private: =======
  */
 
-TokenPtr HLSLScanner::ScanIdentifierOrKeyword(std::string&& spell)
+TokenPtr GLSLScanner::ScanIdentifierOrKeyword(std::string&& spell)
 {
     /* Scan reserved words */
-    auto it = HLSLKeywords().find(spell);
-    if (it != HLSLKeywords().end())
+    auto it = GLSLKeywords().find(spell);
+    if (it != GLSLKeywords().end())
     {
         if (it->second == Token::Types::Reserved)
             Error(R_KeywordReservedForFutureUse(spell));
         else if (it->second == Token::Types::Unsupported)
             Error(R_KeywordNotSupportedYet(spell));
         else
-            return Make(it->second, spell);
-    }
-
-    /* Scan reserved extended words (if Cg keywords are enabled) */
-    if (enableCgKeywords_)
-    {
-        auto it = HLSLKeywordsExtCg().find(spell);
-        if (it != HLSLKeywordsExtCg().end())
             return Make(it->second, spell);
     }
 

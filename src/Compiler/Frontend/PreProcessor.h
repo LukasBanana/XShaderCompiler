@@ -117,8 +117,14 @@ class PreProcessor : public Parser
         // Callback function when the standard macro must be substituted (e.g. __FILE__ to string literal).
         virtual bool OnSubstitueStdMacro(const Token& identTkn, TokenPtrString& tokenString);
 
+        // Evaluate the expression of the specified token string.
+        Variant EvaluateExpr(const TokenPtrString& tokenString, const Token* tkn = nullptr);
+
         // Parse a token string and evaluate it as expression.
         Variant ParseAndEvaluateExpr(const Token* tkn = nullptr);
+
+        // Parse a token string as argument and evaluate it as expression.
+        Variant ParseAndEvaluateArgumentExpr(const Token* tkn = nullptr);
 
         // Returns the output stream as reference.
         inline std::stringstream& Out()
