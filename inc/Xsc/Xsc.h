@@ -339,6 +339,9 @@ struct AssemblyDescriptor
     //! Specifies whether to show the instruction byte offsets in the disassembly or not. By default true.
     bool                    showOffsets             = true;
 
+    //! Specifies whether to show the debug names instead of the ID numbers. By default false.
+    bool                    showNames               = false;
+
     //! Specifies whether to indent the instruction operands or not. By default true.
     bool                    indentOperands          = true;
 };

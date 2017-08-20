@@ -35,11 +35,14 @@ class GLSLPreProcessor : public PreProcessor
         bool OnDefineMacro(const Macro& macro) override;
         bool OnRedefineMacro(const Macro& macro, const Macro& previousMacro) override;
         bool OnUndefineMacro(const Macro& macro) override;
+        bool OnSubstitueStdMacro(const Token& identTkn, TokenPtrString& tokenString) override;
 
         void ParseDirective(const std::string& directive, bool ignoreUnknown) override;
 
         void ParseDirectiveVersion();
         void ParseDirectiveExtension();
+
+        bool VerifyVersionNo(const int* validVersions) const;
 
         /* === Members === */
 

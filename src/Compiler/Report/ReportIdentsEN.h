@@ -347,8 +347,9 @@ DECL_REPORT( IllegalUndefOfStdMacro,            "illegal undefinition of standar
 DECL_REPORT( VersionMustBeFirstDirective,       "'#version'-directive must be the first directive"                                                              );
 DECL_REPORT( GLSLVersionAlreadyDefined,         "GLSL version is already defined[ (with number {0})]"                                                           );
 DECL_REPORT( UnknownGLSLVersion,                "unknown GLSL version: '{0}'"                                                                                   );
+DECL_REPORT( UnknownESSLVersion,                "unknown ESSL version: '{0}'"                                                                                   );
 DECL_REPORT( NoProfileForGLSLVersionBefore150,  "versions before 150 do not allow a profile token"                                                              );
-DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (must be 'core' or 'compatibility')"                                             );
+DECL_REPORT( InvalidGLSLVersionProfile,         "invalid version profile '{0}' (must be 'core', 'compatibility', or 'es')"                                      );
 DECL_REPORT( ExtensionNotSupported,             "extension not supported[: {0}]"                                                                                );
 DECL_REPORT( InvalidGLSLExtensionBehavior,      "invalid extension behavior '{0}' (must be 'enable', 'require', 'warn', or 'disable')"                          );
 
@@ -597,6 +598,7 @@ DECL_REPORT( CmdHelpDetailsNameMangling,        "buffer-fields   => rename 'buff
 DECL_REPORT( CmdHelpSeparateShaders,            "Ensures compatibility to 'ARB_separate_shader_objects' extension; default={0}"                                 );
 DECL_REPORT( CmdHelpSeparateSamplers,           "Enables/disables generation of separate sampler state objects; default={0}"                                    );
 DECL_REPORT( CmdHelpDisassemble,                "Disassembles the SPIR-V module"                                                                                );
+DECL_REPORT( CmdHelpDisassembleExt,             "Disassembles the SPIR-V module with extended ID numbers"                                                       );
 DECL_REPORT( InvalidShaderTarget,               "invalid shader target[: '{0}']"                                                                                );
 DECL_REPORT( InvalidShaderVersionIn,            "invalid input shader version[: '{0}']"                                                                         );
 DECL_REPORT( InvalidShaderVersionOut,           "invalid output shader version[: '{0}']"                                                                        );

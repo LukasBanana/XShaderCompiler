@@ -13,6 +13,7 @@
 #include <Xsc/Xsc.h>
 #include <iostream>
 #include <vector>
+#include <map>
 #include <string>
 #include <functional>
 
@@ -68,14 +69,20 @@ class SPIRVDisassembler
             std::uint32_t width;
         };
 
+        struct IdName
+        {
+            std::string                             name;
+            std::map<std::uint32_t, std::string>    memberNames;
+        };
+
         /* === Functions === */
 
         // Returns true if the current instruction has remaining operands (determined by next offset).
         bool HasRemainingOperands() const;
 
-        void AddOperandId(std::uint32_t offset = ~0);
-        void AddOperandLiteral(std::uint32_t offset = ~0);
-        void AddOperandASCII(std::uint32_t offset = ~0);
+        void AddOperandId(std::uint32_t offset = ~0, spv::Id* output = nullptr);
+        void AddOperandLiteral(std::uint32_t offset = ~0, std::uint32_t* output = nullptr);
+        void AddOperandASCII(std::uint32_t offset = ~0, std::string* output = nullptr);
 
         template <typename T>
         void AddOperandEnum(const std::function<const char*(T e)>& enumToString, std::uint32_t offset = ~0);
@@ -84,7 +91,7 @@ class SPIRVDisassembler
         void AddOperandEnumFlags(const std::function<const char*(T e)>& enumToString, std::uint32_t offset = ~0);
 
         template <typename T>
-        void AddOperandConstant(std::uint32_t offset = ~0);
+        void AddOperandConstant(std::uint32_t offset = ~0, std::string* output = nullptr);
 
         void AddOperandLiteralDecoration(const spv::Decoration decoration);
         void AddOperandLiteralExecutionMode(const spv::ExecutionMode mode);
@@ -108,6 +115,15 @@ class SPIRVDisassembler
         void PrintAll(std::ostream& stream);
         void PrintOperand(std::ostream& stream, const std::string& s);
 
+        void SetName(spv::Id id, const std::string& name);
+        std::string GetName(spv::Id id) const;
+
+        void SetMemberName(spv::Id id, std::uint32_t index, const std::string& name);
+        std::string GetMemberName(spv::Id id, std::uint32_t index) const;
+
+        void SetConstant(spv::Id id, const std::string& value);
+        std::string GetConstant(spv::Id id) const;
+
         /* === Members === */
 
         AssemblyDescriptor              desc_;
@@ -126,6 +142,8 @@ class SPIRVDisassembler
 
         std::map<spv::Id, TypeInt>      typesInt_;
         std::map<spv::Id, TypeFloat>    typesFloat_;
+        std::map<spv::Id, IdName>       idNames_;
+        std::map<spv::Id, std::string>  constants_;
 
 };
 
