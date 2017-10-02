@@ -1142,7 +1142,7 @@ bool IsAttributeValueTrianglePartitioning(const AttributeValue t)
 
 bool IsGlobalIntrinsic(const Intrinsic t)
 {
-    return (t >= Intrinsic::Abort && t <= Intrinsic::Trunc);
+    return (t >= Intrinsic::Abort && t <= Intrinsic::TexCubeProj);
 }
 
 bool IsTextureIntrinsic(const Intrinsic t)
