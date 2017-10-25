@@ -37,6 +37,7 @@ const std::map<std::string, int>& GetGLSLExtensionVersionMap()
         { E_GL_ARB_enhanced_layouts,                        430 },
         { E_GL_ARB_explicit_attrib_location,                330 },
         { E_GL_ARB_fragment_coord_conventions,              150 },
+        { E_GL_ARB_shader_bit_encoding,                     330 },
         { E_GL_ARB_gpu_shader5,                             400 },
         { E_GL_ARB_gpu_shader_fp64,                         400 },
         { E_GL_ARB_gpu_shader_int64,                        450 },

@@ -27,9 +27,9 @@ GLSLExtensionAgent::GLSLExtensionAgent()
     intrinsicExtMap_ = std::map<Intrinsic, const char*>
     {
         { Intrinsic::AsDouble,                  E_GL_ARB_gpu_shader_int64   },
-        { Intrinsic::AsFloat,                   E_GL_ARB_gpu_shader5        },
-        { Intrinsic::AsInt,                     E_GL_ARB_gpu_shader5        },
-        { Intrinsic::AsUInt_1,                  E_GL_ARB_gpu_shader5        },
+        { Intrinsic::AsFloat,                   E_GL_ARB_shader_bit_encoding},
+        { Intrinsic::AsInt,                     E_GL_ARB_shader_bit_encoding},
+        { Intrinsic::AsUInt_1,                  E_GL_ARB_shader_bit_encoding},
         { Intrinsic::CountBits,                 E_GL_ARB_gpu_shader5        },
         { Intrinsic::DDXCoarse,                 E_GL_ARB_derivative_control },
         { Intrinsic::DDXFine,                   E_GL_ARB_derivative_control },
