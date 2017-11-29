@@ -48,6 +48,7 @@ DECL_EXTENSION( GL_ARB_derivative_control                       );
 DECL_EXTENSION( GL_ARB_enhanced_layouts                         );
 DECL_EXTENSION( GL_ARB_explicit_attrib_location                 );
 DECL_EXTENSION( GL_ARB_fragment_coord_conventions               );
+DECL_EXTENSION( GL_ARB_shader_bit_encoding                      );
 DECL_EXTENSION( GL_ARB_gpu_shader5                              );
 DECL_EXTENSION( GL_ARB_gpu_shader_fp64                          );
 DECL_EXTENSION( GL_ARB_gpu_shader_int64                         );
