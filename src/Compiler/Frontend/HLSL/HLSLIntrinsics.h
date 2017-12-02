@@ -49,9 +49,9 @@ class HLSLIntrinsicAdept : public IntrinsicAdept
             const TypeDenoterPtr& prefixTypeDenoter = nullptr
         ) const override;
 
-        std::vector<TypeDenoterPtr> GetIntrinsicParameterTypes(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const override;
+        std::vector<TypeDenoterPtr> GetIntrinsicParameterTypes(CallExpr& expr) const override;
 
-        std::vector<std::size_t> GetIntrinsicOutputParameterIndices(const Intrinsic intrinsic) const override;
+        std::vector<std::size_t> GetIntrinsicOutputParameterIndices(CallExpr& expr) const override;
 
         // Returns the intrinsics map (Intrinsic name -> Intrinsic ID and minimum HLSL shader model).
         static const HLSLIntrinsicsMap& GetIntrinsicMap();

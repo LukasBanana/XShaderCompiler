@@ -48,10 +48,10 @@ class IntrinsicAdept
         ) const = 0;
 
         // Returns a list of all parameter types of the specified intrinsic with its arguments or throws an error if the call is ambiguous.
-        virtual std::vector<TypeDenoterPtr> GetIntrinsicParameterTypes(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const = 0;
+        virtual std::vector<TypeDenoterPtr> GetIntrinsicParameterTypes(CallExpr& expr) const = 0;
 
         // Returns a list of indices that refer to all output parameters of the specified intrinsic.
-        virtual std::vector<std::size_t> GetIntrinsicOutputParameterIndices(const Intrinsic intrinsic) const = 0;
+        virtual std::vector<std::size_t> GetIntrinsicOutputParameterIndices(CallExpr& expr) const = 0;
 
     protected:
 

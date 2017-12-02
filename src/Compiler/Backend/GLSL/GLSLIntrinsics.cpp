@@ -167,7 +167,7 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { T::TexCubeLod,                       "textureLod"            },
       //{ T::TexCubeProj,                      ""                      },
 
-        { T::Texture_GetDimensions,            "textureSize"           },
+      //{ T::Texture_GetDimensions,            ""                      },
         { T::Texture_Load_1,                   "texelFetch"            },
         { T::Texture_Load_2,                   "texelFetch"            },
         { T::Texture_Load_3,                   "texelFetchOffset"      },
@@ -244,6 +244,8 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
 
         { T::StreamOutput_Append,              "EmitVertex"            },
         { T::StreamOutput_RestartStrip,        "EndPrimitive"          },
+
+        { T::TextureSize,                      "textureSize"           }, // GLSL only
 
         { T::Image_Load,                       "imageLoad"             }, // GLSL only
         { T::Image_Store,                      "imageStore"            }, // GLSL only

@@ -2020,7 +2020,7 @@ void CallExpr::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
         else if (intrinsic != Intrinsic::Undefined)
         {
             /* Get output parameters from associated intrinsic */
-            const auto outputParamIndices = IntrinsicAdept::Get().GetIntrinsicOutputParameterIndices(intrinsic);
+            const auto outputParamIndices = IntrinsicAdept::Get().GetIntrinsicOutputParameterIndices(*this);
             for (auto paramIndex : outputParamIndices)
             {
                 if (paramIndex < arguments.size())
@@ -2048,7 +2048,7 @@ void CallExpr::ForEachArgumentWithParameterType(const ArgumentParameterTypeFunct
         else if (intrinsic != Intrinsic::Undefined)
         {
             /* Get parameter type denoters from associated intrinsic */
-            const auto paramTypeDenoters = IntrinsicAdept::Get().GetIntrinsicParameterTypes(intrinsic, arguments);
+            const auto paramTypeDenoters = IntrinsicAdept::Get().GetIntrinsicParameterTypes(*this);
             for (std::size_t i = 0, n = std::min(arguments.size(), paramTypeDenoters.size()); i < n; ++i)
                 iterator(arguments[i], *paramTypeDenoters[i]);
         }

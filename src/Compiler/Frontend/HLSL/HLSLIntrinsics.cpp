@@ -505,7 +505,7 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
       //{ T::Transpose,                        {                        } }, // special case
         { T::Trunc,                            { Ret::GenericArg0, 1    } },
 
-        { T::Texture_GetDimensions,            {                   3    } },
+        { T::Texture_GetDimensions,            {                   1, 5 } },
         { T::Texture_QueryLod,                 { Ret::Float,       2    } },
         { T::Texture_QueryLodUnclamped,        { Ret::Float,       2    } },
 
@@ -586,6 +586,8 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::StreamOutput_Append,              {                   1    } },
         { T::StreamOutput_RestartStrip,        {                        } },
 
+        { T::TextureSize,                      {                   3    } },
+
         { T::Image_Load,                       { Ret::Float4,      2    } },
         { T::Image_Store,                      {                   3    } },
         { T::Image_AtomicAdd,                  {                   2, 3 } },
@@ -657,36 +659,52 @@ TypeDenoterPtr HLSLIntrinsicAdept::GetIntrinsicReturnType(
     }
 }
 
-std::vector<TypeDenoterPtr> HLSLIntrinsicAdept::GetIntrinsicParameterTypes(const Intrinsic intrinsic, const std::vector<ExprPtr>& args) const
+std::vector<TypeDenoterPtr> HLSLIntrinsicAdept::GetIntrinsicParameterTypes(CallExpr& expr) const
 {
     std::vector<TypeDenoterPtr> paramTypeDenoters;
 
-    switch (intrinsic)
+    switch (expr.intrinsic)
     {
         case Intrinsic::Dot:
-            DeriveParameterTypes(paramTypeDenoters, intrinsic, args, true);
+            DeriveParameterTypes(paramTypeDenoters, expr.intrinsic, expr.arguments, true);
             break;
         case Intrinsic::Mul:
-            DeriveParameterTypesMul(paramTypeDenoters, args);
+            DeriveParameterTypesMul(paramTypeDenoters, expr.arguments);
             break;
         case Intrinsic::Transpose:
-            DeriveParameterTypesTranspose(paramTypeDenoters, args);
+            DeriveParameterTypesTranspose(paramTypeDenoters, expr.arguments);
             break;
         case Intrinsic::FirstBitHigh:
         case Intrinsic::FirstBitLow:
-            DeriveParameterTypesFirstBit(paramTypeDenoters, args, intrinsic);
+            DeriveParameterTypesFirstBit(paramTypeDenoters, expr.arguments, expr.intrinsic);
             break;
         default:
-            DeriveParameterTypes(paramTypeDenoters, intrinsic, args);
+            DeriveParameterTypes(paramTypeDenoters, expr.intrinsic, expr.arguments);
             break;
     }
 
     return paramTypeDenoters;
 }
 
-std::vector<std::size_t> HLSLIntrinsicAdept::GetIntrinsicOutputParameterIndices(const Intrinsic intrinsic) const
+// Returns the object expression from the specified texture intrinsic call expression
+static ObjectExpr* GetTexObjectExprFromIntrinsicCall(CallExpr& expr)
 {
-    switch (intrinsic)
+    if (IsTextureIntrinsic(expr.intrinsic))
+    {
+        /* Get texture object from prefix (e.g. "Tex.GetDimensions(...)") */
+        if (expr.prefixExpr)
+            return expr.prefixExpr->As<ObjectExpr>();
+
+        /* Otherwise, get texture from first argument (e.g. "textureSize(Tex, ...)") */
+        if (!expr.arguments.empty())
+            return expr.arguments.front()->As<ObjectExpr>();
+    }
+    return nullptr;
+}
+
+std::vector<std::size_t> HLSLIntrinsicAdept::GetIntrinsicOutputParameterIndices(CallExpr& expr) const
+{
+    switch (expr.intrinsic)
     {
         // asuint(double value, out uint lowbits, out uint highbits)
         case Intrinsic::AsUInt_3:
@@ -709,6 +727,67 @@ std::vector<std::size_t> HLSLIntrinsicAdept::GetIntrinsicOutputParameterIndices(
         // sincos(x, out s, out c)
         case Intrinsic::SinCos:
             return { 1, 2 };
+
+        // see https://msdn.microsoft.com/en-us/library/windows/desktop/bb509693(v=vs.85).aspx
+        case Intrinsic::Texture_GetDimensions:
+        {
+            std::vector<std::size_t> indices;
+
+            if (auto objectExpr = GetTexObjectExprFromIntrinsicCall(expr))
+            {
+                const auto& typeDen = objectExpr->GetTypeDenoter()->GetAliased();
+                if (auto bufferTypeDen = typeDen.As<BufferTypeDenoter>())
+                {
+                    auto AddIndicesByArgCount = [&](std::size_t argCount, std::size_t firstOutputParam)
+                    {
+                        /* Add output parameter indices */
+                        if (expr.arguments.size() == argCount && firstOutputParam < argCount)
+                        {
+                            indices.reserve(argCount - firstOutputParam);
+                            for (std::size_t i = firstOutputParam; i < argCount; ++i)
+                                indices.push_back(i);
+                        }
+                    };
+
+                    switch (bufferTypeDen->bufferType)
+                    {
+                        case BufferType::Texture1D:
+                            AddIndicesByArgCount(1, 0);
+                            AddIndicesByArgCount(3, 1);
+                            break;
+                        case BufferType::Texture1DArray:
+                        case BufferType::Texture2D:
+                        case BufferType::TextureCube:
+                            AddIndicesByArgCount(2, 0);
+                            AddIndicesByArgCount(4, 1);
+                            break;
+                        case BufferType::Texture2DArray:
+                        case BufferType::Texture3D:
+                            AddIndicesByArgCount(3, 0);
+                            AddIndicesByArgCount(5, 1);
+                            break;
+                        case BufferType::TextureCubeArray:
+                            AddIndicesByArgCount(3, 0);
+                            AddIndicesByArgCount(4, 1);
+                            break;
+                        case BufferType::Texture2DMS:
+                            AddIndicesByArgCount(3, 0);
+                            break;
+                        case BufferType::Texture2DMSArray:
+                            AddIndicesByArgCount(4, 0);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    /* If no output parameters have been deduced, the number of arguments is invalid */
+                    if (indices.empty())
+                        RuntimeErr(R_InvalidIntrinsicArgCountOfClass("GetDimensions", bufferTypeDen->ToString()));
+                }
+            }
+
+            return indices;
+        }
 
         default:
             break;

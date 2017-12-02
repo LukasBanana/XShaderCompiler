@@ -519,6 +519,9 @@ void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
         if (enabled(ConvertTextureBracketOp))
             ConvertExprTextureBracketOp(expr);
 
+        if (enabled(ConvertIntrinsicOutputArg))
+            ConvertExprIntrinsicOutputArgumentsToAssignments(expr);
+
         if (enabled(ConvertCompatibleStructs))
             ConvertExprCompatibleStruct(expr);
     }
@@ -1077,6 +1080,19 @@ void ExprConverter::ConvertExprTextureIntrinsicVec4(ExprPtr& expr)
                     }
                 }
             }
+        }
+    }
+}
+
+void ExprConverter::ConvertExprIntrinsicOutputArgumentsToAssignments(ExprPtr& expr)
+{
+    /* Convert e.g. "textureSize(t, 0, s.x, s.y)" to "s.xy = textureSize(t, 0)" (and other combinations) */
+    if (auto callExpr = expr->As<CallExpr>())
+    {
+        if (callExpr->intrinsic == Intrinsic::TextureSize)
+        {
+            //TODO:
+            // move arguments of output parameters to assignemnts (if possible as one single assignment)
         }
     }
 }

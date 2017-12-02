@@ -48,9 +48,10 @@ class ExprConverter : public VisitorTracker
             ConvertMatrixLayout         = (1 <<  8), // Converts expressions that depend on the matrix layout (e.g. the argument order of "mul" intrinsic calls).
             ConvertTextureBracketOp     = (1 <<  9), // Converts Texture Operator[] accesses into "Load" intrinsic calls.
             ConvertTextureIntrinsicVec4 = (1 << 10), // Converts Texture intrinsic calls whose return type is a non-4D-vector.
-            ConvertMatrixSubscripts     = (1 << 11), // Converts matrix subscripts into function calls to the respective wrapper function.
-            ConvertCompatibleStructs    = (1 << 12), // Converts type denoters and struct members when the underlying struct type has a compatible struct.
-            ConvertLiteralHalfToFloat   = (1 << 13), // Converts all half literals to float literals (e.g. "1.5h to 1.5f").
+            ConvertIntrinsicOutputArg   = (1 << 11), // Converts arguments of intrinsic call output parameters to assignments.
+            ConvertMatrixSubscripts     = (1 << 12), // Converts matrix subscripts into function calls to the respective wrapper function.
+            ConvertCompatibleStructs    = (1 << 13), // Converts type denoters and struct members when the underlying struct type has a compatible struct.
+            ConvertLiteralHalfToFloat   = (1 << 14), // Converts all half literals to float literals (e.g. "1.5h to 1.5f").
 
             // All conversion flags commonly used before visiting the sub nodes.
             AllPreVisit                 = (
@@ -66,7 +67,8 @@ class ExprConverter : public VisitorTracker
             AllPostVisit                = (
                 ConvertVectorSubscripts     |
                 ConvertMatrixSubscripts     |
-                ConvertTextureIntrinsicVec4
+                ConvertTextureIntrinsicVec4 |
+                ConvertIntrinsicOutputArg
             ),
 
             // All conversion flags.
@@ -165,6 +167,9 @@ class ExprConverter : public VisitorTracker
 
         // Appends vector subscripts to a texture intrinsic call if the intrinsic return type is not a 4D-vector.
         void ConvertExprTextureIntrinsicVec4(ExprPtr& expr);
+
+        // Converts the expression from intrinsic call to assignment of output parameters.
+        void ConvertExprIntrinsicOutputArgumentsToAssignments(ExprPtr& expr);
 
         // Converts the specified expression when it refers to a member variable of a struct that has a compatible struct.
         void ConvertExprCompatibleStruct(ExprPtr& expr);

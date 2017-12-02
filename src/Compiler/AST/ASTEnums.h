@@ -936,17 +936,17 @@ enum class Intrinsic
 
     /* --- HLSL 4+ class intrinsics --- */
     Texture_GetDimensions,
-    Texture_QueryLod,           // CalculateLevelOfDetail(SamplerState S, float[1,2,3] Location)
-    Texture_QueryLodUnclamped,  // CalculateLevelOfDetailUnclamped(SamplerState S, float[1,2,3] Location)
+    Texture_QueryLod,                   // CalculateLevelOfDetail(SamplerState S, float[1,2,3] Location)
+    Texture_QueryLodUnclamped,          // CalculateLevelOfDetailUnclamped(SamplerState S, float[1,2,3] Location)
 
-    Texture_Load_1,             // Load(int[1,2,3,4] Location)
-    Texture_Load_2,             // Load(int[1,2,3,4] Location, int SampleIndex)
-    Texture_Load_3,             // Load(int[1,2,3,4] Location, int SampleIndex, int Offset)
+    Texture_Load_1,                     // Load(int[1,2,3,4] Location)
+    Texture_Load_2,                     // Load(int[1,2,3,4] Location, int SampleIndex)
+    Texture_Load_3,                     // Load(int[1,2,3,4] Location, int SampleIndex, int Offset)
 
-    Texture_Sample_2,           // Sample(SamplerState S, float[1,2,3,4] Location)
-    Texture_Sample_3,           // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset)
-    Texture_Sample_4,           // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, float Clamp)
-    Texture_Sample_5,           // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, float Clamp, out uint Status)
+    Texture_Sample_2,                   // Sample(SamplerState S, float[1,2,3,4] Location)
+    Texture_Sample_3,                   // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset)
+    Texture_Sample_4,                   // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, float Clamp)
+    Texture_Sample_5,                   // Sample(SamplerState S, float[1,2,3,4] Location, int[1,2,3] Offset, float Clamp, out uint Status)
     Texture_SampleBias_3,
     Texture_SampleBias_4,
     Texture_SampleBias_5,
@@ -962,76 +962,79 @@ enum class Intrinsic
     Texture_SampleGrad_5,
     Texture_SampleGrad_6,
     Texture_SampleGrad_7,
-    Texture_SampleLevel_3,      // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD)
-    Texture_SampleLevel_4,      // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD, int[1,2,3] Offset)
-    Texture_SampleLevel_5,      // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD, int[1,2,3] Offset, out uint Status)
+    Texture_SampleLevel_3,              // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD)
+    Texture_SampleLevel_4,              // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD, int[1,2,3] Offset)
+    Texture_SampleLevel_5,              // SampleLevel(SamplerState S, float[1,2,3,4] Location, float LOD, int[1,2,3] Offset, out uint Status)
 
-    Texture_Gather_2,           // Gather(SamplerState S, float[2,3,4] Location)
-    Texture_GatherRed_2,        // GatherRed(SamplerState S, float[2,3,4] Location)
-    Texture_GatherGreen_2,      // GatherGreen(SamplerState S, float[2,3,4] Location)
-    Texture_GatherBlue_2,       // GatherBlue(SamplerState S, float[2,3,4] Location)
-    Texture_GatherAlpha_2,      // GatherAlpha(SamplerState S, float[2,3,4] Location)
+    Texture_Gather_2,                   // Gather(SamplerState S, float[2,3,4] Location)
+    Texture_GatherRed_2,                // GatherRed(SamplerState S, float[2,3,4] Location)
+    Texture_GatherGreen_2,              // GatherGreen(SamplerState S, float[2,3,4] Location)
+    Texture_GatherBlue_2,               // GatherBlue(SamplerState S, float[2,3,4] Location)
+    Texture_GatherAlpha_2,              // GatherAlpha(SamplerState S, float[2,3,4] Location)
 
-    Texture_Gather_3,           // Gather(SamplerState S, float[2,3] Location, int2 Offset)
-    Texture_Gather_4,           // Gather(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
-    Texture_GatherRed_3,        // GatherRed(SamplerState S, float[2,3] Location, int2 Offset)
-    Texture_GatherRed_4,        // GatherRed(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
-    Texture_GatherGreen_3,      // GatherGreen(SamplerState S, float[2,3] Location, int2 Offset)
-    Texture_GatherGreen_4,      // GatherGreen(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
-    Texture_GatherBlue_3,       // GatherBlue(SamplerState S, float[2,3] Location, int2 Offset)
-    Texture_GatherBlue_4,       // GatherBlue(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
-    Texture_GatherAlpha_3,      // GatherAlpha(SamplerState S, float[2,3] Location, int2 Offset)
-    Texture_GatherAlpha_4,      // GatherAlpha(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
+    Texture_Gather_3,                   // Gather(SamplerState S, float[2,3] Location, int2 Offset)
+    Texture_Gather_4,                   // Gather(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
+    Texture_GatherRed_3,                // GatherRed(SamplerState S, float[2,3] Location, int2 Offset)
+    Texture_GatherRed_4,                // GatherRed(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
+    Texture_GatherGreen_3,              // GatherGreen(SamplerState S, float[2,3] Location, int2 Offset)
+    Texture_GatherGreen_4,              // GatherGreen(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
+    Texture_GatherBlue_3,               // GatherBlue(SamplerState S, float[2,3] Location, int2 Offset)
+    Texture_GatherBlue_4,               // GatherBlue(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
+    Texture_GatherAlpha_3,              // GatherAlpha(SamplerState S, float[2,3] Location, int2 Offset)
+    Texture_GatherAlpha_4,              // GatherAlpha(SamplerState S, float[2,3] Location, int2 Offset, out uint Status)
 
-    Texture_GatherRed_6,        // GatherRed(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
-    Texture_GatherRed_7,        // GatherRed(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
-    Texture_GatherGreen_6,      // GatherGreen(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
-    Texture_GatherGreen_7,      // GatherGreen(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
-    Texture_GatherBlue_6,       // GatherBlue(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
-    Texture_GatherBlue_7,       // GatherBlue(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
-    Texture_GatherAlpha_6,      // GatherAlpha(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
-    Texture_GatherAlpha_7,      // GatherAlpha(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherRed_6,                // GatherRed(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherRed_7,                // GatherRed(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherGreen_6,              // GatherGreen(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherGreen_7,              // GatherGreen(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherBlue_6,               // GatherBlue(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherBlue_7,               // GatherBlue(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherAlpha_6,              // GatherAlpha(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherAlpha_7,              // GatherAlpha(SamplerState S, float[2,3] Location, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
 
-    Texture_GatherCmp_3,        // GatherCmp(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
-    Texture_GatherCmpRed_3,     // GatherCmpRed(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
-    Texture_GatherCmpGreen_3,   // GatherCmpGreen(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
-    Texture_GatherCmpBlue_3,    // GatherCmpBlue(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
-    Texture_GatherCmpAlpha_3,   // GatherCmpAlpha(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
+    Texture_GatherCmp_3,                // GatherCmp(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
+    Texture_GatherCmpRed_3,             // GatherCmpRed(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
+    Texture_GatherCmpGreen_3,           // GatherCmpGreen(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
+    Texture_GatherCmpBlue_3,            // GatherCmpBlue(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
+    Texture_GatherCmpAlpha_3,           // GatherCmpAlpha(SamplerComparisonState S, float[2,3,4] Location, float CompareValue)
 
-    Texture_GatherCmp_4,        // GatherCmp(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
-    Texture_GatherCmp_5,        // GatherCmp(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
-    Texture_GatherCmpRed_4,     // GatherCmpRed(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
-    Texture_GatherCmpRed_5,     // GatherCmpRed(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
-    Texture_GatherCmpGreen_4,   // GatherCmpGreen(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
-    Texture_GatherCmpGreen_5,   // GatherCmpGreen(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
-    Texture_GatherCmpBlue_4,    // GatherCmpBlue(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
-    Texture_GatherCmpBlue_5,    // GatherCmpBlue(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
-    Texture_GatherCmpAlpha_4,   // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
-    Texture_GatherCmpAlpha_5,   // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
+    Texture_GatherCmp_4,                // GatherCmp(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
+    Texture_GatherCmp_5,                // GatherCmp(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
+    Texture_GatherCmpRed_4,             // GatherCmpRed(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
+    Texture_GatherCmpRed_5,             // GatherCmpRed(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
+    Texture_GatherCmpGreen_4,           // GatherCmpGreen(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
+    Texture_GatherCmpGreen_5,           // GatherCmpGreen(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
+    Texture_GatherCmpBlue_4,            // GatherCmpBlue(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
+    Texture_GatherCmpBlue_5,            // GatherCmpBlue(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
+    Texture_GatherCmpAlpha_4,           // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset)
+    Texture_GatherCmpAlpha_5,           // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset, out uint Status)
 
-    Texture_GatherCmpRed_7,     // GatherCmpRed(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
-    Texture_GatherCmpRed_8,     // GatherCmpRed(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
-    Texture_GatherCmpGreen_7,   // GatherCmpGreen(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
-    Texture_GatherCmpGreen_8,   // GatherCmpGreen(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
-    Texture_GatherCmpBlue_7,    // GatherCmpBlue(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
-    Texture_GatherCmpBlue_8,    // GatherCmpBlue(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
-    Texture_GatherCmpAlpha_7,   // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
-    Texture_GatherCmpAlpha_8,   // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherCmpRed_7,             // GatherCmpRed(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherCmpRed_8,             // GatherCmpRed(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherCmpGreen_7,           // GatherCmpGreen(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherCmpGreen_8,           // GatherCmpGreen(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherCmpBlue_7,            // GatherCmpBlue(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherCmpBlue_8,            // GatherCmpBlue(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
+    Texture_GatherCmpAlpha_7,           // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4)
+    Texture_GatherCmpAlpha_8,           // GatherCmpAlpha(SamplerComparisonState S, float[2,3] Location, float CompareValue, int2 Offset1, int2 Offset2, int2 Offset3, int2 Offset4, out uint Status)
 
-    StreamOutput_Append,        // Append(StreamDataType)
-    StreamOutput_RestartStrip,  // RestartStrip()
+    StreamOutput_Append,                // Append(StreamDataType)
+    StreamOutput_RestartStrip,          // RestartStrip()
+
+    /* --- GLSL texture intrinsics --- */
+    TextureSize,                        // GLSL only
 
     /* --- GLSL image intrinsics --- */
-    Image_Load,                 // GLSL only
-    Image_Store,                // GLSL only
-    Image_AtomicAdd,            // GLSL only
-    Image_AtomicAnd,            // GLSL only
-    Image_AtomicOr,             // GLSL only
-    Image_AtomicXor,            // GLSL only
-    Image_AtomicMin,            // GLSL only
-    Image_AtomicMax,            // GLSL only
-    Image_AtomicCompSwap,       // GLSL only
-    Image_AtomicExchange        // GLSL only
+    Image_Load,                         // GLSL only
+    Image_Store,                        // GLSL only
+    Image_AtomicAdd,                    // GLSL only
+    Image_AtomicAnd,                    // GLSL only
+    Image_AtomicOr,                     // GLSL only
+    Image_AtomicXor,                    // GLSL only
+    Image_AtomicMin,                    // GLSL only
+    Image_AtomicMax,                    // GLSL only
+    Image_AtomicCompSwap,               // GLSL only
+    Image_AtomicExchange                // GLSL only
 };
 
 // Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>).
@@ -1053,6 +1056,12 @@ struct IntrinsicUsage
 
 // Returns true if the specified intrinsic is a global intrinsic.
 bool IsGlobalIntrinsic(const Intrinsic t);
+
+// Returns true if the specified intrinsic is only used for HLSL.
+bool IsHLSLOnlyIntrinsic(const Intrinsic t);
+
+// Returns true if the specified intrinsic is only used for GLSL.
+bool IsGLSLOnlyIntrinsic(const Intrinsic t);
 
 // Returns true if the specified intrinsic belongs to a texture object.
 bool IsTextureIntrinsic(const Intrinsic t);

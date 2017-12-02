@@ -144,6 +144,7 @@ DECL_REPORT( InvalidMatrixSubscriptMixture,     "invalid mixture of zero-based a
 DECL_REPORT( InvalidCharInMatrixSubscript,      "invalid character '{0}' in [{2} ]matrix subscript: '{1}'"                                                      );
 DECL_REPORT( InvalidIntrinsicArgType,           "invalid argument type denoter for intrinsic[ '{0}']"                                                           );
 DECL_REPORT( InvalidIntrinsicArgCount,          "invalid number of arguments for intrinsic[ '{0}'][ (expected {1}, but got {2})]"                               );
+DECL_REPORT( InvalidIntrinsicArgCountOfClass,   "invalid number of arguments for intrinsic '{0}' of class '{1}'[ (expected {2}, but got {3})]"                  );
 DECL_REPORT( InvalidIntrinsicArgs,              "invalid arguments for intrinsic[ '{0}']"                                                                       );
 
 /* ----- TypeDenoter ------ */

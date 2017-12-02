@@ -1142,7 +1142,69 @@ bool IsAttributeValueTrianglePartitioning(const AttributeValue t)
 
 bool IsGlobalIntrinsic(const Intrinsic t)
 {
-    return (t >= Intrinsic::Abort && t <= Intrinsic::TexCubeProj);
+    return ( ( t >= Intrinsic::Abort && t <= Intrinsic::TexCubeProj ) || ( t >= Intrinsic::TextureSize && t <= Intrinsic::Image_AtomicExchange ) );
+}
+
+bool IsHLSLOnlyIntrinsic(const Intrinsic t)
+{
+    switch (t)
+    {
+        case Intrinsic::Abort:
+        case Intrinsic::AllMemoryBarrierWithGroupSync:
+        case Intrinsic::AsUInt_3:
+        case Intrinsic::CheckAccessFullyMapped:
+        case Intrinsic::Clip:
+        case Intrinsic::D3DCOLORtoUBYTE4:
+        case Intrinsic::DeviceMemoryBarrier:
+        case Intrinsic::DeviceMemoryBarrierWithGroupSync:
+        case Intrinsic::ErrorF:
+        case Intrinsic::F16toF32:
+        case Intrinsic::F32toF16:
+        case Intrinsic::GetRenderTargetSampleCount:
+        case Intrinsic::GetRenderTargetSamplePosition:
+        case Intrinsic::InterlockedCompareStore:
+        case Intrinsic::IsFinite:
+        case Intrinsic::Lit:
+        case Intrinsic::Log10:
+        case Intrinsic::MSAD4:
+        case Intrinsic::Mul:
+        case Intrinsic::PrintF:
+        case Intrinsic::Process2DQuadTessFactorsAvg:
+        case Intrinsic::Process2DQuadTessFactorsMax:
+        case Intrinsic::Process2DQuadTessFactorsMin:
+        case Intrinsic::ProcessIsolineTessFactors:
+        case Intrinsic::ProcessQuadTessFactorsAvg:
+        case Intrinsic::ProcessQuadTessFactorsMax:
+        case Intrinsic::ProcessQuadTessFactorsMin:
+        case Intrinsic::ProcessTriTessFactorsAvg:
+        case Intrinsic::ProcessTriTessFactorsMax:
+        case Intrinsic::ProcessTriTessFactorsMin:
+        case Intrinsic::Rcp:
+        case Intrinsic::ReverseBits:
+        case Intrinsic::Saturate:
+        case Intrinsic::SinCos:
+        case Intrinsic::Texture_GetDimensions:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool IsGLSLOnlyIntrinsic(const Intrinsic t)
+{
+    switch (t)
+    {
+        case Intrinsic::Equal:
+        case Intrinsic::GreaterThan:
+        case Intrinsic::GreaterThanEqual:
+        case Intrinsic::LessThan:
+        case Intrinsic::LessThanEqual:
+        case Intrinsic::NotEqual:
+        case Intrinsic::Not:
+            return true;
+        default:
+            return (t >= Intrinsic::TextureSize && t <= Intrinsic::Image_AtomicExchange);
+    }
 }
 
 bool IsTextureIntrinsic(const Intrinsic t)

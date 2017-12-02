@@ -862,6 +862,10 @@ void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
             ConvertIntrinsicCallTextureLOD(ast);
             break;
 
+        case Intrinsic::Texture_GetDimensions:
+            ConvertIntrinsicCallTextureGetDimensions(ast);
+            break;
+
         case Intrinsic::Texture_Sample_2:
         case Intrinsic::Texture_Sample_3:
         case Intrinsic::Texture_Sample_4:
@@ -951,6 +955,12 @@ void GLSLConverter::ConvertIntrinsicCallTextureLOD(CallExpr* ast)
     }
     else
         RuntimeErr(R_InvalidIntrinsicArgCount(ast->ident, 2, ast->arguments.size()), ast);
+}
+
+void GLSLConverter::ConvertIntrinsicCallTextureGetDimensions(CallExpr* ast)
+{
+    /* Convert 'GetDimensions' intrinsic into 'textureSize' intrinsic */
+    ast->intrinsic = Intrinsic::TextureSize;
 }
 
 void GLSLConverter::ConvertIntrinsicCallTextureSample(CallExpr* ast)
