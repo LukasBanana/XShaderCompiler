@@ -129,6 +129,8 @@ class GLSLConverter : public Converter
         //TODO: this should be replaced by the code-injection functionality.
         void ConvertEntryPointReturnStmntToCodeBlock(StmntPtr& stmnt);
 
+        void AddMissingInterpModifiers(const std::vector<VarDecl*>& varDecls);
+
         /* ----- Object expressions ----- */
 
         void ConvertObjectExpr(ObjectExpr* objectExpr);
