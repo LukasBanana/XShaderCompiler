@@ -24,8 +24,18 @@ void ReflectionPrinter::PrintReflection(const Reflection::ReflectionData& reflec
     output_ << R_CodeReflection() << ':' << std::endl;
     indentHandler_.IncIndent();
     {
+        //vector<uniform> -> vector<string>
+        std::vector<std::string> reflectionData_uniforms;
+        for (const auto& uname : reflectionData.uniforms)
+            reflectionData_uniforms.push_back(uname.ident.c_str());
+        //vector<function> -> vector<string>
+        std::vector<std::string> reflectionData_functions;
+        for (const auto& fname : reflectionData.functions)
+            reflectionData_functions.push_back(fname.ident.c_str());
+        //print
         PrintReflectionObjects  ( reflectionData.macros,           "Macros"            );
-        PrintReflectionObjects  ( reflectionData.uniforms,         "Uniforms"          );
+        PrintReflectionObjects  ( reflectionData_uniforms,         "Uniforms"          );
+        PrintReflectionObjects  ( reflectionData_functions,        "Functions"         );
         PrintReflectionObjects  ( reflectionData.textures,         "Textures"          );
         PrintReflectionObjects  ( reflectionData.storageBuffers,   "Storage Buffers"   );
         PrintReflectionObjects  ( reflectionData.constantBuffers,  "Constant Buffers"  );
