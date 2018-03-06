@@ -87,7 +87,7 @@ std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
 
     if (separateShaders)
     {
-        if (shaderTarget != ShaderTarget::FragmentShader && shaderTarget != ShaderTarget::ComputeShader)
+        if (shaderTarget != ShaderTarget::ComputeShader)
             AcquireExtension(E_GL_ARB_separate_shader_objects);
     }
 

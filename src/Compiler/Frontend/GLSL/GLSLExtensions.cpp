@@ -31,8 +31,8 @@ const std::map<std::string, int>& GetGLSLExtensionVersionMap()
 
         // ARB
         { E_GL_ARB_arrays_of_arrays,                        430 },
-        { E_GL_ARB_compute_shader,                          110 },
-        { E_GL_ARB_cull_distance,                           110 },
+        { E_GL_ARB_compute_shader,                          430 },
+        { E_GL_ARB_cull_distance,                           440 },
         { E_GL_ARB_derivative_control,                      450 },
         { E_GL_ARB_enhanced_layouts,                        430 },
         { E_GL_ARB_explicit_attrib_location,                330 },
@@ -40,13 +40,13 @@ const std::map<std::string, int>& GetGLSLExtensionVersionMap()
         { E_GL_ARB_gpu_shader5,                             400 },
         { E_GL_ARB_gpu_shader_fp64,                         400 },
         { E_GL_ARB_gpu_shader_int64,                        450 },
-        { E_GL_ARB_separate_shader_objects,                 110 },
+        { E_GL_ARB_separate_shader_objects,                 410 },
         { E_GL_ARB_shading_language_420pack,                420 },
-        { E_GL_ARB_shader_atomic_counters,                  110 },
-        { E_GL_ARB_shader_ballot,                           110 },
+        { E_GL_ARB_shader_atomic_counters,                  410 },
+        { E_GL_ARB_shader_ballot,                           450 },
         { E_GL_ARB_shader_bit_encoding,                     330 },
-        { E_GL_ARB_shader_draw_parameters,                  110 },
-        { E_GL_ARB_shader_group_vote,                       110 },
+        { E_GL_ARB_shader_draw_parameters,                  430 },
+        { E_GL_ARB_shader_group_vote,                       430 },
         { E_GL_ARB_shader_image_load_store,                 420 },
         { E_GL_ARB_shader_storage_buffer_object,            430 },
         { E_GL_ARB_shader_texture_image_samples,            110 },
@@ -61,7 +61,7 @@ const std::map<std::string, int>& GetGLSLExtensionVersionMap()
         { E_GL_ARB_texture_query_lod,                       400 },
         { E_GL_ARB_texture_rectangle,                       110 },
         { E_GL_ARB_uniform_buffer_object,                   140 },
-        { E_GL_ARB_viewport_array,                          110 },
+        { E_GL_ARB_viewport_array,                          320 },
 
         // EXT
         { E_GL_EXT_device_group,                            110 },

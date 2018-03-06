@@ -124,6 +124,279 @@ struct BindingSlot
     int         location;
 };
 
+//! All uniform types
+enum class UniformType
+{
+    Buffer,
+    UniformBuffer,
+    Sampler,
+    Variable,
+    Struct
+};
+
+//! A single element in a constant buffer or an opaque type
+struct Uniform
+{
+    //! Identifier of the element.
+    std::string ident;
+
+    //! Data type of the element.
+    UniformType type = UniformType::Variable;
+
+    //! Determines actual type of the element. Contents depend on "type".
+    int baseType = 0;
+
+    //! Index of the uniform block this uniform belongs to. -1 if none.
+    int uniformBlock = -1;
+
+    //! Index into the default value array. -1 if no default value.
+    int defaultValue = -1;
+
+};
+
+//! Type of costant buffer
+enum class DataType
+{
+    Undefined,
+
+    // String types,
+    String,
+
+    // Scalar types
+    Bool,
+    Int,
+    UInt,
+    Half,
+    Float,
+    Double,
+
+    // Vector types
+    Bool2,
+    Bool3,
+    Bool4,
+    Int2,
+    Int3,
+    Int4,
+    UInt2,
+    UInt3,
+    UInt4,
+    Half2,
+    Half3,
+    Half4,
+    Float2,
+    Float3,
+    Float4,
+    Double2,
+    Double3,
+    Double4,
+
+    // Matrix types
+    Bool2x2,
+    Bool2x3,
+    Bool2x4,
+    Bool3x2,
+    Bool3x3,
+    Bool3x4,
+    Bool4x2,
+    Bool4x3,
+    Bool4x4,
+    Int2x2,
+    Int2x3,
+    Int2x4,
+    Int3x2,
+    Int3x3,
+    Int3x4,
+    Int4x2,
+    Int4x3,
+    Int4x4,
+    UInt2x2,
+    UInt2x3,
+    UInt2x4,
+    UInt3x2,
+    UInt3x3,
+    UInt3x4,
+    UInt4x2,
+    UInt4x3,
+    UInt4x4,
+    Half2x2,
+    Half2x3,
+    Half2x4,
+    Half3x2,
+    Half3x3,
+    Half3x4,
+    Half4x2,
+    Half4x3,
+    Half4x4,
+    Float2x2,
+    Float2x3,
+    Float2x4,
+    Float3x2,
+    Float3x3,
+    Float3x4,
+    Float4x2,
+    Float4x3,
+    Float4x4,
+    Double2x2,
+    Double2x3,
+    Double2x4,
+    Double3x2,
+    Double3x3,
+    Double3x4,
+    Double4x2,
+    Double4x3,
+    Double4x4,
+};
+
+//! Type of buffer
+enum class BufferType
+{
+    Undefined,
+
+    Buffer,
+    StructuredBuffer,
+    ByteAddressBuffer,
+
+    RWBuffer,
+    RWStructuredBuffer,
+    RWByteAddressBuffer,
+    AppendStructuredBuffer,
+    ConsumeStructuredBuffer,
+
+    RWTexture1D,
+    RWTexture1DArray,
+    RWTexture2D,
+    RWTexture2DArray,
+    RWTexture3D,
+
+    Texture1D,
+    Texture1DArray,
+    Texture2D,
+    Texture2DArray,
+    Texture3D,
+    TextureCube,
+    TextureCubeArray,
+    Texture2DMS,
+    Texture2DMSArray,
+};
+
+//! Enum of types of a parameter of a function
+enum class VarType
+{
+    Undefined,
+    Void,
+
+    // Scalar types
+    Bool,
+    Int,
+    UInt,
+    Half,
+    Float,
+    Double,
+
+    // Vector types
+    Bool2,
+    Bool3,
+    Bool4,
+    Int2,
+    Int3,
+    Int4,
+    UInt2,
+    UInt3,
+    UInt4,
+    Half2,
+    Half3,
+    Half4,
+    Float2,
+    Float3,
+    Float4,
+    Double2,
+    Double3,
+    Double4,
+
+    // Matrix types
+    Bool2x2,
+    Bool2x3,
+    Bool2x4,
+    Bool3x2,
+    Bool3x3,
+    Bool3x4,
+    Bool4x2,
+    Bool4x3,
+    Bool4x4,
+    Int2x2,
+    Int2x3,
+    Int2x4,
+    Int3x2,
+    Int3x3,
+    Int3x4,
+    Int4x2,
+    Int4x3,
+    Int4x4,
+    UInt2x2,
+    UInt2x3,
+    UInt2x4,
+    UInt3x2,
+    UInt3x3,
+    UInt3x4,
+    UInt4x2,
+    UInt4x3,
+    UInt4x4,
+    Half2x2,
+    Half2x3,
+    Half2x4,
+    Half3x2,
+    Half3x3,
+    Half3x4,
+    Half4x2,
+    Half4x3,
+    Half4x4,
+    Float2x2,
+    Float2x3,
+    Float2x4,
+    Float3x2,
+    Float3x3,
+    Float3x4,
+    Float4x2,
+    Float4x3,
+    Float4x4,
+    Double2x2,
+    Double2x3,
+    Double2x4,
+    Double3x2,
+    Double3x3,
+    Double3x4,
+    Double4x2,
+    Double4x3,
+    Double4x4,
+};
+
+//! Single parameter in a function.
+struct Parameter
+{
+    enum Flags
+    {
+        In = 1 << 0,
+        Out = 1 << 1
+    };
+
+    VarType type;
+    std::string ident;
+    int flags;
+};
+
+//! A single function defined in the program
+struct Function
+{
+    //! Name of the function
+    std::string ident;
+
+    //! Return value of the function
+    VarType returnValue;
+
+    //! List of all function parameters
+    std::vector<Parameter> parameters;
+};
+
 //! Number of threads within each work group of a compute shader.
 struct NumThreads
 {
@@ -142,10 +415,7 @@ struct ReflectionData
 {
     //! All defined macros after pre-processing.
     std::vector<std::string>            macros;
-
-    //! Single shader uniforms.
-    std::vector<std::string>            uniforms;
-
+    
     //! Texture bindings.
     std::vector<BindingSlot>            textures;
 
@@ -166,6 +436,12 @@ struct ReflectionData
 
     //! Number of local threads in a compute shader.
     NumThreads                          numThreads;
+
+    //! uniform reflaction
+    std::vector<Uniform>                uniforms;
+
+    //! function reflaction
+    std::vector<Function>               functions;
 };
 
 
