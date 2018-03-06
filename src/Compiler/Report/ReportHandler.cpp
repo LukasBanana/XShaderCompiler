@@ -16,7 +16,7 @@ namespace Xsc
 {
 
 
-static std::vector<std::string> g_hintQueue;
+XSC_THREAD_LOCAL static std::vector<std::string> g_hintQueue;
 
 ReportHandler::ReportHandler(Log* log) :
     log_ { log }

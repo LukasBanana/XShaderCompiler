@@ -58,7 +58,7 @@ struct CompilerContext
     std::vector<XscStaticSamplerState>  staticSamplerStates;
 };
 
-static struct CompilerContext g_compilerContext;
+XSC_THREAD_LOCAL static struct CompilerContext g_compilerContext;
 
 
 /*

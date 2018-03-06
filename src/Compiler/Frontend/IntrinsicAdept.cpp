@@ -15,7 +15,7 @@ namespace Xsc
 {
 
 
-static IntrinsicAdept* g_intrinsicAdeptInstance = nullptr;
+XSC_THREAD_LOCAL static IntrinsicAdept* g_intrinsicAdeptInstance = nullptr;
 
 IntrinsicAdept::IntrinsicAdept()
 {
