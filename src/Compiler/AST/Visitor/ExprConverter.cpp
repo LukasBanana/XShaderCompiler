@@ -1055,11 +1055,10 @@ void ExprConverter::ConvertExprTextureIntrinsicVec4(ExprPtr& expr)
         if (intrinsic != Intrinsic::Undefined)
         {
             /* Is this a texture intrinsic? */
-            bool isSampleIntrinsic = IsTextureSampleIntrinsic(intrinsic);
-            if (IsTextureLoadIntrinsic(intrinsic) || isSampleIntrinsic || IsTextureGatherIntrisic(intrinsic))
+            if (IsTextureLoadIntrinsic(intrinsic) || IsTextureSampleIntrinsic(intrinsic) || IsTextureGatherIntrisic(intrinsic))
             {
-                /* Skip sample compare intrinsics as they return a scalar */
-                if (!isSampleIntrinsic || !IsTextureCompareIntrinsic(intrinsic))
+                /* Skip sample-compare intrinsics as they return a scalar */
+                if (!(IsTextureSampleIntrinsic(intrinsic) && IsTextureCompareIntrinsic(intrinsic)))
                 {
                     /* Is the return type a base type denoter? */
                     const auto& typeDen = callExpr->GetTypeDenoter()->GetAliased();
