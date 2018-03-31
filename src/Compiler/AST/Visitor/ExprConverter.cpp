@@ -676,8 +676,9 @@ void ExprConverter::ConvertExprImageAccessAssign(ExprPtr& expr, AssignExpr* assi
 
 /*
 ~~~~~~~~~~ TODO: ~~~~~~~~~~
-conversion is wrong when the index expression contains a function call and the assignemnt is a compound!
+conversion is wrong when the index expression contains a function call and the assignment is a compound!
 e.g. "rwTex[getIndex()] += 2;" --> "imageStore(rwTex, getIndex(), imageLoad(rwTex, getIndex()) + 2)"
+            ^~~~~~~~~~                                ^~~~~~~~~~                   ^~~~~~~~~~
 results in two function calls! Thus the index expression must be moved into a separated statement.
 */
 void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayExpr, AssignExpr* assignExpr)

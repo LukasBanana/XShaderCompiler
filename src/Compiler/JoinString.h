@@ -28,7 +28,7 @@ Special characters for the string 's' are: '{', '}', '[', and ']'.
 Everything inside squared brackets (e.g. "[optional {0}]") will only be joined to the output string,
 if all values inside these brackets are specified and non-empty.
 
-These character will only be treated as direct output,
+These characters will only be treated as direct output,
 if the escape character '\\' is written in front of it (e.g. "\\[...\\]"),
 to write the escape character itself use "\\\\".
 
