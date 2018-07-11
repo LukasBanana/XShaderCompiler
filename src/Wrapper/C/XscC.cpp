@@ -94,6 +94,7 @@ static void InitializeOptions(struct XscOptions* s)
     s->showTimes                = false;
     s->unrollArrayInitializers  = false;
     s->validateOnly             = false;
+    s->writeGeneratorHeader     = true;
 }
 
 static void InitializeNameMangling(struct XscNameMangling* s)
@@ -218,13 +219,13 @@ static void CopyReflection(const Xsc::Reflection::ReflectionData& src, struct Xs
 
     dst->storageBuffers         = g_compilerContext.storageBuffers.data();
     dst->storageBuffersCount    = g_compilerContext.storageBuffers.size();
-            
+
     dst->constantBuffers        = g_compilerContext.constantBuffers.data();
     dst->constantBufferCounts   = g_compilerContext.constantBuffers.size();
-            
+
     dst->inputAttributes        = g_compilerContext.inputAttributes.data();
     dst->inputAttributesCount   = g_compilerContext.inputAttributes.size();
-            
+
     dst->outputAttributes       = g_compilerContext.outputAttributes.data();
     dst->outputAttributesCount  = g_compilerContext.outputAttributes.size();
 
@@ -242,7 +243,7 @@ static void CopyReflection(const Xsc::Reflection::ReflectionData& src, struct Xs
  * IncludeHandlerC class
  */
 
-class IncludeHandlerC : public Xsc::IncludeHandler
+class IncludeHandlerC final : public Xsc::IncludeHandler
 {
 
     public:
@@ -282,7 +283,7 @@ std::unique_ptr<std::istream> IncludeHandlerC::Include(const std::string& filena
  * LogC class
  */
 
-class LogC : public Xsc::Log
+class LogC final : public Xsc::Log
 {
 
     public:
@@ -290,7 +291,7 @@ class LogC : public Xsc::Log
         LogC(const XscLog* handler);
 
         void SubmitReport(const Xsc::Report& report) override;
-        
+
     private:
 
         XscLog handler_;
@@ -378,31 +379,32 @@ XSC_EXPORT bool XscCompileShader(
     }
 
     /* Copy output options descriptor */
-    out.options.optimize                = outputDesc->options.optimize;
-    out.options.preprocessOnly          = outputDesc->options.preprocessOnly;
-    out.options.validateOnly            = outputDesc->options.validateOnly;
     out.options.allowExtensions         = outputDesc->options.allowExtensions;
-    out.options.explicitBinding         = outputDesc->options.explicitBinding;
     out.options.autoBinding             = outputDesc->options.autoBinding;
     out.options.autoBindingStartSlot    = outputDesc->options.autoBindingStartSlot;
-    out.options.preserveComments        = outputDesc->options.preserveComments;
+    out.options.explicitBinding         = outputDesc->options.explicitBinding;
+    out.options.obfuscate               = outputDesc->options.obfuscate;
+    out.options.optimize                = outputDesc->options.optimize;
     out.options.preferWrappers          = outputDesc->options.preferWrappers;
-    out.options.unrollArrayInitializers = outputDesc->options.unrollArrayInitializers;
+    out.options.preprocessOnly          = outputDesc->options.preprocessOnly;
+    out.options.preserveComments        = outputDesc->options.preserveComments;
     out.options.rowMajorAlignment       = outputDesc->options.rowMajorAlignment;
     out.options.separateShaders         = outputDesc->options.separateShaders;
     out.options.separateSamplers        = outputDesc->options.separateSamplers;
-    out.options.obfuscate               = outputDesc->options.obfuscate;
     out.options.showAST                 = outputDesc->options.showAST;
     out.options.showTimes               = outputDesc->options.showTimes;
+    out.options.unrollArrayInitializers = outputDesc->options.unrollArrayInitializers;
+    out.options.validateOnly            = outputDesc->options.validateOnly;
+    out.options.writeGeneratorHeader    = outputDesc->options.writeGeneratorHeader;
 
     /* Copy output formatting descriptor */
-    out.formatting.indent               = ReadStringC(outputDesc->formatting.indent);
-    out.formatting.blanks               = outputDesc->formatting.blanks;
-    out.formatting.lineMarks            = outputDesc->formatting.lineMarks;
-    out.formatting.compactWrappers      = outputDesc->formatting.compactWrappers;
     out.formatting.alwaysBracedScopes   = outputDesc->formatting.alwaysBracedScopes;
-    out.formatting.newLineOpenScope     = outputDesc->formatting.newLineOpenScope;
+    out.formatting.blanks               = outputDesc->formatting.blanks;
+    out.formatting.compactWrappers      = outputDesc->formatting.compactWrappers;
+    out.formatting.indent               = ReadStringC(outputDesc->formatting.indent);
+    out.formatting.lineMarks            = outputDesc->formatting.lineMarks;
     out.formatting.lineSeparation       = outputDesc->formatting.lineSeparation;
+    out.formatting.newLineOpenScope     = outputDesc->formatting.newLineOpenScope;
 
     /* Copy output name mangling descriptor */
     out.nameMangling.inputPrefix        = ReadStringC(outputDesc->nameMangling.inputPrefix);
@@ -425,7 +427,7 @@ XSC_EXPORT bool XscCompileShader(
 
     /* Compile shader with C++ API */
     bool result = false;
-    
+
     try
     {
         result = Xsc::CompileShader(

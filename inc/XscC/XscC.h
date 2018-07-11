@@ -131,6 +131,9 @@ struct XscOptions
 
     //! If true, the source code is only validated, but no output code will be generated. By default false.
     bool    validateOnly;
+
+    //! If true, the generator header with metadata is written as first comment to the output. By default true.
+    bool    writeGeneratorHeader;
 };
 
 //! Name mangling descriptor structure for shader input/output variables (also referred to as "varyings"), temporary variables, and reserved keywords.

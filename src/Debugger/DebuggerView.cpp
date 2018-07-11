@@ -224,6 +224,8 @@ void DebuggerView::CreateLayoutPropertyGridOptions(wxPropertyGrid& pg)
     pg.Append(new wxBoolProperty("Separate Shaders", "separateShaders"));
     pg.Append(new wxBoolProperty("Show AST", "showAST"));
     pg.Append(new wxBoolProperty("Unroll Array Initializers", "unrollInitializers"));
+    pg.Append(new wxBoolProperty("Validate Only", "validate"));
+    pg.Append(new wxBoolProperty("Write Generator Header", "generatorHeader"));
 }
 
 void DebuggerView::CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg)
@@ -453,6 +455,10 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
         shaderOutput_.options.separateShaders = ValueBool();
     else if (name == "separateSamplers")
         shaderOutput_.options.separateSamplers = ValueBool();
+    else if (name == "validate")
+        shaderOutput_.options.validateOnly = ValueBool();
+    else if (name == "generatorHeader")
+        shaderOutput_.options.writeGeneratorHeader = ValueBool();
 
     /* --- Formatting --- */
     else if (name == "blanks")

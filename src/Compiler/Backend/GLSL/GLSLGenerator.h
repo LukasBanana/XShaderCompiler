@@ -198,7 +198,7 @@ class GLSLGenerator : public Generator
         void WriteLocalInputSemantics(FunctionDecl* entryPoint);
         void WriteLocalInputSemanticsVarDecl(VarDecl* varDecl);
         void WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl);
-        
+
         void WriteGlobalInputSemantics(FunctionDecl* entryPoint);
         void WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl);
 
@@ -206,7 +206,7 @@ class GLSLGenerator : public Generator
 
         void WriteLocalOutputSemantics(FunctionDecl* entryPoint);
         void WriteLocalOutputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl);
-        
+
         void WriteGlobalOutputSemantics(FunctionDecl* entryPoint);
         void WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName = false);
         void WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier, IndexedSemantic& semantic, const std::string& ident, VarDecl* varDecl = nullptr);
@@ -330,6 +330,7 @@ class GLSLGenerator : public Generator
         bool                                    separateShaders_        = false;
         bool                                    separateSamplers_       = true;
         bool                                    autoBinding_            = false;
+        bool                                    writeHeaderComment_     = true;
 
         std::set<int>                           usedInLocationsSet_;
         std::set<int>                           usedOutLocationsSet_;

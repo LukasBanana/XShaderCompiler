@@ -388,6 +388,7 @@ public ref class XscCompiler
                     ShowTimes               = false;
                     UnrollArrayInitializers = false;
                     ValidateOnly            = false;
+                    WriteGeneratorHeader    = true;
                 }
 
                 //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
@@ -440,6 +441,9 @@ public ref class XscCompiler
 
                 //! If true, the source code is only validated, but no output code will be generated. By default false.
                 property bool   ValidateOnly;
+
+                //! If true, the generator header with metadata is written as first comment to the output. By default true.
+                property bool   WriteGeneratorHeader;
 
         };
 
@@ -1068,6 +1072,7 @@ bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc
     out.options.showTimes               = outputDesc->Options->ShowTimes;
     out.options.unrollArrayInitializers = outputDesc->Options->UnrollArrayInitializers;
     out.options.validateOnly            = outputDesc->Options->ValidateOnly;
+    out.options.writeGeneratorHeader    = outputDesc->Options->WriteGeneratorHeader;
 
     /* Copy output formatting descriptor */
     out.formatting.alwaysBracedScopes   = outputDesc->Formatting->AlwaysBracedScopes;
