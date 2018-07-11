@@ -33,7 +33,7 @@ std::unique_ptr<std::istream> IncludeHandler::Include(const std::string& filenam
         if (auto file = ReadFile(filename))
             return file;
     }
-    
+
     /* Search file in search paths */
     for (const auto& path : searchPaths)
     {

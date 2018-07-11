@@ -250,7 +250,7 @@ std::string Register::ToString() const
     std::string s;
 
     s += "Register(";
-    
+
     if (registerType == RegisterType::Undefined)
         s += R_Undefined;
     else
@@ -359,7 +359,7 @@ std::string TypeSpecifier::ToString() const
 
     if (isUniform)
         s += "uniform ";
-    
+
     if (IsConst())
         s += "const ";
 
@@ -782,7 +782,7 @@ bool StructDecl::HasNonSystemValueMembers() const
     /* Check if base structure has any non-system-value members */
     if (baseStructRef && baseStructRef->HasNonSystemValueMembers())
         return true;
-    
+
     /* Search for non-system-value member */
     for (const auto& member : varMembers)
     {
@@ -1644,7 +1644,7 @@ void LiteralExpr::ConvertDataType(const DataType type)
                     value = variant.ToString();
                 }
                 break;
-                
+
             case DataType::Float:
                 if (dataType != DataType::Double)
                 {
@@ -1653,12 +1653,12 @@ void LiteralExpr::ConvertDataType(const DataType type)
                 }
                 value.push_back('f');
                 break;
-                
+
             case DataType::Double:
                 variant.ToReal();
                 value = variant.ToString();
                 break;
-                
+
             default:
                 break;
         }
@@ -2186,7 +2186,7 @@ TypeDenoterPtr ObjectExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
         else
             return prefixExpr->GetTypeDenoter()->GetSub(this);
     }
-    
+
     RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
 }
 
@@ -2419,7 +2419,7 @@ TypeDenoterPtr InitializerExpr::DeriveTypeDenoter(const TypeDenoter* expectedTyp
             const auto matrixDim        = MatrixTypeDim(baseTypeDen->dataType);
             const auto numTypeElements  = static_cast<std::size_t>(matrixDim.first * matrixDim.second);
             #endif
-            
+
             //TODO: does not work for { 1, v3 } --> float4(1, v3)
 
             #if 0
@@ -2473,7 +2473,7 @@ const Expr* InitializerExpr::Find(const FindPredicateConstFunctor& predicate, un
 std::size_t InitializerExpr::NumElementsUnrolled() const
 {
     std::size_t n = 0;
-    
+
     for (const auto& e : exprs)
     {
         if (auto initSubExpr = e->FindFirstNotOf(AST::Types::BracketExpr)->As<InitializerExpr>())
@@ -2521,7 +2521,7 @@ static ExprPtr FetchSubExprFromInitializerExpr(const InitializerExpr* ast, const
         if (idx >= 0 && static_cast<std::size_t>(idx) < ast->exprs.size())
         {
             auto expr = ast->exprs[idx];
-            
+
             if (layer + 1 == arrayIndices.size())
             {
                 /* Return final sub expression */
@@ -2561,7 +2561,7 @@ static bool NextArrayIndicesFromInitializerExpr(const InitializerExpr* ast, std:
 
             /* Increment index */
             ++idx;
-            
+
             if (static_cast<std::size_t>(idx) == ast->exprs.size())
             {
                 idx = 0;

@@ -163,7 +163,7 @@ std::string JoinString(const std::string& s, const std::vector<std::string>& val
 {
     std::string out;
     std::size_t pos = 0;
-    
+
     /* Join sub string */
     JoinStringSub(s, pos, out, values, false);
 

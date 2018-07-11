@@ -164,7 +164,7 @@ struct AST
     };
 
     virtual ~AST();
-    
+
     // Returns the AST node type.
     virtual Types Type() const = 0;
 
@@ -253,7 +253,7 @@ struct TypedAST : public AST
         virtual TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) = 0;
 
     private:
-    
+
         // Buffered type denoter which is stored in the "GetTypeDenoter" function and can be reset with the "ResetTypeDenoter" function.
         TypeDenoterPtr bufferedTypeDenoter_;
 
@@ -322,7 +322,7 @@ struct Decl : public TypedAST
 
 // Program AST root.
 struct Program : public AST
-{   
+{
     AST_INTERFACE(Program);
 
     // Layout meta data for tessellation-control shaders
@@ -354,7 +354,7 @@ struct Program : public AST
     {
         // True, if fragment coordinate (SV_Position) is used inside a fragment shader.
         bool fragCoordUsed      = false;
-        
+
         // True, if pixel center is assumed to be integral, otherwise pixel center is assumed to have an (0.5, 0.5) offset.
         bool pixelCenterInteger = false;
 
@@ -490,7 +490,7 @@ struct ArrayDimension : public TypedAST
 struct TypeSpecifier : public TypedAST
 {
     AST_INTERFACE(TypeSpecifier);
-    
+
     // Returns the name of this type and all modifiers.
     std::string ToString() const;
 
@@ -526,7 +526,7 @@ struct TypeSpecifier : public TypedAST
     bool                        isInput         = false;                    // Input modifier 'in'.
     bool                        isOutput        = false;                    // Input modifier 'out'.
     bool                        isUniform       = false;                    // Input modifier 'uniform'.
-    
+
     std::set<StorageClass>      storageClasses;                             // Storage classes, e.g. extern, precise, etc.
     std::set<InterpModifier>    interpModifiers;                            // Interpolation modifiers, e.g. nointerpolation, linear, centroid etc.
     std::set<TypeModifier>      typeModifiers;                              // Type modifiers, e.g. const, row_major, column_major (also 'snorm' and 'unorm' for floats).
@@ -802,10 +802,10 @@ struct FunctionDecl : public Decl
 
     // Returns true if this is a static function (see TypeSpecifier::HasAnyStorageClassOf).
     bool IsStatic() const;
-    
+
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
     std::string ToString() const override;
-    
+
     // Returns a descriptive string of the function signature (e.g. "void f(int x)").
     std::string ToString(bool useParamNames) const;
 
@@ -927,7 +927,7 @@ struct VarDeclStmnt : public Stmnt
 
     // Returns the var-decl statement as string.
     std::string ToString(bool useVarNames = true) const;
-    
+
     // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
     VarDecl* FetchVarDecl(const std::string& ident) const;
 

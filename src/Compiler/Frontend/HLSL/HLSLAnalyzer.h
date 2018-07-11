@@ -26,13 +26,13 @@ struct HLSLIntrinsicEntry;
 // HLSL context analyzer.
 class HLSLAnalyzer : public Analyzer
 {
-    
+
     public:
-        
+
         HLSLAnalyzer(Log* log = nullptr);
 
     private:
-        
+
         using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
         using OnValidAttributeValueProc = std::function<bool(const AttributeValue)>;
         using OnAssignTypeDenoterProc = std::function<void(const TypeDenoterPtr&)>;
@@ -57,7 +57,7 @@ class HLSLAnalyzer : public Analyzer
 
         // Returns true, if the input shader version if either HLSL3 or Cg.
         bool IsD3D9ShaderModel() const;
-        
+
         /* === Visitor implementation === */
 
         DECL_VISIT_PROC( Program           );
@@ -65,7 +65,7 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( Attribute         );
         DECL_VISIT_PROC( ArrayDimension    );
         DECL_VISIT_PROC( TypeSpecifier     );
-        
+
         DECL_VISIT_PROC( VarDecl           );
         DECL_VISIT_PROC( BufferDecl        );
         DECL_VISIT_PROC( SamplerDecl       );
@@ -100,7 +100,7 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeVarDecl(VarDecl* varDecl);
         void AnalyzeVarDeclLocal(VarDecl* varDecl, bool registerVarIdent = true);
         void AnalyzeVarDeclStaticMember(VarDecl* varDecl);
-        
+
         /* ----- Call expressions ----- */
 
         void AnalyzeCallExpr(CallExpr* callExpr);
@@ -133,13 +133,13 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPoint(FunctionDecl* funcDecl);
         void AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl);
         //void AnalyzeEntryPointInputOutputGeometryShader(FunctionDecl* funcDecl);
-        
+
         void AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param);
         void AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input, TypeDenoterPtr varTypeDen = nullptr);
         void AnalyzeEntryPointParameterInOutVariable(FunctionDecl* funcDecl, VarDecl* varDecl, bool input);
         void AnalyzeEntryPointParameterInOutStruct(FunctionDecl* funcDecl, StructDecl* structDecl, bool input);
         void AnalyzeEntryPointParameterInOutBuffer(FunctionDecl* funcDecl, VarDecl* varDecl, BufferTypeDenoter* bufferTypeDen, bool input);
-        
+
         void AnalyzeEntryPointAttributes(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesTessControlShader(const std::vector<AttributePtr>& attribs);
         void AnalyzeEntryPointAttributesTessEvaluationShader(const std::vector<AttributePtr>& attribs);
@@ -161,7 +161,7 @@ class HLSLAnalyzer : public Analyzer
 
         bool AnalyzeNumArgsAttribute(Attribute* attrib, std::size_t minNumArgs, std::size_t maxNumArgs, bool required);
         bool AnalyzeNumArgsAttribute(Attribute* attrib, std::size_t expectedNumArgs, bool required = true);
-        
+
         void AnalyzeAttributeDomain(Attribute* attrib, bool required = true);
         void AnalyzeAttributeOutputTopology(Attribute* attrib, bool required = true);
         void AnalyzeAttributePartitioning(Attribute* attrib, bool required = true);
@@ -199,7 +199,7 @@ class HLSLAnalyzer : public Analyzer
         /* ----- Language extensions ----- */
 
         #ifdef XSC_ENABLE_LANGUAGE_EXT
-        
+
         void AnalyzeExtAttributes(std::vector<AttributePtr>& attribs, const TypeDenoterPtr& typeDen);
 
         void AnalyzeAttributeLayout(Attribute* attrib, const TypeDenoterPtr& typeDen);
@@ -221,7 +221,7 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr>& arrayDims);
 
         void AnalyzeParameter(VarDeclStmnt* param);
-        
+
         /* === Members === */
 
         Program*            program_                    = nullptr;
@@ -238,7 +238,7 @@ class HLSLAnalyzer : public Analyzer
         std::set<VarDecl*>  varDeclSM3Semantics_;
 
         #ifdef XSC_ENABLE_LANGUAGE_EXT
-        
+
         Flags               extensions_;
 
         #endif

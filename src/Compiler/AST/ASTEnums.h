@@ -159,7 +159,7 @@ enum class DataType
     Half,       // half         float
     Float,      // float        float
     Double,     // double       double
-    
+
     /* --- Vector types --- */
                 // HLSL         GLSL
                 // -----------  -----------
@@ -565,7 +565,7 @@ enum class ImageLayoutFormat
     SN8X4,          // rgba8_snorm
     SN8X2,          // rg8_snorm
     SN8X1,          // r8_snorm
-    
+
     /* --- Signed integer formats --- */
     I32X4,          // rgba32i
     I32X2,          // rg32i
@@ -576,7 +576,7 @@ enum class ImageLayoutFormat
     I8X4,           // rgba8i
     I8X2,           // rg8i
     I8X1,           // r8i
-    
+
     /* --- Unsigned integer formats --- */
     UI32X4,         // rgba32ui
     UI32X2,         // rg32ui

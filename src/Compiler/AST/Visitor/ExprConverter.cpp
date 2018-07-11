@@ -446,13 +446,13 @@ IMPLEMENT_VISIT_PROC(ArrayExpr)
 {
     for (auto& expr : ast->arrayIndices)
         ConvertExpr(expr, AllPreVisit);
-    
+
     VISIT_DEFAULT(ArrayExpr);
-    
+
     for (auto& expr : ast->arrayIndices)
     {
         ConvertExpr(expr, AllPostVisit);
-        
+
         /* Convert array index to integral type of same vector dimension */
         const auto& typeDen = expr->GetTypeDenoter()->GetAliased();
         if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
@@ -475,14 +475,14 @@ IMPLEMENT_VISIT_PROC(ArrayExpr)
 static TypeDenoterPtr MakeBufferAccessCallTypeDenoter(const DataType genericDataType)
 {
     auto typeDenoter = std::make_shared<BaseTypeDenoter>();
-    
+
     if (IsIntType(genericDataType))
         typeDenoter->dataType = DataType::Int4;
     else if (IsUIntType(genericDataType))
         typeDenoter->dataType = DataType::UInt4;
     else
         typeDenoter->dataType = DataType::Float4;
-    
+
     return typeDenoter;
 }
 
@@ -491,7 +491,7 @@ void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
     if (expr)
     {
         const auto enabled = Flags(flags & conversionFlags_);
-        
+
         if (enabled(ConvertTextureIntrinsicVec4))
             ConvertExprTextureIntrinsicVec4(expr);
 
@@ -515,7 +515,7 @@ void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
 
         if (enabled(ConvertUnaryExpr))
             ConvertExprIntoBracket(expr);
-        
+
         if (enabled(ConvertTextureBracketOp))
             ConvertExprTextureBracketOp(expr);
 
@@ -912,7 +912,7 @@ void ExprConverter::ConvertExprTargetType(ExprPtr& expr, const TypeDenoter& targ
                 const auto& subTypeDen = arrayTargetTypeDen->subTypeDenoter->GetAliased();
                 for (auto& expr : initExpr->exprs)
                     ConvertExprTargetType(expr, subTypeDen);
-            } 
+            }
 
             /* If enabled, convert initializer to a type constructor */
             if (conversionFlags_(ConvertInitializerToCtor))

@@ -30,9 +30,9 @@ class GLSLConverter : public Converter
 
         static bool ConvertVarDeclType(VarDecl& varDecl);
         static bool ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataType dataType);
-    
+
     private:
-        
+
         void ConvertASTPrimary(
             Program& program,
             const ShaderInput& inputDesc,

@@ -34,13 +34,13 @@ struct BaseTypeDenoter;
 // GLSL output code generator.
 class GLSLGenerator : public Generator
 {
-    
+
     public:
-        
+
         GLSLGenerator(Log* log);
 
     private:
-        
+
         // Function callback interface for entries in a layout qualifier.
         using LayoutEntryFunctor = std::function<void()>;
 

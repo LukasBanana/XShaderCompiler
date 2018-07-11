@@ -739,7 +739,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 {
     /* Write loop header */
     BeginLn();
-    
+
     Write("for (");
 
     PushOptions({ false, false });
@@ -764,7 +764,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
 {
     /* Write loop condExpr */
     BeginLn();
-    
+
     Write("while (");
     Visit(ast->condition);
     Write(")");
@@ -781,11 +781,11 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 
     /* Write loop condExpr */
     WriteScopeContinue();
-    
+
     Write("while (");
     Visit(ast->condition);
     Write(");");
-    
+
     EndLn();
 }
 
@@ -796,11 +796,11 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     /* Write if condExpr */
     if (!hasElseParentNode)
         BeginLn();
-    
+
     Write("if (");
     Visit(ast->condition);
     Write(")");
-    
+
     /* Write if body */
     WriteScopedStmnt(ast->bodyStmnt.get());
 
@@ -837,7 +837,7 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
 {
     /* Write selector */
     BeginLn();
-    
+
     Write("switch (");
     Visit(ast->selector);
     Write(")");
@@ -1023,7 +1023,7 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
     else
     {
         Write("{ ");
-        
+
         for (std::size_t i = 0; i < ast->exprs.size(); ++i)
         {
             Visit(ast->exprs[i]);
@@ -1650,7 +1650,7 @@ void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param,
         {
             /* Write global shader input to local variable assignments */
             auto paramVar = param->varDecls.front().get();
-        
+
             if (paramVar->arrayDims.empty())
             {
                 structDecl->ForEachVarDecl(
@@ -2143,7 +2143,7 @@ void GLSLGenerator::WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectEx
     /* Find system value semantic in object identifier */
     std::unique_ptr<std::string> semanticKeyword;
     Flags varFlags;
-    
+
     if (auto varDecl = symbol->As<VarDecl>())
     {
         /* Copy flags from variable */
@@ -2673,7 +2673,7 @@ void GLSLGenerator::WriteCallExprIntrinsicClip(CallExpr* funcCall)
         Error(R_InvalidIntrinsicArgType("clip"), expr.get());
 
     Write(")");
-    
+
     /* Write if-body (we are still inside an active line, so first 'EndLn', then 'BeginLn') */
     EndLn();
     IncIndent();
@@ -2849,7 +2849,7 @@ void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
     for (const auto& argList : usage.argLists)
     {
         auto arg0Type = (!argList.argTypes.empty() ? argList.argTypes.front() : DataType::Undefined);
-        
+
         if (IsScalarType(arg0Type) || IsVectorType(arg0Type))
         {
             BeginLn();
@@ -3089,7 +3089,7 @@ bool GLSLGenerator::WriteStructDecl(StructDecl* structDecl, bool endWithSemicolo
     }
     EndSep();
     WriteScopeClose();
-    
+
     /* Only append blank line if struct is not part of a variable declaration */
     if (!InsideVarDeclStmnt())
         Blank();
@@ -3235,7 +3235,7 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
             }
         );
         Write(*bufferTypeKeyword + " ");
-        
+
         if (nameMangling_.renameBufferFields)
         {
             Write(bufferDecl->ident);

@@ -392,7 +392,7 @@ int VectorTypeDim(const DataType t)
         case DataType::Float:
         case DataType::Double:
             return 1;
-    
+
         case DataType::Bool2:
         case DataType::Int2:
         case DataType::UInt2:
@@ -433,7 +433,7 @@ std::pair<int, int> MatrixTypeDim(const DataType t)
         case DataType::Float:
         case DataType::Double:
             return { 1, 1 };
-    
+
         case DataType::Bool2:
         case DataType::Int2:
         case DataType::UInt2:
@@ -1391,7 +1391,7 @@ std::string IndexedSemantic::ToString() const
     }
     else
         s = SemanticToString(semantic_);
-    
+
     s += std::to_string(index_);
 
     return s;

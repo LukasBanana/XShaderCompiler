@@ -99,7 +99,7 @@ IMPLEMENT_VISIT_PROC(Program)
     for (auto it = ast->globalStmnts.begin(); it != ast->globalStmnts.end(); ++it)
     {
         auto stmnt = it->get();
-        
+
         /* Visit current global statement */
         Visit(stmnt);
 
@@ -247,7 +247,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         CloseScope();
     }
     PopStructDecl();
-    
+
     /* Analyze type modifiers of member variables */
     for (const auto& member : ast->varMembers)
     {
@@ -1925,7 +1925,7 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
     {
         FindSemantics(outSemantics, semantics, R_InvalidOutputSemanticInEntryPoint);
     };
-    
+
     /*auto RequiredInSemantics = [&](const std::vector<Semantic>& semantics)
     {
         FindSemantics(semantics, inSemantics, R_MissingInputSemanticInEntryPoint);
@@ -2024,7 +2024,7 @@ void HLSLAnalyzer::AnalyzeEntryPointOutput(Expr* expr)
                     /* Add variable as parameter-structure to entry point */
                     if (program_->entryPointRef)
                         program_->entryPointRef->paramStructs.push_back({ expr, varDecl, structDecl });
-                        
+
                     /* Mark variable as local variable of the entry-point */
                     varDecl->flags << VarDecl::isEntryPointLocal;
                 }
@@ -2411,7 +2411,7 @@ void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, const TypeDenoterPt
                         if (auto baseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
                             baseType = BaseDataType(baseTypeDen->dataType);
                     }
-                    
+
                     /* Ensure format is used on a valid buffer type */
                     if (baseType != DataType::Undefined)
                     {

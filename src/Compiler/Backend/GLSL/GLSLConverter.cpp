@@ -157,6 +157,7 @@ IMPLEMENT_VISIT_PROC(Program)
     RegisterGlobalDeclIdents(entryPoint->inputSemantics.varDeclRefsSV);
     RegisterGlobalDeclIdents(entryPoint->outputSemantics.varDeclRefsSV);
 
+    /* Add missing interpolation modifiers */
     if (shaderTarget_ != ShaderTarget::VertexShader && shaderTarget_ != ShaderTarget::ComputeShader)
         AddMissingInterpModifiers(entryPoint->inputSemantics.varDeclRefs);
     if (shaderTarget_ != ShaderTarget::FragmentShader && shaderTarget_ != ShaderTarget::ComputeShader)
@@ -289,7 +290,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     {
         while (Fetch(ast->ident))
             RenameIdentOf(ast);
-        
+
         RegisterDeclIdent(ast);
     }
 
@@ -1429,15 +1430,17 @@ void GLSLConverter::ConvertEntryPointReturnStmntToCodeBlock(StmntPtr& stmnt)
 
 void GLSLConverter::AddMissingInterpModifiers(const std::vector<VarDecl*>& varDecls)
 {
-    for (auto& var : varDecls)
+    for (auto varDecl : varDecls)
     {
-        TypeDenoterPtr typeDenoter = var->declStmntRef->typeSpecifier->typeDenoter;
-        if (auto baseTypeDen = typeDenoter->As<BaseTypeDenoter>())
+        if (auto baseTypeDen = varDecl->GetTypeDenoter()->GetAliased().As<BaseTypeDenoter>())
         {
-            if (IsIntegralType(baseTypeDen->dataType))
+            if (auto typeSpecifier = varDecl->FetchTypeSpecifier())
             {
-                // GLSL requires 'flat' modifier for integer types
-                var->declStmntRef->typeSpecifier->interpModifiers.insert(InterpModifier::NoInterpolation);
+                if (IsIntegralType(baseTypeDen->dataType))
+                {
+                    /* GLSL requires 'flat' modifier for integer types */
+                    typeSpecifier->interpModifiers.insert(InterpModifier::NoInterpolation);
+                }
             }
         }
     }

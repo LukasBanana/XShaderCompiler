@@ -31,9 +31,9 @@ This helper class modifies the AST after context analysis and supports the follo
 */
 class ExprConverter : public VisitorTracker
 {
-    
+
     public:
-        
+
         // Conversion flags enumeration.
         enum : unsigned int
         {
@@ -86,7 +86,7 @@ class ExprConverter : public VisitorTracker
         static std::string GetMatrixSubscriptWrapperIdent(const NameMangling& nameMangling, const MatrixSubscriptUsage& subscriptUsage);
 
     private:
-        
+
         /* === Functions === */
 
         /* ----- Visitor implementation ----- */
@@ -129,7 +129,7 @@ class ExprConverter : public VisitorTracker
         // Converts the expression if a matrix subscript is used.
         void ConvertExprMatrixSubscript(ExprPtr& expr);
         void ConvertExprMatrixSubscriptObject(ExprPtr& expr, ObjectExpr* objectExpr);
-        
+
         // Converts the expression from a vector comparison to the respective intrinsic call (e.g. "a < b" -> "lessThan(a, b)").
         void ConvertExprVectorCompare(ExprPtr& expr);
         void ConvertExprVectorCompareUnary(ExprPtr& expr, UnaryExpr* unaryExpr);
@@ -140,7 +140,7 @@ class ExprConverter : public VisitorTracker
         void ConvertExprImageAccess(ExprPtr& expr);
         void ConvertExprImageAccessAssign(ExprPtr& expr, AssignExpr* assignExpr);
         void ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayExpr, AssignExpr* assignExpr = nullptr);
-        
+
         // Converts the expression from a sampler buffer access to the texelFetch intrinsic call (e.g. "buffer[2]" -> "texelFetch(buffer, 2)").
         void ConvertExprSamplerBufferAccess(ExprPtr& expr);
         void ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr* arrayExpr);

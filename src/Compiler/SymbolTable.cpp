@@ -128,7 +128,7 @@ bool ASTSymbolOverload::AddSymbolRef(AST* ast)
         /* Can this type of symbol be overloaded? */
         if (ast->Type() != AST::Types::FunctionDecl)
             return false;
-        
+
         /* Is the new declaration a forward declaration? */
         auto newFuncDecl = static_cast<FunctionDecl*>(ast);
         if (newFuncDecl->IsForwardDecl())
