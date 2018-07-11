@@ -465,7 +465,22 @@ void Analyzer::AnalyzeTypeSpecifier(TypeSpecifier* typeSpecifier)
     Visit(typeSpecifier->structDecl);
 
     if (typeSpecifier->typeDenoter)
+    {
         AnalyzeTypeDenoter(typeSpecifier->typeDenoter, typeSpecifier);
+
+        /* Make sure integer types only have the interpolation modifier 'nointerpolation' */
+        if (auto baseTypeDen = typeSpecifier->typeDenoter->GetAliased().As<BaseTypeDenoter>())
+        {
+            if (IsIntegralType(baseTypeDen->dataType))
+            {
+                for (auto modifier : typeSpecifier->interpModifiers)
+                {
+                    if (modifier != InterpModifier::NoInterpolation)
+                        Error(R_OnlyNoInterpolationForInts, typeSpecifier);
+                }
+            }
+        }
+    }
     else
         Error(R_MissingVariableType, typeSpecifier);
 }

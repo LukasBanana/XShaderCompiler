@@ -251,6 +251,7 @@ DECL_REPORT( ExpectedConstFloatExpr,            "expected constant floating-poin
 DECL_REPORT( VarDeclaredButNeverUsed,           "variable '{0}' is declared but never used"                                                                     );
 DECL_REPORT( ImplicitVectorTruncation,          "implicit truncation of vector type[ in {2}][ (from {0} to {1} dimensions)]"                                    );
 DECL_REPORT( CantImplicitlyConvertVectorType,   "can not implicitly convert vector type[ in {2}][ (from {0} to {1} dimensions)]"                                );
+DECL_REPORT( OnlyNoInterpolationForInts,        "only 'nointerpolation' interpolation modifier allowed for integral types "                                     );
 
 /* ----- ExprEvaluator ----- */
 
