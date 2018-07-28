@@ -64,7 +64,7 @@ Shell* Shell::Instance()
     return instance_;
 }
 
-bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp)
+bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool& succeeded, bool enableBriefHelp)
 {
     if (cmdLine.ReachedEnd())
     {
@@ -79,7 +79,7 @@ bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp)
 
     try
     {
-        /* Pares all arguments from command line */
+        /* Parse all arguments from command line */
         while (!cmdLine.ReachedEnd())
         {
             /* Get next command */
@@ -113,7 +113,7 @@ bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp)
             else
             {
                 /* Compile specified shader file */
-                Compile(cmdName);
+                succeeded = Compile(cmdName);
 
                 /* Reset output filename and entry point */
                 state_.outputFilename.clear();
@@ -206,8 +206,9 @@ std::string Shell::GetDefaultOutputFilename(const std::string& filename) const
     return (GetFilePart(filename) + "." + state_.inputDesc.entryPoint + "." + TargetToExtension(state_.inputDesc.shaderTarget));
 }
 
-void Shell::Compile(const std::string& filename)
+bool Shell::Compile(const std::string& filename)
 {
+    bool succeeded = true;
     lastOutputFilename_.clear();
 
     const auto  defaultOutputFilename   = GetDefaultOutputFilename(filename);
@@ -303,6 +304,7 @@ void Shell::Compile(const std::string& filename)
         }
         else
         {
+            succeeded = false;
             ScopedColor color { ColorFlags::Red | ColorFlags::Intens };
 
             /* Always print message on failure */
@@ -318,9 +320,12 @@ void Shell::Compile(const std::string& filename)
     }
     catch (const std::exception& err)
     {
+        succeeded = false;
         /* Print error message */
         output << err.what() << std::endl;
     }
+
+    return succeeded;
 }
 
 

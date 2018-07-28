@@ -24,6 +24,7 @@ int main(int argc, char** argv)
     Shell shell(std::cout);
 
     bool actionPerformed = false;
+    bool succeeded = true;
 
     /* Get filename of init file (from program path) */
     std::string filename(argv[0]);
@@ -50,7 +51,7 @@ int main(int argc, char** argv)
                 std::getline(file, line);
 
                 CommandLine cmdLine(line);
-                if (shell.ExecuteCommandLine(cmdLine, false))
+                if (shell.ExecuteCommandLine(cmdLine, succeeded, false))
                     actionPerformed = true;
             }
         }
@@ -58,7 +59,7 @@ int main(int argc, char** argv)
 
     /* Execute command line from program arguments */
     CommandLine cmdLine(argc - 1, argv + 1);
-    if (shell.ExecuteCommandLine(cmdLine, !actionPerformed))
+    if (shell.ExecuteCommandLine(cmdLine, succeeded, !actionPerformed))
         actionPerformed = true;
 
     /* Print hint if no action has been performed */
@@ -68,6 +69,6 @@ int main(int argc, char** argv)
     /* Wait for user (if enabled) */
     shell.WaitForUser();
 
-    return 0;
+    return succeeded ? 0 : 1;
 }
 
