@@ -98,7 +98,7 @@ void ReflectionPrinter::PrintReflectionObjects(const std::map<std::string, Refle
 {
     IndentOut() << title << ':' << std::endl;
     ScopedIndent indent(indentHandler_);
-    
+
     if (!samplerStates.empty())
     {
         for (const auto& it : samplerStates)

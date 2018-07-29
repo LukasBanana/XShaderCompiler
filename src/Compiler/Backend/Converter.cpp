@@ -238,7 +238,7 @@ void Converter::VisitScopedStmntsFromHandler(const StmntScopeHandler& handler, v
 {
     /* Push scope handler onto stack */
     stmntScopeHandlerStack_.push(handler);
-    
+
     if (!stmntScopeHandlerGlobalRef_)
         stmntScopeHandlerGlobalRef_ = &(stmntScopeHandlerStack_.top());
 
@@ -248,7 +248,7 @@ void Converter::VisitScopedStmntsFromHandler(const StmntScopeHandler& handler, v
     /* Visit all statements from the scope handler */
     while (auto stmnt = activeHandler.Next())
         Visit(stmnt, args);
-    
+
     /* Pop scope handler from stack */
     stmntScopeHandlerStack_.pop();
 

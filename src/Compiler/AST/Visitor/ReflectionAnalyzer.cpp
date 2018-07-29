@@ -91,7 +91,7 @@ IMPLEMENT_VISIT_PROC(Program)
             data_->outputAttributes.push_back({ varDecl->ident, varDecl->semantic.Index() });
         for (auto varDecl : entryPoint->outputSemantics.varDeclRefsSV)
             data_->outputAttributes.push_back({ varDecl->semantic.ToString(), varDecl->semantic.Index() });
-        
+
         if (entryPoint->semantic.IsSystemValue())
             data_->outputAttributes.push_back({ entryPoint->semantic.ToString(), entryPoint->semantic.Index() });
     }

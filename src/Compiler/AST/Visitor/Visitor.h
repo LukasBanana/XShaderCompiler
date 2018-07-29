@@ -97,9 +97,9 @@ DECL_PTR( InitializerExpr   );
 
 class Visitor
 {
-    
+
     public:
-        
+
         virtual ~Visitor();
 
         VISITOR_VISIT_PROC( Program           );
@@ -156,9 +156,9 @@ class Visitor
         VISITOR_VISIT_PROC( InitializerExpr   );
 
     protected:
-        
+
         template <typename T>
-        void Visit(T ast, void* args = nullptr)
+        void Visit(const T& ast, void* args = nullptr)
         {
             if (ast)
                 ast->Visit(this, args);

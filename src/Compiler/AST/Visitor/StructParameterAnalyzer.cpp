@@ -109,8 +109,8 @@ IMPLEMENT_VISIT_PROC(VarDecl)
             return (varDecl->flags(VarDecl::isShaderInput) || varDecl->flags(VarDecl::isShaderOutput));
             #endif
         };
-        
-        /* Returns true, if the current structure declaratin (if there is one) is marked as shader input/output */
+
+        /* Returns true, if the current structure declaration (if there is one) is marked as shader input/output */
         auto InsideShaderIOStruct = [this]() -> bool
         {
             if (auto structDecl = ActiveStructDecl())
