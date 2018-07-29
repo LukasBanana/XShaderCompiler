@@ -177,7 +177,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
-    Visit(ast->prefixExpr);
+    VISIT_DEFAULT(CallExpr);
 
     if (ast->intrinsic != Intrinsic::Undefined)
     {
@@ -217,8 +217,6 @@ IMPLEMENT_VISIT_PROC(CallExpr)
         ConvertIntrinsicCall(ast);
     else
         ConvertFunctionCall(ast);
-
-    VISIT_DEFAULT(CallExpr);
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
@@ -1248,7 +1246,7 @@ void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
         {
             if (funcDecl->IsStatic())
             {
-                /* Drop prefix expression, since GLSL does not only allow member functions */
+                /* Drop prefix expression, since GLSL does not allow member functions */
                 ast->prefixExpr.reset();
             }
             else
