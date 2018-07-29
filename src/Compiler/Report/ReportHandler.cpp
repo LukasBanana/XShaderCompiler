@@ -44,7 +44,7 @@ void ReportHandler::SubmitReport(
 
     /* Initialize output message */
     auto outputMsg = typeName;
-    
+
     if (type == ReportTypes::Error)
         hasErrors_ = true;
 

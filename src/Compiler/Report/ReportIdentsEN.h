@@ -454,7 +454,7 @@ DECL_REPORT( IllegalUseOfNormModifiers,         "'snorm' and 'unorm' type modifi
 DECL_REPORT( IllegalExprInReturnForVoidFunc,    "illegal expression in return statement for function with 'void' return type"                                   );
 DECL_REPORT( IllegalBufferTypeForEntryPoint,    "illegal buffer type for entry point[ {0}]"                                                                     );
 DECL_REPORT( IllegalLValueAssignmentToConst,    "illegal assignment to l-value '{0}' that is[ {1}] declared as constant"                                        );
-DECL_REPORT( IllegalRValueAssignment,           "illegal assignment to r-value expression"                                                                      );
+DECL_REPORT( IllegalRValueAssignment,           "illegal assignment to r-value expression[ via function parameter '{0}']"                                       );
 DECL_REPORT( IllegalNonStaticAccessToMember,    "illegal non-static access to static structure member[ '{0}']"                                                  );
 DECL_REPORT( IllegalStaticAccessToMember,       "illegal static access to non-static structure member[ '{0}']"                                                  );
 DECL_REPORT( IllegalNonStaticAccessToType,      "illegal non-static access to type[ '{0}']"                                                                     );

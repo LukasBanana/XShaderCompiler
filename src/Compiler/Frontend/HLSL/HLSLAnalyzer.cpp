@@ -877,9 +877,9 @@ void HLSLAnalyzer::AnalyzeCallExprPrimary(CallExpr* callExpr, const TypeDenoter*
 
         /* Analyze all l-value arguments that are assigned to output parameters */
         callExpr->ForEachOutputArgument(
-            [this](ExprPtr& argExpr)
+            [this](ExprPtr& argExpr, const VarDecl* param)
             {
-                AnalyzeLValueExpr(argExpr.get());
+                AnalyzeLValueExpr(argExpr.get(), nullptr, param);
             }
         );
 
@@ -1398,19 +1398,25 @@ bool HLSLAnalyzer::AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier
     return true;
 }
 
-void HLSLAnalyzer::AnalyzeLValueExpr(const Expr* expr, const AST* ast)
+void HLSLAnalyzer::AnalyzeLValueExpr(const Expr* expr, const AST* ast, const VarDecl* param)
 {
     if (expr)
     {
         /* Fetch l-value from expression */
         if (auto lvalueExpr = expr->FetchLValueExpr())
-            AnalyzeLValueExprObject(lvalueExpr, ast);
+            AnalyzeLValueExprObject(lvalueExpr, ast, param);
         else
-            Error(R_IllegalRValueAssignment, (ast != nullptr ? ast : expr));
+        {
+            ast = (ast != nullptr ? ast : expr);
+            if (param && param->declStmntRef)
+                Error(R_IllegalRValueAssignment(param->declStmntRef->ToString()), ast);
+            else
+                Error(R_IllegalRValueAssignment, ast);
+        }
     }
 }
 
-void HLSLAnalyzer::AnalyzeLValueExprObject(const ObjectExpr* objectExpr, const AST* ast)
+void HLSLAnalyzer::AnalyzeLValueExprObject(const ObjectExpr* objectExpr, const AST* ast, const VarDecl* param)
 {
     /* Analyze prefix expression as l-value */
     AnalyzeLValueExpr(objectExpr->prefixExpr.get(), ast);

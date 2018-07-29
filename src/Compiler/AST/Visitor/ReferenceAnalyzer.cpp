@@ -285,7 +285,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
 
     /* Mark all arguments, that are assigned to output parameters, as l-values */
     ast->ForEachOutputArgument(
-        [this](ExprPtr& argExpr)
+        [this](ExprPtr& argExpr, const VarDecl* /*param*/)
         {
             MarkLValueExpr(argExpr.get());
         }

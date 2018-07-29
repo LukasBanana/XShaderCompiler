@@ -1484,6 +1484,14 @@ VarDecl* VarDeclStmnt::FetchVarDecl(const std::string& ident) const
     return nullptr;
 }
 
+VarDecl* VarDeclStmnt::FetchUniqueVarDecl() const
+{
+    if (varDecls.size() == 1)
+        return varDecls.front().get();
+    else
+        return nullptr;
+}
+
 bool VarDeclStmnt::IsInput() const
 {
     return typeSpecifier->IsInput();
@@ -2014,7 +2022,7 @@ void CallExpr::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
             for (std::size_t i = 0, n = std::min(arguments.size(), parameters.size()); i < n; ++i)
             {
                 if (parameters[i]->IsOutput())
-                    iterator(arguments[i]);
+                    iterator(arguments[i], parameters[i]->FetchUniqueVarDecl());
             }
         }
         else if (intrinsic != Intrinsic::Undefined)
@@ -2024,7 +2032,7 @@ void CallExpr::ForEachOutputArgument(const ExprIteratorFunctor& iterator)
             for (auto paramIndex : outputParamIndices)
             {
                 if (paramIndex < arguments.size())
-                    iterator(arguments[paramIndex]);
+                    iterator(arguments[paramIndex], nullptr);
             }
         }
     }

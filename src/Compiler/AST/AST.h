@@ -49,7 +49,7 @@ enum SearchFlags : unsigned int
 using VarDeclIteratorFunctor = std::function<void(VarDeclPtr& varDecl)>;
 
 // Iteration callback for Expr AST nodes.
-using ExprIteratorFunctor = std::function<void(ExprPtr& expr)>;
+using ExprIteratorFunctor = std::function<void(ExprPtr& expr, const VarDecl* param)>;
 
 // Iteration callback for argument/parameter-type associations.
 using ArgumentParameterTypeFunctor = std::function<void(ExprPtr& argument, const TypeDenoter& paramTypeDen)>;
@@ -930,6 +930,9 @@ struct VarDeclStmnt : public Stmnt
 
     // Returns the VarDecl AST node inside this var-decl statement for the specified identifier, or null if there is no such VarDecl.
     VarDecl* FetchVarDecl(const std::string& ident) const;
+
+    // Returns the one and only VarDecl AST node (used for parameters of FunctionDecl AST nodes).
+    VarDecl* FetchUniqueVarDecl() const;
 
     // Returns true if this is an input parameter.
     bool IsInput() const;
