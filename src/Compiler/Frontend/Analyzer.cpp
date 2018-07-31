@@ -46,7 +46,7 @@ bool Analyzer::DecorateAST(
         Error(e.what());
     }
 
-    return (!reportHandler_.HasErros());
+    return (!reportHandler_.HasErrors());
 }
 
 

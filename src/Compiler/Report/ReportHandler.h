@@ -54,7 +54,7 @@ class ReportHandler
         );
 
         // Returns true if any errors have been submitted.
-        inline bool HasErros() const
+        inline bool HasErrors() const
         {
             return hasErrors_;
         }

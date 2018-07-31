@@ -38,7 +38,7 @@ ProgramPtr GLSLParser::ParseSource(
     {
         /* Parse program AST */
         auto ast = ParseProgram(source);
-        return (GetReportHandler().HasErros() ? nullptr : ast);
+        return (GetReportHandler().HasErrors() ? nullptr : ast);
     }
     catch (const Report& err)
     {

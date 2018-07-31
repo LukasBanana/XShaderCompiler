@@ -38,7 +38,7 @@ std::unique_ptr<std::iostream> PreProcessor::Process(
     try
     {
         ParseProgram();
-        return (GetReportHandler().HasErros() ? nullptr : std::move(output_));
+        return (GetReportHandler().HasErrors() ? nullptr : std::move(output_));
     }
     catch (const Report& err)
     {

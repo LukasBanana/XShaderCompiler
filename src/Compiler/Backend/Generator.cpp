@@ -48,7 +48,7 @@ bool Generator::GenerateCode(
         return false;
     }
 
-    return (!reportHandler_.HasErros());
+    return (!reportHandler_.HasErrors());
 }
 
 

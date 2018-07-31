@@ -30,9 +30,9 @@ enum class ReportTypes
 //! Report exception class which contains a completely constructed message with optional line marker, hints, and context description.
 class XSC_EXPORT Report : public std::exception
 {
-    
+
     public:
-        
+
         Report(const Report&) = default;
         Report& operator = (const Report&) = default;
 
