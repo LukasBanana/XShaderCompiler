@@ -279,6 +279,9 @@ struct Expr : public TypedAST
     // Returns the semantic of this expression, or Semantic::Undefined if this expression has no semantic.
     virtual IndexedSemantic FetchSemantic() const;
 
+    // Returns true if this expression can be trivially copied (e.g. simple expressions without potential side effects). By default false.
+    virtual bool IsTrivialCopyable(unsigned int maxTreeDepth = 3) const;
+
     // Returns the first expression for which the specified predicate returns true.
     virtual const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const;
 
@@ -1314,6 +1317,8 @@ struct ObjectExpr : public Expr
     const ObjectExpr* FetchLValueExpr() const override;
 
     IndexedSemantic FetchSemantic() const override;
+
+    bool IsTrivialCopyable(unsigned int maxTreeDepth = 3) const override;
 
     // Returns a type denoter for the vector subscript of this object expression or throws an runtime error on failure.
     BaseTypeDenoterPtr GetTypeDenoterFromSubscript() const;

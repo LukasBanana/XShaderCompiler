@@ -935,17 +935,26 @@ void GLSLConverter::ConvertIntrinsicCallTextureLOD(CallExpr* ast)
             /* Convert arguments */
             ExprConverter::ConvertExprIfCastRequired(args[1], DataType::Float4, true);
 
-            /* Generate temporary variable with second argument, and insert its declaration statement before the intrinsic call */
-            auto tempVarIdent           = MakeTempVarIdent();
-            auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
-            auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
-            auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarIdent, tempVarDeclStmnt->varDecls.front().get());
+            /* Split expression into two sub expression, one for the ".xyz" part and one for the ".w" part */
+            ExprPtr subExpr;
 
-            InsertStmntBefore(tempVarDeclStmnt);
+            if (!args[1]->IsTrivialCopyable())
+            {
+                /* Generate temporary variable with second argument, and insert its declaration statement before the intrinsic call */
+                auto tempVarIdent           = MakeTempVarIdent();
+                auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
+                auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
+                auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarIdent, tempVarDeclStmnt->varDecls.front().get());
+
+                InsertStmntBefore(tempVarDeclStmnt);
+
+                subExpr = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
+            }
+            else
+                subExpr = args[1];
 
             const std::string vectorSubscript = "xyzw";
 
-            auto subExpr    = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
             auto arg1Expr   = ASTFactory::MakeObjectExpr(subExpr, vectorSubscript.substr(0, textureDim));
             auto arg2Expr   = ASTFactory::MakeObjectExpr(subExpr, "w");
 

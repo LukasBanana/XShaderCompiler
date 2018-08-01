@@ -102,6 +102,11 @@ IndexedSemantic Expr::FetchSemantic() const
     return Semantic::Undefined;
 }
 
+bool Expr::IsTrivialCopyable(unsigned int /*maxTreeDepth*/) const
+{
+    return false;
+}
+
 const Expr* Expr::Find(const FindPredicateConstFunctor& predicate, unsigned int flags) const
 {
     if (predicate && predicate(*this))
@@ -2261,6 +2266,26 @@ IndexedSemantic ObjectExpr::FetchSemantic() const
         return prefixExpr->FetchSemantic();
     }
     return Semantic::Undefined;
+}
+
+bool ObjectExpr::IsTrivialCopyable(unsigned int maxTreeDepth) const
+{
+    if (symbolRef)
+    {
+        /* Does this expression refer to a variable? */
+        if (auto varDecl = symbolRef->As<VarDecl>())
+        {
+            if (prefixExpr)
+            {
+                /* Check prefix expression if tree hierarchy is not too long */
+                if (maxTreeDepth > 0)
+                    return prefixExpr->IsTrivialCopyable(maxTreeDepth - 1);
+            }
+            else
+                return true;
+        }
+    }
+    return false;
 }
 
 BaseTypeDenoterPtr ObjectExpr::GetTypeDenoterFromSubscript() const
