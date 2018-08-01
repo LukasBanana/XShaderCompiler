@@ -589,7 +589,8 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
 
         shell->PushState();
         {
-            shell->ExecuteCommandLine(preset.cmdLine);
+            bool succeeded = true;
+            shell->ExecuteCommandLine(preset.cmdLine, succeeded);
 
             if (!shell->GetLastOutputFilename().empty())
             {

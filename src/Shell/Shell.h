@@ -36,7 +36,7 @@ class Shell
         static Shell* Instance();
 
         // Executes the specified command line, and return true if any action has been performed.
-        bool ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp = true);
+        bool ExecuteCommandLine(CommandLine& cmdLine, bool& succeeded, bool enableBriefHelp = true);
 
         void WaitForUser();
 
@@ -61,7 +61,7 @@ class Shell
 
         std::string GetDefaultOutputFilename(const std::string& filename) const;
 
-        void Compile(const std::string& filename);
+        bool Compile(const std::string& filename);
 
         ShellState              state_;
         std::stack<ShellState>  stateStack_;
