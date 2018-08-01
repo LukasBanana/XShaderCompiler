@@ -27,16 +27,16 @@ namespace Util
 // The shell is the main class of the command line tool for the compiler.
 class Shell
 {
-    
+
     public:
-        
+
         Shell(std::ostream& output);
         ~Shell();
 
         static Shell* Instance();
 
-        // Executes the specified command line, and return true if any action has been performed.
-        bool ExecuteCommandLine(CommandLine& cmdLine, bool& succeeded, bool enableBriefHelp = true);
+        // Executes the specified command line, and returns true if any action has been performed.
+        bool ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp = true);
 
         void WaitForUser();
 

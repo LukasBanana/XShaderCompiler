@@ -64,7 +64,7 @@ Shell* Shell::Instance()
     return instance_;
 }
 
-bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool& succeeded, bool enableBriefHelp)
+bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp)
 {
     if (cmdLine.ReachedEnd())
     {
@@ -113,7 +113,12 @@ bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool& succeeded, bool enabl
             else
             {
                 /* Compile specified shader file */
-                succeeded = Compile(cmdName);
+                bool succeeded = Compile(cmdName);
+
+                if (succeeded)
+                    state_.compileStatus.numSucceeded++;
+                else
+                    state_.compileStatus.numFailed++;
 
                 /* Reset output filename and entry point */
                 state_.outputFilename.clear();
@@ -208,7 +213,8 @@ std::string Shell::GetDefaultOutputFilename(const std::string& filename) const
 
 bool Shell::Compile(const std::string& filename)
 {
-    bool succeeded = true;
+    bool succeeded = false;
+
     lastOutputFilename_.clear();
 
     const auto  defaultOutputFilename   = GetDefaultOutputFilename(filename);
@@ -223,7 +229,7 @@ bool Shell::Compile(const std::string& filename)
     {
         /* Add pre-defined macros at the top of the input stream */
         auto inputStream = std::make_shared<std::stringstream>();
-        
+
         for (const auto& macro : state_.predefinedMacros)
         {
             *inputStream << "#define " << macro.ident;
@@ -251,7 +257,7 @@ bool Shell::Compile(const std::string& filename)
         StdLog                      log;
         IncludeHandler              includeHandler;
         Reflection::ReflectionData  reflectionData;
-        
+
         includeHandler.searchPaths = state_.searchPaths;
         state_.inputDesc.includeHandler = &includeHandler;
 
@@ -270,7 +276,7 @@ bool Shell::Compile(const std::string& filename)
         }
 
         /* Compile shader file */
-        auto result = CompileShader(
+        succeeded = CompileShader(
             state_.inputDesc,
             state_.outputDesc,
             &log,
@@ -280,7 +286,7 @@ bool Shell::Compile(const std::string& filename)
         /* Print all reports to the log output */
         log.PrintAll(state_.verbose);
 
-        if (result)
+        if (succeeded)
         {
             ScopedColor color { ColorFlags::Green | ColorFlags::Intens };
 
@@ -304,7 +310,6 @@ bool Shell::Compile(const std::string& filename)
         }
         else
         {
-            succeeded = false;
             ScopedColor color { ColorFlags::Red | ColorFlags::Intens };
 
             /* Always print message on failure */
@@ -320,7 +325,6 @@ bool Shell::Compile(const std::string& filename)
     }
     catch (const std::exception& err)
     {
-        succeeded = false;
         /* Print error message */
         output << err.what() << std::endl;
     }

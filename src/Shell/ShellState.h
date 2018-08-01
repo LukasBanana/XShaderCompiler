@@ -19,9 +19,21 @@ namespace Util
 {
 
 
+struct CompileStatus
+{
+    // Number of compilations that succeeded
+    std::size_t numSucceeded    = 0;
+
+    // Number of compilations that failed
+    std::size_t numFailed       = 0;
+};
+
 struct PredefinedMacro
 {
+    // Macro identifier
     std::string ident;
+
+    // Optional macro body
     std::string value;
 };
 
@@ -53,6 +65,9 @@ struct ShellState
 
     // True, if any meaningful action has been performed (e.g. printed version or compiled any files).
     bool                            actionPerformed     = false;
+
+    // Status of the compilation results.
+    CompileStatus                   compileStatus;
 };
 
 

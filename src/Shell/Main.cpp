@@ -24,7 +24,6 @@ int main(int argc, char** argv)
     Shell shell(std::cout);
 
     bool actionPerformed = false;
-    bool succeeded = true;
 
     /* Get filename of init file (from program path) */
     std::string filename(argv[0]);
@@ -37,7 +36,7 @@ int main(int argc, char** argv)
 
         /* Execute command line from optional init file */
         std::ifstream file;
-        
+
         file.open(filename);
         if (!file.good())
             file.open("xsc.ini");
@@ -51,7 +50,7 @@ int main(int argc, char** argv)
                 std::getline(file, line);
 
                 CommandLine cmdLine(line);
-                if (shell.ExecuteCommandLine(cmdLine, succeeded, false))
+                if (shell.ExecuteCommandLine(cmdLine, false))
                     actionPerformed = true;
             }
         }
@@ -59,7 +58,7 @@ int main(int argc, char** argv)
 
     /* Execute command line from program arguments */
     CommandLine cmdLine(argc - 1, argv + 1);
-    if (shell.ExecuteCommandLine(cmdLine, succeeded, !actionPerformed))
+    if (shell.ExecuteCommandLine(cmdLine, !actionPerformed))
         actionPerformed = true;
 
     /* Print hint if no action has been performed */
@@ -69,6 +68,6 @@ int main(int argc, char** argv)
     /* Wait for user (if enabled) */
     shell.WaitForUser();
 
-    return succeeded ? 0 : 1;
+    return (shell.GetState().compileStatus.numFailed > 0 ? 1 : 0);
 }
 

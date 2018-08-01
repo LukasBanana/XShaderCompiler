@@ -584,21 +584,20 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
     {
         std::cout << R_RunPresetting(preset.title) << std::endl;
         auto shell = Shell::Instance();
-        
+
         bool result = false;
 
         shell->PushState();
         {
-            bool succeeded = true;
-            shell->ExecuteCommandLine(preset.cmdLine, succeeded);
+            shell->ExecuteCommandLine(preset.cmdLine);
 
             if (!shell->GetLastOutputFilename().empty())
             {
                 #ifdef XSC_ENABLE_POST_VALIDATION
-            
+
                 /* Build command to run glslangValidator for the previous output file */
                 std::string cmd = "glslangValidator ";
-                
+
                 if (IsLanguageVKSL(shell->GetState().outputDesc.shaderVersion))
                     cmd += "-V ";
 
@@ -612,7 +611,7 @@ void PresettingCommand::Run(CommandLine& cmdLine, ShellState& state)
 
                 /* Run command */
                 system(cmd.c_str());
-                
+
                 #endif
 
                 result = true;
