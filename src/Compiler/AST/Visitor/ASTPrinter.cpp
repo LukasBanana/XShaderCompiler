@@ -55,6 +55,12 @@ inline std::string MemberToString<std::string>(const std::string& member)
 }
 
 template <>
+inline std::string MemberToString<int>(const int& member)
+{
+    return std::to_string(member);
+}
+
+template <>
 inline std::string MemberToString<bool>(const bool& member)
 {
     if (member)
@@ -131,7 +137,8 @@ IMPLEMENT_VISIT_PROC(Register)
 {
     PushPrintable(ast, WriteLabel("Register"));
     {
-        // do nothing
+        Printable(ast, "registerType", std::string(1, RegisterTypeToChar(ast->registerType)));
+        ADD_PRINTABLE_MEMBER(slot);
     }
     PopPrintable();
 }
@@ -140,7 +147,8 @@ IMPLEMENT_VISIT_PROC(PackOffset)
 {
     PushPrintable(ast, WriteLabel("PackOffset"));
     {
-        // do nothing
+        ADD_PRINTABLE_MEMBER(registerName);
+        ADD_PRINTABLE_MEMBER(vectorComponent);
     }
     PopPrintable();
 }
@@ -173,6 +181,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
         ADD_PRINTABLE_MEMBER(ident);
         VISIT_MEMBER(namespaceExpr);
         VISIT_MEMBER(arrayDims);
+        VISIT_MEMBER(slotRegisters);
         VISIT_MEMBER(packOffset);
         VISIT_MEMBER(annotations);
         VISIT_MEMBER(initializer);

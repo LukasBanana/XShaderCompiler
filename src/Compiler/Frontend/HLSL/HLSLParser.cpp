@@ -471,7 +471,7 @@ RegisterPtr HLSLParser::ParseRegister(bool parseColon)
     /* Colon is only syntactic sugar, thus not part of the source area */
     if (parseColon)
         Accept(Tokens::Colon);
-    
+
     auto ast = Make<Register>();
 
     Accept(Tokens::Register);
@@ -523,7 +523,7 @@ PackOffsetPtr HLSLParser::ParsePackOffset(bool parseColon)
 {
     if (parseColon)
         Accept(Tokens::Colon);
-    
+
     auto ast = Make<PackOffset>();
 
     Accept(Tokens::PackOffset);
@@ -591,7 +591,7 @@ SamplerDeclPtr HLSLParser::ParseSamplerDecl(SamplerDeclStmnt* declStmntRef, cons
         AcceptIt();
         Accept(Tokens::SamplerState, "sampler_state");
         Accept(Tokens::LCurly);
-        
+
         ast->textureIdent = ParseSamplerStateTextureIdent();
         ast->samplerValues = ParseSamplerValueList();
 
@@ -653,7 +653,7 @@ StructDeclPtr HLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
     {
         /* Parse member variable declarations */
         ast->localStmnts = ParseGlobalStmntList();
-        
+
         for (auto& stmnt : ast->localStmnts)
         {
             if (stmnt->Type() == AST::Types::VarDeclStmnt)
@@ -750,7 +750,7 @@ FunctionDeclPtr HLSLParser::ParseFunctionDecl(BasicDeclStmnt* declStmntRef, cons
 
     /* Parse parameters */
     ast->parameters = ParseParameterList();
-    
+
     ParseFunctionDeclSemantic(*ast);
 
     ast->annotations = ParseAnnotationList();
@@ -1112,7 +1112,7 @@ StmntPtr HLSLParser::ParseStmntWithStructDecl()
 {
     /* Parse structure declaration statement */
     auto ast = Make<BasicDeclStmnt>();
-    
+
     auto structDecl = ParseStructDecl();
     structDecl->declStmntRef = ast.get();
 
@@ -1124,7 +1124,7 @@ StmntPtr HLSLParser::ParseStmntWithStructDecl()
         auto varDeclStmnt = Make<VarDeclStmnt>();
 
         varDeclStmnt->typeSpecifier = ASTFactory::MakeTypeSpecifier(structDecl);
-        
+
         /* Parse variable declarations */
         varDeclStmnt->varDecls = ParseVarDeclList(varDeclStmnt.get());
         Semi();
@@ -1479,7 +1479,7 @@ ExprPtr HLSLParser::ParseObjectOrCallExpr(const ExprPtr& expr)
 {
     /* Parse variable identifier first (for variables and functions) */
     auto objectExpr = ParseObjectExpr(expr);
-    
+
     if (Is(Tokens::LBracket))
         return ParseCallExpr(objectExpr);
 
@@ -1581,7 +1581,7 @@ std::vector<VarDeclStmntPtr> HLSLParser::ParseAnnotationList()
 
         while (!Is(Tokens::BinaryOp, ">"))
             annotations.push_back(ParseVarDeclStmnt());
-        
+
         AcceptIt();
     }
 
@@ -1679,7 +1679,7 @@ std::string HLSLParser::ParseIdentWithNamespaceOpt(ObjectExprPtr& namespaceExpr,
     if (Is(Tokens::DColon))
     {
         AcceptIt();
-        
+
         /* Take first identifier as namespace prefix */
         namespaceExpr           = Make<ObjectExpr>();
         namespaceExpr->ident    = ident;
@@ -1791,7 +1791,7 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseVectorTypeDenoter()
     if (Is(Tokens::BinaryOp, "<"))
     {
         AcceptIt();
-    
+
         PushParsingState({ true });
         {
             vectorType = Accept(Tokens::ScalarType)->Spell();
@@ -1828,7 +1828,7 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseMatrixTypeDenoter()
     if (Is(Tokens::BinaryOp, "<"))
     {
         AcceptIt();
-    
+
         PushParsingState({ true });
         {
             matrixType = Accept(Tokens::ScalarType)->Spell();
@@ -2041,16 +2041,21 @@ void HLSLParser::ParseVarDeclSemantic(VarDecl& varDecl, bool allowPackOffset)
 
         if (Is(Tokens::Register))
         {
-            /* Parse and ignore registers for variable declarations */
-            Warning(R_RegisterIgnoredForVarDecls);
-            ParseRegister(false);
+            /* Parse registers for variable declarations */
+            varDecl.slotRegisters.push_back(ParseRegister(false));
         }
         else if (Is(Tokens::PackOffset))
         {
             /* Parse pack offset (ignore previous pack offset) */
-            varDecl.packOffset = ParsePackOffset(false);
-            if (!allowPackOffset)
-                Error(R_IllegalPackOffset, true);
+            auto packOffset = ParsePackOffset(false);
+            if (allowPackOffset)
+            {
+                if (varDecl.packOffset)
+                    Warning(R_PackOffsetOverridden, packOffset->area);
+                varDecl.packOffset = packOffset;
+            }
+            else
+                Error(R_IllegalPackOffset, packOffset->area);
         }
         else
         {
@@ -2284,7 +2289,7 @@ bool HLSLParser::ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiv
         /* Parse primitive type */
         if (!allowPrimitiveType)
             Error(R_NotAllowedInThisContext(R_PrimitiveType), false, false);
-        
+
         auto primitiveType = ParsePrimitiveType();
 
         if (typeSpecifier->primitiveType == PrimitiveType::Undefined)

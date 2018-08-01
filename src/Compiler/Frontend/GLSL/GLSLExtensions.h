@@ -53,6 +53,7 @@ DECL_EXTENSION( GL_ARB_gpu_shader_fp64                          );
 DECL_EXTENSION( GL_ARB_gpu_shader_int64                         );
 DECL_EXTENSION( GL_ARB_separate_shader_objects                  );
 DECL_EXTENSION( GL_ARB_shading_language_420pack                 );
+DECL_EXTENSION( GL_ARB_explicit_uniform_location                );
 DECL_EXTENSION( GL_ARB_shader_atomic_counters                   );
 DECL_EXTENSION( GL_ARB_shader_ballot                            );
 DECL_EXTENSION( GL_ARB_shader_bit_encoding                      );

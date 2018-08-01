@@ -620,6 +620,8 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     }
     #endif
 
+    const auto& varDecl0 = varDecls.front();
+
     /* Ignore declaration statement of static member variables */
     if (ast->typeSpecifier->HasAnyStorageClassOf({ StorageClass::Static }) && ast->FetchStructDeclRef() != nullptr)
         return;
@@ -627,6 +629,16 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     PushVarDeclStmnt(ast);
     {
         BeginLn();
+
+        /* Write location layout qualifier */
+        if (!varDecl0->slotRegisters.empty())
+        {
+            WriteLayout(
+                {
+                    [&]() { WriteLayoutBindingOrLocation(varDecl0->slotRegisters); },
+                }
+            );
+        }
 
         /* Write storage classes and interpolation modifiers (must be before in/out keywords) */
         if (!InsideStructDecl())
@@ -1580,6 +1592,31 @@ void GLSLGenerator::WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegis
     {
         if (auto slotRegister = Register::GetForTarget(slotRegisters, GetShaderTarget()))
             Write("binding = " + std::to_string(slotRegister->slot));
+    }
+}
+
+void GLSLGenerator::WriteLayoutBindingOrLocation(const std::vector<RegisterPtr>& slotRegisters)
+{
+    /* For ESSL: "binding" and "location" qualifiers are only available since ESSL 310 */
+    if ( explicitBinding_ && ( !IsESSL() || versionOut_ >= OutputShaderVersion::ESSL310 ) )
+    {
+        if (auto slotRegister = Register::GetForTarget(slotRegisters, GetShaderTarget()))
+        {
+            switch (slotRegister->registerType)
+            {
+                case RegisterType::BufferOffset:
+                    Write("location = " + std::to_string(slotRegister->slot));
+                    break;
+                case RegisterType::UnorderedAccessView:
+                case RegisterType::ConstantBuffer:
+                case RegisterType::TextureBuffer:
+                case RegisterType::Sampler:
+                    Write("binding = " + std::to_string(slotRegister->slot));
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }
 

@@ -26,13 +26,13 @@ namespace Xsc
 // AST debug printer.
 class ASTPrinter : private Visitor
 {
-    
+
     public:
-        
+
         void PrintAST(Program* program, std::ostream& output = std::cout);
 
     private:
-        
+
         struct PrintableTree
         {
             std::string                 row;        // Source position row as string.
@@ -98,7 +98,7 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( InitializerExpr   );
 
         /* --- Helper functions --- */
-        
+
         template <typename T>
         void VisitMember(T ast, const std::string& name)
         {

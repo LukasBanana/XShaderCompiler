@@ -192,6 +192,7 @@ class GLSLGenerator : public Generator
         void WriteLayoutGlobalIn(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor = nullptr);
         void WriteLayoutGlobalOut(const std::initializer_list<LayoutEntryFunctor>& entryFunctors, const LayoutEntryFunctor& varFunctor = nullptr);
         void WriteLayoutBinding(const std::vector<RegisterPtr>& slotRegisters);
+        void WriteLayoutBindingOrLocation(const std::vector<RegisterPtr>& slotRegisters);
 
         /* ----- Input semantics ----- */
 

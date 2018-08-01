@@ -588,6 +588,7 @@ struct VarDecl : public Decl
 
     ObjectExprPtr                   namespaceExpr;                  // Optional namespace expression. May be null.
     std::vector<ArrayDimensionPtr>  arrayDims;                      // Array dimension list. May be empty.
+    std::vector<RegisterPtr>        slotRegisters;                  // Slot register list. May be empty.
     IndexedSemantic                 semantic;                       // Variable semantic. May be invalid.
     PackOffsetPtr                   packOffset;                     // Optional pack offset. May be null.
     std::vector<VarDeclStmntPtr>    annotations;                    // Annotations can be ignored by analyzers and generators.

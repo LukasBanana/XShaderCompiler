@@ -181,6 +181,13 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     if (ast->GetTypeDenoter()->NumDimensions() >= 2)
         AcquireExtension(E_GL_ARB_arrays_of_arrays, R_MultiDimArray, ast);
 
+    /* Check for explicit binding point */
+    if (explicitBinding_)
+    {
+        if (auto slotRegister = Register::GetForTarget(ast->slotRegisters, shaderTarget_))
+            AcquireExtension(E_GL_ARB_explicit_uniform_location, R_ExplicitBindingSlot, slotRegister);
+    }
+
     /* Check for packoffsets */
     if (ast->packOffset)
         AcquireExtension(E_GL_ARB_enhanced_layouts, R_PackOffsetLayout, ast);

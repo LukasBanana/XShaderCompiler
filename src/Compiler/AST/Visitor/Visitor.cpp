@@ -75,6 +75,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     Visit(ast->namespaceExpr);
     Visit(ast->arrayDims);
+    Visit(ast->slotRegisters);
     Visit(ast->packOffset);
     Visit(ast->annotations);
     Visit(ast->initializer);

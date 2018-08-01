@@ -29,7 +29,7 @@ void TestGLSLExtensions()
     {
         // Print extension name and version
         printf("%s ( %d )\n", extension, version);
-    
+
         // Get next extension
         iterator = XscGetGLSLExtensionEnumeration(iterator, extension, 256, &version);
     }
@@ -73,7 +73,7 @@ void TestCompile()
         "    return mul(wvpMatrix, float4(pos, 1));\n"
         "}\n"
     );
-    
+
     out.filename    = "test.VS.vert";
     out.sourceCode  = &outputCode;
 

@@ -42,6 +42,7 @@ const std::map<std::string, int>& GetGLSLExtensionVersionMap()
         { E_GL_ARB_gpu_shader_int64,                        450 },
         { E_GL_ARB_separate_shader_objects,                 410 },
         { E_GL_ARB_shading_language_420pack,                420 },
+        { E_GL_ARB_explicit_uniform_location,               430 },
         { E_GL_ARB_shader_atomic_counters,                  410 },
         { E_GL_ARB_shader_ballot,                           450 },
         { E_GL_ARB_shader_bit_encoding,                     330 },
