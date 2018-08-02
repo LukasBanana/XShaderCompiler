@@ -749,35 +749,86 @@ HelpDescriptor VersionCommand::Help() const
     };
 }
 
+// see https://sourceforge.net/p/predef/wiki/Compilers/
+static void PrintCompilerVersion(std::ostream& s)
+{
+    #if defined _MSC_VER
+    
+    /* Decode MSC version */
+    s << "MSVC ";
+    #   if _MSC_VER == 800
+    s << "1.0";
+    #   elif _MSC_VER == 900
+    s << "3.0";
+    #   elif _MSC_VER == 1000
+    s << "4.0";
+    #   elif _MSC_VER == 1020
+    s << "4.2";
+    #   elif _MSC_VER == 1100
+    s << "5.0";
+    #   elif _MSC_VER == 1200
+    s << "6.0";
+    #   elif _MSC_VER == 1300
+    s << "7.0";
+    #   elif _MSC_VER == 1310
+    s << "7.1 (2003)";
+    #   elif _MSC_VER == 1400
+    s << "8.0 (2005)";
+    #   elif _MSC_VER == 1500
+    s << "9.0 (2008)";
+    #   elif _MSC_VER == 1600
+    s << "10.0 (2010)";
+    #   elif _MSC_VER == 1700
+    s << "11.0 (2012)";
+    #   elif _MSC_VER == 1800
+    s << "12.0 (2013)";
+    #   elif _MSC_VER == 1900
+    s << "14.0 (2015)";
+    #   elif _MSC_VER == 1910
+    s << "15.0 (2017)";
+    #   else
+    s << "unknown version";
+    #   endif
+    
+    #elif defined __clang__
+    
+    /* Print clang version */
+    s << "Clang " << __clang_version__;
+    
+    #elif defined __GNUC__
+    
+    /* Print GCC version */
+    s << "GCC " << __GNUC__ << '.' << __GNUC_MINOR__ << '.' << __GNUC_PATCHLEVEL__;
+    
+    #else
+    
+    s << "unknown compiler";
+    
+    #endif
+}
+
 void VersionCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
-    /* Print version info in highlighted color */
-    ScopedColor scopedColor(ColorFlags::Green | ColorFlags::Blue);
+    static const long colorHighlight = (ColorFlags::Green | ColorFlags::Intens);
 
-    /* Print version */
-    std::cout << "XShaderCompiler ( ";
+    /* Print app name */
+    std::cout << "XShaderCompiler ";
+    
+    /* Print version info in highlighted color */
     {
-        ScopedColor scopedColor(ColorFlags::Green | ColorFlags::Blue | ColorFlags::Intens);
+        ScopedColor scopedColor { colorHighlight };
         std::cout << "Version " << XSC_VERSION_STRING;
     }
     
-    #ifdef XSC_ENABLE_LANGUAGE_EXT
-    std::cout << "; ";
-    {
-        ScopedColor scopedColor(ColorFlags::Green | ColorFlags::Blue | ColorFlags::Intens);
-        std::cout << "Ext";
-    }
-    #endif
-    
     #ifdef _DEBUG
-    std::cout << "; ";
-    {
-        ScopedColor scopedColor(ColorFlags::Green | ColorFlags::Blue | ColorFlags::Intens);
-        std::cout << "DEBUG";
-    }
-    #endif
-
-    std::cout << " )" << std::endl;
+    std::cout << " (DEBUG)";
+    #endif // /_DEBUG
+    std::cout << std::endl;
+    
+    /* Print build information */
+    std::cout << "Build with ";
+    PrintCompilerVersion(std::cout);
+    std::cout << " on " << __DATE__ << " at " << __TIME__ << std::endl;
     
     /* Print copyright and license notice */
     std::cout << "Copyright (c) 2014-2017 by Lukas Hermanns" << std::endl;
