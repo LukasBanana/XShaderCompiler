@@ -170,7 +170,7 @@ DECL_REPORT( IdentIsNotVar,                     "identifier '{0}' does not name 
 DECL_REPORT( IdentIsNotType,                    "identifier '{0}' does not name a type"                                                                         );
 DECL_REPORT( IdentIsNotDecl,                    "identifier '{0}' does not name a declaration object"                                                           );
 DECL_REPORT( IdentIsNotBaseOf,                  "identifier '{0}' does not name a base of '{1}'"                                                                );
-DECL_REPORT( IdentAlreadyDeclared,              "identifier '{0}' already declared in this scope"                                                               );
+DECL_REPORT( IdentAlreadyDeclared,              "identifier '{0}' already declared in this scope[; previous declaration at ({1})]"                              );
 DECL_REPORT( NoActiveScopeToRegisterSymbol,     "no active scope to register symbol"                                                                            );
 
 /* ----- Scanner ----- */

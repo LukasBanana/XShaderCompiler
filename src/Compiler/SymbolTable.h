@@ -28,8 +28,10 @@ unsigned int StringDistance(const std::string& a, const std::string& b);
 void RuntimeErrNoActiveScope();
 
 [[noreturn]]
-void RuntimeErrIdentAlreadyDeclared(const std::string& ident);
+void RuntimeErrIdentAlreadyDeclared(const std::string& ident, const AST* prevDeclAST = nullptr);
 
+template <typename SymbolType>
+AST* FetchASTFromSymbol(const SymbolType& symbol);
 
 template <typename T>
 struct GenericDefaultValue
@@ -143,7 +145,7 @@ class SymbolTable
                         if (overrideProc && overrideProc(entry.symbol))
                             return true;
                         else if (throwOnFailure)
-                            RuntimeErrIdentAlreadyDeclared(ident);
+                            RuntimeErrIdentAlreadyDeclared(ident, FetchASTFromSymbol(entry.symbol));
                         else
                             return false;
                     }
@@ -315,6 +317,20 @@ using ASTSymbolOverloadPtr = std::shared_ptr<ASTSymbolOverload>;
 
 // AST symbol table type for ovloading.
 using ASTSymbolOverloadTable = SymbolTable<ASTSymbolOverloadPtr>;
+
+
+// Template to fetch AST node from a generic symbol type.
+template <typename SymbolType>
+AST* FetchASTFromSymbol(const SymbolType& symbol)
+{
+    return nullptr;
+}
+
+template <>
+inline AST* FetchASTFromSymbol<ASTSymbolOverloadPtr>(const ASTSymbolOverloadPtr& symbol)
+{
+    return symbol->Fetch(false);
+}
 
 
 } // /namespace Xsc

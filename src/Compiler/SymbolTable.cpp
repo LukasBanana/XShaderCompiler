@@ -96,9 +96,12 @@ void RuntimeErrNoActiveScope()
 }
 
 [[noreturn]]
-void RuntimeErrIdentAlreadyDeclared(const std::string& ident)
+void RuntimeErrIdentAlreadyDeclared(const std::string& ident, const AST* prevDeclAST)
 {
-    RuntimeErr(R_IdentAlreadyDeclared(ident));
+    if (prevDeclAST != nullptr)
+        RuntimeErr(R_IdentAlreadyDeclared(ident, prevDeclAST->area.Pos().ToString()));
+    else
+        RuntimeErr(R_IdentAlreadyDeclared(ident));
 }
 
 
