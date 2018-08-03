@@ -12,7 +12,6 @@
 #include "Export.h"
 #include <limits>
 #include <string>
-#include <map>
 #include <vector>
 #include <ostream>
 
@@ -27,7 +26,10 @@ namespace Reflection
 
 /* ===== Public enumerations ===== */
 
-//! Sampler filter enumeration (D3D11_FILTER).
+/**
+\brief Sampler filter enumeration (compatible to `D3D11_FILTER`).
+\see https://docs.microsoft.com/en-us/windows/desktop/api/d3d11/ne-d3d11-d3d11_filter
+*/
 enum class Filter
 {
     MinMagMipPoint                          = 0,
@@ -68,7 +70,10 @@ enum class Filter
     MaximumAnisotropic                      = 0x1d5,
 };
 
-//! Texture address mode enumeration (D3D11_TEXTURE_ADDRESS_MODE).
+/**
+\brief Texture address mode enumeration (compatible to `D3D11_TEXTURE_ADDRESS_MODE`).
+\see https://docs.microsoft.com/en-us/windows/desktop/api/d3d11/ne-d3d11-d3d11_texture_address_mode
+*/
 enum class TextureAddressMode
 {
     Wrap        = 1,
@@ -78,7 +83,10 @@ enum class TextureAddressMode
     MirrorOnce  = 5,
 };
 
-//! Sample comparison function enumeration (D3D11_COMPARISON_FUNC).
+/**
+\brief Sample comparison function enumeration (compatible to `D3D11_COMPARISON_FUNC`).
+\see https://docs.microsoft.com/en-us/windows/desktop/api/d3d11/ne-d3d11-d3d11_comparison_func
+*/
 enum class ComparisonFunc
 {
     Never           = 1,
@@ -91,6 +99,59 @@ enum class ComparisonFunc
     Always          = 8,
 };
 
+/**
+\brief Resource type enumeration.
+\see Resource::type
+*/
+enum class ResourceType
+{
+    Undefined,                  //!< Undfined resource type.
+
+    Texture1D,                  //!< 1D texture: `Texture1D` in HLSL, `texture1D` in GLSL (Vulkan only).
+    Texture2D,                  //!< 2D texture: `Texture2D` in HLSL, `texture2D` in GLSL (Vulkan only).
+    Texture3D,                  //!< 3D texture: `Texture3D` in HLSL, `texture3D` in GLSL (Vulkan only).
+    TextureCube,                //!< Cube texture: `TextureCube` in HLSL, `textureCube` in GLSL (Vulkan only).
+    Texture1DArray,             //!< 1D array texture: `Texture1DArray` in HLSL, `texture1DArray` in GLSL (Vulkan only).
+    Texture2DArray,             //!< 2D array texture: `Texture2DArray` in HLSL, `texture2DArray` in GLSL (Vulkan only).
+    TextureCubeArray,           //!< Cube array texture: `TextureCubeArray` in HLSL, `textureCubeArray` in GLSL (Vulkan only).
+    Texture2DMS,                //!< 2D multi-sampled texture: `Texture2DMS` in HLSL, `texture2DMS` in GLSL (Vulkan only).
+    Texture2DMSArray,           //!< 2D multi-sampled array texture: `Texture2DMSArray` in HLSL, `texture2DMSArray` in GLSL (Vulkan only).
+
+    RWTexture1D,                //!< 1D read-write texture: `RWTexture1D` in HLSL, `image1D` in GLSL.
+    RWTexture2D,                //!< 2D read-write texture: `RWTexture2D` in HLSL, `image2D` in GLSL.
+    RWTexture3D,                //!< 3D read-write texture: `RWTexture3D` in HLSL, `image3D` in GLSL.
+    RWTextureCube,              //!< Cube read-write texture: `RWTextureCube` in HLSL, `imageCube` in GLSL.
+    RWTexture1DArray,           //!< 1D array read-write texture: `RWTexture1DArray` in HLSL, `image1DArray` in GLSL.
+    RWTexture2DArray,           //!< 2D array read-write texture: `RWTexture2DArray` in HLSL, `image2DArray` in GLSL.
+    RWTextureCubeArray,         //!< Cube array read-write texture: `RWTextureCubeArray` in HLSL, `imageCubeArray` in GLSL.
+    RWTexture2DMS,              //!< 2D multi-sampled read-write texture: `RWTexture2DMS` in HLSL, `image2DMS` in GLSL.
+    RWTexture2DMSArray,         //!< 2D multi-sampled array read-write texture: `RWTexture2DMSArray` in HLSL, `image2DMSArray` in GLSL.
+
+    Sampler1D,                  //!< Combined 1D texture-sampler: `sampler1D` in GLSL.
+    Sampler2D,                  //!< Combined 2D texture-sampler: `sampler2D` in GLSL.
+    Sampler3D,                  //!< Combined 3D texture-sampler: `sampler3D` in GLSL.
+    SamplerCube,                //!< Combined Cube texture-sampler: `samplerCube` in GLSL.
+    Sampler1DArray,             //!< Combined 1D array texture-sampler: `sampler1DArray` in GLSL.
+    Sampler2DArray,             //!< Combined 2D array texture-sampler: `sampler2DArray` in GLSL.
+    SamplerCubeArray,           //!< Combined Cube array texture-sampler: `samplerCubeArray` in GLSL.
+    Sampler2DMS,                //!< Combined 2D multi-sampled texture-sampler: `sampler2DMS` in GLSL.
+    Sampler2DMSArray,           //!< Combined 2D multi-sampled array texture-sampler: `sampler2DMSArray` in GLSL.
+
+    Buffer,                     //!< Vector buffer: `Buffer` in HLSL, `samplerBuffer` in GLSL.
+    ByteAddressBuffer,          //!< Byte addressable buffer: `ByteAddressBuffer` in HLSL, `samplerBuffer` in GLSL.
+    StructuredBuffer,           //!< Structured buffer: `StructuredBuffer` in HLSL, `buffer` in GLSL and VKSL.
+    AppendStructuredBuffer,     //!< Append structured buffer: `AppendStructuredBuffer` in HLSL, `buffer` in GLSL.
+    ConsumeStructuredBuffer,    //!< Consume structured buffer: `ConsumeStructuredBuffer` in HLSL, `buffer` in GLSL.
+
+    RWBuffer,                   //!< Vector read-write buffer: `RWBuffer` in HLSL, `imageBuffer` in GLSL.
+    RWByteAddressBuffer,        //!< Byte addressable read-write buffer: `RWByteAddressBuffer` in HLSL, `imageBuffer` in GLSL.
+    RWStructuredBuffer,         //!< Structured read-write buffer: `RWStructuredBuffer` in HLSL, `buffer` in GLSL and VKSL.
+
+    ConstantBuffer,             //!< Constant buffer: `cbuffer` in HLSL, `uniform` in GLSL.
+    SamplerState,               //!< Sampler state: `SamplerState` in HLSL, `sampler` in GLSL (Vulkan only).
+    SamplerComparisonState,     //!< Sampler comparison state: `SamplerComparisonState` in HLSL, `sampler` in GLSL (Vulkan only).
+};
+
 
 /* ===== Public structures ===== */
 
@@ -100,7 +161,7 @@ enum class ComparisonFunc
 Thus, they can all be statically casted from and to the original D3D11 values.
 \see https://msdn.microsoft.com/en-us/library/windows/desktop/ff476207(v=vs.85).aspx
 */
-struct SamplerState
+struct SamplerStateDesc
 {
     Filter              filter          = Filter::MinMagMipLinear;
     TextureAddressMode  addressU        = TextureAddressMode::Clamp;
@@ -114,14 +175,85 @@ struct SamplerState
     float               maxLOD          = std::numeric_limits<float>::max();
 };
 
-//! Binding slot of textures, constant buffers, and fragment targets.
-struct BindingSlot
+/**
+\brief Input/output attribute and uniform reflection structure.
+\see ReflectionData::inputAttributes
+\see ReflectionData::outputAttributes
+*/
+struct Attribute
 {
-    //! Identifier of the binding point.
-    std::string ident;
+    //! Name of the attribute.
+    std::string name;
 
-    //! Zero based binding point or location. If this is -1, the location has not been set.
-    int         location;
+    //! Zero-based ttribute location. If this is -1, the binding slot was not specified. By default -1.
+    int         location    = -1;
+};
+
+/**
+\brief Resource reflection structure for textures, combined texture samplers, and buffers.
+\see ReflectionData::resources
+*/
+struct Resource
+{
+    //! Resource type. By default ResourceType::Undefined.
+    ResourceType    type    = ResourceType::Undefined;
+
+    //! Name of the resource.
+    std::string     name;
+
+    //! Zero-based binding slot number. If this is -1, the binding slot was not specified. By default -1.
+    int             slot    = -1;
+};
+
+/**
+\brief Constant buffer reflection structure.
+\see ReflectionData::constantBuffers
+*/
+struct ConstantBuffer
+{
+    //! Resource type. By default ResourceType::Undefined.
+    ResourceType    type    = ResourceType::Undefined;
+
+    //! Name of the constant buffer.
+    std::string     name;
+
+    //! Zero-based binding slot number. If this is -1, the binding slot was not specified. By default -1.
+    int             slot        = -1;
+
+    //! Size (in vectors with 16 bytes each) of the constant buffer. To get the size in bytes, multiply this with 16. By default 0.
+    unsigned int    vectorSize  = 0;
+};
+
+/**
+\brief Sampler state reflection structure.
+\see ReflectionData::samplerStates
+*/
+struct SamplerState
+{
+    //! Resource type. By default ResourceType::Undefined.
+    ResourceType    type    = ResourceType::Undefined;
+
+    //! Name of the sampler state.
+    std::string     name;
+
+    //! Zero-based binding slot number. If this is -1, the binding slot was not specified. By default -1.
+    int             slot    = -1;
+};
+
+/**
+\brief Static sampler state reflection structure.
+\see ReflectionData::staticSamplerStates
+*/
+struct StaticSamplerState
+{
+    //! Resource type. By default ResourceType::Undefined.
+    ResourceType        type    = ResourceType::Undefined;
+
+    //! Name of the static sampler state.
+    std::string         name;
+
+    //! Descriptor of the sampler state.
+    SamplerStateDesc    desc;
 };
 
 //! Number of threads within each work group of a compute shader.
@@ -141,31 +273,31 @@ struct NumThreads
 struct ReflectionData
 {
     //! All defined macros after pre-processing.
-    std::vector<std::string>            macros;
-
-    //! Single shader uniforms.
-    std::vector<std::string>            uniforms;
-
-    //! Texture bindings.
-    std::vector<BindingSlot>            textures;
-
-    //! Storage buffer bindings.
-    std::vector<BindingSlot>            storageBuffers;
-
-    //! Constant buffer bindings.
-    std::vector<BindingSlot>            constantBuffers;
+    std::vector<std::string>        macros;
 
     //! Shader input attributes.
-    std::vector<BindingSlot>            inputAttributes;
+    std::vector<Attribute>          inputAttributes;
 
     //! Shader output attributes.
-    std::vector<BindingSlot>            outputAttributes;
+    std::vector<Attribute>          outputAttributes;
 
-    //! Static sampler states (identifier, states).
-    std::map<std::string, SamplerState> samplerStates;
+    //! Single shader uniforms.
+    std::vector<Attribute>          uniforms;
+
+    //! Texture and buffer resources.
+    std::vector<Resource>           resources;
+
+    //! Constant buffers.
+    std::vector<ConstantBuffer>     constantBuffers;
+
+    //! Dynamic sampler states.
+    std::vector<SamplerState>       samplerStates;
+
+    //! Static sampler states.
+    std::vector<StaticSamplerState> staticSamplerStates;
 
     //! Number of local threads in a compute shader.
-    NumThreads                          numThreads;
+    NumThreads                      numThreads;
 };
 
 
@@ -182,6 +314,9 @@ XSC_EXPORT std::string ToString(const Reflection::TextureAddressMode t);
 
 //! Returns the string representation of the specified 'SamplerState::ComparisonFunc' type.
 XSC_EXPORT std::string ToString(const Reflection::ComparisonFunc t);
+
+//! Returns the string representation of the specified 'Reflection::ResourceType' type.
+XSC_EXPORT std::string ToString(const Reflection::ResourceType t);
 
 //! Prints the reflection data into the output stream in a human readable format.
 XSC_EXPORT void PrintReflection(std::ostream& stream, const Reflection::ReflectionData& reflectionData);

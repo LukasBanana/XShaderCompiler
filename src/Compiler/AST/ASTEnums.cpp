@@ -1598,6 +1598,67 @@ Reflection::ComparisonFunc StringToCompareFunc(const std::string& s)
 }
 
 
+/* ----- Reflection::ResourceType Enum ----- */
+
+std::string ResourceTypeToString(const Reflection::ResourceType t)
+{
+    #define CASE_TO_STRING(IDENT) case Reflection::ResourceType::IDENT: return #IDENT
+
+    switch (t)
+    {
+        case Reflection::ResourceType::Undefined:
+            return R_Undefined;
+
+        CASE_TO_STRING( Texture1D               );
+        CASE_TO_STRING( Texture2D               );
+        CASE_TO_STRING( Texture3D               );
+        CASE_TO_STRING( TextureCube             );
+        CASE_TO_STRING( Texture1DArray          );
+        CASE_TO_STRING( Texture2DArray          );
+        CASE_TO_STRING( TextureCubeArray        );
+        CASE_TO_STRING( Texture2DMS             );
+        CASE_TO_STRING( Texture2DMSArray        );
+
+        CASE_TO_STRING( RWTexture1D             );
+        CASE_TO_STRING( RWTexture2D             );
+        CASE_TO_STRING( RWTexture3D             );
+        CASE_TO_STRING( RWTextureCube           );
+        CASE_TO_STRING( RWTexture1DArray        );
+        CASE_TO_STRING( RWTexture2DArray        );
+        CASE_TO_STRING( RWTextureCubeArray      );
+        CASE_TO_STRING( RWTexture2DMS           );
+        CASE_TO_STRING( RWTexture2DMSArray      );
+
+        CASE_TO_STRING( Sampler1D               );
+        CASE_TO_STRING( Sampler2D               );
+        CASE_TO_STRING( Sampler3D               );
+        CASE_TO_STRING( SamplerCube             );
+        CASE_TO_STRING( Sampler1DArray          );
+        CASE_TO_STRING( Sampler2DArray          );
+        CASE_TO_STRING( SamplerCubeArray        );
+        CASE_TO_STRING( Sampler2DMS             );
+        CASE_TO_STRING( Sampler2DMSArray        );
+
+        CASE_TO_STRING( Buffer                  );
+        CASE_TO_STRING( ByteAddressBuffer       );
+        CASE_TO_STRING( StructuredBuffer        );
+        CASE_TO_STRING( AppendStructuredBuffer  );
+        CASE_TO_STRING( ConsumeStructuredBuffer );
+
+        CASE_TO_STRING( RWBuffer                );
+        CASE_TO_STRING( RWByteAddressBuffer     );
+        CASE_TO_STRING( RWStructuredBuffer      );
+
+        CASE_TO_STRING( ConstantBuffer          );
+        CASE_TO_STRING( SamplerState            );
+        CASE_TO_STRING( SamplerComparisonState  );
+    }
+    return "";
+
+    #undef CASE_TO_STRING
+}
+
+
 } // /namespace Xsc
 
 

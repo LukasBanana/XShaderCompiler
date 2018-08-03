@@ -29,6 +29,11 @@ XSC_EXPORT std::string ToString(const Reflection::ComparisonFunc t)
     return CompareFuncToString(t);
 }
 
+XSC_EXPORT std::string ToString(const Reflection::ResourceType t)
+{
+    return ResourceTypeToString(t);
+}
+
 XSC_EXPORT void PrintReflection(std::ostream& stream, const Reflection::ReflectionData& reflectionData)
 {
     ReflectionPrinter printer(stream);

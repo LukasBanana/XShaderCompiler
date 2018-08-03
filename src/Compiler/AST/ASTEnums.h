@@ -1225,6 +1225,11 @@ std::string CompareFuncToString(const Reflection::ComparisonFunc t);
 Reflection::ComparisonFunc StringToCompareFunc(const std::string& s);
 
 
+/* ----- Reflection::ResourceType Enum ----- */
+
+std::string ResourceTypeToString(const Reflection::ResourceType t);
+
+
 } // /namespace Xsc
 
 
