@@ -20,9 +20,9 @@ namespace Xsc
 
 class ReflectionPrinter
 {
-    
+
     public:
-        
+
         ReflectionPrinter(std::ostream& output);
 
         void PrintReflection(const Reflection::ReflectionData& reflectionData);
@@ -31,10 +31,10 @@ class ReflectionPrinter
 
         std::ostream& IndentOut();
 
-        void PrintReflectionObjects(const std::vector<Reflection::BindingSlot>& objects, const std::string& title);
-        void PrintReflectionObjects(const std::vector<std::string>& idents, const std::string& title);
-        void PrintReflectionObjects(const std::map<std::string, Reflection::SamplerState>& samplerStates, const std::string& title);
-        void PrintReflectionAttribute(const Reflection::NumThreads& numThreads, const std::string& title);
+        void PrintReflectionObjects(const std::vector<Reflection::BindingSlot>& objects, const char* title);
+        void PrintReflectionObjects(const std::vector<std::string>& idents, const char* title);
+        void PrintReflectionObjects(const std::map<std::string, Reflection::SamplerState>& samplerStates, const char* title);
+        void PrintReflectionAttribute(const Reflection::NumThreads& numThreads, const char* title);
 
         std::ostream&   output_;
         IndentHandler   indentHandler_;

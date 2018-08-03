@@ -91,18 +91,18 @@ void Compiler::ValidateArguments(const ShaderInput& inputDesc, const ShaderOutpu
 {
     if (!inputDesc.sourceCode)
         throw std::invalid_argument(R_InputStreamCantBeNull);
-    
+
     if (!outputDesc.sourceCode)
         throw std::invalid_argument(R_OutputStreamCantBeNull);
 
     const auto& nameMngl = outputDesc.nameMangling;
-    
+
     if (nameMngl.reservedWordPrefix.empty())
         throw std::invalid_argument(R_NameManglingPrefixResCantBeEmpty);
 
     if (nameMngl.temporaryPrefix.empty())
         throw std::invalid_argument(R_NameManglingPrefixTmpCantBeEmpty);
-    
+
     if ( nameMngl.reservedWordPrefix == nameMngl.inputPrefix     ||
          nameMngl.reservedWordPrefix == nameMngl.outputPrefix    ||
          nameMngl.reservedWordPrefix == nameMngl.temporaryPrefix ||
@@ -124,11 +124,11 @@ void Compiler::ValidateArguments(const ShaderInput& inputDesc, const ShaderOutpu
     }
 
     #ifndef XSC_ENABLE_LANGUAGE_EXT
-    
+
     /* Report warning, if language extensions acquired but compiler was not build with them */
     if (inputDesc.extensions != 0)
         Warning(R_LangExtensionsNotSupported);
-    
+
     #endif
 }
 

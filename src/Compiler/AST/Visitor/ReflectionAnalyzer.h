@@ -27,21 +27,21 @@ This class collects all meta information that can be optionally retrieved.
 */
 class ReflectionAnalyzer : private Visitor
 {
-    
+
     public:
-        
+
         ReflectionAnalyzer(Log* log);
 
         // Collect all reflection data from the program AST.
         void Reflect(
-            Program& program,
-            const ShaderTarget shaderTarget,
+            Program&                    program,
+            const ShaderTarget          shaderTarget,
             Reflection::ReflectionData& reflectionData,
-            bool enableWarnings
+            bool                        enableWarnings
         );
 
     private:
-        
+
         void Warning(const std::string& msg, const AST* ast = nullptr);
 
         int GetBindingPoint(const std::vector<RegisterPtr>& slotRegisters) const;
@@ -58,7 +58,7 @@ class ReflectionAnalyzer : private Visitor
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
         DECL_VISIT_PROC( BufferDeclStmnt   );
-        
+
         DECL_VISIT_PROC( VarDecl           );
 
         /* --- Helper functions for code reflection --- */

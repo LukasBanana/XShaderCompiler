@@ -48,7 +48,7 @@ std::ostream& ReflectionPrinter::IndentOut()
     return output_;
 }
 
-void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::BindingSlot>& objects, const std::string& title)
+void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::BindingSlot>& objects, const char* title)
 {
     IndentOut() << title << ':' << std::endl;
     ScopedIndent indent(indentHandler_);
@@ -80,7 +80,7 @@ void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Bin
         IndentOut() << "< none >" << std::endl;
 }
 
-void ReflectionPrinter::PrintReflectionObjects(const std::vector<std::string>& idents, const std::string& title)
+void ReflectionPrinter::PrintReflectionObjects(const std::vector<std::string>& idents, const char* title)
 {
     IndentOut() << title << ':' << std::endl;
     ScopedIndent indent(indentHandler_);
@@ -94,7 +94,7 @@ void ReflectionPrinter::PrintReflectionObjects(const std::vector<std::string>& i
         IndentOut() << "< none >" << std::endl;
 }
 
-void ReflectionPrinter::PrintReflectionObjects(const std::map<std::string, Reflection::SamplerState>& samplerStates, const std::string& title)
+void ReflectionPrinter::PrintReflectionObjects(const std::map<std::string, Reflection::SamplerState>& samplerStates, const char* title)
 {
     IndentOut() << title << ':' << std::endl;
     ScopedIndent indent(indentHandler_);
@@ -126,14 +126,17 @@ void ReflectionPrinter::PrintReflectionObjects(const std::map<std::string, Refle
         IndentOut() << "< none >" << std::endl;
 }
 
-void ReflectionPrinter::PrintReflectionAttribute(const Reflection::NumThreads& numThreads, const std::string& title)
+void ReflectionPrinter::PrintReflectionAttribute(const Reflection::NumThreads& numThreads, const char* title)
 {
-    IndentOut() << title << ':' << std::endl;
-    ScopedIndent indent(indentHandler_);
+    if (numThreads.x > 0 || numThreads.y > 0 || numThreads.z > 0)
+    {
+        IndentOut() << title << ':' << std::endl;
+        ScopedIndent indent(indentHandler_);
 
-    IndentOut() << "X = " << numThreads.x << std::endl;
-    IndentOut() << "Y = " << numThreads.y << std::endl;
-    IndentOut() << "Z = " << numThreads.z << std::endl;
+        IndentOut() << "X = " << numThreads.x << std::endl;
+        IndentOut() << "Y = " << numThreads.y << std::endl;
+        IndentOut() << "Z = " << numThreads.z << std::endl;
+    }
 }
 
 

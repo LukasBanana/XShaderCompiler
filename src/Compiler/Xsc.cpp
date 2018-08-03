@@ -63,7 +63,7 @@ XSC_EXPORT bool CompileShader(
         auto PrintTiming = [log](const std::string& processName, const TimePoint startTime, const TimePoint endTime)
         {
             long long duration = 0ll;
-            
+
             if (endTime > startTime)
             {
                 duration =
