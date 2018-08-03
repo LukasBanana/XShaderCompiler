@@ -595,6 +595,18 @@ void VarDecl::AddFlagsRecursive(unsigned int varFlags)
     }
 }
 
+bool VarDecl::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize)
+{
+    try
+    {
+        return GetTypeDenoter()->AccumAlignedVectorSize(vectorSize, paddingSize);
+    }
+    catch (const std::exception&)
+    {
+        return false;
+    }
+}
+
 
 /* ----- BufferDecl ----- */
 
@@ -1000,6 +1012,16 @@ static VarDecl* FindIndexOfStructMemberVar(const StructDecl& structDecl, std::si
 VarDecl* StructDecl::IndexToMemberVar(std::size_t idx, bool includeBaseStructs) const
 {
     return FindIndexOfStructMemberVar(*this, idx, includeBaseStructs);
+}
+
+bool StructDecl::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize)
+{
+    for (const auto& member : varMembers)
+    {
+        if (!member->AccumAlignedVectorSize(vectorSize, paddingSize))
+            return false;
+    }
+    return true;
 }
 
 
@@ -1418,6 +1440,24 @@ TypeModifier UniformBufferDecl::DeriveCommonStorageLayout(const TypeModifier def
     return commonStorageLayout;
 }
 
+bool UniformBufferDecl::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize)
+{
+    if (bufferType == UniformBufferType::ConstantBuffer)
+    {
+        /* Accumulate size for each member */
+        for (const auto& member : varMembers)
+            member->AccumAlignedVectorSize(vectorSize, paddingSize);
+
+        /* Accumulate remaining padding */
+        auto remainingPadding = RemainingVectorSize(vectorSize);
+        vectorSize += remainingPadding;
+        paddingSize += remainingPadding;
+
+        return true;
+    }
+    return false;
+}
+
 
 /* ----- BufferDeclStmnt ----- */
 
@@ -1561,6 +1601,16 @@ StructDecl* VarDeclStmnt::FetchStructDeclRef() const
         return nullptr;
     else
         return varDecls.front()->structDeclRef;
+}
+
+bool VarDeclStmnt::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize)
+{
+    for (const auto& varDecl : varDecls)
+    {
+        if (!varDecl->AccumAlignedVectorSize(vectorSize, paddingSize))
+            return false;
+    }
+    return true;
 }
 
 

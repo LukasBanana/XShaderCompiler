@@ -296,6 +296,23 @@ std::string DataTypeToString(const DataType t, bool useTemplateSyntax)
     return R_Undefined;
 }
 
+unsigned int DataTypeSize(const DataType t)
+{
+    if (t >= DataType::Bool && t <= DataType::Double4x4)
+    {
+        auto dim = MatrixTypeDim(t);
+        auto dimSize = static_cast<unsigned int>(dim.first * dim.second);
+        if (IsDoubleRealType(t))
+            return dimSize * 8;
+        if (IsIntegralType(t) || IsSingleRealType(t))
+            return dimSize * 4;
+        if (IsHalfRealType(t))
+            return dimSize * 2;
+        return dimSize;
+    }
+    return 0;
+}
+
 bool IsScalarType(const DataType t)
 {
     return (t >= DataType::Bool && t <= DataType::Double);
@@ -338,6 +355,16 @@ bool IsHalfRealType(const DataType t)
         (t == DataType::Half) ||
         (t >= DataType::Half2 && t <= DataType::Half4) ||
         (t >= DataType::Half2x2 && t <= DataType::Half4x4)
+    );
+}
+
+bool IsSingleRealType(const DataType t)
+{
+    return
+    (
+        (t == DataType::Float) ||
+        (t >= DataType::Float2 && t <= DataType::Float4) ||
+        (t >= DataType::Float2x2 && t <= DataType::Float4x4)
     );
 }
 
@@ -796,6 +823,34 @@ DataType DoubleToFloatDataType(const DataType dataType)
     if (dataType >= DataType::Double2x2 && dataType <= DataType::Double4x4)
         return static_cast<DataType>(Idx(dataType) - Idx(DataType::Double2x2) + Idx(DataType::Float2x2));
     return dataType;
+}
+
+unsigned int RemainingVectorSize(unsigned int vectorSize, unsigned int alignment)
+{
+    return (alignment - vectorSize % alignment) % alignment;
+}
+
+bool AccumAlignedVectorSize(const DataType dataType, unsigned int& vectorSize, unsigned int& paddingSize)
+{
+    auto dataSize = DataTypeSize(dataType);
+    if (dataSize > 0)
+    {
+        /* Check if data type breaks the 16-byte boundary */
+        auto remainingSize = RemainingVectorSize(vectorSize);
+
+        /* Fill up previous vector slot, if data type breaks the 16-byte boundary */
+        if (remainingSize > 0 && dataSize > remainingSize)
+        {
+            vectorSize += remainingSize;
+            paddingSize += remainingSize;
+        }
+
+        /* Append data type size */
+        vectorSize += dataSize;
+
+        return true;
+    }
+    return false;
 }
 
 
@@ -1638,6 +1693,7 @@ std::string ResourceTypeToString(const Reflection::ResourceType t)
         CASE_TO_STRING( SamplerCubeArray        );
         CASE_TO_STRING( Sampler2DMS             );
         CASE_TO_STRING( Sampler2DMSArray        );
+        CASE_TO_STRING( Sampler2DRect           );
 
         CASE_TO_STRING( Buffer                  );
         CASE_TO_STRING( ByteAddressBuffer       );
@@ -1656,6 +1712,62 @@ std::string ResourceTypeToString(const Reflection::ResourceType t)
     return "";
 
     #undef CASE_TO_STRING
+}
+
+Reflection::ResourceType UniformBufferTypeToResourceType(const UniformBufferType t)
+{
+    using Src = UniformBufferType;
+    using Dst = Reflection::ResourceType;
+    switch (t)
+    {
+        case Src::ConstantBuffer:   return Dst::ConstantBuffer;
+        case Src::TextureBuffer:    return Dst::TextureBuffer;
+        default:                    return Dst::Undefined;
+    }
+}
+
+Reflection::ResourceType BufferTypeToResourceType(const BufferType t)
+{
+    using Src = BufferType;
+    using Dst = Reflection::ResourceType;
+    switch (t)
+    {
+        case Src::Buffer:                   return Dst::Buffer;
+        case Src::StructuredBuffer:         return Dst::StructuredBuffer;
+        case Src::ByteAddressBuffer:        return Dst::ByteAddressBuffer;
+        case Src::RWBuffer:                 return Dst::RWBuffer;
+        case Src::RWStructuredBuffer:       return Dst::RWStructuredBuffer;
+        case Src::RWByteAddressBuffer:      return Dst::RWByteAddressBuffer;
+        case Src::AppendStructuredBuffer:   return Dst::AppendStructuredBuffer;
+        case Src::ConsumeStructuredBuffer:  return Dst::ConsumeStructuredBuffer;
+        case Src::RWTexture1D:              return Dst::RWTexture1D;
+        case Src::RWTexture1DArray:         return Dst::RWTexture1DArray;
+        case Src::RWTexture2D:              return Dst::RWTexture2D;
+        case Src::RWTexture2DArray:         return Dst::RWTexture2DArray;
+        case Src::RWTexture3D:              return Dst::RWTexture3D;
+        case Src::Texture1D:                return Dst::Texture1D;
+        case Src::Texture1DArray:           return Dst::Texture1DArray;
+        case Src::Texture2D:                return Dst::Texture2D;
+        case Src::Texture2DArray:           return Dst::Texture2DArray;
+        case Src::Texture3D:                return Dst::Texture3D;
+        case Src::TextureCube:              return Dst::TextureCube;
+        case Src::TextureCubeArray:         return Dst::TextureCubeArray;
+        case Src::Texture2DMS:              return Dst::Texture2DMS;
+        case Src::Texture2DMSArray:         return Dst::Texture2DMSArray;
+        default:                            return Dst::Undefined;
+    }
+}
+
+Reflection::ResourceType SamplerTypeToResourceType(const SamplerType t)
+{
+    using Src = SamplerType;
+    using Dst = Reflection::ResourceType;
+    switch (t)
+    {
+        case Src::SamplerState:             return Dst::SamplerState;
+        case Src::SamplerComparisonState:   return Dst::SamplerComparisonState;
+        default:                            return Dst::Undefined;
+    }
 }
 
 

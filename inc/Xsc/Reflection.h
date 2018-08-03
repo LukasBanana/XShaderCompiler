@@ -136,6 +136,7 @@ enum class ResourceType
     SamplerCubeArray,           //!< Combined Cube array texture-sampler: `samplerCubeArray` in GLSL.
     Sampler2DMS,                //!< Combined 2D multi-sampled texture-sampler: `sampler2DMS` in GLSL.
     Sampler2DMSArray,           //!< Combined 2D multi-sampled array texture-sampler: `sampler2DMSArray` in GLSL.
+    Sampler2DRect,              //!< Combined 2D texture-sampler with unnormalized texture coordinates: `sampler2DRect` in GLSL.
 
     Buffer,                     //!< Vector buffer: `Buffer` in HLSL, `samplerBuffer` in GLSL.
     ByteAddressBuffer,          //!< Byte addressable buffer: `ByteAddressBuffer` in HLSL, `samplerBuffer` in GLSL.
@@ -148,6 +149,7 @@ enum class ResourceType
     RWStructuredBuffer,         //!< Structured read-write buffer: `RWStructuredBuffer` in HLSL, `buffer` in GLSL and VKSL.
 
     ConstantBuffer,             //!< Constant buffer: `cbuffer` in HLSL, `uniform` in GLSL.
+    TextureBuffer,              //!< Texture buffer: `tbuffer` in HLSL, `samplerBuffer` in GLSL.
     SamplerState,               //!< Sampler state: `SamplerState` in HLSL, `sampler` in GLSL (Vulkan only).
     SamplerComparisonState,     //!< Sampler comparison state: `SamplerComparisonState` in HLSL, `sampler` in GLSL (Vulkan only).
 };
@@ -182,11 +184,21 @@ struct SamplerStateDesc
 */
 struct Attribute
 {
+    //! Default constructor.
+    Attribute() = default;
+
+    //! Constructor to initialize all members.
+    inline Attribute(const std::string& name, int slot) :
+        name { name },
+        slot { slot }
+    {
+    }
+
     //! Name of the attribute.
     std::string name;
 
-    //! Zero-based ttribute location. If this is -1, the binding slot was not specified. By default -1.
-    int         location    = -1;
+    //! Zero-based attribute slot number. If this is -1, the binding slot was not specified. By default -1.
+    int         slot    = -1;
 };
 
 /**
@@ -218,10 +230,13 @@ struct ConstantBuffer
     std::string     name;
 
     //! Zero-based binding slot number. If this is -1, the binding slot was not specified. By default -1.
-    int             slot        = -1;
+    int             slot    = -1;
 
-    //! Size (in vectors with 16 bytes each) of the constant buffer. To get the size in bytes, multiply this with 16. By default 0.
-    unsigned int    vectorSize  = 0;
+    //! Size (in bytes) of the constant buffer with a 16-byte alignment. If this is 0xFFFFFFFF, the buffer size could not be determined. By default 0.
+    unsigned int    size    = 0;
+
+    //! Size (in bytes) of the padding that is added to the constant buffer. By default 0.
+    unsigned int    padding = 0;
 };
 
 /**

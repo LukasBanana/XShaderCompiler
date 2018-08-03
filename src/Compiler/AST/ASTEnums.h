@@ -261,6 +261,9 @@ struct MatrixSubscriptUsage
 // Returns a descriptive string of the specified data type.
 std::string DataTypeToString(const DataType t, bool useTemplateSyntax = false);
 
+// Returns the size (in bytes) of the specified data type, or 0 if the data type is invalid, undefined, or equal to DataType::String.
+unsigned int DataTypeSize(const DataType t);
+
 // Returns true if the specified data type is a scalar type.
 bool IsScalarType(const DataType t);
 
@@ -278,6 +281,9 @@ bool IsRealType(const DataType t);
 
 // Returns true if the specified data type is a half-precision real type (i.e. half, half2, half4x4 etc.).
 bool IsHalfRealType(const DataType t);
+
+// Returns true if the specified data type is a single-precision real type (i.e. float, float2, float4x4 etc.).
+bool IsSingleRealType(const DataType t);
 
 // Returns true if the specified data type is a double-precision real type (i.e. double, double2, double4x4 etc.).
 bool IsDoubleRealType(const DataType t);
@@ -320,6 +326,12 @@ DataType TokenToDataType(const Token& tkn);
 
 // Returns the data type as non-double (i.e. replaces doubles by floats).
 DataType DoubleToFloatDataType(const DataType dataType);
+
+// Returns the remaining size (in bytes) of a vector slot with the specified alignment.
+unsigned int RemainingVectorSize(unsigned int vectorSize, unsigned int alignment = 16u);
+
+// Accumulates the vector size for the specified data type (with a 16 byte boundary), and returns true on success.
+bool AccumAlignedVectorSize(const DataType dataType, unsigned int& vectorSize, unsigned int& paddingSize);
 
 
 /* ----- PrimitiveType Enum ----- */
@@ -1228,6 +1240,10 @@ Reflection::ComparisonFunc StringToCompareFunc(const std::string& s);
 /* ----- Reflection::ResourceType Enum ----- */
 
 std::string ResourceTypeToString(const Reflection::ResourceType t);
+
+Reflection::ResourceType UniformBufferTypeToResourceType(const UniformBufferType t);
+Reflection::ResourceType BufferTypeToResourceType(const BufferType t);
+Reflection::ResourceType SamplerTypeToResourceType(const SamplerType t);
 
 
 } // /namespace Xsc

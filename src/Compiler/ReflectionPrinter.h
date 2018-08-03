@@ -31,9 +31,12 @@ class ReflectionPrinter
 
         std::ostream& IndentOut();
 
-        void PrintReflectionObjects(const std::vector<Reflection::BindingSlot>& objects, const char* title);
+        void PrintReflectionObjects(const std::vector<Reflection::Attribute>& objects, const char* title);
         void PrintReflectionObjects(const std::vector<std::string>& idents, const char* title);
-        void PrintReflectionObjects(const std::map<std::string, Reflection::SamplerState>& samplerStates, const char* title);
+        void PrintReflectionObjects(const std::vector<Reflection::Resource>& objects, const char* title);
+        void PrintReflectionObjects(const std::vector<Reflection::ConstantBuffer>& objects, const char* title);
+        void PrintReflectionObjects(const std::vector<Reflection::SamplerState>& objects, const char* title);
+        void PrintReflectionObjects(const std::vector<Reflection::StaticSamplerState>& samplerStates, const char* title);
         void PrintReflectionAttribute(const Reflection::NumThreads& numThreads, const char* title);
 
         std::ostream&   output_;

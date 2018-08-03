@@ -101,13 +101,29 @@ IMPLEMENT_VISIT_PROC(Program)
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
-    /* Reflect sampler state */
-    Reflection::SamplerState samplerState;
+    if (ast->samplerValues.empty())
     {
-        for (auto& value : ast->samplerValues)
-            ReflectSamplerValue(value.get(), samplerState);
+        /* Reflect sampler state */
+        Reflection::SamplerState samplerState;
+        {
+            samplerState.type = SamplerTypeToResourceType(ast->GetSamplerType());
+            samplerState.name = ast->ident;
+            samplerState.slot = GetBindingPoint(ast->slotRegisters);
+        }
+        data_->samplerStates.push_back(samplerState);
     }
-    data_->samplerStates[ast->ident] = samplerState;
+    else
+    {
+        /* Reflect static sampler state */
+        Reflection::StaticSamplerState samplerState;
+        {
+            samplerState.type = SamplerTypeToResourceType(ast->GetSamplerType());
+            samplerState.name = ast->ident;
+            for (auto& value : ast->samplerValues)
+                ReflectSamplerValue(value.get(), samplerState.desc);
+        }
+        data_->staticSamplerStates.push_back(samplerState);
+    }
 }
 
 /* --- Declaration statements --- */
@@ -125,7 +141,15 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     if (ast->flags(AST::isReachable))
     {
         /* Reflect constant buffer binding */
-        data_->constantBuffers.push_back({ ast->ident, GetBindingPoint(ast->slotRegisters) });
+        Reflection::ConstantBuffer constantBuffer;
+        {
+            constantBuffer.type = UniformBufferTypeToResourceType(ast->bufferType);
+            constantBuffer.name = ast->ident;
+            constantBuffer.slot = GetBindingPoint(ast->slotRegisters);
+            if (!ast->AccumAlignedVectorSize(constantBuffer.size, constantBuffer.padding))
+                constantBuffer.size = ~0;
+        }
+        data_->constantBuffers.push_back(constantBuffer);
     }
 }
 
@@ -138,16 +162,13 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
             if (bufferDecl->flags(AST::isReachable))
             {
                 /* Reflect texture or storage-buffer binding */
-                Reflection::BindingSlot bindingSlot;
+                Reflection::Resource resource;
                 {
-                    bindingSlot.ident       = bufferDecl->ident;
-                    bindingSlot.location    = GetBindingPoint(bufferDecl->slotRegisters);
+                    resource.type = BufferTypeToResourceType(ast->typeDenoter->bufferType);
+                    resource.name = bufferDecl->ident;
+                    resource.slot = GetBindingPoint(bufferDecl->slotRegisters);
                 };
-
-                if (!IsStorageBufferType(ast->typeDenoter->bufferType))
-                    data_->textures.push_back(bindingSlot);
-                else
-                    data_->storageBuffers.push_back(bindingSlot);
+                data_->resources.push_back(resource);
             }
         }
     }
@@ -162,7 +183,12 @@ IMPLEMENT_VISIT_PROC(VarDecl)
             if (typeSpecifier->isUniform)
             {
                 /* Add variable as uniform */
-                data_->uniforms.push_back(ast->ident);
+                Reflection::Attribute attribute;
+                {
+                    attribute.name = ast->ident;
+                    attribute.slot = GetBindingPoint(ast->slotRegisters);
+                }
+                data_->uniforms.push_back(attribute);
             }
         }
     }
@@ -172,7 +198,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 /* --- Helper functions for code reflection --- */
 
-void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::SamplerState& samplerState)
+void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::SamplerStateDesc& desc)
 {
     const auto& name = ast->name;
 
@@ -182,28 +208,28 @@ void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::Samp
         const auto& value = literalExpr->value;
 
         if (name == "MipLODBias")
-            samplerState.mipLODBias = FromStringOrDefault<float>(value);
+            desc.mipLODBias = FromStringOrDefault<float>(value);
         else if (name == "MaxAnisotropy")
-            samplerState.maxAnisotropy = static_cast<unsigned int>(FromStringOrDefault<unsigned long>(value));
+            desc.maxAnisotropy = static_cast<unsigned int>(FromStringOrDefault<unsigned long>(value));
         else if (name == "MinLOD")
-            samplerState.minLOD = FromStringOrDefault<float>(value);
+            desc.minLOD = FromStringOrDefault<float>(value);
         else if (name == "MaxLOD")
-            samplerState.maxLOD = FromStringOrDefault<float>(value);
+            desc.maxLOD = FromStringOrDefault<float>(value);
     }
     else if (auto objectExpr = ast->value->As<ObjectExpr>())
     {
         const auto& value = objectExpr->ident;
 
         if (name == "Filter")
-            ReflectSamplerValueFilter(value, samplerState.filter, ast);
+            ReflectSamplerValueFilter(value, desc.filter, ast);
         else if (name == "AddressU")
-            ReflectSamplerValueTextureAddressMode(value, samplerState.addressU, ast);
+            ReflectSamplerValueTextureAddressMode(value, desc.addressU, ast);
         else if (name == "AddressV")
-            ReflectSamplerValueTextureAddressMode(value, samplerState.addressV, ast);
+            ReflectSamplerValueTextureAddressMode(value, desc.addressV, ast);
         else if (name == "AddressW")
-            ReflectSamplerValueTextureAddressMode(value, samplerState.addressW, ast);
+            ReflectSamplerValueTextureAddressMode(value, desc.addressW, ast);
         else if (name == "ComparisonFunc")
-            ReflectSamplerValueComparisonFunc(value, samplerState.comparisonFunc, ast);
+            ReflectSamplerValueComparisonFunc(value, desc.comparisonFunc, ast);
     }
     else if (name == "BorderColor")
     {
@@ -215,7 +241,7 @@ void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::Samp
                 {
                     /* Evaluate sub expressions to constant floats */
                     for (std::size_t i = 0; i < 4; ++i)
-                        samplerState.borderColor[i] = EvaluateConstExprFloat(*callExpr->arguments[i]);
+                        desc.borderColor[i] = EvaluateConstExprFloat(*callExpr->arguments[i]);
                 }
                 else
                     throw std::string(R_InvalidTypeOrArgCount);
@@ -225,7 +251,7 @@ void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::Samp
                 /* Evaluate sub expression to constant float and copy into four sub values */
                 auto subValueSrc = EvaluateConstExprFloat(*castExpr->expr);
                 for (std::size_t i = 0; i < 4; ++i)
-                    samplerState.borderColor[i] = subValueSrc;
+                    desc.borderColor[i] = subValueSrc;
             }
             else if (auto initExpr = ast->value->As<InitializerExpr>())
             {
@@ -233,7 +259,7 @@ void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::Samp
                 {
                     /* Evaluate sub expressions to constant floats */
                     for (std::size_t i = 0; i < 4; ++i)
-                        samplerState.borderColor[i] = EvaluateConstExprFloat(*initExpr->exprs[i]);
+                        desc.borderColor[i] = EvaluateConstExprFloat(*initExpr->exprs[i]);
                 }
                 else
                     throw std::string(R_InvalidArgCount);

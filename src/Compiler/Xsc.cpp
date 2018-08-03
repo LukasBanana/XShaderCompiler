@@ -35,6 +35,7 @@ XSC_EXPORT bool CompileShader(
         &timePoints
     );
 
+    #if 0
     if (reflectionData)
     {
         /* Sort reflection */
@@ -54,6 +55,7 @@ XSC_EXPORT bool CompileShader(
         SortStats(reflectionData->inputAttributes);
         SortStats(reflectionData->outputAttributes);
     }
+    #endif
 
     /* Show timings */
     if (outputDesc.options.showTimes && log)

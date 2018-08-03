@@ -133,6 +133,9 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Returns true if this type denoter can be casted to the specified target type denoter (special cases void and base types).
     virtual bool IsCastableTo(const TypeDenoter& targetType) const;
 
+    // Accumulates the vector size for this type denoter (with a 16 byte boundary), and returns true on success.
+    virtual bool AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize) const;
+
     /* ----- Shortcuts ----- */
 
     // Shortcut to check if this is a VoidTypeDenoter.
@@ -281,6 +284,7 @@ struct BaseTypeDenoter : public TypeDenoter
 
     bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
+    bool AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize) const override;
 
     TypeDenoterPtr GetSubObject(const std::string& ident, const AST* ast = nullptr) override;
     TypeDenoterPtr GetSubArray(const std::size_t numArrayIndices, const AST* ast = nullptr) override;
@@ -374,6 +378,7 @@ struct StructTypeDenoter : public TypeDenoter
 
     bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
+    bool AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize) const override;
 
     std::string Ident() const override;
 
@@ -405,7 +410,8 @@ struct AliasTypeDenoter : public TypeDenoter
 
     bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
-    
+    bool AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize) const override;
+
     std::string Ident() const override;
 
     TypeDenoterPtr GetSub(const Expr* expr = nullptr) override;
@@ -432,7 +438,7 @@ struct ArrayTypeDenoter : public TypeDenoter
     static const Types classType = Types::Array;
 
     ArrayTypeDenoter() = default;
-    
+
     ArrayTypeDenoter(const TypeDenoterPtr& subTypeDenoter);
     ArrayTypeDenoter(const TypeDenoterPtr& subTypeDenoter, const std::vector<ArrayDimensionPtr>& arrayDims);
 
@@ -453,12 +459,13 @@ struct ArrayTypeDenoter : public TypeDenoter
 
     bool Equals(const TypeDenoter& rhs, const Flags& compareFlags = 0) const override;
     bool IsCastableTo(const TypeDenoter& targetType) const override;
+    bool AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize) const override;
 
     // Returns the number if dimensions for this array plus its sub type (if it's also an array).
     unsigned int NumDimensions() const override;
 
     AST* SymbolRef() const override;
-    
+
     // Returns true if the dimensions of the specified array type denoter are equal to the dimension of this array type denoter.
     bool EqualsDimensions(const ArrayTypeDenoter& rhs) const;
 

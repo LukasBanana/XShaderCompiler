@@ -181,6 +181,11 @@ bool TypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     return (GetAliased().Type() == targetType.GetAliased().Type());
 }
 
+bool TypeDenoter::AccumAlignedVectorSize(unsigned int& /*vectorSize*/, unsigned int& /*paddingSize*/) const
+{
+    return false; // dummy
+}
+
 /* ----- Shortcuts ----- */
 
 bool TypeDenoter::IsVoid() const
@@ -602,7 +607,7 @@ bool BaseTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
     //TODO: this must be extended for a lot of casting variants!!!
     #if 0
-    
+
     if (IsScalar())
         return (targetType.Type() == Types::Base || targetType.Type() == Types::Struct);
     else if (IsVector())
@@ -622,14 +627,19 @@ bool BaseTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
         }
     }
     return false;
-    
+
     #else
-    
+
     const auto& targetTypeAliased = targetType.GetAliased();
     const auto targetTypeClass = targetTypeAliased.Type();
     return (targetTypeClass == Types::Base || targetTypeClass == Types::Struct || targetTypeClass == Types::Array);
 
     #endif
+}
+
+bool BaseTypeDenoter::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize) const
+{
+    return Xsc::AccumAlignedVectorSize(dataType, vectorSize, paddingSize);
 }
 
 TypeDenoterPtr BaseTypeDenoter::GetSubObject(const std::string& ident, const AST* ast)
@@ -901,7 +911,7 @@ bool StructTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
     /* Get structure declarations from type denoters */
     auto structDecl = GetStructDeclOrThrow();
-    
+
     const auto& targetAliasedType = targetType.GetAliased();
     if (auto targetStructTypeDen = targetAliasedType.As<StructTypeDenoter>())
     {
@@ -915,6 +925,14 @@ bool StructTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     }
 
     return false;
+}
+
+bool StructTypeDenoter::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize) const
+{
+    if (structDeclRef)
+        return structDeclRef->AccumAlignedVectorSize(vectorSize, paddingSize);
+    else
+        return false;
 }
 
 std::string StructTypeDenoter::Ident() const
@@ -999,6 +1017,11 @@ bool AliasTypeDenoter::Equals(const TypeDenoter& rhs, const Flags& compareFlags)
 bool AliasTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
 {
     return GetAliasedTypeOrThrow()->IsCastableTo(targetType);
+}
+
+bool AliasTypeDenoter::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize) const
+{
+    return GetAliasedTypeOrThrow()->AccumAlignedVectorSize(vectorSize, paddingSize);
 }
 
 std::string AliasTypeDenoter::Ident() const
@@ -1094,7 +1117,7 @@ TypeDenoterPtr ArrayTypeDenoter::Copy() const
 TypeDenoterPtr ArrayTypeDenoter::GetSubArray(const std::size_t numArrayIndices, const AST* ast)
 {
     const auto numDims = arrayDims.size();
-    
+
     if (numArrayIndices == 0)
     {
         /* Just return this array type denoter */
@@ -1131,6 +1154,41 @@ bool ArrayTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
         /* Compare sub type denoters */
         if (subTypeDenoter && targetArrayTypeDen->subTypeDenoter && EqualsDimensions(*targetArrayTypeDen))
             return subTypeDenoter->IsCastableTo(*targetArrayTypeDen->subTypeDenoter);
+    }
+    return false;
+}
+
+bool ArrayTypeDenoter::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize) const
+{
+    /* First get size and padding from sub type denoter */
+    unsigned int subVectorSize = 0, subPaddingSize = 0;
+    if (subTypeDenoter->AccumAlignedVectorSize(subVectorSize, subPaddingSize))
+    {
+        /* Get linear array size */
+        unsigned int linearArraySize = 1;
+        auto dimSizes = GetDimensionSizes();
+
+        for (auto size : dimSizes)
+        {
+            if (size > 0)
+                linearArraySize *= static_cast<unsigned int>(size);
+            else
+                return false;
+        }
+
+        /* Fill up previous size and padding */
+        auto remainingSize = RemainingVectorSize(vectorSize);
+        vectorSize += remainingSize;
+        paddingSize += remainingSize;
+
+        /* Accumulate array element sizes */
+        subPaddingSize = RemainingVectorSize(subVectorSize);
+        subVectorSize += subPaddingSize;
+
+        vectorSize += (linearArraySize * subVectorSize);
+        paddingSize += (linearArraySize * subPaddingSize);
+
+        return true;
     }
     return false;
 }

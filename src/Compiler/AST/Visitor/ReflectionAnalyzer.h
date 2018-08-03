@@ -63,7 +63,7 @@ class ReflectionAnalyzer : private Visitor
 
         /* --- Helper functions for code reflection --- */
 
-        void ReflectSamplerValue(SamplerValue* ast, Reflection::SamplerState& samplerState);
+        void ReflectSamplerValue(SamplerValue* ast, Reflection::SamplerStateDesc& desc);
         void ReflectSamplerValueFilter(const std::string& value, Reflection::Filter& filter, const AST* ast = nullptr);
         void ReflectSamplerValueTextureAddressMode(const std::string& value, Reflection::TextureAddressMode& addressMode, const AST* ast = nullptr);
         void ReflectSamplerValueComparisonFunc(const std::string& value, Reflection::ComparisonFunc& comparisonFunc, const AST* ast = nullptr);
