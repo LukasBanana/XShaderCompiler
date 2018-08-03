@@ -21,12 +21,16 @@ struct C : B {
 	int get6() { return B::a; }
 };
 
+//BUG:
+//  this member must be moved upwards,
+//  *before* the declaration of <struct A> in the GLSL output.
+//  additional variables in the VarDeclStmnt must be split up.
 int A::static_a = 1;
 
 void main() {
 	C s;
 	s.a = A::static_a;
-	s.C::a = 1;//A::a; //WRONG
+	s.C::a = 1;
 	s.B::a = 2;
 	s.A::a = 3;
 	//s.A::get1();
