@@ -44,18 +44,18 @@ extern "C" {
 
 struct CompilerContext
 {
-    std::string                     outputCode;
+    std::string                         outputCode;
 
-    Xsc::Reflection::ReflectionData reflection;
+    Xsc::Reflection::ReflectionData     reflection;
 
-    std::vector<const char*>        macros;
-    std::vector<const char*>        uniforms;
-    std::vector<XscBindingSlot>     textures;
-    std::vector<XscBindingSlot>     storageBuffers;
-    std::vector<XscBindingSlot>     constantBuffers;
-    std::vector<XscBindingSlot>     inputAttributes;
-    std::vector<XscBindingSlot>     outputAttributes;
-    std::vector<XscSamplerState>    samplerStates;
+    std::vector<const char*>            macros;
+    std::vector<XscAttribute>           inputAttributes;
+    std::vector<XscAttribute>           outputAttributes;
+    std::vector<XscAttribute>           uniforms;
+    std::vector<XscResource>            resources;
+    std::vector<XscConstantBuffer>      constantBuffers;
+    std::vector<XscSamplerState>        samplerStates;
+    std::vector<XscStaticSamplerState>  staticSamplerStates;
 };
 
 static struct CompilerContext g_compilerContext;
@@ -165,72 +165,93 @@ static void CopyReflection(const Xsc::Reflection::ReflectionData& src, struct Xs
     for (const auto& s : src.macros)
         g_compilerContext.macros.push_back(s.c_str());
 
+    for (const auto& s : src.inputAttributes)
+        g_compilerContext.inputAttributes.push_back({ s.name.c_str(), s.slot });
+
+    for (const auto& s : src.outputAttributes)
+        g_compilerContext.outputAttributes.push_back({ s.name.c_str(), s.slot });
+
     for (const auto& s : src.uniforms)
-        g_compilerContext.uniforms.push_back(s.c_str());
+        g_compilerContext.uniforms.push_back({ s.name.c_str(), s.slot });
 
-    for (const auto& s : src.textures)
-        g_compilerContext.textures.push_back({ s.ident.c_str(), s.location });
+    for (const auto& s : src.resources)
+    {
+        g_compilerContext.resources.push_back(
+            {
+                static_cast<XscResourceType>(s.type),
+                s.name.c_str(),
+                s.slot
+            }
+        );
+    }
 
-    for (const auto& s : src.textures)
-        g_compilerContext.storageBuffers.push_back({ s.ident.c_str(), s.location });
-
-    for (const auto& s : src.textures)
-        g_compilerContext.constantBuffers.push_back({ s.ident.c_str(), s.location });
-
-    for (const auto& s : src.textures)
-        g_compilerContext.inputAttributes.push_back({ s.ident.c_str(), s.location });
-
-    for (const auto& s : src.textures)
-        g_compilerContext.outputAttributes.push_back({ s.ident.c_str(), s.location });
+    for (const auto& s : src.constantBuffers)
+    {
+        g_compilerContext.constantBuffers.push_back(
+            {
+                static_cast<XscResourceType>(s.type),
+                s.name.c_str(),
+                s.slot,
+                s.size,
+                s.padding
+            }
+        );
+    }
 
     for (const auto& s : src.samplerStates)
+        g_compilerContext.samplerStates.push_back({ static_cast<XscResourceType>(s.type), s.name.c_str(), s.slot });
+
+    for (const auto& s : src.staticSamplerStates)
     {
-        g_compilerContext.samplerStates.push_back(
+        g_compilerContext.staticSamplerStates.push_back(
             {
-                s.first.c_str(),
-                static_cast<XscFilter>(s.second.filter),
-                static_cast<XscTextureAddressMode>(s.second.addressU),
-                static_cast<XscTextureAddressMode>(s.second.addressV),
-                static_cast<XscTextureAddressMode>(s.second.addressW),
-                s.second.mipLODBias,
-                s.second.maxAnisotropy,
-                static_cast<XscComparisonFunc>(s.second.comparisonFunc),
+                static_cast<XscResourceType>(s.type),
+                s.name.c_str(),
                 {
-                    s.second.borderColor[0],
-                    s.second.borderColor[1],
-                    s.second.borderColor[2],
-                    s.second.borderColor[3]
-                },
-                s.second.minLOD,
-                s.second.maxLOD,
+                    static_cast<XscFilter>(s.desc.filter),
+                    static_cast<XscTextureAddressMode>(s.desc.addressU),
+                    static_cast<XscTextureAddressMode>(s.desc.addressV),
+                    static_cast<XscTextureAddressMode>(s.desc.addressW),
+                    s.desc.mipLODBias,
+                    s.desc.maxAnisotropy,
+                    static_cast<XscComparisonFunc>(s.desc.comparisonFunc),
+                    {
+                        s.desc.borderColor[0],
+                        s.desc.borderColor[1],
+                        s.desc.borderColor[2],
+                        s.desc.borderColor[3]
+                    },
+                    s.desc.minLOD,
+                    s.desc.maxLOD
+                }
             }
         );
     }
 
     /* Set references to output buffers */
-    dst->macros                 = g_compilerContext.macros.data();
-    dst->macrosCount            = g_compilerContext.macros.size();
+    dst->macros                     = g_compilerContext.macros.data();
+    dst->macrosCount                = g_compilerContext.macros.size();
 
-    dst->uniforms               = g_compilerContext.uniforms.data();
-    dst->uniformsCount          = g_compilerContext.uniforms.size();
+    dst->inputAttributes            = g_compilerContext.inputAttributes.data();
+    dst->inputAttributesCount       = g_compilerContext.inputAttributes.size();
 
-    dst->textures               = g_compilerContext.textures.data();
-    dst->texturesCount          = g_compilerContext.textures.size();
+    dst->outputAttributes           = g_compilerContext.outputAttributes.data();
+    dst->outputAttributesCount      = g_compilerContext.outputAttributes.size();
 
-    dst->storageBuffers         = g_compilerContext.storageBuffers.data();
-    dst->storageBuffersCount    = g_compilerContext.storageBuffers.size();
+    dst->uniforms                   = g_compilerContext.uniforms.data();
+    dst->uniformsCount              = g_compilerContext.uniforms.size();
 
-    dst->constantBuffers        = g_compilerContext.constantBuffers.data();
-    dst->constantBufferCounts   = g_compilerContext.constantBuffers.size();
+    dst->resources                  = g_compilerContext.resources.data();
+    dst->resourcesCount             = g_compilerContext.resources.size();
 
-    dst->inputAttributes        = g_compilerContext.inputAttributes.data();
-    dst->inputAttributesCount   = g_compilerContext.inputAttributes.size();
+    dst->constantBuffers            = g_compilerContext.constantBuffers.data();
+    dst->constantBufferCounts       = g_compilerContext.constantBuffers.size();
 
-    dst->outputAttributes       = g_compilerContext.outputAttributes.data();
-    dst->outputAttributesCount  = g_compilerContext.outputAttributes.size();
+    dst->samplerStates              = g_compilerContext.samplerStates.data();
+    dst->samplerStatesCount         = g_compilerContext.samplerStates.size();
 
-    dst->samplerStates          = g_compilerContext.samplerStates.data();
-    dst->samplerStatesCount     = g_compilerContext.samplerStates.size();
+    dst->staticSamplerStates        = g_compilerContext.staticSamplerStates.data();
+    dst->staticSamplerStatesCount   = g_compilerContext.staticSamplerStates.size();
 
     /* Copy remaining data fields */
     dst->numThreads.x = src.numThreads.x;
@@ -336,10 +357,10 @@ void LogC::SubmitReport(const Xsc::Report& report)
  */
 
 XSC_EXPORT bool XscCompileShader(
-    const struct XscShaderInput* inputDesc,
-    const struct XscShaderOutput* outputDesc,
-    const struct XscLog* log,
-    struct XscReflectionData* reflectionData)
+    const struct XscShaderInput*    inputDesc,
+    const struct XscShaderOutput*   outputDesc,
+    const struct XscLog*            log,
+    struct XscReflectionData*       reflectionData)
 {
     if (!ValidateShaderInput(inputDesc) || !ValidateShaderOutput(outputDesc))
         return false;
@@ -472,6 +493,11 @@ XSC_EXPORT void XscTextureAddressModeToString(const enum XscTextureAddressMode t
 XSC_EXPORT void XscComparisonFuncToString(const enum XscComparisonFunc t, char* str, size_t maxSize)
 {
     WriteStringC(Xsc::ToString(static_cast<Xsc::Reflection::ComparisonFunc>(t)), str, maxSize);
+}
+
+XSC_EXPORT void XscResourceTypeToString(const enum XscResourceType t, char* str, size_t maxSize)
+{
+    WriteStringC(Xsc::ToString(static_cast<Xsc::Reflection::ResourceType>(t)), str, maxSize);
 }
 
 XSC_EXPORT void XscShaderTargetToString(const enum XscShaderTarget target, char* str, size_t maxSize)
