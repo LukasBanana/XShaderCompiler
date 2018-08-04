@@ -786,6 +786,14 @@ static void PrintCompilerVersion(std::ostream& s)
     s << "14.0 (2015)";
     #   elif _MSC_VER == 1910
     s << "15.0 (2017)";
+    #   elif _MSC_VER == 1911
+    s << "15.3 (2017)";
+    #   elif _MSC_VER == 1912
+    s << "15.5 (2017)";
+    #   elif _MSC_VER == 1913
+    s << "15.6 (2017)";
+    #   elif _MSC_VER == 1914
+    s << "15.7 (2017)";
     #   else
     s << "unknown version";
     #   endif
