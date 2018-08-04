@@ -7,6 +7,7 @@
 
 #include <XscC/XscC.h>
 #include <stdio.h>
+#include <string.h>
 
 
 #define PRINT_FUNC                              \
@@ -68,8 +69,14 @@ void TestCompile()
     (
         "cbuffer Matrices {\n"
         "    float4x4 wvpMatrix;\n"
+        "    float forcePadding;\n"
         "};\n"
+        "SamplerState linearSampler {\n"
+        "    Filter = MIN_MAG_MIP_LINEAR;\n"
+        "};\n"
+        "Texture2D<float3> tex : register(t2);\n"
         "float4 VS(float3 pos : POSITION) : SV_Position {\n"
+        "    tex; // force generation of 'tex' resource in reflection\n"
         "    return mul(wvpMatrix, float4(pos, 1));\n"
         "}\n"
     );
@@ -81,6 +88,7 @@ void TestCompile()
     puts(in.sourceCode);
 
     struct XscReflectionData reflect;
+    memset(&reflect, 0, sizeof(reflect));
 
     if (XscCompileShader(&in, &out, XSC_DEFAULT_LOG, &reflect))
     {

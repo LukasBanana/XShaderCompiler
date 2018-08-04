@@ -10,7 +10,7 @@
 
 
 #include <Xsc/Export.h>
-#include <stdbool.h>
+#include "TypesC.h"
 #include <stdlib.h>
 
 
@@ -84,20 +84,20 @@ XSC_EXPORT void XscInputShaderVersionToString(const enum XscInputShaderVersion s
 //! Returns the specified shader output version as string.
 XSC_EXPORT void XscOutputShaderVersionToString(const enum XscOutputShaderVersion shaderVersion, char* str, size_t maxSize);
 
-//! Returns true if the shader input version specifies HLSL (for DirectX).
-XSC_EXPORT bool XscIsInputLanguageHLSL(const enum XscInputShaderVersion shaderVersion);
+//! Returns none-zero if the shader input version specifies HLSL (for DirectX).
+XSC_EXPORT XscBoolean XscIsInputLanguageHLSL(const enum XscInputShaderVersion shaderVersion);
 
-//! Returns true if the shader input version specifies GLSL (for OpenGL, OpenGL ES, and Vulkan).
-XSC_EXPORT bool XscIsInputLanguageGLSL(const enum XscInputShaderVersion shaderVersion);
+//! Returns none-zero if the shader input version specifies GLSL (for OpenGL, OpenGL ES, and Vulkan).
+XSC_EXPORT XscBoolean XscIsInputLanguageGLSL(const enum XscInputShaderVersion shaderVersion);
 
-//! Returns true if the shader output version specifies GLSL (for OpenGL 2+).
-XSC_EXPORT bool XscIsOutputLanguageGLSL(const enum XscOutputShaderVersion shaderVersion);
+//! Returns none-zero if the shader output version specifies GLSL (for OpenGL 2+).
+XSC_EXPORT XscBoolean XscIsOutputLanguageGLSL(const enum XscOutputShaderVersion shaderVersion);
 
-//! Returns true if the shader output version specifies ESSL (for OpenGL ES 2+).
-XSC_EXPORT bool XscIsOutputLanguageESSL(const enum XscOutputShaderVersion shaderVersion);
+//! Returns none-zero if the shader output version specifies ESSL (for OpenGL ES 2+).
+XSC_EXPORT XscBoolean XscIsOutputLanguageESSL(const enum XscOutputShaderVersion shaderVersion);
 
-//! Returns true if the shader output version specifies VKSL (for Vulkan).
-XSC_EXPORT bool XscIsOutputLanguageVKSL(const enum XscOutputShaderVersion shaderVersion);
+//! Returns none-zero if the shader output version specifies VKSL (for Vulkan).
+XSC_EXPORT XscBoolean XscIsOutputLanguageVKSL(const enum XscOutputShaderVersion shaderVersion);
 
 /**
 \brief Returns the enumeration of all supported GLSL extensions as a map of extension name and version number.

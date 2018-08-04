@@ -753,7 +753,7 @@ HelpDescriptor VersionCommand::Help() const
 static void PrintCompilerVersion(std::ostream& s)
 {
     #if defined _MSC_VER
-    
+
     /* Decode MSC version */
     s << "MSVC ";
     #   if _MSC_VER == 800
@@ -789,21 +789,21 @@ static void PrintCompilerVersion(std::ostream& s)
     #   else
     s << "unknown version";
     #   endif
-    
+
     #elif defined __clang__
-    
+
     /* Print clang version */
     s << "Clang " << __clang_version__;
-    
+
     #elif defined __GNUC__
-    
+
     /* Print GCC version */
     s << "GCC " << __GNUC__ << '.' << __GNUC_MINOR__ << '.' << __GNUC_PATCHLEVEL__;
-    
+
     #else
-    
+
     s << "unknown compiler";
-    
+
     #endif
 }
 
@@ -813,23 +813,23 @@ void VersionCommand::Run(CommandLine& cmdLine, ShellState& state)
 
     /* Print app name */
     std::cout << "XShaderCompiler ";
-    
+
     /* Print version info in highlighted color */
     {
         ScopedColor scopedColor { colorHighlight };
         std::cout << "Version " << XSC_VERSION_STRING;
     }
-    
+
     #ifdef _DEBUG
     std::cout << " (DEBUG)";
     #endif // /_DEBUG
     std::cout << std::endl;
-    
+
     /* Print build information */
     std::cout << "Build with ";
     PrintCompilerVersion(std::cout);
     std::cout << " on " << __DATE__ << " at " << __TIME__ << std::endl;
-    
+
     /* Print copyright and license notice */
     std::cout << "Copyright (c) 2014-2017 by Lukas Hermanns" << std::endl;
     std::cout << "3-Clause BSD License" << std::endl;

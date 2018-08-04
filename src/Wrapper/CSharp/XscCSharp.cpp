@@ -34,13 +34,13 @@ static std::string ToStdString(String^ s)
     return out;
 }
 
-//! XscCompiler library main class.
+/// <summary>XscCompiler library main class.</summary>
 public ref class XscCompiler
 {
 
     public:
 
-        //! Shader target enumeration.
+        /// <summary>Shader target enumeration.</summary>
         enum class ShaderTarget
         {
             Undefined,                      //!< Undefined shader target.
@@ -53,7 +53,7 @@ public ref class XscCompiler
             ComputeShader,                  //!< Compute shader.
         };
 
-        //! Input shader version enumeration.
+        /// <summary>Input shader version enumeration.</summary>
         enum class InputShaderVersion
         {
             Cg      = 2,            //!< Cg (C for graphics) is a slightly extended HLSL3.
@@ -68,7 +68,7 @@ public ref class XscCompiler
             VKSL    = 0x0002ffff,   //!< GLSL (Vulkan).
         };
 
-        //! Output shader version enumeration.
+        /// <summary>Output shader version enumeration.</summary>
         enum class OutputShaderVersion
         {
             GLSL110 = 110,                  //!< GLSL 1.10 (OpenGL 2.0).
@@ -95,7 +95,7 @@ public ref class XscCompiler
             VKSL    = 0x0002ffff,           //!< Auto-detect minimum required VKSL version (for Vulkan/SPIR-V).
         };
 
-        //! Sampler filter enumeration (D3D11_FILTER).
+        /// <summary>Sampler filter enumeration (D3D11_FILTER).</summary>
         enum class Filter
         {
             MinMagMipPoint                          = 0,
@@ -136,7 +136,7 @@ public ref class XscCompiler
             MaximumAnisotropic                      = 0x1d5,
         };
 
-        //! Texture address mode enumeration (D3D11_TEXTURE_ADDRESS_MODE).
+        /// <summary>Texture address mode enumeration (D3D11_TEXTURE_ADDRESS_MODE).</summary>
         enum class TextureAddressMode
         {
             Wrap        = 1,
@@ -146,8 +146,8 @@ public ref class XscCompiler
             MirrorOnce  = 5,
         };
 
-        //! Sample comparison function enumeration (D3D11_COMPARISON_FUNC).
-        enum class Comparison
+        /// <summary>Sample comparison function enumeration (D3D11_COMPARISON_FUNC).</summary>
+        enum class ComparisonFunc
         {
             Never           = 1,
             Less            = 2,
@@ -159,7 +159,60 @@ public ref class XscCompiler
             Always          = 8,
         };
 
-        //! Compiler warning flags.
+        /// <summary>Resource type enumeration.</summary>
+        /// <see cref="Resource.Type"/>
+        enum class ResourceType
+        {
+            Undefined,
+
+            Texture1D,
+            Texture2D,
+            Texture3D,
+            TextureCube,
+            Texture1DArray,
+            Texture2DArray,
+            TextureCubeArray,
+            Texture2DMS,
+            Texture2DMSArray,
+
+            RWTexture1D,
+            RWTexture2D,
+            RWTexture3D,
+            RWTextureCube,
+            RWTexture1DArray,
+            RWTexture2DArray,
+            RWTextureCubeArray,
+            RWTexture2DMS,
+            RWTexture2DMSArray,
+
+            Sampler1D,
+            Sampler2D,
+            Sampler3D,
+            SamplerCube,
+            Sampler1DArray,
+            Sampler2DArray,
+            SamplerCubeArray,
+            Sampler2DMS,
+            Sampler2DMSArray,
+            Sampler2DRect,
+
+            Buffer,
+            ByteAddressBuffer,
+            StructuredBuffer,
+            AppendStructuredBuffer,
+            ConsumeStructuredBuffer,
+
+            RWBuffer,
+            RWByteAddressBuffer,
+            RWStructuredBuffer,
+
+            ConstantBuffer,
+            TextureBuffer,
+            SamplerState,
+            SamplerComparisonState,
+        };
+
+        /// <summary>Compiler warning flags.</summary>
         [Flags]
         enum class Warnings : System::UInt32
         {
@@ -180,10 +233,8 @@ public ref class XscCompiler
             All                     = (~0u),     // All warnings.
         };
 
-        /**
-        \brief Language extension flags.
-        \remakrs This is only supported, if the compiler was build with the 'XSC_ENABLE_LANGUAGE_EXT' macro.
-        */
+        /// <summary>Language extension flags.</summary>
+        /// <remarks> This is only supported, if the compiler was build with the 'XSC_ENABLE_LANGUAGE_EXT' macro.</remarks>
         [Flags]
         enum class Extensions : System::UInt32
         {
@@ -195,18 +246,16 @@ public ref class XscCompiler
             All             = (~0u)     //!< All extensions.
         };
 
-        /**
-        \brief Static sampler state descriptor structure (D3D11_SAMPLER_DESC).
-        \remarks All members and enumerations have the same values like the one in the "D3D11_SAMPLER_DESC" structure respectively.
-        Thus, they can all be statically casted from and to the original D3D11 values.
-        \see https://msdn.microsoft.com/en-us/library/windows/desktop/ff476207(v=vs.85).aspx
-        */
-        ref class SamplerState
+        /// <summary>Static sampler state descriptor structure (D3D11_SAMPLER_DESC).</summary>
+        /// <remarks>All members and enumerations have the same values like the one in the "D3D11_SAMPLER_DESC" structure respectively.
+        /// Thus, they can all be statically casted from and to the original D3D11 values.</remarks>
+        /// <see cref="https://msdn.microsoft.com/en-us/library/windows/desktop/ff476207(v=vs.85).aspx"/>
+        ref class SamplerStateDesc
         {
 
             public:
 
-                SamplerState()
+                SamplerStateDesc()
                 {
                     TextureFilter   = Filter::MinMagMipLinear;
                     AddressU        = TextureAddressMode::Clamp;
@@ -214,7 +263,7 @@ public ref class XscCompiler
                     AddressW        = TextureAddressMode::Clamp;
                     MipLODBias      = 0.0f;
                     MaxAnisotropy   = 1u;
-                    ComparisonFunc  = Comparison::Never;
+                    ComparisonFunc  = XscCompiler::ComparisonFunc::Never;
                     BorderColor     = gcnew array<float> { 0.0f, 0.0f, 0.0f, 0.0f };
                     MinLOD          = -std::numeric_limits<float>::max();
                     MaxLOD          = std::numeric_limits<float>::max();
@@ -226,39 +275,150 @@ public ref class XscCompiler
                 property TextureAddressMode AddressW;
                 property float              MipLODBias;
                 property unsigned int       MaxAnisotropy;
-                property Comparison         ComparisonFunc;
+                property ComparisonFunc     ComparisonFunc;
                 property array<float>^      BorderColor;
                 property float              MinLOD;
                 property float              MaxLOD;
 
         };
 
-        ref class BindingSlot
+        /// <summary>Input/output attribute and uniform reflection structure.</summary>
+        /// <see cref="ReflectionData.InputAttributes"/>
+        /// <see cref="ReflectionData.OutputAttributes"/>
+        ref class Attribute
         {
 
             public:
 
-                BindingSlot()
+                Attribute()
                 {
-                    Ident = nullptr;
-                    Location = 0;
+                    Name = nullptr;
+                    Slot = -1;
                 }
 
-                BindingSlot(String^ ident, int location)
+                Attribute(String^ name, int slot)
                 {
-                    Ident = ident;
-                    Location = location;
+                    Name = name;
+                    Slot = slot;
                 }
 
-                //! Identifier of the binding point.
-                property String^    Ident;
+                /// <summary>Name of the attribute.</summary>
+                property String^    Name;
 
-                //! Zero based binding point or location. If this is -1, the location has not been set explicitly.
-                property int        Location;
+                /// <summary>Zero-based attribute slot number. If this is -1, the binding slot was not specified. By default -1.</summary>
+                property int        Slot;
 
         };
 
-        //! Number of threads within each work group of a compute shader.
+        /// <summary>Resource reflection structure for textures, combined texture samplers, and buffers.</summary>
+        /// <see cref="ReflectionData.Resources"/>
+        ref class Resource
+        {
+
+            public:
+
+                Resource()
+                {
+                    Type = ResourceType::Undefined;
+                    Name = nullptr;
+                    Slot = -1;
+                }
+
+                /// <summary>Resource type. By default ResourceType::Undefined.</summary>
+                property ResourceType   Type;
+
+                /// <summary>Name of the resource.</summary>
+                property String^        Name;
+
+                /// <summary>Zero-based binding slot number. If this is -1, the binding slot was not specified. By default -1.</summary>
+                property int            Slot;
+
+        };
+
+        /// <summary>Constant buffer reflection structure.</summary>
+        /// <see cref="ReflectionData.ConstantBuffers"/>
+        ref class ConstantBuffer
+        {
+
+            public:
+
+                ConstantBuffer()
+                {
+                    Type    = ResourceType::Undefined;
+                    Name    = nullptr;
+                    Slot    = -1;
+                    Size    = 0;
+                    Padding = 0;
+                }
+
+                /// <summary>Resource type. By default ResourceType::Undefined.</summary>
+                property ResourceType   Type;
+
+                /// <summary>Name of the constant buffer.</summary>
+                property String^        Name;
+
+                /// <summary>Zero-based binding slot number. If this is -1, the binding slot was not specified. By default -1.</summary>
+                property int            Slot;
+
+                /// <summary>Size (in bytes) of the constant buffer with a 16-byte alignment. If this is 0xFFFFFFFF, the buffer size could not be determined. By default 0.</summary>
+                property unsigned int   Size;
+
+                /// <summary>Size (in bytes) of the padding that is added to the constant buffer. By default 0.</summary>
+                property unsigned int   Padding;
+
+        };
+
+        /// <summary>Sampler state reflection structure.</summary>
+        /// <see cref="ReflectionData.SamplerStates"/>
+        ref class SamplerState
+        {
+
+            public:
+
+                SamplerState()
+                {
+                    Type = ResourceType::Undefined;
+                    Name = nullptr;
+                    Slot = -1;
+                }
+
+                /// <summary>Resource type. By default ResourceType::Undefined.</summary>
+                property ResourceType   Type;
+
+                /// <summary>Name of the sampler state.</summary>
+                property String^        Name;
+
+                /// <summary>Zero-based binding slot number. If this is -1, the binding slot was not specified. By default -1.</summary>
+                property int            Slot;
+
+        };
+
+        /// <summary>Static sampler state reflection structure.</summary>
+        /// <see cref="ReflectionData.StaticSamplerStates"/>
+        ref class StaticSamplerState
+        {
+
+            public:
+
+                StaticSamplerState()
+                {
+                    Type = ResourceType::Undefined;
+                    Name = nullptr;
+                    Desc = nullptr;
+                }
+
+                /// <summary>Resource type. By default ResourceType::Undefined.</summary>
+                property ResourceType       Type;
+
+                /// <summary>Name of the static sampler state.</summary>
+                property String^            Name;
+
+                /// <summary>Descriptor of the sampler state.</summary>
+                property SamplerStateDesc^  Desc;
+
+        };
+
+        /// <summary>Number of threads within each work group of a compute shader.</summary>
         ref class ComputeThreads
         {
 
@@ -278,53 +438,53 @@ public ref class XscCompiler
                     Z = z;
                 }
 
-                //! Number of shader compute threads in X dimension.
+                /// <summary>Number of shader compute threads in X dimension.</summary>
                 property int X;
 
-                //! Number of shader compute threads in Y dimension.
+                /// <summary>Number of shader compute threads in Y dimension.</summary>
                 property int Y;
 
-                //! Number of shader compute threads in Z dimension.
+                /// <summary>Number of shader compute threads in Z dimension.</summary>
                 property int Z;
 
         };
 
-        //! Structure for shader output statistics (e.g. texture/buffer binding points).
+        /// <summary>Structure for shader output statistics (e.g. texture/buffer binding points).</summary>
         ref class ReflectionData
         {
 
             public:
 
-                //! All defined macros after pre-processing.
-                property Collections::Generic::List<String^>^                       Macros;
+                /// <summary>All defined macros after pre-processing.</summary>
+                property Collections::Generic::List<String^>^               Macros;
 
-                //! Single shader uniforms.
-                property Collections::Generic::List<String^>^                       Uniforms;
+                /// <summary>Shader input attributes.</summary>
+                property Collections::Generic::List<Attribute^>^            InputAttributes;
 
-                //! Texture bindings.
-                property Collections::Generic::List<BindingSlot^>^                  Textures;
+                /// <summary>Shader output attributes.</summary>
+                property Collections::Generic::List<Attribute^>^            OutputAttributes;
 
-                //! Storage buffer bindings.
-                property Collections::Generic::List<BindingSlot^>^                  StorageBuffers;
+                /// <summary>Single shader uniforms.</summary>
+                property Collections::Generic::List<Attribute^>^            Uniforms;
 
-                //! Constant buffer bindings.
-                property Collections::Generic::List<BindingSlot^>^                  ConstantBuffers;
+                /// <summary>Texture bindings.</summary>
+                property Collections::Generic::List<Resource^>^             Resources;
 
-                //! Shader input attributes.
-                property Collections::Generic::List<BindingSlot^>^                  InputAttributes;
+                /// <summary>Constant buffer bindings.</summary>
+                property Collections::Generic::List<ConstantBuffer^>^       ConstantBuffers;
 
-                //! Shader output attributes.
-                property Collections::Generic::List<BindingSlot^>^                  OutputAttributes;
+                /// <summary>Dynamic sampler states.</summary>
+                property Collections::Generic::List<SamplerState^>^         SamplerStates;
 
-                //! Static sampler states (identifier, states).
-                property Collections::Generic::Dictionary<String^, SamplerState^>^  SamplerStates;
+                /// <summary>Static sampler states.</summary>
+                property Collections::Generic::List<StaticSamplerState^>^   StaticSamplerStates;
 
-                //! 'numthreads' attribute of a compute shader.
-                property ComputeThreads^                                            NumThreads;
+                /// <summary>Number of local threads in a compute shader.</summary>
+                property ComputeThreads^                                    NumThreads;
 
         };
 
-        //! Formatting descriptor structure for the output shader.
+        /// <summary>Formatting descriptor structure for the output shader.</summary>
         ref class OutputFormatting
         {
 
@@ -341,30 +501,30 @@ public ref class XscCompiler
                     NewLineOpenScope    = true;
                 }
 
-                //! If true, scopes are always written in braces. By default false.
+                /// <summary>If true, scopes are always written in braces. By default false.</summary>
                 property bool       AlwaysBracedScopes;
 
-                //! If true, blank lines are allowed. By default true.
+                /// <summary>If true, blank lines are allowed. By default true.</summary>
                 property bool       Blanks;
 
-                //! If true, wrapper functions for special intrinsics are written in a compact formatting (i.e. all in one line). By default false.
+                /// <summary>If true, wrapper functions for special intrinsics are written in a compact formatting (i.e. all in one line). By default false.</summary>
                 property bool       CompactWrappers;
 
-                //! Indentation string for code generation. By default 4 spaces.
+                /// <summary>Indentation string for code generation. By default 4 spaces.</summary>
                 property String^    Indent;
 
-                //! If true, line marks are allowed. By default false.
+                /// <summary>If true, line marks are allowed. By default false.</summary>
                 property bool       LineMarks;
 
-                //! If true, auto-formatting of line separation is allowed. By default true.
+                /// <summary>If true, auto-formatting of line separation is allowed. By default true.</summary>
                 property bool       LineSeparation;
 
-                //! If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default true.
+                /// <summary>If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default true.</summary>
                 property bool       NewLineOpenScope;
 
         };
 
-        //! Structure for additional translation options.
+        /// <summary>Structure for additional translation options.</summary>
         ref class OutputOptions
         {
 
@@ -391,63 +551,61 @@ public ref class XscCompiler
                     WriteGeneratorHeader    = true;
                 }
 
-                //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
+                /// <summary>If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.</summary>
                 property bool   AllowExtensions;
 
-                /**
-                \brief If true, binding slots for all buffer types will be generated sequentially, starting with index at 'AutoBindingStartSlot'. By default false.
-                \remarks This will also enable 'ExplicitBinding'.
-                */
+                /// <summary>If true, binding slots for all buffer types will be generated sequentially, starting with index at 'AutoBindingStartSlot'. By default false.</summary>
+                /// <remarks> This will also enable 'ExplicitBinding'.</remarks>
                 property bool   AutoBinding;
 
-                //! Index to start generating binding slots from. Only relevant if 'AutoBinding' is enabled. By default 0.
+                /// <summary>Index to start generating binding slots from. Only relevant if 'AutoBinding' is enabled. By default 0.</summary>
                 property int    AutoBindingStartSlot;
 
-                //! If true, explicit binding slots are enabled. By default false.
+                /// <summary>If true, explicit binding slots are enabled. By default false.</summary>
                 property bool   ExplicitBinding;
 
-                //! If true, code obfuscation is performed. By default false.
+                /// <summary>If true, code obfuscation is performed. By default false.</summary>
                 property bool   Obfuscate;
 
-                //! If true, little code optimizations are performed. By default false.
+                /// <summary>If true, little code optimizations are performed. By default false.</summary>
                 property bool   Optimize;
 
-                //! If true, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.
+                /// <summary>If true, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.</summary>
                 property bool   PreferWrappers;
 
-                //! If true, only the preprocessed source code will be written out. By default false.
+                /// <summary>If true, only the preprocessed source code will be written out. By default false.</summary>
                 property bool   PreprocessOnly;
 
-                //! If true, commentaries are preserved for each statement. By default false.
+                /// <summary>If true, commentaries are preserved for each statement. By default false.</summary>
                 property bool   PreserveComments;
 
-                //! If true, matrices have row-major alignment. Otherwise the matrices have column-major alignment. By default false.
+                /// <summary>If true, matrices have row-major alignment. Otherwise the matrices have column-major alignment. By default false.</summary>
                 property bool   RowMajorAlignment;
 
-                //! If true, generated GLSL code will contain separate sampler and texture objects when supported. By default true.
+                /// <summary>If true, generated GLSL code will contain separate sampler and texture objects when supported. By default true.</summary>
                 property bool   SeparateSamplers;
 
-                //! If true, generated GLSL code will support the 'ARB_separate_shader_objects' extension. By default false.
+                /// <summary>If true, generated GLSL code will support the 'ARB_separate_shader_objects' extension. By default false.</summary>
                 property bool   SeparateShaders;
 
-                //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
+                /// <summary>If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.</summary>
                 property bool   ShowAST;
 
-                //! If true, the timings of the different compilation processes are written to the log output. By default false.
+                /// <summary>If true, the timings of the different compilation processes are written to the log output. By default false.</summary>
                 property bool   ShowTimes;
 
-                //! If true, array initializations will be unrolled. By default false.
+                /// <summary>If true, array initializations will be unrolled. By default false.</summary>
                 property bool   UnrollArrayInitializers;
 
-                //! If true, the source code is only validated, but no output code will be generated. By default false.
+                /// <summary>If true, the source code is only validated, but no output code will be generated. By default false.</summary>
                 property bool   ValidateOnly;
 
-                //! If true, the generator header with metadata is written as first comment to the output. By default true.
+                /// <summary>If true, the generator header with metadata is written as first comment to the output. By default true.</summary>
                 property bool   WriteGeneratorHeader;
 
         };
 
-        //! Name mangling descriptor structure for shader input/output variables (also referred to as "varyings"), temporary variables, and reserved keywords.
+        /// <summary>Name mangling descriptor structure for shader input/output variables (also referred to as "varyings"), temporary variables, and reserved keywords.</summary>
         ref class OutputNameMangling
         {
 
@@ -464,67 +622,53 @@ public ref class XscCompiler
                     RenameBufferFields  = false;
                 }
 
-                /**
-                \brief Name mangling prefix for shader input variables. By default "xsv_".
-                \remarks This can also be empty or equal to "outputPrefix".
-                */
+                /// <summary>Name mangling prefix for shader input variables. By default "xsv_".</summary>
+                /// <remarks> This can also be empty or equal to "outputPrefix".</remarks>
                 property String^    InputPrefix;
 
-                /**
-                \brief Name mangling prefix for shader output variables. By default "xsv_".
-                \remarks This can also be empty or equal to "inputPrefix".
-                */
+                /// <summary>Name mangling prefix for shader output variables. By default "xsv_".</summary>
+                /// <remarks> This can also be empty or equal to "inputPrefix".</remarks>
                 property String^    OutputPrefix;
 
-                /**
-                \brief Name mangling prefix for reserved words (such as "texture", "main", "sin" etc.). By default "xsr_".
-                \remarks This must not be equal to any of the other prefixes and it must not be empty.
-                */
+                /// <summary>Name mangling prefix for reserved words (such as "texture", "main", "sin" etc.). By default "xsr_".</summary>
+                /// <remarks> This must not be equal to any of the other prefixes and it must not be empty.</remarks>
                 property String^    ReservedWordPrefix;
 
-                /**
-                \brief Name mangling prefix for temporary variables. By default "xst_".
-                \remarks This must not be equal to any of the other prefixes and it must not be empty.
-                */
+                /// <summary>Name mangling prefix for temporary variables. By default "xst_".</summary>
+                /// <remarks> This must not be equal to any of the other prefixes and it must not be empty.</remarks>
                 property String^    TemporaryPrefix;
 
-                /**
-                \brief Name mangling prefix for namespaces like structures or classes. By default "xsn_".
-                \remarks This can also be empty, but if it's not empty it must not be equal to any of the other prefixes.
-                */
+                /// <summary>Name mangling prefix for namespaces like structures or classes. By default "xsn_".</summary>
+                /// <remarks> This can also be empty, but if it's not empty it must not be equal to any of the other prefixes.</remarks>
                 property String^    NamespacePrefix;
 
-                /**
-                If true, shader input/output variables are always renamed to their semantics,
-                even for vertex input and fragment output. Otherwise, their original identifiers are used. By default false.
-                */
+                /// <summary>
+                /// If true, shader input/output variables are always renamed to their semantics,
+                /// even for vertex input and fragment output. Otherwise, their original identifiers are used. By default false.
+                /// </summary>
                 property bool       UseAlwaysSemantics;
 
-                /**
-                \brief If true, the data fields of a 'buffer'-objects is renamed rather than the outer identifier. By default false.
-                \remarks This can be useful for external diagnostic tools, to access the original identifier.
-                */
+                /// <summary>If true, the data fields of a 'buffer'-objects is renamed rather than the outer identifier. By default false.</summary>
+                /// <remarks> This can be useful for external diagnostic tools, to access the original identifier.</remarks>
                 property bool       RenameBufferFields;
 
         };
 
-        //! Shader source include handler interface.
+        /// <summary>Shader source include handler interface.</summary>
         ref class SourceIncludeHandler abstract
         {
 
             public:
-                
-                /**
-                \brief Returns an input stream for the specified filename.
-                \param[in] includeName Specifies the include filename.
-                \param[in] useSearchPathsFirst Specifies whether to first use the search paths to find the file.
-                \return Content of the new input file.
-                */
+
+                /// <summary>Returns an input stream for the specified filename.</summary>
+                /// <param name="includeName">Specifies the include filename.</param>
+                /// <param name="useSearchPathsFirst">Specifies whether to first use the search paths to find the file.</param>
+                /// <returns>Content of the new input file.</returns>
                 virtual String^ Include(String^ filename, bool useSearchPathsFirst) = 0;
 
         };
 
-        //! Shader input descriptor structure.
+        /// <summary>Shader input descriptor structure.</summary>
         ref class ShaderInput
         {
 
@@ -543,52 +687,46 @@ public ref class XscCompiler
                     ExtensionFlags      = Extensions::Disabled;
                 }
 
-                //! Specifies the filename of the input shader code. This is an optional attribute, and only a hint to the compiler.
+                /// <summary>Specifies the filename of the input shader code. This is an optional attribute, and only a hint to the compiler.</summary>
                 property String^                        Filename;
 
-                //! Specifies the input source code stream.
+                /// <summary>Specifies the input source code stream.</summary>
                 property String^                        SourceCode;
 
-                //! Specifies the input shader version (e.g. InputShaderVersion.HLSL5 for "HLSL 5"). By default InputShaderVersion.HLSL5.
+                /// <summary>Specifies the input shader version (e.g. InputShaderVersion.HLSL5 for "HLSL 5"). By default InputShaderVersion.HLSL5.</summary>
                 property InputShaderVersion             ShaderVersion;
-    
-                //! Specifies the target shader (Vertex, Fragment etc.). By default ShaderTarget::Undefined.
+
+                /// <summary>Specifies the target shader (Vertex, Fragment etc.). By default ShaderTarget::Undefined.</summary>
                 property ShaderTarget                   Target;
 
-                //! Specifies the HLSL shader entry point. By default "main".
+                /// <summary>Specifies the HLSL shader entry point. By default "main".</summary>
                 property String^                        EntryPoint;
 
-                /**
-                \brief Specifies the secondary HLSL shader entry point.
-                \remarks This is only used for a Tessellation-Control Shader (alias Hull Shader) entry point,
-                when a Tessellation-Control Shader (alias Domain Shader) is the output target.
-                This is required to translate all Tessellation-Control attributes (i.e. "partitioning" and "outputtopology")
-                to the Tessellation-Evaluation output shader. If this is empty, the default values for these attributes are used.
-                */
+                /// <summary>Specifies the secondary HLSL shader entry point.</summary>
+                /// <remarks>
+                /// This is only used for a Tessellation-Control Shader (alias Hull Shader) entry point,
+                /// when a Tessellation-Control Shader (alias Domain Shader) is the output target.
+                /// This is required to translate all Tessellation-Control attributes (i.e. "partitioning" and "outputtopology")
+                /// to the Tessellation-Evaluation output shader. If this is empty, the default values for these attributes are used.
+                /// </remarks>
                 property String^                        SecondaryEntryPoint;
 
-                /**
-                \brief Compiler warning flags. This can be a bitwise OR combination of the "Warnings" enumeration entries. By default 0.
-                \see Warnings
-                */
+                /// <summary>Compiler warning flags. This can be a bitwise OR combination of the "Warnings" enumeration entries. By default 0.</summary>
+                /// <see cref="Warnings"/>
                 property Warnings                       WarningFlags;
 
-                /**
-                \brief Language extension flags. This can be a bitwise OR combination of the "Extensions" enumeration entries. By default 0.
-                \remarks This is ignored, if the compiler was not build with the 'XSC_ENABLE_LANGUAGE_EXT' macro.
-                \see Extensions
-                */
+                /// <summary>Language extension flags. This can be a bitwise OR combination of the "Extensions" enumeration entries. By default 0.</summary>
+                /// <remarks>This is ignored, if the compiler was not build with the 'XSC_ENABLE_LANGUAGE_EXT' macro.</remarks>
+                /// <see cref="Extensions"/>
                 property Extensions                     ExtensionFlags;
 
-                /**
-                \brief Optional handler to handle '#include'-directives. By default null.
-                \remarks If this is null, the default include handler will be used, which will include files with the STL input file streams.
-                */
+                /// <summary>Optional handler to handle '#include'-directives. By default null.</summary>
+                /// <remarks>If this is null, the default include handler will be used, which will include files with the STL input file streams.</remarks>
                 property SourceIncludeHandler^          IncludeHandler;
 
         };
 
-        //! Vertex shader semantic (or rather attribute) layout structure.
+        /// <summary>Vertex shader semantic (or rather attribute) layout structure.</summary>
         ref class VertexSemantic
         {
 
@@ -600,15 +738,15 @@ public ref class XscCompiler
                     Location = 0;
                 }
 
-                //! Specifies the shader semantic (or rather attribute).
+                /// <summary>Specifies the shader semantic (or rather attribute).</summary>
                 property String^    Semantic;
 
-                //! Specifies the binding location.
+                /// <summary>Specifies the binding location.</summary>
                 property int        Location;
 
         };
 
-        //! Shader output descriptor structure.
+        /// <summary>Shader output descriptor structure.</summary>
         ref class ShaderOutput
         {
 
@@ -625,30 +763,30 @@ public ref class XscCompiler
                     NameMangling    = gcnew OutputNameMangling();
                 }
 
-                //! Specifies the filename of the output shader code. This is an optional attribute, and only a hint to the compiler.
+                /// <summary>Specifies the filename of the output shader code. This is an optional attribute, and only a hint to the compiler.</summary>
                 property String^                                        Filename;
 
-                //! Specifies the output source code stream. This will contain the output code. This must not be null when passed to the "CompileShader" function!
+                /// <summary>Specifies the output source code stream. This will contain the output code. This must not be null when passed to the "CompileShader" function!</summary>
                 property String^                                        SourceCode;
 
-                //! Specifies the output shader version. By default OutputShaderVersion::GLSL (to auto-detect minimum required version).
+                /// <summary>Specifies the output shader version. By default OutputShaderVersion::GLSL (to auto-detect minimum required version).</summary>
                 property OutputShaderVersion                            ShaderVersion;
-                
-                //! Optional list of vertex semantic layouts, to bind a vertex attribute (semantic name) to a location index (only used when 'ExplicitBinding' is true).
+
+                /// <summary>Optional list of vertex semantic layouts, to bind a vertex attribute (semantic name) to a location index (only used when 'ExplicitBinding' is true).</summary>
                 property Collections::Generic::List<VertexSemantic^>^   VertexSemantics;
 
-                //! Additional options to configure the code generation.
+                /// <summary>Additional options to configure the code generation.</summary>
                 property OutputOptions^                                 Options;
 
-                //! Output code formatting descriptor.
+                /// <summary>Output code formatting descriptor.</summary>
                 property OutputFormatting^                              Formatting;
-    
-                //! Specifies the options for name mangling.
+
+                /// <summary>Specifies the options for name mangling.</summary>
                 property OutputNameMangling^                            NameMangling;
 
         };
 
-        //! Report types enumeration.
+        /// <summary>Report types enumeration.</summary>
         enum class ReportTypes
         {
             Info,       //!< Standard information.
@@ -656,7 +794,7 @@ public ref class XscCompiler
             Error       //!< Error message.
         };
 
-        //! Compiler report class.
+        /// <summary>Compiler report class.</summary>
         ref class Report
         {
 
@@ -702,29 +840,27 @@ public ref class XscCompiler
                     Hints   = hints;
                 }
 
-                //! Specifies the type of this report.
+                /// <summary>Specifies the type of this report.</summary>
                 property ReportTypes                            Type;
 
-                //! Returns the context description string (e.g. a function name where the report occured). This may also be empty.
+                /// <summary>Returns the context description string (e.g. a function name where the report occured). This may also be empty.</summary>
                 property String^                                Context;
 
-                //! Returns the message string.
+                /// <summary>Returns the message string.</summary>
                 property String^                                Message;
 
-                //! Returns the line string where the report occured. This line never has new-line characters at its end.
+                /// <summary>Returns the line string where the report occured. This line never has new-line characters at its end.</summary>
                 property String^                                Line;
 
-                //! Returns the line marker string to highlight the area where the report occured.
+                /// <summary>Returns the line marker string to highlight the area where the report occured.</summary>
                 property String^                                Marker;
 
-                //! Returns the list of optional hints of the report.
+                /// <summary>Returns the list of optional hints of the report.</summary>
                 property Collections::Generic::List<String^>^   Hints;
 
-                /**
-                \brief Returns true if this report has a line with line marker.
-                \see Line
-                \see Marker
-                */
+                /// <summary>Returns true if this report has a line with line marker.</summary>
+                /// <see cref="Line"/>
+                /// <see cref="Marker"/>
                 property bool HasLine
                 {
                     bool get()
@@ -735,29 +871,29 @@ public ref class XscCompiler
 
         };
 
-        //! Log base class.
+        /// <summary>Log base class.</summary>
         ref class Log abstract
         {
 
             public:
 
-                //! Submits the specified report with the current indentation.
+                /// <summary>Submits the specified report with the current indentation.</summary>
                 virtual void SubmitReport(Report^ report, String^ indent) = 0;
 
-                //! Prints all submitted reports to the standard output.
+                /// <summary>Prints all submitted reports to the standard output.</summary>
                 void PrintAll()
                 {
                     PrintAll(true);
                 }
 
-                //! Prints all submitted reports to the standard output.
+                /// <summary>Prints all submitted reports to the standard output.</summary>
                 virtual void PrintAll(bool verbose) = 0;
 
         };
 
     private:
 
-        //! Standard output log (uses standard output to submit a report).
+        /// <summary>Standard output log (uses standard output to submit a report).</summary>
         ref class StdLog : public Log
         {
 
@@ -820,34 +956,32 @@ public ref class XscCompiler
             StandardLog = gcnew StdLog();
         }
 
-        /**
-        \brief Cross compiles the shader code from the specified input stream into the specified output shader code.
-        \param[in] inputDesc Input shader code descriptor.
-        \param[in] outputDesc Output shader code descriptor.
-        \param[in] log Optional output log. Inherit from the "Log" class interface. By default null.
-        \param[out] reflectionData Optional code reflection data. By default null.
-        \return True if the code has been translated successfully.
-        \throw ArgumentNullException If either the input or output streams are null.
-        \see ShaderInput
-        \see ShaderOutput
-        \see Log
-        \see ReflectionData
-        */
+        /// <summary>Cross compiles the shader code from the specified input stream into the specified output shader code.</summary>
+        /// <param name="inputDesc">Input shader code descriptor.</param>
+        /// <param name="outputDesc">Output shader code descriptor.</param>
+        /// <param name="log">Optional output log. Inherit from the "Log" class interface. By default null.</param>
+        /// <param name="reflectionData">Optional code reflection data. By default null.</param>
+        /// <returns>True if the code has been translated successfully.</returns>
+        /// <exception cref="ArgumentNullException">If either the input or output streams are null.</exception>
+        /// <see cref="ShaderInput"/>
+        /// <see cref="ShaderOutput"/>
+        /// <see cref="Log"/>
+        /// <see cref="ReflectionData"/>
         bool CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc, Log^ log, ReflectionData^ reflectionData);
 
-        //! \see CompileShader(ShaderInput^, ShaderOutput^, Log^, ReflectionData^)
+        /// <see cref="CompileShader(ShaderInput^, ShaderOutput^, Log^, ReflectionData^)"/>
         bool CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc, Log^ log)
         {
             return CompileShader(inputDesc, outputDesc, log, nullptr);
         }
 
-        //! \see CompileShader(ShaderInput^, ShaderOutput^, Log^, ReflectionData^)
+        /// <see cref="CompileShader(ShaderInput^, ShaderOutput^, Log^, ReflectionData^)"/>
         bool CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc)
         {
             return CompileShader(inputDesc, outputDesc, nullptr, nullptr);
         }
 
-        //! Returns the compiler version.
+        /// <summary>Returns the compiler version.</summary>
         property String ^ Version
         {
             String ^ get()
@@ -856,7 +990,7 @@ public ref class XscCompiler
             }
         }
 
-        //! Returns a dictionary of all supported GLSL extensions with their minimum required version number.
+        /// <summary>Returns a dictionary of all supported GLSL extensions with their minimum required version number.</summary>
         property Collections::Generic::Dictionary<String^, int>^ GLSLExtensionEnumeration
         {
             Collections::Generic::Dictionary<String^, int>^ get()
@@ -870,7 +1004,7 @@ public ref class XscCompiler
             }
         }
 
-        //! Returns the standard log.
+        /// <summary>Returns the standard log.</summary>
         property Log^ StandardLog
         {
             Log^ get()
@@ -992,12 +1126,104 @@ static Collections::Generic::List<String^>^ ToManagedList(const std::vector<std:
     return dst;
 }
 
-static Collections::Generic::List<XscCompiler::BindingSlot^>^ ToManagedList(const std::vector<Xsc::Reflection::BindingSlot>& src)
+static Collections::Generic::List<XscCompiler::Attribute^>^ ToManagedList(const std::vector<Xsc::Reflection::Attribute>& src)
 {
-    auto dst = gcnew Collections::Generic::List<XscCompiler::BindingSlot^>();
+    auto dst = gcnew Collections::Generic::List<XscCompiler::Attribute^>();
 
     for (const auto& s : src)
-        dst->Add(gcnew XscCompiler::BindingSlot(gcnew String(s.ident.c_str()), s.location));
+        dst->Add(gcnew XscCompiler::Attribute(gcnew String(s.name.c_str()), s.slot));
+
+    return dst;
+}
+
+static Collections::Generic::List<XscCompiler::Resource^>^ ToManagedList(const std::vector<Xsc::Reflection::Resource>& src)
+{
+    auto dst = gcnew Collections::Generic::List<XscCompiler::Resource^>();
+
+    for (const auto& s : src)
+    {
+        auto entry = gcnew XscCompiler::Resource();
+        {
+            entry->Type = static_cast<XscCompiler::ResourceType>(s.type);
+            entry->Name = gcnew String(s.name.c_str());
+            entry->Slot = s.slot;
+        }
+        dst->Add(entry);
+    }
+
+    return dst;
+}
+
+static Collections::Generic::List<XscCompiler::ConstantBuffer^>^ ToManagedList(const std::vector<Xsc::Reflection::ConstantBuffer>& src)
+{
+    auto dst = gcnew Collections::Generic::List<XscCompiler::ConstantBuffer^>();
+
+    for (const auto& s : src)
+    {
+        auto entry = gcnew XscCompiler::ConstantBuffer();
+        {
+            entry->Type     = static_cast<XscCompiler::ResourceType>(s.type);
+            entry->Name     = gcnew String(s.name.c_str());
+            entry->Slot     = s.slot;
+            entry->Size     = s.size;
+            entry->Padding  = s.padding;
+        }
+        dst->Add(entry);
+    }
+
+    return dst;
+}
+
+static Collections::Generic::List<XscCompiler::SamplerState^>^ ToManagedList(const std::vector<Xsc::Reflection::SamplerState>& src)
+{
+    auto dst = gcnew Collections::Generic::List<XscCompiler::SamplerState^>();
+
+    for (const auto& s : src)
+    {
+        auto entry = gcnew XscCompiler::SamplerState();
+        {
+            entry->Type = static_cast<XscCompiler::ResourceType>(s.type);
+            entry->Name = gcnew String(s.name.c_str());
+            entry->Slot = s.slot;
+        }
+        dst->Add(entry);
+    }
+
+    return dst;
+}
+
+static Collections::Generic::List<XscCompiler::StaticSamplerState^>^ ToManagedList(const std::vector<Xsc::Reflection::StaticSamplerState>& src)
+{
+    auto dst = gcnew Collections::Generic::List<XscCompiler::StaticSamplerState^>();
+
+    for (const auto& s : src)
+    {
+        auto entry = gcnew XscCompiler::StaticSamplerState();
+        {
+            entry->Type = static_cast<XscCompiler::ResourceType>(s.type);
+            entry->Name = gcnew String(s.name.c_str());
+            entry->Desc = gcnew XscCompiler::SamplerStateDesc();
+            {
+                entry->Desc->TextureFilter  = static_cast<XscCompiler::Filter>(s.desc.filter);
+                entry->Desc->AddressU       = static_cast<XscCompiler::TextureAddressMode>(s.desc.addressU);
+                entry->Desc->AddressV       = static_cast<XscCompiler::TextureAddressMode>(s.desc.addressV);
+                entry->Desc->AddressW       = static_cast<XscCompiler::TextureAddressMode>(s.desc.addressW);
+                entry->Desc->MipLODBias     = s.desc.mipLODBias;
+                entry->Desc->MaxAnisotropy  = s.desc.maxAnisotropy;
+                entry->Desc->ComparisonFunc = static_cast<XscCompiler::ComparisonFunc>(s.desc.comparisonFunc);
+                entry->Desc->BorderColor    = gcnew array<float>
+                {
+                    s.desc.borderColor[0],
+                    s.desc.borderColor[1],
+                    s.desc.borderColor[2],
+                    s.desc.borderColor[3]
+                };
+                entry->Desc->MinLOD         = s.desc.minLOD;
+                entry->Desc->MaxLOD         = s.desc.maxLOD;
+            }
+        }
+        dst->Add(entry);
+    }
 
     return dst;
 }
@@ -1125,39 +1351,14 @@ bool XscCompiler::CompileShader(ShaderInput^ inputDesc, ShaderOutput^ outputDesc
             auto dst = reflectionData;
 
             /* Copy lists in reflection */
-            dst->Macros             = ToManagedList(src.macros);
-            dst->Uniforms           = ToManagedList(src.uniforms);
-            dst->Textures           = ToManagedList(src.textures);
-            dst->StorageBuffers     = ToManagedList(src.storageBuffers);
-            dst->ConstantBuffers    = ToManagedList(src.constantBuffers);
-            dst->InputAttributes    = ToManagedList(src.inputAttributes);
-            dst->OutputAttributes   = ToManagedList(src.outputAttributes);
-
-            /* Copy sampler states reflection */
-            dst->SamplerStates = gcnew Collections::Generic::Dictionary<String^, SamplerState^>();
-            for (const auto& s : src.samplerStates)
-            {
-                auto sampler = gcnew SamplerState();
-                {
-                    sampler->TextureFilter  = static_cast<Filter>(s.second.filter);
-                    sampler->AddressU       = static_cast<TextureAddressMode>(s.second.addressU);
-                    sampler->AddressV       = static_cast<TextureAddressMode>(s.second.addressV);
-                    sampler->AddressW       = static_cast<TextureAddressMode>(s.second.addressW);
-                    sampler->MipLODBias     = s.second.mipLODBias;
-                    sampler->MaxAnisotropy  = s.second.maxAnisotropy;
-                    sampler->ComparisonFunc = static_cast<Comparison>(s.second.comparisonFunc);
-                    sampler->BorderColor    = gcnew array<float>
-                    {
-                        s.second.borderColor[0],
-                        s.second.borderColor[1],
-                        s.second.borderColor[2],
-                        s.second.borderColor[3]
-                    };
-                    sampler->MinLOD         = s.second.minLOD;
-                    sampler->MaxLOD         = s.second.maxLOD;
-                }
-                dst->SamplerStates->Add(gcnew String(s.first.c_str()), sampler);
-            }
+            dst->Macros                 = ToManagedList(src.macros);
+            dst->InputAttributes        = ToManagedList(src.inputAttributes);
+            dst->OutputAttributes       = ToManagedList(src.outputAttributes);
+            dst->Uniforms               = ToManagedList(src.uniforms);
+            dst->Resources              = ToManagedList(src.resources);
+            dst->ConstantBuffers        = ToManagedList(src.constantBuffers);
+            dst->SamplerStates          = ToManagedList(src.samplerStates);
+            dst->StaticSamplerStates    = ToManagedList(src.staticSamplerStates);
 
             /* Copy compute threads reflection */
             dst->NumThreads = gcnew ComputeThreads(

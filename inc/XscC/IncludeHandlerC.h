@@ -9,6 +9,9 @@
 #define XSC_INCLUDE_HANDLER_C_H
 
 
+#include "TypesC.h"
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -21,7 +24,7 @@ extern "C" {
 \param[in] useSearchPathsFirst Specifies whether search paths are to be used first, to find the include file.
 \return Pointer to the source code of the included file, or NULL to ignore this include directive.
 */
-typedef const char* (*XSC_PFN_HANDLE_INCLUDE)(const char* filename, const char** searchPaths, bool useSearchPathsFirst);
+typedef const char* (*XSC_PFN_HANDLE_INCLUDE)(const char* filename, const char** searchPaths, XscBoolean useSearchPathsFirst);
 
 
 //! Include handler structure.

@@ -161,6 +161,7 @@ enum class ResourceType
 \brief Static sampler state descriptor structure (D3D11_SAMPLER_DESC).
 \remarks All members and enumerations have the same values like the one in the "D3D11_SAMPLER_DESC" structure respectively.
 Thus, they can all be statically casted from and to the original D3D11 values.
+\see StaticSamplerState::desc
 \see https://msdn.microsoft.com/en-us/library/windows/desktop/ff476207(v=vs.85).aspx
 */
 struct SamplerStateDesc
@@ -271,7 +272,10 @@ struct StaticSamplerState
     SamplerStateDesc    desc;
 };
 
-//! Number of threads within each work group of a compute shader.
+/**
+\brief Number of threads within each work group of a compute shader.
+\see ReflectionData::numThreads
+*/
 struct NumThreads
 {
     //! Number of shader compute threads in X dimension.
@@ -321,16 +325,16 @@ struct ReflectionData
 
 /* ===== Public functions ===== */
 
-//! Returns the string representation of the specified 'SamplerState::Filter' type.
+//! Returns the string representation of the specified <Filter> type.
 XSC_EXPORT std::string ToString(const Reflection::Filter t);
 
-//! Returns the string representation of the specified 'SamplerState::TextureAddressMode' type.
+//! Returns the string representation of the specified <TextureAddressMode> type.
 XSC_EXPORT std::string ToString(const Reflection::TextureAddressMode t);
 
-//! Returns the string representation of the specified 'SamplerState::ComparisonFunc' type.
+//! Returns the string representation of the specified <ComparisonFunc> type.
 XSC_EXPORT std::string ToString(const Reflection::ComparisonFunc t);
 
-//! Returns the string representation of the specified 'Reflection::ResourceType' type.
+//! Returns the string representation of the specified <Reflection::ResourceType> type.
 XSC_EXPORT std::string ToString(const Reflection::ResourceType t);
 
 //! Prints the reflection data into the output stream in a human readable format.
