@@ -11,11 +11,11 @@
 
 #include <Xsc/Export.h>
 #include <Xsc/Version.h>
+#include "TypesC.h"
 #include "TargetsC.h"
 #include "LogC.h"
 #include "IncludeHandlerC.h"
 #include "ReflectionC.h"
-#include <stdbool.h>
 
 
 #ifdef __cplusplus
@@ -56,84 +56,84 @@ enum XscExtensions
 //! Formatting descriptor structure for the output shader.
 struct XscFormatting
 {
-    //! If true, scopes are always written in braces. By default false.
-    bool        alwaysBracedScopes;
+    //! If none-zero, scopes are always written in braces. By default false.
+    XscBoolean  alwaysBracedScopes;
 
-    //! If true, blank lines are allowed. By default true.
-    bool        blanks;
+    //! If none-zero, blank lines are allowed. By default true.
+    XscBoolean  blanks;
 
-    //! If true, wrapper functions for special intrinsics are written in a compact formatting (i.e. all in one line). By default false.
-    bool        compactWrappers;
+    //! If none-zero, wrapper functions for special intrinsics are written in a compact formatting (i.e. all in one line). By default false.
+    XscBoolean  compactWrappers;
 
     //! Indentation string for code generation. By default 4 spaces.
     const char* indent;
 
-    //! If true, line marks are allowed. By default false.
-    bool        lineMarks;
+    //! If none-zero, line marks are allowed. By default false.
+    XscBoolean  lineMarks;
 
-    //! If true, auto-formatting of line separation is allowed. By default true.
-    bool        lineSeparation;
+    //! If none-zero, auto-formatting of line separation is allowed. By default true.
+    XscBoolean  lineSeparation;
 
-    //! If true, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default true.
-    bool        newLineOpenScope;
+    //! If none-zero, the '{'-braces for an open scope gets its own line. If false, braces are written like in Java coding conventions. By default true.
+    XscBoolean  newLineOpenScope;
 };
 
 //! Structure for additional translation options.
 struct XscOptions
 {
-    //! If true, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
-    bool    allowExtensions;
+    //! If none-zero, the shader output may contain GLSL extensions, if the target shader version is too low. By default false.
+    XscBoolean  allowExtensions;
 
     /**
-    \brief If true, binding slots for all buffer types will be generated sequentially, starting with index at 'autoBindingStartSlot'. By default false.
+    \brief If none-zero, binding slots for all buffer types will be generated sequentially, starting with index at 'autoBindingStartSlot'. By default false.
     \remarks This will also enable 'explicitBinding'.
     */
-    bool    autoBinding;
+    XscBoolean  autoBinding;
 
     //! Index to start generating binding slots from. Only relevant if 'autoBinding' is enabled. By default 0.
-    int     autoBindingStartSlot;
+    int         autoBindingStartSlot;
 
-    //! If true, explicit binding slots are enabled. By default false.
-    bool    explicitBinding;
+    //! If none-zero, explicit binding slots are enabled. By default false.
+    XscBoolean  explicitBinding;
 
-    //! If true, code obfuscation is performed. By default false.
-    bool    obfuscate;
+    //! If none-zero, code obfuscation is performed. By default false.
+    XscBoolean  obfuscate;
 
-    //! If true, little code optimizations are performed. By default false.
-    bool    optimize;
+    //! If none-zero, little code optimizations are performed. By default false.
+    XscBoolean  optimize;
 
-    //! If true, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.
-    bool    preferWrappers;
+    //! If none-zero, intrinsics are prefered to be implemented as wrappers (instead of inlining). By default false.
+    XscBoolean  preferWrappers;
 
-    //! If true, only the preprocessed source code will be written out. By default false.
-    bool    preprocessOnly;
+    //! If none-zero, only the preprocessed source code will be written out. By default false.
+    XscBoolean  preprocessOnly;
 
-    //! If true, commentaries are preserved for each statement. By default false.
-    bool    preserveComments;
+    //! If none-zero, commentaries are preserved for each statement. By default false.
+    XscBoolean  preserveComments;
 
-    //! If true, matrices have row-major alignment. Otherwise the matrices have column-major alignment. By default false.
-    bool    rowMajorAlignment;
+    //! If none-zero, matrices have row-major alignment. Otherwise the matrices have column-major alignment. By default false.
+    XscBoolean  rowMajorAlignment;
 
-    //! If true, generated GLSL code will contain separate sampler and texture objects when supported. By default true.
-    bool    separateSamplers;
+    //! If none-zero, generated GLSL code will contain separate sampler and texture objects when supported. By default true.
+    XscBoolean  separateSamplers;
 
-    //! If true, generated GLSL code will support the 'ARB_separate_shader_objects' extension. By default false.
-    bool    separateShaders;
+    //! If none-zero, generated GLSL code will support the 'ARB_separate_shader_objects' extension. By default false.
+    XscBoolean  separateShaders;
 
-    //! If true, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
-    bool    showAST;
+    //! If none-zero, the AST (Abstract Syntax Tree) will be written to the log output. By default false.
+    XscBoolean  showAST;
 
-    //! If true, the timings of the different compilation processes are written to the log output. By default false.
-    bool    showTimes;
+    //! If none-zero, the timings of the different compilation processes are written to the log output. By default false.
+    XscBoolean  showTimes;
 
-    //! If true, array initializations will be unrolled. By default false.
-    bool    unrollArrayInitializers;
+    //! If none-zero, array initializations will be unrolled. By default false.
+    XscBoolean  unrollArrayInitializers;
 
-    //! If true, the source code is only validated, but no output code will be generated. By default false.
-    bool    validateOnly;
+    //! If none-zero, the source code is only validated, but no output code will be generated. By default false.
+    XscBoolean  validateOnly;
 
-    //! If true, the generator header with metadata is written as first comment to the output. By default true.
-    bool    writeGeneratorHeader;
+    //! If none-zero, the generator header with metadata is written as first comment to the output. By default true.
+    XscBoolean  writeGeneratorHeader;
 };
 
 //! Name mangling descriptor structure for shader input/output variables (also referred to as "varyings"), temporary variables, and reserved keywords.
@@ -170,16 +170,16 @@ struct XscNameMangling
     const char* namespacePrefix;
 
     /**
-    If true, shader input/output variables are always renamed to their semantics,
+    If none-zero, shader input/output variables are always renamed to their semantics,
     even for vertex input and fragment output. Otherwise, their original identifiers are used. By default false.
     */
-    bool        useAlwaysSemantics;
+    XscBoolean  useAlwaysSemantics;
 
     /**
-    \brief If true, the data fields of a 'buffer'-objects is renamed rather than the outer identifier. By default false.
+    \brief If none-zero, the data fields of a 'buffer'-objects is renamed rather than the outer identifier. By default false.
     \remarks This can be useful for external diagnostic tools, to access the original identifier.
     */
-    bool        renameBufferFields;
+    XscBoolean  renameBufferFields;
 };
 
 //! Shader input descriptor structure.
@@ -278,13 +278,13 @@ XSC_EXPORT void XscInitialize(struct XscShaderInput* inputDesc, struct XscShader
 \param[in] log Optional pointer to an output log. This can be NULL (to ignore log) or XSC_DEFAULT_LOG (to use the default log).
 \param[out] reflectionData Optional pointer to a code reflection data structure. If NULL, no reflection data is written out.
 The returned pointers in the XscReflectionData structure are only valid until this function is called the next time.
-\return True if the code has been translated successfully.
+\return None-zero if the code has been translated successfully.
 \see ShaderInput
 \see ShaderOutput
 \see Log
 \see ReflectionData
 */
-XSC_EXPORT bool XscCompileShader(
+XSC_EXPORT int XscCompileShader(
     const struct XscShaderInput*    inputDesc,
     const struct XscShaderOutput*   outputDesc,
     const struct XscLog*            log,

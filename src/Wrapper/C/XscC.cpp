@@ -67,34 +67,34 @@ static struct CompilerContext g_compilerContext;
 
 static void InitializeFormatting(struct XscFormatting* s)
 {
-    s->alwaysBracedScopes   = false;
-    s->blanks               = true;
-    s->compactWrappers      = false;
+    s->alwaysBracedScopes   = 0;
+    s->blanks               = 1;
+    s->compactWrappers      = 0;
     s->indent               = "    ";
-    s->lineMarks            = false;
-    s->lineSeparation       = true;
-    s->newLineOpenScope     = true;
+    s->lineMarks            = 0;
+    s->lineSeparation       = 1;
+    s->newLineOpenScope     = 1;
 }
 
 static void InitializeOptions(struct XscOptions* s)
 {
-    s->allowExtensions          = false;
-    s->autoBinding              = false;
+    s->allowExtensions          = 0;
+    s->autoBinding              = 0;
     s->autoBindingStartSlot     = 0;
-    s->explicitBinding          = false;
-    s->obfuscate                = false;
-    s->optimize                 = false;
-    s->preprocessOnly           = false;
-    s->preserveComments         = false;
-    s->preferWrappers           = false;
-    s->rowMajorAlignment        = false;
-    s->separateSamplers         = true;
-    s->separateShaders          = false;
-    s->showAST                  = false;
-    s->showTimes                = false;
-    s->unrollArrayInitializers  = false;
-    s->validateOnly             = false;
-    s->writeGeneratorHeader     = true;
+    s->explicitBinding          = 0;
+    s->obfuscate                = 0;
+    s->optimize                 = 0;
+    s->preprocessOnly           = 0;
+    s->preserveComments         = 0;
+    s->preferWrappers           = 0;
+    s->rowMajorAlignment        = 0;
+    s->separateSamplers         = 1;
+    s->separateShaders          = 0;
+    s->showAST                  = 0;
+    s->showTimes                = 0;
+    s->unrollArrayInitializers  = 0;
+    s->validateOnly             = 0;
+    s->writeGeneratorHeader     = 1;
 }
 
 static void InitializeNameMangling(struct XscNameMangling* s)
@@ -104,8 +104,8 @@ static void InitializeNameMangling(struct XscNameMangling* s)
     s->reservedWordPrefix   = "xsr_";
     s->temporaryPrefix      = "xst_";
     s->namespacePrefix      = "xsn_";
-    s->useAlwaysSemantics   = false;
-    s->renameBufferFields   = false;
+    s->useAlwaysSemantics   = 0;
+    s->renameBufferFields   = 0;
 }
 
 static void InitializeIncludeHandler(struct XscIncludeHandler* s)
@@ -149,7 +149,7 @@ XSC_EXPORT void XscInitialize(struct XscShaderInput* inputDesc, struct XscShader
         InitializeShaderOutput(outputDesc);
 }
 
-static bool ValidateShaderInput(const struct XscShaderInput* s)
+static int ValidateShaderInput(const struct XscShaderInput* s)
 {
     return (s != NULL && s->sourceCode != NULL && s->entryPoint != NULL);
 }
@@ -292,7 +292,7 @@ std::unique_ptr<std::istream> IncludeHandlerC::Include(const std::string& filena
     if (handler_.handleIncludePfn)
     {
         /* Include file with callback function */
-        auto source = handler_.handleIncludePfn(filename.c_str(), handler_.searchPaths, useSearchPathsFirst);
+        auto source = handler_.handleIncludePfn(filename.c_str(), handler_.searchPaths, (useSearchPathsFirst ? 1 : 0));
         *stream << ReadStringC(source);
     }
 
@@ -356,14 +356,14 @@ void LogC::SubmitReport(const Xsc::Report& report)
  * Public functions
  */
 
-XSC_EXPORT bool XscCompileShader(
+XSC_EXPORT int XscCompileShader(
     const struct XscShaderInput*    inputDesc,
     const struct XscShaderOutput*   outputDesc,
     const struct XscLog*            log,
     struct XscReflectionData*       reflectionData)
 {
     if (!ValidateShaderInput(inputDesc) || !ValidateShaderOutput(outputDesc))
-        return false;
+        return 0;
 
     /* Copy input descriptor */
     Xsc::ShaderInput in;
@@ -400,32 +400,32 @@ XSC_EXPORT bool XscCompileShader(
     }
 
     /* Copy output options descriptor */
-    out.options.allowExtensions         = outputDesc->options.allowExtensions;
-    out.options.autoBinding             = outputDesc->options.autoBinding;
+    out.options.allowExtensions         = (outputDesc->options.allowExtensions != 0);
+    out.options.autoBinding             = (outputDesc->options.autoBinding != 0);
     out.options.autoBindingStartSlot    = outputDesc->options.autoBindingStartSlot;
-    out.options.explicitBinding         = outputDesc->options.explicitBinding;
-    out.options.obfuscate               = outputDesc->options.obfuscate;
-    out.options.optimize                = outputDesc->options.optimize;
-    out.options.preferWrappers          = outputDesc->options.preferWrappers;
-    out.options.preprocessOnly          = outputDesc->options.preprocessOnly;
-    out.options.preserveComments        = outputDesc->options.preserveComments;
-    out.options.rowMajorAlignment       = outputDesc->options.rowMajorAlignment;
-    out.options.separateShaders         = outputDesc->options.separateShaders;
-    out.options.separateSamplers        = outputDesc->options.separateSamplers;
-    out.options.showAST                 = outputDesc->options.showAST;
-    out.options.showTimes               = outputDesc->options.showTimes;
-    out.options.unrollArrayInitializers = outputDesc->options.unrollArrayInitializers;
-    out.options.validateOnly            = outputDesc->options.validateOnly;
-    out.options.writeGeneratorHeader    = outputDesc->options.writeGeneratorHeader;
+    out.options.explicitBinding         = (outputDesc->options.explicitBinding != 0);
+    out.options.obfuscate               = (outputDesc->options.obfuscate != 0);
+    out.options.optimize                = (outputDesc->options.optimize != 0);
+    out.options.preferWrappers          = (outputDesc->options.preferWrappers != 0);
+    out.options.preprocessOnly          = (outputDesc->options.preprocessOnly != 0);
+    out.options.preserveComments        = (outputDesc->options.preserveComments != 0);
+    out.options.rowMajorAlignment       = (outputDesc->options.rowMajorAlignment != 0);
+    out.options.separateShaders         = (outputDesc->options.separateShaders != 0);
+    out.options.separateSamplers        = (outputDesc->options.separateSamplers != 0);
+    out.options.showAST                 = (outputDesc->options.showAST != 0);
+    out.options.showTimes               = (outputDesc->options.showTimes != 0);
+    out.options.unrollArrayInitializers = (outputDesc->options.unrollArrayInitializers != 0);
+    out.options.validateOnly            = (outputDesc->options.validateOnly != 0);
+    out.options.writeGeneratorHeader    = (outputDesc->options.writeGeneratorHeader != 0);
 
     /* Copy output formatting descriptor */
-    out.formatting.alwaysBracedScopes   = outputDesc->formatting.alwaysBracedScopes;
-    out.formatting.blanks               = outputDesc->formatting.blanks;
-    out.formatting.compactWrappers      = outputDesc->formatting.compactWrappers;
+    out.formatting.alwaysBracedScopes   = (outputDesc->formatting.alwaysBracedScopes != 0);
+    out.formatting.blanks               = (outputDesc->formatting.blanks != 0);
+    out.formatting.compactWrappers      = (outputDesc->formatting.compactWrappers != 0);
     out.formatting.indent               = ReadStringC(outputDesc->formatting.indent);
-    out.formatting.lineMarks            = outputDesc->formatting.lineMarks;
-    out.formatting.lineSeparation       = outputDesc->formatting.lineSeparation;
-    out.formatting.newLineOpenScope     = outputDesc->formatting.newLineOpenScope;
+    out.formatting.lineMarks            = (outputDesc->formatting.lineMarks != 0);
+    out.formatting.lineSeparation       = (outputDesc->formatting.lineSeparation != 0);
+    out.formatting.newLineOpenScope     = (outputDesc->formatting.newLineOpenScope != 0);
 
     /* Copy output name mangling descriptor */
     out.nameMangling.inputPrefix        = ReadStringC(outputDesc->nameMangling.inputPrefix);
@@ -433,8 +433,8 @@ XSC_EXPORT bool XscCompileShader(
     out.nameMangling.reservedWordPrefix = ReadStringC(outputDesc->nameMangling.reservedWordPrefix);
     out.nameMangling.temporaryPrefix    = ReadStringC(outputDesc->nameMangling.temporaryPrefix);
     out.nameMangling.namespacePrefix    = ReadStringC(outputDesc->nameMangling.namespacePrefix);
-    out.nameMangling.useAlwaysSemantics = outputDesc->nameMangling.useAlwaysSemantics;
-    out.nameMangling.renameBufferFields = outputDesc->nameMangling.renameBufferFields;
+    out.nameMangling.useAlwaysSemantics = (outputDesc->nameMangling.useAlwaysSemantics != 0);
+    out.nameMangling.renameBufferFields = (outputDesc->nameMangling.renameBufferFields != 0);
 
     /* Initialize log */
     Xsc::StdLog logPrimaryStd;
@@ -477,7 +477,7 @@ XSC_EXPORT bool XscCompileShader(
     if (log == XSC_DEFAULT_LOG)
         logPrimaryStd.PrintAll();
 
-    return result;
+    return (result ? 1 : 0);
 }
 
 XSC_EXPORT void XscFilterToString(const enum XscFilter t, char* str, size_t maxSize)
@@ -515,29 +515,29 @@ XSC_EXPORT void XscOutputShaderVersionToString(const enum XscOutputShaderVersion
     WriteStringC(Xsc::ToString(static_cast<Xsc::OutputShaderVersion>(shaderVersion)), str, maxSize);
 }
 
-XSC_EXPORT bool XscIsInputLanguageHLSL(const enum XscInputShaderVersion shaderVersion)
+XSC_EXPORT XscBoolean XscIsInputLanguageHLSL(const enum XscInputShaderVersion shaderVersion)
 {
-    return Xsc::IsLanguageHLSL(static_cast<Xsc::InputShaderVersion>(shaderVersion));
+    return (Xsc::IsLanguageHLSL(static_cast<Xsc::InputShaderVersion>(shaderVersion)) ? 1 : 0);
 }
 
-XSC_EXPORT bool XscIsInputLanguageGLSL(const enum XscInputShaderVersion shaderVersion)
+XSC_EXPORT XscBoolean XscIsInputLanguageGLSL(const enum XscInputShaderVersion shaderVersion)
 {
-    return Xsc::IsLanguageGLSL(static_cast<Xsc::InputShaderVersion>(shaderVersion));
+    return (Xsc::IsLanguageGLSL(static_cast<Xsc::InputShaderVersion>(shaderVersion)) ? 1 : 0);
 }
 
-XSC_EXPORT bool XscIsOutputLanguageGLSL(const enum XscOutputShaderVersion shaderVersion)
+XSC_EXPORT XscBoolean XscIsOutputLanguageGLSL(const enum XscOutputShaderVersion shaderVersion)
 {
-    return Xsc::IsLanguageGLSL(static_cast<Xsc::OutputShaderVersion>(shaderVersion));
+    return (Xsc::IsLanguageGLSL(static_cast<Xsc::OutputShaderVersion>(shaderVersion)) ? 1 : 0);
 }
 
-XSC_EXPORT bool XscIsOutputLanguageESSL(const enum XscOutputShaderVersion shaderVersion)
+XSC_EXPORT XscBoolean XscIsOutputLanguageESSL(const enum XscOutputShaderVersion shaderVersion)
 {
-    return Xsc::IsLanguageESSL(static_cast<Xsc::OutputShaderVersion>(shaderVersion));
+    return (Xsc::IsLanguageESSL(static_cast<Xsc::OutputShaderVersion>(shaderVersion)) ? 1 : 0);
 }
 
-XSC_EXPORT bool XscIsOutputLanguageVKSL(const enum XscOutputShaderVersion shaderVersion)
+XSC_EXPORT XscBoolean XscIsOutputLanguageVKSL(const enum XscOutputShaderVersion shaderVersion)
 {
-    return Xsc::IsLanguageVKSL(static_cast<Xsc::OutputShaderVersion>(shaderVersion));
+    return (Xsc::IsLanguageVKSL(static_cast<Xsc::OutputShaderVersion>(shaderVersion)) ? 1 : 0);
 }
 
 using GLSLExtensionEnumIterator = std::map<std::string, int>::const_iterator;
