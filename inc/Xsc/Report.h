@@ -9,7 +9,6 @@
 #define XSC_REPORT_H
 
 
-#include "Export.h"
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -28,7 +27,7 @@ enum class ReportTypes
 };
 
 //! Report exception class which contains a completely constructed message with optional line marker, hints, and context description.
-class XSC_EXPORT Report : public std::exception
+class Report : public std::exception
 {
 
     public:
@@ -36,14 +35,36 @@ class XSC_EXPORT Report : public std::exception
         Report(const Report&) = default;
         Report& operator = (const Report&) = default;
 
-        Report(const ReportTypes type, const std::string& message, const std::string& context = "");
-        Report(const ReportTypes type, const std::string& message, const std::string& line, const std::string& marker, const std::string& context = "");
+        inline Report(const ReportTypes type, const std::string& message, const std::string& context = "") :
+            type_    { type    },
+            context_ { context },
+            message_ { message }
+        {
+        }
+
+        inline Report(const ReportTypes type, const std::string& message, const std::string& line, const std::string& marker, const std::string& context = "") :
+            type_    { type    },
+            context_ { context },
+            message_ { message },
+            line_    { line    },
+            marker_  { marker  }
+        {
+            /* Remove new-line characters from end of source line */
+            while ( !line_.empty() && ( line_.back() == '\n' || line_.back() == '\r' ) )
+                line_.pop_back();
+        }
 
         //! Overrides the 'std::exception::what' function.
-        const char* what() const throw() override;
+        inline const char* what() const throw() override
+        {
+            return message_.c_str();
+        }
 
         //! Moves the specified hints into this report.
-        void TakeHints(std::vector<std::string>&& hints);
+        inline void TakeHints(std::vector<std::string>&& hints)
+        {
+            hints_ = std::move(hints);
+        }
 
         //! Returns the type of this report.
         inline ReportTypes Type() const

@@ -16,33 +16,21 @@ namespace Xsc
 
 
 /*
- * StdLog class
+ * Internal types
  */
 
-void StdLog::SubmitReport(const Report& report)
+struct IndentReport
 {
-    switch (report.Type())
-    {
-        case ReportTypes::Info:
-            infos_.push_back({ FullIndent(), report });
-            break;
-        case ReportTypes::Warning:
-            warnings_.push_back({ FullIndent(), report });
-            break;
-        case ReportTypes::Error:
-            errors_.push_back({ FullIndent(), report });
-            break;
-    }
-}
+    std::string indent;
+    Report      report;
+};
 
-void StdLog::PrintAll(bool verbose)
-{
-    PrintAndClearReports(infos_, verbose);
-    PrintAndClearReports(warnings_, verbose, (warnings_.size() == 1 ? "WARNING" : "WARNINGS"));
-    PrintAndClearReports(errors_, verbose, (errors_.size() == 1 ? "ERROR": "ERRORS"));
-}
+using IndentReportList = std::vector<IndentReport>;
 
-using Colors = ConsoleManip::ColorFlags;
+
+/*
+ * Internal functions
+ */
 
 static void PrintMultiLineString(const std::string& s, const std::string& indent)
 {
@@ -87,7 +75,9 @@ static void PrintMultiLineString(const std::string& s, const std::string& indent
     }
 }
 
-void StdLog::PrintReport(const IndentReport& r, bool verbose)
+using Colors = ConsoleManip::ColorFlags;
+
+static void PrintReport(const IndentReport& r, bool verbose)
 {
     /* Print optional context description */
     if (verbose && !r.report.Context().empty())
@@ -112,7 +102,7 @@ void StdLog::PrintReport(const IndentReport& r, bool verbose)
 
     if (!verbose)
         return;
-    
+
     /* Print optional line and line-marker */
     if (r.report.HasLine())
     {
@@ -164,7 +154,7 @@ void StdLog::PrintReport(const IndentReport& r, bool verbose)
         std::cout << r.indent << hint << std::endl;
 }
 
-void StdLog::PrintAndClearReports(IndentReportList& reports, bool verbose, const std::string& headline)
+static void PrintAndClearReports(IndentReportList& reports, bool verbose, const std::string& headline = "")
 {
     if (!reports.empty())
     {
@@ -182,6 +172,51 @@ void StdLog::PrintAndClearReports(IndentReportList& reports, bool verbose, const
 
         reports.clear();
     }
+}
+
+
+/*
+ * StdLog class
+ */
+
+struct StdLog::OpaqueData
+{
+    IndentReportList infos_;
+    IndentReportList warnings_;
+    IndentReportList errors_;
+};
+
+StdLog::StdLog() :
+    data_ { new OpaqueData() }
+{
+}
+
+StdLog::~StdLog()
+{
+    delete data_;
+}
+
+void StdLog::SubmitReport(const Report& report)
+{
+    switch (report.Type())
+    {
+        case ReportTypes::Info:
+            data_->infos_.push_back({ FullIndent(), report });
+            break;
+        case ReportTypes::Warning:
+            data_->warnings_.push_back({ FullIndent(), report });
+            break;
+        case ReportTypes::Error:
+            data_->errors_.push_back({ FullIndent(), report });
+            break;
+    }
+}
+
+void StdLog::PrintAll(bool verbose)
+{
+    PrintAndClearReports(data_->infos_, verbose);
+    PrintAndClearReports(data_->warnings_, verbose, (data_->warnings_.size() == 1 ? "WARNING" : "WARNINGS"));
+    PrintAndClearReports(data_->errors_, verbose, (data_->errors_.size() == 1 ? "ERROR": "ERRORS"));
 }
 
 
