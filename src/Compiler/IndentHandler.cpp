@@ -21,7 +21,6 @@ struct IndentHandler::OpaqueData
 
 IndentHandler::IndentHandler(const std::string& initialIndent) :
     data_ { new OpaqueData() }
-    //indent_ { initialIndent }
 {
     data_->indent = initialIndent;
 }

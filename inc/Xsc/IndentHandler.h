@@ -12,7 +12,6 @@
 #include "Export.h"
 #include <string>
 #include <stack>
-#include <memory>
 
 
 namespace Xsc
