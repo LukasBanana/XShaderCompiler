@@ -22,6 +22,7 @@ file(GLOB FilesSrcWrapperCSharp ${PROJECT_SOURCE_DIR}/src/Wrapper/CSharp/*.*)
 add_library(xsc_core_csharp SHARED ${FilesSrcWrapperCSharp})
 set_target_properties(xsc_core_csharp PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(xsc_core_csharp PROPERTIES COMPILE_FLAGS "/CLR")
+set_target_properties(xsc_core_csharp PROPERTIES OUTPUT_NAME "SharpXSC")
 target_link_libraries(xsc_core_csharp xsc_core)
 target_compile_features(xsc_core_csharp PRIVATE cxx_range_for)
 
