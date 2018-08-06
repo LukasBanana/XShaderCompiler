@@ -1614,7 +1614,7 @@ void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
         }
     );
 
-    for (const auto it : outputSemanticCounter)
+    for (const auto& it : outputSemanticCounter)
     {
         if (it.second > 1)
             Error(R_DuplicateUseOfOutputSemantic(it.first.ToString()));
