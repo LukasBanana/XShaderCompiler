@@ -37,17 +37,17 @@ All other parsers and analyzers only work on an AST.
 */
 class PreProcessor : public Parser
 {
-    
+
     public:
-        
+
         PreProcessor(IncludeHandler& includeHandler, Log* log = nullptr);
 
         std::unique_ptr<std::iostream> Process(
-            const SourceCodePtr& input,
-            const std::string& filename = "",
-            bool writeLineMarks = true,
-            bool writeLineMarkFilenames = true,
-            bool enableWarnings = false
+            const SourceCodePtr&    input,
+            const std::string&      filename = "",
+            bool                    writeLineMarks = true,
+            bool                    writeLineMarkFilenames = true,
+            bool                    enableWarnings = false
         );
 
         // Returns a list of all defined macro identifiers after pre-processing.
@@ -64,14 +64,14 @@ class PreProcessor : public Parser
 
             Macro(const TokenPtr& identTkn);
             Macro(const TokenPtr& identTkn, const TokenPtrString& value);
-            
+
             Macro(
-                const TokenPtr& identTkn,
-                const TokenPtrString& value,
+                const TokenPtr&                 identTkn,
+                const TokenPtrString&           value,
                 const std::vector<std::string>& parameters,
-                bool varArgs = false,
-                bool stdMacro = false,
-                bool emptyParamList = false
+                bool                            varArgs         = false,
+                bool                            stdMacro        = false,
+                bool                            emptyParamList  = false
             );
 
             bool HasParameterList() const;
@@ -133,7 +133,7 @@ class PreProcessor : public Parser
         }
 
     private:
-        
+
         /* === Structures === */
 
         struct IfBlock
@@ -182,7 +182,7 @@ class PreProcessor : public Parser
         TokenPtrString  ParseIdentAsTokenString();
         TokenPtrString  ParseIdentArgumentsForMacro(const TokenPtr& identToken, const Macro& macro);
         void            ParseMisc();
-        
+
         void            ParseDirective();
         void            ParseAnyIfDirectiveAndSkipValidation();
         void            ParseDirectiveDefine();

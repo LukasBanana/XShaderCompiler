@@ -31,13 +31,13 @@ namespace Xsc
 // Syntax parser base class.
 class Parser
 {
-    
+
     public:
-        
+
         virtual ~Parser();
 
     protected:
-        
+
         using Tokens        = Token::Types;
         using BinaryOpList  = std::initializer_list<BinaryOp>;
 

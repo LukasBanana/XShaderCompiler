@@ -22,9 +22,9 @@ namespace Xsc
 // Constant expression evaluator AST visitor.
 class ExprEvaluator : private Visitor
 {
-    
+
     public:
-        
+
         using OnObjectExprCallback = std::function<Variant(ObjectExpr* expr)>;
 
         // Evaluates the specified expression and returns the result as variant, or throws a runtime error on failure.
@@ -37,13 +37,16 @@ class ExprEvaluator : private Visitor
         void Abort();
 
     private:
-        
+
         /* === Functions === */
 
         void Push(const Variant& v);
         Variant Pop();
 
         void SetObjectExprCallback(const OnObjectExprCallback& callback);
+
+        Variant EvaluateBinaryOp(const BinaryExpr* ast, Variant lhs, Variant rhs);
+        Variant EvaluateUnaryOp(const UnaryExpr* ast, Variant rhs);
 
         /* --- Visitor implementation --- */
 
