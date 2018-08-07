@@ -30,7 +30,7 @@ bool GLSLPreProcessor::OnDefineMacro(const Macro& macro)
     if (!macro.stdMacro)
     {
         const auto& ident = macro.identTkn->Spell();
-        
+
         /* Macros beginning with 'GL_' are reserved */
         if (ident.compare(0, 3, "GL_") == 0)
         {
@@ -116,7 +116,7 @@ void GLSLPreProcessor::ParseDirectiveVersion()
         IgnoreDirective();
         return;
     }
-    
+
     versionDefined_ = true;
 
     /* Parse version number */

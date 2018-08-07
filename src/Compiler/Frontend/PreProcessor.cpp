@@ -242,7 +242,7 @@ Variant PreProcessor::EvaluateExpr(const TokenPtrString& tokenString, const Toke
 
         try
         {
-            ExprEvaluator exprEvaluator;
+            ExprEvaluator exprEvaluator { ExprEvaluator::EvaluateReducedBinaryExpr };
             value = exprEvaluator.Evaluate(
                 *conditionExpr,
                 [](ObjectExpr* expr) -> Variant

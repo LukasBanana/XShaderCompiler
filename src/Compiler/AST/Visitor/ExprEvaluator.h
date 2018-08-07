@@ -11,6 +11,7 @@
 
 #include "Visitor.h"
 #include "Variant.h"
+#include "Flags.h"
 #include <stack>
 #include <functional>
 
@@ -24,6 +25,15 @@ class ExprEvaluator : private Visitor
 {
 
     public:
+
+        // Evaluation flags enumeration.
+        enum : unsigned int
+        {
+            // Evaluates only the sub expressions of a BinaryExpr that are necessary (especially for logical AND and OR).
+            EvaluateReducedBinaryExpr = (1 << 0),
+        };
+
+        ExprEvaluator(Flags flags = 0);
 
         using OnObjectExprCallback = std::function<Variant(ObjectExpr* expr)>;
 
@@ -74,6 +84,8 @@ class ExprEvaluator : private Visitor
 
         bool                    throwOnFailure_         = true;
         bool                    abort_                  = false;
+
+        Flags                   flags_;
 
 };
 

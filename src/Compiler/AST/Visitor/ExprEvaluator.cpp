@@ -18,6 +18,11 @@ namespace Xsc
 {
 
 
+ExprEvaluator::ExprEvaluator(Flags flags) :
+    flags_ { flags }
+{
+}
+
 Variant ExprEvaluator::Evaluate(Expr& expr, const OnObjectExprCallback& onObjectExprCallback)
 {
     /* Reset internal state (with exceptions) */
@@ -320,17 +325,74 @@ IMPLEMENT_VISIT_PROC(TernaryExpr)
 // EXPR OP EXPR
 IMPLEMENT_VISIT_PROC(BinaryExpr)
 {
-    Visit(ast->lhsExpr);
-
-    if (auto lhs = Pop())
+    if (flags_(EvaluateReducedBinaryExpr) && (ast->op == BinaryOp::LogicalAnd || ast->op == BinaryOp::LogicalOr))
     {
-        Visit(ast->rhsExpr);
-        if (auto rhs = Pop())
+        if (ast->op == BinaryOp::LogicalAnd)
         {
-            if (auto result = EvaluateBinaryOp(ast, lhs, rhs))
+            /* Visit left hand side expression */
+            Visit(ast->lhsExpr);
+            if (auto lhs = Pop())
             {
-                Push(result);
-                return;
+                auto lhsValue = lhs.ToBool();
+                if (lhsValue)
+                {
+                    /* Visit right hand side expression */
+                    Visit(ast->rhsExpr);
+                    if (auto rhs = Pop())
+                    {
+                        Push(rhs.ToBool());
+                        return;
+                    }
+                }
+                else
+                {
+                    /* Expression evaluates to false */
+                    Push(false);
+                    return;
+                }
+            }
+        }
+        else if (ast->op == BinaryOp::LogicalOr)
+        {
+            /* Visit left hand side expression */
+            Visit(ast->lhsExpr);
+            if (auto lhs = Pop())
+            {
+                auto lhsValue = lhs.ToBool();
+                if (lhsValue)
+                {
+                    /* Expression evaluates to true */
+                    Push(true);
+                    return;
+                }
+                else
+                {
+                    /* Visit right hand side expression */
+                    Visit(ast->rhsExpr);
+                    if (auto rhs = Pop())
+                    {
+                        Push(rhs.ToBool());
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        /* Visit left hand side expression */
+        Visit(ast->lhsExpr);
+        if (auto lhs = Pop())
+        {
+            /* Visit right hand side expression */
+            Visit(ast->rhsExpr);
+            if (auto rhs = Pop())
+            {
+                if (auto result = EvaluateBinaryOp(ast, lhs, rhs))
+                {
+                    Push(result);
+                    return;
+                }
             }
         }
     }

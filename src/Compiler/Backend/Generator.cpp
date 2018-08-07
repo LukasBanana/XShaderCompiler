@@ -59,8 +59,12 @@ bool Generator::GenerateCode(
 void Generator::Error(const std::string& msg, const AST* ast, bool breakWithExpection)
 {
     reportHandler_.SubmitReport(
-        breakWithExpection, ReportTypes::Error, R_CodeGenerationError,
-        msg, program_->sourceCode.get(), (ast ? ast->area : SourceArea::ignore)
+        breakWithExpection,
+        ReportTypes::Error,
+        R_CodeGenerationError,
+        msg,
+        program_->sourceCode.get(),
+        (ast ? ast->area : SourceArea::ignore)
     );
 }
 
