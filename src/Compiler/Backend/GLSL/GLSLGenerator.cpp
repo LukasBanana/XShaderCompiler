@@ -17,6 +17,7 @@
 #include "TypeConverter.h"
 #include "ExprConverter.h"
 #include "FuncNameConverter.h"
+#include "UniformPacker.h"
 #include "Helper.h"
 #include "ReportIdents.h"
 #include <initializer_list>
@@ -70,6 +71,7 @@ void GLSLGenerator::GenerateCodePrimary(
     allowLineMarks_     = outputDesc.formatting.lineMarks;
     compactWrappers_    = outputDesc.formatting.compactWrappers;
     alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
+    uniformPacking_     = outputDesc.uniformPacking;
     entryPointName_     = inputDesc.entryPoint;
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
@@ -1062,6 +1064,7 @@ void GLSLGenerator::PreProcessAST(const ShaderInput& inputDesc, const ShaderOutp
     PreProcessFuncNameConverter();
     PreProcessReferenceAnalyzer(inputDesc);
     PreProcessExprConverterSecondary();
+    PreProcessPackedUniforms();
 }
 
 void GLSLGenerator::PreProcessStructParameterAnalyzer(const ShaderInput& inputDesc)
@@ -1134,6 +1137,21 @@ void GLSLGenerator::PreProcessExprConverterSecondary()
     /* Convert AST for GLSL code generation (After reference analysis) */
     ExprConverter converter;
     converter.Convert(*GetProgram(), ExprConverter::ConvertMatrixSubscripts, nameMangling_);
+}
+
+void GLSLGenerator::PreProcessPackedUniforms()
+{
+    if (uniformPacking_.enabled)
+    {
+        /* Move all global uniform into a single uniform buffer */
+        UniformPacker packer;
+        UniformPacker::CbufferAttributes attribs;
+        {
+            attribs.bindingSlot = uniformPacking_.bindingSlot;
+            attribs.name        = uniformPacking_.bufferName;
+        }
+        packer.Convert(*GetProgram(), attribs);
+    }
 }
 
 /* ----- Basics ----- */

@@ -69,7 +69,7 @@ ObjectExprPtr                   MakeObjectExpr(Decl* symbolRef);
 ArrayExprPtr                    MakeArrayExpr(const ExprPtr& prefixExpr, std::vector<ExprPtr>&& arrayIndices);
 ArrayExprPtr                    MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices);
 ArrayExprPtr                    MakeArrayExpr(
-                                    const ExprPtr& prefixExpr,
+                                    const ExprPtr&                              prefixExpr,
                                     const std::vector<ExprPtr>::const_iterator& arrayIndicesBegin,
                                     const std::vector<ExprPtr>::const_iterator& arrayIndicesEnd
                                 );
@@ -102,6 +102,13 @@ ArrayDimensionPtr               MakeArrayDimension(int arraySize);
 CodeBlockStmntPtr               MakeCodeBlockStmnt(const StmntPtr& stmnt);
 
 BasicDeclStmntPtr               MakeStructDeclStmnt(const StructDeclPtr& structDecl);
+
+// Makes a uniform buffer declaration with the specified identifier.
+UniformBufferDeclPtr            MakeUniformBufferDecl(
+                                    const std::string&      ident,
+                                    int                     bindingSlot = 0,
+                                    const UniformBufferType bufferType  = UniformBufferType::ConstantBuffer
+                                );
 
 /* ----- Make list functions ----- */
 

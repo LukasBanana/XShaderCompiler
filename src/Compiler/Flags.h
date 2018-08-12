@@ -16,9 +16,9 @@ namespace Xsc
 // Common flags class.
 class Flags
 {
-    
+
     public:
-        
+
         Flags() = default;
         Flags(const Flags&) = default;
         Flags& operator = (const Flags&) = default;
@@ -84,7 +84,7 @@ class Flags
         }
 
     private:
-        
+
         unsigned int bitMask_ = 0;
 
 };

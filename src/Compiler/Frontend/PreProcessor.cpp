@@ -11,6 +11,7 @@
 #include "ExprEvaluator.h"
 #include "Helper.h"
 #include "ReportIdents.h"
+#include "Exception.h"
 #include <sstream>
 
 
@@ -241,8 +242,15 @@ Variant PreProcessor::EvaluateExpr(const TokenPtrString& tokenString, const Toke
 
         try
         {
-            ExprEvaluator exprEvaluator;
-            value = exprEvaluator.Evaluate(*conditionExpr);
+            ExprEvaluator exprEvaluator { ExprEvaluator::EvaluateReducedBinaryExpr };
+            value = exprEvaluator.Evaluate(
+                *conditionExpr,
+                [](ObjectExpr* expr) -> Variant
+                {
+                    RuntimeErr(R_UndeclaredIdent(expr->ident), expr);
+                    return {};
+                }
+            );
         }
         catch (const std::exception& e)
         {
@@ -382,7 +390,7 @@ TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<T
 
     if (macro.parameters.size() > arguments.size())
         return expandedString;
-    
+
     auto ExpandTokenString = [&](TokenPtrString::Container::const_iterator& tknIt, const TokenPtrString::Container::const_iterator& tknItEnd) -> bool
     {
         const auto& tkn = **tknIt;
@@ -447,13 +455,13 @@ TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<T
                 /* Ignore following white spaces and comments */
                 while (tknIt != tknItEnd && !DefaultTokenOfInterestFunctor::IsOfInterest(*tknIt))
                     ++tknIt;
-                
+
                 /* Iterate one token back since it will be incremented in the outer for-loop */
                 --tknIt;
                 return true;
             }
             break;
-            
+
             default:
             break;
         }
@@ -613,7 +621,7 @@ TokenPtrString PreProcessor::ParseIdentArgumentsForMacro(const TokenPtr& identTo
     while (!Is(Tokens::RBracket))
     {
         auto arg = ParseArgumentTokenString();
-        
+
         /* Remove white spaces and comments from argument */
         arg.TrimBack();
         arg.TrimFront();
@@ -714,7 +722,7 @@ void PreProcessor::ParseDirectiveDefine()
             {
                 /* Ignore white spaces, comments, and line breaks for macro parameters */
                 IgnoreWhiteSpaces(false, true);
-                
+
                 if (Is(Tokens::LineBreak))
                 {
                     AcceptIt();
@@ -753,7 +761,7 @@ void PreProcessor::ParseDirectiveDefine()
 
         if (macro.parameters.empty())
             macro.emptyParamList = true;
-        
+
         Accept(Tokens::RBracket);
     }
 
@@ -868,7 +876,7 @@ void PreProcessor::ParseDirectiveIfndef(bool skipEvaluation)
     /* Parse identifier */
     IgnoreWhiteSpaces();
     auto ident = Accept(Tokens::Ident)->Spell();
-    
+
     /* Push new if-block activation (with 'not defined' condExpr) */
     PushIfBlock(tkn, !IsDefined(ident));
 }
@@ -986,7 +994,7 @@ void PreProcessor::ParseDirectivePragma()
                     tokenIt.Accept(Tokens::LBracket);
                     auto alignmentTkn = tokenIt.Accept(Tokens::Ident);
                     tokenIt.Accept(Tokens::RBracket);
-                    
+
                     /* Write pragma out */
                     auto alignment = alignmentTkn->Spell();
                     if (alignment == "row_major" || alignment == "column_major")
@@ -1047,7 +1055,7 @@ void PreProcessor::ParseDirectiveError()
 
     /* Parse token string */
     auto tokenString = ParseDirectiveTokenString();
-    
+
     /* Convert token string into error message */
     std::string errorMsg;
 
@@ -1248,13 +1256,19 @@ PreProcessor::Macro::Macro(const TokenPtr& identTkn, const TokenPtrString& value
 }
 
 PreProcessor::Macro::Macro(
-    const TokenPtr& identTkn, const TokenPtrString& value, const std::vector<std::string>& parameters, bool varArgs, bool stdMacro, bool emptyParamList) :
-        identTkn       { identTkn       },
-        tokenString    { value          },
-        parameters     { parameters     },
-        varArgs        { varArgs        },
-        stdMacro       { stdMacro       },
-        emptyParamList { emptyParamList }
+    const TokenPtr&                 identTkn,
+    const TokenPtrString&           value,
+    const std::vector<std::string>& parameters,
+    bool                            varArgs,
+    bool                            stdMacro,
+    bool                            emptyParamList
+) :
+    identTkn       { identTkn       },
+    tokenString    { value          },
+    parameters     { parameters     },
+    varArgs        { varArgs        },
+    stdMacro       { stdMacro       },
+    emptyParamList { emptyParamList }
 {
 }
 

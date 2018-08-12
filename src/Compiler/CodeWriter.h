@@ -85,7 +85,7 @@ class CodeWriter : public IndentHandler
         bool newLineOpenScope = false;
 
     private:
-        
+
         /* === Structures === */
 
         struct SeparatedLine

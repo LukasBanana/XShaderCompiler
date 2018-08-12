@@ -154,7 +154,7 @@ class Variant
         IntType                 int_    = 0;
         RealType                real_   = 0.0;
         std::vector<Variant>    array_;
-    
+
 };
 
 

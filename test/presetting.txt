@@ -155,6 +155,9 @@
 [PPTest1: preprocessor]
 -PP -O -o output/PPTest1.post.hlsl PPTest1.hlsl
 
+[PPTest2: preprocessor]
+-PP -O -o output/PPTest2.post.hlsl PPTest2.hlsl
+
 [FuncOverloadTest1 PS]
 -T frag -E PS -o output/* FuncOverloadTest1.hlsl
 

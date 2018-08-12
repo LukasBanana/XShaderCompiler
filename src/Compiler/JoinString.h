@@ -96,7 +96,7 @@ class JoinableString
 {
 
     public:
-        
+
         JoinableString() = default;
         JoinableString(const JoinableString&) = default;
         JoinableString& operator = (const JoinableString&) = default;
@@ -121,7 +121,7 @@ class JoinableString
         }
 
     private:
-        
+
         const char* s_          = nullptr;
         bool        canJoin_    = false;
 

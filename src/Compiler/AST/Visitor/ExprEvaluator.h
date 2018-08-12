@@ -11,6 +11,7 @@
 
 #include "Visitor.h"
 #include "Variant.h"
+#include "Flags.h"
 #include <stack>
 #include <functional>
 
@@ -22,9 +23,18 @@ namespace Xsc
 // Constant expression evaluator AST visitor.
 class ExprEvaluator : private Visitor
 {
-    
+
     public:
-        
+
+        // Evaluation flags enumeration.
+        enum : unsigned int
+        {
+            // Evaluates only the sub expressions of a BinaryExpr that are necessary (especially for logical AND and OR).
+            EvaluateReducedBinaryExpr = (1 << 0),
+        };
+
+        ExprEvaluator(Flags flags = 0);
+
         using OnObjectExprCallback = std::function<Variant(ObjectExpr* expr)>;
 
         // Evaluates the specified expression and returns the result as variant, or throws a runtime error on failure.
@@ -37,13 +47,16 @@ class ExprEvaluator : private Visitor
         void Abort();
 
     private:
-        
+
         /* === Functions === */
 
         void Push(const Variant& v);
         Variant Pop();
 
         void SetObjectExprCallback(const OnObjectExprCallback& callback);
+
+        Variant EvaluateBinaryOp(const BinaryExpr* ast, Variant lhs, Variant rhs);
+        Variant EvaluateUnaryOp(const UnaryExpr* ast, Variant rhs);
 
         /* --- Visitor implementation --- */
 
@@ -71,6 +84,8 @@ class ExprEvaluator : private Visitor
 
         bool                    throwOnFailure_         = true;
         bool                    abort_                  = false;
+
+        Flags                   flags_;
 
 };
 

@@ -1706,6 +1706,7 @@ std::string ResourceTypeToString(const Reflection::ResourceType t)
         CASE_TO_STRING( RWStructuredBuffer      );
 
         CASE_TO_STRING( ConstantBuffer          );
+        CASE_TO_STRING( TextureBuffer           );
         CASE_TO_STRING( SamplerState            );
         CASE_TO_STRING( SamplerComparisonState  );
     }

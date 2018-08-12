@@ -34,8 +34,8 @@ class GLSLConverter : public Converter
     private:
 
         void ConvertASTPrimary(
-            Program& program,
-            const ShaderInput& inputDesc,
+            Program&            program,
+            const ShaderInput&  inputDesc,
             const ShaderOutput& outputDesc
         ) override;
 

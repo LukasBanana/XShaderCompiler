@@ -25,13 +25,13 @@ All other parsers and analyzers only work on an AST.
 */
 class GLSLPreProcessor : public PreProcessor
 {
-    
+
     public:
-        
+
         GLSLPreProcessor(IncludeHandler& includeHandler, Log* log = nullptr);
 
     private:
-        
+
         bool OnDefineMacro(const Macro& macro) override;
         bool OnRedefineMacro(const Macro& macro, const Macro& previousMacro) override;
         bool OnUndefineMacro(const Macro& macro) override;
