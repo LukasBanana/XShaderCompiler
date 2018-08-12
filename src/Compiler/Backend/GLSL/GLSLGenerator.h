@@ -47,8 +47,8 @@ class GLSLGenerator : public Generator
         /* === Functions === */
 
         void GenerateCodePrimary(
-            Program& program,
-            const ShaderInput& inputDesc,
+            Program&            program,
+            const ShaderInput&  inputDesc,
             const ShaderOutput& outputDesc
         ) override;
 
@@ -153,6 +153,7 @@ class GLSLGenerator : public Generator
         void PreProcessFuncNameConverter();
         void PreProcessReferenceAnalyzer(const ShaderInput& inputDesc);
         void PreProcessExprConverterSecondary();
+        void PreProcessPackedUniforms();
 
         /* ----- Basics ----- */
 
@@ -320,6 +321,7 @@ class GLSLGenerator : public Generator
         OutputShaderVersion                     versionOut_             = OutputShaderVersion::GLSL;
         NameMangling                            nameMangling_;
         std::map<CiString, VertexSemanticLoc>   vertexSemanticsMap_;
+        UniformPacking                          uniformPacking_;
         std::string                             entryPointName_;
 
         bool                                    allowExtensions_        = false;

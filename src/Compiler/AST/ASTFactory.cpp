@@ -441,6 +441,17 @@ BasicDeclStmntPtr MakeStructDeclStmnt(const StructDeclPtr& structDecl)
     return ast;
 }
 
+UniformBufferDeclPtr MakeUniformBufferDecl(const std::string& ident, int bindingSlot, const UniformBufferType bufferType)
+{
+    auto ast = MakeAST<UniformBufferDecl>();
+    {
+        ast->ident      = ident;
+        ast->bufferType = bufferType;
+        ast->slotRegisters.push_back(MakeRegister(bindingSlot, RegisterType::ConstantBuffer));
+    }
+    return ast;
+}
+
 /* ----- Make list functions ----- */
 
 std::vector<ExprPtr> MakeArrayIndices(const std::vector<int>& arrayIndices)
