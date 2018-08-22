@@ -29,8 +29,8 @@ class UniformPacker
 
         struct CbufferAttributes
         {
-            //NOTE: workaround bug in Clang where the default constructor struggles with default arguments of braced initializers
-            #ifdef __clang__
+            //NOTE: workaround bug in Clang and GCC where the default constructor struggles with default arguments of braced initializers
+            #if defined __clang__ || defined __GNUC__
             inline CbufferAttributes() {}
             CbufferAttributes(const CbufferAttributes&) = default;
             CbufferAttributes& operator = (const CbufferAttributes&) = default;
