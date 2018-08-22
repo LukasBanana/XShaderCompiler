@@ -29,6 +29,13 @@ class UniformPacker
 
         struct CbufferAttributes
         {
+            //NOTE: workaround bug in Clang where the default constructor struggles with default arguments of braced initializers
+            #ifdef __clang__
+            inline CbufferAttributes() {}
+            CbufferAttributes(const CbufferAttributes&) = default;
+            CbufferAttributes& operator = (const CbufferAttributes&) = default;
+            #endif
+
             // Zero-based binding slot, where a negative number indicates to ignore this value.
             int         bindingSlot = 0;
 
