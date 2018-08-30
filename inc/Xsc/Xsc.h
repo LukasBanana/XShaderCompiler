@@ -325,7 +325,7 @@ struct VertexSemantic
 struct UniformPacking
 {
     //! If true, all global uniform statements will be packed into a single uniform buffer (except for textures, imges, samplers). By default false.
-    bool        enabled     = true;//false;
+    bool        enabled     = false;
 
     //! Index of the binding slot for this uniform buffer. Only relevant if 'Options::explicitBinding' is enabled. By default 0.
     int         bindingSlot = 0;
