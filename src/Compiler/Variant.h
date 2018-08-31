@@ -67,19 +67,25 @@ class Variant
         Variant operator ! ();
 
         // Converts this variant to a boolean type and returns its value.
-        BoolType ToBool();
+        BoolType ToBool() const;
 
         // Converts this variant to an integral type and returns its value.
-        IntType ToInt();
+        IntType ToInt() const;
 
         // Converts this variant to a real type and returns its value.
-        RealType ToReal();
+        RealType ToReal() const;
 
         // Returns -1 if this variant is less than 'rhs', 0 if they are equal, and 1 if this variant is greater than 'rhs'.
         int CompareWith(const Variant& rhs) const;
 
         // Returns the sub variant of the array value, or the default variant if this is not an array or the index is out of bounds.
         Variant ArraySub(std::size_t idx) const;
+
+        // Returns true if this variant is not undefined.
+        inline bool IsValid() const
+        {
+            return (Type() != Types::Undefined);
+        }
 
         // Returns true if this variant is a boolean type.
         inline bool IsBool() const
@@ -135,17 +141,23 @@ class Variant
             return type_;
         }
 
-        // Returns true if this variant is not undefined.
+        // Shortcut for IsValid().
         inline operator bool () const
         {
-            return (Type() != Types::Undefined);
+            return IsValid();
         }
 
         // Returns a variant, parsed from the specified string (e.g. "true" for a boolean type, or "1.5" for a real type).
         static Variant ParseFrom(const std::string& s);
 
+        // Returns the type that is used when two variants are added, subtracted etc.
+        static Types FindCommonType(const Variant& lhs, const Variant& rhs);
+
         // Returns this variant as string.
         std::string ToString() const;
+
+        // Retunrs true if this variant can be represented as a string (see ToString).
+        bool IsRepresentableAsString() const;
 
     private:
 

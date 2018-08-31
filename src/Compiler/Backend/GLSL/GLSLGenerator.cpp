@@ -2854,14 +2854,20 @@ void GLSLGenerator::WriteCallExprArguments(CallExpr* callExpr, std::size_t first
         numWriteArgs = ~0u;
 
     const auto n = callExpr->arguments.size();
-    const auto m = std::min(numWriteArgs, n + callExpr->defaultArgumentRefs.size());
+    const auto m = std::min(numWriteArgs, n + callExpr->defaultParamRefs.size());
 
     for (std::size_t i = firstArgIndex; i < m; ++i)
     {
         if (i < n)
             Visit(callExpr->arguments[i]);
         else
-            Visit(callExpr->defaultArgumentRefs[i - n]);
+        {
+            auto defaultParam = callExpr->defaultParamRefs[i - n];
+            if (defaultParam->initializerValue.IsRepresentableAsString())
+                Write(defaultParam->initializerValue.ToString());
+            else
+                Visit(defaultParam->initializer);
+        }
 
         if (i + 1 < m)
             Write(", ");

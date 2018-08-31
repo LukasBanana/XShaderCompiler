@@ -297,7 +297,20 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
     /* Analyze parameter type denoters (required before function can be registered in symbol table) */
     for (auto& param : ast->parameters)
+    {
+        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TODO ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+        //NOTE: "AnalyzeArrayDimensionList" is called twice, here and in "AnalyzeParameter".
+        //      The analysis of parameters should be cleaned up here!!!
+        /*
+        Analyze array dimensions of parameters in advance, so that the 'size' member
+        gets initialized before the function identifier is registered in the symbol table
+        */
+        AnalyzeArrayDimensionList(param->varDecls.front()->arrayDims);
+        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ /TODO ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+        /* Analyze type denoter from type specifier */
         AnalyzeTypeDenoter(param->typeSpecifier->typeDenoter, param->typeSpecifier.get());
+    }
 
     /* Only use global symbol table for non-member functions */
     if (!ast->IsMemberFunction())
@@ -739,6 +752,9 @@ void HLSLAnalyzer::AnalyzeVarDeclLocal(VarDecl* varDecl, bool registerVarIdent)
 
         /* Try to evaluate initializer expression */
         varDecl->initializerValue = EvaluateOrDefault(*(varDecl->initializer));
+
+        if (!varDecl->initializerValue.IsValid() && varDecl->IsParameter())
+            Error(R_ExpectedConstExpr(R_DefaultArgOfFuncParam(varDecl->ident)), varDecl->initializer.get());
     }
     else if (auto varDeclStmnt = varDecl->declStmntRef)
     {
@@ -955,8 +971,8 @@ void HLSLAnalyzer::AnalyzeCallExprFunction(
             if (!param->varDecls.empty())
             {
                 auto paramVar = param->varDecls.front().get();
-                if (auto initExpr = paramVar->initializer.get())
-                    callExpr->defaultArgumentRefs.push_back(initExpr);
+                if (paramVar->initializer)
+                    callExpr->defaultParamRefs.push_back(paramVar);
                 else
                     Error(R_MissingInitializerForDefaultParam(paramVar->ident), paramVar);
             }

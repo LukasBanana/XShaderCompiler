@@ -55,9 +55,9 @@ struct GenericDefaultValue<bool>
 template <typename SymbolType>
 class SymbolTable
 {
-    
+
     public:
-        
+
         // Callback function when a symbol is about to be overriden. Must return true to allow a symbol override.
         using OnOverrideProc = std::function<bool(SymbolType& prevSymbol)>;
 
@@ -252,7 +252,7 @@ class SymbolTable
         }
 
     private:
-        
+
         struct Symbol
         {
             SymbolType  symbol;
@@ -282,7 +282,7 @@ class ASTSymbolOverload
 {
 
     public:
-    
+
         ASTSymbolOverload(const std::string& ident, AST* ast);
 
         // Adds the specified AST reference to this overloaded symbol, and return true if the overload is valid.

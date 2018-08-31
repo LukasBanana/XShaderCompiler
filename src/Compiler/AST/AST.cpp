@@ -1194,8 +1194,9 @@ bool FunctionDecl::EqualsSignature(const FunctionDecl& rhs, const Flags& compare
     /* Compare parameter type denoters */
     for (std::size_t i = 0; i < parameters.size(); ++i)
     {
-        auto lhsTypeDen = parameters[i]->typeSpecifier->typeDenoter.get();
-        auto rhsTypeDen = rhs.parameters[i]->typeSpecifier->typeDenoter.get();
+        /* Get type denoters from <VarDecl>, since array dimensions are stored there, while the type specifier only holds its base type */
+        const auto& lhsTypeDen = parameters[i]->varDecls.front()->GetTypeDenoter();
+        const auto& rhsTypeDen = rhs.parameters[i]->varDecls.front()->GetTypeDenoter();
 
         if (!lhsTypeDen->Equals(*rhsTypeDen, compareFlags))
             return false;
@@ -1299,8 +1300,10 @@ static void ListAllFuncCandidates(const std::vector<FunctionDecl*>& candidates)
 };
 
 FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
-    const std::vector<FunctionDecl*>& funcDeclList, const std::string& ident,
-    const std::vector<TypeDenoterPtr>& argTypeDenoters, bool throwErrorIfNoMatch)
+    const std::vector<FunctionDecl*>&   funcDeclList,
+    const std::string&                  ident,
+    const std::vector<TypeDenoterPtr>&  argTypeDenoters,
+    bool                                throwErrorIfNoMatch)
 {
     if (funcDeclList.empty())
     {
@@ -2033,21 +2036,23 @@ IndexedSemantic CallExpr::FetchSemantic() const
         return Semantic::Undefined;
 }
 
+#if 0//UNUSED
 std::vector<Expr*> CallExpr::GetArguments() const
 {
     std::vector<Expr*> args;
-    args.reserve(arguments.size() + defaultArgumentRefs.size());
+    args.reserve(arguments.size() + defaultParamRefs.size());
 
     /* Add explicit arguments */
     for (const auto& arg : arguments)
         args.push_back(arg.get());
 
     /* Add remaining default arguments */
-    for (auto arg : defaultArgumentRefs)
-        args.push_back(arg);
+    for (auto param : defaultParamRefs)
+        args.push_back(param->initializer.get());
 
     return args;
 }
+#endif
 
 FunctionDecl* CallExpr::GetFunctionDecl() const
 {
