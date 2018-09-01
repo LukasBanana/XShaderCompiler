@@ -97,6 +97,15 @@ const ObjectExpr* Expr::FetchLValueExpr() const
     return nullptr;
 }
 
+ObjectExpr* Expr::FetchLValueExpr()
+{
+    /*
+    Use const function and cast the constness away,
+    which is allowed here, since this is a non-const member function
+    */
+    return const_cast<ObjectExpr*>(const_cast<const Expr*>(this)->FetchLValueExpr());
+}
+
 IndexedSemantic Expr::FetchSemantic() const
 {
     return Semantic::Undefined;

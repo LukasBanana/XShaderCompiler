@@ -454,6 +454,7 @@ DECL_REPORT( MissingGenericTypeDen,             "missing generic type denoter[ i
 DECL_REPORT( IllegalUseOfNormModifiers,         "'snorm' and 'unorm' type modifiers can only be used for floating-point types"                                  );
 DECL_REPORT( IllegalExprInReturnForVoidFunc,    "illegal expression in return statement for function with 'void' return type"                                   );
 DECL_REPORT( IllegalBufferTypeForEntryPoint,    "illegal buffer type for entry point[ {0}]"                                                                     );
+DECL_REPORT( IllegalLValueAssignmentToTypeCast, "illegal assignment to l-value '{0}' due to type mismatch[ with function parameter '{1}']"                      );
 DECL_REPORT( IllegalLValueAssignmentToConst,    "illegal assignment to l-value '{0}' that is[ {1}] declared as constant"                                        );
 DECL_REPORT( IllegalRValueAssignment,           "illegal assignment to r-value expression[ via function parameter '{0}']"                                       );
 DECL_REPORT( IllegalNonStaticAccessToMember,    "illegal non-static access to static structure member[ '{0}']"                                                  );

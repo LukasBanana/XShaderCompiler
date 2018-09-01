@@ -49,7 +49,7 @@ enum SearchFlags : unsigned int
 using VarDeclIteratorFunctor = std::function<void(VarDeclPtr& varDecl)>;
 
 // Iteration callback for Expr AST nodes.
-using ExprIteratorFunctor = std::function<void(ExprPtr& expr, const VarDecl* param)>;
+using ExprIteratorFunctor = std::function<void(ExprPtr& expr, VarDecl* param)>;
 
 // Iteration callback for argument/parameter-type associations.
 using ArgumentParameterTypeFunctor = std::function<void(ExprPtr& argument, const TypeDenoter& paramTypeDen)>;
@@ -275,6 +275,7 @@ struct Expr : public TypedAST
     If the return value is non-null, the object expression must refer to a declaration object. By default null.
     */
     virtual const ObjectExpr* FetchLValueExpr() const;
+    ObjectExpr* FetchLValueExpr();
 
     // Returns the semantic of this expression, or Semantic::Undefined if this expression has no semantic.
     virtual IndexedSemantic FetchSemantic() const;

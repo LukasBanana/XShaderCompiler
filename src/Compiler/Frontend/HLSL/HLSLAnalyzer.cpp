@@ -893,7 +893,7 @@ void HLSLAnalyzer::AnalyzeCallExprPrimary(CallExpr* callExpr, const TypeDenoter*
 
         /* Analyze all l-value arguments that are assigned to output parameters */
         callExpr->ForEachOutputArgument(
-            [this](ExprPtr& argExpr, const VarDecl* param)
+            [this](ExprPtr& argExpr, VarDecl* param)
             {
                 AnalyzeLValueExpr(argExpr.get(), nullptr, param);
             }
@@ -1414,7 +1414,7 @@ bool HLSLAnalyzer::AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier
     return true;
 }
 
-void HLSLAnalyzer::AnalyzeLValueExpr(const Expr* expr, const AST* ast, const VarDecl* param)
+void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast, VarDecl* param)
 {
     if (expr)
     {
@@ -1432,7 +1432,7 @@ void HLSLAnalyzer::AnalyzeLValueExpr(const Expr* expr, const AST* ast, const Var
     }
 }
 
-void HLSLAnalyzer::AnalyzeLValueExprObject(const ObjectExpr* objectExpr, const AST* ast, const VarDecl* param)
+void HLSLAnalyzer::AnalyzeLValueExprObject(ObjectExpr* objectExpr, const AST* ast, VarDecl* param)
 {
     /* Analyze prefix expression as l-value */
     AnalyzeLValueExpr(objectExpr->prefixExpr.get(), ast);
@@ -1441,6 +1441,24 @@ void HLSLAnalyzer::AnalyzeLValueExprObject(const ObjectExpr* objectExpr, const A
     {
         if (auto varDecl = symbol->As<VarDecl>())
         {
+            /*
+            For assignments of arguments to parameters:
+            Check if types are equal so no implicit type conversion is necessary, which would result in an r-value expression
+            */
+            if (param != nullptr)
+            {
+                const auto& lhsTypeDen = varDecl->GetTypeDenoter();
+                const auto& rhsTypeDen = param->GetTypeDenoter();
+
+                if (!lhsTypeDen->Equals(*rhsTypeDen))
+                {
+                    Error(
+                        R_IllegalLValueAssignmentToTypeCast(objectExpr->ident, param->declStmntRef->ToString()),
+                        (ast != nullptr ? ast : objectExpr)
+                    );
+                }
+            }
+
             if (varDecl->declStmntRef->IsConstOrUniform())
             {
                 /* Construct error message depending if the variable is implicitly or explicitly declared as constant */
