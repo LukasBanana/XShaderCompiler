@@ -1689,24 +1689,24 @@ void LiteralExpr::ConvertDataType(const DataType type)
         switch (type)
         {
             case DataType::Bool:
-                variant.ToBool();
+                variant = variant.ToBool();
                 value = variant.ToString();
                 break;
 
             case DataType::Int:
-                variant.ToInt();
+                variant = variant.ToInt();
                 value = variant.ToString();
                 break;
 
             case DataType::UInt:
-                variant.ToInt();
+                variant = variant.ToInt();
                 value = variant.ToString() + "u";
                 break;
 
             case DataType::Half:
                 if (dataType != DataType::Double)
                 {
-                    variant.ToReal();
+                    variant = variant.ToReal();
                     value = variant.ToString();
                 }
                 break;
@@ -1714,14 +1714,14 @@ void LiteralExpr::ConvertDataType(const DataType type)
             case DataType::Float:
                 if (dataType != DataType::Double)
                 {
-                    variant.ToReal();
+                    variant = variant.ToReal();
                     value = variant.ToString();
                 }
                 value.push_back('f');
                 break;
 
             case DataType::Double:
-                variant.ToReal();
+                variant = variant.ToReal();
                 value = variant.ToString();
                 break;
 

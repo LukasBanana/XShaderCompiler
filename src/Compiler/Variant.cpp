@@ -244,7 +244,7 @@ int Variant::CompareWith(const Variant& rhs) const
     {
         case Types::Bool:
         {
-            cmp.ToBool();
+            cmp = cmp.ToBool();
             if (Bool() && !cmp.Bool())
                 return 1;
             if (!Bool() && cmp.Bool())
@@ -254,7 +254,7 @@ int Variant::CompareWith(const Variant& rhs) const
 
         case Types::Int:
         {
-            cmp.ToInt();
+            cmp = cmp.ToInt();
             if (Int() < cmp.Int())
                 return -1;
             if (Int() > cmp.Int())
@@ -264,7 +264,7 @@ int Variant::CompareWith(const Variant& rhs) const
 
         case Types::Real:
         {
-            cmp.ToReal();
+            cmp = cmp.ToReal();
             if (Real() < cmp.Real())
                 return -1;
             if (Real() > cmp.Real())
