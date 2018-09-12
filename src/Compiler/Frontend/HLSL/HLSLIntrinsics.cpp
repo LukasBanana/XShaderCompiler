@@ -596,6 +596,8 @@ static std::map<Intrinsic, IntrinsicSignature> GenerateIntrinsicSignatureMap()
         { T::Image_AtomicMin,                  {                   2, 3 } },
         { T::Image_AtomicOr,                   {                   2, 3 } },
         { T::Image_AtomicXor,                  {                   2, 3 } },
+
+        { T::PackHalf2x16,                     { Ret::UInt,        1    } },
     };
 }
 

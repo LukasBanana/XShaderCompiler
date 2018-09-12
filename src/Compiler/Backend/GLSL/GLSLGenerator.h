@@ -281,6 +281,7 @@ class GLSLGenerator : public Generator
         void WriteWrapperIntrinsicsLit(const IntrinsicUsage& usage);
         void WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage);
         void WriteWrapperIntrinsicsMemoryBarrier(const Intrinsic intrinsic, bool groupSync);
+        void WriteWrapperIntrinsicsF16toF32();
 
         void WriteWrapperMatrixSubscript(const MatrixSubscriptUsage& usage);
 

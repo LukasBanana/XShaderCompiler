@@ -140,7 +140,8 @@ bool GLSLGenerator::IsWrappedIntrinsic(const Intrinsic intrinsic) const
         Intrinsic::GroupMemoryBarrierWithGroupSync,
         Intrinsic::DeviceMemoryBarrier,
         Intrinsic::DeviceMemoryBarrierWithGroupSync,
-        Intrinsic::AllMemoryBarrierWithGroupSync
+        Intrinsic::AllMemoryBarrierWithGroupSync,
+        Intrinsic::F16toF32
     };
     return (wrappedIntrinsics.find(intrinsic) != wrappedIntrinsics.end());
 }
@@ -2897,6 +2898,8 @@ void GLSLGenerator::WriteWrapperIntrinsics()
         WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::DeviceMemoryBarrier, true);
     if (program->FetchIntrinsicUsage(Intrinsic::AllMemoryBarrierWithGroupSync) != nullptr)
         WriteWrapperIntrinsicsMemoryBarrier(Intrinsic::AllMemoryBarrier, true);
+    if (program->FetchIntrinsicUsage(Intrinsic::F16toF32) != nullptr)
+        WriteWrapperIntrinsicsF16toF32();
 
     /* Write matrix subscript wrappers */
     for (const auto& usage : program->usedMatrixSubscripts)
@@ -3015,6 +3018,27 @@ void GLSLGenerator::WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage)
 
     if (wrappersWritten)
         Blank();
+}
+
+void GLSLGenerator::WriteWrapperIntrinsicsF16toF32()
+{
+    BeginLn();
+    {
+        /* Write function signature */
+        Write("float f16tof32(");
+        WriteDataType(DataType::UInt, IsESSL());
+        Write(" x)");
+
+        /* Write function body */
+        WriteScopeOpen(compactWrappers_);
+        {
+            Write("return unpackHalf2x16(x).x;");
+        }
+        WriteScopeClose();
+    }
+    EndLn();
+
+    Blank();
 }
 
 static std::string GetWrapperNameForMemoryBarrier(const Intrinsic intrinsic, bool groupSync)

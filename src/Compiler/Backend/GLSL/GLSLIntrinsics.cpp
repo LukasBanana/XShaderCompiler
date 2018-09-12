@@ -255,6 +255,8 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
         { T::Image_AtomicMin,                  "imageAtomicMin"        }, // GLSL only
         { T::Image_AtomicOr,                   "imageAtomicOr"         }, // GLSL only
         { T::Image_AtomicXor,                  "imageAtomicXor"        }, // GLSL only
+
+        { T::PackHalf2x16,                     "packHalf2x16"          }, // GLSL only
     };
 }
 

@@ -113,6 +113,7 @@ class GLSLConverter : public Converter
         void ConvertIntrinsicCallImageAtomic(CallExpr* ast);
         void ConvertIntrinsicCallGather(CallExpr* ast);
         void ConvertIntrinsicCallSampleCmp(CallExpr* ast);
+        void ConvertIntrisicCallF32toF16(CallExpr* ast);
 
         void ConvertFunctionCall(CallExpr* ast);
 

@@ -859,6 +859,10 @@ void GLSLConverter::ConvertIntrinsicCall(CallExpr* ast)
             ConvertIntrinsicCallSaturate(ast);
             break;
 
+        case Intrinsic::F32toF16:
+            ConvertIntrisicCallF32toF16(ast);
+            break;
+
         case Intrinsic::Tex1DLod:
         case Intrinsic::Tex2DLod:
         case Intrinsic::Tex3DLod:
@@ -905,6 +909,33 @@ void GLSLConverter::ConvertIntrinsicCallSaturate(CallExpr* ast)
             ast->intrinsic = Intrinsic::Clamp;
             ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, DataType::Int, "0"));
             ast->arguments.push_back(ASTFactory::MakeLiteralCastExpr(argTypeDen, DataType::Int, "1"));
+        }
+        else
+            RuntimeErr(R_InvalidIntrinsicArgType(ast->ident), ast->arguments.front().get());
+    }
+    else
+        RuntimeErr(R_InvalidIntrinsicArgCount(ast->ident, 1, ast->arguments.size()), ast);
+}
+
+void GLSLConverter::ConvertIntrisicCallF32toF16(CallExpr* ast)
+{
+    /* Convert "f32tof16(x)" to "packHalf2x16(vec2(x, 0))" */
+    if (ast->arguments.size() == 1)
+    {
+        auto argTypeDen = ast->arguments.front()->GetTypeDenoter()->GetSub();
+        if (argTypeDen->IsBase())
+        {
+            auto& args = ast->arguments;
+
+            ast->intrinsic = Intrinsic::PackHalf2x16;
+
+            auto typeDenoter = std::make_shared<BaseTypeDenoter>(DataType::Float2);
+
+            std::vector<ExprPtr> ctorArgs;
+            ctorArgs.push_back(args[0]);
+            ctorArgs.push_back(ASTFactory::MakeLiteralExpr(DataType::Float, "0"));
+
+            args[0] = ASTFactory::MakeTypeCtorCallExpr(typeDenoter, ctorArgs);
         }
         else
             RuntimeErr(R_InvalidIntrinsicArgType(ast->ident), ast->arguments.front().get());

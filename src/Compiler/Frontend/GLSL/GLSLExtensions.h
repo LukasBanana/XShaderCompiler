@@ -74,6 +74,7 @@ DECL_EXTENSION( GL_ARB_texture_query_lod                        );
 DECL_EXTENSION( GL_ARB_texture_rectangle                        );
 DECL_EXTENSION( GL_ARB_uniform_buffer_object                    );
 DECL_EXTENSION( GL_ARB_viewport_array                           );
+DECL_EXTENSION( GL_ARB_shading_language_packing                 );
 
 // EXT
 DECL_EXTENSION( GL_EXT_device_group                             );
