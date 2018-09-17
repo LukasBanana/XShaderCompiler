@@ -297,7 +297,20 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
     /* Analyze parameter type denoters (required before function can be registered in symbol table) */
     for (auto& param : ast->parameters)
+    {
+        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TODO ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+        //NOTE: "AnalyzeArrayDimensionList" is called twice, here and in "AnalyzeParameter".
+        //      The analysis of parameters should be cleaned up here!!!
+        /*
+        Analyze array dimensions of parameters in advance, so that the 'size' member
+        gets initialized before the function identifier is registered in the symbol table
+        */
+        AnalyzeArrayDimensionList(param->varDecls.front()->arrayDims);
+        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ /TODO ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+        /* Analyze type denoter from type specifier */
         AnalyzeTypeDenoter(param->typeSpecifier->typeDenoter, param->typeSpecifier.get());
+    }
 
     /* Only use global symbol table for non-member functions */
     if (!ast->IsMemberFunction())
@@ -739,6 +752,9 @@ void HLSLAnalyzer::AnalyzeVarDeclLocal(VarDecl* varDecl, bool registerVarIdent)
 
         /* Try to evaluate initializer expression */
         varDecl->initializerValue = EvaluateOrDefault(*(varDecl->initializer));
+
+        if (!varDecl->initializerValue.IsValid() && varDecl->IsParameter())
+            Error(R_ExpectedConstExpr(R_DefaultArgOfFuncParam(varDecl->ident)), varDecl->initializer.get());
     }
     else if (auto varDeclStmnt = varDecl->declStmntRef)
     {
@@ -877,7 +893,7 @@ void HLSLAnalyzer::AnalyzeCallExprPrimary(CallExpr* callExpr, const TypeDenoter*
 
         /* Analyze all l-value arguments that are assigned to output parameters */
         callExpr->ForEachOutputArgument(
-            [this](ExprPtr& argExpr, const VarDecl* param)
+            [this](ExprPtr& argExpr, VarDecl* param)
             {
                 AnalyzeLValueExpr(argExpr.get(), nullptr, param);
             }
@@ -955,8 +971,8 @@ void HLSLAnalyzer::AnalyzeCallExprFunction(
             if (!param->varDecls.empty())
             {
                 auto paramVar = param->varDecls.front().get();
-                if (auto initExpr = paramVar->initializer.get())
-                    callExpr->defaultArgumentRefs.push_back(initExpr);
+                if (paramVar->initializer)
+                    callExpr->defaultParamRefs.push_back(paramVar);
                 else
                     Error(R_MissingInitializerForDefaultParam(paramVar->ident), paramVar);
             }
@@ -1398,7 +1414,7 @@ bool HLSLAnalyzer::AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier
     return true;
 }
 
-void HLSLAnalyzer::AnalyzeLValueExpr(const Expr* expr, const AST* ast, const VarDecl* param)
+void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast, VarDecl* param)
 {
     if (expr)
     {
@@ -1416,7 +1432,7 @@ void HLSLAnalyzer::AnalyzeLValueExpr(const Expr* expr, const AST* ast, const Var
     }
 }
 
-void HLSLAnalyzer::AnalyzeLValueExprObject(const ObjectExpr* objectExpr, const AST* ast, const VarDecl* param)
+void HLSLAnalyzer::AnalyzeLValueExprObject(ObjectExpr* objectExpr, const AST* ast, VarDecl* param)
 {
     /* Analyze prefix expression as l-value */
     AnalyzeLValueExpr(objectExpr->prefixExpr.get(), ast);
@@ -1425,6 +1441,24 @@ void HLSLAnalyzer::AnalyzeLValueExprObject(const ObjectExpr* objectExpr, const A
     {
         if (auto varDecl = symbol->As<VarDecl>())
         {
+            /*
+            For assignments of arguments to parameters:
+            Check if types are equal so no implicit type conversion is necessary, which would result in an r-value expression
+            */
+            if (param != nullptr)
+            {
+                const auto& lhsTypeDen = varDecl->GetTypeDenoter();
+                const auto& rhsTypeDen = param->GetTypeDenoter();
+
+                if (!lhsTypeDen->Equals(*rhsTypeDen))
+                {
+                    Error(
+                        R_IllegalLValueAssignmentToTypeCast(objectExpr->ident, param->declStmntRef->ToString()),
+                        (ast != nullptr ? ast : objectExpr)
+                    );
+                }
+            }
+
             if (varDecl->declStmntRef->IsConstOrUniform())
             {
                 /* Construct error message depending if the variable is implicitly or explicitly declared as constant */

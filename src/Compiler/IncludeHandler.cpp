@@ -15,8 +15,19 @@ namespace Xsc
 {
 
 
+struct IncludeHandler::OpaqueData
+{
+    std::vector<std::string> searchPaths;
+};
+
+IncludeHandler::IncludeHandler() :
+    data_ { new OpaqueData() }
+{
+}
+
 IncludeHandler::~IncludeHandler()
 {
+    delete data_;
 }
 
 static std::unique_ptr<std::istream> ReadFile(const std::string& filename)
@@ -35,7 +46,7 @@ std::unique_ptr<std::istream> IncludeHandler::Include(const std::string& filenam
     }
 
     /* Search file in search paths */
-    for (const auto& path : searchPaths)
+    for (const auto& path : data_->searchPaths)
     {
         if (!path.empty())
         {
@@ -59,6 +70,16 @@ std::unique_ptr<std::istream> IncludeHandler::Include(const std::string& filenam
     }
 
     RuntimeErr(R_FailedToIncludeFile(filename));
+}
+
+std::vector<std::string>& IncludeHandler::GetSearchPaths()
+{
+    return data_->searchPaths;
+}
+
+const std::vector<std::string>& IncludeHandler::GetSearchPaths() const
+{
+    return data_->searchPaths;
 }
 
 

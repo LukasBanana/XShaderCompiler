@@ -258,13 +258,13 @@ bool Shell::Compile(const std::string& filename)
         IncludeHandler              includeHandler;
         Reflection::ReflectionData  reflectionData;
 
-        includeHandler.searchPaths = state_.searchPaths;
+        includeHandler.GetSearchPaths() = state_.searchPaths;
         state_.inputDesc.includeHandler = &includeHandler;
 
         /* Add file path to include paths */
         const auto inputPath = GetPathPart(filename);
         if (!inputPath.empty())
-            includeHandler.searchPaths.push_back(inputPath);
+            includeHandler.GetSearchPaths().push_back(inputPath);
 
         /* Show compilation/validation status */
         if (state_.verbose)

@@ -865,9 +865,9 @@ static Dictionary<SamplerType> GenerateSamplerTypeDict()
         { "sampler1DShadow",        T::Sampler1DShadow        },
         { "sampler2DShadow",        T::Sampler2DShadow        },
 
-        { "SamplerState",           T::SamplerState           },
-        { "sampler",                T::SamplerState           },
+        { "sampler",                T::Sampler2D              },
         { "sampler_state",          T::SamplerState           },
+        { "SamplerState",           T::SamplerState           },
         { "SamplerComparisonState", T::SamplerComparisonState },
     };
 }

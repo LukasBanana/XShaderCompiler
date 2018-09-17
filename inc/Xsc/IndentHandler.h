@@ -23,10 +23,11 @@ namespace Xsc
 //! Indentation handler base class.
 class XSC_EXPORT IndentHandler
 {
-    
+
     public:
-        
+
         IndentHandler(const std::string& initialIndent = std::string(2, ' '));
+        ~IndentHandler();
 
         //! Sets the next indentation string. By default two spaces.
         void SetIndent(const std::string& indent);
@@ -38,16 +39,12 @@ class XSC_EXPORT IndentHandler
         void DecIndent();
 
         //! Returns the current full indentation string.
-        inline const std::string& FullIndent() const
-        {
-            return indentFull_;
-        }
+        const std::string& FullIndent() const;
 
     private:
 
-        std::string                         indent_;
-        std::string                         indentFull_;
-        std::stack<std::string::size_type>  indentStack_;
+        struct OpaqueData;
+        OpaqueData* data_ = nullptr;
 
 };
 

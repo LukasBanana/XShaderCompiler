@@ -71,12 +71,12 @@ class Identifier
 
         bool        originalSet_    = false;
         std::string original_;
-        
+
         bool        renamedSet_     = false;
         std::string renamed_;
 
         int         counter_        = 0;
-    
+
 };
 
 

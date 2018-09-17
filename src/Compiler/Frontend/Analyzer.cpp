@@ -168,7 +168,7 @@ AST* Analyzer::Fetch(const std::string& ident, const AST* ast)
         /* Fetch symbol from global symbol table */
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->Fetch();
-        
+
         /* Report undefined identifier error */
         ErrorUndeclaredIdent(ident, "", FetchSimilarIdent(ident, structDecl), ast);
     }
@@ -252,7 +252,7 @@ FunctionDecl* Analyzer::FetchFunctionDecl(const std::string& ident, const std::v
         /* Fetch function with argument type denoters from global symbol table */
         if (auto symbol = symTable_.Fetch(ident))
             return symbol->FetchFunctionDecl(argTypeDens);
-        
+
         /* Check if identifier exists but does not name a function */
         if (Fetch(ident, ast) != nullptr)
             Error(R_IdentIsNotFunc(ident), ast);
@@ -391,7 +391,7 @@ StructDecl* Analyzer::FindCompatibleStructDecl(const StructDecl& rhs)
         if (auto ref = symbol->Fetch(false))
             return ref->As<StructDecl>();
     }
-    
+
     return nullptr;
 }
 

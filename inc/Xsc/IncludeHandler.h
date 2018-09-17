@@ -28,9 +28,10 @@ namespace Xsc
 */
 class XSC_EXPORT IncludeHandler
 {
-    
+
     public:
-        
+
+        IncludeHandler();
         virtual ~IncludeHandler();
 
         /**
@@ -40,9 +41,17 @@ class XSC_EXPORT IncludeHandler
         \return Unique pointer to the new input stream.
         */
         virtual std::unique_ptr<std::istream> Include(const std::string& filename, bool useSearchPathsFirst);
-        
-        //! List of search paths.
-        std::vector<std::string> searchPaths;
+
+        //! Returns the list of search paths.
+        std::vector<std::string>& GetSearchPaths();
+
+        //! Returns the constant list of search paths.
+        const std::vector<std::string>& GetSearchPaths() const;
+
+    private:
+
+        struct OpaqueData;
+        OpaqueData* data_ = nullptr;
 
 };
 

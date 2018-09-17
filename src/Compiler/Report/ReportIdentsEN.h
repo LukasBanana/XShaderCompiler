@@ -238,6 +238,7 @@ DECL_REPORT( WritePrefixStackUnderflow,         "write prefix stack underflow"  
 /* ----- Analyzer ----- */
 
 DECL_REPORT( UndeclaredIdent,                   "undeclared identifier \"{0}\"[ in '{1}'][; did you mean \"{2}\"?]"                                             );
+DECL_REPORT( DefaultArgOfFuncParam,             "default argument of function parameter[ '{0}']"                                                                );
 DECL_REPORT( StatementWithEmptyBody,            "<{0}> statement with empty body"                                                                               );
 DECL_REPORT( MissingReferenceToStructInType,    "missing reference to structure declaration in type denoter '{0}'"                                              );
 DECL_REPORT( MissingVariableType,               "missing variable type"                                                                                         );
@@ -245,9 +246,9 @@ DECL_REPORT( ParameterCantBeUniformAndOut,      "type attributes 'out' and 'inou
 DECL_REPORT( IllegalCast,                       "cannot cast '{0}' to '{1}'[ in {2}]"                                                                           );
 DECL_REPORT( NullPointerArgument,               "null pointer passed to {0}"                                                                                    );
 DECL_REPORT( ConditionalExprNotScalar,          "conditional expression must evaluate to scalar, but got '{0}'"                                                 );
-DECL_REPORT( ExpectedConstExpr,                 "expected constant expression[ for '{0}']"                                                                      );
-DECL_REPORT( ExpectedConstIntExpr,              "expected constant integer expression[ for '{0}']"                                                              );
-DECL_REPORT( ExpectedConstFloatExpr,            "expected constant floating-point expression[ for '{0}']"                                                       );
+DECL_REPORT( ExpectedConstExpr,                 "expected constant expression[ for {0}]"                                                                        );
+DECL_REPORT( ExpectedConstIntExpr,              "expected constant integer expression[ for {0}]"                                                                );
+DECL_REPORT( ExpectedConstFloatExpr,            "expected constant floating-point expression[ for {0}]"                                                         );
 DECL_REPORT( VarDeclaredButNeverUsed,           "variable '{0}' is declared but never used"                                                                     );
 DECL_REPORT( ImplicitVectorTruncation,          "implicit truncation of vector type[ in {2}][ (from {0} to {1} dimensions)]"                                    );
 DECL_REPORT( CantImplicitlyConvertVectorType,   "cannot implicitly convert vector type[ in {2}][ (from {0} to {1} dimensions)]"                                 );
@@ -446,13 +447,14 @@ DECL_REPORT( MissingInputSemanticInEntryPoint,  "missing input semantic '{0}' in
 DECL_REPORT( MissingOutputSemanticInEntryPoint, "missing output semantic '{0}' in entry point '{1}'"                                                            );
 DECL_REPORT( MissingAttributeForEntryPoint,     "missing '{0}' attribute for entry point"                                                                       );
 DECL_REPORT( MissingExprInReturnForFunc,        "missing expression in return statement for function with '{0}' return type"                                    );
-DECL_REPORT( MissingInitializerForDefaultParam, "missing initializer expression for default parameter '{0}'"                                                    ); // internal error
+DECL_REPORT( MissingInitializerForDefaultParam, "missing initializer expression for default argument of parameter '{0}'"                                        ); // internal error
 DECL_REPORT( MissingInitializerForConstant,     "missing initializer expression for local constant '{0}'"                                                       );
 DECL_REPORT( MissingSemanticInEntryPointParam,  "missing semantic in parameter '{0}' of entry point"                                                            );
 DECL_REPORT( MissingGenericTypeDen,             "missing generic type denoter[ in '{0}']"                                                                       );
 DECL_REPORT( IllegalUseOfNormModifiers,         "'snorm' and 'unorm' type modifiers can only be used for floating-point types"                                  );
 DECL_REPORT( IllegalExprInReturnForVoidFunc,    "illegal expression in return statement for function with 'void' return type"                                   );
 DECL_REPORT( IllegalBufferTypeForEntryPoint,    "illegal buffer type for entry point[ {0}]"                                                                     );
+DECL_REPORT( IllegalLValueAssignmentToTypeCast, "illegal assignment to l-value '{0}' due to type mismatch[ with function parameter '{1}']"                      );
 DECL_REPORT( IllegalLValueAssignmentToConst,    "illegal assignment to l-value '{0}' that is[ {1}] declared as constant"                                        );
 DECL_REPORT( IllegalRValueAssignment,           "illegal assignment to r-value expression[ via function parameter '{0}']"                                       );
 DECL_REPORT( IllegalNonStaticAccessToMember,    "illegal non-static access to static structure member[ '{0}']"                                                  );

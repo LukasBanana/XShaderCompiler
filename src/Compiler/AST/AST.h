@@ -49,7 +49,7 @@ enum SearchFlags : unsigned int
 using VarDeclIteratorFunctor = std::function<void(VarDeclPtr& varDecl)>;
 
 // Iteration callback for Expr AST nodes.
-using ExprIteratorFunctor = std::function<void(ExprPtr& expr, const VarDecl* param)>;
+using ExprIteratorFunctor = std::function<void(ExprPtr& expr, VarDecl* param)>;
 
 // Iteration callback for argument/parameter-type associations.
 using ArgumentParameterTypeFunctor = std::function<void(ExprPtr& argument, const TypeDenoter& paramTypeDen)>;
@@ -275,6 +275,7 @@ struct Expr : public TypedAST
     If the return value is non-null, the object expression must refer to a declaration object. By default null.
     */
     virtual const ObjectExpr* FetchLValueExpr() const;
+    ObjectExpr* FetchLValueExpr();
 
     // Returns the semantic of this expression, or Semantic::Undefined if this expression has no semantic.
     virtual IndexedSemantic FetchSemantic() const;
@@ -685,8 +686,10 @@ struct StructDecl : public Decl
 
     // Returns the FunctionDecl AST node for the specified argument type denoter list (used to derive the overloaded function).
     FunctionDecl* FetchFunctionDecl(
-        const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters,
-        const StructDecl** owner = nullptr, bool throwErrorIfNoMatch = false
+        const std::string&                  ident,
+        const std::vector<TypeDenoterPtr>&  argTypeDenoters,
+        const StructDecl**                  owner               = nullptr,
+        bool                                throwErrorIfNoMatch = false
     ) const;
 
     // Returns an identifier that is similar to the specified identifier (for suggestions of typos)
@@ -839,9 +842,10 @@ struct FunctionDecl : public Decl
 
     // Fetches the function declaration from the list that matches the specified argument types.
     static FunctionDecl* FetchFunctionDeclFromList(
-        const std::vector<FunctionDecl*>& funcDeclList,
-        const std::string& ident, const std::vector<TypeDenoterPtr>& argTypeDenoters,
-        bool throwErrorIfNoMatch = true
+        const std::vector<FunctionDecl*>&   funcDeclList,
+        const std::string&                  ident,
+        const std::vector<TypeDenoterPtr>&  argTypeDenoters,
+        bool                                throwErrorIfNoMatch = true
     );
 
     TypeSpecifierPtr                returnType;                                 // Function return type (TypeSpecifier).
@@ -1238,8 +1242,10 @@ struct CallExpr : public Expr
 
     IndexedSemantic FetchSemantic() const override;
 
-    // Returns a list of all argument expressions (including the default parameters).
+    #if 0//UNUSED
+    // Returns a list of all argument expressions (including the default arguments).
     std::vector<Expr*> GetArguments() const;
+    #endif
 
     // Returns the reference to the function declaration of this call expression, or null if not set.
     FunctionDecl* GetFunctionDecl() const;
@@ -1276,7 +1282,7 @@ struct CallExpr : public Expr
 
     FunctionDecl*           funcDeclRef         = nullptr;              // Reference to the function declaration. May be null.
     Intrinsic               intrinsic           = Intrinsic::Undefined; // Intrinsic ID (if this is an intrinsic).
-    std::vector<Expr*>      defaultArgumentRefs;                        // Reference to default argument expressions of all remaining parameters.
+    std::vector<VarDecl*>   defaultParamRefs;                           // Reference to parameters that have a default argument.
 };
 
 // Bracket expression.

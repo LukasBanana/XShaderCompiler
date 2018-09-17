@@ -238,3 +238,6 @@
 
 [Sampler2DonSM3: frag]
 -T frag -Wall -Vin HLSL3 --explicit-bind ON -o output/* Sampler2DOnSM3.hlsl
+
+[InOutParamTest1: vert]
+-T vert -Wall -o output/* InOutParamTest1.hlsl
