@@ -304,7 +304,7 @@ Stmnt* Converter::StmntScopeHandler::Next()
 void Converter::StmntScopeHandler::InsertStmntBefore(const StmntPtr& stmnt)
 {
     EnsureStmntList();
-    
+
     if (idx_ > 0)
         InsertStmntAt(stmnt, idx_ - 1);
     else

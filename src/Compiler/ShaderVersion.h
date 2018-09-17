@@ -19,9 +19,9 @@ namespace Xsc
 // Shader version class.
 class ShaderVersion
 {
-    
+
     public:
-    
+
         ShaderVersion() = default;
         ShaderVersion(const ShaderVersion&) = default;
         ShaderVersion& operator = (const ShaderVersion&) = default;
@@ -41,9 +41,9 @@ class ShaderVersion
         }
 
     private:
-        
-        int major_ = 0,
-            minor_ = 0;
+
+        int major_ = 0;
+        int minor_ = 0;
 
 };
 

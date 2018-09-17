@@ -201,7 +201,7 @@ static HLSLIntrinsicsMap GenerateIntrinsicMap()
 enum class IntrinsicReturnType
 {
     Void,               // Fixed void type
-    
+
     Bool,               // Fixed bool type
     Int,                // Fixed int type
     Int2,               // Fixed int2 type
@@ -798,7 +798,7 @@ TypeDenoterPtr HLSLIntrinsicAdept::DeriveReturnTypeMulPrimary(const std::vector<
     /* Scalar x TYPE = TYPE */
     if (type0->IsScalar())
         return type1;
-        
+
     if (type0->IsVector())
     {
         /* TYPE x Scalar = TYPE */
@@ -1016,7 +1016,7 @@ void HLSLIntrinsicAdept::DeriveParameterTypesFirstBit(std::vector<TypeDenoterPtr
     if (auto baseType0 = type0->As<BaseTypeDenoter>())
     {
         const auto baseDataType = BaseDataType(baseType0->dataType);
-        
+
         if (IsScalarType(baseDataType) || IsVectorType(baseDataType))
         {
             if (baseDataType != DataType::Int && baseDataType != DataType::UInt)

@@ -266,7 +266,7 @@ template <typename T>
 int NumDigits(T n)
 {
     static_assert(std::is_integral<T>::value, "NumDigits template only allows integral types");
-    
+
     int digits = (n < 0 ? 1 : 0);
 
     while (n != 0)

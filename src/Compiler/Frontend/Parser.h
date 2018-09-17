@@ -34,7 +34,7 @@ class Parser
 
     public:
 
-        virtual ~Parser();
+        virtual ~Parser() = default;
 
     protected:
 

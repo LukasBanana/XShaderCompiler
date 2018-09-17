@@ -21,9 +21,9 @@ namespace Xsc
 // Extended visitor class with AST tracking functions.
 class VisitorTracker : public Visitor
 {
-    
+
     protected:
-        
+
         /* ----- Global scope tracker ----- */
 
         bool InsideGlobalScope() const;

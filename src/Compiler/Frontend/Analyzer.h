@@ -29,31 +29,31 @@ struct StructTypeDenoter;
 // Context analyzer base class.
 class Analyzer : protected VisitorTracker
 {
-    
+
     public:
-        
+
         Analyzer(Log* log = nullptr);
 
         bool DecorateAST(
-            Program& program,
-            const ShaderInput& inputDesc,
+            Program&            program,
+            const ShaderInput&  inputDesc,
             const ShaderOutput& outputDesc
         );
 
     protected:
-        
+
         using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
 
         virtual void DecorateASTPrimary(
-            Program& program,
-            const ShaderInput& inputDesc,
+            Program&            program,
+            const ShaderInput&  inputDesc,
             const ShaderOutput& outputDesc
         ) = 0;
 
         /* ----- Report and error handling ----- */
 
         void SubmitReport(bool isError, const std::string& msg, const AST* ast = nullptr, const std::vector<const AST*>& astAppendices = {});
-        
+
         void Error(const std::string& msg, const AST* ast = nullptr, const std::vector<const AST*>& astAppendices = {});
         void ErrorUndeclaredIdent(const std::string& ident, const AST* ast = nullptr);
         void ErrorUndeclaredIdent(const std::string& ident, const std::string& contextName, const AST* ast = nullptr);
@@ -82,7 +82,7 @@ class Analyzer : protected VisitorTracker
 
         // Registers the AST node in the current scope with the specified identifier.
         void Register(const std::string& ident, AST* ast);
-        
+
         // Tries to fetch an AST node with the specified identifier from the symbol table and reports an error on failure.
         AST* Fetch(const std::string& ident, const AST* ast = nullptr);
 

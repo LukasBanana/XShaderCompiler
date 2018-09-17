@@ -23,9 +23,9 @@ namespace Xsc
 // Function name mangling AST converter.
 class FuncNameConverter : public VisitorTracker
 {
-    
+
     public:
-        
+
         // Conversion flags enumeration.
         enum : unsigned int
         {
@@ -43,14 +43,14 @@ class FuncNameConverter : public VisitorTracker
 
         // Converts the function declaration identigiers in the specified AST.
         void Convert(
-            Program& program,
-            const NameMangling& nameMangling,
-            const OnFuncSigantureCompare& onFuncSignatureCompare,
-            const Flags& conversionFlags
+            Program&                        program,
+            const NameMangling&             nameMangling,
+            const OnFuncSigantureCompare&   onFuncSignatureCompare,
+            const Flags&                    conversionFlags
         );
 
     private:
-        
+
         /* ----- Conversion ----- */
 
         using FuncList = std::vector<FunctionDecl*>;

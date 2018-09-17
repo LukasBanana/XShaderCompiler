@@ -74,7 +74,7 @@ class SourceArea
 
         SourcePosition  pos_;
         unsigned int    length_ = 0;
-        unsigned int    offset_  = 0;
+        unsigned int    offset_ = 0;
 
 };
 

@@ -620,7 +620,7 @@ std::string ASTPrinter::WriteLabel(const std::string& astName, TypedAST* ast)
     if (ast)
     {
         s += " <";
-        
+
         try
         {
             s += ast->GetTypeDenoter()->ToString();

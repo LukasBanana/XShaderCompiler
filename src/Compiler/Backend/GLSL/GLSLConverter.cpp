@@ -927,13 +927,16 @@ void GLSLConverter::ConvertIntrisicCallF32toF16(CallExpr* ast)
         {
             auto& args = ast->arguments;
 
+            /* Change intrinsic to "packHalf2x16" and generate new c'tor arguments */
             ast->intrinsic = Intrinsic::PackHalf2x16;
 
             auto typeDenoter = std::make_shared<BaseTypeDenoter>(DataType::Float2);
 
-            std::vector<ExprPtr> ctorArgs;
-            ctorArgs.push_back(args[0]);
-            ctorArgs.push_back(ASTFactory::MakeLiteralExpr(DataType::Float, "0"));
+            std::vector<ExprPtr> ctorArgs =
+            {
+                args[0],
+                ASTFactory::MakeLiteralExpr(DataType::Float, "0")
+            };
 
             args[0] = ASTFactory::MakeTypeCtorCallExpr(typeDenoter, ctorArgs);
         }

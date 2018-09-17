@@ -22,9 +22,9 @@ namespace Xsc
 // Token class used by the scanners and parsers.
 class Token
 {
-    
+
     public:
-        
+
         // Token type enumeration.
         enum class Types
         {
@@ -80,10 +80,10 @@ class Token
             Do,                 // do
             While,              // while
             For,                // for
-            
+
             If,                 // if
             Else,               // else
-            
+
             Switch,             // switch
             Case,               // case
             Default,            // default

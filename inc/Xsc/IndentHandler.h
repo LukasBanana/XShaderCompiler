@@ -26,8 +26,8 @@ class XSC_EXPORT IndentHandler
 
     public:
 
-        IndentHandler(const std::string& initialIndent = std::string(2, ' '));
-        ~IndentHandler();
+        IndentHandler(const std::string& initialIndent = "  ");
+        virtual ~IndentHandler();
 
         //! Sets the next indentation string. By default two spaces.
         void SetIndent(const std::string& indent);
@@ -43,6 +43,7 @@ class XSC_EXPORT IndentHandler
 
     private:
 
+        // PImpl idiom
         struct OpaqueData;
         OpaqueData* data_ = nullptr;
 

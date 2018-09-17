@@ -25,13 +25,13 @@ namespace Xsc
 // Syntax parser base class for HLSL and GLSL.
 class SLParser : public Parser
 {
-    
+
     public:
-        
+
         SLParser(Log* log = nullptr);
 
     protected:
-        
+
         /* === Functions === */
 
         // Accepts the semicolon token (Accept(Tokens::Semicolon)).

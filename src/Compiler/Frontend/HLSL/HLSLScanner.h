@@ -19,9 +19,9 @@ namespace Xsc
 // HLSL token scanner.
 class HLSLScanner : public SLScanner
 {
-    
+
     public:
-        
+
         HLSLScanner(bool enableCgKeywords, Log* log = nullptr);
 
     private:

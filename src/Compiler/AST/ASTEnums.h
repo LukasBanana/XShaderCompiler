@@ -1033,19 +1033,19 @@ enum class Intrinsic
     StreamOutput_Append,        // Append(StreamDataType)
     StreamOutput_RestartStrip,  // RestartStrip()
 
-    /* --- GLSL image intrinsics --- */
-    Image_Load,                 // GLSL only
-    Image_Store,                // GLSL only
-    Image_AtomicAdd,            // GLSL only
-    Image_AtomicAnd,            // GLSL only
-    Image_AtomicOr,             // GLSL only
-    Image_AtomicXor,            // GLSL only
-    Image_AtomicMin,            // GLSL only
-    Image_AtomicMax,            // GLSL only
-    Image_AtomicCompSwap,       // GLSL only
-    Image_AtomicExchange,       // GLSL only
+    /* --- GLSL only intrinsics --- */
+    Image_Load,                 // imageLoad(gimage Image, T Location)
+    Image_Store,                // imageStore(gimage Image, T Location, G Data)
+    Image_AtomicAdd,            // atomicAdd(inout T Memory, T Data)
+    Image_AtomicAnd,            // atomicAnd(inout T Memory, T Data)
+    Image_AtomicOr,             // atomicOr(inout T Memory, T Data)
+    Image_AtomicXor,            // atomicXor(inout T Memory, T Data)
+    Image_AtomicMin,            // atomicMin(inout T Memory, T Data)
+    Image_AtomicMax,            // atomicMax(inout T Memory, T Data)
+    Image_AtomicCompSwap,       // atomicCompSwap(inout T Memory, T compare, T Data)
+    Image_AtomicExchange,       // atomicExchange(inout T Memory, T Data)
 
-    PackHalf2x16,               // GLSL only
+    PackHalf2x16,               // packHalf2x16(vec2 Vec)
 };
 
 // Container structure for all kinds of intrinsic call usages (can be used as std::map<Intrinsic, IntrinsicUsage>).

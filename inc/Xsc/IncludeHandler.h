@@ -50,6 +50,7 @@ class XSC_EXPORT IncludeHandler
 
     private:
 
+        // PImple idiom
         struct OpaqueData;
         OpaqueData* data_ = nullptr;
 

@@ -26,13 +26,13 @@ Marks 'FunctionDecl::hasNonReturnControlPath' and 'AST::isDeadCode' flags.
 */
 class ControlPathAnalyzer : private Visitor
 {
-    
+
     public:
-        
+
         void MarkControlPathsFromFunction(FunctionDecl& funcDecl);
 
     private:
-        
+
         void PushReturnPath(bool returnPath);
         bool PopReturnPath();
 

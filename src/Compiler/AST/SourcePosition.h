@@ -34,9 +34,9 @@ using SourceOriginPtr = std::shared_ptr<SourceOrigin>;
 // This class stores the position in a source code file.
 class SourcePosition
 {
-    
+
     public:
-        
+
         // Invalid source position.
         static const SourcePosition ignore;
 
@@ -92,9 +92,9 @@ class SourcePosition
         }
 
     private:
-        
-        unsigned int    row_    = 0,
-                        column_ = 0;
+
+        unsigned int    row_    = 0;
+        unsigned int    column_ = 0;
 
         SourceOriginPtr origin_;
 

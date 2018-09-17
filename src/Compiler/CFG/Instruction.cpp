@@ -61,7 +61,7 @@ void Instruction::ReadFrom(std::vector<std::uint32_t>::const_iterator& bufferIte
 
     auto wordCount  = (firstWord >> spv::WordCountShift);
     this->opCode    = static_cast<spv::Op>(firstWord & spv::OpCodeMask);
-    
+
     --wordCount;
 
     /* Read type (if used) */

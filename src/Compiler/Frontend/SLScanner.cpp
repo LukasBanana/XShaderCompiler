@@ -207,7 +207,7 @@ TokenPtr SLScanner::ScanPlusOp()
 {
     std::string spell;
     spell += TakeIt();
-    
+
     if (Is('+'))
         return Make(Tokens::UnaryOp, spell, true);
     else if (Is('='))

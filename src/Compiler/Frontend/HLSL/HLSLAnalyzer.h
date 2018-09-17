@@ -33,9 +33,9 @@ class HLSLAnalyzer : public Analyzer
 
     private:
 
-        using OnOverrideProc = ASTSymbolTable::OnOverrideProc;
+        using OnOverrideProc            = ASTSymbolTable::OnOverrideProc;
         using OnValidAttributeValueProc = std::function<bool(const AttributeValue)>;
-        using OnAssignTypeDenoterProc = std::function<void(const TypeDenoterPtr&)>;
+        using OnAssignTypeDenoterProc   = std::function<void(const TypeDenoterPtr&)>;
 
         /* === Structures === */
 
@@ -48,8 +48,8 @@ class HLSLAnalyzer : public Analyzer
         /* === Functions === */
 
         void DecorateASTPrimary(
-            Program& program,
-            const ShaderInput& inputDesc,
+            Program&            program,
+            const ShaderInput&  inputDesc,
             const ShaderOutput& outputDesc
         ) override;
 
@@ -174,18 +174,18 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeAttributeNumThreadsArgument(Expr* expr, unsigned int& value);
 
         void AnalyzeAttributeValue(
-            Expr* argExpr,
-            AttributeValue& value,
-            const OnValidAttributeValueProc& expectedValueFunc,
-            const std::string& expectationDesc,
-            bool required = true
+            Expr*                               argExpr,
+            AttributeValue&                     value,
+            const OnValidAttributeValueProc&    expectedValueFunc,
+            const std::string&                  expectationDesc,
+            bool                                required            = true
         );
 
         bool AnalyzeAttributeValuePrimary(
-            Expr* argExpr,
-            AttributeValue& value,
-            const OnValidAttributeValueProc& expectedValueFunc,
-            std::string& literalValue
+            Expr*                               argExpr,
+            AttributeValue&                     value,
+            const OnValidAttributeValueProc&    expectedValueFunc,
+            std::string&                        literalValue
         );
 
         /* ----- Semantic ----- */
@@ -208,10 +208,10 @@ class HLSLAnalyzer : public Analyzer
         bool AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t argIndex, std::string& ident);
 
         void AnalyzeVectorSpaceAssign(
-            TypedAST* lhs,
-            const TypeDenoter& rhsTypeDen,
-            const OnAssignTypeDenoterProc& assignTypeDenProc = nullptr,
-            bool swapAssignOrder = false
+            TypedAST*                       lhs,
+            const TypeDenoter&              rhsTypeDen,
+            const OnAssignTypeDenoterProc&  assignTypeDenProc   = nullptr,
+            bool                            swapAssignOrder     = false
         );
 
         #endif

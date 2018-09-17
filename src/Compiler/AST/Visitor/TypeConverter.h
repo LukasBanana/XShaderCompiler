@@ -27,9 +27,9 @@ to ensure the type denoters are reset all up the tree hierarchy, if required (i.
 // Helper class to update the type denoters of all 'TypedAST' nodes, whose type denoters have been reset.
 class TypeConverter : public Visitor
 {
-    
+
     public:
-        
+
         // Callback interface for each variable declaration, which returns true if its type has changed (i.e. type denoter has been reset).
         using OnVisitVarDecl = std::function<bool(VarDecl& varDecl)>;
 
@@ -37,7 +37,7 @@ class TypeConverter : public Visitor
         void Convert(Program& program, const OnVisitVarDecl& onVisitVarDecl);
 
     private:
-        
+
         void ConvertExprType(Expr* expr);
         void ConvertExpr(const ExprPtr& expr);
 

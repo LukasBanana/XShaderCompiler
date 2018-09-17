@@ -27,11 +27,11 @@ namespace Xsc
 // Scanner base class.
 class Scanner
 {
-    
+
     public:
-        
+
         Scanner(Log* log = nullptr);
-        virtual ~Scanner();
+        virtual ~Scanner() = default;
 
         // Starts scanning the specified source code.
         bool ScanSource(const SourceCodePtr& source);
@@ -77,7 +77,7 @@ class Scanner
         }
 
     protected:
-        
+
         using Tokens = Token::Types;
 
         /* === Functions === */
@@ -124,7 +124,7 @@ class Scanner
         TokenPtr    ScanCommentBlock(bool scanComments);
         TokenPtr    ScanStringLiteral();
         TokenPtr    ScanCharLiteral();
-        TokenPtr    ScanNumber(bool startWithDot = false);
+        TokenPtr    ScanNumber(bool startWithPeriod = false);
         TokenPtr    ScanNumberOrDot();
         TokenPtr    ScanVarArg(std::string& spell);
 

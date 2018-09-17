@@ -37,20 +37,20 @@ class ReportHandler
         ReportHandler(Log* log);
 
         void Warning(
-            bool breakWithExpection,
-            const std::string& msg,
-            SourceCode* sourceCode = nullptr,
-            const SourceArea& area = SourceArea::ignore
+            bool                breakWithExpection,
+            const std::string&  msg,
+            SourceCode*         sourceCode          = nullptr,
+            const SourceArea&   area                = SourceArea::ignore
         );
 
         void SubmitReport(
-            bool breakWithExpection,
-            const ReportTypes type,
-            const std::string& typeName,
-            const std::string& msg,
-            SourceCode* sourceCode = nullptr,
-            const SourceArea& area = SourceArea::ignore,
-            const std::vector<SourceArea>& secondaryAreas = {}
+            bool                            breakWithExpection,
+            const ReportTypes               type,
+            const std::string&              typeName,
+            const std::string&              msg,
+            SourceCode*                     sourceCode      = nullptr,
+            const SourceArea&               area            = SourceArea::ignore,
+            const std::vector<SourceArea>&  secondaryAreas  = {}
         );
 
         // Returns true if any errors have been submitted.
@@ -72,11 +72,11 @@ class ReportHandler
     private:
 
         Report MakeReport(
-            const ReportTypes type,
-            const std::string& msg,
-            SourceCode* sourceCode,
-            const SourceArea& area,
-            const std::vector<SourceArea>& secondaryAreas
+            const ReportTypes               type,
+            const std::string&              msg,
+            SourceCode*                     sourceCode,
+            const SourceArea&               area,
+            const std::vector<SourceArea>&  secondaryAreas
         );
 
         Log*                        log_                = nullptr;

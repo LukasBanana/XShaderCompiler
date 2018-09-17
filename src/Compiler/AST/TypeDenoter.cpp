@@ -378,7 +378,7 @@ static TypeDenoterPtr FindCommonTypeDenoterScalarAndMatrix(BaseTypeDenoter* lhsT
 static TypeDenoterPtr FindCommonTypeDenoterVectorAndVector(BaseTypeDenoter* lhsTypeDen, BaseTypeDenoter* rhsTypeDen)
 {
     auto commonType = HighestOrderDataType(BaseDataType(lhsTypeDen->dataType), BaseDataType(rhsTypeDen->dataType));
-    
+
     /* Return always lowest dimension (e.g. 'v3 * v4' => 'v3 * float3(v4)') */
     auto lhsDim = VectorTypeDim(lhsTypeDen->dataType);
     auto rhsDim = VectorTypeDim(rhsTypeDen->dataType);

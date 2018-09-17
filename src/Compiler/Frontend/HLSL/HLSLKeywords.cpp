@@ -17,7 +17,7 @@ namespace Xsc
 {
 
 
-/* 
+/*
  * Internal functions
  */
 

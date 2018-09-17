@@ -19,9 +19,9 @@ namespace Xsc
 // Common shading-language token scanner.
 class SLScanner : public Scanner
 {
-    
+
     public:
-        
+
         SLScanner(Log* log = nullptr);
 
         // Scanns the next token.
@@ -32,7 +32,7 @@ class SLScanner : public Scanner
         virtual TokenPtr ScanIdentifierOrKeyword(std::string&& spell) = 0;
 
     private:
-        
+
         /* === Functions === */
 
         TokenPtr ScanToken() override;

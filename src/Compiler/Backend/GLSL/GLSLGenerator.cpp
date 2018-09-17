@@ -2908,7 +2908,7 @@ void GLSLGenerator::WriteWrapperIntrinsics()
 
 void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
 {
-    bool wrappersWritten = false;
+    bool anyWrappersWritten = false;
 
     for (const auto& argList : usage.argLists)
     {
@@ -2951,11 +2951,11 @@ void GLSLGenerator::WriteWrapperIntrinsicsClip(const IntrinsicUsage& usage)
             }
             EndLn();
 
-            wrappersWritten = true;
+            anyWrappersWritten = true;
         }
     }
 
-    if (wrappersWritten)
+    if (anyWrappersWritten)
         Blank();
 }
 
@@ -2986,7 +2986,7 @@ void GLSLGenerator::WriteWrapperIntrinsicsLit(const IntrinsicUsage& usage)
 
 void GLSLGenerator::WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage)
 {
-    bool wrappersWritten = false;
+    bool anyWrappersWritten = false;
 
     for (const auto& argList : usage.argLists)
     {
@@ -3012,11 +3012,11 @@ void GLSLGenerator::WriteWrapperIntrinsicsSinCos(const IntrinsicUsage& usage)
             }
             EndLn();
 
-            wrappersWritten = true;
+            anyWrappersWritten = true;
         }
     }
 
-    if (wrappersWritten)
+    if (anyWrappersWritten)
         Blank();
 }
 

@@ -25,13 +25,13 @@ which are at the end of a scope (e.g. the 'isEndOfFunction' flag for the return 
 */
 class EndOfScopeAnalyzer : private Visitor
 {
-    
+
     public:
-        
+
         void MarkEndOfScopesFromFunction(FunctionDecl& funcDecl);
 
     private:
-        
+
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( CodeBlock         );

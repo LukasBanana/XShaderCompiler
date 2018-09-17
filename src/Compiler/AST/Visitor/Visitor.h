@@ -100,7 +100,7 @@ class Visitor
 
     public:
 
-        virtual ~Visitor();
+        virtual ~Visitor() = default;
 
         VISITOR_VISIT_PROC( Program           );
         VISITOR_VISIT_PROC( CodeBlock         );

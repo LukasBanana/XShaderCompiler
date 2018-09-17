@@ -14,10 +14,10 @@ namespace Xsc
 
 
 void FuncNameConverter::Convert(
-    Program& program,
-    const NameMangling& nameMangling,
-    const OnFuncSigantureCompare& onFuncSignatureCompare,
-    const Flags& conversionFlags)
+    Program&                        program,
+    const NameMangling&             nameMangling,
+    const OnFuncSigantureCompare&   onFuncSignatureCompare,
+    const Flags&                    conversionFlags)
 {
     /* Copy parameters */
     nameMangling_           = nameMangling;

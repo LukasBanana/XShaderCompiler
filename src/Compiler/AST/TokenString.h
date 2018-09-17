@@ -32,9 +32,9 @@ This class is mainly used by the preprocessor, because the preprocessor must kee
 template <typename TokenType, typename TokenOfInterestFunctor>
 class BasicTokenString
 {
-    
+
     public:
-        
+
         using ValueType = TokenType;
         using Container = std::vector<TokenType>;
 
@@ -94,12 +94,12 @@ class BasicTokenString
                 {
                     return *it_;
                 }
-                
+
                 typename Container::const_iterator operator -> ()
                 {
                     return it_;
                 }
-                
+
             private:
 
                 void NextTokenOfInterest()
@@ -120,7 +120,7 @@ class BasicTokenString
         {
             PushBack(token);
         }
-        
+
         ConstIterator Begin() const
         {
             return ConstIterator(tokens_.begin(), tokens_.end());
@@ -150,7 +150,7 @@ class BasicTokenString
         {
             tokens_.pop_back();
         }
-        
+
         const ValueType& Front() const
         {
             return tokens_.front();

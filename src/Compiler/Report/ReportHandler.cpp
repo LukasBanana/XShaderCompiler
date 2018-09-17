@@ -30,8 +30,13 @@ void ReportHandler::Warning(
 }
 
 void ReportHandler::SubmitReport(
-    bool breakWithExpection, const ReportTypes type, const std::string& typeName, const std::string& msg,
-    SourceCode* sourceCode, const SourceArea& area, const std::vector<SourceArea>& secondaryAreas)
+    bool                            breakWithExpection,
+    const ReportTypes               type,
+    const std::string&              typeName,
+    const std::string&              msg,
+    SourceCode*                     sourceCode,
+    const SourceArea&               area,
+    const std::vector<SourceArea>&  secondaryAreas)
 {
     /* Check if error location has already been reported */
     if (!breakWithExpection && area.Pos().IsValid())
@@ -97,8 +102,11 @@ void ReportHandler::HintForNextReport(const std::string& hint)
  */
 
 Report ReportHandler::MakeReport(
-    const ReportTypes type, const std::string& msg, SourceCode* sourceCode,
-    const SourceArea& area, const std::vector<SourceArea>& secondaryAreas)
+    const ReportTypes               type,
+    const std::string&              msg,
+    SourceCode*                     sourceCode,
+    const SourceArea&               area,
+    const std::vector<SourceArea>&  secondaryAreas)
 {
     /* Get current context description */
     std::string contextDesc;
@@ -132,12 +140,12 @@ Report ReportHandler::MakeReport(
 
         /* Return report */
         if (!line.empty())
-            return Report(type, msg, line, marker, contextDesc);
+            return Report { type, msg, line, marker, contextDesc };
         else
-            return Report(type, msg, contextDesc);
+            return Report { type, msg, contextDesc };
     }
     else
-        return Report(type, msg, contextDesc);
+        return Report { type, msg, contextDesc };
 }
 
 

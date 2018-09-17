@@ -18,11 +18,6 @@ namespace Xsc
     void Visitor::Visit##AST_NAME(AST_NAME* ast, void* args)
 
 
-Visitor::~Visitor()
-{
-    // dummy
-}
-
 IMPLEMENT_VISIT_PROC(Program)
 {
     Visit(ast->globalStmnts);

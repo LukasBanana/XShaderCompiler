@@ -16,11 +16,6 @@ namespace Xsc
 {
 
 
-Parser::~Parser()
-{
-}
-
-
 /*
  * ======= Protected: =======
  */

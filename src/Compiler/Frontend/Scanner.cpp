@@ -20,10 +20,6 @@ Scanner::Scanner(Log* log) :
 {
 }
 
-Scanner::~Scanner()
-{
-}
-
 bool Scanner::ScanSource(const SourceCodePtr& source)
 {
     if (source && source->IsValid())
@@ -75,7 +71,7 @@ TokenPtr Scanner::PreviousToken() const
 TokenPtr Scanner::NextToken(bool scanComments, bool scanWhiteSpaces)
 {
     TokenPtr tkn;
-    
+
     /* Store previous token */
     prevToken_ = activeToken_;
 
@@ -131,7 +127,7 @@ TokenPtr Scanner::NextTokenScan(bool scanComments, bool scanWhiteSpaces)
                     StoreStartPos();
                     return Make(Tokens::EndOfStream);
                 }
-                
+
                 /* Scan commentaries */
                 if (Is('/'))
                 {
@@ -283,7 +279,7 @@ TokenPtr Scanner::ScanWhiteSpaces(bool includeNewLines)
 
     /* Scan other white spaces */
     std::string spell;
-    
+
     while ( std::isspace(UChr()) && ( includeNewLines || !IsNewLine() ) )
         spell += TakeIt();
 
@@ -307,7 +303,7 @@ TokenPtr Scanner::ScanCommentLine(bool scanComments)
         spell = "//" + spell;
         return Make(Tokens::Comment, spell);
     }
-    
+
     return nullptr;
 }
 
@@ -352,14 +348,14 @@ TokenPtr Scanner::ScanStringLiteral()
     std::string spell;
 
     spell += Take('\"');
-    
+
     while (!Is('\"'))
     {
         if (Is(0))
             ErrorUnexpectedEOS();
         spell += TakeIt();
     }
-    
+
     spell += Take('\"');
 
     return Make(Tokens::StringLiteral, spell);
@@ -370,21 +366,21 @@ TokenPtr Scanner::ScanCharLiteral()
     std::string spell;
 
     spell += Take('\'');
-    
+
     while (!Is('\''))
     {
         if (Is(0))
             ErrorUnexpectedEOS();
         spell += TakeIt();
     }
-    
+
     spell += Take('\'');
 
     return Make(Tokens::CharLiteral, spell);
 }
 
 // see https://msdn.microsoft.com/de-de/library/windows/desktop/bb509567(v=vs.85).aspx
-TokenPtr Scanner::ScanNumber(bool startWithDot)
+TokenPtr Scanner::ScanNumber(bool startWithPeriod)
 {
     std::string spell;
 
@@ -393,24 +389,24 @@ TokenPtr Scanner::ScanNumber(bool startWithDot)
     auto preDigits  = false;
     auto postDigits = false;
 
-    if (!startWithDot)
+    if (!startWithPeriod)
         preDigits = ScanDigitSequence(spell);
 
     /* Check for exponent part (without fractional part) */
-    if ( !startWithDot && ( Is('e') || Is('E') ) )
-        startWithDot = true;
+    if ( !startWithPeriod && ( Is('e') || Is('E') ) )
+        startWithPeriod = true;
 
     /* Check for fractional part */
-    if (startWithDot || Is('.'))
+    if (startWithPeriod || Is('.'))
     {
         type = Tokens::FloatLiteral;
 
-        /* Scan floating-point dot */
-        if (startWithDot)
+        /* Scan period for floating-points */
+        if (startWithPeriod)
             spell += '.';
         else
             spell += TakeIt();
-        
+
         /* Scan (optional) right hand side digit-sequence */
         postDigits = ScanDigitSequence(spell);
 
@@ -444,7 +440,7 @@ TokenPtr Scanner::ScanNumber(bool startWithDot)
             while ( std::isdigit(UChr()) || ( Chr() >= 'a' && Chr() <= 'f' ) || ( Chr() >= 'A' && Chr() <= 'F' ) )
                 spell += TakeIt();
         }
-        
+
         /* Check for integer-suffix */
         if (Is('u') || Is('U') || Is('l') || Is('L'))
             spell += TakeIt();

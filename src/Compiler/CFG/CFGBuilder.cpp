@@ -207,10 +207,10 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
 
     /* Create condition CFG */
     PushBreak(bbElse);
-    
+
     Visit(ast->condition);
     auto cfgCond = PopCFG();
-    
+
     PopBreak();
 
     cfg.in->AddSucc(*cfgCond.in, "condition");
@@ -218,7 +218,7 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     /* Create then branch CFG */
     Visit(ast->bodyStmnt);
     auto cfgThen = PopCFG();
-    
+
     cfgCond.out->AddSucc(*cfgThen.in);
     cfgThen.out->AddSucc(*cfg.out);
 

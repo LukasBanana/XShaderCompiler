@@ -23,9 +23,9 @@ namespace Xsc
 // Output code writer.
 class CodeWriter : public IndentHandler
 {
-    
+
     public:
-        
+
         struct Options
         {
             Options() = default;

@@ -215,7 +215,7 @@ void SPIRVDisassembler::AddOperandASCII(std::uint32_t offset, std::string* outpu
     /* Add operand as ASCII string */
     std::string value = currentInst_->GetOperandASCII(offset);
     currentPrt_->operands.push_back('\"' + value + '\"');
-    
+
     if (output)
         *output = std::move(value);
 

@@ -19,9 +19,9 @@ namespace Xsc
 // GLSL token scanner.
 class GLSLScanner : public SLScanner
 {
-    
+
     public:
-        
+
         GLSLScanner(Log* log = nullptr);
 
     private:

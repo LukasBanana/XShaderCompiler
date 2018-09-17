@@ -19,15 +19,15 @@ namespace Xsc
 // Pre-processor token scanner.
 class PreProcessorScanner : public Scanner
 {
-    
+
     public:
-        
+
         PreProcessorScanner(Log* log = nullptr);
 
         TokenPtr Next() override;
 
     private:
-        
+
         /* === Functions === */
 
         TokenPtr ScanToken() override;

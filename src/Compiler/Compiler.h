@@ -21,9 +21,9 @@ namespace Xsc
 // Compiler driver class.
 class Compiler
 {
-    
+
     public:
-        
+
         using Time      = std::chrono::system_clock;
         using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
@@ -48,7 +48,7 @@ class Compiler
         );
 
     private:
-        
+
         /* === Functions === */
 
         bool ReturnWithError(const std::string& msg);

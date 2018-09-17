@@ -22,20 +22,20 @@ namespace Xsc
 // Syntax parser class for the shading language GLSL.
 class GLSLParser : public SLParser
 {
-    
+
     public:
-        
+
         GLSLParser(Log* log = nullptr);
 
         ProgramPtr ParseSource(
-            const SourceCodePtr& source,
-            const NameMangling& nameMangling,
-            const InputShaderVersion versionIn,
-            bool enableWarnings = false
+            const SourceCodePtr&        source,
+            const NameMangling&         nameMangling,
+            const InputShaderVersion    versionIn,
+            bool                        enableWarnings = false
         );
 
     private:
-    
+
         /* === Functions === */
 
         ScannerPtr MakeScanner() override;
@@ -45,7 +45,7 @@ class GLSLParser : public SLParser
 
         // Returns true if the current token is a base data type (i.e. scalar, vector, matrix, or string type denoter).
         bool IsBaseDataType() const;
-        
+
         // Returns true if the current token is a literal.
         bool IsLiteral() const;
 

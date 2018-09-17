@@ -26,9 +26,9 @@ namespace Xsc
 // Base class for intrinsic type analysis.
 class IntrinsicAdept
 {
-    
+
     public:
-        
+
         IntrinsicAdept(const IntrinsicAdept&) = delete;
         IntrinsicAdept& operator = (const IntrinsicAdept&) = delete;
 
@@ -42,9 +42,9 @@ class IntrinsicAdept
 
         // Returns the return type denoter of the specified intrinsic with its arguments or throws an error if the call is ambiguous.
         virtual TypeDenoterPtr GetIntrinsicReturnType(
-            const Intrinsic intrinsic,
+            const Intrinsic             intrinsic,
             const std::vector<ExprPtr>& args,
-            const TypeDenoterPtr& prefixTypeDenoter = nullptr
+            const TypeDenoterPtr&       prefixTypeDenoter = nullptr
         ) const = 0;
 
         // Returns a list of all parameter types of the specified intrinsic with its arguments or throws an error if the call is ambiguous.

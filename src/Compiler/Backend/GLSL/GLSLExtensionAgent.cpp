@@ -63,8 +63,13 @@ static OutputShaderVersion GetMinGLSLVersionForTarget(const ShaderTarget shaderT
 }
 
 std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
-    Program& program, OutputShaderVersion& targetGLSLVersion, const ShaderTarget shaderTarget,
-    bool allowExtensions, bool explicitBinding, bool separateShaders, const OnReportProc& onReportExtension)
+    Program&                program,
+    OutputShaderVersion&    targetGLSLVersion,
+    const ShaderTarget      shaderTarget,
+    bool                    allowExtensions,
+    bool                    explicitBinding,
+    bool                    separateShaders,
+    const OnReportProc&     onReportExtension)
 {
     /* Store parameters */
     shaderTarget_       = shaderTarget;

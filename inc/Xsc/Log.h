@@ -27,6 +27,8 @@ class XSC_EXPORT Log
 
     public:
 
+        virtual ~Log() = default;
+
         //! Submits the specified report.
         virtual void SubmitReport(const Report& report) = 0;
 
@@ -81,6 +83,7 @@ class XSC_EXPORT StdLog : public Log
 
     private:
 
+        // PImple idiom
         struct OpaqueData;
         OpaqueData* data_ = nullptr;
 

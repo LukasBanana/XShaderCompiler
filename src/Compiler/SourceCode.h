@@ -24,9 +24,9 @@ namespace Xsc
 // Source code stream class.
 class SourceCode
 {
-    
+
     public:
-        
+
         SourceCode(const std::shared_ptr<std::istream>& stream);
 
         // Returns true if this is a valid source code stream.
@@ -63,7 +63,7 @@ class SourceCode
         std::string Filename() const;
 
     protected:
-        
+
         SourceCode() = default;
 
         // Returns the line (if it has already been read) by the zero-based line index.
