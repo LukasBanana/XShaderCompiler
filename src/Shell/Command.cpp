@@ -1,7 +1,7 @@
 /*
  * Command.cpp
  * 
- * This file is part of the XShaderCompiler project (Copyright (c) 2014-2017 by Lukas Hermanns)
+ * This file is part of the XShaderCompiler project (Copyright (c) 2014-2018 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
@@ -863,7 +863,7 @@ void VersionCommand::Run(CommandLine& cmdLine, ShellState& state)
     std::cout << " on " << __DATE__ << " at " << __TIME__ << std::endl;
 
     /* Print copyright and license notice */
-    std::cout << "Copyright (c) 2014-2017 by Lukas Hermanns" << std::endl;
+    std::cout << "Copyright (c) 2014-2018 by Lukas Hermanns" << std::endl;
     std::cout << "3-Clause BSD License" << std::endl;
 
     state.actionPerformed = true;
