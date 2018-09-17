@@ -79,7 +79,7 @@ class ScreenBufferInfo
 
 };
 
-XSC_THREAD_LOCAL static ScreenBufferInfo g_screenBufferInfo;
+thread_local static ScreenBufferInfo g_screenBufferInfo;
 
 static HANDLE StdOut()
 {

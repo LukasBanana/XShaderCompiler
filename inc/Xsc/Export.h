@@ -15,7 +15,6 @@
 #   define XSC_EXPORT
 #endif
 
-#define XSC_THREAD_LOCAL thread_local
 
 #endif
 
