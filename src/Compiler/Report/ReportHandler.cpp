@@ -38,20 +38,41 @@ void ReportHandler::SubmitReport(
     const SourceArea&               area,
     const std::vector<SourceArea>&  secondaryAreas)
 {
+    if (type == ReportTypes::Error)
+        hasErrors_ = true;
+
+    #if 1 // TODO: this is a workaround to avoid the same error/warning message multiple times (at the same position)
     /* Check if error location has already been reported */
     if (!breakWithExpection && area.Pos().IsValid())
     {
-        if (errorPositions_.find(area.Pos()) == errorPositions_.end())
-            errorPositions_.insert(area.Pos());
-        else
-            return;
+        switch (type)
+        {
+            case ReportTypes::Warning:
+            {
+                if (warningPositions_.find(area.Pos()) == warningPositions_.end())
+                    warningPositions_.insert(area.Pos());
+                else
+                    return;
+            }
+            break;
+
+            case ReportTypes::Error:
+            {
+                if (errorPositions_.find(area.Pos()) == errorPositions_.end())
+                    errorPositions_.insert(area.Pos());
+                else
+                    return;
+            }
+            break;
+
+            default:
+            break;
+        }
     }
+    #endif // /TODO
 
     /* Initialize output message */
     auto outputMsg = typeName;
-
-    if (type == ReportTypes::Error)
-        hasErrors_ = true;
 
     /* Add source position */
     if (area.Pos().IsValid())

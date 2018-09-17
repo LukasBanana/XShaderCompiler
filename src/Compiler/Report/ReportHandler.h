@@ -84,7 +84,9 @@ class ReportHandler
 
         std::stack<std::string>     contextDescStack_;
 
+        // TODO: sometimes the same error/warning message appears multiple times, these sets are a workaround for this issue
         std::set<SourcePosition>    errorPositions_;
+        std::set<SourcePosition>    warningPositions_;
 
 };
 
