@@ -563,6 +563,7 @@ DECL_REPORT( CmdHelpReflect,                    "Enables/disables code reflectio
 DECL_REPORT( CmdHelpPPOnly,                     "Enables/disables to only preprocess source code; default={0}"                                                  );
 DECL_REPORT( CmdHelpMacro,                      "Adds the identifier <IDENT> to the pre-defined macros with an optional VALUE"                                  );
 DECL_REPORT( CmdHelpSemantic,                   "Adds the vertex semantic <IDENT> binding to VALUE (Requires -EB)"                                              );
+DECL_REPORT( CmdHelpPackUniforms,               "Packs global uniforms into a single constant buffer; default={0}"                                              );
 DECL_REPORT( CmdHelpPause,                      "Waits for user input after the translation process"                                                            );
 DECL_REPORT( CmdHelpPresetting,                 "Parse further arguments from the presetting file"                                                              );
 DECL_REPORT( CmdHelpVersion,                    "Prints the version information"                                                                                );

@@ -69,6 +69,7 @@ CommandFactory::CommandFactory()
         PPOnlyCommand,
         MacroCommand,
         SemanticCommand,
+        PackUniformsCommand,
         PauseCommand,
         PresettingCommand,
         VersionCommand,

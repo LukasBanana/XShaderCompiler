@@ -137,7 +137,7 @@ static void PrintColoredCmdUsage(std::ostream& output, const std::string& usage)
 
             /* Write command identifier with color */
             ConsoleManip::ScopedColor scopedColor { ConsoleManip::ColorFlags::Yellow, output };
-            
+
             /* Find end of command identifier */
             end = usage.find_first_of(",;<>= \t", pos);
             if (end != std::string::npos)
@@ -165,7 +165,7 @@ static void PrintColoredCmdUsage(std::ostream& output, const std::string& usage)
 void HelpPrinter::PrintEntry(std::ostream& output, const HelpDescriptor& helpDesc, std::size_t indentSize) const
 {
     std::string indent(indentSize, ' ');
-    
+
     /* Print colored usage */
     output << indent;
     PrintColoredCmdUsage(output, helpDesc.usage);
@@ -183,7 +183,7 @@ void HelpPrinter::PrintEntry(std::ostream& output, const HelpDescriptor& helpDes
 void HelpPrinter::PrintEntryCompact(std::ostream& output, const HelpDescriptor& helpDesc, std::size_t indentSize, std::size_t maxUsageLen) const
 {
     std::string indent(indentSize, ' ');
-    
+
     /* Print usage and brief help */
     output
         << indent << helpDesc.usage << ' '

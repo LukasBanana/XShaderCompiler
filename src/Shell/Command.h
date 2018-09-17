@@ -25,9 +25,9 @@ namespace Util
 // Interface for a shell command.
 class Command
 {
-    
+
     public:
-        
+
         struct Identifier
         {
             Identifier() = default;
@@ -82,6 +82,7 @@ DECL_SHELL_COMMAND( ReflectCommand               );
 DECL_SHELL_COMMAND( PPOnlyCommand                );
 DECL_SHELL_COMMAND( MacroCommand                 );
 DECL_SHELL_COMMAND( SemanticCommand              );
+DECL_SHELL_COMMAND( PackUniformsCommand          );
 DECL_SHELL_COMMAND( PauseCommand                 );
 DECL_SHELL_COMMAND( PresettingCommand            );
 DECL_SHELL_COMMAND( VersionCommand               );

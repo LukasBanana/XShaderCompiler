@@ -516,6 +516,30 @@ void SemanticCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
+ * PackUniformsCommand class
+ */
+
+std::vector<Command::Identifier> PackUniformsCommand::Idents() const
+{
+    return { { "--pack-uniforms" } };
+}
+
+HelpDescriptor PackUniformsCommand::Help() const
+{
+    return
+    {
+        "--pack-uniforms [" + CommandLine::GetBooleanOption() + "]",
+        R_CmdHelpPackUniforms(CommandLine::GetBooleanFalse())
+    };
+}
+
+void PackUniformsCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.outputDesc.uniformPacking.enabled = cmdLine.AcceptBoolean(true);
+}
+
+
+/*
  * PauseCommand class
  */
 

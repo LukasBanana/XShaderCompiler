@@ -74,20 +74,27 @@ class HelpPrinter
 
         // Prints the help reference (either entire or only a brief reference).
         void PrintHelpReference(
-            std::ostream& output, std::size_t indentSize = 2,
-            bool printCompact = true, bool entireReference = false
+            std::ostream&   output,
+            std::size_t     indentSize      = 2,
+            bool            printCompact    = true,
+            bool            entireReference = false
         ) const;
 
         // Prints all previously added help entries to the specified output stream.
         void PrintAll(
-            std::ostream& output, std::size_t indentSize = 0, bool printCompact = true,
-            long categories = HelpCategory::All, long categoriesSet = HelpCategory::All
+            std::ostream&   output,
+            std::size_t     indentSize      = 0,
+            bool            printCompact    = true,
+            long            categories      = HelpCategory::All,
+            long            categoriesSet   = HelpCategory::All
         ) const;
 
         // Prints the help entry only for the specified shell command.
         void Print(
-            std::ostream& output, const std::string& commandName,
-            std::size_t indentSize = 0, bool printCompact = true
+            std::ostream&       output,
+            const std::string&  commandName,
+            std::size_t         indentSize      = 0,
+            bool                printCompact    = true
         ) const;
 
     private:
