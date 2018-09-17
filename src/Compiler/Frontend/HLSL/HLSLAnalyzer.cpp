@@ -984,12 +984,15 @@ void HLSLAnalyzer::AnalyzeCallExprIntrinsic(CallExpr* callExpr, const HLSLIntrin
 {
     const auto intrinsic = intr.intrinsic;
 
-    /* Decoarte function call with intrinsic ID */
-    AnalyzeCallExprIntrinsicPrimary(callExpr, intr);
+    if (IsGlobalIntrinsic(intrinsic) || prefixTypeDenoter)
+    {
+        /* Decoarte function call with intrinsic ID */
+        AnalyzeCallExprIntrinsicPrimary(callExpr, intr);
 
-    /* No intrinsics can be called static */
-    if (isStatic)
-        Error(R_IllegalStaticIntrinsicCall(callExpr->ident), callExpr);
+        /* No intrinsics can be called static */
+        if (isStatic)
+            Error(R_IllegalStaticIntrinsicCall(callExpr->ident), callExpr);
+    }
 
     if (IsGlobalIntrinsic(intrinsic))
     {
@@ -1029,8 +1032,12 @@ void HLSLAnalyzer::AnalyzeCallExprIntrinsic(CallExpr* callExpr, const HLSLIntrin
         }
         else
         {
-            /* Report error on non-global intrinsic without prefix expression */
-            Error(R_InvalidClassIntrinsic(callExpr->ident), callExpr);
+            /* Report warning on reserved identifier for class intrinsic */
+            if (WarnEnabled(Warnings::DeclarationShadowing))
+                Warning(R_FuncCallShadowsClassIntrinsic(callExpr->ident), callExpr);
+
+            /* Try to interpet intrinsic identifier as globally declared function */
+            AnalyzeCallExprFunction(callExpr, callExpr->isStatic, callExpr->prefixExpr.get(), prefixTypeDenoter);
         }
     }
 }

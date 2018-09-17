@@ -436,7 +436,6 @@ DECL_REPORT( InvalidIntrinsicForRWTexture,      "invalid intrinsic '{0}' for RW 
 DECL_REPORT( InvalidIntrinsicForStreamOutput,   "invalid intrinsic '{0}' for stream-output object"                                                              );
 DECL_REPORT( InvalidGlobalIntrinsicForType,     "invalid global intrinsic '{0}' for type '{1}'"                                                                 );
 DECL_REPORT( InvalidClassIntrinsicForType,      "invalid class intrinsic '{0}' for type '{1}'"                                                                  );
-DECL_REPORT( InvalidClassIntrinsic,             "invalid class intrinsic '{0}' for global function call"                                                        );
 DECL_REPORT( InvalidMemberFuncForType,          "invalid member function '{0}' for type '{1}'"                                                                  );
 DECL_REPORT( InvalidTypeModifierForMemberField, "invalid type modifier for structure member field"                                                              );
 DECL_REPORT( InvalidSymbolRefToVarIdent,        "invalid symbol reference to variable identifier '{0}'"                                                         );
@@ -486,6 +485,7 @@ DECL_REPORT( StaticMemberVarRedef,              "redefinition of static member v
 DECL_REPORT( MemberVarsCantHaveDefaultValues,   "member variables cannot have default values[: '{0}']"                                                          );
 DECL_REPORT( DeclTypeDiffersFromDefType,        "declaration type '{0}' differs from definition type '{1}'"                                                     );
 DECL_REPORT( ArrayTypeCanOnlyAppearInDef,       "array type can only appear in definition of static member variables[: '{0}']"                                  );
+DECL_REPORT( FuncCallShadowsClassIntrinsic,     "function call shadows class intrinsic '{0}'"                                                                   );
 
 /* ----- Instruction ----- */
 
