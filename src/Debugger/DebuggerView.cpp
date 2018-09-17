@@ -127,6 +127,7 @@ void DebuggerView::CreateLayoutPropertyGrid()
 
     CreateLayoutPropertyGridShaderInput(*propGrid_);
     CreateLayoutPropertyGridShaderOutput(*propGrid_);
+    CreateLayoutPropertyGridUniformPacking(*propGrid_);
     CreateLayoutPropertyGridOptions(*propGrid_);
     CreateLayoutPropertyGridFormatting(*propGrid_);
     CreateLayoutPropertyGridNameMangling(*propGrid_);
@@ -204,6 +205,15 @@ void DebuggerView::CreateLayoutPropertyGridShaderOutput(wxPropertyGrid& pg)
         choices0.Add("VKSL450");
     }
     pg.Append(new wxEnumProperty("Shader Version", "outputVersion", choices0));
+}
+
+void DebuggerView::CreateLayoutPropertyGridUniformPacking(wxPropertyGrid& pg)
+{
+    pg.Append(new wxPropertyCategory("Uniform Packing"));
+
+    pg.Append(new wxBoolProperty("Enabled", "uniformPackEnabled"));
+    pg.Append(new wxIntProperty("Binding Slot", "uniformPackSlot"));
+    pg.Append(new wxStringProperty("Buffer Name", "uniformPackBuffer", "xsp_buffer"));
 }
 
 void DebuggerView::CreateLayoutPropertyGridOptions(wxPropertyGrid& pg)
@@ -424,7 +434,15 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
     else if (name == "langExtensions")
         shaderInput_.extensions = (ValueBool() ? Extensions::All : 0);
 
-    /* --- Common options --- */
+    /* --- Uniform Packing --- */
+    else if (name == "uniformPackEnabled")
+        shaderOutput_.uniformPacking.enabled = ValueBool();
+    else if (name == "uniformPackSlot")
+        shaderOutput_.uniformPacking.bindingSlot = ValueInt();
+    else if (name == "uniformPackBuffer")
+        shaderOutput_.uniformPacking.bufferName = ValueStr();
+
+    /* --- Options --- */
     else if (name == "indent")
         shaderOutput_.formatting.indent = ValueStr();
     else if (name == "extensions")

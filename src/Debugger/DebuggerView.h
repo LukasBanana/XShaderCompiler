@@ -37,6 +37,7 @@ class DebuggerView : public wxFrame
         void CreateLayoutPropertyGrid();
         void CreateLayoutPropertyGridShaderInput(wxPropertyGrid& pg);
         void CreateLayoutPropertyGridShaderOutput(wxPropertyGrid& pg);
+        void CreateLayoutPropertyGridUniformPacking(wxPropertyGrid& pg);
         void CreateLayoutPropertyGridOptions(wxPropertyGrid& pg);
         void CreateLayoutPropertyGridFormatting(wxPropertyGrid& pg);
         void CreateLayoutPropertyGridNameMangling(wxPropertyGrid& pg);
