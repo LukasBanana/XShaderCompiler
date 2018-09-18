@@ -63,7 +63,6 @@ const std::map<std::string, int>& GetGLSLExtensionVersionMap()
         { E_GL_ARB_texture_rectangle,                       110 },
         { E_GL_ARB_uniform_buffer_object,                   140 },
         { E_GL_ARB_viewport_array,                          320 },
-        { E_GL_ARB_viewport_array,                          110 },
         { E_GL_ARB_shading_language_packing,                420 },
 
         // EXT

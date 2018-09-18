@@ -100,6 +100,22 @@ enum class ComparisonFunc
 };
 
 /**
+\brief Data field type enumeration.
+\see Field::type
+*/
+enum class FieldType
+{
+    Undefined,  //!< Undefined field type.
+    Bool,       //!< Boolean type.
+    Int,        //!< Signed integer type.
+    UInt,       //!< Unsigned integer type.
+    Half,       //!< Half-precision floating-point type.
+    Float,      //!< Single-precision floating-point type.
+    Double,     //!< Double-precision floating-point type.
+    Record,     //!< Record (also called structure, struct, or compound data) type.
+};
+
+/**
 \brief Resource type enumeration.
 \see Resource::type
 */
@@ -209,13 +225,76 @@ struct Attribute
 struct Resource
 {
     //! Resource type. By default ResourceType::Undefined.
-    ResourceType    type    = ResourceType::Undefined;
+    ResourceType    type        = ResourceType::Undefined;
 
     //! Name of the resource.
     std::string     name;
 
     //! Zero-based binding slot number. If this is -1, the binding slot was not specified. By default -1.
-    int             slot    = -1;
+    int             slot        = -1;
+
+    //! Specifies whether this record is referenced in the output shader unit. By default false.
+    bool            referenced  = false;
+};
+
+/**
+\brief A field denotes a data member of a record or constant buffer.
+\see Record::fields
+\see ConstantBuffer::fields
+*/
+struct Field
+{
+    //! Name of the field (also called a data member or variable).
+    std::string                 name;
+
+    //! Base type of the field. Note that this does not include the dimension of a vector type. By default FieldType::Undefined.
+    FieldType                   type            = FieldType::Undefined;
+
+    /**
+    \brief Number of vector dimensions. This is typically used in combination with the 'type' member. By default 1.
+    \remarks If this is 1, the field denotes a scalar type. If this is 0, the field denotes a record type.
+    */
+    unsigned int                dimensions      = 1;
+
+    //! Index to the global record type. If this is -1, the field does not denote a record type. By default -1.
+    int                         typeRecordIndex = -1;
+
+    //! Size (in bytes) of the field. If this is 0xFFFFFFFF, the field size could not be determined. By default 0.
+    unsigned int                size            = 0;
+
+    //! Local offset (in bytes) within the containing record or constant buffer.
+    unsigned int                offset          = 0;
+
+    //! Number of array elements. If this container is empty, the field does not denote an array.
+    std::vector<unsigned int>   arrayElements;
+
+    //! Specifies whether this field is referenced in the output shader unit. By default false.
+    bool                        referenced      = false;
+};
+
+/**
+\brief A record denotes a data structure declared in a shader.
+\see ReflectionData::records
+*/
+struct Record
+{
+    //! Name of the record (also called a structure, struct, or compound data).
+    std::string         name;
+
+    //! Optional index to the global base record type from which this record inherits. If this is -1, this record does not inherit from any other record type. By default -1.
+    int                 baseRecordIndex = -1;
+
+    //! Collection of all fields within this record.
+    std::vector<Field>  fields;
+
+    //! Size (in bytes) of the record. If this is 0xFFFFFFFF, the record size could not be determined. By default 0.
+    unsigned int        size            = 0;
+
+    //! Size (in bytes) of the padding that is added to the record. By default 0.
+    unsigned int        padding         = 0;
+
+    //! Specifies whether this record is referenced in the output shader unit. By default false.
+    bool                referenced      = false;
 };
 
 /**
@@ -225,19 +304,25 @@ struct Resource
 struct ConstantBuffer
 {
     //! Resource type. By default ResourceType::Undefined.
-    ResourceType    type    = ResourceType::Undefined;
+    ResourceType        type        = ResourceType::Undefined;
 
     //! Name of the constant buffer.
-    std::string     name;
+    std::string         name;
 
     //! Zero-based binding slot number. If this is -1, the binding slot was not specified. By default -1.
-    int             slot    = -1;
+    int                 slot        = -1;
+
+    //! Collection of all fields within this constant buffer.
+    std::vector<Field>  fields;
 
     //! Size (in bytes) of the constant buffer with a 16-byte alignment. If this is 0xFFFFFFFF, the buffer size could not be determined. By default 0.
-    unsigned int    size    = 0;
+    unsigned int        size        = 0;
 
     //! Size (in bytes) of the padding that is added to the constant buffer. By default 0.
-    unsigned int    padding = 0;
+    unsigned int        padding     = 0;
+
+    //! Specifies whether this constant buffer is referenced in the output shader unit. By default false.
+    bool                referenced  = false;
 };
 
 /**
@@ -247,13 +332,16 @@ struct ConstantBuffer
 struct SamplerState
 {
     //! Resource type. By default ResourceType::Undefined.
-    ResourceType    type    = ResourceType::Undefined;
+    ResourceType    type        = ResourceType::Undefined;
 
     //! Name of the sampler state.
     std::string     name;
 
     //! Zero-based binding slot number. If this is -1, the binding slot was not specified. By default -1.
-    int             slot    = -1;
+    int             slot        = -1;
+
+    //! Specifies whether this record is referenced in the output shader unit. By default false.
+    bool            referenced  = false;
 };
 
 /**
@@ -291,6 +379,9 @@ struct NumThreads
 //! Structure for shader output statistics (e.g. texture/buffer binding points).
 struct ReflectionData
 {
+    //! All records declared both globally and within constant buffers (also called structure, struct, or compound data).
+    std::vector<Record>             records;
+
     //! All defined macros after pre-processing.
     std::vector<std::string>        macros;
 
