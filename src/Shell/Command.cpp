@@ -1439,7 +1439,7 @@ static void DisassembleCommandPrimary(CommandLine& cmdLine, ShellState& state, b
 
     AssemblyDescriptor desc;
     desc.showNames = showNames;
-    
+
     std::ifstream file(filename, std::ios::binary);
     DisassembleShader(file, std::cout, desc);
 

@@ -211,11 +211,14 @@ struct Attribute
     {
     }
 
+    //! Specifies whether this attribute is referenced in the output shader unit. By default false.
+    bool        referenced  = false;
+
     //! Name of the attribute.
     std::string name;
 
     //! Zero-based attribute slot number. If this is -1, the binding slot was not specified. By default -1.
-    int         slot    = -1;
+    int         slot        = -1;
 };
 
 /**
@@ -224,6 +227,9 @@ struct Attribute
 */
 struct Resource
 {
+    //! Specifies whether this resource is referenced in the output shader unit. By default false.
+    bool            referenced  = false;
+
     //! Resource type. By default ResourceType::Undefined.
     ResourceType    type        = ResourceType::Undefined;
 
@@ -232,9 +238,6 @@ struct Resource
 
     //! Zero-based binding slot number. If this is -1, the binding slot was not specified. By default -1.
     int             slot        = -1;
-
-    //! Specifies whether this record is referenced in the output shader unit. By default false.
-    bool            referenced  = false;
 };
 
 /**
@@ -244,6 +247,9 @@ struct Resource
 */
 struct Field
 {
+    //! Specifies whether this field is referenced in the output shader unit. By default false.
+    bool                        referenced      = false;
+
     //! Name of the field (also called a data member or variable).
     std::string                 name;
 
@@ -267,9 +273,6 @@ struct Field
 
     //! Number of array elements. If this container is empty, the field does not denote an array.
     std::vector<unsigned int>   arrayElements;
-
-    //! Specifies whether this field is referenced in the output shader unit. By default false.
-    bool                        referenced      = false;
 };
 
 /**
@@ -278,6 +281,9 @@ struct Field
 */
 struct Record
 {
+    //! Specifies whether this record is referenced in the output shader unit. By default false.
+    bool                referenced      = false;
+
     //! Name of the record (also called a structure, struct, or compound data).
     std::string         name;
 
@@ -292,9 +298,6 @@ struct Record
 
     //! Size (in bytes) of the padding that is added to the record. By default 0.
     unsigned int        padding         = 0;
-
-    //! Specifies whether this record is referenced in the output shader unit. By default false.
-    bool                referenced      = false;
 };
 
 /**
@@ -303,6 +306,9 @@ struct Record
 */
 struct ConstantBuffer
 {
+    //! Specifies whether this constant buffer is referenced in the output shader unit. By default false.
+    bool                referenced  = false;
+
     //! Resource type. By default ResourceType::Undefined.
     ResourceType        type        = ResourceType::Undefined;
 
@@ -320,9 +326,6 @@ struct ConstantBuffer
 
     //! Size (in bytes) of the padding that is added to the constant buffer. By default 0.
     unsigned int        padding     = 0;
-
-    //! Specifies whether this constant buffer is referenced in the output shader unit. By default false.
-    bool                referenced  = false;
 };
 
 /**
@@ -379,11 +382,11 @@ struct NumThreads
 //! Structure for shader output statistics (e.g. texture/buffer binding points).
 struct ReflectionData
 {
-    //! All records declared both globally and within constant buffers (also called structure, struct, or compound data).
-    std::vector<Record>             records;
-
     //! All defined macros after pre-processing.
     std::vector<std::string>        macros;
+
+    //! All records declared both globally and within constant buffers (also called structure, struct, or compound data).
+    std::vector<Record>             records;
 
     //! Shader input attributes.
     std::vector<Attribute>          inputAttributes;
@@ -428,8 +431,15 @@ XSC_EXPORT std::string ToString(const Reflection::ComparisonFunc t);
 //! Returns the string representation of the specified <Reflection::ResourceType> type.
 XSC_EXPORT std::string ToString(const Reflection::ResourceType t);
 
-//! Prints the reflection data into the output stream in a human readable format.
-XSC_EXPORT void PrintReflection(std::ostream& stream, const Reflection::ReflectionData& reflectionData);
+/**
+\brief Prints the reflection data into the output stream in a human readable format.
+\param[out] stream Specifies the output stream to which the reflection will be printed.
+This can be <code>std::cout</code> to print to the standard output for instance, or an instance of <code>std::stringstream</code> to convert the result into a string.
+\param[in] reflectionData Specifies the input reflection data that can be obtained by the \c CompileShader function.
+\param[in] referencedOnly Specifies whether or not to print only resources that are referenced in the output shader unit. By default false.
+\see CompileShader
+*/
+XSC_EXPORT void PrintReflection(std::ostream& stream, const Reflection::ReflectionData& reflectionData, bool referencedOnly = false);
 
 
 } // /namespace Xsc

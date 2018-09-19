@@ -321,7 +321,7 @@ bool Shell::Compile(const std::string& filename)
 
         /* Show output statistics (if enabled) */
         if (state_.showReflection)
-            PrintReflection(output, reflectionData);
+            PrintReflection(output, reflectionData, !state_.showReflectionExt);
     }
     catch (const std::exception& err)
     {

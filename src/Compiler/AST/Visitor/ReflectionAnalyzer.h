@@ -15,6 +15,7 @@
 #include "Visitor.h"
 #include "Token.h"
 #include "Variant.h"
+#include <map>
 
 
 namespace Xsc
@@ -54,6 +55,7 @@ class ReflectionAnalyzer : private Visitor
         DECL_VISIT_PROC( Program           );
 
         DECL_VISIT_PROC( SamplerDecl       );
+        DECL_VISIT_PROC( StructDecl        );
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
@@ -71,16 +73,21 @@ class ReflectionAnalyzer : private Visitor
         void ReflectAttributes(const std::vector<AttributePtr>& attribs);
         void ReflectAttributesNumThreads(Attribute* ast);
 
+        // Returns the index of the record that is associated with the specified structure declaration object, or -1 on failure.
+        int FindRecordIndex(const StructDecl* structDecl) const;
+
         /* === Members === */
 
-        ReportHandler               reportHandler_;
+        ReportHandler                               reportHandler_;
 
-        ShaderTarget                shaderTarget_   = ShaderTarget::VertexShader;
-        Program*                    program_        = nullptr;
+        ShaderTarget                                shaderTarget_       = ShaderTarget::VertexShader;
+        Program*                                    program_            = nullptr;
 
-        Reflection::ReflectionData* data_           = nullptr;
+        Reflection::ReflectionData*                 data_               = nullptr;
 
-        bool                        enableWarnings_ = false;
+        bool                                        enableWarnings_     = false;
+
+        std::map<const StructDecl*, std::size_t>    recordIndicesMap_;
 
 };
 

@@ -34,10 +34,10 @@ XSC_EXPORT std::string ToString(const Reflection::ResourceType t)
     return ResourceTypeToString(t);
 }
 
-XSC_EXPORT void PrintReflection(std::ostream& stream, const Reflection::ReflectionData& reflectionData)
+XSC_EXPORT void PrintReflection(std::ostream& stream, const Reflection::ReflectionData& reflectionData, bool referencedOnly)
 {
-    ReflectionPrinter printer(stream);
-    printer.PrintReflection(reflectionData);
+    ReflectionPrinter printer { stream };
+    printer.PrintReflection(reflectionData, referencedOnly);
 }
 
 

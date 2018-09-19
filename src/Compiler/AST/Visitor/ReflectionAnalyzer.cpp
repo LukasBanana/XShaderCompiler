@@ -106,9 +106,10 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
         /* Reflect sampler state */
         Reflection::SamplerState samplerState;
         {
-            samplerState.type = SamplerTypeToResourceType(ast->GetSamplerType());
-            samplerState.name = ast->ident;
-            samplerState.slot = GetBindingPoint(ast->slotRegisters);
+            samplerState.referenced = ast->flags(AST::isReachable);
+            samplerState.type       = SamplerTypeToResourceType(ast->GetSamplerType());
+            samplerState.name       = ast->ident;
+            samplerState.slot       = GetBindingPoint(ast->slotRegisters);
         }
         data_->samplerStates.push_back(samplerState);
     }
@@ -126,6 +127,26 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
     }
 }
 
+IMPLEMENT_VISIT_PROC(StructDecl)
+{
+    Visitor::VisitStructDecl(ast, args);
+
+    /* Reflect record type */
+    Reflection::Record record;
+    {
+        record.referenced       = ast->flags(AST::isReachable);
+        record.name             = ast->ident;
+        record.baseRecordIndex  = FindRecordIndex(ast->baseStructRef);
+
+        //TODO...
+    }
+
+    /* Store record in output data and in hash-map associated with the structure declaration object */
+    const auto recordIndex = data_->records.size();
+    data_->records.push_back(record);
+    recordIndicesMap_[ast] = recordIndex;
+}
+
 /* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
@@ -138,58 +159,49 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
-    if (ast->flags(AST::isReachable))
+    /* Reflect constant buffer binding */
+    Reflection::ConstantBuffer constantBuffer;
     {
-        /* Reflect constant buffer binding */
-        Reflection::ConstantBuffer constantBuffer;
-        {
-            constantBuffer.type = UniformBufferTypeToResourceType(ast->bufferType);
-            constantBuffer.name = ast->ident;
-            constantBuffer.slot = GetBindingPoint(ast->slotRegisters);
-            if (!ast->AccumAlignedVectorSize(constantBuffer.size, constantBuffer.padding))
-                constantBuffer.size = ~0;
-        }
-        data_->constantBuffers.push_back(constantBuffer);
+        constantBuffer.referenced   = ast->flags(AST::isReachable);
+        constantBuffer.type         = UniformBufferTypeToResourceType(ast->bufferType);
+        constantBuffer.name         = ast->ident;
+        constantBuffer.slot         = GetBindingPoint(ast->slotRegisters);
+        if (!ast->AccumAlignedVectorSize(constantBuffer.size, constantBuffer.padding))
+            constantBuffer.size = ~0;
     }
+    data_->constantBuffers.push_back(constantBuffer);
 }
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
-    if (ast->flags(AST::isReachable))
+    for (auto& bufferDecl : ast->bufferDecls)
     {
-        for (auto& bufferDecl : ast->bufferDecls)
+        /* Reflect texture or storage-buffer binding */
+        Reflection::Resource resource;
         {
-            if (bufferDecl->flags(AST::isReachable))
-            {
-                /* Reflect texture or storage-buffer binding */
-                Reflection::Resource resource;
-                {
-                    resource.type = BufferTypeToResourceType(ast->typeDenoter->bufferType);
-                    resource.name = bufferDecl->ident;
-                    resource.slot = GetBindingPoint(bufferDecl->slotRegisters);
-                };
-                data_->resources.push_back(resource);
-            }
-        }
+            resource.referenced = bufferDecl->flags(AST::isReachable);
+            resource.type       = BufferTypeToResourceType(ast->typeDenoter->bufferType);
+            resource.name       = bufferDecl->ident;
+            resource.slot       = GetBindingPoint(bufferDecl->slotRegisters);
+        };
+        data_->resources.push_back(resource);
     }
 }
 
 IMPLEMENT_VISIT_PROC(VarDecl)
 {
-    if (ast->flags(AST::isReachable))
+    if (auto typeSpecifier = ast->FetchTypeSpecifier())
     {
-        if (auto typeSpecifier = ast->FetchTypeSpecifier())
+        if (typeSpecifier->isUniform)
         {
-            if (typeSpecifier->isUniform)
+            /* Add variable as uniform */
+            Reflection::Attribute attribute;
             {
-                /* Add variable as uniform */
-                Reflection::Attribute attribute;
-                {
-                    attribute.name = ast->ident;
-                    attribute.slot = GetBindingPoint(ast->slotRegisters);
-                }
-                data_->uniforms.push_back(attribute);
+                attribute.referenced    = ast->flags(AST::isReachable);
+                attribute.name          = ast->ident;
+                attribute.slot          = GetBindingPoint(ast->slotRegisters);
             }
+            data_->uniforms.push_back(attribute);
         }
     }
 }
@@ -333,6 +345,15 @@ void ReflectionAnalyzer::ReflectAttributesNumThreads(Attribute* ast)
         data_->numThreads.y = EvaluateConstExprInt(*ast->arguments[1]);
         data_->numThreads.z = EvaluateConstExprInt(*ast->arguments[2]);
     }
+}
+
+int ReflectionAnalyzer::FindRecordIndex(const StructDecl* structDecl) const
+{
+    auto it = recordIndicesMap_.find(structDecl);
+    if (it != recordIndicesMap_.end())
+        return it->second;
+    else
+        return -1;
 }
 
 

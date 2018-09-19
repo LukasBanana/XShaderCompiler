@@ -25,17 +25,18 @@ class ReflectionPrinter
 
         ReflectionPrinter(std::ostream& output);
 
-        void PrintReflection(const Reflection::ReflectionData& reflectionData);
+        void PrintReflection(const Reflection::ReflectionData& reflectionData, bool referencedOnly = false);
 
     private:
 
         std::ostream& IndentOut();
 
-        void PrintReflectionObjects(const std::vector<Reflection::Attribute>& objects, const char* title);
         void PrintReflectionObjects(const std::vector<std::string>& idents, const char* title);
-        void PrintReflectionObjects(const std::vector<Reflection::Resource>& objects, const char* title);
-        void PrintReflectionObjects(const std::vector<Reflection::ConstantBuffer>& objects, const char* title);
-        void PrintReflectionObjects(const std::vector<Reflection::SamplerState>& objects, const char* title);
+        void PrintReflectionObjects(const std::vector<Reflection::Record>& objects, const char* title, bool referencedOnly);
+        void PrintReflectionObjects(const std::vector<Reflection::Attribute>& objects, const char* title, bool referencedOnly);
+        void PrintReflectionObjects(const std::vector<Reflection::Resource>& objects, const char* title, bool referencedOnly);
+        void PrintReflectionObjects(const std::vector<Reflection::ConstantBuffer>& objects, const char* title, bool referencedOnly);
+        void PrintReflectionObjects(const std::vector<Reflection::SamplerState>& objects, const char* title, bool referencedOnly);
         void PrintReflectionObjects(const std::vector<Reflection::StaticSamplerState>& samplerStates, const char* title);
         void PrintReflectionAttribute(const Reflection::NumThreads& numThreads, const char* title);
 

@@ -63,6 +63,9 @@ struct ShellState
     // Show code reflection output after compilation.
     bool                            showReflection      = false;
 
+    // Show extended code reflection (including all unreferenced objects).
+    bool                            showReflectionExt   = false;
+
     // True, if any meaningful action has been performed (e.g. printed version or compiled any files).
     bool                            actionPerformed     = false;
 

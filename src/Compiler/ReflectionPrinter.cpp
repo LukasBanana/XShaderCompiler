@@ -19,20 +19,21 @@ ReflectionPrinter::ReflectionPrinter(std::ostream& output) :
 {
 }
 
-void ReflectionPrinter::PrintReflection(const Reflection::ReflectionData& reflectionData)
+void ReflectionPrinter::PrintReflection(const Reflection::ReflectionData& reflectionData, bool referencedOnly)
 {
     output_ << R_CodeReflection() << ':' << std::endl;
     indentHandler_.IncIndent();
     {
-        PrintReflectionObjects  ( reflectionData.macros,                "Macros"                );
-        PrintReflectionObjects  ( reflectionData.inputAttributes,       "Input Attributes"      );
-        PrintReflectionObjects  ( reflectionData.outputAttributes,      "Output Attributes"     );
-        PrintReflectionObjects  ( reflectionData.uniforms,              "Uniforms"              );
-        PrintReflectionObjects  ( reflectionData.resources,             "Resources"             );
-        PrintReflectionObjects  ( reflectionData.constantBuffers,       "Constant Buffers"      );
-        PrintReflectionObjects  ( reflectionData.samplerStates,         "Sampler States"        );
-        PrintReflectionObjects  ( reflectionData.staticSamplerStates,   "Static Sampler States" );
-        PrintReflectionAttribute( reflectionData.numThreads,            "Number of Threads"     );
+        PrintReflectionObjects  ( reflectionData.macros,                "Macros"                               );
+        PrintReflectionObjects  ( reflectionData.records,               "Structures",           referencedOnly );
+        PrintReflectionObjects  ( reflectionData.inputAttributes,       "Input Attributes",     referencedOnly );
+        PrintReflectionObjects  ( reflectionData.outputAttributes,      "Output Attributes",    referencedOnly );
+        PrintReflectionObjects  ( reflectionData.uniforms,              "Uniforms",             referencedOnly );
+        PrintReflectionObjects  ( reflectionData.resources,             "Resources",            referencedOnly );
+        PrintReflectionObjects  ( reflectionData.constantBuffers,       "Constant Buffers",     referencedOnly );
+        PrintReflectionObjects  ( reflectionData.samplerStates,         "Sampler States",       referencedOnly );
+        PrintReflectionObjects  ( reflectionData.staticSamplerStates,   "Static Sampler States"                );
+        PrintReflectionAttribute( reflectionData.numThreads,            "Number of Threads"                    );
     }
     indentHandler_.DecIndent();
 }
@@ -42,6 +43,20 @@ void ReflectionPrinter::PrintReflection(const Reflection::ReflectionData& reflec
  * ======= Private: =======
  */
 
+// Template to determine if the 'referenced' member in any object of the list is true.
+template <typename T>
+bool HasAnyReferencedObjects(const std::vector<T>& list)
+{
+    auto it = std::find_if(
+        list.begin(), list.end(),
+        [](const T& entry) -> bool
+        {
+            return entry.referenced;
+        }
+    );
+    return (it != list.end());
+}
+
 template <typename T>
 std::size_t GetMaxSlotLength(const std::vector<T>& container, int& maxSlot)
 {
@@ -50,39 +65,21 @@ std::size_t GetMaxSlotLength(const std::vector<T>& container, int& maxSlot)
     return std::to_string(maxSlot).size();
 }
 
+template <typename T>
+std::size_t GetMaxSlotLength(const std::vector<T>& container, int& maxSlot, bool referencedOnly)
+{
+    for (const auto& entry : container)
+    {
+        if (!referencedOnly || entry.referenced)
+            maxSlot = std::max(maxSlot, entry.slot);
+    }
+    return std::to_string(maxSlot).size();
+}
+
 std::ostream& ReflectionPrinter::IndentOut()
 {
     output_ << indentHandler_.FullIndent();
     return output_;
-}
-
-void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Attribute>& objects, const char* title)
-{
-    IndentOut() << title << ':' << std::endl;
-    ScopedIndent indent(indentHandler_);
-
-    if (!objects.empty())
-    {
-        /* Determines the offset for right-aligned location index */
-        int maxSlot = -1;
-        auto maxSlotLen = GetMaxSlotLength(objects, maxSlot);
-
-        /* Print binding points */
-        for (const auto& obj : objects)
-        {
-            output_ << indentHandler_.FullIndent();
-            if (maxSlot >= 0)
-            {
-                if (obj.slot >= 0)
-                    output_ << std::string(maxSlotLen - std::to_string(obj.slot).size(), ' ') << obj.slot << ": ";
-                else
-                    output_ << std::string(maxSlotLen, ' ') << "  ";
-            }
-            output_ << obj.name << std::endl;
-        }
-    }
-    else
-        IndentOut() << "< none >" << std::endl;
 }
 
 void ReflectionPrinter::PrintReflectionObjects(const std::vector<std::string>& idents, const char* title)
@@ -99,90 +96,155 @@ void ReflectionPrinter::PrintReflectionObjects(const std::vector<std::string>& i
         IndentOut() << "< none >" << std::endl;
 }
 
-void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Resource>& objects, const char* title)
+void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Record>& objects, const char* title, bool referencedOnly)
 {
     IndentOut() << title << ':' << std::endl;
     ScopedIndent indent(indentHandler_);
 
-    if (!objects.empty())
+    if (!objects.empty() && (!referencedOnly || HasAnyReferencedObjects(objects)))
     {
-        /* Determines the offset for right-aligned location index */
-        int maxSlot = -1;
-        auto maxSlotLen = GetMaxSlotLength(objects, maxSlot);
-
-        /* Print binding points */
+        /* Print records */
         for (const auto& obj : objects)
         {
-            output_ << indentHandler_.FullIndent();
-            if (maxSlot >= 0)
+            if (!referencedOnly || obj.referenced)
             {
-                if (obj.slot >= 0)
-                    output_ << std::string(maxSlotLen - std::to_string(obj.slot).size(), ' ') << obj.slot << ": ";
-                else
-                    output_ << std::string(maxSlotLen, ' ') << "  ";
+                output_ << indentHandler_.FullIndent();
+                output_ << obj.name << " <Structure";
+                if (obj.size != ~0)
+                    output_ << "(size: " << obj.size << ", padding: " << obj.padding << ')';
+                output_ << '>' << std::endl;
             }
-            output_ << obj.name << " <" << ToString(obj.type) << '>' << std::endl;
         }
     }
     else
         IndentOut() << "< none >" << std::endl;
 }
 
-void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::ConstantBuffer>& objects, const char* title)
+void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Attribute>& objects, const char* title, bool referencedOnly)
 {
     IndentOut() << title << ':' << std::endl;
     ScopedIndent indent(indentHandler_);
 
-    if (!objects.empty())
+    if (!objects.empty() && (!referencedOnly || HasAnyReferencedObjects(objects)))
     {
         /* Determines the offset for right-aligned location index */
         int maxSlot = -1;
-        auto maxSlotLen = GetMaxSlotLength(objects, maxSlot);
+        auto maxSlotLen = GetMaxSlotLength(objects, maxSlot, referencedOnly);
 
         /* Print binding points */
         for (const auto& obj : objects)
         {
-            output_ << indentHandler_.FullIndent();
-            if (maxSlot >= 0)
+            if (!referencedOnly || obj.referenced)
             {
-                if (obj.slot >= 0)
-                    output_ << std::string(maxSlotLen - std::to_string(obj.slot).size(), ' ') << obj.slot << ": ";
-                else
-                    output_ << std::string(maxSlotLen, ' ') << "  ";
+                output_ << indentHandler_.FullIndent();
+                if (maxSlot >= 0)
+                {
+                    if (obj.slot >= 0)
+                        output_ << std::string(maxSlotLen - std::to_string(obj.slot).size(), ' ') << obj.slot << ": ";
+                    else
+                        output_ << std::string(maxSlotLen, ' ') << "  ";
+                }
+                output_ << obj.name << std::endl;
             }
-            output_ << obj.name << " <" << ToString(obj.type);
-            if (obj.size != ~0)
-                output_ << "(size: " << obj.size << ", padding: " << obj.padding << ')';
-            output_ << '>' << std::endl;
         }
     }
     else
         IndentOut() << "< none >" << std::endl;
 }
 
-void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::SamplerState>& objects, const char* title)
+void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Resource>& objects, const char* title, bool referencedOnly)
 {
     IndentOut() << title << ':' << std::endl;
     ScopedIndent indent(indentHandler_);
 
-    if (!objects.empty())
+    if (!objects.empty() && (!referencedOnly || HasAnyReferencedObjects(objects)))
     {
         /* Determines the offset for right-aligned location index */
         int maxSlot = -1;
-        auto maxSlotLen = GetMaxSlotLength(objects, maxSlot);
+        auto maxSlotLen = GetMaxSlotLength(objects, maxSlot, referencedOnly);
 
         /* Print binding points */
         for (const auto& obj : objects)
         {
-            output_ << indentHandler_.FullIndent();
-            if (maxSlot >= 0)
+            if (!referencedOnly || obj.referenced)
             {
-                if (obj.slot >= 0)
-                    output_ << std::string(maxSlotLen - std::to_string(obj.slot).size(), ' ') << obj.slot << ": ";
-                else
-                    output_ << std::string(maxSlotLen, ' ') << "  ";
+                output_ << indentHandler_.FullIndent();
+                if (maxSlot >= 0)
+                {
+                    if (obj.slot >= 0)
+                        output_ << std::string(maxSlotLen - std::to_string(obj.slot).size(), ' ') << obj.slot << ": ";
+                    else
+                        output_ << std::string(maxSlotLen, ' ') << "  ";
+                }
+                output_ << obj.name << " <" << ToString(obj.type) << '>' << std::endl;
             }
-            output_ << obj.name << std::endl;
+        }
+    }
+    else
+        IndentOut() << "< none >" << std::endl;
+}
+
+void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::ConstantBuffer>& objects, const char* title, bool referencedOnly)
+{
+    IndentOut() << title << ':' << std::endl;
+    ScopedIndent indent(indentHandler_);
+
+    if (!objects.empty() && (!referencedOnly || HasAnyReferencedObjects(objects)))
+    {
+        /* Determines the offset for right-aligned location index */
+        int maxSlot = -1;
+        auto maxSlotLen = GetMaxSlotLength(objects, maxSlot, referencedOnly);
+
+        /* Print binding points */
+        for (const auto& obj : objects)
+        {
+            if (!referencedOnly || obj.referenced)
+            {
+                output_ << indentHandler_.FullIndent();
+                if (maxSlot >= 0)
+                {
+                    if (obj.slot >= 0)
+                        output_ << std::string(maxSlotLen - std::to_string(obj.slot).size(), ' ') << obj.slot << ": ";
+                    else
+                        output_ << std::string(maxSlotLen, ' ') << "  ";
+                }
+                output_ << obj.name << " <" << ToString(obj.type);
+                if (obj.size != ~0)
+                    output_ << "(size: " << obj.size << ", padding: " << obj.padding << ')';
+                output_ << '>' << std::endl;
+            }
+        }
+    }
+    else
+        IndentOut() << "< none >" << std::endl;
+}
+
+void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::SamplerState>& objects, const char* title, bool referencedOnly)
+{
+    IndentOut() << title << ':' << std::endl;
+    ScopedIndent indent(indentHandler_);
+
+    if (!objects.empty() && (!referencedOnly || HasAnyReferencedObjects(objects)))
+    {
+        /* Determines the offset for right-aligned location index */
+        int maxSlot = -1;
+        auto maxSlotLen = GetMaxSlotLength(objects, maxSlot, referencedOnly);
+
+        /* Print binding points */
+        for (const auto& obj : objects)
+        {
+            if (!referencedOnly || obj.referenced)
+            {
+                output_ << indentHandler_.FullIndent();
+                if (maxSlot >= 0)
+                {
+                    if (obj.slot >= 0)
+                        output_ << std::string(maxSlotLen - std::to_string(obj.slot).size(), ' ') << obj.slot << ": ";
+                    else
+                        output_ << std::string(maxSlotLen, ' ') << "  ";
+                }
+                output_ << obj.name << std::endl;
+            }
         }
     }
     else
