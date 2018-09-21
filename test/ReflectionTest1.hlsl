@@ -13,7 +13,9 @@ struct S {
 
 cbuffer Buf2 : register(b2) {
 	float4x4 wvpMatrix;
-    float a, b[3];
+    float a;
+    float b[3];
+    //float b0, b1, b2;
     S x[2];
     float3x3 c[2][3];
 };
@@ -22,6 +24,8 @@ uniform float4x4 wMatrix, unused1;
 uniform int unused2;
 
 Texture2D tex1 : register(t1);
+
+RWTexture1D<float> outTex : register(u0);
 
 [numthreads(1, 2, 3)]
 void main() {
@@ -33,4 +37,6 @@ void main() {
 	//wvpMatrix;
 	wMatrix;
     c;
+    
+    outTex[0] = tex1.Load(0) + x[0].foo;
 }

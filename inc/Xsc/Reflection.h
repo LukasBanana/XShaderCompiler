@@ -257,10 +257,13 @@ struct Field
     FieldType                   type            = FieldType::Undefined;
 
     /**
-    \brief Number of vector dimensions. This is typically used in combination with the 'type' member. By default 1.
-    \remarks If this is 1, the field denotes a scalar type. If this is 0, the field denotes a record type.
+    \brief Number of matrix dimensions. This is typically used in combination with the 'type' member. By default { 1, 1 }.
+    \remarks The first and second entry denote the number of rows and columns respectively.
+    If only one of the entries is 1, the field denotes a vector type.
+    If both the columns and rows are 1, the field denotes a scalar type.
+    If both the columns and rows are 0, the field denotes a record type.
     */
-    unsigned int                dimensions      = 1;
+    unsigned int                dimensions[2]   = { 1, 1 };
 
     //! Index to the global record type. If this is -1, the field does not denote a record type. By default -1.
     int                         typeRecordIndex = -1;
@@ -271,7 +274,7 @@ struct Field
     //! Local offset (in bytes) within the containing record or constant buffer.
     unsigned int                offset          = 0;
 
-    //! Number of array elements. If this container is empty, the field does not denote an array.
+    //! Number of array elements. If this container is empty, the field does not denote an array. If an entry is 0, the respective dimension is dynamically sized.
     std::vector<unsigned int>   arrayElements;
 };
 

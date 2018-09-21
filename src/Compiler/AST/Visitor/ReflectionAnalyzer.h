@@ -15,6 +15,7 @@
 #include "Visitor.h"
 #include "Token.h"
 #include "Variant.h"
+#include "TypeDenoter.h"
 #include <map>
 
 
@@ -72,6 +73,9 @@ class ReflectionAnalyzer : private Visitor
 
         void ReflectAttributes(const std::vector<AttributePtr>& attribs);
         void ReflectAttributesNumThreads(Attribute* ast);
+
+        void ReflectField(VarDecl* ast, Reflection::Field& field, unsigned int& accumSize, unsigned int& accumPadding);
+        void ReflectFieldType(Reflection::Field& field, const TypeDenoter& typeDen);
 
         // Returns the index of the record that is associated with the specified structure declaration object, or -1 on failure.
         int FindRecordIndex(const StructDecl* structDecl) const;

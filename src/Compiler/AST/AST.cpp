@@ -604,11 +604,11 @@ void VarDecl::AddFlagsRecursive(unsigned int varFlags)
     }
 }
 
-bool VarDecl::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize)
+bool VarDecl::AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset)
 {
     try
     {
-        return GetTypeDenoter()->AccumAlignedVectorSize(vectorSize, paddingSize);
+        return GetTypeDenoter()->AccumAlignedVectorSize(size, padding, offset);
     }
     catch (const std::exception&)
     {
@@ -1023,12 +1023,14 @@ VarDecl* StructDecl::IndexToMemberVar(std::size_t idx, bool includeBaseStructs) 
     return FindIndexOfStructMemberVar(*this, idx, includeBaseStructs);
 }
 
-bool StructDecl::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize)
+bool StructDecl::AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset)
 {
     for (const auto& member : varMembers)
     {
-        if (!member->AccumAlignedVectorSize(vectorSize, paddingSize))
+        /* Store offset only for first element */
+        if (!member->AccumAlignedVectorSize(size, padding, offset))
             return false;
+        offset = nullptr;
     }
     return true;
 }
@@ -1452,18 +1454,22 @@ TypeModifier UniformBufferDecl::DeriveCommonStorageLayout(const TypeModifier def
     return commonStorageLayout;
 }
 
-bool UniformBufferDecl::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize)
+bool UniformBufferDecl::AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset)
 {
     if (bufferType == UniformBufferType::ConstantBuffer)
     {
         /* Accumulate size for each member */
         for (const auto& member : varMembers)
-            member->AccumAlignedVectorSize(vectorSize, paddingSize);
+        {
+            /* Store offset only for first element */
+            member->AccumAlignedVectorSize(size, padding, offset);
+            offset = nullptr;
+        }
 
         /* Accumulate remaining padding */
-        auto remainingPadding = RemainingVectorSize(vectorSize);
-        vectorSize += remainingPadding;
-        paddingSize += remainingPadding;
+        auto remainingPadding = RemainingVectorSize(size);
+        size += remainingPadding;
+        padding += remainingPadding;
 
         return true;
     }
@@ -1615,12 +1621,14 @@ StructDecl* VarDeclStmnt::FetchStructDeclRef() const
         return varDecls.front()->structDeclRef;
 }
 
-bool VarDeclStmnt::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize)
+bool VarDeclStmnt::AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset)
 {
     for (const auto& varDecl : varDecls)
     {
-        if (!varDecl->AccumAlignedVectorSize(vectorSize, paddingSize))
+        /* Store offset only for first element */
+        if (!varDecl->AccumAlignedVectorSize(size, padding, offset))
             return false;
+        offset = nullptr;
     }
     return true;
 }

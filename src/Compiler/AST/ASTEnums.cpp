@@ -830,23 +830,27 @@ unsigned int RemainingVectorSize(unsigned int vectorSize, unsigned int alignment
     return (alignment - vectorSize % alignment) % alignment;
 }
 
-bool AccumAlignedVectorSize(const DataType dataType, unsigned int& vectorSize, unsigned int& paddingSize)
+bool AccumAlignedVectorSize(const DataType dataType, unsigned int& size, unsigned int& padding, unsigned int* offset)
 {
     auto dataSize = DataTypeSize(dataType);
     if (dataSize > 0)
     {
         /* Check if data type breaks the 16-byte boundary */
-        auto remainingSize = RemainingVectorSize(vectorSize);
+        auto remainingSize = RemainingVectorSize(size);
 
         /* Fill up previous vector slot, if data type breaks the 16-byte boundary */
         if (remainingSize > 0 && dataSize > remainingSize)
         {
-            vectorSize += remainingSize;
-            paddingSize += remainingSize;
+            size += remainingSize;
+            padding += remainingSize;
         }
 
+        /* Store offest */
+        if (offset != nullptr)
+            *offset = size;
+
         /* Append data type size */
-        vectorSize += dataSize;
+        size += dataSize;
 
         return true;
     }

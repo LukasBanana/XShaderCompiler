@@ -181,7 +181,7 @@ bool TypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     return (GetAliased().Type() == targetType.GetAliased().Type());
 }
 
-bool TypeDenoter::AccumAlignedVectorSize(unsigned int& /*vectorSize*/, unsigned int& /*paddingSize*/) const
+bool TypeDenoter::AccumAlignedVectorSize(unsigned int& /*size*/, unsigned int& /*padding*/, unsigned int* /*offset*/) const
 {
     return false; // dummy
 }
@@ -637,9 +637,9 @@ bool BaseTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     #endif
 }
 
-bool BaseTypeDenoter::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize) const
+bool BaseTypeDenoter::AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset) const
 {
-    return Xsc::AccumAlignedVectorSize(dataType, vectorSize, paddingSize);
+    return Xsc::AccumAlignedVectorSize(dataType, size, padding, offset);
 }
 
 TypeDenoterPtr BaseTypeDenoter::GetSubObject(const std::string& ident, const AST* ast)
@@ -927,10 +927,10 @@ bool StructTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     return false;
 }
 
-bool StructTypeDenoter::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize) const
+bool StructTypeDenoter::AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset) const
 {
     if (structDeclRef)
-        return structDeclRef->AccumAlignedVectorSize(vectorSize, paddingSize);
+        return structDeclRef->AccumAlignedVectorSize(size, padding, offset);
     else
         return false;
 }
@@ -1019,9 +1019,9 @@ bool AliasTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     return GetAliasedTypeOrThrow()->IsCastableTo(targetType);
 }
 
-bool AliasTypeDenoter::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize) const
+bool AliasTypeDenoter::AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset) const
 {
-    return GetAliasedTypeOrThrow()->AccumAlignedVectorSize(vectorSize, paddingSize);
+    return GetAliasedTypeOrThrow()->AccumAlignedVectorSize(size, padding, offset);
 }
 
 std::string AliasTypeDenoter::Ident() const
@@ -1158,11 +1158,11 @@ bool ArrayTypeDenoter::IsCastableTo(const TypeDenoter& targetType) const
     return false;
 }
 
-bool ArrayTypeDenoter::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize) const
+bool ArrayTypeDenoter::AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset) const
 {
     /* First get size and padding from sub type denoter */
-    unsigned int subVectorSize = 0, subPaddingSize = 0;
-    if (subTypeDenoter->AccumAlignedVectorSize(subVectorSize, subPaddingSize))
+    unsigned int subSize = 0, subPadding = 0;
+    if (subTypeDenoter->AccumAlignedVectorSize(subSize, subPadding))
     {
         /* Get linear array size */
         unsigned int linearArraySize = 1;
@@ -1177,16 +1177,20 @@ bool ArrayTypeDenoter::AccumAlignedVectorSize(unsigned int& vectorSize, unsigned
         }
 
         /* Fill up previous size and padding */
-        auto remainingSize = RemainingVectorSize(vectorSize);
-        vectorSize += remainingSize;
-        paddingSize += remainingSize;
+        auto remainingSize = RemainingVectorSize(size);
+        size    += remainingSize;
+        padding += remainingSize;
+
+        /* Store offset */
+        if (offset != nullptr)
+            *offset = size;
 
         /* Accumulate array element sizes */
-        subPaddingSize = RemainingVectorSize(subVectorSize);
-        subVectorSize += subPaddingSize;
+        subPadding = RemainingVectorSize(subSize);
+        subSize += subPadding;
 
-        vectorSize += (linearArraySize * subVectorSize);
-        paddingSize += (linearArraySize * subPaddingSize);
+        size    += (linearArraySize * subSize);
+        padding += (linearArraySize * subPadding);
 
         return true;
     }

@@ -85,7 +85,7 @@ std::ostream& ReflectionPrinter::IndentOut()
 void ReflectionPrinter::PrintReflectionObjects(const std::vector<std::string>& idents, const char* title)
 {
     IndentOut() << title << ':' << std::endl;
-    ScopedIndent indent(indentHandler_);
+    ScopedIndent indent { indentHandler_ };
 
     if (!idents.empty())
     {
@@ -96,10 +96,29 @@ void ReflectionPrinter::PrintReflectionObjects(const std::vector<std::string>& i
         IndentOut() << "< none >" << std::endl;
 }
 
+void ReflectionPrinter::PrintFields(const std::vector<Reflection::Field>& objects, bool referencedOnly)
+{
+    if (!objects.empty() && (!referencedOnly || HasAnyReferencedObjects(objects)))
+    {
+        /* Print fields */
+        for (const auto& obj : objects)
+        {
+            if (!referencedOnly || obj.referenced)
+            {
+                output_ << indentHandler_.FullIndent();
+                output_ << obj.name << " <Field";
+                if (obj.size != ~0)
+                    output_ << "(offset: " << obj.offset << ", size: " << obj.size << ')';
+                output_ << '>' << std::endl;
+            }
+        }
+    }
+}
+
 void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Record>& objects, const char* title, bool referencedOnly)
 {
     IndentOut() << title << ':' << std::endl;
-    ScopedIndent indent(indentHandler_);
+    ScopedIndent indent { indentHandler_ };
 
     if (!objects.empty() && (!referencedOnly || HasAnyReferencedObjects(objects)))
     {
@@ -108,11 +127,16 @@ void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Rec
         {
             if (!referencedOnly || obj.referenced)
             {
+                /* Print record identity */
                 output_ << indentHandler_.FullIndent();
                 output_ << obj.name << " <Structure";
                 if (obj.size != ~0)
                     output_ << "(size: " << obj.size << ", padding: " << obj.padding << ')';
                 output_ << '>' << std::endl;
+
+                /* Print fields */
+                ScopedIndent indent { indentHandler_ };
+                PrintFields(obj.fields, referencedOnly);
             }
         }
     }
@@ -123,7 +147,7 @@ void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Rec
 void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Attribute>& objects, const char* title, bool referencedOnly)
 {
     IndentOut() << title << ':' << std::endl;
-    ScopedIndent indent(indentHandler_);
+    ScopedIndent indent { indentHandler_ };
 
     if (!objects.empty() && (!referencedOnly || HasAnyReferencedObjects(objects)))
     {
@@ -155,7 +179,7 @@ void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Att
 void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Resource>& objects, const char* title, bool referencedOnly)
 {
     IndentOut() << title << ':' << std::endl;
-    ScopedIndent indent(indentHandler_);
+    ScopedIndent indent { indentHandler_ };
 
     if (!objects.empty() && (!referencedOnly || HasAnyReferencedObjects(objects)))
     {
@@ -187,7 +211,7 @@ void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Res
 void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::ConstantBuffer>& objects, const char* title, bool referencedOnly)
 {
     IndentOut() << title << ':' << std::endl;
-    ScopedIndent indent(indentHandler_);
+    ScopedIndent indent { indentHandler_ };
 
     if (!objects.empty() && (!referencedOnly || HasAnyReferencedObjects(objects)))
     {
@@ -200,6 +224,7 @@ void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Con
         {
             if (!referencedOnly || obj.referenced)
             {
+                /* Print constant buffer identity */
                 output_ << indentHandler_.FullIndent();
                 if (maxSlot >= 0)
                 {
@@ -212,6 +237,10 @@ void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Con
                 if (obj.size != ~0)
                     output_ << "(size: " << obj.size << ", padding: " << obj.padding << ')';
                 output_ << '>' << std::endl;
+
+                /* Print fields */
+                ScopedIndent indent { indentHandler_ };
+                PrintFields(obj.fields, referencedOnly);
             }
         }
     }
@@ -222,7 +251,7 @@ void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Con
 void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::SamplerState>& objects, const char* title, bool referencedOnly)
 {
     IndentOut() << title << ':' << std::endl;
-    ScopedIndent indent(indentHandler_);
+    ScopedIndent indent { indentHandler_ };
 
     if (!objects.empty() && (!referencedOnly || HasAnyReferencedObjects(objects)))
     {
@@ -254,7 +283,7 @@ void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Sam
 void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::StaticSamplerState>& samplerStates, const char* title)
 {
     IndentOut() << title << ':' << std::endl;
-    ScopedIndent indent(indentHandler_);
+    ScopedIndent indent { indentHandler_ };
 
     if (!samplerStates.empty())
     {
@@ -288,7 +317,7 @@ void ReflectionPrinter::PrintReflectionAttribute(const Reflection::NumThreads& n
     if (numThreads.x > 0 || numThreads.y > 0 || numThreads.z > 0)
     {
         IndentOut() << title << ':' << std::endl;
-        ScopedIndent indent(indentHandler_);
+        ScopedIndent indent { indentHandler_ };
 
         IndentOut() << "X = " << numThreads.x << std::endl;
         IndentOut() << "Y = " << numThreads.y << std::endl;

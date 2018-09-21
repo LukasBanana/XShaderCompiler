@@ -591,7 +591,7 @@ struct VarDecl : public Decl
     void AddFlagsRecursive(unsigned int varFlags);
 
     // Accumulates the vector size for this variables (with a 16 byte boundary), and returns true on success.
-    bool AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize);
+    bool AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset = nullptr);
 
     ObjectExprPtr                   namespaceExpr;                  // Optional namespace expression. May be null.
     std::vector<ArrayDimensionPtr>  arrayDims;                      // Array dimension list. May be empty.
@@ -735,7 +735,7 @@ struct StructDecl : public Decl
     VarDecl* IndexToMemberVar(std::size_t idx, bool includeBaseStructs = true) const;
 
     // Accumulates the vector size for all members in this structure (with a 16 byte boundary for each member), and returns true on success.
-    bool AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize);
+    bool AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset = nullptr);
 
     bool                            isClass                 = false;    // This struct was declared as 'class'.
     std::string                     baseStructName;                     // May be empty (if no inheritance is used).
@@ -878,7 +878,7 @@ struct UniformBufferDecl : public Decl
     TypeModifier DeriveCommonStorageLayout(const TypeModifier defaultStorgeLayout = TypeModifier::Undefined);
 
     // Accumulates the vector size of the entire uniform buffer (with 16 byte alignemnd for each vector), and return true on success.
-    bool AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize);
+    bool AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset = nullptr);
 
     UniformBufferType               bufferType          = UniformBufferType::Undefined; // Type of this uniform buffer. Must not be undefined.
     std::vector<RegisterPtr>        slotRegisters;                                      // Slot register list. May be empty.
@@ -979,7 +979,7 @@ struct VarDeclStmnt : public Stmnt
     StructDecl* FetchStructDeclRef() const;
 
     // Accumulates the vector size for all variables in this statement (with a 16 byte boundary for each member), and returns true on success.
-    bool AccumAlignedVectorSize(unsigned int& vectorSize, unsigned int& paddingSize);
+    bool AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset = nullptr);
 
     TypeSpecifierPtr        typeSpecifier;  // Type basis for all variables (can be extended by array indices in each individual variable).
     std::vector<VarDeclPtr> varDecls;       // Variable declaration list.

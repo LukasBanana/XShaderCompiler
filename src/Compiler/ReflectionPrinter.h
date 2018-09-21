@@ -32,6 +32,7 @@ class ReflectionPrinter
         std::ostream& IndentOut();
 
         void PrintReflectionObjects(const std::vector<std::string>& idents, const char* title);
+        void PrintFields(const std::vector<Reflection::Field>& objects, bool referencedOnly);
         void PrintReflectionObjects(const std::vector<Reflection::Record>& objects, const char* title, bool referencedOnly);
         void PrintReflectionObjects(const std::vector<Reflection::Attribute>& objects, const char* title, bool referencedOnly);
         void PrintReflectionObjects(const std::vector<Reflection::Resource>& objects, const char* title, bool referencedOnly);

@@ -132,18 +132,32 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     Visitor::VisitStructDecl(ast, args);
 
     /* Reflect record type */
+    const auto recordIndex = data_->records.size();
+
     Reflection::Record record;
     {
+        /* Reflect name and base record index */
         record.referenced       = ast->flags(AST::isReachable);
         record.name             = ast->ident;
         record.baseRecordIndex  = FindRecordIndex(ast->baseStructRef);
 
-        //TODO...
+        /* Reflect record fields */
+        record.size     = 0;
+        record.padding  = 0;
+
+        for (const auto& member : ast->varMembers)
+        {
+            for (const auto& var : member->varDecls)
+            {
+                Reflection::Field field;
+                ReflectField(var.get(), field, record.size, record.padding);
+                record.fields.push_back(field);
+            }
+        }
     }
+    data_->records.push_back(record);
 
     /* Store record in output data and in hash-map associated with the structure declaration object */
-    const auto recordIndex = data_->records.size();
-    data_->records.push_back(record);
     recordIndicesMap_[ast] = recordIndex;
 }
 
@@ -162,12 +176,25 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     /* Reflect constant buffer binding */
     Reflection::ConstantBuffer constantBuffer;
     {
+        /* Reflect type, name, and slot index */
         constantBuffer.referenced   = ast->flags(AST::isReachable);
         constantBuffer.type         = UniformBufferTypeToResourceType(ast->bufferType);
         constantBuffer.name         = ast->ident;
         constantBuffer.slot         = GetBindingPoint(ast->slotRegisters);
-        if (!ast->AccumAlignedVectorSize(constantBuffer.size, constantBuffer.padding))
-            constantBuffer.size = ~0;
+
+        /* Reflect constant buffer fields and size */
+        constantBuffer.size     = 0;
+        constantBuffer.padding  = 0;
+
+        for (const auto& member : ast->varMembers)
+        {
+            for (const auto& var : member->varDecls)
+            {
+                Reflection::Field field;
+                ReflectField(var.get(), field, constantBuffer.size, constantBuffer.padding);
+                constantBuffer.fields.push_back(field);
+            }
+        }
     }
     data_->constantBuffers.push_back(constantBuffer);
 }
@@ -344,6 +371,90 @@ void ReflectionAnalyzer::ReflectAttributesNumThreads(Attribute* ast)
         data_->numThreads.x = EvaluateConstExprInt(*ast->arguments[0]);
         data_->numThreads.y = EvaluateConstExprInt(*ast->arguments[1]);
         data_->numThreads.z = EvaluateConstExprInt(*ast->arguments[2]);
+    }
+}
+
+static Reflection::FieldType ToFieldType(const DataType t)
+{
+    using T = Reflection::FieldType;
+    switch (BaseDataType(t))
+    {
+        case DataType::Bool:    return T::Bool;
+        case DataType::Int:     return T::Int;
+        case DataType::UInt:    return T::UInt;
+        case DataType::Half:    return T::Half;
+        case DataType::Float:   return T::Float;
+        case DataType::Double:  return T::Double;
+        default:                return T::Undefined;
+    }
+}
+
+static void ReflectFieldBaseType(const DataType dataType, Reflection::Field& field)
+{
+    /* Determine base type */
+    field.type = ToFieldType(dataType);
+
+    /* Determine matrix dimensions */
+    auto typeDim = MatrixTypeDim(dataType);
+    field.dimensions[0] = typeDim.first;
+    field.dimensions[1] = typeDim.second;
+}
+
+void ReflectionAnalyzer::ReflectField(VarDecl* ast, Reflection::Field& field, unsigned int& accumSize, unsigned int& accumPadding)
+{
+    /* Reflect name and reachability */
+    field.referenced    = ast->flags(AST::isReachable);
+    field.name          = ast->ident;
+
+    /* Reflect field type */
+    ReflectFieldType(field, ast->GetTypeDenoter()->GetAliased());
+
+    /* Determine size and byte offset */
+    const auto currentSize      = accumSize;
+    const auto currentPadding   = accumPadding;
+
+    if (ast->AccumAlignedVectorSize(accumSize, accumPadding, &(field.offset)))
+    {
+        const auto localPadding = (accumPadding - currentPadding);
+        field.size = (accumSize - currentSize - localPadding);
+    }
+    else
+        field.size = ~0;
+}
+
+void ReflectionAnalyzer::ReflectFieldType(Reflection::Field& field, const TypeDenoter& typeDen)
+{
+    if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
+    {
+        /* Determine base data type and dimensions */
+        ReflectFieldBaseType(baseTypeDen->dataType, field);
+    }
+    /* Reflect structure type */
+    else if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
+    {
+        /* Determine record type index */
+        field.type              = Reflection::FieldType::Record;
+        field.dimensions[0]     = 0;
+        field.dimensions[1]     = 0;
+        field.typeRecordIndex   = FindRecordIndex(structTypeDen->structDeclRef);
+    }
+    /* Reflect array type */
+    else if (auto arrayTypeDen = typeDen.As<ArrayTypeDenoter>())
+    {
+        /* Determine base field type */
+        ReflectFieldType(field, arrayTypeDen->subTypeDenoter->GetAliased());
+
+        /* Determine array dimensions */
+        auto dimSizes = arrayTypeDen->GetDimensionSizes();
+        field.arrayElements.reserve(dimSizes.size());
+
+        for (auto size : dimSizes)
+        {
+            if (size >= 0)
+                field.arrayElements.push_back(static_cast<unsigned int>(size));
+            else
+                field.arrayElements.push_back(0);
+        }
     }
 }
 

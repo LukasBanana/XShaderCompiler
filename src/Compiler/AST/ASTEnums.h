@@ -331,7 +331,7 @@ DataType DoubleToFloatDataType(const DataType dataType);
 unsigned int RemainingVectorSize(unsigned int vectorSize, unsigned int alignment = 16u);
 
 // Accumulates the vector size for the specified data type (with a 16 byte boundary), and returns true on success.
-bool AccumAlignedVectorSize(const DataType dataType, unsigned int& vectorSize, unsigned int& paddingSize);
+bool AccumAlignedVectorSize(const DataType dataType, unsigned int& size, unsigned int& padding, unsigned int* offset = nullptr);
 
 
 /* ----- PrimitiveType Enum ----- */
