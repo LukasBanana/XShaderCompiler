@@ -77,6 +77,7 @@ file(GLOB FilesSrcCompilerASTVisitor ${PROJECT_SOURCE_DIR}/src/Compiler/AST/Visi
 file(GLOB FilesSrcCompilerFrontend ${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/*.*)
 file(GLOB FilesSrcCompilerFrontendHLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/HLSL/*.*)
 file(GLOB FilesSrcCompilerFrontendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/GLSL/*.*)
+file(GLOB FilesSrcCompilerFrontendMetal ${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/Metal/*.*)
 file(GLOB FilesSrcCompilerBackend ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/*.*)
 file(GLOB FilesSrcCompilerBackendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL/*.*)
 file(GLOB FilesSrcCompilerReport ${PROJECT_SOURCE_DIR}/src/Compiler/Report/*.*)
@@ -104,6 +105,7 @@ set(
 	${FilesSrcCompilerFrontend}
 	${FilesSrcCompilerFrontendHLSL}
 	${FilesSrcCompilerFrontendGLSL}
+	${FilesSrcCompilerFrontendMetal}
 	${FilesSrcCompilerBackend}
 	${FilesSrcCompilerBackendGLSL}
 	${FilesSrcCompilerReport}
@@ -125,6 +127,7 @@ source_group("src\\Platform" FILES ${FilesSrcCompilerPlatform})
 source_group("src\\Frontend" FILES ${FilesSrcCompilerFrontend})
 source_group("src\\Frontend\\HLSL" FILES ${FilesSrcCompilerFrontendHLSL})
 source_group("src\\Frontend\\GLSL" FILES ${FilesSrcCompilerFrontendGLSL})
+source_group("src\\Frontend\\Metal" FILES ${FilesSrcCompilerFrontendMetal})
 source_group("src\\Backend" FILES ${FilesSrcCompilerBackend})
 source_group("src\\Backend\\GLSL" FILES ${FilesSrcCompilerBackendGLSL})
 source_group("src\\Report" FILES ${FilesSrcCompilerReport})

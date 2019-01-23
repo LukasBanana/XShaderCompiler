@@ -1992,11 +1992,13 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
 {
     auto entryPoint = GetProgram()->entryPointRef;
 
+    #if 0//???
     /* Fetch variable identifier if expression is set */
     const ObjectExpr* lvalueExpr = nullptr;
     if (expr)
         lvalueExpr = expr->FetchLValueExpr();
-
+    #endif
+    
     /* Write wrapped structures */
     for (const auto& paramStruct : entryPoint->paramStructs)
     {

@@ -208,7 +208,8 @@ HelpDescriptor VersionOutCommand::Help() const
         (
             "GLSL[110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450, 460],\n"  \
             "ESSL[100, 300, 310, 320],\n"                                               \
-            "VKSL[450]"
+            "VKSL[450]\n"                                                               \
+            "Metal[1.0, 1.1, 1.2, 2.0, 2.1]"
         ),
         HelpCategory::Main
     };
@@ -221,29 +222,36 @@ void VersionOutCommand::Run(CommandLine& cmdLine, ShellState& state)
     state.outputDesc.shaderVersion = MapStringToType<OutputShaderVersion>(
         version,
         {
-            { "GLSL110", OutputShaderVersion::GLSL110 },
-            { "GLSL120", OutputShaderVersion::GLSL120 },
-            { "GLSL130", OutputShaderVersion::GLSL130 },
-            { "GLSL140", OutputShaderVersion::GLSL140 },
-            { "GLSL150", OutputShaderVersion::GLSL150 },
-            { "GLSL330", OutputShaderVersion::GLSL330 },
-            { "GLSL400", OutputShaderVersion::GLSL400 },
-            { "GLSL410", OutputShaderVersion::GLSL410 },
-            { "GLSL420", OutputShaderVersion::GLSL420 },
-            { "GLSL430", OutputShaderVersion::GLSL430 },
-            { "GLSL440", OutputShaderVersion::GLSL440 },
-            { "GLSL450", OutputShaderVersion::GLSL450 },
-            { "GLSL460", OutputShaderVersion::GLSL460 },
-            { "GLSL",    OutputShaderVersion::GLSL    },
+            { "GLSL110",    OutputShaderVersion::GLSL110 },
+            { "GLSL120",    OutputShaderVersion::GLSL120 },
+            { "GLSL130",    OutputShaderVersion::GLSL130 },
+            { "GLSL140",    OutputShaderVersion::GLSL140 },
+            { "GLSL150",    OutputShaderVersion::GLSL150 },
+            { "GLSL330",    OutputShaderVersion::GLSL330 },
+            { "GLSL400",    OutputShaderVersion::GLSL400 },
+            { "GLSL410",    OutputShaderVersion::GLSL410 },
+            { "GLSL420",    OutputShaderVersion::GLSL420 },
+            { "GLSL430",    OutputShaderVersion::GLSL430 },
+            { "GLSL440",    OutputShaderVersion::GLSL440 },
+            { "GLSL450",    OutputShaderVersion::GLSL450 },
+            { "GLSL460",    OutputShaderVersion::GLSL460 },
+            { "GLSL",       OutputShaderVersion::GLSL    },
 
-            { "ESSL100", OutputShaderVersion::ESSL100 },
-            { "ESSL300", OutputShaderVersion::ESSL300 },
-            { "ESSL310", OutputShaderVersion::ESSL310 },
-            { "ESSL320", OutputShaderVersion::ESSL320 },
-            { "ESSL",    OutputShaderVersion::ESSL    },
+            { "ESSL100",    OutputShaderVersion::ESSL100 },
+            { "ESSL300",    OutputShaderVersion::ESSL300 },
+            { "ESSL310",    OutputShaderVersion::ESSL310 },
+            { "ESSL320",    OutputShaderVersion::ESSL320 },
+            { "ESSL",       OutputShaderVersion::ESSL    },
 
-            { "VKSL450", OutputShaderVersion::VKSL450 },
-            { "VKSL",    OutputShaderVersion::VKSL    },
+            { "VKSL450",    OutputShaderVersion::VKSL450 },
+            { "VKSL",       OutputShaderVersion::VKSL    },
+
+            { "Metal1.0",   OutputShaderVersion::Metal1_0 },
+            { "Metal1.1",   OutputShaderVersion::Metal1_1 },
+            { "Metal1.2",   OutputShaderVersion::Metal1_2 },
+            { "Metal2.0",   OutputShaderVersion::Metal2_0 },
+            { "Metal2.1",   OutputShaderVersion::Metal2_1 },
+            { "Metal",      OutputShaderVersion::Metal    },
         },
         R_InvalidShaderVersionOut(version)
     );

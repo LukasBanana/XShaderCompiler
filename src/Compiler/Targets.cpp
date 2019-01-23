@@ -73,6 +73,13 @@ XSC_EXPORT std::string ToString(const OutputShaderVersion shaderVersion)
 
         case OutputShaderVersion::VKSL450:  return "VKSL 4.50";
         case OutputShaderVersion::VKSL:     return "VKSL";
+
+        case OutputShaderVersion::Metal1_0: return "Metal 1.0";
+        case OutputShaderVersion::Metal1_1: return "Metal 1.1";
+        case OutputShaderVersion::Metal1_2: return "Metal 1.2";
+        case OutputShaderVersion::Metal2_0: return "Metal 2.0";
+        case OutputShaderVersion::Metal2_1: return "Metal 2.1";
+        case OutputShaderVersion::Metal:    return "Metal";
     }
     return "";
 }
