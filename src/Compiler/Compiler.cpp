@@ -22,6 +22,8 @@
 #include "HLSLAnalyzer.h"
 #include "HLSLIntrinsics.h"
 
+#include "MetalGenerator.h"
+
 #include <sstream>
 #include <stdexcept>
 
@@ -266,6 +268,12 @@ bool Compiler::CompileShaderPrimary(
     {
         /* Generate GLSL output code */
         GLSLGenerator generator(log_);
+        generatorResult = generator.GenerateCode(*program, inputDesc, outputDesc, log_);
+    }
+    else if (IsLanguageMetal(outputDesc.shaderVersion))
+    {
+        /* Generate Metal output code */
+        MetalGenerator generator(log_);
         generatorResult = generator.GenerateCode(*program, inputDesc, outputDesc, log_);
     }
 

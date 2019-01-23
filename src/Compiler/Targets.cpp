@@ -118,6 +118,11 @@ XSC_EXPORT bool IsLanguageVKSL(const OutputShaderVersion shaderVersion)
     return (shaderVersion == OutputShaderVersion::VKSL450 || shaderVersion == OutputShaderVersion::VKSL);
 }
 
+XSC_EXPORT bool IsLanguageMetal(const OutputShaderVersion shaderVersion)
+{
+    return ((shaderVersion >= OutputShaderVersion::Metal1_0 && shaderVersion <= OutputShaderVersion::Metal2_1) || shaderVersion == OutputShaderVersion::Metal);
+}
+
 XSC_EXPORT const std::map<std::string, int>& GetGLSLExtensionEnumeration()
 {
     return GetGLSLExtensionVersionMap();

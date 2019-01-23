@@ -80,6 +80,7 @@ file(GLOB FilesSrcCompilerFrontendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Fronte
 file(GLOB FilesSrcCompilerFrontendMetal ${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/Metal/*.*)
 file(GLOB FilesSrcCompilerBackend ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/*.*)
 file(GLOB FilesSrcCompilerBackendGLSL ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL/*.*)
+file(GLOB FilesSrcCompilerBackendMetal ${PROJECT_SOURCE_DIR}/src/Compiler/Backend/Metal/*.*)
 file(GLOB FilesSrcCompilerReport ${PROJECT_SOURCE_DIR}/src/Compiler/Report/*.*)
 file(GLOB FilesSrcCompilerCFG ${PROJECT_SOURCE_DIR}/src/Compiler/CFG/*.*)
 file(GLOB FilesSrcShell ${PROJECT_SOURCE_DIR}/src/Shell/*.*)
@@ -108,6 +109,7 @@ set(
 	${FilesSrcCompilerFrontendMetal}
 	${FilesSrcCompilerBackend}
 	${FilesSrcCompilerBackendGLSL}
+	${FilesSrcCompilerBackendMetal}
 	${FilesSrcCompilerReport}
 )
 
@@ -130,6 +132,7 @@ source_group("src\\Frontend\\GLSL" FILES ${FilesSrcCompilerFrontendGLSL})
 source_group("src\\Frontend\\Metal" FILES ${FilesSrcCompilerFrontendMetal})
 source_group("src\\Backend" FILES ${FilesSrcCompilerBackend})
 source_group("src\\Backend\\GLSL" FILES ${FilesSrcCompilerBackendGLSL})
+source_group("src\\Backend\\Metal" FILES ${FilesSrcCompilerBackendMetal})
 source_group("src\\Report" FILES ${FilesSrcCompilerReport})
 
 if(XSC_ENABLE_SPIRV)
@@ -147,8 +150,10 @@ include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/AST/Visitor")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/HLSL")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/GLSL")
+include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Frontend/Metal")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend/GLSL")
+include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Backend/Metal")
 include_directories("${PROJECT_SOURCE_DIR}/src/Compiler/Report")
 
 if(XSC_ENABLE_SPIRV)

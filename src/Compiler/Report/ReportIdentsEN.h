@@ -487,6 +487,11 @@ DECL_REPORT( DeclTypeDiffersFromDefType,        "declaration type '{0}' differs 
 DECL_REPORT( ArrayTypeCanOnlyAppearInDef,       "array type can only appear in definition of static member variables[: '{0}']"                                  );
 DECL_REPORT( FuncCallShadowsClassIntrinsic,     "function call shadows class intrinsic '{0}'"                                                                   );
 
+/* ----- MetalGenerator ----- */
+
+DECL_REPORT( FailedToMapToMetalKeyword,         "failed to map {0} to Metal keyword[ ({1})]"                                                                    );
+DECL_REPORT( FailedToDetermineMetalDataType,    "failed to determine Metal data type"                                                                           );
+
 /* ----- Instruction ----- */
 
 DECL_REPORT( NotEnoughOperandsInInst,           "not enough operands in SPIR-V instruction"                                                                     );
