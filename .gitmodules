@@ -1,3 +1,4 @@
 [submodule "external/SPIR-V"]
 	path = external/SPIR-V
 	url = https://github.com/LukasBanana/SPIRV-Headers.git
+	ignore = all
