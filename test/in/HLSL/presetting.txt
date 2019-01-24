@@ -1,0 +1,246 @@
+#
+# Presettings for XShaderCompiler test shaders
+# 
+# Syntax:
+#   First line specifies the title of the presetting,
+#   and the second line contains the command line arguments (without the "xsc" shell).
+#   Lines can be commented out with a leading hash (#) symbol.
+#   Empty lines are ignored.
+#
+
+[SemanticTest1 VS1]
+-T vert -E VS1 in/HLSL/SemanticTest1.hlsl
+
+[SemanticTest1 VS2]
+-T vert -E VS2 in/HLSL/SemanticTest1.hlsl
+
+[SemanticTest1 VS3]
+-T vert -E VS3 in/HLSL/SemanticTest1.hlsl
+
+[SemanticTest1 VS4]
+-T vert -E VS4 in/HLSL/SemanticTest1.hlsl
+
+[SemanticTest1 VS5]
+-T vert -E VS5 in/HLSL/SemanticTest1.hlsl
+
+[SemanticTest1 VS6]
+-T vert -E VS6 in/HLSL/SemanticTest1.hlsl
+
+[SemanticTest1 PS1]
+-T frag -E PS1 in/HLSL/SemanticTest1.hlsl
+
+[SemanticTest1 PS2]
+-T frag -E PS2 in/HLSL/SemanticTest1.hlsl
+
+[SemanticTest2 VS]
+-T vert -E VS -Vout GLSL120 in/HLSL/SemanticTest2.hlsl
+
+[SemanticTest2 PS]
+-T frag -E PS -Vout GLSL120 in/HLSL/SemanticTest2.hlsl
+
+[SemanticTest4 VS (Vertex-Attrib-Layouts)]
+-T vert -E VS -EB -Scoord=0 -Stexcoord0=1 -Stexcoord1=2 -Snormal=3 in/HLSL/SemanticTest4.hlsl
+
+[SemanticTypes: vert]
+-T vert -E main -Vout GLSL140 in/HLSL/SemanticTypes.hlsl
+
+['clip'-Intrinsic PS]
+-T frag -E PS in/HLSL/IntrinsicClip.hlsl
+
+[ExprTest5 VS]
+-T vert -E VS in/HLSL/ExprTest5.hlsl
+
+[ArrayTest1 PS]
+-T vert -E VS in/HLSL/ArrayTest1.hlsl
+
+[TextureObjects PS]
+-T frag -E PS --comments in/HLSL/TextureObjects.hlsl
+
+[BufferObjects CS]
+-T comp -E CS -EB in/HLSL/BufferObjects.hlsl
+
+[RegisterTest1 PS]
+-T frag -E PS in/HLSL/RegisterTest1.hlsl
+
+[NameMangling1 CS]
+-T comp -E CS in/HLSL/NameMangling1.hlsl
+
+[CastTest1 VS]
+-T vert -E VS -Vout GLSL150 in/HLSL/CastTest1.hlsl
+
+[ConstExpr VS]
+-T vert -E VS in/HLSL/ConstExpr.hlsl
+
+[TessellationTest1 VS]
+-T vert -E VS in/HLSL/TessellationTest1.hlsl
+
+[TessellationTest1 HS]
+-T tesc -E HS -Pout "ctrl_" in/HLSL/TessellationTest1.hlsl
+
+[TessellationTest1 DS]
+-T tese -E DS -Pin "ctrl_" -E2 HS in/HLSL/TessellationTest1.hlsl
+
+[TessellationTest1 PS]
+-T frag -E PS in/HLSL/TessellationTest1.hlsl
+
+[GeometryTest1 VS]
+-T vert -E VS in/HLSL/GeometryTest1.hlsl
+
+[GeometryTest1 GS]
+-T geom -E GS in/HLSL/GeometryTest1.hlsl
+
+[GeometryTest1 PS]
+-T frag -E PS in/HLSL/GeometryTest1.hlsl
+
+[ExprTest4 VS]
+-T vert -E VS in/HLSL/ExprTest4.hlsl
+
+[ExprTest3 VS]
+-T vert -E VS in/HLSL/ExprTest3.hlsl
+
+[ExprTest2 CS]
+-T comp -E CS in/HLSL/ExprTest2.hlsl
+
+[TypeTest1 VS]
+-T vert -E VS in/HLSL/TypeTest1.hlsl
+
+[TypeTest2 VS]
+-T vert -E VS in/HLSL/TypeTest2.hlsl
+
+[TypeTest3 VS]
+-T vert -E VS in/HLSL/TypeTest3.hlsl
+
+[FloatTest1 VS]
+-T vert -E VS in/HLSL/FloatTest1.hlsl
+
+[FloatTest2 VS]
+-T vert -E VS in/HLSL/FloatTest2.hlsl
+
+[FunctionDeclTest1 VS]
+-T vert -E VS in/HLSL/FunctionDeclTest1.hlsl
+
+[StructTest1: vert]
+-T vert -E main in/HLSL/StructTest1.hlsl
+
+[StructTest2: vert]
+-T vert -E main in/HLSL/StructTest2.hlsl
+
+[StructInheritTest1: vert]
+-T vert -E main in/HLSL/StructInheritTest1.hlsl
+
+[StructInheritTest2: vert]
+-T vert -E main in/HLSL/StructInheritTest2.hlsl
+
+[StructInheritTest3: vert]
+-T vert -E main in/HLSL/StructInheritTest3.hlsl
+
+[FormattingTest1 VS]
+-T vert -E VS -O in/HLSL/FormattingTest1.hlsl
+
+[TestShader1 VS]
+-T vert -E VS -O in/HLSL/TestShader1.hlsl
+
+[TestShader1 PS]
+-T frag -E PS -O in/HLSL/TestShader1.hlsl
+
+[TestShader1 CS]
+-T comp -E CS -O in/HLSL/TestShader1.hlsl
+
+[ErrorTest1 VS]
+-T vert -E VertexMain in/HLSL/ErrorTest1.hlsl
+
+[PPTest1 VS]
+-T vert -E VS -O in/HLSL/PPTest1.hlsl
+
+[PPTest1: preprocessor]
+-PP -O -o out/HLSL/PPTest1.post.hlsl in/HLSL/PPTest1.hlsl
+
+[PPTest2: preprocessor]
+-PP -O -o out/HLSL/PPTest2.post.hlsl in/HLSL/PPTest2.hlsl
+
+[FuncOverloadTest1 PS]
+-T frag -E PS in/HLSL/FuncOverloadTest1.hlsl
+
+[IntrinsicTest1: comp]
+-T comp -E main in/HLSL/IntrinsicTest1.hlsl
+
+[ScopeTest1 VKSL/VS]
+-T vert -E VS -Vout VKSL in/HLSL/ScopeTest1.hlsl
+
+[MemberFuncTest1 VS]
+-T vert -E VS in/HLSL/MemberFuncTest1.hlsl
+
+[MemberFuncTest2: vert]
+-T vert -E main in/HLSL/MemberFuncTest2.hlsl
+
+[MemberFuncTest3 PS]
+-T frag -E PS in/HLSL/MemberFuncTest3.hlsl
+
+[MemberFuncTest4: vert]
+-T vert -E main in/HLSL/MemberFuncTest4.hlsl
+
+[MemberFuncTest5: vert]
+-T vert -E main in/HLSL/MemberFuncTest5.hlsl
+
+[RWTextureTest1: vert]
+-T vert -E main in/HLSL/RWTextureTest1.hlsl
+
+[RWTextureTest2: vert]
+-T vert -E main in/HLSL/RWTextureTest2.hlsl
+
+[RWTextureTest3: vert]
+-T vert -E main in/HLSL/RWTextureTest3.hlsl
+
+[RWTextureTest4: vert]
+-T vert -E main in/HLSL/RWTextureTest4.hlsl
+
+[ImageBufferTest1: comp]
+-T comp -E main in/HLSL/ImageBufferTest1.hlsl
+
+[GatherTest1: vert]
+-T vert -E main in/HLSL/GatherTest1.hlsl
+
+[GatherTest2: vert]
+-T vert -E main in/HLSL/GatherTest2.hlsl
+
+[SamplerBuffer1: vert]
+-T vert -E main in/HLSL/SamplerBuffer1.hlsl
+
+[TexelFetchTest1: vert]
+-T vert -E main in/HLSL/TexelFetchTest1.hlsl
+
+[MemoryBarrierTest1: vert]
+-T comp -E main in/HLSL/MemoryBarrierTest1.hlsl
+
+[MatrixLayoutTest1: vert]
+-T vert -E main in/HLSL/MatrixLayoutTest1.hlsl
+
+[MatrixMulTest1: vert]
+-T vert -E main in/HLSL/MatrixMulTest1.hlsl
+
+[MatrixSubscriptsTest1: vert]
+-T vert -E main in/HLSL/MatrixSubscriptsTest1.hlsl
+
+[ExtLayoutAttrTest1: vert]
+-T vert -E main -Xall in/HLSL/ExtLayoutAttrTest1.hlsl
+
+[ExtSpaceAttrTest1: vert]
+-T vert -E main -Xall in/HLSL/ExtSpaceAttrTest1.hlsl
+
+[SampleCmpTest1: vert]
+-T vert -E main -Xall in/HLSL/SampleCmpTest1.hlsl
+
+[ReflectionTest1: comp]
+-T comp -E main --reflect -Valid -DFOO in/HLSL/ReflectionTest1.hlsl
+
+[ESSL_IO_Semantics: comp]
+-T frag -E main -Vout ESSL -AB in/HLSL/ESSL_IO_Semantics.hlsl
+
+[Sampler2DonSM3: frag]
+-T frag -Wall -Vin HLSL3 --explicit-bind ON in/HLSL/Sampler2DOnSM3.hlsl
+
+[InOutParamTest1: vert]
+-T vert -Wall in/HLSL/InOutParamTest1.hlsl
+
+[ObjectAccessTest1: vert]
+-T vert -E VS in/HLSL/ObjectAccessTest1.hlsl

@@ -257,6 +257,14 @@ bool TypeDenoter::IsFunction() const
     return (Type() == Types::Function);
 }
 
+DataType TypeDenoter::FetchDataType() const
+{
+    if (auto baseTypeDen = GetAliased().As<BaseTypeDenoter>())
+        return baseTypeDen->dataType;
+    else
+        return DataType::Undefined;
+}
+
 /* ----- Type derivation ----- */
 
 TypeDenoterPtr TypeDenoter::GetSub(const Expr* expr)

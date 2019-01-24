@@ -174,6 +174,9 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     // Shortcut to check if this is a FunctionTypeDenoter.
     bool IsFunction() const;
 
+    // Returns the data type of a BaseTypeDenoter, or DataType::Undefined if this is nota base type denoter.
+    DataType FetchDataType() const;
+
     // Returns this type denoter as the specified sub class if this type denoter has the correct type. Otherwise, null is returned.
     template <typename T>
     T* As()

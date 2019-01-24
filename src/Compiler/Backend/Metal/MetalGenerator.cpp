@@ -7,7 +7,7 @@
 
 #include "MetalGenerator.h"
 #include "MetalKeywords.h"
-//#include "MetalIntrinsics.h"
+#include "MetalIntrinsics.h"
 //#include "StructParameterAnalyzer.h"
 #include "TypeDenoter.h"
 #include "Exception.h"
@@ -650,10 +650,10 @@ IMPLEMENT_VISIT_PROC(ArrayExpr)
 
 IMPLEMENT_VISIT_PROC(CastExpr)
 {
-    WriteTypeDenoter(*ast->typeSpecifier->typeDenoter, ast);
     Write("(");
-    Visit(ast->expr);
+    WriteTypeDenoter(*ast->typeSpecifier->typeDenoter, ast);
     Write(")");
+    Visit(ast->expr);
 }
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
@@ -887,6 +887,28 @@ void MetalGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST*
             /* Convert buffer type to Metal buffer (or sampler type) */
             if (auto keyword = BufferTypeToKeyword(bufferType, ast))
                 Write(*keyword);
+
+            /* Write template arguments */
+            if (IsTextureBufferType(bufferType))
+            {
+                Write("<");
+
+                /* Write base type */
+                auto genericDataType = DataType::Undefined;
+                if (auto genericTypeDen = bufferTypeDen->genericTypeDenoter.get())
+                    genericDataType = genericTypeDen->FetchDataType();
+
+                if (genericDataType != DataType::Undefined)
+                    WriteDataType(BaseDataType(genericDataType));
+                else
+                    Write("float");
+
+                /* Write access flags */
+                if (IsRWBufferType(bufferType))
+                    Write(", access::read_write");
+
+                Write(">");
+            }
         }
         else if (auto samplerTypeDen = typeDenoter.As<SamplerTypeDenoter>())
         {
@@ -1002,28 +1024,29 @@ void MetalGenerator::AssertIntrinsicNumArgs(CallExpr* funcCall, std::size_t numA
 
 void MetalGenerator::WriteCallExprStandard(CallExpr* funcCall)
 {
+    /* Write prefix expression */
+    if (funcCall->prefixExpr)
+    {
+        Visit(funcCall->prefixExpr);
+        Write(".");
+    }
+
     /* Write function name */
     if (funcCall->intrinsic != Intrinsic::Undefined)
     {
-        //TODO
-        #if 0
-        if (!IsWrappedIntrinsic(funcCall->intrinsic))
+        /* Write Metal intrinsic keyword */
+        if (auto intr = IntrinsicToMetalKeyword(funcCall->intrinsic))
         {
-            /* Write Metal intrinsic keyword */
-            if (auto keyword = IntrinsicToMetalKeyword(funcCall->intrinsic))
-                Write(*keyword);
-            else
-                ErrorIntrinsic(funcCall->ident, funcCall);
+            Write(intr->ident);
+            if (intr->isTemplate)
+            {
+                Write("<");
+                WriteTypeDenoter(funcCall->GetTypeDenoter()->GetAliased(), funcCall);
+                Write(">");
+            }
         }
         else
-        #endif
-        if (!funcCall->ident.empty())
-        {
-            /* Write wrapper function name */
-            Write(funcCall->ident);
-        }
-        else
-            Error(R_MissingFuncName, funcCall);
+            ErrorIntrinsic(funcCall->ident, funcCall);
     }
     else if (auto funcDecl = funcCall->GetFunctionImpl())
     {

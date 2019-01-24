@@ -1464,6 +1464,16 @@ ShaderTarget FunctionDecl::DetermineEntryPointType() const
 {
     if (numCalls == 0)
     {
+        /* Determine type by attributes */
+        if (auto declStmnt = declStmntRef)
+        {
+            for (const auto& attr : declStmnt->attribs)
+            {
+                if (attr->attributeType == AttributeType::NumThreads)
+                    return ShaderTarget::ComputeShader;
+            }
+        }
+
         /* Determine type by function output semantic */
         auto target = ShaderTarget::Undefined;
 

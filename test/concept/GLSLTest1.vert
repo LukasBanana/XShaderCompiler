@@ -14,19 +14,19 @@ layout(std140) uniform Matrices
 
 struct VOut
 {
-	vec3 color1;
-	vec3 color2;
+    vec3 color1;
+    vec3 color2;
 };
 
 out xsc_VOut
 {
-	VOut outp;
+    VOut outp;
 };
 
 void main()
 {
-	outp.color1 = vec3(1);
-	outp.color2 = vec3(2);
+    outp.color1 = vec3(1);
+    outp.color2 = vec3(2);
     gl_Position = (wvpMatrix * vPos);
 }
 

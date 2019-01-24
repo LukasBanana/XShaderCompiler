@@ -1,11 +1,11 @@
 /*
- * GLSLIntrinsics.cpp
+ * MetalIntrinsics.cpp
  * 
  * This file is part of the XShaderCompiler project (Copyright (c) 2014-2018 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
-#include "GLSLIntrinsics.h"
+#include "MetalIntrinsics.h"
 #include <map>
 
 
@@ -13,7 +13,7 @@ namespace Xsc
 {
 
 
-static std::map<Intrinsic, std::string> GenerateIntrinsicMapGLSL()
+static std::map<Intrinsic, MetalIntrinsic> GenerateIntrinsicMapMetal()
 {
     using T = Intrinsic;
 
@@ -22,55 +22,55 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMapGLSL()
       //{ T::Abort,                            ""                      },
         { T::Abs,                              "abs"                   },
         { T::ACos,                             "acos"                  },
-        { T::All,                              "all"                   },
-        { T::AllMemoryBarrier,                 "memoryBarrier"         },
-      //{ T::AllMemoryBarrierWithGroupSync,    ""                      },
-        { T::Any,                              "any"                   },
-        { T::AsDouble,                         "uint64BitsToDouble"    },
-        { T::AsFloat,                          "uintBitsToFloat"       },
+      //{ T::All,                              ""                      },
+      //{ T::AllMemoryBarrier,                 ""                      },
+        { T::AllMemoryBarrierWithGroupSync,    "threadgroup_barrier"   },
+      //{ T::Any,                              ""                      },
+        { T::AsDouble,                         { "as_type", true }     },
+        { T::AsFloat,                          { "as_type", true }     },
         { T::ASin,                             "asin"                  },
-        { T::AsInt,                            "floatBitsToInt"        },
-        { T::AsUInt_1,                         "floatBitsToUint"       },
+        { T::AsInt,                            { "as_type", true }     },
+        { T::AsUInt_1,                         { "as_type", true }     },
       //{ T::AsUInt_3,                         ""                      },
         { T::ATan,                             "atan"                  },
-        { T::ATan2,                            "atan"                  },
+        { T::ATan2,                            "atan2"                 },
         { T::Ceil,                             "ceil"                  },
       //{ T::CheckAccessFullyMapped,           ""                      },
         { T::Clamp,                            "clamp"                 },
       //{ T::Clip,                             ""                      },
         { T::Cos,                              "cos"                   },
         { T::CosH,                             "cosh"                  },
-        { T::CountBits,                        "bitCount"              },
+      //{ T::CountBits,                        ""                      },
         { T::Cross,                            "cross"                 },
       //{ T::D3DCOLORtoUBYTE4,                 ""                      },
-        { T::DDX,                              "dFdx"                  },
-        { T::DDXCoarse,                        "dFdxCoarse"            },
-        { T::DDXFine,                          "dFdxFine"              },
-        { T::DDY,                              "dFdy"                  },
-        { T::DDYCoarse,                        "dFdyCoarse"            },
-        { T::DDYFine,                          "dFdyFine"              },
-        { T::Degrees,                          "degrees"               },
+        { T::DDX,                              "dfdx"                  },
+        { T::DDXCoarse,                        "dfdx"                  },
+        { T::DDXFine,                          "dfdx"                  },
+        { T::DDY,                              "dfdy"                  },
+        { T::DDYCoarse,                        "dfdy"                  },
+        { T::DDYFine,                          "dfdy"                  },
+      //{ T::Degrees,                          ""                      },
         { T::Determinant,                      "determinant"           },
       //{ T::DeviceMemoryBarrier,              ""                      }, // memoryBarrier, memoryBarrierImage, memoryBarrierImage, and barrier
       //{ T::DeviceMemoryBarrierWithGroupSync, ""                      }, // memoryBarrier, memoryBarrierImage, memoryBarrierImage
         { T::Distance,                         "distance"              },
         { T::Dot,                              "dot"                   },
       //{ T::Dst,                              ""                      },
-        { T::Equal,                            "equal"                 }, // GLSL only
+      //{ T::Equal,                            ""                      }, // GLSL only
       //{ T::ErrorF,                           ""                      },
-        { T::EvaluateAttributeAtCentroid,      "interpolateAtCentroid" },
-        { T::EvaluateAttributeAtSample,        "interpolateAtSample"   },
-        { T::EvaluateAttributeSnapped,         "interpolateAtOffset"   },
+      //{ T::EvaluateAttributeAtCentroid,      ""                      },
+      //{ T::EvaluateAttributeAtSample,        ""                      },
+      //{ T::EvaluateAttributeSnapped,         ""                      },
         { T::Exp,                              "exp"                   },
         { T::Exp2,                             "exp2"                  },
       //{ T::F16toF32,                         ""                      },
       //{ T::F32toF16,                         ""                      },
         { T::FaceForward,                      "faceforward"           },
-        { T::FirstBitHigh,                     "findMSB"               },
-        { T::FirstBitLow,                      "findLSB"               },
+      //{ T::FirstBitHigh,                     ""                      },
+      //{ T::FirstBitLow,                      ""                      },
         { T::Floor,                            "floor"                 },
         { T::FMA,                              "fma"                   },
-        { T::FMod,                             "mod"                   },
+        { T::FMod,                             "fmod"                  },
         { T::Frac,                             "fract"                 },
         { T::FrExp,                            "frexp"                 },
         { T::FWidth,                           "fwidth"                },
@@ -108,8 +108,8 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMapGLSL()
       //{ T::MSAD4,                            ""                      },
       //{ T::Mul,                              ""                      },
         { T::Normalize,                        "normalize"             },
-        { T::NotEqual,                         "notEqual"              }, // GLSL only
-        { T::Not,                              "not"                   }, // GLSL only
+      //{ T::NotEqual,                         ""                      }, // GLSL only
+      //{ T::Not,                              ""                      }, // GLSL only
         { T::Pow,                              "pow"                   },
       //{ T::PrintF,                           ""                      },
       //{ T::Process2DQuadTessFactorsAvg,      ""                      },
@@ -122,13 +122,13 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMapGLSL()
       //{ T::ProcessTriTessFactorsAvg,         ""                      },
       //{ T::ProcessTriTessFactorsMax,         ""                      },
       //{ T::ProcessTriTessFactorsMin,         ""                      },
-        { T::Radians,                          "radians"               },
+      //{ T::Radians,                          ""                      },
       //{ T::Rcp,                              ""                      },
         { T::Reflect,                          "reflect"               },
         { T::Refract,                          "refract"               },
       //{ T::ReverseBits,                      ""                      },
         { T::Round,                            "round"                 },
-        { T::RSqrt,                            "inversesqrt"           },
+        { T::RSqrt,                            "rsqrt"                 },
       //{ T::Saturate,                         ""                      },
         { T::Sign,                             "sign"                  },
         { T::Sin,                              "sin"                   },
@@ -142,65 +142,65 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMapGLSL()
         { T::Transpose,                        "transpose"             },
         { T::Trunc,                            "trunc"                 },
 
-        { T::Tex1D_2,                          "texture"               },
-        { T::Tex1D_4,                          "texture"               },
-        { T::Tex1DBias,                        "texture"               },
-        { T::Tex1DGrad,                        "textureGrad"           },
-        { T::Tex1DLod,                         "textureLod"            },
-        { T::Tex1DProj,                        "textureProj"           },
-        { T::Tex2D_2,                          "texture"               },
-        { T::Tex2D_4,                          "texture"               },
-        { T::Tex2DBias,                        "texture"               },
-        { T::Tex2DGrad,                        "textureGrad"           },
-        { T::Tex2DLod,                         "textureLod"            },
-        { T::Tex2DProj,                        "textureProj"           },
-        { T::Tex3D_2,                          "texture"               },
-        { T::Tex3D_4,                          "texture"               },
-        { T::Tex3DBias,                        "texture"               },
-        { T::Tex3DGrad,                        "textureGrad"           },
-        { T::Tex3DLod,                         "textureLod"            },
-        { T::Tex3DProj,                        "textureProj"           },
-        { T::TexCube_2,                        "texture"               },
-        { T::TexCube_4,                        "texture"               },
-        { T::TexCubeBias,                      "texture"               },
-        { T::TexCubeGrad,                      "textureGrad"           },
-        { T::TexCubeLod,                       "textureLod"            },
+        { T::Tex1D_2,                          "sample"                },
+        { T::Tex1D_4,                          "sample"                },
+        { T::Tex1DBias,                        "sample"                },
+        { T::Tex1DGrad,                        "sample"                },
+        { T::Tex1DLod,                         "sample"                },
+        { T::Tex1DProj,                        "sample"                },
+        { T::Tex2D_2,                          "sample"                },
+        { T::Tex2D_4,                          "sample"                },
+        { T::Tex2DBias,                        "sample"                },
+        { T::Tex2DGrad,                        "sample"                },
+        { T::Tex2DLod,                         "sample"                },
+        { T::Tex2DProj,                        "sample"                },
+        { T::Tex3D_2,                          "sample"                },
+        { T::Tex3D_4,                          "sample"                },
+        { T::Tex3DBias,                        "sample"                },
+        { T::Tex3DGrad,                        "sample"                },
+        { T::Tex3DLod,                         "sample"                },
+        { T::Tex3DProj,                        "sample"                },
+        { T::TexCube_2,                        "sample"                },
+        { T::TexCube_4,                        "sample"                },
+        { T::TexCubeBias,                      "sample"                },
+        { T::TexCubeGrad,                      "sample"                },
+        { T::TexCubeLod,                       "sample"                },
       //{ T::TexCubeProj,                      ""                      },
 
-        { T::Texture_GetDimensions,            "textureSize"           },
-        { T::Texture_Load_1,                   "texelFetch"            },
-        { T::Texture_Load_2,                   "texelFetch"            },
-        { T::Texture_Load_3,                   "texelFetchOffset"      },
-        { T::Texture_Gather_2,                 "textureGather"         },
-        { T::Texture_Gather_3,                 "textureGatherOffset"   },
-      //{ T::Texture_Gather_4,                 ""                      },
-        { T::Texture_GatherRed_2,              "textureGather"         },
-        { T::Texture_GatherRed_3,              "textureGatherOffset"   },
+      //{ T::Texture_GetDimensions,            ""                      }, // get_width(), get_height(), ...
+        { T::Texture_Load_1,                   "read"                  },
+        { T::Texture_Load_2,                   "read"                  },
+        { T::Texture_Load_3,                   "read"                  },
+        { T::Texture_Gather_2,                 "gather"                },
+        { T::Texture_Gather_3,                 "gather"                },
+        { T::Texture_Gather_4,                 "gather"                },
+      //{ T::Texture_GatherRed_2,              ""                      },
+      //{ T::Texture_GatherRed_3,              ""                      },
       //{ T::Texture_GatherRed_4,              ""                      },
-        { T::Texture_GatherRed_6,              "textureGatherOffsets"  },
+      //{ T::Texture_GatherRed_6,              ""                      },
       //{ T::Texture_GatherRed_7,              ""                      },
-        { T::Texture_GatherGreen_2,            "textureGather"         },
-        { T::Texture_GatherGreen_3,            "textureGatherOffset"   },
+      //{ T::Texture_GatherGreen_2,            ""                      },
+      //{ T::Texture_GatherGreen_3,            ""                      },
       //{ T::Texture_GatherGreen_4,            ""                      },
-        { T::Texture_GatherGreen_6,            "textureGatherOffsets"  },
+      //{ T::Texture_GatherGreen_6,            ""                      },
       //{ T::Texture_GatherGreen_7,            ""                      },
-        { T::Texture_GatherBlue_2,             "textureGather"         },
-        { T::Texture_GatherBlue_3,             "textureGatherOffset"   },
+      //{ T::Texture_GatherBlue_2,             ""                      },
+      //{ T::Texture_GatherBlue_3,             ""                      },
       //{ T::Texture_GatherBlue_4,             ""                      },
-        { T::Texture_GatherBlue_6,             "textureGatherOffsets"  },
+      //{ T::Texture_GatherBlue_6,             ""                      },
       //{ T::Texture_GatherBlue_7,             ""                      },
-        { T::Texture_GatherAlpha_2,            "textureGather"         },
-        { T::Texture_GatherAlpha_3,            "textureGatherOffset"   },
+      //{ T::Texture_GatherAlpha_2,            ""                      },
+      //{ T::Texture_GatherAlpha_3,            ""                      },
       //{ T::Texture_GatherAlpha_4,            ""                      },
-        { T::Texture_GatherAlpha_6,            "textureGatherOffsets"  },
+      //{ T::Texture_GatherAlpha_6,            ""                      },
       //{ T::Texture_GatherAlpha_7,            ""                      },
-        { T::Texture_GatherCmp_3,              "textureGather"         },
-        { T::Texture_GatherCmp_4,              "textureGatherOffset"   },
-      //{ T::Texture_GatherCmp_5,              ""                      },
-        { T::Texture_GatherCmpRed_3,           "textureGather"         },
-        { T::Texture_GatherCmpRed_4,           "textureGatherOffset"   },
+        { T::Texture_GatherCmp_3,              "gather_compare"        },
+        { T::Texture_GatherCmp_4,              "gather_compare"        },
+        { T::Texture_GatherCmp_5,              "gather_compare"        },
+      //{ T::Texture_GatherCmpRed_3,           ""                      },
+      //{ T::Texture_GatherCmpRed_4,           ""                      },
       //{ T::Texture_GatherCmpRed_5,           ""                      },
-        { T::Texture_GatherCmpRed_7,           "textureGatherOffsets"  },
+      //{ T::Texture_GatherCmpRed_7,           ""                      },
       //{ T::Texture_GatherCmpRed_8,           ""                      },
       //{ T::Texture_GatherCmpGreen_3,         ""                      },
       //{ T::Texture_GatherCmpGreen_4,         ""                      },
@@ -217,55 +217,55 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMapGLSL()
       //{ T::Texture_GatherCmpAlpha_5,         ""                      },
       //{ T::Texture_GatherCmpAlpha_7,         ""                      },
       //{ T::Texture_GatherCmpAlpha_8,         ""                      },
-        { T::Texture_Sample_2,                 "texture"               },
-        { T::Texture_Sample_3,                 "textureOffset"         },
-      //{ T::Texture_Sample_4,                 ""                      },
-      //{ T::Texture_Sample_5,                 ""                      },
-        { T::Texture_SampleBias_3,             "texture"               },
-        { T::Texture_SampleBias_4,             "textureOffset"         },
-      //{ T::Texture_SampleBias_5,             ""                      },
-      //{ T::Texture_SampleBias_6,             ""                      },
-        { T::Texture_SampleCmp_3,              "texture"               },
-        { T::Texture_SampleCmp_4,              "textureOffset"         },
-      //{ T::Texture_SampleCmp_5,              ""                      },
-      //{ T::Texture_SampleCmp_6,              ""                      },
-        { T::Texture_SampleCmpLevelZero_3,     "textureLod"            },
-        { T::Texture_SampleCmpLevelZero_4,     "textureLodOffset"      },
-      //{ T::Texture_SampleCmpLevelZero_5,     ""                      },
-        { T::Texture_SampleGrad_4,             "textureGrad"           },
-        { T::Texture_SampleGrad_5,             "textureGradOffset"     },
-      //{ T::Texture_SampleGrad_6,             ""                      },
-      //{ T::Texture_SampleGrad_7,             ""                      },
-        { T::Texture_SampleLevel_3,            "textureLod"            },
-        { T::Texture_SampleLevel_4,            "textureLodOffset"      },
-      //{ T::Texture_SampleLevel_5,            ""                      },
-        { T::Texture_QueryLod,                 "textureQueryLod"       }, // textureQueryLod(...).y  <--  clamped to base level
-        { T::Texture_QueryLodUnclamped,        "textureQueryLod"       }, // textureQueryLod(...).x  <--  unclamped
+        { T::Texture_Sample_2,                 "sample"                },
+        { T::Texture_Sample_3,                 "sample"                },
+        { T::Texture_Sample_4,                 "sample"                },
+        { T::Texture_Sample_5,                 "sample"                },
+        { T::Texture_SampleBias_3,             "sample"                },
+        { T::Texture_SampleBias_4,             "sample"                },
+        { T::Texture_SampleBias_5,             "sample"                },
+        { T::Texture_SampleBias_6,             "sample"                },
+        { T::Texture_SampleCmp_3,              "sample_compare"        },
+        { T::Texture_SampleCmp_4,              "sample_compare"        },
+        { T::Texture_SampleCmp_5,              "sample_compare"        },
+        { T::Texture_SampleCmp_6,              "sample_compare"        },
+        { T::Texture_SampleCmpLevelZero_3,     "sample_compare"        },
+        { T::Texture_SampleCmpLevelZero_4,     "sample_compare"        },
+        { T::Texture_SampleCmpLevelZero_5,     "sample_compare"        },
+        { T::Texture_SampleGrad_4,             "sample"                }, // lod_options: gradient2d or gradient3d
+        { T::Texture_SampleGrad_5,             "sample"                }, // lod_options: gradient2d or gradient3d
+        { T::Texture_SampleGrad_6,             "sample"                }, // lod_options: gradient2d or gradient3d
+        { T::Texture_SampleGrad_7,             "sample"                }, // lod_options: gradient2d or gradient3d
+        { T::Texture_SampleLevel_3,            "sample"                }, // lod_options: level
+        { T::Texture_SampleLevel_4,            "sample"                }, // lod_options: level
+        { T::Texture_SampleLevel_5,            "sample"                }, // lod_options: level
+      //{ T::Texture_QueryLod,                 ""                      },
+      //{ T::Texture_QueryLodUnclamped,        ""                      },
 
-        { T::StreamOutput_Append,              "EmitVertex"            },
-        { T::StreamOutput_RestartStrip,        "EndPrimitive"          },
+      //{ T::StreamOutput_Append,              ""                      },
+      //{ T::StreamOutput_RestartStrip,        ""                      },
 
-        { T::Image_Load,                       "imageLoad"             }, // GLSL only
-        { T::Image_Store,                      "imageStore"            }, // GLSL only
-        { T::Image_AtomicAdd,                  "imageAtomicAdd"        }, // GLSL only
-        { T::Image_AtomicAnd,                  "imageAtomicAnd"        }, // GLSL only
-        { T::Image_AtomicCompSwap,             "imageAtomicCompSwap"   }, // GLSL only
-        { T::Image_AtomicExchange,             "imageAtomicExchange"   }, // GLSL only
-        { T::Image_AtomicMax,                  "imageAtomicMax"        }, // GLSL only
-        { T::Image_AtomicMin,                  "imageAtomicMin"        }, // GLSL only
-        { T::Image_AtomicOr,                   "imageAtomicOr"         }, // GLSL only
-        { T::Image_AtomicXor,                  "imageAtomicXor"        }, // GLSL only
+      //{ T::Image_Load,                       ""                      }, // GLSL only
+      //{ T::Image_Store,                      ""                      }, // GLSL only
+      //{ T::Image_AtomicAdd,                  ""                      }, // GLSL only
+      //{ T::Image_AtomicAnd,                  ""                      }, // GLSL only
+      //{ T::Image_AtomicCompSwap,             ""                      }, // GLSL only
+      //{ T::Image_AtomicExchange,             ""                      }, // GLSL only
+      //{ T::Image_AtomicMax,                  ""                      }, // GLSL only
+      //{ T::Image_AtomicMin,                  ""                      }, // GLSL only
+      //{ T::Image_AtomicOr,                   ""                      }, // GLSL only
+      //{ T::Image_AtomicXor,                  ""                      }, // GLSL only
 
-        { T::PackHalf2x16,                     "packHalf2x16"          }, // GLSL only
+      //{ T::PackHalf2x16,                     ""                      }, // GLSL only
     };
 }
 
-static const auto g_intrinsicMapGLSL = GenerateIntrinsicMapGLSL();
+static const auto g_intrinsicMapMetal = GenerateIntrinsicMapMetal();
 
-const std::string* IntrinsicToGLSLKeyword(const Intrinsic intr)
+const MetalIntrinsic* IntrinsicToMetalKeyword(const Intrinsic intr)
 {
-    auto it = g_intrinsicMapGLSL.find(intr);
-    return (it != g_intrinsicMapGLSL.end() ? &(it->second) : nullptr);
+    auto it = g_intrinsicMapMetal.find(intr);
+    return (it != g_intrinsicMapMetal.end() ? &(it->second) : nullptr);
 }
 
 

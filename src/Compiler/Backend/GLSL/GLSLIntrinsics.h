@@ -9,7 +9,6 @@
 #define XSC_GLSL_INTRINSICS_H
 
 
-#include "Token.h"
 #include "ASTEnums.h"
 #include <string>
 

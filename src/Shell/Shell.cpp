@@ -208,10 +208,20 @@ static std::string TargetToExtension(const ShaderTarget shaderTarget)
 
 std::string Shell::GetDefaultOutputFilename(const std::string& filename) const
 {
+    std::string filePart;
+
+    /* Get file part with new extension */
     if (IsLanguageMetal(state_.outputDesc.shaderVersion))
-        return (GetFilePart(filename) + ".metal");
+        filePart = (GetFilePart(filename) + ".metal");
     else
-        return (GetFilePart(filename) + "." + state_.inputDesc.entryPoint + "." + TargetToExtension(state_.inputDesc.shaderTarget));
+        filePart = (GetFilePart(filename) + "." + state_.inputDesc.entryPoint + "." + TargetToExtension(state_.inputDesc.shaderTarget));
+
+    /* Remove path part */
+    auto pathPart = GetPathPart(filePart);
+    if (!pathPart.empty())
+        filePart = filePart.substr(pathPart.size() + 1);
+
+    return filePart;
 }
 
 bool Shell::Compile(const std::string& filename)

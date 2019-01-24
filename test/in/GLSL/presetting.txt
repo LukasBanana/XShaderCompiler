@@ -9,7 +9,7 @@
 #
 
 [ExprTest1: vert]
--Vin GLSL --show-ast -o output/* ExprTest1.vert
+-Vin GLSL --show-ast ExprTest1.vert
 
 [PPTest3: preprocessor]
--PP -Vin GLSL -o output/PPTest3.post.vert PPTest3.vert
+-PP -Vin GLSL -o ../../out/GLSL/PPTest3.post.vert PPTest3.vert

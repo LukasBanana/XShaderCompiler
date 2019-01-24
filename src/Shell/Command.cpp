@@ -264,7 +264,7 @@ void VersionOutCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 std::vector<Command::Identifier> OutputCommand::Idents() const
 {
-    return { { "-o", }, { "--output" } };
+    return { { "-o" }, { "--output" } };
 }
 
 HelpDescriptor OutputCommand::Help() const
