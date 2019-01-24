@@ -1397,6 +1397,114 @@ FunctionDecl* FunctionDecl::FetchFunctionDeclFromList(
     return funcDeclCandidates.front();
 }
 
+static bool DetermineEntryPointByInputSemantic(const Semantic semantic, ShaderTarget& target)
+{
+    switch (semantic)
+    {
+        case Semantic::DomainLocation:
+            target = ShaderTarget::TessellationEvaluationShader;
+            return true;
+        case Semantic::DispatchThreadID:
+        case Semantic::GroupThreadID:
+        case Semantic::GroupID:
+        case Semantic::GroupIndex:
+            target = ShaderTarget::ComputeShader;
+            return true;
+        default:
+            return false;
+    }
+}
+
+static bool DetermineEntryPointByOutputSemantic(const Semantic semantic, ShaderTarget& target)
+{
+    switch (semantic)
+    {
+        case Semantic::VertexPosition:
+            target = ShaderTarget::VertexShader;
+            return true;
+        case Semantic::Target:
+        case Semantic::Depth:
+        case Semantic::DepthLessEqual:
+        case Semantic::DepthGreaterEqual:
+            target = ShaderTarget::FragmentShader;
+            return true;
+        case Semantic::TessFactor:
+            target = ShaderTarget::TessellationControlShader;
+            return true;
+        default:
+            return false;
+    }
+}
+
+static bool DetermineEntryPointByInputStruct(StructDecl* ast, ShaderTarget& target)
+{
+    ast->ForEachVarDecl(
+        [&target](VarDeclPtr& varDecl)
+        {
+            if (target == ShaderTarget::Undefined)
+                DetermineEntryPointByInputSemantic(varDecl->semantic, target);
+        }
+    );
+    return (target != ShaderTarget::Undefined);
+}
+
+static bool DetermineEntryPointByOutputStruct(StructDecl* ast, ShaderTarget& target)
+{
+    ast->ForEachVarDecl(
+        [&target](VarDeclPtr& varDecl)
+        {
+            if (target == ShaderTarget::Undefined)
+                DetermineEntryPointByOutputSemantic(varDecl->semantic, target);
+        }
+    );
+    return (target != ShaderTarget::Undefined);
+}
+
+ShaderTarget FunctionDecl::DetermineEntryPointType() const
+{
+    if (numCalls == 0)
+    {
+        /* Determine type by function output semantic */
+        auto target = ShaderTarget::Undefined;
+
+        const auto& returnTypeDen = returnType->GetTypeDenoter()->GetAliased();
+        if (auto structTypeDen = returnTypeDen.As<StructTypeDenoter>())
+            DetermineEntryPointByOutputStruct(structTypeDen->structDeclRef, target);
+        else if (semantic.IsSystemValue())
+            DetermineEntryPointByOutputSemantic(semantic, target);
+
+        if (target != ShaderTarget::Undefined)
+            return target;
+
+        /* Determine type by input parameter semantics */
+        for (const auto& param : parameters)
+        {
+            if (auto varDecl = param->FetchUniqueVarDecl())
+            {
+                const auto& typeDen = varDecl->GetTypeDenoter()->GetAliased();
+                if (auto structTypeDen = typeDen.As<StructTypeDenoter>())
+                {
+                    if (param->IsOutput())
+                        DetermineEntryPointByOutputStruct(structTypeDen->structDeclRef, target);
+                    else
+                        DetermineEntryPointByInputStruct(structTypeDen->structDeclRef, target);
+                }
+                else if (varDecl->semantic.IsSystemValue())
+                {
+                    if (param->IsOutput())
+                        DetermineEntryPointByOutputSemantic(varDecl->semantic, target);
+                    else
+                        DetermineEntryPointByInputSemantic(varDecl->semantic, target);
+                }
+
+                if (target != ShaderTarget::Undefined)
+                    return target;
+            }
+        }
+    }
+    return ShaderTarget::Undefined;
+}
+
 
 /* ----- UniformBufferDecl ----- */
 

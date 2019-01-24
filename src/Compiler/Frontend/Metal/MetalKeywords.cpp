@@ -301,7 +301,7 @@ static std::map<Semantic, MetalSemanticDescriptor> GenerateSemanticMap()
       //{ T::StencilRef,             { ""                             } },
         { T::Target,                 { "color",                  true } },
       //{ T::TessFactor,             { ""                             } },
-        { T::VertexID,               { "Vertex_id"                    } },
+        { T::VertexID,               { "vertex_id"                    } },
         { T::VertexPosition,         { "position"                     } },
         { T::ViewportArrayIndex,     { "viewport_array_index"         } },
     };

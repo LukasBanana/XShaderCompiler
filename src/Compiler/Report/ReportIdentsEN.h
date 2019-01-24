@@ -42,6 +42,7 @@ DECL_REPORT( PrevDefinitionAt,                  "previous definition at ({0})"  
 DECL_REPORT( ExceptionThrown,                   "exception thrown: "                                                                                            );
 DECL_REPORT( ZeroBased,                         "zero-based"                                                                                                    );
 DECL_REPORT( OneBased,                          "one-based"                                                                                                     );
+DECL_REPORT( SystemValueSemantic,               "system value semantic"                                                                                         );
 
 /* ----- Token ----- */
 

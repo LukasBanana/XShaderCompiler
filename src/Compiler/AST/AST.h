@@ -848,6 +848,9 @@ struct FunctionDecl : public Decl
         bool                                throwErrorIfNoMatch = true
     );
 
+    // Returns the entry point type of this function, or Undefined if this is not an entry point.
+    ShaderTarget DetermineEntryPointType() const;
+
     TypeSpecifierPtr                returnType;                                 // Function return type (TypeSpecifier).
     std::vector<VarDeclStmntPtr>    parameters;                                 // Function parameter list.
     IndexedSemantic                 semantic            = Semantic::Undefined;  // Function return semantic; may be undefined.

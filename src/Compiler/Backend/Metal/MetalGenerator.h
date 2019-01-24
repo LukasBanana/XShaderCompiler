@@ -52,11 +52,14 @@ class MetalGenerator : public Generator
             const ShaderOutput& outputDesc
         ) override;
 
-        // Returns the Metal keyword for the specified buffer type or reports and error.
+        // Returns the Metal keyword for the specified buffer type or reports an error.
         const std::string* BufferTypeToKeyword(const BufferType bufferType, const AST* ast = nullptr);
 
-        // Returns the Metal keyword for the specified sampler type or reports and error.
+        // Returns the Metal keyword for the specified sampler type or reports an error.
         const std::string* SamplerTypeToKeyword(const SamplerType samplerType, const AST* ast = nullptr);
+
+        // Returns the Metal keyword for the specified semantic or reports an error.
+        std::unique_ptr<std::string> SemanticToKeyword(const IndexedSemantic& semantic, const AST* ast = nullptr);
 
         // Error for intrinsics, that can not be mapped to Metal keywords.
         void ErrorIntrinsic(const std::string& intrinsicName, const AST* ast = nullptr);
@@ -114,6 +117,7 @@ class MetalGenerator : public Generator
 
         // Writes a comment (single or multi-line comments).
         void WriteComment(const std::string& text);
+        void WriteSemantic(const IndexedSemantic& semantic, const AST* ast = nullptr);
 
         /* ----- Program ----- */
 
@@ -146,8 +150,7 @@ class MetalGenerator : public Generator
         /* ----- Function declaration ----- */
 
         void WriteFunction(FunctionDecl* ast);
-        void WriteFunctionEntryPoint(FunctionDecl* ast);
-        void WriteFunctionEntryPointType(FunctionDecl* ast);
+        void WriteFunctionEntryPointType(const ShaderTarget target);
 
         /* ----- Call expressions ----- */
 

@@ -16,12 +16,21 @@ namespace Xsc
 
 void StructParameterAnalyzer::MarkStructsFromEntryPoint(Program& program, const ShaderTarget shaderTarget)
 {
-    program_        = (&program);
+    entryPoint_     = program.entryPointRef;
     shaderTarget_   = shaderTarget;
 
     /* Visit all entry points */
     Visit(program.entryPointRef);
     Visit(program.layoutTessControl.patchConstFunctionRef);
+}
+
+void StructParameterAnalyzer::MarkStructsFromEntryPoint(FunctionDecl& funcDecl, const ShaderTarget shaderTarget)
+{
+    entryPoint_     = (&funcDecl);
+    shaderTarget_   = shaderTarget;
+
+    /* Visit all entry points */
+    Visit(entryPoint_);
 }
 
 
@@ -51,7 +60,7 @@ void StructParameterAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts
 bool StructParameterAnalyzer::IsVariableAnEntryPointParameter(VarDeclStmnt* var) const
 {
     /* Is the variable a parameter of the entry point? */
-    const auto& entryPointParams = program_->entryPointRef->parameters;
+    const auto& entryPointParams = entryPoint_->parameters;
 
     auto entryPointIt = std::find_if(
         entryPointParams.begin(), entryPointParams.end(),

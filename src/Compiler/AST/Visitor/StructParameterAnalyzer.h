@@ -31,6 +31,9 @@ class StructParameterAnalyzer : private VisitorTracker
         // Marks all declarational AST nodes (i.e. function decl, structure decl etc.) that are reachable from the specififed entry point.
         void MarkStructsFromEntryPoint(Program& program, const ShaderTarget shaderTarget);
 
+        // Marks all declarational AST nodes (i.e. function decl, structure decl etc.) that are reachable from the specififed entry point.
+        void MarkStructsFromEntryPoint(FunctionDecl& funcDecl, const ShaderTarget shaderTarget = ShaderTarget::Undefined);
+
     private:
 
         // Returns true if the specified AST has not yet been visited.
@@ -61,9 +64,9 @@ class StructParameterAnalyzer : private VisitorTracker
         DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( ObjectExpr        );
 
-        /* === Members === */
+    private:
 
-        Program*                program_        = nullptr;
+        FunctionDecl*           entryPoint_     = nullptr;
         ShaderTarget            shaderTarget_   = ShaderTarget::VertexShader;
 
         std::set<const AST*>    visitSet_;
