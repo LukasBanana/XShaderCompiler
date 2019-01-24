@@ -61,28 +61,23 @@ void MetalGenerator::GenerateCodePrimary(
     writeHeaderComment_ = outputDesc.options.writeGeneratorHeader;
     alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
 
-    if (program.entryPointRef)
+    try
     {
-        try
-        {
-            /* Visit program AST */
-            Visit(&program);
-        }
-        catch (const Report&)
-        {
-            throw;
-        }
-        catch (const ASTRuntimeError& e)
-        {
-            Error(e.what(), e.GetAST());
-        }
-        catch (const std::exception& e)
-        {
-            Error(e.what());
-        }
+        /* Visit program AST */
+        Visit(&program);
     }
-    else
-        Error(R_EntryPointNotFound(inputDesc.entryPoint));
+    catch (const Report&)
+    {
+        throw;
+    }
+    catch (const ASTRuntimeError& e)
+    {
+        Error(e.what(), e.GetAST());
+    }
+    catch (const std::exception& e)
+    {
+        Error(e.what());
+    }
 }
 
 

@@ -863,6 +863,7 @@ struct FunctionDecl : public Decl
     StructDecl*                     structDeclRef       = nullptr;              // Structure declaration reference if this is a member function; may be null
 
     std::vector<ParameterStructure> paramStructs;                               // Parameter with structure type (only for entry point).
+    unsigned int                    numCalls            = 0;                    // Number of expressions that call this function.
 };
 
 // Uniform buffer (cbuffer, tbuffer) declaration.

@@ -33,6 +33,7 @@ void ReflectionPrinter::PrintReflection(const Reflection::ReflectionData& reflec
         PrintReflectionObjects  ( reflectionData.constantBuffers,       "Constant Buffers",     referencedOnly );
         PrintReflectionObjects  ( reflectionData.samplerStates,         "Sampler States",       referencedOnly );
         PrintReflectionObjects  ( reflectionData.staticSamplerStates,   "Static Sampler States"                );
+        PrintReflectionObjects  ( reflectionData.functions,             "Functions"                            );
         PrintReflectionAttribute( reflectionData.numThreads,            "Number of Threads"                    );
     }
     indentHandler_.DecIndent();
@@ -306,6 +307,25 @@ void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Sta
                 IndentOut() << "MipLODBias     = " << desc.mipLODBias << std::endl;
             }
             indentHandler_.DecIndent();
+        }
+    }
+    else
+        IndentOut() << "< none >" << std::endl;
+}
+
+void ReflectionPrinter::PrintReflectionObjects(const std::vector<Reflection::Function>& functions, const char* title)
+{
+    IndentOut() << title << ':' << std::endl;
+    ScopedIndent indent { indentHandler_ };
+
+    if (!functions.empty())
+    {
+        for (const auto& func : functions)
+        {
+            IndentOut() << func.name << " (references: " << func.references;
+            if (func.entryPointType != ShaderTarget::Undefined)
+                output_ << ", entryPointType: " << ToString(func.entryPointType);
+            output_ << ")" << std::endl;
         }
     }
     else

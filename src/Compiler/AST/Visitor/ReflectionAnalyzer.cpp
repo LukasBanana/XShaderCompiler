@@ -169,6 +169,14 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         ReflectAttributes(ast->declStmntRef->attribs);
 
     Visitor::VisitFunctionDecl(ast, args);
+
+    /* Reflect function declaration */
+    Reflection::Function func;
+    {
+        func.name       = ast->ident;
+        func.references = ast->numCalls;
+    }
+    data_->functions.push_back(func);
 }
 
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)

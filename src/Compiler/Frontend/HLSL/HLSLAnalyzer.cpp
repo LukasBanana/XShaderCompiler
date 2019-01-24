@@ -674,6 +674,10 @@ IMPLEMENT_VISIT_PROC(PostUnaryExpr)
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
     AnalyzeCallExpr(ast);
+
+    /* Count calls to functions */
+    if (auto funcDecl = ast->funcDeclRef)
+        funcDecl->numCalls++;
 }
 
 IMPLEMENT_VISIT_PROC(AssignExpr)

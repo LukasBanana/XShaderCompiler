@@ -39,8 +39,11 @@ class ReflectionPrinter
         void PrintReflectionObjects(const std::vector<Reflection::ConstantBuffer>& objects, const char* title, bool referencedOnly);
         void PrintReflectionObjects(const std::vector<Reflection::SamplerState>& objects, const char* title, bool referencedOnly);
         void PrintReflectionObjects(const std::vector<Reflection::StaticSamplerState>& samplerStates, const char* title);
+        void PrintReflectionObjects(const std::vector<Reflection::Function>& functions, const char* title);
         void PrintReflectionAttribute(const Reflection::NumThreads& numThreads, const char* title);
 
+    private:
+    
         std::ostream&   output_;
         IndentHandler   indentHandler_;
 

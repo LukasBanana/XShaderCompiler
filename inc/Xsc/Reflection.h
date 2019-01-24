@@ -10,6 +10,7 @@
 
 
 #include "Export.h"
+#include "Targets.h"
 #include <limits>
 #include <string>
 #include <vector>
@@ -367,6 +368,22 @@ struct StaticSamplerState
 };
 
 /**
+\brief Shader function reflection structure.
+\see ReflectionData::functions
+*/
+struct Function
+{
+    //! Entry point type or ShaderTarget::Undefined if this function is not an entry point. By default ShaderTarget::Undefined.
+    ShaderTarget    entryPointType  = ShaderTarget::Undefined;
+
+    //! Name of the function.
+    std::string     name;
+
+    //! Number of references within the shader. Note that entry points always have zero references. By default 0.
+    unsigned int    references      = 0;
+};
+
+/**
 \brief Number of threads within each work group of a compute shader.
 \see ReflectionData::numThreads
 */
@@ -411,6 +428,9 @@ struct ReflectionData
 
     //! Static sampler states.
     std::vector<StaticSamplerState> staticSamplerStates;
+
+    //! Shader functions.
+    std::vector<Function>           functions;
 
     //! Number of local threads in a compute shader.
     NumThreads                      numThreads;
