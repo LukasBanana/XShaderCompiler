@@ -26,7 +26,7 @@ static std::map<Intrinsic, MetalIntrinsic> GenerateIntrinsicMapMetal()
       //{ T::AllMemoryBarrier,                 ""                      },
         { T::AllMemoryBarrierWithGroupSync,    "threadgroup_barrier"   },
       //{ T::Any,                              ""                      },
-        { T::AsDouble,                         { "as_type", true }     },
+      //{ T::AsDouble,                         ""                      },
         { T::AsFloat,                          { "as_type", true }     },
         { T::ASin,                             "asin"                  },
         { T::AsInt,                            { "as_type", true }     },

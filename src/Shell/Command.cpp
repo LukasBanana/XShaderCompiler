@@ -208,7 +208,7 @@ HelpDescriptor VersionOutCommand::Help() const
         (
             "GLSL[110, 120, 130, 140, 150, 330, 400, 410, 420, 430, 440, 450, 460],\n"  \
             "ESSL[100, 300, 310, 320],\n"                                               \
-            "VKSL[450]\n"                                                               \
+            "VKSL[450],\n"                                                              \
             "Metal[1.0, 1.1, 1.2, 2.0, 2.1]"
         ),
         HelpCategory::Main
