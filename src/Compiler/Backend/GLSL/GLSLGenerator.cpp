@@ -367,17 +367,20 @@ IMPLEMENT_VISIT_PROC(Program)
     WriteGlobalUniforms();
 
     /* Write global input/output semantics */
-    BeginSep();
+    if (auto entryPoint = GetProgram()->entryPointRef)
     {
-        WriteGlobalInputSemantics(GetProgram()->entryPointRef);
-    }
-    EndSep();
+        BeginSep();
+        {
+            WriteGlobalInputSemantics(entryPoint);
+        }
+        EndSep();
 
-    BeginSep();
-    {
-        WriteGlobalOutputSemantics(GetProgram()->entryPointRef);
+        BeginSep();
+        {
+            WriteGlobalOutputSemantics(entryPoint);
+        }
+        EndSep();
     }
-    EndSep();
 
     /* Write global program statements */
     WriteStmntList(ast->globalStmnts, true);
@@ -1836,6 +1839,8 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
 
         if (varDecl->flags(VarDecl::isDynamicArray))
             Write("[]");
+        else
+            Visit(varDecl->arrayDims);
 
         Write(";");
     }
@@ -1980,9 +1985,14 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
 
         Write(" " + ident);
 
-        if (varDecl && varDecl->flags(VarDecl::isDynamicArray))
-            Write("[]");
-
+        if (varDecl != nullptr)
+        {
+            if (varDecl->flags(VarDecl::isDynamicArray))
+                Write("[]");
+            else
+                Visit(varDecl->arrayDims);
+        }
+        
         Write(";");
     }
     EndLn();
