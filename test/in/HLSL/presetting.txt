@@ -53,6 +53,9 @@
 [ArrayTest1 PS]
 -T vert -E VS in/HLSL/ArrayTest1.hlsl
 
+[ArrayInInputStruct PSMain]
+-T frag -E PSMain in/HLSL/ArrayInInputStruct.hlsl
+
 [TextureObjects PS]
 -T frag -E PS --comments in/HLSL/TextureObjects.hlsl
 
