@@ -76,9 +76,9 @@ static std::map<Intrinsic, MetalIntrinsic> GenerateIntrinsicMapMetal()
         { T::FWidth,                           "fwidth"                },
       //{ T::GetRenderTargetSampleCount,       ""                      },
       //{ T::GetRenderTargetSamplePosition,    ""                      },
-        { T::GreaterThan,                      "greaterThan"           }, // GLSL only
-        { T::GreaterThanEqual,                 "greaterThanEqual"      }, // GLSL only
-        { T::GroupMemoryBarrier,               "groupMemoryBarrier"    },
+      //{ T::GreaterThan,                      ""                      }, // GLSL only
+      //{ T::GreaterThanEqual,                 ""                      }, // GLSL only
+      //{ T::GroupMemoryBarrier,               ""                      },
       //{ T::GroupMemoryBarrierWithGroupSync,  ""                      }, // groupMemoryBarrier and barrier
         { T::InterlockedAdd,                   "atomicAdd"             },
         { T::InterlockedAnd,                   "atomicAnd"             },
@@ -95,8 +95,8 @@ static std::map<Intrinsic, MetalIntrinsic> GenerateIntrinsicMapMetal()
         { T::LdExp,                            "ldexp"                 },
         { T::Length,                           "length"                },
         { T::Lerp,                             "mix"                   },
-        { T::LessThan,                         "lessThan"              }, // GLSL only
-        { T::LessThanEqual,                    "lessThanEqual"         }, // GLSL only
+      //{ T::LessThan,                         ""                      }, // GLSL only
+      //{ T::LessThanEqual,                    ""                      }, // GLSL only
       //{ T::Lit,                              ""                      },
         { T::Log,                              "log"                   },
       //{ T::Log10,                            ""                      },

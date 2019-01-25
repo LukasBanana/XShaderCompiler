@@ -198,11 +198,13 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
     Visit(ast->arrayDims);
 
-    if (ast->semantic.IsSystemValue())
+    WriteAttribBegin();
     {
-        Separator();
-        WriteSemantic(ast->semantic, ast);
+        if (ast->semantic.IsSystemValue())
+            WriteSemantic(ast->semantic, ast);
+        WriteInterpModifiers(ast->declStmntRef->typeSpecifier->interpModifiers, ast);
     }
+    WriteAttribEnd();
 
     if (ast->initializer)
     {
@@ -277,12 +279,18 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 {
-    //TODO
+    if (!InsideGlobalScope())
+    {
+        //TODO
+    }
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
-    //TODO
+    if (!InsideGlobalScope())
+    {
+        //TODO
+    }
 }
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
@@ -291,13 +299,8 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     {
         BeginLn();
 
-        /* Write storage classes and interpolation modifiers (must be before in/out keywords) */
-        if (!InsideStructDecl())
-        {
-            WriteInterpModifiers(ast->typeSpecifier->interpModifiers, ast);
-            WriteStorageClasses(ast->typeSpecifier->storageClasses, ast);
-        }
-
+        /* Write storage classes */
+        WriteStorageClasses(ast->typeSpecifier->storageClasses, ast);
         Separator();
 
         /* Write type modifiers */
@@ -396,15 +399,11 @@ IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
 {
     if (auto structDecl = ast->declObject->As<StructDecl>())
     {
-        if ( structDecl->flags(StructDecl::isNonEntryPointParam) ||
-             !structDecl->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput) )
-        {
-            /* Visit structure declaration */
-            StructDeclArgs structDeclArgs;
-            structDeclArgs.inEndWithSemicolon = true;
+        /* Visit structure declaration */
+        StructDeclArgs structDeclArgs;
+        structDeclArgs.inEndWithSemicolon = true;
 
-            Visit(structDecl, &structDeclArgs);
-        }
+        Visit(structDecl, &structDeclArgs);
     }
     else
     {
@@ -738,7 +737,7 @@ void MetalGenerator::WriteComment(const std::string& text)
 void MetalGenerator::WriteSemantic(const IndexedSemantic& semantic, const AST* ast)
 {
     if (auto keyword = SemanticToKeyword(semantic, ast))
-        Write(" [[" + (*keyword) + "]]");
+        WriteAttrib(*keyword);
 }
 
 /* ----- Program ----- */
@@ -849,7 +848,7 @@ void MetalGenerator::WriteInterpModifiers(const std::set<InterpModifier>& interp
     for (auto modifier : interpModifiers)
     {
         if (auto keyword = InterpModifierToMetalKeyword(modifier))
-            Write(*keyword + " ");
+            WriteAttrib(*keyword);
         //else if (WarnEnabled(Warnings::Basic))
         //    Warning(R_NotAllInterpModMappedToMetal, ast);
     }
@@ -983,6 +982,53 @@ void MetalGenerator::WriteTypeDenoterExt(const TypeDenoter& typeDenoter, bool wr
     }
 }
 
+/* ----- Attributes ----- */
+
+void MetalGenerator::WriteAttribBegin()
+{
+    if (!attribList_.scheduled)
+    {
+        attribList_.scheduled   = true;
+        attribList_.started     = false;
+    }
+}
+
+void MetalGenerator::WriteAttribEnd()
+{
+    if (attribList_.started)
+        Write("]]");
+
+    attribList_.scheduled   = false;
+    attribList_.started     = false;
+}
+
+void MetalGenerator::WriteAttribNext()
+{
+    if (attribList_.scheduled)
+    {
+        /* Write beginning of attribute list (if not done yet) */
+        if (!attribList_.started)
+        {
+            attribList_.started = true;
+            Write(" ");
+            Separator();
+            Write("[[");
+        }
+        else
+            Write(", ");
+    }
+}
+
+void MetalGenerator::WriteAttrib(const std::string& value)
+{
+    if (attribList_.scheduled)
+    {
+        /* Write attribute value */
+        WriteAttribNext();
+        Write(value);
+    }
+}
+
 /* ----- Function declaration ----- */
 
 void MetalGenerator::WriteFunction(FunctionDecl* ast)
@@ -992,7 +1038,11 @@ void MetalGenerator::WriteFunction(FunctionDecl* ast)
 
     auto entryPointTarget = ast->DetermineEntryPointType();
     if (entryPointTarget != ShaderTarget::Undefined)
+    {
+        /* Write entry point target type and store in function declaration */
         WriteFunctionEntryPointType(entryPointTarget);
+        ast->entryPointType = entryPointTarget;
+    }
 
     Visit(ast->returnType);
     Write(" " + ast->ident + "(");
@@ -1129,30 +1179,12 @@ void MetalGenerator::WriteCallExprIntrinsicMul(CallExpr* funcCall)
     Write(")");
 }
 
-void MetalGenerator::WriteCallExprArguments(CallExpr* callExpr, std::size_t firstArgIndex, std::size_t numWriteArgs)
+void MetalGenerator::WriteCallExprArguments(CallExpr* callExpr)
 {
-    if (numWriteArgs <= numWriteArgs + firstArgIndex)
-        numWriteArgs = numWriteArgs + firstArgIndex;
-    else
-        numWriteArgs = ~0u;
-
-    const auto n = callExpr->arguments.size();
-    const auto m = std::min(numWriteArgs, n + callExpr->defaultParamRefs.size());
-
-    for (std::size_t i = firstArgIndex; i < m; ++i)
+    for (std::size_t i = 0, n = callExpr->arguments.size(); i < n; ++i)
     {
-        if (i < n)
-            Visit(callExpr->arguments[i]);
-        else
-        {
-            auto defaultParam = callExpr->defaultParamRefs[i - n];
-            if (defaultParam->initializerValue.IsRepresentableAsString())
-                Write(defaultParam->initializerValue.ToString());
-            else
-                Visit(defaultParam->initializer);
-        }
-
-        if (i + 1 < m)
+        Visit(callExpr->arguments[i]);
+        if (i + 1 < n)
             Write(", ");
     }
 }
@@ -1243,10 +1275,43 @@ void MetalGenerator::WriteParameter(VarDeclStmnt* ast)
     if (ast->varDecls.size() == 1)
     {
         auto paramVar = ast->varDecls.front().get();
+
         Write(paramVar->ident);
         Visit(paramVar->arrayDims);
-        if (paramVar->semantic.IsSystemValue())
-            WriteSemantic(paramVar->semantic);
+
+        WriteAttribBegin();
+        {
+            #if 1 // TODO: move this to MetalConverter
+            if (ast->typeSpecifier->GetStructDeclRef() != nullptr)
+            {
+                /* Write '[[stage_in]]' attribute if parameter has structure type inside an entry point */
+                if (auto funcDecl = ActiveFunctionDecl())
+                {
+                    if (funcDecl->entryPointType != ShaderTarget::Undefined)
+                        WriteAttrib("stage_in");
+                }
+            }
+            #endif // /TODO
+            else if (paramVar->semantic.IsSystemValue())
+            {
+                /* Write system value semantic as attribute */
+                WriteSemantic(paramVar->semantic);
+            }
+
+            /* Write interpolation modifiers as attributes */
+            WriteInterpModifiers(ast->typeSpecifier->interpModifiers);
+        }
+        WriteAttribEnd();
+
+        /* Write default argument for non-entry point functions */
+        if (auto funcDecl = ActiveFunctionDecl())
+        {
+            if (paramVar->initializer != nullptr && funcDecl->entryPointType == ShaderTarget::Undefined)
+            {
+                Write(" = ");
+                Visit(paramVar->initializer);
+            }
+        }
     }
     else
         Error(R_InvalidParamVarCount, ast);

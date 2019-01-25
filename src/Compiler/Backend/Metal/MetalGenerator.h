@@ -153,6 +153,13 @@ class MetalGenerator : public Generator
         void WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast = nullptr);
         void WriteTypeDenoterExt(const TypeDenoter& typeDenoter, bool writeArrayDims, const AST* ast = nullptr);
 
+        /* ----- Attributes ----- */
+
+        void WriteAttribBegin();
+        void WriteAttribEnd();
+        void WriteAttribNext();
+        void WriteAttrib(const std::string& value);
+
         /* ----- Function declaration ----- */
 
         void WriteFunction(FunctionDecl* ast);
@@ -165,7 +172,7 @@ class MetalGenerator : public Generator
         void WriteCallExprStandard(CallExpr* callExpr);
         void WriteCallExprIntrinsicMul(CallExpr* callExpr);
 
-        void WriteCallExprArguments(CallExpr* callExpr, std::size_t firstArgIndex = 0, std::size_t numWriteArgs = ~0u);
+        void WriteCallExprArguments(CallExpr* callExpr);
 
         /* ----- Structure ----- */
 
@@ -191,7 +198,14 @@ class MetalGenerator : public Generator
         bool                alwaysBracedScopes_     = false;
         bool                writeHeaderComment_     = true;
         bool                newLineOpenScope_       = true;
-        
+
+        struct AttribList
+        {
+            bool scheduled  = false;
+            bool started    = false;
+        }
+        attribList_;
+
 };
 
 

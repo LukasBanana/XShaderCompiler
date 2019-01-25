@@ -146,99 +146,99 @@ enum class DataType
     Undefined,
 
     /* --- String types --- */
-                // HLSL         GLSL
-                // -----------  ---------------
-    String,     // string       n/a
+                // HLSL         GLSL         Metal
+                // -----------  -----------  -----------
+    String,     // string       n/a          n/a
 
     /* --- Scalar types --- */
-                // HLSL         GLSL
-                // -----------  -----------
-    Bool,       // bool         bool
-    Int,        // int          int
-    UInt,       // uint         uint
-    Half,       // half         float
-    Float,      // float        float
-    Double,     // double       double
+                // HLSL         GLSL         Metal
+                // -----------  -----------  -----------
+    Bool,       // bool         bool         bool
+    Int,        // int          int          int
+    UInt,       // uint         uint         uint
+    Half,       // half         n/a          half
+    Float,      // float        float        float
+    Double,     // double       double       n/a
 
     /* --- Vector types --- */
-                // HLSL         GLSL
-                // -----------  -----------
-    Bool2,      // bool2        bvec2
-    Bool3,      // bool3        bvec3
-    Bool4,      // bool4        bvec4
-    Int2,       // int2         ivec2
-    Int3,       // int3         ivec3
-    Int4,       // int4         ivec4
-    UInt2,      // uint2        uvec2
-    UInt3,      // uint3        uvec3
-    UInt4,      // uint4        uvec4
-    Half2,      // half2        vec2
-    Half3,      // half3        vec3
-    Half4,      // half4        vec4
-    Float2,     // float2       vec2
-    Float3,     // float3       vec3
-    Float4,     // float4       vec4
-    Double2,    // double2      dvec2
-    Double3,    // double3      dvec3
-    Double4,    // double4      dvec4
+                // HLSL         GLSL         Metal
+                // -----------  -----------  -----------
+    Bool2,      // bool2        bvec2        bool2
+    Bool3,      // bool3        bvec3        bool3
+    Bool4,      // bool4        bvec4        bool4
+    Int2,       // int2         ivec2        int2
+    Int3,       // int3         ivec3        int3
+    Int4,       // int4         ivec4        int4
+    UInt2,      // uint2        uvec2        uint2
+    UInt3,      // uint3        uvec3        uint3
+    UInt4,      // uint4        uvec4        uint4
+    Half2,      // half2        n/a          half2
+    Half3,      // half3        n/a          half3
+    Half4,      // half4        n/a          half4
+    Float2,     // float2       vec2         float2
+    Float3,     // float3       vec3         float3
+    Float4,     // float4       vec4         float4
+    Double2,    // double2      dvec2        n/a
+    Double3,    // double3      dvec3        n/a
+    Double4,    // double4      dvec4        n/a
 
     /* --- Matrix types --- */
-                // HLSL         GLSL
-                // -----------  -----------
-    Bool2x2,    // bool2x2      n/a
-    Bool2x3,    // bool2x3      n/a
-    Bool2x4,    // bool2x4      n/a
-    Bool3x2,    // bool3x2      n/a
-    Bool3x3,    // bool3x3      n/a
-    Bool3x4,    // bool3x4      n/a
-    Bool4x2,    // bool4x2      n/a
-    Bool4x3,    // bool4x3      n/a
-    Bool4x4,    // bool4x4      n/a
-    Int2x2,     // int2x2       n/a
-    Int2x3,     // int2x3       n/a
-    Int2x4,     // int2x4       n/a
-    Int3x2,     // int3x2       n/a
-    Int3x3,     // int3x3       n/a
-    Int3x4,     // int3x4       n/a
-    Int4x2,     // int4x2       n/a
-    Int4x3,     // int4x3       n/a
-    Int4x4,     // int4x4       n/a
-    UInt2x2,    // uint2x2      n/a
-    UInt2x3,    // uint2x3      n/a
-    UInt2x4,    // uint2x4      n/a
-    UInt3x2,    // uint3x2      n/a
-    UInt3x3,    // uint3x3      n/a
-    UInt3x4,    // uint3x4      n/a
-    UInt4x2,    // uint4x2      n/a
-    UInt4x3,    // uint4x3      n/a
-    UInt4x4,    // uint4x4      n/a
-    Half2x2,    // half2x2      mat2
-    Half2x3,    // half2x3      mat2x3
-    Half2x4,    // half2x4      mat2x4
-    Half3x2,    // half3x2      mat3x2
-    Half3x3,    // half3x3      mat3
-    Half3x4,    // half3x4      mat3x4
-    Half4x2,    // half4x2      mat4x2
-    Half4x3,    // half4x3      mat4x3
-    Half4x4,    // half4x4      mat4
-    Float2x2,   // float2x2     mat2
-    Float2x3,   // float2x3     mat2x3
-    Float2x4,   // float2x4     mat2x4
-    Float3x2,   // float3x2     mat3x2
-    Float3x3,   // float3x3     mat3
-    Float3x4,   // float3x4     mat3x4
-    Float4x2,   // float4x2     mat4x2
-    Float4x3,   // float4x3     mat4x3
-    Float4x4,   // float4x4     mat4
-    Double2x2,  // double2x2    dmat2
-    Double2x3,  // double2x3    dmat2x3
-    Double2x4,  // double2x4    dmat2x4
-    Double3x2,  // double3x2    dmat3x2
-    Double3x3,  // double3x3    dmat3
-    Double3x4,  // double3x4    dmat3x4
-    Double4x2,  // double4x2    dmat4x2
-    Double4x3,  // double4x3    dmat4x3
-    Double4x4,  // double4x4    dmat4
+                // HLSL         GLSL         Metal
+                // -----------  -----------  -----------
+    Bool2x2,    // bool2x2      n/a          bool2x2
+    Bool2x3,    // bool2x3      n/a          bool2x3
+    Bool2x4,    // bool2x4      n/a          bool2x4
+    Bool3x2,    // bool3x2      n/a          bool3x2
+    Bool3x3,    // bool3x3      n/a          bool3x3
+    Bool3x4,    // bool3x4      n/a          bool3x4
+    Bool4x2,    // bool4x2      n/a          bool4x2
+    Bool4x3,    // bool4x3      n/a          bool4x3
+    Bool4x4,    // bool4x4      n/a          bool4x4
+    Int2x2,     // int2x2       n/a          int2x2
+    Int2x3,     // int2x3       n/a          int2x3
+    Int2x4,     // int2x4       n/a          int2x4
+    Int3x2,     // int3x2       n/a          int3x3
+    Int3x3,     // int3x3       n/a          int3x3
+    Int3x4,     // int3x4       n/a          int3x4
+    Int4x2,     // int4x2       n/a          int4x2
+    Int4x3,     // int4x3       n/a          int4x3
+    Int4x4,     // int4x4       n/a          int4x4
+    UInt2x2,    // uint2x2      n/a          uint2x2
+    UInt2x3,    // uint2x3      n/a          uint2x3
+    UInt2x4,    // uint2x4      n/a          uint2x4
+    UInt3x2,    // uint3x2      n/a          uint3x2
+    UInt3x3,    // uint3x3      n/a          uint3x3
+    UInt3x4,    // uint3x4      n/a          uint3x4
+    UInt4x2,    // uint4x2      n/a          uint4x2
+    UInt4x3,    // uint4x3      n/a          uint4x3
+    UInt4x4,    // uint4x4      n/a          uint4x4
+    Half2x2,    // half2x2      n/a          half2x2
+    Half2x3,    // half2x3      n/a          half2x3
+    Half2x4,    // half2x4      n/a          half2x4
+    Half3x2,    // half3x2      n/a          half3x2
+    Half3x3,    // half3x3      n/a          half3x3
+    Half3x4,    // half3x4      n/a          half3x4
+    Half4x2,    // half4x2      n/a          half4x2
+    Half4x3,    // half4x3      n/a          half4x3
+    Half4x4,    // half4x4      n/a          half4x4
+    Float2x2,   // float2x2     mat2         float2x2
+    Float2x3,   // float2x3     mat2x3       float2x3
+    Float2x4,   // float2x4     mat2x4       float2x4
+    Float3x2,   // float3x2     mat3x2       float3x2
+    Float3x3,   // float3x3     mat3         float3x3
+    Float3x4,   // float3x4     mat3x4       float3x4
+    Float4x2,   // float4x2     mat4x2       float4x2
+    Float4x3,   // float4x3     mat4x3       float4x3
+    Float4x4,   // float4x4     mat4         float4x4
+    Double2x2,  // double2x2    dmat2        n/a
+    Double2x3,  // double2x3    dmat2x3      n/a
+    Double2x4,  // double2x4    dmat2x4      n/a
+    Double3x2,  // double3x2    dmat3x2      n/a
+    Double3x3,  // double3x3    dmat3        n/a
+    Double3x4,  // double3x4    dmat3x4      n/a
+    Double4x2,  // double4x2    dmat4x2      n/a
+    Double4x3,  // double4x3    dmat4x3      n/a
+    Double4x4,  // double4x4    dmat4        n/a
 };
 
 // Container structure for all kinds of matrix subscript usages.
@@ -351,17 +351,23 @@ enum class PrimitiveType
 
 /* ----- StorageClass Enum ----- */
 
-// Variable storage class enumeration.
+// Variable storage class enumeration (also Metal address space, e.g. "constant", "device").
 enum class StorageClass
 {
     Undefined,
 
-    Extern,
-    Precise,
-    Shared,
-    GroupShared,
-    Static,
-    Volatile,
+                    // HLSL         GLSL         Metal
+                    // -----------  -----------  -----------
+    Extern,         // extern       n/a          extern
+    Precise,        // precise      n/a          n/a
+    Shared,         // shared       ???          ???
+    GroupShared,    // groupshared  shared       threadgroup
+    Static,         // static       n/a          static
+    Volatile,       // volatile     n/a          volatile
+
+    // Metal only
+    Constant,       // n/a          n/a          constant
+    Device,         // n/a          n/a          device
 };
 
 
@@ -372,13 +378,13 @@ enum class InterpModifier
 {
     Undefined,
 
-                        // HLSL             GLSL
-                        // ---------------  ---------------
-    Centroid,           // centroid         centroid
-    Linear,             // linear           smooth
-    NoInterpolation,    // nointerpolation  flat
-    NoPerspective,      // noperspective    noperspective
-    Sample,             // sample           sample
+                        // HLSL             GLSL             Metal
+                        // ---------------  ---------------  ---------------
+    Centroid,           // centroid         centroid         centroid_perspective
+    Linear,             // linear           smooth           center_perspective
+    NoInterpolation,    // nointerpolation  flat             flat
+    NoPerspective,      // noperspective    noperspective    center_no_perspective
+    Sample,             // sample           sample           sample_perspective
 };
 
 
@@ -498,32 +504,32 @@ enum class SamplerType
     Undefined,
 
     /* --- Samplers --- */
-                            // HLSL3            HLSL4+                  GLSL
-                            // ---------------  ----------------------  ----------------------
-    Sampler1D,              // sampler1D        n/a                     sampler1D
-    Sampler2D,              // sampler2D        n/a                     sampler2D
-    Sampler3D,              // sampler3D        n/a                     sampler3D
-    SamplerCube,            // samplerCUBE      n/a                     samplerCube
-    Sampler2DRect,          // n/a              n/a                     sampler2DRect
-    Sampler1DArray,         // n/a              n/a                     sampler1DArray
-    Sampler2DArray,         // n/a              n/a                     sampler2DArray
-    SamplerCubeArray,       // n/a              n/a                     samplerCubeArray
-    SamplerBuffer,          // n/a              n/a                     samplerBuffer
-    Sampler2DMS,            // n/a              n/a                     sampler2DMS
-    Sampler2DMSArray,       // n/a              n/a                     sampler2DMSArray
-    Sampler1DShadow,        // sampler1DShadow  n/a                     sampler1DShadow
-    Sampler2DShadow,        // sampler2DShadow  n/a                     sampler2DShadow
-    SamplerCubeShadow,      // n/a              n/a                     samplerCubeShadow
-    Sampler2DRectShadow,    // n/a              n/a                     sampler2DRectShadow
-    Sampler1DArrayShadow,   // n/a              n/a                     sampler1DArrayShadow
-    Sampler2DArrayShadow,   // n/a              n/a                     sampler2DArrayShadow
-    SamplerCubeArrayShadow, // n/a              n/a                     samplerCubeArrayShadow
+                            // HLSL3            HLSL4+                  GLSL                    Metal
+                            // ---------------  ----------------------  ----------------------  -----------------
+    Sampler1D,              // sampler1D        n/a                     sampler1D               texture1d
+    Sampler2D,              // sampler2D        n/a                     sampler2D               texture2d
+    Sampler3D,              // sampler3D        n/a                     sampler3D               texture3d
+    SamplerCube,            // samplerCUBE      n/a                     samplerCube             texturecube
+    Sampler2DRect,          // n/a              n/a                     sampler2DRect           texture2d
+    Sampler1DArray,         // n/a              n/a                     sampler1DArray          texture1d_array
+    Sampler2DArray,         // n/a              n/a                     sampler2DArray          texture2d_array
+    SamplerCubeArray,       // n/a              n/a                     samplerCubeArray        texturecube_array
+    SamplerBuffer,          // n/a              n/a                     samplerBuffer           texture_buffer
+    Sampler2DMS,            // n/a              n/a                     sampler2DMS             texture2d_ms
+    Sampler2DMSArray,       // n/a              n/a                     sampler2DMSArray        n/a
+    Sampler1DShadow,        // sampler1DShadow  n/a                     sampler1DShadow         n/a
+    Sampler2DShadow,        // sampler2DShadow  n/a                     sampler2DShadow         depth2d
+    SamplerCubeShadow,      // n/a              n/a                     samplerCubeShadow       depthcube
+    Sampler2DRectShadow,    // n/a              n/a                     sampler2DRectShadow     depth2d
+    Sampler1DArrayShadow,   // n/a              n/a                     sampler1DArrayShadow    n/a
+    Sampler2DArrayShadow,   // n/a              n/a                     sampler2DArrayShadow    depth2d_array
+    SamplerCubeArrayShadow, // n/a              n/a                     samplerCubeArrayShadow  depthcube_array
 
     /* --- Sampler states --- */
-                            // HLSL3            HLSL4+                  GLSL
-                            // ---------------  ----------------------  ----------------------
-    SamplerState,           // sampler_state    SamplerState            sampler
-    SamplerComparisonState, // sampler_state    SamplerComparisonState  samplerShadow
+                            // HLSL3            HLSL4+                  GLSL                    Metal
+                            // ---------------  ----------------------  ----------------------  -----------------
+    SamplerState,           // sampler_state    SamplerState            sampler                 sampler
+    SamplerComparisonState, // sampler_state    SamplerComparisonState  samplerShadow           sampler
 };
 
 // Returns true if the specified sampler type is sampler state (i.e. SamplerState or SamplerComparisonState).
@@ -795,130 +801,130 @@ enum class Intrinsic
     Undefined,
 
     /* --- Common global intrinsics --- */
-                                        // HLSL                                 GLSL
-                                        // -----------------------------------  ------------------------
-    Abort,                              // abort                                n/a
-    Abs,                                // abs                                  abs
-    ACos,                               // acos                                 acos
-    All,                                // all                                  all
-    AllMemoryBarrier,                   // AllMemoryBarrier                     memoryBarrier
-    AllMemoryBarrierWithGroupSync,      // AllMemoryBarrierWithGroupSync        n/a
-    Any,                                // any                                  any
-    AsDouble,                           // asdouble                             uint64BitsToDouble
-    AsFloat,                            // asfloat                              uintBitsToFloat
-    ASin,                               // asin                                 asin
-    AsInt,                              // asint                                floatBitsToInt
-    AsUInt_1,                           // asuint                               floatBitsToUint
-    AsUInt_3,                           // asuint                               n/a
-    ATan,                               // atan                                 atan
-    ATan2,                              // atan2                                atan
-    Ceil,                               // ceil                                 cail
-    CheckAccessFullyMapped,             // CheckAccessFullyMapped               n/a
-    Clamp,                              // clamp                                clamp
-    Clip,                               // clip                                 n/a
-    Cos,                                // cos                                  cos
-    CosH,                               // cosh                                 cosh
-    CountBits,                          // countbits                            bitCount
-    Cross,                              // cross                                cross
-    D3DCOLORtoUBYTE4,                   // D3DCOLORtoUBYTE4                     n/a
-    DDX,                                // ddx                                  dFdx
-    DDXCoarse,                          // ddx_coarse                           dFdxCoarse
-    DDXFine,                            // ddx_fine                             dFdxFine
-    DDY,                                // ddy                                  dFdy
-    DDYCoarse,                          // ddy_coarse                           dFdyCoarse
-    DDYFine,                            // ddy_fine                             dFdyFine
-    Degrees,                            // degrees                              degrees
-    Determinant,                        // determinant                          determinant
-    DeviceMemoryBarrier,                // DeviceMemoryBarrier                  n/a
-    DeviceMemoryBarrierWithGroupSync,   // DeviceMemoryBarrierWithGroupSync     n/a
-    Distance,                           // distance                             distance
-    Dot,                                // dot                                  dot
-    Dst,                                // dst                                  n/a
-    Equal,                              // n/a                                  equal
-    ErrorF,                             // errorf                               n/a
-    EvaluateAttributeAtCentroid,        // EvaluateAttributeAtCentroid          interpolateAtCentroid
-    EvaluateAttributeAtSample,          // EvaluateAttributeAtSample            interpolateAtSample
-    EvaluateAttributeSnapped,           // EvaluateAttributeSnapped             interpolateAtOffset
-    Exp,                                // exp                                  exp
-    Exp2,                               // exp2                                 exp2
-    F16toF32,                           // f16tof32                             n/a
-    F32toF16,                           // f32tof16                             n/a
-    FaceForward,                        // faceforward                          faceforward
-    FirstBitHigh,                       // firstbithigh                         findMSB
-    FirstBitLow,                        // firstbitlow                          findLSB
-    Floor,                              // floor                                floor
-    FMA,                                // fma                                  fma
-    FMod,                               // fmod                                 mod
-    Frac,                               // frac                                 fract
-    FrExp,                              // frexp                                frexp
-    FWidth,                             // fwidth                               fwidth
-    GetRenderTargetSampleCount,         // GetRenderTargetSampleCount           n/a
-    GetRenderTargetSamplePosition,      // GetRenderTargetSamplePosition        n/a
-    GreaterThan,                        // n/a                                  greaterThan
-    GreaterThanEqual,                   // n/a                                  greaterThanEqual
-    GroupMemoryBarrier,                 // GroupMemoryBarrier                   groupMemoryBarrier
-    GroupMemoryBarrierWithGroupSync,    // GroupMemoryBarrierWithGroupSync      n/a
-    InterlockedAdd,                     // InterlockedAdd                       atomicAdd
-    InterlockedAnd,                     // InterlockedAnd                       atomicAnd
-    InterlockedCompareExchange,         // InterlockedCompareExchange           atomicCompSwap
-    InterlockedCompareStore,            // InterlockedCompareStore              n/a
-    InterlockedExchange,                // InterlockedExchange                  atomicExchange
-    InterlockedMax,                     // InterlockedMax                       atomicMax
-    InterlockedMin,                     // InterlockedMin                       atomicMin
-    InterlockedOr,                      // InterlockedOr                        atomicOr
-    InterlockedXor,                     // InterlockedXor                       atomicXor
-    IsFinite,                           // isfinite                             n/a
-    IsInf,                              // isinf                                isinf
-    IsNaN,                              // isnan                                isnan
-    LdExp,                              // ldexp                                ldexp
-    Length,                             // length                               length
-    Lerp,                               // lerp                                 mix
-    LessThan,                           // n/a                                  lessThan
-    LessThanEqual,                      // n/a                                  lessThanEqual
-    Lit,                                // lit                                  n/a
-    Log,                                // log                                  log
-    Log10,                              // log10                                n/a
-    Log2,                               // log2                                 log2
-    MAD,                                // mad                                  fma
-    Max,                                // max                                  max
-    Min,                                // min                                  min
-    ModF,                               // modf                                 modf
-    MSAD4,                              // msad4                                n/a
-    Mul,                                // mul                                  n/a
-    Normalize,                          // normalize                            normalize
-    NotEqual,                           // n/a                                  notEqual
-    Not,                                // n/a                                  not
-    Pow,                                // pow                                  pow
-    PrintF,                             // printf                               n/a
-    Process2DQuadTessFactorsAvg,        // Process2DQuadTessFactorsAvg          n/a
-    Process2DQuadTessFactorsMax,        // Process2DQuadTessFactorsMax          n/a
-    Process2DQuadTessFactorsMin,        // Process2DQuadTessFactorsMin          n/a
-    ProcessIsolineTessFactors,          // ProcessIsolineTessFactors            n/a
-    ProcessQuadTessFactorsAvg,          // ProcessQuadTessFactorsAvg            n/a
-    ProcessQuadTessFactorsMax,          // ProcessQuadTessFactorsMax            n/a
-    ProcessQuadTessFactorsMin,          // ProcessQuadTessFactorsMin            n/a
-    ProcessTriTessFactorsAvg,           // ProcessTriTessFactorsAvg             n/a
-    ProcessTriTessFactorsMax,           // ProcessTriTessFactorsMax             n/a
-    ProcessTriTessFactorsMin,           // ProcessTriTessFactorsMin             n/a
-    Radians,                            // radians                              radians
-    Rcp,                                // rcp                                  n/a
-    Reflect,                            // reflect                              reflect
-    Refract,                            // refract                              refract
-    ReverseBits,                        // reversebits                          n/a
-    Round,                              // round                                round
-    RSqrt,                              // rsqrt                                inversesqrt
-    Saturate,                           // saturate                             n/a
-    Sign,                               // sign                                 sign
-    Sin,                                // sin                                  sin
-    SinCos,                             // sincos                               n/a
-    SinH,                               // sinh                                 sinh
-    SmoothStep,                         // smoothstep                           smoothstep
-    Sqrt,                               // sqrt                                 sqrt
-    Step,                               // step                                 step
-    Tan,                                // tan                                  tan
-    TanH,                               // tanh                                 tanh
-    Transpose,                          // transpose                            transpose
-    Trunc,                              // trunc                                trunc
+                                        // HLSL                              GLSL                   Metal
+                                        // --------------------------------  ---------------------  -------------------------
+    Abort,                              // abort                             n/a                    n/a
+    Abs,                                // abs                               abs                    abs
+    ACos,                               // acos                              acos                   acos
+    All,                                // all                               all                    n/a
+    AllMemoryBarrier,                   // AllMemoryBarrier                  memoryBarrier          ?
+    AllMemoryBarrierWithGroupSync,      // AllMemoryBarrierWithGroupSync     n/a                    ?
+    Any,                                // any                               any                    n/a
+    AsDouble,                           // asdouble                          uint64BitsToDouble     n/a
+    AsFloat,                            // asfloat                           uintBitsToFloat        as_type<float>
+    ASin,                               // asin                              asin                   asin
+    AsInt,                              // asint                             floatBitsToInt         as_type<int>
+    AsUInt_1,                           // asuint                            floatBitsToUint        as_type<uint>
+    AsUInt_3,                           // asuint                            n/a                    ?
+    ATan,                               // atan                              atan                   atan
+    ATan2,                              // atan2                             atan                   atan2
+    Ceil,                               // ceil                              ceil                   ceil
+    CheckAccessFullyMapped,             // CheckAccessFullyMapped            n/a                    n/a
+    Clamp,                              // clamp                             clamp                  clamp
+    Clip,                               // clip                              n/a                    n/a
+    Cos,                                // cos                               cos                    cos
+    CosH,                               // cosh                              cosh                   cosh
+    CountBits,                          // countbits                         bitCount               ?
+    Cross,                              // cross                             cross                  cross
+    D3DCOLORtoUBYTE4,                   // D3DCOLORtoUBYTE4                  n/a                    n/a
+    DDX,                                // ddx                               dFdx                   dfdx
+    DDXCoarse,                          // ddx_coarse                        dFdxCoarse             n/a
+    DDXFine,                            // ddx_fine                          dFdxFine               n/a
+    DDY,                                // ddy                               dFdy                   dfdy
+    DDYCoarse,                          // ddy_coarse                        dFdyCoarse             n/a
+    DDYFine,                            // ddy_fine                          dFdyFine               n/a
+    Degrees,                            // degrees                           degrees                n/a
+    Determinant,                        // determinant                       determinant            determinant
+    DeviceMemoryBarrier,                // DeviceMemoryBarrier               n/a                    ?
+    DeviceMemoryBarrierWithGroupSync,   // DeviceMemoryBarrierWithGroupSync  n/a                    ?
+    Distance,                           // distance                          distance               distance
+    Dot,                                // dot                               dot                    dot
+    Dst,                                // dst                               n/a                    n/a
+    Equal,                              // n/a                               equal                  n/a
+    ErrorF,                             // errorf                            n/a                    n/a
+    EvaluateAttributeAtCentroid,        // EvaluateAttributeAtCentroid       interpolateAtCentroid  ?
+    EvaluateAttributeAtSample,          // EvaluateAttributeAtSample         interpolateAtSample    ?
+    EvaluateAttributeSnapped,           // EvaluateAttributeSnapped          interpolateAtOffset    ?
+    Exp,                                // exp                               exp                    exp
+    Exp2,                               // exp2                              exp2                   exp2
+    F16toF32,                           // f16tof32                          n/a                    as_type<float>
+    F32toF16,                           // f32tof16                          n/a                    as_type<half>
+    FaceForward,                        // faceforward                       faceforward            faceforward
+    FirstBitHigh,                       // firstbithigh                      findMSB                ?
+    FirstBitLow,                        // firstbitlow                       findLSB                ?
+    Floor,                              // floor                             floor                  floor
+    FMA,                                // fma                               fma                    fma
+    FMod,                               // fmod                              mod                    fmod
+    Frac,                               // frac                              fract                  fract
+    FrExp,                              // frexp                             frexp                  frexp
+    FWidth,                             // fwidth                            fwidth                 fwidth
+    GetRenderTargetSampleCount,         // GetRenderTargetSampleCount        n/a                    n/a
+    GetRenderTargetSamplePosition,      // GetRenderTargetSamplePosition     n/a                    n/a
+    GreaterThan,                        // n/a                               greaterThan            n/a
+    GreaterThanEqual,                   // n/a                               greaterThanEqual       n/a
+    GroupMemoryBarrier,                 // GroupMemoryBarrier                groupMemoryBarrier     ?
+    GroupMemoryBarrierWithGroupSync,    // GroupMemoryBarrierWithGroupSync   n/a                    ?
+    InterlockedAdd,                     // InterlockedAdd                    atomicAdd              atomic_fetch_add_explicit
+    InterlockedAnd,                     // InterlockedAnd                    atomicAnd              atomic_fetch_and_explicit
+    InterlockedCompareExchange,         // InterlockedCompareExchange        atomicCompSwap         ?
+    InterlockedCompareStore,            // InterlockedCompareStore           n/a                    ?
+    InterlockedExchange,                // InterlockedExchange               atomicExchange         atomic_exchange_explicit
+    InterlockedMax,                     // InterlockedMax                    atomicMax              atomic_fetch_max_explicit
+    InterlockedMin,                     // InterlockedMin                    atomicMin              atomic_fetch_min_explicit
+    InterlockedOr,                      // InterlockedOr                     atomicOr               atomic_fetch_or_explicit
+    InterlockedXor,                     // InterlockedXor                    atomicXor              atomic_fetch_xor_explicit
+    IsFinite,                           // isfinite                          n/a                    isfinite
+    IsInf,                              // isinf                             isinf                  isinf
+    IsNaN,                              // isnan                             isnan                  isnan
+    LdExp,                              // ldexp                             ldexp                  ldexp
+    Length,                             // length                            length                 length
+    Lerp,                               // lerp                              mix                    mix
+    LessThan,                           // n/a                               lessThan               n/a
+    LessThanEqual,                      // n/a                               lessThanEqual          n/a
+    Lit,                                // lit                               n/a                    n/a
+    Log,                                // log                               log                    log
+    Log10,                              // log10                             n/a                    log10
+    Log2,                               // log2                              log2                   log2
+    MAD,                                // mad                               n/a                    n/a
+    Max,                                // max                               max                    max
+    Min,                                // min                               min                    min
+    ModF,                               // modf                              modf                   modf
+    MSAD4,                              // msad4                             n/a                    n/a
+    Mul,                                // mul                               n/a                    n/a
+    Normalize,                          // normalize                         normalize              normalize
+    NotEqual,                           // n/a                               notEqual               n/a
+    Not,                                // n/a                               not                    n/a
+    Pow,                                // pow                               pow                    pow
+    PrintF,                             // printf                            n/a                    n/a
+    Process2DQuadTessFactorsAvg,        // Process2DQuadTessFactorsAvg       n/a                    n/a
+    Process2DQuadTessFactorsMax,        // Process2DQuadTessFactorsMax       n/a                    n/a
+    Process2DQuadTessFactorsMin,        // Process2DQuadTessFactorsMin       n/a                    n/a
+    ProcessIsolineTessFactors,          // ProcessIsolineTessFactors         n/a                    n/a
+    ProcessQuadTessFactorsAvg,          // ProcessQuadTessFactorsAvg         n/a                    n/a
+    ProcessQuadTessFactorsMax,          // ProcessQuadTessFactorsMax         n/a                    n/a
+    ProcessQuadTessFactorsMin,          // ProcessQuadTessFactorsMin         n/a                    n/a
+    ProcessTriTessFactorsAvg,           // ProcessTriTessFactorsAvg          n/a                    n/a
+    ProcessTriTessFactorsMax,           // ProcessTriTessFactorsMax          n/a                    n/a
+    ProcessTriTessFactorsMin,           // ProcessTriTessFactorsMin          n/a                    n/a
+    Radians,                            // radians                           radians                n/a
+    Rcp,                                // rcp                               n/a                    n/a
+    Reflect,                            // reflect                           reflect                reflect
+    Refract,                            // refract                           refract                refract
+    ReverseBits,                        // reversebits                       n/a                    ?
+    Round,                              // round                             round                  round
+    RSqrt,                              // rsqrt                             inversesqrt            rsqrt
+    Saturate,                           // saturate                          n/a                    saturate
+    Sign,                               // sign                              sign                   sign
+    Sin,                                // sin                               sin                    sin
+    SinCos,                             // sincos                            n/a                    sincos
+    SinH,                               // sinh                              sinh                   sinh
+    SmoothStep,                         // smoothstep                        smoothstep             smoothstep
+    Sqrt,                               // sqrt                              sqrt                   sqrt
+    Step,                               // step                              step                   step
+    Tan,                                // tan                               tan                    tan
+    TanH,                               // tanh                              tanh                   tanh
+    Transpose,                          // transpose                         transpose              transpose
+    Trunc,                              // trunc                             trunc                  trunc
 
     /* --- HLSL 3 texture intrinsics --- */
     Tex1D_2,
@@ -1120,39 +1126,39 @@ enum class Semantic
 
     UserDefined,            // User defined HLSL semantic
 
-                            // HLSL3     HLSL4+                     GLSL
-                            // --------  -------------------------  ---------------------
-    ClipDistance,           // n/a       SV_ClipDistance            gl_ClipDistance
-    CullDistance,           // n/a       SV_CullDistance            gl_CullDistance (if ARB_cull_distance is present)
-    Coverage,               // n/a       SV_Coverage                gl_SampleMask
-    Depth,                  // DEPTH     SV_Depth                   gl_FragDepth
-    DepthGreaterEqual,      // n/a       SV_DepthGreaterEqual       layout(depth_greater) out float gl_FragDepth
-    DepthLessEqual,         // n/a       SV_DepthLessEqual          layout(depth_less) out float gl_FragDepth
-    DispatchThreadID,       // n/a       SV_DispatchThreadID        gl_GlobalInvocationID
-    DomainLocation,         // n/a       SV_DomainLocation          gl_TessCoord
-    FragCoord,              // VPOS      SV_Position                gl_FragCoord
-    GroupID,                // n/a       SV_GroupID                 gl_WorkGroupID
-    GroupIndex,             // n/a       SV_GroupIndex              gl_LocalInvocationIndex
-    GroupThreadID,          // n/a       SV_GroupThreadID           gl_LocalInvocationID
-    GSInstanceID,           // n/a       SV_GSInstanceID            gl_InvocationID
-  //HelperInvocation,       // n/a       n/a                        gl_HelperInvocation
-    InnerCoverage,          // n/a       SV_InnerCoverage           gl_SampleMaskIn
-    InsideTessFactor,       // n/a       SV_InsideTessFactor[2]     gl_TessLevelInner[2]
-    InstanceID,             // n/a       SV_InstanceID              gl_InstanceID (OpenGL)/ gl_InstanceIndex (Vulkan)
-    IsFrontFace,            // VFACE     SV_IsFrontFace             gl_FrontFacing
-    OutputControlPointID,   // n/a       SV_OutputControlPointID    gl_InvocationID
-    PointSize,              // PSIZE     n/a                        gl_PointSize
-    PrimitiveID,            // n/a       SV_PrimitiveID             gl_PrimitiveID
-    RenderTargetArrayIndex, // n/a       SV_RenderTargetArrayIndex  gl_Layer
-    SampleIndex,            // n/a       SV_SampleIndex             gl_SampleID
-    StencilRef,             // n/a       SV_StencilRef              gl_FragStencilRef (if ARB_shader_stencil_export is present)
-    Target,                 // COLOR     SV_Target                  gl_FragData
-    TessFactor,             // n/a       SV_TessFactor[4]           gl_TessLevelOuter[4]
-    VertexID,               // n/a       SV_VertexID                gl_VertexID (OpenGL)/ gl_VertexIndex (Vulkan)
-    VertexPosition,         // POSITION  SV_Position                gl_Position
-    ViewportArrayIndex,     // n/a       SV_ViewportArrayIndex      gl_ViewportIndex
-  //NumWorkGroups,          // n/a       n/a                        gl_NumWorkGroups
-  //WorkGroupSize,          // n/a       n/a                        gl_WorkGroupSize
+                            // HLSL3     HLSL4+                     GLSL                                   Metal
+                            // --------  -------------------------  -------------------------------------  ----------------------------
+    ClipDistance,           // n/a       SV_ClipDistance            gl_ClipDistance                        clip_distance
+    CullDistance,           // n/a       SV_CullDistance            gl_CullDistance                        n/a
+    Coverage,               // n/a       SV_Coverage                gl_SampleMask                          sample_mask
+    Depth,                  // DEPTH     SV_Depth                   gl_FragDepth                           depth(any)
+    DepthGreaterEqual,      // n/a       SV_DepthGreaterEqual       gl_FragDepth w. layout(depth_greater)  depth(greater)
+    DepthLessEqual,         // n/a       SV_DepthLessEqual          gl_FragDepth w. layout(depth_less)     depth(less)
+    DispatchThreadID,       // n/a       SV_DispatchThreadID        gl_GlobalInvocationID                  thread_position_in_grid
+    DomainLocation,         // n/a       SV_DomainLocation          gl_TessCoord                           n/a
+    FragCoord,              // VPOS      SV_Position                gl_FragCoord                           position
+    GroupID,                // n/a       SV_GroupID                 gl_WorkGroupID                         threadgroup_position_in_grid
+    GroupIndex,             // n/a       SV_GroupIndex              gl_LocalInvocationIndex                n/a
+    GroupThreadID,          // n/a       SV_GroupThreadID           gl_LocalInvocationID                   thread_index_in_threadgroup
+    GSInstanceID,           // n/a       SV_GSInstanceID            gl_InvocationID                        n/a
+  //HelperInvocation,       // n/a       n/a                        gl_HelperInvocation                    n/a
+    InnerCoverage,          // n/a       SV_InnerCoverage           gl_SampleMaskIn                        n/a
+    InsideTessFactor,       // n/a       SV_InsideTessFactor[2]     gl_TessLevelInner[2]                   n/a
+    InstanceID,             // n/a       SV_InstanceID              gl_InstanceID/ gl_InstanceIndex        instance_id
+    IsFrontFace,            // VFACE     SV_IsFrontFace             gl_FrontFacing                         front_facing
+    OutputControlPointID,   // n/a       SV_OutputControlPointID    gl_InvocationID                        n/a
+    PointSize,              // PSIZE     n/a                        gl_PointSize                           point_size
+    PrimitiveID,            // n/a       SV_PrimitiveID             gl_PrimitiveID                         n/a
+    RenderTargetArrayIndex, // n/a       SV_RenderTargetArrayIndex  gl_Layer                               render_target_array_index
+    SampleIndex,            // n/a       SV_SampleIndex             gl_SampleID                            sample_id
+    StencilRef,             // n/a       SV_StencilRef              gl_FragStencilRef                      n/a
+    Target,                 // COLOR     SV_Target[N]               gl_FragData[N]                         color(N)
+    TessFactor,             // n/a       SV_TessFactor[4]           gl_TessLevelOuter[4]                   n/a
+    VertexID,               // n/a       SV_VertexID                gl_VertexID/ gl_VertexIndex            vertex_id
+    VertexPosition,         // POSITION  SV_Position                gl_Position                            position
+    ViewportArrayIndex,     // n/a       SV_ViewportArrayIndex      gl_ViewportIndex                       viewport_array_index
+  //NumWorkGroups,          // n/a       n/a                        gl_NumWorkGroups                       threadgroups_per_grid
+  //WorkGroupSize,          // n/a       n/a                        gl_WorkGroupSize                       threads_per_threadgroup
 };
 
 // Indexed semantic type with 'Semantic' enum, integral index, and implicit conversion from and to 'Semantic' enum.

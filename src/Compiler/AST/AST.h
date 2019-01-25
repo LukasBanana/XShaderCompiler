@@ -851,22 +851,23 @@ struct FunctionDecl : public Decl
     // Returns the entry point type of this function, or Undefined if this is not an entry point.
     ShaderTarget DetermineEntryPointType() const;
 
-    TypeSpecifierPtr                returnType;                                 // Function return type (TypeSpecifier).
-    std::vector<VarDeclStmntPtr>    parameters;                                 // Function parameter list.
-    IndexedSemantic                 semantic            = Semantic::Undefined;  // Function return semantic; may be undefined.
-    std::vector<VarDeclStmntPtr>    annotations;                                // Annotations can be ignored by analyzers and generators.
-    CodeBlockPtr                    codeBlock;                                  // May be null (if this AST node is a forward declaration).
+    TypeSpecifierPtr                returnType;                                     // Function return type (TypeSpecifier).
+    std::vector<VarDeclStmntPtr>    parameters;                                     // Function parameter list.
+    IndexedSemantic                 semantic            = Semantic::Undefined;      // Function return semantic; may be undefined.
+    std::vector<VarDeclStmntPtr>    annotations;                                    // Annotations can be ignored by analyzers and generators.
+    CodeBlockPtr                    codeBlock;                                      // May be null (if this AST node is a forward declaration).
 
-    ParameterSemantics              inputSemantics;                             // Entry point input semantics.
-    ParameterSemantics              outputSemantics;                            // Entry point output semantics.
+    ParameterSemantics              inputSemantics;                                 // Entry point input semantics.
+    ParameterSemantics              outputSemantics;                                // Entry point output semantics.
 
-    BasicDeclStmnt*                 declStmntRef        = nullptr;              // Reference to its declaration statement (parent node). Must not be null.
-    FunctionDecl*                   funcImplRef         = nullptr;              // Reference to the function implementation (only for forward declarations).
-    std::vector<FunctionDecl*>      funcForwardDeclRefs;                        // Reference to all forward declarations (only for implementations).
-    StructDecl*                     structDeclRef       = nullptr;              // Structure declaration reference if this is a member function; may be null
+    BasicDeclStmnt*                 declStmntRef        = nullptr;                  // Reference to its declaration statement (parent node). Must not be null.
+    FunctionDecl*                   funcImplRef         = nullptr;                  // Reference to the function implementation (only for forward declarations).
+    std::vector<FunctionDecl*>      funcForwardDeclRefs;                            // Reference to all forward declarations (only for implementations).
+    StructDecl*                     structDeclRef       = nullptr;                  // Structure declaration reference if this is a member function; may be null
 
-    std::vector<ParameterStructure> paramStructs;                               // Parameter with structure type (only for entry point).
-    unsigned int                    numCalls            = 0;                    // Number of expressions that call this function.
+    std::vector<ParameterStructure> paramStructs;                                   // Parameter with structure type (only for entry point).
+    unsigned int                    numCalls            = 0;                        // Number of expressions that call this function.
+    ShaderTarget                    entryPointType      = ShaderTarget::Undefined;  // Shader target type for an entry point (only for Metal backend).
 };
 
 // Uniform buffer (cbuffer, tbuffer) declaration.
