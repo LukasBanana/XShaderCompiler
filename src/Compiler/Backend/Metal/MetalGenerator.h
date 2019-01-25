@@ -113,6 +113,11 @@ class MetalGenerator : public Generator
 
         /* --- Helper functions for code generation --- */
 
+        /* ----- Pre processing AST ----- */
+
+        void PreProcessAST(const ShaderInput& inputDesc, const ShaderOutput& outputDesc);
+        void PreProcessReferenceAnalyzer(const ShaderInput& inputDesc);
+
         /* ----- Basics ----- */
 
         // Writes a comment (single or multi-line comments).
@@ -146,6 +151,7 @@ class MetalGenerator : public Generator
         void WriteDataType(DataType dataType, const AST* ast = nullptr);
 
         void WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast = nullptr);
+        void WriteTypeDenoterExt(const TypeDenoter& typeDenoter, bool writeArrayDims, const AST* ast = nullptr);
 
         /* ----- Function declaration ----- */
 
@@ -184,6 +190,7 @@ class MetalGenerator : public Generator
         bool                preserveComments_       = false;
         bool                alwaysBracedScopes_     = false;
         bool                writeHeaderComment_     = true;
+        bool                newLineOpenScope_       = true;
         
 };
 

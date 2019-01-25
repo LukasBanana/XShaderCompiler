@@ -30,6 +30,9 @@ class ReferenceAnalyzer : private VisitorTracker
 
     public:
 
+        // Marks all declarational AST nodes (i.e. function decl, structure decl etc.) that are reachable from any function.
+        void MarkReferences(Program& program);
+
         // Marks all declarational AST nodes (i.e. function decl, structure decl etc.) that are reachable from the specififed entry point.
         void MarkReferencesFromEntryPoint(Program& program, const ShaderTarget shaderTarget);
 
@@ -53,12 +56,14 @@ class ReferenceAnalyzer : private VisitorTracker
         DECL_VISIT_PROC( StructDecl        );
         DECL_VISIT_PROC( BufferDecl        );
         DECL_VISIT_PROC( SamplerDecl       );
-
+        DECL_VISIT_PROC( AliasDecl         );
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
+
         DECL_VISIT_PROC( BufferDeclStmnt   );
         DECL_VISIT_PROC( SamplerDeclStmnt  );
         DECL_VISIT_PROC( VarDeclStmnt      );
+        DECL_VISIT_PROC( AliasDeclStmnt    );
 
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
@@ -66,7 +71,7 @@ class ReferenceAnalyzer : private VisitorTracker
         DECL_VISIT_PROC( ObjectExpr        );
         DECL_VISIT_PROC( AssignExpr        );
 
-        /* === Members === */
+    private:
 
         Program*                program_        = nullptr;
         ShaderTarget            shaderTarget_   = ShaderTarget::VertexShader;

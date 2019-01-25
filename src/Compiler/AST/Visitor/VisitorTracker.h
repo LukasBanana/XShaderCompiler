@@ -106,6 +106,17 @@ class VisitorTracker : public Visitor
         // Returns the active (inner most) variable declaration statement.
         VarDeclStmnt* ActiveVarDeclStmnt() const;
 
+        /* ----- Alias declaration statement tracker ----- */
+
+        void PushAliasDeclStmnt(AliasDeclStmnt* aliasDeclStmnt);
+        void PopAliasDeclStmnt();
+
+        // Returns true if the visitor is currently inside an alias declaration statement.
+        bool InsideAliasDeclStmnt() const;
+
+        // Returns the active (inner most) alias declaration statement.
+        AliasDeclStmnt* ActiveAliasDeclStmnt() const;
+
     private:
 
         // Function declaration stack.
@@ -125,6 +136,9 @@ class VisitorTracker : public Visitor
 
         // Variable declaration stack.
         std::stack<VarDeclStmnt*>       varDeclStmntStack_;
+
+        // Alias declaration stack.
+        std::stack<AliasDeclStmnt*>     aliasDeclStmntStack_;
 
         // Function declaration level of the main entry point.
         std::size_t                     stackLevelOfEntryPoint_     = ~0;

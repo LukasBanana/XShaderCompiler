@@ -188,6 +188,31 @@ VarDeclStmnt* VisitorTracker::ActiveVarDeclStmnt() const
     return (varDeclStmntStack_.empty() ? nullptr : varDeclStmntStack_.top());
 }
 
+/* ----- Alias declaration statement tracker ----- */
+
+void VisitorTracker::PushAliasDeclStmnt(AliasDeclStmnt* aliasDeclStmnt)
+{
+    aliasDeclStmntStack_.push(aliasDeclStmnt);
+}
+
+void VisitorTracker::PopAliasDeclStmnt()
+{
+    if (!aliasDeclStmntStack_.empty())
+        aliasDeclStmntStack_.pop();
+    else
+        throw std::underflow_error(R_AliasDeclStmntStackUnderflow);
+}
+
+bool VisitorTracker::InsideAliasDeclStmnt() const
+{
+    return (!aliasDeclStmntStack_.empty());
+}
+
+AliasDeclStmnt* VisitorTracker::ActiveAliasDeclStmnt() const
+{
+    return (aliasDeclStmntStack_.empty() ? nullptr : aliasDeclStmntStack_.top());
+}
+
 
 } // /namespace Xsc
 

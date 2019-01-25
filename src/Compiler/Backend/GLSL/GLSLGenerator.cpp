@@ -2365,7 +2365,7 @@ void GLSLGenerator::WriteDataType(DataType dataType, bool writePrecisionSpecifie
     if (auto keyword = DataTypeToGLSLKeyword(dataType))
         Write(*keyword);
     else
-        Error(R_FailedToMapToGLSLKeyword(R_DataType), ast);
+        Error(R_FailedToMapToGLSLKeyword(R_DataType + " <" + DataTypeToString(dataType) + ">"), ast);
 }
 
 void GLSLGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, bool writePrecisionSpecifier, const AST* ast)

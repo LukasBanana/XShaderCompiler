@@ -17,6 +17,22 @@ namespace Xsc
 {
 
 
+void ReferenceAnalyzer::MarkReferences(Program& program)
+{
+    program_        = (&program);
+    shaderTarget_   = ShaderTarget::Undefined;
+
+    /* Visit all functions */
+    for (const auto& stmnt : program.globalStmnts)
+    {
+        if (auto declStmnt = stmnt->As<BasicDeclStmnt>())
+        {
+            if (auto funcDecl = declStmnt->declObject->As<FunctionDecl>())
+                Visit(funcDecl);
+        }
+    }
+}
+
 void ReferenceAnalyzer::MarkReferencesFromEntryPoint(Program& program, const ShaderTarget shaderTarget)
 {
     program_        = (&program);
@@ -134,6 +150,12 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
         Visit(ast->declStmntRef);
 }
 
+IMPLEMENT_VISIT_PROC(AliasDecl)
+{
+    if (Reachable(ast))
+        Visit(ast->declStmntRef);
+}
+
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (Reachable(ast))
@@ -173,12 +195,6 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     }
 }
 
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
-{
-    if (Reachable(ast))
-        VISIT_DEFAULT(VarDeclStmnt);
-}
-
 /* --- Declaration statements --- */
 
 IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
@@ -201,6 +217,18 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
 IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 {
     Reachable(ast);
+}
+
+IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+{
+    if (Reachable(ast))
+        VISIT_DEFAULT(VarDeclStmnt);
+}
+
+IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
+{
+    if (Reachable(ast))
+        VISIT_DEFAULT(AliasDeclStmnt);
 }
 
 /* --- Expressions --- */

@@ -15,6 +15,7 @@
 //#include "ExprConverter.h"
 //#include "FuncNameConverter.h"
 //#include "UniformPacker.h"
+#include "ReferenceAnalyzer.h"
 #include "Helper.h"
 #include "ReportIdents.h"
 #include <initializer_list>
@@ -60,9 +61,13 @@ void MetalGenerator::GenerateCodePrimary(
     preserveComments_   = outputDesc.options.preserveComments;
     writeHeaderComment_ = outputDesc.options.writeGeneratorHeader;
     alwaysBracedScopes_ = outputDesc.formatting.alwaysBracedScopes;
+    newLineOpenScope_   = outputDesc.formatting.newLineOpenScope;
 
     try
     {
+        /* Pre-process AST before generation begins */
+        PreProcessAST(inputDesc, outputDesc);
+
         /* Visit program AST */
         Visit(&program);
     }
@@ -212,17 +217,14 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    if (ast->flags(StructDecl::isNonEntryPointParam) || !ast->flags(StructDecl::isShaderInput | StructDecl::isShaderOutput))
+    PushStructDecl(ast);
     {
-        PushStructDecl(ast);
-        {
-            if (auto structDeclArgs = reinterpret_cast<StructDeclArgs*>(args))
-                WriteStructDecl(ast, structDeclArgs->inEndWithSemicolon);
-            else
-                WriteStructDecl(ast, false);
-        }
-        PopStructDecl();
+        if (auto structDeclArgs = reinterpret_cast<StructDeclArgs*>(args))
+            WriteStructDecl(ast, structDeclArgs->inEndWithSemicolon);
+        else
+            WriteStructDecl(ast, false);
     }
+    PopStructDecl();
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
@@ -285,49 +287,6 @@ IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 {
-    auto varDecls = ast->varDecls;
-
-    //TODO: refactor this!
-    #if 1
-    auto varTypeStructDecl = ast->typeSpecifier->GetStructDeclRef();
-
-    for (auto it = varDecls.begin(); it != varDecls.end();)
-    {
-        auto varDecl = it->get();
-
-        /*
-        First check if code generation is disabled for variable declaration,
-        then check if this is a system value semantic inside an interface block.
-        */
-        if ( varDecl->flags(VarDecl::isEntryPointLocal) &&
-             ( !varTypeStructDecl || !varTypeStructDecl->flags(StructDecl::isNonEntryPointParam) ) )
-        {
-            /*
-            Code generation is disabled for this variable declaration
-            -> Remove this from the list
-            */
-            it = varDecls.erase(it);
-        }
-        else
-            ++it;
-    }
-
-    if (varDecls.empty())
-    {
-        /*
-        All variable declarations within this statement are disabled
-        -> Break code generation here
-        */
-        return;
-    }
-    #endif
-
-    //const auto& varDecl0 = varDecls.front();
-
-    /* Ignore declaration statement of static member variables */
-    if (ast->typeSpecifier->HasAnyStorageClassOf({ StorageClass::Static }) && ast->FetchStructDeclRef() != nullptr)
-        return;
-
     PushVarDeclStmnt(ast);
     {
         BeginLn();
@@ -361,10 +320,10 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         Separator();
 
         /* Write variable declarations */
-        for (std::size_t i = 0; i < varDecls.size(); ++i)
+        for (std::size_t i = 0, n = ast->varDecls.size(); i < n; ++i)
         {
-            Visit(varDecls[i]);
-            if (i + 1 < varDecls.size())
+            Visit(ast->varDecls[i]);
+            if (i + 1 < n)
                 Write(", ");
         }
 
@@ -379,14 +338,58 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
 
 IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
 {
-    if (ast->structDecl && !ast->structDecl->IsAnonymous())
-    {
-        /* Write structure declaration and end it with a semicolon */
-        StructDeclArgs structDeclArgs;
-        structDeclArgs.inEndWithSemicolon = true;
+    /* Ignore builtin typedefs (e.g. "WORD" or "FLOAT") that are not referenced */
+    if (ast->flags(AST::isBuiltin) && !ast->flags(AST::isReachable))
+        return;
 
-        Visit(ast->structDecl, &structDeclArgs);
+    BeginLn();
+    Write("typedef ");
+
+    if (ast->structDecl)
+    {
+        PushAliasDeclStmnt(ast);
+        {
+            Visit(ast->structDecl);
+        }
+        PopAliasDeclStmnt();
+
+        if (newLineOpenScope_)
+        {
+            EndLn();
+            BeginLn();
+        }
+        else
+            Write(" ");
     }
+
+    /* Write alias declarations */
+    for (std::size_t i = 0, n = ast->aliasDecls.size(); i < n; ++i)
+    {
+        auto aliasDecl = ast->aliasDecls[i].get();
+        const auto& typeDen = aliasDecl->GetTypeDenoter();
+
+        if (ast->structDecl == nullptr)
+        {
+            WriteTypeDenoterExt(*typeDen, false, aliasDecl);
+            Write(" ");
+        }
+
+        /* Write alias name */
+        Write(aliasDecl->ident);
+
+        /* Write array dimensions */
+        if (auto arrayTypeDen = typeDen->As<ArrayTypeDenoter>())
+            Visit(arrayTypeDen->arrayDims);
+
+        if (i + 1 < n)
+            Write(", ");
+    }
+
+    Write(";");
+    EndLn();
+
+    if (InsideGlobalScope())
+        Blank();
 }
 
 IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
@@ -693,6 +696,20 @@ IMPLEMENT_VISIT_PROC(InitializerExpr)
 
 /* --- Helper functions for code generation --- */
 
+/* ----- Pre processing AST ----- */
+
+void MetalGenerator::PreProcessAST(const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
+{
+    PreProcessReferenceAnalyzer(inputDesc);
+}
+
+void MetalGenerator::PreProcessReferenceAnalyzer(const ShaderInput& inputDesc)
+{
+    /* Mark all reachable AST nodes */
+    ReferenceAnalyzer refAnalyzer;
+    refAnalyzer.MarkReferences(*GetProgram());
+}
+
 /* ----- Basics ----- */
 
 void MetalGenerator::WriteComment(const std::string& text)
@@ -855,10 +872,15 @@ void MetalGenerator::WriteDataType(DataType dataType, const AST* ast)
     if (auto keyword = DataTypeToMetalKeyword(dataType))
         Write(*keyword);
     else
-        Error(R_FailedToMapToMetalKeyword(R_DataType), ast);
+        Error(R_FailedToMapToMetalKeyword(R_DataType + " <" + DataTypeToString(dataType) + ">"), ast);
 }
 
 void MetalGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST* ast)
+{
+    WriteTypeDenoterExt(typeDenoter, true, ast);
+}
+
+void MetalGenerator::WriteTypeDenoterExt(const TypeDenoter& typeDenoter, bool writeArrayDims, const AST* ast)
 {
     try
     {
@@ -934,16 +956,19 @@ void MetalGenerator::WriteTypeDenoter(const TypeDenoter& typeDenoter, const AST*
             else
                 Write(typeDenoter.Ident());
         }
-        else if (typeDenoter.IsAlias())
+        else if (auto aliasTypeDen = typeDenoter.As<AliasTypeDenoter>())
         {
-            /* Write aliased type denoter */
-            WriteTypeDenoter(typeDenoter.GetAliased(), ast);
+            /* Write alias name */
+            Write(aliasTypeDen->ident);
         }
         else if (auto arrayTypeDen = typeDenoter.As<ArrayTypeDenoter>())
         {
             /* Write sub type of array type denoter and array dimensions */
             WriteTypeDenoter(*arrayTypeDen->subTypeDenoter, ast);
-            Visit(arrayTypeDen->arrayDims);
+
+            /* Write array dimensions only if enabled (must be disabled for 'typedef' statements) */
+            if (writeArrayDims)
+                Visit(arrayTypeDen->arrayDims);
         }
         else
             Error(R_FailedToDetermineMetalDataType, ast);
@@ -1147,23 +1172,14 @@ bool MetalGenerator::WriteStructDecl(StructDecl* structDecl, bool endWithSemicol
     WriteScopeOpen(false, endWithSemicolon);
     BeginSep();
     {
-        WriteStmntList(structDecl->varMembers);
+        WriteStmntList(structDecl->localStmnts);
     }
     EndSep();
     WriteScopeClose();
 
     /* Only append blank line if struct is not part of a variable declaration */
-    if (!InsideVarDeclStmnt())
+    if (!InsideVarDeclStmnt() && !InsideAliasDeclStmnt())
         Blank();
-
-    /* Write member functions */
-    std::vector<BasicDeclStmnt*> funcMemberStmnts;
-    funcMemberStmnts.reserve(structDecl->funcMembers.size());
-
-    for (auto& funcDecl : structDecl->funcMembers)
-        funcMemberStmnts.push_back(funcDecl->declStmntRef);
-
-    WriteStmntList(funcMemberStmnts);
 
     return true;
 }
