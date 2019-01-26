@@ -103,6 +103,9 @@ class Generator : protected VisitorTracker
         bool IsFragmentShader() const;
         bool IsComputeShader() const;
 
+        // Writes the specified initializer list expression with an optional limit of entries for a single line.
+        void WriteInitializerList(InitializerExpr* initExpr, std::size_t maxSingleLineEntries = ~0);
+
     private:
 
         /*

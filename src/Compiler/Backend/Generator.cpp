@@ -241,6 +241,40 @@ bool Generator::IsComputeShader() const
     return (shaderTarget_ == ShaderTarget::ComputeShader);
 }
 
+void Generator::WriteInitializerList(InitializerExpr* initExpr, std::size_t maxSingleLineEntries)
+{
+    const auto& subExprs = initExpr->exprs;
+    if (subExprs.size() > maxSingleLineEntries)
+    {
+        WriteScopeOpen();
+
+        for (std::size_t i = 0; i < subExprs.size(); ++i)
+        {
+            BeginLn();
+            Visit(subExprs[i]);
+            if (i + 1 < subExprs.size())
+                Write(",");
+            EndLn();
+        }
+
+        WriteScopeClose();
+        BeginLn();
+    }
+    else
+    {
+        Write("{ ");
+
+        for (std::size_t i = 0; i < subExprs.size(); ++i)
+        {
+            Visit(subExprs[i]);
+            if (i + 1 < subExprs.size())
+                Write(", ");
+        }
+
+        Write(" }");
+    }
+}
+
 
 } // /namespace Xsc
 

@@ -166,7 +166,7 @@ class Converter : public VisitorTracker
 
         StmntScopeHandler& ActiveStmntScopeHandler();
 
-        /* === Members === */
+    private:
 
         // Symbol table to determine which variables must be renamed (scope rules are different between HLSL and GLSL).
         SymbolTable<bool>               symTable_;

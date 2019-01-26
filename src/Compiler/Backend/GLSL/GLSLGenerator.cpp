@@ -1022,35 +1022,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
-    if (ast->GetTypeDenoter()->GetAliased().IsArray())
-    {
-        WriteScopeOpen();
-
-        for (std::size_t i = 0; i < ast->exprs.size(); ++i)
-        {
-            BeginLn();
-            Visit(ast->exprs[i]);
-            if (i + 1 < ast->exprs.size())
-                Write(",");
-            EndLn();
-        }
-
-        WriteScopeClose();
-        BeginLn();
-    }
-    else
-    {
-        Write("{ ");
-
-        for (std::size_t i = 0; i < ast->exprs.size(); ++i)
-        {
-            Visit(ast->exprs[i]);
-            if (i + 1 < ast->exprs.size())
-                Write(", ");
-        }
-
-        Write(" }");
-    }
+    WriteInitializerList(ast, 10);
 }
 
 #undef IMPLEMENT_VISIT_PROC

@@ -247,3 +247,6 @@
 
 [ObjectAccessTest1: vert]
 -T vert -E VS in/HLSL/ObjectAccessTest1.hlsl
+
+[InitializerTest1 vert]
+-T vert in/HLSL/InitializerTest1.hlsl
