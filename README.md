@@ -7,7 +7,7 @@
 Features
 --------
 
-* Cross compiles HLSL shader code (Shader Model 4 and 5) into GLSL
+* Cross compiles HLSL shader code (Shader Model 4 and 5) into GLSL and Metal
 * Simple to integrate into other projects
 * Low overhead translation (i.e. avoidance of unnecessary wrapper functions)
 * Dead code removal
@@ -52,13 +52,17 @@ See the [TODO.md](https://github.com/LukasBanana/XShaderCompiler/blob/master/TOD
 Offline Compiler
 ----------------
 
-The following command line translates the "Example.hlsl" file with the vertex shader entry point "VS", and the fragment shader entry point "PS":
-
+The following command line translates the `Example.hlsl` file with the vertex shader entry point `VS`, and the fragment shader entry point `PS`:
 ```
 xsc -E VS -T vert Example.hlsl -E PS -T frag Example.hlsl
 ```
+The result are two GLSL shader files: `Example.VS.vert` and `Example.PS.frag`.
 
-The result are two GLSL shader files: "Example.VS.vert" and "Example.PS.frag".
+The next command line translates the `Example.hlsl` file into one Metal shader:
+```
+xsc -Vout Metal Example.hlsl
+```
+The result is the `Example.metal` shader file.
 
 Library Usage (C++)
 -------------------
@@ -175,16 +179,16 @@ Language Differences
 
 Here is a brief outline of High-Level differences between HLSL and GLSL, which XShaderCompiler is able to translate properly:
 
-| Feature | HLSL | GLSL |
-|---------|:----:|:----:|
-| Separation of Textures and Samplers | Yes | Only for Vulkan |
-| Structure Inheritance | Yes | No |
-| Nested Structures | Yes | No |
-| Anonymous Structures | Yes | No |
-| Structure Member Functions | Yes | No |
-| Default Parameters | Yes | No |
-| Object-Oriented Intrinsics | Yes | No |
-| Multiple Entry Points | Yes | No |
-| Type Aliasing | Yes | No |
-| L-Values of Input Semantics | Yes | No |
-| Implicit Type Conversion | Extensive | Restricted |
+| Feature | HLSL | GLSL | Metal |
+|---------|:----:|:----:|:-----:|
+| Texture/Sampler Separation | :heavy_check_mark: | Vulkan Only | :heavy_check_mark: |
+| Structure Inheritance | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_multiplication_x: |
+| Nested Structures | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_check_mark: |
+| Anonymous Structures | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_check_mark: |
+| Structure Member Functions | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_check_mark: |
+| Default Parameters | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_check_mark: |
+| Object-Oriented Intrinsics | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_check_mark: |
+| Multiple Entry Points | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_check_mark: |
+| Type Aliasing | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_check_mark: |
+| L-Values of Input Semantics | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_check_mark: |
+| Implicit Type Conversion | Cyclic | Non-Cyclic | Cyclic
