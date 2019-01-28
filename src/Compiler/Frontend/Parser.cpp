@@ -293,101 +293,68 @@ TernaryExprPtr Parser::ParseTernaryExpr(const ExprPtr& condExpr)
     return UpdateSourceArea(ast);
 }
 
-// expr: expr (operator expr)*;
-ExprPtr Parser::ParseAbstractBinaryExpr(const std::function<ExprPtr()>& parseFunc, const BinaryOpList& binaryOps)
-{
-    /* Parse sub expressions */
-    std::vector<ExprPtr> exprs;
-    std::vector<BinaryOp> ops;
-    std::vector<SourcePosition> opsPos;
-
-    /* Parse primary expression */
-    exprs.push_back(parseFunc());
-
-    while (Is(Tokens::BinaryOp))
-    {
-        /* Parse binary operator */
-        auto op = StringToBinaryOp(Tkn()->Spell());
-
-        if (std::find(binaryOps.begin(), binaryOps.end(), op) == binaryOps.end())
-            break;
-
-        AcceptIt();
-
-        /* Store operator and its source position */
-        ops.push_back(op);
-        opsPos.push_back(GetScanner().PreviousToken()->Pos());
-
-        /* Parse next sub-expression */
-        exprs.push_back(parseFunc());
-    }
-
-    /* Build (left-to-rigth) binary expression tree */
-    return BuildBinaryExprTree(exprs, ops, opsPos);
-}
-
 ExprPtr Parser::ParseLogicOrExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&Parser::ParseLogicAndExpr, this), { BinaryOp::LogicalOr });
+    return ParseLTRBinaryExpr(std::bind(&Parser::ParseLogicAndExpr, this), { BinaryOp::LogicalOr });
 }
 
 ExprPtr Parser::ParseLogicAndExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&Parser::ParseBitwiseOrExpr, this), { BinaryOp::LogicalAnd });
+    return ParseLTRBinaryExpr(std::bind(&Parser::ParseBitwiseOrExpr, this), { BinaryOp::LogicalAnd });
 }
 
 ExprPtr Parser::ParseBitwiseOrExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&Parser::ParseBitwiseXOrExpr, this), { BinaryOp::Or });
+    return ParseLTRBinaryExpr(std::bind(&Parser::ParseBitwiseXOrExpr, this), { BinaryOp::Or });
 }
 
 ExprPtr Parser::ParseBitwiseXOrExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&Parser::ParseBitwiseAndExpr, this), { BinaryOp::Xor });
+    return ParseLTRBinaryExpr(std::bind(&Parser::ParseBitwiseAndExpr, this), { BinaryOp::Xor });
 }
 
 ExprPtr Parser::ParseBitwiseAndExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&Parser::ParseEqualityExpr, this), { BinaryOp::And });
+    return ParseLTRBinaryExpr(std::bind(&Parser::ParseEqualityExpr, this), { BinaryOp::And });
 }
 
 ExprPtr Parser::ParseEqualityExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&Parser::ParseRelationExpr, this), { BinaryOp::Equal, BinaryOp::NotEqual });
+    return ParseLTRBinaryExpr(std::bind(&Parser::ParseRelationExpr, this), { BinaryOp::Equal, BinaryOp::NotEqual });
 }
 
 ExprPtr Parser::ParseRelationExpr()
 {
     /* Do not parse '<' and '>' as binary operator while a template is actively being parsed */
     if (ActiveParsingState().activeTemplate)
-        return ParseAbstractBinaryExpr(std::bind(&Parser::ParseShiftExpr, this), { BinaryOp::LessEqual, BinaryOp::GreaterEqual });
+        return ParseLTRBinaryExpr(std::bind(&Parser::ParseShiftExpr, this), { BinaryOp::LessEqual, BinaryOp::GreaterEqual });
     else
-        return ParseAbstractBinaryExpr(std::bind(&Parser::ParseShiftExpr, this), { BinaryOp::Less, BinaryOp::LessEqual, BinaryOp::Greater, BinaryOp::GreaterEqual });
+        return ParseLTRBinaryExpr(std::bind(&Parser::ParseShiftExpr, this), { BinaryOp::Less, BinaryOp::LessEqual, BinaryOp::Greater, BinaryOp::GreaterEqual });
 }
 
 ExprPtr Parser::ParseShiftExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&Parser::ParseAddExpr, this), { BinaryOp::LShift, BinaryOp::RShift });
+    return ParseLTRBinaryExpr(std::bind(&Parser::ParseAddExpr, this), { BinaryOp::LShift, BinaryOp::RShift });
 }
 
 ExprPtr Parser::ParseAddExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&Parser::ParseSubExpr, this), { BinaryOp::Add });
+    return ParseLTRBinaryExpr(std::bind(&Parser::ParseSubExpr, this), { BinaryOp::Add });
 }
 
 ExprPtr Parser::ParseSubExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&Parser::ParseMulExpr, this), { BinaryOp::Sub });
+    return ParseLTRBinaryExpr(std::bind(&Parser::ParseMulExpr, this), { BinaryOp::Sub });
 }
 
 ExprPtr Parser::ParseMulExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&Parser::ParseDivExpr, this), { BinaryOp::Mul });
+    return ParseLTRBinaryExpr(std::bind(&Parser::ParseDivExpr, this), { BinaryOp::Mul });
 }
 
 ExprPtr Parser::ParseDivExpr()
 {
-    return ParseAbstractBinaryExpr(std::bind(&Parser::ParseValueExpr, this), { BinaryOp::Div, BinaryOp::Mod });
+    return ParseLTRBinaryExpr(std::bind(&Parser::ParseValueExpr, this), { BinaryOp::Div, BinaryOp::Mod });
 }
 
 ExprPtr Parser::ParseValueExpr()
@@ -455,41 +422,34 @@ const std::string* Parser::FindNameManglingPrefix(const std::string& ident) cons
  * ======= Private: =======
  */
 
-ExprPtr Parser::BuildBinaryExprTree(
-    std::vector<ExprPtr>& exprs, std::vector<BinaryOp>& ops, std::vector<SourcePosition>& opsPos)
+// binary_expr: (binary_expr OP)? sub_expr;
+ExprPtr Parser::ParseLTRBinaryExpr(const std::function<ExprPtr()>& parseSubExprFunc, const BinaryOpList& binaryOps)
 {
-    if (exprs.empty())
-        ErrorInternal(R_SubExprMustNotBeEmpty, __FUNCTION__);
+    /* Parse primary expression */
+    ExprPtr ast = parseSubExprFunc();
 
-    if (exprs.size() > 1)
+    while (Is(Tokens::BinaryOp))
     {
-        if (exprs.size() != ops.size() + 1 || exprs.size() != opsPos.size() + 1)
-            ErrorInternal(R_SubExprAndOpsUncorrelated, __FUNCTION__);
+        /* Parse binary operator */
+        auto op = StringToBinaryOp(Tkn()->Spell());
 
-        auto ast = Make<BinaryExpr>();
+        if (std::find(binaryOps.begin(), binaryOps.end(), op) == binaryOps.end())
+            break;
 
-        /* Build right hand side */
-        ast->rhsExpr    = exprs.back();
-        ast->op         = ops.back();
-        auto opPos      = opsPos.back();
+        AcceptIt();
 
-        exprs.pop_back();
-        ops.pop_back();
-        opsPos.pop_back();
+        /* Create left-to-right associative binary expression and parse next primary expression */
+        auto binaryExpr = Make<BinaryExpr>();
 
-        /* Build left hand side of the tree */
-        ast->lhsExpr = BuildBinaryExprTree(exprs, ops, opsPos);
+        binaryExpr->lhsExpr = ast;
+        binaryExpr->op      = op;
+        binaryExpr->rhsExpr = parseSubExprFunc();
 
-        /* Update source area */
-        UpdateSourceArea(ast, ast->lhsExpr, ast->rhsExpr);
-
-        /* Update pointer offset of source area (to point directly to the operator in a line marker) */
-        ast->area.Offset(opPos);
-
-        return ast;
+        /* New binary expression becomes the active AST node */
+        ast = binaryExpr;
     }
 
-    return exprs.front();
+    return ast;
 }
 
 void Parser::IncUnexpectedTokenCounter()

@@ -191,7 +191,7 @@ class HLSLParser : public SLParser
 
         bool                            ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiveType = false);
 
-        /* === Members === */
+    private:
 
         using TypeNameSymbolTable = SymbolTable<bool>;
 

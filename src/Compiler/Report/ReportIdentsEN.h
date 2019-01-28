@@ -195,8 +195,6 @@ DECL_REPORT( InFunction,                        " (in function: {0})"           
 DECL_REPORT( FailedToCreateScanner,             "failed to create token scanner"                                                                                );
 DECL_REPORT( FailedToScanSource,                "failed to scan source code"                                                                                    );
 DECL_REPORT( MissingScanner,                    "missing token scanner"                                                                                         );
-DECL_REPORT( SubExprMustNotBeEmpty,             "sub-expressions must not be empty"                                                                             );
-DECL_REPORT( SubExprAndOpsUncorrelated,         "sub-expressions and operators have uncorrelated number of elements"                                            );
 DECL_REPORT( TooManySyntaxErrors,               "too many syntax errors"                                                                                        );
 DECL_REPORT( IdentNameManglingConflict,         "identifier '{0}' conflicts with reserved name mangling prefix '{1}'"                                           );
 DECL_REPORT( NotAllowedInThisContext,           "{0} not allowed in this context"                                                                               );
