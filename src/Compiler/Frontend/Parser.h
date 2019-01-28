@@ -139,8 +139,6 @@ class Parser
         ExprPtr         ParseGenericExpr();
         TernaryExprPtr  ParseTernaryExpr(const ExprPtr& condExpr);
 
-        ExprPtr         ParseAbstractBinaryExpr(const std::function<ExprPtr()>& parseFunc, const BinaryOpList& binaryOps);
-
         ExprPtr         ParseLogicOrExpr();
         ExprPtr         ParseLogicAndExpr();
         ExprPtr         ParseBitwiseOrExpr();
@@ -227,19 +225,15 @@ class Parser
 
         /* === Functions === */
 
-        // Builds a left-to-right binary-expression tree hierarchy for the specified list of expressions.
-        ExprPtr BuildBinaryExprTree(
-            std::vector<ExprPtr>& exprs,
-            std::vector<BinaryOp>& ops,
-            std::vector<SourcePosition>& opsPos
-        );
+        // Parse left-to-right associative binary expression.
+        ExprPtr ParseLTRBinaryExpr(const std::function<ExprPtr()>& parseSubExprFunc, const BinaryOpList& binaryOps);
 
         void IncUnexpectedTokenCounter();
 
         void AssertTokenType(const Tokens type);
         void AssertTokenSpell(const std::string& spell);
 
-        /* === Members === */
+    private:
 
         ReportHandler                   reportHandler_;
         NameMangling                    nameMangling_;
