@@ -44,7 +44,7 @@ TokenPtr SLScanner::ScanToken()
     if (Is('.'))
         return ScanNumberOrDot();
     if (std::isdigit(UChr()))
-        return ScanNumber();
+        return ScanNumber(false, features_.acceptInfConst);
 
     /* Scan string literal */
     if (Is('\"'))

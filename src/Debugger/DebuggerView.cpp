@@ -142,10 +142,10 @@ void DebuggerView::CreateLayoutPropertyGridShaderInput(wxPropertyGrid& pg)
     wxPGChoices choices0;
     {
         choices0.Add("Cg");
-        choices0.Add("HLSL3");
-        choices0.Add("HLSL4");
-        choices0.Add("HLSL5");
-        choices0.Add("HLSL6");
+        choices0.Add("HLSL 3.0");
+        choices0.Add("HLSL 4.0");
+        choices0.Add("HLSL 5.0");
+        choices0.Add("HLSL 6.0");
 
         choices0.Add("GLSL");
         choices0.Add("ESSL");
@@ -182,27 +182,34 @@ void DebuggerView::CreateLayoutPropertyGridShaderOutput(wxPropertyGrid& pg)
     wxPGChoices choices0;
     {
         choices0.Add("GLSL (Auto-Detect)");
-        choices0.Add("GLSL110");
-        choices0.Add("GLSL120");
-        choices0.Add("GLSL130");
-        choices0.Add("GLSL140");
-        choices0.Add("GLSL150");
-        choices0.Add("GLSL330");
-        choices0.Add("GLSL400");
-        choices0.Add("GLSL410");
-        choices0.Add("GLSL420");
-        choices0.Add("GLSL430");
-        choices0.Add("GLSL440");
-        choices0.Add("GLSL450");
+        choices0.Add("GLSL 110");
+        choices0.Add("GLSL 120");
+        choices0.Add("GLSL 130");
+        choices0.Add("GLSL 140");
+        choices0.Add("GLSL 150");
+        choices0.Add("GLSL 330");
+        choices0.Add("GLSL 400");
+        choices0.Add("GLSL 410");
+        choices0.Add("GLSL 420");
+        choices0.Add("GLSL 430");
+        choices0.Add("GLSL 440");
+        choices0.Add("GLSL 450");
 
         choices0.Add("ESSL (Auto-Detect)");
-        choices0.Add("ESSL100");
-        choices0.Add("ESSL300");
-        choices0.Add("ESSL310");
-        choices0.Add("ESSL320");
+        choices0.Add("ESSL 100");
+        choices0.Add("ESSL 300");
+        choices0.Add("ESSL 310");
+        choices0.Add("ESSL 320");
 
         choices0.Add("VKSL (Auto-Detect)");
-        choices0.Add("VKSL450");
+        choices0.Add("VKSL 450");
+
+        choices0.Add("Metal (Auto-Detect)");
+        choices0.Add("Metal 1.0");
+        choices0.Add("Metal 1.1");
+        choices0.Add("Metal 1.2");
+        choices0.Add("Metal 2.0");
+        choices0.Add("Metal 2.1");
     }
     pg.Append(new wxEnumProperty("Shader Version", "outputVersion", choices0));
 }
@@ -413,9 +420,16 @@ void DebuggerView::OnPropertyGridChange(wxPropertyGridEvent& event)
 
             T::VKSL,
             T::VKSL450,
+
+            T::Metal,
+            T::Metal1_0,
+            T::Metal1_1,
+            T::Metal1_2,
+            T::Metal2_0,
+            T::Metal2_1,
         };
 
-        return (idx >= 0 && idx < 20 ? versions[idx] : T::GLSL);
+        return (idx >= 0 && idx < 26 ? versions[idx] : T::GLSL);
     };
 
     /* --- Main options --- */

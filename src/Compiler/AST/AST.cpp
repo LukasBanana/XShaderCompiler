@@ -1890,6 +1890,11 @@ bool LiteralExpr::IsSpaceRequiredForSubscript() const
     return (!value.empty() && value.find('.') == std::string::npos && std::isdigit(static_cast<int>(value.back())));
 }
 
+bool LiteralExpr::IsInfConst() const
+{
+    return flags(LiteralExpr::isInfConst);
+}
+
 
 /* ----- TypeSpecifierExpr ----- */
 

@@ -80,8 +80,6 @@ class Scanner
 
         using Tokens = Token::Types;
 
-        /* === Functions === */
-
         TokenPtr NextToken(bool scanComments, bool scanWhiteSpaces);
 
         void StoreStartPos();
@@ -124,7 +122,7 @@ class Scanner
         TokenPtr    ScanCommentBlock(bool scanComments);
         TokenPtr    ScanStringLiteral();
         TokenPtr    ScanCharLiteral();
-        TokenPtr    ScanNumber(bool startWithPeriod = false);
+        TokenPtr    ScanNumber(bool startWithPeriod = false, bool acceptInfConst = false);
         TokenPtr    ScanNumberOrDot();
         TokenPtr    ScanVarArg(std::string& spell);
 
@@ -158,14 +156,12 @@ class Scanner
 
     private:
 
-        /* === Functions === */
-
         TokenPtr NextTokenScan(bool scanComments, bool scanWhiteSpaces);
 
         void AppendComment(const std::string& s);
         void AppendMultiLineComment(const std::string& s);
 
-        /* === Members === */
+    private:
 
         SourceCodePtr                               source_;
         char                                        chr_                = 0;

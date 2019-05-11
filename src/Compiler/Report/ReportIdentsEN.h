@@ -180,6 +180,7 @@ DECL_REPORT( LexicalError,                      "lexical error"                 
 DECL_REPORT( UnexpectedChar,                    "unexpected character '{0}'[ (expected '{1}')]"                                                                 );
 DECL_REPORT( MissingDigitSequenceAfterExpr,     "missing digit-sequence after exponent part"                                                                    );
 DECL_REPORT( MissingDecimalPartInFloat,         "missing decimal part in floating-point number"                                                                 );
+DECL_REPORT( InvalidSuffixForFloatLiteral,      "invalid suffix for floating-point literal[: '{0}']"                                                            );
 
 /* ----- Parser ----- */
 

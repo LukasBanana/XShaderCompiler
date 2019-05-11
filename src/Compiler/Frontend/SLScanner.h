@@ -29,11 +29,22 @@ class SLScanner : public Scanner
 
     protected:
 
+        struct FeatureSupport
+        {
+            bool acceptInfConst = false;
+        };
+
+    protected:
+
         virtual TokenPtr ScanIdentifierOrKeyword(std::string&& spell) = 0;
 
-    private:
+        // Sets the language features this scanner supports.
+        inline void SetFeatureSupport(const FeatureSupport& features)
+        {
+            features_ = features;
+        }
 
-        /* === Functions === */
+    private:
 
         TokenPtr ScanToken() override;
 
@@ -42,6 +53,10 @@ class SLScanner : public Scanner
         TokenPtr ScanAssignShiftRelationOp(const char Chr);
         TokenPtr ScanPlusOp();
         TokenPtr ScanMinusOp();
+
+    private:
+
+        FeatureSupport features_;
 
 };
 

@@ -521,6 +521,9 @@ void ExprConverter::ConvertExpr(ExprPtr& expr, const Flags& flags)
 
         if (enabled(ConvertCompatibleStructs))
             ConvertExprCompatibleStruct(expr);
+
+        if (enabled(ConvertInfConst))
+            ConvertExprInfConst(expr);
     }
 }
 
@@ -1112,6 +1115,22 @@ void ExprConverter::ConvertExprCompatibleStruct(ExprPtr& expr)
                     }
                 }
             }
+        }
+    }
+}
+
+void ExprConverter::ConvertExprInfConst(ExprPtr& expr)
+{
+    /* Is this is a literal expression with the infinity constant? */
+    if (auto literalExpr = expr->As<LiteralExpr>())
+    {
+        if (literalExpr->IsInfConst())
+        {
+            expr = ASTFactory::MakeBinaryExpr(
+                ASTFactory::MakeLiteralExpr(literalExpr->dataType, "1.0"),
+                BinaryOp::Div,
+                ASTFactory::MakeLiteralExpr(literalExpr->dataType, "0.0")
+            );
         }
     }
 }

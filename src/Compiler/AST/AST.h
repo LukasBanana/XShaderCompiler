@@ -1138,6 +1138,11 @@ struct LiteralExpr : public Expr
 {
     AST_INTERFACE(LiteralExpr);
 
+    FLAG_ENUM
+    {
+        FLAG( isInfConst, 0 ), // This literal is the infinity constnat: 1.#INF
+    };
+
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     // Converts the data type of this literal expr, resets the buffered type denoter (see ResetTypeDenoter), and modifies the value string.
@@ -1151,6 +1156,9 @@ struct LiteralExpr : public Expr
 
     // Returns true if this literal needs a space after the literal, when a vector subscript is used as postfix.
     bool IsSpaceRequiredForSubscript() const;
+
+    // Returns true if this literal is the infinity constant 1.#INF, which is equivalent to ast->flags(LiteralExpr::isInfConst).
+    bool IsInfConst() const;
 
     std::string     value;                              // Literal expression value.
 

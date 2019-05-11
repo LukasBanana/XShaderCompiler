@@ -18,6 +18,11 @@ HLSLScanner::HLSLScanner(bool enableCgKeywords, Log* log) :
     SLScanner         { log              },
     enableCgKeywords_ { enableCgKeywords }
 {
+    FeatureSupport features;
+    {
+        features.acceptInfConst = true;
+    }
+    SetFeatureSupport(features);
 }
 
 

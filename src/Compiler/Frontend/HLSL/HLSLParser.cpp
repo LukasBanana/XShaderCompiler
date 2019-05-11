@@ -1276,6 +1276,10 @@ LiteralExprPtr HLSLParser::ParseLiteralExpr()
 
     ast->value = AcceptIt()->Spell();
 
+    /* Check for pre-defined constants */
+    if (ast->value == "1.#INF")
+        ast->flags << LiteralExpr::isInfConst;
+
     return UpdateSourceArea(ast);
 }
 

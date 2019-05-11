@@ -380,7 +380,7 @@ TokenPtr Scanner::ScanCharLiteral()
 }
 
 // see https://msdn.microsoft.com/de-de/library/windows/desktop/bb509567(v=vs.85).aspx
-TokenPtr Scanner::ScanNumber(bool startWithPeriod)
+TokenPtr Scanner::ScanNumber(bool startWithPeriod, bool acceptInfConst)
 {
     std::string spell;
 
@@ -407,29 +407,53 @@ TokenPtr Scanner::ScanNumber(bool startWithPeriod)
         else
             spell += TakeIt();
 
-        /* Scan (optional) right hand side digit-sequence */
-        postDigits = ScanDigitSequence(spell);
-
-        if (!preDigits && !postDigits)
-            Error(R_MissingDecimalPartInFloat);
-
-        /* Check for exponent-part */
-        if (Is('e') || Is('E'))
+        /* Check for infinity constant 1.#INF */
+        if (Is('#'))
         {
-            spell += TakeIt();
+            if (acceptInfConst)
+            {
+                std::string constIdent;
 
-            /* Check for sign */
-            if (Is('-') || Is('+'))
+                /* Scan constant identifier */
+                constIdent += TakeIt();
+                while (!Is(0) && (std::isalnum(UChr()) || Is('_')))
+                    constIdent += TakeIt();
+
+                /* Check for pre-defined constants */
+                if (constIdent == "#INF")
+                    spell += constIdent;
+                else
+                    Error(R_InvalidSuffixForFloatLiteral(constIdent));
+            }
+            else
+                Error(R_InvalidSuffixForFloatLiteral("#"));
+        }
+        else
+        {
+            /* Scan (optional) right hand side digit-sequence */
+            postDigits = ScanDigitSequence(spell);
+
+            if (!preDigits && !postDigits)
+                Error(R_MissingDecimalPartInFloat);
+
+            /* Check for exponent-part */
+            if (Is('e') || Is('E'))
+            {
                 spell += TakeIt();
 
-            /* Scan exponent digit sequence */
-            if (!ScanDigitSequence(spell))
-                Error(R_MissingDigitSequenceAfterExpr);
-        }
+                /* Check for sign */
+                if (Is('-') || Is('+'))
+                    spell += TakeIt();
 
-        /* Check for floating-suffix */
-        if (Is('f') || Is('F') || Is('h') || Is('H') || Is('l') || Is('L'))
-            spell += TakeIt();
+                /* Scan exponent digit sequence */
+                if (!ScanDigitSequence(spell))
+                    Error(R_MissingDigitSequenceAfterExpr);
+            }
+
+            /* Check for floating-suffix */
+            if (Is('f') || Is('F') || Is('h') || Is('H') || Is('l') || Is('L'))
+                spell += TakeIt();
+        }
     }
     else
     {
